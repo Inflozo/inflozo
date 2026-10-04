@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, capSentence, type PlanId } from '@/lib/plan'
 import { copyName, matchesName, NAME_HINT, nameSchema, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
-import { defaultStylePack } from '@/lib/style-pack'
+import { presetIdOf } from '@/lib/style-pack'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -132,7 +132,9 @@ function refusedAtCap(plan: PlanId): ActionResult {
   return fail('at_cap', capSentence(plan))
 }
 
-export async function createProject(_previous: ActionResult | null, _formData: FormData): Promise<ActionResult> {
+/** Story 6.3 — the Style Pack the New project window chose (D4a, DW-322): `{ preset }` for a preset this build knows, and
+ *  Paper for anything else — `presetIdOf`'s rule, so a tampered field makes a Paper project rather than refusing it. */
+export async function createProject(_previous: ActionResult | null, formData: FormData): Promise<ActionResult> {
   const context = await names()
   if (!context) return logged('create', null, COULD_NOT.create)
   const { user, supabase, taken, slugs, plan } = context
@@ -142,7 +144,7 @@ export async function createProject(_previous: ActionResult | null, _formData: F
   const name = nextUntitled(taken)
   const error = await insertProject(
     supabase,
-    { user_id: user.id, name, style_pack: defaultStylePack() },
+    { user_id: user.id, name, style_pack: { preset: presetIdOf({ preset: formData.get('preset') }) } },
     slugify(name),
     slugs,
   )

@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./fonts": "./src/fonts.ts",
+    "./reference": "./src/reference.ts",
+    "./tokens": "./src/tokens.ts",
     "./reference-tokens.css": "./reference-tokens.css"
   },
   "scripts": {

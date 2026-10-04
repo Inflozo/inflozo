@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url'
 import { assembleEntry, compilesTo, isPaywallDesign, isPlaceable, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { POOL, presetOf } from '@inflozo/library/packs'
-import { fontFaceCss, packTokensCss, type Pack, type ProjectDoc } from '@inflozo/section-runtime'
+import { packTokensCss, type Pack, type ProjectDoc } from '@inflozo/section-runtime'
+import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { canvasOfTemplateKey, fileOfKey, isSurface } from './editor.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import { sampleRows, type DesignRows } from './canvas.ts'
@@ -161,8 +162,9 @@ export function packHead(pack: string, base: string): { tokens: string; faces: s
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**
- * THE CANVAS DOCUMENT: the reference tokens and their faces (Story 6.2: `pack` names the preset, Paper by default — the
- * editor's canvas keeps Paper until Story 6.3's switch; `/pilots` and the render matrix ask for others), the pilots' stylesheets (each scoped by its own class prefix), the
+ * THE CANVAS DOCUMENT: the reference tokens and their faces (Story 6.2: `pack` names the preset, Paper by default; Story
+ * 6.3: the editor asks for it ONCE per mount in the project's pack and restyles it in place on a switch — its two styles are
+ * `lib/style-pack.ts`'s `packChoices` strings, which are this `packHead`'s; `/pilots` and the render matrix ask for others), the pilots' stylesheets (each scoped by its own class prefix), the
  * editor's chrome stylesheet (every rule keyed on `data-inflozo-*`, so inert at rest) and an empty mount point — and
  * NO script, so it needs no nonce. The editor and the pilots review write sections into `#canvas` from the parent
  * document (same origin) and set `data-mode` on this `<html>` for Light and Dark; `/canvas` serves it to both. A whole document in an

@@ -8544,7 +8544,8 @@ ruling (owner, 2026-10-03, Story 6.2's Create, Question 3, option 1): *"One spec
 
 plain: Remix was to let you re-roll the colours and fonts, the designs, or both. Story 5.12 left the colours-and-fonts
   choice out because only one pack existed, and no story brings it back.
-status: open
+status: done 2026-10-04 (Story 6.3)
+resolution: Story 6.3's Dev (2026-10-04): B8's "Re-roll what" is built (`components/editor/remix-dice.tsx`, words in `lib/remix.ts`) — Style Pack · Designs · Both as native radio cards above the buttons, offered where a pack can be re-rolled (the editor; `/controls` holds no pack and keeps today's dialog), opening on Designs where a ring moves and on Style Pack where none does, Designs and Both greyed with `NO_RING_MOVES` beneath. Style Pack draws a different preset uniformly (`lib/pack-switch.ts`'s `otherPreset`, through `shuffleTo`); Both is ONE transaction — the fold and the pack under one `txn`, undone and redone whole (`lib/journal.ts`). Held by `pack-switch.test.ts`, `journal.test.ts`'s grouped-transaction rows (red with the grouping removed, executed in a scratch copy), the keyboard journey's "Remix's Re-roll what" stop (Style Pack and Both, one ⌘Z each) and the deployed walk's step 88 (opening on Style Pack with the other two greyed, and a pack re-roll that one ⌘Z undoes).
 severity: medium
 origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
 owner: Story 6.3 (The pack-switcher moment), the first story with more than one pack to switch to, whose card names
@@ -8665,7 +8666,8 @@ reason: the spec's I/O matrix fixes the negative rule to background and surface 
 plain: The New project window is drawn with a choice of packs (Paper and Tangerine), and the Style Pack list should be
   reachable on a tablet too. Story 6.2 shows the twelve packs but lets nobody pick one, so the window keeps Paper alone
   and the list is reached only on a wide screen until the story that makes picking work.
-status: open
+status: done 2026-10-04 (Story 6.3)
+resolution: Story 6.3's Dev (2026-10-04): both doors are built. The New project window offers the twelve as D4a's cells — native radios `name="preset"` inside the form, Paper checked, the ring on `:checked` — fed `packCells()` from the server, and `createProject` writes `{ preset }` (`presetIdOf`'s rule: anything else is Paper). Below 1280 the ⋯ menu carries a **Style Pack** row before Theme settings (absent on a template surface, live reading along) opening the Controls overlay on the list. Held by the keyboard journey's "⋯ → Style Pack" stop at 720 × 900 and the 5.22 rows stop, and on production by `run-verify-dashboard.py`'s `sheet-packs` and `created-in-pack` (First Run's sheet creating a project in Neon, read back off the pooler, its card wearing Neon).
 severity: medium
 origin: Story 6.2's Create (2026-10-03), reading D4a, S4a and Story 5.22's narrow layout together
 owner: Story 6.3 (The pack-switcher moment), whose card names this entry.
@@ -8684,7 +8686,8 @@ reason: R-118 — a control arrives with the story that makes it work. Choosing 
 plain: To draw a pack's name, fonts and dots, the app's pages now load the full list of every font file with its
   fingerprint, though they use a few names from it. Nothing is wrong on screen; the pages are a little heavier than
   they need to be.
-status: open
+status: done 2026-10-04 (Story 6.3)
+resolution: Story 6.3's Dev (2026-10-04), measured on the build: `REFERENCE_PACK`, `REFERENCE_TOKENS` and `referenceTokensCss` moved to `@inflozo/section-runtime/reference` and `fontFaceCss` off the index (it stays on `./fonts`), so the runtime's index — every canvas client's import — reaches no preset and no pool; no client module imports `lib/style-pack.ts` or `@inflozo/library/packs` any more (the editor is handed `packChoices()` — names, dots, swatches and each preset's canvas `tokens` and `faces`, 78,845 bytes, 7,750 gzipped, in its server payload — the New project window `packCells()`, the chrome layer `PACK_FAMILY_PREFIX` from `lib/pack-switch.ts`). `tools/check-traces.mjs` now refuses a `.next/static` chunk naming `licenceFile` or any sha256 `pool.json` records, and a runtime index whose relative imports reach `@inflozo/library/packs`: red on Story 6.2's build (`0bebwu-me1gyy.js` and `3fqh80dol2fgc.js`, 134 of 134 each, and `tokens.ts` and `fonts.ts`), green on 6.3's (none of 34 chunks). CI runs it after `pnpm build`. `reference-tokens.css` unchanged byte for byte (`test-vocabulary.mjs`).
 severity: low
 origin: Story 6.2's Review (2026-10-03), Blind Hunter + Verification Gap; not measured on a built bundle
 owner: Story 6.3 (The pack-switcher moment), whose card names this entry.
@@ -8717,7 +8720,8 @@ plain: Until a pack can be chosen, every project is Paper, so no test has shown 
   project whose pack is something else, or `/pilots` really changing the page when its menu changes. Two smaller
   things also have no test: which address the app asks for a pack's font, and that the editor does not copy pack fonts
   into the page it draws.
-status: open
+status: done 2026-10-04 (Story 6.3)
+resolution: Story 6.3's Dev (2026-10-04): the harness takes `x-inflozo-harness-pack: <id>` as the project's stored pack, and the keyboard journey opens on Mono — the card, the list, the canvas document (asked for with `&pack=mono`), the Background role's dots and a Section Picker card all Mono's; the deployed editor walk's step 102 opens a fresh browser in a pack the save wrote. The host → font-address rule is `routing.ts`'s `canvasRouteOn` (`routing.test.ts`) and the chrome's face rule `lib/canvas-layer.ts`'s `chromeFace` (`canvas-layer.test.ts`: an `Inflozo pack *` face is never copied into the canvas). `/pilots` reads the editor's own address rule (`packed`), and `run-verify-pilots.cjs` checks its Pack menu reaching the canvas document — Mono's `&pack=mono` and token, then Paper's bare address.
 severity: medium
 origin: Story 6.2's Review (2026-10-03), Verification Gap
 owner: Story 6.3 (The pack-switcher moment), whose card names this entry.

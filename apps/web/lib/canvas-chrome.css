@@ -100,6 +100,29 @@
   }
 }
 
+/* STORY 6.3 — THE PACK SWITCH'S CROSSFADE (FR-E2, `S7 Style Packs.dc.html` S7b :136-298: the old look fading under the new
+   across the whole canvas). A switch replaces this document's token block and its faces INSIDE the document's own
+   `startViewTransition` (`editor.tsx`'s `restyle`), so the browser holds the old picture and crossfades to the new one —
+   no second document, no reload. The three pseudo-elements run 300 ms; the group's default is 250, so it is named too
+   (executed at the Create in Chromium: 332 ms end to end). Keyed on `data-inflozo-switching`, which the editor puts on this
+   `<html>` for the switch alone and takes off when it has landed — so at rest the document carries nothing, and these
+   rules are inert by construction (and inert anyway: no transition runs at rest). */
+:root[data-inflozo-switching]::view-transition-group(root),
+:root[data-inflozo-switching]::view-transition-old(root),
+:root[data-inflozo-switching]::view-transition-new(root) {
+  animation-duration: 300ms;
+}
+/* `globals.css`'s reduced-motion block cannot reach this document, so the degrade is written here — and Chromium STILL
+   animates a view transition under `reduce` without it (executed at the Create): with `animation: none` on the three, no
+   animation runs and the switch is instant (35 ms), the same change and never a removed affordance (UX-DR15). */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-inflozo-switching]::view-transition-group(root),
+  :root[data-inflozo-switching]::view-transition-old(root),
+  :root[data-inflozo-switching]::view-transition-new(root) {
+    animation: none;
+  }
+}
+
 /* STORY 5.20 — THE PAYWALL CANVAS'S PAINTED CHROME (C3a, `C Post Body.dc.html:1423-1436`; S4d, `S4 Editor.dc.html:408-411`).
    A template surface is not a page, and it says so INSIDE the canvas too: the article is context, so it sits at C3a's 55%
    (in both states — the owner's call, stated in the spec); Ghost's cut is C3a's dashed coral rule with its two labels;

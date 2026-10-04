@@ -6,7 +6,11 @@ import { ring } from './greyed'
    its palette as dots, a pencil to edit, and a coral ring when active. The palette values
    belong to the Style Pack (E6, Story 6.1) and arrive as colour strings — the site's
    system, never the app's. Story 6.2: the glyph's face is the pool's (`lib/style-pack.ts`'s
-   `packFacesCss`), and the cell is INFORMATION, not a button, until Story 6.3 makes it switch. */
+   `packFacesCss`). STORY 6.3: the cell SWITCHES — and it stays the picture, never the control:
+   the editor's list wraps it in an option button and the New project window in a native radio's
+   label, so it is a `<span>` (phrasing content inside either) and takes the caller's classes for
+   the ring a `:checked` radio draws. It imports nothing of the pool: its colours and face arrive
+   as data, handed down from the server (DW-323). */
 
 export function PackCell({
   name,
@@ -14,10 +18,11 @@ export function PackCell({
   palette,
   active = false,
   editable = false,
+  className = '',
 }: {
   name: string
   glyphFamily: string
-  palette: string[]
+  palette: readonly string[]
   active?: boolean
   /**
    * The pencil, and only where something opens. The Style Pack EDITOR is Epic 6's, so the
@@ -32,10 +37,12 @@ export function PackCell({
    * is an editor to open, and this cell's caller becomes a client component with it.
    */
   editable?: boolean
+  /** Story 6.3 — the caller's ring rules: D4a's `:checked` radio rings its cell from CSS, never from a prop */
+  className?: string
 }) {
   return (
-    <div
-      className={`relative flex flex-col gap-[3px] rounded-sm border border-line bg-surface p-[6px] ${active ? 'shadow-[0_0_0_2px_var(--color-coral)]' : ''}`}
+    <span
+      className={`relative flex flex-col gap-[3px] rounded-sm border border-line bg-surface p-[6px] ${active ? 'shadow-[0_0_0_2px_var(--color-coral)]' : ''} ${className}`}
     >
       {editable ? (
         <button
@@ -60,7 +67,7 @@ export function PackCell({
           <span key={i} style={{ background: c }} className="size-[9px] rounded-full shadow-hairline-inset" />
         ))}
       </span>
-    </div>
+    </span>
   )
 }
 

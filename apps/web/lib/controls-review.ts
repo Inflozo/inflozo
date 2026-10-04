@@ -12,8 +12,7 @@ import { assembleEntry, orbitWeekly, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
 import { presetOf } from '@inflozo/library/packs'
-import { fontFaceCss, packTokens, REFERENCE_TOKENS } from '@inflozo/section-runtime'
-import type { Mode, Pack } from '@inflozo/section-runtime'
+import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { fontHref } from './style-pack.ts'
 import { PACKAGES } from './style-guide.ts'
 
@@ -78,37 +77,9 @@ export function poolImage(id: string): Buffer | null {
   return imagePool().some((a) => a.id === id) ? readFileSync(join(IMAGES(), `${id}.svg`)) : null
 }
 
-/** Background role's colour roles and the reference token each is painted with. Image has no colour: the
- *  panel draws the Kit's image glyph for it. */
-/** Exported for the keyboard journey (DW-198, Story 5.24e), which holds each Background-role dot to the canvas's own token */
-export const ROLE_TOKENS: Readonly<Record<string, string>> = {
-  base: '--bg-page',
-  surface: '--bg-surface',
-  accent: '--accent',
-  contrast: '--bg-contrast',
-}
-
-/** The swatch colours: the reference token values themselves, so `apps/web` carries no colour literal
- *  (`tokens.test.ts`). A missing property throws rather than drawing an empty circle.
- *
- *  Story 5.6 — PER MODE. `REFERENCE_TOKENS.dark` is the whole property set, as `light` is (`tokens.test.ts` asserts
- *  the two equal), so the panel's Background-role dots are the colours the canvas is ACTUALLY painting while dark is
- *  previewed; drawn from `light` they would have said the light ground was in force. Since Story 6.1 that is true of
- *  these JS maps and no longer of the CSS: the stylesheet's dark blocks redeclare only the per-mode properties, so a
- *  dark block can never override a width band. */
-export function referenceSwatches(mode: Mode = 'light', pack = 'paper'): Record<string, string> {
-  // Story 6.2 — any preset's, for `/pilots`' Pack menu: the dots follow the pack the canvas is painted in
-  const preset = presetOf(pack)
-  if (preset === undefined) throw new Error(`"${pack}" is not a Style Pack preset`)
-  const tokens = pack === 'paper' ? REFERENCE_TOKENS : packTokens(preset.pack as Pack)
-  return Object.fromEntries(
-    Object.entries(ROLE_TOKENS).map(([role, property]) => {
-      const value = tokens[mode][property]
-      if (!value) throw new Error(`the ${mode} ${pack} tokens declare no ${property} — the ${role} swatch has no colour`)
-      return [role, value]
-    }),
-  )
-}
+/** Story 6.3 — the Background role's swatches moved to `lib/style-pack.ts`, the server's one home of the presets, where
+ *  `packChoices` hands every preset's to the editor; they are re-exported here for this module's own callers. */
+export { referenceSwatches, ROLE_TOKENS } from './style-pack.ts'
 
 export type LinkResource = { id: string; title: string; url: string; meta: string }
 export type LinkResources = Record<'pages' | 'posts' | 'tags' | 'authors', LinkResource[]>

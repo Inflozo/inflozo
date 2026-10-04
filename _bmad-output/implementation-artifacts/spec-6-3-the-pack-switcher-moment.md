@@ -220,45 +220,45 @@ AD-15's flush contract (:212) and the FR-E row (:645); `epic-6-context.md`; the 
   - Apply it through `SUPABASE_DB_POOLER_URL` and read it back. Then, before any code, prove the deployed code still saves:
     a three-argument call over PostgREST as a throwaway user on its own project answers `{applied: true}`, and a
     four-argument call writes the preset (the user deleted after). Push `Story 6.3 - Schema - …`.
-- [ ] `packages/section-runtime/src/reference.ts` (new), `tokens.ts`, `index.ts`, `package.json` `exports` --
+- [x] `packages/section-runtime/src/reference.ts` (new), `tokens.ts`, `index.ts`, `package.json` `exports` --
   `REFERENCE_PACK`, `REFERENCE_TOKENS` and `referenceTokensCss` move to `@inflozo/section-runtime/reference`, so `tokens.ts`
   imports no library; `fontFaceCss` leaves the index (it stays on `./fonts`); every importer named in the Code Map follows
   (`reference-tokens.css` byte for byte unchanged) -- DW-323: the index every canvas client imports carries no pool
-- [ ] `apps/web/lib/pack-switch.ts` (new, pure; its one import is `lib/ring.ts`) -- `PACK_FAMILY_PREFIX` (moved here;
+- [x] `apps/web/lib/pack-switch.ts` (new, pure; its one import is `lib/ring.ts`) -- `PACK_FAMILY_PREFIX` (moved here;
   `style-pack.ts` and `canvas-layer.ts` import it), `FACES_WAIT_MS = 1000`, the words (Design Notes' table), and `otherPreset(ids,
   current, random)` through `shuffleTo` -- the client's one home for the switch, reachable by `node --test`
-- [ ] `apps/web/lib/style-pack.ts` -- the server's one home of the presets, imported by no client module: `packChoices()`
+- [x] `apps/web/lib/style-pack.ts` -- the server's one home of the presets, imported by no client module: `packChoices()`
   — per preset in §D.d's order its id, name, the two family names, glyph family, cell dots (background, accent, text,
   plate), card dots (background, surface, accent, text, plate), `swatches` per mode (`referenceSwatches`), and its canvas
   `tokens` (Paper's = `reference-tokens.css`) and `faces` (`fontFaceCss(pairing, fontHref('canvas'))`) — and `packCells()`
   (id, name, glyph family, D4a's three dots); a type-only `PackChoice` for clients; the header says choosing is built --
   one derivation, so every surface paints a pack as the canvas does
-- [ ] `apps/web/lib/journal.ts` -- `PACK_KEY` (`'style-pack'`, never a template key) and a pack entry (`before`/`after`
+- [x] `apps/web/lib/journal.ts` -- `PACK_KEY` (`'style-pack'`, never a template key) and a pack entry (`before`/`after`
   preset ids) beside doc entries (persisted doc entries keep their shape); undo and redo take the head's whole `txn`;
   `Restore` carries every doc of it and the preset; `DEPTH` counts transactions and a trim keeps a transaction whole;
   `flushPayload` answers the docs and the pending preset; `owedOf`/`sendBody` carry the preset (a pack-only record owes);
   `ownFlushLanded` compares the preset -- FR-D9's "Style Pack changes", R-161's grouped undo
-- [ ] `apps/web/lib/local-store.ts` -- `LocalRecord.preset?: string` (absent in a record written before 6.3 → the
+- [x] `apps/web/lib/local-store.ts` -- `LocalRecord.preset?: string` (absent in a record written before 6.3 → the
   server's) -- the device holds the pack with the docs
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` -- an optional `preset` in the body, refused 422 unless
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` -- an optional `preset` in the body, refused 422 unless
   `presetOf` knows it; a body with a preset and no docs is a write; `p_preset` passed; the "already there" read compares
   `style_pack.preset` too -- one door, one compare-and-set
-- [ ] `apps/web/journal.test.ts`, `apps/web/pack-switch.test.ts` (new) -- the I/O matrix's pure rows: a pack entry undoes and
+- [x] `apps/web/journal.test.ts`, `apps/web/pack-switch.test.ts` (new) -- the I/O matrix's pure rows: a pack entry undoes and
   redoes; a two-entry `txn` undoes and redoes whole and counts one edit; a trim never splits one; a pack-only flush payload;
   `ownFlushLanded` with a pending preset; a pre-6.3 record; `otherPreset` never answers the current and reaches every
   other; the words' singular and plural
-- [ ] `apps/web/lib/canvas.ts`, `components/editor/section-preview.tsx` -- `previewSrc(src, designId, pack)` and the
+- [x] `apps/web/lib/canvas.ts`, `components/editor/section-preview.tsx` -- `previewSrc(src, designId, pack)` and the
   editor's opening address carry `&pack=` for any preset but Paper -- previews wear the pack in force; Paper's cached
   addresses never change
-- [ ] `apps/web/lib/canvas-chrome.css` -- `::view-transition-group(root)`, `-old(root)`, `-new(root)` at 300 ms, and the
+- [x] `apps/web/lib/canvas-chrome.css` -- `::view-transition-group(root)`, `-old(root)`, `-new(root)` at 300 ms, and the
   reduced-motion block setting all three to `animation: none` -- the crossfade and its degrade, inert at rest
-- [ ] `(editor)/read.ts`, `app/harness/editor/layout.tsx` -- hand the editor `preset` (`presetIdOf(style_pack)`) and `packs`
+- [x] `(editor)/read.ts`, `app/harness/editor/layout.tsx` -- hand the editor `preset` (`presetIdOf(style_pack)`) and `packs`
   (`packChoices()`) in place of `stylePack` and Paper's `swatches`; the harness takes `x-inflozo-harness-pack: <id>` as
   its stored pack (default Paper) -- DW-325: a journey can open on a pack that is not Paper
-- [ ] `(editor)/style-pack.tsx`, `components/kit/pack-cell.tsx` -- fed by `packs`, no library or runtime import; the list
+- [x] `(editor)/style-pack.tsx`, `components/kit/pack-cell.tsx` -- fed by `packs`, no library or runtime import; the list
   is a listbox of option cells (the design ring's pattern, 3 columns, Enter or a press switches, the current option the
   one tab stop); inside the panel's `ReadOnly` a reading window greys every cell (R-192) -- S7a's cells, pressable
-- [ ] `(editor)/editor.tsx` -- the pack in force as state beside the docs (`latest`); `commitPack(preset, txn?)` through
+- [x] `(editor)/editor.tsx` -- the pack in force as state beside the docs (`latest`); `commitPack(preset, txn?)` through
   `heldBack` and `journalise`; `restored` applies a preset; `store` saves it; the hydrate keeps or replaces it with the
   docs; `flush` sends it; the iframe asked for once in the opening pack; a gesture's change swaps `1-tokens` and `1b-faces`
   in the canvas document inside `startViewTransition` (where offered) whose update awaits `document.fonts.load` of the
@@ -267,30 +267,30 @@ AD-15's flush contract (:212) and the FR-E row (:645); `epic-6-context.md`; the 
   swatches from `packs`; `onRemix(what)` (Both = one `txn` over `apply`'s doc and the pack); ⋯ gains a **Style Pack**
   row before Theme settings (not on a template surface, live while reading) opening the overlay on the list; the ABSENT
   note names what is built -- the moment, and every way into it
-- [ ] `apps/web/lib/remix.ts`, `apps/web/components/editor/remix-dice.tsx` -- B8's "Re-roll what": three radio cards,
+- [x] `apps/web/lib/remix.ts`, `apps/web/components/editor/remix-dice.tsx` -- B8's "Re-roll what": three radio cards,
   Style Pack · Designs · Both, above the buttons, offered only where a pack can be re-rolled (`packs` passed); Designs
   selected when a ring moves, else Style Pack with Designs and Both greyed in P0-0's treatment and the reason beneath; the
   sentence and the announcement follow the choice; `onRemix(what)` -- DW-314, FR-D17's scoped re-roll
-- [ ] `(authed)/new-project-sheet.tsx`, `(dashboard)/page.tsx`, `start/page.tsx`, `projects/actions.ts` -- the row
+- [x] `(authed)/new-project-sheet.tsx`, `(dashboard)/page.tsx`, `start/page.tsx`, `projects/actions.ts` -- the row
   takes `packCells()`: twelve native radios (`name="preset"`, inside the form) drawn as D4a's cells in its three-column
   grid, Paper checked, the ring on `:checked` and the Kit's focus ring on the focused cell; the sheet scrolls inside itself
   where the window is short; `createProject` writes `{ preset }` for a known preset, else Paper -- DW-322's first door
-- [ ] `(authed)/layout.tsx`, `apps/web/lib/canvas-layer.ts`, `apps/web/canvas-layer.test.ts` -- the host → font address
+- [x] `(authed)/layout.tsx`, `apps/web/lib/canvas-layer.ts`, `apps/web/canvas-layer.test.ts` -- the host → font address
   rule becomes a named function a test calls; a test holds that `Inflozo pack *` faces are never copied into the canvas --
   DW-325's two unchecked rules
-- [ ] `tools/check-traces.mjs` -- after the build: no `.next/static` chunk contains `licenceFile` or any sha256 in
+- [x] `tools/check-traces.mjs` -- after the build: no `.next/static` chunk contains `licenceFile` or any sha256 in
   `pool.json`; seen red on the pre-change build (two chunks, 134 each) -- DW-323 held in CI
-- [ ] `tools/keyboard/journey.spec.mjs` -- the switch by keyboard (Change, the current option, arrows, Enter): the
+- [x] `tools/keyboard/journey.spec.mjs` -- the switch by keyboard (Change, the current option, arrows, Enter): the
   transition observed with 300 ms animations, "Style Pack — {name}" said, Current and ring moved, the canvas's `--bg-page`
   the pack's; ⌘Z and ⇧⌘Z; reduced motion (no animation, same announcement); the harness opened on Mono (the knob): card,
   list, canvas and a Section Picker card in Mono; Remix Style Pack and Both, one ⌘Z each; at 720 × 900, ⋯ → Style Pack →
   the list; the 5.12 line asserting no "Style Pack" replaced
-- [ ] `tools/probe/run-verify-editor.cjs`, `run-verify-pilots.cjs`, `run-verify-dashboard.py`, `run-verify-lock.cjs` --
+- [x] `tools/probe/run-verify-editor.cjs`, `run-verify-pilots.cjs`, `run-verify-dashboard.py`, `run-verify-lock.cjs` --
   production: step 88 reads "Re-roll what" opening on Style Pack with Designs and Both greyed, and a pack re-roll that one
   ⌘Z undoes; a switch, ⌘S, then `projects.style_pack.preset` and the revision read back (a seeded `brand` untouched) and a
   fresh context opening in the pack; the route's 422 for an unknown preset; `/pilots`' Pack menu reaching the canvas
   document (DW-325); First Run's sheet creating a project in Neon, read back; a reading window's cells greyed -- R-82
-- [ ] `deferred-work.md`, `epic-6-context.md`, `EXPERIENCE.md:895`, `addendum.md` §AD1, `ARCHITECTURE-SPINE.md` (AD-15,
+- [x] `deferred-work.md`, `epic-6-context.md`, `EXPERIENCE.md:895`, `addendum.md` §AD1, `ARCHITECTURE-SPINE.md` (AD-15,
   the FR-E row), the comments named in the Code Map -- DW-314, DW-322, DW-323, DW-325 closed with their proof; the journey
   says "presses"; the flush carries the preset; then grep for `fontFaceCss`, `REFERENCE_PACK`, `REFERENCE_TOKENS`,
   `previewSrc(` and "6.3's" (standing rule 7) -- the ledger closes on evidence
@@ -325,6 +325,26 @@ AD-15's flush contract (:212) and the FR-E row (:645); `epic-6-context.md`; the 
   `python3 tools/doc-audit.py --check` are green.
 
 ## Spec Change Log
+
+- **Dev (2026-10-04), where the build had to differ from the letter of a task** — each recorded where it lives:
+  `PackChoice`, `PackCellData` and `DEFAULT_PRESET` live in `lib/pack-switch.ts` (the client's home), so no client module
+  imports `lib/style-pack.ts` even for a type, and `lib/canvas.ts`'s `packed` knows Paper's address without the server
+  module; `style-pack.ts` re-exports the constants. `referenceSwatches` and `ROLE_TOKENS` moved into `lib/style-pack.ts`
+  (re-exported by `lib/controls-review.ts`), because `packChoices` reads them and `controls-review.ts` already imports
+  `style-pack.ts` — the other way was an import cycle. The runtime gained a `./tokens` subpath beside `./reference` and
+  `./fonts`, so the server's presets read the engine without the index. Paper's `tokens` is `referenceTokensCss()`, which
+  `test-vocabulary.mjs` holds byte-equal to `reference-tokens.css`, and `pilots.test.ts` holds every choice's `tokens` and
+  `faces` equal to what `/canvas?pack=` serves. The host → font-address rule is `routing.ts`'s `canvasRouteOn` (held in
+  `routing.test.ts`, beside `route()`'s own host reading), the chrome's face rule `canvas-layer.ts`'s `chromeFace`. The
+  crossfade's rules are keyed `:root[data-inflozo-switching]::view-transition-…(root)`, because `pilots.test.ts` holds
+  every chrome selector to a `data-inflozo-*` key; the editor puts the attribute on the canvas's `<html>` for the switch
+  alone. The hydrate's pack rule is a named pure function, `lib/journal.ts`'s `hydratedPreset` (the "record from before
+  6.3" row's pure home). Remix's greyed Designs and Both are native `disabled` radios with the reason on the group's
+  `aria-describedby` — a radio group is one Tab stop, so P0-0's per-control `aria-disabled` would add nothing to hear.
+  The ⋯ Style Pack row lets a selection go (the list is the rest panel's) and closing the overlay closes the list, so the
+  next ⋯ → Style Pack opens it afresh with focus on its back button. `/pilots`' Pack menu reads the same address rule
+  (`packed`). Under reduced motion the faces wait still holds the old picture (at most `FACES_WAIT_MS`), then the change
+  is instant.
 
 ## Design Notes
 
@@ -485,3 +505,72 @@ changes that project's pack; step 13 puts it back.
   answered `{applied: true, revision: 2}`, `style_pack` `{brand: {seed: '#123456'}, preset: 'tangerine'}`; (c) the
   control: anon (no session) answered 401 `42501` and the preset stayed `tangerine`. The user was deleted (200), and the
   user count was 13 before and after.
+
+**Dev's results (2026-10-04), Node 24.18.1, nothing run against production, Supabase, Vercel or the Ghost servers:**
+- `node --test apps/web/journal.test.ts apps/web/pack-switch.test.ts apps/web/remix.test.ts apps/web/canvas-layer.test.ts`
+  — pass. **Control:** in a scratch copy of `lib/journal.ts` with `undo`'s grouping removed (the head entry alone), the
+  "two-entry transaction — Remix's Both" row goes red, 31 pass / 1 fail.
+- `pnpm check` — exit 0 (twice, the second on the final tree): `apps/web` 689 pass, `section-runtime` 304 pass,
+  `test-vocabulary.mjs` 33 checks with the moved imports; `reference-tokens.css` byte-identical to `referenceTokensCss()`
+  read from `./reference.ts`.
+- `pnpm keyboard`, whole, no `--grep` — **166 passed**, exit 0, on the final tree (and once before the last two edits,
+  also 166). The 6.3 stops: the list by keyboard (arrows switch nothing, Enter crossfades — every animation on
+  `::view-transition-group/old/new(root)` 300 ms — the pill, "Style Pack — {name}", Current and the tab stop moved, the
+  canvas's `--bg-page` the pack's, the pack in force answering nothing, ⌘Z and ⇧⌘Z); two quick presses; reduced motion (no
+  animation, same words); the API taken away (instant, same words); a reload keeping the device's pack silently with ⌘Z
+  still undoing it; the harness opened on Mono (card, list, canvas asked for with `&pack=mono`, the Background dots, a
+  Section Picker card); Remix's Style Pack and Both, one ⌘Z each; ⋯ → Style Pack at 720 × 900; and the 5.12 and 5.22
+  lines re-expected (the confirm's three radios; ⋯'s rows with Style Pack before Theme settings).
+- `pnpm build` then `node tools/check-traces.mjs` — "every route carries its files" and no client chunk of 34 carries the
+  pool's record. **Control:** the same check against Story 6.2's build (BUILD_ID `c2bHvYPslmwdi_VIP5HsK`), run before
+  anything rebuilt it: red, `chunks/0bebwu-me1gyy.js` and `chunks/3fqh80dol2fgc.js` each carrying 134 of 134 sha256s and
+  `licenceFile`, and `tokens.ts` and `fonts.ts` importing `@inflozo/library/packs`.
+- `bash supabase/tests/run-rls-gate.sh` — exit 0, the Story 6.3 block's eight PASS lines among them (no SQL changed since
+  the Schema phase).
+- `bash tools/matrix/run-matrix-gate.sh` — green: 570 cases, 0 violations, 0 sideways, nothing moved, no rebaseline.
+- `python3 tools/doc-audit.py --check` — green on the second run (the first regenerates the story board and the index).
+- Measured, not gated (the harness's 40-section Home, a `next dev` build, Chromium, a press to the pill gone and the
+  canvas wearing the pack — the 300 ms crossfade included): at 1× CPU 462–518 ms for a pack's first draw and 412–429 ms
+  returning to one already drawn; at 4× CPU 968–1,065 ms and 751–812 ms (two runs). The production numbers are the
+  Review's.
+- The editor's server payload gains `packChoices()`: 78,845 bytes, 7,750 gzipped.
+- **Written, not run (R-82 is the orchestrating session's):** `run-verify-editor.cjs` step 88 re-expected and step 102
+  added, `run-verify-pilots.cjs`' DW-325 block, `run-verify-dashboard.py`'s `sheet-packs` and `created-in-pack`,
+  `run-verify-lock.cjs`' reader list — each syntax-checked (`node --check`, `py_compile`, the dashboard's embedded script
+  parsed by `node --check`).
+
+
+**Dev's matrix audit and final gates (2026-10-04, the orchestrating session, Node 24.18.1):**
+- Three rows of the I/O matrix had no check that ran, so three were added and run:
+  - *Faces not yet fetched*: two journey stops hold every `?font=` request.
+    - Held 500 ms: the transition's picture was held for at least the hold, the new pack's faces were in when the
+      crossfade began, and the pill stood the whole wait.
+    - Held three times `FACES_WAIT_MS`: it went on after `FACES_WAIT_MS` without the faces, and the late face arrived with
+      no second transition.
+    - **Control:** the editor with the faces wait taken out (a temporary edit, restored byte-identical) turns both red,
+      "held while the faces loaded" received 72 ms and "waited FACES_WAIT_MS" received 73 ms.
+  - *Remix · no ring moves*: a journey stop on the harness's Post canvas. "Re-roll what" opens on Style Pack, with Designs
+    and Both disabled, `aria-disabled` and described by `NO_RING_MOVES`. Remix is live and lands a different pack, and
+    one ⌘Z puts Paper back.
+  - *Remix · Both, a design refusal writes neither*: an `editor.test.ts` source check. The fold joins the `txn` through
+    `apply`, a held or refused fold returns, and `commitPack(to, txn)` comes after both.
+- Every other row is held by a check named above:
+  - the 6.3 journey stops: a press, the pack in force, reduced motion, no View Transitions, two quick presses, undo/redo,
+    reload unsynced, below 1280, a stored non-Paper pack;
+  - read-only: 6.2's list stop, which now holds every cell disabled under `x-inflozo-harness-lock: reader`;
+  - `journal.test.ts`: another session's switch, a pre-6.3 record, a pack-only flush, sign-out with a pack owed, take-over
+    counting;
+  - `editor.test.ts`: the unknown preset's 422 and the pack-only body;
+  - the RLS gate: the conflict, the non-object `style_pack` and the pack-only write;
+  - `style-pack.test.ts`: New project's "no preset → Paper" rule.
+- Rows whose end-to-end half runs only on the deployed site, at Review (R-82):
+  - New project in Neon (`run-verify-dashboard.py`);
+  - the 422 answered by the live route, the switch saved and reopened, and step 88 on the owner's ring-length-1 project
+    (`run-verify-editor.cjs`);
+  - the reading window's greyed cells on two real sessions (`run-verify-lock.cjs`).
+- `pnpm check`: exit 0 on the final tree (`apps/web`, `section-runtime`, `library`, `ghost-shim` and `theme-compiler`
+  each 0 fail).
+- `pnpm build` then `node tools/check-traces.mjs`: exit 0, "every route carries its files", and no client chunk carries
+  the font pool's record. This was rebuilt from the final tree, so the subagent's build that was two edits stale is
+  replaced.
+- `pnpm keyboard`, whole, no `--grep`: **169 passed**, exit 0.

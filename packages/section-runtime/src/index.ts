@@ -38,15 +38,13 @@ export type {
   ThemeOutput,
 } from './core.ts'
 export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
-// the reference token values — the controls panel paints its Swatch Row's roles with them (Story 4.5)
-export { REFERENCE_TOKENS } from './tokens.ts'
-// Story 6.1 — the token engine every pack goes through, its scales (R-230) and Paper's authored inputs; and the WCAG
-// ratio Story 6.4's live contrast warning reads
-export { packTokens, packTokensCss, REFERENCE_PACK, SCALES } from './tokens.ts'
+// Story 6.1 — the token engine every pack goes through and its scales (R-230); and the WCAG ratio Story 6.4's live
+// contrast warning reads. DW-323 (Story 6.3): Paper's reference set — `REFERENCE_PACK`, `REFERENCE_TOKENS`,
+// `referenceTokensCss` — is `@inflozo/section-runtime/reference` and a pairing's faces (`fontFaceCss`) are
+// `@inflozo/section-runtime/fonts`, never this index: both read the library's presets and font pool, and every canvas
+// client imports this file (`tools/check-traces.mjs` holds it).
+export { packTokens, packTokensCss, SCALES } from './tokens.ts'
 export type { Face, Pack, PackMode, TokenRow, TokenSource } from './tokens.ts'
-// Story 6.2 — a pairing's faces as `@font-face` rules: the one emitter the canvas, the app's pack cells and Epic 7 share
-export { fontFaceCss } from './fonts.ts'
-export type { FontFaceOptions } from './fonts.ts'
 export { contrast } from './colour.ts'
 export { editText, linkAttributes } from './marks.ts'
 // Story 5.16a — AD-5's one exception, exported so the tests can name the exact string the theme emits

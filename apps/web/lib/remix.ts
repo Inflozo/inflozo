@@ -24,8 +24,14 @@
  *
  * COUNTS ARE DERIVED, NEVER WRITTEN DOWN (standing rule 4): the number the confirm names is the number of picks,
  * because `remixable` below IS `remixPicks`. The dice cannot say six and move five.
+ *
+ * STORY 6.3 — B8'S "RE-ROLL WHAT" (DW-314, FR-D17's scoped re-roll): Style Pack · Designs · Both, where the editor offers
+ * a pack to re-roll. The pack's draw is `lib/pack-switch.ts`'s `otherPreset` (the same `shuffleTo`), Both is ONE
+ * transaction over the canvas's doc and the pack (R-161's grouped undo), and the sentences for each are below. Its
+ * imports are `lib/ring.ts` and `lib/pack-switch.ts`, both pure, so `node --test` still reaches all of it.
  */
 
+import { PACK_WORDS } from './pack-switch.ts'
 import { shuffleTo } from './ring.ts'
 
 /** A section as Remix reads it — a `DocInstance` satisfies it, and so does anything carrying the two fields. */
@@ -99,10 +105,42 @@ export const remixAsk = (n: number, canvas: string): string =>
  *  `/controls` stores nothing and has no history to step back through (R-162). */
 export const UNDO_NOTE = 'One undo, always available'
 
+/** Why no section can move — every ring is one design long — said by both sentences below, never twice in two words. */
+const ONLY_DESIGNS = 'Every section here is the only design its category has so far'
+
 /** R-12's shape for a control at its floor, `ONE_DESIGN`'s sibling: where no section can change, the dialog says
- *  so in one sentence and offers Close alone — nothing is greyed and nothing is written. */
-export const NOTHING_TO_REMIX =
-  'Every section here is the only design its category has so far, so there is nothing to remix yet. More are coming.'
+ *  so in one sentence and offers Close alone — nothing is greyed and nothing is written. Since Story 6.3 that is a
+ *  dialog offered no pack (`/controls`); the editor's opens on Style Pack instead (`NO_RING_MOVES`). */
+export const NOTHING_TO_REMIX = `${ONLY_DESIGNS}, so there is nothing to remix yet. More are coming.`
+
+/* ─── Story 6.3 — B8's "Re-roll what" (`B Missing Surfaces.dc.html:1594-1601`) ──────────────────────────────────── */
+
+/** What a Remix re-rolls: the pack, the canvas's designs, or both in one transaction. */
+export type RemixWhat = 'pack' | 'designs' | 'both'
+
+/** B8's group label, and its three radio cards in B8's order — "Style Pack" is the one name (R-170). */
+export const REROLL_WHAT = 'Re-roll what'
+export const REMIX_CHOICES: readonly { value: RemixWhat; label: string }[] = [
+  { value: 'pack', label: PACK_WORDS.name },
+  { value: 'designs', label: 'Designs' },
+  { value: 'both', label: 'Both' },
+]
+
+/** Where the choice opens: Designs while a ring moves (B8 draws it selected), else the Style Pack — the one re-roll left. */
+export const remixOpensOn = (count: number): RemixWhat => (count > 0 ? 'designs' : 'pack')
+
+/** The greyed reason under Designs and Both, where no ring moves (P0-0's slot): `NOTHING_TO_REMIX`'s own words. */
+export const NO_RING_MOVES = `${ONLY_DESIGNS}. More are coming.`
+
+/** The confirm's sentence for each choice — Designs keeps B8's own (`remixAsk`). */
+export const remixPackAsk = `Re-rolls the ${PACK_WORDS.name} to a different one. Every section keeps its design, its words and its settings — only the look changes.`
+export const remixBothAsk = (n: number, canvas: string): string =>
+  `Re-rolls the ${PACK_WORDS.name}, and ${sections(n)} on ${canvas} to a different design in its own category. Your text, images and settings stay.`
+
+/** The announcement once a pack re-roll has landed — said in place of the switch's own line, so one gesture says one
+ *  sentence: the pack's name, and for Both the sections that moved. */
+export const remixPackSaid = (name: string, n?: number, canvas?: string): string =>
+  n === undefined ? `Remixed the ${PACK_WORDS.name} — ${name}.` : `Remixed the ${PACK_WORDS.name} — ${name} — and ${sections(n)} on ${canvas ?? ''}.`
 
 /** UX-DR12's polite line, spoken through `#editor-said`. B8 drew a toast with an Undo chip; EXPERIENCE.md:541
  *  makes the count a POLITE canvas-status announcement instead, and R-143 already gave undo its one seat. */

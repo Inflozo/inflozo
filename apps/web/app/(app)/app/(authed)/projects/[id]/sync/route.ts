@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { presetOf } from '@inflozo/library/packs'
 import { docSchema } from '@inflozo/section-runtime'
 import { isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
@@ -30,6 +31,12 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * `applied` IS CARRIED SEPARATELY FROM `revision`, and the reason is a collision (see the migration's own comment): a
  * success answers `base + 1`, and the commonest conflict — one other tab having flushed exactly once — leaves the
  * current revision at `base + 1` too. A single number would be read as a success and the unsent work dropped.
+ *
+ * STORY 6.3 — THE STYLE PACK RIDES THE SAME DOOR. A pack change is an edit (FR-D9, AD-16), so the body may carry the
+ * pending `preset` beside the docs — or alone — and the RPC writes `style_pack.preset` in the docs' compare-and-set: one
+ * revision for both, and a refused call writes neither (`20261004120000_sync_style_pack_preset.sql`). Only a preset this
+ * build knows is accepted, refused HERE as a 422 — inside the RPC a junk id would simply be stored, and the next read
+ * would paint Paper over it (`presetIdOf`). `brand` is never written: the RPC sets the one key.
  */
 
 export const dynamic = 'force-dynamic'
@@ -61,14 +68,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
 
-  const { base, docs, session } = body as { base?: unknown; docs?: unknown; session?: unknown }
+  const { base, docs, session, preset } = body as { base?: unknown; docs?: unknown; session?: unknown; preset?: unknown }
   // `Number.isSafeInteger` and not `typeof === 'number'`: `NaN`, `Infinity` and `1e300` are all numbers, and a base
   // the database cannot compare is a compare-and-set that silently never matches.
   if (!Number.isSafeInteger(base) || (base as number) < 0) return no(400, 'Bad base revision')
   if (typeof docs !== 'object' || docs === null || Array.isArray(docs)) return no(400, 'Bad docs')
 
+  // Story 6.3: a preset this build knows, or none — `presetOf` searches, so `__proto__` is no preset either
+  if (preset !== undefined && (typeof preset !== 'string' || presetOf(preset) === undefined)) return no(422, 'Not a Style Pack')
   const keys = Object.keys(docs as Record<string, unknown>)
-  if (keys.length === 0) return no(400, 'Nothing to write')
+  // a body with a preset and no docs is a write: the pack alone was changed
+  if (keys.length === 0 && preset === undefined) return no(400, 'Nothing to write')
 
   const parsed: Record<string, unknown> = Object.create(null)
   // the designs read while checking this body, each once
@@ -110,6 +120,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     p_project: projectId,
     p_docs: parsed,
     p_base: base as number,
+    // Story 6.3: null writes no pack — the function's own default, and every body that carries none
+    p_preset: (preset as string | undefined) ?? null,
   })
   if (error) {
     // the CODE, never the message: a Postgres message can quote the row it refused
@@ -125,14 +137,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // the OLD revision, and a flush whose answer was lost is retried from the old base: both are the editor conflicting
     // with ITS OWN write, and both used to open "changed somewhere else" over work that was safely stored. If every
     // doc this request carries is exactly what the server holds, there is nothing to write and nothing to refuse —
-    // the editor adopts the revision. A real second writer's doc differs, and gets the 409 it always got.
-    const { data: rows } = await supabase.from('project_templates').select('template_key, doc').eq('project_id', projectId).in('template_key', keys)
+    // the editor adopts the revision. A real second writer's doc differs, and gets the 409 it always got. Story 6.3:
+    // and the preset it carries is the server's `style_pack.preset` — a pack-only body asks that alone.
+    const [{ data: rows }, { data: project }] = await Promise.all([
+      keys.length === 0 ? { data: [] } : supabase.from('project_templates').select('template_key, doc').eq('project_id', projectId).in('template_key', keys),
+      preset === undefined ? { data: null } : supabase.from('projects').select('style_pack').eq('id', projectId).maybeSingle(),
+    ])
     const held = new Map((rows ?? []).map((r) => [r.template_key as string, docSchema.safeParse(r.doc)]))
     const same = keys.every((key) => {
       const there = held.get(key)
       return there?.success === true && stable(there.data) === stable(parsed[key])
     })
-    if (same) return json(200, { applied: true, revision: answer.revision })
+    const packThere = preset === undefined || (project?.style_pack as { preset?: unknown } | null | undefined)?.preset === preset
+    if (same && packThere) return json(200, { applied: true, revision: answer.revision })
   }
   return json(answer.applied ? 200 : 409, { applied: answer.applied, revision: answer.revision })
 }

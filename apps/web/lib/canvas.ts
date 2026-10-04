@@ -7,6 +7,7 @@
 import { DEFAULT_LIMIT, orbitWeekly, postAccess, safeCssColor } from '@inflozo/library'
 import type { DataBinding, IconLookup, SectionRegistryEntry, Visitor } from '@inflozo/library'
 import { contentCta, renderCanvas, withData } from '@inflozo/section-runtime'
+import { DEFAULT_PRESET } from './pack-switch.ts'
 import { PAYWALL_WORDS } from './paywall.ts'
 import type { ControlState, MemberState, RuntimeDocument } from '@inflozo/section-runtime'
 import { reader, SETTINGS, siteRows, siteSource, sitePieces, zoneOf, type LiveQuery, type Look, type Row } from './live-content.ts'
@@ -178,12 +179,19 @@ export const harnessCanvasSrc = () => `/app/harness/canvas?v=${V}`
  *  token carried so the browser keeps it as long as the document (`canvasCaching`), asked for on the first Paywall paint. */
 export const surfaceSheetSrc = (src: string) => `${src}${src.includes('?') ? '&' : '?'}sheet=surface`
 
+/** STORY 6.3 — THE SAME DOCUMENT IN A PACK: `&pack=` for any preset but Paper, whose address is unchanged, so every Paper
+ *  document the browser already keeps stays valid. The editor's canvas is asked for ONCE per mount in the pack in force,
+ *  and a later switch restyles it in place; a preview is asked for in the pack in force and asked again when it changes. */
+export const packed = (src: string, pack: string = DEFAULT_PRESET) =>
+  pack === DEFAULT_PRESET ? src : `${src}${src.includes('?') ? '&' : '?'}pack=${encodeURIComponent(pack)}`
+
 /** THE SAME DOCUMENT, NARROWED TO ONE DESIGN — a Section Picker preview's address (the owner's ruling of
  *  2026-09-20). A preview draws exactly one section, so it carries exactly one stylesheet; the editor's canvas,
  *  which may draw any of them, keeps `canvasSrc`. A picture inside it still resolves against the document's own
- *  address, and relative resolution drops a query, so `canvas?image=x` lands on the unnarrowed route as before. */
-export const previewSrc = (src: string, designId: string) =>
-  `${src}${src.includes('?') ? '&' : '?'}design=${encodeURIComponent(designId)}`
+ *  address, and relative resolution drops a query, so `canvas?image=x` lands on the unnarrowed route as before.
+ *  Story 6.3: and in the pack in force — a card or a ring tile wears the project's pack, as the canvas behind it does. */
+export const previewSrc = (src: string, designId: string, pack: string = DEFAULT_PRESET) =>
+  packed(`${src}${src.includes('?') ? '&' : '?'}design=${encodeURIComponent(designId)}`, pack)
 
 
 /** Orbit Weekly's pictures, pointed at the canvas route — relative, so the canvas document resolves it against its

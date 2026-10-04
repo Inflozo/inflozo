@@ -8,9 +8,9 @@ import { ring } from '@/components/kit/greyed'
 import { AlertCircle, X } from '@/components/kit/icons'
 import { PackCell } from '@/components/kit/pack-cell'
 import { STARTER_DOOR, type Door } from '@/lib/first-run'
+import { DEFAULT_PRESET, type PackCellData } from '@/lib/pack-switch'
 import { capSentence, goProLabel, includesProjects, type PlanId } from '@/lib/plan'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
-import { PRESETS } from '@/lib/style-pack'
 import { createProject, type ActionResult } from './projects/actions'
 
 /* ─────────────────── D4 Dashboard Sheets and Blocks.dc.html — D4a, and D4b at the cap.
@@ -31,10 +31,17 @@ import { createProject, type ActionResult } from './projects/actions'
 
    Two controls the frame draws are ABSENT rather than greyed, and that is the other half of
    the same rule — there is nothing behind them to open at all: the Redesign door's "Connect a
-   site" button (E3), and the project picker that sat inside the door now removed. The Style
-   Pack row carries Paper alone, with no pencil and no New pack cell: D4a's choice (Paper and
-   Tangerine) arrives with Story 6.3's switch (DW-322) and the pack editor with Story 6.4. Since
-   Story 6.2 the cell paints from the library's Paper preset and its glyph is the pool's Fraunces.
+   site" button (E3), and the project picker that sat inside the door now removed.
+
+   THE STYLE PACK ROW IS D4a's CHOICE (Story 6.3, DW-322's first door): every preset as D4a
+   draws its cells — the twelve in §D.d's order in its three-column grid (four rows, not D4a's
+   two), Paper checked — without the pencils and the New pack cell (the pack editor is Story
+   6.4's). Each is a NATIVE RADIO, `name="preset"`, inside the form: the arrows move between them,
+   Tab passes the group as one stop, and the cell is its label's picture — ringed on `:checked`
+   and wearing the Kit's focus ring when its radio has focus. `createProject` writes the one
+   chosen (a value that is no preset is Paper, `presetIdOf`'s rule). The cells arrive as data
+   (`packCells`, from the server), so this client module carries nothing of the font pool (DW-323).
+   The sheet scrolls inside itself where the window is short.
 
    AT THE CAP THE SAME DIALOG IS D4b — every door greyed with the plan's pill instead of a
    reason, no Style Pack row, the upgrade block, and Create project drawn disabled. The page
@@ -129,8 +136,10 @@ const GoPro = () => (
  * pills and the block read "Pro includes 25 projects" and there is no Go Pro, because there is
  * nothing further to sell. Every figure comes from `lib/plan.ts`, never from this file.
  */
-export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId }) {
+export function NewProjectSheet({ atCap, plan, packs }: { atCap: boolean; plan: PlanId; packs: readonly PackCellData[] }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  /** Story 6.3 — the form, so a sheet closed and opened again starts on Paper (`reset` restores `defaultChecked`) */
+  const form = useRef<HTMLFormElement>(null)
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(createProject, null)
   // A result the sheet was CLOSED on is spent — reopened, no stale Banner (review, 2026-09-05), and
   // no stale D4b either: the `at_cap` action revalidated the page before answering, so the `atCap`
@@ -154,16 +163,19 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
   const capped = atCap || raced
   const failed =
     state !== seen && state && 'error' in state && state.error.code === 'failed' ? state.error.message : null
-  const paper = PRESETS.paper
 
   return (
     <dialog
       ref={dialog}
       id={NEW_PROJECT_DIALOG}
       aria-labelledby="new-project-title"
-      onClose={() => setSeen(state)}
-      // `m-auto`: Preflight resets the UA's centring margin — see project-menu.tsx.
-      className="m-auto w-[560px] max-w-[calc(100vw-20px)] flex-col gap-5 rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex"
+      onClose={() => {
+        setSeen(state)
+        form.current?.reset()
+      }}
+      // `m-auto`: Preflight resets the UA's centring margin — see project-menu.tsx. Story 6.3: and it scrolls inside
+      // itself where the window is shorter than the twelve packs make it
+      className="m-auto max-h-[calc(100dvh-20px)] w-[560px] max-w-[calc(100vw-20px)] flex-col gap-5 overflow-y-auto rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex"
     >
       <div className="flex items-start justify-between gap-3">
         <h2 id="new-project-title" className="font-display text-[22px] font-bold tracking-[-0.01em] text-ink">
@@ -203,6 +215,20 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
         )}
       </ul>
 
+      {/* Story 6.3 — the form holds the Style Pack row's radios as well as the buttons; `contents`, so the dialog's own
+          column lays its two parts out exactly as it laid out the row and the buttons before */}
+      <form
+        ref={form}
+        action={action}
+        // A second submit while the first is in flight is refused HERE, not by the button's label:
+        // the kit's `Button` is never `disabled` and React queues form actions rather than dropping
+        // them, so two quick clicks on Pro were two projects (review, 2026-09-06).
+        onSubmit={(event) => {
+          if (inFlight.current) event.preventDefault()
+          else inFlight.current = true
+        }}
+        className="contents"
+      >
       {capped ? (
         // D4b :160 — the warm tinted card, hairline and fill both the frame's.
         <div className="flex items-center gap-[13px] rounded border border-marigold-line bg-marigold-tint-soft p-[14px_16px]">
@@ -217,33 +243,29 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
           {plan === 'free' ? <GoPro /> : null}
         </div>
       ) : (
-        <div className="flex flex-col gap-[9px] border-t border-line pt-[18px]">
+        // the group is named by its row's own words (a legend would have to stand first, alone, outside the row D4a draws)
+        <fieldset data-new-project-packs aria-labelledby="new-project-packs" className="flex min-w-0 flex-col gap-[9px] border-t border-line pt-[18px]">
           <div className="flex items-center gap-2">
-            <span className="text-control-label font-medium text-ink-soft">Style Pack</span>
+            <span id="new-project-packs" className="text-control-label font-medium text-ink-soft">Style Pack</span>
             <span className="ml-auto text-helper-caption text-ink-soft">Change it any time, in any project.</span>
           </div>
           <div className="grid grid-cols-3 gap-[6px]">
-            <PackCell
-              name={paper.name}
-              glyphFamily={paper.glyphFamily}
-              palette={[paper.surface, paper.accent, paper.text]}
-              active
-            />
+            {packs.map((p) => (
+              <label key={p.id} data-new-project-pack={p.id} className="relative block cursor-pointer rounded-sm">
+                <input type="radio" name="preset" value={p.id} defaultChecked={p.id === DEFAULT_PRESET} className="peer sr-only" />
+                <PackCell
+                  name={p.name}
+                  glyphFamily={p.glyphFamily}
+                  palette={p.dots}
+                  className="peer-checked:shadow-[0_0_0_2px_var(--color-coral)] peer-focus-visible:shadow-focus"
+                />
+              </label>
+            ))}
           </div>
-        </div>
+        </fieldset>
       )}
 
-      <form
-        action={action}
-        // A second submit while the first is in flight is refused HERE, not by the button's label:
-        // the kit's `Button` is never `disabled` and React queues form actions rather than dropping
-        // them, so two quick clicks on Pro were two projects (review, 2026-09-06).
-        onSubmit={(event) => {
-          if (inFlight.current) event.preventDefault()
-          else inFlight.current = true
-        }}
-        className="flex items-center gap-[10px]"
-      >
+      <div className="flex items-center gap-[10px]">
         <div className="ml-auto">
           <Button variant="ghost" size={36} onClick={() => dialog.current?.close()}>
             Cancel
@@ -269,6 +291,7 @@ export function NewProjectSheet({ atCap, plan }: { atCap: boolean; plan: PlanId 
             {pending ? 'Creating…' : 'Create project'}
           </Button>
         )}
+      </div>
       </form>
     </dialog>
   )

@@ -8,7 +8,7 @@ import type { ProjectDoc } from '@inflozo/section-runtime'
  *
  * ONE GESTURE = ONE TRANSACTION = ONE UNDO STEP = ONE EDIT (AD-16). `commit()` is the editor's only door to the
  * session's docs and therefore the only caller of `append` below — so a Variant Shuffle (5.11) and a Style Pack change
- * (6.3) inherit the rule by going through that door, and have nothing to add. AD-16's other half is negative and is
+ * (6.3's `commitPack`, through the same read-only guard) inherit the rule by going through that door. AD-16's other half is negative and is
  * kept by construction: nothing here counts OPERATIONS, and no count of any kind is rendered.
  *
  * THE RECORD IS `{ seq, txn, docKey, before, after }` — `addendum.md` §AD4 hands the record's shape to the Architect
@@ -16,6 +16,14 @@ import type { ProjectDoc } from '@inflozo/section-runtime'
  * here for three reasons the spec's Design Notes set out: one transaction touches exactly one doc, so an entry is one
  * template's JSON; FR-D9's "never half-applying" is then one check before one assignment; and FR-D9's parked value
  * comes back free, because the doc that comes back is the doc that was there.
+ *
+ * STORY 6.3 — A STYLE PACK CHANGE IS AN EDIT TOO (FR-D9, `addendum.md` §AD1, AD-16), and it rides this journal under its
+ * own key, `PACK_KEY`, which is never a template key: its entry's `before` and `after` are PRESET IDS, not docs, because
+ * the editor writes `style_pack.preset` alone (`brand` is the Sites page's). The flush sends the pending preset with the
+ * pending docs in ONE `sync_project_doc` call, so one compare-and-set and one revision cover both. AND A TRANSACTION MAY
+ * NOW HOLD MORE THAN ONE ENTRY (R-161's `txn`-grouped undo, which the record's shape anticipated): Site Remix's Both
+ * re-rolls the canvas's doc and the pack as ONE edit, so undo and redo take the head's whole transaction, `DEPTH` counts
+ * transactions, and a trim never splits one. A doc entry keeps its stored shape, so every persisted journal stays valid.
  *
  * TWO PIECES OF STATE DO TWO DIFFERENT JOBS, and collapsing them is the bug this comment exists to prevent.
  * `synced` is a WATERMARK over `seq` and answers AD-16's question — how many EDITS has the server not been told
@@ -26,19 +34,26 @@ import type { ProjectDoc } from '@inflozo/section-runtime'
  */
 
 /** FR-D9's depth. A DEFAULT WITH RATIONALE (`addendum.md` §AD4), owned by the Architect — not behaviour to change
- *  without the owner. One entry is one edit, so this is a length. */
+ *  without the owner. It counts EDITS, which since Story 6.3 are transactions (one may hold a doc and the pack). */
 export const DEPTH = 100
 
-/** One transaction: the touched doc either side of it. */
+/** STORY 6.3 — the journal key a Style Pack change is recorded under. Never a template key (`sync/route.ts`'s
+ *  `TEMPLATE_KEY` refuses it), so it can never be sent as a doc. */
+export const PACK_KEY = 'style-pack'
+
+/** One entry of a transaction: the touched doc either side of it — or, under `PACK_KEY`, the preset id either side. */
 export type JournalEntry = {
   seq: number
-  /** the transaction id §AD4 makes load-bearing — opaque here, and never counted or displayed */
+  /** the transaction id §AD4 makes load-bearing — opaque here, never displayed, and the unit undo and the count read */
   txn: string
-  /** the `project_templates.template_key` this transaction touched */
+  /** the `project_templates.template_key` this entry touched, or `PACK_KEY` */
   docKey: string
-  before: ProjectDoc
-  after: ProjectDoc
+  before: ProjectDoc | string
+  after: ProjectDoc | string
 }
+
+/** Is this the pack's entry — a preset id either side, never a doc? */
+const isPack = (e: { docKey: string }) => e.docKey === PACK_KEY
 
 export type Journal = {
   entries: readonly JournalEntry[]
@@ -67,24 +82,35 @@ export const maxSeq = (j: Journal) => j.entries.reduce((high, e) => Math.max(hig
 /** The entries still in force — the head is the last of them. */
 const live = (j: Journal) => (j.undone === 0 ? j.entries : j.entries.slice(0, j.entries.length - j.undone))
 
+/** How many entries at the start of `entries` belong to its first transaction — a transaction's entries are appended
+ *  together, so they are always one run. */
+const runFrom = (entries: readonly JournalEntry[], at: number): number => {
+  let n = at
+  while (n < entries.length && entries[n]?.txn === entries[at]?.txn) n += 1
+  return n - at
+}
+
 export const canUndo = (j: Journal) => live(j).length > 0
 export const canRedo = (j: Journal) => j.undone > 0
 
 /**
- * One transaction appended.
+ * One entry appended — a transaction, or (Story 6.3) the next entry of the transaction at the head, when it carries
+ * the head's `txn`: Site Remix's Both appends the doc's entry and the pack's under one id, and they are one edit.
  *
  * THE UNDONE TAIL IS DISCARDED — the ordinary editor rule, and the reason `undone` is a distance rather than an
  * index: the entries that were undone are simply no longer there, so nothing can redo into a history that the new
  * edit has replaced.
  *
- * THEN TRIMMED FROM THE HEAD to `DEPTH`, so undo reaches back exactly that many edits and no further. The trim never
- * touches the tail, so it can never move the pointer; `synced` is a seq and survives its entry being dropped.
+ * THEN TRIMMED FROM THE HEAD to `DEPTH` TRANSACTIONS, whole ones, so undo reaches back exactly that many edits and no
+ * further and never half of one. The trim never touches the tail, so it can never move the pointer; `synced` is a seq
+ * and survives its entry being dropped.
  */
 export function append(j: Journal, entry: Omit<JournalEntry, 'seq'>): { journal: Journal; entry: JournalEntry; dropped: readonly number[] } {
   const kept = live(j)
   const full: JournalEntry = { ...entry, seq: j.nextSeq }
   const all = [...kept, full]
-  const over = Math.max(0, all.length - DEPTH)
+  let over = 0
+  for (let txns = new Set(all.map((e) => e.txn)).size; txns > DEPTH; txns -= 1) over += runFrom(all, over)
   const dropped = all.slice(0, over).map((e) => e.seq)
   // the undone tail is gone as well as trimmed: both are entries this journal no longer holds
   const gone = [...j.entries.slice(j.entries.length - j.undone).map((e) => e.seq), ...dropped]
@@ -102,31 +128,45 @@ export function append(j: Journal, entry: Omit<JournalEntry, 'seq'>): { journal:
   }
 }
 
-/** What an undo or a redo asks the editor to put back: one doc, whole. */
-export type Restore = { journal: Journal; docKey: string; doc: ProjectDoc }
+/** What an undo or a redo asks the editor to put back: every doc the transaction touched, whole, and — where it changed
+ *  the Style Pack — the preset (Story 6.3). */
+export type Restore = { journal: Journal; docs: Readonly<Record<string, ProjectDoc>>; preset?: string }
 
-/** The head entry undone: its `before` is restored and the pointer moves back one. */
+/** One transaction's entries, as the editor puts them back: each doc and the preset at the `side` given. Entries are
+ *  applied in order, so a key touched twice ends at the value the side names last. */
+const restoring = (entries: readonly JournalEntry[], side: 'before' | 'after'): Omit<Restore, 'journal'> => {
+  const docs: Record<string, ProjectDoc> = {}
+  let preset: string | undefined
+  for (const e of side === 'before' ? [...entries].reverse() : entries) {
+    if (isPack(e)) preset = e[side] as string
+    else docs[e.docKey] = e[side] as ProjectDoc
+  }
+  return preset === undefined ? { docs } : { docs, preset }
+}
+/** Every key a transaction touched, owed to the server again at `stamp`. */
+const owing = (j: Journal, entries: readonly JournalEntry[], stamp: number) => ({
+  ...j.pending,
+  ...Object.fromEntries(entries.map((e) => [e.docKey, stamp])),
+})
+
+/** The head TRANSACTION undone, whole: each entry's `before` is restored and the pointer moves back past all of them. */
 export function undo(j: Journal): Restore | null {
   const kept = live(j)
   const head = kept[kept.length - 1]
   if (!head) return null
-  return {
-    journal: { ...j, undone: j.undone + 1, pending: { ...j.pending, [head.docKey]: j.stamp + 1 }, stamp: j.stamp + 1 },
-    docKey: head.docKey,
-    doc: head.before,
-  }
+  let from = kept.length - 1
+  while (from > 0 && kept[from - 1]?.txn === head.txn) from -= 1
+  const txn = kept.slice(from)
+  return { journal: { ...j, undone: j.undone + txn.length, pending: owing(j, txn, j.stamp + 1), stamp: j.stamp + 1 }, ...restoring(txn, 'before') }
 }
 
-/** The first undone entry put back: its `after` is restored. */
+/** The first undone TRANSACTION put back, whole: each entry's `after` is restored. */
 export function redo(j: Journal): Restore | null {
   if (j.undone === 0) return null
-  const next = j.entries[j.entries.length - j.undone]
-  if (!next) return null
-  return {
-    journal: { ...j, undone: j.undone - 1, pending: { ...j.pending, [next.docKey]: j.stamp + 1 }, stamp: j.stamp + 1 },
-    docKey: next.docKey,
-    doc: next.after,
-  }
+  const at = j.entries.length - j.undone
+  if (!j.entries[at]) return null
+  const txn = j.entries.slice(at, at + runFrom(j.entries, at))
+  return { journal: { ...j, undone: j.undone - txn.length, pending: owing(j, txn, j.stamp + 1), stamp: j.stamp + 1 }, ...restoring(txn, 'after') }
 }
 
 /**
@@ -173,16 +213,24 @@ export type FlushCall = 'timer' | 'manual' | 'change' | 'retry' | 'unload' | 're
 export const flushDecision = (j: Journal, why: FlushCall, autosave: boolean): 'send' | 'acknowledge' | 'nothing' =>
   why === 'timer' && !autosave ? 'nothing' : unsynced(j) ? 'send' : why === 'manual' ? 'acknowledge' : 'nothing'
 
+/** What one flush sends: the pending docs, and the preset where the Style Pack is owed (Story 6.3). */
+export type Payload = { docs: Record<string, ProjectDoc>; preset?: string }
+
+/** Does a payload carry anything at all? A flush with nothing to send makes no request. */
+export const carries = (p: Payload): boolean => Object.keys(p.docs).length > 0 || p.preset !== undefined
+
 /** The docs a flush must send: the pending keys, each with the doc as it stands NOW. A key whose doc has gone is
  *  skipped rather than sent as null — the RPC upserts what it is given and a synthesized doc is never written, which
- *  would materialise an untouched canvas and break AD-22. */
-export function flushPayload(j: Journal, docs: Readonly<Record<string, ProjectDoc>>): Record<string, ProjectDoc> {
+ *  would materialise an untouched canvas and break AD-22. STORY 6.3: and the pack in force where `PACK_KEY` is pending —
+ *  never as a doc — so the RPC writes both in one compare-and-set. */
+export function flushPayload(j: Journal, docs: Readonly<Record<string, ProjectDoc>>, preset?: string): Payload {
   const out: Record<string, ProjectDoc> = {}
   for (const key of Object.keys(j.pending)) {
+    if (key === PACK_KEY) continue
     const doc = docs[key]
     if (doc) out[key] = doc
   }
-  return out
+  return Object.hasOwn(j.pending, PACK_KEY) && preset !== undefined ? { docs: out, preset } : { docs: out }
 }
 
 /**
@@ -292,19 +340,21 @@ export const SIGNED_OUT_COPY = {
  */
 
 /** One project's work this browser owes the server, as the flush would send it — with what a flush's 200 marks sent:
- *  the journal's own stamp and highest sequence (`flushed`). */
-export type OwedRecord = { projectId: string; base: number; docs: Record<string, ProjectDoc>; edits: number; stamp: number; upTo: number }
+ *  the journal's own stamp and highest sequence (`flushed`). Story 6.3: and the preset, where the pack is owed. */
+export type OwedRecord = { projectId: string; base: number; docs: Record<string, ProjectDoc>; preset?: string; edits: number; stamp: number; upTo: number }
 
-/** What a local record owes, or null when it owes nothing: `flushPayload` over its own journal, AD-16's count beside it. */
-export const owedOf = (projectId: string, record: { baseRevision: number; docs: Readonly<Record<string, ProjectDoc>>; journal: Journal }): OwedRecord | null => {
+/** What a local record owes, or null when it owes nothing: `flushPayload` over its own journal, AD-16's count beside it.
+ *  A record owing only its pack owes (Story 6.3). */
+export const owedOf = (projectId: string, record: { baseRevision: number; docs: Readonly<Record<string, ProjectDoc>>; journal: Journal; preset?: string }): OwedRecord | null => {
   if (!unsynced(record.journal)) return null
-  const docs = flushPayload(record.journal, record.docs)
-  return Object.keys(docs).length === 0 ? null
-    : { projectId, base: record.baseRevision, docs, edits: unsyncedEdits(record.journal), stamp: record.journal.stamp, upTo: maxSeq(record.journal) }
+  const payload = flushPayload(record.journal, record.docs, record.preset)
+  return !carries(payload) ? null
+    : { projectId, base: record.baseRevision, ...payload, edits: unsyncedEdits(record.journal), stamp: record.journal.stamp, upTo: maxSeq(record.journal) }
 }
 
 /** The sign-out's request body: the flush's own, WITHOUT a lock session (routine call 3 — the revision guards it). */
-export const sendBody = (record: OwedRecord): string => JSON.stringify({ base: record.base, docs: record.docs })
+export const sendBody = (record: OwedRecord): string =>
+  JSON.stringify({ base: record.base, docs: record.docs, ...(record.preset === undefined ? {} : { preset: record.preset }) })
 
 /** What the sync route's answer means to the sign-out: only a 200 is sent. A 409 (another writer), a 401 (no session), a
  *  5xx and no answer at all (`null`: the request never came back) are "cannot send" — the ask's business. */
@@ -395,6 +445,12 @@ export type Hydration =
 export const hydrationFor = (local: { baseRevision: number } | null, cloudRevision: number): Hydration =>
   local === null ? { kind: 'first' } : local.baseRevision === cloudRevision ? { kind: 'local' } : { kind: 'cloud' }
 
+/** STORY 6.3 — THE PACK A HYDRATE OPENS IN, by §AD1.1's rule for the docs: this device's where its record is KEPT (the
+ *  revisions agree, or our own flush landed) and holds a pack this build knows; the server's otherwise — a differing
+ *  revision, no record, and a record written before 6.3, which holds none. */
+export const hydratedPreset = (how: Hydration, local: { preset?: string } | null, cloud: string, known: (id: string) => boolean): string =>
+  how.kind === 'local' && local?.preset !== undefined && known(local.preset) ? local.preset : cloud
+
 /**
  * DOES THE JOURNAL GO? (AD-15, Story 5.17.)
  *
@@ -426,14 +482,17 @@ export const stable = (v: unknown): string =>
       ? `[${v.map(stable).join(',')}]`
       : `{${Object.keys(v).filter((k) => (v as Record<string, unknown>)[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${stable((v as Record<string, unknown>)[k])}`).join(',')}}`
 
+/** STORY 6.3: an owed PACK is ours when the server's preset is the one this device holds, as an owed doc is. */
 export const ownFlushLanded = (
-  local: { baseRevision: number; docs: Readonly<Record<string, unknown>>; journal: Journal },
+  local: { baseRevision: number; docs: Readonly<Record<string, unknown>>; journal: Journal; preset?: string },
   cloudRevision: number,
   cloudDocs: Readonly<Record<string, unknown>>,
+  cloudPreset?: string,
 ): boolean =>
   cloudRevision === local.baseRevision + 1 &&
   unsynced(local.journal) &&
-  Object.keys(local.journal.pending).every((key) => key in cloudDocs && stable(cloudDocs[key]) === stable(local.docs[key]))
+  Object.keys(local.journal.pending).every((key) =>
+    key === PACK_KEY ? local.preset !== undefined && local.preset === cloudPreset : key in cloudDocs && stable(cloudDocs[key]) === stable(local.docs[key]))
 
 /**
  * The auto-generated set a local record carries, narrowed to the canvases this project still offers.

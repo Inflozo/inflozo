@@ -101,6 +101,7 @@ export function SectionPicker({
   subject,
   member,
   live,
+  pack,
   refusal,
   onAdd,
   onClose,
@@ -128,6 +129,8 @@ export function SectionPicker({
   member?: Visitor
   /** Story 5.18 — the canvas's own content where it is the connected site's, one source per card */
   live?: Live
+  /** Story 6.3 — the Style Pack in force, which every card wears */
+  pack?: string
   /** the sentence the last Add answered with, shown in the picker's own refusal line (DW-190) */
   refusal: string | null
   onAdd: (placement: Placement) => void
@@ -324,6 +327,7 @@ export function SectionPicker({
                 subject={subject}
                 member={member}
                 live={live}
+                pack={pack}
                 onAdd={onAdd}
               />
             ))}
@@ -352,6 +356,7 @@ function Card({
   subject,
   member,
   live,
+  pack,
   onAdd,
 }: {
   entry: SectionRegistryEntry
@@ -369,6 +374,8 @@ function Card({
   member?: Visitor
   /** Story 5.18 — and with the canvas's content */
   live?: Live
+  /** Story 6.3 — and in the project's pack */
+  pack?: string
   onAdd: (placement: Placement) => void
 }) {
   // measured once, when the preview has been drawn; until then the card is one tile like any other
@@ -394,6 +401,7 @@ function Card({
         subject={subject}
         member={member}
         live={live}
+        pack={pack}
         onAspect={(aspect) => setSpan(spanFor(aspect))}
       />
       {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three

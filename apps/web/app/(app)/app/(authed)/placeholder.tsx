@@ -14,8 +14,9 @@ import { placeholderFor } from '@/lib/style-pack'
  * cleared on purpose). The two outer blocks and the sub-bar stay in the app's own `line` and
  * `line-strong`: they are the wireframe's paper, not the site's ink.
  *
- * With one pack every card looks alike today, and that is the truthful state until E6 makes
- * packs differ.
+ * Since Story 6.3 a project CHOOSES its pack — the New project window, and the editor's list —
+ * so cards differ by it; the card reads the SERVER's pack, so it follows once the work is synced
+ * (FR-D10).
  */
 export function Placeholder({ stylePack }: { stylePack: unknown }) {
   const pack = placeholderFor(stylePack)

@@ -892,7 +892,7 @@ a closed control vocabulary.
 | 4 | **Design Nav** / **Design Picker** | **The climax beat.** She presses `]`. The section becomes a different design — same words, same image, new arrangement — in a 180ms slide-fade. `]` again. And again. The counter reads 7 of 18. She presses `[` three times and is back **exactly** where she started, because a control that only the design she left had was **parked**, not discarded |
 | 5 | **Control Sidebar** | Four to seven controls, and they are **this design's**. The image-backdrop design offers a scrim and an image focus; the big-type design offers three controls and no image controls at all, and says why: "This design has no image. Nothing to crop, position or scrim." |
 | 6 | **Inline Toolbar** | She clicks the headline and types. Selecting raises four marks — bold, italic, underline, link — and nothing else |
-| 7 | **Style Packs** | She opens the panel, hovers Tangerine, and the whole canvas crossfades over 300ms |
+| 7 | **Style Packs** | She opens the panel, presses Tangerine, and the whole canvas crossfades over 300ms *(a press, never a hover — S7a draws Tangerine hovered over an unchanged Paper canvas, and FR-E2 says switching; Story 6.3)* |
 | 8 | **Template Switcher** | Home → Post → Page → Tag → Author. The six untouched synthesizable templates already render their default stacks, each carrying the **Auto-Generated Marker** until her first edit materialises it |
 | 9 | **Layers** | `L`. The Site-wide group sits at the top with its template count; below a hairline, this page's sections. She drags one and the canvas follows |
 | 10 | **Preview** | `P`. Every chip, outline and handle vanishes, and the rotator rotates — the countdown, being edit-safe, was ticking while she designed too. `Esc` returns |

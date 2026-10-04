@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
-  flushPayload, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, panelOpen, redo, undo, unsynced,
+  flushPayload, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, panelOpen, redo, undo, unsynced,
   restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, type Journal, type OwedRecord, type SyncState,
 } from './lib/journal.ts'
 
@@ -39,9 +39,9 @@ test('one gesture is one transaction is one undo step (AD-16), and undo restores
   assert.equal(second.journal.entries.length, 2, 'two gestures, two entries — never one per operation')
 
   const back = undo(second.journal)
-  assert.deepEqual(ids(back!.doc), ['a', 'b'], 'the head entry restores its `before`')
+  assert.deepEqual(ids(back!.docs.home!), ['a', 'b'], 'the head entry restores its `before`')
   const again = undo(back!.journal)
-  assert.deepEqual(ids(again!.doc), ['a'], 'and the one below it restores its own')
+  assert.deepEqual(ids(again!.docs.home!), ['a'], 'and the one below it restores its own')
   assert.equal(undo(again!.journal), null, 'an empty journal undoes nothing')
 })
 
@@ -50,7 +50,7 @@ test('redo puts back exactly what undo took, and only what was undone', () => {
   const back = undo(first.journal)!
   assert.ok(canRedo(back.journal) && !canUndo(back.journal))
   const forward = redo(back.journal)!
-  assert.deepEqual(ids(forward.doc), ['a', 'b'])
+  assert.deepEqual(ids(forward.docs.home!), ['a', 'b'])
   assert.equal(redo(forward.journal), null, 'nothing left to redo')
 })
 
@@ -106,7 +106,7 @@ test('AD-16: the count is EDITS above the watermark, and it is distinct transact
 
 test('the timer with nothing unsynced sends NOTHING — the matrix\'s own row', () => {
   assert.equal(unsynced(EMPTY_JOURNAL), false)
-  assert.deepEqual(flushPayload(EMPTY_JOURNAL, { home: doc('a') }), {})
+  assert.deepEqual(flushPayload(EMPTY_JOURNAL, { home: doc('a') }), { docs: {} })
   const one = edit(EMPTY_JOURNAL, 'home', doc(), doc('a'))
   assert.equal(unsynced(one.journal), true)
 })
@@ -115,7 +115,7 @@ test('a flush sends only the docs the journal names, each as it stands NOW', () 
   const one = edit(EMPTY_JOURNAL, 'home', doc(), doc('a'))
   const two = edit(one.journal, 'site', doc(), doc('s'))
   const docs = { home: doc('a'), site: doc('s'), post: doc('untouched') }
-  assert.deepEqual(Object.keys(flushPayload(two.journal, docs)).sort(), ['home', 'site'])
+  assert.deepEqual(Object.keys(flushPayload(two.journal, docs).docs).sort(), ['home', 'site'])
 })
 
 test('AN UNDO IS SENT TOO — it changes the document without appending an edit', () => {
@@ -124,7 +124,7 @@ test('AN UNDO IS SENT TOO — it changes the document without appending an edit'
   assert.equal(unsynced(synced), false)
   const back = undo(synced)!
   assert.equal(unsynced(back.journal), true, 'an undone edit the server still holds is work owed')
-  assert.deepEqual(Object.keys(flushPayload(back.journal, { home: doc() })), ['home'])
+  assert.deepEqual(Object.keys(flushPayload(back.journal, { home: doc() }).docs), ['home'])
 })
 
 test('AN EDIT MADE WHILE A FLUSH IS IN FLIGHT IS KEPT — the stamp is what makes that true', () => {
@@ -136,7 +136,7 @@ test('AN EDIT MADE WHILE A FLUSH IS IN FLIGHT IS KEPT — the stamp is what make
   const during = edit(one.journal, 'home', doc('a'), doc('a', 'b'))
   const after = flushed(during.journal, sentStamp, upTo)
   assert.equal(unsynced(after), true, 'the newer edit is still owed')
-  assert.deepEqual(Object.keys(flushPayload(after, { home: doc('a', 'b') })), ['home'])
+  assert.deepEqual(Object.keys(flushPayload(after, { home: doc('a', 'b') }).docs), ['home'])
   // the control: with no edit during the flight, the success clears it
   assert.equal(unsynced(flushed(one.journal, sentStamp, upTo)), false)
 })
@@ -234,8 +234,8 @@ test('undo across canvases restores the doc the TRANSACTION touched, not the one
   // the last edit was on `post`; the customer has since moved to `home`
   const onPost = append(EMPTY_JOURNAL, { txn: 'p1', docKey: 'post', before: doc('x'), after: doc('x', 'y') })
   const back = undo(onPost.journal)!
-  assert.equal(back.docKey, 'post', 'the entry names its own doc, so the canvas shown never enters into it')
-  assert.deepEqual(ids(back.doc), ['x'])
+  assert.deepEqual(Object.keys(back.docs), ['post'], 'the entry names its own doc, so the canvas shown never enters into it')
+  assert.deepEqual(ids(back.docs.post!), ['x'])
   assert.deepEqual(Object.keys(back.journal.pending), ['post'], 'and it is `post` that is owed to the server')
 })
 
@@ -245,9 +245,9 @@ test("AD-22's round trip: undoing the last section off hands back the doc that w
   // from it exactly as a forward edit decides it.
   const emptied = append(EMPTY_JOURNAL, { txn: 'e1', docKey: 'tag', before: doc('only'), after: doc() })
   const back = undo(emptied.journal)!
-  assert.deepEqual(ids(back.doc), ['only'], 'the section returns')
+  assert.deepEqual(ids(back.docs.tag!), ['only'], 'the section returns')
   const forward = redo(back.journal)!
-  assert.deepEqual(ids(forward.doc), [], 'and redo empties it again')
+  assert.deepEqual(ids(forward.docs.tag!), [], 'and redo empties it again')
 })
 
 test('a tab-close flush of our own is recognised on the way back in, and another session\'s write never is', () => {
@@ -364,3 +364,88 @@ test('R-214: a 200 the sign-out got is told to the open editor as its own flush\
     assert.equal(isSentMessage(junk), false, JSON.stringify(junk))
   }
 })
+
+/* ── STORY 6.3: a Style Pack change is an edit, and a transaction may hold the pack beside a doc ─────────────────────
+   FR-D9 lists "Style Pack changes" in the undo history, §AD1 counts one as an edit, and R-161's grouped undo arrives with
+   Site Remix's Both: the canvas's doc and the pack in ONE transaction, undone whole. */
+
+/** A pack change, as `commitPack` journals it: the preset ids either side, under its own key. */
+const packEdit = (j: Journal, before: string, after: string, txn = `t${j.nextSeq}`) => append(j, { txn, docKey: PACK_KEY, before, after })
+
+test('6.3: a pack change undoes to the preset before and redoes to the one after — one entry, one edit', () => {
+  const switched = packEdit(EMPTY_JOURNAL, 'paper', 'tangerine').journal
+  assert.equal(unsyncedEdits(switched), 1)
+  const back = undo(switched)!
+  assert.deepEqual(back, { journal: back.journal, docs: {}, preset: 'paper' }, 'the preset comes back, and no doc does')
+  assert.deepEqual(Object.keys(back.journal.pending), [PACK_KEY], 'the pack is owed to the server again')
+  const forward = redo(back.journal)!
+  assert.equal(forward.preset, 'tangerine')
+  assert.deepEqual(forward.docs, {})
+})
+
+test('6.3: a two-entry transaction — Remix\'s Both — counts one edit, undoes whole and redoes whole', () => {
+  const before = edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal
+  const designs = append(before, { txn: 'both', docKey: 'home', before: doc('a'), after: doc('b') }).journal
+  const both = packEdit(designs, 'paper', 'neon', 'both').journal
+  assert.equal(unsyncedEdits(both), 2, 'the earlier edit and the Both — never three')
+  const back = undo(both)!
+  assert.deepEqual(ids(back.docs.home!), ['a'], 'one ⌘Z puts the designs back…')
+  assert.equal(back.preset, 'paper', '…and the pack, in the same press')
+  assert.equal(back.journal.undone, 2, 'the pointer moved past both entries')
+  assert.deepEqual(Object.keys(back.journal.pending).sort(), ['home', PACK_KEY].sort())
+  const earlier = undo(back.journal)!
+  assert.deepEqual(ids(earlier.docs.home!), [], 'the next ⌘Z is the edit before it, whole')
+  assert.equal(earlier.preset, undefined)
+  const again = redo(earlier.journal)!
+  assert.deepEqual(ids(again.docs.home!), ['a'])
+  const forward = redo(again.journal)!
+  assert.deepEqual(ids(forward.docs.home!), ['b'], 'redo takes the Both whole too')
+  assert.equal(forward.preset, 'neon')
+  assert.equal(forward.journal.undone, 0)
+})
+
+test(`6.3: the depth counts TRANSACTIONS — ${DEPTH} of them, two-entry ones included — and a trim never splits one`, () => {
+  let j = packEdit(EMPTY_JOURNAL, 'paper', 'mono', 'grouped').journal
+  j = append(j, { txn: 'grouped', docKey: 'home', before: doc(), after: doc('g') }).journal
+  for (let n = 1; n < DEPTH; n += 1) j = edit(j, 'home', doc(`i${n}`), doc(`i${n + 1}`)).journal
+  assert.equal(new Set(j.entries.map((e) => e.txn)).size, DEPTH, 'every transaction kept at the depth')
+  assert.equal(j.entries.length, DEPTH + 1, 'the grouped one holds two entries')
+  const over = edit(j, 'home', doc(), doc('over'))
+  assert.deepEqual([...over.dropped].sort(), [1, 2], 'the oldest transaction went, both of its entries')
+  assert.ok(!over.journal.entries.some((e) => e.txn === 'grouped'), 'never half of it')
+})
+
+test('6.3: a pack-only flush sends the preset and no doc; a doc entry keeps the docs; nothing owed sends nothing', () => {
+  const switched = packEdit(EMPTY_JOURNAL, 'paper', 'tangerine').journal
+  assert.deepEqual(flushPayload(switched, { home: doc('a') }, 'tangerine'), { docs: {}, preset: 'tangerine' })
+  const both = edit(switched, 'home', doc(), doc('a')).journal
+  assert.deepEqual(flushPayload(both, { home: doc('a') }, 'tangerine'), { docs: { home: doc('a') }, preset: 'tangerine' })
+  assert.deepEqual(flushPayload(edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal, { home: doc('a') }, 'tangerine'), { docs: { home: doc('a') } }, 'the pack is sent only when owed')
+  assert.deepEqual(flushPayload(EMPTY_JOURNAL, {}, 'paper'), { docs: {} })
+  // the record a sign-out sends: a record owing only its pack owes, and its body carries the preset
+  const record = owedOf('p1', { baseRevision: 3, docs: {}, journal: switched, preset: 'tangerine' }) as OwedRecord
+  assert.deepEqual(record, { projectId: 'p1', base: 3, docs: {}, preset: 'tangerine', edits: 1, stamp: switched.stamp, upTo: maxSeq(switched) })
+  assert.deepEqual(JSON.parse(sendBody(record)), { base: 3, docs: {}, preset: 'tangerine' })
+})
+
+test('6.3: our own tab-close flush is recognised with a pending pack only when the server holds this device\'s preset', () => {
+  const switched = packEdit(EMPTY_JOURNAL, 'paper', 'tangerine').journal
+  const local = { baseRevision: 4, docs: { home: doc('a') }, journal: switched, preset: 'tangerine' }
+  assert.equal(ownFlushLanded(local, 5, { home: doc('a') }, 'tangerine'), true, 'base + 1 and the pack is ours')
+  assert.equal(ownFlushLanded(local, 5, { home: doc('a') }, 'neon'), false, 'another session chose another pack')
+  assert.equal(ownFlushLanded(local, 5, { home: doc('a') }), false, 'a server pack nobody read is never ours')
+  // a record from before 6.3 holds no preset: an owed pack cannot be in it, and an owed doc is judged as it always was
+  const before63 = { baseRevision: 4, docs: { home: doc('a') }, journal: edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal }
+  assert.equal(ownFlushLanded(before63, 5, { home: doc('a') }, 'paper'), true)
+})
+
+test('6.3: a hydrate treats the pack as it treats the docs — kept with an equal revision, the server\'s otherwise, and a record from before 6.3 holds none', () => {
+  const known = (id: string) => ['paper', 'tangerine', 'mono'].includes(id)
+  const same = hydrationFor({ baseRevision: 4 }, 4)
+  assert.equal(hydratedPreset(same, { preset: 'tangerine' }, 'paper', known), 'tangerine', 'reload, unsynced: the switched pack')
+  assert.equal(hydratedPreset(hydrationFor({ baseRevision: 4 }, 5), { preset: 'tangerine' }, 'mono', known), 'mono', 'another session moved the revision')
+  assert.equal(hydratedPreset(same, {}, 'mono', known), 'mono', 'a record written before 6.3: the server\'s pack')
+  assert.equal(hydratedPreset(hydrationFor(null, 0), null, 'mono', known), 'mono', 'no record at all')
+  assert.equal(hydratedPreset(same, { preset: 'harbor' }, 'paper', known), 'paper', 'an id this build does not hold is no pack')
+})
+

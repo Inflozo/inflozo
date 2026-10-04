@@ -29,8 +29,9 @@ const REPO = join(here, '..', '..')
 const { A, ORDER, source, stackFor, QUERIES, TARGET } = require('./sections.js')
 const { DIRECTIVES, UNIVERSAL_CONTROLS, scanTags, validateMarkup, validateDesign } =
   await import(join(REPO, 'packages/library/src/index.ts'))
-const { REFERENCE_TOKENS, TOKEN_NAMES, TOKEN_ROWS, referenceTokensCss } =
-  await import(join(REPO, 'packages/section-runtime/src/tokens.ts'))
+const { TOKEN_NAMES, TOKEN_ROWS } = await import(join(REPO, 'packages/section-runtime/src/tokens.ts'))
+// DW-323 (Story 6.3): Paper's reference set reads the library, so it is the runtime's `./reference` subpath, never its index
+const { REFERENCE_TOKENS, referenceTokensCss } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
 
 let failed = 0
 let n = 0

@@ -12,7 +12,7 @@ import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { slimScrollbar } from '@/components/kit/greyed'
 import { Segmented } from '@/components/kit/segmented'
 import { Select } from '@/components/kit/select'
-import { canvasAssets as assetsFor, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
+import { canvasAssets as assetsFor, canvasSrc, mountSections, packed, renderSection, shownRows } from '@/lib/canvas'
 import { isApp } from '@/routing'
 
 /* THE PILOTS WORKSPACE — `/controls`' review (Story 4.5), fed the library's designs (Story 4.10's pilots first).
@@ -120,7 +120,8 @@ export function Review({
   const canvasAssets = assetsFor(pool)
   const shown = (e: SectionRegistryEntry, s: ControlState) => shownRows(e, s, rows[e.id])
   const base = canvasSrc(isApp(usePathname()))
-  const src = pack === 'paper' ? base : `${base}&pack=${encodeURIComponent(pack)}`
+  // Story 6.3: the editor's own address rule (`packed`) — Paper's address carries no pack
+  const src = packed(base, pack)
   // the Background role's dots, in the pack and (below) the mode the canvas is painted in
   const swatches = packSwatches[pack] as (typeof packSwatches)[string]
 

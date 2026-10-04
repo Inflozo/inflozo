@@ -354,3 +354,30 @@ test('DW-235 (Story 5.24e): the sync route asks `docRefusal` of every key before
   assert.ok(asked < route.indexOf(".from('edit_locks')"), 'docRefusal is asked before the lock is read')
   assert.ok(asked < route.indexOf("rpc('sync_project_doc'"), 'docRefusal is asked before the write')
 })
+
+test('Story 6.3: the sync route refuses a preset this build does not know BEFORE the write, and hands a known one to the RPC', () => {
+  // the RPC stores any text it is handed in `style_pack.preset`, and the next read would paint Paper over a junk id — so the
+  // one door that writes the pack refuses it first, as a 422 the editor never retries (DW-235's precedent, above)
+  const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
+  const refused = route.indexOf("no(422, 'Not a Style Pack')")
+  assert.ok(refused > 0 && /presetOf\(preset\) === undefined\)\) return no\(422, 'Not a Style Pack'\)/.test(route), 'the route no longer asks presetOf')
+  assert.ok(refused < route.indexOf("rpc('sync_project_doc'"), 'the preset is refused before the write')
+  assert.match(route, /p_preset: \(preset as string \| undefined\) \?\? null/, 'the preset reaches the RPC, or null')
+  // a body with only a preset is a write; one with neither docs nor a preset is the old 400
+  assert.match(route, /keys\.length === 0 && preset === undefined\) return no\(400, 'Nothing to write'\)/)
+})
+
+test('Story 6.3: Remix\'s Both writes neither when a design is refused — the fold first, the pack only once it landed, one txn (FR-D9)', () => {
+  // the I/O matrix's "a design refusal writes neither": the pack joins the fold's transaction AFTER the fold has landed, so
+  // a refused or held fold returns before anything of the pack is journaled
+  const editor = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'editor.tsx'), 'utf8')
+  const body = editor.slice(editor.indexOf('const onRemix = (what: RemixWhat) => {'), editor.indexOf('const openPackList'))
+  const fold = body.indexOf('apply({ doc: docKey, instanceId: picks[0]!.instanceId }, fold, undefined, txn)')
+  const held = body.indexOf('if (refused === HELD) return')
+  const refused = body.indexOf("if (typeof refused === 'string') return setSaid(refused)")
+  const pack = body.indexOf('commitPack(to, txn)')
+  assert.ok(fold > 0, 'the fold no longer joins the transaction through apply')
+  assert.ok(held > fold && refused > fold, 'a held or refused fold is no longer answered after it')
+  assert.ok(pack > held && pack > refused, 'the pack is committed before the fold is known to have landed')
+})
+

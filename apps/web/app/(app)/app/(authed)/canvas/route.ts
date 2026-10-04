@@ -55,8 +55,9 @@ export async function GET(request: NextRequest) {
   if (design !== null && !pilotIds().includes(design)) {
     return new NextResponse('that design is not in the library', { status: 404, headers })
   }
-  // STORY 6.2 — A PRESET BY ID (`/pilots`' Pack menu): the document carries that preset's block and faces. The editor's
-  // canvas asks for none and keeps Paper until Story 6.3's switch; an unknown id is a 404, never served as Paper
+  // STORY 6.2 — A PRESET BY ID (`/pilots`' Pack menu): the document carries that preset's block and faces. STORY 6.3 —
+  // the editor's canvas asks for its project's pack ONCE per mount (none for Paper, whose address is unchanged) and a
+  // switch restyles the document in place; an unknown id is a 404, never served as Paper
   const pack = request.nextUrl.searchParams.get('pack') ?? 'paper'
   if (presetOf(pack) === undefined) return new NextResponse('that is not a Style Pack', { status: 404, headers })
   return new NextResponse(pilotsCanvasDocument(design ?? undefined, [], pack), {

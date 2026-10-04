@@ -19,9 +19,16 @@
 //
 // CI runs it straight after `check`'s `pnpm build` (`.github/workflows/ci.yml`); `deploy`'s `vercel build` only ever adds
 // files, so a trace this passes is the least the deployment ships.
+//
+// DW-323 (Story 6.3) — AND NO CLIENT CHUNK CARRIES THE FONT POOL'S RECORD. Until 6.3 the runtime's own index imported the
+// presets (for Paper) and the pool (for `fontFaceCss`), so `pool.json` — every file's sha256 and every family's licence —
+// rode as a 43 KB literal in the client script of every page that drew a canvas or a pack cell. Clients are now handed each
+// preset's CSS as server-derived data (`lib/style-pack.ts`'s `packChoices`), and this refuses a `.next/static` chunk that
+// names `licenceFile` or any sha256 the pool records — read off `pool.json`, never listed — and a runtime index whose
+// relative imports reach `@inflozo/library/packs`. Seen red on Story 6.2's build: two chunks, every sha256 in each.
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -92,4 +99,43 @@ for (const [route, file, needs] of ROUTES) {
   console.log(`FAIL  ${route}: ${missing.length} of the ${needs.length} files it reads are not in ${relative(REPO, trace)} — ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ', …' : ''}`)
 }
 console.log(failed === 0 ? 'RESULT: every route carries its files' : `RESULT: ${failed} route(s) would deploy without their files`)
-process.exit(failed === 0 ? 0 : 1)
+
+// ── DW-323: the pool's record stays on the server ───────────────────────────────────────────────────────────────────
+const pool = JSON.parse(readFileSync(join(REPO, 'packages/library/fonts/pool.json'), 'utf8'))
+const shas = Object.values(pool.faces).flatMap((f) => f.files.map((x) => x.sha256))
+// the control: a pool with no file records nothing this could find, and the check would pass on nothing
+if (shas.length === 0) {
+  console.error('REFUSED: pool.json records no file — the pool check would prove nothing')
+  process.exit(2)
+}
+const STATIC = join(REPO, 'apps/web/.next/static')
+const chunks = readdirSync(STATIC, { recursive: true }).filter((f) => String(f).endsWith('.js')).map(String)
+if (chunks.length === 0) {
+  console.error(`REFUSED: ${relative(REPO, STATIC)} holds no script — run \`pnpm build\` first`)
+  process.exit(2)
+}
+let carrying = 0
+for (const chunk of chunks) {
+  const text = readFileSync(join(STATIC, chunk), 'utf8')
+  const named = shas.filter((sha) => text.includes(sha)).length
+  if (named === 0 && !text.includes('licenceFile')) continue
+  carrying++
+  console.log(`FAIL  ${chunk}: carries the font pool's record — ${named} of its ${shas.length} sha256s${text.includes('licenceFile') ? ', and licenceFile' : ''}`)
+}
+// …and the runtime's index reaches no preset and no pool through its own relative imports
+const RUNTIME = join(REPO, 'packages/section-runtime/src')
+const reached = new Set()
+const walk = (file) => {
+  if (reached.has(file)) return
+  reached.add(file)
+  for (const [, spec] of readFileSync(join(RUNTIME, file), 'utf8').matchAll(/^(?:import|export)\b[^'"]*?from\s+'([^']+)'/gm)) {
+    if (spec === '@inflozo/library/packs') {
+      carrying++
+      console.log(`FAIL  packages/section-runtime/src/${file} imports @inflozo/library/packs, so the runtime's index carries the pool`)
+    }
+    if (spec.startsWith('./')) walk(spec.slice(2))
+  }
+}
+walk('index.ts')
+console.log(carrying === 0 ? `PASS  no client chunk of ${chunks.length} carries the font pool's record, and the runtime's index reaches no preset` : `RESULT: ${carrying} place(s) carry the font pool's record to the browser (DW-323)`)
+process.exit(failed === 0 && carrying === 0 ? 0 : 1)

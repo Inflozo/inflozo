@@ -1,8 +1,10 @@
 import { cache } from 'react'
 import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionRegistryEntry } from '@inflozo/library'
-import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
+import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
-import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
+import { imagePool, linkResources } from '@/lib/controls-review'
+import type { PackChoice } from '@/lib/pack-switch'
+import { packChoices, presetIdOf } from '@/lib/style-pack'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
@@ -57,8 +59,9 @@ import { readViewed, type Visitor } from '@/lib/view-as'
 /** Story 5.18 — `linked_site_id` joins it, and for `dark_enabled`'s reason: whether the canvas may read a site is SERVER
  *  TRUTH, never a guess the editor makes (FR-B5; the column pre-exists, `…complete_schema.sql:229`, so no Schema phase). */
 /** Story 6.2 — `style_pack` joins it, E6's column, for S4a's Style Pack card and S7a's roster: the editor shows the
- *  project's pack (a stored preset this build does not know reads as Paper, `presetIdOf`); it writes nothing — choosing a
- *  pack is Story 6.3's. The column pre-exists (`…complete_schema.sql:223`), so no migration and no Schema phase. */
+ *  project's pack (a stored preset this build does not know reads as Paper, `presetIdOf`). The column pre-exists
+ *  (`…complete_schema.sql:223`). Story 6.3 — and the editor CHOOSES it: the save writes `style_pack.preset` with the docs
+ *  (`sync_project_doc`'s `p_preset`, a Schema phase of its own). */
 /** Story 5.19 — `posts_per_page` joins it: FR-H2's main feed is sized by the THEME's setting, never the sample's, and a
  *  secondary feed's Count starts there. SERVER TRUTH for the same reason; the column pre-exists with its `>= 1` check
  *  (`…complete_schema.sql:226-227`), so no migration and no Schema phase (R-99). */
@@ -105,8 +108,6 @@ export type EditorData = {
   postsPerPage: number
   /** per design id: does its category carry R-124's Member visibility row (`carriesMemberVisibility`)? */
   memberVisibility: Readonly<Record<string, boolean>>
-  /** Story 5.6 — Background role's colours per MODE, so the panel's dots are what the canvas is painting */
-  swatches: Readonly<Record<Mode, Readonly<Record<string, string>>>>
   /** Story 5.6 — FR-D7: is this project Light + Dark? False means the sun is ABSENT from the bar, not disabled
    *  (UX-DR3, R-118), and every stored override is untouched (AD-17) */
   darkEnabled: boolean
@@ -159,9 +160,14 @@ export type EditorData = {
    *  order, junk dropped. A canvas with no row here has been looked at as nobody, which is the same answer. Story 5.16:
    *  a page 2 keeps its own record under its own key (R-167). */
   viewed: Readonly<Record<string, readonly Visitor[]>>
-  /** Story 6.2 — `projects.style_pack` as stored (jsonb, user-writable): read through `lib/style-pack.ts`'s
-   *  `presetIdOf`, never trusted */
-  stylePack: unknown
+  /** Story 6.2 — the project's Style Pack: `projects.style_pack` as stored (jsonb, user-writable), read through
+   *  `lib/style-pack.ts`'s `presetIdOf`, never trusted — an id this build does not know is Paper. Story 6.3: the pack the
+   *  canvas document is asked for in, and the one a hydrate keeps or replaces exactly as it does the docs (§AD1.1). */
+  preset: string
+  /** STORY 6.3 — EVERY PRESET AS THE EDITOR PAINTS IT (`packChoices`): names, dots, the Background role's swatches per mode
+   *  (Story 5.6's, now per pack, so the panel's dots are what the canvas is painting) and each canvas token block and
+   *  `@font-face` rules — server-derived data, so no client carries the library's presets or the font pool (DW-323). */
+  packs: readonly PackChoice[]
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -329,7 +335,6 @@ export async function editorData(projectId: string): Promise<EditorData> {
     postsPerPage: project?.posts_per_page ?? orbitWeekly.postsPerPage(),
     memberVisibility: Object.fromEntries(Object.values(entries).map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
-    swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },
     darkEnabled: project?.dark_enabled !== false,
     revision: project?.revision ?? 0,
     userId: user.id,
@@ -350,6 +355,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
        about the document. The client's own `acquire` on mount is the real decision either way — this is only what
        it paints with for the one round trip before that answer arrives. */
     lock: lock.error || !lock.data ? null : rowFrom(lock.data, Date.now()),
-    stylePack: project?.style_pack ?? null,
+    preset: presetIdOf(project?.style_pack ?? null),
+    packs: packChoices(),
   }
 }

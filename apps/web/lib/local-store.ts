@@ -34,6 +34,9 @@ export type LocalRecord = {
   /** the canvases that were AUTO-GENERATED when this was written — see `autoFrom` for why it is stored */
   auto: string[]
   journal: Journal
+  /** STORY 6.3 — the Style Pack in force here, held with the docs (a switch not yet sent survives a reload). ABSENT in a
+   *  record written before 6.3, and then the server's pack is the one the hydrate keeps. */
+  preset?: string
 }
 
 type MetaRow = {
@@ -41,6 +44,7 @@ type MetaRow = {
   baseRevision: number
   docs: Record<string, ProjectDoc>
   auto: string[]
+  preset?: string
   undone: number
   synced: number
   pending: Record<string, number>
@@ -162,7 +166,7 @@ export async function openLocal(userId: string, gone?: () => void): Promise<Loca
         stamp: meta.stamp ?? 0,
         nextSeq: Math.max(meta.nextSeq ?? 1, entries.reduce((high, e) => Math.max(high, e.seq + 1), 1)),
       }
-      return { baseRevision: meta.baseRevision, docs: meta.docs, auto: meta.auto ?? [], journal }
+      return { baseRevision: meta.baseRevision, docs: meta.docs, auto: meta.auto ?? [], journal, ...(typeof meta.preset === 'string' ? { preset: meta.preset } : {}) }
     }, null)
 
   return {
@@ -189,6 +193,7 @@ export async function openLocal(userId: string, gone?: () => void): Promise<Loca
           baseRevision: record.baseRevision,
           docs: record.docs,
           auto: record.auto,
+          ...(record.preset === undefined ? {} : { preset: record.preset }),
           undone: record.journal.undone,
           synced: record.journal.synced,
           pending: { ...record.journal.pending },

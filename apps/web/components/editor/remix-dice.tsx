@@ -6,7 +6,10 @@ import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { Refresh } from '@/components/kit/icons'
-import { NOTHING_TO_REMIX, REMIX_WORDS, UNDO_NOTE, remixAsk } from '@/lib/remix'
+import {
+  NO_RING_MOVES, NOTHING_TO_REMIX, REMIX_CHOICES, REMIX_WORDS, REROLL_WHAT, UNDO_NOTE, remixAsk, remixBothAsk, remixOpensOn,
+  remixPackAsk, type RemixWhat,
+} from '@/lib/remix'
 
 /* ─────────────────────────────────────────── Story 5.12 — THE DICE, AND THE ONE CONFIRM BEHIND IT (FR-D17).
  *
@@ -33,13 +36,19 @@ import { NOTHING_TO_REMIX, REMIX_WORDS, UNDO_NOTE, remixAsk } from '@/lib/remix'
  *
  * THE CONFIRM IS B8 AS RE-SPECIFIED (`B Missing Surfaces.dc.html:1587`): its heading glyph, its sentence, its
  * coral primary and its "one undo, always available" line, inside the app's ONE dialog vocabulary
- * (`kit/dialog.ts`, 460px, opening on Cancel — R-115, UX-DR14). WITHOUT its "Re-roll what" group (one Style Pack
- * exists — R-118, UX-DR3), without "Include the header and footer" and "Every page" (R-161), and without its
- * toast (EXPERIENCE.md:541 makes the count a polite `#editor-said` announcement instead).
+ * (`kit/dialog.ts`, 460px, opening on Cancel — R-115, UX-DR14). Without "Include the header and footer" and "Every
+ * page" (R-161), and without its toast (EXPERIENCE.md:541 makes the count a polite `#editor-said` announcement instead).
  *
- * WHERE NOTHING CAN MOVE IT SAYS SO AND OFFERS CLOSE ALONE (R-12's shape, as R-134 already answers an empty
- * "Clear dark overrides"). That is today's answer in the customer's own editor, because every category in the
- * shipped library holds one design (R-158) — honest, not a bug, and not a greyed button.
+ * STORY 6.3 — AND WITH B8's "RE-ROLL WHAT" (`:1594-1601`, DW-314), where a pack can be re-rolled (`pack`, the editor;
+ * `/controls` holds no pack and keeps today's dialog): three radio cards — Style Pack · Designs · Both — above the
+ * buttons, NATIVE radios (the arrows move between them and Tab passes the group as one stop), each card B8's: a 14px
+ * ring, 12.5/600, the coral border and tint when chosen. It opens on Designs where a ring moves, as B8 draws it, and on
+ * Style Pack where none does — every category of the shipped library holds one design (R-158) — with Designs and Both
+ * greyed in P0-0's treatment and the reason beneath them (UX-DR3: greyed WITH the reason). The sentence follows the
+ * choice, and so does what Remix does: `onRemix(what)`, Both being ONE transaction in the editor.
+ *
+ * WHERE NOTHING CAN MOVE AND NO PACK IS OFFERED IT SAYS SO AND OFFERS CLOSE ALONE (R-12's shape, as R-134 already
+ * answers an empty "Clear dark overrides") — `/controls`' answer, honest, not a bug, and not a greyed button.
  *
  * STORY 5.22 — THE DICE CAN SIT COLLAPSED, and two things break inside a hidden subtree (executed in Chromium 149 with
  * the repo's Playwright): a `<dialog>` under a `display: none` ancestor opens INVISIBLE (0 × 0) and still modal, with
@@ -69,6 +78,7 @@ export const RemixDice = memo(function RemixDice({
   canvas,
   count,
   undoable = false,
+  pack = false,
   onRemix,
   handle,
 }: {
@@ -78,7 +88,9 @@ export const RemixDice = memo(function RemixDice({
   count: number
   /** does one press really put it all back? True in the editor; `/controls` stores nothing and has no history */
   undoable?: boolean
-  onRemix: () => void
+  /** Story 6.3 — can a Style Pack be re-rolled here? The editor's: B8's "Re-roll what" is drawn. `/controls`' is not */
+  pack?: boolean
+  onRemix: (what: RemixWhat) => void
   handle?: RefObject<RemixHandle | null>
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -98,11 +110,22 @@ export const RemixDice = memo(function RemixDice({
   /** where the confirm is drawn — outside any collapsed ancestor, decided once the dice is mounted */
   const [host, setHost] = useState<Element | null>(null)
   useEffect(() => setHost(die.current?.closest('[data-editor]') ?? document.body), [])
+  /** Story 6.3 — the cards are offered only where a pack can be re-rolled; without them it is Designs, as it always was */
+  const choosing = pack
+  const opensOn = (): RemixWhat => (choosing ? remixOpensOn(count) : 'designs')
+  /** …what the confirm re-rolls, chosen afresh on every open: Designs where a ring moves, else the pack */
+  const [what, setWhat] = useState<RemixWhat>(opensOn)
+  /** …and what the confirmed roll lands, held from the press of Remix to the cube's settle */
+  const rolled = useRef<RemixWhat>(what)
+  const greyed = (value: RemixWhat) => value !== 'pack' && count === 0
+  /** something to re-roll: a ring that moves, or a pack */
+  const anything = count > 0 || choosing
 
   /** THE DICE'S ONE DOOR, and both the button and `⇧R` come through it: the confirm opens at once (R-164). A
    *  press while the cube is still in the air is ignored — one roll, one re-roll. */
   const press = () => {
     if (rolling.current) return
+    setWhat(opensOn())
     openOnCancel(dialog.current)
   }
   if (handle) handle.current = { press }
@@ -111,9 +134,10 @@ export const RemixDice = memo(function RemixDice({
    *  the re-roll takes to arrive. */
   const go = () => {
     dialog.current?.close()
+    rolled.current = what
     // a die that is not rendered (the cluster collapsed into ⋯) would fire no `transitionend`: nothing rolls, it lands
     if (!die.current?.checkVisibility()) {
-      onRemix()
+      onRemix(what)
       return
     }
     rolling.current = true
@@ -127,7 +151,7 @@ export const RemixDice = memo(function RemixDice({
   const settle = (event: TransitionEvent<HTMLSpanElement>) => {
     if (event.propertyName !== 'transform' || !rolling.current) return
     rolling.current = false
-    if (confirmed.current === canvas) onRemix()
+    if (confirmed.current === canvas) onRemix(rolled.current)
   }
 
   return (
@@ -180,16 +204,62 @@ export const RemixDice = memo(function RemixDice({
                 Remix {canvas}?
               </h2>
               <p id="editor-remix-body" className="text-ui-dense leading-[1.55] text-ink-soft">
-                {count > 0 ? remixAsk(count, canvas) : NOTHING_TO_REMIX}
+                {!anything ? NOTHING_TO_REMIX : what === 'pack' ? remixPackAsk : what === 'both' ? remixBothAsk(count, canvas) : remixAsk(count, canvas)}
               </p>
             </div>
+            {/* STORY 6.3 — B8's "Re-roll what" (`:1594-1601`): the label, then three radio cards in a row, Both at its own
+                width as B8 draws it; greyed WITH the reason where no ring moves (P0-0, UX-DR3) */}
+            {choosing ? (
+              <fieldset data-remix-what aria-describedby={count === 0 ? 'editor-remix-what-reason' : undefined} className="flex flex-col gap-[7px]">
+                <legend className="mb-[7px] text-[11.5px] font-semibold uppercase tracking-[0.04em] text-ink-soft">{REROLL_WHAT}</legend>
+                <div className="flex gap-[6px]">
+                  {REMIX_CHOICES.map(({ value, label }) => {
+                    const on = value === what
+                    const off = greyed(value)
+                    return (
+                      <label
+                        key={value}
+                        data-remix-choice={value}
+                        // P0-0's greyed card, said to axe as an inactive control (`new-project-sheet.tsx`'s GreyedDoor)
+                        aria-disabled={off || undefined}
+                        className={`flex items-center gap-[7px] rounded-[10px] border p-[9px_10px] transition-colors has-[:focus-visible]:shadow-focus ${value === 'both' ? '' : 'flex-1'} ${
+                          off ? 'cursor-not-allowed border-grey-border bg-grey-field' : on ? 'cursor-pointer border-coral bg-coral-tint' : 'cursor-pointer border-line bg-surface hover:border-line-strong'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="editor-remix-what"
+                          value={value}
+                          checked={on}
+                          disabled={off}
+                          onChange={() => setWhat(value)}
+                          className="sr-only"
+                        />
+                        <span
+                          aria-hidden
+                          className={`inline-flex size-[14px] shrink-0 items-center justify-center rounded-full border-[1.5px] ${on ? 'border-coral' : off ? 'border-grey-border' : 'border-line-strong'}`}
+                        >
+                          {on ? <span className="size-[6px] rounded-full bg-coral" /> : null}
+                        </span>
+                        <span className={`text-[12.5px] font-semibold ${off ? 'text-ink-faint' : 'text-ink'}`}>{label}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+                {count === 0 ? (
+                  <p id="editor-remix-what-reason" className="text-[11.5px] leading-[1.5] text-ink-soft">
+                    {NO_RING_MOVES}
+                  </p>
+                ) : null}
+              </fieldset>
+            ) : null}
             <div className="flex items-center gap-[10px]">
-              {count > 0 && undoable ? <span className="text-helper-caption text-ink-soft">{UNDO_NOTE}</span> : null}
+              {anything && undoable ? <span className="text-helper-caption text-ink-soft">{UNDO_NOTE}</span> : null}
               <span className="flex-1" />
               <Button type="button" variant="secondary" size={36} data-cancel onClick={() => dialog.current?.close()}>
-                {count > 0 ? 'Cancel' : 'Close'}
+                {anything ? 'Cancel' : 'Close'}
               </Button>
-              {count > 0 ? (
+              {anything ? (
                 <Button
                   type="button"
                   variant="coral"

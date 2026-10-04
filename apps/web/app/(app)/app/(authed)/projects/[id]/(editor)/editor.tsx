@@ -45,7 +45,7 @@ import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
-import { canvasAssets, canvasSrc, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, surfaceSheetSrc, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
+import { canvasAssets, canvasSrc, packed, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, surfaceSheetSrc, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
@@ -53,8 +53,8 @@ import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvas
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
-  append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
-  flushDecision, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, redo as redoIn, restingState,
+  append, autoFrom, backoffSeconds, canRedo, canUndo, carries, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
+  flushDecision, hydratedPreset, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, PACK_KEY, redo as redoIn, restingState,
   SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal,
   type Restore, type SyncState,
 } from '@/lib/journal'
@@ -64,7 +64,8 @@ import {
 import { askLock, lockSignals, lockUrl, tabSession, tabSessionKept, type LockAnswer, type LockSignal } from '@/lib/lock-client'
 import { edits, holdsCaret, IN_PREVIEW, KEYMAP, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { BACK_SAID, PAUSED, PAUSED_SAID, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
-import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
+import { FACES_WAIT_MS, otherPreset, PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
+import { remixFold, remixPackSaid, remixPicks, remixSaid, remixable, type RemixWhat } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
@@ -296,13 +297,24 @@ import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
    the pill says what the LAST PAINT used (R-165), with the cause in words. The body is never read (`formats=mobiledoc`,
    MEASUREMENTS §51), and the key never reaches the render context, the markup or a log.
 
-   STORY 6.2 — S4a'S STYLE PACK CARD AT REST, AND S7a'S ROSTER BEHIND ITS CHANGE (`style-pack.tsx`), LOOKING ONLY: the card
-   is 6.2's and Change opens the list, which is a view and so stays live while reading along (R-192); choosing a pack —
-   a cell that switches, the canvas wearing it — is 6.3's (R-118), and so is reaching the list below 1280, where the panel
-   is an overlay a selection opens (DW-322).
+   STORY 6.2 — S4a'S STYLE PACK CARD AT REST, AND S7a'S ROSTER BEHIND ITS CHANGE (`style-pack.tsx`): the card is 6.2's and
+   Change opens the list, which is a view and so stays live while reading along (R-192).
 
-   ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18), the name's rename underline (no story yet) and
-   the Style Pack switch (6.3) (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
+   THE PACK-SWITCHER MOMENT (Story 6.3 — S7b, FR-E2, FR-D9, AD-16). A cell of the list SWITCHES, and so do Remix's Style
+   Pack and Both, ⌘Z and ⇧⌘Z: the pack in force is state beside the docs (`latest.preset`), and a change is ONE EDIT —
+   `commitPack` journals it under `PACK_KEY` through `heldBack`'s read-only guard, `store` keeps it on the device with the
+   docs, the flush sends it with them to `sync_project_doc` (one compare-and-set, one revision), and the hydrate keeps or
+   replaces it exactly as it does the docs (§AD1.1). THE CANVAS DOCUMENT IS ASKED FOR ONCE PER MOUNT, in the pack in force
+   (`packed`: Paper's address unchanged), AND NEVER RELOADED FOR A SWITCH: `restyle` replaces its `1-tokens` block and its
+   `1b-faces` rules in place, inside the canvas document's own `startViewTransition` where the browser offers it — a 300 ms
+   crossfade (`canvas-chrome.css`), instant under reduced motion or with no API, the new picture taken once the pack's
+   latin faces are in (at most `FACES_WAIT_MS`). From the press until it lands S7b's pill says "Trying on {name}…"; once
+   landed `#editor-said` says "Style Pack — {name}", and a later press supersedes one that has not landed. A hydrate's
+   correction is instant and says nothing. The previews, the ring's tiles and the panel's swatches wear the pack in force,
+   and below 1280 ⋯ reaches the list (DW-322). Every colour is server-derived data (`packs`), never the library (DW-323).
+
+   ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18), the name's rename underline (no story yet)
+   (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
    VISITOR's `mode-toggle` and a different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before
    Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's
    docked bar at 390 (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10) and P0-2's filled-slot
@@ -764,7 +776,6 @@ function EditorShell({
   entries,
   postsPerPage,
   pool,
-  swatches,
   links,
   memberVisibility,
   timezone,
@@ -780,7 +791,8 @@ function EditorShell({
   autosave,
   lock: heldOnServer,
   site,
-  stylePack,
+  preset: storedPreset,
+  packs,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -797,6 +809,16 @@ function EditorShell({
   /* STORY 6.2 — S7a's roster in place of the rest panel: Change opens it with focus on the back button, and the back button
      or Esc returns with focus on Change. Esc is the ladder's own rung (`onEscape`). A selection replaces the rest panel, so it leaves the roster too. */
   const [packList, setPackList] = useState(false)
+  /** STORY 6.3 — THE PACK IN FORCE, as the panels draw it: the card, the list, the previews and the swatches. The handlers
+   *  and the journal read `latest.preset`, which they write first (R-210's Always); this follows. */
+  const [pack, setPack] = useHanded(storedPreset)
+  /** a preset as the editor paints it — an id the build does not hold is Paper, the list's first (`presetIdOf`'s rule) */
+  const packOf = (id: string): PackChoice => packs.find((p) => p.id === id) ?? (packs[0] as PackChoice)
+  const choice = useMemo(() => packOf(pack), [pack, packs])
+  /** the frame's address, asked for ONCE per mount in the opening pack — a switch restyles the document in place */
+  const [frameSrc] = useState(() => packed(src, storedPreset))
+  /** S7b's pill: the pack being tried on, from the gesture until the canvas has landed */
+  const [trying, setTrying] = useHanded<string | null>(null)
   const packMoved = useRef(false)
   const packBack = useRef<HTMLButtonElement>(null)
   const packChange = useRef<HTMLButtonElement>(null)
@@ -1365,7 +1387,7 @@ function EditorShell({
   // Story 5.18: and the SOURCE chosen, the canvas's STORED subject (a paint resolves it against the source it paints
   // with) and the source the last paint counted pages in
   // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList })
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList, preset: storedPreset })
   /* STORY 5.23b — `latest` NEVER GOES BACK (R-210's Always). A section operation's state reaches React a task after the
      canvas (the hand-over), so a render can be drawn before it lands — never one this component's own setters cause, since
      each pays what is owed first, but one an external store causes (the layout crossing 1280) — and a render that wrote
@@ -1417,6 +1439,8 @@ function EditorShell({
     focusBack.current = giveBack ? (sheetFrom.current ?? 'stage') : null
     sheetFrom.current = null
     putSheet(null)
+    // Story 6.3: the list ⋯ opened goes with its overlay, so the next ⋯ → Style Pack opens it afresh
+    if (latest.current.packList) setPackList(false)
   }
   const toggleLayers = () => (latest.current.sheet === 'layers' ? closeSheet() : openSheet('layers', true))
 
@@ -1459,8 +1483,11 @@ function EditorShell({
    *  2's doc AS EDITED (its own, or the copy of page 1), and a map carrying that copy must never write it anywhere else.
    *  Page 2's round trip is `committed()`'s own: the first change stores the copy with it, zero instances returns page 2
    *  to following. And R-180's ask sits HERE, the one door every change passes: on page 2 the first change to each
-   *  site-wide section is HELD, and FR-D5's dialog asks before it lands (`about` names the section). Null means held. */
-  const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: About): boolean | null => {
+   *  site-wide section is HELD, and FR-D5's dialog asks before it lands (`about` names the section). Null means held.
+   *
+   *  STORY 6.3 — `txn` joins this change to a transaction already begun: Site Remix's Both journals the canvas's doc and
+   *  the pack under one id, so one ⌘Z takes both (R-161's grouped undo). Omitted, the change is a transaction of its own. */
+  const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: About, txn?: string): boolean | null => {
     if (heldBack(written, touched, about)) return null
     const now = latest.current
     // STORY 5.8: the touched doc either side of the transaction — the journal's whole record, taken HERE because this
@@ -1475,7 +1502,7 @@ function EditorShell({
     if (next.auto !== now.auto) setAuto(next.auto)
     latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library) }
     setDocs(next.docs)
-    journalise(touched, before, after)
+    journalise(touched, before, after, txn)
     // STORY 5.14 — R-167: a change to the page makes its other visitors unviewed again, decided in ONE place. Story
     // 5.16: the page on screen is the page in force, and a page 2 that follows the doc changed has changed with it.
     recordViewed(afterChange(latest.current.viewed, touched, ownKeyOf(now.key, now.page), now.viewAs, followersOf(next.docs, touched)))
@@ -1554,8 +1581,10 @@ function EditorShell({
       void flush('change')
       return
     }
+    // Story 6.3: the pack in force rides with the docs, so a switch not yet sent survives a reload
+    const preset = latest.current.preset
     void (async () => {
-      const wrote = await s.save(project.id, { baseRevision: base.current, docs: { ...docs }, auto: [...auto], journal: j })
+      const wrote = await s.save(project.id, { baseRevision: base.current, docs: { ...docs }, auto: [...auto], journal: j, preset })
       const pushed = entry ? await s.push(project.id, entry, dropped ?? []) : true
       if (!wrote || !pushed) {
         toFallback()
@@ -1564,20 +1593,36 @@ function EditorShell({
     })()
   }
 
-  /** One transaction appended to the journal and written to the device. */
-  const journalise = (docKey: string, before: ProjectDoc, after: ProjectDoc) => {
+  /** One transaction appended to the journal and written to the device — or, with the `txn` of one just begun, the next
+   *  entry of it (Story 6.3). A doc's entry holds the doc either side; the pack's (`PACK_KEY`) the preset id either side. */
+  const journalise = (docKey: string, before: ProjectDoc | string, after: ProjectDoc | string, txn: string = crypto.randomUUID()) => {
     const now = latest.current
-    const { journal: next, entry, dropped } = append(now.journal, { txn: crypto.randomUUID(), docKey, before, after })
+    const { journal: next, entry, dropped } = append(now.journal, { txn, docKey, before, after })
     latest.current = { ...latest.current, journal: next }
     setJournal(next)
     rest()
     store(next, latest.current.docs, latest.current.auto, entry, dropped)
   }
 
+  /** STORY 6.3 — A STYLE PACK CHANGE, AS ONE EDIT (FR-D9, §AD1, AD-16). Through `heldBack`'s read-only guard, so a window
+   *  reading along journals nothing (R-192); the pack in force answers nothing too — no entry, no pill, no word. Otherwise
+   *  `latest.preset` moves first (the handlers' own, R-210), the panels follow, and ONE journal entry under `PACK_KEY` holds
+   *  the preset ids either side — `brand` is never touched. `txn` joins a transaction just begun (Remix's Both). The
+   *  canvas is the caller's to restyle, because what is said once it lands is the caller's. True when it landed. */
+  const commitPack = (next: string, txn?: string): boolean => {
+    if (heldBack({}, PACK_KEY)) return false
+    const before = latest.current.preset
+    if (next === before || !packs.some((p) => p.id === next)) return false
+    latest.current = { ...latest.current, preset: next }
+    setPack(next)
+    journalise(PACK_KEY, before, next, txn)
+    return true
+  }
+
   /**
-   * An undo or a redo applied: ONE doc, whole.
+   * An undo or a redo applied: every doc of the transaction, whole, and its pack (Story 6.3).
    *
-   * FR-D9's "never half-applying" is this function's shape. The restored doc is checked against the library BEFORE any
+   * FR-D9's "never half-applying" is this function's shape. Every restored doc is checked against the library BEFORE any
    * of it is applied — one check, one assignment — and a design the library no longer holds no-ops with a notice and
    * leaves the pointer where it was.
    *
@@ -1589,21 +1634,32 @@ function EditorShell({
    */
   const restore = (r: Restore | null) => {
     if (!r) return
-    const missing = vanishedDesign(r.doc, (id) => entries[id] !== undefined)
-    if (missing) {
-      setSaid(`That change cannot be undone: the ${missing} design is no longer in the library.`)
-      return
+    for (const doc of Object.values(r.docs)) {
+      const missing = vanishedDesign(doc, (id) => entries[id] !== undefined)
+      if (missing) {
+        setSaid(`That change cannot be undone: the ${missing} design is no longer in the library.`)
+        return
+      }
     }
     canvasFirst(() => restored(r))
   }
   const restored = (r: Restore) => {
     const now = latest.current
-    // Story 5.19 — an undo is a door too: a journal written before the main-feed rule may hold a doc it would repair
-    const next = committed({ ...now.docs, [r.docKey]: designated(r.docKey, r.doc) }, r.docKey, stacks, now.auto)
+    // Story 5.19 — an undo is a door too: a journal written before the main-feed rule may hold a doc it would repair.
+    // Story 6.3: every doc of the transaction, each through the round trip as a forward edit is
+    let next = { docs: now.docs, auto: now.auto }
+    for (const [docKey, doc] of Object.entries(r.docs)) next = committed({ ...next.docs, [docKey]: designated(docKey, doc) }, docKey, stacks, next.auto)
     if (next.auto !== now.auto) setAuto(next.auto)
-    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal }
+    // Story 6.3 — and its pack: the panels follow, and the canvas restyles and says which pack is on (an undo announces the
+    // pack it restores, because the canvas changed and the person may not see it)
+    const preset = r.preset !== undefined && packs.some((p) => p.id === r.preset) ? r.preset : now.preset
+    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal, preset }
     setDocs(next.docs)
     setJournal(r.journal)
+    if (preset !== now.preset) {
+      setPack(preset)
+      restyle(PACK_WORDS.said(packOf(preset).name))
+    }
     // STORY 5.16 — AN UNDO CAN TAKE PAGE 2 AWAY WHILE IT IS SHOWN: the journal is one list for the whole project, so ⌘Z
     // on page 2 can reach back into page 1 and remove its main feed. The canvas goes to page 1 BEFORE the paint and says
     // why — never a paint of a page that does not exist.
@@ -1612,13 +1668,14 @@ function EditorShell({
       switchPage(force.page)
       setSaid(leftBecause(force.reason ?? ''))
     }
-    // STORY 5.14 — R-167: undo and redo are changes, so they run the same rule `commit()` does
-    recordViewed(afterChange(latest.current.viewed, r.docKey, ownKeyOf(now.key, latest.current.page), now.viewAs, followersOf(next.docs, r.docKey)))
+    // STORY 5.14 — R-167: undo and redo are changes, so they run the same rule `commit()` does — for each doc they touched
+    for (const docKey of Object.keys(r.docs)) recordViewed(afterChange(latest.current.viewed, docKey, ownKeyOf(now.key, latest.current.page), now.viewAs, followersOf(next.docs, docKey)))
     // a selection cannot outlive the section it was on, exactly as `apply()` decides it — read in the doc as EDITED, so
     // a page 2 that follows again still holds the copy's sections
     const pick = latest.current.selected
     if (pick && !docOf(pick.doc)?.instances.some((i) => i.instanceId === pick.instanceId)) choose(null)
-    paint()
+    // a pack alone changes no section, so nothing is redrawn: the canvas restyles in place (`restyle`)
+    if (Object.keys(r.docs).length > 0) paint()
     rest()
     store(r.journal, next.docs, next.auto)
   }
@@ -1703,8 +1760,9 @@ function EditorShell({
     // here: in the same-browser race it is the holder's. The upgrade is `land()` telling a session that typed before its
     // first answer, when that answer makes it a reader, what it holds — DW-308, Story 7.18's.
     if (!now.lock.holder) return backoffOver()
-    const payload = flushPayload(now.journal, now.docs)
-    if (Object.keys(payload).length === 0) return
+    // Story 6.3: the pending docs AND the pending pack, in one call — one compare-and-set, one revision
+    const payload = flushPayload(now.journal, now.docs, now.preset)
+    if (!carries(payload)) return
     if (inFlight.current) {
       // owed, not dropped: in fallback this edit is held NOWHERE else, and a ⌘S pressed mid-flight meant it
       again.current = true
@@ -1719,7 +1777,7 @@ function EditorShell({
     // Story 5.17: the tab's lock session rides along, so the route can refuse work from a session that was taken over
     // from. `|| undefined` drops it from the JSON before the tab knows its id — never an empty id the route could read
     // as a stranger's.
-    const body = JSON.stringify({ base: base.current, docs: payload, session: tabId.current || undefined })
+    const body = JSON.stringify({ base: base.current, docs: payload.docs, preset: payload.preset, session: tabId.current || undefined })
     let landed = false
     try {
       const answer = await fetch(syncUrl(), {
@@ -1885,7 +1943,7 @@ function EditorShell({
     const store = local.current
     if (!store) return
     void store.clearJournal(project.id)
-    void store.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL })
+    void store.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL, preset: storedPreset })
   }
 
   const land = (answer: LockAnswer | null) => {
@@ -2259,6 +2317,77 @@ function EditorShell({
     if (doc) doc.documentElement.setAttribute('data-mode', next)
     restampAll()
     setSaid(modeShown(next))
+  }
+
+  /* ─── Story 6.3 — THE PACK-SWITCHER MOMENT (S7b, FR-E2, UX-DR12, UX-DR15) ───────────────────────────────────────────── */
+
+  /** The canvas document in a pack: its `1-tokens` block and its `1b-faces` rules replaced in place, from the server's own
+   *  strings (`packs`). A style that already holds them is left alone, so the document a route served in this pack is
+   *  untouched. The frame says which pack it wears (`data-pack`) for the walks to wait on. */
+  const wear = (doc: Document, id: string) => {
+    const wanted = packOf(id)
+    const tokens = doc.querySelector('style[data-order="1-tokens"]')
+    const faces = doc.querySelector('style[data-order="1b-faces"]')
+    if (!tokens || !faces) return
+    if (tokens.textContent !== wanted.tokens) tokens.textContent = wanted.tokens
+    if (faces.textContent !== wanted.faces) faces.textContent = wanted.faces
+    if (frame.current) frame.current.dataset.pack = wanted.id
+  }
+
+  /** the newest switch asked for: one that lands after a later one has been asked for says nothing */
+  const switching = useRef(0)
+
+  /** THE CANVAS RESTYLED TO THE PACK IN FORCE (`latest.preset`), and `said` once it has landed — or, with `said` null, a
+   *  hydrate's correction: instant and silent.
+   *
+   *  A GESTURE'S CHANGE IS ONE VIEW TRANSITION OF THE CANVAS DOCUMENT ITSELF — called from here, same origin, executed at the
+   *  Create in Chromium: the browser holds the old picture, the update replaces the two styles and waits for the new pack's
+   *  latin faces (`document.fonts.load` over "Ag", at most `FACES_WAIT_MS`, inside Chromium's own 4 s abort), and then
+   *  crossfades — 300 ms by `canvas-chrome.css`'s rules, keyed on `data-inflozo-switching` for the switch alone, and instant
+   *  under its reduced-motion block. Where the API is absent the same change is instant. No second document and no reload.
+   *  The update wears the NEWEST pack, whichever update runs last, so a superseded press can never paint over a later one;
+   *  S7b's pill shows from the gesture to landing (`aria-hidden` — the announcement speaks), and only the last turn speaks. */
+  const restyle = (said: string | null) => {
+    const turn = ++switching.current
+    const doc = frame.current?.contentDocument
+    // not drawn yet: its `load` wears the pack in force (`ready`), and the words wait on nothing
+    if (!doc || doc.getElementById('canvas') === null) {
+      if (said !== null) setSaid(said)
+      return
+    }
+    if (said === null) {
+      // it supersedes any switch still in the air, so that switch's pill and key go with it
+      doc.documentElement.removeAttribute('data-inflozo-switching')
+      setTrying(null)
+      wear(doc, latest.current.preset)
+      return
+    }
+    setTrying(packOf(latest.current.preset).name)
+    const landed = () => {
+      if (turn !== switching.current) return
+      doc.documentElement.removeAttribute('data-inflozo-switching')
+      setTrying(null)
+      setSaid(said)
+    }
+    const update = async () => {
+      const wanted = packOf(latest.current.preset)
+      wear(doc, wanted.id)
+      const faces = Promise.all(wanted.families.map((family) => doc.fonts.load(`16px ${family}`, 'Ag'))).catch(() => undefined)
+      await Promise.race([faces, new Promise((done) => setTimeout(done, FACES_WAIT_MS))])
+    }
+    if (typeof doc.startViewTransition !== 'function') {
+      wear(doc, latest.current.preset)
+      landed()
+      return
+    }
+    doc.documentElement.setAttribute('data-inflozo-switching', '')
+    doc.startViewTransition(update).finished.then(landed, landed)
+  }
+
+  /** A cell of the list pressed (Enter, or a click): ONE edit, then the moment. The pack in force answers nothing. */
+  const choosePack = (id: string) => {
+    if (!commitPack(id)) return
+    restyle(PACK_WORDS.said(packOf(id).name))
   }
 
   /** Story 5.7's press, and it is deliberately smaller than `flip`'s: A DEVICE CHANGE IS A STYLE CHANGE AND NOTHING
@@ -3559,7 +3688,13 @@ function EditorShell({
   useEffect(() => {
     let alive = true
     const el = frame.current
-    const ready = () => paint()
+    // Story 6.3: a document that has just loaded wears the pack in force before its first paint — the hydrate may have
+    // kept this device's pack after the address was asked for in the server's
+    const ready = () => {
+      const doc = el?.contentDocument
+      if (doc) wear(doc, latest.current.preset)
+      paint()
+    }
     void loadIcons().then(
       (m) => {
         if (!alive) return
@@ -3636,8 +3771,9 @@ function EditorShell({
       }
       const held = await opened.read(project.id)
       if (!alive) return
-      // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this
-      const landed = held !== null && ownFlushLanded(held, revision, stored)
+      // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this — an
+      // owed pack included, which the server's preset must then be (Story 6.3)
+      const landed = held !== null && ownFlushLanded(held, revision, stored, storedPreset)
       const how = landed ? ({ kind: 'local' } as const) : hydrationFor(held, revision)
       // STORY 5.17 — AD-15's clearing rule, BOTH halves in one call: the revision half above, and the generation
       // half — a take-over — which cannot have happened before this mount, because this session has never held the
@@ -3657,10 +3793,18 @@ function EditorShell({
           // STORY 5.19 — the local hydrate is a door the main-feed rule stands at, as the server read is: a doc this
           // device kept from before the rule is repaired here and stored repaired with the next edit of its canvas
           const docs = Object.fromEntries(Object.entries(held.docs).map(([k, d]) => [k, designated(k, d)]))
-          latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library) }
+          // STORY 6.3 — §AD1.1 FOR THE PACK AS FOR THE DOCS: equal revisions keep THIS device's pack with its journal. A record
+          // written before 6.3 holds none, and an id this build does not hold is no pack — both keep the server's
+          const keptPreset = hydratedPreset(how, held, storedPreset, (id) => packs.some((p) => p.id === id))
+          latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library), preset: keptPreset }
           setDocs(docs)
           setAuto(new Set(back))
           setJournal(kept)
+          // a correction, never a gesture: instant, and it says nothing
+          if (keptPreset !== storedPreset) {
+            setPack(keptPreset)
+            restyle(null)
+          }
           // review, 2026-09-22: the THIRD door page 2 can stop existing through — a local doc that outranks the server's
           // may have no main feed on page 1 — guarded as `restore()` and `chooseSubject` are: page 1 BEFORE the paint
           const force = pageInForce(latest.current.page, latest.current.key, docs, latest.current.subject, latest.current.contentSource)
@@ -3668,7 +3812,7 @@ function EditorShell({
             switchPage(force.page)
             setSaid(leftBecause(force.reason ?? ''))
           }
-          if (landed) void opened.save(project.id, { baseRevision: revision, docs, auto: back, journal: kept })
+          if (landed) void opened.save(project.id, { baseRevision: revision, docs, auto: back, journal: kept, preset: keptPreset })
           if (unsynced(kept)) rest()
           settle(true)
           return
@@ -3681,7 +3825,8 @@ function EditorShell({
       if (!alive) return
       latest.current = { ...latest.current, journal: EMPTY_JOURNAL }
       setJournal(EMPTY_JOURNAL)
-      await opened.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...synthesized], journal: EMPTY_JOURNAL })
+      // …and the server's pack (Story 6.3): the opening one, already in force
+      await opened.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...synthesized], journal: EMPTY_JOURNAL, preset: storedPreset })
       settle(true)
     })()
     return () => {
@@ -4074,8 +4219,9 @@ function EditorShell({
   const pageRows = useMemo(() => rowsOf(own), [docs, own, library, entries, darkEnabled])
 
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null.
-   *  `about` names the section a site-wide change is about, for R-180's ask; it is the pick's own section by default. */
-  const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string, about?: About): string | null | typeof HELD => {
+   *  `about` names the section a site-wide change is about, for R-180's ask; it is the pick's own section by default.
+   *  `txn` (Story 6.3) begins a transaction another entry will join — Remix's Both, whose pack follows under the same id. */
+  const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string, about?: About, txn?: string): string | null | typeof HELD => {
     // Story 5.10: a canvas with NO ROW YET is a canvas you can add the first section to — R-129's three membership
     // templates and Private are never synthesized, so `docs` holds nothing for them until something is placed. Every
     // other caller addresses a doc it drew a row from, so the fallback only ever answers the picker. Story 5.16: the
@@ -4097,7 +4243,7 @@ function EditorShell({
        transition: those wait for any server call in flight. `latest` is the handlers' alone, so nothing moves it back. */
     canvasFirst(() => {
       const now = latest.current
-      const back = commit({ [pick.doc]: next }, pick.doc, asking)
+      const back = commit({ [pick.doc]: next }, pick.doc, asking, txn)
       // a selection cannot outlive the section it was on — and neither can it (or a hover) outlive a canvas returning to
       // untouched. `back` is asked, not the ids: synthesis DERIVES them (`auto-tag-1`), so the default stack that returns
       // can repeat the id of the very section just removed, and a test by id would keep the panel open on a new instance
@@ -4264,23 +4410,45 @@ function EditorShell({
    * repaint — which is the one place in this editor that gets all four right. The `instanceId` it is handed is
    * only there because `apply` addresses a doc through a `Pick`; nothing is removed here, so its selection
    * bookkeeping has nothing to do.
+   *
+   * STORY 6.3 — B8's "RE-ROLL WHAT" (DW-314, FR-D17): `what` is the confirm's choice. Style Pack draws a DIFFERENT preset
+   * (`otherPreset`, uniform over the others) and commits it as one edit; Designs is the re-roll above; BOTH is ONE
+   * TRANSACTION — the fold through `apply` begins it and the pack joins it under the same `txn`, so one ⌘Z restores both
+   * (R-161's grouped undo), and a design refusal writes neither (FR-D9). One gesture says one sentence: a pack re-roll's
+   * names the pack, once the canvas has landed.
    */
-  const onRemix = () => {
+  const onRemix = (what: RemixWhat) => {
     const now = latest.current
     // Story 5.16: the doc on screen — on page 2, page 2's design (R-177: re-rolled like page 1, never page 1 itself)
     const docKey = ownKeyOf(now.key, now.page)
-    const picks = remixPicks(docOf(docKey)?.instances ?? [], ringOf, Math.random)
-    if (picks.length === 0) return
-    const refused = apply({ doc: docKey, instanceId: picks[0]!.instanceId }, (doc) =>
-      remixFold(doc, picks, (next, p) => switchDesign(next, p.instanceId, p.to, ringOf(p.from))),
-    )
-    // NOTHING HAPPENED IS NOT A REFUSAL AND NOT A ROLL: R-180's hold (the dialog is still asking) and Story 5.17's
-    // read-only guard both answer `HELD`, and announcing "Remixed 6 sections" over either would be a sentence about
-    // a change that did not land.
-    if (refused === HELD) return
-    // UX-DR12, and never a toast: `#editor-said` is the editor's one live region (EXPERIENCE.md:541). A refusal
-    // is SAID too (review, 2026-09-20): the cube has already rolled, and a roll that lands on silence reads as broken
-    setSaid(typeof refused === 'string' ? refused : remixSaid(picks.length, canvas.label))
+    const picks = what === 'pack' ? [] : remixPicks(docOf(docKey)?.instances ?? [], ringOf, Math.random)
+    if (what !== 'pack' && picks.length === 0) return
+    const to = what === 'designs' ? null : otherPreset(packs.map((p) => p.id), now.preset, Math.random)
+    if (what !== 'designs' && to === null) return
+    const txn = crypto.randomUUID()
+    if (picks.length > 0) {
+      const fold = (doc: ProjectDoc) => remixFold(doc, picks, (next, p) => switchDesign(next, p.instanceId, p.to, ringOf(p.from)))
+      const refused = apply({ doc: docKey, instanceId: picks[0]!.instanceId }, fold, undefined, txn)
+      // NOTHING HAPPENED IS NOT A REFUSAL AND NOT A ROLL: R-180's hold (the dialog is still asking) and Story 5.17's
+      // read-only guard both answer `HELD`, and announcing "Remixed 6 sections" over either would be a sentence about
+      // a change that did not land.
+      if (refused === HELD) return
+      // UX-DR12, and never a toast: `#editor-said` is the editor's one live region (EXPERIENCE.md:541). A refusal
+      // is SAID too (review, 2026-09-20): the cube has already rolled, and a roll that lands on silence reads as broken —
+      // and for Both it writes neither: the pack is never committed after a refused fold
+      if (typeof refused === 'string') return setSaid(refused)
+    }
+    if (to === null) return setSaid(remixSaid(picks.length, canvas.label))
+    if (!commitPack(to, txn)) return
+    restyle(picks.length > 0 ? remixPackSaid(packOf(to).name, picks.length, canvas.label) : remixPackSaid(packOf(to).name))
+  }
+
+  /** STORY 6.3 — ⋯'s Style Pack row below 1280 (DW-322): the Controls overlay opens on the list — the rest panel's, so a
+   *  selection gives way to it — with focus on its back button. A view, live while reading along (R-192). */
+  const openPackList = () => {
+    choose(null)
+    showPacks(true)
+    openSheet('controls')
   }
 
   /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's
@@ -4615,6 +4783,9 @@ function EditorShell({
     ...(surface ? [] : [{ label: KEYMAP.find((b) => b.gesture === 'remix')?.action ?? 'Site Remix', icon: <Refresh size={13} />, keys: chipsOf('remix'), readOnly: !lock.holder, onSelect: () => remixDice.current?.press() }]),
     ...(darkEnabled ? [{ label: modeWords(mode), icon: mode === 'dark' ? <Moon size={13} /> : <Sun size={13} />, keys: chipsOf('dark'), onSelect: () => flip(latest.current.mode === 'dark' ? 'light' : 'dark') }] : []),
     { label: `Device — ${device.label}`, icon: <Laptop size={13} />, onSelect: () => pickDevice(nextDevice) },
+    // Story 6.3 — the list, extrapolated from D8a's overflow menu (R-74): before Theme settings, absent on a template surface
+    // (its rest panel is the Paywall's), and live reading along — the list is a view, its cells are what grey (R-192)
+    ...(surface ? [] : [{ label: PACK_WORDS.name, icon: noGlyph, onSelect: openPackList }]),
     { label: 'Theme settings', icon: noGlyph, href: settingsPath(project.id) },
     ...(surface ? [] : [{ label: PREVIEW, icon: <PreviewEye size={13} />, keys: chipsOf('preview'), onSelect: enterPreview }]),
     ...(surface ? [{ label: PAYWALL_WORDS.back, icon: noGlyph, href: pathOf('post') }] : []),
@@ -4694,6 +4865,7 @@ function EditorShell({
     chooseVisitor: useStable(chooseVisitor),
     retryNow: useStable(retryNow),
     remix: useStable(onRemix),
+    choosePack: useStable(choosePack),
     flip: useStable(flip),
     pickDevice: useStable(pickDevice),
     enterPreview: useStable(enterPreview),
@@ -4932,6 +5104,8 @@ function EditorShell({
               canvas={canvas.label}
               count={remixCount}
               undoable
+              // Story 6.3 — B8's "Re-roll what": a Style Pack can be re-rolled here
+              pack={packs.length > 1}
               onRemix={on.remix}
               handle={remixDice}
             />
@@ -5172,7 +5346,8 @@ function EditorShell({
           >
             <iframe
               ref={frame}
-              src={src}
+              // Story 6.3: asked for ONCE, in the opening pack — a switch restyles this document in place (`restyle`)
+              src={frameSrc}
               title={`${canvas.label} canvas`}
               // THE WHOLE EMBEDDED DOCUMENT LEAVES SEQUENTIAL NAVIGATION — executed in Chromium 1228 through this
               // repository's own Playwright (the spec's Design Notes): plain gives
@@ -5187,6 +5362,20 @@ function EditorShell({
               className="block origin-top-left border-0"
               style={{ width: device.width, height: device.height, transform: `scale(${scale})` }}
             />
+            {/* STORY 6.3 — S7b's pill (`S7 Style Packs.dc.html:273`): ink, white 12/500, 6 × 13 padding, a 24 radius, a 6px
+                marigold dot, 14px below the canvas's top and centred, from the gesture until the canvas has landed. Chrome
+                over the canvas, never in it, and `aria-hidden`: `#editor-said` speaks once it has landed. Its shadow is the
+                frame's own, the ink at 25% */}
+            {trying !== null ? (
+              <div
+                aria-hidden
+                data-pack-pill
+                className="pointer-events-none absolute left-1/2 top-[14px] z-10 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-[24px] bg-ink px-[13px] py-[6px] text-[12px] font-medium text-surface shadow-[0_4px_16px_color-mix(in_srgb,var(--color-ink)_25%,transparent)]"
+              >
+                <span className="size-[6px] shrink-0 rounded-full bg-marigold" />
+                {PACK_WORDS.trying(trying)}
+              </div>
+            ) : null}
             {/* STORY 5.18 — THE FIRST PAINT OF THE SITE'S CONTENT WAITS FOR ITS READS, as it waits for the hydrate, and the
                 card says so with the Kit's skeleton (R-98, DESIGN.md § Loading — never a spinner). Only where a site can
                 be read: an unlinked project's first frames are exactly what they were. */}
@@ -5314,7 +5503,7 @@ function EditorShell({
             points at B5a's own sentence, which is the honest answer to "why does nothing here respond". */}
         <aside
           id="editor-controls"
-          aria-label={surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : packList ? 'Style Pack' : 'Page settings'}
+          aria-label={surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : packList ? PACK_WORDS.name : 'Page settings'}
           hidden={!controlsShown}
           aria-describedby={lock.holder ? undefined : 'editor-lock-reason'}
           data-readonly={lock.holder ? undefined : ''}
@@ -5389,6 +5578,7 @@ function EditorShell({
                     subject={null}
                     member={viewAs}
                     live={cardLive}
+                    pack={pack}
                     onDesign={on.choosePaywall}
                     onStep={on.stepPaywall}
                   />
@@ -5419,6 +5609,8 @@ function EditorShell({
               member={viewAs}
               // Story 5.18 — and with the canvas's own content, one source per tile
               live={cardLive}
+              // Story 6.3 — the tiles wear the pack in force, as the canvas does
+              pack={pack}
               onDesign={on.designChosen}
               onStep={on.stepChosen}
             />
@@ -5435,7 +5627,7 @@ function EditorShell({
               onChange={on.change}
               // Story 5.6 — the mode's own swatch values, so the Background-role dots are the colours the canvas
               // is actually painting; the mode itself scopes every resolution, write and reset in the panel
-              swatches={swatches}
+              swatches={choice.swatches}
               mode={mode}
               // R-135: absent on a Light-only project — `sidebar.tsx` draws no row at all without this
               onClearDark={darkEnabled ? on.clearDarkChosen : undefined}
@@ -5465,12 +5657,12 @@ function EditorShell({
             />
             </>
           ) : packList ? (
-            // Story 6.2 — S7a's roster, looking only: no cell is a button until Story 6.3 makes one switch
-            <StylePackRoster stylePack={stylePack} />
+            // Story 6.2 — S7a's list; Story 6.3 — and a cell switches (a press or Enter), greyed while reading along (R-192)
+            <StylePackRoster packs={packs} current={choice} readOnly={!lock.holder} onChoose={on.choosePack} />
           ) : (
             <>
               {/* Story 6.2 — S4a's rest panel: "Page", the project's Style Pack card, then the sidebar's empty state */}
-              <StylePackCard stylePack={stylePack} changeRef={packChange} onChange={() => showPacks(true)} />
+              <StylePackCard pack={choice} changeRef={packChange} onChange={() => showPacks(true)} />
               <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
             </>
           )}
@@ -5669,6 +5861,8 @@ function EditorShell({
           member={viewAs}
           // Story 5.18 — and with the canvas's own content: the site's where it shows, one source per card
           live={cardLive}
+          // Story 6.3 — and in the project's Style Pack
+          pack={pack}
           refusal={pickerRefusal}
           // DW-207 (Story 5.24e): browsing on lets the last refusal go — it was about a press no longer in front of you
           onBrowse={() => setPickerRefusal(null)}

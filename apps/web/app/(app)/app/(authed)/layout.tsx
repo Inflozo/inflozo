@@ -5,7 +5,7 @@ import { Shell } from '@/components/shell/shell'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { packFacesCss } from '@/lib/style-pack'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
-import { APP } from '@/routing'
+import { canvasRouteOn } from '@/routing'
 import { RESTORE_PATH } from './account/deletion-rule'
 
 /**
@@ -59,11 +59,11 @@ export default async function AuthedLayout({ children }: { children: ReactNode }
   // pack cell's "Ag" — the dashboard's New project window, the editor's Style Pack card and list — is drawn in the pack's
   // real face from this app's own canvas route, and the app's Inter and Bricolage are never redefined. Nothing is fetched
   // until a glyph uses a face. The route's address is the one the page sees: `/canvas` on the app host, `/app/canvas` on
-  // localhost (`lib/canvas.ts`'s `canvasSrc` makes the same choice from the path in the browser).
-  const onApp = ((await headers()).get('host') ?? '').toLowerCase().split(':')[0] === APP
+  // localhost (`routing.ts`'s `canvasRouteOn`, which `routing.test.ts` holds — DW-325).
+  const fonts = canvasRouteOn((await headers()).get('host'))
   return (
     <Shell user={{ id: user.id, email: user.email ?? '', displayName: profile?.display_name ?? null }} plan={plan}>
-      <style data-pack-faces>{packFacesCss(onApp ? '/canvas' : '/app/canvas')}</style>
+      <style data-pack-faces>{packFacesCss(fonts)}</style>
       {children}
     </Shell>
   )

@@ -8,7 +8,8 @@ import assert from 'node:assert/strict'
 import { PRESETS, POOL, REFERENCE_PACKS, pairingOf, presetOf } from '@inflozo/library/packs'
 import { contrast } from './colour.ts'
 import { fontFaceCss } from './fonts.ts'
-import { REFERENCE_PACK, packTokens } from './tokens.ts'
+import { REFERENCE_PACK } from './reference.ts'
+import { packTokens } from './tokens.ts'
 import type { Pack } from './tokens.ts'
 
 const MODES = ['light', 'dark'] as const

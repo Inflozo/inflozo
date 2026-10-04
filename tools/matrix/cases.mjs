@@ -38,6 +38,8 @@ const pilots = await import(join(REPO, 'apps/web/lib/pilots.ts'))
 const { imagePool } = await import(join(REPO, 'apps/web/lib/controls-review.ts'))
 const lib = await import(join(REPO, 'packages/library/src/index.ts'))
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
+// DW-323 (Story 6.3): a pairing's faces are the runtime's `./fonts` subpath, never its index
+const { fontFaceCss } = await import(join(REPO, 'packages/section-runtime/src/fonts.ts'))
 const { shownRows } = await import(join(REPO, 'apps/web/lib/canvas.ts'))
 const { fontHref } = await import(join(REPO, 'apps/web/lib/style-pack.ts'))
 const presets = await import(join(REPO, 'packages/library/src/packs.ts'))
@@ -89,7 +91,7 @@ export function specimenMarkup(pairingId) {
 export function specimenDocument(pairingId) {
   const paper = presets.presetOf('paper').pack
   const tokens = rt.packTokensCss({ ...paper, fonts: presets.pairingFonts(pairingId) })
-  const faces = rt.fontFaceCss(pairingId, fontHref('canvas'))
+  const faces = fontFaceCss(pairingId, fontHref('canvas'))
   return '<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
     `<title>Specimen ${esc(pairingId)}</title><style data-order="1-tokens">${tokens}</style><style data-order="1b-faces">${faces}</style>` +
     `<style data-order="2-document">html,body{margin:0;background:var(--bg-page)}${SPECIMEN_CSS}</style></head><body><div id="canvas"></div></body></html>`

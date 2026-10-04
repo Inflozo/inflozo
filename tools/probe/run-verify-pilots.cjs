@@ -17,6 +17,8 @@
 // design.json from this checkout and imports the pill rule's widths from packages/library, so run it with Node 24, on a
 // clean tree, after CI has deployed HEAD — it refuses to start otherwise, asking Vercel which commit serves the app; the
 // browser draws real scrollbars, because the panel's own bar narrows the pills.
+// Story 6.3 (DW-325) adds the Pack menu reaching the canvas document: Mono asked for by `&pack=mono` and painting Mono's own
+// token, and Paper taking the pack off the address again.
 // the repo's own pinned copies (Story 4.11 made them devDependencies), resolved from the root — no machine path
 const { chromium } = require('@playwright/test')
 const AXE = require.resolve('axe-core/axe.min.js')
@@ -148,6 +150,34 @@ async function main() {
       await radio('width', 'Desktop').click()
       await radio('member', 'Signed out').click()
     }
+
+    // ── DW-325 (Story 6.3): the Pack menu reaches the CANVAS DOCUMENT — the frame asked for in the preset and painting
+    //    its token — and Paper again takes the pack off the address. Read off the library's data, never a list here ──
+    const presets325 = JSON.parse(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', '..', 'packages', 'library', 'packs', 'packs.json'), 'utf8')).presets
+    const choosePack = async (name) => {
+      await page.locator('#pack').click()
+      await page.locator('#pack-menu').getByRole('button', { name: new RegExp(`^${name}$`) }).click()
+    }
+    const docOf325 = async () => {
+      await page.waitForFunction(() => !!document.querySelector('iframe[data-pilot]')?.contentDocument?.querySelector('#canvas > *'), null, { timeout: 30000 })
+      return page.evaluate(() => {
+        const f = document.querySelector('iframe[data-pilot]')
+        return { src: f.getAttribute('src'), bg: getComputedStyle(f.contentDocument.documentElement).getPropertyValue('--bg-page').trim().toUpperCase() }
+      })
+    }
+    const mono325 = presets325.find((p) => p.id === 'mono')
+    await choosePack(mono325.name)
+    await page.waitForFunction(() => /[?&]pack=mono(&|$)/.test(document.querySelector('iframe[data-pilot]')?.getAttribute('src') ?? ''), null, { timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(600)
+    const inMono325 = await docOf325()
+    check('DW-325 — the Pack menu reaches the canvas document: Mono asks for `&pack=mono` and the document paints Mono\'s own token',
+      /[?&]pack=mono(&|$)/.test(inMono325.src ?? '') && inMono325.bg === mono325.light.background.toUpperCase(), JSON.stringify(inMono325))
+    await choosePack(presets325[0].name)
+    await page.waitForFunction(() => !/[?&]pack=/.test(document.querySelector('iframe[data-pilot]')?.getAttribute('src') ?? 'pack='), null, { timeout: 15000 }).catch(() => {})
+    await page.waitForTimeout(600)
+    const inPaper325 = await docOf325()
+    check('DW-325 — and Paper takes the pack off the address (every cached Paper document stays valid) and paints Paper\'s token',
+      !/[?&]pack=/.test(inPaper325.src ?? 'pack=') && inPaper325.bg === presets325[0].light.background.toUpperCase(), JSON.stringify(inPaper325))
 
     // ── the rows that read back ──
     const at = async (name) => { await radio('pilot', name).click(); await settle(await iframe.getAttribute('data-pilot')); await page.waitForTimeout(250) }

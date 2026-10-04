@@ -35,6 +35,10 @@ WHAT IT PROVES, each step PASS, FAIL or RECORD, and it exits non-zero if any ste
   cancel-focus   DW-16: the delete confirm opens with focus on its Cancel button. React leaves no
                  `autofocus` ATTRIBUTE for `showModal()` to find, so this is `kit/dialog.ts`'s own
                  `openOnCancel` and nothing else makes it true
+  sheet-packs    STORY 6.3, DW-322: First Run's sheet offers every preset as a native radio INSIDE the form, in the
+                 library's order, Paper checked
+  created-in-pack STORY 6.3: Neon chosen, the project row's `style_pack` is `{"preset": "neon"}` off the pooler, and its
+                 card on Projects wears Neon's own ground
   cap            DW-20: a SECOND project on Free is refused, and `public.projects` still holds one
                  row for that account when the pooler is asked. The count is the assertion; the
                  sentence on screen is the detail
@@ -238,6 +242,9 @@ const axeOver = async (page, label, width) => {
        — so the run goes through the door the customer would. */
     const onStart = page.url().includes('/start')
     let createForm = null
+    // Story 6.3 — the pack the sheet's create chose, and the ground its card should wear
+    let neonChosen = false
+    let neonGround = null
     if (onStart) {
       await page.getByRole('button', { name: SAY.blank_door, exact: false }).first().click()
       await page.waitForSelector('#new-project-sheet[open]', { timeout: 20000 })
@@ -251,6 +258,21 @@ const axeOver = async (page, label, width) => {
         const f = document.querySelector('#new-project-sheet form')
         return f ? f.outerHTML : null
       })
+      /* STORY 6.3 — D4a's STYLE PACK ROW (DW-322): every preset as a native radio INSIDE the form, in §D.d's order — read
+         off the library's own data, never a list here — Paper checked; and the project this creates is made in Neon. */
+      const presets = JSON.parse(require('fs').readFileSync(process.env.PACKS_JSON, 'utf8')).presets
+      const radios = await page.evaluate(() => {
+        const form = document.querySelector('#new-project-sheet form')
+        return [...document.querySelectorAll('#new-project-sheet [data-new-project-pack] input[type="radio"][name="preset"]')]
+          .map((r) => ({ id: r.value, checked: r.checked, inForm: r.form === form }))
+      })
+      step('sheet-packs', JSON.stringify(radios.map((r) => r.id)) === JSON.stringify(presets.map((p) => p.id)) &&
+           radios.filter((r) => r.checked).map((r) => r.id).join() === 'paper' && radios.every((r) => r.inForm),
+           `${radios.length} radio(s), checked ${JSON.stringify(radios.filter((r) => r.checked).map((r) => r.id))}, every one in the form: ` +
+           `${radios.every((r) => r.inForm)} — the library holds ${presets.length}`)
+      await page.locator('#new-project-sheet [data-new-project-pack="neon"]').click()
+      neonChosen = await page.evaluate(() => document.querySelector('#new-project-sheet input[name="preset"][value="neon"]')?.checked === true)
+      neonGround = presets.find((p) => p.id === 'neon')?.light.background ?? null
       await page.locator('#new-project-sheet button[type="submit"]').first().click()
       await page.waitForURL((u) => !u.pathname.endsWith('/start'), { timeout: 30000 }).catch(() => {})
       await page.goto(`${APP}/`, { waitUntil: 'load' })
@@ -303,6 +325,20 @@ const axeOver = async (page, label, width) => {
     const made = await projectsOf(USER_ID)
     step('created', made.length === 1,
          `${made.length} project row(s) — the Free cap's one, made through the sheet`)
+    /* STORY 6.3 — THE PROJECT IS IN THE PACK CHOSEN: `projects.style_pack` read off the pooler, and the card on Projects
+       wearing Neon's own ground (FR-B1's placeholder paints the pack). Only where First Run's door made it. */
+    if (onStart) {
+      const packs = await sql`select style_pack from public.projects where user_id = ${USER_ID}`
+      const hex = (h) => `rgb(${[1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ')})`
+      const card = await page.evaluate(() => {
+        const ground = document.querySelector('main [aria-hidden][style*="background"]')
+        return ground ? getComputedStyle(ground).backgroundColor : null
+      })
+      step('created-in-pack', neonChosen && packs.length === 1 && JSON.stringify(packs[0].style_pack) === JSON.stringify({ preset: 'neon' }) &&
+           neonGround !== null && card === hex(neonGround),
+           `Neon checked before Create: ${neonChosen}; style_pack ${JSON.stringify(packs.map((r) => r.style_pack))}; ` +
+           `the card's ground ${card} against Neon's ${neonGround}`)
+    } else record('created-in-pack', 'First Run did not claim the account, so no sheet create chose a pack this run')
 
     // ── overlays, the ⋯ menu and the account menu, now that a card exists.
     for (const [label, trigger, sel] of [
@@ -707,6 +743,8 @@ def main():
                                f'token_hash={link["hashed_token"]}&type=magiclink',
                 'UNBUILT': json.dumps(unbuilt),
                 'SENTENCES': json.dumps(says),
+                # Story 6.3: the presets as the library holds them, so the sheet's row is read against its data
+                'PACKS_JSON': os.path.abspath(os.path.join(WEB, '..', '..', 'packages', 'library', 'packs', 'packs.json')),
             })
             for s in steps:
                 mark = 'RECORD' if s['ok'] is None else ('PASS' if s['ok'] else 'FAIL')

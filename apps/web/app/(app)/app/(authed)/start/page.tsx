@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { FIRST_RUN } from '@/lib/first-run'
+import { packCells } from '@/lib/style-pack'
 import { currentUser } from '@/lib/supabase/server'
 import { NewProjectSheet } from '../new-project-sheet'
 import { Doors } from './doors'
@@ -72,7 +73,8 @@ export default async function FirstRun() {
           re-counts server-side anyway, so a sheet that raced a second tab still refuses. After a
           Create the action re-renders this route and that same layout lands the customer on the
           dashboard with the new project on it (review, 2026-09-11). */}
-      <NewProjectSheet atCap={false} plan={plan} />
+      {/* Story 6.3 — D4a's twelve, handed down as data (DW-322's first door) */}
+      <NewProjectSheet atCap={false} plan={plan} packs={packCells()} />
     </div>
   )
 }

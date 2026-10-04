@@ -9,9 +9,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { contrast } from './colour.ts'
-import {
-  LINK_RULES, REFERENCE_PACK, REFERENCE_TOKENS, SCALES, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss, referenceTokensCss,
-} from './tokens.ts'
+import { LINK_RULES, SCALES, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
+import { REFERENCE_PACK, REFERENCE_TOKENS, referenceTokensCss } from './reference.ts'
 import type { Pack, PackMode } from './tokens.ts'
 
 /** The kits' other two drawn packs, as CALIBRATION (`a29-kit.js:13-22`; every kit carries the same values): their

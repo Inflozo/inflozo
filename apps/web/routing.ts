@@ -13,6 +13,13 @@ export type Route =
 // A path segment, never a prefix: `startsWith('/app')` ate /apply, which 308'd to /ly.
 export const isApp = (pathname: string) => pathname === '/app' || pathname.startsWith('/app/')
 
+/** THE CANVAS ROUTE AS A PAGE ON `host` ADDRESSES IT — `/canvas` on the app host, where the proxy adds the internal prefix,
+ *  and `/app/canvas` everywhere else (localhost, a preview). The signed-in layout declares the pack cells' faces from it
+ *  (Story 6.2); `lib/canvas.ts`'s `canvasSrc` makes the same choice from the path in the browser. DW-325 (Story 6.3): a
+ *  named rule, so `routing.test.ts` holds it. Exact host, port and case aside — `route()`'s own reading. */
+export const canvasRouteOn = (host: string | null | undefined): string =>
+  (host ?? '').toLowerCase().split(':')[0] === APP ? '/canvas' : '/app/canvas'
+
 /**
  * The internal prefix off a path: `/app` → `/`, `/app/sites` → `/sites`, `/apply` untouched.
  * The shell asks the same question of `usePathname()`, which reports `/app/…` on localhost and

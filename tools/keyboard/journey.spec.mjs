@@ -481,8 +481,8 @@ test('6.2 · Tab reaches Change on the rest panel, Enter opens the presets with 
   const named = cells.filter({ hasText: 'Current' })
   await expect(named).toHaveCount(1)
   await expect(named).toHaveAttribute('data-style-pack', 'paper')
-  // looking only (R-118): a cell is not a stop until Story 6.3 makes it switch
-  expect(await stopsIn(page, '[data-style-pack-roster]')).toBe(0)
+  // Story 6.3: the cells switch, and the list is ONE tab stop — the pack in force (the design ring's pattern)
+  expect(await stopsIn(page, '[data-style-pack-roster]')).toBe(1)
 
   // the back button returns, focus on Change
   await page.locator('#style-pack-back').focus()
@@ -498,7 +498,7 @@ test('6.2 · Tab reaches Change on the rest panel, Enter opens the presets with 
   await page.keyboard.press('Escape')
   await expect(change).toBeFocused()
   await expect(panel.locator('[data-style-pack-card]')).toBeVisible()
-  // from OUTSIDE the panel too (review): the cells are not stops, so a Tab or two leaves it — the Layers list here
+  // from OUTSIDE the panel too (review): focus soon leaves the list — the Layers list here
   await page.keyboard.press('Enter')
   await expect(page.locator('#style-pack-back')).toBeFocused()
   await page.locator('[data-layer-row]').first().focus()
@@ -514,6 +514,430 @@ test('6.2 · Tab reaches Change on the rest panel, Enter opens the presets with 
   await change.focus()
   await page.keyboard.press('Enter')
   await expect(cells).toHaveCount(presets.length)
+  // Story 6.3 (R-192): and every cell is greyed and unclickable — the list is a view, choosing is an edit
+  // (a fieldset's `disabled` reaches each cell — `:disabled`, and out of the Tab order — never its own `disabled` property)
+  for (const cell of await cells.all()) await expect(cell).toBeDisabled()
+})
+
+// ── Story 6.3 — the pack-switcher moment (S7b, FR-E2, FR-D9, UX-DR12, UX-DR15) ───────────────────────────────────────────
+
+const PACK = await import(new URL('../../apps/web/lib/pack-switch.ts', import.meta.url).href)
+const REMIX = await import(new URL('../../apps/web/lib/remix.ts', import.meta.url).href)
+/** the presets as the library holds them, in §D.d's order — read off its data, never a list or a count written here */
+const PRESETS = () => JSON.parse(readFileSync(fileURLToPath(new URL('../../packages/library/packs/packs.json', import.meta.url)), 'utf8')).presets
+const presetOf = (id) => PRESETS().find((p) => p.id === id)
+
+/** the pack the canvas WEARS, as the frame says once a switch has landed, and the token its `<html>` resolves */
+const wears = (page) => page.locator('iframe[title$="canvas"]').getAttribute('data-pack')
+const bgPage = (page) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html) => getComputedStyle(html).getPropertyValue('--bg-page').trim().toUpperCase())
+
+/** EVERY VIEW TRANSITION THE CANVAS DOCUMENT RUNS, recorded as it becomes ready: each animation the browser runs on its
+ *  pseudo-elements, by pseudo-element and duration. A wrapper installed on the canvas document itself, where the editor
+ *  calls it, so the transition is the browser's own — or `skipped` where a later press superseded it. */
+const recordTransitions = (page) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html) => {
+    const doc = html.ownerDocument
+    const win = doc.defaultView
+    const real = doc.startViewTransition.bind(doc)
+    win.__transitions = []
+    doc.startViewTransition = (update) => {
+      const t = real(update)
+      const seen = { animations: null, finished: false }
+      win.__transitions.push(seen)
+      t.ready.then(
+        () => {
+          seen.animations = doc.getAnimations().filter((a) => /view-transition/.test(a.effect?.pseudoElement ?? '')).map((a) => ({ pseudo: a.effect.pseudoElement, duration: a.effect.getTiming().duration }))
+        },
+        () => {
+          seen.animations = 'skipped'
+        },
+      )
+      t.finished.then(() => {
+        seen.finished = true
+      })
+      return t
+    }
+  })
+const transitions = (page) => page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html) => html.ownerDocument.defaultView.__transitions)
+
+/** The list opened from Change, and focus walked by Tab onto its ONE stop — the pack in force */
+async function intoList(page) {
+  await page.locator('#style-pack-change').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#style-pack-back')).toBeFocused()
+  for (let n = 0; n < 3; n++) {
+    if (await page.evaluate(() => document.activeElement?.getAttribute('aria-selected') === 'true')) return
+    await page.keyboard.press('Tab')
+  }
+  expect(await page.evaluate(() => document.activeElement?.closest('[data-style-pack-roster]') !== null), 'Tab never reached the list').toBe(true)
+}
+const option = (page, id) => page.locator(`#editor-controls [data-style-pack="${id}"]`)
+const undoArrow = (page) => page.locator('#editor-undo')
+
+test('6.3 · the list from the keyboard: the arrows move focus and switch nothing, Enter crossfades the canvas in 300 ms behind S7b\'s pill and says the pack; ⌘Z and ⇧⌘Z', async ({ page }) => {
+  await open(page)
+  const [paper, target] = [PRESETS()[0], PRESETS()[3]]
+  expect(await wears(page), 'the harness opens on Paper').toBe(paper.id)
+  expect(await bgPage(page)).toBe(paper.light.background.toUpperCase())
+  await intoList(page)
+  await expect(option(page, paper.id)).toBeFocused()
+  // ↓ is one row down the three columns: focus moves, nothing is chosen, nothing is journaled (an arrow is never an edit)
+  await page.keyboard.press('ArrowDown')
+  await expect(option(page, target.id)).toBeFocused()
+  await expect(option(page, paper.id)).toHaveAttribute('aria-selected', 'true')
+  await expect(undoArrow(page), 'the control: no edit was made by an arrow').toHaveAttribute('aria-disabled', 'true')
+  expect(await wears(page)).toBe(paper.id)
+
+  await recordTransitions(page)
+  await page.keyboard.press('Enter')
+  // S7b: from the press the pill names the pack being tried on, and the panel already shows it Current, ringed
+  await expect(page.locator('[data-pack-pill]')).toHaveText(PACK.PACK_WORDS.trying(target.name))
+  await expect(page.locator('[data-pack-pill]')).toHaveAttribute('aria-hidden', 'true')
+  await expect(page.locator('[data-style-pack-current]')).toContainText(target.name)
+  await expect(option(page, target.id)).toHaveAttribute('aria-selected', 'true')
+  await expect(option(page, target.id).filter({ hasText: 'Current' })).toHaveCount(1)
+  // …and once landed the canvas wears it, the pill has gone and `#editor-said` says which pack is on (UX-DR12)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', target.id)
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+  await expect(page.locator('[data-pack-pill]')).toHaveCount(0)
+  expect(await bgPage(page), "the canvas's own token is the pack's").toBe(target.light.background.toUpperCase())
+  // ONE view transition of the canvas document itself, every animation on its three pseudo-elements 300 ms (FR-E2)
+  const [run, ...more] = await transitions(page)
+  expect(more, 'one press, one transition').toEqual([])
+  expect(run.finished).toBe(true)
+  expect(new Set(run.animations.map((a) => a.pseudo)), 'the old picture fades under the new across the whole canvas').toEqual(
+    new Set(['::view-transition-group(root)', '::view-transition-old(root)', '::view-transition-new(root)']),
+  )
+  for (const a of run.animations) expect(a.duration, a.pseudo).toBe(300)
+  // the switch keys its rules on the canvas's <html> for the switch alone: at rest the document carries nothing
+  expect(await page.frameLocator('iframe[title$="canvas"]').locator('html').getAttribute('data-inflozo-switching')).toBe(null)
+  // the list's one stop followed the pack in force
+  expect(await stopsIn(page, '[data-style-pack-roster]')).toBe(1)
+  await expect(option(page, target.id)).toHaveAttribute('tabindex', '0')
+
+  // the pack in force pressed again: nothing — no entry, no pill, no word
+  const before = await transitions(page)
+  await page.keyboard.press('Enter')
+  await panelsSettle(page)
+  expect(await transitions(page)).toEqual(before)
+  // ONE edit: one ⌘Z takes it back to Paper, crossfaded and said; ⇧⌘Z brings it forward the same way
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', paper.id)
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(paper.name))
+  await expect(page.locator('[data-style-pack-current]')).toContainText(paper.name)
+  await expect(undoArrow(page), 'one switch was one edit').toHaveAttribute('aria-disabled', 'true')
+  expect(await bgPage(page)).toBe(paper.light.background.toUpperCase())
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', target.id)
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+  expect((await transitions(page)).length, 'the undo and the redo crossfade too').toBe(3)
+})
+
+test('6.3 · two quick presses: the canvas lands on the second, never on the first after it, and says only the second', async ({ page }) => {
+  await open(page)
+  const [, first, , second] = PRESETS()
+  await intoList(page)
+  await recordTransitions(page)
+  // → and Enter, then → → and Enter, before the first has landed
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowRight')
+  await expect(option(page, second.id)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(second.name))
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', second.id)
+  await expect(page.locator('[data-pack-pill]')).toHaveCount(0)
+  await panelsSettle(page)
+  expect(await wears(page)).toBe(second.id)
+  expect(await bgPage(page)).toBe(second.light.background.toUpperCase())
+  expect(await page.locator('#editor-said').innerText(), 'one announcement, the second\'s').toBe(PACK.PACK_WORDS.said(second.name))
+  // two edits: two ⌘Z, the first back to the first pack
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', first.id)
+})
+
+test('6.3 · prefers-reduced-motion: the same switch, instant — no animation runs — and the same announcement (UX-DR15)', async ({ page }) => {
+  await open(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  expect(await page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((h) => h.ownerDocument.defaultView.matchMedia('(prefers-reduced-motion: reduce)').matches), 'the control: the canvas document is asked for less motion').toBe(true)
+  const target = PRESETS()[1]
+  await intoList(page)
+  await recordTransitions(page)
+  await page.keyboard.press('ArrowRight')
+  await expect(option(page, target.id)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+  expect(await bgPage(page)).toBe(target.light.background.toUpperCase())
+  const [run] = await transitions(page)
+  expect(run.animations, 'the canvas sheet\'s degrade: the three pseudo-elements run no animation').toEqual([])
+})
+
+test('6.3 · a switch is kept on this device with the docs: a reload opens in it, silently, and ⌘Z still undoes it (§AD1.1)', async ({ page }) => {
+  const PROJECT = '00000000-0000-4000-8000-000000000009'
+  await open(page)
+  const [paper, , , target] = PRESETS()
+  await intoList(page)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+  // the device's record holds the pack beside the docs (the harness has no database, so it is owed and never sent)
+  const heldPack = () => page.evaluate((id) => new Promise((resolve) => {
+    const req = indexedDB.open('inflozo-doc-harness')
+    req.onerror = () => resolve(null)
+    req.onsuccess = () => {
+      const get = req.result.transaction('meta', 'readonly').objectStore('meta').get(id)
+      get.onsuccess = () => { req.result.close(); resolve(get.result?.preset ?? null) }
+      get.onerror = () => { req.result.close(); resolve(null) }
+    }
+  }), PROJECT)
+  await expect.poll(heldPack, 'the switch is written to the device').toBe(target.id)
+  await page.reload()
+  await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible()
+  // asked for in the server's pack (Paper's address), and corrected to the device's at once — a correction says nothing
+  expect(await page.locator('iframe[title$="canvas"]').getAttribute('src')).not.toContain('pack=')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', target.id)
+  expect(await bgPage(page)).toBe(target.light.background.toUpperCase())
+  await expect(page.locator('[data-style-pack-card]')).toContainText(target.name)
+  expect(await page.locator('#editor-said').innerText(), 'a hydrate\'s correction is silent').not.toContain(PACK.PACK_WORDS.name)
+  await expect(page.locator('[data-pack-pill]')).toHaveCount(0)
+  // the journal came back with it: one ⌘Z is the switch
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', paper.id)
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(paper.name))
+})
+
+test('6.3 · a browser without View Transitions gets the same switch, instant, and the same announcement — never a removed affordance', async ({ page }) => {
+  await open(page)
+  const target = PRESETS()[1]
+  // the API taken away on the canvas document, where the editor asks for it
+  await page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html) => {
+    html.ownerDocument.startViewTransition = undefined
+  })
+  await intoList(page)
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', target.id)
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+  expect(await bgPage(page)).toBe(target.light.background.toUpperCase())
+  await expect(page.locator('[data-pack-pill]')).toHaveCount(0)
+})
+
+test('6.3 · a project stored in Mono opens in Mono (DW-325): the card, the list, the canvas, the swatches and a Section Picker card', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-pack': 'mono' })
+  await open(page)
+  const mono = presetOf('mono')
+  await expect(page.locator('[data-style-pack-card]')).toContainText(mono.name)
+  // the canvas document was ASKED FOR in Mono (Paper's address never carries a pack), and wears it
+  expect(await page.locator('iframe[title$="canvas"]').getAttribute('src')).toContain('pack=mono')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'mono')
+  expect(await bgPage(page)).toBe(mono.light.background.toUpperCase())
+  await intoList(page)
+  await expect(option(page, 'mono')).toHaveAttribute('aria-selected', 'true')
+  await expect(option(page, 'mono')).toBeFocused()
+  await page.keyboard.press('Escape')
+  // the Background role's dots are Mono's: each the canvas's own token for its role
+  await select(page, (await rows(page)).page[0])
+  await openEveryGroup(page)
+  const dots = await page.evaluate((tokens) => {
+    const doc = document.querySelector('iframe[title$="canvas"]').contentDocument
+    const probe = document.createElement('span')
+    document.body.append(probe)
+    const norm = (c) => {
+      probe.style.color = ''
+      probe.style.color = c.trim()
+      return getComputedStyle(probe).color
+    }
+    const group = [...document.querySelectorAll('#editor-controls [role="radiogroup"]')]
+      .find((g) => /Background/.test(document.getElementById(g.getAttribute('aria-labelledby'))?.textContent ?? ''))
+    const out = [...(group?.querySelectorAll('[role="radio"][data-role]') ?? [])]
+      .filter((b) => tokens[b.dataset.role] !== undefined)
+      .map((b) => ({ role: b.dataset.role, dot: norm(getComputedStyle(b.querySelector('span')).backgroundColor), canvas: norm(getComputedStyle(doc.documentElement).getPropertyValue(tokens[b.dataset.role])) }))
+    probe.remove()
+    return out
+  }, REVIEW.ROLE_TOKENS)
+  expect(dots.length, 'the control: the role offers coloured dots').toBeGreaterThan(1)
+  for (const d of dots) expect(d.dot, d.role).toBe(d.canvas)
+  // a Section Picker card wears Mono too: its frame is asked for in Mono and resolves Mono's token
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  const card = page.locator('dialog[open] iframe').first()
+  await expect(card).toHaveAttribute('src', /pack=mono/)
+  await expect.poll(() => card.evaluate((f) => getComputedStyle(f.contentDocument.documentElement).getPropertyValue('--bg-page').trim().toUpperCase())).toBe(mono.light.background.toUpperCase())
+})
+
+test('6.3 · Remix\'s Re-roll what (B8): Style Pack re-rolls the pack in one ⌘Z, Both re-rolls the designs and the pack in one ⌘Z', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const design = await designName(page).innerText()
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page)).toBeVisible()
+  // B8's group: Style Pack · Designs · Both, opening on Designs where a ring moves, with no "Re-roll where" (R-161)
+  const choices = remixDialog(page).locator('[data-remix-what] input[type="radio"]')
+  expect(await choices.evaluateAll((els) => els.map((e) => e.value))).toEqual(REMIX.REMIX_CHOICES.map((c) => c.value))
+  await expect(remixDialog(page).locator('[data-remix-what] legend')).toHaveText(REMIX.REROLL_WHAT)
+  await expect(remixDialog(page).locator('[data-remix-choice]')).toHaveText(REMIX.REMIX_CHOICES.map((c) => c.label))
+  await expect(remixDialog(page).locator('input[value="designs"]')).toBeChecked()
+  await expect(remixDialog(page)).not.toContainText(/Every page|header and footer|Re-roll where/i)
+  // the group is one stop before the buttons: Shift+Tab from Cancel reaches the checked card, ← chooses Style Pack
+  await page.keyboard.press('Shift+Tab')
+  await expect(remixDialog(page).locator('input[value="designs"]')).toBeFocused()
+  await page.keyboard.press('ArrowLeft')
+  await expect(remixDialog(page).locator('input[value="pack"]')).toBeChecked()
+  await expect(page.locator('#editor-remix-body'), 'the sentence follows the choice').toHaveText(REMIX.remixPackAsk)
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(/^Remixed the Style Pack — .+\.$/)
+  const pack = await wears(page)
+  expect(pack, 'a different pack').not.toBe(PRESETS()[0].id)
+  expect(await page.locator('#editor-said').innerText()).toBe(REMIX.remixPackSaid(presetOf(pack).name))
+  await expect(designName(page), 'every section keeps its design').toHaveText(design)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', PRESETS()[0].id)
+  await expect(undoArrow(page), 'one re-roll, one ⌘Z').toHaveAttribute('aria-disabled', 'true')
+
+  // BOTH — the designs and the pack in ONE transaction: one press, one ⌘Z puts both back
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page).locator('input[value="designs"]')).toBeChecked()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('ArrowRight')
+  await expect(remixDialog(page).locator('input[value="both"]')).toBeChecked()
+  await expect(page.locator('#editor-remix-body')).toHaveText(/^Re-rolls the Style Pack, and [1-9]\d* sections? on Home to a different design in its own category\. Your text, images and settings stay\.$/)
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(/^Remixed the Style Pack — .+ — and [1-9]\d* sections? on Home\.$/)
+  await expect(designName(page)).not.toHaveText(design)
+  expect(await wears(page)).not.toBe(PRESETS()[0].id)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', PRESETS()[0].id)
+  await expect(designName(page), 'one ⌘Z restores both').toHaveText(design)
+  await expect(undoArrow(page), 'Both was one edit').toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await expect(designName(page), 'and one ⇧⌘Z takes both forward').not.toHaveText(design)
+  expect(await wears(page)).not.toBe(PRESETS()[0].id)
+})
+
+test('6.3 · Remix where no ring moves (the Post canvas): Re-roll what opens on Style Pack, Designs and Both greyed with the reason, Remix live, one ⌘Z', async ({ page }) => {
+  await page.goto(`${HARNESS}/post`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  const paper = PRESETS()[0]
+  expect(await wears(page)).toBe(paper.id)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page)).toBeVisible()
+  await expect(remixDialog(page).locator('input[value="pack"]'), 'nothing here has a second design, so the pack is chosen').toBeChecked()
+  for (const value of ['designs', 'both']) {
+    await expect(remixDialog(page).locator(`input[value="${value}"]`)).toBeDisabled()
+    await expect(remixDialog(page).locator(`[data-remix-choice="${value}"]`)).toHaveAttribute('aria-disabled', 'true')
+  }
+  // greyed WITH the reason (UX-DR3), and the group is described by it
+  await expect(remixDialog(page).locator('#editor-remix-what-reason')).toHaveText(REMIX.NO_RING_MOVES)
+  await expect(remixDialog(page).locator('[data-remix-what]')).toHaveAttribute('aria-describedby', 'editor-remix-what-reason')
+  await expect(page.locator('#editor-remix-body')).toHaveText(REMIX.remixPackAsk)
+  // Remix is live: the confirm opens on Cancel, and Tab reaches it
+  await expect(page.locator('dialog[open] [data-cancel]')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(/^Remixed the Style Pack — .+\.$/)
+  const pack = await wears(page)
+  expect(pack, 'a different pack').not.toBe(paper.id)
+  expect(await page.locator('#editor-said').innerText()).toBe(REMIX.remixPackSaid(presetOf(pack).name))
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', paper.id)
+  await expect(undoArrow(page), 'one re-roll, one ⌘Z').toHaveAttribute('aria-disabled', 'true')
+})
+
+/** A FACE THAT TAKES `ms` TO ARRIVE: every `?font=` request held that long (routing also turns the HTTP cache off, so no
+ *  face can skip it), and the canvas document's view transitions timed — when each was asked for, when its picture was
+ *  ready to animate, whether the new pack's families were in at that moment (`document.fonts.check` over the families the
+ *  `1b-faces` rules declare, latin text) and whether S7b's pill was still up. */
+async function holdFaces(page, ms) {
+  await page.route((url) => url.searchParams.has('font'), async (route) => {
+    await new Promise((done) => setTimeout(done, ms))
+    await route.continue()
+  })
+}
+const facesIn = (doc) =>
+  [...new Set([...(doc.querySelector('style[data-order="1b-faces"]')?.textContent ?? '').matchAll(/font-family:\s*'([^']+)'/g)].map((m) => m[1]))]
+    .every((family) => doc.fonts.check(`16px '${family}'`, 'Ag'))
+const timeTransitions = (page) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html, facesInSource) => {
+    const doc = html.ownerDocument
+    const win = doc.defaultView
+    const facesIn = new Function(`return (${facesInSource})`)()
+    const real = doc.startViewTransition.bind(doc)
+    win.__timed = []
+    doc.startViewTransition = (update) => {
+      const seen = { asked: win.performance.now(), ready: null, faces: null, pill: null }
+      win.__timed.push(seen)
+      const t = real(update)
+      t.ready.then(
+        () => {
+          seen.ready = win.performance.now()
+          seen.faces = facesIn(doc)
+          seen.pill = win.parent.document.querySelector('[data-pack-pill]') !== null
+        },
+        () => {
+          seen.ready = 'skipped'
+        },
+      )
+      return t
+    }
+  }, facesIn.toString())
+const timed = (page) => page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html) => html.ownerDocument.defaultView.__timed)
+
+test('6.3 · a pack this browser has never drawn: the canvas holds its picture while the faces load, the pill up, then crossfades in them', async ({ page }) => {
+  await open(page)
+  const target = PRESETS()[1]
+  const HOLD = 500
+  expect(HOLD, 'the control: this hold is inside the wait').toBeLessThan(PACK.FACES_WAIT_MS)
+  await holdFaces(page, HOLD)
+  await intoList(page)
+  await timeTransitions(page)
+  await page.keyboard.press('ArrowRight')
+  await expect(option(page, target.id)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-pack-pill]')).toHaveText(PACK.PACK_WORDS.trying(target.name))
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+  const [run, ...more] = await timed(page)
+  expect(more, 'one press, one transition').toEqual([])
+  expect(run.ready - run.asked, 'the old picture was held while the faces loaded').toBeGreaterThanOrEqual(HOLD - 50)
+  expect(run.faces, 'the crossfade began in the new pack\'s faces').toBe(true)
+  expect(run.pill, 'S7b\'s pill stood the whole wait').toBe(true)
+  expect(await bgPage(page)).toBe(target.light.background.toUpperCase())
+})
+
+test('6.3 · faces slower than FACES_WAIT_MS: the crossfade goes on without them and a late face swaps in on arrival', async ({ page }) => {
+  await open(page)
+  const target = PRESETS()[1]
+  const HOLD = PACK.FACES_WAIT_MS * 3
+  await holdFaces(page, HOLD)
+  await intoList(page)
+  await timeTransitions(page)
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+  const [run] = await timed(page)
+  expect(run.ready - run.asked, 'it waited FACES_WAIT_MS').toBeGreaterThanOrEqual(PACK.FACES_WAIT_MS - 50)
+  expect(run.ready - run.asked, 'and went on long before the faces came').toBeLessThan(HOLD - PACK.FACES_WAIT_MS / 2)
+  expect(run.faces, 'the control: the faces were NOT in when it went on').toBe(false)
+  await expect(page.locator('[data-pack-pill]')).toHaveCount(0)
+  expect(await bgPage(page)).toBe(target.light.background.toUpperCase())
+  // `font-display: swap`: the late face arrives and is drawn, with no second switch
+  await expect
+    .poll(() => page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html, src) => new Function(`return (${src})`)()(html.ownerDocument), facesIn.toString()), { timeout: HOLD * 2 })
+    .toBe(true)
+  expect((await timed(page)).length, 'one transition, no second').toBe(1)
 })
 
 // ── R-147's card ────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1331,9 +1755,12 @@ test('R-164: ⇧R opens the confirm AT ONCE on Cancel, and Esc leaves the canvas
   const sentence = await page.locator('#editor-remix-body').innerText()
   expect(sentence).toMatch(/^Re-rolls [1-9]\d* sections? on Home to a different design in its own category\./)
   await expect(page.locator('[data-remix-go]'), 'there is something to remix, so the coral button is there').toHaveCount(1)
-  // R-161: no tick-box and no scope group — ABSENT, never greyed (UX-DR3, R-118)
-  await expect(remixDialog(page).locator('input, [role="radio"], [role="checkbox"]')).toHaveCount(0)
-  await expect(remixDialog(page)).not.toContainText(/Every page|header and footer|Style Pack/i)
+  // R-161: no tick-box and no "Re-roll where" — ABSENT, never greyed (UX-DR3, R-118). Story 6.3: B8's "Re-roll what" is
+  // the one group, its three radio cards opening on Designs where a ring moves
+  await expect(remixDialog(page).locator('input[type="checkbox"], [role="checkbox"]')).toHaveCount(0)
+  await expect(remixDialog(page).locator('input[type="radio"]')).toHaveCount(3)
+  await expect(remixDialog(page).locator('input[value="designs"]')).toBeChecked()
+  await expect(remixDialog(page)).not.toContainText(/Every page|header and footer|Re-roll where/i)
 
   // THE DIALOG OWNS THE KEY while it is up (the matrix's own row): `remix` is a SINGLE_KEY, so `onShortcut`'s
   // owner selector is `:popover-open, dialog[open]` and a second ⇧R is refused before it reaches the dice
@@ -3254,12 +3681,14 @@ test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine poin
       words.remix,
       `${words.mode}${chip('dark')}`,
       `Device — ${words.device}`,
+      // Story 6.3 — the list's own name (R-170), before Theme settings (DW-322)
+      PACK.PACK_WORDS.name,
       words.theme,
       words.preview,
     ])
     // the Theme settings row goes where the bar's own link goes, not only reads as it does (review, 2026-09-27)
-    expect(await moreRows(page).nth(3).evaluate((a) => a.tagName)).toBe('A')
-    await expect(moreRows(page).nth(3)).toHaveAttribute('href', await page.locator('#editor-theme-settings').getAttribute('href'))
+    expect(await moreRows(page).nth(4).evaluate((a) => a.tagName)).toBe('A')
+    await expect(moreRows(page).nth(4)).toHaveAttribute('href', await page.locator('#editor-theme-settings').getAttribute('href'))
     // opened ON its first row, and the arrows walk the rows
     await expect(moreRows(page).first()).toBeFocused()
     await page.keyboard.press('ArrowDown')
@@ -3323,6 +3752,34 @@ test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine poin
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press('ControlOrMeta+z')
     await expect(designName(page), 'one transaction, one undo').toHaveText(was)
+  })
+
+  test('6.3 · ⋯ → Style Pack opens the Controls overlay on the list, a cell switches the canvas, and Esc closes it (DW-322)', async ({ page }) => {
+    await openCompact(page)
+    const target = PRESETS()[2]
+    await tabTo(page, 'BUTTON#editor-more[More editor actions]')
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).first()).toBeFocused()
+    const row = moreRows(page).filter({ hasText: new RegExp(`^${PACK.PACK_WORDS.name}$`) })
+    await expect(row).toHaveCount(1)
+    while (!(await row.evaluate((el) => el === document.activeElement))) await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    // the overlay, on the list: its head says the one name, and focus is on its way back
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    await expect(page.locator('#editor-controls')).toHaveAttribute('aria-label', PACK.PACK_WORDS.name)
+    await expect(page.locator('#style-pack-back')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Tab')
+    await expect(option(page, PRESETS()[0].id)).toBeFocused()
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('Enter')
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', target.id)
+    await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(target.name))
+    // Esc closes the overlay and gives focus back to ⋯, which opened it
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    await expect(page.locator('#editor-more')).toBeFocused()
   })
 
   test('a rail item selects its section and Controls opens OVER the page, which does not move; Esc closes it and gives focus back', async ({ page }) => {

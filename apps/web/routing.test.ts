@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { route, stripApp } from './routing.ts'
+import { canvasRouteOn, route, stripApp } from './routing.ts'
 
 test('stripApp takes the internal prefix off as a segment, never as a prefix', () => {
   assert.equal(stripApp('/app'), '/')
@@ -108,3 +108,14 @@ test('the proxy matcher leaves the root-served identity files alone and still se
     assert.ok(matcher.test(path), `${path} escaped the proxy — no rewrite, no CSP, no session refresh`)
   }
 })
+
+// DW-325 (Story 6.3) — the signed-in layout's pack faces come from the canvas route AS THE PAGE ADDRESSES IT: `/canvas` on
+// the app host (the proxy adds the prefix) and `/app/canvas` anywhere else. Exact host, as `route()` reads it.
+test('canvasRouteOn: /canvas on the app host, any port or case; /app/canvas everywhere else', () => {
+  assert.equal(canvasRouteOn('app.inflozo.com'), '/canvas')
+  assert.equal(canvasRouteOn('APP.inflozo.com:443'), '/canvas')
+  for (const host of ['localhost:3000', 'inflozo.com', 'ghost5.inflozo.com', 'app.inflozo.com.evil.test', '', null, undefined]) {
+    assert.equal(canvasRouteOn(host), '/app/canvas', String(host))
+  }
+})
+

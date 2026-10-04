@@ -61,11 +61,12 @@ const TILE_HEIGHT = 44
 
 /** One tile's picture: the design's own render, under a transparent press. */
 function Tile({
-  entry, target, rows, pool, icons, mode, src, assets, subject, member, live, className = '', style,
+  entry, target, rows, pool, icons, mode, src, assets, subject, member, live, pack, className = '', style,
 }: {
   subject?: orbitWeekly.Subject | null
   member?: Visitor
   live?: Live
+  pack?: string
   entry: SectionRegistryEntry
   target: string
   rows: DesignRows | undefined
@@ -91,6 +92,7 @@ function Tile({
         subject={subject}
         member={member}
         live={live}
+        pack={pack}
         onAspect={() => {}}
       />
     </span>
@@ -112,6 +114,7 @@ export const DesignPicker = memo(function DesignPicker({
   subject,
   member,
   live,
+  pack,
   onDesign,
   onStep,
 }: {
@@ -123,6 +126,8 @@ export const DesignPicker = memo(function DesignPicker({
   member?: Visitor
   /** Story 5.18 — the canvas's own content, where it is the site's; omitted on `/controls`, which has no site */
   live?: Live
+  /** Story 6.3 — the Style Pack in force, which every tile wears; omitted on `/controls`, which has none (Paper) */
+  pack?: string
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]
   /** where in the ring this section is — or -1 where NOTHING IS CHOSEN YET: Story 5.20's untouched paywall, whose box
@@ -159,7 +164,7 @@ export const DesignPicker = memo(function DesignPicker({
     </button>
   )
 
-  const preview = { target, pool, icons, mode, src, assets, subject, member, live }
+  const preview = { target, pool, icons, mode, src, assets, subject, member, live, pack }
 
   return (
     <Profiler id="design" onRender={counted}>

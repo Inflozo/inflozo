@@ -9,8 +9,8 @@ import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { ShellUserContext } from '@/components/shell/shell'
 import { harnessCanvasSrc } from '@/lib/canvas'
-import { DEFAULT_PRESET, packFacesCss } from '@/lib/style-pack'
-import { imagePool, linkResources, paywallSamples, referenceSwatches, samples } from '@/lib/controls-review'
+import { packChoices, packFacesCss, presetIdOf } from '@/lib/style-pack'
+import { imagePool, linkResources, paywallSamples, samples } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
@@ -82,6 +82,10 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * node and to walk DW-215's Remix over several sections; `tools/perf/fps-trace.mjs` traces NFR-1 on it. Each names its
  * own n and where it comes from. Without the header the default fixture is untouched — every other stop counts on it,
  * which is DW-215's own reason for waiting.
+ *
+ * STORY 6.3 — `x-inflozo-harness-pack: <id>` is the project's STORED pack (DW-325): the editor opens in it — the canvas
+ * document asked for in it, the card, the list, the previews and the swatches its — so a journey can open on a pack that is
+ * not Paper. Read through `presetIdOf`, as `read.ts` reads the column, so an unknown id is Paper. Without it, Paper.
  *
  * STORY 5.24e — `x-inflozo-harness-stand-ins: on` adds two designs the shipped library does not hold yet (`../stand-ins.ts`):
  * a FOOTER, which the rule below places in the site doc after the header — so the band clamp (DW-187) has a band to hold —
@@ -171,7 +175,6 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     postsPerPage: orbitWeekly.postsPerPage(),
     memberVisibility: Object.fromEntries(placed.map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
-    swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },
     // both halves of the map are walked: the sun is drawn, so `.` has something to press (R-135's other arm is the
     // deployed walk's, on a real Light-only project). Story 5.22: a FOURTH header (`x-inflozo-harness-dark: off`) opens a
     // Light-only project, so the journey proves ⋯ carries no dark row where the bar carries no sun (UX-DR3)
@@ -209,8 +212,9 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       : siteAsked === 'surfaces-later' ? SURFACES_LATER_SITE
       : siteAsked === 'ghost-5' ? GHOST_5_SITE
       : null,
-    // Story 6.2 — a fresh project's pack, Paper, as `defaultStylePack` writes it
-    stylePack: { preset: DEFAULT_PRESET },
+    // Story 6.2 — a fresh project's pack, Paper, as `defaultStylePack` writes it; Story 6.3 — or the one the header names
+    preset: presetIdOf({ preset: asked.get('x-inflozo-harness-pack') }),
+    packs: packChoices(),
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it

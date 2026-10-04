@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { REFERENCE_TOKENS } from '@inflozo/section-runtime'
+import { REFERENCE_TOKENS } from '@inflozo/section-runtime/reference'
 import { referenceSwatches } from './lib/controls-review.ts'
 
 /* STORY 5.6 — THE FLIP, AND WHAT IT MUST NOT DO.

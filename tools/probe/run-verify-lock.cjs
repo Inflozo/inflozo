@@ -20,6 +20,7 @@
  *   A reloads and KEEPS the lock · B asks and A keeps editing, and B's SECOND ask still reaches A
  *   a take-over with nothing owed asks without a danger panel · a silent holder goes stale and is taken silently,
  *   and learns it when it can reach the server again
+ *   Story 6.3: the reader's Style Pack list opens (a view) with every cell greyed and unclickable, beside the holder's live one
  *   Story 5.24e, last: a reload keeps the lock with the other session reading inside its gap, and a late leave changes
  *   nothing (DW-240) · a tab going with an edit owed and a slow flush keeps the lock for it (DW-244) · Sign out sends
  *   the owed edit and erases this browser's copy (R-214)
@@ -393,6 +394,39 @@ async function main() {
     check('R-192: an editing SHORTCUT does nothing for the reader — ⌘K opens the section picker in A and nothing in B',
       aPicker === true && bPicker === false, JSON.stringify({ holder: aPicker, reader: bPicker }))
     if (bPicker) await B.keyboard.press('Escape')
+
+    /* ── STORY 6.3 (R-192): THE STYLE PACK LIST OPENS FOR A READER — it is a view — AND EVERY CELL IS GREYED AND
+     * UNCLICKABLE: choosing is an edit. Its positive is the holder's list for the same project, whose cells are live; and
+     * a press on a reader's cell moves neither the canvas nor the revision. */
+    const listOf = async (page) => {
+      // nothing selected, so the panel is the rest panel and its Style Pack card carries Change
+      await page.locator('section[aria-label="Canvas"]').focus()
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(300)
+      await page.locator('#style-pack-change').click()
+      await page.waitForTimeout(300)
+      return page.evaluate(() => {
+        const cells = [...document.querySelectorAll('#editor-controls [data-style-pack-roster] [data-style-pack]')]
+        return { cells: cells.length, live: cells.filter((c) => !c.matches(':disabled')).length, head: document.getElementById('editor-panel-name')?.textContent ?? null }
+      })
+    }
+    const presets63 = JSON.parse(fs.readFileSync(path.join(REPO, 'packages', 'library', 'packs', 'packs.json'), 'utf8')).presets
+    const [aList, bList] = [await listOf(A), await listOf(B)]
+    const wears63 = (page) => page.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack ?? null)
+    const before63 = { pack: await wears63(B), revision: (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision }
+    // a press the browser itself refuses: a disabled button takes no click, so nothing reaches the editor
+    await B.evaluate((id) => document.querySelector(`#editor-controls [data-style-pack="${id}"]`)?.click(), presets63[presets63.length - 1].id)
+    await B.waitForTimeout(1500)
+    const after63 = { pack: await wears63(B), revision: (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision }
+    check('Story 6.3 (R-192) control: the HOLDER\'s Style Pack list has every preset, each live',
+      aList.cells === presets63.length && aList.live === presets63.length, JSON.stringify(aList))
+    check('Story 6.3 (R-192): the READER\'s Change opens the list — a view — and every cell is greyed and unclickable, so a press moves neither the canvas nor the revision',
+      bList.cells === presets63.length && bList.live === 0 && bList.head === 'Style Pack' && after63.pack === before63.pack && after63.revision === before63.revision,
+      JSON.stringify({ bList, before63, after63 }))
+    for (const page of [A, B]) {
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(200)
+    }
 
     /* ── matrix "Keep editing" — and the defect the audit found under it ─────────────────────────────────────
      *

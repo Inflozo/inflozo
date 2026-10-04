@@ -15,8 +15,11 @@
 // `tools/stress/test-vocabulary.mjs` reads the bytes of both — and of §D.0 — and fails on any drift (a test in a core
 // package cannot read a file: AD-1 bans `node:fs` there, and the test-file exemption gives back only `node:test` and
 // `node:assert`).
+//
+// THIS FILE IMPORTS NO LIBRARY (DW-323, Story 6.3): Paper — `REFERENCE_PACK`, `REFERENCE_TOKENS` and the stylesheet
+// `referenceTokensCss` emits — reads the library's presets and lives on its own subpath, `./reference.ts`, so the
+// package's index carries no preset and no font pool into a client.
 
-import { presetOf } from '@inflozo/library/packs'
 import { contrast, darker, isHex, mix, rgba, stepToContrast } from './colour.ts'
 
 export type TokenSource = 'computed' | 'authored'
@@ -146,19 +149,6 @@ export type Pack = {
   buttons: keyof typeof SCALES.buttons
   shadow: keyof typeof SCALES.shadow
   links: keyof typeof SCALES.links
-}
-
-/** STORY 6.2 — ONE PAPER: the reference pack IS the Paper preset, Appendix D §D.d's first row, read from the library
- *  (`@inflozo/library/packs`, where its fonts are pairing D1's — Fraunces over Inter, R-231 — with each face's cap
- *  height off the pool's own file). It used to be hand-copied here from the export, Georgia and all; now there is one
- *  Paper and the library holds it. R-110's ink on the accent, the scrims and the drawn steps are §D.d's values. The
- *  dependency runs runtime → library and never back. */
-export const REFERENCE_PACK: Pack = paperPreset()
-
-function paperPreset(): Pack {
-  const paper = presetOf('paper')
-  if (paper === undefined) throw new Error('the library holds no Paper preset — prd.md §D.d and packages/library/packs/ disagree')
-  return paper.pack as Pack
 }
 
 /** The red every pack's negative starts from, the page margin every pack shares, and the bands the responsive rows
@@ -320,14 +310,6 @@ export function packTokens(pack: Pack): {
   }
 }
 
-/** Story 4.10's Paper, now as the engine computes it: the reference VALUES every design reads through the canvas, the
- *  matrix and the style guide until a project wears a pack (Stories 6.3, 6.4). Both maps are complete, so the
- *  controls panel's swatches read either mode as they always have. */
-export const REFERENCE_TOKENS: Readonly<{
-  light: Readonly<Record<string, string>>
-  dark: Readonly<Record<string, string>>
-}> = (({ light, dark }) => ({ light, dark }))(packTokens(REFERENCE_PACK))
-
 const block = (selector: string, values: Readonly<Record<string, string>>) =>
   `${selector} {\n${Object.entries(values)
     .map(([k, v]) => `  ${k}: ${v};`)
@@ -387,13 +369,4 @@ export function packTokensCss(pack: Pack): string {
     `/* FR-E1 · link style, applied: a plain link reads the two link tokens (R-112, R-173), a post's body included (R-229) */\n${LINK_RULES}`,
     '',
   ].join('\n\n')
-}
-
-/** The reference stylesheet the canvas, the render matrix and the style guide read: Paper through the engine. */
-export function referenceTokensCss(): string {
-  return (
-    '/* GENERATED from packages/section-runtime/src/tokens.ts — edit the contract, not this file.\n' +
-    '   tools/stress/test-vocabulary.mjs fails if the two drift. */\n\n' +
-    packTokensCss(REFERENCE_PACK)
-  )
 }

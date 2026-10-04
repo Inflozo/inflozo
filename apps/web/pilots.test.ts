@@ -2,11 +2,12 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { canvasCaching, canvasSrc, harnessCanvasSrc, previewSrc } from './lib/canvas.ts'
+import { canvasCaching, canvasSrc, harnessCanvasSrc, packed, previewSrc } from './lib/canvas.ts'
 import { carriesMemberVisibility, DESIGNS_DIR, docRefusal, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument, poolFont } from './lib/pilots.ts'
-import { fontFaceCss, packTokensCss, parseDoc, type Pack } from '@inflozo/section-runtime'
+import { packTokensCss, parseDoc, type Pack } from '@inflozo/section-runtime'
+import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { POOL, PRESETS } from '@inflozo/library/packs'
-import { fontHref } from './lib/style-pack.ts'
+import { fontHref, packCells, packChoices, PRESETS as CELLS, referenceSwatches } from './lib/style-pack.ts'
 import { samples } from './lib/controls-review.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
@@ -192,3 +193,37 @@ test('every canvas document carries its pack\'s block and its pairing\'s faces f
   }
   assert.throws(() => pilotsCanvasDocument(undefined, [], 'harbor'), /not a Style Pack preset/)
 })
+
+/* ───────── STORY 6.3 — the editor paints a pack from the very strings the canvas route serves (DW-323) */
+
+test('every pack the editor is handed carries the block and the faces `/canvas?pack=` serves — Paper\'s block byte for byte', () => {
+  const choices = packChoices()
+  // §D.d's order, every preset once — read off the library, never a list written here
+  assert.deepEqual(choices.map((c) => c.id), PRESETS.map((p) => p.id))
+  const tokens = readFileSync(join('..', '..', 'packages', 'section-runtime', 'reference-tokens.css'), 'utf8')
+  for (const c of choices) {
+    const doc = pilotsCanvasDocument(undefined, [], c.id)
+    assert.ok(doc.includes(`<style data-order="1-tokens">${c.tokens}</style>`), `${c.id}: the editor's block is not the one the route serves`)
+    assert.ok(doc.includes(`<style data-order="1b-faces">${c.faces}</style>`), `${c.id}: the editor's faces are not the ones the route serves`)
+    assert.deepEqual(c.swatches, { light: referenceSwatches('light', c.id), dark: referenceSwatches('dark', c.id) })
+    assert.equal(c.cellDots.length, 4)
+    assert.equal(c.cardDots.length, 5)
+    assert.ok(c.families.length === 2 && c.families.every((f) => /^'[^']+', [a-z-]+$/.test(f)), `${c.id}: ${c.families.join(' / ')}`)
+    assert.doesNotMatch(JSON.stringify(c), /licenceFile|sha256/, `${c.id}: the pool's record rides along`)
+  }
+  assert.equal(choices[0]?.tokens, tokens, "Paper's block is reference-tokens.css")
+  // the control: two packs really are painted differently, so the equality above is not of one block with itself
+  assert.notEqual(choices[0]?.tokens, choices[1]?.tokens)
+  // D4a's cells: the same twelve, each its card's three dots, and nothing of the pool
+  assert.deepEqual(packCells().map((c) => [c.id, c.dots]), Object.values(CELLS).map((p) => [p.id, [p.surface, p.accent, p.text]]))
+})
+
+test('a canvas address carries &pack= for any preset but Paper, whose cached address never changes', () => {
+  assert.equal(packed('/canvas?v=x'), '/canvas?v=x')
+  assert.equal(packed('/canvas?v=x', 'paper'), '/canvas?v=x')
+  assert.equal(packed('/canvas?v=x', 'mono'), '/canvas?v=x&pack=mono')
+  assert.equal(previewSrc('/canvas?v=x', 'a4/13'), '/canvas?v=x&design=a4%2F13')
+  assert.equal(previewSrc('/canvas?v=x', 'a4/13', 'paper'), '/canvas?v=x&design=a4%2F13')
+  assert.equal(previewSrc('/canvas?v=x', 'a4/13', 'neon'), '/canvas?v=x&design=a4%2F13&pack=neon')
+})
+

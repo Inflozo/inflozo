@@ -1,7 +1,12 @@
-import { familyList, pairingOf, PRESETS as LIBRARY_PRESETS, type PoolFile } from '@inflozo/library/packs'
+import { familyList, pairingOf, presetOf, PRESETS as LIBRARY_PRESETS, type PoolFile } from '@inflozo/library/packs'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
+import { REFERENCE_TOKENS, referenceTokensCss } from '@inflozo/section-runtime/reference'
+import { packTokens, packTokensCss, type Pack } from '@inflozo/section-runtime/tokens'
+import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, type PackCellData, type PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 import { isAccent } from './probe-rule.ts'
+
+export { DEFAULT_PRESET, PACK_FAMILY_PREFIX }
 
 /**
  * `projects.style_pack`, and the one schema for it (the spine's rule (a): one zod schema per
@@ -23,7 +28,17 @@ import { isAccent } from './probe-rule.ts'
  * holds no colour of its own any more. A pack's glyph is drawn in its own heading face, the pool's
  * own file, declared under a family name of its own (`PACK_FAMILY_PREFIX`) so the app's Inter and
  * Bricolage Grotesque are never redefined; `packFacesCss` is that declaration, linked once in the
- * signed-in layout. Choosing a pack is Story 6.3's (DW-322): nothing here writes the column.
+ * signed-in layout.
+ *
+ * SINCE STORY 6.3 CHOOSING IS BUILT, AND THIS IS THE SERVER'S ONE HOME OF THE PRESETS — IMPORTED BY NO
+ * CLIENT MODULE (DW-323). The library's presets carry the font pool's whole record, so a client that
+ * imported this file carried it too (43 KB in every page that drew a pack cell, measured at 6.3's
+ * Create). Clients are handed what they paint as data instead: `packChoices` — every preset's names,
+ * dots, swatches and canvas CSS, derived here once by the functions `/canvas` uses, so the editor's
+ * card, list, swatches and canvas paint a pack as the canvas does — and `packCells`, D4a's twelve for
+ * the New project window. The client's own vocabulary (`DEFAULT_PRESET`, `PACK_FAMILY_PREFIX`, the
+ * words, the types) is `lib/pack-switch.ts`'s, re-exported here for the server. The editor's choice is
+ * written by the save (`sync_project_doc`'s `p_preset`) and a new project's by `createProject`.
  *
  * STORY 3.4 PUT A `brand` KEY IN THIS COLUMN AND E6 STILL OWNS IT (DW-66). FR-C4's "Use your
  * brand" copies the customer's own Ghost accent, logo and menu out of `sites.site_settings.brand`
@@ -69,10 +84,6 @@ export type Preset = {
   text: string
 }
 
-/** The family-name prefix a pool face takes in the APP's document, where `Inter` and `Bricolage Grotesque` are already
- *  the app's own faces (`app/fonts/fonts.css`). */
-export const PACK_FAMILY_PREFIX = 'Inflozo pack '
-
 /** THE PRESETS, derived — §D.d's order, Paper first. ponytail: a `Record` keyed by id, so `PRESETS.paper` reads as it
  *  always has; its insertion order is the library's. */
 export const PRESETS: Record<string, Preset> = Object.fromEntries(
@@ -91,16 +102,13 @@ export const PRESETS: Record<string, Preset> = Object.fromEntries(
   }),
 )
 
-export const DEFAULT_PRESET = 'paper'
-
 /** A pool file's address beside a document served at `base` — `canvas` from the canvas document, `../canvas` from a
  *  frame one level down, `/canvas` (or `/app/canvas`) from an app page — carrying the start of its own sha256, so a
- *  rebuilt file is a new address and the route may keep it `immutable` (`lib/canvas.ts`'s `canvasCaching`). Here and
- *  not in `lib/canvas.ts` because this module is a client one's too, and must not carry the runtime with it. */
+ *  rebuilt file is a new address and the route may keep it `immutable` (`lib/canvas.ts`'s `canvasCaching`). */
 export const fontHash = (sha256: string) => sha256.slice(0, 12)
 export const fontHref = (base: string) => (f: PoolFile) => `${base}?font=${f.file}&h=${fontHash(f.sha256)}`
 
-/** A blank project's `style_pack`: Paper, the default (choosing another is Story 6.3's). */
+/** A blank project's `style_pack`: Paper, the default. `createProject` writes the one the New project window chose. */
 export const defaultStylePack = (): StylePack => ({ preset: DEFAULT_PRESET })
 
 /** The preset id a stored `style_pack` names — `placeholderFor`'s rule: anything this build does not know is Paper. */
@@ -151,3 +159,67 @@ export function placeholderFor(stylePack: unknown): Preset {
   const accent = brand?.accent
   return isAccent(accent) ? { ...base, accent } : base
 }
+
+/** Background role's colour roles and the reference token each is painted with. Image has no colour: the
+ *  panel draws the Kit's image glyph for it. Exported for the keyboard journey (DW-198, Story 5.24e), which holds each
+ *  Background-role dot to the canvas's own token. */
+export const ROLE_TOKENS: Readonly<Record<string, string>> = {
+  base: '--bg-page',
+  surface: '--bg-surface',
+  accent: '--accent',
+  contrast: '--bg-contrast',
+}
+
+/** The swatch colours: the pack's token values themselves, so `apps/web` carries no colour literal outside this file
+ *  (`tokens.test.ts`). A missing property throws rather than drawing an empty circle.
+ *
+ *  Story 5.6 — PER MODE. `REFERENCE_TOKENS.dark` is the whole property set, as `light` is (`tokens.test.ts` asserts
+ *  the two equal), so the panel's Background-role dots are the colours the canvas is ACTUALLY painting while dark is
+ *  previewed. Story 6.2 — any preset's: the dots follow the pack the canvas is painted in. Here since Story 6.3, beside
+ *  the presets (`lib/controls-review.ts` re-exports it for its own callers). */
+export function referenceSwatches(mode: 'light' | 'dark' = 'light', pack = DEFAULT_PRESET): Record<string, string> {
+  const preset = presetOf(pack)
+  if (preset === undefined) throw new Error(`"${pack}" is not a Style Pack preset`)
+  const tokens = pack === DEFAULT_PRESET ? REFERENCE_TOKENS : packTokens(preset.pack as Pack)
+  return Object.fromEntries(
+    Object.entries(ROLE_TOKENS).map(([role, property]) => {
+      const value = tokens[mode][property]
+      if (!value) throw new Error(`the ${mode} ${pack} tokens declare no ${property} — the ${role} swatch has no colour`)
+      return [role, value]
+    }),
+  )
+}
+
+/** STORY 6.3 — EVERY PRESET AS THE EDITOR PAINTS IT, in §D.d's order: its names and families, the cell's and the card's
+ *  dots (the engine's light values), the Background role's swatches per mode, and its canvas `1-tokens` block (Paper's is
+ *  `reference-tokens.css`, which `referenceTokensCss` emits byte for byte — `test-vocabulary.mjs` holds the two equal)
+ *  and `1b-faces` rules from the canvas route's own `?font=` — the very strings `/canvas?pack=` serves (`pilots.ts`'s
+ *  `packHead`; `style-pack.test.ts` holds the two equal). One derivation, so a switch paints the canvas the document a
+ *  reload would be served. ponytail: derived per editor read (twelve engine runs, milliseconds); cache it if the read
+ *  ever shows it. */
+export function packChoices(): PackChoice[] {
+  return LIBRARY_PRESETS.map((p) => {
+    const pack = p.pack as Pack
+    const pairing = pairingOf(p.pairing)
+    const light = packTokens(pack).light
+    const dots = (properties: readonly string[]) => properties.map((property) => light[property] ?? '')
+    return {
+      id: p.id,
+      name: p.name,
+      heading: pairing.heading.family,
+      body: pairing.body.family,
+      glyphFamily: familyList(pairing.heading.family, PACK_FAMILY_PREFIX),
+      cellDots: dots(['--bg-page', '--accent', '--text-body', '--plate']),
+      cardDots: dots(['--bg-page', '--bg-surface', '--accent', '--text-body', '--plate']),
+      swatches: { light: referenceSwatches('light', p.id), dark: referenceSwatches('dark', p.id) },
+      tokens: p.id === DEFAULT_PRESET ? referenceTokensCss() : packTokensCss(pack),
+      faces: fontFaceCss(p.pairing, fontHref('canvas')),
+      families: [pack.fonts.heading.family, pack.fonts.body.family],
+    }
+  })
+}
+
+/** STORY 6.3 — D4a's twelve, for the New project window: each preset's name, its glyph's face and the card's three dots
+ *  (background, accent, text) — and nothing else of the pool. */
+export const packCells = (): PackCellData[] =>
+  Object.values(PRESETS).map((p) => ({ id: p.id, name: p.name, glyphFamily: p.glyphFamily, dots: [p.surface, p.accent, p.text] }))

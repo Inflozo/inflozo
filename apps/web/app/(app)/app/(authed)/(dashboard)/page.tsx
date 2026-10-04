@@ -7,6 +7,7 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap as overCap, capSentence, goProLabel } from '@/lib/plan'
 import { CLEAR_SEARCH, filterProjects, noProjectsMatch } from '@/lib/projects'
 import { passkeysEnabled } from '@/lib/flags'
+import { packCells } from '@/lib/style-pack'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { isSignOutFailed, SIGN_OUT_FAILED } from '../../sign-in/signed-out'
 import { isRestored, RESTORED, RESTORED_SENTENCE } from '../account/deletion-rule'
@@ -204,7 +205,7 @@ export default async function Dashboard({
 
       {/* D4a under the cap, D4b at it. One dialog, opened from the shell's button, from the
           empty state's, from 390's, and from a card's ⋯ Duplicate when the cap is already met. */}
-      <NewProjectSheet atCap={atCap} plan={plan} />
+      <NewProjectSheet atCap={atCap} plan={plan} packs={packCells()} />
     </>
   )
 }

@@ -107,6 +107,10 @@
 // pressed "+ Add section" pill measured on a hovered gap, placing one section there and ⌘K refusing to open with a
 // REAL caret in a canvas text prop, which is the story's most important line (`lib/inline.ts:230`). Step 8's axe runs
 // once more with the picker open, asserting NO SECOND NODE EXCEPTION is needed.
+// Story 6.3 re-expects step 88 — B8's "Re-roll what" opens on Style Pack, Designs and Both greyed with the reason, and a
+// pack re-roll that one ⌘Z undoes — and adds step 102, in contexts of its own: a press on the Style Pack list switching the
+// canvas behind S7b's pill, ⌘S writing `projects.style_pack.preset` with the revision moved by one and a seeded `brand`
+// untouched, the sync route's 422 for an unknown preset, and a fresh browser opening the project in the pack.
 // Story 5.13 adds step 89, inside the same session, and it opens with the MEASUREMENT because R-166 is a ruling about
 // geometry: B9's pill at the canvas foot, dashed with its grey dot, at 24px, its box never intersecting the page
 // card's at Desktop, Tablet OR Mobile, with R-139's 32px ground unmoved either side; R-118's absences on Home (no
@@ -4128,7 +4132,12 @@ async function main() {
        nothing here can move — which is exactly what the confirm has to SAY rather than pretend (R-12's shape,
        as R-134 already answers an empty "Clear dark overrides"). The re-roll ITSELF is proved where a ring
        exists: on the deployed `/controls` (`run-verify-controls.cjs`, R-162) and on every commit by
-       `pnpm keyboard` over the harness's fixture ring. */
+       `pnpm keyboard` over the harness's fixture ring.
+       STORY 6.3 (DW-314) — and since a Style Pack can be re-rolled, B8's "Re-roll what" opens on it here, with Designs
+       and Both greyed and the reason beneath; a pack re-roll lands and one ⌘Z undoes it. Every word is the app's own. */
+    const REMIX88 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/remix.ts')).href)
+    const PACK88 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pack-switch.ts')).href)
+    const PACKS88 = JSON.parse(fs.readFileSync(path.join(REPO, 'packages/library/packs/packs.json'), 'utf8')).presets
     const dice512 = await page.evaluate(() => {
       const b = document.getElementById('editor-remix')
       if (!b) return null
@@ -4176,18 +4185,29 @@ async function main() {
         title: d.querySelector('#editor-remix-title')?.textContent ?? '',
         body: d.querySelector('#editor-remix-body')?.textContent ?? '',
         buttons: [...d.querySelectorAll('button')].map((b) => b.textContent.trim()),
-        // R-161: B8's "Re-roll what", "Every page" and "Include the header and footer" are ABSENT, not greyed
-        choices: d.querySelectorAll('input, [role="radio"], [role="checkbox"]').length,
-        greyed: d.querySelectorAll('[aria-disabled="true"], :disabled').length,
+        // Story 6.3 — B8's "Re-roll what": its three radio cards, each with what it is and whether it is checked or greyed
+        legend: d.querySelector('[data-remix-what] legend')?.textContent ?? null,
+        choices: [...d.querySelectorAll('[data-remix-what] input[type="radio"]')].map((r) => ({ value: r.value, label: r.closest('label')?.textContent.trim() ?? '', checked: r.checked, disabled: r.disabled })),
+        reason: d.querySelector('#editor-remix-what-reason')?.textContent ?? null,
+        described: d.querySelector('[data-remix-what]')?.getAttribute('aria-describedby') ?? null,
+        // R-161: "Every page" and "Include the header and footer" are ABSENT, not greyed
+        boxes: d.querySelectorAll('input[type="checkbox"], [role="checkbox"]').length,
+        text: d.textContent,
       }
     })
     check('step 88 — pressing the dice opens the ONE confirm with focus on Cancel (R-115, UX-DR14)',
-      ask512 !== null && ask512.onCancel && /^Remix Home\?$/.test(ask512.title.trim()), JSON.stringify(ask512))
-    check('step 88 — R-158 / R-12: on this project every category holds one design, so the dialog says there is nothing to remix and carries CLOSE ALONE — never a greyed Remix',
-      ask512 !== null && /nothing to remix yet/.test(ask512.body) && ask512.buttons.length === 1 && ask512.buttons[0] === 'Close' &&
-      ask512.greyed === 0, JSON.stringify(ask512 && { body: ask512.body, buttons: ask512.buttons, greyed: ask512.greyed }))
-    check('step 88 — R-161: no "Re-roll what" group, no "Every page" and no header-and-footer tick-box — absent, not greyed (UX-DR3, R-118)',
-      ask512 !== null && ask512.choices === 0 && !/Every page|header and footer|Style Pack/i.test(ask512.body), JSON.stringify(ask512 && { choices: ask512.choices }))
+      ask512 !== null && ask512.onCancel && /^Remix Home\?$/.test(ask512.title.trim()), JSON.stringify(ask512 && { ...ask512, text: undefined }))
+    // STORY 6.3 — DW-314: every category on this project holds one design (R-158), so B8's "Re-roll what" opens on the one
+    // re-roll left, the Style Pack, with Designs and Both greyed and the reason beneath them (P0-0) — and Remix is live
+    check('step 88 — Story 6.3: "Re-roll what" opens on Style Pack, Designs and Both greyed with the reason beneath, its sentence the pack\'s, and Cancel beside a LIVE Remix',
+      ask512 !== null && ask512.legend === REMIX88.REROLL_WHAT &&
+      JSON.stringify(ask512.choices.map((c) => [c.value, c.label])) === JSON.stringify(REMIX88.REMIX_CHOICES.map((c) => [c.value, c.label])) &&
+      ask512.choices.every((c) => (c.value === 'pack' ? c.checked && !c.disabled : !c.checked && c.disabled)) &&
+      ask512.reason === REMIX88.NO_RING_MOVES && ask512.described === 'editor-remix-what-reason' &&
+      ask512.body.trim() === REMIX88.remixPackAsk && JSON.stringify(ask512.buttons) === JSON.stringify(['Cancel', 'Remix']),
+      JSON.stringify(ask512 && { ...ask512, text: undefined }))
+    check('step 88 — R-161: no "Re-roll where", no "Every page" and no header-and-footer tick-box — absent, not greyed (UX-DR3, R-118)',
+      ask512 !== null && ask512.boxes === 0 && !/Re-roll where|Every page|header and footer/i.test(ask512.text), JSON.stringify(ask512 && { boxes: ask512.boxes }))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
     check('step 88 — Close leaves the doc, the journal and the announcement exactly as they were',
@@ -4200,8 +4220,31 @@ async function main() {
     await page.keyboard.press('Shift+R')
     check('step 88 — R-145: `⇧R` opens the very same confirm, at once — the key and the dice are one control',
       await page.waitForSelector('dialog[data-remix-confirm][open]', { timeout: 250 }).then(() => true).catch(() => false))
-    await page.keyboard.press('Escape')
-    await page.waitForTimeout(300)
+    // STORY 6.3 — AND REMIX RE-ROLLS THE PACK (FR-D17's scoped re-roll): a different pack, said once the canvas has
+    // landed, every section keeping its design — and ONE ⌘Z puts Paper back, the pack's own entry in the journal
+    const frame88 = () => page.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack ?? null)
+    const wore88 = await frame88()
+    await page.locator('dialog[data-remix-confirm][open] [data-remix-go]').click()
+    const rerolled88 = await page.waitForFunction((was) => {
+      const now = document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack
+      return now && now !== was && /^Remixed the Style Pack — /.test(document.getElementById('editor-said')?.textContent ?? '') ? now : null
+    }, wore88, { timeout: 15000 }).then((h) => h.jsonValue(), () => null)
+    const said88 = await saidNow59()
+    check('step 88 — Story 6.3: Remix with Style Pack chosen re-rolls the PACK — a different one on the canvas, said once it has landed, every section keeping its design',
+      wore88 === 'paper' && rerolled88 !== null && said88 === REMIX88.remixPackSaid(PACKS88.find((p) => p.id === rerolled88)?.name ?? '?') &&
+      JSON.stringify(await pageNames()) === JSON.stringify(beforeDice512.names), JSON.stringify({ wore88, rerolled88, said88 }))
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+z')
+    const undone88 = await page.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === 'paper', null, { timeout: 10000 }).then(() => true, () => false)
+    check('step 88 — Story 6.3: ONE ⌘Z puts Paper back, crossfaded and said — the re-roll was one edit',
+      undone88 && (await saidNow59()) === PACK88.PACK_WORDS.said('Paper') && (await page.locator('#editor-undo').getAttribute('aria-disabled')) === null,
+      JSON.stringify({ undone88, said: await saidNow59() }))
+    // the undo is owed to the server like any other: sent and heard here, so no later step meets a pack still pending
+    await page.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await page.keyboard.press('ControlOrMeta+s')
+    await page.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED58, { timeout: 20000 }).catch(() => {})
+    check('step 88 — Story 6.3: the pack sent with the save is Paper again, in projects.style_pack.preset',
+      (await call('/rest/v1', `/projects?id=eq.${P}&select=style_pack`)).body?.[0]?.style_pack?.preset === 'paper')
 
     // WCAG 2.1.4 WITH A REAL CARET IN THE CANVAS, which only the deployed walk can reach — the owner's own
     // "most important step". Step 75's shape, with the one key this story bound.
@@ -7287,6 +7330,98 @@ async function main() {
     check('step 101 — the lock row is unchanged across both crossings: this tab holds it, with the same generation, at all three widths', at1440.lock?.holderSessionId === at1440.session && sameLock(at1440, at1279) && sameLock(at1440, back1440), JSON.stringify({ at1440: at1440.lock, at1279: at1279.lock, back1440: back1440.lock, session: at1440.session }))
     await handBack(cross)
     await crossContext.close()
+
+    // ── step 102 — STORY 6.3: A STYLE PACK CHANGE IS AN EDIT, SAVED WITH THE DOCS (FR-D9, AD-16, §AD1) ──
+    /* A switch from the list, then ⌘S: `projects.style_pack.preset` holds it, a `brand` seeded through the service key is
+       untouched (the RPC sets the one key — "Use your brand" writes `brand` from the Sites page), and the revision moved by
+       ONE — the docs' compare-and-set. A FRESH context then opens the project in it: the canvas document asked for in the
+       pack (`&pack=`), and the card wearing it. The sync route refuses a preset this build does not know with a 422, writing
+       nothing. Paper is put back through the list and the save, so the project ends as the seed made it. */
+    const PACK102 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pack-switch.ts')).href)
+    const JOURNAL102 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href)
+    const SYNCED102 = JOURNAL102.labelOf({ kind: 'rest', owed: false })
+    const presets102 = JSON.parse(fs.readFileSync(path.join(REPO, 'packages/library/packs/packs.json'), 'utf8')).presets
+    const target102 = presets102[3]
+    const row102 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=style_pack,revision`)).body?.[0] ?? null
+    const seeded102 = await row102()
+    const planted102 = await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ style_pack: { ...(seeded102?.style_pack ?? {}), brand: { seed: 'walk-102' } } }) })
+    const before102 = await row102()
+    check('step 102 — the fixture: Paper, with a brand seeded beside it through the service key', (planted102.status === 200 || planted102.status === 204) && before102?.style_pack?.preset === 'paper' && before102?.style_pack?.brand?.seed === 'walk-102', JSON.stringify(before102))
+    const packContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const packViolations = []
+    await recorder(packContext, packViolations)
+    const pk = steady(await packContext.newPage())
+    await pk.goto(await magic(emailA), { waitUntil: 'load' })
+    await pk.goto(editorUrl(), { waitUntil: 'load' })
+    await pk.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await pk.waitForTimeout(600)
+    await pk.locator('#style-pack-change').click()
+    // S7b's pill from the press until the canvas lands — watched for BEFORE the press, so a quick landing cannot hide it
+    const pill102 = pk.waitForSelector('[data-pack-pill]', { timeout: 5000 }).then((h) => h.textContent(), () => null)
+    await pk.locator(`[data-style-pack="${target102.id}"]`).click()
+    const landed102 = await pk.waitForFunction((id) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === id, target102.id, { timeout: 15000 }).then(() => true, () => false)
+    const shown102 = await pk.evaluate(() => {
+      const doc = document.querySelector('section[aria-label="Canvas"] iframe').contentDocument
+      return {
+        bg: getComputedStyle(doc.documentElement).getPropertyValue('--bg-page').trim().toUpperCase(),
+        said: document.getElementById('editor-said')?.textContent ?? '',
+        current: document.querySelector('[data-style-pack-current]')?.textContent ?? '',
+        switching: doc.documentElement.hasAttribute('data-inflozo-switching'),
+      }
+    })
+    check('step 102 — a press switches: S7b\'s pill names the pack, the canvas lands on its own token, the list calls it Current, and the switch is said once landed',
+      landed102 && (await pill102) === PACK102.PACK_WORDS.trying(target102.name) && shown102.bg === target102.light.background.toUpperCase() &&
+      shown102.current.includes(target102.name) && shown102.said === PACK102.PACK_WORDS.said(target102.name) && !shown102.switching, JSON.stringify(shown102))
+    await pk.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await pk.keyboard.press('ControlOrMeta+s')
+    const synced102 = await pk.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED102, { timeout: 20000 }).then(() => true, () => false)
+    const after102 = await row102()
+    check('step 102 — ⌘S: projects.style_pack.preset holds the pack, the seeded brand is untouched, and the revision moved by exactly ONE (the docs\' compare-and-set)',
+      synced102 && after102?.style_pack?.preset === target102.id && after102?.style_pack?.brand?.seed === 'walk-102' && after102?.revision === (before102?.revision ?? -2) + 1,
+      JSON.stringify({ before102, after102 }))
+    // the route's one door refuses a preset this build does not know — 422, and nothing written
+    const refused102 = await pk.evaluate(async ({ url, base }) => {
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ base, docs: {}, preset: 'harbor' }) })
+      return { status: r.status, body: await r.text() }
+    }, { url: `${PREFIX}/projects/${P}/sync`, base: after102?.revision ?? 0 })
+    const still102 = await row102()
+    check('step 102 — the sync route refuses an unknown preset with a 422 in its own words, and writes nothing',
+      refused102.status === 422 && refused102.body === 'Not a Style Pack' && still102?.revision === after102?.revision && still102?.style_pack?.preset === target102.id, JSON.stringify({ refused102, still102 }))
+    await handBack(pk)
+    await packContext.close()
+    // A FRESH BROWSER opens the project in its pack: no device record, so the server's
+    const freshContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(freshContext, packViolations)
+    const fresh = steady(await freshContext.newPage())
+    await fresh.goto(await magic(emailA), { waitUntil: 'load' })
+    await fresh.goto(editorUrl(), { waitUntil: 'load' })
+    await fresh.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const opened102 = await fresh.evaluate(() => {
+      const frame = document.querySelector('section[aria-label="Canvas"] iframe')
+      return {
+        src: frame.getAttribute('src'),
+        wears: frame.dataset.pack ?? null,
+        bg: getComputedStyle(frame.contentDocument.documentElement).getPropertyValue('--bg-page').trim().toUpperCase(),
+        card: document.querySelector('[data-style-pack-card]')?.textContent ?? '',
+      }
+    })
+    check('step 102 — a fresh browser opens the project in its pack: the canvas document asked for in it (&pack=), wearing it, and the card naming it',
+      new RegExp(`[?&]pack=${target102.id}(&|$)`).test(opened102.src ?? '') && opened102.wears === target102.id && opened102.bg === target102.light.background.toUpperCase() && opened102.card.includes(target102.name),
+      JSON.stringify(opened102))
+    // and back to Paper, the way a customer would: the list and the save
+    await fresh.locator('#style-pack-change').click()
+    await fresh.locator('[data-style-pack="paper"]').click()
+    await fresh.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === 'paper', null, { timeout: 15000 }).catch(() => {})
+    await fresh.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await fresh.keyboard.press('ControlOrMeta+s')
+    await fresh.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED102, { timeout: 20000 }).catch(() => {})
+    const end102 = await row102()
+    check('step 102 — Paper is back on the server, the brand still beside it, and both contexts record zero CSP violations',
+      end102?.style_pack?.preset === 'paper' && end102?.style_pack?.brand?.seed === 'walk-102' && packViolations.length === 0, JSON.stringify({ end102, packViolations }))
+    await handBack(fresh)
+    await freshContext.close()
+    // the seed's own pack again, the brand the walk planted taken off
+    await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ style_pack: seeded102?.style_pack ?? { preset: 'paper' } }) })
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

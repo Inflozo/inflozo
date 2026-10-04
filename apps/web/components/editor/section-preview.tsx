@@ -54,6 +54,7 @@ export function SectionPreview({
   subject,
   member = 'anonymous',
   live,
+  pack,
   onAspect,
 }: {
   entry: SectionRegistryEntry
@@ -82,6 +83,9 @@ export function SectionPreview({
    *  consumer of the same reads): this card's context and rows, or null where a read it needs is not in hand — and
    *  then the card draws the sample, WHOLE, one source per card. Omitted where the canvas shows sample content. */
   live?: Live
+  /** Story 6.3 — the Style Pack in force, so a card or a tile wears the project's pack as the canvas behind it does; a
+   *  change of pack is a new address, which the frame loads and paints. Omitted on `/controls`, which has none: Paper */
+  pack?: string
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
 }) {
@@ -194,7 +198,7 @@ export function SectionPreview({
           ref={frame}
           // ONE DESIGN'S STYLESHEET, NOT THE LIBRARY'S (the owner's ruling of 2026-09-20): every frame used to carry
           // every design's CSS, so the parse cost grew with the square of the library
-          src={previewSrc(src, entry.id)}
+          src={previewSrc(src, entry.id, pack)}
           // unique per frame (axe `frame-title-unique`): two categories can hold a design of the same name
           title={`${entry.categoryTitle} — ${entry.name} preview`}
           // nothing inside is focusable or in the accessibility tree, so R-149's exception is not needed twice

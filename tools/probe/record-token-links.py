@@ -14,7 +14,8 @@ WHY. R-173 (Story 5.14) gives every plain link — an `<a>` with no class — th
 never in a theme. Standing rule 1: until it runs on a real Ghost it is a hypothesis. This is the first theme that ships
 the token block.
 
-  1. It reads the reference set from `packages/section-runtime/src/tokens.ts` (Node 24's type stripping) and refuses to
+  1. It reads the reference set from `packages/section-runtime/src/reference.ts` (`tokens.ts` until Story 6.3's DW-323;
+     Node 24's type stripping) and refuses to
      run unless `reference-tokens.css` on disk is byte-for-byte what the engine emits — the file it ships.
   2. It builds a probe theme whose `default.hbs` carries that file verbatim in `<style id="inflozo-tokens">`, then
      `{{ghost_head}}`, a section `data-bg="contrast"` (background `--bg-contrast`, words `--text-on-contrast`) holding a
@@ -49,7 +50,8 @@ import urllib.error, urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-TOKENS_TS = os.path.join(ROOT, 'packages', 'section-runtime', 'src', 'tokens.ts')
+# DW-323 (Story 6.3): Paper's reference set and its stylesheet moved off `tokens.ts` to the runtime's `./reference` subpath
+TOKENS_TS = os.path.join(ROOT, 'packages', 'section-runtime', 'src', 'reference.ts')
 TOKENS_CSS = os.path.join(ROOT, 'packages', 'section-runtime', 'reference-tokens.css')
 MEASUREMENTS = os.path.join(ROOT, '_bmad-output', 'planning-artifacts', 'architecture',
                             'architecture-Inflozo-2026-08-19', 'MEASUREMENTS.md')

@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { pinned, place } from './lib/canvas-layer.ts'
+import { chromeFace, pinned, place } from './lib/canvas-layer.ts'
+import { PACK_FAMILY_PREFIX } from './lib/pack-switch.ts'
 
 // `place(…, 'above')` is Story 5.3's pill placement: centred 8px above its words, below them when their top is within
 // 48px of the canvas viewport's top, and kept 8px inside the canvas. The harness measures the far-from-the-edge case
@@ -81,5 +82,14 @@ test('pinned: a root inside a fixed ancestor is pinned — Portal\'s pill inside
   assert.equal(pinned(pill as unknown as HTMLElement), true)
   const still = { position: 'relative', top: 'auto', ownerDocument: { body, defaultView: view }, parentElement: body, getBoundingClientRect: () => rect(0, 510, 90, 60) }
   assert.equal(pinned(still as unknown as HTMLElement), false, 'the control: the same pill under a static body is not')
+})
+
+// DW-325 (Story 6.3) — a pack cell's face is the SITE's, declared in the app for its glyphs alone: the chrome copies the
+// editor's own faces into the canvas document and never one of those, quoted or not
+test('chromeFace: the editor\'s own faces are copied into the canvas, never an `Inflozo pack *` face', () => {
+  for (const family of ['Inter', '"Bricolage Grotesque"', "'JetBrains Mono'"]) assert.equal(chromeFace(family), true, family)
+  for (const family of [`${PACK_FAMILY_PREFIX}Fraunces`, `"${PACK_FAMILY_PREFIX}Libre Caslon Text"`, `'${PACK_FAMILY_PREFIX}Inter'`]) {
+    assert.equal(chromeFace(family), false, family)
+  }
 })
 
