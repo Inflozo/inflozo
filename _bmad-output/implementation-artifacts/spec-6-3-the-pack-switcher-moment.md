@@ -2,8 +2,8 @@
 title: 'Story 6.3 — The pack-switcher moment'
 type: 'feature'
 created: '2026-10-04'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 0
 baseline_commit: '6abc26ebddc13eff84e9402b24fe43e46a81f1d2'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
@@ -701,3 +701,7 @@ value reached a command line.
 - **Deployment: `dpl_5cfzKNZxm2YqAtjA2v55p2Aq7Nfv` (https://app.inflozo.com/).**
 - **The owner's manual test** now names the full URL in every step; `owner_test` stays `pending`.
 - **No question for the owner.** Question 1 is ruled.
+
+## Owner's test findings
+
+**Passed (owner, 2026-10-04).** The owner walked `## Owner's manual test` on the deployed site and answered "passed". No findings.

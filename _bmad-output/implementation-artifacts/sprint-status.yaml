@@ -122,7 +122,7 @@ development_status:
   epic-6: in-progress
   6-1-the-token-engine-computed-or-authored-and-nothing-in-between: done
   6-2-the-twelve-presets-and-the-font-pool: done
-  6-3-the-pack-switcher-moment: review
+  6-3-the-pack-switcher-moment: done
   6-4-editing-tokens-per-mode-with-contrast-checked-live: backlog
   6-5-mode-resolution-three-inputs-one-precedence-one-file: backlog
   6-6-auto-branding-seeds-the-pack: backlog
