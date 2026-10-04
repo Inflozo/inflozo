@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
 import { defaultContent, type Mode } from '@inflozo/section-runtime'
 import { Skeleton } from '@/components/kit/loading'
-import { canvasAssets, mountSections, previewSrc, renderSection, type DesignRows, type RenderContext } from '@/lib/canvas'
+import { addressOf, canvasAssets, mountSections, previewSrc, renderSection, wearPack, type DesignRows, type RenderContext } from '@/lib/canvas'
 import { DESKTOP } from '@/lib/device'
+import type { PackChoice } from '@/lib/pack-switch'
 import type { Visitor } from '@/lib/view-as'
 
 /* ────────────────────────────────── Story 5.10 — ONE CARD'S LIVE PREVIEW (S5a's card, FR-D12, NFR-1).
@@ -84,8 +85,11 @@ export function SectionPreview({
    *  then the card draws the sample, WHOLE, one source per card. Omitted where the canvas shows sample content. */
   live?: Live
   /** Story 6.3 — the Style Pack in force, so a card or a tile wears the project's pack as the canvas behind it does; a
-   *  change of pack is a new address, which the frame loads and paints. Omitted on `/controls`, which has none: Paper */
-  pack?: string
+   *  change of pack is a new address, which the frame loads and paints. Omitted on `/controls`, which has none: Paper.
+   *  STORY 6.4 — the pack AS PAINTED (`PackChoice`): the frame is asked for at its preset's address (Paper's for a pack the
+   *  project made, `addressOf`) and WEARS the pack's own block and faces before each paint (`wearPack`, the editor's rule),
+   *  so an edited preset or a custom pack shows here too, and an edit repaints without a reload */
+  pack?: PackChoice
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
 }) {
@@ -137,6 +141,8 @@ export function SectionPreview({
     const doc = frame.current?.contentDocument
     const mount = doc?.getElementById('canvas')
     if (!doc || !mount || !icons) return
+    // Story 6.4 — the pack in force, worn before the section is drawn
+    if (pack) wearPack(doc, pack)
     doc.documentElement.setAttribute('data-mode', mode)
     try {
       // THE INSTANCE A PLACEMENT WOULD REALLY CREATE — the design's own words, no stored controls, `previewSeed`'s
@@ -173,7 +179,8 @@ export function SectionPreview({
   // — and so does a new preview subject, by its VALUE: `resolveSubject` hands back a fresh object every render
   // — and so does a new visitor (Story 5.14): the paint reads it, so it is here, which is Story 5.13's review's rule
   // — and so does the canvas's content (Story 5.18): a new `live` is a source switched or a card's rows arriving
-  useEffect(paint, [near, mode, icons, target, rows, entry, subject?.kind, subject?.slug, member, live])
+  // — and so does a pack edited in place (Story 6.4): its address is unchanged, so only a repaint wears it
+  useEffect(paint, [near, mode, icons, target, rows, entry, subject?.kind, subject?.slug, member, live, pack])
 
   const fit = wide > 0 ? wide / DESKTOP.width : 0
   const drawn = tall > 0 && fit > 0
@@ -198,7 +205,7 @@ export function SectionPreview({
           ref={frame}
           // ONE DESIGN'S STYLESHEET, NOT THE LIBRARY'S (the owner's ruling of 2026-09-20): every frame used to carry
           // every design's CSS, so the parse cost grew with the square of the library
-          src={previewSrc(src, entry.id, pack)}
+          src={previewSrc(src, entry.id, pack === undefined ? undefined : addressOf(pack.id))}
           // unique per frame (axe `frame-title-unique`): two categories can hold a design of the same name
           title={`${entry.categoryTitle} — ${entry.name} preview`}
           // nothing inside is focusable or in the accessibility tree, so R-149's exception is not needed twice

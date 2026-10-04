@@ -27,15 +27,17 @@ under `tools/matrix/test-results/` (gitignored; in CI, the `render-matrix-diffs`
 
 ## What a case is
 
-Every design × every pack × light and dark × every viewport × the design's own fixture rows — and one specimen per
-font pairing. Nothing in that sentence is a number written down: `tools/matrix/cases.mjs` derives each axis.
+Every design × every pack × light and dark × every viewport × the design's own fixture rows — one specimen per font
+pairing — and each design that can sit on the contrast ground, photographed there. Nothing in that sentence is a number
+written down: `tools/matrix/cases.mjs` derives each axis.
 
 | Axis | Where it comes from |
 |---|---|
 | Designs | the directory `packages/library/designs/{category}/{n}/`, read through `apps/web/lib/pilots.ts` — the editor's own door |
 | Packs | the owner's reference packs, `REFERENCE_PACKS` in `packages/library/packs/` — Paper, Mono and Neon (R-234, owner 2026-10-03; DW-169). Mono sits off Paper's step on buttons and on gutters, so a design's Outline button and its gutter are photographed (DW-317); `cases.test.mjs` holds the axis to the list and that pack to its steps. Each case's document is `/canvas?pack=`'s: the pack's token block and its pairing's faces |
 | Viewports | 1440 · 834 · 390 · 1440 at 200% zoom (720 CSS pixels at twice the density, photographed at CSS scale) · 1440 with reduced motion forced |
-| Specimens | one per pairing of the font pool (`packages/library/fonts/pool.json`, Appendix D §D.c) — R-233, owner 2026-10-03, DW-313: a heading at two sizes, a paragraph with a bold and an italic run, tabular figures and latin-ext letters, in Paper's palette with that pairing's faces, light, at 1440. The markup is the matrix's own (`specimenMarkup` in `cases.mjs`), so every pairing is photographed whether or not a preset wears it. Baselines in `packages/library/baselines/specimens/<pairing>/`; `MATRIX_DESIGNS=specimens` narrows to them |
+| Specimens | one per pairing of the font pool (`packages/library/fonts/pool.json`, Appendix D §D.c) — R-233, owner 2026-10-03, DW-313: in Paper's palette with that pairing's faces, light, at 1440. Since Story 6.4 (DW-324) every role is drawn at **both ends of the weights the pool declares for it** — the heading at its range's two ends (or each static weight), the body's roman and its italic at theirs — so the heaviest heading a pairing ships (Broadsheet's 900, Fieldnote's 800) is photographed. The lines: the id line; the heading at its lightest and at its heaviest; **a latin-ext line in the heading face**; a paragraph at the body's lightest roman with a bold run at its heaviest, an italic run at the italic's lightest and **a bold italic run** at its heaviest; tabular figures; and latin-ext letters in the body face. The markup is the matrix's own (`specimenMarkup` in `cases.mjs`), so every pairing is photographed whether or not a preset wears it — and since 6.4 any of them can be picked in the Style Pack editor. Baselines in `packages/library/baselines/specimens/<pairing>/`; `MATRIX_DESIGNS=specimens` narrows to them |
+| The contrast ground | Story 6.4 (DW-324, DW-317): a design whose Background offers `contrast` **and** whose stylesheet draws a `--button-fill` button is photographed on that ground too — its first fixture row with `bg` set to `contrast` — under each reference pack whose Button style is Outline (Mono today), light and dark, at 1440, where an Outline button's border and label must hold on the band. Read off the design and the packs (`onContrast`, `outlinePacks` in `cases.mjs`), never listed; the baseline is the row's name with `-bg-contrast` |
 | Fixture rows | what the design is: it paginates → first, middle, last and empty feed pages; its markup gates by member → one row per visitor; its category carries Member visibility → one row per Show-to audience seen by a visitor it hides from, read through `carriesMemberVisibility` (R-113's register, `packages/library/control-groups.json`), the rule the editor and `/pilots` draw Show to by (DW-171); its binding context is `post` → the style-guide post (and page) |
 
 Each case is rendered exactly as the editor draws it: `renderCanvas`, given the input that `renderSection()` in `apps/web/lib/canvas.ts` builds for `/pilots` and the editor (the rows through its `shownRows()`), written
@@ -59,6 +61,13 @@ their real origin; nothing else is on the network. Baselines live in
   `<img>` with no alt; if axe does not report it, the case aborts — a scan that cannot see a planted fault is not a
   result. When a design first draws a post body (`{{content}}`), the scan must stop at its edge: Ghost writes that
   markup, not the theme.
+- **A specimen line not drawn in the pool's own face** *(Story 6.4, DW-324)*. Each line of a specimen names its role's
+  family (`data-family`), and the runner asks Chromium which faces it drew that line's words with
+  (`CSS.getPlatformFontsForNode`): every one must be the pool's own file (`isCustomFont`, an `@font-face` the document
+  declares) of that family. The family alone cannot tell — the image installs a system Inter — and executed at 6.4's
+  Create, the pool's Fraunces reports `isCustomFont: true` and a fallback `false`. Its positive control comes first: a
+  line set in a family the document never declares must be caught, or the case aborts. The totals line says how many
+  lines were held.
 - **A case that scrolls sideways** *(Story 6.1, FR-F2 · FR-G4: a section spans the site width and stays responsive
   within it)*. After the photograph, every drawn case measures the document's `scrollWidth − clientWidth` and fails
   above zero, naming the overflow in pixels — checked at every viewport of every design. Its positive control comes

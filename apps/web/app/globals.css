@@ -76,6 +76,7 @@
   --color-danger-panel-ink: #8E2C30;
   --color-danger-panel-line: #F0CFD0;
   --color-scrim: rgba(28,27,26,.4);
+  --color-ink-wash: rgba(28,27,26,.05);  /* a quiet button's hover — S7c's Cancel (:1778), Story 6.4 */
   /* the feedback banners' hairlines — Kit :238-241 draws each as its own solid hex */
   --color-sky-line: #D4E0FA;
   --color-mint-line: #BFE7D6;
@@ -110,6 +111,9 @@
   --shadow-modal: 0 12px 40px rgba(28,27,26,.25);  /* every modal and sheet in the export sits at .25,
                                                       not lg's .14 — D4a, D4b and S12c all draw it */
   --shadow-hairline-inset: inset 0 0 0 1px rgba(28,27,26,.12);
+  --shadow-swatch: inset 0 0 0 1px rgba(28,27,26,.14);  /* S7c's 36px colour swatches (:1696-1771), Story 6.4 */
+  --shadow-thumb: 0 1px 3px rgba(0,0,0,.4);             /* S7d's colour square thumb (:1937), Story 6.4 */
+  --shadow-hue-thumb: 0 1px 3px rgba(0,0,0,.35);        /* S7d's hue strip thumb (:1940), Story 6.4 */
   --shadow-canvas-page: 0 4px 16px rgba(28,27,26,.10);  /* the editor's page card — S4a :63 (Story 5.1) */
   --shadow-panel-overlay: -12px 0 40px rgba(28,27,26,.18);  /* the Controls overlay below 1280 — D8 :121 (Story 5.22) */
   --shadow-focus: 0 0 0 2px #C2381F;   /* the one ring, everywhere (Calibration Set, 2026-09-04) */

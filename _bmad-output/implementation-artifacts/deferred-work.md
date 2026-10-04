@@ -2023,6 +2023,11 @@ note (Story 6.4's Create, 2026-10-04): the `also:` line's decision, as 6.4 plans
   re-validated by `isAccent`, and nothing is written until it is picked. The editor never clears `brand` and never
   re-derives a pack from it. The logo is left for Story 6.6's seed, and the menu for the epic that places a header.
   The editor writes `style_pack.preset` and `style_pack.packs` and nothing else.
+note (Story 6.4's Dev, 2026-10-04): built as planned. The colour picker's "From your site" dot is the linked site's
+  stored `site_settings.brand.accent` through `isAccent` (`read.ts`'s `siteAccentOf`, `#RRGGBB`), absent where there
+  is none, and a press only sets the draft. `sync_project_doc` sets `preset` and `packs` and leaves every other key, so
+  `brand` survives a save (the deployed walk's step 103 seeds one and reads it back untouched). The dashboard card still
+  paints the site's accent over an own pack's (`placeholderFor`, FR-C4). Nothing here closes this entry.
 
 ### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
 
@@ -8485,7 +8490,7 @@ plain: The Style Pack panel's drawing calls two settings by other names than the
   "Spacious" for Airy density, with "Title font" and "Corners"), has no Pill button and no rows for gutters, shadow or
   link style, and names the colour of words on the accent "Contrast". The story that builds the panel picks one name
   per thing and has the missing rows drawn.
-status: open
+status: done 2026-10-04 (Story 6.4)
 severity: medium
 origin: Story 6.1's Create (2026-10-03), checked in the frame: S7c's "Contrast" swatch is `#FFFFFF` beside Tangerine's
   light accent and `#1F1410` beside its dark one, so it is on-accent and the seven roles are FR-E1's under one other label
@@ -8509,6 +8514,14 @@ ruling (owner, 2026-10-04, Story 6.4's Create, Question 1, option 2): *"Skip the
   stay two rows (Heading font, Body font).
 ruling (owner, 2026-10-04, Story 6.4's Create, Question 2, option 1): *"Base everywhere."* — R-237. The pack editor's
   first colour is "Base", as in a section's Background setting. Story 6.4's Dev builds both and closes this entry.
+resolution: Story 6.4's Dev (2026-10-04). The panel's rows are Appendix C's — Site width, Radius, Spacing density,
+  Gutters, Button style (Pill last), Shadow, Link style, with Normal and Airy — plus S7a's two font rows (Heading font,
+  Body font, one pairing menu) and Pill radius; the seven colours per mode are Base · Surface · Text · Muted · Border ·
+  Accent · On-accent (R-237), with Image scrim; S7d's stray four-swatch row is not built. One list, `lib/pack-edit.ts`'s
+  `PACK_EDIT_WORDS`; `pack-edit.test.ts` holds the rows to `prd.md` Appendix C and to `SCALES`, the font rows and Base,
+  and refuses Standard, Spacious, Corners, Title font, Background and Contrast. The undrawn parts are built from the
+  drawings that exist (R-236), held by the keyboard journey's computed-style stop `R-236 ·` behind a 1px control, and
+  approved side by side by the owner in the Dev session (Story 6.4's Question 4, 2026-10-04).
 
 ### DW-311: Appendix D pairs Paper and Ink with faces no drawing uses
 
@@ -8623,6 +8636,8 @@ reason: `--button-text` equals `--text-on-accent` and `--space-gutter` equals `-
   `--button-fill` button on a contrast ground answers it there, as A22 #1 does.
 ruling (owner, 2026-10-03, Story 6.2's Create, Question 4, option 1): R-234 makes Mono a reference pack — outline
   buttons and tight gutters, off Paper's step on both. Story 6.2's Dev closes this entry.
+note (Story 6.4's Dev, 2026-10-04): the contrast-ground answers this entry added are now photographed — A4 #13 and
+  A22 #1 on `data-bg="contrast"` under Mono, light and dark, at 1440 (DW-324's derived contrast-ground cases).
 
 ### DW-318: the dark link proof on the two Ghost sites cannot say which of the two dark switches worked
 
@@ -8725,7 +8740,7 @@ plain: The sample photograph per font pairing draws headings at two fixed weight
   only, so the heaviest headings you approved for Broadsheet and Fieldnote, a bold italic, and accented letters in a
   heading font are never photographed. Nothing checks that a photograph was drawn in Inflozo's own font file rather
   than a stand-in, except for Paper. And no photograph shows a section's button on the dark band.
-status: open
+status: done 2026-10-04 (Story 6.4)
 severity: medium
 origin: Story 6.2's Review (2026-10-03), Blind Hunter + Verification Gap
 owner: Story 6.4 (Editing tokens, per mode, with contrast checked live), whose card names this entry.
@@ -8743,6 +8758,18 @@ note (Story 6.4's Create, 2026-10-04): planned. Each specimen draws every role a
   Every design whose `bg` offers `contrast` and whose stylesheet draws a `--button-fill` button is photographed on
   contrast under each Outline reference pack (Mono), in both modes. All of it is one mass rebaseline behind his sampled
   review in Dev.
+resolution: Story 6.4's Dev (2026-10-04). `tools/matrix/cases.mjs`'s specimen draws every role at both ends of the
+  weights `pool.json` declares (`weightEnds`: the heading's range or static weights, the body's roman and italic), a
+  bold italic run and a latin-ext line in the heading face, each line naming its family; `matrix.spec.mjs` holds every
+  line to the faces Chromium drew it with — `isCustomFont` and the role's family (or the family and a style: the
+  instanced Chivo names itself "Chivo Medium") — behind a positive control (a line in a system face must be caught).
+  `onContrast` derives the designs photographed on the contrast ground (a22/1 and a4/13 today: `bg` offers `contrast`
+  and the stylesheet draws a `--button-fill` button) under every Outline reference pack (`outlinePacks`: Mono), light
+  and dark, at 1440. `cases.test.mjs` holds both derivations; `docs/render-matrix.md` describes them. The mass rebaseline
+  ran inside the pinned image: every pairing's specimen moved and the contrast-ground photographs are new, nothing
+  else (one photograph re-taken one pixel off by 1/255 was put back as it was); the gate is then green — every case,
+  zero axe violations, every specimen line in the pool's own face. The owner approved the sampled review in the Dev
+  session (Story 6.4's Question 4, 2026-10-04), and the baselines land in their own commit right after the Dev commit.
 
 ### DW-325: the Style Pack card, the list and the Pack menu have only ever been run with Paper
 

@@ -336,6 +336,11 @@ case join the render matrix behind the owner's sampled review.
 **Both questions are ruled** (R-236, R-237; see Design Notes' "Rulings"), **so Dev can open.** Nothing waits on a
 drawing.
 
+**Who does what in Dev.** The implementation builds and tests everything below, and leaves on disk the R-236
+screenshots and DW-324's before/after pairs, naming their paths. The orchestrating session publishes the private review
+page, asks the owner (R-83), and makes the Dev commit, the baselines-only commit and the push after his approval: nothing
+is committed or pushed before it, and no deployed walk runs before the Dev push has deployed.
+
 **Execution:**
 - [x] **SCHEMA FIRST, ALONE (R-99)**. Files: `supabase/migrations/20261004200000_sync_style_pack_packs.sql`, `SCHEMA.sql`,
   `RLS-TEST.sql` and `supabase/tests/rls.sql`.
@@ -360,14 +365,14 @@ drawing.
   - Then prove two calls as a throwaway user, deleting the user afterwards: the deployed code's four-named-argument call
     still applies, and a five-argument call writes `packs`.
   - Push `Story 6.4 - Schema - …`.
-- [ ] `packages/section-runtime/src/tokens.ts`, `index.ts`, `packs.test.ts`. Export `AA_PAIRS`, the five role pairs, and
+- [x] `packages/section-runtime/src/tokens.ts`, `index.ts`, `packs.test.ts`. Export `AA_PAIRS`, the five role pairs, and
   make 6.2's sheet read it, with its control intact (Tangerine light on-accent `#FFFFFF` still caught). This makes one
   list for the preset sheet and the live warning.
-- [ ] `packages/section-runtime/src/ad36.test.ts`. Add AD-36's instance "a project's own Style Pack record (Story 6.4)":
+- [x] `packages/section-runtime/src/ad36.test.ts`. Add AD-36's instance "a project's own Style Pack record (Story 6.4)":
   `packTokens` refuses each hostile authored value by name, and the legitimate record emits. The hostile values are a
   colour carrying `;}`, a pill radius carrying `;}`, a scrim outside 0–1, a step not in `SCALES`, and a family list with
   an unbalanced quote.
-- [ ] `apps/web/lib/pack-edit.ts` (new). It is pure and reachable by `node --test`; it imports the runtime index,
+- [x] `apps/web/lib/pack-edit.ts` (new). It is pure and reachable by `node --test`; it imports the runtime index,
   `lib/pack-switch.ts` and `lib/zod.ts`. It is the client's one home for editing, and holds:
   - `PackRecord` and `packRecordSchema`. The schema is strict: name trimmed, 1–40 characters; pairing `D<n>`; each step
     one of `SCALES`' keys; `pillRadius` the engine's length grammar; seven `#RRGGBB` colours and a 0–1 scrim per mode.
@@ -379,7 +384,7 @@ drawing.
   - `hexToHsv` and `hsvToHex`.
   - `ROLE_TOKENS`, moved here; `lib/style-pack.ts` and `lib/controls-review.ts` re-export it.
   - `PACK_EDIT_WORDS`, the Design Notes' table.
-- [ ] `apps/web/lib/style-pack.ts`:
+- [x] `apps/web/lib/style-pack.ts`:
   - `stylePackSchema` carries `packs`.
   - `ownPacksOf(stylePack)`: the valid records under valid ids, junk dropped; it never throws.
   - `packIdOf(stylePack)`: the id in force. That is a preset, or a custom id that `ownPacksOf` holds; anything else is
@@ -391,7 +396,7 @@ drawing.
   - `pairingGlyphFacesCss(base)`: the prefixed roman faces of every pool family that the layout's `packFacesCss` does
     not already declare, for the two font rows and the pairing menu. A browser fetches only the faces it draws.
   - `placeholderFor` paints an own pack's light background, text and accent. The brand accent still wins (FR-C4).
-- [ ] `apps/web/lib/journal.ts` and `apps/web/lib/local-store.ts`:
+- [x] `apps/web/lib/journal.ts` and `apps/web/lib/local-store.ts`:
   - `PACK_RECORDS_KEY` (`'pack-records'`, never a template key). Its entries' `before` and `after` are the whole `packs`
     map.
   - `Restore.packs`.
@@ -399,25 +404,25 @@ drawing.
   - `carries`, `owedOf` and `sendBody` carry `packs`; `ownFlushLanded` compares them.
   - `hydratedPacks(how, local, cloud)` follows `hydratedPreset`'s rule.
   - `LocalRecord.packs?` and `MetaRow.packs?`. A record from before 6.4 has none, and takes the server's.
-- [ ] `(authed)/projects/[id]/sync/route.ts`:
+- [x] `(authed)/projects/[id]/sync/route.ts`:
   - It takes an optional `packs`, validated before the write: every entry must survive `ownPacksOf`, else 422 "Not a
     Style Pack".
   - `preset` is a library preset or a `CUSTOM_ID`, and a body carrying only `packs` is a write.
   - It passes `p_packs`.
   - The adopt read compares `style_pack.packs` too (`stable`), under the same one-write-past rule.
-- [ ] `(editor)/read.ts` and `app/harness/editor/layout.tsx`:
+- [x] `(editor)/read.ts` and `app/harness/editor/layout.tsx`:
   - The editor is handed:
     - `preset: packIdOf(style_pack)` and `ownPacks: ownPacksOf(style_pack)`;
     - `packs: packChoices()`, `pairings: pairingChoices()` and `pairingFaces`;
     - `siteAccent`: the linked site's stored brand accent, through `isAccent`, as `#RRGGBB`, else null.
   - In the harness, `x-inflozo-harness-pack: custom-1` opens on a fixture custom pack (Paper's record renamed, with an
     accent of its own), and `-site` supplies a site accent.
-- [ ] `apps/web/lib/canvas.ts`, `components/editor/section-preview.tsx`, `design-picker.tsx`, `section-picker.tsx`:
+- [x] `apps/web/lib/canvas.ts`, `components/editor/section-preview.tsx`, `design-picker.tsx`, `section-picker.tsx`:
   - The `pack` prop becomes the in-force `PackChoice`.
   - A preview asks for its preset's address (Paper's for a custom pack), and on load wears the pack's `tokens` and
     `faces` by the editor's own rule; `wear` moves into a shared function.
   - So the previews and the ring's tiles wear an own pack.
-- [ ] `(editor)/style-pack.tsx` and `components/kit/pack-cell.tsx`:
+- [x] `(editor)/style-pack.tsx` and `components/kit/pack-cell.tsx`:
   - The roster lists the twelve presets in §D.d's order, each shown as its own record where one exists, then the custom
     packs by number.
   - A preset cell's corner pencil, a custom cell's name-and-pencil, and "+ New pack" are buttons OUTSIDE the listbox,
@@ -431,7 +436,7 @@ drawing.
       the Kit's `Segmented` in S7a's dense geometry.
     - **Pill radius**: the Kit's `Stepper` in a row of the same shape.
   - All of it sits inside `ReadOnly` for a reader.
-- [ ] `(editor)/pack-editor.tsx` (new) — the Edit pack and New pack dialog, S7c and S7d as drawn, with the "Built from"
+- [x] `(editor)/pack-editor.tsx` (new) — the Edit pack and New pack dialog, S7c and S7d as drawn, with the "Built from"
   table for every part they do not draw:
   - **The dialog.** It is portalled into `[data-editor]` and opened with native `showModal()`. Focus starts on the name
     field for New pack and on the first swatch for Edit pack. Pack name is a `TextInput` with a 40-character limit.
@@ -455,7 +460,7 @@ drawing.
     - Save pack with an empty name puts the `TextInput` error "Name your pack to save it." and saves nothing. Saving an
       unchanged draft closes with no edit.
   - **Colours** are spelled `white`, `black`, `transparent` and computed `hsl()`, never a literal (`tokens.test.ts`).
-- [ ] `(editor)/editor.tsx`:
+- [x] `(editor)/editor.tsx`:
   - `latest.packs` sits beside `latest.preset`, and every handler writes it first (R-210).
   - The roster is derived from `packs` and the own records (`choiceOf`, memoised per record); `packOf` reads `latest`.
   - `commitPacks(next, txn?)` goes through `heldBack` and `journalise(PACK_RECORDS_KEY, …)`. An equal map makes no entry,
@@ -470,7 +475,7 @@ drawing.
   - Remix's Style Pack re-roll draws from the whole roster.
   - The previews, the ring and the swatches take the in-force choice.
   - The dialog is mounted, and each sentence is said once the change has landed.
-- [ ] Unit tests:
+- [x] Unit tests:
   - `apps/web/pack-edit.test.ts` (new):
     - the schema refuses each vector and accepts the legitimate record.
     - `CUSTOM_ID` and `nextCustomId`.
@@ -498,7 +503,7 @@ drawing.
     - the route refuses a bad `packs` before the write and passes `p_packs`.
     - 6.3's regexes are re-pinned.
   - `pilots.test.ts`: `packChoices` still equals `/canvas?pack=`.
-- [ ] DW-324 — `tools/matrix/cases.mjs`, `matrix.spec.mjs`, `cases.test.mjs` and `docs/render-matrix.md`:
+- [x] DW-324 — `tools/matrix/cases.mjs`, `matrix.spec.mjs`, `cases.test.mjs` and `docs/render-matrix.md`:
   - **The specimen** draws each role at both ends of its declared weights, read from `pool.json`: the heading's `range`
     ends or each static weight, and the body's roman and italic ends. It adds a bold italic run and a latin-ext line in
     the heading face.
@@ -511,7 +516,7 @@ drawing.
   - **The rebaseline.** One mass rebaseline, taken with `--update` in the image. The owner reviews it in the session: a
     page of the specimens and the new cases, before and after. It is committed baselines-only after the Dev commit and
     pushed with it.
-- [ ] `tools/keyboard/journey.spec.mjs`, keyboard only. New stops:
+- [x] `tools/keyboard/journey.spec.mjs`, keyboard only. New stops:
   - **Into the dialog.** Tab from the list reaches a pencil. The dialog opens, with focus where the Design Notes put it.
   - **The colour picker.**
     - A swatch opens the picker; `#1E6BFF` typed in the hex field moves the swatch.
@@ -528,7 +533,12 @@ drawing.
   - **Reading along.** The reader's pencils, "+ New pack" and rows are disabled.
   - **At 720 × 900.** ⋯ → Style Pack shows the rows, and the dialog opens.
   - **Reduced motion.** An edit's restyle is instant.
-- [ ] **R-236's check: the build matches its drawings, measured and seen.**
+  - **At 834 with touch** *(Dev, 2026-10-04 — in `tools/keyboard/floor.spec.mjs`, whose D8a sweeps may tap)*: ⋯ → Style
+    Pack, then Edit pack, then the colour picker, each swept for D8a's 44 px; a pencil's 17 px circle stays where S7a
+    draws it, its target is centred on it, and a tap on the middle of a pack chooses that pack.
+- [x] **R-236's check: the build matches its drawings, measured and seen.** *(Dev, 2026-10-04: the measured half green
+  behind its 1px control; seen side by side on the private review page and approved by the owner in the Dev session,
+  Question 4.)*
   - **By computed style.** A stop in `tools/keyboard/journey.spec.mjs` runs on the harness at 1440. It opens each state:
     the panel with its rows, the pairing menu, Edit pack, New pack showing its name error, the colour picker and the
     warning. For each, it reads every value the "Built from" table gives (sizes, radii, paddings, type, colours,
@@ -539,7 +549,9 @@ drawing.
     - They share the private review page with DW-324's rebaseline, and the owner approves both in the Dev session with
       one R-83 ask, before the Dev commit.
     - A mismatch he names is fixed first.
-- [ ] Deployed walks (R-82):
+- [x] Deployed walks (R-82): *(Dev, 2026-10-04: written and syntax-checked — step 103, the lock walk's 6.4 checks and
+  `duplicate-carries-packs`. They are NOT run yet: they run at Review, once the Dev push has deployed, and their results
+  go under `## Verification`. No ledger entry is closed on them.)*
   - `tools/probe/run-verify-editor.cjs`, step 103:
     - Edit Tangerine's accent through its hex field, Save, ⌘S. Read back `style_pack.packs.tangerine.light.accent`,
       with the seeded `brand` untouched and the revision +1.
@@ -553,7 +565,7 @@ drawing.
     - A throwaway user is made Pro through `entitlements.state`, as `pro-connect-t3` does.
     - It holds a project whose `style_pack` carries an own pack.
     - The project menu's Duplicate runs, and the copy's `style_pack`, read off the pooler, equals the source's.
-- [ ] Propagation:
+- [x] Propagation:
   - In `deferred-work.md`, close DW-310 and DW-324 with their proof, and add the DW-66 note.
   - Update `epic-6-context.md`.
   - `EXPERIENCE.md`: the S7 row says the parts no frame draws are built from the existing drawings (R-236). The
@@ -597,6 +609,43 @@ drawing.
 
 ## Spec Change Log
 
+- **2026-10-04 · Dev — the frames draw in CSS's content-box.** Measured on the frames themselves: S7c's `width:520px;
+  padding:28px` is a 576px box, S7d's 206px picker a 232px one, S7a's 15px pencil 17 across, the 40px name field 42 tall.
+  The app is border-box, so each such part says `box-content`: its computed size is the table's value (520, 206, 15,
+  40…) and the box drawn is the frame's. The 520 sheet is `kit/dialog.ts`'s `wideSheet`; the connect dialog, which drew
+  the same 520 border-box (520 outer, 56px narrower than its own S11b frame), is left as approved — flagged, not changed.
+- **2026-10-04 · Dev — words the table did not give, each the smallest that works (R-170 kept: one list).** The warning's
+  clearing is said as "Nothing is hard to read now." (the Boundaries ask it to be announced; the table words only the
+  warning). The picker's two sliders are named "{Role}, {Mode} — saturation and brightness" and "— hue", their values
+  "saturation n %, brightness n %" and "hue n°". All in `PACK_EDIT_WORDS`.
+- **2026-10-04 · Dev — the warning's glyph marks the WORDS that are hard to read** (a failing pair's foreground: Text,
+  Muted or On-accent), as the owner's test step 4 reads ("The Text colour carries a small warning sign").
+- **2026-10-04 · Dev — the Kit grew, and drew nothing new:** `Segmented` a `dense` variant (S7a's geometry);
+  `StepperBox`, the Kit stepper's own box, for rows that place their own label; `TextInput` S7c's 40 and S7d's 30
+  (content-box) and `labelHidden`; `FontRow` live; `Menu` a row's `contents` and a `width`; `Banner` `live={false}`;
+  `PackPencil`, `CustomName` and a live `NewPackCell` (its frame's coral-deep words on hover); `Clipboard`, S7d's own
+  glyph. The tokens `ink-wash`, `swatch`, `thumb` and `hue-thumb` joined `globals.css` and DESIGN.md.
+- **2026-10-04 · Dev — a custom pack's name is one line**, ending in an ellipsis where the 280px panel (S7a draws 320)
+  cannot hold it, with the whole name as the button's title; a forty-character name never makes its row taller.
+- **2026-10-04 · Dev — the harness's `custom-1`** is Paper renamed "Harness Pack" wearing Ocean's light accent AND its
+  on-accent, so the fixture opens with nothing hard to read (Tangerine's accent under Paper's ink read 4.1:1).
+- **2026-10-04 · Dev — DW-324's font check accepts a style after the family.** In the image the instanced Chivo names
+  itself "Chivo Medium" (its own name table) while `isCustomFont` is true; the check is `isCustomFont` and the family, or
+  the family and a style.
+- **2026-10-04 · Dev — the rebaseline moved one photograph it should not have, by one pixel at 1/255**
+  (`a22/1/neon-dark-1440-reduced-motion-visitor-anonymous.png`, `--update`'s re-take-all): put back as it was; the gate is
+  green either way.
+- **2026-10-04 · Dev — the doors on a touch screen (D8a, executed at 834 × 1112 with touch).** The editor's 44 px rule
+  made each pencil, then its own bordered button, a 46 px circle over its pack's name, and pushed a custom pack's name
+  below its line onto the dots; ⋯ → Style Pack had never been swept on touch. Now the circle is a drawing inside the
+  button, the target is centred on it, and the name keeps its line. `floor.spec.mjs`'s D8a sweep opens the Style Pack
+  list, Edit pack and the picker. Controls, each a scratch edit restored: the circle grown with its target, red at "S7a's
+  circle"; the target grown from the circle's corner, red at "centred"; and with that check off, red at "a tap on the
+  middle of a pack chooses it", where the corner-grown target covered the middle.
+- **2026-10-04 · Dev — two stops beyond the list:** the I/O matrix's "Reload, unsynced" row (an own pack's edit kept on
+  the device and undone after F5), and an undo or redo whose map is passed through `ownPacksIn` like the hydrate's —
+  the journal's copy reaches CSS too (AD-36).
+
 ## Design Notes
 
 **Why full records keyed by id, not overrides.** A record has the shape §D.d's presets have in `packs.json`, so the
@@ -620,6 +669,10 @@ S7a draws them:
 - a preset's corner pencil;
 - a custom pack's dashed name with its inline pencil;
 - the dashed "+ New pack" cell.
+
+On a touch screen each door is the editor's 44 px target (D8a's one rule in `globals.css`), and the drawing does not
+move: a pencil's circle is the button's drawing, not its box, and its target is centred on it, so the middle of a pack
+still chooses that pack; a custom pack's name keeps its line, its target running down over the dots.
 
 Keyboard order is the list (one stop), then each Edit pack button, then "+ New pack", then the rows. S7a draws a custom
 pack's name with a dashed underline and a text cursor, which says "rename". So that button opens Edit pack with focus
@@ -743,7 +796,7 @@ it, and it wins over a drawing's word wherever the two differ.
 
 ## Questions for the owner
 
-All three are ruled; nothing is open.
+Every question is ruled; nothing is open.
 
 ### Question 1 — Parts of the Style Pack editor were never drawn. May I hand you a Claude Design prompt to draw them first?
 
@@ -816,6 +869,25 @@ today, works exactly as before.
 `SUPABASE_DB_POOLER_URL` in this session, read back, and proved on production before any code (the Schema task and
 `## Verification`).
 
+### Question 4 — Does the built Style Pack editor match its drawings, and may the re-taken photographs become the reference? (R-236, DW-324)
+
+**In plain English.** You ruled that this story skips a new drawing and copies the drawings that exist, exactly (R-236),
+and that you see the result side by side before the Dev commit. This story also re-takes the automatic picture check's
+reference photographs: one font sample per pairing, now with the heaviest and lightest weights, a bold italic and
+accented letters, and four new pictures of a button on the dark band. Both were on one private review page:
+https://claude.ai/artifact/E9C3w7ZPe57KgaE2q9ZgGW.
+
+**An example.** If a font sample showed the wrong font, or a row looked bigger than in the drawing, you would choose 2
+and name the picture; it would be fixed and shown again before anything was committed.
+
+1. **Approve both (RECOMMENDED).** The editor matches its drawings, and the new photographs become the reference. Then
+   the Dev commit, the photographs-only commit after it, and one push of both.
+2. **Fix something first.** Name the picture and what looks wrong; it is fixed and shown again before anything is
+   committed.
+
+**Ruled: option 1 (owner, 2026-10-04).** *"1. Approve both"*, asked in the Dev session over the review page. R-236's
+side-by-side half is done, and the baselines land in their own commit (`docs/render-matrix.md`, the rebaseline rule).
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build, on a laptop at full width, in **Pilot sections**. Steps 12
@@ -883,6 +955,86 @@ already hold their one project, so the deployed walk proves duplication instead.
   call with Tangerine's record (light accent `#1E6BFF`) answered `{applied: true, revision: 3}`, and `style_pack` now
   holds `brand`, `packs` and `preset`, with `packs.tangerine.light.accent` `#1E6BFF`; (d) the control: anon (no session)
   answered 401 `42501` and the revision stayed 3. The user was deleted (200); the user count was 13 before and after.
+
+**Executed — Dev phase (2026-10-04), on the harness and in the image; nothing deployed, committed or pushed:**
+- `pnpm check` -- exit 0 on the final tree: lint, typecheck and every package test, among them `pack-edit.test.ts`,
+  the 6.4 cases of `journal.test.ts`, `style-pack.test.ts` and `editor.test.ts`, `packs.test.ts` (6.2's Tangerine control
+  still caught, now through `AA_PAIRS`), `ad36.test.ts`'s own-pack vectors, and `tools/matrix/cases.test.mjs`.
+  **Controls**, each in a scratch copy: with `hardToRead`'s floor taken out, the 4.46 case printed 4.5 and failed; with
+  `ownPacksIn` keeping every entry, the hostile-record cases failed.
+- `pnpm build && node tools/check-traces.mjs` -- exit 0: "every route carries its files", and "no client chunk … carries
+  the font pool's record, and the runtime's index reaches no preset" (DW-323).
+- `bash supabase/tests/run-rls-gate.sh` -- exit 0, every Story 6.4 PASS line as at Schema.
+- `bash tools/matrix/run-matrix-gate.sh --update`, in the image -- every pairing's specimen moved and the contrast-ground
+  photographs were new; one photograph moved that should not have (the Spec Change Log) and was put back. Then
+  `bash tools/matrix/run-matrix-gate.sh` -- exit 0, its own line: "0 violations · 0 of 394 drawn cases scroll sideways ·
+  300 specimen lines in the pool's own faces (each behind its positive control) — passed". **Before and after pairs of
+  every moved photograph are on disk for the owner's sampled review; the baselines are not committed before it.**
+- `pnpm keyboard`, whole -- exit 0 on the final tree, every journey and floor test passed, with no edit landing mid-run.
+- **R-236, by computed style** -- the stop at 1440 green. **Control:** one 1 px change to a gap in a scratch edit turned it
+  red; restored, green.
+- **R-236, by eye** -- a screenshot of each state at 1440 and of the overlay at 834 with touch, each beside its drawing
+  (S7a, S7c, S7d, the Kit's cards, D8a), shown on the private review page with DW-324's pairs and **approved by the
+  owner in the Dev session (Question 4)**.
+- **D8a with touch** -- `floor.spec.mjs`'s sweeps over the Style Pack list, Edit pack and the picker green on both
+  tablets; the three controls in the Spec Change Log each turned it red at its own check.
+- **The I/O matrix's remaining rows, each a stop that ran and passed** (the matrix audit, 2026-10-04). In
+  `journey.spec.mjs`, keyboard only:
+  - **Edit another pack:** Tangerine's record is stored and its cell's dots take the colour; the canvas neither changes
+    nor restyles; "Changed Tangerine."; one ⌘Z.
+  - **Discard:** Cancel and ✕, each after a colour changed in the draft, journal nothing and leave the canvas as it was,
+    with focus back on the pencil; a New pack cancelled gives focus back to "+ New pack".
+  - **Reset to defaults:** the library's whole record goes into the draft, name included; Save pack drops `packs.paper`
+    from the device's record; the canvas takes the library's accent; one edit.
+  - **Paste:** refused without the permission, focus lands on the hex field with "Press ⌘V to paste into the hex
+    field."; granted, the clipboard's `#2F4A3E` fills the field and the swatch.
+  - **From your site:** no linked site, no row; a linked site's stored accent becomes the draft's colour.
+  - **A pairing's late face:** the words and `--font-heading` land after `FACES_WAIT_MS`, without the faces, and the
+    face swaps in on arrival with no second restyle.
+  - **Remix · Style Pack:** with Paper in force, the draw's top end lands on the project's own pack, the roster's last;
+    one ⌘Z.
+  - **Lock lost mid-dialog:** Edit pack joins DW-241's openers; losing the lock closes it, journals and keeps nothing,
+    and leaves no form inside it.
+  - In `floor.spec.mjs`, which taps: **the backdrop** closes Edit pack and journals nothing.
+  - **Controls**, each a scratch edit, restored: Cancel saving; every save restyling; Reset keeping the name; a refused
+    paste saying nothing; the site's dot doing nothing; Remix drawing from the presets alone; the dialog's close keeping
+    its form; the backdrop not closing; the faces' wait taken out. Each turned its own stop red at its own check. Under
+    them the touch walk also showed a race in the test itself (typing before the picker's hex field held focus); it now
+    waits for that focus. No row showed a defect in the product.
+- **The deployed walks** (`run-verify-editor.cjs` step 103, `run-verify-lock.cjs`'s 6.4 checks,
+  `run-verify-dashboard.py` `duplicate-carries-packs`) -- written and syntax-checked, not run: they run once the Dev push
+  has deployed.
+
+**Dev's matrix audit and final gates (2026-10-04, the orchestrating session, Node 24.18.1):**
+- **The I/O matrix, row by row, each to a check that ran and passed:** edit the pack in force, nothing changed and New
+  pack saved — the journey's Save pack and New pack stops; edit another pack, discard, Reset to defaults, paste, From
+  your site, lock lost mid-dialog, a pairing's late face, Remix · Style Pack — the stops added at this audit (above), and
+  the backdrop in `floor.spec.mjs`; hard to read and live, not chatty — the warning stop; New pack and New pack, no name —
+  the New pack stop; a row — the rows stop and the reduced-motion stop; a pairing — the rows stop; hex field —
+  `pack-edit.test.ts`'s hex cases and the first 6.4 stop (`blue`, `#1af`); read-only — the reading-along stop; reload,
+  unsynced — the reload stop; another session's edit and a record from before 6.4 — `journal.test.ts`' hydrate cases;
+  the flush — `journal.test.ts`' payload cases, `editor.test.ts`' route check and the RLS gate's 6.4 block; a hostile body
+  — `pack-edit.test.ts`' schema cases, `ownPacksIn`'s and the route's check (the live route's 422 is step 103's, at
+  Review); a hostile stored value — `style-pack.test.ts`' `ownPacksOf` and `packIdOf` cases; duplicate — `projects.test.ts`'
+  "a duplicate carries every column the grant allows" (the deployed copy is `duplicate-carries-packs`, at Review); below
+  1280 — the 720 × 900 stop and `floor.spec.mjs`' D8a sweep; an own pack in force — the stop opening on `custom-1`.
+- `pnpm check` -- exit 0 on the final tree (`apps/web`, `section-runtime`, `library`, `ghost-shim`, `theme-compiler` and
+  the root's tests, each 0 fail).
+- `pnpm build` then `node tools/check-traces.mjs` -- exit 0: "every route carries its files", and "no client chunk of 36
+  carries the font pool's record, and the runtime's index reaches no preset".
+- `bash supabase/tests/run-rls-gate.sh` -- exit 0, every Story 6.4 assertion passing, 0 FAIL.
+- `bash tools/matrix/run-matrix-gate.sh` (no `--update`), in the image, with the rebaselined photographs in the tree --
+  exit 0, its own line: "574 cases · 5 designs · 30 pairing specimens · 4 on the contrast ground · 3 packs · 0
+  violations · 0 of 394 drawn cases scroll sideways · 300 specimen lines in the pool's own faces (each behind its
+  positive control) — passed". Every before and after on the review page is pixel-identical to `git show HEAD:` and to
+  the working tree's baseline (compared decoded), so the owner approved the very photographs committed.
+- `pnpm keyboard`, whole, never `--grep` -- exit 0 on the final tree, "187 passed (7.8m)", no failure and no retry;
+  `apps/web/next-env.d.ts` left clean.
+- Measured, not gated: the editor's server payload carries `packChoices()` at 84,912 bytes (8,787 gzipped; 78,845 and
+  7,750 at 6.3, each preset now carrying its record), `pairingChoices()` at 87,919 (4,760 gzipped) and the pairing
+  menu's glyph faces at 31,170 (1,870 gzipped).
+- Real services in Dev: Supabase production at the Schema phase only (above). Nothing in Dev wrote to Supabase, Vercel,
+  Resend, Dodo or the Ghost servers; the deployed walks are the Review's.
 
 **Real services (R-82):**
 - **Supabase production**:

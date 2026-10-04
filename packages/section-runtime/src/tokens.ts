@@ -171,6 +171,25 @@ const FAMILY = String.raw`(?:"[\p{L}\p{N}_ .-]+"|'[\p{L}\p{N}_ .-]+'|[\p{L}\p{N}
 const FAMILY_LIST_RE = new RegExp(`^${FAMILY}(?:, ?${FAMILY})*$`, 'u')
 
 const ROLES = ['background', 'surface', 'text', 'muted', 'border', 'accent', 'onAccent'] as const
+/** One of a mode's seven authored colours. */
+export type PackRole = (typeof ROLES)[number]
+
+/** A length a pack's pill radius may be — the one grammar, read by `check` below and by the Style Pack editor's record
+ *  schema (Story 6.4, `apps/web/lib/pack-edit.ts`), so the client refuses exactly what the engine refuses. */
+const LENGTH_RE = /^(0|\d+(\.\d+)?(px|rem|em|%))$/
+export const isLength = (v: unknown): v is string => typeof v === 'string' && LENGTH_RE.test(v)
+
+/** STORY 6.4 — 6.2'S AA SHEET AS ONE LIST: the five role pairs every pack is held to at 4.5:1 in each mode — text and
+ *  muted on the background and on the surface, on-accent on the accent. The presets' sheet (`packs.test.ts`) and the
+ *  Style Pack editor's live warning (`lib/pack-edit.ts`'s `hardToRead`) both read it, so the two can never check
+ *  different pairs. */
+export const AA_PAIRS: readonly { readonly fg: PackRole; readonly bg: PackRole }[] = [
+  { fg: 'text', bg: 'background' },
+  { fg: 'text', bg: 'surface' },
+  { fg: 'muted', bg: 'background' },
+  { fg: 'muted', bg: 'surface' },
+  { fg: 'onAccent', bg: 'accent' },
+]
 
 /** Every authored input, refused by name before a value reaches the block. The two free strings are held to what a
  *  declaration can carry, because the block is written into a `<style>`: a family or a radius that could close the
@@ -194,7 +213,7 @@ function check(pack: Pack): void {
     const steps = Object.keys(SCALES[row])
     if (!steps.includes(pack[row])) throw new Error(`${row}: ${JSON.stringify(pack[row])} is not a step — ${steps.join(' · ')}`)
   }
-  if (typeof pack.pillRadius !== 'string' || !/^(0|\d+(\.\d+)?(px|rem|em|%))$/.test(pack.pillRadius)) throw new Error(`pillRadius: ${JSON.stringify(pack.pillRadius)} is not a length`)
+  if (!isLength(pack.pillRadius)) throw new Error(`pillRadius: ${JSON.stringify(pack.pillRadius)} is not a length`)
   for (const role of ['heading', 'body'] as const) {
     const { family, capHeight } = pack.fonts[role]
     if (typeof family !== 'string' || !FAMILY_LIST_RE.test(family)) throw new Error(`${role} font: ${JSON.stringify(family)} is not a font-family list`)

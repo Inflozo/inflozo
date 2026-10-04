@@ -10,6 +10,7 @@ import {
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 import { COMPACT, isCompact, isPhone, PHONE } from './lib/floor.ts'
+import { PACK_KEY, PACK_RECORDS_KEY } from './lib/journal.ts'
 
 // Story 5.1's URL scheme, held by the module the route, the Shell, the switcher and the harness read it from.
 // Story 5.5 added R-129's three membership canvases, whose stored key is not their segment, and Private's condition.
@@ -360,13 +361,15 @@ test('Story 6.3: the sync route refuses a preset this build does not know BEFORE
   // one door that writes the pack refuses it first, as a 422 the editor never retries (DW-235's precedent, above)
   const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
   const refused = route.indexOf("no(422, 'Not a Style Pack')")
-  assert.ok(refused > 0 && /presetOf\(preset\) === undefined\)\) return no\(422, 'Not a Style Pack'\)/.test(route), 'the route no longer asks presetOf')
+  // Story 6.4 re-pins it: a pack the project made (`custom-<n>`) is a preset the body may name, and still nothing else
+  assert.ok(refused > 0 && /presetOf\(preset\) === undefined && !isCustom\(preset\)\)\)\) return no\(422, 'Not a Style Pack'\)/.test(route), 'the route no longer asks presetOf')
   assert.ok(refused < route.indexOf("rpc('sync_project_doc'"), 'the preset is refused before the write')
   assert.match(route, /p_preset: \(preset as string \| undefined\) \?\? null/, 'the preset reaches the RPC, or null')
-  // a body with only a preset is a write; one with neither docs nor a preset is the old 400
-  assert.match(route, /keys\.length === 0 && preset === undefined\) return no\(400, 'Nothing to write'\)/)
+  // a body with only a preset is a write; one with neither docs nor a preset (nor, since 6.4, own packs) is the old 400
+  assert.match(route, /keys\.length === 0 && preset === undefined && packs === undefined\) return no\(400, 'Nothing to write'\)/)
   // review: a pack-only body is "already there" only one write past its base — never adopted over another session's docs
-  assert.match(route, /const ours = keys\.length > 0 \|\| answer\.revision === \(base as number\) \+ 1\n\s+if \(same && packThere && ours\) return json\(200/)
+  // (Story 6.4: and its own packs must be the server's too)
+  assert.match(route, /const ours = keys\.length > 0 \|\| answer\.revision === \(base as number\) \+ 1\n\s+if \(same && packThere && packsThere && ours\) return json\(200/)
 })
 
 test('Story 6.3: Remix\'s Both writes neither when a design is refused — the fold first, the pack only once it landed, one txn (FR-D9)', () => {
@@ -383,3 +386,28 @@ test('Story 6.3: Remix\'s Both writes neither when a design is refused — the f
   assert.ok(pack > held && pack > refused, 'the pack is committed before the fold is known to have landed')
 })
 
+
+/* ── STORY 6.4 — a project's own packs ride the same door, validated before the write (AD-36) ───────────────────────── */
+
+test('Story 6.4: neither of the journal\'s pack keys is a template key — the sync route\'s TEMPLATE_KEY refuses both', () => {
+  const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
+  const pattern = /const TEMPLATE_KEY = \/(.+)\/\n/.exec(route)?.[1]
+  assert.ok(pattern, 'the sync route no longer declares TEMPLATE_KEY where this test reads it')
+  const shape = new RegExp(pattern)
+  for (const key of [PACK_KEY, PACK_RECORDS_KEY]) assert.ok(!shape.test(key), `${key} would be sent as a doc`)
+  // the control: the pattern is read and live — it takes a template key
+  assert.ok(shape.test('home'))
+})
+
+test('Story 6.4: the sync route refuses own packs that do not all survive ownPacksOf BEFORE the write, and hands the validated map to the RPC', () => {
+  const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
+  // every entry through the one reading rule every reader asks (AD-36)
+  assert.match(route, /const owned = packs === undefined \? undefined : ownPacksOf\(\{ packs \}\)/)
+  const refused = route.indexOf("Object.keys(owned ?? {}).length !== Object.keys(packs).length)) return no(422, 'Not a Style Pack')")
+  assert.ok(refused > 0, 'a map with an entry ownPacksOf drops is no longer refused')
+  assert.ok(refused < route.indexOf(".from('edit_locks')") && refused < route.indexOf("rpc('sync_project_doc'"), 'the packs are refused only after a read or a write')
+  // what is written is what was validated, or null — which writes no packs
+  assert.match(route, /p_packs: owned \?\? null/)
+  // "already there" compares the server's own packs too
+  assert.match(route, /const packsThere = owned === undefined \|\| stable\(stored\?\.packs \?\? \{\}\) === stable\(owned\)/)
+})

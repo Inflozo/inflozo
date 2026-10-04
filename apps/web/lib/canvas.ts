@@ -7,6 +7,7 @@
 import { DEFAULT_LIMIT, orbitWeekly, postAccess, safeCssColor } from '@inflozo/library'
 import type { DataBinding, IconLookup, SectionRegistryEntry, Visitor } from '@inflozo/library'
 import { contentCta, renderCanvas, withData } from '@inflozo/section-runtime'
+import { isCustom } from './pack-edit.ts'
 import { DEFAULT_PRESET } from './pack-switch.ts'
 import { PAYWALL_WORDS } from './paywall.ts'
 import type { ControlState, MemberState, RuntimeDocument } from '@inflozo/section-runtime'
@@ -184,6 +185,24 @@ export const surfaceSheetSrc = (src: string) => `${src}${src.includes('?') ? '&'
  *  and a later switch restyles it in place; a preview is asked for in the pack in force and asked again when it changes. */
 export const packed = (src: string, pack: string = DEFAULT_PRESET) =>
   pack === DEFAULT_PRESET ? src : `${src}${src.includes('?') ? '&' : '?'}pack=${encodeURIComponent(pack)}`
+
+/** STORY 6.4 — THE ADDRESS A PACK'S DOCUMENT IS ASKED FOR AT: its preset's, and Paper's for a pack the project made — so
+ *  every cached document stays valid, and the route serves only the library's twelve. What the pack itself looks like is
+ *  worn in place, before the first paint (`wearPack`): an edited preset and a custom pack differ from their address's. */
+export const addressOf = (pack: string) => (isCustom(pack) ? DEFAULT_PRESET : pack)
+
+/** STORY 6.4 — A CANVAS DOCUMENT WEARS A PACK: its `1-tokens` block and its `1b-faces` rules replaced in place from the
+ *  pack's own strings (`PackChoice`). A style that already holds them is left alone, so a document served in this pack is
+ *  untouched. The editor's canvas (`wear`) and every preview and ring tile (`SectionPreview`) wear through here — one rule.
+ *  False where the document carries neither style yet. */
+export function wearPack(doc: Document, pack: { readonly tokens: string; readonly faces: string }): boolean {
+  const tokens = doc.querySelector('style[data-order="1-tokens"]')
+  const faces = doc.querySelector('style[data-order="1b-faces"]')
+  if (!tokens || !faces) return false
+  if (tokens.textContent !== pack.tokens) tokens.textContent = pack.tokens
+  if (faces.textContent !== pack.faces) faces.textContent = pack.faces
+  return true
+}
 
 /** THE SAME DOCUMENT, NARROWED TO ONE DESIGN — a Section Picker preview's address (the owner's ruling of
  *  2026-09-20). A preview draws exactly one section, so it carries exactly one stylesheet; the editor's canvas,

@@ -43,9 +43,12 @@ export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
 // `referenceTokensCss` — is `@inflozo/section-runtime/reference` and a pairing's faces (`fontFaceCss`) are
 // `@inflozo/section-runtime/fonts`, never this index: both read the library's presets and font pool, and every canvas
 // client imports this file (`tools/check-traces.mjs` holds it).
-export { packTokens, packTokensCss, SCALES } from './tokens.ts'
-export type { Face, Pack, PackMode, TokenRow, TokenSource } from './tokens.ts'
-export { contrast } from './colour.ts'
+// Story 6.4 — and 6.2's AA pairs as one list (`AA_PAIRS`), the pill radius's one grammar (`isLength`) and the one hex test
+// (`isHex`): the Style Pack editor validates a record and computes its tokens in the browser with these, so the client
+// refuses exactly what the engine refuses. All pool-free.
+export { AA_PAIRS, isLength, packTokens, packTokensCss, SCALES } from './tokens.ts'
+export type { Face, Pack, PackMode, PackRole, TokenRow, TokenSource } from './tokens.ts'
+export { contrast, isHex } from './colour.ts'
 export { editText, linkAttributes } from './marks.ts'
 // Story 5.16a — AD-5's one exception, exported so the tests can name the exact string the theme emits
 export { PAGE_NUMBER_HBS } from './marks.ts'

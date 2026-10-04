@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, KeyboardEventHandler, ReactNode } from 'react'
+import type { ChangeEventHandler, FocusEventHandler, KeyboardEventHandler, ReactNode, Ref } from 'react'
 import { fieldTone, greyedProps, labelTone, reason, ring, type Greyed } from './greyed'
 import { Search } from './icons'
 
@@ -12,10 +12,17 @@ const field = 'rounded-sm border text-ink caret-coral placeholder:text-ink-soft-
    draws the connect wizard's three fields at 44px, 13px, padding 0 14 — a form the customer
    pastes long keys into, which is why it is bigger there and nowhere else. The label follows the
    field (13px on the 44, the Kit's 12px on the 36), so one prop moves the whole control rather
-   than a caller stacking utilities the stylesheet's order would decide between. */
-const metrics: Record<36 | 44, { box: string; label: string; mono: string }> = {
-  36: { box: 'h-9 px-[11px] text-[12.5px]', label: 'text-control-label', mono: 'text-control-label' },
-  44: { box: 'h-11 px-[14px] text-ui-dense', label: 'text-ui-dense', mono: '' },
+   than a caller stacking utilities the stylesheet's order would decide between.
+
+   STORY 6.4 — TWO MORE, each a frame's (R-236): S7c's Pack name, 40px at 13px, padding 0 12, its 12px label 6px above at
+   the frame's own `normal` line height; and S7d's hex field, 30px, mono 12px, padding 0 9, in a row that draws no label
+   (`labelHidden` — the field keeps its name for a screen reader). Both `box-content`, as the frames draw them: the height
+   is the field's own and the hairline sits outside it (42 and 32 drawn, measured on the frames). */
+const metrics: Record<30 | 36 | 40 | 44, { box: string; label: string; mono: string; gap: string }> = {
+  30: { box: 'box-content h-[30px] px-[9px] text-control-label', label: 'text-control-label', mono: 'text-control-label', gap: 'gap-[5px]' },
+  36: { box: 'h-9 px-[11px] text-[12.5px]', label: 'text-control-label', mono: 'text-control-label', gap: 'gap-[5px]' },
+  40: { box: 'box-content h-10 px-3 text-ui-dense', label: 'text-control-label leading-[normal]', mono: '', gap: 'gap-[6px]' },
+  44: { box: 'h-11 px-[14px] text-ui-dense', label: 'text-ui-dense', mono: '', gap: 'gap-[5px]' },
 }
 
 type Base = { id: string; label: string; greyed?: Greyed }
@@ -37,7 +44,12 @@ export function TextInput({
   autoComplete,
   required,
   aside,
+  labelHidden = false,
+  className = '',
+  inputRef,
   onChange,
+  onKeyDown,
+  onBlur,
 }: Base & {
   /** Beside the label, in the slot every control row already gives one (`Stepper`, `Toggle`, `Select`):
    *  R-185's `{}` button is the first thing to sit here on a content field. */
@@ -68,8 +80,15 @@ export function TextInput({
    * the two can be shown together. S2b·2's `http://` warning is the first of them.
    */
   hint?: string | null
-  /** 36 is the Kit's own input; 44 is S2b·2's. */
-  size?: 36 | 44
+  /** 36 is the Kit's own input; 44 is S2b·2's; 40 S7c's Pack name and 30 S7d's hex field (Story 6.4). */
+  size?: 30 | 36 | 40 | 44
+  /** Story 6.4 — a row that draws no label (S7d's hex field): the name is kept for a screen reader alone */
+  labelHidden?: boolean
+  /** Story 6.4 — the root's place in the caller's row (`min-w-0 flex-1`) */
+  className?: string
+  inputRef?: Ref<HTMLInputElement>
+  onKeyDown?: KeyboardEventHandler<HTMLInputElement>
+  onBlur?: FocusEventHandler<HTMLInputElement>
   /** `email` gives a phone the @ keyboard and the browser its own address suggestions. `date` is the
    *  Date Picker (Story 4.5): the browser's own calendar, which is what "calendar popover" asks for
    *  without a date library. */
@@ -80,17 +99,26 @@ export function TextInput({
 }) {
   const m = metrics[size]
   return (
-    <div className="flex flex-col gap-[5px]">
-      <span className={`flex items-center gap-[6px] ${m.label} font-medium ${labelTone(greyed)}`}>
-        <label htmlFor={id}>{label}</label>
-        {aside}
-      </span>
+    <div className={`flex flex-col ${m.gap} ${className}`}>
+      {labelHidden ? (
+        <label htmlFor={id} className="sr-only">
+          {label}
+        </label>
+      ) : (
+        <span className={`flex items-center gap-[6px] ${m.label} font-medium ${labelTone(greyed)}`}>
+          <label htmlFor={id}>{label}</label>
+          {aside}
+        </span>
+      )}
       <input
+        ref={inputRef}
         id={id}
         name={name}
         type={type}
         autoComplete={autoComplete}
         onChange={onChange}
+        onKeyDown={onKeyDown}
+        onBlur={onBlur}
         defaultValue={defaultValue}
         value={value}
         required={required}

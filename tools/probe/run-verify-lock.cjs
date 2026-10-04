@@ -423,6 +423,29 @@ async function main() {
     check('Story 6.3 (R-192): the READER\'s Change opens the list — a view — and every cell is greyed and unclickable, so a press moves neither the canvas nor the revision',
       bList.cells === presets63.length && bList.live === 0 && bList.head === 'Style Pack' && after63.pack === before63.pack && after63.revision === before63.revision,
       JSON.stringify({ bList, before63, after63 }))
+
+    /* ── STORY 6.4 (R-192): AND EVERY DOOR TO EDITING THE PACK — each pencil, "+ New pack", both font rows, every row and
+     * Pill radius — is greyed and unclickable for the reader, live for the holder; a forced press on a pencil, a row and
+     * "+ New pack" opens nothing and moves neither the canvas nor the revision. */
+    const doorsOf = (page) => page.evaluate(() => {
+      const doors = [...document.querySelectorAll('#editor-controls [data-style-pack-roster] :is([data-edit-pack], #style-pack-new, #style-pack-heading-font, #style-pack-body-font, [data-style-pack-rows] [role="radio"], #style-pack-pill button)')]
+      return { doors: doors.length, live: doors.filter((d) => !d.matches(':disabled')).length, rows: document.querySelectorAll('#editor-controls [data-style-pack-rows] [role="radiogroup"]').length }
+    })
+    const [aDoors, bDoors] = [await doorsOf(A), await doorsOf(B)]
+    const accent64 = (page) => page.evaluate(() => getComputedStyle(document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.documentElement).getPropertyValue('--site-width').trim())
+    const before64 = { width: await accent64(B), revision: (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision }
+    await B.evaluate(() => {
+      document.querySelector('#editor-controls [data-edit-pack]')?.click()
+      document.querySelector('#editor-controls #style-pack-new')?.click()
+      document.querySelector('#editor-controls #style-pack-width [role="radio"][aria-checked="false"]')?.click()
+    })
+    await B.waitForTimeout(1500)
+    const after64 = { width: await accent64(B), revision: (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision, dialog: await B.evaluate(() => document.querySelector('dialog[data-pack-editor]')?.open === true) }
+    check('Story 6.4 (R-192) control: the HOLDER\'s pencils, "+ New pack", font rows and rows are all live',
+      aDoors.doors > presets63.length && aDoors.live === aDoors.doors && aDoors.rows > 0, JSON.stringify(aDoors))
+    check('Story 6.4 (R-192): the READER\'s pencils, "+ New pack", font rows and rows are greyed and unclickable — a forced press opens nothing and moves neither the canvas nor the revision',
+      bDoors.doors === aDoors.doors && bDoors.live === 0 && !after64.dialog && after64.width === before64.width && after64.revision === before64.revision,
+      JSON.stringify({ bDoors, before64, after64 }))
     for (const page of [A, B]) {
       await page.keyboard.press('Escape')
       await page.waitForTimeout(200)

@@ -4,12 +4,14 @@
  * pool: the presets, their colours and their canvas CSS are the SERVER's (`lib/style-pack.ts`'s `packChoices`, handed
  * to the editor as data), because the library's presets carry the font pool's whole record and no client may import
  * them (DW-323, `tools/check-traces.mjs`). So this module is pure and its one import is `lib/ring.ts`, which is itself
- * importless — `node --test` reaches all of it (`pack-switch.test.ts`).
+ * importless — `node --test` reaches all of it (`pack-switch.test.ts`). Story 6.4's `PackRecord` is a TYPE import from
+ * `lib/pack-edit.ts`, erased at build, so nothing more runs here.
  *
  * ONE WORD LIST (R-170). "Style Pack" is one name across the panel, the pill, the announcement, the ⋯ row and every
  * check; the sentences are `PACK_WORDS` here and Remix's in `lib/remix.ts`, and the surfaces read them, never a copy.
  */
 
+import type { PackRecord } from './pack-edit.ts'
 import { shuffleTo } from './ring.ts'
 
 /** A blank project's pack, and the pack whose canvas address carries no `&pack=` — so every cached Paper document stays
@@ -51,6 +53,9 @@ export type PackChoice = {
   faces: string
   /** the heading's and the body's family lists, which the switch waits on (`document.fonts.load`) */
   families: readonly string[]
+  /** STORY 6.4 — the authored record it was made from (`lib/pack-edit.ts`'s `choiceOf`): the library's for a preset as
+   *  shipped, the project's own for an edited preset or a pack it made — what Edit pack opens on */
+  record: PackRecord
 }
 
 /** THE WORDS (R-170), read by the panel, the pill, the announcement, the ⋯ row and every check. */
@@ -63,7 +68,8 @@ export const PACK_WORDS = {
   said: (name: string) => `Style Pack — ${name}`,
 } as const
 
-/** Site Remix's Style Pack re-roll: a DIFFERENT preset, uniformly from the others — `shuffleTo`, the ring's own draw, so
+/** Site Remix's Style Pack re-roll: a DIFFERENT pack, uniformly from the others — since Story 6.4 over the whole roster,
+ *  a project's own packs included — `shuffleTo`, the ring's own draw, so
  *  "different" is the arithmetic's and no retry loop can spin. Null where there is nowhere to go. AD-1: `random` is
  *  handed in. */
 export function otherPreset(ids: readonly string[], current: string, random: () => number): string | null {

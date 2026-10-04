@@ -112,6 +112,51 @@ function baselineIdsOnDisk() {
   return readdirSync(BASELINES).flatMap((category) => readdirSync(join(BASELINES, category)).map((n) => `${category}/${n}`))
 }
 
+// ─── Story 6.4 — a specimen's lines, each in the pool's own face ────────────────────────────────────────────────
+
+/** Every `[data-family]` line of the specimen, held to the faces Chromium drew it with: each the pool's file, of that
+ *  family. Throws on a line drawn in anything else, and first on a control that is not caught. Answers the lines held. */
+async function poolFacesOnly(page, title) {
+  const cdp = await page.context().newCDPSession(page)
+  try {
+    // the CSS agent needs the DOM agent's first
+    await cdp.send('DOM.enable')
+    await cdp.send('CSS.enable')
+    const drawnWith = async (selector) => {
+      const { root } = await cdp.send('DOM.getDocument', { depth: -1 })
+      const { nodeIds } = await cdp.send('DOM.querySelectorAll', { nodeId: root.nodeId, selector })
+      return Promise.all(nodeIds.map(async (nodeId) => {
+        const { attributes } = await cdp.send('DOM.getAttributes', { nodeId })
+        const family = attributes[attributes.indexOf('data-family') + 1]
+        const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId })
+        // a file names its family as its own name table does — an instanced variable face may add its style ("Chivo
+        // Medium", executed in the image) — so the family is the name or the name and a style
+        const ofFamily = (name) => name === family || name.startsWith(`${family} `)
+        return { family, fonts, ok: fonts.length > 0 && fonts.every((f) => f.isCustomFont && ofFamily(f.familyName)) }
+      }))
+    }
+    // the control: a line in a family no @font-face declares, so Chromium draws it in a system face
+    await page.evaluate(() => {
+      const probe = document.createElement('p')
+      probe.id = 'faces-control'
+      probe.dataset.family = 'Inflozo control'
+      probe.style.fontFamily = 'serif'
+      probe.textContent = 'Control'
+      document.getElementById('canvas').append(probe)
+    })
+    const [control] = await drawnWith('#faces-control')
+    await page.evaluate(() => document.getElementById('faces-control')?.remove())
+    if (!control || control.ok) throw new Error(`${title}: the face check's positive control — a line in a system face — was not caught, so this check is not a result (standing rule 2)`)
+    const lines = await drawnWith('#canvas [data-family]')
+    if (lines.length === 0) throw new Error(`${title}: the specimen names no line's family, so there is nothing to check`)
+    const wrong = lines.filter((l) => !l.ok).map((l) => `${l.family}: drawn with ${l.fonts.map((f) => `${f.familyName}${f.isCustomFont ? '' : ' (not the pool\'s file)'}`).join(', ') || 'nothing'}`)
+    expect.soft(wrong, `${title}: a line not drawn in the pool's own face\n${wrong.join('\n')}`).toEqual([])
+    return lines.length
+  } finally {
+    await cdp.detach()
+  }
+}
+
 // ─── the cases ──────────────────────────────────────────────────────────────────────────────────────────────
 
 const entries = new Map()
@@ -125,7 +170,10 @@ for (const viewport of VIEWPORTS) {
       reducedMotion: viewport.reducedMotion ?? 'no-preference',
     })
     for (const c of LIST.filter((x) => x.viewport === viewport)) {
-      test(c.title, { annotation: [{ type: c.pairing ? 'specimen' : 'design', description: c.id }, { type: 'pack', description: c.pack }] }, async ({ page }) => {
+      const annotation = [{ type: c.pairing ? 'specimen' : 'design', description: c.id }, { type: 'pack', description: c.pack }]
+      // Story 6.4 (DW-324): a case on the contrast ground says so, for the totals line
+      if (c.row.controls?.bg === 'contrast') annotation.push({ type: 'ground', description: 'contrast' })
+      test(c.title, { annotation }, async ({ page }) => {
         writes()
         // a specimen is the matrix's own markup (R-233); a design is rendered as the editor's paint() renders it
         const html = c.pairing ? specimenMarkup(c.pairing) : ((e) => renderCanvas(new JSDOM('<body></body>').window.document, e.html, renderInput(e, c.row, iconDrawing)))(entry(c.id))
@@ -149,6 +197,13 @@ for (const viewport of VIEWPORTS) {
           await page.setViewportSize({ width: viewport.width, height })
           await page.waitForFunction(() => [...document.images].every((img) => img.complete))
         }
+
+        // Story 6.4 (DW-324) — A SPECIMEN IS DRAWN IN THE POOL'S OWN FACES, line by line: Chromium's own record of the
+        // faces it drew each line's words with (`CSS.getPlatformFontsForNode`), every one the pool's file — `isCustomFont`,
+        // an `@font-face` the document declares — and the line's role's family. The family alone cannot tell: the image
+        // installs a system Inter (executed at 6.4's Create: the pool's Fraunces reports `isCustomFont: true`, a fallback
+        // `false`). Behind its positive control: a line set in a family the document never declares must be caught.
+        if (c.pairing) test.info().annotations.push({ type: 'faces', description: String(await poolFacesOnly(page, c.title)) })
 
         const missing = !existsSync(join(BASELINES, ...c.snapshot)) && !writes() ? ' — it has no baseline; take one with bash tools/matrix/run-matrix-gate.sh --update' : ''
         const name = `${c.title} — pack ${c.pack}, mode ${c.mode}, viewport ${viewport.name}${c.row.name ? `, ${c.row.name}` : ''}${missing}`

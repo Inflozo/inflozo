@@ -1,12 +1,13 @@
-import { familyList, pairingOf, presetOf, PRESETS as LIBRARY_PRESETS, type PoolFile } from '@inflozo/library/packs'
-import { fontFaceCss } from '@inflozo/section-runtime/fonts'
+import { familyList, pairingFonts, pairingOf, POOL, presetOf, PRESETS as LIBRARY_PRESETS, type PoolFile, type Preset as LibraryPreset } from '@inflozo/library/packs'
+import { faceRulesCss, fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_TOKENS, referenceTokensCss } from '@inflozo/section-runtime/reference'
-import { packTokens, packTokensCss, type Pack } from '@inflozo/section-runtime/tokens'
+import { packTokens, type Pack } from '@inflozo/section-runtime/tokens'
+import { choiceOf, isCustom, ownPacksIn, ROLE_TOKENS, type PackFonts, type PackRecord, type PairingChoice } from './pack-edit.ts'
 import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, type PackCellData, type PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 import { isAccent } from './probe-rule.ts'
 
-export { DEFAULT_PRESET, PACK_FAMILY_PREFIX }
+export { DEFAULT_PRESET, PACK_FAMILY_PREFIX, ROLE_TOKENS }
 
 /**
  * `projects.style_pack`, and the one schema for it (the spine's rule (a): one zod schema per
@@ -40,6 +41,13 @@ export { DEFAULT_PRESET, PACK_FAMILY_PREFIX }
  * words, the types) is `lib/pack-switch.ts`'s, re-exported here for the server. The editor's choice is
  * written by the save (`sync_project_doc`'s `p_preset`) and a new project's by `createProject`.
  *
+ * SINCE STORY 6.4 A PROJECT HAS PACKS OF ITS OWN (FR-E3): `style_pack.packs[id]`, each a FULL authored record — a preset
+ * as edited in this project, or a `custom-<n>` it made — written by the save (`sync_project_doc`'s `p_packs`) and READ
+ * HERE THROUGH ONE RULE (`ownPacksOf`, AD-36): a record that fails `lib/pack-edit.ts`'s schema, names a pairing the pool
+ * does not hold, or is refused by the engine's `check` is dropped. `packIdOf` is the pack in force — a preset, or a
+ * custom id `ownPacksOf` holds, else Paper — and the card (`placeholderFor`), the editor's roster and its canvas all
+ * wear an own pack. The browser computes an own pack's CSS itself, from `pairingChoices`' per-pairing data.
+ *
  * STORY 3.4 PUT A `brand` KEY IN THIS COLUMN AND E6 STILL OWNS IT (DW-66). FR-C4's "Use your
  * brand" copies the customer's own Ghost accent, logo and menu out of `sites.site_settings.brand`
  * (`probe-rule.ts`'s `brandOf`) into `projects.style_pack.brand`. WHO READS WHAT (DW-71, Story
@@ -63,7 +71,7 @@ export { DEFAULT_PRESET, PACK_FAMILY_PREFIX }
  * so a pack with no preset fails the parse, and reading `brand` out of that parse threw a perfectly
  * good accent away with it. It is read off the raw value instead (review 3, 2026-09-08).
  */
-export const stylePackSchema = z.object({ preset: z.string(), brand: z.unknown().optional() }).loose()
+export const stylePackSchema = z.object({ preset: z.string(), brand: z.unknown().optional(), packs: z.unknown().optional() }).loose()
 
 export type StylePack = z.infer<typeof stylePackSchema>
 
@@ -111,11 +119,38 @@ export const fontHref = (base: string) => (f: PoolFile) => `${base}?font=${f.fil
 /** A blank project's `style_pack`: Paper, the default. `createProject` writes the one the New project window chose. */
 export const defaultStylePack = (): StylePack => ({ preset: DEFAULT_PRESET })
 
-/** The preset id a stored `style_pack` names — `placeholderFor`'s rule: anything this build does not know is Paper. */
+/** The preset id a stored `style_pack` names — `placeholderFor`'s rule: anything this build does not know is Paper. A
+ *  library preset only: the New project window's choice (`createProject`), where no own pack can exist yet. */
 export function presetIdOf(stylePack: unknown): string {
   const parsed = stylePackSchema.safeParse(stylePack)
   const preset = parsed.success ? parsed.data.preset : DEFAULT_PRESET
   return Object.hasOwn(PRESETS, preset) ? preset : DEFAULT_PRESET
+}
+
+/** A pool pairing's fonts as the engine reads them, or undefined for an id the pool does not hold (a stored record's). */
+const poolFontsOf = (pairing: string): PackFonts | undefined =>
+  POOL.pairings.some((p) => p.id === pairing) ? (pairingFonts(pairing) as PackFonts) : undefined
+
+/** STORY 6.4 — A PROJECT'S OWN PACKS, as stored, through the one reading rule (AD-36, `ownPacksIn`): the valid records
+ *  under valid ids, junk dropped. Never throws — a column the user's own session may write must not black out an editor
+ *  or a dashboard. */
+export const ownPacksOf = (stylePack: unknown): Record<string, PackRecord> =>
+  ownPacksIn((stylePack as { packs?: unknown } | null | undefined)?.packs, { isPreset: (id) => presetOf(id) !== undefined, fontsOf: poolFontsOf })
+
+/** STORY 6.4 — THE PACK IN FORCE: the stored `preset` where it names a library preset, or a `custom-<n>` that `ownPacksOf`
+ *  holds; anything else is Paper (`presetIdOf`'s rule, widened to the packs a project made). */
+export function packIdOf(stylePack: unknown): string {
+  const preset = (stylePack as { preset?: unknown } | null | undefined)?.preset
+  if (typeof preset !== 'string') return DEFAULT_PRESET
+  if (presetOf(preset) !== undefined) return preset
+  return isCustom(preset) && Object.hasOwn(ownPacksOf(stylePack), preset) ? preset : DEFAULT_PRESET
+}
+
+/** A library preset as an authored record — `packs.json`'s shape without its id: what an own record is compared with
+ *  (`withoutDefaults`) and what Reset to defaults puts back. */
+export const presetRecord = (p: LibraryPreset): PackRecord => {
+  const { fonts: _fonts, ...authored } = p.pack
+  return { name: p.name, pairing: p.pairing, ...authored } as PackRecord
 }
 
 /** EVERY PRESET'S HEADING FACES, for the app's own document, under `PACK_FAMILY_PREFIX` — so a pack cell's "Ag" is drawn
@@ -136,8 +171,13 @@ export function placeholderFor(stylePack: unknown): Preset {
   // `Object.hasOwn`, not `??`: `PRESETS['__proto__']` and `PRESETS['constructor']` are TRUTHY on
   // an object literal, so `??` never reached the fallback and the card painted `undefined`
   // colours. `style_pack` is a column the user's own session may write (review, 2026-09-05).
-  // `presetIdOf` is that rule, shared with the editor's Style Pack card (Story 6.2).
-  const base = PRESETS[presetIdOf(stylePack)] as Preset
+  // `presetIdOf` is that rule, shared with the editor's Style Pack card (Story 6.2). STORY 6.4 —
+  // `packIdOf`, its widening: the pack in force may be one the project made, and an edited
+  // preset or a custom pack paints its OWN light background, text and accent, validated
+  // (`ownPacksOf`) before a value reaches the card's inline `style`.
+  const id = packIdOf(stylePack)
+  const own = ownPacksOf(stylePack)[id]
+  const base = own === undefined ? (PRESETS[id] as Preset) : ownCard(id, own)
   // FR-C4: the SITE's accent wins over the pack's, which is the whole visible result of "Use your
   // brand" — the dashboard card is painted in the customer's own colour before they have chosen
   // anything. RE-VALIDATED HERE and not trusted from the column: it is painted as an inline
@@ -160,15 +200,23 @@ export function placeholderFor(stylePack: unknown): Preset {
   return isAccent(accent) ? { ...base, accent } : base
 }
 
-/** Background role's colour roles and the reference token each is painted with. Image has no colour: the
- *  panel draws the Kit's image glyph for it. Exported for the keyboard journey (DW-198, Story 5.24e), which holds each
- *  Background-role dot to the canvas's own token. */
-export const ROLE_TOKENS: Readonly<Record<string, string>> = {
-  base: '--bg-page',
-  surface: '--bg-surface',
-  accent: '--accent',
-  contrast: '--bg-contrast',
+/** An own pack as the dashboard card and D4a's chooser paint it: the record's light values, its pairing's glyph. */
+function ownCard(id: string, record: PackRecord): Preset {
+  const pairing = pairingOf(record.pairing)
+  return {
+    id,
+    name: record.name,
+    glyphFamily: familyList(pairing.heading.family, PACK_FAMILY_PREFIX),
+    heading: pairing.heading.family,
+    body: pairing.body.family,
+    surface: record.light.background,
+    accent: record.light.accent,
+    text: record.light.text,
+  }
 }
+
+// `ROLE_TOKENS` — the Background role's dots and the token each is painted with — is `lib/pack-edit.ts`'s since Story 6.4
+// (the browser paints an own pack's swatches), re-exported above for the server and the keyboard journey (DW-198).
 
 /** The swatch colours: the pack's token values themselves, so `apps/web` carries no colour literal outside this file
  *  (`tokens.test.ts`). A missing property throws rather than drawing an empty circle.
@@ -198,25 +246,44 @@ export function referenceSwatches(mode: 'light' | 'dark' = 'light', pack = DEFAU
  *  reload would be served. ponytail: derived per editor read (twelve engine runs, milliseconds); cache it if the read
  *  ever shows it. */
 export function packChoices(): PackChoice[] {
+  // STORY 6.4 — through `choiceOf`, the very derivation the browser runs for an own pack, each preset carrying its record
+  // (what Edit pack opens on and Reset to defaults puts back). Paper's block stays `reference-tokens.css`'s, byte for byte
   return LIBRARY_PRESETS.map((p) => {
-    const pack = p.pack as Pack
-    const pairing = pairingOf(p.pairing)
-    const light = packTokens(pack).light
-    const dots = (properties: readonly string[]) => properties.map((property) => light[property] ?? '')
-    return {
-      id: p.id,
-      name: p.name,
-      heading: pairing.heading.family,
-      body: pairing.body.family,
-      glyphFamily: familyList(pairing.heading.family, PACK_FAMILY_PREFIX),
-      cellDots: dots(['--bg-page', '--accent', '--text-body', '--plate']),
-      cardDots: dots(['--bg-page', '--bg-surface', '--accent', '--text-body', '--plate']),
-      swatches: { light: referenceSwatches('light', p.id), dark: referenceSwatches('dark', p.id) },
-      tokens: p.id === DEFAULT_PRESET ? referenceTokensCss() : packTokensCss(pack),
-      faces: fontFaceCss(p.pairing, fontHref('canvas')),
-      families: [pack.fonts.heading.family, pack.fonts.body.family],
-    }
+    const choice = choiceOf(p.id, presetRecord(p), pairingChoice(p.pairing))
+    return p.id === DEFAULT_PRESET ? { ...choice, tokens: referenceTokensCss() } : choice
   })
+}
+
+/** One pool pairing as the editor is handed it (`pairingChoices`). */
+function pairingChoice(id: string): PairingChoice {
+  const pairing = pairingOf(id)
+  return {
+    id,
+    heading: pairing.heading.family,
+    body: pairing.body.family,
+    glyphFamily: familyList(pairing.heading.family, PACK_FAMILY_PREFIX),
+    bodyGlyphFamily: familyList(pairing.body.family, PACK_FAMILY_PREFIX),
+    fonts: pairingFonts(id) as PackFonts,
+    faces: fontFaceCss(id, fontHref('canvas')),
+    families: [familyList(pairing.heading.family), familyList(pairing.body.family)],
+  }
+}
+
+/** STORY 6.4 — EVERY POOL PAIRING, in §D.c's order, as the font rows, the pairing menu and the browser's engine need it: its
+ *  families, the app's glyph faces, `pairingFonts`, and the canvas document's `1b-faces` rules from the canvas route's own
+ *  `?font=` — the strings `packChoices` hands for a preset. Nothing of the pool's record (no licence, no sha256). */
+export const pairingChoices = (): PairingChoice[] => POOL.pairings.map((p) => pairingChoice(p.id))
+
+/** STORY 6.4 — THE PAIRING MENU'S AND THE FONT ROWS' GLYPH FACES, for the app's own document: the prefixed ROMAN face of
+ *  every pool family that `packFacesCss` (the signed-in layout's) does not already declare — every heading the twelve
+ *  presets do not wear, and every body. A browser fetches a face only when a glyph uses it, and the menu is drawn only
+ *  while open. `base` is the canvas route as the page sees it (`packFacesCss`'s). */
+export function pairingGlyphFacesCss(base: string): string {
+  const declared = new Set(LIBRARY_PRESETS.flatMap((p) => pairingOf(p.pairing).heading.faces))
+  const roman = POOL.pairings
+    .flatMap((p) => [...p.heading.faces, ...p.body.faces])
+    .filter((id, i, all) => all.indexOf(id) === i && !declared.has(id) && POOL.faces[id]?.style === 'normal')
+  return faceRulesCss(roman, fontHref(base), PACK_FAMILY_PREFIX)
 }
 
 /** STORY 6.3 — D4a's twelve, for the New project window: each preset's name, its glyph's face and the card's three dots

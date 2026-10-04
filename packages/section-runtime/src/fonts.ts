@@ -21,7 +21,13 @@ export type FontFaceOptions = {
 export function fontFaceCss(pairingId: string, url: (file: PoolFile) => string, options: FontFaceOptions = {}): string {
   const pairing = pairingOf(pairingId)
   const roles = options.role === undefined ? [pairing.heading, pairing.body] : [pairing[options.role]]
-  const ids = [...new Set(roles.flatMap((r) => r.faces))]
+  return faceRulesCss([...new Set(roles.flatMap((r) => r.faces))], url, options.prefix)
+}
+
+/** THE RULE WRITER: one `@font-face` rule per file of each pool face named — the face's family (after `prefix`), style and
+ *  weight, `swap`, its subset's `unicode-range` and its address. `fontFaceCss` asks it for a pairing's faces; Story 6.4's
+ *  pairing menu (`apps/web/lib/style-pack.ts`'s `pairingGlyphFacesCss`) for the roman faces of every pool family. */
+export function faceRulesCss(ids: readonly string[], url: (file: PoolFile) => string, prefix = ''): string {
   return ids
     .map(faceOf)
     .flatMap((face) =>
@@ -30,7 +36,7 @@ export function fontFaceCss(pairingId: string, url: (file: PoolFile) => string, 
         if (range === undefined) throw new Error(`${f.file}: the pool names no subset "${f.subset}"`)
         return [
           '@font-face {',
-          `  font-family: '${options.prefix ?? ''}${face.family}';`,
+          `  font-family: '${prefix}${face.family}';`,
           `  font-style: ${face.style};`,
           `  font-weight: ${face.weight};`,
           '  font-display: swap;',

@@ -11,6 +11,7 @@ import type { DesignRows } from '@/lib/canvas'
 import { counted } from '@/lib/renders'
 import { NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, STRIP_COLUMNS, position, strip } from '@/lib/ring'
 import type { Visitor } from '@/lib/view-as'
+import type { PackChoice } from '@/lib/pack-switch'
 
 /* ────────────────────────────── Story 5.11 — B1a, THE DESIGN BLOCK AT THE HEAD OF THE PANEL (FR-D19, R-74).
  *
@@ -66,7 +67,7 @@ function Tile({
   subject?: orbitWeekly.Subject | null
   member?: Visitor
   live?: Live
-  pack?: string
+  pack?: PackChoice
   entry: SectionRegistryEntry
   target: string
   rows: DesignRows | undefined
@@ -126,8 +127,9 @@ export const DesignPicker = memo(function DesignPicker({
   member?: Visitor
   /** Story 5.18 — the canvas's own content, where it is the site's; omitted on `/controls`, which has no site */
   live?: Live
-  /** Story 6.3 — the Style Pack in force, which every tile wears; omitted on `/controls`, which has none (Paper) */
-  pack?: string
+  /** Story 6.3 — the Style Pack in force, which every tile wears; omitted on `/controls`, which has none (Paper). Story 6.4 —
+   *  the pack as painted, an own pack included: each tile wears it (`SectionPreview`) */
+  pack?: PackChoice
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]
   /** where in the ring this section is — or -1 where NOTHING IS CHOSEN YET: Story 5.20's untouched paywall, whose box

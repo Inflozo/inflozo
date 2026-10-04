@@ -9,30 +9,34 @@ import { PRESETS, POOL, REFERENCE_PACKS, pairingOf, presetOf } from '@inflozo/li
 import { contrast } from './colour.ts'
 import { fontFaceCss } from './fonts.ts'
 import { REFERENCE_PACK } from './reference.ts'
-import { packTokens } from './tokens.ts'
+import { AA_PAIRS, packTokens } from './tokens.ts'
 import type { Pack } from './tokens.ts'
 
 const MODES = ['light', 'dark'] as const
 const pack = (id: string) => (presetOf(id) ?? assert.fail(`no preset "${id}"`)).pack as Pack
+/** a role as the sheet prints it: `onAccent` → `on-accent` */
+const said = (role: string) => role.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
 
 /** The AA sheet (the spec's Always): text and muted on the background and on the surface, on-accent on the accent —
- *  every failing pair named by pack, mode and pair. */
+ *  every failing pair named by pack, mode and pair. Story 6.4: the pairs are `AA_PAIRS`, the one list the Style Pack
+ *  editor's live warning reads too. */
 function sheet(id: string, p: Pack): string[] {
   const out: string[] = []
   for (const mode of MODES) {
     const m = p[mode]
-    const pairs: [string, string, string][] = [
-      ['text on background', m.text, m.background], ['text on surface', m.text, m.surface],
-      ['muted on background', m.muted, m.background], ['muted on surface', m.muted, m.surface],
-      ['on-accent on accent', m.onAccent, m.accent],
-    ]
-    for (const [name, fg, bg] of pairs) {
-      const ratio = contrast(fg, bg)
-      if (ratio < 4.5) out.push(`${id} ${mode}: ${name} is ${ratio.toFixed(2)}:1 (${fg} on ${bg})`)
+    for (const { fg, bg } of AA_PAIRS) {
+      const ratio = contrast(m[fg], m[bg])
+      if (ratio < 4.5) out.push(`${id} ${mode}: ${said(fg)} on ${said(bg)} is ${ratio.toFixed(2)}:1 (${m[fg]} on ${m[bg]})`)
     }
   }
   return out
 }
+
+test('Story 6.4: AA_PAIRS is 6.2\'s five pairs — text and muted on the background and the surface, on-accent on the accent', () => {
+  assert.deepEqual(AA_PAIRS.map(({ fg, bg }) => `${said(fg)} on ${said(bg)}`), [
+    'text on background', 'text on surface', 'muted on background', 'muted on surface', 'on-accent on accent',
+  ])
+})
 
 test('there are presets, in §D.d\'s order, Paper first, with unique ids and the reference packs among them', () => {
   assert.ok(PRESETS.length > 0, 'the library holds no preset')

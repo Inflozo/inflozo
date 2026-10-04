@@ -33,6 +33,18 @@ const watchMount = (page) => {
 }
 
 const painted = (page) => expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible()
+/** how many transactions the device's journal holds for the harness project (the harness names its own database) */
+const journalled = (page) =>
+  page.evaluate(() => new Promise((resolve, reject) => {
+    const req = indexedDB.open('inflozo-doc-harness')
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const db = req.result
+      const count = db.transaction('journal', 'readonly').objectStore('journal').index('byProject').count('00000000-0000-4000-8000-000000000009')
+      count.onsuccess = () => { db.close(); resolve(count.result) }
+      count.onerror = () => { db.close(); reject(count.error) }
+    }
+  }))
 
 /** THE 44px SWEEP (D8a: "every target is at least 44px"). Every visible pressable in the editor — the rule's own list,
  *  with switches — is at least 44 × 44, and each switch is D8a's 52 × 30 in a row at least 44 tall. The only things
@@ -267,6 +279,56 @@ for (const name of ['iPad Mini', 'iPad Pro 11']) {
         await page.keyboard.press('Escape')
         await expect(page.locator(`${trigger}-menu`)).toBeHidden()
       }
+
+      // Story 6.4 — ⋯ → Style Pack: the list with its doors and rows, then Edit pack and its colour picker over it. A pencil
+      // is the finger's 44, CENTRED on S7a's 17px circle, which stays 4px in from its cell's top and right — so the middle
+      // of a pack is still the pack's. Executed 2026-10-04: as the button's own border it was a 46px circle over the
+      // pack's name, and a target grown from the circle's corner covered the pack's middle
+      await page.locator('#editor-more').tap()
+      await page.locator('#editor-more-menu li :is(button, a)', { hasText: /^Style Pack$/ }).tap()
+      await expect(page.locator('[data-style-pack-roster]')).toBeVisible()
+      const packs = await sweep(page)
+      expect(packs.small, `over Style Pack (${packs.checked} checked)`).toEqual([])
+      const pencil = page.locator('[data-edit-pack="tangerine"]')
+      const [target, circle, cell] = await Promise.all(
+        [pencil, pencil.locator('span').first(), page.locator('[role="option"][data-style-pack="tangerine"]')].map((l) => l.boundingBox()),
+      )
+      expect([Math.round(circle.width), Math.round(circle.height)], 'S7a\'s circle, whatever the target').toEqual([17, 17])
+      expect([Math.round(circle.y - cell.y), Math.round(cell.x + cell.width - circle.x - circle.width)], 'where S7a draws it').toEqual([4, 4])
+      const off = [target.x + target.width / 2 - circle.x - circle.width / 2, target.y + target.height / 2 - circle.y - circle.height / 2]
+      expect(off.map(Math.round), 'the target centred on the circle').toEqual([0, 0])
+      const middle = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="option"]')?.dataset.stylePack ?? null, {
+        x: cell.x + cell.width / 2,
+        y: cell.y + cell.height / 2,
+      })
+      expect(middle, 'a tap on the middle of a pack chooses it').toBe('tangerine')
+      await pencil.tap()
+      await expect(page.locator('dialog[data-pack-editor][open]')).toBeVisible()
+      const sheet = await sweep(page)
+      expect(sheet.small, `with Edit pack open (${sheet.checked} checked)`).toEqual([])
+      await page.locator('[data-swatch="light-accent"]').tap()
+      await expect(page.locator('[data-picker]')).toBeVisible()
+      const colour = await sweep(page)
+      expect(colour.small, `with the colour picker open (${colour.checked} checked)`).toEqual([])
+
+      // Discard by the BACKDROP, the one way out a keyboard cannot press (so here, where the floor taps): a colour typed into
+      // the draft, the picker closed, then a tap beside the dialog closes it and journals nothing
+      await expect(page.locator('#pack-picker-hex')).toBeFocused()
+      await page.keyboard.press('ControlOrMeta+a')
+      await page.keyboard.type('#1E6BFF')
+      await page.keyboard.press('Enter')
+      await expect(page.locator('[data-swatch="light-accent"]'), 'the control: the draft changed').toHaveAccessibleName(/#1E6BFF/)
+      await page.keyboard.press('Escape')
+      await expect(page.locator('[data-picker]')).toBeHidden()
+      const entries = await journalled(page)
+      const dialogBox = await page.locator('dialog[data-pack-editor][open]').boundingBox()
+      await page.touchscreen.tap(dialogBox.x / 2, dialogBox.y + dialogBox.height / 2)
+      await expect(page.locator('dialog[data-pack-editor][open]'), 'the backdrop closes it').toHaveCount(0)
+      expect(await journalled(page), 'and journals nothing').toBe(entries)
+      expect(
+        await page.locator('[role="option"][data-style-pack="tangerine"] span[aria-hidden] > span').nth(1).evaluate((dot) => getComputedStyle(dot).backgroundColor),
+        'Tangerine is as it was',
+      ).not.toBe('rgb(30, 107, 255)')
     })
   })
 }

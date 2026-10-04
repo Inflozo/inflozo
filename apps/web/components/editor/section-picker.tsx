@@ -17,6 +17,7 @@ import type { DesignRows } from '@/lib/canvas'
 import { shortcutFor } from '@/lib/keymap'
 import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_WORDS, spanFor } from '@/lib/picker'
 import type { Visitor } from '@/lib/view-as'
+import type { PackChoice } from '@/lib/pack-switch'
 
 /** Story 5.18 — the canvas's own content for a card, one source per card (`SectionPreview`'s `live`). */
 
@@ -129,8 +130,8 @@ export function SectionPicker({
   member?: Visitor
   /** Story 5.18 — the canvas's own content where it is the connected site's, one source per card */
   live?: Live
-  /** Story 6.3 — the Style Pack in force, which every card wears */
-  pack?: string
+  /** Story 6.3 — the Style Pack in force, which every card wears — Story 6.4: as painted, an own pack included */
+  pack?: PackChoice
   /** the sentence the last Add answered with, shown in the picker's own refusal line (DW-190) */
   refusal: string | null
   onAdd: (placement: Placement) => void
@@ -375,7 +376,7 @@ function Card({
   /** Story 5.18 — and with the canvas's content */
   live?: Live
   /** Story 6.3 — and in the project's pack */
-  pack?: string
+  pack?: PackChoice
   onAdd: (placement: Placement) => void
 }) {
   // measured once, when the preview has been drawn; until then the card is one tile like any other

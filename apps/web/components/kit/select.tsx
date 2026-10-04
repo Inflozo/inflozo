@@ -153,22 +153,43 @@ export const SelectThumb = () => (
   </span>
 )
 
-/** A font row renders "Aa" in the face it is offering. */
-export function FontRow({ id, label, family }: { id: string; label: string; family: string }) {
+/** A font row renders "Aa" in the face it is offering.
+ *
+ *  STORY 6.4 — LIVE, as S7a's two font rows (`S7 Style Packs.dc.html` S7a, Heading font and Body font): 40px tall, padding
+ *  6 × 10, the row's name 10px over the family 12/600 at the frame's own `normal` line height, "Aa" 14px in the face
+ *  itself (`glyph`, the pool's face under the app's prefix; the family's own name where none is handed — `/kit`). With
+ *  `popoverTarget` it opens its menu, which the caller places (`openPopover`); it never synthesises a face it lacks. */
+export function FontRow({
+  id,
+  label,
+  family,
+  glyph,
+  popoverTarget,
+  onClick,
+}: {
+  id: string
+  label: string
+  family: string
+  glyph?: string
+  popoverTarget?: string
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void
+}) {
   return (
     <button
       type="button"
       id={id}
-      className={`flex h-10 items-center gap-[9px] rounded-sm border border-line bg-surface px-[10px] hover:border-line-strong ${ring}`}
+      popoverTarget={popoverTarget}
+      onClick={onClick}
+      className={`flex h-10 items-center gap-[9px] rounded-sm border border-line bg-surface px-[10px] py-[6px] hover:border-line-strong disabled:cursor-not-allowed disabled:hover:border-line ${ring}`}
     >
-      <span aria-hidden style={{ fontFamily: family }} className="w-5 text-ui">
+      <span aria-hidden style={{ fontFamily: glyph ?? family, fontSynthesis: 'none' }} className="w-5 shrink-0 text-ui leading-[normal]">
         Aa
       </span>
-      <span className="flex flex-1 flex-col text-left">
-        <span className="text-[10px] text-ink-soft">{label}</span>
-        <span className="text-control-label font-semibold text-ink">{family}</span>
+      <span className="flex min-w-0 flex-1 flex-col text-left">
+        <span className="text-[10px] leading-[normal] text-ink-soft">{label}</span>
+        <span className="truncate text-control-label leading-[normal] font-semibold text-ink">{family}</span>
       </span>
-      <ChevronRight size={12} className="text-ink-soft" />
+      <ChevronRight size={12} className="shrink-0 text-ink-soft" />
     </button>
   )
 }
@@ -188,16 +209,20 @@ export type MenuItem = {
   /** Story 5.22 — R-192: a row whose action EDITS, inside the Kit's `ReadOnly` while reading along — greyed, out of the
    *  Tab order and unresponsive, as the control it stands for is */
   readOnly?: boolean
+  /** Story 6.4 — what the row shows in place of its label (the pairing menu's "Ag" over two families); the label stays
+   *  its key and its name where the contents are words of their own */
+  contents?: ReactNode
 }
 
-/** The dropdown itself: the active row is coral-tint with a check, danger sits last. */
-export function Menu({ label, items }: { label: string; items: MenuItem[] }) {
+/** The dropdown itself: the active row is coral-tint with a check, danger sits last. Story 6.4 — `width` where the menu is
+ *  as wide as what opened it (the pairing menu, as wide as its font row); the Kit's 210 otherwise. */
+export function Menu({ label, items, width = 'w-[210px]' }: { label: string; items: MenuItem[]; width?: string }) {
   return (
     <ul
       aria-label={label}
       // A long menu scrolls INSIDE its own box, about nine rows tall, so its border and radius stay whole — the
       // icon picker's category list ran the height of the window (the owner's finding 8 on Story 4.5).
-      className={`flex max-h-[min(320px,60vh)] w-[210px] list-none flex-col gap-px overflow-y-auto rounded border border-line bg-surface p-[6px] shadow-lg ${slimScrollbar}`}
+      className={`flex max-h-[min(320px,60vh)] ${width} list-none flex-col gap-px overflow-y-auto rounded border border-line bg-surface p-[6px] shadow-lg ${slimScrollbar}`}
     >
       {items.map((item, i) => {
         const act = (event: MouseEvent<HTMLElement>) => {
@@ -214,7 +239,7 @@ export function Menu({ label, items }: { label: string; items: MenuItem[] }) {
         const inside = (
           <>
             {item.danger ? <Trash size={13} /> : item.icon}
-            <span className="flex-1">{item.label}</span>
+            {item.contents ?? <span className="flex-1">{item.label}</span>}
             {item.keys?.map((k) => (
               <kbd key={k} className={kbd}>
                 {k}

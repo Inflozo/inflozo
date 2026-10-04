@@ -47,16 +47,21 @@ const looks: Record<BannerKind, { box: string; icon: ReactNode }> = {
 export function Banner({
   kind,
   rowHeight,
+  live = true,
   children,
 }: {
   kind: BannerKind
   rowHeight?: number
+  /** Story 6.4 — false where the sentence follows something that moves every frame (the Style Pack editor's warning
+   *  follows a colour being dragged): the banner is then no live region, and its caller announces it when its meaning
+   *  changes rather than once per pointer move */
+  live?: boolean
   children: ReactNode
 }) {
   const { box, icon } = looks[kind]
   return (
     <div
-      role={kind === 'error' ? 'alert' : 'status'}
+      role={!live ? undefined : kind === 'error' ? 'alert' : 'status'}
       className={`flex gap-[9px] rounded-thumb border p-[11px_13px] text-[12.5px] leading-[1.5] ${box}`}
     >
       <span className="flex shrink-0 items-center" style={{ height: rowHeight ?? '1lh' }}>

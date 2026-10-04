@@ -1,9 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
+import type { PackRecord, PackRecords } from './lib/pack-edit.ts'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
-  flushPayload, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, panelOpen, redo, undo, unsynced,
+  flushPayload, hydratedPacks, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, PACK_RECORDS_KEY, panelOpen, redo, undo, unsynced,
   restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, type Journal, type OwedRecord, type SyncState,
 } from './lib/journal.ts'
 
@@ -449,3 +450,71 @@ test('6.3: a hydrate treats the pack as it treats the docs — kept with an equa
   assert.equal(hydratedPreset(same, { preset: 'harbor' }, 'paper', known), 'paper', 'an id this build does not hold is no pack')
 })
 
+
+/* ── STORY 6.4: a project's own packs are an edit too — the whole map either side, under its own key ──────────────────
+   FR-E3's per-project packs, journaled like a doc (FR-D9, §AD1, AD-16): `PACK_RECORDS_KEY` maps to `style_pack.packs`, as
+   `PACK_KEY` maps to `style_pack.preset`, and a New pack is the records entry and the switch in ONE transaction. */
+
+/** a record — its shape is the engine's business, not the journal's, so any object stands in */
+const record = (name: string) => ({ name }) as unknown as PackRecord
+const recordsEdit = (j: Journal, before: PackRecords, after: PackRecords, txn = `t${j.nextSeq}`) => append(j, { txn, docKey: PACK_RECORDS_KEY, before, after })
+
+test('6.4: an own pack\'s edit undoes to the map before and redoes to the map after — one entry, one edit, no doc', () => {
+  const tuned = { paper: record('Paper, tuned') }
+  const edited = recordsEdit(EMPTY_JOURNAL, {}, tuned).journal
+  assert.equal(unsyncedEdits(edited), 1)
+  const back = undo(edited)!
+  assert.deepEqual(back, { journal: back.journal, docs: {}, packs: {} }, 'the map before comes back whole, and no doc or preset with it')
+  assert.deepEqual(Object.keys(back.journal.pending), [PACK_RECORDS_KEY], 'the own packs are owed again')
+  const forward = redo(back.journal)!
+  assert.deepEqual(forward.packs, tuned)
+  assert.equal(forward.preset, undefined)
+})
+
+test('6.4: a New pack — its record and the switch to it — is two entries in one transaction: one edit, one ⌘Z', () => {
+  const made = { 'custom-1': record('Studio Warm') }
+  const records = recordsEdit(EMPTY_JOURNAL, {}, made, 'new').journal
+  const both = append(records, { txn: 'new', docKey: PACK_KEY, before: 'tangerine', after: 'custom-1' }).journal
+  assert.equal(unsyncedEdits(both), 1, 'one edit, never two')
+  const back = undo(both)!
+  assert.deepEqual(back.packs, {}, 'one ⌘Z removes the pack…')
+  assert.equal(back.preset, 'tangerine', '…and puts the previous pack back')
+  assert.equal(back.journal.undone, 2)
+  const forward = redo(back.journal)!
+  assert.deepEqual([forward.packs, forward.preset], [made, 'custom-1'], 'and one ⇧⌘Z brings both')
+})
+
+test('6.4: the flush carries the own packs, whole, only when they are owed — beside the docs and the preset, in one body', () => {
+  const made = { 'custom-1': record('Studio Warm') }
+  const edited = recordsEdit(EMPTY_JOURNAL, {}, made).journal
+  assert.deepEqual(flushPayload(edited, { home: doc('a') }, 'paper', made), { docs: {}, packs: made })
+  const all = append(edit(edited, 'home', doc(), doc('a')).journal, { txn: 'x', docKey: PACK_KEY, before: 'paper', after: 'custom-1' }).journal
+  assert.deepEqual(flushPayload(all, { home: doc('a') }, 'custom-1', made), { docs: { home: doc('a') }, preset: 'custom-1', packs: made })
+  assert.deepEqual(flushPayload(edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal, { home: doc('a') }, 'paper', made), { docs: { home: doc('a') } }, 'packs are sent only when owed')
+  // an empty map is a real value — every own pack reset — and is sent as one
+  assert.deepEqual(flushPayload(recordsEdit(EMPTY_JOURNAL, made, {}).journal, {}, 'paper', {}), { docs: {}, packs: {} })
+  // the sign-out's record and body carry them too
+  const owed = owedOf('p1', { baseRevision: 3, docs: {}, journal: edited, packs: made }) as OwedRecord
+  assert.deepEqual(owed.packs, made)
+  assert.deepEqual(JSON.parse(sendBody(owed)), { base: 3, docs: {}, packs: made })
+})
+
+test('6.4: our own tab-close flush is recognised with owed own packs only when the server holds this device\'s very map', () => {
+  const made = { 'custom-1': record('Studio Warm') }
+  const local = { baseRevision: 4, docs: {}, journal: recordsEdit(EMPTY_JOURNAL, {}, made).journal, packs: made }
+  assert.equal(ownFlushLanded(local, 5, {}, 'paper', { 'custom-1': record('Studio Warm') }), true, 'base + 1 and the map is ours, whatever object holds it')
+  assert.equal(ownFlushLanded(local, 5, {}, 'paper', { 'custom-1': record('Another') }), false, 'another session saved other packs')
+  assert.equal(ownFlushLanded(local, 5, {}, 'paper'), false, 'packs nobody read are never ours')
+  assert.equal(ownFlushLanded(local, 6, {}, 'paper', made), false, 'two writes past the base is not our one')
+})
+
+test('6.4: a hydrate keeps this device\'s own packs with an equal revision, the server\'s otherwise — and a record from before 6.4 takes the server\'s', () => {
+  const mine = { 'custom-1': record('Studio Warm') }
+  const cloud = { paper: record('Paper, tuned') }
+  assert.equal(hydratedPacks(hydrationFor({ baseRevision: 4 }, 4), { packs: mine }, cloud), mine, 'reload, unsynced: this device\'s')
+  assert.equal(hydratedPacks(hydrationFor({ baseRevision: 4 }, 5), { packs: mine }, cloud), cloud, 'another session moved the revision')
+  assert.equal(hydratedPacks(hydrationFor({ baseRevision: 4 }, 4), {}, cloud), cloud, 'a record from before 6.4 holds none')
+  assert.equal(hydratedPacks(hydrationFor(null, 0), null, cloud), cloud, 'no record at all')
+  // and a record from before 6.4 owes nothing of packs: its journal has no such key, so the flush sends none
+  assert.deepEqual(flushPayload(edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal, { home: doc('a') }, 'paper'), { docs: { home: doc('a') } })
+})

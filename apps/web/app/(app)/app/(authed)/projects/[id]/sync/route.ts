@@ -4,7 +4,9 @@ import { docSchema } from '@inflozo/section-runtime'
 import { isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
 import { heldElsewhere } from '@/lib/lock'
+import { isCustom } from '@/lib/pack-edit'
 import { docRefusal } from '@/lib/pilots'
+import { ownPacksOf } from '@/lib/style-pack'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -37,6 +39,13 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * revision for both, and a refused call writes neither (`20261004120000_sync_style_pack_preset.sql`). Only a preset this
  * build knows is accepted, refused HERE as a 422 — inside the RPC a junk id would simply be stored, and the next read
  * would paint Paper over it (`presetIdOf`). `brand` is never written: the RPC sets the one key.
+ *
+ * STORY 6.4 — AND THE PROJECT'S OWN PACKS (FR-E3): the body may carry `packs`, the WHOLE `style_pack.packs` map, beside the
+ * docs and the preset — or alone — and the RPC writes it in the same compare-and-set (`p_packs`,
+ * `20261004200000_sync_style_pack_packs.sql`). EVERY RECORD IS VALIDATED HERE, BEFORE THE WRITE (AD-36): each entry must
+ * survive `ownPacksOf` — the one reading rule every reader asks — or the body is a 422 "Not a Style Pack" and nothing is
+ * written; what is written is what was validated. A `preset` may now name a pack the project made (`custom-<n>`), and
+ * still nothing else.
  */
 
 export const dynamic = 'force-dynamic'
@@ -68,17 +77,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
 
-  const { base, docs, session, preset } = body as { base?: unknown; docs?: unknown; session?: unknown; preset?: unknown }
+  const { base, docs, session, preset, packs } = body as { base?: unknown; docs?: unknown; session?: unknown; preset?: unknown; packs?: unknown }
   // `Number.isSafeInteger` and not `typeof === 'number'`: `NaN`, `Infinity` and `1e300` are all numbers, and a base
   // the database cannot compare is a compare-and-set that silently never matches.
   if (!Number.isSafeInteger(base) || (base as number) < 0) return no(400, 'Bad base revision')
   if (typeof docs !== 'object' || docs === null || Array.isArray(docs)) return no(400, 'Bad docs')
 
-  // Story 6.3: a preset this build knows, or none — `presetOf` searches, so `__proto__` is no preset either
-  if (preset !== undefined && (typeof preset !== 'string' || presetOf(preset) === undefined)) return no(422, 'Not a Style Pack')
+  // Story 6.3: a preset this build knows, or none — `presetOf` searches, so `__proto__` is no preset either. Story 6.4: or a
+  // pack the project made, `custom-<n>` — and still nothing else
+  if (preset !== undefined && (typeof preset !== 'string' || (presetOf(preset) === undefined && !isCustom(preset)))) return no(422, 'Not a Style Pack')
+  // Story 6.4 — the own packs, whole: an object whose every entry survives the one reading rule (AD-36), else nothing is
+  // written. What reaches the RPC is what was validated.
+  const owned = packs === undefined ? undefined : ownPacksOf({ packs })
+  if (packs !== undefined && (typeof packs !== 'object' || packs === null || Array.isArray(packs) || Object.keys(owned ?? {}).length !== Object.keys(packs).length)) return no(422, 'Not a Style Pack')
   const keys = Object.keys(docs as Record<string, unknown>)
-  // a body with a preset and no docs is a write: the pack alone was changed
-  if (keys.length === 0 && preset === undefined) return no(400, 'Nothing to write')
+  // a body with a preset or own packs and no docs is a write: the pack alone was changed
+  if (keys.length === 0 && preset === undefined && packs === undefined) return no(400, 'Nothing to write')
 
   const parsed: Record<string, unknown> = Object.create(null)
   // the designs read while checking this body, each once
@@ -122,6 +136,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     p_base: base as number,
     // Story 6.3: null writes no pack — the function's own default, and every body that carries none
     p_preset: (preset as string | undefined) ?? null,
+    // Story 6.4: the validated own packs, whole, or null — which writes no `packs` at all
+    p_packs: owned ?? null,
   })
   if (error) {
     // the CODE, never the message: a Postgres message can quote the row it refused
@@ -138,23 +154,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // with ITS OWN write, and both used to open "changed somewhere else" over work that was safely stored. If every
     // doc this request carries is exactly what the server holds, there is nothing to write and nothing to refuse —
     // the editor adopts the revision. A real second writer's doc differs, and gets the 409 it always got. Story 6.3:
-    // and the preset it carries is the server's `style_pack.preset` — a pack-only body asks that alone.
+    // and the preset it carries is the server's `style_pack.preset` — a pack-only body asks that alone. Story 6.4: and the
+    // own packs it carries are the server's `style_pack.packs`, as stored (`stable`)
     const [{ data: rows }, { data: project }] = await Promise.all([
       keys.length === 0 ? { data: [] } : supabase.from('project_templates').select('template_key, doc').eq('project_id', projectId).in('template_key', keys),
-      preset === undefined ? { data: null } : supabase.from('projects').select('style_pack').eq('id', projectId).maybeSingle(),
+      preset === undefined && packs === undefined ? { data: null } : supabase.from('projects').select('style_pack').eq('id', projectId).maybeSingle(),
     ])
     const held = new Map((rows ?? []).map((r) => [r.template_key as string, docSchema.safeParse(r.doc)]))
     const same = keys.every((key) => {
       const there = held.get(key)
       return there?.success === true && stable(there.data) === stable(parsed[key])
     })
-    const packThere = preset === undefined || (project?.style_pack as { preset?: unknown } | null | undefined)?.preset === preset
+    const stored = project?.style_pack as { preset?: unknown; packs?: unknown } | null | undefined
+    const packThere = preset === undefined || stored?.preset === preset
+    const packsThere = owned === undefined || stable(stored?.packs ?? {}) === stable(owned)
     // review, 2026-10-04 — A PACK-ONLY BODY PROVES FAR LESS THAN A DOC DOES: with no doc, `same` is true of nothing at all,
     // and one of twelve preset ids matching says nothing about who moved the revision. So it is "already there" only where
     // the server stands exactly ONE write past the base — this body's own, its answer lost. Further on, another session
     // wrote docs this editor has never read, and adopting that revision over them would let its next edit overwrite them.
     const ours = keys.length > 0 || answer.revision === (base as number) + 1
-    if (same && packThere && ours) return json(200, { applied: true, revision: answer.revision })
+    if (same && packThere && packsThere && ours) return json(200, { applied: true, revision: answer.revision })
   }
   return json(answer.applied ? 200 : 409, { applied: answer.applied, revision: answer.revision })
 }

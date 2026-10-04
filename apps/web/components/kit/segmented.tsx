@@ -22,7 +22,13 @@ import { MoonBadge } from './moon-badge'
    the label on the left at 12/500, the track on the right, and fixed 34 × 26 items at 12px, the current one surface
    at a 20px radius and 12/600 with no shadow, as D5d draws it. The radio group and its keys are the Kit's own, above;
    only the drawing differs. Its `note` is the Kit's helper caption under the whole row (11px, `:31`), as D5d draws one
-   under the Pagination row, and it is the radio group's description (R-181). */
+   under the Pagination row, and it is the radio group's description (R-181).
+
+   Story 6.4 — THE DENSE GEOMETRY is S7a's Style Pack rows (`S7 Style Packs.dc.html` S7a, the four segmented rows under the
+   font rows): the row name 11.5/500 ink-soft 4px above the track, the track padded 2, each segment 3px tall padding and
+   11px, the chosen one 600 ink on surface with sm — at the frame's own `normal` line height, so a row is as tall as S7a
+   draws it. The radio group, its one Tab stop and its arrows are the Kit's own, above; only the drawing differs (R-236:
+   built from the existing drawings, exactly). */
 
 /** A value, and the words the panel prints for it. A bare string is both. */
 export type Option = string | { value: string; label: string; greyed?: string }
@@ -65,6 +71,7 @@ export function Segmented({
   aside,
   layout = 'stacked',
   note,
+  dense = false,
   onChange,
 }: {
   id: string
@@ -80,6 +87,8 @@ export function Segmented({
   layout?: 'stacked' | 'inline'
   /** the inline layout's helper caption under the row, read as the group's description (Story 5.16, R-181) */
   note?: string
+  /** Story 6.4 — S7a's dense rows (the Style Pack panel) */
+  dense?: boolean
   onChange?: (value: string) => void
 }) {
   const on = marked(active, greyed)
@@ -131,8 +140,8 @@ export function Segmented({
     )
   }
   return (
-    <div className="flex flex-col gap-[5px]">
-      <span className={`flex items-center gap-[6px] text-control-label font-medium ${labelTone(greyed)}`}>
+    <div className={`flex flex-col ${dense ? 'gap-1' : 'gap-[5px]'}`}>
+      <span className={`flex items-center gap-[6px] ${dense ? 'text-[11.5px] leading-[normal]' : 'text-control-label'} font-medium ${labelTone(greyed)}`}>
         <span id={`${id}-label`}>{label}</span>
         {moon ? <MoonBadge /> : null}
         {aside}
@@ -141,7 +150,7 @@ export function Segmented({
         id={id}
         role="radiogroup"
         aria-labelledby={`${id}-label`}
-        className={`flex rounded-pill p-[3px] ${ring} ${greyed ? 'bg-grey-field' : 'bg-paper-sunk'}`}
+        className={`flex rounded-pill ${dense ? 'p-[2px]' : 'p-[3px]'} ${ring} ${greyed ? 'bg-grey-field' : 'bg-paper-sunk'}`}
         onKeyDown={live ? (event) => radioKeys(event, list, onChange) : undefined}
         {...greyedProps(id, greyed)}
       >
@@ -158,7 +167,7 @@ export function Segmented({
               aria-describedby={one ? `${id}-reason` : undefined}
               tabIndex={!greyed && i === stop ? 0 : -1}
               onClick={live && !one ? () => onChange(option.value) : undefined}
-              className={`flex-1 rounded-[20px] py-1 text-center text-[11.5px] ${ring} ${
+              className={`flex-1 rounded-[20px] text-center ${dense ? 'py-[3px] text-[11px] leading-[normal]' : 'py-1 text-[11.5px]'} ${ring} ${
                 active_
                   ? `font-semibold shadow-sm ${greyed ? 'bg-paper-raised text-ink-faint' : 'bg-surface text-ink'}`
                   : `font-medium ${greyed ? 'text-line-strong cursor-not-allowed' : one ? 'text-ink-faint cursor-not-allowed' : 'text-ink-soft'}`

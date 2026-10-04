@@ -1,3 +1,4 @@
+import type { ComponentProps, CSSProperties, ReactNode, Ref } from 'react'
 import { ProBadge } from './badge'
 import { Pencil } from './icons'
 import { ring } from './greyed'
@@ -10,7 +11,14 @@ import { ring } from './greyed'
    the editor's list wraps it in an option button and the New project window in a native radio's
    label, so it is a `<span>` (phrasing content inside either) and takes the caller's classes for
    the ring a `:checked` radio draws. It imports nothing of the pool: its colours and face arrive
-   as data, handed down from the server (DW-323). */
+   as data, handed down from the server (DW-323).
+
+   STORY 6.4 — THE PENCIL IS ITS OWN BUTTON (`PackPencil`), because the editor's cells are OPTIONS of a
+   listbox and an option may hold nothing interactive (axe's `nested-interactive`): the editor lays
+   each pencil over its cell from outside the listbox, exactly where S7a draws it, and `/kit` still
+   draws it inside (`editable`). A pack the project made is S7a's "Maya's Warm" cell (`custom`):
+   "Ag" at 14, and its name over a dashed underline with the 11px pencil after it — drawn here
+   for the option's own name, and laid over by the editor's name button, which is what you press. */
 
 export function PackCell({
   name,
@@ -18,6 +26,7 @@ export function PackCell({
   palette,
   active = false,
   editable = false,
+  custom = false,
   className = '',
 }: {
   name: string
@@ -39,29 +48,31 @@ export function PackCell({
   editable?: boolean
   /** Story 6.3 — the caller's ring rules: D4a's `:checked` radio rings its cell from CSS, never from a prop */
   className?: string
+  /** Story 6.4 — a pack the project made: S7a's dashed name. Its name and pencil are the editor's button, laid over this
+   *  line (`CustomName`), so here the line keeps its place and its words for a screen reader, drawn by the button */
+  custom?: boolean
 }) {
   return (
     <span
       className={`relative flex flex-col gap-[3px] rounded-sm border border-line bg-surface p-[6px] ${active ? 'shadow-[0_0_0_2px_var(--color-coral)]' : ''} ${className}`}
     >
-      {editable ? (
-        <button
-          type="button"
-          aria-label={`Edit ${name}`}
-          className={`absolute top-1 right-1 inline-flex size-[15px] items-center justify-center rounded-full border border-line-strong bg-surface text-ink-soft ${ring}`}
-        >
-          <Pencil size={8} />
-        </button>
-      ) : null}
+      {editable ? <PackPencil label={`Edit ${name}`} className="absolute top-1 right-1" /> : null}
       {/* Story 6.2: the glyph is the pack's own face as the pool ships it — a weight it lacks is never synthesised */}
-      <span aria-hidden style={{ fontFamily: glyphFamily, fontSynthesis: 'none' }} className="text-[15px] font-semibold">
+      <span aria-hidden style={{ fontFamily: glyphFamily, fontSynthesis: 'none' }} className={`${custom ? 'text-[14px]' : 'text-[15px]'} font-semibold`}>
         Ag
       </span>
-      <span className="text-[10.5px] font-semibold text-ink">
-        {name}
-        {/* the coral ring's meaning, said: the ring alone carries it to the eye and to nothing else (Story 6.2) */}
-        {active ? <span className="sr-only">, Current</span> : null}
-      </span>
+      {custom ? (
+        // the name's words are the option's, so a screen reader hears the cell whole; the button over it draws them
+        <CustomName name={name} className="text-transparent [&_*]:border-transparent [&_svg]:invisible">
+          {active ? <span className="sr-only">, Current</span> : null}
+        </CustomName>
+      ) : (
+        <span className="text-[10.5px] font-semibold text-ink">
+          {name}
+          {/* the coral ring's meaning, said: the ring alone carries it to the eye and to nothing else (Story 6.2) */}
+          {active ? <span className="sr-only">, Current</span> : null}
+        </span>
+      )}
       <span aria-hidden className="flex gap-[3px]">
         {palette.map((c, i) => (
           <span key={i} style={{ background: c }} className="size-[9px] rounded-full shadow-hairline-inset" />
@@ -71,18 +82,71 @@ export function PackCell({
   )
 }
 
-/** The dashed cell that makes a new pack. */
-export const NewPackCell = () => (
-  <button
-    type="button"
-    className={`flex flex-col items-center justify-center gap-[3px] rounded-sm border-[1.5px] border-dashed border-line-strong text-ink-soft transition-colors hover:border-coral ${ring}`}
-  >
-    <span aria-hidden className="text-body leading-none">
-      +
+/** S7a's corner pencil (`S7 Style Packs.dc.html` S7a, `title="Edit pack"`): a 15px circle, 1px line-strong, surface,
+ *  holding the frame's 8px pencil at stroke 2 in ink-soft — `box-content`, as the frame draws it (17 across, measured).
+ *  Story 6.4 — its own button, so the editor can lay it over a cell from outside the listbox; the caller places it.
+ *  The circle is the button's DRAWING, not its box: on a touch screen the editor's 44px rule (D8a, `globals.css`) grows
+ *  the target, the circle stays S7a's at its centre, and the editor centres the target on the circle's drawn place
+ *  (executed at 834 × 1112 with touch: as the button's own border it was a 46px circle over the pack's name). */
+export function PackPencil({ label, className = '', ...rest }: ComponentProps<'button'> & { label: string }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      className={`inline-flex items-center justify-center rounded-full disabled:cursor-not-allowed disabled:opacity-35 ${ring} ${className}`}
+      {...rest}
+    >
+      <span className="box-content inline-flex size-[15px] items-center justify-center rounded-full border border-line-strong bg-surface text-ink-soft">
+        <Pencil size={8} strokeWidth={2} />
+      </span>
+    </button>
+  )
+}
+
+/** S7a's custom pack name (`"Maya's Warm"`): 10.5/600 over a 1px dashed line-strong underline, a text cursor (it renames),
+ *  and the frame's 11px pencil at stroke 1.5, 4px after it. One line: a name longer than its cell ends in an ellipsis, so
+ *  a forty-character name never makes its row taller (the app's panel is 280 wide, S7a's 320). */
+export function CustomName({ name, className = '', children }: { name: string; className?: string; children?: ReactNode }) {
+  return (
+    <span className={`flex min-w-0 items-center gap-1 ${className}`}>
+      <span className="min-w-0 cursor-text truncate border-b border-dashed border-line-strong text-[10.5px] font-semibold">{name}</span>
+      <Pencil size={11} className="shrink-0 text-ink-soft" />
+      {children}
     </span>
-    <span className="text-[10px] font-semibold">New pack</span>
-  </button>
-)
+  )
+}
+
+/** The dashed cell that makes a new pack — S7a's: on hover a coral border and coral-deep words. Story 6.4: it acts, and
+ *  the editor places it in its grid (`style`). */
+export function NewPackCell({
+  id,
+  ref,
+  label = 'New pack',
+  style,
+  onClick,
+}: {
+  id?: string
+  ref?: Ref<HTMLButtonElement>
+  label?: string
+  style?: CSSProperties
+  onClick?: () => void
+} = {}) {
+  return (
+    <button
+      ref={ref}
+      id={id}
+      type="button"
+      onClick={onClick}
+      style={style}
+      className={`flex flex-col items-center justify-center gap-[3px] rounded-sm border-[1.5px] border-dashed border-line-strong text-ink-soft transition-colors hover:border-coral hover:text-coral-deep disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-line-strong disabled:hover:text-ink-soft ${ring}`}
+    >
+      <span aria-hidden className="text-body leading-none">
+        +
+      </span>
+      <span className="text-[10px] font-semibold">{label}</span>
+    </button>
+  )
+}
 
 /** The variant thumb: a name paired with one line, and its Pro mark when it carries one. */
 export function VariantThumb({

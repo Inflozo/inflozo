@@ -1,10 +1,14 @@
+import { headers } from 'next/headers'
 import { cache } from 'react'
 import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionRegistryEntry } from '@inflozo/library'
 import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources } from '@/lib/controls-review'
+import { hexOf, type PackRecords, type PairingChoice } from '@/lib/pack-edit'
 import type { PackChoice } from '@/lib/pack-switch'
-import { packChoices, presetIdOf } from '@/lib/style-pack'
+import { ownPacksOf, packChoices, packIdOf, pairingChoices, pairingGlyphFacesCss } from '@/lib/style-pack'
+import { isAccent } from '@/lib/probe-rule'
+import { canvasRouteOn } from '@/routing'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
@@ -166,8 +170,26 @@ export type EditorData = {
   preset: string
   /** STORY 6.3 — EVERY PRESET AS THE EDITOR PAINTS IT (`packChoices`): names, dots, the Background role's swatches per mode
    *  (Story 5.6's, now per pack, so the panel's dots are what the canvas is painting) and each canvas token block and
-   *  `@font-face` rules — server-derived data, so no client carries the library's presets or the font pool (DW-323). */
+   *  `@font-face` rules — server-derived data, so no client carries the library's presets or the font pool (DW-323).
+   *  Story 6.4: each with the library's record, what Edit pack opens on and Reset to defaults puts back. */
   packs: readonly PackChoice[]
+  /** STORY 6.4 — THE PROJECT'S OWN PACKS (`style_pack.packs`), through `ownPacksOf`'s one rule (AD-36): an edited preset
+   *  under its id, a pack it made under `custom-<n>`. `preset` above may name one of the latter (`packIdOf`). */
+  ownPacks: PackRecords
+  /** STORY 6.4 — every pool pairing, as the font rows, the pairing menu and the browser's engine need it (`pairingChoices`) */
+  pairings: readonly PairingChoice[]
+  /** STORY 6.4 — the `@font-face` rules the font rows and the pairing menu draw "Ag" and "Aa" with, from the canvas route as
+   *  this page sees it (`pairingGlyphFacesCss`) */
+  pairingFaces: string
+  /** STORY 6.4 — S7d's "From your site": the linked site's stored brand accent (Story 3.4), through `isAccent`, as
+   *  `#RRGGBB` — or null where no site is linked or it holds none */
+  siteAccent: string | null
+}
+
+/** STORY 6.4 — the linked site's stored brand accent as the colour picker offers it: `#rgb` expanded, uppercase — or null. */
+export function siteAccentOf(siteSettings: unknown): string | null {
+  const accent = (siteSettings as { brand?: { accent?: unknown } } | null | undefined)?.brand?.accent
+  return isAccent(accent) ? hexOf(accent) : null
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -355,7 +377,12 @@ export async function editorData(projectId: string): Promise<EditorData> {
        about the document. The client's own `acquire` on mount is the real decision either way — this is only what
        it paints with for the one round trip before that answer arrives. */
     lock: lock.error || !lock.data ? null : rowFrom(lock.data, Date.now()),
-    preset: presetIdOf(project?.style_pack ?? null),
+    // Story 6.4 — the pack in force may be one the project made (`packIdOf`), and its own packs come with it, validated
+    preset: packIdOf(project?.style_pack ?? null),
+    ownPacks: ownPacksOf(project?.style_pack ?? null),
     packs: packChoices(),
+    pairings: pairingChoices(),
+    pairingFaces: pairingGlyphFacesCss(canvasRouteOn((await headers()).get('host'))),
+    siteAccent: siteAccentOf(siteRow?.data?.site_settings),
   }
 }

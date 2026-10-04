@@ -141,3 +141,80 @@ test('packFacesCss declares every preset\'s heading face under the prefix, from 
   for (const src of css.matchAll(/src: url\(([^)]+)\)/g)) assert.match(src[1] as string, /^\/canvas\?font=[a-z0-9-]+\.woff2&h=[0-9a-f]{12}$/)
   assert.doesNotMatch(css, /font-style: italic/, 'a heading face is roman only (§D.a rule 1)')
 })
+
+/* ───────── STORY 6.4 — a project's own packs: read through the one rule (AD-36), worn by the card, and the pool's pairings
+   handed to the browser without the pool's record */
+
+test('ownPacksOf keeps a project\'s valid own packs and drops each hostile one — a stored column is never trusted', async () => {
+  const { packChoices } = await import('./lib/style-pack.ts')
+  const paper = packChoices()[0]!.record
+  const good = { ...paper, name: 'Studio Warm', light: { ...paper.light, accent: '#1E6BFF' } }
+  const stored = {
+    preset: 'custom-1',
+    brand: { accent: '#2F4A3E' },
+    packs: {
+      'custom-1': good,
+      tangerine: { ...good, name: 'Tangerine' },
+      // the I/O matrix's hostile stored values, each its own record
+      'custom-2': { ...good, light: { ...good.light, accent: '#fff;}body{display:none' } },
+      'custom-3': { ...good, pillRadius: '1px;}*{x:y' },
+      'custom-4': { ...good, pairing: 'D99' },
+      'custom-5': { ...good, width: 'huge' },
+      'custom-6': { ...good, name: 'x'.repeat(300) },
+      harbor: good,
+      // an OWN `__proto__` key, as a request body's JSON carries one (a literal's `__proto__:` would set the prototype)
+      ...JSON.parse(`{"__proto__": ${JSON.stringify(good)}}`),
+    },
+  }
+  const { ownPacksOf } = await import('./lib/style-pack.ts')
+  assert.deepEqual(Object.keys(ownPacksOf(stored)).sort(), ['custom-1', 'tangerine'])
+  for (const junk of [null, undefined, 'paper', {}, { packs: 'x' }, { packs: [good] }, { preset: 'paper' }]) assert.deepEqual(ownPacksOf(junk), {}, JSON.stringify(junk))
+})
+
+test('packIdOf is the pack in force: a preset, or a custom-<n> ownPacksOf holds — anything else is Paper', async () => {
+  const { packChoices, packIdOf } = await import('./lib/style-pack.ts')
+  const paper = packChoices()[0]!.record
+  const made = { ...paper, name: 'Studio Warm' }
+  assert.equal(packIdOf({ preset: 'mono' }), 'mono')
+  assert.equal(packIdOf({ preset: 'custom-2', packs: { 'custom-2': made } }), 'custom-2')
+  // a custom id naming no valid pack is Paper — the I/O matrix's "a dropped custom pack is gone, and a preset naming it is Paper"
+  assert.equal(packIdOf({ preset: 'custom-2', packs: {} }), DEFAULT_PRESET)
+  assert.equal(packIdOf({ preset: 'custom-2', packs: { 'custom-2': { ...made, pillRadius: '1px;}*{x:y' } } }), DEFAULT_PRESET)
+  for (const junk of [{ preset: 'harbor' }, { preset: '__proto__' }, null, 'mono', {}, { preset: 7 }]) assert.equal(packIdOf(junk), DEFAULT_PRESET, JSON.stringify(junk))
+})
+
+test('placeholderFor paints an own pack\'s light background, text and accent — and the site\'s accent still wins (FR-C4)', async () => {
+  const { packChoices } = await import('./lib/style-pack.ts')
+  const paper = packChoices()[0]!.record
+  const made = { ...paper, name: 'Studio Warm', light: { ...paper.light, background: '#FFF4EA', accent: '#1E6BFF', text: '#2B1D12' } }
+  const card = placeholderFor({ preset: 'custom-1', packs: { 'custom-1': made } })
+  assert.deepEqual([card.name, card.surface, card.text, card.accent], ['Studio Warm', '#FFF4EA', '#2B1D12', '#1E6BFF'])
+  // an edited preset paints its own values too
+  assert.equal(placeholderFor({ preset: 'paper', packs: { paper: made } }).surface, '#FFF4EA')
+  assert.equal(placeholderFor({ preset: 'custom-1', packs: { 'custom-1': made }, brand: { accent: '#2F4A3E' } }).accent, '#2F4A3E')
+  // a hostile own record never reaches the card's style: the library's Paper paints
+  assert.equal(placeholderFor({ preset: 'paper', packs: { paper: { ...made, light: { ...made.light, background: 'red;}' } } } }), PRESETS[DEFAULT_PRESET])
+})
+
+test('pairingChoices hands every pool pairing, in §D.c\'s order, with its fonts and canvas faces — and nothing of the pool\'s record', async () => {
+  const { POOL } = await import('@inflozo/library/packs')
+  const { pairingChoices, pairingGlyphFacesCss } = await import('./lib/style-pack.ts')
+  const pairings = pairingChoices()
+  // the count derived from the pool, never written here
+  assert.deepEqual(pairings.map((p) => p.id), POOL.pairings.map((p) => p.id))
+  for (const p of pairings) {
+    assert.match(p.faces, /src: url\(canvas\?font=[a-z0-9-]+\.woff2&h=[0-9a-f]{12}\)/, p.id)
+    assert.match(p.glyphFamily, new RegExp(`^'${PACK_FAMILY_PREFIX}`), p.id)
+    assert.match(p.bodyGlyphFamily, new RegExp(`^'${PACK_FAMILY_PREFIX}`), p.id)
+    assert.equal(p.families.length, 2)
+    assert.doesNotMatch(JSON.stringify(p), /licenceFile|sha256/, `${p.id}: the pool's record rides along`)
+  }
+  // the glyph faces: roman only, prefixed, and never one the layout's packFacesCss already declares
+  const glyphs = pairingGlyphFacesCss('/canvas')
+  assert.doesNotMatch(glyphs, /font-style: italic/)
+  const declared = new Set([...packFacesCss('/canvas').matchAll(/src: url\(([^)]+)\)/g)].map((m) => m[1]))
+  for (const src of glyphs.matchAll(/src: url\(([^)]+)\)/g)) assert.ok(!declared.has(src[1]), `${src[1]} is declared twice`)
+  // the control: every pool family is drawable — a family with no roman face here or in the layout's would be no "Ag"
+  const families = new Set([...`${glyphs}\n${packFacesCss('/canvas')}`.matchAll(/font-family: '([^']+)'/g)].map((m) => m[1]))
+  for (const f of Object.keys(POOL.families)) assert.ok(families.has(`${PACK_FAMILY_PREFIX}${f}`), f)
+})

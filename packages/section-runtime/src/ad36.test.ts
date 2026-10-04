@@ -11,7 +11,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
-import { PAGE_NUMBER_HBS, allowedMarks, assertBindableAttr, bindExpr, linkAttributes, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { PAGE_NUMBER_HBS, allowedMarks, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { REFERENCE_PACK } from './reference.ts'
 import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { IconLookup } from '@inflozo/library'
@@ -618,4 +619,27 @@ test("AD-36 · a crafted Portal action never borrows an ask's gate or an attribu
   assert.ok(linkOn({ portal: 'signup' }).theme.startsWith('{{#if @site.allow_self_signup}}'))
   assert.ok(linkOn({ portal: 'account/plans' }).theme.startsWith('{{#if @site.paid_members_enabled}}'))
   for (const quiet of ['signin', 'account']) assert.doesNotMatch(linkOn({ portal: quiet }).theme, /@site/)
+})
+
+// ── STORY 6.4 — a project's own Style Pack record (FR-E3): a user-writable record reaches a `<style>` ─────────────────
+// A project's own packs are records its owner's session may write (`projects.style_pack.packs`, the column grant), and
+// every value of one becomes a declaration in the canvas document's token block. `packTokens` is the one door every pack
+// goes through, so it is the guard: each hostile authored value is refused BY NAME before a block is written, and the
+// legitimate record still emits. The route's 422 and the readers' drop (`apps/web/lib/pack-edit.ts`'s `ownPacksIn`) are
+// this same refusal asked earlier.
+test("AD-36 · a project's own Style Pack record (Story 6.4): each hostile authored value is refused by name; the legitimate record emits", () => {
+  const ok = REFERENCE_PACK
+  // the control: the legitimate record emits its own values
+  const css = packTokensCss({ ...ok, light: { ...ok.light, accent: '#1E6BFF' } })
+  assert.match(css, /^ {2}--accent: #1E6BFF;$/m)
+  for (const [why, hostile, refusal] of [
+    ['a colour carrying ;}', { ...ok, light: { ...ok.light, accent: '#fff;}body{display:none' } }, /^light accent: /],
+    ['a pill radius carrying ;}', { ...ok, pillRadius: '1px;}*{x:y' }, /^pillRadius: /],
+    ['a scrim outside 0–1', { ...ok, dark: { ...ok.dark, scrim: 1.5 } }, /^dark scrim: /],
+    ['a step not in SCALES', { ...ok, width: 'huge' }, /^width: "huge" is not a step/],
+    ['a family list with an unbalanced quote', { ...ok, fonts: { ...ok.fonts, heading: { ...ok.fonts.heading, family: "'Fraunces, serif; } body { color: red" } } }, /^heading font: /],
+  ] as const) {
+    assert.throws(() => packTokens(hostile as never), { message: refusal }, why)
+    assert.throws(() => packTokensCss(hostile as never), { message: refusal }, `${why}: the block is never written`)
+  }
 })

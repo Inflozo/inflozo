@@ -111,6 +111,10 @@
 // pack re-roll that one ⌘Z undoes — and adds step 102, in contexts of its own: a press on the Style Pack list switching the
 // canvas behind S7b's pill, ⌘S writing `projects.style_pack.preset` with the revision moved by one and a seeded `brand`
 // untouched, the sync route's 422 for an unknown preset, and a fresh browser opening the project in the pack.
+// Story 6.4 adds step 103, in contexts of its own: Tangerine's pencil and hex field with Save pack, ⌘S writing
+// `style_pack.packs.tangerine` (the brand untouched, the revision +1), a New pack written with the switch in one save, the
+// live route's 422 to each hostile record (AD-36), a fresh browser opening in `custom-1` at Paper's address, two ⌘Z back to
+// the seed's look, and axe over the list, the pairing menu, Edit pack and the picker over a warning.
 // Story 5.13 adds step 89, inside the same session, and it opens with the MEASUREMENT because R-166 is a ruling about
 // geometry: B9's pill at the canvas foot, dashed with its grey dot, at 24px, its box never intersecting the page
 // card's at Desktop, Tablet OR Mobile, with R-139's 32px ground unmoved either side; R-118's absences on Home (no
@@ -7461,6 +7465,172 @@ async function main() {
     await freshContext.close()
     // the seed's own pack again, the brand the walk planted taken off
     await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ style_pack: seeded102?.style_pack ?? { preset: 'paper' } }) })
+
+    // ── step 103 — STORY 6.4: A PROJECT'S OWN PACKS, EDITED AND SAVED WITH THE DOCS (FR-E3, FR-D9, AD-36) ──
+    /* Tangerine's pencil, its Light Accent through the hex field, Save pack, then ⌘S: `style_pack.packs.tangerine` holds the
+       edited record, the seeded `brand` is untouched, the preset is still Paper and the revision moved by ONE. "+ New pack",
+       named, its Base recoloured, saved, ⌘S: `packs['custom-1']` and `preset` both written in one save. The live route then
+       refuses each hostile record with a 422 and writes nothing (AD-36's instance). A fresh browser opens the project in
+       `custom-1` — the canvas asked for at Paper's address and wearing the pack's own block. Two ⌘Z put the seed's look back
+       and a ⌘S saves it; axe, in a context of its own, finds nothing in the list, Edit pack, the picker or the pairing
+       menu; and the column is restored as the seed made it. */
+    const EDIT103 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pack-edit.ts')).href)
+    const W103 = EDIT103.PACK_EDIT_WORDS
+    const row103 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=style_pack,revision`)).body?.[0] ?? null
+    const seeded103 = await row103()
+    const planted103 = await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ style_pack: { preset: 'paper', brand: { seed: 'walk-103' } } }) })
+    const before103 = await row103()
+    check('step 103 — the fixture: Paper and no own pack, a brand seeded beside it through the service key',
+      (planted103.status === 200 || planted103.status === 204) && before103?.style_pack?.preset === 'paper' && before103?.style_pack?.packs === undefined && before103?.style_pack?.brand?.seed === 'walk-103', JSON.stringify(before103))
+    const tangerine103 = presets102.find((p) => p.id === 'tangerine')
+    const editViolations = []
+    const editContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(editContext, editViolations)
+    const ed = steady(await editContext.newPage())
+    await ed.goto(await magic(emailA), { waitUntil: 'load' })
+    await ed.goto(editorUrl(), { waitUntil: 'load' })
+    await ed.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await ed.waitForTimeout(600)
+    const save103 = async () => {
+      await ed.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+      await ed.keyboard.press('ControlOrMeta+s')
+      return ed.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED102, { timeout: 20000 }).then(() => true, () => false)
+    }
+    const hex103 = async (mode, role, value) => {
+      await ed.locator(`[data-swatch="${mode}-${role}"]`).click()
+      await ed.locator('#pack-picker-hex').fill(value)
+      await ed.locator('#pack-picker-hex').press('Enter')
+      await ed.keyboard.press('Escape')
+    }
+    const accent103 = () => ed.evaluate(() => getComputedStyle(document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.documentElement).getPropertyValue('--accent').trim().toUpperCase())
+    await ed.locator('#style-pack-change').click()
+    await ed.locator('[data-edit-pack="tangerine"]').click()
+    await ed.waitForSelector('dialog[data-pack-editor="edit"][open]', { timeout: 10000 })
+    const named103 = await ed.locator('#pack-name').inputValue()
+    await hex103('light', 'accent', '#1E6BFF')
+    await ed.locator('[data-save-pack]').click()
+    const said103 = await ed.waitForFunction((w) => document.getElementById('editor-said')?.textContent === w, W103.changed(tangerine103.name), { timeout: 10000 }).then(() => true, () => false)
+    const cell103 = await ed.locator('[data-style-pack="tangerine"] span[aria-hidden] > span').nth(1).evaluate((s) => getComputedStyle(s).backgroundColor)
+    check('step 103 — Edit pack on Tangerine, its Light Accent typed into the hex field, Save pack: "Changed Tangerine.", Tangerine\'s cell wears the colour, and Paper\'s canvas does not',
+      named103 === tangerine103.name && said103 && cell103 === 'rgb(30, 107, 255)' && (await accent103()) === presets102[0].light.accent.toUpperCase(), JSON.stringify({ named103, said103, cell103, accent: await accent103() }))
+    const synced103 = await save103()
+    const edited103 = await row103()
+    check('step 103 — ⌘S: style_pack.packs.tangerine holds the edited record, the seeded brand is untouched, the preset is still Paper, and the revision moved by exactly ONE',
+      synced103 && edited103?.style_pack?.packs?.tangerine?.light?.accent === '#1E6BFF' && edited103?.style_pack?.packs?.tangerine?.name === tangerine103.name &&
+      edited103?.style_pack?.brand?.seed === 'walk-103' && edited103?.style_pack?.preset === 'paper' && edited103?.revision === (before103?.revision ?? -2) + 1, JSON.stringify(edited103))
+    // + New pack: refused with no name, then named, its Base recoloured — one save writes the record and the switch
+    await ed.locator('#style-pack-new').click()
+    await ed.waitForSelector('dialog[data-pack-editor="new"][open]', { timeout: 10000 })
+    await ed.locator('[data-save-pack]').click()
+    const refusedName103 = await ed.locator('#pack-name-error').textContent().catch(() => null)
+    await ed.locator('#pack-name').fill('Studio Warm')
+    await hex103('light', 'background', '#FFF4EA')
+    await ed.locator('[data-save-pack]').click()
+    const madeSaid103 = await ed.waitForFunction((w) => document.getElementById('editor-said')?.textContent === w, PACK102.PACK_WORDS.said('Studio Warm'), { timeout: 15000 }).then(() => true, () => false)
+    const madeSynced103 = await save103()
+    const made103 = await row103()
+    check('step 103 — + New pack: refused with no name in its own words, then saved as one transaction — packs[\'custom-1\'] and preset written in one save, the revision moved by ONE, the brand untouched',
+      refusedName103 === W103.nameNeeded && madeSaid103 && madeSynced103 && made103?.style_pack?.preset === 'custom-1' && made103?.style_pack?.packs?.['custom-1']?.name === 'Studio Warm' &&
+      made103?.style_pack?.packs?.['custom-1']?.light?.background === '#FFF4EA' && made103?.style_pack?.packs?.tangerine?.light?.accent === '#1E6BFF' &&
+      made103?.style_pack?.brand?.seed === 'walk-103' && made103?.revision === (edited103?.revision ?? -2) + 1, JSON.stringify(made103))
+    // AD-36 — the live route refuses each hostile record with a 422, and nothing is written
+    const good103 = made103?.style_pack?.packs?.['custom-1'] ?? {}
+    const hostile103 = {
+      'an accent carrying ;}': { 'custom-1': { ...good103, light: { ...good103.light, accent: '#fff;}body{display:none' } } },
+      'a pill radius carrying ;}': { 'custom-1': { ...good103, pillRadius: '1px;}*{x:y' } },
+      'an unknown pairing': { 'custom-1': { ...good103, pairing: 'D99' } },
+      'a step not on the scale': { 'custom-1': { ...good103, width: 'huge' } },
+      'a 300-character name': { 'custom-1': { ...good103, name: 'x'.repeat(300) } },
+      'an id that is no pack': { harbor: good103 },
+      'a list, not a map': [good103],
+    }
+    const answers103 = {}
+    for (const [why, packs] of Object.entries(hostile103)) {
+      answers103[why] = await ed.evaluate(async ({ url, base, packs }) => {
+        const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ base, docs: {}, packs }) })
+        return { status: r.status, body: await r.text() }
+      }, { url: `${PREFIX}/projects/${P}/sync`, base: made103?.revision ?? 0, packs })
+    }
+    // …and a `__proto__` key, as a hand-made body's JSON carries one
+    answers103['a __proto__ id'] = await ed.evaluate(async ({ url, base, good }) => {
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: `{"base":${base},"docs":{},"packs":{"__proto__":${JSON.stringify(good)}}}` })
+      return { status: r.status, body: await r.text() }
+    }, { url: `${PREFIX}/projects/${P}/sync`, base: made103?.revision ?? 0, good: good103 })
+    const kept103 = await row103()
+    check('step 103 — the live sync route answers 422 "Not a Style Pack" to every hostile record, and writes nothing',
+      Object.values(answers103).every((a) => a.status === 422 && a.body === 'Not a Style Pack') && kept103?.revision === made103?.revision && JSON.stringify(kept103?.style_pack?.packs) === JSON.stringify(made103?.style_pack?.packs),
+      JSON.stringify({ answers103, kept103 }))
+    // A FRESH BROWSER, reading along beside the editing tab, opens the project in the pack it made
+    const fresh103Context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(fresh103Context, editViolations)
+    const fresh103 = steady(await fresh103Context.newPage())
+    await fresh103.goto(await magic(emailA), { waitUntil: 'load' })
+    await fresh103.goto(editorUrl(), { waitUntil: 'load' })
+    await fresh103.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const opened103 = await fresh103.evaluate(() => {
+      const frame = document.querySelector('section[aria-label="Canvas"] iframe')
+      return {
+        src: frame.getAttribute('src'),
+        wears: frame.dataset.pack ?? null,
+        bg: getComputedStyle(frame.contentDocument.documentElement).getPropertyValue('--bg-page').trim().toUpperCase(),
+        card: document.querySelector('[data-style-pack-card]')?.textContent ?? '',
+      }
+    })
+    check('step 103 — a fresh browser opens the project in custom-1: the canvas asked for at Paper\'s address (no &pack=), wearing the pack\'s own block, and the card naming it',
+      !/[?&]pack=/.test(opened103.src ?? '') && opened103.wears === 'custom-1' && opened103.bg === '#FFF4EA' && opened103.card.includes('Studio Warm'), JSON.stringify(opened103))
+    await fresh103Context.close()
+    // two ⌘Z — the New pack, whole, then Tangerine's edit — and a ⌘S: the seed's look again
+    await ed.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await ed.keyboard.press('ControlOrMeta+z')
+    await ed.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === 'paper', null, { timeout: 15000 }).catch(() => {})
+    await ed.keyboard.press('ControlOrMeta+z')
+    const undone103 = await save103()
+    const back103 = await row103()
+    check('step 103 — two ⌘Z and a ⌘S put the seed\'s look back: Paper in force, no own pack, the brand untouched — and the editing contexts record zero CSP violations',
+      undone103 && back103?.style_pack?.preset === 'paper' && Object.keys(back103?.style_pack?.packs ?? {}).length === 0 && back103?.style_pack?.brand?.seed === 'walk-103' && editViolations.length === 0,
+      JSON.stringify({ back103, editViolations }))
+    await handBack(ed)
+    await editContext.close()
+    // axe, in a context of its own (bypassCSP: axe is injected), holding the lock: the list, Edit pack, the picker, the menu
+    const axe103Context = await browser.newContext({ viewport: { width: 1440, height: 900 }, bypassCSP: true })
+    const ax = steady(await axe103Context.newPage())
+    await ax.goto(await magic(emailA), { waitUntil: 'load' })
+    await ax.goto(editorUrl(), { waitUntil: 'load' })
+    await ax.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await ax.waitForTimeout(600)
+    await ax.addScriptTag({ path: AXE })
+    const axe103 = () => ax.evaluate(async (tags) => (await window.axe.run(document, { runOnly: tags })).violations.map((v) => v.id !== 'frame-focusable-content' ? v : { ...v, nodes: v.nodes.filter((n) => document.querySelector(n.target[0]) !== document.querySelector('section[aria-label="Canvas"] iframe')) }).filter((v) => v.nodes.length > 0).map((v) => `${v.id}(${v.nodes.length}): ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' · ')}`), WCAG)
+    const control103 = await ax.evaluate(async (tags) => {
+      const probe = document.createElement('img')
+      probe.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='
+      document.body.append(probe)
+      const r = await window.axe.run(document, { runOnly: tags })
+      probe.remove()
+      return r.violations.map((v) => v.id)
+    }, WCAG)
+    const scanned103 = {}
+    await ax.locator('#style-pack-change').click()
+    await ax.waitForTimeout(300)
+    scanned103.list = await axe103()
+    await ax.locator('#style-pack-heading-font').click()
+    await ax.waitForTimeout(400)
+    scanned103.menu = await axe103()
+    await ax.keyboard.press('Escape')
+    await ax.locator('[data-edit-pack="paper"]').click()
+    await ax.waitForSelector('dialog[data-pack-editor="edit"][open]', { timeout: 10000 })
+    scanned103.editPack = await axe103()
+    await ax.locator('[data-swatch="light-text"]').click()
+    await ax.locator('#pack-picker-hex').fill('#DDDDDD')
+    await ax.waitForTimeout(300)
+    scanned103.pickerAndWarning = await axe103()
+    await ax.keyboard.press('Escape')
+    await ax.keyboard.press('Escape')
+    check('step 103 — axe (behind its control) finds zero WCAG 2.1 AA violations with the list and its rows, the pairing menu, Edit pack, and the colour picker over a warning',
+      control103.includes('image-alt') && Object.values(scanned103).every((v) => v.length === 0), JSON.stringify(scanned103))
+    await handBack(ax)
+    await axe103Context.close()
+    // and the column as the seed made it, the planted brand and the walk's empty map taken off
+    await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ style_pack: seeded103?.style_pack ?? { preset: 'paper' } }) })
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

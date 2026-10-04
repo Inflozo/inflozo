@@ -386,6 +386,14 @@ export const Pencil = (p: IconProps) => (
     <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" />
   </Icon>
 )
+/* S7d's Paste (`S7 Style Packs.dc.html`, the colour picker's hex row) — the frame's own clipboard, copied as drawn
+   (R-92), Story 6.4. */
+export const Clipboard = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="8" y="2" width="8" height="4" rx="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+  </Icon>
+)
 export const X = (p: IconProps) => (
   <Icon {...p}>
     <line x1="6" y1="6" x2="18" y2="18" />

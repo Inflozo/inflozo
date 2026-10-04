@@ -481,8 +481,9 @@ test('6.2 · Tab reaches Change on the rest panel, Enter opens the presets with 
   const named = cells.filter({ hasText: 'Current' })
   await expect(named).toHaveCount(1)
   await expect(named).toHaveAttribute('data-style-pack', 'paper')
-  // Story 6.3: the cells switch, and the list is ONE tab stop — the pack in force (the design ring's pattern)
-  expect(await stopsIn(page, '[data-style-pack-roster]')).toBe(1)
+  // Story 6.3: the cells switch, and the list is ONE tab stop — the pack in force (the design ring's pattern). Story 6.4:
+  // the LISTBOX is — its Edit pack doors, "+ New pack" and the rows are stops of their own, after it
+  expect(await stopsIn(page, '[data-style-pack-roster] [role="listbox"]')).toBe(1)
 
   // the back button returns, focus on Change
   await page.locator('#style-pack-back').focus()
@@ -613,7 +614,7 @@ test('6.3 · the list from the keyboard: the arrows move focus and switch nothin
   // the switch keys its rules on the canvas's <html> for the switch alone: at rest the document carries nothing
   expect(await page.frameLocator('iframe[title$="canvas"]').locator('html').getAttribute('data-inflozo-switching')).toBe(null)
   // the list's one stop followed the pack in force
-  expect(await stopsIn(page, '[data-style-pack-roster]')).toBe(1)
+  expect(await stopsIn(page, '[data-style-pack-roster] [role="listbox"]')).toBe(1)
   await expect(option(page, target.id)).toHaveAttribute('tabindex', '0')
 
   // the pack in force pressed again: nothing — no entry, no pill, no word
@@ -944,6 +945,839 @@ test('6.3 · faces slower than FACES_WAIT_MS: the crossfade goes on without them
     .poll(() => page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html, src) => new Function(`return (${src})`)()(html.ownerDocument), facesIn.toString()), { timeout: HOLD * 2 })
     .toBe(true)
   expect((await timed(page)).length, 'one transition, no second').toBe(1)
+})
+
+// ── Story 6.4 — editing a pack (FR-E3; S7a's pencils and rows, S7c, S7d; R-236, R-237) ────────────────────────────────────
+
+const EDIT = await import(new URL('../../apps/web/lib/pack-edit.ts', import.meta.url).href)
+const TOKENS = await import(new URL('../../packages/section-runtime/src/tokens.ts', import.meta.url).href)
+/** the one word list (R-170): every sentence and name below is the app's own */
+const W = EDIT.PACK_EDIT_WORDS
+/** the font pool as built — its pairings and their families, read off its data, never written here */
+const POOL = () => JSON.parse(readFileSync(fileURLToPath(new URL('../../packages/library/fonts/pool.json', import.meta.url)), 'utf8'))
+/** a preset's authored record, as `packs.json` holds it without its id — what Edit pack opens on */
+const recordOf = (id) => {
+  const { id: _id, ...record } = presetOf(id)
+  return record
+}
+/** the canvas document's own value for one token */
+const tokenOf = (page, name) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html, n) => getComputedStyle(html).getPropertyValue(n).trim(), name)
+const packEditor = (page) => page.locator('dialog[data-pack-editor][open]')
+const swatchOf = (page, mode, role) => page.locator(`[data-swatch="${mode}-${role}"]`)
+const pickerOf = (page) => page.locator('#pack-picker')
+const door = (page, id) => page.locator(`[data-edit-pack="${id}"]`)
+/** Tab, one stop at a time, until `locator` holds focus — within as many stops as the page has (counted off it) */
+async function tabOnto(page, locator, back = false) {
+  const budget = (await stopsIn(page, 'body')) + 2
+  for (let n = 0; n < budget && !(await locator.evaluate((el) => el === document.activeElement)); n++) await page.keyboard.press(back ? 'Shift+Tab' : 'Tab')
+  await expect(locator).toBeFocused()
+}
+/** Edit pack, opened from a pack's own door — reached by Tab from the list, never by a pointer */
+async function intoEdit(page, id) {
+  await intoList(page)
+  await tabOnto(page, door(page, id))
+  await page.keyboard.press('Enter')
+  await expect(packEditor(page)).toBeVisible()
+}
+/** a colour typed into the picker of one swatch, applied with Enter, the picker closed with Esc. The Tab path into the
+ *  swatches and the picker is the first 6.4 stop's; this enters it with `focus()`. */
+async function typeHex(page, mode, role, hex) {
+  await swatchOf(page, mode, role).focus()
+  await page.keyboard.press('Enter')
+  await expect(pickerOf(page)).toBeVisible()
+  await expect(page.locator('#pack-picker-hex')).toBeFocused()
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type(hex)
+  await page.keyboard.press('Enter')
+  await page.keyboard.press('Escape')
+  await expect(pickerOf(page)).toBeHidden()
+  await expect(swatchOf(page, mode, role)).toBeFocused()
+}
+const savePack = async (page) => {
+  await page.locator('[data-save-pack]').focus()
+  await page.keyboard.press('Enter')
+}
+/** the device's own record of the harness project, read once the editor has opened its database (IndexedDB is per origin,
+ *  and the harness names its own): the own-pack map stored beside the docs, and how many transactions the journal holds */
+const held = (page) =>
+  page.evaluate((id) => new Promise((resolve, reject) => {
+    const req = indexedDB.open('inflozo-doc-harness')
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const db = req.result
+      const tx = db.transaction(['meta', 'journal'], 'readonly')
+      const meta = tx.objectStore('meta').get(id)
+      const entries = tx.objectStore('journal').index('byProject').count(id)
+      tx.oncomplete = () => { db.close(); resolve({ packs: meta.result?.packs ?? {}, entries: entries.result }) }
+      tx.onerror = () => { db.close(); reject(tx.error) }
+    }
+  }), '00000000-0000-4000-8000-000000000009')
+/** a cell's or the Current card's accent dot, as drawn */
+const accentDot = (root) => root.locator('span[aria-hidden] > span').nth(1).evaluate((s) => getComputedStyle(s).backgroundColor)
+
+test('6.4 · Tab from the list reaches the pack\'s pencil; Edit pack opens on the first swatch; a swatch opens the picker, the hex field moves it, the square and the hue strip take the arrows; Esc closes the picker, then the dialog, focus back on the pencil', async ({ page }) => {
+  await open(page)
+  const paper = recordOf('paper')
+  await intoList(page)
+  await expect(option(page, 'paper')).toBeFocused()
+  // the first stop after the list is the doors', the pack in force's own first — outside the listbox (an option holds none)
+  await page.keyboard.press('Tab')
+  await expect(door(page, 'paper')).toBeFocused()
+  await expect(door(page, 'paper')).toHaveAccessibleName(W.edit(paper.name))
+  expect(await page.locator('[data-style-pack-roster] [role="listbox"] :is(button:not([role="option"]), [data-edit-pack], #style-pack-new)').count(), 'no door inside the listbox').toBe(0)
+  await page.keyboard.press('Enter')
+  await expect(packEditor(page)).toBeVisible()
+  await expect(page.locator('#pack-editor-title')).toHaveText(W.editTitle)
+  await expect(page.locator('#pack-editor-subtitle')).toHaveText(W.editSubtitle)
+  await expect(page.locator('#pack-name')).toHaveValue(paper.name)
+  // focus starts on the first swatch, and the seven colours per mode are the one list's, Base first (R-237)
+  await expect(swatchOf(page, 'light', 'background')).toBeFocused()
+  await expect(swatchOf(page, 'light', 'background')).toHaveAccessibleName(W.swatch(W.roles.background, W.modes.light, paper.light.background, false))
+  for (const mode of ['light', 'dark']) {
+    const names = await packEditor(page).locator(`[data-swatch^="${mode}-"]`).evaluateAll((els) => els.map((e) => e.getAttribute('aria-label').split(',')[0]))
+    expect(names, mode).toEqual(Object.values(W.roles))
+  }
+  // Tab walks the swatches in order — Base, Surface, Text, Muted, Border, then Accent
+  for (let n = 0; n < Object.keys(W.roles).indexOf('accent'); n++) await page.keyboard.press('Tab')
+  await expect(swatchOf(page, 'light', 'accent')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(pickerOf(page)).toBeVisible()
+  const hex = page.locator('#pack-picker-hex')
+  await expect(hex, 'the hex field is the exact path, and focus starts there').toBeFocused()
+  await expect(hex).toHaveAccessibleName(W.hexField(W.roles.accent, W.modes.light))
+  await expect(swatchOf(page, 'light', 'accent')).toHaveAttribute('aria-expanded', 'true')
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type('#1E6BFF')
+  await expect(swatchOf(page, 'light', 'accent')).toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, '#1E6BFF', false))
+  // a colour that is not one is refused in words, and the swatch keeps its last valid colour
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type('blue')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-picker-hex-error')).toHaveText(W.notColour)
+  await expect(swatchOf(page, 'light', 'accent')).toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, '#1E6BFF', false))
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type('#1af')
+  await page.keyboard.press('Enter')
+  await expect(hex, 'three digits are expanded').toHaveValue('#11AAFF')
+  await expect(page.locator('#pack-picker-hex-error')).toHaveCount(0)
+  // the hue strip and the square, a Shift+Tab and two back: 1 a press, 10 with ⇧
+  await page.keyboard.press('Shift+Tab')
+  const hue = page.locator('[data-picker-hue]')
+  await expect(hue).toBeFocused()
+  await expect(hue).toHaveAccessibleName(W.hue(W.roles.accent, W.modes.light))
+  const h0 = Number(await hue.getAttribute('aria-valuenow'))
+  await page.keyboard.press('ArrowRight')
+  await expect(hue).toHaveAttribute('aria-valuenow', String(h0 + 1))
+  await page.keyboard.press('Shift+ArrowRight')
+  await expect(hue).toHaveAttribute('aria-valuenow', String(h0 + 11))
+  await page.keyboard.press('Shift+Tab')
+  const square = page.locator('[data-picker-square]')
+  await expect(square).toBeFocused()
+  await expect(square).toHaveAccessibleName(W.square(W.roles.accent, W.modes.light))
+  const s0 = Number(await square.getAttribute('aria-valuenow'))
+  await page.keyboard.press('ArrowLeft')
+  await expect(square).toHaveAttribute('aria-valuenow', String(s0 - 1))
+  const v0 = await square.getAttribute('aria-valuetext')
+  await page.keyboard.press('ArrowDown')
+  await expect(square).not.toHaveAttribute('aria-valuetext', v0)
+  // the swatch and the field followed every move
+  await expect(swatchOf(page, 'light', 'accent')).not.toHaveAccessibleName(/#11AAFF/)
+  expect(await hex.inputValue()).toBe((await swatchOf(page, 'light', 'accent').getAttribute('aria-label')).split(', ')[2])
+  // the first Esc closes the picker, focus back on its swatch; the second closes the dialog, focus back on the pencil
+  await page.keyboard.press('Escape')
+  await expect(pickerOf(page)).toBeHidden()
+  await expect(packEditor(page)).toBeVisible()
+  await expect(swatchOf(page, 'light', 'accent')).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(packEditor(page)).toHaveCount(0)
+  await expect(door(page, 'paper')).toBeFocused()
+  // discarded: nothing journaled, and the canvas untouched
+  await expect(undoArrow(page)).toHaveAttribute('aria-disabled', 'true')
+  expect(await tokenOf(page, '--accent')).toBe(paper.light.accent)
+})
+
+test('6.4 · Save pack is ONE edit: the canvas\'s --accent restyles in place with no pill, "Changed Paper." once landed, the cell follows; ⌘Z and ⇧⌘Z follow; an unchanged draft saves nothing', async ({ page }) => {
+  await open(page)
+  const paper = recordOf('paper')
+  await intoEdit(page, 'paper')
+  await typeHex(page, 'light', 'accent', '#1E6BFF')
+  await timeTransitions(page)
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(W.changed(paper.name))
+  await expect(packEditor(page)).toHaveCount(0)
+  await expect(door(page, 'paper')).toBeFocused()
+  expect(await tokenOf(page, '--accent')).toBe('#1E6BFF')
+  // IN PLACE: the same document at Paper's address, ONE crossfade — and S7b's pill, a switch's alone, never stood
+  expect(await wears(page)).toBe('paper')
+  expect(await page.locator('iframe[title$="canvas"]').getAttribute('src')).not.toContain('pack=')
+  const [run, ...more] = await timed(page)
+  expect(more, 'one edit, one restyle').toEqual([])
+  expect(run.pill, 'an edit is no switch: no "Trying on…"').toBe(false)
+  // Paper's cell and the Current card wear its own accent now
+  expect(await accentDot(option(page, 'paper'))).toBe('rgb(30, 107, 255)')
+  expect(await accentDot(page.locator('[data-style-pack-current]'))).toBe('rgb(30, 107, 255)')
+  // one edit: ⌘Z puts Paper's own accent back and says the pack (the look in force changed); ⇧⌘Z blue again
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(paper.name))
+  await expect.poll(() => tokenOf(page, '--accent')).toBe(paper.light.accent)
+  await expect(undoArrow(page), 'a Save pack is one edit').toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await expect.poll(() => tokenOf(page, '--accent')).toBe('#1E6BFF')
+  // saved again with nothing changed: it closes and makes no entry — the one ⌘Z is still the Save's, and the last
+  await page.keyboard.press('Enter')
+  await expect(packEditor(page)).toBeVisible()
+  await savePack(page)
+  await expect(packEditor(page)).toHaveCount(0)
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => tokenOf(page, '--accent'), 'the ⌘Z is still the Save\'s').toBe(paper.light.accent)
+  await expect(undoArrow(page), 'the unchanged save made no entry').toHaveAttribute('aria-disabled', 'true')
+})
+
+test('6.4 · the warning: Text #DDDDDD raises it in words with each failing swatch marked, it is said once per change of pairs — never per move — and Save pack still saves', async ({ page }) => {
+  await open(page)
+  const paper = recordOf('paper')
+  const hard = { ...paper, light: { ...paper.light, text: '#DDDDDD' } }
+  await intoEdit(page, 'paper')
+  await expect(page.locator('[data-pack-warning]'), 'the control: Paper reads').toHaveCount(0)
+  await typeHex(page, 'light', 'text', '#DDDDDD')
+  const words = W.warning(EDIT.hardToRead(hard))
+  await expect(page.locator('[data-pack-warning]')).toHaveText(words)
+  // in words, and a glyph and "hard to read" on the swatch — never colour alone (UX-DR8)
+  await expect(swatchOf(page, 'light', 'text')).toHaveAccessibleName(W.swatch(W.roles.text, W.modes.light, '#DDDDDD', true))
+  await expect(swatchOf(page, 'light', 'text').locator('[data-hard]')).toHaveCount(1)
+  await expect(swatchOf(page, 'light', 'background').locator('[data-hard]')).toHaveCount(0)
+  await expect(page.locator('[data-pack-warning-said]')).toHaveText(words)
+  // LIVE, NOT CHATTY: ten moves through the square keep the same pairs failing — the banner follows each, the line says
+  // nothing new (a polite region would otherwise read a ratio per move)
+  await swatchOf(page, 'light', 'text').focus()
+  await page.keyboard.press('Enter')
+  await expect(pickerOf(page)).toBeVisible()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('Shift+Tab')
+  await expect(page.locator('[data-picker-square]')).toBeFocused()
+  await page.locator('[data-pack-warning-said]').evaluate((el) => {
+    window.__said = 0
+    new MutationObserver(() => (window.__said += 1)).observe(el, { childList: true, characterData: true, subtree: true })
+  })
+  const banner = await page.locator('[data-pack-warning]').innerText()
+  for (let n = 0; n < 10; n++) await page.keyboard.press('ArrowDown')
+  await expect(page.locator('[data-pack-warning]'), 'the banner follows the draft').not.toHaveText(banner)
+  await expect(page.locator('[data-pack-warning]')).toContainText(W.pair(EDIT.hardToRead(hard)[0]).split(',')[0])
+  expect(await page.evaluate(() => window.__said), 'said nothing while the same pairs failed').toBe(0)
+  await page.keyboard.press('Escape')
+  // Save pack stays live and saves: a warning, never a block
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(W.changed(paper.name))
+  await expect(packEditor(page)).toHaveCount(0)
+  expect(EDIT.hardToRead({ ...paper, light: { ...paper.light, text: await tokenOf(page, '--text-body') } }).length, 'what was saved is the hard-to-read text').toBeGreaterThan(0)
+})
+
+test('6.4 · an own pack\'s edit is kept on this device with the docs: a reload opens in it, silently, and ⌘Z still undoes it (§AD1.1)', async ({ page }) => {
+  await open(page)
+  const paper = recordOf('paper')
+  await intoEdit(page, 'paper')
+  await typeHex(page, 'light', 'accent', '#1E6BFF')
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(W.changed(paper.name))
+  // the device's record holds the whole map beside the docs (the harness has no database, so it is owed and never sent)
+  await expect.poll(async () => (await held(page)).packs.paper?.light?.accent, 'the edit is written to the device').toBe('#1E6BFF')
+  await page.reload()
+  await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible()
+  // asked for at Paper's address, and corrected to the device's own Paper at once — a correction says nothing
+  await expect.poll(() => tokenOf(page, '--accent')).toBe('#1E6BFF')
+  expect(await page.locator('#editor-said').innerText(), 'a hydrate\'s correction is silent').not.toContain(W.changed(paper.name))
+  await expect(page.locator('[data-pack-pill]')).toHaveCount(0)
+  // the journal came back with it: one ⌘Z is the edit
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => tokenOf(page, '--accent')).toBe(paper.light.accent)
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(paper.name))
+})
+
+test('6.4 · + New pack: it starts from the look in force; with no name it refuses; named, it joins the roster after the presets, ringed, and wears the canvas — ONE transaction, one ⌘Z removes it', async ({ page }) => {
+  await open(page)
+  const paper = recordOf('paper')
+  await intoList(page)
+  const create = page.locator('#style-pack-new')
+  await tabOnto(page, create)
+  await expect(create).toHaveAccessibleName(W.newPack)
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-editor-title')).toHaveText(W.newTitle)
+  await expect(page.locator('#pack-editor-subtitle')).toHaveText(W.newSubtitle)
+  const name = page.locator('#pack-name')
+  await expect(name).toBeFocused()
+  await expect(name).toHaveValue('')
+  await expect(name).toHaveAttribute('placeholder', W.placeholder)
+  await expect(swatchOf(page, 'light', 'accent'), 'the look in force').toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, paper.light.accent, false))
+  await expect(page.getByRole('button', { name: W.reset }), 'a pack the project makes has no defaults to reset to').toHaveCount(0)
+  // no name, or only spaces: refused in the field's own words, focus back on it, nothing saved
+  for (const typed of ['', '   ']) {
+    await name.focus()
+    await page.keyboard.press('ControlOrMeta+a')
+    if (typed) await page.keyboard.type(typed)
+    await savePack(page)
+    await expect(page.locator('#pack-name-error')).toHaveText(W.nameNeeded)
+    await expect(name).toBeFocused()
+    await expect(packEditor(page)).toBeVisible()
+  }
+  await expect(undoArrow(page)).toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type('Studio Warm')
+  await expect(page.locator('#pack-name-error'), 'typing clears the refusal').toHaveCount(0)
+  await typeHex(page, 'light', 'background', '#FFF4EA')
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said('Studio Warm'))
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'custom-1')
+  expect(await bgPage(page)).toBe('#FFF4EA')
+  // after the twelve, by number, ringed and Current
+  const ids = await page.locator('#editor-controls [data-style-pack]').evaluateAll((els) => els.map((e) => e.dataset.stylePack))
+  expect(ids).toEqual([...PRESETS().map((p) => p.id), 'custom-1'])
+  await expect(option(page, 'custom-1')).toHaveAttribute('aria-selected', 'true')
+  await expect(page.locator('[data-style-pack-current]')).toContainText('Studio Warm')
+  await expect(door(page, 'custom-1')).toHaveAccessibleName(W.edit('Studio Warm'))
+  // its own door is the dashed name: it opens Edit pack with focus on Pack name, where renaming happens
+  await door(page, 'custom-1').focus()
+  await page.keyboard.press('Enter')
+  await expect(name).toBeFocused()
+  await expect(name).toHaveValue('Studio Warm')
+  await page.keyboard.press('Escape')
+  // ONE transaction: one ⌘Z removes the pack AND puts Paper back
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'paper')
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(paper.name))
+  await expect(option(page, 'custom-1')).toHaveCount(0)
+  await expect(undoArrow(page), 'the New pack was one edit').toHaveAttribute('aria-disabled', 'true')
+  expect(await bgPage(page)).toBe(paper.light.background.toUpperCase())
+})
+
+test('6.4 · the rows are Appendix C\'s words; Site width → Wide moves --site-width in one edit; the pairing menu lists the pool and moves --font-heading once its faces are in', async ({ page }) => {
+  await open(page)
+  await intoList(page)
+  // the titles and steps, in order — the one word list's (and `pack-edit.test.ts` holds that list to Appendix C)
+  const groups = await page.locator('[data-style-pack-rows] [role="radiogroup"]').evaluateAll((gs) =>
+    gs.map((g) => ({ title: document.getElementById(g.getAttribute('aria-labelledby')).textContent, steps: [...g.querySelectorAll('[role="radio"]')].map((r) => r.textContent) })))
+  expect(groups).toEqual(W.rows.map((r) => ({ title: r.title, steps: Object.values(r.steps) })))
+  await expect(page.locator('#style-pack-heading-font')).toContainText(W.headingFont)
+  await expect(page.locator('#style-pack-body-font')).toContainText(W.bodyFont)
+  await expect(page.locator('#style-pack-pill-label')).toHaveText(W.pillRadius)
+  // Site width: its one stop is the step in force; → selects the next, one edit
+  const width = W.rows.find((r) => r.key === 'width')
+  await tabOnto(page, page.locator('#style-pack-width [role="radio"][aria-checked="true"]'))
+  await expect(page.locator('#style-pack-width [aria-checked="true"]')).toHaveText(width.steps.normal)
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('#style-pack-width [aria-checked="true"]')).toHaveText(width.steps.wide)
+  await expect(page.locator('#editor-said')).toHaveText(W.row(width.title, width.steps.wide))
+  await expect.poll(() => tokenOf(page, '--site-width')).toBe(TOKENS.SCALES.width.wide)
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => tokenOf(page, '--site-width'), 'one press, one edit').toBe(TOKENS.SCALES.width.normal)
+  await expect(undoArrow(page)).toHaveAttribute('aria-disabled', 'true')
+
+  // the pairing menu, from Heading font: every pool pairing, "Ag" in its heading face, the one in force checked
+  const pool = POOL()
+  await tabOnto(page, page.locator('#style-pack-heading-font'), true)
+  await page.keyboard.press('Enter')
+  const menu = page.locator('#style-pack-pairings')
+  await expect(menu).toBeVisible()
+  await expect(menu.locator('ul')).toHaveAccessibleName(W.pairings)
+  await expect(menu.locator('li')).toHaveCount(pool.pairings.length)
+  await expect(menu.locator('[aria-current="true"]')).toBeFocused()
+  await expect(menu.locator('[aria-current="true"]')).toContainText(pool.pairings.find((p) => p.id === presetOf('paper').pairing).heading.family)
+  const lora = pool.pairings.find((p) => p.heading.family === 'Lora')
+  const wanted = menu.locator('button').filter({ hasText: lora.heading.family })
+  for (let n = 0; n < pool.pairings.length && !(await wanted.evaluate((el) => el === document.activeElement)); n++) await page.keyboard.press('ArrowDown')
+  await expect(wanted).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(W.pairing(lora.heading.family, lora.body.family))
+  // once landed the canvas wears the pairing, its heading face is in, and both rows name it
+  expect(await tokenOf(page, '--font-heading')).toBe(`'${lora.heading.family}', ${pool.families[lora.heading.family].fallback}`)
+  await expect.poll(() => page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html, f) => html.ownerDocument.fonts.check(`16px '${f}'`, 'Ag'), lora.heading.family)).toBe(true)
+  await expect(page.locator('#style-pack-heading-font')).toContainText(lora.heading.family)
+  await expect(page.locator('#style-pack-body-font')).toContainText(lora.body.family)
+  await expect(page.locator('#style-pack-heading-font')).toBeFocused()
+})
+
+test('6.4 · a project stored in a pack it made opens in it: the card, the list and the canvas (Paper\'s address, its own block before the first paint), and a Section Picker card wears it', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-pack': 'custom-1' })
+  await open(page)
+  const ocean = presetOf('ocean').light
+  await expect(page.locator('[data-style-pack-card]')).toContainText('Harness Pack')
+  expect(await page.locator('iframe[title$="canvas"]').getAttribute('src'), 'asked for at Paper\'s address').not.toContain('pack=')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'custom-1')
+  expect(await tokenOf(page, '--accent')).toBe(ocean.accent)
+  await intoList(page)
+  await expect(option(page, 'custom-1')).toHaveAttribute('aria-selected', 'true')
+  await expect(option(page, 'custom-1')).toBeFocused()
+  await page.keyboard.press('Escape')
+  // a Section Picker card is asked for at Paper's address and wears the pack's own tokens
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  const card = page.locator('dialog[open] iframe').first()
+  await expect(card).not.toHaveAttribute('src', /pack=/)
+  const cardToken = (name) => card.evaluate((f, n) => { const root = f.contentDocument?.documentElement; return root ? getComputedStyle(root).getPropertyValue(n).trim().toUpperCase() : '' }, name)
+  await expect.poll(() => cardToken('--accent'), 'the control: the card is not Paper').toBe(ocean.accent.toUpperCase())
+  await expect.poll(() => cardToken('--bg-page')).toBe(recordOf('paper').light.background.toUpperCase())
+})
+
+test('6.4 · reading along (R-192): every pencil, the custom name, "+ New pack", both font rows and every row are disabled, and nothing opens', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader', 'x-inflozo-harness-pack': 'custom-1' })
+  await open(page)
+  await expect(page.locator('#editor-add-section'), 'the control: this window really is reading along').toBeDisabled()
+  await page.locator('#style-pack-change').focus()
+  await page.keyboard.press('Enter')
+  const doors = page.locator('[data-edit-pack]')
+  expect(await doors.count()).toBe(PRESETS().length + 1)
+  for (const d of await doors.all()) await expect(d).toBeDisabled()
+  await expect(page.locator('#style-pack-new')).toBeDisabled()
+  await expect(page.locator('#style-pack-heading-font')).toBeDisabled()
+  await expect(page.locator('#style-pack-body-font')).toBeDisabled()
+  for (const r of await page.locator('[data-style-pack-rows] [role="radio"], #style-pack-pill button').all()) await expect(r).toBeDisabled()
+  // and none of them is a stop: Tab passes the whole block by (`:disabled`, which a fieldset's disabling is — never the
+  // element's own `disabled`, which stays false inside one)
+  expect(await page.locator('[data-style-pack-roster]').evaluate((root) =>
+    [...root.querySelectorAll('a[href], button, input, [tabindex]')].filter((el) => el.tabIndex >= 0 && !el.matches(':disabled') && el.checkVisibility()).length)).toBe(0)
+  await expect(packEditor(page)).toHaveCount(0)
+})
+
+test('6.4 · prefers-reduced-motion: an edit restyles instantly — no animation runs — and says the same', async ({ page }) => {
+  await open(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await intoList(page)
+  await recordTransitions(page)
+  const radius = W.rows.find((r) => r.key === 'radius')
+  await tabOnto(page, page.locator('#style-pack-radius [role="radio"][aria-checked="true"]'))
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('#editor-said')).toHaveText(W.row(radius.title, radius.steps.round))
+  await expect.poll(() => tokenOf(page, '--radius-card')).toBe(TOKENS.SCALES.radius.round)
+  const [run] = await transitions(page)
+  expect(run.animations, 'the canvas sheet\'s degrade: nothing animates').toEqual([])
+})
+
+test('6.4 · Edit another pack: Tangerine\'s pencil while Paper is in force — stored, its cell\'s dots take the colour, the canvas neither changes nor restyles, "Changed Tangerine.", and one ⌘Z', async ({ page }) => {
+  await open(page)
+  const [paper, tangerine] = [recordOf('paper'), recordOf('tangerine')]
+  await intoList(page)
+  const was = await accentDot(option(page, 'tangerine'))
+  await tabOnto(page, door(page, 'tangerine'))
+  await page.keyboard.press('Enter')
+  await expect(packEditor(page)).toBeVisible()
+  await expect(page.locator('#pack-name')).toHaveValue(tangerine.name)
+  await typeHex(page, 'light', 'accent', '#1E6BFF')
+  await recordTransitions(page)
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(W.changed(tangerine.name))
+  await expect(packEditor(page)).toHaveCount(0)
+  await expect(door(page, 'tangerine')).toBeFocused()
+  await expect.poll(async () => (await held(page)).packs.tangerine?.light?.accent, 'packs.tangerine is stored').toBe('#1E6BFF')
+  await expect.poll(() => accentDot(option(page, 'tangerine')), 'its cell\'s dots take the colour').toBe('rgb(30, 107, 255)')
+  // the pack in force is still Paper: the canvas keeps Paper's accent, and no restyle ran
+  expect(await wears(page)).toBe('paper')
+  expect(await tokenOf(page, '--accent')).toBe(paper.light.accent)
+  await panelsSettle(page)
+  expect(await transitions(page), 'no restyle, no transition').toEqual([])
+  // one edit: one ⌘Z gives Tangerine its own colour back, and leaves nothing to undo
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => accentDot(option(page, 'tangerine'))).toBe(was)
+  await expect(undoArrow(page), 'a Save pack is one edit').toHaveAttribute('aria-disabled', 'true')
+  expect(await transitions(page), 'its undo restyles nothing either').toEqual([])
+})
+
+test('6.4 · Discard: Cancel and ✕, each after a colour changed in the draft, journal nothing and leave the canvas as it was, focus back on the pencil; a New pack cancelled gives focus back to "+ New pack"', async ({ page }) => {
+  await open(page)
+  const paper = recordOf('paper')
+  await intoList(page)
+  await tabOnto(page, door(page, 'paper'))
+  for (const [what, way] of [[W.cancel, (d) => d.locator('[data-cancel]')], ['✕', (d) => d.getByRole('button', { name: W.close })]]) {
+    await expect(door(page, 'paper')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(packEditor(page)).toBeVisible()
+    await typeHex(page, 'light', 'accent', '#1E6BFF')
+    await expect(swatchOf(page, 'light', 'accent'), `${what}: the control — the draft changed`).toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, '#1E6BFF', false))
+    await way(packEditor(page)).focus()
+    await page.keyboard.press('Enter')
+    await expect(packEditor(page), `${what} closes it`).toHaveCount(0)
+    await expect(door(page, 'paper'), `${what}: focus back on the pencil`).toBeFocused()
+    await expect(undoArrow(page), `${what}: nothing journaled`).toHaveAttribute('aria-disabled', 'true')
+    expect(await tokenOf(page, '--accent'), `${what}: the canvas untouched`).toBe(paper.light.accent)
+  }
+  expect((await held(page)).entries, 'the journal holds nothing').toBe(0)
+  // reopened, the draft starts from the pack again: the thrown-away colour is gone
+  await page.keyboard.press('Enter')
+  await expect(swatchOf(page, 'light', 'accent')).toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, paper.light.accent, false))
+  await page.keyboard.press('Escape')
+  await expect(packEditor(page)).toHaveCount(0)
+  // a New pack cancelled: no pack, no entry, focus back on "+ New pack"
+  const create = page.locator('#style-pack-new')
+  await tabOnto(page, create)
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-editor-title')).toHaveText(W.newTitle)
+  await page.keyboard.type('Studio Warm')
+  await packEditor(page).locator('[data-cancel]').focus()
+  await page.keyboard.press('Enter')
+  await expect(packEditor(page)).toHaveCount(0)
+  await expect(create).toBeFocused()
+  await expect(option(page, 'custom-1')).toHaveCount(0)
+  await expect(undoArrow(page)).toHaveAttribute('aria-disabled', 'true')
+})
+
+test('6.4 · Reset to defaults: Paper edited and saved, reopened — Reset puts the library\'s whole record in the draft, name included; Save pack drops packs.paper, the canvas goes back to the library\'s accent, "Changed Paper.", and it is one edit', async ({ page }) => {
+  await open(page)
+  const paper = recordOf('paper')
+  await intoEdit(page, 'paper')
+  const name = page.locator('#pack-name')
+  await name.focus()
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.type('Paper Blue')
+  await typeHex(page, 'light', 'accent', '#1E6BFF')
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(W.changed('Paper Blue'))
+  await expect.poll(async () => (await held(page)).packs.paper?.name, 'the control: Paper holds an own record').toBe('Paper Blue')
+  // reopened on the own record
+  await expect(door(page, 'paper')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(name).toHaveValue('Paper Blue')
+  await packEditor(page).getByRole('button', { name: W.reset }).focus()
+  await page.keyboard.press('Enter')
+  // the draft is the library's record, all of it: the name and every colour of both modes
+  await expect(name).toHaveValue(paper.name)
+  for (const mode of ['light', 'dark']) {
+    for (const role of Object.keys(W.roles)) {
+      await expect(swatchOf(page, mode, role)).toHaveAccessibleName(W.swatch(W.roles[role], W.modes[mode], paper[mode][role], false))
+    }
+  }
+  expect(await tokenOf(page, '--accent'), 'the draft alone: the canvas waits for Save pack').toBe('#1E6BFF')
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(W.changed(paper.name))
+  await expect.poll(() => tokenOf(page, '--accent')).toBe(paper.light.accent)
+  await expect.poll(async () => 'paper' in (await held(page)).packs, 'packs.paper is removed').toBe(false)
+  await expect(door(page, 'paper')).toHaveAccessibleName(W.edit(paper.name))
+  // one edit: ⌘Z brings the edited Paper back, name and colour
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => tokenOf(page, '--accent')).toBe('#1E6BFF')
+  await expect.poll(async () => (await held(page)).packs.paper?.name).toBe('Paper Blue')
+})
+
+test('6.4 · Paste: refused, focus lands on the hex field with "Press ⌘V…"; allowed, the clipboard\'s #2F4A3E fills the field and the swatch follows', async ({ page, context }) => {
+  await open(page)
+  await intoEdit(page, 'paper')
+  await swatchOf(page, 'light', 'accent').focus()
+  await page.keyboard.press('Enter')
+  const hex = page.locator('#pack-picker-hex')
+  await expect(hex).toBeFocused()
+  const paste = pickerOf(page).getByRole('button', { name: W.paste })
+  // REFUSED: this context holds no clipboard permission, so the browser answers `readText` with NotAllowedError
+  expect(await page.evaluate(async () => (await navigator.permissions.query({ name: 'clipboard-read' })).state), 'the control: not granted').not.toBe('granted')
+  await page.keyboard.press('Tab')
+  await expect(paste).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(hex, 'refused: the field takes a ⌘V instead').toBeFocused()
+  await expect(page.locator('#pack-picker-hex-hint')).toHaveText(W.pasteFallback)
+  // ALLOWED: the clipboard holds a colour, and Paste takes it
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'])
+  await page.evaluate(() => navigator.clipboard.writeText('#2F4A3E'))
+  await page.keyboard.press('Tab')
+  await expect(paste).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(hex).toHaveValue('#2F4A3E')
+  await expect(swatchOf(page, 'light', 'accent')).toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, '#2F4A3E', false))
+  await expect(page.locator('#pack-picker-hex-hint')).toHaveCount(0)
+})
+
+test('6.4 · From your site: no linked site, no row; a linked site\'s stored accent is offered, and Enter on it makes it the draft\'s colour', async ({ page }) => {
+  await open(page)
+  await intoEdit(page, 'paper')
+  await swatchOf(page, 'light', 'accent').focus()
+  await page.keyboard.press('Enter')
+  await expect(pickerOf(page)).toBeVisible()
+  await expect(pickerOf(page).locator('[data-from-site]'), 'no linked site: no row').toHaveCount(0)
+  await expect(pickerOf(page)).not.toContainText(W.fromSite)
+  // a linked site — the harness's, whose stored accent is the fixture's own
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'members-off' })
+  await open(page)
+  const accent = EDIT.hexOf(LIB.orbitWeekly.site().accent_color)
+  expect(accent, 'the control: the linked site has an accent').not.toBe(null)
+  // Border, because the fixture's accent IS Paper's (a press there would change nothing), and no AA pair reads Border
+  expect(accent, 'and it is not the colour already there').not.toBe(recordOf('paper').light.border)
+  await intoEdit(page, 'paper')
+  await swatchOf(page, 'light', 'border').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-picker-hex')).toBeFocused()
+  const dot = pickerOf(page).locator('[data-from-site]')
+  await expect(dot).toHaveAccessibleName(`${W.fromSite}, ${accent}`)
+  await page.keyboard.press('Shift+Tab')
+  await expect(dot).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-picker-hex')).toHaveValue(accent)
+  await expect(swatchOf(page, 'light', 'border')).toHaveAccessibleName(W.swatch(W.roles.border, W.modes.light, accent, false))
+})
+
+test('6.4 · a pairing whose faces are slower than FACES_WAIT_MS: the words and --font-heading land after the wait, without them, and the late face swaps in on arrival with no second restyle', async ({ page }) => {
+  await open(page)
+  const pool = POOL()
+  const lora = pool.pairings.find((p) => p.heading.family === 'Lora')
+  const HOLD = PACK.FACES_WAIT_MS * 3
+  await intoList(page)
+  await holdFaces(page, HOLD)
+  await timeTransitions(page)
+  await tabOnto(page, page.locator('#style-pack-heading-font'))
+  await page.keyboard.press('Enter')
+  const menu = page.locator('#style-pack-pairings')
+  await expect(menu.locator('[aria-current="true"]')).toBeFocused()
+  const wanted = menu.locator('button').filter({ hasText: lora.heading.family })
+  for (let n = 0; n < pool.pairings.length && !(await wanted.evaluate((el) => el === document.activeElement)); n++) await page.keyboard.press('ArrowDown')
+  await expect(wanted).toBeFocused()
+  const pressed = Date.now()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(W.pairing(lora.heading.family, lora.body.family), { timeout: HOLD })
+  expect(Date.now() - pressed, 'the words waited FACES_WAIT_MS').toBeGreaterThanOrEqual(PACK.FACES_WAIT_MS - 50)
+  const [run, ...more] = await timed(page)
+  expect(more, 'one edit, one restyle').toEqual([])
+  expect(run.ready - run.asked, 'it waited FACES_WAIT_MS').toBeGreaterThanOrEqual(PACK.FACES_WAIT_MS - 50)
+  expect(run.ready - run.asked, 'and went on long before the faces came').toBeLessThan(HOLD - PACK.FACES_WAIT_MS / 2)
+  expect(run.faces, 'the control: the faces were NOT in when it went on').toBe(false)
+  expect(await tokenOf(page, '--font-heading')).toBe(`'${lora.heading.family}', ${pool.families[lora.heading.family].fallback}`)
+  // `font-display: swap`: released, the late face arrives and is drawn, with no second restyle
+  await expect
+    .poll(() => page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate((html, src) => new Function(`return (${src})`)()(html.ownerDocument), facesIn.toString()), { timeout: HOLD * 2 })
+    .toBe(true)
+  expect((await timed(page)).length, 'one transition, no second').toBe(1)
+})
+
+test('6.4 · Remix\'s Style Pack draws from the whole roster, own packs included: Paper in force, the project\'s own pack last, the top of the draw lands on it, and one ⌘Z puts Paper back', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-pack': 'custom-1' })
+  await open(page)
+  await intoList(page)
+  await expect(option(page, 'custom-1')).toBeFocused()
+  const ids = await page.locator('#editor-controls [data-style-pack]').evaluateAll((els) => els.map((e) => e.dataset.stylePack))
+  expect(ids.at(-1), 'the control: the project\'s own pack is the roster\'s last').toBe('custom-1')
+  // Paper in force: the arrows to its cell, then Enter
+  for (let n = 0; n < ids.length && !(await option(page, 'paper').evaluate((el) => el === document.activeElement)); n++) await page.keyboard.press('ArrowLeft')
+  await expect(option(page, 'paper')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'paper')
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page)).toBeVisible()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('ArrowLeft')
+  await expect(remixDialog(page).locator('input[value="pack"]')).toBeChecked()
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  // the draw is uniform over every pack but the one in force: its top end is the roster's last
+  await page.evaluate(() => {
+    Math.random = () => 0.9999
+  })
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'custom-1')
+  await expect(page.locator('#editor-said')).toHaveText(REMIX.remixPackSaid('Harness Pack'))
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]'), 'one ⌘Z puts Paper back').toHaveAttribute('data-pack', 'paper')
+})
+
+/* ── R-236 (owner, 2026-10-04): THE BUILD MATCHES ITS DRAWINGS, VALUE FOR VALUE. Every value the spec's "Built from" table
+   gives — sizes, radii, paddings, type, colours, shadows — read off the computed style of each built state at 1440 and
+   held to the table. The frames draw in CSS's default content-box, so a size here is the frame's own `width`/`height`,
+   the box the app draws `box-content` where the frame's padding or hairline sits outside it. The colours are the frames'
+   hexes (`S7 Style Packs.dc.html`, `Editor Sidebar Kit.dc.html`), as a computed style prints them. ── */
+
+const rgb = (hex) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`
+const FRAME = {
+  paperSunk: rgb('#EFECE7'), inkSoft: rgb('#6E6A64'), line: rgb('#E7E2DB'), lineStrong: rgb('#C9C2B8'), coral: rgb('#FF5941'),
+  coralDeep: rgb('#E84B34'), coralText: rgb('#C2381F'), coralTint: rgb('#FFEDE8'), ink: rgb('#1C1B1A'), inkHover: rgb('#33312E'),
+  surface: rgb('#FFFFFF'), paper: rgb('#F7F5F2'), white: rgb('#FFFFFF'), clear: 'rgba(0, 0, 0, 0)',
+  sm: 'rgba(28, 27, 26, 0.06) 0px 1px 2px 0px', lg: 'rgba(28, 27, 26, 0.14) 0px 12px 40px 0px', modal: 'rgba(28, 27, 26, 0.25) 0px 12px 40px 0px',
+  swatch: 'rgba(28, 27, 26, 0.14) 0px 0px 0px 1px inset', hairline: 'rgba(28, 27, 26, 0.12) 0px 0px 0px 1px inset',
+  thumb: 'rgba(0, 0, 0, 0.4) 0px 1px 3px 0px', hueThumb: 'rgba(0, 0, 0, 0.35) 0px 1px 3px 0px', scrim: 'rgba(28, 27, 26, 0.4)',
+  focus: 'rgb(194, 56, 31) 0px 0px 0px 2px',
+}
+/** every named property of one element's computed style, held to the table at once — and named, so a miss says where */
+async function holds(locator, what, expected, pseudo = null) {
+  await expect(locator, `${what} is drawn`).toHaveCount(1)
+  const got = await locator.evaluate((el, [names, p]) => {
+    const cs = getComputedStyle(el, p)
+    return Object.fromEntries(names.map((n) => [n, cs.getPropertyValue(n)]))
+  }, [Object.keys(expected), pseudo])
+  // Tailwind composes a shadow from layered properties, so the computed value carries empty transparent layers before the
+  // drawn one: the drawn layers are what a frame's shadow is compared with
+  const drawn = (v) => v.split(/,(?![^(]*\))/).map((l) => l.trim()).filter((l) => l !== 'rgba(0, 0, 0, 0) 0px 0px 0px 0px').join(', ') || 'none'
+  for (const [name, want] of Object.entries(expected)) expect(name === 'box-shadow' ? drawn(got[name]) : got[name], `${what}: ${name}`).toBe(want)
+}
+/** a box's edges against another's — where a frame places one part inside another */
+const inset = (inner, outer) =>
+  Promise.all([inner.boundingBox(), outer.boundingBox()]).then(([i, o]) => ({ top: Math.round(i.y - o.y), right: Math.round(o.x + o.width - (i.x + i.width)), left: Math.round(i.x - o.x) }))
+const border = (width, style, color, sides = ['top', 'right', 'bottom', 'left']) =>
+  Object.fromEntries(sides.flatMap((s) => [[`border-${s}-width`, width], [`border-${s}-style`, style], [`border-${s}-color`, color]]))
+const radius = (r) => Object.fromEntries(['top-left', 'top-right', 'bottom-right', 'bottom-left'].map((c) => [`border-${c}-radius`, r]))
+const padding = (v, h = v) => ({ 'padding-top': v, 'padding-bottom': v, 'padding-left': h, 'padding-right': h })
+const type = (size, weight, colour) => ({ 'font-size': size, ...(weight ? { 'font-weight': weight } : {}), ...(colour ? { color: colour } : {}) })
+/** a border a frame draws at a fraction of a pixel, as Chromium draws it — in whole device pixels (executed: S7a's 1.5px
+ *  "+ New pack" computes 1px at 1×, as the frame itself does in the same browser) */
+const snapped = (px) => `${Math.max(1, Math.floor(px))}px`
+
+test.describe('R-236 — built from the drawings, at the frames\' own 1440', () => {
+test.use({ viewport: { width: 1440, height: 900 } })
+
+test('R-236 · the Style Pack panel, the pairing menu, Edit pack, New pack, the colour picker and the warning match the "Built from" table, value for value', async ({ page }) => {
+  // the pack the project made is in force (its custom cell drawn), and a linked site offers its accent ("From your site")
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-pack': 'custom-1', 'x-inflozo-harness-site': 'members-off' })
+  await open(page)
+  expect(page.viewportSize().width, 'the table is S7a\'s, S7c\'s and S7d\'s, drawn at 1440').toBe(1440)
+  await intoList(page)
+
+  // ── the panel (S7a) ──
+  // the circle is the button's drawing, not its box (a touch screen's 44px rule grows the box, never the circle)
+  const pencil = door(page, 'paper').locator('span').first()
+  await holds(pencil, 'a preset cell\'s pencil', { width: '15px', height: '15px', 'box-sizing': 'content-box', ...border('1px', 'solid', FRAME.lineStrong), 'background-color': FRAME.surface })
+  expect(parseFloat(await pencil.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)), 'a circle').toBeGreaterThanOrEqual(7.5)
+  const placed = await inset(pencil, option(page, 'paper'))
+  expect([placed.top, placed.right], 'the pencil: 4px from the cell\'s top and right').toEqual([4, 4])
+  await holds(pencil.locator('svg'), 'the pencil\'s glyph', { width: '8px', height: '8px', 'stroke-width': '2px', color: FRAME.inkSoft })
+  await holds(option(page, 'custom-1').locator('span[aria-hidden]').first(), 'a custom cell\'s "Ag"', type('14px'))
+  const named = door(page, 'custom-1')
+  await holds(named.locator('span span').first(), 'a custom cell\'s name', { ...type('10.5px', '600'), ...border('1px', 'dashed', FRAME.lineStrong, ['bottom']), cursor: 'text' })
+  await holds(named.locator('svg'), 'a custom cell\'s pencil', { width: '11px', height: '11px', 'stroke-width': '1.5px', color: FRAME.inkSoft })
+  await holds(named.locator('span').first(), 'its name and pencil', { 'column-gap': '4px' })
+  const line = option(page, 'custom-1').locator('span.flex.items-center').first()
+  const [laid, under] = await Promise.all([named.boundingBox(), line.boundingBox()])
+  expect([Math.round(laid.x), Math.round(laid.y)], 'the name button lies over the cell\'s own name line').toEqual([Math.round(under.x), Math.round(under.y)])
+  const create = page.locator('#style-pack-new')
+  await holds(create, '+ New pack', { ...border(snapped(1.5), 'dashed', FRAME.lineStrong), ...radius('8px'), color: FRAME.inkSoft, 'row-gap': '3px' })
+  await holds(create.locator('span').first(), '"+"', type('16px'))
+  await holds(create.locator('span').nth(1), '"New pack"', type('10px', '600'))
+  await holds(page.locator('[data-style-pack-rows]'), 'the rows block', { ...border('1px', 'solid', FRAME.line, ['top']), 'padding-top': '7px', 'row-gap': '6px' })
+  for (const id of ['#style-pack-heading-font', '#style-pack-body-font']) {
+    const row = page.locator(id)
+    await holds(row, `${id}`, { height: '40px', ...padding('6px', '10px'), 'column-gap': '9px', ...border('1px', 'solid', FRAME.line), ...radius('8px'), 'background-color': FRAME.surface })
+    await holds(row.locator('span').first(), `${id} "Aa"`, { ...type('14px'), width: '20px' })
+    await holds(row.locator('span span').first(), `${id}'s name`, type('10px', null, FRAME.inkSoft))
+    await holds(row.locator('span span').nth(1), `${id}'s family`, type('12px', '600'))
+    await holds(row.locator('svg'), `${id}'s chevron`, { width: '12px', 'stroke-width': '1.5px', color: FRAME.inkSoft })
+  }
+  for (const r of W.rows) {
+    const group = page.locator(`#style-pack-${r.key}`)
+    await holds(page.locator(`#style-pack-${r.key}-label`), `${r.title}'s name`, type('11.5px', '500', FRAME.inkSoft))
+    await holds(group.locator('..'), `${r.title}'s row`, { 'row-gap': '4px' })
+    await holds(group, `${r.title}'s track`, { 'background-color': FRAME.paperSunk, ...radius('24px'), ...padding('2px') })
+    await holds(group.locator('[aria-checked="false"]').first(), `${r.title}'s step`, { ...padding('3px', '0px'), ...radius('20px'), ...type('11px', '500', FRAME.inkSoft) })
+    await holds(group.locator('[aria-checked="true"]'), `${r.title}'s chosen step`, { ...type('11px', '600', FRAME.ink), 'background-color': FRAME.surface, 'box-shadow': FRAME.sm })
+  }
+  await expect(page.locator('#style-pack-buttons [role="radio"]').last(), 'Button style has four steps, Pill last').toHaveText(W.rows.find((r) => r.key === 'buttons').steps.pill)
+  await holds(page.locator('#style-pack-pill-label'), 'Pill radius\'s name', type('11.5px', '500', FRAME.inkSoft))
+  await holds(page.locator('#style-pack-pill'), 'Pill radius\'s stepper', { ...border('1px', 'solid', FRAME.line), ...radius('8px'), 'background-color': FRAME.surface })
+  for (const b of await page.locator('#style-pack-pill button').all()) await holds(b, 'a − or +', { width: '26px', height: '28px' })
+  // the pack wears Full, the cap: its + is the Kit's placeholder-grey there, and the − the stepper's ink-soft
+  await holds(page.locator('#style-pack-pill button').first(), 'the live −', { color: FRAME.inkSoft })
+  await holds(page.locator('#style-pack-pill button').last(), 'the + at its cap', { color: FRAME.lineStrong })
+  await holds(page.locator('#style-pack-pill span'), 'Pill radius\'s value', { 'min-width': '32px', ...type('13px', '600'), 'font-variant-numeric': 'tabular-nums' })
+
+  // ── the pairing menu (the Kit's dropdown, as wide as the font row it opens from) ──
+  await page.locator('#style-pack-heading-font').focus()
+  await page.keyboard.press('Enter')
+  const list = page.locator('#style-pack-pairings ul')
+  await expect(list).toBeVisible()
+  await holds(list, 'the pairing menu', { 'background-color': FRAME.surface, ...border('1px', 'solid', FRAME.line), ...radius('12px'), 'box-shadow': FRAME.lg, ...padding('6px'), 'row-gap': '1px' })
+  expect(Math.round((await list.boundingBox()).width), 'as wide as its font row').toBe(Math.round((await page.locator('#style-pack-heading-font').boundingBox()).width))
+  const active = list.locator('[aria-current="true"]')
+  await holds(active, 'the pairing in force', { ...padding('7px', '10px'), ...radius('8px'), 'background-color': FRAME.coralTint })
+  await holds(active.locator('svg').last(), 'its check', { width: '13px', color: FRAME.coralDeep })
+  await holds(list.locator('button:not([aria-current])').first(), 'a pairing', { ...padding('7px', '10px'), ...radius('8px') })
+  await holds(active.locator('span span').first(), 'a pairing\'s "Ag"', { ...type('14px'), width: '20px' })
+  await holds(active.locator('span span span').first(), 'its heading family', type('12px', '600'))
+  await holds(active.locator('span span span').nth(1), 'its body family', type('10px', null, FRAME.inkSoft))
+  await page.keyboard.press('Escape')
+
+  // ── Edit pack (S7c) — opened on a preset, so Reset to defaults is drawn ──
+  await door(page, 'paper').focus()
+  await page.keyboard.press('Enter')
+  const dialog = packEditor(page)
+  await expect(dialog).toBeVisible()
+  await holds(dialog, 'Edit pack', { width: '520px', 'box-sizing': 'content-box', ...padding('28px'), ...radius('16px'), 'background-color': FRAME.surface, 'box-shadow': FRAME.modal, 'row-gap': '20px' })
+  await holds(dialog, 'its scrim', { 'background-color': FRAME.scrim }, '::backdrop')
+  expect(Math.round((await dialog.boundingBox()).width), 'the 576 the frame draws: 520 inside 28 a side').toBe(576)
+  await holds(page.locator('#pack-editor-title'), 'the title', { ...type('22px', '700', FRAME.ink), 'letter-spacing': '-0.22px' })
+  expect(await page.locator('#pack-editor-title').evaluate((el) => getComputedStyle(el).fontFamily), 'Bricolage Grotesque').toMatch(/bricolage/i)
+  await holds(page.locator('#pack-editor-subtitle'), 'the subtitle', { ...type('13px', null, FRAME.inkSoft), 'line-height': '19.5px' })
+  await holds(page.locator('#pack-editor-title').locator('..'), 'title over subtitle', { 'row-gap': '5px' })
+  await holds(dialog.getByRole('button', { name: W.close }).locator('svg'), 'the ✕', { width: '16px', height: '16px', 'stroke-width': '1.5px' })
+  await holds(dialog.getByRole('button', { name: W.close }), 'the ✕\'s place', { color: FRAME.inkSoft, 'margin-top': '4px' })
+  await holds(page.locator('label[for="pack-name"]').locator('..'), 'Pack name\'s label', type('12px', '500', FRAME.inkSoft))
+  await holds(page.locator('#pack-name').locator('..'), 'label over field', { 'row-gap': '6px' })
+  await holds(page.locator('#pack-name'), 'Pack name', { height: '40px', 'box-sizing': 'content-box', ...border('1px', 'solid', FRAME.line), ...radius('8px'), ...padding('0px', '12px'), ...type('13px'), 'caret-color': FRAME.coral })
+  await page.locator('#pack-name').focus()
+  await holds(page.locator('#pack-name'), 'Pack name, focused (S7d)', { ...border('1px', 'solid', FRAME.coralText), 'box-shadow': FRAME.focus })
+  const rows = dialog.locator('[data-swatch="light-background"]').locator('xpath=../../..')
+  await holds(rows, 'the swatch rows', { 'row-gap': '14px' })
+  const lightRow = dialog.locator('[data-swatch="light-background"]').locator('xpath=../..')
+  await holds(lightRow, 'a mode\'s row', { 'column-gap': '12px' })
+  await holds(lightRow.locator('> span'), 'the mode\'s word', { width: '34px', ...type('11px', '600', FRAME.inkSoft) })
+  const grid = dialog.locator('[data-swatch="light-background"]').locator('..')
+  await holds(grid, 'the seven columns', { 'column-gap': '4px' })
+  expect((await grid.evaluate((g) => getComputedStyle(g).gridTemplateColumns)).split(' ').length, 'seven equal columns').toBe(Object.keys(W.roles).length)
+  const swatch = dialog.locator('[data-swatch="light-background"]')
+  await holds(swatch, 'a swatch\'s column', { 'row-gap': '5px' })
+  await holds(swatch.locator('span').first(), 'a swatch', { width: '36px', height: '36px', ...radius('10px'), 'box-shadow': FRAME.swatch })
+  await holds(swatch.locator('span').last(), 'a swatch\'s name', { ...type('9.5px', null, FRAME.inkSoft), 'white-space': 'nowrap' })
+  await holds(dialog.locator('#pack-scrim-light-label').locator('..').locator('..').locator('> span').first(), 'Image scrim\'s name', type('12px', '500', FRAME.inkSoft))
+  await holds(dialog.locator('#pack-scrim-light-label'), 'Image scrim\'s mode word', { width: '34px', ...type('11px', '600', FRAME.inkSoft) })
+  await holds(dialog.locator('#pack-scrim-light'), 'Image scrim\'s stepper', { ...border('1px', 'solid', FRAME.line), ...radius('8px'), 'background-color': FRAME.surface })
+  const footer = dialog.locator('[data-save-pack]').locator('..')
+  await holds(footer, 'the footer', { 'column-gap': '10px' })
+  await holds(dialog.getByRole('button', { name: W.reset }), 'Reset to defaults', { height: '38px', ...padding('0px', '12px'), ...type('12px', '500', FRAME.inkSoft), 'background-color': FRAME.clear, ...radius('10px') })
+  await holds(dialog.locator('[data-cancel]'), 'Cancel', { height: '38px', ...padding('0px', '16px'), ...type('13px', '500', FRAME.inkSoft), 'background-color': FRAME.clear, ...radius('10px') })
+  await holds(dialog.locator('[data-save-pack]'), 'Save pack', { height: '38px', ...padding('0px', '22px'), ...type('13px', '600', FRAME.surface), 'background-color': FRAME.ink, ...radius('10px') })
+  const cancel = await dialog.locator('[data-cancel]').boundingBox()
+  const reset = await dialog.getByRole('button', { name: W.reset }).boundingBox()
+  expect(cancel.x - (reset.x + reset.width), 'Cancel is pushed right').toBeGreaterThan(10)
+
+  // ── the colour picker (S7d), from Accent, with the site's accent offered ──
+  await swatchOf(page, 'light', 'accent').focus()
+  await page.keyboard.press('Enter')
+  const card = page.locator('[data-picker]')
+  await expect(card).toBeVisible()
+  await holds(card, 'the picker', { width: '206px', 'box-sizing': 'content-box', ...padding('12px'), ...border('1px', 'solid', FRAME.line), ...radius('12px'), 'box-shadow': FRAME.modal, 'row-gap': '10px' })
+  const square = page.locator('[data-picker-square]')
+  await holds(square, 'the square', { width: '206px', height: '112px', ...radius('8px') })
+  await holds(square.locator('span'), 'its thumb', { width: '14px', height: '14px', 'box-sizing': 'content-box', 'border-top-color': FRAME.white, 'box-shadow': FRAME.thumb })
+  const hue = page.locator('[data-picker-hue]')
+  await holds(hue, 'the hue strip', { height: '12px', ...radius('6px') })
+  await holds(hue.locator('span'), 'its thumb', { width: '16px', height: '16px', 'box-sizing': 'content-box', 'border-top-color': FRAME.white, 'box-shadow': FRAME.hueThumb })
+  for (const thumb of [square.locator('span'), hue.locator('span')]) await holds(thumb, 'a thumb\'s white ring', { 'border-top-width': snapped(2.5), 'border-top-style': 'solid' })
+  const site = page.locator('[data-from-site]')
+  await holds(site.locator('..'), '"From your site"', { 'column-gap': '7px' })
+  await holds(site.locator('..').locator('span'), 'its words', type('10px', null, FRAME.inkSoft))
+  await holds(site, 'its dot', { width: '16px', height: '16px' })
+  const hexRow = page.locator('#pack-picker-hex').locator('../..')
+  await holds(hexRow, 'the hex row', { ...border('1px', 'solid', FRAME.line, ['top']), 'padding-top': '10px', 'column-gap': '7px' })
+  await holds(hexRow.locator('> span'), 'its swatch', { width: '22px', height: '22px', ...radius('6px'), 'box-shadow': FRAME.hairline })
+  await holds(page.locator('#pack-picker-hex'), 'the hex field', { height: '30px', 'box-sizing': 'content-box', ...border('1px', 'solid', FRAME.coralText), ...radius('8px'), ...padding('0px', '9px'), ...type('12px') })
+  expect(await page.locator('#pack-picker-hex').evaluate((el) => getComputedStyle(el).fontFamily), 'mono').toMatch(/mono/i)
+  const paste = page.getByRole('button', { name: W.paste })
+  await holds(paste, 'Paste', { width: '30px', height: '30px', 'box-sizing': 'content-box', ...radius('8px'), ...border('1px', 'solid', FRAME.line), 'background-color': FRAME.surface })
+  await holds(paste.locator('svg'), 'its clipboard', { width: '13px', 'stroke-width': '1.5px', color: FRAME.inkSoft })
+  await page.keyboard.press('Escape')
+
+  // ── the warning (the Kit's notice banner) and a failing swatch's glyph ──
+  await typeHex(page, 'light', 'text', '#DDDDDD')
+  const banner = page.locator('[data-pack-warning] > div')
+  await holds(banner, 'the warning', { ...radius('10px'), ...padding('11px', '13px'), ...type('12.5px'), 'line-height': '18.75px' })
+  const glyph = swatchOf(page, 'light', 'text').locator('[data-hard]')
+  await holds(glyph, 'a failing swatch\'s glyph', { width: '15px', height: '15px', 'box-sizing': 'content-box', ...border('1px', 'solid', FRAME.lineStrong), 'background-color': FRAME.surface })
+  const at = await inset(glyph, swatchOf(page, 'light', 'text').locator('span').first())
+  expect([at.top, at.right], 'at the swatch\'s top-right, as S7a\'s cells carry their pencils').toEqual([4, 4])
+  await page.keyboard.press('Escape')
+  await expect(packEditor(page)).toHaveCount(0)
+
+  // ── New pack (S7d): its title, its subtitle and its name refusal ──
+  await page.locator('#style-pack-new').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-editor-title')).toHaveText(W.newTitle)
+  await holds(page.locator('#pack-editor-title'), 'New pack\'s title', type('22px', '700'))
+  await savePack(page)
+  await holds(page.locator('#pack-name-error'), 'the name\'s refusal', type('11px'))
+  await expect(page.getByRole('button', { name: W.reset })).toHaveCount(0)
+})
 })
 
 // ── R-147's card ────────────────────────────────────────────────────────────────────────────────────────────────
@@ -3788,6 +4622,32 @@ test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine poin
     await expect(page.locator('#editor-more')).toBeFocused()
   })
 
+  test('6.4 · ⋯ → Style Pack shows the rows under the list, and a pencil opens Edit pack over the editor, inside the window', async ({ page }) => {
+    await openCompact(page)
+    await tabTo(page, 'BUTTON#editor-more[More editor actions]')
+    await page.keyboard.press('Enter')
+    const row = moreRows(page).filter({ hasText: new RegExp(`^${PACK.PACK_WORDS.name}$`) })
+    while (!(await row.evaluate((el) => el === document.activeElement))) await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    // the rows scroll under the list in the overlay — every one of them
+    await expect(page.locator('[data-style-pack-rows] [role="radiogroup"]')).toHaveCount(W.rows.length)
+    await expect(page.locator('#style-pack-heading-font')).toBeVisible()
+    // Tab: the back button, the list's one stop, then the pack in force's own door
+    await tabOnto(page, door(page, 'paper'))
+    await page.keyboard.press('Enter')
+    await expect(packEditor(page)).toBeVisible()
+    await expect(swatchOf(page, 'light', 'background')).toBeFocused()
+    // the same dialog at every width: S7c's 576 fits a 720 window whole
+    const box = await packEditor(page).boundingBox()
+    expect(box.x, 'inside the window').toBeGreaterThanOrEqual(0)
+    expect(box.x + box.width).toBeLessThanOrEqual(720)
+    expect(Math.round(box.width)).toBe(576)
+    await page.keyboard.press('Escape')
+    await expect(packEditor(page)).toHaveCount(0)
+    await expect(door(page, 'paper')).toBeFocused()
+  })
+
   test('a rail item selects its section and Controls opens OVER the page, which does not move; Esc closes it and gives focus back', async ({ page }) => {
     await openCompact(page)
     const chip = await page.locator('#editor-viewport').innerText()
@@ -5262,6 +6122,8 @@ test('DW-241 (Story 5.24e): losing the lock closes every menu, confirm and picke
       body: JSON.stringify(taken ? { row: row('another-session', 2), held: false, won: false } : { row: row(session, 1), held: true, won: true }),
     })
   })
+  /** the journal's length when Edit pack's draft was changed, for the check that losing the lock journaled nothing */
+  let journalled = 0
   const openers = {
     'the Section Picker (⌘K)': async () => {
       await page.locator('section[aria-label="Canvas"]').focus()
@@ -5284,6 +6146,13 @@ test('DW-241 (Story 5.24e): losing the lock closes every menu, confirm and picke
       await page.keyboard.type('xy')
       await expect(canvasFrame(page).locator('[data-inflozo-editing]')).toHaveCount(1)
     },
+    // Story 6.4's "Lock lost mid-dialog": the dialog closes with every other, and its draft goes with it
+    'Edit pack, a colour changed in its draft': async () => {
+      await intoEdit(page, 'paper')
+      await typeHex(page, 'light', 'accent', '#1E6BFF')
+      await expect(swatchOf(page, 'light', 'accent'), 'the control: the draft changed').toHaveAccessibleName(/#1E6BFF/)
+      journalled = (await held(page)).entries
+    },
   }
   for (const [what, opener] of Object.entries(openers)) {
     taken = false
@@ -5302,6 +6171,14 @@ test('DW-241 (Story 5.24e): losing the lock closes every menu, confirm and picke
     const device = page.locator('#editor-device button[data-device]').first()
     await expect(device, `${what}: a view control is still live`).toBeEnabled()
     expect(await device.getAttribute('aria-disabled'), `${what}: and not greyed`).not.toBe('true')
+    if (what.startsWith('Edit pack')) {
+      // the draft is dropped: no form is left in the dialog, nothing was journaled or kept, and the canvas is as it was
+      await expect(page.locator('dialog[data-pack-editor] #pack-name'), `${what}: the draft is dropped`).toHaveCount(0)
+      const after = await held(page)
+      expect(after.entries, `${what}: nothing journaled`).toBe(journalled)
+      expect('paper' in after.packs, `${what}: nothing kept`).toBe(false)
+      expect(await tokenOf(page, '--accent'), `${what}: the canvas untouched`).toBe(recordOf('paper').light.accent)
+    }
   }
 })
 

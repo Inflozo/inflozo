@@ -8,7 +8,13 @@
 //   Paper, Mono (off Paper's step on buttons and gutters, DW-317) and Neon; each case's document carries its pack's block
 //   and faces, as `/canvas?pack=` does;
 // - SPECIMENS are one per pairing of the font pool (R-233, DW-313): a heading, a paragraph with a bold and an italic run,
-//   tabular figures and latin-ext letters, in Paper's palette with that pairing's faces, light, at 1440 — this file owns it;
+//   tabular figures and latin-ext letters, in Paper's palette with that pairing's faces, light, at 1440 — this file owns it.
+//   Story 6.4 (DW-324): every role is drawn at BOTH ENDS of the weights `pool.json` declares for it — the heading's range
+//   or its static weights, the body's roman and its italic — with a bold italic run and a latin-ext line in the heading
+//   face, and every line names its family (`data-family`) so the runner can check it was drawn in the pool's own face;
+// - THE CONTRAST GROUND (Story 6.4, DW-324, DW-317): a design whose Background offers `contrast` and whose stylesheet draws
+//   a `--button-fill` button is also photographed on that ground, under each reference pack whose Button style is
+//   Outline, in both modes, at 1440 — derived from the design and the packs, never listed;
 // - MODES and VIEWPORTS are NFR-6(a)'s own: light/dark × 1440, 834, 390, 1440 at 200% zoom, 1440 with motion reduced;
 // - FIXTURE ROWS come from what the design IS, the way `/pilots` decides its own switcher (`paginates`, member arms,
 //   and the Show-to arms from `carriesMemberVisibility`, the editor's own rule — DW-171).
@@ -67,24 +73,44 @@ export const presetPack = (id) => presets.presetOf(id)?.pack
 
 /** THE SPECIMEN (R-233): what the matrix photographs once per pairing — the heading face at two sizes, the body face with
  *  a bold and an italic run (both true faces, never synthesised), tabular figures and latin-ext letters, all through the
- *  token block, so a pairing's faces are drawn exactly as the canvas and the theme load them. */
+ *  token block, so a pairing's faces are drawn exactly as the canvas and the theme load them.
+ *
+ *  STORY 6.4 — AT BOTH ENDS OF EVERY ROLE'S WEIGHTS (DW-324): the heading at the two ends its pool entry declares (a
+ *  variable face's `range`, or a static face's own weights), the body's roman and its italic at theirs — so the heaviest
+ *  heading a pairing ships (Broadsheet's 900, Fieldnote's 800) and its lightest are photographed — plus a bold italic run
+ *  and a latin-ext line in the HEADING face, which only the body face drew before. Every line with words of its own names
+ *  its family (`data-family`): the runner checks each was drawn in the pool's own file (`matrix.spec.mjs`). */
 export const SPECIMEN_CSS = '.specimen{box-sizing:border-box;max-width:var(--site-width);margin:0 auto;padding:var(--space-section) var(--site-margin);' +
   'background:var(--bg-page);color:var(--text-body);font-family:var(--font-body);font-synthesis:none}' +
   '.specimen__id{margin:0 0 1.5rem;font-size:13px;color:var(--text-muted)}' +
-  '.specimen__heading{margin:0;font-family:var(--font-heading);font-size:56px;line-height:1.1;font-weight:700}' +
-  '.specimen__sub{margin:.75rem 0 0;font-family:var(--font-heading);font-size:28px;line-height:1.2;font-weight:600}' +
+  '.specimen__heading{margin:0;font-family:var(--font-heading);font-size:56px;line-height:1.1}' +
+  '.specimen__sub,.specimen__heading-ext{margin:.75rem 0 0;font-family:var(--font-heading);font-size:28px;line-height:1.2}' +
   '.specimen__body,.specimen__figures,.specimen__ext{margin:1.25rem 0 0;max-width:42rem;font-size:19px;line-height:1.6}' +
   '.specimen__figures{font-feature-settings:var(--figures-tabular)}'
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
+/** The two ends of the weights a pool role declares, as `pool.json` says them: a variable face's range (its italic's, for
+ *  the italic), or a static face's own weights — roman, or the italic ones (`400i`). One weight is both ends. */
+export function weightEnds(role, italic = false) {
+  const declared = role.type === 'V' ? (italic ? role.italic : role.range) : role.weights.filter((w) => w.endsWith('i') === italic).map((w) => Number.parseInt(w, 10))
+  if (!declared || declared.length === 0) throw new Error(`${role.family}: the pool declares no ${italic ? 'italic' : 'roman'} weight`)
+  return [Math.min(...declared), Math.max(...declared)]
+}
 export function specimenMarkup(pairingId) {
   const p = presets.pairingOf(pairingId)
-  return `<section class="specimen"><p class="specimen__id">${esc(`${p.id} · ${p.name} — ${p.heading.family} / ${p.body.family}`)}</p>` +
-    '<h1 class="specimen__heading">The quiet web, written by hand</h1>' +
-    '<h2 class="specimen__sub">Essays from Lisbon, every Sunday</h2>' +
-    '<p class="specimen__body">Orbit Weekly is a newsletter about the humane web, set in the body face with a ' +
-    '<strong>bold run that carries the weight</strong> and an <em>italic run for the aside</em>, so both true faces are drawn.</p>' +
-    '<p class="specimen__figures">Issue 118 · 1,234,567.89 · 0123456789 · 4,100 · 7,711 · £40 · €12.50</p>' +
-    '<p class="specimen__ext">Łódź · Ąžuolas · Őrség · Şişli · Čeština · Ğüneş · ąęłńśźż</p></section>'
+  const [hLo, hHi] = weightEnds(p.heading)
+  const [rLo, rHi] = weightEnds(p.body)
+  const [iLo, iHi] = weightEnds(p.body, true)
+  const h = `data-family="${esc(p.heading.family)}"`
+  const b = `data-family="${esc(p.body.family)}"`
+  return `<section class="specimen"><p class="specimen__id" ${b} style="font-weight:${rLo}">${esc(`${p.id} · ${p.name} — ${p.heading.family} / ${p.body.family}`)}</p>` +
+    `<h1 class="specimen__heading" ${h} style="font-weight:${hLo}">The quiet web, written by hand</h1>` +
+    `<h2 class="specimen__sub" ${h} style="font-weight:${hHi}">Essays from Lisbon, every Sunday</h2>` +
+    `<p class="specimen__heading-ext" ${h} style="font-weight:${hHi}">Łódź · Őrség · Şişli · Čeština · Ğüneş</p>` +
+    `<p class="specimen__body" ${b} style="font-weight:${rLo}">Orbit Weekly is a newsletter about the humane web, set in the body face with a ` +
+    `<strong ${b} style="font-weight:${rHi}">bold run that carries the weight</strong>, an <em ${b} style="font-weight:${iLo}">italic run for the aside</em> ` +
+    `and a <strong style="font-weight:${iHi}"><em ${b}>bold italic run for the emphasis</em></strong>, so every true face is drawn.</p>` +
+    `<p class="specimen__figures" ${b} style="font-weight:${rLo}">Issue 118 · 1,234,567.89 · 0123456789 · 4,100 · 7,711 · £40 · €12.50</p>` +
+    `<p class="specimen__ext" ${b} style="font-weight:${rLo}">Łódź · Ąžuolas · Őrség · Şişli · Čeština · Ğüneş · ąęłńśźż</p></section>`
 }
 /** The specimen's document: Paper's palette through the engine with the pairing's fonts, and that pairing's faces from
  *  `?font=` beside it, exactly as `/canvas` serves a pack's. */
@@ -98,6 +124,13 @@ export function specimenDocument(pairingId) {
 }
 /** One specimen per pairing of the pool (§D.c's order), each Paper, light, at 1440. */
 export const SPECIMENS = () => presets.POOL.pairings.map((p) => p.id)
+
+/** STORY 6.4 (DW-324, DW-317) — a design photographed on the CONTRAST GROUND: its Background offers `contrast`, and its
+ *  stylesheet draws a `--button-fill` button, whose Outline border and label must hold on that ground — read off the
+ *  design, never a list. */
+export const onContrast = (entry) => (entry.universals?.bg?.values ?? []).includes('contrast') && /--button-fill/.test(entry.css)
+/** …under each reference pack whose Button style is Outline (Mono today) — read off the packs, never named here. */
+export const outlinePacks = () => packs().filter((p) => presetPack(p)?.buttons === 'outline')
 
 /** A design's own fixture rows: every combination of the axes its markup and context declare, `[{ name: '' }]` when
  *  it declares none. Each row is a partial render input plus the name its baseline file carries. */
@@ -121,7 +154,9 @@ export const selected = (id, only) => only.length === 0 || only.some((o) => id =
 export const only = () => (process.env.MATRIX_DESIGNS ?? '').split(/[\s,]+/).filter(Boolean)
 
 /** Every case: design × pack × mode × viewport × the design's own rows — and one specimen per pairing (R-233), whose
- *  id is `specimens/<pairing>` so `MATRIX_DESIGNS=specimens` narrows to them as a category does. */
+ *  id is `specimens/<pairing>` so `MATRIX_DESIGNS=specimens` narrows to them as a category does — and, Story 6.4, each
+ *  design that `onContrast` names on the contrast ground: its first row, `bg` set to `contrast`, under every Outline
+ *  reference pack, light and dark, at 1440 (DW-324). */
 export function cases(filter = only()) {
   const ids = pilotIds().filter((id) => selected(id, filter))
   const specimens = SPECIMENS().filter((p) => selected(`specimens/${p.toLowerCase()}`, filter))
@@ -136,7 +171,17 @@ export function cases(filter = only()) {
     }))))
   })
   const [desktop] = VIEWPORTS
-  return [...designs, ...specimens.map((pairing) => {
+  const contrast = ids.filter((id) => onContrast(pilot(id))).flatMap((id) => {
+    const entry = pilot(id)
+    const [category, n] = id.split('/')
+    const [first] = fixtureRows(entry)
+    const row = { ...first, name: [first.name, 'bg-contrast'].filter(Boolean).join('-'), controls: { bg: 'contrast' } }
+    return outlinePacks().flatMap((pack) => MODES.map((mode) => {
+      const slug = [pack, mode, desktop.name, row.name].join('-')
+      return { id, category, n, pack, mode, viewport: desktop, row, title: `${id} · ${slug}`, snapshot: [category, n, `${slug}.png`] }
+    }))
+  })
+  return [...designs, ...contrast, ...specimens.map((pairing) => {
     const n = pairing.toLowerCase()
     const slug = ['paper', 'light', desktop.name].join('-')
     return { id: `specimens/${n}`, category: 'specimens', n, pairing, pack: 'paper', mode: 'light', viewport: desktop, row: { name: '' }, title: `specimens/${n} · ${slug}`, snapshot: ['specimens', n, `${slug}.png`] }
@@ -149,6 +194,7 @@ export const totals = (list) => ({
   designs: new Set(list.filter((c) => !c.pairing).map((c) => c.id)).size,
   packs: new Set(list.map((c) => c.pack)).size,
   specimens: list.filter((c) => c.pairing).length,
+  contrast: list.filter((c) => c.row.controls?.bg === 'contrast').length,
 })
 
 /**
@@ -171,7 +217,8 @@ export function renderInput(entry, row, icons) {
     schema: entry.contentSchema,
     controlSchema: entry.controlSchema,
     universals: entry.universals,
-    controls: {},
+    // Story 6.4 — the contrast-ground case's `bg`; nothing else is set, as the panel sets nothing
+    controls: row.controls ?? {},
     data: {},
     dataBindings: entry.dataBindings,
     getRows,

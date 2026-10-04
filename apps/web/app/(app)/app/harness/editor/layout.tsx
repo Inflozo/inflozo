@@ -9,7 +9,8 @@ import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { ShellUserContext } from '@/components/shell/shell'
 import { harnessCanvasSrc } from '@/lib/canvas'
-import { packChoices, packFacesCss, presetIdOf } from '@/lib/style-pack'
+import { hexOf, type PackRecord } from '@/lib/pack-edit'
+import { ownPacksOf, packChoices, packFacesCss, packIdOf, pairingChoices, pairingGlyphFacesCss } from '@/lib/style-pack'
 import { imagePool, linkResources, paywallSamples, samples } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
@@ -86,6 +87,11 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * STORY 6.3 — `x-inflozo-harness-pack: <id>` is the project's STORED pack (DW-325): the editor opens in it — the canvas
  * document asked for in it, the card, the list, the previews and the swatches its — so a journey can open on a pack that is
  * not Paper. Read through `presetIdOf`, as `read.ts` reads the column, so an unknown id is Paper. Without it, Paper.
+ * STORY 6.4 — `x-inflozo-harness-pack: custom-1` opens on a pack the project MADE: a fixture own record (Paper's renamed,
+ * wearing Ocean's accent and on-accent, so the canvas visibly is not Paper and nothing in it is hard to read) stored under
+ * `custom-1` and in force — the column as
+ * `read.ts` reads it, through `packIdOf` and `ownPacksOf`. Every site header also supplies S7d's "From your site": the
+ * sample's own accent, as a linked site's stored brand would.
  *
  * STORY 5.24e — `x-inflozo-harness-stand-ins: on` adds two designs the shipped library does not hold yet (`../stand-ins.ts`):
  * a FOOTER, which the rule below places in the site doc after the header — so the band clamp (DW-187) has a band to hold —
@@ -167,6 +173,11 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     (id) => entries[id],
   )
 
+  // Story 6.4 — the project's stored `style_pack`, as the column would hold it for the pack header
+  const packAsked = asked.get('x-inflozo-harness-pack')
+  const choices = packChoices()
+  const stylePack = packAsked === 'custom-1' ? { preset: 'custom-1', packs: { 'custom-1': harnessPack(choices) } } : { preset: packAsked }
+
   const data: EditorData = {
     docs,
     entries,
@@ -212,9 +223,14 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       : siteAsked === 'surfaces-later' ? SURFACES_LATER_SITE
       : siteAsked === 'ghost-5' ? GHOST_5_SITE
       : null,
-    // Story 6.2 — a fresh project's pack, Paper, as `defaultStylePack` writes it; Story 6.3 — or the one the header names
-    preset: presetIdOf({ preset: asked.get('x-inflozo-harness-pack') }),
-    packs: packChoices(),
+    // Story 6.2 — a fresh project's pack, Paper, as `defaultStylePack` writes it; Story 6.3 — or the one the header names;
+    // Story 6.4 — or the fixture pack the project made, read as `read.ts` reads the column
+    preset: packIdOf(stylePack),
+    ownPacks: ownPacksOf(stylePack),
+    packs: choices,
+    pairings: pairingChoices(),
+    pairingFaces: pairingGlyphFacesCss('/app/harness/canvas'),
+    siteAccent: siteAsked === null ? null : hexOf(orbitWeekly.site().accent_color),
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -230,6 +246,16 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {children}
     </>
   )
+}
+
+/** Story 6.4 — the fixture pack the project made: Paper's record, renamed, wearing Ocean's light accent with Ocean's own
+ *  words on it, so the pair holds 4.5:1 as Ocean's does — colours of the library's, so this file names none
+ *  (`tokens.test.ts`) */
+function harnessPack(choices: readonly { id: string; record: PackRecord }[]): PackRecord {
+  const of = (id: string) => (choices.find((c) => c.id === id) ?? choices[0]!).record
+  const paper = of('paper')
+  const ocean = of('ocean').light
+  return { ...paper, name: 'Harness Pack', light: { ...paper.light, accent: ocean.accent, onAccent: ocean.onAccent } }
 }
 
 /** Story 5.20 — where the harness's canvases live: its own two pages, never the app's `/projects/<id>` */

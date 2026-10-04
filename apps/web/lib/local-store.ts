@@ -1,5 +1,6 @@
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import { EMPTY_JOURNAL, owedOf, type Journal, type JournalEntry, type OwedRecord } from './journal.ts'
+import type { PackRecords } from './pack-edit.ts'
 
 /* THE IndexedDB DOOR (Story 5.8, `addendum.md` §AD4's default store).
  *
@@ -37,6 +38,10 @@ export type LocalRecord = {
   /** STORY 6.3 — the Style Pack in force here, held with the docs (a switch not yet sent survives a reload). ABSENT in a
    *  record written before 6.3, and then the server's pack is the one the hydrate keeps. */
   preset?: string
+  /** STORY 6.4 — the project's own packs here, the whole map, held with the docs (an edit not yet sent survives a reload).
+   *  ABSENT in a record written before 6.4, and then the server's are the ones the hydrate keeps. A new optional field of
+   *  the one `meta` row, so no IndexedDB upgrade (`VERSION` stays). */
+  packs?: PackRecords
 }
 
 type MetaRow = {
@@ -45,6 +50,7 @@ type MetaRow = {
   docs: Record<string, ProjectDoc>
   auto: string[]
   preset?: string
+  packs?: PackRecords
   undone: number
   synced: number
   pending: Record<string, number>
@@ -166,7 +172,15 @@ export async function openLocal(userId: string, gone?: () => void): Promise<Loca
         stamp: meta.stamp ?? 0,
         nextSeq: Math.max(meta.nextSeq ?? 1, entries.reduce((high, e) => Math.max(high, e.seq + 1), 1)),
       }
-      return { baseRevision: meta.baseRevision, docs: meta.docs, auto: meta.auto ?? [], journal, ...(typeof meta.preset === 'string' ? { preset: meta.preset } : {}) }
+      return {
+        baseRevision: meta.baseRevision,
+        docs: meta.docs,
+        auto: meta.auto ?? [],
+        journal,
+        ...(typeof meta.preset === 'string' ? { preset: meta.preset } : {}),
+        // Story 6.4 — read as stored; the hydrate validates it (`ownPacksIn`) before anything is drawn from it
+        ...(typeof meta.packs === 'object' && meta.packs !== null ? { packs: meta.packs } : {}),
+      }
     }, null)
 
   return {
@@ -194,6 +208,7 @@ export async function openLocal(userId: string, gone?: () => void): Promise<Loca
           docs: record.docs,
           auto: record.auto,
           ...(record.preset === undefined ? {} : { preset: record.preset }),
+          ...(record.packs === undefined ? {} : { packs: record.packs }),
           undone: record.journal.undone,
           synced: record.journal.synced,
           pending: { ...record.journal.pending },

@@ -39,6 +39,16 @@ export const panelBox = `w-[900px] overflow-hidden ${panelHeight} ${box}`
 
 export const panelSheet = `m-auto ${panelBox} flex-col backdrop:bg-scrim open:flex`
 
+/* STORY 6.4 — S7c's EDIT PACK AND S7d's NEW PACK: the frames draw `width:520px; padding:28px` in CSS's default
+   CONTENT-BOX model, so the box they show is 576 wide — 520 of content inside 28 of padding (measured on the frame). The
+   app is border-box, so this sheet says `box-content`: its computed width is the frame's 520 and the box drawn is the
+   frame's 576 (R-236, "exactly"). Its caps leave the same 10px gutter the other sheets leave, padding included. The same
+   vocabulary — the paper, the corner, the shadow, the scrim — at the frames' own width (R-74). */
+export const wideSheet = 'm-auto box-content max-h-[calc(100dvh-76px)] w-[520px] max-w-[calc(100vw-76px)] flex-col gap-5 overflow-y-auto rounded-lg bg-surface p-[28px] shadow-modal backdrop:bg-scrim open:flex'
+
+/** The wide sheet's title: S7c's 22px at the frame's own line height, a step above the confirm's. */
+export const wideTitle = 'font-display text-[22px] font-bold leading-[normal] tracking-[-0.01em] text-ink'
+
 export const title = 'font-display text-[20px] font-bold tracking-[-0.01em] text-ink'
 
 /**

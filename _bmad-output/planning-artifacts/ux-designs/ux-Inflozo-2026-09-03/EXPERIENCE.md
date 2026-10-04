@@ -151,7 +151,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Link Entry** | B4b + P0-1 | Inline Toolbar → link | Searches the user's own posts and pages as you type |
 | **Section Picker** | `S5 Section Picker.dc.html` S5a · S5c dark | `⌘K` · "+ Add section" | Full-screen, category rail, live previews in the project's own pack |
 | **Variant Shuffle** | `S6 Variant Shuffle.dc.html` | `[` `]` · Shuffle | Cycles a section's ring in place, carrying content |
-| **Style Packs** | `S7 Style Packs.dc.html` S7a–d | sidebar "Change" | The pack roster, mid-switch crossfade, edit and create |
+| **Style Packs** | `S7 Style Packs.dc.html` S7a–d | sidebar "Change" | The pack roster, mid-switch crossfade, edit and create. Story 6.4 builds S7a's pencils, custom cell, "+ New pack" and rows, S7c's Edit pack and S7d's New pack with its colour picker; **the parts no frame draws** — the Gutters, Shadow and Link style rows, Button style's Pill, Pill radius, Image scrim, the font-pairing menu and the contrast warning — **are built from the drawings that exist** (S7a's rows and cells, S7c, S7d's picker, the Editor Sidebar Kit, P0-0, D8), value for value, with no Claude Design pass (R-236, the one stated exception to R-74). The words are Appendix C's and the one list's, over any frame's: Normal, Airy, Radius, Heading font, Base, On-accent (R-170, R-237) |
 | **Site Remix** | B8 *(re-specified)* | `⇧R` | Re-rolls pack and/or every design, content preserved (FR-D17) |
 | **Preview** | B3a editing · B3b preview | `P` · Preview | Behaviours run, all editing chrome gone (FR-D20) |
 | **Device Preview** | B11a · B11b *(corrected 2026-09-04, A7 item 6)* | `1` `2` `3` | Both axes resize to a real device size (FR-D8, AD-21) |
@@ -2024,7 +2024,9 @@ token corrections, never a redraw).
     The Edit pack dialog stacks a third row labelled "Dark" with four swatches
     (Base/Surface/Accent/Contrast) under the two correct seven-swatch rows, against its own
     "Seven roles per mode" copy. Delete the third row. (S7d's four-swatch block is different: it
-    anchors the colour-picker popover and stays.)
+    is the DRAWN popover's anchor and stays in the drawing — and Story 6.4 does not build it: its four
+    swatches repeat four of the Dark row's seven, so the built popover anchors to whichever swatch was
+    pressed (R-236, the spec's "Built from" table).)
 
 15. `S14 Editor Cards` S14a · GHOST'S OWN CARD ORDER.
     The dropdown claims Ghost's order and is not it. Reorder to the editor's own menu, read from

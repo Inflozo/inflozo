@@ -45,7 +45,7 @@ import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
-import { canvasAssets, canvasSrc, packed, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, surfaceSheetSrc, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
+import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, surfaceSheetSrc, wearPack, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
@@ -54,7 +54,7 @@ import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORD
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, carries, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
-  flushDecision, hydratedPreset, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, PACK_KEY, redo as redoIn, restingState,
+  flushDecision, hydratedPacks, hydratedPreset, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
   SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal,
   type Restore, type SyncState,
 } from '@/lib/journal'
@@ -65,6 +65,7 @@ import { askLock, lockSignals, lockUrl, tabSession, tabSessionKept, type LockAns
 import { edits, holdsCaret, IN_PREVIEW, KEYMAP, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { BACK_SAID, PAUSED, PAUSED_SAID, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
 import { FACES_WAIT_MS, otherPreset, PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
+import { choiceOf, isCustom, nextCustomId, ownPacksIn, PACK_EDIT_WORDS, samePack, withoutDefaults, type PackRecord, type PackRecords, type PairingChoice, type ScaleRow } from '@/lib/pack-edit'
 import { remixFold, remixPackSaid, remixPicks, remixSaid, remixable, type RemixWhat } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
@@ -91,6 +92,7 @@ import { isApp, stripApp } from '@/routing'
 import { recheckSite, setPreviewSubject, setViewedStates } from './actions'
 import { EditorSkeleton } from './editor-skeleton'
 import type { EditorData } from './read'
+import { PackEditor, type PackEditing } from './pack-editor'
 import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
@@ -312,6 +314,17 @@ import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
    landed `#editor-said` says "Style Pack — {name}", and a later press supersedes one that has not landed. A hydrate's
    correction is instant and says nothing. The previews, the ring's tiles and the panel's swatches wear the pack in force,
    and below 1280 ⋯ reaches the list (DW-322). Every colour is server-derived data (`packs`), never the library (DW-323).
+
+   EDITING THE PACK (Story 6.4 — S7a's pencils and rows, S7c, S7d; FR-E3, DW-310). A project's own packs are FULL authored
+   records beside the preset (`latest.packs`, `style_pack.packs`): a preset as edited here, or a `custom-<n>` it made. Every
+   gesture that changes one — a Save pack, a row, Pill radius, a pairing — is ONE edit (`commitPacks`, the whole map under
+   `PACK_RECORDS_KEY` through the same read-only guard), and a New pack is ONE transaction of two (the record and the switch
+   to it), so one ⌘Z removes it. The flush sends the map with the docs and the preset, the device keeps it, the hydrate keeps
+   or replaces it by §AD1.1's rule, each through AD-36's one reading rule (`ownPacksIn`). The browser computes an own pack's
+   canvas CSS, dots and swatches with the runtime's pool-free engine (`choiceOf`) and the server's per-pairing faces
+   (`pairings`), and wears it in place exactly as a switch does — S7b's pill for a switch only. The canvas is asked for at
+   the pack's preset's address (Paper's for a pack the project made) and wears the pack before its first paint. Edit pack
+   and New pack are `pack-editor.tsx`, mounted at the root; the roster and its rows are `style-pack.tsx`.
 
    ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18), the name's rename underline (no story yet)
    (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
@@ -793,6 +806,10 @@ function EditorShell({
   site,
   preset: storedPreset,
   packs,
+  ownPacks: storedOwnPacks,
+  pairings,
+  pairingFaces,
+  siteAccent,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -812,11 +829,40 @@ function EditorShell({
   /** STORY 6.3 — THE PACK IN FORCE, as the panels draw it: the card, the list, the previews and the swatches. The handlers
    *  and the journal read `latest.preset`, which they write first (R-210's Always); this follows. */
   const [pack, setPack] = useHanded(storedPreset)
-  /** a preset as the editor paints it — an id the build does not hold is Paper, the list's first (`presetIdOf`'s rule) */
-  const packOf = (id: string): PackChoice => packs.find((p) => p.id === id) ?? (packs[0] as PackChoice)
-  const choice = useMemo(() => packOf(pack), [pack, packs])
-  /** the frame's address, asked for ONCE per mount in the opening pack — a switch restyles the document in place */
-  const [frameSrc] = useState(() => packed(src, storedPreset))
+  /** STORY 6.4 — THE PROJECT'S OWN PACKS, as the panels draw them (`latest.packs` is the handlers', written first) */
+  const [ownPacks, setOwnPacks] = useHanded<PackRecords>(storedOwnPacks)
+  /** each own pack as the editor paints it, made once per record by the engine's own derivation (`choiceOf`) */
+  const ownChoices = useRef(new Map<string, { record: PackRecord; choice: PackChoice }>())
+  const ownChoice = (id: string, record: PackRecord): PackChoice => {
+    const hit = ownChoices.current.get(id)
+    if (hit?.record === record) return hit.choice
+    // every record here passed `ownPacksIn`, which keeps only a pairing the pool holds — so its pairing is handed over
+    const choice = choiceOf(id, record, pairings.find((p) => p.id === record.pairing) as PairingChoice)
+    ownChoices.current.set(id, { record, choice })
+    return choice
+  }
+  /** THE ROSTER (Story 6.4): the twelve in §D.d's order, each as this project's own record where it has one, then the
+   *  packs the project made, by number */
+  const rosterOf = (own: PackRecords): PackChoice[] => [
+    ...packs.map((p) => (Object.hasOwn(own, p.id) ? ownChoice(p.id, own[p.id] as PackRecord) : p)),
+    ...Object.keys(own)
+      .filter(isCustom)
+      .sort((a, b) => Number(a.slice('custom-'.length)) - Number(b.slice('custom-'.length)))
+      .map((id) => ownChoice(id, own[id] as PackRecord)),
+  ]
+  /** a pack as the editor paints it — an id the roster does not hold is Paper, the list's first (`packIdOf`'s rule). The
+   *  handlers read the own packs in force (`latest.packs`); a render hands its own. */
+  const packOf = (id: string, own: PackRecords = latest.current.packs): PackChoice => rosterOf(own).find((p) => p.id === id) ?? (packs[0] as PackChoice)
+  const roster = useMemo(() => rosterOf(ownPacks), [ownPacks, packs])
+  const choice = useMemo(() => packOf(pack, ownPacks), [pack, ownPacks, packs])
+  /** AD-36's one reading rule, as the browser asks it (`ownPacksIn`): a preset is one the editor was handed, a pairing one
+   *  the pool holds — the server's lists, so the client refuses exactly what the server refuses */
+  const packReader = { isPreset: (id: string) => packs.some((p) => p.id === id), fontsOf: (pairing: string) => pairings.find((p) => p.id === pairing)?.fonts }
+  /** each preset's library record: what Reset to defaults puts back, and what an own record equal to it is dropped for */
+  const presetRecords = useMemo(() => Object.fromEntries(packs.map((p) => [p.id, p.record])), [packs])
+  /** the frame's address, asked for ONCE per mount in the opening pack's preset (Paper's for a pack the project made,
+   *  `addressOf`) — a switch or an edit restyles the document in place, and `ready` wears an own pack before its first paint */
+  const [frameSrc] = useState(() => packed(src, addressOf(storedPreset)))
   /** S7b's pill: the pack being tried on, from the gesture until the canvas has landed */
   const [trying, setTrying] = useHanded<string | null>(null)
   const packMoved = useRef(false)
@@ -1387,7 +1433,7 @@ function EditorShell({
   // Story 5.18: and the SOURCE chosen, the canvas's STORED subject (a paint resolves it against the source it paints
   // with) and the source the last paint counted pages in
   // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList, preset: storedPreset })
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList, preset: storedPreset, packs: storedOwnPacks })
   /* STORY 5.23b — `latest` NEVER GOES BACK (R-210's Always). A section operation's state reaches React a task after the
      canvas (the hand-over), so a render can be drawn before it lands — never one this component's own setters cause, since
      each pays what is owed first, but one an external store causes (the layout crossing 1280) — and a render that wrote
@@ -1581,10 +1627,11 @@ function EditorShell({
       void flush('change')
       return
     }
-    // Story 6.3: the pack in force rides with the docs, so a switch not yet sent survives a reload
-    const preset = latest.current.preset
+    // Story 6.3: the pack in force rides with the docs, so a switch not yet sent survives a reload — and Story 6.4: the
+    // project's own packs, so an edit not yet sent does too
+    const { preset, packs: own } = latest.current
     void (async () => {
-      const wrote = await s.save(project.id, { baseRevision: base.current, docs: { ...docs }, auto: [...auto], journal: j, preset })
+      const wrote = await s.save(project.id, { baseRevision: base.current, docs: { ...docs }, auto: [...auto], journal: j, preset, packs: own })
       const pushed = entry ? await s.push(project.id, entry, dropped ?? []) : true
       if (!wrote || !pushed) {
         toFallback()
@@ -1594,8 +1641,9 @@ function EditorShell({
   }
 
   /** One transaction appended to the journal and written to the device — or, with the `txn` of one just begun, the next
-   *  entry of it (Story 6.3). A doc's entry holds the doc either side; the pack's (`PACK_KEY`) the preset id either side. */
-  const journalise = (docKey: string, before: ProjectDoc | string, after: ProjectDoc | string, txn: string = crypto.randomUUID()) => {
+   *  entry of it (Story 6.3). A doc's entry holds the doc either side; the pack's (`PACK_KEY`) the preset id either side;
+   *  the own packs' (`PACK_RECORDS_KEY`, Story 6.4) the whole map either side. */
+  const journalise = (docKey: string, before: ProjectDoc | string | PackRecords, after: ProjectDoc | string | PackRecords, txn: string = crypto.randomUUID()) => {
     const now = latest.current
     const { journal: next, entry, dropped } = append(now.journal, { txn, docKey, before, after })
     latest.current = { ...latest.current, journal: next }
@@ -1612,10 +1660,28 @@ function EditorShell({
   const commitPack = (next: string, txn?: string): boolean => {
     if (heldBack({}, PACK_KEY)) return false
     const before = latest.current.preset
-    if (next === before || !packs.some((p) => p.id === next)) return false
+    // Story 6.4: any pack of the roster — a pack the project made included
+    if (next === before || !rosterOf(latest.current.packs).some((p) => p.id === next)) return false
     latest.current = { ...latest.current, preset: next }
     setPack(next)
     journalise(PACK_KEY, before, next, txn)
+    return true
+  }
+
+  /** STORY 6.4 — THE PROJECT'S OWN PACKS, AS ONE EDIT (FR-E3, FR-D9, §AD1, AD-16): the whole `style_pack.packs` map either
+   *  side, under its own key (`PACK_RECORDS_KEY`), through `heldBack`'s read-only guard — a window reading along journals
+   *  nothing (R-192). A preset's record equal to the library's is dropped first (`withoutDefaults`: Reset to defaults then
+   *  Save drops the key), and a map equal to the one in force makes no entry (a dialog saved unchanged). `txn` joins a
+   *  transaction just begun — a New pack's records and its switch are one edit, one ⌘Z. The canvas is the caller's to
+   *  restyle, because what is said once it lands is the caller's. True when it landed. */
+  const commitPacks = (next: PackRecords, txn?: string): boolean => {
+    if (heldBack({}, PACK_RECORDS_KEY)) return false
+    const before = latest.current.packs
+    const after = withoutDefaults(next, presetRecords)
+    if (samePack(after, before)) return false
+    latest.current = { ...latest.current, packs: after }
+    setOwnPacks(after)
+    journalise(PACK_RECORDS_KEY, before, after, txn)
     return true
   }
 
@@ -1651,14 +1717,21 @@ function EditorShell({
     for (const [docKey, doc] of Object.entries(r.docs)) next = committed({ ...next.docs, [docKey]: designated(docKey, doc) }, docKey, stacks, next.auto)
     if (next.auto !== now.auto) setAuto(next.auto)
     // Story 6.3 — and its pack: the panels follow, and the canvas restyles and says which pack is on (an undo announces the
-    // pack it restores, because the canvas changed and the person may not see it)
-    const preset = r.preset !== undefined && packs.some((p) => p.id === r.preset) ? r.preset : now.preset
-    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal, preset }
+    // pack it restores, because the canvas changed and the person may not see it). Story 6.4 — and the project's own packs,
+    // the whole map: the look in force may change with no switch at all (an edit undone), and then it restyles WITHOUT S7b's
+    // pill, which is a switch's alone
+    // the journal's map is this device's copy too, and it reaches CSS: through AD-36's one reading rule, as the hydrate's
+    const own = r.packs === undefined ? now.packs : ownPacksIn(r.packs, packReader)
+    const preset = r.preset !== undefined && rosterOf(own).some((p) => p.id === r.preset) ? r.preset : now.preset
+    const was = packOf(now.preset, now.packs)
+    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal, preset, packs: own }
     setDocs(next.docs)
     setJournal(r.journal)
-    if (preset !== now.preset) {
+    if (own !== now.packs) setOwnPacks(own)
+    const is = packOf(preset, own)
+    if (preset !== now.preset || is.tokens !== was.tokens || is.faces !== was.faces) {
       setPack(preset)
-      restyle(PACK_WORDS.said(packOf(preset).name))
+      restyle(PACK_WORDS.said(is.name), { pill: preset !== now.preset })
     }
     // STORY 5.16 — AN UNDO CAN TAKE PAGE 2 AWAY WHILE IT IS SHOWN: the journal is one list for the whole project, so ⌘Z
     // on page 2 can reach back into page 1 and remove its main feed. The canvas goes to page 1 BEFORE the paint and says
@@ -1674,7 +1747,7 @@ function EditorShell({
     // a page 2 that follows again still holds the copy's sections
     const pick = latest.current.selected
     if (pick && !docOf(pick.doc)?.instances.some((i) => i.instanceId === pick.instanceId)) choose(null)
-    // a pack alone changes no section, so nothing is redrawn: the canvas restyles in place (`restyle`)
+    // a pack alone — a switch or an own pack's edit — changes no section, so nothing is redrawn: the canvas restyles in place
     if (Object.keys(r.docs).length > 0) paint()
     rest()
     store(r.journal, next.docs, next.auto)
@@ -1760,8 +1833,9 @@ function EditorShell({
     // here: in the same-browser race it is the holder's. The upgrade is `land()` telling a session that typed before its
     // first answer, when that answer makes it a reader, what it holds — DW-308, Story 7.18's.
     if (!now.lock.holder) return backoffOver()
-    // Story 6.3: the pending docs AND the pending pack, in one call — one compare-and-set, one revision
-    const payload = flushPayload(now.journal, now.docs, now.preset)
+    // Story 6.3: the pending docs AND the pending pack, in one call — one compare-and-set, one revision; Story 6.4: and the
+    // project's own packs, whole, where they are owed
+    const payload = flushPayload(now.journal, now.docs, now.preset, now.packs)
     if (!carries(payload)) return
     if (inFlight.current) {
       // owed, not dropped: in fallback this edit is held NOWHERE else, and a ⌘S pressed mid-flight meant it
@@ -1777,7 +1851,7 @@ function EditorShell({
     // Story 5.17: the tab's lock session rides along, so the route can refuse work from a session that was taken over
     // from. `|| undefined` drops it from the JSON before the tab knows its id — never an empty id the route could read
     // as a stranger's.
-    const body = JSON.stringify({ base: base.current, docs: payload.docs, preset: payload.preset, session: tabId.current || undefined })
+    const body = JSON.stringify({ base: base.current, docs: payload.docs, preset: payload.preset, packs: payload.packs, session: tabId.current || undefined })
     let landed = false
     try {
       const answer = await fetch(syncUrl(), {
@@ -1943,7 +2017,7 @@ function EditorShell({
     const store = local.current
     if (!store) return
     void store.clearJournal(project.id)
-    void store.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL, preset: storedPreset })
+    void store.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL, preset: storedPreset, packs: storedOwnPacks })
   }
 
   const land = (answer: LockAnswer | null) => {
@@ -2322,15 +2396,11 @@ function EditorShell({
   /* ─── Story 6.3 — THE PACK-SWITCHER MOMENT (S7b, FR-E2, UX-DR12, UX-DR15) ───────────────────────────────────────────── */
 
   /** The canvas document in a pack: its `1-tokens` block and its `1b-faces` rules replaced in place, from the server's own
-   *  strings (`packs`). A style that already holds them is left alone, so the document a route served in this pack is
-   *  untouched. The frame says which pack it wears (`data-pack`) for the walks to wait on. */
+   *  strings (`packs`) — or, for a pack the project edited or made, the browser's own (`choiceOf`, Story 6.4). One rule with
+   *  the previews' (`lib/canvas.ts`'s `wearPack`). The frame says which pack it wears (`data-pack`) for the walks to wait on. */
   const wear = (doc: Document, id: string) => {
     const wanted = packOf(id)
-    const tokens = doc.querySelector('style[data-order="1-tokens"]')
-    const faces = doc.querySelector('style[data-order="1b-faces"]')
-    if (!tokens || !faces) return
-    if (tokens.textContent !== wanted.tokens) tokens.textContent = wanted.tokens
-    if (faces.textContent !== wanted.faces) faces.textContent = wanted.faces
+    if (!wearPack(doc, wanted)) return
     if (frame.current) frame.current.dataset.pack = wanted.id
   }
 
@@ -2346,8 +2416,12 @@ function EditorShell({
    *  crossfades — 300 ms by `canvas-chrome.css`'s rules, keyed on `data-inflozo-switching` for the switch alone, and instant
    *  under its reduced-motion block. Where the API is absent the same change is instant. No second document and no reload.
    *  The update wears the NEWEST pack, whichever update runs last, so a superseded press can never paint over a later one;
-   *  S7b's pill shows from the gesture to landing (`aria-hidden` — the announcement speaks), and only the last turn speaks. */
-  const restyle = (said: string | null) => {
+   *  S7b's pill shows from the gesture to landing (`aria-hidden` — the announcement speaks), and only the last turn speaks.
+   *
+   *  STORY 6.4 — AN EDIT OF THE PACK IN FORCE RESTYLES THE SAME WAY — the same crossfade, the faces waited for, instant under
+   *  reduced motion — but S7b's pill is a SWITCH's alone ("Trying on…" names a pack being tried, not one being tuned):
+   *  `pill: false` for a Save pack, a row, a pairing, and an undo that changes the look with no switch. */
+  const restyle = (said: string | null, { pill = true }: { pill?: boolean } = {}) => {
     const turn = ++switching.current
     const doc = frame.current?.contentDocument
     // not drawn yet: its `load` wears the pack in force (`ready`), and the words wait on nothing
@@ -2362,7 +2436,8 @@ function EditorShell({
       wear(doc, latest.current.preset)
       return
     }
-    setTrying(packOf(latest.current.preset).name)
+    // a switch's pill; an edit supersedes one still in the air, so its pill goes with it
+    setTrying(pill ? packOf(latest.current.preset).name : null)
     const landed = () => {
       if (turn !== switching.current) return
       doc.documentElement.removeAttribute('data-inflozo-switching')
@@ -2388,6 +2463,62 @@ function EditorShell({
   const choosePack = (id: string) => {
     if (!commitPack(id)) return
     restyle(PACK_WORDS.said(packOf(id).name))
+  }
+
+  /* ─── Story 6.4 — EDITING A PACK (FR-E3): Edit pack, New pack, the rows and the pairing, each ONE edit ─────────────── */
+
+  /** the dialog's opening, and a fresh number per open, so a pack reopened starts a fresh draft */
+  const [packEditing, setPackEditing] = useState<PackEditing | null>(null)
+  const editions = useRef(0)
+  /** A pencil, or a custom pack's name, pressed: Edit pack on the pack as it stands — focus on the first swatch, or on Pack
+   *  name for a name pressed. A preset carries its library record for Reset to defaults. Reading along nothing opens. */
+  const editPack = (id: string, focus: 'swatch' | 'name') => {
+    if (!latest.current.lock.holder) return
+    const defaults = presetRecords[id]
+    setPackEditing({ kind: 'edit', id, record: packOf(id).record, ...(defaults === undefined ? {} : { defaults }), focus, n: (editions.current += 1) })
+  }
+  /** "+ New pack": the look in force with an empty name (S7d's "Starts from your current look"), focus on the name. */
+  const newPack = () => {
+    if (!latest.current.lock.holder) return
+    const now = latest.current
+    setPackEditing({ kind: 'new', id: nextCustomId(now.packs), record: { ...packOf(now.preset).record, name: '' }, focus: 'name', n: (editions.current += 1) })
+  }
+  /** Save pack. A New pack is ONE transaction — its record and the switch to it — so one ⌘Z removes it and puts the pack
+   *  before back; it joins the roster after the presets and wears the canvas. An edit is one edit to the map, and an
+   *  unchanged draft none; the canvas restyles only where the pack is the one in force, and the words wait for it. */
+  const savePack = (editing: PackEditing, record: PackRecord) => {
+    const now = latest.current
+    if (editing.kind === 'new') {
+      // the next free number NOW — an undo since the dialog opened may have freed a lower one
+      const id = nextCustomId(now.packs)
+      const txn = crypto.randomUUID()
+      if (!commitPacks({ ...now.packs, [id]: record }, txn)) return
+      if (!commitPack(id, txn)) return
+      restyle(PACK_WORDS.said(record.name))
+      return
+    }
+    if (!commitPacks({ ...now.packs, [editing.id]: record })) return
+    if (editing.id === now.preset) restyle(PACK_EDIT_WORDS.changed(record.name), { pill: false })
+    else setSaid(PACK_EDIT_WORDS.changed(record.name))
+  }
+  /** One change to the pack in force's record — a row, Pill radius or the pairing — as one edit, then the canvas. */
+  const editInForce = (change: Partial<PackRecord>, said: string) => {
+    const now = latest.current
+    const record = packOf(now.preset).record
+    if (Object.entries(change).every(([k, v]) => record[k as keyof PackRecord] === v)) return
+    if (!commitPacks({ ...now.packs, [now.preset]: { ...record, ...change } })) return
+    restyle(said, { pill: false })
+  }
+  const packRow = (row: ScaleRow, step: string) => {
+    const words = PACK_EDIT_WORDS.rows.find((r) => r.key === row)
+    if (words === undefined) return
+    editInForce({ [row]: step } as Partial<PackRecord>, PACK_EDIT_WORDS.row(words.title, (words.steps as Record<string, string>)[step] ?? step))
+  }
+  const packPill = (value: string) => editInForce({ pillRadius: value }, PACK_EDIT_WORDS.row(PACK_EDIT_WORDS.pillRadius, PACK_EDIT_WORDS.pillValue(value)))
+  const packPairing = (id: string) => {
+    const to = pairings.find((p) => p.id === id)
+    if (to === undefined) return
+    editInForce({ pairing: id }, PACK_EDIT_WORDS.pairing(to.heading, to.body))
   }
 
   /** Story 5.7's press, and it is deliberately smaller than `flip`'s: A DEVICE CHANGE IS A STYLE CHANGE AND NOTHING
@@ -3772,8 +3903,9 @@ function EditorShell({
       const held = await opened.read(project.id)
       if (!alive) return
       // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this — an
-      // owed pack included, which the server's preset must then be (Story 6.3)
-      const landed = held !== null && ownFlushLanded(held, revision, stored, storedPreset)
+      // owed pack included, which the server's preset must then be (Story 6.3), and owed own packs, which the server's must
+      // then be (Story 6.4)
+      const landed = held !== null && ownFlushLanded(held, revision, stored, storedPreset, storedOwnPacks)
       const how = landed ? ({ kind: 'local' } as const) : hydrationFor(held, revision)
       // STORY 5.17 — AD-15's clearing rule, BOTH halves in one call: the revision half above, and the generation
       // half — a take-over — which cannot have happened before this mount, because this session has never held the
@@ -3794,14 +3926,20 @@ function EditorShell({
           // device kept from before the rule is repaired here and stored repaired with the next edit of its canvas
           const docs = Object.fromEntries(Object.entries(held.docs).map(([k, d]) => [k, designated(k, d)]))
           // STORY 6.3 — §AD1.1 FOR THE PACK AS FOR THE DOCS: equal revisions keep THIS device's pack with its journal. A record
-          // written before 6.3 holds none, and an id this build does not hold is no pack — both keep the server's
-          const keptPreset = hydratedPreset(how, held, storedPreset, (id) => packs.some((p) => p.id === id))
-          latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library), preset: keptPreset }
+          // written before 6.3 holds none, and an id this build does not hold is no pack — both keep the server's.
+          // STORY 6.4 — AND THE OWN PACKS, by the same rule (a record from before 6.4 holds none: the server's), through
+          // `ownPacksIn` (AD-36): this device's copy is a value a browser can be made to hold, and it reaches CSS
+          const keptPacks = hydratedPacks(how, held.packs === undefined ? null : { packs: ownPacksIn(held.packs, packReader) }, storedOwnPacks)
+          const keptPreset = hydratedPreset(how, held, storedPreset, (id) => packs.some((p) => p.id === id) || (isCustom(id) && Object.hasOwn(keptPacks, id)))
+          const wasLook = packOf(storedPreset, storedOwnPacks)
+          latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library), preset: keptPreset, packs: keptPacks }
           setDocs(docs)
           setAuto(new Set(back))
           setJournal(kept)
+          if (keptPacks !== storedOwnPacks) setOwnPacks(keptPacks)
           // a correction, never a gesture: instant, and it says nothing
-          if (keptPreset !== storedPreset) {
+          const isLook = packOf(keptPreset, keptPacks)
+          if (keptPreset !== storedPreset || isLook.tokens !== wasLook.tokens || isLook.faces !== wasLook.faces) {
             setPack(keptPreset)
             restyle(null)
           }
@@ -3812,7 +3950,7 @@ function EditorShell({
             switchPage(force.page)
             setSaid(leftBecause(force.reason ?? ''))
           }
-          if (landed) void opened.save(project.id, { baseRevision: revision, docs, auto: back, journal: kept, preset: keptPreset })
+          if (landed) void opened.save(project.id, { baseRevision: revision, docs, auto: back, journal: kept, preset: keptPreset, packs: keptPacks })
           if (unsynced(kept)) rest()
           settle(true)
           return
@@ -3825,8 +3963,8 @@ function EditorShell({
       if (!alive) return
       latest.current = { ...latest.current, journal: EMPTY_JOURNAL }
       setJournal(EMPTY_JOURNAL)
-      // …and the server's pack (Story 6.3): the opening one, already in force
-      await opened.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...synthesized], journal: EMPTY_JOURNAL, preset: storedPreset })
+      // …and the server's pack (Story 6.3) and own packs (Story 6.4): the opening ones, already in force
+      await opened.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...synthesized], journal: EMPTY_JOURNAL, preset: storedPreset, packs: storedOwnPacks })
       settle(true)
     })()
     return () => {
@@ -4423,7 +4561,8 @@ function EditorShell({
     const docKey = ownKeyOf(now.key, now.page)
     const picks = what === 'pack' ? [] : remixPicks(docOf(docKey)?.instances ?? [], ringOf, Math.random)
     if (what !== 'pack' && picks.length === 0) return
-    const to = what === 'designs' ? null : otherPreset(packs.map((p) => p.id), now.preset, Math.random)
+    // Story 6.4 — a different pack from the WHOLE roster, a pack the project made included
+    const to = what === 'designs' ? null : otherPreset(rosterOf(now.packs).map((p) => p.id), now.preset, Math.random)
     if (what !== 'designs' && to === null) return
     const txn = crypto.randomUUID()
     if (picks.length > 0) {
@@ -4866,6 +5005,14 @@ function EditorShell({
     retryNow: useStable(retryNow),
     remix: useStable(onRemix),
     choosePack: useStable(choosePack),
+    // Story 6.4 — the Style Pack editor's doors and rows
+    editPack: useStable(editPack),
+    newPack: useStable(newPack),
+    savePack: useStable(savePack),
+    closePack: useStable(() => setPackEditing(null)),
+    packRow: useStable(packRow),
+    packPill: useStable(packPill),
+    packPairing: useStable(packPairing),
     flip: useStable(flip),
     pickDevice: useStable(pickDevice),
     enterPreview: useStable(enterPreview),
@@ -5578,7 +5725,7 @@ function EditorShell({
                     subject={null}
                     member={viewAs}
                     live={cardLive}
-                    pack={pack}
+                    pack={choice}
                     onDesign={on.choosePaywall}
                     onStep={on.stepPaywall}
                   />
@@ -5610,7 +5757,7 @@ function EditorShell({
               // Story 5.18 — and with the canvas's own content, one source per tile
               live={cardLive}
               // Story 6.3 — the tiles wear the pack in force, as the canvas does
-              pack={pack}
+              pack={choice}
               onDesign={on.designChosen}
               onStep={on.stepChosen}
             />
@@ -5657,8 +5804,20 @@ function EditorShell({
             />
             </>
           ) : packList ? (
-            // Story 6.2 — S7a's list; Story 6.3 — and a cell switches (a press or Enter), greyed while reading along (R-192)
-            <StylePackRoster packs={packs} current={choice} readOnly={!lock.holder} onChoose={on.choosePack} />
+            // Story 6.2 — S7a's list; Story 6.3 — and a cell switches (a press or Enter), greyed while reading along (R-192);
+            // Story 6.4 — the roster with the project's own packs, every Edit pack door, "+ New pack" and the rows
+            <StylePackRoster
+              packs={roster}
+              current={choice}
+              pairings={pairings}
+              readOnly={!lock.holder}
+              onChoose={on.choosePack}
+              onEdit={on.editPack}
+              onNew={on.newPack}
+              onRow={on.packRow}
+              onPill={on.packPill}
+              onPairing={on.packPairing}
+            />
           ) : (
             <>
               {/* Story 6.2 — S4a's rest panel: "Page", the project's Style Pack card, then the sidebar's empty state */}
@@ -5862,7 +6021,7 @@ function EditorShell({
           // Story 5.18 — and with the canvas's own content: the site's where it shows, one source per card
           live={cardLive}
           // Story 6.3 — and in the project's Style Pack
-          pack={pack}
+          pack={choice}
           refusal={pickerRefusal}
           // DW-207 (Story 5.24e): browsing on lets the last refusal go — it was about a press no longer in front of you
           onBrowse={() => setPickerRefusal(null)}
@@ -5910,6 +6069,13 @@ function EditorShell({
           </Button>
         </div>
       </dialog>
+
+      {/* STORY 6.4 — S7c's Edit pack and S7d's New pack: at the root, inside `[data-editor]` and under no hidden ancestor,
+          so it opens over the editor at every width (the list below 1280 is in an overlay) and losing the lock closes it */}
+      <PackEditor editing={packEditing} siteAccent={siteAccent} onSave={on.savePack} onClose={on.closePack} />
+      {/* …and the faces the font rows and the pairing menu draw "Ag" and "Aa" in — the pool's own roman faces under the app's
+          prefix, fetched only when a glyph is drawn (`pairingGlyphFacesCss`) */}
+      <style data-pairing-faces>{pairingFaces}</style>
     </div>
   )
 }

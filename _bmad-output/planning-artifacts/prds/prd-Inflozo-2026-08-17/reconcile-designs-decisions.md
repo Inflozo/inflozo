@@ -5150,8 +5150,10 @@ once. Ensure it is perfect and match existing design."*
 - **Declined.** Option 1, a Claude Design pass from a prompt in the spec, with Dev waiting for the export. Option 3,
   leaving the undrawn parts to a later story.
 - Targets: ✅ this entry · ✅ R-74's entry · ✅ Story 6.4's spec — Question 1, its Intent, Boundaries, tasks, the "Built
-  from" table and the owner's test · ✅ `epics.md` — Story 6.4's card · ✅ DW-310 · ✅ `epic-6-context.md` · ⬜ built, and
-  approved side by side — Story 6.4's Dev.
+  from" table and the owner's test · ✅ `epics.md` — Story 6.4's card · ✅ DW-310 · ✅ `epic-6-context.md` · ✅ built —
+  Story 6.4's Dev, 2026-10-04: every part from the table, held by the computed-style stop `R-236 ·` in
+  `tools/keyboard/journey.spec.mjs` (a 1px change turns it red) · ✅ approved side by side — the owner, in Story 6.4's
+  Dev session, 2026-10-04 (its Question 4, option 1, over a private review page of every built state beside its drawing).
 
 **R-237 — the page's own colour is "Base", in the Style Pack editor as in a section's settings.** Story 6.4's Create,
 Question 2, ruled **option 1** (owner, 2026-10-04): *"Base everywhere."*
@@ -5163,8 +5165,8 @@ Question 2, ruled **option 1** (owner, 2026-10-04): *"Base everywhere."*
   contrast warning and every check. The section setting is unchanged. FR-E1's "background" stays as prose describing the
   role, not as a label. Per mode, the seven are: Base · Surface · Text · Muted · Border · Accent · On-accent.
 - **Declined.** Option 2, "Page" in both places. Option 3, two names.
-- Targets: ✅ this entry · ✅ Story 6.4's spec · ✅ `epics.md` — Story 6.4's card · ✅ DW-310 · ✅ `epic-6-context.md` · ⬜
-  built — Story 6.4's Dev (`PACK_EDIT_WORDS`, held by `pack-edit.test.ts`).
+- Targets: ✅ this entry · ✅ Story 6.4's spec · ✅ `epics.md` — Story 6.4's card · ✅ DW-310 · ✅ `epic-6-context.md` · ✅
+  built — Story 6.4's Dev, 2026-10-04 (`PACK_EDIT_WORDS`, held by `pack-edit.test.ts`).
 
 ## B · Approved decisions superseded by this session
 

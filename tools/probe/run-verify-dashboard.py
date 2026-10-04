@@ -49,6 +49,10 @@ WHAT IT PROVES, each step PASS, FAIL or RECORD, and it exits non-zero if any ste
                  field is empty and the card is back. Its control is the card being back: a link
                  that went nowhere, or back to the filter, fails it
   axe-no-match   axe-core at WCAG 2.1 AA over both no-match lines at 1440, 834 and 390
+  duplicate-carries-packs  STORY 6.4 (FR-E3): the account made Pro through `entitlements.state`, its project
+                 holding a pack it made (in force) and an edited preset; the project menu's Duplicate
+                 makes a copy whose `style_pack`, read off the pooler, equals the source's — own packs
+                 and preset included. The copy is deleted, the column and the entitlement put back
   delete-typed   DW-20: Delete with the WRONG name typed is refused and the row survives; then the
                  right name deletes it. Both halves, because "the delete was refused" is satisfied
                  by a delete that never ran
@@ -447,6 +451,49 @@ const axeOver = async (page, label, width) => {
            `the link is the page without ?q=, the click lands there with the field empty and the card back: ` +
            JSON.stringify(cleared))
       await sql`delete from public.sites where id = ${seeded.id}`
+    }
+
+    /* ── duplicate-carries-packs — STORY 6.4 (FR-E3: "duplicate a project to carry a look forward"). The account is made
+       Pro through `entitlements.state` — as `pro-connect-t3` flips it in run-verify-ghost-admin.py, here through the
+       pooler — so Duplicate has room, and its one project's `style_pack` is given a pack it made, in force, and an edited
+       preset beside the planted brand. The project menu's Duplicate runs, and the copy's `style_pack`, read off the
+       pooler, is the source's — the own packs and the preset included. The copy is deleted and the column and the
+       entitlement put back BEFORE the steps that count this account's projects. */
+    {
+      const [ent] = await sql`select state from public.entitlements where user_id = ${USER_ID}`
+      await sql`update public.entitlements set state = 'pro_active' where user_id = ${USER_ID}`
+      const [source] = await sql`select id, style_pack from public.projects where user_id = ${USER_ID} order by id limit 1`
+      const presets = JSON.parse(require('fs').readFileSync(process.env.PACKS_JSON, 'utf8')).presets
+      const { id: _paper, ...paper } = presets[0]
+      const { id: _tangerine, ...tangerine } = presets.find((p) => p.id === 'tangerine')
+      const carried = {
+        preset: 'custom-1',
+        brand: { seed: 'duplicate-carries-packs' },
+        packs: {
+          'custom-1': { ...paper, name: 'Studio Warm', light: { ...paper.light, background: '#FFF4EA' } },
+          tangerine: { ...tangerine, light: { ...tangerine.light, accent: '#1E6BFF' } },
+        },
+      }
+      await sql`update public.projects set style_pack = ${sql.json(carried)} where id = ${source.id}`
+      await page.goto(`${APP}/`, { waitUntil: 'load', timeout: 60000 })
+      await page.locator('button[aria-label^="Options for "]').first().click()
+      await page.waitForTimeout(300)
+      await page.getByRole('button', { name: /^Duplicate/i }).first().click()
+      let copies = []
+      for (let n = 0; n < 30 && copies.length === 0; n++) {
+        await page.waitForTimeout(500)
+        copies = await sql`select id, style_pack from public.projects where user_id = ${USER_ID} and id <> ${source.id}`
+      }
+      const [held] = await sql`select style_pack from public.projects where id = ${source.id}`
+      step('duplicate-carries-packs',
+           copies.length === 1 && JSON.stringify(copies[0].style_pack) === JSON.stringify(held.style_pack) &&
+           held.style_pack.preset === 'custom-1' && held.style_pack.packs?.['custom-1']?.name === 'Studio Warm' &&
+           held.style_pack.packs?.tangerine?.light?.accent === '#1E6BFF',
+           `Pro (entitlement ${ent?.state} → pro_active), the project menu's Duplicate made ${copies.length} copy; its ` +
+           `style_pack ${JSON.stringify(copies[0]?.style_pack ?? null)} against the source's ${JSON.stringify(held.style_pack)}`)
+      for (const c of copies) await sql`delete from public.projects where id = ${c.id}`
+      await sql`update public.projects set style_pack = ${sql.json(source.style_pack)} where id = ${source.id}`
+      if (ent) await sql`update public.entitlements set state = ${ent.state} where user_id = ${USER_ID}`
     }
 
     // ── cross-rename / cross-delete: a SECOND account's row, forged into this account's forms.
