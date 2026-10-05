@@ -2028,6 +2028,11 @@ note (Story 6.4's Dev, 2026-10-04): built as planned. The colour picker's "From 
   is none, and a press only sets the draft. `sync_project_doc` sets `preset` and `packs` and leaves every other key, so
   `brand` survives a save (the deployed walk's step 103 seeds one and reads it back untouched). The dashboard card still
   paints the site's accent over an own pack's (`placeholderFor`, FR-C4). Nothing here closes this entry.
+note (Story 6.6's Create, 2026-10-05): the `also:` line's last decision, as 6.6 plans it. The pack is re-derived from
+  the site's accent (the seed, `brandSeed`), and `style_pack.brand` is no longer written: once the accent is in the pack
+  nothing reads it, so `placeholderFor`'s override goes, and rows that hold one keep it, unread. Whether the logo is
+  copied is 6.6's Question 1 (planned: no, the logo stays Ghost's, as D6a and B17 draw it). The menu still waits for the
+  epic that places a header. The announcement half stays Story 9.5's.
 
 ### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
 
@@ -2278,6 +2283,10 @@ reason: R-74 (owner, 2026-09-02) says a surface with no frame is extrapolated fr
   that next opens the export for Epic 3 should draw both; a scroll bound on the fieldset is a
   one-line change once the frame says what the bound is. Not blocking: the owner's manual test
   reaches the two-card state, which is the state a customer reaches.
+note (Story 6.6's Create, 2026-10-05): planned. Both states are drawn first, as "S2c-2 Which Project", from the Claude
+  Design prompt in 6.6's spec (its Question 3, option 1 recommended), and the card list takes that frame's bound, so the
+  caption and both buttons stay in view with 25 projects. A T1-only harness block, `brand-many`, inserts 24 projects and
+  holds it at 1440, 834 and 390.
 
 ### DW-71: three brand keys are stored for no reader, and no epic has claimed them
 
@@ -4310,6 +4319,11 @@ reason: each needs a vocabulary piece, a module or a field the pilot story does 
     no story builds. Since 5.15 the editor holds `nav-drawer` still while designing, so the mount rests in its no-JS
     state, where A1's own no-JS baseline makes the takeover's contents native `<details>`. The story building A1 #6 and
     #7 (9.2) decides whether that resting state is enough to design them in, or asks for pinning.
+note (Story 6.6's Create, 2026-10-05): found while planning 6.6's logo question. The authored-logo bullet above (`logo`
+  and `logoLight`) is carried by no story's criteria: the cards cite this entry only for the `<main>` target (7.3), the
+  navigation partial (9.1) and the takeover (9.2). Story 9.1 builds A1's content model, so its Create carries the bullet
+  word for word (R-195). 6.6's Question 1 decides whether a logo also lives in the Style Pack (planned: no, it stays
+  Ghost's).
 
 ### DW-151: A17 #1 Three Up — what its pilot leaves, and the one-value grey the engine cannot draw
 
@@ -8861,6 +8875,10 @@ reason: an end-of-life Ghost on the public internet was the server that got hack
   wait is asked of the owner, never skipped silently.
 note (Story 6.5's Dev, 2026-10-05): the pass gains MEASUREMENTS §69's Ghost 5 half — `tools/probe/record-mode-resolution.py`
   runs T1 alone (its `GHOST6_*` keys); the Ghost 5 leg is that recorder pointed at the fresh server, and §69 says so.
+note (Story 6.6's Create, 2026-10-05): `tools/probe/run-verify-ghost-admin.py` is next, at 6.6's Review. Today it reads
+  `GHOST5_*` and calls T3 on every run, `--check` and `--only` included. 6.6 makes its `--only` path T1-only. A full run
+  still needs a Ghost 5 server, so its T3 steps wait for this pass, and so do the full-sequence brand steps 6.6 moves to
+  the seeded pack (`brand-seed`, `brand-atcap`, `brand-picker`).
 
 ## Deferred from: code review of spec-6-4-editing-tokens-per-mode-with-contrast-checked-live (2026-10-04)
 
@@ -8878,6 +8896,12 @@ reason: the action is older than this story and reads `style_pack`, then writes 
   check, while the editor's save merges by key inside `sync_project_doc`. Since 6.3 the exposure was one preset id;
   since 6.4 it is every pack the project authored. The fix is to write `brand` by key (in SQL, or through the RPC), and
   Story 6.6 changes what this action writes, so it is fixed there rather than twice.
+note (Story 6.6's Create, 2026-10-05): planned, by the RPC and without writing `brand` at all. Once the accent is in the
+  pack, nothing reads `brand`. Writing it by key would need a migration, because PostgREST cannot merge into jsonb and
+  the owner's session cannot bump `revision`. So `useBrand`'s one write to an existing project is `sync_project_doc` with
+  the project's revision as its base and the whole validated `packs` map. A stale base re-reads and re-seeds, at most
+  three times. A source test holds that the action writes `style_pack` nowhere else. The race itself is not staged end
+  to end: its guard is the compare-and-set the RLS gate already proves.
 
 ## Deferred from: Story 6.5's Dev (2026-10-05)
 

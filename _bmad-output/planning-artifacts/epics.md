@@ -2873,9 +2873,10 @@ So that the two features are one action rather than two.
 **And** the Style panel shows the seeded values as ordinary editable tokens afterwards
 **And** the flow is re-runnable later from the Style panel.
 **And** S2c's project chooser is drawn in the Claude Design project from S2c before this story builds on it (R-74), and its fieldset takes the scroll bound that frame draws (DW-70).
-**And** "Use your brand" writes `brand` into `style_pack` by key, never the whole object read earlier, so a pack saved by the editor at the same moment survives it (DW-327, from Story 6.4's Review, 2026-10-04).
+**And** "Use your brand" writes `brand` into `style_pack` by key, never the whole object read earlier, so a pack saved by the editor at the same moment survives it (DW-327, from Story 6.4's Review, 2026-10-04). *(Story 6.6's Create, 2026-10-05: planned with no `brand` write at all — once the accent is in the pack nothing reads it, and `placeholderFor`'s override goes — and the seeded pack written through `sync_project_doc`'s compare-and-set, re-read on a stale base; so no migration and no Schema phase.)*
+**And** before Dev the owner rules (R-83) three things: whether the logo is copied into the pack at all, where FR-E5 says it is and D6a and B17 draw it as Ghost's, read-only (Question 1); which colour dark mode wears once the site's accent is in (Question 2); and whether the two parts no frame draws — S2c's chooser at scale and the Style Pack list's "From your site" row — are drawn first from the prompt in the spec (Question 3). S4a's sixth dot, the site's colour, lands here too (from Story 6.6's Create, 2026-10-05).
 
-**FRs:** FR-E5. · **Frame:** `S2 Onboarding.dc.html` S2c · `S7 Style Packs.dc.html` S7c. · **Owner test:** yes.
+**FRs:** FR-E5. · **Frame:** `S2 Onboarding.dc.html` S2c · `S7 Style Packs.dc.html` S7c · `S4 Editor.dc.html` S4a (the sixth dot). · **Owner test:** yes.
 
 *Exit:* live restyle < 300 ms; all 12 packs verified across the five pilot sections in both modes.
 
