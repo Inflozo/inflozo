@@ -1140,3 +1140,31 @@ ran in the main session.
     alone, it passed three times. CI's own whole run on the Review head is the arbiter, recorded below.
 - The RLS gate was not re-run: the review changed no SQL, and CI runs it on the push.
 
+**The reviewed build `db8ad4bf`, on production (2026-10-05).**
+- **GitHub Actions** (`GITHUB_TOKEN`, read-only): `ci.yml` run 37220926820 `check`, `rls` and `deploy` **success** — so
+  CI's own whole `pnpm keyboard` passed, the 5.23a stop that failed once locally included; `matrix.yml` runs
+  37220926817 and 37245948102 **success**.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): `dpl_2ZLnTjjFUbn6p9aGfViVb1HrSnmf` READY from
+  `db8ad4bf`.
+- **`run-verify-editor.cjs` on app.inflozo.com** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID`): **0 FAIL, 709 PASS**, users 13 → 13. Step 103, every line:
+  - Edit pack on Tangerine, its Light Accent typed into the hex field, Save pack: "Changed Tangerine.", Tangerine's cell
+    wears the colour and Paper's canvas does not;
+  - ⌘S: `style_pack.packs.tangerine` holds the edited record, the seeded `brand` untouched, the preset still Paper, the
+    revision moved by exactly one;
+  - "+ New pack" refused with no name, then saved as one transaction: `packs['custom-1']` and `preset` in one save, the
+    revision moved by one;
+  - **the control:** the live sync route answers 422 "Not a Style Pack" to every hostile record and writes nothing;
+  - a fresh browser opens in `custom-1`: the canvas asked for at Paper's address (`/canvas?v=db8ad4bf8b49`, no
+    `&pack=`), wearing the pack's own block (`#FFF4EA`), the card naming "Studio Warm";
+  - two ⌘Z and a ⌘S put the seed back (`packs: {}`, Paper, the brand untouched), zero CSP violations;
+  - axe, behind its control: zero WCAG 2.1 AA violations over the list and its rows, the pairing menu, Edit pack, and
+    the colour picker over a warning.
+- **`run-verify-lock.cjs`**: **0 FAIL, 90 PASS**, no fixture leaked (13 → 13). The holder's doors are all live (the
+  control); the reader's are all disabled, and with `disabled` lifted for the three presses (all three pressable) no
+  dialog opened and neither `--site-width` nor the revision moved — the lock guard itself refused.
+- **`run-verify-dashboard.py`** (`SUPABASE_DB_POOLER_URL` and the Supabase keys): all steps passed, users 13 after.
+  `duplicate-carries-packs`: a throwaway account made Pro, the project menu's Duplicate made one copy, and its
+  `style_pack`, read off the pooler, equals the source's — brand, own pack and preset.
+- **Not touched:** T1 (no theme in this story), Resend, Dodo.
+
