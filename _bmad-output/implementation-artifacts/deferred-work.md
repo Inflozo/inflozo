@@ -8628,6 +8628,8 @@ note (Story 6.5's Create, 2026-10-05): planned. The title wins: the token block 
   (a pin offers no visitor switch) disagree exactly there. Option 1 is recommended: the pin wins, and the choice is kept
   for a return to Auto. The CSS makes the pin win, and the ruling's sentence for the `mode-toggle` module goes into
   Story 9.1's criteria word for word.
+ruling (owner, 2026-10-05, Story 6.5's Create, Question 1, option 1): R-239 — the pin wins, and a choice saved under
+  Auto waits, kept, for a return to Auto. Story 6.5's Dev builds it and closes this entry.
 
 ### DW-317: a Soft or Outline button has never been drawn, and on a dark band an Outline one would be invisible
 

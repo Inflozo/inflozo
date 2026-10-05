@@ -12,7 +12,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.m
 
 After this story every theme Inflozo builds decides light or dark in one place and in one fixed order: your Light or
 Dark setting in Ghost Admin, then — when you leave it on Auto — a visitor's own choice, then their device's setting
-(Question 1 asks you to confirm what happens to a visitor's earlier choice once you pin the site). A section you gave a
+(as you ruled, R-239: a visitor's earlier choice waits while you pin, and returns if you go back to Auto). A section you gave a
 different look for dark mode, such as Contrast in dark, keeps that look for dark-mode visitors on your real site, not
 only in the editor, whichever of the three made the page dark and even with JavaScript switched off. Nothing in the
 editor looks different (you will see this on your own site once publishing arrives in Epic 7), apart from one fix on
@@ -31,7 +31,8 @@ re-stamps `data-bg`: a shipped theme has one markup for both modes, and the desi
 rules keyed on `data-bg`, so nothing can carry an override to a visitor (DW-195). And Story 6.1's T1/T3 recording
 switched dark on two ways at once (DW-318).
 
-**Approach:** One declared list of mode conditions, `MODE_SELECTORS` in `tokens.ts`, in Question 1's precedence, from
+**Approach:** One declared list of mode conditions, `MODE_SELECTORS` in `tokens.ts`, in the precedence the owner ruled
+(R-239), from
 which the token block writes its dark map twice — in the system preference's `@media` block and under one rule
 carrying the two explicit markers — reading the body-class pin on `:root` through `:has(> body.scheme-…)`. A design
 states each value of a mode-scoped control as custom properties on its root (a new validator rule; the pilots and
@@ -60,8 +61,8 @@ AD-30, FR-E4 and the authoring guide say so.
   refused by name, never escaped and never skipped.
 - `packages/section-runtime` stays AD-1 pure, and `tokens.ts` still imports no library (DW-323).
 - Counts are derived, never written down (standing rule 4) — in code, tests, docs and messages.
-- The ruled precedence lives in ONE place, `MODE_SELECTORS` (Design Notes' "Ruled values"); a different ruling changes
-  that table and Story 9.1's sentence, and nothing else in the plan.
+- The ruled precedence (R-239) lives in ONE place, `MODE_SELECTORS` (Design Notes' "Ruled values"); nothing else in
+  the theme or the plan restates it.
 
 **Ask First:**
 - **The write to T1** (the recorder): ask the owner in the Dev session itself and run it in the main session, never
@@ -97,7 +98,7 @@ AD-30, FR-E4 and the authoring guide say so.
 | System dark, visitor light | dark device, `data-mode="light"`, no class | light | — |
 | The owner pins Dark | `<body class="… scheme-dark">`, light device, no `data-mode` | dark | — |
 | The owner pins Light | `scheme-light`, dark device, no `data-mode` | light | — |
-| A choice saved under Auto, then a pin | `scheme-light` + `data-mode="dark"`; `scheme-dark` + `data-mode="light"` | the pin's mode (Question 1, options 1–2); option 3: the visitor's | — |
+| A choice saved under Auto, then a pin | `scheme-light` + `data-mode="dark"`; `scheme-dark` + `data-mode="light"` | the pin's mode (R-239) | — |
 | JavaScript off | dark device, no `data-mode`, no class | dark — pure CSS | — |
 | An unknown visitor value | `data-mode="auto"` | treated as no choice | — |
 | The canvas | `data-mode` light or dark on its `<html>`, a bare `<body>`, any pack | exactly as today | — |
@@ -214,8 +215,8 @@ block at :3040), Story 7.35 (:4017), Story 9.1 (:4231); `deferred-work.md` DW-19
 
 ## Tasks & Acceptance
 
-**Dev opens once Question 1 is ruled.** The tasks build its RECOMMENDED option. Design Notes' "Ruled values" table says
-what each other option changes.
+**Question 1 is ruled (R-239, option 1), so Dev may open.** The tasks build the ruled option; Design Notes' "Ruled
+values" table keeps what the declined options would have changed.
 
 **Execution:**
 - [ ] `packages/section-runtime/src/tokens.ts` -- `MODE_SELECTORS` (the media query, the system selector, the explicit
@@ -269,7 +270,7 @@ what each other option changes.
   the deployed site, at Review
 - [ ] propagation -- `prd.md` FR-E4 (the ruled order; "one declared selector list" as built; the override's
   expression) and FR-D7 / FR-Q5 where they restate the order; `ARCHITECTURE-SPINE.md` AD-30 (title and rule: one file,
-  the token block, with a per-mode image swap's one generic rule there; the expression named; Question 1's answer) and
+  the token block, with a per-mode image swap's one generic rule there; the expression named; R-239) and
   the FR-E row; `docs/section-authoring.md` (the rule with Design Notes' example, the link paragraph, `instance`
   reserved); `epics.md` (6.5's card with the ruling; 7.4: the token block is `packTokensCss` followed by
   `darkOverrideCss` over every placed section — none on a Light-only project; 7.35: the three inputs and one override
@@ -284,8 +285,8 @@ what each other option changes.
   twice — under the system-preference block and under the one rule whose selector list carries the pin and the
   visitor's choice — each copy exactly the per-mode set; the bands and `LINK_RULES` are unchanged; and every selector in
   the block that names a mode is one of `MODE_SELECTORS`'.
-- Given the precedence Question 1 rules, when the keyboard gate's truth table runs, then every combination of device,
-  pin and visitor resolves as Design Notes' table says, under every reference pack, behind its controls.
+- Given R-239's precedence, when the keyboard gate's truth table runs, then every combination of device, pin and
+  visitor resolves as Design Notes' table says for option 1, under every reference pack, behind its controls.
 - Given a section carrying a dark override, when its theme markup and `darkOverrideCss` are drawn and dark comes from
   any one input alone, then every element looks exactly as the canvas draws the dark value; in light, exactly as it
   draws the light value.
@@ -304,14 +305,15 @@ what each other option changes.
 
 ## Design Notes
 
-**Ruled values** — the one place a different ruling changes the plan. In all three options the system selector is the
-same: `:root:not([data-mode="light"]):not(:has(> body.scheme-light))` inside `@media (prefers-color-scheme: dark)`.
+**Ruled values** — R-239 (owner, 2026-10-05) chose option 1; the other rows stay as what was declined. In all three
+options the system selector is the same: `:root:not([data-mode="light"]):not(:has(> body.scheme-light))` inside
+`@media (prefers-color-scheme: dark)`.
 
 | Question 1 | `MODE_SELECTORS.explicit` | Story 9.1's sentence (the module) |
 |---|---|---|
-| **1 (RECOMMENDED, planned)** | `:root:has(> body.scheme-dark), :root[data-mode="dark"]:not(:has(> body.scheme-light))` | "The module offers no control on a page whose body carries `scheme-light` or `scheme-dark` (R-34) and keeps a choice saved under Auto; the token block, not the module, makes the pin win, so the choice applies again once the site is on Auto." |
-| 2 | the same | "…offers no control on a pinned page (R-34) and deletes a saved choice there." |
-| 3 | `:root[data-mode="dark"], :root:not([data-mode="light"]):has(> body.scheme-dark)` | "…offers no control on a pinned page (R-34); a choice saved under Auto still applies there." FR-E4's order stands as written. |
+| **1 — ruled (R-239), built** | `:root:has(> body.scheme-dark), :root[data-mode="dark"]:not(:has(> body.scheme-light))` | "The module offers no control on a page whose body carries `scheme-light` or `scheme-dark` (R-34) and keeps a choice saved under Auto; the token block, not the module, makes the pin win, so the choice applies again once the site is on Auto." |
+| 2 — declined | the same | "…offers no control on a pinned page (R-34) and deletes a saved choice there." |
+| 3 — declined | `:root[data-mode="dark"], :root:not([data-mode="light"]):has(> body.scheme-dark)` | "…offers no control on a pinned page (R-34); a choice saved under Auto still applies there." FR-E4's order stands as written. |
 
 What each option resolves to — the two options differ in two rows only:
 
@@ -437,8 +439,7 @@ ever meets one.
 
 ## Questions for the owner
 
-Question 1 is needed before Dev. The plan follows its recommended option, and Design Notes' "Ruled values" table says
-what the other options change.
+The owner ruled Question 1 on 2026-10-05 (R-239). No question is open.
 
 ### Question 1 — When you pin your site to Light or Dark, what happens to a visitor who had already picked the other? (DW-316)
 
@@ -462,7 +463,11 @@ Light. The next time that reader comes back:
 
 Options 1 and 2 build the same theme; they differ only in what Epic 9's moon button does with the saved choice.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-05).** *"Your setting wins; their old choice waits"* — recorded as **R-239**. The
+token block makes the pin win (`MODE_SELECTORS.explicit`, Design Notes' ruled row), so the visitor's choice applies only
+on a site left on Auto, and the saved choice stays saved for a return to Auto. Dev writes FR-E4's order as "the owner's
+pin; on Auto, the visitor's explicit choice; then the system preference", amends AD-30, and pastes the module's
+sentence into Story 9.1's criteria word for word.
 
 ## Verification
 

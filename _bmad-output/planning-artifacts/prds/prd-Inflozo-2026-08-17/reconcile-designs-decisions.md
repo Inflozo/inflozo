@@ -863,6 +863,8 @@ Pinning is the owner's deliberate choice; a visitor switch that overrides it mak
 meaningless. The control is not offered, and the panel says why. `{{comments mode=…}}` derives from
 the same pinned value rather than being a second selector.
 *Propagates to:* FR-D7 / FR-Q5 / AD-30 · A1 · A28.
+- **A choice saved before the pin: R-239** (owner, 2026-10-05, Story 6.5's Create). The pin beats a visitor's choice
+  saved while the site was on Auto. The choice is kept, and applies again once the site is back on Auto.
 
 **R-35 · Nothing fetches from a video provider. The customer supplies the title and image.**
 *(closes the oEmbed half of R23; owner chose more strictly than the room proposed)* Neither Inflozo's
@@ -5208,6 +5210,26 @@ Just mention a note."*
   header, `tools/probe/server-triage.sh`, and AD-36's vector for the theme payload in `ad36.test.ts` · ✅ lesson 6 (we
   heard last): the owner chose a DigitalOcean alert policy on T1's outbound bandwidth (2026-10-04), recorded in
   `docs/project-context.md`; he sets it up in the DigitalOcean panel.
+
+**R-239 — the owner's pin beats a visitor's saved choice, and the choice waits for a return to Auto.** Story 6.5's
+Create, Question 1, ruled **option 1** (owner, 2026-10-05): *"Your setting wins; their old choice waits"*.
+
+- **Why it was a question.** FR-E4's written precedence puts the visitor's explicit choice first, then the owner's pin,
+  then the system preference. R-34 says a pinned site offers no visitor switch, because a switch would make the pin
+  meaningless. A choice a visitor saved while the site was on Auto, and still holds in their browser once the owner
+  pins, is exactly where the two disagree (DW-316).
+- **The rule.** The owner's pin (`scheme-light` / `scheme-dark` on `<body>`) wins over a visitor's saved choice. On a
+  site left on Auto, the visitor's choice wins over the device's setting. The token block alone makes the pin win:
+  `MODE_SELECTORS.explicit` is `:root:has(> body.scheme-dark), :root[data-mode="dark"]:not(:has(> body.scheme-light))`.
+  So the `mode-toggle` module offers no control on a pinned page (R-34) and keeps the saved choice, which applies again
+  once the site is back on Auto. FR-E4's order becomes: the owner's pin; on Auto, the visitor's explicit choice; then
+  the system preference.
+- **Declined.** Option 2, the pin wins and the module deletes the saved choice. Option 3, the saved choice keeps
+  winning (FR-E4 as written), which leaves the visitor in a mode with no switch to leave it.
+- Targets: ✅ this entry · ✅ R-34's entry · ✅ Story 6.5's spec — Question 1 · ✅ `epics.md` — Story 6.5's card · ✅
+  DW-316 · ✅ `epic-6-context.md` · ⬜ `prd.md` FR-E4, and FR-D7 / FR-Q5 where they restate the order · ⬜
+  `ARCHITECTURE-SPINE.md` AD-30 · ⬜ `epics.md` — Story 9.1's criteria, the module's sentence word for word · ⬜ built and
+  proved — Story 6.5's Dev.
 
 ## B · Approved decisions superseded by this session
 
