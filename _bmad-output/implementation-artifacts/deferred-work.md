@@ -5537,6 +5537,14 @@ location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-202
 reason: Story 5.6 is the editor, and Epic 5 deploys nothing — the override is stored faithfully and previewed
   honestly, so nothing is at risk now and settling the emission here would mean inventing a compiler convention
   in an editor story. Standing rule 6: flag, do not guess. Deciding it needs the compiler in front of you.
+note (Story 6.5's Create, 2026-10-05): planned. No CSS can make a rule keyed on `[data-bg="contrast"]` fire on a root
+  whose attribute says `base`, so the expression is carried by the designs themselves. A design states each value of a
+  mode-scoped control as custom properties on its root, one root-only rule per value declaring the same set, and every
+  other rule reads them. A new validator rule, `mode-scoped-rule`, enforces it, and the pilots and fixtures are refactored
+  with no pixel moved. A section's dark override is then the dark value's set, for that one section (`data-instance`, a
+  hash of `template_key:instanceId`), emitted into the token block under the same mode selectors by `darkOverrideCss`. A
+  plain link follows at specificity (0,0,1), so `LINK_RULES` keeps its bytes. Both directions were executed at Create in
+  Chromium; the keyboard gate's sweep proves every design and pair of values against the canvas's own dark preview.
 
 ### DW-196: `darkCapabilities` is declared on every design and read by nothing
 
@@ -8614,6 +8622,12 @@ owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), w
 location: `ARCHITECTURE-SPINE.md` AD-30 (:352, the title; :358, "the token block and the base stylesheet are the only
   files in a generated theme that mention a mode") · `prd.md` FR-E4 (:256-262), FR-D7 (:224, R-34)
 reason: 6.5 writes the one selector list and the precedence, so both edges are its to settle.
+note (Story 6.5's Create, 2026-10-05): planned. The title wins: the token block becomes the only file that names a mode,
+  and a per-mode image swap's one generic rule moves there from the base stylesheet (text only — no design draws one
+  yet). The saved choice is the owner's Question 1, because FR-E4's written order (the visitor's choice first) and R-34
+  (a pin offers no visitor switch) disagree exactly there. Option 1 is recommended: the pin wins, and the choice is kept
+  for a return to Auto. The CSS makes the pin win, and the ruling's sentence for the `mode-toggle` module goes into
+  Story 9.1's criteria word for word.
 
 ### DW-317: a Soft or Outline button has never been drawn, and on a dark band an Outline one would be invisible
 
@@ -8650,6 +8664,11 @@ owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), w
 location: `tools/probe/record-token-links.py` (`colorScheme: mode` and `data-mode` set together) · MEASUREMENTS §68
 reason: either the `prefers-color-scheme` block or `:root[data-mode="dark"]` alone produces §68's dark rows. Separating
   them is a T1/T3 write (the owner's in-session go), and 6.5 records the third input on the same servers anyway.
+note (Story 6.5's Create, 2026-10-05): planned on T1 alone (R-238; the Ghost 5 half joins DW-326's pass). A new recorder,
+  `tools/probe/record-mode-resolution.py`, writes MEASUREMENTS §69 from one probe theme. Its body class carries the pin
+  by page, composed with `{{body_class}}`: Auto on `/`, Dark on the draft article, Light on the author page. Chromium
+  reads every combination of device, pin and visitor, one input at a time: the per-mode tokens, §68's link rows and one
+  section's dark override, each behind its controls.
 
 ### DW-319: a signed-out visit to a signed-in page is redirected, but the page's own content still travels with the redirect
 

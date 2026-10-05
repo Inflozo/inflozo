@@ -2849,6 +2849,7 @@ a scheme class or on `data-mode`
 **And** a section's own dark override reaches a visitor as a per-instance custom property emitted into the token block, AD-30 amended to name that expression before Epic 9 authors stylesheets against it (DW-195).
 **And** AD-30's title ("exactly one file selects on mode") and its rule (the token block and the base stylesheet) are made to say the same thing, and what a visitor's choice saved under Auto does once the owner pins the site is stated and built (DW-316, from Story 6.1's Create, 2026-10-03).
 **And** the T1/T3 recording reads dark through each switch ALONE — the system preference with no `data-mode`, and `data-mode="dark"` on a light system — because Story 6.1's recording set both at once (DW-318, from its Review, 2026-10-03).
+**And** before Dev the owner rules (R-83) what a visitor's choice saved under Auto does once the site is pinned, where FR-E4's written order and R-34 disagree (Question 1); a design states each value of a mode-scoped control as custom properties on its root, refused otherwise by the validator, which is how a dark override reaches a visitor; and `/pilots`, which saves a dark override and never draws it, draws it (from Story 6.5's Create, 2026-10-05).
 
 **FRs:** FR-E4. · **Owner test:** none (a theme mechanism, visible through 6.3). · **Verification:** on the
 canvas in all three states, plus a unit assertion over the emitted token block — **not on T1/T3, because the
