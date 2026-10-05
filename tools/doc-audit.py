@@ -854,7 +854,7 @@ DOCS = [
     'no links), brand-js-off proves both its controls are forms, axe-brand runs at 1440 and 390, '
     'brand-skip proves Skip writes nothing and leaves the offer on the card, brand-seed drives '
     'the offer link and Use your brand to a project named from the site with linked_site_id set — '
-    "FR-B5's first writer — a style_pack.brand.accent equal to the site's, the card's tally at \"1 "
+    "FR-B5's first writer — the pack in force's light accent equal to the site's (no brand key since Story 6.6), the card's tally at \"1 "
     "project\" and the dashboard card computed in that colour, brand-atcap proves the owner's "
     'Question 1 ruling live (the caption NAMES the project before the press and nothing else '
     'about it moves), brand-rerun presses the offer a SECOND time on Pro — the one state in the '
@@ -940,8 +940,20 @@ DOCS = [
     'RLS-TEST.sql cannot see. Since Story 5.24e (DW-302) the step calls tools/probe/check-schemas-off-rest.py, the '
     "one copy of the rule, which CI's rls job runs on every push.",
     'Note that --check is no longer plumbing alone — it re-executes settings-keys and brand-keys '
-    'against both live Ghosts, so it needs every key the full run does, the two staff tokens '
-    'included; it still starts no browser and creates nothing. Stories 3.2, 3.3 and 3.4.',
+    'against the live Ghost, and since Story 6.6 it evaluates brand-seed-rule (T1\'s live accent seeded into Paper '
+    "by the app's own brandSeed); it still starts no browser and creates nothing. Stories 3.2, 3.3 and 3.4.",
+    "STORY 6.6 (FR-E5, DW-327, DW-70) ADDED THREE BLOCKS AND MADE --check AND --only T1-ONLY (R-238, DW-326): both read "
+    'GHOST6_* alone and name every T3 leg as POSTPONED — settings-keys and brand-keys, a block whose seeds need T3, '
+    "and keys-foreign-key — while the full run still connects T3 and waits for DW-326's Ghost 5 pass. brand-pack: a "
+    "fresh T1 connect and S2c's Use your brand make one linked project whose style_pack is {preset: paper, packs: "
+    "{paper}} with no brand, Paper's record equal to brandSeed's for T1's live accent; the dashboard card, the "
+    "editor's canvas --accent, S4a's sixth dot and the Style Pack list's From your site row all wear it. "
+    "brand-pack-rerun: Paper planted blue beside a Tangerine record and a mode key, then the popup's press — Paper "
+    'seeded again, Tangerine and mode byte-equal, the revision up by exactly one (the compare-and-set). brand-many: '
+    "Pro's cap of projects (PLANS), S2c's cards scrolling inside the rail with the caption and both presses in view "
+    'at 1440 and 834 in the window and on the full page, the list no scroller of its own at 390, and the projects '
+    'and entitlement put back. brand-seed, brand-atcap and brand-picker read the seeded pack instead of '
+    'style_pack.brand, and wait with the full run.',
    )),
  ('tools/probe/check-schemas-off-rest.py', 'tool', 'The exposed schemas, checked on every push',
   "Story 5.24e's check of DW-302, run by CI's rls job after run-rls-gate.sh. Hosted Supabase keeps the schemas "

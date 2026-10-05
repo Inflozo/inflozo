@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { contrast, packTokensCss, SCALES } from '@inflozo/section-runtime'
 import {
-  choiceOf, CUSTOM_ID, hardToRead, hexOf, hexToHsv, hsvToHex, isCustom, nextCustomId, ownPacksIn, PACK_EDIT_WORDS, packOf, packRecordSchema,
+  brandSeed, choiceOf, CUSTOM_ID, hardToRead, hexOf, hexToHsv, hsvToHex, isCustom, nextCustomId, ownPacksIn, PACK_EDIT_WORDS, packOf, packRecordSchema,
   pillStep, PILL_STEPS, scrimStep, withoutDefaults, type PackRecord,
 } from './lib/pack-edit.ts'
 import { packChoices, pairingChoices, presetRecord } from './lib/style-pack.ts'
@@ -133,6 +133,60 @@ test('every preset colour survives hexToHsv then hsvToHex exactly', () => {
   assert.deepEqual(hexToHsv('#000000'), { h: 0, s: 0, v: 0 })
   assert.equal(hsvToHex({ h: 0, s: 0, v: 100 }), '#FFFFFF')
   assert.equal(hsvToHex({ h: 120, s: 100, v: 100 }), '#00FF00')
+})
+
+/* ───────── STORY 6.6 — THE BRAND SEED (FR-E5, R-241): the one rule both doors call. The spec's I/O matrix's colours — T1's
+   pink, a navy, Paper's own orange, and a short hex — over every preset. */
+
+const SITE_COLOURS = ['#FF1A75', '#1E3A8A', '#D96C3F', hexOf('#f2a') as string]
+
+test('brandSeed: light is the accent exactly, dark reads 4.5:1 on dark Base and Surface, and no seeded on-accent reads under 4.5:1 — on every preset', () => {
+  // the control: the colours really are hard cases — navy is near-invisible on a dark page, and Paper's ink misses on pink
+  assert.ok(contrast('#1E3A8A', paper.dark.background) < 4.5, 'the control: navy fails on dark Base unstepped')
+  assert.ok(contrast(paper.light.onAccent, '#FF1A75') < 4.5, 'the control: Paper\'s own on-accent fails on pink')
+  for (const c of choices) {
+    for (const accent of SITE_COLOURS) {
+      const seeded = brandSeed(c.record, accent)
+      const at = `${c.id} with ${accent}`
+      assert.equal(seeded.light.accent, accent, at)
+      assert.ok(contrast(seeded.dark.accent, c.record.dark.background) >= 4.5, `${at}: dark accent on dark Base`)
+      assert.ok(contrast(seeded.dark.accent, c.record.dark.surface) >= 4.5, `${at}: dark accent on dark Surface`)
+      for (const m of ['light', 'dark'] as const) assert.ok(contrast(seeded[m].onAccent, seeded[m].accent) >= 4.5, `${at}: ${m} on-accent`)
+      // a seed adds no on-accent failure: whatever hardToRead finds after, it found before
+      const pairs = (r: PackRecord) => hardToRead(r).map((p) => `${p.mode}:${p.fg}/${p.bg}`)
+      assert.deepEqual(pairs(seeded).filter((p) => !pairs(c.record).includes(p)), [], `${at}: a new warning`)
+      // the rest of the record is unchanged — every key but the two modes' accent and on-accent
+      const rest = (r: PackRecord) => ({ ...r, light: { ...r.light, accent: '', onAccent: '' }, dark: { ...r.dark, accent: '', onAccent: '' } })
+      assert.deepEqual(rest(seeded), rest(c.record), `${at}: something else moved`)
+      assert.equal(packRecordSchema.safeParse(seeded).success, true, `${at}: the seeded record is a valid record`)
+    }
+  }
+})
+
+test('brandSeed: the spec\'s ruled values (R-241), computed with the engine\'s own stepToContrast', () => {
+  const at = (accent: string) => {
+    const s = brandSeed(paper, accent)
+    return [s.light.accent, s.light.onAccent, s.dark.accent, s.dark.onAccent]
+  }
+  // T1's pink: Paper's ink read 4.38, so the light on-accent is stepped; the dark accent already reads, so it is kept
+  assert.deepEqual(at('#FF1A75'), ['#FF1A75', '#1F1C16', '#FF1A75', '#171511'])
+  // navy: lightened in dark only (R-241), and Base reads on it in light
+  assert.deepEqual(at('#1E3A8A'), ['#1E3A8A', '#FBF9F5', '#5E82D9', '#171511'])
+  // Paper's own orange: light kept exactly (with its own on-accent), dark is the orange itself — not Paper's tuned dark
+  assert.deepEqual(at('#D96C3F'), ['#D96C3F', '#232019', '#D96C3F', '#171511'])
+  // a short hex arrives expanded (`hexOf`), and the seed writes it uppercase
+  assert.equal(brandSeed(paper, hexOf('#f2a') as string).light.accent, '#FF22AA')
+  assert.equal(brandSeed(paper, '#ff1a75').light.accent, '#FF1A75')
+})
+
+test('brandSeed: an accent that is not #RRGGBB is a no-op — the record itself comes back', () => {
+  for (const junk of ['#f2a', 'red', '', '#FF1A75;}body{x:y', 'rgb(0,0,0)', '#GGGGGG']) assert.equal(brandSeed(paper, junk), paper, junk)
+  // the control: a real colour does make a new record
+  assert.notEqual(brandSeed(paper, '#FF1A75'), paper)
+  // a seed twice is the seed once — so the second press of either door changes nothing
+  const once = brandSeed(paper, '#1E3A8A')
+  assert.deepEqual(brandSeed(once, '#1E3A8A'), once)
+  assert.equal(PACK_EDIT_WORDS.wearsBrand('Paper'), 'Paper already wears your brand.')
 })
 
 test('the hex field takes six digits or three, either case, with or without the hash, trimmed — and nothing else', () => {

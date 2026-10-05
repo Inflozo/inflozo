@@ -1878,6 +1878,146 @@ test('R-236 · the Style Pack panel, the pairing menu, Edit pack, New pack, the 
 })
 })
 
+// ── Story 6.6 — auto-branding seeds the pack (FR-E5; the "From your site" row, S4a's sixth dot; R-240, R-241, R-242) ─────
+
+/** S2c's words, read from the app (R-170): the row's button is S2c's own "Use your brand" */
+const BRAND = (await import(new URL('../../apps/web/lib/probe-rule.ts', import.meta.url).href)).BRAND_COPY
+/** the harness site's stored accent — the fixture's own, Paper's orange (`harness/editor/layout.tsx`'s `siteAccent`) */
+const siteAccent = () => EDIT.hexOf(LIB.orbitWeekly.site().accent_color)
+const brandButton = (page) => page.locator('#style-pack-brand')
+/** S4a's card dots, as drawn: the `Dots` row between the card's names and its Change */
+const cardDots = (page) => page.locator('[data-style-pack-card] > span[aria-hidden] > span')
+
+test('6.6 · From your site on Tangerine: a press is ONE edit — the canvas\'s light --accent becomes the site colour with no pill, "Changed Tangerine.", Edit pack shows the seeded swatches; a second press journals nothing and says so; ⌘Z puts Tangerine\'s back', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'members-off', 'x-inflozo-harness-pack': 'tangerine' })
+  await open(page)
+  const tangerine = recordOf('tangerine')
+  const accent = siteAccent()
+  const seeded = EDIT.brandSeed(tangerine, accent)
+  expect(accent, 'the control: the site colour is not Tangerine\'s, so a press moves the canvas').not.toBe(tangerine.light.accent.toUpperCase())
+  expect((await tokenOf(page, '--accent')).toUpperCase(), 'the control: the canvas wears Tangerine').toBe(tangerine.light.accent.toUpperCase())
+  await intoList(page)
+  // the row: S7a's name, the site's dot, S2c's own button — the first row of the rows block, above Heading font
+  const row = page.locator('[data-style-pack-brand]')
+  expect(await page.locator('[data-style-pack-rows] > *').first().evaluate((el) => el.hasAttribute('data-style-pack-brand')), 'the first row').toBe(true)
+  await expect(row.locator('#style-pack-brand-label')).toHaveText(W.fromSite)
+  await expect(brandButton(page)).toHaveText(BRAND.use)
+  await expect(brandButton(page)).toHaveAccessibleName(BRAND.use)
+  await expect(brandButton(page), 'which colour it is, said with it').toHaveAccessibleDescription(`${W.fromSite}, ${accent}`)
+  expect(await row.locator('[data-site-dot]').evaluate((d) => getComputedStyle(d).backgroundColor)).toBe(rgb(accent))
+  // reached by Tab from the list, never a pointer
+  await tabOnto(page, brandButton(page))
+  await expect(undoArrow(page), 'the control: nothing to undo yet').toHaveAttribute('aria-disabled', 'true')
+  const before = (await held(page)).entries
+  await timeTransitions(page)
+  await page.keyboard.press('Enter')
+  // one edit: the canvas restyles in place, with no pill (a switch's alone), and says the pack once landed
+  await expect(page.locator('#editor-said')).toHaveText(W.changed(tangerine.name))
+  await expect.poll(() => tokenOf(page, '--accent')).toBe(seeded.light.accent)
+  expect(seeded.light.accent, 'light is the site colour exactly').toBe(accent)
+  const [run, ...more] = await timed(page)
+  expect(more, 'one edit, one restyle').toEqual([])
+  expect(run.pill, 'an edit is no switch: no "Trying on…"').toBe(false)
+  await expect(page.locator('[data-pack-pill]')).toHaveCount(0)
+  expect(await wears(page), 'restyled in place: the same document').toBe('tangerine')
+  await expect.poll(async () => (await held(page)).entries, 'one entry journaled').toBe(before + 1)
+  await expect.poll(async () => (await held(page)).packs.tangerine?.light?.accent, 'the record is the seeded one, on this device').toBe(accent)
+  // the Current card and Tangerine's cell wear it
+  expect(await accentDot(page.locator('[data-style-pack-current]'))).toBe(rgb(accent))
+  // a second press changes nothing: it journals nothing and says so
+  await expect(brandButton(page)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-said')).toHaveText(W.wearsBrand(tangerine.name))
+  expect((await held(page)).entries, 'a press that changes nothing journals nothing').toBe(before + 1)
+  // Edit pack shows the seeded values in its swatches (S7c), each an ordinary colour — and no warning (the seed reads)
+  await tabOnto(page, door(page, 'tangerine'), true)
+  await page.keyboard.press('Enter')
+  await expect(packEditor(page)).toBeVisible()
+  for (const mode of ['light', 'dark']) {
+    for (const role of ['accent', 'onAccent']) {
+      await expect(swatchOf(page, mode, role)).toHaveAccessibleName(W.swatch(W.roles[role], W.modes[mode], seeded[mode][role], false))
+    }
+  }
+  await expect(page.locator('[data-pack-warning]'), 'a seed raises no warning on its own').toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(packEditor(page)).toHaveCount(0)
+  // ⌘Z: one undo puts Tangerine's own accent back, and that was the only edit
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => tokenOf(page, '--accent')).toBe(tangerine.light.accent)
+  await expect(undoArrow(page), 'the seed was one edit').toHaveAttribute('aria-disabled', 'true')
+})
+
+test('6.6 · no site colour, no row: the list has no "From your site" and S4a\'s card keeps the pack\'s dots; with one, the card draws the sixth — the site\'s, after the pack\'s', async ({ page }) => {
+  await open(page)
+  const own = await cardDots(page).count()
+  expect(own, 'the control: the card draws the pack\'s dots').toBeGreaterThan(0)
+  await intoList(page)
+  await expect(page.locator('[data-style-pack-brand]')).toHaveCount(0)
+  await expect(brandButton(page)).toHaveCount(0)
+  await expect(page.locator('[data-style-pack-roster]')).not.toContainText(W.fromSite)
+  // a linked site with a colour: S4a's sixth dot, the site's, as S4a draws the others (16px, the hairline)
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'members-off' })
+  await open(page)
+  await expect(cardDots(page)).toHaveCount(own + 1)
+  const sixth = cardDots(page).last()
+  expect(await sixth.evaluate((d) => getComputedStyle(d).backgroundColor)).toBe(rgb(siteAccent()))
+  const [last, first] = await Promise.all([sixth, cardDots(page).first()].map((d) => d.evaluate((el) => { const cs = getComputedStyle(el); return [cs.width, cs.height, cs.boxShadow] })))
+  expect(last, 'drawn as the card\'s other dots').toEqual(first)
+})
+
+test('6.6 · reading along (R-192): the From your site row is greyed with the other rows — disabled, and no tab stop', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader', 'x-inflozo-harness-site': 'members-off' })
+  await open(page)
+  await expect(page.locator('#editor-add-section'), 'the control: this window really is reading along').toBeDisabled()
+  await page.locator('#style-pack-change').focus()
+  await page.keyboard.press('Enter')
+  await expect(brandButton(page)).toBeVisible()
+  await expect(brandButton(page)).toBeDisabled()
+  // greyed as the rows around it are: the panel's own dim while reading along
+  await expect(page.locator('#editor-controls')).toHaveAttribute('data-readonly', '')
+  expect(await page.locator('#editor-controls').evaluate((el) => Number(getComputedStyle(el).opacity))).toBeLessThan(1)
+  // and no stop: Tab passes the whole roster by, the row included
+  expect(await page.locator('[data-style-pack-roster]').evaluate((root) =>
+    [...root.querySelectorAll('a[href], button, input, [tabindex]')].filter((el) => el.tabIndex >= 0 && !el.matches(':disabled') && el.checkVisibility()).length)).toBe(0)
+  await expect(undoArrow(page)).toHaveAttribute('aria-disabled', 'true')
+})
+
+test.describe('R-242 — "From your site", built from the drawings, at the frames\' own 1440', () => {
+test.use({ viewport: { width: 1440, height: 900 } })
+
+test('R-242 · the From your site row matches the "Built from" table, value for value', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'members-off' })
+  await open(page)
+  expect(page.viewportSize().width, 'the table is S7a\'s, S4a\'s and S7d\'s, drawn at 1440').toBe(1440)
+  await intoList(page)
+  const row = page.locator('[data-style-pack-brand]')
+  // ITS PLACE — S7a's rows block: the first row, above Heading font, 6px from the next
+  expect(await page.locator('[data-style-pack-rows] > *').first().evaluate((el) => el.hasAttribute('data-style-pack-brand'))).toBe(true)
+  const [box, next] = await Promise.all([row.boundingBox(), page.locator('#style-pack-heading-font').boundingBox()])
+  expect(Math.round(next.y - (box.y + box.height)), '6px from the next row').toBe(6)
+  // ITS NAME — S7a's row names, Pill radius's: 11.5px, medium, ink-soft, 4px above its control — and held equal to Pill
+  // radius's own name, computed, so the two cannot drift apart
+  const name = { ...type('11.5px', '500', FRAME.inkSoft), 'line-height': await page.locator('#style-pack-pill-label').evaluate((el) => getComputedStyle(el).lineHeight) }
+  await holds(page.locator('#style-pack-brand-label'), 'its name', name)
+  await holds(page.locator('#style-pack-pill-label'), 'Pill radius\'s name, the row it is built from', name)
+  await holds(row, 'name over control', { 'row-gap': '4px', 'align-items': 'flex-start' })
+  // THE SITE'S COLOUR — S4a's card dots and S7d's "From your site" dot: a 16px circle with the Kit's hairline
+  const dot = row.locator('[data-site-dot]')
+  await holds(dot, 'the site\'s dot', { width: '16px', height: '16px', 'box-shadow': FRAME.hairline, 'background-color': rgb(siteAccent()) })
+  expect(parseFloat(await dot.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)), 'a circle').toBeGreaterThanOrEqual(8)
+  // USE YOUR BRAND — the Kit's 32px secondary button, medium as S4a's Change, 7px after the dot (S7d's spacing)
+  await holds(dot.locator('..'), 'the dot and the button', { 'column-gap': '7px', 'align-items': 'center' })
+  await holds(brandButton(page), 'Use your brand', {
+    height: '32px', ...padding('0px', '13px'), ...type('12px', '500', FRAME.ink), ...border('1px', 'solid', FRAME.line), ...radius('10px'), 'background-color': FRAME.surface,
+  })
+  // sized to its words, never stretched to the panel
+  // (its words and padding, `scrollWidth`, inside its 1px border)
+  const [button, words] = await Promise.all([brandButton(page).boundingBox(), brandButton(page).evaluate((b) => b.scrollWidth + 2)])
+  expect(Math.round(button.width), 'sized to its words').toBe(words)
+  expect(button.width).toBeLessThan(box.width - 16 - 7)
+})
+})
+
 // ── R-147's card ────────────────────────────────────────────────────────────────────────────────────────────────
 
 test('R-147: ? opens the card, it lists exactly the keys that work, and Esc returns focus', async ({ page }) => {

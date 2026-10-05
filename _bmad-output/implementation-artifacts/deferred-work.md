@@ -2033,6 +2033,11 @@ note (Story 6.6's Create, 2026-10-05): the `also:` line's last decision, as 6.6 
   nothing reads it, so `placeholderFor`'s override goes, and rows that hold one keep it, unread. The logo is not copied:
   the owner ruled R-240 (6.6's Question 1, option 1), so the logo stays Ghost's, as D6a and B17 draw it. The menu still
   waits for the epic that places a header. The announcement half stays Story 9.5's.
+note (Story 6.6's Dev, 2026-10-05): built — the `also:` line is settled. "Use your brand" seeds the site's accent into
+  the pack in force (`brandSeed`, one rule for S2c and the Style Pack list's "From your site" row), `style_pack.brand` is
+  no longer written, and `placeholderFor` paints the pack alone, so nothing reads `brand` any more (rows written before
+  6.6 keep it, unread; `stylePackSchema` still parses it). The logo is copied nowhere (R-240). Still open here: the menu,
+  for the header epic, and the announcement half, Story 9.5's.
 
 ### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
 
@@ -2263,7 +2268,16 @@ plain: When you have more than one project, the "Use your brand" screen now show
   one, with a little picture of it. Nobody has drawn that screen in the design tool — it was built
   by copying the pieces from two screens that ARE drawn. Umang's own rule says a screen with no
   drawing gets drawn in the same design project, so it is a picture that is owed, not a decision.
-status: open
+status: done 2026-10-05 (Story 6.6)
+resolution: Story 6.6's Dev (2026-10-05) — not drawn, by the owner's ruling R-242: built from S2c as built and the
+  popup's columns that scroll apart (S11e's idiom), the spec's "Built from" table. From `tablet` up the fieldset is a
+  flex column under its legend and the card list (`data-brand-cards`) fills the rail's free height and scrolls there
+  with the browser's own scrollbar, 2px of padding inside a 2px negative margin keeping each card's focus ring
+  unclipped; "Which project?" stays above it and the caption and both presses at the rail's foot. Below `tablet`
+  nothing moved. The proof is the owner's side-by-side approval of three and twenty-five cards at 1440, 834 and 390 in
+  6.6's Dev session (R-242; given 2026-10-05, Question 4), and `run-verify-ghost-admin.py`'s `brand-many` on the deployed build at Review: Pro's cap of
+  projects (`PLANS`), the caption and both presses in view with the window unscrolled at 1440 and 834 in the window and
+  on the full page, the list scrolling inside the rail, and at 390 no scroller of its own.
 owner: Story 6.6 (Auto-branding seeds the pack), whose criteria carry its requirement word for word with its id
   (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -8880,6 +8894,11 @@ note (Story 6.6's Create, 2026-10-05): `tools/probe/run-verify-ghost-admin.py` i
   `GHOST5_*` and calls T3 on every run, `--check` and `--only` included. 6.6 makes its `--only` path T1-only. A full run
   still needs a Ghost 5 server, so its T3 steps wait for this pass, and so do the full-sequence brand steps 6.6 moves to
   the seeded pack (`brand-seed`, `brand-atcap`, `brand-picker`).
+note (Story 6.6's Dev, 2026-10-05): done for this script's `--check` and `--only`: both read `GHOST6_*` alone, and
+  `settings-keys` and `brand-keys` run on T1, each printing its T3 leg as POSTPONED (R-238). An `--only` block whose
+  seeds need T3 (`moved-domains`) is named as postponed rather than run, and so is `manage-keys`' `keys-foreign-key`,
+  which pastes T3's key into T1's screen. The pass owes: this script's full run (its T3 connect, cap and moved-domains
+  steps), and the full-sequence brand steps, now reading the seeded pack.
 
 ## Deferred from: code review of spec-6-4-editing-tokens-per-mode-with-contrast-checked-live (2026-10-04)
 
@@ -8888,7 +8907,7 @@ note (Story 6.6's Create, 2026-10-05): `tools/probe/run-verify-ghost-admin.py` i
 plain: If you press "Use your brand" in one window at the very moment the editor saves a pack you just edited in
   another, the brand button writes the older packs back and your edit is lost without a message. It needs both to
   happen within a fraction of a second, so it is unlikely, but nothing prevents it.
-status: open
+status: done 2026-10-05 (Story 6.6)
 severity: low
 origin: code review of spec-6-4-editing-tokens-per-mode-with-contrast-checked-live.md, 2026-10-04 (Blind Hunter, Edge Case Hunter)
 owner: Story 6.6 (Auto-branding seeds the pack), which rewrites this action and whose card names this entry.
@@ -8903,6 +8922,15 @@ note (Story 6.6's Create, 2026-10-05): planned, by the RPC and without writing `
   the project's revision as its base and the whole validated `packs` map. A stale base re-reads and re-seeds, at most
   three times. A source test holds that the action writes `style_pack` nowhere else. The race itself is not staged end
   to end: its guard is the compare-and-set the RLS gate already proves.
+resolution: Story 6.6's Dev (2026-10-05) — done as planned. `useBrand`'s `paint` calls `sync_project_doc` with the
+  project's `revision` as `p_base`, `lib/style-pack.ts`'s `brandPacks` answering the whole validated `packs` map with the
+  pack in force seeded and 3.4's preset floor; on `applied: false` it re-reads that one project and seeds on top of what
+  is there, at most `BRAND_TRIES` (three) times, then S2c's failed line. A new project's insert carries the seeded map;
+  `brand` is written nowhere, and a seed that changes nothing writes nothing. Proof: `server-wiring.test.ts`'s DW-327
+  guard (no source updates `style_pack` whole; `useBrand` calls the RPC against the revision it read) beside its
+  planted control (the old `.update({ style_pack: { ...pack, brand } })` fires it); the RLS gate's 6.4 stale-base case
+  for the compare-and-set; and `brand-pack-rerun` on the deployed build at Review (a planted Tangerine record and `mode`
+  byte-equal after the press, the revision up by exactly one).
 
 ## Deferred from: Story 6.5's Dev (2026-10-05)
 

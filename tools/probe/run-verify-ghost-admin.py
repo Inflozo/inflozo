@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """The connect wizard, its probes, FR-C4's auto-branding screen, the site ⋯ menu and FR-C8's key management, driven through the real UI on the deployed site and read off the wire. Stories 3.2-3.6.
 
-    python3 tools/probe/run-verify-ghost-admin.py --check   # plumbing only: no browser, no UI
-    python3 tools/probe/run-verify-ghost-admin.py           # the whole round trip, T1 and T3
+    python3 tools/probe/run-verify-ghost-admin.py --check   # plumbing only: no browser, no UI — T1 alone
+    python3 tools/probe/run-verify-ghost-admin.py           # the whole round trip, T1 and T3 (waits on DW-326)
     python3 tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com
     python3 tools/probe/run-verify-ghost-admin.py --shots /tmp/shots   # + screenshots at 1440/834/390
     python3 tools/probe/run-verify-ghost-admin.py --only brand-none,moved-domains   # named blocks alone
+    python3 tools/probe/run-verify-ghost-admin.py --only brand-pack,brand-pack-rerun,brand-many --shots DIR  # Story 6.6
+
+T3 IS RETIRED FROM TESTING (R-238, owner, 2026-10-04), so since Story 6.6 `--check` and `--only` run on T1 ALONE and read
+no `GHOST5_*` key: each T3 leg — the T3 half of `settings-keys` and `brand-keys`, a block whose seeds need T3, and
+`keys-foreign-key` — is NAMED as postponed, never skipped in silence, and waits for DW-326's one Ghost 5 pass at Story
+15.7. The full run is unchanged: it connects T3, so it needs a Ghost 5 server and waits with DW-326.
 
 WHY IT EXISTS, AND WHY IT CHANGED. Story 3.1 drove a bearer-gated verify route, because the Admin
 chokepoint had no product caller and R-82 wants the Vault write, the decryption and both real
@@ -41,18 +47,21 @@ list gone stale — the sibling harness's own note):
                  `public, graphql_public`; those two 404 PGRST205, the control (MEASUREMENTS §60).
                  Since Story 5.24e (DW-302) the step calls `check-schemas-off-rest.py`'s check(),
                  the one copy of the rule, which CI's `rls` job runs on every push
-  settings-keys  STORY 3.3, printed in both modes: the six settings keys the probes read are
+  settings-keys  STORY 3.3, printed in both modes (T1 alone in `--check` and `--only`, R-238): the six settings keys the probes read are
                  really in the INTEGRATION key's own `GET /admin/settings/` payload on both
                  majors — `portal_button`, the two `codeinjection_*` and the three
                  `announcement_*`. §15h item 21 measured the announcement three with a STAFF
                  token, a credential the product does not hold until Epic 7, so this had to be
                  executed rather than inherited (§39)
-  brand-keys     STORY 3.4, printed in both modes: the keys `BRAND_KEYS` names — FR-C4's brand
+  brand-keys     STORY 3.4, printed in both modes (T1 alone in `--check` and `--only`, R-238): the keys `BRAND_KEYS` names — FR-C4's brand
                  reader takes them off the SAME payload — `accent_color`, `logo` and `navigation`
                  (three since Story 5.24b, DW-71: the fields something reads) — are really in the
                  integration key's own `GET /admin/settings/` on both majors, and the CONTAINER of
                  each is recorded. `navigation` is a JSON *string*, as `announcement_visibility` is
                  (§40); the reader admits an array too, and this is what says which branch is live
+  brand-seed-rule  STORY 6.6, printed in both modes: T1's live `accent_color` seeded into Paper by the app's own
+                 `brandSeed`, EVALUATED from `lib/pack-edit.ts` over `lib/style-pack.ts`'s records — what
+                 `brand-pack`, `brand-pack-rerun` and the full sequence's brand steps compare the column with
   pinned-ca      STORY 5.24b (DW-50), printed in both modes: the pooler reached with the app's own
                  driver and the root CA PINNED in `server/ghost-admin/db.ts`, read out of that
                  file, connects; with `tls.rootCertificates[0]` in its place it is refused
@@ -206,8 +215,9 @@ list gone stale — the sibling harness's own note):
                  sit just above "Checked …" and closer to it than to the pills
   brand-seed     STORY 3.4, driven the way the owner tests it: the offer LINK on the card, then
                  **Use your brand**. A project exists named from the site's own Ghost title, with
-                 `linked_site_id` set — FR-B5's first writer — and `style_pack.brand.accent` equal
-                 to the site's; the Sites card's tally turns into the app's own "1 project"; and
+                 `linked_site_id` set — FR-B5's first writer — and the pack in force's light accent
+                 equal to the site's, with no `brand` key (Story 6.6: the seed is in the pack); the
+                 Sites card's tally turns into the app's own "1 project"; and
                  the DASHBOARD card's wireframe is painted in that accent, read with
                  `getComputedStyle` off the rendered card
   skeleton-soft-nav
@@ -240,10 +250,23 @@ list gone stale — the sibling harness's own note):
                  held would resolve before the read and could not fail. AND NOTHING MOVES (his
                  ask of 2026-09-10): the pressed control's box and its neighbour's position are
                  measured at rest and inside the hold and must be identical
+  brand-pack     STORY 6.6 (FR-E5, R-240, R-241), its own block and in the full sequence right after `brand-seed`:
+                 a FRESH T1 connect (or S2c by its address where T1 is connected) and S2c's **Use your
+                 brand** make ONE project linked to T1 whose `style_pack` is `{ preset: 'paper', packs:
+                 { paper } }` with NO `brand`, Paper's record equal to `brandSeed`'s for T1's live
+                 accent (light exactly; dark and both on-accents readable); the dashboard card's
+                 middle block computes to the accent; the editor's canvas `--accent` is the seeded
+                 light accent; S4a's card draws six dots, the sixth the site's; and the Style Pack list
+                 carries the "From your site" row with S2c's own button (`--shots`: `from-your-site`)
+  brand-pack-rerun  STORY 6.6, DW-327: Paper planted with a blue accent, a Tangerine record of its own and a
+                 `mode` key on the project for T1, then the POPUP's Use your brand: Paper's record is
+                 `brandSeed`'s again, Tangerine's record and `mode` byte-equal, `revision` up by exactly
+                 one — `sync_project_doc`'s compare-and-set, writing `packs` by key — and no `brand`. The
+                 column is put back in a `finally`
   brand-atcap    the seed above just put this Free account at F.1's cap of 1 project, so the
                  owner's Question 1 ruling (2026-09-08) is live: the caption NAMES the project it
-                 will brand before the press, and pressing it writes `style_pack.brand` onto that
-                 row and changes NOTHING else — not its name, not its `slug`, not its
+                 will brand before the press, and pressing it seeds that row's pack (Story 6.6 — it
+                 already wears the seed, so nothing is written) and changes NOTHING else — not its name, not its `slug`, not its
                  `linked_site_id` — and makes no second project
   brand-stale    THE CAP IS WHAT REFUSES, and this is the only step that executes it: at the Free
                  cap the hidden decision is blanked in the DOM — the exact body S2c emits before
@@ -409,6 +432,13 @@ list gone stale — the sibling harness's own note):
                  the limit and NAMES NO PROJECT, because the cards do — asserted with its control,
                  that the naming sentence this screen printed before the ruling is GONE from it,
                  while `brand-atcap` proves that same sentence alive at the cap with one project
+  brand-many     STORY 6.6, DW-70 (R-242), near the end of the full sequence: Pro flipped and projects inserted
+                 through the service role up to Pro's cap (`PLANS`, evaluated); in the window and on the
+                 full page at 1440 x 900 and 834 x 900 the cards scroll INSIDE the rail and the caption and
+                 both presses are in the viewport with the window unscrolled; at 390 the card list is no
+                 scroller of its own, so the window scrolls as one page as before. `--shots`:
+                 `brand-many` and `brand-many-window`, the states the owner approved side by side in Dev.
+                 The projects and the entitlement are put back in a `finally`
   search         the shell's field on Sites, on the deployed page: the title of one site leaves one
                  card, the ADDRESS of the other leaves one, and a word that matches neither leaves
                  none with the app's own "No sites match …"
@@ -617,7 +647,8 @@ manage-keys (keys-screen to keys-forged), moved-domains (with moved-order-term) 
 (keys-content and keys-test-refused — the Manage keys steps the full sequence runs after
 moved-domains); Story 5.24b added connect-paths (path-refused, address-blocked and, alone,
 path-page), search-kept and keys-escape, and changed brand-none, manage-keys (keys-two-fields)
-and keys-content. A name that is not in `BLOCKS` is refused with the registry's own list. `--only`
+and keys-content; Story 6.6 added brand-pack (seeds: sign-in — it makes its own connect), brand-pack-rerun
+and brand-many (each seeds sign-in and T1). A name that is not in `BLOCKS` is refused with the registry's own list. `--only`
 runs the named blocks in the registry's order, which is the full sequence's, whatever order they
 are typed in.
   THE SEEDS are made from the empty fixture account, each at most once and in this order, and
@@ -670,6 +701,9 @@ CONNECT_RULE = os.path.join(WEB, 'lib', 'connect-rule.ts')
 PROBE_RULE = os.path.join(WEB, 'lib', 'probe-rule.ts')
 PLAN = os.path.join(WEB, 'lib', 'plan.ts')
 NOT_FOUND_COPY = os.path.join(WEB, 'lib', 'not-found.ts')
+# STORY 6.6 — the seed's one rule and the presets it seeds, EVALUATED by `brand_seeds()` rather than retyped here
+PACK_EDIT = os.path.join(WEB, 'lib', 'pack-edit.ts')
+STYLE_PACK = os.path.join(WEB, 'lib', 'style-pack.ts')
 GHOST_ADMIN = os.path.join(WEB, 'server', 'ghost-admin', 'index.ts')
 PG_DIR = os.path.join(WEB, 'node_modules', 'postgres')
 
@@ -782,7 +816,7 @@ def app_text():
     script = (
         f"import {{ connectMessage, DISCONNECT, HTTP_WARNING, KEYS, ORPHAN_SNAPSHOT_DAYS, projectsLabel, SITES_EMPTY }} from 'file://{os.path.abspath(CONNECT_RULE)}';"
         f"import {{ BRAND_COPY, INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY }} from 'file://{os.path.abspath(PROBE_RULE)}';"
-        f"import {{ goProLabel, siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
+        f"import {{ goProLabel, PLANS, siteCapSentence }} from 'file://{os.path.abspath(PLAN)}';"
         f"import {{ NOT_FOUND }} from 'file://{os.path.abspath(NOT_FOUND_COPY)}';"
         "console.log(JSON.stringify({"
         " credential_malformed: connectMessage('credential_malformed'),"
@@ -892,6 +926,8 @@ def app_text():
         " not_found_title: NOT_FOUND.title,"
         " not_found_sub: NOT_FOUND.sub,"
         " go_pro: goProLabel(),"
+        # STORY 6.6 (DW-70): Pro's project cap, which `brand-many` fills — derived, never written here
+        " pro_projects: PLANS.pro.projects,"
         " at_cap: siteCapSentence('free') }))")
     try:
         proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
@@ -901,6 +937,31 @@ def app_text():
     lines = [l for l in proc.stdout.splitlines() if l.startswith('{')]
     if proc.returncode != 0 or not lines:
         sys.exit('  FAIL  the app\'s sentences could not be evaluated from lib/connect-rule.ts and lib/plan.ts: '
+                 + proc.stderr.strip()[-400:])
+    return json.loads(lines[-1])
+
+
+def brand_seeds(accent):
+    """STORY 6.6 — what Use your brand must write for T1's live accent, EVALUATED from the app's own `brandSeed`
+    (`lib/pack-edit.ts`) over the library's own records (`lib/style-pack.ts`'s `packChoices`), never computed here: a
+    change to the rule moves this run with it. Paper and Tangerine's records are what `brand-pack-rerun` plants and
+    compares. `accent` is null where the site has none (`hexOf` refuses it), and then nothing is seeded."""
+    script = (
+        f"import {{ brandSeed, hexOf }} from 'file://{os.path.abspath(PACK_EDIT)}';"
+        f"import {{ packChoices }} from 'file://{os.path.abspath(STYLE_PACK)}';"
+        "const records = Object.fromEntries(packChoices().map((c) => [c.id, c.record]));"
+        "const accent = typeof process.env.ACCENT === 'string' ? hexOf(process.env.ACCENT) : null;"
+        "console.log(JSON.stringify({ accent, records: { paper: records.paper, tangerine: records.tangerine },"
+        " paper: accent === null ? null : brandSeed(records.paper, accent) }))")
+    try:
+        proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
+                              capture_output=True, text=True, timeout=60, cwd=WEB,
+                              env={**os.environ, 'ACCENT': accent if isinstance(accent, str) else ''})
+    except FileNotFoundError:
+        sys.exit('  FAIL  node is not on PATH; the seed is evaluated through it')
+    lines = [l for l in proc.stdout.splitlines() if l.startswith('{')]
+    if proc.returncode != 0 or not lines:
+        sys.exit('  FAIL  the brand seed could not be evaluated from lib/pack-edit.ts and lib/style-pack.ts: '
                  + proc.stderr.strip()[-400:])
     return json.loads(lines[-1])
 
@@ -974,6 +1035,20 @@ const MARK = process.env.INJECTION_MARK
    the Python half, whole and without its first `order by` term. */
 const ONLY = (process.env.ONLY || '').split(',').filter(Boolean)
 const MOVED = JSON.parse(process.env.MOVED_QUERY)
+/* STORY 6.6: what Use your brand must write for T1's live accent — `brandSeed` over Paper, and the library's Paper and
+   Tangerine records — EVALUATED by the Python half from `lib/pack-edit.ts` and `lib/style-pack.ts` (`brand_seeds`). */
+const SEEDS_OF = JSON.parse(process.env.BRAND_SEEDS || 'null')
+/* jsonb reorders an object's keys, so two records are compared with their keys sorted — what a byte-equal means here */
+const canonical = (v) => v === null || typeof v !== 'object' ? JSON.stringify(v)
+  : Array.isArray(v) ? `[${v.map(canonical).join(',')}]`
+  : `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonical(v[k])}`).join(',')}}`
+/* the record a stored `style_pack` wears — its own record under its preset, as the app's `packIdOf` reads it for a preset */
+const packOfColumn = (sp) => ((sp && sp.packs) || {})[(sp && typeof sp.preset === 'string') ? sp.preset : 'paper'] || null
+/* `#rgb` or `#rrggbb` as `hexOf` answers it: `#RRGGBB` */
+const hexOf = (v) => {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(v || '').trim())
+  return m ? `#${(m[1].length === 3 ? [...m[1]].map((c) => c + c).join('') : m[1]).toUpperCase()}` : null
+}
 
 /* `load`, NOT `networkidle`, AND A MINUTE TO DO IT IN — the sibling harness's own finding: the
    FIRST authed render on a cold deployment took longer than Playwright's 30s default, and Deploy
@@ -1547,6 +1622,217 @@ const shoot = async (page, name) => {
       `criterion's "or either action is posted", executed`)
   }
 
+  /* ═══════════ STORY 6.6 — AUTO-BRANDING SEEDS THE PACK (FR-E5, DW-327, DW-70). Three blocks, each run alone or in the
+     full sequence. Every expected value is the app's own: `SEEDS_OF` is `brandSeed` evaluated over the library's records
+     for T1's LIVE accent by the Python half, and Pro's project cap is `PLANS`'. ═══════════ */
+
+  // ── brand-pack (seeds: sign-in). S2c's Use your brand puts T1's accent INTO THE PACK through `sync_project_doc`, and the
+  //    dashboard card, the editor's canvas, S4a's sixth dot and the Style Pack list's "From your site" row all wear it. A
+  //    FRESH connect where T1 is not yet connected; where it is (a block before this one, or the full sequence) S2c is
+  //    opened by its own address, which is the same screen and the same press.
+  const brandPack = async () => {
+    let row = await connectedRow(T1)
+    const fresh = !row
+    if (fresh) {
+      await page.goto(`${APP}/sites/connect?step=keys`, { waitUntil: 'load' })
+      await fill(page, T1.url, T1.adminKey, T1.contentKey)
+      await submit(page)
+      await s2cHeading(page).waitFor({ timeout: NAV_TIMEOUT })
+      row = await connectedRow(T1)
+      if (!row) throw new Error('brand-pack: the connect reached S2c and no sites row carries T1')
+    } else {
+      await page.goto(`${APP}/sites/brand?site=${row.id}`, { waitUntil: 'load' })
+      await s2cHeading(page).waitFor()
+    }
+    t1SiteId = row.id
+    pub1 = pub1 || await publicSite(T1)
+    brandRead = (row.site_settings || {}).brand || {}
+    const accent = SEEDS_OF && SEEDS_OF.accent
+    const want = SEEDS_OF && SEEDS_OF.paper
+    await hydrated()
+    await page.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
+    const linked = (await until(async () => {
+      const list = (await projectsOf()).filter((r) => r.linked_site_id === t1SiteId)
+      return list.length && packOfColumn(list[0].style_pack) ? list : null
+    })) || []
+    const made = linked[0] || {}
+    const sp = made.style_pack || {}
+    const seeded = packOfColumn(sp) || {}
+    // THE DASHBOARD CARD: the middle block of its wireframe's button row computes to the accent (`placeholder.tsx`)
+    await page.goto(`${APP}/`, { waitUntil: 'load' })
+    await cardOf(made.name || 'project').first().waitFor()
+    const painted = await cardOf(made.name || 'project').first().locator(':scope > div[aria-hidden="true"] > div:last-child > div')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor))
+    // THE EDITOR: its canvas wears the seeded pack (`--accent` on the canvas document), S4a's card draws the sixth dot, and
+    // the Style Pack list has the "From your site" row with S2c's own button
+    await page.goto(`${APP}/projects/${made.id}`, { waitUntil: 'load' })
+    const canvas = page.frameLocator('iframe[title$="canvas"]')
+    await canvas.locator('#canvas > *').first().waitFor({ timeout: NAV_TIMEOUT }).catch(() => {})
+    const canvasAccent = await until(async () => {
+      const v = await canvas.locator('html').evaluate((h) => getComputedStyle(h).getPropertyValue('--accent').trim()).catch(() => '')
+      return v === (want && want.light.accent) ? v : null
+    }) || await canvas.locator('html').evaluate((h) => getComputedStyle(h).getPropertyValue('--accent').trim()).catch(() => '')
+    const dots = await page.locator('[data-style-pack-card] > span[aria-hidden] > span')
+      .evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor))
+    await page.locator('#style-pack-change').click()
+    const rowDrawn = await page.locator('[data-style-pack-brand]').waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    const rowSays = rowDrawn ? (await page.locator('#style-pack-brand').innerText()).trim() : null
+    await shoot(page, 'from-your-site')
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    step('brand-pack',
+      Boolean(want) && hexOf(brandRead.accent) === accent && want.light.accent === accent
+      && linked.length === 1 && canonical(Object.keys(sp).sort()) === canonical(['packs', 'preset'])
+      && sp.preset === 'paper' && canonical(Object.keys(sp.packs || {})) === canonical(['paper'])
+      && canonical(seeded) === canonical(want) && !('brand' in sp)
+      && painted[1] === rgbOf(accent) && canvasAccent === want.light.accent
+      && dots.length === 6 && dots[5] === rgbOf(accent) && rowSays === SAY.brand_use,
+      `${fresh ? 'a FRESH T1 connect' : 'T1, already connected,'} then S2c's "${SAY.brand_use}": ${linked.length} project ` +
+      `linked to T1 (one wanted), its style_pack ${JSON.stringify(sp).slice(0, 400)} — keys ${JSON.stringify(Object.keys(sp))} ` +
+      `(preset and packs wanted, NO brand: ${!('brand' in sp)}), Paper's record equal to brandSeed's for T1's live accent ` +
+      `${accent} (the site row stored ${JSON.stringify(brandRead.accent)}) = ${canonical(seeded) === canonical(want)}: light ` +
+      `${seeded.light && seeded.light.accent} / ${seeded.light && seeded.light.onAccent}, dark ${seeded.dark && seeded.dark.accent} / ` +
+      `${seeded.dark && seeded.dark.onAccent}. The dashboard card's wireframe computes to ${JSON.stringify(painted)} (the ` +
+      `accent ${rgbOf(accent)} on the MIDDLE block); the editor's canvas --accent ${JSON.stringify(canvasAccent)}; S4a's card ` +
+      `draws ${dots.length} dots, the sixth ${dots[5]} (the site's, R-240 leaving the logo Ghost's); the Style Pack list's ` +
+      `"From your site" row drawn = ${rowDrawn}, its button ${JSON.stringify(rowSays)}`)
+  }
+
+  // ── brand-pack-rerun (seeds: sign-in, T1). The popup's Use your brand onto a project the editor has since changed: Paper
+  //    planted with a blue accent, a Tangerine record of its own and a `mode` key. The press puts Paper's accent back to
+  //    the site's through the compare-and-set — Tangerine's record and `mode` byte-equal, the revision up by exactly one,
+  //    and no `brand` — and the column is put back in a `finally`. Alone, the project for T1 is inserted first, as
+  //    `useBrand` would have made it.
+  const brandPackRerun = async () => {
+    let made = (await projectsOf()).find((r) => r.linked_site_id === t1SiteId)
+    if (!made) {
+      const body = (await insert('/projects', {
+        user_id: USER_ID, name: 'Brand Rerun', slug: `brand-rerun-${Date.now()}`, style_pack: { preset: 'paper' }, linked_site_id: t1SiteId,
+      })).body
+      made = body && body[0]
+      if (!made) throw new Error('brand-pack-rerun: the service role could not insert a project for T1')
+    }
+    const records = SEEDS_OF.records
+    const blue = { ...records.paper, light: { ...records.paper.light, accent: '#1E6BFF' } }
+    const tangerine = { ...records.tangerine, name: 'Tangerine, planted' }
+    const planted = { preset: 'paper', mode: 'dark', packs: { paper: blue, tangerine } }
+    const read = async () => ((await wire(`/projects?id=eq.${made.id}&select=revision,style_pack`)).body || [])[0] || {}
+    const kept = (await read()).style_pack
+    let before = {}
+    let after = {}
+    let opened = false
+    let landed = false
+    try {
+      const put = await patch(`/projects?id=eq.${made.id}`, { style_pack: planted })
+      if (put.status !== 200) throw new Error(`brand-pack-rerun: planting the pack answered HTTP ${put.status}`)
+      before = await read()
+      await page.goto(`${APP}/sites?brand=${t1SiteId}`, { waitUntil: 'load' })
+      const dialog = page.locator('dialog[aria-labelledby="brand-panel-title"]')
+      opened = await dialog.waitFor({ state: 'visible', timeout: 20000 }).then(() => true).catch(() => false)
+      await hydrated()
+      await dialog.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+      landed = await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand')).then(() => true).catch(() => false)
+      after = (await until(async () => {
+        const r = await read()
+        return r.revision !== before.revision ? r : null
+      })) || await read()
+    } finally {
+      if (kept !== undefined) await patch(`/projects?id=eq.${made.id}`, { style_pack: kept })
+    }
+    const sp = after.style_pack || {}
+    const packs = sp.packs || {}
+    step('brand-pack-rerun',
+      opened && landed && canonical(before.style_pack) === canonical(planted)
+      && after.revision === before.revision + 1
+      && canonical(packs.paper) === canonical(SEEDS_OF.paper)
+      && canonical(packs.tangerine) === canonical(tangerine)
+      && sp.mode === 'dark' && sp.preset === 'paper' && !('brand' in sp),
+      `planted on the project for T1: Paper with a blue accent, a Tangerine record of its own and mode "dark" ` +
+      `(read back = ${canonical(before.style_pack) === canonical(planted)}), revision ${before.revision}; the popup opened = ` +
+      `${opened} and its "${SAY.brand_use}" landed on the list = ${landed}. After: revision ${after.revision} (one up wanted), ` +
+      `Paper's light accent ${packs.paper && packs.paper.light && packs.paper.light.accent} — the site's ` +
+      `${SEEDS_OF.accent}, equal to brandSeed's whole record = ${canonical(packs.paper) === canonical(SEEDS_OF.paper)}; ` +
+      `Tangerine's record byte-equal = ${canonical(packs.tangerine) === canonical(tangerine)}, mode ${JSON.stringify(sp.mode)}, ` +
+      `preset ${JSON.stringify(sp.preset)}, no brand = ${!('brand' in sp)} — sync_project_doc wrote packs by key under its ` +
+      `compare-and-set (DW-327). The column was put back afterwards`)
+  }
+
+  // ── brand-many (seeds: sign-in, T1). DW-70: S2c's chooser at Pro's project cap (`PLANS`). Pro is flipped through the
+  //    service role and the projects inserted the same way, both undone in a `finally`. From `tablet` up, in the window and
+  //    on the full page, the cards scroll inside the rail and the caption and both presses are in view with the window
+  //    unscrolled; below `tablet` the card list is no scroller of its own — the window scrolls as one page, as before.
+  const brandMany = async () => {
+    const state = ((await wire(`/entitlements?user_id=eq.${USER_ID}&select=state`)).body || [])[0]
+    const was = state && state.state
+    const added = []
+    const seen = {}
+    let total = 0
+    try {
+      if (was !== 'pro_active') {
+        const pro = await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: 'pro_active' })
+        if (pro.status !== 200 || !(pro.body || []).length) throw new Error(`brand-many: the Pro flip answered HTTP ${pro.status}`)
+      }
+      const stamp = Date.now()
+      for (let n = (await projectsOf()).length; n < SAY.pro_projects; n++) {
+        const body = (await insert('/projects', { user_id: USER_ID, name: `Many ${n + 1}`, slug: `many-${stamp}-${n + 1}`, style_pack: { preset: 'paper' } })).body
+        if (body && body[0]) added.push(body[0].id)
+      }
+      total = (await projectsOf()).length
+      const measure = (scope) => page.evaluate((s) => {
+        const root = document.querySelector(s)
+        const list = root && root.querySelector('[data-brand-cards]')
+        if (!list) return { cards: 0 }
+        const inView = (el) => { const r = el.getBoundingClientRect(); return r.height > 0 && r.top >= 0 && r.bottom <= innerHeight }
+        const presses = [...root.querySelectorAll('button[type="submit"]')]
+        return {
+          cards: list.querySelectorAll('label').length,
+          overflow: getComputedStyle(list).overflowY,
+          scrollsInside: list.scrollHeight > list.clientHeight + 1,
+          caption: inView(root.querySelector('#brand-caption')),
+          presses: presses.length === 2 && presses.every(inView),
+          windowAt: scrollY,
+        }
+      }, scope)
+      for (const [chrome, url, scope] of [['window', `${APP}/sites?brand=${t1SiteId}`, 'dialog[open]'], ['page', `${APP}/sites/brand?site=${t1SiteId}`, 'main']]) {
+        for (const width of [1440, 834]) {
+          await page.setViewportSize({ width, height: 900 })
+          await page.goto(url, { waitUntil: 'load' })
+          await s2cHeading(page).waitFor()
+          await page.locator(`${scope} [data-brand-cards] label`).nth(total - 1).waitFor({ state: 'attached', timeout: 20000 }).catch(() => {})
+          seen[`${chrome}@${width}`] = await measure(scope)
+        }
+      }
+      await page.setViewportSize({ width: 390, height: 844 })
+      await page.goto(`${APP}/sites/brand?site=${t1SiteId}`, { waitUntil: 'load' })
+      await s2cHeading(page).waitFor()
+      seen['page@390'] = await measure('main')
+      await page.setViewportSize({ width: 1440, height: 900 })
+      await shoot(page, 'brand-many')
+      await page.goto(`${APP}/sites?brand=${t1SiteId}`, { waitUntil: 'load' })
+      await s2cHeading(page).waitFor()
+      await shoot(page, 'brand-many-window')
+    } finally {
+      await page.setViewportSize({ width: 1440, height: 900 })
+      if (added.length) {
+        await fetch(`${SB}/rest/v1/projects?id=in.(${added.join(',')})`, {
+          method: 'DELETE', headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}` },
+        })
+      }
+      if (was && was !== 'pro_active') await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: was })
+    }
+    const bounded = (m) => m && m.cards === total && m.overflow === 'auto' && m.scrollsInside && m.caption && m.presses && m.windowAt === 0
+    const left = (await projectsOf()).length
+    step('brand-many',
+      total === SAY.pro_projects && ['window@1440', 'window@834', 'page@1440', 'page@834'].every((k) => bounded(seen[k]))
+      && seen['page@390'] && seen['page@390'].cards === total && seen['page@390'].overflow === 'visible'
+      && left === total - added.length,
+      `with ${added.length} projects inserted the account holds ${total} (Pro's cap, PLANS: ${SAY.pro_projects}); ` +
+      `from tablet up the cards scroll INSIDE the rail and the caption and both presses are in view with the window ` +
+      `unscrolled — ${JSON.stringify(seen)}; at 390 the card list is no scroller of its own (overflow ` +
+      `${seen['page@390'] && seen['page@390'].overflow}), so the window scrolls as one page, as before (DW-70, R-242). ` +
+      `The inserted projects were deleted (${left} left) and the entitlement put back to ${JSON.stringify(was)}`)
+  }
+
   // ── manage-keys: keys-screen to keys-forged (seeds: sign-in, T1). T3 need not be connected:
   //    `keys-foreign-key` pastes T3's KEY into T1's screen, and it is T1's Ghost that answers.
   const manageKeys = async () => {
@@ -1832,6 +2118,9 @@ const shoot = async (page, name) => {
     //    protected either way: refused under the field, nothing written.
     //    NO `.catch(() => {})` ON THE WAIT: a wrong prediction here used to cost a silent 30-second
     //    timeout and then a red assertion, which reads as a product failure rather than a stale test.
+    // R-238: an `--only` run is built from T1 alone, so the one key valid on ANOTHER Ghost is not there — said, not skipped
+    if (!T3) record('keys-foreign-key', 'POSTPONED — needs T3\'s key, and T3 is retired from testing (R-238); its Ghost 5 half is DW-326\'s, at Story 15.7')
+    if (T3) {
     await openKeys(t1SiteId)
     const beforeOther = await credsOf(t1SiteId)
     await page.fill('#keys-admin', T3.adminKey)
@@ -1850,6 +2139,7 @@ const shoot = async (page, name) => {
       `API Key at GET config/ — it never issued this key — so the refusal fires before GET site/ is ` +
       `called at all. R-100: Inflozo cannot tell "another site's key" from "wrong key" and does not ` +
       `pretend to; the domain-move sentence belongs to the step below, which is where it is earned`)
+    }
 
     // ── keys-other-site: THE GUARD R-100 KEEPS, and the only step that executes it. It fires when
     //    THIS Ghost reports a public address different from the one recorded at connect — a domain
@@ -2678,6 +2968,9 @@ const shoot = async (page, name) => {
     'keys-content': { seeds: ['sign-in', 'T1'], run: keysContent },
     'search-kept': { seeds: ['sign-in', 'T1'], run: searchKept },
     'keys-escape': { seeds: ['sign-in', 'T1'], run: keysEscape },
+    'brand-pack': { seeds: ['sign-in'], run: brandPack },
+    'brand-pack-rerun': { seeds: ['sign-in', 'T1'], run: brandPackRerun },
+    'brand-many': { seeds: ['sign-in', 'T1'], run: brandMany },
   }
   /* EACH BLOCK'S SEEDS ARE MADE JUST BEFORE IT, not all at the start (Story 5.24b): `connect-paths` needs an EMPTY
      account — its refusals must not meet the Free cap — and it runs first, so a later block's T1 has to wait for it. A
@@ -2689,6 +2982,11 @@ const shoot = async (page, name) => {
     if (unknown.length) throw new Error(`BLOCKS names seeds SEEDS does not make: ${unknown.join(', ')}`)
     const made = []
     for (const name of blocks) {
+      // R-238 (Story 6.6, DW-326): a block that needs T3 connected is NAMED as postponed, never run against nothing
+      if (BLOCKS[name].seeds.includes('T3') && !T3) {
+        record(name, 'POSTPONED — needs T3 connected, and T3 is retired from testing (R-238); its Ghost 5 half is DW-326\'s, at Story 15.7')
+        continue
+      }
       for (const seed of Object.keys(SEEDS).filter((s) => BLOCKS[name].seeds.includes(s) && !made.includes(s))) {
         await SEEDS[seed]()
         made.push(seed)
@@ -3422,12 +3720,14 @@ const shoot = async (page, name) => {
       return list.length ? list : null
     })) || []
     const made = seeded[0] || {}
-    const seededBrand = ((made.style_pack || {}).brand) || {}
+    // STORY 6.6: the accent is IN THE PACK IN FORCE (`brandSeed`), and no `brand` is written any more
+    const seededLight = (packOfColumn(made.style_pack) || {}).light || {}
+    const branded = 'brand' in (made.style_pack || {})
     await page.reload({ waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
     const tally = await cardOf('Connected').first().innerText().catch(() => '')
-    // …AND THE DASHBOARD CARD IS PAINTED IN IT. `placeholderFor` prefers `brand.accent` over the
-    // preset's, so the wireframe's middle block is the customer's own colour — read off the
+    // …AND THE DASHBOARD CARD IS PAINTED IN IT. Since Story 6.6 the accent is IN THE PACK and `placeholderFor`
+    // paints the pack in force, so the wireframe's middle block is the customer's own colour — read off the
     // RENDERED card with getComputedStyle, not off a class attribute.
 
     await page.goto(`${APP}/`, { waitUntil: 'load' })
@@ -3436,7 +3736,7 @@ const shoot = async (page, name) => {
       .evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor))
     step('brand-seed',
       saidCreate && seeded.length === 1 && made.linked_site_id === t1SiteId
-      && seededBrand.accent === brandRead.accent && made.name === pub1.title
+      && seededLight.accent === hexOf(brandRead.accent) && !branded && made.name === pub1.title
       && Boolean(made.slug) && tally.includes(SAY.one_project)
       // THE MIDDLE BLOCK AND ONLY IT — `placeholder.tsx` paints the middle of three in its button
       // row and leaves the outer two `bg-line`. `includes` over the three stayed green through
@@ -3448,11 +3748,18 @@ const shoot = async (page, name) => {
       `the caption said a project would be made = ${saidCreate}; pressing "${SAY.brand_use}" wrote ` +
       `${seeded.length} project named ${JSON.stringify(made.name)} — the site's own Ghost title — ` +
       `slug ${JSON.stringify(made.slug)}, linked_site_id = the site = ${made.linked_site_id === t1SiteId} ` +
-      `(FR-B5's first writer), style_pack.brand.accent ${seededBrand.accent} equal to the site's ` +
+      `(FR-B5's first writer), the pack in force's light accent ${seededLight.accent} equal to the site's ` +
+      `(no brand key written = ${!branded}) ` +
       `${brandRead.accent}; the Sites card now reads ${JSON.stringify(SAY.one_project)} = ` +
       `${tally.includes(SAY.one_project)}, and the dashboard card's wireframe blocks compute to ` +
       `${JSON.stringify(painted)} — the accent ${rgbOf(brandRead.accent)} on the MIDDLE one and ` +
       `on no other (${painted.filter((c) => c === rgbOf(brandRead.accent)).length} of 3)`)
+
+    // ── Story 6.6: the seed in the pack, worn by the card, the editor and the Style Pack list (`brandPack`), and the
+    //    popup's re-run onto a project the editor changed, through the compare-and-set (`brandPackRerun`). T1 is already
+    //    connected and branded here, so the first opens S2c by its address and its press writes nothing new.
+    await brandPack()
+    await brandPackRerun()
 
     /* ── THE OWNER'S TEST OF 2026-09-09, BOTH FINDINGS, ON THE DEPLOYED SITE (ruling R-98).
 
@@ -3646,13 +3953,14 @@ const shoot = async (page, name) => {
       namedIt && !stillCreate && afterCap.length === 1 && rebranded.id === made.id
       && rebranded.name === made.name && rebranded.slug === made.slug
       && rebranded.linked_site_id === made.linked_site_id
-      && ((rebranded.style_pack || {}).brand || {}).accent === brandRead.accent,
+      && ((packOfColumn(rebranded.style_pack) || {}).light || {}).accent === hexOf(brandRead.accent)
+      && !('brand' in (rebranded.style_pack || {})),
       `at the Free cap of 1 the caption NAMED the project it would brand ` +
       `(${JSON.stringify(SAY.brand_will_brand.replace('%s', made.name))}) = ${namedIt}, and no longer ` +
       `promised a new one = ${!stillCreate}; pressing it left ${afterCap.length} project — the same ` +
       `row (${rebranded.id === made.id}) with its name, slug and linked_site_id untouched ` +
       `(${rebranded.name === made.name && rebranded.slug === made.slug && rebranded.linked_site_id === made.linked_site_id}) ` +
-      `and style_pack.brand written again, idempotently`)
+      `and the pack in force seeded again — idempotently: the pack already wore it, so nothing was written (Story 6.6)`)
 
     // A PRESS THAT HAS NOT LANDED PROVES NOTHING ABOUT "NOTHING WAS WRITTEN" (standing rule 2).
     // The two steps below both refuse and REDIRECT BACK TO `/sites/brand` — the path the press
@@ -4469,7 +4777,8 @@ const shoot = async (page, name) => {
       && preselected === made.id && thumbs.length === 2
       && thumbs.includes(rgbOf(brandRead.accent)) && new Set(thumbs).size === 2
       && afterPick.length === 2
-      && ((chosenRow.style_pack || {}).brand || {}).accent === brandRead.accent
+      && ((packOfColumn(chosenRow.style_pack) || {}).light || {}).accent === hexOf(brandRead.accent)
+      && !('brand' in (chosenRow.style_pack || {}))
       && (chosenRow.style_pack || {}).mode === 'dark' && (chosenRow.style_pack || {}).preset === 'paper'
       && chosenRow.name === 'Field Notes' && chosenRow.slug === 'field-notes'
       && chosenRow.linked_site_id === null
@@ -4484,7 +4793,7 @@ const shoot = async (page, name) => {
       `and a different colour on the fresh one (${new Set(thumbs).size} distinct), so the drawings ` +
       `tell the projects apart — FR-B1's Style-Pack placeholder, claiming to be no preview. ` +
       `Choosing "Field Notes" put the brand on THAT row (accent ` +
-      `${((chosenRow.style_pack || {}).brand || {}).accent}) and changed nothing else about it — ` +
+      `${((packOfColumn(chosenRow.style_pack) || {}).light || {}).accent}, seeded into its pack) and changed nothing else about it — ` +
       `name, slug and a null linked_site_id intact — while "${made.name}" kept its own binding to ` +
       `the site. THE PACK WAS MERGED AND NOT REPLACED: the fixture's own \`mode\` came back as ` +
       `${JSON.stringify((chosenRow.style_pack || {}).mode)} beside preset ` +
@@ -4931,6 +5240,8 @@ const shoot = async (page, name) => {
     // ── Story 5.24b: the Sites search kept through both windows (DW-82), and Escape during a save (DW-84).
     await searchKept()
     await keysEscape()
+    // ── Story 6.6, DW-70: S2c's chooser at Pro's project cap (`brandMany`), its projects and entitlement put back.
+    await brandMany()
     // Back on the list: the axe sweep below audits `/sites` and reads its top bar, and it used to
     // inherit the list from `moved-domains` (a run on 2026-09-10 audited the keys page as "sites").
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
@@ -5084,17 +5395,28 @@ def main():
                          'before any key is read (DW-92).')
     args = ap.parse_args()
 
+    # ── R-238 (owner, 2026-10-04): T3 IS RETIRED FROM TESTING, so `--check` and `--only` run on T1 alone and read no
+    #    `GHOST5_*` at all (DW-326's "made optional by the story that next runs it", Story 6.6). Each T3 leg is NAMED as
+    #    postponed rather than skipped in silence; its Ghost 5 half joins DW-326's one pass at Story 15.7. The full run is
+    #    unchanged — it connects T3 for the cap and moved-domains steps, so it needs a Ghost 5 server and waits with them.
+    t1_only = args.check or bool(args.only)
+    majors = (('T1', 'GHOST6'),) if t1_only else (('T1', 'GHOST6'), ('T3', 'GHOST5'))
+    postponed = ' — T3 POSTPONED (R-238: retired from testing; its Ghost 5 half is DW-326\'s, at Story 15.7)' if t1_only else ''
+
     env = load_env()
     needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_DB_POOLER_URL',
               'GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_VERSION',
-              'GHOST5_URL', 'GHOST5_ADMIN_API_KEY', 'GHOST5_CONTENT_API_KEY', 'GHOST5_VERSION',
               # Story 3.3's `injection-live`, and only that: the HARNESS's own credential for the
               # one write the owner sanctioned. The product never holds one until Epic 7.
-              'GHOST6_STAFF_ACCESS_TOKEN', 'GHOST5_STAFF_ACCESS_TOKEN']
+              # (Story 3.6's `keys-token` stores and removes T1's through the product.)
+              'GHOST6_STAFF_ACCESS_TOKEN']
+    if not t1_only:
+        needed += ['GHOST5_URL', 'GHOST5_ADMIN_API_KEY', 'GHOST5_CONTENT_API_KEY', 'GHOST5_VERSION',
+                   'GHOST5_STAFF_ACCESS_TOKEN']
     missing = [k for k in needed if not env.get(k)]
     print(f'  {"PASS" if not missing else "FAIL"}  keys: present in tools/probe/.env by name: '
           f'{", ".join(k for k in needed if env.get(k))}'
-          + (f'; MISSING: {", ".join(missing)}' if missing else ''))
+          + (f'; MISSING: {", ".join(missing)}' if missing else '') + postponed)
     if missing:
         print('  RESULT: FAILED')
         return 1
@@ -5154,7 +5476,7 @@ def main():
     WANT = ('portal_button', 'codeinjection_head', 'codeinjection_foot',
             'announcement_content', 'announcement_background', 'announcement_visibility')
     seen = {}
-    for label, prefix in (('T1', 'GHOST6'), ('T3', 'GHOST5')):
+    for label, prefix in majors:
         try:
             rows = {r['key'] for r in ghost_for(env, prefix, f'{prefix}_ADMIN_API_KEY')
                     .api('GET', 'settings/')['settings']}
@@ -5168,8 +5490,8 @@ def main():
     keys_ok = all(v == 'all six present' for v in seen.values())
     failed = failed or not keys_ok
     print(f'  {"PASS" if keys_ok else "FAIL"}  settings-keys: GET /admin/settings/ read with '
-          f'GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY (the integration key, no staff token) — '
-          f'{json.dumps(seen)}; the keys wanted: {", ".join(WANT)}')
+          f'{" and ".join(f"{p}_ADMIN_API_KEY" for _, p in majors)} (the integration key, no staff token) — '
+          f'{json.dumps(seen)}; the keys wanted: {", ".join(WANT)}{postponed}')
 
     # ── §40, RE-EXECUTED EVERY RUN: Story 3.4's brand reader takes the SAME payload, so the
     #    keys it reads have to be in it, on both majors, with the CONTAINER each really arrives in.
@@ -5181,10 +5503,13 @@ def main():
     # menu. The icon, the cover, the title and the description were stored for no reader and are no longer read at all.
     BRAND_KEYS = ('accent_color', 'logo', 'navigation')
     brand_seen = {}
-    for label, prefix in (('T1', 'GHOST6'), ('T3', 'GHOST5')):
+    t1_accent = None
+    for label, prefix in majors:
         try:
             flat = {r['key']: r.get('value') for r in ghost_for(env, prefix, f'{prefix}_ADMIN_API_KEY')
                     .api('GET', 'settings/')['settings']}
+            if label == 'T1':
+                t1_accent = flat.get('accent_color')
             missing_brand = [k for k in BRAND_KEYS if k not in flat]
             shapes = {k: type(flat.get(k)).__name__ for k in BRAND_KEYS}
             # The one container the reader has to get right: a JSON array inside a STRING.
@@ -5199,8 +5524,18 @@ def main():
                    for v in brand_seen.values())
     failed = failed or not brand_ok
     print(f'  {"PASS" if brand_ok else "FAIL"}  brand-keys: the {len(BRAND_KEYS)} FR-C4 keys in the same '
-          f'GET /admin/settings/ payload, read with GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY — '
-          f'{json.dumps(brand_seen)}; wanted: {", ".join(BRAND_KEYS)} (MEASUREMENTS §40)')
+          f'GET /admin/settings/ payload, read with {" and ".join(f"{p}_ADMIN_API_KEY" for _, p in majors)} — '
+          f'{json.dumps(brand_seen)}; wanted: {", ".join(BRAND_KEYS)} (MEASUREMENTS §40){postponed}')
+
+    # ── STORY 6.6: what Use your brand must write for T1's LIVE accent, evaluated from the app's own rule (`brand_seeds`).
+    #    Printed in both modes, so `--check` proves the evaluation runs before anything is spent.
+    seeds = brand_seeds(t1_accent)
+    print(f'  {"PASS" if seeds.get("paper") else "FAIL"}  brand-seed-rule: T1\'s accent_color {t1_accent!r} seeded into '
+          f'Paper by lib/pack-edit.ts\'s brandSeed -> light {((seeds.get("paper") or {}).get("light") or {}).get("accent")} / '
+          f'{((seeds.get("paper") or {}).get("light") or {}).get("onAccent")}, dark '
+          f'{((seeds.get("paper") or {}).get("dark") or {}).get("accent")} / '
+          f'{((seeds.get("paper") or {}).get("dark") or {}).get("onAccent")} (accent / on-accent)')
+    failed = failed or not seeds.get('paper')
 
     # ── §57, RE-EXECUTED EVERY RUN (DW-50, Story 5.24b): the app's one direct Postgres connection verifies the pooler
     #    against the root CA PINNED IN `server/ghost-admin/db.ts` — read out of that file, never retyped — and a real
@@ -5300,11 +5635,11 @@ def main():
 
         # A `kid` of the right shape that Ghost has never issued (§37: 401 Unknown Admin API Key).
         bogus = '0' * 24 + ':' + 'ab' * 32
+        # R-238: an `--only` run is built from T1 alone; a block that needs T3 says so when its seed is asked for
         ghosts = [
-            {'label': 'T1', 'url': env['GHOST6_URL'].rstrip('/'), 'adminKey': env['GHOST6_ADMIN_API_KEY'],
-             'contentKey': env['GHOST6_CONTENT_API_KEY'], 'version': env['GHOST6_VERSION']},
-            {'label': 'T3', 'url': env['GHOST5_URL'].rstrip('/'), 'adminKey': env['GHOST5_ADMIN_API_KEY'],
-             'contentKey': env['GHOST5_CONTENT_API_KEY'], 'version': env['GHOST5_VERSION']},
+            {'label': label, 'url': env[f'{prefix}_URL'].rstrip('/'), 'adminKey': env[f'{prefix}_ADMIN_API_KEY'],
+             'contentKey': env[f'{prefix}_CONTENT_API_KEY'], 'version': env[f'{prefix}_VERSION']}
+            for label, prefix in majors
         ]
         # `%s` marks the app's own host hole, so the browser half matches the halves around it
         # rather than rebuilding the interpolation.
@@ -5333,6 +5668,8 @@ def main():
             'SENTENCES': json.dumps(says),
             'ONLY': ','.join(args.only),
             'MOVED_QUERY': json.dumps(moved_queries()),
+            # Story 6.6: what Use your brand must write for T1's live accent, from the app's own rule
+            'BRAND_SEEDS': json.dumps(seeds),
         })
         # Printed as they landed, by `run_browser`; here they only decide the result.
         failed = failed or any(s['ok'] is False for s in steps)

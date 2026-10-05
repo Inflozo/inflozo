@@ -75,7 +75,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-C1** Connect flow — one credential pair now, the Staff Access Token deferred to first deploy. The no-token path is a designed path: no snapshot, no drift check, no automated routes upload, and deploy itself unaffected. A partially credentialed project is a first-class state.
 - **FR-C2** Server-side validation by minting the Admin JWT and calling the authenticated `GET /admin/config/` — never `GET /admin/site/`. Reports the Ghost version (5.x/6.x accepted, 4.x rejected), probes `hostSettings.limits.customThemes` for Preview-only, computes the code-injection boolean and discards it, and reads Portal's floating-button state and the announcement-bar settings.
 - **FR-C3** Key security: Admin keys and the Staff Access Token encrypted in Supabase Vault, never sent to any client, all Admin calls proxied server-side with per-request short-lived JWTs. The token's full-Administrator scope is disclosed where it is requested.
-- **FR-C4** Auto-branding: a one-click "Use your brand" card seeding accent, logo and navigation, and offering the site's announcement bar as a seeded A2 section with a one-click "turn Ghost's own bar off".
+- **FR-C4** Auto-branding: a one-click "Use your brand" card seeding the accent into the Style Pack (the logo stays Ghost's, R-240; the navigation waits for the header epic, DW-66), and offering the site's announcement bar as a seeded A2 section with a one-click "turn Ghost's own bar off".
 - **FR-C5** Multi-site (Free 1, Pro 10); a daily health check re-validating credentials, version, the Preview-only probe, live `routes.yaml` drift, Portal button and announcement settings; the once-per-transition "Reconnect needed" email under a one-per-site-per-7-days ceiling; and the per-Ghost-release compatibility broadcast with its narrow redeploy exemption.
 - **FR-C6** Disconnecting never deletes projects or snapshots; snapshots bind to the site record id, never the raw URL, and orphan after 90 days with a notice and a download offer.
 - **FR-C7** Redesign proposals: a one-click pass rendering 2–3 whole-site starter × Style Pack combinations on the user's real content, which must differ in layout structure; re-runnable from the dashboard.
@@ -112,7 +112,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-E2** 12 curated presets ship with hand-tuned paired light + dark palettes; switching restyles the canvas live in ≤ 300 ms.
 - **FR-E3** Every token is user-editable per project, per mode, with a live AA contrast check that warns and never blocks. Custom packs are per-project by design.
 - **FR-E4** Tokens compile to CSS custom properties with **one** declared list of mode conditions and nothing else in the theme selecting on mode. Three inputs decide the mode in a normative precedence: the owner's pin; on Auto, the visitor's choice; then the system preference (R-239, Story 6.5).
-- **FR-E5** Auto-branding seeds accent colour and logo into the active pack.
+- **FR-E5** Auto-branding seeds the site's accent colour into the active pack — the dark accent lightened only where it would be hard to read (R-241); the logo is not seeded, it stays Ghost's (R-240).
 
 **FR-F · Control System**
 
@@ -959,7 +959,8 @@ So that the canvas looks like mine before I have chosen anything.
 **Given** a successful connect
 **When** the auto-branding card appears
 **Then** it offers, in one click, the site's accent colour, logo and navigation seeded into the active project's
-Style Pack, and switches the canvas to live content
+Style Pack, and switches the canvas to live content *(Story 6.6's Dev, 2026-10-05: the accent is seeded into the pack
+in force; the logo stays Ghost's and is copied nowhere, R-240; the navigation waits for the header epic, DW-66)*
 **And** where the site has an announcement bar set, **it is offered as a seed too** — the text becomes the
 message prop of a placed A2 design, `announcement_visibility` maps onto the **show to** control and
 `announcement_background` onto the Background role — after which it is an ordinary Inflozo section
@@ -2869,11 +2870,11 @@ So that the two features are one action rather than two.
 
 **Given** auto-branding has run
 **When** the "Use your brand" card is accepted
-**Then** the **accent colour and logo are seeded into the active pack**
+**Then** the **accent colour is seeded into the active pack** — the light accent exactly, the dark one lightened only where it would be hard to read (R-241), each on-accent made readable — and the logo stays Ghost's, copied nowhere (R-240) *(Story 6.6's Create amended "accent colour and logo" on the owner's ruling)*
 **And** the Style panel shows the seeded values as ordinary editable tokens afterwards
-**And** the flow is re-runnable later from the Style panel.
+**And** the flow is re-runnable later from the Style panel *(Story 6.6's Dev, 2026-10-05: built — the Style Pack list's "From your site" row, one edit ⌘Z undoes, greyed reading along; S4a's card draws the site's colour as its sixth dot)*.
 **And** S2c's project chooser is drawn in the Claude Design project from S2c before this story builds on it (R-74), and its fieldset takes the scroll bound that frame draws (DW-70); **ruled R-242 (owner, 2026-10-05): not drawn** — the chooser at scale and the "From your site" row are designed from the drawings nearest them, matched value for value and approved by the owner side by side in Dev.
-**And** "Use your brand" writes `brand` into `style_pack` by key, never the whole object read earlier, so a pack saved by the editor at the same moment survives it (DW-327, from Story 6.4's Review, 2026-10-04). *(Story 6.6's Create, 2026-10-05: planned with no `brand` write at all — once the accent is in the pack nothing reads it, and `placeholderFor`'s override goes — and the seeded pack written through `sync_project_doc`'s compare-and-set, re-read on a stale base; so no migration and no Schema phase.)*
+**And** "Use your brand" writes by key, never the whole object read earlier, so a pack saved by the editor at the same moment survives it (DW-327, from Story 6.4's Review, 2026-10-04). *(Story 6.6's Create, 2026-10-05: planned with no `brand` write at all — once the accent is in the pack nothing reads it, and `placeholderFor`'s override goes — and the seeded pack written through `sync_project_doc`'s compare-and-set, re-read on a stale base; so no migration and no Schema phase. Story 6.6's Dev: built as planned — at most three tries on a stale base, then S2c's failed line; S2c's chooser scrolls inside the rail from tablet up, DW-70.)*
 **And** before Dev the owner rules (R-83) three things: whether the logo is copied into the pack at all, where FR-E5 says it is and D6a and B17 draw it as Ghost's, read-only (Question 1); which colour dark mode wears once the site's accent is in (Question 2); and whether the two parts no frame draws — S2c's chooser at scale and the Style Pack list's "From your site" row — are drawn first from the prompt in the spec (Question 3). S4a's sixth dot, the site's colour, lands here too (from Story 6.6's Create, 2026-10-05). **Ruled (owner, 2026-10-05):** the logo stays Ghost's and nothing about it is copied (R-240); dark mode wears the site's colour, lightened only where it would be hard to read (R-241); the two parts are designed from the nearest drawings, with no Claude Design pass (R-242).
 
 **FRs:** FR-E5. · **Frame:** `S2 Onboarding.dc.html` S2c · `S7 Style Packs.dc.html` S7c · `S4 Editor.dc.html` S4a (the sixth dot). · **Owner test:** yes.

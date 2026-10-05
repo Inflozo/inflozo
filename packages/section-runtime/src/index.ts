@@ -54,7 +54,9 @@ export { GROUND_LINKS, MODE_SELECTORS } from './tokens.ts'
 export { darkHook, darkOverrideCss, HOOK_RE } from './dark-override.ts'
 export type { PlacedSection } from './dark-override.ts'
 export type { Face, Pack, PackMode, PackRole, TokenRow, TokenSource } from './tokens.ts'
-export { contrast, isHex } from './colour.ts'
+// Story 6.6 — and `stepToContrast`, the engine's own walk to 4.5:1: the brand seed (`apps/web/lib/pack-edit.ts`'s
+// `brandSeed`) makes a site's accent and its on-accent readable with it, in the browser as on the server
+export { contrast, isHex, stepToContrast } from './colour.ts'
 export { editText, linkAttributes } from './marks.ts'
 // Story 5.16a — AD-5's one exception, exported so the tests can name the exact string the theme emits
 export { PAGE_NUMBER_HBS } from './marks.ts'

@@ -165,7 +165,8 @@ export function BrandPanel({
         <SiteToday site={site} />
 
         <aside className="flex w-full shrink-0 flex-col gap-4 border-t border-line-faint bg-paper-raised p-[16px_20px] tablet:w-[360px] tablet:overflow-y-auto tablet:border-t-0 tablet:border-l tablet:p-[20px_22px]">
-          <form action={useBrand} className="flex flex-1 flex-col gap-4">
+          {/* `tablet:min-h-0` down the chain (the form, the fieldset, the cards): STORY 6.6's bound, below */}
+          <form action={useBrand} className="flex flex-1 flex-col gap-4 tablet:min-h-0">
             <input type="hidden" name="site_id" value={site.id} />
             {chrome}
             {/* THE CHOOSER, AND IT IS REAL RADIO INPUTS — not the Kit's presentational
@@ -176,16 +177,27 @@ export function BrandPanel({
                 frame draws this, so it is extrapolated from the two that draw its parts —
                 `radio-card.tsx`'s coral border and tint (Editor Sidebar Kit `:117`) and
                 `design-picker.tsx`'s 64×44 wireframe tile (`:71`) — same components, same tokens,
-                no second vocabulary. */}
+                no second vocabulary.
+
+                STORY 6.6 — THE CHOOSER AT SCALE (DW-70), built from the drawings nearest it with no
+                Claude Design pass (R-242, the spec's "Built from" table): S2c as built, and this
+                popup's own idiom of columns that scroll apart so a rail's buttons stay in view
+                (above, S11e's). On Pro's 25 projects the cards pushed the caption and both presses
+                below the rail. From `tablet` up the card list now fills the rail's free height and
+                scrolls THERE, with the browser's own scrollbar, while "Which project?" stays above it
+                and the caption and the presses stay at the rail's foot. Below `tablet` nothing moves:
+                the window scrolls as one page, as it always has. */}
             {choosing ? (
-              <fieldset className="m-0 w-full border-0 p-0">
-                {/* A real `<legend>`, and the cards in a flex column INSIDE the fieldset rather
-                    than making the fieldset itself the flex container — a legend is laid out
-                    specially and does not want to be a flex item. */}
+              <fieldset data-brand-chooser className="m-0 w-full border-0 p-0 tablet:flex tablet:min-h-0 tablet:flex-col">
+                {/* A real `<legend>`, laid out as a legend: a fieldset that is a flex container lays
+                    out its anonymous content box, never its rendered legend, so the cards are the
+                    one flex item that fills and scrolls. Its 2px padding inside a 2px negative margin
+                    moves no card: it is the room a card's 2px focus ring (`shadow-focus`) needs, which
+                    a scroller would otherwise clip at its edges. */}
                 <legend className="mb-[10px] w-full text-ui-dense font-semibold text-ink">
                   {BRAND_COPY.whichProject}
                 </legend>
-                <div className="flex flex-col gap-[10px]">
+                <div data-brand-cards className="flex flex-col gap-[10px] tablet:-m-[2px] tablet:min-h-0 tablet:flex-1 tablet:overflow-y-auto tablet:p-[2px]">
                   {projects.map((project) => (
                     <label
                       key={project.id}

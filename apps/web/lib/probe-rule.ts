@@ -175,10 +175,10 @@ export type Brand = {
 
 /**
  * A colour Inflozo may paint with: `#rgb` or `#rrggbb` and nothing else. Exported because
- * `style-pack.ts` re-validates the accent it reads back out of `projects.style_pack` — that
- * column is one the USER'S OWN SESSION may write (schema :1202, the `grant`), so a value validated
- * on the way in is not thereby validated on the way out, and one rule in one place is the only
- * version of this that cannot drift.
+ * `style-pack.ts` re-validates the accent it reads back out of a stored brand — the linked site's
+ * (`siteAccentOf`, "From your site") and the one Use your brand seeds into a pack (`brandPacks`,
+ * Story 6.6) — so a value validated on the way in is not thereby validated on the way out, and one
+ * rule in one place is the only version of this that cannot drift.
  */
 const ACCENT = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/
 

@@ -2,7 +2,7 @@ import { familyList, pairingFonts, pairingOf, POOL, presetOf, PRESETS as LIBRARY
 import { faceRulesCss, fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_TOKENS, referenceTokensCss } from '@inflozo/section-runtime/reference'
 import { packTokens, type Pack } from '@inflozo/section-runtime/tokens'
-import { choiceOf, hexOf, isCustom, ownPacksIn, ROLE_TOKENS, type PackFonts, type PackRecord, type PairingChoice } from './pack-edit.ts'
+import { brandSeed, choiceOf, hexOf, isCustom, ownPacksIn, ROLE_TOKENS, samePack, withoutDefaults, type PackFonts, type PackRecord, type PairingChoice } from './pack-edit.ts'
 import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, type PackCellData, type PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 import { isAccent } from './probe-rule.ts'
@@ -48,28 +48,27 @@ export { DEFAULT_PRESET, PACK_FAMILY_PREFIX, ROLE_TOKENS }
  * custom id `ownPacksOf` holds, else Paper — and the card (`placeholderFor`), the editor's roster and its canvas all
  * wear an own pack. The browser computes an own pack's CSS itself, from `pairingChoices`' per-pairing data.
  *
- * STORY 3.4 PUT A `brand` KEY IN THIS COLUMN AND E6 STILL OWNS IT (DW-66). FR-C4's "Use your
- * brand" copies the customer's own Ghost accent, logo and menu out of `sites.site_settings.brand`
- * (`probe-rule.ts`'s `brandOf`) into `projects.style_pack.brand`. WHO READS WHAT (DW-71, Story
- * 5.24b): here, `placeholderFor` below reads the ACCENT — the dashboard card wears the site's
- * colour instead of the preset's; off the site's own record, S2c draws all three and the canvas's
- * surfaces read the accent (`storedSurfaces`). The logo and the menu wait here for E6's Style Pack
- * editor, which claims them or drops them. The four keys nothing read — icon, cover, title and
- * description — are no longer stored at all; a pack seeded before Story 5.24b still holds them,
- * and nothing reads them.
+ * STORY 6.6 SETTLED THE `brand` KEY STORY 3.4 PUT IN THIS COLUMN (DW-66, DW-327): IT IS NO LONGER
+ * WRITTEN, AND NOTHING READS IT. "Use your brand" puts the site's accent INTO THE PACK IN FORCE
+ * (`brandPacks` below, through `lib/pack-edit.ts`'s `brandSeed` — the one rule the Style Pack list's
+ * "From your site" row runs too), written through `sync_project_doc`'s compare-and-set, so the card,
+ * the editor, its canvas and its previews wear one colour and an edit in the editor reaches the
+ * card. The logo stays Ghost's (R-240): the canvas and the live theme read `@site.logo`, and nothing
+ * about it is copied. The menu waits for the header epic (DW-66). Off the site's own record, S2c
+ * draws all three, the canvas's surfaces read the accent (`storedSurfaces`) and the editor offers it
+ * as "From your site" (`siteAccentOf`). A row branded before 6.6 still holds a `brand` (and one
+ * seeded before Story 5.24b its icon, cover, title and description): `stylePackSchema` still parses
+ * it, and nothing reads it.
  */
 
 /**
  * Today's shape. E6 widens it; `placeholderFor` is written so widening cannot break a card.
  *
- * `brand` is TYPED `unknown` ON PURPOSE and validated where it is read. A stricter shape here
- * would make a `brand` of the wrong type fail the WHOLE parse, and a pack that failed to parse
- * loses its preset — so a junk brand would repaint the card in Paper rather than merely be
- * ignored. `style_pack` is a column the user's own session may write (schema :1202, the `grant`).
- *
- * THE SAME ARGUMENT RUNS THE OTHER WAY AND `placeholderFor` NOW HONOURS IT: `preset` is required,
- * so a pack with no preset fails the parse, and reading `brand` out of that parse threw a perfectly
- * good accent away with it. It is read off the raw value instead (review 3, 2026-09-08).
+ * `brand` is TYPED `unknown` ON PURPOSE: a stricter shape here would make a `brand` of the wrong
+ * type fail the WHOLE parse, and a pack that failed to parse loses its preset — so a junk brand
+ * would repaint the card in Paper rather than merely be ignored. Since Story 6.6 nothing reads it
+ * (the header above); rows written before then still hold one. `style_pack` is a column the user's
+ * own session may write (the `grant` on `projects`).
  */
 export const stylePackSchema = z.object({ preset: z.string(), brand: z.unknown().optional(), packs: z.unknown().optional() }).loose()
 
@@ -175,29 +174,34 @@ export function placeholderFor(stylePack: unknown): Preset {
   // `packIdOf`, its widening: the pack in force may be one the project made, and an edited
   // preset or a custom pack paints its OWN light background, text and accent, validated
   // (`ownPacksOf`) before a value reaches the card's inline `style`.
+  // STORY 6.6 — THE PACK IN FORCE ALONE. A stored `brand` no longer paints over it: "Use your brand"
+  // seeds the accent into the pack itself (`brandPacks`), so the card and the editor wear one colour,
+  // and an edit made in the editor reaches the card. A preset is returned as the very `Preset` the
+  // tests compare by identity.
   const id = packIdOf(stylePack)
   const own = ownPacksOf(stylePack)[id]
-  const base = own === undefined ? (PRESETS[id] as Preset) : ownCard(id, own)
-  // FR-C4: the SITE's accent wins over the pack's, which is the whole visible result of "Use your
-  // brand" — the dashboard card is painted in the customer's own colour before they have chosen
-  // anything. RE-VALIDATED HERE and not trusted from the column: it is painted as an inline
-  // `style`, and the same session that may write this jsonb could write a CSS injection into it.
-  // The preset object is returned UNCHANGED when there is no accent to apply, so a card with no
-  // brand is still the very same `Preset` the tests compare by identity.
-  // READ OFF THE RAW COLUMN, NOT OFF `parsed.data`. `preset` is REQUIRED by the schema, so a pack
-  // that lost it failed the WHOLE parse and TOOK THE BRAND WITH IT — the card reverted to Paper
-  // with nothing failing, and `useBrand`'s merge (`{ ...pack, brand }` over whatever the column
-  // held) is a path that can produce exactly that pack. `brand` is `z.unknown()` in the schema and
-  // is re-validated by `isAccent` on the next line either way, so the parse was never what made it
-  // safe — it was only what could throw it away. Three review layers and the Review 2 record's own
-  // `placeholderFor({brand:{accent}})` line, which did not reproduce, all met this one
-  // (review 3, 2026-09-08). The optional chain covers a column holding null, a string or an array.
-  const brand = (stylePack as { brand?: unknown } | null | undefined)?.brand as
-    | { accent?: unknown }
-    | null
-    | undefined
-  const accent = brand?.accent
-  return isAccent(accent) ? { ...base, accent } : base
+  return own === undefined ? (PRESETS[id] as Preset) : ownCard(id, own)
+}
+
+/** STORY 6.6 — THE SERVER'S HALF OF THE SEED (FR-E5, FR-C4, DW-327): `style_pack` as `sync_project_doc` takes it once the
+ *  site's accent is in the pack in force (`packIdOf` — a preset, as this project's own record where it has one, or a
+ *  `custom-<n>`), seeded by `brandSeed`, the one rule the Style Pack list's row runs too.
+ *  - `packs`: the whole validated map (`ownPacksOf`: junk dropped) with the seeded record in, `withoutDefaults` applied —
+ *    every other own pack kept, and `sync_project_doc` keeps every other key of the column.
+ *  - `preset`: `paper` where the stored preset is not a string (3.4's floor), else null, which writes none.
+ *  Null where nothing would change: an accent that is not a colour, or a pack that already wears this seed. */
+export function brandPacks(stylePack: unknown, accent: unknown): { packs: Record<string, PackRecord>; preset: string | null } | null {
+  const colour = isAccent(accent) ? hexOf(accent) : null
+  if (colour === null) return null
+  const preset = typeof (stylePack as { preset?: unknown } | null | undefined)?.preset === 'string' ? null : DEFAULT_PRESET
+  const id = packIdOf(stylePack)
+  const own = ownPacksOf(stylePack)
+  const library = Object.fromEntries(LIBRARY_PRESETS.map((p) => [p.id, presetRecord(p)]))
+  // `packIdOf` answers a custom id only where `ownPacksOf` holds it, and a preset id always has a library record
+  const before = (own[id] ?? library[id]) as PackRecord
+  const seeded = brandSeed(before, colour)
+  if (preset === null && samePack(seeded, before)) return null
+  return { packs: withoutDefaults({ ...own, [id]: seeded }, library), preset }
 }
 
 /** An own pack as the dashboard card and D4a's chooser paint it: the record's light values, its pairing's glyph. */

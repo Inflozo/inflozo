@@ -2,7 +2,7 @@
 
 import { useRef, type KeyboardEvent, type Ref } from 'react'
 import { gridKeys } from '@/components/controls/icon-picker'
-import { IconButton } from '@/components/kit/button'
+import { Button, IconButton } from '@/components/kit/button'
 import { ReadOnly, ring } from '@/components/kit/greyed'
 import { ChevronLeft } from '@/components/kit/icons'
 import { CustomName, NewPackCell, PackCell, PackPencil } from '@/components/kit/pack-cell'
@@ -12,13 +12,14 @@ import { StepperBox } from '@/components/kit/stepper'
 import { arrowKeys } from '@/lib/menu'
 import { isCustom, PACK_EDIT_WORDS, PILL_STEPS, pillStep, type PairingChoice, type ScaleRow } from '@/lib/pack-edit'
 import { PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
+import { BRAND_COPY } from '@/lib/probe-rule'
 
 /* STORY 6.2 — THE PROJECT'S STYLE PACK; STORY 6.3 — AND CHOOSING IT; STORY 6.4 — AND EDITING IT.
 
-   THE CARD is S4a's rest panel (`S4 Editor.dc.html:110-115`): "Ag" in the pack's heading face, its name, the two families
-   ("Fraunces · Inter"), its dots and a Change button. S4a draws six dots; the sixth is the site's brand colour, which S7d
-   reads "From your site" and Story 6.6 seeds, so the card draws five — background, surface, accent, text and the engine's
-   `--plate` (S4a's fifth is Paper's band tint, a step off the computed plate).
+   THE CARD is S4a's rest panel (`S4 Editor.dc.html:110-120`): "Ag" in the pack's heading face, its name, the two families
+   ("Fraunces · Inter"), its dots and a Change button. Five dots are the pack's — background, surface, accent, text and the
+   engine's `--plate` (S4a's fifth is Paper's band tint, a step off the computed plate) — and STORY 6.6 DRAWS S4a'S SIXTH:
+   the linked site's colour, the one S7d reads "From your site", after the five. With no site colour the card keeps five.
 
    THE LIST is S7a's panel (`S7 Style Packs.dc.html:116-122`): the Current card, then every pack in a three-column grid in
    Appendix D §D.d's order, each `PackCell` with "Ag" in its own heading face, its name and four dots — background, accent,
@@ -47,6 +48,13 @@ import { PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
    then S7a's segmented rows through the Kit's `Segmented` in S7a's dense geometry, and Pill radius on the Kit's stepper.
    Each press is one edit to the pack in force's record; the editor journals it and restyles the canvas.
 
+   STORY 6.6 — "FROM YOUR SITE", THE FIRST ROW, ABOVE HEADING FONT (FR-E5's "re-runnable from the Style panel"). Built from
+   the nearest drawings exactly, no Claude Design pass (R-242, the spec's "Built from" table): S7a's row name (Pill radius's
+   11.5px medium ink-soft, 4px above its control), S4a's 16px dot with the Kit's hairline in the site's colour, and the Kit's
+   32px secondary button in S4a's Change weight, 7px after the dot (S7d's spacing of its own "From your site" row). Its Use
+   your brand is one edit like the other rows (`brandSeed` into the pack in force, through the editor's `editInForce`); it
+   sits inside `ReadOnly`, so reading along it is greyed and no tab stop (R-192). No site colour, no row.
+
    Every colour and face arrives as data (`PackChoice`, `PairingChoice`, derived on the server or by the pool-free engine):
    this module imports nothing of the library or the pool (DW-323). */
 
@@ -61,8 +69,19 @@ function Dots({ colours, size }: { colours: readonly string[]; size: number }) {
   )
 }
 
-/** S4a's card, at rest: the project's pack and a Change button that opens the list. */
-export function StylePackCard({ pack: p, onChange, changeRef }: { pack: PackChoice; onChange: () => void; changeRef: Ref<HTMLButtonElement> }) {
+/** S4a's card, at rest: the project's pack, the site's colour as the sixth dot, and a Change button that opens the list. */
+export function StylePackCard({
+  pack: p,
+  siteAccent,
+  onChange,
+  changeRef,
+}: {
+  pack: PackChoice
+  /** Story 6.6 — the linked site's stored brand accent, S4a's sixth dot; null draws the pack's five */
+  siteAccent: string | null
+  onChange: () => void
+  changeRef: Ref<HTMLButtonElement>
+}) {
   return (
     <div data-style-pack-card className="flex flex-col gap-3 rounded border border-line bg-surface p-[14px]">
       <div className="flex items-center gap-3">
@@ -75,7 +94,7 @@ export function StylePackCard({ pack: p, onChange, changeRef }: { pack: PackChoi
           <span className="text-helper-caption text-ink-soft">{`${p.heading} · ${p.body}`}</span>
         </span>
       </div>
-      <Dots size={16} colours={p.cardDots} />
+      <Dots size={16} colours={siteAccent === null ? p.cardDots : [...p.cardDots, siteAccent]} />
       <button
         ref={changeRef}
         type="button"
@@ -121,12 +140,14 @@ export function StylePackRoster({
   current: now,
   pairings,
   readOnly,
+  siteAccent,
   onChoose,
   onEdit,
   onNew,
   onRow,
   onPill,
   onPairing,
+  onBrand,
 }: {
   packs: readonly PackChoice[]
   /** the pack in force — the Current card, the ringed cell, the list's one tab stop, and the record the rows edit */
@@ -134,12 +155,16 @@ export function StylePackRoster({
   pairings: readonly PairingChoice[]
   /** R-192: a window reading along sees every cell, door and row greyed and unclickable */
   readOnly: boolean
+  /** Story 6.6 — the linked site's stored brand accent ("From your site"); null draws no row */
+  siteAccent: string | null
   onChoose: (preset: string) => void
   onEdit: EditDoor
   onNew: () => void
   onRow: (row: ScaleRow, step: string) => void
   onPill: (value: string) => void
   onPairing: (pairing: string) => void
+  /** Story 6.6 — Use your brand: the site's accent seeded into the pack in force, one edit */
+  onBrand: () => void
 }) {
   const record = now.record
   const pairing = pairings.find((p) => p.id === record.pairing)
@@ -233,6 +258,24 @@ export function StylePackRoster({
         </div>
         {/* S7a's rows block: a rule above, 7px under it, rows 6px apart */}
         <div data-style-pack-rows className="flex flex-col gap-[6px] border-t border-line pt-[7px]">
+          {/* Story 6.6 — "From your site" (R-242's "Built from"): S7a's row name 4px above, then the site's 16px dot and
+              the Kit's 32px secondary button 7px after it. The button is described by the name and the hex together, as
+              the picker's dot is named ("From your site, #…"); `relative`, so that sentence (sr-only, absolute) is placed
+              inside this row and never grows the panel's scroll */}
+          {siteAccent === null ? null : (
+            <div data-style-pack-brand className="relative flex flex-col items-start gap-1">
+              <span id="style-pack-brand-label" aria-hidden className="text-[11.5px] leading-[normal] font-medium text-ink-soft">
+                {W.fromSite}
+              </span>
+              <span id="style-pack-brand-said" className="sr-only">{`${W.fromSite}, ${siteAccent}`}</span>
+              <span className="flex items-center gap-[7px]">
+                <span aria-hidden data-site-dot className="size-4 shrink-0 rounded-full shadow-hairline-inset" style={{ background: siteAccent }} />
+                <Button id="style-pack-brand" size={32} weight="font-medium" aria-describedby="style-pack-brand-said" onClick={onBrand}>
+                  {BRAND_COPY.use}
+                </Button>
+              </span>
+            </div>
+          )}
           {pairing === undefined ? null : (
             <>
               <FontRow id="style-pack-heading-font" label={W.headingFont} family={pairing.heading} glyph={pairing.glyphFamily} popoverTarget="style-pack-pairings" onClick={(e) => openPairings(e.currentTarget)} />

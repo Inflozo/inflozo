@@ -715,3 +715,23 @@ test('DW-273: the editor\'s read asks for the linked site\'s ghost_version and h
   assert.ok(select.split(',').map((c) => c.trim()).includes('ghost_version'), `${EDITOR_READ}: the sites select no longer names ghost_version`)
   assert.match(read.replace(/\s+/g, ' '), /siteWith\([^)]*\.ghost_version\)/, `${EDITOR_READ}: ghost_version no longer reaches siteWith`)
 })
+
+test('DW-327 (Story 6.6): Use your brand writes style_pack only through sync_project_doc\'s compare-and-set — and no source updates the column whole', () => {
+  // The race itself (an editor save landing between the action's read and its write) is not staged end to end: its guard is
+  // the compare-and-set, proven by the RLS gate's stale-base case. This is the half no running test can see — that the
+  // action really goes through it, and that no whole-column write of `style_pack` is left anywhere to lose a save.
+  const code = (text: string) => text.replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+  const wholeWrite = (text: string) => /\.update\(\s*\{[^}]*\bstyle_pack\b/.test(code(text))
+  assert.deepEqual(sources().filter((p) => wholeWrite(readFileSync(p, 'utf8'))), [], 'a whole-column style_pack update loses a concurrent save (DW-327)')
+  const actions = code(readFileSync(CONNECT_ACTIONS, 'utf8'))
+  const from = actions.indexOf('export async function useBrand')
+  const body = actions.slice(from, actions.indexOf('\nexport ', from + 1))
+  assert.ok(from > 0 && body.length > 0, 'the control: useBrand was found')
+  assert.match(body, /\.rpc\('sync_project_doc', \{\s*p_project: row\.id,\s*p_docs: \{\},\s*p_base: row\.revision,\s*p_preset: seed\.preset,\s*p_packs: seed\.packs,\s*\}\)/, 'useBrand seeds through sync_project_doc against the revision it read')
+  // `brand` is no longer written: no `style_pack` the action builds carries it
+  for (const literal of body.matchAll(/style_pack: \{[^\n]*/g)) assert.doesNotMatch(literal[0], /\bbrand\b/, literal[0])
+  assert.match(body, /style_pack: \{ \.\.\.defaultStylePack\(\)/, 'the control: the insert\'s style_pack was found')
+  // THE PLANTED CONTROL: the write as `useBrand` made it before this story fires the rule
+  assert.equal(wholeWrite(".from('projects')\n      .update({ style_pack: { ...pack, brand } })\n      .eq('id', project.id)"), true, 'control: the rule does not fire on the old write')
+  assert.equal(wholeWrite(".update({ dark_enabled: next })"), false, 'control: the rule fires on another column')
+})

@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, PRESETS, defaultStylePack, packFacesCss, placeholderFor, presetIdOf, siteAccentOf } from './lib/style-pack.ts'
+import { brandSeed } from './lib/pack-edit.ts'
+import { brandPacks, DEFAULT_PRESET, PACK_FAMILY_PREFIX, PRESETS, defaultStylePack, packChoices, packFacesCss, placeholderFor, presetIdOf, siteAccentOf } from './lib/style-pack.ts'
 
 // `placeholderFor`'s fallback is the only thing between an unknown Style Pack and a card
 // painted with `undefined` colours, and E6 is the epic that first writes a preset name an
@@ -46,58 +47,41 @@ test('the schema is loose, so E6 widening the column cannot break a 1.5 card', (
   assert.equal(placeholderFor(widened), PRESETS.paper)
 })
 
-/* ───────── STORY 3.4 — FR-C4's `brand` in the column. The dashboard card wearing the customer's
-   own accent is the whole visible result of "Use your brand", and the value it paints with is one
-   the user's own session may write (schema :1202, the `grant`), so it is re-validated on the way out. */
+/* ───────── STORY 3.4 PUT FR-C4's `brand` IN THE COLUMN, AND STORY 6.6 STOPPED PAINTING IT (DW-327). The card used to wear a
+   stored `brand.accent` over the pack, while the editor wore the pack — so a branded project's card and editor disagreed,
+   and an edit in the editor never reached the card. "Use your brand" now seeds the accent INTO the pack (`brandPacks`), so
+   the card paints the pack in force alone. Every case here asserted the brand on the card until 6.6; each is inverted, and
+   each fails at the commit before it. */
 
-test('a site brand repaints the card accent, and changes nothing else about the pack', () => {
+test('a stored brand no longer paints the card: the pack in force alone, the very preset returned', () => {
   const paper = PRESETS[DEFAULT_PRESET]
-  const pack = placeholderFor({ preset: 'paper', brand: { accent: '#FF1A75', nav: [] } })
-  assert.equal(pack.accent, '#FF1A75')
-  // Only the accent moves: the surface, the text colour and the pack's own name are the preset's.
-  assert.equal(pack.surface, paper.surface)
-  assert.equal(pack.text, paper.text)
-  assert.equal(pack.name, paper.name)
-})
-
-test('a brand accent that is not a colour is ignored, never painted', () => {
-  const paper = PRESETS[DEFAULT_PRESET]
-  for (const hostile of ['red;background:url(x)', 'red', '#GGG', 'rgb(0,0,0)', '', null, 7, {}]) {
-    // Identity, not deep equality: nothing was spread, so it is the preset itself.
-    assert.equal(placeholderFor({ preset: 'paper', brand: { accent: hostile } }), paper,
-      `${JSON.stringify(hostile)} must not reach an inline style`)
+  for (const accent of ['#FF1A75', '#abc', 'red;background:url(x)', 'red', '#GGG', 'rgb(0,0,0)', '', null, 7, {}]) {
+    // identity: nothing was spread, so a project branded before 6.6 shows its pack's own accent
+    assert.equal(placeholderFor({ preset: 'paper', brand: { accent, nav: [] } }), paper, JSON.stringify(accent))
   }
+  // the control: the pack's own accent is not the brand's, so a card that still wore the brand would fail above
+  assert.notEqual(paper.accent, '#FF1A75')
+  assert.equal(placeholderFor({ preset: 'mono', brand: { accent: '#FF1A75' } }), PRESETS.mono)
 })
 
 test('a brand of any shape at all costs the pack neither its preset nor its colours', () => {
   const paper = PRESETS[DEFAULT_PRESET]
-  // A strict `brand` shape here would fail the WHOLE parse and drop the preset with it, so a junk
-  // brand would REPAINT a card rather than be ignored. It is typed `unknown` for exactly this.
+  // `brand` is typed `unknown` in the schema: a strict shape would fail the WHOLE parse and drop the preset with it
   for (const junk of [null, undefined, 'brand', 42, [], { accent: undefined }]) {
     assert.equal(placeholderFor({ preset: 'paper', brand: junk }), paper, JSON.stringify(junk))
   }
-  // And an unknown preset still falls back to Paper with the brand's accent on top of it.
-  assert.equal(placeholderFor({ preset: 'aurora', brand: { accent: '#FF1A75' } }).surface, paper.surface)
-  assert.equal(placeholderFor({ preset: 'aurora', brand: { accent: '#FF1A75' } }).accent, '#FF1A75')
+  // an unknown preset falls back to Paper, and a brand beside it is not painted
+  assert.equal(placeholderFor({ preset: 'aurora', brand: { accent: '#FF1A75' } }), paper)
 })
 
-test('a pack that lost its preset keeps its brand accent — the parse must not throw the brand away', () => {
+test('a pack that lost its preset is Paper, and its stored brand is not painted', () => {
   const paper = PRESETS[DEFAULT_PRESET]
-  // THE MIRROR OF THE TEST ABOVE, and it was false until review 3 (2026-09-08). `preset` is
-  // required, so each of these fails `safeParse` — and `brand` used to be read out of that failed
-  // parse, so the accent went with the preset and the card silently reverted to Paper. `useBrand`
-  // merges `{ ...pack, brand }` over whatever the column holds, and `style_pack` is in the caller's
-  // own UPDATE grant, so a pack with no preset is a thing this column can really carry.
   for (const packless of [
     { brand: { accent: '#FF1A75' } },
     { preset: 7, brand: { accent: '#FF1A75' } },
     { preset: null, brand: { accent: '#FF1A75' } },
   ]) {
-    const pack = placeholderFor(packless)
-    assert.equal(pack.accent, '#FF1A75', JSON.stringify(packless))
-    // The preset is still Paper's — losing the preset is expected; losing the brand was the bug.
-    assert.equal(pack.surface, paper.surface)
-    assert.equal(pack.name, paper.name)
+    assert.equal(placeholderFor(packless), paper, JSON.stringify(packless))
   }
   // A column holding something that is not an object at all still costs nothing.
   for (const junk of [null, undefined, 'paper', 42, [], ['brand']]) {
@@ -183,7 +167,7 @@ test('packIdOf is the pack in force: a preset, or a custom-<n> ownPacksOf holds 
   for (const junk of [{ preset: 'harbor' }, { preset: '__proto__' }, null, 'mono', {}, { preset: 7 }]) assert.equal(packIdOf(junk), DEFAULT_PRESET, JSON.stringify(junk))
 })
 
-test('placeholderFor paints an own pack\'s light background, text and accent — and the site\'s accent still wins (FR-C4)', async () => {
+test('placeholderFor paints an own pack\'s light background, text and accent — and a stored brand never paints over it (Story 6.6)', async () => {
   const { packChoices } = await import('./lib/style-pack.ts')
   const paper = packChoices()[0]!.record
   const made = { ...paper, name: 'Studio Warm', light: { ...paper.light, background: '#FFF4EA', accent: '#1E6BFF', text: '#2B1D12' } }
@@ -191,7 +175,8 @@ test('placeholderFor paints an own pack\'s light background, text and accent —
   assert.deepEqual([card.name, card.surface, card.text, card.accent], ['Studio Warm', '#FFF4EA', '#2B1D12', '#1E6BFF'])
   // an edited preset paints its own values too
   assert.equal(placeholderFor({ preset: 'paper', packs: { paper: made } }).surface, '#FFF4EA')
-  assert.equal(placeholderFor({ preset: 'custom-1', packs: { 'custom-1': made }, brand: { accent: '#2F4A3E' } }).accent, '#2F4A3E')
+  // the card follows the pack, so an edit made in the editor reaches it: the own pack's accent, never the brand's
+  assert.equal(placeholderFor({ preset: 'custom-1', packs: { 'custom-1': made }, brand: { accent: '#2F4A3E' } }).accent, '#1E6BFF')
   // a hostile own record never reaches the card's style: the library's Paper paints
   assert.equal(placeholderFor({ preset: 'paper', packs: { paper: { ...made, light: { ...made.light, background: 'red;}' } } } }), PRESETS[DEFAULT_PRESET])
 })
@@ -225,4 +210,60 @@ test('Story 6.4 (the review) — "From your site" is the linked site\'s stored b
   // the control's other half: anything else is no row — never a value handed to the draft
   for (const junk of [null, undefined, 'x', {}, { brand: null }, { brand: {} }, { accent: '#2f4a3e' }, { brand: { accent: 'red' } }, { brand: { accent: '#fff;}body{display:none' } }, { brand: { accent: 7 } }])
     assert.equal(siteAccentOf(junk), null, JSON.stringify(junk))
+})
+
+/* ───────── STORY 6.6 — `brandPacks`, THE SERVER'S HALF OF THE SEED (FR-E5, DW-327): what S2c's action hands
+   `sync_project_doc` — the whole validated map with the pack in force seeded, `withoutDefaults` applied, and 3.4's preset
+   floor — or null where nothing would change. */
+
+const recordOf = (id: string) => (packChoices().find((c) => c.id === id) ?? assert.fail(`no preset ${id}`)).record
+const PINK = '#FF1A75'
+
+test('brandPacks: a preset in force — its library record seeded, the only own pack, and no preset written', () => {
+  const out = brandPacks({ preset: 'paper' }, PINK)
+  assert.deepEqual(out, { packs: { paper: brandSeed(recordOf('paper'), PINK) }, preset: null })
+  // the spec's first row: Paper's light accent the site's, its on-accent Paper's ink stepped to read
+  assert.equal(out?.packs.paper?.light.accent, PINK)
+  assert.equal(out?.packs.paper?.light.onAccent, '#1F1C16')
+  // a new project's insert seeds the same way (`defaultStylePack`), and a short hex arrives expanded
+  assert.deepEqual(brandPacks(defaultStylePack(), PINK), out)
+  assert.equal(brandPacks({ preset: 'paper' }, '#f2a')?.packs.paper?.light.accent, '#FF22AA')
+  // another preset in force is the one seeded
+  assert.deepEqual(Object.keys(brandPacks({ preset: 'mono' }, PINK)?.packs ?? {}), ['mono'])
+})
+
+test('brandPacks: an edited preset and a custom pack in force keep their other values, and every other own pack survives', () => {
+  const edited = { ...recordOf('paper'), width: 'wide' as const, light: { ...recordOf('paper').light, accent: '#1E6BFF' } }
+  const tangerine = { ...recordOf('tangerine'), name: 'My Tangerine' }
+  assert.notDeepEqual(tangerine, recordOf('tangerine'), 'the control: an own record, not the library\'s')
+  const out = brandPacks({ preset: 'paper', mode: 'dark', packs: { paper: edited, tangerine } }, PINK)
+  assert.equal(out?.preset, null)
+  assert.deepEqual(out?.packs.paper, brandSeed(edited, PINK))
+  assert.equal(out?.packs.paper?.width, 'wide', 'the edited record keeps its other values')
+  assert.deepEqual(out?.packs.tangerine, tangerine, 'another own pack is carried untouched')
+  // a custom pack in force is the one seeded
+  const made = { ...recordOf('paper'), name: 'Studio Warm' }
+  const custom = brandPacks({ preset: 'custom-2', packs: { 'custom-2': made } }, PINK)
+  assert.deepEqual(custom?.packs, { 'custom-2': brandSeed(made, PINK) })
+})
+
+test('brandPacks: junk records are dropped, a column that is no object or has no string preset gets 3.4\'s floor', () => {
+  const out = brandPacks({ preset: 'paper', packs: { harbor: recordOf('paper'), 'custom-3': { ...recordOf('paper'), pairing: 'D99' }, paper: 'x' } }, PINK)
+  assert.deepEqual(Object.keys(out?.packs ?? {}), ['paper'], 'the junk is not written back')
+  for (const column of [{ mode: 'dark' }, 'paper', 42, null, [], { preset: 7 }]) {
+    const floored = brandPacks(column, PINK)
+    assert.equal(floored?.preset, DEFAULT_PRESET, JSON.stringify(column))
+    assert.deepEqual(floored?.packs, { paper: brandSeed(recordOf('paper'), PINK) }, JSON.stringify(column))
+  }
+})
+
+test('brandPacks: no accent, or a pack already wearing this seed, is null — nothing is written and no revision moves', () => {
+  for (const accent of [null, undefined, '', 'red', '#GGG', '#fff;}body{x:y', 7]) assert.equal(brandPacks({ preset: 'paper' }, accent), null, JSON.stringify(accent))
+  const once = brandPacks({ preset: 'paper' }, PINK)
+  assert.equal(brandPacks({ preset: 'paper', packs: once?.packs }, PINK), null)
+  // the control: the floor alone is a change — a seeded pack whose preset went missing is written again, with the preset
+  assert.equal(brandPacks({ packs: once?.packs }, PINK)?.preset, DEFAULT_PRESET)
+  // and a seed equal to the library's record drops the key (`withoutDefaults`), as Reset to defaults does
+  const own = recordOf('paper')
+  assert.deepEqual(brandPacks({ preset: 'paper', packs: { paper: brandSeed(own, PINK), mono: { ...recordOf('mono') } } }, PINK), null)
 })

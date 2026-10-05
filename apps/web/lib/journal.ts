@@ -20,7 +20,8 @@ import type { PackRecords } from './pack-edit.ts'
  *
  * STORY 6.3 — A STYLE PACK CHANGE IS AN EDIT TOO (FR-D9, `addendum.md` §AD1, AD-16), and it rides this journal under its
  * own key, `PACK_KEY`, which is never a template key: its entry's `before` and `after` are PRESET IDS, not docs, because
- * the editor writes `style_pack.preset` alone (`brand` is the Sites page's). The flush sends the pending preset with the
+ * the editor writes `style_pack.preset` alone (Story 6.6: the Sites page's Use your brand writes `packs` through the same
+ * `sync_project_doc`, and no `brand` any more). The flush sends the pending preset with the
  * pending docs in ONE `sync_project_doc` call, so one compare-and-set and one revision cover both. AND A TRANSACTION MAY
  * NOW HOLD MORE THAN ONE ENTRY (R-161's `txn`-grouped undo, which the record's shape anticipated): Site Remix's Both
  * re-rolls the canvas's doc and the pack as ONE edit, so undo and redo take the head's whole transaction, `DEPTH` counts

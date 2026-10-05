@@ -32,7 +32,7 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
 import { brandPath, brandRetry, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { freeName, NAME_MAX, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
-import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
+import { brandPacks, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { call, fetchWithKey, findSiteByAdminKeyId, remove, store, type CallResult } from '@/server/ghost-admin'
 import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
@@ -123,6 +123,10 @@ const BRAND = brandPath
    that reads the reason out of the URL, which is also the only shape that survives scripts off
    (review, 2026-09-08 — every failure branch here used to `return` in silence). */
 const BRAND_FAILED = (base: string) => `${base}&failed=1`
+/** Story 6.6 (DW-327): how many times Use your brand's compare-and-set meets a stale base — re-reading the project and
+ *  seeding again each time — before it says S2c's failed line. ponytail: three; a project saved four times in one press is
+ *  an editor in a loop, and the customer can press again. */
+const BRAND_TRIES = 3
 /* S2c HAS THE SAME TWO CHROMES MANAGE KEYS HAS, and its actions answer onto the same base for the
    same reason — see `keysBase` below. `connectSite`'s own landing is NOT this: the owner ruled at
    Question 7 (option 1, 2026-09-10) that the moment straight after a connect stays a full screen,
@@ -756,10 +760,11 @@ export async function useBrand(formData: FormData): Promise<void> {
     // `updated_at desc` IS THE DASHBOARD'S OWN ORDER, so "the project you most recently worked on"
     // means on this screen exactly what it means on that one. `id` breaks the tie: two projects
     // saved in the same millisecond gave the page and this action different first rows, and the
-    // press then bounced back to S2c for ever (review, 2026-09-08).
+    // press then bounced back to S2c for ever (review, 2026-09-08). `revision` is the base the
+    // seed's compare-and-set is made against (Story 6.6, DW-327).
     supabase
       .from('projects')
-      .select('id, name, slug, style_pack, linked_site_id')
+      .select('id, name, slug, style_pack, linked_site_id, revision')
       .order('updated_at', { ascending: false })
       .order('id', { ascending: false }),
     resolveEntitlement(at.userId),
@@ -790,10 +795,10 @@ export async function useBrand(formData: FormData): Promise<void> {
     brandRedirect(BRAND_FAILED(base))
   }
 
-  // ONE RULE, SHARED WITH THE CAPTION S2c PRINTED (`brandTarget`): at the cap the most recently
-  // updated project, with room the project already made for THIS site — and only when there is
-  // none is one made. The offer link never retires, so without the second half a second press
-  // inserted a second project for the same site (review, 2026-09-08).
+  // ONE RULE, SHARED WITH THE CAPTION S2c PRINTED (`brandTarget`): the project already made for
+  // THIS site on both sides of the cap, else at the cap the most recently updated one — and only
+  // with room and none for this site is one made. The offer link never retires, so without the
+  // first half a second press inserted a second project for the same site (review, 2026-09-08).
   const capped = atCap(plan, projects.length)
   const target = brandTarget(capped, projects, site.id)
   // THE CUSTOMER MAY HAVE CHOSEN (the owner's Question 3 ruling): where the brand was going onto
@@ -816,44 +821,55 @@ export async function useBrand(formData: FormData): Promise<void> {
   }
 
   /* THE BRAND ONTO A PROJECT THAT ALREADY EXISTS — lifted out of the `picked` branch by Story 3.9
-     so the insert's `23505` retry below can reach the SAME write (DW-69). It was inline, and a
-     second copy of a five-line style-pack merge with four measured corrections in its comment is
-     exactly the kind of duplication that drifts. Nothing about its behaviour changed. */
-  const paint = async (project: { id: string; style_pack: unknown }) => {
-    // ONTO THE PROJECT THE SCREEN NAMED OR THE CUSTOMER CHOSE, and NOTHING ELSE about it moves —
-    // not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. THREE ways to
-    // be here and the write is the same: AT THE CAP the project for this site, or the most
-    // recently updated one where this site has none (Questions 1 and 4), WITH ROOM the project
-    // already made for this site — the second
-    // press of an offer that never retires — or, where there was more than one to choose between,
-    // the card he picked (Question 3). `linked_site_id` is deliberately untouched in all three:
-    // FR-B5 allows a project at most one site, and a chooser that silently re-pointed a project
-    // at a different site would move a binding the customer was never asked about. The pack is
-    // merged rather than replaced, so a preset E6 has since written survives.
-    // NOT `?? defaultStylePack()`: `projects.style_pack` is in the caller's own UPDATE grant
-    // (schema `:1202`, the `grant`), so a pack that is not an object is a thing the column can
-    // hold — and spreading a string yields its characters, indexed, which is not a pack any more.
-    // `defaultStylePack()` UNDERNEATH, not merely as the fallback: an object with no `preset` is
-    // also a thing this column can hold, and `{ ...pack, brand }` over one wrote a pack that
-    // `stylePackSchema` cannot parse — which used to cost the card the accent as well as the
-    // preset (review 3, 2026-09-08; `placeholderFor` no longer loses the brand, and this keeps the
-    // stored row valid rather than only the render). A preset the pack really carries still wins,
-    // so a pack E6 has since written survives untouched — BUT ONLY IF IT IS ONE. A `preset` that is
-    // present and not a string fails `stylePackSchema` exactly as an absent one does, and `...held`
-    // put it straight back, so the floor held for the hole and not for the wrong shape while the
-    // sentence above claimed both (review 4, 2026-09-09). Every other key of a pack E6 wrote is
-    // still carried through untouched; it is the one required field that is repaired.
-    const prev = project.style_pack
-    const held = (prev && typeof prev === 'object' && !Array.isArray(prev) ? prev : {}) as Record<string, unknown>
-    const pack = { ...defaultStylePack(), ...held, ...(typeof held.preset === 'string' ? {} : { preset: DEFAULT_PRESET }) }
-    const { data, error } = await supabase
-      .from('projects')
-      .update({ style_pack: { ...pack, brand } })
-      .eq('id', project.id)
-      .select('id')
-    if (error || !data?.length) {
-      console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
-      brandRedirect(BRAND_FAILED(base))
+     so the insert's `23505` retry below can reach the SAME write (DW-69).
+
+     ONTO THE PROJECT THE SCREEN NAMED OR THE CUSTOMER CHOSE, and NOTHING ELSE about it moves —
+     not its name, not its `slug` (FR-J10 freezes that), not its `linked_site_id`. THREE ways to be
+     here and the write is the same: the project for this site, AT THE CAP the most recently
+     updated one where this site has none (Questions 1 and 4), or, where there was more than one to
+     choose between, the card he picked (Question 3). `linked_site_id` is deliberately untouched:
+     FR-B5 allows a project at most one site, and a chooser that silently re-pointed a project at a
+     different site would move a binding the customer was never asked about.
+
+     STORY 6.6 — THE ACCENT GOES INTO THE PACK IN FORCE, THROUGH `sync_project_doc`'s COMPARE-AND-SET
+     (FR-E5, DW-327). `brandPacks` seeds it with `brandSeed`, the rule the Style Pack list's row runs,
+     and answers the whole validated map and 3.4's preset floor; the function writes `packs` (and
+     `preset`) BY KEY, so every other key of the column survives, and bumps the revision, so an editor
+     open on the project meets 5.8's conflict dialog at its next save rather than overwriting the seed.
+     It used to read the whole column and write it back with no revision check, so a pack the editor
+     saved in that instant was lost. A STALE BASE re-reads this one project and seeds on top of what
+     is there now, at most `BRAND_TRIES` times, then says S2c's failed line. `brand` is no longer
+     written: once the accent is in the pack nothing reads it (`lib/style-pack.ts`'s header). A seed
+     that changes nothing — no accent, or the pack already wearing it — writes nothing. */
+  const paint = async (project: { id: string; style_pack: unknown; revision: number }) => {
+    let row = project
+    for (let tries = 1; ; tries += 1) {
+      const seed = brandPacks(row.style_pack, brand.accent)
+      if (seed === null) return
+      const { data, error } = await supabase.rpc('sync_project_doc', {
+        p_project: row.id,
+        p_docs: {},
+        p_base: row.revision,
+        p_preset: seed.preset,
+        p_packs: seed.packs,
+      })
+      const answer = data as { applied: boolean; revision: number } | null
+      if (!error && answer?.applied) return
+      // the CODE, never the message; null is "not yours, or no such project" — the function's one answer to both
+      if (error || answer === null || tries >= BRAND_TRIES) {
+        console.error('sites: use brand write failed', { code: error?.code ?? (answer === null ? 'no_such_project' : 'stale_base') })
+        brandRedirect(BRAND_FAILED(base))
+      }
+      const { data: fresh, error: freshError } = await supabase
+        .from('projects')
+        .select('id, style_pack, revision')
+        .eq('id', row.id)
+        .maybeSingle<{ id: string; style_pack: unknown; revision: number }>()
+      if (freshError || !fresh) {
+        console.error('sites: use brand re-read failed', { code: freshError?.code ?? 'no_such_project' })
+        brandRedirect(BRAND_FAILED(base))
+      }
+      row = fresh
     }
   }
 
@@ -901,12 +917,14 @@ export async function useBrand(formData: FormData): Promise<void> {
        chose (review, 2026-09-11 — the first draft painted onto that project). The decision is
        `brandRetry`, pure and under `probe-rule.test.ts`. */
     let inserted = null
+    const seeded = brandPacks(defaultStylePack(), brand.accent)
     for (const slug of slugAttempts(slugify(name), slugs)) {
       const { error } = await supabase.from('projects').insert({
         user_id: at.userId,
         name,
         slug,
-        style_pack: { ...defaultStylePack(), brand },
+        // Story 6.6: Paper, with the site's accent seeded into it — and no `brand` (a brand with no accent seeds nothing)
+        style_pack: { ...defaultStylePack(), ...(seeded === null ? {} : { packs: seeded.packs }) },
         // FR-B5's binding, and this is its first writer: it is what turns the Sites card's tally
         // from "0 projects" into "1 project".
         linked_site_id: site.id,
@@ -916,7 +934,7 @@ export async function useBrand(formData: FormData): Promise<void> {
       if (error.code !== '23505') break
       const { data: fresh } = await supabase
         .from('projects')
-        .select('id, name, slug, style_pack, linked_site_id')
+        .select('id, name, slug, style_pack, linked_site_id, revision')
         .order('updated_at', { ascending: false })
         .order('id', { ascending: false })
       const next = fresh ? brandRetry(atCap(plan, fresh.length), fresh, site.id) : 'fail'

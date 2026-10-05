@@ -65,7 +65,7 @@ import { askLock, lockSignals, lockUrl, tabSession, tabSessionKept, type LockAns
 import { edits, holdsCaret, IN_PREVIEW, KEYMAP, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { BACK_SAID, PAUSED, PAUSED_SAID, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
 import { FACES_WAIT_MS, otherPreset, PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
-import { choiceOf, isCustom, nextCustomId, ownPacksIn, PACK_EDIT_WORDS, samePack, withoutDefaults, type PackRecord, type PackRecords, type PairingChoice, type ScaleRow } from '@/lib/pack-edit'
+import { brandSeed, choiceOf, isCustom, nextCustomId, ownPacksIn, PACK_EDIT_WORDS, samePack, withoutDefaults, type PackRecord, type PackRecords, type PairingChoice, type ScaleRow } from '@/lib/pack-edit'
 import { remixFold, remixPackSaid, remixPicks, remixSaid, remixable, type RemixWhat } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
@@ -2521,6 +2521,20 @@ function EditorShell({
     const to = pairings.find((p) => p.id === id)
     if (to === undefined) return
     editInForce({ pairing: id }, PACK_EDIT_WORDS.pairing(to.heading, to.body))
+  }
+  /** STORY 6.6 — "From your site"'s Use your brand (FR-E5): the linked site's accent seeded into the pack in force by
+   *  `brandSeed`, the rule S2c's action runs, as ONE edit through `editInForce`'s door — journaled under `PACK_RECORDS_KEY`,
+   *  ⌘Z undoes it, the canvas restyles with no pill. A press that changes nothing journals nothing and says so. A local
+   *  edit with no server work, so no busy label is owed (R-98). Reading along nothing lands (`commitPacks`' guard). */
+  const packBrand = () => {
+    if (siteAccent === null || !latest.current.lock.holder) return
+    const record = packOf(latest.current.preset).record
+    const seeded = brandSeed(record, siteAccent)
+    if (samePack(seeded, record)) {
+      setSaid(PACK_EDIT_WORDS.wearsBrand(record.name))
+      return
+    }
+    editInForce({ light: seeded.light, dark: seeded.dark }, PACK_EDIT_WORDS.changed(record.name))
   }
 
   /** Story 5.7's press, and it is deliberately smaller than `flip`'s: A DEVICE CHANGE IS A STYLE CHANGE AND NOTHING
@@ -5017,6 +5031,8 @@ function EditorShell({
     packRow: useStable(packRow),
     packPill: useStable(packPill),
     packPairing: useStable(packPairing),
+    // Story 6.6 — the Style Pack list's "From your site" row
+    packBrand: useStable(packBrand),
     flip: useStable(flip),
     pickDevice: useStable(pickDevice),
     enterPreview: useStable(enterPreview),
@@ -5809,23 +5825,26 @@ function EditorShell({
             </>
           ) : packList ? (
             // Story 6.2 — S7a's list; Story 6.3 — and a cell switches (a press or Enter), greyed while reading along (R-192);
-            // Story 6.4 — the roster with the project's own packs, every Edit pack door, "+ New pack" and the rows
+            // Story 6.4 — the roster with the project's own packs, every Edit pack door, "+ New pack" and the rows;
+            // Story 6.6 — and "From your site", the linked site's colour seeded into the pack in force (FR-E5)
             <StylePackRoster
               packs={roster}
               current={choice}
               pairings={pairings}
               readOnly={!lock.holder}
+              siteAccent={siteAccent}
               onChoose={on.choosePack}
               onEdit={on.editPack}
               onNew={on.newPack}
               onRow={on.packRow}
               onPill={on.packPill}
               onPairing={on.packPairing}
+              onBrand={on.packBrand}
             />
           ) : (
             <>
               {/* Story 6.2 — S4a's rest panel: "Page", the project's Style Pack card, then the sidebar's empty state */}
-              <StylePackCard pack={choice} changeRef={packChange} onChange={() => showPacks(true)} />
+              <StylePackCard pack={choice} siteAccent={siteAccent} changeRef={packChange} onChange={() => showPacks(true)} />
               <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
             </>
           )}

@@ -5250,8 +5250,9 @@ Create, Question 1, ruled **option 1** (owner, 2026-10-05): *"Your setting wins;
 - **Declined.** Option 2: a logo in the pack, with a Logo row and a §D.0 row, which would let the canvas and the live
   site disagree.
 - Targets: ✅ this entry · ✅ Story 6.6's spec — Question 1, its Intent, Boundaries and owner's test · ✅ `epics.md` —
-  Story 6.6's card · ✅ DW-66, DW-150 · ✅ `epic-6-context.md` · at 6.6's Dev: `prd.md` FR-E5, FR-C4 and the summary at
-  :93, and `EXPERIENCE.md`'s Auto-Branding row.
+  Story 6.6's card · ✅ DW-66, DW-150 · ✅ `epic-6-context.md` · ✅ `prd.md` FR-E5, FR-C4 and the summary at :93, and
+  `EXPERIENCE.md`'s Auto-Branding row (Story 6.6's Dev, 2026-10-05) · ✅ built — `brandSeed` touches each mode's accent
+  and on-accent and nothing else, held by `pack-edit.test.ts` (Story 6.6's Dev).
 
 **R-241 — in dark mode the site's colour is lightened only where it would be hard to read.** Story 6.6's Create,
 Question 2, ruled **option 1** (owner, 2026-10-05): *"Your colour in both, lightened in dark only where it would be hard
@@ -5266,7 +5267,8 @@ to read"*.
   4.5:1 and otherwise follows the engine's on-contrast rule (`tokens.ts:261`), a routine call made at Create.
 - **Declined.** Option 2, exactly the site's colour in both modes; option 3, the dark accent left as the pack's.
 - Targets: ✅ this entry · ✅ Story 6.6's spec — Question 2 and "Ruled values" · ✅ `epics.md` — Story 6.6's card · ✅
-  `epic-6-context.md` · at 6.6's Dev: `brandSeed`, held by `pack-edit.test.ts`.
+  `epic-6-context.md` · ✅ built — `brandSeed` (`lib/pack-edit.ts`, over the runtime's own `stepToContrast`), held by
+  `pack-edit.test.ts` over every preset and the spec's colours, the ruled values exactly (Story 6.6's Dev, 2026-10-05).
 
 **R-242 — Story 6.6's two undrawn parts are designed from the drawings that exist, without a Claude Design pass: R-74's
 second stated exception.** Story 6.6's Create, Question 3, ruled **option 2** (owner, 2026-10-05): *"Can you design
@@ -5288,8 +5290,9 @@ them yourself by refering existing design and making it similar?"*
 - **Declined.** Option 1, a Claude Design pass from a prompt in the spec, with Dev waiting for the export.
 - Targets: ✅ this entry · ✅ R-74's entry · ✅ Story 6.6's spec — Question 3, its Intent, Boundaries, tasks, the "Built
   from" table and the owner's test · ✅ `epics.md` — Story 6.6's card · ✅ DW-70 · ✅ `epic-6-context.md` · ✅
-  `EXPERIENCE.md`'s Style Packs row (R-236 is no longer the one exception) · at 6.6's Dev: built, held by the `R-242 ·`
-  stop, and approved side by side.
+  `EXPERIENCE.md`'s Style Packs row (R-236 is no longer the one exception) · ✅ built, held by the keyboard gate's
+  `R-242 ·` stop, red on a 1px change (executed; Story 6.6's Dev, 2026-10-05) · ✅ approved side by side by the owner in
+  6.6's Dev session, before the Dev commit (Question 4, option 1, 2026-10-05: *"1. Approve"*).
 
 ## B · Approved decisions superseded by this session
 

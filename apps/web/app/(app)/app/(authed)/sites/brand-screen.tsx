@@ -182,11 +182,10 @@ export async function BrandScreen({
   const publicUrl = row.site_settings?.public_url || row.url
   const host = hostOf(publicUrl)
   // RE-VALIDATED HERE, ALL THREE: `brandOf` wrote them, but this reads them back out of a jsonb
-  // column and each one crosses into an attribute — `style-pack.ts` takes the same position on
-  // the accent it reads back out of `style_pack`. `hasBrand` is an OR, so a record admitted on
-  // its logo alone carried an UNCHECKED accent into two inline `style` attributes and an
-  // unchecked menu into JSX, where a non-string label throws in render rather than being dropped
-  // (review, 2026-09-08 — the file's own rule is "checked where it crosses, every time").
+  // column and each one crosses into an attribute — the accent two inline `style` attributes, the
+  // logo an `<img src>`, the menu text pills — so each is checked where it crosses, every time
+  // (review, 2026-09-08). `hasBrand` above checks all three as well since DW-71; this is the
+  // crossing's own check, not a second opinion on it.
   return (
     <BrandPanel
       site={{

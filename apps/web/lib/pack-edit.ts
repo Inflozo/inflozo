@@ -21,7 +21,7 @@
  * S7c's "Background"; "On-accent", not its "Contrast"; Appendix C's row titles and steps, not S7a's).
  */
 
-import { AA_PAIRS, contrast, isHex, isLength, packTokens, packTokensCss, SCALES, type Pack, type PackMode, type PackRole } from '@inflozo/section-runtime'
+import { AA_PAIRS, contrast, isHex, isLength, packTokens, packTokensCss, SCALES, stepToContrast, type Pack, type PackMode, type PackRole } from '@inflozo/section-runtime'
 import type { PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 
@@ -205,6 +205,30 @@ export const hardToRead = (record: Pick<PackRecord, 'light' | 'dark'>): HardPair
     }),
   )
 
+/** STORY 6.6 — THE BRAND SEED (FR-E5, R-241): the one rule that puts a site's accent into a pack. S2c's action (through
+ *  `lib/style-pack.ts`'s `brandPacks`) and the Style Pack list's "From your site" row both call it, so the two doors cannot
+ *  seed differently. `accent` is `#RRGGBB` (callers hand `hexOf` of the brand's accent); anything else returns the record
+ *  unchanged.
+ *  - Light: the accent exactly.
+ *  - Dark: the accent stepped lighter only until it reads 4.5:1 on the dark Base and then on the dark Surface — the shape
+ *    of the engine's own double step (`tokens.ts`'s `negative`) — so a colour that already reads is kept as it is.
+ *  - Each mode's on-accent: kept where it reads 4.5:1 on that mode's new accent; otherwise the better of that mode's Base
+ *    and Text, stepped to 4.5:1 — the engine's on-contrast rule (`tokens.ts`'s `--text-on-contrast`). So a seed never
+ *    raises the live warning on its own.
+ *  Every other value of the record is returned as it was: never the logo (R-240: it stays Ghost's), never the menu. */
+export function brandSeed(record: PackRecord, accent: string): PackRecord {
+  if (!isHex(accent)) return record
+  const light = accent.toUpperCase()
+  const dark = stepToContrast(stepToContrast(light, record.dark.background, 4.5), record.dark.surface, 4.5)
+  const onAccent = (m: PackMode, on: string) =>
+    contrast(m.onAccent, on) >= 4.5 ? m.onAccent : stepToContrast(contrast(m.background, on) >= contrast(m.text, on) ? m.background : m.text, on, 4.5)
+  return {
+    ...record,
+    light: { ...record.light, accent: light, onAccent: onAccent(record.light, light) },
+    dark: { ...record.dark, accent: dark, onAccent: onAccent(record.dark, dark) },
+  }
+}
+
 /** A typed colour, as the hex field takes it: six hex digits or three, with or without the hash, either case, spaces
  *  around trimmed — always answered as the hash and six uppercase digits (three digits expanded); anything else is null,
  *  and the swatch keeps its last valid colour (the spec's I/O matrix holds the cases, `pack-edit.test.ts`). */
@@ -308,7 +332,10 @@ export const PACK_EDIT_WORDS = {
   squareValue: (s: number, v: number) => `saturation ${Math.round(s)} %, brightness ${Math.round(v)} %`,
   hue: (role: string, m: string) => `${role}, ${m} — hue`,
   hueValue: (h: number) => `hue ${Math.round(h)}°`,
+  /** the picker's row and, since Story 6.6, the Style Pack list's row whose Use your brand seeds the pack in force */
   fromSite: 'From your site',
+  /** Story 6.6 — said for a Use your brand that changes nothing (the pack already wears this seed) */
+  wearsBrand: (name: string) => `${name} already wears your brand.`,
   paste: 'Paste',
   pasteFallback: 'Press ⌘V to paste into the hex field.',
   notColour: 'Not a colour — type #RRGGBB',
