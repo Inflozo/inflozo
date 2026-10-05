@@ -2,8 +2,8 @@
 title: 'Story 6.4 — Editing tokens, per mode, with contrast checked live'
 type: 'feature'
 created: '2026-10-04'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 0
 baseline_commit: '423e9173ff88662fd9e5cb1091fdfb7287dd2f51'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
@@ -1185,3 +1185,7 @@ Keys are named by their variable, never printed; each command read `tools/probe/
 - **Deployment: `dpl_4hDB8wAifeMWLw17tbcHe8qTPasZ` (https://app.inflozo.com/).**
 - **The owner's manual test** now names the full URL in every step; `owner_test` stays `pending`.
 - **No question for the owner.** Questions 1 to 4 are ruled.
+
+## Owner's test findings
+
+**Passed (owner, 2026-10-05).** The owner walked `## Owner's manual test` on the deployed site and answered "passed". No findings.
