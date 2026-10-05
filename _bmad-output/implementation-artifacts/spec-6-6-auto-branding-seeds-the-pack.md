@@ -2,10 +2,10 @@
 title: 'Story 6.6 — Auto-branding seeds the pack'
 type: 'feature'
 created: '2026-10-05'
-status: 'in-review'
+status: 'done'
 baseline_commit: '7200565bcd75a4a2b4f5cc2bb74fd6077e1a7ed9'
 review_loop_iteration: 1
-owner_test: pending
+owner_test: passed
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
 ---
 
@@ -689,3 +689,7 @@ Keys are named by their variable, never printed; each command read `tools/probe/
 - **Not touched:** T1, Resend, Dodo and the production database; Deploy only read CI and Vercel.
 
 Deployment: dpl_Ci8JsgDdoRmdhiya5CegDwiowiJg
+
+## Owner's test findings
+
+Tested by the owner on the deployed site (`app.inflozo.com`, Deploy `dpl_Ci8JsgDdoRmdhiya5CegDwiowiJg`), 2026-10-05: **passed**, no findings. Accepted as built, including R-243's ticked-project-first list.
