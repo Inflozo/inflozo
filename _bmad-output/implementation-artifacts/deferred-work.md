@@ -2281,8 +2281,8 @@ resolution: Story 6.6's Dev (2026-10-05) — not drawn, by the owner's ruling R-
   **Review (2026-10-05): `brand-many` ran on the deployed build and passed**, and the bound gained what it lacked: a
   check in CI (`6.6 · DW-70 ·` in the keyboard gate, on a harness page mounting the real panel; the bound removed turns
   it red) and a floor of two cards, because in a short window from tablet up the list shrank to a sliver (the rail now
-  scrolls as a whole past the floor; every approved state is byte-identical before and after). One question went to the
-  owner: the ticked project can sit out of sight in the scroller (Story 6.6's Question 5).
+  scrolls as a whole past the floor; every approved state is byte-identical before and after). The ticked project could sit out of sight in the
+  scroller; the owner ruled it is drawn first (R-243, Story 6.6's Question 5), built and approved the same day.
 owner: Story 6.6 (Auto-branding seeds the pack), whose criteria carry its requirement word for word with its id
   (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low

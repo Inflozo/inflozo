@@ -219,7 +219,12 @@ export function BrandPanel({
                   {BRAND_COPY.whichProject}
                 </legend>
                 <div data-brand-cards className="flex flex-col gap-[10px] tablet:-m-[2px] tablet:min-h-0 tablet:flex-1 tablet:overflow-y-auto tablet:p-[2px]">
-                  {projects.map((project) => (
+                  {/* THE TICKED CARD COMES FIRST (the owner's ruling at Story 6.6's Question 5, 2026-10-05). The list
+                      is a scroller now and the presses are always in view, so a pre-selected project further
+                      down — this site's, made long ago — was out of sight with Use your brand right there to
+                      press. Sorted here and not scrolled to: it holds with JavaScript off. The sort is stable,
+                      so the rest keep the Projects page's order; `useBrand` reads its own rows, never this. */}
+                  {[...projects].sort((a, b) => Number(b.id === targetId) - Number(a.id === targetId)).map((project) => (
                     <label
                       key={project.id}
                       /* THE HIGHLIGHT IS `:has(:checked)` AND NOTHING ELSE. A static class on the

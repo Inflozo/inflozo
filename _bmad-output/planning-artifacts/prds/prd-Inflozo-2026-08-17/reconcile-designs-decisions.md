@@ -5294,6 +5294,20 @@ them yourself by refering existing design and making it similar?"*
   `R-242 ·` stop, red on a 1px change (executed; Story 6.6's Dev, 2026-10-05) · ✅ approved side by side by the owner in
   6.6's Dev session, before the Dev commit (Question 4, option 1, 2026-10-05: *"1. Approve"*).
 
+**R-243 — in S2c's "Which project?" list, the project already ticked is the first card.** Story 6.6's Review, Question 5,
+ruled **option 1** (owner, 2026-10-05): *"1. Show the ticked project first in the list"*.
+
+- **Why it was a question.** Since Story 6.6 the cards scroll inside the rail so the buttons stay in view (DW-70). With
+  many projects the pre-selected one — this site's own, or the most recent — could sit below the visible cards while
+  Use your brand was right there to press.
+- **The rule.** The pre-selected project is drawn first; every other card keeps the Projects page's order. It is a sort
+  in the markup, so it holds with JavaScript off. Which project is pre-selected, and what the press writes, do not
+  change.
+- **Declined.** Leaving the list in the Projects page's order exactly.
+- Targets: ✅ this entry · ✅ Story 6.6's spec — Question 5 and its Review Findings · ✅ DW-70 · ✅ built in
+  `brand-panel.tsx`, held by the keyboard gate's `6.6 · DW-70 ·` (red with the sort removed; executed 2026-10-05) · ✅
+  approved before and after by the owner in the Review session (*"1. Approve"*).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

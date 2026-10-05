@@ -7074,6 +7074,20 @@ test('6.6 · DW-70 · the Which project? cards scroll inside the rail from table
       expect(m.list.bottom, `${at}: the list ends above the caption`).toBeLessThanOrEqual(m.caption.top)
     }
 
+    // THE TICKED CARD IS THE FIRST CARD (Question 5): pre-selected on the LAST row, it is drawn first and in view, and
+    // the rest keep their order. The control is the same page with the first row pre-selected: the rows' own order.
+    const order = () => page.locator('[data-brand-cards] input[type="radio"]').evaluateAll((radios) => radios.map((r) => ({ value: r.value, checked: r.checked })))
+    await page.goto(`/app/harness/brand?projects=cap${chrome === 'page' ? '&chrome=page' : ''}`)
+    const plain = await order()
+    expect(plain.map((r) => r.checked).indexOf(true), `${chrome}: the control — the first row pre-selected is the first card`).toBe(0)
+    await page.goto(`/app/harness/brand?projects=cap&target=last${chrome === 'page' ? '&chrome=page' : ''}`)
+    const sorted = await order()
+    const last = plain[plain.length - 1].value
+    expect(sorted.filter((r) => r.checked).map((r) => r.value), `${chrome}: one card is ticked, the last row's`).toEqual([last])
+    expect(sorted.map((r) => r.value), `${chrome}: the ticked card first, the rest in their own order`).toEqual([last, ...plain.slice(0, -1).map((r) => r.value)])
+    const ticked = await page.locator('[data-brand-cards] label').first().evaluate((el) => { const r = el.getBoundingClientRect(); const s = el.parentElement.getBoundingClientRect(); return r.top >= s.top - 1 && r.bottom <= s.bottom + 1 })
+    expect(ticked, `${chrome}: and it is inside the list's visible part, unscrolled`).toBe(true)
+
     // BELOW `tablet` nothing is bounded: the list is as tall as its cards and the panel's one body scrolls
     const phone = await show(390, 844, 'cap', chrome)
     expect(phone.list.overflow, `${chrome} at 390: the list is not a scroller`).toBe('visible')

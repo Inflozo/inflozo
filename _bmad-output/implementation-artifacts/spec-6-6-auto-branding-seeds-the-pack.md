@@ -297,10 +297,10 @@ beside the drawings it came from before the Dev commit (R-242).
 ### Review Findings
 
 Review of 2026-10-05, the diff since `7200565b`: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor
-and the Real-infra verifier (run in the main session on the owner's in-session go, never by a subagent). One finding is
-the owner's to decide (Question 5); every patch is applied.
+and the Real-infra verifier (run in the main session on the owner's in-session go, never by a subagent). One finding was
+the owner's to decide (Question 5, ruled the same day); every patch is applied.
 
-- [ ] [Review][Decision] At scale the project already ticked can be out of sight inside the new scroller — the buttons are now always in view, so Use your brand can be pressed without seeing which card it applies to (the deployed shot at Pro's cap shows no ticked card) [apps/web/app/(app)/app/(authed)/sites/brand-panel.tsx — Question 5]
+- [x] [Review][Decision] At scale the project already ticked can be out of sight inside the new scroller — the buttons are now always in view, so Use your brand can be pressed without seeing which card it applies to (the deployed shot at Pro's cap shows no ticked card) [apps/web/app/(app)/app/(authed)/sites/brand-panel.tsx — Question 5, ruled option 1 (R-243): the ticked card is drawn first, by a stable sort that holds with JavaScript off; `6.6 · DW-70 ·` holds it, red with the sort removed]
 - [x] [Review][Patch] The stale-base loop — re-read, seed again, give up — lived in `useBrand`'s closure where no check could run it: the reason for the rewrite (DW-327) shipped with a regex over its source as its only evidence. Lifted into the pure `brandWrite` and tested: a stale answer re-reads and seeds over the pack saved meanwhile against the new revision; always stale gives up after `BRAND_TRIES` writes; an error or a vanished project fails at once. Control: without `row = fresh` both cases fail [apps/web/lib/style-pack.ts, apps/web/app/(app)/app/(authed)/sites/actions.ts, apps/web/style-pack.test.ts]
 - [x] [Review][Patch] The chooser's card list had no floor: in a short window from tablet up (844 × 390, a phone on its side or a zoomed laptop) it shrank to a 4px sliver — buttons, and no projects to point them at. The chooser now stops shrinking at two cards and the rail scrolls as a whole past that; the form is `tablet:contents` so the floor reaches the rail. At 1440 × 900, 834 × 1112 and 390 × 844, with three projects and at the cap, in both chromes, every before/after shot is byte-identical — the states the owner approved (R-242) did not move [apps/web/app/(app)/app/(authed)/sites/brand-panel.tsx]
 - [x] [Review][Patch] DW-70's bound had no check in CI — Dev measured on a scratch page that was never committed, so removing the form's bound turned nothing red before deploy. A harness page mounts the real `BrandPanel` with stand-in rows and `6.6 · DW-70 ·` in the keyboard gate holds the bound, the floor and the one-page scroll below tablet, in both chromes. Controls: the bound removed and the floor removed each turn it red [apps/web/app/(app)/app/harness/brand/page.tsx, tools/keyboard/journey.spec.mjs, apps/web/app-routes.test.ts, apps/web/busy.test.ts]
@@ -400,7 +400,7 @@ Re-check connection.
 
 ## Questions for the owner
 
-Questions 1 to 4 are ruled. **Question 5 is open** (Review, 2026-10-05).
+Every question is ruled; nothing is open.
 
 ### Question 1 — Should "Use your brand" copy your logo into Inflozo, or keep reading it from Ghost?
 
@@ -511,7 +511,9 @@ brand. That is the right project, but you could not tell.
 2. **Leave it as it is.** The list keeps the Projects page's order exactly. With many projects you scroll to find the
    ticked one.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-05).** *"1. Show the ticked project first in the list"*. Recorded as **R-243**. Built
+in the Review session and shown to him before and after at 1440, 834 and 390 with the ticked project last of 25; he
+answered *"1. Approve"* (R-242's side by side), and the Review commit followed.
 
 ## Owner's manual test
 
@@ -664,3 +666,7 @@ READY, built from that commit, serving `app.inflozo.com`.
   `6.6 · DW-70 ·` (controls: the bound removed, and the floor removed, each turn it red).
 - **Not run:** the full ghost-admin sequence, which needs a Ghost 5 server (DW-326, R-238). Vercel was read, not
   written; Resend and Dodo are not touched by this story.
+- **Question 5's fix (R-243), same session:** `6.6 · DW-70 ·` now pre-selects the last stand-in row and reads the cards:
+  that row first, ticked and in view, the rest in their own order. Control: with the sort removed it is red ("the ticked
+  card first, the rest in their own order"). `pnpm check` and `pnpm keyboard`, whole, were run again on the final tree
+  before the commit. It reaches production with this push and has not been walked there: the owner's test sees it.

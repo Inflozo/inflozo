@@ -35,10 +35,10 @@ const standInProjects = (count: number): BrandProject[] =>
 export default async function HarnessBrand({
   searchParams,
 }: {
-  searchParams: Promise<{ projects?: string | string[]; chrome?: string | string[] }>
+  searchParams: Promise<{ projects?: string | string[]; chrome?: string | string[]; target?: string | string[] }>
 }) {
   if (!HARNESS) notFound()
-  const { projects: asked, chrome } = await searchParams
+  const { projects: asked, chrome, target } = await searchParams
   const cap = PLANS.pro.projects
   // more than one, or there is no chooser to measure (`choosing` in `brand-screen.tsx`); never past the cap
   const count = asked === 'cap' ? cap : Math.min(cap, Math.max(2, Number(asked) || 2))
@@ -58,7 +58,8 @@ export default async function HarnessBrand({
       caption={count >= cap ? BRAND_COPY.atLimitChoose : BRAND_COPY.alreadyOn(projects[0].name)}
       failed={false}
       projects={projects}
-      targetId={projects[0].id}
+      // `?target=last`: the pre-selected project is the LAST row, the one a scroller would hide (Question 5)
+      targetId={(target === 'last' ? projects[projects.length - 1] : projects[0]).id}
       choosing
       popup={chrome !== 'page'}
       back="/app/harness/brand"
