@@ -533,17 +533,17 @@ Do this on the real site after Deploy confirms the build, on a laptop at full wi
 |---|-----|--------|------------|------------|---------------------|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Type the dummy email, press the button, then open the link that arrives in your inbox. | `umngkmr+brand66@gmail.com` | The welcome screen with three doors. |
 | 2 | `https://app.inflozo.com/start` | First Run, then Connect | Click **Connect your Ghost site**. Follow the steps to the keys, paste the three details, and connect. | `https://ghost6.inflozo.com`, then ghost6's Admin API key and Content API key | "Nice site. Want to keep the vibe?" On the left: Ghost6, ghost6.inflozo.com, a blue-violet Accent color swatch with `#3832E5` beside it, and Home and About under Navigation. On the right: "We’ll make a project for this site and put your brand on it." |
-| 3 | the address step 2 landed on | Use your brand | Click **Use your brand**. | — | The button says "Taking your brand…", then you land on Sites. |
+| 3 | the page step 2 ended on, under `https://app.inflozo.com` | Use your brand | Click **Use your brand**. | — | The button says "Taking your brand…", then you land on Sites. |
 | 4 | `https://app.inflozo.com/` | Projects | Look at the new **Ghost6** card. | — | The little drawing of the page has a blue-violet button. |
-| 5 | the address the Ghost6 card opens | Editor | Open Ghost6 and wait for your Ghost6 posts. Press **⌘K**, choose **Newsletter**, then **Inline Row**, and place it. | — | The page shows Ghost6's own posts. The newsletter section's **Subscribe** button is blue-violet with white words, and the previews in ⌘K's list were blue-violet too. |
-| 6 | same | Editor, Page panel | Click the grey area beside the page. | — | The Style Pack card says Paper. Its dots include the blue-violet, and a sixth dot at the end is blue-violet: your site's colour. |
-| 7 | same | Style Pack list | Click **Change**. | — | Paper is current, and its dots include the blue-violet. Under the list is a new row, **From your site**, with a blue-violet dot and a **Use your brand** button, looking like the rows around it, as you approved it side by side. Heading font and the other rows follow as before. |
-| 8 | same | Edit pack | Click Paper's pencil. | — | Light **Accent** is blue-violet (`#3832E5`) and Light **On-accent** is near-white. Dark **Accent** is a lighter blue (`#637AFF`), because your blue-violet itself would be hard to read on the dark page, and Dark **On-accent** is near-black. There is no yellow note. Click **Cancel**. |
-| 9 | same | Edit pack | Click Paper's pencil, click the Light **Accent** colour, type the dummy colour in the hex field and press Enter. Then click **Save pack**. | `#1A7F37` | The Subscribe button turns green. |
-| 10 | same | Style Pack list | Click **Use your brand**. Then press **⌘Z**, then **⇧⌘Z**. | — | The button turns blue-violet. ⌘Z makes it green again, and ⇧⌘Z makes it blue-violet again. |
-| 11 | same | Editor | Press the small **sun** at the right-hand end of the top bar, then the moon. | — | On the dark page the Subscribe button is the lighter blue, with dark words, and easy to read. The moon brings back the light page. |
-| 12 | same, in a second window | Editor, reading along | Open the same project in a second window. Click the grey area, then **Change**. | — | The **From your site** row is greyed with the other rows, and clicking Use your brand does nothing. Close this window. |
-| 13 | same, the first window | Edit pack, then save | Click Paper's pencil, set the Light **Accent** to the dummy colour and click **Save pack**. Then click the grey area, press **⌘S** and wait for the green tick. | `#1A7F37` | The button is green and the change is saved. |
+| 5 | `https://app.inflozo.com/projects/<id>`, the address the Ghost6 card opens | Editor | Open Ghost6 and wait for your Ghost6 posts. Press **⌘K**, choose **Newsletter**, then **Inline Row**, and place it. | — | The page shows Ghost6's own posts. The newsletter section's **Subscribe** button is blue-violet with white words, and the previews in ⌘K's list were blue-violet too. |
+| 6 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5 | Editor, Page panel | Click the grey area beside the page. | — | The Style Pack card says Paper. Its dots include the blue-violet, and a sixth dot at the end is blue-violet: your site's colour. |
+| 7 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5 | Style Pack list | Click **Change**. | — | Paper is current, and its dots include the blue-violet. Under the list is a new row, **From your site**, with a blue-violet dot and a **Use your brand** button, looking like the rows around it, as you approved it side by side. Heading font and the other rows follow as before. |
+| 8 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5 | Edit pack | Click Paper's pencil. | — | Light **Accent** is blue-violet (`#3832E5`) and Light **On-accent** is near-white. Dark **Accent** is a lighter blue (`#637AFF`), because your blue-violet itself would be hard to read on the dark page, and Dark **On-accent** is near-black. There is no yellow note. Click **Cancel**. |
+| 9 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5 | Edit pack | Click Paper's pencil, click the Light **Accent** colour, type the dummy colour in the hex field and press Enter. Then click **Save pack**. | `#1A7F37` | The Subscribe button turns green. |
+| 10 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5 | Style Pack list | Click **Use your brand**. Then press **⌘Z**, then **⇧⌘Z**. | — | The button turns blue-violet. ⌘Z makes it green again, and ⇧⌘Z makes it blue-violet again. |
+| 11 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5 | Editor | Press the small **sun** at the right-hand end of the top bar, then the moon. | — | On the dark page the Subscribe button is the lighter blue, with dark words, and easy to read. The moon brings back the light page. |
+| 12 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5, in a second window | Editor, reading along | Open the same project in a second window. Click the grey area, then **Change**. | — | The **From your site** row is greyed with the other rows, and clicking Use your brand does nothing. Close this window. |
+| 13 | `https://app.inflozo.com/projects/<id>`, the page the Ghost6 card opened in step 5, the first window | Edit pack, then save | Click Paper's pencil, set the Light **Accent** to the dummy colour and click **Save pack**. Then click the grey area, press **⌘S** and wait for the green tick. | `#1A7F37` | The button is green and the change is saved. |
 | 14 | `https://app.inflozo.com/sites` | Sites | On the Ghost6 card, press **⋯**, then **Use this site’s brand**. In the window, press **Use your brand**. | — | The window says "You’re at your project limit. We’ll put your brand on “Ghost6”." After the press you are back on Sites. |
 | 15 | `https://app.inflozo.com/`, then the Ghost6 card | Projects, then Editor | Look at the Ghost6 card, then open the project. | — | The card's button is blue-violet again. In the editor the Subscribe button is blue-violet: the brand went into the pack again, this time from the Sites page. |
 
@@ -670,3 +670,22 @@ READY, built from that commit, serving `app.inflozo.com`.
   that row first, ticked and in view, the rest in their own order. Control: with the sort removed it is red ("the ticked
   card first, the rest in their own order"). `pnpm check` and `pnpm keyboard`, whole, were run again on the final tree
   before the commit. It reaches production with this push and has not been walked there: the owner's test sees it.
+
+### Results — Deploy (2026-10-05)
+
+Keys are named by their variable, never printed; each command read `tools/probe/.env` into its own environment.
+
+- **Schema:** none. The story adds no migration (Review's R-99 line), so there was nothing to apply and no `RLS-TEST.sql`
+  change; CI's `rls` gate on HEAD is green.
+- **CI, for HEAD `d7429e1f`** (`GITHUB_TOKEN`, read-only): `ci.yml` run 37336165273 `check`, `rls` and `deploy` all
+  `success`; `matrix.yml` run 37336165080 `success`. HEAD is Review's R-243 patch over the Dev head, so the code
+  deployed is the code the Review's walks and the final local `pnpm check` and `pnpm keyboard` ran on.
+- **Deployment:** `dpl_Ci8JsgDdoRmdhiya5CegDwiowiJg` READY, target production, built from `d7429e1f`
+  (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `GET /v6/deployments`), serving `app.inflozo.com`
+  (`inflozo-2mps7frt7-umangkagathara.vercel.app`).
+- **Live:** `https://app.inflozo.com/sign-in` answered 200 and `https://app.inflozo.com/` answered 307 (to sign-in, signed out).
+- **Owner's manual test:** every step now names its production URL (the project's own address is per-account, so it is
+  given as `https://app.inflozo.com/projects/<id>`). `owner_test` stays `pending`.
+- **Not touched:** T1, Resend, Dodo and the production database; Deploy only read CI and Vercel.
+
+Deployment: dpl_Ci8JsgDdoRmdhiya5CegDwiowiJg
