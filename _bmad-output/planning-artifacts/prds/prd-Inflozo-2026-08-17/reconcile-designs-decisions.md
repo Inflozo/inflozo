@@ -1150,8 +1150,10 @@ name the frame its surface is built from.
 - Targets: `CLAUDE.md` (the design-export section states the ruling) · `build-sequence.md` steps 5,
   5b and 6 · `STEP-5-PROMPT.txt` · at step 6, every story with a surface carries a "matches the
   frame" acceptance criterion (owed when step 6 runs).
-- **One stated exception: R-236** (owner, 2026-10-04, Story 6.4's Create). Story 6.4's undrawn parts are built from
-  the nearest existing drawings, exactly, without a Claude Design pass. The rule stands for every other surface.
+- **Two stated exceptions.** **R-236** (owner, 2026-10-04, Story 6.4's Create): Story 6.4's undrawn parts are built from
+  the nearest existing drawings, exactly, without a Claude Design pass. **R-242** (owner, 2026-10-05, Story 6.6's
+  Create): the same for Story 6.6's two undrawn parts, S2c's chooser at scale and the Style Pack list's "From your site"
+  row. The rule stands for every other surface.
 
 **R-75 — the owner sees the product's own UI as static pages on his machine before it is built
 dynamically.** Clarified by the owner in the same session, and the clarification is the ruling:
@@ -5233,6 +5235,61 @@ Create, Question 1, ruled **option 1** (owner, 2026-10-05): *"Your setting wins;
   `tokens.ts` — and proved in Chromium by the keyboard gate's truth table, red with option 3's selectors (Story 6.5's
   Dev) · ✅ recorded on T1 — MEASUREMENTS §69, `tools/probe/record-mode-resolution.py`, on the owner's in-session go,
   every row as ruled behind its controls (DW-318, Story 6.5's Dev, 2026-10-05).
+
+**R-240 — "Use your brand" copies no logo; the logo stays Ghost's.** Story 6.6's Create, Question 1, ruled **option 1**
+(owner, 2026-10-05): *"Keep reading it from Ghost"*.
+
+- **Why it was a question.** FR-E5 and FR-C4 say auto-branding seeds the site's logo into the active Style Pack. But a
+  pack is colours, fonts and steps; Appendix D §D.0 has no logo row. The theme prints Ghost's own `@site.logo`, and the
+  export draws the logo as Ghost's and read-only: D6a and B17 show it "from Ghost · Change this in Ghost"
+  (`D6 Theme Settings Completed.dc.html:86-100`, `B Missing Surfaces.dc.html:1662-1687`). Two approved sources
+  disagreed (standing rule 6).
+- **The rule.** Nothing about the logo is copied or stored. The canvas shows the site's own logo wherever it shows the
+  site's content (a project made by Use your brand does from the start, Story 5.18), and the live theme always prints
+  Ghost's. A header's own authored logo (A1's `logo` and `logoLight`) stays Epic 9's (DW-150).
+- **Declined.** Option 2: a logo in the pack, with a Logo row and a §D.0 row, which would let the canvas and the live
+  site disagree.
+- Targets: ✅ this entry · ✅ Story 6.6's spec — Question 1, its Intent, Boundaries and owner's test · ✅ `epics.md` —
+  Story 6.6's card · ✅ DW-66, DW-150 · ✅ `epic-6-context.md` · at 6.6's Dev: `prd.md` FR-E5, FR-C4 and the summary at
+  :93, and `EXPERIENCE.md`'s Auto-Branding row.
+
+**R-241 — in dark mode the site's colour is lightened only where it would be hard to read.** Story 6.6's Create,
+Question 2, ruled **option 1** (owner, 2026-10-05): *"Your colour in both, lightened in dark only where it would be hard
+to read"*.
+
+- **Why it was a question.** Every preset hand-pairs a dark accent. When Use your brand puts the site's one accent into
+  a pack, the requirement does not say what the dark accent becomes.
+- **The rule.** The light accent is exactly the site's. The dark accent is the site's, stepped lighter in OKLCH
+  lightness (hue kept) until it reads 4.5:1 on the pack's dark Base and dark Surface: `stepToContrast` twice, the shape
+  of the engine's error red (`tokens.ts:232`). A colour that already reads is unchanged: Ghost's default pink
+  `#FF1A75` stays pink, and a navy `#1E3A8A` becomes `#5E82D9` in dark. Each mode's on-accent is kept where it reads
+  4.5:1 and otherwise follows the engine's on-contrast rule (`tokens.ts:261`), a routine call made at Create.
+- **Declined.** Option 2, exactly the site's colour in both modes; option 3, the dark accent left as the pack's.
+- Targets: ✅ this entry · ✅ Story 6.6's spec — Question 2 and "Ruled values" · ✅ `epics.md` — Story 6.6's card · ✅
+  `epic-6-context.md` · at 6.6's Dev: `brandSeed`, held by `pack-edit.test.ts`.
+
+**R-242 — Story 6.6's two undrawn parts are designed from the drawings that exist, without a Claude Design pass: R-74's
+second stated exception.** Story 6.6's Create, Question 3, ruled **option 2** (owner, 2026-10-05): *"Can you design
+them yourself by refering existing design and making it similar?"*
+
+- **Why it was a question.** R-74 says a surface with no frame is drawn in the Claude Design project first, and Story
+  6.6's card says S2c's chooser is drawn before it is built on (DW-70). Two parts have no drawing: S2c's "Which
+  project?" cards at scale (Pro allows 25 projects, and the button then falls below them) and the Style Pack list's new
+  "From your site" row.
+- **The rule.** For Story 6.6 alone, neither is drawn first. Each is built from the drawings nearest it, made to match
+  them, with no new component, colour or size:
+  - the row from S7a's row names, S4a's and S7d's 16px dots and the Editor Sidebar Kit's 32px secondary button, first
+    in S7a's rows block;
+  - the chooser from S2c as built and the popup's columns that scroll apart (S11e's idiom): from tablet up, the cards
+    fill the rail's free height and scroll there, so the caption and both buttons stay in view.
+
+  The values are held by a computed-style stop against the spec's "Built from" table. The owner approves every built
+  state side by side with those drawings in the Dev session, before the Dev commit. R-74 stands for every other surface.
+- **Declined.** Option 1, a Claude Design pass from a prompt in the spec, with Dev waiting for the export.
+- Targets: ✅ this entry · ✅ R-74's entry · ✅ Story 6.6's spec — Question 3, its Intent, Boundaries, tasks, the "Built
+  from" table and the owner's test · ✅ `epics.md` — Story 6.6's card · ✅ DW-70 · ✅ `epic-6-context.md` · ✅
+  `EXPERIENCE.md`'s Style Packs row (R-236 is no longer the one exception) · at 6.6's Dev: built, held by the `R-242 ·`
+  stop, and approved side by side.
 
 ## B · Approved decisions superseded by this session
 

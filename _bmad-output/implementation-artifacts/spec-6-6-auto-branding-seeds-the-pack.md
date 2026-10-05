@@ -13,9 +13,9 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.m
 After this story, pressing **Use your brand** puts your site's colour into your project's Style Pack itself, so the
 editor's page, its previews and your Projects card all wear it, and it stays an ordinary colour you can change in Edit
 pack like any other. You can do it again whenever you like from the Style Pack list, where a new "From your site" row
-shows your site's colour beside a **Use your brand** button, and one ⌘Z undoes it. As planned (your Questions 1 and 2
-decide), your logo keeps coming from Ghost, as your live site already shows it, and in dark mode your colour is
-lightened only where it would be hard to read.
+shows your site's colour beside a **Use your brand** button, and one ⌘Z undoes it. As you ruled, your logo keeps coming
+from Ghost, as your live site already shows it, and in dark mode your colour is lightened only where it would be hard
+to read.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -28,11 +28,13 @@ reads the whole column and writes it back with no revision check, so a pack the 
 (DW-327). S2c's project chooser was never drawn and has no bound, so with 25 projects its button falls below the cards
 (DW-70). Nothing in the Style panel can run the brand again.
 
-**Approach:** One pure rule, `brandSeed`, puts the site's accent into a pack record — light exactly, dark per Question
-2, each mode with a readable on-accent — and both doors call it. S2c's action writes the seeded pack in force through
-`sync_project_doc`'s compare-and-set and stops writing `brand`; the Style Pack list gains a "From your site" row whose
-Use your brand is one ordinary edit. The dashboard card paints the pack alone, the logo stays Ghost's (Question 1), and
-the two undrawn parts are drawn first (Question 3).
+**Approach:** One pure rule, `brandSeed`, puts the site's accent into a pack record — light exactly, dark lightened
+only where it would be hard to read (R-241), each mode with a readable on-accent — and both doors call it. S2c's action
+writes the seeded pack in force through `sync_project_doc`'s compare-and-set and stops writing `brand`; the Style Pack
+list gains a "From your site" row whose Use your brand is one ordinary edit. The dashboard card paints the pack alone,
+and the logo stays Ghost's (R-240). The two parts no frame draws are built from the nearest drawings and approved side
+by side, with no Claude Design pass (R-242). *(The owner's three rulings of 2026-10-05 are his renegotiation of this
+block.)*
 
 ## Boundaries & Constraints
 
@@ -60,32 +62,34 @@ the two undrawn parts are drawn first (Question 3).
 - **One word list** (R-170): the button is `BRAND_COPY.use` ("Use your brand"), the row's label
   `PACK_EDIT_WORDS.fromSite` ("From your site"), the landed edit `PACK_EDIT_WORDS.changed` ("Changed Paper."). One new
   sentence, "{name} already wears your brand.", for a press that changes nothing.
-- **Frames** (R-74). S2c (`S2 Onboarding.dc.html`) as built under the owner's two-column ruling of 2026-09-10, and its
-  chooser at scale from the new S2c·2 drawing. S7c (`S7 Style Packs.dc.html`) for the seeded swatches. S4a
-  (`S4 Editor.dc.html`) for the sixth dot. The "From your site" row from the new S7a·2 drawing (Question 3). Node 24;
-  counts derived; `pnpm keyboard` run whole before the Dev commit.
+- **Frames** (R-74). S2c (`S2 Onboarding.dc.html`) as built under the owner's two-column ruling of 2026-09-10. S7c
+  (`S7 Style Packs.dc.html`) for the seeded swatches. S4a (`S4 Editor.dc.html`) for the sixth dot. **The chooser at
+  scale and the "From your site" row are built from the nearest drawings, exactly** (Design Notes' "Built from" table):
+  no new component, colour or size, held by a computed-style stop, and every built state approved by the owner side by
+  side before the Dev commit (R-242, R-74's second stated exception). Node 24; counts derived; `pnpm keyboard` run whole
+  before the Dev commit.
 
 **Ask First:**
-- Questions 1–3 are ruled before Dev opens. A ruling other than the recommended option is written into this spec
-  (Design Notes' "Ruled values"; Question 1's option 2 adds tasks) before any code.
-- Under Question 3's option 1, the chooser's bound and the row are built from the landed drawings. Ask about any value
-  they do not give; never invent it.
+- The owner's side-by-side approval of every built state of the row and the chooser, in the Dev session, before the Dev
+  commit (R-242).
+- A part the "Built from" table does not cover, or a value neither its drawing nor the Kit gives: ask, never invent.
+  R-242 waives the drawing step, not R-74's sources.
 - The Review's harness runs against production Supabase and T1 from the main session. If the permission classifier
   refuses a call, ask the owner in the session (R-83); never hand it to a subagent.
 
 **Never:**
 - No migration and no Schema phase: `sync_project_doc` already writes `packs` by key under a compare-and-set. No write
   to Ghost: connecting T1 only reads it. Nothing on T3 (R-238).
-- Not seeded: the logo (Question 1's recommended option) and the menu (it waits for the header epic, DW-66). Not done:
-  any change to `linked_site_id` from the chooser (3.4's ruling), an automatic seed when the editor opens, and any
-  change to the token engine's output or to a design.
-- No edit to the design export beyond landing the owner's two new drawings (R-74). No hand edit of a generated file.
+- Not seeded: the logo (R-240: it stays Ghost's) and the menu (it waits for the header epic, DW-66). Not done: any
+  change to `linked_site_id` from the chooser (3.4's ruling), an automatic seed when the editor opens, and any change to
+  the token engine's output or to a design.
+- No edit to the design export; this story adds nothing to it (R-74, R-242). No hand edit of a generated file.
 
 ## I/O & Edge-Case Matrix
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| S2c makes the project | a Free account with no project; T1's accent `#FF1A75`; Use your brand | one project for the site, linked; `style_pack` = `{ preset: 'paper', packs: { paper } }` with Paper's light accent `#FF1A75` and light on-accent `#1F1C16`; dark `#FF1A75` / `#171511` (Question 2's option 1; it already reads on Paper's dark page). No `brand` key | a failed insert: S2c's failed line, as today |
+| S2c makes the project | a Free account with no project; T1's accent `#FF1A75`; Use your brand | one project for the site, linked; `style_pack` = `{ preset: 'paper', packs: { paper } }` with Paper's light accent `#FF1A75` and light on-accent `#1F1C16`; dark `#FF1A75` / `#171511` (R-241; it already reads on Paper's dark page). No `brand` key | a failed insert: S2c's failed line, as today |
 | S2c onto an existing project | this site's project, or the card picked; revision r | the pack in force re-seeded; every other own pack and every other key kept; revision r+1 | — |
 | DW-327 | the editor saves a pack between the action's read and its write | the compare-and-set refuses the stale write; the action re-reads and seeds on top of the saved packs (at most three tries) | still refused, or no row: S2c's failed line, nothing written |
 | An open editor | the project is open in another tab when the brand lands | that tab's next save meets 5.8's conflict dialog ("This project was changed somewhere else"); none of its work is overwritten | — |
@@ -94,14 +98,14 @@ the two undrawn parts are drawn first (Question 3).
 | A brand with no accent | a logo or a menu only | nothing to seed: a new project is still made and linked; an existing one is untouched | — |
 | A short hex | the site's accent is `#f2a` | seeded as `#FF22AA` | — |
 | A seed that changes nothing | the pack already wears exactly this seed | no write and no revision bump | — |
-| A dark brand colour | `#1E3A8A` on Paper | light accent `#1E3A8A` with on-accent `#FBF9F5`; dark accent `#5E82D9`, on-accent `#171511` (option 1) | — |
+| A dark brand colour | `#1E3A8A` on Paper | light accent `#1E3A8A` with on-accent `#FBF9F5`; dark accent `#5E82D9`, on-accent `#171511` (R-241) | — |
 | The row | the linked site's accent `#FF1A75`; Paper's light accent edited to blue | "From your site", the pink dot and Use your brand; a press is one edit, the canvas restyles with no pill, "Changed Paper."; ⌘Z undoes it | — |
 | Already wearing it | a press that would change nothing | nothing journaled; "Paper already wears your brand." | — |
 | No site colour | no linked site, or its brand has no accent | no row; the card draws five dots | — |
 | Reading along | another window holds the lock | the row greyed and unclickable, no tab stop (R-192) | `commit`'s guard |
 | The dashboard card | a seeded project whose accent the editor then changed to blue | the card is blue; nothing paints a stored brand over the pack | — |
 | A project branded before this story | `style_pack.brand` stored, no seeded pack | its card and its editor both show the pack's own accent; Use your brand seeds it | — |
-| The chooser at scale | 25 projects | the cards scroll inside the drawn bound; the caption and both buttons stay in view | — |
+| The chooser at scale | 25 projects | from tablet up, the cards fill the rail's free height and scroll there; the caption and both buttons stay in view. Below tablet the window scrolls as one page, as today (R-242) | — |
 
 </frozen-after-approval>
 
@@ -129,8 +133,9 @@ the two undrawn parts are drawn first (Question 3).
   - Stale comments: :793-796 and :834 ("schema :1202").
 - `apps/web/lib/probe-rule.ts` -- `Brand` :170-174, `isAccent` :183-186, `hasBrand` :249-264, `BRAND_COPY` :280-364
   (`use` :288, `failed` :363), `brandTarget` :408-414. Pure, so the editor may import its words.
-- `brand-panel.tsx` -- the rail `<aside>` :167 (`tablet:overflow-y-auto`); the chooser :180-233 (the cards :188-231,
-  with no bound); the presses at `mt-auto` :243. `brand-screen.tsx` -- its projects read :103-119; `choosing` :161; the
+- `brand-panel.tsx` -- the two columns scroll apart from tablet up, so a rail's buttons stay in view (:161-164, S11e's
+  idiom); the rail `<aside>` :167 (`tablet:overflow-y-auto`); the chooser :180-233 (the cards :188-231, with no bound);
+  the presses at `mt-auto` :243. `brand-screen.tsx` -- its projects read :103-119; `choosing` :161; the
   stale "OR" comment :184-189. `../placeholder.tsx:57-74` (`ProjectThumb`) paints through `placeholderFor`.
 - `supabase/migrations/20261004200000_sync_style_pack_packs.sql:33-77` -- `sync_project_doc(p_project, p_docs, p_base,
   p_preset, p_packs)`:
@@ -152,7 +157,10 @@ the two undrawn parts are drawn first (Question 3).
 - `style-pack.tsx` -- the header's note leaving the sixth dot to 6.6 :16-21; `Dots` :52-61; `StylePackCard` :65-91
   (five `cardDots`); `StylePackRoster` :119-298, with `ReadOnly` :167 and the rows block :235-268 (font rows first,
   :236-241).
-- `pack-editor.tsx` -- "From your site" in the picker :414-426 (it sets one role only); the footer :337-356.
+- `pack-editor.tsx` -- "From your site" in the picker :414-426 (a 10px ink-soft label, 16px dots, 7px apart; it sets
+  one role only); the footer :337-356.
+- `apps/web/components/kit/button.tsx:33-41` -- the Editor Sidebar Kit's 32px secondary button (`h-8 px-[13px]
+  text-control-label rounded-thumb`, hairline, `hover:bg-paper`), the row's button.
 - `apps/web/lib/journal.ts:52` -- `PACK_RECORDS_KEY` (the whole map on either side).
 
 **The checks:**
@@ -186,8 +194,9 @@ the two undrawn parts are drawn first (Question 3).
 
 ## Tasks & Acceptance
 
-**Dev opens once Questions 1–3 are ruled.** Under Question 3's option 1, the two UI tasks (the row, the chooser's
-bound) also wait for the drawings to land; everything else may go first, in the same Dev phase.
+**All three questions are ruled (R-240, R-241, R-242), so Dev may open.** Nothing is drawn first: the row and the
+chooser's bound are built from the "Built from" table, and the orchestrating session shows the owner every built state
+beside the drawings it came from before the Dev commit (R-242).
 
 **Execution:**
 - [ ] `packages/section-runtime/src/index.ts` -- export `stepToContrast` beside `contrast` and `isHex` (:57) -- the
@@ -210,23 +219,23 @@ bound) also wait for the drawings to land; everything else may go first, in the 
   - The stale comments in the rewritten lines go (:793-796; :834's "schema :1202").
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/style-pack.tsx`, `editor.tsx` -- the Style panel re-run
   and S4a's sixth dot:
-  - The roster takes `siteAccent` and `onBrand`. The "From your site" row sits inside `ReadOnly`, where S7a·2 draws it
-    (planned: first in the rows block, above Heading font).
+  - The roster takes `siteAccent` and `onBrand`. The "From your site" row sits inside `ReadOnly`, built and placed as
+    the "Built from" table says: the first row of the rows block, above Heading font.
   - `onBrand` seeds the pack in force through `editInForce`'s door. Where `samePack` holds, it journals nothing and
     says `wearsBrand`.
   - The card draws the sixth dot.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/brand-panel.tsx` -- DW-70:
-  - The card list takes S2c·2's bound and scrolls inside the rail, so the caption and both buttons stay in view with
-    25 projects.
+- [ ] `apps/web/app/(app)/app/(authed)/sites/brand-panel.tsx` -- DW-70, built as the "Built from" table says (R-242):
+  - From tablet up, the card list fills the rail's free height and scrolls there, so the caption and both buttons stay
+    in view with 25 projects. Below tablet the window scrolls as one page, as today.
   - The stale comment in `brand-screen.tsx:184-189` goes.
-- [ ] `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/`, `tools/doc-audit.py` -- under Question
-  3's option 1, land only the two new frame files from the owner's export, each with a `record` catalogue row (as S11e
-  landed). Every other export file stays byte-identical -- R-74's drawing, kept
+- [ ] the side-by-side approval (R-242) -- the orchestrating session renders every built state beside the drawings it
+  came from, on a private review page: the row (with a site colour, without one, reading along, at 834) and the chooser
+  (three cards and twenty-five, at 1440, 834 and 390; rendered locally, never committed). It asks the owner (R-83)
+  before the Dev commit, and nothing is committed or pushed before his answer -- R-242's "approved side by side"
 - [ ] `apps/web/pack-edit.test.ts`, `apps/web/style-pack.test.ts`, a source guard beside the existing ones (e.g.
   `apps/web/server-wiring.test.ts`) -- the unit half of the matrix:
-  - `brandSeed` over the matrix's colours on every preset. No seeded on-accent reads under 4.5:1, and under option 1
-    the dark accent reads ≥ 4.5:1 on dark Base and Surface. The rest of the record is unchanged, and a bad accent is a
-    no-op.
+  - `brandSeed` over the matrix's colours on every preset. No seeded on-accent reads under 4.5:1, and the dark accent
+    reads ≥ 4.5:1 on dark Base and Surface (R-241). The rest of the record is unchanged, and a bad accent is a no-op.
   - `brandPacks` with each of: a preset, an edited preset, a custom pack in force, junk records (dropped), a
     non-object column, no preset, no accent (→ null).
   - `placeholderFor` no longer paints a stored brand (`style-pack.test.ts:53-61, :186-197` inverted).
@@ -239,6 +248,8 @@ bound) also wait for the drawings to land; everything else may go first, in the 
   - Reading along, the row is greyed with no tab stop.
   - With no site colour there is no row (a harness project or switch without one is added if none exists).
   - The card draws the sixth dot.
+  - An `R-242 ·` computed-style stop holds the row's values to the "Built from" table, as `R-236 ·` does for 6.4's
+    parts: a 1px change turns it red.
 - [ ] `tools/probe/run-verify-ghost-admin.py` -- DW-326's "made optional by the story that next runs it", and the review
   on real infrastructure (R-82):
   - The `--only` path needs only `GHOST6_*`: `needed` :5088-5093, `settings-keys` :5157 and `brand-keys` :5184 run on
@@ -254,7 +265,7 @@ bound) also wait for the drawings to land; everything else may go first, in the 
   - `epics.md`: 6.6's card.
   - `EXPERIENCE.md` :115 and :154.
   - `deferred-work.md`: DW-70 and DW-327 closed with their proof; notes on DW-66 and DW-326.
-  - `reconcile-designs-decisions.md`: the new rulings.
+  - `reconcile-designs-decisions.md`: R-240, R-241 and R-242's Dev targets ticked (the entries were written at Create).
   - `epic-6-context.md`: a dated Dev sub-bullet.
   - Then grep for `style_pack.brand`, `brand.accent`, `{ ...pack, brand }` and "logo" beside "seed".
 
@@ -265,10 +276,12 @@ bound) also wait for the drawings to land; everything else may go first, in the 
 - Given a seeded project, when its pack's pencil opens, then Edit pack shows the seeded colours in its swatches as S7c
   draws them, and each is edited, reset to defaults and saved like any other (6.4). The card follows the edit.
 - Given a project whose linked site has an accent, when the Style Pack list opens, then the "From your site" row matches
-  the S7a·2 drawing (or, under Question 3's option 2, its side-by-side build), and its Use your brand is one edit that ⌘Z
-  undoes. With no site colour there is no row. While reading along it is greyed (R-192).
-- Given S2c with 25 projects, when it renders at 1440, 834 and 390, then it matches S2c·2: the cards scroll inside the
-  bound, and the caption and both buttons are in view (DW-70).
+  the drawings it is built from, value for value (the "Built from" table, held by the `R-242 ·` stop, and approved side
+  by side by the owner), and its Use your brand is one edit that ⌘Z undoes. With no site colour there is no row. While
+  reading along it is greyed (R-192).
+- Given S2c with 25 projects, when it renders at 1440 and 834, then it matches S2c as built with the "Built from"
+  table's bound: the cards scroll inside the rail, and the caption and both buttons are in view (DW-70). At 390 the
+  window scrolls as one page, as today.
 - Given the S4a card, when the project has a site colour, then it draws six dots, the sixth the site's, as S4a draws
   them; otherwise five.
 - Given a pack the editor saved before Use your brand's write lands, when the write runs, then that save survives, and
@@ -276,8 +289,7 @@ bound) also wait for the drawings to land; everything else may go first, in the 
 - Given R-98, when the row is pressed, then no busy label is owed: it is a local edit with no server work, like 6.4's
   rows. S2c keeps "Taking your brand…", and no route is added.
 - Given the documents, when the story is done, then FR-E5, FR-C4, the card, EXPERIENCE.md and the ledger say what was
-  built. No sentence says the brand is written to `style_pack.brand`, and none says the logo is seeded (unless Question
-  1 is ruled option 2).
+  built. No sentence says the brand is written to `style_pack.brand`, and none says the logo is seeded (R-240).
 
 ## Spec Change Log
 
@@ -286,32 +298,43 @@ bound) also wait for the drawings to land; everything else may go first, in the 
 ### The seed
 
 `brandSeed(record, A)` takes `A` as `#RRGGBB` (callers pass `hexOf` of the brand's accent). It sets the light accent to
-`A` and the dark accent per "Ruled values" below. Each mode's on-accent stays as it is where it reads 4.5:1 on that
-mode's accent; otherwise it becomes the better of that mode's Base and Text, stepped to 4.5:1 with `stepToContrast`.
-That is the engine's own on-contrast rule (`tokens.ts:261`). Everything else in the record is returned unchanged.
+`A`, and the dark accent to `A` stepped lighter until it reads 4.5:1 on the dark Base and the dark Surface (R-241,
+below). Each mode's on-accent stays as it is where it reads 4.5:1 on that mode's accent; otherwise it becomes the better
+of that mode's Base and Text, stepped to 4.5:1 with `stepToContrast`. That is the engine's own on-contrast rule
+(`tokens.ts:261`). Everything else in the record is returned unchanged.
 
 The on-accent half is a routine call, not a question. FR-E1 authors on-accent per pack, and the seed authors it for the
 customer exactly as the engine computes one. So a seed never raises 6.4's warning on its own.
 
 Computed at Create, with the engine's own `stepToContrast` (Node 24, a scratch script over `colour.ts`):
 
-| Site accent | Paper's light on-accent | Dark accent (option 1) | Dark on-accent |
+| Site accent | Paper's light on-accent | Dark accent (R-241) | Dark on-accent |
 |---|---|---|---|
 | `#FF1A75` (T1's, §40) | `#1F1C16`, 4.58:1 (Paper's ink read 4.38) | `#FF1A75`, unchanged (4.91:1 on Base, 4.52:1 on Surface) | `#171511`, 4.91:1 |
 | `#1E3A8A` (navy) | `#FBF9F5`, 9.85:1 | `#5E82D9` (4.92 / 4.53; navy read 1.76) | `#171511` |
 | `#D96C3F` (Paper's own) | `#232019`, 4.77:1, kept | `#D96C3F` (5.35 / 4.92; Paper's own dark is `#E0805A`) | `#171511` |
 
-### Ruled values — the one place a ruling changes
+### Ruled values (owner, 2026-10-05)
 
-| | Option 1 (planned) | Option 2 | Option 3 |
-|---|---|---|---|
-| **Q2 · dark accent** | `stepToContrast(stepToContrast(A, dark.background, 4.5), dark.surface, 4.5)`, the shape of `tokens.ts:232` | `A` | the record's own (dark untouched) |
-| **Q2 · dark on-accent** | the rule above, on the new dark accent | the rule, on `A` | the record's own |
-| **Q1 · logo** | written nowhere; the canvas and the theme read Ghost's `@site.logo` | added to `PackRecord` and §D.0, used by the sample canvas, with a Logo row in the list; tasks added and drawn before Dev | — |
-| **Q3 · drawings** | S2c·2 and S7a·2 land first, and the bound and the row are built from them | built from S2c as built, S7d's "From your site" and S4a's Change, held by a computed-style stop and approved side by side in Dev (R-236's shape) | — |
+| Ruling | What it fixes | Declined |
+|---|---|---|
+| **R-240 · the logo** (Question 1) | Written nowhere. The canvas and the live theme read Ghost's own `@site.logo`, as D6a and B17 draw it: "from Ghost · Change this in Ghost" (`D6 Theme Settings Completed.dc.html:86-100`, `B Missing Surfaces.dc.html:1662-1687`) | a logo in the pack, with a Logo row |
+| **R-241 · dark mode** (Question 2) | dark accent = `stepToContrast(stepToContrast(A, dark.background, 4.5), dark.surface, 4.5)`, the shape of `tokens.ts:232`; dark on-accent by the on-accent rule, on the new dark accent | exactly `A` in dark; dark untouched |
+| **R-242 · the undrawn parts** (Question 3) | no Claude Design pass: the row and the chooser's bound are built from the nearest drawings ("Built from", below), held by a computed-style stop, and approved side by side by the owner in Dev. R-74 stands for every other surface | drawing them first from a prompt |
 
-For Q1, the export already draws the logo as Ghost's and read-only: D6a and B17 show it as "from Ghost · Change this
-in Ghost" (`D6 Theme Settings Completed.dc.html:86-100`, `B Missing Surfaces.dc.html:1662-1687`).
+### Built from (R-242)
+
+Each part takes the values of the drawing named beside it, exactly: no new component, colour or size.
+
+| Part | Built from | As built |
+|---|---|---|
+| The row's name, "From your site" | S7a's row names (Pill radius's, `style-pack.tsx:255`) | 11.5px, medium, ink-soft, 4px above its control |
+| The site's colour | S4a's card dots and S7d's "From your site" dot (`Dots`, 16px) | a 16px circle with the Kit's hairline |
+| Use your brand | the Editor Sidebar Kit's 32px secondary button (`button.tsx:33-41`), medium weight as S4a's Change | 32px high, sized to its words, 7px after the dot (S7d's spacing of its "From your site" row) |
+| Its place | S7a's rows block (`style-pack.tsx:235`) | the first row, above Heading font, 6px from the next |
+| Reading along | the roster's `ReadOnly` (R-192) | greyed with the other rows, no tab stop |
+| Below 1280 | the Controls overlay (Story 5.22), as for the other rows | unchanged |
+| The chooser at scale | S2c as built (3.4), and the popup's columns that scroll apart so a rail's buttons stay in view (S11e's idiom, `brand-panel.tsx:161-164`) | from tablet up, the card list fills the rail's free height and scrolls there with the browser's own scrollbar; the caption and both presses stay at the rail's foot. Below tablet the window scrolls as one page, as today |
 
 ### Why S2c stops writing `brand`
 
@@ -345,15 +368,9 @@ Re-check connection.
   this site's brand.
 - A project linked to another site offers that site's colour.
 
-### Landing the drawings (Question 3's option 1)
-
-The owner exports the Claude Design project. Only the two new files are copied into the export folder, each catalogued
-as `record`, as S11e was (`d6c296f4`). Every other export file stays byte-identical: `git diff --stat` on the folder
-shows only the two, and `verify-design-pass.py` stays green.
-
 ## Questions for the owner
 
-Three decisions are yours, and each is open. Dev opens once all three are ruled.
+Every question is ruled; nothing is open.
 
 ### Question 1 — Should "Use your brand" copy your logo into Inflozo, or keep reading it from Ghost?
 
@@ -376,7 +393,8 @@ one is yours.
    Claude Design, and the plan's token table gains a logo row. The canvas and your live site can then disagree, as in
    the example.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-05).** *"Keep reading it from Ghost"*. Recorded as **R-240**. Nothing about the logo
+is copied or written; FR-E5, FR-C4 and the card are reworded at Dev.
 
 ### Question 2 — In dark mode, which colour should your buttons and links use?
 
@@ -396,7 +414,8 @@ dark page, where small text needs 4.5:1.
 3. **Light only.** Dark mode keeps the pack's own dark accent (Paper's orange), so your colour does not appear in dark
    mode.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-05).** *"Your colour in both, lightened in dark only where it would be hard to
+read"*. Recorded as **R-241**; the rule is Design Notes' "Ruled values".
 
 ### Question 3 — Two parts of this story were never drawn. May I hand you a Claude Design prompt to draw them first?
 
@@ -419,62 +438,11 @@ view.
    your site" dot from the colour picker, and the Change button. You approve the result side by side before the Dev
    commit, as with R-236. It is faster, but nothing you have looked at decides how they look.
 
-**Ruled:** _(awaiting the owner)_
-
-## Claude Design prompt (Question 3)
-
-Paste everything below, from "In the Inflozo project" to the end of this section, into a new chat in the Inflozo Claude
-Design project. Let it finish, then export the project as a zip.
-
-In the Inflozo project, draw two new frames, each in its own new file beside the others. Use only this project's own
-tokens and components (the Calibration Set and the Editor Sidebar Kit), with no new colour, size or component. Use every
-word exactly as written here. Do not change any existing frame.
-
-**1. A new file, "S2c-2 Which Project.dc.html": the "Use your brand" window when there are projects to choose from.**
-
-Today S2c is built as a window over the Sites list, in the same box and two-column layout as "S11e Manage Keys Popup".
-- **The header:** the title "Nice site. Want to keep the vibe?" and a ✕ on the right.
-- **The left column** is what Inflozo read off the site:
-  - "Your site today";
-  - the site's logo, or its first letter on a 48 px tile;
-  - the site's name and its address;
-  - "Accent color" with its swatch, and the hex in mono;
-  - "Navigation", as pills;
-  - the line "Fonts stay yours — pick a pairing once you’re in the editor.";
-  - the mini homepage wearing the accent, with "Your homepage, already wearing your brand." under it.
-- **The right column** is a 360 px rail: the legend "Which project?", one card per project, then the caption, then "Use
-  your brand" (primary, full width) above "Skip".
-- **Each card** is the Editor Sidebar Kit's radio card:
-  - a 16 px radio;
-  - a 64 × 44 wireframe of that project, painted in its own Style Pack colours and drawn like the design picker's tile;
-  - the project's name in 13 px semibold, and under it "This site’s project" or "Another site’s project" in 12 px
-    muted.
-
-  The chosen card has the coral border and the coral tint.
-
-Draw:
-- a. **1440, three projects:** "Orbit Weekly" (This site’s project, chosen), "Field Notes" (Another site’s project) and
-  "Pilot sections". The caption is "You’re at your project limit, so no new project — pick the one to wear your brand."
-- b. **1440, twenty-five projects** (Pro allows 25). Decide how tall the list of cards may grow before it scrolls inside
-  the rail, so the caption and both buttons stay in view without scrolling the window. Show the list scrolled part-way,
-  with this project's own scroll affordance.
-- c. **834, the twenty-five:** the two columns side by side, as at 1440.
-- d. **390, the twenty-five:** the window fills the screen, and the left column sits above the rail.
-
-**2. A new file, "S7a-2 From Your Site.dc.html": the Style Pack list with your site's colour.**
-
-Start from S7a (the Style Pack panel, Paper current). Under the rule that begins the rows, above "Heading font", add one
-row:
-- the label "From your site", in the rows' own label style;
-- the site's colour as a 16 px dot, drawn like S4a's sixth dot and S7d's "From your site" dot;
-- a "Use your brand" button, drawn like S4a's "Change" button and sized for the row.
-
-Draw:
-- a. **1440:** the site's colour is #FF1A75, and Paper is current and already wearing it (its accent dot is that
-  pink).
-- b. **1440, a project with no site:** no row at all. "Heading font" comes first, as in S7a.
-- c. **1440, reading along** while another window holds the editor: the row greyed, like every other row and cell.
-- d. **834:** the same list inside the Controls overlay the editor opens below 1280, with the row.
+**Ruled: option 2 (owner, 2026-10-05).** *"Can you design them yourself by refering existing design and making it
+similar?"* Yes: there is no Claude Design pass. Both parts are designed from the drawings nearest them, made to match
+them (Design Notes' "Built from"), and you see every built state beside those drawings before the Dev commit. Recorded
+as **R-242**, R-74's second stated exception, for this story only. The prompt was not run, and it is no longer in this
+spec.
 
 ## Owner's manual test
 
@@ -487,9 +455,7 @@ Do this on the real site after Deploy confirms the build, on a laptop at full wi
   → Settings → Integrations → Inflozo: the API URL, the Admin API key and the Content API key.
 - **The colour.** Your test site's colour was pink (`#FF1A75`) when last read. If S2c shows another colour, expect that
   colour wherever this test says pink.
-- **The logo.** The site has no logo, so nothing about the logo shows. With Question 1's planned answer, nothing is
-  copied.
-- **These steps assume the planned answers to Questions 1–3.**
+- **The logo.** The site has no logo, so nothing about the logo shows; as you ruled (R-240), nothing is copied.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -499,7 +465,7 @@ Do this on the real site after Deploy confirms the build, on a laptop at full wi
 | 4 | `https://app.inflozo.com/` | Projects | Look at the new **Ghost6** card. | — | The little drawing of the page has a pink button. |
 | 5 | the address the Ghost6 card opens | Editor | Open Ghost6 and wait for your Ghost6 posts. Press **⌘K**, choose **Newsletter**, then **Inline Row**, and place it. | — | The page shows Ghost6's own posts. The newsletter section's **Subscribe** button is pink with dark words, and the previews in ⌘K's list were pink too. |
 | 6 | same | Editor, Page panel | Click the grey area beside the page. | — | The Style Pack card says Paper. Its dots include the pink, and a sixth dot at the end is pink: your site's colour. |
-| 7 | same | Style Pack list | Click **Change**. | — | Paper is current, and its dots include the pink. Under the list is a new row, **From your site**, with a pink dot and a **Use your brand** button, as the new drawing shows it. Heading font and the other rows follow as before. |
+| 7 | same | Style Pack list | Click **Change**. | — | Paper is current, and its dots include the pink. Under the list is a new row, **From your site**, with a pink dot and a **Use your brand** button, looking like the rows around it, as you approved it side by side. Heading font and the other rows follow as before. |
 | 8 | same | Edit pack | Click Paper's pencil. | — | Light **Accent** is pink and Light **On-accent** is near-black. Dark **Accent** is pink too, because pink already reads on the dark page. There is no yellow note. Click **Cancel**. |
 | 9 | same | Edit pack | Click Paper's pencil, click the Light **Accent** colour, type the dummy colour in the hex field and press Enter. Then click **Save pack**. | `#1E6BFF` | The Subscribe button turns blue. |
 | 10 | same | Style Pack list | Click **Use your brand**. Then press **⌘Z**, then **⇧⌘Z**. | — | The button turns pink. ⌘Z makes it blue again, and ⇧⌘Z makes it pink again. |
@@ -516,8 +482,8 @@ Do this on the real site after Deploy confirms the build, on a laptop at full wi
   that fails without the change (the inverted `placeholderFor` case fails at HEAD).
 - `pnpm keyboard`, run whole, never with `--grep` -- expected: green, including the "From your site" stops.
 - `python3 tools/doc-audit.py --check`, run twice after a catalogue row -- expected: exit 0.
-- `python3 tools/verify-design-pass.py` -- expected: exit 0. The export is unchanged apart from the two landed frames;
-  `git diff --stat` on the folder shows only them.
+- `python3 tools/verify-design-pass.py` -- expected: exit 0, and `git diff --stat` on the export folder is empty (R-242:
+  nothing is added to it).
 - `bash supabase/tests/run-rls-gate.sh` -- expected: green and unchanged, because there is no migration. Its 6.4 block's
   stale-base case is the compare-and-set this story relies on.
 - `python3 tools/probe/run-verify-ghost-admin.py --check`, with no `GHOST5_*` read -- expected: exit 0 on T1 alone,
@@ -540,10 +506,10 @@ production (throwaway users and their projects, deleted at the end) and Vercel.
     - Tangerine's record and `mode` are byte-equal, and `revision` has gone up by one.
   - `brand-many`:
     - With 24 projects inserted there are 25 cards.
-    - At 1440 × 900 the caption and both buttons are in the viewport without scrolling the window, and the list
-      scrolls inside its bound.
-    - Shots are taken at 1440, 834 and 390 and compared with S2c·2. The owner cannot reach 25 projects on Free, so he
-      sees these shots beside the drawing with his test.
+    - At 1440 × 900 and at 834 the caption and both buttons are in the viewport without scrolling the window, and the
+      list scrolls inside the rail; at 390 the window scrolls as one page.
+    - Shots at 1440, 834 and 390 match the states the owner approved side by side in Dev (R-242). He cannot reach 25
+      projects on Free, so those approved states are his look at it.
 - The editor walk's pack steps 102 and 103 (`tools/probe/run-verify-editor.cjs`) -- expected: PASS (a save still
   leaves a planted `brand` untouched). Run them with the keys read inside the process, never with `env $(grep …)` on
   argv.

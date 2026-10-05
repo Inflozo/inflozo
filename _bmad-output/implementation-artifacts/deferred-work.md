@@ -2030,9 +2030,9 @@ note (Story 6.4's Dev, 2026-10-04): built as planned. The colour picker's "From 
   paints the site's accent over an own pack's (`placeholderFor`, FR-C4). Nothing here closes this entry.
 note (Story 6.6's Create, 2026-10-05): the `also:` line's last decision, as 6.6 plans it. The pack is re-derived from
   the site's accent (the seed, `brandSeed`), and `style_pack.brand` is no longer written: once the accent is in the pack
-  nothing reads it, so `placeholderFor`'s override goes, and rows that hold one keep it, unread. Whether the logo is
-  copied is 6.6's Question 1 (planned: no, the logo stays Ghost's, as D6a and B17 draw it). The menu still waits for the
-  epic that places a header. The announcement half stays Story 9.5's.
+  nothing reads it, so `placeholderFor`'s override goes, and rows that hold one keep it, unread. The logo is not copied:
+  the owner ruled R-240 (6.6's Question 1, option 1), so the logo stays Ghost's, as D6a and B17 draw it. The menu still
+  waits for the epic that places a header. The announcement half stays Story 9.5's.
 
 ### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
 
@@ -2283,9 +2283,10 @@ reason: R-74 (owner, 2026-09-02) says a surface with no frame is extrapolated fr
   that next opens the export for Epic 3 should draw both; a scroll bound on the fieldset is a
   one-line change once the frame says what the bound is. Not blocking: the owner's manual test
   reaches the two-card state, which is the state a customer reaches.
-note (Story 6.6's Create, 2026-10-05): planned. Both states are drawn first, as "S2c-2 Which Project", from the Claude
-  Design prompt in 6.6's spec (its Question 3, option 1 recommended), and the card list takes that frame's bound, so the
-  caption and both buttons stay in view with 25 projects. A T1-only harness block, `brand-many`, inserts 24 projects and
+note (Story 6.6's Create, 2026-10-05): planned. The owner ruled R-242 (6.6's Question 3, option 2): not drawn. The
+  chooser at scale is designed from S2c as built and the popup's columns that scroll apart (S11e's idiom). From tablet
+  up, the cards fill the rail's free height and scroll there, so the caption and both buttons stay in view with 25
+  projects. He approves it side by side in 6.6's Dev. A T1-only harness block, `brand-many`, inserts 24 projects and
   holds it at 1440, 834 and 390.
 
 ### DW-71: three brand keys are stored for no reader, and no epic has claimed them
@@ -4322,8 +4323,8 @@ reason: each needs a vocabulary piece, a module or a field the pilot story does 
 note (Story 6.6's Create, 2026-10-05): found while planning 6.6's logo question. The authored-logo bullet above (`logo`
   and `logoLight`) is carried by no story's criteria: the cards cite this entry only for the `<main>` target (7.3), the
   navigation partial (9.1) and the takeover (9.2). Story 9.1 builds A1's content model, so its Create carries the bullet
-  word for word (R-195). 6.6's Question 1 decides whether a logo also lives in the Style Pack (planned: no, it stays
-  Ghost's).
+  word for word (R-195). No logo lives in the Style Pack: the owner ruled R-240 (6.6's Question 1), so the site's logo
+  stays Ghost's, and a header's own authored logo is this bullet's.
 
 ### DW-151: A17 #1 Three Up — what its pilot leaves, and the one-value grey the engine cannot draw
 
