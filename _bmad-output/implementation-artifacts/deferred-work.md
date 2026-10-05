@@ -9039,3 +9039,56 @@ reason: the script writes to a live Ghost and cannot be exercised without the ow
   cleanup path rewritten at Review would ship untested. Review made the one change that cannot alter a run — every
   cleanup failure is now printed, not only the first — and leaves the rest to be changed and run together.
 
+## Deferred from: Story 7.1's Create (2026-10-05)
+
+### DW-333: the canvas draws a repeat's rows touching, and Ghost renders a line break between them
+
+plain: When a section repeats something — a list of posts, a row of tag chips — the editor draws the copies right next
+  to each other, while your live site puts a line break and some spaces between them. For cards in a grid or a column
+  that makes no difference you can see. For small items sitting side by side in a line of text, the live site would
+  show a gap the editor did not.
+status: open
+severity: low
+origin: Story 7.1's Create (2026-10-05). Executed on handlebars 4.7.9 in the scratchpad with Ghost's own compile
+  option (`preventIndent: true`): two rows rendered as `</li>\n    <li`. Read in `core.ts`: `expandRepeats` inserts each
+  canvas clone with `el.before(clone)` and nothing between them. It has been there since Story 4.2; Story 7.1's
+  formatting keeps the theme's whitespace exactly as it was.
+owner: Story 7.34 (The canvas-vs-real-Ghost comparison harness), whose criteria carry this entry with its id.
+location: `packages/section-runtime/src/core.ts` — `expandRepeats` (the canvas) and the repeat replacement in
+  `renderTree` (`{{#foreach}}` … `{{/foreach}}` on lines of their own)
+reason: Every repeated item in the library today is a grid item or a block (A17 #1's cells, A4 #13's one card), where
+  whitespace does not render, so the difference cannot be seen yet. Making the two emitters agree means changing one
+  of them: the canvas inserts what Ghost renders, or the theme trims with Handlebars' `~`. That choice belongs with the
+  measured difference on a real Ghost, which is 7.34's comparison.
+
+### DW-334: no story's criteria ship the Koenig width rules on a theme with no designed card
+
+plain: Every Ghost theme has to style two classes Ghost puts on wide and full-width pictures in a post, or Ghost's own
+  checker reports an error. Round 3 ruled that the cards stylesheet always carries them; no story had written that down
+  as something it builds.
+status: open
+severity: medium
+origin: Story 7.1's Create (2026-10-05), building the T1 recorder's scaffold. Round 3's D12 put `.kg-width-wide` and
+  `.kg-width-full` in `cards.css` "on every theme" (AD-18), and MEASUREMENTS §14c recorded `GS050-CSS-KGWF` as an error
+  on both gscan majors without them. Story 7.13's criteria emit `cards.css` for designed cards and name neither class.
+owner: Story 7.13 (The Ghost card design module and `cards.css`), whose criteria carry this entry with its id.
+location: `epics.md` Story 7.13 · `ARCHITECTURE-SPINE.md` AD-18 (D12's rule) · `tools/stress/build.js` (the harness
+  writes both rules by hand)
+reason: The rule was decided and never owned. Until 7.13 lands, Story 7.1's recorder adds the two rules as scaffold,
+  labelled with 7.13's name, so its gscan gate can read 0/0.
+
+### DW-335: no story emits the `package.json` marker that restore scope is gated on
+
+plain: Inflozo must never mistake a theme it built for the customer's own "original" theme when it takes the safety
+  copy. The plan says every Inflozo theme carries a marker in its `package.json` for exactly that, but no story was
+  given the job of writing it.
+status: open
+severity: medium
+origin: Story 7.1's Create (2026-10-05). The Epic 7 context compile set FR-J1's "no builder fingerprints" against
+  FR-J13's marker. Story 7.20 reads the marker ("signature-gated on the `package.json` marker"), and Story 7.2, which
+  writes `package.json`, never names it.
+owner: Story 7.2 (`package.json` emission), whose criteria carry this entry with its id.
+location: `prd.md` FR-J13 ("every Inflozo-built theme carries an `inflozo-*` name and a `package.json` marker") ·
+  `epics.md` Stories 7.2 and 7.20 · Story 7.1's spec, Design Notes § What "no builder fingerprints" means
+reason: The marker is a specified mark, not an incidental fingerprint. It belongs with the file that carries it, and
+  joins Story 7.1's fingerprint scan as a named exception when 7.2 emits it. Its exact field and form are 7.2's to state.

@@ -2893,7 +2893,8 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > graceful degradations behind it, because each is a deploy-time surface and none exists at connect.
 > **The always-reference mechanism is E7's** — every compile emits all three dark built-ins with their fallback
 > chains, in every project, which is what keeps `GS100` unreachable.
-> **The E4/E7 joint compile gate is this epic's closing story (7.33).**
+> **The E4/E7 joint compile gate is this epic's closing story (7.35).** *(Story 7.1's Create, 2026-10-05: this line
+> named 7.33, which is compile CI.)*
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -2960,6 +2961,10 @@ sized URL silently returns the original and gscan does not validate `image_sizes
 `400 / 800 / 1600 + original` covers theme-bundled assets, and FR-K2 caps uploads at 2400 px
 **And** `custom` carries the three dark built-ins **on every project** plus any user-defined settings,
 cap-enforced.
+**And** *(FR-J13, DW-335 — from Story 7.1's Create, 2026-10-05)* it carries **FR-J13's marker**, the field Story
+7.20 gates restore scope on. No story emitted it before this line. Beside FR-J10's `inflozo-` name, it is one of the
+specified marks that FR-J1's no-fingerprint rule allows, and it joins Story 7.1's fingerprint scan as a named
+exception.
 
 **FRs:** FR-J2. · **Owner test:** none. · **Verification:** gscan at the pinned version against both specs.
 
@@ -3057,6 +3062,10 @@ and a project over budget is told **which assets are responsible before it attem
 compiler's own record of which stylesheets each template pulls in, with the whole-file size reported alongside and
 not the gate.
 **And** a theme that draws any Tabler icon ships Tabler's MIT notice verbatim (`packages/library/icons/LICENSE-tabler.txt`) as a file, and the inline icons' bytes count in the theme-size budget (R-26, DW-108).
+**And** *(from Story 7.1's Create, 2026-10-05)* the token block is the top of `assets/css/screen.css`, where Story 7.1
+writes `packTokensCss(pack)` under `/* Tokens */`. FR-J1, §7.4's tree and AD-18 all put it there, and the spine's
+capability map is amended to agree. `darkOverrideCss` and AD-18's two Ghost-first font variables join that block, so
+`screen.css` stays the one file that names a mode (AD-30).
 
 **FRs:** FR-J3. · **Frame:** `S8 Deploy.dc.html` S8b — the over-budget message surfaces in Pre-flight. · **Owner test:** yes (the over-budget message). · **Verification:** upload limits probed on
 T1 and T3.
@@ -3255,6 +3264,9 @@ accent — because previewing the *declared* default rather than the *resolved* 
 never see
 **And** **Ghost's comment accent colour is linked to, never written**, and the write allowlist stays at four
 **And** the builder matches D6a's right column and the text-prop confirm matches D6c.
+**And** *(AD-30 — from Story 7.1's Create, 2026-10-05)* that inline block **sets plain custom properties from
+`{{@custom.*}}` and names no mode**. The token block at the top of `screen.css` reads them through `var()`, with the
+pack's values as fallbacks, so it stays the one file in the theme that names a mode.
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
 test:** yes.
@@ -3284,6 +3296,9 @@ its owner fills one in, in Ghost Admin, it works — **with no redeploy and no v
 `{{comments mode=…}}` **derives** from this value rather than exposing its own control
 **And** promoting the accent creates the *light* setting while its dark counterpart already exists in every
 project, so both modes stay owner-controllable as a pair.
+**And** *(AD-30 — from Story 7.1's Create, 2026-10-05)* **every rule that depends on the mode stays in the token block
+at the top of `screen.css`**. `default.hbs`'s inline block only sets custom properties from `{{@custom.*}}`, and never
+names a mode, so the token block remains the theme's one file that does.
 
 **FRs:** FR-Q5. · **Owner test:** none. · **Verification:** gscan on a Light-only fixture, both specs.
 
@@ -3374,6 +3389,10 @@ column they sit in**
 **And** *(Story 5.20, DW-267)* **`project_treatments.paywall_design_id` is dropped** in this story's own Schema phase
 (R-99): the paywall is the `paywall` doc since Story 5.20 (AD-27(a0)), and the column has never had a reader or a writer
 **And** the callout panel does not ship S14's 'Background role (Base · Surface · Tint · Accent)' under the section universal's name with other values (R-53, R-170): the owner is asked (R-83) whether the row is renamed as a card treatment or offers the section's roles, and his answer is built (DW-109).
+**And** *(D12, AD-18, DW-334 — from Story 7.1's Create, 2026-10-05)* `assets/css/cards.css` ships on **every** theme,
+styling `.kg-width-wide` and `.kg-width-full` whether or not any card is designed. Without them, `GS050-CSS-KGWF` is an
+error on both gscan majors (MEASUREMENTS §14c). Until this story lands, Story 7.1's recorder adds the two rules as
+labelled scaffold.
 
 **FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes. · **Depends on E10:** the
 module and its `cards.css` emission are built here; **A33's six treatments arrive in E10** and are delivered
@@ -3672,6 +3691,9 @@ produces no drift signal at all** — a path-keyed manifest would read a rename 
 **And** the "Overwrite and ship anyway" confirm **opens with focus on the cancelling action** (UX-DR14)
 **And** the three states match D3a drift found, D3b could not verify and D3c no drift — **and D3c is a passing
 row, present rather than absent**.
+**And** *(FR-J1 — from Story 7.1's Create, 2026-10-05)* the per-file fingerprint lives in the deploy's content manifest
+(`deploys.content_manifest`), **never inside an emitted file**. FR-J1 forbids builder fingerprints anywhere in the
+output, and a content hash can match a renamed file without any mark in it.
 
 **FRs:** FR-J16. · **Frame:** `D3 The Drift Report.dc.html` D3a · D3b · D3c. · **Owner test:** yes. ·
 **Verification:** a hand-edited theme on T1 producing a real drift report (R-82).
@@ -4019,6 +4041,10 @@ queue and never interleave
 `/page/2/` and page 2 of an archive whose own posts run past one page, each compared against the canvas's page-2
 preview
 **And** **the CI lane is a costed line item, not an aside**.
+**And** *(DW-333 — from Story 7.1's Create, 2026-10-05)* it compares a design whose repeated items are inline-level in
+normal flow. That is the one place the emitters disagree: the canvas draws a repeat's rows touching, while Ghost
+renders a line break and indentation between them. The two are made to agree, either by the canvas inserting what
+Ghost renders or by the theme trimming with Handlebars' `~`, chosen once the difference has been measured.
 
 **FRs:** none — this builds NFR-6(c3). · **Owner test:** none (a harness). · **Verification:** T1 (6.58.0) and
 T3 (5.130.6), a real deploy compared against a real canvas (R-82). · **Blocks:** E9 Story 9.1 cannot open until
