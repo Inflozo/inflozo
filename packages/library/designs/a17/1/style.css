@@ -6,7 +6,8 @@
 /* The section and the universal trio */
 .a17-1 { background: var(--a17-1-ground); color: var(--a17-1-ink); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
 /* the grounds: on Contrast the quiet text is the contrast pair at 78 %, the plates 12 % and the pager's hairline 20 %,
-   and every accent mark — the hover underline, the focus ring, the foot link's underline — is the contrast accent */
+   and the accent marks that read `--a17-1-mark` — the focus ring, the foot link's underline — are the contrast accent (the
+   pager's hover underline reads `--accent` on every ground, as it did before Story 6.5: DW-329) */
 .a17-1[data-bg="base"] { --a17-1-ground: var(--bg-page); --a17-1-ink: var(--text-body); --a17-1-quiet: var(--text-muted); --a17-1-plate: var(--bg-hover); --a17-1-rule: var(--border-hairline); --a17-1-mark: var(--accent); }
 .a17-1[data-bg="surface"] { --a17-1-ground: var(--bg-surface); --a17-1-ink: var(--text-body); --a17-1-quiet: var(--text-muted); --a17-1-plate: var(--bg-hover); --a17-1-rule: var(--border-hairline); --a17-1-mark: var(--accent); }
 .a17-1[data-bg="contrast"] { --a17-1-ground: var(--bg-contrast); --a17-1-ink: var(--text-on-contrast); --a17-1-quiet: color-mix(in srgb, var(--text-on-contrast) 78%, var(--bg-contrast)); --a17-1-plate: color-mix(in srgb, var(--text-on-contrast) 12%, var(--bg-contrast)); --a17-1-rule: color-mix(in srgb, var(--text-on-contrast) 20%, var(--bg-contrast)); --a17-1-mark: var(--accent-on-contrast); }

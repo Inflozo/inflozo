@@ -136,6 +136,7 @@ test('nothing in force writes nothing: no section, no override, one this design 
   assert.equal(darkOverrideCss([placed(parked)]), '')
   assert.equal(darkHook(entry, parked, KEY), undefined)
   assert.equal(darkOverrideCss([placed({ controls: { bg: 'surface' }, darkOverrides: { bg: 'surface' } })]), '', 'an override equal to its light value changes nothing')
+  assert.equal(darkHook(entry, { controls: { bg: 'surface' }, darkOverrides: { bg: 'surface' } }, KEY), undefined, '…so it carries no hook either: a hook exactly where the block has a rule')
 })
 
 test('refused by name, never skipped: two sections on one hook, a stylesheet that breaks the rule, a value with no root rule', () => {

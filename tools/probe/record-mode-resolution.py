@@ -379,6 +379,9 @@ def record(g, zipped, nonce, tokens):
             except Exception as e:   # noqa: BLE001
                 failed.append(e)
         if failed:
+            # every failure is said, not only the first: a theme error must never hide an article left published
+            for e in failed[1:]:
+                print(f'    ALSO FAILED in cleanup: {e!r}', file=sys.stderr)
             raise failed[0]
     bad = controls_held(rows, nonce)
     if bad:

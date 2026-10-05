@@ -716,7 +716,15 @@ under the same conditions that make the page dark).
   so an override replaces the whole set. A value that paints nothing declares its property `initial`, and the reader
   falls back: `background: var(--cx-tint-bg, var(--bg-elevated))` keeps `tint: none` under the card style's look.
 - **Every other rule reads those properties and names no mode-scoped value.** A descendant rule on the ground
-  (`.x[data-bg="contrast"] .x__title`) is refused.
+  (`.x[data-bg="contrast"] .x__title`) is refused. **And no other rule DECLARES one** — not `.x:hover`, not a
+  descendant — and two mode-scoped controls never share a property: the canvas would settle the clash by the cascade
+  and a visitor's per-section rule by its higher specificity, so the two could draw different looks *(Story 6.5's
+  Review)*. A state's own look is a second property the root rules declare (`--x-hover-mark`), read under `:hover`.
+- **As written:** the value in double quotes (`[data-bg="contrast"]`, the form the reader matches), each value's
+  parentheses closed (an unclosed `var(` would swallow the token block it is copied into, so it is refused), and a
+  long value may wrap over lines. A control that offers **one** value needs no root rule at all. A stored override
+  whose value the stylesheet states no rule for is refused when the theme's block is written (`darkOverrideCss`
+  throws, naming design and value) — never drawn as the light value.
 
 A22 #1 (Base, Surface, Contrast), abridged:
 

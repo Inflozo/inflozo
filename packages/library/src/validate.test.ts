@@ -1101,6 +1101,15 @@ test('mode-scoped-rule: a mode-scoped control is selected on the root alone, dec
   one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast); color: var(--text-on-contrast); }'), /declares `color: var\(--text-on-contrast\)` — a mode-scoped root rule declares the root's own custom properties only/)
   one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast); --bg-page: var(--bg-contrast); }'), /declares `--bg-page: var\(--bg-contrast\)`/)
   one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast) !important; }'), /declares `--s-ink: var\(--text-on-contrast\) !important`/)
+  // …a value that never closes its parenthesis (it would swallow the block it is copied into), beside one wrapped over
+  // two lines, which is one value and passes (Story 6.5's Review)
+  one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast; }'), /declares `--s-ink: var\(--text-on-contrast` — .*parentheses closed/)
+  one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast)); }'), /parentheses closed/)
+  assert.deepEqual(said(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: color-mix(in srgb,\n    var(--text-on-contrast) 78%, var(--bg-contrast)); }')), [])
+  // A RULE THE STYLESHEET NEVER CLOSES still applies in a browser, so it is still read
+  one(`${CLEAN}\n.s[data-bg="contrast"] .s__x { color: var(--s-ink)`, /^\.s\[data-bg="contrast"\] \.s__x selects on data-bg/)
+  // ONE OWNER PER PROPERTY: another rule declaring a mode-scoped property, beside one that only reads it (CLEAN)
+  one(`${CLEAN}\n.s:hover { --s-ink: var(--accent) }`, /^\.s:hover declares --s-ink, which data-bg's root rules state/)
   // UNEVEN GROUNDS: an offered value with no root rule, and one lacking a property the others declare
   one(CLEAN.replace(/\.s\[data-bg="image"\][^\n]*\n/, ''), /data-bg="image" is offered and no \.s\[data-bg="image"\] rule states its properties/)
   one(CLEAN.replace(' --s-ink: var(--text-on-contrast);', ''), /\.s\[data-bg="contrast"\] lacks --s-ink/)
@@ -1114,6 +1123,8 @@ test('mode-scoped-rule: a mode-scoped control is selected on the root alone, dec
   const tinted = `${CLEAN}\n.s[data-tint="none"] { --s-tint: initial; }\n.s[data-tint="soft"] { --s-tint: var(--bg-hover); }\n.s__x { background: var(--s-tint) }`
   assert.deepEqual(said(tinted, withTint), [])
   one(`${tinted}\n.s[data-tint="soft"] .s__x { color: var(--text-body) }`, /\.s\[data-tint="soft"\] \.s__x selects on data-tint/, withTint)
+  // …and two mode-scoped controls never share a property
+  one(tinted.replace('--s-tint: initial;', '--s-ink: initial;').replace('--s-tint: var(--bg-hover);', '--s-ink: var(--bg-hover);'), /--s-ink is declared by data-(bg|tint)'s rules and by data-(bg|tint)'s/, withTint)
   // a root with no class has no root rule to write
   assert.match(said(CLEAN, {}, HTML.replace(' class="s"', ''))[0] ?? '', /carries no class/)
 })

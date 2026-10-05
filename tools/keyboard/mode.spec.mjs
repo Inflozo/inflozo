@@ -95,15 +95,16 @@ test('Story 6.5 — the truth table: every combination of device, pin and visito
 // THE I/O MATRIX'S "JavaScript off" ROW: no script runs, so nothing can write `data-mode` — the device alone decides, in
 // CSS. The page carries the pack's block and a script that WOULD choose the other mode: its attribute reading back absent
 // is the control that JavaScript was off.
-test('Story 6.5 — JavaScript off: the device alone decides, pure CSS, under every reference pack', async ({ browser }) => {
+test('Story 6.5 — JavaScript off: the device decides and the owner\'s pin beats it, pure CSS, under every reference pack', async ({ browser }) => {
   for (const pack of CASES.packs()) {
     const tokens = RT.packTokens(CASES.presetPack(pack))
     const perMode = Object.keys(tokens.light).filter((p) => tokens.light[p] !== tokens.dark[p])
-    for (const device of ['light', 'dark']) {
+    // the pin is the one server-rendered input, so it too must hold with scripts off — each pin against either device
+    for (const device of ['light', 'dark']) for (const pin of [null, 'scheme-light', 'scheme-dark']) {
       const context = await browser.newContext({ javaScriptEnabled: false, colorScheme: device })
       const page = await context.newPage()
       const other = device === 'dark' ? 'light' : 'dark'
-      await page.setContent(`<!doctype html><html><head><style>${RT.packTokensCss(CASES.presetPack(pack))}</style></head><body><script>document.documentElement.setAttribute('data-mode', '${other}')</script></body></html>`)
+      await page.setContent(`<!doctype html><html><head><style>${RT.packTokensCss(CASES.presetPack(pack))}</style></head><body${pin ? ` class="${pin}"` : ''}><script>document.documentElement.setAttribute('data-mode', '${other}')</script></body></html>`)
       const got = await page.evaluate((names) => ({
         visitor: document.documentElement.getAttribute('data-mode'),
         dark: matchMedia('(prefers-color-scheme: dark)').matches,
@@ -112,8 +113,8 @@ test('Story 6.5 — JavaScript off: the device alone decides, pure CSS, under ev
       await context.close()
       if (got.visitor !== null) throw new Error(`${pack} · ${device}: the page's script ran (data-mode ${got.visitor}), so JavaScript was on and this run is not a result`)
       if (got.dark !== (device === 'dark')) throw new Error(`${pack} · ${device}: the media control — prefers-color-scheme did not report the emulated ${device}`)
-      const wrong = perMode.filter((p) => got.root[p] !== tokens[device][p])
-      expect(wrong, `${pack} · device ${device}, JavaScript off: these read otherwise — ${wrong.join(' · ')}`).toEqual([])
+      const wrong = perMode.filter((p) => got.root[p] !== tokens[ruled(device, pin, null)][p])
+      expect(wrong, `${pack} · device ${device} · pin ${pin ?? 'none'}, JavaScript off: these read otherwise — ${wrong.join(' · ')}`).toEqual([])
     }
   }
 })
@@ -121,7 +122,7 @@ test('Story 6.5 — JavaScript off: the device alone decides, pure CSS, under ev
 // ── the agreement sweep ──────────────────────────────────────────────────────────────────────────────────────────────
 
 /** what a dark override may change, read per element */
-const PROPS = ['color', 'background-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'outline-color', 'text-decoration-line', 'text-decoration-color', 'box-shadow']
+const PROPS = ['color', 'background-color', 'background-image', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'outline-color', 'text-decoration-line', 'text-decoration-color', 'box-shadow', 'fill', 'stroke', 'opacity']
 
 /** Every design and fixture on the harness canvas: the library's designs, the controls ring and the stand-in paywalls —
  *  the route's own lists (`app/harness/canvas/route.ts`). */
@@ -152,6 +153,7 @@ const IN_PAGE = (props) => {
 test('Story 6.5 — the agreement sweep: a dark override drawn the theme\'s way equals the canvas\'s way, from each input alone, at rest and under :hover and :focus-visible, under every reference pack', async ({ page }) => {
   test.setTimeout(900_000)
   let cdp
+  let forced = 0
   /** the harness canvas in a reference pack, with the per-section rules in their own <style> after the token block, as
    *  Epic 7's block appends them; transitions off, so a reading never lands mid-way through a design's 160ms change */
   async function open(pack) {
@@ -178,15 +180,21 @@ test('Story 6.5 — the agreement sweep: a dark override drawn the theme\'s way 
       const mount = document.getElementById('canvas')
       mount.innerHTML = markup
       for (const el of mount.querySelectorAll('[data-module]')) el.classList.add('js-enabled')
+      // A PLAIN LINK in every section, both ways: no design's default content draws a class-less <a>, so without this
+      // the per-section link rule (`GROUND_LINKS` at (0,0,1)) is never matched by an element (Story 6.5's Review)
+      for (const root of mount.children) root.insertAdjacentHTML('beforeend', '<a href="#">a plain link</a>')
     }, { markup, css })
     const said = [...await page.evaluate(([op, key]) => window[op](key, null), [op, `${key}|rest`])].map((d) => `rest — ${d}`)
     const { root } = await cdp.send('DOM.getDocument', { depth: -1 })
     for (const t of targets) {
       const [selector, pseudo] = t.split('|')
       let nodeIds = []
-      try { nodeIds = (await cdp.send('DOM.querySelectorAll', { nodeId: root.nodeId, selector: `#canvas ${selector}` })).nodeIds.slice(0, 2) } catch { continue }
+      // a selector the browser refuses is named, never dropped: it would be a state read by nobody (standing rule 2)
+      try { nodeIds = (await cdp.send('DOM.querySelectorAll', { nodeId: root.nodeId, selector: `#canvas ${selector}` })).nodeIds.slice(0, 2) } catch (e) { throw new Error(`${key}: the forced-state target ${selector} could not be queried — ${e.message}`) }
       for (const [k, nodeId] of nodeIds.entries()) {
         const index = await page.evaluate(({ selector, k }) => [...document.querySelectorAll('#canvas *')].indexOf(document.querySelectorAll(`#canvas ${selector}`)[k]), { selector, k })
+        if (index < 0) throw new Error(`${key}: the forced-state target ${selector} #${k} is not on the canvas, so its reading would compare nothing`)
+        forced++
         await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [pseudo] })
         said.push(...(await page.evaluate(([op, key, index]) => window[op](key, index), [op, `${key}|${t}#${k}`, index])).map((d) => `${selector}:${pseudo} — ${d}`))
         await cdp.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: [] })
@@ -209,8 +217,16 @@ test('Story 6.5 — the agreement sweep: a dark override drawn the theme\'s way 
   const CANVAS_DARK = { device: 'light', pin: null, visitor: 'dark' }
   const CANVAS_LIGHT = { device: 'light', pin: null, visitor: 'light' }
 
+  // R-239's own rows, drawn WITH an override: the pin over a visitor's opposite choice, on a section's rules too
+  const PIN_WINS_DARK = { name: 'the pin over a visitor\'s Light', device: 'light', pin: 'scheme-dark', visitor: 'light' }
+  const PIN_WINS_LIGHT = { name: 'the pin over a visitor\'s Dark on a dark device', device: 'dark', pin: 'scheme-light', visitor: 'dark' }
+  /** the per-section block with its plain-link rules taken out — the link control's subject */
+  const noLinks = (css) => css.split('\n').filter((l) => !l.trim().startsWith(':where(')).join('\n')
+
   let pairs = 0
   let withheldDiffers = 0
+  let linkPairs = 0
+  let linkDiffers = 0
   const wrong = []
   const entries = ENTRIES()
   for (const pack of CASES.packs()) {
@@ -229,19 +245,26 @@ test('Story 6.5 — the agreement sweep: a dark override drawn the theme\'s way 
         const at = `${pack} · ${entry.id} · ${control} ${L} → ${K} in dark`
         // DARK: the canvas draws K; the theme draws L plus the block, dark from each input alone
         await reading('__keep', at, render(entry, { [control]: K }), CANVAS_DARK, '', targets)
-        for (const input of DARK) for (const d of await reading('__diff', at, theme, input, css, targets)) wrong.push(`${at}, ${input.name}: ${d}`)
+        for (const input of [...DARK, PIN_WINS_DARK]) for (const d of await reading('__diff', at, theme, input, css, targets)) wrong.push(`${at}, ${input.name}: ${d}`)
+        // THE LINK CONTROL: where the two grounds give a plain link two looks, the block WITHOUT its link rules must not agree
+        if (control === 'bg' && RT.GROUND_LINKS[L] !== RT.GROUND_LINKS[K]) {
+          linkPairs++
+          if ((await reading('__diff', at, theme, DARK[1], noLinks(css), [])).length > 0) linkDiffers++
+        }
         // THE CONTROL: the block withheld, the theme's way must NOT draw K — so the block is what makes the two agree
         if ((await reading('__diff', at, theme, DARK[1], '', targets)).length > 0) withheldDiffers++
         // LIGHT: the canvas draws L; the theme draws L with the block present, from each light input alone
         await reading('__keep', `${at} (light)`, render(entry, { [control]: L }), CANVAS_LIGHT, '', targets)
-        for (const input of LIGHT) for (const d of await reading('__diff', `${at} (light)`, theme, input, css, targets)) wrong.push(`${pack} · ${entry.id} · ${control} ${L} in light (override ${K}), ${input.name}: ${d}`)
+        for (const input of [...LIGHT, PIN_WINS_LIGHT]) for (const d of await reading('__diff', `${at} (light)`, theme, input, css, targets)) wrong.push(`${pack} · ${entry.id} · ${control} ${L} in light (override ${K}), ${input.name}: ${d}`)
         pairs++
       }
     }
   }
   if (pairs === 0) throw new Error('the sweep found no mode-scoped control with a choice, so it proves nothing')
   if (withheldDiffers === 0) throw new Error('the withheld-block control: with darkOverrideCss withheld no pair differed, so this sweep is not a result (standing rule 2)')
+  if (linkPairs === 0 || linkDiffers !== linkPairs) throw new Error(`the plain-link control: ${linkDiffers} of ${linkPairs} Background pairs whose grounds give a plain link two looks differ with the link rules withheld — every one must, or the per-section link rule is drawn by nobody`)
+  if (forced === 0) throw new Error('the forced-state control: no element was read under :hover or :focus-visible, so "at rest and under" is not a result')
   test.info().annotations.push({ type: 'agreement', description: `${pairs} ordered pairs · ${withheldDiffers} differ with the block withheld` })
-  console.log(`      agreement sweep: ${pairs} ordered pairs across the reference packs, each from three dark and three light inputs; control — ${withheldDiffers} of them differ with the block withheld`)
+  console.log(`      agreement sweep: ${pairs} ordered pairs across the reference packs, each from three dark and three light inputs; and the pin over a visitor's opposite choice both ways; controls — ${withheldDiffers} of them differ with the block withheld, every Background pair whose link look changes differs with the link rules withheld, and forced-state readings were taken`)
   expect(wrong, wrong.slice(0, 20).join('\n')).toEqual([])
 })

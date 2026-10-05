@@ -8903,3 +8903,77 @@ reason: 6.5 states what the module does on a pinned page and makes the pin win i
   two states silently discard a visitor's return to their device's setting. Both are the owner's to rule (R-83) at
   9.1's Create, with the frames in front of him (R-74).
 
+## Deferred from: code review of spec-6-5-mode-resolution-three-inputs-one-precedence-one-file (2026-10-05)
+
+### DW-329: Three Up's "Newer / Older" hover underline is the brand accent even on a dark band
+
+plain: On the Three Up post grid, when its background is Contrast, hovering "Newer posts" or "Older posts" underlines the
+  words in your ordinary accent colour, while the keyboard focus ring beside it uses the accent made for that dark band.
+  It has always looked this way; nobody has checked it against the drawing.
+status: open
+severity: low
+origin: Story 6.5's Review (2026-10-05), the Blind Hunter, reading the refactored stylesheet's comment against its rules
+owner: Story 10.54 (A17 — the content model, the stylesheet and designs #1–4), whose criteria carry this entry with its id.
+location: `packages/library/designs/a17/1/style.css`, `.a17-1__newer:hover, .a17-1__older:hover` (`var(--accent)`) beside
+  the `:focus-visible` rule under it (`var(--a17-1-mark)`)
+reason: older than this story, whose refactor was bound to move no pixel — and it moved none; the comment that claimed
+  otherwise is corrected here. Changing the colour is a moved photograph, which is the owner's approval (R-116), with
+  A17's frame in front of him (R-74).
+
+### DW-330: a section's Surface and Contrast looks are photographed for almost no design, and one kind of control is not held to the dark-override rule
+
+plain: The photo check draws each design on its default background, and on Contrast only for two of them. So a wrong colour
+  on a design's Surface or Contrast background could ship with every check green. Separately, a control that another
+  control switches off could behave differently in the editor's Dark preview than on a visitor's dark page; no design
+  does this today.
+status: open
+severity: medium
+origin: Story 6.5's Review (2026-10-05), the Verification Gap reviewer and the Acceptance Auditor
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), the first story that authors
+  designs against `mode-scoped-rule`, whose criteria carry this entry with its id.
+location: `tools/matrix/cases.mjs` (`onContrast`, the default-controls cases) · `tools/keyboard/mode.spec.mjs` (its sweep
+  compares the theme's way with the canvas's way, both drawn from the SAME stylesheet, so it has no oracle for which
+  token a ground should carry) · `packages/library/src/validate.ts` (`disabledBy.control` may name a mode-scoped control)
+reason: 6.5's proof that its refactor moved no pixel was a one-off comparison against the previous stylesheets, right
+  for a refactor and gone once it is done; the standing net is the render matrix, and widening it writes new baselines,
+  which this story's boundaries forbade and which need the owner's sampled approval (R-116). The `disabledBy` case
+  needs a ruling only if a design wants it — a Background that switches a control off is plausible (an overlay only on
+  Image) — so it is asked then (R-83), not refused blind now.
+
+### DW-331: three things the story that first compiles a theme must close about the per-section dark hook
+
+plain: When Inflozo starts building real themes, three loose ends matter: the editor and the theme must name each section
+  the same way; two sections must never be given the same hidden name without a clear remedy; and the checks that run
+  on every change should watch the editor do this in a real browser, not only read its code.
+status: open
+severity: medium
+origin: Story 6.5's Review (2026-10-05), the Blind Hunter and the Verification Gap reviewer
+owner: Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip), which writes `darkOverrideCss` into the theme's
+  token block and whose criteria carry this entry with its id.
+location: `packages/section-runtime/src/dark-override.ts` (`darkHook`'s key is a string its callers each build;
+  `darkOverrideCss` throws on a colliding pair) · `editor.tsx`'s `queryKey` · `apps/web/dark-mode.test.ts` (source-text
+  guards on the editor's and `/pilots`' calls) · `tools/probe/run-verify-editor.cjs` steps 48-49 and
+  `run-verify-pilots.cjs`' Dark stop (the browser proof, run by hand on the deployed site)
+reason: nothing compiles a theme yet, so nothing can drift from the editor's key or meet a collision today, and the
+  hook changes nothing visible on the canvas (it carries no per-section rules). 7.4 is where a second caller of the key
+  appears and where a collision becomes a customer's failed publish, so the shared key builder, the remedy and the
+  browser assertion are built with their first real consumer rather than guessed at here.
+
+### DW-332: the mode-resolution recorder's cleanup has three gaps to close before it runs again
+
+plain: The script that tested light and dark on your test site cleaned up correctly when it ran. Reading it closely shows
+  three unlikely ways it could leave something behind on a future run — an unused test theme, or the test article left
+  published.
+status: open
+severity: low
+origin: Story 6.5's Review (2026-10-05), the Real-infra verifier and the Edge Case Hunter, read in the source — none of
+  the three happened on the recorded run (T1 read back clean at Review)
+owner: Story 15.7 (the Ghost(Pro) launch gate), whose Ghost 5 pass (DW-326) is the recorder's next run and whose
+  criteria carry this entry with its id.
+location: `tools/probe/record-mode-resolution.py` — the upload and `name = …` before the `try`; `except Exception` around
+  `restore_and_delete` (an interrupt skips `to_draft`); the publish fallback's trigger (status, nonce and `gh-content`,
+  never the `scheme-dark` class the hypothesis is about); the driver's `response.status()` on a null response
+reason: the script writes to a live Ghost and cannot be exercised without the owner's go (`RESET-PROTOCOL.md`), so a
+  cleanup path rewritten at Review would ship untested. Review made the one change that cannot alter a run — every
+  cleanup failure is now printed, not only the first — and leaves the rest to be changed and run together.
+

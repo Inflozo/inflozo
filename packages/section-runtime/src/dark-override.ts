@@ -33,13 +33,25 @@ function fnv1a(key: string): string {
   return h.toString(16).padStart(8, '0')
 }
 
+/** The overrides in force (`darkOverridesInForce`, the one rule for which overrides render) whose dark value DIFFERS from
+ *  the light one — the only ones with anything to write. `darkHook` and `darkOverrideCss` both ask this, so a root
+ *  carries a hook exactly where the token block has a rule for it (Story 6.5's Review: an override equal to its light
+ *  value used to stamp a hook with no rule behind it, and could collide on it). */
+function changing(entry: Pick<ControlEntry, 'controlSchema' | 'universals'>, state: ControlState): { names: string[]; dark: Record<string, string> } {
+  const names = darkOverridesInForce(entry, state)
+  if (names.length === 0) return { names, dark: {} }
+  const light = resolveControls(entry, storedFor(entry, state, 'light'))
+  const dark = resolveControls(entry, storedFor(entry, state, 'dark'))
+  return { names: names.filter((n) => dark[n] !== light[n]), dark }
+}
+
 /** THE HOOK of a placed section: a hash of its key — the editor's `queryKey`, `${template_key}:${instanceId}` — when an
- *  override of it is in force (`darkOverridesInForce`, the one rule for which overrides render), else `undefined`, so a
+ *  override of it is in force and changes its look in dark (`changing`), else `undefined`, so a
  *  root carries `data-instance` only where the token block has a rule for it. An instance id is unique only inside its
  *  doc (Home's page-2 copy shares Home's), so the key is doc-qualified, and Epic 7 hashes the same key for the file it
  *  compiles the section into. */
 export function darkHook(entry: Pick<ControlEntry, 'controlSchema' | 'universals'>, state: ControlState, key: string): string | undefined {
-  return darkOverridesInForce(entry, state).length > 0 ? fnv1a(key) : undefined
+  return changing(entry, state).names.length > 0 ? fnv1a(key) : undefined
 }
 
 /** One placed section, as `darkOverrideCss` reads it. */
@@ -63,7 +75,7 @@ export function darkOverrideCss(placed: readonly PlacedSection[]): string {
   const hooks = new Map<string, string>()
   const sections: { hook: string; props: string; links: string | undefined }[] = []
   for (const { key, entry, state } of placed) {
-    const names = darkOverridesInForce(entry, state)
+    const { names, dark } = changing(entry, state)
     if (names.length === 0) continue
     const hook = fnv1a(key)
     const met = hooks.get(hook)
@@ -72,13 +84,10 @@ export function darkOverrideCss(placed: readonly PlacedSection[]): string {
     const design = entry.id ?? key
     const read = modeScopedRules(entry.css, rootClassOf(entry.html), modeScopedOffers(entry.controlSchema, entry.universals))
     if (read.refusals.length > 0) throw new Error(`darkOverrideCss: ${design}'s stylesheet breaks the authoring rule — ${read.refusals[0] as string}`)
-    const light = resolveControls(entry, storedFor(entry, state, 'light'))
-    const dark = resolveControls(entry, storedFor(entry, state, 'dark'))
     const props: string[] = []
     let links: string | undefined
     for (const name of names) {
       const value = dark[name] as string
-      if (value === light[name]) continue
       const declarations = read.rules.get(name)?.get(value)
       if (declarations === undefined) throw new Error(`darkOverrideCss: ${design}'s ${name} is "${value}" in dark and its stylesheet states no root rule for that value — refused, never drawn as the light value (AD-30)`)
       props.push(...declarations.map(([p, v]) => `${p}: ${v};`))

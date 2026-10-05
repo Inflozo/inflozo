@@ -2,10 +2,10 @@
 title: 'Story 6.5 — Mode resolution: three inputs, one precedence, one file'
 type: 'feature'
 created: '2026-10-05'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '53e20026acd5e8e3ac171dbf446d0a5dc87be06c'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
 ---
 
@@ -304,6 +304,36 @@ values" table keeps what the declined options would have changed.
 - Given a story with no surface (the card's Owner test is none: a theme mechanism), when it deploys green, then it is
   Done on the Deploy commit, with no frame to name and no "matches the frame" criterion (R-74 binds surfaces; R-80).
 
+### Review Findings
+
+Review of 2026-10-05, the diff since `53e20026`: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor
+and the Real-infra verifier. No finding needed the owner's decision.
+
+- [x] [Review][Patch] A root value with an unclosed parenthesis passed the reader and, copied into the token block, would swallow every later section's rule; a value wrapped over two lines was refused for the wrong reason [packages/library/src/validate.ts — `parensBalance`, whitespace folded]
+- [x] [Review][Patch] Another rule could declare a mode-scoped property (`.x:hover { --x-ink: … }`), or two mode-scoped controls share one — the canvas would settle it by the cascade, a visitor's per-section rule by specificity, so the two could draw different looks; now refused by `mode-scoped-rule` [packages/library/src/validate.ts — one owner per property]
+- [x] [Review][Patch] A rule the stylesheet never closes was never read, so a descendant rule on the ground inside it was never refused [packages/library/src/validate.ts — the open rules are flushed]
+- [x] [Review][Patch] `darkHook` stamped a hook for an override equal to its light value, which `darkOverrideCss` writes no rule for, and such a section could throw a collision; both now ask one rule [packages/section-runtime/src/dark-override.ts — `changing`]
+- [x] [Review][Patch] The per-section plain-link rule (`GROUND_LINKS` at (0,0,1)) was matched by no element in any committed browser check — no design's default content draws a class-less link; the sweep now draws one in every section, with a control that withholds only the link rules [tools/keyboard/mode.spec.mjs]
+- [x] [Review][Patch] The sweep drew an override only from each input alone, never R-239's own rows (the pin over a visitor's opposite choice); both added [tools/keyboard/mode.spec.mjs]
+- [x] [Review][Patch] The forced `:hover` / `:focus-visible` half had no control: a selector the browser refused was dropped silently and nothing said a state was ever read; now named and counted. The properties read gain `background-image`, `fill`, `stroke`, `opacity` [tools/keyboard/mode.spec.mjs]
+- [x] [Review][Patch] The JavaScript-off check had no pin row, though the pin is the one server-rendered input [tools/keyboard/mode.spec.mjs]
+- [x] [Review][Patch] Three sentences still stated the old order or the old "two files": PRD §8's E6 paragraph, `epic-6-context.md`'s lead bullet, `epic-4-context.md`'s dark-override bullet (standing rule 7) [prd.md:815, epic-6-context.md:55, epic-4-context.md:237]
+- [x] [Review][Patch] A17 #1's new comment said every accent mark is the contrast accent on Contrast; the pager's hover underline is not, and never was [packages/library/designs/a17/1/style.css:9]
+- [x] [Review][Patch] The recorder's cleanup raised only its first failure, so a theme error could hide an article left published; every failure is now printed [tools/probe/record-mode-resolution.py]
+- [x] [Review][Patch] The authoring guide did not say the value is double-quoted, that a one-value control needs no rule, that no other rule declares a mode-scoped property, or what happens at compile when a value has no rule [docs/section-authoring.md]
+- [x] [Review][Defer] A17 #1's pager hover underline is the brand accent on a Contrast ground [packages/library/designs/a17/1/style.css:83] — deferred, pre-existing; DW-329, Story 10.54
+- [x] [Review][Defer] No committed check holds a non-default ground to an expected token (the matrix draws defaults and two Contrast cases), and `disabledBy` may name a mode-scoped control [tools/matrix/cases.mjs:131] — deferred, needs new baselines (R-116) and a ruling only if a design wants it; DW-330, Story 9.1
+- [x] [Review][Defer] The section key is built by each caller, a hook collision is a bare throw, and the editor's hook and `/pilots`' dark draw are held in CI by source-text tests only [packages/section-runtime/src/dark-override.ts] — deferred to the first story that compiles the hook; DW-331, Story 7.4
+- [x] [Review][Defer] The recorder's upload sits outside its `try`, an interrupt during restore skips the draft return, and the publish fallback tests status, not the `scheme-dark` class [tools/probe/record-mode-resolution.py:332] — deferred: a live-server cleanup path is not rewritten untested; DW-332, Story 15.7
+
+Dismissed, with the reason each was read against the source: a browser without `:has()` (below FR-G8's pin, and the
+system selector needs it too); the hook not stamped when an entry has no control schema (neither emitter stamps any
+control there, so the canvas draws no override either); A24 #1's two `initial` properties (they hold the look, proven
+by the refactor's sweep); `check-snapshots`' class pick (it throws by name if a design ever has no class below its
+root); a colour literal in a root value (`untokened` already refuses a hex or a colour function anywhere in a design's
+stylesheet; a named colour is that check's own stated limit, older than this story); the tool
+counts quoted in the Dev record (dated tool output, not a count the project restates).
+
 ## Spec Change Log
 
 ## Design Notes
@@ -555,6 +585,27 @@ sentence into Story 9.1's criteria word for word.
 - **The deployed walks** -- `run-verify-pilots.cjs`' Dark stop and `run-verify-editor.cjs`' hook checks (steps 48 and 49:
   `data-instance` on the overridden root through the flip and the repaint, gone after Reset) are written and
   syntax-checked, not run: they run once the Dev push has deployed.
+
+**Executed — Review phase (2026-10-05), Node 24.18.1:**
+- **CI on the Dev head `b7943c9a`, read first** (GitHub's API, `GITHUB_TOKEN` read in-process) -- `check`, `rls` and
+  `deploy` success, and the render matrix's own workflow success: the Dev build deployed.
+- **The Real-infra verifier, read-only on T1** (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`, read
+  in-process through `record-shim.py`'s `load_env`; GETs only) -- `GET /ghost/api/admin/themes/`: `casper` active, no
+  `inflozo-probe-*` theme installed; `GET /ghost/api/admin/posts/slug/inflozo-style-guide-article/`: `status: draft`,
+  its `updated_at` older than the recorder's run, so it was never published; `GET /ghost/api/admin/config/`: 6.58.0;
+  `GET /`: 200 with no probe marker. **Negative controls:** the same calls with a zeroed secret answered 401 and with no
+  Authorization header 403; the Content API answered 404 for the draft's slug while `posts/?limit=1` answered 200, so
+  the key works and the draft is not public. §69's rows, pins, `<body class=…>` line and colours agree with the
+  recorder's source and with `reference-tokens.css` at HEAD. §69's rows were NOT re-recorded: that is a theme upload on
+  T1, which needs the owner's go, and nothing in Review changed what the recorder uploads' selectors say.
+- **No migration** (`git diff --stat 53e20026 HEAD -- supabase/` is empty), so R-99 owes no schema check.
+- **After the patches** -- `node --test` over `validate.test.ts`, `dark-override.test.ts`, `controls.test.ts` and
+  `tokens.test.ts`: all pass, the new refusals each beside a clean control; `node tools/stress/test-vocabulary.mjs`:
+  pass; `pnpm check`: exit 0 (every real design and fixture passes the tightened `mode-scoped-rule`, no snapshot
+  changed); `pnpm keyboard`, whole: exit 0, the truth table as ruled, the JavaScript-off check now with each pin, and
+  the agreement sweep with a plain link drawn in every section, R-239's two pin-over-visitor rows, and its three
+  controls reported (the block withheld, the link rules withheld on every Background pair whose link look changes,
+  forced-state readings taken).
 
 **The I/O matrix, row by row → the check that ran and passed** (step-03's Matrix Test Audit):
 - System dark · system light + visitor dark · system dark + visitor light · the owner pins Dark · pins Light · a choice

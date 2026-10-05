@@ -1134,6 +1134,13 @@ export type ModeScopedRules = {
 // Nothing here can close the declaration, the rule or the `<style>` the token block is written into (AD-36), and no
 // `!important` can make a per-section rule lose. ponytail: no `calc()` operator or string — widen when a design needs one.
 const ROOT_VALUE_RE = /^[a-zA-Z0-9 .,%()-]+$/
+/** …and its parentheses close in order (Story 6.5's Review): an unclosed `var(` copied into the token block would
+ *  swallow the `;` and the `}` after it, and with them every later section's rule. */
+function parensBalance(v: string): boolean {
+  let depth = 0
+  for (const c of v) if (c === '(') depth++; else if (c === ')' && --depth < 0) return false
+  return depth === 0
+}
 
 /** THE AUTHORING RULE (AD-30, amended at Story 6.5 — what Epic 9 writes against), READ ONCE: a selector naming a
  *  mode-scoped control's attribute is exactly `.<root>[data-<name>="<value>"]` — the root's class and that one
@@ -1174,12 +1181,22 @@ export function modeScopedRules(css: string, root: string | null, offered: Reado
       from = i + 1
     } else if (c === ';' && (open.length === 0 || open[open.length - 1]?.at === true)) from = i + 1
   }
+  // a rule the stylesheet never closes still applies in a browser, so it is still read (Story 6.5's Review)
+  for (let k = open.length - 1; k >= 0; k--) {
+    const top = open[k] as (typeof open)[number]
+    if (!top.at) found.push({ prelude: top.prelude, body: bare.slice(top.from), nested: k > 0 })
+  }
   const prefix = root === null ? null : `--${root}-`
   // a value whose rule was refused for what it declares is named once, never again as "no rule"
   const refused = new Set<string>()
+  // every other rule, with the custom properties it declares — held against the mode-scoped sets below
+  const others: { prelude: string; declares: string[] }[] = []
   for (const { prelude, body, nested } of found) {
     const scopedNames = attributeSelectors(prelude).map((a) => a.name).filter((a) => names.includes(a))
-    if (scopedNames.length === 0) continue
+    if (scopedNames.length === 0) {
+      others.push({ prelude, declares: body.split(';').map((d) => d.split(':')[0]?.trim() ?? '').filter((d) => d.startsWith('--')) })
+      continue
+    }
     const name = scopedNames[0] as string
     const shape = /^\.([\w-]+)\[data-([a-z0-9-]+)="([a-z0-9-]+)"\]$/.exec(prelude)
     if (root === null) { refusals.push(`${prelude} selects on data-${name}, and the markup's first element carries no class to be the root's — a mode-scoped control is selected on the root alone`); continue }
@@ -1195,9 +1212,9 @@ export function modeScopedRules(css: string, root: string | null, offered: Reado
       if (d.trim() === '') continue
       const at = d.indexOf(':')
       const property = (at === -1 ? d : d.slice(0, at)).trim()
-      const v = at === -1 ? '' : d.slice(at + 1).trim()
-      if (prefix === null || !property.startsWith(prefix) || !/^--[\w-]+$/.test(property) || !ROOT_VALUE_RE.test(v)) {
-        refusals.push(`${prelude} declares \`${d.trim()}\` — a mode-scoped root rule declares the root's own custom properties only, each named ${prefix ?? '--<root>-'}…, its value a token expression: a pack token re-pointed would recolour every panel and field that sits on its own fill`)
+      const v = at === -1 ? '' : d.slice(at + 1).trim().replace(/\s+/g, ' ') // a value wrapped over two lines is one value
+      if (prefix === null || !property.startsWith(prefix) || !/^--[\w-]+$/.test(property) || !ROOT_VALUE_RE.test(v) || !parensBalance(v)) {
+        refusals.push(`${prelude} declares \`${d.trim()}\` — a mode-scoped root rule declares the root's own custom properties only, each named ${prefix ?? '--<root>-'}…, its value a token expression with its parentheses closed: a pack token re-pointed would recolour every panel and field that sits on its own fill`)
         painted = true
         continue
       }
@@ -1208,6 +1225,19 @@ export function modeScopedRules(css: string, root: string | null, offered: Reado
     const own = rules.get(name) ?? rules.set(name, new Map()).get(name)!
     if (own.has(value)) { refusals.push(`${prelude} is written twice — one rule per value, so a dark override replaces exactly one`); continue }
     own.set(value, declarations)
+  }
+  // ONE OWNER PER PROPERTY (Story 6.5's Review): the canvas resolves a clash by the cascade among the design's own rules,
+  // the theme's per-section rule by its higher specificity — so a property two things declare can draw two looks. A
+  // mode-scoped property belongs to ONE control, and no other rule declares it: every other rule reads it.
+  const owner = new Map<string, string>()
+  const shared = new Set<string>()
+  for (const [name, byValue] of rules) for (const ds of byValue.values()) for (const [p] of ds) {
+    const met = owner.get(p)
+    if (met !== undefined && met !== name) { if (shared.has(p)) continue; shared.add(p); refusals.push(`${p} is declared by data-${met}'s rules and by data-${name}'s — a property belongs to one mode-scoped control, or a dark override of one would overwrite the other's`) }
+    else owner.set(p, name)
+  }
+  for (const { prelude, declares } of others) for (const p of new Set(declares)) {
+    if (owner.has(p)) refusals.push(`${prelude} declares ${p}, which data-${owner.get(p) as string}'s root rules state — every other rule READS a mode-scoped property and none declares it, or the canvas and a visitor's dark override would disagree on which wins`)
   }
   // UNEVEN GROUNDS: where a choice exists, every value states the same set
   for (const name of names) {
