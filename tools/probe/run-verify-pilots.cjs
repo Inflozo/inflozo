@@ -168,14 +168,14 @@ async function main() {
     }
     const mono325 = presets325.find((p) => p.id === 'mono')
     await choosePack(mono325.name)
-    await page.waitForFunction(() => /[?&]pack=mono(&|$)/.test(document.querySelector('iframe[data-pilot]')?.getAttribute('src') ?? ''), null, { timeout: 15000 }).catch(() => {})
-    await page.waitForTimeout(600)
+    // the frame's OWN address, not its `src` attribute: the attribute changes at once and the old document stays readable
+    // until the new one commits, so a fixed wait read Paper's document under Mono's address (Story 6.5's Review, twice)
+    await page.waitForFunction(() => /[?&]pack=mono(&|$)/.test(document.querySelector('iframe[data-pilot]')?.contentWindow?.location.search ?? ''), null, { timeout: 15000 }).catch(() => {})
     const inMono325 = await docOf325()
     check('DW-325 — the Pack menu reaches the canvas document: Mono asks for `&pack=mono` and the document paints Mono\'s own token',
       /[?&]pack=mono(&|$)/.test(inMono325.src ?? '') && inMono325.bg === mono325.light.background.toUpperCase(), JSON.stringify(inMono325))
     await choosePack(presets325[0].name)
-    await page.waitForFunction(() => !/[?&]pack=/.test(document.querySelector('iframe[data-pilot]')?.getAttribute('src') ?? 'pack='), null, { timeout: 15000 }).catch(() => {})
-    await page.waitForTimeout(600)
+    await page.waitForFunction(() => !/[?&]pack=/.test(document.querySelector('iframe[data-pilot]')?.contentWindow?.location.search ?? 'pack='), null, { timeout: 15000 }).catch(() => {})
     const inPaper325 = await docOf325()
     check('DW-325 — and Paper takes the pack off the address (every cached Paper document stays valid) and paints Paper\'s token',
       !/[?&]pack=/.test(inPaper325.src ?? 'pack=') && inPaper325.bg === presets325[0].light.background.toUpperCase(), JSON.stringify(inPaper325))

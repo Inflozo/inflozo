@@ -321,6 +321,7 @@ and the Real-infra verifier. No finding needed the owner's decision.
 - [x] [Review][Patch] A17 #1's new comment said every accent mark is the contrast accent on Contrast; the pager's hover underline is not, and never was [packages/library/designs/a17/1/style.css:9]
 - [x] [Review][Patch] The recorder's cleanup raised only its first failure, so a theme error could hide an article left published; every failure is now printed [tools/probe/record-mode-resolution.py]
 - [x] [Review][Patch] The authoring guide did not say the value is double-quoted, that a one-value control needs no rule, that no other rule declares a mode-scoped property, or what happens at compile when a value has no rule [docs/section-authoring.md]
+- [x] [Review][Patch] The pilots walk's Pack-menu check (Story 6.3, DW-325) read the old frame under the new address and failed twice on the deployed site; it now waits for the frame's own address [tools/probe/run-verify-pilots.cjs:171]
 - [x] [Review][Defer] A17 #1's pager hover underline is the brand accent on a Contrast ground [packages/library/designs/a17/1/style.css:83] — deferred, pre-existing; DW-329, Story 10.54
 - [x] [Review][Defer] No committed check holds a non-default ground to an expected token (the matrix draws defaults and two Contrast cases), and `disabledBy` may name a mode-scoped control [tools/matrix/cases.mjs:131] — deferred, needs new baselines (R-116) and a ruling only if a design wants it; DW-330, Story 9.1
 - [x] [Review][Defer] The section key is built by each caller, a hook collision is a bare throw, and the editor's hook and `/pilots`' dark draw are held in CI by source-text tests only [packages/section-runtime/src/dark-override.ts] — deferred to the first story that compiles the hook; DW-331, Story 7.4
@@ -606,6 +607,25 @@ sentence into Story 9.1's criteria word for word.
   the agreement sweep with a plain link drawn in every section, R-239's two pin-over-visitor rows, and its three
   controls reported (the block withheld, the link rules withheld on every Background pair whose link look changes,
   forced-state readings taken).
+
+- **CI on the Review head `c0c86314`** -- `check`, `rls`, `deploy` and the render matrix success; Vercel serves
+  `dpl_HRRPLJcPDdrhJpxhPFkoDZUaqSoY`, READY, built from `c0c86314` (each walk asks Vercel and refuses any other commit).
+- **The deployed walks, run in the main session on `app.inflozo.com` and the live Supabase** (`SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, read in-process and handed through the environment, never on
+  a command line; each walk's throwaway accounts deleted, the user count read before and after):
+  - `run-verify-pilots.cjs` -- **0 FAIL**, every check PASS on its third run. This story's Dark stop: Inline Row's
+    Background set to Contrast while Dark is shown is DRAWN as Contrast (`data-bg="contrast"`, its computed ground the
+    pack's dark contrast), Light draws Base, and Dark again draws Contrast. **Its first two runs each had one FAIL, the
+    same line** — Story 6.3's Pack-menu check (DW-325) read Paper's `--bg-page` under Mono's address. Read as a signal,
+    not re-run past: the check waited a fixed time after the frame's `src` attribute changed and then read the OLD
+    document, still readable until the new one commits. It now waits for the frame's own address; with that the same
+    deployment reads Mono's token under Mono and Paper's under Paper. A defect of the walk, not of the page.
+  - `run-verify-editor.cjs` -- **0 FAIL**, every check PASS. Step 47's flip unchanged (nothing repainted, selection,
+    scroll and caret kept); step 48: the overridden root carries `data-instance` (eight hex digits), through the flip's
+    re-stamp and through a repaint; step 49: Reset removes the override and the hook with it (`null`).
+- **Real services this phase hit (R-82):** T1 `ghost6.inflozo.com` (read-only), Vercel (the deployment asked for by
+  commit), Supabase (the walks' accounts and projects, on production), GitHub Actions (the runs read). Resend and Dodo:
+  nothing here sends mail or touches billing. T3: retired (R-238).
 
 **The I/O matrix, row by row → the check that ran and passed** (step-03's Matrix Test Audit):
 - System dark · system light + visitor dark · system dark + visitor light · the owner pins Dark · pins Light · a choice
