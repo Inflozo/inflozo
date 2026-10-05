@@ -950,20 +950,20 @@ already hold their one project, so the deployed walk proves duplication instead.
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Click the grey area beside the page, then **Change**. | — | The Style Pack list. Every pack has a small pencil, and **+ New pack** is last. Below the list are **Heading font** and **Body font**, then **Site width**, **Radius**, **Spacing density**, **Gutters**, **Button style**, **Shadow**, **Link style** and **Pill radius**. Site width reads Narrow · Normal · Wide, and Spacing density reads Compact · Comfortable · Airy. The rows look exactly like the ones in the Style Pack drawing: the same small rounded switches, sizes and greys. |
-| 2 | same | Edit pack | Click **Paper**'s pencil. | — | The Edit pack window, as the drawing shows it: Pack name "Paper", then Light and Dark rows of seven colours (Base · Surface · Text · Muted · Border · Accent · On-accent), then **Image scrim** for Light and for Dark. Below are **Reset to defaults**, **Cancel** and **Save pack**. |
-| 3 | same | Colour picker | Click the Light **Accent** colour. In the hex field, select the text and type the dummy colour, then press **Enter**. | `#1E6BFF` | A small picker with a square and a rainbow strip. The Accent colour turns blue. |
-| 4 | same | Edit pack | Click the Light **Text** colour and type the dummy colour in its hex field. | `#DDDDDD` | A yellow note appears: "Hard to read: Text on Base in Light, …:1. Small text needs 4.5:1 — you can still save." The Text colour carries a small warning sign. **Save pack** still works, but don't press it yet. |
-| 5 | same | Edit pack | Type the dummy colour into the Text hex field, then click **Save pack**. | `#232019` | The yellow note goes away and the window closes. The page's buttons and links turn blue, and Paper's dots in the list show the blue. |
-| 6 | same | Editor | Press **⌘Z**, then **⇧⌘Z**. | — | ⌘Z puts Paper's own orange back. ⇧⌘Z makes it blue again. |
-| 7 | same | Style Pack list | Click **Wide** under Site width, **Pill** under Button style and **Underline** under Link style. | — | The page gets wider, its buttons get fully round ends, and its links go plain with an underline. |
-| 8 | same | Font pairing list | Click the **Heading font** row and pick **Lora** over **Lato**. | — | A list of thirty pairings, each with "Ag" in its own heading font and its two font names. After you pick, Heading font reads Lora and Body font reads Lato, and the page's headings and text change to them. |
-| 9 | same | New pack | Click **+ New pack**, then click **Save pack** without typing a name. | — | "Name your pack to save it." under the name, and nothing is saved. |
-| 10 | same | New pack | Type the dummy name. Click the Light **Base** colour and type the dummy colour, then click **Save pack**. | `Studio Warm`, then `#FFF4EA` | "Studio Warm" appears in the list, ringed and current, and the page turns cream. |
-| 11 | same | Editor | Click the grey area and press **⌘S**. Wait for the green tick, then reload the page. Then click the back arrow to Projects. | — | The page reopens in Studio Warm, with Paper still blue in the list. On Projects, the Pilot sections card is cream. |
+| 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Edit pack | Click **Paper**'s pencil. | — | The Edit pack window, as the drawing shows it: Pack name "Paper", then Light and Dark rows of seven colours (Base · Surface · Text · Muted · Border · Accent · On-accent), then **Image scrim** for Light and for Dark. Below are **Reset to defaults**, **Cancel** and **Save pack**. |
+| 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Colour picker | Click the Light **Accent** colour. In the hex field, select the text and type the dummy colour, then press **Enter**. | `#1E6BFF` | A small picker with a square and a rainbow strip. The Accent colour turns blue. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Edit pack | Click the Light **Text** colour and type the dummy colour in its hex field. | `#DDDDDD` | A yellow note appears: "Hard to read: Text on Base in Light, …:1. Small text needs 4.5:1 — you can still save." The Text colour carries a small warning sign. **Save pack** still works, but don't press it yet. |
+| 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Edit pack | Type the dummy colour into the Text hex field, then click **Save pack**. | `#232019` | The yellow note goes away and the window closes. The page's buttons and links turn blue, and Paper's dots in the list show the blue. |
+| 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Press **⌘Z**, then **⇧⌘Z**. | — | ⌘Z puts Paper's own orange back. ⇧⌘Z makes it blue again. |
+| 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Style Pack list | Click **Wide** under Site width, **Pill** under Button style and **Underline** under Link style. | — | The page gets wider, its buttons get fully round ends, and its links go plain with an underline. |
+| 8 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Font pairing list | Click the **Heading font** row and pick **Lora** over **Lato**. | — | A list of thirty pairings, each with "Ag" in its own heading font and its two font names. After you pick, Heading font reads Lora and Body font reads Lato, and the page's headings and text change to them. |
+| 9 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | New pack | Click **+ New pack**, then click **Save pack** without typing a name. | — | "Name your pack to save it." under the name, and nothing is saved. |
+| 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | New pack | Type the dummy name. Click the Light **Base** colour and type the dummy colour, then click **Save pack**. | `Studio Warm`, then `#FFF4EA` | "Studio Warm" appears in the list, ringed and current, and the page turns cream. |
+| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Click the grey area and press **⌘S**. Wait for the green tick, then reload the page. Then click the back arrow to Projects. | — | The page reopens in Studio Warm, with Paper still blue in the list. On Projects, the Pilot sections card is cream. |
 | 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`, in a second window | Editor, read-only | Open the same project in a second window, click the grey area, then **Change**. | — | Every pencil, **+ New pack** and every row is greyed, and clicking does nothing. |
-| 13 | same, in the first window | Edit pack | Click **Paper**'s pencil, click **Reset to defaults**, then **Save pack**. Click **Paper** in the list, then click the grey area and press **⌘S**. | — | Paper is back as it was, orange accent and Fraunces headings, and it is current. Studio Warm stays in this project's list, with its name dotted-underlined and a small pencil beside it; clicking its name opens Edit pack on the name. Nothing in the plan or the drawings deletes a pack, so this story has no Delete. Say so if you want one. |
-| 14 | same | Editor, narrow | Make the window about 1,000 px wide, open **⋯**, choose **Style Pack**, then click a pencil. | — | The list and its rows open on the right, and the Edit pack window opens over the page. Press **Esc** to close it. |
-| 15 | same | Edit pack | Click **Paper**'s pencil and change Light **Image scrim** to 70 %. Click **Cancel**. | — | The page does not change, because no section on today's page darkens a photo yet. Cancel leaves Paper as it was. |
+| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`, in the first window | Edit pack | Click **Paper**'s pencil, click **Reset to defaults**, then **Save pack**. Click **Paper** in the list, then click the grey area and press **⌘S**. | — | Paper is back as it was, orange accent and Fraunces headings, and it is current. Studio Warm stays in this project's list, with its name dotted-underlined and a small pencil beside it; clicking its name opens Edit pack on the name. Nothing in the plan or the drawings deletes a pack, so this story has no Delete. Say so if you want one. |
+| 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, narrow | Make the window about 1,000 px wide, open **⋯**, choose **Style Pack**, then click a pencil. | — | The list and its rows open on the right, and the Edit pack window opens over the page. Press **Esc** to close it. |
+| 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Edit pack | Click **Paper**'s pencil and change Light **Image scrim** to 70 %. Click **Cancel**. | — | The page does not change, because no section on today's page darkens a photo yet. Cancel leaves Paper as it was. |
 
 ## Verification
 
@@ -1168,3 +1168,20 @@ ran in the main session.
   `style_pack`, read off the pooler, equals the source's — brand, own pack and preset.
 - **Not touched:** T1 (no theme in this story), Resend, Dodo.
 
+### Results — Deploy (2026-10-05)
+
+Keys are named by their variable, never printed; each command read `tools/probe/.env` into its own environment.
+
+- **Schema:** applied at the Schema phase (`0d949166`) through `SUPABASE_DB_POOLER_URL` on the owner's go (Question 3) and
+  read back at Review (one five-argument `sync_project_doc`, `prosrc` byte-identical to the file). Nothing under
+  `supabase/` has changed since, so no second apply; CI's `rls` gate on HEAD is green.
+- **CI, for HEAD `fbb1380e`** (`GITHUB_TOKEN`, read-only): `ci.yml` run 37252782767 `check`, `rls` and `deploy` all
+  `success`; `matrix.yml` run 37252782752 `success`. HEAD adds only the Review record and the board over the reviewed
+  build `db8ad4bf`, so the code is what the Review's walks ran on.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): the deployment for that sha is
+  `READY`, target `production`, aliased to `inflozo.com`, `app.inflozo.com` and `www.inflozo.com`. Signed out, a plain GET
+  answered 200 on `app.inflozo.com/sign-in` and 307 to `/sign-in` on `/start` and on the project route (the sign-in
+  guard).
+- **Deployment: `dpl_4hDB8wAifeMWLw17tbcHe8qTPasZ` (https://app.inflozo.com/).**
+- **The owner's manual test** now names the full URL in every step; `owner_test` stays `pending`.
+- **No question for the owner.** Questions 1 to 4 are ruled.
