@@ -1,11 +1,17 @@
 /* A24 #1 Centred — A24-1 Centred.dc.html. Flat, tokens only, every control selected on the root. The gaps are
    the frame's 8 px grid (24 under the tag, 20 under the title, 24 above the meta, 40 above the picture), each a
    margin on the part that follows, so an absent part takes its gap with it. The space above is the section's;
-   the 64 below belongs to the post body (C), so the section ends at its picture. */
+   the 64 below belongs to the post body (C), so the section ends at its picture. The Background role is mode-scoped,
+   so each of its values is ONE root rule declaring this design's own properties, and every other rule reads them —
+   never `[data-bg]` (AD-30's authoring rule, Story 6.5). */
 
-.a24-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section) 0; padding-inline: var(--site-margin); }
-.a24-1[data-bg="surface"] { background: var(--bg-surface); }
-.a24-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.a24-1 { background: var(--a24-1-ground); color: var(--a24-1-ink); font-family: var(--font-body); padding-block: var(--space-section) 0; padding-inline: var(--site-margin); }
+/* the grounds — on Contrast every colour from the band's own text: the words, the accent marks, the avatar reversed. Two
+   marks exist only there, so elsewhere they are `initial` and leave the property to the cascade: a hovered link's ring
+   colour, and a focused one's underline colour. */
+.a24-1[data-bg="base"] { --a24-1-ground: var(--bg-page); --a24-1-ink: var(--text-body); --a24-1-quiet: var(--text-muted); --a24-1-mark: var(--accent); --a24-1-hover-ring: initial; --a24-1-focus-mark: initial; --a24-1-avatar: var(--border-hairline); --a24-1-avatar-ink: var(--text-body); }
+.a24-1[data-bg="surface"] { --a24-1-ground: var(--bg-surface); --a24-1-ink: var(--text-body); --a24-1-quiet: var(--text-muted); --a24-1-mark: var(--accent); --a24-1-hover-ring: initial; --a24-1-focus-mark: initial; --a24-1-avatar: var(--border-hairline); --a24-1-avatar-ink: var(--text-body); }
+.a24-1[data-bg="contrast"] { --a24-1-ground: var(--bg-contrast); --a24-1-ink: var(--text-on-contrast); --a24-1-quiet: var(--text-on-contrast); --a24-1-mark: var(--accent-on-contrast); --a24-1-hover-ring: var(--accent-on-contrast); --a24-1-focus-mark: var(--accent-on-contrast); --a24-1-avatar: var(--text-on-contrast); --a24-1-avatar-ink: var(--bg-contrast); }
 .a24-1[data-spacing="compact"] { padding-block-start: var(--space-section-compact); }
 .a24-1[data-spacing="spacious"] { padding-block-start: var(--space-section-spacious); }
 .a24-1[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
@@ -17,24 +23,26 @@
 .a24-1[data-rule="above"] .a24-1__text { border-block-start: 1px solid var(--border-hairline); padding-block-start: 24px; }
 .a24-1[data-rule="below"] .a24-1__text { border-block-end: 1px solid var(--border-hairline); padding-block-end: 24px; }
 
-/* Tag — A1's nav-item treatment: muted at rest, text with a 2 px accent underline on hover, 160 ms. */
-.a24-1__tag { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); text-decoration-line: none; text-decoration-thickness: 2px; text-underline-offset: 5px; transition: color 160ms; padding-block: 14px; margin-block: -14px; }
-.a24-1__tag:hover { color: var(--text-body); text-decoration-line: underline; text-decoration-color: var(--accent); }
+/* Tag — A1's nav-item treatment: muted at rest, text with a 2 px accent underline on hover, 160 ms. A focused link's
+   underline colour comes BEFORE the hover rules, so a link both hovered and focused keeps the hover's underline. */
+.a24-1__tag { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--a24-1-quiet); text-decoration-line: none; text-decoration-thickness: 2px; text-underline-offset: 5px; transition: color 160ms; padding-block: 14px; margin-block: -14px; }
+.a24-1__tag:focus-visible, .a24-1__author:focus-visible { text-decoration-color: var(--a24-1-focus-mark); }
+.a24-1__tag:hover { color: var(--a24-1-ink); text-decoration-line: underline; text-decoration-color: var(--a24-1-mark); outline-color: var(--a24-1-hover-ring); }
 .a24-1[data-tag-line="off"] .a24-1__tag { display: none; }
 
-.a24-1__title { margin: 24px 0 0; font-family: var(--font-heading); font-weight: 700; font-size: 50px; line-height: 1.1; letter-spacing: -0.02em; color: var(--text-body); max-width: 820px; text-wrap: balance; }
+.a24-1__title { margin: 24px 0 0; font-family: var(--font-heading); font-weight: 700; font-size: 50px; line-height: 1.1; letter-spacing: -0.02em; color: var(--a24-1-ink); max-width: 820px; text-wrap: balance; }
 .a24-1__title:first-child, .a24-1[data-tag-line="off"] .a24-1__title { margin-block-start: 0; }
 .a24-1[data-title-size="small"] .a24-1__title { font-size: 40px; }
 .a24-1[data-title-size="large"] .a24-1__title { font-size: 64px; }
 
-.a24-1__standfirst { margin: 20px 0 0; font-size: 19px; line-height: 1.55; color: var(--text-muted); max-width: 720px; text-wrap: pretty; }
+.a24-1__standfirst { margin: 20px 0 0; font-size: 19px; line-height: 1.55; color: var(--a24-1-quiet); max-width: 720px; text-wrap: pretty; }
 .a24-1[data-standfirst="off"] .a24-1__standfirst { display: none; }
 .a24-1[data-standfirst-lines="two"] .a24-1__standfirst { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .a24-1[data-standfirst-lines="three"] .a24-1__standfirst { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 .a24-1[data-standfirst="off"][data-standfirst-lines] .a24-1__standfirst { display: none; }
 
 /* Meta — avatar, name, date, reading time on one 13 px muted line; the dots are the stylesheet's. */
-.a24-1__meta { margin: 24px 0 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 13px; line-height: 1.5; color: var(--text-muted); }
+.a24-1__meta { margin: 24px 0 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; font-size: 13px; line-height: 1.5; color: var(--a24-1-quiet); }
 .a24-1[data-align="start"] .a24-1__meta { justify-content: flex-start; }
 .a24-1__date::before, .a24-1__reading::before { content: "·"; padding-inline: 0.35em; }
 .a24-1[data-byline="author-date"] .a24-1__reading { display: none; }
@@ -44,11 +52,11 @@
 .a24-1[data-byline="off"] .a24-1__meta { display: none; }
 
 .a24-1__author { color: inherit; text-decoration-line: none; text-decoration-thickness: 2px; text-underline-offset: 4px; transition: color 160ms; padding-block: 12px; margin-block: -12px; }
-.a24-1__author:hover { color: var(--text-body); text-decoration-line: underline; text-decoration-color: var(--accent); }
-.a24-1__tag:focus-visible, .a24-1__author:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 2px; color: var(--text-body); }
+.a24-1__author:hover { color: var(--a24-1-ink); text-decoration-line: underline; text-decoration-color: var(--a24-1-mark); outline-color: var(--a24-1-hover-ring); }
+.a24-1__tag:focus-visible, .a24-1__author:focus-visible { outline: 2px solid var(--a24-1-mark); outline-offset: 4px; border-radius: 2px; color: var(--a24-1-ink); }
 
 /* Avatar — the photograph over one letter; with no photograph the guard removes the image and the letter stays. */
-.a24-1__avatar { position: relative; flex: none; width: 24px; height: 24px; margin-inline-end: 9px; border-radius: 50%; overflow: hidden; background: var(--border-hairline); color: var(--text-body); }
+.a24-1__avatar { position: relative; flex: none; width: 24px; height: 24px; margin-inline-end: 9px; border-radius: 50%; overflow: hidden; background: var(--a24-1-avatar); color: var(--a24-1-avatar-ink); }
 .a24-1__initial { display: block; height: 100%; font-size: 0; line-height: 24px; font-weight: 600; text-align: center; }
 .a24-1__initial::first-letter { font-size: 10px; }
 .a24-1__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -67,16 +75,9 @@
 .a24-1[data-ratio="landscape"] .a24-1__image { aspect-ratio: 3 / 2; }
 .a24-1[data-ratio="square"] .a24-1__image { aspect-ratio: 1 / 1; }
 .a24-1[data-ratio="portrait"] .a24-1__image { aspect-ratio: 4 / 5; }
-.a24-1__caption { margin-block-start: 12px; font-size: 13px; line-height: 1.5; color: var(--text-muted); text-align: center; }
+.a24-1__caption { margin-block-start: 12px; font-size: 13px; line-height: 1.5; color: var(--a24-1-quiet); text-align: center; }
 .a24-1[data-align="start"] .a24-1__caption { text-align: start; }
 .a24-1[data-caption="hide"] .a24-1__caption { display: none; }
-
-/* Contrast ground: every colour from the band's own text. */
-.a24-1[data-bg="contrast"] .a24-1__title, .a24-1[data-bg="contrast"] .a24-1__tag, .a24-1[data-bg="contrast"] .a24-1__standfirst,
-.a24-1[data-bg="contrast"] .a24-1__meta, .a24-1[data-bg="contrast"] .a24-1__caption { color: var(--text-on-contrast); }
-.a24-1[data-bg="contrast"] .a24-1__tag:hover, .a24-1[data-bg="contrast"] .a24-1__author:hover,
-.a24-1[data-bg="contrast"] .a24-1__tag:focus-visible, .a24-1[data-bg="contrast"] .a24-1__author:focus-visible { color: var(--text-on-contrast); text-decoration-color: var(--accent-on-contrast); outline-color: var(--accent-on-contrast); }
-.a24-1[data-bg="contrast"] .a24-1__avatar { background: var(--text-on-contrast); color: var(--bg-contrast); }
 
 /* 834: title and standfirst both take the measure, title 42, standfirst 18. */
 @media (max-width: 834px) {

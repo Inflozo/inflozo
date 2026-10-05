@@ -4431,3 +4431,40 @@ colour Ghost put on a recorded page, so `tokens.test.ts` admits it.
 - **R-173 holds in a real theme on both majors.** A plain link on the page ground reads the reference set's link colour and decoration in light (R-112: ink words, accent underline) and in dark (the accent's words), and on a contrast ground keeps the ground's words, underlined in `--accent-on-contrast` — the values `tokens.ts` computes, read back from Chromium.
 - **R-229 holds.** The plain link Ghost's own renderer prints in a post's body (`{{content}}`, class-less on both majors) takes the same look, because the rule is document-wide; a classed link keeps its own.
 - **What this does NOT say.** Nothing here was compiled by Inflozo's emitter — the theme is a probe carrying the token block verbatim, as Epic 7 will. The owner pin (`scheme-*`) is Story 6.5's, and its on-Ghost proof is Story 7.35's.
+
+## 69. FR-E4's three mode inputs, one at a time, and a section's dark override — the token block and `darkOverrideCss` on a probe theme, T1 · 2026-10-05
+
+**Command.** `python3 tools/probe/record-mode-resolution.py` — one theme upload and two activations, the previous theme restored and the probe theme deleted in a `finally`, both read back; record-cards.py's own draft article read as the line below says; no other content, no setting and no key written. T1 only (R-238).
+
+**Why.** Story 6.5 decides light or dark from one declared list of conditions, `MODE_SELECTORS` (R-239: the owner's pin, the `scheme-light` / `scheme-dark` body class; on Auto the visitor's `data-mode`; then the device), and carries a section's dark override to a visitor as its root properties written into the token block (`darkOverrideCss`, DW-195). The keyboard gate proves both on the canvas document; this is the pin composed with `{{body_class}}` on a real Ghost, and each input alone — §68 switched dark on two ways at once (DW-318). The theme carries `reference-tokens.css` byte-for-byte, then `darkOverrideCss` for A22 #1 (Background Base in light, Contrast in dark, hook `7c473f96`), with `<body class="{{body_class}}{{#is "post"}} scheme-dark{{/is}}{{#is "author"}} scheme-light{{/is}}">`, so `/` is Auto, the post is pinned Dark and an author page pinned Light. Gate: Ghost 5.x via gscan 4.49.7 — 0 errors / 0 warnings · Ghost 6.x via gscan 6.4.2 — 0 errors / 0 warnings.
+
+**The controls, each of which voids the run:** every page read was this run's probe theme (its nonce); its body carried exactly the pin its page should; the media query reported the emulated scheme; with the token `<style>` disabled `--bg-page` read empty; the classed link kept its own `rgb(10, 11, 12)`; and with the overrides `<style>` disabled the section drew Base's ground in every mode. Every one held.
+
+### (a) T1 `ghost6.inflozo.com` (6.58.0) — the post read through Ghost's draft preview, `/p/{uuid}/`; the author page `/author/priya-raman/`
+
+| Page | Device | Visitor (`data-mode`) | Resolves to | Per-mode `:root` | Plain links | Section A22 #1 | Overrides off |
+|---|---|---|---|---|---|---|---|
+| `/` (Auto) | light | none | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/` (Auto) | light | light | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/` (Auto) | light | dark | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| `/` (Auto) | dark | none | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| `/` (Auto) | dark | light | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/` (Auto) | dark | dark | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| the post (pinned Dark) | light | none | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| the post (pinned Dark) | light | light | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| the post (pinned Dark) | light | dark | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| the post (pinned Dark) | dark | none | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| the post (pinned Dark) | dark | light | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| the post (pinned Dark) | dark | dark | **dark** | as ruled | as ruled | `rgb(242, 237, 228)` — as ruled | `rgb(23, 21, 17)` (Base) |
+| `/author/priya-raman/` (pinned Light) | light | none | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/author/priya-raman/` (pinned Light) | light | light | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/author/priya-raman/` (pinned Light) | light | dark | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/author/priya-raman/` (pinned Light) | dark | none | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/author/priya-raman/` (pinned Light) | dark | light | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+| `/author/priya-raman/` (pinned Light) | dark | dark | **light** | as ruled | as ruled | `rgb(251, 249, 245)` — as ruled | `rgb(251, 249, 245)` (Base) |
+
+### What it means
+
+- **The pin composes with `{{body_class}}` on a real Ghost, and wins as R-239 ruled.** A server-rendered `scheme-dark` on the post and `scheme-light` on the author page resolve the whole palette to their mode whatever the device and whatever `data-mode` says; on `/` (Auto, no class) the visitor's `data-mode` wins over the device, and with neither the device decides. Each input was read alone (DW-318).
+- **A section's dark override reaches a visitor.** A22 #1, Base in light, draws Contrast in dark from each input alone, and Base in light; with the per-instance rules disabled it draws Base in every mode — so `darkOverrideCss` is what moves it (DW-195).
+- **What this does NOT say.** Nothing here was compiled by Inflozo's emitter — the theme is a probe carrying the token block and one section's rules verbatim, as Epic 7 will (Story 7.4); the pin is written by a probe `{{#is}}`, not by `@custom.color_scheme` (Story 7.11), and the compiled theme's confirmation is Story 7.35's. Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired).

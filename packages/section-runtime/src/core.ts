@@ -78,6 +78,7 @@ import {
 import { escapeUserText, flagOn, isRich, linkAttributes, linkGate, serializeMarks } from './marks.ts'
 import type { PropValue, ThemeSink } from './marks.ts'
 import { resolveControls, withData } from './controls.ts'
+import { HOOK_RE } from './dark-override.ts'
 
 export { formatDate }
 
@@ -181,6 +182,11 @@ export type RenderInput = {
   controls?: Readonly<Record<string, unknown>>
   /** the instance's stored Count and Order per `dataBindings` key, folded in by `withData` */
   data?: Readonly<Record<string, unknown>>
+  /** STORY 6.5 — the section's HOOK (`darkHook`): given only while a dark override of it is in force, stamped on the root
+   *  as `data-instance` after the controls, on both emitters, so the token block's per-section rules (`darkOverrideCss`)
+   *  reach it in a shipped theme. Re-checked against the hash's alphabet (AD-36). Omitted, the render is byte-identical
+   *  to one before this story, which is the control. */
+  instance?: string
   /** AD-27(b): asset id → URL. An `image` prop stores an id and resolves ONLY through here — the
    *  review page hands it the sample pool, Epic 7 the theme's asset paths. */
   assets?: Readonly<Record<string, string>>
@@ -1316,8 +1322,12 @@ function applyProps(
  *  put a quote or a brace into either emitter (AD-36). */
 export function stampControls(
   section: RuntimeElement,
-  input: Pick<RenderInput, 'controlSchema' | 'universals' | 'controls'>,
+  input: Pick<RenderInput, 'controlSchema' | 'universals' | 'controls' | 'instance'>,
 ): void {
+  // Story 6.5 — a hook outside its alphabet is refused by name before anything is touched, never escaped (AD-36)
+  if (input.instance !== undefined && !HOOK_RE.test(input.instance)) {
+    throw new Error(`AD-36: data-instance=${JSON.stringify(input.instance)} is not a section's hook — eight lowercase hex digits (darkHook).`)
+  }
   const schema = input.controlSchema
   if (schema === undefined) return
   for (const { name } of [...section.attributes]) {
@@ -1334,6 +1344,8 @@ export function stampControls(
     if (!CONTROL_NAME_RE.test(name) || !CONTROL_VALUE_RE.test(value)) throw new Error(`AD-36: data-${name}=${JSON.stringify(value)} is not a closed control value`)
     section.setAttribute(`data-${name}`, value)
   }
+  // Story 6.5 — the hook AFTER the controls (the strip above took any earlier one), so a cleared override leaves none
+  if (input.instance !== undefined) section.setAttribute('data-instance', input.instance)
 }
 
 /** The first code point of the first and of the last whitespace-separated word: "Jane Doe" → JD,

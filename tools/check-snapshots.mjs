@@ -190,8 +190,10 @@ if (DIRS.length === 0) {
 check('control — a design with one class changed fails, naming the file and its first differing line', () => {
   const d = loadDesign(DIRS[0])
   const { id, files } = renderDesign(d)
-  const m = /class="([^"]+)"/.exec(d.html)
-  if (m === null) throw new Error(`${id} carries no class to change`)
+  // Story 6.5: a class BELOW the root — the root's class is what the stylesheet's mode-scoped rules are written on
+  // (`mode-scoped-rule`), so changing it is refused by the validator before any snapshot is compared
+  const m = [...d.html.matchAll(/class="([^"]+)"/g)][1] ?? null
+  if (m === null) throw new Error(`${id} carries no class below its root to change`)
   const changed = renderDesign({ ...d, html: d.html.replace(m[0], `class="${m[1]}-changed"`) }).files
   return mustFail(driftFailures(id, changed, files), /template\.hbs — changed at line \d+:/, 'a changed class')
 })

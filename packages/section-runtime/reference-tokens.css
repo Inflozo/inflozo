@@ -43,7 +43,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-mode="light"]) {
+  :root:not([data-mode="light"]):not(:has(> body.scheme-light)) {
     --bg-page: #171511;
     --bg-surface: #211D17;
     --text-body: #F2EDE4;
@@ -69,7 +69,7 @@
   }
 }
 
-:root[data-mode="dark"] {
+:root:has(> body.scheme-dark), :root[data-mode="dark"]:not(:has(> body.scheme-light)) {
   --bg-page: #171511;
   --bg-surface: #211D17;
   --text-body: #F2EDE4;

@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { orbitWeekly } from '@inflozo/library'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
-import { defaultContent, stampControls } from '@inflozo/section-runtime'
+import { defaultContent, stampControls, storedFor } from '@inflozo/section-runtime'
 import type { ControlState, MemberState, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import type { LinkResources } from '@/components/controls/link-picker'
@@ -135,7 +135,9 @@ export function Review({
     c.doc.documentElement.setAttribute('data-mode', now.mode)
     const started = performance.now()
     try {
-      mountSections(c.mount, renderSection(c.doc, e, s, {
+      // Story 6.5 — the defect found at Create: the mode's slice, as the editor's paint takes it, so a dark override the
+      // Sidebar saves in Dark is drawn here too (it was saved, its moon shown, and the canvas drew the light value)
+      mountSections(c.mount, renderSection(c.doc, e, { ...s, controls: storedFor(e, s, now.mode) }, {
         target: e.compileTarget[0] as string,
         rows: rows[e.id],
         feed: now.feed,
@@ -167,7 +169,7 @@ export function Review({
       const root = canvas()?.mount.firstElementChild
       // no root: the section is gated away (Show to, or a root data-if), so there is nothing to stamp — re-render
       if (!root) return paint()
-      stampControls(root as unknown as RuntimeElement, { controlSchema: entry.controlSchema, universals: entry.universals, controls: next.controls })
+      stampControls(root as unknown as RuntimeElement, { controlSchema: entry.controlSchema, universals: entry.universals, controls: storedFor(entry, next, latest.current.mode) })
       measure()
     } else paint()
   }

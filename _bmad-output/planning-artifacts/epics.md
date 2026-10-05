@@ -111,7 +111,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-E1** Every pack token is either **computed** or **authored**, and Appendix D says which per row; the author is asked only for genuine judgement. Full token set per pack, including the 30-pairing font pool.
 - **FR-E2** 12 curated presets ship with hand-tuned paired light + dark palettes; switching restyles the canvas live in ≤ 300 ms.
 - **FR-E3** Every token is user-editable per project, per mode, with a live AA contrast check that warns and never blocks. Custom packs are per-project by design.
-- **FR-E4** Tokens compile to CSS custom properties with **one** declared dark selector list and nothing else in the theme selecting on mode. Three inputs decide the mode in a normative precedence: the visitor's choice, then the owner's pin, then the system preference.
+- **FR-E4** Tokens compile to CSS custom properties with **one** declared list of mode conditions and nothing else in the theme selecting on mode. Three inputs decide the mode in a normative precedence: the owner's pin; on Auto, the visitor's choice; then the system preference (R-239, Story 6.5).
 - **FR-E5** Auto-branding seeds accent colour and logo into the active pack.
 
 **FR-F · Control System**
@@ -2834,14 +2834,16 @@ So that a pack change or a mode change can never break a layout.
 **Given** the compiled theme
 **When** the mode is resolved
 **Then** tokens compile to CSS custom properties — **light values on `:root`, dark values under one declared
-selector list — and nothing else in the theme selects on mode at all**
-**And** the precedence is normative: **the visitor's explicit choice wins, then the site owner's pinned setting,
-then the system preference**
+list of mode conditions — and nothing else in the theme selects on mode at all**
+**And** the precedence is normative: **the site owner's pinned setting wins; on Auto, the visitor's explicit choice;
+then the system preference** — **R-239** (owner, 2026-10-05, this story's Question 1): a choice a visitor saved under
+Auto waits, kept, while the site is pinned, and applies again once it is back on Auto *(Story 6.5's Dev: built as
+`MODE_SELECTORS` in `tokens.ts`, the one place the precedence is written; the dark map written twice from it)*
 **And** **system preference is `@media (prefers-color-scheme: dark)`, pure CSS, so it works with JavaScript
 disabled** — this is what `color_scheme: Auto` means, and Auto is not a third palette but the absence of a pin
 **And** **the owner's pin is server-rendered as a body class** (`scheme-light` / `scheme-dark`), because that is
 the one mode signal present in the HTML Ghost sends, and it composes with `{{body_class}}`
-**And** **the visitor's override is `[data-mode]`**, set by the `mode-toggle` module and persisted for them
+**And** **the visitor's override is `[data-mode]`**, set by the `mode-toggle` module and persisted for them, and read only on Auto
 **And** the two markers are **layers, not rivals** — both resolve into the **same token block**
 **And** **sections consume tokens exclusively**: no section stylesheet ever selects on `prefers-color-scheme`, on
 a scheme class or on `data-mode`
@@ -3039,6 +3041,10 @@ a gap is a build warning
 **And** **the strip is sound only because a design never becomes another design at render, and compile CI asserts
 exactly that**: no emitted stylesheet may contain a rule reachable only under another design's root attribute
 **And** global CSS is the token block + base/reset + shared primitives + `cards.css`
+**And** **the token block is `packTokensCss(pack)` followed by `darkOverrideCss` over every placed section** — a section's
+dark override reaching a visitor as its own root properties on its `data-instance` hook (AD-30, DW-195), the hook the
+emitters stamp from `darkHook` over the same `template_key:instanceId` key — and **none on a Light-only project**, whose
+compile hands `darkOverrideCss` nothing (from Story 6.5's Dev, 2026-10-05)
 **And** the **theme-size budget is enforced and surfaced pre-deploy** — total zip, per-entry and uncompressed
 total — because Ghost rejects oversized uploads with `COMPRESSED_TOO_LARGE`, `ENTRY_TOO_LARGE` and
 `TOTAL_TOO_LARGE`; the real limits are **probed on the §4 targets** and the budget set below the lowest observed,
@@ -4033,6 +4039,10 @@ So that "canvas and shipped output agree" is verified rather than assumed on eac
 **And** **the T4 clause is deferred with T4 itself and is not an exit condition for either epic**: a deploy
 attempt against T4 failing with the friendly Starter message and setting Preview-only is **carried forward to §4's
 pre-launch Ghost(Pro) gate**, owned by E15
+**And** **the three mode inputs and one section's dark override are confirmed on the compiled theme on T1** — the
+owner's pin through `@custom.color_scheme`'s body class, the visitor's `data-mode` on Auto and the device, each read
+alone, resolving as R-239's table says, and an overridden section drawing its dark value from each — what MEASUREMENTS
+§69 recorded on a probe theme, now on Inflozo's own emitter (from Story 6.5's Dev, 2026-10-05; Ghost 5's half is DW-326's)
 **And** the gscan stress harness (`tools/stress/build.js`) **names every template's target and stacks on each only what
 its scope allows** — no feed on post, page or error, and its 40-section static-route template modelled as a target — so
 the scale proof compiles what the compiler itself would ship (DW-296)
@@ -4261,6 +4271,8 @@ So that I can start using Headers on my own site.
 **And** the owner's test includes a design change on A1's ring in his own editor, where he sees the 180 ms settle and approves it (DW-214); the navigation partial's classes are recorded on an archive's page 2 as well, where Ghost adds `nav-current-parent`, and `navigationItems` draws exactly the partial's classes (DW-231); and a dark override a design only remembers (R-205) is counted by the row, the moon and D6a, or named where they say 'Nothing to clear' — asked of the owner first (R-83, DW-286).
 **And** the live-content walk reads a ring tile under a selected A1 section drawing the linked site's newest post on production — the half of DW-251 a ring of one design could not show (Story 5.24d's Create, 2026-10-01; the capped lines are 5.24d's).
 **And** a paid member ask on an invite-only site — A1's free-member upgrade ask (`account/plans`) is the first a design can carry — gets the settings line R-216 gives a free one, or is ruled out: Portal blocks every sign-up there, and no Sites sentence covers a paid ask, so this story's Create asks the owner (R-83) for its words (DW-305, from Story 5.24e's Create, 2026-10-02).
+**And** the `mode-toggle` module, where an A1 design declares it: "The module offers no control on a page whose body carries `scheme-light` or `scheme-dark` (R-34) and keeps a choice saved under Auto; the token block, not the module, makes the pin win, so the choice applies again once the site is on Auto." (R-239, owner, 2026-10-05; from Story 6.5's Dev) — and its two open questions, the flash before a deferred script and two states against three, are asked of the owner at this story's Create (DW-328).
+**And** the category stylesheet meets AD-30's authoring rule (`mode-scoped-rule`): a mode-scoped control — Background role, or a design's own `darkOverride` control — is selected on the root alone, each value one rule declaring the root's own custom properties, every value the same set, every other rule reading them, so a dark override reaches a visitor through the token block (DW-195, Story 6.5; `docs/section-authoring.md`).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1); FR-C5 (the compatibility watch), FR-P2's compatibility carve-out (the one email that watch may send), FR-B7 (the `ghost_compat` rows); FR-F1 (button icons and the Icon Picker's canvas entry, R-121). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html` · `P0-2 Icon Slot and Picker.dc.html` (the icon slot and button icons, as R-104 reshapes the picker). The compatibility notice is a transactional send and an in-app row, not a drawn surface; `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 are Story 13.4's reader over it. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82), plus a real Resend send for the broadcast.
 

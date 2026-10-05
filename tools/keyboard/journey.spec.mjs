@@ -1156,6 +1156,9 @@ test('6.4 · the warning: Text #DDDDDD raises it in words with each failing swat
   await swatchOf(page, 'light', 'text').focus()
   await page.keyboard.press('Enter')
   await expect(pickerOf(page)).toBeVisible()
+  // the picker places focus on its hex field a moment after it shows (`typeHex` waits for the same); a Shift+Tab sent
+  // before that started from the swatch and missed the square (1 run in 5 at Story 6.5's Dev — a race in this test)
+  await expect(page.locator('#pack-picker-hex')).toBeFocused()
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Shift+Tab')
   await expect(page.locator('[data-picker-square]')).toBeFocused()

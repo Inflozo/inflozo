@@ -2,7 +2,8 @@
 title: 'Story 6.5 — Mode resolution: three inputs, one precedence, one file'
 type: 'feature'
 created: '2026-10-05'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '53e20026acd5e8e3ac171dbf446d0a5dc87be06c'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
@@ -219,56 +220,57 @@ block at :3040), Story 7.35 (:4017), Story 9.1 (:4231); `deferred-work.md` DW-19
 values" table keeps what the declined options would have changed.
 
 **Execution:**
-- [ ] `packages/section-runtime/src/tokens.ts` -- `MODE_SELECTORS` (the media query, the system selector, the explicit
+- [x] `packages/section-runtime/src/tokens.ts` -- `MODE_SELECTORS` (the media query, the system selector, the explicit
   list — Design Notes); `packTokensCss` writes the dark map under both from it and nothing else changes in the block;
   `GROUND_LINKS`, a plain link's declarations per Background value, built from the same strings `LINK_RULES` is built
   from, its bytes unchanged; the header comment says the pin landed and the token block is the one file naming a mode
   -- one declared list of mode conditions
-- [ ] `packages/section-runtime/src/dark-override.ts` (new) -- `darkHook(entry, state, key)`: an FNV-1a hash of `key` as
+- [x] `packages/section-runtime/src/dark-override.ts` (new) -- `darkHook(entry, state, key)`: an FNV-1a hash of `key` as
   eight hex digits when an override of this section is in force (`darkOverridesInForce`), else `undefined`;
   `darkOverrideCss(placed)`: for each `{ key, entry, state }` with an override in force, the dark value's root
   declarations read from `entry.css` through the library's one reader of those rules (the validator's, below), emitted
   under `MODE_SELECTORS`' two conditions scoped `[data-instance="<hook>"]`,
   and for `bg` the value's `GROUND_LINKS` under the same conditions at specificity (0,0,1); `''` for none; refuses a
   colliding hook and a value with no root rule, by name -- DW-195's expression, the token block's per-instance part
-- [ ] `packages/section-runtime/src/core.ts` -- `RenderInput.instance?: string`, stamped by `stampControls` after the
+- [x] `packages/section-runtime/src/core.ts` -- `RenderInput.instance?: string`, stamped by `stampControls` after the
   controls as `data-instance`, re-checked against the hash's alphabet (AD-36) and removed by the strip like every root
   `data-*` it owns -- both emitters carry the hook from one input; absent, output byte-identical
-- [ ] `packages/section-runtime/src/index.ts` -- export `MODE_SELECTORS`, `GROUND_LINKS`, `darkHook`,
+- [x] `packages/section-runtime/src/index.ts` -- export `MODE_SELECTORS`, `GROUND_LINKS`, `darkHook`,
   `darkOverrideCss` -- Epic 7 and the gate read them
-- [ ] `packages/section-runtime/reference-tokens.css` -- regenerate (Code Map's one-liner) -- the canvas, the matrix and
+- [x] `packages/section-runtime/reference-tokens.css` -- regenerate (Code Map's one-liner) -- the canvas, the matrix and
   the style guide read these bytes
-- [ ] `packages/section-runtime/src/tokens.test.ts`, `dark-override.test.ts` (new), `controls.test.ts` (both emitters'
+- [x] `packages/section-runtime/src/tokens.test.ts`, `dark-override.test.ts` (new), `controls.test.ts` (both emitters'
   roots, beside its dark-render case at :673-684) -- the block's heads are
   `:root`, the media block, the one explicit rule and the two bands; every mode-naming selector is one of
   `MODE_SELECTORS`'; both dark copies exactly `PER_MODE`; `LINK_RULES` unchanged and last; `darkOverrideCss` over the I/O
   matrix's rows (Base → Contrast, Contrast → Base, `tint`, none, a collision, a value with no root rule) with each rule's
   specificity asserted; the hook stamped only from `instance` and refused outside its alphabet -- the card's unit
   assertion over the emitted block
-- [ ] `packages/library/src/validate.ts`, `vocabulary.ts`, `validate.test.ts` -- `mode-scoped-rule` (Design Notes § The
+- [x] `packages/library/src/validate.ts`, `vocabulary.ts`, `validate.test.ts` -- `mode-scoped-rule` (Design Notes § The
   authoring rule), its reader of a stylesheet's mode-scoped root rules exported once, so `darkOverrideCss` parses
   nothing of its own; `data-instance` refused in a design's markup and stylesheet; `instance` joins `FOREIGN_ATTR_RE`;
   each refusal fired beside a clean control -- the rule Epic 9 authors against, enforced
-- [ ] `tools/stress/test-vocabulary.mjs` -- a `var(--x)` with no fallback is also accepted where `--x` is declared by that
+- [x] `tools/stress/test-vocabulary.mjs` -- a `var(--x)` with no fallback is also accepted where `--x` is declared by that
   stylesheet's own mode-scoped root rules -- a design's own properties are declared by construction
-- [ ] every design and fixture `style.css` that selects on a mode-scoped attribute (Code Map's two lists) -- each
+- [x] every design and fixture `style.css` that selects on a mode-scoped attribute (Code Map's two lists) -- each
   ground's answers moved into root custom properties per the rule, every element reading them; `a1/1`'s comment
   rewritten to the rule -- the library meets its rule, every pixel unchanged (the sweep, below)
-- [ ] `apps/web/lib/canvas.ts`, `editor.tsx` -- `renderSection`'s options gain `instance`, passed to `renderCanvas`;
+- [x] `apps/web/lib/canvas.ts`, `editor.tsx` -- `renderSection`'s options gain `instance`, passed to `renderCanvas`;
   `partOf` and `slice` hand `darkHook(entry, state, queryKey(i))` -- the canvas draws the markup the theme ships
-- [ ] `apps/web/app/(app)/app/(authed)/pilots/review.tsx`, `apps/web/dark-mode.test.ts` -- `paint` and `onChange` take
+- [x] `apps/web/app/(app)/app/(authed)/pilots/review.tsx`, `apps/web/dark-mode.test.ts` -- `paint` and `onChange` take
   `storedFor(entry, state, mode)`; the source guard holds both -- the defect found at Create: a dark override on
   `/pilots` is drawn
-- [ ] `tools/keyboard/mode.spec.mjs` (new), `playwright.config.mjs`, `run-keyboard-gate.sh`'s header -- the truth table
+- [x] `tools/keyboard/mode.spec.mjs` (new), `playwright.config.mjs`, `run-keyboard-gate.sh`'s header -- the truth table
   and the agreement sweep (Design Notes § The proofs), each behind its controls -- the card's "on the canvas in all three
   states", in CI before deploy
-- [ ] `tools/probe/record-mode-resolution.py` (new) + its `tools/doc-audit.py` row -- the T1 recorder (Design Notes § The
+- [x] `tools/probe/record-mode-resolution.py` (new) + its `tools/doc-audit.py` row -- the T1 recorder (Design Notes § The
   proofs), MEASUREMENTS §69, docstring on any flag, run on the owner's in-session go (Ask First) -- DW-318, and the pin
-  composed with `{{body_class}}` on a real Ghost
-- [ ] `tools/probe/run-verify-pilots.cjs` -- a Dark stop: a pilot's Background set to Contrast while Dark is shown draws
+  composed with `{{body_class}}` on a real Ghost *(Dev, 2026-10-05: built, catalogued, smoke-run locally with no Ghost,
+  then run on T1 in the main session on the owner's in-session go — §69 written, every row as ruled)*
+- [x] `tools/probe/run-verify-pilots.cjs` -- a Dark stop: a pilot's Background set to Contrast while Dark is shown draws
   Contrast (the root's `data-bg` and its computed background), and Light draws the light value -- the `/pilots` fix on
   the deployed site, at Review
-- [ ] propagation -- `prd.md` FR-E4 (the ruled order; "one declared selector list" as built; the override's
+- [x] propagation -- `prd.md` FR-E4 (the ruled order; "one declared selector list" as built; the override's
   expression) and FR-D7 / FR-Q5 where they restate the order; `ARCHITECTURE-SPINE.md` AD-30 (title and rule: one file,
   the token block, with a per-mode image swap's one generic rule there; the expression named; R-239) and
   the FR-E row; `docs/section-authoring.md` (the rule with Design Notes' example, the link paragraph, `instance`
@@ -278,7 +280,8 @@ values" table keeps what the declined options would have changed.
   and DW-318 closed with their proof; a new entry for the module's two open questions — the flash before a deferred
   script, and two states against three — owned by Story 9.1; DW-326's list gains §69's Ghost 5 half); `epic-6-context.md`
   (a dated Dev sub-bullet); then a grep for the old selectors (`:root:not([data-mode="light"])` alone, the bare
-  `:root[data-mode="dark"]` head) and for every "two files" / "base stylesheet" mode sentence -- standing rules 3 and 7
+  `:root[data-mode="dark"]` head) and for every "two files" / "base stylesheet" mode sentence -- standing rules 3 and 7 *(Dev:
+  done; DW-318 closed on §69)*
 
 **Acceptance Criteria:**
 - Given any pack, when its block is emitted, then `:root` carries every property in light, the dark map appears exactly
@@ -496,3 +499,87 @@ sentence into Story 9.1's criteria word for word.
 - `run-verify-pilots.cjs` with its new Dark stop; `run-verify-editor.cjs`' flip (step 47) and dark-override steps
   (around 53) — the editor's preview unchanged, and `data-instance` present on an overridden root and gone once it is
   cleared.
+
+**Executed — Dev phase (2026-10-05), Node 24.18.1; nothing deployed before the Dev push:**
+- **The regeneration one-liner** -- `git diff packages/section-runtime/reference-tokens.css` shows the two dark heads'
+  selectors changed (`:root:not([data-mode="light"]):not(:has(> body.scheme-light))` inside the media block, and
+  `:root:has(> body.scheme-dark), :root[data-mode="dark"]:not(:has(> body.scheme-light))`), no value and no link rule
+  moved.
+- **The unit tests** -- `tokens.test.ts`, `dark-override.test.ts` (new), `controls.test.ts` and `validate.test.ts` pass;
+  the block-shape and `darkOverrideCss` cases import what HEAD does not have, and `mode-scoped-rule` refused every one of
+  HEAD's pilots and fixtures before the refactor (the validator run over all of them, by name) and none after.
+- **`node tools/stress/test-vocabulary.mjs`** -- every check passed, its own-property control caught.
+- **`pnpm check`** -- exit 0: lint, typecheck, every package test, the `pnpm test` tail, `check-snapshots` with no
+  snapshot changed. One change outside the story's files: `check-snapshots`' "one class changed" control now changes a
+  class BELOW the root — the root's class is what the mode-scoped rules are written on, so changing it was refused by the
+  validator before any snapshot was compared (the control's intent kept: it is caught as a drifted template).
+- **`pnpm keyboard`, whole** -- exit 0, every journey, floor and mode test passed, `mode.spec.mjs` reporting its controls
+  (the media query, the inputs read back, the token block off leaving `--bg-page` empty, the withheld block making pairs
+  differ). **Controls, each a scratch edit, restored:** `MODE_SELECTORS.explicit` swapped to option 3's turned the truth
+  table red (a Light pin with a visitor's Dark read dark); the per-section `<style>` withheld turned the sweep red at the
+  first pair. The first whole run also showed a race in 6.4's warning journey — Shift+Tab sent before the picker placed
+  focus on its hex field, failing 1 run in 5 when repeated alone; it now waits for that focus (green 12 of 12), and the
+  second whole run was clean.
+- **The refactor's sweep** (a scratch script, not committed) -- HEAD's stylesheets (`git show 53e20026:…`) against the
+  new ones, rendered as the editor renders: every design and fixture (the reference design included) × every offered
+  value of each mode-scoped control × every other control one value at a time × light and dark × every reference pack,
+  every element's FULL computed style compared, and every element a stylesheet styles under `:hover` / `:focus-visible`
+  read with that state forced through CDP — **zero differences**. **Control:** one value planted in A22 #1's Contrast
+  rule was detected on every row it reaches.
+- **`bash tools/matrix/run-matrix-gate.sh`** -- exit 0, its own line "0 violations · 0 of 394 drawn cases scroll
+  sideways … — passed"; no photograph moved and no baseline written.
+- **`python3 tools/doc-audit.py --check`** twice -- the first regenerated the story board, the second passed.
+  **`bash supabase/tests/run-rls-gate.sh`** -- exit 0. No migration, so no Schema phase.
+- **`tools/stress`'s gscan harness** -- 0 errors / 0 warnings on both majors (its "Could not parse CSS stylesheet" line
+  is jsdom reading `default.hbs`'s Handlebars-filled `<style>`, as before this story).
+- **The T1 recorder** -- built, catalogued and smoke-run locally with no Ghost (its theme gscan 0/0 on both majors, its
+  driver and judge over a hand render of each pin), then **run on T1 in the main session on the owner's in-session go**
+  (asked in this Dev session, R-83: *"Yes, run it now"*): `python3 tools/probe/record-mode-resolution.py` -- exit 0,
+  *"MEASUREMENTS.md §69 written — every row held on T1, behind its controls"*. Every combination of device × page (`/`
+  Auto, the draft article through Ghost's draft preview `/p/{uuid}/` pinned Dark, `/author/priya-raman/` pinned Light) ×
+  visitor `data-mode` (none, light, dark) PASS on every per-mode `:root` property, §68's plain links, A22 #1's ground
+  (Contrast in dark from each input alone, Base in light) and the overrides-off control (Base in every mode). The draft
+  preview's context WAS `post` (the hypothesis held — the article was never published). Read back afterwards in-process
+  (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY` from `tools/probe/.env`, never printed): active
+  theme `casper`, no probe theme left, `inflozo-style-guide-article` status `draft`. No Ghost 5 leg (R-238; DW-326).
+- **Added at the orchestrator's matrix audit** -- the I/O matrix's "JavaScript off" row had no check that ran with
+  scripts off (the truth table sets its inputs through `page.evaluate`). `mode.spec.mjs` gains *"JavaScript off: the
+  device alone decides, pure CSS"*: every reference pack × both devices in a `javaScriptEnabled: false` context, the page
+  carrying the pack's block and a script that would write the other mode — its `data-mode` reading back absent is the
+  control that JavaScript was off.
+- **Re-run by the orchestrator on the final tree** -- `pnpm keyboard`, whole: exit 0, *"192 passed (9.0m)"*, the truth
+  table *"72 combinations across the reference packs, every one as ruled; controls held"*, the JavaScript-off test, and
+  the agreement sweep *"186 ordered pairs … control — 180 of them differ with the block withheld"*. `pnpm check`: exit 0.
+  `node tools/stress/test-vocabulary.mjs`: *"33 checks passed"*. `bash tools/matrix/run-matrix-gate.sh`: exit 0, *"0
+  violations … — passed"*, no baseline written.
+- **The deployed walks** -- `run-verify-pilots.cjs`' Dark stop and `run-verify-editor.cjs`' hook checks (steps 48 and 49:
+  `data-instance` on the overridden root through the flip and the repaint, gone after Reset) are written and
+  syntax-checked, not run: they run once the Dev push has deployed.
+
+**The I/O matrix, row by row → the check that ran and passed** (step-03's Matrix Test Audit):
+- System dark · system light + visitor dark · system dark + visitor light · the owner pins Dark · pins Light · a choice
+  saved under Auto, then a pin · an unknown visitor value (`auto`) -- `mode.spec.mjs`' truth table (device × pin × visitor
+  none/light/dark/`auto`, every reference pack, the ruled oracle), and on a real Ghost §69 (T1).
+- JavaScript off -- `mode.spec.mjs`' JavaScript-off test (above).
+- The canvas, exactly as today -- the truth table's no-class rows; `controls.test.ts`' byte-identical render without
+  `instance`; `check-snapshots` with no snapshot changed; the render matrix with no photograph moved.
+- Override Base → Contrast · Contrast → Base · a design's own `tint` -- `dark-override.test.ts` (each rule and its
+  specificity) and the agreement sweep (every ordered pair of every mode-scoped control on the harness canvas, dark from
+  each input alone and light from each light input, at rest and under forced `:hover` / `:focus-visible`); Base →
+  Contrast also on T1 (§69).
+- An override nothing renders · no override at all -- `dark-override.test.ts` (*"nothing in force writes nothing"*) and
+  `controls.test.ts` (*"absent, the render is byte-identical"*).
+- A hostile hook -- `controls.test.ts` (*"outside its alphabet, refused by name"*), on both emitters.
+- Two sections, one hook · a value with no root rule -- `dark-override.test.ts` (*"refused by name, never skipped"*).
+- A descendant rule · a root rule that paints · uneven grounds -- `validate.test.ts`' `mode-scoped-rule` test, each
+  refusal beside its clean control.
+- A design writes the hook -- `validate.test.ts`: `instance-attribute` in markup and in a stylesheet, and `instance` in
+  `bad-control-name`'s list.
+- `/pilots` in Dark -- `apps/web/dark-mode.test.ts`' source guard on `paint` and `onChange` (in `pnpm check`); the
+  deployed proof is `run-verify-pilots.cjs`' new Dark stop, at Review.
+
+**Real services this phase hit (R-82):** the Ghost test server **T1** `ghost6.inflozo.com` (6.58.0) alone — one probe
+theme uploaded, activated and deleted, the previous theme restored, all read back (above). **Not touched in Dev, and
+why:** Supabase (no migration and no data path changed — the RLS gate ran on its local PostgreSQL 17 container); Vercel
+(nothing deploys until the Dev push; the deployed walks are Review's); Resend and Dodo (nothing here sends mail or
+touches billing); T3 (retired, R-238).

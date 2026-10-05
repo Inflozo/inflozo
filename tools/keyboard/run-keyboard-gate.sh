@@ -3,7 +3,10 @@
 # matrix from the keyboard alone: D8c's skip link first, the canvas one tab stop with the embedded document out of
 # the order, the eight live keys, WCAG 2.1.4's focus condition, the three-rung `Esc` ladder, R-147's card listing
 # exactly the keys that work, every deferred key inert, the Layers row's `⌥`-arrow reorder, `⌥F10` into the mark toolbar, and
-# the settings panel's reset wiring (DW-167). Any non-zero exit is a failure and CI's `check` job keys on it.
+# the settings panel's reset wiring (DW-167). Since Story 6.5 it also runs `mode.spec.mjs` over the harness's canvas
+# document: every combination of FR-E4's three mode inputs resolving as the owner ruled (R-239), and every dark override
+# drawn the theme's way (`darkOverrideCss`) equal to the canvas's way, element by element. Any non-zero exit is a failure
+# and CI's `check` job keys on it.
 #
 # IT IS ITS OWN STEP IN THAT JOB AND NOT A LINE INSIDE `pnpm check`, and the reason is executed rather than
 # reasoned: `apps/web/vercel.json`'s buildCommand runs `pnpm -w check` a SECOND time inside `vercel build`, in

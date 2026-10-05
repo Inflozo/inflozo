@@ -17,7 +17,8 @@ if (!process.env.KEYBOARD_BASE_URL) {
 export default defineConfig({
   testDir: '.',
   // Story 5.22: and the floor's touch journeys, which may tap — kept out of the journey, whose first test refuses a pointer
-  testMatch: ['journey.spec.mjs', 'floor.spec.mjs'],
+  // Story 6.5: and mode resolution — the truth table over FR-E4's three inputs and the theme-way/canvas-way agreement sweep
+  testMatch: ['journey.spec.mjs', 'floor.spec.mjs', 'mode.spec.mjs'],
   outputDir: './test-results',
   fullyParallel: false,
   workers: 1,

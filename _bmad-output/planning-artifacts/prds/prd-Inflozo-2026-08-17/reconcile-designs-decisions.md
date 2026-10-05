@@ -5227,9 +5227,12 @@ Create, Question 1, ruled **option 1** (owner, 2026-10-05): *"Your setting wins;
 - **Declined.** Option 2, the pin wins and the module deletes the saved choice. Option 3, the saved choice keeps
   winning (FR-E4 as written), which leaves the visitor in a mode with no switch to leave it.
 - Targets: ✅ this entry · ✅ R-34's entry · ✅ Story 6.5's spec — Question 1 · ✅ `epics.md` — Story 6.5's card · ✅
-  DW-316 · ✅ `epic-6-context.md` · ⬜ `prd.md` FR-E4, and FR-D7 / FR-Q5 where they restate the order · ⬜
-  `ARCHITECTURE-SPINE.md` AD-30 · ⬜ `epics.md` — Story 9.1's criteria, the module's sentence word for word · ⬜ built and
-  proved — Story 6.5's Dev.
+  DW-316 · ✅ `epic-6-context.md` · ✅ `prd.md` FR-E4, and FR-D7 / FR-Q5 where they restate the order (Story 6.5's Dev) ·
+  ✅ `ARCHITECTURE-SPINE.md` AD-30 (title and rule) and AD-17 (Story 6.5's Dev) · ✅ `epics.md` — Story 9.1's criteria,
+  the module's sentence word for word, and FR-E4's summary line (Story 6.5's Dev) · ✅ built — `MODE_SELECTORS` in
+  `tokens.ts` — and proved in Chromium by the keyboard gate's truth table, red with option 3's selectors (Story 6.5's
+  Dev) · ✅ recorded on T1 — MEASUREMENTS §69, `tools/probe/record-mode-resolution.py`, on the owner's in-session go,
+  every row as ruled behind its controls (DW-318, Story 6.5's Dev, 2026-10-05).
 
 ## B · Approved decisions superseded by this session
 

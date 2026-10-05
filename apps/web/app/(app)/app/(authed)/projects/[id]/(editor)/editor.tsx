@@ -8,7 +8,7 @@ import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARG
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
-  renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
+  darkHook, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
   withData,
 } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, FeedRole, MarkNode, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
@@ -2352,12 +2352,14 @@ function EditorShell({
     })
   }
   /** The stored slice each root's attributes come from, in the mode being shown — `stampControls`' single door,
-   *  handed a different slice. This is the whole of the dark render (AD-30). */
+   *  handed a different slice. This is the whole of the dark render (AD-30). Story 6.5: and the section's hook while a dark
+   *  override of it is in force, so a re-stamp carries `data-instance` exactly as the theme's markup does, and drops it
+   *  the moment the override is cleared. */
   const slice = (placed: Placed, state: ControlState = placed) => {
     const design = entries[placed.designId]
     return design === undefined
       ? undefined
-      : { controlSchema: design.controlSchema, universals: design.universals, controls: storedFor(design, state, latest.current.mode) }
+      : { controlSchema: design.controlSchema, universals: design.universals, controls: storedFor(design, state, latest.current.mode), instance: darkHook(design, state, queryKey(placed)) }
   }
 
   /** Every root re-stamped for the mode now showing. NEVER A REPAINT: nothing in the DOM is replaced, so the caret,
@@ -3050,7 +3052,8 @@ function EditorShell({
       return
     }
     // Story 5.6: the mode is ONE attribute on the canvas root, and every paint re-asserts it — the token block
-    // (`tokens.ts`'s `:root[data-mode="dark"]`) does all the colouring from there (AD-30)
+    // (`tokens.ts`'s `MODE_SELECTORS`, whose explicit rule reads `data-mode` on a bare body — Story 6.5) does all the
+    // colouring from there (AD-30)
     doc.documentElement.setAttribute('data-mode', now.mode)
     // a field being edited is ended in place before its element is replaced, and asks for no second paint
     const was = editing.current
@@ -3125,8 +3128,9 @@ function EditorShell({
         const queries = queriesOf(i)
         const secondary = queries[FEED_KEY]
         const own: DesignRows | undefined = live === null ? sampleRows(queries) : live.rows[queryKey(i)]
+        // Story 6.5: and the hook, while a dark override of it is in force — the markup the theme ships (`darkHook`)
         return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, {
-          target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility,
+          target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, instance: darkHook(entry, i, queryKey(i)),
           assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs,
           live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
           secondary: secondary === undefined ? undefined : { query: secondary, rows: rowsFor(secondary, own?.[FEED_KEY]) },

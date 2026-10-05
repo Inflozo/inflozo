@@ -47,6 +47,12 @@ export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
 // (`isHex`): the Style Pack editor validates a record and computes its tokens in the browser with these, so the client
 // refuses exactly what the engine refuses. All pool-free.
 export { AA_PAIRS, isLength, packTokens, packTokensCss, SCALES } from './tokens.ts'
+// Story 6.5 — FR-E4's three inputs as one declared list of mode conditions (R-239's precedence lives there alone), a plain
+// link's declarations per Background value, and a section's dark override as a visitor sees it: the hook both emitters
+// stamp and the token block's per-section rules. Epic 7's compile and the keyboard gate read them.
+export { GROUND_LINKS, MODE_SELECTORS } from './tokens.ts'
+export { darkHook, darkOverrideCss, HOOK_RE } from './dark-override.ts'
+export type { PlacedSection } from './dark-override.ts'
 export type { Face, Pack, PackMode, PackRole, TokenRow, TokenSource } from './tokens.ts'
 export { contrast, isHex } from './colour.ts'
 export { editText, linkAttributes } from './marks.ts'

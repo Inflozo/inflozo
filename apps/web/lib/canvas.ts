@@ -282,6 +282,10 @@ export function renderSection(
      *  rule), so `{{#if access}}`, the cut and the reading time answer for the visitor View as previews. Omitting it is
      *  exactly today's render — `/pilots`, the snapshots, the matrix, the picker's cards and the ring's tiles pass none. */
     visitor?: Visitor
+    /** Story 6.5 — the section's hook (`darkHook`), given while a dark override of it is in force, so the canvas draws the
+     *  markup the theme ships (`data-instance` on the root). The canvas never carries the per-section rules — it previews
+     *  dark by re-stamping (Story 5.6) — so nothing it draws changes. Omitting it is exactly today's render. */
+    instance?: string
   },
 ): string {
   const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject, o.perPage, o.visitor)
@@ -305,6 +309,7 @@ export function renderSection(
     editing: o.editing,
     ...(o.page === undefined ? {} : { tokens: { page_number: String(o.page) } }),
     ...(o.secondary === undefined ? {} : { feed: o.secondary }),
+    ...(o.instance === undefined ? {} : { instance: o.instance }),
   }))
 }
 

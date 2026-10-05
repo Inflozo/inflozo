@@ -26,7 +26,7 @@ import {
   withData,
 } from './controls.ts'
 import type { ControlRow, ControlState, DataRow, Mode, PropRow } from './controls.ts'
-import { editText, iconSvg, renderCanvas, renderTheme } from './index.ts'
+import { darkHook, editText, HOOK_RE, iconSvg, renderCanvas, renderTheme, stampControls } from './index.ts'
 import type { RenderInput, RichText } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -681,6 +681,34 @@ test('FR-D7 — the mode picks the stored slice: a dark override in dark, the li
   for (const html of [both(state).canvas, both(state).theme]) assert.match(rootOf(html), /data-bg="base"/)
   const dark = { ...state, controls: storedFor(entry, state, 'dark') }
   for (const html of [both(dark).canvas, both(dark).theme]) assert.match(rootOf(html), /data-bg="contrast"/)
+})
+
+test('Story 6.5 — the hook: both emitters stamp `data-instance` from `instance` alone, after the controls; absent, the render is byte-identical; outside its alphabet, refused by name', () => {
+  const state = start({ controls: { bg: 'base' }, darkOverrides: { bg: 'contrast' } })
+  const hook = darkHook(entry, state, 'home:auto-home-4')
+  assert.match(hook ?? '', HOOK_RE, 'an override in force has a hook')
+  const hooked = both(state, { instance: hook })
+  for (const html of [hooked.canvas, hooked.theme]) {
+    assert.match(rootOf(html), new RegExp(`data-bg="base"[^>]*data-instance="${hook}"`), 'stamped after the controls, the light value kept')
+    assert.equal((html.match(/data-instance=/g) ?? []).length, 1, 'on the root alone')
+  }
+  // THE CONTROL: no `instance`, no attribute, and every byte as before this story
+  const plain = both(state)
+  assert.doesNotMatch(plain.canvas + plain.theme, /data-instance/)
+  assert.equal(hooked.canvas.replace(` data-instance="${hook}"`, ''), plain.canvas)
+  assert.equal(hooked.theme.replace(` data-instance="${hook}"`, ''), plain.theme)
+  // no override in force → no hook; a re-stamp without one strips the old (a cleared override leaves none)
+  assert.equal(darkHook(entry, start({ controls: { bg: 'base' } }), 'home:auto-home-4'), undefined)
+  const root = doc().createElement('div')
+  root.innerHTML = hooked.canvas
+  const section = root.firstElementChild as unknown as Parameters<typeof stampControls>[0]
+  stampControls(section, { controlSchema: entry.controlSchema, universals: entry.universals, controls: state.controls })
+  assert.equal(section.getAttribute('data-instance'), null)
+  // AD-36: a hostile hook is refused by name on both emitters, never escaped
+  for (const instance of ['x"]{}', 'ABCDEF12', '1234567', '123456789', '']) {
+    assert.throws(() => renderCanvas(doc(), HTML, input(state, { instance })), /AD-36: data-instance=/, instance)
+    assert.throws(() => renderTheme(doc(), HTML, input(state, { instance })), /AD-36: data-instance=/, instance)
+  }
 })
 
 test('FR-D7 — a design\'s OWN mode-scoped control works the same way, so nothing is special-cased to `bg`', () => {

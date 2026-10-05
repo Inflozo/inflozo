@@ -400,6 +400,23 @@ DOCS = [
   "the probe in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main "
   'session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §68 alone, replacing an earlier §68 of '
   'its own.'),
+ ('tools/probe/record-mode-resolution.py', 'tool', 'Mode-resolution recorder',
+  "Story 6.5's recorder (standing rule 1, R-82; DW-318): FR-E4's three mode inputs read one at a time on a real Ghost — "
+  "the owner's pin as a scheme-* body class composed with {{body_class}}, the visitor's data-mode, the device — and a "
+  "section's dark override reaching a visitor through darkOverrideCss (DW-195). Refuses unless reference-tokens.css is "
+  'byte-for-byte what referenceTokensCss() emits, then builds a probe theme whose default.hbs carries it inline, '
+  "darkOverrideCss for A22 #1 (Base in light, Contrast in dark) and that section's canvas render with its stylesheet, "
+  "§68's contrast-ground and page-ground links, inside a body class that pins the post Dark and an author page Light "
+  'through {{#is}}; gates it through tools/stress/gate.js at 0 errors on both majors. On T1 ONLY (R-238), behind '
+  "record-shim.py's start_guard, uploads and activates it, waits for this run's nonce, and reads /, record-cards.py's "
+  "own draft article through /p/{uuid}/ (or published for the run and returned to draft in the same finally, read back) "
+  'and the first author the Content API lists. Chromium (the repository\'s Playwright) reads device × page × data-mode: '
+  "every per-mode property on :root, the two plain links and the section's ground, against R-239's ruled table. "
+  'Controls (the nonce, the body carrying exactly its page\'s pin, the media query, --bg-page empty with the token '
+  "<style> disabled, the classed link's own colour, the section on its light ground with the overrides <style> "
+  'disabled) void the run; a value that does not hold writes nothing. Restores the previous theme and deletes the probe '
+  "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
+  'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1295,10 +1312,21 @@ DOCS = [
   '600-wide tablet; DW-199\'s skeleton card measured against the real one at 1440 x 600 and 2560 x 1440, 1440 x 900 the '
   'control; DW-189\'s stand-in footer dragged by its Layers grip and its pill grip, its slot staying in the footer band; '
   'and R-217\'s Layers row pointing at its section with no pill and no scroll. Stores no count.'),
+ ('tools/keyboard/mode.spec.mjs', 'tool', 'Mode resolution in Chromium',
+  "Story 6.5's proofs in the keyboard gate's own run, over the harness's canvas document (/app/harness/canvas): THE "
+  "TRUTH TABLE — every combination of the device (prefers-color-scheme), the owner's pin (scheme-light / scheme-dark on "
+  "<body>, or none) and the visitor's data-mode (light, dark, an unknown word, none) resolves as R-239 ruled under every "
+  "reference pack, every per-mode property on :root equal to packTokens' map; and THE AGREEMENT SWEEP — for every design "
+  'and fixture on the harness canvas, every mode-scoped control with a choice and every ordered pair of its values, the '
+  "theme's way (the light value on the root, data-instance, darkOverrideCss after the token block) draws every element "
+  "as the canvas's way draws the dark value, with dark from each input alone, and as the light value in light — at rest "
+  'and with :hover / :focus-visible forced through CDP, no pointer. Controls (the media query, the inputs read back, '
+  '--bg-page empty with the token block off, a pair that differs with the block withheld) void the run. Stores no count.'),
  ('tools/keyboard/playwright.config.mjs', 'tool', 'The keyboard journey runner configuration',
   'Story 5.9: one worker, no retries, no touch, and a refusal to load without KEYBOARD_BASE_URL — the harness the gate '
   'boots is the only thing this journey means anything against. Since Story 5.22 it runs floor.spec.mjs beside the '
-  'journey and PINS the window at 1280 x 720, because below 1280 a fine pointer gets the compact editor (R-202). Also '
+  'journey and PINS the window at 1280 x 720, because below 1280 a fine pointer gets the compact editor (R-202); since '
+  'Story 6.5, mode.spec.mjs too. Also '
   'covers tools/keyboard/test-results/, which is generated output.'),
  ('tools/matrix/playwright.config.mjs', 'tool', 'The render matrix runner configuration',
   'Story 4.11: the one place NFR-6(a)\'s numbers live — threshold 0.1, maxDiffPixelRatio 0.01, animations disabled, '

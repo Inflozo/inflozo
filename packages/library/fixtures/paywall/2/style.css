@@ -1,9 +1,12 @@
 /* Story 5.20's second stand-in paywall — the first's words in two columns, and the site's paid plans by name. */
 
-.paywall-2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-gap); align-items: start; padding: var(--space-section) var(--site-margin); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); }
+.paywall-2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-gap); align-items: start; padding: var(--space-section) var(--site-margin); background: var(--paywall-2-ground); color: var(--paywall-2-ink); font-family: var(--font-body); }
 .paywall-2[data-layout="stack"] { grid-template-columns: minmax(0, 1fr); }
-.paywall-2[data-bg="surface"] { background: var(--bg-surface); }
-.paywall-2[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+/* the Background role is mode-scoped: each value is ONE root rule declaring this design's own properties, which every
+   other rule reads — never `[data-bg]` (AD-30's authoring rule, Story 6.5) */
+.paywall-2[data-bg="base"] { --paywall-2-ground: var(--bg-page); --paywall-2-ink: var(--text-body); }
+.paywall-2[data-bg="surface"] { --paywall-2-ground: var(--bg-surface); --paywall-2-ink: var(--text-body); }
+.paywall-2[data-bg="contrast"] { --paywall-2-ground: var(--bg-contrast); --paywall-2-ink: var(--text-on-contrast); }
 .paywall-2[data-spacing="compact"] { padding-block: var(--space-section-compact); }
 .paywall-2[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
 .paywall-2[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }

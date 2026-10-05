@@ -5512,7 +5512,19 @@ plain: You can pick a different background for a section's dark version, and on 
   difference — the rules we wrote for ourselves rule out every obvious way of doing it. Nothing is broken and
   nothing you set is lost; the choice is stored. The compiler story has to settle it before dark overrides can
   reach a visitor.
-status: open
+status: done 2026-10-05 (Story 6.5)
+resolution: Story 6.5's Dev (2026-10-05) built the planned expression and AD-30 names it. `mode-scoped-rule` (the library's
+  `modeScopedRules`, read once) holds every design to the authoring rule — a mode-scoped control is selected on the root
+  alone, each value one rule of the root's own custom properties, every value the same set — and the pilots and fixtures
+  were refactored to it with no pixel moved (the refactor sweep: HEAD's stylesheets against the new ones, every design and
+  fixture × every value × both modes × every reference pack, forced :hover/:focus-visible included, zero differences behind
+  a planted change that was caught; the render matrix the second net). Both emitters stamp the hook from
+  `RenderInput.instance` (`darkHook`, AD-36-checked); `darkOverrideCss` (`packages/section-runtime/src/dark-override.ts`)
+  writes the dark value's set and its plain link's look under `MODE_SELECTORS`' two conditions. Proven in
+  `dark-override.test.ts` (the I/O matrix's rows, each rule's specificity) and in the keyboard gate's agreement sweep
+  (`tools/keyboard/mode.spec.mjs`: the theme's way equals the canvas's way, element by element, from each input alone,
+  under every reference pack, behind a withheld-block control). Epic 7's token block appends it (Story 7.4); the editor
+  stamps the same hook. The on-Ghost reading is MEASUREMENTS §69 (DW-318), and a compiled theme's is Story 7.35's.
 severity: high
 origin: Story 5.6's Create run (2026-09-18), read in the normative documents. `ARCHITECTURE-SPINE.md:345`
   (AD-30) says **Background role** "is a Style Pack swatch role, so it resolves through the token block and
@@ -8615,7 +8627,14 @@ reason: the gate's AA assertion has to stop at that scope, or report a pairing t
 plain: The architecture's dark-mode rule says in its title that exactly one file in a theme picks light or dark, and
   in its text that two may. And nothing says what a visitor who chose dark under Auto sees once the owner pins the site
   to light.
-status: open
+status: done 2026-10-05 (Story 6.5)
+resolution: Story 6.5's Dev (2026-10-05). R-239 is built: `MODE_SELECTORS.explicit` is
+  `:root:has(> body.scheme-dark), :root[data-mode="dark"]:not(:has(> body.scheme-light))` and the system selector steps
+  aside for a Light pin, so the pin wins and a saved choice applies only on Auto — the keyboard gate's truth table proves
+  every combination under every reference pack, and goes red with option 3's selectors (executed). AD-30's title now
+  names its one file, the token block, and its rule says the same (a per-mode image swap's one generic rule lives there);
+  FR-E4's order is the ruled one; Story 9.1's criteria carry the module's sentence word for word, and the module's two
+  open questions are DW-328's.
 severity: low
 origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
 owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), whose card names this entry.
@@ -8659,7 +8678,15 @@ note (Story 6.4's Dev, 2026-10-04): the contrast-ground answers this entry added
 
 plain: The test on your two Ghost sites turned dark mode on in two ways at once, so it proves dark works but not that
   each way works alone.
-status: open
+status: done 2026-10-05 (Story 6.5)
+resolution: Story 6.5's Dev (2026-10-05) ran `tools/probe/record-mode-resolution.py` on T1 (6.58.0) on the owner's
+  in-session go: MEASUREMENTS §69 reads each input ALONE — the device (`colorScheme`) with no attribute, `data-mode` on
+  a device of the other scheme, and the owner's pin as a server-rendered `scheme-*` class composed with `{{body_class}}`
+  (the draft preview `/p/{uuid}/` pinned Dark, `/author/…/` pinned Light) — every per-mode `:root` property, §68's plain
+  links and one section's dark override resolving as R-239's table says, behind its controls (the nonce, the pin read
+  back on `<body>`, the media query, the token `<style>` off leaving `--bg-page` empty, the classed link's own colour,
+  the overrides `<style>` off drawing Base). The previous theme was restored and the probe deleted, both read back. The
+  Ghost 5 half is DW-326's.
 severity: low
 origin: Story 6.1's Review (2026-10-03), Real-infra verifier + Blind Hunter
 owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), whose card names this entry.
@@ -8671,6 +8698,10 @@ note (Story 6.5's Create, 2026-10-05): planned on T1 alone (R-238; the Ghost 5 h
   by page, composed with `{{body_class}}`: Auto on `/`, Dark on the draft article, Light on the author page. Chromium
   reads every combination of device, pin and visitor, one input at a time: the per-mode tokens, §68's link rows and one
   section's dark override, each behind its controls.
+note (Story 6.5's Dev, 2026-10-05): the recorder is built and catalogued, and was smoke-run locally with no Ghost — its
+  theme gscan-clean on both majors, its driver and judge over a hand render of the probe's `default.hbs` for each pin,
+  every control held and every value as ruled; then run on T1 on the owner's in-session go, in the main session
+  (RESET-PROTOCOL.md § Ghost), which wrote MEASUREMENTS §69 — the resolution above.
 
 ### DW-319: a signed-out visit to a signed-in page is redirected, but the page's own content still travels with the redirect
 
@@ -8828,6 +8859,8 @@ reason: an end-of-life Ghost on the public internet was the server that got hack
   declined. Until the pass, NFR-7's 5.x claim rests on the earlier T3 recordings and nothing newer. A probe script that
   refuses to run without T3 has its T3 leg made optional by the story that next runs it. A Ghost 5 check that cannot
   wait is asked of the owner, never skipped silently.
+note (Story 6.5's Dev, 2026-10-05): the pass gains MEASUREMENTS §69's Ghost 5 half — `tools/probe/record-mode-resolution.py`
+  runs T1 alone (its `GHOST6_*` keys); the Ghost 5 leg is that recorder pointed at the fresh server, and §69 says so.
 
 ## Deferred from: code review of spec-6-4-editing-tokens-per-mode-with-contrast-checked-live (2026-10-04)
 
@@ -8845,3 +8878,28 @@ reason: the action is older than this story and reads `style_pack`, then writes 
   check, while the editor's save merges by key inside `sync_project_doc`. Since 6.3 the exposure was one preset id;
   since 6.4 it is every pack the project authored. The fix is to write `brand` by key (in SQL, or through the RPC), and
   Story 6.6 changes what this action writes, so it is fixed there rather than twice.
+
+## Deferred from: Story 6.5's Dev (2026-10-05)
+
+### DW-328: the visitor's dark-mode button has two questions left — a flash before its script runs, and two states or three
+
+plain: When Epic 9 builds the small sun-and-moon button visitors press on your site, two things are still open: whether a
+  page briefly shows the wrong mode before the button's script has run, and whether visitors get two choices (Light,
+  Dark) or three (Light, Dark, follow my device).
+status: open
+severity: medium
+origin: Story 6.5's Create (2026-10-05), read in `research-section-js-libraries.md` while stating what the module does
+  under a pin (R-239)
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), the first story that builds
+  the `mode-toggle` module, whose criteria carry this entry with its id.
+location: `research-section-js-libraries.md` §2.1 row 28 and the module table (`mode-toggle`: "a tiny inline head script
+  to avoid the flash"; "Three states (Auto/Light/Dark) as a radio group, not a two-state switch") · `prd.md` NFR-2 (3)
+  ("no render-blocking JS — every theme script is `defer`red or `type="module"`") · the A1 frames' two-state toggle
+  (`A1 Headers - Spec.md`, the designs that declare `mode-toggle`)
+reason: 6.5 states what the module does on a pinned page and makes the pin win in CSS; it builds no module (its
+  boundaries). The flash: a `data-mode` restored by a deferred script lands after first paint, so a visitor who chose
+  Dark on a light device sees Light first — the research's answer is an inline head script, which NFR-2 (3) does not
+  name as allowed. The states: the research asks for three as a radio group and the A1 frames draw a two-state toggle;
+  two states silently discard a visitor's return to their device's setting. Both are the owner's to rule (R-83) at
+  9.1's Create, with the frames in front of him (R-74).
+

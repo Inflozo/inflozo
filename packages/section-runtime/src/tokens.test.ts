@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { contrast } from './colour.ts'
-import { LINK_RULES, SCALES, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
+import { GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
 import { REFERENCE_PACK, REFERENCE_TOKENS, referenceTokensCss } from './reference.ts'
 import type { Pack, PackMode } from './tokens.ts'
 
@@ -225,7 +225,8 @@ test('a step that does not exist, or a colour that is not #rrggbb, is refused by
 })
 
 test('the block: :root declares every property, the dark blocks exactly the per-mode set, each width band exactly the responsive set', () => {
-  const DARK = ['@media (prefers-color-scheme: dark)', ':root[data-mode="dark"]']
+  // Story 6.5: the two dark blocks are MODE_SELECTORS' two conditions — the media block, and the one explicit rule
+  const DARK = [`@media ${MODE_SELECTORS.media}`, MODE_SELECTORS.explicit.join(', ')]
   const BANDS = ['@media (max-width: 1023px)', '@media (max-width: 767px)']
   for (const [name, pack] of Object.entries(PACKS)) {
     const b = blocks(packTokensCss(pack))
@@ -240,6 +241,54 @@ test('the block: :root declares every property, the dark blocks exactly the per-
   }
   // and the reference stylesheet is Paper through the same door, under its header
   assert.ok(referenceTokensCss().endsWith(packTokensCss(REFERENCE_PACK)))
+})
+
+/* STORY 6.5 — FR-E4'S THREE INPUTS, ONE DECLARED LIST (R-239). The ruled precedence lives in MODE_SELECTORS alone; the
+   block writes the dark map twice from it and names a mode nowhere else. The browser half — every combination of device,
+   pin and visitor resolving as the ruled table says — is the keyboard gate's (`tools/keyboard/mode.spec.mjs`). */
+test('Story 6.5 — the dark map appears exactly twice, under MODE_SELECTORS\' two conditions, and every selector that names a mode is one of theirs', () => {
+  const modeNamed = /data-mode|scheme-(?:light|dark)|prefers-color-scheme/
+  const allowed = new Set([`@media ${MODE_SELECTORS.media}`, MODE_SELECTORS.system, MODE_SELECTORS.explicit.join(', ')])
+  for (const [name, pack] of Object.entries(PACKS)) {
+    const css = packTokensCss(pack)
+    // every head in the block, the media block's inner one included
+    const heads = [...css.matchAll(/^\s*([^{}\n]+?)\s*\{/gm)].map((m) => (m[1] as string).trim())
+    const named = heads.filter((h) => modeNamed.test(h))
+    assert.deepEqual(named, [`@media ${MODE_SELECTORS.media}`, MODE_SELECTORS.system, MODE_SELECTORS.explicit.join(', ')], `${name}: the mode-naming heads`)
+    for (const h of named) assert.ok(allowed.has(h), `${name}: ${h} is not one of MODE_SELECTORS'`)
+    // the one map, twice: the inner system rule and the explicit rule declare exactly the per-mode set, the same values
+    const declared = (head: string) => {
+      const at = css.indexOf(`${head} {`)
+      assert.notEqual(at, -1, `${name}: no ${head}`)
+      return css.slice(at, css.indexOf('}', at))
+    }
+    const system = declared(MODE_SELECTORS.system)
+    const explicit = declared(MODE_SELECTORS.explicit.join(', '))
+    assert.equal(system.slice(system.indexOf('{')).replace(/\s+/g, ' '), explicit.slice(explicit.indexOf('{')).replace(/\s+/g, ' '), `${name}: the two dark copies differ`)
+    const dark = packTokens(pack).dark
+    for (const p of PER_MODE) assert.ok(explicit.includes(`  ${p}: ${dark[p]};`), `${name}: ${p} is not the dark map's in the explicit rule`)
+    // nothing names the old bare heads any more (standing rule 7)
+    assert.doesNotMatch(css, /^\s*:root\[data-mode="dark"\] \{|^\s*:root:not\(\[data-mode="light"\]\) \{/m)
+  }
+  // THE RULED ORDER (R-239), as written: the pin wins both ways, and the visitor's choice applies only where no pin says
+  // the other — the system selector steps aside for an explicit Light, the explicit list never reads data-mode under a
+  // Light pin. (Swap `explicit` to option 3's and the keyboard gate's truth table goes red; this pins the words.)
+  assert.equal(MODE_SELECTORS.system, ':root:not([data-mode="light"]):not(:has(> body.scheme-light))')
+  assert.deepEqual([...MODE_SELECTORS.explicit], [':root:has(> body.scheme-dark)', ':root[data-mode="dark"]:not(:has(> body.scheme-light))'])
+})
+
+test('Story 6.5 — LINK_RULES keeps its bytes, and GROUND_LINKS says the same declarations per Background value from the same strings', () => {
+  assert.equal(LINK_RULES, [
+    ':where(a:not([class]), a[class=""]) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }',
+    ':where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class]), a[class=""]) { color: inherit; text-decoration-line: underline; text-decoration-color: currentcolor; }',
+    ':where([data-bg="contrast"]) :where(a:not([class]), a[class=""]) { text-decoration-color: var(--accent-on-contrast); }',
+  ].join('\n'), 'the bytes R-173, R-229 and MEASUREMENTS §68 proved')
+  const [plain, ground, contrast] = LINK_RULES.split('\n').map((r) => r.slice(r.indexOf('{') + 1, r.lastIndexOf('}')).trim()) as [string, string, string]
+  // a plain link on a page ground is the pack's link; on a coloured ground the ground's words, underlined
+  for (const v of ['base', 'surface']) assert.ok(plain.startsWith(GROUND_LINKS[v] as string), `${v}: ${GROUND_LINKS[v]}`)
+  for (const v of ['accent', 'image']) assert.equal(GROUND_LINKS[v], ground, v)
+  // contrast: the ground's words, the underline in the contrast accent — LINK_RULES' second rule overridden by its third
+  assert.equal(GROUND_LINKS['contrast'], ground.replace('text-decoration-color: currentcolor;', contrast))
 })
 
 test('every pack\'s block ends with R-173\'s link rule — there is no other way to emit one', () => {

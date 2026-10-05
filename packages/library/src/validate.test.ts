@@ -20,7 +20,8 @@ import {
 import { assembleEntry, categoryControlUnion, parseDesignDir } from './registry.ts'
 import type { CategoryContent, ControlDef, DesignJson } from './registry.ts'
 import {
-  memberAsks, validateCategoryContent, validateDataBinding, validateDesign, validateDesignJson, validateMarkup,
+  memberAsks, modeScopedOffers, modeScopedRules, rootClassOf, validateCategoryContent, validateDataBinding, validateDesign,
+  validateDesignJson, validateMarkup,
 } from './validate.ts'
 import type { Failure } from './validate.ts'
 
@@ -120,6 +121,9 @@ test("Story 4.7 — an authored js-enabled class is refused: core sets it on the
 test('Story 5.3 review — an authored data-inflozo-* is refused: the prefix is the editor\'s stamps and state marks', () => {
   refuses('editor-attribute', '<h2 data-inflozo-prop="title">x</h2>', '<h2 data-prop="title">x</h2>')
   refuses('editor-attribute', '<p data-inflozo-editing>x</p>', '<p data-prop="sub">x</p>')
+  // Story 6.5 — and its neighbour: the token block's per-section hook is the emitters' alone, on the root or anywhere
+  refuses('instance-attribute', '<p data-instance="0a1b2c3d">x</p>', '<p data-prop="sub">x</p>')
+  assert.deepEqual(codes(validateMarkup('<section class="s" data-bg="surface" data-spacing="comfortable" data-divider="line" data-instance="0a1b2c3d"><p>x</p></section>', { controls: [] })), ['instance-attribute'])
 })
 
 // ─── Story 4.9 — the catalog at the lexical door ─────────────────────────────
@@ -1070,8 +1074,70 @@ test('dark-capabilities: the declaration is exactly what the design earns — to
   one({ darkCapabilities: ['background'] }, undefined, /missing tokens/)
 })
 
+/* STORY 6.5 — THE AUTHORING RULE A DARK OVERRIDE REACHES A VISITOR THROUGH (AD-30, amended; DW-195). A selector naming a
+   mode-scoped control's attribute is exactly `.<root>[data-<name>="<value>"]`, declaring the root's own custom properties;
+   where a choice exists every value has one such rule with the same set; every other rule reads them. */
+test('mode-scoped-rule: a mode-scoped control is selected on the root alone, declaring its own properties, every value the same set — each refusal beside a clean control', () => {
+  const HTML = '<section class="s" data-bg="surface" data-spacing="comfortable" data-divider="line"><p class="s__x" data-prop="title">t</p></section>'
+  const grounds = (over: Record<string, string> = {}) => ['base', 'surface', 'accent', 'contrast', 'image'].map((v) => over[v] ?? `.s[data-bg="${v}"] { --s-ground: var(--bg-${v === 'contrast' ? 'contrast' : 'page'}); --s-ink: var(--text-${v === 'contrast' ? 'on-contrast' : 'body'}); }`).join('\n')
+  const CLEAN = `.s { background: var(--s-ground); color: var(--s-ink) }\n${grounds()}\n.s__x { color: var(--s-ink) }\n.s[data-cols="2"] .s__x { font-size: 2rem }`
+  const said = (css: string, over: Partial<DesignJson> = {}, html = HTML) =>
+    validateDesign({ html, design: design(over), css }).filter((f) => f.code === 'mode-scoped-rule').map((f) => f.message)
+  const one = (css: string, why: RegExp, over: Partial<DesignJson> = {}) => {
+    const m = said(css, over)
+    assert.equal(m.length, 1, `exactly one mode-scoped-rule refusal, got ${JSON.stringify(m)}`)
+    assert.match(m[0]!, why)
+  }
+  // THE CLEAN CONTROL — and a non-mode-scoped control keeps every rule shape it had
+  assert.deepEqual(said(CLEAN), [])
+  // A DESCENDANT RULE on the mode-scoped attribute, named by its selector
+  one(`${CLEAN}\n.s[data-bg="contrast"] .s__x { color: var(--text-on-contrast) }`, /^\.s\[data-bg="contrast"\] \.s__x selects on data-bg, a mode-scoped control/)
+  // …and every other shape that is not the root alone: a presence test, a :not(), a list, inside an at-rule
+  one(`${CLEAN}\n.s[data-bg] { color: var(--s-ink) }`, /^\.s\[data-bg\] selects on data-bg/)
+  one(`${CLEAN}\n.s:not([data-bg="base"]) .s__x { color: var(--s-ink) }`, /:not\(\[data-bg="base"\]\)/)
+  one(`${CLEAN}\n.s[data-bg="base"], .t { --s-ground: var(--bg-page) }`, /\.s\[data-bg="base"\], \.t selects on data-bg/)
+  one(`${CLEAN}\n@media (max-width: 767px) { .s[data-bg="contrast"] { --s-ink: var(--text-body); } }`, /inside another rule or an at-rule/)
+  // A ROOT RULE THAT PAINTS, or re-points a pack token, or writes a value that could close the block it is copied into
+  one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast); color: var(--text-on-contrast); }'), /declares `color: var\(--text-on-contrast\)` — a mode-scoped root rule declares the root's own custom properties only/)
+  one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast); --bg-page: var(--bg-contrast); }'), /declares `--bg-page: var\(--bg-contrast\)`/)
+  one(CLEAN.replace('--s-ink: var(--text-on-contrast); }', '--s-ink: var(--text-on-contrast) !important; }'), /declares `--s-ink: var\(--text-on-contrast\) !important`/)
+  // UNEVEN GROUNDS: an offered value with no root rule, and one lacking a property the others declare
+  one(CLEAN.replace(/\.s\[data-bg="image"\][^\n]*\n/, ''), /data-bg="image" is offered and no \.s\[data-bg="image"\] rule states its properties/)
+  one(CLEAN.replace(' --s-ink: var(--text-on-contrast);', ''), /\.s\[data-bg="contrast"\] lacks --s-ink/)
+  // one value written twice
+  one(`${CLEAN}\n.s[data-bg="base"] { --s-ground: var(--bg-page); --s-ink: var(--text-body); }`, /is written twice/)
+  // where no choice exists nothing is required: Background locked at one value, a stylesheet with no ground rule
+  assert.deepEqual(said('.s { background: var(--bg-page) }', { universals: { bg: { values: ['base'], reason: 'r' } } }), [])
+  // A DESIGN'S OWN darkOverride CONTROL is held the same — the declaration decides, never the name
+  const tint: ControlDef = { name: 'tint', type: 'segmented', label: 'Tint', group: 'style', values: ['none', 'soft'], default: 'none', darkOverride: true }
+  const withTint = { controlSchema: [...DESIGN.controlSchema, tint], darkCapabilities: ['tokens', 'background', 'override'] as DesignJson['darkCapabilities'] }
+  const tinted = `${CLEAN}\n.s[data-tint="none"] { --s-tint: initial; }\n.s[data-tint="soft"] { --s-tint: var(--bg-hover); }\n.s__x { background: var(--s-tint) }`
+  assert.deepEqual(said(tinted, withTint), [])
+  one(`${tinted}\n.s[data-tint="soft"] .s__x { color: var(--text-body) }`, /\.s\[data-tint="soft"\] \.s__x selects on data-tint/, withTint)
+  // a root with no class has no root rule to write
+  assert.match(said(CLEAN, {}, HTML.replace(' class="s"', ''))[0] ?? '', /carries no class/)
+})
+
+test('Story 6.5 — the reader hands each value\'s declarations to the token block, and the offers it reads are the declaration\'s', () => {
+  assert.equal(rootClassOf('<!-- a note --><section class="a22-1 x" data-bg="base"></section>'), 'a22-1')
+  assert.equal(rootClassOf('<section data-bg="base"></section>'), null)
+  const tint: ControlDef = { name: 'tint', type: 'segmented', label: 'Tint', group: 'style', values: ['none', 'soft'], default: 'none', darkOverride: true }
+  assert.deepEqual(modeScopedOffers([...DESIGN.controlSchema, tint], { bg: { values: ['base', 'contrast', 'nonsense'], reason: 'r' } }), { tint: ['none', 'soft'], bg: ['base', 'contrast'] })
+  const read = modeScopedRules('.s[data-bg="base"] { --s-a: var(--bg-page); --s-b: initial }\n.s[data-bg="contrast"] { --s-a: var(--bg-contrast); --s-b: color-mix(in srgb, var(--text-on-contrast) 78%, var(--bg-contrast)) }', 's', { bg: ['base', 'contrast'] })
+  assert.deepEqual(read.refusals, [])
+  assert.deepEqual(read.rules.get('bg')?.get('contrast'), [['--s-a', 'var(--bg-contrast)'], ['--s-b', 'color-mix(in srgb, var(--text-on-contrast) 78%, var(--bg-contrast))']])
+  assert.deepEqual(read.rules.get('bg')?.get('base'), [['--s-a', 'var(--bg-page)'], ['--s-b', 'initial']])
+})
+
+test('Story 6.5 — a design never selects on the hook either: data-instance in a stylesheet is refused', () => {
+  const said = (css: string) => codes(validateDesign({ html: EVERY_DIRECTIVE, design: design({ controlSchema: [align()] }), css })).filter((c) => c === 'instance-attribute')
+  assert.deepEqual(said('[data-instance="0a1b2c3d"] .x { color: var(--text-body) }'), ['instance-attribute'])
+  assert.deepEqual(said('.x [data-align="center"] { color: var(--text-body) }'), [])
+})
+
 test('a control is never named like an attribute the page or Ghost owns', () => {
-  for (const name of ['mode', 'portal', 'kg-card', 'i18n-key', 'members-signout']) alone({ controlSchema: [align({ name })] }, 'bad-control-name')
+  // Story 6.5: and `instance` — `data-instance` is the token block's per-section hook (darkOverrideCss)
+  for (const name of ['mode', 'portal', 'kg-card', 'i18n-key', 'members-signout', 'instance']) alone({ controlSchema: [align({ name })] }, 'bad-control-name')
 })
 
 test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', () => {

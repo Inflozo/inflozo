@@ -1,14 +1,21 @@
 /* Flat, `var(--…)` only, consuming Style Pack custom properties. No nesting (forbidden despite
    being Baseline — the emitted CSS must stay flat and hand-editable), no utility classes, and
    explicitly outside any Tailwind processing the Next.js app adopts. Every control below selects
-   on its `data-` attribute on the section root (AD-3). */
+   on its `data-` attribute on the section root (AD-3). The Background role is MODE-SCOPED — it takes a dark override —
+   so each value it offers is ONE rule on the root alone, declaring the design's own custom properties (`--ref-…`) and
+   nothing else, every value the same set; every other rule reads them and never selects on `data-bg` (AD-30's authoring
+   rule, Story 6.5). That set is what the theme's token block writes for one section whose Background differs in dark. */
 
 .ref {
-  background: var(--bg-surface);
+  background: var(--ref-ground);
   padding-block: var(--space-section);
-  color: var(--text-body);
+  color: var(--ref-ink);
 }
-.ref[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.ref[data-bg="base"] { --ref-ground: var(--bg-surface); --ref-ink: var(--text-body); }
+.ref[data-bg="surface"] { --ref-ground: var(--bg-surface); --ref-ink: var(--text-body); }
+.ref[data-bg="accent"] { --ref-ground: var(--bg-surface); --ref-ink: var(--text-body); }
+.ref[data-bg="contrast"] { --ref-ground: var(--bg-contrast); --ref-ink: var(--text-on-contrast); }
+.ref[data-bg="image"] { --ref-ground: var(--bg-surface); --ref-ink: var(--text-body); }
 .ref[data-spacing="compact"] { padding-block: var(--space-section-compact); }
 .ref[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
 .ref[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }

@@ -2528,10 +2528,14 @@ async function main() {
     }, [GRID, BG.name])
     check(`step 48 — in dark, ${BG.label} → ${BG.to.label} stamps the same root in place: data-${BG.name}="${BG.to.value}"`, authored.value === BG.to.value && authored.same, JSON.stringify(authored))
     check('step 48 — FR-F5 with R-136: the row carries the moon badge, its words are its NAME and its hover title, and they are NOT printed in the row', (await moonOn(BG.label))?.moon === true && (await moonOn(BG.label))?.hover === 'Dark override' && !/Dark override/.test((await moonOn(BG.label))?.words ?? ''), JSON.stringify(await moonOn(BG.label)))
+    // Story 6.5 — the canvas draws the markup the theme ships: the token block's hook on a root whose override is in force
+    const hook = await attrOf(GRID, 'data-instance')
+    check('step 48 — Story 6.5: the overridden root carries the token block\'s hook, `data-instance`, eight hex digits (darkHook)', /^[0-9a-f]{8}$/.test(hook ?? ''), String(hook))
     await modeButton().click()
     await page.waitForTimeout(300)
     check('step 48 — back in light the root returns to the value it had: THE LIGHT PAGE WAS NOT TOUCHED', (await canvasMode()) === 'light' && (await attrOf(GRID, `data-${BG.name}`)) === beforeBg, `${await attrOf(GRID, `data-${BG.name}`)} · was ${beforeBg}`)
     check('step 48 — and the moon STAYS on the row, because an override is stored whatever mode is being shown', (await moonOn(BG.label))?.moon === true, JSON.stringify(await moonOn(BG.label)))
+    check('step 48 — Story 6.5: and so does the hook, through the flip\'s re-stamp — the theme ships one markup for both modes', (await attrOf(GRID, 'data-instance')) === hook, String(await attrOf(GRID, 'data-instance')))
 
     // ── step 48 (b) — A REPAINT IN DARK DRAWS THE DARK RENDER ──
     // Found at Dev by reading `paint()`: the mode picks the slice handed to the one door in `restampAll` and in
@@ -2549,6 +2553,7 @@ async function main() {
     await page.waitForTimeout(500)
     const repainted = { mode: await canvasMode(), value: await attrOf(GRID, `data-${BG.name}`) }
     check('step 48 — a REPAINT while dark is shown keeps the dark render: the override is stamped again, never the light value', repainted.mode === 'dark' && repainted.value === BG.to.value, `${JSON.stringify(repainted)} · want ${BG.to.value}, light was ${beforeBg}`)
+    check('step 48 — Story 6.5: the repaint draws the hook too (the paint\'s door, `partOf`)', (await attrOf(GRID, 'data-instance')) === hook, String(await attrOf(GRID, 'data-instance')))
     await clickOn(GRID)
 
     // ── step 49 — a control that is NOT mode-scoped, and reset in each mode ── (dark is showing, from 48 (b))
@@ -2569,6 +2574,7 @@ async function main() {
     await controlsAside().getByRole('button', { name: `Reset ${BG.label}`, exact: true }).click()
     await page.waitForTimeout(300)
     check('step 49 — FR-F4 in dark: "Reset ' + BG.label + '" forgets the OVERRIDE, the row follows the light value, and the moon goes', (await attrOf(GRID, `data-${BG.name}`)) === beforeBg && (await moonOn(BG.label))?.moon === false, `${await attrOf(GRID, `data-${BG.name}`)} · was ${beforeBg}`)
+    check('step 49 — Story 6.5: and the hook goes with it — no override in force, no `data-instance`', (await attrOf(GRID, 'data-instance')) === null, String(await attrOf(GRID, 'data-instance')))
     // and in LIGHT the dark override is KEPT: put one back, flip to light, reset there
     await controlsAside().getByRole('radiogroup', { name: BG.label }).getByRole('radio', { name: BG.to.label }).click()
     await page.waitForTimeout(250)

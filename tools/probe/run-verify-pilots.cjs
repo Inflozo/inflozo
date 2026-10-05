@@ -18,7 +18,8 @@
 // clean tree, after CI has deployed HEAD — it refuses to start otherwise, asking Vercel which commit serves the app; the
 // browser draws real scrollbars, because the panel's own bar narrows the pills.
 // Story 6.3 (DW-325) adds the Pack menu reaching the canvas document: Mono asked for by `&pack=mono` and painting Mono's own
-// token, and Paper taking the pack off the address again.
+// token, and Paper taking the pack off the address again. Story 6.5 adds a Dark stop: Inline Row's Background set to
+// Contrast while Dark is shown is drawn as Contrast (the root's data-bg and its computed ground), and Light draws Base.
 // the repo's own pinned copies (Story 4.11 made them devDependencies), resolved from the root — no machine path
 const { chromium } = require('@playwright/test')
 const AXE = require.resolve('axe-core/axe.min.js')
@@ -344,6 +345,31 @@ async function main() {
       await reset.click()
       await ask.getByRole('button', { name: 'Reset design' }).click()
       check('R-115 — "Reset design" puts Per row back and its own reset arrow goes', !(await ask.evaluate((d) => d.open)) && (await perRow()) === 'three' && (await aside.getByRole('button', { name: 'Reset Per row' }).count()) === 0)
+    }
+    // ── Story 6.5 — THE DEFECT FOUND AT CREATE, FIXED: a dark override set on /pilots is DRAWN. Until 6.5 the page painted
+    //    and stamped the light `controls` while the Sidebar, given the mode, wrote the override in Dark — saved, its moon
+    //    shown, never drawn. Last in the walk, because the override stays in the page's state ──
+    if (pilotNames.includes('Inline Row')) {
+      await at('Inline Row')
+      const ground = () => frame().evaluate(() => {
+        const root = document.querySelector('#canvas > *')
+        const tokens = getComputedStyle(document.documentElement)
+        return { bg: root?.getAttribute('data-bg') ?? null, fill: root ? getComputedStyle(root).backgroundColor : null, contrast: tokens.getPropertyValue('--bg-contrast').trim(), page: tokens.getPropertyValue('--bg-page').trim(), mode: document.documentElement.getAttribute('data-mode') }
+      })
+      const rgbOf = (hex) => `rgb(${[1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`
+      await radio('mode', 'Dark').click(); await page.waitForTimeout(250)
+      await openGroup('Style')
+      await aside.getByRole('radiogroup', { name: 'Background role' }).getByRole('radio', { name: 'Contrast' }).click()
+      await page.waitForTimeout(250)
+      const dark = await ground()
+      check('Story 6.5 — /pilots in Dark: Background set to Contrast is DRAWN as Contrast — the root\'s data-bg and its computed ground', dark.mode === 'dark' && dark.bg === 'contrast' && dark.fill === rgbOf(dark.contrast), JSON.stringify(dark))
+      await radio('mode', 'Light').click(); await page.waitForTimeout(250)
+      const light = await ground()
+      check('Story 6.5 — and Light draws the light value: the override stayed a dark one', light.mode === 'light' && light.bg === 'base' && light.fill === rgbOf(light.page), JSON.stringify(light))
+      await radio('mode', 'Dark').click(); await page.waitForTimeout(250)
+      const back = await ground()
+      check('Story 6.5 — and Dark again draws Contrast, a repaint taking the mode\'s slice too', back.bg === 'contrast' && back.fill === rgbOf(back.contrast), JSON.stringify(back))
+      await radio('mode', 'Light').click()
     }
     await page.screenshot({ path: `${OUT}/pilots-review-1600.png` })
     await context.close()

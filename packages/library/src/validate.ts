@@ -253,6 +253,11 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
         push(out, 'editor-attribute', `<${tag.name} ${name}> — data-inflozo-* is the editor's own prefix: the canvas emitter's editing stamps and the state marks its chrome is keyed on. A design never writes one.`)
         continue
       }
+      // Story 6.5 — and its neighbour: the hook both emitters stamp on a section whose dark override is in force
+      if (name === 'data-instance') {
+        push(out, 'instance-attribute', `<${tag.name} data-instance> — the emitters stamp data-instance on a section whose dark override the token block writes (darkOverrideCss, Story 6.5). A design never writes one.`)
+        continue
+      }
 
       const retired = RETIRED_DIRECTIVES[name]
       if (retired !== undefined) {
@@ -955,6 +960,10 @@ export function validateDesign(input: {
   if (input.design.dataBindings !== undefined) markupOpts.dataBindings = input.design.dataBindings
   out.push(...validateMarkup(input.html, markupOpts))
   if (input.css !== undefined) out.push(...validateStylesheet(input.css, controlValues))
+  // Story 6.5 — the authoring rule a dark override reaches a visitor through (AD-30, amended)
+  if (input.css !== undefined) {
+    for (const r of modeScopedRules(input.css, rootClassOf(input.html), modeScopedOffers(schema, input.design.universals)).refusals) push(out, 'mode-scoped-rule', r)
+  }
   out.push(...darkCapabilityFailures(input.design, controlValues, input.css))
   return out
 }
@@ -1057,6 +1066,11 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
   for (const { text, name, op, value, flag } of attributeSelectors(css)) {
     if (said.has(text)) continue
     said.add(text)
+    // Story 6.5 — the token block's per-section hook (`darkOverrideCss`) is the emitters' alone
+    if (name === 'instance') {
+      push(out, 'instance-attribute', `style.css selects on ${text} — data-instance is the hook the emitters stamp on a section whose dark override the token block writes (darkOverrideCss); a design never selects on it.`)
+      continue
+    }
     const offered = Object.hasOwn(controlValues, name) ? controlValues[name] : undefined
     if (offered === undefined) {
       if (DIRECTIVES[`data-${name}`] !== undefined || FOREIGN_ATTR_RE.test(name)) continue
@@ -1079,6 +1093,137 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
     }
   }
   return out
+}
+
+// ─── Story 6.5 — the authoring rule a section's dark override reaches a visitor through (AD-30, amended; DW-195) ────
+
+/** The section root's class: its markup's first element's first class, `null` when it has none. */
+export function rootClassOf(html: string): string | null {
+  const [root] = scanTags(html)
+  const cls = root?.attrs.find(([k]) => k.toLowerCase() === 'class')?.[1].trim().split(/\s+/)[0]
+  return cls === undefined || cls === '' ? null : cls
+}
+
+/** Every MODE-SCOPED control a design declares, by name, with the values it offers: the universals that take a dark
+ *  override (`bg`, narrowed by the design) and its own controls declaring `darkOverride`. The DECLARATION decides, never
+ *  the name (`controls.ts`' `scoped`). The validator and the runtime's `darkOverrideCss` both ask this. */
+export function modeScopedOffers(
+  controlSchema: readonly ControlDef[] | undefined,
+  universals: DesignJson['universals'],
+): Record<string, readonly string[]> {
+  const out: Record<string, readonly string[]> = {}
+  for (const c of Array.isArray(controlSchema) ? controlSchema : []) if (c.darkOverride === true && Array.isArray(c.values)) out[c.name] = c.values
+  for (const u of UNIVERSALS) {
+    if (u.darkOverride !== true) continue
+    const n = universals?.[u.name]
+    out[u.name] = (Array.isArray(n?.values) ? n.values : u.values).filter((v) => u.values.includes(v))
+  }
+  return out
+}
+
+/** One root rule's declarations, in source order: `[property, value]`. */
+export type RootDeclarations = readonly (readonly [string, string])[]
+export type ModeScopedRules = {
+  /** per mode-scoped control, per value: that value's root rule — only rules that keep the rule are here */
+  rules: ReadonlyMap<string, ReadonlyMap<string, RootDeclarations>>
+  /** every way the stylesheet breaks the rule, one sentence each, naming the selector, the value or what it lacks */
+  refusals: string[]
+}
+
+// A root rule's value is a token expression: names, `var(--…)`, `color-mix(…)`, lengths and percentages, `initial`.
+// Nothing here can close the declaration, the rule or the `<style>` the token block is written into (AD-36), and no
+// `!important` can make a per-section rule lose. ponytail: no `calc()` operator or string — widen when a design needs one.
+const ROOT_VALUE_RE = /^[a-zA-Z0-9 .,%()-]+$/
+
+/** THE AUTHORING RULE (AD-30, amended at Story 6.5 — what Epic 9 writes against), READ ONCE: a selector naming a
+ *  mode-scoped control's attribute is exactly `.<root>[data-<name>="<value>"]` — the root's class and that one
+ *  attribute, nothing before or after, one compound per rule, at the top level — and it declares custom properties only,
+ *  each named `--<root>-…`, so it can never re-point a pack token. Where two or more values are offered, each has exactly
+ *  one such rule and all declare the same property names, so a dark override replaces the whole set. A value that paints
+ *  nothing declares its property `initial` and the reader falls back. Every other rule reads those properties and names
+ *  no mode-scoped value.
+ *
+ *  That is what lets a section's dark override reach a visitor (DW-195): a shipped theme has ONE markup for both modes,
+ *  so the dark value cannot be re-stamped as the canvas does — but its root rule's declarations can be written into the
+ *  token block for that one section (`darkOverrideCss`, which reads them HERE and parses nothing of its own).
+ *
+ *  ONE PASS, linear in the stylesheet (`tools/check-snapshots.mjs` times the hostile inputs through every reader): a
+ *  comment is dropped, a string skipped to its quote or its line's end, and each `{…}` closes the prelude before it. */
+export function modeScopedRules(css: string, root: string | null, offered: Readonly<Record<string, readonly string[]>>): ModeScopedRules {
+  const rules = new Map<string, Map<string, RootDeclarations>>()
+  const refusals: string[] = []
+  const names = Object.keys(offered)
+  if (names.length === 0) return { rules, refusals }
+  const bare = css.replace(/\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n]|\\[\s\S])*"?|'(?:[^'\\\n]|\\[\s\S])*'?/g, (m) => (m.startsWith('/*') ? ' ' : m))
+  const n = bare.length
+  // every style rule: its prelude, its body, and whether it sits inside an at-rule
+  const found: { prelude: string; body: string; nested: boolean }[] = []
+  const open: { prelude: string; from: number; at: boolean }[] = []
+  let from = 0
+  for (let i = 0; i < n; i++) {
+    const c = bare.charAt(i)
+    if (c === '"' || c === "'") {
+      for (i++; i < n && bare.charAt(i) !== c && bare.charAt(i) !== '\n'; i++) if (bare.charAt(i) === '\\') i++
+    } else if (c === '{') {
+      const prelude = bare.slice(from, i).trim()
+      open.push({ prelude, from: i + 1, at: prelude.startsWith('@') })
+      from = i + 1
+    } else if (c === '}') {
+      const top = open.pop()
+      if (top !== undefined && !top.at) found.push({ prelude: top.prelude, body: bare.slice(top.from, i), nested: open.length > 0 })
+      from = i + 1
+    } else if (c === ';' && (open.length === 0 || open[open.length - 1]?.at === true)) from = i + 1
+  }
+  const prefix = root === null ? null : `--${root}-`
+  // a value whose rule was refused for what it declares is named once, never again as "no rule"
+  const refused = new Set<string>()
+  for (const { prelude, body, nested } of found) {
+    const scopedNames = attributeSelectors(prelude).map((a) => a.name).filter((a) => names.includes(a))
+    if (scopedNames.length === 0) continue
+    const name = scopedNames[0] as string
+    const shape = /^\.([\w-]+)\[data-([a-z0-9-]+)="([a-z0-9-]+)"\]$/.exec(prelude)
+    if (root === null) { refusals.push(`${prelude} selects on data-${name}, and the markup's first element carries no class to be the root's — a mode-scoped control is selected on the root alone`); continue }
+    if (nested) { refusals.push(`${prelude} selects on data-${name} inside another rule or an at-rule — a mode-scoped control's rule sits at the top level, one per value, so a dark override can replace it whole`); continue }
+    if (shape === null || shape[1] !== root || shape[2] !== name) {
+      refusals.push(`${prelude} selects on data-${name}, a mode-scoped control: its rule is exactly .${root}[data-${name}="<value>"], declaring the root's own custom properties, and every other rule reads them (AD-30) — a dark override reaches a visitor only through those properties`)
+      continue
+    }
+    const value = shape[3] as string
+    const declarations: [string, string][] = []
+    let painted = false
+    for (const d of body.split(';')) {
+      if (d.trim() === '') continue
+      const at = d.indexOf(':')
+      const property = (at === -1 ? d : d.slice(0, at)).trim()
+      const v = at === -1 ? '' : d.slice(at + 1).trim()
+      if (prefix === null || !property.startsWith(prefix) || !/^--[\w-]+$/.test(property) || !ROOT_VALUE_RE.test(v)) {
+        refusals.push(`${prelude} declares \`${d.trim()}\` — a mode-scoped root rule declares the root's own custom properties only, each named ${prefix ?? '--<root>-'}…, its value a token expression: a pack token re-pointed would recolour every panel and field that sits on its own fill`)
+        painted = true
+        continue
+      }
+      declarations.push([property, v])
+    }
+    if (painted) { refused.add(`${name}=${value}`); continue }
+    if (!(offered[name] ?? []).includes(value)) continue // `stylesheet-control-value` names it
+    const own = rules.get(name) ?? rules.set(name, new Map()).get(name)!
+    if (own.has(value)) { refusals.push(`${prelude} is written twice — one rule per value, so a dark override replaces exactly one`); continue }
+    own.set(value, declarations)
+  }
+  // UNEVEN GROUNDS: where a choice exists, every value states the same set
+  for (const name of names) {
+    const values = offered[name] ?? []
+    if (values.length < 2) continue
+    const own = rules.get(name) ?? new Map<string, RootDeclarations>()
+    const union = [...new Set([...own.values()].flatMap((ds) => ds.map(([p]) => p)))]
+    for (const value of values) {
+      const ds = own.get(value)
+      if (ds === undefined && refused.has(`${name}=${value}`)) continue
+      if (ds === undefined) { refusals.push(`data-${name}="${value}" is offered and no .${root ?? '<root>'}[data-${name}="${value}"] rule states its properties — every offered value has one, so a dark override to it has something to write`); continue }
+      const lacking = union.filter((p) => !ds.some(([q]) => q === p))
+      if (lacking.length > 0) refusals.push(`.${root ?? '<root>'}[data-${name}="${value}"] lacks ${lacking.join(', ')} — every value of data-${name} declares the same properties, so an override replaces the whole set (a value that paints nothing declares one \`initial\`)`)
+    }
+  }
+  return { rules, refusals }
 }
 
 /** What keeps `tokens` from being earned: the first colour literal a declaration's value writes, or the first mode the

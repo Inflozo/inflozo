@@ -1,10 +1,15 @@
-/* A22 #1 Inline Row — A22-1 Inline Row.dc.html. Flat, tokens only; every control selects on its root attribute.
+/* A22 #1 Inline Row — A22-1 Inline Row.dc.html. Flat, tokens only; every control selects on its root attribute. The
+   Background role is mode-scoped (it takes a dark override), so each of its values is ONE root rule declaring this
+   design's own properties, and every other rule reads them — never `[data-bg]` (AD-30's authoring rule, Story 6.5).
    Geometry from the frame: head on a 720 measure, blurb clamped 560, field 46 high and 10 from the button, note 13
    directly under; field width steps one named value down at 1080; at 767 and below field and button stack at 48. */
 
-.a22-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
-.a22-1[data-bg="surface"] { background: var(--bg-surface); }
-.a22-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.a22-1 { background: var(--a22-1-ground); color: var(--a22-1-ink); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
+/* the grounds: on Surface the field steps back to the page; on Contrast every word takes the band's text and the button
+   takes the band's words as its fill (DW-317) */
+.a22-1[data-bg="base"] { --a22-1-ground: var(--bg-page); --a22-1-ink: var(--text-body); --a22-1-quiet: var(--text-muted); --a22-1-field: var(--bg-surface); --a22-1-cta: var(--button-fill); --a22-1-cta-text: var(--button-text); }
+.a22-1[data-bg="surface"] { --a22-1-ground: var(--bg-surface); --a22-1-ink: var(--text-body); --a22-1-quiet: var(--text-muted); --a22-1-field: var(--bg-page); --a22-1-cta: var(--button-fill); --a22-1-cta-text: var(--button-text); }
+.a22-1[data-bg="contrast"] { --a22-1-ground: var(--bg-contrast); --a22-1-ink: var(--text-on-contrast); --a22-1-quiet: var(--text-on-contrast); --a22-1-field: var(--bg-surface); --a22-1-cta: var(--text-on-contrast); --a22-1-cta-text: var(--bg-contrast); }
 .a22-1[data-spacing="compact"] { padding-block: var(--space-section-compact); }
 .a22-1[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
 .a22-1[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
@@ -16,14 +21,12 @@
 /* the head */
 .a22-1__head { display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 720px; }
 .a22-1[data-align="start"] .a22-1__head { align-items: flex-start; text-align: start; }
-.a22-1__eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.a22-1__eyebrow { margin: 0 0 14px; font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--a22-1-quiet); }
 .a22-1__heading { margin: 0; font-family: var(--font-heading); font-size: 40px; font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; text-wrap: pretty; }
 .a22-1[data-heading-size="regular"] .a22-1__heading { font-size: 34px; }
 .a22-1[data-heading-size="display"] .a22-1__heading { font-size: 48px; }
-.a22-1__blurb { margin: 16px 0 0; max-width: 560px; font-size: 17px; line-height: 1.6; color: var(--text-muted); text-wrap: pretty; }
+.a22-1__blurb { margin: 16px 0 0; max-width: 560px; font-size: 17px; line-height: 1.6; color: var(--a22-1-quiet); text-wrap: pretty; }
 .a22-1[data-blurb="hide"] .a22-1__blurb { display: none; }
-.a22-1[data-bg="contrast"] .a22-1__eyebrow,
-.a22-1[data-bg="contrast"] .a22-1__blurb { color: var(--text-on-contrast); }
 
 /* the slot the form and the signed-in line share: 34 under the blurb, 24 with the blurb hidden */
 .a22-1__slot { margin-block-start: 34px; }
@@ -33,19 +36,17 @@
 .a22-1__form { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 0; }
 .a22-1[data-align="start"] .a22-1__form { align-items: flex-start; }
 .a22-1__row { display: flex; align-items: center; gap: 10px; }
-.a22-1__field { box-sizing: border-box; width: 400px; height: 46px; margin: 0; padding: 0 14px; border: 1px solid var(--border-hairline); border-radius: var(--radius-control); background: var(--bg-surface); color: var(--text-body); font-family: var(--font-body); font-size: 15px; }
+.a22-1__field { box-sizing: border-box; width: 400px; height: 46px; margin: 0; padding: 0 14px; border: 1px solid var(--border-hairline); border-radius: var(--radius-control); background: var(--a22-1-field); color: var(--text-body); font-family: var(--font-body); font-size: 15px; }
 .a22-1[data-field-width="narrow"] .a22-1__field { width: 320px; }
 .a22-1[data-field-width="wide"] .a22-1__field { width: 480px; }
 .a22-1__field::placeholder { color: var(--text-muted); opacity: 1; }
 /* focus: the library ring is suppressed on the field, which takes a 1.5 px accent border; the button keeps its ring */
 .a22-1__field:focus { outline: none; border: 1.5px solid var(--accent); padding: 0 13.5px; }
-/* the field is always a step away from the plane it sits on */
-.a22-1[data-bg="surface"] .a22-1__field { background: var(--bg-page); }
-.a22-1__button { box-sizing: border-box; height: 46px; min-width: 126px; margin: 0; padding: 0 22px; display: inline-flex; align-items: center; justify-content: center; border: var(--button-border); border-radius: var(--button-radius); background: var(--button-fill); color: var(--button-text); font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; }
-.a22-1[data-bg="contrast"] .a22-1__button { background: var(--text-on-contrast); color: var(--bg-contrast); }
+/* the field is always a step away from the plane it sits on: `--a22-1-field`, per ground above */
+.a22-1__button { box-sizing: border-box; height: 46px; min-width: 126px; margin: 0; padding: 0 22px; display: inline-flex; align-items: center; justify-content: center; border: var(--button-border); border-radius: var(--button-radius); background: var(--a22-1-cta); color: var(--a22-1-cta-text); font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; }
 
 .a22-1__note,
-.a22-1__proof { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-muted); text-align: center; }
+.a22-1__proof { margin: 0; font-size: 13px; line-height: 1.5; color: var(--a22-1-quiet); text-align: center; }
 .a22-1[data-align="start"] .a22-1__note,
 .a22-1[data-align="start"] .a22-1__proof { text-align: start; }
 .a22-1[data-below-field="nothing"] .a22-1__note { display: none; }
@@ -53,8 +54,6 @@
 .a22-1[data-social-proof="off"] .a22-1__proof { display: none; }
 .a22-1__error { margin: 0; font-size: 13px; font-weight: 500; line-height: 1.5; }
 .a22-1__error:empty { display: none; }
-.a22-1[data-bg="contrast"] .a22-1__note,
-.a22-1[data-bg="contrast"] .a22-1__proof { color: var(--text-on-contrast); }
 
 /* signed in: the form's slot, at the form's height */
 .a22-1__signed { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; min-height: 96px; text-align: center; }

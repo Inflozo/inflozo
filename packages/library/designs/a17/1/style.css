@@ -1,10 +1,15 @@
 /* A17 #1 Three Up. Flat, colours through the pack's tokens only, and every control selects on its
-   `data-` attribute on the section root (AD-3). Sizes are the frame's: `A17-1 Three Up.dc.html`. */
+   `data-` attribute on the section root (AD-3). Sizes are the frame's: `A17-1 Three Up.dc.html`. The Background role is
+   mode-scoped, so each of its values is ONE root rule declaring this design's own properties, and every other rule reads
+   them — never `[data-bg]` (AD-30's authoring rule, Story 6.5). */
 
 /* The section and the universal trio */
-.a17-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
-.a17-1[data-bg="surface"] { background: var(--bg-surface); }
-.a17-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.a17-1 { background: var(--a17-1-ground); color: var(--a17-1-ink); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
+/* the grounds: on Contrast the quiet text is the contrast pair at 78 %, the plates 12 % and the pager's hairline 20 %,
+   and every accent mark — the hover underline, the focus ring, the foot link's underline — is the contrast accent */
+.a17-1[data-bg="base"] { --a17-1-ground: var(--bg-page); --a17-1-ink: var(--text-body); --a17-1-quiet: var(--text-muted); --a17-1-plate: var(--bg-hover); --a17-1-rule: var(--border-hairline); --a17-1-mark: var(--accent); }
+.a17-1[data-bg="surface"] { --a17-1-ground: var(--bg-surface); --a17-1-ink: var(--text-body); --a17-1-quiet: var(--text-muted); --a17-1-plate: var(--bg-hover); --a17-1-rule: var(--border-hairline); --a17-1-mark: var(--accent); }
+.a17-1[data-bg="contrast"] { --a17-1-ground: var(--bg-contrast); --a17-1-ink: var(--text-on-contrast); --a17-1-quiet: color-mix(in srgb, var(--text-on-contrast) 78%, var(--bg-contrast)); --a17-1-plate: color-mix(in srgb, var(--text-on-contrast) 12%, var(--bg-contrast)); --a17-1-rule: color-mix(in srgb, var(--text-on-contrast) 20%, var(--bg-contrast)); --a17-1-mark: var(--accent-on-contrast); }
 .a17-1[data-spacing="compact"] { padding-block: var(--space-section-compact); }
 .a17-1[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
 .a17-1[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
@@ -14,9 +19,9 @@
 /* The head: eyebrow 13 · title 34 on a 780 measure · sub 17 on 620 */
 .a17-1__head { display: flex; flex-direction: column; gap: 0.625rem; max-width: 48.75rem; }
 .a17-1__head:not(:has(*)) { display: none; }
-.a17-1__eyebrow, .a17-1__tag { margin: 0; font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.a17-1__eyebrow, .a17-1__tag { margin: 0; font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--a17-1-quiet); }
 .a17-1__title { margin: 0; font-family: var(--font-heading); font-size: 2.125rem; font-weight: 700; line-height: 1.14; letter-spacing: -0.02em; }
-.a17-1__sub { margin: 0; max-width: 38.75rem; font-size: 1.0625rem; line-height: 1.6; color: var(--text-muted); }
+.a17-1__sub { margin: 0; max-width: 38.75rem; font-size: 1.0625rem; line-height: 1.6; color: var(--a17-1-quiet); }
 
 /* The grid: 24 gutter, 48 row gap */
 .a17-1__feed { display: flex; flex-direction: column; gap: 3rem; }
@@ -28,36 +33,36 @@
 /* The card: the whole card is the link; no fill, border, shadow or radius of its own */
 .a17-1__cell { display: flex; }
 .a17-1__card { flex: 1; display: flex; flex-direction: column; gap: 0.875rem; color: inherit; text-decoration: none; border-radius: var(--radius-card); }
-.a17-1__card:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.a17-1__card:focus-visible { outline: 2px solid var(--a17-1-mark); outline-offset: 4px; }
 
 /* The image box, and the tag plate behind it for a post with no picture */
-.a17-1__media { position: relative; aspect-ratio: 3 / 2; border-radius: var(--radius-card); overflow: hidden; background: var(--bg-hover); display: flex; align-items: center; justify-content: center; }
+.a17-1__media { position: relative; aspect-ratio: 3 / 2; border-radius: var(--radius-card); overflow: hidden; background: var(--a17-1-plate); display: flex; align-items: center; justify-content: center; }
 .a17-1[data-ratio="wide"] .a17-1__media { aspect-ratio: 16 / 9; }
 .a17-1[data-ratio="square"] .a17-1__media { aspect-ratio: 1 / 1; }
 .a17-1[data-ratio="portrait"] .a17-1__media { aspect-ratio: 4 / 5; }
-.a17-1__plate { font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.a17-1__plate { font-size: 0.8125rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--a17-1-quiet); }
 .a17-1__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
 
 /* Tag · title · excerpt · meta */
 .a17-1__text { display: flex; flex-direction: column; gap: 0.5rem; }
 .a17-1[data-tag="hide"] .a17-1__tag { display: none; }
 .a17-1__post-title { margin: 0; font-family: var(--font-heading); font-size: 1.375rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; text-underline-offset: 0.2em; }
-.a17-1__card:hover .a17-1__post-title { text-decoration: underline 2px var(--accent); }
+.a17-1__card:hover .a17-1__post-title { text-decoration: underline 2px var(--a17-1-mark); }
 .a17-1[data-per-row="two"] .a17-1__post-title { font-size: 1.625rem; }
 .a17-1[data-per-row="four"] .a17-1__post-title { font-size: 1.1875rem; }
 .a17-1[data-first-cell="span"] .a17-1__cell:first-child .a17-1__post-title { font-size: 1.625rem; }
-.a17-1__excerpt { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--text-muted); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.a17-1__excerpt { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--a17-1-quiet); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 .a17-1[data-excerpt="off"] .a17-1__excerpt { display: none; }
 .a17-1[data-excerpt="one"] .a17-1__excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; }
 .a17-1[data-excerpt="two"] .a17-1__excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 /* Three lines is unavailable at Per row Four: it falls to two (spec §0, the disabled-control table) */
 .a17-1[data-per-row="four"][data-excerpt="three"] .a17-1__excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.a17-1__meta { margin: 0.375rem 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.3125rem; font-size: 0.8125rem; line-height: 1.5; color: var(--text-muted); }
+.a17-1__meta { margin: 0.375rem 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.3125rem; font-size: 0.8125rem; line-height: 1.5; color: var(--a17-1-quiet); }
 .a17-1__avatar { margin-inline-end: 0.1875rem; }
 
 /* The avatar: a 24 px photograph over the stylesheet's one letter of the bound name (R-2) */
-.a17-1__avatar { position: relative; flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; overflow: hidden; background: var(--bg-hover); }
-.a17-1__letter { display: block; font-size: 0; line-height: 1.5rem; text-align: center; color: var(--text-muted); }
+.a17-1__avatar { position: relative; flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; overflow: hidden; background: var(--a17-1-plate); }
+.a17-1__letter { display: block; font-size: 0; line-height: 1.5rem; text-align: center; color: var(--a17-1-quiet); }
 .a17-1__letter::first-letter { font-family: var(--font-heading); font-size: 0.625rem; font-weight: 700; text-transform: uppercase; }
 .a17-1__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
@@ -69,35 +74,25 @@
 .a17-1__meta:not(:has(.a17-1__time)) .a17-1__sep--time { display: none; }
 
 /* The pager: Newer · the indicator · Older (R-109), each end keeping its slot on the first and last page */
-.a17-1__pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--space-gutter); padding-block-start: 1.5rem; border-block-start: 1px solid var(--border-hairline); }
+.a17-1__pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--space-gutter); padding-block-start: 1.5rem; border-block-start: 1px solid var(--a17-1-rule); }
 .a17-1__newer, .a17-1__older { display: inline-flex; align-items: center; gap: 0.75rem; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: inherit; text-decoration: none; }
 .a17-1__newer { grid-column: 1; justify-self: start; }
 .a17-1__older { grid-column: 3; justify-self: end; }
-.a17-1__numbers { grid-column: 2; font-size: 0.9375rem; color: var(--text-muted); font-feature-settings: var(--figures-tabular); }
+.a17-1__numbers { grid-column: 2; font-size: 0.9375rem; color: var(--a17-1-quiet); font-feature-settings: var(--figures-tabular); }
 .a17-1__arrow { font-family: var(--font-body); font-weight: 400; }
 .a17-1__newer:hover, .a17-1__older:hover { text-decoration: underline 2px var(--accent); text-underline-offset: 0.2em; }
-.a17-1__newer:focus-visible, .a17-1__older:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--radius-control); }
+.a17-1__newer:focus-visible, .a17-1__older:focus-visible { outline: 2px solid var(--a17-1-mark); outline-offset: 4px; border-radius: var(--radius-control); }
 
 /* The main feed's empty state */
 .a17-1__empty { display: flex; flex-direction: column; gap: 0.625rem; max-width: 38.75rem; }
 .a17-1__empty-heading { margin: 0; font-family: var(--font-heading); font-size: 1.375rem; font-weight: 700; line-height: 1.2; }
-.a17-1__empty-body { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--text-muted); }
+.a17-1__empty-body { margin: 0; font-size: 0.9375rem; line-height: 1.6; color: var(--a17-1-quiet); }
 
 /* The foot: note 13, link 14/600 with the accent underline, 20 apart */
 .a17-1__foot { display: flex; flex-direction: column; align-items: flex-start; gap: 1.25rem; margin-block-start: -1rem; }
 .a17-1__foot:not(:has(*)) { display: none; }
-.a17-1__note { margin: 0; max-width: 38.75rem; font-size: 0.8125rem; line-height: 1.6; color: var(--text-muted); }
-.a17-1__link { font-size: 0.875rem; font-weight: 600; color: inherit; text-decoration: underline 1px var(--accent); text-underline-offset: 3px; }
-
-/* Contrast ground: text takes the contrast pair */
-.a17-1[data-bg="contrast"] .a17-1__eyebrow, .a17-1[data-bg="contrast"] .a17-1__sub, .a17-1[data-bg="contrast"] .a17-1__tag, .a17-1[data-bg="contrast"] .a17-1__excerpt,
-.a17-1[data-bg="contrast"] .a17-1__meta, .a17-1[data-bg="contrast"] .a17-1__numbers, .a17-1[data-bg="contrast"] .a17-1__note, .a17-1[data-bg="contrast"] .a17-1__empty-body,
-.a17-1[data-bg="contrast"] .a17-1__plate, .a17-1[data-bg="contrast"] .a17-1__letter { color: color-mix(in srgb, var(--text-on-contrast) 78%, var(--bg-contrast)); }
-.a17-1[data-bg="contrast"] .a17-1__media, .a17-1[data-bg="contrast"] .a17-1__avatar { background: color-mix(in srgb, var(--text-on-contrast) 12%, var(--bg-contrast)); }
-.a17-1[data-bg="contrast"] .a17-1__pager { border-block-start-color: color-mix(in srgb, var(--text-on-contrast) 20%, var(--bg-contrast)); }
-.a17-1[data-bg="contrast"] .a17-1__card:hover .a17-1__post-title { text-decoration: underline 2px var(--accent-on-contrast); }
-.a17-1[data-bg="contrast"] .a17-1__card:focus-visible, .a17-1[data-bg="contrast"] .a17-1__newer:focus-visible, .a17-1[data-bg="contrast"] .a17-1__older:focus-visible { outline-color: var(--accent-on-contrast); }
-.a17-1[data-bg="contrast"] .a17-1__link { text-decoration-color: var(--accent-on-contrast); }
+.a17-1__note { margin: 0; max-width: 38.75rem; font-size: 0.8125rem; line-height: 1.6; color: var(--a17-1-quiet); }
+.a17-1__link { font-size: 0.875rem; font-weight: 600; color: inherit; text-decoration: underline 1px var(--a17-1-mark); text-underline-offset: 3px; }
 
 /* 1080: Four becomes three */
 @media (max-width: 1080px) {

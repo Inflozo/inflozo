@@ -18,7 +18,7 @@
 import { createRequire } from 'node:module'
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -27,7 +27,7 @@ const here = dirname(fileURLToPath(import.meta.url))
 const REPO = join(here, '..', '..')
 
 const { A, ORDER, source, stackFor, QUERIES, TARGET } = require('./sections.js')
-const { DIRECTIVES, UNIVERSAL_CONTROLS, scanTags, validateMarkup, validateDesign } =
+const { DIRECTIVES, UNIVERSAL_CONTROLS, modeScopedOffers, modeScopedRules, rootClassOf, scanTags, validateMarkup, validateDesign } =
   await import(join(REPO, 'packages/library/src/index.ts'))
 const { TOKEN_NAMES, TOKEN_ROWS } = await import(join(REPO, 'packages/section-runtime/src/tokens.ts'))
 // DW-323 (Story 6.3): Paper's reference set reads the library, so it is the runtime's `./reference` subpath, never its index
@@ -233,7 +233,17 @@ check('every var(--…) a design, a fixture or the post-body stand-in reads is d
   const declared = new Set(TOKEN_NAMES)
   // `var(--x)` with no fallback must name a token; `var(--x, <fallback>)` is a design-local property
   // the design sets on the element itself (AD-3's carve-out) and is legitimately unset at the root.
-  const undeclaredIn = (css) => [...new Set([...css.matchAll(/var\(\s*(--[a-zA-Z0-9-]+)\s*([,)])/g)].filter((m) => m[2] === ')' && !declared.has(m[1])).map((m) => m[1]))]
+  // Story 6.5: or a property the stylesheet's OWN mode-scoped root rules declare — every offered value of a mode-scoped
+  // control declares the same set on the root (`mode-scoped-rule`), so it is declared by construction, read through the
+  // validator's own reader
+  const ownDeclared = (file, css) => {
+    const dir = dirname(join(REPO, file))
+    if (!existsSync(join(dir, 'design.json'))) return new Set()
+    const d = JSON.parse(readFileSync(join(dir, 'design.json'), 'utf8'))
+    const read = modeScopedRules(css, rootClassOf(readFileSync(join(dir, 'index.html'), 'utf8')), modeScopedOffers(d.controlSchema, d.universals))
+    return new Set([...read.rules.values()].flatMap((byValue) => [...byValue.values()].flatMap((ds) => ds.map(([p]) => p))))
+  }
+  const undeclaredIn = (css, own = new Set()) => [...new Set([...css.matchAll(/var\(\s*(--[a-zA-Z0-9-]+)\s*([,)])/g)].filter((m) => m[2] === ')' && !declared.has(m[1]) && !own.has(m[1])).map((m) => m[1]))]
   const sheets = ['designs', 'fixtures'].flatMap((d) => readdirSync(join(REPO, 'packages/library', d), { recursive: true })
     .filter((f) => String(f).endsWith('style.css')).map((f) => join('packages/library', d, String(f))))
   sheets.push('apps/web/lib/style-guide.ts') // THEME_CSS, read as bytes: the app is not importable from here
@@ -241,12 +251,13 @@ check('every var(--…) a design, a fixture or the post-body stand-in reads is d
   for (const file of sheets) {
     const css = readFileSync(join(REPO, file), 'utf8')
     if (!/var\(/.test(css)) throw new Error(`${file}: the extraction found no var(--…) at all, so it proves nothing`)
-    const undeclared = undeclaredIn(css)
+    const undeclared = undeclaredIn(css, ownDeclared(file, css))
     if (undeclared.length) bad.push(`${file} reads ${undeclared.join(', ')}`)
   }
   if (bad.length) throw new Error(`${bad.join('; ')} — which the token contract does not declare`)
-  // the control: a misspelt token must be named, and one with a fallback must not
+  // the control: a misspelt token must be named, and one with a fallback must not; nor one the root rules declare
   if (undeclaredIn('a{padding:var(--site-margn);gap:var(--own, 1px)}').join() !== '--site-margn') throw new Error('the extraction is not a control')
+  if (undeclaredIn('a{color:var(--s-ink);background:var(--s-inq)}', new Set(['--s-ink'])).join() !== '--s-inq') throw new Error('the own-declared reading is not a control')
   console.log(`      swept ${sheets.length} stylesheets`)
 })
 

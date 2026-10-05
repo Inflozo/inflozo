@@ -206,7 +206,8 @@ The example above earns `tokens` and `background`. A per-mode image swap is not 
 draws one, so nothing could falsify it, and the word arrives with the first design that does.
 
 **A control is one attribute on the section root, and it is closed-valued.** Every control writes
-`data-{name}="{named-value}"` on the root and the design's stylesheet selects on it. No free text,
+`data-{name}="{named-value}"` on the root and the design's stylesheet selects on it — a mode-scoped one on the root
+alone, declaring the root's own properties (§ `style.css`, Story 6.5). No free text,
 no units, no hex outside the Style Pack, and no per-section width. A control that declares a
 dependency carries **the reason** in the schema (R-33), so the sidebar greys it and prints that one
 sentence, the validator refuses the value and the compiler never emits it — from one source.
@@ -602,6 +603,13 @@ roles make the ground claims real"). Or it writes its own link rule. With the ro
 an inverted ground takes the page's link colour, and in Paper's light mode that is ink on ink. A panel inside the
 section with a fill of its own is the same case: the token block knows only the section's ground.
 
+**A section whose Background differs in dark keeps its link look too** *(Story 6.5)*. In a shipped theme its root
+still carries the LIGHT `data-bg`, so the token block's ground rules would draw its links for the light ground. The
+section's per-instance rules therefore add a plain link's look for the dark ground (`GROUND_LINKS`, the same
+declarations those ground rules write) at specificity (0,0,1): above the token block's zero, and below any link rule a
+design writes for itself, which keeps winning. A design that draws its own links already reads its ground from its
+own properties, so nothing more is asked of it.
+
 **A link is one record, and a `url` prop and an `a` mark hold the same one** (AD-4, FR-F6):
 
 ```json
@@ -683,7 +691,56 @@ through `withData`, so the canvas rows and the theme's `{{#get}}` read the same 
 Plain CSS consuming **Style Pack custom properties only** — `var(--…)`, flat, no nesting, no
 generated class names, no CSS-in-JS, and **explicitly outside any Tailwind processing**: utility
 classes are structurally incompatible with token-only styling. Every control appears as an attribute
-selector on the root (`.feed[data-cols="3"] .feed__grid { … }`).
+selector on the root (`.feed[data-cols="3"] .feed__grid { … }`) — **except a mode-scoped one, which is
+written as the next section says.**
+
+#### A mode-scoped control: one root rule per value, declaring the root's own properties *(Story 6.5, AD-30, DW-195)*
+
+A **mode-scoped** control is one that takes a dark override (FR-D7): the Background role (`bg`), and any control
+of a design's own that declares `"darkOverride": true`. The DECLARATION decides, never the name. A shipped theme has
+**one markup for both modes** — the editor previews dark by re-stamping the root, but a visitor's browser decides the
+mode, so a section whose Background is Contrast in dark still carries its light `data-bg` there. A rule keyed on
+`[data-bg="contrast"]` can never fire for it. So a design states **each value as custom properties on its root**, and
+the token block writes the dark value's set for that one section (`darkOverrideCss`, on its `data-instance` hook,
+under the same conditions that make the page dark).
+
+**The rule** (`validateDesign`'s `mode-scoped-rule`, which refuses anything else, naming the selector or the value):
+
+- A selector that names a mode-scoped control's attribute is **exactly** `.<root>[data-<name>="<value>"]` — the root's
+  class (the markup's first element's first class) and that one attribute, nothing before or after, one compound per
+  rule, at the top level (never inside `@media` or another rule).
+- It declares **custom properties only**, each named `--<root>-…`. It can never re-point a pack token, which would
+  recolour every panel and field that sits on its own fill; its values are token expressions (`var(--…)`,
+  `color-mix(…)`, `transparent`, `initial`).
+- Where two or more values are offered, **each has exactly one such rule, and all declare the same property names**,
+  so an override replaces the whole set. A value that paints nothing declares its property `initial`, and the reader
+  falls back: `background: var(--cx-tint-bg, var(--bg-elevated))` keeps `tint: none` under the card style's look.
+- **Every other rule reads those properties and names no mode-scoped value.** A descendant rule on the ground
+  (`.x[data-bg="contrast"] .x__title`) is refused.
+
+A22 #1 (Base, Surface, Contrast), abridged:
+
+```css
+.a22-1 { background: var(--a22-1-ground); color: var(--a22-1-ink); }
+.a22-1[data-bg="base"] { --a22-1-ground: var(--bg-page); --a22-1-ink: var(--text-body); --a22-1-quiet: var(--text-muted); --a22-1-field: var(--bg-surface); --a22-1-cta: var(--button-fill); --a22-1-cta-text: var(--button-text); }
+.a22-1[data-bg="surface"] { --a22-1-ground: var(--bg-surface); --a22-1-ink: var(--text-body); --a22-1-quiet: var(--text-muted); --a22-1-field: var(--bg-page); --a22-1-cta: var(--button-fill); --a22-1-cta-text: var(--button-text); }
+.a22-1[data-bg="contrast"] { --a22-1-ground: var(--bg-contrast); --a22-1-ink: var(--text-on-contrast); --a22-1-quiet: var(--text-on-contrast); --a22-1-field: var(--bg-surface); --a22-1-cta: var(--text-on-contrast); --a22-1-cta-text: var(--bg-contrast); }
+.a22-1__eyebrow, .a22-1__blurb, .a22-1__note, .a22-1__proof { color: var(--a22-1-quiet); }
+.a22-1__field { background: var(--a22-1-field); }
+.a22-1__button { background: var(--a22-1-cta); color: var(--a22-1-cta-text); }
+```
+
+A property read with no fallback is declared by construction, so `tools/stress/test-vocabulary.mjs` accepts a
+`var(--a22-1-ground)` the way it accepts a pack token. **Mind the cascade when a value's rule sets a property only on
+one ground**: a hover rule that also set `outline-color` on Contrast becomes a hover rule reading a property that is
+`initial` elsewhere — and an `initial` read with no fallback is the property's initial value, which overrides any
+lower rule. A24 #1 keeps its focused link's underline colour in a rule BEFORE its hover rules for that reason. The
+refactor that moved the library to this rule was proven to move no pixel by comparing every element's computed style,
+both modes, every reference pack, hover and focus forced (Story 6.5's Verification).
+
+**The hook is the emitters' alone.** `data-instance` is stamped by both emitters on a root whose dark override is in
+force (`darkHook`: a hash of the section's `template_key:instanceId`); a design never writes it in its markup or
+selects on it (`instance-attribute`), and no control may be named `instance` (`bad-control-name`).
 
 #### The browser floor — what a stylesheet may use *(Story 4.8, FR-G8)*
 
@@ -1611,7 +1668,9 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | values that break their type's grammar — a toggle that is not exactly `on`/`off`, a stepper that is not ascending consecutive integers, a swatch row offering anything but the pack's roles, a named value that is not a kebab word — or a `valueLabels` key that is not a value | *(Story 4.5)* the grammar is what keeps the attribute selector, the panel's drawing and the stored value the same thing. A label for a value nobody can pick is a typo. |
 | `inherit`, `initial`, `unset` or `revert` anywhere in a control or a `universals` narrowing | *(Story 4.5)* FR-F2, R-23 — no `Inherit`, and no other CSS-wide word, at section level. |
 | more than `CONTROL_CAP` of one design's own controls | *(Story 4.5)* FR-F3. The universal trio and the Data group are not counted. |
-| a control name whose attribute is already a directive (`items`), Ghost's `data-portal`, the visitor's `data-mode`, a Koenig card's `data-kg-*` or a translation's `data-i18n-*` | *(Story 4.5; the last three Story 4.10's Fix)* AD-3. A control's attribute must mean nothing but the control, and a stylesheet may select on those. |
+| a control name whose attribute is already a directive (`items`), Ghost's `data-portal`, the visitor's `data-mode`, a Koenig card's `data-kg-*`, a translation's `data-i18n-*` or the token block's per-section hook `data-instance` | *(Story 4.5; the next three Story 4.10's Fix; `instance` Story 6.5)* AD-3. A control's attribute must mean nothing but the control, and a stylesheet may select on the first five. |
+| `data-instance` in a design's markup or stylesheet (`instance-attribute`) | *(Story 6.5)* the emitters stamp it on a section whose dark override the token block writes (`darkOverrideCss`); authored, it would claim another section's dark look. |
+| a selector naming a mode-scoped control's attribute that is not exactly `.<root>[data-<name>="<value>"]` at the top level, a root rule declaring anything but `--<root>-…` properties, or an offered value with no root rule or with a different property set (`mode-scoped-rule`) | *(Story 6.5, AD-30, DW-195)* a dark override reaches a visitor only as the dark value's root properties written into the token block for that one section; a rule keyed on the ground anywhere else would draw the light value for a dark visitor. § `style.css` above. |
 | JSON null anywhere in `design.json` or `content.json` (`json-null`, naming the path) | *(Story 4.10's Fix)* nothing there takes null — a field that does not apply is left out — and every later check reads through fields, so null is refused before any of them. |
 | a built design's setting that is not a row its own frame draws — its title with one of its values (a toggle's switch), or the drawn title the register's per-design rename replaces | *(Story 4.10's Fix)* R-74 for a setting's words, run by `tools/check-snapshots.mjs`: relabelling a setting to another row's registered title would move it between groups with every other check green. |
 | controls that disable each other round a circle, or an `inForce` outside the control's own values | *(Story 4.5)* no value in force could be decided for any of them; what renders while a control is greyed is always one of its own values. |

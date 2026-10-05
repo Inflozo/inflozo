@@ -1,13 +1,18 @@
 /* A4 #13 Latest Post. Flat, `var(--…)` over the pack's tokens only; every control selects on its `data-` attribute on
    the root. Geometry is 3 Split's (A4 Heroes - Spec.md §3): seven and five on a 64 px gutter, six and six on 40 at
    ≤ 1080, one column at ≤ 767 with the card between the sub and the actions. Vertical spacing reads the pack's section padding,
-   whose Comfortable is A4's own ladder (A4-0 Category Proof, §0); the side margin is the page's. */
+   whose Comfortable is A4's own ladder (A4-0 Category Proof, §0); the side margin is the page's. The Background role is
+   mode-scoped, so each of its values is ONE root rule declaring this design's own properties, and every other rule reads
+   them — never `[data-bg]` (AD-30's authoring rule, Story 6.5). */
 
-.a4-13 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
+.a4-13 { background: var(--a4-13-ground); color: var(--a4-13-ink); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
 .a4-13[data-spacing="compact"] { padding-block: var(--space-section-compact); }
 .a4-13[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
-.a4-13[data-bg="surface"] { background: var(--bg-surface); }
-.a4-13[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+/* the grounds: on Surface the secondary action steps back to the page; on Contrast every word takes the contrast text,
+   the primary action takes the band's words as its fill (DW-317, A22 #1's answer) and the secondary is outlined in them */
+.a4-13[data-bg="base"] { --a4-13-ground: var(--bg-page); --a4-13-ink: var(--text-body); --a4-13-quiet: var(--text-muted); --a4-13-cta: var(--button-fill); --a4-13-cta-text: var(--button-text); --a4-13-second: var(--bg-surface); --a4-13-second-edge: var(--border-hairline); }
+.a4-13[data-bg="surface"] { --a4-13-ground: var(--bg-surface); --a4-13-ink: var(--text-body); --a4-13-quiet: var(--text-muted); --a4-13-cta: var(--button-fill); --a4-13-cta-text: var(--button-text); --a4-13-second: var(--bg-page); --a4-13-second-edge: var(--border-hairline); }
+.a4-13[data-bg="contrast"] { --a4-13-ground: var(--bg-contrast); --a4-13-ink: var(--text-on-contrast); --a4-13-quiet: var(--text-on-contrast); --a4-13-cta: var(--text-on-contrast); --a4-13-cta-text: var(--bg-contrast); --a4-13-second: transparent; --a4-13-second-edge: var(--text-on-contrast); }
 .a4-13[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
 .a4-13[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
 
@@ -19,24 +24,22 @@
 .a4-13[data-card-side="left"] .a4-13__card { grid-column: 1; }
 
 /* the text: A4's shared type ladder */
-.a4-13__eyebrow { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
-.a4-13__headline { margin: 16px 0 0; font-family: var(--font-heading); font-weight: 700; font-size: 60px; line-height: 1.06; letter-spacing: -0.02em; color: var(--text-body); text-wrap: pretty; }
+.a4-13__eyebrow { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--a4-13-quiet); }
+.a4-13__headline { margin: 16px 0 0; font-family: var(--font-heading); font-weight: 700; font-size: 60px; line-height: 1.06; letter-spacing: -0.02em; color: var(--a4-13-ink); text-wrap: pretty; }
 .a4-13__eyebrow + .a4-13__headline { margin-block-start: 16px; }
 .a4-13__headline:first-child { margin-block-start: 0; }
 .a4-13[data-headline-size="medium"] .a4-13__headline { font-size: 48px; }
 .a4-13[data-headline-size="display"] .a4-13__headline { font-size: 76px; }
-.a4-13__sub { margin: 20px 0 0; max-width: 35rem; font-size: 19px; line-height: 1.55; color: var(--text-muted); text-wrap: pretty; }
-.a4-13__sub a { color: var(--text-body); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentcolor 30%, transparent); text-underline-offset: 0.15em; }
+.a4-13__sub { margin: 20px 0 0; max-width: 35rem; font-size: 19px; line-height: 1.55; color: var(--a4-13-quiet); text-wrap: pretty; }
+.a4-13__sub a { color: var(--a4-13-ink); text-decoration: underline; text-decoration-color: color-mix(in srgb, currentcolor 30%, transparent); text-underline-offset: 0.15em; }
 
 /* the actions: A4's action ladder */
 .a4-13__actions { margin-block-start: 32px; display: flex; align-items: center; gap: 12px; }
 .a4-13__action { box-sizing: border-box; display: inline-block; font-size: 15px; font-weight: 600; line-height: 1.34; text-decoration: none; text-align: center; border-radius: var(--button-radius); }
-.a4-13__action--primary { padding: 13px 22px; background: var(--button-fill); color: var(--button-text); border: var(--button-border); }
 /* DW-317 (Story 6.2): on the contrast band the pack's button would be the band's own colour (an Outline label is the ink
-   the band is drawn in), so it takes the band's words as its fill — A22 #1's answer */
-.a4-13[data-bg="contrast"] .a4-13__action--primary { background: var(--text-on-contrast); color: var(--bg-contrast); }
-.a4-13__action--secondary { padding: 12px 21px; background: var(--bg-surface); color: var(--text-body); border: 1px solid var(--border-hairline); }
-.a4-13[data-bg="surface"] .a4-13__action--secondary { background: var(--bg-page); }
+   the band is drawn in), so `--a4-13-cta` there is the band's words — A22 #1's answer */
+.a4-13__action--primary { padding: 13px 22px; background: var(--a4-13-cta); color: var(--a4-13-cta-text); border: var(--button-border); }
+.a4-13__action--secondary { padding: 12px 21px; background: var(--a4-13-second); color: var(--a4-13-ink); border: 1px solid var(--a4-13-second-edge); }
 .a4-13[data-primary-action="off"] .a4-13__action--primary { display: none; }
 .a4-13[data-secondary-action="off"] .a4-13__action--secondary { display: none; }
 .a4-13[data-primary-action="off"][data-secondary-action="off"] .a4-13__actions { display: none; }
@@ -51,19 +54,11 @@
 .a4-13__body { display: flex; flex-direction: column; gap: 8px; }
 .a4-13__title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; margin: 0; font-family: var(--font-heading); font-size: 24px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 0.15em; transition: text-decoration-color 160ms ease-out; }
 .a4-13__link:hover .a4-13__title { text-decoration-color: color-mix(in srgb, currentcolor 35%, transparent); }
-.a4-13__meta { margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; color: var(--text-muted); }
+.a4-13__meta { margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 13px; color: var(--a4-13-quiet); }
 .a4-13[data-show-tag="off"] .a4-13__tag { display: none; }
 .a4-13[data-show-date="off"] .a4-13__date { display: none; }
 .a4-13[data-show-tag="on"][data-show-date="on"] .a4-13__tag + .a4-13__date::before { content: "· "; }
 .a4-13[data-show-tag="off"][data-show-date="off"] .a4-13__meta { display: none; }
-
-/* on the contrast ground every word takes the contrast text */
-.a4-13[data-bg="contrast"] .a4-13__eyebrow,
-.a4-13[data-bg="contrast"] .a4-13__headline,
-.a4-13[data-bg="contrast"] .a4-13__sub,
-.a4-13[data-bg="contrast"] .a4-13__sub a,
-.a4-13[data-bg="contrast"] .a4-13__meta { color: var(--text-on-contrast); }
-.a4-13[data-bg="contrast"] .a4-13__action--secondary { background: transparent; color: var(--text-on-contrast); border-color: var(--text-on-contrast); }
 
 @media (prefers-reduced-motion: reduce) {
   .a4-13__picture, .a4-13__title { transition: none; }

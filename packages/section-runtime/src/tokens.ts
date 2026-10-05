@@ -361,23 +361,64 @@ const indent = (css: string) => css.split('\n').map((l) => `  ${l}`).join('\n')
  *  locks the role there or writes its own link rule (`docs/section-authoring.md`). There the words ARE the ground's
  *  words, so the underline is the link's only sign (WCAG 1.4.1) and is forced, whatever `--link-decoration` a pack sets
  *  (DW-224). A plain link is also `class=""`, which `:not([class])` alone lets escape. No mode is named: the tokens
- *  carry it (AD-30). */
+ *  carry it (AD-30).
+ *
+ *  STORY 6.5 — ONE SET OF STRINGS, TWO READERS: the rules below and `GROUND_LINKS` (what a section's dark override of
+ *  its Background declares for a plain link, `dark-override.ts`) are built from the same declarations, so the two can
+ *  never draw a link two ways. The bytes of `LINK_RULES` did not change (`tokens.test.ts`). */
+const PLAIN_LINK = ':where(a:not([class]), a[class=""])'
+const PACK_LINK = 'color: var(--link-color); text-decoration: var(--link-decoration);'
+const GROUND_WORDS = 'color: inherit; text-decoration-line: underline;'
+const underlineIn = (colour: string) => `text-decoration-color: ${colour};`
+const CONTRAST_UNDERLINE = underlineIn('var(--accent-on-contrast)')
 export const LINK_RULES = [
-  ':where(a:not([class]), a[class=""]) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }',
-  ':where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class]), a[class=""]) { color: inherit; text-decoration-line: underline; text-decoration-color: currentcolor; }',
-  ':where([data-bg="contrast"]) :where(a:not([class]), a[class=""]) { text-decoration-color: var(--accent-on-contrast); }',
+  `${PLAIN_LINK} { ${PACK_LINK} text-underline-offset: 0.15em; }`,
+  `:where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) ${PLAIN_LINK} { ${GROUND_WORDS} ${underlineIn('currentcolor')} }`,
+  `:where([data-bg="contrast"]) ${PLAIN_LINK} { ${CONTRAST_UNDERLINE} }`,
 ].join('\n')
+
+/** STORY 6.5 — A PLAIN LINK'S DECLARATIONS PER BACKGROUND VALUE: what `LINK_RULES` gives a plain link on each ground,
+ *  as one declaration list. `darkOverrideCss` writes the dark value's list for a section whose Background is
+ *  overridden in dark, because `LINK_RULES`' ground rules key on the root's `data-bg`, which in a shipped theme is the
+ *  LIGHT value. Keyed by the Background role's values (`BACKGROUND_ROLES`, which this file cannot import — DW-323;
+ *  `dark-override.test.ts` holds the two equal). */
+export const GROUND_LINKS: Readonly<Record<string, string>> = {
+  base: PACK_LINK,
+  surface: PACK_LINK,
+  accent: `${GROUND_WORDS} ${underlineIn('currentcolor')}`,
+  contrast: `${GROUND_WORDS} ${CONTRAST_UNDERLINE}`,
+  image: `${GROUND_WORDS} ${underlineIn('currentcolor')}`,
+}
+
+/** STORY 6.5 — FR-E4'S THREE INPUTS AS ONE DECLARED LIST OF MODE CONDITIONS, in the precedence the owner ruled (R-239,
+ *  2026-10-05, Story 6.5's Question 1, option 1): THE OWNER'S PIN — Ghost's `color_scheme` setting as the body class
+ *  `scheme-light` / `scheme-dark` (AD-17; Auto emits none); then, ON AUTO, THE VISITOR'S CHOICE — `data-mode` on
+ *  `<html>`, written by Epic 9's `mode-toggle` module (Story 9.1); then THE DEVICE — `prefers-color-scheme`, pure CSS,
+ *  so Auto works with JavaScript off. A visitor's choice saved under Auto waits while the site is pinned and applies
+ *  again once it is back on Auto: the token block, not the module, makes the pin win.
+ *
+ *  The pin is read on `:root` through `:has(> body.scheme-…)` (Tier 1 at FR-G8's pin, `tools/check-baseline.mjs`), so
+ *  every declaration stays on `:root` and `<html>`'s own background is the mode's. A media query cannot sit in a
+ *  selector list, so the dark values are written twice from this one list: under `media` with the `system` selector,
+ *  and under the `explicit` selector list. THIS IS THE ONLY PLACE THE PRECEDENCE IS WRITTEN — `packTokensCss` and
+ *  `darkOverrideCss` build every mode-naming selector from it, and `tokens.test.ts` refuses any other.
+ *
+ *  The canvas — `data-mode` always set on its `<html>`, a bare `<body>` — resolves exactly as before Story 6.5. */
+export const MODE_SELECTORS = {
+  media: '(prefers-color-scheme: dark)',
+  system: ':root:not([data-mode="light"]):not(:has(> body.scheme-light))',
+  explicit: [':root:has(> body.scheme-dark)', ':root[data-mode="dark"]:not(:has(> body.scheme-light))'],
+} as const
 
 /** A pack's token block — the only way a pack is emitted, so every block ends with R-173's link rule. `:root` declares
  *  every property (desktop values, light colours); the dark blocks redeclare the per-mode properties and nothing else,
  *  because a dark block (0,2,0) redeclaring a width value would beat the width band's `:root` (0,1,0) in dark; then the
  *  two width bands, each with the responsive properties alone; then the link rule.
  *
- *  FR-E4 owns mode RESOLUTION in Epic 6: the two dark blocks here are the minimum that makes both modes reachable on
- *  the canvas — system preference, and an explicit `data-mode`, which FR-E4 defines as the VISITOR's override written
- *  by the `mode-toggle` module; the canvas reuses that same attribute to preview a mode, deliberately, so no fourth
- *  mode signal exists. FR-E4's other input, the owner's server-rendered `scheme-*` body class, is Story 6.5's to add.
- *  AD-30: the token block is one of the only two files in a generated theme that may mention a mode. */
+ *  STORY 6.5 — FR-E4'S THREE INPUTS, LANDED: the dark map is written under `MODE_SELECTORS`' two conditions and
+ *  nowhere else — the owner's pin (the `scheme-*` body class), on Auto the visitor's `data-mode`, then the device. The
+ *  canvas reuses `data-mode` to preview a mode, deliberately, so no fourth mode signal exists. AD-30: the token block is
+ *  THE ONE FILE in a generated theme that names a mode — this block, then `darkOverrideCss`' per-section rules. */
 export function packTokensCss(pack: Pack): string {
   const { light, tablet, mobile } = packTokens(pack)
   const dark = modeTokens(pack, 'dark')
@@ -385,8 +426,8 @@ export function packTokensCss(pack: Pack): string {
   const bands = { tablet, mobile }
   return [
     block(':root', light),
-    `@media (prefers-color-scheme: dark) {\n${indent(block(':root:not([data-mode="light"])', perMode))}\n}`,
-    block(':root[data-mode="dark"]', perMode),
+    `@media ${MODE_SELECTORS.media} {\n${indent(block(MODE_SELECTORS.system, perMode))}\n}`,
+    block(MODE_SELECTORS.explicit.join(', '), perMode),
     ...BANDS.map((b) => `@media ${b.query} {\n${indent(block(':root', bands[b.name]))}\n}`),
     `/* FR-E1 · link style, applied: a plain link reads the two link tokens (R-112, R-173), a post's body included (R-229) */\n${LINK_RULES}`,
     '',

@@ -2,9 +2,12 @@
    on its `data-` attribute on the section root (AD-3), and its own `cy` prefix so the three samples' stylesheets
    can sit in one canvas document without meeting. */
 
-.cy { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
-.cy[data-bg="surface"] { background: var(--bg-surface); }
-.cy[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.cy { background: var(--cy-ground); color: var(--cy-ink); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
+/* the Background role is mode-scoped: each value is ONE root rule declaring this design's own properties, which every
+   other rule reads — never `[data-bg]` (AD-30's authoring rule, Story 6.5) */
+.cy[data-bg="base"] { --cy-ground: var(--bg-page); --cy-ink: var(--text-body); --cy-quiet: var(--text-muted); --cy-link: var(--link-color); }
+.cy[data-bg="surface"] { --cy-ground: var(--bg-surface); --cy-ink: var(--text-body); --cy-quiet: var(--text-muted); --cy-link: var(--link-color); }
+.cy[data-bg="contrast"] { --cy-ground: var(--bg-contrast); --cy-ink: var(--text-on-contrast); --cy-quiet: var(--text-on-contrast); --cy-link: var(--accent-on-contrast); }
 .cy[data-spacing="compact"] { padding-block: var(--space-section-compact); }
 .cy[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
 .cy[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
@@ -16,11 +19,9 @@
 .cy[data-align="center"] .cy__words { text-align: center; }
 .cy__picture { display: block; width: 100%; height: auto; border-radius: var(--radius-card); }
 .cy__words { display: flex; flex-direction: column; gap: 0.5rem; }
-.cy__eyebrow { margin: 0; font-size: 0.8125rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
-.cy[data-bg="contrast"] .cy__eyebrow { color: var(--text-on-contrast); }
+.cy__eyebrow { margin: 0; font-size: 0.8125rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--cy-quiet); }
 .cy__title { margin: 0; font-family: var(--font-heading); font-size: 2.25rem; line-height: 1.1; }
-.cy__link { color: var(--link-color); text-decoration: var(--link-decoration); }
-.cy[data-bg="contrast"] .cy__link { color: var(--accent-on-contrast); }
+.cy__link { color: var(--cy-link); text-decoration: var(--link-decoration); }
 
 .cy__features { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-gap); grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .cy[data-columns="2"] .cy__features { grid-template-columns: repeat(2, minmax(0, 1fr)); }

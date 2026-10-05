@@ -116,3 +116,29 @@ test('R-205 — Theme settings\' Clear visits a section whose dark override is o
   assert.match(fold, /if \(!holdsDarkOverride\(instance\)\) continue/, 'a section is skipped only when it holds no override anywhere')
   assert.match(fold, /clearDarkOverrides\(doc, instance\.instanceId\)/)
 })
+
+/* STORY 6.5 — THE HOOK, AND THE DEFECT FOUND AT CREATE.
+
+   The editor's canvas draws the markup the theme ships: a section whose dark override is in force carries the token
+   block's hook (`data-instance`, `darkHook`) through BOTH of its doors — the paint (`partOf`) and every re-stamp
+   (`slice`) — so a flip or a control change keeps it and a cleared override drops it. And `/pilots` draws the mode's
+   slice through both of ITS doors: until this story it saved a dark override from the Sidebar in Dark, showed its moon,
+   and painted the light value. */
+test('Story 6.5 — the editor hands the hook through the paint and the re-stamp, keyed as its queries are', () => {
+  const paint = body(editor, 'const paint = ()')
+  assert.match(paint, /renderSection\(doc, entry, \{ \.\.\.i, controls: storedFor\(entry, i, now\.mode\) \}, \{[^}]*instance: darkHook\(entry, i, queryKey\(i\)\)/)
+  const slice = body(editor, 'const slice = (placed: Placed')
+  assert.match(slice, /controls: storedFor\(design, state, latest\.current\.mode\), instance: darkHook\(design, state, queryKey\(placed\)\)/)
+  // the queries' own key, `${template_key}:${instanceId}` — what Epic 7 hashes for the file it compiles the section into
+  assert.match(editor, /const queryKey = \(i: \{ doc: string; instanceId: string \}\) => `\$\{i\.doc\}:\$\{i\.instanceId\}`/)
+})
+
+test('Story 6.5 — /pilots paints and re-stamps the MODE\'S slice, so a dark override it saves is drawn', () => {
+  const pilots = readFileSync('app/(app)/app/(authed)/pilots/review.tsx', 'utf8')
+  const paint = body(pilots, 'const paint = ()')
+  assert.match(paint, /renderSection\(c\.doc, e, \{ \.\.\.s, controls: storedFor\(e, s, now\.mode\) \}/)
+  const change = body(pilots, 'const onChange = (next: ControlState, kind: Edit)')
+  assert.match(change, /stampControls\([^)]*controls: storedFor\(entry, next, latest\.current\.mode\) \}\)/)
+  // the light `controls` reach neither door any more
+  assert.doesNotMatch(pilots, /renderSection\(c\.doc, e, s,|controls: next\.controls/)
+})

@@ -2,8 +2,11 @@
    Measurements are the frame's (A1-1 Rail.dc.html): bar 76 at Comfortable, wordmark 19, nav 15 at 28 apart,
    actions 14 at 14 apart, the 9 × 17 primary button; 1023 narrows (18, gaps 20); 767 is the drawer. */
 
-.a1-1 { position: relative; z-index: 10; background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-inline: var(--site-margin); }
-.a1-1[data-bg="surface"] { background: var(--bg-surface); }
+.a1-1 { position: relative; z-index: 10; background: var(--a1-1-ground); color: var(--text-body); font-family: var(--font-body); padding-inline: var(--site-margin); }
+/* the Background role is mode-scoped: each value is ONE root rule declaring this design's own properties, which every
+   other rule reads — never `[data-bg]` (AD-30's authoring rule, Story 6.5) */
+.a1-1[data-bg="base"] { --a1-1-ground: var(--bg-page); }
+.a1-1[data-bg="surface"] { --a1-1-ground: var(--bg-surface); }
 .a1-1[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
 .a1-1[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
 .a1-1[data-divider-under="hairline"] { border-block-end: 1px solid var(--border-hairline); }
@@ -59,7 +62,9 @@
 .a1-1__cta { padding: 0.5625rem 1.0625rem; border: var(--button-border); border-radius: var(--button-radius); background: var(--button-fill); color: var(--button-text); font-size: 0.875rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
 /* DW-317 (Story 6.2): the header offers no contrast ground (Background is base · surface), so its button is always on the
    page or the surface, where every button step reads; the day it offers one, the button answers it as A22 #1's does —
-   `[data-bg="contrast"] .a1-1__cta { background: var(--text-on-contrast); color: var(--bg-contrast); }` */
+   through the root's own properties, never a rule on the ground (Story 6.5): every ground's root rule declares
+   `--a1-1-cta` and `--a1-1-cta-text` (Base and Surface `var(--button-fill)` / `var(--button-text)`, Contrast
+   `var(--text-on-contrast)` / `var(--bg-contrast)`), and `.a1-1__cta` reads them. */
 .a1-1[data-sign-in="off"] .a1-1__signin, .a1-1[data-subscribe="off"] .a1-1__cta { display: none; }
 
 .a1-1[data-nav-position="right"] .a1-1__nav { margin-inline-start: auto; }
