@@ -165,8 +165,9 @@ export function BrandPanel({
         <SiteToday site={site} />
 
         <aside className="flex w-full shrink-0 flex-col gap-4 border-t border-line-faint bg-paper-raised p-[16px_20px] tablet:w-[360px] tablet:overflow-y-auto tablet:border-t-0 tablet:border-l tablet:p-[20px_22px]">
-          {/* `tablet:min-h-0` down the chain (the form, the fieldset, the cards): STORY 6.6's bound, below */}
-          <form action={useBrand} className="flex flex-1 flex-col gap-4 tablet:min-h-0">
+          {/* `tablet:contents`: STORY 6.6's bound and its floor, below — from `tablet` up this form draws no box, so
+              the chooser and the presses are the rail's own items, on the rail's own `gap-4` */}
+          <form action={useBrand} className="flex flex-1 flex-col gap-4 tablet:contents">
             <input type="hidden" name="site_id" value={site.id} />
             {chrome}
             {/* THE CHOOSER, AND IT IS REAL RADIO INPUTS — not the Kit's presentational
@@ -182,13 +183,33 @@ export function BrandPanel({
                 STORY 6.6 — THE CHOOSER AT SCALE (DW-70), built from the drawings nearest it with no
                 Claude Design pass (R-242, the spec's "Built from" table): S2c as built, and this
                 popup's own idiom of columns that scroll apart so a rail's buttons stay in view
-                (above, S11e's). On Pro's 25 projects the cards pushed the caption and both presses
+                (above, S11e's). At Pro's project cap the cards pushed the caption and both presses
                 below the rail. From `tablet` up the card list now fills the rail's free height and
                 scrolls THERE, with the browser's own scrollbar, while "Which project?" stays above it
                 and the caption and the presses stay at the rail's foot. Below `tablet` nothing moves:
-                the window scrolls as one page, as it always has. */}
+                the window scrolls as one page, as it always has.
+
+                AND IT HAS A FLOOR (review, 2026-10-05). The list shrank with nothing under it, so in a
+                short window from `tablet` up — a phone on its side, a laptop zoomed in — the legend,
+                the caption and the presses took the rail and the cards were a 4px sliver: buttons, and
+                no projects to point them at. The chooser now stops shrinking at TWO CARDS: two of the
+                70px card below (the 44px tile, 12px of padding twice, the 1px border twice), the 10px
+                between them and the 4px of ring room, under the legend's own line and its 10px —
+                183.5px, floored to the pixel so a chooser of exactly two cards is never stretched.
+                Past that the rail scrolls as a whole on the `tablet:overflow-y-auto` it has always had:
+                cards, caption and both presses reachable, nothing over anything.
+
+                WHY THE FORM IS `tablet:contents`. The floor has to hold all the way up to the scroller
+                or the rail never learns of it: a `<form>` that could still shrink to nothing would let
+                the chooser spill out of it and under **Skip**. And it cannot be given a floor of its
+                own, because it holds the caption, whose height is the sentence's. With no box, the
+                chooser and the presses are the rail's items and each keeps its own minimum. It is also
+                what bounds the list: with its box back, the form's minimum is every card, and the
+                caption and the presses go under the rail again (`6.6 · DW-70 ·` in the keyboard gate
+                holds both). Above the floor nothing is drawn differently — the two gaps were both
+                `gap-4`. */}
             {choosing ? (
-              <fieldset data-brand-chooser className="m-0 w-full border-0 p-0 tablet:flex tablet:min-h-0 tablet:flex-col">
+              <fieldset data-brand-chooser className="m-0 w-full border-0 p-0 tablet:flex tablet:min-h-[183px] tablet:flex-col">
                 {/* A real `<legend>`, laid out as a legend: a fieldset that is a flex container lays
                     out its anonymous content box, never its rendered legend, so the cards are the
                     one flex item that fills and scrolls. Its 2px padding inside a 2px negative margin

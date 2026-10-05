@@ -32,7 +32,7 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
 import { brandPath, brandRetry, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { freeName, NAME_MAX, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
-import { brandPacks, defaultStylePack } from '@/lib/style-pack'
+import { brandPacks, brandWrite, defaultStylePack, type BrandRow } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { call, fetchWithKey, findSiteByAdminKeyId, remove, store, type CallResult } from '@/server/ghost-admin'
 import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
@@ -124,8 +124,8 @@ const BRAND = brandPath
    (review, 2026-09-08 — every failure branch here used to `return` in silence). */
 const BRAND_FAILED = (base: string) => `${base}&failed=1`
 /** Story 6.6 (DW-327): how many times Use your brand's compare-and-set meets a stale base — re-reading the project and
- *  seeding again each time — before it says S2c's failed line. ponytail: three; a project saved four times in one press is
- *  an editor in a loop, and the customer can press again. */
+ *  seeding again each time — before it says S2c's failed line. ponytail: a small fixed number; a project saved on every one
+ *  of them in one press is an editor in a loop, and the customer can press again. */
 const BRAND_TRIES = 3
 /* S2c HAS THE SAME TWO CHROMES MANAGE KEYS HAS, and its actions answer onto the same base for the
    same reason — see `keysBase` below. `connectSite`'s own landing is NOT this: the owner ruled at
@@ -841,35 +841,40 @@ export async function useBrand(formData: FormData): Promise<void> {
      is there now, at most `BRAND_TRIES` times, then says S2c's failed line. `brand` is no longer
      written: once the accent is in the pack nothing reads it (`lib/style-pack.ts`'s header). A seed
      that changes nothing — no accent, or the pack already wearing it — writes nothing. */
-  const paint = async (project: { id: string; style_pack: unknown; revision: number }) => {
-    let row = project
-    for (let tries = 1; ; tries += 1) {
-      const seed = brandPacks(row.style_pack, brand.accent)
-      if (seed === null) return
-      const { data, error } = await supabase.rpc('sync_project_doc', {
-        p_project: row.id,
-        p_docs: {},
-        p_base: row.revision,
-        p_preset: seed.preset,
-        p_packs: seed.packs,
-      })
-      const answer = data as { applied: boolean; revision: number } | null
-      if (!error && answer?.applied) return
-      // the CODE, never the message; null is "not yours, or no such project" — the function's one answer to both
-      if (error || answer === null || tries >= BRAND_TRIES) {
-        console.error('sites: use brand write failed', { code: error?.code ?? (answer === null ? 'no_such_project' : 'stale_base') })
-        brandRedirect(BRAND_FAILED(base))
-      }
-      const { data: fresh, error: freshError } = await supabase
-        .from('projects')
-        .select('id, style_pack, revision')
-        .eq('id', row.id)
-        .maybeSingle<{ id: string; style_pack: unknown; revision: number }>()
-      if (freshError || !fresh) {
-        console.error('sites: use brand re-read failed', { code: freshError?.code ?? 'no_such_project' })
-        brandRedirect(BRAND_FAILED(base))
-      }
-      row = fresh
+  const paint = async (project: BrandRow) => {
+    const outcome = await brandWrite(
+      project,
+      brand.accent,
+      BRAND_TRIES,
+      async (row, seed) => {
+        const { data, error } = await supabase.rpc('sync_project_doc', {
+          p_project: row.id,
+          p_docs: {},
+          p_base: row.revision,
+          p_preset: seed.preset,
+          p_packs: seed.packs,
+        })
+        const answer = data as { applied: boolean; revision: number } | null
+        // the CODE, never the message; null is "not yours, or no such project" — the function's one answer to both
+        if (error || answer === null) {
+          console.error('sites: use brand write failed', { code: error?.code ?? 'no_such_project' })
+          return null
+        }
+        return answer.applied
+      },
+      async (id) => {
+        const { data: fresh, error } = await supabase
+          .from('projects')
+          .select('id, style_pack, revision')
+          .eq('id', id)
+          .maybeSingle<BrandRow>()
+        if (error || !fresh) console.error('sites: use brand re-read failed', { code: error?.code ?? 'no_such_project' })
+        return error || !fresh ? null : fresh
+      },
+    )
+    if (outcome === 'failed') {
+      console.error('sites: use brand gave up', { project: project.id })
+      brandRedirect(BRAND_FAILED(base))
     }
   }
 

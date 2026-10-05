@@ -2278,6 +2278,11 @@ resolution: Story 6.6's Dev (2026-10-05) — not drawn, by the owner's ruling R-
   6.6's Dev session (R-242; given 2026-10-05, Question 4), and `run-verify-ghost-admin.py`'s `brand-many` on the deployed build at Review: Pro's cap of
   projects (`PLANS`), the caption and both presses in view with the window unscrolled at 1440 and 834 in the window and
   on the full page, the list scrolling inside the rail, and at 390 no scroller of its own.
+  **Review (2026-10-05): `brand-many` ran on the deployed build and passed**, and the bound gained what it lacked: a
+  check in CI (`6.6 · DW-70 ·` in the keyboard gate, on a harness page mounting the real panel; the bound removed turns
+  it red) and a floor of two cards, because in a short window from tablet up the list shrank to a sliver (the rail now
+  scrolls as a whole past the floor; every approved state is byte-identical before and after). One question went to the
+  owner: the ticked project can sit out of sight in the scroller (Story 6.6's Question 5).
 owner: Story 6.6 (Auto-branding seeds the pack), whose criteria carry its requirement word for word with its id
   (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -8931,6 +8936,10 @@ resolution: Story 6.6's Dev (2026-10-05) — done as planned. `useBrand`'s `pain
   planted control (the old `.update({ style_pack: { ...pack, brand } })` fires it); the RLS gate's 6.4 stale-base case
   for the compare-and-set; and `brand-pack-rerun` on the deployed build at Review (a planted Tangerine record and `mode`
   byte-equal after the press, the revision up by exactly one).
+  **Review (2026-10-05): `brand-pack-rerun` ran on the deployed build and passed**, with two additions: a second press
+  moves no revision, and `brand-many` presses a picked card (seeded, revision up by one, still unbound). The loop that
+  answers a stale base had no check that ran it, so it was lifted out of the action into the pure `brandWrite`
+  (`lib/style-pack.ts`) and tested: re-read, seed over the pack saved meanwhile, give up after `BRAND_TRIES` writes.
 
 ## Deferred from: Story 6.5's Dev (2026-10-05)
 

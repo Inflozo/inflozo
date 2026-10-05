@@ -204,6 +204,34 @@ export function brandPacks(stylePack: unknown, accent: unknown): { packs: Record
   return { packs: withoutDefaults({ ...own, [id]: seeded }, library), preset }
 }
 
+/** A project as the brand write reads it: the column, and the revision the compare-and-set is made against. */
+export type BrandRow = { id: string; style_pack: unknown; revision: number }
+
+/** STORY 6.6 — THE BRAND WRITE'S LOOP (DW-327), pure so its stale path is under test (review, 2026-10-05: it lived in
+ *  `useBrand`'s closure, where no check could run it). `write` is `sync_project_doc`'s compare-and-set and answers
+ *  whether it applied, or null for an error or a project that is not the caller's; `reread` answers the project as it is
+ *  now, or null. A stale base re-reads and seeds again ON TOP OF WHAT IS THERE NOW, at most `tries` writes in all.
+ *  `unchanged` is `brandPacks`' null: nothing was written. */
+export async function brandWrite(
+  project: BrandRow,
+  accent: unknown,
+  tries: number,
+  write: (row: BrandRow, seed: NonNullable<ReturnType<typeof brandPacks>>) => Promise<boolean | null>,
+  reread: (id: string) => Promise<BrandRow | null>,
+): Promise<'written' | 'unchanged' | 'failed'> {
+  let row = project
+  for (let n = 1; ; n += 1) {
+    const seed = brandPacks(row.style_pack, accent)
+    if (seed === null) return n === 1 ? 'unchanged' : 'written'
+    const applied = await write(row, seed)
+    if (applied) return 'written'
+    if (applied === null || n >= tries) return 'failed'
+    const fresh = await reread(row.id)
+    if (fresh === null) return 'failed'
+    row = fresh
+  }
+}
+
 /** An own pack as the dashboard card and D4a's chooser paint it: the record's light values, its pairing's glyph. */
 function ownCard(id: string, record: PackRecord): Preset {
   const pairing = pairingOf(record.pairing)

@@ -7020,3 +7020,89 @@ test('DW-303 (Story 5.24e): under `next dev`\'s StrictMode the connect wizard\'s
   await page.keyboard.press('Enter')
   await sent
 })
+
+/* STORY 6.6 (review, 2026-10-05) — DW-70's bound had no committed check: Dev measured it on a scratch page and after that
+   only the deployed probe did, so the rail's form could be given its box back with CI green. And the list had no floor:
+   in a short window from `tablet` up it shrank to a sliver under presses that stayed. `/app/harness/brand` mounts the real
+   `BrandPanel` with stand-in rows, in both chromes; nothing is pressed, and nothing is counted (standing rule 4) — the
+   cards, their height and the gap between them are read off the page, and `cap` is `lib/plan`'s own number. */
+test('6.6 · DW-70 · the Which project? cards scroll inside the rail from tablet up, with a floor of two cards; below tablet the panel scrolls as one', async ({ page }) => {
+  /** every box the row is about, with the window where it was left */
+  const read = () => page.locator('[data-brand-cards]').evaluate((list) => {
+    const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom } }
+    const scrolls = (el) => ({ ...box(el), overflow: getComputedStyle(el).overflowY, content: el.scrollHeight, room: el.clientHeight })
+    const rail = list.closest('aside')
+    const cards = [...list.children].map(box)
+    return {
+      list: scrolls(list), rail: scrolls(rail), body: scrolls(rail.parentElement),
+      cards: cards.length, card: cards[0].bottom - cards[0].top, gap: cards[1].top - cards[0].bottom,
+      chooser: box(list.closest('fieldset')), caption: box(rail.querySelector('#brand-caption')),
+      presses: [...rail.querySelectorAll('button[type="submit"]')].map(box),
+      focus: document.activeElement ? box(document.activeElement.closest('label') ?? document.activeElement) : null,
+      window: { height: innerHeight, scrolled: scrollY, content: document.documentElement.scrollHeight },
+    }
+  })
+  const show = async (width, height, projects, chrome) => {
+    await page.setViewportSize({ width, height })
+    await page.goto(`/app/harness/brand?projects=${projects}${chrome === 'page' ? '&chrome=page' : ''}`)
+    await expect(page.locator('[data-brand-cards]')).toBeVisible()
+    return read()
+  }
+  /** a pixel of slack, and no more: these are sub-pixel boxes */
+  const within = (inner, outer) => inner.top >= outer.top - 1 && inner.bottom <= outer.bottom + 1
+
+  for (const chrome of ['popup', 'page']) {
+    // THE CONTROL: with three cards there is room for all of them, so nothing scrolls anywhere
+    const few = await show(1440, 900, 3, chrome)
+    expect(few.cards, `${chrome}: the control — three cards`).toBe(3)
+    expect(few.list.content, `${chrome}: three cards fit the list`).toBeLessThanOrEqual(few.list.room)
+    expect(few.rail.content, `${chrome}: and the rail`).toBeLessThanOrEqual(few.rail.room)
+    expect(few.window.content, `${chrome}: and the window`).toBeLessThanOrEqual(few.window.height)
+
+    // THE BOUND, from `tablet` up: the list is the scroller, and the caption and both presses are on the screen unscrolled
+    for (const [width, height] of [[1440, 900], [834, 1112]]) {
+      const at = `${chrome} at ${width}×${height}`
+      const m = await show(width, height, 'cap', chrome)
+      expect(m.cards, `${at}: the control — the cap is more cards than the three that fit`).toBeGreaterThan(few.cards)
+      expect(m.list.overflow, `${at}: the card list scrolls`).toBe('auto')
+      expect(m.list.content, `${at}: and has more cards than room`).toBeGreaterThan(m.list.room)
+      expect(m.rail.content, `${at}: the rail itself does not scroll`).toBeLessThanOrEqual(m.rail.room)
+      expect(m.window.scrolled, `${at}: the window was never scrolled`).toBe(0)
+      const screen = { top: 0, bottom: m.window.height }
+      expect(m.presses.length, `${at}: Use your brand and Skip`).toBe(2)
+      for (const part of [m.caption, ...m.presses]) expect(within(part, screen) && within(part, m.rail), `${at}: the caption and both presses are in view — ${JSON.stringify(m)}`).toBe(true)
+      expect(m.list.bottom, `${at}: the list ends above the caption`).toBeLessThanOrEqual(m.caption.top)
+    }
+
+    // BELOW `tablet` nothing is bounded: the list is as tall as its cards and the panel's one body scrolls
+    const phone = await show(390, 844, 'cap', chrome)
+    expect(phone.list.overflow, `${chrome} at 390: the list is not a scroller`).toBe('visible')
+    expect(phone.list.content, `${chrome} at 390: it is as tall as its cards`).toBeLessThanOrEqual(phone.list.room)
+    expect(phone.rail.overflow, `${chrome} at 390: nor is the rail`).toBe('visible')
+    expect(phone.body.overflow, `${chrome} at 390: the panel's body scrolls, as one page`).toBe('auto')
+    expect(phone.body.content, `${chrome} at 390`).toBeGreaterThan(phone.body.room)
+
+    // THE FLOOR, in a short window from `tablet` up: two cards stay, and the RAIL scrolls — to a card and to each press
+    const short = await show(844, 390, 'cap', chrome)
+    const at = `${chrome} at 844×390`
+    expect(short.list.overflow, `${at}: the control — still the bounded layout`).toBe('auto')
+    expect(short.list.room, `${at}: the list keeps two cards — ${JSON.stringify(short)}`).toBeGreaterThanOrEqual(2 * short.card + short.gap)
+    expect(short.rail.overflow, `${at}: the rail is the scroller now`).toBe('auto')
+    expect(short.rail.content, `${at}: and it scrolls`).toBeGreaterThan(short.rail.room)
+    expect(short.chooser.bottom, `${at}: the chooser ends above the caption — nothing over anything`).toBeLessThanOrEqual(short.caption.top)
+    expect(short.list.bottom, `${at}: and so does its list`).toBeLessThanOrEqual(short.caption.top)
+    expect(short.caption.bottom, `${at}: the caption above Use your brand`).toBeLessThanOrEqual(short.presses[0].top)
+    expect(short.presses[0].bottom, `${at}: Use your brand above Skip`).toBeLessThanOrEqual(short.presses[1].top)
+    const rail = page.locator('aside', { has: page.locator('[data-brand-cards]') })
+    for (const [name, target] of [
+      ['the last card', rail.locator('[data-brand-cards] input[type="radio"]').last()],
+      ['Use your brand', rail.locator('button[type="submit"]').first()],
+      ['Skip', rail.locator('button[type="submit"]').last()],
+    ]) {
+      // focus scrolls what it lands on into view, as Tab does — the keyboard's own way down a rail
+      await target.focus()
+      const m = await read()
+      expect(within(m.focus, m.rail) && within(m.focus, { top: 0, bottom: m.window.height }), `${at}: ${name} comes into view — ${JSON.stringify(m.focus)} in ${JSON.stringify(m.rail)}`).toBe(true)
+    }
+  }
+})

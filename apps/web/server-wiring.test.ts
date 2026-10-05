@@ -721,7 +721,7 @@ test('DW-327 (Story 6.6): Use your brand writes style_pack only through sync_pro
   // the compare-and-set, proven by the RLS gate's stale-base case. This is the half no running test can see — that the
   // action really goes through it, and that no whole-column write of `style_pack` is left anywhere to lose a save.
   const code = (text: string) => text.replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
-  const wholeWrite = (text: string) => /\.update\(\s*\{[^}]*\bstyle_pack\b/.test(code(text))
+  const wholeWrite = (text: string) => /\.(?:update|upsert)\(\s*\{[^}]*\bstyle_pack\b/.test(code(text))
   assert.deepEqual(sources().filter((p) => wholeWrite(readFileSync(p, 'utf8'))), [], 'a whole-column style_pack update loses a concurrent save (DW-327)')
   const actions = code(readFileSync(CONNECT_ACTIONS, 'utf8'))
   const from = actions.indexOf('export async function useBrand')

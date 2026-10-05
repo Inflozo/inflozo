@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { brandSeed } from './lib/pack-edit.ts'
-import { brandPacks, DEFAULT_PRESET, PACK_FAMILY_PREFIX, PRESETS, defaultStylePack, packChoices, packFacesCss, placeholderFor, presetIdOf, siteAccentOf } from './lib/style-pack.ts'
+import { brandPacks, brandWrite, DEFAULT_PRESET, PACK_FAMILY_PREFIX, PRESETS, defaultStylePack, packChoices, packFacesCss, placeholderFor, presetIdOf, siteAccentOf } from './lib/style-pack.ts'
 
 // `placeholderFor`'s fallback is the only thing between an unknown Style Pack and a card
 // painted with `undefined` colours, and E6 is the epic that first writes a preset name an
@@ -266,4 +266,35 @@ test('brandPacks: no accent, or a pack already wearing this seed, is null — no
   // and a seed equal to the library's record drops the key (`withoutDefaults`), as Reset to defaults does
   const own = recordOf('paper')
   assert.deepEqual(brandPacks({ preset: 'paper', packs: { paper: brandSeed(own, PINK), mono: { ...recordOf('mono') } } }, PINK), null)
+})
+
+/* ───────── STORY 6.6's REVIEW — `brandWrite`, THE COMPARE-AND-SET's LOOP (DW-327). The RLS gate proves the function refuses a
+   stale base; these prove what the action DOES with the refusal: re-read, seed on top of what is there now, give up. */
+test('brandWrite: a stale base re-reads and seeds over the pack the editor just saved, against the re-read revision', async () => {
+  const saved = { preset: 'paper', packs: { tangerine: { ...recordOf('tangerine'), name: 'Saved meanwhile' } } }
+  const calls: { revision: number; packs: string[] }[] = []
+  const out = await brandWrite(
+    { id: 'p', style_pack: { preset: 'paper' }, revision: 4 },
+    PINK,
+    3,
+    async (row, seed) => (calls.push({ revision: row.revision, packs: Object.keys(seed.packs).sort() }), row.revision === 5),
+    async () => ({ id: 'p', style_pack: saved, revision: 5 }),
+  )
+  assert.equal(out, 'written')
+  assert.deepEqual(calls, [{ revision: 4, packs: ['paper'] }, { revision: 5, packs: ['paper', 'tangerine'] }], 'the second write carries the saved pack and the new base')
+})
+
+test('brandWrite: always stale gives up after `tries` writes; an error or a vanished project fails at once; nothing to seed writes nothing', async () => {
+  const row = { id: 'p', style_pack: { preset: 'paper' }, revision: 1 }
+  let writes = 0
+  assert.equal(await brandWrite(row, PINK, 3, async () => (writes++, false), async () => row), 'failed')
+  assert.equal(writes, 3)
+  writes = 0
+  assert.equal(await brandWrite(row, PINK, 3, async () => (writes++, null), async () => row), 'failed')
+  assert.equal(writes, 1, 'an error is not retried')
+  assert.equal(await brandWrite(row, PINK, 3, async () => false, async () => null), 'failed')
+  assert.equal(await brandWrite(row, null, 3, async () => assert.fail('no write'), async () => row), 'unchanged')
+  // stale, and the re-read already wears the seed (the other writer was this same press): nothing more to write
+  const worn = { ...row, style_pack: { preset: 'paper', packs: brandPacks(row.style_pack, PINK)?.packs }, revision: 2 }
+  assert.equal(await brandWrite(row, PINK, 3, async () => false, async () => worn), 'written')
 })

@@ -2,9 +2,9 @@
 title: 'Story 6.6 — Auto-branding seeds the pack'
 type: 'feature'
 created: '2026-10-05'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '7200565bcd75a4a2b4f5cc2bb74fd6077e1a7ed9'
-review_loop_iteration: 0
+review_loop_iteration: 1
 owner_test: pending
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
 ---
@@ -294,6 +294,33 @@ beside the drawings it came from before the Dev commit (R-242).
 - Given the documents, when the story is done, then FR-E5, FR-C4, the card, EXPERIENCE.md and the ledger say what was
   built. No sentence says the brand is written to `style_pack.brand`, and none says the logo is seeded (R-240).
 
+### Review Findings
+
+Review of 2026-10-05, the diff since `7200565b`: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor
+and the Real-infra verifier (run in the main session on the owner's in-session go, never by a subagent). One finding is
+the owner's to decide (Question 5); every patch is applied.
+
+- [ ] [Review][Decision] At scale the project already ticked can be out of sight inside the new scroller — the buttons are now always in view, so Use your brand can be pressed without seeing which card it applies to (the deployed shot at Pro's cap shows no ticked card) [apps/web/app/(app)/app/(authed)/sites/brand-panel.tsx — Question 5]
+- [x] [Review][Patch] The stale-base loop — re-read, seed again, give up — lived in `useBrand`'s closure where no check could run it: the reason for the rewrite (DW-327) shipped with a regex over its source as its only evidence. Lifted into the pure `brandWrite` and tested: a stale answer re-reads and seeds over the pack saved meanwhile against the new revision; always stale gives up after `BRAND_TRIES` writes; an error or a vanished project fails at once. Control: without `row = fresh` both cases fail [apps/web/lib/style-pack.ts, apps/web/app/(app)/app/(authed)/sites/actions.ts, apps/web/style-pack.test.ts]
+- [x] [Review][Patch] The chooser's card list had no floor: in a short window from tablet up (844 × 390, a phone on its side or a zoomed laptop) it shrank to a 4px sliver — buttons, and no projects to point them at. The chooser now stops shrinking at two cards and the rail scrolls as a whole past that; the form is `tablet:contents` so the floor reaches the rail. At 1440 × 900, 834 × 1112 and 390 × 844, with three projects and at the cap, in both chromes, every before/after shot is byte-identical — the states the owner approved (R-242) did not move [apps/web/app/(app)/app/(authed)/sites/brand-panel.tsx]
+- [x] [Review][Patch] DW-70's bound had no check in CI — Dev measured on a scratch page that was never committed, so removing the form's bound turned nothing red before deploy. A harness page mounts the real `BrandPanel` with stand-in rows and `6.6 · DW-70 ·` in the keyboard gate holds the bound, the floor and the one-page scroll below tablet, in both chromes. Controls: the bound removed and the floor removed each turn it red [apps/web/app/(app)/app/harness/brand/page.tsx, tools/keyboard/journey.spec.mjs, apps/web/app-routes.test.ts, apps/web/busy.test.ts]
+- [x] [Review][Patch] Nothing runnable pressed a card in the chooser (the full sequence's `brand-picker` waits for a Ghost 5 server, DW-326), and "a press that changes nothing writes nothing" was asserted without reading the revision. `brand-many` now picks the last card (bound to no site, below the scroller's fold) and presses: seeded, revision up by one, still unbound, the site's own project untouched. `brand-pack-rerun` presses a second time: revision and column unchanged. Its restore is checked, not swallowed [tools/probe/run-verify-ghost-admin.py]
+- [x] [Review][Patch] The DW-327 source guard missed a whole-column `.upsert(` [apps/web/server-wiring.test.ts]
+- [x] [Review][Patch] Two comments wrote a count down (Pro's cap; "saved four times" beside a limit of three) [brand-panel.tsx, actions.ts]
+
+Dismissed, each read in the source first: the editor door "not normalising" the accent (`siteAccentOf` already answers
+`hexOf`); a duplicate React key on the sixth dot (`Dots` keys by index); junk own packs dropped by the write (the spec's
+"whole validated map", as the editor's own save does since 6.4); a logo-only brand landing as success (the matrix's own
+row); a pale accent kept exactly in light (R-241's ruling; the warning's pairs hold no accent-on-page pair); the dark
+double step on a custom pack whose dark page and surface sit on opposite sides (no value satisfies both; the customer
+sees and edits the result); the row's label and spoken sentence (the picker's own "From your site" pattern); cards
+branded before this story losing the stored colour (Design Notes, pre-launch test accounts); the harness's all-postponed
+exit and docstring wording; the approval page living outside the repository (R-242's record is the ruling and Question 4).
+
+Not staged, and said so: an open editor meeting the conflict dialog after a brand lands (the revision bump is measured on
+production; the dialog on a moved revision is 5.8's, held by the editor walk), and the dark canvas after a seed in a
+browser (the seeded dark values are unit-held and read off production's column; the owner's step 11 looks at it).
+
 ## Spec Change Log
 
 ## Design Notes
@@ -373,7 +400,7 @@ Re-check connection.
 
 ## Questions for the owner
 
-Every question is ruled; nothing is open.
+Questions 1 to 4 are ruled. **Question 5 is open** (Review, 2026-10-05).
 
 ### Question 1 — Should "Use your brand" copy your logo into Inflozo, or keep reading it from Ghost?
 
@@ -466,6 +493,25 @@ from it, you would choose 2 and name the picture. It would be fixed and shown ag
 
 **Ruled: option 1 (owner, 2026-10-05).** *"1. Approve"*, asked in the Dev session over the review page. R-242's
 side-by-side half is done: both parts match the drawings they copy, and the Dev commit follows.
+
+### Question 5 — With many projects, the one already ticked can be hidden further down the list. Show it first?
+
+**In plain English.** In the Use your brand window, "Which project?" arrives with one project already ticked: the one
+made for this site, or else your most recent one. Since this story the list scrolls inside the panel so the buttons stay
+in view. The side effect: with a long list, the ticked project can be below the part you can see, and the Use your
+brand button is right there to press. The review's shot of 25 projects shows five cards and none of them ticked.
+
+**An example.** You have 25 projects and your Ghost6 project is the oldest. You open the window: you see Many 25 to
+Many 21, none ticked, and Use your brand. You press it, and Ghost6 — the 25th card, which you never saw — takes the
+brand. That is the right project, but you could not tell.
+
+1. **Show the ticked project first in the list (RECOMMENDED).** The card already chosen for you is always the first
+   card; the rest follow in the usual order. It works with JavaScript off, and nothing else moves. Built and shown to
+   you side by side, as R-242 asks, before it ships.
+2. **Leave it as it is.** The list keeps the Projects page's order exactly. With many projects you scroll to find the
+   ticked one.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Owner's manual test
 
@@ -580,3 +626,41 @@ production (throwaway users and their projects, deleted at the end) and Vercel.
   argv.
 - Not staged end to end: the race itself, an editor save landing between the action's read and its write. Its guard is
   the compare-and-set, proven by the RLS gate's stale-base case; the source test shows the action uses it.
+
+### Results — Review (2026-10-05)
+
+Run in the main session on the owner's in-session go ("1. Go"), every key read inside the process and none printed.
+The reviewed build is the Dev head `4042fd6e`: the editor walk read Vercel and found `dpl_93mmmwCk2tvp69dNVkdor9FekGwW`
+READY, built from that commit, serving `app.inflozo.com`.
+
+- **`run-verify-ghost-admin.py --only brand-pack,brand-pack-rerun,brand-many --shots <dir>`** -- exit 0, "all steps
+  passed", run twice (as Dev wrote it, then with the review's added assertions). Real services: T1 `ghost6.inflozo.com`
+  (reads only: the connect's own calls and `GET /admin/settings/` with `GHOST6_ADMIN_API_KEY`), Supabase production
+  (a throwaway account through `SUPABASE_SECRET_KEY`, its projects and its entitlement) and the deployed app.
+  - `brand-pack` PASS: a fresh T1 connect, then S2c's Use your brand, made one project linked to T1. Its `style_pack`
+    has the keys `packs` and `preset` and no `brand`; Paper's record equals `brandSeed`'s for T1's live accent
+    `#3832E5` (light `#3832E5` / `#FBF9F5`, dark `#637AFF` / `#171511`). The dashboard card's middle block computes to
+    `rgb(56, 50, 229)`, the editor's canvas `--accent` is `#3832E5`, S4a's card draws six dots with the sixth the
+    site's, and the "From your site" row is drawn with its "Use your brand" button.
+  - `brand-pack-rerun` PASS: planted Paper with a blue accent, a Tangerine record and `mode: dark` at revision 0. After
+    the popup's press: revision 1, Paper equal to `brandSeed`'s whole record, Tangerine byte-equal, `mode` and `preset`
+    kept, no `brand`. **The control is the plant itself** (blue before, the site's after). A second press landed the
+    same with revision 1 and the column byte-equal: nothing written. The column was put back (checked).
+  - `brand-many` PASS: 24 projects inserted, 25 held (Pro's cap, read from `PLANS`). In the window and on the full page
+    at 1440 and 834 the list is `overflow: auto` and scrolls inside the rail with the caption and both presses in the
+    viewport and the window unscrolled; at 390 the list is `overflow: visible`. **The control is the 390 row** (same
+    page, not bounded). The chooser's own path: the last card, bound to no site and below the fold, picked and pressed
+    -- seeded, revision 0 → 1, `linked_site_id` still null, no `brand`, and the project for T1 untouched. The inserted
+    projects were deleted and the entitlement put back to `free`.
+  - The fixture user was deleted each run and the user count came back to where it started.
+  - The shots at 1440, 834 and 390 were looked at beside the states approved in Dev: the same.
+- **R-99, the schema is at least as new as the code:** the diff adds no migration, and every `sync_project_doc` call
+  above carried `p_packs` and was applied by production.
+- **`run-verify-editor.cjs`, whole, on a clean tree** -- "0 FAIL, 713 PASS", exit 0 (the walk prints its own count).
+  Steps 102 and 103 PASS: a planted `brand` beside the preset survives a pack switch's ⌘S and an edited pack's ⌘S, the
+  revision moving by exactly one each time; a stale pack-only body is refused 409. Both accounts deleted, users 14 → 14.
+- **Local, Node 24, on the patched tree:** `pnpm check` exit 0, with the two `brandWrite` cases (control: without
+  `row = fresh` both fail). `pnpm keyboard`, run whole: "197 passed", exit 0, with
+  `6.6 · DW-70 ·` (controls: the bound removed, and the floor removed, each turn it red).
+- **Not run:** the full ghost-admin sequence, which needs a Ghost 5 server (DW-326, R-238). Vercel was read, not
+  written; Resend and Dodo are not touched by this story.

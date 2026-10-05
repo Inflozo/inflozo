@@ -261,8 +261,10 @@ list gone stale — the sibling harness's own note):
   brand-pack-rerun  STORY 6.6, DW-327: Paper planted with a blue accent, a Tangerine record of its own and a
                  `mode` key on the project for T1, then the POPUP's Use your brand: Paper's record is
                  `brandSeed`'s again, Tangerine's record and `mode` byte-equal, `revision` up by exactly
-                 one — `sync_project_doc`'s compare-and-set, writing `packs` by key — and no `brand`. The
-                 column is put back in a `finally`
+                 one — `sync_project_doc`'s compare-and-set, writing `packs` by key — and no `brand`. A
+                 SECOND press, the pack now wearing the seed, lands the same and writes nothing: the
+                 revision and the column are unchanged (review, 2026-10-05). The column is put back in a
+                 `finally`, and a restore that failed fails the step
   brand-atcap    the seed above just put this Free account at F.1's cap of 1 project, so the
                  owner's Question 1 ruling (2026-09-08) is live: the caption NAMES the project it
                  will brand before the press, and pressing it seeds that row's pack (Story 6.6 — it
@@ -438,7 +440,11 @@ list gone stale — the sibling harness's own note):
                  both presses are in the viewport with the window unscrolled; at 390 the card list is no
                  scroller of its own, so the window scrolls as one page as before. `--shots`:
                  `brand-many` and `brand-many-window`, the states the owner approved side by side in Dev.
-                 The projects and the entitlement are put back in a `finally`
+                 Then THE CHOOSER'S OWN PATH (review, 2026-10-05; `brand-picker` waits for DW-326): the
+                 last card, an inserted project bound to no site and below the scroller's fold, is picked
+                 and pressed — the seed lands on it, its revision up by one and its `linked_site_id` still
+                 null, and the project for T1 is untouched. The projects and the entitlement are put back
+                 in a `finally`
   search         the shell's field on Sites, on the deployed page: the title of one site leaves one
                  card, the ADDRESS of the other leaves one, and a word that matches neither leaves
                  none with the app's own "No sites match …"
@@ -1720,8 +1726,11 @@ const shoot = async (page, name) => {
     const kept = (await read()).style_pack
     let before = {}
     let after = {}
+    let again = {}
     let opened = false
     let landed = false
+    let landedAgain = false
+    let restored = true
     try {
       const put = await patch(`/projects?id=eq.${made.id}`, { style_pack: planted })
       if (put.status !== 200) throw new Error(`brand-pack-rerun: planting the pack answered HTTP ${put.status}`)
@@ -1736,14 +1745,25 @@ const shoot = async (page, name) => {
         const r = await read()
         return r.revision !== before.revision ? r : null
       })) || await read()
+      // A SECOND PRESS, the pack now wearing the seed (review, 2026-10-05): the action lands as before, writes nothing,
+      // and no revision moves — so an editor open on the project meets no conflict dialog for a press that changed nothing.
+      // The action has answered before the browser leaves the popup, so the read after the landing is the settled row.
+      await page.goto(`${APP}/sites?brand=${t1SiteId}`, { waitUntil: 'load' })
+      await dialog.waitFor({ state: 'visible', timeout: 20000 }).catch(() => {})
+      await hydrated()
+      await dialog.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+      landedAgain = await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand')).then(() => true).catch(() => false)
+      again = await read()
     } finally {
-      if (kept !== undefined) await patch(`/projects?id=eq.${made.id}`, { style_pack: kept })
+      // a restore that failed leaves the planted pack for every later step to read: said, never swallowed
+      if (kept !== undefined) restored = (await patch(`/projects?id=eq.${made.id}`, { style_pack: kept })).status === 200
     }
     const sp = after.style_pack || {}
     const packs = sp.packs || {}
     step('brand-pack-rerun',
-      opened && landed && canonical(before.style_pack) === canonical(planted)
+      opened && landed && landedAgain && restored && canonical(before.style_pack) === canonical(planted)
       && after.revision === before.revision + 1
+      && again.revision === after.revision && canonical(again.style_pack) === canonical(after.style_pack)
       && canonical(packs.paper) === canonical(SEEDS_OF.paper)
       && canonical(packs.tangerine) === canonical(tangerine)
       && sp.mode === 'dark' && sp.preset === 'paper' && !('brand' in sp),
@@ -1754,7 +1774,9 @@ const shoot = async (page, name) => {
       `${SEEDS_OF.accent}, equal to brandSeed's whole record = ${canonical(packs.paper) === canonical(SEEDS_OF.paper)}; ` +
       `Tangerine's record byte-equal = ${canonical(packs.tangerine) === canonical(tangerine)}, mode ${JSON.stringify(sp.mode)}, ` +
       `preset ${JSON.stringify(sp.preset)}, no brand = ${!('brand' in sp)} — sync_project_doc wrote packs by key under its ` +
-      `compare-and-set (DW-327). The column was put back afterwards`)
+      `compare-and-set (DW-327). A second press, the pack already wearing the seed: landed = ${landedAgain}, revision ` +
+      `${again.revision} (unchanged wanted) and the column byte-equal = ${canonical(again.style_pack) === canonical(after.style_pack)} — ` +
+      `nothing was written. The column was put back afterwards = ${restored}`)
   }
 
   // ── brand-many (seeds: sign-in, T1). DW-70: S2c's chooser at Pro's project cap (`PLANS`). Pro is flipped through the
@@ -1767,6 +1789,7 @@ const shoot = async (page, name) => {
     const added = []
     const seen = {}
     let total = 0
+    let picked = {}
     try {
       if (was !== 'pro_active') {
         const pro = await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: 'pro_active' })
@@ -1811,6 +1834,34 @@ const shoot = async (page, name) => {
       await page.goto(`${APP}/sites?brand=${t1SiteId}`, { waitUntil: 'load' })
       await s2cHeading(page).waitFor()
       await shoot(page, 'brand-many-window')
+      /* THE CHOOSER'S OWN PATH (review, 2026-10-05): the full sequence's `brand-picker` holds it, and that sequence waits
+         for a Ghost 5 server (DW-326), so until then nothing runnable pressed a card. The LAST card of the list is one of
+         the inserted projects, bound to no site and below the scroller's fold: picked there and pressed, the seed lands on
+         IT through the compare-and-set — its revision up by one, its `linked_site_id` still null (3.4's ruling: the
+         chooser never moves a binding) — and the project for T1 is not touched. */
+      if (added.length) {
+        const target = added[added.length - 1]
+        const row = async (id) => ((await wire(`/projects?id=eq.${id}&select=revision,style_pack,linked_site_id`)).body || [])[0] || {}
+        const mine = ((await projectsOf()).find((r) => r.linked_site_id === t1SiteId) || {}).id
+        const [was0, mine0] = [await row(target), mine ? await row(mine) : {}]
+        const dialog = page.locator('dialog[open]')
+        await hydrated()
+        const card = dialog.locator(`[data-brand-cards] input[type="radio"][value="${target}"]`)
+        await card.scrollIntoViewIfNeeded()
+        await card.check()
+        await dialog.getByRole('button', { name: SAY.brand_use, exact: true }).click()
+        const landed = await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand')).then(() => true).catch(() => false)
+        const [now, mine1] = [await row(target), mine ? await row(mine) : {}]
+        picked = {
+          landed,
+          seeded: canonical((now.style_pack && now.style_pack.packs || {}).paper) === canonical(SEEDS_OF.paper),
+          revision: [was0.revision, now.revision],
+          unbound: now.linked_site_id === null && was0.linked_site_id === null,
+          noBrand: !!now.style_pack && !('brand' in now.style_pack),
+          siteProjectUntouched: !!mine && mine1.revision === mine0.revision && canonical(mine1.style_pack) === canonical(mine0.style_pack),
+        }
+        picked.ok = landed && picked.seeded && now.revision === was0.revision + 1 && picked.unbound && picked.noBrand && picked.siteProjectUntouched
+      }
     } finally {
       await page.setViewportSize({ width: 1440, height: 900 })
       if (added.length) {
@@ -1825,12 +1876,14 @@ const shoot = async (page, name) => {
     step('brand-many',
       total === SAY.pro_projects && ['window@1440', 'window@834', 'page@1440', 'page@834'].every((k) => bounded(seen[k]))
       && seen['page@390'] && seen['page@390'].cards === total && seen['page@390'].overflow === 'visible'
-      && left === total - added.length,
+      && left === total - added.length && picked.ok === true,
       `with ${added.length} projects inserted the account holds ${total} (Pro's cap, PLANS: ${SAY.pro_projects}); ` +
       `from tablet up the cards scroll INSIDE the rail and the caption and both presses are in view with the window ` +
       `unscrolled — ${JSON.stringify(seen)}; at 390 the card list is no scroller of its own (overflow ` +
       `${seen['page@390'] && seen['page@390'].overflow}), so the window scrolls as one page, as before (DW-70, R-242). ` +
-      `The inserted projects were deleted (${left} left) and the entitlement put back to ${JSON.stringify(was)}`)
+      `The chooser's own path: the last card (an inserted project bound to no site, below the scroller's fold) picked and ` +
+      `pressed — ${JSON.stringify(picked)} (seeded, its revision up by one, still unbound, no brand, and the project for ` +
+      `T1 untouched wanted). The inserted projects were deleted (${left} left) and the entitlement put back to ${JSON.stringify(was)}`)
   }
 
   // ── manage-keys: keys-screen to keys-forged (seeds: sign-in, T1). T3 need not be connected:
