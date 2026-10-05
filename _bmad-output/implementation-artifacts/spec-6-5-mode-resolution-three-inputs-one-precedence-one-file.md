@@ -2,7 +2,7 @@
 title: 'Story 6.5 — Mode resolution: three inputs, one precedence, one file'
 type: 'feature'
 created: '2026-10-05'
-status: 'in-review'
+status: 'done'
 baseline_commit: '53e20026acd5e8e3ac171dbf446d0a5dc87be06c'
 owner_test: none
 review_loop_iteration: 1
@@ -654,3 +654,15 @@ theme uploaded, activated and deleted, the previous theme restored, all read bac
 why:** Supabase (no migration and no data path changed — the RLS gate ran on its local PostgreSQL 17 container); Vercel
 (nothing deploys until the Dev push; the deployed walks are Review's); Resend and Dodo (nothing here sends mail or
 touches billing); T3 (retired, R-238).
+
+### Results — Deploy (2026-10-05)
+
+**Executed at Deploy.** App code and tooling; no migration (`git diff --stat 53e20026 HEAD -- supabase/` is empty), so there
+is no schema step and `RLS-TEST.sql` ran in CI's `rls` job. `owner_test: none` — the story has no screen of its own (the
+one `/pilots` fix was proved by the deployed walk at Review) — so this Deploy is also Done.
+
+- **CI, for HEAD `5a0c667dcce6ed075c89c3fa43dbde0de76d354f`** (GitHub API, `GITHUB_TOKEN` by name): `ci.yml` run
+  37282608499 — `check`, `rls` and `deploy` all `success`; `matrix.yml` run 37282608295 `success`.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): the deployment for that
+  sha is `READY`, target `production`. `https://app.inflozo.com/sign-in` answers HTTP 200 and `https://inflozo.com/` 200.
+- **Deployment: `dpl_4z3DszkPQU3RD88Cwcw6HgqR96cf` (https://app.inflozo.com/).**
