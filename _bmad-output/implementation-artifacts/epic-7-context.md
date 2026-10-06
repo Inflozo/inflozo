@@ -88,6 +88,29 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **R-129 (owner, 2026-09-18):** the membership canvases ship as `custom-signup.hbs` ("Signup"), `custom-signin.hbs` and `custom-member-home.hbs`, keyed `custom:custom-{name}.hbs`; Subscribe and Membership are ordinary Routes Manager templates (7.16). **R-127, R-177–R-179:** page 2 is an exact copy of page 1 until its own first change, and a Home with no main feed falls back to the Synthesis Default stack (AD-27(d)).
   - **DW-150, DW-153, DW-234, DW-253 (Story 7.3):** `default.hbs` carries the skip link's `<main>` target; `page.hbs`'s only `@page.*` is `show_title_and_feature_image`; a page 2 with no visible feed and a feed-less `tag.hbs`/`author.hbs` compile with FR-H2's `noindex` + canonical guard.
   - **DW-261 (Stories 7.3, 7.6):** a designed paywall needs an explicit `{{> "content-cta"}}` (MEASUREMENTS §15b) and `{{{html}}}` as the partial's first line — a further AD-5 exception the owner rules before it is built.
+  - **Story 7.3's Create (2026-10-06):**
+    - **What the compile takes and writes.**
+      - `compileTheme` gains `pageTwo`, the page-2 docs keyed by their page-1 file, and `routed`, the custom templates a route names.
+      - Every stored doc passes `designate`, and each file's stack is `synthesize`'s or `pageTwoStack`'s.
+      - `home.hbs` is written only when Home or its page 2 is designed.
+      - An archive's page 2 compiles inside `{{#is "paged"}}` when it is designed.
+      - On `page.hbs`, the A24 sections sit inside the `@page` switch, and no other `@page` property is ever emitted.
+      - `<main id="site-main">` wraps `{{{body}}}`.
+      - The SEO guard is `noindex` in `default.hbs`'s head, inside `{{#is "paged"}}{{#is "<contexts>"}}`.
+    - **Read in source, both majors:**
+      - `{{ghost_head}}` writes a canonical on every page, and page 2's points at itself. The theme writes none, and `{{block}}` would need a triple-stash.
+      - A missing route template is a 400 (`IncorrectUsageError`), not FR-I1's 500.
+      - The theme's `content-cta.hbs` wins whenever any partial is invoked from a template: gscan narrows its `partials` list to invoked ones, and `active.js` registers the theme's `partials/` only when that list is non-empty. So no explicit `{{> "content-cta"}}` is emitted, since it would print the paywall twice, and §15b's "library rule" is corrected.
+      - `GS110-NO-MISSING` is an error on gscan 4.49.7, not FR-I1's "only a warning".
+    - **Four questions went to the owner, all open:**
+      - Q1: an untouched Page or 404 the library leaves empty. Recommended: left out until Epic 10 fills them.
+      - Q2: `{{{html}}}` as AD-5's second exception. Recommended: allowed, as `content-cta.hbs`'s first line alone.
+      - Q3: the warning's hand test. Recommended: it moves to Story 10.100, because no design can sit on a membership canvas until then.
+      - Q4: `sections-inventory.md` §2's synthesized header and footer, which no story owns. Recommended: Story 9.9.
+    - **D5f:**
+      - it fires from `onRemove` when a delete would empty a designed custom template;
+      - it says "Delete" for the frame's "Remove" (R-170), filled `marigold-solid`;
+      - it never asks on undo.
 - **Only what placed designs reach ships, inside a theme-size budget surfaced before deploy (7.4, FR-J3).** Referenced assets go out as content-hashed 400 / 800 / 1600 + original renditions, fonts as self-hosted woff2 subsets by script range (preloaded), CSS and JS per design, leaving with it, behind a measured dead-CSS strip; the token block is `packTokensCss(pack)` then `darkOverrideCss` over every placed section (none on a Light-only project), with AD-18's font variables and ≤ 50 KB gzipped CSS per template's reachable subset.
   - **Epic 6 (built):** `packTokensCss` and `MODE_SELECTORS` (`tokens.ts`), `darkOverrideCss` (`dark-override.ts`), `fontFaceCss` (`@inflozo/section-runtime/fonts`), and the pool's files, licences and `pool.json` in `packages/library/fonts/` — every pairing within ≤ 5 faces and ≤ 200 KB of latin (Story 6.2).
   - **DW-331, DW-108 (Story 7.4):** one exported builder of `${template_key}:${instanceId}` that the editor, the compile and the gates all call, a deterministic remedy or a named refusal for colliding hooks, and a browser assertion of `data-instance`; a theme drawing any Tabler icon ships `LICENSE-tabler.txt` verbatim and counts the inline bytes (R-26).
@@ -180,8 +203,10 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **7.1:** the section-partial slug rule — §7.4 already gives a numeric suffix per directory, the spine's conventions row (R2-10) says that surface has no rule and both the rule and the function must be stated, and a slug function is stated only for custom templates.
   - **7.1:** hoisting identity — §7.4 compares sections' text after content substitution, while the spine's pipeline partitions before user text is substituted.
   - **7.1 / 7.3 / 7.33:** triple-stashes — AD-5 says zero `{{{` with no exception, §7.3 (Round 3's D3) permits exactly one `{{{body}}}` in `default.hbs`, and 7.3/7.6 count DW-261's `{{{html}}}` as AD-5's "second exception" after `PAGE_NUMBER_HBS`, which is not a triple-stash.
+    - **Story 7.3's Create (2026-10-06):** `{{{html}}}` would be the second triple-stash after `{{{body}}}`. It is put to the owner as 7.3's Question 2 (open), and AD-5 says any second exception is his.
   - **7.1:** D13 makes the guarantee a lint over every design source that refuses the token and marker shapes; the runtime relies on the C0 shape and DW-159's comment drop instead, and `validate.ts` holds no such lint.
   - **7.3:** "a standard file is never emitted empty", but the library holds only the five pilots, so `page.hbs` (A24 #1 is post-only, DW-191; A25 absent) and `error.hbs` (A31 absent) synthesize to nothing until Epic 10.
+    - **Story 7.3's Create (2026-10-06):** put to the owner as 7.3's Question 1 (open).
   - **7.4 / 7.11:** a Light-only project "compiles without dark support" (FR-D7) yet ships the built-ins "present and quiet", working from Ghost Admin with no redeploy (FR-Q5, 7.11); no source gives `color_scheme`'s compiled default per project mode, and Story 6.5 left the Light-only token block to Epic 7.
   - **7.7 / 7.33 / 7.35:** FR-J6 and 7.7 pin one gscan run "against both specs"; AD-34 requires each major's bundled gscan (4.49.7, 6.4.2) because 6.4.2 at `checkVersion: 'v5'` missed a real Ghost 5 error; `packages/theme-compiler` pins 6.4.2 alone.
   - **7.17 / 7.19:** FR-I4 and 7.17 send "a non-Owner connection" to the fallback card, while 7.19 and EXPERIENCE F3 say an Administrator's token suffices (the card's case is a role below Administrator).

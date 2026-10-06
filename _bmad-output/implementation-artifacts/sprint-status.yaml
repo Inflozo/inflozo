@@ -131,7 +131,7 @@ development_status:
   epic-7: in-progress
   7-1-theme-assembly-the-mechanism-and-the-formatting-contract: done
   7-2-package-json-emission: done
-  7-3-synthesis-defaults-and-the-emptying-rules: backlog
+  7-3-synthesis-defaults-and-the-emptying-rules: ready-for-dev
   7-4-assets-fonts-per-design-css-and-the-dead-code-strip: backlog
   7-5-js-bundling-two-files-two-origins: backlog
   7-6-ghost-correct-markup: backlog
