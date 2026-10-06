@@ -1166,6 +1166,7 @@ test('Story 7.1 — D13: a C0 control character in a design\'s markup or stylesh
   assert.match(said(EVERY_DIRECTIVE, `.x { color: var(--text-body) }\n.y { content: "${String.fromCharCode(3)}" }`)[0] ?? '', /^style\.css line 2 carries the control character U\+0003/)
   // a tab is refused, naming U+0009 (Question 2, owner, 2026-10-06); the legitimate neighbours are line feed and carriage return
   assert.match(said(EVERY_DIRECTIVE, '.x {\r\n\tcolor: var(--text-body)\n}')[0] ?? '', /^style\.css line 2 carries the control character U\+0009/)
+  assert.match(said(EVERY_DIRECTIVE.replace('A note.', 'A\tnote.'))[0] ?? '', /^index\.html line \d+ carries the control character U\+0009/)
   assert.deepEqual(said(EVERY_DIRECTIVE.replace('A note.', 'A note.\r\n'), '.x {\r\n  color: var(--text-body)\n}'), [])
 })
 

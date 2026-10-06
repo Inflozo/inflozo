@@ -335,8 +335,11 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
 Code review of 2026-10-06: five layers (blind, edge-case, verification-gap, acceptance, real-infra). Every patch below
 is applied in this commit; the defers are DW-336 to DW-340; Question 2 holds the one decision.
 
-- [x] [Review][Decision] A tab is legal in a design file and illegal in the theme it becomes — Question 2, ruled option 1:
-  `control-character` refuses U+0009 too [packages/library/src/validate.ts:1298].
+- [x] [Review][Decision] A tab WAS legal in a design file and illegal in the theme it becomes — Question 2, ruled option 1:
+  `control-character` refuses U+0009 too [packages/library/src/validate.ts:1298]. Second review (same day): the same
+  alphabet reached the sinks beside it — `content.json`'s strings (scanned by line), the compile's strings, asset URLs
+  and pack CSS (`compile.ts`'s `C0`), and user text, where a typed tab becomes a space in `escapeUserText` (render-
+  identical under normal/nowrap on both emitters); the markup half of the tab test was added.
 - [x] [Review][Patch] A stylesheet header part re-formed `*/` after one pass (`**//`), which could end the `screen.css`
   header comment early [packages/theme-compiler/src/compile.ts:50] — dropped until none is left, with a test.
 - [x] [Review][Patch] The compile's strings, asset URLs and pack CSS had no C0 guard, so a U+0005 in one would land as a

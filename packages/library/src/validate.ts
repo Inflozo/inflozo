@@ -959,6 +959,8 @@ export function validateDesign(input: {
   if (Array.isArray(input.design.compileTarget)) markupOpts.compileTarget = input.design.compileTarget
   if (input.design.dataBindings !== undefined) markupOpts.dataBindings = input.design.dataBindings
   out.push(...controlCharacters('index.html', input.html), ...(input.css === undefined ? [] : controlCharacters('style.css', input.css)))
+  // content.json's strings reach the theme as user text (review): the same alphabet, every string value, by JSON line
+  if (input.content !== undefined) out.push(...controlCharacters('content.json', JSON.stringify(input.content, null, 2).replace(/\\t/g, '\t')))
   out.push(...validateMarkup(input.html, markupOpts))
   if (input.css !== undefined) out.push(...validateStylesheet(input.css, controlValues))
   // Story 6.5 — the authoring rule a dark override reaches a visitor through (AD-30, amended)

@@ -52,6 +52,9 @@ export const isRich = (v: unknown): v is RichText =>
 export function escapeUserText(s: string): string {
   return s
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
+    // a typed tab becomes a space (Story 7.1's review, Question 2): the theme carries no tab, and under white-space
+    // normal or nowrap the two render the same, so neither emitter changes what a visitor sees
+    .replace(/\t/g, ' ')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

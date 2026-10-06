@@ -57,7 +57,7 @@ const cssPart = (s: string): string => {
 /** AD-36, every new sink: the compile's other inputs — the strings, the asset URLs and the pack's CSS — may carry no C0
  *  character, since the formatter's `KEEP_NL` and the runtime's tokens are C0 characters and `Tokens.resolve` would
  *  turn one into a line break or an expression. A design file is held to the same rule by `control-character`. */
-const C0 = /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/
+const C0 = /[\u0000-\u0009\u000b\u000c\u000e-\u001f]/   // a tab included (Question 2): the theme carries none
 const noC0 = (what: string, values: Iterable<string>): void => {
   for (const v of values) if (C0.test(v)) throw new Error(`${what} carries a control character, which the theme compiler refuses (AD-36): ${JSON.stringify(v.slice(0, 40))}`)
 }
