@@ -198,9 +198,11 @@ Three values are the owner's (Questions 1–3). The spec builds the recommended 
 
 ## Spec Change Log
 
+- **2026-10-06, Create (the owner ruled).** All three questions were ruled option 1. The Ruled values table lost its "if ruled otherwise" column, and the propagation list's Question 1 and Question 2 lines now state the ruled values. Nothing else changed.
+
 ## Design Notes
 
-### The file, as 7.2 emits it (with the recommended rulings)
+### The file, as 7.2 emits it (as ruled)
 
 ```json
 {
@@ -243,12 +245,14 @@ Three values are the owner's (Questions 1–3). The spec builds the recommended 
 
 ### Ruled values: Questions 1 to 3
 
-| Value | Planned (RECOMMENDED) | If the owner rules otherwise |
-|---|---|---|
-| **Q1 · `config.custom`** | not emitted by 7.2; 7.10 and 7.11 add it, each with the template lines that read it | **option 2:** the three built-ins in `custom` (keys, types and defaults as 7.11's criteria state them), and every gate's scaffold gains a stand-in template that reads them, labelled 7.11's. **Option 3:** 7.11's reading lines move into this story too |
-| **Q2 · `card_assets` with no designed card** | `true` | **option 2:** `{ "exclude": ["none"] }`. **Option 3:** `{ "exclude": [] }` |
-| **Q2 · `card_assets` with designed cards** | `{ "exclude": [the sorted names] }` | the same under every option |
-| **Q3 · `author`** | `{ "name": "Inflozo", "email": "hello@inflozo.com" }` | **option 2:** the account's name and email, handed in and checked as an email address. **Option 3:** a fixed placeholder |
+All three were ruled option 1 by the owner on 2026-10-06.
+
+| Value | Ruled |
+|---|---|
+| **Q1 · `config.custom`** | not emitted by 7.2; 7.10 and 7.11 add it, each with the template lines that read it |
+| **Q2 · `card_assets` with no designed card** | `true` |
+| **Q2 · `card_assets` with designed cards** | `{ "exclude": [the sorted names] }` |
+| **Q3 · `author`** | `{ "name": "Inflozo", "email": "hello@inflozo.com" }` |
 
 ### The marker (DW-335)
 
@@ -335,8 +339,8 @@ Now `package.json` is compiled rather than scaffolded, and these rows join the r
   - FR-J13: name the marker, `"inflozo": true`.
 - **`epics.md`:**
   - Story 7.2: its `card_assets` and `custom` lines, as ruled.
-  - If Question 1 is ruled option 1, its `custom` line is pasted word for word into Stories 7.10 (user-defined settings, cap-enforced) and 7.11 (the three built-ins on every project), and named in Epic 7's preamble. That is R-195's practice.
-  - Story 7.13 gains: while no card is designed, the theme declares Question 2's value.
+  - Question 1 was ruled option 1, so Story 7.2's `custom` line is pasted word for word into Stories 7.10 (user-defined settings, cap-enforced) and 7.11 (the three built-ins on every project), and named in Epic 7's preamble. That is R-195's practice.
+  - Story 7.13 gains: while no card is designed, the theme declares `card_assets: true` (Question 2).
   - Story 7.20 gains the marker's key and the `GET /themes/` read.
 - **`epic-7-context.md`:** a sub-bullet for each of the above.
 - **`deferred-work.md`:**
@@ -352,7 +356,7 @@ There is no migration, so there is no Schema phase. `Story 7.2 - Dev - …` carr
 
 ## Questions for the owner
 
-Dev waits for all three. Each answer changes one row of Design Notes § Ruled values.
+All three were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Ruled values as it stands.
 
 ### Question 1 — The three dark-mode settings: write them now, or with the page lines that read them?
 
@@ -369,7 +373,7 @@ Dev waits for all three. Each answer changes one row of Design Notes § Ruled va
 2. List the three now. Until 7.11 lands, every check of a compiled theme carries a stand-in page that reads them, labelled as 7.11's.
 3. Build 7.11's reading lines inside this story too. This story then grows by most of 7.11, including a choice 7.11 still has open: which colour scheme a Light-only project starts on.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).** In his words: "I agree with recommendations for all 3 questions."
 
 ### Question 2 — Ghost's own card styling, while no card is designed
 
@@ -387,7 +391,7 @@ Dev waits for all three. Each answer changes one row of Design Notes § Ruled va
 2. Always write the list, with a made-up card name in it whenever it would be empty, so Ghost 5 has something to leave out. This works on both versions, but every theme then carries a card name that does not exist.
 3. Keep the empty list. Ghost 5 sites lose card styling until a card is designed. Not recommended.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).** In his words: "I agree with recommendations for all 3 questions."
 
 ### Question 3 — Whose name and email go in the theme's "author" line?
 
@@ -405,7 +409,7 @@ Dev waits for all three. Each answer changes one row of Design Notes § Ruled va
 2. The customer: their account name and email. It is their theme. But their email then sits in every theme zip Inflozo keeps and every zip they share, and the file changes whenever they change their email.
 3. A placeholder address that reaches no one (`theme@example.com`). It passes the check, but promises a contact nobody answers. Not recommended.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).** In his words: "I agree with recommendations for all 3 questions."
 
 ## Verification
 
