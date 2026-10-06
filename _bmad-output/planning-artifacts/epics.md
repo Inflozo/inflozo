@@ -473,7 +473,7 @@ that tool is the source if they move again.
 
 | Pilot | Why it is in the set |
 |---|---|
-| **A1 #1** (Headers & Navigation) | Site-wide singleton: lives on `default.hbs`, compiles to `partials/header.hbs`, binds `@site.navigation` and `@site.logo`, changes every template at once |
+| **A1 #1** (Headers & Navigation) | Site-wide singleton: lives on `default.hbs`, compiles to a section partial under `partials/sections/default/` (Story 7.1 — this row said `partials/header.hbs`), binds `@site.navigation` and `@site.logo`, changes every template at once |
 | **A17 #1** (Post Grids) | Dynamic feed: `{{#foreach}}` over the native paginated context, extracts `post-card` invoked with **no params**, carries the main-feed designation and pagination |
 | **A22 #1** (Newsletter / Subscribe) | Members-aware: `@member` gating, the show-to control, Portal `data-portal` actions, member-state preview |
 | **A24 #1** (Post Headers) | Wrapper context: valid only inside `{{#post}}` on `post.hbs` — the axis of FR-H7 easiest to get backwards, and silent when it is |

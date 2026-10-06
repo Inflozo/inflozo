@@ -119,6 +119,13 @@ export type BindingContext = (typeof BINDING_CONTEXTS)[number]
  *  target and no other category may declare it (`validate.ts`'s `paywall-target`). */
 export const PAYWALL_TARGET = 'partials/content-cta.hbs'
 
+/** STORY 7.1 — GHOST'S OWN PARTIALS: the templates Ghost registers from `core/frontend/helpers/tpl/` BEFORE the theme's
+ *  `partials/` (`engine.js`'s `partialsDir`, `overrides.json:6` — read in 5.130.6 and 6.58.0; `gift-toast` is 6.x's), so a
+ *  theme partial of one of these names replaces Ghost's template across the whole site. A design's `data-partial` lands
+ *  at that root and may never take one (AD-36); `cancel_link` cannot pass the grammar. The paywall's `content-cta` (7.3)
+ *  and a pagination style's override (7.14) are the compiler's own, chosen by a treatment. */
+export const GHOST_OWN_PARTIALS = ['content-cta', 'gift-toast', 'navigation', 'pagination', 'recommendations'] as const
+
 export const COMPILE_TARGETS = [
   'default.hbs', 'home.hbs', 'index.hbs', 'post.hbs', 'page.hbs',
   'tag.hbs', 'author.hbs', 'error.hbs', 'private.hbs', PAYWALL_TARGET,
@@ -753,7 +760,11 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   },
   'data-partial': {
     summary: 'extract the repeated body into a parameterless partial of this name',
-    parse: (v) => (/^[a-z][a-z0-9-]*$/.test(v) ? ok : fail(`"${v}" is not a partial name (lowercase, digits and hyphens)`)),
+    parse: (v) => (!/^[a-z][a-z0-9-]*$/.test(v)
+      ? fail(`"${v}" is not a partial name (lowercase, digits and hyphens)`)
+      : (GHOST_OWN_PARTIALS as readonly string[]).includes(v)
+      ? fail(`"${v}" is one of Ghost's own partials (${GHOST_OWN_PARTIALS.join(', ')}) — a repeat partial lands at the theme's partials/ root, and a theme file of that name replaces Ghost's own template across the whole site (Story 7.1)`)
+      : ok),
   },
 
   // ── §7.3's gap table ───────────────────────────────────────────────────────

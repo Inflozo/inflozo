@@ -18,6 +18,8 @@
 // Author · the Membership group · 404 · Private. R-128 defers the rule, the `FROM THE ROUTES MANAGER` heading and
 // "+ New template" to Story 7.16.
 
+import { isSiteFooter } from '@inflozo/library'
+
 /** Every canvas the editor can open, in D5b's row order: the template file it compiles into, its D5b label, and the
  *  one line the Template switcher prints under that label (R-171, owner, 2026-09-21 — "Add relevant one liners below
  *  the template name"), written to fit one line of the 284px menu. */
@@ -182,8 +184,9 @@ export const canvasOfPath = (pathname: string): CanvasKey | null => {
   return segment === undefined || segment === '' ? 'home' : canvasFromSegment(segment)
 }
 
-/** DW-187 (Story 5.24e): the one spelling of "a site-wide section the page draws LAST" — A3's footers. */
-export const isSiteFooter = (designId: string): boolean => designId.startsWith('a3/')
+/** DW-187 (Story 5.24e): the one spelling of "a site-wide section the page draws LAST" — A3's footers. Story 7.1 moved it
+ *  into the library (`placement.ts`), so the compiler's `default.hbs` splits the site doc by the canvas's own rule. */
+export { isSiteFooter }
 
 /** Layers' order and the canvas's: the site-wide instances outside `a3/` (headers), the canvas's own, then the `a3/`
  *  footers — each group in doc order. */

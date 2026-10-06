@@ -20,9 +20,10 @@ import {
 import { assembleEntry, categoryControlUnion, parseDesignDir } from './registry.ts'
 import type { CategoryContent, ControlDef, DesignJson } from './registry.ts'
 import {
-  memberAsks, modeScopedOffers, modeScopedRules, rootClassOf, validateCategoryContent, validateDataBinding, validateDesign,
+  memberAsks, modeScopedOffers, modeScopedRules, rootClassOf, stripCssComments, validateCategoryContent, validateDataBinding, validateDesign,
   validateDesignJson, validateMarkup,
 } from './validate.ts'
+import { GHOST_OWN_PARTIALS } from './vocabulary.ts'
 import type { Failure } from './validate.ts'
 
 const codes = (f: Failure[]) => f.map((x) => x.code)
@@ -1144,6 +1145,36 @@ test('Story 6.5 — a design never selects on the hook either: data-instance in 
   const said = (css: string) => codes(validateDesign({ html: EVERY_DIRECTIVE, design: design({ controlSchema: [align()] }), css })).filter((c) => c === 'instance-attribute')
   assert.deepEqual(said('[data-instance="0a1b2c3d"] .x { color: var(--text-body) }'), ['instance-attribute'])
   assert.deepEqual(said('.x [data-align="center"] { color: var(--text-body) }'), [])
+})
+
+// ─── Story 7.1 — the three rules the theme assembly rests on ──────────────────
+
+test('Story 7.1 — D13: a C0 control character in a design\'s markup or stylesheet is refused by line; tab, line feed and carriage return are not', () => {
+  const said = (html: string, css?: string) => validateDesign({ html, design: design({ controlSchema: [align()] }), ...(css === undefined ? {} : { css }) })
+    .filter((f) => f.code === 'control-character').map((f) => f.message)
+  // the hostile case: the compiler's own token shape, written into a design
+  const token = `${String.fromCharCode(1)}0${String.fromCharCode(2)}`
+  assert.match(said(EVERY_DIRECTIVE.replace('A note.', `A ${token} note.`))[0] ?? '', /^index\.html line \d+ carries the control character U\+0001/)
+  assert.match(said(EVERY_DIRECTIVE, `.x { color: var(--text-body) }\n.y { content: "${String.fromCharCode(3)}" }`)[0] ?? '', /^style\.css line 2 carries the control character U\+0003/)
+  // the legitimate neighbours: tab, line feed and carriage return
+  assert.deepEqual(said(EVERY_DIRECTIVE.replace('A note.', 'A\tnote.\r\n'), '.x {\r\n\tcolor: var(--text-body)\n}'), [])
+})
+
+test('Story 7.1 — stripCssComments removes a stylesheet\'s comments by the validator\'s own scan, and keeps every string', () => {
+  assert.equal(stripCssComments('/* head */\n.a { color: red; } /* tail */\n'), '\n.a { color: red; } \n')
+  // a comment inside a string is the string's; a quote inside a comment opens nothing
+  assert.equal(stripCssComments('.a::before { content: "/* kept */"; } /* it\'s gone */'), '.a::before { content: "/* kept */"; } ')
+  // between two name characters a comment still separates two tokens; beside punctuation it leaves nothing
+  assert.equal(stripCssComments('.a { margin: 1px/**/2px; } .b/**/.c {}'), '.a { margin: 1px 2px; } .b.c {}')
+  assert.equal(stripCssComments('.a { color: red } /* never closed'), '.a { color: red } ')
+})
+
+test('Story 7.1 — a data-partial never takes one of Ghost\'s own partial names, which a theme file would replace site-wide', () => {
+  for (const name of GHOST_OWN_PARTIALS) {
+    refuses('bad-value', `<li data-repeat="posts" data-partial="${name}">x</li>`, '<li data-repeat="posts" data-partial="post-card">x</li>')
+  }
+  assert.match(DIRECTIVES['data-partial']?.parse('pagination') ?? '', /one of Ghost's own partials/)
+  assert.equal(DIRECTIVES['data-partial']?.parse('pagination-card'), null, 'a name that merely starts like one is the design\'s')
 })
 
 test('a control is never named like an attribute the page or Ghost owns', () => {

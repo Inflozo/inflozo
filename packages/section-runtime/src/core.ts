@@ -79,6 +79,7 @@ import { escapeUserText, flagOn, isRich, linkAttributes, linkGate, serializeMark
 import type { PropValue, ThemeSink } from './marks.ts'
 import { resolveControls, withData } from './controls.ts'
 import { HOOK_RE } from './dark-override.ts'
+import { formatTheme, indentBy, KEEP_NL } from './format.ts'
 
 export { formatDate }
 
@@ -111,6 +112,8 @@ export type RuntimeElement = {
   cloneNode(deep: boolean): RuntimeElement
   remove(): void
   append(node: RuntimeNode): void
+  /** Story 7.1 — a secondary feed's get is put around the whole section, as markers the theme serializer places */
+  prepend(...nodes: RuntimeNode[]): void
   before(node: RuntimeNode): void
   after(node: RuntimeNode): void
   replaceWith(node: RuntimeNode): void
@@ -241,15 +244,34 @@ export const T1 = String.fromCharCode(2)
 export const U0 = String.fromCharCode(3)
 export const U1 = String.fromCharCode(4)
 
+/** STORY 7.1 — what a token parked in a COMMENT is to the theme serializer (`format.ts`): a block helper's `open`, its
+ *  `else` or its `close` — each on a line of its own, the markup between one level in — or a repeat's whole `block`,
+ *  already indented inside, which lands where it stands. A compound string (`{{#if @member}}{{else}}`) is one role. A
+ *  token with no role is an expression inside a text or an attribute, written where it is. */
+export type MarkerRole = 'open' | 'else' | 'close' | 'block'
+
 /** Handlebars expressions, parked as tokens while the tree is still a DOM and substituted into the
  *  serialized string afterwards — AD-4/AD-5: no document ever parses the result. */
 export class Tokens {
   map: [string, string][] = []
+  roles: (MarkerRole | undefined)[] = []
 
-  put(expr: string): string {
+  put(expr: string, role?: MarkerRole): string {
     const t = `${T0}${this.map.length}${T1}`
     this.map.push([t, expr])
+    this.roles.push(role)
     return t
+  }
+
+  /** The role of the marker a comment's text is, or null when the text is no marker. */
+  roleOf(comment: string): MarkerRole | null {
+    const n = this.indexOf(comment)
+    return n === null ? null : (this.roles[n] ?? null)
+  }
+
+  private indexOf(comment: string): number | null {
+    const m = new RegExp(`^${T0}(\\d+)${T1}$`).exec(comment)
+    return m === null || Number(m[1]) >= this.map.length ? null : Number(m[1])
   }
 
   resolve(html: string): string {
@@ -269,13 +291,31 @@ export class Tokens {
     // every row it rendered was inside an HTML comment and invisible on the live site. It never
     // fired only because no fixture had a guard inside a nested repeat; FR-H8's unconditional guard
     // (Story 4.2) puts one in every design that has one.
+    //
+    // Story 7.1: a `block` is a repeat's whole `{{#get}}`/`{{#foreach}}`, built already indented inside, so each of its
+    // lines after the first moves in by the indentation of the line it lands on. Its inner tokens were inserted earlier,
+    // so they land later, on lines that already stand where they will ship. Last, the formatter's kept line breaks — a
+    // `<pre>`'s, an attribute value's — come back, so no indentation ever reached inside one.
     for (let i = this.map.length - 1; i >= 0; i--) {
       out = out.replace(wrapped, '$1')
       const [t, expr] = this.map[i] as [string, string]
-      out = out.split(t).join(expr)
+      out = this.roles[i] === 'block' && expr.includes('\n') ? landed(out, t, expr) : out.split(t).join(expr)
     }
-    return out.replace(wrapped, '$1')
+    return out.replace(wrapped, '$1').split(KEEP_NL).join('\n')
   }
+}
+
+/** Every `t` in `out` replaced by `expr`, its lines after the first indented as the line `t` lands on. */
+function landed(out: string, t: string, expr: string): string {
+  let res = ''
+  let from = 0
+  for (let at = out.indexOf(t); at !== -1; at = out.indexOf(t, from)) {
+    const line = out.slice(out.lastIndexOf('\n', at - 1) + 1, at)
+    const lead = /^ */.exec(line)?.[0] ?? ''
+    res += out.slice(from, at) + expr.split('\n').map((l, k) => (k === 0 || l === '' ? l : `${lead}${l}`)).join('\n')
+    from = at + t.length
+  }
+  return res + out.slice(from)
 }
 
 /** User content, parked as markers and serialized by `marks.ts` into the emitted STRING (AD-4).
@@ -297,11 +337,17 @@ export class UserText {
     this.tokens = tokens
   }
 
-  put(path: string, value: PropValue, sink: ThemeSink = 'text'): string {
+  /** Story 7.1 — the prop's definition, captured AT PUT: one `UserText` is shared across a whole compile, where two
+   *  categories can name one path differently, so the mark allow-list is the section's own rather than the shared
+   *  instance's schema (which a compile constructs empty). */
+  defs: (PropDef | undefined)[] = []
+
+  put(path: string, value: PropValue, sink: ThemeSink = 'text', def: PropDef | undefined = own(this.schema, path)): string {
     const m = `${U0}${this.map.length}${U1}`
     this.map.push(value)
     this.paths.push(path)
     this.sinks.push(sink)
+    this.defs.push(def)
     return m
   }
 
@@ -318,7 +364,7 @@ export class UserText {
       // (`renderTheme`, and `users !== null` at the binding sites), so the canvas cannot emit a mustache
       // by construction; and an attribute never substitutes it, so a customer's `{page_number}` in an
       // href or a title ships as the characters they typed rather than as an expression or a hole.
-      return serializeMarks(this.map[n], this.schema[this.paths[n] as string], this.tokens, this.sinks[n] ?? 'text')
+      return serializeMarks(this.map[n], this.defs[n], this.tokens, this.sinks[n] ?? 'text')
     })
   }
 }
@@ -502,8 +548,8 @@ function wrapGuard(doc: RuntimeDocument, el: RuntimeElement, field: string, toke
   // ONE guard per field per element, whichever directive asked first — a `data-if` on `@site.logo` and the media
   // guard of `src:@site.logo` on the same <img> share `{{#if @site.logo}}` (Story 4.10)
   if (guarded.get(el)?.has(field) === true) return
-  el.before(doc.createComment(tokens.put(ifOpen(field, zero))))
-  el.after(doc.createComment(tokens.put('{{/if}}')))
+  el.before(doc.createComment(tokens.put(ifOpen(field, zero), 'open')))
+  el.after(doc.createComment(tokens.put('{{/if}}', 'close')))
   guarded.set(el, new Set([...(guarded.get(el) ?? []), field]))
 }
 /** FR-H8's one guard form — `{{#if}}` on the bound field, never `{{#has}}` or `{{#unless}}`. A field the
@@ -798,9 +844,9 @@ function emitBindings(
     if (other !== null) consume(other, 'data-else')
     if (users !== null) {
       // ─────────── THE DIFFERENCE (2) — theme: {{#if f}}<if>{{else}}<else>{{/if}} ───────────
-      el.before(doc.createComment(tokens.put(ifOpen(field, zero(field)))))
-      el.after(doc.createComment(tokens.put(other === null ? '{{/if}}' : '{{else}}')))
-      other?.after(doc.createComment(tokens.put('{{/if}}')))
+      el.before(doc.createComment(tokens.put(ifOpen(field, zero(field)), 'open')))
+      el.after(doc.createComment(other === null ? tokens.put('{{/if}}', 'close') : tokens.put('{{else}}', 'else')))
+      other?.after(doc.createComment(tokens.put('{{/if}}', 'close')))
       // a media guard on the same field is this one: `data-if="@site.logo"` beside `src:@site.logo` is ONE {{#if}}
       guarded.set(el, new Set([...(guarded.get(el) ?? []), field]))
     } else {
@@ -941,7 +987,7 @@ function emitBindings(
     const name = consume(el, 'data-helper') ?? ''
     if (users !== null) {
       // ─────────── THE DIFFERENCE (2) — theme ───────────
-      // Double braces, never triple: compile CI asserts zero `{{{` in emitted output, and Ghost's
+      // Double braces, never triple: compile CI allows no `{{{` but default.hbs's one `{{{body}}}` (D3), and Ghost's
       // `{{content}}` is already a SafeString.
       el.textContent = tokens.put(`{{${name}}}`)
       continue
@@ -1205,7 +1251,7 @@ function applyProps(
     if (users !== null) {
       // AD-4: on the theme the value becomes a MARKER and is spliced into the string later — never
       // through a DOM, because an HTML parser decodes AD-5's numeric entities back to live braces.
-      el.textContent = users.put(path, v)
+      el.textContent = users.put(path, v, 'text', def)
     } else {
       // AD-4: on the canvas the serializer's output goes INTO a DOM, because the user must see
       // their own literal text and their own marks. Story 5.20: with the source's `@site`, for R-4's link gate
@@ -1226,7 +1272,7 @@ function applyProps(
       if (mode === 'hide') el.remove()
       continue
     }
-    if (users !== null) el.textContent = users.put(path, value)
+    if (users !== null) el.textContent = users.put(path, value, 'text', own(schema, path))
     else el.innerHTML = serializeMarks(value, own(schema, path), tokenValues)
   }
 
@@ -1274,7 +1320,7 @@ function applyProps(
         }
         for (const [k, val] of Object.entries(attrs)) {
           // the href is user text and is parked on the theme like any other; the rest are closed values
-          el.setAttribute(k, k === 'href' && users !== null ? users.put(path, val, 'attribute') : val)
+          el.setAttribute(k, k === 'href' && users !== null ? users.put(path, val, 'attribute', def) : val)
         }
         continue
       }
@@ -1297,7 +1343,7 @@ function applyProps(
       // (`apps/web/lib/inline.ts`), so both emitters read one value and no `<br>` can reach an attribute; a URL folds
       // before its scheme check, as `href`'s link record does above
       const safe = URL_ATTRS.has(attr) ? safeUrl(oneLine(String(v))) : oneLine(String(v))
-      el.setAttribute(attr, users !== null ? users.put(path, safe, 'attribute') : safe)
+      el.setAttribute(attr, users !== null ? users.put(path, safe, 'attribute', def) : safe)
     }
     // DW-93: the harness removed only its own attribute here and implemented no `hide`, so an
     // element whose only content is a user-picked image kept a dead `data-empty` and never hid.
@@ -1624,8 +1670,8 @@ function gateMembers(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
     }
     // ─────────── THE DIFFERENCE (2) — theme: Ghost decides, per request ───────────
     const [open, close] = MEMBER_GATE[state]
-    el.before(doc.createComment(tokens.put(open)))
-    el.after(doc.createComment(tokens.put(close)))
+    el.before(doc.createComment(tokens.put(open, 'open')))
+    el.after(doc.createComment(tokens.put(close, 'close')))
   }
   for (const el of all(root, '[data-members]')) gate(el, consume(el, 'data-members') as MemberState)
   const section = root.firstElementChild
@@ -1759,7 +1805,9 @@ function renderTree(
       holder.append(el)
       emitBindings(doc, holder, input, tokens, users, ghost, where)
       applyProps(doc, holder, input, users, tokens)
-      const body = holder.innerHTML
+      // Story 7.1 — the body is written to the formatting contract here, while its expressions are still tokens: a
+      // partial from column 0, an inline body as the lines the block below indents
+      const body = formatTheme(doc, holder, tokens, users)
       // §7.3 gap row 2 / exit construct 1, and the half that was missing until Story 4.3: a
       // `data-repeat` naming a `dataBindings` KEY is a `{{#get}}`, not a `{{#foreach}}`. It used to
       // emit `{{#foreach <key>}}` over a name that is not a context path, so the block silently
@@ -1780,22 +1828,25 @@ function renderTree(
       // order (R-20) — each its own {{#get}} around its own {{#foreach}}, because the order is the
       // point and one get with an `id:a,id:b` filter would answer in the API's order. Story 5.19: a hand-picked list
       // with NOTHING picked (`ids: []`, the Data group's fold) is zero blocks — nothing reaches a hash at all.
-      const opens = picked !== null
-        ? picked.slice(0, limit === null ? undefined : Number(limit)).map((g) => `${g}\n{{#foreach posts}}`)
-        : query === undefined
-        ? [`{{#foreach ${source}${limit !== null ? ` limit="${limit}"` : ''}}}`]
-        : query.ids?.length === 0 ? [] : getExprs(source, input.dataBindings).map((g) => `${g}\n{{#foreach ${query.source}}}`)
-      const close = query === undefined && picked === null ? '{{/foreach}}' : '{{/foreach}}\n{{/get}}'
+      // Story 7.1 — each block is built already indented, `{{#get}}` › `{{#foreach}}` › the body or the invocation, two
+      // spaces a level; `Tokens.resolve` moves it in by the line it lands on
+      const gets = picked !== null
+        ? picked.slice(0, limit === null ? undefined : Number(limit))
+        : query === undefined ? null : query.ids?.length === 0 ? [] : getExprs(source, input.dataBindings)
+      const each = query === undefined ? `{{#foreach ${source}${limit !== null && picked === null ? ` limit="${limit}"` : ''}}}` : `{{#foreach ${query.source}}}`
       let inner: string
       if (partialName !== null) {
         if (partialName in partials) throw new Error(`data-partial "${partialName}" is declared twice`)
         partials[partialName] = body
-        inner = `  {{> "${partialName}"}}`
+        inner = `{{> "${partialName}"}}`
       } else {
         inner = body
       }
-      const replacement = opens.map((open) => `${open}\n${inner}\n${close}`).join('\n')
-      holder.replaceWith(doc.createComment(tokens.put(replacement)))
+      const loop = (by: number) => `${indentBy(each, by)}\n${indentBy(inner, by + 1)}\n${indentBy('{{/foreach}}', by)}`
+      const replacement = gets === null ? loop(0) : gets.map((g) => `${g}\n${loop(1)}\n{{/get}}`).join('\n')
+      // nothing picked is no node at all, so the whitespace around it is one run and no blank line is written
+      if (replacement === '') holder.remove()
+      else holder.replaceWith(doc.createComment(tokens.put(replacement, 'block')))
     }
   } else {
     // ─────────── THE DIFFERENCE (1) — canvas: the repeat expands against real rows ───────────
@@ -1866,6 +1917,7 @@ function expandRepeats(
 // ponytail: whitespace-only lines go from the whole string, and the canvas tidies AFTER values are in the DOM — so a blank
 // line inside a Ghost value or a fixture's `<pre>` is dropped on the canvas only (DW-96). Invisible unless a stylesheet
 // sets `white-space: pre*`, and no fixture's `<pre>` holds one; the upgrade is to tidy whitespace-only text nodes alone.
+// Story 7.1: the CANVAS's alone — the theme is written to the formatting contract by `format.ts`.
 const tidy = (html: string): string => html.replace(/^\s*[\r\n]/gm, '').trim()
 
 /** Emitter 1 — the `.hbs` text that ships to the customer's Ghost site. */
@@ -1878,18 +1930,21 @@ export function renderTheme(doc: RuntimeDocument, src: string, input: RenderInpu
   // Story 5.19 — a hand-picked secondary feed with nothing picked ships nothing, as its canvas draws nothing
   if (feed === null) return { template: '', partials: {} }
 
+  // Story 5.19 — ─────────── a SECONDARY FEED: the whole section inside its query's get and inside `{{#if posts}}`, so at
+  // zero Ghost renders nothing at all, heading and container together (FR-H4, MEASUREMENTS §53) ───────────
+  // Story 7.1: put around the section as markers, so the serializer writes the two helpers one level apart
+  if (feed !== undefined) {
+    root.prepend(doc.createComment(tokens.put(feed.outer, 'open')), doc.createComment(tokens.put('{{#if posts}}', 'open')))
+    root.append(doc.createComment(tokens.put('{{/if}}', 'close')))
+    root.append(doc.createComment(tokens.put('{{/get}}', 'close')))
+  }
+
   // AD-4 / AD-5: serialize FIRST, then resolve into the string. No document ever parses the result,
-  // so numeric entities cannot be decoded back into live braces.
+  // so numeric entities cannot be decoded back into live braces. Story 7.1: serialized to the formatting contract.
   const done = (s: string) => (shared === undefined ? users.substitute(s) : s)
   const out: Record<string, string> = {}
   for (const [k, v] of Object.entries(partials)) out[k] = done(tokens.resolve(v))
-  const template = tidy(tokens.resolve(root.innerHTML))
-  // Story 5.19 — ─────────── a SECONDARY FEED: the whole section inside its query's get and inside `{{#if posts}}`, so at
-  // zero Ghost renders nothing at all, heading and container together (FR-H4, MEASUREMENTS §53) ───────────
-  return {
-    template: done(feed === undefined ? template : `${feed.outer}{{#if posts}}\n${template}\n{{/if}}{{/get}}`),
-    partials: out,
-  }
+  return { template: done(tokens.resolve(formatTheme(doc, root, tokens, users))), partials: out }
 }
 
 /** Emitter 2 — the editing canvas. */

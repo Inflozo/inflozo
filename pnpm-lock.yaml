@@ -152,6 +152,9 @@ importers:
       '@inflozo/library':
         specifier: workspace:*
         version: link:../library
+      '@inflozo/section-runtime':
+        specifier: workspace:*
+        version: link:../section-runtime
     devDependencies:
       '@types/node':
         specifier: 24.13.4
@@ -162,6 +165,9 @@ importers:
       handlebars:
         specifier: 4.7.9
         version: 4.7.9
+      jsdom:
+        specifier: 30.0.1
+        version: 30.0.1
       typescript:
         specifier: 7.0.2
         version: 7.0.2

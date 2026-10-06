@@ -694,6 +694,13 @@ classes are structurally incompatible with token-only styling. Every control app
 selector on the root (`.feed[data-cols="3"] .feed__grid { … }`) — **except a mode-scoped one, which is
 written as the next section says.**
 
+**Every class a design writes is its own** *(Story 7.1)*: the root is `{category}-{n}` (`a22-1`), and every other class
+begins with `{root}__` or `{root}--` (`a22-1__field`, `a4-13__action--primary`). The compiler concatenates every placed
+design's stylesheet into one `assets/css/screen.css` and never rewrites a class name (AD-3 — no generated classes), so
+this rule is what keeps two designs' rules from ever meeting; `tools/check-snapshots.mjs` holds it over every design,
+beside a control. A comment in `style.css` is the author's and ships to no one: the compile strips every one
+(`stripCssComments`), so a header `/* {Category} · {Design} */` is the only comment the theme's stylesheet carries.
+
 #### A mode-scoped control: one root rule per value, declaring the root's own properties *(Story 6.5, AD-30, DW-195)*
 
 A **mode-scoped** control is one that takes a dark override (FR-D7): the Background role (`bg`), and any control
@@ -1001,7 +1008,7 @@ These were executed in the stress harness and keep their names and grammar uncha
 | `data-repeat` | a Ghost context path, or a `dataBindings` key | expands against real rows | `{{#foreach …}}` / `{{#get …}}` |
 | `data-repeat-limit` | 1–100 | slices the rows | `limit="n"` on the block |
 | `data-items-limit` *(5.11)* | 1–100 | draws at most that many of the authored list's items | the same number of static blocks — one shared function, so the two cannot disagree |
-| `data-partial` | a partial name | ignored | extracts the body to a parameterless partial |
+| `data-partial` | a partial name — **unique across the library**, and never one of Ghost's own partials (`content-cta` · `gift-toast` · `navigation` · `pagination` · `recommendations`) *(Story 7.1)* | ignored | extracts the body to a parameterless partial, written once at the theme's `partials/{name}.hbs` however many placements — a theme file of one of Ghost's names would replace Ghost's own template site-wide |
 | `data-bind-style` | `--custom-property:spec` | the value through `safeCssColor` — hex, `rgb()`/`hsl()` or the pack's accent token; a **named** colour is not parsed and falls back too | `style="{{#if field}}--prop: {{path}}{{/if}}"` — the value is Ghost's at render |
 | `data-module` *(4.7)* | a registry module name, optionally `:N` — the width in CSS pixels below which it runs | **kept** on the element, parsed; a bad value refuses | **kept** on the same element — `core` mounts on it on the live page |
 
@@ -1618,6 +1625,17 @@ added to the set without a `emitted: true` marker joins the assertion automatica
 **A comment in a design's markup is dropped by both emitters** *(Story 5.24c, DW-159)* — a designer's `<!-- … -->`
 note reaches no visitor, removed from the parsed tree before the runtime writes its own markers.
 
+**How the theme writes a design — the formatting contract** *(Story 7.1)*. The theme emitter does not ship
+`innerHTML`: it writes each section to the contract in Story 7.1's spec (§ The formatting contract), over the DOM while
+every expression is still a token (`packages/section-runtime/src/format.ts`). Two spaces a level; a start tag whose line
+passes **120** columns, measured on its final text, one attribute per line; a block helper on its own line with what it
+wraps one level in; and an element laid out one child per line **only where your own whitespace already fills every gap
+between its children** — everywhere else it is written exactly as the serializer writes it. So the whitespace you
+author is what decides the layout, and formatting never adds whitespace between two nodes you wrote touching: write
+`<span>a</span><span>b</span>` and it ships touching. `pre`, `textarea`, `script`, `style` and `title` ship verbatim.
+The render-neutral claim rests on every design's text sitting under `white-space: normal` or `nowrap`; a stylesheet
+setting `pre*` outside those elements is a question for the owner before it is built.
+
 ---
 
 ## 4 · The refusals, and why each exists
@@ -1649,6 +1667,8 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | literal words in a `data-text` template (`chrome-literal`) · a `data-t-attr` attribute other than `alt`, `title`, `placeholder`, `aria-label` · `data-empty` or a second text directive on a `data-t` element · an authored `data-i18n-*` | *(Story 4.9)* V1's lexical half and S5: English outside the catalog cannot be translated; the four attributes are the ones that hold text; a `data-t` element hides when a param is empty; the emitters stamp `data-i18n-*` from the registry. |
 | `catalog` on a prop that is not `text`, on a key not marked prop, or beside a `default` (`catalog-prop`) | *(Story 4.9)* S6. The catalog string is the default, so a second one would be ignored; only a prop-marked string may become editable. |
 | `maxChars` on a prop that is not `text` or `richtext` (`max-chars-type`), one that is not a whole number of at least 1 (`max-chars-value`), an authored `default` longer than it (`max-chars-default`), or a catalog string longer than it on a catalog-linked prop (`max-chars-catalog`) | *(Story 5.3)* FR-D4's hard limit. Only a field that is typed into has a character limit, and the words a field starts with — the design's own, or the catalog's — must fit the limit a customer is held to. |
+| a C0 control character other than tab, line feed and carriage return anywhere in `index.html` or `style.css` (`control-character`, naming the file and line) | *(Story 7.1 — Round 3's D13)* The compiler's expression tokens and user-text markers are built from C0 characters, so a design carrying one could forge either. Refusing the character refuses every shape, which a lint over the marker's shape could not. |
+| a `data-partial` naming one of Ghost's own partials (`bad-value`) | *(Story 7.1, AD-36)* A repeat partial lands at the theme's `partials/` root, where Ghost registers `core/frontend/helpers/tpl/` first and a theme file of the same name replaces Ghost's own template across the whole site (read in both majors). Two designs declaring one `data-partial` name, and a class outside its design's root, are refused by `tools/check-snapshots.mjs`. |
 | an authored `data-inflozo-*` attribute (`editor-attribute`) | *(Story 5.3's review)* The editor's own prefix: the canvas emitter's editing stamps, lifted off as the canvas mounts, and the state marks (`data-inflozo-hover`, `-selected`, `-editing`) its chrome is keyed on. An authored one would be lifted as a stamp or paint chrome at rest. |
 | a render naming its target whose markup prints a bare text node, or an `alt` / `title` / `placeholder` / `aria-label`, holding a letter or digit that no directive writes | *(Story 4.9)* V1's tree half. **Refused by the runtime**, beside FR-H7's scope check, in one error naming every literal; `checkChromeLiterals` returns the list. Exempt: text under `data-prop`, `data-bind`, `data-t`, `data-helper`, `data-initials`, `data-index`, `data-text` or `data-pagination="numbers"`; an attribute a directive writes; `alt=""`; text with no letter or digit. |
 | `data-initials` on a prop the category does not declare, on a prop that is not `text`, or inside a `data-repeat` | *(Story 4.6)* R-2. Two initials are baked only from a name the user typed; a person from Ghost shows one letter in CSS. The first two by the validator, the last by the runtime. |

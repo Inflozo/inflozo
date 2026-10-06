@@ -379,6 +379,6 @@ for (const l of leaks.slice(0, 10)) console.log('   !', l);
 console.log(`FR-G7(1) assets/js/ (checkThemeJs): ${jsFindings.length === 0 ? `clean — ${Object.keys(jsFiles).join(', ')}` : jsFindings.length + ' FINDING(S)'}`);
 for (const j of jsFindings) console.log('   !', j);
 if (gateFindings.length) { console.log(`FR-J17 findings: ${gateFindings.length}`); for (const g of gateFindings.slice(0, 8)) console.log('   !', g); }
-console.log(`AD-5 rule 2 ("zero {{{ and zero }}} in the emitted theme"): {{{ x${tripleOpen.length} in ${[...new Set(tripleOpen)].join(', ') || '-'} · }}} x${tripleClose.length} in ${[...new Set(tripleClose)].join(', ') || '-'}`);
+console.log(`AD-5 rule 2 ("no {{{ or }}} but default.hbs's one {{{body}}}", D3): {{{ x${tripleOpen.length} in ${[...new Set(tripleOpen)].join(', ') || '-'} · }}} x${tripleClose.length} in ${[...new Set(tripleClose)].join(', ') || '-'}`);
 
 if (!process.argv.includes('--keep')) console.log(`\ntheme/ kept at ${OUT} — run:  node gate.js theme`);

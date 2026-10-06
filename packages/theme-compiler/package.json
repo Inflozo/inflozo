@@ -11,12 +11,14 @@
     "test": "node --test 'src/**/*.test.ts'"
   },
   "dependencies": {
-    "@inflozo/library": "workspace:*"
+    "@inflozo/library": "workspace:*",
+    "@inflozo/section-runtime": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "24.13.4",
     "gscan": "6.4.2",
     "handlebars": "4.7.9",
+    "jsdom": "30.0.1",
     "typescript": "7.0.2"
   }
 }

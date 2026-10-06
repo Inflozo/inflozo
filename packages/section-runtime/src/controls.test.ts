@@ -696,7 +696,9 @@ test('Story 6.5 — the hook: both emitters stamp `data-instance` from `instance
   const plain = both(state)
   assert.doesNotMatch(plain.canvas + plain.theme, /data-instance/)
   assert.equal(hooked.canvas.replace(` data-instance="${hook}"`, ''), plain.canvas)
-  assert.equal(hooked.theme.replace(` data-instance="${hook}"`, ''), plain.theme)
+  // Story 7.1: the theme's root may break one attribute per line, so it is compared with whitespace runs collapsed
+  const collapsed = (s: string) => s.replace(/[ \t\n\f\r]+/g, ' ')
+  assert.equal(collapsed(hooked.theme.replace(new RegExp(`[ \\t\\n\\f\\r]+data-instance="${hook}"`), '')), collapsed(plain.theme))
   // no override in force → no hook; a re-stamp without one strips the old (a cleared override leaves none)
   assert.equal(darkHook(entry, start({ controls: { bg: 'base' } }), 'home:auto-home-4'), undefined)
   const root = doc().createElement('div')

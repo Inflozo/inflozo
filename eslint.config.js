@@ -75,6 +75,14 @@ const bannedImports = [
   '!../**',
 ]
 
+// Story 7.1 — FR-J1: Handlebars is never parsed, evaluated or printed by the product, and no formatter writes the theme
+// (the theme serializer formats over the DOM, `packages/section-runtime/src/format.ts`). Banned, with every subpath, in
+// every non-test source under apps/ and packages/; a test under packages/ may still load `handlebars` to parse what the
+// compiler emitted.
+const FORMATTERS = ['handlebars', 'handlebars/*', 'prettier', 'prettier/*', '@prettier/*']
+const TEST_PARSER = new Set(['handlebars', 'handlebars/*'])
+const formatterBan = { group: FORMATTERS, message: 'FR-J1 (Story 7.1): the product never parses, evaluates or prints Handlebars, and never runs a formatter — the theme serializer formats over the DOM.' }
+
 const hostReadingCalls = [
   'localeCompare',
   'toLocaleUpperCase',
@@ -117,10 +125,15 @@ export default [
         'error',
         {
           paths: [{ name: 'zod', message: "Import { z } from '@/lib/zod' (by its relative .ts path in a node-tested file): it sets jitless first." }],
-          patterns: [{ group: ['zod/*'], message: "Import { z } from '@/lib/zod': it sets jitless first." }],
+          patterns: [{ group: ['zod/*'], message: "Import { z } from '@/lib/zod': it sets jitless first." }, formatterBan],
         },
       ],
     },
+  },
+  {
+    // Story 7.1 — the one app file the block above ignores still takes the formatter ban
+    files: ['apps/web/lib/zod.ts'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [formatterBan] }] },
   },
   {
     files: CORE,
@@ -129,7 +142,7 @@ export default [
     // call silenced every locale and clock ban beside it (executed, `.localeCompare()`); a core package has no directive.
     linterOptions: { noInlineConfig: true },
     rules: {
-      'no-restricted-imports': ['error', { patterns: bannedImports }],
+      'no-restricted-imports': ['error', { patterns: [...FORMATTERS, ...bannedImports] }],
       // `globalThis` is banned outright because it is the one-word way around every entry
       // beside it: `globalThis.process.env` linted clean while bare `process` errored
       // (executed). `performance` and `crypto` are the clock and the entropy that
@@ -184,7 +197,7 @@ export default [
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: bannedImports.filter((p) => !TEST_RUNNER.has(p)) },
+        { patterns: [...FORMATTERS.filter((p) => !TEST_PARSER.has(p)), ...bannedImports.filter((p) => !TEST_RUNNER.has(p))] },
       ],
     },
   },

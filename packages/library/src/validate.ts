@@ -958,6 +958,7 @@ export function validateDesign(input: {
   if (input.content !== undefined) markupOpts.content = input.content
   if (Array.isArray(input.design.compileTarget)) markupOpts.compileTarget = input.design.compileTarget
   if (input.design.dataBindings !== undefined) markupOpts.dataBindings = input.design.dataBindings
+  out.push(...controlCharacters('index.html', input.html), ...(input.css === undefined ? [] : controlCharacters('style.css', input.css)))
   out.push(...validateMarkup(input.html, markupOpts))
   if (input.css !== undefined) out.push(...validateStylesheet(input.css, controlValues))
   // Story 6.5 — the authoring rule a dark override reaches a visitor through (AD-30, amended)
@@ -1264,8 +1265,33 @@ export function modeScopedRules(css: string, root: string | null, offered: Reado
  *  also named by `light-dark()` and `color-scheme`, the two ways CSS selects on it without a selector. Each pattern reads its input once (the hostile
  *  inputs `tools/check-snapshots.mjs` times). ponytail: a named colour (`white`, `red`…) is not caught; add the list when a
  *  design writes one. */
+/** A stylesheet's comments and strings, in ONE alternation, so a `/*` inside a string is no comment and a quote inside a
+ *  comment opens no string. `untokened` and `stripCssComments` both read through it. */
+const COMMENT_OR_STRING = /\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n]|\\[\s\S])*"?|'(?:[^'\\\n]|\\[\s\S])*'?/g
+
+/** STORY 7.1 — a stylesheet with its comments removed and its strings kept, by the scan the validator trusts. A comment
+ *  between two name or number characters becomes one space, so `1px/**\/2px` stays two tokens; anywhere else it goes. */
+export function stripCssComments(css: string): string {
+  return css.replace(COMMENT_OR_STRING, (m, at: number, all: string) => {
+    if (!m.startsWith('/*')) return m
+    return /[\w-]/.test(all.charAt(at - 1)) && /[\w-]/.test(all.charAt(at + m.length)) ? ' ' : ''
+  })
+}
+
+/** STORY 7.1 — Round 3's D13 lint: a C0 control character other than tab, line feed and carriage return, by line. The
+ *  compiler's expression tokens and user-text markers are built from C0 characters (`core.ts`'s `T0`…`U1`), so a design
+ *  file carrying one could forge either. */
+function controlCharacters(file: string, text: string): Failure[] {
+  const out: Failure[] = []
+  text.split('\n').forEach((line, i) => {
+    const c = /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.exec(line)?.[0]
+    if (c !== undefined) push(out, 'control-character', `${file} line ${i + 1} carries the control character U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')} — a design file holds no C0 control character but tab, line feed and carriage return, because the compiler's own tokens are made of them (D13).`)
+  })
+  return out
+}
+
 function untokened(css: string): string | null {
-  const bare = css.replace(/\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n]|\\[\s\S])*"?|'(?:[^'\\\n]|\\[\s\S])*'?/g, (m) => (m.startsWith('/*') ? ' ' : '""'))
+  const bare = css.replace(COMMENT_OR_STRING, (m) => (m.startsWith('/*') ? ' ' : '""'))
   const mode = /prefers-color-scheme|\bdata-mode(?![\w-])|\bscheme-(?:light|dark)(?![\w-])|\blight-dark(?=\()|(?<![\w-])color-scheme(?![\w-])/i.exec(bare)
   if (mode !== null) return `names the mode \`${mode[0]}\``
   // every declaration: a run the next `;` or `}` ends (one a `{` ends is a selector or an at-rule's prelude), so a rule

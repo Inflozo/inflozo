@@ -4468,3 +4468,56 @@ colour Ghost put on a recorded page, so `tokens.test.ts` admits it.
 - **The pin composes with `{{body_class}}` on a real Ghost, and wins as R-239 ruled.** A server-rendered `scheme-dark` on the post and `scheme-light` on the author page resolve the whole palette to their mode whatever the device and whatever `data-mode` says; on `/` (Auto, no class) the visitor's `data-mode` wins over the device, and with neither the device decides. Each input was read alone (DW-318).
 - **A section's dark override reaches a visitor.** A22 #1, Base in light, draws Contrast in dark from each input alone, and Base in light; with the per-instance rules disabled it draws Base in every mode — so `darkOverrideCss` is what moves it (DW-195).
 - **What this does NOT say.** Nothing here was compiled by Inflozo's emitter — the theme is a probe carrying the token block and one section's rules verbatim, as Epic 7 will (Story 7.4); the pin is written by a probe `{{#is}}`, not by `@custom.color_scheme` (Story 7.11), and the compiled theme's confirmation is Story 7.35's. Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired).
+
+## 70. Theme assembly — the five pilots compiled by `compileTheme` to the formatting contract, rendered by Ghost, T1 · 2026-10-06
+
+**Command.** `python3 tools/probe/record-theme-assembly.py` — one theme upload and two activations, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload (DW-332), both read back; no content, no setting and no key written. T1 only (R-238).
+
+**Why.** Story 7.1's compiler writes each section to a partial named by its layer, a boundary comment before each invocation, `default.hbs` around the one `{{{body}}}` and `screen.css` opening with the token block, all formatted over the DOM to a contract that claims it never changes what renders. `check-snapshots` holds the tree in CI; this is a real Ghost rendering it. Gate, with the scaffold (`package.json`, 7.2; `cards.css`, 7.13 and 7.4; `page.hbs`, 7.3, for GS110): Ghost 5.x via gscan 4.49.7 — 0 errors / 0 warnings · Ghost 6.x via gscan 6.4.2 — 0 errors / 0 warnings.
+
+**The tree uploaded** (14 files): `default.hbs`, `home.hbs`, `index.hbs`, `post.hbs`, `assets/css/screen.css` and 6 partials — `partials/post-card.hbs`, `partials/sections/default/header-layera6277447e3c26854.hbs`, `partials/sections/home/latest-post-layera6277447e3c26854.hbs`, `partials/sections/post/post-header-layera6277447e3c26854.hbs`, `partials/sections/shared/newsletter-p-idleakleakpsitetitle-layera6277447e3c26854.hbs`, `partials/sections/shared/post-grid-layera6277447e3c26854.hbs` — compiled; then the scaffold, `package.json`, `assets/css/cards.css` and `page.hbs`.
+
+**The controls, each of which voids the run:** the layer word is in the uploaded templates and the hostile layer name in the uploaded `home.hbs`, so their absence from the pages is the comments' doing; every page read was this run's theme (`/` by its page word, the others by the same `screen.css` asset hash). Every one held.
+
+### (a) T1 `ghost6.inflozo.com` (6.58.0), locale `en`
+
+| Page | Row | Held |
+|---|---|---|
+| `/` | the page word where Home draws A4 #13 | yes |
+| `/` | every placed section's root class, once each, in doc order | yes |
+| `/` | no `{{` in the HTML | yes |
+| `/` | no `}}` in the HTML | yes |
+| `/` | no `{{!--` in the HTML | yes |
+| `/` | no C0 character in the HTML | yes |
+| `/` | no layer word in the HTML | yes |
+| `/` | A22 #1's hostile text as its literal characters | yes |
+| `/` | A22 #1's hostile text as its literal characters | yes |
+| `/` | A22 #1's hostile text as its literal characters | yes |
+| `/` | `<html lang>` is the site's locale | yes |
+| `/` | CONTROL — this run's theme (screen.css asset hash) | yes |
+| `/page/2/` | every placed section's root class, once each, in doc order | yes |
+| `/page/2/` | no `{{` in the HTML | yes |
+| `/page/2/` | no `}}` in the HTML | yes |
+| `/page/2/` | no `{{!--` in the HTML | yes |
+| `/page/2/` | no C0 character in the HTML | yes |
+| `/page/2/` | no layer word in the HTML | yes |
+| `/page/2/` | `<html lang>` is the site's locale | yes |
+| `/page/2/` | CONTROL — this run's theme (screen.css asset hash) | yes |
+| `/probe-gated-post/` | every placed section's root class, once each, in doc order | yes |
+| `/probe-gated-post/` | no `{{` in the HTML | yes |
+| `/probe-gated-post/` | no `}}` in the HTML | yes |
+| `/probe-gated-post/` | no `{{!--` in the HTML | yes |
+| `/probe-gated-post/` | no C0 character in the HTML | yes |
+| `/probe-gated-post/` | no layer word in the HTML | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters | yes |
+| `/probe-gated-post/` | `<html lang>` is the site's locale | yes |
+| `/probe-gated-post/` | CONTROL — this run's theme (screen.css asset hash) | yes |
+
+### What it means
+
+- **Ghost renders what the compiler emits.** The formatted templates, the per-layer section partials, the hoisted shared partial and the parameterless `post-card` partial all resolve on both pages of the feed and on a post; each placed section draws its root once, in doc order.
+- **The boundary comments ship to no visitor**, a hostile layer name included: its braces were dropped at compile, so it stayed one Handlebars comment, and the layer word is on no page.
+- **User text ships inert.** A22 #1's AD-5 shapes reached the page as their literal characters, and the HTML carries no `{{` or `}}`.
+- **What this does NOT say.** The scaffold is the later stories' (7.2, 7.13, 7.4, 7.3), and nothing here deployed through Inflozo's own path (Story 7.18). Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired).

@@ -593,7 +593,7 @@ test('AD-36 · a crafted Source value is inert through the fold, refused when ha
   assert.ok(theme({ source: 'tag', tag: 'field-notes' }).includes(`filter="tag:'field-notes'"`))
   assert.ok(theme({ source: 'author', author: 'rosa-menendez' }).includes(`filter="authors:'rosa-menendez'"`))
   const good = renderTheme(doc(), feedSrc, { feed: { query: { source: 'posts', limit: 6, order: 'published_at asc', filter: "tag:'craft'" } } }).template
-  assert.ok(good.startsWith(`{{#get "posts" filter="tag:'craft'" limit="6" order="published_at asc" include="tags,authors"}}{{#if posts}}`), good)
+  assert.match(good, /^\{\{#get "posts" filter="tag:'craft'" limit="6" order="published_at asc" include="tags,authors"\}\}\s*\{\{#if posts\}\}/)
 })
 
 // ═══ Story 5.20 — the tier filter and a Portal ask, closed at emission ═══

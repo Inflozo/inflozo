@@ -544,6 +544,84 @@ check('A1 #1 and A22 #1 — the member arms on the canvas: Sign in and Subscribe
   if (at(row, 'home.hbs', { ghost: off, member: 'anonymous' }).includes('data-members-form')) throw new Error('self-signup off still draws the form')
 })
 
+// ── Story 7.1 — theme assembly's library-wide halves, each with its control first ─────────────────────────────────────
+
+/** Every class a design writes is its root `{category}-{n}`, or begins with `{root}__` or `{root}--` — so two designs'
+ *  rules never meet in the one `screen.css` the compiler concatenates them into (AD-3: no generated class names). */
+function classFailures(id, html) {
+  const root = id.replace('/', '-')
+  const tags = lib.scanTags(html)
+  const classes = (tag) => (tag.attrs.find(([k]) => k.toLowerCase() === 'class')?.[1] ?? '').split(/\s+/).filter(Boolean)
+  const first = tags[0] === undefined ? undefined : classes(tags[0])[0]
+  const out = first === root ? [] : [`${id}: the root's class is ${first === undefined ? 'missing' : `"${first}"`}, not "${root}" ({category}-{n})`]
+  for (const tag of tags) {
+    for (const c of classes(tag)) {
+      if (c !== root && !c.startsWith(`${root}__`) && !c.startsWith(`${root}--`)) out.push(`${id}: <${tag.name}> writes the class "${c}", which is neither ${root} nor begins with ${root}__ or ${root}--`)
+    }
+  }
+  return out
+}
+/** No two designs declare one `data-partial` name: a repeat partial lands at the theme's `partials/` root, one file per name. */
+function partialFailures(designs) {
+  const owner = new Map()
+  const out = []
+  for (const { id, html } of designs) {
+    for (const tag of lib.scanTags(html)) {
+      const name = tag.attrs.find(([k]) => k.toLowerCase() === 'data-partial')?.[1]
+      if (name === undefined) continue
+      if (owner.has(name) && owner.get(name) !== id) out.push(`data-partial "${name}" is declared by ${owner.get(name)} and by ${id} — one partials/${name}.hbs cannot be both`)
+      else owner.set(name, id)
+    }
+  }
+  return out
+}
+const pilots = await import(join(REPO, 'tools/pilot-theme.mjs'))
+const WORDS = { pageWord: 'Pageword', layerWord: 'Layerword' }
+
+check('control — Story 7.1: a class outside its design\'s root, and a root that is not {category}-{n}, are caught, naming them', () => {
+  const d = loadDesign(DIRS[0])
+  const id = `${d.category}/${d.n}`
+  if (classFailures(id, d.html).length > 0) throw new Error(`${id} is not clean to begin with: ${classFailures(id, d.html).join(' · ')}`)
+  const foreign = mustFail(classFailures(id, d.html.replace(/class="([^"]+)"/, 'class="$1 hero"')), /writes the class "hero"/, 'a foreign class')
+  mustFail(classFailures(`${d.category}/9${d.n}`, d.html), /not "\w+-9\d+"/, 'a root named for another design')
+  return foreign
+})
+check('Story 7.1 — every class a design writes is its root {category}-{n}, or begins with {root}__ or {root}--', () => {
+  const f = rendered.flatMap((r) => classFailures(r.id, r.entry.html))
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${rendered.length} designs`
+})
+check('control — Story 7.1: two designs declaring one data-partial name are caught, naming both', () => {
+  const r = rendered.find((x) => /data-partial=/.test(x.entry.html))
+  if (r === undefined) throw new Error('no design declares a data-partial, so this control proves nothing')
+  if (partialFailures(rendered.map((x) => x.entry)).length > 0) throw new Error('the library is not clean to begin with')
+  return mustFail(partialFailures([...rendered.map((x) => x.entry), { id: `${r.entry.category}/99`, html: r.entry.html }]), new RegExp(`declared by ${r.id} and by ${r.entry.category}/99`), 'one data-partial name twice')
+})
+check('Story 7.1 — no two designs declare one data-partial name', () => {
+  const f = partialFailures(rendered.map((r) => r.entry))
+  if (f.length > 0) throw new Error(f.join('\n'))
+})
+check('control — Story 7.1: the compiled-theme check catches a second triple-stash, the builder\'s name, an instance id, an orphan partial and a file Handlebars cannot parse', () => {
+  const { files, instanceIds } = pilots.compilePilots(WORDS)
+  const f = pilots.themeFailures(files, instanceIds)
+  if (f.length > 0) throw new Error(`the pilot theme is not clean to begin with: ${f.join(' · ')}`)
+  const broken = (over) => pilots.themeFailures({ ...files, ...over }, instanceIds)
+  mustFail(broken({ 'home.hbs': `${files['home.hbs']}{{{html}}}\n` }), /triple-stash/, 'a second {{{')
+  mustFail(broken({ 'index.hbs': `${files['index.hbs']}<!-- built with Inflozo -->\n` }), /index\.hbs: the builder's name/, 'a generator mark')
+  mustFail(broken({ 'post.hbs': `${files['post.hbs']}<i data-key="${instanceIds[0]}"></i>\n` }), /the instance id/, 'an instance id')
+  mustFail(broken({ 'partials/orphan.hbs': '<p>x</p>\n' }), /partials\/orphan\.hbs is referenced by no file/, 'an orphan partial')
+  return mustFail(broken({ 'home.hbs': '{{#if x}}\n' }), /home\.hbs: Handlebars 4\.7\.9 does not parse it/, 'an unclosed block')
+})
+check('Story 7.1 — the five-pilot project compiles with Paper to a theme Handlebars 4.7.9 parses: one {{{body}}}, no fingerprint, every partial referenced, the same bytes twice', () => {
+  const a = pilots.compilePilots(WORDS)
+  const f = pilots.themeFailures(a.files, a.instanceIds)
+  if (f.length > 0) throw new Error(f.join('\n'))
+  const b = pilots.compilePilots(WORDS)
+  const differ = Object.keys(a.files).filter((k) => a.files[k] !== b.files[k])
+  if (differ.length > 0 || Object.keys(b.files).join() !== Object.keys(a.files).join()) throw new Error(`a second compile differs: ${differ.join(', ')}`)
+  return `${Object.keys(a.files).length} files`
+})
+
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────
 const targets = rendered.reduce((t, r) => t + r.entry.compileTarget.length, 0)
 const files = rendered.reduce((t, r) => t + Object.keys(r.files).length, 0)

@@ -417,6 +417,23 @@ DOCS = [
   'disabled) void the run; a value that does not hold writes nothing. Restores the previous theme and deletes the probe '
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
+ ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
+  "Story 7.1's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the formatting contract, "
+  'rendered by a real Ghost. Compiles tools/pilot-theme.mjs\'s project through Node 24 — the site doc\'s A1 #1, Home\'s '
+  'A4 #13 · A17 #1 (main feed) · A22 #1, index.hbs\'s A17 #1, post.hbs\'s A24 #1 and a hoisted A22 #1 — with a page word '
+  "from this run's nonce in A4 #13's eyebrow, a layer word in every layer name, one hostile layer name and AD-5's shapes "
+  "in A22 #1's text; refuses unless the theme passes the check CI holds it to (themeFailures). Adds the scaffold, new "
+  "files only, each named for its story: package.json (7.2) with a posts_per_page T1's published posts overflow, and "
+  'assets/css/cards.css (7.13, 7.4). Gates through tools/stress/gate.js at 0 errors AND 0 warnings on gscan 4.49.7 and '
+  '6.4.2 — anything gscan names is a question for the owner, never a widened scaffold. On T1 ONLY (R-238), behind '
+  "record-shim.py's start_guard, uploads and activates the theme inside the try whose finally is restore_and_delete "
+  "(DW-332: the name is the zip's, known before the upload), waits for the page word on /, then reads /, /page/2/ and the "
+  "newest published post: the page word, every placed section's root class once each in doc order, no {{ }} {{!-- C0 "
+  "or layer word in the HTML, the hostile text as literal characters, <html lang> the site's locale. Controls (the layer "
+  "word and the hostile name ARE in the uploaded templates; every page is this run's theme by its page word or the same "
+  'screen.css asset hash) void the run; a row that does not hold writes nothing. Run on the owner\'s in-session go, in '
+  'the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §70 alone, replacing an earlier '
+  '§70 of its own.'),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1157,7 +1174,18 @@ DOCS = [
   "(template.hbs and partials/); renders the controls sample through both emitters at each of its targets (DW-121); "
   "and holds A17 #1's no-param post-card partial and four feed pages and A4 #13's one fixed post. --update rewrites "
   'the snapshots; CI never passes it. Also covers the designs and the snapshots, which the catalogue cannot index '
-  '(the package BASES gap: a snapshot is generated output, DW-94). It stores no count: it prints them.'),
+  '(the package BASES gap: a snapshot is generated output, DW-94). It stores no count: it prints them. Since Story 7.1 '
+  'three rows more, each behind its control: every class a design writes is its root {category}-{n} or begins with '
+  '{root}__ or {root}--; no two designs declare one data-partial name; and the five-pilot project (tools/pilot-theme.mjs, '
+  'fixed words) compiles with Paper to a theme Handlebars 4.7.9 parses, with one {{{body}}}, no fingerprint, every partial '
+  'referenced and the same bytes twice.'),
+ ('tools/pilot-theme.mjs', 'tool', 'The five-pilot project, compiled',
+  "Story 7.1's one builder of the project CI and the T1 recorder both compile: the site doc's A1 #1, Home's A4 #13 · "
+  "A17 #1 (main feed) · A22 #1, index.hbs's A17 #1, post.hbs's A24 #1 and an A22 #1 with Home's content so it hoists. A "
+  "page word goes into A4 #13's eyebrow and a layer word into every layer name; one layer name is hostile and A22 #1's "
+  "text carries AD-5's shapes. Designs are read and validated from disk; the compile is compileTheme with Paper. Also "
+  'exports themeFailures, the check both callers hold a compiled theme to: Handlebars 4.7.9 (the compiler\'s test parser) '
+  'parses every template, one {{{body}}} and no other triple-stash, no fingerprint, every partial referenced. Node 24.'),
  ('tools/check-traces.mjs', 'tool', 'The deployed functions carry their files, checked after the build',
   "Story 5.24d's check of DW-269, run by CI's check job straight after pnpm build (never inside pnpm check, which runs "
   "before any build). The app reads designs, pictures and stylesheets off disk, and Vercel ships a function with only the "

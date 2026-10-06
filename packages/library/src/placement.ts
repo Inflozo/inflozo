@@ -129,6 +129,11 @@ export const nativeResourceOf = (file: string): 'post' | 'tag' | 'author' | null
 export const compilesTo = (compileTarget: readonly string[], file: string): boolean =>
   compileTarget.includes(file) || (file === 'index.hbs' && compileTarget.includes('home.hbs'))
 
+/** DW-187 (Story 5.24e): the one spelling of "a site-wide section the page draws LAST" — A3's footers. Moved here from
+ *  `apps/web/lib/editor.ts` by Story 7.1, so the canvas (`canvasStack`) and the compiler (`default.hbs`, footers after
+ *  `{{{body}}}`) split the site doc by one rule. */
+export const isSiteFooter = (designId: string): boolean => designId.startsWith('a3/')
+
 /** THE ONE QUERY THE PICKER READS — the rail, the grid, the counts and every empty state (FR-D12).
  *
  *  Three conditions, all of them absences rather than refusals (UX-DR3): the design must be placeable at all, it

@@ -2,7 +2,7 @@
 title: 'Story 7.1 — Theme assembly: the mechanism, and the formatting contract'
 type: 'feature'
 created: '2026-10-05'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'df866cd279f9dfe5d89454b31ca69684fee04310'
@@ -237,30 +237,30 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
 
 **The library rules**
 
-- [ ] `packages/library/src/vocabulary.ts` -- the `data-partial` grammar also refuses Ghost's own partial names, as
+- [x] `packages/library/src/vocabulary.ts` -- the `data-partial` grammar also refuses Ghost's own partial names, as
   `GHOST_OWN_PARTIALS`: `content-cta`, `gift-toast`, `navigation`, `pagination`, `recommendations`, read in both
   majors' `core/frontend/helpers/tpl/` -- a repeat partial lands at the theme's `partials/` root. Ghost registers its own
   templates there first, and a theme partial of the same name replaces Ghost's template across the whole site.
-- [ ] `packages/library/src/validate.ts` -- two changes, one scan behind both:
+- [x] `packages/library/src/validate.ts` -- two changes, one scan behind both:
   - Round 3's D13 lint: `control-character` refuses any C0 control character in a design's markup or stylesheet, other
     than tab, line feed and carriage return, naming its line;
   - export `stripCssComments(css)` (strings kept), built on the one comment-or-string scan `untokened` already reads.
 
   The compiler's tokens are C0 characters, so a design file must never carry one; and stylesheet comments must be
   stripped by the same scan the validator trusts.
-- [ ] `packages/library/src/placement.ts`, `apps/web/lib/editor.ts` -- move `isSiteFooter` into the library; `editor.ts`
+- [x] `packages/library/src/placement.ts`, `apps/web/lib/editor.ts` -- move `isSiteFooter` into the library; `editor.ts`
   imports it and keeps exporting it -- the canvas and the compiler split the site doc by one rule.
 
 **The theme emitter**
 
-- [ ] `packages/section-runtime/src/format.ts` (new) -- the theme serializer, to Design Notes' contract:
+- [x] `packages/section-runtime/src/format.ts` (new) -- the theme serializer, to Design Notes' contract:
   - block or inline layout, decided per element;
   - markers placed by their role;
   - start tags measured on their final text and broken past 120;
   - raw-text elements written verbatim.
 
   -- the formatting belongs to the serializer, while every expression is still a token.
-- [ ] `packages/section-runtime/src/core.ts` --
+- [x] `packages/section-runtime/src/core.ts` --
   - `Tokens.put` takes a role, and `resolve` re-indents a block's continuation lines by its landing line;
   - every marker site passes its role;
   - the repeat replacement is built already indented: `{{#get}}` › `{{#foreach}}` › the body or the invocation;
@@ -268,28 +268,28 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
     calling `tidy`.
 
   -- this is what makes every snapshot the contract's text.
-- [ ] `packages/section-runtime/src/format.test.ts` (new) -- every rule of the contract, one by one, on jsdom trees.
+- [x] `packages/section-runtime/src/format.test.ts` (new) -- every rule of the contract, one by one, on jsdom trees.
   Then the render-neutral property: for each case, the formatted text and `innerHTML`, resolved by the same `Tokens`,
   are equal once block markers are removed and every whitespace run is collapsed. Its negative control is a formatter
   that puts a newline between two touching spans, which this check must fail -- a formatter that changes a page is
   this story's risk.
-- [ ] `packages/section-runtime/src/*.test.ts`, `apps/web/paywall.test.ts`, `tools/stress/test-vocabulary.mjs` --
+- [x] `packages/section-runtime/src/*.test.ts`, `apps/web/paywall.test.ts`, `tools/stress/test-vocabulary.mjs` --
   every assertion over `renderTheme`'s text whose subject is not formatting becomes whitespace-tolerant (`\s*`), keeping
   its subject; none is deleted or loosened past that -- the change is to formatting; what each assertion tests is not.
 
 **The compiler**
 
-- [ ] `packages/theme-compiler/package.json`, `tsconfig.json`, `src/jsdom.d.ts` --
+- [x] `packages/theme-compiler/package.json`, `tsconfig.json`, `src/jsdom.d.ts` --
   - depend on `@inflozo/section-runtime`;
   - devDepend on `jsdom` 30.0.1, for the tests;
   - set `resolveJsonModule` for the icon set;
   - copy the runtime's `jsdom.d.ts` shape.
 
   -- the compiler drives the theme emitter.
-- [ ] `packages/theme-compiler/src/slug.ts` (new) + `slug.test.ts` -- `partialSlug`, and the per-directory collision
+- [x] `packages/theme-compiler/src/slug.ts` (new) + `slug.test.ts` -- `partialSlug`, and the per-directory collision
   rule, exactly as Design Notes state them, with the table of cases -- the "stated" function the AC asks for:
   deterministic, and unique within a directory.
-- [ ] `packages/theme-compiler/src/compile.ts` (new), `src/index.ts` -- `compileTheme(doc, input)` (Design Notes):
+- [x] `packages/theme-compiler/src/compile.ts` (new), `src/index.ts` -- `compileTheme(doc, input)` (Design Notes):
   - validate the files;
   - render each visible instance — shared `UserText`, `feedQuery`, `iconDrawing`;
   - partition;
@@ -298,7 +298,7 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
   - substitute last, and return the sorted record.
 
   Every refusal names its file and layer -- this is the mechanism.
-- [ ] `packages/theme-compiler/src/compile.test.ts` (new) -- the I/O matrix, on small inline designs. Then, over every
+- [x] `packages/theme-compiler/src/compile.test.ts` (new) -- the I/O matrix, on small inline designs. Then, over every
   file the compiler emits:
   - Handlebars 4.7.9 parses it;
   - there is exactly one `{{{`, the `{{{body}}}` in `default.hbs`;
@@ -308,13 +308,13 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
   - shuffled inputs give the same bytes.
 
   -- this is what the compiler promises, held over every file.
-- [ ] `eslint.config.js` -- `handlebars` and `prettier`, with their subpaths, become banned imports in every non-test
+- [x] `eslint.config.js` -- `handlebars` and `prettier`, with their subpaths, become banned imports in every non-test
   source under `apps/` and `packages/`. A test under `packages/` may still import `handlebars` -- this turns "never
   parsed, evaluated or printed in the product" into a rule.
 
 **CI, the recorder and the documents**
 
-- [ ] `tools/check-snapshots.mjs` -- three new rows, each with its control first:
+- [x] `tools/check-snapshots.mjs` -- three new rows, each with its control first:
   - every class a design writes is its root or begins with `{root}__` or `{root}--`, and the root is `{category}-{n}`;
   - no two designs declare one `data-partial` name;
   - the five-pilot project the recorder builds (Design Notes), with fixed words in place of the nonce and compiled with
@@ -322,11 +322,11 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
     emits, and comes out byte-identical on a second compile.
 
   -- the library-wide halves that CI holds.
-- [ ] `tools/probe/record-theme-assembly.py` (new), `tools/doc-audit.py` -- the T1 recorder described in Design Notes,
+- [x] `tools/probe/record-theme-assembly.py` (new), `tools/doc-audit.py` -- the T1 recorder described in Design Notes,
   and its catalogue row -- R-82: Ghost renders what the compiler emits.
-- [ ] `docs/section-authoring.md`, `prd.md`, `ARCHITECTURE-SPINE.md`, `epic-7-context.md` -- propagate the list in
+- [x] `docs/section-authoring.md`, `prd.md`, `ARCHITECTURE-SPINE.md`, `epic-7-context.md` -- propagate the list in
   Design Notes, then grep the repo for the old wording -- standing rules 3 and 7.
-- [ ] `packages/library/snapshots/` -- run `node tools/check-snapshots.mjs --update` once the one-time render-neutral
+- [x] `packages/library/snapshots/` -- run `node tools/check-snapshots.mjs --update` once the one-time render-neutral
   sweep under Verification has passed for every design. Commit it on its own, after the Dev commit, and push the two
   together -- AD-35 names this re-baseline.
 
@@ -367,6 +367,10 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
   Done on the Deploy commit. It names no frame and carries no "matches the frame" criterion: R-74 binds surfaces (R-80).
 
 ## Spec Change Log
+
+- **2026-10-06, Dev.** The recorder's scaffold (Design Notes § The T1 recorder, step 2) gained a stand-in `page.hbs`,
+  Story 7.3's, on the owner's ruling of Question 1: without it both gscans flag `GS110-NO-MISSING-PAGE-BUILDER-USAGE`,
+  because the pilots compile no `page.hbs`. Nothing the compiler emits changed.
 
 ## Design Notes
 
@@ -654,7 +658,9 @@ It takes no flags; any argument prints its docstring.
    - `package.json` (7.2): a probe name, `engines.ghost`, the `IMAGE_SIZES` map, and a `posts_per_page` that T1's
      published posts overflow, so that `/page/2/` exists;
    - `assets/css/cards.css`, holding `.kg-width-wide` and `.kg-width-full` (7.13, D12) and the two `--gh-font-*`
-     declarations (7.4, AD-18).
+     declarations (7.4, AD-18);
+   - `page.hbs` (7.3): a stand-in that reads `@page.show_title_and_feature_image`, for GS110 — added on the owner's
+     ruling of Question 1.
 3. **Gate** through `tools/stress/gate.js`: 0 errors and 0 warnings on both gscans, or nothing uploads.
 4. **On T1, behind `start_guard`.** Upload and activate the theme, and read `/` until it shows the page word. Then
    read `/`, `/page/2/` and one published post. The restore-and-delete `finally` encloses the upload (DW-332).
@@ -705,6 +711,31 @@ and no Schema phase.
    session on the owner's go.
 2. The re-baseline alone, as `Story 7.1 - Dev - the formatting-only re-baseline <hash> caused: …` (AD-35).
 
+## Questions for the owner
+
+### Question 1 — The test theme needs a page template the five pilots do not have (the recorder's Ask First)
+
+**In plain English.** Before the recorder sends the compiled test theme to T1, both of Ghost's theme checkers read it
+on this machine. They refuse it — Ghost 5's checker calls it an error, Ghost 6's a warning — because no file in the
+theme reads Ghost's own "Show title and feature image" switch for pages. The five pilots compile no Page template, and
+building one is Story 7.3's job. The spec says: if the checker names anything the scaffold list does not cover, stop
+and ask before adding to it. So nothing has been uploaded.
+
+**Example.** In Ghost Admin, a page's settings have a switch that hides its title and feature image. Ghost's checker
+insists a theme reads that switch (`GS110-NO-MISSING-PAGE-BUILDER-USAGE`), in `page.hbs`, or in `post.hbs` when there is
+no `page.hbs`. Story 6.5's recorder met the same rule and carried a two-line `page.hbs` for it.
+
+1. **Add a small `page.hbs` to the recorder's scaffold, labelled as Story 7.3's**, that reads the switch around the
+   page's title and body — new file only, nothing compiled is changed. **(RECOMMENDED)** It is exactly what Story 6.5's
+   probe did, and it keeps the rule "every scaffold file is named for the story that owns it".
+2. Wait, and run the recorder only once Story 7.3 compiles a real `page.hbs`. Story 7.1's "Ghost renders it" criterion
+   stays open until then.
+3. Let the recorder accept this one checker finding and upload anyway. Not recommended: the spec's gate is 0 errors and
+   0 warnings on both checkers.
+
+**Ruled: option 1 (owner, 2026-10-06).** Asked in the Dev session; the recorder's scaffold gained the stand-in
+`page.hbs`, labelled as Story 7.3's, and the run went ahead the same session (Verification).
+
 ## Verification
 
 **Commands:**
@@ -733,3 +764,79 @@ and no Schema phase.
 - T1, through the recorder; gscan's two checkers run locally.
 - The story touches no Supabase, Vercel, Resend or Dodo surface, and changes nothing a visitor or the owner reaches:
   the compiler has no product caller until Story 7.18.
+
+**Dev results (2026-10-05, Node 24, on this tree).**
+- `pnpm check`: exit 0 — lint (the new import ban included), typecheck of every package, and every package's tests:
+  `format.test.ts`, `slug.test.ts` and `compile.test.ts` among them, then `check-snapshots` with its three new rows,
+  each behind a control that fails on its broken subject first.
+- **The one-time render-neutral sweep**, before `--update`: every snapshot file at HEAD against the new text, both with
+  `{{#…}}`, `{{/…}}` and `{{else}}` removed and whitespace collapsed — the run printed "6 of 6 snapshot files equal"
+  over the library's designs. `node tools/check-snapshots.mjs --update` then rewrote them, and `check-snapshots` passes
+  on the re-baselined files. The diff is formatting only.
+- **The import ban, by control**: planted files importing `handlebars` in `packages/theme-compiler/src/` and in
+  `apps/web/lib/`, and `prettier/standalone` in `packages/library/src/`, were each refused by `eslint`; a test under
+  `packages/` importing `handlebars` passed, and one importing `prettier` was refused. The planted files were removed.
+- `cd tools/stress && node build.js && node gate.js theme`: 0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6),
+  the scale harness compiling from the formatted emitter.
+- `python3 tools/doc-audit.py --check`: PASS on the second run (the first regenerated the index and the story board).
+- **The recorder's local half** (compile through `tools/pilot-theme.mjs`, `themeFailures`, the scaffold, the gate) ran
+  with no server contact: the compile is clean, and the gate refused the theme with `GS110-NO-MISSING-PAGE-BUILDER-USAGE`
+  (an error on 4.49.7, a warning on 6.4.2) — Question 1. With the ruled stand-in `page.hbs` it reads **0 errors and 0
+  warnings on gscan 4.49.7 (v5) and 6.4.2 (v6)**.
+- **The canvas is untouched, executed rather than argued** (a scratchpad script, not committed): HEAD's `core.ts` beside
+  this tree's, `renderCanvas` over every design and every fixture in `packages/library/`, at every target, with the
+  defaults and then each control's every value, Orbit Weekly's rows — **338 of 338 renders byte-identical**, none
+  throwing. Control: each pair also differs from the same render of a perturbed design, so the comparison is not
+  vacuous. The render matrix (canvas PNGs) and the keyboard gate therefore have nothing new to see; CI's `check` job runs
+  `pnpm keyboard` on the push.
+- **The render-neutral sweep, re-run in the orchestrating session** on the final tree: 6 of 6 snapshot files equal to
+  `git show HEAD:` with block markers removed and whitespace collapsed; control: a line break forced between two
+  touching tags is caught.
+- `cd tools/stress && node build.js && node gate.js theme` re-run on the final tree: 0 errors / 0 warnings on both.
+
+**The I/O matrix, row by row → the check that ran and passed** (`pnpm check`, exit 0, on the final tree):
+
+| Row | Check |
+|---|---|
+| A designed Home | `compile.test.ts` · "a designed Home: the layout line, then each section's label and invocation …" |
+| A post | `compile.test.ts` · "a post: the sections sit inside the block its target opens ({{#post}}), one level in" |
+| The site doc | `compile.test.ts` · "the site doc: headers before {{{body}}}, A3 footers after it …" (the doc stores the footer first) |
+| Slugs collide | `compile.test.ts` · "slugs collide: Hero, HERO and Héro …"; `slug.test.ts` · the collision table |
+| A slug comes out empty | `compile.test.ts` · "a slug that comes out empty takes the design's name, then the collision rule …"; `slug.test.ts` · the fallback chain |
+| Byte-identical sections | `compile.test.ts` · "byte-identical sections share one file in shared/, named after the first instance …" |
+| Hidden | `compile.test.ts` · "hidden: absent from its template and from partials/ …" (`page.hbs` with every instance hidden) |
+| Hostile layer name | `compile.test.ts` · "a hostile layer name …", with the braces-kept control parsing a live mustache; on T1, §70 |
+| Hostile user text | `compile.test.ts` · "hostile user text ships inert in every file …" (six shapes, statements equal to benign text); on T1, §70 |
+| A long start tag | `compile.test.ts` · "the formatting contract inside a compiled section …"; `format.test.ts` · rule 5's two cases |
+| Inline content | `format.test.ts` · rule 3 "a paragraph with words …" and "two spans that touch stay touching …" |
+| Raw text | `format.test.ts` · "pre, textarea, script, style and title are written verbatim", the repeat-body `<pre>` case; `compile.test.ts` · the A4 #13 `<pre>`/`<textarea>` |
+| One design, many placements | `compile.test.ts` · "one design, many placements …" (and the two-bodies throw); `check-snapshots` · "no two designs declare one data-partial name", behind its control |
+| Unknown design · Wrong template · A file 7.1 does not compile · A renderer refusal | `compile.test.ts` · "every refusal names its file and its layer" |
+| Determinism | `compile.test.ts` · "determinism: the same input, its templates and every object's keys in another order …"; `check-snapshots` · the pilot compile twice |
+
+**T1, through the recorder, in the main session on the owner's in-session go (2026-10-06).**
+`python3 tools/probe/record-theme-assembly.py`, keys read by variable name inside the script (`GHOST6_URL`,
+`GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`), none printed.
+- **Run 1 — VOID, nothing written.** Ghost 6.58.0 accepted the upload (HTTP 200, `inflozo-probe-theme-assembly`) and
+  served `/`, `/page/2/` and `/probe-gated-post/` with HTTP 200, but the control "every page is this run's theme" read no
+  `screen.css?v=` hash on any page: the recorder's pattern allowed `[0-9a-z]` and Ghost writes a mixed-case hash
+  (`?v=qi9i38F3SaPNiyO4` on T1's Casper, read from the public home page). The `finally` re-activated `casper` and deleted
+  the probe theme, both read back. The pattern was widened to `[0-9A-Za-z_-]`, and the recorder now prints every row
+  before a failed control voids the run.
+- **Run 2 — every row held.** Upload HTTP 200 on Ghost 6.58.0; `/` served this run's page word before any page was read. On `/`,
+  `/page/2/` and `/probe-gated-post/`: each placed section's root class once, in doc order (`a1-1 a4-13 a17-1 a22-1`,
+  `a1-1 a17-1`, `a1-1 a24-1 a22-1`); no `{{`, `}}`, `{{!--`, C0 character or layer word in the HTML (so Ghost's own
+  injected HTML carries none either); A22 #1's three hostile strings as their literal characters on Home and the post;
+  `<html lang="en">`, the site's locale; the control asset hash `HyBunOE2AzBSMRSn`, the same on all three. Then
+  `casper` re-activated and read back, the probe theme deleted and read back (installed: `casper`, `racer`, `source`).
+  **MEASUREMENTS §70 written.** The Ghost 5 half is DW-326's (R-238).
+- **Manual check**, on the compiled pilot theme: `home.hbs`, a section partial, `partials/post-card.hbs`, `default.hbs`
+  and `screen.css` read hand-editable — no ragged indentation, no `.hbs` line past the budget but a single long
+  attribute value (`srcset`) or inline text, no comment but the labels and the stylesheet's headers. `screen.css`'s long
+  lines are the designs' own one-rule lines; the contract sets no CSS line budget.
+
+**Real services the Dev phase hit (R-82):** T1 `ghost6.inflozo.com` (Ghost 6.58.0) — Admin API theme upload, two
+activations and the delete; the Content API's `settings/` (locale `en`) and `posts/` (the published count that sizes
+`posts_per_page`, and the newest post); the public pages `/`, `/page/2/` and the post — results above. gscan 4.49.7 and
+6.4.2 ran locally. No Supabase, Vercel, Resend or Dodo surface is touched: the compiler has no product caller until
+Story 7.18, and nothing a visitor or the owner reaches changed.

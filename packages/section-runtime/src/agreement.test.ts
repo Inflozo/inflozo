@@ -39,6 +39,14 @@ import type { RenderInput, RuntimeElement } from './index.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
 
+/** Story 7.1 — a literal piece of the theme's text, tolerant of the formatting contract alone: any whitespace may stand
+ *  where the serializer breaks a line, between a tag or an expression and the tag or block helper after it. */
+const loosely = (literal: string, anchor: { start?: boolean; end?: boolean } = {}): RegExp => new RegExp(
+  `${anchor.start === true ? '^' : ''}${literal.split(/(?<=>|\}\})(?=<|\{\{[#/]|\{\{else\}\})/).map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s*')}${anchor.end === true ? '$' : ''}`,
+)
+/** Story 7.1 — every whitespace run as one space, for a comparison whose subject is not formatting. */
+const collapsed = (s: string): string => s.replace(/[ \t\n\f\r]+/g, ' ')
+
 /** Story 4.6 — FR-H8's guard is `{{#if}}` and nothing else: every theme this suite emits is scanned */
 const renderTheme: typeof renderThemeRaw = (d, src, input) => {
   const out = renderThemeRaw(d, src, input)
@@ -928,7 +936,7 @@ test('FR-H8 — a text attribute binding is guarded in place, and an absent valu
   // the URL entry's field, never the attribute
   const mixed = '<img class="i" alt="a" data-bind-attr="alt:title;src:feature_image">'
   const t = renderTheme(doc(), mixed, {}).template
-  assert.ok(/\{\{#if feature_image\}\}<img/.test(t), `the element must be guarded on the URL field: ${t}`)
+  assert.ok(/\{\{#if feature_image\}\}\s*<img/.test(t), `the element must be guarded on the URL field: ${t}`)
   assert.ok(!/src="\{\{#if/.test(t), `the URL attribute must never be guarded in place: ${t}`)
   const c = renderCanvas(doc(), mixed, { ghost: { title: 'x' } })
   assert.equal(c, '', `an absent image must hide the element on the canvas: ${c}`)
@@ -975,7 +983,7 @@ test('a nested repeat on the canvas reads the outer row, and @site reads the roo
 test('a hide guard on the repeat root sits inside {{#foreach}} and hides the row on the canvas', () => {
   const src = '<ul class="l"><li class="r" data-repeat="posts" data-bind-attr="href:url">x</li></ul>'
   const theme = renderTheme(doc(), src, {}).template
-  assert.ok(/\{\{#foreach posts\}\}\s*\{\{#if url\}\}<li/.test(theme), `the guard is outside the block: ${theme}`)
+  assert.ok(/\{\{#foreach posts\}\}\s*\{\{#if url\}\}\s*<li/.test(theme), `the guard is outside the block: ${theme}`)
   const canvas = renderCanvas(doc(), src, { ghost: { posts: [{ url: '/a' }, {}, { url: '/c' }] } })
   assert.equal((canvas.match(/<li/g) ?? []).length, 2, `a row with no url must be hidden: ${canvas}`)
   const prop = '<ul class="l"><li class="r" data-repeat="posts" data-prop="label" data-empty="hide">x</li></ul>'
@@ -1052,7 +1060,7 @@ test('Story 4.5 — control attributes, data-items trees, link attributes, icons
   assert.equal(items(canvas).length, 3)
   // Story 5.20 — the Upgrade link ships behind the site's paid flag on the theme (R-4); decided true, the copies are equal
   assert.ok(theme.includes('{{#if @site.paid_members_enabled}}<a class="f__link" href="#" data-portal="account/plans">'), theme)
-  assert.deepEqual(items(canvas), items(decide(theme, { '@site.paid_members_enabled': true })), 'the data-items copies differ between emitters')
+  assert.deepEqual(items(canvas).map(collapsed), items(decide(theme, { '@site.paid_members_enabled': true })).map(collapsed), 'the data-items copies differ between emitters')
   const [portal, search, away] = items(canvas)
   assert.match(portal ?? '', /<a class="f__link" href="#" data-portal="account\/plans">Portal<\/a>/)
   assert.match(search ?? '', /<a class="f__link" href="#" data-ghost-search="">Search<\/a>/)
@@ -1302,9 +1310,9 @@ const MEMBERS_SRC = `<section class="band">
 
 test("row · a member arm: the four states emit Ghost's own {{#if}} test, and each visitor sees its arm on the canvas", () => {
   const theme = renderTheme(doc(), MEMBERS_SRC, { target: 'default.hbs' }).template
-  assert.ok(theme.includes('{{#if @member}}{{else}}<p class="a">·</p>{{/if}}'), theme)
-  assert.ok(theme.includes('{{#if @member.paid}}<p class="p">·</p>{{/if}}'), theme)
-  assert.ok(theme.includes('{{#if @member}}{{#if @member.paid}}{{else}}<p class="f">·</p>{{/if}}{{/if}}'), theme)
+  assert.match(theme, loosely('{{#if @member}}{{else}}<p class="a">·</p>{{/if}}'))
+  assert.match(theme, loosely('{{#if @member.paid}}<p class="p">·</p>{{/if}}'))
+  assert.match(theme, loosely('{{#if @member}}{{#if @member.paid}}{{else}}<p class="f">·</p>{{/if}}{{/if}}'))
   assert.ok(/[^}]<p class="e">·<\/p>/.test(theme), `everyone emits no wrapper: ${theme}`)
   assert.ok(!/\{\{#unless|\{\{#has|\{\{@member/.test(theme), `FR-D16 / R-28: {{#if}} only, and no member field printed: ${theme}`)
   for (const member of ['anonymous', 'free', 'paid'] as const) {
@@ -1336,7 +1344,7 @@ test('row · a member arm is refused inside another, and on a repeat, a list or 
 test('row · show-to: the root is gated as if it carried data-members, on both emitters; a visitor outside it gets ""', () => {
   const src = '<section class="band" data-bg="base"><p class="x">·</p></section>'
   const theme = renderTheme(doc(), src, { visibility: 'paid' }).template
-  assert.match(theme, /^\{\{#if @member\.paid\}\}<section class="band"[^>]*>.*<\/section>\{\{\/if\}\}$/s)
+  assert.match(theme, /^\{\{#if @member\.paid\}\}\s*<section class="band"[^>]*>.*<\/section>\s*\{\{\/if\}\}$/s)
   assert.equal(renderCanvas(doc(), src, { visibility: 'paid', member: 'anonymous' }), '')
   for (const member of ['anonymous', 'free', 'paid'] as const) {
     agreeDecided(src, { visibility: 'free', member }, VISITOR[member])
@@ -1374,9 +1382,9 @@ test('row · one arm, a list and a number: an empty list takes the else arm, and
     <span class="count" data-if="pagination.total">·</span>
   </section>`
   const theme = renderTheme(doc(), src, { target: 'index.hbs' }).template
-  assert.ok(theme.includes('{{#if @site.allow_self_signup}}<p class="ask">·</p>{{/if}}'), theme)
-  assert.ok(/\{\{#if posts\}\}<div class="grid">\{\{#foreach posts\}\}[^]*\{\{\/foreach\}\}<\/div>\{\{else\}\}\s*<p class="empty">–<\/p>\{\{\/if\}\}/.test(theme), theme)
-  assert.ok(theme.includes('{{#if pagination.total includeZero=true}}<span class="count">·</span>{{/if}}'), theme)
+  assert.match(theme, loosely('{{#if @site.allow_self_signup}}<p class="ask">·</p>{{/if}}'))
+  assert.ok(/\{\{#if posts\}\}\s*<div class="grid">\{\{#foreach posts\}\}[^]*\{\{\/foreach\}\}<\/div>\s*\{\{else\}\}\s*<p class="empty">–<\/p>\s*\{\{\/if\}\}/.test(theme), theme)
+  assert.match(theme, loosely('{{#if pagination.total includeZero=true}}<span class="count">·</span>{{/if}}'))
   for (const [posts, total] of [[[{ title: 'a' }], 1], [[], 0]] as const) {
     const ghost = { '@site': { allow_self_signup: true }, posts, pagination: { total } }
     const { canvas } = agreeDecided(src, { target: 'index.hbs', ghost }, { '@site.allow_self_signup': true, posts: posts.length > 0, 'pagination.total': true, title: true })
@@ -1456,8 +1464,8 @@ test('Story 5.19 · a secondary feed: the canvas shows the rows the theme\'s get
   const rows = [{ title: 'Picked one', url: 'https://site.example/one/' }]
   const { canvas, theme } = agree(FEED, feedInput({ query: QUERY, rows }))
   // THE THEME: the whole section inside the query's get and inside {{#if posts}}, the posts repeat left native
-  assert.ok(theme.startsWith('{{#get "posts" limit="12" order="published_at desc" include="tags,authors"}}{{#if posts}}'), theme)
-  assert.ok(theme.endsWith('{{/if}}{{/get}}'), theme)
+  assert.match(theme, loosely('{{#get "posts" limit="12" order="published_at desc" include="tags,authors"}}{{#if posts}}', { start: true }))
+  assert.match(theme, loosely('{{/if}}{{/get}}', { end: true }))
   assert.ok(theme.includes('{{#foreach posts}}'), theme)
   // NO PAGER on either: inside a get `pagination` is the query's, and its links would lead to a wrong page
   for (const html of [canvas, theme]) assert.ok(!html.includes('f__pager') && !html.includes('pagination'), html)
@@ -1475,7 +1483,7 @@ test('Story 5.19 · at zero neither draws the section at all — heading and con
   assert.ok(renderCanvas(doc(), FEED_EMPTY, feedInput(undefined, { ghost: { posts: [] } })).includes('f__empty'), 'the control: the main feed at zero shows its empty state')
   const theme = renderTheme(doc(), FEED_EMPTY, feedInput({ query: QUERY, rows: [] })).template
   // the theme's answer at zero is Ghost's own: everything, heading and empty state included, is inside {{#if posts}}
-  const inner = theme.slice(theme.indexOf('{{#if posts}}') + '{{#if posts}}'.length, theme.lastIndexOf('{{/if}}{{/get}}'))
+  const inner = theme.slice(theme.indexOf('{{#if posts}}') + '{{#if posts}}'.length, theme.lastIndexOf('{{/if}}'))
   assert.ok(theme.indexOf('{{#if posts}}') < theme.indexOf('<section') && inner.includes('f__title') && inner.includes('f__empty'), theme)
 })
 
@@ -1483,7 +1491,7 @@ test('Story 5.19 · hand-picked: the existence get around R-20\'s single-id gets
   const ids = ['905700000000000000000003', '905700000000000000000001', '905700000000000000000002']
   const rows = [{ title: 'Third', url: '/3/' }, { title: 'First', url: '/1/' }, { title: 'Second', url: '/2/' }]
   const { canvas, theme } = agree(FEED, feedInput({ query: { source: 'posts', ids }, rows }))
-  assert.ok(theme.startsWith(`{{#get "posts" filter="id:[${ids.join(',')}]" limit="1"}}{{#if posts}}`), theme)
+  assert.match(theme, loosely(`{{#get "posts" filter="id:[${ids.join(',')}]" limit="1"}}{{#if posts}}`, { start: true }))
   assert.deepEqual(
     theme.match(/\{\{#get "posts" filter="id:[0-9a-f]{24}" limit="1" include="tags,authors"\}\}/g),
     ids.map((id) => `{{#get "posts" filter="id:${id}" limit="1" include="tags,authors"}}`),
@@ -1545,7 +1553,7 @@ const ON = { allow_self_signup: true, paid_members_enabled: true }
 test("Story 5.20 · a button the user linked to Portal's Sign up: the theme wraps it in the site's flag, the canvas leaves it out where the flag is false — node for node", () => {
   const input = (site: Record<string, unknown>) => askInput({ portal: 'signup' }, 'Plain words', site)
   const theme = renderTheme(doc(), ASK_SRC, input(OFF)).template
-  assert.ok(theme.includes('{{#if @site.allow_self_signup}}<a class="ask__button" href="#" data-portal="signup">'), theme)
+  assert.match(theme, loosely('{{#if @site.allow_self_signup}}<a class="ask__button" href="#" data-portal="signup">'))
   // self-signup off: the button is gone from the canvas, and the decided theme agrees node for node
   const off = agreeDecided(ASK_SRC, input(OFF), { '@site.allow_self_signup': false })
   assert.doesNotMatch(off.canvas, /ask__button/)
@@ -1554,7 +1562,7 @@ test("Story 5.20 · a button the user linked to Portal's Sign up: the theme wrap
   assert.match(on.canvas, /<a class="ask__button" href="#" data-portal="signup">Subscribe<\/a>/)
   // Upgrade stands behind the PAID flag, never the signup one
   const upgrade = renderTheme(doc(), ASK_SRC, askInput({ portal: 'account/plans' }, 'x', OFF)).template
-  assert.ok(upgrade.includes('{{#if @site.paid_members_enabled}}<a class="ask__button" href="#" data-portal="account/plans">'), upgrade)
+  assert.match(upgrade, loosely('{{#if @site.paid_members_enabled}}<a class="ask__button" href="#" data-portal="account/plans">'))
   agreeDecided(ASK_SRC, askInput({ portal: 'account/plans' }, 'x', { allow_self_signup: true, paid_members_enabled: false }), { '@site.paid_members_enabled': false })
 })
 

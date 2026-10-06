@@ -144,7 +144,7 @@ test('a media fallback is refused on the validator and on the runtime with the s
 
 test('every media guard encloses its element and any srcset', () => {
   const theme = renderTheme(doc(), '<img data-bind-attr="src:feature_image|img_url:l" data-bind-srcset="feature_image|img_url" alt="">', { target: 'post.hbs' }).template
-  assert.match(theme, /^\{\{#if feature_image\}\}<img[^>]*srcset="[^"]*"[^>]*>\{\{\/if\}\}$/)
+  assert.match(theme, /^\{\{#if feature_image\}\}\s*<img[^>]*srcset="[^"]*"[^>]*>\s*\{\{\/if\}\}$/)
 })
 
 // ── R-2 — the avatar's two forms ──────────────────────────────────────────────
