@@ -4521,3 +4521,68 @@ colour Ghost put on a recorded page, so `tokens.test.ts` admits it.
 - **The boundary comments ship to no visitor**, a hostile layer name included: its braces were dropped at compile, so it stayed one Handlebars comment, and the layer word is on no page.
 - **User text ships inert.** A22 #1's AD-5 shapes reached the page as their literal characters, and the HTML carries no `{{` or `}}`.
 - **What this does NOT say.** The scaffold is the later stories' (7.2, 7.13, 7.4, 7.3), and nothing here deployed through Inflozo's own path (Story 7.18). Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired).
+
+## 71. Theme assembly and `package.json` — the five pilots compiled by `compileTheme`, its own `package.json` included, rendered by Ghost, T1 · 2026-10-06
+
+**Command.** `python3 tools/probe/record-theme-assembly.py` — one theme upload and two activations, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload (DW-332), both read back, and the one `w750` rendition Ghost saves the first time it is asked; no content, no setting and no key written. The picture is `/content/images/2026/10/inflozo-probe-rendition.png`, uploaded by this run because T1 hosts no picture of its own (its posts carry Ghost's sample pictures from static.ghost.org; owner, 2026-10-06, Story 7.2's Question 4) — it stays, as Ghost's API deletes no picture. T1 only (R-238). §70 is Story 7.1's record of the same run before `package.json` was compiled; this re-runs its rows beside Story 7.2's.
+
+**Why.** Story 7.1's compiler writes each section to a partial named by its layer, a boundary comment before each invocation, `default.hbs` around the one `{{{body}}}` and `screen.css` opening with the token block, all formatted over the DOM to a contract that claims it never changes what renders; Story 7.2's writes `package.json` — Casper's keys, `posts_per_page`, the `image_sizes` map, `card_assets` and FR-J13's marker `"inflozo": true`. `check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate, with the scaffold (`cards.css`, 7.13 and 7.4; `page.hbs`, 7.3, for GS110): Ghost 5.x via gscan 4.49.7 — 0 errors / 0 warnings · Ghost 6.x via gscan 6.4.2 — 0 errors / 0 warnings.
+
+**The tree uploaded** (14 files): `default.hbs`, `home.hbs`, `index.hbs`, `post.hbs`, `assets/css/screen.css`, `package.json` and 6 partials — `partials/post-card.hbs`, `partials/sections/default/header-layer8a909302190ade24.hbs`, `partials/sections/home/latest-post-layer8a909302190ade24.hbs`, `partials/sections/post/post-header-layer8a909302190ade24.hbs`, `partials/sections/shared/newsletter-p-idleakleakpsitetitle-layer8a909302190ade24.hbs`, `partials/sections/shared/post-grid-layer8a909302190ade24.hbs` — compiled; then the scaffold, `assets/css/cards.css` and `page.hbs`. `package.json` was handed `inflozo-probe-theme-assembly` · `1.0.0` · "The five pilots, compiled" and `posts_per_page` 12 (T1 publishes 33 posts).
+
+**The controls, each of which voids the run:** the layer word is in the uploaded templates and the hostile layer name in the uploaded `home.hbs`, so their absence from the pages is the comments' doing; every page read was this run's theme (`/` by its page word, the others by the same `screen.css` asset hash); under the site's own theme (`casper`), its `package` carries no marker and no 750 width, and `w750` was redirected to the original; after activation, `w751` was redirected to the original. Every one held.
+
+### (a) T1 `ghost6.inflozo.com` (6.58.0), locale `en`
+
+| Page | Row | Held |
+|---|---|---|
+| `theme casper` | CONTROL — the site theme's package carries no marker — `keys ['name', 'description', 'demo', 'version', 'engines', '` | yes |
+| `theme casper` | CONTROL — the site theme declares no 750 width — `widths [30, 100, 300, 600, 1000, 2000]` | yes |
+| `/content/images/size/w750/2026/10/inflozo-probe-rendition.png` | CONTROL — under the site theme, w750 is redirected to the original — `HTTP 200 at /content/images/2026/10/inflozo-probe-rendition.` | yes |
+| `/` | CONTROL — under the site theme, ghost_head links cards.min.css — `card_assets True, ?v=Jw0334E-A8vpuWdm` | yes |
+| `/` | the page word (in A4 #13's eyebrow on Home) is on the page — `Page8a909302190ade24` | yes |
+| `/` | every placed section's root class, once each, in doc order — `['a1-1', 'a4-13', 'a17-1', 'a22-1'] (expected ['a1-1', 'a4-1` | yes |
+| `/` | no `{{` in the HTML — `absent` | yes |
+| `/` | no `}}` in the HTML — `absent` | yes |
+| `/` | no `{{!--` in the HTML — `absent` | yes |
+| `/` | no C0 character in the HTML — `absent` | yes |
+| `/` | no layer word in the HTML — `absent` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `Write {{title}} or {{#if @member}}yes{{/if}} here` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `A path C:\{{x}}, a "quote", an 'apostrophe' and <b>angle bra` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `Close it: }} and }}} and {{{ and {{!-- too` | yes |
+| `/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/page/2/` | every placed section's root class, once each, in doc order — `['a1-1', 'a17-1'] (expected ['a1-1', 'a17-1'])` | yes |
+| `/page/2/` | no `{{` in the HTML — `absent` | yes |
+| `/page/2/` | no `}}` in the HTML — `absent` | yes |
+| `/page/2/` | no `{{!--` in the HTML — `absent` | yes |
+| `/page/2/` | no C0 character in the HTML — `absent` | yes |
+| `/page/2/` | no layer word in the HTML — `absent` | yes |
+| `/page/2/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/page/2/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/probe-gated-post/` | every placed section's root class, once each, in doc order — `['a1-1', 'a24-1', 'a22-1'] (expected ['a1-1', 'a24-1', 'a22-` | yes |
+| `/probe-gated-post/` | no `{{` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no `}}` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no `{{!--` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no C0 character in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no layer word in the HTML — `absent` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `Write {{title}} or {{#if @member}}yes{{/if}} here` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `A path C:\{{x}}, a "quote", an 'apostrophe' and <b>angle bra` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `Close it: }} and }}} and {{{ and {{!-- too` | yes |
+| `/probe-gated-post/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/probe-gated-post/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `theme inflozo-probe-theme-assembly` | GET themes/ returns the compiled package.json, marker included — `inflozo=True, keys ['name', 'description', 'version', 'engin` | yes |
+| `/` | Home lists exactly posts_per_page A17 #1 cells — `12 cells (posts_per_page 12)` | yes |
+| `/page/3/` | the last page answers 200 (33 posts over 12) — `HTTP 200` | yes |
+| `/page/4/` | the page past the last answers 404 — `HTTP 404` | yes |
+| `/content/images/size/w750/2026/10/inflozo-probe-rendition.png` | w750, a width only this theme declares, is served at its path — `HTTP 200 at /content/images/size/w750/2026/10/inflozo-probe-` | yes |
+| `/content/images/size/w751/2026/10/inflozo-probe-rendition.png` | CONTROL — w751, a width no theme declares, is redirected to the original — `HTTP 200 at /content/images/2026/10/inflozo-probe-rendition.` | yes |
+| `/` | cards.min.css's hash equals the site theme's: every card, as Ghost's own default gives it — `Jw0334E-A8vpuWdm (site theme Jw0334E-A8vpuWdm)` | yes |
+
+### What it means
+
+- **Ghost renders what the compiler emits.** The formatted templates, the per-layer section partials, the hoisted shared partial and the parameterless `post-card` partial all resolve on both pages of the feed and on a post; each placed section draws its root once, in doc order.
+- **The boundary comments ship to no visitor**, a hostile layer name included: its braces were dropped at compile, so it stayed one Handlebars comment, and the layer word is on no page.
+- **User text ships inert.** A22 #1's AD-5 shapes reached the page as their literal characters, and the HTML carries no `{{` or `}}`.
+- **Ghost reads the compiled `package.json`.** `GET themes/` returns it whole, marker included, so Story 7.20 reads the marker with no download; `posts_per_page` sizes Home and the last page; a width only its `image_sizes` declares is served as a rendition; and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`: `card_assets: true` gives every card, as Ghost's own default does.
+- **What this does NOT say.** The scaffold is the later stories' (7.13, 7.4, 7.3), and nothing here deployed through Inflozo's own path (Story 7.18). Ghost 5's half — and Ghost 5's reading of an empty `card_assets` exclude list as no card — is DW-326's, at Story 15.7 (R-238: T3 retired).

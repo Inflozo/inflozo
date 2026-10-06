@@ -11,8 +11,11 @@
 // substituted ONCE, LAST, over every file. Hoisting compares sections AFTER substitution by substituting a copy
 // (`UserText.substitute` is pure), so the tree itself is substituted exactly once. Handlebars is never parsed, evaluated or
 // printed here (FR-J1): this file writes a handful of literal lines around opaque text.
+//
+// Story 7.2 (FR-J2, DW-335) adds `package.json`, built from what the compile is handed and refused first wherever Ghost's
+// checker would refuse it, and checks every `size=` the emitted templates pass against `IMAGE_SIZES`.
 
-import { byCategory, COMPILE_TARGETS, compilesTo, isCompileTarget, isSiteFooter, PAYWALL_TARGET, stripCssComments, targetContext } from '@inflozo/library'
+import { byCategory, COMPILE_TARGETS, compilesTo, IMAGE_SIZES, isCompileTarget, isSiteFooter, PAYWALL_TARGET, stripCssComments, targetContext } from '@inflozo/library'
 import type { SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
 import { feedQuery, packTokensCss, renderTheme, UserText } from '@inflozo/section-runtime'
@@ -30,8 +33,13 @@ export type CompileInput = {
   assets: Readonly<Record<string, string>>
   /** `resolveStrings`' output; the catalog's English when omitted */
   strings?: Readonly<Record<string, string>>
-  /** `projects.posts_per_page` — a secondary feed's query is sized by it */
+  /** `projects.posts_per_page` — `package.json`'s `config.posts_per_page`, and a secondary feed's query is sized by it */
   postsPerPage: number
+  /** `package.json`'s identity (Story 7.2): `name` and `version` are Story 7.24's frozen `inflozo-{slug}` and per-deploy
+   *  increment, `description` is `projects.name` */
+  theme: { name: string; version: string; description: string }
+  /** the designed cards — the keys of `project_treatments.card_designs` (Story 7.13); none until then */
+  designedCards?: readonly string[]
 }
 
 /** The site doc's file. */
@@ -62,6 +70,83 @@ const noC0 = (what: string, values: Iterable<string>): void => {
   for (const v of values) if (C0.test(v)) throw new Error(`${what} carries a control character, which the theme compiler refuses (AD-36): ${JSON.stringify(v.slice(0, 40))}`)
 }
 
+// ── package.json (Story 7.2, FR-J2) ──────────────────────────────────────────────────────────────────────────────────
+
+/** FR-J13's marker (DW-335): `"inflozo": true`, top level, written last — what Story 7.20 gates restore scope on. It survives
+ *  a renamed package, sits outside Ghost's `config` namespace, and carries no id, hash or date. */
+export const THEME_MARKER = 'inflozo'
+
+/** Question 3, ruled option 1 (owner, 2026-10-06): Inflozo writes and maintains the theme's code. */
+const AUTHOR = { name: 'Inflozo', email: 'hello@inflozo.com' }
+
+/** gscan's own name rule (GS010-PJ-NAME-LC, -NAME-HY, both errors). */
+const THEME_NAME_RE = /^([a-z0-9]+-)*[a-z0-9]+$/
+/** MAJOR.MINOR.PATCH in plain digits — a strict subset of what gscan's `semver.valid` accepts (GS010-PJ-VERSION-SEM). */
+const VERSION_RE = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/
+/** Every card Ghost 5.130.6 and 6.58.0 ship is named within it, and Ghost 5 splices the names into a file glob
+ *  (`css/!(a|b).css`), where `|`, `(`, `)` and `*` are syntax (AD-36, every new sink). */
+const CARD_RE = /^[a-z0-9_]+$/
+
+const shown = (v: unknown): string => (typeof v === 'string' ? JSON.stringify(v) : String(v))
+
+/** `config.posts_per_page`: an integer, never a string — `"12"` is GS010-PJ-CONF-PPP-INT, an error. FR-H2's 1–100 clamp is a
+ *  secondary feed's alone (`feedBase`), so the main feed's page size is not clamped. */
+function pageSize(v: unknown): number {
+  const n = Math.trunc(Number(v))
+  if (!Number.isFinite(n) || n < 1) throw new Error(`package.json: posts_per_page ${shown(v)} is no page size — it must be a whole number of at least 1 (GS010-PJ-CONF-PPP-INT).`)
+  return n
+}
+
+/** FR-J2's file: the refusals first, then the keys in Casper's and Source's order (a conditional key is omitted, never
+ *  moved), then the marker. The user's words reach it through `JSON.stringify` alone (AD-36). `config.custom` is not
+ *  written here: Question 1, ruled option 1 — Stories 7.10 and 7.11 add it, each with the template lines that read it. */
+function packageJson(input: CompileInput, perPage: number): string {
+  const { name, version, description } = input.theme
+  if (!THEME_NAME_RE.test(name)) throw new Error(`package.json: the theme name ${shown(name)} must match ${THEME_NAME_RE.source} (GS010-PJ-NAME-LC, GS010-PJ-NAME-HY).`)
+  if (!VERSION_RE.test(version)) throw new Error(`package.json: the theme version ${shown(version)} must be MAJOR.MINOR.PATCH in plain digits (GS010-PJ-VERSION-SEM).`)
+  for (const card of input.designedCards ?? []) {
+    if (!CARD_RE.test(card)) throw new Error(`package.json: the designed card ${shown(card)} is no Ghost card name — card names use only the characters ${CARD_RE.source.slice(1, -2)}, because Ghost 5 splices them into a file glob (AD-36).`)
+  }
+  const cards = [...new Set(input.designedCards ?? [])].sort(byCode)
+  return `${JSON.stringify({
+    name,
+    description,
+    version,
+    engines: { ghost: '>=5.0.0' },   // NFR-7's floor, stated; never `ghost-api` (FR-J1)
+    author: AUTHOR,
+    keywords: ['ghost-theme'],
+    config: {
+      posts_per_page: perPage,
+      image_sizes: Object.fromEntries(Object.entries(IMAGE_SIZES).map(([key, width]) => [key, { width }])),
+      // Question 2, ruled option 1: Ghost 5 reads an empty `exclude` as no card at all (`css/!().css` matches nothing)
+      card_assets: cards.length === 0 ? true : { exclude: cards },
+    },
+    [THEME_MARKER]: true,
+  }, null, 2)}\n`
+}
+
+/** A Handlebars comment, `{{!-- … --}}` or `{{! … }}` — never read by the size check, because a layer name lands in one. */
+const HBS_COMMENT = /\{\{~?!--[^]*?--~?\}\}|\{\{~?![^]*?\}\}/g
+/** A mustache, and a `size=` hash argument inside one. Only mustaches are read: a design's `data-headline-size="large"`
+ *  and a customer's typed `size="huge"` are HTML, never an argument (user braces ship as entities). */
+const MUSTACHE = /\{\{[^]*?\}\}/g
+const SIZE_ARG = /(?<![\w-])size=("([^"]*)"|[^\s}]*)/g
+
+/** FR-J2: every `size=` an emitted template passes is an `image_sizes` key — with any other, Ghost silently serves the
+ *  original picture. `HELPERS.img_url` refuses one at render; this is the backstop over the final text. */
+export function checkSizes(files: Readonly<Record<string, string>>): void {
+  for (const [path, body] of Object.entries(files)) {
+    if (!path.endsWith('.hbs')) continue
+    for (const [mustache] of body.replace(HBS_COMMENT, '').matchAll(MUSTACHE)) {
+      for (const m of mustache.matchAll(SIZE_ARG)) {
+        if (m[2] === undefined || !Object.hasOwn(IMAGE_SIZES, m[2])) {
+          throw new Error(`${path}: ${m[0]} is no image size — a size must be one of package.json's image_sizes keys, quoted: ${Object.keys(IMAGE_SIZES).join(', ')}.`)
+        }
+      }
+    }
+  }
+}
+
 /** Rule 7: `{{!-- {Layer name} · {Category} · {Design} --}}` — the layer name its file is slugged from, or the design's
  *  name where the layer has none. */
 const boundary = (p: Placed): string =>
@@ -79,7 +164,8 @@ const designOrder = (a: SectionRegistryEntry, b: SectionRegistryEntry): number =
 /** The legal files, for the refusal that names them. */
 const LEGAL = `${COMPILE_TARGETS.filter((f) => f !== PAYWALL_TARGET).join(', ')} and custom-{name}.hbs`
 
-/** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files. */
+/** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files —
+ *  and, since Story 7.2, its `package.json`. */
 export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonly<Record<string, string>> {
   const files = Object.keys(input.templates).sort(byCode)
   for (const file of files) {
@@ -89,6 +175,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
   noC0('a string', Object.values(input.strings ?? {}))
   noC0('an asset URL', Object.values(input.assets))
   noC0("the pack's CSS", [packTokensCss(input.pack)])
+  const perPage = pageSize(input.postsPerPage)
+  const pkg = packageJson(input, perPage)
 
   // ── render every visible instance, with ONE UserText ──────────────────────────────────────────────────────────────
   const users = new UserText()
@@ -101,7 +189,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
       // an empty layer name is reported as the design's name, as the boundary comment and the slug fall back to it
       const where = `${file} · ${instance.layerName || entry.name}`
       if (!compilesTo(entry.compileTarget, file)) throw new Error(`${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`)
-      const query = feedQuery(entry, instance, file, input.postsPerPage)
+      const query = feedQuery(entry, instance, file, perPage)
       let out: ReturnType<typeof renderTheme>
       try {
         out = renderTheme(doc, entry.html, {
@@ -206,6 +294,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
     ...designs.map((e) => `/* ${cssPart(e.categoryTitle)} · ${cssPart(e.name)} */\n${tidyCss(e.css)}`),
   ].join('\n\n')}\n`
 
-  // ── user text, once, last, over every file; and the record in code-unit path order ──────────────────────────────────
-  return Object.fromEntries(Object.keys(tree).sort(byCode).map((path) => [path, users.substitute(tree[path] as string)]))
+  tree['package.json'] = pkg   // JSON.stringify escapes every C0 character, so no user-text marker is in it to substitute
+
+  // ── user text, once, last, over every file; the record in code-unit path order; and every size= checked on it ──────
+  const out = Object.fromEntries(Object.keys(tree).sort(byCode).map((path) => [path, users.substitute(tree[path] as string)]))
+  checkSizes(out)
+  return out
 }

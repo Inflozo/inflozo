@@ -2,9 +2,10 @@
 title: 'Story 7.2 — `package.json` emission'
 type: 'feature'
 created: '2026-10-06'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: 'e816a183cc2b8454badb364baf490ff55055ef0c'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -141,14 +142,14 @@ Three values are the owner's (Questions 1–3). The spec builds the recommended 
 
 **Execution:**
 
-- [ ] `packages/theme-compiler/src/compile.ts`, `src/index.ts`:
+- [x] `packages/theme-compiler/src/compile.ts`, `src/index.ts`:
   - `CompileInput` gains `theme: { name, version, description }` and `designedCards?`;
   - a `packageJson` builder makes the refusals above, then writes Design Notes' object (Ruled values supply `author`, `card_assets` and `custom`);
   - `compileTheme` adds `package.json` to the tree and, last, refuses any `size=` in an emitted `.hbs` outside a comment that is not an `IMAGE_SIZES` key;
   - `index.ts` exports the marker key as `THEME_MARKER`.
 
   -- FR-J2 and DW-335, in the one place every theme is built.
-- [ ] `packages/theme-compiler/src/compile.test.ts`:
+- [x] `packages/theme-compiler/src/compile.test.ts`:
   - the I/O matrix, row by row, with the A-project row's exact text;
   - the size check on a hand-made record, with its control (`size="m"` passes);
   - the bare compile lists `package.json`;
@@ -156,17 +157,17 @@ Three values are the owner's (Questions 1–3). The spec builds the recommended 
   - determinism with designed cards.
 
   -- what the compiler promises about the file.
-- [ ] `tools/pilot-theme.mjs`:
+- [x] `tools/pilot-theme.mjs`:
   - `compilePilots` takes a `theme`. CI's fixed one is `inflozo-pilots` · `1.0.0` · `Pilot sections`;
   - `themeFailures` parses `package.json`, removes the named marks and scans the rest.
 
   -- CI and the recorder hold one theme to one check.
-- [ ] `tools/check-snapshots.mjs` -- two rows, each behind its control:
+- [x] `tools/check-snapshots.mjs` -- two rows, each behind its control:
   - the pilots' `package.json` raises no `GS010-*` or `GS100-*` result, at any level, under gscan 6.4.2 at `v6`. Control: the same file with `posts_per_page: "12"` raises `GS010-PJ-CONF-PPP-INT`;
   - the builder's name in `package.json` outside its named marks is caught. Control: the clean file passes.
 
   -- this holds "gscan at the pinned version" on every commit. CI runs Ghost 6's checker (AD-34: one gscan per major, never 6.4.2 at `v5`); both majors run through the recorder's gate.
-- [ ] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
+- [x] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
   - the scaffold drops `package.json`;
   - the compile is handed a `theme` (`THEME_NAME` · `1.0.0` · a fixed description);
   - the rows in Design Notes § The T1 run join the run;
@@ -174,7 +175,7 @@ Three values are the owner's (Questions 1–3). The spec builds the recommended 
   - the docstring and the catalogue row say so.
 
   -- R-82: a real Ghost reads what the compiler writes.
-- [ ] `prd.md`, `epics.md`, `epic-7-context.md`, `deferred-work.md` -- apply Design Notes § Propagated at Dev, then grep the repo for each old wording -- standing rules 3 and 7.
+- [x] `prd.md`, `epics.md`, `epic-7-context.md`, `deferred-work.md` -- apply Design Notes § Propagated at Dev, then grep the repo for each old wording -- standing rules 3 and 7.
 
 **Acceptance Criteria:**
 
@@ -199,6 +200,9 @@ Three values are the owner's (Questions 1–3). The spec builds the recommended 
 ## Spec Change Log
 
 - **2026-10-06, Create (the owner ruled).** All three questions were ruled option 1. The Ruled values table lost its "if ruled otherwise" column, and the propagation list's Question 1 and Question 2 lines now state the ruled values. Nothing else changed.
+- **2026-10-06, Dev.** Two readings, neither of which changes the frozen intent:
+  - **The size check reads `size=` inside a Handlebars expression, outside comments.** That is FR-J2's "every `size=` *argument*". Read over raw text, it would refuse every pilot, because a design writes HTML such as `data-headline-size="large"`. It would also refuse a customer who types `size="huge"` into a heading, since user text is HTML and never an argument. The matrix rows hold either way, and `compile.test.ts` carries the typed-text case.
+  - **T1 hosts no picture of its own.** Every post, page, setting and user points at Ghost's sample pictures on `static.ghost.org`, so the first T1 run was void before anything uploaded. The owner ruled Question 4 option 1: the recorder uploads one probe picture when T1 hosts none. The Design Notes' T1-run lines say so.
 
 ## Design Notes
 
@@ -319,7 +323,7 @@ Now `package.json` is compiled rather than scaffolded, and these rows join the r
    - `GET themes/` → that theme's `package`. This is the controls' premise: it carries no marker, has no `750` width in its `image_sizes`, and shows its `card_assets`.
    - `/content/images/size/w750/{picture}` → redirected to the original.
    - The `cards.min.css?v=` hash that `{{ghost_head}}` writes on `/`.
-   - `{picture}` is the newest published post's feature image hosted on T1. With none, the run is void.
+   - `{picture}` is the newest published post's feature image hosted on T1. With none, the run uploads its own probe picture, attached to no post (Question 4, ruled at Dev).
 2. **After activation:**
    - `GET themes/` → the probe's `package` deep-equals the compiled `package.json`, marker included. Control: the site theme's `package` lacks the marker.
    - `/` lists exactly `posts_per_page` A17 #1 cells.
@@ -330,7 +334,7 @@ Now `package.json` is compiled rather than scaffolded, and these rows join the r
    - Its table holds Story 7.1's rows, re-run, and these.
    - The Ghost 5 half joins DW-326 (R-238), together with the empty-list glob above, which that pass must confirm on a real Ghost 5.
 
-**What it writes to T1:** the theme upload, two activations and the delete (as Story 7.1's run did), and the `w750` rendition Ghost saves the first time it is asked for one.
+**What it writes to T1:** the theme upload, two activations and the delete (as Story 7.1's run did), and the `w750` rendition Ghost saves the first time it is asked for one. When T1 hosts no picture of its own, it also uploads one probe picture, which stays, because Ghost's API deletes no picture (Question 4).
 
 ### Propagated at Dev
 
@@ -356,7 +360,7 @@ There is no migration, so there is no Schema phase. `Story 7.2 - Dev - …` carr
 
 ## Questions for the owner
 
-All three were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Ruled values as it stands.
+All three were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Ruled values as it stands. Question 4 was asked and ruled in the Dev session.
 
 ### Question 1 — The three dark-mode settings: write them now, or with the page lines that read them?
 
@@ -411,6 +415,20 @@ All three were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Ru
 
 **Ruled: option 1 (owner, 2026-10-06).** In his words: "I agree with recommendations for all 3 questions."
 
+### Question 4 — The T1 check needs a picture the test site hosts itself (asked at Dev)
+
+**In plain English.**
+- One check asks Ghost to make a medium-size copy (750 px wide) of a picture. That proves Ghost reads this theme's picture sizes.
+- The test site `ghost6.inflozo.com` has no picture of its own to do that with. Every post uses Ghost's sample pictures, which sit on Ghost's servers, not on the site.
+
+**Example.** The newest post's picture is `static.ghost.org/v5.0.0/images/publication-cover.jpg`.
+
+1. **The check uploads its own small, plain picture (a few KB), attached to no post, so no visitor sees it.** Ghost cannot delete a picture through its API, so each such run leaves that one file behind. **(RECOMMENDED)**
+2. You give any published post a feature image in Ghost Admin, and every later run uses it.
+3. Skip the picture rows and move them to the Review run.
+
+**Ruled: option 1 (owner, 2026-10-06).** Asked in the Dev session and answered there.
+
 ## Verification
 
 **Commands:**
@@ -435,3 +453,51 @@ All three were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Ru
 - T1, through the recorder.
 - Both gscans, locally, and gscan 6.4.2 in CI.
 - No Supabase, Vercel, Resend or Dodo surface is touched: the compiler has no product caller until Story 7.18.
+
+**Dev results (2026-10-06, Node 24, on this tree).**
+
+- `pnpm check`: exit 0. That covers lint, the typecheck of every package, and every package's tests with 0 failures, `compile.test.ts`'s ten `(7.2)` rows among them. `check-snapshots` then ran with its four new rows. The two checks each held behind a control that fired first:
+  - gscan 6.4.2 at `v6` raised `error GS010-PJ-CONF-PPP-INT` on `posts_per_page: "12"`, then raised no `GS010-*` or `GS100-*` on the pilots' `package.json`;
+  - with its three marks in place, the clean file passed the fingerprint scan. The builder's name under `config` and in the description was caught, and so was a `package.json` that does not parse.
+- **The recorder's local half**, inside the T1 run below:
+  - `package.json` was compiled, and the scaffold held only `assets/css/cards.css` and `page.hbs`;
+  - the gate read **0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6)**.
+- **T1 `ghost6.inflozo.com` (6.58.0)**, `python3 tools/probe/record-theme-assembly.py`, in the main session on the owner's in-session go. Keys were read in-process from `tools/probe/.env` by variable name: `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`.
+  - **The first run was void before any write.** T1's newest feature image is `static.ghost.org`'s, which is Question 4's finding.
+    - Read-only Content and Admin API reads (posts and pages of every status, settings, users) found no picture under `/content/images/` anywhere. The control: the Admin read returned 38 posts, 35 of them carrying `static.ghost.org` pictures.
+  - **The second run, after Question 4's ruling, held every row: 42 of 42 `yes` in §71's table, and 0 `NO`.**
+    - Before the upload, under `casper`:
+      - `GET themes/` gave casper's `package`, with no `inflozo` key and widths `[30, 100, 300, 600, 1000, 2000]`;
+      - `size/w750/` of the probe picture was redirected to the original;
+      - `/` linked `cards.min.css?v=Jw0334E-A8vpuWdm`.
+    - After activation:
+      - `GET themes/` returned the probe's `package` deep-equal to the compiled `package.json`, with keys `name, description, version, engines, author, keywords, config, inflozo`;
+      - `/` listed 12 A17 #1 cells (`posts_per_page` 12);
+      - with 33 published posts, `/page/3/` answered 200 and `/page/4/` answered 404;
+      - `size/w750/` was served at its own path, and the control `size/w751/` was redirected to the original;
+      - the `cards.min.css` hash was unchanged (`Jw0334E-A8vpuWdm`; casper's `card_assets` is `true`).
+    - Story 7.1's page rows were re-run on `/`, `/page/2/` and `/probe-gated-post/`, and all held.
+  - **T1 was restored and read back**: `casper` is active, and the probe theme was deleted, leaving `casper`, `racer` and `source` installed.
+  - **What stays on T1:** `/content/images/2026/10/inflozo-probe-rendition.png` (1000×10, about 4 KB, attached to no post) and its `w750` rendition.
+  - MEASUREMENTS §71 was written, and §70 is untouched.
+- `python3 tools/doc-audit.py --check`, twice: the first run regenerated `INDEX.md` and `INDEX.html` (STALE), and the second gave **PASS** with 0 warnings.
+- **Manual check.** The compiled pilot `package.json` reads like Casper's:
+  - its keys are in Casper's order, and every value is one a hand-editor recognises;
+  - the only extra is the last line, `"inflozo": true`.
+- **No Supabase, Vercel, Resend or Dodo call was made.** The compiler has no product caller until Story 7.18. CI's `check` job runs `check-snapshots`' gscan rows on the push.
+
+**The I/O matrix, row by row, mapped to the check that ran and passed** (`pnpm check`, exit 0):
+
+| Row | Check |
+|---|---|
+| A project | `(7.2) a project: package.json is the spec's text …` — the exact text, `image_sizes` derived from `IMAGE_SIZES` |
+| Designed cards | `(7.2) designed cards: card_assets excludes them, sorted …, each name once` |
+| A card name that is glob syntax | `(7.2) a card name Ghost 5 would read as glob syntax is refused …` (`'x|*'`, `'Bookmark'`, `''`) |
+| Page size as text or a fraction | `(7.2) a page size given as text or a fraction is written as the integer …` (`'12'`, `12.9`) |
+| A page size that is no page size | `(7.2) a page size that is no page size is refused, naming the value` (`0`, `-3`, `NaN`, `'twelve'`, `Infinity`) |
+| A name the checker refuses | `(7.2) a name Ghost's checker refuses is refused, naming the pattern …` (all four) |
+| A version that is not plain semver | the same test (all four), with a control that compiles `0.10.0` |
+| Hostile words in the description | `(7.2) hostile words in the description …` |
+| A size that is no key | `(7.2) the size check …` (`size="huge"` quoted, `size=m` unquoted; control: `size="m"`, comments, HTML attributes and CSS pass) |
+| A layer named `size="huge"` | `(7.2) a layer named size="huge" compiles …` (control: the same words in a live mustache are refused) |
+| Determinism | `determinism: the same input, its templates and every object's keys in another order …`, now with designed cards and a shuffled `theme` |

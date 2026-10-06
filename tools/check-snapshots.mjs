@@ -24,7 +24,8 @@
 //     node tools/check-snapshots.mjs --update   rewrites every snapshot from its design. CI never passes it.
 
 import { createRequire } from 'node:module'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -599,6 +600,7 @@ function partialFailures(designs) {
 }
 const pilots = await import(join(REPO, 'tools/pilot-theme.mjs'))
 const WORDS = { pageWord: 'Pageword', layerWord: 'Layerword' }
+const THEME = { theme: pilots.PILOT_THEME }
 
 check('control — Story 7.1: a class outside its design\'s root, and a root that is not {category}-{n}, are caught, naming them', () => {
   const d = loadDesign(DIRS[0])
@@ -664,7 +666,7 @@ check('Story 7.1 — no two designs declare one data-partial name', () => {
   if (f.length > 0) throw new Error(f.join('\n'))
 })
 check('control — Story 7.1: the compiled-theme check catches a second triple-stash, the builder\'s name, an instance id, an orphan partial and a file Handlebars cannot parse', () => {
-  const { files, instanceIds } = pilots.compilePilots(WORDS)
+  const { files, instanceIds } = pilots.compilePilots(WORDS, THEME)
   const f = pilots.themeFailures(files, instanceIds)
   if (f.length > 0) throw new Error(`the pilot theme is not clean to begin with: ${f.join(' · ')}`)
   const broken = (over) => pilots.themeFailures({ ...files, ...over }, instanceIds)
@@ -675,13 +677,61 @@ check('control — Story 7.1: the compiled-theme check catches a second triple-s
   return mustFail(broken({ 'home.hbs': '{{#if x}}\n' }), /home\.hbs: Handlebars 4\.7\.9 does not parse it/, 'an unclosed block')
 })
 check('Story 7.1 — the five-pilot project compiles with Paper to a theme Handlebars 4.7.9 parses: one {{{body}}}, no fingerprint, every partial referenced, the same bytes twice', () => {
-  const a = pilots.compilePilots(WORDS)
+  const a = pilots.compilePilots(WORDS, THEME)
   const f = pilots.themeFailures(a.files, a.instanceIds)
   if (f.length > 0) throw new Error(f.join('\n'))
-  const b = pilots.compilePilots(WORDS)
+  const b = pilots.compilePilots(WORDS, THEME)
   const differ = Object.keys(a.files).filter((k) => a.files[k] !== b.files[k])
   if (differ.length > 0 || Object.keys(b.files).join() !== Object.keys(a.files).join()) throw new Error(`a second compile differs: ${differ.join(', ')}`)
   return `${Object.keys(a.files).length} files`
+})
+
+// ── Story 7.2: package.json, judged by Ghost 6's own checker ─────────────────────────────────────────────────────────
+// gscan 6.4.2, the theme compiler's pin, at `v6` — AD-34's pairing for Ghost 6 (never 6.4.2 at `v5`); both majors run
+// through the recorder's gate (tools/stress/gate.js). `check` is synchronous, so gscan runs here, before its rows.
+const gscan6 = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('gscan')
+/** Every result gscan raises on a theme, at any level, as `{level} {code}`. */
+async function gscanResults(files) {
+  const dir = mkdtempSync(join(tmpdir(), 'pilot-theme-'))
+  try {
+    for (const [p, body] of Object.entries(files)) {
+      mkdirSync(dirname(join(dir, p)), { recursive: true })
+      writeFileSync(join(dir, p), body)
+    }
+    const f = gscan6.format(await gscan6.check(dir, { checkVersion: 'v6' }), { checkVersion: 'v6' })
+    return ['error', 'warning', 'recommendation'].flatMap((level) => (f.results[level] ?? []).map((r) => `${level} ${r.code}`))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+const packageRules = (results) => results.filter((r) => / GS(010|100)-/.test(r))
+const pilotTheme = pilots.compilePilots(WORDS, THEME).files
+const withPackage = (edit) => {
+  const pkg = JSON.parse(pilotTheme['package.json'])
+  edit(pkg)
+  return { ...pilotTheme, 'package.json': `${JSON.stringify(pkg, null, 2)}\n` }
+}
+const gscanPilots = await gscanResults(pilotTheme)
+const gscanStringPage = await gscanResults(withPackage((pkg) => { pkg.config.posts_per_page = '12' }))
+const gscanVersion = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('gscan/package.json').version
+
+check('control — Story 7.2: gscan at v6 raises GS010-PJ-CONF-PPP-INT on the pilots\' package.json with posts_per_page "12"', () => {
+  return mustFail(gscanStringPage, /^error GS010-PJ-CONF-PPP-INT$/, 'a string page size')
+})
+check('Story 7.2 — the pilots\' package.json raises no GS010-* or GS100-* result, at any level, under gscan 6.4.2 at v6', () => {
+  const hit = packageRules(gscanPilots)
+  if (hit.length > 0) throw new Error(hit.join('\n'))
+  return `gscan ${gscanVersion}; ${gscanPilots.length} result(s) outside package.json's rules, which later stories answer`
+})
+check('control — Story 7.2: the pilots\' package.json, its three named marks in place, passes the fingerprint scan', () => {
+  if (!/inflozo/i.test(pilotTheme['package.json'])) throw new Error('package.json carries no named mark, so its exemption proves nothing')
+  const f = pilots.themeFailures(pilotTheme, []).filter((x) => x.startsWith('package.json'))
+  if (f.length > 0) throw new Error(f.join(' · '))
+})
+check('Story 7.2 — the builder\'s name in package.json outside its named marks is caught, and so is a package.json that does not parse', () => {
+  mustFail(pilots.themeFailures(withPackage((pkg) => { pkg.config.inflozo_build = 1 }), []), /^package\.json: the builder's name$/, 'a key under config')
+  mustFail(pilots.themeFailures({ ...pilotTheme, 'package.json': '{"name":' }, []), /^package\.json: it does not parse/, 'a broken package.json')
+  return mustFail(pilots.themeFailures(withPackage((pkg) => { pkg.description = 'Made with Inflozo' }), []), /^package\.json: the builder's name$/, 'the builder\'s name in the description')
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

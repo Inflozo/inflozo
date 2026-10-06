@@ -418,23 +418,33 @@ DOCS = [
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
-  "Story 7.1's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the formatting contract, "
-  'rendered by a real Ghost. Compiles tools/pilot-theme.mjs\'s project through Node 24 — the site doc\'s A1 #1, Home\'s '
-  'A4 #13 · A17 #1 (main feed) · A22 #1, index.hbs\'s A17 #1, post.hbs\'s A24 #1 and a hoisted A22 #1 — with a page word '
-  "from this run's nonce in A4 #13's eyebrow, a layer word in every layer name, one hostile layer name and AD-5's shapes "
-  "in A22 #1's text; refuses unless the theme passes the check CI holds it to (themeFailures). Adds the scaffold, new "
-  "files only, each named for its story: package.json (7.2) with a posts_per_page T1's published posts overflow, and "
-  'assets/css/cards.css (7.13, 7.4) and a stand-in page.hbs reading @page.show_title_and_feature_image (7.3, the owner\'s '
-  'ruling of the spec\'s Question 1). Gates through tools/stress/gate.js at 0 errors AND 0 warnings on gscan 4.49.7 and '
-  '6.4.2 — anything gscan names is a question for the owner, never a widened scaffold. On T1 ONLY (R-238), behind '
-  "record-shim.py's start_guard, uploads and activates the theme inside the try whose finally is restore_and_delete "
-  "(DW-332: the name is the zip's, known before the upload), waits for the page word on /, then reads /, /page/2/ and the "
-  "newest published post: the page word, every placed section's root class once each in doc order, no {{ }} {{!-- C0 "
-  "or layer word in the HTML, the hostile text as literal characters, <html lang> the site's locale. Controls (the layer "
-  "word and the hostile name ARE in the uploaded templates; every page is this run's theme by its page word or the same "
-  'screen.css asset hash) void the run; a row that does not hold writes nothing. Run on the owner\'s in-session go, in '
-  'the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §70 alone, replacing an earlier '
-  '§70 of its own.'),
+  "Stories 7.1 and 7.2's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the formatting "
+  "contract, its own package.json included, rendered by a real Ghost. Compiles tools/pilot-theme.mjs's project through "
+  "Node 24 — the site doc's A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, index.hbs's A17 #1, post.hbs's A24 #1 and "
+  "a hoisted A22 #1 — with a page word from this run's nonce in A4 #13's eyebrow, a layer word in every layer name, one "
+  "hostile layer name and AD-5's shapes in A22 #1's text, handed a theme (its probe name · 1.0.0 · a fixed description) "
+  "and a posts_per_page T1's published posts overflow; refuses unless the theme passes the check CI holds it to "
+  "(themeFailures). Adds the scaffold, new files only, each named for its story: assets/css/cards.css (7.13, 7.4) and a "
+  "stand-in page.hbs reading @page.show_title_and_feature_image (7.3, the owner's ruling of Story 7.1's Question 1); "
+  "package.json is compiled, never scaffolded (Story 7.2). Gates through tools/stress/gate.js at 0 errors AND 0 warnings "
+  "on gscan 4.49.7 and 6.4.2 — anything gscan names is a question for the owner, never a widened scaffold. On T1 ONLY "
+  "(R-238), behind record-shim.py's start_guard: under the site's own theme it reads GET themes/ (that theme's package: "
+  "no marker, no 750 width, its card_assets), the newest published post's T1-hosted feature image — or, when T1 hosts "
+  "none, a 1000-px probe PNG it uploads, which stays (Ghost's API deletes no picture; the owner's ruling of Story 7.2's "
+  "Question 4) — at size/w750/ "
+  "(redirected to the original) and the cards.min.css hash on /; then uploads and activates the theme inside the try "
+  "whose finally is restore_and_delete (DW-332: the name is the zip's, known before the upload), waits for the page word "
+  "on /, and reads /, /page/2/, the newest published post, /page/{last}/ and /page/{last+1}/: the page word, every "
+  "placed section's root class once each in doc order, no {{ }} {{!-- C0 or layer word in the HTML, the hostile text as "
+  "literal characters, <html lang> the site's locale; and Story 7.2's rows — GET themes/ returns the compiled "
+  "package.json marker included, / lists exactly posts_per_page A17 #1 cells, the last page 200 and the next 404, "
+  "size/w750/ served at its path, and the cards hash unchanged when the site theme's card_assets is true. Controls (the "
+  "layer word and the hostile name ARE in the uploaded templates; every page is this run's theme by its page word or "
+  "the same screen.css asset hash; the site theme's package carries no marker; w750 redirected before the upload and "
+  "w751 after it) void the run; a row that does not hold writes nothing. Writes T1 the upload, two activations, the "
+  "delete, the one w750 rendition Ghost saves and, only when T1 hosts no picture, that probe picture. Run on the owner's in-session go, in the main session. Any argument "
+  "prints its docstring and exits. Writes MEASUREMENTS.md §71 alone, replacing an earlier §71 of its own; §70 stays "
+  "Story 7.1's record."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1179,14 +1189,20 @@ DOCS = [
   'three rows more, each behind its control: every class a design writes is its root {category}-{n} or begins with '
   '{root}__ or {root}--; no two designs declare one data-partial name; and the five-pilot project (tools/pilot-theme.mjs, '
   'fixed words) compiles with Paper to a theme Handlebars 4.7.9 parses, with one {{{body}}}, no fingerprint, every partial '
-  'referenced and the same bytes twice.'),
+  'referenced and the same bytes twice. Since Story 7.2 two rows more, each behind its control: the pilots\' package.json '
+  'raises no GS010-* or GS100-* result at any level under gscan 6.4.2 at v6 (the control: posts_per_page "12" raises '
+  'GS010-PJ-CONF-PPP-INT), and the builder\'s name in package.json outside its three named marks is caught (the control: '
+  'the clean file passes).'),
  ('tools/pilot-theme.mjs', 'tool', 'The five-pilot project, compiled',
   "Story 7.1's one builder of the project CI and the T1 recorder both compile: the site doc's A1 #1, Home's A4 #13 · "
   "A17 #1 (main feed) · A22 #1, index.hbs's A17 #1, post.hbs's A24 #1 and an A22 #1 with Home's content so it hoists. A "
   "page word goes into A4 #13's eyebrow and a layer word into every layer name; one layer name is hostile and A22 #1's "
-  "text carries AD-5's shapes. Designs are read and validated from disk; the compile is compileTheme with Paper. Also "
-  'exports themeFailures, the check both callers hold a compiled theme to: Handlebars 4.7.9 (the compiler\'s test parser) '
-  'parses every template, one {{{body}}} and no other triple-stash, no fingerprint, every partial referenced. Node 24.'),
+  "text carries AD-5's shapes. Designs are read and validated from disk; the compile is compileTheme with Paper, handed "
+  "a theme identity (CI's fixed one is PILOT_THEME, inflozo-pilots · 1.0.0 · Pilot sections; Story 7.2). Also exports "
+  'themeFailures, the check both callers hold a compiled theme to: Handlebars 4.7.9 (the compiler\'s test parser) '
+  'parses every template, one {{{body}}} and no other triple-stash, no fingerprint (package.json read without its three '
+  "named marks — name, author and FR-J13's marker — by unmarked(), and refused when it does not parse), every partial "
+  'referenced. Node 24.'),
  ('tools/check-traces.mjs', 'tool', 'The deployed functions carry their files, checked after the build',
   "Story 5.24d's check of DW-269, run by CI's check job straight after pnpm build (never inside pnpm check, which runs "
   "before any build). The app reads designs, pictures and stylesheets off disk, and Vercel ships a function with only the "

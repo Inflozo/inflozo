@@ -10,7 +10,7 @@
 // Two words go in. The PAGE word is A4 #13's eyebrow — the page's proof that it is this run's theme. The LAYER word is in
 // every layer name, which reaches only the boundary comments, so it must never reach a page. One section's layer name
 // is hostile (it tries to end its comment early), and A22 #1's text carries AD-5's hostile shapes. Paper, the English
-// strings, no assets.
+// strings, no assets. The theme's identity is handed in (Story 7.2): CI's is `PILOT_THEME`, the recorder's its probe name.
 //
 // Node 24 (it imports the packages' TypeScript). Reads the designs from disk; the compile itself is pure.
 
@@ -25,7 +25,7 @@ const lib = await import(join(REPO, 'packages/library/src/index.ts'))
 const { iconDrawing } = await import(join(REPO, 'packages/library/src/icons.ts'))
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
 const { REFERENCE_PACK } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
-const { compileTheme } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
+const { compileTheme, THEME_MARKER } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
 const { JSDOM } = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('jsdom')
 
 /** The hostile layer name: an early `--}}`, markup and a live expression after it. */
@@ -84,22 +84,41 @@ export function pilotProject({ pageWord, layerWord }, find = library()) {
   }
 }
 
+/** CI's fixed theme identity — `package.json`'s name, version and description. */
+export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', description: 'Pilot sections' }
+
 /** The compiled theme, path → text, and the project it came from. */
-export function compilePilots(words, { postsPerPage = 12, find = library() } = {}) {
+export function compilePilots(words, { theme, postsPerPage = 12, find = library() }) {
   const templates = pilotProject(words, find)
-  const files = compileTheme(new JSDOM('<body></body>').window.document, { templates, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage })
+  const files = compileTheme(new JSDOM('<body></body>').window.document, { templates, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme })
   return { files, templates, instanceIds: Object.values(templates).flatMap((d) => d.instances.map((i) => i.instanceId)) }
+}
+
+/** `package.json` without its three named marks — FR-J10's `name`, the ruled `author` and FR-J13's marker (Story 7.2) —
+ *  the only builder marks a theme may carry. Every other byte of the file is scanned like any emitted file. */
+export function unmarked(text) {
+  const rest = JSON.parse(text)
+  delete rest.name
+  delete rest.author
+  delete rest[THEME_MARKER]
+  return JSON.stringify(rest, null, 2)
 }
 
 /** What CI and the recorder hold every compiled theme to — `[]` when it holds. Handlebars 4.7.9 (the compiler's own test
  *  parser, never product code) must parse every template; one `{{{body}}}` and no other triple-stash; no fingerprint (the
- *  builder's name, its editor prefix, an instance id, a C0 character, an internal reference); every partial referenced. */
+ *  builder's name outside package.json's named marks, its editor prefix, an instance id, a C0 character, an internal
+ *  reference); a package.json that parses; every partial referenced. */
 export function themeFailures(files, instanceIds) {
   const Handlebars = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('handlebars')
   const out = []
   let triples = 0
-  for (const [path, body] of Object.entries(files)) {
-    if (/[\u0000-\u0009\u000b-\u001f]/.test(body)) out.push(`${path}: a control character`)
+  if (files['package.json'] === undefined) out.push('package.json: missing')
+  for (const [path, raw] of Object.entries(files)) {
+    if (/[\u0000-\u0009\u000b-\u001f]/.test(raw)) out.push(`${path}: a control character`)
+    let body = raw
+    if (path === 'package.json') {
+      try { body = unmarked(raw) } catch (e) { out.push(`package.json: it does not parse — ${e.message}`); continue }
+    }
     if (/inflozo/i.test(body)) out.push(`${path}: the builder's name`)
     for (const id of instanceIds) if (body.includes(id)) out.push(`${path}: the instance id ${id}`)
     if (/\b(?:DW|AD|FR|NFR|R)-\d+\b|\bStory \d|ponytail/.test(body)) out.push(`${path}: an internal reference`)

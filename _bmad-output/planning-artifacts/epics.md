@@ -2895,6 +2895,14 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > chains, in every project, which is what keeps `GS100` unreachable.
 > **The E4/E7 joint compile gate is this epic's closing story (7.35).** *(Story 7.1's Create, 2026-10-05: this line
 > named 7.33, which is compile CI.)*
+>
+> **Moved from Story 7.2 by its Question 1 (owner, 2026-10-06), word for word, so none is missed.** `GS100` is an error
+> on both gscans for a `config.custom` key that no template reads (executed on 4.49.7 and 6.4.2), so Story 7.2 emits no
+> `custom`, and its criterion — *"`custom` carries the three dark built-ins **on every project** plus any user-defined
+> settings, cap-enforced."* — is built where the lines that read each setting are:
+>
+> 1. the user-defined settings, cap-enforced — **Story 7.10**, with the `{{@custom.*}}` a promotion emits;
+> 2. the three dark built-ins on every project — **Story 7.11**, with the fallback logic that references them.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -2946,12 +2954,15 @@ So that the theme installs, sizes images and declares its settings honestly.
 **When** `package.json` is emitted
 **Then** it carries project-derived name, description and version, with **`name` lowercase matching
 `^([a-z0-9]+-)*[a-z0-9]+$`**, valid semver, an RFC-valid `author.email`, and `keywords` containing
-`"ghost-theme"`
+`"ghost-theme"`; the `author` is `{ "name": "Inflozo", "email": "hello@inflozo.com" }` *(Question 3, owner,
+2026-10-06)*
 **And** **`engines.ghost: ">=5.0.0"`**, because `>=6.0.0` would contradict NFR-7's public 5.x support with
 nothing to catch it
 **And** **`engines.ghost-api` is never emitted**, because gscan carries it as a standing warning on both the v5
 and v6 specs — and the two keys are **different keys**, only the latter withheld
-**And** `card_assets: { exclude: [...] }` per the designed cards, **never a blanket `true` and never `false`**
+**And** `card_assets: { exclude: [...] }` per the designed cards, **`true` while no card is designed**, and never
+`false` *(Question 2, owner, 2026-10-06: Ghost 5.130.6 reads an empty `exclude` list as no card at all, while `true` is
+every card on both majors)*
 **And** `posts_per_page` from Theme Settings emitted as a **JSON number ≥ 1, coerced to integer**, because `"12"`
 from a form field trips `GS010-PJ-CONF-PPP-INT` at **error** level and blocks the deploy
 **And** the normative **`image_sizes` map** — `xs 150 · s 400 · m 750 · l 1200 · xl 2000` — is emitted, and
@@ -2959,12 +2970,15 @@ from a form field trips `GS010-PJ-CONF-PPP-INT` at **error** level and blocks th
 sized URL silently returns the original and gscan does not validate `image_sizes` at all
 **And** the **three ceilings are never conflated**: these five keys size Ghost-hosted content images, FR-J3's
 `400 / 800 / 1600 + original` covers theme-bundled assets, and FR-K2 caps uploads at 2400 px
-**And** `custom` carries the three dark built-ins **on every project** plus any user-defined settings,
-cap-enforced.
+**And** *(Question 1, owner, 2026-10-06)* **`config.custom` is not emitted here.** This criterion moved word for word
+to Stories 7.10 and 7.11, each of which emits it with the template lines that read it (Epic 7's preamble lists both):
+*"`custom` carries the three dark built-ins **on every project** plus any user-defined settings,
+cap-enforced."*
 **And** *(FR-J13, DW-335 — from Story 7.1's Create, 2026-10-05)* it carries **FR-J13's marker**, the field Story
-7.20 gates restore scope on. No story emitted it before this line. Beside FR-J10's `inflozo-` name, it is one of the
-specified marks that FR-J1's no-fingerprint rule allows, and it joins Story 7.1's fingerprint scan as a named
-exception.
+7.20 gates restore scope on — the top-level **`"inflozo": true`**, written last *(Story 7.2, 2026-10-06)*. No story
+emitted it before this line. Beside FR-J10's `inflozo-` name and the ruled `author`, it is one of the specified marks
+that FR-J1's no-fingerprint rule allows, and it joins Story 7.1's fingerprint scan as a named exception; every other
+byte of `package.json` is scanned like any emitted file.
 
 **FRs:** FR-J2. · **Owner test:** none. · **Verification:** gscan at the pinned version against both specs.
 
@@ -3270,6 +3284,10 @@ never see
 **And** *(AD-30 — from Story 7.1's Create, 2026-10-05)* that inline block **sets plain custom properties from
 `{{@custom.*}}` and names no mode**. The token block at the top of `screen.css` reads them through `var()`, with the
 pack's values as fallbacks, so it stays the one file in the theme that names a mode.
+**And** *(moved word for word from Story 7.2 by its Question 1, owner, 2026-10-06 — this story's half is the
+user-defined settings, cap-enforced)* *"`custom` carries the three dark built-ins **on every project** plus any user-defined settings,
+cap-enforced."* `config.custom` is written in the same change as the
+`{{@custom.*}}` that reads each key, because `GS100` is an error on both gscans for a declared setting no template reads.
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
 test:** yes.
@@ -3302,6 +3320,10 @@ project, so both modes stay owner-controllable as a pair.
 **And** *(AD-30 — from Story 7.1's Create, 2026-10-05)* **every rule that depends on the mode stays in the token block
 at the top of `screen.css`**. `default.hbs`'s inline block only sets custom properties from `{{@custom.*}}`, and never
 names a mode, so the token block remains the theme's one file that does.
+**And** *(moved word for word from Story 7.2 by its Question 1, owner, 2026-10-06 — this story's half is the three dark
+built-ins on every project)* *"`custom` carries the three dark built-ins **on every project** plus any user-defined settings,
+cap-enforced."* Story 7.2 emits no `custom`, so this story writes `config.custom`
+together with the lines that reference the three keys.
 
 **FRs:** FR-Q5. · **Owner test:** none. · **Verification:** gscan on a Light-only fixture, both specs.
 
@@ -3396,6 +3418,10 @@ column they sit in**
 styling `.kg-width-wide` and `.kg-width-full` whether or not any card is designed. Without them, `GS050-CSS-KGWF` is an
 error on both gscan majors (MEASUREMENTS §14c). Until this story lands, Story 7.1's recorder adds the two rules as
 labelled scaffold.
+**And** *(Story 7.2's Question 2, owner, 2026-10-06)* **while no card is designed, the theme declares
+`card_assets: true`**, and `{ exclude: [...] }` from the first designed card on: Ghost 5.130.6 turns an empty list into
+the glob `css/!().css`, which matches nothing, so it would build no card bundle while `{{ghost_head}}` still links one.
+`compileTheme` already does this from `designedCards`; this story hands it `project_treatments.card_designs`' keys.
 
 **FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes. · **Depends on E10:** the
 module and its `cards.css` emission are built here; **A33's six treatments arrive in E10** and are delivered
@@ -3648,6 +3674,10 @@ Settings → Design**, with guidance to reactivate it there
 **And** **restore scope is signature-gated on the `package.json` marker, not the theme name**, because a user can
 export a theme, rename its package and install it manually — keying on the name would let Inflozo capture its own
 theme as that site's "original". **A theme carrying the marker is never captured as a snapshot.**
+**And** *(Story 7.2, 2026-10-06; DW-335)* the marker is `package.json`'s top-level **`"inflozo": true`** — the key
+is `THEME_MARKER` in `@inflozo/theme-compiler` — and it is read from **`GET /themes/` with the staff token**, which
+returns each theme's whole parsed `package.json` as `package` on both majors (`core/server/lib/package-json`, read in
+source), so knowing whether the live theme is Inflozo's needs no download (Story 7.2's T1 run executes the read).
 **And** restoring is a one-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload
 with its own gscan**, so an old fork can be rejected on the way back in; that case has a designed fallback too,
 offering the zip as a download and pointing at Settings → Design

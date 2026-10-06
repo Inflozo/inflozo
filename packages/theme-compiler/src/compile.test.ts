@@ -1,6 +1,7 @@
 // Story 7.1 — theme assembly, held to its I/O matrix on small inline designs, and then to what the compiler promises over
 // EVERY file it emits: Handlebars 4.7.9 parses it, one triple-stash, no token or marker, no comment but the labels, no
 // fingerprint, every partial referenced, no consumed directive, and the same bytes for shuffled input.
+// Story 7.2 — `package.json`, held to its own I/O matrix, and the `size=` check on the final text.
 //
 // A test may load `handlebars` to parse what the compiler emitted (FR-J1); product code may not (`eslint.config.js`).
 
@@ -8,12 +9,12 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import Handlebars from 'handlebars'
 import { JSDOM } from 'jsdom'
-import { CONSUMED_DIRECTIVE_RE } from '@inflozo/library'
+import { CONSUMED_DIRECTIVE_RE, IMAGE_SIZES } from '@inflozo/library'
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
 import { U0, U1, T0, T1 } from '@inflozo/section-runtime'
 import type { DocInstance, ProjectDoc } from '@inflozo/section-runtime'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
-import { compileTheme } from './compile.ts'
+import { checkSizes, compileTheme, THEME_MARKER } from './compile.ts'
 import type { CompileInput } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -95,8 +96,9 @@ const at = (designId: string, layerName: string, over: Partial<DocInstance> = {}
 const docOf = (...instances: DocInstance[]): ProjectDoc => ({ schemaVersion: 1, instances })
 const NEWS = { heading: 'One letter a week', proof: { text: 'Join us today', marks: [{ start: 5, end: 7, mark: 'strong' }] } }
 
+const THEME = { name: 'inflozo-field-notes', version: '1.4.0', description: 'Field Notes' }
 const input = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}): CompileInput => ({
-  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, ...over,
+  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: THEME, ...over,
 })
 const compile = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}) => compileTheme(doc(), input(templates, over))
 
@@ -165,7 +167,7 @@ test('the site doc: headers before {{{body}}}, A3 footers after it, whatever ord
   assert.equal(body[header - 1], '    {{!-- Header · Headers · Rail --}}')
   // no site doc and no section: default.hbs and screen.css are still emitted
   const bare = compile({})
-  assert.deepEqual(Object.keys(bare), ['assets/css/screen.css', 'default.hbs'])
+  assert.deepEqual(Object.keys(bare), ['assets/css/screen.css', 'default.hbs', 'package.json'])
   assert.match(bare['default.hbs'] ?? '', /<body class="\{\{body_class\}\}">\n {4}\{\{\{body\}\}\}\n\n {4}\{\{ghost_foot\}\}\n {2}<\/body>/)
 })
 
@@ -303,6 +305,26 @@ test('the stylesheet: the token block first, then each placed design\'s styleshe
 
 // ─── what the compiler promises, over EVERY file ────────────────────────────────────────────────────────────────────
 
+/** The text the fingerprint scan reads: `package.json` without its three named marks — FR-J10's `name`, the ruled
+ *  `author` and FR-J13's marker — and every other file whole. */
+function unmarked(path: string, body: string): string {
+  if (path !== 'package.json') return body
+  const rest = JSON.parse(body) as Record<string, unknown>
+  delete rest.name
+  delete rest.author
+  delete rest[THEME_MARKER]
+  return JSON.stringify(rest, null, 2)
+}
+
+test('(7.2) the fingerprint scan reads package.json with its three named marks removed, and nothing else removed', () => {
+  const clean = compile(project())['package.json'] as string
+  // the control: the marks are really there, so their absence from the scan is the removal's doing
+  assert.match(clean, /inflozo/i)
+  assert.doesNotMatch(unmarked('package.json', clean), /inflozo/i)
+  const named = compile(project(), { theme: { ...THEME, description: 'Inflozo pilots' } })['package.json'] as string
+  assert.match(unmarked('package.json', named), /inflozo/i, 'the builder\'s name in the description is caught')
+})
+
 /** What Handlebars reads in a file: every statement but the literal text, by kind and path, nested as it nests. */
 function statements(text: string): string[] {
   type Node = { type: string; path?: { original?: unknown }; name?: { original?: unknown }; program?: { body: Node[] }; inverse?: { body: Node[] } }
@@ -326,7 +348,7 @@ test('over every emitted file: it parses under Handlebars 4.7.9, carries one {{{
   let triples = 0
   for (const [path, body] of Object.entries(out)) {
     assert.ok(!/[\u0000-\u001f]/.test(body.replace(/\n/g, '')), `${path}: a control character`)
-    assert.ok(!/inflozo/i.test(body) && !body.includes('data-inflozo-'), `${path}: the builder's name`)
+    assert.ok(!/inflozo/i.test(unmarked(path, body)) && !body.includes('data-inflozo-'), `${path}: the builder's name`)
     for (const id of instanceIds) assert.ok(!body.includes(id), `${path}: the instance id ${id}`)
     assert.ok(!/\b(DW|AD|FR|NFR|R)-\d+\b|Story \d|ponytail/.test(body), `${path}: an internal reference`)
     assert.ok(!/generated by|built with/i.test(body), `${path}: a generator line`)
@@ -355,9 +377,107 @@ test('determinism: the same input, its templates and every object\'s keys in ano
     schemaVersion: d.schemaVersion,
     instances: d.instances.map((i) => reverse({ ...i, content: reverse(i.content), controls: reverse(i.controls) }) as unknown as DocInstance),
   }]))
-  const a = compile(project())
-  const b = compile(shuffled as Record<string, ProjectDoc>, { assets: reverse({ x: '/x', y: '/y' }) })
+  const cards = ['video', 'toggle', 'header_v2', 'header', 'bookmark']
+  const a = compile(project(), { designedCards: cards })
+  const b = compile(shuffled as Record<string, ProjectDoc>, { assets: reverse({ x: '/x', y: '/y' }), theme: reverse(THEME) as typeof THEME, designedCards: [...cards].reverse() })
   assert.deepEqual(Object.keys(b), Object.keys(a))
   assert.deepEqual(Object.keys(a), [...Object.keys(a)].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0)), 'code-unit path order')
   for (const k of Object.keys(a)) assert.equal(b[k], a[k], k)
+})
+
+// ─── Story 7.2: package.json ──────────────────────────────────────────────────────────────────────────────────────
+
+const pkgOf = (over: Partial<CompileInput> = {}): string => compile({}, over)['package.json'] as string
+/** The value posts_per_page takes from a JavaScript caller, which the type does not stop. */
+const anyValue = (v: unknown) => v as number
+
+test('(7.2) a project: package.json is the spec\'s text — Casper\'s key order, engines.ghost and no ghost-api, the ruled author, card_assets true with no designed card, no custom, the marker last', () => {
+  const sizes = Object.entries(IMAGE_SIZES).map(([k, w]) => `      "${k}": {\n        "width": ${w}\n      }`).join(',\n')
+  assert.equal(pkgOf(), [
+    '{',
+    '  "name": "inflozo-field-notes",',
+    '  "description": "Field Notes",',
+    '  "version": "1.4.0",',
+    '  "engines": {',
+    '    "ghost": ">=5.0.0"',
+    '  },',
+    '  "author": {',
+    '    "name": "Inflozo",',
+    '    "email": "hello@inflozo.com"',
+    '  },',
+    '  "keywords": [',
+    '    "ghost-theme"',
+    '  ],',
+    '  "config": {',
+    '    "posts_per_page": 12,',
+    '    "image_sizes": {',
+    sizes,
+    '    },',
+    '    "card_assets": true',
+    '  },',
+    '  "inflozo": true',
+    '}',
+    '',
+  ].join('\n'))
+  const parsed = JSON.parse(pkgOf()) as { engines: Record<string, string>; config: Record<string, unknown> }
+  assert.deepEqual(Object.keys(parsed.engines), ['ghost'])
+  assert.ok(!('custom' in parsed.config) && !('license' in parsed), 'custom is 7.10\'s and 7.11\'s; FR-J2 names no license')
+  assert.equal(Object.keys(parsed).at(-1), THEME_MARKER)
+})
+
+test('(7.2) designed cards: card_assets excludes them, sorted in code-unit order, each name once', () => {
+  const pkg = JSON.parse(pkgOf({ designedCards: ['toggle', 'header_v2', 'header', 'toggle'] })) as { config: { card_assets: unknown } }
+  assert.deepEqual(pkg.config.card_assets, { exclude: ['header', 'header_v2', 'toggle'] })
+})
+
+test('(7.2) a card name Ghost 5 would read as glob syntax is refused, naming the name and the alphabet', () => {
+  for (const card of ['x|*', 'Bookmark', '']) {
+    assert.throws(() => pkgOf({ designedCards: ['toggle', card] }), (e: Error) => e.message.startsWith('package.json: ') && e.message.includes(JSON.stringify(card)) && e.message.includes('a-z0-9_'), card)
+  }
+})
+
+test('(7.2) a page size given as text or a fraction is written as the integer, a JSON number', () => {
+  for (const v of ['12', 12.9]) assert.match(pkgOf({ postsPerPage: anyValue(v) }), /\n {4}"posts_per_page": 12,\n/, String(v))
+})
+
+test('(7.2) a page size that is no page size is refused, naming the value', () => {
+  for (const [v, named] of [[0, '0'], [-3, '-3'], [NaN, 'NaN'], ['twelve', '"twelve"'], [Infinity, 'Infinity']] as const) {
+    assert.throws(() => pkgOf({ postsPerPage: anyValue(v) }), (e: Error) => e.message.startsWith(`package.json: posts_per_page ${named} is no page size`) && e.message.includes('GS010-PJ-CONF-PPP-INT'), named)
+  }
+})
+
+test('(7.2) a name Ghost\'s checker refuses is refused, naming the pattern; a version that is not plain semver is refused', () => {
+  for (const name of ['Field Notes', 'inflozo--x', 'x-', 'Inflozo-x']) {
+    assert.throws(() => pkgOf({ theme: { ...THEME, name } }), (e: Error) => e.message.startsWith('package.json: the theme name') && e.message.includes('^([a-z0-9]+-)*[a-z0-9]+$'), name)
+  }
+  for (const version of ['1.0', 'v1.0.0', '01.0.0', '1.0.0-beta']) {
+    assert.throws(() => pkgOf({ theme: { ...THEME, version } }), /^Error: package\.json: the theme version .* MAJOR\.MINOR\.PATCH/, version)
+  }
+  // the control: the spec's own name and version, and a zero part, compile
+  assert.doesNotThrow(() => pkgOf({ theme: { ...THEME, name: 'inflozo-x-2', version: '0.10.0' } }))
+})
+
+test('(7.2) hostile words in the description: the file parses and gives back the exact string, and carries no raw control character', () => {
+  const description = 'A "quote", a back\\slash, a line\nbreak, \u0005 and {{title}}'
+  const pkg = pkgOf({ theme: { ...THEME, description } })
+  assert.equal((JSON.parse(pkg) as { description: string }).description, description)
+  assert.ok(!/[\u0000-\u0009\u000b-\u001f]/.test(pkg) && pkg.split('\n').length === pkgOf().split('\n').length, 'a raw control character, or a broken line')
+})
+
+test('(7.2) the size check: a size that is no key — quoted or not — is refused naming the file and the keys; comments are not read', () => {
+  const keys = Object.keys(IMAGE_SIZES).join(', ')
+  assert.throws(() => checkSizes({ 'partials/x.hbs': '<img src="{{img_url x size="huge"}}">\n' }), (e: Error) => e.message.startsWith('partials/x.hbs: size="huge"') && e.message.endsWith(`${keys}.`))
+  assert.throws(() => checkSizes({ 'post.hbs': '<img src="{{img_url x size=m}}">\n' }), /^Error: post\.hbs: size=m is no image size/)
+  // the control: a key passes, and so do a size in a comment, an HTML attribute and a non-template file
+  assert.doesNotThrow(() => checkSizes({
+    'home.hbs': '{{!-- size="huge" · x · y --}}\n{{! size=huge }}\n<img src="{{img_url x size="m"}}" data-headline-size="huge" size="9">\n',
+    'assets/css/screen.css': '/* {{img_url x size="huge"}} */\n',
+  }))
+})
+
+test('(7.2) a layer named size="huge" compiles — it reaches a boundary comment, which is not read; a customer typing it compiles too', () => {
+  const out = compile({ 'home.hbs': docOf(at('a22/1', 'size="huge"', { content: { heading: 'size="huge" and {{img_url x size="huge"}}' } })) })
+  assert.match(out['home.hbs'] ?? '', /\{\{!-- size="huge" · Newsletter · Inline Row --\}\}/)
+  // the control: the same words in a live mustache are refused
+  assert.throws(() => checkSizes({ 'home.hbs': out['home.hbs']?.replace('{{!-- size="huge"', '{{img_url x size="huge"}} {{!--') ?? '' }), /size="huge" is no image size/)
 })

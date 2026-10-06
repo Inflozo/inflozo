@@ -8904,6 +8904,12 @@ note (Story 6.6's Dev, 2026-10-05): done for this script's `--check` and `--only
   seeds need T3 (`moved-domains`) is named as postponed rather than run, and so is `manage-keys`' `keys-foreign-key`,
   which pastes T3's key into T1's screen. The pass owes: this script's full run (its T3 connect, cap and moved-domains
   steps), and the full-sequence brand steps, now reading the seeded pack.
+note (Story 7.2's Dev, 2026-10-06): the pass gains MEASUREMENTS §71's Ghost 5 half — `tools/probe/record-theme-assembly.py`
+  runs T1 alone; its Ghost 5 leg is the same rows on the fresh server, the compiled `package.json` included. The pass must
+  also confirm on a real Ghost 5 what Story 7.2 read in 5.130.6's `CardAssets.js` and executed with its pinned tiny-glob
+  0.2.9: `card_assets: { exclude: [] }` becomes the glob `css/!().css`, which matches nothing, so no card bundle is built
+  while `{{ghost_head}}` still links one. 7.2 writes `card_assets: true` while no card is designed (its Question 2), so
+  the empty list is never emitted; the pass checks that the reason holds.
 
 ## Deferred from: code review of spec-6-4-editing-tokens-per-mode-with-contrast-checked-live (2026-10-04)
 
@@ -9082,7 +9088,13 @@ reason: The rule was decided and never owned. Until 7.13 lands, Story 7.1's reco
 plain: Inflozo must never mistake a theme it built for the customer's own "original" theme when it takes the safety
   copy. The plan says every Inflozo theme carries a marker in its `package.json` for exactly that, but no story was
   given the job of writing it.
-status: open
+status: done 2026-10-06 (Story 7.2)
+resolution: Story 7.2 (2026-10-06) — `compileTheme` writes `package.json`, and FR-J13's marker is its top-level
+  `"inflozo": true`, written last (`THEME_MARKER`, exported by `@inflozo/theme-compiler`). It survives a renamed
+  package, sits outside Ghost's `config` namespace and carries no id, hash or date. It is one of the three named marks
+  (with `name` and `author`) that the fingerprint scan exempts: `compile.test.ts` and `tools/pilot-theme.mjs`'s
+  `themeFailures` read `package.json` without them, and a builder's name anywhere else in the file fails. FR-J13 and
+  Story 7.20's card name the key and the `GET /themes/` read that finds it without a download.
 severity: medium
 origin: Story 7.1's Create (2026-10-05). The Epic 7 context compile set FR-J1's "no builder fingerprints" against
   FR-J13's marker. Story 7.20 reads the marker ("signature-gated on the `package.json` marker"), and Story 7.2, which
