@@ -674,6 +674,9 @@ check('control — Story 7.1: the compiled-theme check catches a second triple-s
   mustFail(broken({ 'index.hbs': `${files['index.hbs']}<!-- built with Inflozo -->\n` }), /index\.hbs: the builder's name/, 'a generator mark')
   mustFail(broken({ 'post.hbs': `${files['post.hbs']}<i data-key="${instanceIds[0]}"></i>\n` }), /the instance id/, 'an instance id')
   mustFail(broken({ 'partials/orphan.hbs': '<p>x</p>\n' }), /partials\/orphan\.hbs is referenced by no file/, 'an orphan partial')
+  // Story 7.3: the paywall's {{{html}}} is admitted as its first line alone, and Ghost's {{content}} references it
+  if (broken({ 'partials/content-cta.hbs': '{{{html}}}\n' }).length > 0) throw new Error(`the paywall's first line was refused: ${broken({ 'partials/content-cta.hbs': '{{{html}}}\n' }).join(' · ')}`)
+  mustFail(broken({ 'partials/content-cta.hbs': '<p>x</p>\n{{{html}}}\n' }), /triple-stash/, '{{{html}}} below the paywall\'s first line')
   return mustFail(broken({ 'home.hbs': '{{#if x}}\n' }), /home\.hbs: Handlebars 4\.7\.9 does not parse it/, 'an unclosed block')
 })
 check('Story 7.1 — the five-pilot project compiles with Paper to a theme Handlebars 4.7.9 parses: one {{{body}}}, no fingerprint, every partial referenced, the same bytes twice', () => {
@@ -684,6 +687,61 @@ check('Story 7.1 — the five-pilot project compiles with Paper to a theme Handl
   const differ = Object.keys(a.files).filter((k) => a.files[k] !== b.files[k])
   if (differ.length > 0 || Object.keys(b.files).join() !== Object.keys(a.files).join()) throw new Error(`a second compile differs: ${differ.join(', ')}`)
   return `${Object.keys(a.files).length} files`
+})
+
+// ── Story 7.3: the standard templates, synthesized and split ────────────────────────────────────────────────────────
+// The pilots hand in Home's and Tag's page 2 and an Author page whose feed is hidden (tools/pilot-theme.mjs), so the theme
+// carries an archive split, an untouched page 1 synthesized, a feed-less archive's layout line and FR-H2's guard.
+const pilotsTwo = pilots.compilePilots(WORDS, THEME)
+/** `[]` when tag.hbs is page 2 inside {{#is "paged"}} at per-row two and page 1 in its {{else}} at three, and author.hbs —
+ *  its one feed hidden — is its layout line alone. */
+function splitFailures(files) {
+  const out = []
+  const m = /^\{\{!< default\}\}\n\n\{\{#is "paged"\}\}\n([^]*)\n\{\{else\}\}\n([^]*)\n\{\{\/is\}\}\n$/.exec(files['tag.hbs'] ?? '')
+  if (m === null) out.push('tag.hbs: no {{#is "paged"}} split')
+  else {
+    const perRow = (branch) => [...branch.matchAll(/\{\{> "([^"]+)"\}\}/g)].map((x) => /data-per-row="(\w+)"/.exec(files[`partials/${x[1]}.hbs`] ?? '')?.[1])
+    if (perRow(m[1]).join() !== 'two') out.push(`tag.hbs: page 2 draws per-row ${perRow(m[1]).join() || 'nothing'}, not two`)
+    if (perRow(m[2]).join() !== 'three') out.push(`tag.hbs: page 1 draws per-row ${perRow(m[2]).join() || 'nothing'}, not three`)
+  }
+  if (files['author.hbs'] !== '{{!< default}}\n') out.push(`author.hbs: not its layout line alone — ${JSON.stringify(files['author.hbs'])}`)
+  return out
+}
+/** The contexts default.hbs's noindex block names, or null when it has none. */
+const noindexOf = (files) => /\{\{#is "paged"\}\}\n *\{\{#is "([^"]+)"\}\}\n *<meta name="robots" content="noindex">/.exec(files['default.hbs'] ?? '')?.[1] ?? null
+/** `[]` when one <main id="site-main"> in the whole theme wraps {{{body}}} alone. */
+function mainFailures(files) {
+  const mains = Object.entries(files).flatMap(([p, b]) => (b.match(/<main\b/g) ?? []).map(() => p))
+  if (mains.join() !== 'default.hbs') return [`<main> appears in ${mains.join(', ') || 'no file'}, where default.hbs alone carries one`]
+  return /\n( *)<main id="site-main">\n\1 {2}\{\{\{body\}\}\}\n\1<\/main>\n/.test(files['default.hbs']) ? [] : ['default.hbs: <main id="site-main"> does not wrap {{{body}}} alone']
+}
+check('control — Story 7.3: a theme with no Tag page 2 has no split, and the check says so', () => {
+  const { 'tag.hbs': _, ...rest } = pilotsTwo.pageTwo
+  return mustFail(splitFailures(pilots.compilePilots(WORDS, { ...THEME, pageTwo: rest }).files), /^tag\.hbs: no \{\{#is "paged"\}\} split$/, 'a tag.hbs with no page 2')
+})
+check('Story 7.3 — the pilots compile tag.hbs with page 2 inside {{#is "paged"}} (per-row two) and page 1 in its {{else}} (three), and author.hbs, its feed hidden, as its layout line alone', () => {
+  const f = splitFailures(pilotsTwo.files)
+  if (f.length > 0) throw new Error(f.join('\n'))
+})
+check('control — Story 7.3: a Tag page 2 with no visible feed adds tag to the noindex block', () => {
+  const hidden = { ...pilotsTwo.pageTwo['tag.hbs'], instances: pilotsTwo.pageTwo['tag.hbs'].instances.map((i) => ({ ...i, hidden: true })) }
+  const got = noindexOf(pilots.compilePilots(WORDS, { ...THEME, pageTwo: { ...pilotsTwo.pageTwo, 'tag.hbs': hidden } }).files)
+  if (got !== 'tag, author') throw new Error(`the noindex block names ${JSON.stringify(got)}, not "tag, author"`)
+  return got
+})
+check('Story 7.3 — default.hbs\'s noindex block names author alone: the one page 2 with no visible feed; no canonical link of the theme\'s own', () => {
+  const got = noindexOf(pilotsTwo.files)
+  if (got !== 'author') throw new Error(`the noindex block names ${JSON.stringify(got)}, not "author"`)
+  const canonical = Object.keys(pilotsTwo.files).filter((p) => /rel="canonical"/.test(pilotsTwo.files[p]))
+  if (canonical.length > 0) throw new Error(`a canonical link in ${canonical.join(', ')}`)
+})
+check('control — Story 7.3: a <main> that wraps more than {{{body}}} is caught', () => {
+  const files = pilotsTwo.files
+  return mustFail(mainFailures({ ...files, 'default.hbs': files['default.hbs'].replace('<main id="site-main">\n', '<main id="site-main">\n      <p>x</p>\n') }), /does not wrap \{\{\{body\}\}\} alone/, 'a <main> around more')
+})
+check('Story 7.3 — <main id="site-main"> appears once in the theme, around {{{body}}} alone', () => {
+  const f = mainFailures(pilotsTwo.files)
+  if (f.length > 0) throw new Error(f.join('\n'))
 })
 
 // ── Story 7.2: package.json, judged by Ghost 6's own checker ─────────────────────────────────────────────────────────

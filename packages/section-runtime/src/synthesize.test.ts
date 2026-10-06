@@ -44,7 +44,7 @@ test('the table is the seven synthesizable files, and nothing else is synthesiza
   }
 })
 
-test('home.hbs and index.hbs are the SAME stack — the root and its continuation never disagree (:804-806)', () => {
+test('home.hbs and index.hbs are the SAME stack — the root and its continuation never disagree (:807)', () => {
   assert.deepEqual(SYNTHESIS_DEFAULTS['home.hbs'], SYNTHESIS_DEFAULTS['index.hbs'])
   assert.deepEqual(
     synthesize('home.hbs', FULL).instances.map((i) => i.designId),
@@ -171,7 +171,7 @@ test("R-127's fallback, kept: a Home with NO main feed gives page 2 the Synthesi
   for (const file of ['tag.hbs', 'author.hbs']) assert.deepEqual(pageTwoStack(file, landing, null, FULL).instances, landing.instances, file)
 })
 
-test('an UNTOUCHED page 1 is its Synthesis Default stack, so that is what page 2 copies (:804-806 on Home)', () => {
+test('an UNTOUCHED page 1 is its Synthesis Default stack, so that is what page 2 copies (:807 on Home)', () => {
   for (const one of [null, undefined, doc()]) {
     assert.deepEqual(pageTwoStack('home.hbs', one, null, FULL), synthesize('index.hbs', FULL), String(one))
     // the root and its continuation never disagree about what the feed is

@@ -93,9 +93,10 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * `read.ts` reads it, through `packIdOf` and `ownPacksOf`. Every site header also supplies S7d's "From your site": the
  * sample's own accent, as a linked site's stored brand would.
  *
- * STORY 5.24e — `x-inflozo-harness-stand-ins: on` adds two designs the shipped library does not hold yet (`../stand-ins.ts`):
+ * STORY 5.24e — `x-inflozo-harness-stand-ins: on` adds designs the shipped library does not hold yet (`../stand-ins.ts`):
  * a FOOTER, which the rule below places in the site doc after the header — so the band clamp (DW-187) has a band to hold —
- * and a POST CONTENT LAYOUT, so R-37's refusal can be met in the Section Picker (DW-207). Never in `packages/library`.
+ * and a POST CONTENT LAYOUT, so R-37's refusal can be met in the Section Picker (DW-207). Story 7.3 adds a MEMBERS PAGE,
+ * placed by nothing here, so D5f's warning can be met on Signup. Never in `packages/library`.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -150,7 +151,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     ...ring.map((e) => [e.id, e] as const),
     // Story 5.20 — the stand-in paywalls: never placed (they are treatments), so `compiling` below never picks one up
     ...paywallSamples().map((e) => [e.id, e] as const),
-    // Story 5.24e — the footer and the post content layout, when asked for: after the pilots, so the footer is placed last
+    // Story 5.24e — the stand-ins, when asked for: after the pilots, so the footer is placed last
     ...(standing ? standIns().map((e) => [e.id, e] as const) : []),
   ])
   const placed = Object.values(entries).filter((e) => isPlaceable(e.id))

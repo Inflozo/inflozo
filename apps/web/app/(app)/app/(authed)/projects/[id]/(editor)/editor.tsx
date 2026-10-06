@@ -36,11 +36,13 @@ import { SectionPill, type PillBox } from '@/components/controls/section-pill'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { MainFeedChip, ProBadge } from '@/components/kit/badge'
 import { AddButton, Button, IconButton } from '@/components/kit/button'
-import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
+// STORY 7.3 — `sheet` IS RENAMED HERE because Story 5.22's overlay state below is also `sheet`, and inside `EditorShell` that
+// local won: every confirm here drew `null` (or the open overlay's name) for its classes — no paper, no padding, no corner
+import { closeOnBackdrop, openOnCancel, sheet as dialogSheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { Skeleton } from '@/components/kit/loading'
 import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
-import { ChevronLeft, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, Undo as UndoIcon, X } from '@/components/kit/icons'
+import { AlertTriangle, ChevronLeft, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, Undo as UndoIcon, X } from '@/components/kit/icons'
 import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { PanelLabel } from '@/components/kit/labels'
@@ -49,7 +51,7 @@ import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection,
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, fileOfKey, isSiteFooter, isSurface, landWithin, settingsPath, SITE, siteSlot, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOfKey, isSiteFooter, isSurface, landWithin, settingsPath, SITE, siteSlot, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
@@ -4658,12 +4660,27 @@ function EditorShell({
     const after = mainFeedOf(docOf(docKey))
     return before !== undefined && after !== undefined && after.instanceId !== before.instanceId ? after.layerName : null
   }
+  /** STORY 7.3 — ONE LANDING FOR A REMOVAL: the direct delete, D5f's Delete section and FR-D5's confirm all land here, so
+   *  each says "{layer} removed" — then "{name} is now the main feed." where the delete handed the flag on. */
+  const landRemove = (row: Pick & { layerName: string }) => {
+    const before = mainFeedOf(docOf(row.doc))
+    if (edit(row, (doc) => removeSection(doc, row.instanceId))) setSaid(withTransfer(`${row.layerName} removed`, handedTo(row.doc, before)) ?? '')
+  }
+  /** STORY 7.3 — D5f (FR-I1): the delete that would leave a designed custom template with no section asks first, opening
+   *  on Keep it (UX-DR14). Only this door asks — undo, redo, a reload and Hide never do. */
+  const [emptyAsk, setEmptyAsk] = useHanded<{ row: Pick & { layerName: string }; label: string; file: string } | null>(null)
+  const emptying = useRef<HTMLDialogElement>(null)
   const onRemove = (row: Pick & { layerName: string }) => {
     if (onSurfaceDoc(row.doc)) return
     if (row.doc === SITE.key) return askFirst('remove', row)
-    const before = mainFeedOf(docOf(row.doc))
-    // "the gesture's own sentence, then {name} is now the main feed." where the delete handed the flag on
-    if (edit(row, (doc) => removeSection(doc, row.instanceId))) setSaid(withTransfer(`${row.layerName} removed`, handedTo(row.doc, before)) ?? '')
+    if (emptiesCustomTemplate(row.doc, docOf(row.doc))) {
+      const canvas = canvasOfTemplateKey(row.doc)
+      const file = fileOfKey(row.doc)
+      setEmptyAsk({ row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, label: canvas === null ? file : CANVASES[canvas].label, file })
+      // opened on the frame after the one that filled its words in, and asked again inside it, as FR-D5's confirm is
+      return void requestAnimationFrame(() => { if (!emptying.current?.open) openOnCancel(emptying.current) })
+    }
+    landRemove(row)
   }
   const onToggleHidden = (row: LayerRow) => {
     // the section as the NEWEST doc holds it: the row pressed can be a frame behind the canvas (R-210), and a second Space
@@ -5888,7 +5905,7 @@ function EditorShell({
         }}
         aria-labelledby="editor-sitewide-title"
         aria-describedby="editor-sitewide-body"
-        className={`${sheet} gap-[18px]`}
+        className={`${dialogSheet} gap-[18px]`}
       >
         <div className="flex flex-col gap-[6px]">
           <h2 id="editor-sitewide-title" className={title}>
@@ -5934,10 +5951,56 @@ function EditorShell({
                 if (ask.held.said !== undefined) setSaid(ask.held.said)
                 return
               }
-              edit(ask.pick, (doc) => (ask.kind === 'remove' ? removeSection(doc, ask.pick.instanceId) : setHidden(doc, ask.pick.instanceId, true)))
+              if (ask.kind === 'remove') landRemove({ ...ask.pick, layerName: ask.name })
+              else edit(ask.pick, (doc) => setHidden(doc, ask.pick.instanceId, true))
             }}
           >
             {ask?.kind === 'change' ? SITE_WIDE_ASK.confirm : ask?.kind === 'remove' ? 'Delete section' : 'Hide section'}
+          </Button>
+        </div>
+      </dialog>
+
+      {/* STORY 7.3 — D5f, THE EMPTY TEMPLATE WARNING (FR-I1; `D5 Canvas Markers and Template Switcher.dc.html` D5f). A notice,
+          not danger: the marigold chip and its triangle, the title, the body naming the file in a mono chip, then Keep it
+          and a gold Delete section — R-170's "Delete" for the frame's "Remove", and `marigold-solid` for its resting gold, which
+          fails AA. Here at the root beside FR-D5's confirm, because the pill's bin opens it too. Keep it, Esc and the scrim
+          change nothing; Delete section is the ordinary delete, so the template is left untouched (the switcher's Empty). */}
+      <dialog
+        ref={emptying}
+        onClick={closeOnBackdrop}
+        aria-labelledby="editor-empty-title"
+        aria-describedby="editor-empty-body"
+        className={`${dialogSheet} gap-4`}
+      >
+        <div className="flex items-start gap-[13px]">
+          <span aria-hidden className="inline-flex size-[38px] shrink-0 items-center justify-center rounded-[11px] bg-marigold-tint text-marigold-solid">
+            <AlertTriangle size={18} strokeWidth={1.8} />
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
+            <h2 id="editor-empty-title" className={`${title} leading-[1.2]`}>
+              {EMPTY_TEMPLATE_ASK.title(emptyAsk?.label ?? '')}
+            </h2>
+            <p id="editor-empty-body" className="text-ui-dense leading-[1.6] text-ink-mid">
+              {/* the middle part is the file, in D5f's mono chip */}
+              {EMPTY_TEMPLATE_ASK.body(emptyAsk?.file ?? '').map((part, n) =>
+                n === 1 ? <span key={n} className="rounded-[6px] border border-line bg-paper px-[6px] py-px font-mono text-[12px]">{part}</span> : part)}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end gap-[10px]">
+          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => emptying.current?.close()}>
+            {EMPTY_TEMPLATE_ASK.cancel}
+          </Button>
+          <Button
+            type="button"
+            variant="marigold"
+            size={36}
+            onClick={() => {
+              emptying.current?.close()
+              if (emptyAsk) landRemove(emptyAsk.row)
+            }}
+          >
+            {EMPTY_TEMPLATE_ASK.confirm}
           </Button>
         </div>
       </dialog>
@@ -5954,7 +6017,7 @@ function EditorShell({
         onClick={closeOnBackdrop}
         aria-labelledby="editor-conflict-title"
         aria-describedby="editor-conflict-body"
-        className={`${sheet} gap-[18px]`}
+        className={`${dialogSheet} gap-[18px]`}
       >
         <div className="flex flex-col gap-[6px]">
           <h2 id="editor-conflict-title" className={title}>
@@ -6063,7 +6126,7 @@ function EditorShell({
         onClick={closeOnBackdrop}
         aria-labelledby="editor-cleardark-title"
         aria-describedby="editor-cleardark-body"
-        className={`${sheet} gap-[18px]`}
+        className={`${dialogSheet} gap-[18px]`}
       >
         <div className="flex flex-col gap-[6px]">
           <h2 id="editor-cleardark-title" className={title}>

@@ -29,7 +29,9 @@ import type { SynthesisEntry, SynthesisLibrary } from './synthesize.ts'
 export const isFeed = (entry: Pick<SynthesisEntry, 'bindingContext'> | undefined): boolean =>
   entry?.bindingContext.includes('posts') === true
 
-const visibleFeed = (library: SynthesisLibrary) => (i: DocInstance) => !i.hidden && isFeed(library(i.designId))
+/** A section that lists the page's posts and is not hidden. ONE predicate for the editor's Layers note, Story 7.18's
+ *  Pre-flight warning and Story 7.3's SEO guard, which asks it of every page 2 (DW-253). */
+export const visibleFeed = (library: SynthesisLibrary) => (i: DocInstance): boolean => !i.hidden && isFeed(library(i.designId))
 
 /** The doc with the flag on `instanceId` alone (none for null); every instance whose flag is already right is kept as
  *  the same object. */
@@ -94,8 +96,9 @@ export function makeMainFeed(doc: ProjectDoc, file: string, instanceId: string, 
 }
 
 /** FR-H2's archive case: a Tag or Author page with no VISIBLE feed. Ghost has no second file to fall through to there, so
- *  its page 2 onwards would repeat page 1. ONE predicate for the editor's Layers note now, Story 7.18's Pre-flight
- *  warning and Story 7.3's SEO guard later (DW-253). Home never: its page 2 is another file (FR-I1). */
+ *  its page 2 onwards would repeat page 1. The editor's Layers note and Story 7.18's Pre-flight warning read it; Story
+ *  7.3's SEO guard asks `visibleFeed` of every page 2 instead, Home's included (DW-253). Home never: its page 2 is
+ *  another file (FR-I1). */
 export const feedlessArchive = (doc: ProjectDoc, file: string, library: SynthesisLibrary): boolean =>
   (file === 'tag.hbs' || file === 'author.hbs') && !doc.instances.some(visibleFeed(library))
 

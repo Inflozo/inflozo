@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
   // served one design's stylesheet. The editor's own canvas asks for none and is served them all, because it may
   // draw any section in the document. An unknown id is a 404 like an unknown picture — never served as "all".
   // Story 5.20 — and the two stand-in paywalls (R-158's shape), which the harness's Paywall canvas chooses between.
-  // Story 5.24e — and, when the page asked for them, the footer and post content stand-ins (`../stand-ins.ts`); the page's
+  // Story 5.24e — and, when the page asked for them, the stand-ins (`../stand-ins.ts`); the page's
   // extra headers ride the canvas's own request, so the default document every other stop counts on is unchanged
   const ring = [...samples(), ...paywallSamples(), ...(request.headers.get('x-inflozo-harness-stand-ins') === 'on' ? standIns() : [])]
   const design = request.nextUrl.searchParams.get('design')

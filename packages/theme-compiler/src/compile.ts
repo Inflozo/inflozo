@@ -14,17 +14,34 @@
 //
 // Story 7.2 (FR-J2, DW-335) adds `package.json`, built from what the compile is handed and refused first wherever Ghost's
 // checker would refuse it, and checks every `size=` the emitted templates pass against `IMAGE_SIZES`.
+//
+// Story 7.3 (FR-I1, FR-H2, AD-22, AD-27(d)) makes it compile EVERY standard template, not only the docs it is handed: each
+// file's stack is the stored doc passed through `designate`, else `synthesize`'s or `pageTwoStack`'s — the editor's own
+// functions, never a table of this file's — and each file is emitted by its class's rule (`stacksOf`). An archive's page 2
+// compiles inside `{{#is "paged"}}`, a Post Header on `page.hbs` inside Ghost's page switch, `default.hbs` gains
+// `<main id="site-main">` and FR-H2's `noindex` guard, and a designed paywall becomes `partials/content-cta.hbs`.
 
-import { byCategory, COMPILE_TARGETS, compilesTo, IMAGE_SIZES, isCompileTarget, isSiteFooter, PAYWALL_TARGET, stripCssComments, targetContext } from '@inflozo/library'
+import {
+  byCategory, categoryOf, COMPILE_TARGETS, compilesTo, CUSTOM_TARGET_RE, IMAGE_SIZES, isCompileTarget, isSiteFooter,
+  PAGINATED_TARGETS, PAYWALL_TARGET, POST_HEADER, stripCssComments, targetContext,
+} from '@inflozo/library'
 import type { SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
-import { feedQuery, packTokensCss, renderTheme, UserText } from '@inflozo/section-runtime'
+import { designate, feedQuery, isDesigned, packTokensCss, pageTwoStack, renderTheme, synthesize, UserText, visibleFeed } from '@inflozo/section-runtime'
 import type { DocInstance, Pack, ProjectDoc, RuntimeDocument } from '@inflozo/section-runtime'
 import { claim, sectionSlug } from './slug.ts'
 
 export type CompileInput = {
-  /** every template handed in, by its file — `default.hbs` is the site doc (Story 7.18 maps keys with `fileOfKey`) */
+  /** every STORED template doc, by its file — `default.hbs` is the site doc and `partials/content-cta.hbs` the paywall's
+   *  (Story 7.18 maps keys with `fileOfKey`). An untouched template has no doc (AD-22) and is synthesized here. Never
+   *  `index.hbs`: Home's page 2 is `pageTwo['home.hbs']`. */
   templates: Readonly<Record<string, ProjectDoc>>
+  /** page 2's own docs (R-178, R-179), keyed by their PAGE-1 file: `home.hbs` (stored as `index`), `tag.hbs`
+   *  (`tag-paged`) and `author.hbs` (`author-paged`) — `pageTwoStack(file, pageOne, pageTwo, library)`'s shape. Story
+   *  7.18 maps the keys with `canvasOfPageTwoKey`. */
+  pageTwo?: Readonly<Record<string, ProjectDoc>>
+  /** the `custom-{name}.hbs` files a route names (Story 7.16): FR-I1's class that keeps shipping when emptied */
+  routed?: readonly string[]
   /** the library, handed in (AD-14) — the same entries the editor reads */
   library: (designId: string) => SectionRegistryEntry | undefined
   /** the pack in force, an own pack already resolved */
@@ -45,10 +62,29 @@ export type CompileInput = {
 /** The site doc's file. */
 const SITE_DOC = 'default.hbs'
 
-/** One visible section, rendered. */
-type Placed = { file: string; instance: DocInstance; entry: SectionRegistryEntry; template: string; partials: Record<string, string> }
+/** One visible section, rendered — on page 1 of its file, or on page 2 of an archive whose page 2 is designed. */
+type Placed = { file: string; page: 1 | 2; instance: DocInstance; entry: SectionRegistryEntry; template: string; partials: Record<string, string> }
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
+
+/** Home: the one page 1 whose page 2 is another FILE, `index.hbs`. */
+const HOME = 'home.hbs'
+const INDEX = 'index.hbs'
+/** The page-1 files a page 2 belongs to: the paginated targets but Home's page 2 itself. */
+const PAGE_ONES: readonly string[] = [...PAGINATED_TARGETS].filter((f) => f !== INDEX).sort(byCode)
+/** FR-H2's SEO guard names Ghost's own context for each page 2, in this fixed order (`context.js`: `/page/2/` is
+ *  `['paged','index']`, `/tag/x/page/2/` is `['paged','tag']`). */
+const PAGED_CONTEXTS: readonly (readonly [context: string, pageOne: string])[] = [['index', HOME], ['tag', 'tag.hbs'], ['author', 'author.hbs']]
+/** The files every theme carries. Ghost refuses a theme without `index.hbs` or `post.hbs` (`GS020-INDEX-REQ`,
+ *  `GS020-POST-REQ`, fatal); the archives always ship their default stack. */
+const ALWAYS = ['post.hbs', 'tag.hbs', 'author.hbs']
+/** Emitted when designed, or when synthesis gives them a section — never empty (Question 1, ruled option 1, owner,
+ *  2026-10-06): an untouched one the library leaves with no section is left to Ghost's own fallback until Epic 10. */
+const WHEN_FILLED = ['page.hbs', 'error.hbs']
+/** Ghost's page switch (`@page`, FR-I1): the one `@page` property a theme may read — gscan 4.49.7 refuses any other
+ *  as fatal (GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE). */
+const PAGE_SWITCH = '@page.show_title_and_feature_image'
+
 
 /** A label part, made safe for a Handlebars comment (AD-36): braces and C0 controls dropped, whitespace collapsed, trimmed.
  *  With no brace left, nothing inside can end `{{!--` early — the lexer ends it at the first `--}}` or `--~}}`. */
@@ -138,18 +174,52 @@ const HBS_COMMENT = /\{\{~?!--[^]*?--~?\}\}|\{\{~?![^]*?\}\}/g
 const MUSTACHE = /\{\{[^]*?\}\}/g
 const SIZE_ARG = /(?<![\w-])size=("([^"]*)"|[^\s}]*)/g
 
+/** Every template's mustaches, comments never read: `[path, mustache]`. */
+const mustaches = (files: Readonly<Record<string, string>>): [string, string][] =>
+  Object.entries(files).filter(([path]) => path.endsWith('.hbs')).flatMap(([path, body]) => [...body.replace(HBS_COMMENT, '').matchAll(MUSTACHE)].map((m): [string, string] => [path, m[0]]))
+
 /** FR-J2: every `size=` an emitted template passes is an `image_sizes` key — with any other, Ghost silently serves the
  *  original picture. `HELPERS.img_url` refuses one at render; this is the backstop over the final text. */
 export function checkSizes(files: Readonly<Record<string, string>>): void {
-  for (const [path, body] of Object.entries(files)) {
-    if (!path.endsWith('.hbs')) continue
-    for (const [mustache] of body.replace(HBS_COMMENT, '').matchAll(MUSTACHE)) {
-      for (const m of mustache.matchAll(SIZE_ARG)) {
-        if (m[2] === undefined || !Object.hasOwn(IMAGE_SIZES, m[2])) {
-          throw new Error(`${path}: ${m[0]} is no image size — a size must be one of package.json's image_sizes keys, in double quotes: ${Object.keys(IMAGE_SIZES).join(', ')}.`)
-        }
+  for (const [path, mustache] of mustaches(files)) {
+    for (const m of mustache.matchAll(SIZE_ARG)) {
+      if (m[2] === undefined || !Object.hasOwn(IMAGE_SIZES, m[2])) {
+        throw new Error(`${path}: ${m[0]} is no image size — a size must be one of package.json's image_sizes keys, in double quotes: ${Object.keys(IMAGE_SIZES).join(', ')}.`)
       }
     }
+  }
+}
+
+/** `@page` and anything after it but the page switch itself: a bare `@page`, another property, or a path below the switch
+ *  — what gscan's `lint-no-unknown-page-properties` refuses. */
+const OTHER_PAGE_DATA = /@page\b(?!\.show_title_and_feature_image(?![\w.[\/]))/
+
+/** Story 7.3 (FR-I1): no emitted template reads any `@page` property but the page switch — gscan 4.49.7 refuses one as
+ *  fatal (GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE). Mustaches only, as `checkSizes` reads them. */
+export function checkPageData(files: Readonly<Record<string, string>>): void {
+  for (const [path, mustache] of mustaches(files)) {
+    if (OTHER_PAGE_DATA.test(mustache)) throw new Error(`${path}: ${mustache} reads @page beyond ${PAGE_SWITCH}, the one @page property a Ghost theme may read (GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE, fatal on gscan 4.49.7).`)
+  }
+}
+
+/** Story 7.3: Ghost uses the theme's `partials/content-cta.hbs` only when gscan's `partials` list is non-empty — the
+ *  partials invoked from a file OUTSIDE `partials/` (`checks/005-template-compile.js`, `theme-engine/active.js`, read in
+ *  both majors). An explicit `{{> "content-cta"}}` would print the paywall twice, so none is written; this asserts the
+ *  list cannot be empty instead. */
+export function checkPaywallReached(files: Readonly<Record<string, string>>): void {
+  if (!(PAYWALL_TARGET in files)) return
+  if (mustaches(files).some(([path, m]) => !path.startsWith('partials/') && /^\{\{~?>/.test(m))) return
+  throw new Error(`${PAYWALL_TARGET}: no template outside partials/ invokes a partial, so Ghost would never register the theme's partials and would show its own paywall instead of this one.`)
+}
+
+/** AD-5: one triple-stash, `{{{body}}}` in `default.hbs` — and its second exception, `{{{html}}}` as the paywall
+ *  partial's first line and nowhere else (Question 2, ruled option 1, owner, 2026-10-06), checked on every compile. */
+export function checkTripleStashes(files: Readonly<Record<string, string>>): void {
+  for (const [path, body] of Object.entries(files)) {
+    if (!path.endsWith('.hbs')) continue
+    const found = body.match(/\{\{~?\{/g)?.length ?? 0
+    const allowed = path === SITE_DOC ? body.includes('{{{body}}}') : path === PAYWALL_TARGET && body.startsWith('{{{html}}}\n')
+    if (found > (allowed ? 1 : 0)) throw new Error(`${path}: a triple-stash AD-5 does not allow — a theme carries {{{body}}} in default.hbs and {{{html}}} as ${PAYWALL_TARGET}'s first line, and no other.`)
   }
 }
 
@@ -168,57 +238,116 @@ const designOrder = (a: SectionRegistryEntry, b: SectionRegistryEntry): number =
   byCategory(a.category, b.category) || Number(a.id.split('/')[1]) - Number(b.id.split('/')[1])
 
 /** The legal files, for the refusal that names them. */
-const LEGAL = `${COMPILE_TARGETS.filter((f) => f !== PAYWALL_TARGET).join(', ')} and custom-{name}.hbs`
+const LEGAL = `${COMPILE_TARGETS.filter((f) => f !== INDEX).join(', ')} and custom-{name}.hbs`
+
+/** A file's directory under `partials/sections/`: its name without `.hbs`, the paywall's `partials/` prefix dropped. */
+const stemOf = (file: string): string => file.replace(/^partials\//, '').replace(/\.hbs$/, '')
+
+/** One file to emit: its page-1 stack, and its page-2 stack when an archive's page 2 is designed (the split). */
+type Stack = { file: string; pageOne: readonly DocInstance[]; pageTwo?: readonly DocInstance[] }
+
+/**
+ * STORY 7.3 — WHAT EACH FILE COMPILES FROM, and whether it is emitted (FR-I1; the spec's Design Notes table). Every stored
+ * doc passes `designate` first, with the file it renders at (Home's page 2 at `index.hbs`), so a doc written before the
+ * main-feed rule compiles with the main feed the canvas shows. A file is UNTOUCHED when it has no doc or a doc with no
+ * instance (`isDesigned`, AD-22); hiding is not emptying, so a doc whose every section is hidden is designed and is never
+ * re-synthesized. The stacks are `synthesize`'s and `pageTwoStack`'s — never a table of this file's (AD-27(d)).
+ *
+ * Also returns each page 2's stack, which FR-H2's guard reads.
+ */
+function stacksOf(input: CompileInput): { stacks: Stack[]; pageTwos: Readonly<Record<string, readonly DocInstance[]>> } {
+  const library = input.library
+  const stored = (file: string): ProjectDoc | undefined => {
+    const d = input.templates[file]
+    return d === undefined ? undefined : designate(d, file, library)
+  }
+  const storedTwo = (pageOne: string): ProjectDoc | undefined => {
+    const d = input.pageTwo?.[pageOne]
+    return d === undefined ? undefined : designate(d, pageOne === HOME ? INDEX : pageOne, library)
+  }
+  const designed = (d: ProjectDoc | undefined): d is ProjectDoc => d !== undefined && isDesigned(d)
+  const own = (file: string): readonly DocInstance[] => {
+    const d = stored(file)
+    return designed(d) ? d.instances : synthesize(file, library).instances
+  }
+  const pageTwos = Object.fromEntries(PAGE_ONES.map((f) => [f, pageTwoStack(f, stored(f), storedTwo(f), library).instances]))
+
+  const stacks: Stack[] = [
+    { file: SITE_DOC, pageOne: stored(SITE_DOC)?.instances ?? [] },
+    // `/` renders `home.hbs` else `index.hbs` (`templates.js:67`): an untouched pair IS the generic feed, written once
+    ...(designed(stored(HOME)) || designed(storedTwo(HOME)) ? [{ file: HOME, pageOne: own(HOME) }] : []),
+    { file: INDEX, pageOne: pageTwos[HOME] as readonly DocInstance[] },
+    ...ALWAYS.map((file) => ({ file, pageOne: own(file), ...(PAGE_ONES.includes(file) && designed(storedTwo(file)) ? { pageTwo: pageTwos[file] } : {}) })),
+    ...WHEN_FILLED.map((file) => ({ file, pageOne: own(file) })).filter((s) => s.pageOne.length > 0),
+  ]
+  // a custom template ships when designed or when a route names it; `private.hbs` and the paywall when designed
+  const routed = new Set(input.routed ?? [])
+  const conditional = [...new Set([...Object.keys(input.templates).filter((f) => CUSTOM_TARGET_RE.test(f)), ...routed, 'private.hbs', PAYWALL_TARGET])]
+  for (const file of conditional) {
+    const d = stored(file)
+    if (designed(d) || routed.has(file)) stacks.push({ file, pageOne: d?.instances ?? [] })
+  }
+  return { stacks: stacks.sort((a, b) => byCode(a.file, b.file)), pageTwos }
+}
 
 /** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files —
- *  and, since Story 7.2, its `package.json`. */
+ *  and, since Story 7.2, its `package.json`; since Story 7.3, every standard template, synthesized where untouched. */
 export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonly<Record<string, string>> {
-  const files = Object.keys(input.templates).sort(byCode)
-  for (const file of files) {
-    if (file === PAYWALL_TARGET) throw new Error(`${file}: the paywall's partial is compiled by Story 7.3 (synthesis), not by theme assembly.`)
+  for (const file of Object.keys(input.templates).sort(byCode)) {
+    if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
     if (!isCompileTarget(file)) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
+  }
+  for (const file of Object.keys(input.pageTwo ?? {}).sort(byCode)) {
+    if (!PAGE_ONES.includes(file)) throw new Error(`pageTwo['${file}']: only a paginated page 1 has a page 2 — page 2 is handed in under ${PAGE_ONES.join(', ')}.`)
+  }
+  for (const file of [...(input.routed ?? [])].sort(byCode)) {
+    if (!CUSTOM_TARGET_RE.test(file)) throw new Error(`routed '${file}': a route names a custom template, custom-{name}.hbs, and never another file.`)
   }
   noC0('a string', Object.values(input.strings ?? {}))
   noC0('an asset URL', Object.values(input.assets))
   noC0("the pack's CSS", [packTokensCss(input.pack)])
   const perPage = pageSize(input.postsPerPage)
   const pkg = packageJson(input, perPage)
+  const { stacks, pageTwos } = stacksOf(input)
 
-  // ── render every visible instance, with ONE UserText ──────────────────────────────────────────────────────────────
+  // ── render every visible instance, with ONE UserText — file by file, page 1 before page 2 ─────────────────────────────
   const users = new UserText()
   const placed: Placed[] = []
-  for (const file of files) {
-    for (const instance of (input.templates[file] as ProjectDoc).instances) {
-      if (instance.hidden) continue
-      const entry = input.library(instance.designId)
-      if (entry === undefined) throw new Error(`${file} · ${instance.layerName || instance.designId}: the library holds no design "${instance.designId}".`)
-      // an empty layer name is reported as the design's name, as the boundary comment and the slug fall back to it
-      const where = `${file} · ${instance.layerName || entry.name}`
-      if (!compilesTo(entry.compileTarget, file)) throw new Error(`${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`)
-      const query = feedQuery(entry, instance, file, perPage)
-      let out: ReturnType<typeof renderTheme>
-      try {
-        out = renderTheme(doc, entry.html, {
-          target: file,
-          content: instance.content,
-          schema: entry.contentSchema,
-          controlSchema: entry.controlSchema,
-          universals: entry.universals,
-          controls: instance.controls,
-          data: instance.data,
-          ...(entry.dataBindings === undefined ? {} : { dataBindings: entry.dataBindings }),
-          visibility: instance.memberVisibility,
-          assets: input.assets,
-          icons: iconDrawing,
-          ...(input.strings === undefined ? {} : { strings: input.strings }),
-          users,
-          ...(query === undefined ? {} : { feed: { query } }),
-        })
-      } catch (e) {
-        throw new Error(`${where}: ${(e as Error).message}`)
+  for (const { file, pageOne, pageTwo } of stacks) {
+    for (const [page, instances] of [[1, pageOne], [2, pageTwo ?? []]] as const) {
+      for (const instance of instances) {
+        if (instance.hidden) continue
+        const at = page === 2 ? `${file} (page 2)` : file
+        const entry = input.library(instance.designId)
+        if (entry === undefined) throw new Error(`${at} · ${instance.layerName || instance.designId}: the library holds no design "${instance.designId}".`)
+        // an empty layer name is reported as the design's name, as the boundary comment and the slug fall back to it
+        const where = `${at} · ${instance.layerName || entry.name}`
+        if (!compilesTo(entry.compileTarget, file)) throw new Error(`${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`)
+        const query = feedQuery(entry, instance, file, perPage)
+        let out: ReturnType<typeof renderTheme>
+        try {
+          out = renderTheme(doc, entry.html, {
+            target: file,
+            content: instance.content,
+            schema: entry.contentSchema,
+            controlSchema: entry.controlSchema,
+            universals: entry.universals,
+            controls: instance.controls,
+            data: instance.data,
+            ...(entry.dataBindings === undefined ? {} : { dataBindings: entry.dataBindings }),
+            visibility: instance.memberVisibility,
+            assets: input.assets,
+            icons: iconDrawing,
+            ...(input.strings === undefined ? {} : { strings: input.strings }),
+            users,
+            ...(query === undefined ? {} : { feed: { query } }),
+          })
+        } catch (e) {
+          throw new Error(`${where}: ${(e as Error).message}`)
+        }
+        // a section that renders nothing — a hand-picked feed with nothing picked — contributes no file, no line, no label
+        if (out.template !== '') placed.push({ file, page, instance, entry, template: out.template, partials: out.partials })
       }
-      // a section that renders nothing — a hand-picked feed with nothing picked — contributes no file, no line, no label
-      if (out.template !== '') placed.push({ file, instance, entry, template: out.template, partials: out.partials })
     }
   }
 
@@ -240,8 +369,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
   }
 
   // ── partition: one file per distinct section, hoisted to shared/ when it is on two templates ──────────────────────────
-  // Identity is the text AFTER substitution, computed on a copy; groups are visited in placement order (file, then
-  // position), which is exactly the order R2-10's collision rule hands names out in, in every directory.
+  // Identity is the text AFTER substitution, computed on a copy; groups are visited in placement order (file, then page,
+  // then position), which is exactly the order R2-10's collision rule hands names out in, in every directory.
   const groups = new Map<string, Placed[]>()
   for (const p of placed) {
     const identity = users.substitute(p.template)
@@ -251,31 +380,55 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
   const invocation = new Map<Placed, string>()
   for (const group of groups.values()) {
     const first = group[0] as Placed
-    const dir = new Set(group.map((p) => p.file)).size > 1 ? 'shared' : first.file.replace(/\.hbs$/, '')
+    const dir = new Set(group.map((p) => p.file)).size > 1 ? 'shared' : stemOf(first.file)
     const name = claim(taken.get(dir) ?? taken.set(dir, new Set()).get(dir) as Set<string>, sectionSlug(first.instance.layerName, first.entry))
     tree[`partials/sections/${dir}/${name}.hbs`] = `${first.template}\n`
     for (const p of group) invocation.set(p, `{{> "sections/${dir}/${name}"}}`)
   }
-  const section = (p: Placed): string => `${boundary(p)}\n${invocation.get(p) as string}`
   const indent = (text: string, by: string): string => text.split('\n').map((l) => (l === '' ? l : `${by}${l}`)).join('\n')
-
-  // ── the page templates: the layout line, then each section inside the block its target opens ────────────────────────
-  for (const file of files) {
-    if (file === SITE_DOC) continue
-    const own = placed.filter((p) => p.file === file).map(section)
+  /** One section: its label and invocation — on `page.hbs`, a Post Header's inside Ghost's page switch (FR-I1), so the
+   *  page builder's "show title and feature image" turns it off. Nothing else is guarded, on any file. */
+  const section = (p: Placed): string => {
+    const own = `${boundary(p)}\n${invocation.get(p) as string}`
+    return p.file === 'page.hbs' && categoryOf(p.entry.id) === POST_HEADER ? `{{#if ${PAGE_SWITCH}}}\n${indent(own, '  ')}\n{{/if}}` : own
+  }
+  /** A page's sections, inside the block its target opens; '' when it places none. */
+  const pageBody = (file: string, page: 1 | 2): string => {
+    const own = placed.filter((p) => p.file === file && p.page === page).map(section)
+    if (own.length === 0) return ''
     const block = targetContext(file)?.block
-    const body = block === undefined ? own.join('\n\n') : `{{#${block}}}\n${indent(own.join('\n\n'), '  ')}\n{{/${block}}}`
-    tree[file] = own.length === 0 ? '{{!< default}}\n' : `{{!< default}}\n\n${body}\n`
+    return block === undefined ? own.join('\n\n') : `{{#${block}}}\n${indent(own.join('\n\n'), '  ')}\n{{/${block}}}`
   }
 
-  // ── default.hbs: always, the site doc's headers before {{{body}}} and its footers after (the canvas's own order) ───────
+  // ── the page templates: the layout line, then each section; a designed archive page 2 inside {{#is "paged"}} ───────────
+  for (const { file, pageTwo } of stacks) {
+    if (file === SITE_DOC) continue
+    const one = pageBody(file, 1)
+    // Ghost adds `paged` to the context from page 2 on, never on page 1 (`context.js`, both majors)
+    const two = pageTwo === undefined ? '' : pageBody(file, 2)
+    const body = pageTwo === undefined || (one === '' && two === '')
+      ? one
+      : ['{{#is "paged"}}', ...(two === '' ? [] : [indent(two, '  ')]), ...(one === '' ? [] : ['{{else}}', indent(one, '  ')]), '{{/is}}'].join('\n')
+    // the paywall is a partial Ghost's `{{content}}` runs in place of the post, so it prints the free preview itself —
+    // `{{{html}}}`, AD-5's second exception (Question 2, ruled option 1, owner, 2026-10-06) — and has no layout line
+    if (file === PAYWALL_TARGET) tree[file] = body === '' ? '{{{html}}}\n' : `{{{html}}}\n\n${body}\n`
+    else tree[file] = body === '' ? '{{!< default}}\n' : `{{!< default}}\n\n${body}\n`
+  }
+
+  // ── default.hbs: always, the site doc's headers before <main> and its footers after (the canvas's own order) ───────────
   const site = placed.filter((p) => p.file === SITE_DOC)
   const bands = [
     ...site.filter((p) => !isSiteFooter(p.entry.id)).map(section),
-    '{{{body}}}',
+    // Story 7.3 (DW-150, §7.4): `<main>` wraps `{{{body}}}` alone, once — Story 9.1's skip link lands on `#site-main`
+    '<main id="site-main">\n  {{{body}}}\n</main>',
     ...site.filter((p) => isSiteFooter(p.entry.id)).map(section),
     '{{ghost_foot}}',
   ]
+  // FR-H2's guard (DW-234, DW-253): a page 2 with no visible feed would repeat page 1, so search engines are told not to
+  // index it. `noindex` alone — `{{ghost_head}}` writes the canonical, page 2's pointing at itself
+  // (`meta/canonical-url.js`), and a second canonical makes search engines ignore both
+  const unlisted = PAGED_CONTEXTS.filter(([, pageOne]) => !(pageTwos[pageOne] ?? []).some(visibleFeed(input.library))).map(([context]) => context)
+  const guard = unlisted.length === 0 ? [] : ['{{#is "paged"}}', `  {{#is "${unlisted.join(', ')}"}}`, '    <meta name="robots" content="noindex">', '  {{/is}}', '{{/is}}']
   tree[SITE_DOC] = [
     '<!DOCTYPE html>',
     '<html lang="{{@site.locale}}">',
@@ -284,6 +437,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
     '    <meta name="viewport" content="width=device-width, initial-scale=1">',
     '    <title>{{meta_title}}</title>',
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
+    ...guard.map((l) => `    ${l}`),
     '    {{ghost_head}}',
     '  </head>',
     '  <body class="{{body_class}}">',
@@ -302,8 +456,11 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
 
   tree['package.json'] = pkg   // JSON.stringify escapes every C0 character, so no user-text marker is in it to substitute
 
-  // ── user text, once, last, over every file; the record in code-unit path order; and every size= checked on it ──────
+  // ── user text, once, last, over every file; the record in code-unit path order; then the checks over the final text ─
   const out = Object.fromEntries(Object.keys(tree).sort(byCode).map((path) => [path, users.substitute(tree[path] as string)]))
   checkSizes(out)
+  checkPageData(out)
+  checkPaywallReached(out)
+  checkTripleStashes(out)
   return out
 }

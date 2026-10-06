@@ -4,8 +4,10 @@
 //
 //   the site doc   A1 #1 "Header"
 //   home.hbs       A4 #13, A17 #1 as the main feed, A22 #1
-//   index.hbs      A17 #1
+//   Home's page 2  A17 #1 (`pageTwo['home.hbs']`, compiled to index.hbs — Story 7.3)
 //   post.hbs       A24 #1, and A22 #1 with Home's content, so that it hoists to partials/sections/shared/
+//   Tag's page 2   A17 #1 at `per-row: two`; Tag's page 1 is untouched, so it is its Synthesis Default (Story 7.3)
+//   author.hbs     A17 #1, hidden — an archive with no visible feed, so its page 2 carries FR-H2's noindex (Story 7.3)
 //
 // Two words go in. The PAGE word is A4 #13's eyebrow — the page's proof that it is this run's theme. The LAYER word is in
 // every layer name, which reaches only the boundary comments, so it must never reach a page. One section's layer name
@@ -70,17 +72,24 @@ export function pilotProject({ pageWord, layerWord }, find = library()) {
     if (e === undefined) throw new Error(`the pilot ${designId} is not in the library`)
     return rt.parseDoc({ schemaVersion: 1, instances: [{
       instanceId: `pilot-${String(++n).padStart(2, '0')}-x9q`, layerName: `${layer} ${layerWord}`, designId,
-      content: { ...rt.defaultContent(e.contentSchema), ...(over.content ?? {}) }, controls: {}, data: {}, darkOverrides: {},
-      ...(over.isMainFeed === undefined ? {} : { isMainFeed: over.isMainFeed }),
+      content: { ...rt.defaultContent(e.contentSchema), ...(over.content ?? {}) }, controls: over.controls ?? {}, data: {}, darkOverrides: {},
+      ...(over.isMainFeed === undefined ? {} : { isMainFeed: over.isMainFeed }), ...(over.hidden === undefined ? {} : { hidden: over.hidden }),
     }] }, designId).instances[0]
   }
   const doc = (...instances) => ({ schemaVersion: 1, instances })
   const newsletter = (layer) => at('a22/1', layer, { content: HOSTILE_TEXT })
   return {
-    'default.hbs': doc(at('a1/1', 'Header')),
-    'home.hbs': doc(at('a4/13', 'Latest post', { content: { eyebrow: pageWord } }), at('a17/1', 'Post grid', { isMainFeed: true }), newsletter(HOSTILE_LAYER)),
-    'index.hbs': doc(at('a17/1', 'Post grid', { isMainFeed: true })),
-    'post.hbs': doc(at('a24/1', 'Post header'), newsletter('Sign up')),
+    templates: {
+      'default.hbs': doc(at('a1/1', 'Header')),
+      'home.hbs': doc(at('a4/13', 'Latest post', { content: { eyebrow: pageWord } }), at('a17/1', 'Post grid', { isMainFeed: true }), newsletter(HOSTILE_LAYER)),
+      'post.hbs': doc(at('a24/1', 'Post header'), newsletter('Sign up')),
+      'author.hbs': doc(at('a17/1', 'Writer feed', { isMainFeed: true, hidden: true })),
+    },
+    // page 2's own docs, keyed by their page-1 file (Story 7.3)
+    pageTwo: {
+      'home.hbs': doc(at('a17/1', 'Post grid', { isMainFeed: true })),
+      'tag.hbs': doc(at('a17/1', 'Post grid', { isMainFeed: true, controls: { 'per-row': 'two' } })),
+    },
   }
 }
 
@@ -88,11 +97,26 @@ export function pilotProject({ pageWord, layerWord }, find = library()) {
 export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', description: 'Pilot sections' }
 
 /** The compiled theme, path → text, and the project it came from. */
-export function compilePilots(words, { theme, postsPerPage = 12, find = library() } = {}) {
+export function compilePilots(words, { theme, postsPerPage = 12, find = library(), pageTwo: overTwo } = {}) {
   if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
-  const templates = pilotProject(words, find)
-  const files = compileTheme(new JSDOM('<body></body>').window.document, { templates, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme })
-  return { files, templates, instanceIds: Object.values(templates).flatMap((d) => d.instances.map((i) => i.instanceId)) }
+  const project = pilotProject(words, find)
+  const templates = project.templates
+  const pageTwo = overTwo ?? project.pageTwo
+  const files = compileTheme(new JSDOM('<body></body>').window.document, { templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme })
+  const docs = [...Object.values(templates), ...Object.values(pageTwo)]
+  return { files, templates, pageTwo, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
+}
+
+/** What each page the recorder reads is made of, by the runtime's own functions (AD-27(d)): a page 1 is its doc, or its
+ *  Synthesis Default when untouched; a page 2 is `pageTwoStack`'s. Keyed by file, a page 2 as `{file}#2`. */
+export function pageStacks(templates, pageTwo, find = library()) {
+  const own = (file) => (templates[file]?.instances.length ? templates[file].instances : rt.synthesize(file, find).instances)
+  const two = (file) => rt.pageTwoStack(file, templates[file], pageTwo[file], find).instances
+  return {
+    'default.hbs': templates['default.hbs']?.instances ?? [],
+    'home.hbs': own('home.hbs'), 'index.hbs': two('home.hbs'), 'post.hbs': own('post.hbs'),
+    'tag.hbs': own('tag.hbs'), 'tag.hbs#2': two('tag.hbs'), 'author.hbs': own('author.hbs'), 'author.hbs#2': two('author.hbs'),
+  }
 }
 
 /** `package.json` without its three named marks — FR-J10's `name`, the ruled `author` and FR-J13's marker (Story 7.2) —
@@ -104,10 +128,16 @@ export function unmarked(text) {
   return JSON.stringify(rest, null, 2)
 }
 
+/** The paywall partial (Story 7.3): Ghost's own `{{content}}` runs it, so no file references it, and its first line is
+ *  AD-5's second exception, `{{{html}}}` (Question 2, ruled option 1, owner, 2026-10-06). */
+const PAYWALL = 'partials/content-cta.hbs'
+const FREE_PREVIEW = '{{{html}}}\n'
+
 /** What CI and the recorder hold every compiled theme to — `[]` when it holds. Handlebars 4.7.9 (the compiler's own test
- *  parser, never product code) must parse every template; one `{{{body}}}` and no other triple-stash; no fingerprint (the
- *  builder's name outside package.json's named marks, its editor prefix, an instance id, a C0 character, an internal
- *  reference); a package.json that parses; every partial referenced. */
+ *  parser, never product code) must parse every template; one `{{{body}}}` and no other triple-stash but `{{{html}}}` as
+ *  the paywall's first line; no fingerprint (the builder's name outside package.json's named marks, its editor prefix, an
+ *  instance id, a C0 character, an internal reference); a package.json that parses; every partial referenced but the
+ *  paywall, which Ghost's `{{content}}` runs. */
 export function themeFailures(files, instanceIds) {
   const Handlebars = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('handlebars')
   const out = []
@@ -125,10 +155,11 @@ export function themeFailures(files, instanceIds) {
     if (/generated by|built with/i.test(body)) out.push(`${path}: a generator line`)
     if (!path.endsWith('.hbs')) continue
     try { Handlebars.parse(body) } catch (e) { out.push(`${path}: Handlebars 4.7.9 does not parse it — ${String(e.message).split('\n')[0]}`) }
-    triples += (body.match(/\{\{\{/g) ?? []).length + (body.match(/\}\}\}/g) ?? []).length
+    const counted = path === PAYWALL && body.startsWith(FREE_PREVIEW) ? body.slice(FREE_PREVIEW.length) : body
+    triples += (counted.match(/\{\{\{/g) ?? []).length + (counted.match(/\}\}\}/g) ?? []).length
   }
-  if (triples !== 2 || !/^ *\{\{\{body\}\}\}$/m.test(files['default.hbs'] ?? '')) out.push(`the theme carries ${triples / 2} triple-stash(es), and exactly one is allowed: {{{body}}} in default.hbs`)
-  for (const path of Object.keys(files).filter((p) => p.startsWith('partials/') && p.endsWith('.hbs'))) {
+  if (triples !== 2 || !/^ *\{\{\{body\}\}\}$/m.test(files['default.hbs'] ?? '')) out.push(`the theme carries ${triples / 2} triple-stash(es) beyond the paywall's first line, and exactly one is allowed: {{{body}}} in default.hbs`)
+  for (const path of Object.keys(files).filter((p) => p.startsWith('partials/') && p.endsWith('.hbs') && p !== PAYWALL)) {
     const name = path.slice('partials/'.length, -'.hbs'.length)
     if (!Object.entries(files).some(([p, b]) => p !== path && b.includes(`{{> "${name}"}}`))) out.push(`${path} is referenced by no file`)
   }

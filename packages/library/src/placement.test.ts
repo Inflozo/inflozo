@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { byCategory, categoryOf, compilesTo, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT, ringFor, samePartition } from './placement.ts'
+import { byCategory, categoryOf, compilesTo, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT, POST_HEADER, ringFor, samePartition } from './placement.ts'
 import type { BindingContext } from './vocabulary.ts'
 import type { Surface } from './registry.ts'
 import feedDesign from '../designs/a17/1/design.json' with { type: 'json' }
@@ -31,6 +31,11 @@ test('a first Post Content is allowed; a second is refused with the sentence', (
   assert.equal(placementRefusal('a25/7', ['a24/1', 'a25/1']), 'this layout already prints the article')
   // any design of the category counts, and the one being placed is not compared with itself by id
   assert.equal(placementRefusal('a25/1', ['a25/1']), 'this layout already prints the article')
+})
+
+test('(7.3) POST_HEADER is A24\'s category: every A24 design is one, and no other design is', () => {
+  for (const id of ['a24/1', 'a24/2', 'a24/12']) assert.equal(categoryOf(id), POST_HEADER, id)
+  for (const id of ['a25/1', 'a2/4', 'a241/1', 'a24', '']) assert.notEqual(categoryOf(id), POST_HEADER, id)
 })
 
 test('an ordinary design is unaffected, however many are already there', () => {

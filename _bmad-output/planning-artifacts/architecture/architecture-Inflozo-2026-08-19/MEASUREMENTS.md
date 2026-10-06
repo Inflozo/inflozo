@@ -597,6 +597,24 @@ expecting it to work is the natural thing a theme author does, and it silently f
 **Library rule for E7 and A32: the compiler emits an explicit `{{> "content-cta"}}` reference
 whenever it emits the partial.** Not a convention — a compile assertion.
 
+> **Corrected 2026-10-06 — Story 7.3, read in source; its T1 run is §72.** The table above holds;
+> its explanation and the library rule do not. Ghost registers the theme's `partials/` only when
+> gscan's `partials` list is non-empty (`theme-engine/active.js`, 6.58.0 :47 and :75-77), and gscan
+> fills that list with the partials invoked from non-partial templates
+> (`checks/005-template-compile.js:120`, `checks/120-no-unknown-globals.js:122`, both gscans);
+> express-hbs then reads the theme's directory after Ghost's, so the theme's copy wins
+> (`lib/hbs.js:150-194`, `:328-330`). The control theme here invoked no partial at all, and the
+> explicit `{{> "content-cta"}}` merely made the list non-empty. **Any partial invoked from a
+> template does the same**, and in an Inflozo theme every placed section is one. The explicit
+> reference is therefore **not** emitted: in a rendered position it prints the paywall a second time,
+> and with `{{{html}}}` the free text too, as this probe's `post.hbs` did. The compile asserts
+> instead that a theme carrying `partials/content-cta.hbs` invokes a partial from a file outside
+> `partials/` (FR-I1). §72's paywall rows are the positive (a marker partial, one other partial
+> invoked, no `content-cta` invocation) and its control (no partial invoked: Ghost's own
+> `gh-post-upgrade-cta`).
+> *(The rule above is left as written, per the standing rule that a dated finding is not rewritten
+> to match a later one.)*
+
 ### 15c. Item 15 — what a theme may style inside `{{comments}}`. **Almost nothing.** Blocks E10's A28.
 
 `{{comments}}` emits **exactly one element** and no DOM of its own:
@@ -4586,3 +4604,129 @@ colour Ghost put on a recorded page, so `tokens.test.ts` admits it.
 - **User text ships inert.** A22 #1's AD-5 shapes reached the page as their literal characters, and the HTML carries no `{{` or `}}`.
 - **Ghost reads the compiled `package.json`.** `GET themes/` returns it whole, marker included, so Story 7.20 reads the marker with no download; `posts_per_page` sizes Home and the last page; a width only its `image_sizes` declares is served as a rendition; and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`: `card_assets: true` gives every card, as Ghost's own default does.
 - **What this does NOT say.** The scaffold is the later stories' (7.13, 7.4, 7.3), and nothing here deployed through Inflozo's own path (Story 7.18). Ghost 5's half — and Ghost 5's reading of an empty `card_assets` exclude list as no card — is DW-326's, at Story 15.7 (R-238: T3 retired).
+
+## 72. Synthesis Defaults and the emptying rules — the pilots compiled with every standard template, and the paywall mechanism, rendered by Ghost, T1 · 2026-10-06
+
+**Command.** `python3 tools/probe/record-theme-assembly.py` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload (DW-332), both read back; the one `w750` rendition Ghost saves the first time it is asked; no content, no setting and no key written. The picture is `/content/images/2026/10/inflozo-probe-rendition.png`. T1 only (R-238); the Ghost 5 half is DW-326's, at Story 15.7. §70 and §71 are Stories 7.1's and 7.2's records of the same run; this re-runs their rows beside Story 7.3's.
+
+**Why.** Story 7.3's compiler resolves every standard template through `designate`, `synthesize` and `pageTwoStack`, writes an archive's designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in `<main id="site-main">`, puts FR-H2's `noindex` guard in `default.hbs`'s head, and leaves out an untouched `error.hbs` the library cannot fill (Question 1, ruled option 1). It writes a designed paywall as `partials/content-cta.hbs` with no explicit `{{> "content-cta"}}`, on the strength of a source reading that corrects §15b. `check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate, with the scaffold (`cards.css`, 7.13 and 7.4; the stand-in `page.hbs`, Story 10.79's, for GS110): Ghost 5.x via gscan 4.49.7 — 0 errors / 0 warnings · Ghost 6.x via gscan 6.4.2 — 0 errors / 0 warnings.
+
+**The tree uploaded** (17 files): `author.hbs`, `default.hbs`, `home.hbs`, `index.hbs`, `post.hbs`, `tag.hbs`, `assets/css/screen.css`, `package.json` and 7 partials — `partials/post-card.hbs`, `partials/sections/default/header-layer61f1db3085071292.hbs`, `partials/sections/home/latest-post-layer61f1db3085071292.hbs`, `partials/sections/post/post-header-layer61f1db3085071292.hbs`, `partials/sections/shared/newsletter-p-idleakleakpsitetitle-layer61f1db3085071292.hbs`, `partials/sections/shared/post-grid-layer61f1db3085071292.hbs`, `partials/sections/tag/post-grid-layer61f1db3085071292.hbs` — compiled; then the scaffold, `assets/css/cards.css` and `page.hbs`. `package.json` was handed `inflozo-probe-theme-assembly` · `1.0.0` · "The five pilots, compiled" and `posts_per_page` 8 (T1 publishes 33 posts; the tag `craft` 9 and the author `umang` 12, each the busiest of its kind).
+
+**The controls, each of which voids the run:** the layer word is in the uploaded templates and the hostile layer name in the uploaded `home.hbs`, so their absence from the pages is the comments' doing; the `noindex` meta is in the uploaded `default.hbs` and no `error.hbs` was uploaded; every page read was this run's theme (`/` by its page word, the others by the same `screen.css` asset hash); every page 2 read answered 200; under the site's own theme (`casper`), its `package` carries no marker and no 750 width, and `w750` was redirected to the original; after activation, `w751` was redirected to the original. For the paywall: the Content API says the post is not public, each read carried its own theme's marker, and the control theme rendered Ghost's own call to action. Every one held.
+
+### (a) The compiled pilots — T1 `ghost6.inflozo.com` (6.58.0), locale `en`
+
+| Page | Row | Held |
+|---|---|---|
+| `theme casper` | CONTROL — the site theme's package carries no marker — `keys ['name', 'description', 'demo', 'version', 'engines', '` | yes |
+| `theme casper` | CONTROL — the site theme declares no 750 width — `widths [30, 100, 300, 600, 1000, 2000]` | yes |
+| `/content/images/size/w750/2026/10/inflozo-probe-rendition.png` | CONTROL — under the site theme, w750 is redirected to the original — `HTTP 200 at /content/images/2026/10/inflozo-probe-rendition.` | yes |
+| `/` | CONTROL — under the site theme, ghost_head links cards.min.css — `card_assets True, ?v=Jw0334E-A8vpuWdm` | yes |
+| `/` | the page word (in A4 #13's eyebrow on Home) is on the page — `Page61f1db3085071292` | yes |
+| `/` | every placed section's root class, once each, in doc order — `['a1-1', 'a4-13', 'a17-1', 'a22-1'] (expected ['a1-1', 'a4-1` | yes |
+| `/` | no `{{` in the HTML — `absent` | yes |
+| `/` | no `}}` in the HTML — `absent` | yes |
+| `/` | no `{{!--` in the HTML — `absent` | yes |
+| `/` | no C0 character in the HTML — `absent` | yes |
+| `/` | no layer word in the HTML — `absent` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `Write {{title}} or {{#if @member}}yes{{/if}} here` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `A path C:\{{x}}, a "quote", an 'apostrophe' and <b>angle bra` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `Close it: }} and }}} and {{{ and {{!-- too` | yes |
+| `/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/page/2/` | every placed section's root class, once each, in doc order — `['a1-1', 'a17-1'] (expected ['a1-1', 'a17-1'])` | yes |
+| `/page/2/` | no `{{` in the HTML — `absent` | yes |
+| `/page/2/` | no `}}` in the HTML — `absent` | yes |
+| `/page/2/` | no `{{!--` in the HTML — `absent` | yes |
+| `/page/2/` | no C0 character in the HTML — `absent` | yes |
+| `/page/2/` | no layer word in the HTML — `absent` | yes |
+| `/page/2/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/page/2/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/probe-gated-post/` | every placed section's root class, once each, in doc order — `['a1-1', 'a24-1', 'a22-1'] (expected ['a1-1', 'a24-1', 'a22-` | yes |
+| `/probe-gated-post/` | no `{{` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no `}}` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no `{{!--` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no C0 character in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no layer word in the HTML — `absent` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `Write {{title}} or {{#if @member}}yes{{/if}} here` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `A path C:\{{x}}, a "quote", an 'apostrophe' and <b>angle bra` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `Close it: }} and }}} and {{{ and {{!-- too` | yes |
+| `/probe-gated-post/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/probe-gated-post/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/tag/craft/` | every placed section's root class, once each, in doc order — `['a1-1', 'a17-1'] (expected ['a1-1', 'a17-1'])` | yes |
+| `/tag/craft/` | no `{{` in the HTML — `absent` | yes |
+| `/tag/craft/` | no `}}` in the HTML — `absent` | yes |
+| `/tag/craft/` | no `{{!--` in the HTML — `absent` | yes |
+| `/tag/craft/` | no C0 character in the HTML — `absent` | yes |
+| `/tag/craft/` | no layer word in the HTML — `absent` | yes |
+| `/tag/craft/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/tag/craft/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/tag/craft/page/2/` | every placed section's root class, once each, in doc order — `['a1-1', 'a17-1'] (expected ['a1-1', 'a17-1'])` | yes |
+| `/tag/craft/page/2/` | no `{{` in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no `}}` in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no `{{!--` in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no C0 character in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no layer word in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/tag/craft/page/2/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/author/umang/` | every placed section's root class, once each, in doc order — `['a1-1'] (expected ['a1-1'])` | yes |
+| `/author/umang/` | no `{{` in the HTML — `absent` | yes |
+| `/author/umang/` | no `}}` in the HTML — `absent` | yes |
+| `/author/umang/` | no `{{!--` in the HTML — `absent` | yes |
+| `/author/umang/` | no C0 character in the HTML — `absent` | yes |
+| `/author/umang/` | no layer word in the HTML — `absent` | yes |
+| `/author/umang/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/author/umang/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `/author/umang/page/2/` | every placed section's root class, once each, in doc order — `['a1-1'] (expected ['a1-1'])` | yes |
+| `/author/umang/page/2/` | no `{{` in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no `}}` in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no `{{!--` in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no C0 character in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no layer word in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/author/umang/page/2/` | CONTROL — this run's theme (screen.css asset hash) — `HyBunOE2AzBSMRSn` | yes |
+| `theme inflozo-probe-theme-assembly` | GET themes/ returns the compiled package.json, marker included — `inflozo=True, keys ['name', 'description', 'version', 'engin` | yes |
+| `/` | Home lists exactly posts_per_page A17 #1 cells — `8 cells (posts_per_page 8)` | yes |
+| `/page/5/` | the last page answers 200 (33 posts over 8) — `HTTP 200` | yes |
+| `/page/6/` | the page past the last answers 404 — `HTTP 404` | yes |
+| `/content/images/size/w750/2026/10/inflozo-probe-rendition.png` | w750, a width only this theme declares, is served at its path — `HTTP 200 at /content/images/size/w750/2026/10/inflozo-probe-` | yes |
+| `/content/images/size/w751/2026/10/inflozo-probe-rendition.png` | CONTROL — w751, a width no theme declares, is redirected to the original — `HTTP 200 at /content/images/2026/10/inflozo-probe-rendition.` | yes |
+| `/` | cards.min.css's hash equals the site theme's: every card, as Ghost's own default gives it — `Jw0334E-A8vpuWdm (site theme Jw0334E-A8vpuWdm)` | yes |
+| `/tag/craft/page/2/ /author/umang/page/2/` | CONTROL — every page 2 read answers 200 — `HTTP 200, 200` | yes |
+| `/tag/craft/` | the tag's page 1, untouched, draws its Synthesis Default's A17 #1 at per-row three — `data-per-row='three'` | yes |
+| `/tag/craft/page/2/` | the tag's page 2, designed, draws its own A17 #1 at per-row two — the {{#is "paged"}} split — `data-per-row='two'` | yes |
+| `/author/umang/page/2/` | the author's page 2 (no visible feed) carries the noindex meta inside <head> — `present` | yes |
+| `/author/umang/` | the author's page 1 carries no noindex meta — `absent` | yes |
+| `/tag/craft/page/2/` | the tag's page 2 (a visible feed) carries no noindex meta — `absent` | yes |
+| `/author/umang/page/2/` | Ghost's own canonical is the page's own URL, once — so the theme writes none — `['https://ghost6.inflozo.com/author/umang/page/2/']` | yes |
+| `/61f1db3085071292-missing/` | a missing page answers 404 with Ghost's own error page and none of this theme's screen.css (no error.hbs) — `HTTP 404, error-content in it, screen.css absent` | yes |
+| `/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a4-13', 'a17-1', 'a22-1'] (expecte` | yes |
+| `/page/2/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a17-1'] (expected ['a1-1'], ['a17-` | yes |
+| `/probe-gated-post/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a24-1', 'a22-1'] (expected ['a1-1'` | yes |
+| `/tag/craft/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a17-1'] (expected ['a1-1'], ['a17-` | yes |
+| `/tag/craft/page/2/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a17-1'] (expected ['a1-1'], ['a17-` | yes |
+| `/author/umang/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside [] (expected ['a1-1'], [])` | yes |
+| `/author/umang/page/2/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside [] (expected ['a1-1'], [])` | yes |
+
+### (b) The paywall mechanism — two hand-written probe themes, signed out
+
+Both carry `partials/content-cta.hbs` with this run's marker and invoke `content-cta` nowhere. `inflozo-probe-paywall` invokes one other partial from `default.hbs`; `inflozo-probe-paywall-control` is the same theme with that line removed.
+
+| Page | Row | Held |
+|---|---|---|
+| `/probe-gated-post/` | CONTROL — the Content API says the post is not public — `visibility 'paid'` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall)` | CONTROL — the read is this theme's, signed out — `HTTP 200` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall)` | one other partial invoked from default.hbs, no content-cta invocation: the theme's content-cta.hbs renders, Ghost's own does not — `marker rendered, gh-post-upgrade-cta absent` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall-control)` | CONTROL — the read is this theme's, signed out — `HTTP 200` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall-control)` | CONTROL — no partial invoked anywhere: Ghost's own gh-post-upgrade-cta renders, the theme's does not — `gh-post-upgrade-cta rendered, marker absent` | yes |
+
+### What it means
+
+- **Every standard template ships.** An untouched Tag page compiled from its Synthesis Default and rendered its feed; a designed Tag page 2 rendered its own design inside `{{#is "paged"}}` while page 1 kept the default; an Author page whose one feed is hidden rendered its layout alone.
+- **FR-H2's guard is Ghost's to read.** The author's page 2 carried `noindex` in its `<head>` and its page 1 did not; the tag's page 2, which has a feed, carried none. Ghost's own canonical on that page 2 is the page's own URL, so a theme canonical "to page 1" would have been a second, contradicting one.
+- **`<main id="site-main">` wraps the page alone**, once on every page, with the header outside it — Story 9.1's skip link lands there.
+- **A missing `error.hbs` is Ghost's own error page**, served with a 404 and none of the theme's styles (Question 1, until Epic 10 brings an error design).
+- **The paywall partial wins whenever a template invokes any partial**, with no explicit `{{> "content-cta"}}`; with no partial invoked, Ghost's own call to action shows. §15b's library rule is corrected (its dated note).
+- **Stories 7.1's and 7.2's rows still hold** on the larger tree: user text inert, comments shipped to no visitor, `package.json` read whole, and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`.
+- **What this does NOT say.** The scaffold is the later stories' (7.13, 7.4, 10.79), nothing here deployed through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story 10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired).

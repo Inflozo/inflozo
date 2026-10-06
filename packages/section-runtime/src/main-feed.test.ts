@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { PAGINATED_TARGETS } from '@inflozo/library'
 import { duplicateSection, insertSection, removeSection, setHidden, switchDesign } from './doc-edit.ts'
 import { parseDoc, type ProjectDoc } from './doc-schema.ts'
-import { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, makeMainFeed } from './main-feed.ts'
+import { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
 import type { SynthesisLibrary } from './synthesize.ts'
 
 // Story 5.19 — FR-H2's main-feed designation, every lifecycle row of the spec's I/O matrix that is not a pixel, over
@@ -153,6 +153,18 @@ test('a Tag or Author page with no visible feed is a feed-less archive — and H
   assert.equal(feedlessArchive(hidden, 'index.hbs', library), false)
   assert.equal(feedlessArchive(doc(at('grid', 'a17/1')), 'tag.hbs', library), false, 'gone the moment a feed shows')
   assert.equal(feedlessArchive(doc(at('head', 'a4/13')), 'tag.hbs', library), true, 'no feed at all')
+})
+
+test('(7.3) visibleFeed, the one predicate feedlessArchive and the compiler\'s SEO guard ask: a feed, not hidden', () => {
+  const visible = visibleFeed(library)
+  const one = (i: unknown) => doc(i).instances[0]!
+  assert.equal(visible(one(at('grid', 'a17/1'))), true)
+  assert.equal(visible(one(at('grid', 'a17/1', { hidden: true }))), false, 'a hidden feed is no visible feed')
+  assert.equal(visible(one(at('head', 'a4/13'))), false, 'a section that is no feed')
+  // feedlessArchive is its negation over a doc, on an archive
+  for (const d of [doc(at('grid', 'a17/1')), doc(at('grid', 'a17/1', { hidden: true })), doc(at('head', 'a4/13'))]) {
+    assert.equal(feedlessArchive(d, 'tag.hbs', library), !d.instances.some(visible))
+  }
 })
 
 test('a secondary feed\'s query: posts, the page size, newest first — folded with data.posts; none for the main feed', () => {

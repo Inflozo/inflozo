@@ -18,7 +18,7 @@
 // Author · the Membership group · 404 · Private. R-128 defers the rule, the `FROM THE ROUTES MANAGER` heading and
 // "+ New template" to Story 7.16.
 
-import { isSiteFooter } from '@inflozo/library'
+import { CUSTOM_TARGET_RE, isSiteFooter } from '@inflozo/library'
 
 /** Every canvas the editor can open, in D5b's row order: the template file it compiles into, its D5b label, and the
  *  one line the Template switcher prints under that label (R-171, owner, 2026-09-21 — "Add relevant one liners below
@@ -126,6 +126,27 @@ export const fileOfKey = (key: string): string => {
   if (canvas !== null) return CANVASES[canvas].file
   return key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
 }
+
+/** STORY 7.3 — D5f (FR-I1): WOULD THIS DELETE EMPTY A DESIGNED CUSTOM TEMPLATE? A `custom-{name}.hbs` doc holding exactly
+ *  one instance — hidden ones counted, because hiding is not emptying (FR-D5) — stops shipping when it goes, and Ghost
+ *  falls back to `page.hbs` without a word (`templates.js`), so the editor asks first. */
+export const emptiesCustomTemplate = (key: string, doc: { readonly instances: readonly unknown[] } | undefined): boolean =>
+  CUSTOM_TARGET_RE.test(fileOfKey(key)) && doc?.instances.length === 1
+
+/** …and its words, as one list (R-170), in `SITE_WIDE_ASK`'s shape. "Delete" for the frame's "Remove": the gesture, the
+ *  Layers row and the site-wide confirm all say Delete. `label` is the canvas's D5b label and `file` is `fileOfKey`'s; the
+ *  body comes split around the file, so the dialog can set it in its mono chip. */
+export const EMPTY_TEMPLATE_ASK = {
+  title: (label: string) => `Delete the last section from ${label}?`,
+  body: (file: string) =>
+    [
+      'This template stops shipping. Any Ghost page still pointing at ',
+      file,
+      " will still load — it will just wear your ordinary page design instead. Ghost won't warn anyone, which is why we are.",
+    ] as const,
+  cancel: 'Keep it',
+  confirm: 'Delete section',
+} as const
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 

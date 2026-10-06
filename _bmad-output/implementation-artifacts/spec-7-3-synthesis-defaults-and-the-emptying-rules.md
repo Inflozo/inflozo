@@ -2,7 +2,8 @@
 title: 'Story 7.3 — Synthesis Defaults and the emptying rules'
 type: 'feature'
 created: '2026-10-06'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'd322dd95f3a0079337c5b72d5a1af5154a2c546f'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -218,17 +219,17 @@ After this story, the theme Inflozo builds carries Ghost's standard page types e
 
 **Execution:**
 
-- [ ] `packages/library/src/placement.ts`, `placement.test.ts`:
+- [x] `packages/library/src/placement.ts`, `placement.test.ts`:
   - add `POST_HEADER = 'a24'` beside `POST_CONTENT`;
   - test it with `categoryOf`.
 
   -- FR-I1's "the A24 designs compiled into it carry the guard", spelled once.
-- [ ] `packages/section-runtime/src/main-feed.ts`, `main-feed.test.ts`:
+- [x] `packages/section-runtime/src/main-feed.ts`, `main-feed.test.ts`:
   - export the visible-feed test that `feedlessArchive` uses;
   - `feedlessArchive` keeps calling it.
 
   -- one predicate for the editor's note, 7.18's Pre-flight and this guard (DW-253).
-- [ ] `packages/theme-compiler/src/compile.ts`:
+- [x] `packages/theme-compiler/src/compile.ts`:
   - `CompileInput` gains `pageTwo` and `routed`, and their refusals come first;
   - every stored doc passes through `designate`;
   - each file's stack and emission follow Design Notes § What each file compiles from;
@@ -236,55 +237,55 @@ After this story, the theme Inflozo builds carries Ghost's standard page types e
   - over the final record, the `@page` refusal and the referenced-partial assertion.
 
   -- FR-I1, FR-H2's guard, DW-150, DW-234, DW-253 and DW-261, in the one place every theme is built.
-- [ ] `packages/theme-compiler/src/compile.test.ts`:
+- [x] `packages/theme-compiler/src/compile.test.ts`:
   - the I/O matrix, row by row, on the inline library;
   - the triple-stash test admits content-cta's first line and nothing else;
   - the bare compile's file list;
   - determinism with `pageTwo` and `routed`.
 
   -- what the compiler promises.
-- [ ] `tools/pilot-theme.mjs`:
+- [x] `tools/pilot-theme.mjs`:
   - the project moves `index.hbs` to `pageTwo['home.hbs']`;
   - it gains a Tag page 2 (A17 #1 at `per-row: two`) and an Author doc whose A17 #1 is hidden (no visible feed);
   - `themeFailures` exempts `partials/content-cta.hbs` from "referenced by a file" and admits its `{{{html}}}` line.
 
   -- CI and the recorder hold one theme to one check.
-- [ ] `tools/check-snapshots.mjs` — rows, each behind its control:
+- [x] `tools/check-snapshots.mjs` — rows, each behind its control:
   - the pilots compile `tag.hbs` with the split and `author.hbs`;
   - `default.hbs`'s `noindex` block names `author` alone. Control: a tag page 2 with no visible feed adds `tag`;
   - `<main id="site-main">` appears once, around `{{{body}}}`.
 
   -- the shapes in CI on every commit.
-- [ ] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
+- [x] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
   - Design Notes § The T1 run;
   - `SECTION` becomes `72`;
   - the scaffold's stand-in `page.hbs` stays, relabelled as Story 10.79's (Question 1, ruled);
   - the docstring and the catalogue row say so.
 
   -- R-82: a real Ghost reads what the compiler writes.
-- [ ] `apps/web/lib/editor.ts`, `apps/web/editor.test.ts`:
+- [x] `apps/web/lib/editor.ts`, `apps/web/editor.test.ts`:
   - `EMPTY_TEMPLATE_ASK`, D5f's words with the R-170 change;
   - `emptiesCustomTemplate(key, doc)`: `CUSTOM_TARGET_RE` on `fileOfKey(key)` and exactly one instance, hidden ones counted;
   - tested over every canvas key.
 
   -- R-170: one list.
-- [ ] `apps/web/components/kit/button.tsx`:
+- [x] `apps/web/components/kit/button.tsx`:
   - a `marigold` variant, `bg-marigold-solid` hover `marigold-text`;
   - `new-project-sheet.tsx` uses it.
 
   -- one spelling of the gold fill.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
   - `onRemove` asks D5f where `emptiesCustomTemplate` holds;
   - the dialog sits at the editor root: `sheet`, the marigold chip with `AlertTriangle`, the title, and the body with the file in a mono chip, then Keep it (`data-cancel`) and Delete section;
   - one landing function for a removal (the direct path, D5f and the site-wide confirm), so each says "{layer} removed".
 
   -- FR-I1's warning, at the door every removing gesture takes.
-- [ ] `apps/web/app/(app)/app/harness/stand-ins.ts`, `tools/keyboard/journey.spec.mjs`:
+- [x] `apps/web/app/(app)/app/harness/stand-ins.ts`, `tools/keyboard/journey.spec.mjs`:
   - a members stand-in: a22/1 re-id'd `a30/1`, compiling to the three membership files, behind the stand-ins header;
   - a journey step: place it on Signup, press Delete, and see focus on Keep it; Escape changes nothing. Delete again, Tab, Enter: the section goes, "removed" is said, and the switcher shows Empty. A second section's Delete asks nothing, and nor does a Post's last section.
 
   -- the warning is unreachable on the live site until Story 10.100 (Question 3), so CI proves it here.
-- [ ] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
+- [x] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
 
   -- standing rules 3 and 7.
 
@@ -673,3 +674,53 @@ All four were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Rul
 - Both gscans locally, and gscan 6.4.2 in CI.
 - Vercel: the deploy of the editor change (CI `check`, `rls` and `deploy` green, the deployment READY at the head).
 - No migration and no Supabase, Resend or Dodo surface: the compiler has no product caller until Story 7.18. The warning is unreachable on production until Story 10.100, so the keyboard walk is its proof in CI, and its hand test runs in Story 10.100 (Question 3, ruled).
+
+**Dev results (2026-10-06, Node 24, on this tree).**
+
+- `pnpm check`: exit 0 — lint, the typecheck of every package, and every package's tests with 0 failures: `compile.test.ts`'s `(7.3)` rows (and 7.1's rows adapted to the full tree), `placement.test.ts`'s `POST_HEADER` row, `main-feed.test.ts`'s `visibleFeed` row, `editor.test.ts`'s two D5f rows. `check-snapshots` then ran its 7.3 rows, each behind a control that fired first:
+  - the pilots' `tag.hbs` carries the `{{#is "paged"}}` split and `author.hbs` is its layout line alone — control: a theme with no Tag page 2 has no split, and the check says so;
+  - `default.hbs`'s `noindex` block names `author` alone, with no canonical link — control: a Tag page 2 with no visible feed adds `tag`;
+  - one `<main id="site-main">`, around `{{{body}}}` alone — control: a `<main>` that wraps more is caught.
+- Six mutation controls on `compile.ts` (the `@page` guard, the split, the `noindex` block, `home.hbs` always, `page.hbs`/`error.hbs` always, no `designate`) each failed its `(7.3)` test, then the code was restored.
+- `pnpm keyboard`, whole: **199 passed**, exit 0 (9.8 min). It carries the journey's `7.3 · D5f` step and the floor spec's pill's-bin test. Controls, each run by breaking the rule and then restoring it: a rule that never asks fails the journey at `toBeVisible`; a rule that asks on every delete fails it at "one section stays"; the D5f dialog put back on the shadowed `sheet` name (DW-343) fails the floor test's padding-and-width row. During the helper's runs the whole gate failed once on `R-236 · the Style Pack panel … value for value` (`#pack-editor-title` not found in 5 s; no dialog this story touched), which then passed alone three times and in the next two whole runs.
+- **The recorder's local half**, inside the T1 run: the scaffold held only `assets/css/cards.css` and the stand-in `page.hbs`, now labelled Story 10.79's; **0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6)**, and both hand-written paywall themes gated 0/0 too.
+- **T1 `ghost6.inflozo.com` (6.58.0)**, `python3 tools/probe/record-theme-assembly.py`, in the main session on the owner's in-session go (asked and given in this Dev session). Keys read in-process from `tools/probe/.env` by variable name: `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`.
+  - **The first run held every compiled-theme row and voided on the recorder's own matcher.** The paywall's positive row read `gh-post-upgrade-cta PRESENT`: Ghost 6.58.0's `{{ghost_head}}` injects `<style id="gh-members-styles">` carrying `.gh-post-upgrade-cta` on every page (`helpers/ghost_head.js:146`, `helpers/tpl/styles.js`, read in the npm tarball), so a bare substring found the CSS selector. The matcher now reads the element, `class="gh-post-upgrade-cta"` (`helpers/tpl/content-cta.hbs:2`); the rule was not widened. Nothing was written to MEASUREMENTS, and T1 was restored after each of its three uploads.
+  - **The second run held every row: 89 of 89 `yes` in §72 (a) and 5 of 5 in §72 (b), 0 `NO`.**
+    - The archives: the tag `craft` and the author `umang`, the busiest of each; `posts_per_page` 8 over 33 published posts.
+    - `/tag/craft/` drew A17 #1 at `data-per-row="three"` (its Synthesis Default) and `/tag/craft/page/2/` at `"two"` (the split); `/author/umang/page/2/` carried `<meta name="robots" content="noindex">` in `<head>`, `/author/umang/` and `/tag/craft/page/2/` none; Ghost's canonical on `/author/umang/page/2/` was that page's own URL, once.
+    - Every page read had exactly one `<main id="site-main">`, the header's root before it and the page's roots inside it.
+    - `/{nonce}-missing/` answered 404 with Ghost's own `error-content` page and no `screen.css` (no `error.hbs`, Question 1).
+    - Paywall: the Content API said `/probe-gated-post/` is `paid`; with one other partial invoked from `default.hbs` and no `content-cta` invocation, the theme's marker rendered and Ghost's `<aside class="gh-post-upgrade-cta">` did not; the control (no partial invoked) rendered Ghost's own and not the marker.
+    - 7.1's and 7.2's rows held again on the larger tree (user text inert, comments not shipped, `package.json` read whole, 8 cells, `/page/5/` 200 and `/page/6/` 404, `w750` served, `w751` redirected, the `cards.min.css` hash `Jw0334E-A8vpuWdm` unchanged).
+  - **T1 was restored and read back after every upload**: `casper` active; `casper`, `racer` and `source` installed. The month's probe picture `/content/images/2026/10/inflozo-probe-rendition.png` was reused; nothing else was written.
+  - MEASUREMENTS §72 was written; §70 and §71 are untouched.
+- `python3 tools/doc-audit.py --check`, twice: the first run regenerated `INDEX.md` and `INDEX.html` (STALE), and the second gave **PASS** with 0 warnings.
+- **Manual checks.** The compiled pilot theme reads as a hand-written one would: `tag.hbs`'s `{{#is "paged"}}` split with page 1's default in the `{{else}}`, `default.hbs`'s `noindex` block naming `author` above `{{ghost_head}}` and `<main id="site-main">` around `{{{body}}}` alone, `author.hbs` as `{{!< default}}` alone. The D5f dialog in the harness against the frame: the marigold chip with its triangle, the title, the body with `custom-signup.hbs` in a mono chip, Keep it and a gold Delete section; the Kit's 36px buttons for the frame's 38 (the site-wide confirm beside it is 36 too), `text-ink-mid` for the body, the shared 460px sheet for the frame's 548px card.
+- **Found and fixed here (DW-343, closed):** since Story 5.22 the editor's local `const [sheet, setSheet]` hid the Kit's `sheet` class inside `EditorShell`, so the site-wide confirm, the conflict dialog and the Clear dark overrides confirm drew no paper, padding or width. `editor.tsx` imports it as `dialogSheet`; those three look as drawn again on the next deploy.
+- **No Supabase, Resend or Dodo call was made**, and no migration exists. Vercel: the editor change deploys through CI on this push; its READY is the Review's to read.
+
+**The I/O matrix, row by row, mapped to the check that ran and passed:**
+
+| Row | Check |
+|---|---|
+| Untouched project | `(7.3) the bare compile …` (with `postOnlyHeader` and `withError` for Question 1) and `(7.3) an untouched file holds exactly its synthesize or pageTwoStack stack …`; on T1, `/tag/craft/` at per-row three |
+| Home designed, page 2 follows | `(7.3) Home designed, page 2 following …` |
+| Home's page 2 designed | `(7.3) Home's page 2 designed …` (Home designed and untouched) |
+| Home with no main feed | `(7.3) a Home with no main feed …` |
+| Archive page 2 designed | `(7.3) an archive's page 2 designed …` (page 1 designed and untouched); `check-snapshots`' split row; on T1, `/tag/craft/page/2/` at per-row two |
+| Archive page 2 follows | `(7.3) an archive's page 2 following page 1 …` |
+| A page 2 with no visible feed | `(7.3) FR-H2's guard …` (Tag page 1 hidden and following, Author and Home page 2 of their own; control: none); `check-snapshots`' noindex row; on T1, the author's page 2 |
+| Two main-feed flags | `(7.3) two main-feed flags compile with designate's repair …` |
+| A Page with a Post header | `(7.3) a Page with a Post header …` |
+| A membership page | `(7.3) a membership page …` |
+| Emptied or untouched conditional file | `(7.3) an emptied or untouched custom, private or paywall file is not emitted …` |
+| Routed custom template, emptied | the same test, with the doc absent and empty |
+| Every section hidden | `(7.3) every section hidden …`; on T1, `/author/umang/` |
+| Designed paywall | `(7.3) a designed paywall …` and `(7.3) a theme carrying the paywall but invoking no partial …`; on T1, §72 (b) |
+| A file no theme gets | `(7.3) a file no theme gets is refused …` (`page-about.hbs`, `members/signup.hbs`, `error-404.hbs`, `index.hbs`, three `pageTwo` keys) |
+| A routed name that is no custom template | the same test, `routed: ['page.hbs']` |
+| Another `@page` property | `(7.3) another @page property is refused …` |
+| Determinism | `(7.3) determinism: templates, pageTwo and routed in another order …` |
+| Delete the last section of a designed membership canvas | journey `7.3 · D5f …` (the Delete key, Layers ⋯ Delete; Esc, Keep it, Delete section, "removed", the Empty mark) and floor `7.3 · D5f · the pill's bin …` (the third gesture, by pointer) |
+| Any other removal | journey `7.3 · D5f …` (Hide, ⌘Z, ⇧⌘Z, a second section, Post's last section) and `editor.test.ts`'s rule over every canvas key, the site doc and the page-2 keys |

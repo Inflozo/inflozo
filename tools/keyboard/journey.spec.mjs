@@ -7120,3 +7120,113 @@ test('6.6 · DW-70 · the Which project? cards scroll inside the rail from table
     }
   }
 })
+
+// ── Story 7.3 — D5f, the empty template warning (FR-I1) ───────────────────────────────────────────────────────────────
+
+const EDITOR = await import(new URL('../../apps/web/lib/editor.ts', import.meta.url).href)
+
+test('7.3 · D5f: the last section leaving Signup asks first, on Keep it — Esc and Keep it change nothing, Delete section removes it, and no other removal asks', async ({ page }) => {
+  // the stand-in members page (`harness/stand-ins.ts`): nothing can sit on Signup until Story 10.100, so this is the
+  // warning's only proof before then (Question 3)
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-stand-ins': 'on' })
+  await page.goto(`${HARNESS}/custom-signup`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'custom-signup')
+  const mark = (state) => page.locator(`[data-canvas="custom-signup"] [data-mark="${state}"]`)
+  await expect(mark('empty'), 'the control: Signup starts Empty').toHaveCount(1)
+  const ask = page.locator('dialog[aria-labelledby="editor-empty-title"]')
+  const keepIt = page.locator('dialog[open] [data-cancel]')
+  /** ⌘K from the canvas, and the stand-in placed */
+  const place = async () => {
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+k')
+    await expect(picker(page)).toBeVisible()
+    await picker(page).locator('[data-cell][data-design="a30/1"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(picker(page)).toHaveCount(0)
+  }
+  await place()
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(1)
+  await expect(mark('designed'), 'Signup is designed now').toHaveCount(1)
+  const [own] = (await rows(page)).page
+  const all = (await rows(page)).all.length
+
+  // the Delete key: D5f opens on Keep it, in its words; Escape changes nothing
+  await select(page, own)
+  const quiet = await said(page)
+  await page.keyboard.press('Delete')
+  await expect(ask).toBeVisible()
+  await expect(keepIt).toBeFocused()
+  await expect(keepIt).toHaveText(EDITOR.EMPTY_TEMPLATE_ASK.cancel)
+  await expect(page.locator('#editor-empty-title')).toHaveText(EDITOR.EMPTY_TEMPLATE_ASK.title(EDITOR.CANVASES['custom-signup'].label))
+  await expect(page.locator('#editor-empty-body')).toHaveText(EDITOR.EMPTY_TEMPLATE_ASK.body(EDITOR.CANVASES['custom-signup'].file).join(''))
+  await page.keyboard.press('Escape')
+  await expect(ask).toBeHidden()
+  await panelsSettle(page)
+  expect((await rows(page)).all, 'Escape changes nothing').toHaveLength(all)
+  expect(await said(page), 'and says nothing').toBe(quiet)
+
+  // Hide is not emptying (FR-D5): Space on the row hides it and asks nothing, and a second Space shows it again
+  await page.locator(`[data-layer-row="${own}"]`).focus()
+  await page.keyboard.press(' ')
+  await expect(page.locator(`[data-layer-row="${own}"] [popover] button`).first(), 'the control: it is hidden').toHaveText('Show')
+  await expect(ask, 'Hide asks nothing').toBeHidden()
+  await page.keyboard.press(' ')
+  await expect(page.locator(`[data-layer-row="${own}"] [popover] button`).first()).toHaveText('Hide')
+
+  // Layers ⋯ Delete, the second gesture, takes the same door: D5f again, and Keep it changes nothing
+  await rowItem(page, own, 'Delete')
+  await expect(ask).toBeVisible()
+  await expect(keepIt).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(ask).toBeHidden()
+  await panelsSettle(page)
+  expect((await rows(page)).all, 'Keep it changes nothing').toHaveLength(all)
+
+  // Delete again, Tab, Enter: the section goes, it is said, and the template is left Empty
+  await select(page, own)
+  await page.keyboard.press('Delete')
+  await expect(keepIt).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('dialog[open] button:focus')).toHaveText(EDITOR.EMPTY_TEMPLATE_ASK.confirm)
+  await page.keyboard.press('Enter')
+  await expect(ask).toBeHidden()
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(0)
+  await expect.poll(() => said(page)).toMatch(/ removed$/)
+  await expect(mark('empty'), 'the switcher shows Signup Empty').toHaveCount(1)
+
+  // ⌘Z and ⇧⌘Z ask nothing: undo is the net
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(1)
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(0)
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(1)
+  await expect(ask, 'no undo or redo asked').toBeHidden()
+
+  // a second section: deleting one of the two asks nothing
+  await select(page, (await rows(page)).page[0])
+  await place()
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(2)
+  await select(page, (await rows(page)).page[1])
+  await page.keyboard.press('Delete')
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(1)
+  await expect(ask, 'one section stays, so nothing asks').toBeHidden()
+
+  // and a standard canvas never asks: Post's last section goes with no warning. The harness hands Post no doc (its
+  // `synthesized` is empty), so the post header is placed first and is then Post's one section
+  await page.goto(`${HARNESS}/post`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  expect((await rows(page)).page, 'the control: Post starts with no section of its own').toHaveLength(0)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  await expect(picker(page)).toBeVisible()
+  await picker(page).locator('[data-cell][data-design="a24/1"]').focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(1)
+  await select(page, (await rows(page)).page[0])
+  await page.keyboard.press('Delete')
+  // the rows emptying is the delete LANDING: an ask would have held it
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(0)
+  await expect.poll(() => said(page)).toMatch(/ removed$/)
+  await expect(ask, 'Post is no custom template').toBeHidden()
+})

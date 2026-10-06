@@ -1,7 +1,7 @@
 // THE SYNTHESIS DEFAULTS, AND THE ONE FUNCTION THAT READS THEM (Story 5.5 — FR-D6, AD-27(d)).
 //
 // ONE IMPLEMENTATION, NEVER TWO. The editor calls `synthesize` so an untouched canvas opens already built, and Story
-// 7.3's compiler will call this same one at compile time; `pageTwoStack` is what page 2 of a paginated canvas is made
+// 7.3's compiler calls this same one at compile time; `pageTwoStack` is what page 2 of a paginated canvas is made
 // of (R-179), and the editor's page-2 preview and Story 7.3's compiler call it alike. AD-27(d) exists precisely so the
 // stacks, the main-feed designation and the drop rule are not written twice. The spine's `:530` mermaid puts
 // `synthesize` as the first node INSIDE the pure core: no clock, no I/O, no app state — the library is HANDED in, the
@@ -9,7 +9,7 @@
 //
 // THE TABLE IS A CITATION, NOT A DECISION. `sections-inventory.md § Synthesis Defaults` (:778-867) is normative and is
 // its own single source of truth (its Invariant 1): the per-template stacks are :802-847, the main-feed rule :849-861,
-// and the "same stack into both files" for `home.hbs`/`index.hbs` is :804-806. CHANGING A STACK MEANS CHANGING THAT
+// and the "same stack for both files" for `home.hbs`/`index.hbs` is :807. CHANGING A STACK MEANS CHANGING THAT
 // DOCUMENT FIRST. What is written below is only what that document states, in the fields the doc schema has; where its
 // "key values" ARE the design's own control defaults (FR-F7) nothing is written here, because a restated default is a
 // second place for it to drift.
@@ -57,8 +57,9 @@ export type DroppedRow = { designId: string; reason: string }
 
 export type Synthesis = { instances: DocInstance[]; dropped: DroppedRow[] }
 
-/** `home.hbs` and `index.hbs` are ONE stack, written once: "an untouched Home synthesizes the same stack into both
- *  files — the root and its paginated continuation must not disagree about what the feed is" (:804-806). A17 #1's own
+/** `home.hbs` and `index.hbs` are ONE stack, written once: "an untouched Home's default stack is the same stack for both
+ *  files — the root and its paginated continuation must not disagree about what the feed is" (:807); Story 7.3's compiler
+ *  writes an untouched pair once, as `index.hbs`. A17 #1's own
  *  control defaults already are the document's key values (all meta toggles on), and Pagination style is A34, a
  *  treatment chosen outside the canvas and never an instance here — so this row carries no control values. */
 const FEED: readonly DefaultRow[] = [{ designId: 'a17/1', layerName: 'Post grid', isMainFeed: true }]
@@ -156,7 +157,7 @@ export function synthesize(file: string, library: SynthesisLibrary): Synthesis {
  *      (FR-I1), so `/page/2/` of such a site still lists its posts rather than repeating a page with none.
  *
  * AN UNTOUCHED PAGE 1 — no doc, or no instances (AD-22) — IS its Synthesis Default stack, so that stack is what is
- * copied: :804-806's "the same stack into both files" on Home, and the archive's own stack on Tag and Author. The
+ * copied: :807's "the same stack for both files" on Home, and the archive's own stack on Tag and Author. The
  * editor never meets this arm (`read.ts` hands every untouched canvas its stack as a doc); the compiler, handed a
  * stored doc that is absent, does.
  *

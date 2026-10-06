@@ -418,33 +418,43 @@ DOCS = [
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
-  "Stories 7.1 and 7.2's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the formatting "
-  "contract, its own package.json included, rendered by a real Ghost. Compiles tools/pilot-theme.mjs's project through "
-  "Node 24 — the site doc's A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, index.hbs's A17 #1, post.hbs's A24 #1 and "
-  "a hoisted A22 #1 — with a page word from this run's nonce in A4 #13's eyebrow, a layer word in every layer name, one "
-  "hostile layer name and AD-5's shapes in A22 #1's text, handed a theme (its probe name · 1.0.0 · a fixed description) "
-  "and a posts_per_page T1's published posts overflow; refuses unless the theme passes the check CI holds it to "
-  "(themeFailures). Adds the scaffold, new files only, each named for its story: assets/css/cards.css (7.13, 7.4) and a "
-  "stand-in page.hbs reading @page.show_title_and_feature_image (7.3, the owner's ruling of Story 7.1's Question 1); "
-  "package.json is compiled, never scaffolded (Story 7.2). Gates through tools/stress/gate.js at 0 errors AND 0 warnings "
-  "on gscan 4.49.7 and 6.4.2 — anything gscan names is a question for the owner, never a widened scaffold. On T1 ONLY "
-  "(R-238), behind record-shim.py's start_guard: under the site's own theme it reads GET themes/ (that theme's package: "
-  "no marker, no 750 width, its card_assets), the newest published post's T1-hosted feature image — or, when T1 hosts "
-  "none, a 1000-px probe PNG it uploads, which stays (Ghost's API deletes no picture; the owner's ruling of Story 7.2's "
-  "Question 4) — at size/w750/ "
-  "(redirected to the original) and the cards.min.css hash on /; then uploads and activates the theme inside the try "
-  "whose finally is restore_and_delete (DW-332: the name is the zip's, known before the upload), waits for the page word "
-  "on /, and reads /, /page/2/, the newest published post, /page/{last}/ and /page/{last+1}/: the page word, every "
+  "Stories 7.1, 7.2 and 7.3's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
+  "formatting contract, its own package.json included and every standard template synthesized where untouched, rendered "
+  "by a real Ghost; and Story 7.3's paywall mechanism on two hand-written probe themes. Compiles tools/pilot-theme.mjs's "
+  "project through Node 24 — the site doc's A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 "
+  "(index.hbs), post.hbs's A24 #1 and a hoisted A22 #1, a Tag page 2 at per-row two over an untouched Tag page 1, and an "
+  "Author page whose one feed is hidden — with a page word from this run's nonce in A4 #13's eyebrow, a layer word in "
+  "every layer name, one hostile layer name and AD-5's shapes in A22 #1's text, handed a theme (its probe name · 1.0.0 · "
+  "a fixed description) and a posts_per_page of min(12, the published total − 1, the busiest tag's and author's counts "
+  "− 1), void when either has fewer than two; refuses unless the theme passes the check CI holds it to (themeFailures). "
+  "Adds the scaffold, new files only, each named for its story: assets/css/cards.css (7.13, 7.4) and a stand-in page.hbs "
+  "reading @page.show_title_and_feature_image (Story 10.79's: the compile leaves an untouched page.hbs out, Story 7.3's "
+  "Question 1, ruled); package.json is compiled, never scaffolded (Story 7.2). Gates through tools/stress/gate.js at 0 "
+  "errors AND 0 warnings on gscan 4.49.7 and 6.4.2 — anything gscan names is a question for the owner, never a widened "
+  "scaffold. On T1 ONLY (R-238), behind record-shim.py's start_guard: under the site's own theme it reads GET themes/ "
+  "(that theme's package: no marker, no 750 width, its card_assets), the newest published post's T1-hosted feature image "
+  "— or, when T1 hosts none, a 1000-px probe PNG it uploads, which stays (Ghost's API deletes no picture; the owner's "
+  "ruling of Story 7.2's Question 4) — at size/w750/ (redirected to the original) and the cards.min.css hash on /; then "
+  "uploads and activates the theme inside the try whose finally is restore_and_delete (DW-332: the name is the zip's, "
+  "known before the upload), waits for the page word on /, and reads /, /page/2/, the newest published post, "
+  "/page/{last}/, /page/{last+1}/, the tag's and the author's pages 1 and 2 and /{nonce}-missing/: the page word, every "
   "placed section's root class once each in doc order, no {{ }} {{!-- C0 or layer word in the HTML, the hostile text as "
-  "literal characters, <html lang> the site's locale; and Story 7.2's rows — GET themes/ returns the compiled "
-  "package.json marker included, / lists exactly posts_per_page A17 #1 cells, the last page 200 and the next 404, "
-  "size/w750/ served at its path, and the cards hash unchanged when the site theme's card_assets is true. Controls (the "
-  "layer word and the hostile name ARE in the uploaded templates; every page is this run's theme by its page word or "
-  "the same screen.css asset hash; the site theme's package carries no marker; w750 redirected before the upload and "
-  "w751 after it) void the run; a row that does not hold writes nothing. Writes T1 the upload, two activations, the "
-  "delete, the one w750 rendition Ghost saves and, only when T1 hosts no picture, that probe picture. Run on the owner's in-session go, in the main session. Any argument "
-  "prints its docstring and exits. Writes MEASUREMENTS.md §71 alone, replacing an earlier §71 of its own; §70 stays "
-  "Story 7.1's record."),
+  "literal characters, <html lang> the site's locale; Story 7.2's rows — GET themes/ returns the compiled package.json "
+  "marker included, / lists exactly posts_per_page A17 #1 cells, the last page 200 and the next 404, size/w750/ served "
+  "at its path, and the cards hash unchanged when the site theme's card_assets is true; and Story 7.3's — the tag's page "
+  "1 at per-row three and its page 2 at two, noindex in the author's page 2's head and on neither the author's page 1 nor "
+  "the tag's page 2, one <main id=\"site-main\"> per page around the page's sections with the header outside, Ghost's "
+  "own canonical on the author's page 2 its own URL once, and the missing page a 404 with Ghost's own error page and none "
+  "of the theme's screen.css. Then two hand-written themes, each behind its own start_guard and restore_and_delete, read "
+  "/probe-gated-post/ signed out: one invoking a partial from default.hbs renders its content-cta.hbs marker, and the "
+  "control invoking none renders Ghost's own gh-post-upgrade-cta. Controls (the layer word, the hostile name and the "
+  "noindex meta ARE in the uploaded templates and no error.hbs is; every page is this run's theme by its page word or "
+  "the same screen.css asset hash; every page 2 answers 200; the site theme's package carries no marker; w750 redirected "
+  "before the upload and w751 after it; the gated post is not public; each paywall read carries its theme's marker) void "
+  "the run; a row that does not hold writes nothing. Writes T1 three theme uploads, their activations and deletes, the "
+  "one w750 rendition Ghost saves and, only when T1 hosts no picture, that probe picture. Run on the owner's in-session "
+  "go, in the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §72 alone, replacing an "
+  "earlier §72 of its own; §70 and §71 stay Stories 7.1's and 7.2's records."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1195,14 +1205,18 @@ DOCS = [
   'the clean file passes).'),
  ('tools/pilot-theme.mjs', 'tool', 'The five-pilot project, compiled',
   "Story 7.1's one builder of the project CI and the T1 recorder both compile: the site doc's A1 #1, Home's A4 #13 · "
-  "A17 #1 (main feed) · A22 #1, index.hbs's A17 #1, post.hbs's A24 #1 and an A22 #1 with Home's content so it hoists. A "
+  "A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 (pageTwo, compiled to index.hbs), post.hbs's A24 #1 and an A22 #1 "
+  "with Home's content so it hoists; since Story 7.3 also a Tag page 2 at per-row two over an untouched Tag page 1 and an "
+  "Author page whose one A17 #1 is hidden, and pageStacks, what each page is made of by the runtime's own synthesize and "
+  "pageTwoStack. A "
   "page word goes into A4 #13's eyebrow and a layer word into every layer name; one layer name is hostile and A22 #1's "
   "text carries AD-5's shapes. Designs are read and validated from disk; the compile is compileTheme with Paper, handed "
   "a theme identity (CI's fixed one is PILOT_THEME, inflozo-pilots · 1.0.0 · Pilot sections; Story 7.2). Also exports "
   'themeFailures, the check both callers hold a compiled theme to: Handlebars 4.7.9 (the compiler\'s test parser) '
-  'parses every template, one {{{body}}} and no other triple-stash, no fingerprint (package.json read without its three '
-  "named marks — name, author and FR-J13's marker — by unmarked(), and refused when it does not parse), every partial "
-  'referenced. Node 24.'),
+  'parses every template, one {{{body}}} and no other triple-stash but {{{html}}} as partials/content-cta.hbs\'s first '
+  "line (Story 7.3), no fingerprint (package.json read without its three named marks — name, author and FR-J13's marker "
+  "— by unmarked(), and refused when it does not parse), every partial referenced but the paywall, which Ghost's "
+  "{{content}} runs. Node 24."),
  ('tools/check-traces.mjs', 'tool', 'The deployed functions carry their files, checked after the build',
   "Story 5.24d's check of DW-269, run by CI's check job straight after pnpm build (never inside pnpm check, which runs "
   "before any build). The app reads designs, pictures and stylesheets off disk, and Vercel ships a function with only the "
@@ -1346,11 +1360,13 @@ DOCS = [
   "never greyed, a genuine reader greyed from its first frame); DW-223's pick surviving a reload with its action held; "
   "DW-290's chrome faces prepared before any gesture; DW-229 and DW-226's PAUSED said once and chipped by width; DW-281's "
   "Layers pictures at 1440 and 1024; DW-187's ⌥↑ held in the footer band and DW-207's three Section Picker leftovers, on "
-  "harness-only stand-ins (a footer and a post content layout, x-inflozo-harness-stand-ins); DW-198's role dots in the mode "
+  "harness-only stand-ins (a footer, a post content layout and, since Story 7.3, a members page, x-inflozo-harness-stand-ins); DW-198's role dots in the mode "
   "on screen; DW-282's read-only rows with no duplicate key; DW-275's Paywall sheet arriving with its first paint; and "
   "DW-303's connect wizard sending its action under next dev's StrictMode (/app/harness/connect) — and extends ⌘D "
   "(DW-205: a repeated sentence is a new node), DW-182 (DW-256: the canvas pill's shadow), DW-279 (R-215: no Ghost row "
-  "before the site shows one) and 5.20's Back to post. "
+  "before the site shows one) and 5.20's Back to post. Story 7.3 adds D5f's empty template warning on Signup, through the stand-in members page: the "
+  "Delete key and Layers ⋯ Delete open it on Keep it in its own words, Esc and Keep it change nothing, Delete section "
+  "removes the section and says so, and Hide, undo, redo, a second section and Post's last section never ask. "
   "Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',
@@ -1368,7 +1384,7 @@ DOCS = [
   'name or tier tag cut that full width shows whole. Story 5.24e adds DW-283\'s MEMBERS OFF chip, whole or absent on a '
   '600-wide tablet; DW-199\'s skeleton card measured against the real one at 1440 x 600 and 2560 x 1440, 1440 x 900 the '
   'control; DW-189\'s stand-in footer dragged by its Layers grip and its pill grip, its slot staying in the footer band; '
-  'and R-217\'s Layers row pointing at its section with no pill and no scroll. Stores no count.'),
+  'and R-217\'s Layers row pointing at its section with no pill and no scroll. Story 7.3 adds D5f\'s third gesture, the pill\'s bin over Signup\'s last section (the stand-in members page): the warning opens on Keep it in the dialog vocabulary\'s sheet, Keep it changes nothing and Delete section removes it. Stores no count.'),
  ('tools/keyboard/mode.spec.mjs', 'tool', 'Mode resolution in Chromium',
   "Story 6.5's proofs in the keyboard gate's own run, over the harness's canvas document (/app/harness/canvas): THE "
   "TRUTH TABLE — every combination of the device (prefers-color-scheme), the owner's pin (scheme-light / scheme-dark on "

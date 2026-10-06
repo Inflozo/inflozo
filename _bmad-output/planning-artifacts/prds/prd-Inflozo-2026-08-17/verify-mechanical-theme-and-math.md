@@ -274,6 +274,8 @@ The tension the report names is real and verified: FR-H2 (`prd.md:206`) explicit
 
 **Verdict: CONFIRMED.** Suggested clause for §7.4: *"No `robots.txt` and no `sitemap.xml` are emitted. Ghost serves both, and a theme-root `robots.txt` would silently replace the site owner's — including its sitemap reference. Inflozo's indexing participation is scoped to page-level directives (FR-H2's `noindex` / canonical guards) and stops there."* Severity: **Low**, unchanged.
 
+*(2026-10-06, Story 7.3, read in source: FR-H2's guard is now `noindex` alone, written once in `default.hbs`'s head. Ghost's `{{ghost_head}}` writes a canonical on every page, page 2's pointing at itself, so the theme writes no canonical link of its own — the FR-H2 text quoted above, and the clause's "canonical guards", are superseded.)*
+
 ---
 
 ### Claim 7 — spike output ≠ §7.4 — **CONFIRMED**, and the enumeration is incomplete
@@ -433,6 +435,8 @@ All four sub-claims verified:
 The consequence chain is exactly as described. FR-H2 (`prd.md:206`) permits *"A paginated template with **zero** feed sections … (e.g. a feed-less marketing homepage)"* and pays for it with three mechanisms — a pre-deploy warning, a compiler-emitted `noindex` beyond page 1, and a canonical link to page 1. All three exist to suppress duplicate `/page/N/` URLs that `home.hbs` would never generate.
 
 **Verdict: CONFIRMED**, with one qualification the report already makes and which should be preserved: **the tradeoff is genuine and the current design is defensible.** Adding `home.hbs` costs a seventh template surface in FR-D6's switcher, a seventh entry in the Synthesis Defaults, and a user-facing distinction between "the homepage" and "the post index" that most users of a page-builder do not want to think about. It also does not remove FR-H2's machinery, which is still needed for feed-less *tag* and *author* archives and for custom collections.
+
+*(2026-10-06, Story 7.3: `home.hbs` shipped, and FR-H2's machinery is now a pre-deploy warning and a `noindex` guard in `default.hbs`'s head, with no canonical link of the theme's own — Ghost writes one, page 2's pointing at itself. It covers a feed-less archive's page 2 and Home's page 2 of its own design with no feed (R-178, DW-234).)*
 
 The defect is therefore **documentation, not architecture**: the PRD never mentions the file, so a Ghost-literate reviewer reads FR-H2's guard as ignorance of a standard template rather than as a decision. Fix: one sentence in §7.4 — *"No `home.hbs` is emitted. Ghost would route `/` to it and `/page/N/` to `index.hbs`, splitting the homepage across two template surfaces; Inflozo keeps one Home canvas and handles the pagination consequence with FR-H2's zero-feed SEO guard instead."* Severity: **Low**, not Medium.
 

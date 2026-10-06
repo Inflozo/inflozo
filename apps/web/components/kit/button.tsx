@@ -10,7 +10,7 @@ import { greyedProps, reason, ring, type Greyed } from './greyed'
    `Button` has no `disabled` (a compile error, like an unreasoned grey); a control another
    control switched off is greyed with its reason, and that lives on the controls. */
 
-type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | 'danger' | 'danger-outline'
+type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | 'danger' | 'danger-outline' | 'marigold'
 type Size = 44 | 36 | 32
 /* The Kit's own weight is 600. A FRAME MAY DRAW A DIFFERENT ONE, and it must be said HERE rather
    than passed through `className`: both are plain utilities in the same `@layer utilities`, so the
@@ -20,7 +20,7 @@ type Size = 44 | 36 | 32
    (review, 2026-09-06). Typed, so a weight the Kit does not draw is a compile error. */
 type Weight = 'font-medium' | 'font-semibold'
 
-const variants: Record<Variant, string> = {
+export const variants: Record<Variant, string> = {
   coral: 'bg-coral-text text-surface hover:bg-coral-text-hover',
   primary: 'bg-ink text-surface hover:bg-ink-hover',
   secondary: 'border border-line bg-surface text-ink hover:bg-paper',
@@ -28,6 +28,10 @@ const variants: Record<Variant, string> = {
   'coral-outline': 'border border-coral bg-surface text-coral-text hover:bg-coral-tint',
   danger: 'bg-danger-text text-surface hover:bg-danger-text-hover',
   'danger-outline': 'border border-danger bg-surface text-danger-text hover:bg-danger-tint',
+  /* STORY 7.3 — A NOTICE, NOT DANGER: the gold fill D4b's Go Pro and D5f's Delete section draw. The frames' resting gold fails
+     AA under white, so the fill is `marigold-solid` and the hover `marigold-text` (the owner's ruling for D4b, 2026-09-06);
+     spelled here once, and D4b's link takes it from here at its own 38px */
+  marigold: 'bg-marigold-solid text-surface hover:bg-marigold-text',
 }
 
 const sizes: Record<Size, string> = {

@@ -2,6 +2,8 @@
 // EVERY file it emits: Handlebars 4.7.9 parses it, one triple-stash, no token or marker, no comment but the labels, no
 // fingerprint, every partial referenced, no consumed directive, and the same bytes for shuffled input.
 // Story 7.2 — `package.json`, held to its own I/O matrix, and the `size=` check on the final text.
+// Story 7.3 — every standard template, synthesized where untouched: the spec's I/O matrix row by row, on the same inline
+// library, which holds every design the rows need (A24 #1 may sit on `page.hbs` here, as Story 10.79 will make it).
 //
 // A test may load `handlebars` to parse what the compiler emitted (FR-J1); product code may not (`eslint.config.js`).
 
@@ -9,19 +11,19 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import Handlebars from 'handlebars'
 import { JSDOM } from 'jsdom'
-import { CONSUMED_DIRECTIVE_RE, IMAGE_SIZES } from '@inflozo/library'
+import { CONSUMED_DIRECTIVE_RE, IMAGE_SIZES, PAYWALL_TARGET } from '@inflozo/library'
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
-import { U0, U1, T0, T1 } from '@inflozo/section-runtime'
+import { pageTwoStack, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
 import type { DocInstance, ProjectDoc } from '@inflozo/section-runtime'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
-import { checkSizes, compileTheme, THEME_MARKER, THEME_MARKS } from './compile.ts'
+import { checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, THEME_MARKER, THEME_MARKS } from './compile.ts'
 import type { CompileInput } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
 
 // ─── a small inline library ───────────────────────────────────────────────────────────────────────────────────────
 
-const TITLES: Record<string, string> = { a1: 'Headers', a3: 'Footers', a4: 'Heroes', a17: 'Post Grids', a22: 'Newsletter', a24: 'Post Headers' }
+const TITLES: Record<string, string> = { a1: 'Headers', a3: 'Footers', a4: 'Heroes', a17: 'Post Grids', a22: 'Newsletter', a24: 'Post Headers', a30: 'Members Pages', a31: 'Error Pages', a32: 'Paywall / Content CTA' }
 const text = (label: string): PropDef => ({ type: 'text', label }) as PropDef
 
 function design(id: string, name: string, over: Partial<SectionRegistryEntry> & Pick<SectionRegistryEntry, 'html' | 'compileTarget'>): SectionRegistryEntry {
@@ -34,6 +36,9 @@ function design(id: string, name: string, over: Partial<SectionRegistryEntry> & 
     ...over,
   }
 }
+
+const segmented = (rows: readonly (readonly [string, ...string[]])[]): ControlDef[] =>
+  rows.map(([name, ...values]) => ({ name, type: 'segmented', label: name, group: 'layout', values, default: values[0] }) as ControlDef)
 
 const LATEST: Record<string, DataBinding> = { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true } }
 
@@ -68,6 +73,7 @@ const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
   design('a17/1', 'Three Up', {
     compileTarget: ['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs'],
     bindingContext: ['posts'],
+    controlSchema: segmented([['per-row', 'three', 'two']]),
     html: '<section class="a17-1">\n  <ul class="a17-1__grid">\n    <li class="a17-1__cell" data-repeat="posts" data-partial="post-card">\n      <a class="a17-1__card" data-bind-attr="href:url" data-bind="title">Title</a>\n    </li>\n  </ul>\n</section>',
   }),
   design('a22/1', 'Inline Row', {
@@ -82,9 +88,21 @@ const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
 </section>`,
   }),
   design('a24/1', 'Centred', {
-    compileTarget: ['post.hbs'],
+    // on page.hbs too, as Story 10.79 will make the real one, so the page switch's rows are testable today
+    compileTarget: ['post.hbs', 'page.hbs'],
     bindingContext: ['post'],
+    controlSchema: segmented([['byline', 'on', 'off'], ['tag-line', 'on', 'off']]),
     html: '<section class="a24-1">\n  <h1 class="a24-1__title" data-bind="title">Title</h1>\n</section>',
+  }),
+  design('a30/1', 'Card', {
+    compileTarget: ['custom-signup.hbs', 'custom-signin.hbs', 'custom-member-home.hbs'],
+    contentSchema: { heading: text('Heading') },
+    html: '<section class="a30-1">\n  <h2 class="a30-1__heading" data-prop="heading">Join</h2>\n</section>',
+  }),
+  design('a32/1', 'Centred', {
+    compileTarget: [PAYWALL_TARGET],
+    contentSchema: { heading: text('Heading') },
+    html: '<section class="a32-1">\n  <h2 class="a32-1__heading" data-prop="heading">Keep reading</h2>\n</section>',
   }),
 ].map((e) => [e.id, e]))
 
@@ -117,11 +135,16 @@ function project(): Record<string, ProjectDoc> {
     'page.hbs': docOf(at('a22/1', 'Gone', { hidden: true })),
   }
 }
+/** The project's page 2 (Story 7.3): Home's has a feed of its own, so Home's own sections stay in Home's directory. */
+const projectTwo = (): Record<string, ProjectDoc> => ({ 'home.hbs': docOf(at('a17/1', 'Older posts', { isMainFeed: true })) })
+const compileProject = (over: Partial<CompileInput> = {}) => compile(project(), { pageTwo: projectTwo(), ...over })
+/** Home alone, with that page 2 — so its sections are not hoisted beside an `index.hbs` copy of themselves. */
+const compileHome = (home: ProjectDoc, over: Partial<CompileInput> = {}) => compile({ 'home.hbs': home }, { pageTwo: projectTwo(), ...over })
 
 // ─── the I/O matrix ───────────────────────────────────────────────────────────────────────────────────────────────
 
-test('a designed Home: the layout line, then each section\'s label and invocation, a blank line between; three files in its directory; post-card once', () => {
-  const out = compile({ 'home.hbs': project()['home.hbs'] as ProjectDoc })
+test('a designed Home: the layout line, then each section\'s label and invocation, a blank line between; its own files in its directory, the feed every archive shares in shared/; post-card once', () => {
+  const out = compileHome(project()['home.hbs'] as ProjectDoc)
   assert.equal(out['home.hbs'], [
     '{{!< default}}',
     '',
@@ -129,19 +152,19 @@ test('a designed Home: the layout line, then each section\'s label and invocatio
     '{{> "sections/home/latest-post"}}',
     '',
     '{{!-- Post grid · Post Grids · Three Up --}}',
-    '{{> "sections/home/post-grid"}}',
+    '{{> "sections/shared/post-grid"}}',
     '',
     '{{!-- Newsletter · Newsletter · Inline Row --}}',
     '{{> "sections/home/newsletter"}}',
     '',
   ].join('\n'))
-  assert.deepEqual(Object.keys(out).filter((p) => p.startsWith('partials/sections/')), ['partials/sections/home/latest-post.hbs', 'partials/sections/home/newsletter.hbs', 'partials/sections/home/post-grid.hbs'])
+  assert.deepEqual(Object.keys(out).filter((p) => p.startsWith('partials/sections/home/')), ['partials/sections/home/latest-post.hbs', 'partials/sections/home/newsletter.hbs'])
   assert.equal(Object.keys(out).filter((p) => p === 'partials/post-card.hbs').length, 1)
-  assert.match(out['partials/sections/home/post-grid.hbs'] ?? '', /\{\{#foreach posts\}\}\n {6}\{\{> "post-card"\}\}\n {4}\{\{\/foreach\}\}/)
+  assert.match(out['partials/sections/shared/post-grid.hbs'] ?? '', /\{\{#foreach posts\}\}\n {6}\{\{> "post-card"\}\}\n {4}\{\{\/foreach\}\}/)
 })
 
 test('a post: the sections sit inside the block its target opens ({{#post}}), one level in', () => {
-  const out = compile(project())
+  const out = compileProject()
   assert.equal(out['post.hbs'], [
     '{{!< default}}',
     '',
@@ -157,30 +180,30 @@ test('a post: the sections sit inside the block its target opens ({{#post}}), on
 })
 
 test('the site doc: headers before {{{body}}}, A3 footers after it, whatever order the doc stores them in', () => {
-  const out = compile(project())
+  const out = compileProject()
   const body = (out['default.hbs'] ?? '').split('\n')
   const header = body.indexOf('    {{> "sections/default/header"}}')
-  const triple = body.indexOf('    {{{body}}}')
+  const triple = body.indexOf('      {{{body}}}')
   const footer = body.indexOf('    {{> "sections/default/footer"}}')
   assert.ok(header > 0 && header < triple && triple < footer, out['default.hbs'])
   assert.ok((out['default.hbs'] ?? '').indexOf('{{asset "css/screen.css"}}') < (out['default.hbs'] ?? '').indexOf('{{ghost_head}}'), 'the stylesheet comes before ghost_head')
   assert.equal(body[header - 1], '    {{!-- Header · Headers · Rail --}}')
-  // no site doc and no section: default.hbs and screen.css are still emitted
+  // no site doc: default.hbs is still emitted, <main> around {{{body}}} and nothing else in the body
   const bare = compile({})
-  assert.deepEqual(Object.keys(bare), ['assets/css/screen.css', 'default.hbs', 'package.json'])
-  assert.match(bare['default.hbs'] ?? '', /<body class="\{\{body_class\}\}">\n {4}\{\{\{body\}\}\}\n\n {4}\{\{ghost_foot\}\}\n {2}<\/body>/)
+  assert.match(bare['default.hbs'] ?? '', /<body class="\{\{body_class\}\}">\n {4}<main id="site-main">\n {6}\{\{\{body\}\}\}\n {4}<\/main>\n\n {4}\{\{ghost_foot\}\}\n {2}<\/body>/)
 })
 
 test('slugs collide: Hero, HERO and Héro on one template are hero, hero-2 and hero-3, in position order', () => {
   const heading = (h: string) => ({ content: { heading: h } })
-  const out = compile({ 'home.hbs': docOf(at('a22/1', 'Hero', heading('a')), at('a22/1', 'HERO', heading('b')), at('a22/1', 'Héro', heading('c'))) })
-  assert.deepEqual(Object.keys(out).filter((p) => p.startsWith('partials/sections/')), ['partials/sections/home/hero-2.hbs', 'partials/sections/home/hero-3.hbs', 'partials/sections/home/hero.hbs'])
+  const out = compileHome(docOf(at('a22/1', 'Hero', heading('a')), at('a22/1', 'HERO', heading('b')), at('a22/1', 'Héro', heading('c'))))
+  assert.deepEqual(Object.keys(out).filter((p) => p.startsWith('partials/sections/home/')), ['partials/sections/home/hero-2.hbs', 'partials/sections/home/hero-3.hbs', 'partials/sections/home/hero.hbs'])
   assert.deepEqual([...(out['home.hbs'] ?? '').matchAll(/\{\{> "sections\/home\/([^"]+)"\}\}/g)].map((m) => m[1]), ['hero', 'hero-2', 'hero-3'])
   assert.match(out['home.hbs'] ?? '', /\{\{!-- Héro · Newsletter · Inline Row --\}\}\n\{\{> "sections\/home\/hero-3"\}\}/)
 })
 
 test('a slug that comes out empty takes the design\'s name, then the collision rule; the label keeps the layer\'s own name', () => {
-  const out = compile({ 'home.hbs': docOf(at('a17/1', '🌿🌿', { isMainFeed: true }), at('a17/1', 'ニュース')) })
+  const two = (n: string) => ({ controls: { 'per-row': 'two' }, ...(n === 'main' ? { isMainFeed: true } : {}) })
+  const out = compileHome(docOf(at('a17/1', '🌿🌿', two('main')), at('a17/1', 'ニュース', two('second'))))
   assert.deepEqual([...(out['home.hbs'] ?? '').matchAll(/\{\{> "sections\/home\/([^"]+)"\}\}/g)].map((m) => m[1]), ['three-up', 'three-up-2'])
   assert.match(out['home.hbs'] ?? '', /\{\{!-- 🌿🌿 · Post Grids · Three Up --\}\}/)
   assert.match(out['home.hbs'] ?? '', /\{\{!-- ニュース · Post Grids · Three Up --\}\}/)
@@ -192,26 +215,26 @@ test('a slug that comes out empty takes the design\'s name, then the collision r
 })
 
 test('byte-identical sections share one file in shared/, named after the first instance (template, then position); each label keeps its own layer name', () => {
-  const out = compile(project())
+  const out = compileProject()
   assert.ok('partials/sections/shared/newsletter.hbs' in out, Object.keys(out).join(' '))
   assert.ok(!Object.keys(out).some((p) => /sections\/(home|post)\/(newsletter|sign-up-box)/.test(p)))
   assert.match(out['home.hbs'] ?? '', /Newsletter · Newsletter · Inline Row --\}\}\n\{\{> "sections\/shared\/newsletter"\}\}/)
   assert.match(out['post.hbs'] ?? '', /Sign up box · Newsletter · Inline Row --\}\}\n {2}\{\{> "sections\/shared\/newsletter"\}\}/)
   // two on ONE template share a file in its own directory, named for the first
-  const one = compile({ 'home.hbs': docOf(at('a22/1', 'First', { content: NEWS }), at('a22/1', 'Second', { content: NEWS })) })
-  assert.deepEqual(Object.keys(one).filter((p) => p.startsWith('partials/sections/')), ['partials/sections/home/first.hbs'])
+  const one = compileHome(docOf(at('a22/1', 'First', { content: NEWS }), at('a22/1', 'Second', { content: NEWS })))
+  assert.deepEqual(Object.keys(one).filter((p) => p.startsWith('partials/sections/home/')), ['partials/sections/home/first.hbs'])
   assert.equal(((one['home.hbs'] ?? '').match(/sections\/home\/first/g) ?? []).length, 2)
 })
 
 test('hidden: absent from its template and from partials/; a template whose every instance is hidden is its layout line alone', () => {
-  const out = compile(project())
+  const out = compileProject()
   assert.ok(!Object.values(out).some((t) => t.includes('Never compiled') || t.includes('Hidden one')))
   assert.equal(out['page.hbs'], '{{!< default}}\n')
 })
 
 test('a hostile layer name: braces and controls are dropped, and Handlebars 4.7.9 reads the line as one comment and nothing else', () => {
   const hostile = 'x --}}<p id="leak">LEAK</p>{{@site.title}}\u0001\u0003'
-  const out = compile({ 'home.hbs': docOf(at('a22/1', hostile, { content: NEWS })) })
+  const out = compileHome(docOf(at('a22/1', hostile, { content: NEWS })))
   const line = (out['home.hbs'] ?? '').split('\n').find((l) => l.startsWith('{{!--')) ?? ''
   assert.equal(line, '{{!-- x --<p id="leak">LEAK</p>@site.title · Newsletter · Inline Row --}}')
   const body = Handlebars.parse(line).body
@@ -222,7 +245,7 @@ test('a hostile layer name: braces and controls are dropped, and Handlebars 4.7.
 
 test('hostile user text ships inert in every file: braces as entities, no marker or token, and Handlebars finds the same statements as for benign text', () => {
   const words = ['{{title}}', 'C:\\{{x}}', '{{#if x}}y{{/if}}', `${U0}0${U1}`, `${T0}0${T1}`, '" \' <b>']
-  const withText = (heading: string) => compile({ 'home.hbs': docOf(at('a22/1', 'Newsletter', { content: { heading, proof: heading } })), 'default.hbs': docOf(at('a3/1', 'Footer', { content: { note: heading } })) })
+  const withText = (heading: string) => compile({ 'home.hbs': docOf(at('a22/1', 'Newsletter', { content: { heading, proof: heading } })), 'default.hbs': docOf(at('a3/1', 'Footer', { content: { note: heading } })) }, { pageTwo: projectTwo() })
   const benign = withText('Plain words')
   for (const w of words) {
     const out = withText(w)
@@ -238,7 +261,7 @@ test('hostile user text ships inert in every file: braces as entities, no marker
 })
 
 test('the formatting contract inside a compiled section: a long start tag breaks, a short one stays, a long value stays whole, raw text is byte for byte', () => {
-  const out = compile(project())
+  const out = compileProject()
   const news = out['partials/sections/shared/newsletter.hbs'] ?? ''
   assert.ok(news.startsWith('<section\n  class="a22-1"\n  data-align="center"\n'), news)
   assert.ok(news.includes('  data-divider="none">\n  <h2 class="a22-1__heading">One letter a week</h2>'), news)
@@ -259,7 +282,7 @@ test('the formatting contract inside a compiled section: a long start tag breaks
 })
 
 test('one design, many placements: post-card is written once; two different bodies under one data-partial name throw, naming both designs', () => {
-  const out = compile(project())
+  const out = compileProject()
   assert.ok(out['partials/post-card.hbs']?.startsWith('<li class="a17-1__cell">'))
   const other = design('a17/2', 'Other', { compileTarget: ['tag.hbs'], bindingContext: ['posts'], html: '<section class="a17-2"><ul><li class="a17-2__cell" data-repeat="posts" data-partial="post-card"><b data-bind="title">t</b></li></ul></section>' })
   assert.throws(
@@ -286,8 +309,9 @@ test('(review) a stylesheet header part cannot close the comment early: `*\/` is
 
 test('every refusal names its file and its layer', () => {
   assert.throws(() => compile({ 'home.hbs': docOf(at('a99/1', 'Mystery')) }), /^Error: home\.hbs · Mystery: the library holds no design "a99\/1"/)
-  assert.throws(() => compile({ 'home.hbs': docOf(at('a24/1', 'Post header')) }), /^Error: home\.hbs · Post header: a24\/1 compiles to post\.hbs, never to home\.hbs/)
-  assert.throws(() => compile({ 'partials/content-cta.hbs': docOf() }), /partials\/content-cta\.hbs: the paywall's partial is compiled by Story 7\.3/)
+  assert.throws(() => compile({ 'home.hbs': docOf(at('a24/1', 'Post header')) }), /^Error: home\.hbs · Post header: a24\/1 compiles to post\.hbs, page\.hbs, never to home\.hbs/)
+  // a page-2 section is named as page 2's
+  assert.throws(() => compile({}, { pageTwo: { 'tag.hbs': docOf(at('a22/1', 'Box')) } }), /^Error: tag\.hbs \(page 2\) · Box: a22\/1 compiles to home\.hbs, page\.hbs, post\.hbs, never to tag\.hbs/)
   assert.throws(() => compile({ 'about.hbs': docOf() }), /about\.hbs: this compile writes no such template — the legal files are default\.hbs, home\.hbs[^]*custom-\{name\}\.hbs/)
   // a renderer refusal (R-7) is rethrown with its place in front of the runtime's own sentence
   const paged = design('a17/3', 'Paged', { compileTarget: ['home.hbs', 'post.hbs'], bindingContext: ['posts'], html: '<section class="a17-3"><nav class="a17-3__pager"><a class="a17-3__next" data-pagination="next" href="#" data-t="pagination.older">Older</a></nav></section>' })
@@ -339,9 +363,9 @@ function statements(text: string): string[] {
   return out
 }
 
-test('over every emitted file: it parses under Handlebars 4.7.9, carries one {{{body}}} and no other triple-stash, no token, no stray comment, no fingerprint', () => {
-  const templates = project()
-  const out = compile(templates)
+test('over every emitted file: it parses under Handlebars 4.7.9, carries one {{{body}}} and, with a paywall, {{{html}}} as its first line — no other triple-stash — no token, no stray comment, no fingerprint', () => {
+  const templates = { ...project(), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
+  const out = compile(templates, { pageTwo: projectTwo() })
   const instanceIds = Object.values(templates).flatMap((d) => d.instances.map((i) => i.instanceId))
   let triples = 0
   for (const [path, body] of Object.entries(out)) {
@@ -360,10 +384,12 @@ test('over every emitted file: it parses under Handlebars 4.7.9, carries one {{{
       if (line.includes('{{!--')) assert.match(line, /^ *\{\{!-- [^{}]* · [^{}]* · [^{}]* --\}\}$/, `${path}: a comment that is no boundary label`)
     }
   }
-  assert.equal(triples, 1)
-  assert.match(out['default.hbs'] ?? '', /^ {4}\{\{\{body\}\}\}$/m)
-  // every partial is referenced, by a file that is not itself
-  for (const path of Object.keys(out).filter((p) => p.startsWith('partials/'))) {
+  // AD-5: {{{body}}} in default.hbs, and its second exception, {{{html}}} as the paywall's first line (Question 2, ruled)
+  assert.equal(triples, 2)
+  assert.match(out['default.hbs'] ?? '', /^ {6}\{\{\{body\}\}\}$/m)
+  assert.ok(out[PAYWALL_TARGET]?.startsWith('{{{html}}}\n'), out[PAYWALL_TARGET])
+  // every partial is referenced, by a file that is not itself — the paywall's by Ghost's own {{content}}, and by no file
+  for (const path of Object.keys(out).filter((p) => p.startsWith('partials/') && p !== PAYWALL_TARGET)) {
     const name = path.slice('partials/'.length, -'.hbs'.length)
     assert.ok(Object.entries(out).some(([p, b]) => p !== path && b.includes(`{{> "${name}"}}`)), `${path} is referenced by no file`)
   }
@@ -481,4 +507,213 @@ test('(7.2) a layer named size="huge" compiles — it reaches a boundary comment
   assert.match(out['home.hbs'] ?? '', /\{\{!-- size="huge" · Newsletter · Inline Row --\}\}/)
   // the control: the same words in a live mustache are refused
   assert.throws(() => checkSizes({ 'home.hbs': out['home.hbs']?.replace('{{!-- size="huge"', '{{img_url x size="huge"}} {{!--') ?? '' }), /size="huge" is no image size/)
+})
+
+// ─── Story 7.3: every standard template, synthesized where untouched ──────────────────────────────────────────────────
+
+const lib = (id: string) => LIB[id]
+/** A library the extra designs join: A31 #1, which the real library does not hold yet (Story 10.104). */
+const withError = (id: string) => (id === 'a31/1' ? design('a31/1', 'Plain', { compileTarget: ['error.hbs'], bindingContext: ['error'], contentSchema: { title: text('Title') }, html: '<section class="a31-1">\n  <h1 class="a31-1__title" data-prop="title">Not found</h1>\n</section>' }) : LIB[id])
+/** The library as it stands for `page.hbs`: A24 #1 on `post.hbs` alone (DW-191), so nothing synthesizes onto a Page. */
+const postOnlyHeader = (id: string) => (id === 'a24/1' ? { ...(LIB['a24/1'] as SectionRegistryEntry), compileTarget: ['post.hbs'] } : LIB[id])
+const sectionsOf = (text: string | undefined): string[] => [...(text ?? '').matchAll(/\{\{> "(sections\/[^"]+)"\}\}/g)].map((m) => m[1] as string)
+const asDoc = (instances: readonly DocInstance[]): ProjectDoc => docOf(...instances)
+
+test('(7.3) the bare compile: default, index, post, tag and author always; page.hbs where synthesis gives it a section; no home, custom, private or paywall file', () => {
+  const out = compile({})
+  assert.deepEqual(Object.keys(out).filter((p) => p.endsWith('.hbs') && !p.startsWith('partials/')), ['author.hbs', 'default.hbs', 'index.hbs', 'page.hbs', 'post.hbs', 'tag.hbs'])
+  assert.ok(!Object.keys(out).some((p) => /^(home|private|error)\.hbs$|^custom-|content-cta/.test(p)), Object.keys(out).join(' '))
+  // Question 1, ruled option 1: an untouched page.hbs or error.hbs the library leaves with no section is not emitted
+  const today = compile({}, { library: postOnlyHeader })
+  assert.ok(!('page.hbs' in today) && !('error.hbs' in today))
+  // the control: a library that fills error.hbs emits it
+  assert.match(compile({}, { library: withError })['error.hbs'] ?? '', /^\{\{!< default\}\}\n\n\{\{!-- Error message · Error Pages · Plain --\}\}\n\{\{> "sections\/error\/error-message"\}\}\n$/)
+})
+
+test('(7.3) an untouched file holds exactly its synthesize or pageTwoStack stack, in order, with designate\'s flags', () => {
+  const out = compile({})
+  for (const file of ['post.hbs', 'tag.hbs', 'author.hbs', 'page.hbs']) {
+    const given = compile({ [file]: asDoc(synthesize(file, lib).instances) })
+    assert.equal(out[file], given[file], file)
+  }
+  // index.hbs is pageTwoStack's for an untouched Home: the stack synthesized for index.hbs
+  const given = compile({}, { pageTwo: { 'home.hbs': asDoc(pageTwoStack('home.hbs', undefined, undefined, lib).instances) } })
+  assert.equal(out['index.hbs'], given['index.hbs'])
+  // the synthesized feed is the MAIN feed: it lists the page's own posts, never a query of its own
+  assert.match(out['partials/sections/shared/post-grid.hbs'] ?? '', /^<section[^]*\{\{#foreach posts\}\}/)
+  assert.ok(!(out['partials/sections/shared/post-grid.hbs'] ?? '').includes('{{#get'))
+})
+
+test('(7.3) Home designed, page 2 following: home.hbs from the doc, index.hbs its exact copy, so the sections hoist to shared/', () => {
+  const out = compile({ 'home.hbs': project()['home.hbs'] as ProjectDoc })
+  assert.equal(out['index.hbs'], out['home.hbs'])
+  assert.deepEqual(sectionsOf(out['home.hbs']), ['sections/shared/latest-post', 'sections/shared/post-grid', 'sections/shared/newsletter'])
+})
+
+test('(7.3) Home\'s page 2 designed: index.hbs from page 2; home.hbs from Home\'s doc, or its default stack when Home is untouched', () => {
+  const two = { 'home.hbs': docOf(at('a22/1', 'Letter', { content: NEWS }), at('a17/1', 'Archive', { isMainFeed: true, controls: { 'per-row': 'two' } })) }
+  const designed = compile({ 'home.hbs': docOf(at('a4/13', 'Latest', { content: { eyebrow: 'Now' } }), at('a17/1', 'Grid', { isMainFeed: true })) }, { pageTwo: two })
+  assert.deepEqual(sectionsOf(designed['index.hbs']), ['sections/index/letter', 'sections/index/archive'])
+  assert.deepEqual(sectionsOf(designed['home.hbs']), ['sections/home/latest', 'sections/shared/post-grid'])
+  const untouched = compile({}, { pageTwo: two })
+  assert.equal(untouched['home.hbs'], compile({ 'home.hbs': asDoc(synthesize('home.hbs', lib).instances) })['home.hbs'], 'Home is its default stack')
+  assert.deepEqual(sectionsOf(untouched['index.hbs']), sectionsOf(designed['index.hbs']))
+})
+
+test('(7.3) a Home with no main feed: page 2 following is the default stack (R-127)', () => {
+  const out = compile({ 'home.hbs': docOf(at('a22/1', 'Letter', { content: NEWS })) })
+  assert.equal(out['index.hbs'], compile({})['index.hbs'])
+  assert.deepEqual(sectionsOf(out['home.hbs']), ['sections/home/letter'])
+})
+
+test('(7.3) an archive\'s page 2 designed: page 2 inside {{#is "paged"}}, page 1 in its {{else}} — page 1 designed or untouched', () => {
+  const pageTwo = { 'tag.hbs': docOf(at('a17/1', 'Post grid', { isMainFeed: true, controls: { 'per-row': 'two' } })) }
+  const untouched = compile({}, { pageTwo })
+  assert.equal(untouched['tag.hbs'], [
+    '{{!< default}}',
+    '',
+    '{{#is "paged"}}',
+    '  {{!-- Post grid · Post Grids · Three Up --}}',
+    '  {{> "sections/tag/post-grid"}}',
+    '{{else}}',
+    '  {{!-- Post grid · Post Grids · Three Up --}}',
+    '  {{> "sections/shared/post-grid"}}',
+    '{{/is}}',
+    '',
+  ].join('\n'))
+  assert.match(untouched['partials/sections/tag/post-grid.hbs'] ?? '', /data-per-row="two"/)
+  const designed = compile({ 'tag.hbs': docOf(at('a17/1', 'Tag feed', { isMainFeed: true, controls: { 'per-row': 'three' } })) }, { pageTwo })
+  assert.match(designed['tag.hbs'] ?? '', /^\{\{!< default\}\}\n\n\{\{#is "paged"\}\}\n {2}[^]*"sections\/tag\/post-grid"[^]*\n\{\{else\}\}\n {2}\{\{!-- Tag feed · [^]*\n\{\{\/is\}\}\n$/)
+})
+
+test('(7.3) an archive\'s page 2 following page 1: page 1 alone, with no {{#is}}', () => {
+  const out = compile({ 'author.hbs': docOf(at('a17/1', 'Writer feed', { isMainFeed: true, controls: { 'per-row': 'two' } })) })
+  assert.equal(out['author.hbs'], '{{!< default}}\n\n{{!-- Writer feed · Post Grids · Three Up --}}\n{{> "sections/author/writer-feed"}}\n')
+  for (const [path, body] of Object.entries(compile({}))) assert.ok(!body.includes('{{#is'), `${path}: an {{#is}} with no page 2 designed`)
+})
+
+const GUARD = (contexts: string) => `    {{#is "paged"}}\n      {{#is "${contexts}"}}\n        <meta name="robots" content="noindex">\n      {{/is}}\n    {{/is}}\n    {{ghost_head}}`
+
+test('(7.3) FR-H2\'s guard: noindex in default.hbs\'s head for exactly the page 2s with no visible feed, in the order index, tag, author — and no canonical link', () => {
+  const hiddenFeed = (name: string) => docOf(at('a17/1', name, { hidden: true, isMainFeed: true }))
+  // a Tag page 1 with no visible feed, page 2 following; an Author page 2 of its own with none; Home's page 2 with none
+  const out = compile({ 'tag.hbs': hiddenFeed('Tag feed') }, { pageTwo: { 'author.hbs': hiddenFeed('Writer feed'), 'home.hbs': docOf(at('a22/1', 'Letter', { content: NEWS })) } })
+  assert.ok((out['default.hbs'] ?? '').includes(`<link rel="stylesheet" href="{{asset "css/screen.css"}}">\n${GUARD('index, tag, author')}`), out['default.hbs'])
+  assert.equal(((out['default.hbs'] ?? '').match(/noindex/g) ?? []).length, 1)
+  // one of them: the Author page 2 alone
+  assert.ok((compile({}, { pageTwo: { 'author.hbs': hiddenFeed('Writer feed') } })['default.hbs'] ?? '').includes(GUARD('author')))
+  // the control: every page 2 with a visible feed carries no block at all
+  const none = compile({}, { pageTwo: { 'author.hbs': docOf(at('a17/1', 'Writer feed', { isMainFeed: true })) } })
+  assert.ok(!(none['default.hbs'] ?? '').includes('{{#is') && !(none['default.hbs'] ?? '').includes('noindex'), none['default.hbs'])
+  for (const o of [out, none]) assert.ok(!Object.values(o).some((b) => /rel="canonical"/.test(b)), 'the theme writes no canonical link of its own')
+})
+
+test('(7.3) <main id="site-main"> appears once, wrapping {{{body}}} alone', () => {
+  const out = compileProject()['default.hbs'] ?? ''
+  assert.equal((out.match(/<main\b/g) ?? []).length, 1)
+  assert.match(out, /\n {4}<main id="site-main">\n {6}\{\{\{body\}\}\}\n {4}<\/main>\n/)
+  assert.ok(out.indexOf('sections/default/header') < out.indexOf('<main') && out.indexOf('</main>') < out.indexOf('sections/default/footer'), 'the header and footer sit outside it')
+})
+
+test('(7.3) two main-feed flags compile with designate\'s repair: one main feed, the first visible one', () => {
+  const out = compileHome(docOf(at('a17/1', 'Hidden grid', { hidden: true, isMainFeed: true }), at('a17/1', 'First', { isMainFeed: true, controls: { 'per-row': 'two' } }), at('a17/1', 'Second', { isMainFeed: true, controls: { 'per-row': 'two' } })))
+  assert.match(out['partials/sections/home/first.hbs'] ?? '', /\{\{#foreach posts\}\}/)
+  assert.ok(!(out['partials/sections/home/first.hbs'] ?? '').includes('{{#get'), 'the first visible flagged feed is the main feed')
+  assert.match(out['partials/sections/home/second.hbs'] ?? '', /^\{\{#get "posts" limit="12"/, 'the second is a secondary feed')
+})
+
+test('(7.3) a Page with a Post header: the A24 invocation inside the @page switch, the other not; the same A24 on post.hbs never guarded', () => {
+  const out = compile({ 'page.hbs': docOf(at('a24/1', 'Page header'), at('a22/1', 'Page box', { content: NEWS })), 'post.hbs': docOf(at('a24/1', 'Post header')) })
+  assert.equal(out['page.hbs'], [
+    '{{!< default}}',
+    '',
+    '{{#post}}',
+    '  {{#if @page.show_title_and_feature_image}}',
+    '    {{!-- Page header · Post Headers · Centred --}}',
+    '    {{> "sections/shared/page-header"}}',
+    '  {{/if}}',
+    '',
+    '  {{!-- Page box · Newsletter · Inline Row --}}',
+    '  {{> "sections/page/page-box"}}',
+    '{{/post}}',
+    '',
+  ].join('\n'))
+  for (const [path, body] of Object.entries(out)) {
+    if (path !== 'page.hbs') assert.ok(!body.includes('@page'), `${path}: guarded`)
+  }
+  // two A24s: each is guarded
+  const twice = compile({ 'page.hbs': docOf(at('a24/1', 'One'), at('a24/1', 'Two', { controls: { byline: 'off' } })) })['page.hbs'] ?? ''
+  assert.equal((twice.match(/\{\{#if @page\.show_title_and_feature_image\}\}/g) ?? []).length, 2)
+})
+
+test('(7.3) a membership page: custom-signup.hbs at the root, its sections inside {{#post}}; no route file', () => {
+  const out = compile({ 'custom-signup.hbs': docOf(at('a30/1', 'Join card')) })
+  assert.equal(out['custom-signup.hbs'], '{{!< default}}\n\n{{#post}}\n  {{!-- Join card · Members Pages · Card --}}\n  {{> "sections/custom-signup/join-card"}}\n{{/post}}\n')
+  assert.ok(!Object.keys(out).some((p) => p.endsWith('.yaml') || p.startsWith('members/') || p.startsWith('page-')), Object.keys(out).join(' '))
+})
+
+test('(7.3) an emptied or untouched custom, private or paywall file is not emitted; a routed custom template is its layout line alone', () => {
+  const empty = compile({ 'custom-signup.hbs': docOf(), 'private.hbs': docOf(), [PAYWALL_TARGET]: docOf() })
+  assert.ok(!Object.keys(empty).some((p) => /^custom-|^private\.hbs$|content-cta/.test(p)), Object.keys(empty).join(' '))
+  for (const templates of [{}, { 'custom-landing.hbs': docOf() }] as Record<string, ProjectDoc>[]) {
+    assert.equal(compile(templates, { routed: ['custom-landing.hbs'] })['custom-landing.hbs'], '{{!< default}}\n')
+  }
+})
+
+test('(7.3) every section hidden: a designed file\'s layout line alone, never re-synthesized', () => {
+  const out = compile({ 'post.hbs': docOf(at('a24/1', 'Gone', { hidden: true })), 'tag.hbs': docOf(at('a17/1', 'Gone too', { hidden: true, isMainFeed: true })) })
+  assert.equal(out['post.hbs'], '{{!< default}}\n')
+  assert.equal(out['tag.hbs'], '{{!< default}}\n')
+})
+
+test('(7.3) a designed paywall: partials/content-cta.hbs opens {{{html}}}, then its section; no file invokes content-cta', () => {
+  const out = compile({ [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall', { content: { heading: 'Members read on' } })) })
+  assert.equal(out[PAYWALL_TARGET], '{{{html}}}\n\n{{!-- Paywall · Paywall / Content CTA · Centred --}}\n{{> "sections/content-cta/paywall"}}\n')
+  assert.match(out['partials/sections/content-cta/paywall.hbs'] ?? '', /Members read on/)
+  assert.ok(!Object.values(out).some((b) => /\{\{~?>\s*"?content-cta/.test(b)), 'an explicit {{> "content-cta"}} prints the paywall twice')
+})
+
+test('(7.3) a theme carrying the paywall but invoking no partial outside partials/ is refused; the control passes', () => {
+  const onlyPaywall = (id: string) => (id === 'a32/1' ? LIB[id] : undefined)
+  assert.throws(() => compile({ [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }, { library: onlyPaywall }), /^Error: partials\/content-cta\.hbs: no template outside partials\/ invokes a partial/)
+  assert.throws(() => checkPaywallReached({ [PAYWALL_TARGET]: '{{{html}}}\n{{> "sections/content-cta/x"}}\n', 'post.hbs': '{{!< default}}\n{{!-- {{> "x"}} --}}\n' }), /no template outside partials/)
+  assert.doesNotThrow(() => checkPaywallReached({ [PAYWALL_TARGET]: '{{{html}}}\n', 'post.hbs': '{{> "sections/post/x"}}\n' }))
+  assert.doesNotThrow(() => checkPaywallReached({ 'post.hbs': '{{!< default}}\n' }), 'no paywall, nothing to reach')
+})
+
+test('(7.3) the triple-stash rule: {{{body}}} in default.hbs and {{{html}}} as the paywall\'s first line, and nothing else', () => {
+  const ok = { 'default.hbs': '<main>\n  {{{body}}}\n</main>\n', [PAYWALL_TARGET]: '{{{html}}}\n\n{{> "x"}}\n' }
+  assert.doesNotThrow(() => checkTripleStashes(ok))
+  for (const [path, body] of [['post.hbs', '{{{html}}}\n'], [PAYWALL_TARGET, '\n{{{html}}}\n'], [PAYWALL_TARGET, '{{{html}}}\n{{{html}}}\n'], ['default.hbs', '{{{body}}}\n{{{body}}}\n'], ['partials/x.hbs', '{{~{x}~}}\n']] as const) {
+    assert.throws(() => checkTripleStashes({ ...ok, [path]: body }), /a triple-stash AD-5 does not allow/, `${path}: ${body}`)
+  }
+})
+
+test('(7.3) a file no theme gets is refused, naming the legal files or where page 2 goes; a routed name that is no custom template is refused', () => {
+  for (const file of ['page-about.hbs', 'members/signup.hbs', 'error-404.hbs']) {
+    assert.throws(() => compile({ [file]: docOf() }), new RegExp(`^Error: ${file.replace('.', '\\.')}: this compile writes no such template — the legal files are default\\.hbs, home\\.hbs, post\\.hbs[^]*custom-\\{name\\}\\.hbs`), file)
+  }
+  assert.throws(() => compile({ 'index.hbs': docOf() }), /^Error: index\.hbs: Home's page 2 is handed in as pageTwo\['home\.hbs'\]/)
+  for (const file of ['post.hbs', 'index.hbs', 'custom-x.hbs']) {
+    assert.throws(() => compile({}, { pageTwo: { [file]: docOf() } }), new RegExp(`^Error: pageTwo\\['${file.replace('.', '\\.')}'\\]: only a paginated page 1 has a page 2 — page 2 is handed in under author\\.hbs, home\\.hbs, tag\\.hbs`), file)
+  }
+  assert.throws(() => compile({}, { routed: ['page.hbs'] }), /^Error: routed 'page\.hbs': a route names a custom template, custom-\{name\}\.hbs/)
+})
+
+test('(7.3) another @page property is refused, naming the file; the page switch, and a comment, are not', () => {
+  for (const bad of ['{{#if @page.x}}y{{/if}}', '{{@page}}', '{{#if @page.show_title_and_feature_image.x}}y{{/if}}', '{{@page.[show]}}']) {
+    assert.throws(() => checkPageData({ 'post.hbs': `${bad}\n` }), /^Error: post\.hbs: .* reads @page beyond @page\.show_title_and_feature_image/, bad)
+  }
+  assert.doesNotThrow(() => checkPageData({ 'page.hbs': '{{#if @page.show_title_and_feature_image}}x{{/if}}\n{{!-- @page.x --}}\n<p>@page.x</p>\n' }))
+})
+
+test('(7.3) determinism: templates, pageTwo and routed in another order give the same bytes', () => {
+  const pageTwo = { 'tag.hbs': docOf(at('a17/1', 'Two', { isMainFeed: true, controls: { 'per-row': 'two' } })), 'home.hbs': docOf(at('a22/1', 'Letter', { content: NEWS })) }
+  const templates = { ...project(), 'custom-signup.hbs': docOf(at('a30/1', 'Join')), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
+  const reverse = <T>(o: Record<string, T>): Record<string, T> => Object.fromEntries(Object.entries(o).reverse())
+  const a = compile(templates, { pageTwo, routed: ['custom-landing.hbs', 'custom-about.hbs'] })
+  const b = compile(reverse(templates), { pageTwo: reverse(pageTwo), routed: ['custom-about.hbs', 'custom-landing.hbs'] })
+  assert.deepEqual(Object.keys(b), Object.keys(a))
+  for (const k of Object.keys(a)) assert.equal(b[k], a[k], k)
+  assert.ok(['custom-about.hbs', 'custom-landing.hbs', 'custom-signup.hbs', PAYWALL_TARGET, 'home.hbs'].every((f) => f in a), Object.keys(a).join(' '))
 })

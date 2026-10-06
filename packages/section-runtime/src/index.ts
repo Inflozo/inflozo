@@ -152,11 +152,12 @@ export {
   switchDesign,
 } from './doc-edit.ts'
 // Story 5.5 — FR-D6's synthesis: ONE core function over the normative Synthesis Defaults, called by the editor now
-// and by Story 7.3's compiler later (AD-27(d)). Story 5.16 — `pageTwoStack` is what page 2 of a paginated canvas is
+// and by Story 7.3's compiler (AD-27(d)). Story 5.16 — `pageTwoStack` is what page 2 of a paginated canvas is
 // made of (R-179), and it replaced R-127's `indexStack`: the editor's page-2 preview and the compiler call it alike.
 export { isSynthesizable, pageTwoStack, synthesize, SYNTHESIS_DEFAULTS } from './synthesize.ts'
 export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrary } from './synthesize.ts'
 // Story 5.19 — FR-H2's main feed: ONE designation rule beside `synthesize` (AD-27(d)) that the editor's every door and
-// Story 7.3's compiler pass each paginated doc through, the reassignment, a secondary feed's own query, and the
-// feed-less archive the editor's Layers note, Story 7.18's Pre-flight and Story 7.3's guard all read.
-export { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, makeMainFeed } from './main-feed.ts'
+// Story 7.3's compiler pass each paginated doc through, the reassignment, a secondary feed's own query, the
+// feed-less archive the editor's Layers note and Story 7.18's Pre-flight read, and `visibleFeed`, which Story 7.3's
+// guard asks of every page 2.
+export { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'

@@ -36,6 +36,11 @@ export const NON_PLACEABLE = [...PAYWALL_CATEGORIES, 'a33', 'a34'] as const
  *  template that printed the article twice would print the post's body twice. */
 export const POST_CONTENT = 'a25'
 
+/** A24 Post Headers — the post's title and feature image. On `page.hbs` every one sits inside Ghost's page switch,
+ *  `{{#if @page.show_title_and_feature_image}}` (Story 7.3, FR-I1: "the A24 designs compiled into it carry the guard"),
+ *  so the compiler asks this one name rather than a design asking it of itself. */
+export const POST_HEADER = 'a24'
+
 /** `a25/3` → `a25`. Anything that is not a `{category}/{n}` id has no category, and is not placeable. */
 export const categoryOf = (designId: string): string => (/^[a-z][a-z0-9]*\/\d+$/.test(designId) ? designId.split('/')[0]! : '')
 

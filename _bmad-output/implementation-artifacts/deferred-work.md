@@ -4344,6 +4344,11 @@ note (Story 6.6's Create, 2026-10-05): found while planning 6.6's logo question.
   navigation partial (9.1) and the takeover (9.2). Story 9.1 builds A1's content model, so its Create carries the bullet
   word for word (R-195). No logo lives in the Style Pack: the owner ruled R-240 (6.6's Question 1), so the site's logo
   stays Ghost's, and a header's own authored logo is this bullet's.
+note (Story 7.3's Dev, 2026-10-06): its Story 7.3 half is done — `default.hbs` wraps `{{{body}}}` alone, once, in
+  `<main id="site-main">` (`compileTheme`, `packages/theme-compiler/src/compile.ts`; `compile.test.ts` and
+  `tools/check-snapshots.mjs` hold it, and the T1 recorder reads one `<main id="site-main">` per page with the header
+  outside it, MEASUREMENTS §72). Story 9.1's card now says the skip link lands on `#site-main`. The rest stands with
+  Stories 9.1 and 9.2.
 
 ### DW-151: A17 #1 Three Up — what its pilot leaves, and the one-value grey the engine cannot draw
 
@@ -4419,6 +4424,12 @@ reason: `page.hbs` and `@page.show_title_and_feature_image` need `data-target`; 
   block" group name (its rows sit under Style); the editor-only greyed picture box (no key for its words). The figure's
   `data-if="feature_image"` and the image's media guard emit two nested `{{#if feature_image}}` (they share a field but
   not an element) — harmless, and one guard once a wrapper condition can share its child's.
+note (Story 7.3's Dev, 2026-10-06): its Story 7.3 half is done — on `page.hbs` the compiler places each A24 (Post
+  Header) section's invocation inside `{{#if @page.show_title_and_feature_image}}` (`POST_HEADER` in
+  `packages/library/src/placement.ts`) and refuses any other `@page` property in an emitted file, naming it. The guard
+  is the compiler's, so an A24 design carries none of its own and the `data-target` this entry's reason asked for is
+  not needed; Story 10.79's card says so, and retires the recorder's stand-in `page.hbs` once A24 #1 sits on
+  `page.hbs`. The rest stands with Story 10.79.
 
 ### DW-154: A4 #13 Latest Post — what its pilot leaves to Epic 5 and A4's category story
 
@@ -6584,7 +6595,12 @@ plain: On page 2 you may delete anything, the post grid included (R-177). Page 1
   on `/page/2/` through R-127's fallback; a page 2 of its own that loses its grid has no fallback, so the compiled
   `/page/2/` (and every later page) would show no posts. Nothing compiles yet, so nothing is broken today. And once
   page 2's own design has no main feed, the Preview page row is gone from page 2's panel: the pill is the one way back.
-status: open
+status: done 2026-10-06 (Story 7.3)
+resolution: Story 7.3's Dev (2026-10-06) — a page 2 of its own compiles as designed: `index.hbs` is
+  `pageTwoStack('home.hbs', home, pageTwo['home.hbs'])` (`compileTheme`), so Home's own page 2 with no feed ships
+  exactly what the canvas shows, and `default.hbs`'s `noindex` guard lists `index` for it, so its `/page/N/` is not
+  indexed (FR-H2, as corrected: Home's page 2 of its own with no feed is guarded, R-178, R-179). An archive's page 2
+  compiles inside `{{#is "paged"}}` and is guarded the same way (DW-253). `compile.test.ts` holds both.
 severity: medium
 origin: Story 5.16's review (2026-09-22), the Blind Hunter over `pageTwoStack` rule 1 (`synthesize.ts`): a stored page
   2 is returned as it is, whatever it holds, and FR-I1's "never emitted empty" reasons about page 1 only.
@@ -7158,6 +7174,13 @@ owner: Stories 7.18 (The deploy wizard) and 7.3 (Synthesis Defaults and the empt
 location: `epics.md` Stories 7.3, 7.6 and 7.18 · FR-H2
 reason: all three are compile or deploy facts and nothing compiles yet; Story 5.19 builds the per-SECTION warning (P0·5's
   past-25 sentence) and allows a feed-less paginated template, which is the editor half.
+note (Story 7.3's Dev, 2026-10-06): the guard, Story 7.3's half, is built — `noindex` alone, once, in `default.hbs`'s
+  head: `{{#is "paged"}}{{#is "<contexts>"}}<meta name="robots" content="noindex">{{/is}}{{/is}}`, listing `index`,
+  `tag` and `author` in that order wherever that page 2's stack has no visible feed (`visibleFeed`, now exported from
+  `packages/section-runtime/src/main-feed.ts`, the one test for the editor's note, this guard and 7.18's Pre-flight),
+  and no block where there is none. **No canonical link**: Ghost's `{{ghost_head}}` writes one on every page, page 2's
+  pointing at itself (`meta/canonical-url.js`, read in source), so the page-1 canonical the origin quotes is corrected
+  in FR-H2. Its two Pre-flight warnings stay with Story 7.18.
 
 ### DW-254: the main feed's Count says where Posts per page is set, but not yet "Change it in Theme settings" with its link
 
@@ -7346,7 +7369,14 @@ note (Story 5.20's Dev, 2026-09-26): Story 7.18's Pre-flight criteria now name i
 
 plain: For a designed paywall to replace Ghost's own, the published theme must do two unusual things Ghost requires:
   mention the paywall file once from a page template, and print the post's free preview itself. No story says so yet.
-status: open
+status: done 2026-10-06 (Story 7.3)
+resolution: Story 7.3's Dev (2026-10-06) — a designed paywall compiles to `partials/content-cta.hbs`, opening
+  `{{{html}}}`, AD-5's second exception there alone and checked on every compile (7.3's Question 2, owner, 2026-10-06;
+  the spine's AD-5). The explicit reference is NOT emitted: read in source, any partial invoked from a non-partial
+  template makes Ghost register the theme's `partials/` (gscan's `partials` list, `active.js`), and an explicit
+  `{{> "content-cta"}}` in a rendered position printed the paywall twice in §15b's probe — so the compile asserts
+  instead that a theme carrying the partial invokes one from a file outside `partials/`. MEASUREMENTS §15b carries the
+  dated correction, §72 the T1 rows; FR-I1 and Story 7.6's copy say "built by Story 7.3".
 severity: high
 origin: Story 5.20's Create (2026-09-26). MEASUREMENTS §15b (executed 2/2 each way on both majors): the override takes
   effect only when a template also references the partial explicitly, `{{> "content-cta"}}` — "a compile assertion".
@@ -9173,3 +9203,64 @@ owner: Story 7.33 (the library-wide compile), whose criteria carry this entry wi
 location: `packages/section-runtime/src/format.ts` `tags`, `startTag`
 reason: The branch needs a start tag jsdom serializes in a shape the attribute regex does not match; none has been found
   in the library, so the case is recorded rather than invented.
+
+## Deferred from: Story 7.3's Dev run (2026-10-06)
+
+### DW-341: a theme in which no template reads Ghost's page switch raises GS110, an error on Ghost 5's checker
+
+plain: Ghost lets a site owner hide a page's title and picture with a switch, and Ghost 5's theme checker reports an
+  error when no template in the theme reads that switch. A Page you designed with no post header gets that error — and,
+  until Story 10.79, so does any project whose Page is untouched — though Ghost 5 installs the theme anyway. Whether
+  Inflozo blocks such a deploy is not decided yet.
+status: open
+severity: medium
+origin: Story 7.3's Create (2026-10-06), read in gscan 4.49.7 and 6.4.2 and as the planning run executed it
+  (MEASUREMENTS §13a, §13b): `GS110-NO-MISSING-PAGE-BUILDER-USAGE` is an error on 4.49.7 and a warning on 6.4.2, where
+  FR-I1 said it was only a warning on both. Story 7.3 puts the switch around each Post Header on `page.hbs`
+  (`POST_HEADER`), so a `page.hbs` with no A24 section — or no `page.hbs` at all, which 7.3's Question 1 rules for an
+  untouched Page the library leaves empty — leaves nothing reading it.
+owner: Story 7.7 (The gscan gate), whose criteria carry this entry with its id.
+location: `epics.md` Story 7.7 · FR-I1 and FR-J6 in `prd.md` · `packages/theme-compiler/src/compile.ts` (`PAGE_SWITCH`) ·
+  `tools/probe/record-theme-assembly.py`'s stand-in `page.hbs` (Story 10.79's)
+reason: FR-J6 says errors block a deploy, yet Ghost 5 activates a theme carrying this one, and 7.7 owns the mapping and
+  AD-34's two gscans. Blocking it would refuse every project with an untouched Page until Story 10.79; passing it needs a
+  stated exception. Either answer changes what a deploy does, so 7.7 asks the owner (R-83).
+
+### DW-342: no story built the standard header and footer for a project that placed neither
+
+plain: The plan promises a project that never placed a header or a footer a standard pair — the Rail header and the
+  Minimal Line footer — on the live site and in the editor alike. Nobody had been given the job; Story 9.9, where
+  Minimal Line is built, now has it. Until then a theme ships exactly the header and footer you placed, and none if you
+  placed none.
+status: open
+severity: medium
+origin: Story 7.3's Create (2026-10-06): `sections-inventory.md` § Synthesis Defaults §2 — "If the project has no
+  header/footer singleton at all (nothing designed anywhere), synthesize A1 #1 Rail and A3 #1 Minimal Line with auto
+  content" — sat in no story's criteria, and building it in the theme alone would ship a header the editor never showed,
+  which FR-D6 forbids. 7.3's Question 4, ruled option 1 (owner, 2026-10-06).
+owner: Story 9.9 (A3 — the content model, the stylesheet and designs #1, #3, #4 and #16), whose criteria carry the
+  sentence word for word with this entry's id (R-195); Epic 9's preamble lists it.
+location: `sections-inventory.md` § Synthesis Defaults §2 · `epics.md` Story 9.9 and Epic 9's preamble ·
+  `packages/theme-compiler/src/compile.ts` (`default.hbs`) · the editor's site doc
+reason: The header and the footer are site-wide singletons (FR-D5) compiled into `default.hbs`; synthesizing them is
+  one rule for the canvas and the compiler (AD-27(d)), and A3 #1 Minimal Line arrives with 9.9.
+
+### DW-343: the editor's three confirms drew no sheet since Story 5.22 — a local `sheet` hid the Kit's
+
+plain: Three of the editor's questions — "this changes every page" (the header and footer), "changed somewhere else",
+  and "clear the dark overrides" — have shown without their white card, padding and rounded corners since Story 5.22.
+  Story 7.3 put them back, so they look as drawn again.
+status: done 2026-10-06 (Story 7.3)
+resolution: Story 7.3's Dev (2026-10-06) — `editor.tsx` imports the Kit's class as `sheet as dialogSheet`, so Story
+  5.22's `const [sheet, setSheet] = useHanded(...)` (the compact overlay, db6965a9) no longer hides it inside
+  `EditorShell`; the site-wide confirm, the conflict dialog, the Clear dark overrides confirm and D5f all draw
+  `kit/dialog.ts`'s 460px, 26px sheet. `tools/keyboard/floor.spec.mjs`'s D5f test measures it (padding 26px, width
+  460), and fails with the old name (executed as its control).
+severity: medium
+origin: Story 7.3's Dev (2026-10-06), building D5f beside the site-wide confirm: the dialogs rendered
+  `class="null gap-[18px]"` (or the open overlay's name), measured 1242px wide with no padding before the rename.
+owner: Story 7.3 (done here)
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the `kit/dialog` import) ·
+  `tools/keyboard/floor.spec.mjs`
+reason: A shadowed import is no type error when both are strings or null-able strings in a template literal, so no gate
+  saw it; the floor test now does.

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useActionState, useEffect, useRef, useState } from 'react'
 import { Banner } from '@/components/kit/banner'
-import { Button, IconButton } from '@/components/kit/button'
+import { Button, IconButton, variants } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
 import { AlertCircle, X } from '@/components/kit/icons'
 import { PackCell } from '@/components/kit/pack-cell'
@@ -120,12 +120,13 @@ function GreyedDoor({ door, pill }: { door: Door; pill?: string }) {
  * frame's own next one down (4.74:1) and the hover goes one further to `marigold-text`
  * (5.54:1). Both values are the frame's, and globals.css carries them by name — no hex reaches
  * a .tsx, which is the token gate's whole point. THE OWNER RULED FOR THIS SHADE on 2026-09-06
- * (spec question 4, option 1), so it is settled and not a placeholder.
+ * (spec question 4, option 1), so it is settled and not a placeholder. Since Story 7.3 the fill is
+ * the Kit's `marigold` variant, which D5f's Delete section wears too — one spelling of the gold.
  */
 const GoPro = () => (
   <Link
     href="/billing"
-    className={`inline-flex h-[38px] shrink-0 items-center rounded bg-marigold-solid px-[18px] text-[13.5px] font-semibold text-surface transition-colors hover:bg-marigold-text ${ring}`}
+    className={`inline-flex h-[38px] shrink-0 items-center rounded px-[18px] text-[13.5px] font-semibold transition-colors ${variants.marigold} ${ring}`}
   >
     {goProLabel()}
   </Link>

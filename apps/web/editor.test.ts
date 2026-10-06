@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, fileOfKey, isEditorPath, isMembership, isSiteFooter, isSurface, isUuid, landWithin, LOCK, siteSlot,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOfKey, isEditorPath, isMembership, isSiteFooter, isSurface, isUuid, landWithin, LOCK, siteSlot,
   lockPath, PAGE_TWO,
   pageTwoKeyOf, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
@@ -241,6 +241,39 @@ test('R-171: every canvas carries its own one line for the Template list, and a 
   assert.equal(new Set(captions).size, captions.length, 'no two templates are described the same way')
   // the owner's own words for Story 7.16's custom templates
   assert.equal(CUSTOM_TEMPLATE_CAPTION, 'Custom template')
+})
+
+// ─── Story 7.3 — D5f, the ask before the last section leaves a designed custom template (FR-I1) ──────────────────────
+
+test('Story 7.3 · D5f asks exactly where a delete would empty a designed custom template — over every canvas key', () => {
+  /** a doc of `n` sections, every one hidden or none: hiding is not emptying (FR-D5), so a hidden last section counts */
+  const doc = (n: number, hidden = false) => ({ instances: Array.from({ length: n }, () => ({ hidden })) })
+  const keys = Object.keys(CANVASES) as CanvasKey[]
+  // the control: some canvas is a custom template and some is not, so a rule answering one way for all would fail
+  assert.ok(keys.some(isMembership) && !keys.every(isMembership))
+  for (const canvas of keys) {
+    const key = templateKeyOf(canvas)
+    assert.equal(emptiesCustomTemplate(key, doc(1)), isMembership(canvas), `${key}: its last section`)
+    assert.equal(emptiesCustomTemplate(key, doc(1, true)), isMembership(canvas), `${key}: its last section, hidden`)
+    assert.equal(emptiesCustomTemplate(key, doc(2)), false, `${key}: a section stays`)
+    assert.equal(emptiesCustomTemplate(key, doc(2, true)), false, `${key}: a hidden section stays`)
+    assert.equal(emptiesCustomTemplate(key, doc(0)), false, `${key}: nothing to delete`)
+    assert.equal(emptiesCustomTemplate(key, undefined), false, `${key}: untouched`)
+  }
+  // neither the site doc nor any page 2 is a custom template
+  for (const key of [SITE.key, ...keys.flatMap((c) => pageTwoKeyOf(c) ?? [])]) assert.equal(emptiesCustomTemplate(key, doc(1)), false, key)
+})
+
+test("Story 7.3 · D5f's words: R-170's Delete, the canvas's label and the file its key compiles to", () => {
+  const key = templateKeyOf('custom-signup')
+  assert.equal(EMPTY_TEMPLATE_ASK.title(CANVASES['custom-signup'].label), 'Delete the last section from Signup?')
+  const body = EMPTY_TEMPLATE_ASK.body(fileOfKey(key))
+  assert.equal(body[1], 'custom-signup.hbs', 'the file, alone, for the mono chip (R-129)')
+  assert.equal(
+    body.join(''),
+    "This template stops shipping. Any Ghost page still pointing at custom-signup.hbs will still load — it will just wear your ordinary page design instead. Ghost won't warn anyone, which is why we are.",
+  )
+  assert.deepEqual([EMPTY_TEMPLATE_ASK.cancel, EMPTY_TEMPLATE_ASK.confirm], ['Keep it', 'Delete section'])
 })
 
 // ─── Story 5.16 — page 2's table: the key each paginated canvas's page 2 is stored under, and the file it compiles to ──

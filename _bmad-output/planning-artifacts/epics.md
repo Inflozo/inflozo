@@ -149,7 +149,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 
 **FR-I · Templates & Routing**
 
-- **FR-I1** `home.hbs` is emitted; the standard template set always compiles, with untouched templates synthesised before assembly; `page.hbs` gates on `@page.show_title_and_feature_image`; there is no members template family — a designed membership page compiles to `custom-{name}.hbs` and emits no route; the emptying rule is general and differs by template class.
+- **FR-I1** `home.hbs` is emitted when Home or its page 2 is designed; the standard template set always compiles, with untouched templates synthesised before assembly — one the library leaves with no section is left to Ghost's own fallback until Epic 10, `index.hbs` and `post.hbs` excepted (Story 7.3's Question 1); `page.hbs` gates each Post Header on `@page.show_title_and_feature_image`; a designed paywall is `partials/content-cta.hbs`, opening `{{{html}}}`; there is no members template family — a designed membership page compiles to `custom-{name}.hbs` and emits no route; the emptying rule is general and differs by template class.
 - **FR-I2** Routes Manager: a visual builder for `routes.yaml` — collections with per-collection page size, a rich filter builder with normative NQL mappings, channels, custom routes, taxonomy prefixes, a live YAML pane and validation. The builder never emits redundant or nested parentheses; published date is offered with relative syntax.
 - **FR-I3** Custom templates compiled as `custom-{name}.hbs`, with the naming and collision scheme enforced at the naming step and renaming a deployed template not offered at all.
 - **FR-I4** `routes.yaml` uploads automatically via `POST /settings/routes/yaml` with the staff token, verified by reading the file back byte-for-byte; the guided Labs card remains as the designed fallback.
@@ -2993,13 +2993,17 @@ So that my site does not have four broken page types I never looked at.
 **Given** a project with untouched templates
 **When** it compiles
 **Then** **templates with no doc are synthesized per the Synthesis Defaults before assembly**, so a standard file
-is never emitted empty and the defaults are not specification-only
+is never emitted empty and the defaults are not specification-only *(Question 1, owner, 2026-10-06: an untouched
+standard file the library leaves with no section is not emitted — `index.hbs` and `post.hbs` excepted, which Ghost
+requires — and Ghost's own fallback serves until Epic 10's designs land)*
 **And** the standard set always compiled is `default.hbs` (head, fonts, tokens, header/footer partials,
 `{{ghost_head}}`/`{{ghost_foot}}`, `{{body_class}}`), `index.hbs`, `post.hbs`, `page.hbs`, `tag.hbs`,
-`author.hbs`, `error.hbs` — and **`home.hbs` is emitted whenever the Home canvas differs from the generic post
-feed**, which is the ordinary case
-**And** `page.hbs` gates its title and feature-image markup on **`{{#if @page.show_title_and_feature_image}}`**,
-and **that is the only property from the `@page.*` namespace the compiler may ever emit** (DW-153)
+`author.hbs`, `error.hbs` — and **`home.hbs` is emitted when Home or its page 2 is designed**; an untouched pair is the
+generic post feed, written once, as `index.hbs` *(Story 7.3's Create, 2026-10-06: this said "whenever the Home canvas
+differs from the generic post feed")*; `default.hbs` wraps `{{{body}}}` alone in `<main id="site-main">`
+**And** `page.hbs` gates its title and feature-image markup on **`{{#if @page.show_title_and_feature_image}}`** —
+each A24 (Post Header) section's invocation sits inside it, and nothing else — and **that is the only property from
+the `@page.*` namespace the compiler may ever emit**; the compile refuses any other, naming the file (DW-153)
 **And** **there is no members template family**: a designed membership page compiles to **`custom-{name}.hbs` at
 the theme root** and **emits no route**; Inflozo **never emits `page-{slug}.hbs`**, because that form is matched
 against the live slug, detaches silently on a retitle, and outranks the user's explicit dropdown choice
@@ -3008,7 +3012,8 @@ against the live slug, detaches silently on a retitle, and outranks the user's e
 **And** **the emptying rule is general and differs by class**: the seven synthesizable templates re-synthesize
 from the defaults on the next compile; every conditional template **stops emitting entirely**; and **one class
 does not stop** — a Routes Manager custom template with a route pointing at it keeps emitting even when emptied,
-because a route whose template is missing raises `IncorrectUsageError` and the URL returns 500
+because a route whose template is missing raises `IncorrectUsageError`, a **400** *(read in source, Story 7.3's
+Create, 2026-10-06: this said 500)*; that class's warning words are Story 7.16's, never D5f's "stops shipping"
 **And** **emptying a custom template warns before it takes effect, naming the consequence**, because Ghost's own
 fallback to `page.hbs` is silent and "the page still loads, wearing a different design" is exactly the failure a
 user discovers weeks later
@@ -3023,20 +3028,24 @@ archive's own `tag.hbs` or `author.hbs` inside **`{{#is "paged"}}`**, the contex
 **And** every stored doc passes through **Story 5.19's designation rule** before it compiles (AD-27(d)), so a doc
 written before the rule compiles with the main feed the canvas shows
 **And** a **feed-less `tag.hbs` or `author.hbs`** — no visible feed section — compiles with FR-H2's **SEO guard**,
-`noindex` beyond page 1 plus a canonical link to page 1, because those files have no second file to fall through to
-and their `/page/N/` would repeat page 1 (DW-253)
+`noindex` on page 2 onward, written in `default.hbs`'s head, and **no canonical link of the theme's own** — Ghost's
+`{{ghost_head}}` writes one, page 2's pointing at itself *(read in source, Story 7.3's Create, 2026-10-06: this also
+asked for a page-1 canonical)* — because those files have no second file to fall through to and their `/page/N/`
+would repeat page 1 (DW-253)
 **And** the warning matches D5f.
 
 **And** *(Story 5.20, DW-261)* **a designed paywall compiles as Ghost needs it**: `partials/content-cta.hbs` is emitted
-only where the `paywall` doc holds a design, and then (1) a template references it explicitly, `{{> "content-cta"}}`, or
-Ghost never uses the override (MEASUREMENTS §15b, executed on both majors — a compile assertion), and (2) the partial's
+only where the `paywall` doc holds a design, and then (1) **no template invokes it**: any partial invoked from a
+template makes Ghost register the theme's `partials/`, so its copy wins, and an explicit invocation would print the
+paywall twice — the compile asserts that a theme carrying it invokes a partial from a file outside `partials/` *(read in
+source, Story 7.3's Create, 2026-10-06, correcting MEASUREMENTS §15b's library rule)*, and (2) the partial's
 first line is `{{{html}}}`, the post's free preview, because an override replaces Ghost's whole template and without it
-the preview above the cut disappears — AD-5's second exception to its no-triple-stash rule, bounded to that line, which the owner rules before it is built — AD-5 states only `PAGE_NUMBER_HBS` (R-83, DW-261)
+the preview above the cut disappears — AD-5's second exception to its no-triple-stash rule, bounded to that line and checked on every compile *(Question 2, owner, 2026-10-06; DW-261)*
 **And** `default.hbs` carries the `<main>` target the header's skip link lands on (DW-150).
 **And** a page 2 of its own with no visible main feed compiles as designed with FR-H2's SEO guard on its `/page/N/`, as a feed-less `tag.hbs` does (DW-234).
 
-**FRs:** FR-I1, FR-H2 (the SEO guard). · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5f. · **Owner test:** yes (the
-warning).
+**FRs:** FR-I1, FR-H2 (the SEO guard). · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5f. · **Owner test:** none — the
+warning's hand test moved to Story 10.100 (Question 3, owner, 2026-10-06).
 
 ### Story 7.4: Assets, fonts, per-design CSS and the dead-code strip
 
@@ -3141,11 +3150,13 @@ literals**
 passes through `core`'s gate, and CSS-only continuous motion sits inside `@media (prefers-reduced-motion:
 no-preference)` (UX-DR15).
 
-**And** *(Story 5.20, DW-261)* **a designed paywall compiles as Ghost needs it**: `partials/content-cta.hbs` is emitted
-only where the `paywall` doc holds a design, and then (1) a template references it explicitly, `{{> "content-cta"}}`, or
-Ghost never uses the override (MEASUREMENTS §15b, executed on both majors — a compile assertion), and (2) the partial's
+**And** *(Story 5.20, DW-261)* **a designed paywall compiles as Ghost needs it** — **built by Story 7.3** (2026-10-06): `partials/content-cta.hbs` is emitted
+only where the `paywall` doc holds a design, and then (1) **no template invokes it**: any partial invoked from a
+template makes Ghost register the theme's `partials/`, so its copy wins, and an explicit invocation would print the
+paywall twice — the compile asserts that a theme carrying it invokes a partial from a file outside `partials/` *(read in
+source, Story 7.3's Create, 2026-10-06, correcting MEASUREMENTS §15b's library rule)*, and (2) the partial's
 first line is `{{{html}}}`, the post's free preview, because an override replaces Ghost's whole template and without it
-the preview above the cut disappears — AD-5's second exception to its no-triple-stash rule, bounded to that line, which the owner rules before it is built — AD-5 states only `PAGE_NUMBER_HBS` (R-83, DW-261)
+the preview above the cut disappears — AD-5's second exception to its no-triple-stash rule, bounded to that line and checked on every compile *(Question 2, owner, 2026-10-06; DW-261)*
 **FRs:** FR-J5. · **Owner test:** none. · **Verification:** rendered on T1 and T3.
 
 ### Story 7.7: The gscan gate
@@ -3174,6 +3185,11 @@ theme passing Inflozo's gate is not rejected by the target's own gate on upload;
 behind a library release with a full re-run of the whole inventory, never silently**
 **And** there is **one error envelope and one gscan mapping** (AD-24)
 **And** the Pre-flight step matches S8b as extended.
+**And** *(Story 7.3, 2026-10-06; DW-341)* a theme in which no template reads Ghost's page switch — a designed Page
+with no Post header, or an untouched Page the library leaves with no section and so not emitted (7.3's Question 1,
+until Story 10.79 puts A24 on `page.hbs`) — raises `GS110-NO-MISSING-PAGE-BUILDER-USAGE`, an **error** on gscan
+4.49.7 and a warning on 6.4.2, which Ghost 5 activates despite (MEASUREMENTS §13a, §13b): this story decides whether
+Inflozo's gate blocks it, and asks the owner (R-83) where the answer changes what a deploy does.
 
 **FRs:** FR-J6. · **Frame:** `S8 Deploy.dc.html` S8b. · **Owner test:** yes. · **Verification:** gscan 6.4.2
 against both the v5 and v6 specs.
@@ -3526,6 +3542,10 @@ deleted with it and recoverable via undo, and an editor viewing it switches to H
 (UX-DR6) — and a YAML error is S9b's line-numbered error blocking the deploy with the reason on the Ship button
 **And** the surfaces match S9a, S9b, S9d, S9c and S9e as re-specified.
 **And** a custom template reached through a route this flow authors is offered only what that route supplies — appendix B.1 §3's route form, a flat root carrying exactly its `data:` keys — derived from the route, not the matrix's Admin-entry row for `custom-{name}.hbs` (DW-126).
+**And** a custom template a route names keeps shipping when every section is deleted — FR-I1's class that does not
+stop, built by Story 7.3 as `compileTheme`'s `routed` input, which this story hands in — so the editor's D5f warning
+("This template stops shipping") is not its sentence: **the warning before the last section leaves a routed template
+is this story's, in its own words** *(Story 7.3, 2026-10-06)*.
 
 **FRs:** FR-I2, FR-I3. · **Frame:** `S9 Routes.dc.html` S9a · S9b · S9c · S9d · S9e. · **Owner test:** yes.
 
@@ -4303,6 +4323,11 @@ button, link column, social row, inline newsletter form.
 > **naming two queries in one design** so the panel and the reset confirm can tell them apart (Story 9.2, A1 #7 Mega
 > Bar's columns — DW-165).
 >
+> **Moved in from Story 7.3 by its Question 4 (owner, 2026-10-06), word for word, so none is missed (R-195).**
+> `sections-inventory.md` §2 promises a project that placed no header or footer a standard pair — *"If the project has no header/footer singleton at all (nothing designed anywhere), synthesize **A1 #1 Rail** and **A3 #1 Minimal Line** with auto content (`@site.logo`/title, `@site.navigation`; CTA off, search off, member links on)."* — and
+> no story built it. **Story 9.9** does, where Minimal Line is made: the editor and the theme together, header and
+> footer at once, so the editor shows what the theme ships (FR-D6; DW-342).
+>
 > **Each category's Layers picture — DW-281 (Story 5.24e's Dev, 2026-10-02).** A category's first story adds its Layers picture,
 > extrapolated from S4 and D8's five (R-74); A1, A3, A4, A17 and A22 have theirs (Story 5.24e), and A2's nearest is
 > B7's announcement glyph. Until a category's first story lands, its rows and rail tiles draw Hero's.
@@ -4346,6 +4371,7 @@ So that I can start using Headers on my own site.
 **And** the `mode-toggle` module, where an A1 design declares it: "The module offers no control on a page whose body carries `scheme-light` or `scheme-dark` (R-34) and keeps a choice saved under Auto; the token block, not the module, makes the pin win, so the choice applies again once the site is on Auto." (R-239, owner, 2026-10-05; from Story 6.5's Dev) — and its two open questions, the flash before a deferred script and two states against three, are asked of the owner at this story's Create (DW-328).
 **And** the checks Story 6.5's Review left to the first story that authors designs against the mode-scoped rule (DW-330, 2026-10-05): the render matrix draws one case for every Background value a design offers, not the default alone, so a wrong token on Surface or Contrast is photographed; and a control that another, mode-scoped control switches off (`disabledBy` naming `bg` or a `darkOverride` control) is either refused by the validator or proven to reach a visitor, asked of the owner if a design needs it (R-83).
 **And** the category stylesheet meets AD-30's authoring rule (`mode-scoped-rule`): a mode-scoped control — Background role, or a design's own `darkOverride` control — is selected on the root alone, each value one rule declaring the root's own custom properties, every value the same set, every other rule reading them, so a dark override reaches a visitor through the token block (DW-195, Story 6.5; `docs/section-authoring.md`).
+**And** the header's skip link lands on **`#site-main`** — the `<main id="site-main">` that Story 7.3's `default.hbs` wraps around `{{{body}}}` alone, once *(Story 7.3, 2026-10-06; DW-150)*.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1); FR-C5 (the compatibility watch), FR-P2's compatibility carve-out (the one email that watch may send), FR-B7 (the `ghost_compat` rows); FR-F1 (button icons and the Icon Picker's canvas entry, R-121). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html` · `P0-2 Icon Slot and Picker.dc.html` (the icon slot and button icons, as R-104 reshapes the picker). The compatibility notice is a transactional send and an in-app row, not a drawn surface; `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 are Story 13.4's reader over it. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82), plus a real Resend send for the broadcast.
 
@@ -4578,6 +4604,7 @@ So that I can start using Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A3-<n> <Name>.dc.html` — and the category's `A3-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(moved from Story 7.3 by its Question 4, owner, 2026-10-06, word for word — DW-342)* `sections-inventory.md` §2's synthesized header and footer: *"If the project has no header/footer singleton at all (nothing designed anywhere), synthesize **A1 #1 Rail** and **A3 #1 Minimal Line** with auto content (`@site.logo`/title, `@site.navigation`; CTA off, search off, member links on)."* — built here, where Minimal Line is made, **in the editor and the theme together**, header and footer at once, because the editor shows what the theme ships (FR-D6: nothing ships that the user could not have looked at first). Until this story, a theme ships exactly the header and footer the project placed.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4699,6 +4726,11 @@ behind §4's blocking owner gate.
 > its owner gate stay where inventory order puts them. It is the one story in this epic that runs outside its
 > category's run: `sprint-status.yaml` lists it in its running place, the Create prompt's "previous story" reads that
 > order, and the story board follows it.
+>
+> **Moved in from Story 7.3 by its Question 3 (owner, 2026-10-06), word for word, so none is missed (R-195).** Story 7.3
+> builds D5f's warning — the yellow ask before the last section leaves Signup, Signin or Member home — but no design can
+> sit on those canvases until A30's first designs, so its hand test cannot run on the live site before them. **Story
+> 10.100** carries Story 7.3's owner's manual test, word for word, as part of its own.
 >
 > **Each category's Layers picture — DW-281 (Story 5.24e's Dev, 2026-10-02).** A category's first story adds its Layers picture,
 > extrapolated from S4 and D8's five (R-74); A1, A3, A4, A17 and A22 have theirs (Story 5.24e), and A2's nearest is
@@ -6834,6 +6866,7 @@ So that I can start using Post Headers on my own site.
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster (DW-153)
 **And** #1 Centred, re-authored from its pilot, compiles to `page.hbs` as well as `post.hbs` under A24's page rule, so `page.hbs`'s default stack keeps its header row (DW-191).
+**And** on `page.hbs` **the guard is the compiler's** *(Story 7.3, 2026-10-06)*: each A24 section's invocation sits inside `{{#if @page.show_title_and_feature_image}}` (`POST_HEADER`), so an A24 design carries no guard of its own and DW-153's `data-target` is not needed; and once A24 #1 sits on `page.hbs`, the T1 recorder's stand-in `page.hbs` (`tools/probe/record-theme-assembly.py`'s scaffold, labelled as this story's) is retired, because the compiled theme then reads Ghost's page switch itself.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7417,6 +7450,19 @@ So that I can start using Members Pages on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A30-<n> <Name>.dc.html` — and the category's `A30-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(moved from Story 7.3 by its Question 3, owner, 2026-10-06, word for word)* the owner's test includes the hand test of **D5f's warning** — the yellow ask Story 7.3 built, before the last section leaves Signup, Signin or Member home, which cannot appear on the live site until a Members Pages design can be placed there. It runs on the real site after this story's Deploy, on a laptop at full width:
+
+| # | URL | Screen | What to do | Dummy data | What you should see |
+|---|-----|--------|------------|------------|---------------------|
+| 1 | `https://app.inflozo.com/` | Projects | Open your test project. | — | The editor, on Home. |
+| 2 | `https://app.inflozo.com/projects/<id>` | Editor, Template switcher | Open the Template switcher and choose **Signup**. | — | The Signup page, marked Empty. |
+| 3 | `https://app.inflozo.com/projects/<id>/custom-signup` | Editor, Section Picker | Press **⌘K**, choose a Members Pages design, and place it. | — | The design sits on the Signup page, and Layers lists it. |
+| 4 | the same page | Editor | Click the section, then press **Delete**. | — | A yellow warning: "Delete the last section from Signup?". It says the template stops shipping and names `custom-signup.hbs`. **Keep it** is highlighted, beside a gold **Delete section**. |
+| 5 | the same page | the warning | Press **Keep it**. | — | The warning closes, and the section is still there. |
+| 6 | the same page | Editor | Press **Delete** again, then **Delete section**. | — | The section is gone, the switcher shows Signup as Empty, and the page says "… removed". |
+| 7 | the same page | Editor | Press **⌘Z**. | — | The section is back, with no warning. |
+| 8 | the same page | Editor | Place a second section, then delete one of the two. | — | No warning: one section is still there. |
+| 9 | `https://app.inflozo.com/projects/<id>/post` | Editor, Post | Delete every section on Post, one by one. | — | No warning. Post goes back to its standard recipe, marked Auto-generated. |
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A30). · **Frame:** `A30-<n> <Name>.dc.html` · `A30-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 

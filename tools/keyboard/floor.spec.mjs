@@ -378,6 +378,51 @@ test.describe('DW-211 · the section pill\'s ◀ ▶ and Shuffle in the real edi
   })
 })
 
+test.describe('7.3 · D5f · the pill\'s bin, the one removing gesture no key reaches (1280 × 720)', () => {
+  test.use({ viewport: { width: 1280, height: 720 }, hasTouch: false })
+
+  test('the bin over Signup\'s last section asks first, in the dialog vocabulary\'s sheet; Keep it changes nothing, Delete section removes it', async ({ page }) => {
+    const EDITOR = await import(new URL('../../apps/web/lib/editor.ts', import.meta.url).href)
+    // the stand-in members page (`harness/stand-ins.ts`) — nothing can sit on Signup until Story 10.100
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-stand-ins': 'on' })
+    await page.goto(`${HARNESS}/custom-signup`)
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'custom-signup')
+    const own = () => page.locator('[data-layer-row]').evaluateAll((els) => els.map((e) => e.dataset.layerRow).filter((k) => !k.startsWith('site:')))
+    expect(await own(), 'the control: Signup starts with no section of its own').toHaveLength(0)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+k')
+    const picker = page.locator('dialog[open][aria-label="Add a section"]')
+    await picker.locator('[data-cell][data-design="a30/1"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(picker).toHaveCount(0)
+    await expect.poll(own).toHaveLength(1)
+    const [row] = await own()
+    await page.locator(`[data-layer-row="${row}"] button`).first().click()
+    const root = page.frameLocator('iframe[title$="canvas"]').locator('#canvas > [data-inflozo-selected]')
+    const ask = page.locator('dialog[aria-labelledby="editor-empty-title"]')
+    const bin = async () => {
+      await root.hover()
+      const pill = page.locator('[data-section-pill]')
+      await expect(pill, 'the pill is drawn on the pointed section').toHaveCount(1)
+      await pill.locator('[aria-label^="Delete "]').click()
+    }
+    await bin()
+    await expect(ask).toBeVisible()
+    await expect(page.locator('dialog[open] [data-cancel]')).toBeFocused()
+    // the sheet's own box (`kit/dialog.ts`): Story 5.22's `sheet` state had shadowed the import inside EditorShell, so
+    // every confirm there drew no paper, padding or width until Story 7.3 renamed it
+    expect(await ask.evaluate((d) => [getComputedStyle(d).paddingTop, Math.round(d.getBoundingClientRect().width)])).toEqual(['26px', 460])
+    await page.locator('dialog[open] [data-cancel]').click()
+    await expect(ask).toBeHidden()
+    expect(await own(), 'Keep it changes nothing').toHaveLength(1)
+    await bin()
+    await expect(ask).toBeVisible()
+    await page.locator('dialog[open] button', { hasText: EDITOR.EMPTY_TEMPLATE_ASK.confirm }).click()
+    await expect.poll(own).toHaveLength(0)
+    await expect(page.locator('#editor-said')).toHaveText(/ removed$/)
+  })
+})
+
 test.describe('R-202 · the line is 1280, on a fine pointer', () => {
   test.use({ viewport: { width: 1279, height: 800 }, hasTouch: false })
 
