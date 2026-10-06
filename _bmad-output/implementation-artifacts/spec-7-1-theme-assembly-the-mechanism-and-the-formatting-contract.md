@@ -2,7 +2,7 @@
 title: 'Story 7.1 — Theme assembly: the mechanism, and the formatting contract'
 type: 'feature'
 created: '2026-10-05'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 1
 baseline_commit: 'df866cd279f9dfe5d89454b31ca69684fee04310'
@@ -952,6 +952,13 @@ tree without `page.hbs`) refused with GS110 on both. No migration in the diff, s
 proofs run from the scratchpad (the 6-of-6 render-neutral sweep and the 338-of-338 canvas comparison) are **one-shot
 by construction** — each compared this tree against HEAD's at that moment — and are not committed; `format.test.ts`'s
 `neutral()` and the re-baselined snapshots are their committed form.
+
+**Deploy (2026-10-06), head `cce5305a`.** `Deployment: dpl_EU4o41VUGD23DUgxzFG1aPNvg42r` READY on the production Vercel
+project (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha` matches). CI run
+37402217222: `check`, `rls` and `deploy` success; the render matrix run 37402217220 success. No migration, so no schema
+apply and no RLS read beyond the CI gate. `https://app.inflozo.com/` answers 307 (the signed-out redirect) and
+`https://inflozo.com/` 200. The compiler has no product caller until Story 7.18, so nothing a visitor or the owner reaches
+changed; there is no owner test (`owner_test: none`).
 
 **Real services the Dev phase hit (R-82):** T1 `ghost6.inflozo.com` (Ghost 6.58.0) — Admin API theme upload, two
 activations and the delete; the Content API's `settings/` (locale `en`) and `posts/` (the published count that sizes

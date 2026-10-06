@@ -129,7 +129,7 @@ development_status:
   epic-6-retrospective: optional
 
   epic-7: in-progress
-  7-1-theme-assembly-the-mechanism-and-the-formatting-contract: in-review
+  7-1-theme-assembly-the-mechanism-and-the-formatting-contract: done
   7-2-package-json-emission: backlog
   7-3-synthesis-defaults-and-the-emptying-rules: backlog
   7-4-assets-fonts-per-design-css-and-the-dead-code-strip: backlog
