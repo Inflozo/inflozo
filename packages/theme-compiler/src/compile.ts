@@ -75,6 +75,9 @@ const noC0 = (what: string, values: Iterable<string>): void => {
 /** FR-J13's marker (DW-335): `"inflozo": true`, top level, written last — what Story 7.20 gates restore scope on. It survives
  *  a renamed package, sits outside Ghost's `config` namespace, and carries no id, hash or date. */
 export const THEME_MARKER = 'inflozo'
+/** The three named marks `package.json` may carry — FR-J10's `name`, the ruled `author` and the marker — and the only bytes
+ *  the fingerprint scan exempts. One list, so a fourth mark cannot land in one scanner and miss another. */
+export const THEME_MARKS: readonly string[] = ['name', 'author', THEME_MARKER]
 
 /** Question 3, ruled option 1 (owner, 2026-10-06): Inflozo writes and maintains the theme's code. */
 const AUTHOR = { name: 'Inflozo', email: 'hello@inflozo.com' }
@@ -92,7 +95,8 @@ const shown = (v: unknown): string => (typeof v === 'string' ? JSON.stringify(v)
 /** `config.posts_per_page`: an integer, never a string — `"12"` is GS010-PJ-CONF-PPP-INT, an error. FR-H2's 1–100 clamp is a
  *  secondary feed's alone (`feedBase`), so the main feed's page size is not clamped. */
 function pageSize(v: unknown): number {
-  const n = Math.trunc(Number(v))
+  // a number, or a JavaScript caller's digit string — never `true` (which `Number` reads as 1) or an array
+  const n = typeof v === 'number' || typeof v === 'string' ? Math.trunc(Number(v)) : NaN
   if (!Number.isFinite(n) || n < 1) throw new Error(`package.json: posts_per_page ${shown(v)} is no page size — it must be a whole number of at least 1 (GS010-PJ-CONF-PPP-INT).`)
   return n
 }
@@ -128,7 +132,9 @@ function packageJson(input: CompileInput, perPage: number): string {
 /** A Handlebars comment, `{{!-- … --}}` or `{{! … }}` — never read by the size check, because a layer name lands in one. */
 const HBS_COMMENT = /\{\{~?!--[^]*?--~?\}\}|\{\{~?![^]*?\}\}/g
 /** A mustache, and a `size=` hash argument inside one. Only mustaches are read: a design's `data-headline-size="large"`
- *  and a customer's typed `size="huge"` are HTML, never an argument (user braces ship as entities). */
+ *  and a customer's typed `size="huge"` are HTML, never an argument (user braces ship as entities). The value must be
+ *  double-quoted, as the spec writes it (`size="m"`). Ceiling: a mustache ends at the first `}}`, so a `}}` inside a quoted
+ *  hash string would hide what follows it — no design writes one, and `HELPERS.img_url` refuses the size at render anyway. */
 const MUSTACHE = /\{\{[^]*?\}\}/g
 const SIZE_ARG = /(?<![\w-])size=("([^"]*)"|[^\s}]*)/g
 
@@ -140,7 +146,7 @@ export function checkSizes(files: Readonly<Record<string, string>>): void {
     for (const [mustache] of body.replace(HBS_COMMENT, '').matchAll(MUSTACHE)) {
       for (const m of mustache.matchAll(SIZE_ARG)) {
         if (m[2] === undefined || !Object.hasOwn(IMAGE_SIZES, m[2])) {
-          throw new Error(`${path}: ${m[0]} is no image size — a size must be one of package.json's image_sizes keys, quoted: ${Object.keys(IMAGE_SIZES).join(', ')}.`)
+          throw new Error(`${path}: ${m[0]} is no image size — a size must be one of package.json's image_sizes keys, in double quotes: ${Object.keys(IMAGE_SIZES).join(', ')}.`)
         }
       }
     }

@@ -35,8 +35,10 @@ Ghost reads it as claimed is a hypothesis.
      and no 750 width in its `image_sizes` (the controls' premise), and its `card_assets` is recorded; the picture's
      `size/w750/` is redirected to the original; and the `cards.min.css?v=` hash `{{ghost_head}}` writes on `/` is
      read. The picture is the newest published post's feature image (the Content API's `feature_image:-null`), hosted
-     on T1; with none — T1's posts carry Ghost's sample pictures from static.ghost.org — the run uploads its own, a
-     1000-px-wide PNG of a few KB attached to no post (owner, 2026-10-06, Story 7.2's Question 4).
+     on T1; with none — T1's posts carry Ghost's sample pictures from static.ghost.org — the run uses its own, a
+     1000-px-wide PNG of a few KB attached to no post (owner, 2026-10-06, Story 7.2's Question 4): this month's
+     `/content/images/YYYY/MM/inflozo-probe-rendition.png` if a run already uploaded it, else it uploads one. That
+     happens after `start_guard` and the local controls, so a run about to be refused writes nothing.
   4. On T1, behind record-shim.py's `start_guard`, the theme is uploaded and activated INSIDE the `try` whose `finally`
      is `restore_and_delete` (DW-332: the probe's name is the zip's, known before the upload, so an upload whose answer
      is lost is still deleted), and `/` read until it shows the page word. It then reads `/`, `/page/2/`, the newest
@@ -219,24 +221,6 @@ def record(g, zipped, files, c, per_page, total):
     if st != 200 or not post.get('url'):
         raise Void(f'the Content API lists no published post (HTTP {st}) — there is no post page to read')
     post_path = urllib.parse.urlparse(post['url']).path
-    # {picture}: the newest published post's feature image, hosted on T1 — a width only the theme declares is served
-    st, listed = g.content('posts/?limit=1&filter=feature_image:-null&fields=feature_image')
-    picture = (((listed or {}).get('posts') or [{}])[0]).get('feature_image') or ''
-    images, uploaded = f'{g.url}/content/images/', None
-    if st != 200:
-        raise Void(f'the Content API did not list posts with a feature image (HTTP {st})')
-    if not picture.startswith(images) or not picture.lower().endswith(RESIZED):
-        # T1's posts carry Ghost's sample pictures from static.ghost.org, so it hosts none of its own. The owner ruled
-        # (2026-10-06, Story 7.2's Question 4) that the run uploads one: 1000 px wide, so w750 is a real downscale, a few
-        # KB, attached to no post. Ghost's API deletes no picture, so each such run leaves that one file on T1.
-        print(f'    the newest feature image is not T1\'s ({picture or "none"!r}) — uploading the probe picture')
-        st, up = g.upload_image(shim.make_png(1000, 10), 'inflozo-probe-rendition.png')
-        picture = (((up or {}).get('images') or [{}])[0]).get('url') or ''
-        if not picture.startswith(images):
-            raise Void(f'the probe picture upload answered HTTP {st} with no T1 URL ({picture!r}) — there is no rendition to read')
-        uploaded = urllib.parse.urlparse(picture).path
-    rel = urllib.parse.unquote(urllib.parse.urlparse(picture).path)[len('/content/images/'):]
-    original, sized = f'/content/images/{rel}', (lambda w: f'/content/images/size/w{w}/{rel}')
     compiled_pkg = json.loads(files['package.json'])
     last = -(-total // per_page)
     # the CONTROLS that hold before anything uploads: the words the pages must NOT show are in what is uploaded
@@ -247,6 +231,31 @@ def record(g, zipped, files, c, per_page, total):
     if 750 not in [v.get('width') for v in compiled_pkg['config']['image_sizes'].values()]:
         raise Void('the compiled image_sizes declares no 750 width — the rendition rows would prove nothing')
     previous = shim.start_guard(g)
+    # {picture}: the newest published post's feature image, hosted on T1 — a width only the theme declares is served.
+    # Found AFTER the guard and the local controls, because finding none uploads a file: a run about to be refused writes nothing.
+    st, listed = g.content('posts/?limit=1&filter=feature_image:-null&fields=feature_image')
+    picture = (((listed or {}).get('posts') or [{}])[0]).get('feature_image') or ''
+    images, uploaded = f'{g.url}/content/images/', None
+    if st != 200:
+        raise Void(f'the Content API did not list posts with a feature image (HTTP {st})')
+    if not picture.startswith(images) or not picture.lower().endswith(RESIZED):
+        # T1's posts carry Ghost's sample pictures from static.ghost.org, so it hosts none of its own. The owner ruled
+        # (2026-10-06, Story 7.2's Question 4) that the run uploads one: 1000 px wide, so w750 is a real downscale, a few
+        # KB, attached to no post. Ghost's API deletes no picture, so the file stays — and is REUSED by every later run
+        # that month (Ghost files an upload under /content/images/YYYY/MM/); a new month uploads one more.
+        own = f'/content/images/{datetime.date.today():%Y/%m}/inflozo-probe-rendition.png'
+        if landed(g, own) == (200, own):
+            print(f'    the newest feature image is not T1\'s ({picture or "none"!r}) — reusing this month\'s probe picture {own}')
+            picture = g.url + own
+        else:
+            print(f'    the newest feature image is not T1\'s ({picture or "none"!r}) — uploading the probe picture')
+            st, up = g.upload_image(shim.make_png(1000, 10), 'inflozo-probe-rendition.png')
+            picture = (((up or {}).get('images') or [{}])[0]).get('url') or ''
+            if not picture.startswith(images):
+                raise Void(f'the probe picture upload answered HTTP {st} with no T1 URL ({picture!r}) — there is no rendition to read')
+            uploaded = urllib.parse.urlparse(picture).path
+    rel = urllib.parse.unquote(urllib.parse.urlparse(picture).path)[len('/content/images/'):]
+    original, sized = f'/content/images/{rel}', (lambda w: f'/content/images/size/w{w}/{rel}')
     # ── before the upload, under the site's own theme: the controls' premise ──
     site_pkg = theme_package(g, previous)
     site_cards = (site_pkg.get('config') or {}).get('card_assets')
@@ -260,7 +269,8 @@ def record(g, zipped, files, c, per_page, total):
         (before['w750'] == (200, original), sized(750), 'CONTROL — under the site theme, w750 is redirected to the original',
          f'HTTP {before["w750"][0]} at {before["w750"][1]}'),
         (site_cards is not True or before['cards'] is not None, '/', 'CONTROL — under the site theme, ghost_head links '
-         'cards.min.css', f'card_assets {site_cards!r}, ?v={before["cards"].group(1) if before["cards"] else None}'),
+         'cards.min.css' + ('' if site_cards is True else ' (not read: its card_assets is not true, so the hash row is skipped)'),
+         f'card_assets {site_cards!r}, ?v={before["cards"].group(1) if before["cards"] else None}'),
     ]
     for ok, page, what, detail in premise:
         print(f'    {"PASS" if ok else "FAIL"}  {page:<40} {what} — {detail}')
@@ -281,7 +291,7 @@ def record(g, zipped, files, c, per_page, total):
                 break
         else:
             raise Void(f'/ never served this run\'s theme (last HTTP {st}) — nothing read there is a result')
-        for path in ('/', '/page/2/', post_path, f'/page/{last}/', f'/page/{last + 1}/'):
+        for path in dict.fromkeys(('/', '/page/2/', post_path, f'/page/{last}/', f'/page/{last + 1}/')):   # once each: last may be 2
             st, body = g.page(path)
             read[path] = (st, body)
             print(f'    read {path} -> HTTP {st}, {len(body)} bytes')
@@ -303,7 +313,7 @@ def record(g, zipped, files, c, per_page, total):
         asset_v = asset_v or v
         verdicts += got
     # ── Story 7.2's rows: Ghost reads the compiled package.json ──
-    cells = len(re.findall(r'class="a17-1__cell(?:\s[^"]*)?"', read['/'][1]))
+    cells = len(re.findall(r'class="[^"]*\ba17-1__cell\b[^"]*"', read['/'][1]))
     cards = CARDS_V.search(read['/'][1])
     verdicts += [
         (probe_pkg == compiled_pkg, f'theme {THEME_NAME}', "GET themes/ returns the compiled package.json, marker included",

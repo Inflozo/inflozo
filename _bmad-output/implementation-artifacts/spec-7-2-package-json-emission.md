@@ -2,7 +2,7 @@
 title: 'Story 7.2 — `package.json` emission'
 type: 'feature'
 created: '2026-10-06'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'e816a183cc2b8454badb364baf490ff55055ef0c'
@@ -197,6 +197,30 @@ Three values are the owner's (Questions 1–3). The spec builds the recommended 
   - DW-335 is closed, naming this story;
   - a grep finds none of the old wording.
 
+### Review Findings
+
+Five layers ran on 2026-10-06 (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier). The Acceptance Auditor found no criterion violated; the Verification Gap reviewer found no gap; the Real-infra verifier held every read-only T1 claim (below). Patched in the Review commit:
+
+- [x] [Review][Patch] The recorder uploaded the probe picture BEFORE `start_guard` and the local controls, so a run about to be refused had already written to T1; and a second run would upload another picture, since the probe is attached to no post [tools/probe/record-theme-assembly.py:233-256] — the picture step now follows the guard and the controls, and reuses this month's `/content/images/YYYY/MM/inflozo-probe-rendition.png` when it is there.
+- [x] [Review][Patch] The A17 #1 cell count matched `a17-1__cell` only as the first class; a prepended class would read 0 cells [tools/probe/record-theme-assembly.py:316].
+- [x] [Review][Patch] The ghost_head premise row passed vacuously when the site theme's `card_assets` is not `true`, yet printed as a held CONTROL — it now says so; `/page/2/` was read twice when `last` is 2 [tools/probe/record-theme-assembly.py:275,294].
+- [x] [Review][Patch] The three named marks were written as two code lists (`unmarked` in `tools/pilot-theme.mjs` and in `compile.test.ts`) — a fourth mark could land in one and miss the other; both now read `THEME_MARKS`, exported beside `THEME_MARKER` [packages/theme-compiler/src/compile.ts].
+- [x] [Review][Patch] `compilePilots(words)` with no options died with a destructuring TypeError; it now names the missing `theme`. `unmarked` accepted a `package.json` that parses to `null`, a string or an array [tools/pilot-theme.mjs].
+- [x] [Review][Patch] `check-snapshots.mjs` awaited gscan at the top level, so a gscan that throws aborted every later row instead of failing its own [tools/check-snapshots.mjs:714-715].
+- [x] [Review][Patch] `pageSize(true)` read as 1 and `[12]` as 12 through `Number`; only a number or a digit string is now a page size, and both are matrix-tested refusals [packages/theme-compiler/src/compile.ts].
+- [x] [Review][Patch] The size refusal said "quoted" while only double quotes pass (the spec's spelling); the message now says so and `size='m'` is tested. The mustache regex's ceiling (a `}}` inside a quoted hash string) is named in a comment [packages/theme-compiler/src/compile.ts].
+- [x] [Review][Patch] Propagation: FR-J2 and the §7.4 tree still stated `custom` as an unconditional key, and FR-J2's and Story 7.2's "every `size=` argument" did not say *inside a Handlebars expression*, the reading the Dev change log carries [prd.md FR-J2, §7.4; epics.md Story 7.2]. §71's "no content, no setting and no key written" now names the picture as the one write beside the theme; `doc-audit.py`'s row no longer writes "two rows more".
+- [x] [Review][Patch] Design Notes § The fingerprint scan and the description — says why the user's `description` is scanned and why that trips no product gate.
+
+Dismissed as noise or by rule: the dated counts in Dev results (a dated record of one run); `epic-7-context.md`'s line 69 (refresh, never recompile — the superseding sub-bullet is there); `encode-propagation-map.md`'s old wording (a `record` document); `theme.description` typed by TypeScript; a compile-level test of `checkSizes` (it is a one-line backstop behind `HELPERS.img_url`'s own refusal, tested at the function); recording the probe picture's residue beyond §71, the docstring and the recorder's own reuse.
+
+**Real infrastructure at Review (R-82), read-only — a theme upload needs the owner's in-session go and none was given in this session, so §71's upload rows stand as Dev's record.** T1 `ghost6.inflozo.com`, keys by name `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`:
+- `GET themes/`: installed `casper`, `racer`, `source`; active `casper`; no theme whose `package` carries `inflozo` — T1 is restored as §71 says.
+- `/content/images/2026/10/inflozo-probe-rendition.png` → 200, `image/png`, 4098 bytes. `size/w750/` of it → **302 to the original** (casper declares no 750), and the positive control `size/w600/` (a casper width) → 200 at its own path.
+- casper's `package`: no `inflozo` key, widths `[30, 100, 300, 600, 1000, 2000]`, `card_assets: true` — §71's premise rows hold today.
+- Locally, Node 24: the theme-compiler tests all pass with every `(7.2)` row; `node tools/check-snapshots.mjs` PASS with the gscan 6.4.2 rows behind their controls; the recorder's offline half (`compiled` → `scaffold` → `gated`) gave scaffold `assets/css/cards.css` + `page.hbs` only and **0 errors / 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6)**.
+- No migration in the diff (`git diff --stat e816a183..HEAD -- supabase/` empty), so R-99 does not apply.
+
 ## Spec Change Log
 
 - **2026-10-06, Create (the owner ruled).** All three questions were ruled option 1. The Ruled values table lost its "if ruled otherwise" column, and the propagation list's Question 1 and Question 2 lines now state the ruled values. Nothing else changed.
@@ -257,6 +281,10 @@ All three were ruled option 1 by the owner on 2026-10-06.
 | **Q2 · `card_assets` with no designed card** | `true` |
 | **Q2 · `card_assets` with designed cards** | `{ "exclude": [the sorted names] }` |
 | **Q3 · `author`** | `{ "name": "Inflozo", "email": "hello@inflozo.com" }` |
+
+### The fingerprint scan and the description (Review, 2026-10-06)
+
+`description` is `projects.name`, the user's words, and the scan does not exempt it: `themeFailures` runs only in CI and the recorder over the fixed pilots and the probe theme, never over a customer's compile, so a project named "Inflozo fan site" trips no product gate. The scan is a check that the *builder* writes its name nowhere but the three marks; the pilots' description is fixed, which is what makes the control meaningful.
 
 ### The marker (DW-335)
 

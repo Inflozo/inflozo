@@ -2966,7 +2966,7 @@ every card on both majors)*
 **And** `posts_per_page` from Theme Settings emitted as a **JSON number ≥ 1, coerced to integer**, because `"12"`
 from a form field trips `GS010-PJ-CONF-PPP-INT` at **error** level and blocks the deploy
 **And** the normative **`image_sizes` map** — `xs 150 · s 400 · m 750 · l 1200 · xl 2000` — is emitted, and
-**compile asserts that every `size=` argument in emitted `.hbs` exists as a key in it**, because with no map every
+**compile asserts that every `size=` argument inside a Handlebars expression in emitted `.hbs` exists as a key in it** (an argument: HTML attributes, typed text and comments are not read), because with no map every
 sized URL silently returns the original and gscan does not validate `image_sizes` at all
 **And** the **three ceilings are never conflated**: these five keys size Ghost-hosted content images, FR-J3's
 `400 / 800 / 1600 + original` covers theme-bundled assets, and FR-K2 caps uploads at 2400 px

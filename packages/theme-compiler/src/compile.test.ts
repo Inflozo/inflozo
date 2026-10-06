@@ -14,7 +14,7 @@ import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@in
 import { U0, U1, T0, T1 } from '@inflozo/section-runtime'
 import type { DocInstance, ProjectDoc } from '@inflozo/section-runtime'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
-import { checkSizes, compileTheme, THEME_MARKER } from './compile.ts'
+import { checkSizes, compileTheme, THEME_MARKER, THEME_MARKS } from './compile.ts'
 import type { CompileInput } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -310,9 +310,7 @@ test('the stylesheet: the token block first, then each placed design\'s styleshe
 function unmarked(path: string, body: string): string {
   if (path !== 'package.json') return body
   const rest = JSON.parse(body) as Record<string, unknown>
-  delete rest.name
-  delete rest.author
-  delete rest[THEME_MARKER]
+  for (const mark of THEME_MARKS) delete rest[mark]
   return JSON.stringify(rest, null, 2)
 }
 
@@ -441,7 +439,8 @@ test('(7.2) a page size given as text or a fraction is written as the integer, a
 })
 
 test('(7.2) a page size that is no page size is refused, naming the value', () => {
-  for (const [v, named] of [[0, '0'], [-3, '-3'], [NaN, 'NaN'], ['twelve', '"twelve"'], [Infinity, 'Infinity']] as const) {
+  // `true` and `[12]` are the JavaScript values `Number` would quietly read as 1 and 12
+  for (const [v, named] of [[0, '0'], [-3, '-3'], [NaN, 'NaN'], ['twelve', '"twelve"'], [Infinity, 'Infinity'], [true, 'true'], [[12], '12']] as const) {
     assert.throws(() => pkgOf({ postsPerPage: anyValue(v) }), (e: Error) => e.message.startsWith(`package.json: posts_per_page ${named} is no page size`) && e.message.includes('GS010-PJ-CONF-PPP-INT'), named)
   }
 })
@@ -468,6 +467,8 @@ test('(7.2) the size check: a size that is no key — quoted or not — is refus
   const keys = Object.keys(IMAGE_SIZES).join(', ')
   assert.throws(() => checkSizes({ 'partials/x.hbs': '<img src="{{img_url x size="huge"}}">\n' }), (e: Error) => e.message.startsWith('partials/x.hbs: size="huge"') && e.message.endsWith(`${keys}.`))
   assert.throws(() => checkSizes({ 'post.hbs': '<img src="{{img_url x size=m}}">\n' }), /^Error: post\.hbs: size=m is no image size/)
+  // a single-quoted key is Handlebars-legal but not the spec's spelling, and the message says double quotes
+  assert.throws(() => checkSizes({ 'post.hbs': "<img src=\"{{img_url x size='m'}}\">\n" }), /size='m' is no image size.*in double quotes/)
   // the control: a key passes, and so do a size in a comment, an HTML attribute and a non-template file
   assert.doesNotThrow(() => checkSizes({
     'home.hbs': '{{!-- size="huge" · x · y --}}\n{{! size=huge }}\n<img src="{{img_url x size="m"}}" data-headline-size="huge" size="9">\n',

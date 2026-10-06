@@ -4,6 +4,6 @@
 // reads; the later stories of the epic fill the rest of the tree.
 
 export const name = '@inflozo/theme-compiler'
-export { compileTheme, THEME_MARKER } from './compile.ts'
+export { compileTheme, THEME_MARKER, THEME_MARKS } from './compile.ts'
 export type { CompileInput } from './compile.ts'
 export { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'

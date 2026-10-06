@@ -711,15 +711,19 @@ const withPackage = (edit) => {
   edit(pkg)
   return { ...pilotTheme, 'package.json': `${JSON.stringify(pkg, null, 2)}\n` }
 }
-const gscanPilots = await gscanResults(pilotTheme)
-const gscanStringPage = await gscanResults(withPackage((pkg) => { pkg.config.posts_per_page = '12' }))
+// a gscan that throws (a missing dependency, a temp-dir failure) must be a failing ROW, not a stack trace that stops every
+// row after it — so the throw is kept and re-raised inside each row that reads it
+const gscanOr = async (files) => gscanResults(files).catch((e) => e)
+const gscanPilots = await gscanOr(pilotTheme)
+const gscanStringPage = await gscanOr(withPackage((pkg) => { pkg.config.posts_per_page = '12' }))
+const raised = (r) => { if (r instanceof Error) throw r; return r }
 const gscanVersion = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('gscan/package.json').version
 
 check('control — Story 7.2: gscan at v6 raises GS010-PJ-CONF-PPP-INT on the pilots\' package.json with posts_per_page "12"', () => {
-  return mustFail(gscanStringPage, /^error GS010-PJ-CONF-PPP-INT$/, 'a string page size')
+  return mustFail(raised(gscanStringPage), /^error GS010-PJ-CONF-PPP-INT$/, 'a string page size')
 })
 check('Story 7.2 — the pilots\' package.json raises no GS010-* or GS100-* result, at any level, under gscan 6.4.2 at v6', () => {
-  const hit = packageRules(gscanPilots)
+  const hit = packageRules(raised(gscanPilots))
   if (hit.length > 0) throw new Error(hit.join('\n'))
   return `gscan ${gscanVersion}; ${gscanPilots.length} result(s) outside package.json's rules, which later stories answer`
 })

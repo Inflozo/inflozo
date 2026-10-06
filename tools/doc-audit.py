@@ -1189,7 +1189,7 @@ DOCS = [
   'three rows more, each behind its control: every class a design writes is its root {category}-{n} or begins with '
   '{root}__ or {root}--; no two designs declare one data-partial name; and the five-pilot project (tools/pilot-theme.mjs, '
   'fixed words) compiles with Paper to a theme Handlebars 4.7.9 parses, with one {{{body}}}, no fingerprint, every partial '
-  'referenced and the same bytes twice. Since Story 7.2 two rows more, each behind its control: the pilots\' package.json '
+  'referenced and the same bytes twice. Since Story 7.2, further rows each behind its control: the pilots\' package.json '
   'raises no GS010-* or GS100-* result at any level under gscan 6.4.2 at v6 (the control: posts_per_page "12" raises '
   'GS010-PJ-CONF-PPP-INT), and the builder\'s name in package.json outside its three named marks is caught (the control: '
   'the clean file passes).'),

@@ -25,7 +25,7 @@ const lib = await import(join(REPO, 'packages/library/src/index.ts'))
 const { iconDrawing } = await import(join(REPO, 'packages/library/src/icons.ts'))
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
 const { REFERENCE_PACK } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
-const { compileTheme, THEME_MARKER } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
+const { compileTheme, THEME_MARKS } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
 const { JSDOM } = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('jsdom')
 
 /** The hostile layer name: an early `--}}`, markup and a live expression after it. */
@@ -88,7 +88,8 @@ export function pilotProject({ pageWord, layerWord }, find = library()) {
 export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', description: 'Pilot sections' }
 
 /** The compiled theme, path → text, and the project it came from. */
-export function compilePilots(words, { theme, postsPerPage = 12, find = library() }) {
+export function compilePilots(words, { theme, postsPerPage = 12, find = library() } = {}) {
+  if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
   const templates = pilotProject(words, find)
   const files = compileTheme(new JSDOM('<body></body>').window.document, { templates, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme })
   return { files, templates, instanceIds: Object.values(templates).flatMap((d) => d.instances.map((i) => i.instanceId)) }
@@ -98,9 +99,8 @@ export function compilePilots(words, { theme, postsPerPage = 12, find = library(
  *  the only builder marks a theme may carry. Every other byte of the file is scanned like any emitted file. */
 export function unmarked(text) {
   const rest = JSON.parse(text)
-  delete rest.name
-  delete rest.author
-  delete rest[THEME_MARKER]
+  if (rest === null || typeof rest !== 'object' || Array.isArray(rest)) throw new Error('package.json is not an object')
+  for (const mark of THEME_MARKS) delete rest[mark]
   return JSON.stringify(rest, null, 2)
 }
 
