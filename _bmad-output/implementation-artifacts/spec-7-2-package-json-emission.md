@@ -2,7 +2,7 @@
 title: 'Story 7.2 — `package.json` emission'
 type: 'feature'
 created: '2026-10-06'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'e816a183cc2b8454badb364baf490ff55055ef0c'
@@ -529,3 +529,10 @@ All three were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Ru
 | A size that is no key | `(7.2) the size check …` (`size="huge"` quoted, `size=m` unquoted; control: `size="m"`, comments, HTML attributes and CSS pass) |
 | A layer named `size="huge"` | `(7.2) a layer named size="huge" compiles …` (control: the same words in a live mustache are refused) |
 | Determinism | `determinism: the same input, its templates and every object's keys in another order …`, now with designed cards and a shuffled `theme` |
+
+**Deploy (2026-10-06), head `f09c3d7a`.** `Deployment: dpl_9zQwkXcMuxugH6cVtpbR3FdVquUs` READY on the production Vercel
+project (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha` matches). CI run
+37426028925: `check`, `rls` and `deploy` success (read with `GITHUB_TOKEN`); the render matrix run 37426029002 success.
+No migration, so no schema apply and no RLS read beyond the CI gate. `https://app.inflozo.com/` answers 307 (the
+signed-out redirect) and `https://inflozo.com/` 200. The compiler has no product caller until Story 7.18, so nothing a
+visitor or the owner reaches changed; there is no owner test (`owner_test: none`). Done on the Deploy commit.
