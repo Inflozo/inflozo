@@ -102,11 +102,11 @@ A user ships. The project compiles — purely, from what it is handed — into a
       - A missing route template is a 400 (`IncorrectUsageError`), not FR-I1's 500.
       - The theme's `content-cta.hbs` wins whenever any partial is invoked from a template: gscan narrows its `partials` list to invoked ones, and `active.js` registers the theme's `partials/` only when that list is non-empty. So no explicit `{{> "content-cta"}}` is emitted, since it would print the paywall twice, and §15b's "library rule" is corrected.
       - `GS110-NO-MISSING` is an error on gscan 4.49.7, not FR-I1's "only a warning".
-    - **Four questions went to the owner, all open:**
-      - Q1: an untouched Page or 404 the library leaves empty. Recommended: left out until Epic 10 fills them.
-      - Q2: `{{{html}}}` as AD-5's second exception. Recommended: allowed, as `content-cta.hbs`'s first line alone.
-      - Q3: the warning's hand test. Recommended: it moves to Story 10.100, because no design can sit on a membership canvas until then.
-      - Q4: `sections-inventory.md` §2's synthesized header and footer, which no story owns. Recommended: Story 9.9.
+    - **Four questions went to the owner, and all four were ruled option 1 (owner, 2026-10-06):**
+      - Q1: an untouched Page or 404 the library leaves empty. **Ruled:** not emitted until Epic 10 fills them; Ghost's own fallback serves, and the recorder's stand-in `page.hbs` stays as Story 10.79's.
+      - Q2: `{{{html}}}` as AD-5's second exception. **Ruled:** allowed, as `content-cta.hbs`'s first line alone, checked on every compile.
+      - Q3: the warning's hand test. **Ruled:** it moves word for word to Story 10.100, because no design can sit on a membership canvas until then; 7.3 is `owner_test: none`.
+      - Q4: `sections-inventory.md` §2's synthesized header and footer, which no story owned. **Ruled:** Story 9.9 builds it, in the editor and the theme together.
     - **D5f:**
       - it fires from `onRemove` when a delete would empty a designed custom template;
       - it says "Delete" for the frame's "Remove" (R-170), filled `marigold-solid`;
@@ -203,10 +203,10 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **7.1:** the section-partial slug rule — §7.4 already gives a numeric suffix per directory, the spine's conventions row (R2-10) says that surface has no rule and both the rule and the function must be stated, and a slug function is stated only for custom templates.
   - **7.1:** hoisting identity — §7.4 compares sections' text after content substitution, while the spine's pipeline partitions before user text is substituted.
   - **7.1 / 7.3 / 7.33:** triple-stashes — AD-5 says zero `{{{` with no exception, §7.3 (Round 3's D3) permits exactly one `{{{body}}}` in `default.hbs`, and 7.3/7.6 count DW-261's `{{{html}}}` as AD-5's "second exception" after `PAGE_NUMBER_HBS`, which is not a triple-stash.
-    - **Story 7.3's Create (2026-10-06):** `{{{html}}}` would be the second triple-stash after `{{{body}}}`. It is put to the owner as 7.3's Question 2 (open), and AD-5 says any second exception is his.
+    - **Story 7.3's Create (2026-10-06):** `{{{html}}}` would be the second triple-stash after `{{{body}}}`. It was put to the owner as 7.3's Question 2, because AD-5 says any second exception is his, and ruled option 1 (owner, 2026-10-06): allowed as `partials/content-cta.hbs`'s first line alone.
   - **7.1:** D13 makes the guarantee a lint over every design source that refuses the token and marker shapes; the runtime relies on the C0 shape and DW-159's comment drop instead, and `validate.ts` holds no such lint.
   - **7.3:** "a standard file is never emitted empty", but the library holds only the five pilots, so `page.hbs` (A24 #1 is post-only, DW-191; A25 absent) and `error.hbs` (A31 absent) synthesize to nothing until Epic 10.
-    - **Story 7.3's Create (2026-10-06):** put to the owner as 7.3's Question 1 (open).
+    - **Story 7.3's Create (2026-10-06):** put to the owner as 7.3's Question 1, ruled option 1 (owner, 2026-10-06): an untouched `page.hbs` or `error.hbs` the library leaves with no section is not emitted, and Ghost's own fallback serves until Epic 10's designs land.
   - **7.4 / 7.11:** a Light-only project "compiles without dark support" (FR-D7) yet ships the built-ins "present and quiet", working from Ghost Admin with no redeploy (FR-Q5, 7.11); no source gives `color_scheme`'s compiled default per project mode, and Story 6.5 left the Light-only token block to Epic 7.
   - **7.7 / 7.33 / 7.35:** FR-J6 and 7.7 pin one gscan run "against both specs"; AD-34 requires each major's bundled gscan (4.49.7, 6.4.2) because 6.4.2 at `checkVersion: 'v5'` missed a real Ghost 5 error; `packages/theme-compiler` pins 6.4.2 alone.
   - **7.17 / 7.19:** FR-I4 and 7.17 send "a non-Owner connection" to the fallback card, while 7.19 and EXPERIENCE F3 say an Administrator's token suffices (the card's case is a role below Administrator).

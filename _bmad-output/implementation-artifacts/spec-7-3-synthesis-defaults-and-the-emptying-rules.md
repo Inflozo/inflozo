@@ -3,14 +3,14 @@ title: 'Story 7.3 — Synthesis Defaults and the emptying rules'
 type: 'feature'
 created: '2026-10-06'
 status: 'ready-for-dev'
-owner_test: pending
+owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
 ## In plain English
 
-After this story, the theme Inflozo builds carries Ghost's standard page types even where you never opened them, each built from the same standard recipe the editor already shows you, and the second page of your blog, of a tag or of a writer uses the design you gave it. When you delete the last section from Signup, Signin or Member home, a yellow warning first tells you that the page will stop shipping and that Ghost will quietly show your ordinary page design instead. Four choices are yours before it is built (see "Questions for the owner"), and one of them decides when you can test the warning by hand, because no design can be placed on those three pages until Story 10.100.
+After this story, the theme Inflozo builds carries Ghost's standard page types even where you never opened them, each built from the same standard recipe the editor already shows you, and the second page of your blog, of a tag or of a writer uses the design you gave it. When you delete the last section from Signup, Signin or Member home, a yellow warning first tells you that the page will stop shipping and that Ghost will quietly show your ordinary page design instead. You ruled all four questions on 2026-10-06, and this story has nothing for you to test by hand: no design can be placed on those three pages until Story 10.100, so the warning's hand test moved there word for word.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -258,7 +258,7 @@ After this story, the theme Inflozo builds carries Ghost's standard page types e
 - [ ] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
   - Design Notes § The T1 run;
   - `SECTION` becomes `72`;
-  - the scaffold's `page.hbs` is relabelled as Question 1's ruling places it;
+  - the scaffold's stand-in `page.hbs` stays, relabelled as Story 10.79's (Question 1, ruled);
   - the docstring and the catalogue row say so.
 
   -- R-82: a real Ghost reads what the compiler writes.
@@ -292,7 +292,7 @@ After this story, the theme Inflozo builds carries Ghost's standard page types e
 
 - **Every standard template compiles.** Given any compile, when the tree is read:
   - `default.hbs`, `index.hbs`, `post.hbs`, `tag.hbs` and `author.hbs` are present;
-  - `page.hbs` and `error.hbs` are present wherever designed or wherever synthesis gives them a section, and an untouched one with no section follows Question 1;
+  - `page.hbs` and `error.hbs` are present wherever designed or wherever synthesis gives them a section, and an untouched one with no section is not emitted (Question 1, ruled);
   - `home.hbs` is present exactly when Home or its page 2 is designed;
   - each untouched file's sections are its `synthesize` or `pageTwoStack` stack, in order, with `designate`'s flags.
 - **Conditional files.** Given custom, private and paywall docs, when compiled, each file is present exactly when its doc is designed. A `routed` custom template is always present. None is ever named `page-{slug}.hbs` or under `members/`.
@@ -304,7 +304,7 @@ After this story, the theme Inflozo builds carries Ghost's standard page types e
 - **The SEO guard.** Given any compile, when `default.hbs`'s head is read, then it carries the `noindex` block exactly for the contexts whose page-2 stack has no visible feed, and no canonical link.
 - **`<main>`.** Given any compile, when `default.hbs` is read, then it carries one `<main id="site-main">`, wrapping `{{{body}}}` alone.
 - **The paywall.** When compiled:
-  - given a designed paywall doc, then `partials/content-cta.hbs` opens with `{{{html}}}` as Question 2 rules, and no file invokes `content-cta`;
+  - given a designed paywall doc, then `partials/content-cta.hbs` opens with `{{{html}}}` (Question 2, ruled), and no file invokes `content-cta`;
   - given a theme carrying `partials/content-cta.hbs` and invoking no partial outside `partials/`, then the compile is refused.
 - **Ghost renders it.** Given T1 and the owner's in-session go, when the recorder runs:
   - every row in Design Notes § The T1 run holds behind its control;
@@ -319,13 +319,20 @@ After this story, the theme Inflozo builds carries Ghost's standard page types e
   - the title "Delete the last section from {label}?";
   - the body naming `{file}` in a mono chip;
   - Keep it, then a marigold Delete section.
-- **Owner's test.** Given Question 3's ruling, the owner runs § Owner's manual test on the deployed site, or that section moves to Story 10.100 and this story is Done on its Deploy commit (R-80).
+- **Owner's test.** Given Question 3's ruling (option 1), when Dev ends, then § Owner's manual test is in Story 10.100's card word for word, and this story is Done on its Deploy commit (R-80).
 - **Propagation.** Given the rulings, when Dev ends:
   - FR-I1, FR-H2, AD-5, MEASUREMENTS §15b and the stories they touch say what landed;
+  - Story 10.100's card carries the warning's hand test and Story 9.9's the synthesized header and footer, each word for word, and each epic's preamble lists what it received (R-195);
   - DW-150's, DW-153's and DW-253's halves here are recorded, and DW-234 and DW-261 are closed;
   - a grep finds none of the old wordings.
 
 ## Spec Change Log
+
+- **2026-10-06, Create (the owner ruled).** All four questions were ruled option 1.
+  - The Ruled values table now states the ruled values.
+  - Question 3 moved the warning's hand test word for word to Story 10.100, so `owner_test` is `none` and § Owner's manual test is the text Dev pastes there.
+  - The T1 run's 404 step, the propagation list and the Verification lines name the ruled values.
+  - The frozen intent is unchanged: every ruling is its recommended option.
 
 ## Design Notes
 
@@ -338,7 +345,7 @@ After this story, the theme Inflozo builds carries Ghost's standard page types e
 | `index.hbs` | `pageTwoStack('home.hbs', home, pageTwo['home.hbs'])` | always. Ghost requires it (`GS020-INDEX-REQ`, fatal) |
 | `post.hbs` | the designed doc, else `synthesize` | always (`GS020-POST-REQ`, fatal) |
 | `tag.hbs`, `author.hbs` | page 1: the designed doc or `synthesize`; page 2: `pageTwoStack(file, …)` | always. Page 2 inside `{{#is "paged"}}` only when page 2 is designed |
-| `page.hbs`, `error.hbs` | the designed doc, else `synthesize` | when designed, or when synthesis gives a section; an untouched one with none: Question 1 |
+| `page.hbs`, `error.hbs` | the designed doc, else `synthesize` | when designed, or when synthesis gives a section; an untouched one with none is not emitted, and Ghost's own fallback serves (Question 1, ruled) |
 | `custom-{name}.hbs` | the designed doc | when designed, or when `routed` names it (FR-I1's class that does not stop) |
 | `private.hbs` | the designed doc | when designed |
 | `partials/content-cta.hbs` | the paywall doc | when designed (Question 2) |
@@ -419,13 +426,13 @@ The words, in `EMPTY_TEMPLATE_ASK`:
 
 ### Ruled values: Questions 1 to 4
 
-All four are awaiting the owner. Dev builds the RECOMMENDED column unless he rules otherwise.
+All four were ruled option 1 by the owner on 2026-10-06.
 
-| Value | RECOMMENDED |
+| Value | Ruled |
 |---|---|
 | Q1 · an untouched `page.hbs` / `error.hbs` the library leaves with no section | not emitted; Ghost's own fallback serves. The recorder's stand-in `page.hbs` stays, relabelled as Story 10.79's |
 | Q2 · `{{{html}}}` as `partials/content-cta.hbs`'s first line | allowed, there alone. It is AD-5's second exception, checked on every compile |
-| Q3 · the hand test of the warning | moves word for word to Story 10.100. This story becomes `owner_test: none` |
+| Q3 · the hand test of the warning | moves word for word to Story 10.100. This story is `owner_test: none`, Done on its Deploy commit |
 | Q4 · sections-inventory §2's synthesized header and footer | built by Story 9.9, the editor and the theme together. Not in 7.3 |
 
 ### Settled here as readings, each told to the owner in one line
@@ -496,10 +503,9 @@ It is Story 7.2's run (§71's rows re-run), extended:
      - the `noindex` meta is in the uploaded `default.hbs`;
      - every page 2 read answers 200;
      - every page carries this run's `screen.css` hash.
-2. **The 404**, per Question 1:
+2. **The 404** (Question 1, ruled):
    - `/{nonce}-missing/` answers 404;
-   - options 1 and 3: Ghost's own error page renders, with none of this theme's `screen.css`;
-   - option 2: this theme's `error.hbs` renders, its `<main>` empty.
+   - Ghost's own error page renders, with none of this theme's `screen.css`, because the compiled tree carries no `error.hbs`.
 3. **The paywall mechanism.** Two hand-written probe themes (not compiled), each behind `start_guard` and `restore_and_delete`, read `/probe-gated-post/` signed out. They settle §15b's library rule.
    - **Positive:** `partials/content-cta.hbs` with a marker, plus one other partial invoked from `default.hbs`, and no `content-cta` invocation. The marker renders.
    - **Control:** the same theme with no partial invoked anywhere. Ghost's own `gh-post-upgrade-cta` renders, as in §15b.
@@ -516,31 +522,32 @@ It is Story 7.2's run (§71's rows re-run), extended:
     - the paywall's mechanism, with no explicit invocation;
     - `home.hbs`'s condition;
     - `<main id="site-main">`;
-    - Question 1's ruling.
+    - Question 1's ruling: an untouched standard file the library leaves with no section is not emitted (`index.hbs` and `post.hbs` excepted, which Ghost requires), and Ghost's own fallback serves until Epic 10's designs land.
   - FR-H2:
     - the guard is `noindex` alone, written in `default.hbs`'s head;
     - Home's page 2 of its own with no feed is guarded (R-178, R-179, DW-234). This retires "there is nothing to guard".
-- **`ARCHITECTURE-SPINE.md` AD-5:** the second exception, if Question 2 is ruled option 1.
+- **`ARCHITECTURE-SPINE.md` AD-5:** the second exception, `{{{html}}}` as `partials/content-cta.hbs`'s first line and nowhere else (Question 2, owner, 2026-10-06), checked on every compile.
 - **`MEASUREMENTS.md` §15b:** a dated correction note pointing at §72.
 - **`research-ghost-membership-pages.md:852`:** 500 → 400, read in source.
 - **`sections-inventory.md`:**
   - §3: an untouched Home compiles once, as `index.hbs`;
-  - §2: Question 4's ruling.
+  - §2: the synthesized header and footer are built by Story 9.9, in the editor and the theme together (Question 4, owner, 2026-10-06).
 - **`epics.md`:**
-  - Story 7.3's card: the explicit-reference line, "returns 500" and the canonical, as read here;
+  - Story 7.3's card: the explicit-reference line, "returns 500" and the canonical, as read here; its "Owner test: yes (the warning)" becomes "none — the warning's hand test moved to Story 10.100 (Question 3)";
   - Story 7.6: "built by Story 7.3";
   - Story 7.7: a designed Page with no Post header raises GS110, an error on 4.49.7 that Ghost 5 activates despite. 7.7 decides whether Inflozo's gate blocks it (a new DW);
   - Story 7.16: the routed class keeps shipping, and its warning words are 7.16's;
   - Story 9.1: the skip link lands on `#site-main`;
   - Story 10.79: the guard is the compiler's, so an A24 design carries none of its own (DW-153's `data-target` is not needed); retire the recorder's stand-in `page.hbs` once A24 sits on `page.hbs`;
-  - Stories 10.100 and 9.9, as Questions 3 and 4 rule.
+  - Story 10.100: this spec's § Owner's manual test, pasted word for word as the warning's hand test (Question 3), and listed in Epic 10's preamble (R-195);
+  - Story 9.9: `sections-inventory.md` §2's sentence ("If the project has no header/footer singleton at all (nothing designed anywhere), synthesize **A1 #1 Rail** and **A3 #1 Minimal Line** with auto content …"), pasted word for word with the rule that the editor shows what the theme ships (FR-D6), and listed in Epic 9's preamble (Question 4, R-195).
 - **`epic-7-context.md`:** a sub-bullet for each of the above.
 - **`deferred-work.md`:**
   - DW-150 (`<main>`) and DW-153 (the guard) record 7.3's halves;
   - DW-253 records the guard, and its two warnings stay with 7.18;
   - DW-234 and DW-261 are closed;
   - the new GS110 entry for 7.7;
-  - Question 4's entry, if it moves.
+  - a new entry for the synthesized header and footer, owned by Story 9.9 (Question 4).
 - **Last:** grep for "returns 500", `{{> "content-cta"}}` as a rule, "canonical link to page 1", "only a **warning**", "nothing to guard" and the recorder's old scaffold label.
 
 ### The commits
@@ -551,7 +558,7 @@ There is no migration, so there is no Schema phase. `Story 7.3 - Dev - …` carr
 
 ## Owner's manual test
 
-Run this on the real site after Deploy confirms the build, on a laptop at full width, **once a design can be placed on Signup**. That is Story 10.100 (Members Pages) unless Question 3 rules otherwise. Today nothing can be placed there, so today the warning cannot appear.
+**Moved word for word to Story 10.100 (Question 3, owner, 2026-10-06).** Nothing can be placed on Signup until then, so the warning cannot appear on the live site, and this story has no hand test: it is Done on its Deploy commit. Dev pastes the steps below into Story 10.100's card, where they are run on the real site after that story's Deploy, on a laptop at full width.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -567,7 +574,7 @@ Run this on the real site after Deploy confirms the build, on a laptop at full w
 
 ## Questions for the owner
 
-Four decisions are yours. Dev builds the recommended option of each unless you rule otherwise.
+All four were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Ruled values as it stands.
 
 ### Question 1 — Pages and the 404 page, until their designs exist
 
@@ -591,7 +598,7 @@ Four decisions are yours. Dev builds the recommended option of each unless you r
    - Every theme passes both of Ghost's checkers.
    - New test pictures of that design on a Page need your approval.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).**
 
 ### Question 2 — The paywall's free preview: allow one more "print it as-is" line
 
@@ -608,7 +615,7 @@ Four decisions are yours. Dev builds the recommended option of each unless you r
 2. **Not yet.** Build the paywall file with A32's own designs in Story 10.107, and ask again there. Until then, a designed paywall is not written into the theme and Ghost's own box shows.
 3. **Never.** A designed paywall is never written into the theme, so the Paywall canvas's choice never reaches the live site. Not recommended.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).**
 
 ### Question 3 — When you can test the warning by hand
 
@@ -623,7 +630,7 @@ Four decisions are yours. Dev builds the recommended option of each unless you r
 2. **Keep this story open after deploy until Story 10.100 lands**, and test it then.
 3. **Make it reachable now.** Let an existing design (the Newsletter Inline Row) be placed on the three member pages, test the warning on the live site, and take that back off in Story 10.100.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).**
 
 ### Question 4 — A standard header and footer for a project that has none
 
@@ -638,7 +645,7 @@ Four decisions are yours. Dev builds the recommended option of each unless you r
 2. **Build it now, in this story.** A project with no header shows the Rail header on every page, in the editor and on the live site, until you place your own. The footer joins when Story 9.9 adds Minimal Line.
 3. **Drop it.** A theme ships exactly the header and footer you placed, and none if you placed none.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).**
 
 ## Verification
 
@@ -649,7 +656,7 @@ Four decisions are yours. Dev builds the recommended option of each unless you r
   - every package's tests, `compile.test.ts`'s `(7.3)` rows among them;
   - `node tools/check-snapshots.mjs` with its new rows, each control failing on its broken subject first.
 - `pnpm keyboard`, run whole -- expected: green, including the D5f step.
-- The recorder's local half (`compiled()` → `scaffold()` → `gated()`; `cd tools/stress && npm install` once) -- expected: 0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6), with only the scaffold Question 1's ruling leaves.
+- The recorder's local half (`compiled()` → `scaffold()` → `gated()`; `cd tools/stress && npm install` once) -- expected: 0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6), with only `assets/css/cards.css` and the stand-in `page.hbs`, now labelled Story 10.79's, in the scaffold (Question 1, ruled).
 - `python3 tools/probe/record-theme-assembly.py`, on the owner's in-session go, in the main session -- expected:
   - every §72 row holds behind its control on T1 `ghost6.inflozo.com` (6.58.0);
   - T1 is restored and read back.
@@ -665,4 +672,4 @@ Four decisions are yours. Dev builds the recommended option of each unless you r
 - T1, through the recorder.
 - Both gscans locally, and gscan 6.4.2 in CI.
 - Vercel: the deploy of the editor change (CI `check`, `rls` and `deploy` green, the deployment READY at the head).
-- No migration and no Supabase, Resend or Dodo surface: the compiler has no product caller until Story 7.18. The warning is unreachable on production until Story 10.100, so the keyboard walk is its proof in CI (Question 3).
+- No migration and no Supabase, Resend or Dodo surface: the compiler has no product caller until Story 7.18. The warning is unreachable on production until Story 10.100, so the keyboard walk is its proof in CI, and its hand test runs in Story 10.100 (Question 3, ruled).
