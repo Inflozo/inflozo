@@ -243,7 +243,7 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
   templates there first, and a theme partial of the same name replaces Ghost's template across the whole site.
 - [x] `packages/library/src/validate.ts` -- two changes, one scan behind both:
   - Round 3's D13 lint: `control-character` refuses any C0 control character in a design's markup or stylesheet, other
-    than tab, line feed and carriage return, naming its line;
+    than line feed and carriage return (a tab too, Question 2's ruling), naming its line;
   - export `stripCssComments(css)` (strings kept), built on the one comment-or-string scan `untokened` already reads.
 
   The compiler's tokens are C0 characters, so a design file must never carry one; and stylesheet comments must be
@@ -335,8 +335,8 @@ Every snapshot therefore re-baselines once, as AD-35 predicted.
 Code review of 2026-10-06: five layers (blind, edge-case, verification-gap, acceptance, real-infra). Every patch below
 is applied in this commit; the defers are DW-336 to DW-340; Question 2 holds the one decision.
 
-- [ ] [Review][Decision] A tab is legal in a design file and illegal in the theme it becomes — Question 2 (`validate.ts`
-  `control-character` admits U+0009; `themeFailures` and `compile.test.ts` refuse it; nothing converts).
+- [x] [Review][Decision] A tab is legal in a design file and illegal in the theme it becomes — Question 2, ruled option 1:
+  `control-character` refuses U+0009 too [packages/library/src/validate.ts:1298].
 - [x] [Review][Patch] A stylesheet header part re-formed `*/` after one pass (`**//`), which could end the `screen.css`
   header comment early [packages/theme-compiler/src/compile.ts:50] — dropped until none is left, with a test.
 - [x] [Review][Patch] The compile's strings, asset URLs and pack CSS had no C0 guard, so a U+0005 in one would land as a
@@ -437,7 +437,7 @@ the `@page.show_title_and_feature_image` line (it has it, DW-153); §70's "post-
   library row that keeps it from any design, and `cards.css`'s link as 7.13's. Three guards landed beside the code (Review Findings): `white-space-pre`,
   the stylesheet half of the class rule in `check-snapshots`, and the FR-J1 import ban as executed rows in
   `check-baseline`. The recorder's scaffold `package.json` now carries FR-J2's `card_assets` shape, and its rows split
-  the site doc's roots as the compiler does. Question 2 is open.
+  the site doc's roots as the compiler does. Question 2 was ruled option 1 the same day (Fix): a tab is refused in a design file too.
 - **2026-10-06, Dev.** The recorder's scaffold (Design Notes § The T1 recorder, step 2) gained a stand-in `page.hbs`,
   Story 7.3's, on the owner's ruling of Question 1: without it both gscans flag `GS110-NO-MISSING-PAGE-BUILDER-USAGE`,
   because the pilots compile no `page.hbs`. Nothing the compiler emits changed.
@@ -833,7 +833,8 @@ project, the compiled `screen.css` carries those tabs, and the theme check fails
 3. Allow tabs in the theme and drop "no tabs" from the formatting contract. Not recommended: hand editors then meet
    mixed indentation.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-06).** `control-character` refuses U+0009 too, naming it; the test's tab case flipped from
+legitimate to refused; `docs/section-authoring.md`'s row says so. Every library design is tab-free (`check-snapshots` validates each).
 
 ## Verification
 

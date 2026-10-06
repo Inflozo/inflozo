@@ -1289,14 +1289,15 @@ export function stripCssComments(css: string): string {
   })
 }
 
-/** STORY 7.1 — Round 3's D13 lint: a C0 control character other than tab, line feed and carriage return, by line. The
+/** STORY 7.1 — Round 3's D13 lint: a C0 control character other than line feed and carriage return — a tab included, since the theme carries none (Question 2) — by line. The
  *  compiler's expression tokens and user-text markers are built from C0 characters (`core.ts`'s `T0`…`U1`), so a design
  *  file carrying one could forge either. */
 function controlCharacters(file: string, text: string): Failure[] {
   const out: Failure[] = []
   text.split('\n').forEach((line, i) => {
-    const c = /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.exec(line)?.[0]
-    if (c !== undefined) push(out, 'control-character', `${file} line ${i + 1} carries the control character U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')} — a design file holds no C0 control character but tab, line feed and carriage return, because the compiler's own tokens are made of them (D13).`)
+    // a tab too (Question 2, owner, 2026-10-06): the theme carries none (the formatting contract, rule 1) and nothing converts
+    const c = /[\u0000-\u0009\u000b\u000c\u000e-\u001f]/.exec(line)?.[0]
+    if (c !== undefined) push(out, 'control-character', `${file} line ${i + 1} carries the control character U+${c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0')} — a design file holds no C0 control character but line feed and carriage return: the compiler's own tokens are made of them (D13), and the theme is written with no tab (two spaces a level).`)
   })
   return out
 }

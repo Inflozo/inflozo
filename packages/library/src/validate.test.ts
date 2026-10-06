@@ -1157,15 +1157,16 @@ test('Story 7.1 (review) — white-space: pre* outside a pre or textarea is refu
   assert.deepEqual(said('.x__t { white-space: nowrap } .x__u { white-space: normal } .x pre { white-space: pre } .x > textarea { white-space: pre-wrap }'), [])
 })
 
-test('Story 7.1 — D13: a C0 control character in a design\'s markup or stylesheet is refused by line; tab, line feed and carriage return are not', () => {
+test('Story 7.1 — D13: a C0 control character in a design\'s markup or stylesheet is refused by line, a tab included (Question 2); line feed and carriage return are not', () => {
   const said = (html: string, css?: string) => validateDesign({ html, design: design({ controlSchema: [align()] }), ...(css === undefined ? {} : { css }) })
     .filter((f) => f.code === 'control-character').map((f) => f.message)
   // the hostile case: the compiler's own token shape, written into a design
   const token = `${String.fromCharCode(1)}0${String.fromCharCode(2)}`
   assert.match(said(EVERY_DIRECTIVE.replace('A note.', `A ${token} note.`))[0] ?? '', /^index\.html line \d+ carries the control character U\+0001/)
   assert.match(said(EVERY_DIRECTIVE, `.x { color: var(--text-body) }\n.y { content: "${String.fromCharCode(3)}" }`)[0] ?? '', /^style\.css line 2 carries the control character U\+0003/)
-  // the legitimate neighbours: tab, line feed and carriage return
-  assert.deepEqual(said(EVERY_DIRECTIVE.replace('A note.', 'A\tnote.\r\n'), '.x {\r\n\tcolor: var(--text-body)\n}'), [])
+  // a tab is refused, naming U+0009 (Question 2, owner, 2026-10-06); the legitimate neighbours are line feed and carriage return
+  assert.match(said(EVERY_DIRECTIVE, '.x {\r\n\tcolor: var(--text-body)\n}')[0] ?? '', /^style\.css line 2 carries the control character U\+0009/)
+  assert.deepEqual(said(EVERY_DIRECTIVE.replace('A note.', 'A note.\r\n'), '.x {\r\n  color: var(--text-body)\n}'), [])
 })
 
 test('Story 7.1 — stripCssComments removes a stylesheet\'s comments by the validator\'s own scan, and keeps every string', () => {
