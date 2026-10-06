@@ -77,7 +77,12 @@ const pilots = await import(`${root}/tools/pilot-theme.mjs`)
 const lib = await import(`${root}/packages/library/src/index.ts`)
 const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
 const { files, templates, instanceIds } = pilots.compilePilots(words, { postsPerPage: Number(process.env.PER_PAGE) })
-const order = Object.fromEntries(Object.entries(templates).map(([file, doc]) => [file, doc.instances.map((i) => i.designId.replace('/', '-'))]))
+// the root classes each template places, in doc order — the site doc's split as the compiler splits it: headers before
+// {{{body}}}, A3 footers after (isSiteFooter), hidden instances never
+const roots = (doc, keep = () => true) => doc.instances.filter((i) => !i.hidden && keep(i)).map((i) => i.designId.replace('/', '-'))
+const order = Object.fromEntries(Object.entries(templates).map(([file, doc]) => [file, roots(doc)]))
+order['default.hbs'] = roots(templates['default.hbs'], (i) => !lib.isSiteFooter(i.designId))
+order['default.hbs#footers'] = roots(templates['default.hbs'], (i) => lib.isSiteFooter(i.designId))
 process.stdout.write(JSON.stringify({
   files, order, failures: pilots.themeFailures(files, instanceIds), hostileLayer: pilots.HOSTILE_LAYER,
   hostileText: Object.values(pilots.HOSTILE_TEXT), imageSizes: lib.IMAGE_SIZES,
@@ -107,7 +112,7 @@ def scaffold(c, per_page):
             'name': THEME_NAME, 'description': "Story 7.1's recording surface: the five pilots, compiled",
             'version': '1.0.0', 'engines': {'ghost': '>=5.0.0'}, 'license': 'MIT',
             'keywords': ['ghost', 'theme', 'ghost-theme'], 'author': {'name': 'Probe', 'email': 'probe@example.com'},
-            'config': {'posts_per_page': per_page, 'card_assets': True, 'image_sizes': sizes},
+            'config': {'posts_per_page': per_page, 'card_assets': {'exclude': []}, 'image_sizes': sizes},
         }, indent=2) + '\n',
         # Story 7.13's (D12) — the two Koenig widths; Story 7.4's (AD-18) — Ghost's custom-font reads
         'assets/css/cards.css': ('.kg-width-wide { max-width: 1000px; }\n.kg-width-full { max-width: 100%; }\n'
@@ -136,13 +141,19 @@ def gated(files):
     return gates
 
 
+def site(c, page):
+    """A page's root classes in doc order: the site doc's headers, the page's own, the site doc's footers."""
+    return c['order']['default.hbs'] + c['order'][page] + c['order']['default.hbs#footers']
+
+
 def rows(page, body, c, want, locale, asset_v):
     """[(ok, page, what, detail)] for one page."""
     out = []
     text = html.unescape(re.sub(r'<[^>]+>', ' ', body))
     if want.get('page_word'):
-        out.append((c['page_word'] in body, page, 'the page word where Home draws A4 #13', c['page_word']))
-    got = [cls for cls in re.findall(r'class="(a\d+-\d+)"', body)]
+        out.append((c['page_word'] in body, page, "the page word (in A4 #13's eyebrow on Home) is on the page", c['page_word']))
+    # the FIRST class token: a root may carry a modifier beside its root class ({root}--x, the class rule)
+    got = [cls for cls in re.findall(r'class="(a\d+-\d+)(?:\s|")', body)]
     out.append((got == want['roots'], page, 'every placed section\'s root class, once each, in doc order', f'{got} (expected {want["roots"]})'))
     for what, bad in (('`{{`', '{{' in body), ('`}}`', '}}' in body), ('`{{!--`', '{{!--' in body),
                       ('C0 character', bool(C0.search(body))), ('layer word', c['layer_word'] in body)):
@@ -198,9 +209,9 @@ def record(g, zipped, files, c):
     finally:
         shim.restore_and_delete(g, previous, [THEME_NAME])
     want = {
-        '/': {'roots': c['order']['default.hbs'] + c['order']['home.hbs'], 'page_word': True, 'hostile': True},
-        '/page/2/': {'roots': c['order']['default.hbs'] + c['order']['index.hbs']},
-        post_path: {'roots': c['order']['default.hbs'] + c['order']['post.hbs'], 'hostile': True},
+        '/': {'roots': site(c, 'home.hbs'), 'page_word': True, 'hostile': True},
+        '/page/2/': {'roots': site(c, 'index.hbs')},
+        post_path: {'roots': site(c, 'post.hbs'), 'hostile': True},
     }
     verdicts, asset_v = [], None
     for path in ('/', '/page/2/', post_path):
@@ -242,7 +253,8 @@ def section(rec, gates, files, c):
            f'### (a) T1 `{rec["site"].replace("https://", "")}` ({rec["version"]}), locale `{rec["locale"]}`', '',
            '| Page | Row | Held |', '|---|---|---|']
     for ok, page, what, detail in rec['verdicts']:
-        out.append(f'| `{page}` | {what} | {"yes" if ok else "**NO**"} |')
+        shown = str(detail)[:60].replace('|', '\\|')   # the detail tells the three hostile rows apart (review)
+        out.append(f'| `{page}` | {what} — `{shown}` | {"yes" if ok else "**NO**"} |')
     out += ['', '### What it means', '',
             '- **Ghost renders what the compiler emits.** The formatted templates, the per-layer section partials, the '
             'hoisted shared partial and the parameterless `post-card` partial all resolve on both pages of the feed and '

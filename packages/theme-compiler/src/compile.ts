@@ -46,8 +46,21 @@ const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
  *  With no brace left, nothing inside can end `{{!--` early — the lexer ends it at the first `--}}` or `--~}}`. */
 const commentPart = (s: string): string => s.replace(/[{}\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim()
 
-/** A stylesheet header part: `*\/` and C0 controls dropped, whitespace collapsed. */
-const cssPart = (s: string): string => s.replace(/\*\/|[\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim()
+/** A stylesheet header part: `*\/` and C0 controls dropped, whitespace collapsed. `*\/` is dropped until none is left,
+ *  because one pass over `**\/\/` leaves a `*\/` behind. */
+const cssPart = (s: string): string => {
+  let out = s.replace(/[\u0000-\u001f]/g, '')
+  for (let next = out.replace(/\*\//g, ''); next !== out; next = out.replace(/\*\//g, '')) out = next
+  return out.replace(/\s+/g, ' ').trim()
+}
+
+/** AD-36, every new sink: the compile's other inputs — the strings, the asset URLs and the pack's CSS — may carry no C0
+ *  character, since the formatter's `KEEP_NL` and the runtime's tokens are C0 characters and `Tokens.resolve` would
+ *  turn one into a line break or an expression. A design file is held to the same rule by `control-character`. */
+const C0 = /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/
+const noC0 = (what: string, values: Iterable<string>): void => {
+  for (const v of values) if (C0.test(v)) throw new Error(`${what} carries a control character, which the theme compiler refuses (AD-36): ${JSON.stringify(v.slice(0, 40))}`)
+}
 
 /** Rule 7: `{{!-- {Layer name} · {Category} · {Design} --}}` — the layer name its file is slugged from, or the design's
  *  name where the layer has none. */
@@ -73,6 +86,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
     if (file === PAYWALL_TARGET) throw new Error(`${file}: the paywall's partial is compiled by Story 7.3 (synthesis), not by theme assembly.`)
     if (!isCompileTarget(file)) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
   }
+  noC0('a string', Object.values(input.strings ?? {}))
+  noC0('an asset URL', Object.values(input.assets))
+  noC0("the pack's CSS", [packTokensCss(input.pack)])
 
   // ── render every visible instance, with ONE UserText ──────────────────────────────────────────────────────────────
   const users = new UserText()
@@ -80,9 +96,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
   for (const file of files) {
     for (const instance of (input.templates[file] as ProjectDoc).instances) {
       if (instance.hidden) continue
-      const where = `${file} · ${instance.layerName || instance.designId}`
       const entry = input.library(instance.designId)
-      if (entry === undefined) throw new Error(`${where}: the library holds no design "${instance.designId}".`)
+      if (entry === undefined) throw new Error(`${file} · ${instance.layerName || instance.designId}: the library holds no design "${instance.designId}".`)
+      // an empty layer name is reported as the design's name, as the boundary comment and the slug fall back to it
+      const where = `${file} · ${instance.layerName || entry.name}`
       if (!compilesTo(entry.compileTarget, file)) throw new Error(`${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`)
       const query = feedQuery(entry, instance, file, input.postsPerPage)
       let out: ReturnType<typeof renderTheme>

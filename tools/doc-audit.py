@@ -424,7 +424,8 @@ DOCS = [
   "from this run's nonce in A4 #13's eyebrow, a layer word in every layer name, one hostile layer name and AD-5's shapes "
   "in A22 #1's text; refuses unless the theme passes the check CI holds it to (themeFailures). Adds the scaffold, new "
   "files only, each named for its story: package.json (7.2) with a posts_per_page T1's published posts overflow, and "
-  'assets/css/cards.css (7.13, 7.4). Gates through tools/stress/gate.js at 0 errors AND 0 warnings on gscan 4.49.7 and '
+  'assets/css/cards.css (7.13, 7.4) and a stand-in page.hbs reading @page.show_title_and_feature_image (7.3, the owner\'s '
+  'ruling of the spec\'s Question 1). Gates through tools/stress/gate.js at 0 errors AND 0 warnings on gscan 4.49.7 and '
   '6.4.2 — anything gscan names is a question for the owner, never a widened scaffold. On T1 ONLY (R-238), behind '
   "record-shim.py's start_guard, uploads and activates the theme inside the try whose finally is restore_and_delete "
   "(DW-332: the name is the zip's, known before the upload), waits for the page word on /, then reads /, /page/2/ and the "

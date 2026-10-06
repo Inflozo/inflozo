@@ -3069,6 +3069,9 @@ capability map is amended to agree. `darkOverrideCss` and AD-18's two Ghost-firs
 
 **FRs:** FR-J3. · **Frame:** `S8 Deploy.dc.html` S8b — the over-budget message surfaces in Pre-flight. · **Owner test:** yes (the over-budget message). · **Verification:** upload limits probed on
 T1 and T3.
+**And** *(DW-337 — from Story 7.1's review, 2026-10-06)* `stripCssComments`, which the compile strips a design's
+stylesheet with, cuts an unquoted `url(http://x/*/y)` at the `/*`; this story, which rewrites every `url()` to a
+bundled asset, either keeps a `url(…)` alternation before the comment branch or refuses an unquoted `url()`.
 
 ### Story 7.5: JS bundling — two files, two origins
 
@@ -3697,6 +3700,9 @@ output, and a content hash can match a renamed file without any mark in it.
 
 **FRs:** FR-J16. · **Frame:** `D3 The Drift Report.dc.html` D3a · D3b · D3c. · **Owner test:** yes. ·
 **Verification:** a hand-edited theme on T1 producing a real drift report (R-82).
+**And** *(DW-338 — from Story 7.1's review, 2026-10-06)* a layer name has no length cap, so the boundary comment
+`{{!-- {Layer name} · … --}}` has none while the file name is cut to 60; the cap lands at the input, in the Layers
+rename flow, so the file and the label agree.
 
 ### Story 7.22: Artifacts, retention and pinning
 
@@ -3831,6 +3837,9 @@ mirrors deploy gating exactly**
 **And** B15's Preview-only card gains the frame's **Export theme zip** beside **Re-check plan** and a greyed **Ship it** with its reason, `PREVIEW_COPY.body` regains its export sentence, and `probe-rule.test.ts`'s absence assertion flips in the same change (DW-60).
 
 **FRs:** FR-J12. · **Frame:** `S8 Deploy.dc.html` S8a · S8e (Ship it ▾), and `S8 Deploy.dc.html` S8a′ where the destination is Preview-only and export replaces deploy. · **Owner test:** yes.
+**And** *(DW-336 — from Story 7.1's review, 2026-10-06)* a layer named `con`, `nul`, `aux`, `prn`, `com1`… slugs
+to a partial file Windows cannot extract from the zip; the export suffixes such a slug, or the download states that
+the zip is not for Windows.
 
 ### Story 7.27: Library updates and the consent step
 
@@ -4007,6 +4016,10 @@ warning, not a build failure**
 
 **FRs:** none — this builds NFR-6(b). · **Owner test:** none (a CI lane). · **Verification:** gscan 6.4.2, both
 specs.
+**And** *(DW-339, DW-340 — from Story 7.1's review, 2026-10-06)* the pilot theme's "internal reference" scan
+(`themeFailures`) reads `R-1`, `Story 3` or `ponytail` in any text, so it is anchored to comment contexts before it
+meets user text; and rule 5's `attrs === null` branch (a start tag the formatter cannot re-spell is left whole) gains
+the test the library-wide compile can first supply.
 
 ### Story 7.34: The canvas-vs-real-Ghost comparison harness
 

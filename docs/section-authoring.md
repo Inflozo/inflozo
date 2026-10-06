@@ -697,9 +697,12 @@ written as the next section says.**
 **Every class a design writes is its own** *(Story 7.1)*: the root is `{category}-{n}` (`a22-1`), and every other class
 begins with `{root}__` or `{root}--` (`a22-1__field`, `a4-13__action--primary`). The compiler concatenates every placed
 design's stylesheet into one `assets/css/screen.css` and never rewrites a class name (AD-3 — no generated classes), so
-this rule is what keeps two designs' rules from ever meeting; `tools/check-snapshots.mjs` holds it over every design,
-beside a control. A comment in `style.css` is the author's and ships to no one: the compile strips every one
-(`stripCssComments`), so a header `/* {Category} · {Design} */` is the only comment the theme's stylesheet carries.
+this rule is what keeps two designs' rules from ever meeting; `tools/check-snapshots.mjs` holds both halves over every
+design, beside a control — every class `index.html` authors, and every selector in `style.css`, which must name the
+root (`.a22-1`, `.a22-1__field`, never a bare `p` or another design's class). A class a renderer writes at compile
+(an icon's, a members class) is the runtime's and is held by its own tests. A comment in `style.css` is the author's and ships to no one: the compile strips every one
+(`stripCssComments`), so the theme's stylesheet carries no comment but `/* Tokens */` at its top and a header `/* {Category} · {Design} */`
+over each design.
 
 #### A mode-scoped control: one root rule per value, declaring the root's own properties *(Story 6.5, AD-30, DW-195)*
 
@@ -1632,9 +1635,14 @@ passes **120** columns, measured on its final text, one attribute per line; a bl
 wraps one level in; and an element laid out one child per line **only where your own whitespace already fills every gap
 between its children** — everywhere else it is written exactly as the serializer writes it. So the whitespace you
 author is what decides the layout, and formatting never adds whitespace between two nodes you wrote touching: write
-`<span>a</span><span>b</span>` and it ships touching. `pre`, `textarea`, `script`, `style` and `title` ship verbatim.
-The render-neutral claim rests on every design's text sitting under `white-space: normal` or `nowrap`; a stylesheet
-setting `pre*` outside those elements is a question for the owner before it is built.
+`<span>a</span><span>b</span>` and it ships touching. At a section's top level — always one node per line — two nodes
+you wrote touching would be separated, so `check-snapshots` refuses a design whose top-level nodes touch. `pre`, `textarea`, `script`, `style` and `title` ship verbatim,
+and so does every element whose content the serializer writes raw or not at all (`template`, `iframe`, `noscript`,
+`xmp`, `noembed`, `noframes`, `plaintext`), since walking their children would not be the serializer. The long-tag rule
+applies in block layout; a tag inside inline content ships as written, however long.
+The render-neutral claim rests on every design's text sitting under `white-space: normal` or `nowrap`, so a stylesheet
+setting `white-space: pre`, `pre-wrap`, `pre-line` or `break-spaces` on anything but a `pre` or `textarea` is refused
+(`white-space-pre`); a design that needs one is a question for the owner before it is built.
 
 ---
 
@@ -1668,6 +1676,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | `catalog` on a prop that is not `text`, on a key not marked prop, or beside a `default` (`catalog-prop`) | *(Story 4.9)* S6. The catalog string is the default, so a second one would be ignored; only a prop-marked string may become editable. |
 | `maxChars` on a prop that is not `text` or `richtext` (`max-chars-type`), one that is not a whole number of at least 1 (`max-chars-value`), an authored `default` longer than it (`max-chars-default`), or a catalog string longer than it on a catalog-linked prop (`max-chars-catalog`) | *(Story 5.3)* FR-D4's hard limit. Only a field that is typed into has a character limit, and the words a field starts with — the design's own, or the catalog's — must fit the limit a customer is held to. |
 | a C0 control character other than tab, line feed and carriage return anywhere in `index.html` or `style.css` (`control-character`, naming the file and line) | *(Story 7.1 — Round 3's D13)* The compiler's expression tokens and user-text markers are built from C0 characters, so a design carrying one could forge either. Refusing the character refuses every shape, which a lint over the marker's shape could not. |
+| `white-space: pre`, `pre-wrap`, `pre-line` or `break-spaces` on any selector that is not a `pre` or `textarea` (`white-space-pre`) | *(Story 7.1's review)* The theme serializer is render-neutral only where a whitespace run is one space or nothing — `normal` and `nowrap`. A `pre*` value elsewhere would let a line break the formatter placed reach the page. |
 | a `data-partial` naming one of Ghost's own partials (`bad-value`) | *(Story 7.1, AD-36)* A repeat partial lands at the theme's `partials/` root, where Ghost registers `core/frontend/helpers/tpl/` first and a theme file of the same name replaces Ghost's own template across the whole site (read in both majors). Two designs declaring one `data-partial` name, and a class outside its design's root, are refused by `tools/check-snapshots.mjs`. |
 | an authored `data-inflozo-*` attribute (`editor-attribute`) | *(Story 5.3's review)* The editor's own prefix: the canvas emitter's editing stamps, lifted off as the canvas mounts, and the state marks (`data-inflozo-hover`, `-selected`, `-editing`) its chrome is keyed on. An authored one would be lifted as a stamp or paint chrome at rest. |
 | a render naming its target whose markup prints a bare text node, or an `alt` / `title` / `placeholder` / `aria-label`, holding a letter or digit that no directive writes | *(Story 4.9)* V1's tree half. **Refused by the runtime**, beside FR-H7's scope check, in one error naming every literal; `checkChromeLiterals` returns the list. Exempt: text under `data-prop`, `data-bind`, `data-t`, `data-helper`, `data-initials`, `data-index`, `data-text` or `data-pagination="numbers"`; an attribute a directive writes; `alt=""`; text with no letter or digit. |

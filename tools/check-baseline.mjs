@@ -237,6 +237,25 @@ await check('DW-4: a disable comment in a core package does not silence .localeC
   return hit.message
 })
 
+// Story 7.1 (review) — FR-J1's ban on Handlebars and Prettier in product code was proved by planted files at Dev and by
+// nothing since; here, in the one ESLint harness, so an `ignores` reshuffle cannot weaken it silently.
+const lintAt = async (code, file) => (await new ESLint({ cwd: REPO }).lintText(code, { filePath: join(REPO, file) }))[0].messages
+const banned = (got) => got.find((m) => m.ruleId === 'no-restricted-imports' && m.message.includes('FR-J1'))
+await check('Story 7.1: a core package importing handlebars is refused, naming FR-J1', async () => {
+  const hit = banned(await lintAt("import Handlebars from 'handlebars'\nexport const p = Handlebars.parse\n", 'packages/theme-compiler/src/probe.ts'))
+  if (hit === undefined) fail('not refused')
+  return hit.message
+})
+await check('Story 7.1: the app importing prettier/standalone is refused, naming FR-J1', async () => {
+  const hit = banned(await lintAt("import { format } from 'prettier/standalone'\nexport const f = format\n", 'apps/web/lib/probe.ts'))
+  if (hit === undefined) fail('not refused')
+  return hit.message
+})
+await check('Story 7.1: a test under packages/ may import handlebars to parse what the compiler emitted, and still not prettier', async () => {
+  if (banned(await lintAt("import Handlebars from 'handlebars'\nexport const p = Handlebars.parse\n", 'packages/theme-compiler/src/probe.test.ts')) !== undefined) fail('handlebars refused in a test')
+  if (banned(await lintAt("import { format } from 'prettier/standalone'\nexport const f = format\n", 'packages/theme-compiler/src/probe.test.ts')) === undefined) fail('prettier admitted in a test')
+})
+
 await check('the one exception: a second entry carrying notBaseline is refused, naming R-105', () => {
   const [first] = BASELINE.tier2.filter((e) => e.notBaseline === undefined)
   const { refusals } = tier2Findings([...BASELINE.tier2.filter((e) => e !== first), { ...first, notBaseline: 'probe' }])

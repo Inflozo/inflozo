@@ -188,3 +188,20 @@ test('Story 7.1 · a repeat with nothing picked leaves no node, and the whitespa
   // the control: one pick lands its block where the repeat stood
   assert.match(renderTheme(doc(), src, { dataBindings: { picked: { source: 'posts', ids: ['5f0000000000000000000001'] } } }).template, /<ul class="g">\n {4}\{\{#get "posts"[^\n]*\n {6}\{\{#foreach posts\}\}/)
 })
+
+test('Story 7.1 (review) · a section\'s top level is block layout even where two nodes touch — the one place a line break is added, which check-snapshots holds no library design to', () => {
+  const k = kase()
+  assert.equal(k.ship(k.tree('<div>a</div><div>b</div>')), '<div>a</div>\n<div>b</div>')
+  // a marker between them is no node: the helper lands on its own line, the markup one level in
+  assert.equal(k.ship(k.tree(`${k.open()}<div>a</div>${k.close()}\n<div>b</div>`)), '{{#if x}}\n  <div>a</div>\n{{/if}}\n<div>b</div>')
+})
+
+test('Story 7.1 (review) · rule 5 measures the widest LINE of a start tag: a value holding a line break does not make a short tag long', () => {
+  const k = kase()
+  const value = `${'a'.repeat(70)}\n${'b'.repeat(70)}`
+  const shipped = k.ship(k.tree(`<img srcset="${value}" alt="">`))
+  // each line is under the budget, so the tag is not broken one attribute per line
+  assert.equal(shipped, `<img srcset="${value}" alt="">`)
+  // the control: the same characters on one line pass the budget, and the tag breaks
+  assert.match(k.ship(k.tree(`<img srcset="${'a'.repeat(141)}" alt="">`)), /^<img\n  srcset=/)
+})

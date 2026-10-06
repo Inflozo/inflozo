@@ -561,6 +561,28 @@ function classFailures(id, html) {
   }
   return out
 }
+/** The stylesheet half of the same rule (review): every selector in a design's `style.css` names its root `.{category}-{n}`
+ *  (the root itself, or a class under it) — a bare `p { }` or another design's class would restyle every other design
+ *  once the stylesheets are concatenated. Preludes inside `@keyframes` and `@font-face` are not selectors. */
+function selectorFailures(id, css) {
+  const root = id.replace('/', '-')
+  const own = new RegExp(`\\.${root}(?![\\w-])|\\.${root}(?:__|--)`)
+  const out = []
+  const stack = []
+  let buf = ''
+  for (const ch of lib.stripCssComments(css)) {
+    if (ch === '{') {
+      const prelude = buf.trim()
+      buf = ''
+      const inAtBlock = stack.some((p) => /^@(?:keyframes|font-face)/.test(p))
+      stack.push(prelude)
+      if (prelude.startsWith('@') || inAtBlock) continue
+      for (const sel of prelude.split(',')) if (!own.test(sel)) out.push(`${id}: style.css's selector "${sel.trim()}" names no .${root} — a rule outside its root reaches every other design in screen.css`)
+    } else if (ch === '}') { stack.pop(); buf = '' } else if (ch === ';') buf = ''
+    else buf += ch
+  }
+  return out
+}
 /** No two designs declare one `data-partial` name: a repeat partial lands at the theme's `partials/` root, one file per name. */
 function partialFailures(designs) {
   const owner = new Map()
@@ -588,6 +610,46 @@ check('control — Story 7.1: a class outside its design\'s root, and a root tha
 })
 check('Story 7.1 — every class a design writes is its root {category}-{n}, or begins with {root}__ or {root}--', () => {
   const f = rendered.flatMap((r) => classFailures(r.id, r.entry.html))
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${rendered.length} designs`
+})
+check('control — Story 7.1 (review): a stylesheet rule outside its design\'s root — a bare element, another design\'s class — is caught, naming the selector', () => {
+  const d = loadDesign(DIRS[0])
+  const id = `${d.category}/${d.n}`
+  if (selectorFailures(id, d.css).length > 0) throw new Error(`${id} is not clean to begin with: ${selectorFailures(id, d.css).join(' · ')}`)
+  const bare = mustFail(selectorFailures(id, `${d.css}\np { margin: 0 }\n`), /selector "p" names no/, 'a bare element selector')
+  mustFail(selectorFailures(id, `${d.css}\n@media (min-width: 40em) { .zz-9__x { color: red } }\n`), /selector "\.zz-9__x" names no/, 'another design\'s class, inside @media')
+  if (selectorFailures(id, `${d.css}\n@keyframes spin { from { opacity: 0 } to { opacity: 1 } }\n`).length > 0) throw new Error('a keyframe step was taken for a selector')
+  return bare
+})
+check('Story 7.1 (review) — every selector in a design\'s stylesheet names its root, so two designs\' rules never meet in screen.css', () => {
+  const f = rendered.flatMap((r) => selectorFailures(r.id, r.entry.css))
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${rendered.length} designs`
+})
+/** A section's top level is always block layout, so two nodes that touch there would gain a line break — the one
+ *  place the formatter adds whitespace. No library design may have one (review). */
+function touchingRoots(id, html) {
+  const root = doc().createElement('div')
+  root.innerHTML = html
+  const out = []
+  let open = false
+  for (const n of root.childNodes) {
+    if (n.nodeType === 3 && /^[ \t\n\f\r]*$/.test(n.textContent)) { if (n.textContent !== '') open = false; continue }
+    if (n.nodeType === 8) continue
+    if (open) out.push(`${id}: <${n.nodeName.toLowerCase()}> touches its sibling at the design's top level — the theme would put a line break between them`)
+    open = true
+  }
+  return out
+}
+check('control — Story 7.1 (review): two nodes touching at a design\'s top level are caught', () => {
+  const d = loadDesign(DIRS[0])
+  const id = `${d.category}/${d.n}`
+  if (touchingRoots(id, d.html).length > 0) throw new Error(`${id} is not clean to begin with`)
+  return mustFail(touchingRoots(id, `${d.html.trim()}<p>x</p>`), /touches its sibling/, 'a touching root')
+})
+check('Story 7.1 (review) — no design\'s top-level nodes touch, so the one line break block layout adds there is never added', () => {
+  const f = rendered.flatMap((r) => touchingRoots(r.id, r.entry.html))
   if (f.length > 0) throw new Error(f.join('\n'))
   return `${rendered.length} designs`
 })

@@ -142,7 +142,7 @@ export default [
     // call silenced every locale and clock ban beside it (executed, `.localeCompare()`); a core package has no directive.
     linterOptions: { noInlineConfig: true },
     rules: {
-      'no-restricted-imports': ['error', { patterns: [...FORMATTERS, ...bannedImports] }],
+      'no-restricted-imports': ['error', { patterns: [formatterBan, { group: bannedImports }] }],
       // `globalThis` is banned outright because it is the one-word way around every entry
       // beside it: `globalThis.process.env` linted clean while bare `process` errored
       // (executed). `performance` and `crypto` are the clock and the entropy that
@@ -197,7 +197,7 @@ export default [
     rules: {
       'no-restricted-imports': [
         'error',
-        { patterns: [...FORMATTERS.filter((p) => !TEST_PARSER.has(p)), ...bannedImports.filter((p) => !TEST_RUNNER.has(p))] },
+        { patterns: [{ ...formatterBan, group: FORMATTERS.filter((p) => !TEST_PARSER.has(p)) }, { group: bannedImports.filter((p) => !TEST_RUNNER.has(p)) }] },
       ],
     },
   },

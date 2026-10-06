@@ -1149,6 +1149,14 @@ test('Story 6.5 — a design never selects on the hook either: data-instance in 
 
 // ─── Story 7.1 — the three rules the theme assembly rests on ──────────────────
 
+test('Story 7.1 (review) — white-space: pre* outside a pre or textarea is refused; nowrap, normal and a pre\'s own are not', () => {
+  const said = (css: string) => codes(validateDesign({ html: EVERY_DIRECTIVE, design: design({ controlSchema: [align()] }), css })).filter((c) => c === 'white-space-pre')
+  assert.deepEqual(said('.x__poem { white-space: pre-wrap }'), ['white-space-pre'])
+  assert.deepEqual(said('.x__a, .x__b { white-space: pre }'), ['white-space-pre'])
+  assert.deepEqual(said('@media (min-width: 40em) { .x__c { white-space: break-spaces } }'), ['white-space-pre'])
+  assert.deepEqual(said('.x__t { white-space: nowrap } .x__u { white-space: normal } .x pre { white-space: pre } .x > textarea { white-space: pre-wrap }'), [])
+})
+
 test('Story 7.1 — D13: a C0 control character in a design\'s markup or stylesheet is refused by line; tab, line feed and carriage return are not', () => {
   const said = (html: string, css?: string) => validateDesign({ html, design: design({ controlSchema: [align()] }), ...(css === undefined ? {} : { css }) })
     .filter((f) => f.code === 'control-character').map((f) => f.message)

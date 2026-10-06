@@ -9092,3 +9092,72 @@ location: `prd.md` FR-J13 ("every Inflozo-built theme carries an `inflozo-*` nam
   `epics.md` Stories 7.2 and 7.20 · Story 7.1's spec, Design Notes § What "no builder fingerprints" means
 reason: The marker is a specified mark, not an incidental fingerprint. It belongs with the file that carries it, and
   joins Story 7.1's fingerprint scan as a named exception when 7.2 emits it. Its exact field and form are 7.2's to state.
+
+## Deferred from: code review of spec-7-1-theme-assembly-the-mechanism-and-the-formatting-contract (2026-10-06)
+
+### DW-336: a layer named `con`, `nul`, `aux`, `prn`, `com1`… slugs to a file Windows cannot extract
+
+plain: A section's file is named after its name in Layers. A handful of names are reserved by Windows for devices, so
+  a theme zip holding `partials/sections/home/con.hbs` cannot be unpacked on a Windows machine, though Ghost itself
+  would serve it fine.
+status: open
+severity: low
+origin: Story 7.1's review (2026-10-06), the edge-case layer. `partialSlug` is §7.4's custom-template rule plus a cap,
+  stated in the spec's Design Notes; a reserved-name rule would change that stated rule, and the download is 7.26's.
+owner: Story 7.26 (the theme download), whose criteria carry this entry with its id.
+location: `packages/theme-compiler/src/slug.ts` · Story 7.1's spec, Design Notes § The partial slug
+reason: The same names bite a custom template (`custom-con.hbs` is fine; `con.hbs` cannot arise there), so the rule
+  belongs where the file leaves the product. 7.26 either suffixes a reserved slug or records that the zip is not for
+  Windows.
+
+### DW-337: `stripCssComments` cuts an unquoted `url(http://x/*/y)` at the `/*`
+
+plain: The compiler strips the comments out of a design's stylesheet before shipping it. A web address written inside
+  `url(…)` without quotes and containing `/*` would be mistaken for the start of a comment and the rule cut short.
+status: open
+severity: low
+origin: Story 7.1's review (2026-10-06). The scan (`COMMENT_OR_STRING`) predates 7.1 — `untokened` read it since
+  Story 4.8 — and 7.1 only made it the compile's stripper; no design writes an unquoted `url()`.
+owner: Story 7.4 (assets and the dead-CSS strip), whose criteria carry this entry with its id.
+location: `packages/library/src/validate.ts` `COMMENT_OR_STRING`, `stripCssComments`
+reason: 7.4 rewrites every `url()` to a bundled asset and is the story that reads them; a `url\(…\)` alternation kept
+  before the comment branch, or a refusal of an unquoted `url()`, is its call.
+
+### DW-338: a layer name has no length cap, so a boundary comment line has none
+
+plain: The one-line label above each section in a theme file repeats the section's name from Layers. Nothing limits how
+  long that name can be, so a very long name makes a very long line — harmless to Ghost, untidy to a hand editor.
+status: open
+severity: low
+origin: Story 7.1's review (2026-10-06). The file name is cut to 60 characters (`SLUG_MAX`); the comment is not.
+owner: Story 7.21 (drift and the Layers rename flow), whose criteria carry this entry with its id — or the Layers
+  panel's own cap if one lands first.
+location: `packages/section-runtime/src/doc-schema.ts` `layerName: z.string()` · `packages/theme-compiler/src/compile.ts`
+  `commentPart`
+reason: A cap belongs at the input (the Layers panel) so the file and the label agree, not in the compiler.
+
+### DW-339: the pilot theme's "internal reference" scan reads `R-1`, `Story 3` and `ponytail` in any text
+
+plain: The checker that keeps builder notes out of a theme looks for patterns like `R-12` or `Story 3` anywhere in
+  the files. A customer whose newsletter is called "Story 3" would trip it once the check runs over real projects.
+status: open
+severity: low
+origin: Story 7.1's review (2026-10-06). Today the scan runs only over the five pilots with fixed words
+  (`tools/pilot-theme.mjs` `themeFailures`, `compile.test.ts`), where it cannot misfire.
+owner: Story 7.33 (the library-wide nightly compile), whose criteria carry this entry with its id.
+location: `tools/pilot-theme.mjs` `themeFailures` · `packages/theme-compiler/src/compile.test.ts`
+reason: Anchor the pattern to comment contexts (`{{!--` and `/*`) when the scan first meets user text; a word in a
+  heading is the customer's, not a fingerprint.
+
+### DW-340: the start tag the formatter cannot re-spell is never broken, and no test shows it
+
+plain: When a tag's attributes cannot be read back from the way the browser writes them, the formatter leaves the tag on
+  one line however long it is. That is the safe choice, but no test proves the branch does what it says.
+status: open
+severity: low
+origin: Story 7.1's review (2026-10-06), the verification-gap layer. `tags()` returns `attrs: null` when re-spelling the
+  parts does not reproduce `outerHTML`; `startTag` then keeps the tag whole.
+owner: Story 7.33 (the library-wide compile), whose criteria carry this entry with its id.
+location: `packages/section-runtime/src/format.ts` `tags`, `startTag`
+reason: The branch needs a start tag jsdom serializes in a shape the attribute regex does not match; none has been found
+  in the library, so the case is recorded rather than invented.

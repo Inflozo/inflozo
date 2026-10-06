@@ -1063,6 +1063,17 @@ function attributeSelectors(css: string): { text: string; name: string; op?: str
  *  compiler consumes selects nothing live and is not refused; add that when a design writes one. */
 function validateStylesheet(css: string, controlValues: Readonly<Record<string, readonly string[]>>): Failure[] {
   const out: Failure[] = []
+  // Story 7.1 (review) — the theme serializer is render-neutral only under `white-space: normal` or `nowrap`, where a
+  // whitespace run is one space or nothing; it writes `pre` and `textarea` verbatim and nothing else, so a `pre*` value
+  // anywhere else would let a line break the formatter placed reach the page.
+  for (const m of stripCssComments(css).matchAll(/([^{}]*)\{([^{}]*)\}/g)) {
+    const [, prelude, body] = m as unknown as [string, string, string]
+    const value = /white-space\s*:\s*(pre(?:-wrap|-line)?|break-spaces)\b/.exec(body)?.[1]
+    if (value === undefined || prelude.trim().startsWith('@')) continue
+    if (!prelude.split(',').every((sel) => /(?:^|[\s>+~])(?:pre|textarea)\b/.test(sel.trim()))) {
+      push(out, 'white-space-pre', `style.css sets white-space: ${value} on "${prelude.trim()}" — the theme is formatted on the promise that text renders under normal or nowrap; only a pre or textarea may keep its whitespace (Story 7.1's formatting contract).`)
+    }
+  }
   const said = new Set<string>()
   for (const { text, name, op, value, flag } of attributeSelectors(css)) {
     if (said.has(text)) continue

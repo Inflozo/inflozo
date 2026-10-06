@@ -63,7 +63,10 @@ function tags(el: RuntimeElement): { start: string; end: string; name: string; a
  *  per line, one level deeper than its line, with `>` closing the last attribute's line. A value is never split. */
 function startTag(el: RuntimeElement, level: number, c: Ctx): string {
   const { start, name, attrs } = tags(el)
-  const width = ind(level).length + c.users.substitute(c.tokens.resolve(start)).length
+  // the widest LINE of the final text: an attribute value may hold a line break, and a tag that spans two short lines is
+  // not past the budget. ponytail: resolve + substitute per start tag, O(elements × tokens) a section — resolve once per
+  // section and measure on the landed text if Story 7.33's library-wide compile ever shows it
+  const width = ind(level).length + Math.max(...c.users.substitute(c.tokens.resolve(start)).split('\n').map((l) => l.length))
   return width > LINE_BUDGET && attrs !== null && attrs.length > 0
     ? `${name}${attrs.map((a) => `\n${ind(level + 1)}${keep(a)}`).join('')}>`
     : keep(start)
@@ -132,12 +135,16 @@ function element(el: RuntimeElement, level: number, c: Ctx): string {
 function block(parent: RuntimeElement, level: number, c: Ctx): string[] {
   const lines: string[] = []
   let at = level
+  // a section's top level is block layout without `isBlock`'s test (the contract, rule 3), so two nodes that TOUCH
+  // there get a line break between them — harmless between a section's block-level roots, and the one place the
+  // formatter adds whitespace. `tools/check-snapshots.mjs` holds every library design's top level whitespace-separated.
   for (const n of parent.childNodes as Iterable<Node>) {
     if (n.nodeType === 3) {
       const t = n.textContent ?? ''
+      if (ALL_WS.test(t)) continue
       // ponytail: only a section's top level reaches here with words (a design source with text beside its root); they
       // are written on a line of their own, as the serializer writes them
-      if (!ALL_WS.test(t)) lines.push(`${ind(at)}${text(n, c).replace(/^[ \t\n\f\r]+|[ \t\n\f\r]+$/g, '').replace(NL_RUN, `\n${ind(at)}`)}`)
+      lines.push(`${ind(at)}${text(n, c).replace(/^[ \t\n\f\r]+|[ \t\n\f\r]+$/g, '').replace(NL_RUN, `\n${ind(at)}`)}`)
       continue
     }
     if (n.nodeType === 8) {
