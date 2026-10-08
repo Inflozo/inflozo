@@ -6,6 +6,8 @@
 // library, which holds every design the rows need (A24 #1 may sit on `page.hbs` here, as Story 10.79 will make it).
 // Story 7.4 — fonts, licences, the token block, the base, the strip, the hooks and AD-14's record: the spec's I/O matrix
 // row by row. A core package's test opens no file (AD-1), so the font pool's bytes are made here, to the pool's lengths.
+// Story 7.5 — the scripts: main.js, cards.js, Ghost's licence, README.md and the two tags, the spec's I/O matrix row by
+// row. The module files and Ghost's card scripts are made here too, the chunks in record-cards.py's head shape.
 //
 // A test may load `handlebars` to parse what the compiler emitted (FR-J1); product code may not (`eslint.config.js`).
 
@@ -13,7 +15,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import Handlebars from 'handlebars'
 import { JSDOM } from 'jsdom'
-import { CONSUMED_DIRECTIVE_RE, IMAGE_SIZES, PAYWALL_TARGET } from '@inflozo/library'
+import {
+  bundle, bundledNames, CARDS_JS_TAG, cardsJs, checkThemeJs, checkThemeScripts, CONSUMED_DIRECTIVE_RE, i18nAttr, IMAGE_SIZES, MAIN_JS_TAG, moduleFunctionName,
+  MODULES, PAYWALL_TARGET,
+} from '@inflozo/library'
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
 import { TABLER_LICENSE } from '@inflozo/library/icons'
 import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
@@ -21,7 +26,7 @@ import { BASE_CSS, darkOverrideCss, hookOf, MODE_SELECTORS, packTokensCss, pageT
 import type { DocInstance, Pack, ProjectDoc } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
-import { checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, THEME_MARKER, THEME_MARKS } from './compile.ts'
+import { checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, THEME_MARKER, THEME_MARKS, tidyLicence } from './compile.ts'
 import type { CompiledTheme, CompileInput } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -130,9 +135,24 @@ const poolFonts = (path: string): Uint8Array => {
   throw new Error(`the pool holds no ${path}`)
 }
 
+/** The shell's read of `packages/library/modules/` (Story 7.5), made in memory: a minimal `core`, its comment plain. */
+const CORE = '// the runtime\nexport function core(win, modules) {\n  return { stop() {}, paused: [] }\n}\n'
+/** A module file, as its category story writes one: its one exported function. */
+const stub = (name: string) => `export function ${moduleFunctionName(name)}(el) {\n  el.hidden = false\n}\n`
+/** A chunk as `tools/probe/record-cards.py` vendors it: its two-line head, then Ghost's bytes. */
+const chunk = (name: string, body: string, version = '6.58.0') =>
+  `/* Vendored verbatim from Ghost ${version}, core/frontend/src/cards/js/${name}.js, by \`python3 tools/probe/record-cards.py\`.\n   Copyright (c) 2013-2026 Ghost Foundation. MIT licence — the full text is vendor/LICENSE-ghost.txt. */\n${body}`
+/** Ghost's four scripted chunks and its licence as the shell reads them — the licence with CRLF, a trailing space and two
+ *  final newlines, which `tidyLicence` tidies. */
+const GHOST_CARDS = {
+  scripts: Object.fromEntries(['audio', 'gallery', 'toggle', 'video'].map((n) => [n, chunk(n, `(function() {\n    const ${n} = document.querySelectorAll('.kg-${n}-card');\n\n})();\n`)])),
+  licence: 'Copyright (c) 2013-2026 Ghost Foundation\r\n\r\nPermission is hereby granted, free of charge. \r\n\r\n',
+}
+
 const THEME = { name: 'inflozo-field-notes', version: '1.4.0', description: 'Field Notes' }
 const input = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}): CompileInput => ({
-  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: THEME, pairing: 'D1', fonts: poolFonts, darkEnabled: true, ...over,
+  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: THEME, pairing: 'D1', fonts: poolFonts, darkEnabled: true,
+  modules: { core: CORE }, ghostCards: GHOST_CARDS, ...over,
 })
 /** The whole compile: every file — a font's bytes too — and AD-14's record. */
 const build = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}): CompiledTheme => compileTheme(doc(), input(templates, over))
@@ -385,13 +405,15 @@ function statements(text: string): string[] {
 
 test('over every emitted file: it parses under Handlebars 4.7.9, carries one {{{body}}} and, with a paywall, {{{html}}} as its first line — no other triple-stash — no token, no stray comment, no fingerprint', () => {
   const templates = { ...project(), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
-  const files = build(templates, { pageTwo: projectTwo() }).files
+  // Story 7.5: a designed toggle, so cards.js and Ghost's licence are read beside main.js and README.md
+  const files = build(templates, { pageTwo: projectTwo(), designedCards: ['toggle'] }).files
   // Story 7.4: a font is bytes, never text, so the text scans skip it — and the skip is not vacuous: the fonts are there
   const bytes = Object.entries(files).filter(([, b]) => b instanceof Uint8Array).map(([p]) => p)
   assert.ok(bytes.length > 0 && bytes.every((p) => /^assets\/fonts\/[a-z0-9-]+\.woff2$/.test(p)), bytes.join(' '))
   const out = textOf(files)
   assert.deepEqual(Object.keys(out).length + bytes.length, Object.keys(files).length)
   assert.ok(Object.keys(out).some((p) => p.startsWith('LICENSE-')), 'the licences are read as text, and meet rule 1')
+  for (const p of ['assets/js/main.js', 'assets/js/cards.js', 'LICENSE-ghost.txt', 'README.md']) assert.ok(p in out, `${p} is read by the scan`)
   const instanceIds = Object.values(templates).flatMap((d) => d.instances.map((i) => i.instanceId))
   let triples = 0
   for (const [path, body] of Object.entries(out)) {
@@ -626,7 +648,8 @@ test('(7.3) FR-H2\'s guard: noindex in default.hbs\'s head for exactly the page 
   const hiddenFeed = (name: string) => docOf(at('a17/1', name, { hidden: true, isMainFeed: true }))
   // a Tag page 1 with no visible feed, page 2 following; an Author page 2 of its own with none; Home's page 2 with none
   const out = compile({ 'tag.hbs': hiddenFeed('Tag feed') }, { pageTwo: { 'author.hbs': hiddenFeed('Writer feed'), 'home.hbs': docOf(at('a22/1', 'Letter', { content: NEWS })) } })
-  assert.ok((out['default.hbs'] ?? '').includes(`<link rel="stylesheet" href="{{asset "css/screen.css"}}">\n${GUARD('index, tag, author')}`), out['default.hbs'])
+  // Story 7.5: main.js's tag sits between the stylesheet and the guard
+  assert.ok((out['default.hbs'] ?? '').includes(`<link rel="stylesheet" href="{{asset "css/screen.css"}}">\n    ${MAIN_JS_TAG}\n${GUARD('index, tag, author')}`), out['default.hbs'])
   assert.equal(((out['default.hbs'] ?? '').match(/noindex/g) ?? []).length, 1)
   // one of them: the Author page 2 alone
   assert.ok((compile({}, { pageTwo: { 'author.hbs': hiddenFeed('Writer feed') } })['default.hbs'] ?? '').includes(GUARD('author')))
@@ -944,4 +967,144 @@ test('(7.4) determinism: every input in another key order — the pool read incl
   assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
   for (const k of Object.keys(a.files)) assert.deepEqual(b.files[k], a.files[k], k)
   assert.deepEqual(b.css, a.css)
+})
+
+// ─── Story 7.5: the scripts — main.js, cards.js, Ghost's licence, README.md and the two tags ──────────────────────────
+
+/** A design whose markup mounts modules, one element each — `js` as `assembleEntry` recovers it, in registry order. */
+const mounting = (id: string, compileTarget: string[], ...names: string[]): SectionRegistryEntry => {
+  const root = id.replace('/', '-')
+  return design(id, `Mounts ${names.join(' and ')}`, {
+    compileTarget,
+    js: MODULES.filter((m) => names.includes(m.name)).map((m) => m.name),
+    html: `<section class="${root}">\n${names.map((n) => `  <div class="${root}__${n}" data-module="${n}"></div>`).join('\n')}\n</section>`,
+  })
+}
+const MOUNTING: Record<string, SectionRegistryEntry> = Object.fromEntries([
+  mounting('a12/1', ['default.hbs'], 'nav-drawer', 'lightbox'),
+  mounting('a12/2', ['home.hbs', 'index.hbs'], 'lightbox', 'carousel'),
+  mounting('a12/3', ['index.hbs'], 'tabs'),
+  mounting('a12/4', ['tag.hbs'], 'accordion'),
+  mounting('a12/5', [PAYWALL_TARGET], 'countdown'),
+  mounting('a12/6', ['home.hbs'], 'lightbox'),
+].map((e) => [e.id, e]))
+const mountingLib = (id: string) => MOUNTING[id] ?? LIB[id]
+const mainOf = (files: CompiledTheme['files']): string => files['assets/js/main.js'] as string
+const headOf = (files: CompiledTheme['files']): string => (files['default.hbs'] as string).split('</head>')[0] as string
+const STYLESHEET = '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">'
+const SCRIPTS_LINE = "- `assets/js/main.js` is this theme's own code: a small runtime and one function for each behaviour its sections use. It carries no third-party code."
+
+test('(7.5) no module declared: main.js is bundle([]) — core alone; one defer tag after the stylesheet; README is the Scripts section alone; no cards.js, licence or cards tag', () => {
+  const { files } = build(project(), { pageTwo: projectTwo() })
+  assert.equal(mainOf(files), bundle([], { core: CORE }))
+  assert.deepEqual(bundledNames(mainOf(files)), ['core'])
+  assert.ok(headOf(files).includes(`${STYLESHEET}\n    ${MAIN_JS_TAG}\n`), headOf(files))
+  assert.equal((files['default.hbs'] as string).split(MAIN_JS_TAG).length, 2, 'the tag once')
+  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n`)
+  for (const p of ['assets/js/cards.js', 'LICENSE-ghost.txt']) assert.ok(!(p in files), p)
+  assert.ok(!(files['default.hbs'] as string).includes('js/cards.js'))
+  assert.deepEqual(Object.keys(files).filter((p) => p.startsWith('assets/js/')), ['assets/js/main.js'])
+})
+
+test('(7.5) a written module: a placed design declaring lightbox, with its file, is in main.js, and its mount keeps data-module', () => {
+  const modules = { core: CORE, lightbox: stub('lightbox') }
+  const { files } = build({ 'home.hbs': docOf(at('a12/6', 'Gallery')) }, { library: mountingLib, modules, pageTwo: projectTwo() })
+  assert.equal(mainOf(files), bundle(['lightbox'], modules))
+  assert.match(mainOf(files).split('\n')[0] ?? '', / core · lightbox$/)
+  assert.match(textOf(files)['partials/sections/home/gallery.hbs'] ?? '', /data-module="lightbox"/)
+})
+
+test('(7.5) the union: modules declared on the site doc, Home, Home\'s page 2, an archive\'s page 2 and the paywall — each once, in registry order', () => {
+  const names = ['nav-drawer', 'lightbox', 'carousel', 'tabs', 'accordion', 'countdown']
+  const modules = { core: CORE, ...Object.fromEntries(names.map((n) => [n, stub(n)])) }
+  const { files } = build({
+    'default.hbs': docOf(at('a12/1', 'Header bits')),
+    'home.hbs': docOf(at('a12/2', 'Home bits'), at('a17/1', 'Post grid', { isMainFeed: true })),
+    [PAYWALL_TARGET]: docOf(at('a12/5', 'Clock')),
+  }, {
+    library: mountingLib, modules,
+    pageTwo: { 'home.hbs': docOf(at('a12/3', 'Tabs'), at('a17/1', 'Older', { isMainFeed: true })), 'tag.hbs': docOf(at('a12/4', 'Folds'), at('a17/1', 'Tag feed', { isMainFeed: true })) },
+  })
+  const registryOrder = MODULES.map((m) => m.name).filter((n) => names.includes(n))
+  assert.deepEqual(bundledNames(mainOf(files)), ['core', ...registryOrder])
+  assert.equal(mainOf(files), bundle(registryOrder, modules))
+})
+
+test('(7.5) it leaves with its design: deleted, or every instance hidden, its module leaves main.js — unless another placed design declares it', () => {
+  const modules = { core: CORE, lightbox: stub('lightbox'), carousel: stub('carousel') }
+  const compileWith = (...instances: DocInstance[]) => bundledNames(mainOf(build({ 'home.hbs': docOf(...instances) }, { library: mountingLib, modules, pageTwo: projectTwo() }).files))
+  assert.deepEqual(compileWith(at('a12/2', 'Both')), ['core', 'carousel', 'lightbox'])
+  assert.deepEqual(compileWith(at('a22/1', 'Letter', { content: NEWS })), ['core'], 'the declaring design deleted')
+  assert.deepEqual(compileWith(at('a12/2', 'Both', { hidden: true })), ['core'], 'its every instance hidden')
+  assert.deepEqual(compileWith(at('a12/2', 'Both', { hidden: true }), at('a12/6', 'Gallery')), ['core', 'lightbox'], 'another placed design keeps lightbox')
+})
+
+test('(7.5) declared, no file yet: nav-drawer is left out of main.js, its mount keeps data-module and ships at rest — no throw, no stub', () => {
+  const { files } = build({ 'default.hbs': docOf(at('a12/1', 'Header bits')) }, { library: mountingLib, modules: { core: CORE, lightbox: stub('lightbox') } })
+  assert.deepEqual(bundledNames(mainOf(files)), ['core', 'lightbox'])
+  assert.ok(!mainOf(files).includes('navDrawer'), 'no stub')
+  assert.match(textOf(files)['partials/sections/default/header-bits.hbs'] ?? '', /data-module="nav-drawer"/)
+})
+
+test('(7.5) no core: the compile throws bundle()\'s sentence', () => {
+  assert.throws(() => build({}, { modules: {} }), /core\.js has no source/)
+})
+
+test('(7.5) a module\'s strings: a placed countdown carries one data-i18n-* per key its row declares, as S5 stamps it; main.js carries no countdown, which has no file', () => {
+  const { files } = build({ [PAYWALL_TARGET]: docOf(at('a12/5', 'Clock')) }, { library: mountingLib })
+  const partial = Object.entries(textOf(files)).find(([p, b]) => p.startsWith('partials/sections/') && b.includes('data-module="countdown"'))?.[1] ?? ''
+  const keys = MODULES.find((m) => m.name === 'countdown')?.strings ?? []
+  assert.ok(keys.length > 0)
+  for (const key of keys) assert.equal(partial.split(`${i18nAttr(key)}=`).length, 2, `${i18nAttr(key)} once`)
+  assert.deepEqual(bundledNames(mainOf(files)), ['core'])
+})
+
+test('(7.5) designed cards with scripts: cards.js is cardsJs of the scripted ones, Ghost\'s licence at the root, CARDS_JS_TAG after MAIN_JS_TAG, README\'s cards line, package.json excluding both', () => {
+  const { files } = build({}, { designedCards: ['toggle', 'callout'] })
+  assert.equal(files['assets/js/cards.js'], cardsJs(['toggle'], GHOST_CARDS.scripts))
+  assert.equal(files['LICENSE-ghost.txt'], tidyLicence(GHOST_CARDS.licence))
+  assert.equal(files['LICENSE-ghost.txt'], 'Copyright (c) 2013-2026 Ghost Foundation\n\nPermission is hereby granted, free of charge.\n')
+  assert.ok(headOf(files).includes(`${STYLESHEET}\n    ${MAIN_JS_TAG}\n    ${CARDS_JS_TAG}\n`), headOf(files))
+  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n- \`assets/js/cards.js\` is Ghost's own code for these cards: toggle. It is copied unchanged from Ghost 6.58.0, under the MIT licence in \`LICENSE-ghost.txt\`. This theme styles those cards itself, which switches off Ghost's own copy of their scripts, so it carries this one.\n`)
+  assert.deepEqual((JSON.parse(files['package.json'] as string) as { config: { card_assets: unknown } }).config.card_assets, { exclude: ['callout', 'toggle'] })
+  // every scripted card, in code-unit order
+  assert.match(build({}, { designedCards: ['video', 'gallery', 'audio', 'toggle'] }).files['assets/js/cards.js'] as string, /^\/\* Ghost's own scripts for these cards: audio · gallery · toggle · video — /)
+})
+
+test('(7.5) designed cards without scripts: no cards.js, no cards tag, no licence, no cards line', () => {
+  const { files } = build({}, { designedCards: ['callout'] })
+  for (const p of ['assets/js/cards.js', 'LICENSE-ghost.txt']) assert.ok(!(p in files), p)
+  assert.ok(!(files['default.hbs'] as string).includes(CARDS_JS_TAG))
+  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n`)
+})
+
+test('(7.5) a chunk not as vendored, or two chunks from two Ghost versions, throws naming the card', () => {
+  const scripts = (over: Record<string, string>) => ({ ghostCards: { ...GHOST_CARDS, scripts: { ...GHOST_CARDS.scripts, ...over } } })
+  assert.throws(() => build({}, { designedCards: ['toggle'], ...scripts({ toggle: '(function() {})();\n' }) }), /toggle\.js does not open with record-cards\.py's head/)
+  assert.throws(() => build({}, { designedCards: ['audio', 'toggle'], ...scripts({ toggle: chunk('toggle', '(function() {})();\n', '5.130.6') }) }), /toggle\.js is copied from Ghost 5\.130\.6/)
+})
+
+test('(7.5) a control character in a module source, a card script or Ghost\'s licence — a tab included — throws noC0\'s sentence', () => {
+  assert.throws(() => build({}, { modules: { core: CORE.replace('  return', '\treturn') } }), /^Error: a module source carries a control character, which the theme compiler refuses/)
+  assert.throws(() => build({}, { ghostCards: { ...GHOST_CARDS, scripts: { ...GHOST_CARDS.scripts, audio: `${GHOST_CARDS.scripts['audio']}\u0007` } } }), /^Error: a card script carries a control character/)
+  assert.throws(() => build({}, { ghostCards: { ...GHOST_CARDS, licence: 'MIT\tLicence\n' } }), /^Error: Ghost's licence carries a control character/)
+})
+
+test('(7.5) determinism: the module files, the card scripts and the designed cards in another order give the same files, byte for byte', () => {
+  const reverse = <T>(o: Record<string, T>): Record<string, T> => Object.fromEntries(Object.entries(o).reverse())
+  const modules = { core: CORE, lightbox: stub('lightbox'), carousel: stub('carousel'), 'nav-drawer': stub('nav-drawer') }
+  const templates = { 'default.hbs': docOf(at('a12/1', 'Header bits')), 'home.hbs': docOf(at('a12/2', 'Home bits')) }
+  const a = build(templates, { library: mountingLib, modules, designedCards: ['video', 'toggle', 'callout'], pageTwo: projectTwo() })
+  const b = build(templates, { library: mountingLib, modules: reverse(modules), designedCards: ['callout', 'toggle', 'video'], ghostCards: { ...GHOST_CARDS, scripts: reverse(GHOST_CARDS.scripts) }, pageTwo: projectTwo() })
+  assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
+  for (const k of Object.keys(a.files)) assert.deepEqual(b.files[k], a.files[k], k)
+})
+
+test('(7.5) the compile\'s own output: checkThemeJs and checkThemeScripts return no sentence over the final text', () => {
+  const modules = { core: CORE, lightbox: stub('lightbox') }
+  for (const designedCards of [[], ['audio', 'callout', 'gallery']]) {
+    const out = textOf(build(project(), { library: mountingLib, modules, designedCards, pageTwo: projectTwo() }).files)
+    assert.deepEqual(checkThemeJs(out, modules, GHOST_CARDS.scripts), [], designedCards.join())
+    assert.deepEqual(checkThemeScripts(out), [], designedCards.join())
+  }
 })

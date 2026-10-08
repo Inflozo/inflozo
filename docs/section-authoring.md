@@ -890,6 +890,20 @@ export function lightbox(el, ctx) {
 | `observe(target, callback, { root, rootMargin, threshold })` | one shared `IntersectionObserver` per root, `rootMargin` and `threshold`; the target is unobserved when the mount stops |
 | `reducedMotion` | true while `(prefers-reduced-motion: reduce)` matches — for motion that is incidental, such as a carousel's smooth scroll |
 
+**A module writes no words of its own** *(Story 7.5, DW-146)*. Every word a visitor reads comes off the mount through
+`ctx.t('key')`, from the `data-i18n-*` both emitters stamp from the module's registry row (S5) — so a translation reaches
+it. Two halves hold it. **Lint**, in `eslint.config.js`'s modules block: a letter-bearing string literal, or a template
+literal's static text, written to `textContent`, `innerText`, `innerHTML`, `outerHTML`, `title`, `alt`, `placeholder`,
+`label` or an aria text property (`ariaLabel` …), passed as `setAttribute`'s value for a text attribute (`title`, `alt`,
+`aria-label` …), as `insertAdjacentText`'s or `insertAdjacentHTML`'s text, or to `createTextNode`, `write`, `alert`,
+`confirm`, `prompt`, `new Text` or `new Option`, is refused; so is a `t()` whose key is no string literal. Markup is
+refused with it — a module builds elements with `createElement`. No comment switches it off (`noInlineConfig`).
+**The registry half**, `moduleKeyRefusals`, in CI: every `t('…')` key a module calls must be `i18nAttr(k)` without
+`data-i18n-` for some `k` in its row's `strings` — `countdown.time_remaining` is read as `ctx.t('time-remaining')`. So
+the example above needs `lightbox`'s row to declare a `….close` key first. The lint's ceiling, which review holds: a
+literal parked in a variable, or joined by `+`, evades it; `append` and its family are left out, because `FormData` and
+`URLSearchParams` share those names.
+
 Nothing reaches a global it was not handed: `el.ownerDocument`, never `document`. Lint enforces the
 letter of it — `no-undef` over `packages/library/modules/*.js` refuses a bare `window`, `document` or
 `setTimeout` — and review holds the rest, since `el.ownerDocument.defaultView` is the window by another
@@ -945,20 +959,47 @@ registry row `animates` is not started while it matches, mounts when the prefere
 it returns — because for each of those modules its reduced-motion state **is** its no-JS state. A module
 whose reduced-motion state would differ from its no-JS state cannot use the gate; raise it before writing it.
 
-**`main.js`.** `bundle(names, sources)` writes it: a header naming `core` and the modules, then one
-wrapping function with `'use strict'` holding each file with exactly its one `export` removed and not a byte
-else, `core` first, then `core(window, rows)`. It is a **classic** script loaded `defer` (FR-J4) — never an
+**`main.js`.** `bundle(names, sources)` writes it: a header naming `core` and the modules — `// This file's
+scripts, one function each, started together by its last line: core · lightbox`, which names no builder, since it ships
+(FR-J1) — then one wrapping function with `'use strict'` holding each file with exactly its one `export` removed and not a
+byte else, `core` first, then `core(window, rows)`. **A module's comments ship with it** *(Story 7.5)*: nothing strips them,
+because a lexical stripper would share `bundle`'s own scanner's ceiling and could cut code. So write them for the theme's
+reader — no ruling or story id, no repo path, no builder's name, no `ponytail:` marker — and CI holds every module file to
+the theme's own text scan (`textFailures`). That scan does not see a letter-bearing id such as `FR-G7(4)` (DW-339), so
+review holds that part. It is a **classic** script loaded `defer` (FR-J4) — never an
 ES module, because an `export` left in it would be a SyntaxError that silently turns every site to its
 no-JS state — and nothing in it lands on `window`. `checkThemeJs` compares a theme's `main.js` with `bundle`'s
 bytes over the same sources, so the keyword can never reach a theme. A module that appends markup carrying `data-module`
 (`load-more` is the first) must add a rescan of what it inserted to `core`; today `core` scans once.
 
-**`assets/js/`.** `checkThemeJs(files, sources)` is FR-G7(1) as one check: a theme's `assets/js/` holds
+**What the theme carries** *(Story 7.5)*. `compileTheme` writes `main.js` on every theme, from `core` and each module a
+placed, visible design declares **that has a file** — in registry order, so a design deleted or hidden everywhere takes
+its names with it. **A declared module with no file yet ships at rest:** it is left out of `main.js`, its mount keeps
+`data-module`, and it stays in its no-JS state, which FR-G7(3) calls the real one; `core` reports the name in the
+browser console, and CI prints it as a `WARNING FR-G7` line until the file lands. It is never stubbed — a no-op would let
+`core` set `js-enabled`, and the section's CSS would then hide content behind a control that does nothing (A1 #1's phone
+nav). The canvas runs a no-op for such a module instead (`apps/web/lib/behaviours.ts`), so Preview draws the JavaScript
+branch where the theme draws the no-JS one; DW-347 gives that difference to Story 7.34. Both tags sit in
+`default.hbs`'s head after the stylesheet, `defer`, in Ghost's own attribute order: `MAIN_JS_TAG`, then `CARDS_JS_TAG`
+when `cards.js` ships.
+
+**`assets/js/`.** `checkThemeJs(files, sources, cardScripts?)` is FR-G7(1) as one check: a theme's `assets/js/` holds
 `main.js`, byte-identical to `bundle` of the names its header lists over the repo's own sources, and
 Ghost's `cards.js`, and **nothing else**. `cards.js` is the one declared exception — Ghost's MIT card
 behaviour shipped back to a Ghost site (FR-J4) — and it has its own row in research §7: with JavaScript
 off the audio and video cards show no working player, the toggle stays closed and gallery rows lose
-their proportions; it is edit-safe.
+their proportions; it is edit-safe. *(Story 7.5, DW-135)* `cardsJs(names, scripts)` writes it — one header naming
+Ghost, its version, the cards and `LICENSE-ghost.txt`, then each designed card's chunk exactly as Ghost wrote it, with
+`record-cards.py`'s head cut — and only for designed cards Ghost has a script for, with Ghost's licence beside it.
+`checkThemeJs` compares it byte for byte to `cardsJs` of the scripted cards `package.json` excludes; a scripted card
+excluded with no `cards.js` is a sentence too, because excluding a card switches Ghost's own copy of its script off.
+
+**Templates carry no other script** *(Story 7.5, DW-134)*. `checkThemeScripts(files, inline = {})` reads every emitted
+`.hbs`, its Handlebars comments removed first, and refuses any `<script>` but the two tags in `default.hbs` — `main.js`'s
+once, `cards.js`'s once exactly when `cards.js` ships — or a bare inline `<script>` whose bytes equal a repo source
+handed to it by name. That door is empty today; DW-328 decides at Story 9.1 whether `mode-toggle`'s head script ever
+opens it. The compile runs both checks over its own output and throws on any sentence; CI and the stress fixture run
+the same two functions.
 
 **The licence filter**, for any future proposal to bundle code Inflozo did not write: **MIT,
 BSD-2-Clause, BSD-3-Clause, Apache-2.0 or ISC only**, re-verified **at the pinned version** rather than

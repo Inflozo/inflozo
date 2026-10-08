@@ -96,6 +96,34 @@ const hostReadingCalls = [
   'getHours',
 ]
 
+// Story 7.5 — DW-146, the selectors for the modules block below. "Letter-bearing" is `\p{L}`, so Cyrillic is caught as
+// well as Latin (executed at planning). Each sink takes the literal itself — a string, or a template literal's static text.
+const LETTERS = '/\\p{L}/u'
+const TEXT_PROPS = '/^(?:textContent|innerText|innerHTML|outerHTML|title|alt|placeholder|label|ariaLabel|ariaDescription|ariaRoleDescription|ariaValueText|ariaPlaceholder)$/'
+const TEXT_ATTRS = '/^(?:title|alt|placeholder|aria-label|aria-description|aria-roledescription|aria-valuetext|aria-placeholder)$/'
+const TEXT_CALLS = '/^(?:createTextNode|write|writeln|alert|confirm|prompt)$/'
+const TEXT_NEWS = '/^(?:Text|Option)$/'
+const wordsMessage = "DW-146: a module writes no visitor-facing words of its own — each comes off the mount through ctx.t('key'), from a data-i18n-* its registry row's strings stamp, so it can be translated (docs/section-authoring.md, Behaviour modules)."
+/** A sink, given as the selector of the node whose child is the text: the literal itself, or a template's static text. */
+const literalAt = (parent, field) => [
+  `${parent} > Literal${field}[value=${LETTERS}]`,
+  `${parent} > TemplateLiteral${field} > TemplateElement[value.raw=${LETTERS}]`,
+]
+const visitorWords = [
+  ...literalAt(`AssignmentExpression[left.property.name=${TEXT_PROPS}]`, '.right'),
+  ...literalAt(`CallExpression[callee.property.name='setAttribute'][arguments.0.value=${TEXT_ATTRS}]`, '.arguments:nth-child(2)'),
+  ...literalAt("CallExpression[callee.property.name=/^insertAdjacent(?:Text|HTML)$/]", '.arguments:nth-child(2)'),
+  ...literalAt(`CallExpression[callee.property.name=${TEXT_CALLS}]`, '.arguments'),
+  ...literalAt(`CallExpression[callee.name=${TEXT_CALLS}]`, '.arguments'),
+  ...literalAt(`NewExpression[callee.name=${TEXT_NEWS}]`, '.arguments'),
+  ...literalAt(`NewExpression[callee.property.name=${TEXT_NEWS}]`, '.arguments'),
+].map((selector) => ({ selector, message: wordsMessage })).concat(
+  ["CallExpression[callee.name='t']", "CallExpression[callee.property.name='t']"].map((call) => ({
+    selector: `${call}:not([arguments.0.type='Literal'][arguments.0.raw=/^['"]/])`,
+    message: "DW-146: a t() key is a string literal — moduleKeyRefusals checks each one against the module's registry row, so a key it cannot read is a key no mount carries.",
+  })),
+)
+
 export default [
   {
     // Everything that is not source. The dot-directory line is load-bearing: Vercel restores
@@ -217,9 +245,18 @@ export default [
     // same bare global; what compat adds is the browser's name, and its real job is the control in
     // `tools/check-baseline.mjs`, which proves the pin reached the toolchain: `new ImageCapture()` must be refused
     // naming the floor's Safari.
+    //
+    // Story 7.5 — DW-146's literal half: a module writes no visitor-facing words of its own. Each comes off its mount
+    // through `ctx.t('key')`, from the `data-i18n-*` S5 stamps from the module's registry row (`moduleKeyRefusals`, CI,
+    // is the registry half), so a translation reaches it. Refused: a letter-bearing string literal, or a template
+    // literal's static text, written to a text sink or a text-making call; and a `t()` whose key is no string literal.
+    // No comment switches it off (`noInlineConfig`, DW-4's pattern). Ceiling, which review holds: a literal parked in a
+    // variable first, or joined by `+`, evades it; `append` and its family are left out, since `FormData` and
+    // `URLSearchParams` share those names.
     files: ['packages/library/modules/*.js'],
     languageOptions: { sourceType: 'module' },
+    linterOptions: { noInlineConfig: true },
     plugins: { compat },
-    rules: { 'no-undef': 'error', 'compat/compat': 'error' },
+    rules: { 'no-undef': 'error', 'compat/compat': 'error', 'no-restricted-syntax': ['error', ...visitorWords] },
   },
 ]

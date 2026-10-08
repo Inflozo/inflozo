@@ -599,7 +599,7 @@ function partialFailures(designs) {
   return out
 }
 const pilots = await import(join(REPO, 'tools/pilot-theme.mjs'))
-const WORDS = { pageWord: 'Pageword', layerWord: 'Layerword' }
+const WORDS = pilots.CI_WORDS
 const THEME = { theme: pilots.PILOT_THEME }
 
 check('control — Story 7.1: a class outside its design\'s root, and a root that is not {category}-{n}, are caught, naming them', () => {
@@ -920,18 +920,132 @@ check(`Story 7.4 (NFR-2) — each template's reachable CSS is within ${pilots.CS
 })
 
 // The strip's soundness rests on nothing at runtime writing a `data-*` on a root (`strip.ts`'s header): a claim CI reads,
-// not one a comment asserts (review, 2026-10-08). Story 7.5 bundles the modules; this row holds every one of them.
+// not one a comment asserts (review, 2026-10-08). Story 7.5 bundles the modules; this row holds every one of them, read
+// by the one reader the compile is handed them through (`pilots.moduleSources`).
 const MODULE_WRITES_DATA = /\bdataset\b|setAttribute\(\s*['"`]data-/
-const moduleSources = () => readdirSync(join(REPO, 'packages/library/modules')).filter((f) => f.endsWith('.js') && !f.endsWith('.test.mjs')).map((f) => [f, readFileSync(join(REPO, 'packages/library/modules', f), 'utf8')])
+const MODULE_SRC = pilots.moduleSources()
 check('control — Story 7.4 (FR-G7): a module source that writes a data-* attribute is caught', () => {
   for (const line of ['el.dataset.perRow = "two"', 'el.setAttribute("data-bg", "contrast")', "el.setAttribute( 'data-x', 1)"]) if (!MODULE_WRITES_DATA.test(line)) throw new Error(`${line} was not caught`)
   return 'three shapes caught'
 })
 check('Story 7.4 (FR-G7) — no behaviour module writes a data-* attribute, so the strip\'s proof is the root as compiled', () => {
-  const sources = moduleSources()
+  const sources = Object.entries(MODULE_SRC)
   if (sources.length === 0) throw new Error('no module source read')
-  for (const [f, body] of sources) if (MODULE_WRITES_DATA.test(body)) throw new Error(`${f} writes a data-* attribute`)
+  for (const [name, body] of sources) if (MODULE_WRITES_DATA.test(body)) throw new Error(`${name}.js writes a data-* attribute`)
   return `${sources.length} module(s)`
+})
+
+// ── Story 7.5: the scripts — main.js, cards.js and the two tags over the pilot theme, and every module file ─────────────
+// The pilots compile with every file of packages/library/modules/ and Ghost's vendored card scripts (tools/pilot-theme.mjs).
+// Each row behind its control.
+const { tidyLicence } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
+const GHOST = pilots.ghostCards()
+const pilots75 = pilots.compilePilots(WORDS, THEME)
+const jsFailures = (files) => [...lib.checkThemeJs(pilots.textFiles(files), MODULE_SRC, GHOST.scripts), ...lib.checkThemeScripts(pilots.textFiles(files))]
+check('control — Story 7.5: a template carrying <script>alert(1)</script>, and a main.js with one byte appended, are each named', () => {
+  const files = pilots75.files
+  if (jsFailures(files).length > 0) throw new Error(`the pilot theme is not clean to begin with: ${jsFailures(files).join(' · ')}`)
+  mustFail(jsFailures({ ...files, 'post.hbs': `${files['post.hbs']}<script>alert(1)</script>\n` }), /^post\.hbs: "<script>alert\(1\)<\/script>" is no script/, 'a stray script')
+  return mustFail(jsFailures({ ...files, 'assets/js/main.js': `${files['assets/js/main.js']} ` }), /^assets\/js\/main\.js is not the bytes bundle\(\) makes/, 'a byte appended to main.js')
+})
+check('Story 7.5 — the pilot theme\'s JS is clean: checkThemeJs, with Ghost\'s card scripts, and checkThemeScripts say nothing', () => {
+  const f = jsFailures(pilots75.files)
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return Object.keys(pilots75.files).filter((p) => p.startsWith('assets/js/')).join(', ')
+})
+/** What the compiled templates mount, against main.js's header: `failures`, and a `WARNING FR-G7` line for each mounted
+ *  module with no file yet — its mounts ship at rest, and the check passes. */
+function mountFailures(files, modules) {
+  const failures = []
+  const mounted = new Set()
+  for (const [path, body] of Object.entries(pilots.textFiles(files))) {
+    if (!path.endsWith('.hbs')) continue
+    for (const m of body.replace(lib.HBS_COMMENT, '').matchAll(/\bdata-module="([^"]*)"/g)) {
+      const d = lib.parseModuleDeclaration(m[1])
+      if (typeof d === 'string') failures.push(`${path}: ${d}`)
+      else mounted.add(d.name)
+    }
+  }
+  const order = lib.MODULES.map((r) => r.name).filter((n) => mounted.has(n))
+  const written = order.filter((n) => Object.hasOwn(modules, n))
+  const listed = lib.bundledNames(files['assets/js/main.js'] ?? '')
+  if (listed === null || listed[0] !== 'core') failures.push('assets/js/main.js opens with no header naming core')
+  else if (listed.slice(1).join() !== written.join()) failures.push(`main.js carries ${listed.slice(1).join(' · ') || 'no module'}, and the templates mount ${written.join(' · ') || 'no module'} with a file`)
+  const warnings = order.filter((n) => !Object.hasOwn(modules, n)).map((n) => `WARNING FR-G7: ${n} is mounted and has no file yet — its mounts ship at rest`)
+  return { failures, warnings, mounted: order }
+}
+check('control — Story 7.5: with a stub nav-drawer file, main.js lists it and no warning names it; a main.js missing it fails', () => {
+  const modules = { ...MODULE_SRC, 'nav-drawer': 'export function navDrawer(el) {}\n' }
+  const stubbed = pilots.compilePilots(WORDS, { ...THEME, modules })
+  const got = mountFailures(stubbed.files, modules)
+  if (got.failures.length > 0) throw new Error(got.failures.join(' · '))
+  if (!lib.bundledNames(stubbed.files['assets/js/main.js']).includes('nav-drawer')) throw new Error('main.js does not list the stub nav-drawer')
+  if (got.warnings.some((w) => w.includes('nav-drawer'))) throw new Error('a warning names nav-drawer, which has a file')
+  return mustFail(mountFailures({ ...stubbed.files, 'assets/js/main.js': lib.bundle([], modules) }, modules).failures, /^main\.js carries no module, and the templates mount nav-drawer/, 'a main.js missing a mounted written module')
+})
+check('Story 7.5 — main.js is what the markup mounts: core, then each mounted module with a file, in registry order; each mounted module with no file is a warning', () => {
+  const got = mountFailures(pilots75.files, MODULE_SRC)
+  if (got.failures.length > 0) throw new Error(got.failures.join('\n'))
+  for (const w of got.warnings) console.log(`  ${w}`)
+  return `main.js: ${lib.bundledNames(pilots75.files['assets/js/main.js']).join(' · ')}; mounted: ${got.mounted.join(', ') || 'none'}`
+})
+// every vendored scripted card designed: cards.js, Ghost's licence, the tag, README's line and the exclusions
+const CARD_NAMES = Object.keys(GHOST.scripts)
+const pilotsCards = pilots.compilePilots(WORDS, { ...THEME, designedCards: CARD_NAMES })
+function cardsFailures(files) {
+  const out = []
+  if (files['assets/js/cards.js'] !== lib.cardsJs(CARD_NAMES, GHOST.scripts)) out.push('assets/js/cards.js is not cardsJs of every vendored chunk')
+  if (files['LICENSE-ghost.txt'] !== tidyLicence(GHOST.licence)) out.push('LICENSE-ghost.txt is not Ghost\'s licence, tidied')
+  if ((files['default.hbs'] ?? '').split('</head>')[0].split(lib.CARDS_JS_TAG).length !== 2) out.push('default.hbs\'s head does not carry CARDS_JS_TAG once')
+  const line = (files['README.md'] ?? '').split('\n').find((l) => l.startsWith('- `assets/js/cards.js`')) ?? ''
+  if (!line.includes(CARD_NAMES.join(' · ')) || !line.includes('`LICENSE-ghost.txt`')) out.push('README.md\'s cards line does not name every card and the licence file')
+  let exclude = []
+  try { exclude = JSON.parse(files['package.json']).config.card_assets.exclude ?? [] } catch { /* named below */ }
+  const unexcluded = CARD_NAMES.filter((n) => !exclude.includes(n))
+  if (unexcluded.length > 0) out.push(`package.json does not exclude ${unexcluded.join(', ')}`)
+  return out
+}
+check('control — Story 7.5: cards.js with one byte changed is named by checkThemeJs; each other piece of the cards, taken away, is named', () => {
+  const files = pilotsCards.files
+  if (cardsFailures(files).length > 0 || jsFailures(files).length > 0) throw new Error(`the cards theme is not clean to begin with: ${[...cardsFailures(files), ...jsFailures(files)].join(' · ')}`)
+  const js = files['assets/js/cards.js']
+  const changed = `${js.slice(0, -2)}${js.at(-2) === ';' ? ' ' : ';'}\n`
+  mustFail(lib.checkThemeJs(pilots.textFiles({ ...files, 'assets/js/cards.js': changed }), MODULE_SRC, GHOST.scripts), /^assets\/js\/cards\.js is not the bytes cardsJs\(\) makes/, 'a changed byte')
+  const pkg = JSON.parse(files['package.json'])
+  const without = [
+    [{ 'LICENSE-ghost.txt': 'MIT\n' }, /LICENSE-ghost\.txt is not/],
+    [{ 'default.hbs': files['default.hbs'].replace(lib.CARDS_JS_TAG, '') }, /CARDS_JS_TAG/],
+    [{ 'README.md': files['README.md'].replace(/\n- `assets\/js\/cards\.js`[^\n]*/, '') }, /README\.md's cards line/],
+    [{ 'package.json': `${JSON.stringify({ ...pkg, config: { ...pkg.config, card_assets: { exclude: ['toggle'] } } }, null, 2)}\n` }, /does not exclude audio, gallery, video/],
+  ]
+  for (const [over, pattern] of without) mustFail(cardsFailures({ ...files, ...over }), pattern, pattern.source)
+  return `${without.length + 1} pieces`
+})
+check('Story 7.5 — every vendored scripted card designed: cards.js is cardsJs over the vendored files, Ghost\'s licence tidied at the root, the cards tag in the head, README\'s cards line, package.json\'s exclusions; checkThemeJs and checkThemeScripts say nothing', () => {
+  const f = [...cardsFailures(pilotsCards.files), ...jsFailures(pilotsCards.files)]
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${CARD_NAMES.join(' · ')}, ${Buffer.byteLength(pilotsCards.files['assets/js/cards.js'])} B`
+})
+check('control — Story 7.5: planted module sources carrying R-21, ponytail: and the builder\'s name are each named by the theme\'s text scan', () => {
+  const core = MODULE_SRC.core
+  mustFail(pilots.textFailures('core.js', `${core}// R-21: held still\n`), /^core\.js: an internal reference$/, 'R-21')
+  mustFail(pilots.textFailures('core.js', `${core}// ponytail: one scan\n`), /^core\.js: an internal reference$/, 'ponytail:')
+  return mustFail(pilots.textFailures('core.js', `// The Inflozo runtime\n${core}`), /^core\.js: the builder's name$/, 'the builder\'s name')
+})
+check('Story 7.5 — every module file passes the theme\'s text scan: its comments ship inside every theme\'s main.js', () => {
+  const f = Object.entries(MODULE_SRC).flatMap(([name, body]) => pilots.textFailures(`packages/library/modules/${name}.js`, body))
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${Object.keys(MODULE_SRC).length} module file(s)`
+})
+check('control — Story 7.5 (DW-146): a planted countdown calling ctx.t(\'weeks\') is named; ctx.t(\'days\') is clean', () => {
+  const countdown = (key) => `export function countdown(el, ctx) {\n  el.textContent = ctx.t('${key}')\n}\n`
+  if (lib.moduleKeyRefusals({ ...MODULE_SRC, countdown: countdown('days') }).length > 0) throw new Error(`ctx.t('days') was refused: ${lib.moduleKeyRefusals({ ...MODULE_SRC, countdown: countdown('days') }).join(' · ')}`)
+  return mustFail(lib.moduleKeyRefusals({ ...MODULE_SRC, countdown: countdown('weeks') }), /^countdown\.js calls t\('weeks'\)/, 'an undeclared key')
+})
+check('Story 7.5 (DW-146) — every t() key a module file calls derives from a string its registry row declares', () => {
+  const f = lib.moduleKeyRefusals(MODULE_SRC)
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${Object.keys(MODULE_SRC).length} module file(s)`
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

@@ -16,8 +16,12 @@
 // Story 7.4: Paper's pairing and the font pool's own files (read here, the shell — the compile reads none), on a Light + Dark
 // project, so the theme carries fonts, licences, AD-18's variables and one section's dark hook; and `cssFailures`, the
 // check CI runs on the stripped stylesheet (Story 7.33 runs it over the whole library).
+// Story 7.5: the module files of `packages/library/modules/` and Ghost's vendored card scripts and licence, read here and
+// handed in, so the theme carries `main.js` (core, the pilots' two declared modules having no file yet) and, for CI's cards
+// row, `cards.js`; and `textFailures`, the per-file scan CI also holds every module file to.
 //
-// Node 24 (it imports the packages' TypeScript). Reads the designs and the font pool from disk; the compile itself is pure.
+// Node 24 (it imports the packages' TypeScript). Reads the designs, the font pool, the modules and Ghost's card scripts
+// from disk; the compile itself is pure.
 
 import { createRequire } from 'node:module'
 import { createHash } from 'node:crypto'
@@ -79,6 +83,23 @@ const FONTS = join(REPO, 'packages/library/fonts')
 /** The shell's read of the font pool, by its path under `packages/library/fonts/` (AD-1: the compile reads no file). */
 export const poolFonts = (path) => readFileSync(join(FONTS, path))
 
+/** Story 7.5 — the module files, by name: every `packages/library/modules/` file named like a registry module (`core.js`,
+ *  `nav-drawer.js`), never its tests or types. What `main.js` is bundled from, and what CI holds to the theme's scan. */
+const MODULE_DIR = join(REPO, 'packages/library/modules')
+export const moduleSources = () => Object.fromEntries(readdirSync(MODULE_DIR).filter((f) => /^[a-z][a-z0-9-]*\.js$/.test(f)).sort()
+  .map((f) => [f.slice(0, -'.js'.length), readFileSync(join(MODULE_DIR, f), 'utf8')]))
+
+/** Story 7.5 — Ghost's card scripts as `tools/probe/record-cards.py` vendored them, by card name, and Ghost's licence. */
+const VENDOR = join(REPO, 'packages/library/orbit-weekly/vendor')
+export const ghostCards = () => ({
+  scripts: Object.fromEntries(readdirSync(join(VENDOR, 'cards/js')).filter((f) => /^[a-z0-9_]+\.js$/.test(f)).sort()
+    .map((f) => [f.slice(0, -'.js'.length), readFileSync(join(VENDOR, 'cards/js', f), 'utf8')])),
+  licence: readFileSync(join(VENDOR, 'LICENSE-ghost.txt'), 'utf8'),
+})
+
+/** CI's two words (check-snapshots, check-baseline's size row) — fixed, so the compiled theme is the same every run. */
+export const CI_WORDS = { pageWord: 'Pageword', layerWord: 'Layerword' }
+
 /** The project's template docs. */
 export function pilotProject({ pageWord, layerWord }, find = library()) {
   let n = 0
@@ -113,14 +134,16 @@ export function pilotProject({ pageWord, layerWord }, find = library()) {
 /** CI's fixed theme identity — `package.json`'s name, version and description. */
 export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', description: 'Pilot sections' }
 
-/** The compiled theme — path → text, or a font's bytes — with AD-14's record (`css`), and the project it came from. */
-export function compilePilots(words, { theme, postsPerPage = 12, find = library(), pageTwo: overTwo } = {}) {
+/** The compiled theme — path → text, or a font's bytes — with AD-14's record (`css`), and the project it came from.
+ *  Story 7.5: `designedCards` reaches `package.json` and `cards.js`; `modules` replaces the files read, for CI's controls. */
+export function compilePilots(words, { theme, postsPerPage = 12, find = library(), pageTwo: overTwo, designedCards, modules = moduleSources() } = {}) {
   if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
   const project = pilotProject(words, find)
   const templates = project.templates
   const pageTwo = overTwo ?? project.pageTwo
   const { files, css } = compileTheme(new JSDOM('<body></body>').window.document, {
     templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled: true,
+    modules, ghostCards: ghostCards(), ...(designedCards === undefined ? {} : { designedCards }),
   })
   const docs = [...Object.values(templates), ...Object.values(pageTwo)]
   return { files, css, templates, pageTwo, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
@@ -154,31 +177,39 @@ export function unmarked(text) {
  *  is `checkTripleStashes`'s to admit (Question 2, ruled option 1, owner, 2026-10-06). */
 const PAYWALL = 'partials/content-cta.hbs'
 
-/** What CI and the recorder hold every compiled theme to — `[]` when it holds. Handlebars 4.7.9 (the compiler's own test
- *  parser, never product code) must parse every template; one `{{{body}}}` and no other triple-stash but `{{{html}}}` as
- *  the paywall's first line (the compiler's own `checkTripleStashes`, called rather than spelled again); no fingerprint (the builder's name outside package.json's named marks, its editor prefix, an
- *  instance id, a C0 character, an internal reference); a package.json that parses; every partial referenced but the
- *  paywall, which Ghost's `{{content}}` runs. */
+/** One text file's fingerprint scan — `[]` when it holds: no C0 character, no builder's name (outside `package.json`'s named
+ *  marks, which must parse), no instance id, no internal reference, no generator line, and a template Handlebars 4.7.9
+ *  parses. Every file of a compiled theme passes it, and since Story 7.5 every module file too, since its comments ship
+ *  inside every theme's `main.js`. */
+export function textFailures(path, raw, instanceIds = []) {
+  const out = []
+  if (/[\u0000-\u0009\u000b-\u001f]/.test(raw)) out.push(`${path}: a control character`)
+  let body = raw
+  if (path === 'package.json') {
+    try { body = unmarked(raw) } catch (e) { return [...out, `package.json: it does not parse — ${e.message}`] }
+  }
+  if (/inflozo/i.test(body)) out.push(`${path}: the builder's name`)
+  for (const id of instanceIds) if (body.includes(id)) out.push(`${path}: the instance id ${id}`)
+  if (/\b(?:DW|AD|FR|NFR|R)-\d+\b|\bStory \d|ponytail/.test(body)) out.push(`${path}: an internal reference`)
+  if (/generated by|built with/i.test(body)) out.push(`${path}: a generator line`)
+  if (path.endsWith('.hbs')) {
+    const Handlebars = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('handlebars')
+    try { Handlebars.parse(body) } catch (e) { out.push(`${path}: Handlebars 4.7.9 does not parse it — ${String(e.message).split('\n')[0]}`) }
+  }
+  return out
+}
+
+/** What CI and the recorder hold every compiled theme to — `[]` when it holds. Every text file passes `textFailures`; one
+ *  `{{{body}}}` and no other triple-stash but `{{{html}}}` as the paywall's first line (the compiler's own
+ *  `checkTripleStashes`, called rather than spelled again); a package.json; every partial referenced but the paywall, which
+ *  Ghost's `{{content}}` runs. */
 export function themeFailures(all, instanceIds) {
-  const Handlebars = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('handlebars')
   const out = []
   // Story 7.4: a font's bytes are no text to scan — only a woff2 under assets/fonts/ may be bytes
   for (const [path, b] of Object.entries(all)) if (typeof b !== 'string' && !/^assets\/fonts\/[a-z0-9-]+\.woff2$/.test(path)) out.push(`${path}: bytes where a text file belongs`)
   const files = textFiles(all)
   if (files['package.json'] === undefined) out.push('package.json: missing')
-  for (const [path, raw] of Object.entries(files)) {
-    if (/[\u0000-\u0009\u000b-\u001f]/.test(raw)) out.push(`${path}: a control character`)
-    let body = raw
-    if (path === 'package.json') {
-      try { body = unmarked(raw) } catch (e) { out.push(`package.json: it does not parse — ${e.message}`); continue }
-    }
-    if (/inflozo/i.test(body)) out.push(`${path}: the builder's name`)
-    for (const id of instanceIds) if (body.includes(id)) out.push(`${path}: the instance id ${id}`)
-    if (/\b(?:DW|AD|FR|NFR|R)-\d+\b|\bStory \d|ponytail/.test(body)) out.push(`${path}: an internal reference`)
-    if (/generated by|built with/i.test(body)) out.push(`${path}: a generator line`)
-    if (!path.endsWith('.hbs')) continue
-    try { Handlebars.parse(body) } catch (e) { out.push(`${path}: Handlebars 4.7.9 does not parse it — ${String(e.message).split('\n')[0]}`) }
-  }
+  for (const [path, raw] of Object.entries(files)) out.push(...textFailures(path, raw, instanceIds))
   // AD-5's ONE spelling (Story 7.3's review): the compiler's check refuses any triple-stash but the two allowed, opens and
   // closes counted apart; the positive half — default.hbs DOES carry {{{body}}} — is this file's
   try { checkTripleStashes(files) } catch (e) { out.push(e.message) }

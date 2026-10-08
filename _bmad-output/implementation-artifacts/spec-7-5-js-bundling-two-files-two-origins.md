@@ -2,9 +2,10 @@
 title: 'Story 7.5 — JS bundling: two files, two origins'
 type: 'feature'
 created: '2026-10-08'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: '23d5c0c58fc2cc9e0dc5b75673170392168128d1'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -195,12 +196,12 @@ After this story, the theme Inflozo builds for your site carries one small scrip
 
 **Execution:**
 
-- [ ] `packages/library/modules/core.js`, `core.test.mjs` — the comments only:
+- [x] `packages/library/modules/core.js`, `core.test.mjs` — the comments only:
   - each keeps what it tells a reader of the theme, and loses the ids, the repo paths and the `ponytail:` marker;
   - `core.test.mjs:285` matches the new header.
 
   -- FR-J1: these comments ship in every theme. Proof: acorn's tokenizer gives the same token stream for the old file and the new.
-- [ ] `packages/library/src/modules.ts`, `modules.test.ts`:
+- [x] `packages/library/src/modules.ts`, `modules.test.ts`:
   - `HEADER` per Design Notes § What the theme carries;
   - export `MAIN_JS_TAG`, `CARDS_JS_TAG` and `cardsJs(names, scripts)`;
   - `checkThemeJs(files, sources, cardScripts?)` compares `cards.js` to `cardsJs` over the scripted cards that `package.json` excludes (DW-135);
@@ -209,45 +210,45 @@ After this story, the theme Inflozo builds for your site carries one small scrip
   - the matrix's check rows.
 
   -- one spelling of each rule, beside `bundle`.
-- [ ] `eslint.config.js`, `tools/check-baseline.mjs`:
+- [x] `eslint.config.js`, `tools/check-baseline.mjs`:
   - the modules block gains `no-restricted-syntax` per Design Notes § DW-146, and `linterOptions: { noInlineConfig: true }`;
   - the controls go in the one ESLint harness: each sink refused, the clean lines clean, a disable comment silencing nothing.
 
   -- DW-146's literal half, on the syntax tree.
-- [ ] `packages/theme-compiler/src/compile.ts`:
+- [x] `packages/theme-compiler/src/compile.ts`:
   - `CompileInput` gains `modules: ModuleSources` and `ghostCards: { scripts, licence }`, both read by the shell;
   - `main.js`, `cards.js`, `LICENSE-ghost.txt`, `README.md` and the two tags;
   - `noC0` over the new inputs;
   - `checkThemeJs` and `checkThemeScripts` in the final checks, throwing on any sentence.
 
   -- FR-J4, in the one place every theme is built.
-- [ ] `packages/theme-compiler/src/compile.test.ts` — the I/O matrix's compile rows, row by row:
+- [x] `packages/theme-compiler/src/compile.test.ts` — the I/O matrix's compile rows, row by row:
   - the input helper gains a minimal `core` and in-memory chunks in `record-cards.py`'s head shape;
   - the whole-output scan reads `main.js` and `README.md`.
 
   -- what the compiler promises.
-- [ ] `tools/pilot-theme.mjs`:
+- [x] `tools/pilot-theme.mjs`:
   - read `packages/library/modules/*.js` (the `^[a-z][a-z0-9-]*\.js$` files) and the vendored card scripts and licence, and hand them to `compileTheme`;
   - `compilePilots` takes `designedCards`, and, for CI's controls, `modules` in place of the files read;
   - factor `textFailures(path, body, instanceIds)` out of `themeFailures`.
 
   -- one project for CI and the recorder.
-- [ ] `tools/check-snapshots.mjs` — Design Notes § What CI holds, each row behind its control. `moduleSources` comes from `pilot-theme.mjs`.
+- [x] `tools/check-snapshots.mjs` — Design Notes § What CI holds, each row behind its control. `moduleSources` comes from `pilot-theme.mjs`.
 
   -- the shapes in CI on every commit.
-- [ ] `tools/check-baseline.mjs` — the size rows per Design Notes § The size rows.
+- [x] `tools/check-baseline.mjs` — the size rows per Design Notes § The size rows.
 
   -- NFR-2's JS budget over what a theme ships.
-- [ ] `tools/stress/build.js` — the tag through `MAIN_JS_TAG`, `checkThemeScripts` printed beside `checkThemeJs`, and its "(Story 7.5 does)" comment says what landed.
+- [x] `tools/stress/build.js` — the tag through `MAIN_JS_TAG`, `checkThemeScripts` printed beside `checkThemeJs`, and its "(Story 7.5 does)" comment says what landed.
 
   -- the fixture held by the same checks.
-- [ ] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
+- [x] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
   - Design Notes § The T1 run;
   - `SECTION` becomes `74`;
   - the docstring, `section()`'s text and the catalogue row say so.
 
   -- R-82: a real Ghost serves what the compiler writes.
-- [ ] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
+- [x] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
 
   -- standing rules 3 and 7.
 
@@ -517,3 +518,73 @@ None. This story has no screen, so it has no frame and no hand test, and it is D
 - Both gscans locally, and gscan 6.4.2 in CI.
 - Vercel: CI's `check`, `rls` and `deploy` green, and the deployment READY at the head. The app's only change is `core.js`'s comments, inside the editor's bundle.
 - There is no migration, and no Supabase, Resend or Dodo surface. The compiler has no product caller until Story 7.18.
+
+**Dev results (2026-10-08, Node 24.18.1, on this tree).**
+
+- **`pnpm check`: exit 0.** That covers lint (DW-146's rule included), the typecheck and every package's tests with 0 failures:
+  - `modules.test.ts`'s seven `(7.5)` rows, `compile.test.ts`'s thirteen `(7.5)` rows, and `core.test.mjs`'s header row.
+  - `check-baseline` ran DW-146's three lint rows: every planted sink refused (Latin and Cyrillic), the clean lines clean, and a disable comment silencing nothing.
+  - `check-baseline`'s size rows, measured by size-limit and checked against zlib's level-9 gzip, summed:
+    - the maximal design (`main.js` of every module with a file, plus `cards.js` of all four vendored chunks) is 5,181 B;
+    - the pilot theme's `main.js` is 2,740 B;
+    - the 1 B control printed its `WARNING NFR-2` line and did not fail;
+    - a row with a control confirms that no file in `apps/` reads the size check.
+  - `check-snapshots` ran § What CI holds, rows 1–5, each behind a control that fired first. It printed today's two warnings: `WARNING FR-G7: nav-drawer is mounted and has no file yet — its mounts ship at rest`, and the same for `member-form`.
+- **`python3 tools/doc-audit.py --check`**, twice: PASS (0 warnings).
+- **The stress fixture** (`node build.js && node gate.js theme`):
+  - `checkThemeJs` clean, with `main.js` the only file;
+  - `checkThemeScripts` clean, with `main.js`'s defer tag the only script;
+  - 0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6).
+- **The recorder's local half** (`compiled()`, then `scaffold()`, then `gated()`, run through importlib): 0/0 on both gscans. The compiled tree carries `assets/js/main.js` (`core` alone) and `README.md`, and `default.hbs` carries `MAIN_JS_TAG` once. Both hand-written paywall probes (`paywall_theme`) also gate 0/0, checked before the upload.
+- **T1 `ghost6.inflozo.com` (Ghost 6.58.0):**
+  - Command: `python3 tools/probe/record-theme-assembly.py`, run in the main session on the owner's in-session go, asked and given in this Dev session.
+  - Keys: read in-process from `tools/probe/.env` by variable name only — `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`.
+  - **Every row held: 114 PASS, 0 FAIL, first run.** Story 7.5's rows:
+    - `/`'s head carried the tag once, as Ghost renders `MAIN_JS_TAG`: `<script defer src="/assets/js/main.js?v=tfdVV6-o_MAJ2f5L"></script>`. Ghost's hash is mixed-case with `-` and `_`, and the matcher allows `[0-9A-Za-z_-]`.
+    - That address answered HTTP 200 as `application/javascript; charset=UTF-8`, and its body was the compiled `main.js` byte for byte (7,302 bytes served, 7,302 compiled).
+    - Control: `/assets/js/{nonce}.js` answered 404.
+    - Premise checked before the upload: `main.js` and its tag were in the uploaded tree.
+  - Stories 7.1–7.4's rows held again on this tree, the paywall mechanism among them.
+  - **T1 was restored and read back after each of the three uploads**: `casper` active, with `casper`, `racer` and `source` installed. A public read afterwards found Casper's `casper.js` back in the head, and `/assets/js/main.js` answering 404.
+  - What it wrote: the three uploads, their activations and deletes. This month's probe picture was reused. MEASUREMENTS §74 was written; §70–§73 are untouched. The Ghost 5 half is DW-326's (R-238).
+- **Manual checks:**
+  - The compiled pilot theme's `default.hbs` head shows the stylesheet link, then `<script defer src="{{asset "js/main.js"}}"></script>`, then FR-H2's guard and `{{ghost_head}}`.
+  - `main.js` opens with `// This file's scripts, one function each, started together by its last line: core`, then `core`, whose comments read as plain explanation.
+  - `README.md` is the Scripts section alone. With all four vendored cards designed, it adds the cards line (`audio · gallery · toggle · video`, Ghost 6.58.0, `LICENSE-ghost.txt`), and `cards.js` opens with the header in § What the theme carries.
+- **`core.js`'s tokens are unchanged.** acorn 8.18.0's tokenizer gives 1,138 tokens for the file at baseline and 1,138 for this one, identical. Control: one token changed reads as different. The line count is unchanged at 158, so every `core.js:N` reference still points where it did.
+- **The grep for the old wordings** (§ Propagated at Dev, *Last*) finds them only in this spec.
+- **No Supabase, Resend or Dodo call was made**, and no migration exists. Vercel: `core.js`'s comment-only change reaches the editor's bundle through CI on this push, and checking its READY is the Review's job.
+- **Added beyond the spec's names, each a reader or a value the named functions needed:**
+  - `cardsVersion`, the Ghost version README states;
+  - `bundledNames`, the one reader of `main.js`'s header;
+  - `HBS_COMMENT`, moved from `compile.ts` into the library, since `checkThemeScripts` needs it;
+  - `CI_WORDS` in `pilot-theme.mjs`;
+  - Epic 7's R-195 preamble list.
+  - The lint's ceiling is a little wider than § DW-146 states: a literal joined by `+` evades it too. `docs/section-authoring.md` says so.
+- **One wording left as the owner ruled it.** R-63 in `reconcile-designs-decisions.md` still says Inflozo "neither writes, bundles nor budgets for" Ghost's gallery script. Its decision stands: gallery's script is not a module and has no registry entry. The research row it cites (`research-section-js-libraries.md`'s gallery row) now carries the dated note that NFR-2 counts that script once a gallery is designed. The ruling's own text is the owner's and was not edited.
+
+**The I/O matrix, row by row, mapped to the check that ran and passed:**
+
+| Row | Check |
+|---|---|
+| No module declared | `(7.5) no module declared …` (compile) |
+| A written module | `(7.5) a written module …` (compile) |
+| The union | `(7.5) the union …` (compile) |
+| It leaves with its design | `(7.5) it leaves with its design …` (compile) |
+| Declared, no file yet | `(7.5) declared, no file yet …` (compile); `check-snapshots` row 2, with its two `WARNING FR-G7` lines and its stub-file control |
+| No `core` | `(7.5) no core …` (compile) |
+| A module's strings | `(7.5) a module's strings …` (compile) |
+| Designed cards with scripts | `(7.5) designed cards with scripts …` (compile); `check-snapshots` row 3 |
+| Designed cards without scripts | `(7.5) designed cards without scripts …` (compile) |
+| A chunk not as vendored | `(7.5) a chunk not as vendored …` (compile); `(7.5) cardsJs refuses …` (modules) |
+| A control character | `(7.5) a control character …` (compile) |
+| Determinism | `(7.5) determinism …` (compile) |
+| The compile's own output | `(7.5) the compile's own output …` (compile); `check-snapshots` row 1 |
+| `cards.js` changed | `(7.5) checkThemeJs compares cards.js …` (modules): one byte off, and a card not excluded; `check-snapshots` row 3's control |
+| A scripted card with no `cards.js` | the same modules test: `audio's player would never play` |
+| A stray `<script>` | `(7.5) checkThemeScripts …` (modules): stray inline, upper-case, `MAIN_JS_TAG` missing, twice and outside `default.hbs`, `CARDS_JS_TAG` without `cards.js`, `cards.js` without its tag, an unclosed script; `check-snapshots` row 1's control |
+| A named inline script | the same test: a named source passes, and one byte off is refused |
+| A `<script>` in a Handlebars comment | the same test: both comment forms are ignored |
+| A visitor-facing literal | `check-baseline`'s three DW-146 lint rows |
+| An undeclared key | `(7.5) moduleKeyRefusals …` (modules); `check-snapshots` row 5 and its `ctx.t('weeks')` control |
+| A module's comments | `check-snapshots` row 4 and its control (`R-21`, `ponytail:`, the builder's name) |

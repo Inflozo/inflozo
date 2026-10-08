@@ -282,7 +282,8 @@ test("the real core.js, bundled: its header, the file with exactly its one `expo
   const at = CORE.indexOf('export function core(')
   assert.ok(at >= 0 && CORE.indexOf('export ', at + 1) === -1, 'core.js is one exported declaration')
   const [header, ...rest] = main.split('\n')
-  assert.match(header, /^\/\/ Inflozo main\.js, made by bundle\(\) .*: core$/)
+  // Story 7.5 (FR-J1): main.js ships in every theme, so its first line names no builder and no repo path
+  assert.equal(header, "// This file's scripts, one function each, started together by its last line: core")
   assert.equal(rest.join('\n'), `;(function () {\n'use strict'\n${CORE.slice(0, at)}${CORE.slice(at + 'export '.length)}\ncore(window, [])\n})()\n`)
   assert.doesNotMatch(main, /\bexport\b/, 'a classic script carrying `export` is a SyntaxError on every site')
 })

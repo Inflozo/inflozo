@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Stories 7.1, 7.2, 7.3 and 7.4's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with
-the `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, and since Story 7.4
-the pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, rendered by a REAL Ghost
-(T1); and Story 7.3's paywall mechanism, on two hand-written probe themes.
+"""Stories 7.1, 7.2, 7.3, 7.4 and 7.5's recorder — the five pilots, compiled by `compileTheme` to the formatting contract
+with the `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4
+the pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, and since Story 7.5 the
+theme's `main.js` behind its `defer` tag and its `README.md`, rendered by a REAL Ghost (T1); and Story 7.3's paywall
+mechanism, on two hand-written probe themes.
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -23,8 +24,11 @@ from its Synthesis Default, an archive's designed page 2 inside `{{#is "paged"}}
 no explicit `{{> "content-cta"}}`. Since Story 7.4 it ships the pairing's pool woff2 files in `assets/fonts/`, preloaded
 and faced in `default.hbs`'s head through one `{{asset}}` address each, each family's licence at the root, and a
 `screen.css` whose token block declares AD-18's two `--gh-font-*` variables and a section's dark override on its hook.
-`check-snapshots` holds the compiled tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a
-hypothesis.
+Since Story 7.5 it writes `assets/js/main.js` (`bundle()` of `core` and every declared module that has a file — `core`
+alone on the pilots, whose `nav-drawer` and `member-form` have none yet and ship at rest) behind `MAIN_JS_TAG`, a `defer`
+tag in `default.hbs`'s head after the stylesheet, and `README.md`'s Scripts section. `cards.js` is not uploaded here: the
+pilots design no card, and Story 7.13's first designed card runs its first T1 proof. `check-snapshots` holds the compiled
+tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a hypothesis.
 
   1. It compiles, through Node 24's type stripping and `tools/pilot-theme.mjs` (the project CI holds): the site doc's
      A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 (index.hbs), post.hbs's A24 #1 and an
@@ -77,13 +81,18 @@ hypothesis.
      served `screen.css` equals the compiled one byte for byte, with both `var(--gh-font-…, …)` forms, the base rule and
      the `[data-instance="<hook>"]` rules; and A4 #13's root on `/` carries `data-instance="<hook>"`, the hook computed
      here through `hookOf(sectionKey('home', …))`.
+     Story 7.5's: `/`'s head carries the theme's script tag exactly once, as Ghost renders `MAIN_JS_TAG` —
+     `<script defer src="/assets/js/main.js?v=…"></script>`; that address answers 200 with a JavaScript content type
+     (recorded as served), and its body is the compiled `main.js`, byte for byte. gscan reads no `.js`, so the local gate
+     is §73's, unchanged.
   6. THE CONTROLS (standing rule 2), each voiding the run: the layer word IS in the uploaded templates and the hostile
      layer name is in the uploaded `home.hbs`, so their absence from every page is the comments' doing; the `noindex`
      meta IS in the uploaded `default.hbs` and no `error.hbs` is; every page read is this run's theme — `/` by its page
      word, the others by the same `screen.css?v=` asset hash `/` carried; every page 2 read answers 200; the site
      theme's `package` lacks the marker; and `size/w751/` — a width no theme declares — is redirected to the original,
      as `size/w750/` was before the upload. Story 7.4's: `/assets/fonts/{nonce}.woff2` and `/LICENSE-{nonce}.txt` answer
-     404, so a 200 is the file's own; and A17 #1's root on `/` carries no hook.
+     404, so a 200 is the file's own; and A17 #1's root on `/` carries no hook. Story 7.5's: `main.js` and its tag ARE in
+     the uploaded tree before anything uploads, and `/assets/js/{nonce}.js` answers 404, so the 200 is `main.js`'s own.
   7. Its `finally` is record-shim.py's `restore_and_delete` — the previous theme re-activated and read back, the probe
      theme DELETED and read back, whichever step failed.
   8. THE PAYWALL MECHANISM (Story 7.3, settling MEASUREMENTS §15b's library rule): two HAND-WRITTEN probe themes, never
@@ -98,8 +107,8 @@ hypothesis.
 What it writes to the SERVER: three theme uploads, their activations and deletes; the `w750` rendition Ghost saves the
 first time it is asked for one; and — only when T1 hosts no picture of its own — one probe picture, which stays (Ghost's
 API deletes no picture) — no content, no setting, no key; keys are read by variable name and no URL that carries one is
-printed. To disk it writes MEASUREMENTS.md §73 alone, replacing an earlier §73 of its own so a re-run re-records; §70,
-§71 and §72 stay Stories 7.1's, 7.2's and 7.3's records.
+printed. To disk it writes MEASUREMENTS.md §74 alone, replacing an earlier §74 of its own so a re-run re-records; §70,
+§71, §72 and §73 stay Stories 7.1's, 7.2's, 7.3's and 7.4's records.
 """
 import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, subprocess, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -112,7 +121,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '73'   # §70, §71 and §72 stay Stories 7.1's, 7.2's and 7.3's records
+SECTION = '74'   # §70, §71, §72 and §73 stay Stories 7.1's, 7.2's, 7.3's and 7.4's records
 POOL = os.path.join(ROOT, 'packages', 'library', 'fonts', 'pool.json')
 MARKER = 'inflozo'   # FR-J13's marker key, THEME_MARKER in packages/theme-compiler
 C0 = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f]')
@@ -136,6 +145,7 @@ const pilots = await import(`${root}/tools/pilot-theme.mjs`)
 const lib = await import(`${root}/packages/library/src/index.ts`)
 const rt = await import(`${root}/packages/section-runtime/src/index.ts`)
 const { THEME_MARKER } = await import(`${root}/packages/theme-compiler/src/index.ts`)
+const { MAIN_JS_TAG } = await import(`${root}/packages/library/src/modules.ts`)
 if (THEME_MARKER !== process.env.MARKER) throw new Error(`the recorder reads the marker as ${process.env.MARKER}, the compiler writes ${THEME_MARKER}`)
 const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
 const find = pilots.library()
@@ -155,6 +165,8 @@ process.stdout.write(JSON.stringify({
   files: Object.fromEntries(Object.entries(files).map(([p, b]) => [p, typeof b === 'string' ? b : { base64: Buffer.from(b).toString('base64') }])),
   order, failures: pilots.themeFailures(files, instanceIds), hostileLayer: pilots.HOSTILE_LAYER,
   hostileText: Object.values(pilots.HOSTILE_TEXT), hook: rt.hookOf(rt.sectionKey('home', a4.instanceId)), base: rt.BASE_CSS,
+  // Story 7.5: the tag as the compiler writes it — the recorder's premise reads it, never a copy of its own
+  mainTag: MAIN_JS_TAG,
 }))
 '''
 
@@ -270,6 +282,9 @@ def fetched(g, url):
 
 
 PRELOAD = re.compile(r'<link rel="preload" href="([^"]+)" as="font" type="font/woff2" crossorigin>')
+# Story 7.5: MAIN_JS_TAG as Ghost renders it — `{{asset}}` resolved to the theme's address with its mixed-case `?v=` hash
+MAIN_TAG = re.compile(r'<script defer src="(/assets/js/main\.js\?v=[0-9A-Za-z_-]+)"></script>')
+JS_TYPES = ('application/javascript', 'text/javascript')
 FACE_SRC = re.compile(r"src: url\(([^)]+)\) format\('woff2'\);")
 
 
@@ -369,6 +384,9 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         raise Void('the uploaded screen.css carries no rule for the hook — the stylesheet row would prove nothing')
     if not any(p.startswith('assets/fonts/') for p in files) or not any(p.startswith('LICENSE-') for p in files):
         raise Void('the uploaded tree carries no font or no licence — the font rows would prove nothing')
+    # Story 7.5: main.js and its tag ARE uploaded, so the script rows read what Ghost served of them
+    if 'assets/js/main.js' not in files or files['default.hbs'].count(c['mainTag']) != 1:
+        raise Void('the uploaded tree carries no main.js, or default.hbs does not carry its tag once — the script rows would prove nothing')
     tag, author = arch['tag'][0], arch['author'][0]
     tag1, tag2, au1, au2 = f'/tag/{tag}/', f'/tag/{tag}/page/2/', f'/author/{author}/', f'/author/{author}/page/2/'
     missing = f'/{nonce}-missing/'
@@ -445,7 +463,11 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         licences = {p: fetched(g, f'/{p}') for p in files if p.startswith('LICENSE-')}
         sheet_at = re.search(r'href="([^"]*/assets/css/screen\.css\?v=[^"]+)"', read['/'][1])
         sheet = fetched(g, sheet_at.group(1)) if sheet_at else (None, '', b'')
-        misses = {'font': fetched(g, f'/assets/fonts/{nonce}.woff2'), 'licence': fetched(g, f'/LICENSE-{nonce}.txt')}
+        misses = {'font': fetched(g, f'/assets/fonts/{nonce}.woff2'), 'licence': fetched(g, f'/LICENSE-{nonce}.txt'),
+                  'script': fetched(g, f'/assets/js/{nonce}.js')}
+        # ── Story 7.5: the script tag in the head, and the file at its address ──
+        tags75 = MAIN_TAG.findall(head74)
+        main_js = fetched(g, tags75[0]) if len(tags75) == 1 else (None, '', b'')
     finally:
         shim.restore_and_delete(g, previous, [THEME_NAME])
     # the page each path renders, by the key `order` holds it under (a page 2 as `{file}#2`)
@@ -538,6 +560,17 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         (f'data-instance="{c["hook"]}"' in a4, '/', "A4 #13's root carries the hook computed here, hookOf(sectionKey('home', …))",
          re.sub(r'\s+', ' ', a4)[:120]),
         (a17 != '' and 'data-instance=' not in a17, '/', 'CONTROL — A17 #1\'s root carries no hook', re.sub(r'\s+', ' ', a17)[:120]),
+    ]
+    # ── Story 7.5's rows: main.js behind its defer tag, served as compiled ──
+    compiled_main = files['assets/js/main.js'].encode('utf8')
+    verdicts += [
+        (len(tags75) == 1, '/', '<head> carries the theme\'s script tag once, as Ghost renders MAIN_JS_TAG: <script defer src="/assets/js/main.js?v=…"></script>',
+         f'{len(tags75)} found {tags75}'),
+        (main_js[0] == 200 and main_js[1].split(';')[0].strip() in JS_TYPES, '/assets/js/main.js', 'main.js answers 200 with a JavaScript content type (as served)',
+         f'HTTP {main_js[0]}, {main_js[1]!r}'),
+        (main_js[2] == compiled_main, '/assets/js/main.js', 'its body is the compiled main.js, byte for byte',
+         f'{len(main_js[2])} bytes served, {len(compiled_main)} compiled'),
+        (misses['script'][0] == 404, f'/assets/js/{nonce}.js', 'CONTROL — a script the theme does not carry answers 404', f'HTTP {misses["script"][0]}'),
     ]
     for ok, page, what, detail in verdicts[len(premise):]:
         print(f'    {"PASS" if ok else "FAIL"}  {page:<40} {what} — {detail}')
@@ -642,9 +675,9 @@ def section(rec, gates, files, c, pay):
     fonts = sorted(p for p in files if p.startswith('assets/fonts/'))
     licences = sorted(p for p in files if p.startswith('LICENSE-'))
     (tag, tag_n), (author, author_n) = rec['arch']['tag'], rec['arch']['author']
-    out = [f'## {SECTION}. Assets, fonts, per-design CSS and the dead-code strip — the pilots compiled with Paper\'s fonts, '
-           f'their licences, AD-18\'s variables and a section\'s dark hook, beside every standard template and the paywall '
-           f'mechanism, rendered by Ghost, T1 · {today}', '',
+    out = [f'## {SECTION}. JS bundling — the pilots compiled with `main.js` behind its `defer` tag and `README.md`, beside '
+           f'Paper\'s fonts, their licences, a section\'s dark hook, every standard template and the paywall mechanism, '
+           f'rendered by Ghost, T1 · {today}', '',
            f'**Command.** `{COMMAND}` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each '
            'activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload '
            '(DW-332), both read back; the one `w750` rendition Ghost saves the first time it is asked; no content, no '
@@ -652,7 +685,8 @@ def section(rec, gates, files, c, pay):
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70, §71 and §72 are Stories 7.1's, 7.2's and 7.3's records; this re-runs their rows beside Story 7.4's.", '',
+           "§70, §71, §72 and §73 are Stories 7.1's, 7.2's, 7.3's and 7.4's records; this re-runs their rows beside "
+           "Story 7.5's.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
            '`<main id="site-main">`, puts FR-H2\'s `noindex` guard in `default.hbs`\'s head, and leaves out an untouched '
@@ -662,11 +696,14 @@ def section(rec, gates, files, c, pay):
            'faces and writes their `@font-face` rules in `default.hbs`\'s head through one `{{asset}}` address each, puts '
            'each family\'s licence at the root, and writes `screen.css` as the token block — AD-18\'s two `--gh-font-*` '
            'variables, then A4 #13\'s dark override on its hook — the canvas\'s base, and each design\'s sheet stripped to '
-           'what its placed roots reach. `check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate, '
+           'what its placed roots reach. Story 7.5\'s writes `assets/js/main.js` — `core` and each declared module with a '
+           'file, `core` alone on the pilots, whose `nav-drawer` and `member-form` have no file yet and ship at rest — behind '
+           'one `defer` tag in `default.hbs`\'s head after the stylesheet, and `README.md`\'s Scripts section. '
+           '`check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate (gscan reads no `.js`), '
            f'with the scaffold (`cards.css`, Story 7.13\'s two widths alone — AD-18\'s lines left it, so `screen.css` '
            f'answers GS051; the stand-in `page.hbs`, Story 10.79\'s, for GS110): {gline}.', '',
            f'**The tree uploaded** ({len(files)} files): ' + ', '.join(f'`{p}`' for p in templates)
-           + f', `assets/css/screen.css`, `package.json`, {len(fonts)} font files — ' + ', '.join(f'`{p}`' for p in fonts)
+           + f', `assets/css/screen.css`, `assets/js/main.js`, `README.md`, `package.json`, {len(fonts)} font files — ' + ', '.join(f'`{p}`' for p in fonts)
            + ' — the licences ' + ', '.join(f'`{p}`' for p in licences)
            + f', and {len(parts)} partials — ' + ', '.join(f'`{p}`' for p in parts)
            + ' — compiled; then the scaffold, `assets/css/cards.css` and `page.hbs`. `package.json` was handed '
@@ -679,8 +716,9 @@ def section(rec, gates, files, c, pay):
            "page word, the others by the same `screen.css` asset hash); every page 2 read answered 200; under the site's "
            f"own theme (`{rec['previous']}`), its `package` carries no marker and no 750 width, and `w750` was redirected to "
            'the original; after activation, `w751` was redirected to the original; a font and a licence the theme does not '
-           'carry answered 404, so each 200 read was the file\'s own; and A17 #1\'s root carried no hook, so A4 #13\'s is '
-           'the override\'s doing. For the paywall: the Content API says '
+           'carry answered 404, so each 200 read was the file\'s own; A17 #1\'s root carried no hook, so A4 #13\'s is '
+           'the override\'s doing; `main.js` and its tag were in the uploaded tree, and a script the theme does not carry '
+           'answered 404, so the 200 read at the tag\'s address was `main.js`\'s own. For the paywall: the Content API says '
            'the post is not public, each read carried its own theme\'s marker, and the control theme rendered Ghost\'s own '
            'call to action. Every one held.', '',
            f'### (a) The compiled pilots — T1 `{rec["site"].replace("https://", "")}` ({rec["version"]}), locale `{rec["locale"]}`', '']
@@ -692,6 +730,9 @@ def section(rec, gates, files, c, pay):
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **The theme\'s script reaches the page as built.** `/`\'s head carried `main.js`\'s tag once, `defer`, in the '
+            'form `{{asset}}` resolves to, and its address answered with a JavaScript type and the compiled bytes — so '
+            '`core` loads on every page without holding it up.',
             '- **The theme carries its own fonts, and Ghost serves them as built.** Each font address in the page\'s own '
             '`<style>` answered `font/woff2` with the bytes `pool.json` records, and each preload `href` was, verbatim, one '
             'face\'s `src` — one `{{asset}}` address, so the preload is the fetch. No visitor\'s browser asks a font host.',
@@ -715,7 +756,10 @@ def section(rec, gates, files, c, pay):
             f'visitor, `package.json` read whole, and {cards_line}.',
             "- **What this does NOT say.** The scaffold is the later stories' (7.13, 10.79), nothing here deployed "
             "through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story "
-            "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). Two shapes the compiler "
+            "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). No `cards.js` was uploaded: "
+            "the pilots design no card, so a real Ghost first serves it with Story 7.13's first designed card; that "
+            "excluding a card drops Ghost's own script is read in source (Story 7.5's Facts 1), not on a page. What "
+            "`main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Two shapes the compiler "
             "writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was "
             "uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard "
             "`author` alone, so `{{#is \"index, tag, author\"}}` and the `index` and `tag` contexts rest on "

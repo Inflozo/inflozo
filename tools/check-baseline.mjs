@@ -16,15 +16,16 @@
 //  3. every Tier-2 date recomputed as `baseline_low_date` + 30 months, and R-105's one exception held alone;
 //  4. the stylelint plugin diffed against the pin, row by row, over every identifier-shaped `css.properties` row;
 //  5. the matrix's stylesheet rows and the repository's own sheets through the real config;
-//  6. `size-limit` over `bundle()`'s maximal main.js at NFR-2's budget — 40,960 bytes, gzip level 9 (DW-140) — as a
-//     WARNING, with a 1 B control, its size held equal to zlib's own gzip of the file, and NFR-2's sentence held to
-//     naming what is checked.
+//  6. `size-limit` at NFR-2's budget — 40,960 bytes, gzip level 9 (DW-140) — as a WARNING, never a failure, over two
+//     things (Story 7.5): NFR-2's maximal design, `bundle()` of every module with a file plus `cardsJs` of every vendored
+//     Ghost chunk, and the compiled pilot theme's `assets/js/`; with a 1 B control, each size held equal to the sum of
+//     zlib's own level-9 gzip of its files, and NFR-2's sentence held to naming what is checked. Nothing in apps/ reads it.
 //
 //     node tools/check-baseline.mjs          (Node 24: it imports packages/library/src/modules.ts)
 
 import { createRequire } from 'node:module'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -38,7 +39,7 @@ process.chdir(REPO)
 const require = createRequire(import.meta.url)
 const stylelint = (await import('stylelint')).default
 const { ESLint } = await import('eslint')
-const { MODULES, bundle } = await import(join(REPO, 'packages/library/src/modules.ts'))
+const { MODULES, bundle, cardsJs } = await import(join(REPO, 'packages/library/src/modules.ts'))
 const webFeatures = require('web-features/data.json')
 const WEB_FEATURES = JSON.parse(readFileSync(join(dirname(require.resolve('web-features/data.json')), 'package.json'), 'utf8')).version
 const BASELINE = JSON.parse(readFileSync(join(REPO, 'packages/library/baseline.json'), 'utf8'))
@@ -256,6 +257,39 @@ await check('Story 7.1: a test under packages/ may import handlebars to parse wh
   if (banned(await lintAt("import { format } from 'prettier/standalone'\nexport const f = format\n", 'packages/theme-compiler/src/probe.test.ts')) === undefined) fail('prettier admitted in a test')
 })
 
+// Story 7.5 — DW-146's literal half (eslint.config.js's modules block): a module writes no visitor-facing words of its own.
+// Each line is planted in a module file's one function, with every name it uses a parameter, so `no-undef` stays quiet.
+const moduleLint = async (line) => (await lintAt(`export function probe(el, ctx, win, doc, body, n, value) {\n  const t = ctx.t\n  ${line}\n}\n`, 'packages/library/modules/probe.js'))
+  .filter((m) => m.ruleId === 'no-restricted-syntax' && m.message.startsWith('DW-146'))
+const VISITOR_WORDS = [
+  "el.textContent = 'Hello'", "el.textContent = 'Привет'", 'el.title = `Close ${n}`', "el.ariaLabel = 'Close'", "el.innerHTML = '<b>x</b>'",
+  "el.setAttribute('aria-label', 'Close')", "el.setAttribute('title', `Next ${n}`)", "el.insertAdjacentText('beforeend', 'More')",
+  "el.insertAdjacentHTML('afterend', '<p>x</p>')", "doc.createTextNode('Hi')", "win.alert('Hi')", "new win.Option('Pick')",
+  'ctx.t(n)', 't(`days`)',
+]
+const NOT_VISITOR_WORDS = [
+  "el.textContent = ctx.t('more')", "el.setAttribute('aria-expanded', 'true')", "el.insertAdjacentText('beforeend', ctx.t('more'))",
+  'el.textContent = `${n}`', "body.append('email', value)", "el.innerHTML = ''",
+]
+await check('Story 7.5 (DW-146): every sink is refused in a module file — a letter-bearing literal written to text or passed to a text-making call, and a t() key that is no string literal', async () => {
+  const missed = []
+  for (const line of VISITOR_WORDS) if ((await moduleLint(line)).length === 0) missed.push(line)
+  if (missed.length > 0) fail(`not refused: ${missed.join(' · ')}`)
+  return `${VISITOR_WORDS.length} lines refused`
+})
+await check('Story 7.5 (DW-146): the clean lines are clean — ctx.t(\'more\') into text, aria-expanded, a number in a template, FormData\'s append, clearing innerHTML', async () => {
+  const hit = []
+  for (const line of NOT_VISITOR_WORDS) if ((await moduleLint(line)).length > 0) hit.push(line)
+  if (hit.length > 0) fail(`refused: ${hit.join(' · ')}`)
+  return `${NOT_VISITOR_WORDS.length} lines clean`
+})
+await check('Story 7.5 (DW-146): a disable comment in a module file silences nothing', async () => {
+  const got = (await lintAt("/* eslint-disable no-restricted-syntax */\nexport function probe(el) {\n  el.textContent = 'Hello' // eslint-disable-line\n}\n", 'packages/library/modules/probe.js'))
+    .filter((m) => m.ruleId === 'no-restricted-syntax' && m.message.startsWith('DW-146'))
+  if (got.length === 0) fail('silenced')
+  return got[0].message
+})
+
 await check('the one exception: a second entry carrying notBaseline is refused, naming R-105', () => {
   const [first] = BASELINE.tier2.filter((e) => e.notBaseline === undefined)
   const { refusals } = tier2Findings([...BASELINE.tier2.filter((e) => e !== first), { ...first, notBaseline: 'probe' }])
@@ -288,11 +322,11 @@ await check('a Tier-2 date altered is refused, naming the entry and both dates',
 // its CLI takes no metric flag — and `@size-limit/file` gzips at level 9.
 const NFR2_BYTES = 40960
 const NFR2_WORDS = `${NFR2_BYTES.toLocaleString('en-US')} bytes, gzip level 9`
-let sizeFile, sizeConfig
-const sizeLimit = (limit) => {
+/** size-limit over one config entry — its files' sizes summed, as `@size-limit/file` does — at `limit`. */
+const sizeLimit = (limit, config) => {
   let out
   try {
-    out = execFileSync(join(REPO, 'node_modules/.bin/size-limit'), ['--json', '--limit', limit, '--config', sizeConfig], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+    out = execFileSync(join(REPO, 'node_modules/.bin/size-limit'), ['--json', '--limit', limit, '--config', config], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
   } catch (e) {
     out = e.stdout || e.message // size-limit exits 1 over its limit; NFR-2 wants a warning, so the JSON decides
   }
@@ -302,23 +336,51 @@ const sizeLimit = (limit) => {
   } catch {
     fail(`size-limit did not run: ${String(out).slice(0, 400)}`)
   }
-  if (!Array.isArray(parsed) || parsed.length !== 1 || typeof parsed[0].size !== 'number') fail(`size-limit printed no one-file result: ${out}`)
+  if (!Array.isArray(parsed) || parsed.length !== 1 || typeof parsed[0].size !== 'number') fail(`size-limit printed no one-entry result: ${out}`)
   return parsed[0]
 }
 const tmp = mkdtempSync(join(tmpdir(), 'check-baseline-'))
 try {
-  // "Maximal" is every registry module that has a source; today that is core alone. Stories 7.5 and 7.33 point
-  // size-limit at compiled themes.
+  // Story 7.5 — NFR-2's maximal design: every registry module with a file in one main.js, and every vendored Ghost chunk
+  // in one cards.js — measured as the two files a theme carries. The second row is what a compiled theme ships: the pilot
+  // theme as CI compiles it (tools/pilot-theme.mjs's words and theme), its assets/js/ files. Story 7.33 measures the library.
+  const pilots = await import(join(REPO, 'tools/pilot-theme.mjs'))
   const present = MODULES.map((m) => m.name).filter((n) => existsSync(join(REPO, `packages/library/modules/${n}.js`)))
-  const sources = Object.fromEntries(['core', ...present].map((n) => [n, readFileSync(join(REPO, `packages/library/modules/${n}.js`), 'utf8')]))
-  sizeFile = join(tmp, 'main.js')
-  writeFileSync(sizeFile, bundle(present, sources))
-  sizeConfig = join(tmp, 'size-limit.json')
-  writeFileSync(sizeConfig, JSON.stringify([{ path: 'main.js', gzip: true }]))
+  const sources = pilots.moduleSources()
+  const ghost = pilots.ghostCards()
+  /** One size-limit config entry over `files` (name → text), written to its own directory; `{ config, files }`. */
+  const measured = (dir, files) => {
+    const at = join(tmp, dir)
+    mkdirSync(at)
+    for (const [name, text] of Object.entries(files)) writeFileSync(join(at, name), text)
+    const config = join(at, 'size-limit.json')
+    writeFileSync(config, JSON.stringify([{ path: Object.keys(files), gzip: true }]))
+    return { config, files }
+  }
+  /** One size row: size-limit's sum held equal to zlib's level-9 gzip of each file, summed. Under the budget the size is
+   *  the row's note; past it, `warning` is NFR-2's WARNING line — never a failure. */
+  const sizeRow = ({ config, files }, what, limit = `${NFR2_BYTES} B`) => {
+    const r = sizeLimit(limit, config)
+    const zlib = Object.values(files).reduce((n, text) => n + gzipSync(Buffer.from(text), { level: 9 }).length, 0)
+    if (r.size !== zlib) fail(`size-limit measured ${r.size} B and zlib's gzip at level 9, summed over ${Object.keys(files).join(' and ')}, is ${zlib} B — the gate is not measuring NFR-2's metric`)
+    const said = `${what} is ${r.size} B gzipped`
+    return { said, warning: r.passed === false ? `WARNING NFR-2: ${said}, over the ${limit === `${NFR2_BYTES} B` ? NFR2_WORDS : limit} budget — a warning, not a failure (no customer can act on it)` : null }
+  }
+  /** A row's note: its size, with its WARNING line printed above when it is over. */
+  const shownSize = ({ said, warning }) => {
+    if (warning !== null) console.log(`  ${warning}`)
+    return said
+  }
+  const maximal = measured('maximal', { 'main.js': bundle(present, sources), 'cards.js': cardsJs(Object.keys(ghost.scripts), ghost.scripts) })
+  const compiled = pilots.compilePilots(pilots.CI_WORDS, { theme: pilots.PILOT_THEME }).files
+  const theme = measured('theme', Object.fromEntries(Object.entries(compiled).filter(([p]) => p.startsWith('assets/js/')).map(([p, b]) => [p.slice('assets/js/'.length), b])))
 
-  await check('the size control: the same main.js at --limit "1 B" reports passed: false', () => {
-    const r = sizeLimit('1 B')
+  await check('the size control: the maximal design at --limit "1 B" reports passed: false, and the row prints its WARNING line rather than fail', () => {
+    const r = sizeLimit('1 B', maximal.config)
     if (r.passed !== false) fail(`size-limit reported ${JSON.stringify(r)} at 1 B`)
+    const { warning } = sizeRow(maximal, 'the maximal design', '1 B')
+    if (warning === null || !warning.startsWith('WARNING NFR-2: ') || !warning.endsWith('— a warning, not a failure (no customer can act on it)')) fail(`no WARNING NFR-2 line at 1 B: ${warning}`)
+    return warning
   })
 
   await check('the plugin against the pin: every identifier-shaped css.properties row, through the repo config', async () => {
@@ -467,13 +529,25 @@ try {
     if (!nfr2.includes(`< 40 KB gzipped (${NFR2_WORDS})`)) fail(`prd.md NFR-2 does not say "< 40 KB gzipped (${NFR2_WORDS})", which is what size-limit is run at here`)
   })
 
-  await check(`size-limit over bundle() of every registry module with a source: NFR-2, ${NFR2_WORDS}`, () => {
-    const r = sizeLimit(`${NFR2_BYTES} B`)
-    const zlib = gzipSync(readFileSync(sizeFile), { level: 9 }).length
-    if (r.size !== zlib) fail(`size-limit measured ${r.size} B and zlib's gzip at level 9 is ${zlib} B — the gate is not measuring NFR-2's metric`)
-    const said = `main.js (core${present.map((n) => ` · ${n}`).join('')}) is ${r.size} B gzipped`
-    if (r.passed === false) console.log(`  WARNING NFR-2: ${said}, over the ${NFR2_WORDS} budget — a warning, not a failure (Story 7.5 owns the gate)`)
-    return said
+  await check(`size-limit over NFR-2's maximal design — bundle() of every module with a file, and cardsJs() of every vendored Ghost chunk: ${NFR2_WORDS}`, () =>
+    shownSize(sizeRow(maximal, `main.js (core${present.map((n) => ` · ${n}`).join('')}) with cards.js (${Object.keys(ghost.scripts).join(' · ')})`)))
+  await check(`size-limit over the compiled pilot theme's assets/js/: ${NFR2_WORDS}`, () => {
+    if (!('main.js' in theme.files)) fail('the compiled pilot theme carries no assets/js/main.js, so this row measures nothing')
+    return shownSize(sizeRow(theme, `the pilot theme's ${Object.keys(theme.files).join(' and ')}`))
+  })
+  /** The tracked files under `dir` that name the size check; `git grep` exits 1 when it finds none. */
+  const readers = (dir) => {
+    try {
+      return execFileSync('git', ['grep', '-l', '-E', 'size-limit|check-baseline|NFR2_BYTES', '--', dir], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim().split('\n')
+    } catch (e) {
+      if (e.status === 1) return []
+      throw e
+    }
+  }
+  await check('no file in apps/ reads the size check: a warning for CI, never a sentence a customer meets (the control: the same search finds tools/check-baseline.mjs)', () => {
+    if (!readers('tools/').includes('tools/check-baseline.mjs')) fail('the search finds no reader in tools/ either, so its silence in apps/ proves nothing')
+    const hits = readers('apps/')
+    if (hits.length > 0) fail(`read in ${hits.join(', ')}`)
   })
 } finally {
   rmSync(tmp, { recursive: true, force: true })

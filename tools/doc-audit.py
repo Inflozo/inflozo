@@ -418,9 +418,10 @@ DOCS = [
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
-  "Stories 7.1, 7.2, 7.3 and 7.4's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
-  "formatting contract, its own package.json included, every standard template synthesized where untouched and, since "
-  "Story 7.4, Paper's pool woff2 files, their licences and a stripped screen.css with AD-18's variables and one dark hook, "
+  "Stories 7.1, 7.2, 7.3, 7.4 and 7.5's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
+  "formatting contract, its own package.json included, every standard template synthesized where untouched, since "
+  "Story 7.4 Paper's pool woff2 files, their licences and a stripped screen.css with AD-18's variables and one dark hook, "
+  "and since Story 7.5 main.js (core alone on the pilots) behind its defer tag and README.md's Scripts section, "
   "rendered by a real Ghost; and Story 7.3's paywall mechanism on two hand-written probe themes. Compiles tools/pilot-theme.mjs's "
   "project through Node 24 — the site doc's A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 "
   "(index.hbs), post.hbs's A24 #1 and a hoisted A22 #1, a Tag page 2 at per-row two over an untouched Tag page 1, and an "
@@ -451,17 +452,19 @@ DOCS = [
   "of the theme's screen.css; and Story 7.4's — / carries the compiled preloads, each href verbatim one @font-face src in "
   "its own <style>, every font address 200 as font/woff2 with pool.json's sha256, each LICENSE-{family}.txt 200 as "
   "compiled, the served screen.css equal to the compiled one with both var(--gh-font-…) forms, the base rule and the "
-  "hook's rules, and A4 #13's root carrying hookOf(sectionKey('home', …)) computed locally. Then two hand-written themes, each behind its own start_guard and restore_and_delete, read "
+  "hook's rules, and A4 #13's root carrying hookOf(sectionKey('home', …)) computed locally; and Story 7.5's — /'s head "
+  "carries main.js's tag once as Ghost renders MAIN_JS_TAG (<script defer src=\"/assets/js/main.js?v=…\">), and that "
+  "address answers 200 with a JavaScript content type and the compiled main.js byte for byte. Then two hand-written themes, each behind its own start_guard and restore_and_delete, read "
   "/probe-gated-post/ signed out: one invoking a partial from default.hbs renders its content-cta.hbs marker, and the "
   "control invoking none renders Ghost's own gh-post-upgrade-cta. Controls (the layer word, the hostile name and the "
   "noindex meta ARE in the uploaded templates and no error.hbs is; every page is this run's theme by its page word or "
   "the same screen.css asset hash; every page 2 answers 200; the site theme's package carries no marker; w750 redirected "
-  "before the upload and w751 after it; a font and a licence the theme does not carry answer 404; A17 #1's root carries no "
-  "hook; the gated post is not public; each paywall read carries its theme's marker) void "
+  "before the upload and w751 after it; a font, a licence and a script the theme does not carry answer 404; main.js and "
+  "its tag ARE in the uploaded tree; A17 #1's root carries no hook; the gated post is not public; each paywall read carries its theme's marker) void "
   "the run; a row that does not hold writes nothing. Writes T1 three theme uploads, their activations and deletes, the "
   "one w750 rendition Ghost saves and, only when T1 hosts no picture, that probe picture. Run on the owner's in-session "
-  "go, in the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §73 alone, replacing an "
-  "earlier §73 of its own; §70, §71 and §72 stay Stories 7.1's, 7.2's and 7.3's records."),
+  "go, in the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §74 alone, replacing an "
+  "earlier §74 of its own; §70, §71, §72 and §73 stay Stories 7.1's, 7.2's, 7.3's and 7.4's records."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '

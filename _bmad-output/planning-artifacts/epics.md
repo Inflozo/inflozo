@@ -2912,6 +2912,13 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    **Story 7.29** (Question 1): no picture of the customer's can sit in a section until Epic 8, and Pre-flight is 7.18's;
 > 2. the whole face for a language outside `latin` and `latin-ext`, and its coverage check — **Story 7.12**
 >    (Question 2), where the language is chosen.
+>
+> **Given owners by Story 7.5's Create (2026-10-08), so none is missed (R-195).**
+>
+> 1. §7.4's README install steps, the Style Pack and font pairing in use, and where to re-import — **Story 7.26**
+>    (DW-346); Story 7.5 writes the README's Scripts section, 7.17 its routes step and 7.28 its credit;
+> 2. the canvas drawing the JavaScript branch of a module with no file yet, where the theme ships it at rest —
+>    **Story 7.34** (DW-347); Story 9.1's `nav-drawer` file ends A1 #1's case.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3132,8 +3139,20 @@ else**, with `cards.js` the single declared exception
 budget, as a **developer-facing warning, not a build failure**, and it never appears in the editor — the user has
 no lever to pull in response to it.
 **And** every emitted template is inspected too: no `<script>` but the one `defer` tag for `main.js`, `cards.js`'s where designed, and an inline script only when its bytes are a named repo-authored source compared byte for byte (DW-134); and `cards.js` is no exception: `checkThemeJs` takes the vendored chunks as its source and refuses a `cards.js` that is not their concatenation (DW-135).
+**And** *(as landed, Story 7.5's Dev, 2026-10-08 — DW-134, DW-135 and DW-146 are done)* `main.js` ships on every theme
+as `bundle()` of `core` and each module a placed, visible design declares **that has a file**; a declared module with
+no file yet (the pilots' `nav-drawer` and `member-form`) ships at rest, its mount in its no-JS state, and CI prints it as
+a warning (the canvas difference is DW-347, Story 7.34's). `main.js`'s header and `core.js`'s comments name no builder
+and carry no internal reference, and CI holds every module file to the theme's text scan. `cards.js` is `cardsJs()` —
+one header, then Ghost's chunks unchanged — with `LICENSE-ghost.txt` beside it; both tags are `defer` in
+`default.hbs`'s head after the stylesheet (`MAIN_JS_TAG`, `CARDS_JS_TAG`); `README.md` opens with its Scripts section,
+whose other sections are Stories 7.26 (DW-346), 7.17 and 7.28's. DW-134 is `checkThemeScripts`, DW-135 is
+`checkThemeJs`'s `cards.js` comparison, and DW-146 is a lint rule in `eslint.config.js`'s modules block plus
+`moduleKeyRefusals`; `check-baseline` measures NFR-2's maximal design (`cards.js` included) and the compiled pilot theme.
 
-**FRs:** FR-J4. · **Owner test:** none.
+**FRs:** FR-J4. · **Owner test:** none — no screen, so it is Done on its Deploy commit (R-80). · **Verification:** the
+pilot theme on T1 (R-238): `main.js` behind its tag as Ghost serves it (MEASUREMENTS §74); `cards.js` first meets a real
+Ghost with Story 7.13's first designed card; the Ghost 5 half is DW-326's.
 
 ### Story 7.6: Ghost-correct markup
 
@@ -3470,6 +3489,12 @@ labelled scaffold.
 `card_assets: true`**, and `{ exclude: [...] }` from the first designed card on: Ghost 5.130.6 turns an empty list into
 the glob `css/!().css`, which matches nothing, so it would build no card bundle while `{{ghost_head}}` still links one.
 `compileTheme` already does this from `designedCards`; this story hands it `project_treatments.card_designs`' keys.
+**And** *(from Story 7.5, 2026-10-08)* `compileTheme` already ships `cards.js` (Ghost's chunks for the designed cards
+that have one) and `LICENSE-ghost.txt` from `designedCards`; this story runs **`cards.js`'s first T1 proof** with its
+first designed scripted card — the card's script served from the theme and Ghost's own `cards.min.js` no longer
+carrying it. **Excluding `gallery` restores three gscan ERRORS** on both checkers (`GS050-CSS-KGGC`, `-KGGR`, `-KGGI`;
+audio's, toggle's and video's restored rules are warnings — read in gscan 4.49.7 and 6.4.2), so `cards.css` styles
+those classes before a designed gallery can pass FR-J6.
 
 **FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes. · **Depends on E10:** the
 module and its `cards.css` emission are built here; **A33's six treatments arrive in E10** and are delivered
@@ -3923,6 +3948,9 @@ mirrors deploy gating exactly**
 **And** *(DW-336 — from Story 7.1's review, 2026-10-06)* a layer named `con`, `nul`, `aux`, `prn`, `com1`… slugs
 to a partial file Windows cannot extract from the zip; the export suffixes such a slug, or the download states that
 the zip is not for Windows.
+**And** *(DW-346 — from Story 7.5's Create, 2026-10-08)* the theme's `README.md` states, after Story 7.5's Scripts
+section, the **install steps**, the **Style Pack and font pairing in use**, and **where to re-import** (prd.md §7.4); the
+`routes.yaml` step stays Story 7.17's and the credit Story 7.28's. The owner test opens the exported zip and reads it.
 
 ### Story 7.27: Library updates and the consent step
 
@@ -4165,6 +4193,11 @@ preview
 normal flow. That is the one place the emitters disagree: the canvas draws a repeat's rows touching, while Ghost
 renders a line break and indentation between them. The two are made to agree, either by the canvas inserting what
 Ghost renders or by the theme trimming with Handlebars' `~`, chosen once the difference has been measured.
+**And** *(DW-347 — from Story 7.5's Create, 2026-10-08)* a mount whose module has no file yet ships at rest in the theme
+(left out of `main.js`, its no-JS state) while the canvas runs a no-op for it and draws its JavaScript branch, so A1 #1
+at phone width differs between the two (its nav as a list in the theme, behind a menu button on the canvas). The harness
+compares such a design and decides how the difference is shown or closed; Story 9.1's `nav-drawer` file ends A1 #1's
+case.
 
 **FRs:** none — this builds NFR-6(c3). · **Owner test:** none (a harness). · **Verification:** T1 (6.58.0) and
 T3 (5.130.6), a real deploy compared against a real canvas (R-82). · **Blocks:** E9 Story 9.1 cannot open until

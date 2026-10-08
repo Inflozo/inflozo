@@ -26,12 +26,20 @@
 // each; each shipped family's licence and Tabler's at the root; and `screen.css` as the token block (AD-18's two Ghost
 // font variables, then each section's dark override, none on a Light-only project), the canvas's base, and each placed
 // design's sheet cut by `stripCss` to what its placed roots reach. It returns AD-14's reachability record beside the files.
+//
+// Story 7.5 (FR-J4, FR-G7) makes it carry its scripts, two files of two origins: `assets/js/main.js`, `bundle` of every
+// module a placed, visible design declares that has a file (a declared module with no file yet ships at rest, its mount in
+// its no-JS state), and — when a designed card has a script of Ghost's — `assets/js/cards.js`, `cardsJs` of those cards,
+// with Ghost's licence beside it; `README.md`'s Scripts section; and the two `defer` tags in `default.hbs`'s head. The
+// module files and Ghost's card scripts arrive as values the shell read, and `checkThemeJs` and `checkThemeScripts` judge
+// the final text as CI and the stress fixture do.
 
 import {
-  byCategory, categoryOf, COMPILE_TARGETS, compilesTo, CUSTOM_TARGET_RE, IMAGE_SIZES, isCompileTarget, isSiteFooter,
-  PAGINATED_TARGETS, PAYWALL_TARGET, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
+  bundle, byCategory, CARDS_JS_TAG, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
+  CUSTOM_TARGET_RE, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion, PAGINATED_TARGETS, PAYWALL_TARGET,
+  POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
 } from '@inflozo/library'
-import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
+import type { IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { faceOf, pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
 import {
@@ -76,6 +84,12 @@ export type CompileInput = {
   fonts: (path: string) => Uint8Array
   /** `projects.dark_enabled`: false is Light-only — no section hook and no per-section dark rule (AD-30) */
   darkEnabled: boolean
+  /** every file of `packages/library/modules/` by module name (`core`, `lightbox`), read by the shell (AD-1) — `main.js`
+   *  carries `core` and each declared module found here (Story 7.5) */
+  modules: ModuleSources
+  /** Ghost's card scripts as `tools/probe/record-cards.py` vendored them, by card name (`audio`, `gallery`, `toggle`,
+   *  `video`), and Ghost's licence — `packages/library/orbit-weekly/vendor/`, read by the shell (Story 7.5) */
+  ghostCards: { scripts: Readonly<Record<string, string>>; licence: string }
 }
 
 /** NFR-2's per-template CSS budget, gzipped at level 9 — the one figure, read by CI's `cssFailures` (tools/pilot-theme.mjs)
@@ -211,8 +225,6 @@ function packageJson(input: CompileInput, perPage: number): string {
   }, null, 2)}\n`
 }
 
-/** A Handlebars comment, `{{!-- … --}}` or `{{! … }}` — never read by the size check, because a layer name lands in one. */
-const HBS_COMMENT = /\{\{~?!--[^]*?--~?\}\}|\{\{~?![^]*?\}\}/g
 /** A mustache, and a `size=` hash argument inside one. Only mustaches are read: a design's `data-headline-size="large"`
  *  and a customer's typed `size="huge"` are HTML, never an argument (user braces ship as entities). The value must be
  *  double-quoted, as the spec writes it (`size="m"`). Ceiling: a mustache ends at the first `}}`, so a `}}` inside a quoted
@@ -345,8 +357,9 @@ const POOL_FILE_RE = /^[a-z0-9-]+\.woff2$/
 const SLUG_RE = /^[a-z0-9-]+$/
 
 /** A licence's own words with only its whitespace tidied — line endings, trailing spaces, one final newline — so it meets
- *  the formatting contract's rule 1 and says exactly what its authors wrote. */
-const tidyLicence = (text: string): string => `${text.replace(/\r\n?/g, '\n').replace(/[ \t]+$/gm, '').replace(/\n+$/, '')}\n`
+ *  the formatting contract's rule 1 and says exactly what its authors wrote. Every licence the theme ships passes it: each
+ *  font family's, and Ghost's beside `cards.js` (Story 7.5). */
+export const tidyLicence = (text: string): string => `${text.replace(/\r\n?/g, '\n').replace(/[ \t]+$/gm, '').replace(/\n+$/, '')}\n`
 
 const fontWords = (f: Pack['fonts']): string => `${f.heading.family} with ${f.body.family}`
 
@@ -398,7 +411,7 @@ function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; l
 
 /** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files —
  *  and, since Story 7.2, its `package.json`; since Story 7.3, every standard template, synthesized where untouched; since
- *  Story 7.4, its fonts, licences and stripped stylesheet, with AD-14's record. */
+ *  Story 7.4, its fonts, licences and stripped stylesheet, with AD-14's record; since Story 7.5, its scripts and README. */
 export function compileTheme(doc: RuntimeDocument, input: CompileInput): CompiledTheme {
   for (const file of Object.keys(input.templates).sort(byCode)) {
     if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
@@ -418,6 +431,14 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const pkg = packageJson(input, perPage)
   const fonts = themeFonts(input)
   noC0('a licence', Object.values(fonts.licences))
+  // Story 7.5: the scripts the theme ships are read by the shell, so each is held to the same rule before it is copied
+  const sorted = (o: Readonly<Record<string, string>>): string[] => Object.keys(o).sort(byCode).map((k) => o[k] as string)
+  noC0('a module source', sorted(input.modules))
+  noC0('a card script', sorted(input.ghostCards.scripts))
+  noC0("Ghost's licence", [input.ghostCards.licence])
+  // the designed cards Ghost has a script for (a callout has none): cards.js carries exactly these, or ships not at all
+  const scripted = [...new Set(input.designedCards ?? [])].filter((c) => Object.hasOwn(input.ghostCards.scripts, c)).sort(byCode)
+  const cards = scripted.length === 0 ? undefined : { js: cardsJs(scripted, input.ghostCards.scripts), version: cardsVersion(scripted, input.ghostCards.scripts) }
   const { stacks, pageTwos } = stacksOf(input)
 
   // ── render every visible instance, with ONE UserText — file by file, page 1 before page 2 ─────────────────────────────
@@ -576,6 +597,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     // rules only and names no mode, so `screen.css` stays the one file that does (AD-30)
     ...fonts.head.map((l) => `    ${l}`),
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
+    // Story 7.5 (NFR-2 (3)): both scripts `defer`, in the head, so neither holds the page up
+    `    ${MAIN_JS_TAG}`,
+    ...(cards === undefined ? [] : [`    ${CARDS_JS_TAG}`]),
     ...guard.map((l) => `    ${l}`),
     '    {{ghost_head}}',
     '  </head>',
@@ -613,6 +637,26 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   Object.assign(tree, fonts.licences)
   if (drewAny) tree['LICENSE-tabler.txt'] = TABLER_LICENSE
 
+  // ── the scripts (Story 7.5, FR-J4): main.js is `core` and every module a placed, visible design declares that has a
+  // file, in registry order — a deleted or everywhere-hidden design takes its names with it, and a declared module with
+  // no file yet is left out, so its mount keeps `data-module` and ships at rest in its no-JS state (never a stub: `core`
+  // would set `js-enabled` on it). cards.js and Ghost's licence ship only for designed cards that have a script ────────
+  const mounted = moduleUnion(placed.map((p) => p.entry))
+  tree['assets/js/main.js'] = bundle(mounted.filter((n) => Object.hasOwn(input.modules, n)), input.modules)
+  if (cards !== undefined) {
+    tree['assets/js/cards.js'] = cards.js
+    tree['LICENSE-ghost.txt'] = tidyLicence(input.ghostCards.licence)
+  }
+  tree['README.md'] = [
+    '## Scripts',
+    '',
+    "- `assets/js/main.js` is this theme's own code: a small runtime and one function for each behaviour its sections use. It carries no third-party code.",
+    ...(cards === undefined ? [] : [
+      `- \`assets/js/cards.js\` is Ghost's own code for these cards: ${scripted.join(' · ')}. It is copied unchanged from Ghost ${cards.version}, under the MIT licence in \`LICENSE-ghost.txt\`. This theme styles those cards itself, which switches off Ghost's own copy of their scripts, so it carries this one.`,
+    ]),
+    '',
+  ].join('\n')
+
   // ── user text, once, last, over every text file; the record in code-unit path order; then the checks over the final
   // text. A font's bytes are never substituted: `UserText.substitute` is a string `replace` ────────────────────────────
   const text = Object.fromEntries(Object.keys(tree).map((path) => [path, users.substitute(tree[path] as string)]))
@@ -620,6 +664,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   checkPageData(text)
   checkPaywallReached(text)
   checkTripleStashes(text)
+  // Story 7.5: the theme's scripts, judged by the checks CI and the stress fixture run — no script but the two tags, main.js
+  // as bundled and cards.js as copied
+  const scripts = [...checkThemeJs(text, input.modules, input.ghostCards.scripts), ...checkThemeScripts(text)]
+  if (scripts.length > 0) throw new Error(`the theme's scripts: ${scripts.join(' · ')}`)
   const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
   return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach } }
 }

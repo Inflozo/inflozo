@@ -4007,7 +4007,14 @@ reason: FR-D20 and 5.15 list "sticky/shrink headers, scroll reveal, tabs, accord
 
 plain: The check that proves a site carries only Inflozo's own scripts looks in the scripts folder. A script
   written straight into a page template would never be looked at, so it could ship without anyone noticing.
-status: open
+status: done 2026-10-08 (Story 7.5)
+resolution: Story 7.5's Dev (2026-10-08) — `checkThemeScripts(files, inline = {})` (`packages/library/src/modules.ts`)
+  reads every emitted `.hbs`, its Handlebars comments removed first, and refuses any `<script>` but `MAIN_JS_TAG` once in
+  `default.hbs`, `CARDS_JS_TAG` once there exactly when `assets/js/cards.js` ships, and a bare `<script>` whose bytes equal
+  a repo source handed in by name — a door that is empty today; DW-328 decides at Story 9.1 whether `mode-toggle`'s head
+  script ever opens it. `compileTheme` runs it over its own final text and throws on any sentence; `check-snapshots` runs
+  it over the pilot theme (control: `<script>alert(1)</script>` planted in `post.hbs` is named), and the stress fixture
+  prints it beside `checkThemeJs`. `modules.test.ts` holds each refusal and the named-inline pass, one byte off refused.
 severity: medium
 origin: Story 4.7 (2026-09-14) — spec task "propagate"; FR-G7(1)'s assertion is over `assets/js/` by definition
 owner: Story 7.5 (JS bundling — two files, two origins), whose criteria carry its requirement word for word with its
@@ -4026,7 +4033,14 @@ reason: `checkThemeJs` sees only files under `assets/js/`. (The DESIGN-markup fo
 
 plain: Ghost's own card scripts are allowed through the scripts check by name. If something else were saved
   under that name, the check would still pass it.
-status: open
+status: done 2026-10-08 (Story 7.5)
+resolution: Story 7.5's Dev (2026-10-08) — `checkThemeJs(files, sources, cardScripts?)` compares `cards.js`, byte for
+  byte, to `cardsJs` of the scripted cards `package.json`'s `card_assets.exclude` names, over the vendored chunks handed
+  in; a scripted card excluded with no `cards.js` is a sentence too ("audio's player would never play"), and called
+  without the chunks (`run-verify-core.py`, the stress fixture) it refuses a `cards.js` rather than skip it. `cardsJs`
+  cuts `record-cards.py`'s head by its exact shape and copies Ghost's chunk bodies unchanged under one header. Held by
+  `modules.test.ts`, the compile's own final check, and `check-snapshots` (control: one byte of the pilots' `cards.js`
+  changed is named).
 severity: low
 origin: Story 4.7 (2026-09-14) — `checkThemeJs` skips `assets/js/cards.js` wholesale
 owner: Story 7.5 (JS bundling — two files, two origins), whose criteria carry its requirement word for word with its
@@ -4246,7 +4260,16 @@ reason: whether every visible default must have a catalog key, or a non-English 
 plain: The phrase list marks which phrases are written by a section's JavaScript, and the countdown section declares
   its six. Nothing checks the other way round: a future section could write "Loading…" from its script and forget to
   declare it, and the phrase would then be untranslatable with no warning.
-status: open
+status: done 2026-10-08 (Story 7.5)
+resolution: Story 7.5's Dev (2026-10-08), in two halves with no new phrase-list column. The literal half is lint:
+  `eslint.config.js`'s modules block refuses a letter-bearing string or template literal written to a text sink
+  (`textContent`, `innerHTML`, `title`, an aria text property, `setAttribute` of a text attribute, `insertAdjacentText`,
+  `createTextNode`, `alert` and their kin) and a `t()` whose key is no string literal, with `noInlineConfig` so no
+  comment silences it; `check-baseline` plants each sink, the clean lines and a disable comment. The registry half is
+  `moduleKeyRefusals` (`modules.ts`): every module file but `core` is a registry row, and each `t('…')` key derives from a
+  string its row declares; `check-snapshots` runs it over every module file (control: a planted `countdown` calling
+  `ctx.t('weeks')` is named, `ctx.t('days')` clean). Ceiling, held by review: a literal parked in a variable, or joined
+  by `+`, evades the lint.
 severity: low
 origin: Story 4.9's review — `moduleStringsRefusals` checks that every declared key is a live `js` key; the inverse
   cannot be derived today because the js keys of modules not yet written map to no row (namespaces are by function,
@@ -9210,7 +9233,10 @@ origin: Story 7.1's review (2026-10-06). Today the scan runs only over the five 
 owner: Story 7.33 (the library-wide nightly compile), whose criteria carry this entry with its id.
 location: `tools/pilot-theme.mjs` `themeFailures` · `packages/theme-compiler/src/compile.test.ts`
 reason: Anchor the pattern to comment contexts (`{{!--` and `/*`) when the scan first meets user text; a word in a
-  heading is the customer's, not a fingerprint.
+  heading is the customer's, not a fingerprint. *(Story 7.5's Dev, 2026-10-08: the scan also misses letter-bearing ids — `FR-G7(4)`, `FR-J4`, `FR-G4` — since its
+  pattern wants digits after the dash. Found while rewriting `core.js`'s comments, which carried both kinds; those were
+  removed by hand. The scan is now `textFailures` and holds every module file too, so the anchoring and the id shape
+  land together.)*
 
 ### DW-340: the start tag the formatter cannot re-spell is never broken, and no test shows it
 
@@ -9323,3 +9349,40 @@ owner: Story 8.1 (Upload, optimise and sanitise), whose card carries this entry 
 location: `ARCHITECTURE-SPINE.md` AD-12 · `epics.md` Story 8.1, Story 7.29 · prd.md FR-J3
 reason: FR-J3's 400 / 800 / 1600 + original set is bundled by Story 7.29 and made by the upload (AD-12); with no
   criterion, Epic 8 could ship an upload that makes one file and leave 7.29 nothing to bundle.
+
+## Deferred from: spec-7-5-js-bundling-two-files-two-origins (2026-10-08)
+
+### DW-346: the theme README's install steps, pack and pairing, and where to re-import have no story
+
+plain: The plan says the theme's README tells you how to install it, which style pack and fonts it uses, and where to
+  re-import it. Today the README has only its Scripts section; nobody had been given the rest. Story 7.26, where you
+  download the theme as a zip and would read it, now has the job.
+status: open
+severity: low
+origin: Story 7.5's Create (2026-10-08): prd.md §7.4 ("`README.md` is a deliverable, not a placeholder: it states install
+  steps, the FR-J15 credit…, the Style Pack and font pairing in use, and where to re-import") — the routes step is Story
+  7.17's and the credit Story 7.28's, and the other three sat in no story's criteria. Story 7.5 writes the Scripts section.
+owner: Story 7.26 (Theme ZIP export), whose card carries this entry with its id.
+location: prd.md §7.4 · `epics.md` Story 7.26 · `packages/theme-compiler/src/compile.ts` (`README.md`)
+reason: The README is read by whoever opens the zip (Ghost serves no root `.md`), so the story whose owner test opens
+  the zip is where its words are checked.
+
+### DW-347: a module with no file yet draws its JavaScript branch on the canvas and its no-JS branch in the theme
+
+plain: Until a section's script is written, the editor's Preview shows it as if the script were there — your header's
+  menu button on a phone — while the theme Inflozo builds shows it without — the menu links as a plain list. The two
+  differ for A1 #1 on a phone until Story 9.1 writes the menu button's script.
+status: open
+severity: low
+origin: Story 7.5's Create (2026-10-08). The theme leaves a declared module with no file out of `main.js`, so `core`
+  mounts nothing there and the section stays in its no-JS state (FR-G7(3)); the canvas runs a no-op for it
+  (`apps/web/lib/behaviours.ts`, `noFileYet`), so `core` sets `js-enabled` and Preview, `/pilots` and the render matrix
+  draw the JavaScript branch. The pilots declare `nav-drawer` (A1 #1, Story 9.1's) and `member-form` (A22 #1, Story
+  10.75's); A1 #1's phone CSS hides the nav behind the button only with `js-enabled`.
+owner: Story 7.34 (the canvas-vs-real-Ghost comparison harness), whose card carries this entry with its id. Story 9.1's
+  `nav-drawer` file ends the A1 #1 case.
+location: `apps/web/lib/behaviours.ts` (`noFileYet`) · `packages/theme-compiler/src/compile.ts` (`main.js`) ·
+  `packages/library/designs/a1/1/style.css` · `epics.md` Story 7.34
+reason: A stub in the theme would make it worse (the nav hidden behind a button that does nothing), and the canvas's
+  no-op is what keeps `core` from reporting an unknown name on every edit; 7.34 is the story that compares the two
+  renderings and decides how a difference is shown or closed.

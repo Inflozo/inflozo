@@ -13,6 +13,8 @@ const fs = require('fs'); const path = require('path'); const crypto = require('
 const { execFileSync } = require('child_process');
 const { renderSection, renderSecondary, feedQuery, UserText, T0, T1, U0, U1 } = require('./compile');
 const { IMAGE_SIZES } = require('../../packages/library/src/vocabulary.ts');
+// FR-J4's tag for main.js, the one spelling the compiler writes (Story 7.5)
+const { MAIN_JS_TAG } = require('../../packages/library/src/modules.ts');
 const { stackFor, source, QUERIES } = require('./sections');
 
 const OUT = path.join(__dirname, 'theme');
@@ -157,7 +159,7 @@ write('default.hbs', `<!DOCTYPE html>
 <body class="{{body_class}} {{#match @custom.color_scheme "Dark"}}scheme-dark{{else}}{{#match @custom.color_scheme "Light"}}scheme-light{{/match}}{{/match}}">
   <a class="skip-link" href="#main">Skip to content</a>
   <main id="main">{{{body}}}</main>
-  <script defer src="{{asset "js/main.js"}}"></script>
+  ${MAIN_JS_TAG}
   {{ghost_foot}}
 </body>
 </html>
@@ -241,8 +243,9 @@ write('assets/css/cards.css', `.kg-width-wide { max-inline-size: 1000px; margin-
 // FR-J4's main.js is bundle()'s bytes over packages/library/modules/ — core and nothing else, because no
 // feature module is written until the first category that declares it (FR-G7(2)). It replaced a
 // placeholder of made-up functions whose hardcoded number had long since stopped matching the registry.
-// The fixture is not a compiled theme, so it bundles no union (Story 7.5 does).
-const { bundle, checkThemeJs } = require('../../packages/library/src/modules.ts');
+// The fixture is not a compiled theme, so it bundles no union: Story 7.5's compileTheme does, bundling every module its
+// placed designs declare that has a file, and holds its own output to the same two checks this fixture prints.
+const { bundle, checkThemeJs, checkThemeScripts } = require('../../packages/library/src/modules.ts');
 const MODULE_DIR = path.join(__dirname, '../../packages/library/modules');
 const moduleSources = Object.fromEntries(fs.readdirSync(MODULE_DIR)
   .filter((f) => /^[a-z][a-z0-9-]*\.js$/.test(f))
@@ -309,6 +312,8 @@ for (const f of textFiles) {
 const jsFiles = Object.fromEntries(allFiles.filter((f) => path.relative(OUT, f).startsWith(`assets${path.sep}js${path.sep}`))
   .map((f) => [path.relative(OUT, f).split(path.sep).join('/'), fs.readFileSync(f, 'utf8')]));
 const jsFindings = checkThemeJs(jsFiles, moduleSources); // a missing main.js is its own sentence
+// Story 7.5 (DW-134): no <script> in any template but main.js's tag in default.hbs — the compile's own check
+const scriptFindings = checkThemeScripts(Object.fromEntries([...hbsFiles.map((f) => [path.relative(OUT, f).split(path.sep).join('/'), fs.readFileSync(f, 'utf8')]), ...Object.entries(jsFiles)]));
 const allTemplateText = hbsFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
 for (const f of hbsFiles.filter((f) => f.includes('partials'))) {
   const name = path.relative(path.join(OUT, 'partials'), f).replace(/\.hbs$/, '');
@@ -378,6 +383,8 @@ AD-34 leak assertions: ${leaks.length === 0 ? 'clean' : leaks.length + ' LEAK(S)
 for (const l of leaks.slice(0, 10)) console.log('   !', l);
 console.log(`FR-G7(1) assets/js/ (checkThemeJs): ${jsFindings.length === 0 ? `clean — ${Object.keys(jsFiles).join(', ')}` : jsFindings.length + ' FINDING(S)'}`);
 for (const j of jsFindings) console.log('   !', j);
+console.log(`FR-J4 template scripts (checkThemeScripts): ${scriptFindings.length === 0 ? 'clean — main.js\'s defer tag alone' : scriptFindings.length + ' FINDING(S)'}`);
+for (const j of scriptFindings) console.log('   !', j);
 if (gateFindings.length) { console.log(`FR-J17 findings: ${gateFindings.length}`); for (const g of gateFindings.slice(0, 8)) console.log('   !', g); }
 console.log(`AD-5 rule 2 ("no {{{ or }}} but default.hbs's one {{{body}}}", D3): {{{ x${tripleOpen.length} in ${[...new Set(tripleOpen)].join(', ') || '-'} · }}} x${tripleClose.length} in ${[...new Set(tripleClose)].join(', ') || '-'}`);
 
