@@ -297,6 +297,11 @@ After this story, the theme Inflozo builds follows the markup rules Ghost's own 
 
 ## Spec Change Log
 
+- **2026-10-08, Create (the owner ruled).** Question 1 was ruled option 1.
+  - The Ruled values table now states the ruled value: Ghost's post labels go on each post's own page only, and a list card stays its design's own markup.
+  - Nothing moves to another story, and the plan is unchanged.
+  - The frozen intent is unchanged: the ruling is its recommended option.
+
 ## Design Notes
 
 ### What the theme carries
@@ -402,9 +407,11 @@ Rules 4 and 5 read attributes inside a start tag only. A customer's own words ca
 
 ### Ruled values: Question 1
 
-| Question | What this spec builds |
+Ruled option 1 by the owner on 2026-10-08.
+
+| Question | Ruled: what this spec builds |
 |---|---|
-| Q1 · Ghost's post labels on list cards | *Awaiting the owner; planned as option 1.* `POST_ARTICLE` goes on the post-block templates alone, and a card stays its design's own markup. **Option 2 would add:** the runtime appends Ghost's classes to every post-list row on both emitters (on the theme as `{{#if access}}{{else}} post-access-{{visibility}}{{/if}}`, since a section emits only `{{#if}}` guards); a shim `postClass(row, member)` and a recorded `post_class` row on T1 (`record-shim.py`); rule 3 admitting it on a post list's row; the agreement test reading those classes as Ghost's; and A4 #13's and A17 #1's snapshots rewritten |
+| Q1 · Ghost's post labels on list cards | `POST_ARTICLE` goes on the post-block templates alone. A card in a list stays its design's own markup, and no Ghost class goes on a design's element, so the runtime, the shim and every snapshot's markup are untouched by the labels |
 
 ### Settled here as readings, each told to the owner in one line
 
@@ -555,7 +562,7 @@ None. This story has no screen, so it has no frame and no hand test, and it is D
 
 ## Questions for the owner
 
-Question 1 is needed before Dev. Dev builds Design Notes § Ruled values as it stands.
+Question 1 was ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ruled values as it stands.
 
 ### Question 1 — Ghost's post labels on the post cards in your lists
 
@@ -576,7 +583,7 @@ Question 1 is needed before Dev. Dev builds Design Notes § Ruled values as it s
 1. **The post's own page only.** The cards stay exactly as each design draws them. **(RECOMMENDED)**
 2. **Every post card in every list too, built in this story.** The shared engine adds the same labels to every card, in the editor's preview and in the theme, recorded on our test site first. This makes the story noticeably bigger.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-08).**
 
 ## Verification
 
