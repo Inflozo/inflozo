@@ -1091,7 +1091,9 @@ def render_story(story, ep, phase_prompts, briefs):
                      f'<button class="btn copy" data-copy="pr-{kid}-{pk}">Copy prompt</button>'
                      f'<span class="fine">{PASTE_HOW}</span></div>')
     parts.append(render_questions(story))
-    if spec and spec['test'] and phase != 'Test':
+    # a story ruled `owner_test: none` has no hand test, even where its spec keeps the steps it moved to another story
+    # (Story 7.3's went to 10.100 by its Question 3): the owner ran them from 7.3's card on 2026-10-08, where they cannot work
+    if spec and spec['test'] and phase != 'Test' and spec['owner_test'] != 'none':
         parts.append(render_test(story))
     if spec and spec['findings']:
         parts.append(f'<h3>Your test findings</h3>{mdblock(spec["findings"])}')
@@ -2148,6 +2150,12 @@ The real database now exists with every table and every policy from the architec
 **Acceptance Criteria:**
 - Given the production project, when RLS-TEST.sql runs, then every assertion passes
 
+## Owner's manual test
+
+Moved word for word to another story; nothing here to run.
+
+1. Open the moved-away screen and press the moved-away button.
+
 ## Verification
 
 **Commands:**
@@ -2532,6 +2540,7 @@ def demo():
     assert flat['1.4']['spec']['test']['kind'] == 'list'
     # the two-line test form, with the dummy value on its own copy button
     assert 'data-text="owner+test1@inflozo.com"' in out and 'You should see:' in out
+    assert 'moved-away button' not in out, 'an owner_test: none story showed steps it moved to another story as the owner\'s test'
     # F13: the plain-sentence fallback reads as English
     assert 'can the app deployed' not in out and 'wants the health check to retry' in out
     assert 'Story 1.3 from _bmad-output/planning-artifacts/epics.md' in out, 'the {E.S} placeholder was not filled'
