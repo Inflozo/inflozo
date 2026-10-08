@@ -1179,6 +1179,17 @@ test('Story 7.1 — stripCssComments removes a stylesheet\'s comments by the val
   assert.equal(stripCssComments('.a { color: red } /* never closed'), '.a { color: red } ')
 })
 
+test('Story 7.4 (DW-337) — an unquoted url() is read whole, so its `/*` is no comment; a comment after it, and a quoted URL, read as before', () => {
+  assert.equal(stripCssComments('.a { background: url(http://x/*/y) } /* gone */'), '.a { background: url(http://x/*/y) } ')
+  assert.equal(stripCssComments('.a { background: URL( http://x/*/y ); } .b/**/.c {}'), '.a { background: URL( http://x/*/y ); } .b.c {}')
+  // an escaped `)` stays inside the URL
+  assert.equal(stripCssComments('.a { mask: url(x\\)/*y) }'), '.a { mask: url(x\\)/*y) }')
+  // a quoted URL is a string, as before; the comment after it goes
+  assert.equal(stripCssComments('.a { background: url("http://x/*/y") } /* gone */'), '.a { background: url("http://x/*/y") } ')
+  // the control: a name ending in `url` opens no URL, so the comment in it is read as a comment
+  assert.equal(stripCssComments('.a { x: myurl(a/*b*/c) }'), '.a { x: myurl(a c) }')
+})
+
 test('Story 7.1 — a data-partial never takes one of Ghost\'s own partial names, which a theme file would replace site-wide', () => {
   for (const name of GHOST_OWN_PARTIALS) {
     refuses('bad-value', `<li data-repeat="posts" data-partial="${name}">x</li>`, '<li data-repeat="posts" data-partial="post-card">x</li>')

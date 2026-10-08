@@ -192,7 +192,9 @@ def gate(files):
     with tempfile.TemporaryDirectory() as d:
         for rel, body in files.items():
             os.makedirs(os.path.dirname(os.path.join(d, rel)), exist_ok=True)
-            open(os.path.join(d, rel), 'w').write(body)
+            # Story 7.4: a font is bytes, written as they are; text as UTF-8, as before
+            with open(os.path.join(d, rel), 'wb') as f:
+                f.write(body if isinstance(body, bytes) else body.encode('utf8'))
         out = subprocess.run(['node', GATE, d], capture_output=True, text=True, timeout=300).stdout
     counts = re.findall(r'^Ghost (\S+)\s+via gscan (\S+).*?ERRORS (\d+)\s+WARNINGS (\d+)', out, re.M)
     print('    gscan:\n      ' + '\n      '.join(out.strip().splitlines()))

@@ -12,6 +12,7 @@ import { glyphOf, LayerThumb, LayersRow, SiteWideGroup } from '@/components/kit/
 import { Menu } from '@/components/kit/select'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Layout, type Store } from '@/lib/reorder'
+import { sectionKey } from '@inflozo/section-runtime'
 import { landWithin } from '@/lib/editor'
 import { canvasFirst, counted, useHanded, useStable } from '@/lib/renders'
 import { MAKE_MAIN_FEED } from '@/lib/data-group'
@@ -175,7 +176,7 @@ export type LayersProps = {
 }
 
 /** A row's identity across both groups: `instanceId` is unique inside a doc, not between two. */
-const keyOf = (row: LayerRow) => `${row.doc}:${row.instanceId}`
+const keyOf = (row: LayerRow) => sectionKey(row.doc, row.instanceId)
 
 const NAME_FIELD = 'layers-rename-name'
 

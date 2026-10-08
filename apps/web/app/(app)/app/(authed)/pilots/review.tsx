@@ -12,7 +12,7 @@ import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { slimScrollbar } from '@/components/kit/greyed'
 import { Segmented } from '@/components/kit/segmented'
 import { Select } from '@/components/kit/select'
-import { canvasAssets as assetsFor, canvasSrc, mountSections, packed, renderSection, shownRows } from '@/lib/canvas'
+import { canvasAssets as assetsFor, canvasSrc as appCanvasSrc, mountSections, packed, renderSection, shownRows } from '@/lib/canvas'
 import { isApp } from '@/routing'
 
 /* THE PILOTS WORKSPACE — `/controls`' review (Story 4.5), fed the library's designs (Story 4.10's pilots first).
@@ -71,6 +71,7 @@ export function Review({
   links,
   pool,
   timezone,
+  canvasSrc,
   children,
 }: {
   entries: SectionRegistryEntry[]
@@ -84,6 +85,9 @@ export function Review({
   links: LinkResources
   pool: readonly { id: string; bytes: number }[]
   timezone: string
+  /** Story 7.4 — the canvas document's address: the app's `/canvas` unless handed one — the keyboard harness's own route
+   *  (`harnessCanvasSrc`), so `/app/harness/pilots` paints with no session */
+  canvasSrc?: string | undefined
   children?: ReactNode
 }) {
   const [id, setId] = useState(entries[0]?.id ?? '')
@@ -119,7 +123,8 @@ export function Review({
 
   const canvasAssets = assetsFor(pool)
   const shown = (e: SectionRegistryEntry, s: ControlState) => shownRows(e, s, rows[e.id])
-  const base = canvasSrc(isApp(usePathname()))
+  const appBase = appCanvasSrc(isApp(usePathname()))
+  const base = canvasSrc ?? appBase
   // Story 6.3: the editor's own address rule (`packed`) — Paper's address carries no pack
   const src = packed(base, pack)
   // the Background role's dots, in the pack and (below) the mode the canvas is painted in

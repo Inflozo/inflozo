@@ -190,6 +190,10 @@ const NO_SKELETON: Record<string, string> = {
     'Story 6.6 (DW-70; review, 2026-10-05): the keyboard gate\'s mount of S2c\'s brand offer with stand-in rows, where ' +
     'the chooser\'s bound and floor are measured — no user reaches it, it answers notFound() unless INFLOZO_HARNESS=1, ' +
     'and a loading.tsx would commit the 200 before that notFound() ran (DW-67)',
+  [join(APP, 'app', 'harness', 'pilots')]:
+    'Story 7.4 (DW-331): the keyboard gate\'s mount of the pilots review on the harness\'s canvas route — no user reaches ' +
+    'it, it answers notFound() unless INFLOZO_HARNESS=1, and a loading.tsx would commit the 200 before that notFound() ' +
+    'ran (DW-67)',
   [join(AUTHED, 'projects', '[id]', '(editor)')]:
     'Story 5.1\'s editor, and a loading.tsx here would be a defect: both editor pages render nothing, and the ' +
     'editor\'s skeleton — its own shape, bar, both panels and the page card — is the Suspense fallback inside ' +

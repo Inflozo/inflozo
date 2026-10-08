@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { orbitWeekly } from '@inflozo/library'
+import { orbitWeekly, templateKeyOfFile } from '@inflozo/library'
 import { designate, isFeed, makeMainFeed, parseDoc, removeSection, renameSection, synthesize, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import { CANVASES, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from './lib/editor.ts'
 import { KEYMAP } from './lib/keymap.ts'
@@ -271,4 +271,36 @@ test('R-170: the words are EXPERIENCE.md\'s canonical strings, written once — 
   assert.deepEqual([SITE_WIDE_ASK.cancel, SITE_WIDE_ASK.confirm], ['Cancel', 'Change it everywhere'])
   // "States added after the shortcut map carry no shortcut, deliberately" (EXPERIENCE.md:392-393)
   for (const binding of KEYMAP) assert.doesNotMatch(binding.action, /page 2|page two|paginat/i, binding.action)
+})
+
+/* Story 7.4 (DW-331) — ONE KEY: the row's `themeKey` is the key the compile hashes the section under — `templateKeyOfFile`
+   of the place it fills — on every canvas, both pages, page 2 designed or following. Page 1 is its file; Home's page 2
+   is `index.hbs` either way; an archive's designed page 2 compiles inside `{{#is "paged"}}` (`tag-paged`), and one that
+   follows has no markup of its own, so its rows are page 1's. */
+test('Story 7.4 (DW-331) — every stack row carries the key the theme hashes it under, on every canvas and page', () => {
+  const base = withBand(opened())
+  const one = (designId: string, n: number) => parseDoc({ schemaVersion: 1, instances: [{ instanceId: `own-${n}`, layerName: 'Own', designId, content: {}, controls: {}, data: {}, darkOverrides: {} }] }, 'home').instances[0]!
+  // every canvas holds a section of its own, so its own rows are checked and not only the site's
+  const filled: Record<string, ProjectDoc> = { ...base }
+  ;(Object.keys(CANVASES) as CanvasKey[]).forEach((canvas, n) => { filled[templateKeyOf(canvas)] ??= doc([one(pilotIds()[0] as string, n)]) })
+  let checked = 0
+  for (const canvas of Object.keys(CANVASES) as CanvasKey[]) {
+    const file = CANVASES[canvas].file
+    const two = PAGE_TWO[canvas]
+    const cases: [Page, boolean][] = two === undefined ? [[1, false]] : [[1, false], [2, false], [2, true]]
+    for (const [page, designed] of cases) {
+      const docs = designed && two !== undefined ? { ...filled, [two.key]: pageTwoOf(filled, canvas, held) } : filled
+      if (two !== undefined && page === 2) assert.equal(follows(docs, canvas), !designed, `the control: ${canvas}'s page 2 ${designed ? 'is designed' : 'follows'}`)
+      const compiled = page === 1 || two === undefined ? templateKeyOfFile(file) : two.file !== file ? templateKeyOfFile(two.file) : templateKeyOfFile(file, designed)
+      const rows = stackOf(docs, canvas, page, held)
+      assert.ok(rows.some((r) => r.doc !== SITE.key), `${canvas}: a row of its own`)
+      for (const row of rows) {
+        assert.equal(row.themeKey, row.doc === SITE.key ? templateKeyOfFile(SITE.file) : compiled, `${canvas} · page ${page}${page === 2 ? (designed ? ' designed' : ' following') : ''} · ${row.instanceId}`)
+        checked++
+      }
+    }
+  }
+  assert.ok(checked > 0)
+  // the defect this closes: a Tag page 2 that follows page 1 is keyed `tag`, never `tag-paged`
+  assert.ok(stackOf(filled, 'tag', 2, held).filter((r) => r.doc !== SITE.key).every((r) => r.doc === 'tag-paged' && r.themeKey === 'tag'))
 })

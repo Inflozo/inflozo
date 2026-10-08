@@ -137,6 +137,22 @@ export function isCompileTarget(t: string): boolean {
   return (COMPILE_TARGETS as readonly string[]).includes(t) || CUSTOM_TARGET_RE.test(t)
 }
 
+/** STORY 7.4 (DW-331) — THE KEY OF THE PLACE A SECTION FILLS in a compiled theme: the `template_key` the editor stores
+ *  that place's doc under, so the canvas and the theme hash one key for one section (`sectionKey`, `hookOf`). The app's
+ *  own map (`apps/web/lib/editor.ts`' `fileOfKey`, `templateKeyOf`, `PAGE_TWO`) is held equal to this one by its test,
+ *  because a package cannot import the app. `index.hbs` is `index` whether Home's page 2 is designed or the copy; an
+ *  archive's page 2 with its own design, inside `{{#is "paged"}}`, is `pageTwo` (`tag-paged`, `author-paged`). */
+export function templateKeyOfFile(file: string, pageTwo = false): string {
+  if (file === 'default.hbs') return 'site'
+  if (file === PAYWALL_TARGET) return 'paywall'
+  if (CUSTOM_TARGET_RE.test(file)) return `custom:${file}`
+  const stem = file.replace(/\.hbs$/, '')
+  if (!pageTwo) return stem
+  if (file === 'home.hbs') return 'index'
+  if (file === 'tag.hbs' || file === 'author.hbs') return `${stem}-paged`
+  throw new Error(`${file} has no page 2 of its own — only home.hbs, tag.hbs and author.hbs do`)
+}
+
 /** R-7, half one: `{{pagination}}` outside a paginated context is a FATAL render, not a warning. */
 export const PAGINATED_TARGETS: ReadonlySet<string> = new Set([
   'home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs',

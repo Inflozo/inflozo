@@ -684,7 +684,9 @@ check('Story 7.1 — the five-pilot project compiles with Paper to a theme Handl
   const f = pilots.themeFailures(a.files, a.instanceIds)
   if (f.length > 0) throw new Error(f.join('\n'))
   const b = pilots.compilePilots(WORDS, THEME)
-  const differ = Object.keys(a.files).filter((k) => a.files[k] !== b.files[k])
+  // Story 7.4: by content — a font is bytes, and two reads of one file are two arrays
+  const same = (x, y) => (typeof x === 'string' ? x === y : typeof y !== 'string' && Buffer.from(x).equals(Buffer.from(y)))
+  const differ = Object.keys(a.files).filter((k) => !same(a.files[k], b.files[k]))
   if (differ.length > 0 || Object.keys(b.files).join() !== Object.keys(a.files).join()) throw new Error(`a second compile differs: ${differ.join(', ')}`)
   return `${Object.keys(a.files).length} files`
 })
@@ -711,7 +713,7 @@ function splitFailures(files) {
 const noindexOf = (files) => /\{\{#is "paged"\}\}\n *\{\{#is "([^"]+)"\}\}\n *<meta name="robots" content="noindex">/.exec(files['default.hbs'] ?? '')?.[1] ?? null
 /** `[]` when one <main id="site-main"> in the whole theme wraps {{{body}}} alone. */
 function mainFailures(files) {
-  const mains = Object.entries(files).flatMap(([p, b]) => (b.match(/<main\b/g) ?? []).map(() => p))
+  const mains = Object.entries(pilots.textFiles(files)).flatMap(([p, b]) => (b.match(/<main\b/g) ?? []).map(() => p))
   if (mains.join() !== 'default.hbs') return [`<main> appears in ${mains.join(', ') || 'no file'}, where default.hbs alone carries one`]
   return /\n( *)<main id="site-main">\n\1 {2}\{\{\{body\}\}\}\n\1<\/main>\n/.test(files['default.hbs']) ? [] : ['default.hbs: <main id="site-main"> does not wrap {{{body}}} alone']
 }
@@ -732,7 +734,7 @@ check('control — Story 7.3: a Tag page 2 with no visible feed adds tag to the 
 check('Story 7.3 — default.hbs\'s noindex block names author alone: the one page 2 with no visible feed; no canonical link of the theme\'s own', () => {
   const got = noindexOf(pilotsTwo.files)
   if (got !== 'author') throw new Error(`the noindex block names ${JSON.stringify(got)}, not "author"`)
-  const canonical = Object.keys(pilotsTwo.files).filter((p) => /rel="canonical"/.test(pilotsTwo.files[p]))
+  const canonical = Object.entries(pilots.textFiles(pilotsTwo.files)).filter(([, b]) => /rel="canonical"/.test(b)).map(([p]) => p)
   if (canonical.length > 0) throw new Error(`a canonical link in ${canonical.join(', ')}`)
 })
 check('control — Story 7.3: a <main> that wraps more than {{{body}}} is caught', () => {
@@ -794,6 +796,125 @@ check('Story 7.2 — the builder\'s name in package.json outside its named marks
   mustFail(pilots.themeFailures(withPackage((pkg) => { pkg.config.inflozo_build = 1 }), []), /^package\.json: the builder's name$/, 'a key under config')
   mustFail(pilots.themeFailures({ ...pilotTheme, 'package.json': '{"name":' }, []), /^package\.json: it does not parse/, 'a broken package.json')
   return mustFail(pilots.themeFailures(withPackage((pkg) => { pkg.description = 'Made with Inflozo' }), []), /^package\.json: the builder's name$/, 'the builder\'s name in the description')
+})
+
+// ── Story 7.4: fonts, licences, Ghost's font variables, the hook and the strip, over the pilot theme ────────────────────
+// The pilots compile with Paper's pairing and the pool's own files on a Light + Dark project, A4 #13's Background set to
+// Contrast in Dark (tools/pilot-theme.mjs). Each row behind its control; `cssFailures` is the independent oracle Story
+// 7.33 runs over the whole library.
+const packs = await import(join(REPO, 'packages/library/src/packs.ts'))
+const { createHash } = await import('node:crypto')
+const pilots74 = pilots.compilePilots(WORDS, THEME)
+const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
+/** `[]` when the theme's fonts are exactly the pairing's pool files, byte for byte, preloaded and faced through one
+ *  {{asset}} address each, each family's licence at the root with its words unchanged, and no font host named anywhere. */
+function fontFailures(files, pairing) {
+  const out = []
+  const faces = packs.pairingFaces(pairing)
+  const want = new Map(faces.flatMap((f) => f.files).map((f) => [`assets/fonts/${f.file}`, f]))
+  for (const path of Object.keys(files).filter((p) => p.startsWith('assets/fonts/'))) {
+    const f = want.get(path)
+    if (f === undefined) out.push(`${path}: no file of ${pairing}'s faces`)
+    else if (typeof files[path] === 'string' || sha256(files[path]) !== f.sha256) out.push(`${path}: its sha256 is not pool.json's`)
+  }
+  for (const path of want.keys()) if (!(path in files)) out.push(`${path}: missing`)
+  const shell = files['default.hbs'] ?? ''
+  const preloads = [...shell.matchAll(/<link rel="preload" href="(\{\{asset "[^"]+"\}\})" as="font" type="font\/woff2" crossorigin>/g)].map((m) => m[1])
+  const srcs = [...shell.matchAll(/src: url\((\{\{asset "fonts\/[^"]+"\}\})\) format\('woff2'\);/g)].map((m) => m[1])
+  const p = packs.pairingOf(pairing)
+  const romans = [...new Set([p.heading, p.body].map((r) => r.faces.map(packs.faceOf).find((f) => f.style === 'normal').files.find((f) => f.subset === 'latin').file))]
+  if (preloads.join() !== romans.map((f) => `{{asset "fonts/${f}"}}`).join()) out.push(`default.hbs preloads ${preloads.join(', ') || 'nothing'}, not each roman face's latin file once`)
+  for (const href of preloads) if (srcs.filter((s) => s === href).length !== 1) out.push(`default.hbs: the preload ${href} is not the src of one @font-face rule`)
+  for (const [path, body] of Object.entries(pilots.textFiles(files))) if (/fonts\.(googleapis|gstatic)\.com/.test(body)) out.push(`${path} names a font host`)
+  for (const family of new Set(faces.map((f) => f.family))) {
+    const record = packs.POOL.families[family]
+    const words = (t) => t.replace(/\s+/g, ' ').trim()
+    const text = files[`LICENSE-${record.slug}.txt`]
+    if (typeof text !== 'string') out.push(`LICENSE-${record.slug}.txt: missing`)
+    else if (words(text) !== words(readFileSync(join(REPO, 'packages/library/fonts', record.licenceFile), 'utf8'))) out.push(`LICENSE-${record.slug}.txt: its words are not ${record.licenceFile}'s`)
+  }
+  return out
+}
+check('control — Story 7.4: a changed font byte, a preload no face fetches, a font host and a reworded licence are each caught', () => {
+  const files = pilots74.files
+  if (fontFailures(files, 'D1').length > 0) throw new Error(`the pilot theme is not clean to begin with: ${fontFailures(files, 'D1').join(' · ')}`)
+  const font = Object.keys(files).find((p) => p.startsWith('assets/fonts/'))
+  const flipped = Uint8Array.from(files[font]); flipped[0] ^= 1
+  mustFail(fontFailures({ ...files, [font]: flipped }, 'D1'), /its sha256 is not pool\.json's/, 'a changed byte')
+  mustFail(fontFailures({ ...files, 'default.hbs': files['default.hbs'].replace(/(<link rel="preload" href="\{\{asset "fonts\/)[^"]+/, '$1elsewhere.woff2') }, 'D1'), /preloads/, 'a preload no face fetches')
+  mustFail(fontFailures({ ...files, 'default.hbs': files['default.hbs'].replace('<title>', '<link rel="stylesheet" href="https://fonts.googleapis.com/css2"><title>') }, 'D1'), /names a font host/, 'a font host')
+  return mustFail(fontFailures({ ...files, 'LICENSE-inter.txt': files['LICENSE-inter.txt'].replace('Font', 'Typeface') }, 'D1'), /its words are not/, 'a reworded licence')
+})
+check('Story 7.4 — the pilot theme ships D1\'s pool files byte for byte (sha256 as pool.json records), preloads the two roman faces through their faces\' own {{asset}} address, carries each family\'s licence and names no font host', () => {
+  const f = fontFailures(pilots74.files, 'D1')
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${Object.keys(pilots74.files).filter((p) => p.startsWith('assets/fonts/')).length} font files`
+})
+const gscanNoGhostFonts = await gscanOr({ ...pilots74.files, 'assets/css/screen.css': pilots74.files['assets/css/screen.css'].replace(/var\(--gh-font-(?:heading|body), ([^;]+)\);/g, '$1;') })
+check('control — Story 7.4: with AD-18\'s two var() forms taken out of screen.css, gscan raises GS051', () => mustFail(raised(gscanNoGhostFonts), /GS051/, 'a theme without --gh-font-*'))
+check('Story 7.4 — gscan 6.4.2 raises no GS051 on the pilot theme: screen.css declares --gh-font-heading and --gh-font-body', () => {
+  const hit = raised(gscanPilots).filter((r) => /GS051/.test(r))
+  if (hit.length > 0) throw new Error(hit.join('\n'))
+  return `gscan ${gscanVersion}`
+})
+/** `[]` when exactly one hook ships — A4 #13's, `hookOf(sectionKey('home', its id))`, on its root — and the token block
+ *  carries its rules. */
+function hookFailures(compiled) {
+  const a4 = compiled.templates['home.hbs'].instances.find((i) => i.designId === 'a4/13')
+  const hook = rt.hookOf(rt.sectionKey('home', a4.instanceId))
+  const out = []
+  const stamped = Object.entries(pilots.textFiles(compiled.files)).filter(([p]) => p.endsWith('.hbs')).flatMap(([p, b]) => [...b.matchAll(/data-instance="([^"]*)"/g)].map((m) => [p, m[1]]))
+  if (stamped.length !== 1 || stamped[0][1] !== hook) out.push(`the theme stamps ${JSON.stringify(stamped)}, not A4 #13's hook ${hook} alone`)
+  else if (!/^<section[^>]*class="a4-13"/.test(compiled.files[stamped[0][0]].replace(/\s+/g, ' '))) out.push(`${stamped[0][0]} carries the hook, and it is no A4 #13 root`)
+  if (!compiled.css.global.includes(`[data-instance="${hook}"]`)) out.push(`the token block carries no rule for ${hook}`)
+  return out
+}
+check('control — Story 7.4: a second hook on another section, and a token block with no rule for A4 #13\'s, are caught', () => {
+  if (hookFailures(pilots74).length > 0) throw new Error(`the pilot theme is not clean to begin with: ${hookFailures(pilots74).join(' · ')}`)
+  const grid = Object.keys(pilots74.files).find((p) => /^partials\/sections\/[^/]+\/post-grid/.test(p))
+  mustFail(hookFailures({ ...pilots74, files: { ...pilots74.files, [grid]: pilots74.files[grid].replace('<section', '<section data-instance="00000000"') } }), /not A4 #13's hook/, 'a second hook')
+  return mustFail(hookFailures({ ...pilots74, css: { ...pilots74.css, global: pilots74.css.global.replace(/\[data-instance="[0-9a-f]{8}"\]/g, '') } }), /no rule for/, 'a block with no rule')
+})
+check('Story 7.4 — A4 #13, its Background set to Contrast in Dark, carries the one hook — hookOf(sectionKey(\'home\', its id)) — and the token block its rules; no other section carries one', () => {
+  const f = hookFailures(pilots74)
+  if (f.length > 0) throw new Error(f.join('\n'))
+})
+const cssOf = (over) => pilots.cssFailures({ ...pilots74, ...over })
+const sheetsWith = (id, edit) => ({ css: { ...pilots74.css, sheets: { ...pilots74.css.sheets, [id]: edit(pilots74.css.sheets[id]) } } })
+const css74 = pilots.cssFailures(pilots74)
+check('control — Story 7.4 (FR-G7 soundness): an emitted chunk with one reachable rule removed is a failure', () => {
+  const root = pilots74.css.sheets['a22/1'].split('\n').find((l) => /^\.a22-1 \{/.test(l))
+  if (root === undefined) throw new Error('A22 #1\'s chunk carries no root rule to remove, so this control proves nothing')
+  return mustFail(cssOf(sheetsWith('a22/1', (c) => c.replace(`${root}\n`, ''))).failures, /^FR-G7: a22\/1's sheet lost a rule a placed root reaches/, 'a lost rule')
+})
+check('Story 7.4 (FR-G7 soundness) — no rule a placed root reaches is missing from the pilot theme\'s stylesheet', () => {
+  const f = css74.failures.filter((x) => x.startsWith('FR-G7'))
+  if (f.length > 0) throw new Error(f.join('\n'))
+})
+check('control — Story 7.4 (FR-G7\'s gap): a chunk carrying one dead rule prints a non-zero gap, and the check still passes', () => {
+  const got = cssOf(sheetsWith('a17/1', (c) => `${c}\n.a17-1[data-per-row="four"] .a17-1__x { gap: 0; }`))
+  if (got.failures.length > 0) throw new Error(`the gap failed the check: ${got.failures.join(' · ')}`)
+  return mustFail(got.warnings, /^WARNING FR-G7: a17\/1 ships 1 rule\(s\), [1-9]\d* B/, 'a dead rule')
+})
+check('Story 7.4 (FR-G7\'s gap) — the emitted bytes no placed root reaches, printed as a warning, never a failure', () => {
+  for (const w of css74.warnings) console.log(`  ${w}`)
+  return css74.warnings.length === 0 ? 'no gap' : `${css74.warnings.length} design(s) with a gap`
+})
+check('control — Story 7.4 (AD-37): a screen.css carrying the rules of a design no compiled section is, is caught', () => {
+  const files = Object.fromEntries(Object.entries(pilots74.files).filter(([p, b]) => !(p.startsWith('partials/sections/') && typeof b === 'string' && /^<section\s[^>]*class="a24-1"/.test(b))))
+  return mustFail(cssOf({ files }).failures, /^AD-37: screen\.css carries a24\/1's rules, and no compiled section is a24\/1$/, 'an unplaced design\'s chunk')
+})
+check('Story 7.4 (AD-37) — every chunk in screen.css is a placed design\'s, and every selector naming a design\'s root names its own', () => {
+  const f = css74.failures.filter((x) => x.startsWith('AD-37'))
+  if (f.length > 0) throw new Error(f.join('\n'))
+})
+check(`control — Story 7.4 (NFR-2): a template that reaches an incompressible chunk past ${pilots.CSS_BUDGET} B gzipped is caught`, () => {
+  return mustFail(cssOf(sheetsWith('a4/13', (c) => `${c}\n${pilots.incompressible(2 * pilots.CSS_BUDGET)}`)).failures, /^NFR-2: home\.hbs's reachable CSS is \d+ B at gzip level 9, past the \d+ B budget$/, 'an over-budget template')
+})
+check(`Story 7.4 (NFR-2) — each template's reachable CSS is within ${pilots.CSS_BUDGET} B at gzip level 9; the whole screen.css reported beside it`, () => {
+  const f = css74.failures.filter((x) => x.startsWith('NFR-2'))
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return css74.report.join(' · ')
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

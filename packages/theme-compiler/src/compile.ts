@@ -20,16 +20,28 @@
 // functions, never a table of this file's — and each file is emitted by its class's rule (`stacksOf`). An archive's page 2
 // compiles inside `{{#is "paged"}}`, a Post Header on `page.hbs` inside Ghost's page switch, `default.hbs` gains
 // `<main id="site-main">` and FR-H2's `noindex` guard, and a designed paywall becomes `partials/content-cta.hbs`.
+//
+// Story 7.4 (FR-J3, AD-14, AD-18, AD-30) makes the theme carry what it draws with: the pairing's pool woff2 files in
+// `assets/fonts/` (bytes, read by the shell), preloaded and faced in `default.hbs`'s head through ONE `{{asset}}` address
+// each; each shipped family's licence and Tabler's at the root; and `screen.css` as the token block (AD-18's two Ghost
+// font variables, then each section's dark override, none on a Light-only project), the canvas's base, and each placed
+// design's sheet cut by `stripCss` to what its placed roots reach. It returns AD-14's reachability record beside the files.
 
 import {
   byCategory, categoryOf, COMPILE_TARGETS, compilesTo, CUSTOM_TARGET_RE, IMAGE_SIZES, isCompileTarget, isSiteFooter,
-  PAGINATED_TARGETS, PAYWALL_TARGET, POST_HEADER, stripCssComments, targetContext,
+  PAGINATED_TARGETS, PAYWALL_TARGET, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
 } from '@inflozo/library'
-import type { SectionRegistryEntry } from '@inflozo/library'
-import { iconDrawing } from '@inflozo/library/icons'
-import { designate, feedQuery, isDesigned, packTokensCss, pageTwoStack, renderTheme, synthesize, UserText, visibleFeed } from '@inflozo/section-runtime'
-import type { DocInstance, Pack, ProjectDoc, RuntimeDocument } from '@inflozo/section-runtime'
+import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
+import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
+import { faceOf, pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
+import {
+  BASE_CSS, darkHook, darkOverrideCss, designate, feedQuery, isDesigned, packTokensCss, pageTwoStack, renderTheme, resolveControls, sectionKey,
+  synthesize, UserText, visibleFeed,
+} from '@inflozo/section-runtime'
+import type { DocInstance, Pack, PlacedSection, ProjectDoc, RuntimeDocument } from '@inflozo/section-runtime'
+import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { claim, sectionSlug } from './slug.ts'
+import { stripCss } from './strip.ts'
 
 export type CompileInput = {
   /** every STORED template doc, by its file — `default.hbs` is the site doc and `partials/content-cta.hbs` the paywall's
@@ -57,13 +69,37 @@ export type CompileInput = {
   theme: { name: string; version: string; description: string }
   /** the designed cards — the keys of `project_treatments.card_designs` (Story 7.13); none until then */
   designedCards?: readonly string[]
+  /** the pack's pairing (`D1` …, Appendix D §D.c) — `pack.fonts` must be its `pairingFonts` (Story 7.4) */
+  pairing: string
+  /** a font-pool file's bytes, by its path under `packages/library/fonts/` (`files/<file>`, a family's `licenceFile`),
+   *  read by the shell (AD-1): the core reads no file */
+  fonts: (path: string) => Uint8Array
+  /** `projects.dark_enabled`: false is Light-only — no section hook and no per-section dark rule (AD-30) */
+  darkEnabled: boolean
 }
+
+/** AD-14's reachability record (Story 7.4): what `screen.css` is made of, and which designs each template reaches —
+ *  the CSS budget's one fact. */
+export type CssRecord = {
+  /** the Tokens and Base sections, exactly as `screen.css` opens */
+  global: string
+  /** each placed design's emitted chunk, header comment included, by design id, in design order */
+  sheets: Readonly<Record<string, string>>
+  /** every emitted root-level template but `default.hbs` → the design ids its page can draw, in design order: the site
+   *  doc's, the file's own (both pages) and, on `post.hbs`, `page.hbs` and each `custom-*.hbs`, the paywall's (Ghost
+   *  renders it inside `{{content}}`) */
+  reach: Readonly<Record<string, readonly string[]>>
+}
+
+/** A compiled theme: its files — text, and a font's bytes — in code-unit path order, and AD-14's record. */
+export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord }
 
 /** The site doc's file. */
 const SITE_DOC = 'default.hbs'
 
-/** One visible section, rendered — on page 1 of its file, or on page 2 of an archive whose page 2 is designed. */
-type Placed = { file: string; page: 1 | 2; instance: DocInstance; entry: SectionRegistryEntry; template: string; partials: Record<string, string> }
+/** One visible section, rendered — on page 1 of its file, or on page 2 of an archive whose page 2 is designed — with its
+ *  dark hook when an override of it is in force (Story 7.4). */
+type Placed = { file: string; page: 1 | 2; instance: DocInstance; entry: SectionRegistryEntry; template: string; partials: Record<string, string>; key: string; hook?: string }
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -297,9 +333,63 @@ function stacksOf(input: CompileInput): { stacks: Stack[]; pageTwos: Readonly<Re
   return { stacks: stacks.sort((a, b) => byCode(a.file, b.file)), pageTwos }
 }
 
+// ── fonts and licences (Story 7.4, FR-J3, Appendix D §D.a rule 6, §D.b) ──────────────────────────────────────────────
+
+/** A pool file's name — the only pool text that reaches a theme path or an `{{asset}}` expression (AD-36). */
+const POOL_FILE_RE = /^[a-z0-9-]+\.woff2$/
+const SLUG_RE = /^[a-z0-9-]+$/
+
+/** A licence's own words with only its whitespace tidied — line endings, trailing spaces, one final newline — so it meets
+ *  the formatting contract's rule 1 and says exactly what its authors wrote. */
+const tidyLicence = (text: string): string => `${text.replace(/\r\n?/g, '\n').replace(/[ \t]+$/gm, '').replace(/\n+$/, '')}\n`
+
+const fontWords = (f: Pack['fonts']): string => `${f.heading.family} with ${f.body.family}`
+
+/** The pairing's pool files as `assets/fonts/` (the pool's own bytes, names and subsets — nothing subset, re-encoded or
+ *  renamed), each shipped family's licence at the root, and `default.hbs`'s head lines: a preload of each distinct roman
+ *  face's `latin` file (§D.a rule 6 — italics and `latin-ext` are fetched only by a page that needs them) and the faces'
+ *  `<style>`, both through one `{{asset}}` address per file, so the preload is the fetch (Ghost's `?v=`). */
+function themeFonts(input: CompileInput): { files: Record<string, string | Uint8Array>; head: string[] } {
+  const want = pairingFonts(input.pairing)
+  const got = input.pack.fonts
+  const same = got.heading.family === want.heading.family && got.heading.capHeight === want.heading.capHeight &&
+    got.body.family === want.body.family && got.body.capHeight === want.body.capHeight && got.body.tabular === want.body.tabular
+  if (!same) throw new Error(`fonts: the pack draws ${fontWords(got)}, and its pairing ${input.pairing} is ${fontWords(want)} — a pack's fonts are its pairing's, so the theme ships the faces the pack names.`)
+  const files: Record<string, string | Uint8Array> = {}
+  const faces = pairingFaces(input.pairing)
+  for (const f of faces.flatMap((face) => face.files)) {
+    if (!POOL_FILE_RE.test(f.file)) throw new Error(`fonts: the pool file ${JSON.stringify(f.file)} is no font file name the theme writes (${POOL_FILE_RE.source}).`)
+    const bytes = input.fonts(`files/${f.file}`)
+    if (!(bytes instanceof Uint8Array) || bytes.length !== f.bytes) throw new Error(`fonts: files/${f.file} read ${bytes instanceof Uint8Array ? bytes.length : 'no'} bytes, and the pool records ${f.bytes} — a short or changed read is refused, never shipped.`)
+    files[`assets/fonts/${f.file}`] = new Uint8Array(bytes)
+  }
+  for (const family of [...new Set(faces.map((face) => face.family))]) {
+    const record = Object.hasOwn(POOL.families, family) ? POOL.families[family] : undefined
+    if (record === undefined || !SLUG_RE.test(record.slug)) throw new Error(`fonts: the pool records no licence for ${family}.`)
+    files[`LICENSE-${record.slug}.txt`] = tidyLicence(new TextDecoder().decode(input.fonts(record.licenceFile)))
+  }
+  const pairing = pairingOf(input.pairing)
+  const preloads = [...new Set([pairing.heading, pairing.body].map((role) => {
+    const latin = role.faces.map(faceOf).find((face) => face.style === 'normal')?.files.find((f) => f.subset === 'latin')
+    if (latin === undefined) throw new Error(`fonts: ${input.pairing}'s ${role.family} has no roman latin file to preload.`)
+    return latin.file
+  }))]
+  const asset = (file: string): string => `{{asset "fonts/${file}"}}`
+  return {
+    files,
+    head: [
+      ...preloads.map((file) => `<link rel="preload" href="${asset(file)}" as="font" type="font/woff2" crossorigin>`),
+      '<style>',
+      ...fontFaceCss(input.pairing, (f) => asset(f.file)).split('\n').map((l) => `  ${l}`),
+      '</style>',
+    ],
+  }
+}
+
 /** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files —
- *  and, since Story 7.2, its `package.json`; since Story 7.3, every standard template, synthesized where untouched. */
-export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonly<Record<string, string>> {
+ *  and, since Story 7.2, its `package.json`; since Story 7.3, every standard template, synthesized where untouched; since
+ *  Story 7.4, its fonts, licences and stripped stylesheet, with AD-14's record. */
+export function compileTheme(doc: RuntimeDocument, input: CompileInput): CompiledTheme {
   for (const file of Object.keys(input.templates).sort(byCode)) {
     if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
     if (!isCompileTarget(file)) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
@@ -312,14 +402,26 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
   }
   noC0('a string', Object.values(input.strings ?? {}))
   noC0('an asset URL', Object.values(input.assets))
-  noC0("the pack's CSS", [packTokensCss(input.pack)])
+  const tokens = packTokensCss(input.pack, { ghostFonts: true })
+  noC0("the pack's CSS", [tokens])
   const perPage = pageSize(input.postsPerPage)
   const pkg = packageJson(input, perPage)
+  const fonts = themeFonts(input)
   const { stacks, pageTwos } = stacksOf(input)
 
   // ── render every visible instance, with ONE UserText — file by file, page 1 before page 2 ─────────────────────────────
   const users = new UserText()
   const placed: Placed[] = []
+  // Story 7.4 (R-26): Tabler's licence ships when a placed section draws an icon — the lookup records each drawing it gives
+  let drew = false
+  const icons: IconLookup = (name) => {
+    const drawing = iconDrawing(name)
+    if (drawing !== undefined) drew = true
+    return drawing
+  }
+  let drewAny = false
+  // Story 7.4 (DW-331): each hook, with the section that holds it, so a collision is refused naming both
+  const hooks = new Map<string, string>()
   for (const { file, pageOne, pageTwo } of stacks) {
     for (const [page, instances] of [[1, pageOne], [2, pageTwo ?? []]] as const) {
       for (const instance of instances) {
@@ -331,6 +433,11 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
         const where = `${at} · ${instance.layerName || entry.name}`
         if (!compilesTo(entry.compileTarget, file)) throw new Error(`${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`)
         const query = feedQuery(entry, instance, file, perPage)
+        // the place it fills, as the editor keys it (`templateKeyOfFile`); a hook only while an override changes its dark
+        // look, and none at all on a Light-only project (AD-30)
+        const key = sectionKey(templateKeyOfFile(file, page === 2), instance.instanceId)
+        const hook = input.darkEnabled ? darkHook(entry, instance, key) : undefined
+        drew = false
         let out: ReturnType<typeof renderTheme>
         try {
           out = renderTheme(doc, entry.html, {
@@ -344,16 +451,27 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
             ...(entry.dataBindings === undefined ? {} : { dataBindings: entry.dataBindings }),
             visibility: instance.memberVisibility,
             assets: input.assets,
-            icons: iconDrawing,
+            icons,
             ...(input.strings === undefined ? {} : { strings: input.strings }),
             users,
             ...(query === undefined ? {} : { feed: { query } }),
+            ...(hook === undefined ? {} : { instance: hook }),
           })
         } catch (e) {
           throw new Error(`${where}: ${(e as Error).message}`)
         }
         // a section that renders nothing — a hand-picked feed with nothing picked — contributes no file, no line, no label
-        if (out.template !== '') placed.push({ file, page, instance, entry, template: out.template, partials: out.partials })
+        if (out.template !== '') {
+          if (hook !== undefined) {
+            // refused by name before `darkOverrideCss`, so the customer reads layer names, never keys (Story 7.18 shows it)
+            const named = `"${instance.layerName || entry.name}" in ${at}`
+            const met = hooks.get(hook)
+            if (met !== undefined) throw new Error(`Two sections share a hidden name, so neither one's dark look can ship: ${met} and ${named}. Delete one of them and add it again — it gets a new name.`)
+            hooks.set(hook, named)
+          }
+          placed.push({ file, page, instance, entry, template: out.template, partials: out.partials, key, ...(hook === undefined ? {} : { hook }) })
+          drewAny ||= drew
+        }
       }
     }
   }
@@ -443,6 +561,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
     '    <meta charset="utf-8">',
     '    <meta name="viewport" content="width=device-width, initial-scale=1">',
     '    <title>{{meta_title}}</title>',
+    // Story 7.4: the preloads and the faces, each address one `{{asset}}` expression; the `<style>` holds `@font-face`
+    // rules only and names no mode, so `screen.css` stays the one file that does (AD-30)
+    ...fonts.head.map((l) => `    ${l}`),
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
     ...guard.map((l) => `    ${l}`),
     '    {{ghost_head}}',
@@ -454,20 +575,38 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Readonl
     '',
   ].join('\n')
 
-  // ── screen.css: the token block first, then each placed design's stylesheet once, in design order ───────────────────
+  // ── screen.css (Story 7.4): the token block — the pack's, with AD-18's two Ghost font variables, then each section's
+  // dark override, read from the library's UNSTRIPPED sheet — then the canvas's base, then each placed design's sheet
+  // once, in design order, cut to the rules its placed roots reach ──────────────────────────────────────────────────────
+  const overrides: PlacedSection[] = placed.filter((p) => p.hook !== undefined).map((p) => ({ key: p.key, entry: p.entry, state: p.instance }))
+  const global = `/* Tokens */\n${tidyCss(tokens + darkOverrideCss(overrides))}\n\n/* Base */\n${BASE_CSS}`
   const designs = [...new Map(placed.map((p) => [p.entry.id, p.entry])).values()].sort(designOrder)
-  tree['assets/css/screen.css'] = `${[
-    `/* Tokens */\n${tidyCss(packTokensCss(input.pack))}`,
-    ...designs.map((e) => `/* ${cssPart(e.categoryTitle)} · ${cssPart(e.name)} */\n${tidyCss(e.css)}`),
-  ].join('\n\n')}\n`
+  const sheets: Record<string, string> = {}
+  for (const e of designs) {
+    // the roots exactly as `stampControls` writes them, so a forced value is read as the theme ships it
+    const roots = placed.filter((p) => p.entry.id === e.id).map((p) => resolveControls(e, p.instance.controls))
+    sheets[e.id] = `/* ${cssPart(e.categoryTitle)} · ${cssPart(e.name)} */\n${stripCss(tidyCss(e.css), rootClassOf(e.html), roots)}`
+  }
+  tree['assets/css/screen.css'] = `${[global, ...designs.map((e) => sheets[e.id] as string)].join('\n\n')}\n`
+  // AD-14's record: each emitted root-level template but the shell reaches the site doc's designs, its own (both pages)
+  // and, where Ghost's `{{content}}` can print the paywall, the paywall's
+  const idsOf = (files: readonly string[]): string[] => designs.filter((e) => placed.some((p) => p.entry.id === e.id && files.includes(p.file))).map((e) => e.id)
+  const reach: Record<string, readonly string[]> = {}
+  for (const file of Object.keys(tree).filter((f) => f.endsWith('.hbs') && !f.includes('/') && f !== SITE_DOC).sort(byCode)) {
+    reach[file] = idsOf([SITE_DOC, file, ...(file === 'post.hbs' || file === 'page.hbs' || CUSTOM_TARGET_RE.test(file) ? [PAYWALL_TARGET] : [])])
+  }
 
   tree['package.json'] = pkg   // JSON.stringify escapes every C0 character, so no user-text marker is in it to substitute
+  // R-26: Tabler's MIT licence, verbatim, whenever a placed section draws an icon; each shipped family's beside it
+  if (drewAny) tree['LICENSE-tabler.txt'] = TABLER_LICENSE
 
-  // ── user text, once, last, over every file; the record in code-unit path order; then the checks over the final text ─
-  const out = Object.fromEntries(Object.keys(tree).sort(byCode).map((path) => [path, users.substitute(tree[path] as string)]))
-  checkSizes(out)
-  checkPageData(out)
-  checkPaywallReached(out)
-  checkTripleStashes(out)
-  return out
+  // ── user text, once, last, over every text file; the record in code-unit path order; then the checks over the final
+  // text. A font's bytes are never substituted: `UserText.substitute` is a string `replace` ────────────────────────────
+  const text = Object.fromEntries(Object.keys(tree).map((path) => [path, users.substitute(tree[path] as string)]))
+  checkSizes(text)
+  checkPageData(text)
+  checkPaywallReached(text)
+  checkTripleStashes(text)
+  const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
+  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach } }
 }

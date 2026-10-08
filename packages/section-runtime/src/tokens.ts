@@ -419,8 +419,13 @@ export const MODE_SELECTORS = {
  *  nowhere else — the owner's pin (the `scheme-*` body class), on Auto the visitor's `data-mode`, then the device. The
  *  canvas reuses `data-mode` to preview a mode, deliberately, so no fourth mode signal exists. AD-30: the token block is
  *  THE ONE FILE in a generated theme that names a mode — this block, then `darkOverrideCss`' per-section rules. */
-export function packTokensCss(pack: Pack): string {
-  const { light, tablet, mobile } = packTokens(pack)
+export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean } = {}): string {
+  const { light: tokens, tablet, mobile } = packTokens(pack)
+  // AD-18, in the theme only (Story 7.4): a font chosen in Ghost Admin wins, the pack's family list is the fallback, and
+  // one file holding both names is what gscan's GS051 asks for. The canvas calls with no option, so its bytes stand.
+  const light = options.ghostFonts === true
+    ? { ...tokens, '--font-heading': `var(--gh-font-heading, ${tokens['--font-heading']})`, '--font-body': `var(--gh-font-body, ${tokens['--font-body']})` }
+    : tokens
   const dark = modeTokens(pack, 'dark')
   const perMode = Object.fromEntries(TOKEN_NAMES.filter((n) => Object.hasOwn(dark, n)).map((n) => [n, dark[n] as string]))
   const bands = { tablet, mobile }
@@ -433,3 +438,8 @@ export function packTokensCss(pack: Pack): string {
     '',
   ].join('\n\n')
 }
+
+/** THE BASE (Story 7.4, FR-J3): the page behind the sections — no browser margin, and the pack's page ground in either
+ *  mode, since `--bg-page` is a token the dark map redeclares. The canvas document's `2-document` style opens with it
+ *  (`apps/web/lib/pilots.ts`) and the theme's `screen.css` carries it after the token block, so the two draw one page. */
+export const BASE_CSS = 'html, body { margin: 0; background: var(--bg-page); }'

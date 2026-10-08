@@ -7246,3 +7246,98 @@ test('7.3 · D5f: the last section leaving Signup asks first, on Keep it — Esc
   await expect.poll(() => said(page)).toMatch(/ removed$/)
   await expect(ask, 'Post is no custom template').toBeHidden()
 })
+
+/* ── Story 7.4 — DW-331's browser proof: the canvas and the theme hash ONE key ─────────────────────────────────────
+   The editor stamps a section's dark hook as `hookOf(sectionKey(<the place it fills>, instanceId))`, the key the compile
+   hashes (`templateKeyOfFile`); on Home's page 1 the place is the row's own doc, so the hook is `hookOf` of the row's
+   `data-layer-row` key, computed here in Node through the runtime. And `/pilots`, mounted in the harness, draws a
+   Background set in Dark as that ground — the browser half of the source guards `dark-mode.test.ts` used to hold.
+   `RUNTIME` is the runtime this file already imports (Story 5.19's DATA_WORDS). */
+
+/** A roving radio group's choice moved to `name` with the arrows alone — greyed radios are skipped by the Kit's own
+ *  `radioKeys`, so the presses are counted against the checked radio, never against a position. */
+async function choose(page, group, name) {
+  const names = (await group.locator('[role="radio"]').allInnerTexts()).map((t) => t.trim())
+  expect(names, `${name} is offered`).toContain(name)
+  const checked = async () => (await group.locator('[role="radio"][aria-checked="true"]').innerText()).trim()
+  const step = names.indexOf(name) > names.indexOf(await checked()) ? 'ArrowRight' : 'ArrowLeft'
+  await group.locator('[role="radio"][tabindex="0"]').focus()
+  for (let n = 0; n < names.length && (await checked()) !== name; n++) await page.keyboard.press(step)
+  await expect(group.locator('[role="radio"][aria-checked="true"]')).toHaveText(name)
+}
+
+test('7.4 · DW-331 · the hook on the canvas: a Background set in Dark stamps hookOf(the row\'s key), and Reset takes it away', async ({ page }) => {
+  const canvas = await open(page)
+  const key = (await rows(page)).page[0]
+  await select(page, key)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('.')
+  await expect.poll(() => modeOf(page)).toBe('dark')
+  const root = canvas.locator('#canvas [data-inflozo-selected]')
+  await expect(root).toHaveCount(1)
+  // THE CONTROL: no override in force, no hook — so the hook below is the change's doing
+  expect(await root.getAttribute('data-instance')).toBeNull()
+  await openEveryGroup(page)
+  const ground = page.locator('#editor-controls').getByRole('radiogroup', { name: 'Background role' })
+  await ground.locator('[role="radio"][tabindex="0"]').focus()
+  await page.keyboard.press('ArrowRight')
+  const hook = RUNTIME.hookOf(key)
+  expect(hook).toMatch(RUNTIME.HOOK_RE)
+  await expect.poll(() => root.getAttribute('data-instance')).toBe(hook)
+  // …and the theme's key for the same section is that same key: Home's page 1 is the row's own doc
+  expect(key).toBe(RUNTIME.sectionKey('home', key.slice('home:'.length)))
+  const reset = page.locator('#editor-controls button[aria-label="Reset Background role"]')
+  await reset.focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => root.getAttribute('data-instance')).toBeNull()
+})
+
+test('7.4 · DW-331 · /pilots draws a Background set in Dark: Contrast in Dark, the light ground in Light, Contrast in Dark again', async ({ page }) => {
+  await page.goto('/app/harness/pilots')
+  const iframe = page.locator('iframe[data-width]')
+  const frame = page.frameLocator('iframe[data-width]')
+  await expect(frame.locator('#canvas > *').first()).toBeVisible()
+  /** the pilot's root: its `data-bg`, its computed fill, and the two grounds' colours resolved the same way */
+  const ground = () => frame.locator('html').evaluate((html) => {
+    const doc = html.ownerDocument
+    const root = doc.querySelector('#canvas > *')
+    const probe = doc.createElement('span')
+    doc.body.append(probe)
+    const as = (token) => {
+      probe.style.backgroundColor = `var(${token})`
+      return getComputedStyle(probe).backgroundColor
+    }
+    const out = { mode: html.getAttribute('data-mode'), bg: root?.getAttribute('data-bg') ?? null, fill: root ? getComputedStyle(root).backgroundColor : null, contrast: as('--bg-contrast'), page: as('--bg-page') }
+    probe.remove()
+    return out
+  })
+  await choose(page, page.locator('#pilot'), 'Inline Row')
+  await expect(iframe).toHaveAttribute('data-pilot', 'a22/1')
+  await choose(page, page.locator('#mode'), 'Dark')
+  await expect.poll(async () => (await ground()).mode).toBe('dark')
+  // THE CONTROL: before the change, Dark draws the base ground — and the two grounds are two colours, so the reads discriminate
+  const before = await ground()
+  expect(before.bg).toBe('base')
+  expect(before.fill).toBe(before.page)
+  expect(before.contrast).not.toBe(before.page)
+  for (let guard = 0; guard < 12; guard++) {
+    const collapsed = page.locator('#section-controls button[aria-expanded="false"]')
+    if ((await collapsed.count()) === 0) break
+    await collapsed.first().focus()
+    await page.keyboard.press('Enter')
+  }
+  await choose(page, page.locator('#section-controls').getByRole('radiogroup', { name: 'Background role' }), 'Contrast')
+  await expect.poll(async () => (await ground()).bg).toBe('contrast')
+  const dark = await ground()
+  expect(dark.fill, 'Dark draws the ground set in Dark').toBe(dark.contrast)
+  await choose(page, page.locator('#mode'), 'Light')
+  await expect.poll(async () => (await ground()).mode).toBe('light')
+  const light = await ground()
+  expect(light.bg, 'the override stayed a dark one').toBe('base')
+  expect(light.fill).toBe(light.page)
+  await choose(page, page.locator('#mode'), 'Dark')
+  await expect.poll(async () => (await ground()).mode).toBe('dark')
+  const again = await ground()
+  expect(again.bg, 'a repaint takes the mode\'s slice too').toBe('contrast')
+  expect(again.fill).toBe(again.contrast)
+})

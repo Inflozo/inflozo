@@ -11,6 +11,7 @@ import {
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 import { COMPACT, isCompact, isPhone, PHONE } from './lib/floor.ts'
 import { PACK_KEY, PACK_RECORDS_KEY } from './lib/journal.ts'
+import { templateKeyOfFile } from '@inflozo/library'
 
 // Story 5.1's URL scheme, held by the module the route, the Shell, the switcher and the harness read it from.
 // Story 5.5 added R-129's three membership canvases, whose stored key is not their segment, and Private's condition.
@@ -323,6 +324,21 @@ test('every key the editor writes is accepted word for word by the sync route AN
   }
   // and nothing wider: a near miss is refused by the route, as the constraint refuses it
   for (const junk of ['home-paged', 'tag-page', 'index2', 'page-2']) assert.ok(!shape.test(junk), junk)
+})
+
+test('Story 7.4 (DW-331): the library\'s templateKeyOfFile answers the app\'s own map — every canvas, every page-2 key and site', () => {
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) {
+    assert.equal(templateKeyOfFile(fileOfKey(templateKeyOf(key))), templateKeyOf(key), key)
+    const two = PAGE_TWO[key]
+    if (two === undefined) continue
+    // page 2: Home's is its own file, index.hbs (the copy too); an archive's is page 1's file, inside {{#is "paged"}}
+    assert.equal(templateKeyOfFile(CANVASES[key].file, true), two.key, two.key)
+    assert.equal(fileOfKey(two.key), two.file, two.key)
+    if (two.file !== CANVASES[key].file) assert.equal(templateKeyOfFile(two.file), two.key, two.file)
+  }
+  assert.equal(templateKeyOfFile(fileOfKey(SITE.key)), SITE.key)
+  // the control: a file with no page 2 is refused, never given a key no doc is stored under
+  assert.throws(() => templateKeyOfFile('post.hbs', true), /post\.hbs has no page 2/)
 })
 
 // ─── Story 5.20 — the first TEMPLATE SURFACE ─────────────────────────────────────────────────────────────────────

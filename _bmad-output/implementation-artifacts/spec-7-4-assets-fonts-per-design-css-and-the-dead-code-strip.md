@@ -2,7 +2,8 @@
 title: 'Story 7.4 — Assets, fonts, per-design CSS and the dead-code strip'
 type: 'feature'
 created: '2026-10-08'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '023db2584770f0f6a104b3995da72a7e2bbd36aa'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -248,34 +249,34 @@ After this story, the theme Inflozo builds for your site carries your pack's fon
 
 **Execution:**
 
-- [ ] `packages/library/src/validate.ts`, `validate.test.ts`:
+- [x] `packages/library/src/validate.ts`, `validate.test.ts`:
   - `COMMENT_OR_STRING` gains an unquoted `url(…)` alternation before the comment branch, so `stripCssComments`, `untokened` and the strip read one scan;
   - export `attributeSelectors`;
   - rows: `url(http://x/*/y)` is kept, while a comment after it, and a quoted URL, are read as before.
 
   -- DW-337, in the one scanner.
-- [ ] `packages/library/src/vocabulary.ts`, `apps/web/editor.test.ts`:
+- [x] `packages/library/src/vocabulary.ts`, `apps/web/editor.test.ts`:
   - `templateKeyOfFile(file, pageTwo = false)` gives the key of the place a section fills in a compiled file (Design Notes § Dark overrides);
   - the app test holds it to `fileOfKey`, `templateKeyOf` and `PAGE_TWO` over every canvas, every page-2 key and `site`.
 
   -- one key↔file rule for a package, held to the app's map.
-- [ ] `packages/section-runtime/src/dark-override.ts`, `dark-override.test.ts`, `index.ts`:
+- [x] `packages/section-runtime/src/dark-override.ts`, `dark-override.test.ts`, `index.ts`:
   - export `sectionKey(templateKey, instanceId)` and `hookOf(key)`, and `darkHook` hashes through `hookOf`;
   - fix the stale `home-2:` key at :82.
 
   -- DW-331's one builder.
-- [ ] `packages/section-runtime/src/tokens.ts`, `tokens.test.ts`, `index.ts`:
+- [x] `packages/section-runtime/src/tokens.ts`, `tokens.test.ts`, `index.ts`:
   - `packTokensCss(pack, { ghostFonts })` writes AD-18's two `var()` forms;
   - with no option the bytes are unchanged;
   - export `BASE_CSS`.
 
   -- AD-18 and the base, each written once.
-- [ ] `packages/theme-compiler/src/strip.ts`, `strip.test.ts`:
+- [x] `packages/theme-compiler/src/strip.ts`, `strip.test.ts`:
   - `stripCss(css, root, roots)` per Design Notes § The strip;
   - rows: the matrix's strip rows, the parser traps (selectors over several lines, a `,` inside `:is()` or inside a string, a stray `}`), and a sheet it cannot judge comes back unchanged.
 
   -- FR-G7's strip, sound by construction.
-- [ ] `packages/theme-compiler/src/compile.ts`, `index.ts`:
+- [x] `packages/theme-compiler/src/compile.ts`, `index.ts`:
   - the inputs and the `{ files, css }` return;
   - the fonts, the preloads and the faces' `<style>`;
   - the licences;
@@ -286,43 +287,43 @@ After this story, the theme Inflozo builds for your site carries your pack's fon
   - the substitution pass skips bytes.
 
   -- FR-J3's emission, in the one place every theme is built.
-- [ ] `packages/theme-compiler/src/compile.test.ts`:
+- [x] `packages/theme-compiler/src/compile.test.ts`:
   - the I/O matrix, row by row;
   - the whole-output scans skip bytes, and the licences pass rule 1;
   - determinism compares bytes by content;
   - `screen.css` equals the record's concatenation.
 
   -- what the compiler promises.
-- [ ] `apps/web/lib/page-two.ts`, `editor.tsx`, `components/controls/layers.tsx`, `page-two.test.ts` (or `editor.test.ts`):
+- [x] `apps/web/lib/page-two.ts`, `editor.tsx`, `components/controls/layers.tsx`, `page-two.test.ts` (or `editor.test.ts`):
   - `queryKey` and both `keyOf`s call `sectionKey`;
   - each stack row carries the key the theme hashes it under: its `doc`, except on a Tag or Author page 2 that follows page 1, where it is page 1's;
   - the two hash sites hash that key, only when `darkEnabled`;
   - a test checks every canvas × page × (designed or following) against the compile's key.
 
   -- DW-331: the canvas and the theme hash one key.
-- [ ] `apps/web/lib/pilots.ts` — the `2-document` style opens with `BASE_CSS`; the scrollbar rules stay the canvas's own.
+- [x] `apps/web/lib/pilots.ts` — the `2-document` style opens with `BASE_CSS`; the scrollbar rules stay the canvas's own.
 
   -- one base, two readers.
-- [ ] `/pilots` in the harness:
+- [x] `/pilots` in the harness:
   - `apps/web/app/(app)/app/harness/pilots/page.tsx`: `notFound()` unless `HARNESS`, then `Review` with `page.tsx`'s props and `canvasSrc={harnessCanvasSrc()}`;
   - `review.tsx` takes an optional `canvasSrc`;
   - `busy.test.ts` and `app-routes.test.ts` list the page as harness-only.
 
   -- the gate can open `/pilots` with no database.
-- [ ] `tools/keyboard/journey.spec.mjs`, `mode.spec.mjs`:
+- [x] `tools/keyboard/journey.spec.mjs`, `mode.spec.mjs`:
   - two journey steps per Design Notes § The journeys, keyboard only;
   - `mode.spec.mjs` builds its key with `sectionKey`;
   - `apps/web/dark-mode.test.ts:127-144` is deleted, because the journeys hold what it held, in a browser.
 
   -- DW-331's browser proof, in CI.
-- [ ] `tools/pilot-theme.mjs`:
+- [x] `tools/pilot-theme.mjs`:
   - pass `pairing` (Paper's), `fonts` (read from `packages/library/fonts/`) and `darkEnabled: true`;
   - A4 #13 gains a dark Background override; it is not the hoisted A22 pair;
   - `themeFailures` skips bytes;
   - add `cssFailures` per Design Notes § The record, and what CI measures.
 
   -- one project for CI and the recorder.
-- [ ] `tools/check-snapshots.mjs` — rows, each behind its control:
+- [x] `tools/check-snapshots.mjs` — rows, each behind its control:
   - the fonts and licences;
   - `GS051` gone from gscan 6.4.2;
   - the hook on A4 #13 and none elsewhere;
@@ -330,15 +331,15 @@ After this story, the theme Inflozo builds for your site carries your pack's fon
   - :687 compares by content and :714 skips bytes.
 
   -- the shapes in CI on every commit.
-- [ ] `tools/probe/record-theme-assembly.py`, `record-contexts.py`, `tools/doc-audit.py`:
+- [x] `tools/probe/record-theme-assembly.py`, `record-contexts.py`, `tools/doc-audit.py`:
   - binary values cross the JSON hop as base64 and are written `'wb'`;
   - `CARDS_CSS` loses AD-18's two lines;
   - Design Notes § The T1 run;
   - `SECTION` becomes `73`;
   - the docstring, `section()`'s tree text and the catalogue rows say so.
 
-  -- R-82: a real Ghost serves what the compiler writes.
-- [ ] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
+  -- R-82: a real Ghost serves what the compiler writes. *(Dev, 2026-10-08: built, and its local half run — both gscans 0/0, the control warning GS051 on both; run on T1 in the main session on the owner's in-session go — §73 written, every row held; see § Verification's Dev results.)*
+- [x] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
 
   -- standing rules 3 and 7.
 
@@ -720,3 +721,56 @@ Both were ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ruled v
 - Both gscans locally, and gscan 6.4.2 in CI.
 - Vercel, for the editor's key change and the harness page: CI `check`, `rls` and `deploy` green, and the deployment READY at the head.
 - There is no migration and no Supabase, Resend or Dodo surface. The compiler has no product caller until Story 7.18.
+
+**Dev results (2026-10-08, Node 24, on this tree).**
+
+- `pnpm check`: exit 0 — lint, the typecheck of every package, and every package's tests with 0 failures, among them `strip.test.ts`, `compile.test.ts`'s `(7.4)` rows, `tokens.test.ts`'s two 7.4 rows, `validate.test.ts`'s DW-337 row, `page-two.test.ts`'s and `editor.test.ts`'s DW-331 rows. `check-snapshots` then ran its 7.4 rows, each behind a control that fired first:
+  - the fonts and licences — control: a changed font byte, a preload no face fetches, a font host and a reworded licence are each caught;
+  - no `GS051` from gscan 6.4.2 on the pilot theme — control: with the two `var(--gh-font-…)` forms taken out of `screen.css`, gscan raises `GS051-CUSTOM-FONTS`;
+  - A4 #13 alone carries the hook, `dc5d8b50`, and the token block its rules — control: a second hook, and a block with no rule, are caught;
+  - `cssFailures`' four rows: soundness (control: a chunk missing A22 #1's root rule fails), the gap (control: one dead rule added prints `WARNING FR-G7: a17/1 ships 1 rule(s), 51 B …` and passes; the pilot theme itself has no gap), AD-37 (control: A24 #1's chunk with no A24 section is caught), and the budget (control: an incompressible chunk past the limit fails `home.hbs`). Each template's reachable CSS printed well under 51,200 B at gzip level 9, with the whole `screen.css` reported beside it, ungated.
+- `pnpm keyboard`, whole: every test passed, exit 0 (9.6 min), both `7.4 · DW-331` journeys among them. The implementing agent ran each journey against a mutated editor and a mutated `/pilots` first, and each failed.
+- **The recorder's local half**, inside the T1 run: the scaffold is `assets/css/cards.css` with D12's two widths alone, plus the stand-in `page.hbs`; **0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6)** for the compiled theme. Its control, the compiled theme with the two `--gh-font-*` forms removed, raises `GS051` on both.
+- **T1 `ghost6.inflozo.com` (6.58.0)**, `python3 tools/probe/record-theme-assembly.py`, in the main session on the owner's in-session go (asked and given in this Dev session). Keys read in-process from `tools/probe/.env` by variable name: `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`.
+  - **The first run held every compiled-theme row, then voided at the paywall step's local gate.** Story 7.3's two hand-written paywall probes had borrowed `CARDS_CSS` for their `GS051` answer, so removing AD-18's lines from the compiled theme's scaffold left them warning `GS051` on both gscans. They now carry those two lines themselves (`PROBE_FONTS_CSS`, byte for byte what they uploaded at 7.3), so the compiled theme's scaffold is not widened. Checked locally before the re-run: both probes gate 0/0, and without the lines both warn `GS051` again. Nothing was written to MEASUREMENTS, the paywall probes were never uploaded, and T1 was restored after the one compiled-theme upload.
+  - **The second run held every row, 0 `NO`, in §73 (a) and (b).** Story 7.4's rows:
+    - `/`'s head carried two preloads, `fraunces-roman-latin.woff2` and `inter-roman-latin.woff2`, each `as="font" type="font/woff2" crossorigin` and each `href` verbatim one `@font-face` `src`. The six faced files were the six shipped.
+    - Each font address answered 200 as `font/woff2`, with `pool.json`'s sha256. Control: `/assets/fonts/{nonce}.woff2` answered 404.
+    - `/LICENSE-fraunces.txt` and `/LICENSE-inter.txt` answered 200 as compiled. Control: `/LICENSE-{nonce}.txt` answered 404.
+    - The served `screen.css` equalled the compiled one byte for byte, carrying both `var(--gh-font-…, …)` forms, the base rule and `[data-instance="dc5d8b50"]`'s rules.
+    - A4 #13's root on `/` carried `data-instance="dc5d8b50"`, which is `hookOf(sectionKey('home', …))` computed locally. Control: A17 #1's root carried none.
+    - Stories 7.1's, 7.2's and 7.3's rows held again on this tree, the paywall mechanism among them.
+  - **T1 was restored and read back after every upload**: `casper` active; `casper`, `racer` and `source` installed. The month's probe picture was reused; nothing else was written.
+  - MEASUREMENTS §73 was written; §70, §71 and §72 are untouched. The Ghost 5 half is DW-326's (R-238).
+- **Manual checks.** The compiled pilot theme reads as hand-written:
+  - `default.hbs`'s head: `<title>`, the two preloads, one `<style>` of `@font-face` rules, then `screen.css`.
+  - `screen.css` opens with `/* Tokens */`, carrying `--font-heading: var(--gh-font-heading, 'Fraunces', serif)` and `--font-body: var(--gh-font-body, 'Inter', sans-serif)`, and ending with A4 #13's override under `MODE_SELECTORS`' two conditions. Then `/* Base */` and `html, body { margin: 0; background: var(--bg-page); }`, then each design's chunk.
+  - Each chunk is shorter than its library sheet. A17 #1 was placed at `three` and `two`: the library sheet names `data-per-row="four"` eight times, and the emitted sheet never.
+- **No Supabase, Resend or Dodo call was made**, and no migration exists. Vercel: the editor's key change and the harness page deploy through CI on this push; their READY is the Review's to read.
+
+**The I/O matrix, row by row, mapped to the check that ran and passed:**
+
+| Row | Check |
+|---|---|
+| Paper's fonts | `(7.4) Paper's fonts …`; `check-snapshots`' font row; on T1, the font, preload and licence rows |
+| One family in both roles | `(7.4) one family in both roles (D12) …` |
+| A static body family | `(7.4) a static body family (D15) …` |
+| Fonts that disagree | `(7.4) fonts that disagree are refused …` |
+| A short read | the same test's short-read half |
+| Ghost's font variables | `(7.4) Ghost's font variables …` and `tokens.test.ts`' `AD-18 in the theme only …` (no option, bytes unchanged); gscan 6.4.2's `GS051` row; on T1, the stylesheet row |
+| The base | `(7.4) the base …` and `tokens.test.ts`' `the base …`; `lib/pilots.ts` opens `2-document` with `BASE_CSS` |
+| A dark override, Light + Dark | `(7.4) a dark override, Light + Dark …`; `check-snapshots`' hook row; on T1, A4 #13's root |
+| Light-only | `(7.4) Light-only …` |
+| Keys by place | `(7.4) keys by place …`; `editor.test.ts`' `templateKeyOfFile` row |
+| An archive's page 2 that follows page 1 | `(7.4) an archive's page 2 that follows page 1 …`; `page-two.test.ts`' DW-331 row (the editor side) |
+| Two hooks collide | `(7.4) two hooks collide …` |
+| The strip | `strip.test.ts`' `A17 #1 placed only at three …`; `(7.4) the strip in the compile …` |
+| Two placements, two values | `strip.test.ts`' `two placements, two values …`; the same compile test |
+| A forced value | `strip.test.ts`' `a forced value …` (control: stored values make the rule look dead) |
+| What the strip cannot judge | `strip.test.ts`' `what the strip cannot judge …`, its parser traps, and `a sheet it cannot judge comes back unchanged …` |
+| A dark value's root rule | `strip.test.ts`' first row (no `contrast` left) and the compile test's dark row (the sheet drops it, the token block writes it) |
+| Hidden only | `(7.4) hidden only …` |
+| The record | `(7.4) the record …` and `(7.4) the base …` (`screen.css` is `css.global`, then the chunks) |
+| A Tabler icon | `(7.4) a Tabler icon …` (drawn and not drawn) |
+| DW-337 | `validate.test.ts`' `Story 7.4 (DW-337) …` |
+| Determinism | `(7.4) determinism …`; `check-snapshots`' second-compile row by content |

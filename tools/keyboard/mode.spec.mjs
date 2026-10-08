@@ -236,7 +236,8 @@ test('Story 6.5 — the agreement sweep: a dark override drawn the theme\'s way 
       const choices = Object.entries(LIB.modeScopedOffers(entry.controlSchema, entry.universals)).filter(([, values]) => values.length >= 2)
       for (const [control, values] of choices) for (const L of values) for (const K of values) {
         if (L === K) continue
-        const key = `harness:${entry.id}`
+        // DW-331 (Story 7.4): built by the one builder; `harness` names no real place, as this sweep is no compiled section
+        const key = RT.sectionKey('harness', entry.id)
         const state = { controls: { [control]: L }, darkOverrides: { [control]: K } }
         const instance = RT.darkHook(entry, state, key)
         if (instance === undefined) throw new Error(`${entry.id} ${control} ${L}→${K}: an override this design offers has no hook`)

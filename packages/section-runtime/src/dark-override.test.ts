@@ -7,7 +7,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { BACKGROUND_ROLES } from '@inflozo/library'
 import type { ControlDef } from '@inflozo/library'
-import { darkHook, darkOverrideCss, HOOK_RE } from './dark-override.ts'
+import { darkHook, darkOverrideCss, HOOK_RE, hookOf, sectionKey } from './dark-override.ts'
 import type { PlacedSection } from './dark-override.ts'
 import { GROUND_LINKS, MODE_SELECTORS } from './tokens.ts'
 
@@ -79,7 +79,11 @@ test('the hook: a hash of the section\'s key, eight hex digits, only while an ov
   const hook = darkHook(entry, on, KEY)
   assert.match(hook ?? '', HOOK_RE)
   assert.equal(darkHook(entry, on, KEY), hook, 'the same key, the same hook — Epic 7 hashes it again for the file it compiles')
-  assert.notEqual(darkHook(entry, on, 'home-2:auto-home-4'), hook, 'a doc-qualified key: Home\'s page-2 copy shares the id, never the hook')
+  // Home's page-2 copy sits in index.hbs and is keyed `index:…` (Story 7.4, `templateKeyOfFile`): it shares the id, never the hook
+  assert.notEqual(darkHook(entry, on, sectionKey('index', 'auto-home-4')), hook, 'a doc-qualified key: Home\'s page-2 copy shares the id, never the hook')
+  // Story 7.4 (DW-331): the one builder and the one hash
+  assert.equal(sectionKey('home', 'auto-home-4'), KEY)
+  assert.equal(hook, hookOf(KEY))
   assert.equal(darkHook(entry, { controls: { bg: 'base' } }, KEY), undefined, 'no override, no hook')
 })
 

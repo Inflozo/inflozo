@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { contrast } from './colour.ts'
-import { GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
+import { BASE_CSS, GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
 import { REFERENCE_PACK, REFERENCE_TOKENS, referenceTokensCss } from './reference.ts'
 import type { Pack, PackMode } from './tokens.ts'
 
@@ -347,4 +347,28 @@ test('R-229: the link rule stays DOCUMENT-WIDE, so a plain link in a post\'s bod
     assert.doesNotMatch(selector, /gh-content/, `a link rule names the post body: ${rule}`)
     assert.doesNotMatch(selector.replaceAll('a:not([class])', ''), /:not\(/, `a link rule scopes itself with a :not(…): ${rule}`)
   }
+})
+
+test('Story 7.4 — AD-18 in the theme only: ghostFonts writes Ghost\'s two font variables first, the pack\'s lists as their fallbacks; with no option the bytes stand', () => {
+  for (const [name, pack] of Object.entries(PACKS)) {
+    const plain = packTokensCss(pack)
+    assert.equal(packTokensCss(pack, {}), plain, name)
+    assert.equal(packTokensCss(pack, { ghostFonts: false }), plain, name)
+    const ghost = packTokensCss(pack, { ghostFonts: true })
+    const { heading, body } = pack.fonts
+    // exactly the two declarations change, each once, in :root alone
+    assert.equal(ghost, plain
+      .replace(`  --font-heading: ${heading.family};`, `  --font-heading: var(--gh-font-heading, ${heading.family});`)
+      .replace(`  --font-body: ${body.family};`, `  --font-body: var(--gh-font-body, ${body.family});`), name)
+    // the control: the option changed something
+    assert.notEqual(ghost, plain, name)
+    assert.equal((ghost.match(/--gh-font-heading/g) ?? []).length, 1, name)
+    assert.equal((ghost.match(/--gh-font-body/g) ?? []).length, 1, name)
+  }
+})
+
+test('Story 7.4 — the base: no browser margin and the pack\'s page ground, a token the dark map redeclares', () => {
+  assert.equal(BASE_CSS, 'html, body { margin: 0; background: var(--bg-page); }')
+  assert.ok(TOKEN_NAMES.includes('--bg-page'))
+  assert.match(packTokensCss(REFERENCE_PACK).split(MODE_SELECTORS.explicit.join(', '))[1] ?? '', /--bg-page:/, 'dark redeclares the page ground')
 })

@@ -54,12 +54,14 @@ const SELF_GUARDED = [join('restore', 'page.tsx')]
 // Story 5.24b (DW-91): and the page that throws on purpose, so the gate can read the error boundary's tab title.
 // Story 5.24e (DW-303): and the connect wizard's keys step, pressed under `next dev`'s StrictMode
 // Story 6.6 (DW-70; review, 2026-10-05): and S2c's brand offer with stand-in rows, so the chooser's bound and floor are measured
+// Story 7.4 (DW-331): and the pilots review on the harness's canvas route, so a Background set in Dark is walked in a browser
 const HARNESS_ONLY = [
   join('harness', 'editor', 'page.tsx'),
   join('harness', 'editor', '[template]', 'page.tsx'),
   join('harness', 'error', 'page.tsx'),
   join('harness', 'connect', 'page.tsx'),
   join('harness', 'brand', 'page.tsx'),
+  join('harness', 'pilots', 'page.tsx'),
 ]
 
 test('every page under /app is inside the (authed) group, or named as public here', () => {

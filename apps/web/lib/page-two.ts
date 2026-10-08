@@ -26,8 +26,9 @@ import { EMPTY_DOC } from './round-trip.ts'
 /** The page a canvas shows: its first, or its second — which stands for every later page (R-177). */
 export type Page = 1 | 2
 
-/** A section on the canvas, by the doc that stores it and the file it renders at. */
-export type Placed = DocInstance & { target: string; doc: string }
+/** A section on the canvas, by the doc that stores it, the file it renders at and — Story 7.4 (DW-331) — the key the theme
+ *  hashes its dark hook under (`sectionKey(themeKey, instanceId)`, the compile's `templateKeyOfFile` for the place it fills). */
+export type Placed = DocInstance & { target: string; doc: string; themeKey: string }
 
 type Docs = Readonly<Record<string, ProjectDoc>>
 type Subject = orbitWeekly.Subject | null | undefined
@@ -130,15 +131,21 @@ export const pageFileOf = (canvas: CanvasKey, page: Page): string =>
 
 /** THE STACK A PAGE PAINTS, and Layers lists, and every edit is aligned with: the site-wide rows around the page's own
  *  — on page 2, page 2's doc (its own, or the copy), stamped with page 2's key and file. Because page 2's rows are a
- *  whole doc, nothing downstream (the roots, the picks, ⌘K's insert position, the pill's drag) needs a page-2 branch. */
+ *  whole doc, nothing downstream (the roots, the picks, ⌘K's insert position, the pill's drag) needs a page-2 branch.
+ *
+ *  STORY 7.4 (DW-331) — each row also carries the key the THEME hashes it under: its doc's, except on a Tag or Author
+ *  page 2 that follows page 1. That page has no markup of its own — `tag.hbs` serves page 1's on every page — so its
+ *  rows take page 1's key, and the canvas draws the hook the visitor's page carries. Home's copy keeps `index`, because
+ *  `index.hbs` is a file of its own. */
 export function stackOf(docs: Docs, canvas: CanvasKey, page: Page, library: SynthesisLibrary): Placed[] {
   const key = ownKeyOf(canvas, page)
   const target = pageFileOf(canvas, page)
   const own = key === templateKeyOf(canvas) ? docs[key] : pageTwoOf(docs, canvas, library)
+  const themeKey = page === 2 && target === CANVASES[canvas].file && follows(docs, canvas) ? templateKeyOf(canvas) : key
   return canvasStack(
     // STORY 5.20 — a template SURFACE draws no site doc: the paywall is a partial inside a post, not a page
-    isSurface(canvas) ? [] : (docs[SITE.key]?.instances ?? []).map((i) => ({ ...i, target: SITE.file as string, doc: SITE.key as string })),
-    (own?.instances ?? []).map((i) => ({ ...i, target, doc: key })),
+    isSurface(canvas) ? [] : (docs[SITE.key]?.instances ?? []).map((i) => ({ ...i, target: SITE.file as string, doc: SITE.key as string, themeKey: SITE.key as string })),
+    (own?.instances ?? []).map((i) => ({ ...i, target, doc: key, themeKey })),
   )
 }
 

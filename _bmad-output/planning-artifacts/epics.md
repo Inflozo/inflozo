@@ -2903,6 +2903,15 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >
 > 1. the user-defined settings, cap-enforced — **Story 7.10**, with the `{{@custom.*}}` a promotion emits;
 > 2. the three dark built-ins on every project — **Story 7.11**, with the fallback logic that references them.
+>
+> **Moved from Story 7.4 by its two questions (owner, 2026-10-08), word for word, so none is missed (R-195).**
+>
+> 1. the pictures — `assets/images/`, content-hashed, each the 400 / 800 / 1600 px + original rendition set — the
+>    theme-size budget with its probe of the upload limits and its Pre-flight message, the inline icons' share of that
+>    budget (DW-108's budget half), the frame `S8 Deploy.dc.html` S8b and the over-budget message's hand test —
+>    **Story 7.29** (Question 1): no picture of the customer's can sit in a section until Epic 8, and Pre-flight is 7.18's;
+> 2. the whole face for a language outside `latin` and `latin-ext`, and its coverage check — **Story 7.12**
+>    (Question 2), where the language is chosen.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3057,13 +3066,15 @@ So that the theme is fast because it is small, not because it was minified.
 
 **Given** a compile
 **When** assets are emitted
-**Then** **only assets actually referenced** are copied into `assets/images/` with content-hashed filenames,
-**each as a fixed rendition set — 400 / 800 / 1600 px plus the original** — so `srcset` has real files behind it
+**Then** *(the pictures moved word for word to Story 7.29 by Question 1, owner, 2026-10-08: "**only assets actually
+referenced** are copied into `assets/images/` …")*
 **And** fonts are **self-hosted**: woff2 subsets of the project's pairing bundled into `assets/fonts/` with
-`@font-face` and `font-display: swap`, **preloaded**
+`@font-face` and `font-display: swap`, **preloaded** *(Story 7.4, 2026-10-08: the pool's own files, never subset,
+re-encoded or renamed by the compile; the `@font-face` rules in `default.hbs`'s head and the two roman faces' `latin`
+files preloaded, both through one `{{asset}}` address per file; each shipped family's licence at the theme root)*
 **And** **subsetting is static, by script range, never content-driven**, because the theme renders posts written
-after deploy: latin + latin-ext by default, and a project whose language falls outside that range **ships the
-full face**, with the size consequence surfaced in the budget rather than silently absorbed
+after deploy: latin + latin-ext by default *(the whole face for a language outside that range moved word for word to
+Story 7.12 by Question 2, owner, 2026-10-08)*
 **And** **section CSS and JS are emitted per *design*, not per category, and both leave when the design does**
 **And** the compiler **strips the CSS the placed designs cannot reach**, and the strip is **measured, not
 asserted**: compile CI reports emitted CSS bytes against bytes reachable from the placed designs' selectors, and
@@ -3076,22 +3087,23 @@ dark override reaching a visitor as its own root properties on its `data-instanc
 emitters stamp from `darkHook` over the same `template_key:instanceId` key — and **none on a Light-only project**, whose
 compile hands `darkOverrideCss` nothing (from Story 6.5's Dev, 2026-10-05)
 **And** what Story 6.5's Review left to the story that first compiles the hook (DW-331, 2026-10-05): one exported function builds a placed section's key (`${template_key}:${instanceId}`) and the editor's `queryKey`, the compile and the gates all call it, so the canvas and the theme can never hash two keys; two sections whose hooks collide are given a deterministic remedy or a named refusal the customer can act on, never a bare compile error; and a keyboard-gate journey asserts in a browser that an overridden section's root carries `data-instance` on the editor canvas and loses it on Reset, and that `/pilots` draws a Background set in Dark — today both are held in CI by source-text tests and proven only by the deployed walks.
-**And** the **theme-size budget is enforced and surfaced pre-deploy** — total zip, per-entry and uncompressed
-total — because Ghost rejects oversized uploads with `COMPRESSED_TOO_LARGE`, `ENTRY_TOO_LARGE` and
-`TOTAL_TOO_LARGE`; the real limits are **probed on the §4 targets** and the budget set below the lowest observed,
-and a project over budget is told **which assets are responsible before it attempts a deploy**
+**And** *(the theme-size budget moved word for word to Story 7.29 by Question 1, owner, 2026-10-08: "the **theme-size
+budget is enforced and surfaced pre-deploy** …")*
 **And** the theme stylesheet declares Ghost's two font variables (AD-18)
 **And** the CSS budget of ≤ 50 KB gzipped is computed **over the subset a given template reaches**, from the
 compiler's own record of which stylesheets each template pulls in, with the whole-file size reported alongside and
 not the gate.
-**And** a theme that draws any Tabler icon ships Tabler's MIT notice verbatim (`packages/library/icons/LICENSE-tabler.txt`) as a file, and the inline icons' bytes count in the theme-size budget (R-26, DW-108).
+**And** a theme that draws any Tabler icon ships Tabler's MIT notice verbatim (`packages/library/icons/LICENSE-tabler.txt`) as a file (R-26, DW-108) *(its other half — "the inline icons' bytes count in the theme-size budget" — moved word for word to Story 7.29 with the budget, Question 1, owner, 2026-10-08)*.
 **And** *(from Story 7.1's Create, 2026-10-05)* the token block is the top of `assets/css/screen.css`, where Story 7.1
 writes `packTokensCss(pack)` under `/* Tokens */`. FR-J1, §7.4's tree and AD-18 all put it there, and the spine's
 capability map is amended to agree. `darkOverrideCss` and AD-18's two Ghost-first font variables join that block, so
 `screen.css` stays the one file that names a mode (AD-30).
 
-**FRs:** FR-J3. · **Frame:** `S8 Deploy.dc.html` S8b — the over-budget message surfaces in Pre-flight. · **Owner test:** yes (the over-budget message). · **Verification:** upload limits probed on
-T1 and T3.
+**FRs:** FR-J3 (the fonts, the per-design CSS and its strip; its pictures and its budget are Story 7.29's). · **Frame:**
+none — `S8 Deploy.dc.html` S8b moved to Story 7.29 with the over-budget message (Question 1, owner, 2026-10-08). ·
+**Owner test:** none — the over-budget message's hand test moved word for word to Story 7.29; this story is Done on its
+Deploy commit (R-80). · **Verification:** the pilot theme on T1 (R-238): its fonts, licences, `screen.css` and the
+hook as Ghost serves them (MEASUREMENTS §73); the Ghost 5 half is DW-326's.
 **And** *(DW-337 — from Story 7.1's review, 2026-10-06)* `stripCssComments`, which the compile strips a design's
 stylesheet with, cuts an unquoted `url(http://x/*/y)` at the `/*`; this story, which rewrites every `url()` to a
 bundled asset, either keeps a `url(…)` alternation before the comment branch or refuses an unquoted `url()`.
@@ -3304,6 +3316,10 @@ pack's values as fallbacks, so it stays the one file in the theme that names a m
 user-defined settings, cap-enforced)* *"`custom` carries the three dark built-ins **on every project** plus any user-defined settings,
 cap-enforced."* `config.custom` is written in the same change as the
 `{{@custom.*}}` that reads each key, because `GS100` is an error on both gscans for a declared setting no template reads.
+**And** *(from Story 7.4's Dev, 2026-10-08)* a promoted control writes `data-{control}="{{@custom.key}}"`, a value decided
+at runtime, so the dead-CSS strip (`stripCss`, which reads each placed root's values through `resolveControls`) keeps
+**every value of that control**: this story hands the compile the promoted names, and the strip reads each as reachable
+at every value.
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
 test:** yes.
@@ -3340,6 +3356,10 @@ names a mode, so the token block remains the theme's one file that does.
 built-ins on every project)* *"`custom` carries the three dark built-ins **on every project** plus any user-defined settings,
 cap-enforced."* Story 7.2 emits no `custom`, so this story writes `config.custom`
 together with the lines that reference the three keys.
+**And** *(from Story 7.4's Dev, 2026-10-08)* a Light-only project's token block **keeps the pack's dark map**:
+`packTokensCss` writes it on every project, and Story 7.4 hands `darkOverrideCss` nothing and stamps no hook there. So
+which mode a Light-only site's visitors see is `color_scheme`'s compiled default, and this story's Create asks the owner
+(R-83) what that default is for each project mode.
 
 **FRs:** FR-Q5. · **Owner test:** none. · **Verification:** gscan on a Light-only fixture, both specs.
 
@@ -3385,6 +3405,18 @@ belong to Ghost's i18n namespaces and cannot be reached by a theme catalog
 file
 **And** the surface matches B18 as re-specified.
 **And** before this surface is built — and before Epic 9 authors a content model — the owner rules (R-83) what a non-English site shows for a section's untouched English starting words (DW-145).
+**And** *(moved word for word from Story 7.4 by its Question 2, owner, 2026-10-08 — the language is chosen here, so this
+screen says what the choice means for the fonts; until this story every project ships `latin` and `latin-ext`, and the
+library holds no whole-face file)* a project whose language falls outside that range **ships the full face**, with the
+size consequence surfaced in the budget rather than silently absorbed — Appendix D §D.b's full-face sentence: *"**Non-latin
+project languages ship the full face** for the covering script — no Inflozo-side subsetting at all — because there is no
+content-independent way to narrow it. The size consequence is real and surfaced, not absorbed: a Cyrillic or Greek face
+runs roughly 1.5–2× a latin subset, and a **CJK face is 1–5 MB per weight** with no subsetting the compiler can perform
+to make it small. FR-J3's pre-deploy theme-size budget is where that lands, and a CJK project is told at the language
+selector that font payload will dominate the theme zip."* — and its coverage line: *"**Coverage is checked, not
+assumed.** If the selected pairing's families do not cover the project language's script, the compiler falls back to
+the **system font stack** for that script and the language selector says so at the moment of selection — a theme never
+ships a `@font-face` that cannot render its own chrome strings."*
 
 **FRs:** FR-Q6 (the surface and `locales/` emission halves), FR-Q8. · **Frame:** `B Missing Surfaces.dc.html`
 B18. · **Owner test:** yes.
@@ -3967,8 +3999,30 @@ before that
 **And** bundled assets carry the fixed rendition set, **never Ghost's `image_sizes` map**, because Ghost never
 resizes theme-bundled assets and a `srcset` built from the wrong set is a live defect
 **And** nothing large crosses a function boundary (AD-13).
+**And** *(moved word for word from Story 7.4 by its Question 1, owner, 2026-10-08 — no picture of the customer's can sit
+in a section until Epic 8, and Pre-flight, where the size check speaks, is Story 7.18's; this story's planning decides how
+to prove both before Epic 8's pictures exist)* **only assets actually referenced** are copied into `assets/images/` with
+content-hashed filenames, **each as a fixed rendition set — 400 / 800 / 1600 px plus the original** — so `srcset` has
+real files behind it
+**And** *(moved word for word from Story 7.4, as above)* the **theme-size budget is enforced and surfaced pre-deploy** —
+total zip, per-entry and uncompressed total — because Ghost rejects oversized uploads with `COMPRESSED_TOO_LARGE`,
+`ENTRY_TOO_LARGE` and `TOTAL_TOO_LARGE`; the real limits are **probed on the §4 targets** and the budget set below the
+lowest observed, and a project over budget is told **which assets are responsible before it attempts a deploy**
+**And** *(moved word for word from Story 7.4, DW-108's budget half)* the inline icons' bytes count in the theme-size
+budget (R-26, DW-108).
+**And** *(read in source at Story 7.4's Create, 2026-10-08 — its Facts 5 and 6)* Ghost 6.58.0's `theme.uploadLimits`
+defaults (`shared/config/defaults.json`) are host-configurable: 1 GiB compressed — multer's `fileSize` →
+`COMPRESSED_TOO_LARGE` (`server/web/api/middleware/upload.js`); 512 MiB per entry and 4 GiB in total — gscan's
+`checkZip` limits → `@tryghost/zip`'s `ENTRY_TOO_LARGE` and `TOTAL_TOO_LARGE` (`server/services/themes/validate.js`), the
+same extract refusing a name of 254 bytes or more, and a symlink; each error carries `errorDetails.limitBytes`. Ghost
+5.130.6 has no `uploadLimits` key, and gscan 4.49.7 extracts with no limit. Ghost-CLI's nginx takes 1g on the SSL vhost
+(MEASUREMENTS §15h). Ghost(Pro)'s "5 MB" is its **media** limit (`ghost.org/help/media-file-size-limits`, read
+2026-10-08: Starter 5 MB, Publisher 100 MB, Business 250 MB, Custom 1 GB), and it names no theme limit.
 
-**FRs:** FR-K5. · **Owner test:** none. · **Verification:** a deployed theme on T1 rendering its bundled images.
+**FRs:** FR-K5; FR-J3's pictures and theme-size budget (from Story 7.4). · **Frame:** `S8 Deploy.dc.html` S8b — the
+over-budget message surfaces in Pre-flight (from Story 7.4). · **Owner test:** yes (the over-budget message) — Story 7.4's
+hand test, moved word for word. · **Verification:** a deployed theme on T1 rendering its bundled images; upload limits
+probed on T1 (R-238 — the Ghost 5 half is DW-326's).
 
 ### Story 7.30: The post-deploy template-binding checklist
 
@@ -4060,7 +4114,9 @@ root attribute**, which is what makes the dead-CSS strip sound rather than usual
 argument in emitted `.hbs` exists as a key in `image_sizes`**; and that **every emitted guard resolves to a real
 bound field**, since a guard on an identifier that does not exist passes a presence check and renders nothing
 **And** it reports **emitted CSS bytes against the bytes reachable from the placed designs' selectors**, and a
-gap is a build warning
+gap is a build warning *(Story 7.4's Dev, 2026-10-08: the measure is `cssFailures` in `tools/pilot-theme.mjs`, which CI
+runs today over the pilot theme alone; this lane runs it over every design — the strip's soundness, the gap as a
+`WARNING FR-G7` line, AD-37, and each template's ≤ 50 KB gzipped budget)*
 **And** it runs `size-limit` over `assets/js/main.js` at the **40 KB gzipped — 40,960 bytes at gzip level 9** (NFR-2, DW-140) budget as a **developer-facing
 warning, not a build failure**
 **And** the **FR-J17 quality gate runs in the same lane**, so a category gate has one sheet to read.
@@ -4183,6 +4239,9 @@ before approval can be granted**, since one user's file reaches every visitor th
 has no keyboard path (UX-DR10)
 **And** per-file progress shows a **real byte count** (UX-DR6)
 **And** the states match S10a–d and D8d.
+**And** *(DW-345 — from Story 7.4's Create, 2026-10-08)* the upload makes, in the browser, the rendition set AD-12 says
+it makes — **400 / 800 / 1600 px wide plus the original**, recorded in `assets.renditions` — so Story 7.29 has the files
+FR-J3 bundles; no Epic 8 story's criteria said so.
 
 **FRs:** FR-K2. · **Frame:** `S10 Assets.dc.html` S10a–d · `D8 Editor Below 1440.dc.html` D8d. · **Owner test:**
 yes.

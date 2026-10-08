@@ -4,6 +4,8 @@
 // Story 7.2 — `package.json`, held to its own I/O matrix, and the `size=` check on the final text.
 // Story 7.3 — every standard template, synthesized where untouched: the spec's I/O matrix row by row, on the same inline
 // library, which holds every design the rows need (A24 #1 may sit on `page.hbs` here, as Story 10.79 will make it).
+// Story 7.4 — fonts, licences, the token block, the base, the strip, the hooks and AD-14's record: the spec's I/O matrix
+// row by row. A core package's test opens no file (AD-1), so the font pool's bytes are made here, to the pool's lengths.
 //
 // A test may load `handlebars` to parse what the compiler emitted (FR-J1); product code may not (`eslint.config.js`).
 
@@ -13,11 +15,14 @@ import Handlebars from 'handlebars'
 import { JSDOM } from 'jsdom'
 import { CONSUMED_DIRECTIVE_RE, IMAGE_SIZES, PAYWALL_TARGET } from '@inflozo/library'
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
-import { pageTwoStack, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
-import type { DocInstance, ProjectDoc } from '@inflozo/section-runtime'
+import { TABLER_LICENSE } from '@inflozo/library/icons'
+import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
+import { BASE_CSS, darkOverrideCss, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
+import type { DocInstance, Pack, ProjectDoc } from '@inflozo/section-runtime'
+import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
 import { checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, THEME_MARKER, THEME_MARKS } from './compile.ts'
-import type { CompileInput } from './compile.ts'
+import type { CompiledTheme, CompileInput } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
 
@@ -114,11 +119,26 @@ const at = (designId: string, layerName: string, over: Partial<DocInstance> = {}
 const docOf = (...instances: DocInstance[]): ProjectDoc => ({ schemaVersion: 1, instances })
 const NEWS = { heading: 'One letter a week', proof: { text: 'Join us today', marks: [{ start: 5, end: 7, mark: 'strong' }] } }
 
+/** A licence as a font family's authors wrote it: CRLF, a trailing space, two final newlines — what `tidyLicence` tidies. */
+const LICENCE_WORDS = (path: string) => `Copyright 2020 The ${path} Project Authors\r\n\r\nThis Font Software is licensed under the SIL Open Font License, Version 1.1. \r\n\r\n`
+const POOL_FILES = Object.values(POOL.faces).flatMap((face) => face.files)
+/** The shell's read of the pool (Story 7.4), made in memory: each file its pool length, filled with a byte of its own name. */
+const poolFonts = (path: string): Uint8Array => {
+  const f = POOL_FILES.find((x) => `files/${x.file}` === path)
+  if (f !== undefined) return new Uint8Array(f.bytes).fill([...f.file].reduce((n, c) => (n + c.charCodeAt(0)) % 256, 0))
+  if (Object.values(POOL.families).some((family) => family.licenceFile === path)) return new TextEncoder().encode(LICENCE_WORDS(path))
+  throw new Error(`the pool holds no ${path}`)
+}
+
 const THEME = { name: 'inflozo-field-notes', version: '1.4.0', description: 'Field Notes' }
 const input = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}): CompileInput => ({
-  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: THEME, ...over,
+  templates, library: (id) => LIB[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: THEME, pairing: 'D1', fonts: poolFonts, darkEnabled: true, ...over,
 })
-const compile = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}) => compileTheme(doc(), input(templates, over))
+/** The whole compile: every file — a font's bytes too — and AD-14's record. */
+const build = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}): CompiledTheme => compileTheme(doc(), input(templates, over))
+/** A compile's TEXT files — every row before Story 7.4 reads templates and stylesheets; the scans below read bytes too. */
+const textOf = (files: CompiledTheme['files']): Record<string, string> => Object.fromEntries(Object.entries(files).filter((e): e is [string, string] => typeof e[1] === 'string'))
+const compile = (templates: Record<string, ProjectDoc>, over: Partial<CompileInput> = {}) => textOf(build(templates, over).files)
 
 /** The project every matrix row is a slice of, and the tree the whole-output checks below read. */
 function project(): Record<string, ProjectDoc> {
@@ -321,7 +341,7 @@ test('every refusal names its file and its layer', () => {
 test('the stylesheet: the token block first, then each placed design\'s stylesheet once, in design order, under its header, and no other comment', () => {
   const css = compile(project())['assets/css/screen.css'] ?? ''
   const headers = [...css.matchAll(/\/\*[^]*?\*\//g)].map((m) => m[0])
-  assert.deepEqual(headers, ['/* Tokens */', '/* Headers · Rail */', '/* Footers · Columns */', '/* Heroes · Latest Post */', '/* Post Grids · Three Up */', '/* Newsletter · Inline Row */', '/* Post Headers · Centred */'])
+  assert.deepEqual(headers, ['/* Tokens */', '/* Base */', '/* Headers · Rail */', '/* Footers · Columns */', '/* Heroes · Latest Post */', '/* Post Grids · Three Up */', '/* Newsletter · Inline Row */', '/* Post Headers · Centred */'])
   assert.ok(css.startsWith('/* Tokens */\n:root {'), css.slice(0, 80))
   assert.ok(!/[ \t]$/m.test(css) && !/\n\n\n/.test(css) && css.endsWith('}\n') && !css.endsWith('\n\n'), 'trailing whitespace, a double blank line or a bad ending')
   assert.equal((css.match(/\.a22-1 \{/g) ?? []).length, 1, 'a design placed three times ships its stylesheet once')
@@ -365,7 +385,13 @@ function statements(text: string): string[] {
 
 test('over every emitted file: it parses under Handlebars 4.7.9, carries one {{{body}}} and, with a paywall, {{{html}}} as its first line — no other triple-stash — no token, no stray comment, no fingerprint', () => {
   const templates = { ...project(), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
-  const out = compile(templates, { pageTwo: projectTwo() })
+  const files = build(templates, { pageTwo: projectTwo() }).files
+  // Story 7.4: a font is bytes, never text, so the text scans skip it — and the skip is not vacuous: the fonts are there
+  const bytes = Object.entries(files).filter(([, b]) => b instanceof Uint8Array).map(([p]) => p)
+  assert.ok(bytes.length > 0 && bytes.every((p) => /^assets\/fonts\/[a-z0-9-]+\.woff2$/.test(p)), bytes.join(' '))
+  const out = textOf(files)
+  assert.deepEqual(Object.keys(out).length + bytes.length, Object.keys(files).length)
+  assert.ok(Object.keys(out).some((p) => p.startsWith('LICENSE-')), 'the licences are read as text, and meet rule 1')
   const instanceIds = Object.values(templates).flatMap((d) => d.instances.map((i) => i.instanceId))
   let triples = 0
   for (const [path, body] of Object.entries(out)) {
@@ -402,11 +428,13 @@ test('determinism: the same input, its templates and every object\'s keys in ano
     instances: d.instances.map((i) => reverse({ ...i, content: reverse(i.content), controls: reverse(i.controls) }) as unknown as DocInstance),
   }]))
   const cards = ['video', 'toggle', 'header_v2', 'header', 'bookmark']
-  const a = compile(project(), { designedCards: cards })
-  const b = compile(shuffled as Record<string, ProjectDoc>, { assets: reverse({ x: '/x', y: '/y' }), theme: reverse(THEME) as typeof THEME, designedCards: [...cards].reverse() })
-  assert.deepEqual(Object.keys(b), Object.keys(a))
-  assert.deepEqual(Object.keys(a), [...Object.keys(a)].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0)), 'code-unit path order')
-  for (const k of Object.keys(a)) assert.equal(b[k], a[k], k)
+  const a = build(project(), { designedCards: cards })
+  const b = build(shuffled as Record<string, ProjectDoc>, { assets: reverse({ x: '/x', y: '/y' }), theme: reverse(THEME) as typeof THEME, designedCards: [...cards].reverse() })
+  assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
+  assert.deepEqual(Object.keys(a.files), [...Object.keys(a.files)].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0)), 'code-unit path order')
+  // Story 7.4: `deepEqual`, so a font's bytes are compared by content, never by identity
+  for (const k of Object.keys(a.files)) assert.deepEqual(b.files[k], a.files[k], k)
+  assert.deepEqual(b.css, a.css)
 })
 
 // ─── Story 7.2: package.json ──────────────────────────────────────────────────────────────────────────────────────
@@ -712,9 +740,208 @@ test('(7.3) determinism: templates, pageTwo and routed in another order give the
   const pageTwo = { 'tag.hbs': docOf(at('a17/1', 'Two', { isMainFeed: true, controls: { 'per-row': 'two' } })), 'home.hbs': docOf(at('a22/1', 'Letter', { content: NEWS })) }
   const templates = { ...project(), 'custom-signup.hbs': docOf(at('a30/1', 'Join')), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
   const reverse = <T>(o: Record<string, T>): Record<string, T> => Object.fromEntries(Object.entries(o).reverse())
-  const a = compile(templates, { pageTwo, routed: ['custom-landing.hbs', 'custom-about.hbs'] })
-  const b = compile(reverse(templates), { pageTwo: reverse(pageTwo), routed: ['custom-about.hbs', 'custom-landing.hbs'] })
-  assert.deepEqual(Object.keys(b), Object.keys(a))
-  for (const k of Object.keys(a)) assert.equal(b[k], a[k], k)
-  assert.ok(['custom-about.hbs', 'custom-landing.hbs', 'custom-signup.hbs', PAYWALL_TARGET, 'home.hbs'].every((f) => f in a), Object.keys(a).join(' '))
+  const a = build(templates, { pageTwo, routed: ['custom-landing.hbs', 'custom-about.hbs'] })
+  const b = build(reverse(templates), { pageTwo: reverse(pageTwo), routed: ['custom-about.hbs', 'custom-landing.hbs'] })
+  assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
+  for (const k of Object.keys(a.files)) assert.deepEqual(b.files[k], a.files[k], k)
+  assert.deepEqual(b.css, a.css)
+  assert.ok(['custom-about.hbs', 'custom-landing.hbs', 'custom-signup.hbs', PAYWALL_TARGET, 'home.hbs'].every((f) => f in a.files), Object.keys(a.files).join(' '))
+})
+
+// ─── Story 7.4: fonts, licences, the token block, the base, the strip, the hooks and the record ───────────────────────
+
+const fontsOf = (files: CompiledTheme['files']): string[] => Object.keys(files).filter((p) => p.startsWith('assets/fonts/'))
+const preloadsOf = (head: string): string[] => [...head.matchAll(/<link rel="preload" href="\{\{asset "fonts\/([^"]+)"\}\}" as="font" type="font\/woff2" crossorigin>/g)].map((m) => m[1] as string)
+const withPairing = (pairing: string): Partial<CompileInput> => ({ pairing, pack: { ...REFERENCE_PACK, fonts: pairingFonts(pairing) } as Pack })
+
+test('(7.4) Paper\'s fonts: the pool files of D1\'s faces as fonts returned them, two roman preloads, D1\'s faces in the head, each family\'s licence at the root', () => {
+  const { files } = build({})
+  assert.deepEqual(fontsOf(files), [
+    'assets/fonts/fraunces-roman-latin-ext.woff2', 'assets/fonts/fraunces-roman-latin.woff2',
+    'assets/fonts/inter-italic-latin-ext.woff2', 'assets/fonts/inter-italic-latin.woff2',
+    'assets/fonts/inter-roman-latin-ext.woff2', 'assets/fonts/inter-roman-latin.woff2',
+  ])
+  for (const path of fontsOf(files)) assert.deepEqual(files[path], poolFonts(`files/${path.slice('assets/fonts/'.length)}`), path)
+  const shell = files['default.hbs'] as string
+  assert.deepEqual(preloadsOf(shell), ['fraunces-roman-latin.woff2', 'inter-roman-latin.woff2'])
+  // the faces are fontFaceCss's, one {{asset}} address per file, inside one <style> between the preloads and the stylesheet
+  const faces = fontFaceCss('D1', (f) => `{{asset "fonts/${f.file}"}}`).split('\n').map((l) => `      ${l}`).join('\n')
+  assert.ok(shell.includes(`crossorigin>\n    <style>\n${faces}\n    </style>\n    <link rel="stylesheet" href="{{asset "css/screen.css"}}">`), shell)
+  // every preload href is, verbatim, the src of one of its faces
+  const srcs = [...shell.matchAll(/src: url\((\{\{asset "fonts\/[^"]+"\}\})\) format\('woff2'\);/g)].map((m) => m[1])
+  for (const file of preloadsOf(shell)) assert.equal(srcs.filter((s) => s === `{{asset "fonts/${file}"}}`).length, 1, file)
+  // the style holds faces only and names no mode (AD-30): screen.css stays the one file that does
+  assert.doesNotMatch(shell, /prefers-color-scheme|data-mode|scheme-(light|dark)/)
+  // each family's licence, its words unchanged and only its whitespace tidied (CRLF, a trailing space, the extra newline)
+  for (const slug of ['fraunces', 'inter']) {
+    assert.equal(files[`LICENSE-${slug}.txt`], `Copyright 2020 The licences/${slug}.txt Project Authors\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1.\n`, slug)
+  }
+  assert.deepEqual(Object.keys(files).filter((p) => p.startsWith('LICENSE-')), ['LICENSE-fraunces.txt', 'LICENSE-inter.txt'])
+  // no file names a font host (§D.a rule 6)
+  for (const [path, body] of Object.entries(textOf(files))) assert.doesNotMatch(body, /fonts\.(googleapis|gstatic)\.com/, path)
+})
+
+test('(7.4) one family in both roles (D12): its two faces, one preload — the shared roman — and one licence', () => {
+  const { files } = build({}, withPairing('D12'))
+  assert.deepEqual(fontsOf(files).map((p) => p.replace(/^assets\/fonts\//, '')), pairingFaces('D12').flatMap((f) => f.files.map((x) => x.file)).sort())
+  assert.ok(fontsOf(files).every((p) => p.includes('newsreader-')))
+  assert.deepEqual(preloadsOf(files['default.hbs'] as string), ['newsreader-roman-latin.woff2'])
+  assert.deepEqual(Object.keys(files).filter((p) => p.startsWith('LICENSE-')), ['LICENSE-newsreader.txt'])
+})
+
+test('(7.4) a static body family (D15): Lora\'s roman and Lato\'s four static faces ship; the preloads are Lora\'s roman and Lato\'s first roman face, 400', () => {
+  const { files } = build({}, withPairing('D15'))
+  assert.deepEqual(fontsOf(files).map((p) => p.replace(/^assets\/fonts\//, '')), pairingFaces('D15').flatMap((f) => f.files.map((x) => x.file)).sort())
+  assert.equal(fontsOf(files).filter((p) => p.includes('/lato-')).length, pairingFaces('D15').filter((f) => f.family === 'Lato').length * Object.keys(POOL.subsets).length)
+  assert.deepEqual(preloadsOf(files['default.hbs'] as string), ['lora-roman-latin.woff2', 'lato-roman-400-latin.woff2'])
+  assert.deepEqual(Object.keys(files).filter((p) => p.startsWith('LICENSE-')), ['LICENSE-lato.txt', 'LICENSE-lora.txt'])
+})
+
+test('(7.4) fonts that disagree are refused, naming the pairing and the pack\'s two families; a short read is refused naming the file', () => {
+  const { heading, body } = REFERENCE_PACK.fonts
+  assert.throws(() => build({}, { pairing: 'D12' }), (e: Error) => e.message.includes('D12') && e.message.includes(heading.family) && e.message.includes(body.family))
+  const short = (path: string) => (path === 'files/inter-italic-latin.woff2' ? poolFonts(path).subarray(1) : poolFonts(path))
+  assert.throws(() => build({}, { fonts: short }), /^Error: fonts: files\/inter-italic-latin\.woff2 read \d+ bytes, and the pool records \d+/)
+  // the control: the pool's own read compiles
+  assert.doesNotThrow(() => build({}))
+})
+
+test('(7.4) Ghost\'s font variables: screen.css\'s :root declares both var(--gh-font-…) forms over the pack\'s lists; the canvas\'s block is not touched', () => {
+  const css = compile({})['assets/css/screen.css'] as string
+  assert.ok(css.includes(`  --font-heading: var(--gh-font-heading, ${REFERENCE_PACK.fonts.heading.family});\n`), css.slice(0, 2000))
+  assert.ok(css.includes(`  --font-body: var(--gh-font-body, ${REFERENCE_PACK.fonts.body.family});\n`))
+  // the control: the block the canvas reads names neither
+  assert.doesNotMatch(packTokensCss(REFERENCE_PACK), /--gh-font/)
+})
+
+test('(7.4) the base: BASE_CSS, the canvas document\'s own, right after the token block; screen.css is css.global then each sheet in design order', () => {
+  const templates = { ...project(), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
+  const { files, css } = build(templates, { pageTwo: projectTwo() })
+  assert.ok(css.global.startsWith('/* Tokens */\n:root {') && css.global.endsWith(`\n\n/* Base */\n${BASE_CSS}`), css.global.slice(-200))
+  assert.equal(files['assets/css/screen.css'], `${[css.global, ...Object.values(css.sheets)].join('\n\n')}\n`)
+  assert.deepEqual(Object.keys(css.sheets), ['a1/1', 'a3/1', 'a4/13', 'a17/1', 'a22/1', 'a24/1', 'a32/1'], 'design order')
+  for (const [id, chunk] of Object.entries(css.sheets)) assert.match(chunk, /^\/\* [^*]+ \*\/\n/, id)
+})
+
+test('(7.4) the record: every root-level template but the shell reaches the site doc\'s designs and its own; post, page and a custom template add the paywall\'s', () => {
+  const templates = { ...project(), 'custom-signup.hbs': docOf(at('a30/1', 'Join')), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
+  const { files, css } = build(templates, { pageTwo: projectTwo() })
+  const site = ['a1/1', 'a3/1']
+  assert.deepEqual(css.reach['home.hbs'], [...site, 'a4/13', 'a17/1', 'a22/1'])
+  assert.deepEqual(css.reach['post.hbs'], [...site, 'a22/1', 'a24/1', 'a32/1'])
+  assert.deepEqual(css.reach['custom-signup.hbs'], [...site, 'a30/1', 'a32/1'])
+  assert.deepEqual(css.reach['index.hbs'], [...site, 'a17/1'])
+  assert.deepEqual(Object.keys(css.reach), Object.keys(files).filter((p) => p.endsWith('.hbs') && !p.includes('/') && p !== 'default.hbs'))
+})
+
+test('(7.4) hidden only: a design whose every instance is hidden ships no sheet', () => {
+  const { files, css } = build({ 'home.hbs': docOf(at('a4/13', 'Gone', { hidden: true }), at('a17/1', 'Grid', { isMainFeed: true })) })
+  assert.ok(!('a4/13' in css.sheets) && !(files['assets/css/screen.css'] as string).includes('.a4-13'))
+  // the control: shown, it ships
+  assert.ok('a4/13' in build({ 'home.hbs': docOf(at('a4/13', 'Here'), at('a17/1', 'Grid', { isMainFeed: true })) }).css.sheets)
+})
+
+test('(7.4) the strip in the compile: a value no placed root carries leaves the sheet; two placements keep both values', () => {
+  const lib = (id: string) => (id === 'a17/1' ? { ...(LIB['a17/1'] as SectionRegistryEntry), css: '.a17-1 { gap: 0; }\n.a17-1[data-per-row="two"] .a17-1__grid { gap: 1px; }\n.a17-1[data-per-row="three"] .a17-1__grid { gap: 2px; }\n' } : LIB[id])
+  const one = build({ 'home.hbs': docOf(at('a17/1', 'Grid', { isMainFeed: true })) }, { library: lib }).css.sheets['a17/1'] ?? ''
+  assert.ok(one.includes('"three"') && !one.includes('"two"'), one)
+  const two = build({ 'home.hbs': docOf(at('a17/1', 'Grid', { isMainFeed: true })) }, { library: lib, pageTwo: { 'tag.hbs': docOf(at('a17/1', 'Two', { isMainFeed: true, controls: { 'per-row': 'two' } })) } }).css.sheets['a17/1'] ?? ''
+  assert.ok(two.includes('"three"') && two.includes('"two"'), two)
+})
+
+// A design drawn on two grounds, as AD-30's authoring rule writes them: the Background role narrowed to Base and Contrast,
+// one root rule per value declaring the root's own property, and the root rule reading it.
+const grounded = (e: SectionRegistryEntry): SectionRegistryEntry => {
+  const root = e.id.replace('/', '-')
+  return { ...e, universals: { bg: { values: ['base', 'contrast'], reason: 'two grounds' } }, css: `.${root} { background: var(--${root}-ground); }\n.${root}[data-bg="base"] { --${root}-ground: var(--bg-page); }\n.${root}[data-bg="contrast"] { --${root}-ground: var(--bg-contrast); }\n` }
+}
+const GROUNDED = Object.fromEntries(Object.entries(LIB).map(([id, e]) => [id, grounded(e)]))
+const groundedLib = (id: string) => GROUNDED[id]
+const DARK: Partial<DocInstance> = { darkOverrides: { bg: 'contrast' } }
+const hooksIn = (files: CompiledTheme['files']): string[] => [...new Set(Object.values(textOf(files)).flatMap((b) => [...b.matchAll(/data-instance="([0-9a-f]{8})"/g)].map((m) => m[1] as string)))].sort()
+
+test('(7.4) a dark override, Light + Dark: the root carries hookOf(sectionKey(its place, id)); the token block ends with its rules under MODE_SELECTORS\' two conditions; no override, no hook', () => {
+  const dark = at('a22/1', 'Dark box', { content: NEWS, ...DARK })
+  const plain = at('a22/1', 'Plain box', { content: { heading: 'Other' } })
+  const { files, css } = build({ 'home.hbs': docOf(dark, plain) }, { library: groundedLib, pageTwo: projectTwo() })
+  const key = sectionKey('home', dark.instanceId)
+  const hook = hookOf(key)
+  assert.match(files['partials/sections/home/dark-box.hbs'] as string, new RegExp(`\\n  data-instance="${hook}">`))
+  assert.ok(!(files['partials/sections/home/plain-box.hbs'] as string).includes('data-instance'))
+  assert.deepEqual(hooksIn(files), [hook])
+  const tokens = css.global.split('\n\n/* Base */')[0] as string
+  const rules = darkOverrideCss([{ key, entry: GROUNDED['a22/1'] as SectionRegistryEntry, state: dark }]).replace(/^\/\*[^\n]*\*\/\n/, '').trimEnd()
+  assert.ok(tokens.endsWith(rules), tokens.slice(-600))
+  assert.ok(tokens.includes(`${MODE_SELECTORS.explicit.map((c) => `${c} [data-instance="${hook}"]`).join(', ')} { --a22-1-ground: var(--bg-contrast); }`), tokens.slice(-600))
+  // a dark value's root rule: no instance is at contrast in light, so the SHEET drops it — and the block still writes it
+  assert.ok(!(css.sheets['a22/1'] ?? '').includes('contrast'), css.sheets['a22/1'])
+})
+
+test('(7.4) Light-only: no data-instance anywhere and no per-section rule; the pack\'s dark map stands', () => {
+  const dark = at('a22/1', 'Dark box', { content: NEWS, ...DARK })
+  const { files, css } = build({ 'home.hbs': docOf(dark) }, { library: groundedLib, pageTwo: projectTwo(), darkEnabled: false })
+  assert.deepEqual(hooksIn(files), [])
+  assert.ok(!css.global.includes('[data-instance'))
+  assert.ok(css.global.includes(`${MODE_SELECTORS.explicit.join(', ')} {`), 'the dark map')
+  // the control: Light + Dark, the same doc carries both
+  const on = build({ 'home.hbs': docOf(dark) }, { library: groundedLib, pageTwo: projectTwo() })
+  assert.equal(hooksIn(on.files).length, 1)
+  assert.ok(on.css.global.includes('[data-instance'))
+})
+
+test('(7.4) keys by place: site, home, index (own design and the copy), tag-paged, a custom template and the paywall — the keys the editor hashes', () => {
+  const site = at('a1/1', 'Header', DARK)
+  const home = at('a22/1', 'Box', { content: NEWS, ...DARK })
+  const index = at('a17/1', 'Older', { isMainFeed: true, ...DARK })
+  const tagTwo = at('a17/1', 'Tag two', { isMainFeed: true, controls: { 'per-row': 'two' }, ...DARK })
+  const custom = at('a30/1', 'Join', DARK)
+  const paywall = at('a32/1', 'Paywall', DARK)
+  const out = build({ 'default.hbs': docOf(site), 'home.hbs': docOf(home), 'custom-signup.hbs': docOf(custom), [PAYWALL_TARGET]: docOf(paywall) }, {
+    library: groundedLib, pageTwo: { 'home.hbs': docOf(index), 'tag.hbs': docOf(tagTwo) },
+  })
+  const want = [['site', site], ['home', home], ['index', index], ['tag-paged', tagTwo], ['custom:custom-signup.hbs', custom], ['paywall', paywall]] as const
+  assert.deepEqual(hooksIn(out.files), want.map(([k, i]) => hookOf(sectionKey(k, i.instanceId))).sort())
+  // Home's page 2 as the COPY: index.hbs holds Home's instance under `index:…`, a hook apart from Home's own, so the two no
+  // longer share a partial once an override is in force
+  const feed = at('a17/1', 'Feed', { isMainFeed: true, ...DARK })
+  const copy = build({ 'home.hbs': docOf(feed) }, { library: groundedLib })
+  assert.deepEqual(hooksIn(copy.files), [hookOf(sectionKey('home', feed.instanceId)), hookOf(sectionKey('index', feed.instanceId))].sort())
+  assert.notEqual(sectionsOf(copy.files['home.hbs'] as string)[0], sectionsOf(copy.files['index.hbs'] as string)[0])
+})
+
+test('(7.4) an archive\'s page 2 that follows page 1: tag.hbs\'s one markup takes the tag:… key', () => {
+  const feed = at('a17/1', 'Tag feed', { isMainFeed: true, ...DARK })
+  const { files } = build({ 'tag.hbs': docOf(feed) }, { library: groundedLib })
+  assert.deepEqual(hooksIn(files), [hookOf(sectionKey('tag', feed.instanceId))])
+  assert.ok(!hooksIn(files).includes(hookOf(sectionKey('tag-paged', feed.instanceId))))
+})
+
+test('(7.4) two hooks collide: refused naming both layer names and files, with the remedy', () => {
+  // two keys whose FNV-1a hashes collide (dark-override.test.ts found them by search)
+  assert.equal(hookOf(sectionKey('home', 's10161')), hookOf(sectionKey('home', 's488360')), 'the control: the keys collide')
+  const pair = docOf(at('a22/1', 'First', { instanceId: 's10161', content: NEWS, ...DARK }), at('a22/1', 'Second', { instanceId: 's488360', content: NEWS, ...DARK }))
+  assert.throws(() => build({ 'home.hbs': pair }, { library: groundedLib, pageTwo: projectTwo() }), (e: Error) => e.message === 'Two sections share a hidden name, so neither one\'s dark look can ship: "First" in home.hbs and "Second" in home.hbs. Delete one of them and add it again — it gets a new name.')
+  // Light-only: no hook, so nothing to collide
+  assert.doesNotThrow(() => build({ 'home.hbs': pair }, { library: groundedLib, pageTwo: projectTwo(), darkEnabled: false }))
+})
+
+test('(7.4) a Tabler icon: a placed section that draws one ships LICENSE-tabler.txt, byte for byte TABLER_LICENSE; none drawn, no file', () => {
+  const iconRow = design('a22/9', 'Icon Row', { compileTarget: ['home.hbs'], contentSchema: { icon: { type: 'icon', label: 'Icon' } as PropDef }, html: '<section class="a22-9">\n  <span class="a22-9__icon" data-prop="icon"></span>\n</section>' })
+  const lib = (id: string) => (id === 'a22/9' ? iconRow : LIB[id])
+  const drawn = build({ 'home.hbs': docOf(at('a22/9', 'Icons', { content: { icon: 'star' } })) }, { library: lib }).files
+  assert.equal(drawn['LICENSE-tabler.txt'], TABLER_LICENSE)
+  assert.ok(Object.values(textOf(drawn)).some((b) => b.includes('<svg ')), 'the icon is drawn')
+  // the controls: no icon named, and an icon on a hidden section, draw nothing and ship no licence
+  assert.ok(!('LICENSE-tabler.txt' in build({ 'home.hbs': docOf(at('a22/9', 'Icons', { content: { icon: '' } })) }, { library: lib }).files))
+  assert.ok(!('LICENSE-tabler.txt' in build({ 'home.hbs': docOf(at('a22/9', 'Icons', { content: { icon: 'star' }, hidden: true })) }, { library: lib }).files))
+})
+
+test('(7.4) determinism: every input in another key order — the pool read included — gives the same files, byte for byte, and the same record', () => {
+  const templates = { ...project(), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall', DARK)) }
+  const reverse = <T>(o: Record<string, T>): Record<string, T> => Object.fromEntries(Object.entries(o).reverse())
+  const a = build(templates, { library: groundedLib, pageTwo: projectTwo() })
+  const b = build(reverse(templates), { library: groundedLib, pageTwo: reverse(projectTwo()), fonts: (p) => Uint8Array.from(poolFonts(p)) })
+  assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
+  for (const k of Object.keys(a.files)) assert.deepEqual(b.files[k], a.files[k], k)
+  assert.deepEqual(b.css, a.css)
 })

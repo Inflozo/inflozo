@@ -3430,11 +3430,17 @@ plain: The icon set's licence has to travel with every theme that uses one of it
   size of drawing icons inline has to be counted against the theme's size limit. The licence text is in
   the library today, but no compiler story copies it into the theme or counts the icons.
 status: open
+resolution: the LICENCE half is done — Story 7.4 (2026-10-08): `compileTheme` records each icon its lookup draws, and a
+  theme whose placed sections draw one ships `LICENSE-tabler.txt` at its root, byte for byte `TABLER_LICENSE`; with no
+  icon drawn there is no file (`compile.test.ts`, its control). The BUDGET half stays open: the theme-size budget moved
+  word for word to Story 7.29 (Story 7.4's Question 1, owner, 2026-10-08), and with it "the inline icons' bytes count in
+  the theme-size budget".
 severity: medium
 origin: Story 4.5 Dev (2026-09-13) — vendoring the whole set under R-104.
-owner: Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip), whose criteria carry its requirement word
-  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Epic 7 — Story 7.4 (Assets, fonts, per-design CSS
-  and the dead-code strip, FR-J3's budget) is the nearest home; its acceptance criteria name neither.")*
+owner: Story 7.29 (Deploy-time asset bundling), whose criteria carry the budget half word for word with its id (R-195).
+  *(Story 7.4's Dev, 2026-10-08: was Story 7.4, which built the licence half. Story 5.24a's Dev, 2026-09-28: was "Epic 7
+  — Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip, FR-J3's budget) is the nearest home; its
+  acceptance criteria name neither.")*
 location: packages/library/icons/LICENSE-tabler.txt · packages/library/src/icons.ts `TABLER_LICENSE` ·
   prd.md Appendix C, Icon Picker row ("the licence text ships in the emitted theme"; "that cost is measured
   against FR-J's budget") · reconcile-designs-decisions.md R-26 · epics.md Story 7.4
@@ -9043,7 +9049,18 @@ reason: 6.5's proof that its refactor moved no pixel was a one-off comparison ag
 plain: When Inflozo starts building real themes, three loose ends matter: the editor and the theme must name each section
   the same way; two sections must never be given the same hidden name without a clear remedy; and the checks that run
   on every change should watch the editor do this in a real browser, not only read its code.
-status: open
+status: done 2026-10-08 (Story 7.4)
+resolution: Story 7.4 (2026-10-08) — ONE KEY: `sectionKey(templateKey, instanceId)` and `hookOf(key)` in
+  `dark-override.ts` (exported by the runtime), and `templateKeyOfFile(file, pageTwo)` in the library's `vocabulary.ts`,
+  held equal to the app's own key↔file map by `editor.test.ts`. The editor's `queryKey`, both `keyOf`s, the compile and
+  `mode.spec.mjs` build through `sectionKey`; each stack row carries `themeKey`, the key the theme hashes it under — its
+  doc's, except on a Tag or Author page 2 that follows page 1, which the editor used to hash as `tag-paged:…` while the
+  theme serves page 1's markup — and the editor hashes it only when `darkEnabled` (it stamped hooks on a Light-only
+  project). `page-two.test.ts` checks every canvas × page × designed-or-following. A COLLISION is refused by name, before
+  `darkOverrideCss`, naming both layers and files with the remedy ("Delete one of them and add it again — it gets a new
+  name."). THE BROWSER PROOF: two keyboard-gate journeys, `7.4 · DW-331 · the hook on the canvas` and `· /pilots draws a
+  Background set in Dark` (`/pilots` mounted in the harness at `/app/harness/pilots`), each behind its control and each
+  seen failing on a mutated editor and `/pilots`; `dark-mode.test.ts`'s two source-text guards are deleted.
 severity: medium
 origin: Story 6.5's Review (2026-10-05), the Blind Hunter and the Verification Gap reviewer
 owner: Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip), which writes `darkOverrideCss` into the theme's
@@ -9156,7 +9173,11 @@ reason: The same names bite a custom template (`custom-con.hbs` is fine; `con.hb
 
 plain: The compiler strips the comments out of a design's stylesheet before shipping it. A web address written inside
   `url(…)` without quotes and containing `/*` would be mistaken for the start of a comment and the rule cut short.
-status: open
+status: done 2026-10-08 (Story 7.4)
+resolution: Story 7.4 (2026-10-08) — `COMMENT_OR_STRING` reads an unquoted `url(…)` first, as CSS tokenizes it (to its
+  `)`, an escape taking the next character, never after a name character), so `stripCssComments`, `untokened` and the
+  theme compiler's strip read one scan; `validate.test.ts` keeps `url(http://x/*/y)` whole and removes a comment after
+  it, a quoted URL is read as before, and the control (`myurl(…)`, no URL) still reads its comment.
 severity: low
 origin: Story 7.1's review (2026-10-06). The scan (`COMMENT_OR_STRING`) predates 7.1 — `untokened` read it since
   Story 4.8 — and 7.1 only made it the compile's stripper; no design writes an unquoted `url()`.
@@ -9285,3 +9306,20 @@ location: `apps/web/lib/editor.ts` (`emptiesCustomTemplate`) · `packages/theme-
   (`PAGED_CONTEXTS`, `routed`) · `epics.md` Story 7.16
 reason: Routes are 7.16's input; until it hands the editor the routed list and the compiler the collection names, both
   rules are right for every project that exists, and 7.16 is the first story that can make them wrong.
+
+## Deferred from: spec-7-4-assets-fonts-per-design-css-and-the-dead-code-strip (2026-10-08)
+
+### DW-345: no Epic 8 story's criteria make the rendition set the upload is meant to make
+
+plain: The plan says every picture you upload is saved in four sizes, so a phone can download the small one. The story
+  that builds the upload does not say so, and the story that puts your pictures into the theme (7.29) needs those four
+  files to exist.
+status: open
+severity: medium
+origin: Story 7.4's Create (2026-10-08), moving the pictures to Story 7.29 (Question 1, owner, 2026-10-08): AD-12 says
+  renditions are made in the browser at upload and compile never decodes an image, and `assets.renditions` holds them,
+  but Story 8.1's criteria name WebP at 2400 px and no rendition set.
+owner: Story 8.1 (Upload, optimise and sanitise), whose card carries this entry with its id.
+location: `ARCHITECTURE-SPINE.md` AD-12 · `epics.md` Story 8.1, Story 7.29 · prd.md FR-J3
+reason: FR-J3's 400 / 800 / 1600 + original set is bundled by Story 7.29 and made by the upload (AD-12); with no
+  criterion, Epic 8 could ship an upload that makes one file and leave 7.29 nothing to bundle.

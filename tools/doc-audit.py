@@ -418,16 +418,19 @@ DOCS = [
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
-  "Stories 7.1, 7.2 and 7.3's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
-  "formatting contract, its own package.json included and every standard template synthesized where untouched, rendered "
-  "by a real Ghost; and Story 7.3's paywall mechanism on two hand-written probe themes. Compiles tools/pilot-theme.mjs's "
+  "Stories 7.1, 7.2, 7.3 and 7.4's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
+  "formatting contract, its own package.json included, every standard template synthesized where untouched and, since "
+  "Story 7.4, Paper's pool woff2 files, their licences and a stripped screen.css with AD-18's variables and one dark hook, "
+  "rendered by a real Ghost; and Story 7.3's paywall mechanism on two hand-written probe themes. Compiles tools/pilot-theme.mjs's "
   "project through Node 24 — the site doc's A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 "
   "(index.hbs), post.hbs's A24 #1 and a hoisted A22 #1, a Tag page 2 at per-row two over an untouched Tag page 1, and an "
   "Author page whose one feed is hidden — with a page word from this run's nonce in A4 #13's eyebrow, a layer word in "
   "every layer name, one hostile layer name and AD-5's shapes in A22 #1's text, handed a theme (its probe name · 1.0.0 · "
   "a fixed description) and a posts_per_page of min(12, the published total − 1, the busiest tag's and author's counts "
   "− 1), void when either has fewer than two; refuses unless the theme passes the check CI holds it to (themeFailures). "
-  "Adds the scaffold, new files only, each named for its story: assets/css/cards.css (7.13, 7.4) and a stand-in page.hbs "
+  "A font's bytes cross the compile's JSON as base64 and are written as bytes. "
+  "Adds the scaffold, new files only, each named for its story: assets/css/cards.css (7.13's two widths alone — AD-18's "
+  "lines left it at Story 7.4, so screen.css answers GS051) and a stand-in page.hbs "
   "reading @page.show_title_and_feature_image (Story 10.79's: the compile leaves an untouched page.hbs out, Story 7.3's "
   "Question 1, ruled); package.json is compiled, never scaffolded (Story 7.2). Gates through tools/stress/gate.js at 0 "
   "errors AND 0 warnings on gscan 4.49.7 and 6.4.2 — anything gscan names is a question for the owner, never a widened "
@@ -445,16 +448,20 @@ DOCS = [
   "1 at per-row three and its page 2 at two, noindex in the author's page 2's head and on neither the author's page 1 nor "
   "the tag's page 2, one <main id=\"site-main\"> per page around the page's sections with the header outside, Ghost's "
   "own canonical on the author's page 2 its own URL once, and the missing page a 404 with Ghost's own error page and none "
-  "of the theme's screen.css. Then two hand-written themes, each behind its own start_guard and restore_and_delete, read "
+  "of the theme's screen.css; and Story 7.4's — / carries the compiled preloads, each href verbatim one @font-face src in "
+  "its own <style>, every font address 200 as font/woff2 with pool.json's sha256, each LICENSE-{family}.txt 200 as "
+  "compiled, the served screen.css equal to the compiled one with both var(--gh-font-…) forms, the base rule and the "
+  "hook's rules, and A4 #13's root carrying hookOf(sectionKey('home', …)) computed locally. Then two hand-written themes, each behind its own start_guard and restore_and_delete, read "
   "/probe-gated-post/ signed out: one invoking a partial from default.hbs renders its content-cta.hbs marker, and the "
   "control invoking none renders Ghost's own gh-post-upgrade-cta. Controls (the layer word, the hostile name and the "
   "noindex meta ARE in the uploaded templates and no error.hbs is; every page is this run's theme by its page word or "
   "the same screen.css asset hash; every page 2 answers 200; the site theme's package carries no marker; w750 redirected "
-  "before the upload and w751 after it; the gated post is not public; each paywall read carries its theme's marker) void "
+  "before the upload and w751 after it; a font and a licence the theme does not carry answer 404; A17 #1's root carries no "
+  "hook; the gated post is not public; each paywall read carries its theme's marker) void "
   "the run; a row that does not hold writes nothing. Writes T1 three theme uploads, their activations and deletes, the "
   "one w750 rendition Ghost saves and, only when T1 hosts no picture, that probe picture. Run on the owner's in-session "
-  "go, in the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §72 alone, replacing an "
-  "earlier §72 of its own; §70 and §71 stay Stories 7.1's and 7.2's records."),
+  "go, in the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §73 alone, replacing an "
+  "earlier §73 of its own; §70, §71 and §72 stay Stories 7.1's, 7.2's and 7.3's records."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1202,7 +1209,12 @@ DOCS = [
   'referenced and the same bytes twice. Since Story 7.2, further rows each behind its control: the pilots\' package.json '
   'raises no GS010-* or GS100-* result at any level under gscan 6.4.2 at v6 (the control: posts_per_page "12" raises '
   'GS010-PJ-CONF-PPP-INT), and the builder\'s name in package.json outside its three named marks is caught (the control: '
-  'the clean file passes).'),
+  'the clean file passes). Since Story 7.4, rows each behind its control: the pilots\' fonts are D1\'s pool files with '
+  'pool.json\'s sha256, preloaded and faced through one {{asset}} address, each family\'s licence at the root and no font '
+  'host named; gscan 6.4.2 raises no GS051 (the control: the two --gh-font-* forms taken out raise it); A4 #13 alone '
+  'carries the dark hook its key hashes to, and the token block its rules; and cssFailures\' four rows — the strip sound, '
+  'its gap printed as a WARNING FR-G7 line that passes, AD-37, and each template\'s CSS within 50 KB gzipped with the '
+  'whole screen.css reported. The determinism row compares a font\'s bytes by content.'),
  ('tools/pilot-theme.mjs', 'tool', 'The five-pilot project, compiled',
   "Story 7.1's one builder of the project CI and the T1 recorder both compile: the site doc's A1 #1, Home's A4 #13 · "
   "A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 (pageTwo, compiled to index.hbs), post.hbs's A24 #1 and an A22 #1 "
@@ -1211,12 +1223,16 @@ DOCS = [
   "pageTwoStack. A "
   "page word goes into A4 #13's eyebrow and a layer word into every layer name; one layer name is hostile and A22 #1's "
   "text carries AD-5's shapes. Designs are read and validated from disk; the compile is compileTheme with Paper, handed "
-  "a theme identity (CI's fixed one is PILOT_THEME, inflozo-pilots · 1.0.0 · Pilot sections; Story 7.2). Also exports "
+  "a theme identity (CI's fixed one is PILOT_THEME, inflozo-pilots · 1.0.0 · Pilot sections; Story 7.2) and, since Story "
+  "7.4, Paper's pairing, the font pool read from packages/library/fonts/ (poolFonts) and darkEnabled, with A4 #13's "
+  "Background set to Contrast in Dark. Since Story 7.4 it also exports cssFailures, the independent oracle CI runs on the "
+  "stripped stylesheet (jsdom's CSSOM and Element.matches over the compiled section roots: soundness, the gap as a "
+  "warning, AD-37 and the 50 KB per-template budget; Story 7.33 runs it over the whole library), and textFiles. Also exports "
   'themeFailures, the check both callers hold a compiled theme to: Handlebars 4.7.9 (the compiler\'s test parser) '
   'parses every template, one {{{body}}} and no other triple-stash but {{{html}}} as partials/content-cta.hbs\'s first '
   "line (Story 7.3), no fingerprint (package.json read without its three named marks — name, author and FR-J13's marker "
   "— by unmarked(), and refused when it does not parse), every partial referenced but the paywall, which Ghost's "
-  "{{content}} runs. Node 24."),
+  "{{content}} runs; a font's bytes are skipped, never scanned as text. Node 24."),
  ('tools/check-traces.mjs', 'tool', 'The deployed functions carry their files, checked after the build',
   "Story 5.24d's check of DW-269, run by CI's check job straight after pnpm build (never inside pnpm check, which runs "
   "before any build). The app reads designs, pictures and stylesheets off disk, and Vercel ships a function with only the "

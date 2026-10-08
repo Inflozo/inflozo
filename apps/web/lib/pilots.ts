@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url'
 import { assembleEntry, compilesTo, isPaywallDesign, isPlaceable, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { POOL, presetOf } from '@inflozo/library/packs'
-import { packTokensCss, type Pack, type ProjectDoc } from '@inflozo/section-runtime'
+import { BASE_CSS, packTokensCss, type Pack, type ProjectDoc } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { canvasOfTemplateKey, fileOfKey, isSurface } from './editor.ts'
 import { iconDrawing } from '@inflozo/library/icons'
@@ -196,7 +196,8 @@ export function pilotsCanvasDocument(only?: string, extra: readonly { id: string
     `<title>${esc('Pilot sections')}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
     `<style data-order="1b-faces">${faces}</style>` +
-    `<style data-order="2-document">html,body{margin:0;background:var(--bg-page)}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}</style>` +
+    // Story 7.4: the base is the runtime's `BASE_CSS`, which the theme's `screen.css` carries too; the scrollbar is the canvas's own
+    `<style data-order="2-document">${BASE_CSS}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}</style>` +
     // DW-275 (Story 5.24e): the Paywall canvas's post body (`style-guide.ts`'s `surfaceCss`) is NO LONGER INLINED here.
     // Story 5.20 carried it disabled in every canvas document — 69,185 of its 124,335 bytes (10,379 of 22,872 gzipped)
     // — for the one canvas that uses it. The canvas routes now answer `?sheet=surface` with it, and the editor's first

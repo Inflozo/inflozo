@@ -13,9 +13,10 @@
 // rule (0,2,0) always; the link rule sits at (0,0,1), above `LINK_RULES`' zero-specificity rules whatever their order and
 // below any link rule a design writes for itself (R-173).
 //
-// Epic 7's compile writes `packTokensCss(pack)` then `darkOverrideCss` over every placed section into the theme's token
-// block (Story 7.4); the editor stamps the same hook (`darkHook`) so the canvas draws the markup the theme ships. Pure
-// (AD-1): plain values in, a string out.
+// Epic 7's compile writes `packTokensCss(pack, { ghostFonts: true })` then `darkOverrideCss` over every placed section with
+// an override in force into the theme's token block (Story 7.4), and none on a Light-only project; the editor stamps the
+// same hook (`darkHook` over `sectionKey`) so the canvas draws the markup the theme ships. Pure (AD-1): plain values in,
+// a string out.
 
 import { modeScopedOffers, modeScopedRules, rootClassOf } from '@inflozo/library'
 import { darkOverridesInForce, resolveControls, storedFor, type ControlEntry, type ControlState } from './controls.ts'
@@ -25,9 +26,15 @@ import { GROUND_LINKS, MODE_SELECTORS } from './tokens.ts'
  *  quote or a bracket can never reach an attribute or a selector. */
 export const HOOK_RE = /^[0-9a-f]{8}$/
 
-/** FNV-1a, 32 bits, over the key's UTF-16 code units, as eight hex digits. ponytail: 32 bits, and a collision is refused at
- *  emit (`darkOverrideCss`); widen the hash if a project ever meets one. */
-function fnv1a(key: string): string {
+/** STORY 7.4 (DW-331) — A PLACED SECTION'S KEY, built in ONE place: the place it fills — the `template_key` its doc is
+ *  stored under, which `templateKeyOfFile` gives the compile for a file — and its instance id. The editor's `queryKey`,
+ *  both its `keyOf`s, the compile and the keyboard gate all call this. */
+export const sectionKey = (templateKey: string, instanceId: string): string => `${templateKey}:${instanceId}`
+
+/** A key's hook: FNV-1a, 32 bits, over the key's UTF-16 code units, as eight hex digits. ponytail: 32 bits, and a collision
+ *  is refused at emit (`darkOverrideCss`; the compile names both sections first); widen the hash if a project ever meets
+ *  one. */
+export function hookOf(key: string): string {
   let h = 0x811c9dc5
   for (let i = 0; i < key.length; i++) h = Math.imul(h ^ key.charCodeAt(i), 0x01000193) >>> 0
   return h.toString(16).padStart(8, '0')
@@ -45,18 +52,18 @@ function changing(entry: Pick<ControlEntry, 'controlSchema' | 'universals'>, sta
   return { names: names.filter((n) => dark[n] !== light[n]), dark }
 }
 
-/** THE HOOK of a placed section: a hash of its key — the editor's `queryKey`, `${template_key}:${instanceId}` — when an
+/** THE HOOK of a placed section: `hookOf` its key — `sectionKey(template_key, instanceId)` — when an
  *  override of it is in force and changes its look in dark (`changing`), else `undefined`, so a
  *  root carries `data-instance` only where the token block has a rule for it. An instance id is unique only inside its
  *  doc (Home's page-2 copy shares Home's), so the key is doc-qualified, and Epic 7 hashes the same key for the file it
  *  compiles the section into. */
 export function darkHook(entry: Pick<ControlEntry, 'controlSchema' | 'universals'>, state: ControlState, key: string): string | undefined {
-  return changing(entry, state).names.length > 0 ? fnv1a(key) : undefined
+  return changing(entry, state).names.length > 0 ? hookOf(key) : undefined
 }
 
 /** One placed section, as `darkOverrideCss` reads it. */
 export type PlacedSection = {
-  /** `${template_key}:${instanceId}` — what `darkHook` hashes */
+  /** `sectionKey(template_key, instanceId)` — what `darkHook` hashes */
   key: string
   entry: Pick<ControlEntry, 'controlSchema' | 'universals' | 'html'> & { css: string; id?: string }
   state: ControlState
@@ -77,7 +84,7 @@ export function darkOverrideCss(placed: readonly PlacedSection[]): string {
   for (const { key, entry, state } of placed) {
     const { names, dark } = changing(entry, state)
     if (names.length === 0) continue
-    const hook = fnv1a(key)
+    const hook = hookOf(key)
     const met = hooks.get(hook)
     if (met !== undefined) throw new Error(`darkOverrideCss: sections "${met}" and "${key}" share the hook ${hook} — ${met === key ? 'one section was handed twice' : 'their keys collide'}; each placed section is handed once, and a colliding pair is refused rather than given one look`)
     hooks.set(hook, key)

@@ -977,7 +977,7 @@ export function validateDesign(input: {
  *  value and a flag — and where that stops short, the scan resumes where it stopped, because nothing it read (spaces,
  *  name characters, an operator, a string) can hold another `[`. A CSS escape is decoded: up to six hex digits and
  *  one space is a code point (0, a surrogate or past U+10FFFF is U+FFFD), any other character is itself. */
-function attributeSelectors(css: string): { text: string; name: string; op?: string; value?: string; flag?: string }[] {
+export function attributeSelectors(css: string): { text: string; name: string; op?: string; value?: string; flag?: string }[] {
   const out: { text: string; name: string; op?: string; value?: string; flag?: string }[] = []
   const n = css.length
   const at = (i: number) => css.charAt(i)
@@ -1279,8 +1279,11 @@ export function modeScopedRules(css: string, root: string | null, offered: Reado
  *  inputs `tools/check-snapshots.mjs` times). ponytail: a named colour (`white`, `red`…) is not caught; add the list when a
  *  design writes one. */
 /** A stylesheet's comments and strings, in ONE alternation, so a `/*` inside a string is no comment and a quote inside a
- *  comment opens no string. `untokened` and `stripCssComments` both read through it. */
-const COMMENT_OR_STRING = /\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n]|\\[\s\S])*"?|'(?:[^'\\\n]|\\[\s\S])*'?/g
+ *  comment opens no string. `untokened`, `stripCssComments` and the theme compiler's strip all read through it.
+ *  DW-337 (Story 7.4): an UNQUOTED `url(…)` is read first, as CSS tokenizes it — to its `)`, no quote, bracket or space
+ *  inside, an escape taking the next character — so the `/*` in `url(http://x/*\/y)` is the URL's and no comment's. A
+ *  quoted URL is a string, as before. */
+export const COMMENT_OR_STRING = /(?<![\w-])url\(\s*(?:[^\s"'()\\]|\\[\s\S])*\s*\)|\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n]|\\[\s\S])*"?|'(?:[^'\\\n]|\\[\s\S])*'?/gi
 
 /** STORY 7.1 — a stylesheet with its comments removed and its strings kept, by the scan the validator trusts. A comment
  *  between two name or number characters becomes one space, so `1px/**\/2px` stays two tokens; anywhere else it goes. */

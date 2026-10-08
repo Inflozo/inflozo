@@ -8,7 +8,7 @@ import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARG
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
-  darkHook, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
+  darkHook, renameSection, sectionKey, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
   withData,
 } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, FeedRole, MarkNode, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
@@ -915,7 +915,12 @@ function EditorShell({
     return { ...withData(design.dataBindings, i.data), ...(feed === undefined ? {} : { [FEED_KEY]: feed }) }
   }
   /** A section's key among a page's queries — an `instanceId` is unique inside a doc, not across the two groups. */
-  const queryKey = (i: { doc: string; instanceId: string }) => `${i.doc}:${i.instanceId}`
+  const queryKey = (i: { doc: string; instanceId: string }) => sectionKey(i.doc, i.instanceId)
+  /** STORY 7.4 (DW-331) — the hook the THEME stamps on a section: `sectionKey` of the place it fills (`themeKey`, which is
+   *  page 1's on an archive page 2 that follows it) — and none at all on a Light-only project, where the theme writes no
+   *  per-section rule (AD-30). Both doors below, the paint and the re-stamp, ask this one. */
+  const themeHook = (design: Parameters<typeof darkHook>[0], state: ControlState, placed: { themeKey: string; instanceId: string }) =>
+    darkEnabled ? darkHook(design, state, sectionKey(placed.themeKey, placed.instanceId)) : undefined
   /** The doc as the main-feed rule leaves it — the one door, asked with the doc's own file (`fileOfKey`). */
   const designated = (docKey: string, doc: ProjectDoc, previous?: ProjectDoc) => designate(doc, fileOfKey(docKey), library, previous)
   /* ─── Story 5.16 — PAGE 2 (FR-D21, D5d, R-176 to R-180) ────────────────────────────────────────────────────────
@@ -2361,7 +2366,7 @@ function EditorShell({
     const design = entries[placed.designId]
     return design === undefined
       ? undefined
-      : { controlSchema: design.controlSchema, universals: design.universals, controls: storedFor(design, state, latest.current.mode), instance: darkHook(design, state, queryKey(placed)) }
+      : { controlSchema: design.controlSchema, universals: design.universals, controls: storedFor(design, state, latest.current.mode), instance: themeHook(design, state, placed) }
   }
 
   /** Every root re-stamped for the mode now showing. NEVER A REPAINT: nothing in the DOM is replaced, so the caret,
@@ -3144,9 +3149,10 @@ function EditorShell({
         const queries = queriesOf(i)
         const secondary = queries[FEED_KEY]
         const own: DesignRows | undefined = live === null ? sampleRows(queries) : live.rows[queryKey(i)]
-        // Story 6.5: and the hook, while a dark override of it is in force — the markup the theme ships (`darkHook`)
+        // Story 6.5: and the hook, while a dark override of it is in force — the markup the theme ships (`darkHook`); Story
+        // 7.4: keyed as the theme keys it, and none on a Light-only project
         return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, {
-          target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, instance: darkHook(entry, i, queryKey(i)),
+          target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, instance: themeHook(entry, i, i),
           assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs,
           live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
           secondary: secondary === undefined ? undefined : { query: secondary, rows: rowsFor(secondary, own?.[FEED_KEY]) },
@@ -4348,7 +4354,7 @@ function EditorShell({
   // ─── Story 5.4 — every section operation, through `doc-edit.ts`, and the two surfaces that ask for one ───
 
   /** A row's identity across both Layers groups: an `instanceId` is unique inside a doc, not between two. */
-  const keyOf = (p: Pick) => `${p.doc}:${p.instanceId}`
+  const keyOf = (p: Pick) => sectionKey(p.doc, p.instanceId)
 
   /** One doc's own instances as Layers rows, in DOC order — the card's are `site`'s, the page group's are this
    *  canvas's. Doc order, not `canvasStack`'s: the row's `at` is the position `moveSection` is given, and B7 draws
