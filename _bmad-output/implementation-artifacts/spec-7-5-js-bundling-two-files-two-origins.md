@@ -2,7 +2,7 @@
 title: 'Story 7.5 — JS bundling: two files, two origins'
 type: 'feature'
 created: '2026-10-08'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 1
 baseline_commit: '23d5c0c58fc2cc9e0dc5b75673170392168128d1'
@@ -639,3 +639,14 @@ rows covering `core.js` alone today (each has a planted control).
 | A visitor-facing literal | `check-baseline`'s three DW-146 lint rows |
 | An undeclared key | `(7.5) moduleKeyRefusals …` (modules); `check-snapshots` row 5 and its `ctx.t('weeks')` control |
 | A module's comments | `check-snapshots` row 4 and its control (`R-21`, `ponytail:`, the builder's name) |
+
+**Deploy (2026-10-08), head `13e3e459`.** `Deployment: dpl_EYewsnY9ssndxVtbUGzXCbx9ncqZ` READY on the production Vercel
+project, target `production` (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha`
+matches), the Review's recorded head. CI run 37801080065: `check`, `rls` and `deploy` success (read with `GITHUB_TOKEN`);
+the render matrix run 37801080068 success. The app code was last changed at the Review patch `4de80690`
+(`dpl_CapwNwpyFCfwHrbehZ4iseStf2cG` READY there); `13e3e459` is the spec's results alone. No migration, so no schema
+apply and no RLS read beyond the CI gate; no Supabase, Resend or Dodo surface. Controls:
+`https://app.inflozo.com/harness/pilots` and `/harness/editor` answer 404 (the harness is off in production),
+`https://app.inflozo.com/` answers 307 to `/sign-in` (the signed-out redirect). The compiler has no product caller until
+Story 7.18, so nothing a visitor or the owner reaches changed; there is no owner test (`owner_test: none`). This story is
+Done on this commit (R-80).
