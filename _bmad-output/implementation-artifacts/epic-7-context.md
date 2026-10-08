@@ -153,6 +153,7 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - a licence read is held as a font read is;
     - NFR-2's 50 KB is `CSS_BUDGET_BYTES`, exported by the compiler package;
     - a `check-snapshots` row fails any module source that writes a `data-*` attribute, so the strip's premise is a check. Story 7.5 bundles those modules.
+  - **Story 7.6's Create (2026-10-08):** FR-J5's "and from the rendition set for bundled assets" goes word for word to Story 7.29 at 7.6's Dev, following the pictures 7.4's Question 1 moved there (R-195). A picture Ghost hosts takes `image_sizes` with `format="webp"` from 7.6 on.
 - **JavaScript is two files of two origins (7.5, FR-J4).** `main.js` bundles only the declared modules — vanilla, deferred, strings as `data-i18n-*` — and `cards.js` is Ghost's vendored MIT card code for designed audio, video, gallery and toggle cards only, declared in the README; `size-limit` (file preset) warns, never fails, past 40,960 bytes at gzip 9 (NFR-2, DW-140).
   - **DW-134, DW-135, DW-146 (Story 7.5):** no `<script>` in an emitted template but `main.js`'s, `cards.js`'s and named repo-authored inline bytes; `checkThemeJs` refuses a `cards.js` that is not the vendored chunks' concatenation; a module that writes visitor text declares its keys.
   - **Story 7.5's Create (2026-10-08):**
@@ -187,6 +188,25 @@ A user ships. The project compiles — purely, from what it is handed — into a
 - **Markup uses the helpers Ghost provides (7.6, FR-J5).** `{{ghost_head}}`, `{{ghost_foot}}`, `{{body_class}}`, `{{post_class}}` on the `<article>` plus self-emitted `post-access-*` classes, a theme-authored `srcset` beside `{{img_url}}`, real `data-portal`, chrome strings only through `{{t}}`, and motion behind `core`'s one reduced-motion gate.
   - **Story 7.3's Dev (2026-10-06):** 7.6's copy of the DW-261 criterion is built by 7.3 — `partials/content-cta.hbs` opens `{{{html}}}`, and no template invokes it.
   - **AD-38 (R-28):** no `@member.email`, `name` or billing detail is ever printed — `cacheMembersContent` caches a member page publicly by tier (MEASUREMENTS §31b).
+  - **Story 7.6's Create (2026-10-08):**
+    - **What the compile writes.**
+      - On every template whose matrix row opens `{{#post}}` (`post.hbs`, `page.hbs`, `custom-{name}.hbs`), the sections sit one level inside `POST_ARTICLE`: `<article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">`. No other template carries one, and the canvas draws none.
+      - Every `srcset` candidate carries `format="webp"` (`srcsetExpr`). `src` keeps the picture's own format, and the canvas asks a linked site's Ghost for the same candidates.
+    - **The checks.**
+      - `checkGhostMarkup`, over the final text: `{{ghost_head}}` and `{{ghost_foot}}` once each, last in the head and the body; `{{body_class}}` once, opening `<body>`'s class; `{{post_class}}` only in `POST_ARTICLE`; every `srcset` is `srcsetExpr`'s, on a tag with `sizes`; every `data-portal` is a page both majors' Portal opens (`PORTAL_PAGE`); no `@member` value printed (AD-38).
+      - `checkChromeText`: V1 over the tree before substitution, the user-text markers being appendix H1 §7's emission record.
+      - CI runs `checkGhostMarkup` over every design as well, and holds gscan 6.4.2's `GS001-DEPR-*` at zero on the pilot theme. `inflozo/motion-gated` (stylelint) and a module lint hold FR-G4.
+    - **Read in source:**
+      - `post_class` is identical on 5.0.0, 5.130.6 and 6.58.0, and `access` is on every post (`post-gating.js`);
+      - `img_url`'s `format` works on both majors and 5.0.0 ignores it; the middleware redirects to the original when it cannot convert;
+      - Portal 2.51.5's and 2.69.339's pages;
+      - nothing in Ghost or Portal styles `post-access-*`, `featured` or `no-image`.
+    - **Readings, each told to the owner in one line:**
+      - the locale file is Story 7.12's, so until then Ghost prints each label's key (§44);
+      - `loading` is each design's own attribute; A17 #1's eager author photo becomes DW-348, Story 10.54's;
+      - a fixed-size picture takes one rendition and no `srcset`;
+      - the bundled-picture `srcset` moves to 7.29 under 7.4's Question 1.
+    - **Question 1 is open:** Ghost's post labels on list cards, planned as option 1 (the post's own page only).
 - **gscan errors block and are explained in English (7.7, FR-J6).** Warnings deploy, library output targets 0/0, the malformed-`visibility` cascade is replaced by its real cause, the mapping covers the reachable shortlist with a stated verbatim fallback in one envelope (AD-24), `GS100` can never fire, and a gscan upgrade lands only behind a library release and a full re-run.
   - **MEASUREMENTS §15j, §25f; VERIFY-AT-BUILD 9:** `GS005-TPL-ERR` is fatal at upload where others are reported and activated; a partial missing at render serves a 400 carrying its message to visitors; two concurrent uploads of one name return a raw `500 EEXIST` with a server path (mapped, never passed through); a token-less `GET /themes/` answers 501 on Ghost 5 and 403 on Ghost 6 — one Inflozo code.
   - **DW-341 (Story 7.7, from Story 7.3's Dev, 2026-10-06):** a theme in which no template reads `@page.show_title_and_feature_image` — a designed Page with no Post header, or an untouched Page left out until Story 10.79 (7.3's Question 1) — raises `GS110-NO-MISSING-PAGE-BUILDER-USAGE`, an error on gscan 4.49.7 that Ghost 5 activates despite and a warning on 6.4.2. 7.7 decides whether Inflozo's gate blocks it, asking the owner (R-83).
@@ -201,6 +221,7 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **Story 7.2's Create (2026-10-06):** a `config.custom` key that no template reads is `GS100`, an error on both gscans (executed on 4.49.7 and 6.4.2). The three built-ins are therefore declared in the same change that references them. 7.2's Question 1 was ruled option 1 (owner, 2026-10-06): 7.11 emits them, together with its reading lines, and 7.2 emits no `custom`.
   - **Story 7.2's Dev (2026-10-06):** the same criterion was pasted word for word into Story 7.11's card (its half: the three built-ins on every project) and named in Epic 7's preamble. `compileTheme` writes no `config.custom` today; `config` ends at `card_assets`, and `custom` goes last when 7.10 or 7.11 adds it.
 - **Translations override any chrome label, validated on entry and again at compile (7.12, FR-Q6, FR-Q8).** `en.json` always ships, plus the project language's file, both from one catalog; `credit.*` is never offered; an RTL language needs a blocking acknowledgement; braces are refused, never repaired, and compile fails rather than ship an unparseable catalog.
+  - **Story 7.6's Create (2026-10-08):** every chrome string reaches a theme only through `{{t}}`. V1 holds it at render, and since 7.6 `checkChromeText` holds it at compile. `locales/en.json` is this story's, so until it lands Ghost prints each key (`nav.more`, MEASUREMENTS §44), and 7.6's T1 row records exactly that.
   - **DW-141, DW-142, DW-145 (Story 7.12):** refuse `<` and `&` in an override for a key passed to `{{plural}}` (MEASUREMENTS §44); validate with the `intl-messageformat` 5.4.3 both majors bundle plus plain `{snake_case}`, observing the 500 before promising it; the owner rules what a non-English site shows for untouched English defaults before the surface is built. **R-106:** a blank override is refused.
 - **Cards, treatments and share destinations are site-wide choices (7.13–7.15, FR-Q7, FR-Q9, FR-Q10).** A designed Koenig card is excluded through `card_assets` (never `!important`) with `cards.css` emitted before per-design CSS and vendored JS for audio, video, gallery and toggle; treatments stay selectable without a host section; one ordered share list renders as plain links built from the canonical URL, copy-link the only script, nothing when empty.
   - **DW-109, DW-267 (Story 7.13):** the callout's "Background role" row is renamed or takes the section's roles (the owner asked, R-53, R-170); `project_treatments.paywall_design_id` drops in 7.13's own Schema phase (R-99). **AD-18:** `cards.css` declares `.kg-width-wide` and `.kg-width-full` on every theme. **R-29, MEASUREMENTS §29b:** Portal's share page is Ghost 6 only and unstylable, so it is never used.

@@ -134,7 +134,7 @@ development_status:
   7-3-synthesis-defaults-and-the-emptying-rules: done
   7-4-assets-fonts-per-design-css-and-the-dead-code-strip: done
   7-5-js-bundling-two-files-two-origins: done
-  7-6-ghost-correct-markup: backlog
+  7-6-ghost-correct-markup: ready-for-dev
   7-7-the-gscan-gate: backlog
   7-8-the-emitted-theme-quality-gate: backlog
   7-9-theme-settings-and-the-custom-settings-builder: backlog
