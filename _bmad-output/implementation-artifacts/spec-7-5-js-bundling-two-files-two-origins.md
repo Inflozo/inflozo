@@ -582,6 +582,38 @@ None. This story has no screen, so it has no frame and no hand test, and it is D
   - The lint's ceiling is a little wider than § DW-146 states: a literal joined by `+` evades it too. `docs/section-authoring.md` says so.
 - **One wording left as the owner ruled it.** R-63 in `reconcile-designs-decisions.md` still says Inflozo "neither writes, bundles nor budgets for" Ghost's gallery script. Its decision stands: gallery's script is not a module and has no registry entry. The research row it cites (`research-section-js-libraries.md`'s gallery row) now carries the dated note that NFR-2 counts that script once a gallery is designed. The ruling's own text is the owner's and was not edited.
 
+**Review (2026-10-08), five layers over the diff since `23d5c0c5` (Blind Hunter, Edge Case Hunter, Verification Gap,
+Acceptance Auditor, Real-infra verifier), then triage.** No acceptance criterion violated; no owner decision needed; no
+new question; nothing deferred. Real infrastructure (R-82), read-only on T1 — no upload, since the Dev run of 2026-10-08
+stands and a second upload needs an in-session go. Keys by variable name (`GITHUB_TOKEN`, `VERCEL_TOKEN`,
+`VERCEL_TEAM_ID`), none printed. On T1 `ghost6.inflozo.com`: public `GET /` → 200 with Casper's scripts in the head and
+no `/assets/js/main.js`; `GET /assets/js/main.js` → 404; controls `GET /assets/js/{nonce}.js` → 404 and the live
+`/assets/built/casper.js?v=…` → 200 — §74's restoration holds. **CI on the Dev head `48c450d3` was red:** run 37792007160
+`check` failed at `pnpm keyboard` on the R-236 journey (`#pack-editor-title` not found), `rls` success, `deploy` skipped,
+so no deployment carried the Dev head; the diff touches nothing under `apps/web` or `tools/keyboard`, and `pnpm keyboard
+-g R-236` passed locally (1 passed, 5.6 s). CI on the Review head `4de80690`: run 37796621688 `check`, `rls`, `deploy` all
+success; `Render matrix` 37796621598 success. Deployment `dpl_CapwNwpyFCfwHrbehZ4iseStf2cG` READY on production at
+`4de80690`; control: `app.inflozo.com/app/harness/pilots` → 308 → `/harness/pilots` → 404 (the harness is off in
+production). No migration in the diff (`git diff --stat 23d5c0c5 HEAD -- supabase/` empty), so no R-99 schema read; no
+Supabase, Resend or Dodo surface. Locally (Node 24.18.1): `pnpm check` exit 0 before and after the patches (library 223,
+theme-compiler 90 after the review's rows, 0 failures); `check-baseline` PASS with the DW-146 rows now planting 104
+refused and 8 clean lines derived from the exported sink lists, the maximal design 5,178 B gzipped and the pilot theme's
+`main.js` 2,740 B gzipped; `check-snapshots` PASS with every 7.5 row behind its control, the two `WARNING FR-G7` lines
+held against the compiler's `js.atRest`; `tools/stress` `node build.js` (`checkThemeJs` and `checkThemeScripts` clean)
+and `node gate.js theme` 0/0 on gscan 4.49.7 and 6.4.2; `python3 tools/doc-audit.py --check` twice, PASS.
+
+**Patched here:** see § Review Findings. The recorder's new per-page tag row is code only until the next T1 run (Story
+7.13's first designed card); it reads pages the recorder already fetches and is a verdict row, not a Void.
+
+**Dismissed as noise or settled by the spec:** `checkThemeJs` also naming a missing `package.json` when `cards.js` is
+absent (a missing `package.json` is a defect in any theme); tag position held by the compile's tests rather than
+`checkThemeScripts` (§ The two checks defines the function so); `core` reporting a mount with no file in the console
+(§ Modules with no file yet settles it; DW-347 carries the canvas difference); `noC0` over every module file and chunk
+handed in, placed or not (the matrix's control-character row asks exactly that); the README naming Ghost 6.58.0 on a
+theme a Ghost 5 site may install (the version named is the one the bytes were copied from, and § Facts 2 holds them
+identical); Story 7.34's card still saying "T1 and T3" (R-238 governs every such line project-wide); the positive module
+rows covering `core.js` alone today (each has a planted control).
+
 **The I/O matrix, row by row, mapped to the check that ran and passed:**
 
 | Row | Check |
