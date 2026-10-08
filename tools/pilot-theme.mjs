@@ -86,8 +86,13 @@ export const poolFonts = (path) => readFileSync(join(FONTS, path))
 /** Story 7.5 — the module files, by name: every `packages/library/modules/` file named like a registry module (`core.js`,
  *  `nav-drawer.js`), never its tests or types. What `main.js` is bundled from, and what CI holds to the theme's scan. */
 const MODULE_DIR = join(REPO, 'packages/library/modules')
-export const moduleSources = () => Object.fromEntries(readdirSync(MODULE_DIR).filter((f) => /^[a-z][a-z0-9-]*\.js$/.test(f)).sort()
-  .map((f) => [f.slice(0, -'.js'.length), readFileSync(join(MODULE_DIR, f), 'utf8')]))
+export const moduleSources = () => {
+  const files = readdirSync(MODULE_DIR).filter((f) => f.endsWith('.js'))
+  // review (2026-10-08): a `.js` named outside the grammar would be neither bundled nor scanned, silently — refuse it instead
+  const stray = files.filter((f) => !/^[a-z][a-z0-9-]*\.js$/.test(f))
+  if (stray.length > 0) throw new Error(`packages/library/modules/ holds ${stray.join(', ')}, which is no module file name (a registry name plus .js) and would ship nowhere`)
+  return Object.fromEntries(files.sort().map((f) => [f.slice(0, -'.js'.length), readFileSync(join(MODULE_DIR, f), 'utf8')]))
+}
 
 /** Story 7.5 — Ghost's card scripts as `tools/probe/record-cards.py` vendored them, by card name, and Ghost's licence. */
 const VENDOR = join(REPO, 'packages/library/orbit-weekly/vendor')
@@ -141,12 +146,12 @@ export function compilePilots(words, { theme, postsPerPage = 12, find = library(
   const project = pilotProject(words, find)
   const templates = project.templates
   const pageTwo = overTwo ?? project.pageTwo
-  const { files, css } = compileTheme(new JSDOM('<body></body>').window.document, {
+  const { files, css, js } = compileTheme(new JSDOM('<body></body>').window.document, {
     templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled: true,
     modules, ghostCards: ghostCards(), ...(designedCards === undefined ? {} : { designedCards }),
   })
   const docs = [...Object.values(templates), ...Object.values(pageTwo)]
-  return { files, css, templates, pageTwo, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
+  return { files, css, js, templates, pageTwo, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
 }
 
 /** A compiled theme's text files alone — a font is bytes, and no text check reads it (Story 7.4). */

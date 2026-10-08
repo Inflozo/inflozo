@@ -98,19 +98,35 @@ const hostReadingCalls = [
 
 // Story 7.5 — DW-146, the selectors for the modules block below. "Letter-bearing" is `\p{L}`, so Cyrillic is caught as
 // well as Latin (executed at planning). Each sink takes the literal itself — a string, or a template literal's static text.
+// The lists are exported so `tools/check-baseline.mjs` plants one line per entry: the control is derived from the rule
+// and cannot drift from it (review, 2026-10-08).
 const LETTERS = '/\\p{L}/u'
-const TEXT_PROPS = '/^(?:textContent|innerText|innerHTML|outerHTML|title|alt|placeholder|label|ariaLabel|ariaDescription|ariaRoleDescription|ariaValueText|ariaPlaceholder)$/'
-const TEXT_ATTRS = '/^(?:title|alt|placeholder|aria-label|aria-description|aria-roledescription|aria-valuetext|aria-placeholder)$/'
-const TEXT_CALLS = '/^(?:createTextNode|write|writeln|alert|confirm|prompt)$/'
-const TEXT_NEWS = '/^(?:Text|Option)$/'
+export const VISITOR_SINKS = {
+  props: ['textContent', 'innerText', 'innerHTML', 'outerHTML', 'nodeValue', 'title', 'alt', 'placeholder', 'label', 'ariaLabel', 'ariaDescription', 'ariaRoleDescription', 'ariaValueText', 'ariaPlaceholder'],
+  attrs: ['title', 'alt', 'placeholder', 'aria-label', 'aria-description', 'aria-roledescription', 'aria-valuetext', 'aria-placeholder'],
+  // DOM-only names: `append` and its kin are left out, since `FormData` and `URLSearchParams` share them
+  calls: ['createTextNode', 'write', 'writeln', 'alert', 'confirm', 'prompt', 'prepend', 'before', 'after', 'replaceWith', 'replaceChildren'],
+  news: ['Text', 'Option'],
+}
+const oneOf = (names) => `/^(?:${names.join('|')})$/`
+const TEXT_PROPS = oneOf(VISITOR_SINKS.props)
+const TEXT_ATTRS = oneOf(VISITOR_SINKS.attrs)
+const TEXT_CALLS = oneOf(VISITOR_SINKS.calls)
+const TEXT_NEWS = oneOf(VISITOR_SINKS.news)
 const wordsMessage = "DW-146: a module writes no visitor-facing words of its own — each comes off the mount through ctx.t('key'), from a data-i18n-* its registry row's strings stamp, so it can be translated (docs/section-authoring.md, Behaviour modules)."
-/** A sink, given as the selector of the node whose child is the text: the literal itself, or a template's static text. */
+/** A sink, given as the selector of the node whose child is the text: the literal itself, a template's static text, or
+ *  either as a branch of a `?:` or a `||`/`??` (review, 2026-10-08: `ok ? 'Done' : 'Failed'` is two literals written). */
 const literalAt = (parent, field) => [
   `${parent} > Literal${field}[value=${LETTERS}]`,
   `${parent} > TemplateLiteral${field} > TemplateElement[value.raw=${LETTERS}]`,
+  `${parent} > ConditionalExpression${field} > Literal[value=${LETTERS}]`,
+  `${parent} > ConditionalExpression${field} > TemplateLiteral > TemplateElement[value.raw=${LETTERS}]`,
+  `${parent} > LogicalExpression${field} > Literal[value=${LETTERS}]`,
+  `${parent} > LogicalExpression${field} > TemplateLiteral > TemplateElement[value.raw=${LETTERS}]`,
 ]
 const visitorWords = [
   ...literalAt(`AssignmentExpression[left.property.name=${TEXT_PROPS}]`, '.right'),
+  ...literalAt(`AssignmentExpression[left.computed=true][left.property.value=${TEXT_PROPS}]`, '.right'),
   ...literalAt(`CallExpression[callee.property.name='setAttribute'][arguments.0.value=${TEXT_ATTRS}]`, '.arguments:nth-child(2)'),
   ...literalAt("CallExpression[callee.property.name=/^insertAdjacent(?:Text|HTML)$/]", '.arguments:nth-child(2)'),
   ...literalAt(`CallExpression[callee.property.name=${TEXT_CALLS}]`, '.arguments'),
@@ -118,7 +134,7 @@ const visitorWords = [
   ...literalAt(`NewExpression[callee.name=${TEXT_NEWS}]`, '.arguments'),
   ...literalAt(`NewExpression[callee.property.name=${TEXT_NEWS}]`, '.arguments'),
 ].map((selector) => ({ selector, message: wordsMessage })).concat(
-  ["CallExpression[callee.name='t']", "CallExpression[callee.property.name='t']"].map((call) => ({
+  ["CallExpression[callee.name='t']", "CallExpression[callee.property.name='t']", "CallExpression[callee.computed=true][callee.property.value='t']"].map((call) => ({
     selector: `${call}:not([arguments.0.type='Literal'][arguments.0.raw=/^['"]/])`,
     message: "DW-146: a t() key is a string literal — moduleKeyRefusals checks each one against the module's registry row, so a key it cannot read is a key no mount carries.",
   })),
@@ -251,8 +267,9 @@ export default [
     // is the registry half), so a translation reaches it. Refused: a letter-bearing string literal, or a template
     // literal's static text, written to a text sink or a text-making call; and a `t()` whose key is no string literal.
     // No comment switches it off (`noInlineConfig`, DW-4's pattern). Ceiling, which review holds: a literal parked in a
-    // variable first, or joined by `+`, evades it; `append` and its family are left out, since `FormData` and
-    // `URLSearchParams` share those names.
+    // variable first, or joined by `+`, evades it, as does a sink outside the lists (`value`, `data`); `append` and
+    // `set` are left out, since `FormData` and `URLSearchParams` share those names (the DOM-only `prepend`, `before`,
+    // `after`, `replaceWith` and `replaceChildren` are in). A `?:` or `||` branch, and `el['textContent']`, are caught.
     files: ['packages/library/modules/*.js'],
     languageOptions: { sourceType: 'module' },
     linterOptions: { noInlineConfig: true },

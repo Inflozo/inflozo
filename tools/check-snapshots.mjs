@@ -981,6 +981,13 @@ check('control — Story 7.5: with a stub nav-drawer file, main.js lists it and 
   if (got.failures.length > 0) throw new Error(got.failures.join(' · '))
   if (!lib.bundledNames(stubbed.files['assets/js/main.js']).includes('nav-drawer')) throw new Error('main.js does not list the stub nav-drawer')
   if (got.warnings.some((w) => w.includes('nav-drawer'))) throw new Error('a warning names nav-drawer, which has a file')
+  // the positive half (review, 2026-10-08): on the pilots as read, each mounted module with no file IS warned, and the list
+  // derived from the markup equals the compiler's own record, so a warning list gone silent fails here
+  const real = mountFailures(pilots75.files, MODULE_SRC)
+  const atRest = real.mounted.filter((n) => !Object.hasOwn(MODULE_SRC, n))
+  if (atRest.length === 0) throw new Error('every mounted module has a file, so this control proves nothing — move it to a planted mount')
+  if (real.warnings.map((w) => w.split(' ')[2]).join() !== atRest.join()) throw new Error(`the warnings name ${real.warnings.join(' · ') || 'nothing'}, and the markup mounts ${atRest.join(', ')} with no file`)
+  if (atRest.join() !== pilots75.js.atRest.join() || lib.bundledNames(pilots75.files['assets/js/main.js']).slice(1).join() !== pilots75.js.bundled.join()) throw new Error(`the compiler's js record says bundled ${pilots75.js.bundled.join(', ') || 'none'} / at rest ${pilots75.js.atRest.join(', ') || 'none'}, and the markup says ${atRest.join(', ')}`)
   return mustFail(mountFailures({ ...stubbed.files, 'assets/js/main.js': lib.bundle([], modules) }, modules).failures, /^main\.js carries no module, and the templates mount nav-drawer/, 'a main.js missing a mounted written module')
 })
 check('Story 7.5 — main.js is what the markup mounts: core, then each mounted module with a file, in registry order; each mounted module with no file is a warning', () => {
@@ -1021,8 +1028,9 @@ check('control — Story 7.5: cards.js with one byte changed is named by checkTh
   for (const [over, pattern] of without) mustFail(cardsFailures({ ...files, ...over }), pattern, pattern.source)
   return `${without.length + 1} pieces`
 })
-check('Story 7.5 — every vendored scripted card designed: cards.js is cardsJs over the vendored files, Ghost\'s licence tidied at the root, the cards tag in the head, README\'s cards line, package.json\'s exclusions; checkThemeJs and checkThemeScripts say nothing', () => {
-  const f = [...cardsFailures(pilotsCards.files), ...jsFailures(pilotsCards.files)]
+check('Story 7.5 — every vendored scripted card designed: cards.js is cardsJs over the vendored files, Ghost\'s licence tidied at the root, the cards tag in the head, README\'s cards line, package.json\'s exclusions; checkThemeJs, checkThemeScripts and the theme\'s text scan over the real vendored bytes say nothing', () => {
+  // review (2026-10-08): the text scan too — the one tree whose bytes are not repo-authored is the one it must read
+  const f = [...cardsFailures(pilotsCards.files), ...jsFailures(pilotsCards.files), ...pilots.themeFailures(pilotsCards.files, pilotsCards.instanceIds)]
   if (f.length > 0) throw new Error(f.join('\n'))
   return `${CARD_NAMES.join(' · ')}, ${Buffer.byteLength(pilotsCards.files['assets/js/cards.js'])} B`
 })

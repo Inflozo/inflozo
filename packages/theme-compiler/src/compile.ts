@@ -111,7 +111,11 @@ export type CssRecord = {
 }
 
 /** A compiled theme: its files — text, and a font's bytes — in code-unit path order, and AD-14's record. */
-export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord }
+/** The scripts' record (Story 7.5's review, 2026-10-08): `bundled` is what `main.js` carries after `core`, and `atRest` each
+ *  mounted module with no file yet, whose mounts ship in their no-JS state — both in registry order. CI's warning reads
+ *  it rather than re-deriving it, and a deploy surface can say which sections rest. */
+export type JsRecord = { bundled: readonly string[]; atRest: readonly string[] }
+export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord }
 
 /** The site doc's file. */
 const SITE_DOC = 'default.hbs'
@@ -635,6 +639,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // R-26: Tabler's MIT licence, verbatim, whenever a placed section draws an icon; each shipped family's beside it — text
   // files of the tree like any other, so the final checks read them too (review, 2026-10-08)
   Object.assign(tree, fonts.licences)
+  if (drewAny && Object.hasOwn(tree, 'LICENSE-tabler.txt')) throw new Error("LICENSE-tabler.txt: a font family's licence is already at that name, and Tabler's would overwrite it — the pool's slugs may not be `ghost` or `tabler`.")
   if (drewAny) tree['LICENSE-tabler.txt'] = TABLER_LICENSE
 
   // ── the scripts (Story 7.5, FR-J4): main.js is `core` and every module a placed, visible design declares that has a
@@ -642,8 +647,11 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // no file yet is left out, so its mount keeps `data-module` and ships at rest in its no-JS state (never a stub: `core`
   // would set `js-enabled` on it). cards.js and Ghost's licence ship only for designed cards that have a script ────────
   const mounted = moduleUnion(placed.map((p) => p.entry))
-  tree['assets/js/main.js'] = bundle(mounted.filter((n) => Object.hasOwn(input.modules, n)), input.modules)
+  const js: JsRecord = { bundled: mounted.filter((n) => Object.hasOwn(input.modules, n)), atRest: mounted.filter((n) => !Object.hasOwn(input.modules, n)) }
+  tree['assets/js/main.js'] = bundle(js.bundled, input.modules)
   if (cards !== undefined) {
+    // three writers share the root's LICENSE-*.txt namespace (review, 2026-10-08): a family slug of `ghost` or `tabler` would overwrite one silently
+    if (Object.hasOwn(tree, 'LICENSE-ghost.txt')) throw new Error("LICENSE-ghost.txt: a font family's licence is already at that name, and Ghost's would overwrite it — the pool's slugs may not be `ghost` or `tabler`.")
     tree['assets/js/cards.js'] = cards.js
     tree['LICENSE-ghost.txt'] = tidyLicence(input.ghostCards.licence)
   }
@@ -669,5 +677,5 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const scripts = [...checkThemeJs(text, input.modules, input.ghostCards.scripts), ...checkThemeScripts(text)]
   if (scripts.length > 0) throw new Error(`the theme's scripts: ${scripts.join(' · ')}`)
   const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
-  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach } }
+  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js }
 }

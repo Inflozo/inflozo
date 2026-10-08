@@ -102,7 +102,7 @@ export const moduleFunctionName = (name: string): string => name.replace(/-([a-z
 
 /** `main.js`'s first line, before the names it carries. It ships in every theme, so it names no builder and carries no
  *  internal reference (FR-J1); `checkThemeJs` reads the names back from it. */
-const HEADER = "// This file's scripts, one function each, started together by its last line: "
+const HEADER = "// This file's scripts, one function each, started together at the end of this file: "
 
 /** The names a `main.js` header lists — `core` first — or null when its first line is not `bundle`'s header. CI reads
  *  the list with this, so the header has one reader. */
@@ -205,7 +205,9 @@ ${cards.map(([n, body]) => `/* ${n}.js */\n${body}`).join('')}`
 
 const JS_DIR = 'assets/js/'
 
-/** The cards `package.json` excludes, or a sentence when it cannot be read. `card_assets: true` excludes none. */
+/** The cards `package.json` excludes, or a sentence when it cannot be read. `card_assets: true` excludes none. Those are
+ *  the two forms `compileTheme` writes (FR-Q7); Ghost's other two, `false` and `{ include: [...] }`, reach no theme of
+ *  ours, so each is a sentence naming the form rather than a reading of Ghost's grammar (review, 2026-10-08). */
 function excludedCards(files: Readonly<Record<string, string>>): string[] | string {
   const pkg = own(files, 'package.json')
   if (pkg === undefined) return 'package.json is missing'
@@ -218,7 +220,7 @@ function excludedCards(files: Readonly<Record<string, string>>): string[] | stri
   const assets = (parsed as { config?: { card_assets?: unknown } } | null)?.config?.card_assets
   if (assets === undefined || assets === true) return []
   const exclude = (assets as { exclude?: unknown } | null)?.exclude
-  return Array.isArray(exclude) && exclude.every((c) => typeof c === 'string') ? exclude : 'package.json\'s card_assets is neither true nor { "exclude": [...] }'
+  return Array.isArray(exclude) && exclude.every((c) => typeof c === 'string') ? exclude : 'package.json\'s card_assets is neither true nor { "exclude": [...] }, the two forms a compiled theme carries — a false or an include list is not read here'
 }
 
 /** FR-G7(1) and FR-J4 as one check over a theme's files (theme-relative path → text): `assets/js/` holds `main.js`,
@@ -303,8 +305,9 @@ export const HBS_COMMENT = /\{\{~?!--[^]*?--~?\}\}|\{\{~?![^]*?\}\}/g
 
 /** DW-134 over every `.hbs`, its Handlebars comments removed first: each `<script …>…</script>` is `MAIN_JS_TAG` in
  *  `default.hbs`, exactly once; `CARDS_JS_TAG` in `default.hbs`, exactly once when `assets/js/cards.js` ships and never
- *  otherwise; or a bare `<script>` whose body equals a value of `inline` — a repo source handed in by name, byte for byte
- *  (empty today; DW-328 decides at Story 9.1 whether that door ever opens). A `<script` that never closes is a sentence.
+ *  otherwise; or, in `default.hbs` alone, a bare `<script>` whose body equals a value of `inline` — a repo source handed in
+ *  by name, byte for byte (empty today; DW-328 decides at Story 9.1 whether that door ever opens, and its candidate is a
+ *  head script, so the door is the shell's only — review, 2026-10-08). A `<script` that never closes is a sentence.
  *  Returns sentences, each naming the file and the tag. */
 export function checkThemeScripts(files: Readonly<Record<string, string>>, inline: Readonly<Record<string, string>> = {}): string[] {
   const out: string[] = []
@@ -327,7 +330,7 @@ export function checkThemeScripts(files: Readonly<Record<string, string>>, inlin
       open.lastIndex = end.index + end[0].length
       if (path === 'default.hbs' && tag === MAIN_JS_TAG) main++
       else if (path === 'default.hbs' && tag === CARDS_JS_TAG) cards++
-      else if (!named.has(tag)) out.push(`${path}: ${shown(tag)} is no script a theme may carry — its templates carry main.js's and cards.js's tags in default.hbs, and nothing else (DW-134)`)
+      else if (path !== 'default.hbs' || !named.has(tag)) out.push(`${path}: ${shown(tag)} is no script a theme may carry — its templates carry main.js's and cards.js's tags in default.hbs, and nothing else (DW-134)`)
     }
   }
   if (main !== 1) out.push(`default.hbs carries ${MAIN_JS_TAG} ${main} times — exactly once, so core runs once on every page (FR-J4)`)
@@ -340,7 +343,9 @@ export function checkThemeScripts(files: Readonly<Record<string, string>>, inlin
 /** DW-146's registry half: every module file but `core` is a registry row, and every `t('…')` it calls names a string its
  *  row declares — `i18nAttr(k)` without `data-i18n-`, for some `k` in `strings` — since `ctx.t(key)` reads
  *  `data-i18n-<key>` off the mount, and a key no row declares is stamped on no mount. The lint (`eslint.config.js`)
- *  makes every `t()` key a literal, so this plain scan finds them all. */
+ *  makes every `t()` key a literal, so this plain scan finds them all. Its ceiling, which review holds: the scan is over the
+ *  raw text, so a `t('…')` inside a comment or a string is read as a call and held to the row too — write the key you mean
+ *  there, or none (review, 2026-10-08). */
 export function moduleKeyRefusals(sources: ModuleSources, rows: readonly ModuleRow[] = MODULES): string[] {
   const out: string[] = []
   for (const name of Object.keys(sources).sort(byCode)) {
@@ -351,7 +356,7 @@ export function moduleKeyRefusals(sources: ModuleSources, rows: readonly ModuleR
       continue
     }
     const keys = new Set((row.strings ?? []).map((k) => i18nAttr(k).slice('data-i18n-'.length)))
-    for (const m of (sources[name] as string).matchAll(/(?<![\w$])t\(\s*(['"])(.*?)\1/g)) {
+    for (const m of (sources[name] as string).matchAll(/(?<![\w$])t\s*\(\s*(['"])(.*?)\1/g)) {
       const key = m[2] as string
       if (!keys.has(key)) out.push(`${name}.js calls t('${key}'), and its registry row declares no string that derives data-i18n-${key} — the mount carries no such attribute, so the words would be empty (DW-146, S5)`)
     }

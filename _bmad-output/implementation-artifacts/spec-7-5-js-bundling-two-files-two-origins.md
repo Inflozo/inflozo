@@ -2,9 +2,9 @@
 title: 'Story 7.5 — JS bundling: two files, two origins'
 type: 'feature'
 created: '2026-10-08'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '23d5c0c58fc2cc9e0dc5b75673170392168128d1'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -252,6 +252,24 @@ After this story, the theme Inflozo builds for your site carries one small scrip
 
   -- standing rules 3 and 7.
 
+### Review Findings
+
+Review of 2026-10-08, five layers. No decision for the owner; nothing deferred. Every patch applied in the review:
+
+- [x] [Review][Patch] CI was red on the Dev head (the R-236 keyboard journey, no app change in the diff), so nothing deployed — passed locally with `--grep`; the Review push re-runs it [.github/workflows/ci.yml]
+- [x] [Review][Patch] The named-inline door was open in every template; DW-328's candidate is a head script, so it is `default.hbs`'s alone [packages/library/src/modules.ts · checkThemeScripts]
+- [x] [Review][Patch] `main.js`'s header said "by its last line", and the start call is the penultimate line [packages/library/src/modules.ts · HEADER]
+- [x] [Review][Patch] DW-146's lint missed a `?:` or `||` branch, `el['textContent']`, `ctx['t'](…)`, and the DOM-only `prepend`/`before`/`after`/`replaceWith`/`replaceChildren` and `nodeValue`; its control planted half the sinks — the lists are exported and the lines derived [eslint.config.js · tools/check-baseline.mjs]
+- [x] [Review][Patch] `moduleKeyRefusals` missed `t ('k')` and did not state that it reads comments [packages/library/src/modules.ts]
+- [x] [Review][Patch] `excludedCards`' sentence named Ghost's `false` and `include` forms as if unknown [packages/library/src/modules.ts]
+- [x] [Review][Patch] The compile said nothing about which mounts ship at rest — `js: { bundled, atRest }` beside `css`, and CI's warning holds against it [packages/theme-compiler/src/compile.ts · tools/check-snapshots.mjs]
+- [x] [Review][Patch] The `WARNING FR-G7` list had no positive assertion; the cards theme's real vendored bytes never met `themeFailures` [tools/check-snapshots.mjs]
+- [x] [Review][Patch] "the compile's own output" could not fail — a design's `<script>` now reaches the throw [packages/theme-compiler/src/compile.test.ts]
+- [x] [Review][Patch] Three licence writers shared `LICENSE-*.txt` with no guard [packages/theme-compiler/src/compile.ts]
+- [x] [Review][Patch] `moduleSources()` skipped a misnamed `.js` silently where the old reader took every file [tools/pilot-theme.mjs]
+- [x] [Review][Patch] "core loads on every page" was read on `/` alone — the recorder counts the tag in every 200 page's head (runs at the next T1 run, Story 7.13's) [tools/probe/record-theme-assembly.py]
+- [x] [Review][Patch] Wording: "2,740 B" without its metric; `tidyLicence` missing from the added-names list [this spec]
+
 **Acceptance Criteria:**
 
 - **The pilot theme's scripts.** Given the five-pilot project, when CI compiles it:
@@ -305,7 +323,7 @@ The tags are `MAIN_JS_TAG` and `CARDS_JS_TAG`, in Ghost's own attribute order (`
 `main.js` opens with `HEADER` plus the names. `checkThemeJs` still parses that line:
 
 ```js
-// This file's scripts, one function each, started together by its last line: core · lightbox
+// This file's scripts, one function each, started together at the end of this file: core · lightbox
 ```
 
 `cards.js` is one header, then each card's chunk in code-unit order, each under a one-line label:
@@ -344,7 +362,7 @@ Each returns sentences, each naming the file. The compile throws on any of them 
   - **Anything else under `assets/js/`:** as today.
   - Called without `cardScripts` — `run-verify-core.py` and the stress fixture — the only change is that a `cards.js` is refused rather than skipped.
 - **`checkThemeScripts(files, inline = {})`** — DW-134 over every `.hbs`, its Handlebars comments removed first.
-  - Every `<script …>…</script>` must be one of three things: `MAIN_JS_TAG` in `default.hbs`; `CARDS_JS_TAG` in `default.hbs`; or a bare `<script>` whose body equals a value of `inline`.
+  - Every `<script …>…</script>` must be one of three things: `MAIN_JS_TAG` in `default.hbs`; `CARDS_JS_TAG` in `default.hbs`; or, in `default.hbs` alone *(review, 2026-10-08: DW-328's candidate is a head script, so the door is the shell's)*, a bare `<script>` whose body equals a value of `inline`.
   - `MAIN_JS_TAG` appears exactly once.
   - `CARDS_JS_TAG` appears exactly once when `assets/js/cards.js` is in `files`, and never otherwise.
   - A `<script` with no closing tag is a sentence.
@@ -379,20 +397,20 @@ A module is written by the first category story that declares it (FR-G7(2)). The
 
 - **The literal half: lint.** `no-restricted-syntax` in the modules block refuses three things.
   - **A letter-bearing literal written to text.** "Letter-bearing" means a string literal, or a template literal's static text, matching `/\p{L}/u`. It is refused when assigned to `textContent`, `innerText`, `innerHTML`, `outerHTML`, `title`, `alt`, `placeholder`, `label` or an `aria*` text property, or passed as the second argument of `setAttribute` when the first names `title`, `alt`, `placeholder`, `aria-label`, `aria-description`, `aria-roledescription`, `aria-valuetext` or `aria-placeholder`.
-  - **The same literal passed to a text-making call:** the second argument of `insertAdjacentText` or `insertAdjacentHTML`; any argument of `createTextNode`, `write`, `writeln`, `alert`, `confirm`, `prompt`, `new Text` or `new Option`.
+  - **The same literal passed to a text-making call:** the second argument of `insertAdjacentText` or `insertAdjacentHTML`; any argument of `createTextNode`, `write`, `writeln`, `alert`, `confirm`, `prompt`, `new Text` or `new Option` *(review, 2026-10-08: and the DOM-only `prepend`, `before`, `after`, `replaceWith`, `replaceChildren`; `nodeValue` joins the properties; a literal as either branch of a `?:` or a `||`, and `el['textContent']`, are caught; the sink lists are exported and `check-baseline` plants one line per entry)*.
     - `innerHTML`, `outerHTML` and `insertAdjacentHTML` refuse markup too: a module builds elements with `createElement`.
-  - **A `t()` call (bare or `ctx.t`) whose first argument is not a string literal.**
+  - **A `t()` call (bare, `ctx.t` or `ctx['t']`) whose first argument is not a string literal.**
 - **The clean lines.**
   - `el.textContent = ctx.t('more')`, `setAttribute('aria-expanded', 'true')`, `insertAdjacentText('beforeend', ctx.t('more'))` and `` `${n}` `` are clean.
   - The selectors were executed at planning on the repo's ESLint, and gave exactly the expected refusals (§ Facts 6).
 - **The ceiling, which review holds.**
-  - A literal parked in a variable first evades the rule.
+  - A literal parked in a variable first, or joined by `+`, evades the rule; so does a sink outside the lists (`value`, `data`).
   - `append`, `prepend`, `before`, `after`, `replaceWith` and `replaceChildren` are left out: `URLSearchParams` and `FormData` share those names, and a form module calling `append('email', …)` must stay clean.
 - **The registry half: `moduleKeyRefusals`.** For each module file but `core`:
   - its name is a registry row;
   - every `t('…')` literal in it equals `i18nAttr(k)` without `data-i18n-`, for some `k` in that row's `strings`.
 
-  The lint guarantees the keys are literals, so a plain scan finds them all.
+  The lint guarantees the keys are literals, so a plain scan finds them all. It reads the raw text, so a `t('…')` in a comment or a string is held to the row too *(review, 2026-10-08)*.
 
 ### The size rows
 
@@ -526,7 +544,7 @@ None. This story has no screen, so it has no frame and no hand test, and it is D
   - `check-baseline` ran DW-146's three lint rows: every planted sink refused (Latin and Cyrillic), the clean lines clean, and a disable comment silencing nothing.
   - `check-baseline`'s size rows, measured by size-limit and checked against zlib's level-9 gzip, summed:
     - the maximal design (`main.js` of every module with a file, plus `cards.js` of all four vendored chunks) is 5,181 B;
-    - the pilot theme's `main.js` is 2,740 B;
+    - the pilot theme's `main.js` is 2,740 B gzipped;
     - the 1 B control printed its `WARNING NFR-2` line and did not fail;
     - a row with a control confirms that no file in `apps/` reads the size check.
   - `check-snapshots` ran § What CI holds, rows 1–5, each behind a control that fired first. It printed today's two warnings: `WARNING FR-G7: nav-drawer is mounted and has no file yet — its mounts ship at rest`, and the same for `member-form`.
@@ -549,7 +567,7 @@ None. This story has no screen, so it has no frame and no hand test, and it is D
   - What it wrote: the three uploads, their activations and deletes. This month's probe picture was reused. MEASUREMENTS §74 was written; §70–§73 are untouched. The Ghost 5 half is DW-326's (R-238).
 - **Manual checks:**
   - The compiled pilot theme's `default.hbs` head shows the stylesheet link, then `<script defer src="{{asset "js/main.js"}}"></script>`, then FR-H2's guard and `{{ghost_head}}`.
-  - `main.js` opens with `// This file's scripts, one function each, started together by its last line: core`, then `core`, whose comments read as plain explanation.
+  - `main.js` opens with `// This file's scripts, one function each, started together at the end of this file: core` (the review's wording: the start call is the penultimate line, the IIFE's close the last), then `core`, whose comments read as plain explanation.
   - `README.md` is the Scripts section alone. With all four vendored cards designed, it adds the cards line (`audio · gallery · toggle · video`, Ghost 6.58.0, `LICENSE-ghost.txt`), and `cards.js` opens with the header in § What the theme carries.
 - **`core.js`'s tokens are unchanged.** acorn 8.18.0's tokenizer gives 1,138 tokens for the file at baseline and 1,138 for this one, identical. Control: one token changed reads as different. The line count is unchanged at 158, so every `core.js:N` reference still points where it did.
 - **The grep for the old wordings** (§ Propagated at Dev, *Last*) finds them only in this spec.
@@ -559,6 +577,7 @@ None. This story has no screen, so it has no frame and no hand test, and it is D
   - `bundledNames`, the one reader of `main.js`'s header;
   - `HBS_COMMENT`, moved from `compile.ts` into the library, since `checkThemeScripts` needs it;
   - `CI_WORDS` in `pilot-theme.mjs`;
+  - `tidyLicence`, exported from the compiler package for CI's comparison of Ghost's licence;
   - Epic 7's R-195 preamble list.
   - The lint's ceiling is a little wider than § DW-146 states: a literal joined by `+` evades it too. `docs/section-authoring.md` says so.
 - **One wording left as the owner ruled it.** R-63 in `reconcile-designs-decisions.md` still says Inflozo "neither writes, bundles nor budgets for" Ghost's gallery script. Its decision stands: gallery's script is not a module and has no registry entry. The research row it cites (`research-section-js-libraries.md`'s gallery row) now carries the dated note that NFR-2 counts that script once a gallery is designed. The ruling's own text is the owner's and was not edited.

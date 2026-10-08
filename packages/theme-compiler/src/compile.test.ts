@@ -1098,13 +1098,26 @@ test('(7.5) determinism: the module files, the card scripts and the designed car
   const b = build(templates, { library: mountingLib, modules: reverse(modules), designedCards: ['callout', 'toggle', 'video'], ghostCards: { ...GHOST_CARDS, scripts: reverse(GHOST_CARDS.scripts) }, pageTwo: projectTwo() })
   assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
   for (const k of Object.keys(a.files)) assert.deepEqual(b.files[k], a.files[k], k)
+  assert.deepEqual(b.js, a.js)
 })
 
-test('(7.5) the compile\'s own output: checkThemeJs and checkThemeScripts return no sentence over the final text', () => {
+test('(7.5) the compile\'s own output: checkThemeJs and checkThemeScripts return no sentence over the final text — and the control: a design whose markup carries a <script> makes the compile throw that sentence', () => {
   const modules = { core: CORE, lightbox: stub('lightbox') }
   for (const designedCards of [[], ['audio', 'callout', 'gallery']]) {
     const out = textOf(build(project(), { library: mountingLib, modules, designedCards, pageTwo: projectTwo() }).files)
     assert.deepEqual(checkThemeJs(out, modules, GHOST_CARDS.scripts), [], designedCards.join())
     assert.deepEqual(checkThemeScripts(out), [], designedCards.join())
   }
+  // review (2026-10-08): the throw itself, reached — the only way a script reaches a template is a design's own markup
+  const scripted = design('a12/9', 'Scripted', { compileTarget: ['home.hbs'], html: '<section class="a12-9">\n  <script></script>\n</section>' })
+  assert.throws(() => build({ 'home.hbs': docOf(at('a12/9', 'Bad')) }, { library: (id) => (id === 'a12/9' ? scripted : LIB[id]), modules }), /^Error: the theme's scripts: partials\/sections\/home\/bad\.hbs: "<script><\/script>" is no script/)
 })
+
+test('(7.5, review) the js record beside css: bundled is what main.js carries after core, atRest each mounted module with no file, both in registry order', () => {
+  const modules = { core: CORE, lightbox: stub('lightbox') }
+  const { js, files } = build({ 'default.hbs': docOf(at('a12/1', 'Header bits')), 'home.hbs': docOf(at('a12/2', 'Home bits')) }, { library: mountingLib, modules })
+  assert.deepEqual(js, { bundled: ['lightbox'], atRest: MODULES.map((m) => m.name).filter((n) => ['nav-drawer', 'carousel'].includes(n)) })
+  assert.deepEqual(bundledNames(mainOf(files)), ['core', ...js.bundled])
+  assert.deepEqual(build(project(), { pageTwo: projectTwo() }).js, { bundled: [], atRest: [] })
+})
+

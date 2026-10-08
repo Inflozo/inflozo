@@ -7,5 +7,5 @@
 
 export const name = '@inflozo/theme-compiler'
 export { checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, THEME_MARKER, THEME_MARKS, tidyLicence } from './compile.ts'
-export type { CompiledTheme, CompileInput, CssRecord } from './compile.ts'
+export type { CompiledTheme, CompileInput, CssRecord, JsRecord } from './compile.ts'
 export { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'

@@ -468,6 +468,8 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         # ── Story 7.5: the script tag in the head, and the file at its address ──
         tags75 = MAIN_TAG.findall(head74)
         main_js = fetched(g, tags75[0]) if len(tags75) == 1 else (None, '', b'')
+        # review (2026-10-08): "core loads on every page" is read, not inferred — the tag once in every 200 page's head
+        tag_pages = {p: len(MAIN_TAG.findall(b.split('</head>', 1)[0])) for p, (st, b) in read.items() if st == 200}
     finally:
         shim.restore_and_delete(g, previous, [THEME_NAME])
     # the page each path renders, by the key `order` holds it under (a page 2 as `{file}#2`)
@@ -571,6 +573,8 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         (main_js[2] == compiled_main, '/assets/js/main.js', 'its body is the compiled main.js, byte for byte',
          f'{len(main_js[2])} bytes served, {len(compiled_main)} compiled'),
         (misses['script'][0] == 404, f'/assets/js/{nonce}.js', 'CONTROL — a script the theme does not carry answers 404', f'HTTP {misses["script"][0]}'),
+        (len(tag_pages) > 1 and all(n == 1 for n in tag_pages.values()), 'every 200 page', 'each page read carries the tag once in its head — core loads on every page',
+         ', '.join(f'{p}: {n}' for p, n in tag_pages.items())),
     ]
     for ok, page, what, detail in verdicts[len(premise):]:
         print(f'    {"PASS" if ok else "FAIL"}  {page:<40} {what} — {detail}')

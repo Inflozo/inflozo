@@ -896,13 +896,17 @@ it. Two halves hold it. **Lint**, in `eslint.config.js`'s modules block: a lette
 literal's static text, written to `textContent`, `innerText`, `innerHTML`, `outerHTML`, `title`, `alt`, `placeholder`,
 `label` or an aria text property (`ariaLabel` …), passed as `setAttribute`'s value for a text attribute (`title`, `alt`,
 `aria-label` …), as `insertAdjacentText`'s or `insertAdjacentHTML`'s text, or to `createTextNode`, `write`, `alert`,
-`confirm`, `prompt`, `new Text` or `new Option`, is refused; so is a `t()` whose key is no string literal. Markup is
-refused with it — a module builds elements with `createElement`. No comment switches it off (`noInlineConfig`).
+`confirm`, `prompt`, `prepend`, `before`, `after`, `replaceWith`, `replaceChildren`, `new Text` or `new Option`, is
+refused — as a plain literal, as either branch of a `?:` or a `||`, and through `el['textContent']` too; so is a `t()`
+whose key is no string literal, `ctx['t'](…)` included. Markup is refused with it — a module builds elements with
+`createElement`. No comment switches it off (`noInlineConfig`). The sink lists are exported from `eslint.config.js`, and
+`check-baseline` plants one line per entry, so the control cannot drift from the rule.
 **The registry half**, `moduleKeyRefusals`, in CI: every `t('…')` key a module calls must be `i18nAttr(k)` without
 `data-i18n-` for some `k` in its row's `strings` — `countdown.time_remaining` is read as `ctx.t('time-remaining')`. So
-the example above needs `lightbox`'s row to declare a `….close` key first. The lint's ceiling, which review holds: a
-literal parked in a variable, or joined by `+`, evades it; `append` and its family are left out, because `FormData` and
-`URLSearchParams` share those names.
+the example above needs `lightbox`'s row to declare a `….close` key first. It reads the raw text, so a `t('…')` inside
+a comment or a string is held to the row too: write the key you mean there, or none. The lint's ceiling, which review
+holds: a literal parked in a variable, or joined by `+`, evades it, as does a sink outside the lists (`value`, `data`);
+`append` and `set` are left out, because `FormData` and `URLSearchParams` share those names.
 
 Nothing reaches a global it was not handed: `el.ownerDocument`, never `document`. Lint enforces the
 letter of it — `no-undef` over `packages/library/modules/*.js` refuses a bare `window`, `document` or
@@ -960,7 +964,7 @@ it returns — because for each of those modules its reduced-motion state **is**
 whose reduced-motion state would differ from its no-JS state cannot use the gate; raise it before writing it.
 
 **`main.js`.** `bundle(names, sources)` writes it: a header naming `core` and the modules — `// This file's
-scripts, one function each, started together by its last line: core · lightbox`, which names no builder, since it ships
+scripts, one function each, started together at the end of this file: core · lightbox`, which names no builder, since it ships
 (FR-J1) — then one wrapping function with `'use strict'` holding each file with exactly its one `export` removed and not a
 byte else, `core` first, then `core(window, rows)`. **A module's comments ship with it** *(Story 7.5)*: nothing strips them,
 because a lexical stripper would share `bundle`'s own scanner's ceiling and could cut code. So write them for the theme's
@@ -979,7 +983,8 @@ its names with it. **A declared module with no file yet ships at rest:** it is l
 browser console, and CI prints it as a `WARNING FR-G7` line until the file lands. It is never stubbed — a no-op would let
 `core` set `js-enabled`, and the section's CSS would then hide content behind a control that does nothing (A1 #1's phone
 nav). The canvas runs a no-op for such a module instead (`apps/web/lib/behaviours.ts`), so Preview draws the JavaScript
-branch where the theme draws the no-JS one; DW-347 gives that difference to Story 7.34. Both tags sit in
+branch where the theme draws the no-JS one; DW-347 gives that difference to Story 7.34. `compileTheme` returns the two
+lists beside AD-14's record — `js.bundled` and `js.atRest`, in registry order — and CI's warning reads them. Both tags sit in
 `default.hbs`'s head after the stylesheet, `defer`, in Ghost's own attribute order: `MAIN_JS_TAG`, then `CARDS_JS_TAG`
 when `cards.js` ships.
 
@@ -996,9 +1001,9 @@ excluded with no `cards.js` is a sentence too, because excluding a card switches
 
 **Templates carry no other script** *(Story 7.5, DW-134)*. `checkThemeScripts(files, inline = {})` reads every emitted
 `.hbs`, its Handlebars comments removed first, and refuses any `<script>` but the two tags in `default.hbs` — `main.js`'s
-once, `cards.js`'s once exactly when `cards.js` ships — or a bare inline `<script>` whose bytes equal a repo source
-handed to it by name. That door is empty today; DW-328 decides at Story 9.1 whether `mode-toggle`'s head script ever
-opens it. The compile runs both checks over its own output and throws on any sentence; CI and the stress fixture run
+once, `cards.js`'s once exactly when `cards.js` ships — or, in `default.hbs` alone, a bare inline `<script>` whose bytes
+equal a repo source handed to it by name. That door is empty today; DW-328 decides at Story 9.1 whether `mode-toggle`'s
+head script ever opens it, and a head script is the shell's, so no other template may carry one. The compile runs both checks over its own output and throws on any sentence; CI and the stress fixture run
 the same two functions.
 
 **The licence filter**, for any future proposal to bundle code Inflozo did not write: **MIT,

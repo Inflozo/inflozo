@@ -261,15 +261,20 @@ await check('Story 7.1: a test under packages/ may import handlebars to parse wh
 // Each line is planted in a module file's one function, with every name it uses a parameter, so `no-undef` stays quiet.
 const moduleLint = async (line) => (await lintAt(`export function probe(el, ctx, win, doc, body, n, value) {\n  const t = ctx.t\n  ${line}\n}\n`, 'packages/library/modules/probe.js'))
   .filter((m) => m.ruleId === 'no-restricted-syntax' && m.message.startsWith('DW-146'))
+// The planted lines are derived from the rule's own sink lists (review, 2026-10-08), one per entry and one per literal
+// shape, so a sink added to the rule is planted here without anyone remembering to.
+const { VISITOR_SINKS } = await import(join(REPO, 'eslint.config.js'))
 const VISITOR_WORDS = [
-  "el.textContent = 'Hello'", "el.textContent = 'Привет'", 'el.title = `Close ${n}`', "el.ariaLabel = 'Close'", "el.innerHTML = '<b>x</b>'",
-  "el.setAttribute('aria-label', 'Close')", "el.setAttribute('title', `Next ${n}`)", "el.insertAdjacentText('beforeend', 'More')",
-  "el.insertAdjacentHTML('afterend', '<p>x</p>')", "doc.createTextNode('Hi')", "win.alert('Hi')", "new win.Option('Pick')",
-  'ctx.t(n)', 't(`days`)',
+  ...VISITOR_SINKS.props.flatMap((p) => [`el.${p} = 'Hello'`, `el['${p}'] = 'Привет'`, `el.${p} = n ? 'Open' : 'Close'`, `el.${p} = value || 'Untitled'`]),
+  ...VISITOR_SINKS.attrs.flatMap((a) => [`el.setAttribute('${a}', 'Close')`, `el.setAttribute('${a}', \`Next \${n}\`)`]),
+  ...VISITOR_SINKS.calls.flatMap((c) => [`el.${c}('Hi')`, `${c}('Hi')`]),
+  ...VISITOR_SINKS.news.flatMap((c) => [`new win.${c}('Pick')`, `new ${c}('Pick')`]),
+  'el.title = `Close ${n}`', "el.insertAdjacentText('beforeend', 'More')", "el.insertAdjacentHTML('afterend', '<p>x</p>')",
+  'ctx.t(n)', 't(`days`)', "ctx['t'](n)",
 ]
 const NOT_VISITOR_WORDS = [
   "el.textContent = ctx.t('more')", "el.setAttribute('aria-expanded', 'true')", "el.insertAdjacentText('beforeend', ctx.t('more'))",
-  'el.textContent = `${n}`', "body.append('email', value)", "el.innerHTML = ''",
+  'el.textContent = `${n}`', "body.append('email', value)", "el.innerHTML = ''", "el.textContent = n ? ctx.t('open') : ctx.t('close')", "t('days')",
 ]
 await check('Story 7.5 (DW-146): every sink is refused in a module file — a letter-bearing literal written to text or passed to a text-making call, and a t() key that is no string literal', async () => {
   const missed = []

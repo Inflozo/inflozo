@@ -146,7 +146,7 @@ test('a module declares the live js keys it writes, and countdown declares every
 
 test("(7.5) main.js's header names no builder and no internal reference, and bundledNames reads its list back", () => {
   const js = bundle(['lightbox'], { core, lightbox })
-  assert.equal(js.split('\n')[0], "// This file's scripts, one function each, started together by its last line: core · lightbox")
+  assert.equal(js.split('\n')[0], "// This file's scripts, one function each, started together at the end of this file: core · lightbox")
   assert.doesNotMatch(js.split('\n')[0] ?? '', /inflozo|bundle\(|packages\/|\b(DW|AD|FR|NFR|R)-\d/i)
   assert.deepEqual(bundledNames(js), ['core', 'lightbox'])
   assert.equal(bundledNames('alert(1)\n'), null)
@@ -229,6 +229,8 @@ test('(7.5) checkThemeScripts: the two tags in default.hbs and nothing else, in 
   const src = 'document.documentElement.dataset.x = 1'
   assert.deepEqual(checkThemeScripts({ ...clean, 'default.hbs': DEFAULT(`    <script>${src}</script>`) }, { 'mode-toggle': src }), [])
   named({ ...clean, 'default.hbs': DEFAULT(`    <script>${src} </script>`) }, /is no script/, 'one byte off a named source')
+  // review: the door is the shell's alone — the same named source in another template is refused
+  assert.deepEqual(checkThemeScripts({ ...clean, 'post.hbs': `<script>${src}</script>\n` }, { 'mode-toggle': src }).filter((f) => f.startsWith('post.hbs')).length, 1, 'a named source outside default.hbs')
   // a layer name inside a boundary comment is a comment: Ghost never prints it
   assert.deepEqual(checkThemeScripts({ ...clean, 'home.hbs': '{{!-- <script>alert(1)</script> · Heroes · Plain --}}\n{{! <script> }}\n' }), [])
 })
@@ -238,6 +240,10 @@ test('(7.5) moduleKeyRefusals: every t() key a module calls derives from a strin
   assert.deepEqual(moduleKeyRefusals({ core, countdown: countdown('days') }), [])
   assert.deepEqual(moduleKeyRefusals({ countdown: countdown('time-remaining') }), [], 'countdown.time_remaining derives data-i18n-time-remaining')
   assert.match(moduleKeyRefusals({ countdown: countdown('weeks') })[0] ?? '', /^countdown\.js calls t\('weeks'\), and its registry row declares no string that derives data-i18n-weeks/)
+  // review: a space before the parenthesis is the same call to the parser, so it is the same call here
+  assert.match(moduleKeyRefusals({ countdown: "export function countdown(el, ctx) { el.textContent = ctx.t ('weeks') }" })[0] ?? '', /calls t\('weeks'\)/, 't (…)')
+  // the ceiling, stated: a t('…') in a comment is read too
+  assert.match(moduleKeyRefusals({ countdown: "// t('weeks') is not a key\nexport function countdown() {}" })[0] ?? '', /calls t\('weeks'\)/, 'a comment')
   assert.match(moduleKeyRefusals({ lightbox: 'export function lightbox(el, ctx) { const t = ctx.t; el.title = t("close") }' })[0] ?? '', /lightbox\.js calls t\('close'\)/, 'a row with no strings')
   assert.match(moduleKeyRefusals({ 'back-to-top': 'export function backToTop() {}' })[0] ?? '', /back-to-top\.js is no registry row/)
   // `set('x')` and `split("y")` are not t()
