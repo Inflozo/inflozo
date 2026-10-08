@@ -685,9 +685,11 @@ check('Story 7.1 — the five-pilot project compiles with Paper to a theme Handl
   if (f.length > 0) throw new Error(f.join('\n'))
   const b = pilots.compilePilots(WORDS, THEME)
   // Story 7.4: by content — a font is bytes, and two reads of one file are two arrays
+  // the paths first, so a file one compile lacks is named rather than thrown on (review, 2026-10-08)
+  if (Object.keys(b.files).join() !== Object.keys(a.files).join()) throw new Error(`a second compile differs in its files: ${Object.keys(a.files).filter((k) => !(k in b.files)).concat(Object.keys(b.files).filter((k) => !(k in a.files))).join(', ')}`)
   const same = (x, y) => (typeof x === 'string' ? x === y : typeof y !== 'string' && Buffer.from(x).equals(Buffer.from(y)))
   const differ = Object.keys(a.files).filter((k) => !same(a.files[k], b.files[k]))
-  if (differ.length > 0 || Object.keys(b.files).join() !== Object.keys(a.files).join()) throw new Error(`a second compile differs: ${differ.join(', ')}`)
+  if (differ.length > 0) throw new Error(`a second compile differs: ${differ.join(', ')}`)
   return `${Object.keys(a.files).length} files`
 })
 
@@ -915,6 +917,21 @@ check(`Story 7.4 (NFR-2) — each template's reachable CSS is within ${pilots.CS
   const f = css74.failures.filter((x) => x.startsWith('NFR-2'))
   if (f.length > 0) throw new Error(f.join('\n'))
   return css74.report.join(' · ')
+})
+
+// The strip's soundness rests on nothing at runtime writing a `data-*` on a root (`strip.ts`'s header): a claim CI reads,
+// not one a comment asserts (review, 2026-10-08). Story 7.5 bundles the modules; this row holds every one of them.
+const MODULE_WRITES_DATA = /\bdataset\b|setAttribute\(\s*['"`]data-/
+const moduleSources = () => readdirSync(join(REPO, 'packages/library/modules')).filter((f) => f.endsWith('.js') && !f.endsWith('.test.mjs')).map((f) => [f, readFileSync(join(REPO, 'packages/library/modules', f), 'utf8')])
+check('control — Story 7.4 (FR-G7): a module source that writes a data-* attribute is caught', () => {
+  for (const line of ['el.dataset.perRow = "two"', 'el.setAttribute("data-bg", "contrast")', "el.setAttribute( 'data-x', 1)"]) if (!MODULE_WRITES_DATA.test(line)) throw new Error(`${line} was not caught`)
+  return 'three shapes caught'
+})
+check('Story 7.4 (FR-G7) — no behaviour module writes a data-* attribute, so the strip\'s proof is the root as compiled', () => {
+  const sources = moduleSources()
+  if (sources.length === 0) throw new Error('no module source read')
+  for (const [f, body] of sources) if (MODULE_WRITES_DATA.test(body)) throw new Error(`${f} writes a data-* attribute`)
+  return `${sources.length} module(s)`
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

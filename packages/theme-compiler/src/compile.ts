@@ -78,8 +78,13 @@ export type CompileInput = {
   darkEnabled: boolean
 }
 
+/** NFR-2's per-template CSS budget, gzipped at level 9 — the one figure, read by CI's `cssFailures` (tools/pilot-theme.mjs)
+ *  and by whatever Story 7.33 and 7.29 measure. */
+export const CSS_BUDGET_BYTES = 50 * 1024
+
 /** AD-14's reachability record (Story 7.4): what `screen.css` is made of, and which designs each template reaches —
- *  the CSS budget's one fact. */
+ *  the CSS budget's one fact. The `@font-face` rules inlined in `default.hbs`'s head are not in it: they are the
+ *  pairing's constant, the same on every page, and no placed root reaches or misses them. */
 export type CssRecord = {
   /** the Tokens and Base sections, exactly as `screen.css` opens */
   global: string
@@ -349,13 +354,14 @@ const fontWords = (f: Pack['fonts']): string => `${f.heading.family} with ${f.bo
  *  renamed), each shipped family's licence at the root, and `default.hbs`'s head lines: a preload of each distinct roman
  *  face's `latin` file (§D.a rule 6 — italics and `latin-ext` are fetched only by a page that needs them) and the faces'
  *  `<style>`, both through one `{{asset}}` address per file, so the preload is the fetch (Ghost's `?v=`). */
-function themeFonts(input: CompileInput): { files: Record<string, string | Uint8Array>; head: string[] } {
+function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; licences: Record<string, string>; head: string[] } {
   const want = pairingFonts(input.pairing)
   const got = input.pack.fonts
   const same = got.heading.family === want.heading.family && got.heading.capHeight === want.heading.capHeight &&
     got.body.family === want.body.family && got.body.capHeight === want.body.capHeight && got.body.tabular === want.body.tabular
   if (!same) throw new Error(`fonts: the pack draws ${fontWords(got)}, and its pairing ${input.pairing} is ${fontWords(want)} — a pack's fonts are its pairing's, so the theme ships the faces the pack names.`)
-  const files: Record<string, string | Uint8Array> = {}
+  const files: Record<string, Uint8Array> = {}
+  const licences: Record<string, string> = {}
   const faces = pairingFaces(input.pairing)
   for (const f of faces.flatMap((face) => face.files)) {
     if (!POOL_FILE_RE.test(f.file)) throw new Error(`fonts: the pool file ${JSON.stringify(f.file)} is no font file name the theme writes (${POOL_FILE_RE.source}).`)
@@ -366,7 +372,10 @@ function themeFonts(input: CompileInput): { files: Record<string, string | Uint8
   for (const family of [...new Set(faces.map((face) => face.family))]) {
     const record = Object.hasOwn(POOL.families, family) ? POOL.families[family] : undefined
     if (record === undefined || !SLUG_RE.test(record.slug)) throw new Error(`fonts: the pool records no licence for ${family}.`)
-    files[`LICENSE-${record.slug}.txt`] = tidyLicence(new TextDecoder().decode(input.fonts(record.licenceFile)))
+    // held as the font read is (review, 2026-10-08): a licence the pool names has words, so an empty or non-byte read is refused
+    const raw = input.fonts(record.licenceFile)
+    if (!(raw instanceof Uint8Array) || raw.length === 0) throw new Error(`fonts: ${record.licenceFile} read ${raw instanceof Uint8Array ? 'no' : 'no bytes and no'} licence text — ${family}'s licence ships with its files, so a missing read is refused.`)
+    licences[`LICENSE-${record.slug}.txt`] = tidyLicence(new TextDecoder().decode(raw))
   }
   const pairing = pairingOf(input.pairing)
   const preloads = [...new Set([pairing.heading, pairing.body].map((role) => {
@@ -377,6 +386,7 @@ function themeFonts(input: CompileInput): { files: Record<string, string | Uint8
   const asset = (file: string): string => `{{asset "fonts/${file}"}}`
   return {
     files,
+    licences,
     head: [
       ...preloads.map((file) => `<link rel="preload" href="${asset(file)}" as="font" type="font/woff2" crossorigin>`),
       '<style>',
@@ -407,6 +417,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const perPage = pageSize(input.postsPerPage)
   const pkg = packageJson(input, perPage)
   const fonts = themeFonts(input)
+  noC0('a licence', Object.values(fonts.licences))
   const { stacks, pageTwos } = stacksOf(input)
 
   // ── render every visible instance, with ONE UserText — file by file, page 1 before page 2 ─────────────────────────────
@@ -597,7 +608,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   }
 
   tree['package.json'] = pkg   // JSON.stringify escapes every C0 character, so no user-text marker is in it to substitute
-  // R-26: Tabler's MIT licence, verbatim, whenever a placed section draws an icon; each shipped family's beside it
+  // R-26: Tabler's MIT licence, verbatim, whenever a placed section draws an icon; each shipped family's beside it — text
+  // files of the tree like any other, so the final checks read them too (review, 2026-10-08)
+  Object.assign(tree, fonts.licences)
   if (drewAny) tree['LICENSE-tabler.txt'] = TABLER_LICENSE
 
   // ── user text, once, last, over every text file; the record in code-unit path order; then the checks over the final

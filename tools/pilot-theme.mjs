@@ -33,7 +33,7 @@ const { iconDrawing } = await import(join(REPO, 'packages/library/src/icons.ts')
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
 const { REFERENCE_PACK } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
 const { presetOf } = await import(join(REPO, 'packages/library/src/packs.ts'))
-const { checkTripleStashes, compileTheme, THEME_MARKS } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
+const { checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, THEME_MARKS } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
 const { JSDOM } = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('jsdom')
 
 /** The hostile layer name: an early `--}}`, markup and a live expression after it. */
@@ -199,7 +199,7 @@ export function themeFailures(all, instanceIds) {
 // the first elements of the compiled section partials, parsed by jsdom — what the theme ships, not what the compiler meant.
 
 /** NFR-2's per-template budget: each template's reachable CSS, gzipped at level 9, at most 50 KB. */
-export const CSS_BUDGET = 50 * 1024
+export const CSS_BUDGET = CSS_BUDGET_BYTES   // the package's figure, never a second literal (review, 2026-10-08)
 
 /** `text` split on its top-level commas — outside (), [] and strings. */
 function splitList(text) {
@@ -237,7 +237,12 @@ function withoutPseudo(compound) {
   let out = ''
   for (let i = 0; i < compound.length; i++) {
     const c = compound[i]
-    if (c === '[') { const end = compound.indexOf(']', i); out += compound.slice(i, end + 1); i = end; continue }
+    if (c === '[') {
+      // an unclosed `[` keeps the rest whole — never `i = -1`, which would restart the loop for ever (review, 2026-10-08)
+      const end = compound.indexOf(']', i)
+      if (end === -1) return out + compound.slice(i)
+      out += compound.slice(i, end + 1); i = end; continue
+    }
     if (c !== ':') { out += c; continue }
     while (compound[i + 1] === ':') i++
     while (i + 1 < compound.length && /[\w-]/.test(compound[i + 1])) i++

@@ -5,6 +5,6 @@
 // the files; the later stories of the epic fill the rest of the tree.
 
 export const name = '@inflozo/theme-compiler'
-export { checkTripleStashes, compileTheme, THEME_MARKER, THEME_MARKS } from './compile.ts'
+export { checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, THEME_MARKER, THEME_MARKS } from './compile.ts'
 export type { CompiledTheme, CompileInput, CssRecord } from './compile.ts'
 export { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'

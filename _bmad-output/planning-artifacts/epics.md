@@ -3068,7 +3068,7 @@ So that the theme is fast because it is small, not because it was minified.
 **When** assets are emitted
 **Then** *(the pictures moved word for word to Story 7.29 by Question 1, owner, 2026-10-08: "**only assets actually
 referenced** are copied into `assets/images/` …")*
-**And** fonts are **self-hosted**: woff2 subsets of the project's pairing bundled into `assets/fonts/` with
+**And** fonts are **self-hosted**: the pool's pre-cut woff2 files (`latin` and `latin-ext`) of the project's pairing bundled into `assets/fonts/` with
 `@font-face` and `font-display: swap`, **preloaded** *(Story 7.4, 2026-10-08: the pool's own files, never subset,
 re-encoded or renamed by the compile; the `@font-face` rules in `default.hbs`'s head and the two roman faces' `latin`
 files preloaded, both through one `{{asset}}` address per file; each shipped family's licence at the theme root)*
@@ -3082,7 +3082,7 @@ a gap is a build warning
 **And** **the strip is sound only because a design never becomes another design at render, and compile CI asserts
 exactly that**: no emitted stylesheet may contain a rule reachable only under another design's root attribute
 **And** global CSS is the token block + base/reset + shared primitives + `cards.css`
-**And** **the token block is `packTokensCss(pack)` followed by `darkOverrideCss` over every placed section** — a section's
+**And** **the token block is `packTokensCss(pack, { ghostFonts: true })` followed by `darkOverrideCss` over every placed section with an override in force** *(as landed, Story 7.4, 2026-10-08)* — a section's
 dark override reaching a visitor as its own root properties on its `data-instance` hook (AD-30, DW-195), the hook the
 emitters stamp from `darkHook` over the same `template_key:instanceId` key — and **none on a Light-only project**, whose
 compile hands `darkOverrideCss` nothing (from Story 6.5's Dev, 2026-10-05)

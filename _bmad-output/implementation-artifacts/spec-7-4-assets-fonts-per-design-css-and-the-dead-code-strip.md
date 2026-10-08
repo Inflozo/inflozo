@@ -2,10 +2,10 @@
 title: 'Story 7.4 — Assets, fonts, per-design CSS and the dead-code strip'
 type: 'feature'
 created: '2026-10-08'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '023db2584770f0f6a104b3995da72a7e2bbd36aa'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -343,6 +343,20 @@ After this story, the theme Inflozo builds for your site carries your pack's fon
 
   -- standing rules 3 and 7.
 
+### Review Findings
+
+Review of 2026-10-08, five layers. No decision for the owner; nothing deferred. Every patch applied in the review:
+
+- [x] [Review][Patch] The editor's PAINT door and its Light-only guard had no browser proof: the one journey went through `slice` (the re-stamp) only — a stored override now opens with its hook, under a new harness header [tools/keyboard/journey.spec.mjs · apps/web/app/(app)/app/harness/editor/layout.tsx]
+- [x] [Review][Patch] The DW-331 defect itself — a Tag page 2 that follows page 1 — was held in Node only; a journey now reads `tag:`'s hook on the following copy, with `tag-paged:`'s as the control [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] A licence read was not held as the font read is, and sat outside the tree's final checks [packages/theme-compiler/src/compile.ts]
+- [x] [Review][Patch] `withoutPseudo` restarted its loop for ever on an unclosed `[` [tools/pilot-theme.mjs]
+- [x] [Review][Patch] The second-compile row threw on a missing path instead of naming it [tools/check-snapshots.mjs]
+- [x] [Review][Patch] NFR-2's 50 KB was a second literal in `tools/` — now `CSS_BUDGET_BYTES` from the package [packages/theme-compiler/src/index.ts]
+- [x] [Review][Patch] The strip's "nothing at runtime writes a `data-*`" was a comment, not a check — a `check-snapshots` row over every module source, behind its control [tools/check-snapshots.mjs]
+- [x] [Review][Patch] Test rows: two controls on one compound across two placements (`roots.some(every)`), `sectionKey`'s stored shape, an unquoted `url()` through `untokened` [strip.test.ts · dark-override.test.ts · validate.test.ts]
+- [x] [Review][Patch] Wording: `css.reach` is in design order; the oracle's pseudo-class reading; the inline faces outside the record; FR-J3's and the card's "woff2 subsets"; the card's token-block line; DW-331's owner line [this spec · prd.md · epics.md · deferred-work.md]
+
 **Acceptance Criteria:**
 
 - **Fonts, self-hosted.** Given any compile, when the tree is read:
@@ -462,19 +476,21 @@ The licences sit at the theme root: `LICENSE-<family slug>.txt` from `licences/<
 
 - `css.global` is the Tokens and Base sections, exactly as `screen.css` opens.
 - `css.sheets[designId]` is that design's emitted chunk, header comment included.
-- `css.reach[file]` is defined for every emitted root-level template except `default.hbs`. It is the sorted design ids of the visible placed sections of `default.hbs` and of the file (both pages), plus, for `post.hbs`, `page.hbs` and every `custom-*.hbs`, those of `partials/content-cta.hbs`. Ghost renders the paywall inside `{{content}}`.
+- `css.reach[file]` is defined for every emitted root-level template except `default.hbs`. It is the design ids, in design order (category, then number — what `screen.css` follows), of the visible placed sections of `default.hbs` and of the file (both pages), plus, for `post.hbs`, `page.hbs` and every `custom-*.hbs`, those of `partials/content-cta.hbs`. Ghost renders the paywall inside `{{content}}`.
+
+The `@font-face` rules in `default.hbs`'s head are outside the record: the pairing's constant, the same on every page, and no placed root reaches or misses them.
 
 `cssFailures(compiled, find)` in `tools/pilot-theme.mjs` is the check CI runs, and Story 7.33 runs it over the whole library. Its independent oracle works like this:
 
 - Each placed design's original and emitted sheets are parsed through jsdom's CSSOM into entries of the form *(the `@media` condition, one selector, the declarations' `cssText`)*, with selector lists split by its own top-level splitter.
-- An entry is **reachable** unless its leading compound begins with the design's root class and `Element.matches` finds no placed root. The roots are the first elements of that design's compiled partials, parsed by jsdom, so they are what the theme ships.
+- An entry is **reachable** unless its leading compound begins with the design's root class and `Element.matches`, with the compound's pseudo-classes removed first (a placed root is never `:hover` in jsdom), finds no placed root — a reading that can only widen "reachable", so the soundness row is the stricter for it. The roots are the first elements of that design's compiled partials, parsed by jsdom, so they are what the theme ships.
 
 Its four rows, each with a control:
 
 1. **Soundness.** A reachable original entry missing from the emitted chunk is a failure. Control: an emitted chunk with one reachable entry removed.
 2. **The gap.** The emitted entries that are not reachable are printed as `WARNING FR-G7: …` with their bytes, and the check passes (`check-baseline.mjs:475`'s shape). Control: a chunk with one dead entry added prints a non-zero gap.
 3. **AD-37.** Every emitted selector whose leading compound begins with a library design's root class begins with its own placed design's. Control: a `screen.css` carrying an unplaced design's chunk.
-4. **The budget.** For each `reach` template, `gzip -9` of `css.global` plus its designs' chunks is at most 51,200 bytes. The whole file's gzip is printed beside it. Control: a record whose template reaches an incompressible chunk past the limit.
+4. **The budget.** For each `reach` template, `gzip -9` of `css.global` plus its designs' chunks is at most `CSS_BUDGET_BYTES`, the one figure the compiler package exports (50 KB). The whole file's gzip is printed beside it. Control: a record whose template reaches an incompressible chunk past the limit.
 
 ### Dark overrides in the theme
 
@@ -747,6 +763,57 @@ Both were ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ruled v
   - `screen.css` opens with `/* Tokens */`, carrying `--font-heading: var(--gh-font-heading, 'Fraunces', serif)` and `--font-body: var(--gh-font-body, 'Inter', sans-serif)`, and ending with A4 #13's override under `MODE_SELECTORS`' two conditions. Then `/* Base */` and `html, body { margin: 0; background: var(--bg-page); }`, then each design's chunk.
   - Each chunk is shorter than its library sheet. A17 #1 was placed at `three` and `two`: the library sheet names `data-per-row="four"` eight times, and the emitted sheet never.
 - **No Supabase, Resend or Dodo call was made**, and no migration exists. Vercel: the editor's key change and the harness page deploy through CI on this push; their READY is the Review's to read.
+
+**Review (2026-10-08), five layers over the diff since `023db258` (Blind Hunter, Edge Case Hunter, Verification Gap,
+Acceptance Auditor, Real-infra verifier), then triage.** No acceptance criterion violated; no owner decision needed; no
+new question; nothing deferred. Real infrastructure (R-82), read-only — no upload, since the Dev run of 2026-10-08 stands
+and a second upload needs an in-session go. Keys by variable name (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`,
+`GHOST6_CONTENT_API_KEY`, `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`), none printed. On T1 `ghost6.inflozo.com`:
+`GET /ghost/api/admin/themes/` → `casper` active, `racer` and `source` installed; public `/LICENSE-fraunces.txt`,
+`/LICENSE-inter.txt`, `/assets/fonts/fraunces-roman-latin.woff2`, `/assets/fonts/inter-roman-latin.woff2` and
+`/assets/css/screen.css` → 404 each, `/` → 200 (control) — the compiled theme is gone and §73's restoration holds.
+MEASUREMENTS §73 read against a fresh local compile: the same 25-file tree, the same licence sizes, the same hook
+`dc5d8b50`. CI on the Dev head `f551cced`: run 37761219838 `check`, `rls`, `deploy` all success; `Render matrix`
+37761219696 success. `Deployment: dpl_7gcoJz8A9wdSpWvA8E3pcTCJFCmY` READY on production at `f551cced`; control:
+`app.inflozo.com/app/harness/pilots` → 404 (the harness is off in production). No migration in the diff, so no R-99
+schema read; no Supabase, Resend or Dodo surface. Locally (Node 24): `pnpm check` exit 0 before and after the patches;
+`check-snapshots` PASS with every 7.4 row behind its control, the new module row among them; the recorder's scaffold
+reproduced from its source gives 0 errors / 0 warnings on gscan 4.49.7 and 6.4.2 for the compiled pilot theme, and the
+same tree with the two `var(--gh-font-…)` forms removed warns `GS051` on both; `tools/stress` `node build.js` and `node
+gate.js theme` 0/0 on both. `pnpm keyboard` whole, after the patches: every test passed, exit 0 (9.8 min), the four `7.4 · DW-331` journeys among them.
+
+**Patched here:**
+- **The browser proof reaches the two doors the deleted guards held.** The one journey set a Background through the
+  Sidebar, which re-stamps through `slice` — so the PAINT door (`renderSection`'s `instance: themeHook(entry, i, i)`) and
+  the `darkEnabled` guard were proved by nothing in a browser. The harness gains `x-inflozo-harness-override: on`: Home's
+  first section opens with its Background already stored Contrast in Dark, and the header also gives the Tag canvas a doc
+  of its own. Journey `7.4 · DW-331 · the PAINT door` reads the hook off the paint with no key pressed, then under
+  `x-inflozo-harness-dark: off` reads none. Journey `7.4 · DW-331 · a Tag page 2 that FOLLOWS page 1` sets a Background
+  on Tag page 1, enters the following page 2 and reads `hookOf(sectionKey(templateKeyOfFile('tag.hbs'), id))` on the
+  copy, with `tag-paged:`'s hook on no root as the control. Controls executed: with the paint's `instance` dropped and
+  `themeHook` keyed on `doc`, both fail; with the `darkEnabled` guard dropped, the paint-door journey fails; restored, all
+  four 7.4 journeys pass. The first journey's key line now goes through `templateKeyOfFile('home.hbs')`.
+- **Licences held like fonts.** An empty or non-byte licence read is refused by name, and the family licences join the
+  tree beside Tabler's, so `noC0` and the final text checks read them too.
+- **Three small tool holes.** `withoutPseudo` returned the rest whole on an unclosed `[` instead of looping for ever; the
+  second-compile row names a missing path instead of throwing on it; `CSS_BUDGET` reads the package's `CSS_BUDGET_BYTES`.
+- **The strip's premise is a check.** `check-snapshots` reads every `packages/library/modules/*.js` and fails on a
+  `dataset` or `setAttribute('data-…')` write, behind a control of three shapes — Story 7.5 bundles the modules.
+- **Rows.** `strip.test.ts`: two controls on one compound, each carried by a different root, is dead (and kept when one root
+  carries both); `dark-override.test.ts`: `sectionKey('a', 'b')` is `a:b`; `validate.test.ts`: `url(/img/data-mode-x.png#fff)`
+  is accepted whole.
+- **Wording.** `css.reach` is in design order (Design Notes said sorted); the oracle removes pseudo-classes before
+  `Element.matches`, which can only widen "reachable"; the inline `@font-face` rules are outside the record, said at
+  `CssRecord` and in Design Notes; FR-J3 and the card say "the pool's pre-cut woff2 files" where "subsets" read as a
+  contradiction of "never subset"; the card's token-block line says what landed; DW-331's owner line reads as closed.
+
+**Dismissed as noise or settled by design:** a pool family slugged `tabler` (the pool is static and reviewed); two colliding
+sections sharing one layer name in one file (a 32-bit collision AND a shared name); a dropped rule's leading whitespace;
+`stripCss` returning a commented sheet unchanged (the spec's own rule); a malformed `url(a"b)` (invalid CSS the validator
+refuses); the recorder's `root_tag` on a root with a second class (held on T1 as built); its preload chained comparison
+(correct Python, held on T1); licence `Content-Type` rows; `pairing` beside `pack.fonts` (`Pack` carries no pairing, and
+the refusal holds them together); the recorder's hook premise not naming A4 #13's file (CI's `hookFailures` does); a
+non-`bg` dark control on `/pilots` (no pilot offers one).
 
 **The I/O matrix, row by row, mapped to the check that ran and passed:**
 

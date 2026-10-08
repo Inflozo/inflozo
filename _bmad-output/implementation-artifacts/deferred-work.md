@@ -9063,8 +9063,8 @@ resolution: Story 7.4 (2026-10-08) — ONE KEY: `sectionKey(templateKey, instanc
   seen failing on a mutated editor and `/pilots`; `dark-mode.test.ts`'s two source-text guards are deleted.
 severity: medium
 origin: Story 6.5's Review (2026-10-05), the Blind Hunter and the Verification Gap reviewer
-owner: Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip), which writes `darkOverrideCss` into the theme's
-  token block and whose criteria carry this entry with its id.
+owner: was Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip), which wrote `darkOverrideCss` into the theme's
+  token block and whose criteria carried this entry with its id — closed there, 2026-10-08.
 location: `packages/section-runtime/src/dark-override.ts` (`darkHook`'s key is a string its callers each build;
   `darkOverrideCss` throws on a colliding pair) · `editor.tsx`'s `queryKey` · `apps/web/dark-mode.test.ts` (source-text
   guards on the editor's and `/pilots`' calls) · `tools/probe/run-verify-editor.cjs` steps 48-49 and

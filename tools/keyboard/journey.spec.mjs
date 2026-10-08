@@ -7285,11 +7285,66 @@ test('7.4 · DW-331 · the hook on the canvas: a Background set in Dark stamps h
   expect(hook).toMatch(RUNTIME.HOOK_RE)
   await expect.poll(() => root.getAttribute('data-instance')).toBe(hook)
   // …and the theme's key for the same section is that same key: Home's page 1 is the row's own doc
-  expect(key).toBe(RUNTIME.sectionKey('home', key.slice('home:'.length)))
+  expect(key).toBe(RUNTIME.sectionKey(LIB.templateKeyOfFile('home.hbs'), key.slice('home:'.length)))
   const reset = page.locator('#editor-controls button[aria-label="Reset Background role"]')
   await reset.focus()
   await page.keyboard.press('Enter')
   await expect.poll(() => root.getAttribute('data-instance')).toBeNull()
+})
+
+/** The first row of this page whose panel offers the Background role, selected, its groups open. */
+async function withGround(page) {
+  for (const key of (await rows(page)).page) {
+    await select(page, key)
+    await openEveryGroup(page)
+    if ((await page.locator('#editor-controls').getByRole('radiogroup', { name: 'Background role' }).count()) > 0) return key
+  }
+  throw new Error('no section on this page offers the Background role')
+}
+
+test('7.4 · DW-331 · the PAINT door: a stored override is drawn with its hook on open, before any control is touched; a Light-only project draws none', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-override': 'on' })
+  const canvas = await open(page)
+  const key = (await rows(page)).page[0]
+  const hook = RUNTIME.hookOf(key)
+  // NO PRESS AT ALL: the hook below is the paint's doing, never a re-stamp's (the Sidebar and `.` both go through `slice`)
+  await expect(canvas.locator(`#canvas [data-instance="${hook}"]`)).toHaveCount(1)
+  await select(page, key)
+  await expect(canvas.locator('#canvas [data-inflozo-selected]')).toHaveAttribute('data-instance', hook)
+  // LIGHT-ONLY (AD-30): the same stored override, and no hook anywhere — the half above is its control
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-override': 'on', 'x-inflozo-harness-dark': 'off' })
+  await open(page)
+  await expect(page.locator('#editor-mode'), 'the control of the control: this really is a Light-only project').toHaveCount(0)
+  await expect(canvas.locator('#canvas [data-instance]')).toHaveCount(0)
+})
+
+test('7.4 · DW-331 · a Tag page 2 that FOLLOWS page 1 carries page 1\'s hook — tag:, never tag-paged: — the defect this story closes', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-override': 'on' })   // gives the Tag canvas a doc of its own
+  await page.goto(`${HARNESS}/tag`)
+  const canvas = page.frameLocator('iframe[title$="canvas"]')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'tag')
+  await expect(page.locator('[data-layer-row]').first()).toBeVisible()
+  await page.locator('body').focus()
+  // page 1: a Background set in Dark stamps hookOf(tag:<id>), as on Home
+  const key = await withGround(page)
+  expect(key.startsWith('tag:')).toBe(true)
+  const id = key.slice('tag:'.length)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('.')
+  await expect.poll(() => modeOf(page)).toBe('dark')
+  await choose(page, page.locator('#editor-controls').getByRole('radiogroup', { name: 'Background role' }), 'Contrast')
+  const hook = RUNTIME.hookOf(RUNTIME.sectionKey(LIB.templateKeyOfFile('tag.hbs'), id))
+  await expect.poll(() => canvas.locator('#canvas [data-inflozo-selected]').getAttribute('data-instance')).toBe(hook)
+  // page 2, FOLLOWING page 1: `tag.hbs` serves page 1's markup on every page, so the copy carries page 1's hook
+  await toPageTwo(page)
+  await expect(page.locator('#editor-layers [data-auto-generated="page-2"]'), 'page 2 follows').toBeVisible()
+  const two = (await rows(page)).page.find((k) => k.endsWith(`:${id}`))
+  expect(two, 'the copy shares page 1\'s id under page 2\'s key').toBe(RUNTIME.sectionKey('tag-paged', id))
+  await expect(canvas.locator(`#canvas [data-instance="${hook}"]`)).toHaveCount(1)
+  // THE CONTROL: the row key's own hook is another value, and it is on no root
+  const paged = RUNTIME.hookOf(two)
+  expect(paged).not.toBe(hook)
+  await expect(canvas.locator(`#canvas [data-instance="${paged}"]`)).toHaveCount(0)
 })
 
 test('7.4 · DW-331 · /pilots draws a Background set in Dark: Contrast in Dark, the light ground in Light, Contrast in Dark again', async ({ page }) => {

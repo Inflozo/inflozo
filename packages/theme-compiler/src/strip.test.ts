@@ -92,6 +92,14 @@ test('what the strip cannot judge is kept whole: :not/:is/:where/:has, another o
   assert.equal(stripCss('.a17-1[data-per-row] { gap: 0; }', 'a17-1', [{}]), '.a17-1[data-per-row] { gap: 0; }')
 })
 
+test('two controls on one compound: a rule needing both is dead when no ONE root carries both, even where each root carries one (review, 2026-10-08)', () => {
+  const css = '.a17-1[data-per-row="three"][data-bg="contrast"] { gap: 0; }\n.a17-1[data-per-row="three"] { gap: 1px; }'
+  // each root satisfies one attribute, neither satisfies both — `roots.some(every)`, never `every(some)`
+  assert.equal(stripCss(css, 'a17-1', [at({ 'per-row': 'three', bg: 'base' }), at({ 'per-row': 'two', bg: 'contrast' })]), '.a17-1[data-per-row="three"] { gap: 1px; }')
+  // the control: one root carrying both keeps it
+  assert.equal(stripCss(css, 'a17-1', [at({ 'per-row': 'three', bg: 'contrast' })]), css)
+})
+
 test('the parser traps: a selector over several lines, a comma inside :is() or inside a string, a brace inside a url()', () => {
   const root = [at({ 'per-row': 'three' })]
   const lines = '.a17-1__grid,\n.a17-1[data-per-row="two"]\n  .a17-1__grid,\n.a17-1[data-per-row="three"] .a17-1__cell { gap: 0; }'

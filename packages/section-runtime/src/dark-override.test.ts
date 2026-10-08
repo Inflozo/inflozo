@@ -83,6 +83,8 @@ test('the hook: a hash of the section\'s key, eight hex digits, only while an ov
   assert.notEqual(darkHook(entry, on, sectionKey('index', 'auto-home-4')), hook, 'a doc-qualified key: Home\'s page-2 copy shares the id, never the hook')
   // Story 7.4 (DW-331): the one builder and the one hash
   assert.equal(sectionKey('home', 'auto-home-4'), KEY)
+  // the stored shape every shipped hook hashes: `<template_key>:<instanceId>`, so a changed separator turns this red (review, 2026-10-08)
+  assert.equal(sectionKey('a', 'b'), 'a:b')
   assert.equal(hook, hookOf(KEY))
   assert.equal(darkHook(entry, { controls: { bg: 'base' } }, KEY), undefined, 'no override, no hook')
 })

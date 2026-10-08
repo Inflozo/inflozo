@@ -123,8 +123,11 @@ const instanceOf = (entry: SectionRegistryEntry) => ({
 /** Through AD-27's ONE schema, exactly as `read.ts` and the seed do — so every field a later story defaults is
  *  defaulted here too (`isMainFeed` among them: `designateAll` below is what flags the main feed), and a fixture the real
  *  editor could not have stored throws at the harness rather than in the browser. */
-const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc =>
-  parseDoc({ schemaVersion: 1, instances: entries.map(instanceOf) }, key)
+const docOf = (key: string, entries: SectionRegistryEntry[], override = false): ProjectDoc =>
+  // Story 7.4 (review, 2026-10-08) — `x-inflozo-harness-override: on`: the FIRST section opens with a Background set to
+  // Contrast in Dark already STORED, so the keyboard gate reads the hook off the paint itself, before any control is
+  // touched — and, under `x-inflozo-harness-dark: off` as well, reads that a Light-only project paints none (AD-30)
+  parseDoc({ schemaVersion: 1, instances: entries.map((e, n) => ({ ...instanceOf(e), ...(override && n === 0 ? { darkOverrides: { bg: 'contrast' } } : {}) })) }, key)
 
 /** Story 5.20 — another tab's lock, just beaten: the reader's side of B5a, for R-192's walk */
 const READER_LOCK: EditorData['lock'] = {
@@ -144,6 +147,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   const siteAsked = asked.get('x-inflozo-harness-site')
   const readingAlong = asked.get('x-inflozo-harness-lock') === 'reader'
   const standing = asked.get('x-inflozo-harness-stand-ins') === 'on'
+  const overriding = asked.get('x-inflozo-harness-override') === 'on'
 
   const ring = samples()
   const entries = Object.fromEntries([
@@ -169,7 +173,10 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   const docs = designateAll(
     {
       [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
-      [templateKeyOf('home')]: docOf(templateKeyOf('home'), homeShown),
+      [templateKeyOf('home')]: docOf(templateKeyOf('home'), homeShown, overriding),
+      // …and, under the same header, a Tag canvas of its own (the designs that compile to `tag.hbs`), so the gate can walk a
+      // Tag page 2 that FOLLOWS page 1 — the DW-331 defect's own page. Without the header the Tag canvas stays as it was.
+      ...(overriding ? { [templateKeyOf('tag')]: docOf(templateKeyOf('tag'), compiling(CANVASES.tag.file)) } : {}),
     },
     (id) => entries[id],
   )
