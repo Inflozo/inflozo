@@ -138,9 +138,9 @@ A user ships. The project compiles — purely, from what it is handed — into a
       - The editor stamps hooks on a Light-only project, where the theme will not.
       - No Epic 8 story's criteria make AD-12's rendition set.
       - DW-331's one key (`sectionKey`, `hookOf`, `templateKeyOfFile`) closes the first two; a new DW owned by Story 8.1 takes the third.
-    - **Two questions went to the owner (R-83), and option 1 of each is planned:**
-      - Q1: the pictures and the theme-size check to move, word for word, to Story 7.29;
-      - Q2: whole faces for a non-Latin language to move to Story 7.12.
+    - **Two questions went to the owner, and both were ruled option 1 (owner, 2026-10-08):**
+      - Q1: the pictures and the theme-size check. **Ruled:** both move word for word to Story 7.29, with the size warning's hand test and its frame (S8b); 7.4 is `owner_test: none`.
+      - Q2: whole faces for a non-Latin language. **Ruled:** the sentence moves word for word to Story 7.12, where the language is chosen; every project ships `latin` and `latin-ext`.
 - **JavaScript is two files of two origins (7.5, FR-J4).** `main.js` bundles only the declared modules — vanilla, deferred, strings as `data-i18n-*` — and `cards.js` is Ghost's vendored MIT card code for designed audio, video, gallery and toggle cards only, declared in the README; `size-limit` (file preset) warns, never fails, past 40,960 bytes at gzip 9 (NFR-2, DW-140).
   - **DW-134, DW-135, DW-146 (Story 7.5):** no `<script>` in an emitted template but `main.js`'s, `cards.js`'s and named repo-authored inline bytes; `checkThemeJs` refuses a `cards.js` that is not the vendored chunks' concatenation; a module that writes visitor text declares its keys.
 - **Markup uses the helpers Ghost provides (7.6, FR-J5).** `{{ghost_head}}`, `{{ghost_foot}}`, `{{body_class}}`, `{{post_class}}` on the `<article>` plus self-emitted `post-access-*` classes, a theme-authored `srcset` beside `{{img_url}}`, real `data-portal`, chrome strings only through `{{t}}`, and motion behind `core`'s one reduced-motion gate.

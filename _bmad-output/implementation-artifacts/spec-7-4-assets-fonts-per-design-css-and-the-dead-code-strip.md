@@ -10,7 +10,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.m
 
 ## In plain English
 
-After this story, the theme Inflozo builds for your site carries your pack's fonts inside it, so no visitor's browser ever asks Google for them, and it tells the browser to fetch the two main ones first; a font you pick in Ghost Admin still wins. The theme's stylesheet ships only the rules the sections you placed can actually use, plus the plain page background behind them and each section's own dark-mode background, so a visitor in dark mode sees the background you chose for that section. Nothing changes on your screen and there is nothing to test by hand, because no theme deploys until Story 7.18; the automated checks and our test Ghost site prove it, and two questions below are yours to rule before Dev starts.
+After this story, the theme Inflozo builds for your site carries your pack's fonts inside it, so no visitor's browser ever asks Google for them, and it tells the browser to fetch the two main ones first; a font you pick in Ghost Admin still wins. The theme's stylesheet ships only the rules the sections you placed can actually use, plus the plain page background behind them and each section's own dark-mode background, so a visitor in dark mode sees the background you chose for that section. You ruled both questions on 2026-10-08, so there is nothing for you to test by hand here: your pictures, the theme-size check and its warning's hand test move to Story 7.29, fonts for a non-Latin language move to Story 7.12, and the automated checks and our test Ghost site prove the rest.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -373,13 +373,19 @@ After this story, the theme Inflozo builds for your site carries your pack's fon
   - every row in Design Notes § The T1 run holds behind its control;
   - T1 is restored and read back;
   - MEASUREMENTS §73 records the run.
-- **No screen.** Given Question 1 ruled option 1, when Dev ends, then this story is Done on its Deploy commit (R-80), and its frame (`S8 Deploy.dc.html` S8b) and its hand test are Story 7.29's.
+- **No screen.** Given Question 1's ruling (option 1, owner, 2026-10-08), when Dev ends, then this story is Done on its Deploy commit (R-80), and its frame (`S8 Deploy.dc.html` S8b) and its hand test are in Story 7.29's card word for word.
 - **Propagation.** Given the rulings, when Dev ends:
   - the moved sentences sit word for word in Stories 7.29 and 7.12, and Epic 7's preamble lists them (R-195);
   - FR-J3, AD-14, AD-18, AD-30, VERIFY-AT-BUILD item 3 and DW-108, DW-331 and DW-337 say what landed;
   - a grep finds no old wording.
 
 ## Spec Change Log
+
+- **2026-10-08, Create (the owner ruled).** Both questions were ruled option 1.
+  - The Ruled values table now states the ruled values.
+  - Question 1 moves four things word for word to Story 7.29: the pictures, the theme-size check, its frame (S8b) and its hand test. This story stays `owner_test: none` and is Done on its Deploy commit.
+  - Question 2 moves the whole-face sentence word for word to Story 7.12.
+  - The frozen intent is unchanged: each ruling is its recommended option.
 
 ## Design Notes
 
@@ -513,12 +519,12 @@ Both are keyboard only (the pointer ban, `journey.spec.mjs:163-172`). The DW-198
 
 ### Ruled values: Questions 1 and 2
 
-Both are awaiting the owner. Dev builds the RECOMMENDED column.
+Both were ruled option 1 by the owner on 2026-10-08.
 
-| Question | RECOMMENDED: what this spec builds | Any other option |
-|---|---|---|
-| Q1 · pictures and the theme-size check | moved word for word to Story 7.29 with their hand test; no `assets/images/`, no budget here; `owner_test: none` | amends this spec before Dev: option 2 adds the picture emission and the budget against test inputs, option 3 adds the budget alone, and each hand test moves to 7.18 |
-| Q2 · whole faces for a non-Latin language | moved word for word to Story 7.12; every project ships `latin` and `latin-ext` | option 2 adds whole-face files to the pool's builder and a language input; option 3 strikes the sentence from FR-J3 and §D.b |
+| Question | Ruled: what this spec builds |
+|---|---|
+| Q1 · pictures and the theme-size check | moved word for word to Story 7.29, with the size warning's hand test and its frame. No `assets/images/` and no budget here, and this story is `owner_test: none`, Done on its Deploy commit |
+| Q2 · whole faces for a non-Latin language | moved word for word to Story 7.12. Every project ships `latin` and `latin-ext` |
 
 ### Settled here as readings, each told to the owner in one line
 
@@ -639,13 +645,15 @@ There is no migration, so there is no Schema phase. `Story 7.4 - Dev - …` carr
 
 ## Owner's manual test
 
-None. Under Question 1's recommended ruling, this story has no screen:
+None. Question 1 was ruled option 1 (owner, 2026-10-08), so this story has no screen:
 - the over-budget message, its frame (`S8 Deploy.dc.html` S8b) and its hand test move to Story 7.29, word for word;
 - nothing deploys a theme before Story 7.18.
 
 It is Done on its Deploy commit (R-80). The two keyboard-gate journeys are the browser proof of what the editor and `/pilots` draw.
 
 ## Questions for the owner
+
+Both were ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ruled values as it stands.
 
 ### Question 1 — Your pictures and the theme-size check, until pictures exist
 
@@ -666,7 +674,7 @@ It is Done on its Deploy commit (R-80). The two keyboard-gate journeys are the b
 2. **Build both now, against test pictures and a test limit.** The size warning still waits for Story 7.18's screen, so its hand test moves there.
 3. **Move the pictures only, and build the size check now** over the fonts and code a theme carries today. Its hand test moves to Story 7.18.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-08).**
 
 ### Question 2 — Fonts for a language not written in Latin letters
 
@@ -682,7 +690,7 @@ It is Done on its Deploy commit (R-80). The two keyboard-gate journeys are the b
 2. **Build it now.** Add every library font again as a whole file, which makes the library's font files several times bigger, and use them for a non-Latin language, even though no project can choose one yet.
 3. **Drop it.** Letters outside Latin always use the visitor's system font.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-08).**
 
 ## Verification
 
