@@ -2,7 +2,7 @@
 title: 'Story 7.3 — Synthesis Defaults and the emptying rules'
 type: 'feature'
 created: '2026-10-06'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'd322dd95f3a0079337c5b72d5a1af5154a2c546f'
 owner_test: none
 review_loop_iteration: 1
@@ -763,6 +763,16 @@ gate.js theme` 0 errors / 0 warnings on gscan 4.49.7 and 6.4.2 (the existing roo
 - **DW-344, owned by Story 7.16:** routes reach neither D5f's sentence (the editor is handed no routed list) nor the
   guard's context names (a main collection off `/` is not `index`); 7.16's card carries it. DW-341's heading named the
   Dev run while its origin is the Create; the heading now names both.
+
+**Deploy (2026-10-08), head `70e38ea8`.** `Deployment: dpl_DrgxbUxpQXLSvPZhmiqBdnmutSdQ` READY on the production Vercel
+project, target `production` (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha`
+matches), aliased to `app.inflozo.com` and `inflozo.com` among others. CI run 37737206817 (the retry of 37735390634,
+whose `check` job failed one unrelated floor test, `R-201 · a phone gets D4f, never the editor`, on a tablet
+canvas-paint timeout — recorded above, not in this diff): `check`, `rls` and `deploy` success; the render matrix run
+37737206890 success. No migration, so no schema apply and no RLS read beyond the CI gate. `https://app.inflozo.com/`
+answers 307 (the signed-out redirect) and `https://inflozo.com/` 200. The compiler has no product caller until Story
+7.18, so nothing a visitor or the owner reaches changed; there is no owner test (`owner_test: none`), and the
+warning's hand test is Story 10.100's (Question 3). This story is Done on this commit (R-80).
 
 **Dismissed, with the reading that dismisses each:** a page, Home, archive page 2 or paywall whose every section is
 hidden ships its layout line alone — the frozen rule ("hiding is not emptying"), and the paywall's Hide is unreachable
