@@ -149,7 +149,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 
 **FR-I · Templates & Routing**
 
-- **FR-I1** `home.hbs` is emitted when Home or its page 2 is designed; the standard template set always compiles, with untouched templates synthesised before assembly — one the library leaves with no section is left to Ghost's own fallback until Epic 10, `index.hbs` and `post.hbs` excepted (Story 7.3's Question 1); `page.hbs` gates each Post Header on `@page.show_title_and_feature_image`; a designed paywall is `partials/content-cta.hbs`, opening `{{{html}}}`; there is no members template family — a designed membership page compiles to `custom-{name}.hbs` and emits no route; the emptying rule is general and differs by template class.
+- **FR-I1** `home.hbs` is emitted when Home or its page 2 is designed; the standard template set always compiles, with untouched templates synthesised before assembly — one the library leaves with no section is left to Ghost's own fallback until Epic 10, `index.hbs` and `post.hbs` excepted, and `tag.hbs` and `author.hbs`, which always ship their default stack (Story 7.3's Question 1); `page.hbs` gates each Post Header on `@page.show_title_and_feature_image`; a designed paywall is `partials/content-cta.hbs`, opening `{{{html}}}`; there is no members template family — a designed membership page compiles to `custom-{name}.hbs` and emits no route; the emptying rule is general and differs by template class.
 - **FR-I2** Routes Manager: a visual builder for `routes.yaml` — collections with per-collection page size, a rich filter builder with normative NQL mappings, channels, custom routes, taxonomy prefixes, a live YAML pane and validation. The builder never emits redundant or nested parentheses; published date is offered with relative syntax.
 - **FR-I3** Custom templates compiled as `custom-{name}.hbs`, with the naming and collision scheme enforced at the naming step and renaming a deployed template not offered at all.
 - **FR-I4** `routes.yaml` uploads automatically via `POST /settings/routes/yaml` with the staff token, verified by reading the file back byte-for-byte; the guided Labs card remains as the designed fallback.
@@ -2995,7 +2995,7 @@ So that my site does not have four broken page types I never looked at.
 **Then** **templates with no doc are synthesized per the Synthesis Defaults before assembly**, so a standard file
 is never emitted empty and the defaults are not specification-only *(Question 1, owner, 2026-10-06: an untouched
 standard file the library leaves with no section is not emitted — `index.hbs` and `post.hbs` excepted, which Ghost
-requires — and Ghost's own fallback serves until Epic 10's designs land)*
+requires, and `tag.hbs` and `author.hbs`, which always ship their default stack — and Ghost's own fallback serves until Epic 10's designs land)*
 **And** the standard set always compiled is `default.hbs` (head, fonts, tokens, header/footer partials,
 `{{ghost_head}}`/`{{ghost_foot}}`, `{{body_class}}`), `index.hbs`, `post.hbs`, `page.hbs`, `tag.hbs`,
 `author.hbs`, `error.hbs` — and **`home.hbs` is emitted when Home or its page 2 is designed**; an untouched pair is the
@@ -3546,6 +3546,7 @@ deleted with it and recoverable via undo, and an editor viewing it switches to H
 stop, built by Story 7.3 as `compileTheme`'s `routed` input, which this story hands in — so the editor's D5f warning
 ("This template stops shipping") is not its sentence: **the warning before the last section leaves a routed template
 is this story's, in its own words** *(Story 7.3, 2026-10-06)*.
+**And** routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.
 
 **FRs:** FR-I2, FR-I3. · **Frame:** `S9 Routes.dc.html` S9a · S9b · S9c · S9d · S9e. · **Owner test:** yes.
 
@@ -6866,7 +6867,7 @@ So that I can start using Post Headers on my own site.
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster (DW-153)
 **And** #1 Centred, re-authored from its pilot, compiles to `page.hbs` as well as `post.hbs` under A24's page rule, so `page.hbs`'s default stack keeps its header row (DW-191).
-**And** on `page.hbs` **the guard is the compiler's** *(Story 7.3, 2026-10-06)*: each A24 section's invocation sits inside `{{#if @page.show_title_and_feature_image}}` (`POST_HEADER`), so an A24 design carries no guard of its own and DW-153's `data-target` is not needed; and once A24 #1 sits on `page.hbs`, the T1 recorder's stand-in `page.hbs` (`tools/probe/record-theme-assembly.py`'s scaffold, labelled as this story's) is retired, because the compiled theme then reads Ghost's page switch itself.
+**And** on `page.hbs` **the guard is the compiler's** *(Story 7.3, 2026-10-06)*: each A24 section's invocation sits inside `{{#if @page.show_title_and_feature_image}}` (`POST_HEADER`), so an A24 design carries no guard of its own and DW-153's `data-target` is not needed; and once A24 #1 sits on `page.hbs`, the T1 recorder's stand-in `page.hbs` (`tools/probe/record-theme-assembly.py`'s scaffold, labelled as this story's) is retired, because the compiled theme then reads Ghost's page switch itself. **That T1 run is the first real Ghost to render the compiler's own `page.hbs`** — 7.3's run uploaded the stand-in, so the compiled shape (each A24 inside `{{#if @page.show_title_and_feature_image}}` inside `{{#post}}`) is held by `compile.test.ts` and gscan alone until then *(Story 7.3's review, 2026-10-08)*.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 

@@ -366,6 +366,22 @@ test('Del removes the selection, and a site-wide one asks first with focus on Ca
   await expect(confirm).toBeHidden()
   await panelsSettle(page)
   expect((await rows(page)).all, 'Cancel leaves the doc untouched').toHaveLength(before)
+
+  // Story 7.3's review: the confirm's Delete section lands through the ONE removal landing, so it says "{layer} removed"
+  // like the direct delete — before 7.3 it said nothing, and no step pressed it. The sheet is the Kit's (DW-343).
+  // the live region still holds the direct delete's sentence (never emptied by hand: it is React's node, and the editor
+  // crashed when a run did), so the sentence must CHANGE — the site section's own name — and end in "removed"
+  const direct = await said(page)
+  await page.keyboard.press('Delete')
+  await expect(confirm).toBeVisible()
+  expect(await confirm.evaluate((d) => [getComputedStyle(d).paddingTop, Math.round(d.getBoundingClientRect().width)])).toEqual(['26px', 460])
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Enter')
+  await expect(confirm).toBeHidden()
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before - 1)
+  await expect.poll(async () => { const s = await said(page); return s !== direct && / removed$/.test(s) }, "the confirm's Delete says what the direct delete says").toBe(true)
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before)
 })
 
 // ── WCAG 2.1.4, and it is the single most important stop on this walk ───────────────────────────────────────────

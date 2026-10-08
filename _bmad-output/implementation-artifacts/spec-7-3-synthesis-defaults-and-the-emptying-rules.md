@@ -2,10 +2,10 @@
 title: 'Story 7.3 — Synthesis Defaults and the emptying rules'
 type: 'feature'
 created: '2026-10-06'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'd322dd95f3a0079337c5b72d5a1af5154a2c546f'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -724,3 +724,53 @@ All four were ruled option 1 (owner, 2026-10-06). Dev builds Design Notes § Rul
 | Determinism | `(7.3) determinism: templates, pageTwo and routed in another order …` |
 | Delete the last section of a designed membership canvas | journey `7.3 · D5f …` (the Delete key, Layers ⋯ Delete; Esc, Keep it, Delete section, "removed", the Empty mark) and floor `7.3 · D5f · the pill's bin …` (the third gesture, by pointer) |
 | Any other removal | journey `7.3 · D5f …` (Hide, ⌘Z, ⇧⌘Z, a second section, Post's last section) and `editor.test.ts`'s rule over every canvas key, the site doc and the page-2 keys |
+
+**Review (2026-10-08), five layers over the diff since `d322dd95` (Blind Hunter, Edge Case Hunter, Verification Gap,
+Acceptance Auditor, Real-infra verifier), then triage.** No acceptance criterion violated; no owner decision needed; no
+new question. Real infrastructure (R-82), read-only — no upload, since the Dev run of 2026-10-06 stands and a second
+upload needs an in-session go. Keys by variable name (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GITHUB_TOKEN`,
+`VERCEL_TOKEN`, `VERCEL_TEAM_ID`), none printed. On T1 `ghost6.inflozo.com`: `GET /ghost/api/admin/themes/` → 200,
+`casper` active, `racer` and `source` installed, no `inflozo-*` theme — the Dev run's `finally` left what §72 says;
+`GET /ghost/api/admin/site/` → 200, version 6.58; public `/` → 200 under Casper's own `<main id="site-main" class="site-main
+outer">` and `assets/built/screen.css`, no compiler stylesheet, no `noindex`; `/tag/craft/page/2/` → 404 under Casper
+(its `posts_per_page` 25 over the tag's 9 posts; §72's 200 was at 8). Control: the same `themes/` read with the key's
+secret replaced → 401 "invalid signature". MEASUREMENTS §72 derived from the file: 89 `yes` in (a), 5 in (b), 0 `NO`,
+matching the Dev results. CI on the Dev head `08e0c61b`: run 37730165872 `check`, `rls`, `deploy` all success; `Render
+matrix` 37730165792 success; `a1802122` the same. `Deployment: dpl_5bbTQfiQCqF6PtjwAroby8BaXB5Q` READY on production
+at `08e0c61b`. No migration in the diff, so no R-99 schema read. Locally (Node 24): `pnpm check` exit 0 before and after
+the patches; `check-snapshots` PASS with its three 7.3 controls firing first; `tools/stress` `node build.js` and `node
+gate.js theme` 0 errors / 0 warnings on gscan 4.49.7 and 6.4.2 (the existing root-owned install; `npm install` refused).
+
+**Patched here:**
+- **One spelling of the triple-stash rule.** `checkTripleStashes` now counts `{{{` opens and `}}}` closes apart (AD-5's
+  rule 2, a mustache abutting a closing brace, is refused too), is exported, and `tools/pilot-theme.mjs`'s `themeFailures`
+  calls it instead of counting again; `compile.test.ts` gains the two closing-brace cases. Control: a `{{x}}}` appended to
+  the pilots' `post.hbs` is refused by both.
+- **The site-wide confirm's Delete is pressed by a test.** `landRemove` made it announce "{layer} removed", and no step
+  pressed it; the R-115 journey step now does (Tab, Enter → one row fewer, a "removed" sentence that CHANGED from the direct
+  delete's, ⌘Z back) and measures the Kit's sheet on that dialog (DW-343's regression had no check of its own). Control:
+  with the old silent `edit(...)` planted, the step fails on that sentence; restored, it passes. A first draft emptied
+  `#editor-said` by hand to read the new sentence, and the editor crashed to its error page — React's own node is never
+  mutated by a test; the step compares sentences instead.
+- **Two readings cited beside the code.** `PAGED_CONTEXTS`: the comma list is `helpers/is.js`'s (split on `,`, OR), `index`
+  is the main collection's name only at `/` (`collection-router.js`); `PAGE_SWITCH`: GS110-NO-UNKNOWN is `fatal: true` in
+  gscan 4.49.7's `specs/v5.js`, its MISSING sibling is not — MEASUREMENTS §13a carries the dated note.
+- **What T1 did not render, said where the run is read:** §72's "What this does NOT say" and the recorder's own text —
+  the compiled `page.hbs` (the stand-in was uploaded; 10.79's run renders the compiler's) and the guard's comma list
+  (the pilots guard `author` alone). Story 10.79's card says the same.
+- **The documents' exception list matches the code's.** FR-I1, Epic 7's preamble, 7.3's card and `sections-inventory.md`
+  said "`index.hbs` and `post.hbs` excepted"; `tag.hbs` and `author.hbs` are always written too (`ALWAYS`), and now say so.
+- **DW-344, owned by Story 7.16:** routes reach neither D5f's sentence (the editor is handed no routed list) nor the
+  guard's context names (a main collection off `/` is not `index`); 7.16's card carries it. DW-341's heading named the
+  Dev run while its origin is the Create; the heading now names both.
+
+**Dismissed, with the reading that dismisses each:** a page, Home, archive page 2 or paywall whose every section is
+hidden ships its layout line alone — the frozen rule ("hiding is not emptying"), and the paywall's Hide is unreachable
+(its doc has no Layers row and no pill, Story 5.20); the D5f dialog opened on a frame after a `useHanded` setter — the
+site-wide confirm's own shape since 5.16, and no removing gesture runs inside a `canvasFirst` hold (its two callers are
+the restore and the pack switch); a stale pick with one instance left — `edit` refuses it, so Delete section is a no-op
+it already was; A24 guarded on `page.hbs` only — "No other file is guarded" is frozen; the old wordings inside dated
+"this said …" corrections and DW-253's `origin:` quote — history, not claims; the literal `ALWAYS`/`WHEN_FILLED` lists
+— the spec's own table, and the bare-compile test pins them; §72's "17 files" — `len(files)` counts the scaffold's two
+and the sentence names both; the hand test's "marked Auto-generated" — the switcher's `auto` set is AD-22's, read from
+the doc; the recorder's matchers having no `--self-check` — a human-run tool whose failure voids the run.

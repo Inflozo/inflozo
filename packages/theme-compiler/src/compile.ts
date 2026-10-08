@@ -73,7 +73,11 @@ const INDEX = 'index.hbs'
 /** The page-1 files a page 2 belongs to: the paginated targets but Home's page 2 itself. */
 const PAGE_ONES: readonly string[] = [...PAGINATED_TARGETS].filter((f) => f !== INDEX).sort(byCode)
 /** FR-H2's SEO guard names Ghost's own context for each page 2, in this fixed order (`context.js`: `/page/2/` is
- *  `['paged','index']`, `/tag/x/page/2/` is `['paged','tag']`). */
+ *  `['paged','index']`, `/tag/x/page/2/` is `['paged','tag']`). The guard writes them as ONE comma list, which `helpers/is.js`
+ *  splits on `,` and reads as OR (its header: `{{#is "index, paged"}}`; read in source, both majors). Ceiling: `index` is
+ *  the main collection's name only while it sits at `/` (`collection-router.js`: `routerName = mainRoute === '/' ? 'index'
+ *  : …`) — a Routes Manager project whose main collection moves gets a context of the route's own, which is DW-344's,
+ *  Story 7.16's. T1 rendered the single-context form alone (§72: `author`); the comma form is read, not executed. */
 const PAGED_CONTEXTS: readonly (readonly [context: string, pageOne: string])[] = [['index', HOME], ['tag', 'tag.hbs'], ['author', 'author.hbs']]
 /** The files every theme carries. Ghost refuses a theme without `index.hbs` or `post.hbs` (`GS020-INDEX-REQ`,
  *  `GS020-POST-REQ`, fatal); the archives always ship their default stack. */
@@ -82,7 +86,8 @@ const ALWAYS = ['post.hbs', 'tag.hbs', 'author.hbs']
  *  2026-10-06): an untouched one the library leaves with no section is left to Ghost's own fallback until Epic 10. */
 const WHEN_FILLED = ['page.hbs', 'error.hbs']
 /** Ghost's page switch (`@page`, FR-I1): the one `@page` property a theme may read — gscan 4.49.7 refuses any other
- *  as fatal (GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE). */
+ *  as fatal (GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE: `level: 'error', fatal: true` in its `specs/v5.js`; its MISSING
+ *  sibling is an error there but not fatal — MEASUREMENTS §13a's dated note). */
 const PAGE_SWITCH = '@page.show_title_and_feature_image'
 
 
@@ -213,11 +218,13 @@ export function checkPaywallReached(files: Readonly<Record<string, string>>): vo
 }
 
 /** AD-5: one triple-stash, `{{{body}}}` in `default.hbs` — and its second exception, `{{{html}}}` as the paywall
- *  partial's first line and nowhere else (Question 2, ruled option 1, owner, 2026-10-06), checked on every compile. */
+ *  partial's first line and nowhere else (Question 2, ruled option 1, owner, 2026-10-06), checked on every compile.
+ *  Opens and closes are counted apart, so a `}}}` abutting a mustache (AD-5's rule 2) is refused here too; this is the
+ *  ONE spelling of the rule — `tools/pilot-theme.mjs`'s `themeFailures` calls it rather than counting again. */
 export function checkTripleStashes(files: Readonly<Record<string, string>>): void {
   for (const [path, body] of Object.entries(files)) {
     if (!path.endsWith('.hbs')) continue
-    const found = body.match(/\{\{~?\{/g)?.length ?? 0
+    const found = Math.max(body.match(/\{\{~?\{/g)?.length ?? 0, body.match(/\}~?\}\}/g)?.length ?? 0)
     const allowed = path === SITE_DOC ? body.includes('{{{body}}}') : path === PAYWALL_TARGET && body.startsWith('{{{html}}}\n')
     if (found > (allowed ? 1 : 0)) throw new Error(`${path}: a triple-stash AD-5 does not allow — a theme carries {{{body}}} in default.hbs and {{{html}}} as ${PAYWALL_TARGET}'s first line, and no other.`)
   }

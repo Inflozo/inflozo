@@ -377,6 +377,8 @@ The spike theme scores **0 errors / 0 warnings under both checkers**, so nothing
 | `GS050-CSS-KGVIDTHUMB` · `-KGVIDTHUMBPL` · `-KGVIDTI` | warning | **absent** |
 | `GS005-NO-INLINE-DYNAMIC-PARTIAL` | absent | error |
 
+*Read in source 2026-10-08 (Story 7.3's review), `tools/stress/node_modules/gscan4/lib/specs/v5.js`: of the two GS110 rules, `-NO-UNKNOWN-PAGE-BUILDER-USAGE` is `fatal: true` on 4.49.7 and `-NO-MISSING-` is not — so VERIFY-AT-BUILD item 10's "reported but activated" is the MISSING case alone, and the compiler refuses any `@page` property but the switch (`checkPageData`).*
+
 `GS100` and `GS051-CUSTOM-FONTS` exist in **both** with identical regexes; the `config.custom` cap is
 **20** in both and the allowed types (`select|boolean|color|image|text`) are unchanged. **AD-17 and
 AD-18 therefore survive the version split unchanged** — only the GS110 pair and the three GS050
@@ -4729,4 +4731,4 @@ Both carry `partials/content-cta.hbs` with this run's marker and invoke `content
 - **A missing `error.hbs` is Ghost's own error page**, served with a 404 and none of the theme's styles (Question 1, until Epic 10 brings an error design).
 - **The paywall partial wins whenever a template invokes any partial**, with no explicit `{{> "content-cta"}}`; with no partial invoked, Ghost's own call to action shows. §15b's library rule is corrected (its dated note).
 - **Stories 7.1's and 7.2's rows still hold** on the larger tree: user text inert, comments shipped to no visitor, `package.json` read whole, and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`.
-- **What this does NOT say.** The scaffold is the later stories' (7.13, 7.4, 10.79), nothing here deployed through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story 10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired).
+- **What this does NOT say.** The scaffold is the later stories' (7.13, 7.4, 10.79), nothing here deployed through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story 10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). Two shapes the compiler writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard `author` alone, so `{{#is "index, tag, author"}}` and the `index` and `tag` contexts rest on `helpers/is.js` (split on `,`, OR) read in source, not on a page read.

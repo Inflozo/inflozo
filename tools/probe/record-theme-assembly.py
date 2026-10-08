@@ -599,7 +599,11 @@ def section(rec, gates, files, c, pay):
             f'visitor, `package.json` read whole, and {cards_line}.',
             "- **What this does NOT say.** The scaffold is the later stories' (7.13, 7.4, 10.79), nothing here deployed "
             "through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story "
-            "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired).", '']
+            "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). Two shapes the compiler "
+            "writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was "
+            "uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard "
+            "`author` alone, so `{{#is \"index, tag, author\"}}` and the `index` and `tag` contexts rest on "
+            "`helpers/is.js` (split on `,`, OR) read in source, not on a page read.", '']
     return '\n'.join(out)
 
 

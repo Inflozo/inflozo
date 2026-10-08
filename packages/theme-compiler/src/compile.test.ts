@@ -684,7 +684,8 @@ test('(7.3) a theme carrying the paywall but invoking no partial outside partial
 test('(7.3) the triple-stash rule: {{{body}}} in default.hbs and {{{html}}} as the paywall\'s first line, and nothing else', () => {
   const ok = { 'default.hbs': '<main>\n  {{{body}}}\n</main>\n', [PAYWALL_TARGET]: '{{{html}}}\n\n{{> "x"}}\n' }
   assert.doesNotThrow(() => checkTripleStashes(ok))
-  for (const [path, body] of [['post.hbs', '{{{html}}}\n'], [PAYWALL_TARGET, '\n{{{html}}}\n'], [PAYWALL_TARGET, '{{{html}}}\n{{{html}}}\n'], ['default.hbs', '{{{body}}}\n{{{body}}}\n'], ['partials/x.hbs', '{{~{x}~}}\n']] as const) {
+  // the last two are AD-5's rule 2, a mustache abutting a closing brace: no `{{{` opens, so the closes are counted apart
+  for (const [path, body] of [['post.hbs', '{{{html}}}\n'], [PAYWALL_TARGET, '\n{{{html}}}\n'], [PAYWALL_TARGET, '{{{html}}}\n{{{html}}}\n'], ['default.hbs', '{{{body}}}\n{{{body}}}\n'], ['partials/x.hbs', '{{~{x}~}}\n'], ['post.hbs', '{{x}}}\n'], ['default.hbs', '{{{body}}}\n{{y}~}}\n']] as const) {
     assert.throws(() => checkTripleStashes({ ...ok, [path]: body }), /a triple-stash AD-5 does not allow/, `${path}: ${body}`)
   }
 })

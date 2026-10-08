@@ -9204,7 +9204,7 @@ location: `packages/section-runtime/src/format.ts` `tags`, `startTag`
 reason: The branch needs a start tag jsdom serializes in a shape the attribute regex does not match; none has been found
   in the library, so the case is recorded rather than invented.
 
-## Deferred from: Story 7.3's Dev run (2026-10-06)
+## Deferred from: Story 7.3 (2026-10-06 — DW-341 and DW-342 found at its Create, DW-343 at its Dev)
 
 ### DW-341: a theme in which no template reads Ghost's page switch raises GS110, an error on Ghost 5's checker
 
@@ -9264,3 +9264,24 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (t
   `tools/keyboard/floor.spec.mjs`
 reason: A shadowed import is no type error when both are strings or null-able strings in a template literal, so no gate
   saw it; the floor test now does.
+
+## Deferred from: code review of spec-7-3-synthesis-defaults-and-the-emptying-rules (2026-10-08)
+
+### DW-344: routes reach neither D5f's sentence nor the SEO guard's context names
+
+plain: Two rules Story 7.3 wrote assume a site with no custom routing. The warning before you delete the last section
+  from a custom template says the template "stops shipping", which is false for a template a route points at (it
+  keeps shipping). And the line that tells search engines not to index a feed-less page 2 names Ghost's standard page
+  contexts; a site whose main post list was moved off the front page gets a context named after that route, which the
+  line does not name. Both wait for the Routes Manager, which is where routes first exist.
+status: open
+severity: medium
+origin: Story 7.3's code review (2026-10-08): `emptiesCustomTemplate(key, doc)` takes no route list, so the editor
+  cannot pick the routed sentence 7.16's card promises; `compileTheme`'s `PAGED_CONTEXTS` keys Home's page 2 on `index`,
+  which `collection-router.js` names only while the main collection sits at `/` (`routerName = mainRoute === '/' ?
+  'index' : …`, read in source).
+owner: Story 7.16 (The Routes Manager), whose card carries this entry with its id.
+location: `apps/web/lib/editor.ts` (`emptiesCustomTemplate`) · `packages/theme-compiler/src/compile.ts`
+  (`PAGED_CONTEXTS`, `routed`) · `epics.md` Story 7.16
+reason: Routes are 7.16's input; until it hands the editor the routed list and the compiler the collection names, both
+  rules are right for every project that exists, and 7.16 is the first story that can make them wrong.
