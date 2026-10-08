@@ -121,6 +121,26 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **VERIFY-AT-BUILD 3, 36:** a self-hosted Ghost-CLI site takes uploads to 1 GB (50 MB on plain HTTP) and Ghost(Pro)'s limit is unmeasured; NFR-2's CSS budget is re-measured at the first category gate.
   - **Story 7.1's Create (2026-10-05):** the token block is the top of `screen.css`, where 7.1 writes `packTokensCss`. `darkOverrideCss` and AD-18's Ghost-first font variables join that block. The inline block in `default.hbs` (7.10, 7.11) sets plain custom properties from `{{@custom.*}}` and names no mode, so `screen.css` stays the one file that does (AD-30). Each of the three cards carries a line saying so.
   - **DW-337 (Story 7.4, from Story 7.1's review):** `stripCssComments` cuts an unquoted `url(http://x/*/y)` at its `/*`. 7.4, which rewrites every `url()` to a bundled asset, either keeps a `url(…)` alternation before the comment branch or refuses an unquoted `url()`.
+  - **Story 7.4's Create (2026-10-08):**
+    - **What the compile takes and writes.**
+      - `CompileInput` gains `pairing`, `fonts` (a font-pool file's bytes by path, read by the shell) and `darkEnabled`.
+      - `compileTheme` returns `{ files, css }`: a font file is bytes, and `css` is AD-14's record (`global`, `sheets`, `reach`).
+      - The pairing's pool files go to `assets/fonts/` as they are. `default.hbs`'s head preloads the two roman faces' `latin` files and carries the `@font-face` rules, both through `{{asset}}`, so the two addresses are one.
+      - Each shipped family's licence sits at the theme root, and Tabler's whenever an icon is drawn.
+      - The token block is `packTokensCss(pack, { ghostFonts: true })` (AD-18's two variables), then `darkOverrideCss`, with none on a Light-only project. The canvas's `BASE_CSS` follows it.
+      - Each design's sheet is stripped to the rules its placed roots reach (`resolveControls`). CI's `cssFailures` holds the strip sound, prints the gap as a warning, asserts AD-37 and holds each template's subset to 50 KB gzipped.
+    - **Read in source:**
+      - Ghost caches theme files for a year and adds `?v=` to every `{{asset}}` address, and gscan warns on an `/assets/` address written without `{{asset}}` (`GS030-ASSET-REQ`), so the preload and the face must share one `{{asset}}` expression.
+      - Ghost 6.58.0's theme limits are 1 GiB compressed, 512 MiB per entry and 4 GiB in total, host-configurable. Ghost 5.130.6 has none.
+      - FR-J3's Ghost(Pro) "5 MB" is Ghost(Pro)'s media limit (Ghost's help page), not a theme limit.
+    - **Found:**
+      - The editor hashes a following Tag or Author page 2 as `tag-paged:…`, while the theme serves page 1's markup (`tag:…`).
+      - The editor stamps hooks on a Light-only project, where the theme will not.
+      - No Epic 8 story's criteria make AD-12's rendition set.
+      - DW-331's one key (`sectionKey`, `hookOf`, `templateKeyOfFile`) closes the first two; a new DW owned by Story 8.1 takes the third.
+    - **Two questions went to the owner (R-83), and option 1 of each is planned:**
+      - Q1: the pictures and the theme-size check to move, word for word, to Story 7.29;
+      - Q2: whole faces for a non-Latin language to move to Story 7.12.
 - **JavaScript is two files of two origins (7.5, FR-J4).** `main.js` bundles only the declared modules — vanilla, deferred, strings as `data-i18n-*` — and `cards.js` is Ghost's vendored MIT card code for designed audio, video, gallery and toggle cards only, declared in the README; `size-limit` (file preset) warns, never fails, past 40,960 bytes at gzip 9 (NFR-2, DW-140).
   - **DW-134, DW-135, DW-146 (Story 7.5):** no `<script>` in an emitted template but `main.js`'s, `cards.js`'s and named repo-authored inline bytes; `checkThemeJs` refuses a `cards.js` that is not the vendored chunks' concatenation; a module that writes visitor text declares its keys.
 - **Markup uses the helpers Ghost provides (7.6, FR-J5).** `{{ghost_head}}`, `{{ghost_foot}}`, `{{body_class}}`, `{{post_class}}` on the `<article>` plus self-emitted `post-access-*` classes, a theme-authored `srcset` beside `{{img_url}}`, real `data-portal`, chrome strings only through `{{t}}`, and motion behind `core`'s one reduced-motion gate.
