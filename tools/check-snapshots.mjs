@@ -1056,6 +1056,99 @@ check('Story 7.5 (DW-146) — every t() key a module file calls derives from a s
   return `${Object.keys(MODULE_SRC).length} module file(s)`
 })
 
+// ── Story 7.6: Ghost-correct markup — the article, Ghost's helpers in place, pictures, Portal, AD-38, V1 and gscan's
+// deprecations, over the pilot theme and every design. Each row behind its control. ─────────────────────────────────────
+const { checkGhostMarkup, POST_ARTICLE } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
+const pilots76 = pilots.textFiles(pilots.compilePilots(WORDS, THEME).files)
+const markupOf = (files) => checkGhostMarkup(pilots.textFiles(files))
+check('control — Story 7.6: one copy of the pilot theme with five defects planted — ghost_head above the stylesheet, post_class on <body>, A17\'s sizes removed, data-portal="share", {{@member.email}} — names each', () => {
+  if (markupOf(pilots76).length > 0) throw new Error(`the pilot theme is not clean to begin with: ${markupOf(pilots76).join(' · ')}`)
+  const header = Object.keys(pilots76).find((p) => /^partials\/sections\/default\/header/.test(p))
+  const news = Object.keys(pilots76).find((p) => /^partials\/sections\/shared\/newsletter/.test(p))
+  const planted = {
+    ...pilots76,
+    'default.hbs': pilots76['default.hbs'].replace('    {{ghost_head}}\n', '').replace('    <link rel="stylesheet"', '    {{ghost_head}}\n    <link rel="stylesheet"')
+      .replace('<body class="{{body_class}}">', '<body class="{{body_class}} {{post_class}}">'),
+    'partials/post-card.hbs': pilots76['partials/post-card.hbs'].replace(/\n *sizes="[^"]*"/, ''),
+    [header]: pilots76[header].replace('data-portal="signup"', 'data-portal="share"'),
+    [news]: `${pilots76[news]}<p>{{@member.email}}</p>\n`,
+  }
+  const got = markupOf(planted)
+  const named = [
+    mustFail(got, /^default\.hbs: \{\{ghost_head\}\} is not the last line before <\/head>/, 'ghost_head above the stylesheet'),
+    mustFail(got, /^default\.hbs: \{\{post_class\}\} outside <article/, 'post_class on <body>'),
+    mustFail(got, /^partials\/post-card\.hbs: <img> carries a srcset and no sizes/, "A17's sizes removed"),
+    mustFail(got, /data-portal="share" is no page Portal opens/, 'data-portal="share"'),
+    mustFail(got, /\{\{@member\.email\}\} prints a member's own data/, '{{@member.email}}'),
+  ]
+  if (got.length !== named.length) throw new Error(`five defects planted, ${got.length} sentences: ${got.join(' · ')}`)
+  return `${named.length} named`
+})
+check('Story 7.6 — checkGhostMarkup over the pilot theme returns nothing: Ghost\'s head, foot and body class in place, post_class only on the article, every srcset the theme\'s own with sizes, every data-portal a Portal page, no member\'s own data', () => {
+  const f = markupOf(pilots76)
+  if (f.length > 0) throw new Error(f.join('\n'))
+  const sets = Object.values(pilots76).reduce((n, b) => n + (b.match(/\ssrcset="/g) ?? []).length, 0)
+  if (sets === 0) throw new Error('the pilot theme carries no srcset, so the picture rule proves nothing')
+  return `${sets} srcset(s), each asking for WebP on a tag with sizes`
+})
+/** `[]` when post.hbs's sections sit inside POST_ARTICLE inside {{#post}}, and no other template carries the article. */
+function articleFailures(files) {
+  const out = []
+  const post = (files['post.hbs'] ?? '').split('\n')
+  const open = post.indexOf('{{#post}}')
+  if (open === -1 || post[open + 1] !== `  ${POST_ARTICLE}` || post.at(-3) !== '  </article>' || post.at(-2) !== '{{/post}}') out.push('post.hbs: its block is not {{#post}}, POST_ARTICLE, the sections, </article>, {{/post}}')
+  const inside = post.slice(open + 2, -3).filter((l) => l !== '')
+  if (inside.length === 0 || inside.some((l) => !l.startsWith('    '))) out.push('post.hbs: its sections do not sit one level inside the article')
+  for (const [path, body] of Object.entries(files)) {
+    if (!path.endsWith('.hbs') || path === 'post.hbs') continue
+    if (/<article\b|post_class/.test(body.replace(lib.HBS_COMMENT, ''))) out.push(`${path}: carries <article or post_class, which only the post's own page does`)
+  }
+  return out
+}
+check('control — Story 7.6: post.hbs with the article removed is named by checkGhostMarkup\'s rule 3, and by the article row', () => {
+  const bare = { ...pilots76, 'post.hbs': pilots76['post.hbs'].replace(`  ${POST_ARTICLE}\n`, '').replace('  </article>\n', '').replace(/^ {4}/gm, '  ') }
+  mustFail(articleFailures(bare), /^post\.hbs: its block is not/, 'the article removed (the row)')
+  return mustFail(markupOf(bare), /^post\.hbs: the first line inside \{\{#post\}\} is not <article/, 'the article removed (rule 3)')
+})
+check('Story 7.6 — the pilot theme\'s post.hbs holds A24 #1 and A22 #1 inside POST_ARTICLE inside {{#post}}, and no other template carries <article or post_class', () => {
+  const f = articleFailures(pilots76)
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return [...pilots76['post.hbs'].matchAll(/\{\{> "([^"]+)"\}\}/g)].map((m) => m[1]).join(' · ')
+})
+check('control — Story 7.6: the pilot compile throws V1\'s sentence when A24 #1\'s title binding ships its authored English as a fallback', () => {
+  const find = pilots.library()
+  const typed = (id) => {
+    const e = find(id)
+    return id === 'a24/1' ? { ...e, html: e.html.replace(/(class="a24-1__title" data-bind="title") data-empty="hide"/, '$1') } : e
+  }
+  typed.ids = find.ids
+  if (typed('a24/1').html === find('a24/1').html) throw new Error('A24 #1\'s title binding is not where this control expects it')
+  return mustThrow(() => pilots.compilePilots(WORDS, { ...THEME, find: typed }), /^the theme's markup: [^]*partials\/sections\/post\/[^:]+: <h1> "[^"]+" is a label typed into the template/, 'a typed fallback')
+})
+check('Story 7.6 — checkChromeText over the pilot tree before substitution says nothing: the pilot compile, which runs it and throws on a sentence, returns', () => {
+  pilots.compilePilots(WORDS, THEME)
+  return 'V1 holds at compile'
+})
+check('control — Story 7.6: A17 #1\'s partial with its sizes removed is named by checkGhostMarkup', () => {
+  const a17 = rendered.find((r) => r.id === 'a17/1')
+  if (a17 === undefined) throw new Error('A17 #1 did not render above')
+  if (checkGhostMarkup(a17.files).length > 0) throw new Error(`A17 #1 is not clean to begin with: ${checkGhostMarkup(a17.files).join(' · ')}`)
+  return mustFail(checkGhostMarkup({ ...a17.files, 'partials/post-card.hbs': a17.files['partials/post-card.hbs'].replace(/\n *sizes="[^"]*"/, '') }), /^partials\/post-card\.hbs: <img> carries a srcset and no sizes/, 'A17 #1 without sizes')
+})
+check('Story 7.6 — checkGhostMarkup over every design\'s rendered theme text returns nothing, so an authoring defect is named at its design', () => {
+  const f = rendered.flatMap((r) => checkGhostMarkup(r.files).map((s) => `${r.id} — ${s}`))
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${rendered.length} designs`
+})
+// gscan's own GS001-DEPR-* rules decide what is deprecated (no list of Inflozo's); 6.4.2 at v6, as Story 7.2's rows run it
+const gscanBlog = await gscanOr({ ...pilotTheme, 'post.hbs': `${pilotTheme['post.hbs']}{{@blog.title}}\n` })
+check('control — Story 7.6: the pilot theme with {{@blog.title}} appended to post.hbs raises GS001-DEPR-BLOG under gscan 6.4.2 at v6', () => mustFail(raised(gscanBlog), / GS001-DEPR-BLOG$/, '{{@blog.title}}'))
+check('Story 7.6 — gscan 6.4.2 at v6 raises no GS001-DEPR-* result, at any level, on the pilot theme', () => {
+  const hit = raised(gscanPilots).filter((r) => / GS001-DEPR-/.test(r))
+  if (hit.length > 0) throw new Error(hit.join('\n'))
+  return `gscan ${gscanVersion}`
+})
+
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────
 const targets = rendered.reduce((t, r) => t + r.entry.compileTarget.length, 0)
 const files = rendered.reduce((t, r) => t + Object.keys(r.files).length, 0)

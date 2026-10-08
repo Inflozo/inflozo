@@ -342,6 +342,14 @@ export const PORTAL_ACTIONS: Readonly<Record<string, string>> = {
   'account/plans': 'Upgrade',
 }
 
+/** Story 7.6 (FR-J5) — every page BOTH majors' Portal opens from a `data-portal` value, Portal's own grammar written once:
+ *  `getPageFromLinkPath` in `@tryghost/portal` 2.51.5 (Ghost 5.130.6's `~2.51`) and 2.69.339 (Ghost 6.58.0's `~2.69`), read
+ *  in source (`umd/portal.min.js`), whose click handler hands it the value as written. The `signup…` and `offers/<id>` forms
+ *  may end in `/`; every other page matches exactly; `<id>` is word characters (`signup/free`, `/monthly` and `/yearly` are
+ *  its words too). Anything else — the empty value included — opens Portal's DEFAULT page instead of the one meant. 2.69's
+ *  `gift`, `gift/redeem/<token>` and `share` are refused: Ghost 5's Portal has neither, and D15 rules `share` out. */
+export const PORTAL_PAGE = /^(?:signup(?:\/\w+(?:\/(?:monthly|yearly))?)?\/?|offers\/\w+\/?|signin|account(?:\/(?:plans|profile|newsletters(?:\/(?:help|disabled))?))?|support(?:\/(?:success|error))?|recommendations)$/
+
 /** R-4 (Story 5.20) — WHAT A VISITOR IS ASKED TO JOIN AS. A free ask signs a visitor up; a paid ask signs them up to a
  *  paid tier, upgrades them or opens the plans. Each is shipped behind the site's OWN flag and nothing else — a tier
  *  count, `@site.members_enabled` or a member state says nothing about whether the site will take the ask. */

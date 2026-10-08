@@ -8,6 +8,10 @@
 // row by row. A core package's test opens no file (AD-1), so the font pool's bytes are made here, to the pool's lengths.
 // Story 7.5 — the scripts: main.js, cards.js, Ghost's licence, README.md and the two tags, the spec's I/O matrix row by
 // row. The module files and Ghost's card scripts are made here too, the chunks in record-cards.py's head shape.
+// Story 7.6 — Ghost's markup: the article on every {{#post}} template, WebP candidates, and `checkGhostMarkup` and
+// `checkChromeText`, each refusal called directly and the compile's own throw reached. The inline designs' text bindings
+// and props hide when empty, as the library's do: FR-H8's text default would ship the authored English as a literal,
+// which V1 at compile refuses (the last row).
 //
 // A test may load `handlebars` to parse what the compiler emitted (FR-J1); product code may not (`eslint.config.js`).
 
@@ -16,17 +20,19 @@ import assert from 'node:assert/strict'
 import Handlebars from 'handlebars'
 import { JSDOM } from 'jsdom'
 import {
-  bundle, bundledNames, CARDS_JS_TAG, cardsJs, checkThemeJs, checkThemeScripts, CONSUMED_DIRECTIVE_RE, i18nAttr, IMAGE_SIZES, MAIN_JS_TAG, moduleFunctionName,
-  MODULES, PAYWALL_TARGET,
+  bundle, bundledNames, CARDS_JS_TAG, cardsJs, checkThemeJs, checkThemeScripts, CONSUMED_DIRECTIVE_RE, HBS_COMMENT, i18nAttr, IMAGE_SIZES, MAIN_JS_TAG, moduleFunctionName,
+  MODULES, PAYWALL_TARGET, PORTAL_ACTIONS, PORTAL_PAGE,
 } from '@inflozo/library'
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
 import { TABLER_LICENSE } from '@inflozo/library/icons'
 import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
-import { BASE_CSS, darkOverrideCss, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
+import { BASE_CSS, darkOverrideCss, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, srcsetExpr, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
 import type { DocInstance, Pack, ProjectDoc } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
-import { checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, THEME_MARKER, THEME_MARKS, tidyLicence } from './compile.ts'
+import {
+  checkChromeText, checkGhostMarkup, checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, POST_ARTICLE, THEME_MARKER, THEME_MARKS, tidyLicence,
+} from './compile.ts'
 import type { CompiledTheme, CompileInput } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
@@ -55,23 +61,23 @@ const LATEST: Record<string, DataBinding> = { latest: { source: 'posts', limit: 
 const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
   design('a1/1', 'Rail', {
     compileTarget: ['default.hbs'],
-    html: '<header class="a1-1">\n  <a class="a1-1__brand" data-bind-attr="href:@site.url" data-bind="@site.title">Site</a>\n</header>',
+    html: '<header class="a1-1">\n  <a class="a1-1__brand" data-bind-attr="href:@site.url" data-bind="@site.title" data-empty="hide">Site</a>\n</header>',
   }),
   design('a3/1', 'Columns', {
     compileTarget: ['default.hbs'],
     contentSchema: { note: text('Note') },
-    html: '<footer class="a3-1">\n  <p class="a3-1__note" data-prop="note">Note</p>\n</footer>',
+    html: '<footer class="a3-1">\n  <p class="a3-1__note" data-prop="note" data-empty="hide">Note</p>\n</footer>',
   }),
   design('a4/13', 'Latest Post', {
     compileTarget: ['home.hbs'],
     contentSchema: { eyebrow: text('Eyebrow') },
     dataBindings: LATEST,
     html: `<section class="a4-13">
-  <p class="a4-13__eyebrow" data-prop="eyebrow">Issue</p>
+  <p class="a4-13__eyebrow" data-prop="eyebrow" data-empty="hide">Issue</p>
   <div class="a4-13__card" data-repeat="latest">
     <a class="a4-13__link" data-bind-attr="href:url">
       <img class="a4-13__picture" data-bind-attr="src:feature_image|img_url:l" data-bind-srcset="feature_image|img_url" sizes="(max-width: 767px) 108px, 434px" width="1200" height="800" alt="">
-      <span class="a4-13__title" data-bind="title">Title</span>
+      <span class="a4-13__title" data-bind="title" data-empty="hide">Title</span>
     </a>
     <pre class="a4-13__rule">*
    *  *</pre>
@@ -84,7 +90,7 @@ const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
     compileTarget: ['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs'],
     bindingContext: ['posts'],
     controlSchema: segmented([['per-row', 'three', 'two']]),
-    html: '<section class="a17-1">\n  <ul class="a17-1__grid">\n    <li class="a17-1__cell" data-repeat="posts" data-partial="post-card">\n      <a class="a17-1__card" data-bind-attr="href:url" data-bind="title">Title</a>\n    </li>\n  </ul>\n</section>',
+    html: '<section class="a17-1">\n  <ul class="a17-1__grid">\n    <li class="a17-1__cell" data-repeat="posts" data-partial="post-card">\n      <a class="a17-1__card" data-bind-attr="href:url" data-bind="title" data-empty="hide">Title</a>\n    </li>\n  </ul>\n</section>',
   }),
   design('a22/1', 'Inline Row', {
     compileTarget: ['home.hbs', 'page.hbs', 'post.hbs'],
@@ -93,8 +99,8 @@ const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
     controlSchema: ([['align', 'center', 'start'], ['heading-size', 'large', 'display'], ['field-width', 'medium', 'wide'], ['below-field', 'note', 'nothing'], ['blurb', 'show', 'hide'], ['social-proof', 'off', 'member-count']] as const)
       .map(([name, a, b]) => ({ name, type: 'segmented', label: name, group: 'layout', values: [a, b], default: a }) as ControlDef),
     html: `<section class="a22-1">
-  <h2 class="a22-1__heading" data-prop="heading">Heading</h2>
-  <p class="a22-1__proof" data-prop="proof">Proof</p>
+  <h2 class="a22-1__heading" data-prop="heading" data-empty="hide">Heading</h2>
+  <p class="a22-1__proof" data-prop="proof" data-empty="hide">Proof</p>
 </section>`,
   }),
   design('a24/1', 'Centred', {
@@ -102,17 +108,17 @@ const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
     compileTarget: ['post.hbs', 'page.hbs'],
     bindingContext: ['post'],
     controlSchema: segmented([['byline', 'on', 'off'], ['tag-line', 'on', 'off']]),
-    html: '<section class="a24-1">\n  <h1 class="a24-1__title" data-bind="title">Title</h1>\n</section>',
+    html: '<section class="a24-1">\n  <h1 class="a24-1__title" data-bind="title" data-empty="hide">Title</h1>\n</section>',
   }),
   design('a30/1', 'Card', {
     compileTarget: ['custom-signup.hbs', 'custom-signin.hbs', 'custom-member-home.hbs'],
     contentSchema: { heading: text('Heading') },
-    html: '<section class="a30-1">\n  <h2 class="a30-1__heading" data-prop="heading">Join</h2>\n</section>',
+    html: '<section class="a30-1">\n  <h2 class="a30-1__heading" data-prop="heading" data-empty="hide">Join</h2>\n</section>',
   }),
   design('a32/1', 'Centred', {
     compileTarget: [PAYWALL_TARGET],
     contentSchema: { heading: text('Heading') },
-    html: '<section class="a32-1">\n  <h2 class="a32-1__heading" data-prop="heading">Keep reading</h2>\n</section>',
+    html: '<section class="a32-1">\n  <h2 class="a32-1__heading" data-prop="heading" data-empty="hide">Keep reading</h2>\n</section>',
   }),
 ].map((e) => [e.id, e]))
 
@@ -203,17 +209,19 @@ test('a designed Home: the layout line, then each section\'s label and invocatio
   assert.match(out['partials/sections/shared/post-grid.hbs'] ?? '', /\{\{#foreach posts\}\}\n {6}\{\{> "post-card"\}\}\n {4}\{\{\/foreach\}\}/)
 })
 
-test('a post: the sections sit inside the block its target opens ({{#post}}), one level in', () => {
+test('a post: the sections sit inside the block its target opens ({{#post}}), inside Ghost\'s article (Story 7.6), each a level in', () => {
   const out = compileProject()
   assert.equal(out['post.hbs'], [
     '{{!< default}}',
     '',
     '{{#post}}',
-    '  {{!-- Post header · Post Headers · Centred --}}',
-    '  {{> "sections/post/post-header"}}',
+    `  ${POST_ARTICLE}`,
+    '    {{!-- Post header · Post Headers · Centred --}}',
+    '    {{> "sections/post/post-header"}}',
     '',
-    '  {{!-- Sign up box · Newsletter · Inline Row --}}',
-    '  {{> "sections/shared/newsletter"}}',
+    '    {{!-- Sign up box · Newsletter · Inline Row --}}',
+    '    {{> "sections/shared/newsletter"}}',
+    '  </article>',
     '{{/post}}',
     '',
   ].join('\n'))
@@ -251,7 +259,7 @@ test('a slug that comes out empty takes the design\'s name, then the collision r
   assert.match(out['partials/sections/home/three-up-2.hbs'] ?? '', /^\{\{#get "posts" limit="12"/)
   // an empty layer name labels the section with the design's name, and slugs from it
   const empty = compile({ 'post.hbs': docOf(at('a24/1', '')) })
-  assert.match(empty['post.hbs'] ?? '', /\{\{!-- Centred · Post Headers · Centred --\}\}\n {2}\{\{> "sections\/post\/centred"\}\}/)
+  assert.match(empty['post.hbs'] ?? '', /\{\{!-- Centred · Post Headers · Centred --\}\}\n {4}\{\{> "sections\/post\/centred"\}\}/)
 })
 
 test('byte-identical sections share one file in shared/, named after the first instance (template, then position); each label keeps its own layer name', () => {
@@ -259,7 +267,7 @@ test('byte-identical sections share one file in shared/, named after the first i
   assert.ok('partials/sections/shared/newsletter.hbs' in out, Object.keys(out).join(' '))
   assert.ok(!Object.keys(out).some((p) => /sections\/(home|post)\/(newsletter|sign-up-box)/.test(p)))
   assert.match(out['home.hbs'] ?? '', /Newsletter · Newsletter · Inline Row --\}\}\n\{\{> "sections\/shared\/newsletter"\}\}/)
-  assert.match(out['post.hbs'] ?? '', /Sign up box · Newsletter · Inline Row --\}\}\n {2}\{\{> "sections\/shared\/newsletter"\}\}/)
+  assert.match(out['post.hbs'] ?? '', /Sign up box · Newsletter · Inline Row --\}\}\n {4}\{\{> "sections\/shared\/newsletter"\}\}/)
   // two on ONE template share a file in its own directory, named for the first
   const one = compileHome(docOf(at('a22/1', 'First', { content: NEWS }), at('a22/1', 'Second', { content: NEWS })))
   assert.deepEqual(Object.keys(one).filter((p) => p.startsWith('partials/sections/home/')), ['partials/sections/home/first.hbs'])
@@ -309,7 +317,7 @@ test('the formatting contract inside a compiled section: a long start tag breaks
   assert.ok(news.includes('<p class="a22-1__proof">Join <strong>us</strong> today</p>'), news)
   const hero = out['partials/sections/home/latest-post.hbs'] ?? ''
   assert.match(hero, /\n {14}<img\n {16}class="a4-13__picture"\n/)
-  assert.match(hero, /\n {16}srcset="\{\{img_url feature_image size="xs"\}\} 150w, [^\n]* 2000w">\n/)
+  assert.match(hero, /\n {16}srcset="\{\{img_url feature_image size="xs" format="webp"\}\} 150w, [^\n]* 2000w">\n/)
   // the <pre> and <textarea> inside a re-indented {{#get}} body keep their own lines exactly
   assert.ok(hero.includes('<pre class="a4-13__rule">*\n   *  *</pre>'), hero)
   assert.ok(hero.includes('<textarea class="a4-13__box" aria-hidden="true">-\n      -</textarea>'), hero)
@@ -563,7 +571,7 @@ test('(7.2) a layer named size="huge" compiles — it reaches a boundary comment
 
 const lib = (id: string) => LIB[id]
 /** A library the extra designs join: A31 #1, which the real library does not hold yet (Story 10.104). */
-const withError = (id: string) => (id === 'a31/1' ? design('a31/1', 'Plain', { compileTarget: ['error.hbs'], bindingContext: ['error'], contentSchema: { title: text('Title') }, html: '<section class="a31-1">\n  <h1 class="a31-1__title" data-prop="title">Not found</h1>\n</section>' }) : LIB[id])
+const withError = (id: string) => (id === 'a31/1' ? design('a31/1', 'Plain', { compileTarget: ['error.hbs'], bindingContext: ['error'], contentSchema: { title: text('Title') }, html: '<section class="a31-1">\n  <h1 class="a31-1__title" data-prop="title" data-empty="hide">Not found</h1>\n</section>' }) : LIB[id])
 /** The library as it stands for `page.hbs`: A24 #1 on `post.hbs` alone (DW-191), so nothing synthesizes onto a Page. */
 const postOnlyHeader = (id: string) => (id === 'a24/1' ? { ...(LIB['a24/1'] as SectionRegistryEntry), compileTarget: ['post.hbs'] } : LIB[id])
 const sectionsOf = (text: string | undefined): string[] => [...(text ?? '').matchAll(/\{\{> "(sections\/[^"]+)"\}\}/g)].map((m) => m[1] as string)
@@ -679,13 +687,15 @@ test('(7.3) a Page with a Post header: the A24 invocation inside the @page switc
     '{{!< default}}',
     '',
     '{{#post}}',
-    '  {{#if @page.show_title_and_feature_image}}',
-    '    {{!-- Page header · Post Headers · Centred --}}',
-    '    {{> "sections/shared/page-header"}}',
-    '  {{/if}}',
+    `  ${POST_ARTICLE}`,
+    '    {{#if @page.show_title_and_feature_image}}',
+    '      {{!-- Page header · Post Headers · Centred --}}',
+    '      {{> "sections/shared/page-header"}}',
+    '    {{/if}}',
     '',
-    '  {{!-- Page box · Newsletter · Inline Row --}}',
-    '  {{> "sections/page/page-box"}}',
+    '    {{!-- Page box · Newsletter · Inline Row --}}',
+    '    {{> "sections/page/page-box"}}',
+    '  </article>',
     '{{/post}}',
     '',
   ].join('\n'))
@@ -699,7 +709,7 @@ test('(7.3) a Page with a Post header: the A24 invocation inside the @page switc
 
 test('(7.3) a membership page: custom-signup.hbs at the root, its sections inside {{#post}}; no route file', () => {
   const out = compile({ 'custom-signup.hbs': docOf(at('a30/1', 'Join card')) })
-  assert.equal(out['custom-signup.hbs'], '{{!< default}}\n\n{{#post}}\n  {{!-- Join card · Members Pages · Card --}}\n  {{> "sections/custom-signup/join-card"}}\n{{/post}}\n')
+  assert.equal(out['custom-signup.hbs'], `{{!< default}}\n\n{{#post}}\n  ${POST_ARTICLE}\n    {{!-- Join card · Members Pages · Card --}}\n    {{> "sections/custom-signup/join-card"}}\n  </article>\n{{/post}}\n`)
   assert.ok(!Object.keys(out).some((p) => p.endsWith('.yaml') || p.startsWith('members/') || p.startsWith('page-')), Object.keys(out).join(' '))
 })
 
@@ -1121,3 +1131,126 @@ test('(7.5, review) the js record beside css: bundled is what main.js carries af
   assert.deepEqual(build(project(), { pageTwo: projectTwo() }).js, { bundled: [], atRest: [] })
 })
 
+
+// ─── Story 7.6: Ghost-correct markup — the spec's I/O matrix, row by row ──────────────────────────────────────────────
+
+/** Every template's text with its Handlebars comments removed — what Ghost renders. */
+const rendered = (files: Record<string, string>): [string, string][] =>
+  Object.entries(files).filter(([p]) => p.endsWith('.hbs')).map(([p, b]) => [p, b.replace(HBS_COMMENT, '')])
+/** A private page's design, which the real library does not hold yet — so the row reaches every template class. */
+const withPrivate = (id: string) => (id === 'a33/1' ? design('a33/1', 'Lock', { compileTarget: ['private.hbs'], contentSchema: { heading: text('Heading') }, html: '<section class="a33-1">\n  <h2 class="a33-1__heading" data-prop="heading" data-empty="hide">Locked</h2>\n</section>' }) : withError(id))
+
+test('(7.6) the article: POST_ARTICLE is Ghost\'s post_class, then Casper\'s post-access class for a visitor without access — and no class of Inflozo\'s', () => {
+  assert.equal(POST_ARTICLE, '<article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">')
+  // Handlebars reads it as the helper, then the block: nothing else is in it
+  const parsed = Handlebars.parse(`${POST_ARTICLE}</article>`).body.map((n) => n.type)
+  assert.deepEqual(parsed, ['ContentStatement', 'MustacheStatement', 'BlockStatement', 'ContentStatement'])
+})
+
+test('(7.6) an emptied post: its layout line alone — no block and no article', () => {
+  const out = compile({ 'post.hbs': docOf(at('a24/1', 'Gone', { hidden: true }), at('a22/1', 'Gone too', { hidden: true, content: NEWS })) })
+  assert.equal(out['post.hbs'], '{{!< default}}\n')
+  assert.deepEqual(checkGhostMarkup(out), [])
+})
+
+test('(7.6) every other template — default, home, index, the archives, error, private and the paywall — carries no <article> and no {{post_class}}', () => {
+  const templates = { ...project(), 'private.hbs': docOf(at('a33/1', 'Lock', { content: { heading: 'Members only' } })), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall', { content: { heading: 'Read on' } })) }
+  const out = compile(templates, { library: withPrivate, pageTwo: { ...projectTwo(), 'tag.hbs': docOf(at('a17/1', 'Older', { isMainFeed: true })) } })
+  const files = Object.keys(out).filter((p) => p.endsWith('.hbs') && !p.startsWith('partials/sections/'))
+  for (const want of ['default.hbs', 'home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs', 'error.hbs', 'private.hbs', PAYWALL_TARGET, 'post.hbs']) assert.ok(files.includes(want), `${want} was not compiled: ${files.join(' ')}`)
+  for (const [path, body] of rendered(out)) {
+    const carries = body.includes('<article') || body.includes('post_class')
+    assert.equal(carries, path === 'post.hbs', `${path}: ${carries ? 'carries' : 'lacks'} the article`)
+  }
+  assert.equal((out['post.hbs']?.match(/<article\b/g) ?? []).length, 1)
+  assert.deepEqual(checkGhostMarkup(out), [])
+})
+
+test('(7.6) a picture: each srcset is srcsetExpr of its path — one candidate per image_sizes key asking for WebP, in the map\'s order — on a tag with the design\'s sizes; src unchanged', () => {
+  const hero = compileProject()['partials/sections/home/latest-post.hbs'] ?? ''
+  const want = Object.entries(IMAGE_SIZES).map(([key, width]) => `{{img_url feature_image size="${key}" format="webp"}} ${width}w`).join(', ')
+  assert.equal(srcsetExpr('feature_image'), want)
+  assert.ok(hero.includes(`srcset="${want}"`), hero)
+  assert.ok(hero.includes('sizes="(max-width: 767px) 108px, 434px"'), hero)
+  assert.ok(hero.includes('src="{{img_url feature_image size="l"}}"'), `src keeps the picture's own format: ${hero}`)
+  // the format is a constant, never the design's: a path that is not a Ghost path is refused before any format is written
+  assert.throws(() => srcsetExpr('feature_image" format="png'), /AD-36/)
+})
+
+test('(7.6) a srcset without sizes: the compile throws checkGhostMarkup\'s sentence, naming the file', () => {
+  const bare = (id: string) => (id === 'a4/13' ? { ...(LIB['a4/13'] as SectionRegistryEntry), html: (LIB['a4/13'] as SectionRegistryEntry).html.replace(/ sizes="[^"]*"/, '') } : LIB[id])
+  assert.throws(() => compile({ 'home.hbs': docOf(at('a4/13', 'Lead', { content: { eyebrow: 'Issue 9' } })) }, { library: bare }),
+    /^Error: the theme's markup: partials\/sections\/home\/lead\.hbs: <img> carries a srcset and no sizes/)
+  const site = compileProject()
+  const file = 'partials/sections/home/latest-post.hbs'
+  const unsized = (site[file] ?? '').replace(/\n *sizes="[^"]*"/, '')
+  assert.deepEqual(checkGhostMarkup({ [file]: unsized }), [`${file}: <img> carries a srcset and no sizes — without sizes the browser assumes the full viewport width and fetches the largest file (NFR-2 (1)).`])
+  // a srcset that is not srcsetExpr's — the old one, with no format — is named too
+  const old = (site[file] ?? '').replaceAll(' format="webp"', '')
+  assert.match(checkGhostMarkup({ [file]: old }).join('\n'), /^partials\/sections\/home\/latest-post\.hbs: <img> srcset="\{\{img_url feature_image size="xs"\}\} 150w, .* 2000w" is not the theme's own/)
+})
+
+test('(7.6) Portal: a page both majors\' Portal opens passes, a bound id read as an id; anything else is named with its file and value', () => {
+  const tag = (v: string) => ({ 'partials/sections/home/x.hbs': `<a href="#" data-portal="${v}">{{t "member.signup_cta"}}</a>\n` })
+  for (const v of ['signup', 'account/plans', 'signup/{{id}}/monthly', 'signup/free', 'signup/', 'offers/abc123', 'signin', 'account', 'account/profile', 'account/newsletters', 'account/newsletters/help', 'account/newsletters/disabled', 'support', 'support/success', 'support/error', 'recommendations']) {
+    assert.deepEqual(checkGhostMarkup(tag(v)), [], v)
+  }
+  for (const v of ['sigup', 'share', 'gift', 'signin/', '']) {
+    assert.deepEqual(checkGhostMarkup(tag(v)).map((s) => s.split(' — ')[0]), [`partials/sections/home/x.hbs: data-portal="${v}" is no page Portal opens`], v)
+  }
+  // a bare attribute is the empty value
+  assert.equal(checkGhostMarkup({ 'x.hbs': '<a href="#" data-portal>x</a>' }).length, 1)
+  // the Link Picker's own actions are Portal pages, and a customer's words naming data-portal form no start tag
+  for (const action of Object.keys(PORTAL_ACTIONS)) assert.ok(PORTAL_PAGE.test(action), action)
+  assert.deepEqual(checkGhostMarkup({ 'x.hbs': '<p>data-portal="share" &lt;a data-portal="gift"&gt;</p>\n' }), [])
+})
+
+test('(7.6) a member\'s own data: a value or a hash argument naming @member is refused (AD-38); a block helper\'s condition passes', () => {
+  for (const m of ['{{@member.email}}', '{{@member.name}}', '{{t "member.greeting" name=@member.name}}', '{{#if (eq tier=@member.status)}}x{{/if}}']) {
+    const got = checkGhostMarkup({ 'partials/sections/home/x.hbs': `<p>${m}</p>\n` })
+    assert.equal(got.length, 1, m)
+    assert.match(got[0] ?? '', /^partials\/sections\/home\/x\.hbs: .* prints a member's own data — .* \(AD-38\)/, m)
+  }
+  for (const m of ['{{#if @member}}a{{/if}}', '{{#if @member.paid}}a{{/if}}', '{{#if @member}}a{{else if @member.paid}}b{{/if}}', '{{^if @member}}a{{/if}}', '{{#unless @member}}a{{/unless}}']) {
+    assert.deepEqual(checkGhostMarkup({ 'x.hbs': `<p>${m}</p>\n` }), [], m)
+  }
+  // a Handlebars comment is never read
+  assert.deepEqual(checkGhostMarkup({ 'x.hbs': '{{!-- {{@member.email}} --}}\n' }), [])
+})
+
+test('(7.6) Ghost\'s helpers out of place: each is named by checkGhostMarkup; the compiled theme is clean', () => {
+  const site = compileProject()
+  assert.deepEqual(checkGhostMarkup(site), [])
+  const shell = site['default.hbs'] ?? ''
+  const head = shell.replace('    {{ghost_head}}\n', '').replace('    <link rel="stylesheet"', '    {{ghost_head}}\n    <link rel="stylesheet"')
+  const cases: [string, Record<string, string>, RegExp][] = [
+    ['ghost_head above the stylesheet link', { ...site, 'default.hbs': head }, /^default\.hbs: \{\{ghost_head\}\} is not the last line before <\/head>/],
+    ['a second ghost_foot', { ...site, 'default.hbs': shell.replace('{{ghost_foot}}', '{{ghost_foot}}\n    {{ghost_foot}}') }, /^default\.hbs: \{\{ghost_foot\}\} appears 2 times/],
+    ['ghost_foot in a section', { ...site, 'partials/sections/home/newsletter.hbs': `${site['partials/sections/home/newsletter.hbs']}{{ghost_foot}}\n` }, /^partials\/sections\/home\/newsletter\.hbs: \{\{ghost_foot\}\} appears 1 time — /],
+    ['post_class on <body>', { ...site, 'default.hbs': shell.replace('<body class="{{body_class}}">', '<body class="{{body_class}} {{post_class}}">') }, /^default\.hbs: \{\{post_class\}\} outside <article/],
+    ['post_class outside POST_ARTICLE', { ...site, 'home.hbs': `${site['home.hbs']}<div class="{{post_class}}"></div>\n` }, /^home\.hbs: \{\{post_class\}\} outside <article/],
+    ['the article removed', { ...site, 'post.hbs': (site['post.hbs'] ?? '').replace(`  ${POST_ARTICLE}\n`, '').replace('  </article>\n', '') }, /^post\.hbs: the first line inside \{\{#post\}\} is not <article/],
+    ['body_class in a section', { ...site, 'partials/sections/home/newsletter.hbs': `<div class="{{body_class}}"></div>\n${site['partials/sections/home/newsletter.hbs']}` }, /^partials\/sections\/home\/newsletter\.hbs: \{\{body_class\}\} appears 1 time/],
+    ['body_class off <body>', { ...site, 'default.hbs': shell.replace('<body class="{{body_class}}">', '<body>').replace('<main id="site-main">', '<main id="site-main" class="{{body_class}}">') }, /^default\.hbs: <body>'s class does not open with \{\{body_class\}\}/],
+  ]
+  for (const [what, files, pattern] of cases) assert.match(checkGhostMarkup(files).join('\n'), pattern, what)
+  // a later story's class after it is allowed (Story 7.11's scheme-*)
+  assert.deepEqual(checkGhostMarkup({ ...site, 'default.hbs': shell.replace('<body class="{{body_class}}">', '<body class="{{body_class}} scheme-dark">') }), [])
+})
+
+test('(7.6) V1 at compile: a label typed into a template is named with its file; a customer\'s words, a marker, and a comment are not', () => {
+  const U = (n: number) => `${U0}${n}${U1}`
+  assert.deepEqual(checkChromeText(doc(), { 'default.hbs': '<a href="#site-main">Skip to content</a>\n' }), ['default.hbs: <a> "Skip to content" is a label typed into the template, which no customer can translate — it reaches a theme only through {{t}} (V1, FR-Q6).'])
+  assert.match(checkChromeText(doc(), { 'partials/sections/default/header.hbs': '<img class="a1-1__logo" alt="Logo" src="{{@site.logo}}">\n' }).join(''), /^partials\/sections\/default\/header\.hbs: <img alt="Logo">/)
+  // clean: {{t}}, a bound value, a marker, a Handlebars comment, a stylesheet's body, a script's, and no letter at all
+  const clean = {
+    'default.hbs': `<title>{{meta_title}}</title>\n<style>\n  @font-face { font-family: 'Inter'; }\n</style>\n<script>var a = 1</script>\n<a href="#">{{t "nav.more"}}</a>\n`,
+    'home.hbs': `{{!< default}}\n{{!-- Latest post · Heroes · Latest Post --}}\n<p class="x">${U(0)}</p>\n<img alt="${U(1)}" src="{{img_url feature_image size="m"}}">\n<span aria-hidden="true">·</span>\n{{{body}}}\n`,
+  }
+  assert.deepEqual(checkChromeText(doc(), clean), [])
+  // the compile's own tree carries no typed label: a customer's hostile words are markers until substitution
+  assert.doesNotThrow(() => compileProject())
+  // and the compile throws on its own output: a text binding's authored fallback is English no customer can translate
+  const fallback = (id: string) => (id === 'a24/1' ? { ...(LIB['a24/1'] as SectionRegistryEntry), html: '<section class="a24-1">\n  <h1 class="a24-1__title" data-bind="title">Untitled</h1>\n</section>' } : LIB[id])
+  assert.throws(() => compile({ 'post.hbs': docOf(at('a24/1', 'Header')) }, { library: fallback }), /^Error: the theme's markup: .*partials\/sections\/post\/header\.hbs: <h1> "Untitled" is a label typed into the template/)
+})

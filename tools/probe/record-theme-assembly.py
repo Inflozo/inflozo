@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Stories 7.1, 7.2, 7.3, 7.4 and 7.5's recorder — the five pilots, compiled by `compileTheme` to the formatting contract
-with the `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4
-the pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, and since Story 7.5 the
-theme's `main.js` behind its `defer` tag and its `README.md`, rendered by a REAL Ghost (T1); and Story 7.3's paywall
-mechanism, on two hand-written probe themes.
+"""Stories 7.1 to 7.6's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+`package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
+pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
+`main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
+WebP `srcset`s, rendered by a REAL Ghost (T1); and Story 7.3's paywall mechanism, on two hand-written probe themes.
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -27,8 +27,11 @@ and faced in `default.hbs`'s head through one `{{asset}}` address each, each fam
 Since Story 7.5 it writes `assets/js/main.js` (`bundle()` of `core` and every declared module that has a file — `core`
 alone on the pilots, whose `nav-drawer` and `member-form` have none yet and ship at rest) behind `MAIN_JS_TAG`, a `defer`
 tag in `default.hbs`'s head after the stylesheet, and `README.md`'s Scripts section. `cards.js` is not uploaded here: the
-pilots design no card, and Story 7.13's first designed card runs its first T1 proof. `check-snapshots` holds the compiled
-tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a hypothesis.
+pilots design no card, and Story 7.13's first designed card runs its first T1 proof. Since Story 7.6 every template whose
+matrix row opens `{{#post}}` wraps its sections in `POST_ARTICLE` — `<article class="{{post_class}}{{#unless access}}
+post-access-{{visibility}}{{/unless}}">` — and every `srcset` candidate carries `format="webp"`; no `locales/` ships until
+Story 7.12, so Ghost prints each `{{t}}` key. `check-snapshots` holds the compiled tree in CI; until a real Ghost reads
+it, that Ghost reads it as claimed is a hypothesis.
 
   1. It compiles, through Node 24's type stripping and `tools/pilot-theme.mjs` (the project CI holds): the site doc's
      A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 (index.hbs), post.hbs's A24 #1 and an
@@ -49,7 +52,8 @@ tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a hyp
      `page.hbs` the library cannot fill out, Story 7.3's Question 1, ruled option 1, so the stand-in stays until A24
      sits on `page.hbs`). It gates the theme
      through tools/stress/gate.js: 0 errors AND 0 warnings on gscan 4.49.7 and 6.4.2, or nothing uploads — gscan naming
-     anything the scaffold does not answer is a question for the owner, never a widened scaffold.
+     anything the scaffold does not answer is a question for the owner, never a widened scaffold. Each checker's own
+     `GS001-DEPR-*` rules are among them, so no helper Ghost deprecates uploads (Story 7.6).
   3. BEFORE THE UPLOAD, under the site's own theme: `GET themes/` gives that theme's `package` — it must carry no marker
      and no 750 width in its `image_sizes` (the controls' premise), and its `card_assets` is recorded; the picture's
      `size/w750/` is redirected to the original; and the `cards.min.css?v=` hash `{{ghost_head}}` writes on `/` is
@@ -61,9 +65,10 @@ tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a hyp
   4. On T1, behind record-shim.py's `start_guard`, the theme is uploaded and activated INSIDE the `try` whose `finally`
      is `restore_and_delete` (DW-332: the probe's name is the zip's, known before the upload, so an upload whose answer
      is lost is still deleted), and `/` read until it shows the page word. It then reads `/`, `/page/2/`, the newest
-     published post, `/page/{last}/` and `/page/{last+1}/` (`last` = the Content API's published total over
-     `posts_per_page`, rounded up), `/tag/{t}/` and its page 2, `/author/{a}/` and its page 2, `/{nonce}-missing/`,
-     `GET themes/`, and the picture's `size/w750/` and `size/w751/`.
+     published post, the gated post and the newest public post (Story 7.6), `/page/{last}/` and `/page/{last+1}/`
+     (`last` = the Content API's published total over `posts_per_page`, rounded up), `/tag/{t}/` and its page 2,
+     `/author/{a}/` and its page 2, `/{nonce}-missing/`, `GET themes/`, and the picture's `size/w750/` and `size/w751/`,
+     each also with `format/webp/` (Story 7.6).
   5. ROWS, on each page: the page word where Home draws A4 #13; every placed section's root class, once each, in doc
      order; no `{{`, `}}`, `{{!--`, C0 character or layer word in the HTML; A22 #1's hostile text as its literal
      characters; `<html lang>` equal to the site's locale. Story 7.2's: the probe's `package` deep-equals the compiled
@@ -85,6 +90,17 @@ tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a hyp
      `<script defer src="/assets/js/main.js?v=…"></script>`; that address answers 200 with a JavaScript content type
      (recorded as served), and its body is the compiled `main.js`, byte for byte. gscan reads no `.js`, so the local gate
      is §73's, unchanged.
+     Story 7.6's (§75): the gated post (`/probe-gated-post/`) signed out and the newest PUBLIC post (the Content API's
+     `filter=visibility:public`) each carry exactly one `<article>`, the page's section roots inside it and the header's
+     outside, its class Ghost's `post_class` computed here from the Content API's record of that post — `post`, then
+     `tag-<slug>` per tag in the API's order, then `featured` and `no-image` where they apply — ending ` post-access-
+     <visibility>` on the gated post and with nothing after it on the public one; every theme page's `<body>` class
+     carries Ghost's template class (`home-template` on `/`, `post-template` on a post, `tag-template tag-<t>` and
+     `author-template author-<a>` on the archives, `paged` on each page 2) and never the bare class `post`; every theme
+     page's `<head>` carries Ghost's generator meta once and Portal's `portal.min.js` script once; every `data-portal` on
+     `/` matches `PORTAL_PAGE` (read from the library, never restated), their count recorded; the picture's
+     `size/w750/format/webp/` answers 200 as `image/webp` at its own path; and A1 #1's More label on `/` prints `nav.more`,
+     Ghost's answer for a key no shipped locale file holds (Story 7.12's run turns it to "More").
   6. THE CONTROLS (standing rule 2), each voiding the run: the layer word IS in the uploaded templates and the hostile
      layer name is in the uploaded `home.hbs`, so their absence from every page is the comments' doing; the `noindex`
      meta IS in the uploaded `default.hbs` and no `error.hbs` is; every page read is this run's theme — `/` by its page
@@ -93,6 +109,10 @@ tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a hyp
      as `size/w750/` was before the upload. Story 7.4's: `/assets/fonts/{nonce}.woff2` and `/LICENSE-{nonce}.txt` answer
      404, so a 200 is the file's own; and A17 #1's root on `/` carries no hook. Story 7.5's: `main.js` and its tag ARE in
      the uploaded tree before anything uploads, and `/assets/js/{nonce}.js` answers 404, so the 200 is `main.js`'s own.
+     Story 7.6's: the uploaded `post.hbs` carries `POST_ARTICLE` and every uploaded `srcset` asks for WebP; no uploaded
+     file writes a generator meta or names `portal.min.js`, so both are `{{ghost_head}}`'s; no `locales/` is uploaded;
+     the Content API says the gated post is not public and the other is; `/` carries at least one `data-portal`; and
+     `size/w751/format/webp/` — a width no theme declares — is redirected to the original.
   7. Its `finally` is record-shim.py's `restore_and_delete` — the previous theme re-activated and read back, the probe
      theme DELETED and read back, whichever step failed.
   8. THE PAYWALL MECHANISM (Story 7.3, settling MEASUREMENTS §15b's library rule): two HAND-WRITTEN probe themes, never
@@ -104,11 +124,11 @@ tree in CI; until a real Ghost reads it, that Ghost reads it as claimed is a hyp
      public. Every read is that theme's own (a `<meta>` naming it and the nonce). Both carry the scaffold's two widths
      and their own two `--gh-font-*` reads (`PROBE_FONTS_CSS`, Story 7.3's bytes), since they have no `screen.css`.
 
-What it writes to the SERVER: three theme uploads, their activations and deletes; the `w750` rendition Ghost saves the
-first time it is asked for one; and — only when T1 hosts no picture of its own — one probe picture, which stays (Ghost's
-API deletes no picture) — no content, no setting, no key; keys are read by variable name and no URL that carries one is
-printed. To disk it writes MEASUREMENTS.md §74 alone, replacing an earlier §74 of its own so a re-run re-records; §70,
-§71, §72 and §73 stay Stories 7.1's, 7.2's, 7.3's and 7.4's records.
+What it writes to the SERVER: three theme uploads, their activations and deletes; the `w750` rendition, and the one
+`w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
+one probe picture, which stays (Ghost's API deletes no picture) — no content, no setting, no key; keys are read by
+variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §75 alone, replacing an earlier
+§75 of its own so a re-run re-records; §70 to §74 stay Stories 7.1's to 7.5's records. The Ghost 5 half is DW-326's.
 """
 import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, subprocess, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -121,7 +141,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '74'   # §70, §71, §72 and §73 stay Stories 7.1's, 7.2's, 7.3's and 7.4's records
+SECTION = '75'   # §70 to §74 stay Stories 7.1's to 7.5's records
 POOL = os.path.join(ROOT, 'packages', 'library', 'fonts', 'pool.json')
 MARKER = 'inflozo'   # FR-J13's marker key, THEME_MARKER in packages/theme-compiler
 C0 = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f]')
@@ -144,7 +164,7 @@ const root = process.env.ROOT
 const pilots = await import(`${root}/tools/pilot-theme.mjs`)
 const lib = await import(`${root}/packages/library/src/index.ts`)
 const rt = await import(`${root}/packages/section-runtime/src/index.ts`)
-const { THEME_MARKER } = await import(`${root}/packages/theme-compiler/src/index.ts`)
+const { POST_ARTICLE, THEME_MARKER } = await import(`${root}/packages/theme-compiler/src/index.ts`)
 const { MAIN_JS_TAG } = await import(`${root}/packages/library/src/modules.ts`)
 if (THEME_MARKER !== process.env.MARKER) throw new Error(`the recorder reads the marker as ${process.env.MARKER}, the compiler writes ${THEME_MARKER}`)
 const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
@@ -167,6 +187,8 @@ process.stdout.write(JSON.stringify({
   hostileText: Object.values(pilots.HOSTILE_TEXT), hook: rt.hookOf(rt.sectionKey('home', a4.instanceId)), base: rt.BASE_CSS,
   // Story 7.5: the tag as the compiler writes it — the recorder's premise reads it, never a copy of its own
   mainTag: MAIN_JS_TAG,
+  // Story 7.6: the article and Portal's pages as the compiler and the library spell them — read, never restated
+  postArticle: POST_ARTICLE, portalPage: lib.PORTAL_PAGE.source,
 }))
 '''
 
@@ -349,6 +371,59 @@ def main_row(path, body, c, page):
     return (got == want, path, what, f'before {got[0]}, inside {got[1]} (expected {want[0]}, {want[1]})')
 
 
+# ── Story 7.6 (§75): Ghost's article, body class, head and Portal, the WebP rendition and the labels ──────────────────
+
+def post_class(post):
+    """Ghost's `{{post_class}}` for a Content API post record (`frontend/helpers/post_class.js`, identical in 5.0.0, 5.130.6
+    and 6.58.0, read in source): `post`, then `tag-<slug>` per tag in order, then `featured`, then `no-image` when there is
+    no feature image. `page` is a page's alone, and the recorder reads posts."""
+    classes = ['post'] + [f'tag-{t["slug"]}' for t in (post.get('tags') or [])]
+    if post.get('featured'):
+        classes.append('featured')
+    if not post.get('feature_image'):
+        classes.append('no-image')
+    return ' '.join(classes)
+
+
+ARTICLE = re.compile(r'<article\b[^>]*>')
+GENERATOR = re.compile(r'<meta name="generator" content="Ghost [^"]*"')
+PORTAL_SCRIPT = re.compile(r'<script\b[^>]*\bsrc="[^"]*/portal\.min\.js[^"]*"')
+DATA_PORTAL = re.compile(r'\sdata-portal="([^"]*)"')
+SRCSET = re.compile(r'\ssrcset="((?:\{\{.*?\}\}|[^"{])*)"')   # a template's srcset value, each mustache (quotes and all) one unit
+
+
+def article_row(path, body, c, want_class):
+    """One `<article>`, its class `want_class`, the page's section roots inside it and the site doc's header roots before it."""
+    what = ("exactly one <article>, its class Ghost's post_class computed from the Content API's record, the page's "
+            "section roots inside it and the header's outside")
+    found = ARTICLE.findall(body)
+    if len(found) != 1:
+        return (False, path, what, f'{len(found)} found')
+    cls = re.search(r'\bclass="([^"]*)"', found[0])
+    before, rest = body.split(found[0], 1)
+    inside = rest.split('</article>', 1)[0]
+    got = (SECTION_ROOT.findall(before), SECTION_ROOT.findall(inside), cls.group(1) if cls else None)
+    want = (c['order']['default.hbs'], c['order']['post.hbs'], want_class)
+    return (got == want, path, what, f'class {got[2]!r} (expected {want_class!r}); before {got[0]}, inside {got[1]}')
+
+
+def body_classes(body):
+    """The class tokens of the page's `<body>`, or []."""
+    m = re.search(r'<body\b[^>]*\bclass="([^"]*)"', body)
+    return m.group(1).split() if m else []
+
+
+def served_as(g, path):
+    """(HTTP status, the path the request ended on, its Content-Type) — `landed` with the type it was served as."""
+    req = urllib.request.Request(g.url + path, headers={'User-Agent': 'inflozo-probe'})
+    try:
+        with urllib.request.urlopen(req, timeout=45) as r:
+            r.read()
+            return r.status, urllib.parse.unquote(urllib.parse.urlparse(r.geturl()).path), r.headers.get('Content-Type', '')
+    except urllib.error.HTTPError as e:
+        return e.code, urllib.parse.unquote(urllib.parse.urlparse(e.geturl()).path), e.headers.get('Content-Type', '')
+
+
 def record(g, zipped, files, c, per_page, total, arch, nonce):
     print(f'\n{"=" * 72}\nGhost {g.major} — {g.url}\n{"=" * 72}')
     version = g.api('GET', 'config/')['config']['version']
@@ -387,6 +462,28 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
     # Story 7.5: main.js and its tag ARE uploaded, so the script rows read what Ghost served of them
     if 'assets/js/main.js' not in files or files['default.hbs'].count(c['mainTag']) != 1:
         raise Void('the uploaded tree carries no main.js, or default.hbs does not carry its tag once — the script rows would prove nothing')
+    # Story 7.6: the article and the WebP candidates ARE uploaded; no uploaded file writes Ghost's generator meta or Portal's
+    # script, so a page carrying them has them from {{ghost_head}}; and no locales/ is uploaded, so a key is Ghost's answer
+    texts = {p: b for p, b in files.items() if isinstance(b, str)}
+    if c['postArticle'] not in files['post.hbs']:
+        raise Void('the uploaded post.hbs carries no POST_ARTICLE — the article rows would prove nothing')
+    sets = [v for b in texts.values() for v in SRCSET.findall(b)]
+    if not sets or any(re.search(r'\{\{img_url(?![^}]*format="webp")[^}]*\}\}', v) for v in sets):
+        raise Void('the uploaded templates carry no srcset, or a candidate that does not ask for WebP — the WebP row would prove nothing')
+    if any('name="generator"' in b or 'portal.min.js' in b for b in texts.values()):
+        raise Void('an uploaded file writes a generator meta or names portal.min.js — the head row would not be {{ghost_head}}\'s')
+    if any(p.startswith('locales/') for p in files):
+        raise Void('the uploaded tree carries locales/ — the label row reads Ghost\'s answer for a key no locale file holds')
+    portal_page = re.compile(c['portalPage'])
+    st, got = g.content(f'posts/slug/{GATED.strip("/")}/?include=tags')
+    gated_post = (((got or {}).get('posts') or [{}])[0])
+    st2, got2 = g.content('posts/?limit=1&filter=visibility:public&include=tags')
+    public_post = (((got2 or {}).get('posts') or [{}])[0])
+    if st != 200 or gated_post.get('visibility') in (None, 'public'):
+        raise Void(f'the Content API says {GATED} is {gated_post.get("visibility")!r} (HTTP {st}) — the gated article row needs a post that is not public')
+    if st2 != 200 or public_post.get('visibility') != 'public' or not public_post.get('url'):
+        raise Void(f'the Content API lists no public post (HTTP {st2}) — the public article row needs one')
+    public_path = urllib.parse.urlparse(public_post['url']).path
     tag, author = arch['tag'][0], arch['author'][0]
     tag1, tag2, au1, au2 = f'/tag/{tag}/', f'/tag/{tag}/page/2/', f'/author/{author}/', f'/author/{author}/page/2/'
     missing = f'/{nonce}-missing/'
@@ -451,12 +548,14 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
                 break
         else:
             raise Void(f'/ never served this run\'s theme (last HTTP {st}) — nothing read there is a result')
-        for path in dict.fromkeys(('/', '/page/2/', post_path, f'/page/{last}/', f'/page/{last + 1}/', tag1, tag2, au1, au2, missing)):   # once each: last may be 2
+        for path in dict.fromkeys(('/', '/page/2/', post_path, GATED, public_path, f'/page/{last}/', f'/page/{last + 1}/', tag1, tag2, au1, au2, missing)):   # once each: last may be 2, and the newest post is the gated one
             st, body = g.page(path)
             read[path] = (st, body)
             print(f'    read {path} -> HTTP {st}, {len(body)} bytes')
         probe_pkg = theme_package(g, THEME_NAME)
         after = {w: landed(g, sized(w)) for w in (750, 751)}
+        # Story 7.6: the rendition every srcset candidate asks for, and a width no theme declares
+        webp = {w: served_as(g, sized(w).replace(f'/size/w{w}/', f'/size/w{w}/format/webp/')) for w in (750, 751)}
         # ── Story 7.4: the fonts, the licences and the stylesheet, as Ghost serves them ──
         head74 = read['/'][1].split('</head>', 1)[0]
         faces = {src: fetched(g, src) for src in dict.fromkeys(FACE_SRC.findall(head74))}
@@ -473,11 +572,13 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
     finally:
         shim.restore_and_delete(g, previous, [THEME_NAME])
     # the page each path renders, by the key `order` holds it under (a page 2 as `{file}#2`)
-    pages = {'/': 'home.hbs', '/page/2/': 'index.hbs', post_path: 'post.hbs', tag1: 'tag.hbs', tag2: 'tag.hbs#2', au1: 'author.hbs', au2: 'author.hbs#2'}
+    pages = {'/': 'home.hbs', '/page/2/': 'index.hbs', post_path: 'post.hbs', GATED: 'post.hbs', public_path: 'post.hbs',
+             tag1: 'tag.hbs', tag2: 'tag.hbs#2', au1: 'author.hbs', au2: 'author.hbs#2'}
     want = {
         '/': {'roots': site(c, 'home.hbs'), 'page_word': True, 'hostile': True},
         '/page/2/': {'roots': site(c, 'index.hbs')},
         post_path: {'roots': site(c, 'post.hbs'), 'hostile': True},
+        **{path: {'roots': site(c, 'post.hbs')} for path in (GATED, public_path) if path != post_path},
         **{path: {'roots': site(c, pages[path])} for path in (tag1, tag2, au1, au2)},
     }
     verdicts, asset_v = list(premise), None
@@ -576,12 +677,47 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         (len(tag_pages) > 1 and all(n == 1 for n in tag_pages.values()), 'every 200 page', 'each page read carries the tag once in its head — core loads on every page',
          ', '.join(f'{p}: {n}' for p, n in tag_pages.items())),
     ]
+    # ── Story 7.6's rows (§75): the article, the body class, Ghost's head, Portal, WebP and the labels ──
+    gated_class = f'{post_class(gated_post)} post-access-{gated_post["visibility"]}'
+    templates_of = {'/': ['home-template'], '/page/2/': ['paged'], post_path: ['post-template'], GATED: ['post-template'],
+                    public_path: ['post-template'], tag1: ['tag-template', f'tag-{tag}'], tag2: ['tag-template', f'tag-{tag}', 'paged'],
+                    au1: ['author-template', f'author-{author}'], au2: ['author-template', f'author-{author}', 'paged']}
+    portals = DATA_PORTAL.findall(read['/'][1])
+    more = re.search(r'class="a1-1__more-trigger"[^>]*>\s*([^<]*?)\s*<', read['/'][1])
+    verdicts += [
+        (True, GATED, 'CONTROL — the Content API says the gated post is not public', f'visibility {gated_post["visibility"]!r}'),
+        (True, public_path, 'CONTROL — the Content API says the newest public post is public', f'visibility {public_post["visibility"]!r}'),
+        article_row(GATED, read[GATED][1], c, gated_class),
+        article_row(public_path, read[public_path][1], c, post_class(public_post)),
+    ]
+    for path, want_tokens in templates_of.items():
+        tokens = body_classes(read[path][1])
+        verdicts.append((all(t in tokens for t in want_tokens) and 'post' not in tokens, path,
+                         f"<body>'s class carries Ghost's template class ({' '.join(want_tokens)}) and never the bare class post",
+                         ' '.join(tokens)))
+    for path in dict.fromkeys(pages):
+        head = read[path][1].split('</head>', 1)[0]
+        gen, portal = len(GENERATOR.findall(head)), len(PORTAL_SCRIPT.findall(head))
+        verdicts.append((gen == 1 and portal == 1, path, "<head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s",
+                         f'generator {gen}, portal.min.js {portal}'))
+    verdicts += [
+        (len(portals) > 0, '/', 'CONTROL — / carries at least one data-portal, so the Portal row reads something', f'{len(portals)} found'),
+        (all(portal_page.fullmatch(v) for v in portals), '/', 'every data-portal on / names a page both majors\' Portal opens (PORTAL_PAGE)',
+         f'{len(portals)}: {", ".join(sorted(set(portals)))}'),
+        (webp[750][:2] == (200, sized(750).replace('/size/w750/', '/size/w750/format/webp/')) and webp[750][2].split(';')[0].strip() == 'image/webp',
+         sized(750).replace('/size/w750/', '/size/w750/format/webp/'), 'the WebP rendition every srcset candidate asks for answers 200 as image/webp at its own path',
+         f'HTTP {webp[750][0]} at {webp[750][1]}, {webp[750][2]!r}'),
+        (webp[751][:2] == (200, original), sized(751).replace('/size/w751/', '/size/w751/format/webp/'),
+         'CONTROL — size/w751/format/webp/, a width no theme declares, is redirected to the original', f'HTTP {webp[751][0]} at {webp[751][1]}'),
+        ((more.group(1) if more else None) == 'nav.more', '/', "A1 #1's More label prints nav.more — Ghost's answer for a key no shipped locale file holds (Story 7.12 ships en.json)",
+         repr(more.group(1) if more else None)),
+    ]
     for ok, page, what, detail in verdicts[len(premise):]:
         print(f'    {"PASS" if ok else "FAIL"}  {page:<40} {what} — {detail}')
     bad = [v for v in verdicts if v[2].startswith('CONTROL') and not v[0]]
     if bad:
         raise Void('A CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
-    return {'version': version, 'site': g.url, 'locale': locale, 'post': post_path, 'verdicts': verdicts,
+    return {'version': version, 'gated': gated_class, 'public': public_path, 'portals': len(portals), 'site': g.url, 'locale': locale, 'post': post_path, 'verdicts': verdicts,
             'previous': previous, 'site_cards': site_cards, 'per_page': per_page, 'total': total, 'picture': rel,
             'uploaded': uploaded, 'arch': arch}
 
@@ -679,18 +815,17 @@ def section(rec, gates, files, c, pay):
     fonts = sorted(p for p in files if p.startswith('assets/fonts/'))
     licences = sorted(p for p in files if p.startswith('LICENSE-'))
     (tag, tag_n), (author, author_n) = rec['arch']['tag'], rec['arch']['author']
-    out = [f'## {SECTION}. JS bundling — the pilots compiled with `main.js` behind its `defer` tag and `README.md`, beside '
-           f'Paper\'s fonts, their licences, a section\'s dark hook, every standard template and the paywall mechanism, '
-           f'rendered by Ghost, T1 · {today}', '',
+    out = [f'## {SECTION}. Ghost-correct markup — the pilots compiled with Ghost\'s article around each post\'s sections and '
+           f'WebP `srcset`s, beside `main.js`, Paper\'s fonts, their licences, a section\'s dark hook, every standard '
+           f'template and the paywall mechanism, rendered by Ghost, T1 · {today}', '',
            f'**Command.** `{COMMAND}` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each '
            'activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload '
-           '(DW-332), both read back; the one `w750` rendition Ghost saves the first time it is asked; no content, no '
-           'setting and no key written. The picture is '
+           '(DW-332), both read back; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time '
+           'it is asked for each; no content, no setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70, §71, §72 and §73 are Stories 7.1's, 7.2's, 7.3's and 7.4's records; this re-runs their rows beside "
-           "Story 7.5's.", '',
+           "§70 to §74 are Stories 7.1's to 7.5's records; this re-runs their rows beside Story 7.6's.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
            '`<main id="site-main">`, puts FR-H2\'s `noindex` guard in `default.hbs`\'s head, and leaves out an untouched '
@@ -702,7 +837,10 @@ def section(rec, gates, files, c, pay):
            'variables, then A4 #13\'s dark override on its hook — the canvas\'s base, and each design\'s sheet stripped to '
            'what its placed roots reach. Story 7.5\'s writes `assets/js/main.js` — `core` and each declared module with a '
            'file, `core` alone on the pilots, whose `nav-drawer` and `member-form` have no file yet and ship at rest — behind '
-           'one `defer` tag in `default.hbs`\'s head after the stylesheet, and `README.md`\'s Scripts section. '
+           'one `defer` tag in `default.hbs`\'s head after the stylesheet, and `README.md`\'s Scripts section. Story 7.6\'s '
+           'wraps the sections of every template whose matrix row opens `{{#post}}` in `POST_ARTICLE` — '
+           f'`{c["postArticle"]}` — asks Ghost for WebP in every `srcset` candidate (`format="webp"`), and ships no '
+           '`locales/` (Story 7.12\'s), so Ghost prints each `{{t}}` key. '
            '`check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate (gscan reads no `.js`), '
            f'with the scaffold (`cards.css`, Story 7.13\'s two widths alone — AD-18\'s lines left it, so `screen.css` '
            f'answers GS051; the stand-in `page.hbs`, Story 10.79\'s, for GS110): {gline}.', '',
@@ -722,7 +860,11 @@ def section(rec, gates, files, c, pay):
            'the original; after activation, `w751` was redirected to the original; a font and a licence the theme does not '
            'carry answered 404, so each 200 read was the file\'s own; A17 #1\'s root carried no hook, so A4 #13\'s is '
            'the override\'s doing; `main.js` and its tag were in the uploaded tree, and a script the theme does not carry '
-           'answered 404, so the 200 read at the tag\'s address was `main.js`\'s own. For the paywall: the Content API says '
+           'answered 404, so the 200 read at the tag\'s address was `main.js`\'s own; the uploaded `post.hbs` carried the '
+           'article and every uploaded `srcset` candidate asked for WebP, no uploaded file wrote a generator meta or named '
+           '`portal.min.js`, and no `locales/` was uploaded; the Content API said the gated post is not public and the other '
+           'post is; `/` carried at least one `data-portal`; and `size/w751/format/webp/` was redirected to the original. '
+           'For the paywall: the Content API says '
            'the post is not public, each read carried its own theme\'s marker, and the control theme rendered Ghost\'s own '
            'call to action. Every one held.', '',
            f'### (a) The compiled pilots — T1 `{rec["site"].replace("https://", "")}` ({rec["version"]}), locale `{rec["locale"]}`', '']
@@ -734,6 +876,21 @@ def section(rec, gates, files, c, pay):
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            f'- **Each post\'s page sits in Ghost\'s article.** The gated post, signed out, and the newest public post '
+            f'(`{rec["public"]}`) each carried one `<article>` around the page\'s sections, with the header outside, and its '
+            'class was Ghost\'s `post_class` exactly as computed from the Content API\'s record — ending '
+            f'` post-access-…` on the gated post (`{rec["gated"]}`) and with nothing after it on the public one. So a site '
+            'owner\'s own CSS can style a members-only, featured or tagged post. Nothing in Ghost styles these classes itself.',
+            '- **Ghost\'s helpers sit where Ghost expects them.** Every page\'s `<body>` carried Ghost\'s template class and '
+            'never the bare `post`, and every `<head>` carried Ghost\'s generator meta and Portal\'s script once each — '
+            '`{{ghost_head}}`\'s, since the theme writes neither.',
+            f'- **Every `data-portal` on `/` opens a real Portal page** ({rec["portals"]} read, each matching `PORTAL_PAGE`).',
+            '- **Pictures are offered as WebP.** The rendition every `srcset` candidate asks for was served at its own path '
+            'as `image/webp`, while a width no theme declares was redirected to the original; `src` keeps the picture\'s own '
+            'format.',
+            '- **Labels go through `{{t}}`, and the language file is still to come.** A1 #1\'s More label printed `nav.more`, '
+            'Ghost\'s answer for a key no shipped locale file holds; Story 7.12 ships `en.json` and its run turns it to "More". '
+            'No visitor sees this: nothing deploys before Story 7.18.',
             '- **The theme\'s script reaches the page as built.** `/`\'s head carried `main.js`\'s tag once, `defer`, in the '
             'form `{{asset}}` resolves to, and its address answered with a JavaScript type and the compiled bytes — so '
             '`core` loads on every page without holding it up.',
@@ -763,7 +920,9 @@ def section(rec, gates, files, c, pay):
             "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). No `cards.js` was uploaded: "
             "the pilots design no card, so a real Ghost first serves it with Story 7.13's first designed card; that "
             "excluding a card drops Ghost's own script is read in source (Story 7.5's Facts 1), not on a page. What "
-            "`main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Two shapes the compiler "
+            "`main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Ghost's post labels sit on "
+            "each post's own page only, never on a card in a list (Story 7.6's Question 1, ruled option 1), so no list was "
+            "read for them; gscan's deprecation rules are the local gate's, not a page read. Two shapes the compiler "
             "writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was "
             "uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard "
             "`author` alone, so `{{#is \"index, tag, author\"}}` and the `index` and `tag` contexts rest on "

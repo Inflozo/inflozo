@@ -9386,3 +9386,40 @@ location: `apps/web/lib/behaviours.ts` (`noFileYet`) · `packages/theme-compiler
 reason: A stub in the theme would make it worse (the nav hidden behind a button that does nothing), and the canvas's
   no-op is what keeps `core` from reporting an unknown name on every edit; 7.34 is the story that compares the two
   renderings and decides how a difference is shown or closed.
+
+## Deferred from: spec-7-6-ghost-correct-markup (2026-10-08)
+
+### DW-348: A17 #1's author photo loads eagerly inside a lazy card
+
+plain: In the post grid, each card's main picture waits until the visitor scrolls near it, but the tiny author photo
+  beside it loads at once, so a long grid fetches every author photo on page load. Story 10.54, which rebuilds the
+  post grids, decides it against the design's spec.
+status: open
+severity: low
+origin: Story 7.6's Create (2026-10-08). "Lazy below the fold" is each design's own `loading` attribute, set from its
+  spec in the design export (the compiler cannot see the fold without making a section's text depend on where it sits,
+  which hoisting and one snapshot per design forbid). A17 #1's card picture carries `loading="lazy"`; its author photo
+  (`a17-1__photo`, one `img_url:xs` rendition) carries no `loading`, so the browser fetches it eagerly.
+owner: Story 10.54 (A17 — the content model, the stylesheet and designs #1–4), whose card carries this entry with its id.
+location: `packages/library/designs/a17/1/index.html` (`a17-1__photo`) · `epics.md` Story 10.54
+reason: A design file is its owning story's (AD-35), so Story 7.6 may not edit it; 10.54 rebuilds A17 #1 against its
+  frame and spec and sets the photo's `loading` there.
+
+### DW-349: an emptied typed text ships the design's sample English, which the compile refuses
+
+plain: When a customer deletes every word of a typed text, such as the newsletter heading, the editor shows the design's
+  own sample sentence again, and the published theme would carry that English. Story 7.6's label check refuses it, so the
+  publish would fail. The owner ruled the line is hidden instead, on the canvas and the site; Story 7.18 builds it.
+status: open
+severity: medium
+origin: Story 7.6's Dev (2026-10-08). `checkChromeText` (V1 at compile) refuses FR-H8's text default on a typed prop:
+  `packages/section-runtime/src/core.ts`'s `data-prop` loop leaves the authored text in place when the value is empty
+  and the element has no `data-empty="hide"`. Render-time V1 exempts text under `data-prop`, so only the compile sees it.
+  A22 #1's heading and A4 #13's headline are such props; the pilots compile because their content is never empty. No
+  library design binds a text (`data-bind`) in fallback mode, and none uses `data-initials`.
+owner: Story 7.18 (the deploy wizard, the compiler's first product caller), whose card carries this entry's words.
+location: `packages/section-runtime/src/core.ts` (the `data-prop` loop's `propEmpty` branch) ·
+  `packages/theme-compiler/src/compile.ts` (`checkChromeText`) · `epics.md` Story 7.18
+reason: Story 7.6's Question 2, ruled option 1 (owner, 2026-10-08): "If user deletes than he intends to delete that
+  line". Hiding changes the editor (an emptied line leaves the canvas and comes back through the sidebar's text box), so
+  it needs a screen and the owner's hand test, which Story 7.6 has neither of.

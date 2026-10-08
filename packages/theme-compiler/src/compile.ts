@@ -33,18 +33,27 @@
 // with Ghost's licence beside it; `README.md`'s Scripts section; and the two `defer` tags in `default.hbs`'s head. The
 // module files and Ghost's card scripts arrive as values the shell read, and `checkThemeJs` and `checkThemeScripts` judge
 // the final text as CI and the stress fixture do.
+//
+// Story 7.6 (FR-J5, AD-38, V1) makes the markup Ghost's: every template whose matrix row opens `{{#post}}` (`post.hbs`,
+// `page.hbs`, `custom-{name}.hbs`) wraps its sections in ONE `<article>`, `POST_ARTICLE`, carrying Ghost's `{{post_class}}`
+// and the `post-access-*` class Ghost's Casper writes for a visitor without access — no class of Inflozo's (AD-3), and
+// none on a design's own element (Question 1, ruled option 1, owner, 2026-10-08). Every `srcset` asks Ghost for WebP
+// (`srcsetExpr`, the runtime's one spelling). Two checks join the final ones: `checkGhostMarkup` over the final text —
+// Ghost's head, foot and body class in place, `{{post_class}}` only in the article, every `srcset` the theme's own on a
+// tag with `sizes`, every `data-portal` a page Portal opens (`PORTAL_PAGE`), no member's own data printed — and
+// `checkChromeText` over the tree before user text is substituted, V1: no label typed into a template outside `{{t}}`.
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
   CUSTOM_TARGET_RE, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion, PAGINATED_TARGETS, PAYWALL_TARGET,
-  POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
+  PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
 } from '@inflozo/library'
 import type { IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { faceOf, pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
 import {
-  BASE_CSS, darkHook, darkOverrideCss, designate, feedQuery, isDesigned, packTokensCss, pageTwoStack, renderTheme, resolveControls, sectionKey,
-  synthesize, UserText, visibleFeed,
+  BASE_CSS, checkChromeLiterals, darkHook, darkOverrideCss, designate, feedQuery, isDesigned, packTokensCss, pageTwoStack, renderTheme,
+  resolveControls, sectionKey, srcsetExpr, synthesize, U0, U1, UserText, visibleFeed,
 } from '@inflozo/section-runtime'
 import type { DocInstance, Pack, PlacedSection, ProjectDoc, RuntimeDocument } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
@@ -287,6 +296,165 @@ export function checkTripleStashes(files: Readonly<Record<string, string>>): voi
   }
 }
 
+// ── Ghost's markup (Story 7.6, FR-J5, AD-38, V1) ─────────────────────────────────────────────────────────────────────
+
+/** The article every template whose matrix row opens `{{#post}}` wraps its sections in — the block's first line, with
+ *  `</article>` its last. Inside `{{#post}}` `this` is the post, so Ghost's `{{post_class}}` prints `post`, `tag-<slug>`
+ *  per tag, `featured`, `no-image` and `page` where each applies (`helpers/post_class.js`, identical in 5.0.0, 5.130.6 and
+ *  6.58.0), and `access` is false only for a visitor who may not read it (`post-gating.js`), who also gets Casper's
+ *  `post-access-{visibility}`. Ghost's classes only (AD-3): the canvas draws no article, and no design selects on it.
+ *  The ONE spelling — the compile, `checkGhostMarkup`, the tests and the recorder all read it. */
+export const POST_ARTICLE = '<article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">'
+
+/** A template's text with its Handlebars comments taken out — Ghost never prints one, and a layer name lands in one. */
+const uncommented = (files: Readonly<Record<string, string>>): [string, string][] =>
+  Object.entries(files).filter(([path]) => path.endsWith('.hbs')).map(([path, body]) => [path, body.replace(HBS_COMMENT, '')])
+
+/** A mustache naming the helper or path `name` first, as `{{name}}` or `{{~ name …}}`. */
+const names = (mustache: string, name: string): boolean => new RegExp(String.raw`^\{\{~?\s*${name}\b`).test(mustache)
+
+/** The raw-text bodies of `<style>` and `<script>`, emptied — CSS and JavaScript are not markup. */
+const RAW_TEXT = /(<(style|script)\b[^>]*>)[^]*?(<\/\2\s*>)/gi
+
+/** Every start tag in a template's text: its name and its attributes, lower-cased, each value as written ('' for a bare
+ *  one). Each mustache is parked first, so a quote inside one (`size="xs"`) cannot end an attribute; a mustache standing
+ *  where an attribute name would (`{{#if x}}sizes="…"{{/if}}`) is taken out of the name. A customer's own words never
+ *  form a start tag: their `<` ships as `&lt;` (AD-4, AD-5). */
+function startTags(text: string): { name: string; attrs: Map<string, string> }[] {
+  const parked: string[] = []
+  const park = text.replace(RAW_TEXT, '$1$3').replace(MUSTACHE, (m) => `\u0001${parked.push(m) - 1}\u0002`)
+  const unpark = (v: string): string => v.replace(/\u0001(\d+)\u0002/g, (_, i: string) => parked[Number(i)] as string)
+  const out: { name: string; attrs: Map<string, string> }[] = []
+  for (const tag of park.matchAll(/<([A-Za-z][A-Za-z0-9-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*)\s*\/?>/g)) {
+    const attrs = new Map<string, string>()
+    for (const a of (tag[2] ?? '').matchAll(/([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g)) {
+      const name = (a[1] as string).replace(/\u0001\d+\u0002/g, '').toLowerCase()
+      if (name !== '') attrs.set(name, unpark(a[2] ?? a[3] ?? a[4] ?? ''))
+    }
+    out.push({ name: (tag[1] as string).toLowerCase(), attrs })
+  }
+  return out
+}
+
+/** The index of the nearest line from `from`, stepping by `step`, that holds more than whitespace; -1 when none does. */
+const nonBlank = (lines: readonly string[], from: number, step: 1 | -1): number => {
+  for (let i = from; i >= 0 && i < lines.length; i += step) if ((lines[i] as string).trim() !== '') return i
+  return -1
+}
+
+/**
+ * Story 7.6 — FR-J5 and AD-38 over a theme's FINAL text (the customer's words substituted), `.hbs` files only, Handlebars
+ * comments out first. Each sentence names its file; `[]` when the markup is Ghost's:
+ *   1. `{{ghost_head}}` and `{{ghost_foot}}` each appear once in the theme, in `default.hbs` — never in another file — the
+ *      head's as the last line before `</head>`, so Ghost's own styles and the site's code injection come after the
+ *      theme's stylesheet (AD-18), and the foot's as the last line before `</body>`;
+ *   2. `{{body_class}}` appears once, in `default.hbs`, opening `<body>`'s `class` (a later story may add classes after it);
+ *   3. `{{post_class}}` appears only in `POST_ARTICLE`, which is the first line inside every `{{#post}}`, whose last line
+ *      is `</article>`;
+ *   4. every `srcset` is `srcsetExpr` of the path its first candidate names, on a tag that carries `sizes` — without one
+ *      the browser assumes the full viewport and fetches the largest file (NFR-2 (1));
+ *   5. every `data-portal` names a page both majors' Portal opens (`PORTAL_PAGE`), each mustache in it read as an id;
+ *   6. a mustache that names `@member` is a block helper's condition (`{{#…}}`, `{{^…}}`, `{{else …}}`) and never a
+ *      value or a hash argument (AD-38: Ghost caches a member page publicly by tier, MEASUREMENTS §31b). Ceiling: a block
+ *      that changes context over a `@member` value (`{{#with}}`, `{{#foreach}}`) prints its fields without naming
+ *      `@member` again — the runtime refuses every `@member` binding first (`contexts.ts`), so no design writes one.
+ * Rules 1 and 2's line rules read `default.hbs` when it is among the files; their counts read every file, so a design's
+ * own text (CI's every-design row) carries none of the three.
+ */
+export function checkGhostMarkup(files: Readonly<Record<string, string>>): string[] {
+  const out: string[] = []
+  const hbs = uncommented(files)
+  // ── 1 and 2: Ghost's head, foot and body class — default.hbs's, once each, nowhere else ──
+  for (const name of ['ghost_head', 'ghost_foot', 'body_class']) {
+    for (const [path, body] of hbs) {
+      const found = [...body.matchAll(MUSTACHE)].filter((m) => names(m[0], name)).length
+      const want = path === SITE_DOC ? 1 : 0
+      if (found !== want) out.push(`${path}: {{${name}}} appears ${found} time${found === 1 ? '' : 's'} — a theme carries it once, in ${SITE_DOC}, and in no other file.`)
+    }
+  }
+  const site = hbs.find(([path]) => path === SITE_DOC)?.[1]
+  if (site !== undefined) {
+    const lines = site.split('\n')
+    for (const [helper, close, why] of [
+      ['{{ghost_head}}', '</head>', "so Ghost's own styles and the site's code injection come after the theme's stylesheet (AD-18)"],
+      ['{{ghost_foot}}', '</body>', "so Ghost's scripts and the site's footer injection come last"],
+    ] as const) {
+      const at = lines.findIndex((l) => l.trim() === close)
+      const last = at === -1 ? -1 : nonBlank(lines, at - 1, -1)
+      if (last === -1 || (lines[last] as string).trim() !== helper) out.push(`${SITE_DOC}: ${helper} is not the last line before ${close} — it belongs there, ${why}.`)
+    }
+    const body = startTags(site).filter((t) => t.name === 'body')
+    if (body.length !== 1 || !(body[0]?.attrs.get('class') ?? '').startsWith('{{body_class}}')) out.push(`${SITE_DOC}: <body>'s class does not open with {{body_class}} — Ghost writes each template's class there (home-template, post-template, tag-template tag-<slug> …).`)
+  }
+  for (const [path, body] of hbs) {
+    // ── 3: {{post_class}} only in POST_ARTICLE, the first line inside every {{#post}}, with </article> its last ──
+    const lines = body.split('\n')
+    const admitted = new Set<number>()
+    lines.forEach((line, i) => {
+      if (/\{\{~?#\s*post\b/.test(line)) {
+        const next = nonBlank(lines, i + 1, 1)
+        if (next === -1 || (lines[next] as string).trim() !== POST_ARTICLE) out.push(`${path}: the first line inside {{#post}} is not ${POST_ARTICLE} — every post's page sits in Ghost's article (FR-J5).`)
+        else admitted.add(next)
+      }
+      if (/\{\{~?\/\s*post\b/.test(line)) {
+        const prev = nonBlank(lines, i - 1, -1)
+        if (prev === -1 || (lines[prev] as string).trim() !== '</article>') out.push(`${path}: the last line inside {{#post}} is not </article> — POST_ARTICLE closes where the post's block does.`)
+      }
+    })
+    lines.forEach((line, i) => {
+      if (admitted.has(i)) return
+      for (const m of line.matchAll(MUSTACHE)) if (/(?<![\w.@-])post_class\b/.test(m[0])) out.push(`${path}: ${m[0]} outside ${POST_ARTICLE} — Ghost's post classes go on the post's own article, and on no other element.`)
+    })
+    // ── 4 and 5: pictures and Portal, read from start tags alone ──
+    for (const tag of startTags(body)) {
+      const set = tag.attrs.get('srcset')
+      if (set !== undefined) {
+        const path0 = /^\{\{img_url\s+([^\s}]+)/.exec(set)?.[1]
+        let want: string | undefined
+        try { want = path0 === undefined ? undefined : srcsetExpr(path0) } catch { want = undefined }
+        if (want !== set) out.push(`${path}: <${tag.name}> srcset="${set}" is not the theme's own — a srcset is srcsetExpr's: one {{img_url}} per image_sizes key, each asking for WebP.`)
+        if (!tag.attrs.has('sizes')) out.push(`${path}: <${tag.name}> carries a srcset and no sizes — without sizes the browser assumes the full viewport width and fetches the largest file (NFR-2 (1)).`)
+      }
+      const portal = tag.attrs.get('data-portal')
+      if (portal !== undefined && !PORTAL_PAGE.test(portal.replace(MUSTACHE, 'x'))) {
+        out.push(`${path}: data-portal="${portal}" is no page Portal opens — Portal would open its default page instead (signup, signin, account, account/plans, support … — PORTAL_PAGE).`)
+      }
+    }
+    // ── 6: no member's own data printed (AD-38) ──
+    for (const m of body.matchAll(MUSTACHE)) {
+      const mustache = m[0]
+      if (!/@member\b/.test(mustache)) continue
+      const condition = /^\{\{~?\s*(?:#|\^|else\b)/.test(mustache)
+      if (!condition || /=\s*(?:\([^)]*)?@member\b/.test(mustache)) out.push(`${path}: ${mustache} prints a member's own data — a page Ghost caches by tier would show it to the next visitor (AD-38). @member may only be a block helper's condition: {{#if @member}}, {{#if @member.paid}}.`)
+    }
+  }
+  return out
+}
+
+/**
+ * Story 7.6 — V1 at compile (appendix H1 §7): the compile's `tree` BEFORE user text is substituted, `.hbs` files only.
+ * Taken out of each template, in this order: Handlebars comments, `<style>` and `<script>` bodies, every mustache (triple
+ * ones first), and every user-text marker `U0<n>U1` — the emission record that tells a customer's words from a typed
+ * label. What is left goes to the runtime's `checkChromeLiterals`: a letter or digit left in a text node, or in an `alt`,
+ * `title`, `placeholder` or `aria-label`, is a label typed into the template that no customer can translate. Render-time
+ * V1 already holds every section, so this holds the compiler's own lines and every later story's. Each sentence names
+ * its file; `[]` when every label goes through `{{t}}`.
+ *
+ * Found at Story 7.6's Dev: render-time V1 exempts text under a `data-bind` or `data-prop` element, but FR-H8's text
+ * default (`fallback`) ships that element's AUTHORED English as a literal when the value is empty — `{{#if title}}{{title}}
+ * {{else}}Title{{/if}}` for a binding, and the authored text itself for an emptied prop. This check refuses both. No library
+ * design has one today (each text binding hides), so the pilots compile; a customer who empties a fallback-mode prop (A22
+ * #1's heading, A4 #13's headline) makes the compile throw. The owner ruled such a text HIDDEN, on the canvas and in the
+ * theme alike, built by Story 7.18, the compiler's first product caller (Story 7.6's Question 2, 2026-10-08, DW-349).
+ */
+export function checkChromeText(doc: RuntimeDocument, files: Readonly<Record<string, string>>): string[] {
+  const marker = new RegExp(`${U0}\\d+${U1}`, 'g')
+  return Object.entries(files).filter(([path]) => path.endsWith('.hbs')).flatMap(([path, body]) => {
+    const bare = body.replace(HBS_COMMENT, '').replace(RAW_TEXT, '$1$3').replace(/\{\{~?\{[^]*?\}~?\}\}/g, '').replace(MUSTACHE, '').replace(marker, '')
+    return checkChromeLiterals(doc, bare).map((literal) => `${path}: ${literal} is a label typed into the template, which no customer can translate — it reaches a theme only through {{t}} (V1, FR-Q6).`)
+  })
+}
+
 /** Rule 7: `{{!-- {Layer name} · {Category} · {Design} --}}` — the layer name its file is slugged from, or the design's
  *  name where the layer has none. */
 const boundary = (p: Placed): string =>
@@ -415,7 +583,8 @@ function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; l
 
 /** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files —
  *  and, since Story 7.2, its `package.json`; since Story 7.3, every standard template, synthesized where untouched; since
- *  Story 7.4, its fonts, licences and stripped stylesheet, with AD-14's record; since Story 7.5, its scripts and README. */
+ *  Story 7.4, its fonts, licences and stripped stylesheet, with AD-14's record; since Story 7.5, its scripts and README;
+ *  since Story 7.6, Ghost's article around each post's sections, WebP candidates and the markup checks. */
 export function compileTheme(doc: RuntimeDocument, input: CompileInput): CompiledTheme {
   for (const file of Object.keys(input.templates).sort(byCode)) {
     if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
@@ -553,12 +722,16 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     const own = `${boundary(p)}\n${invocation.get(p) as string}`
     return p.file === 'page.hbs' && categoryOf(p.entry.id) === POST_HEADER ? `{{#if ${PAGE_SWITCH}}}\n${indent(own, '  ')}\n{{/if}}` : own
   }
-  /** A page's sections, inside the block its target opens; '' when it places none. */
+  /** A page's sections, inside the block its target opens — and, inside `{{#post}}`, inside Ghost's article (Story 7.6,
+   *  FR-J5): `POST_ARTICLE` first, the sections one level in, `</article>` last. '' when it places none, so an emptied
+   *  post keeps its layout line alone (Story 7.3's rule), with no block and no article. */
   const pageBody = (file: string, page: 1 | 2): string => {
     const own = placed.filter((p) => p.file === file && p.page === page).map(section)
     if (own.length === 0) return ''
     const block = targetContext(file)?.block
-    return block === undefined ? own.join('\n\n') : `{{#${block}}}\n${indent(own.join('\n\n'), '  ')}\n{{/${block}}}`
+    if (block === undefined) return own.join('\n\n')
+    const inner = block === 'post' ? `${POST_ARTICLE}\n${indent(own.join('\n\n'), '  ')}\n</article>` : own.join('\n\n')
+    return `{{#${block}}}\n${indent(inner, '  ')}\n{{/${block}}}`
   }
 
   // ── the page templates: the layout line, then each section; a designed archive page 2 inside {{#is "paged"}} ───────────
@@ -676,6 +849,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // as bundled and cards.js as copied
   const scripts = [...checkThemeJs(text, input.modules, input.ghostCards.scripts), ...checkThemeScripts(text)]
   if (scripts.length > 0) throw new Error(`the theme's scripts: ${scripts.join(' · ')}`)
+  // Story 7.6: Ghost's markup over the final text, and V1 over the tree before substitution — where a customer's words are
+  // still markers, so a typed label and a customer's text are told apart
+  const markup = [...checkGhostMarkup(text), ...checkChromeText(doc, tree)]
+  if (markup.length > 0) throw new Error(`the theme's markup: ${markup.join(' · ')}`)
   const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
   return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js }
 }

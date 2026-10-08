@@ -512,15 +512,16 @@ test('data-bind-srcset — one candidate per image_sizes key on both emitters, f
   const { canvas, theme } = agree(src, { ghost: { feature_image: hosted }, site: SITE })
 
   // THE DIFFERENCE (2), positively: the theme is mustaches, the canvas is the recorded URL shape.
+  // Story 7.6 (FR-J5): every candidate asks Ghost for WebP, on both emitters alike.
   for (const [key, width] of Object.entries(IMAGE_SIZES)) {
     assert.ok(
-      theme.includes(`{{img_url feature_image size="${key}"}} ${width}w`),
+      theme.includes(`{{img_url feature_image size="${key}" format="webp"}} ${width}w`),
       `the theme is missing the ${key} candidate: ${theme}`,
     )
     // NOT normalised: the canvas candidate is the sized URL, character for character, and the
     // width descriptor beside it comes from the same map.
     assert.ok(
-      canvas.includes(`${imgUrl(hosted, key, { siteUrl: SITE?.url, absolute: true })} ${width}w`),
+      canvas.includes(`${imgUrl(hosted, key, { siteUrl: SITE?.url, absolute: true, format: 'webp' })} ${width}w`),
       `the canvas is missing the ${key} candidate: ${canvas}`,
     )
   }

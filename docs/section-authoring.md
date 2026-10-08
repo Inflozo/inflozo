@@ -962,6 +962,12 @@ the owner's to rule first, and brings its own module row with it.
 registry row `animates` is not started while it matches, mounts when the preference clears and stops when
 it returns — because for each of those modules its reduced-motion state **is** its no-JS state. A module
 whose reduced-motion state would differ from its no-JS state cannot use the gate; raise it before writing it.
+*(Story 7.6)* **Both halves are lints.** No module file but `core.js` names `prefers-reduced-motion` — a module
+reads `ctx.reducedMotion` for incidental motion and declares `animates` for the rest (`eslint.config.js`, FR-G4's
+message; no comment switches it off). And in a stylesheet, an animation that repeats for ever — `infinite` in
+`animation` or `animation-iteration-count` — sits inside `@media (prefers-reduced-motion: no-preference)`, alone or
+with a width (`stylelint.config.mjs`'s `inflozo/motion-gated`); a finite animation and `transition` are left alone,
+and an iteration count like `1000` is review's to catch.
 
 **`main.js`.** `bundle(names, sources)` writes it: a header naming `core` and the modules — `// This file's
 scripts, one function each, started together at the end of this file: core · lightbox`, which names no builder, since it ships
@@ -1067,7 +1073,7 @@ from both majors — `packages/ghost-shim/fixtures/`, captured by `python3 tools
 
 | Directive | Grammar | Canvas | Theme |
 |---|---|---|---|
-| `data-bind-srcset` | `path\|img_url` — the size list is the shim's | one candidate per `image_sizes` key, at the recorded sized URLs | `srcset="{{img_url path size="xs"}} 150w, …"`, one candidate per key from the one map |
+| `data-bind-srcset` | `path\|img_url` — the size list is the shim's | one candidate per `image_sizes` key, at the recorded sized URLs, each asking a linked site's Ghost for WebP *(Story 7.6)*; an external or unlinked picture passes through | `srcset="{{img_url path size="xs" format="webp"}} 150w, …"`, one candidate per key from the one map (`srcsetExpr`); the element must carry the design's own `sizes` |
 | `data-helper` | one of the bare helpers | the shim's resolved value, as a **text node**; `navigation` builds Ghost's own `<ul class="nav">`; `content`/`comments` render Story 4.4's fixture and **refuse** without one (FR-H3); `content_api_key` is an inert placeholder; `total_paid_members` is a sample on an unlinked project, as `total_members` is; `content_api_url` is the linked site's own address and nothing on an unlinked one *(Story 5.24c, DW-99)* | the helper's own mustache — `{{content}}`, `{{total_members}}`, `{{content_api_key}}`; double braces, never triple |
 | `data-pagination` | `prev` · `next` · `numbers` | `prev`/`next` get the resolved `page_url` and the element is removed where the page does not exist; `numbers` shows `page / pages` | `prev`/`next` emit `href="{{page_url pagination.prev}}"` inside `{{#if pagination.prev}}`; `numbers` emits `{{pagination.page}} / {{pagination.pages}}` |
 
@@ -1213,13 +1219,19 @@ item through `data-helper="navigation"`, which renders Ghost's own `<ul class="n
 stylesheet.
 
 **A section never writes `{{#post}}`.** The template opens it once around every section, because FR-J5's
-`<article class="{{post_class}}">` needs post context; a section opening a second would look up `post`
-inside the post and print nothing. So one design is one byte-identical text on `post.hbs` and `page.hbs`:
+article needs post context; a section opening a second would look up `post` inside the post and print nothing. So
+one design is one byte-identical text on `post.hbs` and `page.hbs`. *(Story 7.6)* The compiler writes the article —
+`POST_ARTICLE`, Ghost's `{{post_class}}` and Casper's `post-access-*` class for a visitor without access, and no class
+of Inflozo's — as the block's first line, with every section one level inside it. The canvas draws no article, so no
+design selects on it, and a card in a list carries no Ghost class (Story 7.6's Question 1, ruled option 1):
 
 ```hbs
-{{#post}}<article class="gh-article {{post_class}}">
-  {{> "sections/post/a24-1"}}  {{! evaluated in post scope: title, url, feature_image }}
-</article>{{/post}}
+{{#post}}
+  <article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">
+    {{!-- Post header · Post Headers · Centred --}}
+    {{> "sections/post/post-header"}}
+  </article>
+{{/post}}
 ```
 
 **Two functions answer, and the runtime asks one of them at every render that names its target:**
@@ -1454,7 +1466,12 @@ makes** — a subscribe form, a Sign in action — sits inside `data-if="@site.a
 implies members, so one condition hides every ask on an invite-only site. *(Story 5.20)* **The flag is the ask's own**:
 a free ask — a subscribe or sign-up form, `data-portal="signup"` or `signup/free` — sits inside
 `@site.allow_self_signup`; a paid ask — `signup/<tier>…`, `offers/…`, `account/plans`, or a bound
-`data-bind-attr="data-portal:signup/{id}…"` — inside `@site.paid_members_enabled`. The gate may be on the element or
+`data-bind-attr="data-portal:signup/{id}…"` — inside `@site.paid_members_enabled`. *(Story 7.6)* Every `data-portal`
+value must name a page both majors' Portal opens — `PORTAL_PAGE` in the library's vocabulary, Portal's own grammar
+read in source: `signup` (with `free`, `monthly`, `yearly`, a tier id and a cadence), `offers/<id>`, `signin`,
+`account` and its `plans`, `profile` and `newsletters` pages, `support` and `recommendations`. Anything else —
+Ghost 6's `share` and `gift` included, which Ghost 5's Portal lacks — opens Portal's default page, and the compiler
+refuses it naming the file and the value. The gate may be on the element or
 on any element around it, never on an else arm; `members_enabled`, a tier count or the other flag never satisfies it
 (`member-ask-ungated`, `memberAsks` in `validate.ts` is the one reader of which asks a design makes). Sign in and
 Account ask nobody to join and are never gated. **A link whose destination the customer picks is gated by that
@@ -1630,12 +1647,23 @@ a live 404 on the customer's site.
 **`sizes` is NOT emitted and is not bindable** *(Story 4.3)*. `srcset` says what files exist;
 `sizes` says how much of the viewport the image occupies, which is a fact about the **design's own
 layout** — the design knows it and the runtime cannot. So a design writes `sizes` as an ordinary
-static attribute in its markup, and `data-bind-srcset` emits the candidate list beside it.
+static attribute in its markup, and `data-bind-srcset` emits the candidate list beside it. **It is
+required** *(Story 7.6)*: the compiler's `checkGhostMarkup` refuses a `srcset` on a tag with no `sizes`,
+since without one the browser assumes the full viewport width and fetches the largest file (NFR-2 (1)).
 
 ```html
 <img class="hero__img" data-bind-attr="src:feature_image|img_url:l"
-     data-bind-srcset="feature_image|img_url" data-empty="hide" src="/cover.jpg" alt="">
+     data-bind-srcset="feature_image|img_url" sizes="(max-width: 72rem) 100vw, 72rem"
+     data-empty="hide" src="/cover.jpg" alt="">
 ```
+
+*(Story 7.6)* **Every candidate asks Ghost for WebP** — `{{img_url path size="…" format="webp"}}`, a
+constant, never the design's value — as Ghost's own Source theme does; `src` keeps the picture's own format, a
+Ghost that cannot convert serves the original, and an early Ghost 5 ignores the format. **`loading` is the
+design's own attribute**, set from its spec in the design export (`lazy` below the fold, `eager` with
+`fetchpriority="high"` for a hero's picture): the compiler cannot see the fold without making a section's text
+depend on where it sits. **A picture drawn at one small fixed size** — an author photo — takes one rendition
+(`src:…|img_url:xs`) and no `srcset`.
 
 **Exit 5 · controls.** There is no directive, and there must not be one: the root's control
 attributes are **generated from `controlSchema`**, and the validator asserts the two match in **both

@@ -259,8 +259,9 @@ await check('Story 7.1: a test under packages/ may import handlebars to parse wh
 
 // Story 7.5 — DW-146's literal half (eslint.config.js's modules block): a module writes no visitor-facing words of its own.
 // Each line is planted in a module file's one function, with every name it uses a parameter, so `no-undef` stays quiet.
+// Story 7.6: FR-G4's motion rule shares the block's `no-restricted-syntax`, so its messages are kept beside DW-146's.
 const moduleLint = async (line) => (await lintAt(`export function probe(el, ctx, win, doc, body, n, value) {\n  const t = ctx.t\n  ${line}\n}\n`, 'packages/library/modules/probe.js'))
-  .filter((m) => m.ruleId === 'no-restricted-syntax' && m.message.startsWith('DW-146'))
+  .filter((m) => m.ruleId === 'no-restricted-syntax' && (m.message.startsWith('DW-146') || m.message.startsWith('FR-G4')))
 // The planted lines are derived from the rule's own sink lists (review, 2026-10-08), one per entry and one per literal
 // shape, so a sink added to the rule is planted here without anyone remembering to.
 const { VISITOR_SINKS } = await import(join(REPO, 'eslint.config.js'))
@@ -287,6 +288,31 @@ await check('Story 7.5 (DW-146): the clean lines are clean — ctx.t(\'more\') i
   for (const line of NOT_VISITOR_WORDS) if ((await moduleLint(line)).length > 0) hit.push(line)
   if (hit.length > 0) fail(`refused: ${hit.join(' · ')}`)
   return `${NOT_VISITOR_WORDS.length} lines clean`
+})
+// Story 7.6 — FR-G4's module half (eslint.config.js, the block after the modules block): no module but core reads the
+// reduced-motion preference; a module reads ctx.reducedMotion. Each planted line is refused by its own rule's message.
+const MOTION_READS = ["win.matchMedia('(prefers-reduced-motion: reduce)')", 'win.matchMedia(`(prefers-reduced-motion: ${value})`)']
+await check('Story 7.6 (FR-G4): a module reading the reduced-motion preference itself is refused — a string and a template literal', async () => {
+  const missed = []
+  for (const line of MOTION_READS) if (!(await moduleLint(line)).some((m) => m.message.startsWith('FR-G4'))) missed.push(line)
+  if (missed.length > 0) fail(`not refused: ${missed.join(' · ')}`)
+  return `${MOTION_READS.length} lines refused`
+})
+await check('Story 7.6 (FR-G4): if (ctx.reducedMotion) return is clean, and so is core.js itself, which holds the one query', async () => {
+  const got = await moduleLint('if (ctx.reducedMotion) return')
+  if (got.length > 0) fail(`refused: ${JSON.stringify(got.map((m) => m.message))}`)
+  const core = readFileSync(join(REPO, 'packages/library/modules/core.js'), 'utf8')
+  if (!core.includes('prefers-reduced-motion')) fail('core.js names no reduced-motion query, so its clean lint proves nothing')
+  const own = (await lintAt(core, 'packages/library/modules/core.js')).filter((m) => m.message.startsWith('FR-G4'))
+  if (own.length > 0) fail(`core.js refused: ${own.map((m) => `${m.line}: ${m.message}`).join(' · ')}`)
+  // the control: core's own text, at any other module's path, is refused
+  if (!(await lintAt(core, 'packages/library/modules/probe.js')).some((m) => m.message.startsWith('FR-G4'))) fail("core's query at another module's path was not refused")
+})
+await check('Story 7.6 (FR-G4): a disable comment in a module file does not silence the motion rule', async () => {
+  const got = (await lintAt("/* eslint-disable no-restricted-syntax */\nexport function probe(win) {\n  return win.matchMedia('(prefers-reduced-motion: reduce)') // eslint-disable-line\n}\n", 'packages/library/modules/probe.js'))
+    .filter((m) => m.ruleId === 'no-restricted-syntax' && m.message.startsWith('FR-G4'))
+  if (got.length === 0) fail('silenced')
+  return got[0].message
 })
 await check('Story 7.5 (DW-146): a disable comment in a module file silences nothing', async () => {
   const got = (await lintAt("/* eslint-disable no-restricted-syntax */\nexport function probe(el) {\n  el.textContent = 'Hello' // eslint-disable-line\n}\n", 'packages/library/modules/probe.js'))
@@ -402,7 +428,9 @@ try {
     }
     const keys = [...rows.keys()]
     const code = keys.map((k, i) => `.p${i} { ${rows.get(k).prop}: ${rows.get(k).value ?? 'inherit'}; }`).join('\n')
-    const refused = new Set((await lint(code)).map((w) => keys[w.line - 1]))
+    // Story 7.6: `inflozo/motion-gated` judges motion, not the floor — `animation: infinite` is Widely and refused only
+    // outside the reduced-motion query — so its warnings are no answer about the pin
+    const refused = new Set((await lint(code)).filter((w) => w.rule !== 'inflozo/motion-gated').map((w) => keys[w.line - 1]))
     const wider = []
     const narrower = []
     for (const k of keys) {
@@ -470,6 +498,15 @@ try {
     // `-apple-system` is a font-family keyword, not a vendor prefix: the export's stack (`'Inter',-apple-system,sans-serif`)
     // uses it in every frame, and the prefix closure must keep passing it.
     'a font keyword, not a prefix': ["html { font-family: 'Inter', -apple-system, sans-serif; }"],
+    // Story 7.6 (FR-G4, inflozo/motion-gated): a never-ending animation behind the no-preference query, alone or with a
+    // width, and a finite one anywhere
+    'motion, gated or finite': [
+      '@media (prefers-reduced-motion: no-preference) { .a { animation: spin 1s linear infinite; } }',
+      '@media (prefers-reduced-motion: no-preference) { .a { animation-iteration-count: infinite; } }',
+      '@media (prefers-reduced-motion: no-preference) and (width >= 50rem) { .a { animation: spin 1s linear infinite; } }',
+      '@media (prefers-reduced-motion: no-preference) and (width >= 50rem) { .a { animation-iteration-count: infinite; } }',
+      '.a { animation: fade 300ms 1; }',
+    ],
   }
   for (const [group, sheets] of Object.entries(legal)) {
     await check(`${group} passes`, async () => {
@@ -504,6 +541,9 @@ try {
     ['a prefix', '.a { display: -webkit-box; }', 'inflozo/prefix-pairs'],
     ['a prefix', '.a { -webkit-user-select: none; }', 'inflozo/prefix-pairs'],
     ['a prefix', '.a { user-select: none; }', 'inflozo/prefix-pairs'],
+    // Story 7.6 (FR-G4): an animation that repeats for ever, outside the no-preference query
+    ['motion', '.a { animation: spin 1s linear infinite; }', 'inflozo/motion-gated'],
+    ['motion', '.a { animation-iteration-count: infinite; }', 'inflozo/motion-gated'],
   ]
   for (const [group, sheet, rule] of refusedRows) {
     await check(`${group} refused by ${rule}: ${sheet}`, async () => {

@@ -425,7 +425,7 @@ FR-Q6 says "compile validation enforces this". These are the assertions, so the 
 
 | # | Assertion | Fails when |
 |---|---|---|
-| V1 | Every visitor-facing string literal in emitted `.hbs` is inside a `{{t}}` call or a `(t "…")` sub-expression | A design hard-codes a label |
+| V1 | Every visitor-facing string literal in emitted `.hbs` is inside a `{{t}}` call or a `(t "…")` sub-expression. *Held at render (Story 4.9, `chromeLiterals`) and, since Story 7.6 (2026-10-08), over every compiled template by `checkChromeText`, on the compile's tree before user text is substituted — the user-text markers are the emission record that tells a customer's words from a typed label* | A design hard-codes a label |
 | V2 | Every `{{t}}` key used in emitted `.hbs` exists in this catalog | A design invents a key, or misspells one |
 | V3 | **Every** emitted locale file's key set equals the catalog's key set, minus `canvas`-marked keys — checked per file, and `en.json` must be one of them | A key was added to the catalog but not emitted, or a non-English project shipped without its `en.json` fallback (S4, FR-Q6) |
 | V4 | Every `{{t}}` call supplies exactly the placeholder set its key declares | A missing hash param would render `{count}` literally to a visitor (S3) |

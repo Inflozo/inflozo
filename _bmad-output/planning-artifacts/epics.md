@@ -2913,6 +2913,13 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 2. the whole face for a language outside `latin` and `latin-ext`, and its coverage check — **Story 7.12**
 >    (Question 2), where the language is chosen.
 >
+> **Moved from Story 7.6 at its Dev (2026-10-08), word for word, so none is missed (R-195).**
+>
+> 1. FR-J5's `srcset` "from the rendition set for bundled assets" — **Story 7.29**, with the pictures Story 7.4's
+>    Question 1 moved there; a picture Ghost hosts takes `image_sizes` with `format="webp"` from Story 7.6 on;
+> 2. a typed text the customer empties is hidden, on the canvas and in the theme alike — **Story 7.18** (Question 2,
+>    ruled at Dev, DW-349): the compiler's first product caller, and a change to the editor that needs a hand test.
+>
 > **Given owners by Story 7.5's Create (2026-10-08), so none is missed (R-195).**
 >
 > 1. §7.4's README install steps, the Style Pack and font pairing in use, and where to re-import — **Story 7.26**
@@ -3171,8 +3178,9 @@ So that members styling, images and Portal actually work.
 styling
 **And** no deprecated helpers are used
 **And** `{{img_url}}` is paired with a **theme-authored `srcset`**, because the helper returns a single URL string
-and emits no `srcset` at all — composed from `image_sizes` for Ghost content and from the rendition set for
-bundled assets — with WebP and lazy loading below the fold for Ghost-hosted images
+and emits no `srcset` at all — composed from `image_sizes` for Ghost content *(the rest of this clause moved word for
+word to Story 7.29 at Story 7.6's Dev, following the pictures Story 7.4's Question 1 moved there, owner, 2026-10-08:
+"and from the rendition set for bundled assets")* — with WebP and lazy loading below the fold for Ghost-hosted images
 **And** Portal actions emit real `data-portal` attributes, and the paywall renders via the `content-cta.hbs`
 partial at the members-only cutoff
 **And** **all chrome strings emit via `{{t}}` against the shipped `locales/` files — no hard-coded visitor-facing
@@ -3188,7 +3196,22 @@ paywall twice — the compile asserts that a theme carrying it invokes a partial
 source, Story 7.3's Create, 2026-10-06, correcting MEASUREMENTS §15b's library rule)*, and (2) the partial's
 first line is `{{{html}}}`, the post's free preview, because an override replaces Ghost's whole template and without it
 the preview above the cut disappears — AD-5's second exception to its no-triple-stash rule, bounded to that line and checked on every compile *(Question 2, owner, 2026-10-06; DW-261)*
-**FRs:** FR-J5. · **Owner test:** none. · **Verification:** rendered on T1 and T3.
+**And** *(Story 7.6, as landed, 2026-10-08)* every template whose matrix row opens `{{#post}}` (`post.hbs`, `page.hbs`,
+`custom-{name}.hbs`) wraps its sections in one `POST_ARTICLE` —
+`<article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">`, Ghost's classes only — and no
+other template carries one; Ghost's post labels go on each post's own page only, and a card in a list stays its design's
+own markup with no Ghost class on a design's element *(Question 1, ruled option 1, owner, 2026-10-08)*. Every `srcset`
+candidate asks Ghost for WebP (`srcsetExpr`, `format="webp"`) on a tag with the design's `sizes`, and the canvas asks a
+linked site's Ghost for the same; `loading` is each design's own attribute (A17 #1's eager author photo is DW-348,
+Story 10.54's), and a fixed-size picture takes one rendition and no `srcset`. `checkGhostMarkup` holds the final text —
+`{{ghost_head}}` and `{{ghost_foot}}` once each and last in the head and the body, `{{body_class}}` opening `<body>`'s
+class, `{{post_class}}` only in the article, every `srcset` the theme's own with `sizes`, every `data-portal` a page both
+majors' Portal opens (`PORTAL_PAGE`), no `@member` value printed (AD-38) — and `checkChromeText` holds V1 over the tree
+before user text is substituted; the compile throws on either, and CI runs `checkGhostMarkup` over every design.
+"Deprecated" is gscan's own `GS001-DEPR-*` rules, held at zero on the pilot theme in CI. Motion is two lints:
+`inflozo/motion-gated` (a never-ending animation sits inside `@media (prefers-reduced-motion: no-preference)`) and no
+module file but `core.js` naming the preference. `locales/` is Story 7.12's, so until it ships Ghost prints each key.
+**FRs:** FR-J5. · **Owner test:** none. · **Verification:** rendered on T1 (R-238 — the Ghost 5 half is DW-326's), MEASUREMENTS §75.
 
 ### Story 7.7: The gscan gate
 
@@ -3690,6 +3713,7 @@ whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** a save the server refuses for good — the project deleted in another window, or this browser now signed in to another account (404), or a document it will not take (400, 422) — stops saying the work will be sent "when the connection returns", in the editor's save message and in Pre-flight's own flush; this story's Create asks the owner (R-83) for the sentence (DW-304, from Story 5.24e's Create, 2026-10-02).
 **And** closing the editing window while it checks in with the server frees the lock within a check-in, as any other close does: the lock row gains a per-page id (a migration, pushed first as `Schema`, R-99) so a going page's `leave` matches its own page's beat whatever landed since, and a reload still keeps its lock (DW-307, from Story 5.24e's Dev, 2026-10-02; R-228 accepted the wait until then).
 **And** a window that typed in its first moment — before the server answered that another session is editing — is told what it holds when it turns read-only, as a displaced session is told: "This session had N unsynced edits; they were not included." (`LOCK_COPY.displaced`), in memory only, never resetting the on-device record the holder shares (DW-308, from Story 5.24e's review, 2026-10-02).
+**And** *(moved word for word from Story 7.6's Question 2, ruled option 1, owner, 2026-10-08, DW-349)* **a typed text the customer empties is hidden, on the canvas and in the theme alike**: deleting every word of a section's typed text (A22 #1's heading, A4 #13's headline) removes that element, and typing in the sidebar's text box brings it back. The design's sample English never ships in its place, because V1 refuses it and Story 7.6's `checkChromeText` makes the compile throw on it. A text the catalog supplies (S6, such as a Subscribe label) still returns as its `{{t}}` string, and the owner's hand test covers the empty, the hidden line and the way back.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
@@ -4038,6 +4062,10 @@ total zip, per-entry and uncompressed total — because Ghost rejects oversized 
 lowest observed, and a project over budget is told **which assets are responsible before it attempts a deploy**
 **And** *(moved word for word from Story 7.4, DW-108's budget half)* the inline icons' bytes count in the theme-size
 budget (R-26, DW-108).
+**And** *(moved word for word from Story 7.6 at its Dev, 2026-10-08, following the pictures Story 7.4's Question 1 moved
+here)* a bundled picture's theme-authored `srcset` is composed "from the rendition set for bundled assets" — the 400 /
+800 / 1600 px + original files above, never `image_sizes` — on a tag that carries its design's `sizes`, which Story 7.6's
+`checkGhostMarkup` refuses a `srcset` without.
 **And** *(read in source at Story 7.4's Create, 2026-10-08 — its Facts 5 and 6)* Ghost 6.58.0's `theme.uploadLimits`
 defaults (`shared/config/defaults.json`) are host-configurable: 1 GiB compressed — multer's `fileSize` →
 `COMPRESSED_TOO_LARGE` (`server/web/api/middleware/upload.js`); 512 MiB per entry and 4 GiB in total — gscan's
@@ -4047,7 +4075,7 @@ same extract refusing a name of 254 bytes or more, and a symlink; each error car
 (MEASUREMENTS §15h). Ghost(Pro)'s "5 MB" is its **media** limit (`ghost.org/help/media-file-size-limits`, read
 2026-10-08: Starter 5 MB, Publisher 100 MB, Business 250 MB, Custom 1 GB), and it names no theme limit.
 
-**FRs:** FR-K5; FR-J3's pictures and theme-size budget (from Story 7.4). · **Frame:** `S8 Deploy.dc.html` S8b — the
+**FRs:** FR-K5; FR-J3's pictures and theme-size budget (from Story 7.4); FR-J5's bundled-asset `srcset` (from Story 7.6). · **Frame:** `S8 Deploy.dc.html` S8b — the
 over-budget message surfaces in Pre-flight (from Story 7.4). · **Owner test:** yes (the over-budget message) — Story 7.4's
 hand test, moved word for word. · **Verification:** a deployed theme on T1 rendering its bundled images; upload limits
 probed on T1 (R-238 — the Ghost 5 half is DW-326's).
@@ -6285,6 +6313,7 @@ Spec.md`)
 **And** each design **matches its frame** — `A17-<n> <Name>.dc.html` — and the category's `A17-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
 **And** a value another control switches off is greyed on its own with its reason — Three Up's 'Three lines' at Four per row — a per-value dependency the whole-control `disabledBy` cannot express (DW-151); and reading time prints as Ghost's own `{{reading_time}}` does — '1 min read' at 0 and 1 minute — through a translatable catalog form recorded on T1 and T3 first (DW-156).
 **And** the pager's hover underline on a Contrast ground is decided against the frame — today it reads `--accent` on every ground while the focus ring beside it reads the contrast accent (DW-329, from Story 6.5's Review, 2026-10-05); a change is a moved pixel, so it is rebaselined on the owner's approval.
+**And** A17 #1's author photo (`a17-1__photo`) takes its `loading` from the spec — today it loads eagerly inside a card whose picture is `lazy` (DW-348, from Story 7.6's Create, 2026-10-08: `loading` is each design's own attribute, since the compiler cannot see the fold).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A17). · **Frame:** `A17-<n> <Name>.dc.html` · `A17-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 

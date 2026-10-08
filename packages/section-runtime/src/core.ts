@@ -506,10 +506,18 @@ export function bindExpr(spec: string): string {
  *  all, so the THEME composes one — one candidate per FR-J2 `image_sizes` key, from the one map,
  *  each expression built by `bindExpr` so the path and the size are validated rather than
  *  interpolated (AD-36 2). The `sizes` attribute is NOT emitted and is not bindable: it describes
- *  the design's own layout, which the design knows and the runtime does not. */
+ *  the design's own layout, which the design knows and the runtime does not — and since Story 7.6 the
+ *  compiler's `checkGhostMarkup` refuses a `srcset` on a tag without one.
+ *
+ *  Story 7.6 (FR-J5): every candidate asks Ghost for WebP, as Ghost's own Source theme does — `format="webp"`, a CONSTANT
+ *  appended to the validated `bindExpr` output, never a design's or a customer's value (AD-36). `src` keeps the picture's
+ *  own format. Read in source on both majors (`frontend/utils/images.js` `getImageWithSize`, `handle-image-sizes.js`): a
+ *  Ghost that cannot convert serves the original, and 5.0.0's `img_url` ignores `format`. This is the ONE spelling of a
+ *  theme `srcset` — the compiler's check compares against it rather than re-deriving one. */
+const SRCSET_FORMAT = 'webp'
 export function srcsetExpr(path: string): string {
   return Object.entries(IMAGE_SIZES)
-    .map(([key, width]) => `${bindExpr(`${path}|img_url:${key}`)} ${width}w`)
+    .map(([key, width]) => `${bindExpr(`${path}|img_url:${key}`).slice(0, -'}}'.length)} format="${SRCSET_FORMAT}"}} ${width}w`)
     .join(', ')
 }
 
@@ -972,9 +980,12 @@ function emitBindings(
         el.remove()
         continue
       }
+      // Story 7.6: the theme's candidates, asked of a linked site's Ghost — `img_url`'s `format` (the shim's recorded
+      // `IMG|hosted_webp` shape); an external or unlinked picture passes through unchanged, as before
       el.setAttribute('srcset', srcset(safe, {
         siteUrl: input.site?.url,
         absolute: input.site?.url !== undefined,
+        format: SRCSET_FORMAT,
       }))
     }
   }

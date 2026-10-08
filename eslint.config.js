@@ -140,6 +140,10 @@ const visitorWords = [
   })),
 )
 
+// Story 7.6 — FR-G4: no module but `core` reads the reduced-motion preference itself (the block after the modules block).
+const motionMessage = "FR-G4: a module never reads the reduced-motion preference itself — core holds the one query; read ctx.reducedMotion for incidental motion, and declare animates: true in the module's registry row so core does not start it while the visitor asks for less motion (docs/section-authoring.md, the motion gate)."
+const motionGate = ['Literal[value=/prefers-reduced-motion/]', 'TemplateElement[value.raw=/prefers-reduced-motion/]'].map((selector) => ({ selector, message: motionMessage }))
+
 export default [
   {
     // Everything that is not source. The dot-directory line is load-bearing: Vercel restores
@@ -275,5 +279,17 @@ export default [
     linterOptions: { noInlineConfig: true },
     plugins: { compat },
     rules: { 'no-undef': 'error', 'compat/compat': 'error', 'no-restricted-syntax': ['error', ...visitorWords] },
+  },
+  {
+    // Story 7.6 — FR-G4's module half, "gated once": `core` holds the one reduced-motion query, a module reads
+    // `ctx.reducedMotion`, and the registry's `animates` keeps a moving module from starting while the preference holds.
+    // So no module file but `core.js` names `prefers-reduced-motion`: a string, or a template literal's static text,
+    // holding it is refused. This block's `no-restricted-syntax` REPLACES the block above's for these files, so it carries
+    // DW-146's `visitorWords` too, and no comment switches it off (`noInlineConfig`). Ceiling, which review holds: a name
+    // joined by `+` ('prefers-reduced-' + 'motion') evades it. The CSS half is `stylelint.config.mjs`'s `inflozo/motion-gated`.
+    files: ['packages/library/modules/*.js'],
+    ignores: ['packages/library/modules/core.js'],
+    linterOptions: { noInlineConfig: true },
+    rules: { 'no-restricted-syntax': ['error', ...visitorWords, ...motionGate] },
   },
 ]

@@ -7,7 +7,9 @@
 //   differences it may keep are named in `packages/library/baseline.json` (`plugin.refused` / `plugin.admitted`);
 // - it passes whatever an `@supports` condition tests, so `inflozo/supports-tier-2` holds a condition to Tier 2;
 // - it sees neither nesting (`max-nesting-depth: 0`, §7.1's flat output) nor vendor prefixes (the closure below:
-//   research §6.6's three, and nothing else, with `inflozo/prefix-pairs` holding them to their complete forms).
+//   research §6.6's three, and nothing else, with `inflozo/prefix-pairs` holding them to their complete forms);
+// - it knows nothing of motion: `inflozo/motion-gated` holds a never-ending animation behind the reduced-motion query
+//   (FR-G4, Story 7.6).
 //
 // The tiers are data: Tier 2 is `baseline.json`'s `tier2`, read here, never restated.
 
@@ -84,11 +86,36 @@ const prefixPairs = createPlugin(PAIRS, (on) => (root, result) => {
   root.walkAtRules((at) => at.nodes && check(at))
 })
 
+// ── inflozo/motion-gated ────────────────────────────────────────────────────────────────────────────────────
+// Story 7.6 — FR-G4's CSS half: "decorative and continuous" motion is gated behind the visitor's reduced-motion
+// preference. "Continuous" is mechanical — an animation that repeats for ever, the keyword `infinite` in `animation` or
+// `animation-iteration-count`; "decorative" is not, so EVERY never-ending animation is held: it sits inside an `@media`
+// whose condition holds `(prefers-reduced-motion: no-preference)`, alone or `and`-ed with a width. A finite animation is
+// left alone, and so is `transition`, which FR-D20 keeps live for hover. Ceiling, which review holds: an iteration count
+// like `1000` repeats for minutes and evades the rule. The module half — no module but `core` reads the preference — is
+// `eslint.config.js`'s.
+const MOTION = 'inflozo/motion-gated'
+const motionMessages = ruleMessages(MOTION, {
+  ungated: (prop, value) =>
+    `${prop}: ${value} — an animation that repeats for ever sits inside @media (prefers-reduced-motion: no-preference), so a visitor who asked for less motion never gets it (FR-G4)`,
+})
+const NO_PREFERENCE = /\(\s*prefers-reduced-motion\s*:\s*no-preference\s*\)/i
+const motionGated = createPlugin(MOTION, (on) => (root, result) => {
+  if (!on) return
+  root.walkDecls(/^animation(-iteration-count)?$/i, (decl) => {
+    if (!/(^|[\s,])infinite(?=$|[\s,])/i.test(decl.value)) return
+    for (let p = decl.parent; p; p = p.parent) {
+      if (p.type === 'atrule' && /^media$/i.test(p.name) && NO_PREFERENCE.test(p.params)) return
+    }
+    report({ ruleName: MOTION, result, node: decl, message: motionMessages.ungated(decl.prop, decl.value) })
+  })
+})
+
 /** @type {import('stylelint').Config} */
 export default {
   // Ghost's own card CSS, vendored as recorded (Story 4.4) — Ghost-authored, as `cards.js` is; FR-G8 is ours.
   ignoreFiles: ['packages/library/orbit-weekly/vendor/**/*.css'],
-  plugins: ['stylelint-plugin-use-baseline', supportsTier2, prefixPairs],
+  plugins: ['stylelint-plugin-use-baseline', supportsTier2, prefixPairs, motionGated],
   rules: {
     'plugin/use-baseline': [
       true,
@@ -118,5 +145,6 @@ export default {
 
     [SUPPORTS]: true,
     [PAIRS]: true,
+    [MOTION]: true,
   },
 }

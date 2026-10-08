@@ -2,9 +2,10 @@
 title: 'Story 7.6 — Ghost-correct markup'
 type: 'feature'
 created: '2026-10-08'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: '9587b46976f1f1e3cbafac0c52a449e7e8dfafb3'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -211,22 +212,22 @@ After this story, the theme Inflozo builds follows the markup rules Ghost's own 
 
 **Execution:**
 
-- [ ] `packages/library/src/vocabulary.ts` — export `PORTAL_PAGE`, the pattern of every page both majors' Portal opens, per Design Notes § Facts 6.
+- [x] `packages/library/src/vocabulary.ts` — export `PORTAL_PAGE`, the pattern of every page both majors' Portal opens, per Design Notes § Facts 6.
 
   -- Portal's grammar, written once, beside `PORTAL_ACTIONS`.
-- [ ] `packages/section-runtime/src/core.ts`, `index.ts`, `agreement.test.ts`:
+- [x] `packages/section-runtime/src/core.ts`, `index.ts`, `agreement.test.ts`:
   - `srcsetExpr` writes `format="webp"` into each candidate's mustache, built from the validated `bindExpr` output and a constant;
   - the canvas's `srcset(…)` call passes `format: 'webp'`;
   - export `srcsetExpr`;
   - :517 and :523 expect the format on both emitters, and :528 and :530 hold as they are.
 
   -- FR-J5's WebP, on both emitters.
-- [ ] `packages/ghost-shim/src/contract.test.ts` — beside :313, `srcset(src, { siteUrl, format: 'webp' })`:
+- [x] `packages/ghost-shim/src/contract.test.ts` — beside :313, `srcset(src, { siteUrl, format: 'webp' })`:
   - equals each key's `imgUrl(src, key, { siteUrl, format: 'webp' })`;
   - its first candidate equals the recorded `hosted_webp`.
 
   -- the canvas's WebP set is Ghost's recorded shape.
-- [ ] `packages/theme-compiler/src/compile.ts`, `index.ts`:
+- [x] `packages/theme-compiler/src/compile.ts`, `index.ts`:
   - export `POST_ARTICLE`, and wrap `pageBody`'s `post` block in it;
   - `checkGhostMarkup(files)` and `checkChromeText(doc, files)` per Design Notes § The two checks;
   - run `checkChromeText` over `tree` and `checkGhostMarkup` over `text` in the final checks, throwing on any sentence;
@@ -234,39 +235,39 @@ After this story, the theme Inflozo builds follows the markup rules Ghost's own 
   - export both checks and `POST_ARTICLE`.
 
   -- FR-J5, in the one place every theme is built.
-- [ ] `packages/theme-compiler/src/compile.test.ts`:
+- [x] `packages/theme-compiler/src/compile.test.ts`:
   - the I/O matrix's compile rows, row by row, each check's refusals called directly;
   - :208-219, :678-691, :702 and :312 updated;
   - the whole-output scan passes with the article in `post.hbs`.
 
   -- what the compiler promises.
-- [ ] `packages/library/snapshots/` — run `node tools/check-snapshots.mjs --update`, then confirm by `git diff` that only the three `srcset` lines changed.
+- [x] `packages/library/snapshots/` — run `node tools/check-snapshots.mjs --update`, then confirm by `git diff` that only the three `srcset` lines changed.
 
   -- NFR-6(c1): the change is visible in review.
-- [ ] `stylelint.config.mjs` — the `inflozo/motion-gated` plugin, switched on. It reports a declaration of `animation` or `animation-iteration-count` whose value holds the keyword `infinite`, unless an ancestor `@media`'s condition holds `(prefers-reduced-motion: no-preference)`.
+- [x] `stylelint.config.mjs` — the `inflozo/motion-gated` plugin, switched on. It reports a declaration of `animation` or `animation-iteration-count` whose value holds the keyword `infinite`, unless an ancestor `@media`'s condition holds `(prefers-reduced-motion: no-preference)`.
 
   -- FR-G4's CSS half, in the one stylesheet config.
-- [ ] `eslint.config.js` — a block after the modules block, for `packages/library/modules/*.js` but `core.js`:
+- [x] `eslint.config.js` — a block after the modules block, for `packages/library/modules/*.js` but `core.js`:
   - its `no-restricted-syntax` is `visitorWords` plus a selector refusing a string or template literal that holds `prefers-reduced-motion`;
   - the message opens `FR-G4:` and names `ctx.reducedMotion` and the registry's `animates`;
   - the block carries `noInlineConfig`.
 
   -- "gated once", made mechanical.
-- [ ] `tools/check-baseline.mjs`:
+- [x] `tools/check-baseline.mjs`:
   - the motion rows go in `refusedRows`, the legal sheets and the module harness, as Design Notes § Motion lists them;
   - the module harness keeps `FR-G4` messages beside `DW-146`'s.
 
   -- each rule fails its control first.
-- [ ] `tools/check-snapshots.mjs` — Design Notes § What CI holds, each row behind its control.
+- [x] `tools/check-snapshots.mjs` — Design Notes § What CI holds, each row behind its control.
 
   -- the rules in CI on every commit.
-- [ ] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
+- [x] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py`:
   - Design Notes § The T1 run;
   - `SECTION` becomes `75`;
   - the docstring, `section()`'s text and the catalogue row say so.
 
   -- R-82: a real Ghost renders what the compiler writes.
-- [ ] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
+- [x] Documents: apply Design Notes § Propagated at Dev, then grep the repo for each old wording.
 
   -- standing rules 3 and 7.
 
@@ -301,6 +302,10 @@ After this story, the theme Inflozo builds follows the markup rules Ghost's own 
   - The Ruled values table now states the ruled value: Ghost's post labels go on each post's own page only, and a list card stays its design's own markup.
   - Nothing moves to another story, and the plan is unchanged.
   - The frozen intent is unchanged: the ruling is its recommended option.
+- **2026-10-08, Dev (the owner ruled Question 2).** `checkChromeText` refuses FR-H8's text default on an emptied typed text (the runtime leaves the design's authored English in place), so a customer who empties A22 #1's heading would make the compile throw.
+  - The owner ruled that an emptied typed text is hidden, on the canvas and in the theme, and that Story 7.18 builds it (DW-349, pasted into 7.18's card and Epic 7's R-195 list).
+  - This story's check is unchanged and still refuses the case. No library design binds a text in fallback mode, and the pilots compile.
+  - The frozen intent is unchanged.
 
 ## Design Notes
 
@@ -562,7 +567,7 @@ None. This story has no screen, so it has no frame and no hand test, and it is D
 
 ## Questions for the owner
 
-Question 1 was ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ruled values as it stands.
+Question 1 was ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ruled values as it stands. Question 2, found at Dev, was ruled option 1 the same day: Story 7.18 builds it (DW-349).
 
 ### Question 1 — Ghost's post labels on the post cards in your lists
 
@@ -582,6 +587,25 @@ Question 1 was ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ru
 
 1. **The post's own page only.** The cards stay exactly as each design draws them. **(RECOMMENDED)**
 2. **Every post card in every list too, built in this story.** The shared engine adds the same labels to every card, in the editor's preview and in the theme, recorded on our test site first. This makes the story noticeably bigger.
+
+**Ruled: option 1 (owner, 2026-10-08).**
+
+### Question 2 — a text the customer empties (asked at Dev)
+
+**In plain English.**
+- Found at Dev: when a customer deletes every word of a typed text, such as the newsletter section's heading, the editor puts the design's own sample sentence back ("One letter a week, on Friday morning").
+- This story's new label check refuses English typed into the theme by us. So once publishing exists (Story 7.18), that customer's publish would fail with an error.
+- Nothing breaks today: nobody can publish until Story 7.18.
+
+**Example.** A customer clears the heading and presses Publish.
+- With option 1, the heading disappears from the canvas and from the published site. Typing in the sidebar's Heading box brings it back.
+- Words that come from the translation list, such as the "Subscribe" button, still come back as their translated word when emptied, because they are never our typed English.
+
+1. **Hide the emptied line on the canvas and the site, built in Story 7.18 and tested by you there.** **(RECOMMENDED)**
+2. **Hide it, built now in this story.** Story 7.6 then gains a screen change and your hand test.
+3. **Show the design's sample sentence, as the editor does today.**
+
+The owner first asked why the sample was recommended ("If user deletes than he intends to delete that line"), and then ruled option 1.
 
 **Ruled: option 1 (owner, 2026-10-08).**
 
@@ -614,3 +638,22 @@ Question 1 was ruled option 1 (owner, 2026-10-08). Dev builds Design Notes § Ru
   - The app's one change is the canvas's `srcset` for a linked site's Ghost-hosted pictures.
   - The owner's projects draw T1's `static.ghost.org` pictures, which pass through unchanged.
 - There is no migration, and no Supabase, Resend or Dodo surface. The compiler has no product caller until Story 7.18.
+
+**Dev results (2026-10-08, main session, on the owner's in-session go for the T1 writes):**
+
+- **T1 `ghost6.inflozo.com` (Ghost 6.58.0)** — `python3 tools/probe/record-theme-assembly.py`, keys read by variable name (`GHOST6_*` in `tools/probe/.env`), never printed. Exit 0, every row PASS and none failed, MEASUREMENTS §75 written:
+  - the gated post `/probe-gated-post/` (Content API: `visibility 'paid'`) carried one `<article>` with class `post no-image post-access-paid`, equal to the class computed from the Content API's record, with A24 #1 and A22 #1 inside and A1 #1 before it;
+  - the newest public post `/on-typography-and-restraint/` (Content API: `public`) carried `post tag-craft tag-field-notes featured`, with nothing after it;
+  - every page's `<body>` carried Ghost's template class (`home-template`, `paged`, `post-template`, `tag-template tag-craft`, `author-template author-umang`) and never the bare `post`;
+  - every `<head>` carried one generator meta and one `portal.min.js` script, which the uploaded theme writes neither of;
+  - `/` carried 3 `data-portal`s (`signin`, `signup`), each matching `PORTAL_PAGE`;
+  - `size/w750/format/webp/` of the probe picture answered 200 as `image/webp` at its own path, and the control `size/w751/format/webp/` was redirected to the original;
+  - A1 #1's More label printed `nav.more` (no `locales/` uploaded; Story 7.12 turns it to "More");
+  - Stories 7.1–7.5's rows and §72's paywall probe and control held again; the local gate was 0/0 on gscan 4.49.7 (v5) and 6.4.2 (v6);
+  - the active theme was read back as `casper` after each of the three uploads, and the probe themes were deleted (installed after: `casper`, `racer`, `source`).
+  - The Ghost 5 half is DW-326's (R-238).
+- **`pnpm check` (Node 24.18.1)** — exit 0: lint (with `inflozo/motion-gated` and the FR-G4 module rule), the typecheck, and every package's tests, among them the nine `(7.6)` rows in `compile.test.ts`. `check-baseline` printed the motion rows `ok`: both refused lines refused by `inflozo/motion-gated`, the gated and finite sheets clean, the two module reads refused, `if (ctx.reducedMotion) return` and `core.js` clean, and a disable comment silencing nothing. `check-snapshots` printed every Story 7.6 row `ok` after its control: five planted defects named, the article, V1 through the pilot compile, every design's `checkGhostMarkup` (`A17 #1`'s unsized partial named first), and gscan 6.4.2 with no `GS001-DEPR-*` (`{{@blog.title}}` raised `GS001-DEPR-BLOG` first).
+- **`tools/stress`** — `node build.js && node gate.js theme`: 0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6); `checkThemeJs` and `checkThemeScripts` clean.
+- **Manual checks** — the pilot `post.hbs` reads as § What the theme carries shows; `default.hbs` is byte-identical; the three snapshots' diff is one `srcset` line each.
+- **Matrix audit** — every I/O row maps to a check that ran: the post, page and membership rows, the emptied post and every other template (`compile.test.ts`'s `(7.6)` rows and the updated verbatim templates); the picture and the unsized `srcset` (`(7.6) a picture`, `a srcset without sizes`, and `check-snapshots`' every-design control); Portal pass and refuse, including `sigup`, `share`, `gift`, `signin/` and `''`; the member rows; each helper out of place; the typed labels and the customer's words (`(7.6) V1 at compile`, and V1 through the pilot compile in CI); the canvas's linked, external and unlinked pictures (`agreement.test.ts` :517/:523 with the format, :528/:530 unchanged, and `contract.test.ts`'s WebP row against `hosted_webp`); the motion rows (`check-baseline`); the deprecated helper (`check-snapshots`' gscan row); and determinism (`compile.test.ts`'s determinism tests over the compiled `post.hbs`).
+- **Vercel, Supabase, Resend, Dodo** — not touched at Dev. No migration, and no Supabase, Resend or Dodo surface. CI's `check`/`rls`/`deploy` and the deployment's READY state are read at Review.

@@ -311,6 +311,12 @@ test('data-bind-srcset composes one candidate per key, from the one map (FR-J5)'
       assert.equal(c.url, recorded(major, 'index', 'IMG', `hosted_${key}`, `srcset candidate ${key}`))
     }
     assert.equal(srcset(src, { siteUrl: rec.site }), cands.map((c) => `${c.url} ${c.width}w`).join(', '))
+    // Story 7.6 (FR-J5): the canvas asks for WebP as the theme does — each candidate is img_url's own answer with the
+    // format, and the first is the RECORDED `{{img_url size="xs" format="webp"}}`, so the set is Ghost's shape
+    const webp = { siteUrl: rec.site, format: 'webp' }
+    assert.equal(srcset(src, webp), Object.entries(IMAGE_SIZES).map(([key, width]) => `${imgUrl(src, key, webp)} ${width}w`).join(', '))
+    const first = Object.keys(IMAGE_SIZES)[0] as string
+    assert.equal(srcsetCandidates(src, webp)[0]?.url, recorded(major, 'index', 'IMG', 'hosted_webp', `srcset candidate ${first}, format="webp"`))
   })
 })
 

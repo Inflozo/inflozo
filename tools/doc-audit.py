@@ -418,11 +418,11 @@ DOCS = [
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
-  "Stories 7.1, 7.2, 7.3, 7.4 and 7.5's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
+  "Stories 7.1 to 7.6's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
   "formatting contract, its own package.json included, every standard template synthesized where untouched, since "
   "Story 7.4 Paper's pool woff2 files, their licences and a stripped screen.css with AD-18's variables and one dark hook, "
-  "and since Story 7.5 main.js (core alone on the pilots) behind its defer tag and README.md's Scripts section, "
-  "rendered by a real Ghost; and Story 7.3's paywall mechanism on two hand-written probe themes. Compiles tools/pilot-theme.mjs's "
+  "since Story 7.5 main.js (core alone on the pilots) behind its defer tag and README.md's Scripts section, and since "
+  "Story 7.6 POST_ARTICLE around each post's sections and WebP srcsets, rendered by a real Ghost; and Story 7.3's paywall mechanism on two hand-written probe themes. Compiles tools/pilot-theme.mjs's "
   "project through Node 24 — the site doc's A1 #1, Home's A4 #13 · A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 "
   "(index.hbs), post.hbs's A24 #1 and a hoisted A22 #1, a Tag page 2 at per-row two over an untouched Tag page 1, and an "
   "Author page whose one feed is hidden — with a page word from this run's nonce in A4 #13's eyebrow, a layer word in "
@@ -454,17 +454,26 @@ DOCS = [
   "compiled, the served screen.css equal to the compiled one with both var(--gh-font-…) forms, the base rule and the "
   "hook's rules, and A4 #13's root carrying hookOf(sectionKey('home', …)) computed locally; and Story 7.5's — /'s head "
   "carries main.js's tag once as Ghost renders MAIN_JS_TAG (<script defer src=\"/assets/js/main.js?v=…\">), and that "
-  "address answers 200 with a JavaScript content type and the compiled main.js byte for byte. Then two hand-written themes, each behind its own start_guard and restore_and_delete, read "
+  "address answers 200 with a JavaScript content type and the compiled main.js byte for byte; and Story 7.6's — the gated "
+  "post signed out and the newest public post each carry one <article> around the page's sections with the header "
+  "outside, its class Ghost's post_class computed from the Content API's record (post, tag-<slug> per tag, featured, "
+  "no-image), ending post-access-<visibility> on the gated post only; every page's <body> class carries Ghost's template "
+  "class and never the bare post; every <head> carries the generator meta and portal.min.js once; every data-portal on / "
+  "matches PORTAL_PAGE; size/w750/format/webp/ answers 200 as image/webp at its own path; and A1 #1's More label prints "
+  "nav.more (no locales/ until Story 7.12). Then two hand-written themes, each behind its own start_guard and restore_and_delete, read "
   "/probe-gated-post/ signed out: one invoking a partial from default.hbs renders its content-cta.hbs marker, and the "
   "control invoking none renders Ghost's own gh-post-upgrade-cta. Controls (the layer word, the hostile name and the "
   "noindex meta ARE in the uploaded templates and no error.hbs is; every page is this run's theme by its page word or "
   "the same screen.css asset hash; every page 2 answers 200; the site theme's package carries no marker; w750 redirected "
   "before the upload and w751 after it; a font, a licence and a script the theme does not carry answer 404; main.js and "
-  "its tag ARE in the uploaded tree; A17 #1's root carries no hook; the gated post is not public; each paywall read carries its theme's marker) void "
+  "its tag ARE in the uploaded tree; A17 #1's root carries no hook; the gated post is not public; each paywall read carries its theme's marker; "
+  "POST_ARTICLE and WebP candidates ARE uploaded, no uploaded file writes a generator meta or names portal.min.js, no "
+  "locales/ is; the Content API says the gated post is not public and the other is; / carries a data-portal; "
+  "size/w751/format/webp/ is redirected to the original) void "
   "the run; a row that does not hold writes nothing. Writes T1 three theme uploads, their activations and deletes, the "
-  "one w750 rendition Ghost saves and, only when T1 hosts no picture, that probe picture. Run on the owner's in-session "
-  "go, in the main session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §74 alone, replacing an "
-  "earlier §74 of its own; §70, §71, §72 and §73 stay Stories 7.1's, 7.2's, 7.3's and 7.4's records."),
+  "one w750 rendition and the one w750 WebP rendition Ghost saves and, only when T1 hosts no picture, that probe picture. "
+  "Run on the owner's in-session go, in the main session. Any argument prints its docstring and exits. Writes "
+  "MEASUREMENTS.md §75 alone, replacing an earlier §75 of its own; §70 to §74 stay Stories 7.1's to 7.5's records."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1179,9 +1188,14 @@ DOCS = [
   "measures bundle()'s maximal main.js with size-limit at NFR-2's budget — 40,960 bytes, gzip level 9 (DW-140) — "
   "as a warning, its size held equal to zlib's own gzip and NFR-2's sentence held to naming it. Also covers "
   'the pin in the root package.json, packages/library/baseline.json (the Tier-2 allowlist and the plugin\'s named '
-  'differences) and the root stylelint.config.mjs (the plugin, max-nesting-depth, the prefix closure and the two '
-  'custom rules inflozo/supports-tier-2 and inflozo/prefix-pairs), which the catalogue cannot index. It stores no '
-  'floor: it prints one.'),
+  'differences) and the root stylelint.config.mjs (the plugin, max-nesting-depth, the prefix closure and the three '
+  'custom rules inflozo/supports-tier-2, inflozo/prefix-pairs and, since Story 7.6, inflozo/motion-gated), which the '
+  'catalogue cannot index. Since Story 7.6 (FR-G4) it also holds motion: a never-ending animation outside '
+  '@media (prefers-reduced-motion: no-preference) is refused by inflozo/motion-gated, the same lines gated (alone or with '
+  'a width) and a finite animation are clean, and the rule is kept out of the plugin-against-the-pin diff; and a module '
+  "file but core.js naming prefers-reduced-motion is refused by eslint.config.js's FR-G4 rule (a string and a template "
+  "literal), if (ctx.reducedMotion) return is clean, core.js lints clean while its own text at another module's path is "
+  'refused, and a disable comment silences nothing. It stores no floor: it prints one.'),
  ('tools/check-catalog.mjs', 'tool', 'The string catalog, checked by execution',
   "Story 4.9's check of FR-Q6, run last by pnpm test and therefore by CI. Controls first, each handed a broken "
   'subject and required to fail naming it: a key removed from catalog.json, a default changed in one copy only, a '
@@ -1217,7 +1231,14 @@ DOCS = [
   'host named; gscan 6.4.2 raises no GS051 (the control: the two --gh-font-* forms taken out raise it); A4 #13 alone '
   'carries the dark hook its key hashes to, and the token block its rules; and cssFailures\' four rows — the strip sound, '
   'its gap printed as a WARNING FR-G7 line that passes, AD-37, and each template\'s CSS within 50 KB gzipped with the '
-  'whole screen.css reported. The determinism row compares a font\'s bytes by content.'),
+  'whole screen.css reported. The determinism row compares a font\'s bytes by content. Since Story 7.6, rows each '
+  'behind its control: checkGhostMarkup over the pilot theme returns nothing (the control: one copy with ghost_head '
+  'above the stylesheet, post_class on <body>, A17\'s sizes removed, data-portal="share" and {{@member.email}} planted '
+  'names each); post.hbs\'s sections sit inside POST_ARTICLE and no other template carries <article or post_class (the '
+  'control: the article removed is named by rule 3); the pilot compile runs checkChromeText and returns (the control: '
+  'A24 #1\'s title binding shipping its authored English throws V1\'s sentence); checkGhostMarkup over every design\'s '
+  'rendered theme text returns nothing (the control: A17 #1\'s sizes removed); and gscan 6.4.2 at v6 raises no '
+  'GS001-DEPR-* on the pilot theme (the control: {{@blog.title}} appended raises GS001-DEPR-BLOG).'),
  ('tools/pilot-theme.mjs', 'tool', 'The five-pilot project, compiled',
   "Story 7.1's one builder of the project CI and the T1 recorder both compile: the site doc's A1 #1, Home's A4 #13 · "
   "A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 (pageTwo, compiled to index.hbs), post.hbs's A24 #1 and an A22 #1 "

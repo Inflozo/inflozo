@@ -20,6 +20,7 @@ export {
   U0,
   U1,
   bindExpr,
+  srcsetExpr,
   bindValue,
   assertBindableAttr,
   formatDate,
