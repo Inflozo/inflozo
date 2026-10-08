@@ -1206,7 +1206,7 @@ test('(7.6) Portal: a page both majors\' Portal opens passes, a bound id read as
 })
 
 test('(7.6) a member\'s own data: a value or a hash argument naming @member is refused (AD-38); a block helper\'s condition passes', () => {
-  for (const m of ['{{@member.email}}', '{{@member.name}}', '{{t "member.greeting" name=@member.name}}', '{{#if (eq tier=@member.status)}}x{{/if}}']) {
+  for (const m of ['{{@member.email}}', '{{@member.name}}', '{{t "member.greeting" name=@member.name}}', '{{#if (eq tier=@member.status)}}x{{/if}}', '{{#get "posts" filter="author:{{@member.id}}"}}x{{/get}}']) {
     const got = checkGhostMarkup({ 'partials/sections/home/x.hbs': `<p>${m}</p>\n` })
     assert.equal(got.length, 1, m)
     assert.match(got[0] ?? '', /^partials\/sections\/home\/x\.hbs: .* prints a member's own data — .* \(AD-38\)/, m)

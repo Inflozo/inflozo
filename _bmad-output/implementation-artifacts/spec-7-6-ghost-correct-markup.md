@@ -307,6 +307,12 @@ After this story, the theme Inflozo builds follows the markup rules Ghost's own 
   - This story's check is unchanged and still refuses the case. No library design binds a text in fallback mode, and the pilots compile.
   - The frozen intent is unchanged.
 
+- **2026-10-08, Review (five layers, the real-infra verifier included; every patch applied, no question open).**
+  - Patched: `checkGhostMarkup`'s AD-38 rule now refuses `@member` anywhere after a `=` in a block helper, so a hash string holding one (`{{#get "posts" filter="author:{{@member.id}}"}}`, AD-36's vector) is named, with a test row; `inflozo/motion-gated` refuses a query that only looks like the gate (`not (…)`, or a comma or `or` list another query lets through), with three refused rows in `check-baseline`; `check-snapshots` gains an every-design row (behind a control) that names a text binding left in fallback mode, the authoring defect that passes render-time V1 and makes `compileTheme` throw for every project placing the design; `srcsetExpr`'s JSDoc is reattached; rule 4 says Story 7.29 widens it for a bundled picture's rendition set; the custom-property ceiling is named beside the motion rule.
+  - Executed, standing rule 1: `{{post_class}}` never prints `page` — the helper's `page` branch reads `this.page`, absent since Ghost 3's `type`; two pages on T1 6.58.0 rendered `article post` and `article post no-image`. Facts 1, § What the theme carries, the compile's comment and FR-J5's note now say so.
+  - Read and left: `PORTAL_PAGE` admits `signup/<word>/monthly` for any word, so `signup/free/monthly` passes though Facts 6 lists it under neither form — Portal reads `free` as a tier id; no design writes one, and a narrower regex is not worth its weight until one does. `spec-4-6…md:391` still shows the old `gh-article` example: a finished story's spec, left as its history. The recorder's article row reads the roots before and inside the article, not after it; the pilots place no footer.
+  - The frozen intent is unchanged.
+
 ## Design Notes
 
 ### What the theme carries
@@ -327,7 +333,7 @@ After this story, the theme Inflozo builds follows the markup rules Ghost's own 
 {{/post}}
 ```
 
-- **On Ghost**, inside `{{#post}}` `this` is the post, so `{{post_class}}` prints `post`, then `tag-<slug>` for each tag, then `featured`, `no-image` and `page` where each applies. A visitor without access also gets `post-access-members`, `-paid` or `-tiers` (§ Facts 1 and 2).
+- **On Ghost**, inside `{{#post}}` `this` is the post, so `{{post_class}}` prints `post`, then `tag-<slug>` for each tag, then `featured` and `no-image` where each applies (never `page`: the helper's `page` branch reads `this.page`, which no post or page carries since Ghost 3's `type` — executed on T1 at Review, a page's article is `article post no-image`). A visitor without access also gets `post-access-members`, `-paid` or `-tiers` (§ Facts 1 and 2).
 - **On `page.hbs`** the article encloses Story 7.3's `{{#if @page.show_title_and_feature_image}}` switch and the sections after it.
 - **Nothing else moves.**
   - The sections' partials are unchanged, so hoisting is unchanged.
@@ -443,7 +449,7 @@ Ruled option 1 by the owner on 2026-10-08.
 These were read in the npm tarballs ghost-6.58.0, ghost-5.130.6 and ghost-5.0.0, @tryghost/portal 2.69.339 and 2.51.5, and @tryghost/image-transform 1.4.17 and 1.4.6, all on 2026-10-08. Paths are under `core/`.
 
 1. **`post_class`** (`frontend/helpers/post_class.js:8-39`) is identical in all three Ghost releases, diffed.
-   - It starts with `post`, then adds `tag-<slug>` per tag, `featured`, `no-image` when there is no feature image, and `page`.
+   - It starts with `post`, then adds `tag-<slug>` per tag, `featured`, `no-image` when there is no feature image, and `page` when `this.page` is set — which no post or page on Ghost 5 or 6 is (`type` replaced it in Ghost 3): executed read-only on T1 6.58.0 at Review, two pages' articles were `article post` and `article post no-image`, so `page` is never printed.
    - It reads `this.post` first, else `this`.
    - It emits no members class.
    - `access` is on every post Ghost serves: `true`, unless members are on and this visitor may not read it (`server/api/endpoints/utils/serializers/output/utils/post-gating.js`, `forPost`, :84-124 on 6.58.0 with its two assignments at :87 and :120, and at :88 and :117 on 5.130.6). So `{{#unless access}}` adds nothing on a site without members, and nothing for a reader with access.
@@ -657,3 +663,12 @@ The owner first asked why the sample was recommended ("If user deletes than he i
 - **Manual checks** — the pilot `post.hbs` reads as § What the theme carries shows; `default.hbs` is byte-identical; the three snapshots' diff is one `srcset` line each.
 - **Matrix audit** — every I/O row maps to a check that ran: the post, page and membership rows, the emptied post and every other template (`compile.test.ts`'s `(7.6)` rows and the updated verbatim templates); the picture and the unsized `srcset` (`(7.6) a picture`, `a srcset without sizes`, and `check-snapshots`' every-design control); Portal pass and refuse, including `sigup`, `share`, `gift`, `signin/` and `''`; the member rows; each helper out of place; the typed labels and the customer's words (`(7.6) V1 at compile`, and V1 through the pilot compile in CI); the canvas's linked, external and unlinked pictures (`agreement.test.ts` :517/:523 with the format, :528/:530 unchanged, and `contract.test.ts`'s WebP row against `hosted_webp`); the motion rows (`check-baseline`); the deprecated helper (`check-snapshots`' gscan row); and determinism (`compile.test.ts`'s determinism tests over the compiled `post.hbs`).
 - **Vercel, Supabase, Resend, Dodo** — not touched at Dev. No migration, and no Supabase, Resend or Dodo surface. CI's `check`/`rls`/`deploy` and the deployment's READY state are read at Review.
+
+**Review results (2026-10-08, Review session, T1 read-only, no owner go asked for and none needed):**
+
+- **Layers:** Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the Real-infra verifier all ran. Patches are in the Spec Change Log; nothing is the owner's to decide.
+- **T1 `ghost6.inflozo.com` (6.58.0), read-only** — `env $(grep '^GHOST6_' tools/probe/.env | xargs)` with `GHOST6_STAFF_ACCESS_TOKEN`: `GET /ghost/api/admin/themes/` answered 200 with `casper` active and `racer`, `source` installed — no probe theme remains. Control: an unknown key answered 401 `Unknown Admin API Key`. `GET /` and `/probe-gated-post/` signed out carried one generator meta and one `portal.min.js` each (casper writes neither), `data-portal="signin"` and `"signup"` on `/`, both `PORTAL_PAGE` pages. The probe picture's `size/w750/format/webp/` is 302 to the original now, as §75's pre-upload control recorded under casper, whose `image_sizes` has no 750: the 200 `image/webp` row is §75's, under the probe theme. MEASUREMENTS §75 read back: every row `yes`, consistent with the Dev results above. With `GHOST6_CONTENT_API_KEY`: two pages' articles under casper were `article post` and `article post no-image` — `{{post_class}}` prints no `page` class.
+- **CI on the Dev head 738c0124** (`GITHUB_TOKEN`, the Actions API): `ci.yml` run 37817954821 — `check`, `rls`, `deploy` all success; `matrix.yml` run 37817954914 — `matrix` success. **Vercel** (`VERCEL_TOKEN`): `dpl_JA1VvJ7QQRJWgZ1SEp65H2SbfwbS` READY at 738c0124, the newest production deployment.
+- **Local, Node 24.18.1** — `pnpm check` exit 0 before the patches; after them `compile.test.ts` 86 pass / 0 fail, `check-baseline` PASS with the five refused motion rows and the legal sheets, `check-snapshots` PASS with the fallback control named first; `pnpm check` re-run green after the patches (see the Review commit). `cd tools/stress && node build.js && node gate.js theme`: 0 errors / 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6).
+- **R-99** — the diff adds no file under `supabase/migrations/`; no Schema phase was due.
+- **The Ghost 5 half** is DW-326's (R-238). Deploy and the owner's Done follow (R-80): this story has no screen, so it is Done on its Deploy commit.

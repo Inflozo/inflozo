@@ -300,8 +300,9 @@ export function checkTripleStashes(files: Readonly<Record<string, string>>): voi
 
 /** The article every template whose matrix row opens `{{#post}}` wraps its sections in — the block's first line, with
  *  `</article>` its last. Inside `{{#post}}` `this` is the post, so Ghost's `{{post_class}}` prints `post`, `tag-<slug>`
- *  per tag, `featured`, `no-image` and `page` where each applies (`helpers/post_class.js`, identical in 5.0.0, 5.130.6 and
- *  6.58.0), and `access` is false only for a visitor who may not read it (`post-gating.js`), who also gets Casper's
+ *  per tag, `featured` and `no-image` where each applies (`helpers/post_class.js`, identical in 5.0.0, 5.130.6 and
+ *  6.58.0; its `page` branch reads `this.page`, which no post or page carries since Ghost 3's `type` — executed on T1
+ *  6.58.0 at Story 7.6's review: a page's article is `post`, never `page`), and `access` is false only for a visitor who may not read it (`post-gating.js`), who also gets Casper's
  *  `post-access-{visibility}`. Ghost's classes only (AD-3): the canvas draws no article, and no design selects on it.
  *  The ONE spelling — the compile, `checkGhostMarkup`, the tests and the recorder all read it. */
 export const POST_ARTICLE = '<article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">'
@@ -355,9 +356,10 @@ const nonBlank = (lines: readonly string[], from: number, step: 1 | -1): number 
  *      the browser assumes the full viewport and fetches the largest file (NFR-2 (1));
  *   5. every `data-portal` names a page both majors' Portal opens (`PORTAL_PAGE`), each mustache in it read as an id;
  *   6. a mustache that names `@member` is a block helper's condition (`{{#…}}`, `{{^…}}`, `{{else …}}`) and never a
- *      value or a hash argument (AD-38: Ghost caches a member page publicly by tier, MEASUREMENTS §31b). Ceiling: a block
- *      that changes context over a `@member` value (`{{#with}}`, `{{#foreach}}`) prints its fields without naming
- *      `@member` again — the runtime refuses every `@member` binding first (`contexts.ts`), so no design writes one.
+ *      value or a hash argument — a hash STRING holding one (`filter="author:{{@member.id}}"`, AD-36's vector) included
+ *      (AD-38: Ghost caches a member page publicly by tier, MEASUREMENTS §31b). Ceiling: a block that changes context
+ *      over a `@member` value (`{{#with}}`, `{{#foreach}}`) prints its fields without naming `@member` again — the
+ *      runtime refuses every `@member` binding first (`contexts.ts`), so no design writes one.
  * Rules 1 and 2's line rules read `default.hbs` when it is among the files; their counts read every file, so a design's
  * own text (CI's every-design row) carries none of the three.
  */
@@ -409,6 +411,7 @@ export function checkGhostMarkup(files: Readonly<Record<string, string>>): strin
     for (const tag of startTags(body)) {
       const set = tag.attrs.get('srcset')
       if (set !== undefined) {
+        // a bundled picture's srcset, composed from its rendition set, is Story 7.29's — it widens this rule then
         const path0 = /^\{\{img_url\s+([^\s}]+)/.exec(set)?.[1]
         let want: string | undefined
         try { want = path0 === undefined ? undefined : srcsetExpr(path0) } catch { want = undefined }
@@ -425,7 +428,7 @@ export function checkGhostMarkup(files: Readonly<Record<string, string>>): strin
       const mustache = m[0]
       if (!/@member\b/.test(mustache)) continue
       const condition = /^\{\{~?\s*(?:#|\^|else\b)/.test(mustache)
-      if (!condition || /=\s*(?:\([^)]*)?@member\b/.test(mustache)) out.push(`${path}: ${mustache} prints a member's own data — a page Ghost caches by tier would show it to the next visitor (AD-38). @member may only be a block helper's condition: {{#if @member}}, {{#if @member.paid}}.`)
+      if (!condition || /=[^}]*@member\b/.test(mustache)) out.push(`${path}: ${mustache} prints a member's own data — a page Ghost caches by tier would show it to the next visitor (AD-38). @member may only be a block helper's condition: {{#if @member}}, {{#if @member.paid}}.`)
     }
   }
   return out

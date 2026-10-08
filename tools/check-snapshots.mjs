@@ -1135,6 +1135,23 @@ check('control — Story 7.6: A17 #1\'s partial with its sizes removed is named 
   if (checkGhostMarkup(a17.files).length > 0) throw new Error(`A17 #1 is not clean to begin with: ${checkGhostMarkup(a17.files).join(' · ')}`)
   return mustFail(checkGhostMarkup({ ...a17.files, 'partials/post-card.hbs': a17.files['partials/post-card.hbs'].replace(/\n *sizes="[^"]*"/, '') }), /^partials\/post-card\.hbs: <img> carries a srcset and no sizes/, 'A17 #1 without sizes')
 })
+// Story 7.6's review: `checkChromeText` runs at compile, where a text binding left in FR-H8's fallback mode (`{{#if x}}{{x}}
+// {{else}}Authored English{{/if}}`, no `data-empty="hide"`) throws for every project that places the design — and render-time
+// V1 exempts bound text, so nothing above names it at its design. Every design's theme text carries no `{{else}}` followed
+// by bare letters (no tag between) before its `{{/if}}` — a `{{else}}` branch that opens a tag is a design's own markup.
+const FALLBACK_TEXT = /\{\{else\}\}[^<{]*[A-Za-z0-9][^<{]*\{\{\/if\}\}/
+const fallbackFailures = (files) => Object.entries(files).filter(([p, b]) => p.endsWith('.hbs') && FALLBACK_TEXT.test(b.replace(lib.HBS_COMMENT, ''))).map(([p]) => `${p}: a text binding ships its authored English as a fallback — the compile refuses it (V1); bind it with data-empty="hide"`)
+check('control — Story 7.6: A24 #1 rendered with its title binding\'s data-empty="hide" removed is named by the fallback row', () => {
+  const d = loadDesign({ category: 'a24', n: '1' })
+  const html = d.html.replace(/(data-bind="title") data-empty="hide"/, '$1')
+  if (html === d.html) throw new Error('A24 #1\'s title binding is not where this control expects it')
+  return mustFail(fallbackFailures(renderDesign({ ...d, html }).files), /^template\.hbs: a text binding ships its authored English/, 'A24 #1 in fallback mode')
+})
+check('Story 7.6 — no design\'s rendered theme text leaves a text binding in fallback mode, so checkChromeText holds for every design at compile', () => {
+  const f = rendered.flatMap((r) => fallbackFailures(r.files).map((s) => `${r.id} — ${s}`))
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${rendered.length} designs`
+})
 check('Story 7.6 — checkGhostMarkup over every design\'s rendered theme text returns nothing, so an authoring defect is named at its design', () => {
   const f = rendered.flatMap((r) => checkGhostMarkup(r.files).map((s) => `${r.id} — ${s}`))
   if (f.length > 0) throw new Error(f.join('\n'))

@@ -91,8 +91,10 @@ const prefixPairs = createPlugin(PAIRS, (on) => (root, result) => {
 // preference. "Continuous" is mechanical — an animation that repeats for ever, the keyword `infinite` in `animation` or
 // `animation-iteration-count`; "decorative" is not, so EVERY never-ending animation is held: it sits inside an `@media`
 // whose condition holds `(prefers-reduced-motion: no-preference)`, alone or `and`-ed with a width. A finite animation is
-// left alone, and so is `transition`, which FR-D20 keeps live for hover. Ceiling, which review holds: an iteration count
-// like `1000` repeats for minutes and evades the rule. The module half — no module but `core` reads the preference — is
+// left alone, and so is `transition`, which FR-D20 keeps live for hover. A query that only LOOKS like the gate does not
+// gate: `not (prefers-reduced-motion: no-preference)`, or a list where another query (`, (width > 50rem)`, `or`) lets the
+// animation through — every query in the list must hold the condition. Ceiling, which review holds: an iteration count
+// like `1000` repeats for minutes and evades the rule, and so does `infinite` carried by a custom property (`--spin`). The module half — no module but `core` reads the preference — is
 // `eslint.config.js`'s.
 const MOTION = 'inflozo/motion-gated'
 const motionMessages = ruleMessages(MOTION, {
@@ -100,12 +102,14 @@ const motionMessages = ruleMessages(MOTION, {
     `${prop}: ${value} — an animation that repeats for ever sits inside @media (prefers-reduced-motion: no-preference), so a visitor who asked for less motion never gets it (FR-G4)`,
 })
 const NO_PREFERENCE = /\(\s*prefers-reduced-motion\s*:\s*no-preference\s*\)/i
+/** Every query in the list holds the condition, none negates it, and none `or`s it away. */
+const gated = (params) => params.split(',').every((q) => NO_PREFERENCE.test(q) && !/^\s*not\b/i.test(q) && !/\bor\b/i.test(q))
 const motionGated = createPlugin(MOTION, (on) => (root, result) => {
   if (!on) return
   root.walkDecls(/^animation(-iteration-count)?$/i, (decl) => {
     if (!/(^|[\s,])infinite(?=$|[\s,])/i.test(decl.value)) return
     for (let p = decl.parent; p; p = p.parent) {
-      if (p.type === 'atrule' && /^media$/i.test(p.name) && NO_PREFERENCE.test(p.params)) return
+      if (p.type === 'atrule' && /^media$/i.test(p.name) && gated(p.params)) return
     }
     report({ ruleName: MOTION, result, node: decl, message: motionMessages.ungated(decl.prop, decl.value) })
   })

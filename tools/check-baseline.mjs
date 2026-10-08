@@ -544,6 +544,10 @@ try {
     // Story 7.6 (FR-G4): an animation that repeats for ever, outside the no-preference query
     ['motion', '.a { animation: spin 1s linear infinite; }', 'inflozo/motion-gated'],
     ['motion', '.a { animation-iteration-count: infinite; }', 'inflozo/motion-gated'],
+    // Story 7.6's review: a query that only looks like the gate — negated, or a list another query lets through
+    ['motion', '@media not (prefers-reduced-motion: no-preference) { .a { animation: spin 1s linear infinite; } }', 'inflozo/motion-gated'],
+    ['motion', '@media (prefers-reduced-motion: no-preference), (width >= 50rem) { .a { animation: spin 1s linear infinite; } }', 'inflozo/motion-gated'],
+    ['motion', '@media (prefers-reduced-motion: no-preference) or (width >= 50rem) { .a { animation-iteration-count: infinite; } }', 'inflozo/motion-gated'],
   ]
   for (const [group, sheet, rule] of refusedRows) {
     await check(`${group} refused by ${rule}: ${sheet}`, async () => {
