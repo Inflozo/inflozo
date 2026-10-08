@@ -2,7 +2,7 @@
 title: 'Story 7.4 — Assets, fonts, per-design CSS and the dead-code strip'
 type: 'feature'
 created: '2026-10-08'
-status: 'in-review'
+status: 'done'
 baseline_commit: '023db2584770f0f6a104b3995da72a7e2bbd36aa'
 owner_test: none
 review_loop_iteration: 1
@@ -841,3 +841,13 @@ non-`bg` dark control on `/pilots` (no pilot offers one).
 | A Tabler icon | `(7.4) a Tabler icon …` (drawn and not drawn) |
 | DW-337 | `validate.test.ts`' `Story 7.4 (DW-337) …` |
 | Determinism | `(7.4) determinism …`; `check-snapshots`' second-compile row by content |
+
+**Deploy (2026-10-08), head `d39c6161`.** `Deployment: dpl_Bn56eKJJyPYcGxTVpv4ctJuGY1pd` READY on the production Vercel
+project, target `production` (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha`
+matches), the review's patched head. CI run 37776554596: `check`, `rls` and `deploy` success (read with `GITHUB_TOKEN`);
+the render matrix run 37776554618 success. No migration, so no schema apply and no RLS read beyond the CI gate; no
+Supabase, Resend or Dodo surface. Controls: `https://app.inflozo.com/app/harness/pilots` and `/app/harness/editor` end at
+404 (the harness is off in production), `https://app.inflozo.com/` answers 307 (the signed-out redirect). The compiler
+has no product caller until Story 7.18, so nothing a visitor or the owner reaches changed; there is no owner test
+(`owner_test: none`), and the pictures, the size check and its hand test are Story 7.29's (Question 1). This story is
+Done on this commit (R-80).
