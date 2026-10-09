@@ -10,7 +10,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.m
 
 ## In plain English
 
-After this story, every theme Inflozo builds can be checked by the same theme checker your own Ghost runs when a theme is uploaded — Ghost 5's checker for a Ghost 5 site and Ghost 6's for a Ghost 6 site — and each problem it finds comes back as one plain sentence that names the real cause: an error stops the deploy, a warning lets it go ahead. Two traps close on the way: a known fault in Ghost's checker, which turns one badly written theme setting into a page of false errors about a file that is fine, now becomes one true sentence, and words you type, such as "currency_symbol", can no longer trip the checker, while visitors still read exactly what you typed. Nothing changes on your screen yet, because the deploy screen that shows these sentences is Story 7.18's, so this story is done when it deploys green, proved by the automated checks and our test Ghost site; two questions below are yours to rule before Dev starts.
+After this story, every theme Inflozo builds can be checked by the same theme checker your own Ghost runs when a theme is uploaded — Ghost 5's checker for a Ghost 5 site and Ghost 6's for a Ghost 6 site — and each problem it finds comes back as one plain sentence that names the real cause: an error stops the deploy, a warning lets it go ahead. Two traps close on the way: a known fault in Ghost's checker, which turns one badly written theme setting into a page of false errors about a file that is fine, now becomes one true sentence, and words you type, such as "currency_symbol", can no longer trip the checker, while visitors still read exactly what you typed. Nothing changes on your screen yet, because the deploy screen that shows these sentences is Story 7.18's (you ruled so on 2026-10-09), so this story is done when it deploys green, proved by the automated checks and our test Ghost site; the page-switch warning never blocks a deploy, on either Ghost version.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -268,7 +268,7 @@ After this story, every theme Inflozo builds can be checked by the same theme ch
   - T1 is restored and read back;
   - MEASUREMENTS §76 records the run.
 - **AD-1.** Given `pnpm lint`, then `gate/gscan.ts` is the one gate file outside AD-1's ban, and `verdict.ts` imports no builtin.
-- **No screen.** Given Questions 1 and 2 ruled as planned, when Deploy ends, then the story is Done on its Deploy commit (R-80).
+- **No screen.** Given Question 2's ruling (option 1, owner, 2026-10-09), when Deploy ends, then the story is Done on its Deploy commit (R-80), and its Pre-flight line and its hand test are in Story 7.18's card word for word.
 - **Propagation.** Given Dev's end:
   - FR-J6, FR-I1, AD-24, AD-34, VERIFY-AT-BUILD 31, MEASUREMENTS §74 and §75 (dated corrections) and `docs/section-authoring.md` say what landed;
   - the cards and Epic 7's preamble carry § Propagated at Dev's lines;
@@ -276,6 +276,12 @@ After this story, every theme Inflozo builds can be checked by the same theme ch
   - a grep finds no old wording.
 
 ## Spec Change Log
+
+- **2026-10-09, Create (the owner ruled).** Both questions were ruled option 1.
+  - The Ruled values table now states the ruled values, and the mapping table's Ghost 5 sentence reads as ruled.
+  - Question 1: `page_switch_unused` is a warning on Ghost 5 and Ghost 6 and never blocks. On Ghost 5 its detail says Ghost 5 counts it as an error. DW-341 closes on it at Dev.
+  - Question 2: "the Pre-flight step matches S8b as extended" and the card's owner test move word for word to Story 7.18 at Dev (R-195). This story stays `owner_test: none` and is Done on its Deploy commit.
+  - The frozen intent is unchanged: each ruling is its recommended option.
 
 ## Design Notes
 
@@ -305,7 +311,7 @@ interface Verdict { major: Major; gscan: string; blocked: boolean; errors: Findi
 
 | gscan | `code` | level | `message` | `detail` | `action` |
 |---|---|---|---|---|---|
-| `GS110-NO-MISSING-PAGE-BUILDER-USAGE` | `page_switch_unused` | § Ruled values | The switch that hides a page's title and feature image does nothing on this site. | No page template shows a Post header, which is what the switch hides. On Ghost 5, as planned, it adds: Ghost 5's own theme check counts this as an error and installs the theme anyway. | To use the switch, add a Post header to your Page template. |
+| `GS110-NO-MISSING-PAGE-BUILDER-USAGE` | `page_switch_unused` | warning on both (§ Ruled values) | The switch that hides a page's title and feature image does nothing on this site. | No page template shows a Post header, which is what the switch hides. On Ghost 5 it adds (Question 1): Ghost 5's own theme check counts this as an error and installs the theme anyway. | To use the switch, add a Post header to your Page template. |
 | `GS100-NO-UNUSED-CUSTOM-THEME-SETTING` | `setting_unused` | error | Theme settings declared but used nowhere on your site: {keys}. | Ghost refuses a theme setting no template reads. This is ours to fix, not yours, and nothing was sent to your site. | — |
 | the cascade (below) | `package_check_failed` | error | Ghost's theme check can't read when theme setting “{key}” should show, so it reports every package.json rule as broken. | Its rule, “{visibility}”, must name a theme setting at least two characters long. Those package.json errors are not real. This is ours to fix, not yours, and nothing was sent to your site. | — |
 | any other rule | `theme_check_rule` | gscan's | {gscan code}: {gscan's rule, plain} | {refs}: {each failure's message, plain} | Ghost's guide: {the first link in gscan's details, else Ghost's theme docs root} |
@@ -432,14 +438,12 @@ export const GSCAN = {
 
 ### Ruled values: Questions 1 and 2
 
-Both are open. This table holds what Dev builds, written for the recommended options. A different ruling changes this table and the rows that read it.
+Both were ruled option 1 by the owner on 2026-10-09.
 
-| Question | As planned (the recommended option) |
+| Question | Ruled: what this spec builds |
 |---|---|
 | Q1 · `GS110` on Ghost 5 | `page_switch_unused` is a **warning** on Ghost 5 and on Ghost 6, and never blocks. On Ghost 5 its detail adds "Ghost 5's own theme check counts this as an error and installs the theme anyway." DW-341 closes on it |
-| Q2 · Pre-flight and the hand test | Story 7.7 has no screen (`owner_test: none`). "**And** the Pre-flight step matches S8b as extended." and the card's owner test move word for word to Story 7.18, with Epic 7's R-195 list |
-
-Dev needs both rulings before it starts.
+| Q2 · Pre-flight and the hand test | Story 7.7 has no screen (`owner_test: none`), and is Done on its Deploy commit. "**And** the Pre-flight step matches S8b as extended." and the card's owner test move word for word to Story 7.18, with Epic 7's R-195 list |
 
 ### Settled here as readings, each told to the owner in one line
 
@@ -592,11 +596,11 @@ There is no migration, so there is no Schema phase. `Story 7.7 - Dev - …` carr
 
 ## Owner's manual test
 
-None, under Question 2's recommended answer. This story has no screen, so it has no frame and no hand test, and it is Done on its Deploy commit (R-80). The automated checks prove the sentences, and T1 proves that Ghost's own checker answers as the gate says. If Question 2 is ruled option 2, this section gains the check step's steps before Dev.
+None. Question 2 was ruled option 1 (owner, 2026-10-09), so this story has no screen: no frame and no hand test, and it is Done on its Deploy commit (R-80). The automated checks prove the sentences, and T1 proves that Ghost's own checker answers as the gate says. The Pre-flight line and its hand test are Story 7.18's, word for word.
 
 ## Questions for the owner
 
-Both are open. Dev builds Design Notes § Ruled values once they are ruled.
+Both were ruled option 1 (owner, 2026-10-09). Dev builds Design Notes § Ruled values as it stands.
 
 ### Question 1 — When Ghost 5's checker calls something an error but installs the theme anyway
 
@@ -618,7 +622,7 @@ Both are open. Dev builds Design Notes § Ruled values once they are ruled.
 2. **Block it on Ghost 5 only,** as the plan's "errors block" reads. No Ghost 5 site can deploy until Story 10.79, and afterwards only once its Page template has a Post header.
 3. **Block it on both Ghost versions.** Every site waits for Story 10.79, and a site whose pages show no title can never deploy.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-09).**
 
 ### Question 2 — Where you first see these sentences, and when you test them
 
@@ -633,7 +637,7 @@ Both are open. Dev builds Design Notes § Ruled values once they are ruled.
 1. **Move this story's Pre-flight line and its hand test, word for word, to Story 7.18.** This story then has no screen, and it is done when it deploys green. The automated checks and our test Ghost site prove its sentences. **(RECOMMENDED)**
 2. **Build the check step now** (S8b, opened from Ship it, with shipping itself greyed until Story 7.18), so you test the sentences by hand in this story. This makes the story several times bigger, because it pulls Story 7.18's server-side build of your theme into this one.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-09).**
 
 ## Verification
 
