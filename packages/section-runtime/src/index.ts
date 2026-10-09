@@ -61,6 +61,8 @@ export { contrast, isHex, stepToContrast } from './colour.ts'
 export { editText, linkAttributes } from './marks.ts'
 // Story 5.16a — AD-5's one exception, exported so the tests can name the exact string the theme emits
 export { PAGE_NUMBER_HBS } from './marks.ts'
+// Story 7.7 — AD-36: gscan's brace-free trigger words written inert, and the table the gate's test holds on both checkers
+export { GSCAN_INERT, gscanInert } from './marks.ts'
 // Story 5.20 — GHOST'S OWN PAYWALL BOX and the stylesheet `{{ghost_head}}` injects for it (MEASUREMENTS §54, held equal
 // by the shim's `contract.test.ts`), for the Paywall canvas while no paywall design is chosen. The app reaches the shim
 // through this package, which already depends on it, rather than as a dependency of its own.

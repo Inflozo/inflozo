@@ -1831,6 +1831,16 @@ validator refuses only what it sees in one attribute (a `data-text` template's w
 walks the tree for the rest whenever a render names its target, beside the binding check.
 `checkChromeLiterals` asks it without rendering.
 
+**gscan's brace-free rules** *(Story 7.7)*. Five of Ghost's theme-checker rules match a theme file's text with no
+mustache at all, attributes included: `currency_symbol`, `@site.lang`, `@labs.members` and `ghost.url.api` are errors on
+both pinned checkers (gscan 4.49.7 for Ghost 5, 6.4.2 for Ghost 6), and an `/assets/` address in a `src` or `href` is a
+warning (`GS030-ASSET-REQ`) unless `{{asset}}` writes it. So **a design's own markup never holds any of the five words, or
+an `/assets/` address outside `{{asset}}`**: a design that did would trip Ghost's checker on every theme that places it,
+and the gate would show it in its verbatim format. The validator does not refuse them; a design meets both checkers in CI
+(`check-snapshots` for the pilots, Story 7.33's lane for the whole library). A customer's words are the runtime's to make
+safe, not the design's: `escapeUserText` writes one character of each trigger as its numeric entity (`GSCAN_INERT`,
+AD-36), and a visitor reads exactly what was typed.
+
 The ceiling is written down rather than left to be rediscovered; a `ponytail:` comment at the head of
 `validate.ts` names it and the upgrade path.
 

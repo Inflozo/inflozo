@@ -24,8 +24,7 @@
 //     node tools/check-snapshots.mjs --update   rewrites every snapshot from its design. CI never passes it.
 
 import { createRequire } from 'node:module'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -748,24 +747,16 @@ check('Story 7.3 — <main id="site-main"> appears once in the theme, around {{{
   if (f.length > 0) throw new Error(f.join('\n'))
 })
 
-// ── Story 7.2: package.json, judged by Ghost 6's own checker ─────────────────────────────────────────────────────────
-// gscan 6.4.2, the theme compiler's pin, at `v6` — AD-34's pairing for Ghost 6 (never 6.4.2 at `v5`); both majors run
-// through the recorder's gate (tools/stress/gate.js). `check` is synchronous, so gscan runs here, before its rows.
-const gscan6 = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('gscan')
-/** Every result gscan raises on a theme, at any level, as `{level} {code}`. */
-async function gscanResults(files) {
-  const dir = mkdtempSync(join(tmpdir(), 'pilot-theme-'))
-  try {
-    for (const [p, body] of Object.entries(files)) {
-      mkdirSync(dirname(join(dir, p)), { recursive: true })
-      writeFileSync(join(dir, p), body)
-    }
-    const f = gscan6.format(await gscan6.check(dir, { checkVersion: 'v6' }), { checkVersion: 'v6' })
-    return ['error', 'warning', 'recommendation'].flatMap((level) => (f.results[level] ?? []).map((r) => `${level} ${r.code}`))
-  } finally {
-    rmSync(dir, { recursive: true, force: true })
-  }
-}
+// ── Story 7.2: package.json, judged by each Ghost major's own checker ──────────────────────────────────────────────────
+// Story 7.7: every gscan row runs through `runGscan` (`@inflozo/theme-compiler/gate`), the ONE caller of gscan in product
+// code and in CI, on BOTH pinned checkers — 4.49.7 at `v5` for Ghost 5, 6.4.2 at `v6` for Ghost 6 (AD-34), each row named
+// per checker. `runGscan` drops gscan's recommendations, which Ghost's own upload answer never carries, so "at any level"
+// below is errors and warnings. `check` is synchronous, so gscan runs here, before its rows.
+const gate = await import(join(REPO, 'packages/theme-compiler/gate/index.ts'))
+const MAJORS = Object.keys(gate.GSCAN).map(Number)
+const pinOf = (major) => `gscan ${gate.GSCAN[major].version} at ${gate.GSCAN[major].checkVersion}`
+/** Every result a major's pinned gscan raises on a theme, errors then warnings, as `{level} {code}`. */
+const gscanResults = async (files, major) => (await gate.runGscan(files, major)).results.map((r) => `${r.level} ${r.code}`)
 const packageRules = (results) => results.filter((r) => / GS(010|100)-/.test(r))
 const pilotTheme = pilots.compilePilots(WORDS, THEME).files
 const withPackage = (edit) => {
@@ -774,21 +765,22 @@ const withPackage = (edit) => {
   return { ...pilotTheme, 'package.json': `${JSON.stringify(pkg, null, 2)}\n` }
 }
 // a gscan that throws (a missing dependency, a temp-dir failure) must be a failing ROW, not a stack trace that stops every
-// row after it — so the throw is kept and re-raised inside each row that reads it
-const gscanOr = async (files) => gscanResults(files).catch((e) => e)
+// row after it — so the throw is kept, per major, and re-raised inside each row that reads it
+const gscanOr = async (files) => Object.fromEntries(await Promise.all(MAJORS.map(async (m) => [m, await gscanResults(files, m).catch((e) => e)])))
 const gscanPilots = await gscanOr(pilotTheme)
 const gscanStringPage = await gscanOr(withPackage((pkg) => { pkg.config.posts_per_page = '12' }))
 const raised = (r) => { if (r instanceof Error) throw r; return r }
-const gscanVersion = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('gscan/package.json').version
 
-check('control — Story 7.2: gscan at v6 raises GS010-PJ-CONF-PPP-INT on the pilots\' package.json with posts_per_page "12"', () => {
-  return mustFail(raised(gscanStringPage), /^error GS010-PJ-CONF-PPP-INT$/, 'a string page size')
-})
-check('Story 7.2 — the pilots\' package.json raises no GS010-* or GS100-* result, at any level, under gscan 6.4.2 at v6', () => {
-  const hit = packageRules(raised(gscanPilots))
-  if (hit.length > 0) throw new Error(hit.join('\n'))
-  return `gscan ${gscanVersion}; ${gscanPilots.length} result(s) outside package.json's rules, which later stories answer`
-})
+for (const m of MAJORS) {
+  check(`control — Story 7.2: ${pinOf(m)} raises GS010-PJ-CONF-PPP-INT on the pilots' package.json with posts_per_page "12"`, () => {
+    return mustFail(raised(gscanStringPage[m]), /^error GS010-PJ-CONF-PPP-INT$/, 'a string page size')
+  })
+  check(`Story 7.2 — the pilots' package.json raises no GS010-* or GS100-* error or warning under ${pinOf(m)}`, () => {
+    const hit = packageRules(raised(gscanPilots[m]))
+    if (hit.length > 0) throw new Error(hit.join('\n'))
+    return `${gscanPilots[m].length} result(s) outside package.json's rules — the verdict rows below name them`
+  })
+}
 check('control — Story 7.2: the pilots\' package.json, its three named marks in place, passes the fingerprint scan', () => {
   if (!/inflozo/i.test(pilotTheme['package.json'])) throw new Error('package.json carries no named mark, so its exemption proves nothing')
   const f = pilots.themeFailures(pilotTheme, []).filter((x) => x.startsWith('package.json'))
@@ -853,12 +845,13 @@ check('Story 7.4 — the pilot theme ships D1\'s pool files byte for byte (sha25
   return `${Object.keys(pilots74.files).filter((p) => p.startsWith('assets/fonts/')).length} font files`
 })
 const gscanNoGhostFonts = await gscanOr({ ...pilots74.files, 'assets/css/screen.css': pilots74.files['assets/css/screen.css'].replace(/var\(--gh-font-(?:heading|body), ([^;]+)\);/g, '$1;') })
-check('control — Story 7.4: with AD-18\'s two var() forms taken out of screen.css, gscan raises GS051', () => mustFail(raised(gscanNoGhostFonts), /GS051/, 'a theme without --gh-font-*'))
-check('Story 7.4 — gscan 6.4.2 raises no GS051 on the pilot theme: screen.css declares --gh-font-heading and --gh-font-body', () => {
-  const hit = raised(gscanPilots).filter((r) => /GS051/.test(r))
-  if (hit.length > 0) throw new Error(hit.join('\n'))
-  return `gscan ${gscanVersion}`
-})
+for (const m of MAJORS) {
+  check(`control — Story 7.4: with AD-18's two var() forms taken out of screen.css, ${pinOf(m)} raises GS051`, () => mustFail(raised(gscanNoGhostFonts[m]), /GS051/, 'a theme without --gh-font-*'))
+  check(`Story 7.4 — ${pinOf(m)} raises no GS051 on the pilot theme: screen.css declares --gh-font-heading and --gh-font-body`, () => {
+    const hit = raised(gscanPilots[m]).filter((r) => /GS051/.test(r))
+    if (hit.length > 0) throw new Error(hit.join('\n'))
+  })
+}
 /** `[]` when exactly one hook ships — A4 #13's, `hookOf(sectionKey('home', its id))`, on its root — and the token block
  *  carries its rules. */
 function hookFailures(compiled) {
@@ -1157,14 +1150,62 @@ check('Story 7.6 — checkGhostMarkup over every design\'s rendered theme text r
   if (f.length > 0) throw new Error(f.join('\n'))
   return `${rendered.length} designs`
 })
-// gscan's own GS001-DEPR-* rules decide what is deprecated (no list of Inflozo's); 6.4.2 at v6, as Story 7.2's rows run it
+// gscan's own GS001-DEPR-* rules decide what is deprecated (no list of Inflozo's), on each major's own checker
 const gscanBlog = await gscanOr({ ...pilotTheme, 'post.hbs': `${pilotTheme['post.hbs']}{{@blog.title}}\n` })
-check('control — Story 7.6: the pilot theme with {{@blog.title}} appended to post.hbs raises GS001-DEPR-BLOG under gscan 6.4.2 at v6', () => mustFail(raised(gscanBlog), / GS001-DEPR-BLOG$/, '{{@blog.title}}'))
-check('Story 7.6 — gscan 6.4.2 at v6 raises no GS001-DEPR-* result, at any level, on the pilot theme', () => {
-  const hit = raised(gscanPilots).filter((r) => / GS001-DEPR-/.test(r))
-  if (hit.length > 0) throw new Error(hit.join('\n'))
-  return `gscan ${gscanVersion}`
-})
+for (const m of MAJORS) {
+  check(`control — Story 7.6: the pilot theme with {{@blog.title}} appended to post.hbs raises GS001-DEPR-BLOG under ${pinOf(m)}`, () => mustFail(raised(gscanBlog[m]), / GS001-DEPR-BLOG$/, '{{@blog.title}}'))
+  check(`Story 7.6 — ${pinOf(m)} raises no GS001-DEPR-* error or warning on the pilot theme`, () => {
+    const hit = raised(gscanPilots[m]).filter((r) => / GS001-DEPR-/.test(r))
+    if (hit.length > 0) throw new Error(hit.join('\n'))
+  })
+}
+
+// ── Story 7.7: the gscan gate's verdicts, on both checkers (FR-J6, AD-24) ──────────────────────────────────────────────
+// `gscanGate` maps each major's own checker through the one table: errors block, warnings deploy. Today's pilot theme has
+// no `cards.css` (Story 7.13's) and no `page.hbs` reading Ghost's page switch (Story 10.79's), so it is blocked on the two
+// Koenig widths and warned on the switch; behind §73's scaffold, which supplies exactly those two files, it is clean.
+const gateOr = async (files) => Object.fromEntries(await Promise.all(MAJORS.map(async (m) => [m, await gate.gscanGate(files, m)])))
+const shape = (v) => ({ blocked: v.blocked, errors: v.errors.map((f) => `${f.code} ${f.rule ?? ''}`.trim()), warnings: v.warnings.map((f) => `${f.code} ${f.rule ?? ''}`.trim()) })
+const sameShape = (got, want) => { if (JSON.stringify(shape(got)) !== JSON.stringify(want)) throw new Error(`the verdict is ${JSON.stringify(shape(got))}, not ${JSON.stringify(want)}`) }
+const clash = Object.keys(pilots.SCAFFOLD).filter((p) => p in pilotTheme)
+const gatePilots = await gateOr(pilotTheme)
+const gateScaffolded = await gateOr({ ...pilotTheme, ...pilots.SCAFFOLD })
+for (const m of MAJORS) {
+  check(`control — Story 7.7: the pilot theme plus §73's scaffold (Story 7.13's cards.css, Story 10.79's page.hbs) gives an empty, unblocked verdict under ${pinOf(m)}`, () => {
+    if (clash.length > 0) throw new Error(`the scaffold would replace compiled files: ${clash.join(', ')}`)
+    sameShape(gateScaffolded[m], { blocked: false, errors: [], warnings: [] })
+  })
+  check(`Story 7.7 — the pilot theme's verdict under ${pinOf(m)}: blocked on exactly GS050-CSS-KGWF and -KGWW (ref styles), warned on exactly page_switch_unused`, () => {
+    sameShape(gatePilots[m], { blocked: true, errors: ['theme_check_rule GS050-CSS-KGWF', 'theme_check_rule GS050-CSS-KGWW'], warnings: ['page_switch_unused GS110-NO-MISSING-PAGE-BUILDER-USAGE'] })
+    const refs = gatePilots[m].errors.flatMap((f) => f.refs)
+    if (refs.join() !== 'styles,styles') throw new Error(`the two GS050 errors name ${refs.join(', ')}, not styles`)
+    return gatePilots[m].warnings[0].detail
+  })
+}
+// AD-36: a customer's words never trip gscan. The four error words go into A4 #13's eyebrow (through `escapeUserText`) and
+// `currency_symbol` into every layer name (through the boundary comment's `commentPart`); the control writes them raw.
+const TRIGGERS = ['GS001-DEPR-CURR-SYM', 'GS001-DEPR-SITE-LANG', 'GS001-DEPR-LABS-MEMBERS', 'GS060-JS-GUA']
+const typedWords = { pageWord: 'Pageword currency_symbol @site.lang @labs.members ghost.url.api', layerWord: 'currency_symbol' }
+const typedTheme = pilots.compilePilots(typedWords, THEME).files
+const typedRaw = { ...typedTheme, 'post.hbs': `${typedTheme['post.hbs']}<p>${typedWords.pageWord}</p>\n` }
+const gscanTyped = await gscanOr(typedTheme)
+const gscanTypedRaw = await gscanOr(typedRaw)
+const triggered = (results) => TRIGGERS.filter((rule) => results.some((r) => r.endsWith(` ${rule}`)))
+for (const m of MAJORS) {
+  check(`control — Story 7.7: the same words written raw into post.hbs raise each of the four rules under ${pinOf(m)}`, () => {
+    const got = triggered(raised(gscanTypedRaw[m]))
+    if (got.join() !== TRIGGERS.join()) throw new Error(`raw, they raise ${got.join(', ') || 'nothing'}, not ${TRIGGERS.join(', ')}`)
+  })
+  check(`Story 7.7 — a customer's words in A4 #13's eyebrow and in every layer name raise none of the four rules under ${pinOf(m)} (AD-36)`, () => {
+    const text = pilots.textFiles(typedTheme)
+    const labels = Object.values(text).flatMap((b) => b.split('\n').filter((l) => l.trimStart().startsWith('{{!--')))
+    // every label the customer named carries the layer word, inert (an untouched page's synthesized labels carry none)
+    if (!labels.some((l) => l.includes('currency&#95;symbol')) || labels.some((l) => l.includes('currency_symbol'))) throw new Error(`the boundary comments do not carry the layer word, inert — ${labels.join(' | ')}`)
+    if (!Object.values(text).some((b) => b.includes('Pageword currency&#95;symbol &#64;site.lang &#64;labs.members ghost&#46;url.api'))) throw new Error('A4 #13\'s eyebrow does not carry the typed words, inert')
+    const got = triggered(raised(gscanTyped[m]))
+    if (got.length > 0) throw new Error(`a customer's words raise ${got.join(', ')}`)
+  })
+}
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────
 const targets = rendered.reduce((t, r) => t + r.entry.compileTarget.length, 0)

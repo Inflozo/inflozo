@@ -43,7 +43,9 @@ if (cwdPin === undefined) {
 // window, never its own — so AD-1's ban is not theirs, and every future module keeps its test beside it there.
 // Their own rule is the block at the end: no global.
 const CORE = ['packages/*/**/*.{ts,tsx,mts,cts,js,mjs,cjs}']
-const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**', 'packages/library/orbit-weekly/**', 'packages/library/modules/**']
+// Story 7.7 added `packages/theme-compiler/gate/gscan.ts`: the gate's shell, which writes a temporary directory and calls
+// gscan, which reads a theme from disk (AD-34). It is the one gate file outside the ban; `verdict.ts`, the mapping, stays core.
+const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**', 'packages/library/orbit-weekly/**', 'packages/library/modules/**', 'packages/theme-compiler/gate/gscan.ts']
 
 // Derived from the runtime, never a hand list — a hardcoded membership list has gone stale twice.
 const builtins = builtinModules.flatMap((m) => {

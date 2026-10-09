@@ -37,6 +37,35 @@ export type PropValue = string | number | boolean | RichText | null | undefined
 export const isRich = (v: unknown): v is RichText =>
   typeof v === 'object' && v !== null && typeof (v as RichText).text === 'string'
 
+/** AD-36 (Story 7.7) — gscan matches some rules by regular expression over a theme file's WHOLE text, comments and
+ *  attributes included, and five of them match a customer's words with no brace at all (executed on gscan 4.49.7 and
+ *  6.4.2 at Story 7.7's Create): four are errors on both checkers and `GS030-ASSET-REQ` a warning. Each entry writes ONE
+ *  character of every match (`at`) as its numeric entity, which a browser decodes back to the typed character in text
+ *  and in an attribute, so a visitor — and the canvas, which parses the same serializer's output — reads exactly what was
+ *  typed; in a Handlebars comment, which nothing renders, the entity stays as written. `witness` trips the rule raw.
+ *  For the four whole-word rules `pattern` IS the rule's recorded regex (`packages/theme-compiler/fixtures/gscan/`);
+ *  `GS030-ASSET-REQ`'s recorded regex is the whole `src`/`href` form, which differs between the checkers and reads
+ *  `/ASSETS/` too, so its entry writes the slash before any `assets/` (a lookahead, so `/assets/assets/` leaves no match)
+ *  and is held by its witness alone. Both halves are held on the real pinned checkers by `gate/gate.test.ts`.
+ *
+ *  THE CEILING: the list's completeness rests on Story 7.7's analysis of every regex rule in both pinned checkers (its
+ *  spec's Facts 7). A pin move re-records the inventories and re-derives this list (`fixtures/gscan/README.md`'s bump
+ *  procedure); a rule it misses would show in the gate's verbatim format, never as a stack trace. Left out on purpose:
+ *  `GS001-DEPR-AMP-TEMPLATE` (a typed `<` is already `&lt;`), `GS080-CARD-LAST4` (it never runs at the `engines` Story 7.2
+ *  writes) and a NUL (`escapeUserText` drops it). */
+export const GSCAN_INERT = [
+  { rule: 'GS001-DEPR-CURR-SYM', pattern: /currency_symbol/g, at: 8, witness: 'Pay in currency_symbol today' },
+  { rule: 'GS001-DEPR-SITE-LANG', pattern: /@site\.lang/g, at: 0, witness: 'Ask @site.lang for the language' },
+  { rule: 'GS001-DEPR-LABS-MEMBERS', pattern: /@labs\.members/g, at: 0, witness: 'Follow @labs.members here' },
+  { rule: 'GS060-JS-GUA', pattern: /ghost\.url\.api/g, at: 5, witness: 'Call ghost.url.api today' },
+  { rule: 'GS030-ASSET-REQ', pattern: /\/(?=assets\/)/gi, at: 0, witness: '/assets/brochure.pdf' },
+] as const
+
+/** Every `GSCAN_INERT` match in already-escaped text, one character written as its numeric entity. It runs AFTER
+ *  escaping, so the `&` it writes is never escaped again. */
+export const gscanInert = (escaped: string): string =>
+  GSCAN_INERT.reduce((out, e) => out.replace(e.pattern, (m) => `${m.slice(0, e.at)}&#${m.charCodeAt(e.at)};${m.slice(e.at + 1)}`), escaped)
+
 /** AD-5 rule 1: `&` first, then every brace the user typed becomes an HTML NUMERIC ENTITY.
  *  Handlebars never sees a mustache; the browser decodes the exact characters back.
  *
@@ -50,7 +79,7 @@ export const isRich = (v: unknown): v is RichText =>
  *  character the user typed skips this door: a typed `{{page_number}}` still emits `&#123;` and
  *  `&#125;` around the constant and can never become a triple-stache. */
 export function escapeUserText(s: string): string {
-  return s
+  return gscanInert(s
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
     // a typed tab becomes a space (Story 7.1's review, Question 2): the theme carries no tab, and under white-space
     // normal or nowrap the two render the same, so neither emitter changes what a visitor sees
@@ -60,7 +89,7 @@ export function escapeUserText(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/\{/g, '&#123;')
-    .replace(/\}/g, '&#125;')
+    .replace(/\}/g, '&#125;'))
 }
 
 const REL_SET: ReadonlySet<string> = new Set(LINK_RELS)

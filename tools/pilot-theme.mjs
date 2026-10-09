@@ -105,6 +105,15 @@ export const ghostCards = () => ({
 /** CI's two words (check-snapshots, check-baseline's size row) — fixed, so the compiled theme is the same every run. */
 export const CI_WORDS = { pageWord: 'Pageword', layerWord: 'Layerword' }
 
+/** §73's scaffold — new files only, each labelled for the story that owns it: D12's two Koenig widths in `cards.css`
+ *  (Story 7.13's; DW-334) and a stand-in `page.hbs` reading Ghost's page switch (Story 10.79's, until A24 sits on
+ *  `page.hbs`). With it the pilot theme gates clean on both checkers. One copy: CI's control for the gate's clean verdict
+ *  (`check-snapshots`, Story 7.7) and the recorder's upload scaffold (`record-theme-assembly.py`'s `scaffold()`). */
+export const SCAFFOLD = {
+  'assets/css/cards.css': '.kg-width-wide { max-width: 1000px; }\n.kg-width-full { max-width: 100%; }\n',
+  'page.hbs': '{{!< default}}\n\n{{#post}}\n  {{#if @page.show_title_and_feature_image}}\n    <h1>{{title}}</h1>\n  {{/if}}\n  {{content}}\n{{/post}}\n',
+}
+
 /** The project's template docs. */
 export function pilotProject({ pageWord, layerWord }, find = library()) {
   let n = 0

@@ -2926,6 +2926,22 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    (DW-346); Story 7.5 writes the README's Scripts section, 7.17 its routes step and 7.28 its credit;
 > 2. the canvas drawing the JavaScript branch of a module with no file yet, where the theme ships it at rest —
 >    **Story 7.34** (DW-347); Story 9.1's `nav-drawer` file ends A1 #1's case.
+>
+> **Moved from Story 7.7 by its Question 2 (owner, 2026-10-09), word for word, so none is missed (R-195).**
+>
+> 1. "the Pre-flight step matches S8b as extended", with the frame `S8 Deploy.dc.html` S8b — **Story 7.18**, which
+>    builds Pre-flight and the server step that compiles and gates a real project;
+> 2. the card's owner test, the hand test of the gscan check's rows — **Story 7.18**, whose own owner test covers it.
+>
+> **Given owners by Story 7.7's Create (2026-10-09), so none is missed (R-195).**
+>
+> 1. Ghost's raw `500` when two uploads of one theme name collide (`EEXIST … mkdir '/var/…'`), mapped to AD-24's own
+>    sentence and never passed through — **Story 7.18**, with the upload;
+> 2. carrying both pinned checkers inside the deploy function, proved on Vercel — **Story 7.18**;
+> 3. `GET /themes/` without the staff token (`501` on Ghost 5, `403` on Ghost 6) read as one Inflozo code — **Story 7.20**;
+> 4. a theme setting's key at least two characters long, so gscan's visibility test can read it — **Story 7.10**;
+> 5. a gscan pin moving only as a library release — **Story 7.27**; and re-running the whole library's lane before a
+>    pin move lands — **Story 7.33**.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3225,28 +3241,48 @@ So that I am never sent to a file that is not the problem.
 **When** the gscan gate runs server-side
 **Then** **errors block the deploy** with human-readable mapping and warnings are surfaced but deployable
 **And** the target for all library output is **0 errors, 0 warnings**
-**And** **one failure mode is not passed through verbatim**: a malformed `visibility` string cascades into ~19
-errors including a bogus JSON-parse failure reported against a perfectly valid `package.json` — Inflozo detects
-that signature and **replaces it with its own explanation naming the real cause**
+**And** **one failure mode is not passed through verbatim**: a theme setting whose `visibility` names no setting key
+of two or more characters (or is not a string) makes gscan report every `package.json` rule it validates as failed,
+including a bogus JSON-parse failure against a perfectly valid `package.json`, on both checkers — Inflozo detects
+that signature and **replaces it with its own explanation naming the real cause** *(as landed, Story 7.7, 2026-10-09:
+gscan's own key test, `010-package-json.js:225`; this said a count, which was a different gscan's)*
 **And** the mapping is **scoped to the reachable shortlist** — the rules Inflozo's own output can trip, not
 gscan's full set — and **any unmapped rule falls back to a stated verbatim format** (rule code, gscan's message,
 the file, a docs link), so **no compile ever surfaces a raw stack trace**
 **And** **`GS100` is on the shortlist and can never fire**, because the dark built-ins are referenced on every
 compile — and if a future gscan bump changes that trigger, three settings in every shipped theme go red at once,
 which is why the trigger is re-proved on a fixture rather than assumed
-**And** **version policy:** one pinned gscan version at or above the newest bundled by any supported target, so a
-theme passing Inflozo's gate is not rejected by the target's own gate on upload; **a gscan upgrade lands only
-behind a library release with a full re-run of the whole inventory, never silently**
+**And** **version policy:** each Ghost major's own gscan, pinned exactly — 4.49.7 at `v5` for Ghost 5 and 6.4.2 at
+`v6` for Ghost 6, the versions those majors' newest releases bundle (AD-34, R2-2) — so a theme passing Inflozo's gate
+is judged as the target's own gate judges it on upload; **a gscan upgrade lands only behind a library release with a
+full re-run of the whole inventory, never silently** *(as landed: the bump procedure in
+`packages/theme-compiler/fixtures/gscan/README.md`; this said one gscan for every target, corrected to R2-2's two)*
 **And** there is **one error envelope and one gscan mapping** (AD-24)
-**And** the Pre-flight step matches S8b as extended.
+**And** *(moved word for word to Story 7.18 by Question 2, ruled option 1, owner, 2026-10-09, R-195: "the Pre-flight
+step matches S8b as extended")*
 **And** *(Story 7.3, 2026-10-06; DW-341)* a theme in which no template reads Ghost's page switch — a designed Page
 with no Post header, or an untouched Page the library leaves with no section and so not emitted (7.3's Question 1,
 until Story 10.79 puts A24 on `page.hbs`) — raises `GS110-NO-MISSING-PAGE-BUILDER-USAGE`, an **error** on gscan
-4.49.7 and a warning on 6.4.2, which Ghost 5 activates despite (MEASUREMENTS §13a, §13b): this story decides whether
-Inflozo's gate blocks it, and asks the owner (R-83) where the answer changes what a deploy does.
+4.49.7 and a warning on 6.4.2, which Ghost 5 activates despite (MEASUREMENTS §13a, §13b): **Inflozo's gate warns on it
+on both majors and never blocks** — `page_switch_unused`, whose sentence on Ghost 5 adds that Ghost 5's own check
+counts it as an error and installs the theme anyway *(Question 1, ruled option 1, owner, 2026-10-09; DW-341 closed)*
+**And** *(Story 7.7, as landed, 2026-10-09)* `@inflozo/theme-compiler/gate`'s `gscanGate(files, major)` runs that
+major's pinned gscan (`GSCAN`; Ghost 5's installed from a copy whose only change is the Node range it declares, because
+pnpm refuses the original on Node 24) over the compiled files in a fresh temporary directory and maps the result through
+one table (`verdict`, AD-24) to `{ major, gscan, blocked, errors, warnings }` — each finding AD-24's envelope plus
+gscan's `rule`, `level`, `fatal` and `refs`, plain text, never a stack. The shortlist is derived and three rules long:
+GS110's page switch (`page_switch_unused`), `GS100` (`setting_unused`) and the cascade (`package_check_failed`); every
+other rule is `theme_check_rule` in the verbatim format, and a checker that fails, a moved pin or a refused path is
+`theme_check_failed`. Each pin's rule inventory is an AD-23 recording held by the gate's test with the pins, and
+`GS100`'s trigger is re-proved on a fixture on both checkers. A customer's words are inert to gscan's five brace-free
+rules — the runtime's escaper and the boundary comment write one character of each as its numeric entity (AD-36,
+`GSCAN_INERT`) — and a visitor reads the typed text. gscan's recommendations are not shown: Ghost's own upload answer
+carries errors and warnings alone. CI (`check-snapshots`) holds the pilot theme's verdicts on both checkers.
 
-**FRs:** FR-J6. · **Frame:** `S8 Deploy.dc.html` S8b. · **Owner test:** yes. · **Verification:** gscan 6.4.2
-against both the v5 and v6 specs.
+**FRs:** FR-J6. · **Frame:** none — `S8 Deploy.dc.html` S8b moved to Story 7.18 with the Pre-flight line (Question 2,
+owner, 2026-10-09). · **Owner test:** none — its hand test moved word for word to Story 7.18; this story is Done on its
+Deploy commit (R-80). · **Verification:** gscan 4.49.7 at `v5` and 6.4.2 at `v6`; T1 (R-238 — the Ghost 5 half is
+DW-326's), MEASUREMENTS §76.
 
 ### Story 7.8: The emitted-theme quality gate
 
@@ -3362,6 +3398,12 @@ cap-enforced."* `config.custom` is written in the same change as the
 at runtime, so the dead-CSS strip (`stripCss`, which reads each placed root's values through `resolveControls`) keeps
 **every value of that control**: this story hands the compile the promoted names, and the strip reads each as reachable
 at every value.
+
+**And** *(given an owner by Story 7.7's Create, 2026-10-09)* **a theme setting's key is at least two characters long**:
+gscan's own test for a `visibility` rule's key (`010-package-json.js:225`, the same in both pinned checkers) reads a
+one-character key as no key, and the cascade that follows reports every `package.json` rule failed on both — so the
+builder refuses a shorter key, and every `visibility` it writes names keys of two or more characters (the gate maps a
+cascade that reaches it anyway to `package_check_failed`, naming the setting).
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
 test:** yes.
@@ -3714,6 +3756,9 @@ whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** closing the editing window while it checks in with the server frees the lock within a check-in, as any other close does: the lock row gains a per-page id (a migration, pushed first as `Schema`, R-99) so a going page's `leave` matches its own page's beat whatever landed since, and a reload still keeps its lock (DW-307, from Story 5.24e's Dev, 2026-10-02; R-228 accepted the wait until then).
 **And** a window that typed in its first moment — before the server answered that another session is editing — is told what it holds when it turns read-only, as a displaced session is told: "This session had N unsynced edits; they were not included." (`LOCK_COPY.displaced`), in memory only, never resetting the on-device record the holder shares (DW-308, from Story 5.24e's review, 2026-10-02).
 **And** *(moved word for word from Story 7.6's Question 2, ruled option 1, owner, 2026-10-08, DW-349)* **a typed text the customer empties is hidden, on the canvas and in the theme alike**: deleting every word of a section's typed text (A22 #1's heading, A4 #13's headline) removes that element, and typing in the sidebar's text box brings it back. The design's sample English never ships in its place, because V1 refuses it and Story 7.6's `checkChromeText` makes the compile throw on it. A text the catalog supplies (S6, such as a Subscribe label) still returns as its `{{t}}` string, and the owner's hand test covers the empty, the hidden line and the way back.
+**And** *(moved word for word from Story 7.7 by its Question 2, ruled option 1, owner, 2026-10-09, R-195)* the Pre-flight step matches S8b as extended. — with Story 7.7's hand test (its card's "**Owner test:** yes."), which this story's owner test now covers: Pre-flight's Checking row shows `gscanGate`'s verdict (`@inflozo/theme-compiler/gate`) in its sentences, errors blocking and warnings deployable — e.g. a project whose Page template has no Post header shows "0 errors · 1 warning" with the page-switch sentence, and Ship it still works. The verdict is stored as `deploys.gscan`, and a blocking finding as `deploy_jobs.error`, each field rendered as text, never as HTML (Story 7.7's spec, § What the gate returns).
+**And** *(given an owner by Story 7.7's Create, 2026-10-09)* Ghost's raw `500` when two uploads of one theme name collide — its message carries `EEXIST … mkdir '/var/…'`, a server path — is mapped to AD-24's own sentence ("another deploy to this site is already running — try again in a moment") and never passed through.
+**And** *(given an owner by Story 7.7's Create, 2026-10-09)* the deploy function carries both pinned checkers — `gscan4` (4.49.7, from `packages/theme-compiler/vendor/`) and `gscan6` (6.4.2) — and runs `gscanGate` for the site's major, proved on Vercel within the function's limits (Story 7.7 measured the two trees at hundreds of packages installed).
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
@@ -3793,6 +3838,9 @@ taken**; objects before rows, through `drainPrefix`, as `purge-accounts` does
 **And** the gate matches D1d self-hosted, D1d′ with the shortcut ticked and D1e Ghost(Pro); the running and
 degraded snapshot states match B12a and B12b as corrected.
 **And** the purge's 90 days and the Sites card's 'kept for 90 days' have one home: the job takes `ORPHAN_SNAPSHOT_DAYS` rather than a second literal in SQL, and `connect-rule.test.ts`'s agreement test follows it (DW-79).
+
+**And** *(given an owner by Story 7.7's Create, 2026-10-09)* `GET /themes/` without the staff token — `501` on Ghost 5,
+`403` on Ghost 6 (VERIFY-AT-BUILD 9) — is read as **one Inflozo code**, never two answers by major.
 
 **FRs:** FR-J13. · **Frame:** `D1 First-Deploy Gates.dc.html` D1d · D1d′ · D1e · `B Missing Surfaces.dc.html`
 B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 and restored (R-82).
@@ -4012,6 +4060,9 @@ a silent re-render, never a failed load, and no deletion path to build**
 **And** user-facing copy about the library is **count-agnostic** — "hundreds of gorgeous sections" — because the
 count moves monthly
 **And** the notice matches B14a and the confirm matches B14b as re-specified.
+**And** *(given an owner by Story 7.7's Create, 2026-10-09)* **a gscan pin moves only as a library release**: a change
+to `GSCAN` (`@inflozo/theme-compiler/gate`) reaches a live site only through its owner's redeploy and this consent
+step — step 5 of the bump procedure in `packages/theme-compiler/fixtures/gscan/README.md`.
 
 **FRs:** FR-J14. · **Frame:** `B Missing Surfaces.dc.html` B14a · B14b. · **Owner test:** yes.
 
@@ -4162,7 +4213,8 @@ So that a defect in a shared primitive is caught by CI rather than by a user's d
 **Given** §4's statement that **compile CI needs only gscan** — no Ghost host
 **When** it runs nightly
 **Then** it assembles **synthetic themes covering 100% of designs** and each scans **gscan 0 errors / 0
-warnings** at the pinned version, against **both the v5 and v6 specs**
+warnings** at the pinned version, against **both the v5 and v6 specs** *(Story 7.7, 2026-10-09: each Ghost major's own
+pinned checker — gscan 4.49.7 at `v5`, 6.4.2 at `v6`, AD-34 — through `runGscan`, the one caller of gscan)*
 **And** it asserts the checks the compiler's own stories declared but which only a whole-library run can
 exercise: that **`assets/js/` contains only files authored in the Inflozo repository**, with `cards.js` the
 single declared exception; that **no emitted stylesheet contains a rule reachable only under another design's
@@ -4177,8 +4229,11 @@ runs today over the pilot theme alone; this lane runs it over every design — t
 warning, not a build failure**
 **And** the **FR-J17 quality gate runs in the same lane**, so a category gate has one sheet to read.
 
-**FRs:** none — this builds NFR-6(b). · **Owner test:** none (a CI lane). · **Verification:** gscan 6.4.2, both
-specs.
+**And** *(given an owner by Story 7.7's Create, 2026-10-09)* **a gscan pin move re-runs this lane over the whole library
+before it lands** — step 4 of the bump procedure in `packages/theme-compiler/fixtures/gscan/README.md`.
+
+**FRs:** none — this builds NFR-6(b). · **Owner test:** none (a CI lane). · **Verification:** gscan 4.49.7 at `v5`
+and 6.4.2 at `v6` (AD-34).
 **And** *(DW-339, DW-340 — from Story 7.1's review, 2026-10-06)* the pilot theme's "internal reference" scan
 (`themeFailures`) reads `R-1`, `Story 3` or `ponytail` in any text, so it is anchored to comment contexts before it
 meets user text; and rule 5's `attrs === null` branch (a start tag the formatter cannot re-spell is left whole) gains

@@ -4,19 +4,21 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./gate": "./gate/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
-    "test": "node --test 'src/**/*.test.ts'"
+    "test": "node --test 'src/**/*.test.ts' 'gate/**/*.test.ts'"
   },
   "dependencies": {
     "@inflozo/library": "workspace:*",
-    "@inflozo/section-runtime": "workspace:*"
+    "@inflozo/section-runtime": "workspace:*",
+    "gscan4": "file:vendor/gscan-4.49.7.tgz",
+    "gscan6": "npm:gscan@6.4.2"
   },
   "devDependencies": {
     "@types/node": "24.13.4",
-    "gscan": "6.4.2",
     "handlebars": "4.7.9",
     "jsdom": "30.0.1",
     "typescript": "7.0.2"

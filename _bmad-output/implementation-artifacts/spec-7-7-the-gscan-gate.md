@@ -2,9 +2,10 @@
 title: 'Story 7.7 — The gscan gate'
 type: 'feature'
 created: '2026-10-09'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: 'b5a3da0a78da7adc296c809cc5bf7a2afecf75b1'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -202,7 +203,7 @@ After this story, every theme Inflozo builds can be checked by the same theme ch
 
 **Execution:**
 
-- [ ] `packages/theme-compiler/package.json`, `pnpm-lock.yaml`, `packages/theme-compiler/vendor/`:
+- [x] `packages/theme-compiler/package.json`, `pnpm-lock.yaml`, `packages/theme-compiler/vendor/`:
   - The control comes first: add `"gscan4": "npm:gscan@4.49.7"` and record pnpm's answer on Node 24. Expected: `ERR_PNPM_UNSUPPORTED_ENGINE` (§ Facts 9).
   - Then commit `vendor/gscan-4.49.7.tgz`: the registry tarball, with `package.json`'s `engines.node` alone widened by ` || ^24.0.0`.
   - `vendor/README.md` records the upstream URL, its `dist.integrity`, the date and the command that makes the copy (§ The two checkers). The dependency becomes `"gscan4": "file:vendor/gscan-4.49.7.tgz"`.
@@ -211,48 +212,48 @@ After this story, every theme Inflozo builds can be checked by the same theme ch
   - `exports` gains `"./gate": "./gate/index.ts"`, `test` gains `'gate/**/*.test.ts'`, and `tsconfig.json`'s `include` gains `gate`.
 
   -- AD-34's two checkers, installable on the project's own Node.
-- [ ] `eslint.config.js` — `NOT_CORE` gains `packages/theme-compiler/gate/gscan.ts`, with a comment beside it: the gate's shell, which writes a temporary directory and calls gscan (AD-34). `verdict.ts` stays core.
+- [x] `eslint.config.js` — `NOT_CORE` gains `packages/theme-compiler/gate/gscan.ts`, with a comment beside it: the gate's shell, which writes a temporary directory and calls gscan (AD-34). `verdict.ts` stays core.
 
   -- AD-1 holds everywhere else.
-- [ ] `packages/theme-compiler/gate/gscan.ts`, `gate/gscan.d.ts` — `GSCAN`, `runGscan(files, major)` and `installedRules(major)`, per § The two checkers and § What the gate returns. The declarations cover the members used.
+- [x] `packages/theme-compiler/gate/gscan.ts`, `gate/gscan.d.ts` — `GSCAN`, `runGscan(files, major)` and `installedRules(major)`, per § The two checkers and § What the gate returns. The declarations cover the members used.
 
   -- the shell.
-- [ ] `packages/theme-compiler/gate/verdict.ts` — `verdict(report, files, major)`, per § The one mapping.
+- [x] `packages/theme-compiler/gate/verdict.ts` — `verdict(report, files, major)`, per § The one mapping.
 
   -- AD-24's one table.
-- [ ] `packages/theme-compiler/gate/index.ts` — exports `gscanGate(files, major)`, which is `verdict(await runGscan(…))` and catches any throw into `theme_check_failed`. It also exports `GSCAN`, `runGscan`, `installedRules` and the types.
+- [x] `packages/theme-compiler/gate/index.ts` — exports `gscanGate(files, major)`, which is `verdict(await runGscan(…))` and catches any throw into `theme_check_failed`. It also exports `GSCAN`, `runGscan`, `installedRules` and the types.
 
   -- the door 7.18 and CI use.
-- [ ] `packages/section-runtime/src/marks.ts`, `index.ts`; `packages/theme-compiler/src/compile.ts` — `GSCAN_INERT` and `gscanInert`, per § A customer's words. `escapeUserText` ends with it, and `commentPart` applies it.
+- [x] `packages/section-runtime/src/marks.ts`, `index.ts`; `packages/theme-compiler/src/compile.ts` — `GSCAN_INERT` and `gscanInert`, per § A customer's words. `escapeUserText` ends with it, and `commentPart` applies it.
 
   -- AD-36, at both doors.
-- [ ] `packages/section-runtime/src/ad36.test.ts` — the pair. Each trigger, through `escapeUserText`, no longer matches its own pattern, and decodes to the typed text. A layer label behaves the same through `commentPart`.
+- [x] `packages/section-runtime/src/ad36.test.ts` — the pair. Each trigger, through `escapeUserText`, no longer matches its own pattern, and decodes to the typed text. A layer label behaves the same through `commentPart`.
 
   -- AD-36's rule.
-- [ ] `tools/record-gscan.mjs`, `tools/doc-audit.py`, `packages/theme-compiler/fixtures/gscan/`:
+- [x] `tools/record-gscan.mjs`, `tools/doc-audit.py`, `packages/theme-compiler/fixtures/gscan/`:
   - the tool writes `rules-4.49.7.json` and `rules-6.4.2.json` from `installedRules`, per § The two checkers;
   - `README.md` gives each recording's date and command, names MEASUREMENTS §13a as the recording the probe-theme row reproduces, and holds the bump procedure;
   - the tool gets its catalogue row.
 
   -- AD-23: the recordings the tests read.
-- [ ] `packages/theme-compiler/gate/gate.test.ts` — on both checkers, against the real pinned gscans:
+- [x] `packages/theme-compiler/gate/gate.test.ts` — on both checkers, against the real pinned gscans:
   - the I/O matrix, row by row;
   - the inventories equal the installed checkers, and a planted level change fails that row;
   - `GSCAN` equals the installed versions;
   - `GSCAN_INERT` holds as § A customer's words states.
 
   -- what the gate promises.
-- [ ] `tools/check-snapshots.mjs` — § What CI holds, each row behind its control.
+- [x] `tools/check-snapshots.mjs` — § What CI holds, each row behind its control.
 
   -- the gate on every commit.
-- [ ] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py` — § The T1 run:
+- [x] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py` — § The T1 run:
   - `SECTION` becomes `76`;
   - the docstring's and :844's `.js` claim is corrected;
   - `gated()` goes through the product gate;
   - the catalogue row says so.
 
   -- R-82: Ghost's own checker answers as the gate says.
-- [ ] Documents — apply § Propagated at Dev, then grep for each old wording.
+- [x] Documents — apply § Propagated at Dev, then grep for each old wording.
 
   -- standing rules 3 and 7.
 
@@ -669,3 +670,32 @@ Both were ruled option 1 (owner, 2026-10-09). Dev builds Design Notes § Ruled v
 - Both pinned checkers, locally and in CI.
 - Vercel: CI's `check`, `rls` and `deploy` green, and the deployment READY at the head. The app's code is unchanged; the escaper's entities decode to the same text on the canvas.
 - There is no migration, and no Supabase, Resend or Dodo surface. The gate has no product caller until Story 7.18.
+
+**Dev results (2026-10-09, main session, on the owner's in-session go for the T1 writes):**
+
+- **The install (AC "The two checkers").**
+  - The control ran first: `"gscan4": "npm:gscan@4.49.7"` under `pnpm install` on Node 24.18.1 and pnpm 11.22.0 answered `ERR_PNPM_UNSUPPORTED_ENGINE` — "Your Node version is incompatible with "gscan@4.49.7". Expected version: ^14.18.0 || ^16.13.0 || ^18.12.1 || ^20.11.1 || ^22.13.1. Got: v24.18.1" (recorded in `packages/theme-compiler/vendor/README.md`).
+  - So `gscan4` is `file:vendor/gscan-4.49.7.tgz`; `gscan6` is `npm:gscan@6.4.2`; the devDependency `gscan` is gone. `pnpm install --frozen-lockfile` installs both. No `packageExtensions` and no new `allowBuilds` entry were needed.
+  - The copy, unpacked, differs from the registry 4.49.7 (as installed in `tools/stress/node_modules/gscan4`) in `package.json`'s `engines.node` line alone (`diff -r`, re-run in the main session). The README's command, run twice by the implementation pass, gave identical bytes; its sha256 is in the README.
+  - `GSCAN` equals both installed versions (`gate.test.ts`).
+- **The one line the permission classifier held.** The implementation subagent's edit ending `escapeUserText` with `gscanInert` was refused by the session's permission classifier. The owner approved it in this session (2026-10-09), and it was made in the main session. It adds escaping and removes none; `agreement.test.ts` held unchanged, and no snapshot or render-matrix baseline moved (`check-snapshots` PASS against the committed snapshot files).
+- **`pnpm check` (Node 24.18.1)** — exit 0: lint (with `gate/gscan.ts` the one gate file in `NOT_CORE`), the typecheck with `gate/`, and every package's tests, among them `gate/gate.test.ts`'s rows on both real pinned checkers, `ad36.test.ts`'s pair, and `compile.test.ts`'s `(7.7)` layer-name row. `check-snapshots` printed every gscan row `ok` after its control, on gscan 4.49.7 at `v5` and 6.4.2 at `v6`:
+  - 7.2's "no `GS010-*` or `GS100-*`" (control: `posts_per_page "12"` raised `GS010-PJ-CONF-PPP-INT`), 7.4's "no `GS051`" (control: AD-18's two `var()` forms taken out raised `GS051-CUSTOM-FONTS`) and 7.6's "no `GS001-DEPR-*`" (control: `{{@blog.title}}` raised `GS001-DEPR-BLOG`), now through `runGscan`;
+  - the pilot theme's verdicts: blocked on exactly `GS050-CSS-KGWF` and `-KGWW` (ref `styles`), warned on exactly `page_switch_unused`, whose Ghost 5 detail carries Question 1's sentence; control: the pilot theme plus `SCAFFOLD` gave an empty, unblocked verdict on both;
+  - a customer's words in A4 #13's eyebrow and every layer name raised none of the four rules; control: the same words raw in `post.hbs` raised each of them on both.
+- **`tools/stress`** — `node build.js && node gate.js theme`: 0 errors and 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6), unchanged.
+- **The recorder's local half**, run from a scratch script before T1 (no T1 call): the scaffolded pilots and both paywall probes gave an empty, unblocked verdict on both checkers; the three probe trees gave the expected verdicts (pilot: `GS050` ×2 blocked, `page_switch_unused`; fatal: `GS005-TPL-ERR` fatal plus the two `GS050`s; cascade: one `package_check_failed` naming `probe_setting`); the uploaded templates carried each inert form and no raw word; control: the words raw in `post.hbs` raised `GS001-DEPR-CURR-SYM`, `-LABS-MEMBERS`, `-SITE-LANG` and `GS060-JS-GUA` on both.
+- **T1 `ghost6.inflozo.com` (Ghost 6.58.0)** — `python3 tools/probe/record-theme-assembly.py`, keys read in-process by variable name (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY` in `tools/probe/.env`), never printed. Exit 0, every row PASS and none failed, MEASUREMENTS §76 written:
+  - `/` rendered A4 #13's eyebrow as exactly `Page<nonce> currency_symbol @site.lang @labs.members ghost.url.api`, from templates carrying only the inert forms;
+  - the unscaffolded pilot probe: `200`, its theme record's `errors` `[GS050-CSS-KGWF, GS050-CSS-KGWW]`, not fatal, equal to `runGscan(files, 6)`'s; its `warnings` `[]` in production while the gate reports `GS110-NO-MISSING` (the premise, recorded);
+  - the fatal probe: `422 ThemeValidationError`, `errors[0].details.errors` equal to the gate's — `GS005-TPL-ERR` fatal with the two `GS050`s; the gate's verdict blocked; `GET themes/` listed no such theme (the `finally`'s delete answered `404`, as nothing was installed);
+  - the cascade probe: `200` with `GS010-PJ-PARSE` and the cascade, the same codes and flags as `runGscan`'s; `gscanGate` returned one `package_check_failed` naming `probe_setting` and no `GS010-PJ-*` finding; the active theme's custom settings read the same before and after;
+  - Stories 7.1–7.6's rows and §72's paywall probe and control held again;
+  - the active theme was read back as `casper` after every upload, and every probe theme was deleted (installed after: `casper`, `racer`, `source`). The run reused this month's probe picture, so no picture was uploaded.
+  - The Ghost 5 half is DW-326's (R-238).
+- **Matrix audit** — every I/O row maps to a check that ran:
+  - a clean theme and today's pilot theme: `check-snapshots`' 7.7 rows and their control, on both checkers (and `gate.test.ts`'s clean base theme at 0/0);
+  - Ghost's own verdicts (§13a), a Page with no Post header, a fatal error, the cascade, the one-letter key, a valid visibility, `GS100` and its two controls, their control, a customer's words in text and in an `href`, any other rule (`GS001-DEPR-CSS-KGMD`), gscan's markup, gscan fails (an unwritable file and a path leaving the directory, the directory removed), a moved pin, determinism: `gate/gate.test.ts`'s rows of those names, on both real checkers;
+  - the layer-name half of "a customer's words": `compile.test.ts`'s `(7.7)` row, since the runtime package cannot reach `commentPart` — the spec placed it in `ad36.test.ts`, whose pair holds the `escapeUserText` half.
+- **One narrowing to know at Review.** `runGscan` drops gscan's recommendations, as the spec says, so 7.2's "no `GS010-*` or `GS100-*`" row no longer sees the recommendation-level `GS010-PJ-*` rules it saw at any level before; Ghost's own upload answer carries none, and `compile.test.ts` still holds the page-size refusals.
+- **Vercel, Supabase, Resend, Dodo** — not touched at Dev. No migration, and no Supabase, Resend or Dodo surface. CI's `check`/`rls`/`deploy` (the first install of `gscan4` from `vendor/` on CI's runner) and the deployment's READY state are read at Review.

@@ -135,7 +135,7 @@ development_status:
   7-4-assets-fonts-per-design-css-and-the-dead-code-strip: done
   7-5-js-bundling-two-files-two-origins: done
   7-6-ghost-correct-markup: done
-  7-7-the-gscan-gate: ready-for-dev
+  7-7-the-gscan-gate: in-progress
   7-8-the-emitted-theme-quality-gate: backlog
   7-9-theme-settings-and-the-custom-settings-builder: backlog
   7-10-promoting-a-control-to-a-ghost-admin-setting: backlog

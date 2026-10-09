@@ -9259,7 +9259,13 @@ plain: Ghost lets a site owner hide a page's title and picture with a switch, an
   error when no template in the theme reads that switch. A Page you designed with no post header gets that error — and,
   until Story 10.79, so does any project whose Page is untouched — though Ghost 5 installs the theme anyway. Whether
   Inflozo blocks such a deploy is not decided yet.
-status: open
+status: done 2026-10-09 (Story 7.7)
+resolution: Story 7.7's Question 1, ruled option 1 (owner, 2026-10-09) — Inflozo's gate (`@inflozo/theme-compiler/gate`)
+  maps `GS110-NO-MISSING-PAGE-BUILDER-USAGE` to `page_switch_unused`, a WARNING on Ghost 5 and Ghost 6 alike that never
+  blocks a deploy; on Ghost 5 its detail says Ghost 5's own theme check counts it as an error and installs the theme
+  anyway, and its action is to add a Post header to the Page template. `gate/gate.test.ts` holds it on both pinned
+  checkers and `check-snapshots` on the pilot theme. FR-I1 says so; the switch stays Story 10.79's to read on a real
+  `page.hbs`.
 severity: medium
 origin: Story 7.3's Create (2026-10-06), read in gscan 4.49.7 and 6.4.2 and as the planning run executed it
   (MEASUREMENTS §13a, §13b): `GS110-NO-MISSING-PAGE-BUILDER-USAGE` is an error on 4.49.7 and a warning on 6.4.2, where

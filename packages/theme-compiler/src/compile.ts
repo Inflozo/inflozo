@@ -52,7 +52,7 @@ import type { IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/l
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { faceOf, pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
 import {
-  BASE_CSS, checkChromeLiterals, darkHook, darkOverrideCss, designate, feedQuery, isDesigned, packTokensCss, pageTwoStack, renderTheme,
+  BASE_CSS, checkChromeLiterals, darkHook, darkOverrideCss, designate, feedQuery, gscanInert, isDesigned, packTokensCss, pageTwoStack, renderTheme,
   resolveControls, sectionKey, srcsetExpr, synthesize, U0, U1, UserText, visibleFeed,
 } from '@inflozo/section-runtime'
 import type { DocInstance, Pack, PlacedSection, ProjectDoc, RuntimeDocument } from '@inflozo/section-runtime'
@@ -160,8 +160,10 @@ const PAGE_SWITCH = '@page.show_title_and_feature_image'
 
 
 /** A label part, made safe for a Handlebars comment (AD-36): braces and C0 controls dropped, whitespace collapsed, trimmed.
- *  With no brace left, nothing inside can end `{{!--` early — the lexer ends it at the first `--}}` or `--~}}`. */
-const commentPart = (s: string): string => s.replace(/[{}\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim()
+ *  With no brace left, nothing inside can end `{{!--` early — the lexer ends it at the first `--}}` or `--~}}`. Story 7.7:
+ *  gscan's brace-free rules read comments too, so `gscanInert` writes their trigger words inert — the entity stays as
+ *  written, since nothing renders a comment. */
+const commentPart = (s: string): string => gscanInert(s.replace(/[{}\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim())
 
 /** A stylesheet header part: `*\/` and C0 controls dropped, whitespace collapsed. `*\/` is dropped until none is left,
  *  because one pass over `**\/\/` leaves a `*\/` behind. */

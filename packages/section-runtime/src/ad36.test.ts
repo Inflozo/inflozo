@@ -11,7 +11,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
-import { PAGE_NUMBER_HBS, allowedMarks, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { GSCAN_INERT, PAGE_NUMBER_HBS, allowedMarks, escapeUserText, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { REFERENCE_PACK } from './reference.ts'
 import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
@@ -276,6 +276,29 @@ test('AD-5 still holds — user braces ship as entities, never as a mustache', (
     title: 'Notes on {{@site.title}} and {{#if @member}}x{{/if}}',
   })
   assert.ok(!/\{\{[^&]/.test(out), `AD-5 regression: a live mustache reached the output: ${out}`)
+})
+
+// ── AD-36, Story 7.7: gscan matches five rules over a theme file's whole text with no brace at all, so a customer's words
+//    could fail a deploy. `escapeUserText` writes one character of each match as its numeric entity: the vector is inert
+//    (no rule's pattern matches) AND the legitimate case still works (a browser reads back exactly the typed text, in a
+//    text run and in an href). The real checkers' half is `packages/theme-compiler/gate/gate.test.ts`. ──
+test('AD-36 — gscan\'s brace-free trigger words leave escapeUserText inert to their rules, and decode to the typed text', () => {
+  for (const e of GSCAN_INERT) {
+    // the control: the typed words DO match the rule's pattern, so their absence below is the escaper's doing
+    assert.notEqual(e.witness.search(e.pattern), -1, `${e.rule}: the witness does not match its own pattern, so it proves nothing`)
+    const out = escapeUserText(e.witness)
+    assert.equal(out.search(e.pattern), -1, `${e.rule}: the escaped text still matches ${String(e.pattern)}: ${out}`)
+    const page = new JSDOM(`<p>${out}</p><a href="${out}">x</a>`).window.document
+    assert.equal(page.querySelector('p')?.textContent, e.witness, `${e.rule}: a visitor would not read the typed text`)
+    assert.equal(page.querySelector('a')?.getAttribute('href'), e.witness, `${e.rule}: a link would not lead where the customer typed`)
+  }
+})
+
+test('AD-36 — the five rules\' trigger words inside ordinary text are each written inert once, and the rest of the text is untouched', () => {
+  const typed = `Pay in currency_symbol, ask @site.lang or @labs.members, call ghost.url.api, open /assets/a.pdf and /ASSETS/assets/b.pdf & "more"`
+  const out = escapeUserText(typed)
+  for (const e of GSCAN_INERT) assert.equal(out.search(e.pattern), -1, `${e.rule} still matches: ${out}`)
+  assert.equal(new JSDOM(`<p>${out}</p>`).window.document.querySelector('p')?.textContent, typed)
 })
 
 // ── AD-5's ONE deliberate exception, proved narrow (Story 5.16a). `PAGE_NUMBER_HBS` is the only string this

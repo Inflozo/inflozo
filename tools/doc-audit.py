@@ -233,9 +233,11 @@ DOCS = [
  ('tools/stress/build.js', 'tool', 'The stress fixture',
   'Builds a deliberately heavy stress theme, prints its own section count and the compile budget. The measurement '
   'behind AD-11.'),
- ('tools/stress/gate.js', 'tool', 'The gscan gate',
-  'Runs the gscan version each Ghost major actually BUNDLES — 4.49.7 for Ghost 5, 6.4.2 for Ghost 6. '
-  'Running one gscan twice with different flags looks equivalent and is not.'),
+ ('tools/stress/gate.js', 'tool', 'The stress fixture\'s gscan run',
+  'Runs the gscan version each Ghost major actually BUNDLES — 4.49.7 for Ghost 5, 6.4.2 for Ghost 6 — over the stress '
+  'fixture, on tools/stress\'s own npm install. Running one gscan twice with different flags looks equivalent and is not. '
+  'Since Story 7.7 it is the stress fixture\'s alone (DW-296, Story 7.35): the product\'s gate is '
+  '@inflozo/theme-compiler/gate (gscanGate, runGscan), which CI and the theme-assembly recorder run.'),
  ('tools/stress/sections.js', 'tool', 'Fixture sections', 'The annotated HTML the fixture compiles.'),
  ('tools/stress/test-vocabulary.mjs', 'tool', 'Proof the vocabulary describes what was executed',
   "Story 4.1's control. Runs packages/library's validator over sections.js's eight EXECUTED "
@@ -418,7 +420,7 @@ DOCS = [
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
-  "Stories 7.1 to 7.6's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
+  "Stories 7.1 to 7.7's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
   "formatting contract, its own package.json included, every standard template synthesized where untouched, since "
   "Story 7.4 Paper's pool woff2 files, their licences and a stripped screen.css with AD-18's variables and one dark hook, "
   "since Story 7.5 main.js (core alone on the pilots) behind its defer tag and README.md's Scripts section, and since "
@@ -433,9 +435,17 @@ DOCS = [
   "Adds the scaffold, new files only, each named for its story: assets/css/cards.css (7.13's two widths alone — AD-18's "
   "lines left it at Story 7.4, so screen.css answers GS051) and a stand-in page.hbs "
   "reading @page.show_title_and_feature_image (Story 10.79's: the compile leaves an untouched page.hbs out, Story 7.3's "
-  "Question 1, ruled); package.json is compiled, never scaffolded (Story 7.2). Gates through tools/stress/gate.js at 0 "
-  "errors AND 0 warnings on gscan 4.49.7 and 6.4.2 — anything gscan names is a question for the owner, never a widened "
-  "scaffold. On T1 ONLY (R-238), behind record-shim.py's start_guard: under the site's own theme it reads GET themes/ "
+  "Question 1, ruled) — both tools/pilot-theme.mjs's SCAFFOLD since Story 7.7; package.json is compiled, never "
+  "scaffolded (Story 7.2). Gates through the PRODUCT gate since Story 7.7 (gscanGate, @inflozo/theme-compiler/gate, "
+  "through Node 24) to an empty, unblocked verdict on gscan 4.49.7 at v5 and 6.4.2 at v6 — anything the gate names is a "
+  "question for the owner, never a widened scaffold. Story 7.7 (§76): the page word carries the four brace-free words "
+  "gscan counts as errors after its nonce and the layer word currency_symbol — the uploaded templates carry each inert "
+  "and none raw (a control), and / reads A4 #13's eyebrow back exactly as typed; then three probe uploads under their own "
+  "names, none activated, each deleted in a finally around its upload with the active theme read back — the pilots "
+  "unscaffolded (200, its theme record's errors the codes and fatal flags runGscan(files, 6) gives, its warnings empty in "
+  "production or equal), a fatal probe (422 ThemeValidationError whose details.errors match, GS005-TPL-ERR fatal, the "
+  "gate blocked, nothing listed) and a cascade probe (200 with GS010-PJ-PARSE and the cascade, gscanGate's one "
+  "package_check_failed naming probe_setting, the active theme's custom settings the same before and after). On T1 ONLY (R-238), behind record-shim.py's start_guard: under the site's own theme it reads GET themes/ "
   "(that theme's package: no marker, no 750 width, its card_assets), the newest published post's T1-hosted feature image "
   "— or, when T1 hosts none, a 1000-px probe PNG it uploads, which stays (Ghost's API deletes no picture; the owner's "
   "ruling of Story 7.2's Question 4) — at size/w750/ (redirected to the original) and the cards.min.css hash on /; then "
@@ -473,7 +483,8 @@ DOCS = [
   "the run; a row that does not hold writes nothing. Writes T1 three theme uploads, their activations and deletes, the "
   "one w750 rendition and the one w750 WebP rendition Ghost saves and, only when T1 hosts no picture, that probe picture. "
   "Run on the owner's in-session go, in the main session. Any argument prints its docstring and exits. Writes "
-  "MEASUREMENTS.md §75 alone, replacing an earlier §75 of its own; §70 to §74 stay Stories 7.1's to 7.5's records."),
+  "MEASUREMENTS.md §76 alone, replacing an earlier §76 of its own; §70 to §75 stay Stories 7.1's to 7.6's records. "
+  "Since Story 7.7 it also writes T1 the three gate probes' uploads and deletes."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1238,7 +1249,15 @@ DOCS = [
   'control: the article removed is named by rule 3); the pilot compile runs checkChromeText and returns (the control: '
   'A24 #1\'s title binding shipping its authored English throws V1\'s sentence); checkGhostMarkup over every design\'s '
   'rendered theme text returns nothing (the control: A17 #1\'s sizes removed); and gscan 6.4.2 at v6 raises no '
-  'GS001-DEPR-* on the pilot theme (the control: {{@blog.title}} appended raises GS001-DEPR-BLOG).'),
+  'GS001-DEPR-* on the pilot theme (the control: {{@blog.title}} appended raises GS001-DEPR-BLOG). Since Story 7.7 every '
+  'gscan row runs through runGscan (@inflozo/theme-compiler/gate, the one caller of gscan) on BOTH pinned checkers — '
+  '4.49.7 at v5 and 6.4.2 at v6 — each row named per checker, at error and warning level (runGscan drops '
+  'recommendations, which Ghost\'s upload answer never carries); and rows each behind its control: the pilot theme\'s '
+  'gscanGate verdict is blocked on exactly GS050-CSS-KGWF and -KGWW (ref styles) and warned on exactly page_switch_unused '
+  '(the control: the pilots plus tools/pilot-theme.mjs\'s SCAFFOLD give an empty, unblocked verdict), and a customer\'s '
+  'words — the four brace-free error words in A4 #13\'s eyebrow and currency_symbol in every layer name — raise none of '
+  'GS001-DEPR-CURR-SYM, -SITE-LANG, -LABS-MEMBERS or GS060-JS-GUA (the control: the same words written raw into post.hbs '
+  'raise each).'),
  ('tools/pilot-theme.mjs', 'tool', 'The five-pilot project, compiled',
   "Story 7.1's one builder of the project CI and the T1 recorder both compile: the site doc's A1 #1, Home's A4 #13 · "
   "A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 (pageTwo, compiled to index.hbs), post.hbs's A24 #1 and an A22 #1 "
@@ -1256,7 +1275,17 @@ DOCS = [
   'parses every template, one {{{body}}} and no other triple-stash but {{{html}}} as partials/content-cta.hbs\'s first '
   "line (Story 7.3), no fingerprint (package.json read without its three named marks — name, author and FR-J13's marker "
   "— by unmarked(), and refused when it does not parse), every partial referenced but the paywall, which Ghost's "
-  "{{content}} runs; a font's bytes are skipped, never scanned as text. Node 24."),
+  "{{content}} runs; a font's bytes are skipped, never scanned as text. Since Story 7.7 it exports SCAFFOLD, §73's two "
+  "labelled files (Story 7.13's cards.css with D12's two widths, Story 10.79's stand-in page.hbs reading the page "
+  "switch), the one copy CI's clean-verdict control and the recorder's upload both use. Node 24."),
+ ('tools/record-gscan.mjs', 'tool', 'gscan rule inventories, recorded',
+  "Story 7.7's AD-23 recorder: for each Ghost major in GSCAN (@inflozo/theme-compiler/gate/gscan.ts), it writes "
+  'packages/theme-compiler/fixtures/gscan/rules-<version>.json as { gscan, checkVersion, ghost, captured, command, rules }, '
+  'rules being installedRules(major) — every rule in the installed checker\'s own spec for its checkVersion, with its '
+  'level, fatal flag and a regex rule\'s source. Refuses when the installed checker is not the pin; a re-run with '
+  'nothing changed rewrites nothing, captured included. The gate\'s test holds the installed checkers equal to these '
+  'files, so a pin cannot move without its inventory re-recorded in the same commit (step 2 of the bump procedure, '
+  'fixtures/gscan/README.md). Writes no count: the file is the list. Local only — no network, no Ghost. Node 24.'),
  ('tools/check-traces.mjs', 'tool', 'The deployed functions carry their files, checked after the build',
   "Story 5.24d's check of DW-269, run by CI's check job straight after pnpm build (never inside pnpm check, which runs "
   "before any build). The app reads designs, pictures and stylesheets off disk, and Vercel ships a function with only the "

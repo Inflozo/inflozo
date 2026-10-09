@@ -1,0 +1,1261 @@
+{
+  "gscan": "4.49.7",
+  "checkVersion": "v5",
+  "ghost": "5.130.6",
+  "captured": "2026-10-09",
+  "command": "node tools/record-gscan.mjs",
+  "rules": {
+    "GS001-DEPR-AC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-AC-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?primary_author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-AC-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?authors\\.\\[[0-9]+\\]\\.(cover)\\s*?}}/g"
+    },
+    "GS001-DEPR-AIMG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-AIMG-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?primary_author\\.(image)\\s*?}}/g"
+    },
+    "GS001-DEPR-AIMG-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?authors\\.\\[[0-9]+\\]\\.(cover)\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-BIO": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.bio\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-CIMG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.cover_image\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-FB": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.facebook\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-FIELD": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#get.+fields=(\"|')\\s*?([\\w\\[\\]]+,{1}\\s*?)*?(\\s*?author\\s*?)(\\s*,{1}\\s?[\\w\\[\\]]+)*?\\s*?(\"|')(.*)}}/g"
+    },
+    "GS001-DEPR-AUTH-FILT": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#get.+filter=(\"|')\\s*?([\\w\\[\\]]+,{1}\\s*?)*?(\\s*?author:).*(\"|')(.*)}}/g"
+    },
+    "GS001-DEPR-AUTH-ID": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.id\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-INCL": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#get.+include=(\"|')\\s*?([\\w\\[\\]]+,{1}\\s*?)*?(\\s*?author\\s*?)(\\s*,{1}\\s?[\\w\\[\\]]+)*?\\s*?(\"|')(.*)}}/g"
+    },
+    "GS001-DEPR-AUTH-LOC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.location\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-MAIL": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.email\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-MD": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.meta_description\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-MT": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.meta_title\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-NAME": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.name\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-PIMG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.profile_image\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-SLUG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.slug\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-TW": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.twitter\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-URL": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.url\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTH-WEB": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?author\\.website\\s*?}}/g"
+    },
+    "GS001-DEPR-AUTHBL": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#author\\s*?}}/g"
+    },
+    "GS001-DEPR-BC": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?@blog\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-BLOG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?@blog\\.[a-zA-Z0-9_]+\\s*?}}/g"
+    },
+    "GS001-DEPR-BPL": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?@blog\\.permalinks\\s*?}}/g"
+    },
+    "GS001-DEPR-C0H": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?content words=(\"|')0(\"|')\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-AC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-AC-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?primary_author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-AC-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?authors\\.\\[[0-9]+\\]\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-AIMG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?author\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-AIMG-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?primary_author\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-AIMG-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?authors\\.\\[[0-9]+\\]\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-AUTH": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?(author)(?:\\.\\w+)*?\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-BC": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?#if\\s*?@blog\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-COV": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?#if\\s*?cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-IMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?#if\\s*?image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PAC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?post\\.author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PAC-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?post\\.primary_author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PAC-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?post\\.authors\\.\\[[0-9]+\\]\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PAIMG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?post\\.author\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PAIMG-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?post\\.primary_author\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PAIMG-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?post\\.authors\\.\\[[0-9]+\\]\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PAUTH": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#if\\s*?(?:post\\.)(author)(?:\\.\\w+)*?\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-PTIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?#if\\s*?post\\.tags\\.\\[[0-9]+\\].image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-TIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?#if\\s*?tag\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-CON-TSIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?#if\\s*?tags\\.\\[[0-9]+\\].image\\s*?}}/g"
+    },
+    "GS001-DEPR-COV": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?cover\\s*?}}/g"
+    },
+    "GS001-DEPR-CSS-AT": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.archive-template[\\s{]/g"
+    },
+    "GS001-DEPR-CSS-KGMD": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-card-markdown/g"
+    },
+    "GS001-DEPR-CSS-PATS": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.page-template-\\w+[\\s{]/g"
+    },
+    "GS001-DEPR-CURR-SYM": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/currency_symbol/g"
+    },
+    "GS001-DEPR-EACH": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/{{\\s*?#each\\s*/g"
+    },
+    "GS001-DEPR-ESC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?(?:error\\.)?(code)\\s*?}}/g"
+    },
+    "GS001-DEPR-IMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?image\\b[\\w\\s='\"]*?}}/g"
+    },
+    "GS001-DEPR-IUA": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?img_url\\s*?(author.).*}}/g"
+    },
+    "GS001-DEPR-LABS-MEMBERS": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/@labs\\.members/g"
+    },
+    "GS001-DEPR-LANG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?lang\\s*?}}/g"
+    },
+    "GS001-DEPR-MD": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/<meta name=(\"|')description(\"|') content=(\"|'){{meta_description}}(\"|')/gi"
+    },
+    "GS001-DEPR-NAUTH": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?(?:#|#if)?\\s*?\\.\\.\\/author(?:\\.\\S*?)?\\s*?}}/g"
+    },
+    "GS001-DEPR-PAC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?post\\.author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-PAC-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?post\\.primary_author\\.cover\\s*?}}/g"
+    },
+    "GS001-DEPR-PAC-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?post\\.authors\\.\\[[0-9]+\\]\\.(cover)\\s*?}}/g"
+    },
+    "GS001-DEPR-PAID": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author_id\\s*?}}/g"
+    },
+    "GS001-DEPR-PAIMG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?post\\.author\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-PAIMG-2": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?post\\.primary_author\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-PAIMG-3": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?post\\.authors\\.\\[[0-9]+\\]\\.(image)\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-BIO": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.bio\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-CIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.cover_image\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-FB": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.facebook\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-ID": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.id\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-LOC": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.location\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-MAIL": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.email\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-MD": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.meta_description\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-MT": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.meta_title\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-NAME": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.name\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-PIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.profile_image\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-SLUG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.slug\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-TW": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.twitter\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-URL": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.url\\s*?}}/g"
+    },
+    "GS001-DEPR-PAUTH-WEB": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.author\\.website\\s*?}}/g"
+    },
+    "GS001-DEPR-PIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-PPP": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?@blog\\.posts_per_page\\s*?}}/g"
+    },
+    "GS001-DEPR-PTIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?post\\.tags\\.\\[[0-9]+\\]\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-PURL": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?pageUrl\\b[\\w\\s='\"]*?}}/gi"
+    },
+    "GS001-DEPR-SGF": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?@site\\.ghost_foot\\s*?}}/g"
+    },
+    "GS001-DEPR-SGH": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?@site\\.ghost_head\\s*?}}/g"
+    },
+    "GS001-DEPR-SITE-LANG": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/@site\\.lang/g"
+    },
+    "GS001-DEPR-SPL": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?@site\\.permalinks\\s*?}}/g"
+    },
+    "GS001-DEPR-TIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?tag\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-TSIMG": {
+      "level": "error",
+      "fatal": true,
+      "regex": "/{{\\s*?tags\\.\\[[0-9]+\\]\\.image\\s*?}}/g"
+    },
+    "GS001-DEPR-USER-GET": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*?#get (\"|')\\s*users(\"|')\\s*/g"
+    },
+    "GS005-TPL-ERR": {
+      "level": "error",
+      "fatal": true
+    },
+    "GS010-PJ-AUT-EM-REQ": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-AUT-EM-VAL": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CONF-PPP": {
+      "level": "recommendation",
+      "fatal": false
+    },
+    "GS010-PJ-CONF-PPP-INT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-BOOLEAN-DEFAULT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-CASE": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-COLOR-DEFAULT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-DESCRIPTION-LENGTH": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-GROUP": {
+      "level": "recommendation",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-IMAGE-DEFAULT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-SELECT-DEFAULT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-SELECT-OPTIONS": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-TYPE": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-VISIBILITY-SYNTAX": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-SETTINGS-VISIBILITY-VALUE": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-CUST-THEME-TOTAL-SETTINGS": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-GHOST-API": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS010-PJ-GHOST-API-PRESENT": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS010-PJ-GHOST-API-V2": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS010-PJ-GHOST-CARD-ASSETS-NOT-PRESENT": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS010-PJ-KEYWORDS": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS010-PJ-NAME-HY": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-NAME-LC": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-NAME-REQ": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-PARSE": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-REQ": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-VERSION-REQ": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS010-PJ-VERSION-SEM": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS020-DEF-REC": {
+      "level": "recommendation",
+      "fatal": false
+    },
+    "GS020-INDEX-REQ": {
+      "level": "error",
+      "fatal": true
+    },
+    "GS020-POST-REQ": {
+      "level": "error",
+      "fatal": true
+    },
+    "GS030-ASSET-REQ": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/(src|href)=['\"](.*?\\/assets\\/.*?)['\"]/gim"
+    },
+    "GS030-ASSET-SYM": {
+      "level": "error",
+      "fatal": true
+    },
+    "GS040-GF-REQ": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS040-GH-REQ": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS050-CSS-KG-NFT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-card/g"
+    },
+    "GS050-CSS-KG-NFTCO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-card-container/g"
+    },
+    "GS050-CSS-KG-NFTCTR": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-creator/g"
+    },
+    "GS050-CSS-KG-NFTDSC": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-description/g"
+    },
+    "GS050-CSS-KG-NFTHD": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-header/g"
+    },
+    "GS050-CSS-KG-NFTIMG": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-image/g"
+    },
+    "GS050-CSS-KG-NFTLG": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-logo/g"
+    },
+    "GS050-CSS-KG-NFTMD": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-metadata/g"
+    },
+    "GS050-CSS-KG-NFTTIT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-nft-title/g"
+    },
+    "GS050-CSS-KGAUD": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-card/g"
+    },
+    "GS050-CSS-KGAUDCURRTM": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-current-time/g"
+    },
+    "GS050-CSS-KGAUDDUR": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-duration/g"
+    },
+    "GS050-CSS-KGAUDMTICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-mute-icon/g"
+    },
+    "GS050-CSS-KGAUDPAUICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-pause-icon/g"
+    },
+    "GS050-CSS-KGAUDPL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-player/g"
+    },
+    "GS050-CSS-KGAUDPLCNT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-player-container/g"
+    },
+    "GS050-CSS-KGAUDPLICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-play-icon/g"
+    },
+    "GS050-CSS-KGAUDPLRT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-playback-rate/g"
+    },
+    "GS050-CSS-KGAUDSKSL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-seek-slider/g"
+    },
+    "GS050-CSS-KGAUDTHUMB": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-thumbnail/g"
+    },
+    "GS050-CSS-KGAUDTHUMBPL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-thumbnail.placeholder/g"
+    },
+    "GS050-CSS-KGAUDTI": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-title/g"
+    },
+    "GS050-CSS-KGAUDTM": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-time/g"
+    },
+    "GS050-CSS-KGAUDUNMTICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-unmute-icon/g"
+    },
+    "GS050-CSS-KGAUDVOLSL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-audio-volume-slider/g"
+    },
+    "GS050-CSS-KGBA": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-before-after-card/g"
+    },
+    "GS050-CSS-KGBAIA": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-before-after-card-image-before/g"
+    },
+    "GS050-CSS-KGBAIB": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-before-after-card-image-after/g"
+    },
+    "GS050-CSS-KGBM": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-card/g"
+    },
+    "GS050-CSS-KGBMAU": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-author/g"
+    },
+    "GS050-CSS-KGBMCO": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-container/g"
+    },
+    "GS050-CSS-KGBMCON": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-content/g"
+    },
+    "GS050-CSS-KGBMDE": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-description/g"
+    },
+    "GS050-CSS-KGBMIC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-icon/g"
+    },
+    "GS050-CSS-KGBMME": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-metadata/g"
+    },
+    "GS050-CSS-KGBMPU": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-publisher/g"
+    },
+    "GS050-CSS-KGBMTH": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-thumbnail/g"
+    },
+    "GS050-CSS-KGBMTI": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-bookmark-title/g"
+    },
+    "GS050-CSS-KGBQALT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-blockquote-alt/g"
+    },
+    "GS050-CSS-KGBTN": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-button-card/g"
+    },
+    "GS050-CSS-KGBTNBTN": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-btn/g"
+    },
+    "GS050-CSS-KGBTNBTNA": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-btn-accent/g"
+    },
+    "GS050-CSS-KGBTNC": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-button-card.kg-align-center/g"
+    },
+    "GS050-CSS-KGBTNL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-button-card.kg-align-left/g"
+    },
+    "GS050-CSS-KGCO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card/g"
+    },
+    "GS050-CSS-KGCOBGA": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-accent/g"
+    },
+    "GS050-CSS-KGCOBGB": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-blue/g"
+    },
+    "GS050-CSS-KGCOBGGN": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-green/g"
+    },
+    "GS050-CSS-KGCOBGGY": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-grey/g"
+    },
+    "GS050-CSS-KGCOBGPE": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-purple/g"
+    },
+    "GS050-CSS-KGCOBGPK": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-pink/g"
+    },
+    "GS050-CSS-KGCOBGR": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-red/g"
+    },
+    "GS050-CSS-KGCOBGW": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-white/g"
+    },
+    "GS050-CSS-KGCOBGY": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-background-yellow/g"
+    },
+    "GS050-CSS-KGCOE": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-emoji/g"
+    },
+    "GS050-CSS-KGCOT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-callout-card-text/g"
+    },
+    "GS050-CSS-KGFL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card/g"
+    },
+    "GS050-CSS-KGFLCAP": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-caption/g"
+    },
+    "GS050-CSS-KGFLCNT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-contents/g"
+    },
+    "GS050-CSS-KGFLCON": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-container/g"
+    },
+    "GS050-CSS-KGFLMD": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-medium/g"
+    },
+    "GS050-CSS-KGFLNM": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-filename/g"
+    },
+    "GS050-CSS-KGFLSM": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-small/g"
+    },
+    "GS050-CSS-KGFLSZ": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-filesize/g"
+    },
+    "GS050-CSS-KGFLTTL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-file-card-title/g"
+    },
+    "GS050-CSS-KGGC": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-gallery-container/g"
+    },
+    "GS050-CSS-KGGI": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-gallery-image/g"
+    },
+    "GS050-CSS-KGGR": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-gallery-row/g"
+    },
+    "GS050-CSS-KGPR": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card/g"
+    },
+    "GS050-CSS-KGPRBTN": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-button/g"
+    },
+    "GS050-CSS-KGPRBTNA": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-btn-accent/g"
+    },
+    "GS050-CSS-KGPRCO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-container/g"
+    },
+    "GS050-CSS-KGPRDE": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-description/g"
+    },
+    "GS050-CSS-KGPRIM": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-image/g"
+    },
+    "GS050-CSS-KGPRRA": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-rating/g"
+    },
+    "GS050-CSS-KGPRRAA": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-rating-active/g"
+    },
+    "GS050-CSS-KGPRRAS": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-rating-star/g"
+    },
+    "GS050-CSS-KGPRTI": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-title/g"
+    },
+    "GS050-CSS-KGPRTICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-product-card-title-container/g"
+    },
+    "GS050-CSS-KGTGL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-toggle-card/g"
+    },
+    "GS050-CSS-KGTGLC": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-toggle-content/g"
+    },
+    "GS050-CSS-KGTGLH": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-toggle-heading/g"
+    },
+    "GS050-CSS-KGTGLHT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-toggle-heading-text/g"
+    },
+    "GS050-CSS-KGTGLIC": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-toggle-card-icon/g"
+    },
+    "GS050-CSS-KGVID": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-card/g"
+    },
+    "GS050-CSS-KGVIDCNT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-container/g"
+    },
+    "GS050-CSS-KGVIDCURRTM": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-current-time/g"
+    },
+    "GS050-CSS-KGVIDDUR": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-duration/g"
+    },
+    "GS050-CSS-KGVIDHD": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-hide/g"
+    },
+    "GS050-CSS-KGVIDLGPLICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-large-play-icon/g"
+    },
+    "GS050-CSS-KGVIDMTICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-mute-icon/g"
+    },
+    "GS050-CSS-KGVIDOVL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-overlay/g"
+    },
+    "GS050-CSS-KGVIDPAUICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-pause-icon/g"
+    },
+    "GS050-CSS-KGVIDPL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-player/g"
+    },
+    "GS050-CSS-KGVIDPLCNT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-player-container/g"
+    },
+    "GS050-CSS-KGVIDPLICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-play-icon/g"
+    },
+    "GS050-CSS-KGVIDPLRT": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-playback-rate/g"
+    },
+    "GS050-CSS-KGVIDSKSL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-seek-slider/g"
+    },
+    "GS050-CSS-KGVIDTHUMB": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-thumbnail/g"
+    },
+    "GS050-CSS-KGVIDTHUMBPL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-thumbnail.placeholder/g"
+    },
+    "GS050-CSS-KGVIDTI": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-title/g"
+    },
+    "GS050-CSS-KGVIDTM": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-time/g"
+    },
+    "GS050-CSS-KGVIDUNMTICO": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-unmute-icon/g"
+    },
+    "GS050-CSS-KGVIDVOLSL": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/\\.kg-video-volume-slider/g"
+    },
+    "GS050-CSS-KGWF": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-width-full/g"
+    },
+    "GS050-CSS-KGWW": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/\\.kg-width-wide/g"
+    },
+    "GS051-CUSTOM-FONTS": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/^(?=[\\s\\S]*--gh-font-heading)(?=[\\s\\S]*--gh-font-body)/"
+    },
+    "GS060-JS-GUA": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/ghost\\.url\\.api/g"
+    },
+    "GS070-VALID-TRANSLATIONS": {
+      "level": "error",
+      "fatal": true
+    },
+    "GS080-CARD-LAST4": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/default_payment_card_last4/g"
+    },
+    "GS080-FEACH-POSTS": {
+      "level": "warning",
+      "fatal": false,
+      "regex": "/{{\\s*?#foreach\\s*?\\w*?\\s*?}}/g"
+    },
+    "GS080-FEACH-PV": {
+      "level": "recommendation",
+      "fatal": false,
+      "regex": "/{{\\s*?#foreach\\b[\\w\\s='\"]*?visibility=(\"|')all(\"|')[\\w\\s='\"]*?}}/g"
+    },
+    "GS080-NO-EMPTY-TRANSLATIONS": {
+      "level": "error",
+      "fatal": false,
+      "regex": "/{{\\s*t\\s*([\"'“”]?)\\s*\\1?\\s*}}/g"
+    },
+    "GS090-NO-AUTHOR-HELPER-IN-POST-CONTEXT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-IMG-URL-IN-CONDITIONALS": {
+      "level": "warning",
+      "fatal": false
+    },
+    "GS090-NO-MEMBER-PRODUCTS-DATA-HELPER": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-PRICE-DATA-CURRENCY-CONTEXT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-PRICE-DATA-CURRENCY-GLOBAL": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-PRICE-DATA-MONTHLY-YEARLY": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-PRODUCT-DATA-HELPER": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-PRODUCTS-DATA-HELPER": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-PRODUCTS-HELPER": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-TIER-BENEFIT-AS-OBJECT": {
+      "level": "error",
+      "fatal": true
+    },
+    "GS090-NO-TIER-PRICE-AS-OBJECT": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS090-NO-UNKNOWN-CUSTOM-THEME-SETTINGS": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS100-NO-UNUSED-CUSTOM-THEME-SETTING": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS110-NO-MISSING-PAGE-BUILDER-USAGE": {
+      "level": "error",
+      "fatal": false
+    },
+    "GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE": {
+      "level": "error",
+      "fatal": true
+    },
+    "GS120-NO-UNKNOWN-GLOBALS": {
+      "level": "error",
+      "fatal": false
+    }
+  }
+}

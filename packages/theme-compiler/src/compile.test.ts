@@ -26,7 +26,7 @@ import {
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
 import { TABLER_LICENSE } from '@inflozo/library/icons'
 import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
-import { BASE_CSS, darkOverrideCss, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, srcsetExpr, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
+import { BASE_CSS, darkOverrideCss, GSCAN_INERT, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, srcsetExpr, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
 import type { DocInstance, Pack, ProjectDoc } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
@@ -289,6 +289,16 @@ test('a hostile layer name: braces and controls are dropped, and Handlebars 4.7.
   assert.deepEqual(body.map((s) => s.type), ['CommentStatement'])
   // the control: with the braces left in, the same name ends the comment early and the rest is live Handlebars
   assert.ok(Handlebars.parse(`{{!-- ${hostile.replace(/[\u0000-\u001f]/g, '')} --}}`).body.some((s) => s.type === 'MustacheStatement'))
+})
+
+test('(7.7) a layer name holding gscan\'s trigger words reaches its boundary comment inert: one character of each written as its entity, no rule\'s pattern matching (AD-36)', () => {
+  const layer = GSCAN_INERT.map((e) => e.witness).join(' ')
+  // the control: the name as typed DOES match every pattern, so their absence below is commentPart's doing
+  for (const e of GSCAN_INERT) assert.notEqual(layer.search(e.pattern), -1, `${e.rule}: the layer name does not carry its trigger`)
+  const line = (compileHome(docOf(at('a22/1', layer, { content: NEWS })))['home.hbs'] ?? '').split('\n').find((l) => l.startsWith('{{!--')) ?? ''
+  assert.ok(line.includes('currency&#95;symbol') && line.includes('&#47;assets/brochure.pdf'), line)
+  for (const e of GSCAN_INERT) assert.equal(line.search(e.pattern), -1, `${e.rule} still matches the label: ${line}`)
+  assert.deepEqual(Handlebars.parse(line).body.map((x) => x.type), ['CommentStatement'])
 })
 
 test('hostile user text ships inert in every file: braces as entities, no marker or token, and Handlebars finds the same statements as for benign text', () => {

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.6's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.7's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
-WebP `srcset`s, rendered by a REAL Ghost (T1); and Story 7.3's paywall mechanism, on two hand-written probe themes.
+WebP `srcset`s, rendered by a REAL Ghost (T1); Story 7.3's paywall mechanism, on two hand-written probe themes; and since
+Story 7.7 the gscan gate (`@inflozo/theme-compiler/gate`): a customer's words, inert to gscan, read on a real page, and
+Ghost 6's own checker answering three probe uploads as the gate says.
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -50,9 +52,11 @@ it, that Ghost reads it as claimed is a hypothesis.
      D12: `.kg-width-wide` and `.kg-width-full` — Story 7.4's AD-18 lines left it, since `screen.css` now answers
      GS051) and a stand-in `page.hbs` (Story 10.79's: GS110's page-builder switch — the compile leaves an untouched
      `page.hbs` the library cannot fill out, Story 7.3's Question 1, ruled option 1, so the stand-in stays until A24
-     sits on `page.hbs`). It gates the theme
-     through tools/stress/gate.js: 0 errors AND 0 warnings on gscan 4.49.7 and 6.4.2, or nothing uploads — gscan naming
-     anything the scaffold does not answer is a question for the owner, never a widened scaffold. Each checker's own
+     sits on `page.hbs`) — both `SCAFFOLD`, from tools/pilot-theme.mjs, the copy CI's clean-verdict control uses. It gates
+     the theme through the PRODUCT gate (Story 7.7: `gscanGate`, through Node 24, as `compiled()` calls
+     tools/pilot-theme.mjs): an empty, unblocked verdict — 0 errors AND 0 warnings, after mapping — on gscan 4.49.7 at
+     `v5` and 6.4.2 at `v6`, or nothing uploads; the gate naming anything the scaffold does not answer is a question for
+     the owner, never a widened scaffold. Each checker's own
      `GS001-DEPR-*` rules are among them, so no helper Ghost deprecates uploads (Story 7.6).
   3. BEFORE THE UPLOAD, under the site's own theme: `GET themes/` gives that theme's `package` — it must carry no marker
      and no 750 width in its `image_sizes` (the controls' premise), and its `card_assets` is recorded; the picture's
@@ -88,8 +92,9 @@ it, that Ghost reads it as claimed is a hypothesis.
      here through `hookOf(sectionKey('home', …))`.
      Story 7.5's: `/`'s head carries the theme's script tag exactly once, as Ghost renders `MAIN_JS_TAG` —
      `<script defer src="/assets/js/main.js?v=…"></script>`; that address answers 200 with a JavaScript content type
-     (recorded as served), and its body is the compiled `main.js`, byte for byte. gscan reads no `.js`, so the local gate
-     is §73's, unchanged.
+     (recorded as served), and its body is the compiled `main.js`, byte for byte. gscan reads `.js` too (`read-theme.js`,
+     both pinned versions — `GS060-JS-GUA` matches in it; corrected at Story 7.7, whose dated notes sit under §74 and §75),
+     so `main.js` is among what the local gate checks.
      Story 7.6's (§75): the gated post (`/probe-gated-post/`) signed out and the newest PUBLIC post (the Content API's
      `filter=visibility:public`) each carry exactly one `<article>`, the page's section roots inside it and the header's
      outside, its class Ghost's `post_class` computed here from the Content API's record of that post — `post`, then
@@ -124,11 +129,32 @@ it, that Ghost reads it as claimed is a hypothesis.
      public. Every read is that theme's own (a `<meta>` naming it and the nonce). Both carry the scaffold's two widths
      and their own two `--gh-font-*` reads (`PROBE_FONTS_CSS`, Story 7.3's bytes), since they have no `screen.css`.
 
-What it writes to the SERVER: three theme uploads, their activations and deletes; the `w750` rendition, and the one
+  9. STORY 7.7 (§76) — A CUSTOMER'S WORDS ON A REAL GHOST: the page word is the nonce's word, then the four brace-free
+     words gscan counts as errors (`currency_symbol @site.lang @labs.members ghost.url.api`), and the layer word carries
+     `currency_symbol`; every earlier row still finds `/` by the nonce's word, its first part. The CONTROLS: the uploaded
+     templates carry each word's inert form (`currency&#95;symbol`, `&#64;site.lang`, `&#64;labs.members`,
+     `ghost&#46;url.api`) and none raw, and the local gate gave an empty verdict on both checkers. The ROW: `/` renders A4
+     #13's eyebrow as exactly the typed words.
+ 10. STORY 7.7 (§76) — GHOST 6'S OWN CHECKER AGAINST THE GATE: three probe uploads under their own names, none activated,
+     each deleted in a `finally` that encloses its upload (`restore_and_delete`), the active theme read back after each.
+     (a) The compiled pilot theme, unscaffolded: T1 answers 200, and the `errors` on its theme record carry the same codes
+     and `fatal` flags as `runGscan(files, 6)`'s errors (`GS050-CSS-KGWF`, `-KGWW`). Its `warnings` are empty in
+     production (Ghost's `validate.js`), while the gate reports `GS110-NO-MISSING`: the row records both, and a warning
+     list T1 does return must match. (b) A fatal probe — the pilot theme plus `custom-probe-fatal.hbs` invoking
+     `{{> "no-such-partial"}}`: T1 answers 422 `ThemeValidationError`, its `errors[0].details.errors` (Ghost's
+     `errorDetails`, as `@tryghost/mw-error-handler` 1.0.13 writes it) carry the gate's codes and flags — `GS005-TPL-ERR`,
+     fatal, with the two `GS050`s — the gate's verdict is blocked, and `GET themes/` lists no such theme. (c) The cascade
+     probe — the pilot theme with `config.custom.probe_setting`, a two-option select whose `visibility` is `"true"`, read
+     once in `default.hbs`: T1 answers 200 with `GS010-PJ-PARSE` and the cascade, the same codes as `runGscan`'s, and
+     `gscanGate` returns one `package_check_failed` naming `probe_setting`. Premise: the active theme's custom settings
+     read the same before and after.
+
+What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.7's three probe uploads, none
+activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
 one probe picture, which stays (Ghost's API deletes no picture) — no content, no setting, no key; keys are read by
-variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §75 alone, replacing an earlier
-§75 of its own so a re-run re-records; §70 to §74 stay Stories 7.1's to 7.5's records. The Ghost 5 half is DW-326's.
+variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §76 alone, replacing an earlier
+§76 of its own so a re-run re-records; §70 to §75 stay Stories 7.1's to 7.6's records. The Ghost 5 half is DW-326's.
 """
 import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, subprocess, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -141,7 +167,12 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '75'   # §70 to §74 stay Stories 7.1's to 7.5's records
+SECTION = '76'   # §70 to §75 stay Stories 7.1's to 7.6's records
+# Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
+# the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
+TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
+INERT = {'currency_symbol': 'currency&#95;symbol', '@site.lang': '&#64;site.lang', '@labs.members': '&#64;labs.members',
+         'ghost.url.api': 'ghost&#46;url.api'}
 POOL = os.path.join(ROOT, 'packages', 'library', 'fonts', 'pool.json')
 MARKER = 'inflozo'   # FR-J13's marker key, THEME_MARKER in packages/theme-compiler
 C0 = re.compile(r'[\x00-\x08\x0b\x0c\x0e-\x1f]')
@@ -189,13 +220,17 @@ process.stdout.write(JSON.stringify({
   mainTag: MAIN_JS_TAG,
   // Story 7.6: the article and Portal's pages as the compiler and the library spell them — read, never restated
   postArticle: POST_ARTICLE, portalPage: lib.PORTAL_PAGE.source,
+  // Story 7.7: §73's scaffold, the one copy CI's clean-verdict control uses too
+  scaffold: pilots.SCAFFOLD,
 }))
 '''
 
 
 def compiled(nonce, per_page):
     """The compiled pilot theme, the classes each template places in order, and the check CI runs on it."""
-    words = {'PAGE_WORD': f'Page{nonce}', 'LAYER_WORD': f'Layer{nonce}'}
+    # Story 7.7: the four brace-free words gscan counts as errors follow the nonce's word, and the layer word carries
+    # currency_symbol — every earlier row finds `/` by the nonce's word, so it stays the first part
+    words = {'PAGE_WORD': f'Page{nonce} {TYPED}', 'LAYER_WORD': f'Layer{nonce} currency_symbol'}
     run = subprocess.run([core.node24(), '--input-type=module', '-e', COMPILE], capture_output=True, text=True, timeout=180,
                          env={**os.environ, 'ROOT': ROOT, 'PER_PAGE': str(per_page), 'THEME': json.dumps(THEME),
                               'MARKER': MARKER, **words})
@@ -205,11 +240,11 @@ def compiled(nonce, per_page):
     out['files'] = {p: base64.b64decode(b['base64']) if isinstance(b, dict) else b for p, b in out['files'].items()}
     if out['failures']:
         raise Void('the compiled theme fails the check CI holds it to:\n      ' + '\n      '.join(out['failures']))
-    return {**out, 'page_word': words['PAGE_WORD'], 'layer_word': words['LAYER_WORD']}
+    return {**out, 'page_word': f'Page{nonce}', 'layer_word': f'Layer{nonce}', 'typed_page': words['PAGE_WORD']}
 
 
-# Story 7.13's (D12) — the two Koenig widths. Story 7.4's AD-18 lines left it: the compiled screen.css declares both
-# --gh-font-* variables, so GS051 is answered by the compiler, and the local gate below proves it
+# Story 7.13's (D12) — the two Koenig widths, for the two HAND-WRITTEN paywall probes, which are no compiled theme; the
+# compiled theme's scaffold is tools/pilot-theme.mjs's SCAFFOLD (Story 7.7), whose cards.css is these bytes
 CARDS_CSS = '.kg-width-wide { max-width: 1000px; }\n.kg-width-full { max-width: 100%; }\n'
 # The two HAND-WRITTEN paywall probes are no compiled theme and carry no screen.css, so they keep the two Ghost
 # custom-font reads they uploaded at Story 7.3 — their own GS051 answer, byte for byte what they carried then. The
@@ -220,31 +255,64 @@ PROBE_FONTS_CSS = ('body { font-family: var(--gh-font-body, var(--font-body)); }
 
 
 def scaffold(c):
-    """New files only, each named for its story; never a compiled file changed. `package.json` is compiled (Story 7.2)."""
-    added = {
-        'assets/css/cards.css': CARDS_CSS,
-        # Story 10.79's — the page template: GS110 asks a theme to read the page builder's title-and-image switch, and the
-        # compile leaves out an untouched page.hbs the library cannot fill (Story 7.3's Question 1, ruled option 1), so
-        # this stand-in reads it until A24 sits on page.hbs (the owner's ruling on Story 7.1's Question 1)
-        'page.hbs': ('{{!< default}}\n\n{{#post}}\n  {{#if @page.show_title_and_feature_image}}\n    <h1>{{title}}</h1>\n'
-                     '  {{/if}}\n  {{content}}\n{{/post}}\n'),
-    }
+    """New files only, each named for its story; never a compiled file changed. `package.json` is compiled (Story 7.2).
+    The files are tools/pilot-theme.mjs's `SCAFFOLD` — Story 7.13's `cards.css` (D12's two widths) and Story 10.79's
+    stand-in `page.hbs`, which reads GS110's page-builder switch until A24 sits on `page.hbs` (the owner's ruling on Story
+    7.1's Question 1; the compile leaves an untouched `page.hbs` out, Story 7.3's Question 1)."""
+    added = c['scaffold']
     clash = [p for p in added if p in c['files']]
     if clash:
         raise Void(f'the scaffold would replace compiled files: {clash}')
     return {**c['files'], **added}
 
 
-def gated(files):
-    """0 errors and 0 warnings on both gscans. Anything gscan names is a question, never a widened scaffold."""
-    try:
-        gates = contexts.gate(files)
-    except Void as e:
-        raise Void(f'{e} — STOP AND ASK the owner before the scaffold grows (the spec\'s Ask First)')
-    loud = [g for g in gates if g['warnings'] != 0]
+# Story 7.7: the PRODUCT gate, through Node 24 — each tree on both pinned checkers: gscan's raw results (`runGscan`, the
+# one caller of gscan) and the verdict (`gscanGate`). A font crosses as base64 and is written back as the bytes it was.
+GATE = r'''
+const gate = await import(`${process.env.ROOT}/packages/theme-compiler/gate/index.ts`)
+const chunks = []
+for await (const c of process.stdin) chunks.push(c)
+const trees = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+const out = {}
+for (const [name, enc] of Object.entries(trees)) {
+  const files = Object.fromEntries(Object.entries(enc).map(([p, b]) => [p, typeof b === 'string' ? b : Buffer.from(b.base64, 'base64')]))
+  out[name] = {}
+  for (const major of Object.keys(gate.GSCAN).map(Number)) {
+    const raw = await gate.runGscan(files, major).catch((e) => ({ failed: String(e?.message ?? e) }))
+    out[name][major] = { gscan: gate.GSCAN[major].version, checkVersion: gate.GSCAN[major].checkVersion, raw, verdict: await gate.gscanGate(files, major) }
+  }
+}
+process.stdout.write(JSON.stringify(out))
+'''
+
+
+def gated(trees):
+    """Each tree — `{name: files}` — through the product gate on both pinned checkers: `{name: {major: {gscan, checkVersion,
+    raw, verdict}}}`, majors as strings. A checker that failed is a Void, never a pass (standing rule 2)."""
+    enc = {n: {p: b if isinstance(b, str) else {'base64': base64.b64encode(b).decode()} for p, b in f.items()} for n, f in trees.items()}
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', GATE], input=json.dumps(enc), capture_output=True, text=True,
+                         timeout=600, env={**os.environ, 'ROOT': ROOT})
+    if run.returncode != 0:
+        raise Void(f'the gate did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    for name, majors in out.items():
+        for major, r in majors.items():
+            if 'failed' in r['raw']:
+                raise Void(f'gscan {r["gscan"]} (Ghost {major}) failed on {name}: {r["raw"]["failed"]}')
+            v = r['verdict']
+            print(f'    gate {name}: Ghost {major} via gscan {r["gscan"]} ({r["checkVersion"]}) -> {len(v["errors"])} error(s) / '
+                  f'{len(v["warnings"])} warning(s){" — BLOCKED" if v["blocked"] else ""}')
+    return out
+
+
+def clean(local, name):
+    """An empty, unblocked verdict on both checkers, after mapping. Anything the gate names is a question for the owner,
+    never a widened scaffold."""
+    loud = {m: [f'{f["code"]} {f.get("rule", "")}'.strip() for f in r['verdict']['errors'] + r['verdict']['warnings']]
+            for m, r in local[name].items() if r['verdict']['errors'] or r['verdict']['warnings']}
     if loud:
-        raise Void(f'gscan warns on the probe theme ({loud}) — STOP AND ASK the owner before the scaffold grows')
-    return gates
+        raise Void(f'the gate names findings on {name} ({loud}) — STOP AND ASK the owner before the scaffold grows (the spec\'s Ask First)')
+    return [{'major': m, 'gscan': r['gscan'], 'checkVersion': r['checkVersion'], 'errors': 0, 'warnings': 0} for m, r in local[name].items()]
 
 
 def site(c, page):
@@ -474,6 +542,13 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         raise Void('an uploaded file writes a generator meta or names portal.min.js — the head row would not be {{ghost_head}}\'s')
     if any(p.startswith('locales/') for p in files):
         raise Void('the uploaded tree carries locales/ — the label row reads Ghost\'s answer for a key no locale file holds')
+    # Story 7.7: the customer's words ARE uploaded, each inert and none raw — so a page reading them back is the escaper's
+    # doing, and the local gate's empty verdict on this tree is theirs
+    hbs = [b for p, b in texts.items() if p.endswith('.hbs')]
+    missing_inert = [w for w, inert in INERT.items() if not any(inert in b for b in hbs)]
+    raw_left = [w for w in INERT if any(w in b for b in hbs)]
+    if missing_inert or raw_left:
+        raise Void(f'the uploaded templates lack the inert form of {missing_inert} or carry {raw_left} raw — the words row would prove nothing')
     portal_page = re.compile(c['portalPage'])
     st, got = g.content(f'posts/slug/{GATED.strip("/")}/?include=tags')
     gated_post = (((got or {}).get('posts') or [{}])[0])
@@ -712,6 +787,11 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         ((more.group(1) if more else None) == 'nav.more', '/', "A1 #1's More label prints nav.more — Ghost's answer for a key no shipped locale file holds (Story 7.12 ships en.json)",
          repr(more.group(1) if more else None)),
     ]
+    # ── Story 7.7's row (§76): a customer's words, inert to gscan, read back as typed ──
+    eyebrow = re.search(r'<p class="a4-13__eyebrow"[^>]*>(.*?)</p>', read['/'][1], re.S)
+    shown = re.sub(r'\s+', ' ', html.unescape(eyebrow.group(1))).strip() if eyebrow else None
+    verdicts.append((shown == c['typed_page'], '/', "A4 #13's eyebrow reads exactly the typed words — gscan's four brace-free error words among them, written inert",
+                     repr(shown)))
     for ok, page, what, detail in verdicts[len(premise):]:
         print(f'    {"PASS" if ok else "FAIL"}  {page:<40} {what} — {detail}')
     bad = [v for v in verdicts if v[2].startswith('CONTROL') and not v[0]]
@@ -758,8 +838,9 @@ def paywall(g, nonce):
     out = [(True, GATED, 'CONTROL — the Content API says the post is not public', f'visibility {visibility!r}')]
     marker = f'CTA-{nonce}'
     themes = [(name, invoke, paywall_theme(name, nonce, invoke)) for name, invoke in ((PAYWALL, True), (PAYWALL_CONTROL, False))]
-    for _, _, files in themes:
-        gated(files)   # both gate 0/0 before either uploads
+    local = gated({name: files for name, _, files in themes})
+    for name, _, _ in themes:
+        clean(local, name)   # both gate clean before either uploads
     for name, invoke, files in themes:
         previous = shim.start_guard(g)
         body, st = '', None
@@ -798,6 +879,102 @@ def paywall(g, nonce):
     return out
 
 
+# ── Story 7.7 (§76): Ghost 6's own checker against the gate, on three probe uploads ─────────────────────────────────
+GATE_PILOT = 'inflozo-probe-gate-pilot'       # the compiled pilot theme, unscaffolded
+GATE_FATAL = 'inflozo-probe-gate-fatal'       # plus a template invoking a partial it lacks
+GATE_CASCADE = 'inflozo-probe-gate-cascade'   # plus a theme setting whose visibility names no key
+FATAL_FILE = 'custom-probe-fatal.hbs'
+PROBE_SETTING = 'probe_setting'
+
+
+def probe_trees(c):
+    """The three probe trees, each the COMPILED pilot theme (no scaffold) with one change."""
+    files = c['files']
+    pkg = json.loads(files['package.json'])
+    pkg['config']['custom'] = {PROBE_SETTING: {'type': 'select', 'options': ['One', 'Two'], 'default': 'One', 'visibility': 'true'}}
+    if files['default.hbs'].count('{{{body}}}') != 1:
+        raise Void('default.hbs carries no single {{{body}}} — the cascade probe has nowhere to read its setting')
+    return {
+        GATE_PILOT: dict(files),
+        GATE_FATAL: {**files, FATAL_FILE: '{{!< default}}\n{{> "no-such-partial"}}\n'},
+        GATE_CASCADE: {**files, 'package.json': json.dumps(pkg, indent=2) + '\n',
+                       'default.hbs': files['default.hbs'].replace('{{{body}}}', f'<i hidden>{{{{@custom.{PROBE_SETTING}}}}}</i>{{{{{{body}}}}}}', 1)},
+    }
+
+
+def flags(results):
+    """[(code, fatal)] in code order — what Ghost's answer and the gate's raw report are compared on."""
+    return sorted((r['code'], bool(r.get('fatal'))) for r in results or [])
+
+
+def gate_probes(g, trees, local):
+    """Each probe uploaded under its own name, never activated, deleted in a `finally` that encloses its upload, the
+    active theme read back after each; Ghost 6's answer compared with the gate's own on the same files."""
+    out = []
+    for name in (GATE_PILOT, GATE_FATAL, GATE_CASCADE):
+        six = local[name]['6']
+        want_err = flags(r for r in six['raw']['results'] if r['level'] == 'error')
+        want_warn = flags(r for r in six['raw']['results'] if r['level'] == 'warning')
+        before = g.api('GET', 'custom_theme_settings/').get('custom_theme_settings') if name == GATE_CASCADE else None
+        previous = shim.start_guard(g)
+        st, body, listed = None, {}, []
+        try:
+            try:
+                st, body = g._multipart('themes/upload/', [('file', f'{name}.zip', 'application/zip', contexts.zip_bytes(trees[name]))])
+            except urllib.error.HTTPError as e:   # the fatal probe's 422 is an answer, not a failure
+                st, body = e.code, json.loads(e.read() or b'{}')
+            listed = [t['name'] for t in g.api('GET', 'themes/')['themes']]
+            print(f'    probe {name}: HTTP {st}')
+        finally:
+            shim.restore_and_delete(g, previous, [name])
+        active = shim.active_theme(g)
+        out.append((active == previous, name, "CONTROL — the active theme read back after the probe is the site's own: no probe was activated",
+                    f'{active!r} (before {previous!r})'))
+        if name in (GATE_PILOT, GATE_CASCADE):
+            theme = ((body or {}).get('themes') or [{}])[0]
+            got_err, got_warn = flags(theme.get('errors')), flags(theme.get('warnings'))
+            out += [
+                (st == 200 and theme.get('name') == name, name, 'T1 answers 200 and installs it: no result is fatal', f'HTTP {st}, {theme.get("name")!r}'),
+                (got_err == want_err, name, "the errors on its theme record carry the same codes and fatal flags as runGscan(files, 6)'s",
+                 f'T1 {got_err} · gate {want_err}'),
+                (got_warn in ([], want_warn), name, "its warnings: Ghost empties them in production (validate.js), so [] is that premise; any it returns match the gate's",
+                 f'T1 {got_warn} · gate {want_warn}'),
+            ]
+        if name == GATE_PILOT:
+            out.append((('GS050-CSS-KGWF', False) in want_err and ('GS050-CSS-KGWW', False) in want_err, name,
+                         "CONTROL — the gate's raw errors carry the two GS050 widths, so the comparison reads something", f'{want_err}'))
+        if name == GATE_FATAL:
+            err = ((body or {}).get('errors') or [{}])[0]
+            got_err = flags(((err.get('details') or {}).get('errors')))
+            out += [
+                (('GS005-TPL-ERR', True) in want_err, name, "CONTROL — the gate's raw errors carry GS005-TPL-ERR, fatal", f'{want_err}'),
+                (st == 422 and err.get('type') == 'ThemeValidationError', name, 'T1 answers 422 ThemeValidationError: a fatal result refuses the theme',
+                 f'HTTP {st}, {err.get("type")!r}'),
+                (got_err == want_err, name, "its errorDetails.errors carry the gate's codes and fatal flags — GS005-TPL-ERR fatal, with the two GS050s",
+                 f'T1 {got_err} · gate {want_err}'),
+                (six['verdict']['blocked'], name, "gscanGate's verdict is blocked", f'{[f["code"] + " " + f.get("rule", "") for f in six["verdict"]["errors"]]}'),
+                (name not in listed, name, 'GET themes/ lists no such theme after the 422', f'{len(listed)} theme(s) listed'),
+            ]
+        if name == GATE_CASCADE:
+            after = g.api('GET', 'custom_theme_settings/').get('custom_theme_settings')
+            failed = [f for f in six['verdict']['errors'] if f['code'] == 'package_check_failed']
+            pj = [f for f in six['verdict']['errors'] + six['verdict']['warnings'] if (f.get('rule') or '').startswith('GS010-PJ-') and f['code'] != 'package_check_failed']
+            out += [
+                (('GS010-PJ-PARSE', False) in want_err and sum(c.startswith('GS010-PJ-') for c, _ in want_err) > 1, name,
+                 "CONTROL — the gate's raw report carries GS010-PJ-PARSE and the cascade", f'{[c for c, _ in want_err if c.startswith("GS010-")]}'),
+                (len(failed) == 1 and f'“{PROBE_SETTING}”' in failed[0]['message'] and not pj, name,
+                 f'gscanGate returns one package_check_failed naming {PROBE_SETTING}, and no GS010-PJ-* finding',
+                 failed[0]['message'] if failed else f'{[f["code"] for f in six["verdict"]["errors"]]}'),
+                (before == after, name, "CONTROL — the active theme's custom settings read the same before and after", f'{len(before or [])} setting(s)'),
+            ]
+    for ok, page, what, detail in out:
+        print(f'    {"PASS" if ok else "FAIL"}  {page:<40} {what} — {detail}')
+    bad = [v for v in out if v[2].startswith('CONTROL') and not v[0]]
+    if bad:
+        raise Void('A GATE-PROBE CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
+    return out
+
+
 # ── §72 ───────────────────────────────────────────────────────────────────────
 def table(rows):
     out = ['| Page | Row | Held |', '|---|---|---|']
@@ -807,25 +984,28 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay):
+def section(rec, gates, files, c, pay, probes, local):
     today = datetime.date.today().isoformat()
-    gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
+    gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
     templates = sorted(p for p in files if p.endswith('.hbs') and not p.startswith('partials/') and p not in ('page.hbs',))
     fonts = sorted(p for p in files if p.startswith('assets/fonts/'))
     licences = sorted(p for p in files if p.startswith('LICENSE-'))
     (tag, tag_n), (author, author_n) = rec['arch']['tag'], rec['arch']['author']
-    out = [f'## {SECTION}. Ghost-correct markup — the pilots compiled with Ghost\'s article around each post\'s sections and '
-           f'WebP `srcset`s, beside `main.js`, Paper\'s fonts, their licences, a section\'s dark hook, every standard '
-           f'template and the paywall mechanism, rendered by Ghost, T1 · {today}', '',
+    out = [f'## {SECTION}. The gscan gate — a customer\'s words inert to gscan on a real page, and Ghost 6\'s own checker '
+           f'answering three probe uploads as the gate says, beside the pilots compiled with Ghost\'s article, WebP `srcset`s, '
+           f'`main.js`, Paper\'s fonts, their licences, a section\'s dark hook, every standard template and the paywall '
+           f'mechanism, rendered by Ghost, T1 · {today}', '',
            f'**Command.** `{COMMAND}` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each '
            'activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload '
-           '(DW-332), both read back; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time '
+           '(DW-332), both read back; Story 7.7\'s three probe uploads (the compiled pilots unscaffolded, a fatal probe, a '
+           'cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back '
+           'after each; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time '
            'it is asked for each; no content, no setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70 to §74 are Stories 7.1's to 7.5's records; this re-runs their rows beside Story 7.6's.", '',
+           "§70 to §75 are Stories 7.1's to 7.6's records; this re-runs their rows beside Story 7.7's.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
            '`<main id="site-main">`, puts FR-H2\'s `noindex` guard in `default.hbs`\'s head, and leaves out an untouched '
@@ -840,8 +1020,13 @@ def section(rec, gates, files, c, pay):
            'one `defer` tag in `default.hbs`\'s head after the stylesheet, and `README.md`\'s Scripts section. Story 7.6\'s '
            'wraps the sections of every template whose matrix row opens `{{#post}}` in `POST_ARTICLE` — '
            f'`{c["postArticle"]}` — asks Ghost for WebP in every `srcset` candidate (`format="webp"`), and ships no '
-           '`locales/` (Story 7.12\'s), so Ghost prints each `{{t}}` key. '
-           '`check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate (gscan reads no `.js`), '
+           '`locales/` (Story 7.12\'s), so Ghost prints each `{{t}}` key. Story 7.7\'s gate, `gscanGate` '
+           '(`@inflozo/theme-compiler/gate`), runs each Ghost major\'s own pinned gscan over a compiled theme and maps it '
+           'through one table (AD-24); the runtime\'s escaper and the boundary comment write gscan\'s brace-free trigger '
+           'words inert (AD-36), so the page word carried the four error words after its nonce and the layer word '
+           '`currency_symbol`. '
+           '`check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate — the product\'s own, `gscanGate` '
+           '(gscan reads `.js` too, so `main.js` is checked; §74 and §75 said otherwise, and carry a dated correction), '
            f'with the scaffold (`cards.css`, Story 7.13\'s two widths alone — AD-18\'s lines left it, so `screen.css` '
            f'answers GS051; the stand-in `page.hbs`, Story 10.79\'s, for GS110): {gline}.', '',
            f'**The tree uploaded** ({len(files)} files): ' + ', '.join(f'`{p}`' for p in templates)
@@ -866,16 +1051,39 @@ def section(rec, gates, files, c, pay):
            'post is; `/` carried at least one `data-portal`; and `size/w751/format/webp/` was redirected to the original. '
            'For the paywall: the Content API says '
            'the post is not public, each read carried its own theme\'s marker, and the control theme rendered Ghost\'s own '
-           'call to action. Every one held.', '',
+           'call to action. Story 7.7\'s: the uploaded templates carried each typed word\'s inert form and none raw, and the '
+           'local gate gave the scaffolded tree an empty verdict on both checkers; for the three probes, the active theme read '
+           'back after each was the site\'s own, the gate\'s raw report carried what each probe plants (the two `GS050`s, '
+           '`GS005-TPL-ERR` fatal, `GS010-PJ-PARSE` with the cascade), and the active theme\'s custom settings read the same '
+           'before and after the cascade probe. Every one held.', '',
            f'### (a) The compiled pilots — T1 `{rec["site"].replace("https://", "")}` ({rec["version"]}), locale `{rec["locale"]}`', '']
     out += table(rec['verdicts'])
     out += ['', '### (b) The paywall mechanism — two hand-written probe themes, signed out', '',
             f'Both carry `partials/content-cta.hbs` with this run\'s marker and invoke `content-cta` nowhere. `{PAYWALL}` '
             f'invokes one other partial from `default.hbs`; `{PAYWALL_CONTROL}` is the same theme with that line removed.', '']
     out += table(pay)
+    g5 = {n: local[n]['5']['verdict'] for n in (GATE_PILOT, GATE_FATAL, GATE_CASCADE)}
+    out += ['', "### (c) Ghost 6's own checker against the gate — three probe uploads, none activated", '',
+            f'`{GATE_PILOT}` is the compiled pilot theme with no scaffold; `{GATE_FATAL}` adds `{FATAL_FILE}` invoking '
+            f'`{{{{> "no-such-partial"}}}}`; `{GATE_CASCADE}` adds `config.custom.{PROBE_SETTING}`, a two-option select whose '
+            '`visibility` is `"true"`, read once in `default.hbs`. Each row compares T1\'s answer with `runGscan(files, 6)` and '
+            '`gscanGate` on the same files. The Ghost 5 half is DW-326\'s; gscan 4.49.7 judged the same trees locally: '
+            + '; '.join(f'`{n}` {"blocked" if v["blocked"] else "not blocked"} — {", ".join(f["code"] + (" " + f["rule"] if f.get("rule") else "") for f in v["errors"] + v["warnings"]) or "nothing"}' for n, v in g5.items())
+            + '.', '']
+    out += table(probes)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **A customer\'s words never trip Ghost\'s checker, and visitors read them as typed.** The four words gscan '
+            'counts as errors with no brace at all were typed into A4 #13\'s eyebrow and `currency_symbol` into every layer '
+            'name; the templates carried each with one character as its HTML code, the gate found nothing on either checker, '
+            'and `/` read the eyebrow back exactly as typed.',
+            '- **Ghost 6\'s own checker answers as the gate says.** On the same files, the errors on T1\'s theme record — or, '
+            'for the fatal probe, in its 422 `ThemeValidationError` — carried the codes and `fatal` flags `runGscan` gave; a '
+            'fatal result refused the theme and left nothing installed, while non-fatal errors installed it. T1 returned no '
+            'warnings, as Ghost empties them in production, so the page switch the gate warns on is never Ghost\'s to show. '
+            'The cascade probe reported every `package.json` rule broken on T1, and the gate said it as one sentence naming '
+            f'`{PROBE_SETTING}`.',
             f'- **Each post\'s page sits in Ghost\'s article.** The gated post, signed out, and the newest public post '
             f'(`{rec["public"]}`) each carried one `<article>` around the page\'s sections, with the header outside, and its '
             'class was Ghost\'s `post_class` exactly as computed from the Content API\'s record — ending '
@@ -959,18 +1167,22 @@ if __name__ == '__main__':
         per_page = min(12, total - 1, arch['tag'][1] - 1, arch['author'][1] - 1)
         c = compiled(nonce, per_page)
         files = scaffold(c)
-        gates = gated(files)
+        # Story 7.7: the scaffolded tree and the three probe trees through the product gate, before anything uploads
+        trees = probe_trees(c)
+        local = gated({'pilots': files, **trees})
+        gates = clean(local, 'pilots')
         rec = record(g, contexts.zip_bytes(files), files, c, per_page, total, arch, nonce)
         pay = paywall(g, nonce)
+        probes = gate_probes(g, trees, local)
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay))
+    write_section(section(rec, gates, files, c, pay, probes, local))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)

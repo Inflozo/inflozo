@@ -4,7 +4,8 @@
 // reads; Story 7.4 its fonts, licences and stripped stylesheet, returning AD-14's record (`CssRecord`) beside
 // the files; Story 7.5 its scripts and README (`tidyLicence` is exported for CI's comparison of Ghost's licence); Story 7.6
 // Ghost's article (`POST_ARTICLE`) and the two markup checks CI also runs, `checkGhostMarkup` and `checkChromeText`; the
-// later stories of the epic fill the rest of the tree.
+// later stories of the epic fill the rest of the tree. Story 7.7's gscan gate is `@inflozo/theme-compiler/gate`, and it is
+// deliberately NOT exported here, so nothing that only compiles loads either gscan.
 
 export const name = '@inflozo/theme-compiler'
 export {
