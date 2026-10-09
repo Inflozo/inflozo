@@ -9444,6 +9444,9 @@ origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain
   the notice, drawn to D4f, and not one request to the lock or the sync route` with `expect(locator).toBeVisible()
   failed / element(s) not found`; every other row passed; `deploy` skipped. Run 37889508187 on d62812b5 (the Dev commit,
   the same app code plus the gate) — `check`, `rls`, `deploy` all success.
+  Second recurrence, same day: run 37892026760 on 1ab50ea1 (the Review commit, a gate patch with no app code) — `check`
+  failed at the same row, `floor.spec.mjs:77:3`, `#canvas > *` not found after 5s, with 202 other stops passed; `rls`
+  success, `deploy` skipped. Read at Story 7.7's Deploy; the story is re-pushed with no app change.
 owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
   the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
   then, re-push on a red R-201 stop with no app change.
