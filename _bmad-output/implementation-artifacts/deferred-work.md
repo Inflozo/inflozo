@@ -4151,7 +4151,7 @@ resolution: Story 7.8's Dev (2026-10-09). `inflozo/tier3-by-name` in `stylelint.
   typed `attr()`, gradient interpolation spaces, `@container anchored()`, `@keyframes` named ranges, `:lang()` lists among
   them — `docs/section-authoring.md` § `style.css` says so). Controls: the four witnesses (`@container style(--x: 1)`,
   `if()`, `sibling-index()`, `random()`), `@font-face { ascent-override }` and `@import … supports()`, each passing
-  before the rule and refused after; with the rule disabled the check fails on all six and on both diffs. The compiled
+  before the rule and refused after. The compiled
   pilot theme's emitted CSS (`screen.css`, each `<style>` in a template, `cards.css` when it ships) lints clean through
   the root config, with `@container style(--x: 1) {}` planted in `screen.css` as its control.
 severity: medium

@@ -50,7 +50,7 @@ export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
 export { AA_PAIRS, BASE_CSS, isLength, packTokens, packTokensCss, SCALES } from './tokens.ts'
 // Story 7.8 (R-170) — the contrast check and its words, moved from the Style Pack editor: the editor's live warning and the
 // theme quality gate's `contrast_low` say one thing
-export { hardToRead, MODE_WORDS, pairWords, ROLE_WORDS } from './tokens.ts'
+export { hardToRead, MODE_WORDS, MODES, pairWords, ROLE_WORDS } from './tokens.ts'
 // Story 6.5 — FR-E4's three inputs as one declared list of mode conditions (R-239's precedence lives there alone), a plain
 // link's declarations per Background value, and a section's dark override as a visitor sees it: the hook both emitters
 // stamp and the token block's per-section rules. Epic 7's compile and the keyboard gate read them.

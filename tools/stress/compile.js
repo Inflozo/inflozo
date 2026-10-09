@@ -66,4 +66,5 @@ module.exports = {
   // compiled from the library, so its required set is the compiler's `REQUIRED_TEMPLATES`.
   qualityGate: (files) => gate.qualityGate(files, { pack: REFERENCE_PACK, library: () => undefined }),
   leftovers: (files) => gate.leftovers(files),
+  TEXTUAL: gate.TEXTUAL,
 };

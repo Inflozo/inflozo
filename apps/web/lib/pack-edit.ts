@@ -22,7 +22,7 @@
  */
 
 // Story 7.8 (R-170): the contrast check and its words live beside `AA_PAIRS`, shared with the theme quality gate
-import { contrast, hardToRead, isHex, isLength, MODE_WORDS, packTokens, packTokensCss, pairWords, ROLE_WORDS, SCALES, stepToContrast, type HardPair, type Pack, type PackMode } from '@inflozo/section-runtime'
+import { contrast, hardToRead, isHex, isLength, MODE_WORDS, MODES, packTokens, packTokensCss, pairWords, ROLE_WORDS, SCALES, stepToContrast, type HardPair, type Pack, type PackMode } from '@inflozo/section-runtime'
 import type { PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 
@@ -191,12 +191,11 @@ export function withoutDefaults(packs: PackRecords, presets: Readonly<Record<str
   return Object.fromEntries(Object.entries(packs).filter(([id, record]) => !(Object.hasOwn(presets, id) && samePack(record, presets[id]))))
 }
 
-export const MODES = ['light', 'dark'] as const
 
 /** THE LIVE CONTRAST CHECK (FR-E3, NFR-5, UX-DR8): 6.2's AA sheet over a draft, in both modes. A warning in words, never a
  *  block — Save pack stays live and saves. Story 7.8 moved it beside `AA_PAIRS` (`@inflozo/section-runtime`), where the
  *  theme quality gate reads it too; this file re-exports it. */
-export { hardToRead }
+export { hardToRead, MODES }
 export type { HardPair }
 
 /** STORY 6.6 — THE BRAND SEED (FR-E5, R-241): the one rule that puts a site's accent into a pack. S2c's action (through

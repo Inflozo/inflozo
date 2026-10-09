@@ -101,6 +101,10 @@ function kindOf(m: string): { kind: Kind; name?: string } {
     return p === null ? { kind: 'none' } : { kind: 'partial', name: (p[1] ?? p[2] ?? p[3]) as string }
   }
   if (inner === '^') return { kind: 'else' }
+  // ponytail: a partial block `{{#> name}}…{{/name}}` reads as a plain block and a dynamic partial `{{> (concat …)}}` as
+  // nothing — neither splices its partial's markup, so that markup is never judged. The compiler writes neither form
+  // (`compile.ts` writes `{{> "name"}}` alone); `leaks` counts both as a reference so a theme that uses them is not a
+  // false `build_leftover`.
   if (/^[#^]/.test(inner)) return { kind: 'open' }
   if (/^else\b/.test(inner)) return { kind: 'else' }
   if (inner.startsWith('/')) return { kind: 'close' }
@@ -122,7 +126,9 @@ type Masked = { text: string; layout: string | undefined }
  *  `<!--L…-->`, block markers as `<!--B…-->`/`<!--E…-->`/`<!--C-->`, partials and `{{{body}}}` as splice tokens, every
  *  other mustache by its place. Every replacement keeps the newlines it replaced, so a parse error's line is the file's. */
 function maskFile(source: string, t: Tables): Masked {
-  let text = source.replace(/\r\n?/g, '\n')
+  // the private-use characters and the `<!--C-->`-shaped comments below are the reader's own marks: a theme that writes
+  // one gets U+FFFD, or an underscored comment, never a crash or a misread block
+  let text = source.replace(/\r\n?/g, '\n').replace(/[-]/g, '�').replace(/<!--([BELPQC]\d*)-->/g, '<!--_$1-->')
   // Ghost's own test (express-hbs 2.5.0, `lib/hbs.js:13`, `declaredLayoutFile` :74): the first `{{!< name}}` ANYWHERE in
   // the template names its layout, and a layout may name its own — read in source at Story 7.8's Dev
   const layout = /\{\{!<\s+([A-Za-z0-9._\-/]+)\s*\}\}/.exec(text)?.[1]
@@ -159,7 +165,8 @@ function maskFile(source: string, t: Tables): Masked {
   while (i < p.length) {
     const c = p[i] as string
     if (raw !== null) {
-      if (c === '<' && p.slice(i + 2, i + 2 + raw.length).toLowerCase() === raw && p[i + 1] === '/') { raw = null; continue }
+      // the end tag, as the tokenizer reads it: `</script` followed by whitespace, `/` or `>` (`</scriptx>` is still text)
+      if (c === '<' && p[i + 1] === '/' && p.slice(i + 2, i + 2 + raw.length).toLowerCase() === raw && /[\s/>]/.test(p[i + 2 + raw.length] ?? '')) { raw = null; continue }
       if (c === '\uE000') { const { m, end } = at(i); out += flat(m); i = end; continue }
       out += c; i++; continue
     }
@@ -174,7 +181,8 @@ function maskFile(source: string, t: Tables): Masked {
       const tag = startTag(p, i, at, unpark, t)
       out += tag.html
       i = tag.end
-      if (RAW_TEXT.has(tag.name) && !tag.selfClosing) raw = tag.name
+      // HTML has no self-closing `<script/>`: the parser opens it, and so does the reader
+      if (RAW_TEXT.has(tag.name)) raw = tag.name
       continue
     }
     if (c === '<' && (p[i + 1] === '/' || p[i + 1] === '!')) {
@@ -240,7 +248,8 @@ function startTag(p: string, i: number, at: (i: number) => { m: string; end: num
         if (vf.every((b) => b === 0)) masked += d
         k++
       }
-      const value = held ? `${masked}\uE002${t.raws.push(unpark(rawText)) - 1}\uE003${newlines(rawText)}` : rawText
+      // the masked value keeps the literal newlines; only the mustaches' own are added back, so lines never drift
+      const value = held ? `${masked}\uE002${t.raws.push(unpark(rawText)) - 1}\uE003${newlines(rawText).slice(newlines(masked).length)}` : rawText
       if (keeping()) html += quote === null ? value : `${quote}${value}${quote}`
       else html += newlines(rawText)
       j = quote === null ? k : k + 1
@@ -258,11 +267,12 @@ function startTag(p: string, i: number, at: (i: number) => { m: string; end: num
 // ── reading: one page, assembled ─────────────────────────────────────────────────────────────────────────────────────
 
 type Segment = { at: number; file: string; line: number }
-type Page = { file: string; text: string; fragment: boolean; segments: Segment[] }
+type Page = { file: string; text: string; fragment: boolean; segments: Segment[]; unspliced: string[] }
 
 const isText = (body: string | Uint8Array): body is string => typeof body === 'string'
-/** A file the gate reads as text; a font's or a picture's bytes are skipped. */
-const TEXTUAL = /\.(?:hbs|css|js|json|md|txt|yaml|yml|html)$/
+/** A file the gate reads as text; a font's or a picture's bytes are skipped. The ONE spelling: `tools/quality-gate.mjs`
+ *  and `tools/stress/build.js` read a theme directory by it. */
+export const TEXTUAL = /\.(?:hbs|css|js|json|md|txt|yaml|yml|html)$/
 
 /** Every page of `files`, assembled as Ghost assembles it (rules 2 and 3). */
 function assemble(files: ThemeFiles, t: Tables): Page[] {
@@ -307,7 +317,9 @@ function assemble(files: ThemeFiles, t: Tables): Page[] {
     for (let l = maskOf(page).layout; l !== undefined && `${l}.hbs` in files && !chain.includes(`${l}.hbs`) && chain.length < 10; l = maskOf(`${l}.hbs`).layout) chain.push(`${l}.hbs`)
     const outer = chain.reverse()
     emit(outer[0] as string, outer.slice(1), [outer[0] as string])
-    return { file: page, text: out, fragment: page === PAYWALL_TARGET, segments }
+    // a layout with no `{{{body}}}` never shows the page it wraps: Ghost renders the layout alone
+    const unspliced = outer.slice(0, -1).filter((l) => !maskOf(l).text.includes(''))
+    return { file: page, text: out, fragment: page === PAYWALL_TARGET, segments, unspliced }
   })
 }
 
@@ -323,7 +335,7 @@ const sourceAt = (page: Page, offset: number): { file: string; line: number } =>
 type El = P.Element
 type Ev =
   | { t: 'open'; cond: string } | { t: 'else'; cond: string } | { t: 'close' }
-  | { t: 'el'; el: El; file: string; layer: string | undefined; hidden: boolean; guards: ReadonlySet<string> }
+  | { t: 'el'; el: El; file: string; layer: string | undefined; hidden: boolean; inert: boolean; guards: ReadonlySet<string> }
   | { t: 'end'; el: El }
   | { t: 'text'; words: boolean; hidden: boolean }
 
@@ -336,7 +348,7 @@ const written = (v: string | undefined, t: Tables): string | undefined => {
   const m = /\uE002(\d+)\uE003/.exec(v)
   return m === null ? v : t.raws[Number(m[1])]
 }
-const isHidden = (el: El): boolean => attr(el, 'aria-hidden') === 'true' || attr(el, 'hidden') !== undefined
+const isHidden = (el: El): boolean => shown(attr(el, 'aria-hidden')) === 'true' || attr(el, 'hidden') !== undefined
 
 /** The block helper's condition field, when it is a plain `{{#if field}}` / `{{#unless field}}` / `{{else if field}}`. */
 const condition = (m: string): { helper: string; field: string } | undefined => {
@@ -364,7 +376,7 @@ function events(root: P.ParentNode, t: Tables, start: string): Ev[] {
     }
     return g
   }
-  const walk = (node: P.ParentNode, hidden: boolean): void => {
+  const walk = (node: P.ParentNode, hidden: boolean, inert = false): void => {
     for (const n of node.childNodes) {
       if (n.nodeName === '#comment') {
         const d = (n as P.CommentNode).data
@@ -383,10 +395,11 @@ function events(root: P.ParentNode, t: Tables, start: string): Ev[] {
       if (!('tagName' in n)) continue
       const el = n as El
       const h = hidden || isHidden(el)
-      out.push({ t: 'el', el, file: files.at(-1) as string, layer: layers.at(-1), hidden: h, guards: guards() })
-      walk(el, h)
-      // a template's content is its own fragment: walked for its markers, never judged (axe reads none of it)
-      if (el.tagName === 'template') walk((el as P.Template).content, true)
+      out.push({ t: 'el', el, file: files.at(-1) as string, layer: layers.at(-1), hidden: h, inert, guards: guards() })
+      walk(el, h, inert)
+      // a template's content is its own document fragment: walked for its markers, never judged (its ids are not the
+      // page's, axe reads none of it)
+      if (el.tagName === 'template') walk((el as P.Template).content, true, true)
       out.push({ t: 'end', el })
     }
   }
@@ -401,13 +414,13 @@ function events(root: P.ParentNode, t: Tables, start: string): Ev[] {
 // empty at render is not modelled; the render matrix's empty fixtures and Story 7.34's canvas-vs-Ghost harness see rendered
 // pages. And a tag opened in one branch and closed in another reads as one flattened page (the markers stay in document
 // order around it); the compiler never writes one, because its blocks wrap whole elements.
-type Item = Ev | { t: 'block'; branches: Item[][] }
+type Item = Ev | { t: 'block'; repeats: boolean; branches: Item[][] }
 function tree(evs: readonly Ev[]): Item[] {
   const root: Item[] = []
   const stack: { branches: Item[][] }[] = []
   const into = (): Item[] => (stack.length === 0 ? root : (stack.at(-1)?.branches.at(-1) as Item[]))
   for (const e of evs) {
-    if (e.t === 'open') { const b = { t: 'block' as const, branches: [[]] as Item[][] }; into().push(b); stack.push(b) }
+    if (e.t === 'open') { const b = { t: 'block' as const, repeats: /^\{\{~?#foreach\b/.test(e.cond), branches: [[]] as Item[][] }; into().push(b); stack.push(b) }
     else if (e.t === 'else') { if (stack.length > 0) stack.at(-1)?.branches.push([]) }
     else if (e.t === 'close') stack.pop()
     else into().push(e)
@@ -429,12 +442,13 @@ function flow<S>(items: readonly Item[], states: readonly S[], step: (s: S, e: E
   return now
 }
 
-/** The most times anything `count` names occurs on one alternative. */
+/** The most times anything `count` names occurs on one alternative. A `{{#foreach}}` body is read as rendering at least
+ *  twice, because a literal id inside one repeats on any page with two items. */
 function most(items: readonly Item[], count: (e: Ev) => string | undefined): Map<string, number> {
   const out = new Map<string, number>()
   for (const it of items) {
     const add = it.t === 'block'
-      ? it.branches.map((b) => most(b, count)).reduce((a, b) => { for (const [k, v] of b) a.set(k, Math.max(a.get(k) ?? 0, v)); return a }, new Map<string, number>())
+      ? it.branches.map((b) => most(b, count)).reduce((a, b) => { for (const [k, v] of b) a.set(k, Math.max(a.get(k) ?? 0, v * (it.repeats ? 2 : 1))); return a }, new Map<string, number>())
       : new Map(count(it) === undefined ? [] : [[count(it) as string, 1]])
     for (const [k, v] of add) out.set(k, (out.get(k) ?? 0) + v)
   }
@@ -460,19 +474,31 @@ const inLayer = (layer: string | undefined): string => (layer === undefined ? 'o
  *  ("Ghost" by default), and a tag's or a staff user's `name`, which Ghost refuses blank (`schema.js:141`, :286, through
  *  `data/schema/validator.js:44-50`, called from `models/base/plugins/events.js:109` — read in Ghost 6.58.0's source at
  *  Story 7.8's Dev). */
-// ponytail: a bare `name` is read as a tag's or an author's — the only contexts that carry one; no context is tracked, so
-// a `{{name}}` in a post's own context (where Ghost prints nothing) would pass. No design writes one there.
-const FILLED = new Set(['title', '@site.title', 'name', 'primary_author.name', 'primary_tag.name'])
+// ponytail: no context is tracked — a bare `name` is read as a tag's or an author's, and `title` as a post's; a `{{name}}`
+// in a post's context or a `{{title}}` at the top of `tag.hbs` (where Ghost prints nothing) would pass. No design writes
+// either. `primary_tag.name` is NOT here: a post with no tag has `primary_tag: null`, so it renders empty.
+const FILLED = new Set(['title', '@site.title', 'name', 'primary_author.name'])
 
 /** Can an `alt` written as `raw` render empty, under the fields its enclosing blocks guarantee (§ How each rule decides)? */
 function canBeEmpty(raw: string, guards: ReadonlySet<string>): boolean {
-  const parts = raw.split(/(\{\{[^]*?\}\})/).filter((s) => s !== '')
+  const parts = raw.split(/(\{\{~?\{[^]*?\}~?\}\}|\{\{[^]*?\}\})/).filter((s) => s !== '')
   // a sequence is never empty when any of its parts is never empty
   const never = (ps: readonly string[], g: ReadonlySet<string>): boolean => {
     for (let i = 0; i < ps.length; i++) {
       const s = ps[i] as string
       if (!s.startsWith('{{')) { if (s.trim() !== '') return true; continue }
-      const inner = s.slice(2, -2).replace(/^~|~$/g, '').trim()
+      const inner = s.replace(/^\{\{~?\{?|\}?~?\}\}$/g, '').trim()
+      if (/^[#^](?!if\b|unless\b)/.test(inner)) {
+        // any other block (`{{#has}}`, `{{#foreach}}`, `{{#match}}`, `{{^x}}`): its contents may render or not, so
+        // nothing inside counts — skip to its matching close
+        let depth = 0
+        for (i++; i < ps.length; i++) {
+          const qi = (ps[i] as string).startsWith('{{') ? (ps[i] as string).replace(/^\{\{~?\{?|\}?~?\}\}$/g, '').trim() : ''
+          if (/^[#^]/.test(qi) && qi !== '^') depth++
+          if (/^\//.test(qi)) { if (depth === 0) break; depth-- }
+        }
+        continue
+      }
       if (/^#(if|unless)\b/.test(inner)) {
         // the block's branches, to its matching close
         let depth = 0
@@ -535,8 +561,9 @@ function control(el: El): [QualityRule, string] | undefined {
     case 'select': return ['select-name', 'field']
     case 'textarea': return ['label', 'field']
     case 'input':
-      if (['button', 'submit', 'reset'].includes(type)) return ['input-button-name', 'button']
-      return ['hidden', 'image'].includes(type) ? undefined : ['label', 'field']
+      // an image button is named by its alt (axe `input-image-alt`, axe.js:32522), judged with the other buttons
+      if (['button', 'submit', 'reset', 'image'].includes(type)) return ['input-button-name', 'button']
+      return type === 'hidden' ? undefined : ['label', 'field']
     default: return undefined
   }
 }
@@ -572,6 +599,7 @@ function judgePage(page: Page, t: Tables): Raw[] {
     const at = sourceAt(page, e.startOffset)
     out.push(invalid('html-parse', page.file, at.file, `${e.code} at line ${at.line}`))
   }
+  for (const layout of page.unspliced) out.push(invalid('html-parse', page.file, layout, `no {{{body}}} in the layout, so ${page.file} is never shown`))
   const taken = new Set<number>()
   const covered: [number, number][] = []
   const mark = (node: P.ParentNode): void => {
@@ -654,17 +682,17 @@ function judgePage(page: Page, t: Tables): Raw[] {
   // ── on each alternative: ids, <main>, heading order, names, picture-only links ──
   const items = tree(evs)
   const literalId = (e: Ev): string | undefined => {
-    if (e.t !== 'el') return undefined
+    if (e.t !== 'el' || e.inert) return undefined
     const id = attr(e.el, 'id')
     return id === undefined || id.includes('\uE002') ? undefined : id
   }
   for (const [id, n] of most(items, literalId)) {
     if (n > 1) {
       const where = els.filter((e) => attr(e.el, 'id') === id).map((e) => e.file)
-      out.push(invalid('duplicate-id', page.file, where[1] ?? start, `the id “${id}” on more than one element`))
+      out.push(invalid('duplicate-id', page.file, where[1] ?? where[0] ?? start, `the id “${id}” on more than one element`))
     }
   }
-  const mains = most(items, (e) => (e.t === 'el' && e.el.tagName === 'main' && attr(e.el, 'hidden') === undefined ? 'main' : undefined)).get('main') ?? 0
+  const mains = most(items, (e) => (e.t === 'el' && !e.inert && e.el.tagName === 'main' && attr(e.el, 'hidden') === undefined ? 'main' : undefined)).get('main') ?? 0
   if (mains > 1) out.push(invalid('one-main', page.file, els.filter((e) => e.el.tagName === 'main')[1]?.file ?? start, `${mains} <main> elements on one page`))
 
   // heading order (axe-core's heading-order): the state is the level before; 0 is "no heading yet"
@@ -711,8 +739,9 @@ function judgePage(page: Page, t: Tables): Raw[] {
     }
     if (rule === 'input-button-name') {
       // axe-core's non-empty-if-present: a submit or reset with no value attribute says its default label
-      const value = attr(el, 'value')
-      if (!hasWords(value) && !(value === undefined && (attr(el, 'type') ?? '').toLowerCase() !== 'button')) out.push(nameless(e, page.file, rule, kind))
+      const type = (attr(el, 'type') ?? '').toLowerCase()
+      const value = type === 'image' ? attr(el, 'alt') : attr(el, 'value')
+      if (!hasWords(value) && !(value === undefined && !['button', 'image'].includes(type))) out.push(nameless(e, page.file, rule, kind))
       return
     }
     if (rule === 'button-name' && (labelled(el) || presentational)) return
@@ -738,7 +767,7 @@ function judgePage(page: Page, t: Tables): Raw[] {
             rule: 'image-link-alt',
             message: `A link ${inLayer(e.layer)} is only a picture, and the picture can be left with no description.`,
             detail: raw === undefined ? 'It has no description.' : raw.trim() === '' ? 'Its description is empty.' : `Its description is “${raw}”, which can be empty.`,
-            action: 'Describe the picture in the section\'s settings.',
+            action: e.layer === undefined ? 'Describe the picture.' : 'Describe the picture in the section\'s settings.',
             refs: [page.file, s.img.file],
           })
         }
@@ -767,7 +796,7 @@ function textOf(el: El): string {
 const nameless = (e: Extract<Ev, { t: 'el' }>, page: string, rule: QualityRule, kind: string): Raw => ({
   rule,
   message: `A ${kind} ${inLayer(e.layer)} has no words a screen reader can say.`,
-  action: 'Give it words in the section\'s settings.',
+  action: e.layer === undefined ? 'Give it words.' : 'Give it words in the section\'s settings.',
   refs: [page, e.file],
 })
 
@@ -795,7 +824,8 @@ function leaks(files: ThemeFiles): [string, string][] {
   const templates = text.filter(([p]) => p.endsWith('.hbs'))
   for (const [path] of templates.filter(([p]) => p.startsWith('partials/') && p !== PAYWALL_TARGET)) {
     const name = path.slice('partials/'.length, -'.hbs'.length)
-    const quoted = new RegExp(`\\{\\{~?>\\s*(?:"${name.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}"|'${name.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}'|${name.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}(?=[\\s}~]))`)
+    // `{{> name}}` in any of its three spellings, and a partial block `{{#> name}}`, count as a reference
+    const quoted = new RegExp(`\\{\\{~?#?>\\s*(?:"${name.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}"|'${name.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}'|${name.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&')}(?=[\\s}~]))`)
     if (!templates.some(([p, b]) => p !== path && quoted.test(b.replace(HBS_COMMENT, '')))) out.push([path, 'a partial no template uses'])
   }
   return out.sort(([a, x], [b, y]) => byCode(a, b) || byCode(x, y))
@@ -836,8 +866,9 @@ export function qualityGate(files: ThemeFiles, input: { pack: Pack; library: Syn
     }
     for (const [file, what] of leaks(files)) raws.push({ rule: 'build-leftover', message: 'Pieces of Inflozo\'s own build were left in your theme\'s files.', detail: `${what}, in ${file}. ${OURS}`, refs: [file] })
     // contrast: always a warning — CI holds every preset, so at a deploy only a customer's own colour can fail (FR-E3)
+    const sheet = ['assets/css/screen.css', 'assets/built/screen.css'].find((f) => f in files) ?? 'assets/css/screen.css'
     for (const p of hardToRead(input.pack)) {
-      raws.push({ rule: 'contrast-aa', message: `Hard to read: ${pairWords(p)}. Small text needs 4.5:1 — it still ships.`, action: 'Change one of the two colours in the Style Pack.', refs: ['assets/css/screen.css'] })
+      raws.push({ rule: 'contrast-aa', message: `Hard to read: ${pairWords(p)}. Small text needs 4.5:1 — it still ships.`, action: 'Change one of the two colours in the Style Pack.', refs: [sheet] })
     }
     // one finding per defect: a shared file's fault is said once, on the first page that shows it
     const seen = new Map<string, Finding>()

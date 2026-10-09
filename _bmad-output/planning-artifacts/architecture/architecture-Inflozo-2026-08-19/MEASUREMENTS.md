@@ -296,11 +296,11 @@ measuring rather than asserting: the number moved and the decision did not.
 *(Story 7.8, 2026-10-09 — the real gate, on the same fixture: `tools/stress/build.js` now runs `qualityGate` and
 `leftovers` (`@inflozo/theme-compiler/gate`, through its `compile.js` adapter) where this proxy ran, and prints the stage's
 wall time. Three runs on the host (Node 24.18.1, 4 cores): **114, 115 and 119 ms** for the gate and the leak assertions
-together, over the fixture's 75 sections, with 0 errors and 0 warnings once the fixture's card picture link was given a
+together, over the fixture's sections (the run prints their count), with 0 errors and 0 warnings once the fixture's card picture link was given a
 never-empty `alt` (the gate's own first finding — `alt=""` on a picture-only link, NFR-5's case). The 697 ms above is the
 proxy's — `Handlebars.precompile` plus a JSDOM walk — and stays the record of what was measured then; the real gate reads
 each page once through parse5 and never parses Handlebars. On the compiled pilot theme `check-snapshots` prints the gate's
-time on every run (about 20–30 ms on the host). The figure is printed by each run, never stored as a budget.)*
+time on every run (tens of milliseconds on the host; 56 ms and 19 ms on two runs). The figure is printed by each run, never stored as a budget.)*
 
 ---
 

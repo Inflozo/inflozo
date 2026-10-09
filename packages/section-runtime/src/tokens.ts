@@ -201,7 +201,7 @@ export type HardPair = { mode: 'light' | 'dark'; fg: PackRole; bg: PackRole; rat
  *  Story 7.8 moved it here from the Style Pack editor (`lib/pack-edit.ts`, which re-exports it), so the editor's live
  *  warning and the theme quality gate's `contrast_low` are one check. */
 export const hardToRead = (record: Pick<Pack, 'light' | 'dark'>): HardPair[] =>
-  (['light', 'dark'] as const).flatMap((m) =>
+  MODES.flatMap((m) =>
     AA_PAIRS.flatMap(({ fg, bg }) => {
       const ratio = contrast(record[m][fg], record[m][bg])
       return ratio < 4.5 ? [{ mode: m, fg, bg, ratio: Math.floor(ratio * 10) / 10 }] : []
@@ -212,6 +212,8 @@ export const hardToRead = (record: Pick<Pack, 'light' | 'dark'>): HardPair[] =>
  *  mode words and a pair's sentence, beside `AA_PAIRS`, so the editor and the theme quality gate say one thing. */
 export const ROLE_WORDS = { background: 'Base', surface: 'Surface', text: 'Text', muted: 'Muted', border: 'Border', accent: 'Accent', onAccent: 'On-accent' } satisfies Record<PackRole, string>
 export const MODE_WORDS = { light: 'Light', dark: 'Dark' } as const
+/** The two modes, in the editor's order — the one list `hardToRead` and the Style Pack editor both walk. */
+export const MODES = ['light', 'dark'] as const satisfies readonly (keyof typeof MODE_WORDS)[]
 /** One hard pair, in words: "Text on Base in Light, 1.1:1". */
 export const pairWords = (p: HardPair): string => `${ROLE_WORDS[p.fg]} on ${ROLE_WORDS[p.bg]} in ${MODE_WORDS[p.mode]}, ${p.ratio.toFixed(1)}:1`
 

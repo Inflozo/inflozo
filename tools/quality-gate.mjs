@@ -19,11 +19,10 @@ if (!dir || !statSync(dir, { throwIfNoEntry: false })?.isDirectory()) {
   console.error('usage: node tools/quality-gate.mjs <theme-dir>')
   process.exit(2)
 }
-const { qualityGate } = await import(join(REPO, 'packages/theme-compiler/gate/index.ts'))
+const { qualityGate, TEXTUAL } = await import(join(REPO, 'packages/theme-compiler/gate/index.ts'))
 const { REFERENCE_PACK } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
 
-/** Text where the gate reads text, bytes otherwise; never `node_modules` or `.git`. */
-const TEXTUAL = /\.(?:hbs|css|js|json|md|txt|yaml|yml|html)$/
+/** Text where the gate reads text (`TEXTUAL`, the gate's own), bytes otherwise; never `node_modules` or `.git`. */
 const files = {}
 const walk = (at) => {
   for (const e of readdirSync(at, { withFileTypes: true })) {

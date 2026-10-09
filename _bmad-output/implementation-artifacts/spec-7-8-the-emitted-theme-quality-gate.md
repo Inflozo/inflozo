@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-10-09'
 status: 'in-progress'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '6ec74c9fdeff99e769d4498a5ae73eeacbc20b5c'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -238,7 +238,7 @@ Levels marked *(Q2)* follow § Ruled values. The rows show Question 2's recommen
 - [x] `packages/theme-compiler/gate/quality.test.ts` — on the clean base theme:
   - the I/O matrix, row by row;
   - every preset clean in both modes, and Tangerine's white on-accent caught (`packs.test.ts`' own control);
-  - the premise theme: the gate's findings, and both pinned gscans at 0/0 through `runGscan`.
+  - the premise theme: the gate's findings, and both pinned gscans through `runGscan` — executed: 0 errors and one warning (`GS051-CUSTOM-FONTS`) each, 0/0 once Ghost's two font variables are declared (the dated correction, § Dev results).
 
   -- what the gate promises.
 - [x] `tools/pilot-theme.mjs`, `tools/stress/build.js`:
@@ -296,6 +296,30 @@ Levels marked *(Q2)* follow § Ruled values. The rows show Question 2's recommen
   - DW-137, DW-139 and DW-315 are closed;
   - a grep finds no old wording.
 
+### Review Findings (2026-10-09)
+
+Decision-needed: none — no finding needed the owner's call. Patches, all applied, each with the probe that showed it (every one was executed against the gate before it was rated; `quality.test.ts`'s "review:" rows hold them):
+
+- [x] [Review][Patch] `primary_tag.name` counted as a field Ghost always fills; a post with no tag has `primary_tag: null`, so a picture-only link with that alt shipped with an empty name [packages/theme-compiler/gate/quality.ts `FILLED`]
+- [x] [Review][Patch] an alt written as a triple-stash (`{{{feature_image_alt}}}`) or inside any block but `{{#if}}`/`{{#unless}}` (`{{#has}}Hello{{/has}}`) counted its stray braces or its conditional words as never-empty [quality.ts `canBeEmpty`]
+- [x] [Review][Patch] `aria-hidden` bound from Ghost (`aria-hidden="{{#if x}}true{{/if}}"`) was never read as hidden: a false `name_missing` on a named icon link [quality.ts `isHidden`]
+- [x] [Review][Patch] a private-use character in a theme's own text crashed the reader into `quality_check_failed` (a block); a theme comment shaped like a marker (`<!--C-->`) closed the enclosing block early [quality.ts `maskFile`]
+- [x] [Review][Patch] a parse error's line drifted by the newlines of any multi-line attribute holding a mustache (counted twice) [quality.ts `startTag`]
+- [x] [Review][Patch] `<script/>` read as self-closing while the parser opens it; `</scriptx>` ended a script's text [quality.ts raw-text handling]
+- [x] [Review][Patch] a literal id inside one `{{#foreach}}` body passed, though it repeats on any page with two items (Source's lock on its "Read more" feed is one); the repeat's finding named the layout, not the file [quality.ts `most`, `tree`]
+- [x] [Review][Patch] `<input type="image">` was excluded from every name rule — axe `input-image-alt` [quality.ts `control`]
+- [x] [Review][Patch] ids and `<main>` inside `<template>` content counted as the page's: a false blocking `markup_invalid` [quality.ts `events`, `inert`]
+- [x] [Review][Patch] a layout with no `{{{body}}}` gave a silent clean verdict while the page it wraps is never shown [quality.ts `assemble`, `unspliced`]
+- [x] [Review][Patch] a partial block `{{#> name}}` counted as no reference (a false `build_leftover`); the dynamic-partial ceiling was uncommented [quality.ts `kindOf`, `leaks`]
+- [x] [Review][Patch] the `label`, `select-name`, `input-button-name` and `summary-name` rules, `role="heading"` and a numeric `user-scalable` had no failing test (deleting the branch left every test green) [quality.test.ts]
+- [x] [Review][Patch] `TEXTUAL` spelled three times; `MODES` spelled in two files beside `MODE_WORDS`' keys [gate/quality.ts, tools/quality-gate.mjs, tools/stress/build.js; section-runtime/tokens.ts, apps/web/lib/pack-edit.ts]
+- [x] [Review][Patch] the stress build printed the gate's verdict and exited 0 whatever it said; now a blocked verdict or a leak exits 1, with `--plant-orphan` as its control [tools/stress/build.js]
+- [x] [Review][Patch] a nameless control or picture-only link with no section said "in the section's settings"; `contrast_low`'s ref named `assets/css/screen.css` for every theme [quality.ts `nameless`, `qualityGate`]
+- [x] [Review][Patch] the recorder read Ghost's tarball with no integrity check (`tools/vendor-icons.py` pins its own), and proved an orphan partial by its first non-blank character, not by the absence of a reference [tools/probe/record-theme-assembly.py]
+- [x] [Review][Patch] the premise's contrast written as 1.2:1 in two documents against the gate's floored 1.1:1; "about 20–30 ms" stored in three places against the two printed figures (56 ms, 19 ms); "the fixture's 75 sections" written down; `section-authoring.md` claimed every design is held today (the pilots are, 7.33 extends it); the Execution bullet still said "0/0"; DW-139's "with the rule disabled" named a control no check runs; the `refs` shape for the three page-less rules was unstated for 7.18 [prd.md, epic-7-context.md, ARCHITECTURE-SPINE.md, MEASUREMENTS.md, docs/section-authoring.md, this spec, deferred-work.md, epics.md]
+
+Dismissed as noise or correct as built (each read in the code or executed): `tabindex="-1"` inside a link blocks as axe-core 4.12.1's `nested-interactive` does (`getFocusableDescendants` uses `_isFocusable`, which counts -1, `axe.js:26314`); the `a11y-rules` grep hit is the spine's own dated parenthetical saying it never existed; `check-snapshots` compiles the pilots twice because the 7.8 rows need `find`; §77 (f) is whole (the "cut" was a reviewer's truncated read); a `{{title}}` alt at the top of `tag.hbs` and a `{{name}}` in a post's context are the stated context-free ceiling (comment extended); a partial `Pack` throwing inside `hardToRead` is a type the gate never receives; `readPages` is documented as throwing and its one caller catches; the recorder's `levels()` counting a hidden heading, a subprocess timeout or a tarball failure each void the run loudly; a symlink cycle under `tools/quality-gate.mjs`; a phantom attribute `x` in `check-baseline`'s unmapped list; a boundary label attaching to the next partial when inline markup intervenes (the compiler writes none); a block opened in a start tag and closed in content (the compiler writes none).
+
 ## Spec Change Log
 
 - **2026-10-09, Create (the owner ruled).** Both questions were ruled option 1.
@@ -319,7 +343,7 @@ export function qualityGate(files: ThemeFiles, input: { pack: Pack; library: Syn
   - `level` comes from § Ruled values;
   - `fatal` is always `false`, because Ghost never refuses an upload for these;
   - `refs` is `[page file, file the element is written in]`.
-- A message never names a file to the customer. It names the layer, from the boundary comment above the section's invocation, which is the formatting contract's own label. Story 7.18 shows `refs[0]` by its canvas label (`CANVASES`, R-170).
+- A message never names a file to the customer. It names the layer, from the boundary comment above the section's invocation, which is the formatting contract's own label. Story 7.18 shows `refs[0]` by its canvas label (`CANVASES`, R-170). Three rules have no page: `template_missing` and `build_leftover` carry `[file]` and `contrast_low` carries `[the stylesheet]`, and for those `refs[0]` is not a template, so 7.18 shows the message alone (its sentence already says what is missing or hard to read).
 - `readPages(files)` returns each page's assembled, masked text: CI's axe agreement row reads exactly what the gate read.
 - `leftovers(files)` returns AD-34's leak sentences.
 
@@ -710,3 +734,13 @@ Both were ruled option 1 (owner, 2026-10-09). Dev builds § Ruled values as it s
   - a defect is said once per file: Casper's many nameless social links are one warning;
   - `tools/stress/sections.js`'s post card was a picture-only link with `alt=""`, the real gate's first finding there; its `alt` now binds the post's title.
 - **Vercel, Supabase, Resend, Dodo** — not touched at Dev. There is no migration and no Supabase, Resend or Dodo surface. Review reads CI's `check`, `rls` and `deploy` and the deployment's READY state at this head.
+
+**Review results (2026-10-09, five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier; R-82):**
+
+- **Every finding was executed before it was rated.** A probe script ran twenty of the reviewers' claims through `qualityGate` on the base theme: eleven held as real gaps (patched above, each now a `review:` row in `quality.test.ts`), the rest were refuted or are stated ceilings.
+- **After the patches, on Node 24.18.1:** `pnpm lint` exit 0 (`gate/quality.ts` still core); `pnpm -r typecheck` exit 0; `packages/theme-compiler` tests 166 pass (the ten review rows among them); `packages/section-runtime` 339 pass; `apps/web` 727 pass (`pack-edit`'s unchanged, `MODES` now read from the runtime); `node tools/check-snapshots.mjs` PASS with the 7.8 rows `ok` behind their controls (the pilot verdict empty, `qualityGate` 19 ms this run; axe-core 4.12.1 agreeing, 11 rules over 5 pages); `node tools/check-baseline.mjs` PASS; `tools/stress`: `node build.js` 0 errors, 0 warnings, clean leaks, 122 ms, exit 0, and `node build.js --plant-orphan` exits 1 naming the planted orphan (the new control); `python3 tools/doc-audit.py --check` twice, PASS.
+- **The negative control, re-run on the patched gate** over Ghost 6.58.0's tarball (`curl -sSL https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`, fresh extract; the pinned `dist.integrity` is now `GHOST_TARBALL_INTEGRITY` in the recorder): Casper 5.12.1 and Source 1.7.1 each still blocked with the same findings as the Dev results, every one read at its line again by the verifier. The `{{#foreach}}` patch finds Source's repeated lock id on `post.hbs` too (its "Read more" feed, `post.hbs:77-79` → `post-card.hbs:35`), said once with `author.hbs`'s as one finding per file. The recorder's orphan evidence was executed on Casper: `partials/icons/loader.hbs` is proved by no template invoking it in any spelling (25 templates read), and `partials/icons/facebook.hbs`, which `author.hbs` invokes, returns no evidence — the control.
+- **T1 `ghost6.inflozo.com` (6.58.0), read-only by the verifier** (`GHOST6_STAFF_ACCESS_TOKEN` signed as the shim does, never printed): the active theme is `casper` and no `inflozo-probe-*` theme remains — the Dev run's restore held. `/`, `/page/2/`, a post, `/tag/craft/` and `/author/umang/` fetched 200, each `<html lang="en">`; axe-core 4.12.1 in jsdom over `QUALITY_RULES`' ids on those pages, which are Casper's now, reported exactly Casper's defects — `heading-order` on the post, `link-name` ×9 on the author page — and nothing on the rest, agreeing with the gate's Casper findings on Ghost's live render; the control, an `<h4>` planted after the clean home page's `<h1>`, fired `heading-order`. The Dev row (d), axe clean over the PILOTS as Ghost renders them, needs the probe theme active and so a T1 write; it stands on the Dev run's §77 and was not re-executed here (no subagent writes T1).
+- **CI at the Dev head 15cdd5ba** (`GITHUB_TOKEN`, run 37914382324): `check` success (its keyboard walk took ~20 min, no floor stop), `rls` success, `deploy` success; the render matrix run 37914382329 `matrix` success. Vercel (`VERCEL_TOKEN`): `dpl_E8PP16P1uXiNzh6isSepqsHcJxnQ` READY at 15cdd5ba. The Review head deploys next and Deploy records it.
+- **No migration**: `git diff --stat 6ec74c9f HEAD -- supabase/` is empty, so no hosted-schema read (R-99). Supabase, Resend and Dodo are untouched.
+- **The story stays in review**: Done is the Deploy commit's (`owner_test: none`, Q1).

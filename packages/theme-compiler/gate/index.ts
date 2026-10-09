@@ -24,6 +24,6 @@ export async function gscanGate(files: ThemeFiles, major: Major): Promise<Verdic
 export { GSCAN, gscanDirs, installedRules, installedVersion, PinMoved, runGscan } from './gscan.ts'
 export { DOCS_ROOT, failed, OURS, plain, verdict } from './verdict.ts'
 // Story 7.8 — FR-J17's quality gate beside gscan's: core, synchronous, never throws (`quality.ts`)
-export { AXE_CORE, leftovers, qualityGate, QUALITY_RULES, readPages } from './quality.ts'
+export { AXE_CORE, leftovers, qualityGate, QUALITY_RULES, readPages, TEXTUAL } from './quality.ts'
 export type { QualityRule, QualityVerdict } from './quality.ts'
 export type { Finding, GscanReport, Major, ReportResult, ThemeFiles, Verdict } from './verdict.ts'

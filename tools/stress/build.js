@@ -11,7 +11,7 @@
 // _bmad-output/.../fixtures-r2/gate.js: gscan 4.49.7 answers for Ghost 5, 6.4.2 for Ghost 6.
 const fs = require('fs'); const path = require('path'); const crypto = require('crypto');
 const { execFileSync } = require('child_process');
-const { renderSection, renderSecondary, feedQuery, UserText, U0, U1, qualityGate, leftovers } = require('./compile');
+const { renderSection, renderSecondary, feedQuery, UserText, U0, U1, qualityGate, leftovers, TEXTUAL } = require('./compile');
 const { IMAGE_SIZES } = require('../../packages/library/src/vocabulary.ts');
 // FR-J4's tag for main.js, the one spelling the compiler writes (Story 7.5)
 const { MAIN_JS_TAG } = require('../../packages/library/src/modules.ts');
@@ -296,10 +296,11 @@ const subMs = ms(tSub);
 // Story 7.8: both are the theme compiler's own, through the adapter — `leftovers` is AD-34's one spelling (no consumed
 // directive, no expression token or user-text marker, every partial referenced), and `qualityGate` is FR-J17's real gate,
 // whose wall time is this stage's figure (AD-34's budget; MEASUREMENTS §11's 697 ms was the proxy's).
+// the control for the exit below: `--plant-orphan` writes a partial no template uses, which must fail the build
+if (process.argv.includes('--plant-orphan')) fs.writeFileSync(path.join(OUT, 'partials', 'zz-planted-orphan.hbs'), '<div></div>\n');
 const allFiles = walk(OUT);
 const hbsFiles = allFiles.filter((f) => f.endsWith('.hbs'));
 const relOf = (f) => path.relative(OUT, f).split(path.sep).join('/');
-const TEXTUAL = /\.(?:hbs|css|js|json|md|txt|yaml|yml|html)$/;
 const themeFiles = Object.fromEntries(allFiles.map((f) => [relOf(f), TEXTUAL.test(f) ? fs.readFileSync(f, 'utf8') : new Uint8Array(fs.readFileSync(f))]));
 const tGate = process.hrtime.bigint();
 const leaks = leftovers(themeFiles);
@@ -358,3 +359,5 @@ for (const f of [...quality.errors, ...quality.warnings].slice(0, 12)) console.l
 console.log(`AD-5 rule 2 ("no {{{ or }}} but default.hbs's one {{{body}}}", D3): {{{ x${tripleOpen.length} in ${[...new Set(tripleOpen)].join(', ') || '-'} · }}} x${tripleClose.length} in ${[...new Set(tripleClose)].join(', ') || '-'}`);
 
 if (!process.argv.includes('--keep')) console.log(`\ntheme/ kept at ${OUT} — run:  node gate.js theme`);
+// Story 7.8's review: the gate is a gate here too — a blocked verdict or a leak fails the build, never just prints
+if (quality.blocked || leaks.length > 0) { console.error('\nFAIL: the quality gate blocked or the leak assertions found a leak (above)'); process.exit(1); }

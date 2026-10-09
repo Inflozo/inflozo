@@ -996,6 +996,9 @@ def gate_probes(g, trees, local):
 # ── Story 7.8 (§77): the quality gate against Ghost's own pages ──────────────────────────────────────────────────
 QUALITY_PROBE = 'inflozo-probe-quality'   # the pilots plus a planted heading skip and a nameless link, never the site's
 GHOST_TARBALL = 'https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz'   # Ghost 6.58.0's own Casper and Source, read only
+# its `dist.integrity` (`npm view ghost@6.58.0 dist.integrity`): the run voids on any other bytes, so §77's negative
+# control is always over the Casper and Source it records (Story 7.8's review; the pattern is `tools/vendor-icons.py`'s)
+GHOST_TARBALL_INTEGRITY = 'sha512-4upiXdkeXgDl6gUpTs/rFm6qGSwrR7J0N4TWHQuOHftSNxwxH+1OqM76xqPNl1kdL6/8lR5h0FRjvBk5kBPXtQ=='
 
 # The quality gate, readPages' heading alternatives and axe-core, through Node 24 — each tree the PRODUCT gate's verdict
 # (`qualityGate`, Paper's pack, the library on disk), each page axe-core's violations of QUALITY_RULES' own axe ids
@@ -1139,6 +1142,17 @@ def evidence(root, f):
         'meta-viewport': r'<head\b',
         'build-leftover': r'\S',
     }.get(rule)
+    if rule == 'build-leftover' and 'a partial no template uses' in detail:
+        # the evidence is the ABSENCE of a reference: no other template invokes it in any spelling (`{{> "name"}}`,
+        # `{{> 'name'}}`, `{{> name}}`, `{{#> name}}`); a dynamic `{{> (concat …)}}` is the gate's stated ceiling
+        name = re.escape(path[len('partials/'):-len('.hbs')])
+        ref = re.compile(r'\{\{~?#?>\s*(?:"' + name + r'"|\'' + name + r"'|" + name + r'(?=[\s}~]))')
+        for dirpath, _, files in os.walk(root):
+            for fn in files:
+                p = os.path.join(dirpath, fn)
+                if fn.endswith('.hbs') and os.path.relpath(p, root) != path and ref.search(open(p, encoding='utf8').read()):
+                    return None
+        return f'{path}: no template invokes it ({len([1 for _, _, fs in os.walk(root) for f in fs if f.endswith(".hbs")])} templates read)'
     if at:
         line = int(at.group(1))
     elif pattern:
@@ -1175,6 +1189,9 @@ def negative_control():
         tgz = os.path.join(tmp, 'ghost.tgz')
         with urllib.request.urlopen(GHOST_TARBALL, timeout=300) as r, open(tgz, 'wb') as f:
             shutil.copyfileobj(r, f)
+        got = 'sha512-' + base64.b64encode(hashlib.sha512(open(tgz, 'rb').read()).digest()).decode()
+        if got != GHOST_TARBALL_INTEGRITY:
+            raise Void(f'the Ghost tarball is not the pinned one: integrity {got[:24]}… (pinned {GHOST_TARBALL_INTEGRITY[:24]}…)')
         with tarfile.open(tgz) as t:
             members = [m for m in t.getmembers() if m.name.startswith('package/content/themes/') and m.isfile()
                        and '..' not in m.name.split('/')]

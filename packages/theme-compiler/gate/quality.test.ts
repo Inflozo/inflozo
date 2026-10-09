@@ -320,7 +320,7 @@ test('the premise: both pinned gscans pass FR-J17\'s theme — 0 errors, one war
   }
 })
 
-test('the premise: the gate reports each defect FR-J17 names — no lang, no viewport, h1→h6, no alt, a picture-only link, an onclick, no tag.hbs or author.hbs, 1.5:1 text — blocked', () => {
+test('the premise: the gate reports each defect FR-J17 names — no lang, no viewport, h1→h6, no alt, a picture-only link, an onclick, no tag.hbs or author.hbs, FR-J17\'s low-contrast text (1.1:1 as floored) — blocked', () => {
   const v = qualityGate(PREMISE, { pack: PREMISE_PACK, library: NONE })
   assert.equal(v.blocked, true)
   assert.deepEqual(v.errors.map((f) => `${f.code}${f.code === 'template_missing' ? ` ${f.refs[0]}` : ''}`), [
@@ -359,4 +359,73 @@ test('a message never names a file to the customer but template_missing\'s; no f
     if (f.code !== 'template_missing') assert.doesNotMatch(f.message, /\.hbs\b/, `${f.code}: ${f.message}`)
     assert.equal(f.fatal, false)
   }
+})
+
+// ─── Story 7.8's review: the gaps the review's probes found, each a row of the base plus its one change ───────────────
+
+test('review: the four other name rules fire — a nameless <select>, <textarea>, <input type="text"> and <input type="button">, and an empty <summary>', () => {
+  for (const [body, kind] of [
+    ['<select><option>a</option></select>', 'field'], ['<textarea></textarea>', 'field'], ['<input type="text">', 'field'],
+    ['<input type="button">', 'button'], ['<input type="image" src="go.png">', 'button'], ['<details><summary></summary>x</details>', 'button'],
+  ]) {
+    const v = gate(section('Form', body))
+    assert.deepEqual([v.blocked, codes(v)], [false, ['name_missing']], body)
+    assert.equal(v.warnings[0]?.message, `A ${kind} in “Form” has no words a screen reader can say.`)
+  }
+  clean(gate(section('Form', '<input type="image" src="go.png" alt="Go">')), 'an image button named by its alt')
+})
+
+test('review: role="heading" aria-level="4" after the <h1> is a heading_skip; user-scalable=0 stops zoom', () => {
+  assert.deepEqual(codes(gate(section('Aria', '<div role="heading" aria-level="4">x</div>'))), ['heading_skip'])
+  const vp = '<meta name="viewport" content="width=device-width, initial-scale=1">'
+  assert.deepEqual(codes(gate({ 'default.hbs': (BASE['default.hbs'] as string).replace(vp, vp.replace('initial-scale=1', 'initial-scale=1, user-scalable=0')) })), ['viewport_missing'])
+})
+
+test('review: an alt that can be empty — {{primary_tag.name}} (null on an untagged post), a triple-stash, a {{#has}} block — image_link_unnamed each', () => {
+  for (const alt of ['{{primary_tag.name}}', '{{{feature_image_alt}}}', '{{#has tag="x"}}Hello{{/has}}']) {
+    assert.deepEqual(codes(gate(section('Cards', `<a href="{{url}}"><img src="x.png" alt="${alt}"></a>`))), ['image_link_unnamed'], alt)
+  }
+  clean(gate(section('Cards', '<a href="{{url}}"><img src="x.png" alt="{{primary_author.name}}"></a>')), 'an author\'s name, which Ghost fills')
+})
+
+test('review: aria-hidden bound from Ghost (aria-hidden="{{#if x}}true{{/if}}") hides as aria-hidden="true" does — no false name_missing', () => {
+  clean(gate(section('Icon', '<a href="x" aria-label="Share"><svg aria-hidden="{{#if x}}true{{/if}}"></svg></a>')), 'a bound aria-hidden')
+})
+
+test('review: a theme\'s own text never breaks the reader — a private-use character, and a comment shaped like a marker', () => {
+  clean(gate(post('<p></p>')), 'private-use characters')
+  // a literal <!--C--> inside a block must not close it: the {{else}} branch below is still the block's, and its <h2> is fine
+  clean(gate(post('{{#if feature_image}}<!--C--><h2>a</h2>{{else}}<h2>b</h2>{{/if}}')), 'a marker-shaped comment')
+})
+
+test('review: a parse error\'s line never drifts through a multi-line attribute that holds a mustache', () => {
+  const v = gate(post('<p class="a\nb {{c}}\nd">x</p>\n\n</span>'))
+  assert.deepEqual(codes(v), ['markup_invalid'])
+  // post header partial: line 1 is the <h1>, the <p> opens on line 2 and spans to 4, the stray </span> is on line 6
+  assert.match(v.errors[0]?.detail ?? '', /a stray <\/span> no element takes, at line 6, in partials\/sections\/post\/header\.hbs/)
+})
+
+test('review: a literal id inside {{#foreach}} repeats on any page with two items — markup_invalid; inside <template> it is not the page\'s — none', () => {
+  const v = gate(post('{{#foreach tags}}<span id="lock">x</span>{{/foreach}}'))
+  assert.deepEqual(codes(v), ['markup_invalid'])
+  assert.match(v.errors[0]?.detail ?? '', /the id “lock” on more than one element/)
+  clean(gate(post('<span id="a">x</span><template><span id="a">y</span><main>m</main></template>')), 'template content')
+})
+
+test('review: a layout with no {{{body}}} never shows the page it wraps — markup_invalid naming the layout, on every page', () => {
+  const v = gate({ 'default.hbs': (BASE['default.hbs'] as string).replace('{{{body}}}', '') })
+  assert.ok(v.blocked)
+  assert.ok(v.errors.every((f) => f.code === 'markup_invalid' && f.refs[1] === 'default.hbs' && /no \{\{\{body\}\}\} in the layout/.test(f.detail ?? '')))
+  assert.deepEqual(v.errors.map((f) => f.refs[0]), ['author.hbs', 'index.hbs', 'post.hbs', 'tag.hbs'])
+})
+
+test('review: a partial block {{#> name}} counts as a reference (never an orphan); a dynamic partial is the stated ceiling', () => {
+  assert.deepEqual(leftovers(theme({ ...section('Wrap', '{{#> "wrap"}}x{{/wrap}}'), 'partials/wrap.hbs': '<div>{{> @partial-block}}</div>\n' })), [])
+  assert.deepEqual(leftovers({ ...theme(), 'partials/wrap.hbs': '<div></div>\n' }), ['partials/wrap.hbs: a partial no template uses'])
+})
+
+test('review: an action that names no section when no section holds the control (a compiler-written line)', () => {
+  const v = gate({ 'tag.hbs': '{{!< default}}\n<a href="x"></a>\n' })
+  assert.equal(v.warnings[0]?.message, 'A link on this page has no words a screen reader can say.')
+  assert.equal(v.warnings[0]?.action, 'Give it words.')
 })

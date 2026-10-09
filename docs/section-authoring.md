@@ -1852,8 +1852,8 @@ safe, not the design's: `escapeUserText` writes one character of each trigger as
 AD-36), and a visitor reads exactly what was typed.
 
 **The quality gate's authoring rules** *(Story 7.8, FR-J17, NFR-5)*. `qualityGate` reads every compiled theme as Ghost
-assembles it, and four of its rules are a design's to keep, because the gate holds each on every compiled theme and the
-library is held at zero findings of either level in CI (Story 7.33 runs every design):
+assembles it, and four of its rules are a design's to keep, because the gate holds each on every compiled theme and CI holds
+the compiled pilot theme at zero findings of either level today (`check-snapshots`); Story 7.33 extends that to every design:
 
 - **a link whose only content is a picture carries a never-empty `alt`** — NFR-5's chain
   (`{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}`), a field Ghost always fills (a post's
