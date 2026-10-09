@@ -2957,6 +2957,16 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    (`deploy_jobs.stage_timings`, AD-34) and showing `refs[0]` by its canvas label — **Story 7.18**;
 > 2. the gate over every design's synthetic theme at zero findings of either level — **Story 7.33**;
 > 3. axe-core's agreement with the gate over every design's pages — **Story 7.33**.
+>
+> **Given owners by Story 7.9's Create (owner, 2026-10-09), so none is missed (R-195).**
+>
+> 1. D6a's **Site basics** group — the linked site's title, logo and accent, each "from Ghost" with "Change this in Ghost ↗",
+>    read from `sites.title` and `site_settings.brand` and never written (AD-10's P8), with one caption when no site is
+>    linked — **Story 7.9** (Question 2, option 1): no story owned it since R-131 left it out as Epic 7's;
+> 2. of Story 7.10's type lines, **Toggle → boolean · Segmented / Named Select → select**, with the "Promote a control" form
+>    for those two kinds and the list, edit and delete around it — **built in Story 7.9** (Question 1, option 1); text
+>    props, image props and the accent, D6c's confirm, the lock pill, the pack-switch warning and every compile-side effect
+>    stay **Story 7.10's**.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3365,6 +3375,13 @@ the stored value
 and its **Theme settings ↗** link (DW-254)
 **And** the surface matches D6a Pro and D6b Free.
 
+**And** *(given an owner by this story's Create, Question 2, owner, 2026-10-09)* the surface carries D6a's **Site basics** —
+the linked site's title, logo and accent colour, each marked "from Ghost" with "Change this in Ghost ↗", read and never
+written; a project with no linked site shows the group's one caption instead.
+**And** *(this story's Create, Question 1, owner, 2026-10-09)* the **Promote a control** form is built here for **Toggle →
+boolean** and **Segmented / Named Select → select** (the control's named values as the options, its current value as the
+default), with the settings list, edit and delete around it; text props, image props and the accent join in Story 7.10.
+
 **FRs:** FR-Q1, FR-Q2. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a · D6b. · **Owner test:** yes.
 
 ### Story 7.10: Promoting a control to a Ghost Admin setting
@@ -3378,7 +3395,9 @@ So that they can change it themselves without coming back to Inflozo.
 **Given** a section control or the accent token
 **When** I flag it "expose to Ghost Admin"
 **Then** its Ghost type follows from what is promoted — **Toggle → boolean · Segmented / Named Select → select ·
-Image Picker → image · text prop → text · accent → color** (colour promotion is **accent-only in v1**)
+Image Picker → image · text prop → text · accent → color** (colour promotion is **accent-only in v1**) — *(Story 7.9's Create, Question 1, owner, 2026-10-09: **Toggle → boolean** and **Segmented / Named Select → select** are
+built in Story 7.9, with the "Promote a control" form for those two kinds and the list, edit and delete around it; this
+story adds image props, text props and the accent to that form, and everything below)*
 **And** promoting a **text prop shows an upfront confirm** — "This text won't support formatting while it's
 editable in Ghost Admin — bold, italic, underline, and links will be removed and disabled" — and on confirm any
 existing marks are stripped and formatting is disabled for as long as the binding exists, re-enabling when it is

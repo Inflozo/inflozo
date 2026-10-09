@@ -16,10 +16,11 @@ before it paginates, which you set here because Ghost has no setting for it — 
 feed now says "Change it in Theme settings." with a working link to this page. Beside it sits the **Custom settings**
 card: a meter reading how many of your seventeen Ghost theme settings you have used, the notice that a setting's key
 freezes once you deploy or export, and the list of settings you have promoted, each of which you can relabel, regroup,
-hide behind another setting or delete (with a warning), and — if you rule option 1 of Question 1 — a **Promote a
-control** form that turns a toggle or a choice control from one of your sections into a setting the site's owner will
-later change in Ghost Admin without opening Inflozo. Nothing reaches a theme yet: the settings are stored and checked
-against Ghost's own rules now, and Story 7.10 writes them into the theme; two questions below are yours.
+hide behind another setting or delete (with a warning), and a **Promote a control** form that turns a toggle
+or a choice control from one of your sections into a setting the site's owner will later change in Ghost Admin without
+opening Inflozo (you ruled so on 2026-10-09), above a read-only **Site basics** group showing the linked site's title,
+logo and accent as Ghost holds them. Nothing reaches a theme yet: the settings are stored and checked against Ghost's own
+rules now, and Story 7.10 writes them into the theme.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -34,9 +35,9 @@ theme is ever compiled — does not exist, and the `custom_settings` table has w
 freeze triggers and no writer.
 
 **Approach:** Build the rest of D6a on the existing settings route, as R-131 left it: Posts per page first (a stepper,
-tabular numerals, `projects.posts_per_page`), then Site basics read from the linked site (Question 2), then the built
+tabular numerals, `projects.posts_per_page`), then Site basics read from the linked site (Question 2, ruled option 1), then the built
 mode block, then the Custom settings card — meter, freeze notice, the project's settings as rows with edit and delete,
-and the Promote form for toggle, segmented and named-select controls (Question 1). Every rule a stored setting must meet
+and the Promote form for toggle, segmented and named-select controls (Question 1, ruled option 1). Every rule a stored setting must meet
 lives in ONE core module both the server actions and Story 7.10's emitter read, and is executed against both pinned
 gscans rather than asserted. The main feed's Count gains D5c's second sentence and its link. No migration: every
 column, grant and trigger this story needs exists in `20260904120000_complete_schema.sql`, so there is no Schema phase
@@ -82,8 +83,8 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   executed through an RLS session on a test account, on the owner's in-session go.
 
 **Ask First:**
-- Question 1 and Question 2 below, both open. Dev builds the (RECOMMENDED) option of each only once ruled; until then
-  the Promote form and Site basics are the two things Dev may not start.
+- Questions 1 and 2 are ruled (option 1 on both, owner, 2026-10-09); a change to either scope is a new question, not a
+  Dev decision.
 - Any change to `custom_settings`' columns, grants or triggers — none is planned; a need for one is a Schema phase and
   a question.
 - The three reserved keys' names: `color_scheme` is FR-Q5's; `dark_accent_color` and `dark_logo` are this spec's
@@ -108,7 +109,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
 | Posts per page saved | + pressed at 12 | `projects.posts_per_page` = 13; the stepper reads 13, says "Saving…" while it posts; the editor's main feed paginates at 13 on next read (`revalidateProject`) | N/A |
 | Posts per page out of range | a posted value of 0, 101, `12.5`, `abc`, or absent | refused before the write with the module's sentence: "Posts per page is a whole number from 1 to 100."; the stored value stands | the − is spent at 1 and the + at 100 (`aria-disabled`, never `disabled`) |
 | Count's second sentence | the main feed's Data group in the editor | the greyed Count reads "This feed is sized by your theme's Posts per page. Change it in Theme settings." and a "Theme settings ↗" link to `settingsPath(project.id)`; the harness editor, which has no project, draws the sentence and no link | N/A |
-| Promote a toggle (Q1 option 1) | Which control = Latest Post · Primary action (`toggle`, value `on`), Label "Show the button", Group Homepage | a row `{ key: 'show_the_button', type: 'boolean', default_value: 'true', options: null, group_name: 'homepage', bound_to: {kind:'control', instanceId, controlKey:'primary-action'} }`; the list gains the row, the meter steps | N/A |
+| Promote a toggle | Which control = Latest Post · Primary action (`toggle`, value `on`), Label "Show the button", Group Homepage | a row `{ key: 'show_the_button', type: 'boolean', default_value: 'true', options: null, group_name: 'homepage', bound_to: {kind:'control', instanceId, controlKey:'primary-action'} }`; the list gains the row, the meter steps | N/A |
 | Promote a choice | Latest Post · Headline size (`segmented`, values medium/large/display, value `large`) | `type: 'select'`, `options: [{value:'medium',label:'Medium'},{value:'large',label:'Large'},{value:'display',label:'Display'}]`, `default_value: 'Large'` — the labels are what Ghost's panel shows (D6a: "Named values only"), the values what the markup needs; `valueWords` names both | a control with fewer than two values is not offered (gscan: `options.length < 2` fails) |
 | Label → key | "Show the Button!" · "  Wide  " · "W" · "Show tag" twice | `show_the_button` · `wide` · refused ("A key needs at least two letters") · `show_tag`, then `show_tag_2` | a label that leaves no key (an emoji) is refused with the sentence |
 | Reserved key | label "Color scheme" → `color_scheme` | refused: "color_scheme is one of the three dark-mode settings every Inflozo theme carries." | N/A |
@@ -238,10 +239,10 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   -- the writers the table has waited for since Story 1.2.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/theme-settings.tsx`, `page.tsx` — D6a in order: **Posts per
   page** (`Stepper` 1–100, the `posts_per_page` chip, the caption verbatim, "Saving…" while it posts), **Site basics**
-  (Question 2), the built mode block untouched, the **Custom settings** card: header with the meter chip "n OF 17", the
+  (Question 2, ruled: title · logo · accent rows, or the one caption), the built mode block untouched, the **Custom settings** card: header with the meter chip "n OF 17", the
   two captions verbatim, the freeze notice verbatim, the rows (label · "Design · Control →" · key chip · type word ·
   the condition caption when set · Edit · Delete), the empty state "Nothing promoted yet.", the **Promote a control** form
-  (Question 1: Which control as a `Select` over the project's placed toggle / segmented / named-select controls named
+  (Question 1, ruled: Which control as a `Select` over the project's placed toggle / segmented / named-select controls named
   "Layer · Control"; Label in Ghost; Key, generated live and editable before Promote; Group in Ghost; Only show when
   with the Kit's `ConditionRow`, optional; Promote; D6a's two closing captions). The delete confirm in `dialog.ts`'s
   sheet, focus on Cancel. `ReadOnly` over the whole card in a read-only session.
@@ -251,7 +252,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
 
   -- R-98; `busy.test.ts`.
 - [ ] `apps/web/lib/paywall.ts:107` — `adminAt` gains the anchor Site basics links to (`settings`), so one function builds
-  every Ghost Admin address (Question 2).
+  every Ghost Admin address (Question 2, ruled).
 
   -- one builder, one shape.
 - [ ] `apps/web/settings.test.ts` (new) — the actions' refusals by shape (no id, bad range, a key the module refuses, the
@@ -261,8 +262,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   -- the I/O matrix's app rows.
 - [ ] `_bmad-output/implementation-artifacts/deferred-work.md` DW-254 → done with the commit; `epic-7-context.md` — the
   Theme Settings block gains this story's Create and Dev sub-bullets (refresh, never recompile); `epics.md` Story 7.10's
-  card gains the line this story's ruling of Question 1 moves or keeps, word for word (R-195), and Epic 7's preamble
-  its list; `docs/project-context.md` unchanged.
+  card carries the Create's note (landed at Create, 2026-10-09) and Epic 7's preamble its "Given owners" list; `docs/project-context.md` unchanged.
 
   -- propagate, never localise (standing rule 3); end with a grep for the old sentence.
 
@@ -281,7 +281,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
 - Given the Custom settings card, when it is read, then the meter prints the count of this project's settings over the
   derived user cap, the twenty and the three are printed in D6a's sentence, the freeze notice is D6a's, and with no
   settings the card says so.
-- Given Question 1 ruled option 1 and a project with a placed section carrying a toggle or a choice control, when the
+- Given a project with a placed section carrying a toggle or a choice control, when the
   owner promotes it with a label and a group, then a `custom_settings` row exists with a generated two-or-more-character
   lowercase snake_case key that is not reserved and not taken, the type Ghost gives that control, the control's current
   value as default (a select's options as `{value, label}` pairs), and the row appears in the list with the meter stepped.
@@ -311,11 +311,11 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
 | Top bar (Orbit Weekly / Theme settings · Saved · Preview · Ship update) | `:30-41` | the back arrow and heading R-131 built | Preview and Ship are the editor's and Story 7.18's |
 | Left rail (Site basics · Navigation · Social accounts · Translations · Code injection) | `:42-49` | absent (R-118, as R-131 ruled it) | Story 7.12 adds Translations and may add the rail |
 | Posts per page | `:54-66` | **built** | — |
-| Site basics (title · logo · accent, "from Ghost", "Change this in Ghost ↗") | `:69-100` | **Question 2** | — |
+| Site basics (title · logo · accent, "from Ghost", "Change this in Ghost ↗") | `:69-100` | **built** (Question 2, option 1) | — |
 | This project · Clear dark overrides | `:102-121` | R-131, unchanged | — |
 | Credits | `:123-137` | absent | Story 7.28 |
 | Custom settings: meter, captions, freeze notice, rows | `:139-178` | **built** | the `header_bg` row's pack-switch caption is 7.10's (accent) |
-| Promote a control | `:180-235` | **Question 1** | text props, the accent and D6c are 7.10's |
+| Promote a control | `:180-235` | **built** for toggles and choice controls (Question 1, option 1) | text props, image props, the accent and D6c are 7.10's |
 | D6b Credits Free | `:245-262` | absent | Story 7.28 |
 | D6b Light-only pattern | `:265-290` | R-131, unchanged | — |
 
@@ -359,7 +359,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
 - `position`: the row's place in the list, assigned at creation as count + 1; the list is ordered by it.
 - `options`: `[{ value, label }]` for a select, `null` otherwise.
 
-### Which controls the Promote form offers (Question 1, option 1)
+### Which controls the Promote form offers (Question 1, ruled option 1)
 
 The project's docs through `editorData` (the same read the page already makes), every visible instance on every stored
 canvas and the site doc, each control of type `toggle`, `segmented` or `named-select` from the design's `controlSchema`,
@@ -367,7 +367,7 @@ named "Layer name · Control label" as D6a's rows do ("Home hero · Split Form �
 instance is not offered again. Stepper and swatch-row are not offered (Never). Text props, image props and the accent
 join in Story 7.10 with the type each takes.
 
-### Site basics (Question 2, option 1)
+### Site basics (Question 2, ruled option 1)
 
 Three read-only rows from the linked site: `sites.title`, `site_settings.brand.logo` (through `imageUrl`), and
 `brand.accent` (through `siteAccentOf`, drawn as a swatch with its hex), each with D6a's "from Ghost" chip and
@@ -395,8 +395,8 @@ Hypothesis, to be read at Dev: Ghost 6's API `maxLimit` applies to the collectio
 
 Do this on the real site after Deploy confirms the build, on a laptop at full width, signed in as yourself. The URLs
 are **Pilot sections** (`b6d4db35-8e5e-45e1-a70f-4daa28916d51`) and **Ghost 6 Project**
-(`21d868cf-1262-4ad2-9a44-091fbf653a04`); a step marked *(Q1)* or *(Q2)* exists only if you rule option 1 of that
-question. Step 4 puts Posts per page back.
+(`21d868cf-1262-4ad2-9a44-091fbf653a04`); you ruled option 1 on both questions, so every step below applies. Step 4 puts
+Posts per page back.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -405,16 +405,18 @@ question. Step 4 puts Posts per page back.
 | 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the **Three Up** post grid, open **Data** in the right-hand panel and look at **Count**. | — | Count is greyed at **13** and reads "This feed is sized by your theme's Posts per page. Change it in Theme settings." with a **Theme settings ↗** link. Click it: the Theme settings page opens. |
 | 4 | the same page | Theme settings | Press **−** once. Then hold − down to the bottom, and + up to the top. | — | Back to 12 and saved. The − goes pale and stops at **1**; the + goes pale and stops at **100**. Set it back to 12. |
 | 5 | the same page | Theme settings | Look at the **Custom settings** card. | — | "Custom settings" with a chip reading **0 OF 17**, the sentence about Ghost's twenty and the three dark-mode built-ins, "Keys freeze once you deploy or export — pick them like you mean it.", and "Nothing promoted yet." |
-| 6 *(Q1)* | the same page | Promote a control | Under **Promote a control**, open **Which control**, choose **Latest Post · Primary action**; type the label; leave Group on **Site wide**; press **Promote**. | Label: `Show the button` | The key fills itself as `show_the_button` while you type. Promote says "Promoting…", then a row appears: **Show the button** · Latest Post · Primary action → · `show_the_button` · boolean. The chip reads **1 OF 17**. |
-| 7 *(Q1)* | the same page | Promote a control | Promote a second control: **Latest Post · Headline size**, Group **Homepage**. | Label: `Headline size` | A second row: `headline_size` · select. The chip reads **2 OF 17**. |
-| 8 *(Q1)* | the same page | Custom settings | On the **Show the button** row press **Edit**; set **Only show when** to Headline size · is · Display; change the label; save. | Label: `Show the big button` | The row now reads **Show the big button**, the key is still `show_the_button` (it cannot be typed into), and a caption reads "Only when Headline size is Display". |
-| 9 *(Q1)* | the same page | Custom settings | Promote **Latest Post · Primary action** again. | — | It is not in the list of controls any more — it is already promoted. |
-| 10 *(Q1)* | the same page | Custom settings | Press **Delete** on **Headline size**. | — | A small window: "Delete Headline size?" with "Nothing is deployed yet, so nothing is lost.", focus on **Cancel**. Press **Delete**: the row goes, and the "Only when…" caption on Show the big button goes with it. Chip: **1 OF 17**. Delete Show the big button too: **0 OF 17**, "Nothing promoted yet." |
-| 11 *(Q2)* | the same page | Theme settings | Look between Posts per page and This project. | — | **Site basics** with one line: "Connect a Ghost site and its title, logo and accent appear here." and a link to Sites — this project links no site. |
-| 12 *(Q2)* | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04/settings` | Theme settings | Look at **Site basics**. | — | Three rows — Site title, Logo, Accent colour — each marked "from Ghost" with "Change this in Ghost ↗"; a value Ghost never gave reads "Not set in Ghost". The link opens that site's Ghost Admin settings in a new tab (it may ask you to sign in to Ghost). |
+| 6 | the same page | Promote a control | Under **Promote a control**, open **Which control**, choose **Latest Post · Primary action**; type the label; leave Group on **Site wide**; press **Promote**. | Label: `Show the button` | The key fills itself as `show_the_button` while you type. Promote says "Promoting…", then a row appears: **Show the button** · Latest Post · Primary action → · `show_the_button` · boolean. The chip reads **1 OF 17**. |
+| 7 | the same page | Promote a control | Promote a second control: **Latest Post · Headline size**, Group **Homepage**. | Label: `Headline size` | A second row: `headline_size` · select. The chip reads **2 OF 17**. |
+| 8 | the same page | Custom settings | On the **Show the button** row press **Edit**; set **Only show when** to Headline size · is · Display; change the label; save. | Label: `Show the big button` | The row now reads **Show the big button**, the key is still `show_the_button` (it cannot be typed into), and a caption reads "Only when Headline size is Display". |
+| 9 | the same page | Custom settings | Promote **Latest Post · Primary action** again. | — | It is not in the list of controls any more — it is already promoted. |
+| 10 | the same page | Custom settings | Press **Delete** on **Headline size**. | — | A small window: "Delete Headline size?" with "Nothing is deployed yet, so nothing is lost.", focus on **Cancel**. Press **Delete**: the row goes, and the "Only when…" caption on Show the big button goes with it. Chip: **1 OF 17**. Delete Show the big button too: **0 OF 17**, "Nothing promoted yet." |
+| 11 | the same page | Theme settings | Look between Posts per page and This project. | — | **Site basics** with one line: "Connect a Ghost site and its title, logo and accent appear here." and a link to Sites — this project links no site. |
+| 12 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04/settings` | Theme settings | Look at **Site basics**. | — | Three rows — Site title, Logo, Accent colour — each marked "from Ghost" with "Change this in Ghost ↗"; a value Ghost never gave reads "Not set in Ghost". The link opens that site's Ghost Admin settings in a new tab (it may ask you to sign in to Ghost). |
 | 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings`, in a second window | Theme settings, read-only | Open the project in a second window first (it shows read-only), then open its Theme settings there. | — | Every stepper, field, menu and button is greyed and does nothing; the values are readable. Close the second window. |
 
 ## Questions for the owner
+
+Both were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them.
 
 ### Question 1 — Where the "Promote a control" form is built: this story or Story 7.10
 
@@ -442,7 +444,7 @@ setting you can make arrives with Story 7.10.
 3. **Build the whole form here, text props and the accent included,** with D6c's confirm and the pack-switch warning.
    This story then also changes the editor's text toolbar (the lock pill) and the Style panel, and grows by about half.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-09).**
 
 ### Question 2 — Site basics: show your Ghost site's title, logo and accent here, or leave it out
 
@@ -465,7 +467,7 @@ straight to This project.
 3. **Drop it from the product.** The frame keeps the drawing; the plan records that Site basics is never built, because
    the Sites page already shows the brand.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-09).**
 
 ## Verification
 
