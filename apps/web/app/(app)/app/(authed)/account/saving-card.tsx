@@ -88,7 +88,7 @@ export function SavingCard({ autosave }: { autosave: boolean }) {
         </span>
 
         {/* The switch and its form. Not progressive enhancement in the OFF direction — the dialog only opens through
-            `showModal()` — but the ON direction is a plain submit and works with scripts off. */}
+            `showModal()` — but the ON direction is a plain submit. */}
         <form
           action={saveAction}
           onSubmit={once}

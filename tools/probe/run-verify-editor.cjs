@@ -228,6 +228,17 @@
 // 36 measures the pill against the section hovered when the scroll settles (DW-222); the screencast decoders skip and count
 // a frame that will not decode (DW-236); step 6's signed-out loop asks both frame routes (DW-117); the four CSP reads no
 // longer leave Projects out (DW-174); and the dice's pips are `die-pips.cjs`'s one measurement (DW-216).
+// Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
+// Site basics and the custom-settings meter (present), the seeded project's Site basics is its one no-site caption, and
+// Credits and D6a's rail rows stay absent (R-118). Step 104 walks the spec's I/O matrix row by row: + held mid-post saying
+// "Saving…" with `aria-busy` (the one holder of the stepper's computed submit, which `busy.test.ts` cannot see), 13 stored and
+// read back, the editor's main feed greyed at 13 with D5c's "Theme settings ↗" opening the page; the spent steps at 1 and 100
+// and hand-posted 0, 101, 12.5 and abc refused (51 the control); a toggle and a choice promoted to the matrix's rows; label →
+// key (`show_tag_2`, "W", "Color scheme"); a condition set and its target deleted; a frozen row's label edit and resurrect
+// warning; the cap at seventeen; R-192's read-only page under a second session's lock; each of A's four writes replayed under
+// B's cookies (refused) and A's (the control); and Site basics with a throwaway site linked, then unset. No step runs with
+// scripts off: the app needs JavaScript and this route streams behind its skeleton (Question 3, ruled option 1). The
+// project is handed back with no setting, Posts per page 12 and no site.
 const { chromium, devices, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -2634,7 +2645,8 @@ async function main() {
     const saysSo = await controlsAside().evaluate((a) => ({ open: !!document.querySelector('dialog[aria-labelledby="editor-cleardark-title"]')?.open, words: a.innerText.replace(/\s+/g, ' ') }))
     check('step 51 — R-12: with nothing to clear the panel\'s row SAYS SO under itself rather than asking, and stays live', saysSo.open === false && /Nothing to clear/.test(saysSo.words), JSON.stringify({ open: saysSo.open, said: /Nothing to clear[^.]*\./.exec(saysSo.words)?.[0] }))
 
-    // ── step 52 — R-131's Theme settings screen: D6a's two rows, and every other row of D6a ABSENT ──
+    // ── step 52 — R-131's Theme settings screen: D6a's two rows; since Story 7.9 Posts per page, Site basics and the
+    //    custom-settings card beside them; and every row D6a leaves to a later story still ABSENT (R-118) ──
     // The override is planted through the service key, because this step's subject is a STORED override and not one this
     // session made — the editor's own write goes through 5.8's journal and would be this session's. So
     // this is the only way to prove "every stored override is untouched" across a mode change and a reload, and the
@@ -2657,10 +2669,16 @@ async function main() {
       return r.body?.[0]?.doc?.instances?.[0]?.darkOverrides
     }
     const settingsUrl = at(`/projects/${P}/settings`)
+    // Story 7.9's words, from the modules that print them (R-170), never restated here
+    const [CS52, TS52] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/custom-settings.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/theme-settings.ts')).href),
+    ])
+    const linked52 = (await call('/rest/v1', `/projects?id=eq.${P}&select=linked_site_id`)).body?.[0]?.linked_site_id ?? null
     // `BusyLabel` keeps both labels in one grid cell, so a segment's accessible name carries its busy word too: the
     // pill is read and pressed by its form value, never by an exact name
     const segment = (value) => page.locator(`button[name="dark"][value="${value}"]`)
-    const readSettings = () => page.evaluate(() => ({
+    const readSettings = () => page.evaluate((words) => ({
       pill: [...document.querySelectorAll('[role="group"][aria-label="This project"] button')].map((b) => ({ value: b.getAttribute('value'), label: b.querySelector('span span')?.textContent, pressed: b.getAttribute('aria-pressed') })),
       caption: document.body.innerText.includes('Every Style Pack ships a hand-paired dark palette, so dark is already paid for.'),
       row: document.querySelector('[data-clear-row]')?.innerText.replace(/\s+/g, ' '),
@@ -2674,9 +2692,15 @@ async function main() {
       })(),
       reason: document.body.innerText.includes('Switch to Light + Dark to use or clear them.'),
       kept: document.body.innerText.includes('The overrides are kept, not discarded'),
-      // R-118 a fourth time: everything else D6a draws is ABSENT — not greyed and not captioned
-      restOfD6a: ['Posts per page', 'Site basics', 'Accent colour', 'Credits', 'OF 17', 'Navigation', 'Social accounts', 'Translations', 'Code injection'].filter((w) => document.body.innerText.includes(w)),
-    }))
+      // Story 7.9: what this story built of D6a is PRESENT — Posts per page, Site basics and the custom-settings meter
+      built: [words.posts, words.basics, words.meter].filter((w) => !document.body.innerText.includes(w)),
+      // the seeded project links no site, so Site basics is its one caption and no Ghost-owned row (Question 2)
+      noSite: document.body.innerText.includes(words.noSite),
+      accent: document.body.innerText.includes(words.accent),
+      // R-118: what D6a leaves to Story 7.12 (its rail: Navigation, Social accounts, Translations, Code injection) and
+      // Story 7.28 (Credits) stays ABSENT — not greyed and not captioned
+      restOfD6a: ['Credits', 'Navigation', 'Social accounts', 'Translations', 'Code injection'].filter((w) => document.body.innerText.includes(w)),
+    }), { posts: TS52.THEME_WORDS.postsPerPage, basics: TS52.THEME_WORDS.siteBasics, meter: `OF ${CS52.USER_SETTING_CAP}`, noSite: TS52.THEME_WORDS.noSite, accent: TS52.THEME_WORDS.accent })
     await page.goto(settingsUrl, { waitUntil: 'load' })
     // Review: `load` can land while React's streamed rows still sit in their HIDDEN holder — `querySelector` finds them
     // there and `body.innerText` does not, so the caption read false beside a pill read true. Wait for the words SHOWN.
@@ -2684,7 +2708,9 @@ async function main() {
     const settings = await readSettings()
     check('step 52 — R-131: /projects/<id>/settings draws D6a\'s mode block — "This project" as Light only | Light + Dark, with its caption verbatim', settings.pill.map((b) => b.label).join(' | ') === 'Light only | Light + Dark' && settings.pill[1].pressed === 'true' && settings.caption, JSON.stringify(settings.pill))
     check('step 52 — R-131: D6a\'s clear row carries the moon labelled "Dark override" and a DERIVED count, live while the project is Light + Dark', settings.moonLabel === 'Dark override' && /1 section carries a dark override/.test(settings.row ?? '') && settings.greyed === false && settings.clearRefuses === null, JSON.stringify({ row: settings.row, greyed: settings.greyed, refuses: settings.clearRefuses }))
-    check('step 52 — R-118 a fourth time: every other row and group D6a draws is ABSENT from the screen — not greyed and not captioned', settings.restOfD6a.length === 0 && !settings.reason && !settings.kept, settings.restOfD6a.join(' · '))
+    check('step 52 — Story 7.9: Posts per page, Site basics and the custom-settings meter are PRESENT — what this story built of D6a', settings.built.length === 0, `missing: ${settings.built.join(' · ')}`)
+    check('step 52 — Story 7.9 (Question 2): the seeded project links no site, so Site basics is its one caption and draws no Accent colour row', linked52 === null && settings.noSite && !settings.accent, JSON.stringify({ linked52, noSite: settings.noSite, accent: settings.accent }))
+    check('step 52 — R-118: every row D6a leaves to a later story — Credits (7.28) and the rail\'s Navigation, Social accounts, Translations and Code injection (7.12) — is ABSENT, not greyed and not captioned', settings.restOfD6a.length === 0 && !settings.reason && !settings.kept, settings.restOfD6a.join(' · '))
 
     // ── step 53 — FR-D7's Light-only half, against the STORED docs, and back again ──
     await segment('off').click()
@@ -7637,6 +7663,480 @@ async function main() {
     await axe103Context.close()
     // and the column as the seed made it, the planted brand and the walk's empty map taken off
     await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ style_pack: seeded103?.style_pack ?? { preset: 'paper' } }) })
+
+    // ── step 104 — STORY 7.9: THEME SETTINGS — POSTS PER PAGE, THE COUNT'S LINK, THE CUSTOM-SETTINGS BUILDER, SITE BASICS ──
+    /* The spec's I/O matrix, one block of checks per UI row, in contexts of its own (the lock handed back by every context
+       before it). Every word is the module's that prints it — `custom-settings.ts`'s SETTING_WORDS, `lib/theme-settings.ts`'s
+       THEME_WORDS, `lib/data-group.ts`, `lib/lock.ts` — and every control the Promote form must offer is derived from the
+       STORED docs through the app's own `placedControls`, never restated here. Every database effect is read back through
+       the service key; a check that could pass on nothing carries its control. The project is handed back clean: no
+       `custom_settings` row, Posts per page at 12, no linked site — later steps inherit what this one leaves. */
+    const [CS104, TS104, DG104, ED104, LK104, RT104] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/custom-settings.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/theme-settings.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/data-group.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/lock.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
+    ])
+    const W104 = CS104.SETTING_WORDS
+    const T104 = TS104.THEME_WORDS
+    const settings104 = at(ED104.settingsPath(P))
+    const SETTINGS_ROUTE104 = (u) => u.pathname.endsWith('/settings')
+    /** field-by-field, key order ignored — jsonb reorders an object's keys */
+    const same104 = (a, b) => { try { require('node:assert').deepStrictEqual(a, b); return true } catch { return false } }
+    const rows104 = async () => (await call('/rest/v1', `/custom_settings?project_id=eq.${P}&select=*&order=position.asc,created_at.asc`)).body ?? []
+    const rowOf104 = async (key) => (await rows104()).find((r) => r.key === key) ?? null
+    const fields104 = (r) => r && { key: r.key, label: r.label, type: r.type, options: r.options, default_value: r.default_value, group_name: r.group_name, visibility_condition: r.visibility_condition, bound_to: r.bound_to, frozen_at: r.frozen_at }
+    const project104 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=posts_per_page,linked_site_id`)).body?.[0] ?? null
+    const patchProject104 = (body) => call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify(body) })
+    const wipe104 = () => call('/rest/v1', `/custom_settings?project_id=eq.${P}`, { method: 'DELETE' })
+    const isAction104 = (r) => r.method() === 'POST' && !!r.headers()['next-action']
+    /** the next server action's answer, watched for BEFORE the press that sends it */
+    const posted104 = (p) => p.waitForResponse((r) => isAction104(r.request()), { timeout: 20000 })
+    const until104 = async (p, read, test, tries = 40) => {
+      let v
+      for (let i = 0; i < tries; i++) { v = await read(); if (test(v)) return v; await p.waitForTimeout(250) }
+      return v
+    }
+    /** hydrated: React's own props on the stepper's button, so a press is the scripted path and never a document post */
+    const hydrated104 = (p) => p.waitForFunction(() => { const b = document.querySelector('#posts-per-page button'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')) }, null, { timeout: 20000 })
+    const open104 = async (p, { hydrate = true } = {}) => {
+      await p.goto(settings104, { waitUntil: 'load' })
+      // `load` can land while the streamed rows still sit in their hidden holder (step 52's review): wait for them SHOWN
+      await p.getByRole('heading', { name: T104.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+      if (hydrate) await hydrated104(p)
+      await p.waitForTimeout(300)
+    }
+    const stepper104 = (p) => p.evaluate(() => {
+      const g = document.getElementById('posts-per-page')
+      const [minus, plus] = g ? [...g.querySelectorAll('button')] : []
+      const form = g?.closest('form')
+      const b = (x) => x && { type: x.getAttribute('type'), disabled: x.getAttribute('aria-disabled'), busy: x.getAttribute('aria-busy'), value: x.getAttribute('value') }
+      return { value: g?.querySelector('span')?.textContent ?? null, minus: b(minus), plus: b(plus), status: form?.querySelector('[role="status"]')?.textContent ?? null, alert: form?.querySelector('[role="alert"]')?.textContent ?? null, text: form?.innerText ?? '' }
+    })
+    const meter104 = (p) => p.evaluate(() => document.getElementById('custom-settings')?.parentElement?.querySelector('span')?.textContent ?? null)
+    const offered104 = async (p) => {
+      await p.locator('#promote-which').click()
+      await p.waitForTimeout(250)
+      const items = (await p.locator('#promote-which-menu button').allInnerTexts()).map((t) => t.trim())
+      await p.keyboard.press('Escape')
+      await p.waitForTimeout(150)
+      return items
+    }
+    const choose104 = async (p, id, name) => {
+      await p.locator(`#${id}`).click()
+      await p.waitForTimeout(250)
+      await p.locator(`#${id}-menu`).getByRole('button', { name, exact: true }).click()
+      await p.waitForTimeout(200)
+    }
+    /** one promotion through the form: the key as the form shows it before the press, and the action's raw answer */
+    const promote104 = async (p, { control, label, group }) => {
+      if (control) await choose104(p, 'promote-which', control)
+      await p.locator('#promote-label').fill(label)
+      if (group) await choose104(p, 'promote-group', group)
+      const key = await p.locator('#promote-key').inputValue()
+      const answered = posted104(p)
+      await p.locator('form:has(#promote-which) button[type="submit"]').click()
+      const body = await (await answered).text()
+      await p.waitForTimeout(800)
+      return { key, body }
+    }
+    const item104 = (p, key) => p.locator(`li[data-setting="${key}"]`)
+    const lockRead104 = (p) => p.evaluate(async (url) => {
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'beat', session: 'walk-7-9-read-only' }) })
+      return r.ok ? (await r.json()).row : null
+    }, `${PREFIX}/projects/${P}/lock`)
+
+    // the fixture: nothing promoted, Posts per page at 12, no site linked
+    await wipe104()
+    await patchProject104({ posts_per_page: 12, linked_site_id: null })
+    const start104 = { rows: (await rows104()).length, project: await project104() }
+    check('step 104 — the fixture: no custom setting, Posts per page at 12 and no linked site, read back through the service key', start104.rows === 0 && start104.project?.posts_per_page === 12 && start104.project?.linked_site_id === null, JSON.stringify(start104))
+    // what the Promote form must offer, derived from the STORED docs through the app's own rule (Question 1)
+    const docs104 = Object.fromEntries(((await call('/rest/v1', `/project_templates?project_id=eq.${P}&select=template_key,doc`)).body ?? []).map((r) => [r.template_key, parseDoc(r.doc, r.template_key)]))
+    const entries104 = Object.fromEntries(Object.values(docs104).flatMap((d) => d.instances.map((i) => [i.designId, pilot(i.designId)])))
+    const placed104 = TS104.placedControls(docs104, entries104)
+    const toggle104 = placed104.find((c) => c.controlKey === 'primary-action')
+    const choice104 = placed104.find((c) => c.controlKey === 'headline-size')
+    check('step 104 — the stored docs offer the matrix\'s two controls: Latest Post\'s Primary action (a toggle) and its Headline size (a choice)', !!toggle104 && !!choice104 && toggle104.setting.type === 'boolean' && choice104.setting.type === 'select', JSON.stringify({ toggle104, choice104 }))
+    if (!toggle104 || !choice104) throw new Error('step 104: the seeded docs offer no Primary action or Headline size — the block has nothing to promote')
+
+    const tsContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const csp104 = []
+    await recorder(tsContext, csp104)
+    const ts = steady(await tsContext.newPage())
+    ts.on('pageerror', (e) => note('pageerror 104', String(e)))
+    await ts.goto(await magic(emailA), { waitUntil: 'load' })
+
+    // ── 104a — the matrix's "Posts per page saved": + at 12 says Saving… while it posts, then 13 stored and read back ──
+    await open104(ts)
+    // the R-192 control, read on this EDITABLE page: its forms carry live controls
+    const live104 = await ts.evaluate(() => [...document.querySelectorAll('form:has(input[name="project"])')].flatMap((f) => [...f.elements]).filter((e) => !e.matches(':disabled')).length)
+    let release104
+    const held104 = new Promise((r) => { release104 = r })
+    const hold104 = async (route) => { if (isAction104(route.request())) await held104; await route.continue() }
+    await ts.route(SETTINGS_ROUTE104, hold104)
+    const answered104a = posted104(ts)
+    await ts.locator('#posts-per-page button[aria-label="More Posts per page"]').click()
+    const saying104 = await ts.waitForFunction((saving) => document.getElementById('posts-per-page')?.closest('form')?.querySelector('[role="status"]')?.textContent === saving, T104.saving, { timeout: 10000 }).then(() => true, () => false)
+    const during104 = await stepper104(ts)
+    release104()
+    await answered104a
+    await ts.unroute(SETTINGS_ROUTE104, hold104)
+    const after104 = await until104(ts, () => stepper104(ts), (s) => s.status === '')
+    const stored104a = await until104(ts, project104, (r) => r?.posts_per_page === 13)
+    check('step 104a — "Posts per page saved": + at 12 says "Saving…" with aria-busy (never `disabled`) while the post is held, shows 13 at once, and stops saying it once answered', saying104 && during104.value === '13' && during104.plus?.busy === 'true' && during104.plus?.disabled === null && after104.status === '' && after104.plus?.busy === null, JSON.stringify({ during104, after104 }))
+    await ts.reload({ waitUntil: 'load' })
+    await ts.getByRole('heading', { name: T104.postsPerPage, exact: true }).waitFor({ state: 'visible' })
+    check('step 104a — projects.posts_per_page is 13, and a reload reads 13', stored104a?.posts_per_page === 13 && (await stepper104(ts)).value === '13', JSON.stringify({ stored: stored104a, shown: (await stepper104(ts)).value }))
+
+    // ── 104c (the matrix's "Count's second sentence") — the editor's main feed greyed at 13, D5c's link, and the link works ──
+    await ts.goto(editorUrl(), { waitUntil: 'load' })
+    await ts.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await ts.waitForTimeout(600)
+    await ts.locator('#editor-layers [data-layer-row]:has([data-main-feed-chip]) button').first().click()
+    await ts.waitForTimeout(400)
+    const dataHead104 = ts.locator('#editor-controls button[aria-expanded]').filter({ hasText: /^Data$/ })
+    if ((await dataHead104.getAttribute('aria-expanded')) !== 'true') await dataHead104.click()
+    await ts.waitForTimeout(300)
+    const count104 = await ts.locator('#editor-controls [data-data-group]').first().evaluate((g) => {
+      const c = g.querySelector('[role="group"][id$="-count"]')
+      const a = g.querySelector('a')
+      return { value: c?.innerText.replace(/\s+/g, ''), greyed: c?.getAttribute('aria-disabled'), text: g.innerText.replace(/\s+/g, ' '), link: a && { text: a.textContent, href: a.getAttribute('href') } }
+    })
+    const barHref104 = await ts.locator('#editor-theme-settings').getAttribute('href')
+    check('step 104c — DW-254: the main feed\'s Count is greyed at 13 with D5c\'s two sentences, and carries "Theme settings ↗" to the settings page — the bar\'s own Theme settings address, never Ghost Admin',
+      count104.value?.includes('13') && count104.greyed === 'true' && count104.text.includes(RT104.DATA_WORDS.mainCount) && count104.link?.text === DG104.THEME_SETTINGS_LINK &&
+      count104.link?.href === barHref104 && (count104.link?.href ?? '').endsWith(ED104.settingsPath(P)) && !/\/ghost\//.test(count104.link?.href ?? ''), JSON.stringify({ count104, barHref104 }))
+    await ts.locator('#editor-controls [data-data-group] a').first().click()
+    const opened104 = await ts.waitForURL((u) => u.pathname.endsWith(ED104.settingsPath(P)), { timeout: 15000 }).then(() => true, () => false)
+    const there104 = await ts.getByRole('heading', { name: T104.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+    check('step 104c — pressed, the link opens Theme settings', opened104 && there104, ts.url().replace(/\?.*/, ''))
+    // and back to 12 with the −, read back
+    await hydrated104(ts)
+    await ts.waitForTimeout(300)
+    const answered104back = posted104(ts)
+    await ts.locator('#posts-per-page button[aria-label="Fewer Posts per page"]').click()
+    await answered104back
+    check('step 104a — − puts it back: 12 stored', (await until104(ts, project104, (r) => r?.posts_per_page === 12))?.posts_per_page === 12)
+    await handBack(ts)
+
+    // ── 104b — the matrix's "out of range": the spent step submits nothing, and a hand-made 0, 101, 12.5 or abc is refused ──
+    await patchProject104({ posts_per_page: 1 })
+    await open104(ts)
+    const atMin104 = await stepper104(ts)
+    await patchProject104({ posts_per_page: 100 })
+    await open104(ts)
+    const atMax104 = await stepper104(ts)
+    check('step 104b — at 1 the − is spent: aria-disabled and type="button", so it can never post 0, while the + is a live submit of 2 (the control); at 100 the reverse, with the ceiling\'s caption there and only there',
+      atMin104.value === '1' && atMin104.minus?.type === 'button' && atMin104.minus?.disabled === 'true' && atMin104.plus?.type === 'submit' && atMin104.plus?.value === '2' &&
+      atMax104.value === '100' && atMax104.plus?.type === 'button' && atMax104.plus?.disabled === 'true' && atMax104.minus?.type === 'submit' && atMax104.minus?.value === '99' &&
+      atMax104.text.includes(T104.postsCeiling) && !atMin104.text.includes(T104.postsCeiling), JSON.stringify({ atMin104, atMax104 }))
+    await patchProject104({ posts_per_page: 50 })
+    await open104(ts)
+    /** the + of a page at 50, its posted value set by hand and the form submitted past the click (`requestSubmit`) */
+    const handPost104 = async (value) => {
+      const answered = posted104(ts)
+      await ts.evaluate((v) => { const b = document.querySelector('#posts-per-page button[aria-label="More Posts per page"]'); b.value = v; b.closest('form').requestSubmit(b) }, value)
+      const body = await (await answered).text()
+      await ts.waitForTimeout(300)
+      return { value, said: body.includes(W104.postsPerPage), stored: (await project104())?.posts_per_page }
+    }
+    const refused104 = []
+    for (const bad of ['0', '101', '12.5', 'abc']) refused104.push(await handPost104(bad))
+    const shownRefusal104 = (await stepper104(ts)).alert
+    // the control: the same hand-made post with a value in range lands, so the four refusals are the action's answer
+    const landed104 = await handPost104('51')
+    check('step 104b — 0, 101, 12.5 and abc, posted by hand, each answer "Posts per page is a whole number from 1 to 100." and the stored 50 stands; 51 posted the same way lands (the control)',
+      refused104.every((r) => r.said && r.stored === 50) && shownRefusal104 === W104.postsPerPage && !landed104.said && landed104.stored === 51, JSON.stringify({ refused104, shownRefusal104, landed104 }))
+    await patchProject104({ posts_per_page: 12 })
+
+    // ── 104d — the matrix's "promote a toggle" and "promote a choice": the stored rows, the meter, the list ──
+    await open104(ts)
+    const offeredBefore104 = await offered104(ts)
+    const emptyMeter104 = await meter104(ts)
+    const emptySaid104 = (await ts.locator('section[aria-labelledby="custom-settings"]').innerText()).includes(T104.empty)
+    const t104 = await promote104(ts, { control: toggle104.label, label: 'Show the button', group: CS104.GROUP_WORDS.homepage })
+    const r1 = await rowOf104('show_the_button')
+    const meter1 = await meter104(ts)
+    check('step 104d — promote a toggle: the key is generated live as show_the_button, and the stored row is the matrix\'s — boolean, the control\'s value as "true"/"false", no options, Homepage, bound to that instance and control',
+      emptyMeter104 === W104.meter(0) && emptySaid104 && t104.key === 'show_the_button' &&
+      same104(fields104(r1), { key: 'show_the_button', label: 'Show the button', type: 'boolean', options: null, default_value: toggle104.setting.default_value, group_name: 'homepage', visibility_condition: null, bound_to: { kind: 'control', instanceId: toggle104.instanceId, controlKey: 'primary-action' }, frozen_at: null }) &&
+      ['true', 'false'].includes(r1?.default_value) && meter1 === W104.meter(1), JSON.stringify({ key: t104.key, row: fields104(r1), emptyMeter104, meter1 }))
+    const c104 = await promote104(ts, { control: choice104.label, label: 'Headline size', group: CS104.GROUP_WORDS.post })
+    const r2 = await rowOf104('headline_size')
+    const offeredAfter104 = await offered104(ts)
+    // the matrix's own options, against what the app derives — the labels are what Ghost's panel shows, the values what the markup needs
+    const matrixOptions104 = [{ value: 'medium', label: 'Medium' }, { value: 'large', label: 'Large' }, { value: 'display', label: 'Display' }]
+    check('step 104d — promote a choice: a select whose options are {value, label} pairs — the matrix\'s Medium, Large, Display — and whose default is the current value\'s LABEL, Post',
+      c104.key === 'headline_size' && same104(choice104.setting.options, matrixOptions104) &&
+      same104(fields104(r2), { key: 'headline_size', label: 'Headline size', type: 'select', options: matrixOptions104, default_value: choice104.setting.default_value, group_name: 'post', visibility_condition: null, bound_to: { kind: 'control', instanceId: choice104.instanceId, controlKey: 'headline-size' }, frozen_at: null }) &&
+      matrixOptions104.some((o) => o.label === r2?.default_value), JSON.stringify(fields104(r2)))
+    check('step 104d — the meter steps to 2 OF 17, and both promoted controls leave Which control — offered before (the control), gone after',
+      (await meter104(ts)) === W104.meter(2) && offeredBefore104.includes(toggle104.label) && offeredBefore104.includes(choice104.label) &&
+      !offeredAfter104.includes(toggle104.label) && !offeredAfter104.includes(choice104.label) && offeredAfter104.length === offeredBefore104.length - 2, JSON.stringify({ before: offeredBefore104.length, after: offeredAfter104.length }))
+
+    // ── 104e — the matrix's "label → key": a second "Show tag" takes _2; "W" and "Color scheme" are refused and insert nothing ──
+    const [x104, y104] = offeredAfter104
+    const tag1 = await promote104(ts, { control: x104, label: 'Show tag' })
+    await choose104(ts, 'promote-which', y104)
+    await ts.locator('#promote-label').fill('Show tag')
+    const liveKey104 = await ts.locator('#promote-key').inputValue()
+    const tag2 = await promote104(ts, { label: 'Show tag' })
+    const keys104 = (await rows104()).map((r) => r.key)
+    check('step 104e — label → key: "Show tag" is show_tag, and a second "Show tag" reads show_tag_2 in the live key field and is stored so',
+      tag1.key === 'show_tag' && liveKey104 === 'show_tag_2' && tag2.key === 'show_tag_2' && keys104.includes('show_tag') && keys104.includes('show_tag_2'), JSON.stringify({ tag1: tag1.key, liveKey104, tag2: tag2.key, keys104 }))
+    const countBefore104 = (await rows104()).length
+    const w104 = await promote104(ts, { label: 'W' })
+    const scheme104 = await promote104(ts, { label: 'Color scheme' })
+    const countAfter104 = (await rows104()).length
+    check('step 104e — "W" is refused with "A key needs at least two letters." and "Color scheme" with the reserved sentence; neither inserts a row',
+      w104.key === 'w' && w104.body.includes(W104.keyShort) && scheme104.key === 'color_scheme' && scheme104.body.includes(W104.reserved('color_scheme')) && countAfter104 === countBefore104,
+      JSON.stringify({ w: w104.key, scheme: scheme104.key, countBefore104, countAfter104 }))
+
+    // ── 104f — the matrix's "visibility set" and "visibility's target deleted" ──
+    const button104 = await rowOf104('show_the_button')
+    const whenId104 = `setting-${button104.id}-when`
+    await item104(ts, 'show_the_button').locator('summary').click()
+    await ts.waitForTimeout(200)
+    const captionBefore104 = (await item104(ts, 'show_the_button').innerText()).includes(T104.onlyWhen('Headline size', 'Display'))
+    await ts.locator(`#${whenId104} button[aria-label^="Field:"]`).click()
+    await ts.waitForTimeout(250)
+    await ts.locator(`#${whenId104}-field-menu`).getByRole('button', { name: 'Headline size', exact: true }).click()
+    await ts.waitForTimeout(200)
+    await ts.locator(`#${whenId104} button[aria-label^="Value:"]`).click()
+    await ts.waitForTimeout(250)
+    await ts.locator(`#${whenId104}-value-menu`).getByRole('button', { name: 'Display', exact: true }).click()
+    await ts.waitForTimeout(200)
+    const answered104f = posted104(ts)
+    await item104(ts, 'show_the_button').locator('details form button[type="submit"]').click()
+    await answered104f
+    await ts.waitForTimeout(600)
+    const conditioned104 = await rowOf104('show_the_button')
+    const captionAfter104 = (await item104(ts, 'show_the_button').innerText()).includes(T104.onlyWhen('Headline size', 'Display'))
+    check('step 104f — visibility set through Edit: the row reads "Only when Headline size is Display" (absent before — the control) and the database holds {key: headline_size, value: Display}, the option\'s LABEL',
+      !captionBefore104 && captionAfter104 && same104(conditioned104?.visibility_condition, { key: 'headline_size', value: 'Display' }), JSON.stringify(conditioned104?.visibility_condition))
+    await item104(ts, 'headline_size').locator('form:has(dialog) button[type="submit"]').click()
+    await ts.waitForTimeout(300)
+    const ask104 = await item104(ts, 'headline_size').locator('dialog').evaluate((d) => ({ open: d.open, text: d.innerText.replace(/\s+/g, ' '), focus: document.activeElement?.textContent?.trim() ?? null }))
+    check('step 104f — Delete asks first: "Delete Headline size?" with "Nothing is deployed yet, so nothing is lost.", focus on Cancel (R-134)',
+      ask104.open && ask104.text.includes(T104.deleteTitle('Headline size')) && ask104.text.includes(T104.deleteBody({ key: 'headline_size', frozen_at: null })) && ask104.focus === T104.cancel, JSON.stringify(ask104))
+    const answered104del = posted104(ts)
+    await item104(ts, 'headline_size').locator('dialog').getByRole('button', { name: T104.deleteButton, exact: true }).click()
+    await answered104del
+    await ts.waitForTimeout(800)
+    const gone104 = await rowOf104('headline_size')
+    const cleared104 = await rowOf104('show_the_button')
+    const captionGone104 = !(await item104(ts, 'show_the_button').innerText()).includes(T104.onlyWhen('Headline size', 'Display'))
+    check('step 104f — the target deleted: its row is gone, the condition naming it is null in the database, and the caption is gone',
+      gone104 === null && cleared104?.visibility_condition === null && captionGone104 && (await item104(ts, 'headline_size').count()) === 0, JSON.stringify({ gone104, condition: cleared104?.visibility_condition, captionGone104 }))
+
+    // ── 104g — the matrix's "label edit on a frozen row": planted frozen, the key stays and cannot be typed into ──
+    const frozenAt104 = new Date().toISOString()
+    const froze104 = await call('/rest/v1', `/custom_settings?id=eq.${cleared104.id}`, { method: 'PATCH', body: JSON.stringify({ frozen_at: frozenAt104 }) })
+    const frozenRow104 = await rowOf104('show_the_button')
+    await open104(ts)
+    const frozenText104 = await item104(ts, 'show_the_button').innerText()
+    await item104(ts, 'show_the_button').locator('summary').click()
+    await ts.waitForTimeout(200)
+    const keyInputs104 = await item104(ts, 'show_the_button').locator('details form input[name="key"]').count()
+    const promoteKeyInputs104 = await ts.locator('form:has(#promote-which) input[name="key"]').count()
+    await item104(ts, 'show_the_button').locator('details form input[name="label"]').fill('Show the big button')
+    const answered104g = posted104(ts)
+    await item104(ts, 'show_the_button').locator('details form button[type="submit"]').click()
+    await answered104g
+    await ts.waitForTimeout(600)
+    const edited104 = await rowOf104('show_the_button')
+    check('step 104g — frozen (planted through the service key): the row reads "Key frozen since …", the edit form has NO input named key (the Promote form has one — the control), and a label edit lands with the key and the stamp unchanged',
+      (froze104.status === 200 || froze104.status === 204) && frozenText104.includes(T104.frozenSince(frozenRow104?.frozen_at ?? frozenAt104)) && keyInputs104 === 0 && promoteKeyInputs104 === 1 &&
+      edited104?.label === 'Show the big button' && edited104?.key === 'show_the_button' && edited104?.id === cleared104.id && edited104?.frozen_at === frozenRow104?.frozen_at, JSON.stringify({ keyInputs104, promoteKeyInputs104, edited: fields104(edited104) }))
+    await item104(ts, 'show_the_button').locator('form:has(dialog) button[type="submit"]').click()
+    await ts.waitForTimeout(300)
+    const askFrozen104 = await item104(ts, 'show_the_button').locator('dialog').evaluate((d) => ({ open: d.open, text: d.innerText.replace(/\s+/g, ' ') }))
+    await item104(ts, 'show_the_button').locator('dialog').getByRole('button', { name: T104.cancel, exact: true }).click()
+    await ts.waitForTimeout(300)
+    check('step 104g — the frozen row\'s delete confirm carries the resurrect sentence, and Cancel keeps the row',
+      askFrozen104.open && askFrozen104.text.includes(T104.deleteBody({ key: 'show_the_button', frozen_at: frozenAt104 })) && (await rowOf104('show_the_button')) !== null, JSON.stringify(askFrozen104))
+
+    // ── 104h — the matrix's "the cap": sixteen planted, the seventeenth lands, the eighteenth is refused before the insert ──
+    await wipe104()
+    const plant104 = await call('/rest/v1', '/custom_settings', { method: 'POST', body: JSON.stringify(Array.from({ length: CS104.USER_SETTING_CAP - 1 }, (_, i) => ({
+      project_id: P, user_id: ids[0], key: `walk_104_${i + 1}`, label: `Walk ${i + 1}`, type: 'boolean', default_value: 'true',
+      bound_to: { kind: 'control', instanceId: 'walk-104', controlKey: `k${i + 1}` }, position: i + 1,
+    }))) })
+    await open104(ts)
+    const sixteen104 = await meter104(ts)
+    const seventeenth104 = await promote104(ts, { label: 'Seventeenth' })
+    const full104 = await ts.evaluate(() => {
+      const form = document.getElementById('promote-which')?.closest('form')
+      const greyed = form?.querySelector('button[aria-disabled="true"]')
+      return { submits: form?.querySelectorAll('button[type="submit"]').length ?? null, greyed: greyed?.textContent ?? null, reason: document.getElementById('promote-submit-reason')?.textContent ?? null }
+    })
+    check('step 104h — the cap: 16 planted reads 16 OF 17, the 17th promoted lands and reads 17 OF 17, and Promote greys with the cap sentence and no submit left',
+      plant104.status === 201 && sixteen104 === W104.meter(CS104.USER_SETTING_CAP - 1) && !seventeenth104.body.includes(W104.cap) && (await meter104(ts)) === W104.meter(CS104.USER_SETTING_CAP) &&
+      (await rows104()).length === CS104.USER_SETTING_CAP && full104.submits === 0 && full104.greyed === T104.promoteButton && full104.reason === W104.cap, JSON.stringify({ sixteen104, full104 }))
+    await ts.locator('#promote-label').fill('Eighteenth')
+    const answered104h = posted104(ts)
+    await ts.evaluate(() => document.getElementById('promote-which').closest('form').requestSubmit())
+    const past104 = await (await answered104h).text()
+    check('step 104h — a submit forced past the greyed button answers "You have used all 17 of your theme settings. Delete one to promote another." and inserts nothing',
+      past104.includes(W104.cap) && (await rows104()).length === CS104.USER_SETTING_CAP, `rows ${(await rows104()).length}`)
+    await wipe104()
+
+    // ── 104i — R-192: a second session holds the lock, and Theme settings in another tab reads along ──
+    const holderContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(holderContext, csp104)
+    const hp = steady(await holderContext.newPage())
+    await hp.goto(await magic(emailA), { waitUntil: 'load' })
+    await hp.goto(editorUrl(), { waitUntil: 'load' })
+    await hp.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const holderSession104 = await hp.evaluate(() => sessionStorage.getItem('inflozo-lock-session'))
+    const held104row = await until104(hp, () => lockRead104(hp), (r) => r?.holderSessionId === holderSession104)
+    await patchProject104({ posts_per_page: 12 })
+    const rd = steady(await tsContext.newPage())
+    await open104(rd, { hydrate: false })
+    await rd.waitForTimeout(1500)
+    const reading104 = await rd.evaluate((reading) => {
+      const controls = [...document.querySelectorAll('form:has(input[name="project"])')].flatMap((f) => [...f.elements])
+      return { banner: document.body.innerText.includes(reading), region: document.querySelector('[data-readonly]') !== null, controls: controls.length, live: controls.filter((e) => !e.matches(':disabled')).map((e) => e.outerHTML.slice(0, 80)) }
+    }, LK104.LOCK_COPY.reading)
+    check('step 104i — R-192: with another session holding the lock, Theme settings in a new tab says it is reading along and EVERY input and button of its forms is disabled (the same forms carried live controls on the editable page — the control)',
+      held104row?.holderSessionId === holderSession104 && reading104.banner && reading104.region && reading104.controls > 0 && reading104.live.length === 0 && live104 > 0, JSON.stringify({ reading104, live104 }))
+    const rowsBeforeForce104 = (await rows104()).length
+    for (const form of ['#posts-per-page', '#promote-which']) {
+      const answered = posted104(rd).catch(() => null)
+      await rd.evaluate((sel) => document.querySelector(sel)?.closest('form')?.requestSubmit(), form)
+      await answered
+    }
+    await rd.waitForTimeout(600)
+    check('step 104i — a submit forced on the read-only page changes nothing in the database', (await project104())?.posts_per_page === 12 && (await rows104()).length === rowsBeforeForce104, JSON.stringify({ project: await project104(), rows: (await rows104()).length }))
+    await rd.close()
+    await handBack(hp)
+    await holderContext.close()
+
+    // ── 104j — the matrix's "another user's project": A's own posts, replayed under B's session, reach zero rows ──
+    /* Each of A's four writes is CAPTURED as it leaves A's page (`page.route`, passed through), the database put back where
+       the capture's own write moved it, and the same request REPLAYED with B's cookies: B is answered "We couldn't save that
+       just now." and A's rows stand. The control is the same replay under A's own session, which reaches A's rows — so B's
+       refusal is RLS answering, never a replay that could not have worked. */
+    const bContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(bContext, csp104)
+    const bp = steady(await bContext.newPage())
+    await bp.goto(await magic(emailB), { waitUntil: 'load' })
+    const capture104 = async (act) => {
+      let caught = null
+      const passing = async (route) => {
+        const r = route.request()
+        if (isAction104(r) && caught === null) caught = { url: r.url(), headers: r.headers(), body: r.postDataBuffer() }
+        await route.continue()
+      }
+      await ts.route(SETTINGS_ROUTE104, passing)
+      const answered = posted104(ts)
+      await act()
+      await answered
+      await ts.unroute(SETTINGS_ROUTE104, passing)
+      await ts.waitForTimeout(600)
+      return caught
+    }
+    const replay104 = async (ctx, c) => {
+      const headers = Object.fromEntries(Object.entries(c.headers).filter(([k]) => !/^(cookie|content-length|host)$/i.test(k)))
+      const r = await ctx.request.post(c.url, { headers: { ...headers, origin: new URL(c.url).origin }, data: c.body, maxRedirects: 0 })
+      return { status: r.status(), body: await r.text() }
+    }
+    await open104(ts)
+    // posts per page: captured at 12 → 13, put back to 12, replayed
+    const cPosts104 = await capture104(() => ts.locator('#posts-per-page button[aria-label="More Posts per page"]').click())
+    await patchProject104({ posts_per_page: 12 })
+    const bPosts104 = await replay104(bContext, cPosts104)
+    const afterB104 = (await project104())?.posts_per_page
+    const aPosts104 = await replay104(tsContext, cPosts104)
+    const afterA104 = (await project104())?.posts_per_page
+    check('step 104j — Posts per page: A\'s post replayed under B answers "We couldn\'t save that just now." and A\'s 12 stands; under A\'s own session it lands 13 (the control)',
+      !!cPosts104 && bPosts104.body.includes(W104.couldNot) && afterB104 === 12 && !aPosts104.body.includes(W104.couldNot) && afterA104 === 13, JSON.stringify({ b: bPosts104.status, afterB104, a: aPosts104.status, afterA104 }))
+    await patchProject104({ posts_per_page: 12 })
+    await open104(ts)
+    // promote: captured as A promotes, replayed — B refused; A's replay finds the control already promoted (the control)
+    const cPromote104 = await capture104(async () => {
+      await ts.locator('#promote-label').fill('Replay')
+      await ts.locator('form:has(#promote-which) button[type="submit"]').click()
+    })
+    const rowsAfterA104 = (await rows104()).length
+    const bPromote104 = await replay104(bContext, cPromote104)
+    const rowsAfterB104 = (await rows104()).length
+    const aPromote104 = await replay104(tsContext, cPromote104)
+    check('step 104j — Promote: replayed under B it answers "We couldn\'t save that just now." and A\'s rows stand; under A it reaches A\'s rows and finds the control already promoted (the control)',
+      !!cPromote104 && rowsAfterA104 === 1 && bPromote104.body.includes(W104.couldNot) && rowsAfterB104 === 1 && aPromote104.body.includes(W104.noControl), JSON.stringify({ rowsAfterA104, b: bPromote104.status, rowsAfterB104, a: aPromote104.status }))
+    // update: captured as A relabels, put back, replayed
+    await open104(ts)
+    const replay104row = await rowOf104('replay')
+    await item104(ts, 'replay').locator('summary').click()
+    const cUpdate104 = await capture104(async () => {
+      await item104(ts, 'replay').locator('details form input[name="label"]').fill('Replay edited')
+      await item104(ts, 'replay').locator('details form button[type="submit"]').click()
+    })
+    await call('/rest/v1', `/custom_settings?id=eq.${replay104row?.id}`, { method: 'PATCH', body: JSON.stringify({ label: 'Replay' }) })
+    const bUpdate104 = await replay104(bContext, cUpdate104)
+    const labelAfterB104 = (await rowOf104('replay'))?.label
+    const aUpdate104 = await replay104(tsContext, cUpdate104)
+    const labelAfterA104 = (await rowOf104('replay'))?.label
+    check('step 104j — Edit: replayed under B it answers "We couldn\'t save that just now." and the label stays; under A it lands (the control)',
+      !!cUpdate104 && bUpdate104.body.includes(W104.couldNot) && labelAfterB104 === 'Replay' && labelAfterA104 === 'Replay edited', JSON.stringify({ b: bUpdate104.status, labelAfterB104, a: aUpdate104.status, labelAfterA104 }))
+    // delete: captured as A deletes, the row put back with its own id, replayed
+    await open104(ts)
+    const beforeDelete104 = await rowOf104('replay')
+    await item104(ts, 'replay').locator('form:has(dialog) button[type="submit"]').click()
+    await ts.waitForTimeout(300)
+    const cDelete104 = await capture104(() => item104(ts, 'replay').locator('dialog').getByRole('button', { name: T104.deleteButton, exact: true }).click())
+    const putBack104 = await call('/rest/v1', '/custom_settings', { method: 'POST', body: JSON.stringify({ id: beforeDelete104?.id, project_id: P, user_id: ids[0], key: beforeDelete104?.key, label: beforeDelete104?.label, type: beforeDelete104?.type, options: beforeDelete104?.options, default_value: beforeDelete104?.default_value, group_name: beforeDelete104?.group_name, bound_to: beforeDelete104?.bound_to, position: beforeDelete104?.position }) })
+    const bDelete104 = await replay104(bContext, cDelete104)
+    const stillB104 = await rowOf104('replay')
+    const aDelete104 = await replay104(tsContext, cDelete104)
+    const goneA104 = await rowOf104('replay')
+    check('step 104j — Delete: replayed under B it answers "We couldn\'t save that just now." and the row stands; under A it is deleted (the control)',
+      !!cDelete104 && putBack104.status === 201 && bDelete104.body.includes(W104.couldNot) && stillB104?.id === beforeDelete104?.id && goneA104 === null, JSON.stringify({ put: putBack104.status, b: bDelete104.status, stillB: !!stillB104, a: aDelete104.status, goneA: goneA104 === null }))
+    await bContext.close()
+    await wipe104()
+    await patchProject104({ posts_per_page: 12 })
+
+    // ── no 104k: the app needs JavaScript (Story 7.9's Question 3, ruled option 1, owner, 2026-10-09 — Story 3.9's Question 5
+    // again, EXPERIENCE.md § Where the floor stops). This route streams behind its `loading.tsx`, so with scripts off it stays
+    // on its skeleton, and a scripts-off step here would test a page nobody can see. Its forms are still plain forms (104b
+    // posts the stepper by `requestSubmit`; 104h and 104j post past the scripted layer).
+
+    // ── 104l — Site basics (Question 2): no linked site, then a throwaway site linked, then its values unset ──
+    await open104(ts)
+    const unlinked104 = await ts.locator('section[aria-labelledby="site-basics"]').evaluate((s) => ({ text: s.innerText, links: [...s.querySelectorAll('a')].map((a) => ({ text: a.textContent, href: a.getAttribute('href') })) }))
+    const SITE104 = { url: `https://walk-104-${stamp}.example.com`, title: 'Walk 104', logo: `https://walk-104-${stamp}.example.com/content/images/logo.png`, accent: '#FF5941' }
+    const site104 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: ids[0], url: SITE104.url, title: SITE104.title, site_settings: { brand: { logo: SITE104.logo, accent: SITE104.accent } } }) })
+    const siteId104 = site104.body?.[0]?.id
+    await patchProject104({ linked_site_id: siteId104 })
+    await open104(ts)
+    const basics104 = () => ts.locator('section[aria-labelledby="site-basics"]').evaluate((s) => ({ text: s.innerText, links: [...s.querySelectorAll('a')].map((a) => ({ text: a.textContent, href: a.getAttribute('href'), target: a.getAttribute('target') })) }))
+    const linked104 = await basics104()
+    const admin104 = `${SITE104.url}/ghost/#/settings`
+    check('step 104l — Site basics, no site linked: its one caption and a link to Sites, and no Ghost-owned row',
+      unlinked104.text.includes(T104.noSite) && unlinked104.links.length === 1 && unlinked104.links[0].text === T104.sites && !unlinked104.text.includes(T104.fromGhost), JSON.stringify(unlinked104))
+    check('step 104l — Site basics, a site linked: Site title, Logo and Accent colour, each "from Ghost" with "Change this in Ghost ↗" to its Ghost Admin settings, and the values Ghost holds',
+      site104.status === 201 && [T104.siteTitle, T104.logo, T104.accent, SITE104.title, SITE104.accent].every((w) => linked104.text.includes(w)) &&
+      linked104.text.split(T104.fromGhost).length - 1 === 3 && linked104.links.length === 3 && linked104.links.every((l) => l.text === T104.change && l.href === admin104 && l.target === '_blank') &&
+      !linked104.text.includes(T104.notSet), JSON.stringify(linked104))
+    await call('/rest/v1', `/sites?id=eq.${siteId104}`, { method: 'PATCH', body: JSON.stringify({ site_settings: {} }) })
+    await open104(ts)
+    const unset104 = await basics104()
+    check('step 104l — a value Ghost never gave reads "Not set in Ghost": the logo and the accent, with the title still shown', unset104.text.split(T104.notSet).length - 1 === 2 && unset104.text.includes(SITE104.title), JSON.stringify(unset104.text))
+    await patchProject104({ linked_site_id: null })
+    const siteGone104 = await call('/rest/v1', `/sites?id=eq.${siteId104}`, { method: 'DELETE' })
+
+    // the project as this block found it — later steps inherit it
+    await handBack(ts)
+    await tsContext.close()
+    await wipe104()
+    await patchProject104({ posts_per_page: 12, linked_site_id: null })
+    const end104 = { rows: (await rows104()).length, project: await project104(), site: (await call('/rest/v1', `/sites?id=eq.${siteId104}&select=id`)).body?.length ?? null }
+    check('step 104 — the project is handed back clean: no custom setting, Posts per page 12, no linked site, the throwaway site deleted — and every signed-in context of the block recorded zero CSP violations',
+      end104.rows === 0 && end104.project?.posts_per_page === 12 && end104.project?.linked_site_id === null && end104.site === 0 && (siteGone104.status === 200 || siteGone104.status === 204) && csp104.length === 0,
+      JSON.stringify({ end104, csp104: csp104.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

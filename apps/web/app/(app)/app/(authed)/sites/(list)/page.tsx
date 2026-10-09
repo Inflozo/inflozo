@@ -66,7 +66,7 @@ import { SiteNotices, type NoticeSite } from '../site-notices'
       is the shape of the Projects empty screen (S3b): a drawing, the display title, the quieter
       line, and a centred "Connect site" that opens the same sheet the top bar's does. The
       full-page handshake did not disappear — it is `/sites/connect`, which is where that link
-      goes with JavaScript off. No frame draws this screen, so it is extrapolated from the nearest
+      goes as a plain link (a modified click). No frame draws this screen, so it is extrapolated from the nearest
       one that has (R-74) and its words and drawing are the owner's rulings at Questions 5 and 6.
    2. THE TOP BAR IS THE SHELL'S, as Projects' is (his finding 5): the search field on the left,
       "Connect site" on its right, the 64px rule under both. Its bell is Story 13.4's and is drawn
@@ -88,8 +88,7 @@ import { SiteNotices, type NoticeSite } from '../site-notices'
    and 3.7's health badges now add to the state line the owner made, rather than reading the frame
    and undoing him (the ledger entry is amended to say so). And `<SiteNotices>` is the card's LAST
    block: the one-time code-injection notice, the two questions the probes could not answer for
-   themselves, and B15's Preview-Only Notice — every control in it a form, so all of them work
-   with JavaScript off.
+   themselves, and B15's Preview-Only Notice — every control in it a plain form.
 
    STORY 3.5 ADDED THE ⋯ AND THE GHOST SLOT, AND OBEYED DW-57 TWICE OVER. `<SiteMenu>` goes at
    the TOP RIGHT OF THE HEADER ROW, in the `margin-left:auto` slot the frame draws it in
@@ -422,7 +421,7 @@ export default async function Sites({
                         carries `data-recheck` beside it (`site-menu.tsx`), so this line SELECTS on
                         the press rather than being told about it: `group-has-[…]` hides the settled
                         state and shows the checking one. No state, no context, no card-wide client
-                        boundary — and the scripts-off behaviour falls out for free, because with no
+                        boundary — and the behaviour before the page's scripts run falls out for free, because with no
                         script there is no `aria-busy`, no swap, and the click is a document
                         navigation the browser reports itself.
                         ponytail: `:has()` off the submit's own aria-busy; a client card component
@@ -480,7 +479,7 @@ export default async function Sites({
 
                           **Reconnect** IS A `PanelLink`, EXACTLY AS THE ⋯'S Manage API keys ROW IS:
                           a plain click opens the Manage keys WINDOW over this list and a modified
-                          or scripts-off click takes the full page, and it already carries its own
+                          click takes the full page, and it already carries its own
                           busy state (R-98). This is EXPERIENCE.md's promised second entry point
                           into that panel, and the first thing that has ever reached it besides the
                           ⋯ menu. A row that could not be read leaves the caption absent and the

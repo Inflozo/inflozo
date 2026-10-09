@@ -156,8 +156,9 @@ export const isUuid = (id: string) => UUID.test(id)
 export const canvasPath = (projectId: string, key: CanvasKey = 'home') =>
   key === 'home' ? `/projects/${projectId}` : `/projects/${projectId}/${key}`
 
-/** THE SCHEME'S ONE NON-CANVAS SEGMENT (Story 5.6, R-131): Theme settings, `/projects/<id>/settings`, holding D6a's
- *  project-mode block and the project-level "Clear dark overrides" row and nothing else that screen draws.
+/** THE SCHEME'S ONE NON-CANVAS SEGMENT (Story 5.6, R-131): Theme settings, `/projects/<id>/settings` — D6a's project-mode
+ *  block and its "Clear dark overrides" row, and since Story 7.9 Posts per page, Site basics and the custom-settings
+ *  builder beside them; every "posts per page" sentence in the product links here (FR-Q1).
  *
  *  Named HERE because the scheme is data in one place (Story 5.1) — the route, the editor's way in and the harness
  *  all read it from this module, so nothing learns the word twice. It is deliberately NOT in `CANVASES`: it compiles

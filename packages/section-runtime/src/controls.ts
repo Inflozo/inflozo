@@ -372,8 +372,9 @@ export const DATA_WORDS = {
   pickedCount: 'The list you picked is the count.',
   /** Order greyed at Hand-picked, marking no value (P0·5, R-69) */
   pickedOrder: 'The list you picked is the order — these posts render in the order you dragged them.',
-  /** the main feed's Count, greyed at the page size in force (D5c's first sentence; its link is Story 7.9's, DW-254) */
-  mainCount: "This feed is sized by your theme's Posts per page.",
+  /** the main feed's Count, greyed at the page size in force — D5c's two sentences; the panel draws the second's link to
+   *  Theme settings under them (Story 7.9, DW-254) */
+  mainCount: "This feed is sized by your theme's Posts per page. Change it in Theme settings.",
   /** setData's refusal of a Count outside 1–100 (FR-H2) */
   countRefused: 'Count is a number from 1 to 100.',
 } as const

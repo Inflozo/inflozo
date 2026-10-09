@@ -4,7 +4,10 @@ import { notFound } from 'next/navigation'
 import { darkOverrideCount } from '@inflozo/section-runtime'
 import { ChevronLeft } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
-import { canvasPath } from '@/lib/editor'
+import { canvasPath, templateKeyOf } from '@/lib/editor'
+import { siteAccentOf } from '@/lib/style-pack'
+import { boundLabels, liveHolder, placedControls, promotable, SETTING_COLUMNS, siteBasics, storedSettings } from '@/lib/theme-settings'
+import { supabaseServer } from '@/lib/supabase/server'
 import { editorData, projectOf } from '../(editor)/read'
 import { ThemeSettings } from './theme-settings'
 
@@ -25,7 +28,13 @@ import { ThemeSettings } from './theme-settings'
    parses every doc through AD-27's one schema and checks every design against the library, so the count cannot be
    built on a doc the editor would refuse. Note that nothing writes `project_templates` before Story 5.8: until then
    an override made on the canvas is session state, so this count reads what is STORED and reads 0 on a project whose
-   overrides have never been saved. That is 5.8's missing half, not a wrong count. */
+   overrides have never been saved. That is 5.8's missing half, not a wrong count.
+
+   STORY 7.9 — THE REST OF D6a, read here beside it: `posts_per_page` off the same cached row; the project's custom
+   settings through the caller's own session (RLS), each through `storedSettings`; the controls the Promote form offers,
+   derived from the same `editorData` docs (`placedControls`, every synthesized doc skipped — no row binds to one); the linked
+   site's title, logo and accent for Site basics, read and never written (AD-10's P8); and the lock's live holder, so a
+   tab reading along draws every editing control greyed (R-192). */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const project = await projectOf((await params).id)
@@ -39,7 +48,17 @@ export default async function ThemeSettingsPage({ params }: { params: Promise<{ 
   const { id } = await params
   const project = await projectOf(id)
   if (!project) notFound()
-  const { docs, entries } = await editorData(id)
+  const sb = await supabaseServer()
+  const [{ docs, entries, synthesized, lock }, settingsRead, siteRead] = await Promise.all([
+    editorData(id),
+    sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', id).order('position').order('created_at'),
+    project.linked_site_id === null ? null : sb.from('sites').select('url, title, site_settings').eq('id', project.linked_site_id).maybeSingle(),
+  ])
+  if (settingsRead.error) throw new Error(`the project's theme settings could not be read (${settingsRead.error.code})`)
+  // a failed site read is the three rows unread ("Not set in Ghost"), never a black page over values Ghost owns
+  if (siteRead?.error) console.error('projects/settings: the linked site could not be read', { code: siteRead.error.code })
+  const settings = storedSettings(settingsRead.data)
+  const placed = placedControls(docs, entries, new Set(synthesized.map(templateKeyOf)))
 
   return (
     <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6">
@@ -58,6 +77,12 @@ export default async function ThemeSettingsPage({ params }: { params: Promise<{ 
         projectId={id}
         darkEnabled={project.dark_enabled !== false}
         overriddenSections={darkOverrideCount(Object.values(docs), (designId) => entries[designId])}
+        postsPerPage={project.posts_per_page}
+        basics={siteRead === null ? null : siteBasics(siteRead.data, siteAccentOf(siteRead.data?.site_settings))}
+        settings={settings}
+        controls={promotable(placed, settings)}
+        bound={boundLabels(placed, settings)}
+        holder={liveHolder(lock)}
       />
     </div>
   )

@@ -133,6 +133,9 @@ export type SidebarProps = {
    *  puts the zero note in the panel, not on the canvas, and no frame draws the rest), and R-194's **Preview with sample
    *  content** sits beside it — the pill's own Sample content row, a second door. Absent, no note. */
   note?: { words: string; onSample: () => void }
+  /** Story 7.9 (DW-254) — Theme settings' address, for D5c's link under the main feed's greyed Count. Absent (the keyboard
+   *  harness, `/controls`, `/pilots`), no link. */
+  settingsHref?: string
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
@@ -261,7 +264,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
    the section kept by value, every handler of fixed identity — so a hover, a move or another section's edit leaves it
    alone, and a change to THIS section redraws it in the render that commits it (FR-F4). React's `<Profiler>` inside
    counts its renders for the keyboard gate (`lib/renders.ts`). */
-export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode, onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
+export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode, onClearDark, page, shownPage, siteWide, readOnly = false, note, settingsHref }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -401,6 +404,7 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
           lists={lists}
           shown={sourceRows[key]}
           design={entry.name ?? 'This design'}
+          settingsHref={settingsHref}
           onData={(changes: readonly (readonly [DataControl, unknown])[]) => {
             let next: ControlState | string = state
             for (const [control, value] of changes) if (typeof next !== 'string') next = setData(entry, next, key, control, value)

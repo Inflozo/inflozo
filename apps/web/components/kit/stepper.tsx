@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { greyedProps, labelTone, reason, ring, type Greyed } from './greyed'
+import { Minus, Plus } from './icons'
 
 /* Editor Sidebar Kit.dc.html:99 — stepper, `− n +` with tabular numerals.
    Greyed (P0-0): it shows the number that WILL RENDER, not the one last chosen.
@@ -10,7 +11,13 @@ import { greyedProps, labelTone, reason, ring, type Greyed } from './greyed'
 
    Story 6.4 — THE BOX ALONE (`StepperBox`), for a row that draws its own label: S7a's Pill radius row puts the name above
    it, as its segmented rows do, and S7c's Image scrim row puts each mode's word before it. The box is the Kit's drawing
-   unchanged — save that the value grows past its 32px when a step's words need it ("100 %"), and stays 32 below. */
+   unchanged — save that the value grows past its 32px when a step's words need it ("100 %"), and stays 32 below.
+
+   Story 7.9 — D6a's POSTS PER PAGE, the first stepper that SAVES: with `name` each step is a real submit of its form,
+   posting `name` = the value it steps to, so it is a plain form's submit (R-98); `onStep`, when given as well, takes the
+   press while scripts run. At an end the step submits nothing at all — `type="button"`, so a spent − can never post 0.
+   `busy` is the form posting (`aria-busy`, never `disabled`); the caller says "Saving…" beside it. `large` is D6a's own
+   drawing (`D6 Theme Settings Completed.dc.html:56-60`): 38 tall, 36-wide steps on hairlines, the value 56 wide at 14/600. */
 
 export function Stepper({
   id,
@@ -56,6 +63,9 @@ export function StepperBox({
   min,
   max,
   onStep,
+  name,
+  busy = false,
+  large = false,
 }: {
   id: string
   /** the steppers' own words: "Fewer {label}", "More {label}" */
@@ -66,15 +76,34 @@ export function StepperBox({
   min?: number
   max?: number
   onStep?: (step: 1 | -1) => void
+  /** Story 7.9 — each step submits its form, posting this field at the value it steps to */
+  name?: string
+  /** Story 7.9 — the form is posting */
+  busy?: boolean
+  /** Story 7.9 — D6a's Posts per page drawing */
+  large?: boolean
 }) {
   const step = (dir: 1 | -1, end: boolean) => {
     const stopped = Boolean(greyed) || end
+    const submits = name !== undefined && !stopped
     return {
+      // A BLIND SPOT, SAID WHERE IT IS (standing rule 3): `busy.test.ts` audits every submit by the LITERAL `type="submit"`,
+      // and this one is computed, so that auditor cannot see it. What holds its busy state is the deployed walk's step 104
+      // (`tools/probe/run-verify-editor.cjs`): Posts per page's + held mid-post, read for "Saving…" and `aria-busy`.
+      type: submits ? ('submit' as const) : ('button' as const),
+      name: submits ? name : undefined,
+      value: submits ? String(at + dir) : undefined,
       tabIndex: greyed ? -1 : 0,
       'aria-disabled': (!greyed && end) || undefined,
-      onClick: onStep && !stopped ? () => onStep(dir) : undefined,
-      className: `inline-flex h-7 w-[26px] items-center justify-center ${ring} ${
-        stopped ? 'cursor-not-allowed text-line-strong' : 'text-ink-soft hover:bg-paper'
+      'aria-busy': busy || undefined,
+      onClick: onStep && !stopped
+        ? (event: { preventDefault: () => void }) => {
+            event.preventDefault()
+            onStep(dir)
+          }
+        : undefined,
+      className: `inline-flex items-center justify-center ${large ? `h-[38px] w-9 border-line ${dir < 0 ? 'border-r' : 'border-l'}` : 'h-7 w-[26px]'} ${ring} ${
+        stopped ? 'cursor-not-allowed text-line-strong' : `${large ? 'text-ink-mid' : 'text-ink-soft'} hover:bg-paper`
       }`,
     }
   }
@@ -83,20 +112,20 @@ export function StepperBox({
       id={id}
       role="group"
       aria-labelledby={`${id}-label`}
-      className={`flex items-center overflow-hidden rounded-sm border ${ring} ${greyed ? 'border-grey-border bg-grey-field' : 'border-line bg-surface'}`}
+      className={`flex items-center overflow-hidden rounded-sm border ${ring} ${large ? 'h-[38px] w-max' : ''} ${greyed ? 'border-grey-border bg-grey-field' : 'border-line bg-surface'}`}
       {...greyedProps(id, greyed)}
     >
-      <button type="button" aria-label={`Fewer ${label}`} {...step(-1, min !== undefined && at <= min)}>
-        −
+      <button aria-label={`Fewer ${label}`} {...step(-1, min !== undefined && at <= min)}>
+        {large ? <Minus size={12} strokeWidth={2.2} /> : '−'}
       </button>
       <span
-        aria-live={onStep ? 'polite' : undefined}
-        className={`min-w-8 text-center text-ui-dense font-semibold tabular-nums ${greyed ? 'text-ink-faint' : 'text-ink'}`}
+        aria-live={onStep || name ? 'polite' : undefined}
+        className={`text-center font-semibold tabular-nums ${large ? 'w-14 text-[14px]' : 'min-w-8 text-ui-dense'} ${greyed ? 'text-ink-faint' : 'text-ink'}`}
       >
         {value}
       </span>
-      <button type="button" aria-label={`More ${label}`} {...step(1, max !== undefined && at >= max)}>
-        +
+      <button aria-label={`More ${label}`} {...step(1, max !== undefined && at >= max)}>
+        {large ? <Plus size={12} strokeWidth={2.2} /> : '+'}
       </button>
     </div>
   )

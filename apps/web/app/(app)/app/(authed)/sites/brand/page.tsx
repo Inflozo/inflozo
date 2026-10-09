@@ -9,7 +9,7 @@ import { BrandScreen, type BrandSearchParams } from '../brand-screen'
    1, 2026-09-10): "Leave it. The card's link gives you the popup; the moment straight after
    connecting stays a full screen." Which suits the moment: straight after a connect this is S2's
    own full-screen onboarding beat, not an aside over a list. Every other way here is the same — a
-   typed URL, a modified click, a refresh, a shared link, a scripts-off browser — and the Sites
+   typed URL, a modified click, a refresh, a shared link — and the Sites
    card's offer link, which is a `PanelLink`, opens `/sites?brand=…` as a window over the list.
 
    `brand-screen.tsx` is the component both chromes render, so there is one panel and one pair of

@@ -76,7 +76,8 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   confirm that names it; the resurrect sentence appears only when `frozen_at` is set, because before a deploy there is
   no stored value to resurrect.
 - **R-98:** every control that starts work says so (`Submit`'s required `busy`, `useSubmitting`), `loading.tsx` draws
-  these rows' own skeleton, and every form posts without JavaScript. **R-192:** in a read-only editor session the whole
+  these rows' own skeleton, and every form is a plain form (the page itself needs JavaScript: it streams behind its
+  skeleton — Question 3, ruled option 1). **R-192:** in a read-only editor session the whole
   page is read-only — every editing control greyed and unclickable, the values readable.
 - Every "posts per page" sentence links to this page and never into Ghost Admin (FR-Q1, R-10 #13); the Count's words
   stay `DATA_WORDS`' (R-170), one list.
@@ -123,7 +124,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
 | Select default outside its options · image default · colour not 6-digit hex | module inputs | each refused with its sentence; `hex6_colour` and `no_image_default` are the floor | unit rows, since no UI in this story can produce them |
 | Read-only session (R-192) | a second window holds the lock | every stepper, field, select, toggle and button greyed, values readable, no form posts | N/A |
 | Another user's project | an id the caller does not own | every write reaches zero rows (RLS) and the action answers "We couldn't save that just now." | never a 500 |
-| Scripts off | any form | the stepper's − and + and every Promote / Save / Delete are real submits; the page re-renders with the result | the confirm dialog is the scripted layer over a form that still posts |
+| Scripts off | any form | not offered: the app needs JavaScript (Question 3, ruled option 1, as Story 3.9's Question 5 — `EXPERIENCE.md` § Where the floor stops). The route streams behind its `loading.tsx`, so with scripts off it stays on its skeleton; every control is still a plain form's submit, so a press before the page's scripts run posts natively | no check runs with scripts off |
 
 </frozen-after-approval>
 
@@ -210,7 +211,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
 
 **Execution:**
 
-- [ ] `packages/section-runtime/src/custom-settings.ts`, `index.ts`, `custom-settings.test.ts` — the module: `SETTING_CAP`
+- [x] `packages/section-runtime/src/custom-settings.ts`, `index.ts`, `custom-settings.test.ts` — the module: `SETTING_CAP`
   (20), `RESERVED_SETTING_KEYS` (`color_scheme`, `dark_accent_color`, `dark_logo` — one list, 7.11's to confirm),
   `USER_SETTING_CAP` derived, `GHOST_SETTING_TYPES`, `GHOST_SETTING_GROUPS`, `settingKey(label)`, `claimKey(taken, key)`,
   `settingOf(controlDef, value)` (toggle → boolean; segmented / named-select → select with `[{value, label}]` options and
@@ -221,16 +222,16 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   and a control with each rule broken fails the matching code.
 
   -- FR-Q2's rules as data, executed on both gscans (standing rule 1).
-- [ ] `packages/section-runtime/src/controls.ts:376` — `mainCount` becomes the two sentences; `controls.test.ts` and
+- [x] `packages/section-runtime/src/controls.ts:376` — `mainCount` becomes the two sentences; `controls.test.ts` and
   `apps/web/data-group.test.ts:33` hold the new text.
 
   -- DW-254's first half; one list (R-170).
-- [ ] `apps/web/components/controls/data-group.tsx`, `sidebar.tsx`, `editor.tsx:5809` — a `settingsHref?: string` threaded
+- [x] `apps/web/components/controls/data-group.tsx`, `sidebar.tsx`, `editor.tsx:5809` — a `settingsHref?: string` threaded
   from the editor to the Count row; drawn as D5c's "Theme settings ↗" link under the greyed reason; the harness passes
   none and draws none.
 
   -- DW-254's link; a door arrives with the thing it opens (R-118).
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` — `setPostsPerPage` (writes `posts_per_page`
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` — `setPostsPerPage` (writes `posts_per_page`
   alone, `revalidateProject`); `promoteControl` (reads the project's docs through `editorData`, finds the instance and
   control, builds the row with the module, checks it against the project's other settings, inserts through the caller's
   session; maps `23514` and `23505` to the module's sentences); `updateSetting` (label, group, visibility, default —
@@ -238,7 +239,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   first so a failure leaves no dangling condition). Every action is `(previous, formData)` and works with scripts off.
 
   -- the writers the table has waited for since Story 1.2.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/theme-settings.tsx`, `page.tsx` — D6a in order: **Posts per
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/theme-settings.tsx`, `page.tsx` — D6a in order: **Posts per
   page** (`Stepper` 1–100, the `posts_per_page` chip, the caption verbatim, "Saving…" while it posts), **Site basics**
   (Question 2, ruled: title · logo · accent rows, or the one caption), the built mode block untouched, the **Custom settings** card: header with the meter chip "n OF 17", the
   two captions verbatim, the freeze notice verbatim, the rows (label · "Design · Control →" · key chip · type word ·
@@ -249,19 +250,19 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   sheet, focus on Cancel. `ReadOnly` over the whole card in a read-only session.
 
   -- the surface, matching the frame (R-74).
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/loading.tsx` — bars for each new row, in the page's order.
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/loading.tsx` — bars for each new row, in the page's order.
 
   -- R-98; `busy.test.ts`.
-- [ ] `apps/web/lib/paywall.ts:107` — `adminAt` gains the anchor Site basics links to (`settings`), so one function builds
+- [x] `apps/web/lib/paywall.ts:107` — `adminAt` gains the anchor Site basics links to (`settings`), so one function builds
   every Ghost Admin address (Question 2, ruled).
 
   -- one builder, one shape.
-- [ ] `apps/web/settings.test.ts` (new) — the actions' refusals by shape (no id, bad range, a key the module refuses, the
+- [x] `apps/web/settings.test.ts` (new) — the actions' refusals by shape (no id, bad range, a key the module refuses, the
   cap sentence), `mainCount`'s link present with a project and absent without, the page's read-only state; the gate's
   `pnpm check` runs it.
 
   -- the I/O matrix's app rows.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` DW-254 → done with the commit; `epic-7-context.md` — the
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` DW-254 → done with the commit; `epic-7-context.md` — the
   Theme Settings block gains this story's Create and Dev sub-bullets (refresh, never recompile); `epics.md` Story 7.10's
   card carries the Create's note (landed at Create, 2026-10-09) and Epic 7's preamble its "Given owners" list; `docs/project-context.md` unchanged.
 
@@ -298,10 +299,21 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   no `GS010-PJ-CUST-*` finding, and each deliberately broken input fails its matching code — proved in a test that runs
   in `pnpm check`.
 - Given a read-only editor session (R-192), when the settings page opens, then every editing control is greyed and
-  unclickable and every value is readable; given scripts off, every form still posts and answers.
+  unclickable and every value is readable; and no surface here promises to work with scripts off (Question 3, ruled
+  option 1).
 - Given the page, when it loads, then `loading.tsx` draws these rows' own skeleton (R-98) and `busy.test.ts` passes.
 
 ## Spec Change Log
+
+- **Dev, 2026-10-09 — Question 3, ruled option 1 (owner): the app needs JavaScript.** Dev executed that a route with a
+  `loading.tsx` streams its page into a hidden holder only React's inline script reveals, so with scripts off Theme settings
+  stays on its skeleton (a throwaway async route beside a `loading.tsx` under `next dev`: the skeleton with scripts off,
+  the content with them on, and the content either way with no boundary — the control). The ruling restates Story 3.9's
+  Question 5 (2026-09-11), already in `EXPERIENCE.md` § Where the floor stops, which this spec's Create missed. Amended
+  inside the frozen block on that ruling: the R-98 bullet in Boundaries, the matrix's "Scripts off" row and the R-192
+  criterion's last clause. Dropped: the deployed walk's step 104k. Corrected: the code notes on every streamed route (each `loading.tsx`)
+  that promised a page works with scripts off (they now say plain form); notes on routes that render without a boundary
+  (`/sites/keys`, `/sites/disconnect`, the connect wizard) were true and are unchanged.
 
 ## Design Notes
 
@@ -417,7 +429,7 @@ Posts per page back.
 
 ## Questions for the owner
 
-Questions 1 and 2 were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them. Question 3 was raised at Dev and is open; everything else in this story is built and waits in the working tree for it.
+Questions 1 and 2 were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them. Question 3 was raised at Dev and ruled option 1 the same day; it restates Story 3.9's Question 5.
 
 ### Question 1 — Where the "Promote a control" form is built: this story or Story 7.10
 
@@ -493,7 +505,7 @@ Custom settings belong, and they never turn into the stepper and the Promote for
    are. Theme settings then shows a blank space while it loads, which breaks your loading-bars rule (R-98) on this one
    page.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-09).**
 
 ## Verification
 
@@ -521,3 +533,108 @@ Custom settings belong, and they never turn into the stepper and the Promote for
 **Manual checks (if no CLI):**
 - D6a `:54-66` and `:139-235` beside the deployed page at 1440: the same rows, in the same order, with the frame's
   sentences verbatim; D6b `:265-290` still holds on a Light-only project.
+
+**Dev results (2026-10-09, Node 24.18.1).** The gates below were re-run by the orchestrator on the final tree. The mutation
+controls are the implementation run's.
+
+- **`pnpm check`** — exit 0: lint, the typecheck and every package's tests, `fail 0` in each of `library`, `ghost-shim`,
+  `section-runtime`, `theme-compiler` and `apps/web`. This story's rows ran by name inside it: the eight in
+  `custom-settings.test.ts`, the five gscan rows in `gate/custom-settings.test.ts`, the eight in `settings.test.ts`, and
+  the updated `controls.test.ts`, `data-group.test.ts` and `paywall.test.ts` rows.
+- **Both pinned gscans (4.49.7 and 6.4.2), locally, through `runGscan`:**
+  - The module's own output passes with no finding at all. Its control: with one `{{@custom.*}}` reader removed, gscan
+    reports `GS100`.
+  - Twenty settings pass, and a twenty-first is `GS010-PJ-CUST-THEME-TOTAL-SETTINGS`.
+  - Each input the module refuses, emitted anyway, fails its own gscan code and no other.
+  - A group outside Ghost's two is only a gscan recommendation.
+  - A one-character condition key breaks gscan's own check (`:225`).
+- **Controls (standing rule 2), from the implementation run.**
+  - **Mutation runs.** Three breaks in the rules module and four in the app each turned their test red; each was restored
+    afterwards.
+  - **The weak assertion they exposed.** The before-the-write check read a missing call as "before". It now requires
+    both calls to be present.
+  - **The keyboard harness row.** The harness was made to pass the link deliberately, and the journey failed at that
+    line (exit 1). The file was then restored.
+- **`bash supabase/tests/run-rls-gate.sh`** — exit 0, unchanged; this story adds no SQL (R-99, no Schema phase).
+- **`node --check tools/probe/run-verify-editor.cjs`** — exit 0. Step 52 is re-expected and step 104 is new. Both are
+  written and syntax-checked, not run: the walk refuses a dirty tree and wants Vercel serving HEAD, so it runs at Review.
+- **`pnpm keyboard`**, whole, on the final tree — exit 0, *"203 passed (9.8m)"*. The harness's no-link assertion ran
+  inside `journey.spec.mjs:3848` ("5.19 · ⌘K places a second Three Up…"), which passed.
+- **`python3 tools/doc-audit.py --check`**, twice — the second run PASS (the first regenerates the board).
+- **Ghost 6.58.0, read in source** (`registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`, extracted fresh in this session's
+  scratchpad; read-only):
+  - **The 100 limit.** `maxLimit` (`core/shared/max-limit-cap.js`, default 100) is applied in three places only:
+    - by the HTTP API's middleware (`core/server/web/api/app.js:24`);
+    - by the comments routes;
+    - by `{{#get}}` (`core/frontend/helpers/get.js:202`).
+  - **Archives are never capped.** `collection.js:31-48` takes a route's `limit:`, else `posts_per_page`, and no input
+    validator under `core/server/api/endpoints/utils/validators/input/` reads `limit`.
+  - **Result.** Posts per page's 100 is Inflozo's own ceiling, FR-H2's Count ceiling, and the stepper says so at its +
+    end.
+  - **The Admin address.** The admin bundle declares `{path:'settings'}`
+    (`core/built/admin/assets/index-BOJzlYiz.js:67`), which `adminAt(url, 'settings')` targets.
+- **Judgement call, recorded.** `deleteSetting` is two ordered writes: the conditions naming the setting are cleared
+  first, then the row is deleted. The matrix says "one transaction". A database transaction needs an RPC, which is a
+  migration the spec rules out without a question. A failure between the two writes leaves the setting in place with its
+  dependents' conditions already cleared. The customer sees "We couldn't save that just now." and can press Delete again.
+- **Real services this phase hit (R-82):**
+  - **registry.npmjs.org** — the Ghost 6.58.0 tarball, read.
+  - **GitHub** — the Blocked push `78168785`, which carried the spec alone.
+  - **Not touched, and why:**
+    - **Supabase:** no migration, and the RLS gate ran on its local PostgreSQL 17 container. The production RLS session
+      and the pooler's freeze check are Review's, on the owner's in-session go.
+    - **Vercel:** nothing deploys before the Dev push. CI and READY are read at Review, and the deployed walk runs there.
+    - **T1:** this story writes no theme and reads no Ghost.
+    - **Resend and Dodo:** nothing here sends mail or touches billing.
+    - **T3:** retired (R-238).
+
+**The I/O matrix, row by row → the check that covers it.** Unit rows ran at Dev. The deployed walk's steps run at Review
+and are syntax-checked now.
+
+- **Posts per page saved:**
+  - `settings.test.ts`, "every writer is…": the one column, written after the refusal.
+  - The walk's 104a: + held mid-post shows "Saving…" with `aria-busy`, then 13 stored and read back.
+  - The walk's 104c: the editor's Count greyed at 13.
+- **Posts per page out of range:**
+  - `custom-settings.test.ts`, "posts per page: a whole number…": 0, 101, `12.5`, `abc` and absent.
+  - The walk's 104b: the spent steps are `type="button"` and `aria-disabled`; the hand-posts are refused and 50 stands;
+    51 lands (the control).
+- **The Count's second sentence:**
+  - `controls.test.ts`, `data-group.test.ts` and `settings.test.ts`, "the Count's two sentences…".
+  - `journey.spec.mjs` (keyboard gate): no link in the harness, with the bar's link as the selector's control.
+  - The walk's 104c: the link opens Theme settings and never `/ghost/`.
+- **Promote a toggle · Promote a choice:**
+  - `custom-settings.test.ts`, "promote a toggle → boolean…".
+  - `settings.test.ts`, "Promote offers…".
+  - The walk's 104d: the stored rows field by field, the meter, and both controls leaving the list.
+- **Label → key · reserved key:**
+  - `custom-settings.test.ts`, "label → key…" and "a reserved key is refused…".
+  - The walk's 104e: `show_tag_2`, "W" and "Color scheme", with no row inserted for either refusal.
+- **The cap:**
+  - `custom-settings.test.ts`, "the cap…".
+  - `gate/custom-settings.test.ts`: 20 pass and 21 fail on both pins.
+  - `settings.test.ts`: the derived 17 equals the trigger's, and `23514` is mapped.
+  - The walk's 104h: 16 planted, the 17th lands, Promote greys with the sentence, and a forced post is refused with the
+    count staying 17.
+- **Group outside Ghost's two:**
+  - `custom-settings.test.ts` (the group rule).
+  - `gate/custom-settings.test.ts` ("only a gscan recommendation").
+  - The Select offers the three groups alone (the walk's 104d).
+- **Visibility set · its target deleted:**
+  - `custom-settings.test.ts`, "visibility: …", with the NQL parsed.
+  - `settings.test.ts`: conditions cleared before the delete.
+  - The walk's 104f: the caption, `{key, value:'Display'}`, the confirm on Cancel, and afterwards the condition null with
+    the caption gone.
+- **Label edit on a frozen row · Delete:**
+  - `settings.test.ts`: no `key` in the update; `42501` mapped; the two delete sentences; "Key frozen since".
+  - The walk's 104g (frozen) and 104f (unfrozen).
+- **Select default outside its options · image default · colour not hex:**
+  - `custom-settings.test.ts`, "Ghost's type rules…".
+  - `gate/custom-settings.test.ts`: each fails its own code on both pins.
+- **Read-only session (R-192):**
+  - `settings.test.ts`, "R-192: the page reads along…".
+  - The walk's 104i: a second context's lock, every control disabled, and forced posts change nothing.
+- **Another user's project:**
+  - The walk's 104j: A's four writes replayed under B's cookies, each refused with the sentence, A's data standing; under
+    A's cookies, the control.
+- **Scripts off:** not offered (Question 3, ruled option 1). No check runs with scripts off; step 104k was dropped.

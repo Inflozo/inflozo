@@ -3867,6 +3867,12 @@ test('5.19 · ⌘K places a second Three Up, which lands SECONDARY — no chip, 
   await select(page, main)
   const mainData = await openData(page)
   await expect(mainData).toContainText(RUNTIME.DATA_WORDS.mainCount)
+  // Story 7.9 (DW-254): the harness has no project of its own, so its Count draws NO "Theme settings ↗" — the matrix's
+  // "harness draws no link" row. The control: the same selector finds the bar's own Theme settings link on this page, so a
+  // zero inside the Data group is the link's absence and never a selector that matches nothing
+  await expect(page.locator('#editor-theme-settings')).toHaveAttribute('href', /\/settings$/)
+  await expect(mainData.locator('a[href$="/settings"]')).toHaveCount(0)
+  await expect(mainData.getByText(WORDS.THEME_SETTINGS_LINK)).toHaveCount(0)
   await expect(mainData.locator('button[id$="-source"]')).toHaveCount(0)
   await expect(mainData.locator('[role="radiogroup"]')).toHaveCount(0)
   await expect(page.locator('#editor-panel-main-feed')).toHaveText(WORDS.MAIN_FEED)

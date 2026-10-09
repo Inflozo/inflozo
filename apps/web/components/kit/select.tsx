@@ -249,7 +249,8 @@ export function Menu({ label, items, width = 'w-[210px]' }: { label: string; ite
           </>
         )
         return (
-          <li key={item.label} className="flex flex-col">
+          // by place as well as label: Story 7.9's condition menu lists settings the customer named, and two may share a name
+          <li key={`${i}:${item.label}`} className="flex flex-col">
             {item.danger && i > 0 ? <hr className="mx-2 my-1 h-px border-0 bg-line" /> : null}
             {item.href !== undefined ? (
               <Link href={item.href} aria-current={item.active ? 'true' : undefined} onClick={act} className={className}>

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./custom-settings": "./src/custom-settings.ts",
     "./fonts": "./src/fonts.ts",
     "./reference": "./src/reference.ts",
     "./tokens": "./src/tokens.ts",

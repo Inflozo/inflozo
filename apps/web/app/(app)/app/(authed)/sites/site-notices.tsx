@@ -13,13 +13,13 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
    Notice (`B Missing Surfaces.dc.html:1188-1225`).
 
    EVERY CONTROL HERE IS A `<form action={serverAction}>` WITH A HIDDEN SITE ID, so all of them
-   work with JavaScript off and none of them needs state. The card is a server render, and the
+   are plain forms and none of them needs state. The card is a server render, and the
    only thing that changes it is a POST that revalidates the route.
 
    THE ONE CLIENT THING IN THE FILE IS THE BUSY LABEL, and it changes none of that. `Submit`
    (`components/kit/submit.tsx`) is a client component INSIDE each form rather than around it, so
-   this file has no `'use client'` of its own, the markup is still a server render, and with
-   scripts off the forms post exactly as they did — there is simply no busy label to show, which
+   this file has no `'use client'` of its own, the markup is still a server render, and before
+   the page's scripts run the forms post exactly as they did — there is simply no busy label to show, which
    is right, because the click is then a document navigation the browser reports itself. It landed
    on the owner's test of Story 3.4, finding 1: every control here submitted with the button
    unchanged, because a server component has no hook to read a form's status with.
@@ -106,7 +106,7 @@ function Ask({
         <span className="flex flex-wrap items-center gap-2">
           {/* TWO FORMS, NOT ONE WITH TWO SUBMIT VALUES: a submit button's `value` is sent only by
               the button that was pressed, which is true in a browser and NOT true of every
-              assistive click path — and with scripts off the difference is silent. One form per
+              assistive click path — and on a native post the difference is silent. One form per
               answer sends its own hidden field, always. */}
           <form action={action}>
             <SiteField id={siteId} />

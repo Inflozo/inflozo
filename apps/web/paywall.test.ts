@@ -96,6 +96,8 @@ test('the Sites notice: one sentence per fact the record holds, and nothing for 
 test("Ghost admin's anchors, whatever the stored address ends with", () => {
   assert.equal(adminAt('https://ghost5.inflozo.com', 'members'), 'https://ghost5.inflozo.com/ghost/#/settings/members')
   assert.equal(adminAt('https://ghost6.inflozo.com/', 'tiers'), 'https://ghost6.inflozo.com/ghost/#/settings/tiers')
+  // Story 7.9 — Settings itself, where Site basics sends the title, logo and accent
+  assert.equal(adminAt('https://ghost6.inflozo.com/', 'settings'), 'https://ghost6.inflozo.com/ghost/#/settings')
 })
 
 test('the tier line counts the PUBLIC tiers: the sample\'s, and T3\'s recorded ones with its hidden tier left out', () => {

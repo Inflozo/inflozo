@@ -1,10 +1,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { clearProject, parseDoc } from '@inflozo/section-runtime'
-import type { ProjectDoc } from '@inflozo/section-runtime'
-import { isUuid, settingsPath } from '@/lib/editor'
+import { checkSetting, claimKey, clearProject, parseDoc, postsPerPage, SETTING_WORDS, settingKey, USER_SETTING_CAP } from '@inflozo/section-runtime'
+import type { ProjectDoc, SettingGroup, SettingRow, Visibility } from '@inflozo/section-runtime'
+import { isUuid, settingsPath, templateKeyOf } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
+import { placedControls, promotable, ruleRow, SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
+import { editorData, projectOf } from '../(editor)/read'
 
 /** The route as NEXT sees it — under the internal `/app` prefix the proxy strips, which is the form every other
  *  action in the app revalidates (`projects/actions.ts`'s `DASHBOARD = '/app'`). `settingsPath` is the customer's
@@ -16,7 +18,7 @@ const routeOf = (id: string) => `/app${settingsPath(id)}`
 const revalidateProject = (id: string) => revalidatePath(routeOf(id).replace(/\/settings$/, ''), 'layout')
 
 /**
- * R-131's TWO WRITES, and nothing else.
+ * R-131's TWO WRITES — and, since Story 7.9, Posts per page and the custom-settings builder's three, below them.
  *
  * Both go through the CALLER'S OWN SESSION (`supabaseServer()`, the publishable key, the caller's cookies), so RLS
  * decides what exists for them: `projects` and `project_templates` are AD-6 owner-policy tables and the uniform owner
@@ -32,7 +34,9 @@ const revalidateProject = (id: string) => revalidatePath(routeOf(id).replace(/\/
  * product that removes one is a deliberate clear — this file's second action, and `editor.tsx`'s per-section confirm.
  *
  * Each takes `(previous, formData)` so a form drives it through `useActionState`, and the project id rides in the form
- * rather than in a closure — so both also work with JavaScript switched off.
+ * rather than in a closure — so each stays a plain form's action. The PAGE needs JavaScript: it streams behind its
+ * `loading.tsx`, so with scripts off it stays on its skeleton (EXPERIENCE.md § Where the floor stops; Story 7.9's
+ * Question 3, ruled option 1).
  */
 
 export type SettingsResult = { ok: true } | { error: string }
@@ -89,7 +93,7 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
   await signedIn()
 
   const supabase = await supabaseServer()
-  // D6b's greyed Clear is refused HERE, not only by the button: with scripts off `aria-disabled` still submits, and
+  // D6b's greyed Clear is refused HERE, not only by the button: `aria-disabled` still submits (a hand-made POST), and
   // "the overrides are kept, not discarded" is a promise about the database (FR-D7, AD-17). Review, 2026-09-18.
   // `revision` rides in on the SAME read the greyed-Clear refusal already needed, so the guard costs no extra query
   const project = await supabase.from('projects').select('dark_enabled, revision').eq('id', id).maybeSingle()
@@ -125,6 +129,187 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
   if (rpcError || answer === null || (answer as { applied: boolean }).applied !== true) {
     console.error('projects/settings: clear write refused', { code: rpcError?.code, applied: (answer as { applied?: boolean } | null)?.applied ?? null })
     return { error: COULD_NOT.clear }
+  }
+  revalidateProject(id)
+  return { ok: true }
+}
+
+/* ───────────────────────────── STORY 7.9 — Posts per page and the custom-settings builder ─────────────────────────────
+ *
+ * Every write goes through the caller's own session as the two above do, so RLS decides: the uniform owner policy and the
+ * parent-ownership term (`…complete_schema.sql:816-855`) reach zero rows on another user's project, and the answer is the
+ * one sentence. Every rule a setting must meet is the runtime's `checkSetting`, asked BEFORE the write; the database's own
+ * constraints — the cap trigger, `unique (project_id, key)`, `custom_settings_key_frozen`, the column grants (no `key`, no
+ * `frozen_at` in the update grant) — stay the floor, and a refusal from one is mapped to the module's sentence, never shown
+ * as a Postgres code. No migration: every column, grant and trigger here exists since Story 1.2 (R-99). */
+
+type Supabase = Awaited<ReturnType<typeof supabaseServer>>
+
+/** FR-Q1's one column, alone (AD-31): a whole number from 1 to 100, else the module's sentence and the stored value stands. */
+export async function setPostsPerPage(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
+  const id = idOf(formData)
+  if (!id) return { error: SETTING_WORDS.couldNot }
+  const size = postsPerPage(formData.get('posts_per_page'))
+  if (typeof size === 'string') return { error: size }
+  await signedIn()
+  const { data, error } = await (await supabaseServer()).from('projects').update({ posts_per_page: size }).eq('id', id).select('id')
+  if (error || !data || data.length === 0) {
+    console.error('projects/settings: posts per page write failed', { code: error?.code })
+    return { error: SETTING_WORDS.couldNot }
+  }
+  // the editor's main feed is sized by it (FR-H2), so the project's whole subtree is read afresh
+  revalidateProject(id)
+  return { ok: true }
+}
+
+/** This project's settings, in their order — or null where the read failed. */
+async function settingsOf(supabase: Supabase, id: string): Promise<StoredSetting[] | null> {
+  const { data, error } = await supabase.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', id).order('position').order('created_at')
+  if (error) {
+    console.error('projects/settings: custom settings read failed', { code: error.code })
+    return null
+  }
+  return storedSettings(data)
+}
+
+/** The posted condition, in the type its target compares: none when no setting is named, a boolean target's `true`/`false`
+ *  as JSON — anything else stays text, which `checkSetting` then refuses with its sentence. */
+function conditionOf(formData: FormData, others: readonly SettingRow[]): Visibility | null {
+  const key = formData.get('when_key')
+  if (typeof key !== 'string' || key === '') return null
+  const raw = formData.get('when_value')
+  const value = typeof raw === 'string' ? raw : ''
+  const boolean = others.find((o) => o.key === key)?.type === 'boolean'
+  return { key, value: boolean && value === 'true' ? true : boolean && value === 'false' ? false : value }
+}
+
+/** A database refusal as the module's sentence: the cap trigger's `23514` (named by its message — the column checks share
+ *  the code, and the module stops every one of them first), the key's uniqueness `23505`, the frozen key's `42501`. */
+const refusalOf = (error: { code?: string; message?: string } | null, key: string): string =>
+  error?.code === '23514' && /cap/.test(error.message ?? '')
+    ? SETTING_WORDS.cap
+    : error?.code === '23505'
+      ? SETTING_WORDS.taken(key)
+      : error?.code === '42501'
+        ? SETTING_WORDS.frozen
+        : SETTING_WORDS.couldNot
+
+/**
+ * QUESTION 1, RULED OPTION 1 — a toggle, segmented or named select promoted to a Ghost setting. The control is found again
+ * HERE, through `editorData` (the read the page makes), so what is stored is a control on a visible instance of a stored
+ * doc, at its current value, never one already promoted — whatever the form posted. The key is the one posted (the form
+ * generates it live and lets it be edited before Promote), else the label's, claimed past the keys taken.
+ */
+export async function promoteControl(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
+  const id = idOf(formData)
+  if (!id) return { error: SETTING_WORDS.couldNot }
+  const user = await signedIn()
+  const supabase = await supabaseServer()
+  const rows = await settingsOf(supabase, id)
+  if (rows === null || (await projectOf(id)) === null) return { error: SETTING_WORDS.couldNot }
+  // the cap first, so a full project costs no docs read (the trigger's `23514` maps to the same words below)
+  if (rows.length >= USER_SETTING_CAP) return { error: SETTING_WORDS.cap }
+  const data = await editorData(id)
+  const synthesized = new Set(data.synthesized.map(templateKeyOf))
+  const chosen = promotable(placedControls(data.docs, data.entries, synthesized), rows)
+    .find((c) => c.instanceId === formData.get('instance') && c.controlKey === formData.get('control'))
+  if (chosen === undefined) return { error: SETTING_WORDS.noControl }
+
+  const label = String(formData.get('label') ?? '').trim()
+  const typed = String(formData.get('key') ?? '').trim()
+  const others = rows.map(ruleRow)
+  const row: SettingRow = {
+    key: typed !== '' ? typed : claimKey(new Set(rows.map((r) => r.key)), settingKey(label)),
+    label,
+    ...chosen.setting,
+    group_name: String(formData.get('group') ?? 'site_wide') as SettingGroup,
+    visibility_condition: conditionOf(formData, others),
+  }
+  const refused = checkSetting(row, others)
+  if (refused !== null) return { error: refused }
+
+  const { error } = await supabase.from('custom_settings').insert({
+    project_id: id,
+    user_id: user.id,
+    ...row,
+    bound_to: { kind: 'control', instanceId: chosen.instanceId, controlKey: chosen.controlKey },
+    position: Math.max(0, ...rows.map((r) => r.position)) + 1,
+  })
+  if (error) {
+    console.error('projects/settings: promote failed', { code: error.code })
+    return { error: refusalOf(error, row.key) }
+  }
+  revalidateProject(id)
+  return { ok: true }
+}
+
+/** A stored setting edited — its label, group, default and condition, and NEVER its key: the update grant omits `key`, so
+ *  "a rename changes the label only" is the database's rule (FR-Q2), and this writes none of it. */
+export async function updateSetting(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
+  const id = idOf(formData)
+  const settingId = formData.get('setting')
+  if (!id || typeof settingId !== 'string' || !isUuid(settingId)) return { error: SETTING_WORDS.couldNot }
+  await signedIn()
+  const supabase = await supabaseServer()
+  const rows = await settingsOf(supabase, id)
+  const current = rows?.find((r) => r.id === settingId)
+  if (rows === null || current === undefined) return { error: SETTING_WORDS.couldNot }
+  const others = rows.filter((r) => r !== current).map(ruleRow)
+  const posted = (name: string) => {
+    const v = formData.get(name)
+    return typeof v === 'string' ? v : null
+  }
+  const row: SettingRow = {
+    ...ruleRow(current),
+    label: posted('label')?.trim() ?? current.label,
+    group_name: (posted('group') ?? current.group_name) as SettingGroup,
+    default_value: posted('default') ?? current.default_value,
+    visibility_condition: conditionOf(formData, others),
+  }
+  const refused = checkSetting(row, others)
+  if (refused !== null) return { error: refused }
+  const { data, error } = await supabase
+    .from('custom_settings')
+    .update({ label: row.label, group_name: row.group_name, default_value: row.default_value, visibility_condition: row.visibility_condition, updated_at: new Date().toISOString() })
+    .eq('id', current.id)
+    .eq('project_id', id)
+    .select('id')
+  if (error || !data || data.length === 0) {
+    console.error('projects/settings: setting update failed', { code: error?.code })
+    return { error: refusalOf(error, row.key) }
+  }
+  revalidateProject(id)
+  return { ok: true }
+}
+
+/** A setting deleted, and every condition that names it cleared FIRST — so a failure part-way leaves a setting with no
+ *  dangling condition rather than a condition naming a setting that is gone (the confirm, R-134, is the page's). */
+export async function deleteSetting(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
+  const id = idOf(formData)
+  const settingId = formData.get('setting')
+  if (!id || typeof settingId !== 'string' || !isUuid(settingId)) return { error: SETTING_WORDS.couldNot }
+  await signedIn()
+  const supabase = await supabaseServer()
+  const rows = await settingsOf(supabase, id)
+  const target = rows?.find((r) => r.id === settingId)
+  if (rows === null || target === undefined) return { error: SETTING_WORDS.couldNot }
+  const naming = rows.filter((r) => r.visibility_condition?.key === target.key).map((r) => r.id)
+  if (naming.length > 0) {
+    const cleared = await supabase
+      .from('custom_settings')
+      .update({ visibility_condition: null, updated_at: new Date().toISOString() })
+      .in('id', naming)
+      .eq('project_id', id)
+      .select('id')
+    if (cleared.error || cleared.data.length !== naming.length) {
+      console.error('projects/settings: condition clear failed', { code: cleared.error?.code })
+      return { error: SETTING_WORDS.couldNot }
+    }
+  }
+  const { data, error } = await supabase.from('custom_settings').delete().eq('id', target.id).eq('project_id', id).select('id')
+  if (error || !data || data.length === 0) {
+    console.error('projects/settings: setting delete failed', { code: error?.code })
+    return { error: SETTING_WORDS.couldNot }
   }
   revalidateProject(id)
   return { ok: true }

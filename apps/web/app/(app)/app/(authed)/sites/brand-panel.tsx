@@ -45,8 +45,8 @@ import { skipBrand, useBrand } from './actions'
    THE LOGO IS AN `<img>` AND IS `https:`-ONLY, checked in `brandOf` — `img-src` admits `data:`
    (`csp.ts:60`) and a `data:` SVG is script.
 
-   BOTH CONTROLS ARE `<form action={serverAction}>` WITH A HIDDEN SITE ID, so both work with
-   JavaScript off — `site-notices.tsx` is the pattern, and there is no client component here.
+   BOTH CONTROLS ARE `<form action={serverAction}>` WITH A HIDDEN SITE ID, so both are plain
+   forms — `site-notices.tsx` is the pattern, and there is no client component here.
 
    AND NEITHER MOVES WHEN IT IS PRESSED. `Submit` draws both labels in one grid cell
    (`kit/submit.tsx`'s `BusyLabel`), so **Use your brand** is already as wide as **Taking your
@@ -172,8 +172,8 @@ export function BrandPanel({
             {chrome}
             {/* THE CHOOSER, AND IT IS REAL RADIO INPUTS — not the Kit's presentational
                 `RadioCards`, which draws the shape with `role="radio"` on buttons and posts
-                nothing. Both controls on this screen work with JavaScript off (Boundaries), and a
-                native radio inside this form is the only version of a chooser that does; it is
+                nothing. Both controls on this screen are plain forms (Boundaries), and a
+                native radio inside this form is the only version of a chooser that posts; it is
                 also why this is cards and not a `<select>`, which cannot hold a drawing. R-74: no
                 frame draws this, so it is extrapolated from the two that draw its parts —
                 `radio-card.tsx`'s coral border and tint (Editor Sidebar Kit `:117`) and
@@ -222,14 +222,14 @@ export function BrandPanel({
                   {/* THE TICKED CARD COMES FIRST (the owner's ruling at Story 6.6's Question 5, 2026-10-05). The list
                       is a scroller now and the presses are always in view, so a pre-selected project further
                       down — this site's, made long ago — was out of sight with Use your brand right there to
-                      press. Sorted here and not scrolled to: it holds with JavaScript off. The sort is stable,
+                      press. Sorted here and not scrolled to: it holds in the markup, before any script runs. The sort is stable,
                       so the rest keep the Projects page's order; `useBrand` reads its own rows, never this. */}
                   {[...projects].sort((a, b) => Number(b.id === targetId) - Number(a.id === targetId)).map((project) => (
                     <label
                       key={project.id}
                       /* THE HIGHLIGHT IS `:has(:checked)` AND NOTHING ELSE. A static class on the
                          pre-selected card would stay lit after the customer picked a different
-                         one — two cards coral, with scripts off and nothing to clear it. The
+                         one — two cards coral, with no script of ours to clear it. The
                          `defaultChecked` below lights the right card on first paint and the
                          browser moves it from there, no JavaScript involved. */
                       className="flex cursor-pointer items-center gap-[11px] rounded-thumb border border-line bg-surface p-[12px_13px] text-left hover:border-line-strong has-[:checked]:border-coral has-[:checked]:bg-coral-tint has-[:focus-visible]:shadow-focus"
@@ -280,7 +280,7 @@ export function BrandPanel({
                 options are sometimes absent. */}
             <div className="mt-auto flex flex-col gap-[10px]">
               {/* The matrix's "insert fails → the page says so". `useBrand` redirects back here
-                  with the flag rather than returning a value, so the message survives scripts off
+                  with the flag rather than returning a value, so the message survives a native post
                   — the same shape `recheckPlan` uses on the Sites page. ABOVE the buttons and not
                   below them: it arrives with the document rather than as a later change, so a live
                   region is not announced for it, and it is the reason the customer is being asked

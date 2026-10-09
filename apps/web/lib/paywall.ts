@@ -103,8 +103,11 @@ const factsOf = (members: Members | null | undefined) => (members ? FACTS.filter
 export const membersNotice = (members: Members | null, site: string): string[] => factsOf(members).map((f) => f.sites(site))
 
 /** Ghost admin at one of its settings anchors, read in the shipped admin bundles of both majors (the spec's Code Map):
- *  Settings → Membership is `#/settings/members`, Tiers is `#/settings/tiers`. */
-export const adminAt = (url: string, anchor: 'members' | 'tiers'): string => `${url.replace(/\/+$/, '')}/ghost/#/settings/${anchor}`
+ *  Settings → Membership is `#/settings/members`, Tiers is `#/settings/tiers`. Story 7.9 — and `settings`, Settings
+ *  itself (`#/settings`), where Site basics sends the site's title, logo and accent: Ghost 6.58.0's admin router declares
+ *  `{path:'settings'}` (`core/built/admin/assets/index-BOJzlYiz.js:67`, read in source). ONE builder for every address. */
+export const adminAt = (url: string, anchor: 'members' | 'tiers' | 'settings'): string =>
+  `${url.replace(/\/+$/, '')}/ghost/#/settings${anchor === 'settings' ? '' : `/${anchor}`}`
 
 type Tier = { type?: unknown; visibility?: unknown; active?: unknown }
 

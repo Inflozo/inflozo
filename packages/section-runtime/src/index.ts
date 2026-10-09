@@ -167,3 +167,11 @@ export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrar
 // feed-less archive the editor's Layers note and Story 7.18's Pre-flight read, and `visibleFeed`, which Story 7.3's
 // guard asks of every page 2.
 export { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
+// Story 7.9 — FR-Q2's rules for a Ghost theme setting as data, one module: Theme settings' actions validate with it and
+// Story 7.10's `config.custom` emitter reads it
+export {
+  checkSetting, claimKey, conditionValues, ghostEntry, GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, keyRefusal, POSTS_PER_PAGE,
+  postsPerPage, PROMOTED_TYPE, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS, settingKey, settingOf, USER_SETTING_CAP,
+  visibilityNql,
+} from './custom-settings.ts'
+export type { SettingGroup, SettingOption, SettingRow, SettingType, Visibility } from './custom-settings.ts'

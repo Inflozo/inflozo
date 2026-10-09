@@ -56,7 +56,7 @@ import { PanelLink } from './panel-link'
    `openOnCancel`, because `autoFocus` alone does not do it (`kit/dialog.ts` records why).
 
    THE SUBMIT IS A REAL `<form action={disconnectSite}>` carrying the server action's OWN dispatch,
-   so React progressively enhances it and a scripts-off browser posts it natively (`project-menu.tsx`
+   so React progressively enhances it and a press before the page's scripts run posts it natively (`project-menu.tsx`
    :52-64 is the record of what happens when a client closure is passed instead). `Submit` carries
    the required `busy` label (R-98) and its own double-submit guard, so this file needs neither a
    `useActionState` nor a ref: `disconnectSite` answers nothing and redirects.
@@ -134,8 +134,8 @@ export function SiteMenu({ id, name, brand }: { id: string; name: string; brand:
         {/* STORY 3.7's FIRST ROW — THE OWNER'S INSTRUCTION OF 2026-09-10, moved here from the card
             body. It is the SAME `PanelLink` the card's link was, with the same two addresses and
             the same busy word, so nothing about how the brand window opens changed: a plain click
-            goes to `/sites?brand=…`, a window over this list; a modified click and a scripts-off
-            click take `/sites/brand?site=…`, the full page. And it is the SAME two sentences —
+            goes to `/sites?brand=…`, a window over this list; a modified click takes
+            `/sites/brand?site=…`, the full page. And it is the SAME two sentences —
             `BRAND_COPY.offer` and `BRAND_COPY.opening`, which Story 3.4 wrote and the harness
             already reads from `probe-rule.ts`. A copy of them in `HEALTH` would have been two homes
             for one word (standing rule 7), so the row moved and the words did not. */}

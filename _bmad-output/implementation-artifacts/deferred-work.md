@@ -7237,7 +7237,12 @@ note (Story 7.3's Dev, 2026-10-06): the guard, Story 7.3's half, is built — `n
 plain: When you click your main list of posts, its greyed Count explains that your theme's Posts per page decides it. The
   drawing also says "Change it in Theme settings" with a link; that half waits until Theme settings has the Posts per
   page field.
-status: open
+status: done 2026-10-09 (Story 7.9)
+resolution: Story 7.9's Dev — `DATA_WORDS.mainCount` is D5c's two sentences, "This feed is sized by your theme's Posts per
+  page. Change it in Theme settings.", and the Data group draws `THEME_SETTINGS_LINK` ("Theme settings ↗") under the main
+  feed's greyed Count, to `settingsPath(project.id)` — threaded from the editor through `Sidebar` to `DataGroup` as
+  `settingsHref`; the keyboard harness, which has no project, hands none and draws none. Theme settings now carries
+  Posts per page (`projects.posts_per_page`, 1–100). `data-group.test.ts`, `controls.test.ts` and `settings.test.ts` hold it.
 severity: low
 origin: Story 5.19's Create (2026-09-25). D5c (`D5 Canvas Markers and Template Switcher.dc.html:347-348`) draws "This feed is
   sized by your theme's Posts per page. Change it in Theme settings." and "Theme settings ↗"; Theme settings holds only

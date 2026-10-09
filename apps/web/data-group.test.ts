@@ -30,7 +30,7 @@ test('Source, Count and Order — one name each (R-170), the engine\'s and the v
   assert.equal(DATA_WORDS.pickedCount, 'The list you picked is the count.')
   assert.equal(DATA_WORDS.pickedOrder, 'The list you picked is the order — these posts render in the order you dragged them.')
   assert.equal(DATA_WORDS.countRefused, 'Count is a number from 1 to 100.')
-  assert.equal(DATA_WORDS.mainCount, "This feed is sized by your theme's Posts per page.")
+  assert.equal(DATA_WORDS.mainCount, "This feed is sized by your theme's Posts per page. Change it in Theme settings.")
 })
 
 test('the tag and writer selects: "{n} posts" ("1 post"), and what a value the source lacks says', () => {

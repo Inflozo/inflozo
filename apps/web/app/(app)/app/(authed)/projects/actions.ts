@@ -23,7 +23,7 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  *
  * Each takes `(previous, formData)` because each is driven by `useActionState` from the dialog
  * that owns it; the ids and the typed name ride in the form, never in a closure, so every one
- * of them also works with JavaScript switched off.
+ * of them stays a plain form's action.
  */
 
 type Code = 'at_cap' | 'bad_name' | 'name_mismatch' | 'failed'

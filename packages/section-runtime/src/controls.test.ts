@@ -632,7 +632,7 @@ test('Story 5.19 · a FIXED query (R-108) offers Source alone, and its Hand-pick
 test('Story 5.19 · the main feed\'s Data group is D5c\'s: Count greyed at the page size in force, and no Source or Order', () => {
   const main = { ...entry, dataBindings: {}, feed: { kind: 'main' as const, postsPerPage: 12 } }
   const rows = rowsOf(main, start())
-  assert.deepEqual(rows.map((r) => [r.control, r.value, r.greyed]), [['count', '12', "This feed is sized by your theme's Posts per page."]])
+  assert.deepEqual(rows.map((r) => [r.control, r.value, r.greyed]), [['count', '12', "This feed is sized by your theme's Posts per page. Change it in Theme settings."]])
   assert.equal(typeof setData(main, start(), 'posts', 'count', 5), 'string')
   // a SECONDARY feed's rows are the same functions over data.posts and its base query
   const secondary = { ...entry, dataBindings: {}, feed: { kind: 'secondary' as const, base: { source: 'posts', limit: 12, order: 'published_at desc' } } }

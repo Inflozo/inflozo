@@ -629,6 +629,13 @@ export const Plus = ({ strokeWidth = 2, ...p }: IconProps) => (
     <line x1="5" y1="12" x2="19" y2="12" />
   </Icon>
 )
+/* D6a's Posts per page stepper (`D6 Theme Settings Completed.dc.html:57-59`), read verbatim — Story 7.9: the plus above
+   and its minus, both at the frame's stroke 2.2. */
+export const Minus = ({ strokeWidth = 2, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </Icon>
+)
 export const MenuLines = (p: IconProps) => (
   <Icon {...p}>
     <line x1="4" y1="7" x2="20" y2="7" />

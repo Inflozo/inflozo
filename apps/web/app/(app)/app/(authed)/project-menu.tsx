@@ -52,7 +52,7 @@ const item = `${row} ${ring}`
 /**
  * DUPLICATE IS ONE ACTION FOR THE WHOLE GRID, so its failure Banner sits above the grid rather
  * than inside whichever card was clicked (the story's matrix). Every card's Duplicate is still
- * a real `<form>` posting the id, so it works with JavaScript switched off.
+ * a real `<form>` posting the id, so it posts natively even before the page's scripts have run.
  *
  * WHAT THE CONTEXT CARRIES IS THE ACTION ITSELF, and it has to be. The double-submit guard added
  * on 2026-09-06 wrapped the dispatch in a plain client closure and passed THAT as the form's
@@ -129,7 +129,7 @@ export function ProjectMenu({ id, name, atCap }: { id: string; name: string; atC
   // queues form actions while `pending` only turns true on the NEXT render — so a held Enter or a
   // double click sends a second Delete whose "We couldn't delete that just now." arrives about a
   // row that is already gone, and a second Rename that races the first. `onSubmit` and not the
-  // action, so the forms keep working with JavaScript off, where there is no double submit.
+  // action, so each form keeps the action's own dispatch and stays a plain form (`:52-64`).
   const busy = useRef(false)
   useEffect(() => {
     if (!renaming && !removing) busy.current = false

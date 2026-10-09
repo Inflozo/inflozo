@@ -5844,6 +5844,9 @@ function EditorShell({
               // design control to declare (DW-186); `carriesMemberVisibility` reads R-113's register (DW-185).
               // Story 5.14: R-124's caption follows View as — R-168's "left out, and the panel says for whom"
               visibility={visibilityRow}
+              // Story 7.9 (DW-254) — D5c's "Theme settings ↗" under the main feed's greyed Count; the keyboard harness, which
+              // has no project of its own (`canvasBase`), draws none
+              settingsHref={canvasBase === undefined ? settingsPath(project.id) : undefined}
             />
             </>
           ) : packList ? (

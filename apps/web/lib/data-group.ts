@@ -45,6 +45,9 @@ export const PICK_LACKING = (held: Held): string =>
 /** The picked list's words (P0·5). */
 export const PICKED = (n: number): string => `${n} picked`
 export const SEARCH_POSTS = 'Search posts to add'
+/** D5c's link under the main feed's greyed Count (`D5 Canvas Markers and Template Switcher.dc.html:348`) — to Theme settings,
+ *  where Posts per page is set, never into Ghost Admin (FR-Q1, R-10 #13). Story 7.9, DW-254. */
+export const THEME_SETTINGS_LINK = 'Theme settings ↗'
 export const NO_PICKS = 'No posts picked yet.'
 /** review (2026-09-25) — a search (posts, tags or writers) that matches nothing says so rather than showing an empty list */
 export const NO_MATCHES = 'Nothing matches.'
