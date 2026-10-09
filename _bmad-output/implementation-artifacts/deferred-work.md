@@ -4090,7 +4090,16 @@ plain: The new browser checks read stylesheets and scripts. Nothing reads a desi
   attribute that the oldest supported browsers do not understand, nothing would stop it. The two newer HTML touches
   already on the allowed list — one-at-a-time accordions and a loading-priority hint — are tracked for their dates,
   but nothing checks where they are used.
-status: open
+status: done 2026-10-09 (Story 7.8)
+resolution: Story 7.8's Dev (2026-10-09). `tools/check-baseline.mjs` holds the markup against the pin on every `pnpm
+  check`: it reads every design's `index.html` and the compiled pilot theme's templates (mustaches masked, parsed with
+  parse5 8.0.1), maps each element and attribute to its `web-features` key (`html.` or `svg.elements.<el>[.<attr>]`, or
+  `.global_attributes.<attr>`), and refuses one below Widely on the pin unless `baseline.json`'s `tier2` names it — a
+  named key only on the element its entry names. A key `web-features` does not map is not judged, the stated ceiling
+  (`class`, `id`, `type`). Controls, each refused: a planted `popover` (`html.global_attributes.popover`), and
+  `fetchpriority` on a `<link>` while it passes on its entry's `<img>`. Today the check sees one Tier-2 key,
+  `html.elements.img.fetchpriority`, and prints where. The check runs in CI rather than at deploy because nothing a
+  customer chooses or types can add an element or an attribute (Story 7.8's Readings 5); Story 7.33 runs every design.
 severity: medium
 origin: Story 4.8's Dev run (2026-09-14) — `packages/library/baseline.json` carries `details-name` and
   `fetch-priority` as `html` entries, and `tools/check-baseline.mjs` recomputes their Widely dates; stylelint and
@@ -4132,7 +4141,19 @@ reason: 4.8's Never bars the trigger inside the matrix. The likely shape is one 
 plain: The stylesheet check refuses newer styling by its property name. Some newer styling has no property name of
   its own — a newer form of an existing rule (a container query that tests a style) or a function used as a value —
   and the lint passes those unnoticed. Review has to catch them by hand until a check does.
-status: open
+status: done 2026-10-09 (Story 7.8)
+resolution: Story 7.8's Dev (2026-10-09). `inflozo/tier3-by-name` in `stylelint.config.mjs`, shaped like
+  `inflozo/supports-tier-2`, refuses by name every function and every at-rule prelude form or descriptor below Widely on
+  the pin, derived from `web-features` at the pin (never listed by hand; a `baseline.json` Tier-2 entry stays allowed),
+  and the pin's date rule has one spelling, exported by the config and imported by the check. The plugin-against-the-pin
+  diff grew from `css.properties` to `css.types`, `css.at-rules` and `css.selectors`, one probe form per family, each at
+  0 wider and 0 narrower; a key a family's form cannot express is printed by name as its ceiling (relative colour syntax,
+  typed `attr()`, gradient interpolation spaces, `@container anchored()`, `@keyframes` named ranges, `:lang()` lists among
+  them — `docs/section-authoring.md` § `style.css` says so). Controls: the four witnesses (`@container style(--x: 1)`,
+  `if()`, `sibling-index()`, `random()`), `@font-face { ascent-override }` and `@import … supports()`, each passing
+  before the rule and refused after; with the rule disabled the check fails on all six and on both diffs. The compiled
+  pilot theme's emitted CSS (`screen.css`, each `<style>` in a template, `cards.css` when it ships) lints clean through
+  the root config, with `@container style(--x: 1) {}` planted in `screen.css` as its control.
 severity: medium
 origin: Story 4.8's review (2026-09-14) — Verification Gap: executed through the real config, `@container style(--x: 1)
   { … }`, `.a { color: if(style(--x: 1): red; else: blue); }`, `sibling-index()` and `random()` all pass, while the
@@ -8706,7 +8727,14 @@ reason: R-195 — a requirement left out of its story needs a named owner.
 
 plain: When you edit a colour, Inflozo warns about poor contrast but lets you keep it. The deploy check, as written,
   then fails the theme for that same contrast — so the warning becomes a block.
-status: open
+status: done 2026-10-09 (Story 7.8)
+resolution: Story 7.8's Dev (2026-10-09). The quality gate's contrast rule, `contrast-aa`, checks the pack's own
+  `AA_PAIRS` in both modes (`hardToRead`, moved beside `AA_PAIRS` with its words so the gate and the Style Pack editor
+  say one thing, R-170) and is ALWAYS a warning, `contrast_low`, in the editor's own words — never a block (FR-E3). CI
+  holds every preset in both modes (`quality.test.ts`, with `packs.test.ts`' Tangerine control caught), so at a deploy
+  only a customer's own colour can fail. This did not change what a deploy does beyond FR-E3's approved rule, so no new
+  question went to the owner; Question 2 (owner, 2026-10-09) extended the same rule to the heading, name and
+  picture-link findings a customer's choice causes.
 severity: medium
 origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
 owner: Story 7.8 (the theme quality gate), whose card names this entry.

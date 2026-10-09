@@ -672,7 +672,8 @@ check('control — Story 7.1: the compiled-theme check catches a second triple-s
   mustFail(broken({ 'home.hbs': `${files['home.hbs']}{{{html}}}\n` }), /triple-stash/, 'a second {{{')
   mustFail(broken({ 'index.hbs': `${files['index.hbs']}<!-- built with Inflozo -->\n` }), /index\.hbs: the builder's name/, 'a generator mark')
   mustFail(broken({ 'post.hbs': `${files['post.hbs']}<i data-key="${instanceIds[0]}"></i>\n` }), /the instance id/, 'an instance id')
-  mustFail(broken({ 'partials/orphan.hbs': '<p>x</p>\n' }), /partials\/orphan\.hbs is referenced by no file/, 'an orphan partial')
+  // Story 7.8: the orphan rule is the quality gate's `leftovers` (AD-34's one spelling), which `themeFailures` calls
+  mustFail(broken({ 'partials/orphan.hbs': '<p>x</p>\n' }), /^partials\/orphan\.hbs: a partial no template uses$/, 'an orphan partial')
   // Story 7.3: the paywall's {{{html}}} is admitted as its first line alone, and Ghost's {{content}} references it
   if (broken({ 'partials/content-cta.hbs': '{{{html}}}\n' }).length > 0) throw new Error(`the paywall's first line was refused: ${broken({ 'partials/content-cta.hbs': '{{{html}}}\n' }).join(' · ')}`)
   mustFail(broken({ 'partials/content-cta.hbs': '<p>x</p>\n{{{html}}}\n' }), /triple-stash/, '{{{html}}} below the paywall\'s first line')
@@ -1211,6 +1212,69 @@ for (const m of MAJORS) {
     if (got.length > 0) throw new Error(`a customer's words raise ${got.join(', ')}`)
   })
 }
+
+// ── Story 7.8: the emitted-theme quality gate (FR-J17, AD-34) ─────────────────────────────────────────────────────────
+// `qualityGate` over the pilot theme, Paper's pack and the library from disk: no error and no warning, its wall time
+// printed (measured, never asserted). axe-core 4.12.1 — the render matrix's version — runs QUALITY_RULES' own axe ids in
+// jsdom over each page `readPages` assembles (exactly what the gate read) and must agree: no violation on the pilots, and
+// on the planted page both fire. `themeFailures` reads AD-34's leak assertions through the gate's `leftovers`.
+const { REFERENCE_PACK } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
+const PILOT_LIBRARY = pilots.library()
+const pilots78 = pilots.compilePilots(WORDS, { ...THEME, find: PILOT_LIBRARY })
+const qualityOf = (files) => gate.qualityGate(files, { pack: REFERENCE_PACK, library: PILOT_LIBRARY })
+const said78 = (v) => [...v.errors, ...v.warnings].map((f) => `${f.level} ${f.code} ${f.refs.join(',')}: ${f.message}${f.detail ? ` ${f.detail}` : ''}`)
+const t78 = performance.now()
+const quality78 = qualityOf(pilots78.files)
+const qualityMs = performance.now() - t78
+// the control's plant: an <h4> straight after A24 #1's invocation (its <h1>) in post.hbs
+const a24 = /^( *)\{\{> "sections\/post\/[^"]+"\}\}$/m.exec(pilots78.files['post.hbs'] ?? '')
+const planted78 = a24 === null ? null : { ...pilots78.files, 'post.hbs': pilots78.files['post.hbs'].replace(a24[0], `${a24[0]}\n${a24[1]}<h4>Planted</h4>`) }
+check('control — Story 7.8: the pilot theme with an <h4> planted after A24 #1\'s <h1> in post.hbs gives exactly one heading_skip, refs[0] post.hbs', () => {
+  if (planted78 === null) throw new Error('post.hbs carries no section invocation to plant after')
+  const v = qualityOf(planted78)
+  const got = [...v.errors, ...v.warnings].map((f) => `${f.code} ${f.refs[0]}`)
+  if (got.join() !== 'heading_skip post.hbs' || v.blocked) throw new Error(`the planted verdict is ${JSON.stringify(said78(v))}`)
+  return v.warnings[0].message
+})
+check('Story 7.8 — the pilot theme\'s quality verdict is empty: no error and no warning (Paper\'s pack, the library on disk)', () => {
+  if (quality78.blocked || quality78.errors.length + quality78.warnings.length > 0) throw new Error(said78(quality78).join('\n'))
+  return `qualityGate ran in ${qualityMs.toFixed(0)} ms (measured, not asserted)`
+})
+// axe-core in jsdom, over each assembled page (`tools/pilot-theme.mjs`'s `axeOn`, the recorder's too) — run here, before
+// its rows, because `check` is synchronous
+const AXE_IDS = pilots.axeIds(gate.QUALITY_RULES)
+/** axe's violations over every page `readPages` assembles: `[page, rule]`, in page order. */
+async function axeViolations(files) {
+  const out = []
+  for (const page of gate.readPages(files)) for (const id of await pilots.axeOn(page.text, AXE_IDS)) out.push(`${page.file} ${id}`)
+  return out
+}
+const axePilots = await axeViolations(pilots78.files).catch((e) => e)
+const axePlanted = planted78 === null ? new Error('no plant') : await axeViolations(planted78).catch((e) => e)
+check(`control — Story 7.8: axe-core ${gate.AXE_CORE} over the planted pages reports heading-order on post.hbs, as the gate reports heading_skip`, () => {
+  const got = raised(axePlanted)
+  if (got.join() !== 'post.hbs heading-order') throw new Error(`axe reports ${JSON.stringify(got)} on the planted pages`)
+  return got.join()
+})
+check(`Story 7.8 — axe-core agrees: the installed axe-core is ${gate.AXE_CORE}, and it reports no violation of QUALITY_RULES' axe ids over the pilot theme's pages`, () => {
+  if (pilots.AXE_VERSION !== gate.AXE_CORE) throw new Error(`axe-core ${pilots.AXE_VERSION} is installed where QUALITY_RULES follows ${gate.AXE_CORE} — re-read every rule's axe source line, then move AXE_CORE`)
+  const got = raised(axePilots)
+  if (got.length > 0) throw new Error(`axe reports ${got.join(', ')}`)
+  return `${AXE_IDS.length} rules over ${gate.readPages(pilots78.files).length} pages`
+})
+check('control — Story 7.8: themeFailures reads AD-34\'s leaks through leftovers — a planted expression token and an orphan partial are each its sentence', () => {
+  const broken = { ...pilots78.files, 'post.hbs': `${pilots78.files['post.hbs']}<p>${rt.T0}0${rt.T1}</p>\n`, 'partials/orphan.hbs': '<p>x</p>\n' }
+  const said = gate.leftovers(broken)
+  if (said.join(' · ') !== 'partials/orphan.hbs: a partial no template uses · post.hbs: an expression token') throw new Error(`leftovers says ${JSON.stringify(said)}`)
+  const f = pilots.themeFailures(broken, pilots78.instanceIds)
+  const missing = said.filter((x) => !f.includes(x))
+  if (missing.length > 0) throw new Error(`themeFailures does not carry ${missing.join(', ')}: ${JSON.stringify(f)}`)
+  return said.join(' · ')
+})
+check('Story 7.8 — leftovers over the pilot theme says nothing: no consumed directive, no token or marker, every partial referenced', () => {
+  const said = gate.leftovers(pilots78.files)
+  if (said.length > 0) throw new Error(said.join('\n'))
+})
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────
 const targets = rendered.reduce((t, r) => t + r.entry.compileTarget.length, 0)

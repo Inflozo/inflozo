@@ -2,9 +2,10 @@
 title: 'Story 7.8 — The emitted-theme quality gate'
 type: 'feature'
 created: '2026-10-09'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: '6ec74c9fdeff99e769d4498a5ae73eeacbc20b5c'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -213,55 +214,55 @@ Levels marked *(Q2)* follow § Ruled values. The rows show Question 2's recommen
 
 **Execution:**
 
-- [ ] `packages/theme-compiler/package.json`, `pnpm-lock.yaml` — add `"parse5": "8.0.1"` to `dependencies`. `pnpm install --frozen-lockfile` must then install with no new download, because the version is jsdom's own.
+- [x] `packages/theme-compiler/package.json`, `pnpm-lock.yaml` — add `"parse5": "8.0.1"` to `dependencies`. `pnpm install --frozen-lockfile` must then install with no new download, because the version is jsdom's own.
 
   -- the parser, declared.
-- [ ] `packages/section-runtime/src/tokens.ts`, `index.ts`; `apps/web/lib/pack-edit.ts`:
+- [x] `packages/section-runtime/src/tokens.ts`, `index.ts`; `apps/web/lib/pack-edit.ts`:
   - `ROLE_WORDS`, `MODE_WORDS` and the pair's sentence (`pairWords`) move beside `AA_PAIRS` and are exported;
   - `pack-edit.ts` imports them;
   - no word changes, and `pack-edit`'s tests hold unchanged.
 
   -- R-170: Pre-flight's contrast warning says what the editor says.
-- [ ] `packages/theme-compiler/src/compile.ts` — export `REQUIRED_TEMPLATES` (`default.hbs`, `index.hbs` and `ALWAYS`'s files) and `requiredTemplates(library)`, which adds each `WHEN_FILLED` file whose `synthesize` stack is not empty. `stacksOf` reads the same constants, and no output changes.
+- [x] `packages/theme-compiler/src/compile.ts` — export `REQUIRED_TEMPLATES` (`default.hbs`, `index.hbs` and `ALWAYS`'s files) and `requiredTemplates(library)`, which adds each `WHEN_FILLED` file whose `synthesize` stack is not empty. `stacksOf` reads the same constants, and no output changes.
 
   -- one statement of "every template the theme carries".
-- [ ] `packages/theme-compiler/gate/verdict.ts` — export `OURS`.
+- [x] `packages/theme-compiler/gate/verdict.ts` — export `OURS`.
 
   -- one sentence for "ours".
-- [ ] `packages/theme-compiler/gate/quality.ts` (core) — `qualityGate(files, { pack, library })`, `QUALITY_RULES`, `readPages(files)` and `leftovers(files)`, per § How the gate reads a theme and § The rules.
+- [x] `packages/theme-compiler/gate/quality.ts` (core) — `qualityGate(files, { pack, library })`, `QUALITY_RULES`, `readPages(files)` and `leftovers(files)`, per § How the gate reads a theme and § The rules.
 
   -- FR-J17, AD-3, AD-34.
-- [ ] `packages/theme-compiler/gate/index.ts` — export them with their types, beside `gscanGate`.
+- [x] `packages/theme-compiler/gate/index.ts` — export them with their types, beside `gscanGate`.
 
   -- the door Story 7.18 and CI use.
-- [ ] `packages/theme-compiler/gate/quality.test.ts` — on the clean base theme:
+- [x] `packages/theme-compiler/gate/quality.test.ts` — on the clean base theme:
   - the I/O matrix, row by row;
   - every preset clean in both modes, and Tangerine's white on-accent caught (`packs.test.ts`' own control);
   - the premise theme: the gate's findings, and both pinned gscans at 0/0 through `runGscan`.
 
   -- what the gate promises.
-- [ ] `tools/pilot-theme.mjs`, `tools/stress/build.js`:
+- [x] `tools/pilot-theme.mjs`, `tools/stress/build.js`:
   - `themeFailures`' token and orphan-partial rules call `leftovers`;
   - the stress build's leak block calls `leftovers`;
   - its FR-J17 proxy becomes `qualityGate`, through its adapter, and prints the gate's time.
 
   -- one spelling; AD-34 measured on the real gate.
-- [ ] `tools/check-snapshots.mjs` — § What CI holds, rows 1-3, each behind its control.
+- [x] `tools/check-snapshots.mjs` — § What CI holds, rows 1-3, each behind its control.
 
   -- the gate on every commit.
-- [ ] `stylelint.config.mjs`, `tools/check-baseline.mjs`, `packages/library/baseline.json` — § What CI holds, rows 4-6:
+- [x] `stylelint.config.mjs`, `tools/check-baseline.mjs`, `packages/library/baseline.json` — § What CI holds, rows 4-6:
   - DW-139's rule and its per-family diff;
   - DW-137's markup against the pin;
   - the compiled pilot theme's emitted CSS through the config.
 
   -- FR-G8 on what a compile emits.
-- [ ] `tools/quality-gate.mjs` (new), `tools/doc-audit.py` — `node tools/quality-gate.mjs <theme-dir>` prints `qualityGate`'s verdict for any Ghost theme directory, using Paper's pack and an empty library (§ The negative control). It gets its catalogue row.
+- [x] `tools/quality-gate.mjs` (new), `tools/doc-audit.py` — `node tools/quality-gate.mjs <theme-dir>` prints `qualityGate`'s verdict for any Ghost theme directory, using Paper's pack and an empty library (§ The negative control). It gets its catalogue row.
 
   -- the negative control's door.
-- [ ] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py` — `SECTION` becomes `77`, with § The T1 run's rows; the catalogue row says so.
+- [x] `tools/probe/record-theme-assembly.py`, `tools/doc-audit.py` — `SECTION` becomes `77`, with § The T1 run's rows; the catalogue row says so.
 
   -- R-82: Ghost's real pages agree with the gate.
-- [ ] Documents — apply § Propagated at Dev, then grep for each old wording.
+- [x] Documents — apply § Propagated at Dev, then grep for each old wording.
 
   -- standing rules 3 and 7.
 
@@ -653,3 +654,59 @@ Both were ruled option 1 (owner, 2026-10-09). Dev builds § Ruled values as it s
 - The npm registry, read only: Ghost 6.58.0's tarball for Casper and Source.
 - Vercel: CI's `check`, `rls` and `deploy` green, and the deployment READY at the head. The app changes only in where `pack-edit.ts` reads its words.
 - There is no migration and no Supabase, Resend or Dodo surface. The gate has no product caller until Story 7.18.
+
+**Dev results (2026-10-09, main session; the T1 run on the owner's in-session go, option 1, 2026-10-09):**
+
+- **The install.** `pnpm install --frozen-lockfile --offline` (Node 24.18.1, pnpm 11.22.0): "Lockfile is up to date … Already up to date". `parse5` 8.0.1 is declared, it is the copy jsdom already installed, and nothing was downloaded.
+- **`pnpm check` (Node 24.18.1)** — exit 0. That covers:
+  - lint, including `check-baseline`'s new control: a builtin import at `gate/quality.ts` is refused, so the file is core, and the same line at `gate/gscan.ts` is not;
+  - the typecheck;
+  - every package's tests, among them `gate/quality.test.ts`, whose premise rows run both real pinned gscans.
+  - `check-baseline` printed each row `ok` after its control:
+    - DW-139's four witnesses, an `@font-face` descriptor and an `@import … supports()` each refused by `inflozo/tier3-by-name`;
+    - the pin diff over `css.properties`, `css.types`, `css.at-rules` and `css.selectors`, at 0 wider and 0 narrower, each family's ceiling named;
+    - DW-137: a planted `popover` was refused as `html.global_attributes.popover`, and `fetchpriority` passes on `img` but is refused on `link`; every design and the pilot templates are Widely, bar the named Tier-2 key;
+    - the emitted CSS: a planted `@container style(--x: 1) {}` was refused, and the pilot theme's `screen.css` and `default.hbs`'s `<style>` gave no warning.
+  - `check-snapshots` printed the 7.8 rows `ok` after their controls:
+    - the planted `<h4>` gave exactly one `heading_skip` with `refs[0]` `post.hbs`;
+    - the pilot verdict was empty, with `qualityGate` measured at 56 ms on this run;
+    - axe-core 4.12.1 reported `heading-order` on the planted `post.hbs`, and nothing over the pilot pages;
+    - `themeFailures` carried `leftovers`' sentences for a planted token and an orphan partial, and `leftovers` was clean on the pilots.
+- **`tools/stress`** — `node build.js && node gate.js theme`: 0 errors and 0 warnings on gscan 4.49.7 (`v5`) and 6.4.2 (`v6`), unchanged. The stage line now reads "FR-J17 quality gate + leak assertions 119 ms (qualityGate and leftovers, the real gate)". Both report nothing. That 119 ms replaces the proxy's 697 ms in §11's and AD-34's dated notes.
+  - `npm install` there failed on the root-owned `node_modules`, a known machine quirk; the installed copy ran.
+- **The premise (AC "The premise").** On both pinned gscans, the review's files verbatim score 0 errors and **one warning, `GS051-CUSTOM-FONTS`**. With Ghost's two `--gh-font-*` variables declared, they score 0/0.
+  - The spec's "a result other than 0/0 is recorded" is honoured: FR-J17, FR-J6 and §7.6 carry the dated correction.
+  - The gate reports `language_missing`, `viewport_missing`, `alt_missing`, `inline_script`, `template_missing` for `tag.hbs` and for `author.hbs`, `heading_skip` (h1→h6), `image_link_unnamed` and `contrast_low` (Text on Base in Light, 1.1:1 for #eeeeee on #ffffff), and `blocked: true`.
+- **The negative control (AC "The negative control").** Run with `node tools/quality-gate.mjs` over Ghost 6.58.0's npm tarball (`curl -sSL https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`, read only), re-run in the main session. Every finding was read against the theme's source here, and none is false:
+  - **Casper 5.12.1**, blocked:
+    - `error.hbs:16` `<html>` with no `lang`;
+    - headings skip at `error.hbs:47→54` (h1→h3) and `post.hbs:26→50` (h1→h4);
+    - the icon-only social links on `author.hbs:54…78` have no name: `icons/*.hbs` are SVGs with no title;
+    - `partials/icons/loader.hbs` and `rss.hbs` are used by no template. The only dynamic partial, `default.hbs:88`'s `{{#> (concat "icons/" type)}}`, reaches only `social_accounts`' platform types, read in Ghost's `core/frontend/helpers/social_accounts.js`, and neither file is one of them.
+  - **Source 1.7.1**, blocked:
+    - `<main>` nests inside `<main>` through `partials/components/post-list.hbs:18`;
+    - the id `Lock-1--Streamline-Ultimate` (`partials/icons/lock.hbs:1`) repeats. The gate reaches it through `post-list.hbs`'s feed blocks, each read as present, and it is real on any listing with two paid posts, because `{{#foreach}}` repeats `post-card.hbs:35`'s lock;
+    - a heading skips at `post.hbs:15→35` (h1→h4);
+    - links with no name at `author.hbs:23` (`icons/x`) and `post.hbs:30` (`icons/avatar`);
+    - `partials/icons/checkmark.hbs`, `fire.hbs` and `rss.hbs` are used by no template.
+  - Both stylesheets give warnings through the root config (`use-baseline`, the closed prefix lists, `motion-gated`, nesting). The tool prints its own counts, and §77 records them.
+- **T1 `ghost6.inflozo.com` (Ghost 6.58.0)** — `python3 tools/probe/record-theme-assembly.py`, with the keys read in-process by variable name (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY` in `tools/probe/.env`), never printed. Exit 0, every row PASS, and MEASUREMENTS §77 written:
+  - (d) axe-core 4.12.1, over `/`, `/page/2/`, a post, `/tag/craft/` and `/author/umang/` as Ghost rendered the pilots, reported no violation of `QUALITY_RULES`' axe ids. Each page's `<html lang>` was the site's `en`, and each page's heading levels were one of `readPages`' alternatives for its template (Home `h1 h2 h3 h2`, index and tag `h2 h3`, post `h1 h2`, author none);
+  - (e) the probe `inflozo-probe-quality`: locally, the gate reported exactly `heading_skip` and `name_missing` for `post.hbs`. On T1, axe on Ghost's rendered probe post reported exactly `heading-order` and `link-name`, and the read carried this run's nonce;
+  - (f) the negative control, recorded beside the T1 rows: each theme fails at least one rule, and each finding is quoted at its source line;
+  - Stories 7.1–7.7's rows held again: the pilots' local gate was 0/0 on both gscans, §72's paywall probe and its control held, and so did 7.7's three gscan-gate probes (200, 422 `ThemeValidationError`, 200 with the cascade);
+  - the active theme was read back as `casper` after every upload, and every probe theme was deleted (installed after: `casper`, `racer`, `source`). This month's probe picture was reused, so no picture was uploaded;
+  - the Ghost 5 half is DW-326's (R-238).
+- **Matrix audit.** Every I/O row maps to a check that ran:
+  - the pilot theme: `check-snapshots`' 7.8 rows;
+  - the negative control: `tools/quality-gate.mjs` and §77 (f);
+  - every other row: its own `test(…)` in `gate/quality.test.ts`, in matrix order;
+  - "Filled by the library, with today's library, none": the pilot verdict, which is compiled with the library on disk.
+- **Judgement calls, for Review:**
+  - `inflozo/tier3-by-name` also refuses below-Widely descriptors inside at-rule blocks, such as `@font-face { ascent-override }`. That is a stricter reading of FR-G8, and the library is unchanged by it;
+  - `hardToRead` itself moved beside `AA_PAIRS`, with its words, so the editor and the gate run one check. `pack-edit.ts` re-exports it;
+  - the layout line is found anywhere in a template, as express-hbs 2.5.0 does (`lib/hbs.js`, read in source), not only on the first line;
+  - parse5 reports tokenizer errors only, so a stray end tag (a link inside a link among them) is found from parse5's own source locations;
+  - a defect is said once per file: Casper's many nameless social links are one warning;
+  - `tools/stress/sections.js`'s post card was a picture-only link with `alt=""`, the real gate's first finding there; its `alt` now binds the post's title.
+- **Vercel, Supabase, Resend, Dodo** — not touched at Dev. There is no migration and no Supabase, Resend or Dodo surface. Review reads CI's `check`, `rls` and `deploy` and the deployment's READY state at this head.

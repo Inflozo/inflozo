@@ -3,7 +3,8 @@
 //
 // One copy of each thing, and this file restates none of them:
 // - the PIN is the root `package.json`'s `browserslist-config-baseline.widelyAvailableOnDate`, the one place
-//   `browserslist-config-baseline` reads it (from the WORKING DIRECTORY's package.json — executed);
+//   `browserslist-config-baseline` reads it (from the WORKING DIRECTORY's package.json — executed), and Widely on it is
+//   `stylelint.config.mjs`'s `widelyOnPin`, imported (Story 7.8: the config's `inflozo/tier3-by-name` needs it too);
 // - the TIERS are `packages/library/baseline.json`;
 // - the STYLESHEET RULES are the root `stylelint.config.mjs`, loaded as stylelint loads it;
 // - the FLOOR is printed here and stored nowhere.
@@ -14,18 +15,25 @@
 //  2. the pin reaches eslint-plugin-compat (`new ImageCapture()` refused at the floor's Safari — it ships in 17.4,
 //     which an unpinned floor passes);
 //  3. every Tier-2 date recomputed as `baseline_low_date` + 30 months, and R-105's one exception held alone;
-//  4. the stylelint plugin diffed against the pin, row by row, over every identifier-shaped `css.properties` row;
+//  4. the stylelint config diffed against the pin, key by key, with one probe form per family — `css.properties`,
+//     and since Story 7.8 (DW-139) `css.types`, `css.at-rules` and `css.selectors` — each family's ceiling named, behind
+//     DW-139's four witnesses refused by `inflozo/tier3-by-name`;
 //  5. the matrix's stylesheet rows and the repository's own sheets through the real config;
 //  6. `size-limit` at NFR-2's budget — 40,960 bytes, gzip level 9 (DW-140) — as a WARNING, never a failure, over two
 //     things (Story 7.5): NFR-2's maximal design, `bundle()` of every module with a file plus `cardsJs` of every vendored
 //     Ghost chunk, and the compiled pilot theme's `assets/js/`; with a 1 B control, each size held equal to the sum of
-//     zlib's own level-9 gzip of its files, and NFR-2's sentence held to naming what is checked. Nothing in apps/ reads it.
+//     zlib's own level-9 gzip of its files, and NFR-2's sentence held to naming what is checked. Nothing in apps/ reads it;
+//  7. Story 7.8 (DW-137) — the markup against the pin: every element and attribute of every design's `index.html` and of
+//     the compiled pilot theme's templates, mustaches masked, mapped to its web-features key; below Widely is refused
+//     unless a Tier-2 entry names that key, on its element (a planted `popover` and a `<link fetchpriority>` the controls);
+//  8. Story 7.8 — the emitted CSS: the compiled pilot theme's `screen.css`, each template `<style>` and `cards.css` when it
+//     has one, through the root config with no warning (a planted `@container style()` the control).
 //
 //     node tools/check-baseline.mjs          (Node 24: it imports packages/library/src/modules.ts)
 
 import { createRequire } from 'node:module'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -43,7 +51,7 @@ const { MODULES, bundle, cardsJs } = await import(join(REPO, 'packages/library/s
 const webFeatures = require('web-features/data.json')
 const WEB_FEATURES = JSON.parse(readFileSync(join(dirname(require.resolve('web-features/data.json')), 'package.json'), 'utf8')).version
 const BASELINE = JSON.parse(readFileSync(join(REPO, 'packages/library/baseline.json'), 'utf8'))
-const PIN = JSON.parse(readFileSync(join(REPO, 'package.json'), 'utf8'))['browserslist-config-baseline']?.widelyAvailableOnDate
+const { PIN, clean, addMonths, widelyOnPin, tier2Keys, isTier2Key, functionName, atRuleForm } = await import(join(REPO, 'stylelint.config.mjs'))
 // Two preconditions every row below rests on (review of 4.8): a pin that is not a date makes every date compare
 // silently wrong, and a BROWSERSLIST / BROWSERSLIST_CONFIG variable overrides every config file, so nothing below
 // would be testing the pin.
@@ -74,20 +82,6 @@ const fail = (msg) => {
 // Every row below that reads a date needs the pin; without it each says so in one line instead of a list.
 const needPin = () => {
   if (PIN === undefined) fail('the root package.json carries no browserslist-config-baseline.widelyAvailableOnDate: there is no pin')
-}
-
-// ── dates ──────────────────────────────────────────────────────────────────────────────────────────────────
-const clean = (d) => (d ?? '').replace('≤', '')
-/** `YYYY-MM-DD` + n months, the day clamped to the month's length (web-features' Widely rule). */
-function addMonths(date, n) {
-  const [y, m, d] = date.split('-').map(Number)
-  const total = y * 12 + (m - 1) + n
-  const last = new Date(Date.UTC(Math.floor(total / 12), (total % 12) + 1, 0)).getUTCDate()
-  return `${Math.floor(total / 12)}-${String((total % 12) + 1).padStart(2, '0')}-${String(Math.min(d, last)).padStart(2, '0')}`
-}
-const widelyOnPin = (status) => {
-  const low = clean(status?.baseline_low_date)
-  return low !== '' && addMonths(low, 30) <= PIN
 }
 
 // ── the floor ──────────────────────────────────────────────────────────────────────────────────────────────
@@ -147,13 +141,7 @@ function tier2Findings(tier2, features = webFeatures.features) {
       refusals.push(`${e.feature}: an entry names exactly one of css or html (got ${shapes.join(', ') || 'neither'})`)
       continue
     }
-    const named = e.css?.property
-      ? (e.css.values ?? [undefined]).map((v) => `css.properties.${e.css.property}${v ? `.${v}` : ''}`)
-      : e.css?.atRule
-        ? [`css.at-rules.${e.css.atRule}`]
-        : e.html?.element && e.html?.attribute
-          ? [`html.elements.${e.html.element}.${e.html.attribute}`]
-          : []
+    const named = tier2Keys(e)
     const unlinked = named.length === 0 ? ['(nothing named)'] : named.filter((k) => !(f.compat_features ?? []).includes(k))
     if (unlinked.length > 0) {
       refusals.push(`${e.feature}: ${unlinked.join(', ')} is not among its web-features compat keys — the entry's css/html names something else`)
@@ -197,6 +185,41 @@ const tier2Rows = (tier2) => {
 // ── stylelint ──────────────────────────────────────────────────────────────────────────────────────────────
 const PROBE = join(REPO, 'packages/library/fixtures/baseline-probe.css') // never written: a filename for config lookup
 const lint = async (code) => (await stylelint.lint({ code, codeFilename: PROBE })).results[0].warnings
+/** A row: `sheet` through the repo config is refused by `rule`, and no other custom rule fires. */
+const refusedCheck = (group, sheet, rule) =>
+  check(`${group} refused by ${rule}: ${sheet}`, async () => {
+    const rules = [...new Set((await lint(sheet)).map((w) => w.rule))]
+    if (!rules.includes(rule)) fail(`not refused by ${rule} (got ${rules.join(', ') || 'no warning'})`)
+    const stray = rules.filter((r) => r.startsWith('inflozo/') && r !== rule)
+    if (stray.length > 0) fail(`a custom rule fired outside its own rows: ${stray.join(', ')}`)
+  })
+
+// Story 7.6 and 7.8: `inflozo/motion-gated` judges motion and `inflozo/supports-tier-2` what a condition may test, not the
+// floor — `animation: infinite` is Widely, and so is `@supports selector()` — so their warnings are no answer about the pin.
+const NOT_THE_PIN = new Set(['inflozo/motion-gated', 'inflozo/supports-tier-2'])
+/** The config against the pin over one compat-key family: each key `probe` can write is one line of one sheet; refused
+ *  while `allowed` (or Widely) is narrower, passed while neither is wider. A key it cannot write is judged by its nearest
+ *  written ancestor that was refused (`:scroll-button` refuses `scroll-button.left`); a key below Widely that neither
+ *  reaches is the family's ceiling, named in the note. Throws on a difference. */
+async function pinDiff(prefix, probe, allowed) {
+  needPin()
+  const rows = new Map()
+  for (const f of Object.values(webFeatures.features)) {
+    if (f.kind !== 'feature') continue
+    for (const [key, s] of Object.entries(f.status?.by_compat_key ?? {})) if (key.startsWith(prefix)) rows.set(key, { code: probe(key, f), ok: widelyOnPin(s) || allowed(key) })
+  }
+  const keys = [...rows.keys()].filter((k) => rows.get(k).code !== undefined)
+  const refused = new Set((await lint(keys.map((k) => rows.get(k).code).join('\n'))).filter((w) => !NOT_THE_PIN.has(w.rule)).map((w) => keys[w.line - 1]))
+  const wider = keys.filter((k) => !rows.get(k).ok && !refused.has(k))
+  const narrower = keys.filter((k) => rows.get(k).ok && refused.has(k))
+  if (wider.length + narrower.length > 0) {
+    fail(`wider than the pin (passed, not Widely, not named): ${wider.join(', ') || 'none'}\nnarrower than the pin (refused, Widely or named): ${narrower.join(', ') || 'none'}`)
+  }
+  const reached = (k) => k.split('.').some((_, i, p) => i > 2 && refused.has(p.slice(0, i).join('.')))
+  const unwritten = [...rows.keys()].filter((k) => rows.get(k).code === undefined)
+  const ceiling = unwritten.filter((k) => !rows.get(k).ok && !reached(k))
+  return `${keys.length} keys written: 0 wider, 0 narrower; ${unwritten.length} the form cannot write, of which ${ceiling.length} below Widely and under no refused key — the ceiling: ${ceiling.join(', ') || 'none'}`
+}
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -242,6 +265,15 @@ await check('DW-4: a disable comment in a core package does not silence .localeC
 // nothing since; here, in the one ESLint harness, so an `ignores` reshuffle cannot weaken it silently.
 const lintAt = async (code, file) => (await new ESLint({ cwd: REPO }).lintText(code, { filePath: join(REPO, file) }))[0].messages
 const banned = (got) => got.find((m) => m.ruleId === 'no-restricted-imports' && m.message.includes('FR-J1'))
+// Story 7.8 — the quality gate is CORE (AD-1): `gate/quality.ts` sits under the ban, and only the gscan shell is exempt
+await check('Story 7.8: gate/quality.ts is core — a builtin import at its path is refused, and the same line at gate/gscan.ts (the one exempt shell) is not', async () => {
+  const builtin = (got) => got.find((m) => m.ruleId === 'no-restricted-imports' && m.message.includes('node:fs'))
+  const line = "import { readFileSync } from 'node:fs'\nexport const r = readFileSync\n"
+  const hit = builtin(await lintAt(line, 'packages/theme-compiler/gate/quality.ts'))
+  if (hit === undefined) fail('a node:fs import at gate/quality.ts was not refused')
+  if (builtin(await lintAt(line, 'packages/theme-compiler/gate/gscan.ts')) !== undefined) fail('the control: gscan.ts is NOT_CORE, and the same line was refused there')
+  return hit.message
+})
 await check('Story 7.1: a core package importing handlebars is refused, naming FR-J1', async () => {
   const hit = banned(await lintAt("import Handlebars from 'handlebars'\nexport const p = Handlebars.parse\n", 'packages/theme-compiler/src/probe.ts'))
   if (hit === undefined) fail('not refused')
@@ -414,36 +446,65 @@ try {
     return warning
   })
 
-  await check('the plugin against the pin: every identifier-shaped css.properties row, through the repo config', async () => {
-    needPin()
+  // Story 7.8 (DW-139) — the four witnesses DW-139 recorded passing the config (executed again before the rule: no
+  // warning), then a descriptor and an @import condition: each refused by the rule the three new diffs below rest on.
+  for (const sheet of [
+    '@container style(--x: 1) {}',
+    '.a { color: if(style(--x: 1): red; else: blue); }',
+    '.a { order: sibling-index(); }',
+    '.a { width: calc(random(1px, 10px)); }',
+    '@font-face { font-family: x; src: url(x.woff2); ascent-override: 90%; }',
+    '@import url(x.css) supports(display: grid);',
+  ]) {
+    await refusedCheck('Tier 3 by name (DW-139)', sheet, 'inflozo/tier3-by-name')
+  }
+
+  const PROPERTY = /^css\.properties\.([a-z][a-z-]*)(?:\.([a-z][a-z-]*))?$/
+  await check('the config against the pin: every identifier-shaped css.properties key, as prop: value (or inherit)', async () => {
     const isTier2 = tier2Rows(BASELINE.tier2)
     const admitted = (prop) => Object.hasOwn(BASELINE.plugin.admitted, prop)
-    const rows = new Map()
-    for (const f of Object.values(webFeatures.features)) {
-      if (f.kind !== 'feature') continue
-      for (const [key, s] of Object.entries(f.status?.by_compat_key ?? {})) {
-        const m = /^css\.properties\.([a-z][a-z-]*)(?:\.([a-z][a-z-]*))?$/.exec(key)
-        if (m) rows.set(key, { prop: m[1], value: m[2], widely: widelyOnPin(s) })
-      }
-    }
-    const keys = [...rows.keys()]
-    const code = keys.map((k, i) => `.p${i} { ${rows.get(k).prop}: ${rows.get(k).value ?? 'inherit'}; }`).join('\n')
-    // Story 7.6: `inflozo/motion-gated` judges motion, not the floor — `animation: infinite` is Widely and refused only
-    // outside the reduced-motion query — so its warnings are no answer about the pin
-    const refused = new Set((await lint(code)).filter((w) => w.rule !== 'inflozo/motion-gated').map((w) => keys[w.line - 1]))
-    const wider = []
-    const narrower = []
-    for (const k of keys) {
-      const { prop, value, widely } = rows.get(k)
-      const allowed = widely || isTier2(prop, value) || (value !== undefined && admitted(prop))
-      if (!allowed && !refused.has(k)) wider.push(k)
-      if (allowed && refused.has(k)) narrower.push(k)
-    }
-    if (wider.length + narrower.length > 0) {
-      fail(`wider than the pin (passed, not Widely, not named): ${wider.join(', ') || 'none'}\nnarrower than the pin (refused, Widely, Tier 2 or admitted): ${narrower.join(', ') || 'none'}`)
-    }
-    return `${keys.length} rows: 0 wider, 0 narrower (refused by name: ${BASELINE.plugin.refused.join(', ')}; admitted: ${Object.keys(BASELINE.plugin.admitted).join(', ')} values)`
+    const said = await pinDiff(
+      'css.properties.',
+      (key) => {
+        const [, prop, value] = PROPERTY.exec(key) ?? []
+        return prop && `.p { ${prop}: ${value ?? 'inherit'}; }`
+      },
+      (key) => {
+        const [, prop, value] = PROPERTY.exec(key) ?? []
+        return prop !== undefined && (isTier2(prop, value) || (value !== undefined && admitted(prop)))
+      },
+    )
+    return `${said}\n       refused by name: ${BASELINE.plugin.refused.join(', ')}; admitted: ${Object.keys(BASELINE.plugin.admitted).join(', ')} values`
   })
+  // Story 7.8 (DW-139): one probe form per family, each written by the config's own reading of a key
+  await check('the config against the pin: every css.types key whose feature writes it name(), as --t: name()', () =>
+    pinDiff(
+      'css.types.',
+      (key, f) => {
+        const name = functionName(key, f)
+        return name && `.t { --t: ${name}(); }`
+      },
+      isTier2Key,
+    ))
+  await check('the config against the pin: every css.at-rules key, as @at-rule (name[: value]) {}', () =>
+    pinDiff(
+      'css.at-rules.',
+      (key) => {
+        const atRule = /^css\.at-rules\.([a-z][a-z-]*)$/.exec(key)?.[1]
+        const form = atRuleForm(key)
+        return atRule ? `@${atRule} {}` : form && `@${form.atRule} (${form.name}${form.value ? `: ${form.value}` : ''}) {}`
+      },
+      isTier2Key,
+    ))
+  await check('the config against the pin: every identifier-shaped css.selectors key, as :name {}', () =>
+    pinDiff(
+      'css.selectors.',
+      (key) => {
+        const name = /^css\.selectors\.([a-z][a-z-]*)$/.exec(key)?.[1]
+        return name && `:${name} {}`
+      },
+      isTier2Key,
+    ))
 
   console.log('\nthe floor')
 
@@ -507,6 +568,15 @@ try {
       '@media (prefers-reduced-motion: no-preference) and (width >= 50rem) { .a { animation-iteration-count: infinite; } }',
       '.a { animation: fade 300ms 1; }',
     ],
+    // Story 7.8 (DW-139, inflozo/tier3-by-name): a name Widely under another key, a feature's Widely value beside its
+    // Tier-3 ones, a word in a string or a url(), and a Widely descriptor
+    'Widely, named like Tier 3': [
+      '.a { clip-path: rect(0 0 1px 1px); }',
+      '@media (display-mode: browser) { .a { color: red; } }',
+      '@import url(supports.css);',
+      "@font-face { font-family: x; src: url(x.woff2); font-display: swap; }",
+      ".a { content: 'if('; }",
+    ],
   }
   for (const [group, sheets] of Object.entries(legal)) {
     await check(`${group} passes`, async () => {
@@ -549,14 +619,7 @@ try {
     ['motion', '@media (prefers-reduced-motion: no-preference), (width >= 50rem) { .a { animation: spin 1s linear infinite; } }', 'inflozo/motion-gated'],
     ['motion', '@media (prefers-reduced-motion: no-preference) or (width >= 50rem) { .a { animation-iteration-count: infinite; } }', 'inflozo/motion-gated'],
   ]
-  for (const [group, sheet, rule] of refusedRows) {
-    await check(`${group} refused by ${rule}: ${sheet}`, async () => {
-      const rules = [...new Set((await lint(sheet)).map((w) => w.rule))]
-      if (!rules.includes(rule)) fail(`not refused by ${rule} (got ${rules.join(', ') || 'no warning'})`)
-      const stray = rules.filter((r) => r.startsWith('inflozo/') && r !== rule)
-      if (stray.length > 0) fail(`a custom rule fired outside its own rows: ${stray.join(', ')}`)
-    })
-  }
+  for (const [group, sheet, rule] of refusedRows) await refusedCheck(group, sheet, rule)
 
   await check("the repository's stylesheets are clean, and Ghost's card CSS is not linted", async () => {
     const { results } = await stylelint.lint({ files: 'packages/**/*.css', cwd: REPO })
@@ -566,6 +629,122 @@ try {
     const dirty = ours.flatMap((r) => r.warnings.map((w) => `${r.source}:${w.line} ${w.rule}`))
     if (dirty.length > 0) fail(dirty.join('\n'))
     return `${ours.length} sheets linted, ${vendor.length} of Ghost's ignored`
+  })
+
+  // ── Story 7.8 (DW-137): the markup against the pin ──────────────────────────────────────────────────────────
+  // A compiled theme draws its elements and attributes only from the designs and the compiler's own lines, so both are read
+  // here, on every library release, rather than at deploy (spec 7.8, "Why the floors are checked in CI").
+  console.log('\nmarkup (DW-137)')
+
+  // parse5 is the gate's own parser, declared by packages/theme-compiler; it is ESM, so it is resolved there and imported
+  const { parse } = await import(createRequire(join(REPO, 'packages/theme-compiler/package.json')).resolve('parse5'))
+  const MARKUP_KEYS = new Map() // every html.* and svg.* element or attribute key → Widely on the pin
+  for (const f of Object.values(webFeatures.features)) {
+    if (f.kind !== 'feature') continue
+    for (const [key, s] of Object.entries(f.status?.by_compat_key ?? {})) if (/^(html|svg)\.(elements|global_attributes)\./.test(key)) MARKUP_KEYS.set(key, widelyOnPin(s))
+  }
+  const NS = { 'http://www.w3.org/1999/xhtml': 'html', 'http://www.w3.org/2000/svg': 'svg' }
+  /** Every element and attribute in `text` with its key, undefined where web-features maps none. A mustache reads `x`, so one
+   *  inside a start tag (`href="{{asset "x"}}"`, `{{#if}}checked{{/if}}`) never breaks the attributes around it.
+   *  ponytail: an attribute's VALUE is not judged (`rel="dns-prefetch"`, `html.elements.link.rel.dns-prefetch`) — the ceiling
+   *  beside the keys web-features does not map; a value check is the next step if a design reaches for one. */
+  const markup = (text) => {
+    const out = []
+    const walk = (node) => {
+      const ns = NS[node.namespaceURI]
+      if (ns !== undefined && node.tagName !== undefined) {
+        const el = `${ns}.elements.${node.tagName}`
+        out.push({ name: `<${node.tagName}>`, key: MARKUP_KEYS.has(el) ? el : undefined })
+        for (const { name } of node.attrs) out.push({ name, key: [`${el}.${name}`, `${ns}.global_attributes.${name}`].find((k) => MARKUP_KEYS.has(k)) })
+      }
+      for (const child of node.childNodes ?? []) walk(child)
+      if (node.content !== undefined) walk(node.content) // a <template>'s
+    }
+    walk(parse(text.replace(/\{\{!--[\s\S]*?--\}\}|\{\{\{?[\s\S]*?\}?\}\}/g, 'x')))
+    return out
+  }
+  /** `sources` (where → text) against the pin: each key below Widely that no Tier-2 entry names is refused; a named key is
+   *  that element's attribute, so on any other element it is another key and refused. */
+  const judgeMarkup = (sources) => {
+    const refused = []
+    const tier2 = new Map() // key → where
+    const unmapped = new Set()
+    for (const [where, text] of Object.entries(sources)) {
+      for (const { name, key } of markup(text)) {
+        if (key === undefined) unmapped.add(name)
+        else if (MARKUP_KEYS.get(key)) continue
+        else if (isTier2Key(key)) tier2.set(key, [...new Set([...(tier2.get(key) ?? []), where])])
+        else refused.push(`${where}: ${key}`)
+      }
+    }
+    return { refused, tier2, unmapped }
+  }
+  const designs = Object.fromEntries(globSync('packages/library/designs/*/*/index.html', { cwd: REPO }).sort().map((p) => [p, readFileSync(join(REPO, p), 'utf8')]))
+  const templates = Object.fromEntries(Object.entries(compiled).filter(([p, b]) => p.endsWith('.hbs') && typeof b === 'string'))
+
+  await check('the markup control: a popover attribute planted in a design is refused as html.global_attributes.popover', () => {
+    const [where] = Object.keys(designs)
+    if (where === undefined) fail('no design index.html was found, so the markup row reads nothing')
+    const { refused } = judgeMarkup({ [where]: designs[where].replace(/<([a-z][\w-]*)/i, '<$1 popover') })
+    const hit = refused.find((r) => r === `${where}: html.global_attributes.popover`)
+    if (hit === undefined) fail(`not refused: ${JSON.stringify(refused)}`)
+    return hit
+  })
+  await check("the markup control: a Tier-2 attribute passes on its entry's element and is refused on another, planted in default.hbs", () => {
+    // the first html entry whose attribute some other element carries below Widely, read off baseline.json and web-features
+    const pair = BASELINE.tier2
+      .filter((e) => e.html)
+      .map(({ html: { element, attribute } }) => {
+        const own = `html.elements.${element}.${attribute}`
+        const other = [...MARKUP_KEYS].find(([k, widely]) => !widely && k !== own && /^html\.elements\.[^.]+\.[^.]+$/.test(k) && k.endsWith(`.${attribute}`))?.[0]
+        return other && { own, other, attribute, element, wrong: other.split('.')[2] }
+      })
+      .find(Boolean)
+    if (pair === undefined) fail('no Tier-2 html attribute is carried below Widely by another element: this control needs a new probe')
+    const planted = `${templates['default.hbs']}<${pair.element} ${pair.attribute}="x"></${pair.element}><${pair.wrong} ${pair.attribute}="x"></${pair.wrong}>`
+    const { refused, tier2 } = judgeMarkup({ 'default.hbs': planted })
+    if (!tier2.has(pair.own)) fail(`${pair.own} was not read as Tier 2 on <${pair.element}> (refused: ${JSON.stringify(refused)})`)
+    if (!refused.includes(`default.hbs: ${pair.other}`)) fail(`${pair.other} was not refused on <${pair.wrong}> (refused: ${JSON.stringify(refused)})`)
+    return `${pair.own} passes as Tier 2; ${pair.other} is refused`
+  })
+  await check("every design's index.html and the compiled pilot theme's templates are Widely on the pin, bar a named Tier-2 key on its element", () => {
+    const { refused, tier2, unmapped } = judgeMarkup({ ...designs, ...templates })
+    if (refused.length > 0) fail(refused.join('\n'))
+    const seen = [...tier2].map(([k, where]) => `${k} in ${where.join(', ')}`).join('; ') || 'none'
+    const data = [...unmapped].filter((n) => n.startsWith('data-'))
+    const named = [...unmapped].filter((n) => !n.startsWith('data-')).sort()
+    return `${Object.keys(designs).length} designs, ${Object.keys(templates).length} templates; Tier 2 seen: ${seen}\n       not judged, no web-features key (the ceiling): ${unmapped.size} names — ${data.length} data-* and ${named.join(' ')}`
+  })
+
+  // ── Story 7.8: the emitted CSS ──────────────────────────────────────────────────────────────────────────────
+  console.log('\nthe emitted CSS')
+
+  /** The compiled theme's stylesheets as a browser reads them: screen.css, cards.css when the theme has one, and every
+   *  template `<style>` body with `{{asset "…"}}` read as `/assets/…`. */
+  const emitted = (files) => {
+    const out = {}
+    for (const p of ['assets/css/screen.css', 'assets/css/cards.css']) if (typeof files[p] === 'string') out[p] = files[p]
+    for (const [p, text] of Object.entries(files)) {
+      if (!p.endsWith('.hbs') || typeof text !== 'string') continue
+      for (const [i, [, body]] of [...text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].entries()) out[`${p} <style> ${i + 1}`] = body.replace(/\{\{\s*asset\s+"([^"]+)"\s*\}\}/g, '/assets/$1')
+    }
+    return out
+  }
+  /** Every warning the root config gives `sheets`, as `where:line rule`. */
+  const lintSheets = async (sheets) => (await Promise.all(Object.entries(sheets).map(async ([where, code]) => (await lint(code)).map((w) => `${where}:${w.line} ${w.rule}: ${w.text}`)))).flat()
+
+  await check('the emitted-CSS control: @container style(--x: 1) {} planted in screen.css is refused by inflozo/tier3-by-name', async () => {
+    if (typeof compiled['assets/css/screen.css'] !== 'string') fail('the compiled pilot theme carries no assets/css/screen.css, so the emitted-CSS row reads nothing')
+    const got = await lint(`${compiled['assets/css/screen.css']}\n@container style(--x: 1) {}\n`)
+    const hit = got.find((w) => w.rule === 'inflozo/tier3-by-name')
+    if (hit === undefined) fail(`not refused: ${JSON.stringify(got.map((w) => w.rule))}`)
+    return hit.text
+  })
+  await check("the compiled pilot theme's emitted CSS gives no warning through the root config", async () => {
+    const sheets = emitted(compiled)
+    const dirty = await lintSheets(sheets)
+    if (dirty.length > 0) fail(dirty.join('\n'))
+    return `${Object.keys(sheets).join(' · ')}: no warning`
   })
 
   console.log('\nsize')

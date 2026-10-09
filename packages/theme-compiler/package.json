@@ -15,7 +15,8 @@
     "@inflozo/library": "workspace:*",
     "@inflozo/section-runtime": "workspace:*",
     "gscan4": "file:vendor/gscan-4.49.7.tgz",
-    "gscan6": "npm:gscan@6.4.2"
+    "gscan6": "npm:gscan@6.4.2",
+    "parse5": "8.0.1"
   },
   "devDependencies": {
     "@types/node": "24.13.4",

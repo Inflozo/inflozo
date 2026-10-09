@@ -50,7 +50,8 @@ const VISIBILITY_KEY = /[a-zA-Z_][a-zA-Z0-9_.]+:/
 /** Ghost's theme docs root, as gscan 6.4.2's specs write it (`docsBaseUrl`, `lib/specs/v6.js:4`) — the fallback's link
  *  where a rule's details carry none. */
 export const DOCS_ROOT = 'https://docs.ghost.org/themes/'
-const OURS = 'This is ours to fix, not yours, and nothing was sent to your site.'
+/** The "ours to fix" sentence, said wherever a fault is Inflozo's own — here, and by Story 7.8's quality gate. */
+export const OURS = 'This is ours to fix, not yours, and nothing was sent to your site.'
 
 const ENTITIES: Readonly<Record<string, string>> = { nbsp: ' ', lt: '<', gt: '>', amp: '&', quot: '"', apos: "'" }
 /** gscan's HTML as plain text: a `<br>` is a space, every other tag goes, entities decode once, whitespace collapses. */

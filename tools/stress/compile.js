@@ -18,6 +18,8 @@
 
 const { JSDOM } = require('jsdom');
 const rt = require('../../packages/section-runtime/src/index.ts');
+const gate = require('../../packages/theme-compiler/gate/index.ts');
+const { REFERENCE_PACK } = require('../../packages/section-runtime/src/reference.ts');
 
 // One fresh document per render. In the browser this is `window.document`; here it is jsdom's, and
 // AD-1's "a DOM global it did not receive as an argument" is what makes the difference invisible to
@@ -58,4 +60,10 @@ module.exports = {
   BINDABLE_ATTRS: require('../../packages/library/src/vocabulary.ts').BINDABLE_ATTRS,
   RENDERED_DIRECTIVES: rt.RENDERED_DIRECTIVES,
   REFUSED_DIRECTIVES: rt.REFUSED_DIRECTIVES,
+  // Story 7.8 — FR-J17's gate and AD-34's leak assertions, the theme compiler's own (`@inflozo/theme-compiler/gate`):
+  // the fixture measures the real gate where its proxy (a Handlebars precompile and a JSDOM walk) used to run, and spells no leak rule
+  // of its own. The pack is Paper's; the library is empty, because the fixture is assembled from `sections.js`, not
+  // compiled from the library, so its required set is the compiler's `REQUIRED_TEMPLATES`.
+  qualityGate: (files) => gate.qualityGate(files, { pack: REFERENCE_PACK, library: () => undefined }),
+  leftovers: (files) => gate.leftovers(files),
 };

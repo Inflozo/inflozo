@@ -420,7 +420,7 @@ DOCS = [
   "in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main session. Any "
   'argument prints its docstring and exits. Writes MEASUREMENTS.md §69 alone, replacing an earlier §69 of its own.'),
  ('tools/probe/record-theme-assembly.py', 'tool', 'Theme-assembly recorder',
-  "Stories 7.1 to 7.7's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
+  "Stories 7.1 to 7.8's recorder (standing rule 1, R-82): the five pilots compiled by compileTheme to the "
   "formatting contract, its own package.json included, every standard template synthesized where untouched, since "
   "Story 7.4 Paper's pool woff2 files, their licences and a stripped screen.css with AD-18's variables and one dark hook, "
   "since Story 7.5 main.js (core alone on the pilots) behind its defer tag and README.md's Scripts section, and since "
@@ -483,8 +483,18 @@ DOCS = [
   "the run; a row that does not hold writes nothing. Writes T1 three theme uploads, their activations and deletes, the "
   "one w750 rendition and the one w750 WebP rendition Ghost saves and, only when T1 hosts no picture, that probe picture. "
   "Run on the owner's in-session go, in the main session. Any argument prints its docstring and exits. Writes "
-  "MEASUREMENTS.md §76 alone, replacing an earlier §76 of its own; §70 to §75 stay Stories 7.1's to 7.6's records. "
-  "Since Story 7.7 it also writes T1 the three gate probes' uploads and deletes."),
+  "MEASUREMENTS.md §77 alone, replacing an earlier §77 of its own; §70 to §76 stay Stories 7.1's to 7.7's records. "
+  "Since Story 7.7 it also writes T1 the three gate probes' uploads and deletes. Since Story 7.8 (§77): before anything "
+  "uploads, qualityGate (Paper's pack, the library on disk) must give the uploaded tree an empty verdict or the run stops "
+  "for the owner; after the upload, axe-core (the version QUALITY_RULES follows, refused otherwise) runs QUALITY_RULES' own "
+  "axe ids in jsdom over /, /page/2/, a post, the busiest tag and the busiest author as Ghost served them (no violation) "
+  "and each page's heading levels, consecutive repeats collapsed, are one of readPages' alternatives for its template; a "
+  "quality probe (inflozo-probe-quality: an <h4> carrying the nonce and an empty link planted after A24 #1 in post.hbs) is "
+  "uploaded and activated, the gate naming exactly heading_skip and name_missing locally and axe exactly heading-order "
+  "and link-name on Ghost's rendered post, restored and deleted in a finally and the active theme read back; and the "
+  "negative control reads Ghost 6.58.0's npm tarball (read only) for Casper and Source — gscan 6.4.2 at v6 passes each "
+  "0/0 (the control) and tools/quality-gate.mjs fails each on at least one rule, every finding located at its line in the "
+  "theme's own source, their stylesheets' warnings counted and recorded, never gated."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '
@@ -1206,7 +1216,16 @@ DOCS = [
   'a width) and a finite animation are clean, and the rule is kept out of the plugin-against-the-pin diff; and a module '
   "file but core.js naming prefers-reduced-motion is refused by eslint.config.js's FR-G4 rule (a string and a template "
   "literal), if (ctx.reducedMotion) return is clean, core.js lints clean while its own text at another module's path is "
-  'refused, and a disable comment silences nothing. It stores no floor: it prints one.'),
+  'refused, and a disable comment silences nothing. Since Story 7.8 (DW-137, DW-139), each behind its control: '
+  "inflozo/tier3-by-name (stylelint.config.mjs) refuses by name every function and at-rule prelude form or descriptor "
+  "below Widely on the pin, derived from web-features — the four DW-139 witnesses, @font-face's ascent-override and "
+  "@import's supports() refused, Widely look-alikes passing — and the config is diffed against the pin over css.properties, "
+  "css.types, css.at-rules and css.selectors, one probe form per family, each family's unexpressible keys printed as its "
+  "ceiling; every design's index.html and the compiled pilot theme's templates are held to the pin element by element "
+  "and attribute by attribute (a planted popover refused, fetchpriority passing on <img> and refused on <link>); the "
+  "compiled pilot theme's emitted CSS — screen.css, each template's <style>, cards.css when it ships — lints clean through "
+  "the root config (@container style(--x: 1) planted in screen.css refused); and gate/quality.ts sits under AD-1's ban (a "
+  "node:fs import at its path refused, the same line at gate/gscan.ts not). It stores no floor: it prints one."),
  ('tools/check-catalog.mjs', 'tool', 'The string catalog, checked by execution',
   "Story 4.9's check of FR-Q6, run last by pnpm test and therefore by CI. Controls first, each handed a broken "
   'subject and required to fail naming it: a key removed from catalog.json, a default changed in one copy only, a '
@@ -1257,7 +1276,12 @@ DOCS = [
   '(the control: the pilots plus tools/pilot-theme.mjs\'s SCAFFOLD give an empty, unblocked verdict), and a customer\'s '
   'words — the four brace-free error words in A4 #13\'s eyebrow and currency_symbol in every layer name — raise none of '
   'GS001-DEPR-CURR-SYM, -SITE-LANG, -LABS-MEMBERS or GS060-JS-GUA (the control: the same words written raw into post.hbs '
-  'raise each).'),
+  'raise each). Since Story 7.8 (FR-J17), rows each behind its control: the pilot theme\'s qualityGate verdict is empty, '
+  'its wall time printed (the control: an <h4> planted after A24 #1\'s <h1> in post.hbs gives exactly one heading_skip, '
+  'refs[0] post.hbs); axe-core runs QUALITY_RULES\' own axe ids in jsdom over each page readPages assembles and reports '
+  'nothing, refusing an installed axe-core other than AXE_CORE (the control: on the planted pages axe reports '
+  'heading-order on post.hbs); and themeFailures carries AD-34\'s leaks through leftovers (the control: a planted '
+  'expression token and an orphan partial are each its sentence), with leftovers clean over the pilot theme.'),
  ('tools/pilot-theme.mjs', 'tool', 'The five-pilot project, compiled',
   "Story 7.1's one builder of the project CI and the T1 recorder both compile: the site doc's A1 #1, Home's A4 #13 · "
   "A17 #1 (main feed) · A22 #1, Home's page 2's A17 #1 (pageTwo, compiled to index.hbs), post.hbs's A24 #1 and an A22 #1 "
@@ -1277,7 +1301,19 @@ DOCS = [
   "— by unmarked(), and refused when it does not parse), every partial referenced but the paywall, which Ghost's "
   "{{content}} runs; a font's bytes are skipped, never scanned as text. Since Story 7.7 it exports SCAFFOLD, §73's two "
   "labelled files (Story 7.13's cards.css with D12's two widths, Story 10.79's stand-in page.hbs reading the page "
-  "switch), the one copy CI's clean-verdict control and the recorder's upload both use. Node 24."),
+  "switch), the one copy CI's clean-verdict control and the recorder's upload both use. Since Story 7.8 themeFailures "
+  "reads AD-34's leak assertions — no consumed directive, no expression token or user-text marker, every partial "
+  "referenced but the paywall — through the quality gate's leftovers, never spelled here; and it exports axeOn, axeIds "
+  "and AXE_VERSION, axe-core over one page with QUALITY_RULES' own axe ids in jsdom, the one spelling check-snapshots and "
+  "the recorder both run. Node 24."),
+ ('tools/quality-gate.mjs', 'tool', 'The quality gate over any Ghost theme',
+  "Story 7.8's door for FR-J17's negative control: node tools/quality-gate.mjs <theme-dir> reads any Ghost theme "
+  "directory (never node_modules or .git; text where the gate reads text, bytes otherwise) and prints one JSON object — "
+  "qualityGate's verdict with Paper's pack and an empty library (a theme Inflozo did not compile has none, so the required "
+  "set is REQUIRED_TEMPLATES), and the theme's screen.css (assets/built/ where Ghost's themes build it, else assets/css/) "
+  "through the root stylelint.config.mjs, each warning's line and rule. Exits 0 whatever the verdict says and 2 when the "
+  "directory cannot be read. The T1 recorder runs it over Ghost 6.58.0's own Casper and Source (MEASUREMENTS §77). Writes "
+  "nothing. Local only. Node 24."),
  ('tools/record-gscan.mjs', 'tool', 'gscan rule inventories, recorded',
   "Story 7.7's AD-23 recorder: for each Ghost major in GSCAN (@inflozo/theme-compiler/gate/gscan.ts), it writes "
   'packages/theme-compiler/fixtures/gscan/rules-<version>.json as { gscan, checkVersion, ghost, captured, command, rules }, '

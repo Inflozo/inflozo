@@ -82,7 +82,7 @@ const A = {
   <div class="feed__grid">
     <article class="card" data-repeat="posts" data-repeat-limit="9" data-partial="post-card-${i}">
       <a class="card__img-link" data-bind-attr="href:url">
-        <img class="card__img" data-bind-attr="src:feature_image|img_url:m" data-empty="hide" src="/ph.jpg" alt="">
+        <img class="card__img" data-bind-attr="src:feature_image|img_url:m;alt:title" data-empty="hide" src="/ph.jpg" alt="">
       </a>
       <div class="card__body">
         <ul class="card__tags">

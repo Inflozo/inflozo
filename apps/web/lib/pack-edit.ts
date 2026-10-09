@@ -21,7 +21,8 @@
  * S7c's "Background"; "On-accent", not its "Contrast"; Appendix C's row titles and steps, not S7a's).
  */
 
-import { AA_PAIRS, contrast, isHex, isLength, packTokens, packTokensCss, SCALES, stepToContrast, type Pack, type PackMode, type PackRole } from '@inflozo/section-runtime'
+// Story 7.8 (R-170): the contrast check and its words live beside `AA_PAIRS`, shared with the theme quality gate
+import { contrast, hardToRead, isHex, isLength, MODE_WORDS, packTokens, packTokensCss, pairWords, ROLE_WORDS, SCALES, stepToContrast, type HardPair, type Pack, type PackMode } from '@inflozo/section-runtime'
 import type { PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 
@@ -190,20 +191,13 @@ export function withoutDefaults(packs: PackRecords, presets: Readonly<Record<str
   return Object.fromEntries(Object.entries(packs).filter(([id, record]) => !(Object.hasOwn(presets, id) && samePack(record, presets[id]))))
 }
 
-/** One pair of `AA_PAIRS` that reads under 4.5:1, its ratio FLOORED to one decimal — so a failing pair never prints 4.5. */
-export type HardPair = { mode: 'light' | 'dark'; fg: PackRole; bg: PackRole; ratio: number }
-
 export const MODES = ['light', 'dark'] as const
 
 /** THE LIVE CONTRAST CHECK (FR-E3, NFR-5, UX-DR8): 6.2's AA sheet over a draft, in both modes. A warning in words, never a
- *  block — Save pack stays live and saves. */
-export const hardToRead = (record: Pick<PackRecord, 'light' | 'dark'>): HardPair[] =>
-  MODES.flatMap((m) =>
-    AA_PAIRS.flatMap(({ fg, bg }) => {
-      const ratio = contrast(record[m][fg], record[m][bg])
-      return ratio < 4.5 ? [{ mode: m, fg, bg, ratio: Math.floor(ratio * 10) / 10 }] : []
-    }),
-  )
+ *  block — Save pack stays live and saves. Story 7.8 moved it beside `AA_PAIRS` (`@inflozo/section-runtime`), where the
+ *  theme quality gate reads it too; this file re-exports it. */
+export { hardToRead }
+export type { HardPair }
 
 /** STORY 6.6 — THE BRAND SEED (FR-E5, R-241): the one rule that puts a site's accent into a pack. S2c's action (through
  *  `lib/style-pack.ts`'s `brandPacks`) and the Style Pack list's "From your site" row both call it, so the two doors cannot
@@ -273,11 +267,6 @@ export function scrimStep(scrim: number, by: 1 | -1): number {
   const next = by > 0 ? Math.floor(at / 5) * 5 + 5 : Math.ceil(at / 5) * 5 - 5
   return Math.max(0, Math.min(100, next)) / 100
 }
-
-/** The seven colours per mode, in the record's order: the page's own colour is Base (R-237). */
-const ROLE_WORDS = { background: 'Base', surface: 'Surface', text: 'Text', muted: 'Muted', border: 'Border', accent: 'Accent', onAccent: 'On-accent' } satisfies Record<PackRole, string>
-const MODE_WORDS = { light: 'Light', dark: 'Dark' } as const
-const pairWords = (p: HardPair) => `${ROLE_WORDS[p.fg]} on ${ROLE_WORDS[p.bg]} in ${MODE_WORDS[p.mode]}, ${p.ratio.toFixed(1)}:1`
 
 /** The rows a pack's steps are set on, in the panel's order, with Appendix C's titles and steps (R-170). */
 type Row<K extends ScaleRow> = { key: K; title: string; steps: Readonly<Record<keyof (typeof SCALES)[K], string>> }

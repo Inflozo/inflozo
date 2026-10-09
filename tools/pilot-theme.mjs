@@ -38,6 +38,8 @@ const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
 const { REFERENCE_PACK } = await import(join(REPO, 'packages/section-runtime/src/reference.ts'))
 const { presetOf } = await import(join(REPO, 'packages/library/src/packs.ts'))
 const { checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, THEME_MARKS } = await import(join(REPO, 'packages/theme-compiler/src/index.ts'))
+// Story 7.8: AD-34's leak assertions have one spelling, the quality gate's `leftovers`
+const { leftovers } = await import(join(REPO, 'packages/theme-compiler/gate/index.ts'))
 const { JSDOM } = createRequire(join(REPO, 'packages/theme-compiler/package.json'))('jsdom')
 
 /** The hostile layer name: an early `--}}`, markup and a live expression after it. */
@@ -187,10 +189,6 @@ export function unmarked(text) {
   return JSON.stringify(rest, null, 2)
 }
 
-/** The paywall partial (Story 7.3): Ghost's own `{{content}}` runs it, so no file references it; its `{{{html}}}` first line
- *  is `checkTripleStashes`'s to admit (Question 2, ruled option 1, owner, 2026-10-06). */
-const PAYWALL = 'partials/content-cta.hbs'
-
 /** One text file's fingerprint scan — `[]` when it holds: no C0 character, no builder's name (outside `package.json`'s named
  *  marks, which must parse), no instance id, no internal reference, no generator line, and a template Handlebars 4.7.9
  *  parses. Every file of a compiled theme passes it, and since Story 7.5 every module file too, since its comments ship
@@ -215,8 +213,9 @@ export function textFailures(path, raw, instanceIds = []) {
 
 /** What CI and the recorder hold every compiled theme to — `[]` when it holds. Every text file passes `textFailures`; one
  *  `{{{body}}}` and no other triple-stash but `{{{html}}}` as the paywall's first line (the compiler's own
- *  `checkTripleStashes`, called rather than spelled again); a package.json; every partial referenced but the paywall, which
- *  Ghost's `{{content}}` runs. */
+ *  `checkTripleStashes`, called rather than spelled again); a package.json; and AD-34's leak assertions — no consumed
+ *  directive, no expression token or user-text marker, every partial referenced but the paywall, which Ghost's
+ *  `{{content}}` runs — through the quality gate's `leftovers` (Story 7.8), never spelled again here. */
 export function themeFailures(all, instanceIds) {
   const out = []
   // Story 7.4: a font's bytes are no text to scan — only a woff2 under assets/fonts/ may be bytes
@@ -228,10 +227,7 @@ export function themeFailures(all, instanceIds) {
   // closes counted apart; the positive half — default.hbs DOES carry {{{body}}} — is this file's
   try { checkTripleStashes(files) } catch (e) { out.push(e.message) }
   if (!/^ *\{\{\{body\}\}\}$/m.test(files['default.hbs'] ?? '')) out.push('default.hbs carries no {{{body}}}')
-  for (const path of Object.keys(files).filter((p) => p.startsWith('partials/') && p.endsWith('.hbs') && p !== PAYWALL)) {
-    const name = path.slice('partials/'.length, -'.hbs'.length)
-    if (!Object.entries(files).some(([p, b]) => p !== path && b.includes(`{{> "${name}"}}`))) out.push(`${path} is referenced by no file`)
-  }
+  out.push(...leftovers(files))
   return out
 }
 
@@ -373,6 +369,27 @@ export function cssFailures({ files, css }, find = library()) {
   }
   report.push(`screen.css whole ${gzipped(files['assets/css/screen.css'] ?? '')} B (reported, not gated)`)
   return { failures, warnings, report }
+}
+
+// ── Story 7.8 — axe-core over a page, as the quality gate follows it ───────────────────────────────────────────────
+// QUALITY_RULES names the axe-core rule each of its rules follows; CI (`check-snapshots`, over the pages `readPages`
+// assembles) and the T1 recorder (over the pages Ghost renders) run exactly those, in jsdom, with axe-core's own source —
+// the root's devDependency, the version the render matrix runs. One spelling, so the two agree on what "axe agrees" means.
+const rootRequire = createRequire(join(REPO, 'package.json'))
+export const AXE_VERSION = rootRequire('axe-core/package.json').version
+const AXE_SOURCE = readFileSync(rootRequire.resolve('axe-core/axe.js'), 'utf8')
+/** The axe ids QUALITY_RULES follows, read from the table — never a list of this file's. */
+export const axeIds = (rules) => Object.values(rules).flatMap((r) => (r.axe === undefined ? [] : [r.axe]))
+/** axe-core's violations of `ids` on one page's HTML, by rule id, sorted; page scripts never run. */
+export async function axeOn(page, ids) {
+  const dom = new JSDOM(page, { runScripts: 'outside-only', pretendToBeVisual: true })
+  try {
+    dom.window.eval(AXE_SOURCE)
+    const r = await dom.window.axe.run(dom.window.document, { runOnly: { type: 'rule', values: ids }, resultTypes: ['violations'] })
+    return r.violations.map((v) => v.id).sort()
+  } finally {
+    dom.window.close()
+  }
 }
 
 /** An incompressible chunk of `bytes` characters, the same every run — the budget's control. */

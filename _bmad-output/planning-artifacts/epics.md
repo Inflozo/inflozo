@@ -2942,6 +2942,21 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 4. a theme setting's key at least two characters long, so gscan's visibility test can read it — **Story 7.10**;
 > 5. a gscan pin moving only as a library release — **Story 7.27**; and re-running the whole library's lane before a
 >    pin move lands — **Story 7.33**.
+>
+> **Moved from Story 7.8 by its Question 1 (owner, 2026-10-09), word for word, so none is missed (R-195).**
+>
+> 1. "**Frame:** `S8 Deploy.dc.html` S8b." and its "matches the frame" criterion — **Story 7.18**, which builds
+>    Pre-flight and the server step that compiles and gates a real project;
+> 2. "**Owner test:** yes (a failure message)." — **Story 7.18**, whose own owner test covers it beside the theme
+>    checker's.
+>
+> **Given owners by Story 7.8's Create (2026-10-09), so none is missed (R-195).**
+>
+> 1. showing the quality verdict in Pre-flight, storing it with the deploy (`deploy_jobs.error` for a blocking finding;
+>    a new column beside `deploys.gscan`, a `Schema` push first), recording the gate's time per deploy
+>    (`deploy_jobs.stage_timings`, AD-34) and showing `refs[0]` by its canvas label — **Story 7.18**;
+> 2. the gate over every design's synthetic theme at zero findings of either level — **Story 7.33**;
+> 3. axe-core's agreement with the gate over every design's pages — **Story 7.33**.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3309,9 +3324,12 @@ fail on a customer's content
 `feature_image_alt` then the post title.
 **And** every emitted element and attribute is held to the FR-G8 pin — one below Widely that `baseline.json` does not name is refused, a named `html` entry held to its Tier-2 condition (DW-137) — and its CSS check refuses a Tier-3 at-rule form, selector or function by name, one probe per web-features family diffed at the pin (DW-139).
 **And** the AA assertion against the pack's tokens holds shipped packs and library defaults and never fails a deploy for a pairing the user edited and was warned about — FR-E3 makes that a warning, never a block — asking the owner (R-83) if that changes what a deploy does (DW-315, from Story 6.1's Create, 2026-10-03).
+**And** *(Question 2, ruled option 1, owner, 2026-10-09)* a finding a customer's own choice causes — a heading that skips a level, a link or control with no words, a picture-only link whose description can be empty — is a **warning** that names the section and the fix and never blocks, as FR-E3 rules for colours; only Inflozo's own faults are errors that stop a deploy.
 
-**FRs:** FR-J17. · **Frame:** `S8 Deploy.dc.html` S8b. · **Owner test:** yes (a failure message). ·
-**Verification:** run against Casper and Source as the negative control.
+*(Story 7.8's Dev, 2026-10-09 — as landed: `@inflozo/theme-compiler/gate`'s `qualityGate(files, { pack, library })`, core, beside `gscanGate`; its rules are `QUALITY_RULES`, each naming the axe-core 4.12.1 rule it follows; AD-34's leak assertions are `leftovers`; the required set is `requiredTemplates(library)`. Contrast is `contrast_low`, always a warning (DW-315 closed). The Baseline floors — DW-137's markup and DW-139's functions and at-rule forms, with the emitted CSS — are held by `check-baseline` in CI rather than at deploy, because nothing a customer chooses adds an element, an attribute or a stylesheet feature. Re-run on both pins, the premise theme scores 0 errors and one warning, `GS051-CUSTOM-FONTS`, on each, and 0/0 with Ghost's two font variables (FR-J17's dated note). Casper 5.12.1 and Source 1.7.1 pass gscan 6.4.2 at `v6` 0/0 and each fail the gate, every finding real against their source.)*
+
+**FRs:** FR-J17. · **Frame:** none — moved word for word to Story 7.18 (Question 1, ruled option 1, owner, 2026-10-09). · **Owner test:** none — the failure-message hand test moved word for word to Story 7.18 (Question 1); Done on its Deploy commit (R-80). ·
+**Verification:** run against Casper and Source as the negative control (`node tools/quality-gate.mjs`); `pnpm check` (the gate's I/O matrix, the presets and the premise on both pinned gscans; `check-snapshots`' pilot verdict and axe-core's agreement; `check-baseline`'s floors); the stress fixture's measured gate; T1 renders the pilots and a planted probe, and axe-core on Ghost's real pages agrees with the gate (MEASUREMENTS §77).
 
 ### Story 7.9: Theme Settings and the custom-settings builder
 
@@ -3759,8 +3777,10 @@ whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** *(moved word for word from Story 7.7 by its Question 2, ruled option 1, owner, 2026-10-09, R-195)* the Pre-flight step matches S8b as extended. — with Story 7.7's hand test (its card's "**Owner test:** yes."), which this story's owner test now covers: Pre-flight's Checking row shows `gscanGate`'s verdict (`@inflozo/theme-compiler/gate`) in its sentences, errors blocking and warnings deployable — e.g. a project whose Page template has no Post header shows "0 errors · 1 warning" with the page-switch sentence, and Ship it still works. The verdict is stored as `deploys.gscan`, and a blocking finding as `deploy_jobs.error`, each field rendered as text, never as HTML (Story 7.7's spec, § What the gate returns).
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* Ghost's raw `500` when two uploads of one theme name collide — its message carries `EEXIST … mkdir '/var/…'`, a server path — is mapped to AD-24's own sentence ("another deploy to this site is already running — try again in a moment") and never passed through.
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* the deploy function carries both pinned checkers — `gscan4` (4.49.7, from `packages/theme-compiler/vendor/`) and `gscan6` (6.4.2) — and runs `gscanGate` for the site's major, proved on Vercel within the function's limits (Story 7.7 measured the two trees at hundreds of packages installed).
+**And** *(moved word for word from Story 7.8 by its Question 1, ruled option 1, owner, 2026-10-09, R-195)* "**Frame:** `S8 Deploy.dc.html` S8b." and "**Owner test:** yes (a failure message)." — the Pre-flight step matches S8b as extended, and this story's owner test covers one failure message of the quality gate, beside the theme checker's.
+**And** *(given an owner by Story 7.8's Create, 2026-10-09)* Pre-flight runs `qualityGate` (`@inflozo/theme-compiler/gate`) on the same compile as `gscanGate` and shows its rows beside gscan's in S8b as extended: errors block and warnings deploy — e.g. a project whose post grid's title was deleted on Home shows "Checking your theme — 0 errors · 1 warning" with the heading sentence, and Ship it still works. Its verdict is stored with the deploy beside `deploys.gscan` (a new column is a `Schema` push first, R-99), a blocking finding is stored as `deploy_jobs.error`, the gate's time goes in `deploy_jobs.stage_timings` (AD-34), and each finding's `refs[0]` is shown by its canvas label (`CANVASES`, R-170), never as a file name.
 
-**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
+**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
 
 ### Story 7.19: The first-deploy credential step, and its decline path
@@ -4231,6 +4251,11 @@ warning, not a build failure**
 
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* **a gscan pin move re-runs this lane over the whole library
 before it lands** — step 4 of the bump procedure in `packages/theme-compiler/fixtures/gscan/README.md`.
+**And** *(given an owner by Story 7.8's Create, 2026-10-09)* `qualityGate` runs over every synthetic theme at **zero
+findings of either level** — a warning there is a library defect, since at a deploy a warning may only be a customer's
+own choice — and axe-core 4.12.1 runs `QUALITY_RULES`' axe ids over every page `readPages` assembles and agrees, as
+`check-snapshots` holds today over the pilot theme alone; the Baseline floors' markup and CSS rows run over every
+design's compiled theme as `check-baseline` runs them over the pilots.
 
 **FRs:** none — this builds NFR-6(b). · **Owner test:** none (a CI lane). · **Verification:** gscan 4.49.7 at `v5`
 and 6.4.2 at `v6` (AD-34).

@@ -194,6 +194,27 @@ export const AA_PAIRS: readonly { readonly fg: PackRole; readonly bg: PackRole }
   { fg: 'onAccent', bg: 'accent' },
 ]
 
+/** One pair of `AA_PAIRS` that reads under 4.5:1, its ratio FLOORED to one decimal — so a failing pair never prints 4.5. */
+export type HardPair = { mode: 'light' | 'dark'; fg: PackRole; bg: PackRole; ratio: number }
+
+/** THE CONTRAST CHECK (FR-E3, NFR-5, UX-DR8): 6.2's AA sheet over a pack's two modes. A warning in words, never a block.
+ *  Story 7.8 moved it here from the Style Pack editor (`lib/pack-edit.ts`, which re-exports it), so the editor's live
+ *  warning and the theme quality gate's `contrast_low` are one check. */
+export const hardToRead = (record: Pick<Pack, 'light' | 'dark'>): HardPair[] =>
+  (['light', 'dark'] as const).flatMap((m) =>
+    AA_PAIRS.flatMap(({ fg, bg }) => {
+      const ratio = contrast(record[m][fg], record[m][bg])
+      return ratio < 4.5 ? [{ mode: m, fg, bg, ratio: Math.floor(ratio * 10) / 10 }] : []
+    }),
+  )
+
+/** The seven colours per mode, in the record's order: the page's own colour is Base (R-237). Story 7.8 (R-170): with the
+ *  mode words and a pair's sentence, beside `AA_PAIRS`, so the editor and the theme quality gate say one thing. */
+export const ROLE_WORDS = { background: 'Base', surface: 'Surface', text: 'Text', muted: 'Muted', border: 'Border', accent: 'Accent', onAccent: 'On-accent' } satisfies Record<PackRole, string>
+export const MODE_WORDS = { light: 'Light', dark: 'Dark' } as const
+/** One hard pair, in words: "Text on Base in Light, 1.1:1". */
+export const pairWords = (p: HardPair): string => `${ROLE_WORDS[p.fg]} on ${ROLE_WORDS[p.bg]} in ${MODE_WORDS[p.mode]}, ${p.ratio.toFixed(1)}:1`
+
 /** Every authored input, refused by name before a value reaches the block. The two free strings are held to what a
  *  declaration can carry, because the block is written into a `<style>`: a family or a radius that could close the
  *  declaration, the rule or the element is refused (Story 6.4 makes packs editable per project). */

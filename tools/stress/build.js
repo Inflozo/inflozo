@@ -11,7 +11,7 @@
 // _bmad-output/.../fixtures-r2/gate.js: gscan 4.49.7 answers for Ghost 5, 6.4.2 for Ghost 6.
 const fs = require('fs'); const path = require('path'); const crypto = require('crypto');
 const { execFileSync } = require('child_process');
-const { renderSection, renderSecondary, feedQuery, UserText, T0, T1, U0, U1 } = require('./compile');
+const { renderSection, renderSecondary, feedQuery, UserText, U0, U1, qualityGate, leftovers } = require('./compile');
 const { IMAGE_SIZES } = require('../../packages/library/src/vocabulary.ts');
 // FR-J4's tag for main.js, the one spelling the compiler writes (Story 7.5)
 const { MAIN_JS_TAG } = require('../../packages/library/src/modules.ts');
@@ -292,63 +292,32 @@ for (const f of textFiles) {
 }
 const subMs = ms(tSub);
 
-// ---------------------------------------------------------------- AD-34 leak assertions
-const tGate = process.hrtime.bigint();
+// ---------------------------------------------------------------- AD-34 leak assertions and FR-J17's quality gate
+// Story 7.8: both are the theme compiler's own, through the adapter — `leftovers` is AD-34's one spelling (no consumed
+// directive, no expression token or user-text marker, every partial referenced), and `qualityGate` is FR-J17's real gate,
+// whose wall time is this stage's figure (AD-34's budget; MEASUREMENTS §11's 697 ms was the proxy's).
 const allFiles = walk(OUT);
 const hbsFiles = allFiles.filter((f) => f.endsWith('.hbs'));
-const leaks = [];
-// The set is DERIVED from packages/library, never restated (standing rule 4). The seven names
-// this line used to carry were the spike's, and they were stale the moment §7.3's gap table was
-// answered — the settled vocabulary is more than three times that. The three directives absent
-// from CONSUMED_DIRECTIVES survive on purpose: Portal and sodo-search read them on the live site.
-const { CONSUMED_DIRECTIVE_RE: DIRECTIVE } = require('../../packages/library/src/vocabulary.ts');
-for (const f of textFiles) {
-  const s = fs.readFileSync(f, 'utf8');
-  if (DIRECTIVE.test(s)) leaks.push(`directive attribute survived in ${path.relative(OUT, f)}`);
-  if (s.includes(T0) || s.includes(T1)) leaks.push(`compiler expression token survived in ${path.relative(OUT, f)}`);
-  if (s.includes(U0) || s.includes(U1)) leaks.push(`user-text marker survived in ${path.relative(OUT, f)}`);
-}
+const relOf = (f) => path.relative(OUT, f).split(path.sep).join('/');
+const TEXTUAL = /\.(?:hbs|css|js|json|md|txt|yaml|yml|html)$/;
+const themeFiles = Object.fromEntries(allFiles.map((f) => [relOf(f), TEXTUAL.test(f) ? fs.readFileSync(f, 'utf8') : new Uint8Array(fs.readFileSync(f))]));
+const tGate = process.hrtime.bigint();
+const leaks = leftovers(themeFiles);
+const quality = qualityGate(themeFiles);
+const gateMs = ms(tGate);
+mark();
 // FR-G7(1): assets/js/ holds bundle()'s bytes from repo sources, and Ghost's cards.js, and nothing else
-const jsFiles = Object.fromEntries(allFiles.filter((f) => path.relative(OUT, f).startsWith(`assets${path.sep}js${path.sep}`))
-  .map((f) => [path.relative(OUT, f).split(path.sep).join('/'), fs.readFileSync(f, 'utf8')]));
+const jsFiles = Object.fromEntries(Object.entries(themeFiles).filter(([p]) => p.startsWith('assets/js/')));
 const jsFindings = checkThemeJs(jsFiles, moduleSources); // a missing main.js is its own sentence
 // Story 7.5 (DW-134): no <script> in any template but main.js's tag in default.hbs — the compile's own check
-const scriptFindings = checkThemeScripts(Object.fromEntries([...hbsFiles.map((f) => [path.relative(OUT, f).split(path.sep).join('/'), fs.readFileSync(f, 'utf8')]), ...Object.entries(jsFiles)]));
-const allTemplateText = hbsFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
-for (const f of hbsFiles.filter((f) => f.includes('partials'))) {
-  const name = path.relative(path.join(OUT, 'partials'), f).replace(/\.hbs$/, '');
-  if (!allTemplateText.includes(`{{> "${name}"}}`)) leaks.push(`orphan partial: ${name}`);
-}
+const scriptFindings = checkThemeScripts(Object.fromEntries([...hbsFiles.map((f) => [relOf(f), themeFiles[relOf(f)]]), ...Object.entries(jsFiles)]));
 // AD-5 rule 2, as literally stated
 const tripleOpen = [], tripleClose = [];
 for (const f of hbsFiles) {
-  const s = fs.readFileSync(f, 'utf8'); const rel = path.relative(OUT, f);
+  const s = themeFiles[relOf(f)]; const rel = relOf(f);
   for (const m of s.match(/\{\{\{/g) || []) tripleOpen.push(rel);
   for (const m of s.match(/\}\}\}/g) || []) tripleClose.push(rel);
 }
-
-// ---------------------------------------------------------------- FR-J17 gate proxy (MEASUREMENTS §11 shape)
-const { JSDOM } = require('jsdom');
-const Handlebars = require('handlebars');
-let parsed = 0, walked = 0, links = 0, images = 0, headings = 0, decls = 0;
-const gateFindings = [];
-for (const f of hbsFiles) {
-  const src = fs.readFileSync(f, 'utf8');
-  try { Handlebars.precompile(src); parsed++; }
-  catch (e) { gateFindings.push(`${path.relative(OUT, f)}: ${e.message.split('\n')[0]}`); }
-  const doc = new JSDOM(`<body>${src.replace(/\{\{[^}]*\}\}/g, 'X')}</body>`).window.document;
-  const els = doc.body.querySelectorAll('*'); walked += els.length;
-  for (const el of els) {
-    for (const a of el.attributes) if (/^on/i.test(a.name)) gateFindings.push(`inline handler ${a.name} in ${path.relative(OUT, f)}`);
-    if (el.tagName === 'A') { links++; if (!el.textContent.trim() && !el.getAttribute('aria-label')) gateFindings.push(`link without an accessible name in ${path.relative(OUT, f)}`); }
-    if (el.tagName === 'IMG') { images++; if (el.getAttribute('alt') == null) gateFindings.push(`img without alt in ${path.relative(OUT, f)}`); }
-    if (/^H[1-6]$/.test(el.tagName)) headings++;
-  }
-}
-for (const c of ['assets/css/screen.css', 'assets/css/cards.css'])
-  decls += (fs.readFileSync(path.join(OUT, c), 'utf8').match(/[^;{}]+:[^;{}]+;/g) || []).length;
-const gateMs = ms(tGate);
-mark();
 
 // ---------------------------------------------------------------- zip
 const tZip = process.hrtime.bigint();
@@ -373,19 +342,19 @@ theme ${MB(du)} MB uncompressed   ${MB(fs.statSync(zipPath).size)} MB zipped
 | render + serialize (${String(sectionCount).padStart(2)} sections)        | ${renderMs.toFixed(0).padStart(5)} ms  (${(renderMs / sectionCount).toFixed(1)} ms/section)
 | assemble the rest of the tree           | ${assembleMs.toFixed(0).padStart(5)} ms
 | substitute user text over the tree      | ${subMs.toFixed(0).padStart(5)} ms
-| FR-J17 quality gate + leak assertions   | ${gateMs.toFixed(0).padStart(5)} ms
+| FR-J17 quality gate + leak assertions   | ${gateMs.toFixed(0).padStart(5)} ms  (qualityGate and leftovers, the real gate)
 | zip                                     | ${zipMs.toFixed(0).padStart(5)} ms
 | TOTAL (before gscan)                    | ${totalMs.toFixed(0).padStart(5)} ms
 peak RSS ${peak} MB
 
-FR-J17 proxy: ${parsed}/${hbsFiles.length} .hbs parsed · ${walked} elements walked · ${links} links / ${images} images / ${headings} headings · ${decls} CSS declarations
-AD-34 leak assertions: ${leaks.length === 0 ? 'clean' : leaks.length + ' LEAK(S)'}`);
+FR-J17 quality gate (qualityGate): ${quality.errors.length} error(s), ${quality.warnings.length} warning(s)${quality.blocked ? ' — BLOCKED' : ''}
+AD-34 leak assertions (leftovers): ${leaks.length === 0 ? 'clean' : leaks.length + ' LEAK(S)'}`);
 for (const l of leaks.slice(0, 10)) console.log('   !', l);
 console.log(`FR-G7(1) assets/js/ (checkThemeJs): ${jsFindings.length === 0 ? `clean — ${Object.keys(jsFiles).join(', ')}` : jsFindings.length + ' FINDING(S)'}`);
 for (const j of jsFindings) console.log('   !', j);
 console.log(`FR-J4 template scripts (checkThemeScripts): ${scriptFindings.length === 0 ? 'clean — main.js\'s defer tag alone' : scriptFindings.length + ' FINDING(S)'}`);
 for (const j of scriptFindings) console.log('   !', j);
-if (gateFindings.length) { console.log(`FR-J17 findings: ${gateFindings.length}`); for (const g of gateFindings.slice(0, 8)) console.log('   !', g); }
+for (const f of [...quality.errors, ...quality.warnings].slice(0, 12)) console.log('   !', f.level, f.code, f.refs.join(' '), '—', f.message, f.detail || '');
 console.log(`AD-5 rule 2 ("no {{{ or }}} but default.hbs's one {{{body}}}", D3): {{{ x${tripleOpen.length} in ${[...new Set(tripleOpen)].join(', ') || '-'} · }}} x${tripleClose.length} in ${[...new Set(tripleClose)].join(', ') || '-'}`);
 
 if (!process.argv.includes('--keep')) console.log(`\ntheme/ kept at ${OUT} — run:  node gate.js theme`);

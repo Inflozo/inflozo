@@ -55,7 +55,7 @@ import {
   BASE_CSS, checkChromeLiterals, darkHook, darkOverrideCss, designate, feedQuery, gscanInert, isDesigned, packTokensCss, pageTwoStack, renderTheme,
   resolveControls, sectionKey, srcsetExpr, synthesize, U0, U1, UserText, visibleFeed,
 } from '@inflozo/section-runtime'
-import type { DocInstance, Pack, PlacedSection, ProjectDoc, RuntimeDocument } from '@inflozo/section-runtime'
+import type { DocInstance, Pack, PlacedSection, ProjectDoc, RuntimeDocument, SynthesisLibrary } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { claim, sectionSlug } from './slug.ts'
 import { stripCss } from './strip.ts'
@@ -153,6 +153,13 @@ const ALWAYS = ['post.hbs', 'tag.hbs', 'author.hbs']
 /** Emitted when designed, or when synthesis gives them a section — never empty (Question 1, ruled option 1, owner,
  *  2026-10-06): an untouched one the library leaves with no section is left to Ghost's own fallback until Epic 10. */
 const WHEN_FILLED = ['page.hbs', 'error.hbs']
+/** Story 7.8 — every template every theme carries: the shell, Home's page 2 (`index.hbs`, always written) and `ALWAYS`.
+ *  The quality gate's required set starts here, and `stacksOf` emits from the same constants. */
+export const REQUIRED_TEMPLATES: readonly string[] = [SITE_DOC, INDEX, ...ALWAYS]
+/** Story 7.8 — the required set for a library: `REQUIRED_TEMPLATES`, plus each `WHEN_FILLED` file the library's synthesis
+ *  gives a section (Story 7.3's Question 1: `page.hbs` and `error.hbs` ship once Epic 10 fills them). */
+export const requiredTemplates = (library: SynthesisLibrary): string[] =>
+  [...REQUIRED_TEMPLATES, ...WHEN_FILLED.filter((file) => synthesize(file, library).instances.length > 0)].sort(byCode)
 /** Ghost's page switch (`@page`, FR-I1): the one `@page` property a theme may read — gscan 4.49.7 refuses any other
  *  as fatal (GS110-NO-UNKNOWN-PAGE-BUILDER-USAGE: `level: 'error', fatal: true` in its `specs/v5.js`; its MISSING
  *  sibling is an error there but not fatal — MEASUREMENTS §13a's dated note). */

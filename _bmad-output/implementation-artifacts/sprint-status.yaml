@@ -136,7 +136,7 @@ development_status:
   7-5-js-bundling-two-files-two-origins: done
   7-6-ghost-correct-markup: done
   7-7-the-gscan-gate: done
-  7-8-the-emitted-theme-quality-gate: ready-for-dev
+  7-8-the-emitted-theme-quality-gate: in-progress
   7-9-theme-settings-and-the-custom-settings-builder: backlog
   7-10-promoting-a-control-to-a-ghost-admin-setting: backlog
   7-11-the-three-dark-built-ins-always-declared-and-always-referenc: backlog

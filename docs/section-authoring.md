@@ -783,10 +783,20 @@ browserslist walks up from a file, and a root key would reach the app's `next bu
 - **Tier 3 — everything else.** `pnpm lint` refuses a Tier-3 **property or value** — `scrollbar-gutter`,
   `text-wrap: nowrap`, `animation-timeline`, `anchor-name`, `field-sizing`, `mask-mode` (the stylelint plugin's own
   data passes it; Safari lacks it, so it is refused by name) — and the check diffs the plugin against the pin over
-  those rows. **A Tier-3 at-rule form or function is not caught by lint today** (executed at the 4.8 review:
-  `@container style(--x: 1)`, `if()`, `sibling-index()` and `random()` all pass — the plugin knows an at-rule by
-  its name only, and the diff covers `css.properties`). Until DW-139 closes, review refuses those by reading
-  `web-features` at the pin, as it does for a module's APIs.
+  those rows. **A Tier-3 function or at-rule form is refused by name too** *(Story 7.8, DW-139)*:
+  `inflozo/tier3-by-name` derives, from `web-features` at the pin, every function (`if()`, `sibling-index()`,
+  `random()`, …) and every at-rule prelude form or descriptor (`@container style(…)`, `@import … supports(…)`,
+  `@font-face { ascent-override }`, …) below Widely, and `pnpm lint` refuses each unless `baseline.json` names it; the
+  check diffs the config against the pin over `css.properties`, `css.types`, `css.at-rules` and `css.selectors`, one
+  probe form per family. **Its ceiling, which review still reads by hand** — keys a probe form cannot express, each
+  printed by name by the check: relative colour syntax (`rgb(from …)`), typed `attr()` and `type()`, a gradient's
+  `in <colorspace>`, `superellipse()`, `dynamic-range-limit-mix()`, `env()`'s viewport-segment and titlebar names,
+  `@container anchored()`, `@keyframes`' named ranges, `:lang()` lists and wildcards, and the `[a=b s]` modifier.
+- **Markup is held to the pin as well** *(Story 7.8, DW-137)*: `check-baseline` maps every element and attribute in
+  each design's `index.html`, and in the compiled pilot theme's templates, to its `web-features` key (`html.` or
+  `svg.elements.<el>[.<attr>]`, or `.global_attributes.<attr>`) and refuses one below Widely on the pin unless
+  `baseline.json`'s `tier2` names it — and a named one only on the element its entry names (`fetchpriority` on an
+  `<img>`, `name` on a `<details>`). An attribute `web-features` does not map (`class`, `id`, `type`) is not judged.
 
 **Tier 2's conditions are review rules, not lint** — the linter cannot see what a declaration *does*:
 
@@ -1840,6 +1850,25 @@ and the gate would show it in its verbatim format. The validator does not refuse
 (`check-snapshots` for the pilots, Story 7.33's lane for the whole library). A customer's words are the runtime's to make
 safe, not the design's: `escapeUserText` writes one character of each trigger as its numeric entity (`GSCAN_INERT`,
 AD-36), and a visitor reads exactly what was typed.
+
+**The quality gate's authoring rules** *(Story 7.8, FR-J17, NFR-5)*. `qualityGate` reads every compiled theme as Ghost
+assembles it, and four of its rules are a design's to keep, because the gate holds each on every compiled theme and the
+library is held at zero findings of either level in CI (Story 7.33 runs every design):
+
+- **a link whose only content is a picture carries a never-empty `alt`** — NFR-5's chain
+  (`{{#if feature_image_alt}}{{feature_image_alt}}{{else}}{{title}}{{/if}}`), a field Ghost always fills (a post's
+  `title`, `@site.title`, a tag's or an author's `name`), a `{{t}}` label, or a guard around the link on the field the
+  `alt` binds; an `alt=""` or a bare `alt="{{feature_image_alt}}"` there is `image_link_unnamed`;
+- **every interactive element has a name axe-core 4.12.1 counts** — words or a bound field inside it, an image `alt`
+  with words, `aria-label`, `aria-labelledby` naming an element with words, or `title`; for a field, a `<label>` or a
+  `placeholder` — and an icon-only link or button without one is `name_missing`;
+- **a design's headings never skip a level internally**: after its first heading, none goes more than one level deeper
+  (`heading_skip`; a section's first heading may be any level, and the page's order is the customer's to arrange);
+- nothing interactive sits inside a link or a button, no literal `id` repeats, and a design writes no `<main>` (the
+  layout's is the page's one) — each `markup_invalid`.
+
+A finding a customer's own choice causes — emptying a title, leaving a picture undescribed — is a warning that names the
+section and the fix; the same finding on a design as authored is a library defect.
 
 The ceiling is written down rather than left to be rediscovered; a `ponytail:` comment at the head of
 `validate.ts` names it and the upgrade path.

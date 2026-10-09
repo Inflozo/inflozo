@@ -48,13 +48,16 @@ export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
 // (`isHex`): the Style Pack editor validates a record and computes its tokens in the browser with these, so the client
 // refuses exactly what the engine refuses. All pool-free.
 export { AA_PAIRS, BASE_CSS, isLength, packTokens, packTokensCss, SCALES } from './tokens.ts'
+// Story 7.8 (R-170) — the contrast check and its words, moved from the Style Pack editor: the editor's live warning and the
+// theme quality gate's `contrast_low` say one thing
+export { hardToRead, MODE_WORDS, pairWords, ROLE_WORDS } from './tokens.ts'
 // Story 6.5 — FR-E4's three inputs as one declared list of mode conditions (R-239's precedence lives there alone), a plain
 // link's declarations per Background value, and a section's dark override as a visitor sees it: the hook both emitters
 // stamp and the token block's per-section rules. Epic 7's compile and the keyboard gate read them.
 export { GROUND_LINKS, MODE_SELECTORS } from './tokens.ts'
 export { darkHook, darkOverrideCss, HOOK_RE, hookOf, sectionKey } from './dark-override.ts'
 export type { PlacedSection } from './dark-override.ts'
-export type { Face, Pack, PackMode, PackRole, TokenRow, TokenSource } from './tokens.ts'
+export type { Face, HardPair, Pack, PackMode, PackRole, TokenRow, TokenSource } from './tokens.ts'
 // Story 6.6 — and `stepToContrast`, the engine's own walk to 4.5:1: the brand seed (`apps/web/lib/pack-edit.ts`'s
 // `brandSeed`) makes a site's accent and its on-accent readable with it, in the browser as on the server
 export { contrast, isHex, stepToContrast } from './colour.ts'

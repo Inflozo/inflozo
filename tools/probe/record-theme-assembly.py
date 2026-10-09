@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.7's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.8's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
 WebP `srcset`s, rendered by a REAL Ghost (T1); Story 7.3's paywall mechanism, on two hand-written probe themes; and since
 Story 7.7 the gscan gate (`@inflozo/theme-compiler/gate`): a customer's words, inert to gscan, read on a real page, and
-Ghost 6's own checker answering three probe uploads as the gate says.
+Ghost 6's own checker answering three probe uploads as the gate says; and since Story 7.8 the emitted-theme quality gate
+(`qualityGate`) against Ghost's own pages, a planted probe, and Ghost's Casper and Source as its negative control.
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -148,15 +149,30 @@ it, that Ghost reads it as claimed is a hypothesis.
      once in `default.hbs`: T1 answers 200 with `GS010-PJ-PARSE` and the cascade, the same codes as `runGscan`'s, and
      `gscanGate` returns one `package_check_failed` naming `probe_setting`. Premise: the active theme's custom settings
      read the same before and after.
+ 11. STORY 7.8 (§77) — THE QUALITY GATE AGAINST GHOST'S OWN PAGES: before anything uploads, `qualityGate` (Paper's pack,
+     the library on disk) gives the uploaded tree an empty verdict, or the run stops for the owner. After the upload,
+     axe-core — the version `QUALITY_RULES` follows, refused if another is installed — runs `QUALITY_RULES`' own axe ids
+     in jsdom (`tools/pilot-theme.mjs`'s `axeOn`, the one CI runs) over `/`, `/page/2/`, a post, the busiest tag and the
+     busiest author as Ghost served them: no violation. Each page's heading levels, consecutive repeats collapsed, are
+     one of `readPages`' alternatives for its template. `<html lang>` is the site's locale (step 5's row).
+ 12. STORY 7.8 (§77) — THE PROBE: `inflozo-probe-quality`, the uploaded tree plus an `<h4>` carrying the nonce and an
+     `<a href="#"></a>` right after A24 #1's invocation in `post.hbs`. Locally the gate reports exactly `heading_skip`
+     and `name_missing` for `post.hbs`; uploaded, activated and read on the newest post, axe-core reports exactly
+     `heading-order` and `link-name`. In a `finally` that encloses the upload, the site's theme is activated again and
+     the probe deleted (`restore_and_delete`), and the active theme read back.
+ 13. STORY 7.8 (§77) — THE NEGATIVE CONTROL: Ghost 6.58.0's npm tarball (read only) gives Casper and Source; gscan 6.4.2
+     at `v6`, their own Ghost's checker, passes each 0/0 (the CONTROL), and `node tools/quality-gate.mjs` fails each on at
+     least one rule, every finding located at its line in the theme's own source. Their stylesheets' warnings through the
+     root `stylelint.config.mjs` are counted and recorded, never gated.
 
-What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.7's three probe uploads, none
-activated, and their deletes; the `w750` rendition, and the one
+What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
+activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
 one probe picture, which stays (Ghost's API deletes no picture) — no content, no setting, no key; keys are read by
-variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §76 alone, replacing an earlier
-§76 of its own so a re-run re-records; §70 to §75 stay Stories 7.1's to 7.6's records. The Ghost 5 half is DW-326's.
+variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §77 alone, replacing an earlier
+§77 of its own so a re-run re-records; §70 to §76 stay Stories 7.1's to 7.7's records. The Ghost 5 half is DW-326's.
 """
-import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, subprocess, importlib.util
+import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
 import urllib.error, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -167,7 +183,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '76'   # §70 to §75 stay Stories 7.1's to 7.6's records
+SECTION = '77'   # §70 to §76 stay Stories 7.1's to 7.7's records
 # Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
 # the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
 TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
@@ -797,7 +813,9 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
     bad = [v for v in verdicts if v[2].startswith('CONTROL') and not v[0]]
     if bad:
         raise Void('A CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
-    return {'version': version, 'gated': gated_class, 'public': public_path, 'portals': len(portals), 'site': g.url, 'locale': locale, 'post': post_path, 'verdicts': verdicts,
+    # Story 7.8: the five pages §77's quality rows read, each with the template it renders, as Ghost served them
+    rendered = {path: {'template': pages[path].split('#')[0], 'body': read[path][1]} for path in ('/', '/page/2/', post_path, tag1, au1)}
+    return {'rendered': rendered, 'version': version, 'gated': gated_class, 'public': public_path, 'portals': len(portals), 'site': g.url, 'locale': locale, 'post': post_path, 'verdicts': verdicts,
             'previous': previous, 'site_cards': site_cards, 'per_page': per_page, 'total': total, 'picture': rel,
             'uploaded': uploaded, 'arch': arch}
 
@@ -975,6 +993,223 @@ def gate_probes(g, trees, local):
     return out
 
 
+# ── Story 7.8 (§77): the quality gate against Ghost's own pages ──────────────────────────────────────────────────
+QUALITY_PROBE = 'inflozo-probe-quality'   # the pilots plus a planted heading skip and a nameless link, never the site's
+GHOST_TARBALL = 'https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz'   # Ghost 6.58.0's own Casper and Source, read only
+
+# The quality gate, readPages' heading alternatives and axe-core, through Node 24 — each tree the PRODUCT gate's verdict
+# (`qualityGate`, Paper's pack, the library on disk), each page axe-core's violations of QUALITY_RULES' own axe ids
+# (`tools/pilot-theme.mjs`'s `axeOn`, the one CI runs). A font crosses as base64.
+QUALITY = r"""
+const root = process.env.ROOT
+const gate = await import(`${root}/packages/theme-compiler/gate/index.ts`)
+const pilots = await import(`${root}/tools/pilot-theme.mjs`)
+const { REFERENCE_PACK } = await import(`${root}/packages/section-runtime/src/reference.ts`)
+const chunks = []
+for await (const c of process.stdin) chunks.push(c)
+const job = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+const library = pilots.library()
+const ids = pilots.axeIds(gate.QUALITY_RULES)
+const out = { axeVersion: pilots.AXE_VERSION, axeCore: gate.AXE_CORE, ids, trees: {}, pages: {} }
+for (const [name, enc] of Object.entries(job.trees ?? {})) {
+  const files = Object.fromEntries(Object.entries(enc).map(([p, b]) => [p, typeof b === 'string' ? b : new Uint8Array(Buffer.from(b.base64, 'base64'))]))
+  out.trees[name] = { verdict: gate.qualityGate(files, { pack: REFERENCE_PACK, library }), headings: Object.fromEntries(gate.readPages(files).map((p) => [p.file, p.headings])) }
+}
+for (const [path, body] of Object.entries(job.pages ?? {})) out.pages[path] = await pilots.axeOn(body, ids)
+process.stdout.write(JSON.stringify(out))
+"""
+
+
+def quality(trees=None, pages=None):
+    """`{axeVersion, axeCore, ids, trees: {name: {verdict, headings}}, pages: {path: [axe ids]}}` — a failed run is a Void."""
+    enc = {n: {p: b if isinstance(b, str) else {'base64': base64.b64encode(b).decode()} for p, b in f.items()} for n, f in (trees or {}).items()}
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', QUALITY], input=json.dumps({'trees': enc, 'pages': pages or {}}),
+                         capture_output=True, text=True, timeout=600, env={**os.environ, 'ROOT': ROOT})
+    if run.returncode != 0:
+        raise Void(f'the quality gate did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    if out['axeVersion'] != out['axeCore']:
+        raise Void(f'axe-core {out["axeVersion"]} is installed where QUALITY_RULES follows {out["axeCore"]} — nothing it says agrees with the gate')
+    return out
+
+
+def said(v):
+    """A verdict's findings, one line each: level, code, refs."""
+    return [f'{f["level"]} {f["code"]} {",".join(f["refs"])}' for f in v['errors'] + v['warnings']]
+
+
+def quality_probe_tree(files, nonce):
+    """The uploaded tree plus, in post.hbs right after A24 #1's invocation (its <h1>), an <h4> carrying this run's nonce
+    and an <a href="#"></a> — a heading skip and a nameless link the gate and axe must each name, and nothing else."""
+    m = re.search(r'^( *)\{\{> "sections/post/[^"]+"\}\}$', files['post.hbs'], re.M)
+    if not m:
+        raise Void('post.hbs carries no section invocation to plant after — the probe would plant nothing')
+    plant = f'{m.group(0)}\n{m.group(1)}<h4>Probe{nonce}</h4>\n{m.group(1)}<a href="#"></a>'
+    return {**files, 'post.hbs': files['post.hbs'].replace(m.group(0), plant, 1)}
+
+
+def levels(body):
+    """A rendered page's heading levels in document order, consecutive repeats collapsed — a repeat's body, which the
+    gate reads once, renders once per post."""
+    seq = re.findall(r'<h([1-6])\b', re.sub(r'<(script|style)\b.*?</\1>', '', body, flags=re.S | re.I))
+    return ' '.join(f'h{l}' for i, l in enumerate(seq) if i == 0 or seq[i - 1] != l)
+
+
+def collapse(seq):
+    words = seq.split()
+    return ' '.join(w for i, w in enumerate(words) if i == 0 or words[i - 1] != w)
+
+
+def quality_rows(rec, local):
+    """§77's rows (1): axe-core over the five pages Ghost rendered under the compiled theme, and their heading levels
+    against the gate's alternatives for each page's template."""
+    tree = local['trees']['pilots']
+    out = [(not tree['verdict']['errors'] and not tree['verdict']['warnings'], 'local', 'CONTROL — the gate gave the uploaded tree an empty verdict before anything uploaded',
+            '; '.join(said(tree['verdict'])) or 'no finding'),
+           (len(local['ids']) > 0, 'local', f'CONTROL — axe-core {local["axeVersion"]} runs QUALITY_RULES\' own axe ids', ', '.join(local['ids']))]
+    axe = quality(pages={p: r['body'] for p, r in rec['rendered'].items()})['pages']
+    for path, r in rec['rendered'].items():
+        out.append((axe[path] == [], path, f'axe-core reports no violation of QUALITY_RULES\' axe ids on Ghost\'s rendered page ({r["template"]}), as the gate\'s empty verdict says',
+                    ', '.join(axe[path]) or 'none'))
+        alts = sorted({collapse(a) for a in tree['headings'].get(r['template'], [])})
+        got = levels(r['body'])
+        out.append((got in alts, path, f'its heading levels are one of the gate\'s alternatives for {r["template"]} (consecutive repeats collapsed)',
+                    f'{got or "none"} · gate {alts}'))
+    return out
+
+
+def quality_probe(g, files, nonce, post_path, local):
+    """§77's rows (2): the probe uploaded under its own name and activated, a post read, axe-core and the gate each naming
+    exactly the two planted findings; restored and deleted in a `finally` that encloses the upload, the active theme
+    read back."""
+    probe = local['trees'][QUALITY_PROBE]['verdict']
+    want = ['warning heading_skip post.hbs,post.hbs', 'warning name_missing post.hbs,post.hbs']
+    out = [(sorted(said(probe)) == want, 'local', 'the gate reports exactly heading_skip and name_missing for post.hbs on the probe tree',
+            '; '.join(said(probe)) or 'nothing')]
+    tree = quality_probe_tree(files, nonce)
+    previous = shim.start_guard(g)
+    st, body = None, ''
+    try:
+        st, res = g._multipart('themes/upload/', [('file', f'{QUALITY_PROBE}.zip', 'application/zip', contexts.zip_bytes(tree))])
+        if res['themes'][0]['name'] != QUALITY_PROBE:
+            raise Void(f'Ghost named the upload {res["themes"][0]["name"]!r}, not {QUALITY_PROBE!r}')
+        g.api('PUT', f'themes/{QUALITY_PROBE}/activate/')
+        for _ in range(10):
+            time.sleep(2)
+            st, body = g.page(post_path)
+            if f'Probe{nonce}' in body:
+                break
+        else:
+            raise Void(f'{post_path} never served {QUALITY_PROBE} (last HTTP {st}) — nothing read there is a result')
+        print(f'    read {post_path} under {QUALITY_PROBE} -> HTTP {st}, {len(body)} bytes')
+    finally:
+        shim.restore_and_delete(g, previous, [QUALITY_PROBE])
+    active = shim.active_theme(g)
+    axe = quality(pages={post_path: body})['pages'][post_path]
+    out += [
+        (active == previous, QUALITY_PROBE, "CONTROL — the active theme read back after the probe is the site's own", f'{active!r} (before {previous!r})'),
+        (st == 200 and f'Probe{nonce}' in body, post_path, "CONTROL — the read is the probe's own: its planted heading carries this run's nonce", f'HTTP {st}'),
+        (axe == ['heading-order', 'link-name'], post_path, 'axe-core reports exactly heading-order and link-name on Ghost\'s rendered probe post',
+         ', '.join(axe) or 'none'),
+    ]
+    return out
+
+
+def evidence(root, f):
+    """A finding's line in the theme's own source — `file:line: text` — or None: the file it names, searched for the
+    element the rule judged."""
+    path = f['refs'][1] if len(f['refs']) > 1 else f['refs'][0]
+    try:
+        text = open(os.path.join(root, path), encoding='utf8').read()
+    except OSError:
+        return None
+    rule, msg, detail = f.get('rule'), f['message'], f.get('detail') or ''
+    level = re.search(r'a level-(\d) heading', msg)
+    ident = re.search(r'the id “([^”]+)”', detail)
+    at = re.search(r'at line (\d+)', detail)
+    pattern = {
+        'html-has-lang': r'<html(?![^>]*\blang=)[^>]*>',
+        'heading-order': rf'<h{level.group(1)}\b' if level else None,
+        # a link or button whose content is only tags and partials — never a picture, whose alt may name it
+        'link-name': r'<a\b[^>]*>(?:\s|<(?!img\b)[^>]*>|\{\{>[^}]*\}\})*</a>',
+        'button-name': r'<button\b[^>]*>(?:\s|<(?!img\b)[^>]*>|\{\{>[^}]*\}\})*</button>',
+        'duplicate-id': rf'id="{re.escape(ident.group(1))}"' if ident else None,
+        'one-main': r'<main\b',
+        'image-alt': r'<img(?![^>]*\balt=)[^>]*>',
+        'meta-viewport': r'<head\b',
+        'build-leftover': r'\S',
+    }.get(rule)
+    if at:
+        line = int(at.group(1))
+    elif pattern:
+        m = re.search(pattern, text, re.S)
+        if not m:
+            return None
+        line = text.count('\n', 0, m.start()) + 1
+    else:
+        return None
+    return f'{path}:{line}: {text.split(chr(10))[line - 1].strip()[:90]}'
+
+
+GSCAN6 = r"""
+const gate = await import(`${process.env.ROOT}/packages/theme-compiler/gate/index.ts`)
+const { readdirSync, readFileSync } = await import('node:fs')
+const { join, relative, sep } = await import('node:path')
+const out = {}
+for (const dir of JSON.parse(process.env.DIRS)) {
+  const files = {}
+  const walk = (at) => { for (const e of readdirSync(at, { withFileTypes: true })) { if (e.name === 'node_modules' || e.name === '.git') continue; const p = join(at, e.name); if (e.isDirectory()) walk(p); else files[relative(dir, p).split(sep).join('/')] = readFileSync(p) } }
+  walk(dir)
+  out[dir] = (await gate.runGscan(files, 6)).results.map((r) => `${r.level} ${r.code}`)
+}
+process.stdout.write(JSON.stringify(out))
+"""
+
+
+def negative_control():
+    """§77's rows (3): Ghost 6.58.0's own Casper and Source, from its npm tarball (read only), through
+    `tools/quality-gate.mjs` — each fails at least one rule, every finding shown at its line in the theme's own source —
+    and gscan 6.4.2 at `v6`, their own Ghost's checker, passing each 0/0. Returns `(rows, themes)`."""
+    tmp = tempfile.mkdtemp(prefix='inflozo-negative-')
+    try:
+        tgz = os.path.join(tmp, 'ghost.tgz')
+        with urllib.request.urlopen(GHOST_TARBALL, timeout=300) as r, open(tgz, 'wb') as f:
+            shutil.copyfileobj(r, f)
+        with tarfile.open(tgz) as t:
+            members = [m for m in t.getmembers() if m.name.startswith('package/content/themes/') and m.isfile()
+                       and '..' not in m.name.split('/')]
+            t.extractall(tmp, members=members, filter='data')
+        base = os.path.join(tmp, 'package', 'content', 'themes')
+        dirs = [os.path.join(base, n) for n in ('casper', 'source')]
+        run = subprocess.run([core.node24(), '--input-type=module', '-e', GSCAN6], capture_output=True, text=True, timeout=600,
+                             env={**os.environ, 'ROOT': ROOT, 'DIRS': json.dumps(dirs)})
+        if run.returncode != 0:
+            raise Void(f'gscan did not run on Ghost\'s own themes:\n{run.stderr[-1500:]}')
+        gscan6 = json.loads(run.stdout)
+        rows, themes = [], {}
+        for d in dirs:
+            version = json.load(open(os.path.join(d, 'package.json')))['version']
+            name = f'{os.path.basename(d)} {version}'
+            r = subprocess.run([core.node24(), os.path.join(ROOT, 'tools', 'quality-gate.mjs'), d], capture_output=True, text=True, timeout=600, cwd=ROOT)
+            if r.returncode != 0:
+                raise Void(f'tools/quality-gate.mjs did not run on {name}:\n{r.stderr[-1500:]}')
+            got = json.loads(r.stdout)
+            findings = got['verdict']['errors'] + got['verdict']['warnings']
+            rows.append((gscan6[d] == [], name, 'CONTROL — gscan 6.4.2 at v6, its own Ghost\'s checker, passes it 0/0', ', '.join(gscan6[d]) or '0/0'))
+            rows.append((len(findings) > 0, name, 'it fails at least one rule of the quality gate', f'{len(findings)} finding(s)'))
+            for f in findings:
+                ev = evidence(d, f)
+                rows.append((ev is not None, name, f'{f["level"]} {f["code"]} ({f.get("rule")}) is real: its line in the theme\'s own source', ev or f'NOT FOUND in {f["refs"]}'))
+            sheet = got.get('stylesheet') or {}
+            by_rule = {}
+            for w in sheet.get('warnings', []):
+                by_rule[w['rule']] = by_rule.get(w['rule'], 0) + 1
+            themes[name] = {'findings': findings, 'sheet': sheet.get('file'), 'css': by_rule}
+        return rows, themes
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 # ── §72 ───────────────────────────────────────────────────────────────────────
 def table(rows):
     out = ['| Page | Row | Held |', '|---|---|---|']
@@ -984,7 +1219,7 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay, probes, local):
+def section(rec, gates, files, c, pay, probes, local, q):
     today = datetime.date.today().isoformat()
     gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
@@ -992,20 +1227,24 @@ def section(rec, gates, files, c, pay, probes, local):
     fonts = sorted(p for p in files if p.startswith('assets/fonts/'))
     licences = sorted(p for p in files if p.startswith('LICENSE-'))
     (tag, tag_n), (author, author_n) = rec['arch']['tag'], rec['arch']['author']
-    out = [f'## {SECTION}. The gscan gate — a customer\'s words inert to gscan on a real page, and Ghost 6\'s own checker '
-           f'answering three probe uploads as the gate says, beside the pilots compiled with Ghost\'s article, WebP `srcset`s, '
-           f'`main.js`, Paper\'s fonts, their licences, a section\'s dark hook, every standard template and the paywall '
-           f'mechanism, rendered by Ghost, T1 · {today}', '',
+    qrows, qprobe, neg_rows, neg = q
+    out = [f'## {SECTION}. The emitted-theme quality gate — axe-core on Ghost\'s own pages agreeing with `qualityGate`, a '
+           f'planted probe named by both, and Ghost\'s Casper and Source as its negative control, beside the gscan gate, a '
+           f'customer\'s words inert to gscan and the pilots compiled with Ghost\'s article, WebP `srcset`s, `main.js`, '
+           f'Paper\'s fonts, their licences, a section\'s dark hook, every standard template and the paywall mechanism, '
+           f'rendered by Ghost, T1 · {today}', '',
            f'**Command.** `{COMMAND}` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each '
            'activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload '
-           '(DW-332), both read back; Story 7.7\'s three probe uploads (the compiled pilots unscaffolded, a fatal probe, a '
+           '(DW-332), both read back; Story 7.8\'s quality probe (the pilots plus a planted heading skip and a nameless '
+           'link), activated, then restored and deleted the same way; Story 7.7\'s three probe uploads (the compiled pilots unscaffolded, a fatal probe, a '
            'cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back '
            'after each; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time '
            'it is asked for each; no content, no setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70 to §75 are Stories 7.1's to 7.6's records; this re-runs their rows beside Story 7.7's.", '',
+           "§70 to §76 are Stories 7.1's to 7.7's records; this re-runs their rows beside Story 7.8's. Ghost 6.58.0's npm "
+           f"tarball (`{GHOST_TARBALL}`) is read, never installed, for Casper and Source.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
            '`<main id="site-main">`, puts FR-H2\'s `noindex` guard in `default.hbs`\'s head, and leaves out an untouched '
@@ -1071,9 +1310,32 @@ def section(rec, gates, files, c, pay, probes, local):
             + '; '.join(f'`{n}` {"blocked" if v["blocked"] else "not blocked"} — {", ".join(f["code"] + (" " + f["rule"] if f.get("rule") else "") for f in v["errors"] + v["warnings"]) or "nothing"}' for n, v in g5.items())
             + '.', '']
     out += table(probes)
+    out += ['', "### (d) The quality gate against Ghost's own pages — the pilots as T1 renders them", '',
+            'axe-core, the version `QUALITY_RULES` follows, runs `QUALITY_RULES`\' own axe ids in jsdom over `/`, `/page/2/`, a '
+            'post, the busiest tag and the busiest author, as Ghost served them under the compiled theme; each page\'s heading '
+            'levels are compared with `readPages`\' alternatives for its template, consecutive repeats collapsed (a repeat\'s '
+            'body, which the gate reads once, renders once per post).', '']
+    out += table(qrows)
+    out += ['', f'### (e) The probe — `{QUALITY_PROBE}`: the pilots, plus an `<h4>` and an `<a href="#"></a>` after A24 #1\'s '
+            '`<h1>` in `post.hbs`', '']
+    out += table(qprobe)
+    out += ['', "### (f) The negative control — Ghost 6.58.0's own Casper and Source, through `tools/quality-gate.mjs`", '',
+            'Paper\'s pack and an empty library (a theme Inflozo did not compile has none, so the required set is '
+            '`REQUIRED_TEMPLATES`). Every finding is shown at its line in the theme\'s own source. Their stylesheets, through '
+            'the root `stylelint.config.mjs` (FR-G8\'s floor), warned: '
+            + '; '.join(f'{n} (`{t["sheet"]}`) ' + (', '.join(f'`{r}` ×{k}' for r, k in sorted(t['css'].items())) or 'nothing') for n, t in neg.items())
+            + ' — recorded, never gated: Ghost\'s themes are not held to Inflozo\'s floor.', '']
+    out += table(neg_rows)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **The quality gate reads a theme as Ghost renders it.** On the five pages read, axe-core found nothing the '
+            'gate\'s empty verdict did not already say, and every page\'s heading levels were one of the gate\'s alternatives '
+            'for its template. With a heading skip and a nameless link planted, axe-core on Ghost\'s own page and the gate on '
+            'the files named exactly those two.',
+            '- **Ghost\'s own themes pass gscan and fail this gate.** Casper and Source score 0/0 on their own Ghost\'s '
+            'checker, and each fails at least one quality rule — every finding shown at its line in their source. That is '
+            'the gap FR-J17 exists for: gscan certifies a Ghost theme, not a good one.',
             '- **A customer\'s words never trip Ghost\'s checker, and visitors read them as typed.** The four words gscan '
             'counts as errors with no brace at all were typed into A4 #13\'s eyebrow and `currency_symbol` into every layer '
             'name; the templates carried each with one character as its HTML code, the gate found nothing on either checker, '
@@ -1171,18 +1433,26 @@ if __name__ == '__main__':
         trees = probe_trees(c)
         local = gated({'pilots': files, **trees})
         gates = clean(local, 'pilots')
+        # Story 7.8: the quality gate over the same tree and the probe's, before anything uploads — a finding on the
+        # pilots is a question for the owner (the spec's Ask First), never a result
+        local_q = quality(trees={'pilots': files, QUALITY_PROBE: quality_probe_tree(files, nonce)})
+        if said(local_q['trees']['pilots']['verdict']):
+            raise Void(f'the quality gate names findings on the pilots ({said(local_q["trees"]["pilots"]["verdict"])}) — STOP AND ASK the owner')
         rec = record(g, contexts.zip_bytes(files), files, c, per_page, total, arch, nonce)
         pay = paywall(g, nonce)
         probes = gate_probes(g, trees, local)
+        qrows = quality_rows(rec, local_q)
+        qprobe = quality_probe(g, files, nonce, rec['post'], local_q)
+        neg_rows, neg = negative_control()
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay + probes if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay, probes, local))
+    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg)))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)
