@@ -236,6 +236,28 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **Review (2026-10-09):** five layers, real-infra read-only on T1 (restored, `casper` active), CI and Vercel green at the Dev head. Patched: `plain()` no longer throws on an out-of-range entity; a fatal page switch falls through to the verbatim format (never a deployable warning); a moved pin's verdict names the installed checker; `setting_unused` with no parsed key carries gscan's sentence; four pure test rows, among them THE CEILING derived — every brace-free regex rule outside the stylesheet families is in `GSCAN_INERT` or exempt with a reason; `check-snapshots` derives the inert forms from `gscanInert`. DW-350 records the keyboard gate's R-201 floor stop flaking on the Create commit.
 - **A quality gate measures what gscan does not (7.8, FR-J17).** Valid HTML, `lang` and viewport, heading order, accessible names, NFR-5's `alt` rules, AA contrast against the pack's tokens, every required template, no inline handlers, Baseline-clean CSS — a compile stage (AD-34) that stops at the edge of `{{content}}` (R-6), with Casper and Source (each failing a rule) as its negative control.
   - **DW-137, DW-139, DW-315 (Story 7.8):** every element and attribute held to the FR-G8 pin through `baseline.json`; a Tier-3 at-rule form, selector or function refused by name; AA never fails a deploy for a pairing the user edited and was warned about (R-83 if that changes what a deploy does).
+  - **Story 7.8's Create (2026-10-09):**
+    - **What it builds.** `@inflozo/theme-compiler/gate`'s `qualityGate(files, { pack, library })`, core and never throwing, beside `gscanGate`. It reads each page as Ghost assembles it: the layout, the partials (quoted or bare), each `{{else}}` as its own alternative, a block without one as present, and `{{content}}` and `{{{html}}}` as the edge (R-6). It parses with `parse5` 8.0.1 (jsdom's own, now declared) and never parses Handlebars. It returns AD-24's envelope:
+      - Inflozo's own faults are errors: `markup_invalid`, `language_missing`, `viewport_missing`, `template_missing`, `inline_script`, `inline_style` (AD-3), `build_leftover` (AD-34's leak assertions, `leftovers`, the one spelling) and `alt_missing`;
+      - contrast is always a warning (`contrast_low`, `AA_PAIRS` in the Style Pack editor's own words — FR-E3, DW-315);
+      - the three a customer's choice can cause — `heading_skip`, `name_missing`, `image_link_unnamed` — take Question 2's level.
+      - `QUALITY_RULES` names the axe-core 4.12.1 rule each follows. The required set is `requiredTemplates(library)`: `default`, `index`, `post`, `tag` and `author`, plus `page` and `error` once the library fills them (7.3's Question 1).
+    - **The floors are checked in CI, over every design and the compiled pilot theme, on every library release:** DW-137's markup against the pin, DW-139's `inflozo/tier3-by-name` with the per-family diff, and the emitted CSS through the root config. Nothing a customer chooses or types adds an element, an attribute or a stylesheet feature.
+    - **Read in source and executed:**
+      - axe-core 4.12.1: `heading-order` passes the first heading, then at most one level deeper; its name sources count a field's placeholder.
+      - Ghost 6.58.0 fills an empty post title, and `@site.title` defaults to "Ghost".
+      - Casper 5.12.1 and Source 1.7.1 score 0/0 on gscan 6.4.2 at `v6`, and both fail FR-J17 rules: heading skips and nameless social links, plus Source's repeated id and nested `<main>`. In-tag alternatives must be read one branch only, or Casper's `<html>` reads as a false duplicate attribute.
+      - The pilot theme reads clean, and its emitted CSS lints clean.
+      - Today's markup holds one Tier-2 key (`img` `fetchpriority`).
+    - **Proof planned:**
+      - CI holds the pilot verdict empty, and holds axe-core in agreement over the same pages;
+      - the premise theme fails each named rule while both pinned gscans score it 0/0;
+      - Casper and Source are the negative control;
+      - T1 renders the pilots and a planted probe, and axe on Ghost's real pages agrees (§77);
+      - the stress fixture measures the real gate (AD-34's "700 ms" was the proxy's).
+    - **Two questions went to the owner, both open:**
+      - Q1, the frame S8b and the failure-message hand test (option 1 recommended: move word for word to Story 7.18, so 7.8 is `owner_test: none`);
+      - Q2, a fault the customer's own choice causes (option 1 recommended: a warning that names the section and the fix, never a block, as FR-E3 rules for colours).
 - **Theme Settings own `posts_per_page`, credits and the custom-settings builder; a control or the accent can be promoted (7.9, 7.10, FR-Q1–Q4).** Ghost's five types, the `homepage`/`post` groups (else Site wide), 6-digit hex colour defaults, a 20-setting meter with three slots kept for the dark built-ins, keys immutable once deployed or exported; a promotion emits `{{@custom.*}}`, parks with its design, warns on delete and before a pack switch, previews at its resolved default, and compiles colours as an inline block in `default.hbs`.
   - **R-131 (owner, 2026-09-18):** the screen exists at `/projects/<id>/settings`, reached from the editor, holding D6a's project-mode block and its Clear dark overrides row; 7.9 builds the rest of D6a. **DW-254 (Story 7.9):** the main feed's Count gains "Change it in Theme settings." and its link.
   - **R-122, R-22 (AD-10):** a bound text prop shows P0-1's lock pill (built by Story 5.3); Ghost's comment accent is linked, never written, and the Admin write allowlist stays four.
