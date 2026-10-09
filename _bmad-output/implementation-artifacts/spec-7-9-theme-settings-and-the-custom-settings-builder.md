@@ -2,9 +2,10 @@
 title: 'Story 7.9 — Theme Settings and the custom-settings builder'
 type: 'feature'
 created: '2026-10-09'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: '0b6fdcd0832a23e566b54e9e2af4274463050b8e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -416,7 +417,7 @@ Posts per page back.
 
 ## Questions for the owner
 
-Both were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them.
+Questions 1 and 2 were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them. Question 3 was raised at Dev and is open; everything else in this story is built and waits in the working tree for it.
 
 ### Question 1 — Where the "Promote a control" form is built: this story or Story 7.10
 
@@ -468,6 +469,31 @@ straight to This project.
    the Sites page already shows the brand.
 
 **Ruled: option 1 (owner, 2026-10-09).**
+
+### Question 3 — With JavaScript switched off, Theme settings never finishes loading (raised at Dev, 2026-10-09)
+
+**In plain English.**
+- This story promises that every Theme settings form still works for someone whose browser has JavaScript switched off
+  (the "Scripts off" row).
+- Dev tested it, and it cannot hold on any page that shows grey loading bars while it loads. With JavaScript off the
+  grey bars stay for ever and the real page never appears, so there is nothing to press. With JavaScript on, nothing is
+  wrong.
+- Six signed-in pages show such bars, Projects, Sites and Account among them, and the same cause applies to each. The
+  editor itself already needs JavaScript.
+
+**Example.** Switch JavaScript off in Chrome and open Theme settings: you see the grey bars where Posts per page and
+Custom settings belong, and they never turn into the stepper and the Promote form.
+
+1. **Signed-in pages need JavaScript, like the editor.** Keep the grey bars and stop promising that these pages work
+   with JavaScript off. This story drops its "JavaScript off" check, and the old notes in the code that made the same
+   promise are corrected. **(RECOMMENDED)**
+2. **Keep the promise on all six pages.** With JavaScript off, a small rule hides the grey bars and shows the real page.
+   It appears below the app's frame rather than in its place, and this story grows by a check on each of the six pages.
+3. **Theme settings only.** Remove its grey bars so it works with JavaScript off, and leave the other five as they
+   are. Theme settings then shows a blank space while it loads, which breaks your loading-bars rule (R-98) on this one
+   page.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
