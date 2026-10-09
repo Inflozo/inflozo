@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 2026-10-08
+last_updated: 2026-10-09
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -135,7 +135,7 @@ development_status:
   7-4-assets-fonts-per-design-css-and-the-dead-code-strip: done
   7-5-js-bundling-two-files-two-origins: done
   7-6-ghost-correct-markup: done
-  7-7-the-gscan-gate: backlog
+  7-7-the-gscan-gate: ready-for-dev
   7-8-the-emitted-theme-quality-gate: backlog
   7-9-theme-settings-and-the-custom-settings-builder: backlog
   7-10-promoting-a-control-to-a-ghost-admin-setting: backlog
