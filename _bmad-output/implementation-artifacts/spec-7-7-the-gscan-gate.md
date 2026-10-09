@@ -2,7 +2,7 @@
 title: 'Story 7.7 — The gscan gate'
 type: 'feature'
 created: '2026-10-09'
-status: 'in-progress'
+status: 'done'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'b5a3da0a78da7adc296c809cc5bf7a2afecf75b1'
@@ -731,3 +731,16 @@ Both were ruled option 1 (owner, 2026-10-09). Dev builds Design Notes § Ruled v
 - **Old wording that remains, on purpose.** "gscan 6.4.2 against both" and "Inflozo pins one gscan" survive in `prds/…/validation-report.md`, `review-st2-theme-quality.md` and the `.v3.0-backup`/`.v4.0-backup` PRD copies — record and frozen documents standing rule 5 forbids editing; and in three stale agent worktrees under `.claude/worktrees/` (at `2450daea`), which pollute every old-wording grep and are to be pruned once no agent needs them (not Claude's to delete). Live documents are clean.
 - **Deferred, with owners.** The recorder's `INERT` dict restates the four forms in Python (the gate's test holds them on both checkers; a bump re-derives them by the README's step 3); the non-fatal error's "Ghost would install this; Inflozo does not" sentence is Story 7.18's copy; the `Finding`/`AdminEnvelope` assignability is held when 7.18 types the store; the recorder's Ghost 6 warning row reads `[]` as the production premise by design (Facts 2, read in source) and is not a control row; `GS030-ASSET-REQ` through the compiled pilot's `href` is held by `gate.test.ts` on both checkers through `escapeUserText`. Dismissed as designed: every `GS010-PJ-*` result is dropped under the cascade (gscan's catch marks them all failed, so none is distinguishable); recommendations are not read (Ghost's upload answer carries none; `compile.test.ts` holds the page-size refusals); `GSCAN` is mutated by one serial test row.
 - **Gate.** `pnpm --filter @inflozo/theme-compiler test` 123 pass; `node tools/check-snapshots.mjs` PASS with every 7.7 row `ok` behind its control on both checkers; `pnpm lint` and the typecheck clean; `pnpm check` green; `doc-audit --check` PASS twice. The story stays in review: Deploy and Done follow (R-80).
+
+**Deploy (2026-10-09), head `256991ab`.** `Deployment: dpl_Cv1a1fkH19MpPbiM5sRz2WsxABcc` READY on the production Vercel
+project, target `production` (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha`
+matches). The Review head `1ab50ea1` never deployed: its CI run 37892026760 went red at `check`, on the keyboard gate's
+R-201 floor stop (`floor.spec.mjs:77:3`, 202 other stops passed), so `deploy` was skipped — DW-350's second recurrence,
+recorded there. `256991ab` changed no app code (DW-350 and the story board alone) and was pushed to re-run the gate: CI
+run 37893746383 `check`, `rls` and `deploy` success (read with `GITHUB_TOKEN`), and the render matrix run 37893746376
+success. The app code was last changed at the Dev head `d62812b5` (`dpl_6Pvz5UroMnmJu3Y3p4nhoXPGAABs` READY there).
+No migration, so no schema apply and no RLS read beyond the CI gate; no Supabase, Resend or Dodo surface. Controls:
+`https://app.inflozo.com/harness/pilots` and `/harness/editor` answer 404 (the harness is off in production),
+`https://app.inflozo.com/` answers 307 to `/sign-in` (the signed-out redirect). The gate has no product caller until
+Story 7.18, so nothing a visitor or the owner reaches changed; there is no owner test (`owner_test: none`). This story is
+Done on this commit (R-80).
