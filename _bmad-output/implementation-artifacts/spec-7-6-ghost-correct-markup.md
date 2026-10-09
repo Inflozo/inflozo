@@ -2,7 +2,7 @@
 title: 'Story 7.6 — Ghost-correct markup'
 type: 'feature'
 created: '2026-10-08'
-status: 'in-progress'
+status: 'done'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '9587b46976f1f1e3cbafac0c52a449e7e8dfafb3'
@@ -672,3 +672,14 @@ The owner first asked why the sample was recommended ("If user deletes than he i
 - **Local, Node 24.18.1** — `pnpm check` exit 0 before the patches; after them `compile.test.ts` 86 pass / 0 fail, `check-baseline` PASS with the five refused motion rows and the legal sheets, `check-snapshots` PASS with the fallback control named first; `pnpm check` re-run green after the patches (see the Review commit). `cd tools/stress && node build.js && node gate.js theme`: 0 errors / 0 warnings on gscan 4.49.7 (v5) and 6.4.2 (v6).
 - **R-99** — the diff adds no file under `supabase/migrations/`; no Schema phase was due.
 - **The Ghost 5 half** is DW-326's (R-238). Deploy and the owner's Done follow (R-80): this story has no screen, so it is Done on its Deploy commit.
+
+**Deploy (2026-10-09), head `aaaf5a11`.** `Deployment: dpl_BtieN2HicTFCBKo6bDs1NH23B5rX` READY on the production Vercel
+project, target `production` (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha`
+matches), the Review's recorded head. CI run 37823249103: `check`, `rls` and `deploy` success (read with `GITHUB_TOKEN`);
+the render matrix run 37823249050 success. The app code was last changed at the Dev head `738c0124`
+(`dpl_JA1VvJ7QQRJWgZ1SEp65H2SbfwbS` READY there); the Review patches touched the compiler's checks, lint, tools and this
+spec, and `aaaf5a11` re-ran every gate green. No migration, so no schema apply and no RLS read beyond the CI gate; no
+Supabase, Resend or Dodo surface. Controls: `https://app.inflozo.com/harness/pilots` and `/harness/editor` answer 404
+(the harness is off in production), `https://app.inflozo.com/` answers 307 to `/sign-in` (the signed-out redirect). The
+compiler has no product caller until Story 7.18, so nothing a visitor or the owner reaches changed; there is no owner
+test (`owner_test: none`). This story is Done on this commit (R-80).
