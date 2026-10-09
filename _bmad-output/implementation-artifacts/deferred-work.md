@@ -9475,6 +9475,12 @@ origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain
   Second recurrence, same day: run 37892026760 on 1ab50ea1 (the Review commit, a gate patch with no app code) — `check`
   failed at the same row, `floor.spec.mjs:77:3`, `#canvas > *` not found after 5s, with 202 other stops passed; `rls`
   success, `deploy` skipped. Read at Story 7.7's Deploy; the story is re-pushed with no app change.
+  Third recurrence, a different row (2026-10-09, Story 7.8's Deploy): run 37916947735 on 9bd0fe1d (the Review commit; its
+  app change is `MODES` moving into `@inflozo/section-runtime`, the same two values) — `check` failed at
+  `tools/keyboard/journey.spec.mjs:1736:1 › R-236 …`, `#pack-editor-title` not found after 5s following Enter on
+  `#style-pack-new`, with 202 other stops passed; `rls` success, `deploy` skipped. Run cold on this machine with
+  `bash tools/keyboard/run-keyboard-gate.sh -g 'R-236'` (Node 24.18.1): 1 passed. So the flake is not one row: it is the
+  walk looking before a surface has drawn. The story is re-pushed with no app change.
 owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
   the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
   then, re-push on a red R-201 stop with no app change.
