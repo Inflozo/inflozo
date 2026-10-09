@@ -14,7 +14,8 @@ export async function gscanGate(files: ThemeFiles, major: Major): Promise<Verdic
   try {
     return verdict(await runGscan(files, major), files, major)
   } catch (e) {
-    return failed(major, GSCAN[major]?.version ?? '', e instanceof PinMoved ? e : undefined)
+    // Review (2026-10-09): `gscan` names the checker that ran — on a moved pin that is the installed one, never the pin
+    return failed(major, e instanceof PinMoved ? e.installed : GSCAN[major]?.version ?? '', e instanceof PinMoved ? e : undefined)
   }
 }
 

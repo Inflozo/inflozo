@@ -57,9 +57,13 @@ const ENTITIES: Readonly<Record<string, string>> = { nbsp: ' ', lt: '<', gt: '>'
 export const plain = (html: string): string => html
   .replace(/<br\s*\/?>/gi, ' ')
   .replace(/<\/?[a-zA-Z][^>]*>/g, '')
-  .replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (m, e: string) => (e[0] === '#'
-    ? String.fromCodePoint(Number.parseInt(e[1] === 'x' || e[1] === 'X' ? e.slice(2) : e.slice(1), e[1] === 'x' || e[1] === 'X' ? 16 : 10))
-    : ENTITIES[e.toLowerCase()] ?? m))
+  .replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (m, e: string) => {
+    if (e[0] !== '#') return ENTITIES[e.toLowerCase()] ?? m
+    const cp = Number.parseInt(e[1] === 'x' || e[1] === 'X' ? e.slice(2) : e.slice(1), e[1] === 'x' || e[1] === 'X' ? 16 : 10)
+    // Review (2026-10-09): a numeric entity past U+10FFFF made `fromCodePoint` throw, turning a permanent cause into
+    // "try again"; it is left as written instead
+    return cp > 0x10ffff ? m : String.fromCodePoint(cp)
+  })
   .replace(/\s+/g, ' ')
   .trim()
 
@@ -85,7 +89,8 @@ function settingUnused(r: ReportResult): Finding {
   const keys = [...new Set(r.failures.flatMap((f) => [...(f.message ?? '').matchAll(/(?:@custom|config\.custom)\.([A-Za-z0-9_]+)/g)].map((m) => m[1] as string)))].sort(byCode)
   return {
     code: 'setting_unused',
-    message: `Theme settings declared but used nowhere on your site: ${keys.join(', ')}.`,
+    // Review (2026-10-09): a wording neither pattern reads names no key, so gscan's own sentence stands in for ": ."
+    message: keys.length > 0 ? `Theme settings declared but used nowhere on your site: ${keys.join(', ')}.` : `Theme settings declared but used nowhere on your site. ${plain(r.failures.map((f) => f.message ?? '').join(' '))}`,
     detail: `Ghost refuses a theme setting no template reads. ${OURS}`,
     rule: r.code, level: 'error', fatal: r.fatal, refs: refsOf(r),
   }
@@ -151,7 +156,9 @@ export function verdict(report: GscanReport, files: ThemeFiles, major: Major): V
   const findings: Finding[] = []
   for (const r of report.results) {
     if (cascaded && r.code.startsWith('GS010-PJ-')) continue
-    findings.push(r.code === PAGE_SWITCH ? pageSwitch(r, major) : r.code === SETTING_UNUSED ? settingUnused(r) : verbatim(r))
+    // Review (2026-10-09): the page switch is a warning only while Ghost would install the theme — a pin that made
+    // GS110 fatal would otherwise deploy a theme Ghost refuses with 422; it then falls through to the verbatim format
+    findings.push(r.code === PAGE_SWITCH && !r.fatal ? pageSwitch(r, major) : r.code === SETTING_UNUSED ? settingUnused(r) : verbatim(r))
   }
   if (cascaded) findings.push(...cascade(parse, pkg))
   const errors = findings.filter((f) => f.level === 'error').sort(order)

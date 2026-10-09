@@ -227,7 +227,7 @@ After this story, every theme Inflozo builds can be checked by the same theme ch
 - [x] `packages/section-runtime/src/marks.ts`, `index.ts`; `packages/theme-compiler/src/compile.ts` — `GSCAN_INERT` and `gscanInert`, per § A customer's words. `escapeUserText` ends with it, and `commentPart` applies it.
 
   -- AD-36, at both doors.
-- [x] `packages/section-runtime/src/ad36.test.ts` — the pair. Each trigger, through `escapeUserText`, no longer matches its own pattern, and decodes to the typed text. A layer label behaves the same through `commentPart`.
+- [x] `packages/section-runtime/src/ad36.test.ts` — the pair. Each trigger, through `escapeUserText`, no longer matches its own pattern, and decodes to the typed text. A layer label behaves the same through `commentPart` (landed in `packages/theme-compiler/src/compile.test.ts`'s `(7.7)` row, since the runtime package cannot reach `commentPart` — Dev results; accepted at Review).
 
   -- AD-36's rule.
 - [x] `tools/record-gscan.mjs`, `tools/doc-audit.py`, `packages/theme-compiler/fixtures/gscan/`:
@@ -256,6 +256,23 @@ After this story, every theme Inflozo builds can be checked by the same theme ch
 - [x] Documents — apply § Propagated at Dev, then grep for each old wording.
 
   -- standing rules 3 and 7.
+
+### Review Findings (2026-10-09)
+
+Decision-needed: none — no finding needed the owner's call. Patches, all applied; defers, each with an owner:
+
+- [x] [Review][Patch] `plain()` throws on a numeric entity past U+10FFFF, a permanent cause read as "try again" [packages/theme-compiler/gate/verdict.ts]
+- [x] [Review][Patch] a fatal GS110 would map to a deployable warning while Ghost refuses the upload [packages/theme-compiler/gate/verdict.ts]
+- [x] [Review][Patch] `setting_unused` with no parsed key reads ": ." [packages/theme-compiler/gate/verdict.ts]
+- [x] [Review][Patch] a moved pin's verdict names the pin as the checker that ran [packages/theme-compiler/gate/index.ts]
+- [x] [Review][Patch] the docs link, `plain()`'s decoding, the cascade's no-cause branch, two-key `setting_unused` and the ceiling were asserted loosely or not at all [packages/theme-compiler/gate/gate.test.ts]
+- [x] [Review][Patch] the inert forms restated by hand in CI; the header's Node 24 line [tools/check-snapshots.mjs]
+- [x] [Review][Patch] the reproducible command is GNU-only, unsaid [packages/theme-compiler/vendor/README.md]
+- [x] [Review][Patch] "gscan reads no `.js`" survives in Story 7.5's spec; `epic-7-context.md`'s AD-34 and Homes leads have no 7.7 sub-bullet; the sort's third key and the layer row's home unstated [spec-7-5, epic-7-context.md, this spec]
+- [x] [Review][Patch] the Create commit's red `check` (keyboard R-201 floor stop) had no owning document [deferred-work.md DW-350, epics.md Story 15.1]
+- [x] [Review][Defer] the recorder's `INERT` dict restates the four forms in Python [tools/probe/record-theme-assembly.py] — deferred: held by `gate.test.ts` on both checkers; a bump re-derives them (README step 3)
+- [x] [Review][Defer] a non-fatal error's "Ghost would install this; Inflozo does not" sentence, and `Finding`'s assignability to `AdminEnvelope` typed — deferred to Story 7.18, the store and the screen
+- [x] [Review][Defer] old wording in record/frozen PRD copies and three stale agent worktrees — deferred: standing rule 5 forbids the first; the worktrees are pruned by their owner
 
 **Acceptance Criteria:**
 
@@ -304,7 +321,7 @@ interface Verdict { major: Major; gscan: string; blocked: boolean; errors: Findi
 ```
 
 - `blocked` is `errors.length > 0`.
-- Errors come before warnings, each sorted by `rule`, then by first ref.
+- Errors come before warnings, each sorted by `rule`, then by first ref, then by `message` (Review, 2026-10-09: the third key keeps several `package_check_failed` findings, which share rule and ref, in one order).
 - A finding is assignable to `AdminEnvelope` as it stands, so 7.18 stores and shows it without a second shape.
 - `runGscan(files, major)` returns gscan's results as data: `{ gscan, results: [{ code, level, fatal, rule, details, failures: [{ ref, message }] }] }`, with recommendations dropped. CI's raw rows read that.
 
@@ -699,3 +716,18 @@ Both were ruled option 1 (owner, 2026-10-09). Dev builds Design Notes § Ruled v
   - the layer-name half of "a customer's words": `compile.test.ts`'s `(7.7)` row, since the runtime package cannot reach `commentPart` — the spec placed it in `ad36.test.ts`, whose pair holds the `escapeUserText` half.
 - **One narrowing to know at Review.** `runGscan` drops gscan's recommendations, as the spec says, so 7.2's "no `GS010-*` or `GS100-*`" row no longer sees the recommendation-level `GS010-PJ-*` rules it saw at any level before; Ghost's own upload answer carries none, and `compile.test.ts` still holds the page-size refusals.
 - **Vercel, Supabase, Resend, Dodo** — not touched at Dev. No migration, and no Supabase, Resend or Dodo surface. CI's `check`/`rls`/`deploy` (the first install of `gscan4` from `vendor/` on CI's runner) and the deployment's READY state are read at Review.
+
+**Review results (2026-10-09, five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier):**
+
+- **Real infrastructure (R-82), read-only on T1, keys by variable name.** CI on the Dev head d62812b5: `ci.yml` `check`, `rls` and `deploy` success, `matrix.yml` success; the `check` log shows the gate's rows and `check-snapshots: PASS` on CI's runner, with no `UNSUPPORTED_ENGINE` line, so `gscan4` installed from `vendor/` under `--frozen-lockfile` there. Vercel `dpl_6Pvz5UroMnmJu3Y3p4nhoXPGAABs` READY, production, at d62812b5. T1 `ghost6.inflozo.com` (6.58): `GET admin/themes/` lists `casper` active, `racer`, `source`, and no probe theme; `GET /` carries no nonce word and none of the trigger words — restored as Dev recorded. No migration (`git diff --stat -- supabase/` empty), so R-99 has nothing to confirm. The recorder was NOT re-run (it uploads; §76 stands from Dev). The vendor copy: the registry tarball's `dist.integrity` and the copy's sha256 equal the README's, and `diff -r` reports `package.json`'s `engines.node` line alone. The Ghost 5 half is DW-326's (R-238).
+- **Controls that ran.** A planted level change in `rules-6.4.2.json` failed exactly the inventory row (118 pass / 1 fail), then the file was restored; the new ceiling row fails when an exemption is removed (executed, then restored).
+- **Patches applied (code):**
+  - `verdict.ts`: `plain()` leaves a numeric entity past U+10FFFF as written instead of throwing (a permanent cause read as "try again"); `setting_unused` whose failure wording names no key carries gscan's own sentence instead of ": ."; the page switch is a warning only while `fatal` is false — a pin that made GS110 fatal falls through to the verbatim format, so the gate never deploys a theme Ghost refuses with `422`.
+  - `index.ts`: on a moved pin, `verdict.gscan` names the checker that ran (the installed version), never the pin, since Story 7.18 stores it in `deploys.gscan`.
+  - `gate.test.ts` (four rows added, 123 pass): `plain()`'s decoding asserted by character (tags, `<br>`, named, numeric, hex, the past-range entity); the cascade's no-cause branch on a hand-made report; the fallback docs link (`DOCS_ROOT`) and the fatal page switch; `GS001-DEPR-CSS-KGMD`'s link asserted exactly (`https://ghost.org/docs/themes/content/` on both — v1's `docsBaseUrl`; only 6.4.2's `v6.js` moves to `docs.ghost.org`); `setting_unused` with two keys on both wordings; and **the ceiling, derived**: every brace-free regex rule in both inventories outside the stylesheet families (`GS050-CSS-*`, `GS001-DEPR-CSS-*`, `GS051-*`) is in `GSCAN_INERT` or in an `EXEMPT` list with its reason (`GS001-DEPR-AMP-TEMPLATE`, `GS080-CARD-LAST4`) — a pin bump that adds one fails the row.
+  - `check-snapshots.mjs`: the inert forms are derived from `gscanInert` rather than restated; the header names the gate's TypeScript among what Node 24 is for.
+  - `vendor/README.md`: the reproducible command is GNU tar, gzip, sed and coreutils on Linux (CI's runner); macOS's BSD tools give other bytes.
+- **Patches applied (documents):** `spec-7-5`'s "gscan reads no `.js`" (:458) carries a dated correction; `epic-7-context.md` gains a 7.7 sub-bullet under the AD-34 and Homes leads and a Review sub-bullet under 7.7's Dev; the order's third key and the layer-row's home are stated above; DW-350 records the keyboard gate's R-201 floor stop going red on b5a3da0a (the Create commit, spec-only) so that push never deployed — the same app code passed `check` on d62812b5.
+- **Old wording that remains, on purpose.** "gscan 6.4.2 against both" and "Inflozo pins one gscan" survive in `prds/…/validation-report.md`, `review-st2-theme-quality.md` and the `.v3.0-backup`/`.v4.0-backup` PRD copies — record and frozen documents standing rule 5 forbids editing; and in three stale agent worktrees under `.claude/worktrees/` (at `2450daea`), which pollute every old-wording grep and are to be pruned once no agent needs them (not Claude's to delete). Live documents are clean.
+- **Deferred, with owners.** The recorder's `INERT` dict restates the four forms in Python (the gate's test holds them on both checkers; a bump re-derives them by the README's step 3); the non-fatal error's "Ghost would install this; Inflozo does not" sentence is Story 7.18's copy; the `Finding`/`AdminEnvelope` assignability is held when 7.18 types the store; the recorder's Ghost 6 warning row reads `[]` as the production premise by design (Facts 2, read in source) and is not a control row; `GS030-ASSET-REQ` through the compiled pilot's `href` is held by `gate.test.ts` on both checkers through `escapeUserText`. Dismissed as designed: every `GS010-PJ-*` result is dropped under the cascade (gscan's catch marks them all failed, so none is distinguishable); recommendations are not read (Ghost's upload answer carries none; `compile.test.ts` holds the page-size refusals); `GSCAN` is mutated by one serial test row.
+- **Gate.** `pnpm --filter @inflozo/theme-compiler test` 123 pass; `node tools/check-snapshots.mjs` PASS with every 7.7 row `ok` behind its control on both checkers; `pnpm lint` and the typecheck clean; `pnpm check` green; `doc-audit --check` PASS twice. The story stays in review: Deploy and Done follow (R-80).

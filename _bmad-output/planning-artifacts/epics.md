@@ -8988,6 +8988,7 @@ in Layers and item lists, and **single-key shortcuts being inert inside a text f
 globally stateful, so concurrent runs queue and never interleave.
 **And** before the suite is trusted, DW-68's stall is diagnosed: the suite signs in against any deployment URL and each 30–60 s stall is matched to its Vercel runtime-log invocation, so a red run names the deployment, the platform or the runner (DW-68).
 **And** every page under the signed-in layout is requested signed out and its reply's BODY is read: the redirect is a 307 whose body still carries what the page rendered (`/pilots` carries its sample content), so the suite proves no page puts a customer's data there (DW-319, from Story 6.1's Review, 2026-10-03).
+**And** the keyboard gate's R-201 floor stop (`tools/keyboard/floor.spec.mjs`, the phone-size notice) waits for the notice to draw before it looks, the way `rendersSettle` closed DW-246 and DW-292 — it went red with no app change on 2026-10-09 and cost one deploy (DW-350)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

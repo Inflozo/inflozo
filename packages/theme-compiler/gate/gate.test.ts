@@ -12,7 +12,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { escapeUserText, GSCAN_INERT, gscanInert } from '@inflozo/section-runtime'
-import { GSCAN, gscanDirs, gscanGate, installedRules, installedVersion, runGscan } from './index.ts'
+import { DOCS_ROOT, GSCAN, gscanDirs, gscanGate, installedRules, installedVersion, plain, runGscan, verdict } from './index.ts'
 import type { Finding, GscanReport, Major, ThemeFiles, Verdict } from './index.ts'
 import rules4 from '../fixtures/gscan/rules-4.49.7.json' with { type: 'json' }
 import rules6 from '../fixtures/gscan/rules-6.4.2.json' with { type: 'json' }
@@ -94,6 +94,7 @@ test('a moved pin: the installed checker differs from GSCAN — one theme_check_
     const v = await gate(BASE, 5)
     assert.deepEqual(codes(v.errors), ['theme_check_failed'])
     assert.equal(v.errors[0]?.detail, `gscan ${kept} is installed where 4.49.6 is pinned.`)
+    assert.equal(v.gscan, kept, 'the verdict names the checker that ran, not the pin (Review, 2026-10-09)')
     assert.equal(v.blocked, true)
   } finally {
     pin.version = kept
@@ -196,6 +197,10 @@ test('GS100\'s controls: the invocation removed, or the partial kept and never i
       assert.deepEqual([v.blocked, codes(v.errors), codes(v.warnings)], [true, ['setting_unused GS100-NO-UNUSED-CUSTOM-THEME-SETTING'], []], `Ghost ${major}, ${what}`)
       assert.equal(v.errors[0]?.message, 'Theme settings declared but used nowhere on your site: dark_logo.')
     }
+    // two unused keys, in one list on 4.49.7 and one sentence each on 6.4.2 — both named, sorted (Review, 2026-10-09)
+    const two = gs100(false, false)
+    const v = await gate({ ...two, 'default.hbs': (two['default.hbs'] as string).replace(/\{\{#if @custom\.dark_accent_color\}\}.*\{\{\/if\}\}\n/, '') }, major)
+    assert.equal(v.errors[0]?.message, 'Theme settings declared but used nowhere on your site: dark_accent_color, dark_logo.', `Ghost ${major}`)
   }
 })
 
@@ -247,7 +252,9 @@ test('any other rule: a planted .kg-card-markdown — one theme_check_rule warni
     assert.match(w.message, /^GS001-DEPR-CSS-KGMD: \S/)
     assert.deepEqual(w.refs, ['assets/css/screen.css'])
     assert.equal(w.detail, 'assets/css/screen.css: Please remove or replace .kg-card-markdown from this css file.')
-    assert.match(w.action ?? '', /^Ghost's guide: https:\/\/\S+$/)
+    // the rule's own page, not the fallback (Review, 2026-10-09: both expectations used to accept any https link)
+    // the rule is v1's in both checkers, and v1's docsBaseUrl is ghost.org/docs on both (6.4.2's v6.js alone moves to docs.ghost.org)
+    assert.equal(w.action, 'Ghost\'s guide: https://ghost.org/docs/themes/content/', `Ghost ${major}`)
   }
 })
 
@@ -284,4 +291,52 @@ test('gscan\'s markup: no tag, no &nbsp; and no other entity in any finding\'s m
       assert.doesNotMatch(text, /&(?:[a-zA-Z]+|#\d+|#x[0-9a-fA-F]+);/, `${f.code} ${f.rule ?? ''} ${field} carries an entity: ${text}`)
     }
   }
+})
+
+// ─── Review (2026-10-09): the pure rows the real-checker rows could not observe ──────────────────────────────────
+
+test('plain(): tags go, <br> is a space, entities decode to their characters, a code point past U+10FFFF is left as written', () => {
+  assert.equal(plain('<code>&lt;img src=&quot;x&quot;&gt;</code>'), '<img src="x">')
+  assert.equal(plain('a<br>b<br/>c'), 'a b c')
+  assert.equal(plain('&#123;&#x7b;x&#125;&nbsp;y'), '{{x} y')
+  assert.equal(plain('&#1114112; &unknown;'), '&#1114112; &unknown;')
+})
+
+test('the cascade with no cause found: a hand-made error GS010-PJ-PARSE on a clean package.json gives one package_check_failed, gscan\'s reason in its detail, blocked', () => {
+  const report: GscanReport = { gscan: '6.4.2', results: [
+    { code: 'GS010-PJ-PARSE', level: 'error', fatal: false, rule: 'x', details: '', failures: [{ ref: 'package.json', message: 'Cannot read properties of <code>null</code>.' }] },
+    { code: 'GS010-PJ-NAME-REQ', level: 'error', fatal: false, rule: 'x', details: '', failures: [{ ref: 'package.json' }] },
+  ] }
+  const v = verdict(report, BASE, 6)
+  assert.deepEqual([v.blocked, codes(v.errors), codes(v.warnings)], [true, ['package_check_failed GS010-PJ-PARSE'], []])
+  assert.equal(v.errors[0]?.message, 'Ghost\'s theme check failed while reading package.json, which is valid, so it reports every package.json rule as broken.')
+  assert.match(v.errors[0]?.detail ?? '', /^Cannot read properties of null\. Those package\.json errors are not real\./)
+})
+
+test('a rule whose details carry no link falls back to Ghost\'s docs root; a fatal page switch is never a warning', () => {
+  const r = (code: string, fatal: boolean, level: 'error' | 'warning') => ({ code, level, fatal, rule: 'Rule <b>text</b>', details: 'no link here', failures: [{ ref: 'page.hbs' }] })
+  const v = verdict({ gscan: '6.4.2', results: [r('GS999-X', false, 'warning')] }, BASE, 6)
+  assert.equal(v.warnings[0]?.action, `Ghost's guide: ${DOCS_ROOT}`)
+  assert.equal(v.warnings[0]?.message, 'GS999-X: Rule text')
+  const fatal = verdict({ gscan: '4.49.7', results: [r('GS110-NO-MISSING-PAGE-BUILDER-USAGE', true, 'error')] }, BASE, 5)
+  assert.deepEqual([fatal.blocked, codes(fatal.errors)], [true, ['theme_check_rule GS110-NO-MISSING-PAGE-BUILDER-USAGE']])
+})
+
+// THE CEILING, derived (marks.ts's comment): every regex rule in both inventories whose source has no brace, outside the
+// stylesheet families no customer word reaches (`GS050-CSS-*`, `GS001-DEPR-CSS-*`, `GS051-*` — `cssPart` takes library
+// names only), is either in GSCAN_INERT or exempt here with its reason. A pin bump that adds one fails this row.
+const EXEMPT: Record<string, string> = {
+  'GS001-DEPR-AMP-TEMPLATE': 'needs a literal <html amp — a typed < is already &lt;',
+  'GS080-CARD-LAST4': 'runs only under engines["ghost-api"] "v3", which Story 7.2 never writes',
+}
+test('every brace-free regex rule outside the stylesheet families is in GSCAN_INERT or exempt with a reason, on both inventories', () => {
+  const inert = new Set<string>(GSCAN_INERT.map((e) => e.rule))
+  for (const major of MAJORS) {
+    const missing = Object.entries(RECORDED[major].rules)
+      .filter(([code, r]) => r.regex !== undefined && !r.regex.includes('{') && !/^GS050-CSS-|^GS001-DEPR-CSS-|^GS051-/.test(code))
+      .map(([code]) => code)
+      .filter((code) => !inert.has(code) && !(code in EXEMPT))
+    assert.deepEqual(missing, [], `gscan ${RECORDED[major].gscan}: brace-free rules a customer's words could reach, neither inert nor exempt`)
+  }
+  for (const code of Object.keys(EXEMPT)) assert.ok(MAJORS.some((m) => code in RECORDED[m].rules), `${code} is exempt but no inventory has it`)
 })

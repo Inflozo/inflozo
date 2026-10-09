@@ -9429,3 +9429,25 @@ location: `packages/section-runtime/src/core.ts` (the `data-prop` loop's `propEm
 reason: Story 7.6's Question 2, ruled option 1 (owner, 2026-10-08): "If user deletes than he intends to delete that
   line". Hiding changes the editor (an emptied line leaves the canvas and comes back through the sidebar's text box), so
   it needs a screen and the owner's hand test, which Story 7.6 has neither of.
+
+### DW-350: the keyboard gate's R-201 floor stop went red on a spec-only push, and that push never deployed
+
+plain: The automatic checks that run on every push include a keyboard walk. On 2026-10-09 one of its stops — the one
+  that checks a phone-sized screen shows the "this editor needs a bigger screen" notice — reported the notice missing
+  on a push that changed only a story document, so that push was marked red and nothing was published. The very next
+  push, with the same app code, passed every stop. Nothing is wrong with the notice; the walk sometimes looks before the
+  page has drawn it. It cost one deploy, like DW-246 and DW-292 before it.
+status: open
+severity: low
+origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain: run 37875128495 on b5a3da0a (the Create
+  commit, `spec-7-7-*.md` alone) — `check` failed at `tools/keyboard/floor.spec.mjs:77:3 › R-201 · a phone gets D4f … ›
+  the notice, drawn to D4f, and not one request to the lock or the sync route` with `expect(locator).toBeVisible()
+  failed / element(s) not found`; every other row passed; `deploy` skipped. Run 37889508187 on d62812b5 (the Dev commit,
+  the same app code plus the gate) — `check`, `rls`, `deploy` all success.
+owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
+  the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
+  then, re-push on a red R-201 stop with no app change.
+location: `tools/keyboard/floor.spec.mjs:77` · `.github/workflows/ci.yml` (`check`)
+reason: a stop that fails once with no app change and passes on the next push is a timing wait, not a defect in the
+  story under review; fixing a wait inside Story 7.7, which touches no screen, would be a second change with no owner
+  test. The flake is recorded so the third recurrence is not read as new.

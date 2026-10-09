@@ -39,6 +39,8 @@ sed -i 's/\("node": "^14.18.0 || ^16.13.0 || ^18.12.1 || ^20.11.1 || ^22.13.1\)"
 sha256sum gscan-4.49.7.tgz                                                 # must print the copy's sha256 above
 ```
 
+The command is GNU tar, gzip, sed and coreutils on Linux — CI's runner and this machine; macOS's BSD tar and `sed -i` give other bytes, so run it in a Linux container there (Review, 2026-10-09).
+
 **A review re-runs it and compares:** the sha256 matches, and unpacking both tarballs, `diff -r` reports
 `package/package.json`'s `engines.node` line alone.
 

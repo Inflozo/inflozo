@@ -455,7 +455,7 @@ These were read in the npm tarballs ghost-6.58.0 and ghost-5.130.6, and in gscan
 
 It is §73's run on this tree. The compiled pilot theme now carries `main.js`, which is `core` alone today, and `README.md`.
 
-1. **The local gate is unchanged.** It is 0/0 on both gscans with §73's scaffold; gscan reads no `.js`.
+1. **The local gate is unchanged.** It is 0/0 on both gscans with §73's scaffold; gscan reads no `.js`. *(Corrected at Story 7.7's Review, 2026-10-09: gscan DOES read a theme's `.js` — `read-theme.js` in both pinned versions, for `GS060-JS-GUA`; MEASUREMENTS §74/§75 carry the same dated correction. The 0/0 result stands.)*
 2. **The tag.** `/`'s head carries the theme's script tag once, as Ghost renders `MAIN_JS_TAG`: `<script defer src="/assets/js/main.js?v=…"></script>`.
 3. **The file.** That address answers 200 with a JavaScript content type (recorded as served), and its body is the compiled `main.js`, byte for byte.
    - Control: `/assets/js/{nonce}.js` answers 404.

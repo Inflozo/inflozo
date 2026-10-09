@@ -20,7 +20,7 @@
 //     every target against one file is the proof.
 // Then the controls sample renders through both emitters at each of its targets (DW-121), and the story's own rows.
 //
-//     node tools/check-snapshots.mjs            (Node 24: it imports the packages' TypeScript)
+//     node tools/check-snapshots.mjs            (Node 24: it imports the packages' TypeScript, the gscan gate's included)
 //     node tools/check-snapshots.mjs --update   rewrites every snapshot from its design. CI never passes it.
 
 import { createRequire } from 'node:module'
@@ -1186,6 +1186,11 @@ for (const m of MAJORS) {
 // `currency_symbol` into every layer name (through the boundary comment's `commentPart`); the control writes them raw.
 const TRIGGERS = ['GS001-DEPR-CURR-SYM', 'GS001-DEPR-SITE-LANG', 'GS001-DEPR-LABS-MEMBERS', 'GS060-JS-GUA']
 const typedWords = { pageWord: 'Pageword currency_symbol @site.lang @labs.members ghost.url.api', layerWord: 'currency_symbol' }
+// the inert forms are derived from the runtime's own escaper, never restated (Review, 2026-10-09)
+const { gscanInert } = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
+const inertPage = gscanInert(typedWords.pageWord)
+const inertLayer = gscanInert(typedWords.layerWord)
+if (inertPage === typedWords.pageWord || inertLayer === typedWords.layerWord) throw new Error('gscanInert left the typed words as they are, so the rows below would prove nothing')
 const typedTheme = pilots.compilePilots(typedWords, THEME).files
 const typedRaw = { ...typedTheme, 'post.hbs': `${typedTheme['post.hbs']}<p>${typedWords.pageWord}</p>\n` }
 const gscanTyped = await gscanOr(typedTheme)
@@ -1200,8 +1205,8 @@ for (const m of MAJORS) {
     const text = pilots.textFiles(typedTheme)
     const labels = Object.values(text).flatMap((b) => b.split('\n').filter((l) => l.trimStart().startsWith('{{!--')))
     // every label the customer named carries the layer word, inert (an untouched page's synthesized labels carry none)
-    if (!labels.some((l) => l.includes('currency&#95;symbol')) || labels.some((l) => l.includes('currency_symbol'))) throw new Error(`the boundary comments do not carry the layer word, inert — ${labels.join(' | ')}`)
-    if (!Object.values(text).some((b) => b.includes('Pageword currency&#95;symbol &#64;site.lang &#64;labs.members ghost&#46;url.api'))) throw new Error('A4 #13\'s eyebrow does not carry the typed words, inert')
+    if (!labels.some((l) => l.includes(inertLayer)) || labels.some((l) => l.includes(typedWords.layerWord))) throw new Error(`the boundary comments do not carry the layer word, inert — ${labels.join(' | ')}`)
+    if (!Object.values(text).some((b) => b.includes(inertPage))) throw new Error('A4 #13\'s eyebrow does not carry the typed words, inert')
     const got = triggered(raised(gscanTyped[m]))
     if (got.length > 0) throw new Error(`a customer's words raise ${got.join(', ')}`)
   })
