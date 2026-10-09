@@ -10,7 +10,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.m
 
 ## In plain English
 
-After this story, every theme Inflozo builds is checked for what Ghost's own theme checker never looks at — a language tag, a phone-screen tag, valid HTML, headings in order, words on every link and button, a description on every picture, colours that are easy to read, the files every theme needs, and no hidden scripts — and each problem comes back as one plain sentence that names the section and the fix. To prove it catches real problems, it is run on Ghost's own Casper and Source themes, which pass Ghost's checker, and on a deliberately bad theme that scores a perfect pass on Ghost's checker and fails this one on every count. Nothing changes on your screen yet, because the deploy screen that shows these sentences is Story 7.18's (Question 1), so this story is done when it deploys green, proved by the automated checks and our test Ghost site.
+After this story, every theme Inflozo builds is checked for what Ghost's own theme checker never looks at — a language tag, a phone-screen tag, valid HTML, headings in order, words on every link and button, a description on every picture, colours that are easy to read, the files every theme needs, and no hidden scripts — and each problem comes back as one plain sentence that names the section and the fix: a fault of Inflozo's own stops the deploy, while one your own choice causes (a skipped heading, a link with no words, a picture-only link with no description, colours that are hard to read) is a warning, and Ship it still works. To prove it catches real problems, it is run on Ghost's own Casper and Source themes, which pass Ghost's checker, and on a deliberately bad theme that scores a perfect pass on Ghost's checker and fails this one on every count. Nothing changes on your screen yet, because the deploy screen that shows these sentences is Story 7.18's (you ruled so on 2026-10-09), so this story is done when it deploys green, proved by the automated checks and our test Ghost site.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -284,17 +284,24 @@ Levels marked *(Q2)* follow § Ruled values. The rows show Question 2's recommen
   - T1 is restored and read back;
   - MEASUREMENTS §77 records the run.
 - **AD-1.** Given `pnpm lint`, then `gate/quality.ts` is core and passes the ban, and no product file imports `handlebars`.
-- **No screen.** Given Question 1's recommended ruling, when Deploy ends, then:
+- **No screen.** Given Question 1's ruling (option 1, owner, 2026-10-09), when Deploy ends, then:
   - the story is Done on its Deploy commit (R-80);
   - the frame `S8 Deploy.dc.html` S8b, its "matches the frame" criterion and the "failure message" hand test are in Story 7.18's card word for word.
-
-  If option 2 is ruled, this criterion becomes "Pre-flight's quality rows match S8b as extended", and the owner's test gains its steps before Dev.
+- **A customer's own choices.** Given Question 2's ruling (option 1, owner, 2026-10-09), when a page skips a heading level, holds a link or control with no name, or holds a picture-only link whose description can be empty, then:
+  - the finding is a warning that names the section and the fix, and `blocked` stays false;
+  - only the rules § The rules marks "error" block.
 - **Propagation.** Given Dev's end, then:
   - § Propagated at Dev has landed;
   - DW-137, DW-139 and DW-315 are closed;
   - a grep finds no old wording.
 
 ## Spec Change Log
+
+- **2026-10-09, Create (the owner ruled).** Both questions were ruled option 1.
+  - Question 1: the frame `S8 Deploy.dc.html` S8b, its "matches the frame" criterion and the "failure message" hand test move word for word to Story 7.18 at Dev (R-195). This story stays `owner_test: none` and is Done on its Deploy commit.
+  - Question 2: `heading_skip`, `name_missing` and `image_link_unnamed` are warnings that never block, each naming the section and the fix. Only Inflozo's own faults are errors. `contrast_low` stays a warning (FR-E3).
+  - § Ruled values, § The rules' level column, the No screen criterion and the owner's test now state the ruled values, and a criterion for Question 2 is added.
+  - The frozen intent is unchanged: each ruling is its recommended option, which the I/O matrix's *(Q2)* rows already show.
 
 ## Design Notes
 
@@ -353,9 +360,9 @@ export function qualityGate(files: ThemeFiles, input: { pack: Pack; library: Syn
 | `inline-style` | AD-3 | `inline_style` | error | Part of your theme styles an element inline, which Inflozo themes do only to pass one value from Ghost. | the attribute, in {file}. `OURS` | — |
 | `build-leftover` | AD-34 | `build_leftover` | error | Pieces of Inflozo's own build were left in your theme's files. | {a directive attribute / a build marker / a partial no template uses}, in {file}. `OURS` | — |
 | `image-alt` | axe `image-alt` (`has-alt`, `aria-label`, `aria-labelledby`, `title`, presentational role) | `alt_missing` | error | A picture in your theme has no description attribute at all. | `<img>` in {file}. `OURS` | — |
-| `heading-order` | axe `heading-order`: the first heading any level, then never more than one deeper | `heading_skip` | *(Q2)* | The headings skip a level in “{layer}”: a level-{m} heading comes straight after a level-{n} one. | Screen-reader users move through a page by its headings, one level at a time. | If you emptied a title in “{layer}” or the section above it, type it back, or move “{layer}” below a section whose heading is level {m−1}. |
-| `link-name`, `button-name`, `summary-name`, `label`, `select-name`, `input-button-name` | axe, each rule's own name sources | `name_missing` | *(Q2)* | A {link/button/field} in “{layer}” has no words a screen reader can say. | — | Give it words in the section's settings. |
-| `image-link-alt` | NFR-5 | `image_link_unnamed` | *(Q2)* | A link in “{layer}” is only a picture, and the picture can be left with no description. | Its description is {alt as written}, which can be empty. | Describe the picture in the section's settings. |
+| `heading-order` | axe `heading-order`: the first heading any level, then never more than one deeper | `heading_skip` | warning (Q2) | The headings skip a level in “{layer}”: a level-{m} heading comes straight after a level-{n} one. | Screen-reader users move through a page by its headings, one level at a time. | If you emptied a title in “{layer}” or the section above it, type it back, or move “{layer}” below a section whose heading is level {m−1}. |
+| `link-name`, `button-name`, `summary-name`, `label`, `select-name`, `input-button-name` | axe, each rule's own name sources | `name_missing` | warning (Q2) | A {link/button/field} in “{layer}” has no words a screen reader can say. | — | Give it words in the section's settings. |
+| `image-link-alt` | NFR-5 | `image_link_unnamed` | warning (Q2) | A link in “{layer}” is only a picture, and the picture can be left with no description. | Its description is {alt as written}, which can be empty. | Describe the picture in the section's settings. |
 | `contrast-aa` | `AA_PAIRS`, FR-E3 | `contrast_low` | warning | Hard to read: {the editor's pair words}. Small text needs 4.5:1 — it still ships. | — | Change one of the two colours in the Style Pack. |
 | — | — | `quality_check_failed` | error | We couldn't check your theme, so nothing was sent to your site. | — | Try again in a moment. |
 
@@ -374,12 +381,12 @@ How each rule decides:
 
 ### Ruled values: Questions 1 and 2
 
-Both questions are open. The table plans each recommended option. A different ruling changes this table and nothing else, plus § No screen and the owner test.
+Both were ruled option 1 by the owner on 2026-10-09.
 
-| Question | What this spec builds (planned: option 1 each) |
+| Question | Ruled: what this spec builds |
 |---|---|
 | Q1 · Frame and hand test | No screen (`owner_test: none`), Done on its Deploy commit. "**Frame:** `S8 Deploy.dc.html` S8b" and "**Owner test:** yes (a failure message)" move word for word to Story 7.18, with Epic 7's R-195 list |
-| Q2 · A customer's own choices | `heading_skip`, `name_missing` and `image_link_unnamed` are **warnings**: they never block, and each names the section and the fix. Every other rule is an error and says it is ours. `contrast_low` is a warning whatever the ruling (FR-E3). Option 2 makes the three errors; option 3 makes `name_missing` and `image_link_unnamed` errors |
+| Q2 · A customer's own choices | `heading_skip`, `name_missing` and `image_link_unnamed` are **warnings**: they never block, and each names the section and the fix. Every other rule is an error and says it is ours. `contrast_low` is a warning (FR-E3) |
 
 ### Why the floors are checked in CI, not at deploy
 
@@ -572,11 +579,11 @@ There is no migration, so there is no Schema phase. `Story 7.8 - Dev - …` carr
 
 ## Owner's manual test
 
-None, under Question 1's recommended answer. This story has no screen, so it has no frame and no hand test, and it is Done on its Deploy commit (R-80). The automated checks prove the sentences, and T1 proves that Ghost's real pages agree with the gate. If Question 1 is ruled option 2, this section gains the check step's steps before Dev.
+None. Question 1 was ruled option 1 (owner, 2026-10-09), so this story has no screen: no frame and no hand test, and it is Done on its Deploy commit (R-80). The automated checks prove the sentences, and T1 proves that Ghost's real pages agree with the gate. The frame S8b and the failure-message hand test are Story 7.18's, word for word.
 
 ## Questions for the owner
 
-Both are open. Dev builds § Ruled values once they are ruled.
+Both were ruled option 1 (owner, 2026-10-09). Dev builds § Ruled values as it stands.
 
 ### Question 1 — Where you first see these messages, and when you test them
 
@@ -591,7 +598,7 @@ Both are open. Dev builds § Ruled values once they are ruled.
 1. **Move this story's frame and its hand test, word for word, to Story 7.18,** beside the theme checker's. This story then has no screen, and it is done when it deploys green. The automated checks and our test Ghost site prove its sentences. **(RECOMMENDED)**
 2. **Build the check step now,** so you test one message by hand in this story. This pulls Story 7.18's server-side build of your theme into this one, and makes it several times bigger.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-09).**
 
 ### Question 2 — When your own choices make a page harder to use, does Ship it stop or warn?
 
@@ -614,7 +621,7 @@ Both are open. Dev builds § Ruled values once they are ruled.
 2. **Stop on all of them,** as the plan reads today. Ship it stays greyed until the page passes.
 3. **Warn on headings, stop on missing words or descriptions.** A skipped heading breaks a good-practice rule. A link a screen reader cannot name fails the accessibility standard the plan holds us to, WCAG 2.1 AA.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-09).**
 
 ## Verification
 

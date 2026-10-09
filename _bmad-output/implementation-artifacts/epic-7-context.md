@@ -255,9 +255,9 @@ A user ships. The project compiles — purely, from what it is handed — into a
       - Casper and Source are the negative control;
       - T1 renders the pilots and a planted probe, and axe on Ghost's real pages agrees (§77);
       - the stress fixture measures the real gate (AD-34's "700 ms" was the proxy's).
-    - **Two questions went to the owner, both open:**
-      - Q1, the frame S8b and the failure-message hand test (option 1 recommended: move word for word to Story 7.18, so 7.8 is `owner_test: none`);
-      - Q2, a fault the customer's own choice causes (option 1 recommended: a warning that names the section and the fix, never a block, as FR-E3 rules for colours).
+    - **Two questions went to the owner, and both were ruled option 1 (owner, 2026-10-09):**
+      - Q1, the frame S8b and the failure-message hand test. **Ruled:** both move word for word to Story 7.18 at Dev (R-195), beside the theme checker's; 7.8 is `owner_test: none`, Done on its Deploy commit.
+      - Q2, a fault the customer's own choice causes (`heading_skip`, `name_missing`, `image_link_unnamed`). **Ruled:** a warning that names the section and the fix, never a block, as FR-E3 rules for colours; only Inflozo's own faults stop a deploy.
 - **Theme Settings own `posts_per_page`, credits and the custom-settings builder; a control or the accent can be promoted (7.9, 7.10, FR-Q1–Q4).** Ghost's five types, the `homepage`/`post` groups (else Site wide), 6-digit hex colour defaults, a 20-setting meter with three slots kept for the dark built-ins, keys immutable once deployed or exported; a promotion emits `{{@custom.*}}`, parks with its design, warns on delete and before a pack switch, previews at its resolved default, and compiles colours as an inline block in `default.hbs`.
   - **R-131 (owner, 2026-09-18):** the screen exists at `/projects/<id>/settings`, reached from the editor, holding D6a's project-mode block and its Clear dark overrides row; 7.9 builds the rest of D6a. **DW-254 (Story 7.9):** the main feed's Count gains "Change it in Theme settings." and its link.
   - **R-122, R-22 (AD-10):** a bound text prop shows P0-1's lock pill (built by Story 5.3); Ghost's comment accent is linked, never written, and the Admin write allowlist stays four.
