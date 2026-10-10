@@ -2,8 +2,8 @@
 title: 'Story 7.9 — Theme Settings and the custom-settings builder'
 type: 'feature'
 created: '2026-10-09'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '0b6fdcd0832a23e566b54e9e2af4274463050b8e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -1034,3 +1034,8 @@ and are syntax-checked now.
   phone-notice stop, `#canvas > *` not found after 5 s, 202 other stops passed) — DW-350's row, its fourth recurrence, on a push
   that changes no app code; `deploy` was skipped, which changes nothing live. This Deploy commit re-pushes with no app change.
 - The owner's test below already carries the live URLs; they are the two real projects, on `app.inflozo.com`.
+
+## Owner's test findings
+
+**Passed (owner, 2026-10-10).** The owner walked `## Owner's manual test` on the live site (`app.inflozo.com`, Deploy
+`dpl_9QfaoUKNJDBzhXEFLcJgepGfjSxN` at `d536c38c`, CI green on `e9d74866`) and answered "passed". No findings.
