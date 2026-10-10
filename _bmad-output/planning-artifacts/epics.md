@@ -3571,6 +3571,10 @@ assumed.** If the selected pairing's families do not cover the project language'
 the **system font stack** for that script and the language selector says so at the moment of selection — a theme never
 ships a `@font-face` that cannot render its own chrome strings."*
 
+**And** *(from Story 7.9's Dev, 2026-10-10)* this story's Create asks the owner (R-83) about D6a's left rail before it is
+drawn: besides Site basics and Translations it names **Navigation, Social accounts and Code injection**, which Ghost owns and
+no story builds — whether each is drawn (and as what, e.g. a "Change this in Ghost ↗" link as Site basics has) or left out.
+
 **FRs:** FR-Q6 (the surface and `locales/` emission halves), FR-Q8. · **Frame:** `B Missing Surfaces.dc.html`
 B18. · **Owner test:** yes.
 
