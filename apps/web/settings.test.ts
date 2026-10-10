@@ -258,8 +258,9 @@ test('every writer is (previous, formData), refuses without a project id, and ch
   before(update, 'checkSetting(row, others)', '.update(', 'refused before the update')
   assert.doesNotMatch(update.slice(update.indexOf('.update(')), /\bkey:|\blabel:/)
   assert.doesNotMatch(update, /posted\('label'\)/)
-  // a delete clears every condition naming the setting first, then deletes
-  before(fn('deleteSetting'), 'visibility_condition: null', '.delete()', 'conditions cleared first')
+  // a delete and the conditions naming it are ONE call — the database's transaction (Question 7, option 2), never two writes
+  assert.match(fn('deleteSetting'), /\.rpc\('delete_custom_setting', \{ p_project: id, p_setting: settingId \}\)/)
+  assert.doesNotMatch(fn('deleteSetting'), /\.delete\(\)|\.update\(/)
   // the database's floor speaks the module's words, never a Postgres code — `refusalOf`, run above, on every write's error
   assert.equal(actions.match(/return \{ error: refusalOf\(error, row\.key\) \}/g)?.length, 2, 'promote and edit')
 })

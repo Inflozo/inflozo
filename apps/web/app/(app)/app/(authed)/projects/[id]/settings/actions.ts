@@ -141,7 +141,8 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
  * one sentence. Every rule a setting must meet is the runtime's `checkSetting`, asked BEFORE the write; the database's own
  * constraints — the cap trigger, `unique (project_id, key)`, `custom_settings_key_frozen`, the column grants (no `key`, no
  * `frozen_at` in the update grant) — stay the floor, and a refusal from one is mapped to the module's sentence, never shown
- * as a Postgres code. No migration: every column, grant and trigger here exists since Story 1.2 (R-99). */
+ * as a Postgres code. Every column, grant and trigger here exists since Story 1.2; the one function this story added,
+ * `delete_custom_setting()` (Question 7, option 2), was pushed first as its own Schema phase (R-99). */
 
 type Supabase = Awaited<ReturnType<typeof supabaseServer>>
 
@@ -270,33 +271,18 @@ export async function updateSetting(_previous: SettingsResult | null, formData: 
   return { ok: true }
 }
 
-/** A setting deleted, and every condition that names it cleared FIRST — so a failure part-way leaves a setting with no
- *  dangling condition rather than a condition naming a setting that is gone (the confirm, R-134, is the page's). */
+/** A setting deleted, and every condition that names it cleared, in ONE transaction — `delete_custom_setting()`
+ *  (`20261010120000_delete_custom_setting.sql`; Story 7.9's Question 7, ruled option 2, owner, 2026-10-10), so a failure
+ *  leaves both or neither. It runs as the caller (SECURITY INVOKER), so RLS decides as every write here does: another
+ *  user's setting answers false and nothing moves. The confirm (R-134) is the page's. */
 export async function deleteSetting(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
   const id = idOf(formData)
   const settingId = formData.get('setting')
   if (!id || typeof settingId !== 'string' || !isUuid(settingId)) return { error: SETTING_WORDS.couldNot }
   await signedIn()
-  const supabase = await supabaseServer()
-  const rows = await settingsOf(supabase, id)
-  const target = rows?.find((r) => r.id === settingId)
-  if (rows === null || target === undefined) return { error: SETTING_WORDS.couldNot }
-  const naming = rows.filter((r) => r.visibility_condition?.key === target.key).map((r) => r.id)
-  if (naming.length > 0) {
-    const cleared = await supabase
-      .from('custom_settings')
-      .update({ visibility_condition: null, updated_at: new Date().toISOString() })
-      .in('id', naming)
-      .eq('project_id', id)
-      .select('id')
-    if (cleared.error || cleared.data.length !== naming.length) {
-      console.error('projects/settings: condition clear failed', { code: cleared.error?.code })
-      return { error: SETTING_WORDS.couldNot }
-    }
-  }
-  const { data, error } = await supabase.from('custom_settings').delete().eq('id', target.id).eq('project_id', id).select('id')
-  if (error || !data || data.length === 0) {
-    console.error('projects/settings: setting delete failed', { code: error?.code })
+  const { data, error } = await (await supabaseServer()).rpc('delete_custom_setting', { p_project: id, p_setting: settingId })
+  if (error || data !== true) {
+    console.error('projects/settings: setting delete failed', { code: error?.code, deleted: data ?? null })
     return { error: SETTING_WORDS.couldNot }
   }
   revalidateProject(id)
