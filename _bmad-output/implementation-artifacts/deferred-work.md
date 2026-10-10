@@ -9550,3 +9550,66 @@ location: `tools/probe/run-verify-editor.cjs` (`posted104`, `promote104`; every 
 reason: the hold is in the walk's browser, not in the product (the server answered every held POST in under a second once
   it arrived, and every row was stored); DW-204's retry covers idempotent loads only, by design, because a POST may not be
   replayed blind. Hardening the walk's POST steps is the E2E suite's work, not a theme-settings story's.
+
+## Deferred from: code review of spec-7-10-promoting-a-control-to-a-ghost-admin-setting (2026-10-10)
+
+### DW-353: a promoted setting the theme cannot carry is refused only when the theme is built, in the builder's words
+
+plain: Theme settings shows a promoted setting as healthy whenever its section is on the page and its design has the
+  control or the words. A few rarer cases still stop the theme from being built, and today you would only find out at a
+  deploy, in a sentence written for an engineer: a setting promoted from a hand-picked post list with nothing picked (the
+  section prints nothing, so nothing reads the setting); a picture's description promoted on a section with no picture
+  (the picture's element is left out, and its description with it); a shuffle onto a design that has the same control as
+  a different kind; and two settings stored for the same control by two promotes in one instant. Separately, an "Only show
+  when" that names a setting a shuffle has parked is quietly dropped from the theme while Theme settings still prints it.
+  The deploy wizard's Pre-flight builds the theme before anything is uploaded, so it is the place to say each of these in
+  plain words and name the setting.
+status: open
+severity: low
+origin: Story 7.10's Review (2026-10-10), on `94065e62`. `compileTheme`'s last check (`compile.ts`, "is declared and nothing
+  reads it — a setting ships with the line that reads it (GS100, GS090)") is reached by `compile.test.ts`'s own row "(7.10)
+  the readers and the keys are one set" (Per row promoted on a hand-picked feed with no picks); `core.ts`'s `applyProps`
+  removes an element whose first prop is empty under `data-empty="hide"` before a promoted attribute on it is read; a
+  shuffle's park note (`parkedOn`) names a control the new design drops, never one it declares as another kind
+  (`bindingState` then answers `changed`); `custom_settings` has no unique constraint on `bound_to`, so two concurrent
+  promotes of one control store two rows, of which the compile reads one (`customSettings`' `at(…)` keeps the last); and
+  `customSettings` drops a condition whose target is parked without a row note (`rowStates`) or a `CustomRecord` entry.
+owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — its Pre-flight runs the compile before
+  any upload and already names a deployed setting a deploy would drop (Story 7.10's Question 2).
+location: `packages/theme-compiler/src/compile.ts` (`customSettings`, the keys-and-readers check) · `apps/web/lib/theme-settings.ts`
+  (`rowStates`, `parkedOn`) · `supabase/migrations/20260904120000_complete_schema.sql` (`custom_settings`)
+reason: every case is refused before anything reaches Ghost, so nothing ships wrong; what is missing is the owner's words
+  at the moment a deploy meets one, which is the wizard's surface, and closing the two-promote window in the database is a
+  Schema phase.
+
+### DW-354: a promoted picture over a section's own picture ships no `srcset` on either branch
+
+plain: When a section has its own picture and that picture is handed to the site's owner in Ghost, the page asks for the
+  picture at one size only, whether it shows the owner's choice or the section's own. A section with no picture of its own
+  already asks Ghost for the right sizes. No design on a real project has its own picture until Story 9.1, and the
+  section's own picture's sizes are Story 7.29's work, so the two halves are built together there.
+status: open
+severity: low
+origin: Story 7.10's Review (2026-10-10). `core.ts`'s promoted-picture branch writes `src="{{#if f}}{{img_url f}}{{else}}<the
+  section's picture>{{/if}}"` with no `srcset` (its `ponytail:` note names Story 7.29), while the branch with no picture of
+  the section's own writes `srcsetExpr(field)` where the element carries `sizes`.
+owner: Story 7.29 (deploy-time asset bundling), whose card carries this entry with its id — it composes a bundled
+  picture's `srcset` from its rendition set, and the promoted branch's `srcsetExpr` joins it in one attribute.
+location: `packages/section-runtime/src/core.ts` (`applyProps`, the promoted picture)
+reason: the `{{else}}` half needs the bundled rendition set that does not exist before Story 7.29.
+
+### DW-355: `custom_settings.bound_to`'s column comment names two shapes; Story 7.10 stores a third
+
+plain: A note stored with the database column that holds what a setting was promoted from lists two kinds — a control and
+  the accent — but Story 7.10 also stores a text or a picture. Nothing reads the note; it only misleads a person reading the
+  database. Changing it needs a database change, which is done at the start of a story that changes the database anyway.
+status: open
+severity: low
+origin: Story 7.10's Review (2026-10-10). `20260904120000_complete_schema.sql`'s comment on `bound_to` and the architecture's
+  `SCHEMA.sql` read `{kind:'control'|'token', instanceId?, controlKey?, token?}`; `custom-settings.ts`'s `Binding` type is the
+  one statement of the three shapes and says so beside the code.
+owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — the next story with a planned `Schema`
+  phase on this project's deploy tables; a `comment on column` rides along with its migration.
+location: `supabase/migrations/20260904120000_complete_schema.sql` · `architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql`
+reason: an applied migration is never edited, and a migration for a comment alone is a Schema phase this story's spec rules
+  out.

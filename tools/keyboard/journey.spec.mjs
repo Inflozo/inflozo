@@ -7406,7 +7406,8 @@ test('7.4 · DW-331 · /pilots draws a Background set in Dark: Contrast in Dark,
 // ── Story 7.10 — promoting from the editor: the ↗ beside a row, "In Ghost", P0-1's lock pill and the four warnings ──────
 //
 // The harness header `x-inflozo-harness-promoted: on` hands the editor the rows Theme settings would have stored after
-// promoting the fixture ring section's Show icons, Heading and Picture and the accent; without it, nothing is promoted —
+// promoting the fixture ring section's Show icons, Heading and Picture, the accent and (the review) the header's Sign in;
+// without it, nothing is promoted —
 // each stop's control, in a test of its own (a second load in one test would read the first's journal from this device,
 // and the harness mints its instance ids per load). Every sentence is read from `THEME_WORDS` (the one list, R-170).
 
@@ -7501,8 +7502,12 @@ test('7.10 · a promoted rich text on the canvas: no toolbar, P0-1\'s lock pill 
   await expect(formattingBar(page), 'no formatting toolbar on a text Ghost holds').toHaveCount(0)
   await page.keyboard.press('ControlOrMeta+b')
   await page.keyboard.press('ControlOrMeta+i')
+  // review, 2026-10-10: the matrix names all four keys — ⌘U and ⌘K too, and ⌘K opens neither a link panel nor the picker
+  await page.keyboard.press('ControlOrMeta+u')
+  await page.keyboard.press('ControlOrMeta+k')
   await panelsSettle(page)
-  await expect(editingNow(page).locator('strong, em'), '⌘B and ⌘I do nothing').toHaveCount(0)
+  await expect(editingNow(page).locator('strong, em, u, a'), '⌘B, ⌘I, ⌘U and ⌘K do nothing').toHaveCount(0)
+  await expect(page.locator('dialog[open]'), '⌘K opened nothing').toHaveCount(0)
   await page.keyboard.press('End')
   await page.keyboard.type(' again')
   await expect(editingNow(page)).toHaveText(`${RING_CONTENT.props.heading.default} again`)
@@ -7687,4 +7692,181 @@ test('7.10 · reading along with settings promoted: every tag still reads, and n
   await openRowGroups(page)
   await expect(inGhost(page, 'show_icons')).toHaveText(THEME.inGhost)
   await expect(page.locator('#editor-controls a[data-promote]')).toHaveCount(0)
+})
+
+// ── Story 7.10's review (2026-10-10): the doors and the panel field the journeys above did not walk ──
+
+const panelHeading = (page) => page.locator('#editor-controls').getByRole('textbox', { name: 'Heading', exact: true })
+
+test('7.10 · the control: the panel\'s rich Heading, unpromoted, draws its toolbar over a selection and ⌘B bolds it', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  await openRowGroups(page)
+  await panelHeading(page).focus()
+  await page.keyboard.press('ControlOrMeta+a')
+  await expect(formattingBar(page)).toBeVisible()
+  await page.keyboard.press('ControlOrMeta+b')
+  await expect(panelHeading(page).locator('strong'), 'unpromoted, ⌘B bolds in the panel too').toHaveCount(1)
+})
+
+test('7.10 · the panel\'s rich Heading, promoted, is P0-1\'s lock too: no toolbar, ⌘B does nothing, typing edits its words', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  await selectRinged(page)
+  await openRowGroups(page)
+  await panelHeading(page).focus()
+  await page.keyboard.press('ControlOrMeta+a')
+  await panelsSettle(page)
+  await expect(formattingBar(page), 'no formatting toolbar on a text Ghost holds').toHaveCount(0)
+  await page.keyboard.press('ControlOrMeta+b')
+  await panelsSettle(page)
+  await expect(panelHeading(page).locator('strong'), '⌘B does nothing').toHaveCount(0)
+  await page.keyboard.press('End')
+  await page.keyboard.type(' again')
+  await expect(panelHeading(page)).toHaveText(`${RING_CONTENT.props.heading.default} again`)
+})
+
+test('7.10 · a hidden section draws no ↗ — Theme settings offers nothing hidden — and showing it brings them back', async ({ page }) => {
+  await open(page)
+  const key = await selectRinged(page)
+  await openRowGroups(page)
+  await expect(promoteAction(page, 'Show icons'), 'the control: shown, the switch has its ↗').toHaveCount(1)
+  // Space hides from the Layers row, so the row has the focus first
+  await select(page, key)
+  await page.keyboard.press(' ')
+  await expect(hideEntry(page, key)).toHaveText('Show')
+  await select(page, key)
+  await openRowGroups(page)
+  await expect(page.locator('#editor-controls [data-promote]'), 'hidden, no row offers a promotion').toHaveCount(0)
+  await select(page, key)
+  await page.keyboard.press(' ')
+  await expect(hideEntry(page, key)).toHaveText('Hide')
+  await select(page, key)
+  await openRowGroups(page)
+  await expect(promoteAction(page, 'Show icons')).toHaveCount(1)
+})
+
+test('7.10 · deleting a site-wide section a setting is promoted from asks ONCE: FR-D5\'s site-wide confirm carries the settings\' sentence', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  // the harness promotes the header's Sign in (`promotedFrom`); the header is the site doc's first row
+  await select(page, (await rows(page)).site[0])
+  await page.keyboard.press('Delete')
+  await expect(page.locator('dialog[aria-labelledby="editor-sitewide-title"]')).toBeVisible()
+  await expect(page.locator('#editor-sitewide-body')).toContainText(THEME.bindingAsk(['Sign in'], 'deleted'))
+  await expect(page.locator('dialog[open]'), 'one dialog, never two').toHaveCount(1)
+  await page.keyboard.press('Escape')
+  await expect(page.locator('dialog[open]')).toHaveCount(0)
+})
+
+test('7.10 · the control: placing a header over a header nothing is promoted from asks nothing — it replaces at once', async ({ page }) => {
+  await open(page)
+  const before = await rows(page)
+  await page.locator('#editor-add-section').focus()
+  await page.keyboard.press('Enter')
+  await expect(picker(page)).toBeVisible()
+  await picker(page).locator('[data-cell][data-design="a1/1"]').focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => (await rows(page)).site).not.toEqual(before.site)
+  await expect(bindingAsk(page)).toBeHidden()
+})
+
+test('7.10 · placing a header that replaces one a setting is promoted from asks first, on Keep it; Keep it places nothing, Delete section replaces it', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  const before = await rows(page)
+  const place = async () => {
+    await page.locator('#editor-add-section').focus()
+    await page.keyboard.press('Enter')
+    await expect(picker(page)).toBeVisible()
+    await picker(page).locator('[data-cell][data-design="a1/1"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(bindingAsk(page)).toBeVisible()
+  }
+  await place()
+  await expect(page.locator('#editor-binding-body')).toHaveText(THEME.bindingAsk(['Sign in'], 'deleted'))
+  await expect(page.locator('dialog[open] [data-cancel]'), 'it opens on Keep it').toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(bindingAsk(page)).toBeHidden()
+  await panelsSettle(page)
+  expect((await rows(page)).site, 'Keep it places nothing').toEqual(before.site)
+  await place()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('dialog[open] button:focus')).toHaveText(THEME.deleteSection)
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => (await rows(page)).site).not.toEqual(before.site)
+  expect((await rows(page)).site, 'one header replaces the other').toHaveLength(before.site.length)
+})
+
+test('7.10 · with the accent promoted, a New pack asks first too: Keep keeps the pack in force AND the new pack in the list; chosen again, Switch wears it', async ({ page }) => {
+  const paper = PRESETS()[0]
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  await intoList(page)
+  await tabOnto(page, page.locator('#style-pack-new'))
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-name')).toBeFocused()
+  await page.keyboard.type('Harbour')
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeVisible()
+  await expect(page.locator('#editor-pack-title')).toHaveText(THEME.packTitle('Harbour'))
+  await expect(page.locator('dialog[open] [data-cancel]'), 'it opens on Keep').toBeFocused()
+  await expect(page.locator('dialog[open] [data-cancel]')).toHaveText(THEME.packKeep(paper.name))
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeHidden()
+  await panelsSettle(page)
+  expect(await wears(page), 'Keep keeps the pack in force').toBe(paper.id)
+  await expect(option(page, 'custom-1'), 'and keeps the pack just made, in the list').toHaveCount(1)
+  await option(page, 'custom-1').focus()
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('dialog[open] button:focus')).toHaveText(THEME.packSwitch)
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'custom-1')
+})
+
+test('7.10 · with the accent promoted, Remix with the Style Pack asks first; Keep re-rolls nothing at all', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  await selectRinged(page)
+  const design = await designName(page).innerText()
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page)).toBeVisible()
+  await page.keyboard.press('Shift+Tab')
+  await page.keyboard.press('ArrowRight')
+  await expect(remixDialog(page).locator('input[value="both"]')).toBeChecked()
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeVisible()
+  await expect(page.locator('dialog[open] [data-cancel]'), 'it opens on Keep').toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeHidden()
+  await panelsSettle(page)
+  expect(await wears(page), 'Keep switches no pack').toBe(PRESETS()[0].id)
+  await expect(designName(page), 'and re-rolls no design').toHaveText(design)
+  await expect(undoArrow(page), 'and journals nothing').toHaveAttribute('aria-disabled', 'true')
+})
+
+test('7.10 · Remix that moves a promoted section to a design without its control says so, as a shuffle does', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  await selectRinged(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page)).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  // the draw is uniform over the ring's other designs: its top end is the last, design 3, which has no Show icons and no
+  // picture — both parked; the heading it still prints is not
+  await page.evaluate(() => {
+    Math.random = () => 0.9999
+  })
+  await page.keyboard.press('Enter')
+  const words = [THEME.parkNote('Show icons'), THEME.parkNote('Picture')].join(' ')
+  await expect.poll(() => said(page)).toMatch(new RegExp(`^Remixed .+\\. ${words.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`))
+  await expect.poll(() => canvasNotes(page), 'the note on the section').toEqual([words])
 })

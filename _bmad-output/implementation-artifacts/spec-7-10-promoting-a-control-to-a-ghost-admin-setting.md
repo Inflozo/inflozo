@@ -2,10 +2,10 @@
 title: 'Story 7.10 — Promoting a control to a Ghost Admin setting'
 type: 'feature'
 created: '2026-10-10'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '48e32444b3659feec646961737c1d5854bbc7db5'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -265,7 +265,7 @@ DW-150 (A1's authored logo, Story 9.1).
 
   -- AD-3's promoted form, `data-{control}="{{@custom.key}}"`, made real without touching the canvas.
 - [x] `packages/section-runtime/src/tokens.ts` — `packTokensCss(pack, { ghostFonts, settingAccent })` and an exported
-  `SETTING_ACCENT = '--setting-accent'`: with `settingAccent`, every light-block value that is, or contains, the light accent
+  `SETTING_ACCENT = '--setting-accent'`: with `settingAccent`, every light-block value the accent feeds (it moves with the accent — the review, 2026-10-10) that is, or contains, the light accent
   (compared without regard to case) reads `var(--setting-accent, <hex>)`; computed shades and the dark blocks are
   untouched; with no option the bytes are today's. Tests: the canvas call unchanged, the theme call's light values, the dark map identical.
 
@@ -408,6 +408,73 @@ DW-150 (A1's authored logo, Story 9.1).
 - Given T1, when the compiled theme with promotions is uploaded, then Ghost lists each setting at its start, a change in
   Ghost reaches the page, and the keep-and-forget facts hold as § Facts reads them (MEASUREMENTS §78).
 
+### Review Findings (2026-10-10)
+
+Five layers ran: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the real-infra verifier (CI,
+Vercel, production's schema read-only, T1 read-only, signed-out routes), with the deployed editor walk run in the main
+session on the owner's in-session go (R-82) — results under § Verification. Every finding was read in the code before it
+was rated.
+
+- [ ] [Review][Decision] The render matrix never ran on the Dev head: GitHub refused to start the job — "recent account
+  payments have failed or your spending limit needs to be increased" — on this push and the two before it, and nothing
+  re-ran it, while this push changes the shared runtime every design renders through. Put to the owner as **Question 5**
+  [`.github/workflows/matrix.yml`, run 38058081445]
+- [x] [Review][Patch] A promoted accent on a pack whose accent is also another of its colours — Mono, accent and text both
+  `#000000` — handed the site's owner the body text, the contrast ground and the error colour too, because the light block
+  was rewritten wherever the hex appeared; only the tokens the accent feeds follow it now [tokens.ts `packTokensCss`]
+- [x] [Review][Patch] Remix parked a promoted setting without a word — the park note lived in `onDesign`, which Remix never
+  passes; Remix's sentence and the section's note now say it [editor.tsx `remixed`]
+- [x] [Review][Patch] The ↗ was drawn on a hidden section and on an untouched canvas, where Theme settings offers nothing,
+  so the form opened on another control with no word; it is drawn only where the form offers it, and a promoted one's tag
+  still reads [editor.tsx `promotion`, sidebar.tsx]
+- [x] [Review][Patch] Placing a header or footer that replaces a site-wide section carrying a promoted setting deleted it
+  without the ask; it asks first, in the same dialog [editor.tsx `onPlace`]
+- [x] [Review][Patch] Keep in the pack-switch ask threw away a pack just made with New pack; Keep now keeps the new pack in
+  the list and the pack in force as it was [editor.tsx `savePack`]
+- [x] [Review][Patch] A refusal while D6c's confirm or the accent's caution was open was drawn behind the modal sheet; the
+  sheet closes on any answer, so the sentence is seen [theme-settings.tsx `PromoteForm`]
+- [x] [Review][Patch] Deleting or hiding one copy of a section whose other copy (page 1 or page 2) still carries the setting
+  asked with a sentence that was not true; it asks only when no other visible copy keeps it [editor.tsx `promotedOn`]
+- [x] [Review][Patch] A catalog text promoted into an attribute lost its translated fallback once emptied in Ghost, which
+  the same text in an element keeps [core.ts `applyProps`]
+- [x] [Review][Patch] A bound rich text with no value at all was handed to the editor unlocked, so its marks were offered
+  [theme-settings.ts `locked`]
+- [x] [Review][Patch] A visible section on a design the library no longer has was called "hidden"; it is "changed"
+  [custom-settings.ts `bindingState`]
+- [x] [Review][Patch] The "In Ghost" tag's explanation lived only in a `title`, which a screen reader, a keyboard and a touch
+  never reach; it is read out beside the tag too [sidebar.tsx `InGhost`]
+- [x] [Review][Patch] Nothing ran the lock's save path: typing into a locked text keeps its marks shifted and stores no
+  `plainText`, the canvas and the panel save through `unlocked`, the sheet posts `confirmed`, and the editor reads the
+  project's settings — each now held [settings.test.ts]
+- [x] [Review][Patch] Keyboard journeys for what had none: ⌘U and ⌘K inert under the lock, the panel's rich field locked,
+  the pack-switch ask from New pack and from Remix, Remix's park note, the site-wide ask's joined sentence, the replacement
+  ask, and no ↗ on a hidden section [journey.spec.mjs]
+- [x] [Review][Patch] Step 105 promoted no plain text on production, which its task names; 105 promotes Latest Post's
+  headline (no confirm) and reads it stored [run-verify-editor.cjs]
+- [x] [Review][Patch] §78's root-tag rows printed 110 characters of a multi-line tag — broken table cells, cut before the
+  attribute each row tests — and its command line wrote a count by hand; the recorder prints the attribute it tests, the
+  cells are put on one line, the count is gone [record-theme-assembly.py, MEASUREMENTS §78]
+- [x] [Review][Patch] Comments that said something untrue: `matchChain` named a `promotedValue` that does not exist, and
+  `namesOn` claimed the rows' order; the harness built a setting's label with its own regex instead of `ghostName`
+  [custom-settings.ts, theme-settings.ts, harness layout.tsx]
+- [x] [Review][Patch] Four words the build added were missing from § Words (R-170): the empty form's sentence, the ask's
+  title, the "Style Pack" heading and the accent's row [spec § Words]
+- [x] [Review][Defer] A promoted setting the compile refuses while Theme settings shows it as healthy, refused in the
+  compile's own words — owner Story 7.18's Pre-flight [compile.ts `customSettings`] — deferred, DW-353
+- [x] [Review][Defer] A promoted picture over a section's own picture asks for one size on either branch — owner Story
+  7.29 [core.ts] — deferred, DW-354
+- [x] [Review][Defer] `custom_settings.bound_to`'s column comment names two shapes — owner Story 7.18's Schema migration
+  [complete_schema.sql, SCHEMA.sql] — deferred, DW-355
+
+Dismissed, each read in the code: the page row's and the compile's sentences differ (§ Words gives each its own); "control"
+in 7.9's sentences and the frozen delete's (§ Words and D6a's own "Promote a control"); a text's start not printed (§ Words:
+"none for a text or a picture"); formatting lost by typing under the lock (executed: `replaceRange` over a locked value
+shifts its marks and keeps them); `gate.test.ts`' 15-second wait; two `startOf`s in two modules; a failed settings read
+drawing no tag (the documented safe side; Theme settings stays the truth); DW-351 closed (the spec rules the compile's
+refusal its close); `--accent-on-contrast` following the accent where it IS the accent (the task's own rule); no picture
+promoted on production (Question 4: no pilot takes one; proved on T1, §78); D5f's joined sentence unwalked (the site-wide
+dialog's join is walked, and both pass `promoted` the same way).
+
 ## Spec Change Log
 
 - **Dev, 2026-10-10 — a choice's `{{#match}}` branches take the three-argument form.** § What each kind becomes writes
@@ -435,6 +502,17 @@ DW-150 (A1's authored logo, Story 9.1).
   empty, so the recorder's rows read "still empty"; its first two T1 runs were void on that row alone.
 - **Dev, 2026-10-10 — the accent's inline block is guarded** `{{#if @custom.k}}…{{/if}}`: a colour its condition hides renders
   as `null`, and `--setting-accent: ;` would empty every `var()` reading it rather than fall back to the pack's hex.
+- **Review, 2026-10-10.** Five layers; the findings and their dispositions are § Review Findings. Amended outside the
+  frozen block: the tokens task's "every light-block value that is, or contains, the light accent" now reads **every value
+  the accent feeds** — Mono's accent is also its text, and the literal rule handed the site's owner the body text and the
+  contrast ground (`followAccent`: a token follows only when its value moves with the accent); the Remix door says a park as
+  a shuffle does; the ↗ is drawn only where Theme settings offers the section (a visible instance of a stored doc), the
+  tag where it is promoted; a site-wide placement that replaces a promoted section asks in the delete ask, and on page 2
+  R-180's own ask then follows it (two asks, in that corner only); Keep in the pack-switch ask keeps a pack just made with
+  New pack in the list, unworn; the delete or hide ask stays silent where another visible copy of the section (a page 1
+  and its stored page 2) keeps the setting live; step 105 gains 105l (a plain text promoted on production). § Words gains
+  the words the build added; §78's evidence cells and its upload count are corrected (MEASUREMENTS, formatting and a count
+  only — the verdicts are the run's).
 
 ## Design Notes
 
@@ -506,6 +584,7 @@ block cannot carry anything else.
 | Pack-switch ask | title `Switch to ${pack}?` · body `Your accent is a Ghost setting. Switching packs restyles your canvas, but once you have deployed, your live site keeps the accent Ghost holds until your site's owner changes it there.` · `Keep ${current}` · `Switch` |
 | Frozen delete (Question 2, replaces 7.9's) | `Promote a control with the key ${key} again before your next deploy and the value your site's owner set in Ghost comes back. After that deploy, Ghost forgets it.` |
 | Site basics' accent (Question 3, replaces `accentCaption`) | `Ghost's own comments and card buttons use this colour. Your Style Pack's accent is separate.` · `Change this in Ghost ↗` (`adminAt(url, 'settings')`) |
+| Built at Dev, recorded at Review (R-170) | the delete-or-hide ask's title `Delete ${name}?` · `Hide ${name}?` and its buttons `Keep it` · `Delete section` · `Hide section`; Which control's heading for the accent `Style Pack` and its row `Accent`; the form with nothing left `Nothing on your canvases is left to promote.` (7.9's said "No switch or choice…") |
 | Compile refusals (`SETTING_WORDS`) | deleted: `${name} is promoted from a section that is no longer on your site. Delete the setting in Theme settings, or bring the section back.` · hidden: `${name} is promoted from a hidden section. Show the section, or delete the setting in Theme settings.` · changed: as the row · confirm: `Confirm first — promoting this changes what your theme carries.` · cap: 7.9's |
 
 ### What the frames draw and what this story builds
@@ -590,6 +669,7 @@ the test Ghost proves it).
 All four were raised at this story's Create and ruled by the owner in chat on 2026-10-10, each the recommended option
 (1, 2, 1 and 1). The spec is written to those rulings (§ Rulings this spec is written to); Story 7.18's and Story 9.1's
 cards and Epics 7 and 9's preambles carry the two moved requirements word for word (R-195).
+Question 5 was raised at Review and is open.
 
 ### Question 1 — Where a promoted control's starting value is set
 
@@ -671,6 +751,27 @@ and promoting it gives your site's owner a "Logo" picture under Design in Ghost.
 
 **Ruled: option 1 (owner, 2026-10-10).**
 
+### Question 5 — GitHub did not run the picture check of every section on this story's code (raised at Review, 2026-10-10)
+
+**In plain English.**
+- Every push runs an automatic check that photographs every section design and compares it with its approved picture
+  (the "render matrix"). It is the check that would catch this story changing how any section looks.
+- On this story's three pushes GitHub refused to start that check. The reason GitHub gives is: "The job was not started
+  because recent account payments have failed or your spending limit needs to be increased." The same refusal hit the
+  main check's first try on the Dev push, which you re-ran by hand; the picture check was never re-run.
+- This story changes code every section is drawn with, so the picture check matters here. It does not stop the site
+  deploying (R-116), so the live site is unaffected meanwhile.
+
+**Example.** If the change to the colour block had moved one section's colours, the picture check would have shown it
+red, with the before-and-after pictures. Today nothing has looked.
+
+1. **Fix the payment in GitHub's Billing & plans, then press "Re-run all jobs" on the Render matrix run for this story's
+   Review push** (I will give you the link at Deploy). It compares every design against its picture. **(RECOMMENDED)**
+2. Fix the payment and let tonight's automatic full run (03:00 IST) check it instead — one day later, same coverage.
+3. Leave it for now and go on without the picture check on this story.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Verification
 
 **Commands:**
@@ -733,3 +834,37 @@ with the source-level rows in `settings.test.ts` meanwhile): D6c's confirm openi
 (105d); the accent caution (105f); an id `?promote=` does not offer opening the form on its first row, never parsed (105a,
 added at this Dev); a demote drawing the link again (105j; the harness's unpromoted control journey is its local
 equivalent).
+
+**Results (Review, 2026-10-10, main session, Node 24; the owner's in-session go for the live checks):**
+- **CI and Vercel at the Dev head `94065e62`** (GitHub and Vercel APIs, `GITHUB_TOKEN` / `VERCEL_*` read in-process): CI
+  run 38058081466 — attempt 1's `check` and `rls` were refused by GitHub before starting (no runner, no steps); attempt 2,
+  re-run by the owner, `check` (16 steps), `rls` and `deploy` green; `dpl_6HNoZZ7UgETzvEcKADFq5PPdbaXn` READY at
+  `94065e62` and aliased to app.inflozo.com. **The Render matrix never ran**: runs 38046521341, 38052237437 and
+  38058081445 (this story's three pushes) were refused with GitHub's annotation "recent account payments have failed or
+  your spending limit needs to be increased" — Question 5.
+- **Production's schema (R-99)**, read through `SUPABASE_DB_POOLER_URL` in one `BEGIN READ ONLY` transaction, rolled back:
+  `custom_settings` has no check, rule or trigger that reads `bound_to` or `type` (the cap, key-frozen and touch triggers
+  match `20260904120000_complete_schema.sql` line for line); `ghost_setting_type` holds `text`, `image` and `color`; each
+  production CHECK evaluated over the three new shapes passes, with its control refused (`'red'` fails `hex6_colour`, a
+  picture with a default fails `no_image_default`, `'number'::ghost_setting_type` answers `22P02`).
+- **Signed out**, `/projects/<id>/settings?promote=…` (a prop id, `token:accent`, a markup payload, a non-uuid project) and
+  the editor answer 307 to `/sign-in` with `no-store`, the payload never reflected; the control, `/sign-in`, answers 200.
+- **T1** (read-only; `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`): Casper active, `racer` and
+  `source` installed, no probe theme, `custom_theme_settings` Casper's alone, `/` served by Casper with no 7.10 reader;
+  controls — a forged token 401, a wrong Content key 401.
+- **The deployed editor walk on `94065e62`** (`run-verify-editor.cjs`, throwaway accounts through the service key, the
+  user count 14 → 14 after every run): **six runs, none reached step 105**, and none failed a 7.10 check. Run 1 died at
+  step 92 (Story 5.16's Tag page 2) under a conflict dialog; run 2 at step 8's magic link; run 3 — **739 PASS, 0 FAIL**,
+  step 104's re-expected reads included — at 104h's forced submit, its POST held past 20 s (DW-352); run 4, beside this
+  review's niced local tests, FAILED 104c's 15-second heading wait (Vercel's rows: the four `/settings` loads answered in
+  0.3–0.7 s — the browser, not the app) and died at the next wait; run 5 at step 1's magic link, with no Vercel row for it
+  (DW-204: it never left the machine); run 6, a debug copy waiting 90 s for a navigation and 120 s for an action's answer
+  (recorded here, never committed), **728 PASS, 0 FAIL**, died at 104d's promote on `response.text()` — "No data found for
+  resource", DW-352's second form. Runs 3 to 6 ran from a clean worktree at the Dev head, so the review's edits were not
+  under them. Step 105 (and the review's 105l) is run on the Review head once CI deploys it.
+- **Local, over the review's tree:** `pnpm check` green (lint, typecheck, every package's tests — the runtime's
+  `tokens.test.ts` with every preset and Mono, `custom-settings.test.ts`, `agreement.test.ts`'s catalog-attribute row,
+  `settings.test.ts`' lock round trip and source pins, both pinned gscans, `check-snapshots` PASS); `pnpm keyboard` whole
+  green, the new 7.10 journeys in it, each new one turned red by its fix reverted (the ↗ on a hidden section, the replacement ask, Keep on a
+  New pack, Remix's park note) and restored byte for byte; the tokens, unknown-design, catalog-attribute and save-path
+  patches each turned red the same way.

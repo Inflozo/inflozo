@@ -316,7 +316,7 @@ export function lockedContent(
   }
   return out
 }
-/** The names Ghost gives the settings an instance carries, in the order they were promoted (the rows' order). */
+/** The names Ghost gives the settings an instance carries: its promoted controls, then its props, each in the rows' order. */
 export const namesOn = (bindings: Bindings, instanceId: string): string[] => {
   const at = bindings.byInstance[instanceId]
   return at === undefined ? [] : [...Object.values(at.controls), ...Object.values(at.props)].map(ghostName)
@@ -325,9 +325,11 @@ export const namesOn = (bindings: Bindings, instanceId: string): string[] => {
 /** P0-1's lock as a render-time copy (never stored): a bound rich text's value with `plainText` set, so the canvas, the
  *  panel and the inline session draw and allow no mark while its formatting stays in the doc, out of force (D6c: "Demote
  *  it later and the formatting comes back"). A plain string — a rich text no one has marked yet — is locked too, as the
- *  same words in the rich shape, or its session would offer the marks Ghost cannot hold. An empty value stays as it is. */
+ *  same words in the rich shape, or its session would offer the marks Ghost cannot hold — and so is no value at all. */
 export const locked = (value: PropValue): PropValue =>
-  isRich(value) ? { ...value, plainText: true } : typeof value === 'string' ? { text: value, plainText: true } : value
+  isRich(value) ? { ...value, plainText: true } : typeof value === 'string' ? { text: value, plainText: true }
+    // a bound text with no value yet is locked too, or its session would offer marks (the review, 2026-10-10)
+    : value == null ? { text: '', plainText: true } : value
 /** The lock taken back off a value the inline session or the panel handed up, before it is stored — the binding is the
  *  lock's one source, so nothing writes `plainText` into a doc; and a value carrying no mark goes back to the plain
  *  string a value with none is stored as. */

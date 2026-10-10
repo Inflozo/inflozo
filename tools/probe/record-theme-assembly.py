@@ -183,8 +183,8 @@ it, that Ghost reads it as claimed is a hypothesis.
 What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
 activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
-one probe picture, which stays (Ghost's API deletes no picture); Story 7.10's probe theme, uploaded five times and
-activated, its own `custom_theme_settings` written through Ghost's API and cleared again before it is deleted — no content,
+one probe picture, which stays (Ghost's API deletes no picture); Story 7.10's probe theme, uploaded and activated for
+each tree it deploys (the bare theme, `start`, `restarted`, `without_sub`, `start` again, and the bare theme to clear it), its own `custom_theme_settings` written through Ghost's API and cleared again before it is deleted — no content,
 no site setting, no key; keys are read by variable name and no URL that carries one is printed. To disk it writes
 MEASUREMENTS.md §78 alone, replacing an earlier §78 of its own so a re-run re-records; §70 to §77 stay Stories 7.1's to
 7.8's records. The Ghost 5 half is DW-326's.
@@ -415,6 +415,13 @@ def root_tag(body, cls):
     """The start tag of the page's first root whose first class is `cls`, or ''."""
     m = re.search(r'<[a-z]+\s[^>]*?\bclass="' + re.escape(cls) + r'"[^>]*>', body)
     return m.group(0) if m else ''
+
+
+def attrs_of(tag, *names):
+    """The attributes a row tests, as the tag carries them, on one line — the evidence a table cell can hold. Story 7.10's
+    review (2026-10-10): `tag[:110]` of a multi-line start tag broke §78's table and was cut before the attribute tested."""
+    found = [m.group(0) for n in names for m in [re.search(re.escape(n) + r'="[^"]*"', tag)] if m]
+    return ' '.join(found) if found else f'none of {", ".join(names)}'
 
 
 def theme_package(g, name):
@@ -1369,8 +1376,8 @@ def settings_phase(g, nonce, picture_path, sc):
             row(key in got and got[key].get('value') == entry.get('default'), 'custom_theme_settings', f'`{key}` listed at its start',
                 f'type {got.get(key, {}).get("type")!r}, value {got.get(key, {}).get("value")!r}, start {entry.get("default")!r}')
         a4 = root_tag(body, 'a4-13')
-        row('data-primary-action="on"' in a4 and 'data-headline-size="large"' in a4, '/', 'the switch and the choice draw their start', a4[:110])
-        row('data-secondary-action="on"' in a4, '/', 'CONTROL — the secondary action, which follows the promoted primary (its disabledBy), is on while the primary is', a4[:160])
+        row('data-primary-action="on"' in a4 and 'data-headline-size="large"' in a4, '/', 'the switch and the choice draw their start', attrs_of(a4, 'data-primary-action', 'data-headline-size'))
+        row('data-secondary-action="on"' in a4, '/', 'CONTROL — the secondary action, which follows the promoted primary (its disabledBy), is on while the primary is', attrs_of(a4, 'data-primary-action', 'data-secondary-action'))
         row(words(body, 'p', 'a4-13__sub') == starts['sub']['default'], '/', 'the promoted rich text prints its start, its words alone', words(body, 'p', 'a4-13__sub'))
         row(words(body, 'h2', 'a17-1__title') == starts['title']['default'], '/', 'the promoted title prints its start', words(body, 'h2', 'a17-1__title'))
         row((accent(body) or '').lower() == starts['accent_colour']['default'].lower(), '/', '`--setting-accent` is the pack\'s light accent', accent(body))
@@ -1379,7 +1386,7 @@ def settings_phase(g, nonce, picture_path, sc):
         put(show_the_button=True, headline_size='Medium', sub=f'Sub {nonce}', title=f'Title {nonce}', accent_colour=SETTINGS_ACCENT, picture=g.url + picture_path)
         body = home(lambda b: f'Sub {nonce}' in b and f'Title {nonce}' in b)
         a4 = root_tag(body, 'a4-13')
-        row('data-headline-size="medium"' in a4, '/', 'Headline size set to Medium in Ghost: the root reads medium', a4[:110])
+        row('data-headline-size="medium"' in a4, '/', 'Headline size set to Medium in Ghost: the root reads medium', attrs_of(a4, 'data-headline-size'))
         row(words(body, 'p', 'a4-13__sub') == f'Sub {nonce}', '/', 'Sub changed in Ghost: the page prints Ghost\'s words', words(body, 'p', 'a4-13__sub'))
         row(words(body, 'h2', 'a17-1__title') == f'Title {nonce}', '/', 'Title changed in Ghost: the page prints Ghost\'s words', words(body, 'h2', 'a17-1__title'))
         row((accent(body) or '').lower() == SETTINGS_ACCENT.lower(), '/', 'the accent changed in Ghost: `--setting-accent` carries it', accent(body))
@@ -1388,8 +1395,8 @@ def settings_phase(g, nonce, picture_path, sc):
         put(show_the_button=False)
         body = home(lambda b: 'data-primary-action="off"' in root_tag(b, 'a4-13'))
         a4 = root_tag(body, 'a4-13')
-        row('data-primary-action="off"' in a4 and 'data-headline-size="large"' in a4, '/', 'the button off hides Headline size in Ghost: its reader draws the start', a4[:110])
-        row('data-secondary-action="off"' in a4, '/', 'the primary off in Ghost: the secondary action follows it off, so it never stands alone (a4/13\'s disabledBy)', a4[:160])
+        row('data-primary-action="off"' in a4 and 'data-headline-size="large"' in a4, '/', 'the button off hides Headline size in Ghost: its reader draws the start', attrs_of(a4, 'data-primary-action', 'data-headline-size'))
+        row('data-secondary-action="off"' in a4, '/', 'the primary off in Ghost: the secondary action follows it off, so it never stands alone (a4/13\'s disabledBy)', attrs_of(a4, 'data-primary-action', 'data-secondary-action'))
         row(listed()['headline_size'].get('value') == 'Medium', 'custom_theme_settings', 'CONTROL — Ghost still stores Medium, so the start above is the hidden setting\'s', listed()['headline_size'].get('value'))
         # (4) a text emptied in Ghost is left out (DW-349's rule, "delete means delete")
         put(sub='')
@@ -1460,7 +1467,7 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted):
            '(DW-332), both read back; Story 7.8\'s quality probe (the pilots plus a planted heading skip and a nameless '
            'link), activated, then restored and deleted the same way; Story 7.7\'s three probe uploads (the compiled pilots unscaffolded, a fatal probe, a '
            'cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back '
-           'after each; Story 7.10\'s probe theme (`inflozo-probe-custom-settings`), uploaded and activated five times, its '
+           'after each; Story 7.10\'s probe theme (`inflozo-probe-custom-settings`), uploaded and activated for each tree it deploys — the bare theme, `start`, `restarted`, `without_sub`, `start` again and the bare theme to clear it — its '
            'own `custom_theme_settings` written through Ghost\'s API and cleared by activating it with nothing declared, '
            'then restored and deleted the same way; the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
            'the first time it is asked for each; no content, no site setting and no key written. The picture is '

@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
-import { USER_SETTING_CAP } from '@inflozo/section-runtime/custom-settings'
+import { ghostName, USER_SETTING_CAP } from '@inflozo/section-runtime/custom-settings'
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { ShellUserContext } from '@/components/shell/shell'
@@ -100,7 +100,8 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * placed by nothing here, so D5f's warning can be met on Signup. Never in `packages/library`.
  *
  * STORY 7.10 — `x-inflozo-harness-promoted: on` hands the editor custom settings as Theme settings would store them: the
- * fixture ring section's Show icons (a switch), its Heading (a rich text) and its Picture, and the Style Pack's accent —
+ * fixture ring section's Show icons (a switch), its Heading (a rich text) and its Picture, the Style Pack's accent, and
+ * (Story 7.10's review) the site header's Sign in, so a site-wide ask and a replacing placement meet one too;
  * so `pnpm keyboard` walks the "In Ghost" tags, P0-1's lock pill, the delete ask, the park note and the pack-switch ask
  * with no database. Without it, none: every promote action is drawn, linking to the harness project's Theme settings.
  * `x-inflozo-harness-promoted: full` stores as many rows as the user's cap allows, each bound to a section no doc holds, so
@@ -195,9 +196,12 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   // Story 7.10 — the fixture ring's section on Home, and the settings promoted from it under the header (the accent at
   // Paper's own light accent, read from the pack — the harness writes no colour)
   const ringOnHome = docs[templateKeyOf('home')]?.instances.find((i) => i.designId === ring[0]?.id)
+  // Story 7.10's review — and the site header's Sign in, so the site-wide confirm and a placement that replaces the header
+  // meet a promoted setting too
+  const header = docs[SITE.key]?.instances.find((i) => i.designId === 'a1/1')
   const promotedAsked = asked.get('x-inflozo-harness-promoted')
   const settings = promotedAsked === 'full' ? atCap()
-    : promotedAsked === 'on' && ringOnHome !== undefined ? promotedFrom(ringOnHome.instanceId, (choices.find((c) => c.id === 'paper') ?? choices[0]!).record.light.accent) : []
+    : promotedAsked === 'on' && ringOnHome !== undefined ? promotedFrom(ringOnHome.instanceId, (choices.find((c) => c.id === 'paper') ?? choices[0]!).record.light.accent, header?.instanceId) : []
   const stylePack = packAsked === 'custom-1' ? { preset: 'custom-1', packs: { 'custom-1': harnessPack(choices) } } : { preset: packAsked }
 
   const data: EditorData = {
@@ -283,9 +287,9 @@ function harnessPack(choices: readonly { id: string; record: PackRecord }[]): Pa
 
 /** Story 7.10 — the rows Theme settings would have stored after promoting the fixture ring section's Show icons, Heading and
  *  Picture and the accent (keys as the Promote form makes them; nothing deployed, so no key is frozen) */
-function promotedFrom(instanceId: string, accent: string): EditorData['settings'] {
+function promotedFrom(instanceId: string, accent: string, header: string | undefined): EditorData['settings'] {
   const row = (n: number, key: string, type: 'boolean' | 'text' | 'image' | 'color', bound_to: Record<string, unknown>, default_value: string | null) => ({
-    id: `00000000-0000-4000-8000-00000000071${n}`, key, label: key.replace(/^[a-z]/, (c) => c.toUpperCase()).replace(/_/g, ' '), type, options: null,
+    id: `00000000-0000-4000-8000-00000000071${n}`, key, label: ghostName(key), type, options: null,
     default_value, group_name: 'homepage' as const, visibility_condition: null, bound_to, position: n, frozen_at: null,
   })
   return [
@@ -293,6 +297,7 @@ function promotedFrom(instanceId: string, accent: string): EditorData['settings'
     row(2, 'heading', 'text', { kind: 'prop', instanceId, path: 'heading' }, 'Seven links, checked by hand'),
     row(3, 'picture', 'image', { kind: 'prop', instanceId, path: 'picture' }, null),
     row(4, 'accent_colour', 'color', { kind: 'token', token: 'accent' }, accent),
+    ...(header === undefined ? [] : [{ ...row(5, 'sign_in', 'boolean', { kind: 'control', instanceId: header, controlKey: 'sign-in' }, 'true'), group_name: 'site_wide' as const }]),
   ]
 }
 

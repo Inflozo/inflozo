@@ -202,6 +202,9 @@ test('(7.10) a binding\'s state: live at the start the canvas holds, parked, hid
   assert.equal(parked.state === 'parked' && parked.holder.entry.name, 'Centred Notice')
   assert.equal(state({ kind: 'prop', instanceId: 'i1', path: 'picture' }, docs(inst({ designId: 'a4/2' })), 'image').state, 'parked', 'a prop the design does not print')
   assert.equal(state(HEAD, docs(inst({ hidden: true })), 'select').state, 'hidden')
+  // the review (2026-10-10): a VISIBLE section on a design the library no longer has is changed, never "hidden"
+  assert.equal(state(HEAD, docs(inst({ designId: 'gone/1' })), 'select').state, 'changed')
+  assert.equal(state(HEAD, docs(inst({ designId: 'gone/1', hidden: true })), 'select').state, 'hidden', 'the control: hidden, it is hidden')
   assert.equal(state(HEAD, docs(inst({ instanceId: 'other' })), 'select').state, 'deleted')
   assert.equal(state(HEAD, docs(), 'select').state, 'deleted')
   // changed: the stored type is not what it derives now, or it derives nothing (a label refused by a library update)

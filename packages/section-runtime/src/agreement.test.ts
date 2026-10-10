@@ -1706,3 +1706,12 @@ test('Story 7.10 — a promoted switch, choice, text, catalog text and picture: 
   assert.doesNotMatch(baked, /@custom/)
   assert.match(baked, /data-icons="on"\s+data-size="medium"/)
 })
+
+test('Story 7.10\'s review — a catalog text promoted into an ATTRIBUTE keeps its translated string while Ghost\'s value is empty, as it does in an element', () => {
+  const src = '<section class="q"><a class="q__cta" data-prop="cta" data-prop-attr="aria-label:cta;href:ctaUrl">c</a></section>'
+  const theme = renderTheme(doc(), src, promotedInput({ props: { cta: 'button_text' } })).template
+  assert.ok(theme.includes('aria-label="{{#if @custom.button_text}}{{@custom.button_text}}{{else}}{{t "member.signup_cta"}}{{/if}}"'), theme)
+  // the control: a text with no catalog string has none to fall back on
+  const plain = renderTheme(doc(), src.replace('aria-label:cta', 'aria-label:title'), promotedInput({ props: { title: 'title_words' } })).template
+  assert.ok(plain.includes('aria-label="{{@custom.title_words}}"'), plain)
+})

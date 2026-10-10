@@ -436,6 +436,18 @@ export const MODE_SELECTORS = {
 /** Story 7.10 — the custom property a promoted accent sets in `default.hbs`'s head, and the light block reads. */
 export const SETTING_ACCENT = '--setting-accent'
 
+/** Story 7.10's review — the light values that follow a promoted accent: only a token the accent FEEDS, one whose value
+ *  moves when the accent does (found by nudging its last digit, never a list of names), so a pack whose accent is also
+ *  another of its colours — Mono: accent and text both `#000000` — never hands the site's owner its body text, its
+ *  contrast ground or its error colour; in each, the accent itself reads `var(--setting-accent, <hex>)`. */
+function followAccent(pack: Pack, tokens: Readonly<Record<string, string>>): Record<string, string> {
+  const hex = pack.light.accent
+  const still = modeTokens(pack, 'light')
+  const moved = modeTokens({ ...pack, light: { ...pack.light, accent: `${hex.slice(0, -1)}${(parseInt(hex.slice(-1), 16) ^ 1).toString(16)}` } }, 'light')
+  const accent = new RegExp(`${hex.replace(/[^#0-9a-f]/gi, '')}(?![0-9a-f])`, 'gi')
+  return Object.fromEntries(Object.entries(tokens).map(([k, v]) => [k, still[k] !== moved[k] ? v.replace(accent, (h) => `var(${SETTING_ACCENT}, ${h})`) : v]))
+}
+
 /** A pack's token block — the only way a pack is emitted, so every block ends with R-173's link rule. `:root` declares
  *  every property (desktop values, light colours); the dark blocks redeclare the per-mode properties and nothing else,
  *  because a dark block (0,2,0) redeclaring a width value would beat the width band's `:root` (0,1,0) in dark; then the
@@ -452,16 +464,13 @@ export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean; setti
   const fonts = options.ghostFonts === true
     ? { ...tokens, '--font-heading': `var(--gh-font-heading, ${tokens['--font-heading']})`, '--font-body': `var(--gh-font-body, ${tokens['--font-body']})` }
     : tokens
-  // STORY 7.10 (FR-Q3, AD-30), in the theme only: with the accent promoted, every light value that IS or CONTAINS the
-  // light accent — `--accent`, a solid button's fill, an outline's border and words, the accent link style — reads the
+  // STORY 7.10 (FR-Q3, AD-30), in the theme only: with the accent promoted, every light value the accent feeds that IS or
+  // CONTAINS it (`followAccent`) — `--accent`, a solid button's fill, an outline's border and words, the accent link style — reads the
   // site owner's colour through `var()`, the pack's own value its fallback; `default.hbs`'s inline block sets the one
   // property from `{{@custom.*}}` and names no mode, so this block stays the one that does. The computed shades (the
   // tint, `--accent-on-contrast`) are new colours and keep the pack's — which is why the caution says contrast is in the
   // site owner's hands — and the dark blocks are untouched until Story 7.11's dark built-in.
-  const accent = new RegExp(`${pack.light.accent.replace(/[^#0-9a-f]/gi, '')}(?![0-9a-f])`, 'gi')
-  const light = options.settingAccent === true
-    ? Object.fromEntries(Object.entries(fonts).map(([k, v]) => [k, v.replace(accent, (hex) => `var(${SETTING_ACCENT}, ${hex})`)]))
-    : fonts
+  const light = options.settingAccent === true ? followAccent(pack, fonts) : fonts
   const dark = modeTokens(pack, 'dark')
   const perMode = Object.fromEntries(TOKEN_NAMES.filter((n) => Object.hasOwn(dark, n)).map((n) => [n, dark[n] as string]))
   const bands = { tablet, mobile }

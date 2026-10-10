@@ -87,14 +87,22 @@ export type Promotion = {
   bound: { readonly controls: Readonly<Record<string, string>>; readonly props: Readonly<Record<string, string>> }
   href: (kind: 'control' | 'prop', name: string) => string
   full: boolean
+  /** the review (2026-10-10): whether Theme settings offers this section at all — a visible instance of a stored doc
+   *  (`placedControls`' rule). Where it does not (hidden, or on an untouched canvas) no ↗ is drawn, because the form would
+   *  open on another row; a promoted one's tag still reads. */
+  offer: boolean
 }
 
 /** "In Ghost" — D6a's "from Ghost" chip (`D6 Theme Settings Completed.dc.html:87`), the mono words beside the label, its
  *  title saying who changes it and what the canvas still decides (R-74: no frame draws it; extrapolated from the chip). */
 export const InGhost = ({ settingKey }: { settingKey: string }) => (
-  <span data-in-ghost={settingKey} title={THEME_WORDS.inGhostTitle(settingKey)} className="shrink-0 font-mono text-[10.5px] leading-none text-ink-soft-aa">
-    {THEME_WORDS.inGhost}
-  </span>
+  <>
+    <span data-in-ghost={settingKey} title={THEME_WORDS.inGhostTitle(settingKey)} className="shrink-0 font-mono text-[10.5px] leading-none text-ink-soft-aa">
+      {THEME_WORDS.inGhost}
+    </span>
+    {/* a `title` reaches no screen reader, keyboard or finger, so its sentence is read beside the tag too (the review) */}
+    <span className="sr-only">{THEME_WORDS.inGhostTitle(settingKey)}</span>
+  </>
 )
 
 /**
@@ -365,7 +373,7 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
     if (promotion === undefined) return null
     const def = entry.controlSchema.find((c) => c.name === row.name)
     const key = promotion.bound.controls[row.name]
-    if (key === undefined && (row.universal || def === undefined || settingOf(def, def.default) === null)) return null
+    if (key === undefined && (!promotion.offer || row.universal || def === undefined || settingOf(def, def.default) === null)) return null
     return <PromoteAside id={id} label={row.label} settingKey={key} href={promotion.href('control', row.name)} full={promotion.full} readOnly={readOnly} />
   }
   const control = (row: ControlRow) => (
@@ -465,7 +473,7 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
     // Story 7.10 — a text, a rich text or a picture Ghost can hold carries the action, or its tag once promoted; a bound
     // rich text is drawn and edited as P0-1's lock (a copy — the doc keeps its marks), and the lock never reaches the doc
     const key = promotion?.bound.props[row.path]
-    const offered = promotion !== undefined && (key !== undefined || propSettingOf(row.def, row.value) !== null)
+    const offered = promotion !== undefined && (key !== undefined || (promotion.offer && propSettingOf(row.def, row.value) !== null))
     const aside = offered ? <PromoteAside id={id} label={row.label} settingKey={key} href={promotion.href('prop', row.path)} full={promotion.full} readOnly={readOnly} /> : null
     const lock = key !== undefined && lockable(row.def)
     return field(row, lock ? locked(row.value as PropValue) : row.value, (value) => commit(setContent(entry, state, row.path, lock ? unlocked(value) : value), 'content'), id, aside)

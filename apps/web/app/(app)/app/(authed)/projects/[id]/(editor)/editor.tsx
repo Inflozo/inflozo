@@ -2484,11 +2484,16 @@ function EditorShell({
      Keep {current} (UX-DR14): Keep changes nothing, Switch goes on exactly as the door would have. Undo and redo never
      ask (`restore`), an edit to the pack in force is no switch, and a session reading along asks nothing — its switch is
      refused anyway (R-192). */
-  const [packAsk, setPackAsk] = useHanded<{ name: string; go: () => void } | null>(null)
+  const [packAsk, setPackAsk] = useHanded<{ name: string; go: () => void; keep?: () => void } | null>(null)
   const packAsking = useRef<HTMLDialogElement>(null)
-  const switchFirst = (name: string, go: () => void) => {
+  /** set by Switch, so the close that follows it is not a Keep */
+  const packSwitched = useRef(false)
+  /** `keep` — what Keep, Esc and the scrim still do: a New pack is kept in the list, unworn (the review, 2026-10-10: Keep
+   *  threw the pack just made away) */
+  const switchFirst = (name: string, go: () => void, keep?: () => void) => {
     if (bound.current.accent === null || !latest.current.lock.holder) return go()
-    setPackAsk({ name, go })
+    packSwitched.current = false
+    setPackAsk({ name, go, ...(keep === undefined ? {} : { keep }) })
     requestAnimationFrame(() => { if (!packAsking.current?.open) openOnCancel(packAsking.current) })
   }
 
@@ -2534,6 +2539,10 @@ function EditorShell({
         if (!commitPacks({ ...now.packs, [id]: record }, txn)) return
         if (!commitPack(id, txn)) return
         restyle(PACK_WORDS.said(record.name))
+      }, () => {
+        // Keep: the pack in force stays, and the pack just made joins the list — one edit, ⌘Z removes it
+        const now = latest.current
+        commitPacks({ ...now.packs, [nextCustomId(now.packs)]: record })
       })
     }
     if (!commitPacks({ ...now.packs, [editing.id]: record })) return
@@ -4201,11 +4210,19 @@ function EditorShell({
      redraws when what it shows changes): this section's bindings, Theme settings' address for each of its controls and
      props (Story 7.9's Question 5, option 3, built here), and the cap. The accent's action sits on the Style Pack card. */
   const chosenId = chosen?.instanceId
+  // the review (2026-10-10): Theme settings offers a section only as a visible instance of a stored doc (`placedControls`
+  // skips a hidden one and every untouched canvas), so the ↗ is drawn only there — elsewhere the form opened on another
+  // row. A boolean, so an edit that does not change it leaves the panel alone (R-208)
+  const chosenOffered = useMemo(() => chosenId !== undefined && Object.entries(docs).some(([k, d]) => {
+    const canvas = canvasOfTemplateKey(k)
+    return !(canvas !== null && auto.has(canvas)) && d.instances.some((i) => i.instanceId === chosenId && !i.hidden)
+  }), [chosenId, docs, auto])
   const promotion = useMemo<Promotion | undefined>(() => (chosenId === undefined ? undefined : {
     bound: bindings.byInstance[chosenId] ?? NOTHING_BOUND,
     href: (kind, name) => promoteHref(project.id, kind === 'control' ? { kind, instanceId: chosenId, controlKey: name } : { kind, instanceId: chosenId, path: name }),
     full: bindings.count >= USER_SETTING_CAP,
-  }), [chosenId, bindings, project.id])
+    offer: chosenOffered,
+  }), [chosenId, bindings, project.id, chosenOffered])
   const pointedNow = hovered ? stack.find((i) => same(i, hovered)) : undefined
   const pointedSig = pointedNow === undefined ? '' : JSON.stringify(pointedNow)
   const pointed = useMemo(() => pointedNow, [pointedSig])
@@ -4576,8 +4593,9 @@ function EditorShell({
     markSwapped(pick)
     // STORY 7.10 — a design that does not carry a promoted control or print a promoted prop PARKS its setting (FR-D19): not
     // deleted — it comes back on the way back — but Ghost will not see it while this design is in use, and forgets its
-    // value at a deploy that leaves it out (Question 2, ruled option 2). Every door that changes a design lands here, so the
-    // canvas says it on the section (P0-1's pill, as a refusal is shown) and the live region says it after the design
+    // value at a deploy that leaves it out (Question 2, ruled option 2). Every shuffle door lands here — Remix, which changes
+    // many at once, says the same in `remixed` — so the canvas says it on the section (P0-1's pill, as a refusal is shown)
+    // and the live region says it after the design
     const [from, into] = [entries[placed.designId], entries[to]]
     const parked = from === undefined || into === undefined ? [] : parkedOn(bound.current, pick.instanceId, from, into)
     setSaid(parked.length === 0 ? said : `${said}. ${parked.join(' ')}`)
@@ -4670,9 +4688,19 @@ function EditorShell({
       // and for Both it writes neither: the pack is never committed after a refused fold
       if (typeof refused === 'string') return setSaid(refused)
     }
-    if (to === null) return setSaid(remixSaid(picks.length, canvas.label))
+    // Story 7.10's review: a re-roll that moves a section to a design without its promoted control or prop PARKS the
+    // setting, and says so as a shuffle does (`onDesign`) — after Remix's own sentence, and on the first such section
+    const parked = picks.flatMap((p) => {
+      const [from, into] = [entries[p.from], entries[p.to]]
+      const words = from === undefined || into === undefined ? [] : parkedOn(bound.current, p.instanceId, from, into)
+      return words.length === 0 ? [] : [{ instanceId: p.instanceId, words: words.join(' ') }]
+    })
+    const root = parked[0] === undefined ? null : rootOf({ doc: docKey, instanceId: parked[0].instanceId })
+    if (root && parked[0]) showNote({ el: root, kind: 'limit', words: parked[0].words })
+    const andParked = (said: string) => (parked.length === 0 ? said : `${said} ${parked.map((p) => p.words).join(' ')}`)
+    if (to === null) return setSaid(andParked(remixSaid(picks.length, canvas.label)))
     if (!commitPack(to, txn)) return
-    restyle(picks.length > 0 ? remixPackSaid(packOf(to).name, picks.length, canvas.label) : remixPackSaid(packOf(to).name))
+    restyle(andParked(picks.length > 0 ? remixPackSaid(packOf(to).name, picks.length, canvas.label) : remixPackSaid(packOf(to).name)))
   }
 
   /** STORY 6.3 — ⋯'s Style Pack row below 1280 (DW-322): the Controls overlay opens on the list — the rest panel's, so a
@@ -4749,11 +4777,19 @@ function EditorShell({
    *  opening on Keep it (UX-DR14). Where FR-D5's site-wide ask or D5f fires already, its sentence joins THAT dialog, so a
    *  gesture asks once. Undo and redo never ask — ⌘Z brings the section back and its settings with it — and a session reading
    *  along asks nothing (its edit is refused anyway, R-192). */
-  const [bindAsk, setBindAsk] = useHanded<{ kind: 'remove' | 'hide'; row: Pick & { layerName: string }; promoted: readonly string[] } | null>(null)
+  const [bindAsk, setBindAsk] = useHanded<{ kind: 'remove' | 'hide'; row: Pick & { layerName: string }; promoted: readonly string[]; go?: () => void } | null>(null)
   const binding = useRef<HTMLDialogElement>(null)
-  const promotedOn = (row: Pick): readonly string[] => (latest.current.lock.holder ? namesOn(bound.current, row.instanceId) : [])
-  const askPromoted = (kind: 'remove' | 'hide', row: Pick & { layerName: string }, promoted: readonly string[]) => {
-    setBindAsk({ kind, row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, promoted })
+  /** The settings a delete or hide of this section would leave dangling — none while another visible copy of it (a page 1
+   *  and its stored page 2 share ids) still carries them, since the setting stays live there (the review, 2026-10-10) */
+  const promotedOn = (row: Pick): readonly string[] => {
+    const now = latest.current
+    if (!now.lock.holder) return []
+    const elsewhere = Object.entries(now.docs).some(([k, d]) => k !== row.doc && d.instances.some((i) => i.instanceId === row.instanceId && !i.hidden))
+    return elsewhere ? [] : namesOn(bound.current, row.instanceId)
+  }
+  /** `go` — what Delete section does instead of a plain delete: a placement that replaces the section (the review) */
+  const askPromoted = (kind: 'remove' | 'hide', row: Pick & { layerName: string }, promoted: readonly string[], go?: () => void) => {
+    setBindAsk({ kind, row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, promoted, ...(go === undefined ? {} : { go }) })
     requestAnimationFrame(() => { if (!binding.current?.open) openOnCancel(binding.current) })
   }
   const onRemove = (row: Pick & { layerName: string }) => {
@@ -4822,8 +4858,16 @@ function EditorShell({
    * transaction, so one `⌘Z` puts the old one back. The card said so before the press, with the Kit's globe; nothing
    * is explained afterwards, and the only thing said aloud is the polite announcement every placement already makes.
    */
-  const onPlace = ({ entry: design, siteWide }: Placement) => {
+  const onPlace = ({ entry: design, siteWide }: Placement, asked = false) => {
     const now = latest.current
+    // Story 7.10's review: a site-wide placement REPLACES its category's section, so where that section carries a promoted
+    // setting it asks first, as its Delete would — Keep it places nothing, Delete section places this one (`asked`)
+    const replaces = siteWide ? (now.docs[SITE.key]?.instances ?? []).find((i) => categoryOf(i.designId) === design.category) : undefined
+    const dangling = replaces === undefined || asked ? [] : promotedOn({ doc: SITE.key, instanceId: replaces.instanceId })
+    if (replaces !== undefined && dangling.length > 0) {
+      picker.current?.close()
+      return askPromoted('remove', { doc: SITE.key, instanceId: replaces.instanceId, layerName: replaces.layerName }, dangling, () => onPlace({ entry: design, siteWide }, true))
+    }
     // Story 5.16: the page on screen — a section added on page 2 lands in page 2's design (R-177), never page 1's
     const docKey = siteWide ? SITE.key : ownKeyOf(now.key, now.page)
     const layerName = `${design.categoryTitle} — ${design.name}`
@@ -6157,7 +6201,8 @@ function EditorShell({
             onClick={() => {
               binding.current?.close()
               if (bindAsk === null) return
-              if (bindAsk.kind === 'remove') landRemove(bindAsk.row)
+              if (bindAsk.go !== undefined) bindAsk.go()
+              else if (bindAsk.kind === 'remove') landRemove(bindAsk.row)
               else landHidden(bindAsk.row, true)
             }}
           >
@@ -6170,6 +6215,11 @@ function EditorShell({
       <dialog
         ref={packAsking}
         onClick={closeOnBackdrop}
+        // Keep, Esc and the scrim each close it without Switch: what the door keeps is kept
+        onClose={() => {
+          if (!packSwitched.current) packAsk?.keep?.()
+          packSwitched.current = false
+        }}
         aria-labelledby="editor-pack-title"
         aria-describedby="editor-pack-body"
         className={`${dialogSheet} gap-[18px]`}
@@ -6187,6 +6237,7 @@ function EditorShell({
             variant="primary"
             size={36}
             onClick={() => {
+              packSwitched.current = true
               packAsking.current?.close()
               packAsk?.go()
             }}

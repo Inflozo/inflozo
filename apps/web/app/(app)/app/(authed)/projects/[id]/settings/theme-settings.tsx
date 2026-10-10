@@ -522,12 +522,14 @@ function PromoteForm({ projectId, settings, controls, promote }: { projectId: st
   const [when, setWhen] = useState<Visibility | null>(null)
   const ask = useRef<HTMLDialogElement>(null)
   useEffect(() => {
-    if (!state || !('ok' in state)) return
+    if (!state) return
+    // the sheet closes on ANY answer: a refusal is drawn under the form, behind a modal sheet it was never seen (the review)
+    ask.current?.close()
+    if (!('ok' in state)) return
     setChosen(null)
     setTypedLabel(null)
     setTypedGroup(null)
     setWhen(null)
-    ask.current?.close()
   }, [state])
   const control = controls.find((c) => c.id === chosen) ?? controls[0]
   // the label and the group follow the control until they are changed — what shows is what posts

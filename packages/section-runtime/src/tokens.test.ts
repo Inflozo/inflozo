@@ -11,6 +11,7 @@ import assert from 'node:assert/strict'
 import { contrast } from './colour.ts'
 import { BASE_CSS, GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, SETTING_ACCENT, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
 import { REFERENCE_PACK, REFERENCE_TOKENS, referenceTokensCss } from './reference.ts'
+import { PRESETS } from '@inflozo/library/packs'
 import type { Pack, PackMode } from './tokens.ts'
 
 /** The kits' other two drawn packs, as CALIBRATION (`a29-kit.js:13-22`; every kit carries the same values): their
@@ -367,8 +368,9 @@ test('Story 7.4 — AD-18 in the theme only: ghostFonts writes Ghost\'s two font
   }
 })
 
-test('Story 7.10 — a promoted accent in the theme only: every light value that is or holds the accent reads var(--setting-accent, <hex>); the shades, the dark blocks and the canvas\'s bytes stand', () => {
-  for (const [name, pack] of Object.entries(PACKS)) {
+test('Story 7.10 — a promoted accent in the theme only: every light value the accent feeds that is or holds it reads var(--setting-accent, <hex>); the shades, the dark blocks and the canvas\'s bytes stand', () => {
+  // every preset too (the review, 2026-10-10): Mono's accent is also its text
+  for (const [name, pack] of [...Object.entries(PACKS), ...PRESETS.map((p) => [p.id, p.pack as Pack] as const)]) {
     const plain = packTokensCss(pack, { ghostFonts: true })
     const themed = packTokensCss(pack, { ghostFonts: true, settingAccent: true })
     assert.equal(packTokensCss(pack, { settingAccent: false }), packTokensCss(pack), `${name}: the canvas's call is unchanged`)
@@ -381,11 +383,24 @@ test('Story 7.10 — a promoted accent in the theme only: every light value that
     const hex = pack.light.accent.toLowerCase()
     assert.equal(after['--accent'], `var(${SETTING_ACCENT}, ${pack.light.accent})`, name)
     for (const [k, v] of Object.entries(before)) {
-      const holds = (v as string).toLowerCase().includes(hex)
-      if (holds) assert.equal(after[k], (v as string).replace(new RegExp(hex, 'i'), (h) => `var(${SETTING_ACCENT}, ${h})`), `${name}: ${k}`)
-      else assert.equal(after[k], v, `${name}: ${k} — a computed shade keeps the pack's value`)
+      // a value either stands or is the pack's own with its accent read through the setting — nothing else ever changes
+      if (after[k] !== v) assert.equal(after[k], (v as string).replace(new RegExp(hex, 'i'), (h) => `var(${SETTING_ACCENT}, ${h})`), `${name}: ${k}`)
+      // and none of the pack's other roles ever follows it, whatever hex it shares with the accent
+      if (['--text-body', '--text-muted', '--bg-page', '--bg-surface', '--bg-contrast', '--border-hairline', '--negative'].includes(k)) assert.equal(after[k], v, `${name}: ${k} is not the accent's`)
     }
   }
+})
+
+test('Story 7.10\'s review — Mono, whose accent IS its text (#000000): the promoted accent takes the accent\'s roles and never the body text or the contrast ground', () => {
+  const mono = PRESETS.find((p) => p.id === 'mono')?.pack as Pack
+  assert.ok(mono, 'the preset exists')
+  assert.equal(mono.light.text.toLowerCase(), mono.light.accent.toLowerCase(), 'the control: Mono\'s text really is its accent')
+  const decls = (css: string) => Object.fromEntries([...css.slice(0, css.indexOf('\n}\n')).matchAll(/^ {2}(--[\w-]+): (.*);$/gm)].map((m) => [m[1], m[2]]))
+  const [plain, themed] = [decls(packTokensCss(mono, { ghostFonts: true })), decls(packTokensCss(mono, { ghostFonts: true, settingAccent: true }))]
+  assert.equal(plain['--text-body'], mono.light.text, 'the control: the body text holds the shared hex')
+  assert.equal(themed['--text-body'], plain['--text-body'], 'the body text stays the pack\'s')
+  assert.equal(themed['--bg-contrast'], plain['--bg-contrast'], 'the contrast ground stays the pack\'s')
+  assert.equal(themed['--accent'], `var(${SETTING_ACCENT}, ${mono.light.accent})`, 'the accent follows the setting')
 })
 
 test('Story 7.4 — the base: no browser margin and the pack\'s page ground, a token the dark map redeclares', () => {

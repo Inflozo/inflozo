@@ -330,11 +330,15 @@ export function bindingState(
   }
   const holders = docs.flatMap((d) => d.instances.filter((i) => i.instanceId === binding.instanceId))
   if (holders.length === 0) return { state: 'deleted' }
-  const visible = holders.filter((i) => !i.hidden).flatMap((instance) => {
+  const shown = holders.filter((i) => !i.hidden)
+  if (shown.length === 0) return { state: 'hidden' }
+  // a visible section whose design the library no longer has is no hidden one: what it was promoted from has changed
+  // (the review, 2026-10-10 — it used to fall through to `hidden`)
+  const visible = shown.flatMap((instance) => {
     const entry = library(instance.designId)
     return entry === undefined ? [] : [{ instance, entry }]
   })
-  if (visible.length === 0) return { state: 'hidden' }
+  if (visible.length === 0) return { state: 'changed' }
   const declares = ({ entry }: Holder): boolean =>
     binding.kind === 'control'
       ? entry.controlSchema.some((c) => c.name === binding.controlKey)
@@ -382,7 +386,7 @@ export function customPath(key: string): string {
  *  label this chain writes to the select's own options, which the two-argument form would never let them do.
  *  A label `settingOf` would refuse, a value outside the control's grammar or a start that is no value is refused here
  *  too, by name, before anything is written (AD-36). `write` prints each value in place — the identity, or, for a control
- *  another control greys (`disabledBy`), what that control renders at it (`promotedValue` in `core.ts`). */
+ *  another control greys (`disabledBy`), what that control renders at it (`renderTree`'s `value` in `core.ts`). */
 export function matchChain(key: string, setting: Pick<SettingRow, 'type' | 'options'>, start: string, write: (value: string) => string = (v) => v): string {
   const path = customPath(key)
   const branches: [string, string][] = setting.type === 'boolean'

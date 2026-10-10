@@ -2984,6 +2984,14 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 2. the hand test of promoting a picture — **Story 9.1** (Question 4, option 1), whose headers carry A1's authored logo,
 >    the first picture a customer chooses on a real project (DW-150); Story 7.10 builds picture promotion and proves it by
 >    machine.
+>
+> **Given owners by Story 7.10's Review (2026-10-10), so none is missed (R-195).**
+>
+> 1. a promoted setting the compile refuses that Theme settings shows as healthy, said in Pre-flight in plain words, and an
+>    "Only show when" dropped for a parked setting named there — **Story 7.18** (DW-353);
+> 2. `custom_settings.bound_to`'s column comment brought to its three shapes in that story's `Schema` migration —
+>    **Story 7.18** (DW-355);
+> 3. a promoted picture's `srcset` over a section's own picture, on both branches — **Story 7.29** (DW-354).
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3871,6 +3879,8 @@ whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** *(moved word for word from Story 7.8 by its Question 1, ruled option 1, owner, 2026-10-09, R-195)* "**Frame:** `S8 Deploy.dc.html` S8b." and "**Owner test:** yes (a failure message)." — the Pre-flight step matches S8b as extended, and this story's owner test covers one failure message of the quality gate, beside the theme checker's.
 **And** *(given an owner by Story 7.8's Create, 2026-10-09)* Pre-flight runs `qualityGate` (`@inflozo/theme-compiler/gate`) on the same compile as `gscanGate` and shows its rows beside gscan's in S8b as extended: errors block and warnings deploy — e.g. a project whose post grid's title was deleted on Home shows "Checking your theme — 0 errors · 1 warning" with the heading sentence, and Ship it still works. Its verdict is stored with the deploy beside `deploys.gscan` (a new column is a `Schema` push first, R-99), a blocking finding is stored as `deploy_jobs.error`, the gate's time goes in `deploy_jobs.stage_timings` (AD-34), and each finding's `refs[0]` is shown by its canvas label (`CANVASES`, R-170), never as a file name — and a finding whose `refs[0]` is not a template (`template_missing`, `build_leftover`, `contrast_low`) shows its message alone.
 **And** *(given an owner by Story 7.10's Create, its Question 2, ruled option 2, owner, 2026-10-10, word for word — R-195)* **Pre-flight names any setting already deployed that this deploy would drop, and says Ghost will forget its value.** Read in Ghost's source at Story 7.10's Create, both majors: activating a theme deletes the stored value of every setting whose key the theme no longer declares (`core/shared/custom-theme-settings-cache/custom-theme-settings-service.js:214-266` in 6.58.0; `CustomThemeSettingsService.js:175-227` in 5.130.6), so a setting deleted in Theme settings, or parked because its section moved to a design without its control, loses what the site's owner chose at this deploy and comes back, if ever, at its starting value. Story 7.10's `compileTheme` returns `custom: { emitted, parked }`; the keys the site already holds are its last deploy's `config.custom`.
+**And** *(given an owner by Story 7.10's Review, 2026-10-10 — DW-353)* Pre-flight says in plain words, naming the setting, each case `compileTheme` refuses that Theme settings shows as healthy — a promoted setting whose section prints nothing that reads it (a hand-picked list with nothing picked; a picture's description on a section with no picture), a shuffle onto a design that declares the control as another kind, two settings stored for one control by two promotes in one instant — instead of the compile's own sentence ("… is declared and nothing reads it … (GS100, GS090)"), and names an "Only show when" the theme drops because its setting is parked; closing the two-promote window in the database (a unique `bound_to` per project) is this story's Create's question if it is wanted.
+**And** *(given an owner by Story 7.10's Review, 2026-10-10 — DW-355)* this story's `Schema` migration also corrects `custom_settings.bound_to`'s column comment to the three shapes `custom-settings.ts`'s `Binding` states — `control`, `prop` and `token` — in the migration and in the architecture's `SCHEMA.sql`.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
@@ -4229,6 +4239,7 @@ budget (R-26, DW-108).
 here)* a bundled picture's theme-authored `srcset` is composed "from the rendition set for bundled assets" — the 400 /
 800 / 1600 px + original files above, never `image_sizes` — on a tag that carries its design's `sizes`, which Story 7.6's
 `checkGhostMarkup` refuses a `srcset` without.
+**And** *(given an owner by Story 7.10's Review, 2026-10-10 — DW-354)* a picture promoted to a Ghost setting on a section that has its own picture asks for its sizes on both branches: `srcset` reads `srcsetExpr` of the setting while it is set and the bundled rendition set otherwise, on the tag that carries `sizes` (`core.ts`'s promoted picture, whose `ponytail:` note names this story).
 **And** *(read in source at Story 7.4's Create, 2026-10-08 — its Facts 5 and 6)* Ghost 6.58.0's `theme.uploadLimits`
 defaults (`shared/config/defaults.json`) are host-configurable: 1 GiB compressed — multer's `fileSize` →
 `COMPRESSED_TOO_LARGE` (`server/web/api/middleware/upload.js`); 512 MiB per entry and 4 GiB in total — gscan's

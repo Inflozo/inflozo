@@ -1387,7 +1387,8 @@ function applyProps(
         if (def?.type !== 'text' && def?.type !== 'richtext') throw new Error(`"${path}" is promoted as a text, and this design reads a ${def?.type ?? 'prop it does not declare'} into ${attr}.`)
         // AD-36 (1): a value Ghost holds never reaches a URL attribute — its scheme could not be checked here
         if (URL_ATTRS.has(attr)) throw new Error(`data-prop-attr="${attr}:${path}" — a promoted text never reaches a URL attribute (AD-36).`)
-        el.setAttribute(attr, tokens.put(`{{${field}}}`))
+        // a catalog text keeps its translated string while Ghost's value is empty, as it does in an element (review, 2026-10-10)
+        el.setAttribute(attr, tokens.put(linked === null ? `{{${field}}}` : `{{#if ${field}}}{{${field}}}{{else}}{{t "${linked}"}}{{/if}}`))
         continue
       }
       if (def?.type === 'date' && !isIsoDate(raw)) raw = undefined

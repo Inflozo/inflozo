@@ -235,7 +235,8 @@
 // the panel's ↗ opening Theme settings on exactly that control, a choice, a rich text through D6c (Cancel, a hand-made
 // post refused, Promote it) and the accent through its caution, each stored and read back field by field; the tags, the
 // lock pill with the link not drawn and ⌘B inert; the pack-switch ask; the delete and hide asks, the rows' states once
-// saved, and ⌘Z; the rows' starts; the demote bringing the link back; the read-only window; and the project handed back.
+// saved, and ⌘Z; the rows' starts; the demote bringing the link back; a plain text promoted with nothing to confirm (105l,
+// the review); the read-only window; and the project handed back.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
 // Site basics and the custom-settings meter (present), the seeded project's Site basics is its one no-site caption, and
 // Credits and D6a's rail rows stay absent (R-118). Step 104 walks the spec's I/O matrix row by row: + held mid-post saying
@@ -8558,6 +8559,28 @@ async function main() {
       demoted105 === null && subBack105?.links === 1 && !pillBack105.includes(T105.lockPill('sub')) && barBack105 === 1, JSON.stringify({ subBack105, pillBack105, barBack105 }))
     await pe.keyboard.press('Escape')
     await pe.keyboard.press('Escape')
+
+    // ── 105l (Story 7.10's review) — a PLAIN text promoted: Latest Post's Headline, from its ↗, with nothing to confirm ──
+    await select105()
+    await group105('Content')
+    await action105('Headline').click()
+    const opened105l = await pe.waitForURL((u) => u.searchParams.get('promote') === `prop:${hero105.instanceId}:headline`, { timeout: 15000 }).then(() => true, () => false)
+    await pe.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    await hydrated104(pe)
+    await pe.waitForTimeout(300)
+    const form105l = await theForm105()
+    const answered105l = posted104(pe)
+    await pe.locator('form:has(#promote-which) button[type="submit"]').first().click()
+    await answered105l
+    const asked105l = await ask105()
+    const headline105 = await until104(pe, () => rowOf104('headline'), (r) => r !== null)
+    const words105l = hero105.content?.headline
+    const start105l = typeof words105l === 'string' ? words105l : words105l?.text ?? ''
+    check('step 105l — a plain text, Latest Post\'s Headline, promoted from its ↗: the form opens on it, Promote asks nothing first, and the row is Ghost\'s text at its words, no options, bound to the prop',
+      opened105l && (form105l.which ?? '').includes('Headline') && form105l.key === 'headline' && asked105l === null &&
+      headline105?.type === 'text' && headline105?.default_value === (start105l === '' ? null : start105l) && headline105?.options === null &&
+      same104(headline105?.bound_to, { kind: 'prop', instanceId: hero105.instanceId, path: 'headline' }), JSON.stringify({ form105l, asked105l, row: fields104(headline105) }))
+    await editor105()
 
     // ── 105k — R-192: a second window reads along, and every ↗ in it is greyed and goes nowhere ──
     const roContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })

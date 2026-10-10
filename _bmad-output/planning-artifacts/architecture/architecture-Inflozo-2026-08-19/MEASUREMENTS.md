@@ -5723,7 +5723,7 @@ Paper's pack and an empty library (a theme Inflozo did not compile has none, so 
 
 ## 78. Promoted settings in Ghost's own Design panel — every kind at the canvas's start, a change per kind reaching the page, a hidden setting drawing its start, Ghost keeping a value across a new start and forgetting a dropped key — beside the emitted-theme quality gate: axe-core on Ghost's own pages agreeing with `qualityGate`, a planted probe named by both, and Ghost's Casper and Source as its negative control, beside the gscan gate, a customer's words inert to gscan and the pilots compiled with Ghost's article, WebP `srcset`s, `main.js`, Paper's fonts, their licences, a section's dark hook, every standard template and the paywall mechanism, rendered by Ghost, T1 · 2026-10-10
 
-**Command.** `python3 tools/probe/record-theme-assembly.py` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload (DW-332), both read back; Story 7.8's quality probe (the pilots plus a planted heading skip and a nameless link), activated, then restored and deleted the same way; Story 7.7's three probe uploads (the compiled pilots unscaffolded, a fatal probe, a cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back after each; Story 7.10's probe theme (`inflozo-probe-custom-settings`), uploaded and activated five times, its own `custom_theme_settings` written through Ghost's API and cleared by activating it with nothing declared, then restored and deleted the same way; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time it is asked for each; no content, no site setting and no key written. The picture is `/content/images/2026/10/inflozo-probe-rendition.png`. T1 only (R-238); the Ghost 5 half is DW-326's, at Story 15.7. §70 to §77 are Stories 7.1's to 7.8's records; this re-runs their rows beside Story 7.10's. Ghost 6.58.0's npm tarball (`https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`) is read, never installed, for Casper and Source.
+**Command.** `python3 tools/probe/record-theme-assembly.py` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload (DW-332), both read back; Story 7.8's quality probe (the pilots plus a planted heading skip and a nameless link), activated, then restored and deleted the same way; Story 7.7's three probe uploads (the compiled pilots unscaffolded, a fatal probe, a cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back after each; Story 7.10's probe theme (`inflozo-probe-custom-settings`), uploaded and activated for each tree it deploys — the bare theme, `start`, `restarted`, `without_sub`, `start` again and the bare theme to clear it — its own `custom_theme_settings` written through Ghost's API and cleared by activating it with nothing declared, then restored and deleted the same way; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time it is asked for each; no content, no site setting and no key written. The picture is `/content/images/2026/10/inflozo-probe-rendition.png`. T1 only (R-238); the Ghost 5 half is DW-326's, at Story 15.7. §70 to §77 are Stories 7.1's to 7.8's records; this re-runs their rows beside Story 7.10's. Ghost 6.58.0's npm tarball (`https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`) is read, never installed, for Casper and Source.
 
 **Why.** Story 7.3's compiler resolves every standard template through `designate`, `synthesize` and `pageTwoStack`, writes an archive's designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in `<main id="site-main">`, puts FR-H2's `noindex` guard in `default.hbs`'s head, and leaves out an untouched `error.hbs` the library cannot fill (Question 1, ruled option 1). It writes a designed paywall as `partials/content-cta.hbs` with no explicit `{{> "content-cta"}}`, on the strength of a source reading that corrects §15b. Story 7.4's ships the pairing's pool woff2 files in `assets/fonts/`, preloads the two roman faces and writes their `@font-face` rules in `default.hbs`'s head through one `{{asset}}` address each, puts each family's licence at the root, and writes `screen.css` as the token block — AD-18's two `--gh-font-*` variables, then A4 #13's dark override on its hook — the canvas's base, and each design's sheet stripped to what its placed roots reach. Story 7.5's writes `assets/js/main.js` — `core` and each declared module with a file, `core` alone on the pilots, whose `nav-drawer` and `member-form` have no file yet and ship at rest — behind one `defer` tag in `default.hbs`'s head after the stylesheet, and `README.md`'s Scripts section. Story 7.6's wraps the sections of every template whose matrix row opens `{{#post}}` in `POST_ARTICLE` — `<article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">` — asks Ghost for WebP in every `srcset` candidate (`format="webp"`), and ships no `locales/` (Story 7.12's), so Ghost prints each `{{t}}` key. Story 7.7's gate, `gscanGate` (`@inflozo/theme-compiler/gate`), runs each Ghost major's own pinned gscan over a compiled theme and maps it through one table (AD-24); the runtime's escaper and the boundary comment write gscan's brace-free trigger words inert (AD-36), so the page word carried the four error words after its nonce and the layer word `currency_symbol`. `check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate — the product's own, `gscanGate` (gscan reads `.js` too, so `main.js` is checked; §74 and §75 said otherwise, and carry a dated correction), with the scaffold (`cards.css`, Story 7.13's two widths alone — AD-18's lines left it, so `screen.css` answers GS051; the stand-in `page.hbs`, Story 10.79's, for GS110): Ghost 5 via gscan 4.49.7 at `v5` — 0 errors / 0 warnings · Ghost 6 via gscan 6.4.2 at `v6` — 0 errors / 0 warnings.
 
@@ -5985,34 +5985,19 @@ Four trees compiled under one name, each gated 0/0 on both pinned gscans before 
 | `custom_theme_settings` | `title` listed at its start — `type 'text', value 'Everything Orbit Weekly published this s` | yes |
 | `custom_theme_settings` | `accent_colour` listed at its start — `type 'color', value '#D96C3F', start '#D96C3F'` | yes |
 | `custom_theme_settings` | `picture` listed at its start — `type 'image', value None, start None` | yes |
-| `/` | the switch and the choice draw their start — `<section
-  class="a4-13"
-  data-card-side="right"
-  data-sho` | yes |
-| `/` | CONTROL — the secondary action, which follows the promoted primary (its disabledBy), is on while the primary is — `<section
-  class="a4-13"
-  data-card-side="right"
-  data-sho` | yes |
+| `/` | the switch and the choice draw their start — `<section class="a4-13" data-card-side="right" data-sho` | yes |
+| `/` | CONTROL — the secondary action, which follows the promoted primary (its disabledBy), is on while the primary is — `<section class="a4-13" data-card-side="right" data-sho` | yes |
 | `/` | the promoted rich text prints its start, its words alone — `Orbit Weekly is a letter about the small web — the sites peo` | yes |
 | `/` | the promoted title prints its start — `Everything Orbit Weekly published this spring` | yes |
 | `/` | `--setting-accent` is the pack's light accent — `#D96C3F` | yes |
 | `/` | a picture setting unset, on a section with no picture of its own: the element is left out — `no <img class="cx__picture">` | yes |
-| `/` | Headline size set to Medium in Ghost: the root reads medium — `<section
-  class="a4-13"
-  data-card-side="right"
-  data-sho` | yes |
+| `/` | Headline size set to Medium in Ghost: the root reads medium — `<section class="a4-13" data-card-side="right" data-sho` | yes |
 | `/` | Sub changed in Ghost: the page prints Ghost's words — `Sub e6fb0c78b9271665` | yes |
 | `/` | Title changed in Ghost: the page prints Ghost's words — `Title e6fb0c78b9271665` | yes |
 | `/` | the accent changed in Ghost: `--setting-accent` carries it — `#1A2B3C` | yes |
 | `/` | a picture chosen in Ghost: the section shows it — `<img class="cx__picture" alt="Cargo cranes over a harbour at` | yes |
-| `/` | the button off hides Headline size in Ghost: its reader draws the start — `<section
-  class="a4-13"
-  data-card-side="right"
-  data-sho` | yes |
-| `/` | the primary off in Ghost: the secondary action follows it off, so it never stands alone (a4/13's disabledBy) — `<section
-  class="a4-13"
-  data-card-side="right"
-  data-sho` | yes |
+| `/` | the button off hides Headline size in Ghost: its reader draws the start — `<section class="a4-13" data-card-side="right" data-sho` | yes |
+| `/` | the primary off in Ghost: the secondary action follows it off, so it never stands alone (a4/13's disabledBy) — `<section class="a4-13" data-card-side="right" data-sho` | yes |
 | `custom_theme_settings` | CONTROL — Ghost still stores Medium, so the start above is the hidden setting's — `Medium` | yes |
 | `/` | Sub emptied in Ghost: the line is left out — `absent` | yes |
 | `custom_theme_settings` | Sub emptied in Ghost is held empty — `''` | yes |

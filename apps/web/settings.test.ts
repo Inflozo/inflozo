@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import type { PropDef, SectionRegistryEntry } from '@inflozo/library'
-import { DATA_WORDS, SETTING_WORDS, USER_SETTING_CAP, type ProjectDoc, type SettingRow } from '@inflozo/section-runtime'
+import { DATA_WORDS, replaceRange, SETTING_WORDS, USER_SETTING_CAP, type ProjectDoc, type SettingRow } from '@inflozo/section-runtime'
 import { THEME_SETTINGS_LINK } from './lib/data-group.ts'
 import {
   bindingsOf, boundLabels, choicesOf, conditionOf, droppedWords, EVERY_PAGE, fileName, liveHolder, locked, lockedContent, namesOn, orderedDocs, packInForce, pageOf, parkedOn,
@@ -380,7 +380,10 @@ test('(7.10) the editor\'s bindings by instance, P0-1\'s lock as a render-time c
   assert.deepEqual(locked(SUB), { ...SUB, plainText: true })
   // a rich text no one has marked yet is a plain string, and it is locked too — else its session would offer the marks
   assert.deepEqual(locked('plain words'), { text: 'plain words', plainText: true })
-  assert.equal(locked(null), null)
+  // the review (2026-10-10): a bound text with no value at all is locked as well, or its session would offer the marks
+  assert.deepEqual(locked(null), { text: '', plainText: true })
+  assert.deepEqual(locked(undefined), { text: '', plainText: true })
+  assert.equal(unlocked(locked(null)), '', 'and stores the empty string a value with no mark is')
   assert.deepEqual(unlocked(locked(SUB)), SUB)
   assert.equal(unlocked(locked('plain words')), 'plain words', 'a value with no mark goes back to the string it was')
   assert.equal(unlocked('x'), 'x')
@@ -388,6 +391,24 @@ test('(7.10) the editor\'s bindings by instance, P0-1\'s lock as a render-time c
   assert.equal(droppedWords({ text: 'a b c', marks: [{ start: 2, end: 3, mark: 'a', href: 'https://x' }, { start: 0, end: 1, mark: 'strong' }] }), 'The bold and the link are dropped; the words stay.')
   assert.equal(droppedWords({ text: 'a b', marks: [{ start: 0, end: 1, mark: 'em' }] }), 'The italic is dropped; the words stay.')
   assert.equal(droppedWords('no marks'), null)
+})
+
+test('(7.10, the review) typing under the lock keeps the doc\'s marks, shifted, and stores no plainText — the canvas and the panel both save through `unlocked`', () => {
+  const SUB = { text: 'One essay, every Thursday.', marks: [{ start: 17, end: 25, mark: 'a' as const, href: 'https://example.com/' }] }
+  // the session edits the LOCKED copy (`replaceRange`, `lib/inline.ts`'s one edit), and its value goes up through `unlocked`
+  const typed = unlocked(replaceRange(locked(SUB), 0, 0, 'Now: ', { typed: true }).value)
+  assert.deepEqual(typed, { text: 'Now: One essay, every Thursday.', marks: [{ start: 22, end: 30, mark: 'a', href: 'https://example.com/' }] }, 'the link moved with its words')
+  const appended = unlocked(replaceRange(locked(SUB), SUB.text.length, SUB.text.length, ' again', { typed: true }).value)
+  assert.deepEqual(appended, { ...SUB, text: `${SUB.text} again` })
+  assert.equal(JSON.stringify([typed, appended]).includes('plainText'), false, 'nothing writes the lock into a doc')
+  // a plain text promoted: the same round trip, back to the plain string it is stored as
+  assert.equal(unlocked(replaceRange(locked('Words'), 5, 5, '!', { typed: true }).value), 'Words!')
+  // …and the two places that edit a bound text hand their value up through `unlocked`, and down through `locked`
+  const editor = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx', 'utf8')
+  assert.match(editor, /value: boundKey === undefined \? value : locked\(value\)/)
+  assert.match(editor, /setContent\(entry, at, me\.path, boundKey === undefined \? next : \(unlocked\(next\) as PropValue\), me\.item\)/)
+  const sidebar = readFileSync('components/controls/sidebar.tsx', 'utf8')
+  assert.match(sidebar, /field\(row, lock \? locked\(row\.value as PropValue\) : row\.value, \(value\) => commit\(setContent\(entry, state, row\.path, lock \? unlocked\(value\) : value\), 'content'\)/)
 })
 
 test('(7.10) § Words: one list, each sentence the spec\'s', () => {
@@ -426,4 +447,13 @@ test('(7.10) the actions: promote finds what it stores by the posted id and refu
   assert.match(page, /controls\.find\(\(c\) => c\.id === chosen\) \?\? controls\[0\]/)
   // Edit has no Default list any more (Question 1)
   assert.doesNotMatch(page.slice(page.indexOf('function EditForm('), page.indexOf('function Fixed(')), /name="default"|defaultValue/)
+  // the review (2026-10-10): the sheet's **Promote it** posts the acknowledgement the action asks for, and the sheet closes on
+  // any answer, so a refusal drawn under the form is seen
+  const ask = page.slice(page.indexOf('function PromoteAsk('), page.indexOf('function Formatted('))
+  assert.match(ask, /<Submit busy=\{THEME_WORDS\.promoting\} variant="marigold" size=\{36\} name="confirmed" value="yes">/)
+  const form = page.slice(page.indexOf('function PromoteForm('), page.indexOf('function PromoteAsk('))
+  assert.ok(form.indexOf('ask.current?.close()') < form.indexOf("if (!('ok' in state)) return"), 'closed before the refusal returns')
+  // and the editor reads the project's settings the way Theme settings does (RLS, `SETTING_COLUMNS`, in their order)
+  const read = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/read.ts', 'utf8')
+  assert.match(read, /sb\.from\('custom_settings'\)\.select\(SETTING_COLUMNS\)\.eq\('project_id', projectId\)\.order\('position'\)\.order\('created_at'\)/)
 })
