@@ -1023,3 +1023,14 @@ and are syntax-checked now.
   (`false`, nothing moved) rather than through the deployed action. Its four FAILs are syncs that did not land in code this
   story does not touch — step 66's ⌘S, step 8's sign-out, step 102's pack restore — the class runs 5 and 6 share, which
   passed in runs 2, 3 and 4.
+
+**Deploy (2026-10-10).**
+
+- `Deployment: dpl_9QfaoUKNJDBzhXEFLcJgepGfjSxN` — READY, built from `d536c38c`, the last commit to change app code (the Schema
+  push `d792d939` before it is `dpl_5J91p3HxnLH9gNTEVVhkyhbX9K4M`, READY). Production is `https://app.inflozo.com`; the
+  migration `20261010120000_delete_custom_setting.sql` is applied there and read back (§ Schema phase above), and the RLS gate
+  was green on both pushes.
+- The docs-only commit after them, `a1c3bb3c`, went red in CI's `check` at `tools/keyboard/floor.spec.mjs:77` (the R-201
+  phone-notice stop, `#canvas > *` not found after 5 s, 202 other stops passed) — DW-350's row, its fourth recurrence, on a push
+  that changes no app code; `deploy` was skipped, which changes nothing live. This Deploy commit re-pushes with no app change.
+- The owner's test below already carries the live URLs; they are the two real projects, on `app.inflozo.com`.

@@ -9486,6 +9486,9 @@ origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain
   `#style-pack-new`, with 202 other stops passed; `rls` success, `deploy` skipped. Run cold on this machine with
   `bash tools/keyboard/run-keyboard-gate.sh -g 'R-236'` (Node 24.18.1): 1 passed. So the flake is not one row: it is the
   walk looking before a surface has drawn. The story is re-pushed with no app change.
+  Fourth recurrence, the same R-201 row as the first (2026-10-10, Story 7.9's Review): run 38036171816 on a1c3bb3c (a
+  spec/ledger-only commit) — `check` failed at `floor.spec.mjs:77:3`, `#canvas > *` not found after 5s, 202 other stops
+  passed; `rls` success, `deploy` skipped. Re-pushed with no app change at Deploy.
 owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
   the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
   then, re-push on a red R-201 stop with no app change.
