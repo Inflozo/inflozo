@@ -9544,6 +9544,11 @@ origin: Story 7.9's Review (2026-10-10), on `d52974c5` (`dpl_Hs6Ntbzx6djJfJSyDP7
   Run 6 on `d536c38c` the same day: 104a–104i passed, then 104j's first replay died the same way (`capture104` →
   `posted104`); steps 66 (⌘S), 8 (sign-out) and 102 (the pack restore) FAILed on syncs that did not land, as step 66 and
   step 8 had in run 5 — the same hold, in the editor's own POSTs.
+  Story 7.10's Review (2026-10-10), seven runs: on `94065e62` runs 2 and 5 died at a magic link with no Vercel row (DW-204's
+  class), run 3 at 104h's forced submit held past 20 s, run 6 (a debug copy waiting 120 s) at 104d on `response.text()` —
+  "No data found for resource"; on `0b73718d` run 7 completed, 772 PASS: step 66's ⌘S (two rows) failed on a sync that
+  stayed "Syncing" — the next row saw it land — and step 8's R-213 found its tab already reading along, so nothing was
+  sent; neither touches code the story changed, and runs 3 and 6 had passed both.
 owner: Story 15.1 (the E2E suite), whose card carries this entry with its id — the story that hardens the walks against
   their environment, as DW-68 and DW-350 are.
 location: `tools/probe/run-verify-editor.cjs` (`posted104`, `promote104`; every step that reads a server action's body)

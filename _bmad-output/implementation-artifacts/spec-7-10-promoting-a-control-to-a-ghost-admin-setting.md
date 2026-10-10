@@ -415,10 +415,11 @@ Vercel, production's schema read-only, T1 read-only, signed-out routes), with th
 session on the owner's in-session go (R-82) — results under § Verification. Every finding was read in the code before it
 was rated.
 
-- [ ] [Review][Decision] The render matrix never ran on the Dev head: GitHub refused to start the job — "recent account
-  payments have failed or your spending limit needs to be increased" — on this push and the two before it, and nothing
-  re-ran it, while this push changes the shared runtime every design renders through. Put to the owner as **Question 5**
-  [`.github/workflows/matrix.yml`, run 38058081445]
+- [x] [Review][Decision] The render matrix never ran on the Dev head: GitHub refused to start the job — "recent account
+  payments have failed or your spending limit needs to be increased" — on this push and the two before it, while this push
+  changes the shared runtime every design renders through. Raised as Question 5, then **withdrawn before the owner ruled**:
+  the Review push's own run (38066935771 at `0b73718d`) started, took every design as its scope ("a shared input changed")
+  and passed — so nothing was left to decide [`.github/workflows/matrix.yml`]
 - [x] [Review][Patch] A promoted accent on a pack whose accent is also another of its colours — Mono, accent and text both
   `#000000` — handed the site's owner the body text, the contrast ground and the error colour too, because the light block
   was rewritten wherever the hex appeared; only the tokens the accent feeds follow it now [tokens.ts `packTokensCss`]
@@ -669,7 +670,9 @@ the test Ghost proves it).
 All four were raised at this story's Create and ruled by the owner in chat on 2026-10-10, each the recommended option
 (1, 2, 1 and 1). The spec is written to those rulings (§ Rulings this spec is written to); Story 7.18's and Story 9.1's
 cards and Epics 7 and 9's preambles carry the two moved requirements word for word (R-195).
-Question 5 was raised at Review and is open.
+A fifth question, raised at Review (2026-10-10) — fix GitHub's billing and re-run the picture check of every section, which
+GitHub had refused to start on this story's three pushes — was withdrawn before the owner ruled: the Review push's own
+run started and passed with every design in its scope, so nothing was left to decide (§ Review Findings, § Verification).
 
 ### Question 1 — Where a promoted control's starting value is set
 
@@ -751,27 +754,6 @@ and promoting it gives your site's owner a "Logo" picture under Design in Ghost.
 
 **Ruled: option 1 (owner, 2026-10-10).**
 
-### Question 5 — GitHub did not run the picture check of every section on this story's code (raised at Review, 2026-10-10)
-
-**In plain English.**
-- Every push runs an automatic check that photographs every section design and compares it with its approved picture
-  (the "render matrix"). It is the check that would catch this story changing how any section looks.
-- On this story's three pushes GitHub refused to start that check. The reason GitHub gives is: "The job was not started
-  because recent account payments have failed or your spending limit needs to be increased." The same refusal hit the
-  main check's first try on the Dev push, which you re-ran by hand; the picture check was never re-run.
-- This story changes code every section is drawn with, so the picture check matters here. It does not stop the site
-  deploying (R-116), so the live site is unaffected meanwhile.
-
-**Example.** If the change to the colour block had moved one section's colours, the picture check would have shown it
-red, with the before-and-after pictures. Today nothing has looked.
-
-1. **Fix the payment in GitHub's Billing & plans, then press "Re-run all jobs" on the Render matrix run for this story's
-   Review push** (I will give you the link at Deploy). It compares every design against its picture. **(RECOMMENDED)**
-2. Fix the payment and let tonight's automatic full run (03:00 IST) check it instead — one day later, same coverage.
-3. Leave it for now and go on without the picture check on this story.
-
-**Ruled:** _(awaiting the owner)_
-
 ## Verification
 
 **Commands:**
@@ -841,7 +823,10 @@ equivalent).
   re-run by the owner, `check` (16 steps), `rls` and `deploy` green; `dpl_6HNoZZ7UgETzvEcKADFq5PPdbaXn` READY at
   `94065e62` and aliased to app.inflozo.com. **The Render matrix never ran**: runs 38046521341, 38052237437 and
   38058081445 (this story's three pushes) were refused with GitHub's annotation "recent account payments have failed or
-  your spending limit needs to be increased" — Question 5.
+  your spending limit needs to be increased". **At the Review head `0b73718d`** both started: CI run 38066935766 `check`,
+  `rls` and `deploy` green, `dpl_G6ZnvZh6oBTM4AK2C6tFe2XYACpS` READY; Render matrix run 38066935771 green with "scope:
+  every design (a shared input changed)" — every case photographed at this story's code with zero violations, the runner
+  printing its own counts — so the question raised about it (Question 5) was withdrawn.
 - **Production's schema (R-99)**, read through `SUPABASE_DB_POOLER_URL` in one `BEGIN READ ONLY` transaction, rolled back:
   `custom_settings` has no check, rule or trigger that reads `bound_to` or `type` (the cap, key-frozen and touch triggers
   match `20260904120000_complete_schema.sql` line for line); `ghost_setting_type` holds `text`, `image` and `color`; each
@@ -861,7 +846,20 @@ equivalent).
   (DW-204: it never left the machine); run 6, a debug copy waiting 90 s for a navigation and 120 s for an action's answer
   (recorded here, never committed), **728 PASS, 0 FAIL**, died at 104d's promote on `response.text()` — "No data found for
   resource", DW-352's second form. Runs 3 to 6 ran from a clean worktree at the Dev head, so the review's edits were not
-  under them. Step 105 (and the review's 105l) is run on the Review head once CI deploys it.
+  under them.
+- **The deployed walk on the Review head `0b73718d`** (`dpl_G6ZnvZh6oBTM4AK2C6tFe2XYACpS`, the committed walk, users
+  14 → 14): **772 PASS, 4 FAIL, and step 105 walked whole** — 105a–105l held but one row, 105l's plain text included:
+  the ↗ opening the form on exactly that control and an unoffered id on its first row, unparsed; Headline size stored and
+  its start printed; the tag; D6c on Cancel and Promote it storing Sub's words with the doc keeping its link; the lock
+  pill with the link not drawn and ⌘B inert; the accent's caution, row and caption; the pack-switch ask; the delete and
+  hide asks, the rows' states and ⌘Z; the demote bringing the link back; the reader's greyed ↗; the project handed back
+  clean, zero CSP violations. **The FAILs:** 105d's "the hand-made post answers *Confirm first — …*" — the walk read the
+  action's answer as Latin-1 (`text/x-component`, no charset), so its em dash came back "â€”"; a probe of the same post
+  on production (one throwaway account, deleted) read the answer's bytes and the page's own alert as the sentence, twice,
+  with no row stored, and the walk now decodes the bytes as UTF-8 (its control: the same bytes read as Latin-1 miss the
+  sentence). Step 66's ⌘S (two rows: a sync that stayed "Syncing", landing by the next row) and step 8's R-213 (its tab
+  already reading along, so nothing was sent) failed beside code the story never touched, and passed in runs 3 and 6 —
+  recorded on DW-352.
 - **Local, over the review's tree:** `pnpm check` green (lint, typecheck, every package's tests — the runtime's
   `tokens.test.ts` with every preset and Mono, `custom-settings.test.ts`, `agreement.test.ts`'s catalog-attribute row,
   `settings.test.ts`' lock round trip and source pins, both pinned gscans, `check-snapshots` PASS); `pnpm keyboard` whole

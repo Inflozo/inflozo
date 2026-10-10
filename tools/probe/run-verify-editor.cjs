@@ -8394,7 +8394,10 @@ async function main() {
     const cancelled105 = await rowOf104('sub')
     const answered105d = posted104(pe)
     await pe.evaluate(() => document.getElementById('promote-which').closest('form').requestSubmit())
-    const bare105 = await (await answered105d).text()
+    // the action's answer is UTF-8 with no charset (`text/x-component`), and Playwright's `text()` read it as Latin-1, so the
+    // sentence's em dash came back as "â€”" and the check failed on a right answer (the review's run 7 — a probe of the same
+    // post read the page's own alert as the sentence, twice, nothing stored): the bytes, decoded as UTF-8
+    const bare105 = (await (await answered105d).body()).toString('utf8')
     const refusedRow105 = await rowOf104('sub')
     check('step 105d — Cancel stores nothing, and the form posted by hand with no acknowledgement answers "Confirm first — promoting this changes what your theme carries." and stores nothing',
       cancelled105 === null && bare105.includes(W105.confirm) && refusedRow105 === null, JSON.stringify({ cancelled105, refusedRow105 }))
