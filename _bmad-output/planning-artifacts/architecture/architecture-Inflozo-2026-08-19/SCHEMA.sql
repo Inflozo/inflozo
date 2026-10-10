@@ -1881,3 +1881,40 @@ grant  execute on function public.session_guard() to anon, authenticated, servic
 
 alter role authenticator set pgrst.db_pre_request = 'public.session_guard';
 notify pgrst, 'reload config';
+
+-- ============================================================================
+-- 16. Story 7.9 — deleting a theme setting clears every condition naming it, in ONE transaction
+-- ============================================================================
+-- FR-Q2's matrix row "Visibility's target deleted — one confirm, one transaction": the conditions that
+-- name the setting are cleared and the setting deleted in one call, so a failure leaves both or neither
+-- (Story 7.9's Question 7, option 2, owner, 2026-10-10). SECURITY INVOKER: the caller's own RLS and
+-- column grants decide, exactly as the two PostgREST writes it replaces did, so another tenant's setting
+-- answers false and nothing is written. A row gone between the read and the delete raises, rolling the
+-- cleared conditions back. `updated_at` is `touch_updated_at()`'s.
+--
+-- Mirrors `supabase/migrations/20261010120000_delete_custom_setting.sql`; the RLS gate diffs the database
+-- the migrations build against the one this file builds, so the two move together.
+create or replace function public.delete_custom_setting(p_project uuid, p_setting uuid)
+returns boolean
+language plpgsql security invoker set search_path = public as $$
+declare
+  target_key text;
+begin
+  select key into target_key from public.custom_settings where id = p_setting and project_id = p_project;
+  if target_key is null then
+    return false;
+  end if;
+
+  update public.custom_settings
+     set visibility_condition = null
+   where project_id = p_project and visibility_condition->>'key' = target_key;
+
+  delete from public.custom_settings where id = p_setting and project_id = p_project;
+  if not found then
+    raise exception 'custom setting % went before it could be deleted', p_setting using errcode = 'P0002';
+  end if;
+  return true;
+end $$;
+
+revoke execute on function public.delete_custom_setting(uuid, uuid) from public, anon;
+grant  execute on function public.delete_custom_setting(uuid, uuid) to authenticated;

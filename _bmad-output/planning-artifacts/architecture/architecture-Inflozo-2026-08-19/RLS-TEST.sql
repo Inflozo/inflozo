@@ -2128,3 +2128,127 @@ reset role;
 
 delete from auth.users where id in ('66666666-6400-0000-0000-000000000001',
                                     '66666666-6400-0000-0000-000000000002');
+
+-- ── STORY 7.9 — deleting a theme setting clears every condition naming it, in ONE transaction ─────────────
+--
+-- BEHAVIOURAL. `delete_custom_setting()` (Question 7, option 2, owner, 2026-10-10) is the one save behind the
+-- matrix's "Visibility's target deleted": the conditions naming the setting are cleared and the setting deleted
+-- together. So: a delete refused part-way (a trigger planted to refuse it, then removed) leaves the setting AND
+-- its dependent's condition exactly as they were — the transaction, which two PostgREST writes never had; the
+-- owner's delete then removes the row, nulls the dependent's condition and keeps a condition naming another
+-- setting; another tenant's setting answers false and stands, by its own project id and by the caller's; anon
+-- cannot call it; and it is SECURITY INVOKER, so RLS and the column grants decide as they did before.
+
+reset role;
+
+delete from auth.users where id in ('77777777-7900-0000-0000-000000000001',
+                                    '77777777-7900-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-7900-0000-0000-000000000001'),
+                                  ('77777777-7900-0000-0000-000000000002');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-7900-0000-0000-000000000001','77777777-7900-0000-0000-000000000001','Own settings','own-settings-79','{"preset":"paper"}'),
+  ('dddddddd-7900-0000-0000-000000000002','77777777-7900-0000-0000-000000000002','Theirs','theirs-79','{"preset":"paper"}');
+insert into public.custom_settings(id,project_id,user_id,key,label,type,options,default_value,bound_to,visibility_condition) values
+  ('aaaaaaaa-7900-0000-0000-000000000001','cccccccc-7900-0000-0000-000000000001','77777777-7900-0000-0000-000000000001',
+   'headline_size','Headline size','select','[{"value":"large","label":"Large"},{"value":"display","label":"Display"}]','Large','{"kind":"control"}',null),
+  ('aaaaaaaa-7900-0000-0000-000000000002','cccccccc-7900-0000-0000-000000000001','77777777-7900-0000-0000-000000000001',
+   'show_the_button','Show the button','boolean',null,'true','{"kind":"control"}','{"key":"headline_size","value":"Display"}'),
+  ('aaaaaaaa-7900-0000-0000-000000000003','cccccccc-7900-0000-0000-000000000001','77777777-7900-0000-0000-000000000001',
+   'show_tag','Show tag','boolean',null,'true','{"kind":"control"}','{"key":"show_the_button","value":true}'),
+  ('bbbbbbbb-7900-0000-0000-000000000001','dddddddd-7900-0000-0000-000000000002','77777777-7900-0000-0000-000000000002',
+   'headline_size','Headline size','boolean',null,'true','{"kind":"control"}',null);
+
+do $$
+declare n int; definer boolean;
+begin
+  select count(*), bool_or(p.prosecdef) into n, definer from pg_proc p join pg_namespace s on s.oid = p.pronamespace
+   where s.nspname = 'public' and p.proname = 'delete_custom_setting';
+  if n <> 1 or definer then
+    raise exception 'FAIL (7.9): % delete_custom_setting functions exist, security definer: % — one, invoker', n, definer;
+  end if;
+  raise notice 'PASS (7.9): exactly one delete_custom_setting exists, and it runs as its caller';
+end $$;
+
+-- (1) THE TRANSACTION: a delete refused part-way keeps the setting and its dependent's condition.
+create function public.rls_test_refuse_delete() returns trigger language plpgsql as $$
+begin
+  raise exception 'refused for the test' using errcode = 'P0001';
+end $$;
+create trigger rls_test_refuse_delete before delete on public.custom_settings
+  for each row when (old.id = 'aaaaaaaa-7900-0000-0000-000000000001') execute function public.rls_test_refuse_delete();
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7900-0000-0000-000000000001';
+
+do $$
+declare cond jsonb; still int;
+begin
+  begin
+    perform public.delete_custom_setting('cccccccc-7900-0000-0000-000000000001','aaaaaaaa-7900-0000-0000-000000000001');
+    raise exception 'FAIL (7.9): the planted refusal did not stop the delete';
+  exception when raise_exception then
+    if sqlerrm <> 'refused for the test' then raise; end if;
+  end;
+  select visibility_condition into cond from public.custom_settings where id = 'aaaaaaaa-7900-0000-0000-000000000002';
+  select count(*) into still from public.custom_settings where id = 'aaaaaaaa-7900-0000-0000-000000000001';
+  if cond is distinct from '{"key":"headline_size","value":"Display"}'::jsonb or still <> 1 then
+    raise exception 'FAIL (7.9): a delete refused part-way left the condition % and % setting(s) — the clear was not rolled back', cond, still;
+  end if;
+  raise notice 'PASS (7.9): a delete refused part-way keeps the setting and its dependent''s condition (one transaction)';
+end $$;
+
+reset role;
+drop trigger rls_test_refuse_delete on public.custom_settings;
+drop function public.rls_test_refuse_delete();
+
+-- (2) the owner's delete: the row goes, the dependent's condition is null, another condition stays.
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7900-0000-0000-000000000001';
+
+do $$
+declare answered boolean; gone int; cond jsonb; other jsonb;
+begin
+  answered := public.delete_custom_setting('cccccccc-7900-0000-0000-000000000001','aaaaaaaa-7900-0000-0000-000000000001');
+  select count(*) into gone from public.custom_settings where id = 'aaaaaaaa-7900-0000-0000-000000000001';
+  select visibility_condition into cond from public.custom_settings where id = 'aaaaaaaa-7900-0000-0000-000000000002';
+  select visibility_condition into other from public.custom_settings where id = 'aaaaaaaa-7900-0000-0000-000000000003';
+  if answered is not true or gone <> 0 or cond is not null or other is distinct from '{"key":"show_the_button","value":true}'::jsonb then
+    raise exception 'FAIL (7.9): the delete answered %, left % row(s), the dependent''s condition % and the other %', answered, gone, cond, other;
+  end if;
+  raise notice 'PASS (7.9): the owner''s delete removes the setting and clears only the conditions naming it';
+
+  -- (3) another tenant's setting: false, by its own project id and by the caller's
+  if public.delete_custom_setting('dddddddd-7900-0000-0000-000000000002','bbbbbbbb-7900-0000-0000-000000000001') is not false
+     or public.delete_custom_setting('cccccccc-7900-0000-0000-000000000001','bbbbbbbb-7900-0000-0000-000000000001') is not false then
+    raise exception 'FAIL (7.9): another tenant''s setting did not answer false';
+  end if;
+end $$;
+
+reset role;
+
+do $$
+begin
+  if not exists (select 1 from public.custom_settings where id = 'bbbbbbbb-7900-0000-0000-000000000001') then
+    raise exception 'FAIL (7.9): another tenant deleted this setting';
+  end if;
+  raise notice 'PASS (7.9): another tenant''s setting answers false and stands';
+end $$;
+
+-- (4) anon cannot call it.
+set request.jwt.claim.sub = '';
+set role anon;
+
+do $$
+declare answered boolean;
+begin
+  answered := public.delete_custom_setting('dddddddd-7900-0000-0000-000000000002','bbbbbbbb-7900-0000-0000-000000000001');
+  raise exception 'FAIL (7.9): anon executed delete_custom_setting() and got %', answered;
+exception
+  when insufficient_privilege then
+    raise notice 'PASS (7.9): anon cannot execute delete_custom_setting() (42501)';
+end $$;
+
+reset role;
+
+delete from auth.users where id in ('77777777-7900-0000-0000-000000000001',
+                                    '77777777-7900-0000-0000-000000000002');

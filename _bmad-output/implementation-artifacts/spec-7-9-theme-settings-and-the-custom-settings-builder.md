@@ -46,7 +46,8 @@ and the Promote form for toggle, segmented and named-select controls (Question 1
 lives in ONE core module both the server actions and Story 7.10's emitter read, and is executed against both pinned
 gscans rather than asserted. The main feed's Count gains D5c's second sentence and its link. No migration: every
 column, grant and trigger this story needs exists in `20260904120000_complete_schema.sql`, so there is no Schema phase
-(R-99).
+(R-99). *(Amended on Question 7's ruling, option 2, owner, 2026-10-10: one migration after all —
+`delete_custom_setting()`, so a delete and the conditions it clears are one save — pushed first as a Schema phase.)*
 
 ## Boundaries & Constraints
 
@@ -354,9 +355,10 @@ Five layers ran: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Au
 the main session on the owner's in-session go, R-82 — results under § Verification). Every finding was read in the code
 before it was rated; each patch's test was turned red by a mutation and restored byte for byte.
 
-- [ ] [Review][Decision] Delete is two ordered writes, not one transaction — the criterion says "cleared in the same
+- [x] [Review][Decision] Delete is two ordered writes, not one transaction — the criterion says "cleared in the same
   transaction"; one save needs a database function, which is a Schema phase this spec rules out without a question. Put to
-  the owner as **Question 7**.
+  the owner as **Question 7**; ruled option 2 (owner, 2026-10-10): `delete_custom_setting()`, pushed first as a Schema
+  phase, then `deleteSetting` calls it [actions.ts `deleteSetting`, `20261010120000_delete_custom_setting.sql`]
 - [x] [Review][Patch] A label that leaves no key ("🎉", "2", "!!!") was refused "A setting needs a label." — since Question
   6 the label is the key's words, so the label rule fired first; the key is now checked first and the matrix's sentence
   ("A key needs at least two letters.") answers [custom-settings.ts `checkSetting`]
@@ -456,6 +458,11 @@ small type sizes the Kit's components own.
   block: Site basics' design note (Question 2's "the drawing as drawn" — D6a's three rows are not alike), the task line on
   `docs/project-context.md`, the verification notes, and owner's-test steps 4, 10 and 12. Inside the frozen block nothing
   changed: the delete's "one transaction" is Question 7's, open.
+- **Review, 2026-10-10 — Question 7, ruled option 2 (owner): a delete and the conditions it clears are one save.** A
+  Schema phase after all: `20261010120000_delete_custom_setting.sql`, mirrored in `SCHEMA.sql` § 16 and proved in
+  `RLS-TEST.sql` (and its copy), applied to production and pushed alone; then `deleteSetting` calls it. Amended inside the
+  frozen block on that ruling: the Approach's "no migration" sentence. The matrix's "one transaction" and the criterion's
+  "in the same transaction" now hold as written.
 
 ## Design Notes
 
@@ -548,7 +555,15 @@ linked site draws the group's heading and one caption — "Connect a Ghost site 
 here." — with a link to Sites (UX-DR3: could-not-now, with its reason). The accent's caption is D6a's: it feeds
 `--ghost-accent-color`, which the Style Pack maps to its accent role. Nothing is written (AD-10's P8: read, never write).
 
-### Why no Schema phase
+### Why no Schema phase — until Question 7
+
+**Since Question 7 (option 2, owner, 2026-10-10) there is one:** `20261010120000_delete_custom_setting.sql` adds
+`public.delete_custom_setting(p_project, p_setting)`, SECURITY INVOKER, which clears every condition naming the setting and
+deletes it in one call, so a failure leaves both or neither. It changes no column, grant or trigger; the caller's RLS and
+grants decide as the two PostgREST writes did. Applied to production through the pooler and read back before its Schema
+push, which went alone, before `deleteSetting` calls it (R-99). The paragraph below is the Create's reasoning, kept as the
+record of why there was none before.
+
 
 Every column (`projects.posts_per_page`, the whole `custom_settings` table), every grant (insert without `frozen_at`,
 update without `key` or `frozen_at`, select and delete), the owner policy, the cap trigger and the freeze guard exist in
@@ -592,7 +607,7 @@ Posts per page back.
 
 ## Questions for the owner
 
-Questions 1 and 2 were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them. Question 3 was raised at Dev and ruled option 1 the same day; it restates Story 3.9's Question 5. Questions 4 and 5 came from the owner looking at the deployed page after Dev, and Question 6 from Ghost's admin source read while answering them; all three were ruled in chat on 2026-10-10, before Review. Question 7 was raised at Review and is open.
+Questions 1 and 2 were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them. Question 3 was raised at Dev and ruled option 1 the same day; it restates Story 3.9's Question 5. Questions 4 and 5 came from the owner looking at the deployed page after Dev, and Question 6 from Ghost's admin source read while answering them; all three were ruled in chat on 2026-10-10, before Review. Question 7 was raised at Review and ruled option 2 the same day: one save, through a database function pushed first.
 
 ### Question 1 — Where the "Promote a control" form is built: this story or Story 7.10
 
@@ -746,7 +761,7 @@ would still be there and Show the button would have lost its condition, which yo
 2. **Make it one save.** A small database function deletes and clears together, pushed first on its own (a Schema step),
    then the page uses it, and the deployed walk runs again.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-10-10).**
 
 ## Verification
 
@@ -814,7 +829,8 @@ controls are the implementation run's.
     end.
   - **The Admin address.** The admin bundle declares `{path:'settings'}`
     (`core/built/admin/assets/index-BOJzlYiz.js:67`), which `adminAt(url, 'settings')` targets.
-- **Judgement call, recorded.** `deleteSetting` is two ordered writes: the conditions naming the setting are cleared
+- **Judgement call, recorded** *(superseded at Review by Question 7, ruled option 2: one save, `delete_custom_setting()`)*.
+  `deleteSetting` is two ordered writes: the conditions naming the setting are cleared
   first, then the row is deleted. The matrix says "one transaction". A database transaction needs an RPC, which is a
   migration the spec rules out without a question. A failure between the two writes leaves the setting in place with its
   dependents' conditions already cleared. The customer sees "We couldn't save that just now." and can press Delete again.
@@ -984,3 +1000,17 @@ and are syntax-checked now.
   checked before the key, no duplicate-label guard, no accent folding, the stored value in place of the in-force one, the
   cap read by another word, a switch's condition inverted, "page 2 page" — each turned its test red; the tree's diff hash
   identical before and after.
+
+**Schema phase on Question 7's ruling (option 2, owner, 2026-10-10).**
+
+- **`bash supabase/tests/run-rls-gate.sh`** — exit 0: the migrations and `SCHEMA.sql` build the same database, and Story
+  7.9's block passes — one `delete_custom_setting`, SECURITY INVOKER; **a delete refused part-way (a trigger planted to
+  refuse it, then removed) keeps the setting and its dependent's condition** — the transaction; the owner's delete removes
+  the setting, nulls the condition naming it and keeps one naming another setting (the control against clearing too much);
+  another tenant's setting answers false and stands, by its own project id and by the caller's; anon is refused `42501`.
+- **Production, through `SUPABASE_DB_POOLER_URL`** (keys read in-process): no `delete_custom_setting` before; the file
+  applied in one transaction; read back — one function, its body byte-identical to the file's, `prosecdef` false,
+  `(p_project uuid, p_setting uuid) → boolean`; `authenticated` may execute it and `anon` may not.
+- **PostgREST, as a throwaway user with RLS on:** the control first — anon's call answers `401 42501`; a setting that is not
+  the caller's answers `false`; the user's call answers `true`, the setting is gone, the condition naming it is null and a
+  condition naming another setting stands. The user deleted; the user count 14 → 14.
