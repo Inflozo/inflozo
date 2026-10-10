@@ -9515,3 +9515,27 @@ location: `supabase/migrations/20260904120000_complete_schema.sql:331` · `apps/
 reason: closing the window in the database is a trigger change, which is a Schema phase and a migration this story's
   spec rules out without a question; the emitter is the one place every stored row passes before a theme exists, so it
   refuses there.
+
+### DW-352: the editor walk dies when a promote's POST is held in the browser or its answer's body is cancelled
+
+plain: The long automatic walk of the editor sends real saves to the live site. On 2026-10-10 three walks in a row stopped
+  at the same place — the first "Promote" of step 104e — not because Inflozo did anything wrong but because the test's
+  browser held the save for a long time before sending it, or dropped the answer's text after reading it. A separate small
+  test saw the browser hold one save for 74 seconds while the same save from the command line answered in under half a
+  second. The saves themselves landed. The walk needs to wait out such a hold rather than give up after 20 seconds.
+status: open
+severity: low
+origin: Story 7.9's Review (2026-10-10), on `d52974c5` (`dpl_Hs6Ntbzx6djJfJSyDP7whW7rJZXo`): runs 3 and 4 died at
+  `run-verify-editor.cjs:7933` (`promote104` → `posted104`, `page.waitForResponse` 20 s), with no Vercel request row for that
+  POST in the next two and a half minutes; run 5 (a diagnostic copy) died at the same promote on `response.text()` —
+  "Network.getResponseBody: No data found for resource" — and also lost step 66's ⌘S and four step-8 rows to syncs that did
+  not land. Run 2 on `fff9a5a1` (the same app code) passed every step-104 check. A probe replaying the walk's sequence on a
+  throwaway account: the page logged the promote POST at 04:54:28.192Z and Vercel's request log has it at 04:55:41.958Z
+  (762 ms server time); and of seven promotes on one page, two answers were `net::ERR_ABORTED` after their 200 arrived.
+  `curl` POSTs from the same machine at the same time answered in 0.35–0.40 s, twenty of twenty.
+owner: Story 15.1 (the E2E suite), whose card carries this entry with its id — the story that hardens the walks against
+  their environment, as DW-68 and DW-350 are.
+location: `tools/probe/run-verify-editor.cjs` (`posted104`, `promote104`; every step that reads a server action's body)
+reason: the hold is in the walk's browser, not in the product (the server answered every held POST in under a second once
+  it arrived, and every row was stored); DW-204's retry covers idempotent loads only, by design, because a POST may not be
+  replayed blind. Hardening the walk's POST steps is the E2E suite's work, not a theme-settings story's.

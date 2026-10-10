@@ -412,6 +412,9 @@ before it was rated; each patch's test was turned red by a mutation and restored
 - [x] [Review][Patch] This spec: Site basics' design note, "with the NQL parsed" (the parse is gscan's), written-down
   test counts, the project-context line the task said was unchanged, and owner's-test steps 4 (each press is one step),
   10 (the new confirm line) and 12 (Site basics as drawn) [this file]
+- [x] [Review][Defer] The deployed walk dies when the browser holds a promote's POST or cancels its answer's body — three runs
+  at 104e's first promote, a 74-second hold reproduced by probe — DW-352, owned by Story 15.1 [run-verify-editor.cjs
+  `posted104`] — deferred, the walk's environment, not the product
 - [x] [Review][Defer] Two promotes landing in the same instant at sixteen can store eighteen — the cap trigger counts
   without a lock — DW-351, owned by Story 7.10's emitter [complete_schema.sql:331] — deferred, needs a trigger change
 
@@ -953,6 +956,24 @@ and are syntax-checked now.
     otherwise as expected). The walk now picks the Promote by the reason it carries; the product is as intended.
   - **69b** (Story 5.17's stalled-sync Retry, code this story does not touch): Retrying shown (`gaveUp58: true`), then
     Synced not reached after Retry now (`unstuck58: false`). It passed in run 1 on the Dev head. Re-run below.
+- **Runs 3, 4 and 5 on `d52974c5`** (the 104h selector fix; CI run 38022414545 `check`/`rls`/`deploy` success, matrix
+  38022414458 success, `dpl_Hs6Ntbzx6djJfJSyDP7whW7rJZXo` READY). 69b passed in runs 3 and 4. All three died at the SAME line,
+  104e's first promote (`run-verify-editor.cjs:7933`): runs 3 and 4 with `page.waitForResponse` 20 s and no Vercel request row
+  for that POST in the next two and a half minutes (0 FAIL, 730 PASS each, before it); run 5, a diagnostic copy with the press
+  instrumented, on `response.text()` — the answer arrived and its body was gone — after also losing step 66's ⌘S and four
+  step-8 rows to syncs that did not land (those passed in runs 2, 3 and 4). A line dying twice is a signal, so it was sampled
+  on production with probes replaying the walk's sequence on throwaway accounts (each deleted): 104d's two promotes and 104e's
+  first, three rounds clean; the same after the walk's 104a–c preamble (a held post, the editor, the Count link, the
+  hand-back, 104b's hand posts), three rounds clean; then seven promotes on one page, twice — the page logged one POST at
+  04:54:28.192Z and Vercel's log has it arriving at 04:55:41.958Z with 762 ms of server time, and two answers were
+  `net::ERR_ABORTED` after their 200 had arrived; every row was stored. `curl` POSTs from the same machine answered in
+  0.35–0.40 s, twenty of twenty. **The hold is in the walk's browser, not the product: DW-352, owned by Story 15.1.**
+- **104h's subject with the corrected selector**, as a probe on production (throwaway account, sixteen planted, the
+  seventeenth promoted): `16 OF 17`, seventeen rows, no submit left, the greyed button reads "Promote" with the cap sentence —
+  and the first `aria-disabled` button in the form is "Value: none", the condition row's empty value box, which is what run
+  2's selector had read.
+- **So every step-104 check has passed on production on this Review's app code at least once** — run 2 for all of them (104h's
+  first by its probe), with the user count equal before and after every run. A clean single walk was not obtained today.
 
 - **Ghost 5.130.6, read in source** (`registry.npmjs.org/ghost/-/ghost-5.130.6.tgz`, extracted fresh in this session's
   scratchpad; read-only): `core/frontend/services/routing/controllers/collection.js:31-48` sizes an archive by a route's
