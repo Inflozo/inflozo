@@ -16,7 +16,22 @@
 // default is the text `'true'`/`'false'`. A visibility condition is `{ key, value }`: an option label for a select, a
 // JSON boolean for a boolean — the value Ghost stores and compares.
 
-import { valueWords, type ControlDef, type ControlType } from '@inflozo/library'
+// STORY 7.10 — WHAT A PROMOTION IS, here beside 7.9's rules and nowhere else (the spec's one-module rule): the type each
+// control, text prop, picture and the accent becomes; the binding's three shapes (`Binding`); a binding's state over the
+// project's stored docs (`bindingState`: live · parked · hidden · deleted · changed); the start the canvas decides
+// (Question 1, ruled option 1, owner, 2026-10-10 — the compile derives `type`, `options` and `default` from the design
+// and the doc IN FORCE, never from the stored `default_value`, which stays the record of what was promoted); the reader a
+// switch or a choice ships (`matchChain`); and every sentence the compiler throws. The compiler, Theme settings and the
+// editor all import it.
+
+import { CONTROL_VALUE_RE, valueWords, type ControlDef, type ControlType, type PropDef, type PropType } from '@inflozo/library'
+import { getPath, markupProps, resolveControls, type ControlEntry } from './controls.ts'
+import type { DocInstance } from './doc-schema.ts'
+import { plainText } from './marks.ts'
+import type { Pack } from './tokens.ts'
+
+/** What the accent's start reads of a pack — a `Pack` has it, and so does a project's own record. */
+export type AccentOf = { readonly light: Pick<Pack['light'], 'accent'> }
 
 /** Ghost's cap on a theme's settings (gscan `customSettingsKeys.length > 20`). */
 export const SETTING_CAP = 20
@@ -26,7 +41,7 @@ export const RESERVED_SETTING_KEYS = ['color_scheme', 'dark_accent_color', 'dark
 /** The user's share, derived — the cap trigger's `>= 17` (`complete_schema.sql`), which a test reads back. */
 export const USER_SETTING_CAP = SETTING_CAP - RESERVED_SETTING_KEYS.length
 
-/** Ghost's five types, in gscan's order. This story creates `boolean` and `select`; 7.10 adds the other three. */
+/** Ghost's five types, in gscan's order. Story 7.9 created `boolean` and `select`; Story 7.10 `text`, `image` and `color`. */
 export const GHOST_SETTING_TYPES = ['select', 'boolean', 'color', 'image', 'text'] as const
 export type SettingType = (typeof GHOST_SETTING_TYPES)[number]
 /** The groups as stored; `site_wide` is emitted as no `group` at all (gscan allows `undefined`, `post`, `homepage`). */
@@ -93,6 +108,12 @@ export const SETTING_WORDS = {
   noControl: 'Choose a control to promote.',
   postsPerPage: `Posts per page is a whole number from ${POSTS_PER_PAGE.min} to ${POSTS_PER_PAGE.max}.`,
   couldNot: "We couldn't save that just now.",
+  /** Story 7.10 — the compile's refusals of a binding that no longer holds, each naming the setting as Ghost does */
+  deleted: (name: string) => `${name} is promoted from a section that is no longer on your site. Delete the setting in Theme settings, or bring the section back.`,
+  hidden: (name: string) => `${name} is promoted from a hidden section. Show the section, or delete the setting in Theme settings.`,
+  changed: (name: string) => `${name} was promoted from a control that has changed. Delete it and promote it again.`,
+  /** a rich text or the accent posted without D6c's confirm or the accent's caution */
+  confirm: 'Confirm first — promoting this changes what your theme carries.',
 } as const
 
 /** A label's key: an accented letter keeps its letter, then lowercase, each run of anything else one `_`, no leading digit
@@ -134,8 +155,14 @@ export function settingOf(def: ControlDef, value: string): Pick<SettingRow, 'typ
   if (type === 'boolean') return { type, options: null, default_value: value === 'on' ? 'true' : 'false' }
   const options = def.values.map((v) => ({ value: v, label: valueWords(def.valueLabels, v) }))
   if (new Set(options.map((o) => o.label)).size !== options.length) return null
+  // Story 7.10 (AD-36): a label reaches a `{{#match}}` argument as a quoted string, so one carrying a quote, a backslash or
+  // a brace is never offered — refused, never escaped (the validator does not limit `valueLabels`' characters)
+  if (options.some((o) => labelRefused(o.label))) return null
   return { type, options, default_value: valueWords(def.valueLabels, def.values.includes(value) ? value : def.default) }
 }
+
+/** A value label that may not stand inside a `{{#match}}` argument: `"`, `'`, `\`, `{` or `}` (AD-36). */
+const labelRefused = (label: string): boolean => /["'\\{}]/.test(label)
 
 /** The values a condition on `target` may name: a select's option labels, a boolean's two — and none for any other
  *  type, which Ghost could not compare to one of its own values. */
@@ -212,4 +239,165 @@ export function ghostEntry(row: SettingRow): Record<string, unknown> {
     ...(row.group_name === 'site_wide' ? {} : { group: row.group_name }),
     ...(row.visibility_condition === null ? {} : { visibility: visibilityNql(row.visibility_condition) }),
   }
+}
+
+/* ─────────────────────────────── Story 7.10 — promoting a control, a text, a picture or the accent ─────────────────────────────── */
+
+/** `bound_to`, as the module reads it — the schema's own `jsonb`, so no migration (R-99): a control on one instance (7.9),
+ *  a content prop on one instance, or the Style Pack's accent. The ONE statement of the shape: the column comment's list
+ *  predates `prop`. */
+export type Binding =
+  | { kind: 'control'; instanceId: string; controlKey: string }
+  | { kind: 'prop'; instanceId: string; path: string }
+  | { kind: 'token'; token: 'accent' }
+
+const filled = (v: unknown): v is string => typeof v === 'string' && v !== ''
+
+/** A stored `bound_to` as one of the three shapes, or null for anything else — a value nothing in the product wrote,
+ *  which no reader trusts (AD-36). */
+export function bindingOf(json: unknown): Binding | null {
+  if (typeof json !== 'object' || json === null || Array.isArray(json)) return null
+  const b = json as Record<string, unknown>
+  if (b['kind'] === 'control' && filled(b['instanceId']) && filled(b['controlKey'])) return { kind: 'control', instanceId: b['instanceId'], controlKey: b['controlKey'] }
+  if (b['kind'] === 'prop' && filled(b['instanceId']) && filled(b['path'])) return { kind: 'prop', instanceId: b['instanceId'], path: b['path'] }
+  if (b['kind'] === 'token' && b['token'] === 'accent') return { kind: 'token', token: 'accent' }
+  return null
+}
+
+/** One spelling of a binding as a string — the `?promote=` value the editor links with and Theme settings opens on, and
+ *  a map key. Compared, never parsed into markup. */
+export const bindingId = (b: Binding): string =>
+  b.kind === 'token' ? `token:${b.token}` : b.kind === 'control' ? `control:${b.instanceId}:${b.controlKey}` : `prop:${b.instanceId}:${b.path}`
+
+/** FR-Q3: the Ghost type each content prop becomes when promoted — a text or a rich text is Ghost's plain `text` (D6c), a
+ *  picture its `image`; a link, a date, an icon and a list never (Ghost has no such setting). Keyed by every prop type, as
+ *  `PROMOTED_TYPE` is, so a new one is a compile error here. */
+export const PROMOTED_PROP_TYPE: Readonly<Record<PropType, SettingType | null>> = {
+  text: 'text', richtext: 'text', image: 'image', url: null, icon: null, date: null, array: null,
+}
+
+/** What a content prop becomes in Ghost at its value, or null where it is never promoted: a type Ghost has no setting for,
+ *  or a prop carrying R-27's inline tokens (Ghost would print `{members}` as typed). A text starts at its words alone, its
+ *  marks dropped (`plainText`) — none at all when it has no words, so Ghost starts it empty and the theme falls back to
+ *  the prop's own empty behaviour; a picture has no start (Ghost forbids an image default). */
+export function propSettingOf(def: PropDef, value: unknown): Pick<SettingRow, 'type' | 'options' | 'default_value'> | null {
+  const type = PROMOTED_PROP_TYPE[def.type]
+  if (type === null || (def.tokens?.length ?? 0) > 0) return null
+  if (type === 'image') return { type, options: null, default_value: null }
+  const words = plainText(value)
+  return { type, options: null, default_value: words === '' ? null : words }
+}
+
+/** The accent promoted: Ghost's `color`, starting at the pack's light accent (always `#rrggbb` — `assertPack`). */
+export const accentSettingOf = (pack: AccentOf): Pick<SettingRow, 'type' | 'options' | 'default_value'> =>
+  ({ type: 'color', options: null, default_value: pack.light.accent })
+
+/** What a holder's design is read for: its controls, its props, its markup (which props it prints) and its name. */
+export type HolderEntry = Pick<ControlEntry, 'controlSchema' | 'contentSchema' | 'html' | 'universals'> & { name: string }
+/** A stored doc as `bindingState` walks it. */
+export type HolderDoc = { readonly instances: readonly DocInstance[] }
+export type Holder = { instance: DocInstance; entry: HolderEntry }
+export type Derived = Pick<SettingRow, 'type' | 'options' | 'default_value'>
+
+/**
+ * A binding's state over the project's STORED docs, page 2s included — the one answer Theme settings, the editor and the
+ * compile ask for:
+ *   - `live`: a visible instance of that id whose design declares the control (`controlSchema`) or prints the prop
+ *     (`markupProps`), with what it becomes in Ghost (`setting`, the start the canvas holds) from the FIRST such holder in
+ *     `docs`' order — the caller's: `pageOf`'s in the app, the compile's file order, page 1 before its page 2 in both, and
+ *     an instance id repeats only between a page 1 and its page 2's copy, so the two orders agree. The accent is always
+ *     live, at the pack's light accent;
+ *   - `parked`: the instance is there and visible but its design does not declare it (a shuffle, FR-D19) — `holder` names
+ *     the first visible one;
+ *   - `hidden`: every holder is hidden; `deleted`: no stored doc holds it;
+ *   - `changed`: what it now derives is not the stored `type`, or nothing at all (a label refused, a prop that took tokens).
+ */
+export type BindingState =
+  | { state: 'live'; setting: Derived; holder?: Holder }
+  | { state: 'parked'; holder: Holder }
+  | { state: 'hidden' | 'deleted' | 'changed' }
+
+export function bindingState(
+  binding: Binding,
+  docs: readonly HolderDoc[],
+  library: (designId: string) => HolderEntry | undefined,
+  type: SettingType,
+  pack: AccentOf,
+): BindingState {
+  if (binding.kind === 'token') {
+    const setting = accentSettingOf(pack)
+    return setting.type === type ? { state: 'live', setting } : { state: 'changed' }
+  }
+  const holders = docs.flatMap((d) => d.instances.filter((i) => i.instanceId === binding.instanceId))
+  if (holders.length === 0) return { state: 'deleted' }
+  const visible = holders.filter((i) => !i.hidden).flatMap((instance) => {
+    const entry = library(instance.designId)
+    return entry === undefined ? [] : [{ instance, entry }]
+  })
+  if (visible.length === 0) return { state: 'hidden' }
+  const declares = ({ entry }: Holder): boolean =>
+    binding.kind === 'control'
+      ? entry.controlSchema.some((c) => c.name === binding.controlKey)
+      : Object.hasOwn(entry.contentSchema, binding.path) && !binding.path.includes('[]') && markupProps(entry.html).includes(binding.path)
+  const holder = visible.find(declares)
+  if (holder === undefined) return { state: 'parked', holder: visible[0] as Holder }
+  const setting = derive(binding, holder)
+  return setting === null || setting.type !== type ? { state: 'changed' } : { state: 'live', setting, holder }
+}
+
+/** What a declaring holder's control or prop becomes in Ghost, at its value IN FORCE (`resolveControls`, the emitters'
+ *  own reader: a control another greys is at the value it renders). */
+function derive(binding: Exclude<Binding, { kind: 'token' }>, { instance, entry }: Holder): Derived | null {
+  if (binding.kind === 'control') {
+    const def = entry.controlSchema.find((c) => c.name === binding.controlKey) as ControlDef
+    return settingOf(def, resolveControls(entry, instance.controls)[def.name] ?? def.default)
+  }
+  return propSettingOf(entry.contentSchema[binding.path] as PropDef, getPath(instance.content, binding.path))
+}
+
+/** Question 1's start, as the compile ships it and the page prints it — null where the binding is not live. */
+export const startOf = (...args: Parameters<typeof bindingState>): Derived | null => {
+  const s = bindingState(...args)
+  return s.state === 'live' ? s.setting : null
+}
+
+/** A setting's reader path, `@custom.<key>` — reached only after the key's own rules (AD-36): a key the module refuses
+ *  never enters an expression. */
+export function customPath(key: string): string {
+  const refused = keyRefusal(key)
+  if (refused !== null) throw new Error(`AD-36: ${JSON.stringify(key)} is no setting key — ${refused}`)
+  return `@custom.${key}`
+}
+
+/** THE READER A PROMOTED SWITCH OR CHOICE SHIPS, as its root attribute's value (AD-3: `data-{control}` stays one
+ *  attribute, the stylesheet unchanged): a `{{#match}}` chain over every value Ghost may hold, each branch the control's
+ *  own value, its `{{else}}` the canvas's start — reached only when Ghost renders the setting as `null`, which it does for
+ *  a setting its condition hides (`HIDDEN_SETTING_VALUE`, read in source, both majors). Ghost's `match` is strict
+ *  equality, so a switch compares the literals `true` and `false`; a choice compares its option LABELS, the strings Ghost
+ *  stores. It is Casper's and Source's own shape (`{{#match …}}…{{else match …}}…{{else}}…{{/match}}` in an attribute).
+ *  A choice's branches take the THREE-argument form, `@custom.k "=" "Label"`: Ghost's `match.js` reads `"="` as the same
+ *  strict equality as two arguments (its `default:` arm — read in source, 6.58.0 and 5.130.6, which differ by a comment),
+ *  and gscan's `GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH` checks only the three-argument form
+ *  (`lint-no-unknown-custom-theme-select-value-in-match.js`, `params.length === 3`) — so both pinned gscans hold every
+ *  label this chain writes to the select's own options, which the two-argument form would never let them do.
+ *  A label `settingOf` would refuse, a value outside the control's grammar or a start that is no value is refused here
+ *  too, by name, before anything is written (AD-36). `write` prints each value in place — the identity, or, for a control
+ *  another control greys (`disabledBy`), what that control renders at it (`promotedValue` in `core.ts`). */
+export function matchChain(key: string, setting: Pick<SettingRow, 'type' | 'options'>, start: string, write: (value: string) => string = (v) => v): string {
+  const path = customPath(key)
+  const branches: [string, string][] = setting.type === 'boolean'
+    ? [['true', 'on'], ['false', 'off']]
+    : setting.type === 'select'
+      ? (setting.options ?? []).map((o): [string, string] => {
+        if (labelRefused(o.label)) throw new Error(`AD-36: the value label ${JSON.stringify(o.label)} cannot stand in a {{#match}} argument — a label carries no quote, backslash or brace.`)
+        return [`"=" "${o.label}"`, o.value]
+      })
+      : []
+  if (branches.length < 2) throw new Error(`a ${setting.type} setting has no {{#match}} reader — only a switch or a choice is a root attribute.`)
+  for (const v of [start, ...branches.map(([, value]) => value)]) {
+    if (!CONTROL_VALUE_RE.test(v)) throw new Error(`AD-36: data value ${JSON.stringify(v)} is not a closed control value.`)
+  }
+  if (!branches.some(([, value]) => value === start)) throw new Error(`the start ${JSON.stringify(start)} is none of the setting's values.`)
+  const [first, ...rest] = branches as [[string, string], ...[string, string][]]
+  return `{{#match ${path} ${first[0]}}}${write(first[1])}${rest.map(([arg, value]) => `{{else match ${path} ${arg}}}${write(value)}`).join('')}{{else}}${write(start)}{{/match}}`
 }

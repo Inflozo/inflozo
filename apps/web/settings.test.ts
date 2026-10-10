@@ -1,12 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
-import type { SectionRegistryEntry } from '@inflozo/library'
+import type { PropDef, SectionRegistryEntry } from '@inflozo/library'
 import { DATA_WORDS, SETTING_WORDS, USER_SETTING_CAP, type ProjectDoc, type SettingRow } from '@inflozo/section-runtime'
 import { THEME_SETTINGS_LINK } from './lib/data-group.ts'
 import {
-  boundLabels, choicesOf, conditionOf, EVERY_PAGE, fileName, liveHolder, pageOf, placedControls, promotable, refusalOf, settingsReadOnly,
-  siteBasics, startOf, storedSettings, THEME_WORDS, type Promotable, type StoredSetting,
+  bindingsOf, boundLabels, choicesOf, conditionOf, droppedWords, EVERY_PAGE, fileName, liveHolder, locked, lockedContent, namesOn, orderedDocs, packInForce, pageOf, parkedOn,
+  placedControls, promotable, refusalOf, rowStates, settingsReadOnly, siteBasics, startOf, storedSettings, STYLE_PACK, THEME_WORDS, unlocked,
+  type Promotable, type StoredSetting,
 } from './lib/theme-settings.ts'
 
 /* STORY 7.9 — Theme settings' app rows of the I/O matrix. Ghost's own rules are the runtime's `custom-settings.test.ts` and,
@@ -62,6 +63,9 @@ const LATEST = {
     { name: 'columns', type: 'stepper', label: 'Columns', group: 'layout', values: ['2', '3'], default: '2' },
     { name: 'tint', type: 'swatch-row', label: 'Tint', group: 'style', values: ['base', 'surface'], default: 'base' },
   ],
+  // Story 7.10: a design prints its props, and this one prints none, so only its controls are offered
+  contentSchema: {},
+  html: '<section class="a4-13"></section>',
 } as unknown as SectionRegistryEntry
 const instance = (instanceId: string, over: Record<string, unknown> = {}) => ({
   instanceId, layerName: 'Latest Post', designId: 'a4/13', content: {}, controls: {}, data: {}, darkOverrides: {}, hidden: false,
@@ -119,6 +123,8 @@ test('a control another one greys is offered at the value it renders, the one th
       { name: 'secondary-action', type: 'toggle', label: 'Secondary action', group: 'content', values: ['on', 'off'], default: 'on',
         disabledBy: { control: 'primary-action', whenValue: 'off', inForce: 'off', reason: 'A secondary action needs a primary beside it.' } },
     ],
+    contentSchema: {},
+    html: '<section class="a4-13"></section>',
   } as unknown as SectionRegistryEntry
   const secondary = (controls: Record<string, string>) =>
     placedControls({ home: doc(instance('i1', { controls })) }, { 'a4/13': ACTIONS }).find((c) => c.controlKey === 'secondary-action')?.setting.default_value
@@ -145,12 +151,12 @@ test('what a menu row and "What your site\'s owner will see" say (Question 5) �
   assert.deepEqual(choicesOf(toggle), ['On', 'Off'])
   assert.equal(THEME_WORDS.now(startOf(choice)), 'now Large')
   assert.equal(THEME_WORDS.now(startOf(toggle)), 'now Off')
-  assert.equal(THEME_WORDS.gets({ control: 'Headline size', section: 'Latest Post', page: 'Home', setting: choice }, 'Headline size', 'homepage'),
+  assert.equal(THEME_WORDS.gets({ kind: 'control', control: 'Headline size', section: 'Latest Post', page: 'Home', setting: choice }, 'Headline size', 'homepage'),
     "In Ghost's Design panel, under Homepage, your site's owner will see “Headline size”, a list set to Large. It changes Headline size on Latest Post, on your Home page.")
-  assert.equal(THEME_WORDS.gets({ control: 'Primary action', section: 'Header', page: EVERY_PAGE, setting: toggle }, 'Show the button', 'site_wide'),
+  assert.equal(THEME_WORDS.gets({ kind: 'control', control: 'Primary action', section: 'Header', page: EVERY_PAGE, setting: toggle }, 'Show the button', 'site_wide'),
     "In Ghost's Design panel, under Site wide, your site's owner will see “Show the button”, a switch set to Off. It changes Primary action on Header, on every page.")
   // a section only on a page 2 is on "your Home page 2", never "your Home page 2 page"
-  assert.match(THEME_WORDS.gets({ control: 'Headline size', section: 'Latest Post', page: pageOf('index').page, setting: choice }, 'Headline size', 'homepage'), /on your Home page 2\.$/)
+  assert.match(THEME_WORDS.gets({ kind: 'control', control: 'Headline size', section: 'Latest Post', page: pageOf('index').page, setting: choice }, 'Headline size', 'homepage'), /on your Home page 2\.$/)
   // the page names a setting by its key wherever it names one, and its edit form posts no label (Question 6)
   assert.doesNotMatch(page, /\{setting\.label\}|target\?\.label|deleteTitle\(setting\.label\)|label: o\.label, active: o\.key/)
   assert.doesNotMatch(page.slice(page.indexOf('function EditForm('), page.indexOf('function Fixed(')), /name="label"/)
@@ -218,8 +224,9 @@ test('the Count\'s two sentences and its link to Theme settings, never Ghost Adm
 test('the delete confirm warns of the stored value only once the key is frozen; the row says since when', () => {
   assert.equal(THEME_WORDS.deleteTitle('Show the button'), 'Delete Show the button?')
   assert.equal(THEME_WORDS.deleteBody({ key: 'show_the_button', frozen_at: null }), 'Nothing is deployed yet, so nothing is lost.')
+  // Story 7.10's Question 2, ruled option 2: Ghost forgets a stored value at the deploy that leaves its key out
   assert.equal(THEME_WORDS.deleteBody({ key: 'show_the_button', frozen_at: '2026-10-09T10:00:00Z' }),
-    "If you later promote a control with the key show_the_button, the value your site's owner set in Ghost comes back.")
+    "Promote a control with the key show_the_button again before your next deploy and the value your site's owner set in Ghost comes back. After that deploy, Ghost forgets it.")
   assert.equal(THEME_WORDS.frozenSince('2026-10-09T23:30:00Z'), 'Key frozen since 9 Oct 2026')
   // the delete clears every condition naming the setting, and the confirm says so before it does
   assert.equal(THEME_WORDS.deleteDependents(['Show the button']), 'The “Only show when” on Show the button is removed too.')
@@ -263,4 +270,160 @@ test('every writer is (previous, formData), refuses without a project id, and ch
   assert.doesNotMatch(fn('deleteSetting'), /\.delete\(\)|\.update\(/)
   // the database's floor speaks the module's words, never a Postgres code — `refusalOf`, run above, on every write's error
   assert.equal(actions.match(/return \{ error: refusalOf\(error, row\.key\) \}/g)?.length, 2, 'promote and edit')
+})
+
+// ─── Story 7.10 — texts, pictures and the accent; a row's state; the editor's bindings; the words ───────────────────────
+
+const HERO = {
+  name: 'Latest Post',
+  controlSchema: [{ name: 'headline-size', type: 'segmented', label: 'Headline size', group: 'style', values: ['medium', 'large', 'display'], default: 'large' }],
+  contentSchema: {
+    headline: { type: 'text', label: 'Headline' },
+    sub: { type: 'richtext', label: 'Sub', marks: ['strong', 'a'] },
+    picture: { type: 'image', label: 'Picture' },
+    link: { type: 'url', label: 'Link' },
+    members: { type: 'text', label: 'Members', tokens: ['members'] },
+    'items[].title': { type: 'text', label: 'Item title' },
+    unprinted: { type: 'text', label: 'Never printed' },
+  },
+  html: '<section class="x"><h1 data-prop="headline">h</h1><p data-prop="sub">s</p><img data-prop-attr="src:picture;href:link" alt=""><p data-prop="members">m</p><ul><li data-items="items"><span data-prop="items[].title">t</span></li></ul></section>',
+} as unknown as SectionRegistryEntry
+const SUB = { text: 'One essay, every Thursday.', marks: [{ start: 17, end: 25, mark: 'a', href: 'https://example.com' }] }
+const PAPER_LIKE = { name: 'Paper', light: { accent: '#D96C3F' } }
+
+test('(7.10) Promote offers the texts, rich texts and pictures a design prints and the accent last — never a link, a list\'s field, a tokens prop or an unprinted one', () => {
+  const docs = { home: doc(instance('i1', { content: { headline: 'Big words', sub: SUB }, controls: { 'headline-size': 'display' } })) }
+  const placed = placedControls(docs, { 'a4/13': HERO }, new Set(), PAPER_LIKE)
+  assert.deepEqual(placed.map((c) => [c.kind, c.path, c.label, c.id]), [
+    ['control', 'headline-size', 'Latest Post · Headline size', 'control:i1:headline-size'],
+    ['prop', 'headline', 'Latest Post · Headline', 'prop:i1:headline'],
+    ['prop', 'sub', 'Latest Post · Sub', 'prop:i1:sub'],
+    ['prop', 'picture', 'Latest Post · Picture', 'prop:i1:picture'],
+    ['token', 'accent', 'Accent', 'token:accent'],
+  ])
+  const by = (id: string) => placed.find((c) => c.id === id) as Promotable
+  assert.deepEqual(by('prop:i1:headline').setting, { type: 'text', options: null, default_value: 'Big words' })
+  assert.deepEqual(by('prop:i1:sub').setting, { type: 'text', options: null, default_value: 'One essay, every Thursday.' }, 'the words alone')
+  assert.deepEqual(by('prop:i1:picture').setting, { type: 'image', options: null, default_value: null })
+  // D6c for a rich text, the caution for the accent, nothing for a plain text (it has no formatting to lose)
+  assert.deepEqual(placed.map((c) => c.confirm), [null, null, 'formatting', null, 'accent'])
+  assert.deepEqual(by('prop:i1:sub').value, SUB, 'the line the confirm shows with and without its link')
+  const accent = by('token:accent')
+  assert.deepEqual([accent.page, accent.control, accent.group, accent.setting], [STYLE_PACK, 'Accent colour', 'site_wide', { type: 'color', options: null, default_value: '#D96C3F' }])
+  // without the pack, no accent row (the editor's panel never needs one)
+  assert.equal(placedControls(docs, { 'a4/13': HERO }).some((c) => c.kind === 'token'), false)
+  // a promoted prop or the accent is not offered again, and its row is named
+  const rows = [stored({ id: '00000000-0000-4000-8000-0000000000a1', key: 'sub', type: 'text', bound_to: { kind: 'prop', instanceId: 'i1', path: 'sub' } }),
+    stored({ id: '00000000-0000-4000-8000-0000000000a2', key: 'accent_colour', type: 'color', bound_to: { kind: 'token', token: 'accent' } })]
+  assert.deepEqual(promotable(placed, rows).map((c) => c.id), ['control:i1:headline-size', 'prop:i1:headline', 'prop:i1:picture'])
+  assert.deepEqual(boundLabels(placed, rows), { [rows[0]!.id]: 'Latest Post · Sub', [rows[1]!.id]: 'Accent' })
+  // the pack in force: the project's own record of it, else the preset's
+  const packs = [{ id: 'paper', record: PAPER_LIKE }, { id: 'ocean', record: { name: 'Ocean', light: { accent: '#0055AA' } } }]
+  assert.equal(packInForce('ocean', packs, {}).light.accent, '#0055AA')
+  assert.equal(packInForce('ocean', packs, { ocean: { name: 'Ocean', light: { accent: '#112233' } } }).light.accent, '#112233')
+})
+
+test('(7.10) each row\'s state and start, from the module over the stored docs: live with its start, parked, hidden, deleted, changed', () => {
+  const live = doc(instance('i1', { content: { sub: SUB }, controls: { 'headline-size': 'display' } }))
+  const PLAIN = { ...HERO, name: 'Plain', controlSchema: [], html: '<section class="y"><p data-prop="sub">s</p></section>' } as unknown as SectionRegistryEntry
+  const rows = [
+    stored({ id: 'r1', key: 'headline_size', type: 'select', bound_to: { kind: 'control', instanceId: 'i1', controlKey: 'headline-size' } }),
+    stored({ id: 'r2', key: 'sub', type: 'text', bound_to: { kind: 'prop', instanceId: 'i1', path: 'sub' } }),
+    stored({ id: 'r3', key: 'accent_colour', type: 'color', bound_to: { kind: 'token', token: 'accent' } }),
+    stored({ id: 'r4', key: 'gone_one', type: 'boolean', bound_to: { kind: 'control', instanceId: 'nowhere', controlKey: 'x' } }),
+    stored({ id: 'r5', key: 'odd_one', type: 'boolean', bound_to: { kind: 'other' } }),
+  ]
+  const states = rowStates(rows, orderedDocs({ home: live }), { 'a4/13': HERO }, PAPER_LIKE)
+  assert.deepEqual(states['r1'], { state: 'live', start: 'Display', note: null })
+  assert.deepEqual(states['r2'], { state: 'live', start: null, note: null }, 'a text prints no start')
+  assert.deepEqual(states['r3'], { state: 'live', start: '#D96C3F', note: null })
+  assert.deepEqual(states['r4'], { state: 'deleted', start: null, note: 'Its section is gone. Delete this setting, or bring the section back, before your next deploy.' })
+  assert.deepEqual(states['r5'], { state: 'changed', start: null, note: 'Odd one was promoted from a control that has changed. Delete it and promote it again.' })
+  // shuffled to a design without the choice: parked, named by its section and design
+  const parked = rowStates(rows.slice(0, 1), [doc(instance('i1', { designId: 'a4/2' }))], { 'a4/2': PLAIN }, PAPER_LIKE)
+  assert.deepEqual(parked['r1'], { state: 'parked', start: null, note: "Won't appear in Ghost while Latest Post uses Plain." })
+  const hidden = rowStates(rows.slice(0, 1), [doc(instance('i1', { hidden: true }))], { 'a4/13': HERO }, PAPER_LIKE)
+  assert.deepEqual(hidden['r1'], { state: 'hidden', start: null, note: 'Its section is hidden. Show the section or delete this setting before your next deploy.' })
+  // the docs in pageOf's order, synthesized ones left out
+  assert.deepEqual(orderedDocs({ post: doc(instance('p')), site: doc(instance('s')), home: doc(instance('h')), tag: doc(instance('t')) }, new Set(['tag'])).map((d) => d.instances[0]?.instanceId), ['s', 'h', 'p'])
+})
+
+test('(7.10) the editor\'s bindings by instance, P0-1\'s lock as a render-time copy, and D6c\'s dropped marks', () => {
+  const b = bindingsOf([
+    { key: 'headline_size', bound_to: { kind: 'control', instanceId: 'i1', controlKey: 'headline-size' }, frozen_at: '2026-10-09T10:00:00Z' },
+    { key: 'sub', bound_to: { kind: 'prop', instanceId: 'i1', path: 'sub' }, frozen_at: null },
+    { key: 'accent_colour', bound_to: { kind: 'token', token: 'accent' }, frozen_at: null },
+    { key: 'junk', bound_to: {}, frozen_at: null },
+  ])
+  assert.deepEqual(b.byInstance, { i1: { controls: { 'headline-size': 'headline_size' }, props: { sub: 'sub' } } })
+  assert.equal(b.accent, 'accent_colour')
+  assert.equal(b.count, 4, 'every stored row counts toward the cap, a junk one too')
+  assert.deepEqual(namesOn(b, 'i1'), ['Headline size', 'Sub'])
+  assert.deepEqual(namesOn(b, 'other'), [])
+  // a shuffle onto a design that declares neither: each parked binding in Question 2's words, the frozen one with its second
+  const hero = { controlSchema: [{ name: 'headline-size' }], html: '<p data-prop="sub">s</p>' } as unknown as SectionRegistryEntry
+  const plain = { controlSchema: [], html: '<p>x</p>' } as unknown as SectionRegistryEntry
+  assert.deepEqual(parkedOn(b, 'i1', hero, plain), [
+    "Headline size won't appear in Ghost while this design is in use. Deploy before you switch back and Ghost forgets what your site's owner chose.",
+    "Sub won't appear in Ghost while this design is in use.",
+  ])
+  assert.deepEqual(parkedOn(b, 'i1', hero, hero), [], 'the control: a design that carries both parks nothing')
+  // the paint's copy locks the bound rich text alone, and leaves the stored content as it was
+  const schema = { sub: { type: 'richtext', label: 'Sub' }, 'nested.line': { type: 'text', label: 'Line' }, picture: { type: 'image', label: 'Picture' }, missing: { type: 'text', label: 'M' } } as Record<string, PropDef>
+  const content = { sub: SUB, other: SUB, nested: { line: SUB }, picture: 'feature-03' }
+  const painted = lockedContent(content, ['sub', 'nested.line', 'missing', 'picture'], schema)
+  assert.deepEqual(painted, { sub: locked(SUB), other: SUB, nested: { line: locked(SUB) }, picture: 'feature-03' }, 'a picture\'s asset id is never wrapped')
+  assert.deepEqual(lockedContent({ sub: 'words' }, ['sub'], schema), { sub: { text: 'words', plainText: true } }, 'a plain string is locked as well')
+  assert.deepEqual(content, { sub: SUB, other: SUB, nested: { line: SUB }, picture: 'feature-03' })
+  assert.equal(lockedContent(content, [], schema), content)
+  // the lock is a copy: the doc's marks are kept, out of force, and taken off before anything is stored
+  assert.deepEqual(locked(SUB), { ...SUB, plainText: true })
+  // a rich text no one has marked yet is a plain string, and it is locked too — else its session would offer the marks
+  assert.deepEqual(locked('plain words'), { text: 'plain words', plainText: true })
+  assert.equal(locked(null), null)
+  assert.deepEqual(unlocked(locked(SUB)), SUB)
+  assert.equal(unlocked(locked('plain words')), 'plain words', 'a value with no mark goes back to the string it was')
+  assert.equal(unlocked('x'), 'x')
+  assert.equal(droppedWords(SUB), 'The link is dropped; its words stay.')
+  assert.equal(droppedWords({ text: 'a b c', marks: [{ start: 2, end: 3, mark: 'a', href: 'https://x' }, { start: 0, end: 1, mark: 'strong' }] }), 'The bold and the link are dropped; the words stay.')
+  assert.equal(droppedWords({ text: 'a b', marks: [{ start: 0, end: 1, mark: 'em' }] }), 'The italic is dropped; the words stay.')
+  assert.equal(droppedWords('no marks'), null)
+})
+
+test('(7.10) § Words: one list, each sentence the spec\'s', () => {
+  assert.equal(THEME_WORDS.promoteAction('Headline size'), "Let your site's owner change Headline size in Ghost")
+  assert.equal(THEME_WORDS.inGhost, 'In Ghost')
+  assert.equal(THEME_WORDS.inGhostTitle('headline_size'), 'Your site\'s owner changes “Headline size” in Ghost. Your canvas sets where it starts, on your first deploy.')
+  assert.equal(THEME_WORDS.lockPill('sub'), 'Sub — plain text, set in Ghost')
+  assert.equal(THEME_WORDS.confirmTitle('Sub'), 'Promote “Sub” to Ghost?')
+  assert.equal(THEME_WORDS.bindingAsk(['Headline size', 'Sub'], 'deleted'), 'Headline size and Sub are promoted to Ghost from this section. Once it is deleted, your next deploy stops until you delete them in Theme settings or bring the section back.')
+  assert.equal(THEME_WORDS.bindingAsk(['Sub'], 'hidden'), 'Sub is promoted to Ghost from this section. Once it is hidden, your next deploy stops until you delete it in Theme settings or bring the section back.')
+  assert.equal(THEME_WORDS.parkNote('Show the button'), "Show the button won't appear in Ghost while this design is in use.")
+  assert.equal(THEME_WORDS.packTitle('Ocean'), 'Switch to Ocean?')
+  assert.equal(THEME_WORDS.packKeep('Paper'), 'Keep Paper')
+  assert.equal(THEME_WORDS.accentCaption, "Ghost's own comments and card buttons use this colour. Your Style Pack's accent is separate.")
+  const text = { kind: 'prop' as const, control: 'Sub', section: 'Latest Post', page: 'Home', setting: { type: 'text' as const, options: null, default_value: 'x' } }
+  assert.equal(THEME_WORDS.gets(text, 'Sub', 'homepage'), "In Ghost's Design panel, under Homepage, your site's owner will see “Sub”, a text box. It changes Sub on Latest Post, on your Home page.")
+  const picture = { ...text, control: 'Picture', setting: { type: 'image' as const, options: null, default_value: null } }
+  assert.match(THEME_WORDS.gets(picture, 'Picture', 'homepage'), /an empty picture slot\. It changes Picture on Latest Post, on your Home page\. Until they choose one, your section shows its own picture\.$/)
+  const accent = { kind: 'token' as const, control: 'Accent colour', section: 'Paper', page: STYLE_PACK, setting: { type: 'color' as const, options: null, default_value: '#D96C3F' } }
+  assert.equal(THEME_WORDS.gets(accent, 'Accent colour', 'site_wide'), "In Ghost's Design panel, under Site wide, your site's owner will see “Accent colour”, a colour set to #D96C3F. It changes your Style Pack's accent, on every page.")
+})
+
+test('(7.10) the actions: promote finds what it stores by the posted id and refuses a rich text or the accent posted without its confirm; an edit writes no default', () => {
+  const fn = (name: string) => actions.slice(actions.indexOf(`export async function ${name}(`), actions.indexOf('\n}\n', actions.indexOf(`export async function ${name}(`)))
+  const promote = fn('promoteControl')
+  assert.match(promote, /\.find\(\(c\) => c\.id === formData\.get\('promote'\)\)/)
+  assert.match(promote, /if \(chosen\.confirm !== null && formData\.get\('confirmed'\) !== 'yes'\) return \{ error: SETTING_WORDS\.confirm \}/)
+  assert.match(promote, /bound_to: chosen\.binding,/)
+  const a = promote.indexOf("formData.get('confirmed')")
+  assert.ok(a >= 0 && a < promote.indexOf('.insert('), 'the confirm is checked before the insert')
+  assert.doesNotMatch(fn('updateSetting'), /default_value|posted\('default'\)/, 'Question 1: the canvas decides the start')
+  // the page opens on the editor's ↗ — `?promote=` handed down as it came, compared with the offered ids
+  const settingsPage = readFileSync(`${SETTINGS}/page.tsx`, 'utf8')
+  assert.match(settingsPage, /promote=\{typeof asked === 'string' \? asked : null\}/)
+  assert.match(page, /useState<string \| null>\(promote\)/)
+  assert.match(page, /controls\.find\(\(c\) => c\.id === chosen\) \?\? controls\[0\]/)
+  // Edit has no Default list any more (Question 1)
+  assert.doesNotMatch(page.slice(page.indexOf('function EditForm('), page.indexOf('function Fixed(')), /name="default"|defaultValue/)
 })

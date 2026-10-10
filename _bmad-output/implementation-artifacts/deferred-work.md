@@ -9506,7 +9506,12 @@ plain: A project may keep seventeen theme settings. The database counts them bef
   land. The theme would then carry one setting too many, and Ghost's own checker would refuse the deploy. It needs two
   presses within the same instant, so it is rare; the story that writes the settings into the theme refuses that case
   with the cap sentence.
-status: open
+status: done 2026-10-10 (Story 7.10)
+resolution: Story 7.10's Dev (2026-10-10) — `compileTheme` counts the project's stored settings before anything renders
+  and refuses more than `USER_SETTING_CAP` with `SETTING_WORDS.cap` (`packages/theme-compiler/src/compile.ts`'s
+  `customSettings`), so a race that stores an eighteenth row can never reach a theme; held by `compile.test.ts`'s refusal
+  row ("eighteen rows stored … refused before the binding is even read"). The window itself stays in the database, as this
+  entry's reason says, and no migration was made.
 severity: low
 origin: Story 7.9's Review (2026-10-10). `enforce_custom_setting_cap()` (`20260904120000_complete_schema.sql:331-338`)
   runs `select count(*) … >= 17` in a `before insert` trigger with no lock, so two concurrent inserts each count sixteen.

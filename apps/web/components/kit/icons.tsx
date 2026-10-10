@@ -765,6 +765,15 @@ export const TagGlyph = ({ strokeWidth = 1.8, ...p }: IconProps) => (
     <circle cx="7.5" cy="7.5" r="1" />
   </Icon>
 )
+/* Story 7.10 — D6c's type glyph (`D6 Theme Settings Completed.dc.html:296`), read verbatim at the frame's own 1.8 stroke:
+   the text-prop confirm's amber chip, a field about to become plain text. */
+export const TypeGlyph = ({ strokeWidth = 1.8, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M5 6V4.5h14V6" />
+    <path d="M12 4.5V19" />
+    <path d="M9 19h6" />
+  </Icon>
+)
 export const FromGhost = ({ strokeWidth = 2, ...p }: IconProps) => (
   <Icon strokeWidth={strokeWidth} {...p}>
     <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />

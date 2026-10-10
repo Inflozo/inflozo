@@ -2,7 +2,8 @@
 title: 'Story 7.10 — Promoting a control to a Ghost Admin setting'
 type: 'feature'
 created: '2026-10-10'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '48e32444b3659feec646961737c1d5854bbc7db5'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -242,7 +243,7 @@ DW-150 (A1's authored logo, Story 9.1).
 
 **Execution:**
 
-- [ ] `packages/section-runtime/src/custom-settings.ts`, `custom-settings.test.ts` — add, beside 7.9's rules: the
+- [x] `packages/section-runtime/src/custom-settings.ts`, `custom-settings.test.ts` — add, beside 7.9's rules: the
   `Binding` type and `bindingOf(json)` (`control` {instanceId, controlKey} · `prop` {instanceId, path} · `token`
   {token:'accent'}; anything else null); `PROMOTED_PROP_TYPE` (text/richtext → text, image → image, the rest null) and
   `propSettingOf(def, value)` (null for a `tokens` prop; a text default is the words alone, `plainText(value)`; an image
@@ -253,7 +254,7 @@ DW-150 (A1's authored logo, Story 9.1).
   start, every refusal, each state, the label refusal.
 
   -- one module, so the compiler, the page and the editor cannot disagree about what a promotion is.
-- [ ] `packages/section-runtime/src/core.ts` — `RenderInput.promoted?` `{ controls: Record<name, {key, type, options, start}>,
+- [x] `packages/section-runtime/src/core.ts` — `RenderInput.promoted?` `{ controls: Record<name, {key, type, options, start}>,
   props: Record<path, key> }`, read by the THEME emitter only: after `stampControls`, a promoted control's root attribute
   becomes one role-less token — the `{{#match}}` chain of § What each kind becomes; a promoted text prop prints
   `{{@custom.key}}` wherever the design prints it, guarded so an empty value takes the prop's own empty behaviour; a
@@ -263,13 +264,13 @@ DW-150 (A1's authored logo, Story 9.1).
   hostile key, the hostile option label and a hostile text default (each inert or refused, the legitimate one working).
 
   -- AD-3's promoted form, `data-{control}="{{@custom.key}}"`, made real without touching the canvas.
-- [ ] `packages/section-runtime/src/tokens.ts` — `packTokensCss(pack, { ghostFonts, settingAccent })` and an exported
+- [x] `packages/section-runtime/src/tokens.ts` — `packTokensCss(pack, { ghostFonts, settingAccent })` and an exported
   `SETTING_ACCENT = '--setting-accent'`: with `settingAccent`, every light-block value that is, or contains, the light accent
   (compared without regard to case) reads `var(--setting-accent, <hex>)`; computed shades and the dark blocks are
   untouched; with no option the bytes are today's. Tests: the canvas call unchanged, the theme call's light values, the dark map identical.
 
   -- FR-Q3's runtime accent where the token block already writes it (AD-30).
-- [ ] `packages/theme-compiler/src/compile.ts`, `src/strip.ts`, `compile.test.ts`, `strip.test.ts` — `CompileInput.settings?`
+- [x] `packages/theme-compiler/src/compile.ts`, `src/strip.ts`, `compile.test.ts`, `strip.test.ts` — `CompileInput.settings?`
   (each stored row's `key`, `type`, `group_name`, `visibility_condition`, `bound_to`, `position`); before rendering: the key
   rules, the cap (`SETTING_WORDS.cap`, DW-351), and `bindingState` — `deleted`/`hidden`/`changed` throw their sentences
   naming `ghostName(key)`, `parked` is left out; each live setting's entry is `ghostEntry` of the derived row, checked with
@@ -282,19 +283,19 @@ DW-150 (A1's authored logo, Story 9.1).
   purpose.
 
   -- the theme reads `{{@custom.*}}`, and `GS100` cannot fire because the declaration and the reader are one change.
-- [ ] `packages/theme-compiler/gate/custom-settings.test.ts` — a theme COMPILED by `compileTheme` (a switch, a choice with a
+- [x] `packages/theme-compiler/gate/custom-settings.test.ts` — a theme COMPILED by `compileTheme` (a switch, a choice with a
   condition, a plain text, a rich text, a picture and the accent promoted, plus a parked one) scores 0/0 on both pinned
   gscans and an empty `qualityGate`; the controls: one reader removed is `GS100`, a match against a label that is not an
   option is `GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH`, a condition naming the parked key is
   `GS010-PJ-CUST-THEME-SETTINGS-VISIBILITY-VALUE`.
 
   -- the claim executed on both checkers, each with a control that fails (standing rule 2).
-- [ ] `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs` — a second pilot compile with settings (a4/13's `primary-action`
+- [x] `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs` — a second pilot compile with settings (a4/13's `primary-action`
   and `headline-size`, its `sub`, a17/1's `title`, the accent) gated 0/0 on both gscans, an empty quality verdict, `cssFailures`
   sound and `themeFailures` clean; the existing pilot compile and every per-design snapshot unchanged.
 
   -- CI holds the real library with promotions on every commit.
-- [ ] `tools/probe/record-theme-assembly.py` — `SECTION = '78'`: the pilots compiled with the settings above plus one fixture
+- [x] `tools/probe/record-theme-assembly.py` — `SECTION = '78'`: the pilots compiled with the settings above plus one fixture
   ring section with `picture`, uploaded to T1; `GET /ghost/api/admin/custom_theme_settings/` lists each key at its start;
   a `PUT` per kind changes the page (the attribute, the words, `--setting-accent`, the picture — a probe PNG uploaded when
   T1 has none, 7.2's Question 4); a hidden condition draws the start; a redeploy with a new start keeps the stored value; a
@@ -303,14 +304,14 @@ DW-150 (A1's authored logo, Story 9.1).
   MEASUREMENTS §78.
 
   -- standing rule 1: the Ghost behaviour this story's words rest on, executed on T1.
-- [ ] `apps/web/lib/theme-settings.ts`, `apps/web/settings.test.ts` — `placedControls` offers props (`propSettingOf`, a
+- [x] `apps/web/lib/theme-settings.ts`, `apps/web/settings.test.ts` — `placedControls` offers props (`propSettingOf`, a
   page's text, rich text and picture, never a list's field) and the accent (one row under a "Style Pack" heading, after the
   pages); `Promotable` gains `kind`, `path` and `id` (the `?promote=` value, built by one function from the binding);
   `boundControl` gives way to `bindingOf`; `promotable` and `boundLabels` read every kind; each row's state and start come
   from the module; `THEME_WORDS` gains § Words and loses `defaultValue`.
 
   -- the page offers what the card names, from the same rule the compiler uses.
-- [ ] `.../settings/page.tsx`, `theme-settings.tsx`, `actions.ts`, `loading.tsx` — the page reads `searchParams.promote`
+- [x] `.../settings/page.tsx`, `theme-settings.tsx`, `actions.ts`, `loading.tsx` — the page reads `searchParams.promote`
   and the project's pack; `PromoteForm` opens on that row when offered; Promote on a rich text opens D6c's confirm and on the
   accent the caution (both `dialog.ts` sheets, focus on Cancel, **Promote it** busy while it posts); rows print their start
   and their state's caption, the accent row D6a's colour caption; `EditForm` keeps Group and Only show when and drops
@@ -320,20 +321,20 @@ DW-150 (A1's authored logo, Story 9.1).
   `default_value`. The skeleton keeps the page's shape.
 
   -- D6a's right column and D6c, completed.
-- [ ] `.../(editor)/read.ts`, `apps/web/app/(app)/app/harness/editor/layout.tsx` — `editorData` reads the project's
+- [x] `.../(editor)/read.ts`, `apps/web/app/(app)/app/harness/editor/layout.tsx` — `editorData` reads the project's
   `custom_settings` (`SETTING_COLUMNS`, `storedSettings`) as `settings`; the harness hands `[]`, and under
   `x-inflozo-harness-promoted: on` plants the fixture ring section's `icons`, `heading` and `picture` and the accent as
   promoted.
 
   -- the editor learns what is promoted; the keyboard walk can see it with no database.
-- [ ] `apps/web/components/controls/sidebar.tsx`, `rich-field.tsx`, `image-picker.tsx` — `RichField` and `ImagePicker` gain
+- [x] `apps/web/components/controls/sidebar.tsx`, `rich-field.tsx`, `image-picker.tsx` — `RichField` and `ImagePicker` gain
   the `aside` slot the other Kit controls have; every promotable control or prop row carries, in that slot, either the
   promote action (an icon button with `ExternalLink`, named and titled from § Words, linking to the settings page with
   `?promote=`; greyed with `SETTING_WORDS.cap` at the cap) or the "In Ghost" tag (D6a's mono "from Ghost" chip, titled
   from § Words); a bound rich text's field is plain. `Sidebar` takes the project's settings path and the bindings.
 
   -- the owner's Question 5, option 3 (Story 7.9), word for word on this card.
-- [ ] `.../(editor)/editor.tsx`, `style-pack.tsx`, `apps/web/lib/editor.ts` — a bound text paints as its `plainText` lock (a
+- [x] `.../(editor)/editor.tsx`, `style-pack.tsx`, `apps/web/lib/editor.ts` — a bound text paints as its `plainText` lock (a
   render-time copy), its inline session allows no mark, and selecting it shows the lock pill in the toolbar's place;
   deleting or hiding a section that carries a binding asks first in one dialog (§ Words); a shuffle that parks a binding
   shows a `CanvasNote` on the section and says it in `#editor-said`; the Style Pack card carries the accent's action or tag;
@@ -341,20 +342,20 @@ DW-150 (A1's authored logo, Story 9.1).
   and redo never. Every action, tag and ask greys or holds in a read-only session.
 
   -- P0-1's plain-text lock and FR-Q3's four warnings.
-- [ ] `tools/keyboard/journey.spec.mjs` — 7.10 journeys on the harness with the promoted header: the action's `href` exact,
+- [x] `tools/keyboard/journey.spec.mjs` — 7.10 journeys on the harness with the promoted header: the action's `href` exact,
   the tag's name, the lock pill with ⌘B inert, the delete ask (Keep, then Delete and ⌘Z), the park note when `]` reaches
   design 3, the pack-switch ask (Keep, Switch, ⌘Z silent), and under `x-inflozo-harness-lock: reader` every action greyed;
   each behind its control.
 
   -- the editor half proved on every commit (`pnpm keyboard`).
-- [ ] `tools/probe/run-verify-editor.cjs` — step 105, written and syntax-checked at Dev, run at Review on production: the
+- [x] `tools/probe/run-verify-editor.cjs` — step 105, written and syntax-checked at Dev, run at Review on production: the
   panel's action opens the form filled; a plain text, a rich text (D6c), the accent (caution) promoted and stored field by
   field; the tags; the lock pill and the link not drawn; the pack-switch ask; the delete and hide asks with the rows' states
   and ⌘Z; the rows' starts; a demote bringing the link back; the read-only window; every row deleted and the project read
   back clean.
 
   -- R-82: the stack, not only the wiring.
-- [ ] Propagation — `epics.md` (landed with the rulings at Create, 2026-10-10: this card's four notes; Story 7.18's card
+- [x] Propagation — `epics.md` (landed with the rulings at Create, 2026-10-10: this card's four notes; Story 7.18's card
   carries Question 2's Pre-flight sentence and Story 9.1's Question 4's hand test, each word for word; Epics 7 and 9's
   preambles list both, R-195 — Dev re-reads them and changes nothing unless the build moves a fact); `prd.md` FR-Q2 (the resurrect
   sentence) and FR-Q3 (what Ghost keeps and forgets; formatting out of force) with dates and sources; `epic-7-context.md`
@@ -408,6 +409,32 @@ DW-150 (A1's authored logo, Story 9.1).
   Ghost reaches the page, and the keep-and-forget facts hold as § Facts reads them (MEASUREMENTS §78).
 
 ## Spec Change Log
+
+- **Dev, 2026-10-10 — a choice's `{{#match}}` branches take the three-argument form.** § What each kind becomes writes
+  `{{#match @custom.k "Medium"}}`; the build writes `{{#match @custom.k "=" "Medium"}}`. Ghost's `match.js` reads `"="` as
+  the same strict equality (its `default:` arm — read in source, 6.58.0 and 5.130.6, which differ by a comment), and gscan's
+  `GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH` checks only a three-argument match
+  (`lint-no-unknown-custom-theme-select-value-in-match.js`, `params.length === 3`, executed) — so the two-argument form
+  would let the task's GS090 control pass vacuously. Behaviour is unchanged; Story 7.10's card carries the line.
+- **Dev, 2026-10-10 — a control another greys follows its promoted controller in the theme.** No row covered it, and
+  without it a4/13's secondary action would stand alone once the site's owner turned the promoted primary off in Ghost,
+  breaking the design's own `disabledBy` ("A secondary action needs a primary beside it."). The theme writes the
+  follower's attribute as the controller's `{{#match}}` chain, each leaf the follower's own value or chain (`core.ts`;
+  `matchChain`'s `write`), a promoted follower keeping its reader where the canvas forces it; the strip keeps every value
+  of a follower. Proved in `compile.test.ts` with its control (nothing promoted: baked as before); the pilot compile now
+  ships it. Recorded in `docs/section-authoring.md`. Also: `gate.test.ts`'s leftover-directory check waits for a directory
+  another test file has in flight to go, instead of comparing all of `os.tmpdir()` (it went red once under `pnpm check`;
+  a planted leak still fails it).
+- **Dev, 2026-10-10 — the matrix audit closed two rows at Dev.** *Section hidden*'s ask and *The cap reached* had no
+  test that ran: `pnpm keyboard` gains the hide ask (Keep it, Hide section, Show asking nothing) behind its control, and
+  the cap (every ↗ greyed with `SETTING_WORDS.cap`, in the panel and on the Style Pack card) under a new harness value,
+  `x-inflozo-harness-promoted: full`, which stores the user's share of settings bound to no placed section.
+- **Dev, 2026-10-10 — an emptied text is empty in two spellings** (T1, §78, read in source): Ghost's API answers `''` from
+  its cache (`custom-theme-settings-service.js:153`) while its base model writes `null` (`setEmptyValuesToNull`,
+  `core/server/models/base/plugins/data-manipulation.js:16-19`), which the next activation reads. `{{#if}}` reads both as
+  empty, so the recorder's rows read "still empty"; its first two T1 runs were void on that row alone.
+- **Dev, 2026-10-10 — the accent's inline block is guarded** `{{#if @custom.k}}…{{/if}}`: a colour its condition hides renders
+  as `null`, and `--setting-accent: ;` would empty every `var()` reading it rather than fall back to the pack's hex.
 
 ## Design Notes
 
@@ -667,3 +694,42 @@ and promoting it gives your site's owner a "Logo" picture under Design in Ghost.
 
 **Manual checks (if no CLI):**
 - D6a `:139-235` and D6c `:291-317` beside the deployed page at 1440; P0-1's plain-text-locked frame beside the canvas pill.
+
+**Results (Dev, 2026-10-10, main session, Node 24):**
+- `pnpm check` — green over the final tree: lint, typecheck and every package's tests, the 7.10 rows in
+  `custom-settings.test.ts`, `agreement.test.ts`, `ad36.test.ts`, `tokens.test.ts`, `compile.test.ts` (the follower row
+  with its nothing-promoted control), `strip.test.ts`, `gate/custom-settings.test.ts` (both pins, each control failing
+  its own code), `settings.test.ts`, `busy.test.ts` and `ghost-admin-rule.test.ts` unchanged; `check-snapshots` PASS with
+  the promoted pilot rows (0/0 on 4.49.7 and 6.4.2, each with its GS100 control, quality empty, the strip sound with its
+  control) and every per-design snapshot unchanged. `gate.test.ts`' leftover check now waits out another file's run in
+  flight; a planted leak (the gate's `rm` removed) still fails it.
+- `pnpm keyboard` — the full gate green; after the hide and cap journeys were added, every 7.10 journey and 6.2's re-run
+  green.
+- `node --check tools/probe/run-verify-editor.cjs` — clean (step 105 runs at Review).
+- The recorder's local half — the pilots, the four promoted trees and both paywall probes 0/0 on both pinned gscans, the
+  pilots' quality verdict empty; the start tree's secondary action reads the primary's setting.
+- `bash supabase/tests/run-rls-gate.sh` — passed unchanged (run by the Dev subagent; this story touches no SQL).
+
+**Real services this story hit at Dev (R-82):**
+- **T1** `ghost6.inflozo.com` (6.58.0), on the owner's in-session go (2026-10-10), keys read by `shim.load_env()` as
+  `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN` and `GHOST6_CONTENT_API_KEY`: `python3 tools/probe/record-theme-assembly.py`,
+  three runs. Runs 1 and 2 were void on one recorder row each (an emptied text's spelling, change log) and wrote nothing;
+  run 3 held every row and wrote **MEASUREMENTS §78**. Admin `themes/upload/` and `themes/<name>/activate/` answered 200
+  for each upload; `GET custom_theme_settings/` listed every key at its start (`show_the_button` true, `headline_size`
+  Large, `sub` and `title` their words, `accent_colour` `#D96C3F`, `picture` null); `PUT custom_theme_settings/` per kind
+  reached `/` (the root `medium`, both texts, `--setting-accent` `#1A2B3C`, the picture); the primary off hid Headline
+  size in Ghost and the root drew `large` while Ghost stored Medium (the control), and the secondary action went off with
+  it; Sub emptied left the page; the `restarted` deploy kept Medium under its new default Display; the `without_sub`
+  deploy dropped Sub and the next brought it back at its start. Every earlier §70–§77 row re-ran and held. The probe
+  theme's stored settings were cleared (`[]`), Casper re-activated and read back, every probe theme deleted (installed
+  now: casper, racer, source). No new picture uploaded — this month's `/content/images/2026/10/inflozo-probe-rendition.png`
+  was reused.
+- **Not touched at Dev, and why:** Supabase production and Vercel (the Dev push deploys through CI; Review reads both and
+  runs step 105 on production, R-82); Resend and Dodo (nothing mails or bills); T3 (retired, R-238 — the Ghost 5 half is
+  DW-326's).
+
+**The matrix rows whose only run is Review's** (Theme settings has no harness, so each is a step 105 read on production,
+with the source-level rows in `settings.test.ts` meanwhile): D6c's confirm opening on Cancel and Cancel storing nothing
+(105d); the accent caution (105f); an id `?promote=` does not offer opening the form on its first row, never parsed (105a,
+added at this Dev); a demote drawing the link again (105j; the harness's unpromoted control journey is its local
+equivalent).

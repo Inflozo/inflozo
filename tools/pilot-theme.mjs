@@ -20,6 +20,12 @@
 // handed in, so the theme carries `main.js` (core, the pilots' two declared modules having no file yet) and, for CI's cards
 // row, `cards.js`; and `textFailures`, the per-file scan CI also holds every module file to.
 //
+// Story 7.10: `compilePilots(words, { settings: true })` compiles the same project with five settings promoted
+// (`pilotSettings`) — A4 #13's Primary action (a switch) and Headline size (a choice shown only while the button is on),
+// its Sub, A17 #1's Title on Home (two rich texts) and the accent — the second pilot compile CI gates on both gscans and
+// the quality gate, and the recorder uploads to T1 (§78). `cssFailures` reads a promoted root as each value Ghost could
+// put there.
+//
 // Node 24 (it imports the packages' TypeScript). Reads the designs, the font pool, the modules and Ghost's card scripts
 // from disk; the compile itself is pure.
 
@@ -51,14 +57,14 @@ export const HOSTILE_TEXT = {
   note: 'Close it: }} and }}} and {{{ and {{!-- too',
 }
 
-/** One design from disk, validated and assembled — loudly. */
-function entry(id) {
+/** One design from disk, validated and assembled — loudly. Story 7.10: from `packages/library/fixtures/` too. */
+function entry(id, base = DESIGNS) {
   const [category, n] = id.split('/')
-  const dir = join(DESIGNS, category, n)
-  if (!existsSync(dir) || !statSync(dir).isDirectory()) throw new Error(`the pilot ${id} is not in packages/library/designs/`)
+  const dir = join(base, category, n)
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) throw new Error(`the pilot ${id} is not in ${base.slice(REPO.length + 1)}/`)
   const read = (f) => readFileSync(join(dir, f), 'utf8')
   const design = JSON.parse(read('design.json'))
-  const content = JSON.parse(readFileSync(join(DESIGNS, category, 'content.json'), 'utf8'))
+  const content = JSON.parse(readFileSync(join(base, category, 'content.json'), 'utf8'))
   const html = read('index.html')
   const css = read('style.css')
   const failures = lib.validateDesign({ html, design, content, icons: iconDrawing, css })
@@ -116,8 +122,27 @@ export const SCAFFOLD = {
   'page.hbs': '{{!< default}}\n\n{{#post}}\n  {{#if @page.show_title_and_feature_image}}\n    <h1>{{title}}</h1>\n  {{/if}}\n  {{content}}\n{{/post}}\n',
 }
 
-/** The project's template docs. */
-export function pilotProject({ pageWord, layerWord }, find = library()) {
+/** Story 7.10 — the controls ring's first design (`packages/library/fixtures/controls/1`, Story 4.5's sample, never the
+ *  shipped library — AD-35), the one section here with a picture a customer chooses: the recorder places it on Home with
+ *  no picture of its own and promotes it, so T1 renders a picture setting (Question 4: built now, proved by machine). */
+export const FIXTURE_PICTURE = 'controls/1'
+const FIXTURES = join(REPO, 'packages/library/fixtures')
+/** `find`, also resolving the fixture */
+const withFixture = (find) => {
+  // the sample predates DW-349's rule (an emptied typed text hides), so its archive title's authored fallback would ship as
+  // English V1 refuses at compile — read here as the library's designs write it, `data-empty="hide"`; the file stays as
+  // the harness and /controls draw it
+  const raw = entry(FIXTURE_PICTURE, FIXTURES)
+  const fixture = { ...raw, html: raw.html.replace('data-bind="title">', 'data-bind="title" data-empty="hide">') }
+  if (fixture.html === raw.html) throw new Error(`${FIXTURE_PICTURE}'s archive title no longer reads as it did — re-read the fixture before compiling it`)
+  const lookup = (id) => (id === FIXTURE_PICTURE ? fixture : find(id))
+  lookup.ids = [...(find.ids ?? []), FIXTURE_PICTURE]
+  return lookup
+}
+
+/** The project's template docs. Story 7.10: with `fixture`, Home ends with the fixture's feature row (its id made last,
+ *  so every pilot keeps its own). */
+export function pilotProject({ pageWord, layerWord }, find = library(), { fixture = false } = {}) {
   let n = 0
   const at = (designId, layer, over = {}) => {
     const e = find(designId)
@@ -130,7 +155,7 @@ export function pilotProject({ pageWord, layerWord }, find = library()) {
   }
   const doc = (...instances) => ({ schemaVersion: 1, instances })
   const newsletter = (layer) => at('a22/1', layer, { content: HOSTILE_TEXT })
-  return {
+  const project = {
     templates: {
       'default.hbs': doc(at('a1/1', 'Header')),
       // Story 7.4: A4 #13's Background is Contrast in Dark, so its root carries the hook and the token block its rules — on
@@ -145,6 +170,30 @@ export function pilotProject({ pageWord, layerWord }, find = library()) {
       'tag.hbs': doc(at('a17/1', 'Post grid', { isMainFeed: true, controls: { 'per-row': 'two' } })),
     },
   }
+  if (fixture) project.templates['home.hbs'].instances.push(at(FIXTURE_PICTURE, 'Feature row'))
+  return project
+}
+
+/** Story 7.10 — the pilots' promoted settings, as `custom_settings` would store them, bound to the instances
+ *  `pilotProject` made: A4 #13's two controls and its Sub, A17 #1's Title on Home, and the accent. */
+export function pilotSettings(templates) {
+  const on = (file, designId) => {
+    const i = templates[file]?.instances.find((x) => x.designId === designId)
+    if (i === undefined) throw new Error(`the pilot project holds no ${designId} on ${file}`)
+    return i.instanceId
+  }
+  const latest = on('home.hbs', 'a4/13')
+  const grid = on('home.hbs', 'a17/1')
+  const fixture = templates['home.hbs'].instances.find((x) => x.designId === FIXTURE_PICTURE)
+  const row = (key, type, bound_to, over = {}) => ({ key, type, group_name: 'homepage', visibility_condition: null, bound_to, ...over })
+  return [
+    row('show_the_button', 'boolean', { kind: 'control', instanceId: latest, controlKey: 'primary-action' }),
+    row('headline_size', 'select', { kind: 'control', instanceId: latest, controlKey: 'headline-size' }, { visibility_condition: { key: 'show_the_button', value: true } }),
+    row('sub', 'text', { kind: 'prop', instanceId: latest, path: 'sub' }),
+    row('title', 'text', { kind: 'prop', instanceId: grid, path: 'title' }),
+    row('accent_colour', 'color', { kind: 'token', token: 'accent' }, { group_name: 'site_wide' }),
+    ...(fixture === undefined ? [] : [row('picture', 'image', { kind: 'prop', instanceId: fixture.instanceId, path: 'picture' })]),
+  ].map((r, n) => ({ ...r, position: n + 1 }))
 }
 
 /** CI's fixed theme identity — `package.json`'s name, version and description. */
@@ -152,17 +201,21 @@ export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', descripti
 
 /** The compiled theme — path → text, or a font's bytes — with AD-14's record (`css`), and the project it came from.
  *  Story 7.5: `designedCards` reaches `package.json` and `cards.js`; `modules` replaces the files read, for CI's controls. */
-export function compilePilots(words, { theme, postsPerPage = 12, find = library(), pageTwo: overTwo, designedCards, modules = moduleSources() } = {}) {
+export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, designedCards, modules = moduleSources(), settings = false, fixture = false, edit } = {}) {
   if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
-  const project = pilotProject(words, find)
+  const find = fixture ? withFixture(given) : given
+  const project = pilotProject(words, find, { fixture })
+  // Story 7.10: the recorder's redeploys change the canvas (a control's value, a new start) before compiling again
+  edit?.(project)
   const templates = project.templates
   const pageTwo = overTwo ?? project.pageTwo
-  const { files, css, js } = compileTheme(new JSDOM('<body></body>').window.document, {
+  const { files, css, js, custom } = compileTheme(new JSDOM('<body></body>').window.document, {
     templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled: true,
     modules, ghostCards: ghostCards(), ...(designedCards === undefined ? {} : { designedCards }),
+    ...(settings === false ? {} : { settings: settings === true ? pilotSettings(templates) : settings }),
   })
   const docs = [...Object.values(templates), ...Object.values(pageTwo)]
-  return { files, css, js, templates, pageTwo, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
+  return { files, css, js, custom, templates, pageTwo, find, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
 }
 
 /** A compiled theme's text files alone — a font is bytes, and no text check reads it (Story 7.4). */
@@ -314,11 +367,23 @@ function entriesOf(css) {
 }
 const shown = (e) => `${e.media === '' ? '' : `@media ${e.media} `}${e.selector} { ${e.body} }`
 
-/** The first element of every compiled section partial — the roots the theme ships. */
+/** The first element of every compiled section partial — the roots the theme ships. Story 7.10: a promoted control's
+ *  attribute holds its setting's `{{#match}}` reader, so the root is read as each value Ghost could put there — one copy
+ *  per combination of the literal values between its branches — never as the reader's own text, which no rule names. */
 const sectionRoots = (files) => Object.entries(files)
   .filter(([p, b]) => p.startsWith('partials/sections/') && typeof b === 'string')
-  .map(([, b]) => new JSDOM(`<body>${b}</body>`).window.document.body.firstElementChild)
+  // a mustache's own quotes (`"=" "Medium"`) would end the attribute for an HTML parser — Handlebars consumes them first
+  .map(([, b]) => new JSDOM(`<body>${b.replace(/\{\{[^}]*\}\}/g, (m) => m.replaceAll('"', "'"))}</body>`).window.document.body.firstElementChild)
   .filter((el) => el !== null)
+  .flatMap((el) => {
+    let copies = [el]
+    for (const { name, value } of [...el.attributes].filter((a) => a.value.includes('{{'))) {
+      const values = [...new Set([...value.matchAll(/\}\}([^{}]+)\{\{/g)].map((m) => m[1]))]
+      if (values.length === 0) continue   // an expression with no literal branch (`{{url}}`) is no control value
+      copies = copies.flatMap((c) => values.map((v) => { const x = c.cloneNode(false); x.setAttribute(name, v); return x }))
+    }
+    return copies
+  })
 
 /**
  * What CI holds the pilot theme's stylesheet to, over `compilePilots`' `{ files, css }`:

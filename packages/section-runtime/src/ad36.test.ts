@@ -13,6 +13,7 @@ import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
 import { GSCAN_INERT, PAGE_NUMBER_HBS, allowedMarks, escapeUserText, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { REFERENCE_PACK } from './reference.ts'
+import { ghostEntry, propSettingOf } from './custom-settings.ts'
 import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { IconLookup } from '@inflozo/library'
@@ -668,5 +669,52 @@ test("AD-36 · a project's own Style Pack record (Story 6.4): each hostile autho
   ] as const) {
     assert.throws(() => packTokens(hostile as never), { message: refusal }, why)
     assert.throws(() => packTokensCss(hostile as never), { message: refusal }, `${why}: the block is never written`)
+  }
+})
+
+// ── STORY 7.10 — three new sinks: a setting KEY reaches `{{@custom.<key>}}`, an option LABEL a `{{#match}}` argument, and a
+//    text START a `package.json` string. Each is refused or inert, beside a legitimate case that works. ──────────────────
+const PROMO_SRC = '<section class="s" data-card="flat"><h2 class="s__t" data-prop="title" data-empty="hide">t</h2></section>'
+const promo = (promoted: RenderInput['promoted']): RenderInput => ({
+  schema: { title: { type: 'text', label: 'Title' } },
+  controlSchema: [{ name: 'card', type: 'segmented', label: 'Card', group: 'style', values: ['flat', 'raised'], default: 'flat' }],
+  content: { title: 'Hello' },
+  promoted,
+})
+const CARD = (key: string, labels: [string, string] = ['Flat', 'Raised']) =>
+  ({ controls: { card: { key, type: 'select' as const, options: [{ value: 'flat', label: labels[0] }, { value: 'raised', label: labels[1] }] } } })
+
+test('AD-36 (7.10) · a hostile setting key never reaches {{@custom.*}} — refused by the module\'s shape check; a sound key reads', () => {
+  for (const key of ['card}}{{#if @member}}', 'card" onload="x', 'Card', 'c', 'color_scheme', 'card.inner', '../card']) {
+    assert.throws(() => renderTheme(doc(), PROMO_SRC, promo(CARD(key))), /AD-36/, `control key ${key}`)
+    assert.throws(() => renderTheme(doc(), PROMO_SRC, promo({ props: { title: key } })), /AD-36/, `text key ${key}`)
+  }
+  const theme = renderTheme(doc(), PROMO_SRC, promo({ ...CARD('card_style'), props: { title: 'title_words' } })).template
+  assert.ok(theme.includes('data-card="{{#match @custom.card_style "=" "Flat"}}flat{{else match @custom.card_style "=" "Raised"}}raised{{else}}flat{{/match}}"'), theme)
+  assert.ok(theme.includes('{{@custom.title_words}}'), theme)
+  // and the canvas never reads one: a hostile key is no more than ignored there
+  assert.ok(renderCanvas(doc(), PROMO_SRC, promo(CARD('card}}{{x'))).includes('data-card="flat"'))
+})
+
+test('AD-36 (7.10) · an option label carrying a quote, a backslash or a brace never reaches a {{#match}} argument; a plain label does', () => {
+  for (const bad of ['Flat" onload="x', "Flat' x", 'Fl\\at', 'Flat}}{{x', '{Flat']) {
+    assert.throws(() => renderTheme(doc(), PROMO_SRC, promo(CARD('card_style', [bad, 'Raised']))), /AD-36/, bad)
+  }
+  // the label is Handlebars' string, compared with the one Ghost stores, so it is written as typed: an entity would never match
+  assert.ok(renderTheme(doc(), PROMO_SRC, promo(CARD('card_style', ['Flat & plain', 'Raised']))).template.includes('{{#match @custom.card_style "=" "Flat & plain"}}flat'))
+})
+
+test('AD-36 (7.10) · a hostile text start is inert in package.json — one string, decoding to the words typed, nothing more — and never in a template', () => {
+  for (const words of ['Hello', 'Close "}, "evil": {"type": "boolean', '{{#if @member}}{{@member.email}}{{/if}}', 'A line\nbreak and a \u0007 bell', '</script><script>x</script>']) {
+    const start = propSettingOf({ type: 'text', label: 'Title' }, words)
+    const custom = { title_words: ghostEntry({ key: 'title_words', label: 'Title words', group_name: 'site_wide', visibility_condition: null, ...start! }) }
+    const pkg = JSON.stringify({ config: { custom } }, null, 2)
+    const back = JSON.parse(pkg) as { config: { custom: Record<string, { default?: string }> } }
+    assert.deepEqual(Object.keys(back.config.custom), ['title_words'], words)
+    assert.equal(back.config.custom['title_words']?.default, words, 'the typed words, exactly')
+    assert.doesNotMatch(pkg, /[\u0000-\u0009\u000b-\u001f]/, 'no control character in the file')
+    // the theme reads Ghost's value; the start never enters a template
+    const theme = renderTheme(doc(), PROMO_SRC, { ...promo({ props: { title: 'title_words' } }), content: { title: words } }).template
+    assert.ok(!theme.includes(words), theme)
   }
 })

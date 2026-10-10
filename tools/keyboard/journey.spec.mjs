@@ -7402,3 +7402,289 @@ test('7.4 · DW-331 · /pilots draws a Background set in Dark: Contrast in Dark,
   expect(again.bg, 'a repaint takes the mode\'s slice too').toBe('contrast')
   expect(again.fill).toBe(again.contrast)
 })
+
+// ── Story 7.10 — promoting from the editor: the ↗ beside a row, "In Ghost", P0-1's lock pill and the four warnings ──────
+//
+// The harness header `x-inflozo-harness-promoted: on` hands the editor the rows Theme settings would have stored after
+// promoting the fixture ring section's Show icons, Heading and Picture and the accent; without it, nothing is promoted —
+// each stop's control, in a test of its own (a second load in one test would read the first's journal from this device,
+// and the harness mints its instance ids per load). Every sentence is read from `THEME_WORDS` (the one list, R-170).
+
+const SETTINGS = await import(new URL('../../apps/web/lib/theme-settings.ts', import.meta.url).href)
+const THEME = SETTINGS.THEME_WORDS
+const CUSTOM = await import(new URL('../../packages/section-runtime/src/custom-settings.ts', import.meta.url).href)
+const PROMOTED = { 'x-inflozo-harness-promoted': 'on' }
+const promoteAction = (page, name) => page.locator(`#editor-controls a[data-promote][aria-label="${THEME.promoteAction(name)}"]`)
+const inGhost = (page, key) => page.locator(`#editor-controls [data-in-ghost="${key}"]`)
+// the `?promote=` address is the harness project's Theme settings (`HARNESS_PROJECT_ID`, the journal stops' own)
+const promoteAddress = (binding) => `/projects/${HARNESS_PROJECT_ID}/settings?promote=${encodeURIComponent(binding)}`
+/** the canvas's P0-1 pills, read through the chrome layers' shadow roots (DW-182's reader) */
+const canvasNotes = (page) => canvasFrame(page).locator('body').evaluate((body) =>
+  [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')]
+    .flatMap((h) => [...(h.shadowRoot?.querySelectorAll('[data-chrome="note"]') ?? [])]).map((n) => n.textContent.trim()))
+/** the panel's Content, Layout and Style groups, opened from the keyboard by name */
+async function openRowGroups(page) {
+  for (const name of ['content', 'layout', 'style']) {
+    const group = page.locator(`#editor-controls button[id$="-group-${name}"]`)
+    if ((await group.count()) === 0 || (await group.getAttribute('aria-expanded')) === 'true') continue
+    await group.focus()
+    await page.keyboard.press('Enter')
+    await expect(group).toHaveAttribute('aria-expanded', 'true')
+  }
+}
+const toRest = async (page) => {
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('[data-style-pack-card]')).toBeVisible()
+}
+
+test('7.10 · the panel\'s ↗ beside a switch, a choice, a rich text and a picture opens Theme settings on exactly that one; a stepper, a universal and a link have none; the Style Pack card carries the accent\'s', async ({ page }) => {
+  await open(page)
+  const key = await selectRinged(page)
+  const id = key.slice(key.indexOf(':') + 1)
+  await openRowGroups(page)
+  for (const [name, binding] of [['Show icons', `control:${id}:icons`], ['Card style', `control:${id}:card`], ['Heading', `prop:${id}:heading`], ['Picture', `prop:${id}:picture`]]) {
+    await expect(promoteAction(page, name), name).toHaveAttribute('href', promoteAddress(binding))
+    await expect(promoteAction(page, name)).toHaveAttribute('title', THEME.promoteAction(name))
+  }
+  // never offered: a stepper (Ghost has no number type), a universal, and a link
+  for (const name of ['Columns', 'Background role', 'Link', 'Next issue']) await expect(promoteAction(page, name), name).toHaveCount(0)
+  // nothing is promoted here, so nothing carries the tag (the next stop's control)
+  await expect(page.locator('#editor-controls [data-in-ghost]')).toHaveCount(0)
+  // the action is a tab stop beside its label
+  await promoteAction(page, 'Show icons').focus()
+  await expect(promoteAction(page, 'Show icons')).toBeFocused()
+  await toRest(page)
+  await expect(page.locator('[data-style-pack-accent] a[data-promote]')).toHaveAttribute('href', promoteAddress('token:accent'))
+  await expect(page.locator('[data-style-pack-accent] [data-in-ghost]')).toHaveCount(0)
+})
+
+test('7.10 · promoted (the harness header): Show icons, Heading and Picture carry "In Ghost" with its title in place of the ↗, an unpromoted control keeps its ↗, and the card\'s accent is In Ghost', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  await selectRinged(page)
+  await openRowGroups(page)
+  for (const [key, name] of [['show_icons', 'Show icons'], ['heading', 'Heading'], ['picture', 'Picture']]) {
+    await expect(inGhost(page, key), key).toHaveText(THEME.inGhost)
+    await expect(inGhost(page, key)).toHaveAttribute('title', THEME.inGhostTitle(key))
+    await expect(promoteAction(page, name), `${name} has no ↗ once promoted`).toHaveCount(0)
+  }
+  // the control: a control nothing promoted keeps its action
+  await expect(promoteAction(page, 'Card style')).toHaveCount(1)
+  await toRest(page)
+  await expect(page.locator('[data-style-pack-accent] [data-in-ghost="accent_colour"]')).toHaveText(THEME.inGhost)
+  await expect(page.locator('[data-style-pack-accent] a[data-promote]')).toHaveCount(0)
+})
+
+const formattingBar = (page) => page.locator('[role="toolbar"][aria-label="Text formatting"]')
+const editingNow = (page) => canvasFrame(page).locator('[data-inflozo-editing]')
+
+test('7.10 · the control: an unpromoted heading on the canvas draws its toolbar over a selection, ⌘B bolds it, and no pill shows', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  expect(await startHeading(page), 'a press on the heading starts a session').toBe(RING_CONTENT.props.heading.default)
+  await page.keyboard.press('ControlOrMeta+a')
+  await expect(formattingBar(page)).toBeVisible()
+  await page.keyboard.press('ControlOrMeta+b')
+  await expect(editingNow(page).locator('strong'), 'unpromoted, ⌘B bolds').toHaveCount(1)
+  expect(await canvasNotes(page)).toEqual([])
+})
+
+test('7.10 · a promoted rich text on the canvas: no toolbar, P0-1\'s lock pill naming the setting in its place, ⌘B and ⌘I do nothing, typing edits its words', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  await selectRinged(page)
+  expect(await startHeading(page)).toBe(RING_CONTENT.props.heading.default)
+  await expect.poll(() => canvasNotes(page), 'the lock pill, where the toolbar would be').toEqual([THEME.lockPill('heading')])
+  await page.keyboard.press('ControlOrMeta+a')
+  await panelsSettle(page)
+  await expect(formattingBar(page), 'no formatting toolbar on a text Ghost holds').toHaveCount(0)
+  await page.keyboard.press('ControlOrMeta+b')
+  await page.keyboard.press('ControlOrMeta+i')
+  await panelsSettle(page)
+  await expect(editingNow(page).locator('strong, em'), '⌘B and ⌘I do nothing').toHaveCount(0)
+  await page.keyboard.press('End')
+  await page.keyboard.type(' again')
+  await expect(editingNow(page)).toHaveText(`${RING_CONTENT.props.heading.default} again`)
+  expect(await canvasNotes(page), 'the pill stays while the words are typed').toEqual([THEME.lockPill('heading')])
+})
+
+const bindingAsk = (page) => page.locator('dialog[aria-labelledby="editor-binding-title"]')
+
+test('7.10 · the control: deleting a section nothing is promoted from asks nothing — it goes at once', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const before = (await rows(page)).all.length
+  await page.keyboard.press('Delete')
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before - 1)
+  await expect(bindingAsk(page)).toBeHidden()
+})
+
+test('7.10 · deleting a section a setting is promoted from asks first in one dialog naming the settings, on Keep it; Keep changes nothing, Delete section deletes, ⌘Z brings it back and asks nothing', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  const key = await selectRinged(page)
+  const before = (await rows(page)).all.length
+  await page.keyboard.press('Delete')
+  await expect(bindingAsk(page)).toBeVisible()
+  await expect(page.locator('#editor-binding-body')).toHaveText(THEME.bindingAsk(['Show icons', 'Heading', 'Picture'], 'deleted'))
+  await expect(page.locator('dialog[open] [data-cancel]'), 'it opens on Keep it').toBeFocused()
+  await expect(page.locator('dialog[open] [data-cancel]')).toHaveText(THEME.keepIt)
+  await page.keyboard.press('Enter')
+  await expect(bindingAsk(page)).toBeHidden()
+  await panelsSettle(page)
+  expect((await rows(page)).all, 'Keep it changes nothing').toHaveLength(before)
+  await select(page, key)
+  await page.keyboard.press('Delete')
+  await expect(bindingAsk(page)).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('dialog[open] button:focus')).toHaveText(THEME.deleteSection)
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before - 1)
+  // ⌘Z brings the section back with its bindings, and asks nothing
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before)
+  await expect(bindingAsk(page)).toBeHidden()
+})
+
+// the row's first menu entry is Hide while the section shows and Show while it is hidden
+const hideEntry = (page, key) => page.locator(`[data-layer-row="${key}"] [popover] button`).first()
+
+test('7.10 · the control: hiding a section nothing is promoted from asks nothing — Space hides it at once', async ({ page }) => {
+  await open(page)
+  const key = await selectRinged(page)
+  await page.keyboard.press(' ')
+  await expect(hideEntry(page, key)).toHaveText('Show')
+  await expect(bindingAsk(page)).toBeHidden()
+})
+
+test('7.10 · hiding a section a setting is promoted from asks first in the same dialog, saying hidden; Keep it changes nothing, Hide section hides, Show asks nothing', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  const key = await selectRinged(page)
+  await page.keyboard.press(' ')
+  await expect(bindingAsk(page)).toBeVisible()
+  await expect(page.locator('#editor-binding-body')).toHaveText(THEME.bindingAsk(['Show icons', 'Heading', 'Picture'], 'hidden'))
+  await expect(page.locator('dialog[open] [data-cancel]'), 'it opens on Keep it').toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(bindingAsk(page)).toBeHidden()
+  await panelsSettle(page)
+  await expect(hideEntry(page, key), 'Keep it changes nothing').toHaveText('Hide')
+  await select(page, key)
+  await page.keyboard.press(' ')
+  await expect(bindingAsk(page)).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('dialog[open] button:focus')).toHaveText(THEME.hideSection)
+  await page.keyboard.press('Enter')
+  await expect(hideEntry(page, key)).toHaveText('Show')
+  // Show brings it back, and asks nothing
+  await select(page, key)
+  await page.keyboard.press(' ')
+  await expect(hideEntry(page, key)).toHaveText('Hide')
+  await expect(bindingAsk(page)).toBeHidden()
+})
+
+test('7.10 · a shuffle that parks a promoted control says so on the section and in #editor-said, in Question 2\'s words; a design that carries them all parks nothing (the control)', async ({ page }) => {
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  await selectRinged(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  // design 2 carries Show icons, Heading and Picture: the control — nothing parked, nothing said of Ghost
+  await page.keyboard.press(']')
+  await expect(counter(page)).toHaveText(/^2 of \d+$/)
+  await expect.poll(() => said(page)).toMatch(/^Design 2 of \d+ — [^.]+$/)
+  expect(await canvasNotes(page)).toEqual([])
+  // design 3 has no Show icons and no picture: both parked; the heading it still prints is not
+  await page.keyboard.press(']')
+  await expect(counter(page)).toHaveText(/^3 of \d+$/)
+  const words = [THEME.parkNote('Show icons'), THEME.parkNote('Picture')].join(' ')
+  await expect.poll(() => said(page)).toMatch(new RegExp(`^Design 3 of \\d+ — [^.]+\\. ${words.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`))
+  await expect.poll(() => canvasNotes(page), 'the note on the section').toEqual([words])
+  // parked, not deleted: back round the ring, and nothing more is said of Ghost
+  await page.keyboard.press(']')
+  await expect(counter(page)).toHaveText(/^1 of \d+$/)
+  await expect.poll(() => said(page)).toMatch(/^Design 1 of \d+ — [^.]+$/)
+})
+
+const packAsk = (page) => page.locator('dialog[aria-labelledby="editor-pack-title"]')
+
+test('7.10 · the control: with no accent promoted, a pack cell switches at once and asks nothing', async ({ page }) => {
+  const target = PRESETS()[3]
+  await open(page)
+  await intoList(page)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', target.id)
+  await expect(packAsk(page)).toBeHidden()
+})
+
+test('7.10 · with the accent promoted, choosing another pack asks first, on Keep; Keep changes nothing, Switch switches, ⌘Z switches back without asking', async ({ page }) => {
+  const [paper, target] = [PRESETS()[0], PRESETS()[3]]
+  await page.setExtraHTTPHeaders(PROMOTED)
+  await open(page)
+  expect(await wears(page)).toBe(paper.id)
+  await intoList(page)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeVisible()
+  await expect(page.locator('#editor-pack-title')).toHaveText(THEME.packTitle(target.name))
+  await expect(page.locator('#editor-pack-body')).toHaveText(THEME.packBody)
+  await expect(page.locator('dialog[open] [data-cancel]'), 'it opens on Keep').toBeFocused()
+  await expect(page.locator('dialog[open] [data-cancel]')).toHaveText(THEME.packKeep(paper.name))
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeHidden()
+  await panelsSettle(page)
+  expect(await wears(page), 'Keep changes nothing').toBe(paper.id)
+  await expect(undoArrow(page), 'and journals nothing').toHaveAttribute('aria-disabled', 'true')
+  // asked again, Switch switches
+  await option(page, target.id).focus()
+  await page.keyboard.press('Enter')
+  await expect(packAsk(page)).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('dialog[open] button:focus')).toHaveText(THEME.packSwitch)
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', target.id)
+  // ⌘Z switches back and never asks
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', paper.id)
+  await expect(packAsk(page)).toBeHidden()
+})
+
+test('7.10 · reading along (R-192): every ↗ is a disabled button that goes nowhere — in the panel and on the Style Pack card', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+  await open(page)
+  await selectRinged(page)
+  await openRowGroups(page)
+  const actions = page.locator('#editor-controls [data-promote]')
+  expect(await actions.count(), 'the control: the panel draws its actions').toBeGreaterThan(0)
+  await expect(page.locator('#editor-controls a[data-promote]'), 'no ↗ is a link while reading along').toHaveCount(0)
+  for (const a of await actions.all()) await expect(a).toBeDisabled()
+  await toRest(page)
+  await expect(page.locator('[data-style-pack-accent] [data-promote]')).toBeDisabled()
+})
+
+test('7.10 · at the cap (the user\'s share of settings stored), every ↗ is greyed with the cap\'s sentence and goes nowhere — in the panel and on the Style Pack card', async ({ page }) => {
+  // the control is the first 7.10 stop: with nothing stored, each ↗ is a link to Theme settings
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-promoted': 'full' })
+  await open(page)
+  await selectRinged(page)
+  await openRowGroups(page)
+  const actions = page.locator('#editor-controls [data-promote]')
+  expect(await actions.count(), 'the panel draws its actions').toBeGreaterThan(0)
+  await expect(page.locator('#editor-controls a[data-promote]'), 'no ↗ is a link at the cap').toHaveCount(0)
+  for (const a of await actions.all()) {
+    await expect(a).toHaveAttribute('aria-disabled', 'true')
+    await expect(a).toHaveAttribute('title', CUSTOM.SETTING_WORDS.cap)
+  }
+  await toRest(page)
+  await expect(page.locator('[data-style-pack-accent] [data-promote]')).toHaveAttribute('title', CUSTOM.SETTING_WORDS.cap)
+})
+
+test('7.10 · reading along with settings promoted: every tag still reads, and nothing is a link', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader', ...PROMOTED })
+  await open(page)
+  await selectRinged(page)
+  await openRowGroups(page)
+  await expect(inGhost(page, 'show_icons')).toHaveText(THEME.inGhost)
+  await expect(page.locator('#editor-controls a[data-promote]')).toHaveCount(0)
+})

@@ -26,14 +26,14 @@ import {
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
 import { TABLER_LICENSE } from '@inflozo/library/icons'
 import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
-import { BASE_CSS, darkOverrideCss, GSCAN_INERT, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, srcsetExpr, synthesize, U0, U1, T0, T1 } from '@inflozo/section-runtime'
+import { BASE_CSS, darkOverrideCss, GSCAN_INERT, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, SETTING_WORDS, srcsetExpr, synthesize, U0, U1, T0, T1, USER_SETTING_CAP } from '@inflozo/section-runtime'
 import type { DocInstance, Pack, ProjectDoc } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
 import {
   checkChromeText, checkGhostMarkup, checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, POST_ARTICLE, THEME_MARKER, THEME_MARKS, tidyLicence,
 } from './compile.ts'
-import type { CompiledTheme, CompileInput } from './compile.ts'
+import type { CompiledTheme, CompileInput, CompileSetting } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
 
@@ -1263,4 +1263,170 @@ test('(7.6) V1 at compile: a label typed into a template is named with its file;
   // and the compile throws on its own output: a text binding's authored fallback is English no customer can translate
   const fallback = (id: string) => (id === 'a24/1' ? { ...(LIB['a24/1'] as SectionRegistryEntry), html: '<section class="a24-1">\n  <h1 class="a24-1__title" data-bind="title">Untitled</h1>\n</section>' } : LIB[id])
   assert.throws(() => compile({ 'post.hbs': docOf(at('a24/1', 'Header')) }, { library: fallback }), /^Error: the theme's markup: .*partials\/sections\/post\/header\.hbs: <h1> "Untitled" is a label typed into the template/)
+})
+
+// ─── Story 7.10: the promoted settings ────────────────────────────────────────────────────────────────────────────────
+
+/** A Hero with every kind a section can promote — a switch, a choice, a text, a rich text and a picture — and a second
+ *  design of its category that carries none of them, for the shuffle's park. */
+const PROMO = design('a4/2', 'Promo', {
+  compileTarget: ['home.hbs', 'index.hbs'],
+  contentSchema: { headline: text('Headline'), sub: { type: 'richtext', label: 'Sub', marks: ['a'] } as PropDef, picture: { type: 'image', label: 'Picture' } as PropDef },
+  controlSchema: [
+    { name: 'primary-action', type: 'toggle', label: 'Primary action', group: 'content', values: ['on', 'off'], default: 'on' },
+    { name: 'headline-size', type: 'segmented', label: 'Headline size', group: 'style', values: ['medium', 'large', 'display'], default: 'large' },
+  ] as ControlDef[],
+  css: '.a4-2 { color: var(--text-body); }\n.a4-2[data-headline-size="medium"] .a4-2__h { font-size: 1rem; }\n.a4-2[data-headline-size="large"] .a4-2__h { font-size: 2rem; }\n.a4-2[data-headline-size="display"] .a4-2__h { font-size: 3rem; }\n.a4-2[data-primary-action="off"] .a4-2__sub { display: none; }\n',
+  html: `<section class="a4-2">
+  <h1 class="a4-2__h" data-prop="headline" data-empty="hide">Headline</h1>
+  <p class="a4-2__sub" data-prop="sub" data-empty="hide">Sub</p>
+  <img class="a4-2__picture" data-prop-attr="src:picture" data-empty="hide" alt="">
+</section>`,
+})
+const PLAIN = design('a4/3', 'Plain', {
+  compileTarget: ['home.hbs', 'index.hbs'],
+  contentSchema: PROMO.contentSchema,
+  html: '<section class="a4-3">\n  <h1 class="a4-3__h" data-prop="headline" data-empty="hide">Headline</h1>\n</section>',
+})
+const PROMO_LIB: Record<string, SectionRegistryEntry> = { ...LIB, 'a4/2': PROMO, 'a4/3': PLAIN }
+const SUB_WORDS = { text: 'One essay, every Thursday.', marks: [{ start: 17, end: 25, mark: 'a', href: 'https://example.com' }] }
+const promoHome = (over: Partial<DocInstance> = {}) => docOf(at('a4/2', 'Latest post', {
+  instanceId: 'promo-0001-zq', content: { headline: 'Big words', sub: SUB_WORDS, picture: 'asset-1' }, controls: { 'headline-size': 'display' }, ...over,
+}))
+let position = 0
+const row = (key: string, type: CompileSetting['type'], bound_to: unknown, over: Partial<CompileSetting> = {}): CompileSetting =>
+  ({ key, type, group_name: 'homepage', visibility_condition: null, bound_to, position: ++position, ...over })
+const control = (controlKey: string) => ({ kind: 'control', instanceId: 'promo-0001-zq', controlKey })
+const propOf = (path: string) => ({ kind: 'prop', instanceId: 'promo-0001-zq', path })
+const ALL = (): CompileSetting[] => [
+  row('show_the_button', 'boolean', control('primary-action')),
+  row('headline_size', 'select', control('headline-size'), { visibility_condition: { key: 'show_the_button', value: true } }),
+  row('sub', 'text', propOf('sub'), { group_name: 'site_wide' }),
+  row('picture', 'image', propOf('picture')),
+  row('accent_colour', 'color', { kind: 'token', token: 'accent' }, { group_name: 'site_wide' }),
+]
+const promote = (settings: readonly CompileSetting[], home = promoHome(), over: Partial<CompileInput> = {}) =>
+  build({ 'home.hbs': home }, { pageTwo: projectTwo(), library: (id) => PROMO_LIB[id], assets: { 'asset-1': 'https://cdn.example/one.png' }, settings, ...over })
+const custom = (t: CompiledTheme) => (JSON.parse(t.files['package.json'] as string) as { config: Record<string, unknown> }).config
+const sectionOf = (t: CompiledTheme) => textOf(t.files)['partials/sections/home/latest-post.hbs'] ?? ''
+
+test('(7.10) every kind compiles: config.custom carries each live setting last in config, in position order, at the start the CANVAS holds — and each key is read', () => {
+  const t = promote(ALL())
+  const config = custom(t)
+  assert.equal(Object.keys(config).at(-1), 'custom', 'custom is last in config')
+  assert.deepEqual(config['custom'], {
+    show_the_button: { type: 'boolean', default: true, group: 'homepage' },
+    headline_size: { type: 'select', options: ['Medium', 'Large', 'Display'], default: 'Display', group: 'homepage', visibility: 'show_the_button:true' },
+    sub: { type: 'text', default: 'One essay, every Thursday.' },
+    picture: { type: 'image', group: 'homepage' },
+    accent_colour: { type: 'color', default: REFERENCE_PACK.light.accent },
+  })
+  assert.deepEqual(t.custom, { emitted: ['show_the_button', 'headline_size', 'sub', 'picture', 'accent_colour'], parked: [] })
+  const section = sectionOf(t)
+  // a switch and a choice: the root's one attribute is the setting's {{#match}} reader, its {{else}} the start
+  assert.ok(section.includes('data-primary-action="{{#match @custom.show_the_button true}}on{{else match @custom.show_the_button false}}off{{else}}on{{/match}}"'), section)
+  assert.ok(section.includes('data-headline-size="{{#match @custom.headline_size "=" "Medium"}}medium{{else match @custom.headline_size "=" "Large"}}large{{else match @custom.headline_size "=" "Display"}}display{{else}}display{{/match}}"'), section)
+  // a text: Ghost's words, the element shown only while they are words, the link's words and never the link
+  assert.match(section, /\{\{#if @custom\.sub\}\}\n\s*<p class="a4-2__sub">\{\{@custom\.sub\}\}<\/p>\n\s*\{\{\/if\}\}/)
+  assert.doesNotMatch(section, /example\.com|One essay/)
+  // a picture: Ghost's while set, else the section's own
+  assert.ok(section.includes('src="{{#if @custom.picture}}{{img_url @custom.picture}}{{else}}https://cdn.example/one.png{{/if}}"'), section)
+  // the stored default and options are never read: the canvas decides (Question 1)
+  const stale = ALL().map((r) => ({ ...r, default_value: 'Medium', options: [{ value: 'x', label: 'X' }] }))
+  assert.equal(custom(promote(stale))['custom'] !== undefined && JSON.stringify(custom(promote(stale))), JSON.stringify(config))
+})
+
+test('(7.10) a control another greys follows its promoted controller on the live site, and keeps its own reader where the canvas forces it', () => {
+  // a4/13's pair: "A secondary action needs a primary beside it" — the theme must not show it alone when Ghost turns the primary off
+  const PAIR = { ...PROMO, controlSchema: [...(PROMO.controlSchema ?? []), {
+    name: 'secondary-action', type: 'toggle', label: 'Secondary action', group: 'content', values: ['on', 'off'], default: 'on',
+    disabledBy: { control: 'primary-action', whenValue: 'off', inForce: 'off', reason: 'A secondary action needs a primary beside it.' },
+  }] as ControlDef[], css: `${PROMO.css}.a4-2[data-secondary-action="off"] .a4-2__h { display: none; }\n` }
+  const lib: Record<string, SectionRegistryEntry> = { ...PROMO_LIB, 'a4/2': PAIR }
+  const pair = (settings: readonly CompileSetting[], home = promoHome()) => promote(settings, home, { library: (id) => lib[id] })
+  const chain = '{{#match @custom.show_the_button true}}on{{else match @custom.show_the_button false}}off{{else}}on{{/match}}'
+  // the controller promoted: the dependant reads the same setting, off wherever it is off
+  let t = pair([row('show_the_button', 'boolean', control('primary-action'))])
+  assert.ok(sectionOf(t).includes(`data-secondary-action="${chain}"`), sectionOf(t))
+  assert.ok((textOf(t.files)['assets/css/screen.css'] ?? '').includes('[data-secondary-action="off"]'), 'the strip keeps every value of a following control')
+  // control: nothing promoted, both baked as today
+  t = pair([])
+  assert.match(sectionOf(t), /data-secondary-action="on"/)
+  assert.doesNotMatch(sectionOf(t), /@custom/)
+  // the dependant promoted while the canvas's primary is off: every branch is the value in force, and the key is still read
+  t = pair([row('show_the_secondary', 'boolean', control('secondary-action'))], promoHome({ controls: { 'headline-size': 'display', 'primary-action': 'off' } }))
+  assert.ok(sectionOf(t).includes('data-secondary-action="{{#match @custom.show_the_secondary true}}off{{else match @custom.show_the_secondary false}}off{{else}}off{{/match}}"'), sectionOf(t))
+})
+
+test('(7.10) the accent: one guarded inline block in default.hbs\'s head naming no mode, screen.css\'s light block reading it through var(), the dark blocks unchanged', () => {
+  const t = promote(ALL().filter((r) => r.key === 'accent_colour'))
+  const shell = textOf(t.files)['default.hbs'] ?? ''
+  assert.ok(shell.includes(`    </style>\n    {{#if @custom.accent_colour}}\n      <style>:root{--setting-accent: {{@custom.accent_colour}};}</style>\n    {{/if}}\n    <link rel="stylesheet" href="{{asset "css/screen.css"}}">`), shell)
+  assert.doesNotMatch(shell, /prefers-color-scheme|data-mode|scheme-(light|dark)/, 'default.hbs names no mode (AD-30)')
+  const screen = textOf(t.files)['assets/css/screen.css'] ?? ''
+  assert.ok(screen.includes(packTokensCss(REFERENCE_PACK, { ghostFonts: true, settingAccent: true }).trimEnd().split('\n').slice(0, 3).join('\n')), 'the token block is the themed one')
+  assert.ok(screen.includes(`--accent: var(--setting-accent, ${REFERENCE_PACK.light.accent});`))
+  // the dark blocks are byte-identical to a theme without the accent
+  const without = textOf(promote([]).files)['assets/css/screen.css'] ?? ''
+  const dark = (css: string) => css.slice(css.indexOf(`@media ${MODE_SELECTORS.media}`))
+  assert.equal(dark(screen), dark(without))
+  assert.ok(!without.includes('--setting-accent') && !(textOf(promote([]).files)['default.hbs'] ?? '').includes('@custom'), 'the control: no accent, no block')
+})
+
+test('(7.10) every value of a promoted control survives the strip, and the root carries one attribute (AD-3)', () => {
+  const t = promote([row('headline_size', 'select', control('headline-size'))])
+  const sheet = t.css.sheets['a4/2'] ?? ''
+  for (const v of ['medium', 'large', 'display']) assert.ok(sheet.includes(`[data-headline-size="${v}"]`), v)
+  // the control: unpromoted at Display, the other two sizes are cut
+  const baked = promote([]).css.sheets['a4/2'] ?? ''
+  assert.ok(baked.includes('[data-headline-size="display"]') && !baked.includes('[data-headline-size="medium"]'))
+  assert.equal((sectionOf(t).match(/data-headline-size=/g) ?? []).length, 1)
+})
+
+test('(7.10) parked by a shuffle: neither declared nor read, a condition naming it dropped from the other setting, and the record names it', () => {
+  // the section shuffled to a design without the switch, the choice or the picture; the text it still prints stays live
+  const shuffled = promoHome({ designId: 'a4/3', controls: {} })
+  const settings = [...ALL().filter((r) => r.key !== 'accent_colour' && r.key !== 'sub'), row('headline', 'text', propOf('headline'), { visibility_condition: { key: 'show_the_button', value: true } })]
+  const t = promote(settings, shuffled)
+  assert.deepEqual(custom(t)['custom'], { headline: { type: 'text', default: 'Big words', group: 'homepage' } })
+  assert.deepEqual(t.custom, { emitted: ['headline'], parked: ['show_the_button', 'headline_size', 'picture'] })
+  for (const body of Object.values(textOf(t.files))) assert.doesNotMatch(body, /@custom\.(show_the_button|headline_size|picture)\b/)
+  // every setting parked: no custom at all
+  assert.ok(!('custom' in custom(promote(ALL().filter((r) => r.key === 'picture'), shuffled))))
+})
+
+test('(7.10) a dangling, hidden, changed or over-cap project is refused with the module\'s sentence before anything renders', () => {
+  const head = [row('headline_size', 'select', control('headline-size'))]
+  assert.throws(() => promote(head, docOf(at('a4/2', 'Other', { instanceId: 'someone-else' }))), { message: SETTING_WORDS.deleted('Headline size') })
+  assert.throws(() => promote(head, promoHome({ hidden: true })), { message: SETTING_WORDS.hidden('Headline size') })
+  assert.throws(() => promote([row('headline_size', 'boolean', control('headline-size'))]), { message: SETTING_WORDS.changed('Headline size') })
+  assert.throws(() => promote([row('headline_size', 'select', { kind: 'control', instanceId: 'promo-0001-zq' })]), { message: SETTING_WORDS.changed('Headline size') }, 'a binding no reader can read')
+  const quoted = { ...PROMO, controlSchema: PROMO.controlSchema.map((c) => (c.name === 'headline-size' ? { ...c, valueLabels: { display: 'Display "XL"' } } : c)) }
+  assert.throws(() => promote(head, undefined, { library: (id) => (id === 'a4/2' ? quoted : PROMO_LIB[id]) }), { message: SETTING_WORDS.changed('Headline size') }, 'a label a library update made unsafe')
+  // DW-351: eighteen rows stored (two promotes in one instant) — refused before the binding is even read
+  const many = Array.from({ length: USER_SETTING_CAP + 1 }, (_, i) => row(`setting_${i + 1}`, 'boolean', control('primary-action')))
+  assert.throws(() => promote(many), { message: SETTING_WORDS.cap })
+  // a stored condition naming a one-character key: the key's own rule, so 7.7's cascade is never reached
+  assert.throws(() => promote([row('s', 'boolean', control('primary-action'))]), /A key needs at least two letters/)
+  assert.throws(() => promote([row('show_the_button', 'boolean', control('primary-action'), { visibility_condition: { key: 'x', value: true } })]), /Only show when must name another setting/)
+  // a condition on a value its target does not offer
+  assert.throws(() => promote([row('headline_size', 'select', control('headline-size')), row('show_the_button', 'boolean', control('primary-action'), { visibility_condition: { key: 'headline_size', value: 'Huge' } })]), /Choose one of Headline size's values/)
+})
+
+test('(7.10) determinism: one input, one byte string, whatever order the settings and the docs arrive in', () => {
+  const a = promote(ALL())
+  const b = promote([...ALL()].reverse())
+  assert.deepEqual(Object.keys(a.files), Object.keys(b.files))
+  for (const path of Object.keys(a.files)) assert.deepEqual(a.files[path], b.files[path], path)
+})
+
+test('(7.10) the readers and the keys are one set: a theme that would declare a key nothing reads is refused rather than shipped', () => {
+  // a hand-picked secondary feed with nothing picked renders nothing at all (Story 5.19), so a setting promoted from it
+  // is live — visible, its design declares the control — and has no reader
+  const home = docOf(at('a17/1', 'Main feed', { isMainFeed: true }), at('a17/1', 'Picked', { instanceId: 'picked-0001-zq', data: { posts: { source: 'picked', picks: [] } } }))
+  const perRow = [row('per_row', 'select', { kind: 'control', instanceId: 'picked-0001-zq', controlKey: 'per-row' })]
+  assert.throws(() => promote(perRow, home), /^Error: the theme's settings: Per row is declared and nothing reads it — a setting ships with the line that reads it/)
+  // the control: one post picked, and the same setting is read
+  const one = docOf(at('a17/1', 'Main feed', { isMainFeed: true }), at('a17/1', 'Picked', { instanceId: 'picked-0001-zq', data: { posts: { source: 'picked', picks: [{ id: '5f0000000000000000000001', title: 'One' }] } } }))
+  assert.ok(Object.values(textOf(promote(perRow, one).files)).some((b) => b.includes('{{#match @custom.per_row "=" "Three"}}three')))
 })

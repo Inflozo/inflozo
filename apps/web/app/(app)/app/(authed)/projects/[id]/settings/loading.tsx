@@ -5,7 +5,8 @@
  * as D6a draws it (Question 4, owner, 2026-10-10) — "This project" over its pill and caption, the bordered clear row. On the
  * right, Custom settings (the heading and meter, two captions), the freeze notice, one setting's row and the dashed Promote
  * form with its "What your site's owner will see" box. Story 7.9 drew the rows it built; nothing D6a leaves to a later
- * story is drawn, so the skeleton promises no screen this page does not have.
+ * story is drawn, so the skeleton promises no screen this page does not have. Story 7.10: Site basics' accent row carries
+ * its link under its caption (Question 3), and a setting's row its start under its name.
  *
  * Its segment has no child routes, so this boundary stands over exactly one route — the half a first fix of that
  * finding got wrong, and what the `(editor)` route group next door exists to keep true (`busy.test.ts`).
@@ -45,6 +46,7 @@ export default function Loading() {
                   <div className={`h-[11px] w-[76px] ${FAINT}`} />
                   <div className="h-[38px] rounded-sm bg-paper-sunk" />
                   <div className={`h-[11px] w-[132px] ${FAINT}`} />
+                  {row === 2 ? <div className={`h-[11px] w-[118px] ${FAINT}`} /> : null}
                 </div>
               ))}
             </div>
@@ -80,12 +82,15 @@ export default function Loading() {
               <div className={`h-[11px] w-[80%] ${FAINT}`} />
             </div>
             <div className="h-[40px] rounded-thumb border border-line bg-paper-raised" />
-            <div className="flex items-center gap-[11px] rounded-thumb border border-line bg-surface p-[10px_12px]">
-              <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-                <div className={`h-[12px] w-[120px] ${BAR}`} />
-                <div className={`h-[10px] w-[180px] ${FAINT}`} />
+            <div className="flex flex-col gap-[7px] rounded-thumb border border-line bg-surface p-[10px_12px]">
+              <div className="flex items-center gap-[11px]">
+                <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
+                  <div className={`h-[12px] w-[120px] ${BAR}`} />
+                  <div className={`h-[10px] w-[180px] ${FAINT}`} />
+                </div>
+                <div className="h-[16px] w-[52px] shrink-0 rounded-pill bg-paper-sunk/70" />
               </div>
-              <div className="h-[16px] w-[52px] shrink-0 rounded-pill bg-paper-sunk/70" />
+              <div className={`h-[10px] w-[86px] ${FAINT}`} />
             </div>
             <div className="flex flex-col gap-[10px] rounded-thumb border border-dashed border-line-strong bg-paper-raised p-3">
               <div className={`h-[12px] w-[118px] ${BAR}`} />

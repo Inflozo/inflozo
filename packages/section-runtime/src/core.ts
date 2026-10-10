@@ -78,6 +78,7 @@ import {
 import { escapeUserText, flagOn, isRich, linkAttributes, linkGate, serializeMarks } from './marks.ts'
 import type { PropValue, ThemeSink } from './marks.ts'
 import { resolveControls, withData } from './controls.ts'
+import { customPath, matchChain, type SettingRow } from './custom-settings.ts'
 import { HOOK_RE } from './dark-override.ts'
 import { formatTheme, indentBy, KEEP_NL } from './format.ts'
 
@@ -226,6 +227,20 @@ export type RenderInput = {
    *  rendered: inside a get `pagination` is the query's, and its links would lead to the wrong page. Omitted: the
    *  render is byte-identical to one before this story, which is the control. */
   feed?: { query: DataBinding; rows?: readonly unknown[] }
+
+  // ── Story 7.10 — FR-Q3's promoted settings ──────────────────────────────────
+  /** THE THEME EMITTER'S ALONE — the canvas ignores it and draws every promoted value at its start (Question 1, ruled
+   *  option 1: the canvas decides). This section's controls and props a Ghost theme setting holds, each by its key: a
+   *  control's root attribute becomes the setting's `{{#match}}` reader (`matchChain`), its `{{else}}` the value the
+   *  canvas stamped — AD-3's promoted form, one attribute, the stylesheet unchanged; a text prop prints `{{@custom.key}}`
+   *  wherever the design prints it, guarded so an empty value takes the prop's own empty behaviour (a catalog label's
+   *  `{{t}}`, else the element left out — DW-349's rule, "delete means delete"); a picture's `src` reads
+   *  `{{img_url @custom.key}}` while it is set, else the section's own picture, or the element is left out when it has
+   *  none. Every key passes the module's shape check before it enters an expression (AD-36). */
+  promoted?: {
+    controls?: Readonly<Record<string, { key: string } & Pick<SettingRow, 'type' | 'options'>>>
+    props?: Readonly<Record<string, string>>
+  }
 
   /** the CANVAS's alone: each surviving `text` or `richtext` prop's element is stamped `data-inflozo-prop="<path>"` (and
    *  `data-inflozo-item="<index>"` inside an authored item), each surviving Ghost word `data-inflozo-ghost="<name>"` (R-122),
@@ -1232,6 +1247,21 @@ function applyProps(
     }
     let v = propGet(content, path, items) as PropValue
     const mode = guardMode(el, false)
+    // Story 7.10 — a promoted text, on the theme alone: Ghost's value wherever the design prints it, guarded
+    const promotedKey = users !== null && items === undefined ? own(input.promoted?.props, path) : undefined
+    if (promotedKey !== undefined) {
+      if (def?.type !== 'text' && def?.type !== 'richtext') throw new Error(`"${path}" is promoted as a text, and this design prints a ${def?.type ?? 'prop it does not declare'} there — only a text or a rich text becomes Ghost's text setting.`)
+      const field = customPath(promotedKey)
+      const linkedKey = catalogProp(path, def)
+      if (linkedKey !== null) {
+        // a catalog label's own empty behaviour is the translated string, so the element always shows
+        el.textContent = tokens.put(`{{#if ${field}}}{{${field}}}{{else}}{{t "${linkedKey}"}}{{/if}}`)
+      } else {
+        el.textContent = tokens.put(`{{${field}}}`)
+        wrapGuard(doc, el, field, tokens)
+      }
+      continue
+    }
     if (def?.type === 'icon' && input.icons !== undefined) {
       // an icon is DRAWN into the element, identically on both emitters; a name not in the set, or a
       // drawing that fails its grammar, is an empty slot
@@ -1337,6 +1367,29 @@ function applyProps(
       }
       // AD-27(b): an image stores an asset ID, resolved only through `assets`; a URL in its place is unset
       if (def?.type === 'image') raw = typeof raw === 'string' && ASSET_ID_RE.test(raw) ? own(input.assets, raw) : undefined
+      // Story 7.10 — a promoted text or picture in an attribute, on the theme alone
+      const promotedKey = users !== null && items === undefined ? own(input.promoted?.props, path) : undefined
+      if (promotedKey !== undefined && users !== null) {
+        const field = customPath(promotedKey)
+        if (def?.type === 'image') {
+          if (attr !== 'src') throw new Error(`data-prop-attr="${attr}:${path}" — a promoted picture is read into src alone.`)
+          if (propEmpty(raw)) {
+            // no picture of the section's own: the element shows only while the site's owner has chosen one
+            el.setAttribute('src', tokens.put(`{{img_url ${field}}}`))
+            if (el.getAttribute('sizes') !== null) el.setAttribute('srcset', tokens.put(srcsetExpr(field)))
+            wrapGuard(doc, el, field, tokens)
+          } else {
+            // ponytail: no srcset over the section's own picture — a bundled picture's rendition set is Story 7.29's
+            el.setAttribute('src', `${tokens.put(`{{#if ${field}}}{{img_url ${field}}}{{else}}`)}${users.put(path, safeUrl(oneLine(String(isRich(raw) ? raw.text : raw))), 'attribute', def)}${tokens.put('{{/if}}')}`)
+          }
+          continue
+        }
+        if (def?.type !== 'text' && def?.type !== 'richtext') throw new Error(`"${path}" is promoted as a text, and this design reads a ${def?.type ?? 'prop it does not declare'} into ${attr}.`)
+        // AD-36 (1): a value Ghost holds never reaches a URL attribute — its scheme could not be checked here
+        if (URL_ATTRS.has(attr)) throw new Error(`data-prop-attr="${attr}:${path}" — a promoted text never reaches a URL attribute (AD-36).`)
+        el.setAttribute(attr, tokens.put(`{{${field}}}`))
+        continue
+      }
       if (def?.type === 'date' && !isIsoDate(raw)) raw = undefined
       if (linked !== null && propEmpty(raw)) {
         el.setAttribute(attr, users !== null ? tokens.put(`{{t "${linked}"}}`) : (input.strings?.[linked] ?? ''))
@@ -1788,6 +1841,35 @@ function renderTree(
   // controls, the lists and the repeats, so a member gate is the outermost wrapper of its element on the theme
   gateMembers(doc, root, input, tokens, users)
   if (root.firstElementChild !== null) stampControls(root.firstElementChild, input)
+  // Story 7.10 — THE THEME'S ALONE: a promoted control's root attribute becomes its setting's reader, the value the canvas
+  // stamped its `{{else}}` (Question 1: the canvas decides the start). One role-less token, as `data-bind-attr`'s are
+  if (users !== null && root.firstElementChild !== null) {
+    const section = root.firstElementChild
+    const controls = input.promoted?.controls ?? {}
+    const schema = input.controlSchema ?? []
+    for (const name of Object.keys(controls)) {
+      if (section.getAttribute(`data-${name}`) === null) throw new Error(`the control "${name}" is promoted, and this design's root carries no data-${name} to read it into.`)
+    }
+    // A control another greys (`disabledBy`) renders its in-force value wherever that control is at `whenValue` — on the
+    // live site too, so where the controller is promoted the dependant reads the same setting (a4/13: a secondary action
+    // never stands alone when the site's owner turns the primary off in Ghost). Each value is written as the controller's
+    // chain, its leaves the dependant's own value or chain; a promoted dependant keeps its reader even where it is forced.
+    const unforced = resolveControls({ controlSchema: schema.map(({ disabledBy: _, ...c }) => c), universals: input.universals }, input.controls)
+    const canvas = new Map([...section.attributes].map((a) => [a.name, a.value]))   // read before any is replaced
+    const stamped = (name: string): string => canvas.get(`data-${name}`) ?? ''
+    const value = (name: string, write: (v: string) => string, seen: ReadonlySet<string>): string => {
+      const p = controls[name]
+      const own = (w: (v: string) => string): string => p === undefined ? w(unforced[name] ?? stamped(name)) : matchChain(p.key, p, stamped(name), w)
+      const by = schema.find((c) => c.name === name)?.disabledBy
+      if (by === undefined || seen.has(name)) return own(write)
+      return value(by.control, (v) => v === by.whenValue ? own(() => write(by.inForce)) : own(write), new Set([...seen, name]))
+    }
+    for (const name of [...new Set([...schema.map((c) => c.name), ...Object.keys(controls)])].sort()) {
+      if (section.getAttribute(`data-${name}`) === null) continue
+      const v = value(name, (x) => x, new Set())
+      if (v.includes('{{')) section.setAttribute(`data-${name}`, tokens.put(v))
+    }
+  }
   // Story 4.9 — S5, AFTER the controls, so a mount's strings are the resolved ones; stampControls keeps a root's
   // `data-i18n-*` through a later re-stamp (DW-228)
   stampStrings(root, input, users)

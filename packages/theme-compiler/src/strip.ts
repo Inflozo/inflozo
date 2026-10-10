@@ -15,6 +15,11 @@ import { attributeSelectors, COMMENT_OR_STRING } from '@inflozo/library'
 
 /** One placed root's control attributes, by control name: `resolveControls(entry, instance.controls)`. */
 export type RootAttributes = Readonly<Record<string, string>>
+/** Story 7.10 — a root attribute that may hold ANY of its values on the live site: a promoted control, which Ghost's
+ *  setting chooses (its `{{#match}}` reader). No control value can be it — `CONTROL_VALUE_RE` admits no `*` — so every
+ *  rule naming that control is kept, as the stylesheet must keep them all (AD-3). */
+export const ANY_VALUE = '*'
+
 
 /** Thrown inside the walk when the sheet is not one the strip can judge; `stripCss` then returns it unchanged. */
 class Unjudged extends Error {}
@@ -92,7 +97,7 @@ export function stripCss(css: string, root: string | null, roots: readonly RootA
     }
     if (wants.length === 0) return true
     const fold = (v: string, f: boolean) => (f ? v.toLowerCase() : v)
-    return roots.some((r) => wants.every((w) => Object.hasOwn(r, w.name) && (w.value === undefined || fold(r[w.name] as string, w.fold) === fold(w.value, w.fold))))
+    return roots.some((r) => wants.every((w) => Object.hasOwn(r, w.name) && (w.value === undefined || r[w.name] === ANY_VALUE || fold(r[w.name] as string, w.fold) === fold(w.value, w.fold))))
   }
 
   /** A block's items, [from, to): each kept, cut or dropped with the whitespace before it. */

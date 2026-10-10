@@ -42,6 +42,16 @@
 // Ghost's head, foot and body class in place, `{{post_class}}` only in the article, every `srcset` the theme's own on a
 // tag with `sizes`, every `data-portal` a page Portal opens (`PORTAL_PAGE`), no member's own data printed — and
 // `checkChromeText` over the tree before user text is substituted, V1: no label typed into a template outside `{{t}}`.
+//
+// Story 7.10 (FR-Q3, FR-Q4, DW-351) makes it carry the project's promoted settings into Ghost's own Design panel: each
+// stored row's binding is judged by the runtime's ONE module (`bindingState`) before anything renders — a section that
+// is gone, hidden or changed refuses with the module's sentence, an over-cap project with `SETTING_WORDS.cap` (the cap
+// trigger's race, DW-351), and a parked one is left out — and each live setting is written to `config.custom` in the same
+// change as the `{{@custom.*}}` that reads it (`GS100` is an error on both pinned gscans): a switch or a choice as its
+// section root's `{{#match}}` reader, a text or a picture where the design prints it, the accent as one inline block in
+// `default.hbs`'s head that the token block reads through `var()` (AD-30). Its start is the canvas's (Question 1, ruled
+// option 1, owner, 2026-10-10), never the stored `default_value`. A last assertion holds the declared keys and the
+// readers to one set, so `GS100` and `GS090-NO-UNKNOWN-CUSTOM-THEME-SETTINGS` cannot fire.
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
@@ -52,13 +62,16 @@ import type { IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/l
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { faceOf, pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
 import {
-  BASE_CSS, checkChromeLiterals, darkHook, darkOverrideCss, designate, feedQuery, gscanInert, isDesigned, packTokensCss, pageTwoStack, renderTheme,
-  resolveControls, sectionKey, srcsetExpr, synthesize, U0, U1, UserText, visibleFeed,
+  BASE_CSS, bindingOf, bindingState, checkChromeLiterals, checkSetting, customPath, darkHook, darkOverrideCss, designate, feedQuery, ghostEntry, ghostName,
+  gscanInert, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls, sectionKey, SETTING_ACCENT, SETTING_WORDS,
+  srcsetExpr, synthesize, U0, U1, USER_SETTING_CAP, UserText, visibleFeed,
 } from '@inflozo/section-runtime'
-import type { DocInstance, Pack, PlacedSection, ProjectDoc, RuntimeDocument, SynthesisLibrary } from '@inflozo/section-runtime'
+import type {
+  DocInstance, Pack, PlacedSection, ProjectDoc, RenderInput, RuntimeDocument, SettingGroup, SettingRow, SettingType, SynthesisLibrary, Visibility,
+} from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { claim, sectionSlug } from './slug.ts'
-import { stripCss } from './strip.ts'
+import { ANY_VALUE, stripCss } from './strip.ts'
 
 export type CompileInput = {
   /** every STORED template doc, by its file — `default.hbs` is the site doc and `partials/content-cta.hbs` the paywall's
@@ -99,6 +112,21 @@ export type CompileInput = {
   /** Ghost's card scripts as `tools/probe/record-cards.py` vendored them, by card name (`audio`, `gallery`, `toggle`,
    *  `video`), and Ghost's licence — `packages/library/orbit-weekly/vendor/`, read by the shell (Story 7.5) */
   ghostCards: { scripts: Readonly<Record<string, string>>; licence: string }
+  /** Story 7.10 — the project's custom settings as stored (`custom_settings`), read by the shell (AD-14: values): each row's
+   *  key, type, group, condition, binding and place. Their `default_value` and `options` are NOT read — the start is the
+   *  canvas's (Question 1) — and a project with none emits no `config.custom`. */
+  settings?: readonly CompileSetting[]
+}
+
+/** One stored setting as the compile reads it (`custom_settings`' own column names). */
+export type CompileSetting = {
+  key: string
+  type: SettingType
+  group_name: SettingGroup
+  visibility_condition: Visibility | null
+  /** `bound_to` as stored — `bindingOf` reads it; anything it cannot is refused as changed */
+  bound_to: unknown
+  position: number
 }
 
 /** NFR-2's per-template CSS budget, gzipped at level 9 — the one figure, read by CI's `cssFailures` (tools/pilot-theme.mjs)
@@ -124,14 +152,22 @@ export type CssRecord = {
  *  mounted module with no file yet, whose mounts ship in their no-JS state — both in registry order. CI's warning reads
  *  it rather than re-deriving it, and a deploy surface can say which sections rest. */
 export type JsRecord = { bundled: readonly string[]; atRest: readonly string[] }
-export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord }
+/** Story 7.10 — the settings record, for Story 7.18's Pre-flight: the keys `config.custom` declares, in its order, and the
+ *  keys a shuffle parked (FR-D19), which this theme neither declares nor reads — and which Ghost forgets at the deploy that
+ *  leaves them out (read in source, both majors: `_syncRepositoryWithTheme`; Question 2, ruled option 2). */
+export type CustomRecord = { emitted: readonly string[]; parked: readonly string[] }
+export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord; custom: CustomRecord }
 
 /** The site doc's file. */
 const SITE_DOC = 'default.hbs'
 
 /** One visible section, rendered — on page 1 of its file, or on page 2 of an archive whose page 2 is designed — with its
  *  dark hook when an override of it is in force (Story 7.4). */
-type Placed = { file: string; page: 1 | 2; instance: DocInstance; entry: SectionRegistryEntry; template: string; partials: Record<string, string>; key: string; hook?: string }
+type Placed = {
+  file: string; page: 1 | 2; instance: DocInstance; entry: SectionRegistryEntry; template: string; partials: Record<string, string>; key: string; hook?: string
+  /** Story 7.10 — what of it is promoted, as its render was handed it */
+  promoted?: RenderInput['promoted']
+}
 
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -220,9 +256,10 @@ function pageSize(v: unknown): number {
 }
 
 /** FR-J2's file: the refusals first, then the keys in Casper's and Source's order (a conditional key is omitted, never
- *  moved), then the marker. The user's words reach it through `JSON.stringify` alone (AD-36). `config.custom` is not
- *  written here: Question 1, ruled option 1 — Stories 7.10 and 7.11 add it, each with the template lines that read it. */
-function packageJson(input: CompileInput, perPage: number): string {
+ *  moved), then the marker. The user's words reach it through `JSON.stringify` alone (AD-36). `config.custom` is Story
+ *  7.10's (7.2's Question 1, ruled option 1): last in `config`, in the settings' order, and absent when no setting is
+ *  live — written only with the template lines that read each key (`customSettings`). */
+function packageJson(input: CompileInput, perPage: number, custom: Readonly<Record<string, unknown>>): string {
   const { name, version, description } = input.theme
   if (!THEME_NAME_RE.test(name)) throw new Error(`package.json: the theme name ${shown(name)} must match ${THEME_NAME_RE.source} (GS010-PJ-NAME-LC, GS010-PJ-NAME-HY).`)
   if (!VERSION_RE.test(version)) throw new Error(`package.json: the theme version ${shown(version)} must be MAJOR.MINOR.PATCH in plain digits (GS010-PJ-VERSION-SEM).`)
@@ -242,6 +279,7 @@ function packageJson(input: CompileInput, perPage: number): string {
       image_sizes: Object.fromEntries(Object.entries(IMAGE_SIZES).map(([key, width]) => [key, { width }])),
       // Question 2, ruled option 1: Ghost 5 reads an empty `exclude` as no card at all (`css/!().css` matches nothing)
       card_assets: cards.length === 0 ? true : { exclude: cards },
+      ...(Object.keys(custom).length === 0 ? {} : { custom }),
     },
     [THEME_MARKER]: true,
   }, null, 2)}\n`
@@ -593,6 +631,83 @@ function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; l
   }
 }
 
+// ── the promoted settings (Story 7.10, FR-Q3, FR-Q4, DW-351) ────────────────────────────────────────────────────────────
+
+/** What the compile does with the project's settings, decided before anything renders. */
+type Custom = {
+  /** `config.custom`, key → Ghost's entry, in the settings' order */
+  entries: Record<string, unknown>
+  /** what each instance's theme render is handed, by instance id */
+  promoted: Map<string, { controls: Record<string, { key: string } & Pick<SettingRow, 'type' | 'options'>>; props: Record<string, string> }>
+  /** the accent's key, when it is promoted and live */
+  accent: string | null
+  record: CustomRecord
+}
+
+/**
+ * THE SETTINGS, JUDGED BEFORE ANYTHING RENDERS. The cap first (DW-351: two promotes in one instant can store an
+ * eighteenth row past the trigger), then each key's own rules, then each binding through the module's `bindingState`
+ * over the stored docs in the compile's order — every page 1 before any page 2, so a page 2's copy of an instance never
+ * decides its start, as in Theme settings (`pageOf`). A setting whose section is gone, hidden or changed refuses with the
+ * module's sentence, naming it as Ghost does; a parked one is left out, and a condition on another setting naming it is
+ * dropped from that setting (gscan: a condition may name only a declared key). Each live setting is the row the canvas
+ * derives — its type, options and start (Question 1), the stored group and condition — checked against the other live
+ * ones by `checkSetting`, so every condition names a declared key of two or more characters and every value is one of
+ * the target's.
+ */
+function customSettings(input: CompileInput, docs: readonly ProjectDoc[]): Custom {
+  const rows = [...(input.settings ?? [])].sort((a, b) => a.position - b.position || byCode(a.key, b.key))
+  if (rows.length > USER_SETTING_CAP) throw new Error(SETTING_WORDS.cap)
+  for (const row of rows) {
+    const refused = keyRefusal(row.key)
+    if (refused !== null) throw new Error(`${JSON.stringify(row.key)}: ${refused}`)
+  }
+  const parked = new Set<string>()
+  const live: { row: CompileSetting; derived: SettingRow; binding: NonNullable<ReturnType<typeof bindingOf>> }[] = []
+  for (const row of rows) {
+    const name = ghostName(row.key)
+    const binding = bindingOf(row.bound_to)
+    if (binding === null) throw new Error(SETTING_WORDS.changed(name))
+    const state = bindingState(binding, docs, input.library, row.type, input.pack)
+    if (state.state === 'parked') {
+      parked.add(row.key)
+      continue
+    }
+    if (state.state !== 'live') throw new Error(SETTING_WORDS[state.state](name))
+    live.push({ row, binding, derived: { key: row.key, label: name, ...state.setting, group_name: row.group_name, visibility_condition: row.visibility_condition } })
+  }
+  for (const l of live) if (l.derived.visibility_condition !== null && parked.has(l.derived.visibility_condition.key)) l.derived.visibility_condition = null
+  const entries: Record<string, unknown> = {}
+  const promoted: Custom['promoted'] = new Map()
+  const at = (instanceId: string) => promoted.get(instanceId) ?? promoted.set(instanceId, { controls: {}, props: {} }).get(instanceId)!
+  let accent: string | null = null
+  for (const l of live) {
+    const refused = checkSetting(l.derived, live.filter((o) => o !== l).map((o) => o.derived))
+    if (refused !== null) throw new Error(`${ghostName(l.row.key)}: ${refused}`)
+    entries[l.row.key] = ghostEntry(l.derived)
+    if (l.binding.kind === 'token') accent = l.row.key
+    else if (l.binding.kind === 'control') at(l.binding.instanceId).controls[l.binding.controlKey] = { key: l.row.key, type: l.derived.type, options: l.derived.options }
+    else at(l.binding.instanceId).props[l.binding.path] = l.row.key
+  }
+  return { entries, promoted, accent, record: { emitted: live.map((l) => l.row.key), parked: rows.filter((r) => parked.has(r.key)).map((r) => r.key) } }
+}
+
+/** What one instance's render is handed: the promoted controls its design declares and the props it prints — a page 2's
+ *  copy on another design reads none it cannot carry. Undefined when nothing of it is promoted. */
+function promotedFor(custom: Custom, instance: DocInstance, entry: SectionRegistryEntry): RenderInput['promoted'] | undefined {
+  const own = custom.promoted.get(instance.instanceId)
+  if (own === undefined) return undefined
+  const printed = markupProps(entry.html)
+  const controls = Object.fromEntries(Object.entries(own.controls).filter(([name]) => entry.controlSchema.some((c) => c.name === name)))
+  const props = Object.fromEntries(Object.entries(own.props).filter(([path]) => printed.includes(path)))
+  return Object.keys(controls).length === 0 && Object.keys(props).length === 0 ? undefined : { controls, props }
+}
+
+/** Every `@custom.<key>` a template reads, comments out — the readers the last assertion holds to the declared keys. */
+const READER = /@custom\.([A-Za-z0-9_]+)/g
+const readers = (files: Readonly<Record<string, string>>): Set<string> =>
+  new Set(uncommented(files).flatMap(([, body]) => [...body.matchAll(MUSTACHE)].flatMap((m) => [...m[0].matchAll(READER)].map((r) => r[1] as string))))
+
 /** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files —
  *  and, since Story 7.2, its `package.json`; since Story 7.3, every standard template, synthesized where untouched; since
  *  Story 7.4, its fonts, licences and stripped stylesheet, with AD-14's record; since Story 7.5, its scripts and README;
@@ -610,10 +725,16 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   }
   noC0('a string', Object.values(input.strings ?? {}))
   noC0('an asset URL', Object.values(input.assets))
-  const tokens = packTokensCss(input.pack, { ghostFonts: true })
+  // Story 7.10 — the settings, judged before anything renders, over every stored doc: each page 1, then each page 2
+  const storedDocs = [
+    ...Object.keys(input.templates).sort(byCode).map((f) => input.templates[f] as ProjectDoc),
+    ...Object.keys(input.pageTwo ?? {}).sort(byCode).map((f) => input.pageTwo?.[f] as ProjectDoc),
+  ]
+  const custom = customSettings(input, storedDocs)
+  const tokens = packTokensCss(input.pack, { ghostFonts: true, settingAccent: custom.accent !== null })
   noC0("the pack's CSS", [tokens])
   const perPage = pageSize(input.postsPerPage)
-  const pkg = packageJson(input, perPage)
+  const pkg = packageJson(input, perPage, custom.entries)
   const fonts = themeFonts(input)
   noC0('a licence', Object.values(fonts.licences))
   // Story 7.5: the scripts the theme ships are read by the shell, so each is held to the same rule before it is copied
@@ -654,6 +775,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
         // look, and none at all on a Light-only project (AD-30)
         const key = sectionKey(templateKeyOfFile(file, page === 2), instance.instanceId)
         const hook = input.darkEnabled ? darkHook(entry, instance, key) : undefined
+        const promoted = promotedFor(custom, instance, entry)
         drew = false
         let out: ReturnType<typeof renderTheme>
         try {
@@ -673,6 +795,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
             users,
             ...(query === undefined ? {} : { feed: { query } }),
             ...(hook === undefined ? {} : { instance: hook }),
+            ...(promoted === undefined ? {} : { promoted }),
           })
         } catch (e) {
           throw new Error(`${where}: ${(e as Error).message}`)
@@ -686,7 +809,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
             if (met !== undefined) throw new Error(`Two sections share a hidden name, so neither one's dark look can ship: ${met} and ${named}. Delete one of them and add it again — it gets a new name.`)
             hooks.set(hook, named)
           }
-          placed.push({ file, page, instance, entry, template: out.template, partials: out.partials, key, ...(hook === undefined ? {} : { hook }) })
+          placed.push({ file, page, instance, entry, template: out.template, partials: out.partials, key, ...(hook === undefined ? {} : { hook }), ...(promoted === undefined ? {} : { promoted }) })
           drewAny ||= drew
         }
       }
@@ -785,6 +908,16 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     // Story 7.4: the preloads and the faces, each address one `{{asset}}` expression; the `<style>` holds `@font-face`
     // rules only and names no mode, so `screen.css` stays the one file that does (AD-30)
     ...fonts.head.map((l) => `    ${l}`),
+    // Story 7.10 (AD-30) — the promoted accent: ONE plain custom property from Ghost's value, its own element, naming no
+    // mode, which the token block reads through `var()` with the pack's light accent as its fallback. Guarded, because
+    // Ghost renders a setting its condition hides as `null`, and an empty custom property would empty every `var()` that
+    // reads it rather than fall back (`--x: ;` is a value) — so a hidden accent keeps the pack's. Ghost stores a colour only
+    // as `#rrggbb` (`custom-theme-settings-service.js:127-133`), so nothing else can reach the block.
+    ...(custom.accent === null ? [] : [
+      `    {{#if ${customPath(custom.accent)}}}`,
+      `      <style>:root{${SETTING_ACCENT}: {{${customPath(custom.accent)}}};}</style>`,
+      '    {{/if}}',
+    ]),
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
     // Story 7.5 (NFR-2 (3)): both scripts `defer`, in the head, so neither holds the page up
     `    ${MAIN_JS_TAG}`,
@@ -807,8 +940,17 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const designs = [...new Map(placed.map((p) => [p.entry.id, p.entry])).values()].sort(designOrder)
   const sheets: Record<string, string> = {}
   for (const e of designs) {
-    // the roots exactly as `stampControls` writes them, so a forced value is read as the theme ships it
-    const roots = placed.filter((p) => p.entry.id === e.id).map((p) => resolveControls(e, p.instance.controls))
+    // the roots exactly as `stampControls` writes them, so a forced value is read as the theme ships it — and, since
+    // Story 7.10, a promoted control as every value it can take, since Ghost chooses it on the live site
+    // — and a control another greys, which follows its promoted controller there (`core.ts`)
+    const follows = (names: Set<string>): Set<string> => {
+      const next = (e.controlSchema ?? []).find((c) => c.disabledBy !== undefined && names.has(c.disabledBy.control) && !names.has(c.name))
+      return next === undefined ? names : follows(names.add(next.name))
+    }
+    const roots = placed.filter((p) => p.entry.id === e.id).map((p) => ({
+      ...resolveControls(e, p.instance.controls),
+      ...Object.fromEntries([...follows(new Set(Object.keys(p.promoted?.controls ?? {})))].map((name) => [name, ANY_VALUE])),
+    }))
     sheets[e.id] = `/* ${cssPart(e.categoryTitle)} · ${cssPart(e.name)} */\n${stripCss(tidyCss(e.css), rootClassOf(e.html), roots)}`
   }
   tree['assets/css/screen.css'] = `${[global, ...designs.map((e) => sheets[e.id] as string)].join('\n\n')}\n`
@@ -865,6 +1007,14 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // still markers, so a typed label and a customer's text are told apart
   const markup = [...checkGhostMarkup(text), ...checkChromeText(doc, tree)]
   if (markup.length > 0) throw new Error(`the theme's markup: ${markup.join(' · ')}`)
+  // Story 7.10 — GS100 and GS090 by construction: every declared key has a reader and every reader a declared key
+  const declared = Object.keys(custom.entries)
+  const read = readers(text)
+  const unread = declared.filter((k) => !read.has(k))
+  const undeclared = [...read].filter((k) => !declared.includes(k)).sort(byCode)
+  if (unread.length > 0 || undeclared.length > 0) {
+    throw new Error(`the theme's settings: ${[...unread.map((k) => `${ghostName(k)} is declared and nothing reads it`), ...undeclared.map((k) => `@custom.${k} is read and never declared`)].join(' · ')} — a setting ships with the line that reads it (GS100, GS090).`)
+  }
   const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
-  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js }
+  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js, custom: custom.record }
 }

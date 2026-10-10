@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { PropDef } from '@inflozo/library'
 import { replaceRange, serializeMarks } from '@inflozo/section-runtime'
 import type { PropValue } from '@inflozo/section-runtime'
@@ -37,6 +37,7 @@ export function RichField({
   links,
   placeholders = [],
   readOnly = false,
+  aside = null,
 }: {
   id: string
   label: string
@@ -49,6 +50,8 @@ export function RichField({
   placeholders?: readonly string[]
   /** R-192 — a session reading along: the words are shown and read aloud, and cannot be edited or formatted */
   readOnly?: boolean
+  /** Story 7.10 — the label row's slot the Kit's other controls have: the promote action or the "In Ghost" tag */
+  aside?: ReactNode
 }) {
   const box = useRef<HTMLDivElement>(null)
   const tools = useRef<InlineToolsHandle>(null)
@@ -130,6 +133,7 @@ export function RichField({
         <span id={`${id}-label`}>{label}</span>
         {/* R-185: BESIDE THE LABEL, and nowhere else. P0-1's chip row under the field is withdrawn. */}
         <PlaceholderMenu id={id} label={label} offered={placeholders} onInsert={insert} onOpen={hold} onClose={release} />
+        {aside}
       </span>
       <div
         ref={box}

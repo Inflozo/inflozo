@@ -9,7 +9,7 @@ import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
   darkHook, renameSection, sectionKey, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
-  withData,
+  USER_SETTING_CAP, withData,
 } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, FeedRole, MarkNode, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
@@ -33,7 +33,8 @@ import { TemplateSwitcher } from '@/components/editor/template-switcher'
 import { ViewAs } from '@/components/editor/view-as'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
-import { Sidebar, type Edit } from '@/components/controls/sidebar'
+import { PromoteAside, Sidebar, type Edit, type Promotion } from '@/components/controls/sidebar'
+import { bindingsOf, locked, lockedContent, namesOn, parkedOn, promoteHref, THEME_WORDS, unlocked } from '@/lib/theme-settings'
 import { MainFeedChip, ProBadge } from '@/components/kit/badge'
 import { AddButton, Button, IconButton } from '@/components/kit/button'
 // STORY 7.3 — `sheet` IS RENAMED HERE because Story 5.22's overlay state below is also `sheet`, and inside `EditorShell` that
@@ -554,6 +555,8 @@ type EditorProps = EditorData & {
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
 type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
+/** Story 7.10 — a section nothing has been promoted from, one value so the panel's `promotion` keeps its identity */
+const NOTHING_BOUND: Promotion['bound'] = { controls: {}, props: {} }
 
 /* ─── THE CANVAS CHROME (Stories 5.2 to 5.21 drew it; Story 5.23b made it a part of its own, R-208, R-210) ──────────────
  *
@@ -812,6 +815,7 @@ function EditorShell({
   pairings,
   pairingFaces,
   siteAccent,
+  settings,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -1441,6 +1445,13 @@ function EditorShell({
   // with) and the source the last paint counted pages in
   // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
   const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList, preset: storedPreset, packs: storedOwnPacks })
+  /* STORY 7.10 — WHAT THE PROJECT HAS HANDED TO GHOST: Theme settings' rows, server truth at load and again after every
+     visit there (the page revalidates the project's subtree), by instance for the panel's tags, the canvas's plain-text
+     lock, the delete and hide ask and the park note, and the accent for the Style Pack card and the pack-switch ask. The
+     paint and the handlers read it through `bound`, as they read everything through `latest`; nothing here writes it. */
+  const bindings = useMemo(() => bindingsOf(settings), [settings])
+  const bound = useRef(bindings)
+  bound.current = bindings
   /* STORY 5.23b — `latest` NEVER GOES BACK (R-210's Always). A section operation's state reaches React a task after the
      canvas (the hand-over), so a render can be drawn before it lands — never one this component's own setters cause, since
      each pays what is owed first, but one an external store causes (the layout crossing 1280) — and a render that wrote
@@ -2468,10 +2479,26 @@ function EditorShell({
     doc.startViewTransition(update).finished.then(landed, landed)
   }
 
+  /* STORY 7.10 — THE PACK-SWITCH ASK (FR-Q3): while the accent is a Ghost setting, every door that SWITCHES the pack — a cell,
+     a new pack, Remix with the pack — asks first, in R-134's sheet over S7a (`S7 Style Packs.dc.html` S7a), opening on
+     Keep {current} (UX-DR14): Keep changes nothing, Switch goes on exactly as the door would have. Undo and redo never
+     ask (`restore`), an edit to the pack in force is no switch, and a session reading along asks nothing — its switch is
+     refused anyway (R-192). */
+  const [packAsk, setPackAsk] = useHanded<{ name: string; go: () => void } | null>(null)
+  const packAsking = useRef<HTMLDialogElement>(null)
+  const switchFirst = (name: string, go: () => void) => {
+    if (bound.current.accent === null || !latest.current.lock.holder) return go()
+    setPackAsk({ name, go })
+    requestAnimationFrame(() => { if (!packAsking.current?.open) openOnCancel(packAsking.current) })
+  }
+
   /** A cell of the list pressed (Enter, or a click): ONE edit, then the moment. The pack in force answers nothing. */
   const choosePack = (id: string) => {
-    if (!commitPack(id)) return
-    restyle(PACK_WORDS.said(packOf(id).name))
+    if (id === latest.current.preset) return
+    switchFirst(packOf(id).name, () => {
+      if (!commitPack(id)) return
+      restyle(PACK_WORDS.said(packOf(id).name))
+    })
   }
 
   /* ─── Story 6.4 — EDITING A PACK (FR-E3): Edit pack, New pack, the rows and the pairing, each ONE edit ─────────────── */
@@ -2498,13 +2525,16 @@ function EditorShell({
   const savePack = (editing: PackEditing, record: PackRecord) => {
     const now = latest.current
     if (editing.kind === 'new') {
-      // the next free number NOW — an undo since the dialog opened may have freed a lower one
-      const id = nextCustomId(now.packs)
-      const txn = crypto.randomUUID()
-      if (!commitPacks({ ...now.packs, [id]: record }, txn)) return
-      if (!commitPack(id, txn)) return
-      restyle(PACK_WORDS.said(record.name))
-      return
+      // Story 7.10: a new pack is a switch to it, so it asks first while the accent is in Ghost
+      return switchFirst(record.name, () => {
+        const now = latest.current
+        // the next free number NOW — an undo since the dialog opened may have freed a lower one
+        const id = nextCustomId(now.packs)
+        const txn = crypto.randomUUID()
+        if (!commitPacks({ ...now.packs, [id]: record }, txn)) return
+        if (!commitPack(id, txn)) return
+        restyle(PACK_WORDS.said(record.name))
+      })
     }
     if (!commitPacks({ ...now.packs, [editing.id]: record })) return
     if (editing.id === now.preset) restyle(PACK_EDIT_WORDS.changed(record.name), { pill: false })
@@ -3151,7 +3181,9 @@ function EditorShell({
         const own: DesignRows | undefined = live === null ? sampleRows(queries) : live.rows[queryKey(i)]
         // Story 6.5: and the hook, while a dark override of it is in force — the markup the theme ships (`darkHook`); Story
         // 7.4: keyed as the theme keys it, and none on a Light-only project
-        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, {
+        // Story 7.10 — a bound rich text paints as P0-1's plain-text lock, a copy: its marks stay in the doc, out of force
+        const content = lockedContent(i.content, Object.keys(bound.current.byInstance[i.instanceId]?.props ?? {}), entry.contentSchema)
+        return renderSection(doc, entry, { ...i, content, controls: storedFor(entry, i, now.mode) }, {
           target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, instance: themeHook(entry, i, i),
           assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs,
           live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
@@ -3169,6 +3201,8 @@ function EditorShell({
       const context = JSON.stringify([
         now.key, now.page, pageFile, feed, url, pageNumber ?? null, now.mode, now.viewAs, now.preview, now.source,
         live === null ? null : (reads.current?.version() ?? null), now.stored ?? null, sampleSubject ?? null, postsPerPage, assets,
+        // Story 7.10: a promotion or a demotion locks or frees a rich text, so it repaints the page
+        bound.current.byInstance,
       ])
       const keep = context === drawnUnder.current ? drawn.current : new Map<string, Drawn>()
       /* EACH PART IS PARSED ALONE, with an element of `#canvas`'s own kind in the canvas document as its context — the
@@ -3414,17 +3448,21 @@ function EditorShell({
     const value = (cut === -1
       ? getPath(placed.content, stamp.path)
       : getPath((getPath(placed.content, stamp.path.slice(0, cut)) as unknown[] | undefined)?.[stamp.item ?? -1], stamp.path.slice(cut + 3))) as PropValue
+    // STORY 7.10 — A TEXT A GHOST SETTING HOLDS is edited as P0-1's plain-text lock: the session is handed the locked copy,
+    // so it allows no mark (no toolbar, ⌘B ⌘I ⌘U ⌘K inert) and draws none, its words still typed into the start; and what it
+    // hands back has the lock taken off before it is stored, so the doc keeps its marks for the day the setting goes
+    const boundKey = cut === -1 ? bound.current.byInstance[placed.instanceId]?.props[stamp.path] : undefined
     const me: Editing = { inline: null as unknown as Inline, target, path: stamp.path, item: stamp.item, n }
     me.inline = startInline(el, {
       def,
       label: def.label,
-      value,
+      value: boundKey === undefined ? value : locked(value),
       onValue: (next) => {
         const now = latest.current
         const at = now.stack[me.n]
         const entry = at ? entries[at.designId] : undefined
         if (!at || !entry) return
-        const state = setContent(entry, at, me.path, next, me.item)
+        const state = setContent(entry, at, me.path, boundKey === undefined ? next : (unlocked(next) as PropValue), me.item)
         if (typeof state === 'string') return
         // held for R-180's ask on page 2: the dialog takes the focus, which ends this field, and it repaints either way
         if (commit(withState(editable(at.doc), at.doc, at.instanceId, state), at.doc, { instanceId: at.instanceId, name: at.layerName }) === null) return
@@ -3440,6 +3478,8 @@ function EditorShell({
       onEnd: () => {
         unwrap()
         setInlineAt(null)
+        // the lock pill goes with the field it stood for
+        if (boundKey !== undefined && noteRef.current?.el === target) showNote(null)
         setSession((shown) => (shown === me.inline ? null : shown))
         if (editing.current !== me) return
         editing.current = null
@@ -3449,6 +3489,8 @@ function EditorShell({
     })
     editing.current = me
     setSession(me.inline)
+    // …and in the toolbar's place, P0-1's pill naming the setting (`P0-1 Inline Text Toolbar.dc.html`, plain-text-locked)
+    if (boundKey !== undefined) showNote({ el: target, kind: 'lock', words: THEME_WORDS.lockPill(boundKey) })
     if (caret === 'end') {
       el.focus({ preventScroll: true })
       const sel = doc.getSelection()
@@ -3785,9 +3827,11 @@ function EditorShell({
         chooseGhost(shim)
         return
       }
-      // R-122: Ghost's own words in the selected section name themselves; the next click takes the pill away
+      // R-122: Ghost's own words in the selected section name themselves; the next click takes the pill away. Story 7.10: a
+      // text a Ghost setting holds, whose editing this very press began, keeps its lock pill
       const ghost = stampAt(e.target, latest.current.selected)
-      showNote(ghost && 'ghost' in ghost.stamp ? { el: ghost.el, kind: 'lock', words: `${ghost.stamp.ghost} — set in Ghost` } : null)
+      const held = noteRef.current?.kind === 'lock' && editing.current !== null && noteRef.current.el === editing.current.target ? noteRef.current : null
+      showNote(ghost && 'ghost' in ghost.stamp ? { el: ghost.el, kind: 'lock', words: `${ghost.stamp.ghost} — set in Ghost` } : held)
       // R-123 (owner, 2026-09-18): a click on NOTHING — the ground below the last section — deselects, as Esc does.
       // It used to keep the selection (Story 5.2's matrix); one press now ends any editing and lets the section go.
       choose(pickAt(e.target))
@@ -4153,6 +4197,15 @@ function EditorShell({
   useEffect(() => {
     if (!resting) setPackList(false)
   }, [resting])
+  /* STORY 7.10 — THE PANEL'S PROMOTE ACTIONS AND TAGS for the section shown, kept by value as `chosen` is (R-208: the panel
+     redraws when what it shows changes): this section's bindings, Theme settings' address for each of its controls and
+     props (Story 7.9's Question 5, option 3, built here), and the cap. The accent's action sits on the Style Pack card. */
+  const chosenId = chosen?.instanceId
+  const promotion = useMemo<Promotion | undefined>(() => (chosenId === undefined ? undefined : {
+    bound: bindings.byInstance[chosenId] ?? NOTHING_BOUND,
+    href: (kind, name) => promoteHref(project.id, kind === 'control' ? { kind, instanceId: chosenId, controlKey: name } : { kind, instanceId: chosenId, path: name }),
+    full: bindings.count >= USER_SETTING_CAP,
+  }), [chosenId, bindings, project.id])
   const pointedNow = hovered ? stack.find((i) => same(i, hovered)) : undefined
   const pointedSig = pointedNow === undefined ? '' : JSON.stringify(pointedNow)
   const pointed = useMemo(() => pointedNow, [pointedSig])
@@ -4519,8 +4572,17 @@ function EditorShell({
     if (!placed || to === placed.designId) return
     const ring = ringOf(placed.designId)
     if (!edit(pick, (doc) => switchDesign(doc, pick.instanceId, to, ring))) return
-    setSaid(announce(ring.findIndex((e) => e.id === to), ring.length, entries[to]?.name ?? to))
+    const said = announce(ring.findIndex((e) => e.id === to), ring.length, entries[to]?.name ?? to)
     markSwapped(pick)
+    // STORY 7.10 — a design that does not carry a promoted control or print a promoted prop PARKS its setting (FR-D19): not
+    // deleted — it comes back on the way back — but Ghost will not see it while this design is in use, and forgets its
+    // value at a deploy that leaves it out (Question 2, ruled option 2). Every door that changes a design lands here, so the
+    // canvas says it on the section (P0-1's pill, as a refusal is shown) and the live region says it after the design
+    const [from, into] = [entries[placed.designId], entries[to]]
+    const parked = from === undefined || into === undefined ? [] : parkedOn(bound.current, pick.instanceId, from, into)
+    setSaid(parked.length === 0 ? said : `${said}. ${parked.join(' ')}`)
+    const root = parked.length === 0 ? null : rootOf(pick)
+    if (root) showNote({ el: root, kind: 'limit', words: parked.join(' ') })
   }
 
   /** `[` `]`, the panel's ◀ ▶ and the pill's: one step around the ring, wrapping (UX-DR5 — a dead key at the end
@@ -4590,6 +4652,11 @@ function EditorShell({
     // Story 6.4 — a different pack from the WHOLE roster, a pack the project made included
     const to = what === 'designs' ? null : otherPreset(rosterOf(now.packs).map((p) => p.id), now.preset, Math.random)
     if (what !== 'designs' && to === null) return
+    // Story 7.10: a re-roll that switches the pack asks first while the accent is in Ghost — Keep re-rolls nothing at all
+    if (to === null) return remixed(docKey, picks, to)
+    switchFirst(packOf(to).name, () => remixed(docKey, picks, to))
+  }
+  const remixed = (docKey: string, picks: ReturnType<typeof remixPicks>, to: string | null) => {
     const txn = crypto.randomUUID()
     if (picks.length > 0) {
       const fold = (doc: ProjectDoc) => remixFold(doc, picks, (next, p) => switchDesign(next, p.instanceId, p.to, ringOf(p.from)))
@@ -4621,13 +4688,14 @@ function EditorShell({
    *  nothing: it is the restoring half. The dialog lives here and not in Layers, because the canvas pill's Delete
    *  must open the same one. */
   const [ask, setAsk] = useHanded<
-    | { kind: 'hide' | 'remove'; pick: Pick; name: string }
+    | { kind: 'hide' | 'remove'; pick: Pick; name: string; promoted: readonly string[] }
     | { kind: 'change'; pick: Pick; name: string; held: { written: Readonly<Record<string, ProjectDoc>>; touched: string; base: ProjectDoc | undefined; also?: string; said?: string } }
     | null
   >(null)
   const confirm = useRef<HTMLDialogElement>(null)
-  const askFirst = (kind: 'hide' | 'remove', row: Pick & { layerName: string }) => {
-    setAsk({ kind, pick: { doc: row.doc, instanceId: row.instanceId }, name: row.layerName })
+  /** Story 7.10: `promoted` — the settings this section carries, whose sentence joins this ask (ONE dialog, never two) */
+  const askFirst = (kind: 'hide' | 'remove', row: Pick & { layerName: string }, promoted: readonly string[] = []) => {
+    setAsk({ kind, pick: { doc: row.doc, instanceId: row.instanceId }, name: row.layerName, promoted })
     // opened on the frame after the one that filled its words in
     requestAnimationFrame(() => openOnCancel(confirm.current))
   }
@@ -4674,30 +4742,49 @@ function EditorShell({
   }
   /** STORY 7.3 — D5f (FR-I1): the delete that would leave a designed custom template with no section asks first, opening
    *  on Keep it (UX-DR14). Only this door asks — undo, redo, a reload and Hide never do. */
-  const [emptyAsk, setEmptyAsk] = useHanded<{ row: Pick & { layerName: string }; label: string; file: string } | null>(null)
+  const [emptyAsk, setEmptyAsk] = useHanded<{ row: Pick & { layerName: string }; label: string; file: string; promoted: readonly string[] } | null>(null)
   const emptying = useRef<HTMLDialogElement>(null)
+  /** STORY 7.10 — FR-Q3's delete and hide warnings: a section a Ghost setting is promoted from asks first, naming the settings,
+   *  in D5f's shape (`D5 Canvas Markers and Template Switcher.dc.html` D5f) — Keep it, or Delete section / Hide section —
+   *  opening on Keep it (UX-DR14). Where FR-D5's site-wide ask or D5f fires already, its sentence joins THAT dialog, so a
+   *  gesture asks once. Undo and redo never ask — ⌘Z brings the section back and its settings with it — and a session reading
+   *  along asks nothing (its edit is refused anyway, R-192). */
+  const [bindAsk, setBindAsk] = useHanded<{ kind: 'remove' | 'hide'; row: Pick & { layerName: string }; promoted: readonly string[] } | null>(null)
+  const binding = useRef<HTMLDialogElement>(null)
+  const promotedOn = (row: Pick): readonly string[] => (latest.current.lock.holder ? namesOn(bound.current, row.instanceId) : [])
+  const askPromoted = (kind: 'remove' | 'hide', row: Pick & { layerName: string }, promoted: readonly string[]) => {
+    setBindAsk({ kind, row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, promoted })
+    requestAnimationFrame(() => { if (!binding.current?.open) openOnCancel(binding.current) })
+  }
   const onRemove = (row: Pick & { layerName: string }) => {
     if (onSurfaceDoc(row.doc)) return
-    if (row.doc === SITE.key) return askFirst('remove', row)
+    const promoted = promotedOn(row)
+    if (row.doc === SITE.key) return askFirst('remove', row, promoted)
     if (emptiesCustomTemplate(row.doc, docOf(row.doc))) {
       const canvas = canvasOfTemplateKey(row.doc)
       const file = fileOfKey(row.doc)
-      setEmptyAsk({ row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, label: canvas === null ? file : CANVASES[canvas].label, file })
+      setEmptyAsk({ row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, label: canvas === null ? file : CANVASES[canvas].label, file, promoted })
       // opened on the frame after the one that filled its words in, and asked again inside it, as FR-D5's confirm is
       return void requestAnimationFrame(() => { if (!emptying.current?.open) openOnCancel(emptying.current) })
     }
+    if (promoted.length > 0) return askPromoted('remove', row, promoted)
     landRemove(row)
+  }
+  /** One hide or show landing: Hide says nothing of its own; where it handed the main-feed flag on, that is said. */
+  const landHidden = (row: Pick, hide: boolean) => {
+    const before = mainFeedOf(docOf(row.doc))
+    if (!edit(row, (doc) => setHidden(doc, row.instanceId, hide))) return
+    const said = withTransfer(null, handedTo(row.doc, before))
+    if (said !== null) setSaid(said)
   }
   const onToggleHidden = (row: LayerRow) => {
     // the section as the NEWEST doc holds it: the row pressed can be a frame behind the canvas (R-210), and a second Space
     // inside that frame must show what the first hid rather than hide it again
     const hidden = docOf(row.doc)?.instances.find((i) => i.instanceId === row.instanceId)?.hidden ?? row.hidden
-    if (row.doc === SITE.key && !hidden) return askFirst('hide', row)
-    const before = mainFeedOf(docOf(row.doc))
-    if (!edit(row, (doc) => setHidden(doc, row.instanceId, !hidden))) return
-    // Hide says nothing of its own; where it handed the flag on, that is said
-    const said = withTransfer(null, handedTo(row.doc, before))
-    if (said !== null) setSaid(said)
+    const promoted = hidden ? [] : promotedOn(row)
+    if (row.doc === SITE.key && !hidden) return askFirst('hide', row, promoted)
+    if (promoted.length > 0) return askPromoted('hide', row, promoted)
+    landHidden(row, !hidden)
   }
   /** D5c's **Make this the main feed**: ONE edit through `apply`, announced politely. The old main feed becomes a
    *  secondary feed with its own stored Data values — Latest, the page size and Newest where it has none. */
@@ -5847,6 +5934,8 @@ function EditorShell({
               // Story 7.9 (DW-254) — D5c's "Theme settings ↗" under the main feed's greyed Count; the keyboard harness, which
               // has no project of its own (`canvasBase`), draws none
               settingsHref={canvasBase === undefined ? settingsPath(project.id) : undefined}
+              // Story 7.10 — the promote action beside each control and prop Ghost can hold, or its "In Ghost" tag
+              promotion={promotion}
             />
             </>
           ) : packList ? (
@@ -5870,7 +5959,23 @@ function EditorShell({
           ) : (
             <>
               {/* Story 6.2 — S4a's rest panel: "Page", the project's Style Pack card, then the sidebar's empty state */}
-              <StylePackCard pack={choice} siteAccent={siteAccent} changeRef={packChange} onChange={() => showPacks(true)} />
+              <StylePackCard
+                pack={choice}
+                siteAccent={siteAccent}
+                changeRef={packChange}
+                onChange={() => showPacks(true)}
+                // Story 7.10 — the accent's promote action, or its "In Ghost" tag once promoted
+                accent={
+                  <PromoteAside
+                    id="style-pack-accent"
+                    label={THEME_WORDS.accent}
+                    settingKey={bindings.accent ?? undefined}
+                    href={promoteHref(project.id, { kind: 'token', token: 'accent' })}
+                    full={bindings.count >= USER_SETTING_CAP}
+                    readOnly={!lock.holder}
+                  />
+                }
+              />
               <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
             </>
           )}
@@ -5928,6 +6033,8 @@ function EditorShell({
                 This section is site-wide: it is one shared thing that appears on every template of your site, so{' '}
                 {ask?.kind === 'remove' ? 'deleting' : 'hiding'} it here changes all {templates}{' '}
                 templates.
+                {/* Story 7.10 — the settings it carries, in the same dialog */}
+                {ask !== null && 'promoted' in ask && ask.promoted.length > 0 ? ` ${THEME_WORDS.bindingAsk(ask.promoted, ask.kind === 'remove' ? 'deleted' : 'hidden')}` : null}
               </>
             )}
           </p>
@@ -5993,6 +6100,8 @@ function EditorShell({
               {/* the middle part is the file, in D5f's mono chip */}
               {EMPTY_TEMPLATE_ASK.body(emptyAsk?.file ?? '').map((part, n) =>
                 n === 1 ? <span key={n} className="rounded-[6px] border border-line bg-paper px-[6px] py-px font-mono text-[12px]">{part}</span> : part)}
+              {/* Story 7.10 — the settings it carries, in the same dialog */}
+              {emptyAsk !== null && emptyAsk.promoted.length > 0 ? ` ${THEME_WORDS.bindingAsk(emptyAsk.promoted, 'deleted')}` : null}
             </p>
           </div>
         </div>
@@ -6010,6 +6119,79 @@ function EditorShell({
             }}
           >
             {EMPTY_TEMPLATE_ASK.confirm}
+          </Button>
+        </div>
+      </dialog>
+
+      {/* STORY 7.10 — FR-Q3'S DELETE AND HIDE WARNING, in D5f's shape: the marigold chip and its triangle, the title, the
+          sentence naming every setting this section carries, then Keep it and a gold Delete section / Hide section. Keep
+          it, Esc and the scrim change nothing; the confirm is the ordinary delete or hide, so ⌘Z brings it all back. */}
+      <dialog
+        ref={binding}
+        onClick={closeOnBackdrop}
+        aria-labelledby="editor-binding-title"
+        aria-describedby="editor-binding-body"
+        className={`${dialogSheet} gap-4`}
+      >
+        <div className="flex items-start gap-[13px]">
+          <span aria-hidden className="inline-flex size-[38px] shrink-0 items-center justify-center rounded-[11px] bg-marigold-tint text-marigold-solid">
+            <AlertTriangle size={18} strokeWidth={1.8} />
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
+            <h2 id="editor-binding-title" className={`${title} leading-[1.2]`}>
+              {THEME_WORDS.bindingAskTitle(bindAsk?.kind ?? 'remove', bindAsk?.row.layerName ?? '')}
+            </h2>
+            <p id="editor-binding-body" className="text-ui-dense leading-[1.6] text-ink-mid">
+              {bindAsk === null ? '' : THEME_WORDS.bindingAsk(bindAsk.promoted, bindAsk.kind === 'remove' ? 'deleted' : 'hidden')}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end gap-[10px]">
+          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => binding.current?.close()}>
+            {THEME_WORDS.keepIt}
+          </Button>
+          <Button
+            type="button"
+            variant="marigold"
+            size={36}
+            onClick={() => {
+              binding.current?.close()
+              if (bindAsk === null) return
+              if (bindAsk.kind === 'remove') landRemove(bindAsk.row)
+              else landHidden(bindAsk.row, true)
+            }}
+          >
+            {bindAsk?.kind === 'hide' ? THEME_WORDS.hideSection : THEME_WORDS.deleteSection}
+          </Button>
+        </div>
+      </dialog>
+
+      {/* STORY 7.10 — THE PACK-SWITCH ASK, R-134's sheet: the pack named, what the live site keeps, Keep {current} and Switch */}
+      <dialog
+        ref={packAsking}
+        onClick={closeOnBackdrop}
+        aria-labelledby="editor-pack-title"
+        aria-describedby="editor-pack-body"
+        className={`${dialogSheet} gap-[18px]`}
+      >
+        <div className="flex flex-col gap-[6px]">
+          <h2 id="editor-pack-title" className={title}>{THEME_WORDS.packTitle(packAsk?.name ?? '')}</h2>
+          <p id="editor-pack-body" className="text-ui-dense leading-[1.55] text-ink-soft">{THEME_WORDS.packBody}</p>
+        </div>
+        <div className="flex justify-end gap-[10px]">
+          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => packAsking.current?.close()}>
+            {THEME_WORDS.packKeep(choice.name)}
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            size={36}
+            onClick={() => {
+              packAsking.current?.close()
+              packAsk?.go()
+            }}
+          >
+            {THEME_WORDS.packSwitch}
           </Button>
         </div>
       </dialog>

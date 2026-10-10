@@ -228,6 +228,14 @@
 // 36 measures the pill against the section hovered when the scroll settles (DW-222); the screencast decoders skip and count
 // a frame that will not decode (DW-236); step 6's signed-out loop asks both frame routes (DW-117); the four CSP reads no
 // longer leave Projects out (DW-174); and the dice's pips are `die-pips.cjs`'s one measurement (DW-216).
+// Story 7.10 adds step 105 and RE-EXPECTS THREE OF STEP 104's READS, in contexts of its own. Step 104: the Promote form's
+// menu closes with the accent under a "Style Pack" heading; the two stops that promote by place pick the first two
+// CONTROLS offered (a rich text would ask D6c first); and Site basics carries two links — the accent's row says what
+// Ghost's own colour is for and gives its way into Ghost (Question 3). Step 105 walks the spec's I/O matrix on production:
+// the panel's ↗ opening Theme settings on exactly that control, a choice, a rich text through D6c (Cancel, a hand-made
+// post refused, Promote it) and the accent through its caution, each stored and read back field by field; the tags, the
+// lock pill with the link not drawn and ⌘B inert; the pack-switch ask; the delete and hide asks, the rows' states once
+// saved, and ⌘Z; the rows' starts; the demote bringing the link back; the read-only window; and the project handed back.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
 // Site basics and the custom-settings meter (present), the seeded project's Site basics is its one no-site caption, and
 // Credits and D6a's rail rows stay absent (R-118). Step 104 walks the spec's I/O matrix row by row: + held mid-post saying
@@ -7893,7 +7901,8 @@ async function main() {
     await ts.keyboard.press('Escape')
     await ts.waitForTimeout(150)
     const headings104 = menu104.filter((m) => m.heading).map((m) => m.heading.toLowerCase())
-    const pages104 = [...new Set(placed104.map((c) => c.page.toLowerCase()))]
+    // Story 7.10: the page hands the form the pack in force, so the accent's row closes the menu under its own heading
+    const pages104 = [...new Set([...placed104.map((c) => c.page), TS104.STYLE_PACK].map((pg) => pg.toLowerCase()))]
     const rowOk104 = (c) => { const m = menu104.find((x) => x.row === c.label); return !!m && m.text.includes(c.control) && m.text.includes(c.section) && m.text.includes(TS104.choicesOf(c.setting).join(' · ')) && m.text.includes(T104.now(TS104.startOf(c.setting))) }
     await choose104(ts, 'promote-which', choice104.label)
     const chosen104 = await form104(ts)
@@ -7929,7 +7938,8 @@ async function main() {
       !offeredAfter104.includes(toggle104.label) && !offeredAfter104.includes(choice104.label) && offeredAfter104.length === offeredBefore104.length - 2, JSON.stringify({ before: offeredBefore104.length, after: offeredAfter104.length }))
 
     // ── 104e — the matrix's "label → key": a second "Show tag" takes _2; "W" and "Color scheme" are refused and insert nothing ──
-    const [x104, y104] = offeredAfter104
+    // Story 7.10: the form offers texts and pictures too — these two stops promote CONTROLS, which ask no confirm
+    const [x104, y104] = offeredAfter104.filter((label) => placed104.some((c) => c.label === label && c.kind === 'control'))
     const tag1 = await promote104(ts, { control: x104, label: 'Show tag' })
     await choose104(ts, 'promote-which', y104)
     await ts.locator('#promote-label').fill('Show tag')
@@ -8198,8 +8208,10 @@ async function main() {
     // logo "from Ghost" with the way into Ghost Admin, the accent "from Ghost" on its white field — one link, two chips
     check('step 104l — Site basics, a site linked, as D6a draws it: Site title with "Change this in Ghost — it appears in email too", Logo and Accent colour "from Ghost", the logo\'s "Change this in Ghost ↗" to its Ghost Admin settings, and the values Ghost holds',
       site104.status === 201 && [T104.siteTitle, T104.logo, T104.accent, T104.titleCaption, SITE104.title, SITE104.accent, 'logo.png'].every((w) => linked104.text.includes(w)) &&
-      linked104.text.split(T104.fromGhost).length - 1 === 2 && linked104.links.length === 1 && linked104.links.every((l) => l.text === T104.change && l.href === admin104 && l.target === '_blank') &&
-      !linked104.text.includes(T104.notSet), JSON.stringify(linked104))
+      // Story 7.10's Question 3 (owner, 2026-10-10): the accent's row says what Ghost's own colour is for and carries the same
+      // way into Ghost — two links now, the logo's and the accent's
+      linked104.text.split(T104.fromGhost).length - 1 === 2 && linked104.links.length === 2 && linked104.links.every((l) => l.text === T104.change && l.href === admin104 && l.target === '_blank') &&
+      linked104.text.includes(T104.accentCaption) && !linked104.text.includes(T104.notSet), JSON.stringify(linked104))
     await call('/rest/v1', `/sites?id=eq.${siteId104}`, { method: 'PATCH', body: JSON.stringify({ site_settings: {} }) })
     await open104(ts)
     const unset104 = await basics104()
@@ -8216,6 +8228,368 @@ async function main() {
     check('step 104 — the project is handed back clean: no custom setting, Posts per page 12, no linked site, the throwaway site deleted — and every signed-in context of the block recorded zero CSP violations',
       end104.rows === 0 && end104.project?.posts_per_page === 12 && end104.project?.linked_site_id === null && end104.site === 0 && (siteGone104.status === 200 || siteGone104.status === 204) && csp104.length === 0,
       JSON.stringify({ end104, csp104: csp104.slice(0, 3) }))
+
+    // ── step 105 — STORY 7.10: PROMOTING FROM THE EDITOR — THE ↗, D6c, THE ACCENT, THE TAGS, THE LOCK AND THE FOUR WARNINGS ──
+    /* The spec's I/O matrix on production, in contexts of its own. Latest Post's Sub is planted with one link through the
+       service key (the line D6c shows with and without it); then the panel's ↗ beside Headline size opens Theme settings on
+       exactly that control; a plain promote, D6c's confirm for the rich Sub (Cancel, a hand-made post with no
+       acknowledgement, then Promote it), and the accent's caution are each stored and read back field by field; the tags
+       and P0-1's lock pill read in the editor, the link not drawn and ⌘B inert; the pack-switch ask (Keep, Switch, ⌘Z
+       silent); the delete and hide asks, the rows' states once saved, and ⌘Z; the rows' starts; deleting Sub's setting
+       bringing its link back (the demote); the read-only window greying every ↗. Every sentence is the module's that prints
+       it (`custom-settings.ts`, `lib/theme-settings.ts`); every database effect is read back through the service key; the
+       project is handed back as the seed made it — no custom setting, Home's doc as stored before. */
+    const W105 = CS104.SETTING_WORDS
+    const T105 = TS104.THEME_WORDS
+    const home105 = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+    const setHome105 = (doc) => call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc }) })
+    const seededHome105 = await home105()
+    const hero105 = seededHome105?.instances?.find((i) => i.designId === 'a4/13')
+    if (!hero105) throw new Error('step 105: the seeded Home holds no Latest Post (a4/13) — nothing to promote')
+    const SUB105 = { text: 'One essay, every Thursday.', marks: [{ start: 17, end: 25, mark: 'a', href: 'https://example.com/' }] }
+    const planted105 = await setHome105({ ...seededHome105, instances: seededHome105.instances.map((i) => (i.instanceId === hero105.instanceId ? { ...i, content: { ...i.content, sub: SUB105 } } : i)) })
+    await wipe104()
+    const pack105 = presets102.find((pr) => pr.id === 'paper')
+    const otherPack105 = presets102.find((pr) => pr.id === 'tangerine')
+    check('step 105 — the fixture: no custom setting, Paper in force, and Latest Post\'s Sub carrying one link, planted through the service key',
+      (planted105.status === 200 || planted105.status === 204) && (await rows104()).length === 0 && (await row103())?.style_pack?.preset === 'paper', JSON.stringify({ planted: planted105.status }))
+    const ROW105 = `home:${hero105.instanceId}`
+    const addr105 = (binding) => `${ED104.settingsPath(P)}?promote=${encodeURIComponent(binding)}`
+
+    const pContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const csp105 = []
+    await recorder(pContext, csp105)
+    const pe = steady(await pContext.newPage())
+    pe.on('pageerror', (e) => note('pageerror 105', String(e)))
+    await pe.goto(await magic(emailA), { waitUntil: 'load' })
+    const editor105 = async () => {
+      await pe.goto(editorUrl(), { waitUntil: 'load' })
+      await pe.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+      await pe.waitForTimeout(600)
+    }
+    const select105 = async () => {
+      await pe.locator(`#editor-layers [data-layer-row="${ROW105}"]`).focus()
+      await pe.keyboard.press('Enter')
+      await pe.waitForTimeout(400)
+    }
+    const group105 = async (label) => {
+      const head = pe.locator('#editor-controls button[aria-expanded]').filter({ hasText: new RegExp(`^${label}$`) })
+      if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
+      await pe.waitForTimeout(250)
+    }
+    const action105 = (name) => pe.locator(`#editor-controls a[data-promote][aria-label="${T105.promoteAction(name)}"]`)
+    const tag105 = (key) => pe.locator(`[data-in-ghost="${key}"]`)
+    const notes105 = () => pe.evaluate(() => {
+      const doc = document.querySelector('section[aria-label="Canvas"] iframe')?.contentDocument
+      return doc ? [...doc.querySelectorAll('[data-inflozo-chrome]')].flatMap((h) => [...(h.shadowRoot?.querySelectorAll('[data-chrome="note"]') ?? [])]).map((n) => n.textContent.trim()) : []
+    })
+    const sub105 = () => pe.evaluate(() => {
+      const doc = document.querySelector('section[aria-label="Canvas"] iframe')?.contentDocument
+      const el = doc?.querySelector('.a4-13__sub')
+      return el ? { text: el.textContent, links: el.querySelectorAll('a').length, strong: el.querySelectorAll('strong').length } : null
+    })
+    /** a press on Latest Post's Sub on the canvas, mapped through the iframe — where a person would start editing it */
+    const pressSub105 = async () => {
+      const box = await pe.evaluate(() => {
+        const f = document.querySelector('section[aria-label="Canvas"] iframe')
+        const el = f?.contentDocument?.querySelector('.a4-13__sub')
+        if (!f || !el) return null
+        const fr = f.getBoundingClientRect()
+        const s = fr.width / f.offsetWidth
+        const r = el.getBoundingClientRect()
+        return { x: fr.left + (r.left + Math.min(40, r.width / 2)) * s, y: fr.top + (r.top + r.height / 2) * s }
+      })
+      if (box) await pe.mouse.click(box.x, box.y)
+      await pe.waitForTimeout(400)
+      return box !== null
+    }
+    const save105 = async () => {
+      await pe.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+      await pe.keyboard.press('ControlOrMeta+s')
+      return pe.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED102, { timeout: 20000 }).then(() => true, () => false)
+    }
+    const theForm105 = () => pe.evaluate(() => ({
+      which: document.getElementById('promote-which')?.textContent?.trim() ?? null,
+      label: document.getElementById('promote-label')?.value ?? null,
+      key: document.getElementById('promote-key')?.textContent ?? null,
+      group: document.getElementById('promote-group')?.textContent?.trim() ?? null,
+    }))
+    const ask105 = () => pe.evaluate(() => {
+      const d = document.querySelector('dialog[aria-labelledby="promote-ask-title"]')
+      return d && { open: d.open, title: document.getElementById('promote-ask-title')?.textContent ?? null, body: document.getElementById('promote-ask-body')?.textContent ?? null,
+        before: d.querySelector('[data-ships="before"]')?.textContent ?? null, chip: d.querySelector('[data-ships="before"] .font-mono')?.textContent ?? null,
+        after: d.querySelector('[data-ships="after"]')?.textContent ?? null, text: d.innerText.replace(/\s+/g, ' '), focus: document.activeElement?.textContent?.trim() ?? null }
+    })
+    const rowText105 = (key) => pe.locator(`li[data-setting="${key}"]`).innerText().catch(() => '')
+
+    // ── 105a — the ↗ beside Headline size: its address exact, and pressed, Theme settings opens on that very control ──
+    await editor105()
+    await select105()
+    await group105('Style')
+    const href105a = await action105('Headline size').getAttribute('href').catch(() => null)
+    const title105a = await action105('Headline size').getAttribute('title').catch(() => null)
+    check('step 105a — beside Headline size, the ↗ named and titled "Let your site\'s owner change Headline size in Ghost", its address Theme settings opened on exactly this control',
+      (href105a ?? '').endsWith(addr105(`control:${hero105.instanceId}:headline-size`)), JSON.stringify({ href105a, title105a }))
+    check('step 105a — its title says the same words', title105a === T105.promoteAction('Headline size'), title105a)
+    await action105('Headline size').click()
+    const opened105a = await pe.waitForURL((u) => u.pathname.endsWith(ED104.settingsPath(P)) && u.searchParams.get('promote') === `control:${hero105.instanceId}:headline-size`, { timeout: 15000 }).then(() => true, () => false)
+    await pe.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    await hydrated104(pe)
+    await pe.waitForTimeout(300)
+    const form105a = await theForm105()
+    check('step 105a — Theme settings opens with Which control on Headline size (Latest Post), Label "Headline size", Key headline_size, Group Homepage — the form filled in for that exact control',
+      opened105a && (form105a.which ?? '').includes('Headline size') && form105a.label === 'Headline size' && form105a.key === 'headline_size' && form105a.group === CS104.GROUP_WORDS.homepage, JSON.stringify(form105a))
+
+    // ── 105a — and an id the form does not offer opens it on its first row, exactly as with none; compared, never parsed ──
+    const settingsAt105 = async (path) => {
+      await pe.goto(new URL(path, pe.url()).href, { waitUntil: 'load' })
+      await pe.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+      await hydrated104(pe)
+      await pe.waitForTimeout(300)
+      return theForm105()
+    }
+    const plain105 = await settingsAt105(ED104.settingsPath(P))
+    const stray105 = await settingsAt105(addr105('control:00000000:<b id="stray105">x</b>'))
+    const parsed105 = await pe.locator('#stray105').count()
+    check('step 105a — an id the form does not offer (another instance, markup in it) opens the form on its first row, as with none, and none of it is parsed into the page',
+      plain105.which !== null && JSON.stringify(stray105) === JSON.stringify(plain105) && parsed105 === 0, JSON.stringify({ plain105, stray105, parsed105 }))
+    await settingsAt105(addr105(`control:${hero105.instanceId}:headline-size`))
+
+    // ── 105b — a choice promoted: stored field by field, and the row prints the start the canvas holds ──
+    const answered105b = posted104(pe)
+    await pe.locator('form:has(#promote-which) button[type="submit"]').first().click()
+    await answered105b
+    const head105 = await until104(pe, () => rowOf104('headline_size'), (r) => r !== null)
+    const startLabel105 = head105?.default_value
+    check('step 105b — Headline size stored: a select, its three labels, its start the label in force, Homepage, bound to Latest Post\'s control',
+      head105?.type === 'select' && Array.isArray(head105?.options) && head105.options.length === 3 && head105.options.some((o) => o.label === startLabel105) && head105?.group_name === 'homepage' &&
+      same104(head105?.bound_to, { kind: 'control', instanceId: hero105.instanceId, controlKey: 'headline-size' }), JSON.stringify(fields104(head105)))
+    await pe.waitForTimeout(600)
+    check('step 105b — its row reads "starts …" — the start the canvas holds', (await rowText105('headline_size')).includes(T105.starts(startLabel105 ?? '?')), await rowText105('headline_size'))
+
+    // ── 105c — the editor shows the tag where the ↗ was ──
+    await editor105()
+    await select105()
+    await group105('Style')
+    const tagged105 = { text: await tag105('headline_size').textContent().catch(() => null), title: await tag105('headline_size').getAttribute('title').catch(() => null), action: await action105('Headline size').count() }
+    check('step 105c — Headline size carries "In Ghost", titled "Your site\'s owner changes “Headline size” in Ghost. Your canvas sets where it starts, on your first deploy.", and no ↗',
+      tagged105.text === T105.inGhost && tagged105.title === T105.inGhostTitle('headline_size') && tagged105.action === 0, JSON.stringify(tagged105))
+
+    // ── 105d — the rich Sub: D6c first, Cancel stores nothing, a post without the acknowledgement is refused, Promote it stores ──
+    await group105('Content')
+    await action105('Sub').click()
+    await pe.waitForURL((u) => u.searchParams.get('promote') === `prop:${hero105.instanceId}:sub`, { timeout: 15000 }).catch(() => {})
+    await pe.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    await hydrated104(pe)
+    await pe.waitForTimeout(300)
+    await pe.locator('form:has(#promote-which) button[type="submit"]').first().click()
+    await pe.waitForTimeout(400)
+    const d6c105 = await ask105()
+    check('step 105d — D6c: "Promote “Sub” to Ghost?", its sentence, WHAT SHIPS with the line linked (Thursday as the frame\'s chip) and then without, "The link is dropped; its words stay.", "Demote it later and the formatting comes back.", focus on Cancel',
+      d6c105?.open && d6c105.title === T105.confirmTitle('Sub') && d6c105.body === T105.confirmBody && d6c105.chip === 'Thursday' && d6c105.before === SUB105.text && d6c105.after === SUB105.text &&
+      d6c105.text.includes(T105.whatShips) && d6c105.text.includes(T105.linkDropped) && d6c105.text.includes(T105.formattingBack) && d6c105.focus === T105.cancel, JSON.stringify(d6c105))
+    await pe.locator('dialog[aria-labelledby="promote-ask-title"]').getByRole('button', { name: T105.cancel, exact: true }).click()
+    await pe.waitForTimeout(400)
+    const cancelled105 = await rowOf104('sub')
+    const answered105d = posted104(pe)
+    await pe.evaluate(() => document.getElementById('promote-which').closest('form').requestSubmit())
+    const bare105 = await (await answered105d).text()
+    const refusedRow105 = await rowOf104('sub')
+    check('step 105d — Cancel stores nothing, and the form posted by hand with no acknowledgement answers "Confirm first — promoting this changes what your theme carries." and stores nothing',
+      cancelled105 === null && bare105.includes(W105.confirm) && refusedRow105 === null, JSON.stringify({ cancelled105, refusedRow105 }))
+    await pe.locator('form:has(#promote-which) button[type="submit"]').first().click()
+    await pe.waitForTimeout(300)
+    const answered105dd = posted104(pe)
+    await pe.locator('dialog[aria-labelledby="promote-ask-title"] button[name="confirmed"]').click()
+    const busy105 = await pe.locator('dialog[aria-labelledby="promote-ask-title"] button[name="confirmed"]').getAttribute('aria-busy').catch(() => null)
+    await answered105dd
+    const subRow105 = await until104(pe, () => rowOf104('sub'), (r) => r !== null)
+    const subDoc105 = (await home105())?.instances?.find((i) => i.instanceId === hero105.instanceId)?.content?.sub
+    check('step 105d — Promote it stores Sub as Ghost\'s text: its words alone as the start, no options, bound to the prop — and the doc keeps its link (out of force, never deleted)',
+      subRow105?.type === 'text' && subRow105?.default_value === SUB105.text && subRow105?.options === null &&
+      same104(subRow105?.bound_to, { kind: 'prop', instanceId: hero105.instanceId, path: 'sub' }) && same104(subDoc105, SUB105), JSON.stringify({ row: fields104(subRow105), subDoc105, busy105 }))
+
+    // ── 105e — the canvas: the lock pill where the toolbar would be, the link not drawn, ⌘B inert ──
+    await editor105()
+    await select105()
+    const subBefore105 = await sub105()
+    const pressed105 = await pressSub105()
+    const pill105 = await notes105()
+    await pe.keyboard.press('ControlOrMeta+a')
+    await pe.waitForTimeout(300)
+    const bar105 = await pe.locator('[role="toolbar"][aria-label="Text formatting"]').count()
+    await pe.keyboard.press('ControlOrMeta+b')
+    await pe.waitForTimeout(300)
+    const subAfter105 = await sub105()
+    check('step 105e — Sub on the canvas: its link is not drawn; a press shows the lock pill "Sub — plain text, set in Ghost" and no formatting toolbar; ⌘B makes nothing bold',
+      pressed105 && subBefore105?.links === 0 && pill105.includes(T105.lockPill('sub')) && bar105 === 0 && subAfter105?.strong === 0, JSON.stringify({ subBefore105, pill105, bar105, subAfter105 }))
+    await pe.keyboard.press('Escape')
+    await pe.keyboard.press('Escape')
+    await pe.waitForTimeout(300)
+
+    // ── 105f — the accent: the card's ↗, the caution, and its row with D6a's colour caption ──
+    await editor105()
+    const cardHref105 = await pe.locator('[data-style-pack-accent] a[data-promote]').getAttribute('href').catch(() => null)
+    check('step 105f — the Style Pack card carries the accent\'s ↗ to Theme settings opened on the accent', (cardHref105 ?? '').endsWith(addr105('token:accent')), cardHref105)
+    await pe.locator('[data-style-pack-accent] a[data-promote]').click()
+    await pe.waitForURL((u) => u.searchParams.get('promote') === 'token:accent', { timeout: 15000 }).catch(() => {})
+    await pe.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    await hydrated104(pe)
+    await pe.waitForTimeout(300)
+    const form105f = await theForm105()
+    await pe.locator('form:has(#promote-which) button[type="submit"]').first().click()
+    await pe.waitForTimeout(400)
+    const caution105 = await ask105()
+    const answered105f = posted104(pe)
+    await pe.locator('dialog[aria-labelledby="promote-ask-title"] button[name="confirmed"]').click()
+    await answered105f
+    const accent105 = await until104(pe, () => rowOf104('accent_colour'), (r) => r !== null)
+    await pe.waitForTimeout(600)
+    const accentRow105 = await rowText105('accent_colour')
+    check('step 105f — Theme settings opens on Accent (Label "Accent colour", Group Site wide); the caution reads "Promote your accent to Ghost?" and its sentence, focus on Cancel; stored as a colour at Paper\'s light accent, bound to the token',
+      (form105f.which ?? '').includes(T105.accentRow) && form105f.label === T105.accent && form105f.group === CS104.GROUP_WORDS.site_wide &&
+      caution105?.title === T105.accentTitle && caution105?.body === T105.accentBody && caution105?.focus === T105.cancel &&
+      accent105?.type === 'color' && accent105?.default_value?.toUpperCase() === pack105.light.accent.toUpperCase() && same104(accent105?.bound_to, { kind: 'token', token: 'accent' }), JSON.stringify({ form105f, caution105, row: fields104(accent105) }))
+    check('step 105f — the accent\'s row: "starts #…" and D6a\'s caption "This points at a Style Pack colour role. Switching packs changes what this setting is pointing at."',
+      accentRow105.includes(T105.starts(accent105?.default_value ?? '?')) && accentRow105.includes(T105.accentRowCaption), accentRow105)
+
+    // ── 105g — the pack-switch ask: Keep changes nothing, Switch switches, ⌘Z switches back and never asks ──
+    await editor105()
+    const cardTag105 = await pe.locator('[data-style-pack-accent] [data-in-ghost="accent_colour"]').textContent().catch(() => null)
+    await pe.locator('#style-pack-change').click()
+    await pe.locator(`[data-style-pack="${otherPack105.id}"]`).click()
+    await pe.waitForTimeout(400)
+    const packAsk105 = await pe.evaluate(() => { const d = document.querySelector('dialog[aria-labelledby="editor-pack-title"]'); return d && { open: d.open, title: document.getElementById('editor-pack-title')?.textContent, focus: document.activeElement?.textContent?.trim() } })
+    await pe.keyboard.press('Enter')
+    await pe.waitForTimeout(500)
+    const kept105 = await pe.locator('section[aria-label="Canvas"] iframe').getAttribute('data-pack')
+    await pe.locator(`[data-style-pack="${otherPack105.id}"]`).click()
+    await pe.waitForTimeout(400)
+    await pe.locator('dialog[aria-labelledby="editor-pack-title"]').getByRole('button', { name: T105.packSwitch, exact: true }).click()
+    const switched105 = await pe.waitForFunction((id) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === id, otherPack105.id, { timeout: 15000 }).then(() => true, () => false)
+    await pe.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await pe.keyboard.press('ControlOrMeta+z')
+    const back105 = await pe.waitForFunction((id) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === id, 'paper', { timeout: 15000 }).then(() => true, () => false)
+    const askedOnUndo105 = await pe.evaluate(() => document.querySelector('dialog[aria-labelledby="editor-pack-title"]')?.open ?? false)
+    check('step 105g — the card shows the accent "In Ghost"; choosing Tangerine asks "Switch to Tangerine?" on "Keep Paper"; Keep changes nothing, Switch switches, ⌘Z switches back without asking',
+      cardTag105 === T105.inGhost && packAsk105?.open && packAsk105.title === T105.packTitle(otherPack105.name) && packAsk105.focus === T105.packKeep(pack105.name) &&
+      kept105 === 'paper' && switched105 && back105 && !askedOnUndo105, JSON.stringify({ cardTag105, packAsk105, kept105, switched105, back105, askedOnUndo105 }))
+    await save105()
+
+    // ── 105h — Delete asks once, naming both settings; once deleted and saved the rows say so; ⌘Z brings it all back ──
+    await pe.locator('#style-pack-back').click().catch(() => {})
+    await select105()
+    await pe.keyboard.press('Delete')
+    await pe.waitForTimeout(400)
+    const delAsk105 = await pe.evaluate(() => { const d = document.querySelector('dialog[aria-labelledby="editor-binding-title"]'); return d && { open: d.open, body: document.getElementById('editor-binding-body')?.textContent, focus: document.activeElement?.textContent?.trim() } })
+    await pe.keyboard.press('Enter')
+    await pe.waitForTimeout(400)
+    const keptRow105 = await pe.locator(`#editor-layers [data-layer-row="${ROW105}"]`).count()
+    await select105()
+    await pe.keyboard.press('Delete')
+    await pe.waitForTimeout(400)
+    await pe.locator('dialog[aria-labelledby="editor-binding-title"]').getByRole('button', { name: T105.deleteSection, exact: true }).click()
+    await pe.waitForTimeout(500)
+    const deletedSaved105 = await save105()
+    const settingsTab105 = await pContext.newPage()
+    await settingsTab105.goto(settings104, { waitUntil: 'load' })
+    await settingsTab105.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    const goneNotes105 = { head: await settingsTab105.locator('li[data-setting="headline_size"]').innerText(), sub: await settingsTab105.locator('li[data-setting="sub"]').innerText() }
+    check('step 105h — Delete asks first in ONE dialog: "Headline size and Sub are promoted to Ghost from this section. Once it is deleted, your next deploy stops until you delete them in Theme settings or bring the section back.", on Keep it; Keep it keeps the section',
+      delAsk105?.open && delAsk105.body === T105.bindingAsk(['Headline size', 'Sub'], 'deleted') && delAsk105.focus === T105.keepIt && keptRow105 === 1, JSON.stringify({ delAsk105, keptRow105 }))
+    check('step 105h — deleted and saved, both rows say "Its section is gone. Delete this setting, or bring the section back, before your next deploy."',
+      deletedSaved105 && goneNotes105.head.includes(T105.deleted('Headline size')) && goneNotes105.sub.includes(T105.deleted('Sub')), JSON.stringify(goneNotes105))
+    await pe.bringToFront()
+    await pe.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await pe.keyboard.press('ControlOrMeta+z')
+    await pe.waitForTimeout(600)
+    const undoneSaved105 = await save105()
+    await settingsTab105.reload({ waitUntil: 'load' })
+    await settingsTab105.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    const backNotes105 = await settingsTab105.locator('li[data-setting="headline_size"]').innerText()
+    check('step 105h — ⌘Z brings Latest Post back, and once saved the rows\' notes are gone',
+      undoneSaved105 && (await pe.locator(`#editor-layers [data-layer-row="${ROW105}"]`).count()) === 1 && !backNotes105.includes(T105.deleted('Headline size')) && backNotes105.includes(T105.starts(startLabel105 ?? '?')), backNotes105)
+
+    // ── 105i — Hide asks the same, with "hidden"; while hidden the rows say so; Show brings them back ──
+    await pe.locator(`#editor-layers [data-layer-row="${ROW105}"]`).focus()
+    await pe.keyboard.press(' ')
+    await pe.waitForTimeout(400)
+    const hideAsk105 = await pe.evaluate(() => document.getElementById('editor-binding-body')?.textContent ?? null)
+    await pe.locator('dialog[aria-labelledby="editor-binding-title"]').getByRole('button', { name: T105.hideSection, exact: true }).click()
+    await pe.waitForTimeout(500)
+    const hiddenSaved105 = await save105()
+    await settingsTab105.reload({ waitUntil: 'load' })
+    await settingsTab105.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    const hiddenNote105 = await settingsTab105.locator('li[data-setting="headline_size"]').innerText()
+    await pe.bringToFront()
+    await pe.locator(`#editor-layers [data-layer-row="${ROW105}"]`).focus()
+    await pe.keyboard.press(' ')
+    await pe.waitForTimeout(500)
+    const shownSaved105 = await save105()
+    await settingsTab105.reload({ waitUntil: 'load' })
+    await settingsTab105.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    const shownNote105 = await settingsTab105.locator('li[data-setting="headline_size"]').innerText()
+    check('step 105i — Hide asks with "hidden"; while hidden and saved the row says "Its section is hidden. …"; Show (asking nothing) brings it back to normal',
+      hideAsk105 === T105.bindingAsk(['Headline size', 'Sub'], 'hidden') && hiddenSaved105 && hiddenNote105.includes(T105.hidden('Headline size')) && shownSaved105 && !shownNote105.includes(T105.hidden('Headline size')),
+      JSON.stringify({ hideAsk105, hiddenNote105, shownNote105 }))
+
+    // ── 105j — the demote: Sub's setting deleted in Theme settings, its link is drawn again and its toolbar returns ──
+    // in the editor's own tab, which holds the lock — the second tab above reads along (R-192), so its Delete is greyed
+    await settingsTab105.close()
+    await pe.goto(settings104, { waitUntil: 'load' })
+    await pe.getByRole('heading', { name: T105.postsPerPage, exact: true }).waitFor({ state: 'visible', timeout: 20000 })
+    await hydrated104(pe)
+    await pe.waitForTimeout(300)
+    await pe.locator('li[data-setting="sub"] form:has(dialog) button[type="submit"]').click()
+    await pe.waitForTimeout(300)
+    const answered105j = posted104(pe)
+    await pe.locator('li[data-setting="sub"] dialog').getByRole('button', { name: T105.deleteButton, exact: true }).click()
+    await answered105j
+    const demoted105 = await until104(pe, () => rowOf104('sub'), (r) => r === null)
+    await editor105()
+    await select105()
+    const subBack105 = await sub105()
+    await pressSub105()
+    const pillBack105 = await notes105()
+    await pe.keyboard.press('ControlOrMeta+a')
+    await pe.waitForTimeout(300)
+    const barBack105 = await pe.locator('[role="toolbar"][aria-label="Text formatting"]').count()
+    check('step 105j — Sub\'s setting deleted: the canvas draws its link again (the formatting came back), and a press shows the toolbar, not the lock pill',
+      demoted105 === null && subBack105?.links === 1 && !pillBack105.includes(T105.lockPill('sub')) && barBack105 === 1, JSON.stringify({ subBack105, pillBack105, barBack105 }))
+    await pe.keyboard.press('Escape')
+    await pe.keyboard.press('Escape')
+
+    // ── 105k — R-192: a second window reads along, and every ↗ in it is greyed and goes nowhere ──
+    const roContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(roContext, csp105)
+    const ro = steady(await roContext.newPage())
+    await ro.goto(await magic(emailA), { waitUntil: 'load' })
+    await ro.goto(editorUrl(), { waitUntil: 'load' })
+    await ro.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await ro.waitForTimeout(800)
+    const roCard105 = await ro.locator('[data-style-pack-accent] [data-in-ghost], [data-style-pack-accent] [data-promote]').evaluateAll((els) => els.map((e) => ({ tag: e.tagName, disabled: e.hasAttribute('disabled'), inGhost: e.hasAttribute('data-in-ghost') })))
+    await ro.locator(`#editor-layers [data-layer-row="${ROW105}"]`).focus()
+    await ro.keyboard.press('Enter')
+    await ro.waitForTimeout(400)
+    for (const label of ['Content', 'Style']) {
+      const head = ro.locator('#editor-controls button[aria-expanded]').filter({ hasText: new RegExp(`^${label}$`) })
+      if ((await head.getAttribute('aria-expanded').catch(() => 'true')) !== 'true') await head.click().catch(() => {})
+    }
+    await ro.waitForTimeout(300)
+    const roActions105 = await ro.locator('#editor-controls [data-promote]').evaluateAll((els) => els.map((e) => ({ tag: e.tagName, disabled: e.matches(':disabled') })))
+    const roTags105 = await ro.locator('#editor-controls [data-in-ghost]').count()
+    check('step 105k — reading along: every ↗ in the panel is a disabled button, none a link; the Headline size tag still reads; the card\'s accent tag reads',
+      roActions105.length > 0 && roActions105.every((a) => a.tag === 'BUTTON' && a.disabled) && roTags105 >= 1 && roCard105.some((c) => c.inGhost), JSON.stringify({ roActions105, roTags105, roCard105 }))
+    await roContext.close()
+
+    // the project as this block found it — later steps inherit it
+    await handBack(pe)
+    await pContext.close()
+    await wipe104()
+    const restored105 = await setHome105(seededHome105)
+    const end105 = { rows: (await rows104()).length, home: same104(await home105(), seededHome105), pack: (await row103())?.style_pack?.preset }
+    check('step 105 — the project is handed back as the seed made it: no custom setting, Home\'s doc as stored before the plant, Paper in force — and every context of the block recorded zero CSP violations',
+      (restored105.status === 200 || restored105.status === 204) && end105.rows === 0 && end105.home && end105.pack === 'paper' && csp105.length === 0, JSON.stringify({ end105, csp105: csp105.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

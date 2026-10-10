@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.8's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.10's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
@@ -165,12 +165,29 @@ it, that Ghost reads it as claimed is a hypothesis.
      least one rule, every finding located at its line in the theme's own source. Their stylesheets' warnings through the
      root `stylelint.config.mjs` are counted and recorded, never gated.
 
+ 14. STORY 7.10 (§78) — PROMOTED SETTINGS ON A REAL GHOST (FR-Q3, FR-Q4): four trees compiled under one name,
+     `inflozo-probe-custom-settings` — `start` (the pilots with A4 #13's Primary action and Headline size, its Sub, A17
+     #1's Title on Home and the accent promoted, `tools/pilot-theme.mjs`'s `pilotSettings`, plus the controls fixture's
+     feature row with its picture promoted and no picture of its own), `restarted` (Headline size moved to Display on the
+     canvas — a new start), `without_sub` and `bare` — each gated 0/0 on both pinned gscans and the start's quality verdict
+     empty, every declared key read in its own tree, before anything uploads. On T1, behind `start_guard`: `bare` first
+     (a CONTROL — nothing listed, so every value read is this run's); `start`, and `GET custom_theme_settings/` lists
+     each key at its start; the page draws each start (both root attributes, the two texts, `--setting-accent`, no
+     picture element); a `PUT` per kind — Medium, two texts, the accent, the picture — reaches the page; the button off
+     hides Headline size in Ghost and its reader draws the start while Ghost still stores Medium (a CONTROL); Sub
+     emptied leaves the page; `restarted` keeps every stored value under its new default; `without_sub` loses Sub, and
+     `start` again brings it back at its start (Questions 1 and 2's facts). Its `finally` activates `bare`, which clears
+     the probe's stored settings — Ghost deletes a theme's files and never its `custom_theme_settings` rows (read in
+     source, 6.58.0 `themes/storage.js` `destroy`) — then `restore_and_delete`.
+
 What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
 activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
-one probe picture, which stays (Ghost's API deletes no picture) — no content, no setting, no key; keys are read by
-variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §77 alone, replacing an earlier
-§77 of its own so a re-run re-records; §70 to §76 stay Stories 7.1's to 7.7's records. The Ghost 5 half is DW-326's.
+one probe picture, which stays (Ghost's API deletes no picture); Story 7.10's probe theme, uploaded five times and
+activated, its own `custom_theme_settings` written through Ghost's API and cleared again before it is deleted — no content,
+no site setting, no key; keys are read by variable name and no URL that carries one is printed. To disk it writes
+MEASUREMENTS.md §78 alone, replacing an earlier §78 of its own so a re-run re-records; §70 to §77 stay Stories 7.1's to
+7.8's records. The Ghost 5 half is DW-326's.
 """
 import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -183,7 +200,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '77'   # §70 to §76 stay Stories 7.1's to 7.7's records
+SECTION = '78'   # §70 to §77 stay Stories 7.1's to 7.8's records
 # Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
 # the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
 TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
@@ -1227,6 +1244,192 @@ def negative_control():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+# ── Story 7.10 (§78): promoted settings, on a real Ghost ────────────────────────────────────────────────────────────
+SETTINGS_THEME = 'inflozo-probe-custom-settings'   # its own name, so its stored settings are its own (Ghost keys them by theme)
+SETTINGS_ACCENT = '#1A2B3C'   # the colour this run picks in Ghost, a valid `#rrggbb` (custom-theme-settings-service.js:127-133)
+COMPILE_SETTINGS = r"""
+const root = process.env.ROOT
+const pilots = await import(`${root}/tools/pilot-theme.mjs`)
+const gate = await import(`${root}/packages/theme-compiler/gate/index.ts`)
+const { REFERENCE_PACK } = await import(`${root}/packages/section-runtime/src/reference.ts`)
+const theme = { name: process.env.SETTINGS_THEME, version: '1.0.0', description: 'The pilots, promoted' }
+const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
+const base = { theme, postsPerPage: Number(process.env.PER_PAGE), find: pilots.library(), fixture: true }
+// the canvas moved: A4 #13's Headline size set to Display, so the redeploy carries a new start
+const display = (project) => { project.templates['home.hbs'].instances.find((i) => i.designId === 'a4/13').controls['headline-size'] = 'display' }
+const start = pilots.compilePilots(words, { ...base, settings: true })
+const variants = {
+  start,
+  restarted: pilots.compilePilots(words, { ...base, settings: true, edit: display }),
+  without_sub: pilots.compilePilots(words, { ...base, settings: pilots.pilotSettings(start.templates).filter((r) => r.key !== 'sub') }),
+  bare: pilots.compilePilots(words, base),
+}
+const q = gate.qualityGate(start.files, { pack: REFERENCE_PACK, library: start.find })
+process.stdout.write(JSON.stringify({
+  variants: Object.fromEntries(Object.entries(variants).map(([name, v]) => [name, {
+    files: Object.fromEntries(Object.entries(v.files).map(([p, b]) => [p, typeof b === 'string' ? b : { base64: Buffer.from(b).toString('base64') }])),
+    custom: v.custom, failures: pilots.themeFailures(v.files, v.instanceIds),
+  }])),
+  quality: [...q.errors, ...q.warnings].map((f) => `${f.code} ${f.refs.join(',')}`),
+  scaffold: pilots.SCAFFOLD,
+}))
+"""
+READS_CUSTOM = re.compile(r'@custom\.([a-z0-9_]+)')
+
+
+def settings_compiled(nonce, per_page):
+    """Story 7.10's four trees, compiled under SETTINGS_THEME with the run's page word: `start` (five pilot settings and
+    the fixture's picture promoted, at the canvas's start), `restarted` (A4 #13's Headline size moved to Display on the
+    canvas — a new start), `without_sub` (Sub no longer promoted) and `bare` (nothing promoted) — each with §73's
+    scaffold, each passing the check CI holds a theme to, and the start's quality verdict empty. The controls that hold
+    before anything uploads are checked here: every declared key is read in the same tree, and each variant differs from
+    `start` in exactly what it is for."""
+    words = {'PAGE_WORD': f'Page{nonce}', 'LAYER_WORD': f'Layer{nonce}'}
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', COMPILE_SETTINGS], capture_output=True, text=True, timeout=300,
+                         env={**os.environ, 'ROOT': ROOT, 'PER_PAGE': str(per_page), 'SETTINGS_THEME': SETTINGS_THEME, **words})
+    if run.returncode != 0:
+        raise Void(f'the settings compile did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    if out['quality']:
+        raise Void(f'the quality gate names findings on the promoted pilots ({out["quality"]}) — STOP AND ASK the owner')
+    trees, custom = {}, {}
+    for name, v in out['variants'].items():
+        if v['failures']:
+            raise Void(f'the {name} tree fails the check CI holds it to:\n      ' + '\n      '.join(v['failures']))
+        files = {p: base64.b64decode(b['base64']) if isinstance(b, dict) else b for p, b in v['files'].items()}
+        clash = [p for p in out['scaffold'] if p in files]
+        if clash:
+            raise Void(f'the scaffold would replace compiled files in {name}: {clash}')
+        trees[name] = {**files, **out['scaffold']}
+        custom[name] = (json.loads(files['package.json']).get('config') or {}).get('custom') or {}
+        read = {k for p, b in files.items() if isinstance(b, str) and p.endswith('.hbs') for k in READS_CUSTOM.findall(b)}
+        if read != set(custom[name]):
+            raise Void(f'the {name} tree declares {sorted(custom[name])} and reads {sorted(read)} — GS100/GS090 would decide, not Ghost')
+    want = ['show_the_button', 'headline_size', 'sub', 'title', 'accent_colour', 'picture']
+    if list(custom['start']) != want or 'default' in custom['start']['picture']:
+        raise Void(f'the start tree declares {list(custom["start"])} — the rows below are written for {want}, the picture with no start')
+    if (custom['start']['headline_size'].get('default'), custom['restarted']['headline_size'].get('default')) != ('Large', 'Display'):
+        raise Void('the restarted tree does not carry a new start for Headline size — the keep row would prove nothing')
+    if 'sub' in custom['without_sub'] or custom['bare']:
+        raise Void('the without_sub tree still declares sub, or the bare tree declares a setting — the forget and clear rows would prove nothing')
+    return {'trees': trees, 'custom': custom, 'page_word': words['PAGE_WORD']}
+
+
+def settings_phase(g, nonce, picture_path, sc):
+    """§78 on T1, behind `start_guard` and a `finally` that clears the probe theme's stored settings (Ghost deletes a
+    theme's files and never its `custom_theme_settings` rows, read in source: `themes/storage.js` `destroy`; activating it
+    with nothing declared destroys every row its config no longer names, `_syncRepositoryWithTheme`) and then restores
+    the site's theme and deletes the probe (`restore_and_delete`). Returns the rows."""
+    rows = []
+    starts = sc['custom']['start']
+
+    def row(ok, page, what, detail):
+        rows.append((bool(ok), page, what, detail))
+        print(f'    {"PASS" if ok else "FAIL"}  {page:<26} {what} — {str(detail)[:120]}')
+
+    def deploy(variant):
+        st, res = g._multipart('themes/upload/', [('file', f'{SETTINGS_THEME}.zip', 'application/zip', contexts.zip_bytes(sc['trees'][variant]))])
+        if res['themes'][0]['name'] != SETTINGS_THEME:
+            raise Void(f'Ghost named the upload {res["themes"][0]["name"]!r}, not {SETTINGS_THEME!r} — the finally would not delete it')
+        # an upload over the ACTIVE theme activates it again (themes/storage.js, `activateFromAPIOverride`), which syncs its
+        # settings; the first upload is activated here
+        if shim.active_theme(g) != SETTINGS_THEME:
+            g.api('PUT', f'themes/{SETTINGS_THEME}/activate/')
+        print(f'    deployed {variant} -> HTTP {st}')
+
+    def listed():
+        return {x['key']: x for x in g.api('GET', 'custom_theme_settings/')['custom_theme_settings']}
+
+    def put(**values):
+        g.api('PUT', 'custom_theme_settings/', {'custom_theme_settings': [{'key': k, 'value': v} for k, v in values.items()]})
+
+    def home(until):
+        body = ''
+        for _ in range(10):
+            time.sleep(2)
+            _, body = g.page('/')
+            if sc['page_word'] in body and until(body):
+                break
+        return body
+
+    words = lambda body, tag, cls: html.unescape(m.group(1)) if (m := re.search(f'<{tag} class="{cls}">(.*?)</{tag}>', body, re.S)) else None
+    accent = lambda body: m.group(1) if (m := re.search(r'--setting-accent:\s*(#[0-9A-Fa-f]{6})', body)) else None
+    picture = lambda body: m.group(0) if (m := re.search(r'<img class="cx__picture"[^>]*>', body)) else ''
+    previous = shim.start_guard(g)
+    try:
+        # (0) a run that failed before its cleanup left stored values under this name: the bare theme, activated, clears them
+        deploy('bare')
+        row(listed() == {}, 'custom_theme_settings', 'CONTROL — the probe theme declaring nothing lists no setting, so every value read below is this run\'s', 'none listed')
+        # (1) each key at the start the canvas holds (Question 1)
+        deploy('start')
+        body = home(lambda b: 'data-headline-size=' in b)
+        row(sc['page_word'] in body, '/', 'CONTROL — / serves this run\'s promoted theme', f'page word {"found" if sc["page_word"] in body else "ABSENT"}')
+        got = listed()
+        for key, entry in starts.items():
+            row(key in got and got[key].get('value') == entry.get('default'), 'custom_theme_settings', f'`{key}` listed at its start',
+                f'type {got.get(key, {}).get("type")!r}, value {got.get(key, {}).get("value")!r}, start {entry.get("default")!r}')
+        a4 = root_tag(body, 'a4-13')
+        row('data-primary-action="on"' in a4 and 'data-headline-size="large"' in a4, '/', 'the switch and the choice draw their start', a4[:110])
+        row('data-secondary-action="on"' in a4, '/', 'CONTROL — the secondary action, which follows the promoted primary (its disabledBy), is on while the primary is', a4[:160])
+        row(words(body, 'p', 'a4-13__sub') == starts['sub']['default'], '/', 'the promoted rich text prints its start, its words alone', words(body, 'p', 'a4-13__sub'))
+        row(words(body, 'h2', 'a17-1__title') == starts['title']['default'], '/', 'the promoted title prints its start', words(body, 'h2', 'a17-1__title'))
+        row((accent(body) or '').lower() == starts['accent_colour']['default'].lower(), '/', '`--setting-accent` is the pack\'s light accent', accent(body))
+        row(picture(body) == '', '/', 'a picture setting unset, on a section with no picture of its own: the element is left out', picture(body) or 'no <img class="cx__picture">')
+        # (2) a change per kind, made in Ghost, reaches the page
+        put(show_the_button=True, headline_size='Medium', sub=f'Sub {nonce}', title=f'Title {nonce}', accent_colour=SETTINGS_ACCENT, picture=g.url + picture_path)
+        body = home(lambda b: f'Sub {nonce}' in b and f'Title {nonce}' in b)
+        a4 = root_tag(body, 'a4-13')
+        row('data-headline-size="medium"' in a4, '/', 'Headline size set to Medium in Ghost: the root reads medium', a4[:110])
+        row(words(body, 'p', 'a4-13__sub') == f'Sub {nonce}', '/', 'Sub changed in Ghost: the page prints Ghost\'s words', words(body, 'p', 'a4-13__sub'))
+        row(words(body, 'h2', 'a17-1__title') == f'Title {nonce}', '/', 'Title changed in Ghost: the page prints Ghost\'s words', words(body, 'h2', 'a17-1__title'))
+        row((accent(body) or '').lower() == SETTINGS_ACCENT.lower(), '/', 'the accent changed in Ghost: `--setting-accent` carries it', accent(body))
+        row(picture_path in picture(body), '/', 'a picture chosen in Ghost: the section shows it', picture(body))
+        # (3) a setting its condition hides renders as null, so the root draws the start — while Ghost still stores Medium
+        put(show_the_button=False)
+        body = home(lambda b: 'data-primary-action="off"' in root_tag(b, 'a4-13'))
+        a4 = root_tag(body, 'a4-13')
+        row('data-primary-action="off"' in a4 and 'data-headline-size="large"' in a4, '/', 'the button off hides Headline size in Ghost: its reader draws the start', a4[:110])
+        row('data-secondary-action="off"' in a4, '/', 'the primary off in Ghost: the secondary action follows it off, so it never stands alone (a4/13\'s disabledBy)', a4[:160])
+        row(listed()['headline_size'].get('value') == 'Medium', 'custom_theme_settings', 'CONTROL — Ghost still stores Medium, so the start above is the hidden setting\'s', listed()['headline_size'].get('value'))
+        # (4) a text emptied in Ghost is left out (DW-349's rule, "delete means delete")
+        put(sub='')
+        body = home(lambda b: 'a4-13__sub' not in b)
+        row('class="a4-13__sub"' not in body, '/', 'Sub emptied in Ghost: the line is left out', 'absent' if 'class="a4-13__sub"' not in body else 'PRESENT')
+        held = listed()
+        # An emptied text is EMPTY in two spellings (6.58.0, read in source): the API answers '' from the service's cache,
+        # which keeps the value as sent (`custom-theme-settings-service.js:153`), while the base model writes null to the
+        # database (`setEmptyValuesToNull`, `core/server/models/base/plugins/data-manipulation.js:16-19`), which the next
+        # activation reads back. `{{#if}}` reads both as empty, so the claim below is "still empty", not one spelling of it
+        row(held['sub'].get('value') in ('', None), 'custom_theme_settings', 'Sub emptied in Ghost is held empty', repr(held['sub'].get('value')))
+        # (5) a redeploy with a NEW start keeps every stored value (Question 1's fact): the start is a fresh install's
+        deploy('restarted')
+        got = listed()
+        row(got['headline_size'].get('default') == 'Display' and got['headline_size'].get('value') == 'Medium', 'custom_theme_settings',
+            'a redeploy whose canvas starts at Display keeps the stored Medium', f'default {got["headline_size"].get("default")!r}, value {got["headline_size"].get("value")!r}')
+        row(got['accent_colour'].get('value') == SETTINGS_ACCENT and got['sub'].get('value') in ('', None)
+            and all(got[k].get('value') == held[k].get('value') for k in held if k not in ('headline_size', 'sub')),
+            'custom_theme_settings', 'and every other value Ghost holds stays — the emptied Sub still empty, never its start again',
+            f'accent {got["accent_colour"].get("value")!r}, sub {got["sub"].get("value")!r}, unchanged {sorted(k for k in held if got[k].get("value") == held[k].get("value"))}')
+        # (6) a deploy that leaves a key out loses its value, and the next brings it back at its start (Question 2's fact)
+        deploy('without_sub')
+        row('sub' not in listed(), 'custom_theme_settings', 'a deploy without Sub: Ghost no longer lists it', sorted(listed()))
+        deploy('start')
+        got = listed()
+        row(got.get('sub', {}).get('value') == starts['sub']['default'], 'custom_theme_settings',
+            'promoted again and deployed: Sub returns at its start, not the value set before', got.get('sub', {}).get('value'))
+    finally:
+        try:
+            deploy('bare')   # Ghost keeps a deleted theme's stored settings, so they are cleared while it is still active
+            print(f'    the probe theme\'s stored settings cleared -> {sorted(listed())}')
+        except Exception as e:  # the restore below still runs, and decides
+            print(f'    clearing the probe theme\'s stored settings FAILED ({type(e).__name__}: {e}) — restoring anyway')
+        shim.restore_and_delete(g, previous, [SETTINGS_THEME])
+    bad = [r for r in rows if r[2].startswith('CONTROL') and not r[0]]
+    if bad:
+        raise Void('A SETTINGS CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
+    return rows
+
+
 # ── §72 ───────────────────────────────────────────────────────────────────────
 def table(rows):
     out = ['| Page | Row | Held |', '|---|---|---|']
@@ -1236,7 +1439,7 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay, probes, local, q):
+def section(rec, gates, files, c, pay, probes, local, q, promoted):
     today = datetime.date.today().isoformat()
     gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
@@ -1245,7 +1448,9 @@ def section(rec, gates, files, c, pay, probes, local, q):
     licences = sorted(p for p in files if p.startswith('LICENSE-'))
     (tag, tag_n), (author, author_n) = rec['arch']['tag'], rec['arch']['author']
     qrows, qprobe, neg_rows, neg = q
-    out = [f'## {SECTION}. The emitted-theme quality gate — axe-core on Ghost\'s own pages agreeing with `qualityGate`, a '
+    out = [f'## {SECTION}. Promoted settings in Ghost\'s own Design panel — every kind at the canvas\'s start, a change per kind '
+           f'reaching the page, a hidden setting drawing its start, Ghost keeping a value across a new start and forgetting a dropped '
+           f'key — beside the emitted-theme quality gate: axe-core on Ghost\'s own pages agreeing with `qualityGate`, a '
            f'planted probe named by both, and Ghost\'s Casper and Source as its negative control, beside the gscan gate, a '
            f'customer\'s words inert to gscan and the pilots compiled with Ghost\'s article, WebP `srcset`s, `main.js`, '
            f'Paper\'s fonts, their licences, a section\'s dark hook, every standard template and the paywall mechanism, '
@@ -1255,12 +1460,14 @@ def section(rec, gates, files, c, pay, probes, local, q):
            '(DW-332), both read back; Story 7.8\'s quality probe (the pilots plus a planted heading skip and a nameless '
            'link), activated, then restored and deleted the same way; Story 7.7\'s three probe uploads (the compiled pilots unscaffolded, a fatal probe, a '
            'cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back '
-           'after each; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time '
-           'it is asked for each; no content, no setting and no key written. The picture is '
+           'after each; Story 7.10\'s probe theme (`inflozo-probe-custom-settings`), uploaded and activated five times, its '
+           'own `custom_theme_settings` written through Ghost\'s API and cleared by activating it with nothing declared, '
+           'then restored and deleted the same way; the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
+           'the first time it is asked for each; no content, no site setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70 to §76 are Stories 7.1's to 7.7's records; this re-runs their rows beside Story 7.8's. Ghost 6.58.0's npm "
+           "§70 to §77 are Stories 7.1's to 7.8's records; this re-runs their rows beside Story 7.10's. Ghost 6.58.0's npm "
            f"tarball (`{GHOST_TARBALL}`) is read, never installed, for Casper and Source.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
@@ -1343,9 +1550,23 @@ def section(rec, gates, files, c, pay, probes, local, q):
             + '; '.join(f'{n} (`{t["sheet"]}`) ' + (', '.join(f'`{r}` ×{k}' for r, k in sorted(t['css'].items())) or 'nothing') for n, t in neg.items())
             + ' — recorded, never gated: Ghost\'s themes are not held to Inflozo\'s floor.', '']
     out += table(neg_rows)
+    out += ['', f'### (g) Promoted settings — `{SETTINGS_THEME}`: the pilots with A4 #13\'s switch and choice, its Sub, A17 #1\'s '
+            'Title, the accent and the controls fixture\'s picture promoted (Story 7.10)', '',
+            'Four trees compiled under one name, each gated 0/0 on both pinned gscans before anything uploaded: `start` (each '
+            'setting at the start the canvas holds), `restarted` (A4 #13\'s Headline size moved to Display on the canvas), '
+            '`without_sub` (Sub no longer promoted) and `bare` (nothing promoted), deployed in that story\'s order; each change '
+            f'made through `PUT /ghost/api/admin/custom_theme_settings/`, with the accent `{SETTINGS_ACCENT}` and the picture '
+            '`/content/images/' + rec['picture'] + '`. The run began and ended by activating `bare`, so the probe\'s stored '
+            'settings were cleared before the theme was deleted (Ghost deletes a theme\'s files, never its settings).', '']
+    out += table(promoted)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **A promoted setting reaches Ghost\'s own Design panel and the page reads it.** Every key Inflozo declared was '
+            'listed at the start the canvas holds; a switch, a choice, two texts, the accent and a picture each changed in Ghost '
+            'and the page followed; a choice its condition hides drew its start while Ghost still stored the other value; and a '
+            'text emptied in Ghost left the page. A redeploy with a new start kept every stored value, and a deploy that left a '
+            'key out made Ghost forget it — promoted again, it came back at its start (Questions 1 and 2, as ruled).',
             '- **The quality gate reads a theme as Ghost renders it.** On the five pages read, axe-core found nothing the '
             'gate\'s empty verdict did not already say, and every page\'s heading levels were one of the gate\'s alternatives '
             'for its template. With a heading skip and a nameless link planted, axe-core on Ghost\'s own page and the gate on '
@@ -1448,8 +1669,12 @@ if __name__ == '__main__':
         files = scaffold(c)
         # Story 7.7: the scaffolded tree and the three probe trees through the product gate, before anything uploads
         trees = probe_trees(c)
-        local = gated({'pilots': files, **trees})
+        # Story 7.10: the promoted trees, compiled and gated with the rest, before anything uploads
+        sc = settings_compiled(nonce, per_page)
+        local = gated({'pilots': files, **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()}})
         gates = clean(local, 'pilots')
+        for n in sc['trees']:
+            clean(local, f'settings-{n}')
         # Story 7.8: the quality gate over the same tree and the probe's, before anything uploads — a finding on the
         # pilots is a question for the owner (the spec's Ask First), never a result
         local_q = quality(trees={'pilots': files, QUALITY_PROBE: quality_probe_tree(files, nonce)})
@@ -1461,15 +1686,16 @@ if __name__ == '__main__':
         qrows = quality_rows(rec, local_q)
         qprobe = quality_probe(g, files, nonce, rec['post'], local_q)
         neg_rows, neg = negative_control()
+        promoted = settings_phase(g, nonce, f'/content/images/{rec["picture"]}', sc)
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg)))
+    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)

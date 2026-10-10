@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { contrast } from './colour.ts'
-import { BASE_CSS, GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
+import { BASE_CSS, GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, SETTING_ACCENT, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
 import { REFERENCE_PACK, REFERENCE_TOKENS, referenceTokensCss } from './reference.ts'
 import type { Pack, PackMode } from './tokens.ts'
 
@@ -364,6 +364,27 @@ test('Story 7.4 — AD-18 in the theme only: ghostFonts writes Ghost\'s two font
     assert.notEqual(ghost, plain, name)
     assert.equal((ghost.match(/--gh-font-heading/g) ?? []).length, 1, name)
     assert.equal((ghost.match(/--gh-font-body/g) ?? []).length, 1, name)
+  }
+})
+
+test('Story 7.10 — a promoted accent in the theme only: every light value that is or holds the accent reads var(--setting-accent, <hex>); the shades, the dark blocks and the canvas\'s bytes stand', () => {
+  for (const [name, pack] of Object.entries(PACKS)) {
+    const plain = packTokensCss(pack, { ghostFonts: true })
+    const themed = packTokensCss(pack, { ghostFonts: true, settingAccent: true })
+    assert.equal(packTokensCss(pack, { settingAccent: false }), packTokensCss(pack), `${name}: the canvas's call is unchanged`)
+    assert.notEqual(themed, plain, `${name}: the control — the option changed something`)
+    // :root is the first block; everything after it — both dark blocks, the width bands, the link rule — is byte-identical
+    const cut = (css: string) => css.indexOf('\n}\n') + 3
+    assert.equal(themed.slice(cut(themed)), plain.slice(cut(plain)), `${name}: only :root changes`)
+    const decls = (css: string) => Object.fromEntries([...css.slice(0, cut(css)).matchAll(/^ {2}(--[\w-]+): (.*);$/gm)].map((m) => [m[1], m[2]]))
+    const [before, after] = [decls(plain), decls(themed)]
+    const hex = pack.light.accent.toLowerCase()
+    assert.equal(after['--accent'], `var(${SETTING_ACCENT}, ${pack.light.accent})`, name)
+    for (const [k, v] of Object.entries(before)) {
+      const holds = (v as string).toLowerCase().includes(hex)
+      if (holds) assert.equal(after[k], (v as string).replace(new RegExp(hex, 'i'), (h) => `var(${SETTING_ACCENT}, ${h})`), `${name}: ${k}`)
+      else assert.equal(after[k], v, `${name}: ${k} — a computed shade keeps the pack's value`)
+    }
   }
 })
 

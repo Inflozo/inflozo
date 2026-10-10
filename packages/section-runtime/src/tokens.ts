@@ -433,6 +433,9 @@ export const MODE_SELECTORS = {
   explicit: [':root:has(> body.scheme-dark)', ':root[data-mode="dark"]:not(:has(> body.scheme-light))'],
 } as const
 
+/** Story 7.10 — the custom property a promoted accent sets in `default.hbs`'s head, and the light block reads. */
+export const SETTING_ACCENT = '--setting-accent'
+
 /** A pack's token block — the only way a pack is emitted, so every block ends with R-173's link rule. `:root` declares
  *  every property (desktop values, light colours); the dark blocks redeclare the per-mode properties and nothing else,
  *  because a dark block (0,2,0) redeclaring a width value would beat the width band's `:root` (0,1,0) in dark; then the
@@ -442,13 +445,23 @@ export const MODE_SELECTORS = {
  *  nowhere else — the owner's pin (the `scheme-*` body class), on Auto the visitor's `data-mode`, then the device. The
  *  canvas reuses `data-mode` to preview a mode, deliberately, so no fourth mode signal exists. AD-30: the token block is
  *  THE ONE FILE in a generated theme that names a mode — this block, then `darkOverrideCss`' per-section rules. */
-export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean } = {}): string {
+export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean; settingAccent?: boolean } = {}): string {
   const { light: tokens, tablet, mobile } = packTokens(pack)
   // AD-18, in the theme only (Story 7.4): a font chosen in Ghost Admin wins, the pack's family list is the fallback, and
   // one file holding both names is what gscan's GS051 asks for. The canvas calls with no option, so its bytes stand.
-  const light = options.ghostFonts === true
+  const fonts = options.ghostFonts === true
     ? { ...tokens, '--font-heading': `var(--gh-font-heading, ${tokens['--font-heading']})`, '--font-body': `var(--gh-font-body, ${tokens['--font-body']})` }
     : tokens
+  // STORY 7.10 (FR-Q3, AD-30), in the theme only: with the accent promoted, every light value that IS or CONTAINS the
+  // light accent — `--accent`, a solid button's fill, an outline's border and words, the accent link style — reads the
+  // site owner's colour through `var()`, the pack's own value its fallback; `default.hbs`'s inline block sets the one
+  // property from `{{@custom.*}}` and names no mode, so this block stays the one that does. The computed shades (the
+  // tint, `--accent-on-contrast`) are new colours and keep the pack's — which is why the caution says contrast is in the
+  // site owner's hands — and the dark blocks are untouched until Story 7.11's dark built-in.
+  const accent = new RegExp(`${pack.light.accent.replace(/[^#0-9a-f]/gi, '')}(?![0-9a-f])`, 'gi')
+  const light = options.settingAccent === true
+    ? Object.fromEntries(Object.entries(fonts).map(([k, v]) => [k, v.replace(accent, (hex) => `var(${SETTING_ACCENT}, ${hex})`)]))
+    : fonts
   const dark = modeTokens(pack, 'dark')
   const perMode = Object.fromEntries(TOKEN_NAMES.filter((n) => Object.hasOwn(dark, n)).map((n) => [n, dark[n] as string]))
   const bands = { tablet, mobile }

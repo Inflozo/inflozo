@@ -1276,6 +1276,47 @@ check('Story 7.8 — leftovers over the pilot theme says nothing: no consumed di
   if (said.length > 0) throw new Error(said.join('\n'))
 })
 
+// ── Story 7.10: the pilots with promoted settings (FR-Q3) ─────────────────────────────────────────────────────────────
+// A second pilot compile with five settings promoted (`pilotSettings`: A4 #13's switch, its choice shown only while the
+// button is on, its Sub, A17 #1's Title, the accent) — `config.custom` written in the same change as every reader — gated
+// on both pinned checkers behind §73's scaffold, by the quality gate and the strip's oracle; the compile without settings
+// stays exactly as every row above reads it. Each behind its control.
+const pilots710 = pilots.compilePilots(WORDS, { ...THEME, find: PILOT_LIBRARY, settings: true })
+const scaffolded710 = { ...pilots710.files, ...pilots.SCAFFOLD }
+const gscan710 = await gscanOr(scaffolded710)
+// the control's plant: A17 #1's Title read nowhere — its guarded element taken out whole, so the key is declared and unread
+const unread710 = Object.fromEntries(Object.entries(scaffolded710).map(([p, b]) => [p, typeof b === 'string' ? b.replace(/\{\{#if @custom\.title\}\}\s*<h2 class="a17-1__title">\{\{@custom\.title\}\}<\/h2>\s*\{\{\/if\}\}/g, '') : b]))
+if (Object.keys(unread710).every((p) => unread710[p] === scaffolded710[p])) throw new Error('the Story 7.10 plant changed nothing, so its control would prove nothing')
+const gscanUnread710 = await gscanOr(unread710)
+for (const m of MAJORS) {
+  check(`control — Story 7.10: the promoted pilots with the Title's reader taken out raise exactly GS100-NO-UNUSED-CUSTOM-THEME-SETTING under ${pinOf(m)}`, () => {
+    const got = raised(gscanUnread710[m])
+    if (got.join() !== 'error GS100-NO-UNUSED-CUSTOM-THEME-SETTING') throw new Error(`the planted theme raises ${JSON.stringify(got)}`)
+  })
+  check(`Story 7.10 — the pilots with five settings promoted raise no error and no warning under ${pinOf(m)} (behind §73's scaffold)`, () => {
+    const got = raised(gscan710[m])
+    if (got.length > 0) throw new Error(got.join('\n'))
+    return `config.custom: ${pilots710.custom.emitted.join(', ')}`
+  })
+}
+check('Story 7.10 — the promoted pilots\' quality verdict is empty, the strip is sound with no gap (a promoted root read as every value Ghost could give it), and themeFailures is clean', () => {
+  const q = qualityOf(pilots710.files)
+  if (q.blocked || q.errors.length + q.warnings.length > 0) throw new Error(said78(q).join('\n'))
+  const c = pilots.cssFailures(pilots710, PILOT_LIBRARY)
+  if (c.failures.length + c.warnings.length > 0) throw new Error([...c.failures, ...c.warnings].join('\n'))
+  const t = pilots.themeFailures(pilots710.files, pilots710.instanceIds)
+  if (t.length > 0) throw new Error(t.join('\n'))
+})
+check('control — Story 7.10: the strip\'s oracle reads a promoted root as its values — a promoted size rule cut from the sheet is a soundness failure', () => {
+  const sheets = { ...pilots710.css.sheets, 'a4/13': pilots710.css.sheets['a4/13'].replace(/\.a4-13\[data-headline-size="medium"\][^}]*\}/, '') }
+  return mustFail(pilots.cssFailures({ ...pilots710, css: { ...pilots710.css, sheets } }, PILOT_LIBRARY).failures, /^FR-G7: a4\/13's sheet lost a rule a placed root reaches — .*data-headline-size="medium"/, 'a cut Medium rule')
+})
+check('Story 7.10 — the pilot compile without settings declares no config.custom and reads no @custom, so every row above reads today\'s theme', () => {
+  if ('custom' in JSON.parse(pilotTheme['package.json']).config) throw new Error('the pilot theme declares config.custom')
+  const hit = Object.entries(pilots.textFiles(pilotTheme)).filter(([, b]) => b.includes('@custom')).map(([p]) => p)
+  if (hit.length > 0) throw new Error(`@custom in ${hit.join(', ')}`)
+})
+
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────
 const targets = rendered.reduce((t, r) => t + r.entry.compileTarget.length, 0)
 const files = rendered.reduce((t, r) => t + Object.keys(r.files).length, 0)

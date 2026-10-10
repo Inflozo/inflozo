@@ -17,6 +17,7 @@ import type { PlanId } from '@/lib/plan'
 import { carriesMemberVisibility, docRefusal, pilot, pilotIds } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { readViewed, type Visitor } from '@/lib/view-as'
+import { SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
 
 /**
  * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
@@ -183,6 +184,11 @@ export type EditorData = {
   /** STORY 6.4 — S7d's "From your site": the linked site's stored brand accent (Story 3.4), through `isAccent`, as
    *  `#RRGGBB` — or null where no site is linked or it holds none */
   siteAccent: string | null
+  /** STORY 7.10 — the project's custom settings (Theme settings' rows, `storedSettings`), in their order: what the panel draws
+   *  as "In Ghost", what the canvas paints as P0-1's plain-text lock, and what Delete, Hide, a shuffle and a pack switch
+   *  warn about. A failed read is none, logged — the safe side the prefs read takes: the editor draws every promote action
+   *  and no tag, and Theme settings stays the truth */
+  settings: readonly StoredSetting[]
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -194,7 +200,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // `cache`d, and the 404 guard above this boundary already read it — so this is the linked site's id at no cost, and
   // the site's own row can join the reads below rather than follow them
   const linked = (await projectOf(projectId))?.linked_site_id ?? null
-  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -220,6 +226,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 5.20 — and its `site_settings`, for FR-H6's record of the member switches (`storedMembers` reads the one key)
     // Story 5.21 — and for the snapshot Ghost's two surfaces are drawn from (`storedSurfaces`)
     linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version').eq('id', linked).maybeSingle(),
+    // Story 7.10 — the project's custom settings, through the user's own session as Theme settings reads them (RLS)
+    sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', projectId).order('position').order('created_at'),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -377,5 +385,12 @@ export async function editorData(projectId: string): Promise<EditorData> {
     pairings: pairingChoices(),
     pairingFaces: pairingGlyphFacesCss(canvasRouteOn((await headers()).get('host'))),
     siteAccent: siteAccentOf(siteRow?.data?.site_settings),
+    settings: settingsRead(settingsRow),
   }
+}
+
+/** Story 7.10 — a failed settings read is none, logged by code, never a black editor (the prefs read's safe side). */
+function settingsRead(row: { data: unknown[] | null; error: { code?: string } | null }): StoredSetting[] {
+  if (row.error) console.error('editorData: the custom settings could not be read', { code: row.error.code })
+  return row.error ? [] : storedSettings(row.data)
 }

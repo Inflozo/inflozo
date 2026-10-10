@@ -1728,6 +1728,40 @@ The render-neutral claim rests on every design's text sitting under `white-space
 setting `white-space: pre`, `pre-wrap`, `pre-line` or `break-spaces` on anything but a `pre` or `textarea` is refused
 (`white-space-pre`); a design that needs one is a question for the owner before it is built.
 
+**What a design is promoted from, and how the theme reads it** *(Story 7.10, FR-Q3)*. A customer can hand a section's
+switch or choice, a text or rich text it prints, a picture it prints, or the pack's accent to their site's owner as a Ghost
+theme setting (Theme settings, or the ↗ beside the row in the panel). Nothing in a design declares this — the rules are
+`packages/section-runtime/src/custom-settings.ts`'s, one module — but what you author decides what can be promoted:
+
+- **A toggle, segmented or named select** becomes Ghost's `boolean` or `select`. In the theme its root attribute becomes
+  ONE `{{#match}}` reader — `data-x="{{#match @custom.k true}}on{{else match @custom.k false}}off{{else}}on{{/match}}"`, a
+  choice's branches `{{#match @custom.k "=" "Label"}}value` over every value label (the three-argument form, which both
+  pinned gscans hold to the select's own options) — its `{{else}}` the value the canvas stamped. Your stylesheet is
+  unchanged (AD-3), and the strip keeps a rule for every value of a promoted control. **Write `valueLabels` with no
+  quote, apostrophe, backslash or brace** — such a control is never offered, because a label is a quoted `{{#match}}`
+  argument (AD-36). A stepper and a swatch row are never promoted. **A `disabledBy` holds on the live site too:** a
+  control another greys follows that control's setting there — a4/13's secondary action reads the promoted primary's
+  setting, `off` wherever it is `off` — so the rule you wrote is never broken by a value Ghost holds, and the strip keeps
+  every value of the follower as well.
+- **A `text` or `richtext` prop** becomes Ghost's plain `text`: the theme prints `{{@custom.k}}` wherever the design prints
+  the prop, inside `{{#if @custom.k}}` so an emptied value takes the prop's own empty behaviour — a catalog label's `{{t}}`,
+  otherwise the element left out (DW-349's rule). A rich text keeps its marks in the doc while bound, out of force: the
+  canvas and the panel draw it as P0-1's plain-text lock, and deleting the setting brings the formatting back. **A prop
+  carrying `tokens` (R-27) is never promoted** (Ghost would print `{members}` as typed), and neither is a `url`, `date`,
+  `icon` or `array` prop, nor a field inside an authored list. A promoted text never reaches a URL attribute (refused by
+  name).
+- **An `image` prop** read into `src` becomes Ghost's `image`: `src="{{#if @custom.k}}{{img_url @custom.k}}{{else}}…the
+  section's own picture…{{/if}}"`, or, with no picture of its own, the element guarded on the setting (with `srcsetExpr`
+  of it where the element carries `sizes`).
+- **The accent** sets one custom property in `default.hbs`'s head from `{{@custom.*}}`, and the token block reads it through
+  `var(--setting-accent, #hex)` wherever its light value is or holds the accent — so author accent-coloured parts with
+  the accent's tokens (`--accent`, `--button-fill`, the link tokens), never a literal hex, or a site owner's colour will
+  not reach them.
+
+The compile refuses a setting whose section is gone, hidden or no longer offers what it was promoted from, in the
+module's own words, and leaves out one a shuffle parked (FR-D19); its last check holds the declared keys and the
+`{{@custom.*}}` readers to one set, so `GS100` and `GS090` cannot fire.
+
 ---
 
 ## 4 · The refusals, and why each exists

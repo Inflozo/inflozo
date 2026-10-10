@@ -32,7 +32,7 @@ import {
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
-import { PAGE_NUMBER_HBS, REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw, serializeMarks, stampControls } from './index.ts'
+import { PAGE_NUMBER_HBS, REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw, serializeMarks, srcsetExpr, stampControls } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { ControlDef } from '@inflozo/library'
 import type { RenderInput, RuntimeElement } from './index.ts'
@@ -1642,4 +1642,67 @@ test('DW-159 — a designer\'s comment ships from neither emitter, and the runti
   // review 5.24c: a comment inside a <template> — a tree of its own in a browser's DOM — is dropped too
   const tpl = agree('<section class="s"><template><!-- in a template --><p>x</p></template></section>', {})
   for (const out of [tpl.canvas, tpl.theme]) assert.doesNotMatch(out, /<!--/, out)
+})
+
+// ── STORY 7.10 — a promoted control, text and picture. The canvas ignores `promoted` and draws every value at its start
+//    (Question 1: the canvas decides); the theme reads Ghost's setting. Structure agrees; every difference is asserted
+//    positively, so nobody can "fix" one into agreement. ──
+const PROMOTED_SRC = `<section class="p" data-icons="on" data-size="large">
+  <h1 class="p__title" data-prop="title" data-empty="hide">t</h1>
+  <a class="p__cta" data-prop="cta" data-prop-attr="href:ctaUrl">c</a>
+  <img class="p__img" data-prop-attr="src:picture" data-empty="hide" alt="">
+  <img class="p__logo" data-prop-attr="src:logo" data-empty="hide" sizes="96px" alt="">
+</section>`
+const promotedInput = (promoted: RenderInput['promoted'] | undefined): RenderInput => ({
+  schema: {
+    title: { type: 'richtext', label: 'Title', marks: ['strong'] } as PropDef,
+    cta: { type: 'text', label: 'Button text', catalog: 'member.signup_cta' } as PropDef,
+    ctaUrl: { type: 'url', label: 'Link' } as PropDef,
+    picture: { type: 'image', label: 'Picture' } as PropDef,
+    logo: { type: 'image', label: 'Logo' } as PropDef,
+  },
+  controlSchema: [
+    { name: 'icons', type: 'toggle', label: 'Show icons', group: 'content', values: ['on', 'off'], default: 'on' },
+    { name: 'size', type: 'segmented', label: 'Size', group: 'style', values: ['medium', 'large'], default: 'large' },
+  ],
+  controls: { size: 'medium' },
+  // the editor paints a bound rich text as P0-1's plain-text lock, a render-time copy (the stored doc keeps its marks)
+  content: { title: { text: 'Hello there', marks: [{ start: 0, end: 5, mark: 'strong' }], plainText: true }, cta: '', ctaUrl: 'https://ok.example/x', picture: 'one' },
+  assets: { one: '/pool/one.svg' },
+  ...(promoted === undefined ? {} : { promoted }),
+})
+const PROMOTED: RenderInput['promoted'] = {
+  controls: {
+    icons: { key: 'show_icons', type: 'boolean', options: null },
+    size: { key: 'text_size', type: 'select', options: [{ value: 'medium', label: 'Medium' }, { value: 'large', label: 'Large' }] },
+  },
+  props: { title: 'title_words', cta: 'button_text', picture: 'picture', logo: 'logo' },
+}
+
+test('Story 7.10 — a promoted switch, choice, text, catalog text and picture: the emitters agree on structure, the canvas draws the start, the theme reads {{@custom.*}}', () => {
+  // decided as the canvas draws the start: the text has words, the logo none chosen (the canvas has no picture to draw)
+  const { canvas, theme } = agreeDecided(PROMOTED_SRC, promotedInput(PROMOTED), { '@custom.title_words': true, '@custom.logo': false })
+  // the canvas ignores `promoted` entirely: byte-identical to a render without it
+  assert.equal(canvas, renderCanvas(doc(), PROMOTED_SRC, promotedInput(undefined)))
+  assert.match(canvas, /<section class="p" data-icons="on" data-size="medium" /)
+  assert.ok(canvas.includes('>Hello there</h1>') && canvas.includes('src="/pool/one.svg"'), canvas)
+  // the lock is the canvas's only change to the words: its marks are out of force, never deleted (the control)
+  const marked = promotedInput(PROMOTED)
+  assert.ok(renderCanvas(doc(), PROMOTED_SRC, { ...marked, content: { ...marked.content, title: { text: 'Hello there', marks: [{ start: 0, end: 5, mark: 'strong' }] } } }).includes('<strong>Hello</strong> there'))
+  // THE DIFFERENCES, each positively. A control: one attribute, its setting's {{#match}} chain, its {{else}} the start
+  assert.ok(theme.includes('data-icons="{{#match @custom.show_icons true}}on{{else match @custom.show_icons false}}off{{else}}on{{/match}}"'), theme)
+  assert.ok(theme.includes('data-size="{{#match @custom.text_size "=" "Medium"}}medium{{else match @custom.text_size "=" "Large"}}large{{else}}medium{{/match}}"'), theme)
+  // a text: Ghost's words, the element left out while they are empty, and no mark of the canvas's in the theme
+  assert.match(theme, loosely('{{#if @custom.title_words}}<h1 class="p__title">{{@custom.title_words}}</h1>{{/if}}'))
+  assert.doesNotMatch(theme, /<strong>|Hello there/)
+  // a catalog label's own empty behaviour is its translated string
+  assert.ok(theme.includes('<a class="p__cta" href="https://ok.example/x">{{#if @custom.button_text}}{{@custom.button_text}}{{else}}{{t "member.signup_cta"}}{{/if}}</a>'), theme)
+  // a picture: Ghost's while set, else the section's own; with none of its own, the element is left out until one is chosen
+  assert.ok(theme.includes('src="{{#if @custom.picture}}{{img_url @custom.picture}}{{else}}/pool/one.svg{{/if}}"'), theme)
+  assert.match(theme, /\{\{#if @custom\.logo\}\}\s*<img[^>]*class="p__logo"[^>]*>\s*\{\{\/if\}\}/)
+  assert.ok(theme.includes(`srcset="${srcsetExpr('@custom.logo')}"`), 'a srcset where the element carries sizes')
+  // the control: without `promoted` the theme bakes, exactly as before this story
+  const baked = renderTheme(doc(), PROMOTED_SRC, promotedInput(undefined)).template
+  assert.doesNotMatch(baked, /@custom/)
+  assert.match(baked, /data-icons="on"\s+data-size="medium"/)
 })

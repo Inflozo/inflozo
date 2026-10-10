@@ -3,6 +3,7 @@
 import { AssetRow } from '@/components/kit/image-control'
 import { openPopover } from '@/components/kit/select'
 import { ring } from '@/components/kit/greyed'
+import type { ReactNode } from 'react'
 
 /* The Image Picker (Appendix C, Story 4.5): the Kit's asset row (`Editor Sidebar Kit.dc.html:256`) over a
    pool of pictures. An image prop stores an ASSET ID and the render resolves it (AD-27(b)), so what this
@@ -18,19 +19,23 @@ export function ImagePicker({
   value,
   assets,
   onChange,
+  aside = null,
 }: {
   id: string
   label: string
   value: unknown
   assets: readonly Asset[]
   onChange: (id: string) => void
+  /** Story 7.10 — the label row's slot the Kit's other controls have: the promote action or the "In Ghost" tag */
+  aside?: ReactNode
 }) {
   const current = assets.find((a) => a.id === value)
   const pop = `${id}-pool`
   return (
     <div className="flex flex-col gap-[5px]">
-      <span id={`${id}-label`} className="text-control-label font-medium text-ink-soft">
-        {label}
+      <span className="flex items-center gap-[6px] text-control-label font-medium text-ink-soft">
+        <span id={`${id}-label`}>{label}</span>
+        {aside}
       </span>
       <AssetRow
         name={current ? `${current.id}.svg` : 'No picture'}

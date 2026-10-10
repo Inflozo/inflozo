@@ -5,7 +5,7 @@ import { checkSetting, claimKey, clearProject, ghostName, parseDoc, postsPerPage
 import type { ProjectDoc, SettingGroup, SettingRow } from '@inflozo/section-runtime'
 import { isUuid, settingsPath, templateKeyOf } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
-import { conditionOf, placedControls, promotable, refusalOf, ruleRow, SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
+import { conditionOf, packInForce, placedControls, promotable, refusalOf, ruleRow, SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
 import { editorData, projectOf } from '../(editor)/read'
 
 /** The route as NEXT sees it — under the internal `/app` prefix the proxy strips, which is the form every other
@@ -177,11 +177,16 @@ async function settingsOf(supabase: Supabase, id: string): Promise<StoredSetting
 // sentence) live in `lib/theme-settings.ts`, where `settings.test.ts` runs them — a 'use server' file exports actions only.
 
 /**
- * QUESTION 1, RULED OPTION 1 — a toggle, segmented or named select promoted to a Ghost setting. The control is found again
- * HERE, through `editorData` (the read the page makes), so what is stored is a control on a visible instance of a stored
- * doc, at its current value, never one already promoted — whatever the form posted. The key is the label's, claimed past
- * the keys taken, worked out HERE as the form shows it, and nothing else posted can name one; the label stored is the name
- * Ghost makes of that key, because Ghost names a setting by its key alone (Question 6, ruled option 1, owner, 2026-10-10).
+ * QUESTION 1, RULED OPTION 1 — a toggle, segmented or named select promoted to a Ghost setting; since Story 7.10 a text,
+ * a rich text, a picture or the accent too. What is promoted is found again HERE by the id the form posted (`promote`,
+ * `bindingId`), through `editorData` (the read the page makes), so what is stored is a control or a prop on a visible
+ * instance of a stored doc, at its value now, or the pack in force's accent — never one already promoted, whatever the form
+ * posted. A rich text and the accent need the page's confirm (D6c, the accent's caution): a post without `confirmed` is
+ * refused with the module's sentence. The key is the label's, claimed past the keys taken, worked out HERE as the form
+ * shows it, and nothing else posted can name one; the label stored is the name Ghost makes of that key, because Ghost names
+ * a setting by its key alone (Question 6, ruled option 1, owner, 2026-10-10). `bound_to` is the binding's own shape and
+ * `default_value` the start at promotion — the record of what was promoted; the compile reads the canvas's start (Story
+ * 7.10's Question 1).
  */
 export async function promoteControl(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
   const id = idOf(formData)
@@ -201,9 +206,10 @@ export async function promoteControl(_previous: SettingsResult | null, formData:
     return { error: SETTING_WORDS.couldNot }
   }
   const synthesized = new Set(data.synthesized.map(templateKeyOf))
-  const chosen = promotable(placedControls(data.docs, data.entries, synthesized), rows)
-    .find((c) => c.instanceId === formData.get('instance') && c.controlKey === formData.get('control'))
+  const pack = packInForce(data.preset, data.packs, data.ownPacks)
+  const chosen = promotable(placedControls(data.docs, data.entries, synthesized, pack), rows).find((c) => c.id === formData.get('promote'))
   if (chosen === undefined) return { error: SETTING_WORDS.noControl }
+  if (chosen.confirm !== null && formData.get('confirmed') !== 'yes') return { error: SETTING_WORDS.confirm }
 
   const key = claimKey(new Set(rows.map((r) => r.key)), settingKey(String(formData.get('label') ?? '')))
   const others = rows.map(ruleRow)
@@ -221,7 +227,7 @@ export async function promoteControl(_previous: SettingsResult | null, formData:
     project_id: id,
     user_id: user.id,
     ...row,
-    bound_to: { kind: 'control', instanceId: chosen.instanceId, controlKey: chosen.controlKey },
+    bound_to: chosen.binding,
     position: Math.max(0, ...rows.map((r) => r.position)) + 1,
   })
   if (error) {
@@ -232,9 +238,10 @@ export async function promoteControl(_previous: SettingsResult | null, formData:
   return { ok: true }
 }
 
-/** A stored setting edited — its group, default and condition, and NEVER its key or its label: the update grant omits `key`
- *  (FR-Q2), and Ghost names a setting by its key alone, so the label is the key's words and is fixed with it (Question 6,
- *  ruled option 1, owner, 2026-10-10) — a posted `label` is not read. */
+/** A stored setting edited — its group and condition, and NEVER its key, its label or its default: the update grant omits
+ *  `key` (FR-Q2), and Ghost names a setting by its key alone, so the label is the key's words and is fixed with it (Question
+ *  6, ruled option 1, owner, 2026-10-10) — a posted `label` is not read; and the canvas decides where a setting starts
+ *  (Story 7.10's Question 1, ruled option 1), so a posted `default` is not read either. */
 export async function updateSetting(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
   const id = idOf(formData)
   const settingId = formData.get('setting')
@@ -252,14 +259,13 @@ export async function updateSetting(_previous: SettingsResult | null, formData: 
   const row: SettingRow = {
     ...ruleRow(current),
     group_name: (posted('group') ?? current.group_name) as SettingGroup,
-    default_value: posted('default') ?? current.default_value,
     visibility_condition: conditionOf(formData, others),
   }
   const refused = checkSetting(row, others)
   if (refused !== null) return { error: refused }
   const { data, error } = await supabase
     .from('custom_settings')
-    .update({ group_name: row.group_name, default_value: row.default_value, visibility_condition: row.visibility_condition, updated_at: new Date().toISOString() })
+    .update({ group_name: row.group_name, visibility_condition: row.visibility_condition, updated_at: new Date().toISOString() })
     .eq('id', current.id)
     .eq('project_id', id)
     .select('id')

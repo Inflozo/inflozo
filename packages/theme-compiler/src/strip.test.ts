@@ -6,7 +6,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { ControlDef } from '@inflozo/library'
 import { resolveControls } from '@inflozo/section-runtime'
-import { stripCss } from './strip.ts'
+import { ANY_VALUE, stripCss } from './strip.ts'
 
 const seg = (name: string, values: string[], def = values[0] as string, over: Partial<ControlDef> = {}): ControlDef =>
   ({ name, type: 'segmented', label: name, group: 'layout', values, default: def, ...over }) as ControlDef
@@ -122,4 +122,15 @@ test('a sheet it cannot judge comes back unchanged: a stray }, a comment, an unc
   assert.equal(stripCss(A17_CSS, null, root), A17_CSS)
   // the control: the same rule, well formed, is stripped
   assert.equal(stripCss('.a17-1[data-per-row="two"] { gap: 0; }\n.a17-1 { gap: 1px; }', 'a17-1', root), '.a17-1 { gap: 1px; }')
+})
+
+test('Story 7.10 — a promoted control on a root reads as every value it can take: no rule naming it is dropped, while a rule another control rules out still is', () => {
+  // A17 #1 placed at three with Per row promoted: Ghost chooses two, three or four on the live site, so all three stay
+  const promoted = { ...at({ 'per-row': 'three' }), 'per-row': ANY_VALUE }
+  assert.equal(stripCss(A17_CSS, 'a17-1', [promoted]), stripCss(A17_CSS, 'a17-1', [at({ 'per-row': 'two' }), at({ 'per-row': 'three' }), at({ 'per-row': 'four' })]))
+  for (const v of ['two', 'four']) assert.ok(stripCss(A17_CSS, 'a17-1', [promoted]).includes(`[data-per-row="${v}"]`), v)
+  // the Background is not promoted, so a value no root carries is still cut
+  assert.doesNotMatch(stripCss(A17_CSS, 'a17-1', [promoted]), /data-bg="contrast"/)
+  // the control: unpromoted, the root at three drops two and four
+  assert.doesNotMatch(stripCss(A17_CSS, 'a17-1', [at({ 'per-row': 'three' })]), /data-per-row/)
 })

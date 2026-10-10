@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { startTransition, useActionState, useEffect, useOptimistic, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
+import { startTransition, useActionState, useEffect, useOptimistic, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react'
 import {
   claimKey, conditionValues, ghostName, GHOST_SETTING_GROUPS, GROUP_WORDS, POSTS_PER_PAGE, SETTING_WORDS, settingKey,
   USER_SETTING_CAP, type SettingGroup, type Visibility,
@@ -12,18 +12,19 @@ import { ConditionRow } from '@/components/kit/condition-row'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { BusyLabel, Submit, useSubmitting } from '@/components/kit/submit'
 import { greyedProps, ReadOnly, reason, ring, type Greyed } from '@/components/kit/greyed'
-import { Lock } from '@/components/kit/icons'
+import { AlertTriangle, Lock, TypeGlyph } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { CounterChip, HelperCaption } from '@/components/kit/labels'
 import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { MoonBadge } from '@/components/kit/moon-badge'
 import { Select } from '@/components/kit/select'
 import { StepperBox } from '@/components/kit/stepper'
-import { Toggle } from '@/components/kit/toggle'
 import { sitesPath } from '@/lib/connect-rule'
 import { LOCK_COPY, TAB_SESSION_KEY } from '@/lib/lock'
+import { isRich, type Mark, type PropValue } from '@inflozo/section-runtime'
 import {
-  choicesOf, conditionWord, fileName, settingsReadOnly, startOf, THEME_WORDS, type Promotable, type SiteBasics, type StoredSetting,
+  choicesOf, conditionWord, droppedWords, fileName, settingsReadOnly, startOf, THEME_WORDS, type Promotable, type RowState, type SiteBasics,
+  type StoredSetting,
 } from '@/lib/theme-settings'
 import {
   clearProjectDarkOverrides, deleteSetting, promoteControl, setPostsPerPage, setProjectMode, updateSetting, type SettingsResult,
@@ -45,10 +46,18 @@ import {
    values and the one in force (Question 5), the form says what the site's owner will see in Ghost (Question 5, D6c's
    "What ships" extrapolated), and every setting is named ONCE, by its key, because that is all Ghost reads (Question 6).
 
+   STORY 7.10 COMPLETES THE RIGHT COLUMN: Promote a control offers a section's texts, rich texts and pictures and the Style
+   Pack's accent beside its switches and choices, and opens on the one the editor's ↗ named (`?promote=`); a rich text asks
+   D6c's confirm first (`:291-317` — its line with and without its formatting) and the accent its caution, each a Kit sheet
+   opening on Cancel with **Promote it** saying it is busy while it posts; each row prints the start the canvas holds and,
+   where the compile would leave it out or refuse it, its state's sentence (the module's `bindingState`); the promoted
+   accent carries D6a's colour caption (`:168-177`); Edit keeps Group and Only show when and no longer edits a Default
+   (Question 1, ruled option 1: the canvas decides the start); and Site basics' accent says what Ghost's own colour is
+   for, with its way into Ghost (Question 3, ruled option 1). `compileTheme` writes `config.custom` with the lines that read
+   each key; nothing deploys before Story 7.18.
+
    STILL ABSENT, each a later story's (R-118: absent, not greyed): D6a's left rail (Story 7.12 gives the page a second
-   surface), Credits and D6b's Free row (Story 7.28), and everything a promotion of a text prop, a picture or the accent
-   brings — D6c's confirm, the lock pill, the pack-switch caption on a colour row, parking, the canvas preview (Story 7.10).
-   Nothing here reaches a theme: Story 7.10 writes `config.custom` with the lines that read it.
+   surface), and Credits and D6b's Free row (Story 7.28).
 
    READING ALONG (R-192): while another session holds the project's lock, the whole page is the Kit's `ReadOnly` — every
    editing control disabled and dimmed as B5a dims the editor's panel, every value readable, and LOCK_COPY's one sentence
@@ -78,6 +87,8 @@ export function ThemeSettings({
   settings,
   controls,
   bound,
+  states,
+  promote,
   holder,
 }: {
   projectId: string
@@ -94,6 +105,10 @@ export function ThemeSettings({
   controls: readonly Promotable[]
   /** each row's "Layer · Control", by setting id */
   bound: Readonly<Record<string, string>>
+  /** Story 7.10 — each row's state and start, by setting id (`rowStates`) */
+  states: Readonly<Record<string, RowState>>
+  /** Story 7.10 — the `?promote=` id the editor's ↗ named; the form opens on it while it is offered */
+  promote: string | null
   /** the session holding the project's lock while it is live, or null */
   holder: string | null
 }) {
@@ -110,7 +125,7 @@ export function ThemeSettings({
             <ModeBlock projectId={projectId} darkEnabled={darkEnabled} overriddenSections={overriddenSections} />
           </div>
           <div aria-hidden className="hidden w-px self-stretch bg-line-faint tablet:block" />
-          <CustomSettings projectId={projectId} settings={settings} controls={controls} bound={bound} />
+          <CustomSettings projectId={projectId} settings={settings} controls={controls} bound={bound} states={states} promote={promote} />
         </ReadOnly>
       </div>
     </>
@@ -183,7 +198,16 @@ function SiteBasicsGroup({ basics }: { basics: SiteBasics | null }) {
               {basics.logo === null ? THEME_WORDS.notSet : fileName(basics.logo)}
             </span>
           </Basic>
-          <Basic label={THEME_WORDS.accent} open below={<AccentCaption />}>
+          <Basic
+            label={THEME_WORDS.accent}
+            open
+            below={
+              <>
+                <span className={CAPTION}>{THEME_WORDS.accentCaption}</span>
+                {basics.admin === null ? null : <a href={basics.admin} target="_blank" rel="noreferrer" className={LINK}>{THEME_WORDS.change}</a>}
+              </>
+            }
+          >
             {basics.accent === null ? null : <span aria-hidden className="size-[22px] shrink-0 rounded-[6px] shadow-hairline-inset" style={{ background: basics.accent }} />}
             <span className={`min-w-0 flex-1 text-[12.5px] ${basics.accent === null ? 'text-ink-soft' : 'font-mono text-ink'}`}>{basics.accent ?? THEME_WORDS.notSet}</span>
           </Basic>
@@ -194,15 +218,6 @@ function SiteBasicsGroup({ basics }: { basics: SiteBasics | null }) {
 }
 
 const CAPTION = 'text-[11.5px] leading-[1.45] text-ink-soft'
-
-function AccentCaption() {
-  const [feeds, variable, rest] = THEME_WORDS.accentCaption
-  return (
-    <span className={CAPTION}>
-      {feeds}<span className="font-mono text-[11px]">{variable}</span>{rest}
-    </span>
-  )
-}
 
 /** One Ghost-owned value: its label, the value in D6a's field — locked and grey unless `open` (the accent's white one),
  *  with "from Ghost" unless `chip` is false (the title's) — and what D6a draws under it. */
@@ -222,11 +237,13 @@ function Basic({ label, chip = true, open = false, below, children }: { label: s
 
 /* ───────────────────────────── Custom settings (FR-Q2, D6a :139-235) ───────────────────────────── */
 
-function CustomSettings({ projectId, settings, controls, bound }: {
+function CustomSettings({ projectId, settings, controls, bound, states, promote }: {
   projectId: string
   settings: readonly StoredSetting[]
   controls: readonly Promotable[]
   bound: Readonly<Record<string, string>>
+  states: Readonly<Record<string, RowState>>
+  promote: string | null
 }) {
   return (
     <section aria-labelledby="custom-settings" className="flex min-w-0 flex-1 flex-col gap-3">
@@ -248,23 +265,26 @@ function CustomSettings({ projectId, settings, controls, bound }: {
       ) : (
         <ul className="flex list-none flex-col gap-[7px]">
           {settings.map((s) => (
-            <SettingItem key={s.id} projectId={projectId} setting={s} settings={settings} bound={bound[s.id]} />
+            <SettingItem key={s.id} projectId={projectId} setting={s} settings={settings} bound={bound[s.id]} state={states[s.id]} />
           ))}
         </ul>
       )}
-      <PromoteForm projectId={projectId} settings={settings} controls={controls} />
+      <PromoteForm projectId={projectId} settings={settings} controls={controls} promote={promote} />
       <Banner kind="info" live={false}>{THEME_WORDS.afterDeploy}</Banner>
     </section>
   )
 }
 
 /** One stored setting: D6a's row — the label, "Layer · Control → key", the type word — with its condition and its frozen
- *  date when it has them, then Edit (a `<details>`, the browser's own disclosure) and Delete. */
-function SettingItem({ projectId, setting, settings, bound }: {
+ *  date when it has them, then Edit (a `<details>`, the browser's own disclosure) and Delete. Story 7.10: the start the
+ *  canvas holds for a switch, a choice and the accent; the state's sentence where the compile would leave the setting out
+ *  or refuse it; and, on the promoted accent, D6a's colour caption (`:168-177`). */
+function SettingItem({ projectId, setting, settings, bound, state }: {
   projectId: string
   setting: StoredSetting
   settings: readonly StoredSetting[]
   bound: string | undefined
+  state: RowState | undefined
 }) {
   const when = setting.visibility_condition
   const target = when === null ? undefined : settings.find((o) => o.key === when.key)
@@ -281,8 +301,17 @@ function SettingItem({ projectId, setting, settings, bound }: {
         </div>
         <span className="shrink-0 rounded-pill border border-line px-[7px] py-[2px] text-[10px] font-semibold text-ink-soft-aa">{THEME_WORDS.typeWord(setting.type)}</span>
       </div>
+      {state?.start == null ? null : <HelperCaption>{THEME_WORDS.starts(state.start)}</HelperCaption>}
+      {state?.note == null ? null : <span data-setting-state={state.state}><HelperCaption>{state.note}</HelperCaption></span>}
       {when === null ? null : <HelperCaption>{THEME_WORDS.onlyWhen(ghostName(target?.key ?? when.key), when.value)}</HelperCaption>}
       {setting.frozen_at === null ? null : <HelperCaption>{THEME_WORDS.frozenSince(setting.frozen_at)}</HelperCaption>}
+      {(setting.bound_to as { kind?: unknown }).kind === 'token' ? (
+        // D6a's colour row caption (`:176`): the marigold note, its triangle, the frame's words
+        <span className="flex items-start gap-[7px] rounded-[8px] border border-marigold-line bg-marigold-tint-soft p-[7px_9px] text-[11px] leading-[1.5] text-marigold-text">
+          <AlertTriangle size={12} strokeWidth={1.9} className="mt-[2px] shrink-0 text-marigold-solid" />
+          {THEME_WORDS.accentRowCaption}
+        </span>
+      ) : null}
       <div className="flex items-start gap-3">
         <EditForm projectId={projectId} setting={setting} others={settings.filter((o) => o.id !== setting.id)} />
         <DeleteForm projectId={projectId} setting={setting} dependents={settings.filter((o) => o.visibility_condition?.key === setting.key).map((o) => ghostName(o.key))} />
@@ -296,7 +325,6 @@ function EditForm({ projectId, setting, others }: { projectId: string; setting: 
   const details = useRef<HTMLDetailsElement>(null)
   // controlled, so a refusal keeps what was chosen (React resets a form after every action)
   const [group, setGroup] = useState<SettingGroup>(setting.group_name)
-  const [byDefault, setByDefault] = useState(setting.default_value)
   const [when, setWhen] = useState<Visibility | null>(setting.visibility_condition)
   useEffect(() => {
     if (!state || !('ok' in state) || !details.current) return
@@ -328,20 +356,8 @@ function EditForm({ projectId, setting, others }: { projectId: string; setting: 
           <HelperCaption>{THEME_WORDS.nameFixed}</HelperCaption>
         </div>
         <GroupField id={`${id}-group`} group={group} onGroup={setGroup} />
-        {/* the two kinds this story makes; Story 7.10's kinds bring their own default field, and until then no default is
-            posted for one, so the action keeps the stored value */}
-        {setting.type === 'boolean' ? (
-          <Toggle id={`${id}-default`} label={THEME_WORDS.defaultValue} checked={byDefault === 'true'} onToggle={(on) => setByDefault(on ? 'true' : 'false')} />
-        ) : setting.type === 'select' ? (
-          <Select
-            id={`${id}-default`}
-            label={THEME_WORDS.defaultValue}
-            value={byDefault ?? ''}
-            options={(setting.options ?? []).map((o) => ({ value: o.label, label: o.label, active: o.label === byDefault }))}
-            onSelect={setByDefault}
-          />
-        ) : null}
-        {setting.type === 'boolean' || setting.type === 'select' ? <input type="hidden" name="default" value={byDefault ?? ''} /> : null}
+        {/* Question 1, ruled option 1 (owner, 2026-10-10): the canvas decides where a setting starts, and the row prints
+            it — so Edit has no Default of its own, and `updateSetting` writes none */}
         <WhenField id={`${id}-when`} when={when} others={others} onWhen={setWhen} />
         <Submit busy={THEME_WORDS.saving} variant="primary" size={32} className="self-start">{THEME_WORDS.save}</Submit>
         {alert(state)}
@@ -495,21 +511,25 @@ function DeleteButton({ onAsk }: { onAsk: () => void }) {
  *  form, before Promote, one sentence says what the site's owner will see in Ghost and what it changes — D6c's "What
  *  ships" box, extrapolated (R-74). Question 6 (option 1): Ghost names a setting by its key alone (`ghostName`), so the
  *  key is the label's, shown read-only as D6a draws it (`:197-202`) and worked out again by the action, never posted. */
-function PromoteForm({ projectId, settings, controls }: { projectId: string; settings: readonly StoredSetting[]; controls: readonly Promotable[] }) {
+function PromoteForm({ projectId, settings, controls, promote }: { projectId: string; settings: readonly StoredSetting[]; controls: readonly Promotable[]; promote: string | null }) {
   const [state, dispatch] = useActionState<SettingsResult | null, FormData>(promoteControl, null)
-  // by the control's own id, never its place: a revalidation that adds or drops a row must not move the choice
-  const [chosen, setChosen] = useState<string | null>(null)
+  // by the control's own id, never its place: a revalidation that adds or drops a row must not move the choice. Story 7.10
+  // (Story 7.9's Question 5, option 3): the editor's ↗ names one, and the form opens on it while it is offered — an id not
+  // offered (promoted already, gone, another project's) opens on the first row, as before; it is compared, never parsed
+  const [chosen, setChosen] = useState<string | null>(promote)
   const [typedLabel, setTypedLabel] = useState<string | null>(null)
   const [typedGroup, setTypedGroup] = useState<SettingGroup | null>(null)
   const [when, setWhen] = useState<Visibility | null>(null)
+  const ask = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     if (!state || !('ok' in state)) return
     setChosen(null)
     setTypedLabel(null)
     setTypedGroup(null)
     setWhen(null)
+    ask.current?.close()
   }, [state])
-  const control = controls.find((c) => controlId(c) === chosen) ?? controls[0]
+  const control = controls.find((c) => c.id === chosen) ?? controls[0]
   // the label and the group follow the control until they are changed — what shows is what posts
   const label = typedLabel ?? control?.control ?? ''
   const group = typedGroup ?? control?.group ?? 'site_wide'
@@ -521,15 +541,14 @@ function PromoteForm({ projectId, settings, controls }: { projectId: string; set
     <form action={dispatch} className="flex flex-col gap-[10px] rounded-thumb border border-dashed border-line-strong bg-paper-raised p-3">
       <h3 className="text-[12.5px] font-semibold text-ink">{THEME_WORDS.promote}</h3>
       <input type="hidden" name="project" value={projectId} />
-      <input type="hidden" name="instance" value={control?.instanceId ?? ''} />
-      <input type="hidden" name="control" value={control?.controlKey ?? ''} />
+      <input type="hidden" name="promote" value={control?.id ?? ''} />
       <Select
         id="promote-which"
         label={THEME_WORDS.which}
         value={control?.label ?? '—'}
         options={controls.map((c) => ({
-          value: controlId(c), label: c.label, active: c === control, group: c.page,
-          icon: <LayerThumb glyph={glyphOf(c.category)} />, contents: <ControlRow c={c} />,
+          value: c.id, label: c.label, active: c === control, group: c.page,
+          icon: c.kind === 'token' ? <AccentDot colour={c.setting.default_value ?? ''} /> : <LayerThumb glyph={glyphOf(c.category)} />, contents: <ControlRow c={c} />,
         }))}
         onSelect={setChosen}
         menuWidth="w-[min(440px,calc(100vw-32px))]"
@@ -549,7 +568,20 @@ function PromoteForm({ projectId, settings, controls }: { projectId: string; set
       )}
       <div className="flex items-center gap-[9px]">
         {stopped === undefined ? (
-          <Submit busy={THEME_WORDS.promoting} variant="primary" size={32}>{THEME_WORDS.promoteButton}</Submit>
+          <Submit
+            busy={THEME_WORDS.promoting}
+            variant="primary"
+            size={32}
+            // a rich text and the accent ask first (D6c, the accent's caution): the button stays a plain submit, and the sheet
+            // posts the form itself with the acknowledgement the action requires
+            onClick={(event) => {
+              if (control?.confirm == null) return
+              event.preventDefault()
+              openOnCancel(ask.current)
+            }}
+          >
+            {THEME_WORDS.promoteButton}
+          </Submit>
         ) : (
           <button
             type="button"
@@ -567,16 +599,85 @@ function PromoteForm({ projectId, settings, controls }: { projectId: string; set
       </div>
       {full ? reason('promote-submit', stopped) : null}
       {alert(state)}
+      {control?.confirm == null ? null : <PromoteAsk ask={ask} c={control} name={ghostName(key) || label} />}
     </form>
   )
 }
 
-const controlId = (c: Promotable) => `${c.instanceId}:${c.controlKey}`
+/** The accent's row in Which control: the pack's own accent, where a section's row has its layer's picture. */
+const AccentDot = ({ colour }: { colour: string }) => <span aria-hidden className="size-[14px] shrink-0 rounded-[4px] shadow-hairline-inset" style={{ background: colour }} />
+
+/**
+ * WHAT PROMOTE ASKS FIRST (Story 7.10), inside the form so **Promote it** is a real submit that says it is busy while it
+ * posts (R-98): for a rich text, D6c (`D6 Theme Settings Completed.dc.html:291-317`) — the amber type chip, the title naming
+ * the setting, the frame's sentence, WHAT SHIPS with the line as it is (a link as the frame's mono chip, bold, italic and
+ * underline as they read) and as Ghost will hold it, the marks it drops, then "Demote it later…", Cancel and **Promote
+ * it**; for the accent, the caution in the same sheet. Both open on Cancel (UX-DR14). The action refuses a post without
+ * `confirmed`, so a hand-made POST cannot skip it.
+ */
+function PromoteAsk({ ask, c, name }: { ask: RefObject<HTMLDialogElement | null>; c: Promotable; name: string }) {
+  const accent = c.confirm === 'accent'
+  const dropped = accent ? null : droppedWords(c.value)
+  return (
+    <dialog ref={ask} onClick={closeOnBackdrop} aria-labelledby="promote-ask-title" aria-describedby="promote-ask-body" className={`${sheet} w-[520px] gap-4`}>
+      <div className="flex items-start gap-3">
+        <span aria-hidden className="inline-flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-marigold-tint text-marigold-solid">
+          {accent ? <AlertTriangle size={17} strokeWidth={1.8} /> : <TypeGlyph size={17} />}
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
+          <h2 id="promote-ask-title" className={`${title} text-[19px] leading-[1.2]`}>{accent ? THEME_WORDS.accentTitle : THEME_WORDS.confirmTitle(name)}</h2>
+          <p id="promote-ask-body" className="text-[13px] leading-[1.6] text-ink-mid">{accent ? THEME_WORDS.accentBody : THEME_WORDS.confirmBody}</p>
+        </div>
+      </div>
+      {accent ? null : (
+        <div data-what-ships className="flex flex-col gap-[6px] rounded-thumb border border-line bg-paper-raised p-[11px_12px]">
+          <span className="font-mono text-[10px] tracking-[0.06em] text-ink-soft-aa">{THEME_WORDS.whatShips}</span>
+          <span data-ships="before" className="text-[12.5px] leading-[1.5] text-ink-mid"><Formatted value={c.value} /></span>
+          <div aria-hidden className="h-px bg-line-faint" />
+          <span data-ships="after" className="text-[12.5px] leading-[1.5] text-ink-mid">{isRich(c.value) ? c.value.text : String(c.value ?? '')}</span>
+          {dropped === null ? null : <span className="text-[11px] leading-[1.45] text-ink-soft">{dropped}</span>}
+        </div>
+      )}
+      <div className="flex items-center gap-[10px]">
+        <span className="flex-1 text-[11.5px] leading-[1.45] text-ink-soft">{accent ? null : THEME_WORDS.formattingBack}</span>
+        <Button type="button" variant="secondary" size={36} data-cancel onClick={() => ask.current?.close()}>
+          {THEME_WORDS.cancel}
+        </Button>
+        <Submit busy={THEME_WORDS.promoting} variant="marigold" size={36} name="confirmed" value="yes">
+          {THEME_WORDS.promoteIt}
+        </Submit>
+      </div>
+    </dialog>
+  )
+}
+
+/** A rich text's line as it reads with its marks — D6c's "before": a link as the frame's mono chip, the rest as they look.
+ *  Words only, never markup (AD-4): each run is a text node. */
+function Formatted({ value }: { value: PropValue }) {
+  if (!isRich(value)) return <>{String(value ?? '')}</>
+  const marks = (value.marks ?? []) as readonly Mark[]
+  const cuts = [...new Set([0, value.text.length, ...marks.flatMap((m) => [m.start, m.end])])].filter((n) => n >= 0 && n <= value.text.length).sort((a, b) => a - b)
+  return (
+    <>
+      {cuts.slice(0, -1).map((from, n) => {
+        const to = cuts[n + 1] as number
+        const on = new Set(marks.filter((m) => m.start <= from && m.end >= to).map((m) => m.mark))
+        const words = value.text.slice(from, to)
+        const style = `${on.has('strong') ? 'font-semibold' : ''} ${on.has('em') ? 'italic' : ''} ${on.has('u') ? 'underline' : ''}`
+        return on.has('a')
+          ? <span key={from} className={`rounded-[5px] border border-line bg-line-soft px-[5px] py-px font-mono text-[11.5px] ${style}`}>{words}</span>
+          : <span key={from} className={style}>{words}</span>
+      })}
+    </>
+  )
+}
 
 /** One row of Which control (Question 5): the control's own name with its section beside it, then every value the site's
  *  owner could pick and the one in force now. `data-promotable` carries the row's D6a name, which the deployed walk reads
  *  and chooses it by. */
 function ControlRow({ c }: { c: Promotable }) {
+  const choices = choicesOf(c.setting)
+  const start = startOf(c.setting)
   return (
     <span data-promotable={c.label} className="flex min-w-0 flex-1 flex-col gap-[2px]">
       <span className="flex items-baseline gap-2">
@@ -584,7 +685,9 @@ function ControlRow({ c }: { c: Promotable }) {
         <span className="max-w-[50%] shrink-0 truncate text-[11px] font-normal text-ink-soft-aa">{c.section}</span>
       </span>
       <span className="truncate text-[11px] font-normal text-ink-soft">
-        {choicesOf(c.setting).join(' · ')} — {THEME_WORDS.now(startOf(c.setting))}
+        {/* Story 7.10: a text, a picture and the accent have no values to list — the kind's word, and its start where it has one */}
+        {choices.length > 0 ? `${choices.join(' · ')} — ` : `${THEME_WORDS.typeWord(c.setting.type)}${start === '' ? '' : ' — '}`}
+        {start === '' ? '' : THEME_WORDS.now(start)}
       </span>
     </span>
   )

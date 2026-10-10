@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
+import { USER_SETTING_CAP } from '@inflozo/section-runtime/custom-settings'
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { ShellUserContext } from '@/components/shell/shell'
@@ -98,6 +99,13 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * and a POST CONTENT LAYOUT, so R-37's refusal can be met in the Section Picker (DW-207). Story 7.3 adds a MEMBERS PAGE,
  * placed by nothing here, so D5f's warning can be met on Signup. Never in `packages/library`.
  *
+ * STORY 7.10 — `x-inflozo-harness-promoted: on` hands the editor custom settings as Theme settings would store them: the
+ * fixture ring section's Show icons (a switch), its Heading (a rich text) and its Picture, and the Style Pack's accent —
+ * so `pnpm keyboard` walks the "In Ghost" tags, P0-1's lock pill, the delete ask, the park note and the pack-switch ask
+ * with no database. Without it, none: every promote action is drawn, linking to the harness project's Theme settings.
+ * `x-inflozo-harness-promoted: full` stores as many rows as the user's cap allows, each bound to a section no doc holds, so
+ * every promote action meets the cap greyed (nothing here is "In Ghost").
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -184,6 +192,12 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   // Story 6.4 — the project's stored `style_pack`, as the column would hold it for the pack header
   const packAsked = asked.get('x-inflozo-harness-pack')
   const choices = packChoices()
+  // Story 7.10 — the fixture ring's section on Home, and the settings promoted from it under the header (the accent at
+  // Paper's own light accent, read from the pack — the harness writes no colour)
+  const ringOnHome = docs[templateKeyOf('home')]?.instances.find((i) => i.designId === ring[0]?.id)
+  const promotedAsked = asked.get('x-inflozo-harness-promoted')
+  const settings = promotedAsked === 'full' ? atCap()
+    : promotedAsked === 'on' && ringOnHome !== undefined ? promotedFrom(ringOnHome.instanceId, (choices.find((c) => c.id === 'paper') ?? choices[0]!).record.light.accent) : []
   const stylePack = packAsked === 'custom-1' ? { preset: 'custom-1', packs: { 'custom-1': harnessPack(choices) } } : { preset: packAsked }
 
   const data: EditorData = {
@@ -239,6 +253,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     pairings: pairingChoices(),
     pairingFaces: pairingGlyphFacesCss('/app/harness/canvas'),
     siteAccent: siteAsked === null ? null : hexOf(orbitWeekly.site().accent_color),
+    settings,
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -264,6 +279,30 @@ function harnessPack(choices: readonly { id: string; record: PackRecord }[]): Pa
   const paper = of('paper')
   const ocean = of('ocean').light
   return { ...paper, name: 'Harness Pack', light: { ...paper.light, accent: ocean.accent, onAccent: ocean.onAccent } }
+}
+
+/** Story 7.10 — the rows Theme settings would have stored after promoting the fixture ring section's Show icons, Heading and
+ *  Picture and the accent (keys as the Promote form makes them; nothing deployed, so no key is frozen) */
+function promotedFrom(instanceId: string, accent: string): EditorData['settings'] {
+  const row = (n: number, key: string, type: 'boolean' | 'text' | 'image' | 'color', bound_to: Record<string, unknown>, default_value: string | null) => ({
+    id: `00000000-0000-4000-8000-00000000071${n}`, key, label: key.replace(/^[a-z]/, (c) => c.toUpperCase()).replace(/_/g, ' '), type, options: null,
+    default_value, group_name: 'homepage' as const, visibility_condition: null, bound_to, position: n, frozen_at: null,
+  })
+  return [
+    row(1, 'show_icons', 'boolean', { kind: 'control', instanceId, controlKey: 'icons' }, 'true'),
+    row(2, 'heading', 'text', { kind: 'prop', instanceId, path: 'heading' }, 'Seven links, checked by hand'),
+    row(3, 'picture', 'image', { kind: 'prop', instanceId, path: 'picture' }, null),
+    row(4, 'accent_colour', 'color', { kind: 'token', token: 'accent' }, accent),
+  ]
+}
+
+/** Story 7.10 — a project at its cap: as many switches as the user may promote, each bound to a section no doc holds */
+function atCap(): EditorData['settings'] {
+  return Array.from({ length: USER_SETTING_CAP }, (_, n) => ({
+    id: `00000000-0000-4000-8000-0000000072${String(n).padStart(2, '0')}`, key: `filler_${n + 1}`, label: `Filler ${n + 1}`, type: 'boolean' as const,
+    options: null, default_value: 'true', group_name: 'homepage' as const, visibility_condition: null,
+    bound_to: { kind: 'control', instanceId: 'gone0000', controlKey: 'icons' }, position: n + 1, frozen_at: null,
+  }))
 }
 
 /** Story 5.20 — where the harness's canvases live: its own two pages, never the app's `/projects/<id>` */

@@ -3390,7 +3390,9 @@ value, so **a setting is named once, at Promote** — and deleting a setting war
 the stored value *(Story 7.9's Dev, read in Ghost's admin source, 2026-10-10: Ghost has no label for a theme setting and
 names each by its key — `show_the_button` is "Show the button" in both 5.130.6 and 6.58.0 — so a label could never be
 renamed in Ghost; ruled Question 6, option 1, owner, 2026-10-10. This line previously said "a rename changes the label
-only")*
+only")* *(Story 7.10's Question 2, option 2, owner, 2026-10-10: the stored value comes back only if the key is promoted
+again **before the next deploy** — a deploy that leaves the key out makes Ghost forget it, and the delete confirm now says
+so)*
 **And** the main feed's greyed Count (Story 5.19) gains D5c's second sentence, *"Change it in Theme settings."*,
 and its **Theme settings ↗** link (DW-254)
 **And** the surface matches D6a Pro and D6b Free.
@@ -3503,6 +3505,10 @@ card buttons take Ghost's accent — its "which your Style Pack maps to its acce
 "Change this in Ghost ↗" under it: the link to Ghost's comment accent colour this card asks for.
 **And** *(Question 4, option 1, owner, 2026-10-10)* promoting a picture is built here and proved by machine; no design on a
 real project takes a customer's picture until A1's authored logo, so its hand test moved word for word to Story 9.1.
+**And** *(this story's Dev, 2026-10-10 — the build moved one fact)* a promoted switch's or choice's root attribute is a
+`{{#match}}` reader whose `{{else}}` is the start, and a choice's branches take the three-argument form
+`{{#match @custom.key "=" "Label"}}` — the same strict equality in Ghost's `match.js` (both majors), and the only form gscan's
+`GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH` checks, so both pinned gscans hold every label the theme writes.
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
 test:** yes — but for promoting a picture, whose hand test moved to Story 9.1 (Question 4, owner, 2026-10-10).

@@ -322,8 +322,9 @@ function setPath(o: unknown, path: string, value: unknown): Record<string, unkno
   return base
 }
 
-/** The props the markup names, in markup order — top-level paths, then each array's item props. */
-function markupProps(html: string): string[] {
+/** The props the markup names, in markup order — top-level paths, then each array's item props. Story 7.10: exported, so
+ *  a promoted prop is one the design PRINTS — `custom-settings.ts`'s `bindingState` reads it as the panel does. */
+export function markupProps(html: string): string[] {
   const paths: string[] = []
   for (const tag of scanTags(html)) {
     for (const [k, v] of tag.attrs) {

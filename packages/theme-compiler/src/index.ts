@@ -12,5 +12,5 @@ export {
   checkChromeText, checkGhostMarkup, checkTripleStashes, compileTheme, CSS_BUDGET_BYTES, POST_ARTICLE, REQUIRED_TEMPLATES, requiredTemplates, THEME_MARKER,
   THEME_MARKS, tidyLicence,
 } from './compile.ts'
-export type { CompiledTheme, CompileInput, CssRecord, JsRecord } from './compile.ts'
+export type { CompiledTheme, CompileInput, CompileSetting, CssRecord, CustomRecord, JsRecord } from './compile.ts'
 export { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'

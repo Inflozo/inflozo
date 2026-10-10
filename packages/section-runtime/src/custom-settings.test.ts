@@ -4,11 +4,14 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CONTROL_TYPES, type ControlDef } from '@inflozo/library'
+import { CONTROL_TYPES, PROP_TYPES, type ControlDef, type PropDef } from '@inflozo/library'
 import {
-  checkSetting, claimKey, ghostName, GHOST_SETTING_TYPES, postsPerPage, PROMOTED_TYPE, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS,
-  settingKey, settingOf, USER_SETTING_CAP, visibilityNql, type SettingRow,
+  accentSettingOf, bindingId, bindingOf, bindingState, checkSetting, claimKey, customPath, ghostName, GHOST_SETTING_TYPES, matchChain, postsPerPage,
+  PROMOTED_PROP_TYPE, PROMOTED_TYPE, propSettingOf, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS, settingKey, settingOf, startOf, USER_SETTING_CAP,
+  visibilityNql, type Binding, type HolderEntry, type SettingRow,
 } from './custom-settings.ts'
+import type { DocInstance } from './doc-schema.ts'
+import { REFERENCE_PACK } from './reference.ts'
 
 const control = (over: Partial<ControlDef>): ControlDef =>
   ({ name: 'x', type: 'segmented', label: 'X', group: 'style', values: ['a', 'b'], default: 'a', ...over }) as ControlDef
@@ -131,4 +134,109 @@ test('posts per page: a whole number from 1 to 100, or the sentence', () => {
   assert.equal(postsPerPage('1'), 1)
   assert.equal(postsPerPage('100'), 100)
   for (const bad of ['0', '101', '12.5', 'abc', '', ' ', null, undefined, 12]) assert.equal(postsPerPage(bad), 'Posts per page is a whole number from 1 to 100.', String(bad))
+})
+
+// ─── Story 7.10 — promoting a control, a text, a picture or the accent ─────────────────────────────────────────────
+
+const prop = (over: Partial<PropDef>): PropDef => ({ type: 'text', label: 'Sub', ...over }) as PropDef
+
+test('(7.10) each kind\'s Ghost type and start: a text\'s words, a rich text\'s words without its marks, a picture none, the accent the pack\'s light accent', () => {
+  assert.deepEqual(propSettingOf(prop({}), 'Thursday letter'), { type: 'text', options: null, default_value: 'Thursday letter' })
+  const linked = { text: 'One essay, every Thursday.', marks: [{ start: 16, end: 24, mark: 'a', href: 'https://example.com' }] }
+  assert.deepEqual(propSettingOf(prop({ type: 'richtext', marks: ['a'] }), linked), { type: 'text', options: null, default_value: 'One essay, every Thursday.' })
+  // no words: no start, so Ghost starts it empty and the theme falls back to the prop's own empty behaviour
+  assert.deepEqual(propSettingOf(prop({}), ''), { type: 'text', options: null, default_value: null })
+  assert.deepEqual(propSettingOf(prop({ type: 'image' }), 'asset-1'), { type: 'image', options: null, default_value: null })
+  assert.deepEqual(accentSettingOf(REFERENCE_PACK), { type: 'color', options: null, default_value: REFERENCE_PACK.light.accent })
+  assert.equal(checkSetting(row({ key: 'accent_colour', ...accentSettingOf(REFERENCE_PACK) }), []), null, 'the accent start is a colour Ghost takes')
+  // never promoted: a link, a date, an icon, a list, or a prop carrying R-27's tokens (Ghost would print the braces)
+  for (const type of ['url', 'date', 'icon', 'array'] as const) assert.equal(propSettingOf(prop({ type }), 'x'), null, type)
+  assert.equal(propSettingOf(prop({ tokens: ['members'] }), 'Join {members} readers'), null)
+  for (const t of PROP_TYPES) assert.ok(PROMOTED_PROP_TYPE[t] === null || GHOST_SETTING_TYPES.includes(PROMOTED_PROP_TYPE[t]), t)
+})
+
+test('(7.10) a choice whose value labels carry a quote, a backslash or a brace is never offered (AD-36)', () => {
+  for (const bad of ['Rock "n" roll', "Rock 'n' roll", 'C:\\x', '{wide}', 'wide}']) {
+    assert.equal(settingOf(control({ values: ['a', 'b'], valueLabels: { a: bad } }), 'a'), null, bad)
+  }
+  assert.notEqual(settingOf(control({ values: ['a', 'b'], valueLabels: { a: 'Rock & roll' } }), 'a'), null, 'the control: an ampersand is fine')
+})
+
+test('(7.10) bound_to\'s three shapes, and nothing else', () => {
+  assert.deepEqual(bindingOf({ kind: 'control', instanceId: 'i1', controlKey: 'headline-size' }), { kind: 'control', instanceId: 'i1', controlKey: 'headline-size' })
+  assert.deepEqual(bindingOf({ kind: 'prop', instanceId: 'i1', path: 'sub' }), { kind: 'prop', instanceId: 'i1', path: 'sub' })
+  assert.deepEqual(bindingOf({ kind: 'token', token: 'accent' }), { kind: 'token', token: 'accent' })
+  for (const junk of [null, [], 'control', {}, { kind: 'control', instanceId: 'i1' }, { kind: 'prop', instanceId: '', path: 'sub' }, { kind: 'token', token: 'text' }, { kind: 'other' }]) {
+    assert.equal(bindingOf(junk), null, JSON.stringify(junk))
+  }
+  assert.equal(bindingId({ kind: 'prop', instanceId: 'i1', path: 'sub' }), 'prop:i1:sub')
+  assert.equal(bindingId({ kind: 'token', token: 'accent' }), 'token:accent')
+})
+
+/* A small ring: design 1 declares headline-size and prints sub and picture; design 2 prints sub and declares neither. */
+const D1: HolderEntry = {
+  name: 'Latest Post', controlSchema: [HEADLINE, PRIMARY], universals: {},
+  contentSchema: { sub: prop({ type: 'richtext', marks: ['a'] }), picture: prop({ type: 'image', label: 'Picture' }), link: prop({ type: 'url', label: 'Link' }) },
+  html: '<section class="x"><p data-prop="sub">Sub</p><img data-prop-attr="src:picture" alt=""></section>',
+}
+const D2: HolderEntry = { ...D1, name: 'Centred Notice', controlSchema: [PRIMARY], html: '<section class="y"><p data-prop="sub">Sub</p></section>' }
+const LIB: Record<string, HolderEntry> = { 'a4/1': D1, 'a4/2': D2 }
+const inst = (over: Partial<DocInstance>): DocInstance => ({
+  instanceId: 'i1', layerName: 'Latest Post', designId: 'a4/1', content: { sub: 'Hello there' }, controls: { 'headline-size': 'display' }, data: {}, darkOverrides: {},
+  hidden: false, memberVisibility: 'everyone', isMainFeed: false, parkedControls: {}, ...over,
+})
+const docs = (...instances: DocInstance[]) => [{ instances }]
+const state = (b: Binding, d: ReturnType<typeof docs>, type: SettingRow['type']) => bindingState(b, d, (id) => LIB[id], type, REFERENCE_PACK)
+const HEAD: Binding = { kind: 'control', instanceId: 'i1', controlKey: 'headline-size' }
+const SUB: Binding = { kind: 'prop', instanceId: 'i1', path: 'sub' }
+
+test('(7.10) a binding\'s state: live at the start the canvas holds, parked, hidden, deleted, changed — over every stored doc', () => {
+  const live = state(HEAD, docs(inst({})), 'select')
+  assert.equal(live.state, 'live')
+  assert.equal(live.state === 'live' && live.setting.default_value, 'Display', 'the value IN FORCE, never a stored default')
+  assert.deepEqual(state(SUB, docs(inst({})), 'text'), { state: 'live', setting: { type: 'text', options: null, default_value: 'Hello there' }, holder: { instance: inst({}), entry: D1 } })
+  assert.equal(state({ kind: 'prop', instanceId: 'i1', path: 'picture' }, docs(inst({})), 'image').state, 'live')
+  // parked: the instance is there and visible, on a design that does not declare it (a shuffle)
+  const parked = state(HEAD, docs(inst({ designId: 'a4/2' })), 'select')
+  assert.equal(parked.state, 'parked')
+  assert.equal(parked.state === 'parked' && parked.holder.entry.name, 'Centred Notice')
+  assert.equal(state({ kind: 'prop', instanceId: 'i1', path: 'picture' }, docs(inst({ designId: 'a4/2' })), 'image').state, 'parked', 'a prop the design does not print')
+  assert.equal(state(HEAD, docs(inst({ hidden: true })), 'select').state, 'hidden')
+  assert.equal(state(HEAD, docs(inst({ instanceId: 'other' })), 'select').state, 'deleted')
+  assert.equal(state(HEAD, docs(), 'select').state, 'deleted')
+  // changed: the stored type is not what it derives now, or it derives nothing (a label refused by a library update)
+  assert.equal(state(HEAD, docs(inst({})), 'boolean').state, 'changed')
+  assert.equal(state({ kind: 'prop', instanceId: 'i1', path: 'link' }, docs(inst({})), 'text').state, 'parked', 'a link the markup never prints')
+  const quoted = { ...D1, controlSchema: [{ ...HEADLINE, valueLabels: { medium: 'Med "ium"' } }] }
+  assert.equal(bindingState(HEAD, docs(inst({})), () => quoted, 'select', REFERENCE_PACK).state, 'changed')
+  // a page 2 holds the same instance: one live holder is enough, and the FIRST in the docs' order decides the start
+  const two = [{ instances: [inst({ hidden: true })] }, { instances: [inst({ controls: { 'headline-size': 'medium' } })] }]
+  assert.equal(startOf(HEAD, two, (id) => LIB[id], 'select', REFERENCE_PACK)?.default_value, 'Medium')
+  const both = [{ instances: [inst({})] }, { instances: [inst({ controls: { 'headline-size': 'medium' } })] }]
+  assert.equal(startOf(HEAD, both, (id) => LIB[id], 'select', REFERENCE_PACK)?.default_value, 'Display', 'page 1 before its page 2')
+  // the accent is always live, at the pack's light accent; a stored accent of another type has changed
+  assert.deepEqual(state({ kind: 'token', token: 'accent' }, docs(), 'color'), { state: 'live', setting: accentSettingOf(REFERENCE_PACK) })
+  assert.equal(state({ kind: 'token', token: 'accent' }, docs(), 'text').state, 'changed')
+  assert.equal(startOf(HEAD, docs(inst({ hidden: true })), (id) => LIB[id], 'select', REFERENCE_PACK), null)
+})
+
+test('(7.10) the compile refuses in the module\'s own words, naming the setting as Ghost does', () => {
+  assert.equal(SETTING_WORDS.deleted(ghostName('headline_size')), 'Headline size is promoted from a section that is no longer on your site. Delete the setting in Theme settings, or bring the section back.')
+  assert.equal(SETTING_WORDS.hidden(ghostName('headline_size')), 'Headline size is promoted from a hidden section. Show the section, or delete the setting in Theme settings.')
+  assert.equal(SETTING_WORDS.changed(ghostName('headline_size')), 'Headline size was promoted from a control that has changed. Delete it and promote it again.')
+  assert.equal(SETTING_WORDS.confirm, 'Confirm first — promoting this changes what your theme carries.')
+})
+
+test('(7.10) the reader: a {{#match}} chain over every value, its {{else}} the start; a key or a label the module refuses never reaches it', () => {
+  assert.equal(matchChain('show_the_button', { type: 'boolean', options: null }, 'on'),
+    '{{#match @custom.show_the_button true}}on{{else match @custom.show_the_button false}}off{{else}}on{{/match}}')
+  const choice = settingOf(HEADLINE, 'display') as SettingRow
+  assert.equal(matchChain('headline_size', choice, 'display'),
+    '{{#match @custom.headline_size "=" "Medium"}}medium{{else match @custom.headline_size "=" "Large"}}large{{else match @custom.headline_size "=" "Display"}}display{{else}}display{{/match}}')
+  assert.equal(customPath('sub'), '@custom.sub')
+  for (const key of ['s', 'Sub', 'sub}}{{evil', 'color_scheme', '']) assert.throws(() => customPath(key), /AD-36/, key)
+  assert.throws(() => matchChain('headline_size', { type: 'select', options: [{ value: 'a', label: 'A" onclick="x' }, { value: 'b', label: 'B' }] }, 'a'), /AD-36/)
+  assert.throws(() => matchChain('headline_size', choice, 'huge'), /none of the setting's values/)
+  assert.throws(() => matchChain('headline_size', { type: 'select', options: [{ value: 'A}}', label: 'A' }, { value: 'b', label: 'B' }] }, 'b'), /AD-36/)
+  assert.throws(() => matchChain('sub', { type: 'text', options: null }, 'x'), /no \{\{#match\}\} reader/)
 })

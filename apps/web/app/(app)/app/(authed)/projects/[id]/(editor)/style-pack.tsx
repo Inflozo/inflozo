@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, type KeyboardEvent, type Ref } from 'react'
+import { useRef, type KeyboardEvent, type ReactNode, type Ref } from 'react'
 import { gridKeys } from '@/components/controls/icon-picker'
 import { Button, IconButton } from '@/components/kit/button'
 import { ReadOnly, ring } from '@/components/kit/greyed'
@@ -13,6 +13,7 @@ import { arrowKeys } from '@/lib/menu'
 import { isCustom, PACK_EDIT_WORDS, PILL_STEPS, pillStep, type PairingChoice, type ScaleRow } from '@/lib/pack-edit'
 import { PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
 import { BRAND_COPY } from '@/lib/probe-rule'
+import { THEME_WORDS } from '@/lib/theme-settings'
 
 /* STORY 6.2 — THE PROJECT'S STYLE PACK; STORY 6.3 — AND CHOOSING IT; STORY 6.4 — AND EDITING IT.
 
@@ -69,18 +70,23 @@ function Dots({ colours, size }: { colours: readonly string[]; size: number }) {
   )
 }
 
-/** S4a's card, at rest: the project's pack, the site's colour as the sixth dot, and a Change button that opens the list. */
+/** S4a's card, at rest: the project's pack, the site's colour as the sixth dot, and a Change button that opens the list.
+ *  Story 7.10: under the dots, the pack's accent with its promote action or its "In Ghost" tag — the accent is the one
+ *  colour a site's owner can be handed (FR-Q3), and D6a's colour row is where Theme settings draws it. */
 export function StylePackCard({
   pack: p,
   siteAccent,
   onChange,
   changeRef,
+  accent = null,
 }: {
   pack: PackChoice
   /** Story 6.6 — the linked site's stored brand accent, S4a's sixth dot; null draws the pack's five */
   siteAccent: string | null
   onChange: () => void
   changeRef: Ref<HTMLButtonElement>
+  /** Story 7.10 — the accent's promote action or tag (`PromoteAside`); absent, no accent row */
+  accent?: ReactNode
 }) {
   return (
     <div data-style-pack-card className="flex flex-col gap-3 rounded border border-line bg-surface p-[14px]">
@@ -105,6 +111,15 @@ export function StylePackCard({
       >
         Change
       </button>
+      {/* after Change, so the card's own button stays its first stop (6.2's path to it is one Tab from the fold) */}
+      {accent === null ? null : (
+        <span data-style-pack-accent className="flex items-center gap-[6px] text-control-label font-medium text-ink-soft">
+          {/* the card's dots are background, surface, ACCENT, text, plate */}
+          <span aria-hidden style={{ background: p.cardDots[2] }} className="size-3 shrink-0 rounded-[4px] shadow-hairline-inset" />
+          <span>{THEME_WORDS.accent}</span>
+          {accent}
+        </span>
+      )}
     </div>
   )
 }

@@ -1,17 +1,18 @@
 'use client'
 
+import Link from 'next/link'
 import { memo, Profiler, useId, useRef, useState, type ReactNode } from 'react'
 import {
-  darkOverridesInForce, editText, GROUP_LABELS, resetChanges, resetControl, resetSection, setContent, setControl,
-  setData, sidebar,
+  darkOverridesInForce, editText, GROUP_LABELS, propSettingOf, resetChanges, resetControl, resetSection, setContent, setControl,
+  setData, SETTING_WORDS, settingOf, sidebar,
 } from '@inflozo/section-runtime'
 import type { ControlEntry, ControlRow, ControlState, DataControl, DataRow, MemberState, Mode, PropRow, PropValue, SidebarGroupModel } from '@inflozo/section-runtime'
 import { orbitWeekly, placeholdersOffered } from '@inflozo/library'
 import { Accordion } from '@/components/kit/accordion'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
-import { ReadOnly, ring, type Greyed } from '@/components/kit/greyed'
-import { Image, InfoCircle, Undo } from '@/components/kit/icons'
+import { greyedProps, ReadOnly, ring, type Greyed } from '@/components/kit/greyed'
+import { ExternalLink, Image, InfoCircle, Undo } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { HelperCaption } from '@/components/kit/labels'
 import { MoonBadge } from '@/components/kit/moon-badge'
@@ -32,6 +33,7 @@ import { counted } from '@/lib/renders'
 import { LATER_PAGES, PREVIEW_PAGE, type Page } from '@/lib/page-two'
 import { PREVIEWING, type Visitor } from '@/lib/view-as'
 import { SOURCE_WORDS } from '@/lib/preview-subject'
+import { lockable, locked, THEME_WORDS, unlocked } from '@/lib/theme-settings'
 
 /* THE CONTROLS PANEL — what Epic 5 mounts beside its canvas (Story 4.5).
 
@@ -76,6 +78,63 @@ import { SOURCE_WORDS } from '@/lib/preview-subject'
    engine, the journal or `⌘Z`. With no `page` there is no row. */
 
 export type Edit = 'control' | 'content'
+
+/** STORY 7.10 — what this section has handed to Ghost, and the way to hand more (Story 7.9's Question 5, option 3): its
+ *  promoted controls by name and props by path, each with its setting's key; the Theme settings address that opens on one
+ *  of its controls or props; and whether the project is at its cap. Absent (`/controls`, `/pilots`), no row carries
+ *  either. */
+export type Promotion = {
+  bound: { readonly controls: Readonly<Record<string, string>>; readonly props: Readonly<Record<string, string>> }
+  href: (kind: 'control' | 'prop', name: string) => string
+  full: boolean
+}
+
+/** "In Ghost" — D6a's "from Ghost" chip (`D6 Theme Settings Completed.dc.html:87`), the mono words beside the label, its
+ *  title saying who changes it and what the canvas still decides (R-74: no frame draws it; extrapolated from the chip). */
+export const InGhost = ({ settingKey }: { settingKey: string }) => (
+  <span data-in-ghost={settingKey} title={THEME_WORDS.inGhostTitle(settingKey)} className="shrink-0 font-mono text-[10.5px] leading-none text-ink-soft-aa">
+    {THEME_WORDS.inGhost}
+  </span>
+)
+
+/**
+ * The promote action beside a promotable row's label — the Kit's in-row icon button (the reset arrow's 20px shape, Editor
+ * Sidebar Kit's icon buttons and ink tooltips, extrapolated, R-74) holding the ↗ (`ExternalLink`), named and titled
+ * "Let your site's owner change {name} in Ghost" — or, once promoted, the "In Ghost" tag in its place.
+ *
+ * A LINK, AND THEREFORE NEVER A LINK WHEN IT MUST NOT GO: a disabled fieldset disables no `<a>` (7.9's `<summary>` lesson),
+ * so a session reading along (R-192) and a project at its cap get the same shape as a button — greyed, going nowhere, the
+ * cap's sentence as its reason.
+ */
+export function PromoteAside({ id, label, settingKey, href, full, readOnly }: {
+  id: string
+  label: string
+  settingKey: string | undefined
+  href: string
+  full: boolean
+  readOnly: boolean
+}) {
+  if (settingKey !== undefined) return <InGhost settingKey={settingKey} />
+  const name = THEME_WORDS.promoteAction(label)
+  const shape = `-my-1 inline-flex size-5 shrink-0 items-center justify-center rounded-sm ${ring}`
+  if (readOnly || full) {
+    const greyed: Greyed | undefined = full ? { reason: SETTING_WORDS.cap } : undefined
+    return (
+      <>
+        {/* disabled while reading along, as the panel's fieldset would — the Style Pack card sits in none */}
+        <button type="button" data-promote="" aria-label={name} title={greyed?.reason ?? name} disabled={readOnly || undefined} {...greyedProps(`${id}-promote`, greyed)} className={`${shape} cursor-not-allowed text-ink-faint`}>
+          <ExternalLink size={12} />
+        </button>
+        {greyed === undefined ? null : <span id={`${id}-promote-reason`} className="sr-only">{greyed.reason}</span>}
+      </>
+    )
+  }
+  return (
+    <Link href={href} data-promote="" aria-label={name} title={name} className={`${shape} text-ink-soft hover:bg-paper-sunk hover:text-ink`}>
+      <ExternalLink size={12} />
+    </Link>
+  )
+}
 
 /** Story 5.16 — D5d's row: the page the canvas shows, and where to send a choice. */
 export type PageRow = { value: Page; onChange: (to: Page) => void }
@@ -136,6 +195,8 @@ export type SidebarProps = {
   /** Story 7.9 (DW-254) — Theme settings' address, for D5c's link under the main feed's greyed Count. Absent (the keyboard
    *  harness, `/controls`, `/pilots`), no link. */
   settingsHref?: string
+  /** Story 7.10 — the promote action and the "In Ghost" tag, by row. Absent, neither. */
+  promotion?: Promotion
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
@@ -152,12 +213,15 @@ function ControlField({
   swatches,
   onValue,
   onReset,
+  promote = null,
 }: {
   id: string
   row: ControlRow
   swatches: Readonly<Record<string, string>>
   onValue: (value: string) => void
   onReset: () => void
+  /** Story 7.10 — the promote action or the "In Ghost" tag, beside the moon */
+  promote?: ReactNode
 }) {
   const greyed: Greyed | undefined = row.greyed === undefined ? undefined : row.value === null ? { reason: row.greyed, value: null } : { reason: row.greyed }
   const words = (v: string | null) => row.options.find((o) => o.value === v)?.label ?? ''
@@ -168,6 +232,7 @@ function ControlField({
           control label to wrap. UX-DR8 is met the way `DESIGN.md:534-536` provides for where the layout cannot hold
           a word — which two words beside a 12px chip in a 280px panel is. */}
       {row.moon ? <MoonBadge /> : null}
+      {promote}
       {row.changed ? (
         <button
           type="button"
@@ -264,7 +329,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
    the section kept by value, every handler of fixed identity — so a hover, a move or another section's edit leaves it
    alone, and a change to THIS section redraws it in the render that commits it (FR-F4). React's `<Profiler>` inside
    counts its renders for the keyboard gate (`lib/renders.ts`). */
-export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode, onClearDark, page, shownPage, siteWide, readOnly = false, note, settingsHref }: SidebarProps) {
+export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode, onClearDark, page, shownPage, siteWide, readOnly = false, note, settingsHref, promotion }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -294,6 +359,15 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
     return null
   }
 
+  /** Story 7.10 — a design's own switch or choice that Ghost can hold (`settingOf` decides; a universal never) carries the
+   *  action, or its tag once promoted */
+  const promoteControl = (row: ControlRow, id: string): ReactNode => {
+    if (promotion === undefined) return null
+    const def = entry.controlSchema.find((c) => c.name === row.name)
+    const key = promotion.bound.controls[row.name]
+    if (key === undefined && (row.universal || def === undefined || settingOf(def, def.default) === null)) return null
+    return <PromoteAside id={id} label={row.label} settingKey={key} href={promotion.href('control', row.name)} full={promotion.full} readOnly={readOnly} />
+  }
   const control = (row: ControlRow) => (
     <ControlField
       key={`control-${row.name}`}
@@ -303,6 +377,7 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
       swatches={swatches[mode]}
       onValue={(value) => commit(setControl(entry, state, row.name, value, mode), 'control')}
       onReset={() => commit(resetControl(entry, state, row.name, mode), 'control')}
+      promote={promoteControl(row, `${base}-control-${row.name}`)}
     />
   )
 
@@ -313,12 +388,13 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
    *  R-187's site-wide rule have one implementation rather than one per field kind. A field with nothing to
    *  offer gets no button at all, which is every field on page 1 but the Newsletter's, every field of the
    *  header and footer on every page, and every field that is not typed into. */
-  const field = (prop: PropRow, value: unknown, onValue: (value: unknown) => void, id: string): ReactNode => {
+  const field = (prop: PropRow, value: unknown, onValue: (value: unknown) => void, id: string, aside: ReactNode = null): ReactNode => {
     const placeholders = placeholdersOffered(prop.def, { page: shownPage, siteWide })
     switch (prop.type) {
       case 'richtext':
-        // Story 5.3: the same value the canvas edits, with the same marks and the same toolbar
-        return <RichField key={id} id={id} label={prop.label} def={prop.def} value={value} onValue={onValue} links={links} placeholders={placeholders} readOnly={readOnly} />
+        // Story 5.3: the same value the canvas edits, with the same marks and the same toolbar — and, while a Ghost setting
+        // holds it (Story 7.10), P0-1's plain-text lock: the caller hands the locked copy, so no toolbar and no mark key
+        return <RichField key={id} id={id} label={prop.label} def={prop.def} value={value} onValue={onValue} links={links} placeholders={placeholders} readOnly={readOnly} aside={aside} />
       case 'date':
         return (
           <div key={id} className="flex flex-col gap-[5px]">
@@ -327,7 +403,7 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
           </div>
         )
       case 'image':
-        return <ImagePicker key={id} id={id} label={prop.label} value={value} assets={assets} onChange={onValue} />
+        return <ImagePicker key={id} id={id} label={prop.label} value={value} assets={assets} onChange={onValue} aside={aside} />
       case 'url':
         return <LinkPicker key={id} id={id} label={prop.label} value={value} resources={links} onChange={onValue} />
       case 'icon':
@@ -356,7 +432,7 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
             label={prop.label}
             value={text}
             maxLength={max}
-            aside={<PlaceholderMenu id={id} label={prop.label} offered={placeholders} onInsert={insert} />}
+            aside={<><PlaceholderMenu id={id} label={prop.label} offered={placeholders} onInsert={insert} />{aside}</>}
             hint={max !== undefined && (text.length >= max || refusedToken === id) ? limitSentence(prop.label, max) : null}
             onChange={(e) => {
               setRefusedToken(null)
@@ -386,7 +462,13 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
         />
       )
     }
-    return field(row, row.value, (value) => commit(setContent(entry, state, row.path, value), 'content'), id)
+    // Story 7.10 — a text, a rich text or a picture Ghost can hold carries the action, or its tag once promoted; a bound
+    // rich text is drawn and edited as P0-1's lock (a copy — the doc keeps its marks), and the lock never reaches the doc
+    const key = promotion?.bound.props[row.path]
+    const offered = promotion !== undefined && (key !== undefined || propSettingOf(row.def, row.value) !== null)
+    const aside = offered ? <PromoteAside id={id} label={row.label} settingKey={key} href={promotion.href('prop', row.path)} full={promotion.full} readOnly={readOnly} /> : null
+    const lock = key !== undefined && lockable(row.def)
+    return field(row, lock ? locked(row.value as PropValue) : row.value, (value) => commit(setContent(entry, state, row.path, lock ? unlocked(value) : value), 'content'), id, aside)
   }
 
   /* STORY 5.19 — P0·5's body, ONE group per query: Source, the tag or writer or picked list, Count and Order. A gesture

@@ -270,7 +270,12 @@ test('gscan fails: a file that cannot be written, and a path that leaves the dir
       }, `Ghost ${major}: ${Object.keys(files).at(-1)}`)
     }
   }
-  assert.deepEqual(await gscanDirs(), before, 'a temporary directory was left behind')
+  // A run another test file has in flight (Story 7.10's compiled-theme gate) shares `os.tmpdir()` and is not a leftover
+  // of these: its directory is gone within seconds, and a leftover never is — the whole-list equality this used to
+  // assert went red intermittently under `pnpm check`'s parallel runs
+  const fresh = (await gscanDirs()).filter((n) => !before.includes(n))
+  for (let i = 0; i < 150 && (await gscanDirs()).some((n) => fresh.includes(n)); i++) await new Promise((r) => setTimeout(r, 100))
+  assert.deepEqual((await gscanDirs()).filter((n) => fresh.includes(n)), [], 'a temporary directory was left behind')
 })
 
 test('determinism: the same files twice, their keys in another order, give equal verdicts', async () => {

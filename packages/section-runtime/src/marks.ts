@@ -414,6 +414,9 @@ const kids = (n: MarkNode): MarkNode[] => Array.from(n.childNodes)
 const words = (n: MarkNode): string => (n.nodeValue ?? '').replace(/ /g, ' ')
 
 const textOf = (v: PropValue): string => (isRich(v) ? v.text : v == null ? '' : String(v))
+/** Story 7.10 — a value's words alone, its marks dropped: what a promoted text starts at in Ghost, whose own settings are
+ *  plain text (D6c). */
+export const plainText = (v: unknown): string => textOf(isRich(v) || typeof v === 'string' || typeof v === 'number' ? v : null)
 const marksOf = (v: PropValue): readonly Mark[] => (isRich(v) && Array.isArray(v.marks) ? v.marks : [])
 /** the value with new text and marks, in its own shape: a plain string stays one until it carries a mark */
 const shaped = (value: PropValue, text: string, marks: Mark[]): PropValue =>

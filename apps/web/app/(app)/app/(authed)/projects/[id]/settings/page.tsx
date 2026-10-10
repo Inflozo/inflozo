@@ -6,7 +6,9 @@ import { ChevronLeft } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
 import { canvasPath, templateKeyOf } from '@/lib/editor'
 import { siteAccentOf } from '@/lib/style-pack'
-import { boundLabels, liveHolder, placedControls, promotable, SETTING_COLUMNS, siteBasics, storedSettings } from '@/lib/theme-settings'
+import {
+  boundLabels, liveHolder, orderedDocs, packInForce, placedControls, promotable, rowStates, SETTING_COLUMNS, siteBasics, storedSettings,
+} from '@/lib/theme-settings'
 import { supabaseServer } from '@/lib/supabase/server'
 import { editorData, projectOf } from '../(editor)/read'
 import { ThemeSettings } from './theme-settings'
@@ -34,7 +36,12 @@ import { ThemeSettings } from './theme-settings'
    settings through the caller's own session (RLS), each through `storedSettings`; the controls the Promote form offers,
    derived from the same `editorData` docs (`placedControls`, every synthesized doc skipped — no row binds to one); the linked
    site's title, logo and accent for Site basics, read and never written (AD-10's P8); and the lock's live holder, so a
-   tab reading along draws every editing control greyed (R-192). */
+   tab reading along draws every editing control greyed (R-192).
+
+   STORY 7.10 — and the project's pack in force (the accent's start and its row), each row's state and start from the
+   runtime's one module over the same stored docs (`rowStates`, `bindingState`), and `?promote=` — the editor's ↗ naming
+   what the form opens on. The parameter is handed down as it came and compared with the ids the form offers, never
+   parsed into markup. */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const project = await projectOf((await params).id)
@@ -44,12 +51,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
-export default async function ThemeSettingsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ThemeSettingsPage({ params, searchParams }: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { id } = await params
+  const asked = (await searchParams).promote
   const project = await projectOf(id)
   if (!project) notFound()
   const sb = await supabaseServer()
-  const [{ docs, entries, synthesized, lock }, settingsRead, siteRead] = await Promise.all([
+  const [{ docs, entries, synthesized, lock, preset, packs, ownPacks }, settingsRead, siteRead] = await Promise.all([
     editorData(id),
     sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', id).order('position').order('created_at'),
     project.linked_site_id === null ? null : sb.from('sites').select('url, title, site_settings').eq('id', project.linked_site_id).maybeSingle(),
@@ -58,7 +69,9 @@ export default async function ThemeSettingsPage({ params }: { params: Promise<{ 
   // a failed site read is the three rows unread ("Not set in Ghost"), never a black page over values Ghost owns
   if (siteRead?.error) console.error('projects/settings: the linked site could not be read', { code: siteRead.error.code })
   const settings = storedSettings(settingsRead.data)
-  const placed = placedControls(docs, entries, new Set(synthesized.map(templateKeyOf)))
+  const skip = new Set(synthesized.map(templateKeyOf))
+  const pack = packInForce(preset, packs, ownPacks)
+  const placed = placedControls(docs, entries, skip, pack)
 
   return (
     <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6">
@@ -82,6 +95,8 @@ export default async function ThemeSettingsPage({ params }: { params: Promise<{ 
         settings={settings}
         controls={promotable(placed, settings)}
         bound={boundLabels(placed, settings)}
+        states={rowStates(settings, orderedDocs(docs, skip), entries, pack)}
+        promote={typeof asked === 'string' ? asked : null}
         holder={liveHolder(lock)}
       />
     </div>

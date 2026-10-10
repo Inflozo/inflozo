@@ -138,7 +138,7 @@ development_status:
   7-7-the-gscan-gate: done
   7-8-the-emitted-theme-quality-gate: done
   7-9-theme-settings-and-the-custom-settings-builder: done
-  7-10-promoting-a-control-to-a-ghost-admin-setting: ready-for-dev
+  7-10-promoting-a-control-to-a-ghost-admin-setting: in-progress
   7-11-the-three-dark-built-ins-always-declared-and-always-referenc: backlog
   7-12-the-translations-surface-locales-emission-and-override-valid: backlog
   7-13-the-ghost-card-design-module-and-cards-css: backlog

@@ -47,7 +47,7 @@ export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
 // Story 6.4 — and 6.2's AA pairs as one list (`AA_PAIRS`), the pill radius's one grammar (`isLength`) and the one hex test
 // (`isHex`): the Style Pack editor validates a record and computes its tokens in the browser with these, so the client
 // refuses exactly what the engine refuses. All pool-free.
-export { AA_PAIRS, BASE_CSS, isLength, packTokens, packTokensCss, SCALES } from './tokens.ts'
+export { AA_PAIRS, BASE_CSS, isLength, packTokens, packTokensCss, SCALES, SETTING_ACCENT } from './tokens.ts'
 // Story 7.8 (R-170) — the contrast check and its words, moved from the Style Pack editor: the editor's live warning and the
 // theme quality gate's `contrast_low` say one thing
 export { hardToRead, MODE_WORDS, MODES, pairWords, ROLE_WORDS } from './tokens.ts'
@@ -62,6 +62,8 @@ export type { Face, HardPair, Pack, PackMode, PackRole, TokenRow, TokenSource } 
 // `brandSeed`) makes a site's accent and its on-accent readable with it, in the browser as on the server
 export { contrast, isHex, stepToContrast } from './colour.ts'
 export { editText, linkAttributes } from './marks.ts'
+// Story 7.10 — a value's words alone (a promoted text's start)
+export { plainText } from './marks.ts'
 // Story 5.16a — AD-5's one exception, exported so the tests can name the exact string the theme emits
 export { PAGE_NUMBER_HBS } from './marks.ts'
 // Story 7.7 — AD-36: gscan's brace-free trigger words written inert, and the table the gate's test holds on both checkers
@@ -94,6 +96,8 @@ export {
   duplicateItem,
   getPath,
   GROUP_LABELS,
+  // Story 7.10 — the props a design prints, which a promoted prop must be one of
+  markupProps,
   // Story 5.11 — FR-D19's carry / park / default over one instance's slice, and FR-D13's per-design item cap as
   // the panel reads it
   itemsShown,
@@ -173,5 +177,9 @@ export {
   checkSetting, claimKey, conditionValues, ghostEntry, ghostName, GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, keyRefusal, POSTS_PER_PAGE,
   postsPerPage, PROMOTED_TYPE, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS, settingKey, settingOf, USER_SETTING_CAP,
   visibilityNql,
+  // Story 7.10 — what a promotion IS: the binding's shapes and state, each kind's Ghost type and start, the reader
+  accentSettingOf, bindingId, bindingOf, bindingState, customPath, matchChain, PROMOTED_PROP_TYPE, propSettingOf, startOf,
 } from './custom-settings.ts'
-export type { SettingGroup, SettingOption, SettingRow, SettingType, Visibility } from './custom-settings.ts'
+export type {
+  AccentOf, Binding, BindingState, Derived, Holder, HolderDoc, HolderEntry, SettingGroup, SettingOption, SettingRow, SettingType, Visibility,
+} from './custom-settings.ts'
