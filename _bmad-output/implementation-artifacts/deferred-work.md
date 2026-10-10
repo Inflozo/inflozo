@@ -9533,6 +9533,9 @@ origin: Story 7.9's Review (2026-10-10), on `d52974c5` (`dpl_Hs6Ntbzx6djJfJSyDP7
   throwaway account: the page logged the promote POST at 04:54:28.192Z and Vercel's request log has it at 04:55:41.958Z
   (762 ms server time); and of seven promotes on one page, two answers were `net::ERR_ABORTED` after their 200 arrived.
   `curl` POSTs from the same machine at the same time answered in 0.35–0.40 s, twenty of twenty.
+  Run 6 on `d536c38c` the same day: 104a–104i passed, then 104j's first replay died the same way (`capture104` →
+  `posted104`); steps 66 (⌘S), 8 (sign-out) and 102 (the pack restore) FAILed on syncs that did not land, as step 66 and
+  step 8 had in run 5 — the same hold, in the editor's own POSTs.
 owner: Story 15.1 (the E2E suite), whose card carries this entry with its id — the story that hardens the walks against
   their environment, as DW-68 and DW-350 are.
 location: `tools/probe/run-verify-editor.cjs` (`posted104`, `promote104`; every step that reads a server action's body)

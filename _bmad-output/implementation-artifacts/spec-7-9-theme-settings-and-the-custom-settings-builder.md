@@ -1014,3 +1014,12 @@ and are syntax-checked now.
 - **PostgREST, as a throwaway user with RLS on:** the control first — anon's call answers `401 42501`; a setting that is not
   the caller's answers `false`; the user's call answers `true`, the setting is gone, the condition naming it is null and a
   condition naming another setting stands. The user deleted; the user count 14 → 14.
+- **The deployed walk, run 6 on `d536c38c`** (the one-call delete; CI runs 38033642649 on the Schema push `d792d939` and
+  38033727024 on `d536c38c`, `check`/`rls`/`deploy` success each, matrix success; `dpl_9QfaoUKNJDBzhXEFLcJgepGfjSxN` READY):
+  **every check of 104a to 104i passed** — 104f's delete through `delete_custom_setting()` among them (the row gone, the
+  condition naming it null, the caption gone) and 104h with its corrected selector — the user count 14 → 14. It then died at
+  104j's first replay (`capture104` → `posted104`, 20 s, a POST held — DW-352), so 104j and 104l did not run; both passed in
+  run 2 on this Review's page code, and 104j's delete leg — another user's call — is proved on production at the database
+  (`false`, nothing moved) rather than through the deployed action. Its four FAILs are syncs that did not land in code this
+  story does not touch — step 66's ⌘S, step 8's sign-out, step 102's pack restore — the class runs 5 and 6 share, which
+  passed in runs 2, 3 and 4.
