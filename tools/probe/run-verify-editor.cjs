@@ -8029,7 +8029,9 @@ async function main() {
     const seventeenth104 = await promote104(ts, { label: 'Seventeenth' })
     const full104 = await ts.evaluate(() => {
       const form = document.getElementById('promote-which')?.closest('form')
-      const greyed = form?.querySelector('button[aria-disabled="true"]')
+      // the Promote button by the reason it carries — since Story 7.9's Review the condition row's empty value box is
+      // aria-disabled too (nothing to pick before a setting is chosen), and it comes first in the form
+      const greyed = form?.querySelector('button[aria-disabled="true"][aria-describedby="promote-submit-reason"]')
       return { submits: form?.querySelectorAll('button[type="submit"]').length ?? null, greyed: greyed?.textContent ?? null, reason: document.getElementById('promote-submit-reason')?.textContent ?? null }
     })
     check('step 104h — the cap: 16 planted reads 16 OF 17, the 17th promoted lands and reads 17 OF 17, and Promote greys with the cap sentence and no submit left',

@@ -944,6 +944,16 @@ and are syntax-checked now.
 - **The deployed walk, run 1 on `772080d3`:** HARNESS ERROR at step 6's `openCard` (`page.waitForURL` timeout, a click's
   navigation), after 1266 PASS and 0 FAIL, with three `stall` notes — not a result (a harness death is re-run, never
   counted). It is re-run on the Review head once deployed, below.
+- **The deployed walk, run 2 on the Review head `fff9a5a1`** (CI run 38019980656 `check`/`rls`/`deploy` success, matrix
+  38019980675 success, `dpl_365CvTGFTDiPVYBiL1Y4HfhGAnu7` READY): `2 FAIL, 750 PASS`, the user count 14 → 14. Every new
+  Review check passed — 104d's Only show when greyed then live, 104e's "Show tag 2", 104f's confirm line, 104i's Edit
+  refused, 104l's Site basics as drawn. The two FAILs:
+  - **104h** read the FIRST `aria-disabled` button in the Promote form for the greyed Promote, and this Review's own
+    patch made the condition row's empty value box `aria-disabled` ahead of it (`greyed: ""`, the sentence and no submit
+    otherwise as expected). The walk now picks the Promote by the reason it carries; the product is as intended.
+  - **69b** (Story 5.17's stalled-sync Retry, code this story does not touch): Retrying shown (`gaveUp58: true`), then
+    Synced not reached after Retry now (`unstuck58: false`). It passed in run 1 on the Dev head. Re-run below.
+
 - **Ghost 5.130.6, read in source** (`registry.npmjs.org/ghost/-/ghost-5.130.6.tgz`, extracted fresh in this session's
   scratchpad; read-only): `core/frontend/services/routing/controllers/collection.js:31-48` sizes an archive by a route's
   `limit:` else `parseInt(posts_per_page)` when `> 0`, with no cap, and 5.130.6 has no `core/shared/max-limit-cap.js`; its
