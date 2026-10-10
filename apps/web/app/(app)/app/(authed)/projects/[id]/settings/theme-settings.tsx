@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { startTransition, useActionState, useEffect, useOptimistic, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import {
-  claimKey, conditionValues, GHOST_SETTING_GROUPS, GROUP_WORDS, POSTS_PER_PAGE, SETTING_WORDS, settingKey, USER_SETTING_CAP,
-  type SettingGroup, type Visibility,
+  claimKey, conditionValues, ghostName, GHOST_SETTING_GROUPS, GROUP_WORDS, POSTS_PER_PAGE, SETTING_WORDS, settingKey,
+  USER_SETTING_CAP, type SettingGroup, type Visibility,
 } from '@inflozo/section-runtime/custom-settings'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
@@ -15,13 +15,16 @@ import { greyedProps, ReadOnly, reason, ring, type Greyed } from '@/components/k
 import { Lock } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { CounterChip, HelperCaption } from '@/components/kit/labels'
+import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { MoonBadge } from '@/components/kit/moon-badge'
 import { Select } from '@/components/kit/select'
 import { StepperBox } from '@/components/kit/stepper'
 import { Toggle } from '@/components/kit/toggle'
 import { sitesPath } from '@/lib/connect-rule'
 import { LOCK_COPY, TAB_SESSION_KEY } from '@/lib/lock'
-import { conditionWord, settingsReadOnly, THEME_WORDS, type Promotable, type SiteBasics, type StoredSetting } from '@/lib/theme-settings'
+import {
+  choicesOf, conditionWord, settingsReadOnly, startOf, THEME_WORDS, type Promotable, type SiteBasics, type StoredSetting,
+} from '@/lib/theme-settings'
 import {
   clearProjectDarkOverrides, deleteSetting, promoteControl, setPostsPerPage, setProjectMode, updateSetting, type SettingsResult,
 } from './actions'
@@ -33,11 +36,14 @@ import {
    every step is a real submit of a plain form and says "Saving…" while it posts (R-98), the `posts_per_page` chip and the
    caption verbatim; SITE BASICS (Story 7.9's Question 2, ruled option 1, `:69-100`) — the linked site's title, logo and
    accent, read and never written, each "from Ghost" with its way into Ghost Admin, or one caption and a link to Sites
-   where no site is linked; then R-131's PROJECT-MODE BLOCK (`:102-121`), byte for byte as Story 5.6 built it.
+   where no site is linked; then R-131's PROJECT-MODE BLOCK (`:102-121`) as Story 5.6 built it, flat in the column (Question 4).
 
    THE RIGHT COLUMN: CUSTOM SETTINGS (Story 7.9, `:139-235`) — the meter over the derived seventeen, D6a's two captions
    (its numbers derived, `SETTING_WORDS.limits`), the freeze notice, the project's settings as rows with Edit and Delete,
    and PROMOTE A CONTROL (Question 1, ruled option 1) for toggles and choice controls; D6a's closing note under it.
+   Since the owner's rulings of 2026-10-10: Which control lists its controls page by page, each with its section, its
+   values and the one in force (Question 5), the form says what the site's owner will see in Ghost (Question 5, D6c's
+   "What ships" extrapolated), and every setting is named ONCE, by its key, because that is all Ghost reads (Question 6).
 
    STILL ABSENT, each a later story's (R-118: absent, not greyed): D6a's left rail (Story 7.12 gives the page a second
    surface), Credits and D6b's Free row (Story 7.28), and everything a promotion of a text prop, a picture or the accent
@@ -258,14 +264,15 @@ function SettingItem({ projectId, setting, settings, bound }: {
     <li data-setting={setting.key} className="flex flex-col gap-[7px] rounded-thumb border border-line bg-surface p-[10px_12px]">
       <div className="flex items-center gap-[11px]">
         <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-          <span className="text-[12.5px] font-semibold text-ink">{setting.label}</span>
+          {/* Question 6: Ghost prints the key's words, so the row does too — whatever an earlier label said */}
+          <span className="text-[12.5px] font-semibold text-ink">{ghostName(setting.key)}</span>
           <span className="text-[11px] text-ink-soft-aa">
             {bound === undefined ? '' : `${bound} `}→ <span className="font-mono text-[10.5px]">{setting.key}</span>
           </span>
         </div>
         <span className="shrink-0 rounded-pill border border-line px-[7px] py-[2px] text-[10px] font-semibold text-ink-soft-aa">{THEME_WORDS.typeWord(setting.type)}</span>
       </div>
-      {when === null ? null : <HelperCaption>{THEME_WORDS.onlyWhen(target?.label ?? when.key, when.value)}</HelperCaption>}
+      {when === null ? null : <HelperCaption>{THEME_WORDS.onlyWhen(ghostName(target?.key ?? when.key), when.value)}</HelperCaption>}
       {setting.frozen_at === null ? null : <HelperCaption>{THEME_WORDS.frozenSince(setting.frozen_at)}</HelperCaption>}
       <div className="flex items-start gap-3">
         <EditForm projectId={projectId} setting={setting} others={settings.filter((o) => o.id !== setting.id)} />
@@ -278,8 +285,7 @@ function SettingItem({ projectId, setting, settings, bound }: {
 function EditForm({ projectId, setting, others }: { projectId: string; setting: StoredSetting; others: readonly StoredSetting[] }) {
   const [state, dispatch] = useActionState<SettingsResult | null, FormData>(updateSetting, null)
   const details = useRef<HTMLDetailsElement>(null)
-  // controlled, so a refusal keeps what was typed (React resets a form after every action)
-  const [label, setLabel] = useState(setting.label)
+  // controlled, so a refusal keeps what was chosen (React resets a form after every action)
   const [group, setGroup] = useState<SettingGroup>(setting.group_name)
   const [byDefault, setByDefault] = useState(setting.default_value)
   const [when, setWhen] = useState<Visibility | null>(setting.visibility_condition)
@@ -295,9 +301,13 @@ function EditForm({ projectId, setting, others }: { projectId: string; setting: 
       <form action={dispatch} className="mt-[10px] flex flex-col gap-[10px]">
         <input type="hidden" name="project" value={projectId} />
         <input type="hidden" name="setting" value={setting.id} />
-        <div className="flex gap-2">
-          <TextInput id={`${id}-label`} label={THEME_WORDS.labelInGhost} name="label" value={label} onChange={(e) => setLabel(e.target.value)} required className="min-w-0 flex-1" />
-          <KeyField id={`${id}-key`} value={setting.key} />
+        {/* Question 6, ruled option 1: Ghost names a setting by its key and the key never changes, so neither does the name */}
+        <div className="flex flex-col gap-[5px]">
+          <div className="flex gap-2">
+            <Fixed id={`${id}-label`} label={THEME_WORDS.labelInGhost} value={ghostName(setting.key)} />
+            <Fixed id={`${id}-key`} label={THEME_WORDS.key} value={setting.key} mono />
+          </div>
+          <HelperCaption>{THEME_WORDS.nameFixed}</HelperCaption>
         </div>
         <GroupField id={`${id}-group`} group={group} onGroup={setGroup} />
         {setting.type === 'boolean' ? (
@@ -320,12 +330,14 @@ function EditForm({ projectId, setting, others }: { projectId: string; setting: 
   )
 }
 
-/** The key once the row exists: read-only, always — the update grant omits `key` (FR-Q2, "rename changes the label only"). */
-function KeyField({ id, value }: { id: string; value: string }) {
+/** A value the form shows and never posts, in D6a's locked field (the Key, `:197-202`): the key, always — the update grant
+ *  omits it — and, since Question 6, the name Ghost makes of it, which is fixed with it. The Promote form's key too: it is
+ *  the label's, worked out again by the action, so what shows is what is stored. */
+function Fixed({ id, label, value, mono = false }: { id: string; label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
-      <span id={`${id}-label`} className="text-control-label font-medium text-ink-soft">{THEME_WORDS.key}</span>
-      <span id={id} className="flex h-9 items-center truncate rounded-sm border border-line bg-line-soft px-[11px] font-mono text-control-label text-ink-mid">
+      <span id={`${id}-label`} className="text-control-label font-medium text-ink-soft">{label}</span>
+      <span id={id} className={`flex h-9 items-center truncate rounded-sm border border-line bg-line-soft px-[11px] text-control-label text-ink-mid ${mono ? 'font-mono' : ''}`}>
         {value}
       </span>
     </div>
@@ -363,11 +375,11 @@ function WhenField({ id, when, others, onWhen }: { id: string; when: Visibility 
       </div>
       <ConditionRow
         id={id}
-        field={target?.label ?? 'Setting'}
+        field={target === undefined ? 'Setting' : ghostName(target.key)}
         operator="is"
         // a condition whose setting has gone (deleted elsewhere) shows and posts nothing — `deleteSetting` clears it too
         values={target === undefined || when === null ? [] : [conditionWord(when.value)]}
-        fields={named.map((o) => ({ value: o.key, label: o.label, active: o.key === when?.key }))}
+        fields={named.map((o) => ({ value: o.key, label: ghostName(o.key), active: o.key === when?.key }))}
         options={values.map((v, i) => ({ value: String(i), label: conditionWord(v), active: v === when?.value }))}
         onField={(key) => {
           const first = conditionValues(named.find((o) => o.key === key) ?? { type: 'text', options: null })[0]
@@ -403,7 +415,7 @@ function DeleteForm({ projectId, setting }: { projectId: string; setting: Stored
       {alert(state)}
       <dialog ref={confirm} onClick={closeOnBackdrop} aria-labelledby={`${id}-title`} aria-describedby={`${id}-body`} className={`${sheet} gap-[18px]`}>
         <div className="flex flex-col gap-[6px]">
-          <h2 id={`${id}-title`} className={title}>{THEME_WORDS.deleteTitle(setting.label)}</h2>
+          <h2 id={`${id}-title`} className={title}>{THEME_WORDS.deleteTitle(ghostName(setting.key))}</h2>
           <p id={`${id}-body`} className="text-ui-dense leading-[1.55] text-ink-soft">{THEME_WORDS.deleteBody(setting)}</p>
         </div>
         <div className="flex justify-end gap-[10px]">
@@ -448,27 +460,34 @@ function DeleteButton({ onAsk }: { onAsk: () => void }) {
   )
 }
 
-/** PROMOTE A CONTROL (Question 1, ruled option 1; D6a :180-235): which control, its label in Ghost, the key — generated
- *  live from the label and editable until Promote — the group, an optional condition, and Promote. At the cap the button
- *  greys with the module's sentence (UX-DR3); with nothing left to offer, the control's select greys with its own. */
+/** PROMOTE A CONTROL (Question 1, ruled option 1; D6a :180-235): which control, its label in Ghost, the key it makes, the
+ *  group, an optional condition, and Promote. At the cap the button greys with the module's sentence (UX-DR3); with
+ *  nothing left to offer, the control's select greys with its own.
+ *
+ *  THE OWNER'S RULINGS OF 2026-10-10. Question 5 (option 3): Which control lists its controls page by page, each row the
+ *  control, its section, every value and the one in force (`ControlRow`); the label starts as the control's own name and
+ *  the group as the page's (Home → Homepage, Post → Post, else Site wide), each until the user changes it; and under the
+ *  form, before Promote, one sentence says what the site's owner will see in Ghost and what it changes — D6c's "What
+ *  ships" box, extrapolated (R-74). Question 6 (option 1): Ghost names a setting by its key alone (`ghostName`), so the
+ *  key is the label's, shown read-only as D6a draws it (`:197-202`) and worked out again by the action, never posted. */
 function PromoteForm({ projectId, settings, controls }: { projectId: string; settings: readonly StoredSetting[]; controls: readonly Promotable[] }) {
   const [state, dispatch] = useActionState<SettingsResult | null, FormData>(promoteControl, null)
   const [chosen, setChosen] = useState(0)
-  const [label, setLabel] = useState('')
-  const [typedKey, setTypedKey] = useState<string | null>(null)
-  const [group, setGroup] = useState<SettingGroup>('site_wide')
+  const [typedLabel, setTypedLabel] = useState<string | null>(null)
+  const [typedGroup, setTypedGroup] = useState<SettingGroup | null>(null)
   const [when, setWhen] = useState<Visibility | null>(null)
   useEffect(() => {
     if (!state || !('ok' in state)) return
     setChosen(0)
-    setLabel('')
-    setTypedKey(null)
-    setGroup('site_wide')
+    setTypedLabel(null)
+    setTypedGroup(null)
     setWhen(null)
   }, [state])
   const control = controls[chosen] ?? controls[0]
-  // the key follows the label until it is typed into, and again once it is emptied — what shows is what posts
-  const key = typedKey ?? claimKey(new Set(settings.map((s) => s.key)), settingKey(label))
+  // the label and the group follow the control until they are changed — what shows is what posts
+  const label = typedLabel ?? control?.control ?? ''
+  const group = typedGroup ?? control?.group ?? 'site_wide'
+  const key = claimKey(new Set(settings.map((s) => s.key)), settingKey(label))
   const full = settings.length >= USER_SETTING_CAP
   const none: Greyed | undefined = controls.length === 0 ? { reason: THEME_WORDS.noControls } : undefined
   const stopped: Greyed | undefined = full ? { reason: SETTING_WORDS.cap } : none
@@ -482,16 +501,26 @@ function PromoteForm({ projectId, settings, controls }: { projectId: string; set
         id="promote-which"
         label={THEME_WORDS.which}
         value={control?.label ?? '—'}
-        options={controls.map((c, i) => ({ value: String(i), label: c.label, active: c === control }))}
+        options={controls.map((c, i) => ({
+          value: String(i), label: c.label, active: c === control, group: c.page,
+          icon: <LayerThumb glyph={glyphOf(c.category)} />, contents: <ControlRow c={c} />,
+        }))}
         onSelect={(i) => setChosen(Number(i))}
+        menuWidth="w-[min(440px,calc(100vw-32px))]"
         greyed={none}
       />
       <div className="flex gap-2">
-        <TextInput id="promote-label" label={THEME_WORDS.labelInGhost} name="label" value={label} onChange={(e) => setLabel(e.target.value)} required className="min-w-0 flex-1" />
-        <TextInput id="promote-key" label={THEME_WORDS.key} name="key" value={key} onChange={(e) => setTypedKey(e.target.value === '' ? null : e.target.value)} mono className="min-w-0 flex-1" />
+        <TextInput id="promote-label" label={THEME_WORDS.labelInGhost} name="label" value={label} onChange={(e) => setTypedLabel(e.target.value)} required className="min-w-0 flex-1" />
+        <Fixed id="promote-key" label={THEME_WORDS.key} value={key} mono />
       </div>
-      <GroupField id="promote-group" group={group} onGroup={setGroup} />
+      <GroupField id="promote-group" group={group} onGroup={setTypedGroup} />
       <WhenField id="promote-when" when={when} others={settings} onWhen={setWhen} />
+      {control === undefined || stopped !== undefined ? null : (
+        <div data-promote-summary className="flex flex-col gap-[6px] rounded-thumb border border-line bg-surface p-[11px_12px]">
+          <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-ink-soft-aa">{THEME_WORDS.willGet}</span>
+          <span className="text-[12.5px] leading-[1.5] text-ink-mid">{THEME_WORDS.gets(control, ghostName(key) || '…', group)}</span>
+        </div>
+      )}
       <div className="flex items-center gap-[9px]">
         {stopped === undefined ? (
           <Submit busy={THEME_WORDS.promoting} variant="primary" size={32}>{THEME_WORDS.promoteButton}</Submit>
@@ -516,12 +545,33 @@ function PromoteForm({ projectId, settings, controls }: { projectId: string; set
   )
 }
 
-/* ───────────────────────────── R-131's project-mode block (D6a :102-121), unchanged ─────────────────────────────
+/** One row of Which control (Question 5): the control's own name with its section beside it, then every value the site's
+ *  owner could pick and the one in force now. `data-promotable` carries the row's D6a name, which the deployed walk reads
+ *  and chooses it by. */
+function ControlRow({ c }: { c: Promotable }) {
+  return (
+    <span data-promotable={c.label} className="flex min-w-0 flex-1 flex-col gap-[2px]">
+      <span className="flex items-baseline gap-2">
+        <span className="min-w-0 flex-1 truncate">{c.control}</span>
+        <span className="max-w-[50%] shrink-0 truncate text-[11px] font-normal text-ink-soft-aa">{c.section}</span>
+      </span>
+      <span className="truncate text-[11px] font-normal text-ink-soft">
+        {choicesOf(c.setting).join(' · ')} — {THEME_WORDS.now(startOf(c.setting))}
+      </span>
+    </span>
+  )
+}
+
+/* ───────────────────────────── R-131's project-mode block (D6a :102-121) ─────────────────────────────
 
    Two rows, read off the frame: "This project" over a two-segment control — `Light only` | `Light + Dark` — with its
    caption verbatim; then the bordered row carrying the moon badge with its label "Dark override", the title "Clear
    dark overrides", a sub-caption counting the sections that hold one, and a secondary Clear. D6a's footnote about the
    badge closes it.
+
+   FLAT IN THE COLUMN, AS D6a DRAWS IT (Story 7.9's Question 4, ruled option 1, owner, 2026-10-10): a rule above it and
+   nothing around it. R-131 built it as D6b's detail draws it — a white card with a shadow — when it was the only thing on
+   the page; beside Posts per page and Site basics the card read as a second surface, so it took D6a's shape.
 
    THE ONE THING THAT GREYS, WITH ITS REASON, IS D6b'S CLEAR ROW (`:271-283`) — because there the overrides genuinely
    exist and are merely not in force. Its sentence is the frame's own, and so is the line under it: the overrides are
@@ -562,7 +612,7 @@ function ModeBlock({ projectId, darkEnabled, overriddenSections }: {
   const carry = `${n === 0 ? 'No' : n} ${n === 1 ? 'section carries' : 'sections carry'} a dark override`
 
   return (
-    <div className="flex max-w-[520px] flex-col gap-[14px] rounded border border-line bg-surface p-[18px] shadow-sm">
+    <div data-mode-block className="flex flex-col gap-[9px] border-t border-line-faint pt-[14px]">
       <form action={onMode} className="flex flex-col gap-[6px]">
         <input type="hidden" name="project" value={projectId} />
         <span className="text-[12px] font-medium text-ink-soft">This project</span>
@@ -574,7 +624,7 @@ function ModeBlock({ projectId, darkEnabled, overriddenSections }: {
         {mode && 'error' in mode ? <span role="alert"><HelperCaption>{mode.error}</HelperCaption></span> : null}
       </form>
 
-      <form ref={clearForm} action={onClear} className="flex flex-col gap-[6px] border-t border-line pt-[14px]">
+      <form ref={clearForm} action={onClear} className="flex flex-col gap-[6px]">
         <input type="hidden" name="project" value={projectId} />
         <div
           data-clear-row

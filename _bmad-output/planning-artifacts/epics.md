@@ -2967,6 +2967,12 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    for those two kinds and the list, edit and delete around it — **built in Story 7.9** (Question 1, option 1); text
 >    props, image props and the accent, D6c's confirm, the lock pill, the pack-switch warning and every compile-side effect
 >    stay **Story 7.10's**.
+>
+> **Given owners by Story 7.9's Dev (owner, 2026-10-10), so none is missed (R-195).**
+>
+> 1. promoting a control from the editor's own right-hand panel, which opens Theme settings with the form filled in for
+>    that control, and the "In Ghost" tag on a promoted control — **Story 7.10** (Question 5, option 3; Story 7.9 built the
+>    clearer Which control, the label and group that fill themselves in, and "What your site's owner will see").
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3369,8 +3375,11 @@ can never overflow the cap or collide with a built-in key
 **And** keys are generated lowercase snake_case, select defaults are validated against options, and defaults on
 image settings are disallowed
 **And** **setting keys are immutable once deployed or exported** — renaming would erase the site owner's stored
-value, so a rename changes the label only — and deleting a setting warns that re-creating the key would resurrect
-the stored value
+value, so **a setting is named once, at Promote** — and deleting a setting warns that re-creating the key would resurrect
+the stored value *(Story 7.9's Dev, read in Ghost's admin source, 2026-10-10: Ghost has no label for a theme setting and
+names each by its key — `show_the_button` is "Show the button" in both 5.130.6 and 6.58.0 — so a label could never be
+renamed in Ghost; ruled Question 6, option 1, owner, 2026-10-10. This line previously said "a rename changes the label
+only")*
 **And** the main feed's greyed Count (Story 5.19) gains D5c's second sentence, *"Change it in Theme settings."*,
 and its **Theme settings ↗** link (DW-254)
 **And** the surface matches D6a Pro and D6b Free.
@@ -3381,6 +3390,17 @@ written; a project with no linked site shows the group's one caption instead.
 **And** *(this story's Create, Question 1, owner, 2026-10-09)* the **Promote a control** form is built here for **Toggle →
 boolean** and **Segmented / Named Select → select** (the control's named values as the options, its current value as the
 default), with the settings list, edit and delete around it; text props, image props and the accent join in Story 7.10.
+**And** *(owner, 2026-10-10, after Dev — Question 4, option 1)* the **This project / Clear dark overrides** block sits flat
+in the column under its rule, as D6a draws it, not in R-131's white card.
+**And** *(owner, 2026-10-10 — Question 5, option 3)* **Which control** lists the controls page by page (Every page, then
+D5b's canvases in order), each row the control's name, its section, every value and the one in force now; choosing one
+starts **Label in Ghost** at the control's name and **Group in Ghost** at its page's (Home → Homepage, Post → Post, else
+Site wide); and before Promote, a box — D6c's "What ships", extrapolated — says what the site's owner will see in Ghost and
+what it changes, e.g. *"In Ghost's Design panel, under Homepage, your site's owner will see "Headline size", a list set to
+Large. It changes Headline size on Latest Post, on your Home page."* Promoting from the editor itself is Story 7.10's.
+**And** *(owner, 2026-10-10 — Question 6, option 1)* **a setting is named once**: the key is made from Label in Ghost and
+shown read-only, the stored label is the name Ghost makes of the key, and Edit shows both read-only — to rename before a
+deploy, delete it and promote it again.
 
 **FRs:** FR-Q1, FR-Q2. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a · D6b. · **Owner test:** yes.
 
@@ -3441,6 +3461,18 @@ gscan's own test for a `visibility` rule's key (`010-package-json.js:225`, the s
 one-character key as no key, and the cascade that follows reports every `package.json` rule failed on both — so the
 builder refuses a shorter key, and every `visibility` it writes names keys of two or more characters (the gate maps a
 cascade that reaches it anyway to `package_check_failed`, naming the setting).
+
+**And** *(given an owner by Story 7.9's Dev — Question 5, option 3, owner, 2026-10-10, word for word — R-195)* **promote
+from the editor itself**: *"In the editor's right-hand panel, every toggle and choice gets a "Let my customer change this in
+Ghost" action. It opens Theme settings with the form already filled in for that exact control. Once promoted, the control
+carries a small "In Ghost" tag, drawn like Site basics' "from Ghost" tag. You'd be looking at the section when you choose,
+so "what is this and where does it appear" answers itself."* No frame draws it, so it is extrapolated from the Editor
+Sidebar Kit and D6a's "from Ghost" chip (R-74); the words on the action and the tag follow the page's one name for the person
+who edits the setting in Ghost, "your site's owner" (R-170), and the action extends to every kind this story makes
+promotable (text props, image props, the accent).
+**And** *(Story 7.9's Dev, Question 6, option 1, owner, 2026-10-10)* every kind this story adds is **named once, at
+Promote**: Ghost names a setting by its key alone (`ghostName` in `custom-settings.ts`), so the key is made from Label in
+Ghost and nothing renames it afterwards.
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
 test:** yes.

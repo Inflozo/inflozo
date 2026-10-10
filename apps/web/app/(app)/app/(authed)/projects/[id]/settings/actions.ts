@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { checkSetting, claimKey, clearProject, parseDoc, postsPerPage, SETTING_WORDS, settingKey, USER_SETTING_CAP } from '@inflozo/section-runtime'
+import { checkSetting, claimKey, clearProject, ghostName, parseDoc, postsPerPage, SETTING_WORDS, settingKey, USER_SETTING_CAP } from '@inflozo/section-runtime'
 import type { ProjectDoc, SettingGroup, SettingRow, Visibility } from '@inflozo/section-runtime'
 import { isUuid, settingsPath, templateKeyOf } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
@@ -197,8 +197,9 @@ const refusalOf = (error: { code?: string; message?: string } | null, key: strin
 /**
  * QUESTION 1, RULED OPTION 1 — a toggle, segmented or named select promoted to a Ghost setting. The control is found again
  * HERE, through `editorData` (the read the page makes), so what is stored is a control on a visible instance of a stored
- * doc, at its current value, never one already promoted — whatever the form posted. The key is the one posted (the form
- * generates it live and lets it be edited before Promote), else the label's, claimed past the keys taken.
+ * doc, at its current value, never one already promoted — whatever the form posted. The key is the label's, claimed past
+ * the keys taken, worked out HERE as the form shows it, and nothing else posted can name one; the label stored is the name
+ * Ghost makes of that key, because Ghost names a setting by its key alone (Question 6, ruled option 1, owner, 2026-10-10).
  */
 export async function promoteControl(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
   const id = idOf(formData)
@@ -215,12 +216,11 @@ export async function promoteControl(_previous: SettingsResult | null, formData:
     .find((c) => c.instanceId === formData.get('instance') && c.controlKey === formData.get('control'))
   if (chosen === undefined) return { error: SETTING_WORDS.noControl }
 
-  const label = String(formData.get('label') ?? '').trim()
-  const typed = String(formData.get('key') ?? '').trim()
+  const key = claimKey(new Set(rows.map((r) => r.key)), settingKey(String(formData.get('label') ?? '')))
   const others = rows.map(ruleRow)
   const row: SettingRow = {
-    key: typed !== '' ? typed : claimKey(new Set(rows.map((r) => r.key)), settingKey(label)),
-    label,
+    key,
+    label: ghostName(key),
     ...chosen.setting,
     group_name: String(formData.get('group') ?? 'site_wide') as SettingGroup,
     visibility_condition: conditionOf(formData, others),
@@ -243,8 +243,9 @@ export async function promoteControl(_previous: SettingsResult | null, formData:
   return { ok: true }
 }
 
-/** A stored setting edited — its label, group, default and condition, and NEVER its key: the update grant omits `key`, so
- *  "a rename changes the label only" is the database's rule (FR-Q2), and this writes none of it. */
+/** A stored setting edited — its group, default and condition, and NEVER its key or its label: the update grant omits `key`
+ *  (FR-Q2), and Ghost names a setting by its key alone, so the label is the key's words and is fixed with it (Question 6,
+ *  ruled option 1, owner, 2026-10-10) — a posted `label` is not read. */
 export async function updateSetting(_previous: SettingsResult | null, formData: FormData): Promise<SettingsResult> {
   const id = idOf(formData)
   const settingId = formData.get('setting')
@@ -261,7 +262,6 @@ export async function updateSetting(_previous: SettingsResult | null, formData: 
   }
   const row: SettingRow = {
     ...ruleRow(current),
-    label: posted('label')?.trim() ?? current.label,
     group_name: (posted('group') ?? current.group_name) as SettingGroup,
     default_value: posted('default') ?? current.default_value,
     visibility_condition: conditionOf(formData, others),
@@ -270,7 +270,7 @@ export async function updateSetting(_previous: SettingsResult | null, formData: 
   if (refused !== null) return { error: refused }
   const { data, error } = await supabase
     .from('custom_settings')
-    .update({ label: row.label, group_name: row.group_name, default_value: row.default_value, visibility_condition: row.visibility_condition, updated_at: new Date().toISOString() })
+    .update({ group_name: row.group_name, default_value: row.default_value, visibility_condition: row.visibility_condition, updated_at: new Date().toISOString() })
     .eq('id', current.id)
     .eq('project_id', id)
     .select('id')

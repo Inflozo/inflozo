@@ -5,7 +5,8 @@ import type { SectionRegistryEntry } from '@inflozo/library'
 import { DATA_WORDS, USER_SETTING_CAP, type ProjectDoc } from '@inflozo/section-runtime'
 import { THEME_SETTINGS_LINK } from './lib/data-group.ts'
 import {
-  boundLabels, liveHolder, placedControls, promotable, settingsReadOnly, siteBasics, storedSettings, THEME_WORDS, type StoredSetting,
+  boundLabels, choicesOf, EVERY_PAGE, liveHolder, pageOf, placedControls, promotable, settingsReadOnly, siteBasics, startOf, storedSettings,
+  THEME_WORDS, type Promotable, type StoredSetting,
 } from './lib/theme-settings.ts'
 
 /* STORY 7.9 — Theme settings' app rows of the I/O matrix. Ghost's own rules are the runtime's `custom-settings.test.ts` and,
@@ -51,22 +52,64 @@ test('Promote offers each toggle and choice on a visible instance of a stored do
     index: doc(instance('i1')), // a page 2 shares its page 1's instances
     post: doc(instance('i2', { layerName: '' })),
     tag: doc(instance('synth')), // a synthesized default no row binds to
+    site: doc(instance('s1', { layerName: 'Header' })), // stored last, listed first: it is on every page
   }
   const placed = placedControls(docs, { 'a4/13': LATEST }, new Set(['tag']))
   assert.deepEqual(placed.map((c) => [c.instanceId, c.controlKey, c.label]), [
+    ['s1', 'headline-size', 'Header · Headline size'],
+    ['s1', 'primary-action', 'Header · Primary action'],
     ['i1', 'headline-size', 'Latest Post · Headline size'],
     ['i1', 'primary-action', 'Latest Post · Primary action'],
     ['i2', 'headline-size', 'Latest Post · Headline size (2)'],
     ['i2', 'primary-action', 'Latest Post · Primary action (2)'],
   ])
   // the instance's own value, as the label Ghost will print
-  assert.equal(placed[0]?.setting.default_value, 'Display')
-  assert.deepEqual(placed[1]?.setting, { type: 'boolean', options: null, default_value: 'true' })
+  assert.equal(placed[2]?.setting.default_value, 'Display')
+  assert.deepEqual(placed[3]?.setting, { type: 'boolean', options: null, default_value: 'true' })
+  // Question 5: where each control is, in the menu's words — its own name, its section, its page and the group it suggests
+  assert.deepEqual(placed.map((c) => [c.control, c.section, c.page, c.group, c.category]), [
+    ['Headline size', 'Header', EVERY_PAGE, 'site_wide', 'a4'],
+    ['Primary action', 'Header', EVERY_PAGE, 'site_wide', 'a4'],
+    ['Headline size', 'Latest Post', 'Home', 'homepage', 'a4'],
+    ['Primary action', 'Latest Post', 'Home', 'homepage', 'a4'],
+    ['Headline size', 'Latest Post (2)', 'Post', 'post', 'a4'],
+    ['Primary action', 'Latest Post (2)', 'Post', 'post', 'a4'],
+  ])
   // a control already promoted on that instance is not offered again, and its row names it
   const row = stored({ bound_to: { kind: 'control', instanceId: 'i1', controlKey: 'primary-action' } })
-  assert.deepEqual(promotable(placed, [row]).map((c) => c.label), ['Latest Post · Headline size', 'Latest Post · Headline size (2)', 'Latest Post · Primary action (2)'])
+  assert.deepEqual(promotable(placed, [row]).map((c) => c.label), [
+    'Header · Headline size', 'Header · Primary action', 'Latest Post · Headline size', 'Latest Post · Headline size (2)', 'Latest Post · Primary action (2)',
+  ])
   assert.deepEqual(boundLabels(placed, [row]), { [row.id]: 'Latest Post · Primary action' })
   assert.deepEqual(boundLabels(placed, [stored({ bound_to: { kind: 'control', instanceId: 'gone', controlKey: 'x' } })]), {})
+})
+
+test('each stored doc\'s page in D5b\'s words, the Ghost group it suggests, and its place in the menu (Question 5)', () => {
+  assert.deepEqual(pageOf('site'), { page: 'Every page', group: 'site_wide', rank: -1 })
+  assert.deepEqual(pageOf('home'), { page: 'Home', group: 'homepage', rank: 0 })
+  assert.deepEqual(pageOf('index'), { page: 'Home page 2', group: 'homepage', rank: 0.5 })
+  assert.equal(pageOf('post').group, 'post')
+  assert.deepEqual([pageOf('tag-paged').page, pageOf('tag-paged').group], ['Tag page 2', 'site_wide'])
+  assert.equal(pageOf('error').page, '404')
+  assert.equal(pageOf('custom:custom-signup.hbs').page, 'Signup', 'a membership canvas is a custom template with a name of its own')
+  assert.equal(pageOf('custom:custom-landing.hbs').page, 'custom-landing.hbs', 'a custom template outside the switcher, by its file')
+  assert.ok(pageOf('home').rank < pageOf('index').rank && pageOf('index').rank < pageOf('post').rank && pageOf('post').rank < pageOf('custom:custom-landing.hbs').rank)
+})
+
+test('what a menu row and "What your site\'s owner will see" say (Question 5) — the name is the key\'s (Question 6)', () => {
+  const choice: Promotable['setting'] = { type: 'select', options: [{ value: 'medium', label: 'Medium' }, { value: 'large', label: 'Large' }], default_value: 'Large' }
+  const toggle: Promotable['setting'] = { type: 'boolean', options: null, default_value: 'false' }
+  assert.deepEqual(choicesOf(choice), ['Medium', 'Large'])
+  assert.deepEqual(choicesOf(toggle), ['On', 'Off'])
+  assert.equal(THEME_WORDS.now(startOf(choice)), 'now Large')
+  assert.equal(THEME_WORDS.now(startOf(toggle)), 'now Off')
+  assert.equal(THEME_WORDS.gets({ control: 'Headline size', section: 'Latest Post', page: 'Home', setting: choice }, 'Headline size', 'homepage'),
+    "In Ghost's Design panel, under Homepage, your site's owner will see “Headline size”, a list set to Large. It changes Headline size on Latest Post, on your Home page.")
+  assert.equal(THEME_WORDS.gets({ control: 'Primary action', section: 'Header', page: EVERY_PAGE, setting: toggle }, 'Show the button', 'site_wide'),
+    "In Ghost's Design panel, under Site wide, your site's owner will see “Show the button”, a switch set to Off. It changes Primary action on Header, on every page.")
+  // the page names a setting by its key wherever it names one, and its edit form posts no label (Question 6)
+  assert.doesNotMatch(page, /\{setting\.label\}|target\?\.label|deleteTitle\(setting\.label\)|label: o\.label, active: o\.key/)
+  assert.doesNotMatch(page.slice(page.indexOf('function EditForm('), page.indexOf('function Fixed(')), /name="label"/)
 })
 
 test('a stored row of another shape is dropped, never drawn or handed to a rule (AD-36)', () => {
@@ -106,6 +149,12 @@ test('R-192: the page reads along while another session holds a live lock', () =
   // the whole page is the Kit's ReadOnly, the server assuming a live lock is someone else's until the tab says otherwise
   assert.match(page, /useSyncExternalStore\(noSubscribe, \(\) => settingsReadOnly\(holder, tabSession\(\)\), \(\) => holder !== null\)/)
   assert.match(page, /<ReadOnly on=\{readOnly\}>[\s\S]*<PostsPerPage[\s\S]*<ModeBlock[\s\S]*<CustomSettings[\s\S]*<\/ReadOnly>/)
+})
+
+test('Question 4: the project-mode block sits flat in the column under its rule, as D6a draws it — no card, no shadow', () => {
+  const block = page.slice(page.indexOf('function ModeBlock('), page.indexOf('function ModeSegment('))
+  assert.match(block, /<div data-mode-block className="flex flex-col gap-\[9px\] border-t border-line-faint pt-\[14px\]">/)
+  assert.doesNotMatch(block, /shadow-sm|max-w-\[520px\]|[\s"]p-\[18px\]/)
 })
 
 // ─── the words ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -150,10 +199,15 @@ test('every writer is (previous, formData), refuses without a project id, and ch
   const promote = fn('promoteControl')
   before(promote, 'rows.length >= USER_SETTING_CAP', 'editorData(id)', 'a full project costs no docs read')
   before(promote, 'checkSetting(row, others)', '.insert(', 'refused before the insert')
-  // an edit never writes the key — the update grant omits it, and so does this
+  // Question 6: the key is the label's, worked out here — nothing posted names one — and the label stored is Ghost's name for it
+  assert.doesNotMatch(promote, /formData\.get\('key'\)/)
+  assert.match(promote, /const key = claimKey\(new Set\(rows\.map\(\(r\) => r\.key\)\), settingKey\(String\(formData\.get\('label'\) \?\? ''\)\)\)/)
+  assert.match(promote, /label: ghostName\(key\),/)
+  // an edit never writes the key — the update grant omits it, and so does this — nor, since Question 6, the label
   const update = fn('updateSetting')
   before(update, 'checkSetting(row, others)', '.update(', 'refused before the update')
-  assert.doesNotMatch(update.slice(update.indexOf('.update(')), /\bkey:/)
+  assert.doesNotMatch(update.slice(update.indexOf('.update(')), /\bkey:|\blabel:/)
+  assert.doesNotMatch(update, /posted\('label'\)/)
   // a delete clears every condition naming the setting first, then deletes
   before(fn('deleteSetting'), 'visibility_condition: null', '.delete()', 'conditions cleared first')
   // the database's floor speaks the module's words, never a Postgres code

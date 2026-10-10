@@ -3,9 +3,10 @@
  * them, which controls the Promote form offers, Site basics from the linked site, whether this session reads along, and
  * the page's words (R-170: one list). Pure, so `settings.test.ts` reaches every rule. */
 
-import type { SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, type SectionRegistryEntry } from '@inflozo/library'
 import type { ProjectDoc } from '@inflozo/section-runtime'
-import { GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, settingOf, type SettingRow } from '@inflozo/section-runtime/custom-settings'
+import { GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, settingOf, type SettingGroup, type SettingRow } from '@inflozo/section-runtime/custom-settings'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOfKey, SITE } from './editor.ts'
 import { isStale, type LockRow } from './lock.ts'
 import { adminAt } from './paywall.ts'
 import { imageUrl } from './probe-rule.ts'
@@ -50,16 +51,50 @@ export const boundControl = (b: Readonly<Record<string, unknown>>): { instanceId
     ? { instanceId: b['instanceId'], controlKey: b['controlKey'] }
     : null
 
-/** A control the Promote form offers: where it is, its name as D6a's rows print it, and what it becomes in Ghost. */
-export type Promotable = { instanceId: string; controlKey: string; label: string; setting: Pick<SettingRow, 'type' | 'options' | 'default_value'> }
+/** A control the Promote form offers: where it is, its name as D6a's rows print it, and what it becomes in Ghost — and,
+ *  since the owner's Question 5 (option 3, 2026-10-10), the parts the menu and "What your site's owner will see" say: the
+ *  control's own name, its section, the page it is on, the Ghost group that page suggests, and its kind's picture. */
+export type Promotable = {
+  instanceId: string
+  controlKey: string
+  label: string
+  control: string
+  section: string
+  page: string
+  group: SettingGroup
+  category: string
+  setting: Pick<SettingRow, 'type' | 'options' | 'default_value'>
+}
 
 const idOf = (instanceId: string, controlKey: string) => `${instanceId}\u0000${controlKey}`
+
+/** The words for "every page" — a header or footer sits in the site doc, which every template draws. */
+export const EVERY_PAGE = 'Every page'
+const ORDER = Object.keys(CANVASES)
+
+/** Where a stored doc's sections appear, in D5b's words, with the Ghost group that page suggests and its place in the
+ *  menu: the site doc first (every page), then each canvas in D5b's order with its page 2 straight after it. Home is
+ *  Ghost's Homepage and Post its Post; every other page suggests Site wide, the group Ghost shows everywhere. */
+export function pageOf(key: string): { page: string; group: SettingGroup; rank: number } {
+  if (key === SITE.key) return { page: EVERY_PAGE, group: 'site_wide', rank: -1 }
+  const paged = canvasOfPageTwoKey(key)
+  const canvas = paged ?? canvasOfTemplateKey(key)
+  // ponytail: a custom template outside the switcher is named by its file until the Routes Manager (7.16) names them
+  if (canvas === null) return { page: fileOfKey(key), group: 'site_wide', rank: ORDER.length }
+  const { label } = CANVASES[canvas]
+  return {
+    page: paged === null ? label : `${label} page 2`,
+    group: canvas === 'home' ? 'homepage' : canvas === 'post' ? 'post' : 'site_wide',
+    rank: ORDER.indexOf(canvas) + (paged === null ? 0 : 0.5),
+  }
+}
 
 /**
  * Every control a Ghost setting can be made from (QUESTION 1, RULED OPTION 1): each toggle, segmented and named select
  * (`settingOf` decides) on every VISIBLE instance of every STORED doc — `skip` names the template keys whose doc is a
  * synthesized default, which no row binds to — once each (a page 2 shares its page 1's instances), at the instance's
  * value, named "Layer · Control" as D6a's rows are; a name met twice takes " (2)", so no two rows of a menu read alike.
+ * The docs are walked in `pageOf`'s order, so the menu lists them page by page (Question 5).
  */
 export function placedControls(
   docs: Readonly<Record<string, ProjectDoc>>,
@@ -69,8 +104,10 @@ export function placedControls(
   const seen = new Set<string>()
   const names = new Map<string, number>()
   const out: Promotable[] = []
-  for (const [key, doc] of Object.entries(docs)) {
+  const walk = Object.entries(docs).sort(([a], [b]) => pageOf(a).rank - pageOf(b).rank)
+  for (const [key, doc] of walk) {
     if (skip.has(key)) continue
+    const { page, group } = pageOf(key)
     for (const i of doc.instances) {
       const entry = entries[i.designId]
       if (i.hidden || entry === undefined) continue
@@ -79,15 +116,27 @@ export function placedControls(
         const setting = settingOf(def, typeof v === 'string' ? v : def.default)
         if (setting === null || seen.has(idOf(i.instanceId, def.name))) continue
         seen.add(idOf(i.instanceId, def.name))
-        const name = `${i.layerName.trim() || entry.name} · ${def.label}`
+        const section = i.layerName.trim() || entry.name
+        const name = `${section} · ${def.label}`
         const n = (names.get(name) ?? 0) + 1
         names.set(name, n)
-        out.push({ instanceId: i.instanceId, controlKey: def.name, label: n === 1 ? name : `${name} (${n})`, setting })
+        out.push({
+          instanceId: i.instanceId, controlKey: def.name, label: n === 1 ? name : `${name} (${n})`,
+          // a second instance of a name says so here too, so two rows of one page never read alike
+          control: def.label, section: n === 1 ? section : `${section} (${n})`, page, group, category: categoryOf(i.designId), setting,
+        })
       }
     }
   }
   return out
 }
+
+/** A promoted setting's start, as Ghost's panel shows it: a choice's label, a switch's On or Off. */
+export const startOf = (s: Pick<SettingRow, 'type' | 'default_value'>): string =>
+  s.type === 'boolean' ? conditionWord(s.default_value === 'true') : (s.default_value ?? '')
+/** Every value the site's owner can pick: a choice's labels, a switch's two. */
+export const choicesOf = (s: Pick<SettingRow, 'type' | 'options'>): string[] =>
+  s.type === 'boolean' ? [conditionWord(true), conditionWord(false)] : (s.options ?? []).map((o) => o.label)
 
 /** What the Promote form offers: the placed controls no row is bound to yet. */
 export const promotable = (placed: readonly Promotable[], rows: readonly StoredSetting[]): Promotable[] => {
@@ -179,4 +228,13 @@ export const THEME_WORDS = {
       ? 'Nothing is deployed yet, so nothing is lost.'
       : `If you later promote a control with the key ${s.key}, the value your site's owner set in Ghost comes back.`,
   typeWord: (type: SettingRow['type']) => (type === 'color' ? 'colour' : type),
+  /** Question 6, ruled option 1 (owner, 2026-10-10): Ghost names a setting by its key, so its label is set once */
+  nameFixed: 'Ghost names a setting by its key, so its label is fixed once promoted. To rename one before you deploy, delete it and promote it again.',
+  /** Question 5, ruled option 3 (owner, 2026-10-10): each control in Which control says its values and where it stands */
+  now: (start: string) => `now ${start}`,
+  /** …and, under the form, what the site's owner will see in Ghost — D6c's "What ships", extrapolated (R-74). "Your site's
+   *  owner" is the one name the page already gives the person who edits the setting in Ghost (R-170) */
+  willGet: "What your site's owner will see",
+  gets: (c: Pick<Promotable, 'control' | 'section' | 'page' | 'setting'>, name: string, group: SettingGroup) =>
+    `In Ghost's Design panel, under ${GROUP_WORDS[group]}, your site's owner will see “${name}”, ${c.setting.type === 'boolean' ? 'a switch' : 'a list'} set to ${startOf(c.setting)}. It changes ${c.control} on ${c.section}, ${c.page === EVERY_PAGE ? 'on every page' : `on your ${c.page} page`}.`,
 } as const

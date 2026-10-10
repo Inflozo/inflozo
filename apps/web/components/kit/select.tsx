@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { MouseEvent, ReactNode } from 'react'
+import { Fragment, type MouseEvent, type ReactNode } from 'react'
 import { anchorTo, arrowKeys } from '@/lib/menu'
 import { Check, ChevronDown, ChevronRight, Trash } from './icons'
 import { fieldTone, greyedProps, labelTone, ReadOnly, reason, ring, slimScrollbar, valueTone, type Greyed } from './greyed'
@@ -88,6 +88,7 @@ export function Select({
   aside,
   options,
   onSelect,
+  menuWidth,
 }: {
   id: string
   label: string
@@ -95,9 +96,11 @@ export function Select({
   thumb?: ReactNode
   greyed?: Greyed
   aside?: ReactNode
-  /** the menu's rows, when the select is live */
-  options?: { value: string; label: string; active?: boolean }[]
+  /** the menu's rows, when the select is live — Story 7.9: a row may carry `Menu`'s group, glyph and contents */
+  options?: ({ value: string; label: string; active?: boolean } & Pick<MenuItem, 'group' | 'icon' | 'contents'>)[]
   onSelect?: (value: string) => void
+  /** Story 7.9 — `Menu`'s width, where the rows say more than a name (the Promote form's Which control) */
+  menuWidth?: string
 }) {
   const live = onSelect !== undefined && options !== undefined && !greyed
   return (
@@ -136,7 +139,8 @@ export function Select({
         >
           <Menu
             label={label}
-            items={options.map((o) => ({ label: o.label, active: o.active, onSelect: () => onSelect(o.value) }))}
+            width={menuWidth}
+            items={options.map((o) => ({ label: o.label, active: o.active, group: o.group, icon: o.icon, contents: o.contents, onSelect: () => onSelect(o.value) }))}
           />
         </div>
       ) : null}
@@ -212,6 +216,9 @@ export type MenuItem = {
   /** Story 6.4 — what the row shows in place of its label (the pairing menu's "Ag" over two families); the label stays
    *  its key and its name where the contents are words of their own */
   contents?: ReactNode
+  /** Story 7.9 — the heading a row is listed under (the Promote menu's pages, the owner's Question 5): a row whose group is
+   *  not the row before's opens it with its heading, drawn as D6a's rail heading ("SETTINGS", `:42`) */
+  group?: string
 }
 
 /** The dropdown itself: the active row is coral-tint with a check, danger sits last. Story 6.4 — `width` where the menu is
@@ -248,22 +255,28 @@ export function Menu({ label, items, width = 'w-[210px]' }: { label: string; ite
             {item.active ? <Check size={13} className="text-coral-deep" /> : null}
           </>
         )
+        const heading = item.group !== undefined && item.group !== items[i - 1]?.group ? item.group : null
         return (
           // by place as well as label: Story 7.9's condition menu lists settings the customer named, and two may share a name
-          <li key={`${i}:${item.label}`} className="flex flex-col">
-            {item.danger && i > 0 ? <hr className="mx-2 my-1 h-px border-0 bg-line" /> : null}
-            {item.href !== undefined ? (
-              <Link href={item.href} aria-current={item.active ? 'true' : undefined} onClick={act} className={className}>
-                {inside}
-              </Link>
-            ) : (
-              <ReadOnly on={item.readOnly === true}>
-                <button type="button" aria-current={item.active ? 'true' : undefined} onClick={item.onSelect ? act : undefined} className={className}>
-                  {inside}
-                </button>
-              </ReadOnly>
+          <Fragment key={`${i}:${item.label}`}>
+            {heading === null ? null : (
+              <li className={`px-[10px] pb-[3px] text-[10.5px] font-semibold uppercase tracking-[0.04em] text-ink-soft ${i > 0 ? 'pt-[9px]' : 'pt-[4px]'}`}>{heading}</li>
             )}
-          </li>
+            <li className="flex flex-col">
+              {item.danger && i > 0 ? <hr className="mx-2 my-1 h-px border-0 bg-line" /> : null}
+              {item.href !== undefined ? (
+                <Link href={item.href} aria-current={item.active ? 'true' : undefined} onClick={act} className={className}>
+                  {inside}
+                </Link>
+              ) : (
+                <ReadOnly on={item.readOnly === true}>
+                  <button type="button" aria-current={item.active ? 'true' : undefined} onClick={item.onSelect ? act : undefined} className={className}>
+                    {inside}
+                  </button>
+                </ReadOnly>
+              )}
+            </li>
+          </Fragment>
         )
       })}
     </ul>

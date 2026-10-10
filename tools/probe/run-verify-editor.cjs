@@ -234,11 +234,15 @@
 // "Saving…" with `aria-busy` (the one holder of the stepper's computed submit, which `busy.test.ts` cannot see), 13 stored and
 // read back, the editor's main feed greyed at 13 with D5c's "Theme settings ↗" opening the page; the spent steps at 1 and 100
 // and hand-posted 0, 101, 12.5 and abc refused (51 the control); a toggle and a choice promoted to the matrix's rows; label →
-// key (`show_tag_2`, "W", "Color scheme"); a condition set and its target deleted; a frozen row's label edit and resurrect
+// key (`show_tag_2`, "W", "Color scheme"); a condition set and its target deleted; a frozen row's edit and resurrect
 // warning; the cap at seventeen; R-192's read-only page under a second session's lock; each of A's four writes replayed under
 // B's cookies (refused) and A's (the control); and Site basics with a throwaway site linked, then unset. No step runs with
 // scripts off: the app needs JavaScript and this route streams behind its skeleton (Question 3, ruled option 1). The
-// project is handed back with no setting, Posts per page 12 and no site.
+// project is handed back with no setting, Posts per page 12 and no site. The owner's rulings of 2026-10-10 re-expect both:
+// step 52 reads the mode block flat as D6a draws it (Question 4); 104d reads Which control page by page, each row with its
+// section, values and the one in force, and the label, key, group and "What your site's owner will see" a chosen control
+// starts with (Question 5); 104g and 104j edit a row's group, because its label is Ghost's name for the key and fixed with
+// it (Question 6), and the form's key is read where it is now shown, read-only.
 const { chromium, devices, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -2700,6 +2704,12 @@ async function main() {
       // R-118: what D6a leaves to Story 7.12 (its rail: Navigation, Social accounts, Translations, Code injection) and
       // Story 7.28 (Credits) stays ABSENT — not greyed and not captioned
       restOfD6a: ['Credits', 'Navigation', 'Social accounts', 'Translations', 'Code injection'].filter((w) => document.body.innerText.includes(w)),
+      // Story 7.9's Question 4 (owner, 2026-10-10): the block is flat in the column under its rule, as D6a draws it; the
+      // clear row inside it is a bordered box, read the same way (the control)
+      flat: (() => {
+        const box = (el) => { if (!el) return null; const c = getComputedStyle(el); return { shadow: c.boxShadow, top: c.borderTopWidth, left: c.borderLeftWidth, bg: c.backgroundColor } }
+        return { block: box(document.querySelector('[data-mode-block]')), row: box(document.querySelector('[data-clear-row]')) }
+      })(),
     }), { posts: TS52.THEME_WORDS.postsPerPage, basics: TS52.THEME_WORDS.siteBasics, meter: `OF ${CS52.USER_SETTING_CAP}`, noSite: TS52.THEME_WORDS.noSite, accent: TS52.THEME_WORDS.accent })
     await page.goto(settingsUrl, { waitUntil: 'load' })
     // Review: `load` can land while React's streamed rows still sit in their HIDDEN holder — `querySelector` finds them
@@ -2709,6 +2719,8 @@ async function main() {
     check('step 52 — R-131: /projects/<id>/settings draws D6a\'s mode block — "This project" as Light only | Light + Dark, with its caption verbatim', settings.pill.map((b) => b.label).join(' | ') === 'Light only | Light + Dark' && settings.pill[1].pressed === 'true' && settings.caption, JSON.stringify(settings.pill))
     check('step 52 — R-131: D6a\'s clear row carries the moon labelled "Dark override" and a DERIVED count, live while the project is Light + Dark', settings.moonLabel === 'Dark override' && /1 section carries a dark override/.test(settings.row ?? '') && settings.greyed === false && settings.clearRefuses === null, JSON.stringify({ row: settings.row, greyed: settings.greyed, refuses: settings.clearRefuses }))
     check('step 52 — Story 7.9: Posts per page, Site basics and the custom-settings meter are PRESENT — what this story built of D6a', settings.built.length === 0, `missing: ${settings.built.join(' · ')}`)
+    check('step 52 — Story 7.9\'s Question 4: the mode block is flat as D6a draws it — a rule above, no side border, no shadow, no fill of its own — while its clear row is a bordered box (the control)',
+      settings.flat.block?.shadow === 'none' && settings.flat.block?.top === '1px' && settings.flat.block?.left === '0px' && settings.flat.block?.bg === 'rgba(0, 0, 0, 0)' && settings.flat.row?.left === '1px', JSON.stringify(settings.flat))
     check('step 52 — Story 7.9 (Question 2): the seeded project links no site, so Site basics is its one caption and draws no Accent colour row', linked52 === null && settings.noSite && !settings.accent, JSON.stringify({ linked52, noSite: settings.noSite, accent: settings.accent }))
     check('step 52 — R-118: every row D6a leaves to a later story — Credits (7.28) and the rail\'s Navigation, Social accounts, Translations and Code injection (7.12) — is ABSENT, not greyed and not captioned', settings.restOfD6a.length === 0 && !settings.reason && !settings.kept, settings.restOfD6a.join(' · '))
 
@@ -7716,10 +7728,11 @@ async function main() {
       return { value: g?.querySelector('span')?.textContent ?? null, minus: b(minus), plus: b(plus), status: form?.querySelector('[role="status"]')?.textContent ?? null, alert: form?.querySelector('[role="alert"]')?.textContent ?? null, text: form?.innerText ?? '' }
     })
     const meter104 = (p) => p.evaluate(() => document.getElementById('custom-settings')?.parentElement?.querySelector('span')?.textContent ?? null)
+    /** Which control's rows by their D6a name (`data-promotable`) — since the owner's Question 5 a row says more than its name */
     const offered104 = async (p) => {
       await p.locator('#promote-which').click()
       await p.waitForTimeout(250)
-      const items = (await p.locator('#promote-which-menu button').allInnerTexts()).map((t) => t.trim())
+      const items = await p.locator('#promote-which-menu [data-promotable]').evaluateAll((els) => els.map((e) => e.getAttribute('data-promotable')))
       await p.keyboard.press('Escape')
       await p.waitForTimeout(150)
       return items
@@ -7727,15 +7740,23 @@ async function main() {
     const choose104 = async (p, id, name) => {
       await p.locator(`#${id}`).click()
       await p.waitForTimeout(250)
-      await p.locator(`#${id}-menu`).getByRole('button', { name, exact: true }).click()
+      if (id === 'promote-which') await p.locator(`#${id}-menu button`).filter({ has: p.locator(`[data-promotable="${name}"]`) }).click()
+      else await p.locator(`#${id}-menu`).getByRole('button', { name, exact: true }).click()
       await p.waitForTimeout(200)
     }
+    /** what the form shows for the control chosen: the label it starts with, the key, the group and the summary sentence */
+    const form104 = (p) => p.evaluate(() => ({
+      label: document.getElementById('promote-label')?.value ?? null,
+      key: document.getElementById('promote-key')?.textContent ?? null,
+      group: document.getElementById('promote-group')?.textContent?.trim() ?? null,
+      summary: document.querySelector('[data-promote-summary]')?.innerText.replace(/\s+/g, ' ').trim() ?? null,
+    }))
     /** one promotion through the form: the key as the form shows it before the press, and the action's raw answer */
     const promote104 = async (p, { control, label, group }) => {
       if (control) await choose104(p, 'promote-which', control)
       await p.locator('#promote-label').fill(label)
       if (group) await choose104(p, 'promote-group', group)
-      const key = await p.locator('#promote-key').inputValue()
+      const key = await p.locator('#promote-key').textContent()
       const answered = posted104(p)
       await p.locator('form:has(#promote-which) button[type="submit"]').click()
       const body = await (await answered).text()
@@ -7857,6 +7878,27 @@ async function main() {
     const offeredBefore104 = await offered104(ts)
     const emptyMeter104 = await meter104(ts)
     const emptySaid104 = (await ts.locator('section[aria-labelledby="custom-settings"]').innerText()).includes(T104.empty)
+    // Question 5 (owner, 2026-10-10): the menu lists the controls page by page, each row its control, section, values and the
+    // one in force; choosing one starts the label at the control's name and the group at its page's, and the summary says
+    // what the site's owner will see — every word the app's own, derived from the same stored docs
+    await ts.locator('#promote-which').click()
+    await ts.waitForTimeout(250)
+    const menu104 = await ts.locator('#promote-which-menu ul').evaluate((ul) => [...ul.children].map((li) => li.querySelector('[data-promotable]') ? { row: li.querySelector('[data-promotable]').getAttribute('data-promotable'), text: li.innerText.replace(/\s+/g, ' ').trim() } : { heading: li.innerText.trim() }))
+    await ts.keyboard.press('Escape')
+    await ts.waitForTimeout(150)
+    const headings104 = menu104.filter((m) => m.heading).map((m) => m.heading.toLowerCase())
+    const pages104 = [...new Set(placed104.map((c) => c.page.toLowerCase()))]
+    const rowOk104 = (c) => { const m = menu104.find((x) => x.row === c.label); return !!m && m.text.includes(c.control) && m.text.includes(c.section) && m.text.includes(TS104.choicesOf(c.setting).join(' · ')) && m.text.includes(T104.now(TS104.startOf(c.setting))) }
+    await choose104(ts, 'promote-which', choice104.label)
+    const chosen104 = await form104(ts)
+    const name104 = CS104.ghostName(CS104.claimKey(new Set(), CS104.settingKey(choice104.control)))
+    check('step 104d — Question 5: Which control is headed by each page its controls are on, in order, and every row says its control, its section, its values and the one in force now (Headline size\'s and Primary action\'s read as the app derives them)',
+      same104(headings104, pages104) && rowOk104(choice104) && rowOk104(toggle104), JSON.stringify({ headings104, pages104, menu: menu104.slice(0, 6) }))
+    check('step 104d — Question 5: choosing Headline size starts Label in Ghost at the control\'s own name, the key at its words, Group in Ghost at its page\'s group, and the summary says what the site\'s owner will see — the app\'s sentence',
+      // the box's heading is drawn uppercase, and innerText reads it as drawn
+      chosen104.label === choice104.control && chosen104.key === CS104.settingKey(choice104.control) && chosen104.group === CS104.GROUP_WORDS[choice104.group] &&
+      chosen104.summary === `${T104.willGet.toUpperCase()} ${T104.gets(choice104, name104, choice104.group)}`,
+      JSON.stringify({ chosen104, expected: T104.gets(choice104, name104, choice104.group) }))
     const t104 = await promote104(ts, { control: toggle104.label, label: 'Show the button', group: CS104.GROUP_WORDS.homepage })
     const r1 = await rowOf104('show_the_button')
     const meter1 = await meter104(ts)
@@ -7882,7 +7924,7 @@ async function main() {
     const tag1 = await promote104(ts, { control: x104, label: 'Show tag' })
     await choose104(ts, 'promote-which', y104)
     await ts.locator('#promote-label').fill('Show tag')
-    const liveKey104 = await ts.locator('#promote-key').inputValue()
+    const liveKey104 = await ts.locator('#promote-key').textContent()
     const tag2 = await promote104(ts, { label: 'Show tag' })
     const keys104 = (await rows104()).map((r) => r.key)
     check('step 104e — label → key: "Show tag" is show_tag, and a second "Show tag" reads show_tag_2 in the live key field and is stored so',
@@ -7932,7 +7974,7 @@ async function main() {
     check('step 104f — the target deleted: its row is gone, the condition naming it is null in the database, and the caption is gone',
       gone104 === null && cleared104?.visibility_condition === null && captionGone104 && (await item104(ts, 'headline_size').count()) === 0, JSON.stringify({ gone104, condition: cleared104?.visibility_condition, captionGone104 }))
 
-    // ── 104g — the matrix's "label edit on a frozen row": planted frozen, the key stays and cannot be typed into ──
+    // ── 104g — the matrix's "edit on a frozen row": planted frozen, the key and — since Question 6 — the label are fixed ──
     const frozenAt104 = new Date().toISOString()
     const froze104 = await call('/rest/v1', `/custom_settings?id=eq.${cleared104.id}`, { method: 'PATCH', body: JSON.stringify({ frozen_at: frozenAt104 }) })
     const frozenRow104 = await rowOf104('show_the_button')
@@ -7940,17 +7982,19 @@ async function main() {
     const frozenText104 = await item104(ts, 'show_the_button').innerText()
     await item104(ts, 'show_the_button').locator('summary').click()
     await ts.waitForTimeout(200)
-    const keyInputs104 = await item104(ts, 'show_the_button').locator('details form input[name="key"]').count()
-    const promoteKeyInputs104 = await ts.locator('form:has(#promote-which) input[name="key"]').count()
-    await item104(ts, 'show_the_button').locator('details form input[name="label"]').fill('Show the big button')
+    const keyInputs104 = await item104(ts, 'show_the_button').locator('details form input[name="key"], details form input[name="label"]').count()
+    const promoteLabelInputs104 = await ts.locator('form:has(#promote-which) input[name="label"]').count()
+    const fixedName104 = await ts.locator(`#setting-${cleared104.id}-label`).textContent()
+    await choose104(ts, `setting-${cleared104.id}-group`, CS104.GROUP_WORDS.post)
     const answered104g = posted104(ts)
     await item104(ts, 'show_the_button').locator('details form button[type="submit"]').click()
     await answered104g
     await ts.waitForTimeout(600)
     const edited104 = await rowOf104('show_the_button')
-    check('step 104g — frozen (planted through the service key): the row reads "Key frozen since …", the edit form has NO input named key (the Promote form has one — the control), and a label edit lands with the key and the stamp unchanged',
-      (froze104.status === 200 || froze104.status === 204) && frozenText104.includes(T104.frozenSince(frozenRow104?.frozen_at ?? frozenAt104)) && keyInputs104 === 0 && promoteKeyInputs104 === 1 &&
-      edited104?.label === 'Show the big button' && edited104?.key === 'show_the_button' && edited104?.id === cleared104.id && edited104?.frozen_at === frozenRow104?.frozen_at, JSON.stringify({ keyInputs104, promoteKeyInputs104, edited: fields104(edited104) }))
+    check('step 104g — frozen (planted through the service key): the row reads "Key frozen since …", the edit form has NO input named key or label (the Promote form has a label input — the control) and shows Ghost\'s name for the key, and a group edit lands with the key, the label and the stamp unchanged',
+      (froze104.status === 200 || froze104.status === 204) && frozenText104.includes(T104.frozenSince(frozenRow104?.frozen_at ?? frozenAt104)) && keyInputs104 === 0 && promoteLabelInputs104 === 1 &&
+      fixedName104 === CS104.ghostName('show_the_button') && edited104?.group_name === 'post' && edited104?.label === frozenRow104?.label &&
+      edited104?.key === 'show_the_button' && edited104?.id === cleared104.id && edited104?.frozen_at === frozenRow104?.frozen_at, JSON.stringify({ keyInputs104, promoteLabelInputs104, fixedName104, edited: fields104(edited104) }))
     await item104(ts, 'show_the_button').locator('form:has(dialog) button[type="submit"]').click()
     await ts.waitForTimeout(300)
     const askFrozen104 = await item104(ts, 'show_the_button').locator('dialog').evaluate((d) => ({ open: d.open, text: d.innerText.replace(/\s+/g, ' ') }))
@@ -8067,21 +8111,23 @@ async function main() {
     const aPromote104 = await replay104(tsContext, cPromote104)
     check('step 104j — Promote: replayed under B it answers "We couldn\'t save that just now." and A\'s rows stand; under A it reaches A\'s rows and finds the control already promoted (the control)',
       !!cPromote104 && rowsAfterA104 === 1 && bPromote104.body.includes(W104.couldNot) && rowsAfterB104 === 1 && aPromote104.body.includes(W104.noControl), JSON.stringify({ rowsAfterA104, b: bPromote104.status, rowsAfterB104, a: aPromote104.status }))
-    // update: captured as A relabels, put back, replayed
+    // update: captured as A regroups (the label is fixed since Question 6), put back, replayed
     await open104(ts)
     const replay104row = await rowOf104('replay')
     await item104(ts, 'replay').locator('summary').click()
+    // whichever group its page suggested, the edit moves it to another
+    const regroup104 = replay104row?.group_name === 'post' ? 'homepage' : 'post'
     const cUpdate104 = await capture104(async () => {
-      await item104(ts, 'replay').locator('details form input[name="label"]').fill('Replay edited')
+      await choose104(ts, `setting-${replay104row?.id}-group`, CS104.GROUP_WORDS[regroup104])
       await item104(ts, 'replay').locator('details form button[type="submit"]').click()
     })
-    await call('/rest/v1', `/custom_settings?id=eq.${replay104row?.id}`, { method: 'PATCH', body: JSON.stringify({ label: 'Replay' }) })
+    await call('/rest/v1', `/custom_settings?id=eq.${replay104row?.id}`, { method: 'PATCH', body: JSON.stringify({ group_name: replay104row?.group_name }) })
     const bUpdate104 = await replay104(bContext, cUpdate104)
-    const labelAfterB104 = (await rowOf104('replay'))?.label
+    const groupAfterB104 = (await rowOf104('replay'))?.group_name
     const aUpdate104 = await replay104(tsContext, cUpdate104)
-    const labelAfterA104 = (await rowOf104('replay'))?.label
-    check('step 104j — Edit: replayed under B it answers "We couldn\'t save that just now." and the label stays; under A it lands (the control)',
-      !!cUpdate104 && bUpdate104.body.includes(W104.couldNot) && labelAfterB104 === 'Replay' && labelAfterA104 === 'Replay edited', JSON.stringify({ b: bUpdate104.status, labelAfterB104, a: aUpdate104.status, labelAfterA104 }))
+    const groupAfterA104 = (await rowOf104('replay'))?.group_name
+    check('step 104j — Edit: replayed under B it answers "We couldn\'t save that just now." and the group stays; under A it lands (the control)',
+      !!cUpdate104 && bUpdate104.body.includes(W104.couldNot) && groupAfterB104 === replay104row?.group_name && groupAfterA104 === regroup104, JSON.stringify({ b: bUpdate104.status, groupAfterB104, a: aUpdate104.status, groupAfterA104 }))
     // delete: captured as A deletes, the row put back with its own id, replayed
     await open104(ts)
     const beforeDelete104 = await rowOf104('replay')

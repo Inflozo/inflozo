@@ -97,6 +97,14 @@ export const SETTING_WORDS = {
 export const settingKey = (label: string): string =>
   label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^[0-9_]+|_+$/g, '')
 
+/** WHAT GHOST ADMIN CALLS A SETTING: its KEY, never a label. Ghost has no label field — its Design panel names every
+ *  setting from the key, the first letter raised, each `_` a space, and API, CTA and RSS in capitals (read in source,
+ *  2026-10-10: Ghost 6.58.0's `core/built/admin/assets/index-BOJzlYiz.js` `mU`, and 5.130.6's
+ *  `admin-x-settings/index-BVxh86CD.mjs` `iR`, the same function, called on `e.key` for each of the five types). So a
+ *  setting is named once, at Promote, and its label is this (Story 7.9's Question 6, ruled option 1, owner, 2026-10-10). */
+export const ghostName = (key: string): string =>
+  key.replace(/^[a-z]/, (c) => c.toUpperCase()).replace(/_/g, ' ').replace(/\b(API|CTA|RSS)\b/gi, (w) => w.toUpperCase())
+
 /** `key` while it is free, else the first free `key_2`, `key_3`, … — `slug.ts`'s `claim` with `_`. */
 export function claimKey(taken: ReadonlySet<string>, key: string): string {
   let name = key

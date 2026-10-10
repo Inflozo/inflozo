@@ -6,7 +6,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { CONTROL_TYPES, type ControlDef } from '@inflozo/library'
 import {
-  checkSetting, claimKey, GHOST_SETTING_TYPES, postsPerPage, PROMOTED_TYPE, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS,
+  checkSetting, claimKey, ghostName, GHOST_SETTING_TYPES, postsPerPage, PROMOTED_TYPE, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS,
   settingKey, settingOf, USER_SETTING_CAP, visibilityNql, type SettingRow,
 } from './custom-settings.ts'
 
@@ -24,6 +24,16 @@ test('the meter and its caption are derived: 20 − 3 = 17, printed in D6a\'s ow
   assert.equal(USER_SETTING_CAP, 17)
   assert.equal(SETTING_WORDS.limits, 'Ghost allows twenty per theme; three are the dark-mode built-ins every Inflozo project declares, so seventeen are yours.')
   assert.equal(SETTING_WORDS.meter(3), '3 OF 17')
+})
+
+test('Ghost names a setting by its key — its Design panel\'s own rule, so the label is the key\'s words (Question 6)', () => {
+  assert.equal(ghostName('show_the_button'), 'Show the button')
+  assert.equal(ghostName('show_tag_2'), 'Show tag 2')
+  assert.equal(ghostName('rss_link'), 'RSS link', "API, CTA and RSS in capitals, as Ghost's admin raises them")
+  assert.equal(ghostName('cta_api_text'), 'CTA API text')
+  assert.equal(ghostName('apiary'), 'Apiary', 'a whole word only')
+  // the round trip a promotion makes: the label typed becomes the key, and Ghost prints the key's words back
+  assert.equal(ghostName(settingKey('Show the Button!')), 'Show the button')
 })
 
 test('label → key: lowercase snake_case, two characters at least, a collision takes _2, _3', () => {

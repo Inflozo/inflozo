@@ -170,7 +170,7 @@ export { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, ma
 // Story 7.9 — FR-Q2's rules for a Ghost theme setting as data, one module: Theme settings' actions validate with it and
 // Story 7.10's `config.custom` emitter reads it
 export {
-  checkSetting, claimKey, conditionValues, ghostEntry, GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, keyRefusal, POSTS_PER_PAGE,
+  checkSetting, claimKey, conditionValues, ghostEntry, ghostName, GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, keyRefusal, POSTS_PER_PAGE,
   postsPerPage, PROMOTED_TYPE, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS, settingKey, settingOf, USER_SETTING_CAP,
   visibilityNql,
 } from './custom-settings.ts'
