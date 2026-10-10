@@ -36,8 +36,8 @@ reads it: a root attribute per promoted control, `{{@custom.key}}` in place of b
 and an inline block in `default.hbs` for the accent that the token block reads through `var()` (AD-30). It refuses a
 dangling binding and an over-cap project, and is proved 0/0 on both pinned gscans and on T1. Theme settings gains the three
 new kinds with D6c's confirm and the accent caution; the editor gains the promote action, the "In Ghost" tag, P0-1's lock
-pill and the four warnings. **Written to the RECOMMENDED option of each open question** (§ Rulings this spec is written
-to). No migration: `bound_to` is `jsonb`, and every type, check and grant this story needs exists since Story 1.2, so
+pill and the four warnings. **Written to the owner's rulings of 2026-10-10 on Questions 1–4** (§ Rulings this spec is
+written to). No migration: `bound_to` is `jsonb`, and every type, check and grant this story needs exists since Story 1.2, so
 there is no Schema phase (R-99).
 
 ## Boundaries & Constraints
@@ -55,7 +55,7 @@ there is no Schema phase (R-99).
   becomes, the binding shape (`control` · `prop` · `token`), a binding's state (live · parked · deleted · hidden ·
   changed), the start value, and every sentence the compiler throws. The compiler, Theme settings and the editor import
   it; no second copy of any rule (7.9's design).
-- **The canvas decides the start (Question 1).** The compile derives each setting's `type`, `options` and `default` from
+- **The canvas decides the start (Question 1, ruled option 1).** The compile derives each setting's `type`, `options` and `default` from
   the design and the doc **in force** (`resolveControls`; a text prop's words; the pack's light accent) — never from the
   stored `default_value` or `options`, which stay the record of what was promoted. Theme settings prints the start the
   canvas holds and no longer edits it.
@@ -63,9 +63,10 @@ there is no Schema phase (R-99).
   the panel and the theme read it as P0-1's plain-text lock (`RichText.plainText`, `marks.ts:28-31`), so deleting the
   setting brings the formatting back exactly as D6c promises ("Demote it later and the formatting comes back"). The
   binding is the one source of the lock; nothing writes `plainText` into a stored doc.
-- **What Ghost keeps and forgets is said, not hidden (Question 2).** Ghost keeps a setting's stored value at every redeploy
-  and deletes it the moment a deploy leaves the key out (read in source, both majors — § Facts). The shuffle note and the
-  delete confirm say so in § Words; the deploy wizard's Pre-flight warning is Story 7.18's (moved word for word at Dev).
+- **What Ghost keeps and forgets is said, not hidden (Question 2, ruled option 2).** Ghost keeps a setting's stored value
+  at every redeploy and deletes it the moment a deploy leaves the key out (read in source, both majors — § Facts). The
+  shuffle note and the delete confirm say so in § Words; the deploy wizard's Pre-flight warning is Story 7.18's, on its
+  card word for word since the ruling.
 - **AD-14.** Compile stays pure and byte-deterministic: the settings arrive as values (`CompileInput.settings`), emitted
   in `position` order, `custom` last in `config` and absent when nothing is live.
 - **AD-36.** A key reaches `{{@custom.<key>}}` only after the module's shape check (`^[a-z][a-z0-9_]*$`, two or more
@@ -88,8 +89,8 @@ there is no Schema phase (R-99).
   Review. Ghost 5's half waits for DW-326 (R-238).
 
 **Ask First:**
-- Questions 1–4 are open; § Rulings this spec is written to names the rows a different ruling changes. Dev starts only
-  once all four are ruled.
+- Questions 1–4 are ruled (owner, 2026-10-10: options 1, 2, 1 and 1); a change to any of them is a new question, not a
+  Dev decision.
 - Any change to `custom_settings`' columns, grants or triggers — none is planned; a need for one is a Schema phase and a
   question.
 - Every T1 write (theme uploads, the probe picture, `PUT /custom_theme_settings/`) and every production write — the owner's
@@ -353,8 +354,9 @@ DW-150 (A1's authored logo, Story 9.1).
   back clean.
 
   -- R-82: the stack, not only the wiring.
-- [ ] Propagation — `epics.md` (this card's notes; Story 7.18's card gains Question 2's Pre-flight sentence and Story 9.1's
-  Question 4's hand test, each word for word, and Epic 7's preamble lists both, R-195); `prd.md` FR-Q2 (the resurrect
+- [ ] Propagation — `epics.md` (landed with the rulings at Create, 2026-10-10: this card's four notes; Story 7.18's card
+  carries Question 2's Pre-flight sentence and Story 9.1's Question 4's hand test, each word for word; Epics 7 and 9's
+  preambles list both, R-195 — Dev re-reads them and changes nothing unless the build moves a fact); `prd.md` FR-Q2 (the resurrect
   sentence) and FR-Q3 (what Ghost keeps and forgets; formatting out of force) with dates and sources; `epic-7-context.md`
   sub-bullets; `deferred-work.md` DW-351 → done; `docs/section-authoring.md` (how a promoted control, text and picture
   emit); MEASUREMENTS §78. End with a grep for "comes back" and "maps to its accent role" (standing rule 7).
@@ -411,10 +413,10 @@ DW-150 (A1's authored logo, Story 9.1).
 
 ### Rulings this spec is written to
 
-Dev starts once Questions 1–4 are ruled. The spec is written to each RECOMMENDED option; a different ruling changes the
-rows named here and nothing else.
+All four were ruled by the owner on 2026-10-10, each the recommended option, so the spec stands as written; the rows each
+ruling governs are named here.
 
-| Question | Written to | A different ruling changes |
+| Question | Ruled (owner, 2026-10-10) | Rows it governs |
 |---|---|---|
 | 1 — where a promoted value starts | option 1: the canvas decides; Theme settings shows the start; Edit loses Default | Always · "The canvas decides"; the compile task; the Theme settings task (`EditForm`, `updateSetting`); owner's test step 3 |
 | 2 — what Ghost forgets at a deploy | option 2: the words in § Words, and Story 7.18's Pre-flight warning | § Words rows *park note* and *frozen delete*; the propagation task's Story 7.18 line |
@@ -536,10 +538,10 @@ facts above hold on a real upload. Nothing of Ghost 5 is executed (R-238, DW-326
 
 Do this on the real site after Deploy confirms the build, on a laptop at full width, signed in as yourself. The projects are
 **Pilot sections** (`b6d4db35-8e5e-45e1-a70f-4daa28916d51`) and **Ghost 6 Project** (`21d868cf-1262-4ad2-9a44-091fbf653a04`);
-Deploy confirms both addresses. Written to the recommended option of each question; the Record step rewrites a step a
-different ruling changes. **Not in this test, and why:** moving a promoted control by shuffling (every section has one
-design until Epic 9 — the keyboard walk proves it on a test ring), a picture (no design on your projects takes a picture you
-choose until Story 9.1 — Question 4), and the theme reaching Ghost (no deploy until Story 7.18 — the test Ghost proves it).
+Deploy confirms both addresses. Written to your rulings of 2026-10-10. **Not in this test, and why:** moving a promoted
+control by shuffling (every section has one design until Epic 9 — the keyboard walk proves it on a test ring), a picture
+(its hand test moved to Story 9.1 by your ruling on Question 4), and the theme reaching Ghost (no deploy until Story 7.18 —
+the test Ghost proves it).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -558,8 +560,9 @@ choose until Story 9.1 — Question 4), and the theme reaching Ghost (no deploy 
 
 ## Questions for the owner
 
-All four are open. Dev starts once each is ruled; the spec is written to each RECOMMENDED option (§ Rulings this spec is
-written to).
+All four were raised at this story's Create and ruled by the owner in chat on 2026-10-10, each the recommended option
+(1, 2, 1 and 1). The spec is written to those rulings (§ Rulings this spec is written to); Story 7.18's and Story 9.1's
+cards and Epics 7 and 9's preambles carry the two moved requirements word for word (R-195).
 
 ### Question 1 — Where a promoted control's starting value is set
 
@@ -581,7 +584,7 @@ Edit still says Large. Which one does your theme ship?
    Theme settings"), and the canvas shows Theme settings' value; promoted text is then edited in Theme settings, not on the
    canvas.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-10).**
 
 ### Question 2 — Ghost forgets a setting's value when a deploy leaves it out
 
@@ -602,7 +605,7 @@ then shuffle back and deploy again: "Show the button" returns On, its starting v
    deploy would drop, and says Ghost will forget its value — added to its card word for word. **(RECOMMENDED)**
 3. **Keep the plan's words** as they are.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-10-10).**
 
 ### Question 3 — Site basics' accent sentence is wrong, and where the "comments" link goes
 
@@ -622,7 +625,7 @@ as the logo row has.
    corrected but no link there.
 3. **Both places.**
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-10).**
 
 ### Question 4 — Pictures: no design on your projects takes one yet
 
@@ -639,7 +642,7 @@ and promoting it gives your site's owner a "Logo" picture under Design in Ghost.
 1. **Build it now, proved by machine; your hand test of it moves word for word to Story 9.1.** **(RECOMMENDED)**
 2. **Move picture promotion itself to Story 9.1**, word for word.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-10).**
 
 ## Verification
 

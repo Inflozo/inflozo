@@ -2975,6 +2975,15 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    clearer Which control, the label and group that fill themselves in, and "What your site's owner will see");
 > 2. D6a's left-rail entries that Ghost owns and no story builds — **Navigation, Social accounts and Code injection** — put
 >    to the owner at **Story 7.12's** Create, whether each is drawn (and as what) or left out (R-83).
+>
+> **Given owners by Story 7.10's Create (owner, 2026-10-10), so none is missed (R-195).**
+>
+> 1. Pre-flight names any setting already deployed that this deploy would drop, and says Ghost will forget its value —
+>    **Story 7.18** (Question 2, option 2): Ghost deletes a stored theme setting's value when a theme without its key is
+>    activated, read in its source on both majors;
+> 2. the hand test of promoting a picture — **Story 9.1** (Question 4, option 1), whose headers carry A1's authored logo,
+>    the first picture a customer chooses on a real project (DW-150); Story 7.10 builds picture promotion and proves it by
+>    machine.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3480,9 +3489,23 @@ Ghost and nothing renames it afterwards.
 settings than `USER_SETTING_CAP`: the cap trigger counts without a lock, so two promotes landing together at sixteen can
 store eighteen, and the compile refuses that project with the cap sentence rather than letting gscan's total-settings
 error stop the deploy.
+**And** *(this story's Create, Question 1, option 1, owner, 2026-10-10)* **the canvas decides a promoted setting's start**:
+the theme ships what the section shows — a control's value in force, a text's words, the pack's accent — as the Ghost
+Admin default; Theme settings prints it on each row ("starts Display"), and Story 7.9's Edit keeps Group and Only show
+when without its Default list.
+**And** *(Question 2, option 2, owner, 2026-10-10 — read in Ghost's source at this story's Create, both majors: a deploy
+that leaves a key out makes Ghost delete the value stored for it)* once a key is frozen, the shuffle note adds "Deploy
+before you switch back and Ghost forgets what your site's owner chose."; Story 7.9's frozen-delete sentence says the
+value comes back only if the key is promoted again before the next deploy; and Story 7.18's Pre-flight names any setting
+already deployed that a deploy would drop, on its card word for word.
+**And** *(Question 3, option 1, owner, 2026-10-10)* Site basics' accent row says plainly that Ghost's own comments and
+card buttons take Ghost's accent — its "which your Style Pack maps to its accent role" is not true and is corrected — with
+"Change this in Ghost ↗" under it: the link to Ghost's comment accent colour this card asks for.
+**And** *(Question 4, option 1, owner, 2026-10-10)* promoting a picture is built here and proved by machine; no design on a
+real project takes a customer's picture until A1's authored logo, so its hand test moved word for word to Story 9.1.
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
-test:** yes.
+test:** yes — but for promoting a picture, whose hand test moved to Story 9.1 (Question 4, owner, 2026-10-10).
 
 ### Story 7.11: The three dark built-ins, always declared and always referenced
 
@@ -3841,6 +3864,7 @@ whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* the deploy function carries both pinned checkers — `gscan4` (4.49.7, from `packages/theme-compiler/vendor/`) and `gscan6` (6.4.2) — and runs `gscanGate` for the site's major, proved on Vercel within the function's limits (Story 7.7 measured the two trees at hundreds of packages installed).
 **And** *(moved word for word from Story 7.8 by its Question 1, ruled option 1, owner, 2026-10-09, R-195)* "**Frame:** `S8 Deploy.dc.html` S8b." and "**Owner test:** yes (a failure message)." — the Pre-flight step matches S8b as extended, and this story's owner test covers one failure message of the quality gate, beside the theme checker's.
 **And** *(given an owner by Story 7.8's Create, 2026-10-09)* Pre-flight runs `qualityGate` (`@inflozo/theme-compiler/gate`) on the same compile as `gscanGate` and shows its rows beside gscan's in S8b as extended: errors block and warnings deploy — e.g. a project whose post grid's title was deleted on Home shows "Checking your theme — 0 errors · 1 warning" with the heading sentence, and Ship it still works. Its verdict is stored with the deploy beside `deploys.gscan` (a new column is a `Schema` push first, R-99), a blocking finding is stored as `deploy_jobs.error`, the gate's time goes in `deploy_jobs.stage_timings` (AD-34), and each finding's `refs[0]` is shown by its canvas label (`CANVASES`, R-170), never as a file name — and a finding whose `refs[0]` is not a template (`template_missing`, `build_leftover`, `contrast_low`) shows its message alone.
+**And** *(given an owner by Story 7.10's Create, its Question 2, ruled option 2, owner, 2026-10-10, word for word — R-195)* **Pre-flight names any setting already deployed that this deploy would drop, and says Ghost will forget its value.** Read in Ghost's source at Story 7.10's Create, both majors: activating a theme deletes the stored value of every setting whose key the theme no longer declares (`core/shared/custom-theme-settings-cache/custom-theme-settings-service.js:214-266` in 6.58.0; `CustomThemeSettingsService.js:175-227` in 5.130.6), so a setting deleted in Theme settings, or parked because its section moved to a design without its control, loses what the site's owner chose at this deploy and comes back, if ever, at its starting value. Story 7.10's `compileTheme` returns `custom: { emitted, parked }`; the keys the site already holds are its last deploy's `config.custom`.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
@@ -4591,6 +4615,11 @@ button, link column, social row, inline newsletter form.
 > no story built it. **Story 9.9** does, where Minimal Line is made: the editor and the theme together, header and
 > footer at once, so the editor shows what the theme ships (FR-D6; DW-342).
 >
+> **Moved in from Story 7.10 by its Question 4 (owner, 2026-10-10), word for word, so none is missed (R-195).** Story
+> 7.10 builds picture promotion — a picture field handed to the site's owner as a Ghost theme setting — and proves it by
+> machine, but no design on a real project takes a picture the customer chooses until A1's authored logo (DW-150), so its
+> hand test cannot run on the live site before it. **Story 9.1** carries that hand test, word for word, as part of its own.
+>
 > **Each category's Layers picture — DW-281 (Story 5.24e's Dev, 2026-10-02).** A category's first story adds its Layers picture,
 > extrapolated from S4 and D8's five (R-74); A1, A3, A4, A17 and A22 have theirs (Story 5.24e), and A2's nearest is
 > B7's announcement glyph. Until a category's first story lands, its rows and rail tiles draw Hero's.
@@ -4635,6 +4664,14 @@ So that I can start using Headers on my own site.
 **And** the checks Story 6.5's Review left to the first story that authors designs against the mode-scoped rule (DW-330, 2026-10-05): the render matrix draws one case for every Background value a design offers, not the default alone, so a wrong token on Surface or Contrast is photographed; and a control that another, mode-scoped control switches off (`disabledBy` naming `bg` or a `darkOverride` control) is either refused by the validator or proven to reach a visitor, asked of the owner if a design needs it (R-83).
 **And** the category stylesheet meets AD-30's authoring rule (`mode-scoped-rule`): a mode-scoped control — Background role, or a design's own `darkOverride` control — is selected on the root alone, each value one rule declaring the root's own custom properties, every value the same set, every other rule reading them, so a dark override reaches a visitor through the token block (DW-195, Story 6.5; `docs/section-authoring.md`).
 **And** the header's skip link lands on **`#site-main`** — the `<main id="site-main">` that Story 7.3's `default.hbs` wraps around `{{{body}}}` alone, once *(Story 7.3, 2026-10-06; DW-150)*.
+**And** *(moved from Story 7.10 by its Question 4, ruled option 1, owner, 2026-10-10, word for word — R-195)* the owner's test includes the hand test of **promoting a picture** — Story 7.10 builds it and proves it by machine, but no design on a real project takes a picture the customer chooses until A1's authored logo (DW-150), so it cannot run on the live site before this story. It runs on a header from this story that shows its own logo (if none of this story's four prints the authored `logo`, the hand test travels with it to the story that does, word for word), on the real site after this story's Deploy, on a laptop at full width:
+
+| # | URL | Screen | What to do | Dummy data | What you should see |
+|---|-----|--------|------------|------------|---------------------|
+| 1 | `https://app.inflozo.com/projects/<id>` | Editor | Click a header from this story that shows its own logo. In the right-hand panel's **Content** group find **Logo**; beside its name is a small ↗ button. Hover it, then click it. | — | The hover reads "Let your site's owner change Logo in Ghost". Clicking opens **Theme settings** with **Promote a control** already on Logo (that header): Label "Logo", Key `logo`, Group **Site wide**, and the box saying your site's owner will see "Logo", an empty picture slot, and that until they choose one the section shows its own picture. |
+| 2 | the same page | Theme settings | Press **Promote**. | — | A row **Logo · {the header} · Logo → logo · image**, with no "starts" — a picture setting starts empty in Ghost. |
+| 3 | `https://app.inflozo.com/projects/<id>` | Editor | Click the header again. | — | Logo shows the small grey **In Ghost** tag where the ↗ was, and the canvas still shows the header's own logo. |
+| 4 | `https://app.inflozo.com/projects/<id>/settings` | Theme settings | Delete **Logo** (it asks first), then go back to the editor and click the header. | — | Logo shows its ↗ button again. |
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1); FR-C5 (the compatibility watch), FR-P2's compatibility carve-out (the one email that watch may send), FR-B7 (the `ghost_compat` rows); FR-F1 (button icons and the Icon Picker's canvas entry, R-121). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html` · `P0-2 Icon Slot and Picker.dc.html` (the icon slot and button icons, as R-104 reshapes the picker). The compatibility notice is a transactional send and an in-app row, not a drawn surface; `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 are Story 13.4's reader over it. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82), plus a real Resend send for the broadcast.
 
