@@ -2,9 +2,9 @@
 title: 'Story 7.9 — Theme Settings and the custom-settings builder'
 type: 'feature'
 created: '2026-10-09'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '0b6fdcd0832a23e566b54e9e2af4274463050b8e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -275,7 +275,7 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   -- the I/O matrix's app rows.
 - [x] `_bmad-output/implementation-artifacts/deferred-work.md` DW-254 → done with the commit; `epic-7-context.md` — the
   Theme Settings block gains this story's Create and Dev sub-bullets (refresh, never recompile); `epics.md` Story 7.10's
-  card carries the Create's note (landed at Create, 2026-10-09) and Epic 7's preamble its "Given owners" list; `docs/project-context.md` unchanged.
+  card carries the Create's note (landed at Create, 2026-10-09) and Epic 7's preamble its "Given owners" list; `docs/project-context.md` gains Question 3's pitfall line ("The app needs JavaScript; its forms do not", Dev, 2026-10-09).
 
   -- propagate, never localise (standing rule 3); end with a grep for the old sentence.
 - [x] *(Question 4, ruled option 1, owner, 2026-10-10)* `theme-settings.tsx`'s `ModeBlock` and `loading.tsx` — the block
@@ -348,6 +348,86 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   whatever else was posted, the stored label is `ghostName(key)`, and that is the name the row, the conditions, the delete
   confirm and Edit print.
 
+### Review Findings (2026-10-10)
+
+Five layers ran: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, and the real-infra verifier (run in
+the main session on the owner's in-session go, R-82 — results under § Verification). Every finding was read in the code
+before it was rated; each patch's test was turned red by a mutation and restored byte for byte.
+
+- [ ] [Review][Decision] Delete is two ordered writes, not one transaction — the criterion says "cleared in the same
+  transaction"; one save needs a database function, which is a Schema phase this spec rules out without a question. Put to
+  the owner as **Question 7**.
+- [x] [Review][Patch] A label that leaves no key ("🎉", "2", "!!!") was refused "A setting needs a label." — since Question
+  6 the label is the key's words, so the label rule fired first; the key is now checked first and the matrix's sentence
+  ("A key needs at least two letters.") answers [custom-settings.ts `checkSetting`]
+- [x] [Review][Patch] Which control was remembered by its place in the list, so a revalidation that added or dropped a row
+  could move the choice to another control under a typed label; it is remembered by the control's own id
+  [theme-settings.tsx `PromoteForm`]
+- [x] [Review][Patch] Two settings could each show only when the other did, which can hide both in Ghost's panel for good;
+  a chain of conditions that comes back to the setting is refused with `SETTING_WORDS.cycle` [custom-settings.ts
+  `checkSetting`]
+- [x] [Review][Patch] Site basics drew three identical rows; Question 2 ruled "the drawing as drawn", and D6a draws the
+  title locked with "Change this in Ghost — it appears in email too", the logo with "from Ghost" and the link, and the
+  accent on a white field with "from Ghost" and no lock or link [theme-settings.tsx `SiteBasicsGroup`, `Basic`]
+- [x] [Review][Patch] A control another one greys (`disabledBy`, e.g. Latest Post's Secondary action while Primary action
+  is Off) was offered at its stored value, so "now …" and the setting's start disagreed with the canvas; it is read in
+  force through `resolveControls` [lib/theme-settings.ts `placedControls`]
+- [x] [Review][Patch] The delete confirm said "nothing is lost" while it cleared other settings' conditions silently; it
+  now names them ("The “Only show when” on Show the button is removed too.") [theme-settings.tsx `DeleteForm`]
+- [x] [Review][Patch] Edit still opened in a read-only session — a disabled fieldset never disables a `<summary>` (R-192);
+  the page refuses the disclosure itself [theme-settings.tsx `EditForm`]
+- [x] [Review][Patch] Focus fell to the page after a saved Edit (its Save hidden) and a delete (its row gone); it returns to
+  Edit, and waits at the card's heading [theme-settings.tsx `EditForm`, `DeleteForm`]
+- [x] [Review][Patch] `conditionOf` and `refusalOf` were held only by regexes over the source; moved to
+  `lib/theme-settings.ts` and run — a switch's `true`/`false` as JSON, the trigger's own message (read from every
+  migration, the last definition winning) mapping to the cap sentence, a column check's `23514` not [actions.ts,
+  settings.test.ts]
+- [x] [Review][Patch] Two values printed alike would give Ghost's panel the same word twice and 7.10 no way back; such a
+  control is not offered [custom-settings.ts `settingOf`]
+- [x] [Review][Patch] An accented letter was dropped from a key ("Café" → `caf`, which Ghost shows as "Caf"); it keeps its
+  letter (`cafe`) [custom-settings.ts `settingKey`]
+- [x] [Review][Patch] The condition-value refusal named the target by its stored label; it names it as everything else
+  on the page does, `ghostName(key)` (R-170) [custom-settings.ts `checkSetting`]
+- [x] [Review][Patch] A promote whose docs read threw reached the error boundary; it answers the one sentence
+  [actions.ts `promoteControl`]
+- [x] [Review][Patch] Edit drew a Select for every non-boolean row, which would post an empty default for Story 7.10's
+  colour, picture and text rows; it draws a default only for the two kinds this story makes [theme-settings.tsx
+  `EditForm`]
+- [x] [Review][Patch] The logo's name read a trailing `/` or a query string; `fileName` takes the path's last part
+  [lib/theme-settings.ts]
+- [x] [Review][Patch] "on your Home page 2 page" for a section only on a page 2 [lib/theme-settings.ts `THEME_WORDS.gets`]
+- [x] [Review][Patch] A row whose control is no longer placed drew a stray "→" [theme-settings.tsx `SettingItem`]
+- [x] [Review][Patch] The live condition row's value box was a silent Tab stop before a field is chosen; it says it is
+  unavailable (`aria-disabled`) [condition-row.tsx]
+- [x] [Review][Patch] The walk could not tell a stored typed label from Ghost's name, never read Only show when greyed,
+  and claimed its forced read-only submit proved more than it does: 104e reads "Show tag 2", 104d reads the greyed row and
+  then the live one, 104f the confirm's new line, 104i Edit refused (and says plainly what its forced submit proves), 104l
+  Site basics as drawn [run-verify-editor.cjs]
+- [x] [Review][Patch] Ghost 5's half of two source claims was unread: 5.130.6 read in source — its `collection.js` caps no
+  archive and it has no `max-limit-cap`; its admin declares `settings-x` at `/settings` [custom-settings.ts
+  `POSTS_PER_PAGE`, paywall.ts `adminAt`]
+- [x] [Review][Patch] Epic 7's preamble listed the 7.10 hand-over but not the 7.12 one (R-195) [epics.md]
+- [x] [Review][Patch] A test message said the writers "post with scripts off" (Question 3 ruled otherwise); the Minus
+  icon's comment named a default it does not have [settings.test.ts, icons.tsx]
+- [x] [Review][Patch] This spec: Site basics' design note, "with the NQL parsed" (the parse is gscan's), written-down
+  test counts, the project-context line the task said was unchanged, and owner's-test steps 4 (each press is one step),
+  10 (the new confirm line) and 12 (Site basics as drawn) [this file]
+- [x] [Review][Defer] Two promotes landing in the same instant at sixteen can store eighteen — the cap trigger counts
+  without a lock — DW-351, owned by Story 7.10's emitter [complete_schema.sql:331] — deferred, needs a trigger change
+
+Dismissed, each read in the code or the frame: D6a's own sentences ("…after your next deploy", "an editor never sees…",
+the type words); the reserved key refused rather than claimed past, and Promote refusing after the press (the matrix's
+rows); the toggle's `'on'` (the library's grammar refuses any other toggle value); duplicate numbering across pages (the
+matrix's row); the 55% read-only dimming (the editor's B5a treatment, R-192); `42501` mapped to the frozen sentence (the
+matrix's row, and no action can reach a `42501`); a lost stepper press (React's optimistic update renders in the sync lane —
+`dispatchOptimisticSetState`, `lane: 2`, read in Next's bundled `react-dom`); the settings writers not consulting the edit
+lock and the page reading it once (row-level writes the database guards; the matrix's case — a lock already held — holds);
+`posts_per_page` above 100 written straight to the table (only the owner's own hand-made call reaches it); a disconnected
+linked site's last values in Site basics (they are what Ghost gave; the Sites page carries the state); the delete's
+pre-hydration press (R-131's pattern, Question 3); the stepper's `aria-busy` without `aria-disabled` (presses queue, the
+criterion's own words); the skeleton's full shape; a design swapped under a bound control (Story 7.10's parking); and
+small type sizes the Kit's components own.
+
 ## Spec Change Log
 
 - **Dev, 2026-10-09 — Question 3, ruled option 1 (owner): the app needs JavaScript.** Dev executed that a route with a
@@ -369,6 +449,10 @@ column, grant and trigger this story needs exists in `20260904120000_complete_sc
   control and the box. FR-Q2's "rename changes the label only", in the PRD and on this story's card, is corrected with its
   source. Four tasks and three criteria added; the first criterion and the edit criterion amended; the owner's test steps
   1 and 6–9 rewritten.
+- **Review, 2026-10-10.** Five layers; the findings and their dispositions are § Review Findings. Amended outside the frozen
+  block: Site basics' design note (Question 2's "the drawing as drawn" — D6a's three rows are not alike), the task line on
+  `docs/project-context.md`, the verification notes, and owner's-test steps 4, 10 and 12. Inside the frozen block nothing
+  changed: the delete's "one transaction" is Question 7's, open.
 
 ## Design Notes
 
@@ -453,8 +537,10 @@ own panel, with an "In Ghost" tag, is Story 7.10's (on its card word for word, R
 ### Site basics (Question 2, ruled option 1)
 
 Three read-only rows from the linked site: `sites.title`, `site_settings.brand.logo` (through `imageUrl`), and
-`brand.accent` (through `siteAccentOf`, drawn as a swatch with its hex), each with D6a's "from Ghost" chip and
-"Change this in Ghost ↗" to `adminAt(url, 'settings')`. A missing value reads "Not set in Ghost". A project with no
+`brand.accent` (through `siteAccentOf`, drawn as a swatch with its hex), each drawn as D6a draws it (Question 2 ruled
+"the drawing as drawn"; corrected at Review, 2026-10-10): the title in a locked field with D6a's "Change this in Ghost —
+it appears in email too" under it, the logo in a locked field with the "from Ghost" chip and "Change this in Ghost ↗" to
+`adminAt(url, 'settings')`, and the accent on a white field with its swatch and the chip. A missing value reads "Not set in Ghost". A project with no
 linked site draws the group's heading and one caption — "Connect a Ghost site and its title, logo and accent appear
 here." — with a link to Sites (UX-DR3: could-not-now, with its reason). The accent's caption is D6a's: it feeds
 `--ghost-accent-color`, which the Style Pack maps to its accent role. Nothing is written (AD-10's P8: read, never write).
@@ -490,20 +576,20 @@ Posts per page back.
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open the **⋯** menu at the top right and choose **Theme settings**. | — | The Theme settings page. **Posts per page** is the first row: a − 12 + stepper, a small `posts_per_page` chip, and "How many posts your archives show before paginating. Your theme owns this — Ghost has no setting for it." Further down, the This project and Clear dark overrides rows you tested in Story 5.6 sit flat on the page under a thin line — no white card or shadow around them, as the D6 drawing shows. |
 | 2 | the same page | Theme settings | Press **+** once. | — | The stepper says "Saving…" for a moment, then reads **13**. Reload the page: still 13. |
 | 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the **Three Up** post grid, open **Data** in the right-hand panel and look at **Count**. | — | Count is greyed at **13** and reads "This feed is sized by your theme's Posts per page. Change it in Theme settings." with a **Theme settings ↗** link. Click it: the Theme settings page opens. |
-| 4 | the same page | Theme settings | Press **−** once. Then hold − down to the bottom, and + up to the top. | — | Back to 12 and saved. The − goes pale and stops at **1**; the + goes pale and stops at **100**. Set it back to 12. |
+| 4 | the same page | Theme settings | Press **−** once. Then keep pressing **−** until it stops. | — | The first press puts it back to 12 and saves. The − goes pale and stops at **1** (each press is one step — holding does not repeat). The + stops at **100** the same way; the deployed walk checked that end, so you need not press 99 times. Press **+** eleven times to set it back to 12. |
 | 5 | the same page | Theme settings | Look at the **Custom settings** card. | — | "Custom settings" with a chip reading **0 OF 17**, the sentence about Ghost's twenty and the three dark-mode built-ins, "Keys freeze once you deploy or export — pick them like you mean it.", and "Nothing promoted yet." |
 | 6 | the same page | Promote a control | Under **Promote a control**, open **Which control** and read it. Then choose **Primary action** under the **Home** heading. Then type a new label and change **Group in Ghost** to **Site wide**, and press **Promote**. | Label: `Show the button` | The list is split by page — a small grey heading per page (**HOME**, and any other page your sections are on) — and each row shows a little picture of the section, the control's name in bold with the section's name (**Latest Post**) on the right, and under it its choices and the one it is set to now, e.g. "On · Off — now On". When you choose Primary action, **Label in Ghost** already says "Primary action", **Key** says `primary_action` in a grey box you cannot type into, **Group in Ghost** says **Homepage**, and a box above Promote headed **WHAT YOUR SITE'S OWNER WILL SEE** says "In Ghost's Design panel, under Homepage, your site's owner will see "Primary action", a switch set to On. It changes Primary action on Latest Post, on your Home page." (On or Off — whatever it is on your canvas now). As you type the label and change the group, the Key becomes `show_the_button` and the box follows: "…under Site wide, your site's owner will see "Show the button"…". Promote says "Promoting…", then a row appears: **Show the button** · Latest Post · Primary action → · `show_the_button` · boolean. The chip reads **1 OF 17**. |
 | 7 | the same page | Promote a control | Choose **Headline size** under **Home** and press **Promote** without typing anything. | — | The label already reads "Headline size", the group **Homepage**, and the box "…your site's owner will see "Headline size", a list set to Large…" (whatever it is set to now). A second row: **Headline size** · `headline_size` · select. The chip reads **2 OF 17**. |
 | 8 | the same page | Custom settings | On the **Show the button** row press **Edit**. Set **Only show when** to Headline size · is · Display, change **Group in Ghost** to **Post**, and press **Save**. | — | In the edit form, **Label in Ghost** and **Key** are grey and cannot be typed into, with the sentence "Ghost names a setting by its key, so its label is fixed once promoted. To rename one before you deploy, delete it and promote it again." After Save, the row still reads **Show the button** and a caption reads "Only when Headline size is Display". |
 | 9 | the same page | Custom settings | Open **Which control** again. | — | **Primary action** and **Headline size** under Home are no longer in the list — they are already promoted. |
-| 10 | the same page | Custom settings | Press **Delete** on **Headline size**. | — | A small window: "Delete Headline size?" with "Nothing is deployed yet, so nothing is lost.", focus on **Cancel**. Press **Delete**: the row goes, and the "Only when…" caption on Show the button goes with it. Chip: **1 OF 17**. Delete Show the button too: **0 OF 17**, "Nothing promoted yet." |
+| 10 | the same page | Custom settings | Press **Delete** on **Headline size**. | — | A small window: "Delete Headline size?" with "Nothing is deployed yet, so nothing is lost." and "The “Only show when” on Show the button is removed too.", focus on **Cancel**. Press **Delete**: the row goes, and the "Only when…" caption on Show the button goes with it. Chip: **1 OF 17**. Delete Show the button too: **0 OF 17**, "Nothing promoted yet." |
 | 11 | the same page | Theme settings | Look between Posts per page and This project. | — | **Site basics** with one line: "Connect a Ghost site and its title, logo and accent appear here." and a link to Sites — this project links no site. |
-| 12 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04/settings` | Theme settings | Look at **Site basics**. | — | Three rows — Site title, Logo, Accent colour — each marked "from Ghost" with "Change this in Ghost ↗"; a value Ghost never gave reads "Not set in Ghost". The link opens that site's Ghost Admin settings in a new tab (it may ask you to sign in to Ghost). |
+| 12 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04/settings` | Theme settings | Look at **Site basics**. | — | Three rows, as the D6 drawing has them: **Site title** in a grey locked box with "Change this in Ghost — it appears in email too" under it; **Logo** in a grey locked box marked "from Ghost", with "Change this in Ghost ↗"; **Accent colour** in a white box with its swatch, marked "from Ghost". A value Ghost never gave reads "Not set in Ghost". The link opens that site's Ghost Admin settings in a new tab (it may ask you to sign in to Ghost). |
 | 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings`, in a second window | Theme settings, read-only | Open the project in a second window first (it shows read-only), then open its Theme settings there. | — | Every stepper, field, menu and button is greyed and does nothing; the values are readable. Close the second window. |
 
 ## Questions for the owner
 
-Questions 1 and 2 were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them. Question 3 was raised at Dev and ruled option 1 the same day; it restates Story 3.9's Question 5. Questions 4 and 5 came from the owner looking at the deployed page after Dev, and Question 6 from Ghost's admin source read while answering them; all three were ruled in chat on 2026-10-10, before Review.
+Questions 1 and 2 were ruled option 1 (owner, 2026-10-09). Dev builds the Promote form for toggles and choice controls, and Site basics, as this spec describes them. Question 3 was raised at Dev and ruled option 1 the same day; it restates Story 3.9's Question 5. Questions 4 and 5 came from the owner looking at the deployed page after Dev, and Question 6 from Ghost's admin source read while answering them; all three were ruled in chat on 2026-10-10, before Review. Question 7 was raised at Review and is open.
 
 ### Question 1 — Where the "Promote a control" form is built: this story or Story 7.10
 
@@ -638,6 +724,27 @@ Inflozo and Ghost still says "Show the button".
 
 **Ruled: option 1 (owner, 2026-10-10).**
 
+### Question 7 — Deleting a setting another one depends on: two quick saves, or one (raised at Review, 2026-10-10)
+
+**In plain English.**
+- When you delete a setting that another setting's "Only show when" names, Inflozo does two things: it removes that
+  condition from the other setting, then deletes the one you chose.
+- This story's rule says those two happen as ONE save, so they can never half-happen. Today they are two saves in a row:
+  making them one needs a small addition to the database, which this story was told not to make without asking you.
+- If the second save failed — a dropped connection at that exact moment — the condition would already be gone from the
+  other setting while the one you chose stayed. You would see "We couldn't save that just now." and press Delete again.
+
+**Example.** Show the button shows only when Headline size is Display. You delete Headline size. Today the condition on
+Show the button is removed first, then Headline size is deleted. If the connection dropped between the two, Headline size
+would still be there and Show the button would have lost its condition, which you would set again.
+
+1. **Keep the two saves, condition first.** The worst case is one lost condition, set again by hand; the story's rule is
+   reworded to say so. No database change. **(RECOMMENDED)**
+2. **Make it one save.** A small database function deletes and clears together, pushed first on its own (a Schema step),
+   then the page uses it, and the deployed walk runs again.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Verification
 
 **Commands:**
@@ -669,8 +776,8 @@ Inflozo and Ghost still says "Show the button".
 controls are the implementation run's.
 
 - **`pnpm check`** — exit 0: lint, the typecheck and every package's tests, `fail 0` in each of `library`, `ghost-shim`,
-  `section-runtime`, `theme-compiler` and `apps/web`. This story's rows ran by name inside it: the eight in
-  `custom-settings.test.ts`, the five gscan rows in `gate/custom-settings.test.ts`, the eight in `settings.test.ts`, and
+  `section-runtime`, `theme-compiler` and `apps/web`. This story's rows ran by name inside it: the rows in
+  `custom-settings.test.ts`, the gscan rows in `gate/custom-settings.test.ts`, the rows in `settings.test.ts`, and
   the updated `controls.test.ts`, `data-group.test.ts` and `paywall.test.ts` rows.
 - **Both pinned gscans (4.49.7 and 6.4.2), locally, through `runGscan`:**
   - The module's own output passes with no finding at all. Its control: with one `{{@custom.*}}` reader removed, gscan
@@ -721,8 +828,7 @@ controls are the implementation run's.
 
 **Dev results (2026-10-10, the owner's rulings on Questions 4–6, Node 24.18.1).** Run on the final tree, in this order.
 
-- **`pnpm check`** — exit 0: lint, the typecheck and every package's tests, `fail 0` in each (`apps/web` 738 passed,
-  `section-runtime` 348 — the runner's own counts on this run). The new rows ran by name: "Ghost names a setting by its
+- **`pnpm check`** — exit 0: lint, the typecheck and every package's tests, `fail 0` in each (each runner prints its own count). The new rows ran by name: "Ghost names a setting by its
   key…", "Promote offers…" (rewritten), "each stored doc's page…", "what a menu row and…", "Question 4: …", and "every
   writer is…" with its Question 6 lines.
 - **`pnpm keyboard`**, whole — exit 0, *"203 passed (10.1m)"*. The Kit's `Menu` changed for every menu in the app (a
@@ -787,7 +893,8 @@ and are syntax-checked now.
   - `gate/custom-settings.test.ts` ("only a gscan recommendation").
   - The Select offers the three groups alone (the walk's 104d).
 - **Visibility set · its target deleted:**
-  - `custom-settings.test.ts`, "visibility: …", with the NQL parsed.
+  - `custom-settings.test.ts`, "visibility: …" (the NQL strings); the parse itself is gscan's own `@tryghost/nql`, in
+    `gate/custom-settings.test.ts`, with a broken condition as its control.
   - `settings.test.ts`: conditions cleared before the delete.
   - The walk's 104f: the caption, `{key, value:'Display'}`, the confirm on Cancel, and afterwards the condition null with
     the caption gone.
@@ -815,3 +922,34 @@ and are syntax-checked now.
   - The walk's 104j: A's four writes replayed under B's cookies, each refused with the sentence, A's data standing; under
     A's cookies, the control.
 - **Scripts off:** not offered (Question 3, ruled option 1). No check runs with scripts off; step 104k was dropped.
+
+**Review results (2026-10-10, Node 24.18.1), on the owner's in-session go for production (R-82).**
+
+- **CI and Vercel at the Dev head `772080d3`:** run 38013771486 — `check`, `rls`, `deploy` success; Render matrix 38013771442
+  success; `dpl_ExQ69LH6owi3wBVNuWxnkh94bkSd` READY from `772080d3` (and `c7e3d545`, `15b5a0be` each green and READY).
+- **Production's schema is at least as new as the code (R-99)**, read through `SUPABASE_DB_POOLER_URL`: `custom_settings`
+  carries every column the actions write; both enums hold Ghost's five types and three groups; `custom_settings_cap` and
+  `custom_settings_key_frozen` are on the table; the `authenticated` update grant is `bound_to, default_value, group_name,
+  label, options, position, updated_at, visibility_condition` — no `key`, no `frozen_at`; the cap function's source reads
+  `>= 17`; `projects.posts_per_page` defaults to 12.
+- **The floor, executed through an RLS session** (`generate_link` + `verifyOtp` over the publishable key, a throwaway
+  `review-7-9-…@inflozo.com` account seeded by `seed-editor-project.mjs`, its own key reads in-process): the control first —
+  an anonymous insert answers `401 42501`; seventeen inserts land; the eighteenth answers `400 23514` with "custom setting cap
+  reached (17 user-defined + 3 reserved dark built-ins = Ghost's 20)" — the message `refusalOf` reads (second run); a `key`
+  update answers `403 42501`, a `frozen_at` update `403 42501`; a `label` and `group_name` update lands (the control);
+  `posts_per_page` 0 answers `23514` and 101 lands (the 100 is the app's alone — dismissed in § Review Findings). Through the
+  pooler as the owner's script: `frozen_at` set once, then a `key` change on that row refused `42501` by
+  `custom_settings_key_frozen`, un-freezing refused `42501`, a `label` change lands (the control). Every row deleted by the
+  user, read back clean, the user deleted; the user count equal before and after (`0 FAIL, 21 PASS`, twice).
+- **The deployed walk, run 1 on `772080d3`:** HARNESS ERROR at step 6's `openCard` (`page.waitForURL` timeout, a click's
+  navigation), after 1266 PASS and 0 FAIL, with three `stall` notes — not a result (a harness death is re-run, never
+  counted). It is re-run on the Review head once deployed, below.
+- **Ghost 5.130.6, read in source** (`registry.npmjs.org/ghost/-/ghost-5.130.6.tgz`, extracted fresh in this session's
+  scratchpad; read-only): `core/frontend/services/routing/controllers/collection.js:31-48` sizes an archive by a route's
+  `limit:` else `parseInt(posts_per_page)` when `> 0`, with no cap, and 5.130.6 has no `core/shared/max-limit-cap.js`; its
+  admin declares `this.route("settings-x",{path:"/settings"})`, so `adminAt(url, 'settings')` holds on both majors.
+- **`pnpm keyboard`**, whole, on the patched tree — exit 0, every journey passed (the runner prints its own count).
+- **`pnpm check`** — exit 0 on the patched tree. **Controls (standing rule 2):** eight mutations — no cycle rule, the label
+  checked before the key, no duplicate-label guard, no accent folding, the stored value in place of the in-force one, the
+  cap read by another word, a switch's condition inverted, "page 2 page" — each turned its test red; the tree's diff hash
+  identical before and after.

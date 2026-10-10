@@ -42,11 +42,15 @@ test('label → key: lowercase snake_case, two characters at least, a collision 
   assert.equal(settingKey('2nd line'), 'nd_line')
   assert.equal(settingKey('W'), 'w')
   assert.equal(settingKey('🎉'), '')
+  assert.equal(settingKey('Café menu'), 'cafe_menu', 'an accented letter keeps its letter')
   assert.equal(claimKey(new Set(), 'show_tag'), 'show_tag')
   assert.equal(claimKey(new Set(['show_tag']), 'show_tag'), 'show_tag_2')
   assert.equal(claimKey(new Set(['show_tag', 'show_tag_2']), 'show_tag'), 'show_tag_3')
   assert.equal(checkSetting(row({ key: 'w' }), []), 'A key needs at least two letters.')
   assert.equal(checkSetting(row({ key: '' }), []), 'A key needs at least two letters.', 'a label that leaves no key')
+  // …as the action builds it since Question 6, the label being the key's own words: the key's sentence, not the label's
+  const fromLabel = (label: string) => { const key = settingKey(label); return row({ key, label: ghostName(key) }) }
+  for (const label of ['🎉', '2', '!!!']) assert.equal(checkSetting(fromLabel(label), []), SETTING_WORDS.keyShort, label)
   assert.equal(checkSetting(row({ key: 'Show' }), []), SETTING_WORDS.keyShape)
   assert.equal(checkSetting(row({ key: 'show_tag' }), [row({ key: 'show_tag' })]), SETTING_WORDS.taken('show_tag'))
 })
@@ -77,6 +81,8 @@ test('promote a toggle → boolean; a segmented or named select → select with 
   assert.equal(settingOf(control({ type: 'stepper', values: ['1', '2'] }), '1'), null)
   assert.equal(settingOf(control({ type: 'swatch-row', values: ['base', 'surface'] }), 'base'), null)
   assert.equal(settingOf(control({ values: ['only'] }), 'only'), null)
+  // …or two values the panel prints alike: Ghost would offer one word twice, and no word maps back to one value
+  assert.equal(settingOf(control({ values: ['a', 'b'], valueLabels: { a: 'Same', b: 'Same' } }), 'a'), null)
   // every control type has a decision, and every decision is one of Ghost's five or none
   for (const t of CONTROL_TYPES) assert.ok(PROMOTED_TYPE[t] === null || GHOST_SETTING_TYPES.includes(PROMOTED_TYPE[t]), t)
   assert.equal(checkSetting(row({ ...(settingOf(PRIMARY, 'on') as object) }), []), null)
@@ -110,6 +116,12 @@ test('visibility: another setting\'s label or boolean, never itself, and its NQL
   assert.equal(checkSetting({ ...headline, visibility_condition: { key: 'show_the_button', value: 'true' } }, [button]), SETTING_WORDS.conditionValue('Show the button'))
   const quoted = { ...headline, options: [{ value: 'a', label: "Rock 'n' roll" }, { value: 'b', label: 'B' }], default_value: 'B' }
   assert.equal(checkSetting(row({ visibility_condition: { key: 'headline_size', value: "Rock 'n' roll" } }), [quoted]), SETTING_WORDS.conditionQuote)
+  // a chain that comes back here — A shows when B, B when A — is refused, so Ghost can never hide both for good
+  const leans = { ...headline, visibility_condition: { key: 'show_the_button', value: true } }
+  assert.equal(on('Display', [leans]), SETTING_WORDS.cycle)
+  const third = row({ key: 'show_tag', label: 'Show tag', visibility_condition: { key: 'headline_size', value: 'Display' } })
+  assert.equal(checkSetting({ ...headline, visibility_condition: { key: 'show_tag', value: true } }, [button, third]), SETTING_WORDS.cycle, 'through a third')
+  assert.equal(checkSetting(row({ visibility_condition: { key: 'show_tag', value: true } }), [headline, third]), null, 'a chain that ends is no loop (the control)')
   assert.equal(visibilityNql({ key: 'headline_size', value: 'Display' }), "headline_size:'Display'")
   assert.equal(visibilityNql({ key: 'show_the_button', value: true }), 'show_the_button:true')
 })

@@ -83,6 +83,8 @@ export function ConditionRow({
           <button
             type="button"
             aria-label={`Value: ${values.join(', ') || 'none'}`}
+            // with no field chosen yet there is nothing to pick: said, not a silent stop (Story 7.9's Review)
+            aria-disabled={greyed || (onValue !== undefined && (options?.length ?? 0) > 0) ? undefined : true}
             className={`flex min-h-9 min-w-0 flex-1 items-center gap-[5px] rounded-sm border px-2 py-[3px] ${fieldTone(greyed)} ${ring}`}
             {...skip}
             {...opener('value', onValue !== undefined && (options?.length ?? 0) > 0)}

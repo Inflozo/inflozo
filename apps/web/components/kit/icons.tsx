@@ -630,7 +630,7 @@ export const Plus = ({ strokeWidth = 2, ...p }: IconProps) => (
   </Icon>
 )
 /* D6a's Posts per page stepper (`D6 Theme Settings Completed.dc.html:57-59`), read verbatim — Story 7.9: the plus above
-   and its minus, both at the frame's stroke 2.2. */
+   and its minus; the stepper draws both at the frame's stroke 2.2, and each keeps the Kit's 2 by default. */
 export const Minus = ({ strokeWidth = 2, ...p }: IconProps) => (
   <Icon strokeWidth={strokeWidth} {...p}>
     <line x1="5" y1="12" x2="19" y2="12" />

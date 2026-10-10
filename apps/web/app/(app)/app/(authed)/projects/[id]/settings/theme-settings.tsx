@@ -23,7 +23,7 @@ import { Toggle } from '@/components/kit/toggle'
 import { sitesPath } from '@/lib/connect-rule'
 import { LOCK_COPY, TAB_SESSION_KEY } from '@/lib/lock'
 import {
-  choicesOf, conditionWord, settingsReadOnly, startOf, THEME_WORDS, type Promotable, type SiteBasics, type StoredSetting,
+  choicesOf, conditionWord, fileName, settingsReadOnly, startOf, THEME_WORDS, type Promotable, type SiteBasics, type StoredSetting,
 } from '@/lib/theme-settings'
 import {
   clearProjectDarkOverrides, deleteSetting, promoteControl, setPostsPerPage, setProjectMode, updateSetting, type SettingsResult,
@@ -35,7 +35,7 @@ import {
    THE LEFT COLUMN: POSTS PER PAGE (Story 7.9, `:54-66`) — the one value the theme owns outright, a `− n +` stepper whose
    every step is a real submit of a plain form and says "Saving…" while it posts (R-98), the `posts_per_page` chip and the
    caption verbatim; SITE BASICS (Story 7.9's Question 2, ruled option 1, `:69-100`) — the linked site's title, logo and
-   accent, read and never written, each "from Ghost" with its way into Ghost Admin, or one caption and a link to Sites
+   accent, read and never written, each row as D6a draws it (the logo's with its way into Ghost Admin), or one caption and a link to Sites
    where no site is linked; then R-131's PROJECT-MODE BLOCK (`:102-121`) as Story 5.6 built it, flat in the column (Question 4).
 
    THE RIGHT COLUMN: CUSTOM SETTINGS (Story 7.9, `:139-235`) — the meter over the derived seventeen, D6a's two captions
@@ -171,16 +171,19 @@ function SiteBasicsGroup({ basics }: { basics: SiteBasics | null }) {
       </div>
       {basics === null ? null : (
         <>
-          <Basic label={THEME_WORDS.siteTitle} admin={basics.admin}>
+          {/* D6a draws the three rows differently and they are built as drawn (Question 2, "the drawing as drawn"): the
+              title locked with its own line under it, the logo locked with "from Ghost" and the way into Ghost Admin, the
+              accent on a white field with its swatch and "from Ghost" — corrected at Story 7.9's Review */}
+          <Basic label={THEME_WORDS.siteTitle} chip={false} below={<span className={CAPTION}>{THEME_WORDS.titleCaption}</span>}>
             <span className={`min-w-0 flex-1 truncate text-[13px] ${basics.title === null ? 'text-ink-soft' : 'text-ink-mid'}`}>{basics.title ?? THEME_WORDS.notSet}</span>
           </Basic>
-          <Basic label={THEME_WORDS.logo} admin={basics.admin}>
+          <Basic label={THEME_WORDS.logo} below={basics.admin === null ? null : <a href={basics.admin} target="_blank" rel="noreferrer" className={LINK}>{THEME_WORDS.change}</a>}>
             {basics.logo === null ? null : <img src={basics.logo} alt="" className="h-8 w-11 shrink-0 rounded-[5px] object-contain" />}
             <span className={`min-w-0 flex-1 truncate text-[12.5px] font-medium ${basics.logo === null ? 'text-ink-soft' : 'text-ink-mid'}`}>
-              {basics.logo === null ? THEME_WORDS.notSet : (basics.logo.split('/').pop() ?? basics.logo)}
+              {basics.logo === null ? THEME_WORDS.notSet : fileName(basics.logo)}
             </span>
           </Basic>
-          <Basic label={THEME_WORDS.accent} admin={basics.admin} caption>
+          <Basic label={THEME_WORDS.accent} open below={<AccentCaption />}>
             {basics.accent === null ? null : <span aria-hidden className="size-[22px] shrink-0 rounded-[6px] shadow-hairline-inset" style={{ background: basics.accent }} />}
             <span className={`min-w-0 flex-1 text-[12.5px] ${basics.accent === null ? 'text-ink-soft' : 'font-mono text-ink'}`}>{basics.accent ?? THEME_WORDS.notSet}</span>
           </Basic>
@@ -190,25 +193,29 @@ function SiteBasicsGroup({ basics }: { basics: SiteBasics | null }) {
   )
 }
 
-/** One Ghost-owned value: its label, the value in D6a's locked field with "from Ghost", and the way into Ghost Admin. */
-function Basic({ label, admin, caption = false, children }: { label: string; admin: string | null; caption?: boolean; children: ReactNode }) {
+const CAPTION = 'text-[11.5px] leading-[1.45] text-ink-soft'
+
+function AccentCaption() {
   const [feeds, variable, rest] = THEME_WORDS.accentCaption
+  return (
+    <span className={CAPTION}>
+      {feeds}<span className="font-mono text-[11px]">{variable}</span>{rest}
+    </span>
+  )
+}
+
+/** One Ghost-owned value: its label, the value in D6a's field — locked and grey unless `open` (the accent's white one),
+ *  with "from Ghost" unless `chip` is false (the title's) — and what D6a draws under it. */
+function Basic({ label, chip = true, open = false, below, children }: { label: string; chip?: boolean; open?: boolean; below: ReactNode; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-[6px]">
       <span className="text-control-label font-medium text-ink-soft">{label}</span>
-      <div className="flex min-h-[38px] items-center gap-[9px] rounded-sm border border-line bg-line-soft px-[11px] py-[7px]">
+      <div className={`flex min-h-[38px] items-center gap-[9px] rounded-sm border border-line px-[11px] py-[7px] ${open ? 'bg-surface' : 'bg-line-soft'}`}>
         {children}
-        <span className="shrink-0 font-mono text-[10.5px] text-ink-soft-aa">{THEME_WORDS.fromGhost}</span>
-        <Lock size={12} className="shrink-0 text-ink-soft-aa" />
+        {chip ? <span className="shrink-0 font-mono text-[10.5px] text-ink-soft-aa">{THEME_WORDS.fromGhost}</span> : null}
+        {open ? null : <Lock size={12} className="shrink-0 text-ink-soft-aa" />}
       </div>
-      {caption ? (
-        <span className="text-[11.5px] leading-[1.45] text-ink-soft">
-          {feeds}<span className="font-mono text-[11px]">{variable}</span>{rest}
-        </span>
-      ) : null}
-      {admin === null ? null : (
-        <a href={admin} target="_blank" rel="noreferrer" className={LINK}>{THEME_WORDS.change}</a>
-      )}
+      {below}
     </div>
   )
 }
@@ -225,7 +232,8 @@ function CustomSettings({ projectId, settings, controls, bound }: {
     <section aria-labelledby="custom-settings" className="flex min-w-0 flex-1 flex-col gap-3">
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
-          <h2 id="custom-settings" className="flex-1 text-[14px] font-semibold text-ink">{THEME_WORDS.custom}</h2>
+          {/* where focus lands once a deleted row has gone (Story 7.9's Review), so it never falls to the page */}
+          <h2 id="custom-settings" tabIndex={-1} className="flex-1 rounded-sm text-[14px] font-semibold text-ink outline-none">{THEME_WORDS.custom}</h2>
           <CounterChip>{SETTING_WORDS.meter(settings.length)}</CounterChip>
         </div>
         <span className="text-[12px] leading-[1.5] text-ink-soft">{THEME_WORDS.customLead}</span>
@@ -267,7 +275,8 @@ function SettingItem({ projectId, setting, settings, bound }: {
           {/* Question 6: Ghost prints the key's words, so the row does too — whatever an earlier label said */}
           <span className="text-[12.5px] font-semibold text-ink">{ghostName(setting.key)}</span>
           <span className="text-[11px] text-ink-soft-aa">
-            {bound === undefined ? '' : `${bound} `}→ <span className="font-mono text-[10.5px]">{setting.key}</span>
+            {/* a control no longer placed and visible names nothing, so no arrow points from it */}
+            {bound === undefined ? null : `${bound} → `}<span className="font-mono text-[10.5px]">{setting.key}</span>
           </span>
         </div>
         <span className="shrink-0 rounded-pill border border-line px-[7px] py-[2px] text-[10px] font-semibold text-ink-soft-aa">{THEME_WORDS.typeWord(setting.type)}</span>
@@ -276,7 +285,7 @@ function SettingItem({ projectId, setting, settings, bound }: {
       {setting.frozen_at === null ? null : <HelperCaption>{THEME_WORDS.frozenSince(setting.frozen_at)}</HelperCaption>}
       <div className="flex items-start gap-3">
         <EditForm projectId={projectId} setting={setting} others={settings.filter((o) => o.id !== setting.id)} />
-        <DeleteForm projectId={projectId} setting={setting} />
+        <DeleteForm projectId={projectId} setting={setting} dependents={settings.filter((o) => o.visibility_condition?.key === setting.key).map((o) => ghostName(o.key))} />
       </div>
     </li>
   )
@@ -290,12 +299,21 @@ function EditForm({ projectId, setting, others }: { projectId: string; setting: 
   const [byDefault, setByDefault] = useState(setting.default_value)
   const [when, setWhen] = useState<Visibility | null>(setting.visibility_condition)
   useEffect(() => {
-    if (state && 'ok' in state && details.current) details.current.open = false
+    if (!state || !('ok' in state) || !details.current) return
+    details.current.open = false
+    // the Save that had focus is hidden with the form: focus goes back to Edit, never to the page
+    details.current.querySelector('summary')?.focus()
   }, [state])
   const id = `setting-${setting.id}`
   return (
     <details ref={details} className="min-w-0 flex-1">
-      <summary className={`w-max cursor-pointer list-none rounded-sm text-[11.5px] font-medium text-sky-text hover:underline ${ring}`}>
+      <summary
+        // R-192: a disabled fieldset does not disable a <summary>, so a reading-along page refuses the disclosure itself
+        onClick={(event) => {
+          if (event.currentTarget.closest('fieldset:disabled')) event.preventDefault()
+        }}
+        className={`w-max cursor-pointer list-none rounded-sm text-[11.5px] font-medium text-sky-text hover:underline ${ring}`}
+      >
         {THEME_WORDS.edit}
       </summary>
       <form action={dispatch} className="mt-[10px] flex flex-col gap-[10px]">
@@ -310,9 +328,11 @@ function EditForm({ projectId, setting, others }: { projectId: string; setting: 
           <HelperCaption>{THEME_WORDS.nameFixed}</HelperCaption>
         </div>
         <GroupField id={`${id}-group`} group={group} onGroup={setGroup} />
+        {/* the two kinds this story makes; Story 7.10's kinds bring their own default field, and until then no default is
+            posted for one, so the action keeps the stored value */}
         {setting.type === 'boolean' ? (
           <Toggle id={`${id}-default`} label={THEME_WORDS.defaultValue} checked={byDefault === 'true'} onToggle={(on) => setByDefault(on ? 'true' : 'false')} />
-        ) : (
+        ) : setting.type === 'select' ? (
           <Select
             id={`${id}-default`}
             label={THEME_WORDS.defaultValue}
@@ -320,8 +340,8 @@ function EditForm({ projectId, setting, others }: { projectId: string; setting: 
             options={(setting.options ?? []).map((o) => ({ value: o.label, label: o.label, active: o.label === byDefault }))}
             onSelect={setByDefault}
           />
-        )}
-        <input type="hidden" name="default" value={byDefault ?? ''} />
+        ) : null}
+        {setting.type === 'boolean' || setting.type === 'select' ? <input type="hidden" name="default" value={byDefault ?? ''} /> : null}
         <WhenField id={`${id}-when`} when={when} others={others} onWhen={setWhen} />
         <Submit busy={THEME_WORDS.saving} variant="primary" size={32} className="self-start">{THEME_WORDS.save}</Submit>
         {alert(state)}
@@ -402,7 +422,7 @@ function WhenField({ id, when, others, onWhen }: { id: string; when: Visibility 
 /** Delete asks first (R-134): the setting named, focus on Cancel, and — once its key is frozen — the warning that a later
  *  setting with the same key brings the site owner's stored value back (FR-Q2). The confirm is the scripted layer over a
  *  form that still posts without it. */
-function DeleteForm({ projectId, setting }: { projectId: string; setting: StoredSetting }) {
+function DeleteForm({ projectId, setting, dependents }: { projectId: string; setting: StoredSetting; dependents: readonly string[] }) {
   const [state, dispatch] = useActionState<SettingsResult | null, FormData>(deleteSetting, null)
   const form = useRef<HTMLFormElement>(null)
   const confirm = useRef<HTMLDialogElement>(null)
@@ -416,7 +436,10 @@ function DeleteForm({ projectId, setting }: { projectId: string; setting: Stored
       <dialog ref={confirm} onClick={closeOnBackdrop} aria-labelledby={`${id}-title`} aria-describedby={`${id}-body`} className={`${sheet} gap-[18px]`}>
         <div className="flex flex-col gap-[6px]">
           <h2 id={`${id}-title`} className={title}>{THEME_WORDS.deleteTitle(ghostName(setting.key))}</h2>
-          <p id={`${id}-body`} className="text-ui-dense leading-[1.55] text-ink-soft">{THEME_WORDS.deleteBody(setting)}</p>
+          <p id={`${id}-body`} className="text-ui-dense leading-[1.55] text-ink-soft">
+            {THEME_WORDS.deleteBody(setting)}
+            {dependents.length === 0 ? null : ` ${THEME_WORDS.deleteDependents(dependents)}`}
+          </p>
         </div>
         <div className="flex justify-end gap-[10px]">
           <Button type="button" variant="secondary" size={36} data-cancel onClick={() => confirm.current?.close()}>
@@ -428,6 +451,8 @@ function DeleteForm({ projectId, setting }: { projectId: string; setting: Stored
             size={36}
             onClick={() => {
               confirm.current?.close()
+              // the row goes with its form, so focus waits at the card's heading rather than falling to the page
+              document.getElementById('custom-settings')?.focus()
               form.current?.requestSubmit()
             }}
           >
@@ -472,18 +497,19 @@ function DeleteButton({ onAsk }: { onAsk: () => void }) {
  *  key is the label's, shown read-only as D6a draws it (`:197-202`) and worked out again by the action, never posted. */
 function PromoteForm({ projectId, settings, controls }: { projectId: string; settings: readonly StoredSetting[]; controls: readonly Promotable[] }) {
   const [state, dispatch] = useActionState<SettingsResult | null, FormData>(promoteControl, null)
-  const [chosen, setChosen] = useState(0)
+  // by the control's own id, never its place: a revalidation that adds or drops a row must not move the choice
+  const [chosen, setChosen] = useState<string | null>(null)
   const [typedLabel, setTypedLabel] = useState<string | null>(null)
   const [typedGroup, setTypedGroup] = useState<SettingGroup | null>(null)
   const [when, setWhen] = useState<Visibility | null>(null)
   useEffect(() => {
     if (!state || !('ok' in state)) return
-    setChosen(0)
+    setChosen(null)
     setTypedLabel(null)
     setTypedGroup(null)
     setWhen(null)
   }, [state])
-  const control = controls[chosen] ?? controls[0]
+  const control = controls.find((c) => controlId(c) === chosen) ?? controls[0]
   // the label and the group follow the control until they are changed — what shows is what posts
   const label = typedLabel ?? control?.control ?? ''
   const group = typedGroup ?? control?.group ?? 'site_wide'
@@ -501,11 +527,11 @@ function PromoteForm({ projectId, settings, controls }: { projectId: string; set
         id="promote-which"
         label={THEME_WORDS.which}
         value={control?.label ?? '—'}
-        options={controls.map((c, i) => ({
-          value: String(i), label: c.label, active: c === control, group: c.page,
+        options={controls.map((c) => ({
+          value: controlId(c), label: c.label, active: c === control, group: c.page,
           icon: <LayerThumb glyph={glyphOf(c.category)} />, contents: <ControlRow c={c} />,
         }))}
-        onSelect={(i) => setChosen(Number(i))}
+        onSelect={setChosen}
         menuWidth="w-[min(440px,calc(100vw-32px))]"
         greyed={none}
       />
@@ -544,6 +570,8 @@ function PromoteForm({ projectId, settings, controls }: { projectId: string; set
     </form>
   )
 }
+
+const controlId = (c: Promotable) => `${c.instanceId}:${c.controlKey}`
 
 /** One row of Which control (Question 5): the control's own name with its section beside it, then every value the site's
  *  owner could pick and the one in force now. `data-promotable` carries the row's D6a name, which the deployed walk reads

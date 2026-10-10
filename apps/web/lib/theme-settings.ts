@@ -4,8 +4,10 @@
  * the page's words (R-170: one list). Pure, so `settings.test.ts` reaches every rule. */
 
 import { categoryOf, type SectionRegistryEntry } from '@inflozo/library'
-import type { ProjectDoc } from '@inflozo/section-runtime'
-import { GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, settingOf, type SettingGroup, type SettingRow } from '@inflozo/section-runtime/custom-settings'
+import { resolveControls, type ProjectDoc } from '@inflozo/section-runtime'
+import {
+  GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, SETTING_WORDS, settingOf, type SettingGroup, type SettingRow, type Visibility,
+} from '@inflozo/section-runtime/custom-settings'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOfKey, SITE } from './editor.ts'
 import { isStale, type LockRow } from './lock.ts'
 import { adminAt } from './paywall.ts'
@@ -93,7 +95,8 @@ export function pageOf(key: string): { page: string; group: SettingGroup; rank: 
  * Every control a Ghost setting can be made from (QUESTION 1, RULED OPTION 1): each toggle, segmented and named select
  * (`settingOf` decides) on every VISIBLE instance of every STORED doc — `skip` names the template keys whose doc is a
  * synthesized default, which no row binds to — once each (a page 2 shares its page 1's instances), at the instance's
- * value, named "Layer · Control" as D6a's rows are; a name met twice takes " (2)", so no two rows of a menu read alike.
+ * value IN FORCE (`resolveControls`, the emitters' own reader: a control another one greys is at the value it renders, so
+ * "now …" and the setting's start say what the canvas shows — Story 7.9's Review), named "Layer · Control" as D6a's rows are; a name met twice takes " (2)", so no two rows of a menu read alike.
  * The docs are walked in `pageOf`'s order, so the menu lists them page by page (Question 5).
  */
 export function placedControls(
@@ -111,9 +114,9 @@ export function placedControls(
     for (const i of doc.instances) {
       const entry = entries[i.designId]
       if (i.hidden || entry === undefined) continue
+      const inForce = resolveControls(entry, i.controls)
       for (const def of entry.controlSchema) {
-        const v = i.controls[def.name]
-        const setting = settingOf(def, typeof v === 'string' ? v : def.default)
+        const setting = settingOf(def, inForce[def.name] ?? def.default)
         if (setting === null || seen.has(idOf(i.instanceId, def.name))) continue
         seen.add(idOf(i.instanceId, def.name))
         const section = i.layerName.trim() || entry.name
@@ -155,6 +158,15 @@ export const boundLabels = (placed: readonly Promotable[], rows: readonly Stored
     return c === undefined ? [] : [[r.id, c.label]]
   }))
 
+/** A picture's file name as D6a prints the logo's — the address's last part, never a trailing `/` or its query. */
+export const fileName = (url: string): string => {
+  try {
+    return new URL(url).pathname.split('/').filter(Boolean).pop() ?? url
+  } catch {
+    return url
+  }
+}
+
 /** QUESTION 2, RULED OPTION 1: D6a's three Ghost-owned values, read from the linked site — never written (AD-10's P8).
  *  `accent` arrives through `siteAccentOf`, the Style Pack's one reader of the same field. A value Ghost never gave is
  *  null, and so is the Admin link of a site whose address is not http(s). */
@@ -165,6 +177,31 @@ export function siteBasics(row: { url?: unknown; title?: unknown; site_settings?
   const logo = imageUrl((row?.site_settings as { brand?: { logo?: unknown } } | null | undefined)?.brand?.logo)
   return { title, logo, accent, admin: url === null ? null : adminAt(url, 'settings') }
 }
+
+/* ─── the actions' two translations, here so `settings.test.ts` runs them (a 'use server' file exports actions only) ─── */
+
+/** The posted condition, in the type its target compares: none when no setting is named, a boolean target's `true`/`false`
+ *  as JSON — anything else stays text, which `checkSetting` then refuses with its sentence. */
+export function conditionOf(formData: FormData, others: readonly SettingRow[]): Visibility | null {
+  const key = formData.get('when_key')
+  if (typeof key !== 'string' || key === '') return null
+  const raw = formData.get('when_value')
+  const value = typeof raw === 'string' ? raw : ''
+  const boolean = others.find((o) => o.key === key)?.type === 'boolean'
+  return { key, value: boolean && value === 'true' ? true : boolean && value === 'false' ? false : value }
+}
+
+/** A database refusal as the module's sentence: the cap trigger's `23514` (named by its message — the column checks share
+ *  the code, and the module stops every one of them first), the key's uniqueness `23505`, the frozen key's `42501`. The
+ *  trigger's own message is read back from the migrations in `settings.test.ts`, so a reworded trigger turns it red. */
+export const refusalOf = (error: { code?: string; message?: string } | null, key: string): string =>
+  error?.code === '23514' && /cap/.test(error.message ?? '')
+    ? SETTING_WORDS.cap
+    : error?.code === '23505'
+      ? SETTING_WORDS.taken(key)
+      : error?.code === '42501'
+        ? SETTING_WORDS.frozen
+        : SETTING_WORDS.couldNot
 
 /** R-192: the session holding the lock, while its row is live — null when nobody does. */
 export const liveHolder = (lock: LockRow | null): string | null => (lock !== null && !isStale(lock) ? lock.holderSessionId : null)
@@ -191,6 +228,8 @@ export const THEME_WORDS = {
   accent: 'Accent colour',
   accentCaption: ['Feeds ', '--ghost-accent-color', ', which your Style Pack maps to its accent role.'] as const,
   fromGhost: 'from Ghost',
+  /** D6a's own line under the title (`:80`): the title is the one value it sends nowhere but Ghost */
+  titleCaption: 'Change this in Ghost — it appears in email too',
   change: 'Change this in Ghost ↗',
   notSet: 'Not set in Ghost',
   noSite: 'Connect a Ghost site and its title, logo and accent appear here.',
@@ -227,6 +266,9 @@ export const THEME_WORDS = {
     s.frozen_at === null
       ? 'Nothing is deployed yet, so nothing is lost.'
       : `If you later promote a control with the key ${s.key}, the value your site's owner set in Ghost comes back.`,
+  /** Story 7.9's Review: the delete clears every "Only show when" naming the setting, and the confirm says so first */
+  deleteDependents: (names: readonly string[]) =>
+    `The “Only show when” on ${new Intl.ListFormat('en-GB', { type: 'conjunction' }).format(names)} is removed too.`,
   typeWord: (type: SettingRow['type']) => (type === 'color' ? 'colour' : type),
   /** Question 6, ruled option 1 (owner, 2026-10-10): Ghost names a setting by its key, so its label is set once */
   nameFixed: 'Ghost names a setting by its key, so its label is fixed once promoted. To rename one before you deploy, delete it and promote it again.',
@@ -236,5 +278,5 @@ export const THEME_WORDS = {
    *  owner" is the one name the page already gives the person who edits the setting in Ghost (R-170) */
   willGet: "What your site's owner will see",
   gets: (c: Pick<Promotable, 'control' | 'section' | 'page' | 'setting'>, name: string, group: SettingGroup) =>
-    `In Ghost's Design panel, under ${GROUP_WORDS[group]}, your site's owner will see “${name}”, ${c.setting.type === 'boolean' ? 'a switch' : 'a list'} set to ${startOf(c.setting)}. It changes ${c.control} on ${c.section}, ${c.page === EVERY_PAGE ? 'on every page' : `on your ${c.page} page`}.`,
+    `In Ghost's Design panel, under ${GROUP_WORDS[group]}, your site's owner will see “${name}”, ${c.setting.type === 'boolean' ? 'a switch' : 'a list'} set to ${startOf(c.setting)}. It changes ${c.control} on ${c.section}, ${c.page === EVERY_PAGE ? 'on every page' : / page 2$/.test(c.page) ? `on your ${c.page}` : `on your ${c.page} page`}.`,
 } as const

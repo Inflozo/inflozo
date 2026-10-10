@@ -2960,7 +2960,7 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >
 > **Given owners by Story 7.9's Create (owner, 2026-10-09), so none is missed (R-195).**
 >
-> 1. D6a's **Site basics** group — the linked site's title, logo and accent, each "from Ghost" with "Change this in Ghost ↗",
+> 1. D6a's **Site basics** group — the linked site's title, logo and accent, each as D6a draws it ("from Ghost", "Change this in Ghost"),
 >    read from `sites.title` and `site_settings.brand` and never written (AD-10's P8), with one caption when no site is
 >    linked — **Story 7.9** (Question 2, option 1): no story owned it since R-131 left it out as Epic 7's;
 > 2. of Story 7.10's type lines, **Toggle → boolean · Segmented / Named Select → select**, with the "Promote a control" form
@@ -2972,7 +2972,9 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >
 > 1. promoting a control from the editor's own right-hand panel, which opens Theme settings with the form filled in for
 >    that control, and the "In Ghost" tag on a promoted control — **Story 7.10** (Question 5, option 3; Story 7.9 built the
->    clearer Which control, the label and group that fill themselves in, and "What your site's owner will see").
+>    clearer Which control, the label and group that fill themselves in, and "What your site's owner will see");
+> 2. D6a's left-rail entries that Ghost owns and no story builds — **Navigation, Social accounts and Code injection** — put
+>    to the owner at **Story 7.12's** Create, whether each is drawn (and as what) or left out (R-83).
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3385,8 +3387,9 @@ and its **Theme settings ↗** link (DW-254)
 **And** the surface matches D6a Pro and D6b Free.
 
 **And** *(given an owner by this story's Create, Question 2, owner, 2026-10-09)* the surface carries D6a's **Site basics** —
-the linked site's title, logo and accent colour, each marked "from Ghost" with "Change this in Ghost ↗", read and never
-written; a project with no linked site shows the group's one caption instead.
+the linked site's title, logo and accent colour, each drawn as D6a draws it (the logo "from Ghost" with "Change this in
+Ghost ↗", the title with "Change this in Ghost — it appears in email too", the accent "from Ghost" on a white field —
+corrected at Review, 2026-10-10), read and never written; a project with no linked site shows the group's one caption instead.
 **And** *(this story's Create, Question 1, owner, 2026-10-09)* the **Promote a control** form is built here for **Toggle →
 boolean** and **Segmented / Named Select → select** (the control's named values as the options, its current value as the
 default), with the settings list, edit and delete around it; text props, image props and the accent join in Story 7.10.
@@ -3473,6 +3476,10 @@ promotable (text props, image props, the accent).
 **And** *(Story 7.9's Dev, Question 6, option 1, owner, 2026-10-10)* every kind this story adds is **named once, at
 Promote**: Ghost names a setting by its key alone (`ghostName` in `custom-settings.ts`), so the key is made from Label in
 Ghost and nothing renames it afterwards.
+**And** *(given an owner by Story 7.9's Review, 2026-10-10 — DW-351)* `config.custom` is never emitted with more user
+settings than `USER_SETTING_CAP`: the cap trigger counts without a lock, so two promotes landing together at sixteen can
+store eighteen, and the compile refuses that project with the cap sentence rather than letting gscan's total-settings
+error stop the deploy.
 
 **FRs:** FR-Q3, FR-Q4. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a right column · D6c. · **Owner
 test:** yes.

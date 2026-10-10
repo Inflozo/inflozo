@@ -104,8 +104,9 @@ export const membersNotice = (members: Members | null, site: string): string[] =
 
 /** Ghost admin at one of its settings anchors, read in the shipped admin bundles of both majors (the spec's Code Map):
  *  Settings → Membership is `#/settings/members`, Tiers is `#/settings/tiers`. Story 7.9 — and `settings`, Settings
- *  itself (`#/settings`), where Site basics sends the site's title, logo and accent: Ghost 6.58.0's admin router declares
- *  `{path:'settings'}` (`core/built/admin/assets/index-BOJzlYiz.js:67`, read in source). ONE builder for every address. */
+ *  itself (`#/settings`), where Site basics sends the site's logo: Ghost 6.58.0's admin router declares `{path:'settings'}`
+ *  (`core/built/admin/assets/index-BOJzlYiz.js:67`) and 5.130.6's `this.route("settings-x",{path:"/settings"})`
+ *  (`core/built/admin/assets/ghost-060c0f30….js`), both read in source. ONE builder for every address. */
 export const adminAt = (url: string, anchor: 'members' | 'tiers' | 'settings'): string =>
   `${url.replace(/\/+$/, '')}/ghost/#/settings${anchor === 'settings' ? '' : `/${anchor}`}`
 

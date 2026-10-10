@@ -44,7 +44,9 @@ export const PROMOTED_TYPE: Readonly<Record<ControlType, SettingType | null>> = 
 
 /** FR-H2's ceiling, which the main feed's Count shares; the floor is the column's `>= 1`. Ghost 6.58.0 does NOT cap a
  *  collection route's page size (its `maxLimit` is the HTTP API's and `{{#get}}`'s — `max-limit-cap.js`, applied in
- *  `web/api/app.js:24` and `helpers/get.js:202`, never on `collection.js`'s `fetchData`), so 100 is Inflozo's choice. */
+ *  `web/api/app.js:24` and `helpers/get.js:202`, never on `collection.js`'s `fetchData`), and neither does 5.130.6, which has
+ *  no `max-limit-cap` at all and the same `collection.js` (read in source at Story 7.9's Review, 2026-10-10) — so 100 is
+ *  Inflozo's choice. */
 export const POSTS_PER_PAGE = { min: 1, max: 100 } as const
 
 export type SettingOption = { value: string; label: string }
@@ -84,6 +86,7 @@ export const SETTING_WORDS = {
   colour: 'A colour default is a six-digit hex value, like #1A2B3C.',
   imageDefault: 'A picture setting has no default — Ghost starts it empty.',
   self: 'A setting cannot depend on itself.',
+  cycle: 'A setting cannot depend on one that depends on it — Ghost could hide them both for good.',
   condition: 'Only show when must name another setting of this project.',
   conditionValue: (label: string) => `Choose one of ${label}'s values.`,
   conditionQuote: 'A value with a quote or a backslash cannot be a condition.',
@@ -92,10 +95,11 @@ export const SETTING_WORDS = {
   couldNot: "We couldn't save that just now.",
 } as const
 
-/** A label's key: lowercase, each run of anything else one `_`, no leading digit or `_`, no trailing `_`; `''` when
- *  nothing survives. `'Show the Button!'` → `show_the_button`, `'2nd line'` → `nd_line`. */
+/** A label's key: an accented letter keeps its letter, then lowercase, each run of anything else one `_`, no leading digit
+ *  or `_`, no trailing `_`; `''` when nothing survives. `'Show the Button!'` → `show_the_button`, `'Café menu'` →
+ *  `cafe_menu`, `'2nd line'` → `nd_line`. */
 export const settingKey = (label: string): string =>
-  label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^[0-9_]+|_+$/g, '')
+  label.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^[0-9_]+|_+$/g, '')
 
 /** WHAT GHOST ADMIN CALLS A SETTING: its KEY, never a label. Ghost has no label field — its Design panel names every
  *  setting from the key, the first letter raised, each `_` a space, and API, CTA and RSS in capitals (read in source,
@@ -120,14 +124,16 @@ export function keyRefusal(key: string): string | null {
   return null
 }
 
-/** What a control becomes in Ghost, at its current value — or null where it is never promoted or offers fewer than
- *  two values (gscan: `options.length < 2` fails). A toggle is a boolean; a segmented or named select a select whose
- *  labels are the panel's words for each value (`valueWords`, R-170). */
+/** What a control becomes in Ghost, at its current value — or null where it is never promoted, offers fewer than
+ *  two values (gscan: `options.length < 2` fails), or prints two values alike (Ghost's panel would offer the same word
+ *  twice, and 7.10 could not map the chosen word back to one value). A toggle is a boolean; a segmented or named select a
+ *  select whose labels are the panel's words for each value (`valueWords`, R-170). */
 export function settingOf(def: ControlDef, value: string): Pick<SettingRow, 'type' | 'options' | 'default_value'> | null {
   const type = PROMOTED_TYPE[def.type]
   if (type === null || def.values.length < 2) return null
   if (type === 'boolean') return { type, options: null, default_value: value === 'on' ? 'true' : 'false' }
   const options = def.values.map((v) => ({ value: v, label: valueWords(def.valueLabels, v) }))
+  if (new Set(options.map((o) => o.label)).size !== options.length) return null
   return { type, options, default_value: valueWords(def.valueLabels, def.values.includes(value) ? value : def.default) }
 }
 
@@ -147,9 +153,11 @@ export const visibilityNql = ({ key, value }: Visibility): string => (typeof val
  */
 export function checkSetting(row: SettingRow, others: readonly SettingRow[]): string | null {
   if (others.length >= USER_SETTING_CAP) return SETTING_WORDS.cap
-  if (row.label.trim() === '') return SETTING_WORDS.label
+  // the key before the label: since Question 6 the label is the key's own words, so a label that leaves no key ("🎉")
+  // is refused as the key it failed to make, never as a label nobody left empty
   const key = keyRefusal(row.key)
   if (key !== null) return key
+  if (row.label.trim() === '') return SETTING_WORDS.label
   if (others.some((o) => o.key === row.key)) return SETTING_WORDS.taken(row.key)
   if (!(GHOST_SETTING_TYPES as readonly string[]).includes(row.type)) return SETTING_WORDS.type
   if (!(GHOST_SETTING_GROUPS as readonly string[]).includes(row.group_name)) return SETTING_WORDS.group
@@ -173,8 +181,16 @@ export function checkSetting(row: SettingRow, others: readonly SettingRow[]): st
   if (v.key === row.key) return SETTING_WORDS.self
   const target = others.find((o) => o.key === v.key)
   if (target === undefined || keyRefusal(target.key) === SETTING_WORDS.keyShort) return SETTING_WORDS.condition
-  if (!conditionValues(target).includes(v.value)) return SETTING_WORDS.conditionValue(target.label)
+  if (!conditionValues(target).includes(v.value)) return SETTING_WORDS.conditionValue(ghostName(target.key))
   if (typeof v.value === 'string' && /['\\]/.test(v.value)) return SETTING_WORDS.conditionQuote
+  // a chain of conditions that comes back to this setting could hide every setting on it in Ghost's panel for good; the
+  // walk is bounded, so a loop among the OTHERS (which this check would have refused when it was made) cannot spin
+  let at: SettingRow | undefined = target
+  for (let hop = 0; hop <= others.length && at?.visibility_condition; hop++) {
+    const next: string = at.visibility_condition.key
+    if (next === row.key) return SETTING_WORDS.cycle
+    at = others.find((o) => o.key === next)
+  }
   return null
 }
 

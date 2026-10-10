@@ -1,12 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import type { SectionRegistryEntry } from '@inflozo/library'
-import { DATA_WORDS, USER_SETTING_CAP, type ProjectDoc } from '@inflozo/section-runtime'
+import { DATA_WORDS, SETTING_WORDS, USER_SETTING_CAP, type ProjectDoc, type SettingRow } from '@inflozo/section-runtime'
 import { THEME_SETTINGS_LINK } from './lib/data-group.ts'
 import {
-  boundLabels, choicesOf, EVERY_PAGE, liveHolder, pageOf, placedControls, promotable, settingsReadOnly, siteBasics, startOf, storedSettings,
-  THEME_WORDS, type Promotable, type StoredSetting,
+  boundLabels, choicesOf, conditionOf, EVERY_PAGE, fileName, liveHolder, pageOf, placedControls, promotable, refusalOf, settingsReadOnly,
+  siteBasics, startOf, storedSettings, THEME_WORDS, type Promotable, type StoredSetting,
 } from './lib/theme-settings.ts'
 
 /* STORY 7.9 — Theme settings' app rows of the I/O matrix. Ghost's own rules are the runtime's `custom-settings.test.ts` and,
@@ -18,11 +18,38 @@ const SETTINGS = 'app/(app)/app/(authed)/projects/[id]/settings'
 const actions = readFileSync(`${SETTINGS}/actions.ts`, 'utf8')
 const page = readFileSync(`${SETTINGS}/theme-settings.tsx`, 'utf8')
 
-test('the user cap is the trigger\'s: the module derives 17, the migration counts to it', () => {
-  const schema = readFileSync('../../supabase/migrations/20260904120000_complete_schema.sql', 'utf8')
-  const trigger = /where project_id = new\.project_id\) >= (\d+) then/.exec(schema)
-  assert.ok(trigger, 'the cap trigger is where the spec says')
-  assert.equal(Number(trigger[1]), USER_SETTING_CAP)
+test('the user cap is the trigger\'s: the module derives 17, the migrations count to it, and its refusal reads as the cap', () => {
+  // every migration in order, the LAST definition winning — a later file that redefines the trigger is the one in force
+  const dir = '../../supabase/migrations'
+  const bodies = readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()
+    .flatMap((f) => [...readFileSync(`${dir}/${f}`, 'utf8').matchAll(/create or replace function public\.enforce_custom_setting_cap\(\)[\s\S]*?end \$\$/g)].map((m) => m[0]))
+  const trigger = bodies.at(-1)
+  assert.ok(trigger, 'the cap trigger is defined in a migration')
+  assert.equal(Number(/where project_id = new\.project_id\) >= (\d+) then/.exec(trigger)?.[1]), USER_SETTING_CAP)
+  // `refusalOf` names the cap by its message; the trigger's own words are what PostgREST hands back (executed at Review)
+  const message = /raise exception '((?:[^']|'')*)'/.exec(trigger)?.[1]?.replace(/''/g, "'")
+  assert.ok(message, 'the trigger raises a message')
+  assert.equal(refusalOf({ code: '23514', message }, 'show_tag'), SETTING_WORDS.cap)
+  // the control: a column check shares the code and is not the cap
+  assert.equal(refusalOf({ code: '23514', message: 'new row for relation "custom_settings" violates check constraint "hex6_colour"' }, 'x'), SETTING_WORDS.couldNot)
+  assert.equal(refusalOf({ code: '23505', message: 'duplicate key value' }, 'show_tag'), SETTING_WORDS.taken('show_tag'))
+  assert.equal(refusalOf({ code: '42501', message: 'custom_settings.key is frozen' }, 'show_tag'), SETTING_WORDS.frozen)
+  assert.equal(refusalOf(null, 'show_tag'), SETTING_WORDS.couldNot)
+})
+
+test('the posted condition, typed as its target compares: a switch\'s true/false as JSON, a choice\'s label as text', () => {
+  const form = (key: string, value: string) => { const f = new FormData(); f.set('when_key', key); f.set('when_value', value); return f }
+  const others = [
+    { key: 'show_the_button', label: 'Show the button', type: 'boolean', options: null, default_value: 'true', group_name: 'site_wide', visibility_condition: null },
+    { key: 'headline_size', label: 'Headline size', type: 'select', options: [{ value: 'large', label: 'Large' }, { value: 'display', label: 'Display' }], default_value: 'Large', group_name: 'site_wide', visibility_condition: null },
+  ] satisfies SettingRow[]
+  assert.deepEqual(conditionOf(form('show_the_button', 'true'), others), { key: 'show_the_button', value: true })
+  assert.deepEqual(conditionOf(form('show_the_button', 'false'), others), { key: 'show_the_button', value: false })
+  assert.deepEqual(conditionOf(form('headline_size', 'Display'), others), { key: 'headline_size', value: 'Display' })
+  // a choice's "true" stays text (the control), and no setting named is no condition
+  assert.deepEqual(conditionOf(form('headline_size', 'true'), others), { key: 'headline_size', value: 'true' })
+  assert.equal(conditionOf(form('', 'true'), others), null)
+  assert.equal(conditionOf(new FormData(), others), null)
 })
 
 // ─── the controls the Promote form offers (Question 1) ─────────────────────────────────────────────────────────────
@@ -84,6 +111,21 @@ test('Promote offers each toggle and choice on a visible instance of a stored do
   assert.deepEqual(boundLabels(placed, [stored({ bound_to: { kind: 'control', instanceId: 'gone', controlKey: 'x' } })]), {})
 })
 
+test('a control another one greys is offered at the value it renders, the one the canvas shows (Story 7.9\'s Review)', () => {
+  const ACTIONS = {
+    name: 'Latest Post',
+    controlSchema: [
+      { name: 'primary-action', type: 'toggle', label: 'Primary action', group: 'content', values: ['on', 'off'], default: 'on' },
+      { name: 'secondary-action', type: 'toggle', label: 'Secondary action', group: 'content', values: ['on', 'off'], default: 'on',
+        disabledBy: { control: 'primary-action', whenValue: 'off', inForce: 'off', reason: 'A secondary action needs a primary beside it.' } },
+    ],
+  } as unknown as SectionRegistryEntry
+  const secondary = (controls: Record<string, string>) =>
+    placedControls({ home: doc(instance('i1', { controls })) }, { 'a4/13': ACTIONS }).find((c) => c.controlKey === 'secondary-action')?.setting.default_value
+  assert.equal(secondary({ 'primary-action': 'off', 'secondary-action': 'on' }), 'false', 'greyed: the value it renders')
+  assert.equal(secondary({ 'primary-action': 'on', 'secondary-action': 'on' }), 'true', 'the control: live, its own value')
+})
+
 test('each stored doc\'s page in D5b\'s words, the Ghost group it suggests, and its place in the menu (Question 5)', () => {
   assert.deepEqual(pageOf('site'), { page: 'Every page', group: 'site_wide', rank: -1 })
   assert.deepEqual(pageOf('home'), { page: 'Home', group: 'homepage', rank: 0 })
@@ -107,6 +149,8 @@ test('what a menu row and "What your site\'s owner will see" say (Question 5) �
     "In Ghost's Design panel, under Homepage, your site's owner will see “Headline size”, a list set to Large. It changes Headline size on Latest Post, on your Home page.")
   assert.equal(THEME_WORDS.gets({ control: 'Primary action', section: 'Header', page: EVERY_PAGE, setting: toggle }, 'Show the button', 'site_wide'),
     "In Ghost's Design panel, under Site wide, your site's owner will see “Show the button”, a switch set to Off. It changes Primary action on Header, on every page.")
+  // a section only on a page 2 is on "your Home page 2", never "your Home page 2 page"
+  assert.match(THEME_WORDS.gets({ control: 'Headline size', section: 'Latest Post', page: pageOf('index').page, setting: choice }, 'Headline size', 'homepage'), /on your Home page 2\.$/)
   // the page names a setting by its key wherever it names one, and its edit form posts no label (Question 6)
   assert.doesNotMatch(page, /\{setting\.label\}|target\?\.label|deleteTitle\(setting\.label\)|label: o\.label, active: o\.key/)
   assert.doesNotMatch(page.slice(page.indexOf('function EditForm('), page.indexOf('function Fixed(')), /name="label"/)
@@ -132,6 +176,9 @@ test('Site basics reads the linked site\'s title, logo and accent, and links Gho
   assert.deepEqual(siteBasics(null, null), { title: null, logo: null, accent: null, admin: null })
   assert.equal(siteBasics({ url: 'javascript:alert(1)' }, null).admin, null)
   assert.equal(THEME_WORDS.noSite, 'Connect a Ghost site and its title, logo and accent appear here.')
+  // the logo's name as D6a prints it: the file, never a trailing slash or a query
+  assert.equal(fileName('https://x.example/content/images/logo.png?v=3'), 'logo.png')
+  assert.equal(fileName('https://x.example/content/images/logo/'), 'logo')
 })
 
 // ─── R-192, the read-only page ─────────────────────────────────────────────────────────────────────────────────────
@@ -174,6 +221,9 @@ test('the delete confirm warns of the stored value only once the key is frozen; 
   assert.equal(THEME_WORDS.deleteBody({ key: 'show_the_button', frozen_at: '2026-10-09T10:00:00Z' }),
     "If you later promote a control with the key show_the_button, the value your site's owner set in Ghost comes back.")
   assert.equal(THEME_WORDS.frozenSince('2026-10-09T23:30:00Z'), 'Key frozen since 9 Oct 2026')
+  // the delete clears every condition naming the setting, and the confirm says so before it does
+  assert.equal(THEME_WORDS.deleteDependents(['Show the button']), 'The “Only show when” on Show the button is removed too.')
+  assert.equal(THEME_WORDS.deleteDependents(['Show the button', 'Show tag', 'Wide']), 'The “Only show when” on Show the button, Show tag and Wide is removed too.')
   assert.equal(THEME_WORDS.onlyWhen('Headline size', 'Display'), 'Only when Headline size is Display')
   assert.equal(THEME_WORDS.onlyWhen('Show the button', true), 'Only when Show the button is On')
 })
@@ -183,7 +233,7 @@ test('the delete confirm warns of the stored value only once the key is frozen; 
 test('every writer is (previous, formData), refuses without a project id, and checks the rules BEFORE it writes', () => {
   for (const name of ['setPostsPerPage', 'promoteControl', 'updateSetting', 'deleteSetting']) {
     const body = new RegExp(`export async function ${name}\\(_previous: SettingsResult \\| null, formData: FormData\\): Promise<SettingsResult> \\{\\n  const id = idOf\\(formData\\)`)
-    assert.match(actions, body, `${name} posts with scripts off and starts from the project id`)
+    assert.match(actions, body, `${name} is a plain form's action and starts from the project id`)
   }
   const fn = (name: string) => actions.slice(actions.indexOf(`export async function ${name}(`), actions.indexOf('\n}\n', actions.indexOf(`export async function ${name}(`)))
   /** `first` is in `body`, and before `then` — an absent call is a failure, never a -1 that sorts first */
@@ -210,8 +260,6 @@ test('every writer is (previous, formData), refuses without a project id, and ch
   assert.doesNotMatch(update, /posted\('label'\)/)
   // a delete clears every condition naming the setting first, then deletes
   before(fn('deleteSetting'), 'visibility_condition: null', '.delete()', 'conditions cleared first')
-  // the database's floor speaks the module's words, never a Postgres code
-  assert.match(actions, /error\?\.code === '23514' && \/cap\/\.test\(error\.message \?\? ''\)\s*\? SETTING_WORDS\.cap/)
-  assert.match(actions, /error\?\.code === '23505'\s*\? SETTING_WORDS\.taken\(key\)/)
-  assert.match(actions, /error\?\.code === '42501'\s*\? SETTING_WORDS\.frozen/)
+  // the database's floor speaks the module's words, never a Postgres code — `refusalOf`, run above, on every write's error
+  assert.equal(actions.match(/return \{ error: refusalOf\(error, row\.key\) \}/g)?.length, 2, 'promote and edit')
 })

@@ -242,7 +242,9 @@
 // step 52 reads the mode block flat as D6a draws it (Question 4); 104d reads Which control page by page, each row with its
 // section, values and the one in force, and the label, key, group and "What your site's owner will see" a chosen control
 // starts with (Question 5); 104g and 104j edit a row's group, because its label is Ghost's name for the key and fixed with
-// it (Question 6), and the form's key is read where it is now shown, read-only.
+// it (Question 6), and the form's key is read where it is now shown, read-only. Story 7.9's Review adds: Only show when
+// greyed with its reason and then live (104d), "Show tag 2" stored as Ghost's name of its key (104e), the confirm saying a
+// dependent's condition goes too (104f), Edit refused on the read-only page (104i), and Site basics as D6a draws it (104l).
 const { chromium, devices, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -7878,6 +7880,10 @@ async function main() {
     const offeredBefore104 = await offered104(ts)
     const emptyMeter104 = await meter104(ts)
     const emptySaid104 = (await ts.locator('section[aria-labelledby="custom-settings"]').innerText()).includes(T104.empty)
+    // the matrix's "Visibility set" error column (Story 7.9's Review): with no other setting to name, Only show when is greyed
+    // with its reason; once one setting exists it is live (the control, read after the first promote below)
+    const whenOf104 = () => ts.locator('#promote-when').evaluate((g) => ({ disabled: g.getAttribute('aria-disabled'), reason: document.getElementById('promote-when-reason')?.textContent ?? null }))
+    const whenNone104 = await whenOf104()
     // Question 5 (owner, 2026-10-10): the menu lists the controls page by page, each row its control, section, values and the
     // one in force; choosing one starts the label at the control's name and the group at its page's, and the summary says
     // what the site's owner will see — every word the app's own, derived from the same stored docs
@@ -7902,6 +7908,9 @@ async function main() {
     const t104 = await promote104(ts, { control: toggle104.label, label: 'Show the button', group: CS104.GROUP_WORDS.homepage })
     const r1 = await rowOf104('show_the_button')
     const meter1 = await meter104(ts)
+    const whenOne104 = await whenOf104()
+    check('step 104d — with nothing promoted, Only show when is greyed with "Promote a second control to show this one conditionally."; with one setting stored it is live (the control)',
+      whenNone104.disabled === 'true' && whenNone104.reason === T104.whenNone && whenOne104.disabled === null && whenOne104.reason === null, JSON.stringify({ whenNone104, whenOne104 }))
     check('step 104d — promote a toggle: the key is generated live as show_the_button, and the stored row is the matrix\'s — boolean, the control\'s value as "true"/"false", no options, Homepage, bound to that instance and control',
       emptyMeter104 === W104.meter(0) && emptySaid104 && t104.key === 'show_the_button' &&
       same104(fields104(r1), { key: 'show_the_button', label: 'Show the button', type: 'boolean', options: null, default_value: toggle104.setting.default_value, group_name: 'homepage', visibility_condition: null, bound_to: { kind: 'control', instanceId: toggle104.instanceId, controlKey: 'primary-action' }, frozen_at: null }) &&
@@ -7927,8 +7936,13 @@ async function main() {
     const liveKey104 = await ts.locator('#promote-key').textContent()
     const tag2 = await promote104(ts, { label: 'Show tag' })
     const keys104 = (await rows104()).map((r) => r.key)
+    const tag2Label104 = (await rowOf104('show_tag_2'))?.label
     check('step 104e — label → key: "Show tag" is show_tag, and a second "Show tag" reads show_tag_2 in the live key field and is stored so',
       tag1.key === 'show_tag' && liveKey104 === 'show_tag_2' && tag2.key === 'show_tag_2' && keys104.includes('show_tag') && keys104.includes('show_tag_2'), JSON.stringify({ tag1: tag1.key, liveKey104, tag2: tag2.key, keys104 }))
+    // Question 6 through the action (Story 7.9's Review): the typed label was "Show tag", the stored one is Ghost's name of the
+    // key it made — the one input of this block where the two differ
+    check('step 104e — the second "Show tag" is stored as "Show tag 2", the name Ghost makes of show_tag_2, not the label typed',
+      tag2Label104 === CS104.ghostName('show_tag_2') && tag2Label104 !== 'Show tag', JSON.stringify({ tag2Label104 }))
     const countBefore104 = (await rows104()).length
     const w104 = await promote104(ts, { label: 'W' })
     const scheme104 = await promote104(ts, { label: 'Color scheme' })
@@ -7962,8 +7976,9 @@ async function main() {
     await item104(ts, 'headline_size').locator('form:has(dialog) button[type="submit"]').click()
     await ts.waitForTimeout(300)
     const ask104 = await item104(ts, 'headline_size').locator('dialog').evaluate((d) => ({ open: d.open, text: d.innerText.replace(/\s+/g, ' '), focus: document.activeElement?.textContent?.trim() ?? null }))
-    check('step 104f — Delete asks first: "Delete Headline size?" with "Nothing is deployed yet, so nothing is lost.", focus on Cancel (R-134)',
-      ask104.open && ask104.text.includes(T104.deleteTitle('Headline size')) && ask104.text.includes(T104.deleteBody({ key: 'headline_size', frozen_at: null })) && ask104.focus === T104.cancel, JSON.stringify(ask104))
+    check('step 104f — Delete asks first: "Delete Headline size?" with "Nothing is deployed yet, so nothing is lost." and that Show the button\'s condition goes with it, focus on Cancel (R-134)',
+      ask104.open && ask104.text.includes(T104.deleteTitle('Headline size')) && ask104.text.includes(T104.deleteBody({ key: 'headline_size', frozen_at: null })) &&
+      ask104.text.includes(T104.deleteDependents(['Show the button'])) && ask104.focus === T104.cancel, JSON.stringify(ask104))
     const answered104del = posted104(ts)
     await item104(ts, 'headline_size').locator('dialog').getByRole('button', { name: T104.deleteButton, exact: true }).click()
     await answered104del
@@ -8038,6 +8053,11 @@ async function main() {
     const holderSession104 = await hp.evaluate(() => sessionStorage.getItem('inflozo-lock-session'))
     const held104row = await until104(hp, () => lockRead104(hp), (r) => r?.holderSessionId === holderSession104)
     await patchProject104({ posts_per_page: 12 })
+    // one stored row, so the read-only page draws an Edit to try (Story 7.9's Review: a disabled fieldset never disables a <summary>)
+    const plantRo104 = await call('/rest/v1', '/custom_settings', { method: 'POST', body: JSON.stringify({
+      project_id: P, user_id: ids[0], key: 'walk_104_ro', label: 'Walk 104 ro', type: 'boolean', default_value: 'true',
+      bound_to: { kind: 'control', instanceId: 'walk-104', controlKey: 'ro' }, position: 1,
+    }) })
     const rd = steady(await tsContext.newPage())
     await open104(rd, { hydrate: false })
     await rd.waitForTimeout(1500)
@@ -8054,7 +8074,16 @@ async function main() {
       await answered
     }
     await rd.waitForTimeout(600)
-    check('step 104i — a submit forced on the read-only page changes nothing in the database', (await project104())?.posts_per_page === 12 && (await rows104()).length === rowsBeforeForce104, JSON.stringify({ project: await project104(), rows: (await rows104()).length }))
+    // what this proves, said plainly (Story 7.9's Review): the fieldset disables every field, the project id included, so a
+    // forced submit posts nothing an action could act on — the page's own refusal, not a server-side lock check (none is claimed)
+    check('step 104i — a submit forced on the read-only page posts no field an action can act on, and changes nothing in the database', (await project104())?.posts_per_page === 12 && (await rows104()).length === rowsBeforeForce104, JSON.stringify({ project: await project104(), rows: (await rows104()).length }))
+    await hydrated104(rd)
+    await rd.locator('li[data-setting="walk_104_ro"] summary').click()
+    await rd.waitForTimeout(200)
+    const roOpen104 = await rd.locator('li[data-setting="walk_104_ro"] details').evaluate((d) => d.open)
+    check('step 104i — R-192: the read-only page\'s Edit does not open (a disabled fieldset never disables a <summary>, so the page refuses it); on the editable page it opens (104f, the control)',
+      plantRo104.status === 201 && roOpen104 === false, JSON.stringify({ status: plantRo104.status, roOpen104 }))
+    await wipe104()
     await rd.close()
     await handBack(hp)
     await holderContext.close()
@@ -8163,9 +8192,11 @@ async function main() {
     const admin104 = `${SITE104.url}/ghost/#/settings`
     check('step 104l — Site basics, no site linked: its one caption and a link to Sites, and no Ghost-owned row',
       unlinked104.text.includes(T104.noSite) && unlinked104.links.length === 1 && unlinked104.links[0].text === T104.sites && !unlinked104.text.includes(T104.fromGhost), JSON.stringify(unlinked104))
-    check('step 104l — Site basics, a site linked: Site title, Logo and Accent colour, each "from Ghost" with "Change this in Ghost ↗" to its Ghost Admin settings, and the values Ghost holds',
-      site104.status === 201 && [T104.siteTitle, T104.logo, T104.accent, SITE104.title, SITE104.accent].every((w) => linked104.text.includes(w)) &&
-      linked104.text.split(T104.fromGhost).length - 1 === 3 && linked104.links.length === 3 && linked104.links.every((l) => l.text === T104.change && l.href === admin104 && l.target === '_blank') &&
+    // as D6a draws them (Question 2, "the drawing as drawn"; corrected at Story 7.9's Review): the title with its own line, the
+    // logo "from Ghost" with the way into Ghost Admin, the accent "from Ghost" on its white field — one link, two chips
+    check('step 104l — Site basics, a site linked, as D6a draws it: Site title with "Change this in Ghost — it appears in email too", Logo and Accent colour "from Ghost", the logo\'s "Change this in Ghost ↗" to its Ghost Admin settings, and the values Ghost holds',
+      site104.status === 201 && [T104.siteTitle, T104.logo, T104.accent, T104.titleCaption, SITE104.title, SITE104.accent, 'logo.png'].every((w) => linked104.text.includes(w)) &&
+      linked104.text.split(T104.fromGhost).length - 1 === 2 && linked104.links.length === 1 && linked104.links.every((l) => l.text === T104.change && l.href === admin104 && l.target === '_blank') &&
       !linked104.text.includes(T104.notSet), JSON.stringify(linked104))
     await call('/rest/v1', `/sites?id=eq.${siteId104}`, { method: 'PATCH', body: JSON.stringify({ site_settings: {} }) })
     await open104(ts)

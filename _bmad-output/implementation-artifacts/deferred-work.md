@@ -9493,3 +9493,25 @@ location: `tools/keyboard/floor.spec.mjs:77` · `.github/workflows/ci.yml` (`che
 reason: a stop that fails once with no app change and passes on the next push is a timing wait, not a defect in the
   story under review; fixing a wait inside Story 7.7, which touches no screen, would be a second change with no owner
   test. The flake is recorded so the third recurrence is not read as new.
+
+## Deferred from: code review of spec-7-9-theme-settings-and-the-custom-settings-builder (2026-10-10)
+
+### DW-351: two promotes landing together at sixteen settings can store eighteen
+
+plain: A project may keep seventeen theme settings. The database counts them before each new one, but it does not make
+  two promotes wait for each other, so if two windows press Promote at the same moment with sixteen stored, both can
+  land. The theme would then carry one setting too many, and Ghost's own checker would refuse the deploy. It needs two
+  presses within the same instant, so it is rare; the story that writes the settings into the theme refuses that case
+  with the cap sentence.
+status: open
+severity: low
+origin: Story 7.9's Review (2026-10-10). `enforce_custom_setting_cap()` (`20260904120000_complete_schema.sql:331-338`)
+  runs `select count(*) … >= 17` in a `before insert` trigger with no lock, so two concurrent inserts each count sixteen.
+  The action's own check (`promoteControl`, `rows.length >= USER_SETTING_CAP`) reads before the insert and has the same
+  window. Executed on production the same day through an RLS session: seventeen inserts land and the eighteenth answers
+  `23514` when the inserts are sequential — the race itself was not provoked.
+owner: Story 7.10 (the `config.custom` emitter), whose card carries this entry with its id.
+location: `supabase/migrations/20260904120000_complete_schema.sql:331` · `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` (`promoteControl`)
+reason: closing the window in the database is a trigger change, which is a Schema phase and a migration this story's
+  spec rules out without a question; the emitter is the one place every stored row passes before a theme exists, so it
+  refuses there.

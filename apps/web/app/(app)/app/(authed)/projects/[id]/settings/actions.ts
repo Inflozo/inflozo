@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { checkSetting, claimKey, clearProject, ghostName, parseDoc, postsPerPage, SETTING_WORDS, settingKey, USER_SETTING_CAP } from '@inflozo/section-runtime'
-import type { ProjectDoc, SettingGroup, SettingRow, Visibility } from '@inflozo/section-runtime'
+import type { ProjectDoc, SettingGroup, SettingRow } from '@inflozo/section-runtime'
 import { isUuid, settingsPath, templateKeyOf } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
-import { placedControls, promotable, ruleRow, SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
+import { conditionOf, placedControls, promotable, refusalOf, ruleRow, SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
 import { editorData, projectOf } from '../(editor)/read'
 
 /** The route as NEXT sees it — under the internal `/app` prefix the proxy strips, which is the form every other
@@ -172,27 +172,8 @@ async function settingsOf(supabase: Supabase, id: string): Promise<StoredSetting
   return storedSettings(data)
 }
 
-/** The posted condition, in the type its target compares: none when no setting is named, a boolean target's `true`/`false`
- *  as JSON — anything else stays text, which `checkSetting` then refuses with its sentence. */
-function conditionOf(formData: FormData, others: readonly SettingRow[]): Visibility | null {
-  const key = formData.get('when_key')
-  if (typeof key !== 'string' || key === '') return null
-  const raw = formData.get('when_value')
-  const value = typeof raw === 'string' ? raw : ''
-  const boolean = others.find((o) => o.key === key)?.type === 'boolean'
-  return { key, value: boolean && value === 'true' ? true : boolean && value === 'false' ? false : value }
-}
-
-/** A database refusal as the module's sentence: the cap trigger's `23514` (named by its message — the column checks share
- *  the code, and the module stops every one of them first), the key's uniqueness `23505`, the frozen key's `42501`. */
-const refusalOf = (error: { code?: string; message?: string } | null, key: string): string =>
-  error?.code === '23514' && /cap/.test(error.message ?? '')
-    ? SETTING_WORDS.cap
-    : error?.code === '23505'
-      ? SETTING_WORDS.taken(key)
-      : error?.code === '42501'
-        ? SETTING_WORDS.frozen
-        : SETTING_WORDS.couldNot
+// `conditionOf` (the posted condition, typed as its target compares) and `refusalOf` (a database refusal as the module's
+// sentence) live in `lib/theme-settings.ts`, where `settings.test.ts` runs them — a 'use server' file exports actions only.
 
 /**
  * QUESTION 1, RULED OPTION 1 — a toggle, segmented or named select promoted to a Ghost setting. The control is found again
@@ -210,7 +191,14 @@ export async function promoteControl(_previous: SettingsResult | null, formData:
   if (rows === null || (await projectOf(id)) === null) return { error: SETTING_WORDS.couldNot }
   // the cap first, so a full project costs no docs read (the trigger's `23514` maps to the same words below)
   if (rows.length >= USER_SETTING_CAP) return { error: SETTING_WORDS.cap }
-  const data = await editorData(id)
+  let data: Awaited<ReturnType<typeof editorData>>
+  try {
+    data = await editorData(id)
+  } catch (error) {
+    // a doc the read refuses throws there (`read.ts`); here it is the one sentence, never the error boundary
+    console.error('projects/settings: promote could not read the docs', { message: error instanceof Error ? error.message : null })
+    return { error: SETTING_WORDS.couldNot }
+  }
   const synthesized = new Set(data.synthesized.map(templateKeyOf))
   const chosen = promotable(placedControls(data.docs, data.entries, synthesized), rows)
     .find((c) => c.instanceId === formData.get('instance') && c.controlKey === formData.get('control'))
