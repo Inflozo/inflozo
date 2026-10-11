@@ -866,3 +866,17 @@ equivalent).
   green, the new 7.10 journeys in it, each new one turned red by its fix reverted (the ↗ on a hidden section, the replacement ask, Keep on a
   New pack, Remix's park note) and restored byte for byte; the tokens, unknown-design, catalog-attribute and save-path
   patches each turned red the same way.
+
+**Deploy (2026-10-11).**
+
+- `Deployment: dpl_GLKwLjnHhvp2iLTJLbLLLB5qfy1c` — READY, built from `a6ec94ec` (the head, so it carries the Dev code and every
+  Review patch), aliased to `app.inflozo.com` and `inflozo.com` (Vercel API, `VERCEL_TOKEN` and `VERCEL_TEAM_ID` read
+  in-process). CI run 38069764947 at that sha: `check` (16 steps), `rls` and `deploy` green; Render matrix runs 38069764970
+  and 38098037474 at the same sha green. No Schema phase: this story ships no migration, and production's newest is Story
+  7.9's `20261010120000_delete_custom_setting.sql`, already applied; the RLS gate ran green on this push.
+- Signed out, both owner-test projects' editor and `/settings` pages answer 307 to `https://app.inflozo.com/sign-in`, and
+  `/sign-in` answers 200 — the addresses are live. The project ids were not read from the production database (no
+  production read was needed for a code-only deploy); the owner's test steps use the two he has opened before.
+- Tooling and the theme compiler reach Ghost only through Story 7.18's deploy wizard, so nothing was pushed to any Ghost
+  site; T1 was not touched at Deploy.
+- The owner's test above already carries the live URLs on `app.inflozo.com`. `owner_test` stays `pending`.
