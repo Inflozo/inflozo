@@ -2,9 +2,9 @@
 title: 'Story 7.10 — Promoting a control to a Ghost Admin setting'
 type: 'feature'
 created: '2026-10-10'
-status: 'in-review'
+status: 'done'
 baseline_commit: '48e32444b3659feec646961737c1d5854bbc7db5'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -880,3 +880,8 @@ equivalent).
 - Tooling and the theme compiler reach Ghost only through Story 7.18's deploy wizard, so nothing was pushed to any Ghost
   site; T1 was not touched at Deploy.
 - The owner's test above already carries the live URLs on `app.inflozo.com`. `owner_test` stays `pending`.
+
+## Owner's test findings
+
+**Passed (owner, 2026-10-11).** The owner walked `## Owner's manual test` on the live site (`app.inflozo.com`, Deploy
+`dpl_GLKwLjnHhvp2iLTJLbLLLB5qfy1c` at `a6ec94ec`, CI green on `a6ec94ec`) and answered "passed". No findings.
