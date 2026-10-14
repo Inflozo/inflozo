@@ -9618,3 +9618,23 @@ owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id
 location: `supabase/migrations/20260904120000_complete_schema.sql` · `architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql`
 reason: an applied migration is never edited, and a migration for a comment alone is a Schema phase this story's spec rules
   out.
+
+### DW-356: Ghost's comments box does not follow a mode change made after it loads
+
+plain: Ghost's comments box decides once whether to draw itself light or dark, by reading the colour of the words around it
+  when it loads. If a visitor then switches the site between light and dark — with the light/dark button a header can carry,
+  or by changing their phone's setting while the page is open — the comments box keeps its first look until the page is
+  reloaded, so it can show dark words on a dark page. No comments section exists until Story 10.93, which is where the two
+  first meet.
+status: open
+severity: low
+origin: Story 7.11's Create (2026-10-14), read in source: `@tryghost/comments-ui` 1.6.445 (Ghost 6.58.0 loads `~1.6`) and
+  1.2.6 (Ghost 5.130.6 loads `~1.2`), `umd/comments-ui.min.js` — `auto` reads `getComputedStyle(<the script's parent>).color`
+  and draws dark below 5:1 contrast against white; a `MutationObserver` re-reads it only when that parent's own `class` or
+  `style` attribute changes, never on `<html>`'s `data-mode` or a `prefers-color-scheme` change. Its parser also reads the
+  colour as `rgb(…)` only, so a parent whose computed colour is `color(srgb …)` or `oklch(…)` leaves it light.
+owner: Story 10.93 (A28's first designs), whose card carries this entry with its id — the first story with a comments block on
+  a page that Story 9.1's `mode-toggle` can recolour: after a mode change the comments block's parent is nudged (a class
+  touched) so the box re-reads its colour, and the block's parent computes its text colour as `rgb()`.
+location: `packages/library/modules/` (`mode-toggle`, Story 9.1) · A28's designs and stylesheet
+reason: no design carries `{{comments}}` before Story 10.93, so neither the fix nor its test has anything to run on.

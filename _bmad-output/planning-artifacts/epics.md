@@ -2992,6 +2992,11 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 2. `custom_settings.bound_to`'s column comment brought to its three shapes in that story's `Schema` migration —
 >    **Story 7.18** (DW-355);
 > 3. a promoted picture's `srcset` over a section's own picture, on both branches — **Story 7.29** (DW-354).
+>
+> **Given an owner by Story 7.11's Create (2026-10-14), so none is missed (R-195).**
+>
+> 1. Ghost's comments box following a light/dark change made after it loads — **Story 10.93** (DW-356): no design carries
+>    `{{comments}}` before A28.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -7575,6 +7580,7 @@ So that I can start using Comments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A28-<n> <Name>.dc.html` — and the category's `A28-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(given an owner by Story 7.11's Create, 2026-10-14 — **DW-356**)* Ghost's comments box follows a light/dark change made after it loads — a visitor's `mode-toggle` choice or a device switch — because it re-reads its colour only when its own parent's `class` or `style` changes (comments-ui, read in source): the block's parent is nudged after a mode change and computes its text colour as `rgb()`; no A28 design passes `mode=` (R-34, FR-Q5)
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A28). · **Frame:** `A28-<n> <Name>.dc.html` · `A28-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
