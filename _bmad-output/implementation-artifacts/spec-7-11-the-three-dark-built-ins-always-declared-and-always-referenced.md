@@ -711,7 +711,11 @@ it reaches a screen, and the test Ghost proves it here.
   with an empty quality verdict, GS100 and GS090 as controls, the stamp once, the canvas's token block unchanged, AD-36's
   hostile values through Handlebars 4.7.9 and JSDOM, and Chromium's truth table (pinned Dark and Auto on a dark device draw
   the set accent and the dark logo; with the options off nothing follows).
-- **Production at the Review head:** read after the push and recorded in the second Review commit.
+- **Production at the Review head `e824ca30`** (read after the push, the same in-process key reads): CI run 38607428595 —
+  `rls`, `check` and `deploy` success (the R-236 row passed this time); Render matrix run 38607428603 — success. Vercel
+  `dpl_6qBQy4WAtSh9SE9vecDVL95Nt5M9` READY, target production, aliased to `app.inflozo.com`, `inflozo.com` and
+  `www.inflozo.com`; `https://inflozo.com/` and `https://app.inflozo.com/sign-in` answered 200. This is the first push of
+  Story 7.11 to reach production; nothing changes for a visitor or a customer until Story 7.18 deploys a theme.
 - **Not touched:** Supabase (no migration — no `supabase/migrations/` file in the diff), Resend and Dodo (nothing mails or
   bills), any T1 write, T3 (retired, R-238).
 
