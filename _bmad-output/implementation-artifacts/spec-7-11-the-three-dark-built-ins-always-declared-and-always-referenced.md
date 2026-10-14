@@ -37,8 +37,8 @@ project, after any promoted setting, and reads each one in `default.hbs` with re
 pinned gscans must score Light-only and Light + Dark themes 0/0. Chromium's truth table and T1 prove the mechanism. No
 migration, so no Schema phase (R-99).
 
-**Written to the recommended options of Questions 1 and 2, both open.** Dev starts only once the owner has ruled both. A
-different ruling changes § The starts or the Story 7.18 line, nothing else.
+**Written to the owner's rulings of 2026-10-14 on Questions 1 and 2, both option 1** (§ Rulings this spec is written to).
+Question 2's sentence is on Story 7.18's card word for word, and Epic 7's preamble lists it (R-195).
 
 ## Boundaries & Constraints
 
@@ -80,8 +80,8 @@ different ruling changes § The starts or the Story 7.18 line, nothing else.
   waits for DW-326 (R-238).
 
 **Ask First:**
-- **Questions 1 and 2 are the owner's.** Dev builds the option each one rules. A ruling that differs from the planned option
-  changes only § The starts (Question 1) or the Story 7.18 line (Question 2).
+- **Questions 1 and 2 are ruled** (owner, 2026-10-14: option 1 and option 1). A change to either is a new question, not a Dev
+  decision.
 - If a browser Dev can run does not replace an `<img>`'s picture with CSS `content`, HALT and ask the owner, because the dark
   logo would stay the light one there. The browsers are Chromium, plus Firefox and WebKit through Playwright installed in the
   scratchpad.
@@ -308,8 +308,8 @@ compiled theme is not proved there.
     must compute its colour as `rgb()`.
   - `tools/stress/build.js`'s `dark_accent_colour` → `dark_accent_color`.
   - `epic-7-context.md` sub-bullets.
-  - Story 7.18's card carries Question 2's sentence if it is ruled option 1, word for word with Epic 7's preamble list
-    (R-195), landed at Record.
+  - Story 7.18's card carries Question 2's sentence word for word, with Epic 7's preamble list (R-195). This landed with the
+    ruling at Create (2026-10-14); Dev re-reads it and changes nothing unless the build moves a fact.
   - End with a grep for `dark_accent_colour` and "names no mode" (standing rule 7).
 
   -- propagate, never localise (standing rule 3).
@@ -342,10 +342,12 @@ compiled theme is not proved there.
 
 ### Rulings this spec is written to
 
-| Question | Planned (open) | Rows it governs |
+Both were ruled by the owner on 2026-10-14, each the recommended option, so the spec stands as written.
+
+| Question | Ruled (owner, 2026-10-14) | Rows it governs |
 |---|---|---|
 | 1 — which mode a site starts in | option 1: Light + Dark starts **Auto**, Light only starts **Light** | § The starts; the matrix's first two rows; the recorder's first rows |
-| 2 — what a later Style Pack or mode change does to a deployed site | option 1: Story 7.18's Pre-flight says it, on its card word for word | the propagation task's Story 7.18 line |
+| 2 — what a later Style Pack or mode change does to a deployed site | option 1: Story 7.18's Pre-flight says it — on its card word for word since the ruling | the propagation task's Story 7.18 line |
 
 ### The starts (one table; `SCHEME_START` and `builtInSettings` read it)
 
@@ -428,8 +430,9 @@ executed (R-238, DW-326).
 
 ## Questions for the owner
 
-Two questions, both open. The spec is written to the option marked (RECOMMENDED) on each, and **Dev waits for both
-rulings**.
+Both were raised at this story's Create and ruled by the owner in chat on 2026-10-14, each the recommended option (1 and 1).
+The spec is written to those rulings (§ Rulings this spec is written to). Story 7.18's card and Epic 7's preamble carry
+Question 2's sentence word for word (R-195).
 
 ### Question 1 — Which mode a new site starts in
 
@@ -449,7 +452,7 @@ a Light only project never had.
 2. **Both start on Auto.** Light only sites also go dark for dark-mode visitors, using the Style Pack's dark colours.
 3. **Both start on Light.** No site shows dark until its owner picks Auto or Dark in Ghost.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-14).**
 
 ### Question 2 — After your first deploy, Ghost keeps the dark accent and the colour scheme it stored
 
@@ -471,7 +474,7 @@ Your light colours and the rest of the dark colours change to Ocean's, but in da
    option 1.
 3. **Leave it unsaid.**
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-14).**
 
 ## Verification
 
