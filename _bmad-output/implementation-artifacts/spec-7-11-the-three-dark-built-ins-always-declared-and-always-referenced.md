@@ -2,7 +2,7 @@
 title: 'Story 7.11 — The three dark built-ins, always declared and always referenced'
 type: 'feature'
 created: '2026-10-14'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'ab27d534892d9fa656b30e8aeab4f1b5dc267a5d'
@@ -750,3 +750,14 @@ it reaches a screen, and the test Ghost proves it here.
 | Comments | `compile.test.ts` and `agreement.test.ts` R-34 rows (bare `{{comments}}`; `comments mode=dark` refused) |
 | A design authors the stamp | `agreement.test.ts`, `validate.test.ts`, `ad36.test.ts` (`site-logo-attribute`, markup and stylesheet) |
 | The canvas | `tokens.test.ts` "the canvas's call and every non-dark byte stand"; `agreement.test.ts` stamp on both emitters; `check-snapshots` (only A1 #1's attribute moved) |
+
+**Deploy (2026-10-15), head `c5a5c7a8`.** `Deployment: dpl_2JZDG7eiCe8ydxRYGAxKqn9fN7po` READY on the production Vercel
+project, target `production`, aliased (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`; `meta.githubCommitSha`
+matches `c5a5c7a8`). CI run 38614809370 for that head: `check`, `rls` and `deploy` success, and the render matrix run
+38614809151 success (read with `GITHUB_TOKEN`). The previous deployment, `dpl_6qBQy4WAtSh9SE9vecDVL95Nt5M9`, was READY at
+the Review head `e824ca30`. No migration (`git diff --stat ab27d534 HEAD -- supabase/` is empty), so no schema apply and no
+RLS read beyond CI's gate; no Supabase, Resend or Dodo surface. Controls: `https://inflozo.com/` and
+`https://app.inflozo.com/sign-in` answer 200, `https://app.inflozo.com/` answers 307 (the signed-out redirect), and
+`https://app.inflozo.com/harness/editor` answers 404 (the harness is off in production). The three built-ins reach a
+screen only through Story 7.18's deploy, so nothing a visitor or the owner reaches changed; there is no owner test
+(`owner_test: none`). This story is Done on this commit (R-80).
