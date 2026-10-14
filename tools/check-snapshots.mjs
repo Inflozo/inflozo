@@ -1317,7 +1317,7 @@ check('control — Story 7.10: the strip\'s oracle reads a promoted root as its 
 // The pilot compile without settings declares exactly the three built-ins and reads each (rewritten from 7.10's "declares
 // no config.custom"); a Light only pilot compile, the same three and the same readers with Color scheme on Light, is gated
 // 0/0 on both pinned checkers behind §73's scaffold with an empty quality verdict. Each behind its control.
-const BUILT_INS = ['color_scheme', 'dark_accent_color', 'dark_logo']
+const BUILT_INS = [...rt.RESERVED_SETTING_KEYS] // the runtime's one list (the review: never a second copy here)
 const builtInFailures = (files) => {
   const out = []
   const custom = JSON.parse(files['package.json']).config.custom ?? {}

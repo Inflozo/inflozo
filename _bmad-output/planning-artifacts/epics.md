@@ -3472,11 +3472,15 @@ live in static CSS
 chains** — an unset dark logo previews as the light logo or the wordmark, an unset dark accent as the light
 accent — because previewing the *declared* default rather than the *resolved* one would show a state visitors
 never see
+*(Story 7.11, 2026-10-14 — corrected, as FR-Q4 is: the Dark accent color starts at the pack's dark accent, which
+Ghost seeds and never empties, so in Dark the canvas previews the pack's dark accent, never the light one.)*
 **And** **Ghost's comment accent colour is linked to, never written**, and the write allowlist stays at four
 **And** the builder matches D6a's right column and the text-prop confirm matches D6c.
 **And** *(AD-30 — from Story 7.1's Create, 2026-10-05)* that inline block **sets plain custom properties from
 `{{@custom.*}}` and names no mode**. The token block at the top of `screen.css` reads them through `var()`, with the
 pack's values as fallbacks, so it stays the one file in the theme that names a mode.
+*(Story 7.11, 2026-10-14: the one file whose STYLE RULES name a mode — `default.hbs`'s `<body>` writes the pin's two
+class names inside its Color scheme chain, the signal those rules read; AD-30's dated note.)*
 **And** *(moved word for word from Story 7.2 by its Question 1, owner, 2026-10-06 — this story's half is the
 user-defined settings, cap-enforced)* *"`custom` carries the three dark built-ins **on every project** plus any user-defined settings,
 cap-enforced."* `config.custom` is written in the same change as the
@@ -9151,6 +9155,10 @@ globally stateful, so concurrent runs queue and never interleave.
 **And** the deployed editor walk's server-action steps survive a POST that Chrome holds for tens of seconds before it reaches
 Vercel, and an action answer whose body the page cancels once read: Story 7.9's Review lost three walks at step 104e's
 first promote that way and reproduced a 74-second hold in a probe (DW-352)
+**And** the dark logo's picture swap — CSS `content` on the stamped `<img data-site-logo>`, Story 7.11 — runs under
+Firefox and WebKit too, not Chromium alone: `mode.spec.mjs`' dark built-ins page, or a reduced form of it (one pin, one
+picture, the computed `content` and the centre pixel), outside `deploy`'s `needs` as the render matrix is (DW-357, from
+Story 7.11's Review, 2026-10-14)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

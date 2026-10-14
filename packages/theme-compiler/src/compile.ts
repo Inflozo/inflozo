@@ -951,9 +951,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     // is double-stashed inside a quoted string, where Handlebars writes `"`, `<` and `>` as entities (AD-36).
     // ponytail: two ceilings, both stated in compile.test.ts — Handlebars leaves a line break as it is and a line break
     // ends a CSS string, so a value carrying one adds CSS rules (never an element or a script; only the Administrator role
-    // may write a theme setting — Ghost 6.58.0's `fixtures.json`, no integration — and it already holds Code Injection;
-    // kept at Story 7.11's Dev, its spec's change log);
-    // and it writes `=` and `&` as entities too, so a URL with a query string does not load — Ghost's uploads carry neither.
+    // may write a theme setting — both majors' `fixtures.json`, 5.130.6 and 6.58.0, no integration — and it already holds
+    // Code Injection; Question 3 on Story 7.11's spec, for the owner);
+    // and it writes `=` and `&` as entities too, so a URL with a query string does not load and dark draws an empty box —
+    // Ghost's uploads carry neither (`ghost-storage-base`'s `getSanitizedFileName`, both majors).
     ...settingsStyle(custom.accent === null ? null : customPath(custom.accent)).map((l) => `    ${l}`),
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
     // Story 7.5 (NFR-2 (3)): both scripts `defer`, in the head, so neither holds the page up

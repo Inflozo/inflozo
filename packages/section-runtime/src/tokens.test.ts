@@ -458,6 +458,32 @@ test('Story 7.11 — darkSettings in the theme only: the canvas\'s call and ever
   }
 })
 
+test('Story 7.11\'s review — the values that follow each setting are derived here, not read off the block: exactly the tokens whose value moves when the pack\'s accent is nudged and holds its hex, light and dark, every preset and Mono; Paper\'s are the accent, the button fill and the link', () => {
+  const nudged = (hex: string) => `${hex.slice(0, -1)}${(parseInt(hex.slice(-1), 16) ^ 1).toString(16)}`
+  const reading = (decls: Record<string, string>, property: string) => Object.keys(decls).filter((k) => decls[k]?.includes(`var(${property}, `)).sort()
+  const rootOf = (css: string) => declsUnder(css, ':root')
+  let paper: Record<string, string[]> = {}
+  for (const [name, pack] of ALL_PACKS()) {
+    const sets: Record<string, string[]> = {}
+    for (const [mode, property, option, block] of [['light', SETTING_ACCENT, 'settingAccent', rootOf], ['dark', SETTING_DARK_ACCENT, 'darkSettings', (css: string) => declsUnder(css, EXPLICIT)]] as const) {
+      const hex = pack[mode].accent
+      const plain = block(packTokensCss(pack, { ghostFonts: true }))
+      const moved = block(packTokensCss({ ...pack, [mode]: { ...pack[mode], accent: nudged(hex) } }, { ghostFonts: true }))
+      // the oracle: a token follows when the pack's own accent moves it AND its value carries the hex to read through var()
+      const want = Object.keys(plain).filter((k) => plain[k] !== moved[k] && new RegExp(hex.replace('#', '#?'), 'i').test(plain[k] ?? '')).sort()
+      const got = reading(block(packTokensCss(pack, { ghostFonts: true, [option]: true })), property)
+      assert.ok(want.includes('--accent'), `${name} ${mode}: the control — the oracle finds the accent itself`)
+      assert.deepEqual(got, want, `${name} ${mode}`)
+      sets[mode] = got
+    }
+    if (pack === REFERENCE_PACK) paper = sets
+  }
+  // the floor, by name, so a fed value that stops carrying the hex (a contrast step) cannot leave both sets in silence:
+  // Paper's light link is ink with an accent underline, and its light accent already clears the contrast ground
+  assert.deepEqual(paper['dark'], ['--accent', '--button-fill', '--link-color'], 'Paper, dark')
+  assert.deepEqual(paper['light'], ['--accent', '--accent-on-contrast', '--button-fill', '--link-decoration'], 'Paper, light')
+})
+
 test('Story 7.11 — Mono, whose dark accent IS its dark text (#FFFFFF): the dark accent takes the accent\'s roles and never the body text', () => {
   const mono = PRESETS.find((p) => p.id === 'mono')?.pack as Pack
   assert.equal(mono.dark.text.toLowerCase(), mono.dark.accent.toLowerCase(), 'the control: Mono\'s dark text really is its dark accent')

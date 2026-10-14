@@ -346,7 +346,8 @@ test('Story 7.11 — the dark built-ins over the theme\'s token block: the dark 
           if (got.root[name].toLowerCase() !== want.toLowerCase()) wrong.push(`${where}: ${name} ${got.root[name]} (want ${want})`)
         }
         const logo = dark && state.logo !== null
-        if (logo ? !got.content.includes(DARK_LOGO.slice(0, 40)) : got.content !== 'normal') wrong.push(`${where}: content ${got.content.slice(0, 60)} (want ${logo ? 'the dark logo' : 'normal'})`)
+        // the WHOLE address, both ways (the review: the two squares' first 40 characters are the same; only the fill differs)
+        if (logo ? !(got.content.includes(DARK_LOGO) && !got.content.includes(LIGHT_LOGO)) : got.content !== 'normal') wrong.push(`${where}: content ${got.content.slice(0, 60)} (want ${logo ? 'the dark logo' : 'normal'})`)
         if (got.pixel !== (logo ? 'dark logo' : 'light logo')) wrong.push(`${where}: the picture draws ${got.pixel} (want the ${logo ? 'dark' : 'light'} logo)`)
         rows++
       }

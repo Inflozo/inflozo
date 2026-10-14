@@ -469,7 +469,8 @@ function followAccent(pack: Pack, mode: 'light' | 'dark', property: string, toke
  *  STORY 6.5 — FR-E4'S THREE INPUTS, LANDED: the dark map is written under `MODE_SELECTORS`' two conditions and
  *  nowhere else — the owner's pin (the `scheme-*` body class), on Auto the visitor's `data-mode`, then the device. The
  *  canvas reuses `data-mode` to preview a mode, deliberately, so no fourth mode signal exists. AD-30: the token block is
- *  THE ONE FILE in a generated theme that names a mode — this block, then `darkOverrideCss`' per-section rules. */
+ *  THE ONE FILE in a generated theme whose style rules name a mode — this block, then `darkOverrideCss`' per-section
+ *  rules (since Story 7.11 `default.hbs`'s `<body>` writes the pin's two class names, the signal these rules read). */
 export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean; settingAccent?: boolean; darkSettings?: boolean } = {}): string {
   const { light: tokens, tablet, mobile } = packTokens(pack)
   // AD-18, in the theme only (Story 7.4): a font chosen in Ghost Admin wins, the pack's family list is the fallback, and

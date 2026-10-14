@@ -744,8 +744,11 @@ try {
     if (hit === undefined) fail(`not refused: ${JSON.stringify(got.map((w) => w.rule))}`)
     return hit.text
   })
-  await check("the compiled pilot theme's emitted CSS gives no warning through the root config", async () => {
-    const sheets = emitted(compiled)
+  await check("the compiled pilot theme's emitted CSS gives no warning through the root config — with and without its settings promoted", async () => {
+    // Story 7.11's review: the settings compile promotes the accent, so default.hbs's `{{else if}}` branch reaches the lint
+    const promoted = pilots.compilePilots(pilots.CI_WORDS, { theme: pilots.PILOT_THEME, settings: true }).files
+    if (!(promoted['default.hbs'] ?? '').includes('{{else if @custom.')) fail('the settings compile writes no {{else if}} — this row lints nothing new')
+    const sheets = { ...emitted(compiled), ...Object.fromEntries(Object.entries(emitted(promoted)).map(([p, b]) => [`promoted ${p}`, b])) }
     const dirty = await lintSheets(sheets)
     if (dirty.length > 0) fail(dirty.join('\n'))
     return `${Object.keys(sheets).join(' · ')}: no warning`

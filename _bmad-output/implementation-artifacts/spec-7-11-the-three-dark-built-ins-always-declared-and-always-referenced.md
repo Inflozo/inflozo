@@ -2,7 +2,7 @@
 title: 'Story 7.11 — The three dark built-ins, always declared and always referenced'
 type: 'feature'
 created: '2026-10-14'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'ab27d534892d9fa656b30e8aeab4f1b5dc267a5d'
@@ -337,6 +337,71 @@ compiled theme is not proved there.
   picture carries `data-site-logo`.
 - **AD-36.** Given a hostile dark logo, when the head renders, then it is inert beside a legitimate value that draws.
 
+### Review Findings (2026-10-14)
+
+Five layers ran: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the real-infra verifier (T1 read
+only, Ghost's source, the local compile, both gscans and Chromium), with CI and Vercel read in the main session (R-82) —
+results under § Verification. Every finding was read in the code before it was rated.
+
+- [ ] [Review][Decision] A Dark logo address carrying a line break adds CSS rules, which the approved AD-36 line ("cannot
+  close the string") and the matrix row "A hostile dark logo" ("no rule … is created") say cannot happen. Dev kept it as a
+  routine call while titling it "for the owner", and the frozen words are the owner's, so it is **Question 3**
+  [compile.ts `settingsStyle` · § Boundaries AD-36 · the matrix row]
+- [x] [Review][Patch] Only `--accent` was pinned among the values the Dark accent color feeds, so the button fill and the
+  link could stop following it with every check green. The fed set is now derived independently — the tokens a nudge of
+  the pack's accent moves and that carry its hex — for every pack in both modes, Paper's pinned by name, and its control
+  (the dark follow narrowed to `--accent`) goes red [tokens.test.ts]
+- [x] [Review][Patch] The keyboard gate's logo check compared the first 40 characters of the address, which the light
+  and dark squares share, so only the pixels told the two apart; it compares the whole address both ways [mode.spec.mjs]
+- [x] [Review][Patch] The dark accent's fallback to a promoted accent was a string pin only; it is rendered through
+  Handlebars 4.7.9 in all three states — set, missing with the accent promoted, neither [compile.test.ts]
+- [x] [Review][Patch] "A user's condition can never name a built-in" had no test; each of the three is refused with
+  7.10's sentence [compile.test.ts]
+- [x] [Review][Patch] The ceiling's permission fact was read in Ghost 6.58.0 alone, and FR-Q5 cited §28's "a staff
+  session", which an Editor also has. 5.130.6's `fixtures.json` was read at Review (Administrator only, no integration)
+  and the fact replaces the citation [compile.ts, compile.test.ts, prd.md FR-Q5]
+- [x] [Review][Patch] "Ghost's uploads carry neither `&` nor `=`" was asserted; it is cited (`ghost-storage-base`'s
+  `getSanitizedFileName`, both majors), and the cost of an address that cannot load — an empty box in dark, executed in
+  Chromium — is stated beside it [compile.ts, compile.test.ts]
+- [x] [Review][Patch] AD-36 had no record of a value reaching CSS at runtime un-validated; its instance list carries the
+  Dark logo, the ceiling, the permission fact and what would reopen it [ARCHITECTURE-SPINE.md AD-36]
+- [x] [Review][Patch] Places that still said the old thing, each given a dated note: AD-17's re-proof pointed at
+  `tools/stress/`; AD-30's theme token call lacked `darkSettings` and its "nothing else … names a mode" had no note;
+  `tokens.ts` called the token block the one file that names a mode; Story 7.10's card said an unset dark accent
+  previews as the light one and that `screen.css` is the one file naming a mode [ARCHITECTURE-SPINE.md, tokens.ts,
+  epics.md]
+- [x] [Review][Patch] The recorder could write into T1's own theme and mislead its own restore: the `finally` put the
+  starts back into whichever theme was active (Casper declares a `color_scheme` of its own), a run that died after setting
+  the probe's logo left the next run "restoring" to it, and the put-back was printed rather than checked. It puts back only
+  into the probe, refuses to start on a leftover logo, and asserts the put-back as a CONTROL [record-theme-assembly.py
+  `built_ins_phase`]
+- [x] [Review][Patch] §79's start rows read back the run's own put (Ghost keeps a deleted theme's values), which "a Light
+  only site starts pinned Light" did not say; a dated note in §79 says how to read them, and the recorder's wording says so
+  from its next run [MEASUREMENTS §79, record-theme-assembly.py]
+- [x] [Review][Patch] `check-snapshots` kept its own copy of the three keys; it reads `RESERVED_SETTING_KEYS`
+  [check-snapshots.mjs]
+- [x] [Review][Patch] The emitted-CSS lint read a compile with no promoted accent, so the `{{else if}}` branch never
+  reached it; it lints the settings compile too, and refuses if that compile writes no `{{else if}}` [check-baseline.mjs]
+- [x] [Review][Patch] Story 7.18 had no named source for "each built-in whose start has changed": `builtInSettings` over
+  the last deploy's pack and mode and the new ones, since `CustomRecord` carries keys only [epic-7-context.md]
+- [x] [Review][Defer] The dark logo's swap is checked in Chromium alone on every push; Firefox and WebKit ran once by
+  hand — owner Story 15.1 [mode.spec.mjs, playwright.config.mjs] — deferred, DW-357
+- [x] [Review][Defer] A header printing `@site.logo` on a ground of the other mode (a contrast band) would draw the wrong
+  logo; A1 #1 offers no such ground — owner Epic 9, beside `logoLight` [deferred-work.md] — deferred, DW-150 (note added)
+- [x] [Review][Defer] CI's `check` went red on the Dev head at the R-236 journey row (`#pack-editor-title` not found) with
+  no screen changed, so the Dev head never deployed; it passed here cold — owner Story 15.1 [journey.spec.mjs:1736] —
+  deferred, DW-350 (its fifth recurrence)
+
+Dismissed, each read in the code: a Dark logo set on a site with no logo shows the wordmark (the frozen matrix row, and a
+reading told to the owner at Create); a hint under Dark logo in Ghost (new words, which § Never rules out); T1 never read
+Auto on a dark device (Ghost's half — no class under Auto — held on T1, and the CSS is the truth table's on every device);
+Question 2's pack switch not run as such (§78 executed a stored value kept under a changed start, which a pack switch is);
+the cap proved on a hand-built `package.json` (gscan reads only `config.custom`, and the compile's order and record are
+pinned); the comments box's parent computing `rgb()` (DW-356's, Story 10.93); the Firefox/WebKit claim (already worded as
+a dated one-off in AD-17 and here); dropping the promoted-accent fallback (the frozen matrix asks for it); a two-source logo
+(Question 3's option 2); line numbers in the Code Map (Create's convention); `doc-audit --check` unrecorded at Dev (the
+pre-commit hook ran it; the Review records it).
+
 ## Spec Change Log
 
 - **Dev, 2026-10-14 — a line break in a Dark logo value adds CSS rules (a ceiling, for the owner).** § Boundaries' AD-36
@@ -365,6 +430,11 @@ compiled theme is not proved there.
   user's settings, which the bare tree cannot clear), so the 7.10 phase puts them back to the bare tree's starts at its
   start and in its `finally`; the 7.7 cascade probe now adds its setting beside the built-ins instead of replacing
   `config.custom`. The local half gated every tree 0/0 on both gscans; the T1 run (§79) is the main session's.
+- **Review, 2026-10-14.** Five layers; the findings and their dispositions are § Review Findings. The line-break ceiling
+  above is **Question 3**, the owner's: the frozen § Boundaries AD-36 line and the matrix row "A hostile dark logo" stand
+  as approved until he rules, and this log is the record of where the build departs from them. The permission fact is now
+  read in both majors (5.130.6's `fixtures.json` too), and "Ghost's uploads carry neither" is read in `ghost-storage-base`
+  (1.0.0 and 3.0.0). No compiled byte changed at Review, so §79 on T1 stands for this tree; no T1 write was made.
 
 ## Design Notes
 
@@ -458,9 +528,9 @@ executed (R-238, DW-326).
 
 ## Questions for the owner
 
-Both were raised at this story's Create and ruled by the owner in chat on 2026-10-14, each the recommended option (1 and 1).
-The spec is written to those rulings (§ Rulings this spec is written to). Story 7.18's card and Epic 7's preamble carry
-Question 2's sentence word for word (R-195).
+Questions 1 and 2 were raised at this story's Create and ruled by the owner in chat on 2026-10-14, each the recommended
+option (1 and 1). The spec is written to those rulings (§ Rulings this spec is written to). Story 7.18's card and Epic 7's
+preamble carry Question 2's sentence word for word (R-195). **Question 3 was raised at Review (2026-10-14) and is open.**
 
 ### Question 1 — Which mode a new site starts in
 
@@ -503,6 +573,36 @@ Your light colours and the rest of the dark colours change to Ocean's, but in da
 3. **Leave it unsaid.**
 
 **Ruled: option 1 (owner, 2026-10-14).**
+
+### Question 3 — A Dark logo address with a line break in it can add page styles
+
+**In plain English.**
+- In Ghost's Design panel your site's owner uploads a **Dark logo**. Ghost stores the picture's address, and the theme
+  writes that address into the page's styles.
+- If someone types that address by hand through Ghost's API and puts a line break in it, the text after the break becomes
+  page styles of their own, on every page. It can hide or recolour things. It cannot add a script, a link or any other
+  element.
+- Only a Ghost **Administrator** or the **Owner** can change that setting (checked in Ghost 5's and Ghost 6's own code).
+  Both can already add any script to every page through Ghost's **Code Injection**, so nobody gains a power they do not
+  already have.
+- The spec you approved says a bad address "creates no rule". That is wrong for this one case, and I can't change words
+  you approved without you.
+
+**Example.** An Administrator saves the Dark logo through the API as `x`, then a line break, then `");}main{display:none}`.
+Every page then hides its main content. The same Administrator can already do exactly that by pasting
+`<style>main{display:none}</style>` into Code Injection.
+
+1. **Accept it as a stated limit.** I correct the two sentences in the spec. The limit stays written beside the code and
+   in the architecture's safety rule (AD-36), with the one thing that would reopen it: Inflozo itself ever writing that
+   setting. Nothing changes for visitors. (An address Ghost never makes for an upload, one with `?…=` in it, would also
+   show an empty box in dark.) **(RECOMMENDED)**
+2. **Remove it by drawing the Dark logo as a second picture.** Every design that prints your site's logo gets a second,
+   hidden picture that shows in dark; a line break in a picture's address does nothing. This reworks this story's logo
+   half, the canvas and A1 #1, and needs a new run on the test Ghost.
+3. **Remove it with a small script.** The theme's script sets the Dark logo safely. Visitors with scripts turned off
+   would see the normal logo in dark.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -570,6 +670,50 @@ it reaches a screen, and the test Ghost proves it here.
   - The same run re-ran §70–§78's rows on today's compile: all held, §78's with the built-ins beside the promoted settings.
 - **Production:** untouched at Dev. CI and Vercel are the Review's reads, at the Dev head.
 - **Not touched:** Supabase (no migration), Resend and Dodo (nothing mails or bills), T3 (retired, R-238).
+
+### Review results (2026-10-14, main session, Node 24.18.1)
+
+**Commands, on the Review tree:**
+- `pnpm check` — exit 0. Every 7.11 row passed, the review's new ones among them: `tokens.test.ts`' independently derived
+  fed set, `compile.test.ts`' rendered dark-accent chain and the three conditions naming a built-in, and `check-baseline`'s
+  emitted-CSS row over the settings compile (no warning). Each runner prints its own count.
+- **Control for the fed set (standing rule 2):** with the dark follow narrowed to `--accent` in `tokens.ts`, the new test
+  failed `paper dark`; `tokens.ts` was put back byte for byte (`cmp`, `git diff` empty).
+- **Control for the logo compare:** the old 40-character check passed on the LIGHT logo's address; the whole-address check
+  does not, and passes on the dark one.
+- `bash tools/keyboard/run-keyboard-gate.sh -g 'Story 7.11'` — 1 passed, 288 combinations, with the whole-address compare.
+- `bash tools/keyboard/run-keyboard-gate.sh -g 'R-236 · the Style Pack panel'` — 1 passed (the row CI failed at Dev).
+- `pnpm keyboard`, whole, on the final tree — exit 0, every stop passed, R-236 and the 7.11 mode test among them.
+- `python3 tools/doc-audit.py --check`, twice — PASS, no warning.
+- Chromium, a scratch page (never committed): an `<img>` whose `content` is a `url()` that cannot load draws the page's
+  white at its centre; the same picture with no rule draws its own red. That is the "empty box" stated beside the code.
+- `python3 -m py_compile tools/probe/record-theme-assembly.py` — clean. The recorder's changes are guards and wording; it
+  was not run on T1 at Review, because no compiled byte changed and no T1 write was asked for.
+
+**Real infrastructure (R-82):**
+- **CI at the Dev head `980febcc`** (read with `GITHUB_TOKEN`, in-process): CI run 38601332100 — `rls` success, `check`
+  failure at `journey.spec.mjs:1736` (R-236, `#pack-editor-title` not found; 226 stops passed, the 7.11 mode test among
+  them), `deploy` skipped. Render matrix run 38601332139 — success. **Nothing of 7.11 reached production at Dev.** It is
+  DW-350's fifth recurrence.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): no production deployment for `980febcc`; the newest
+  READY is `dpl_DHVcw4abkhd8jfSRt41VvNoJGuEJ` at `ab27d534` (the Create).
+- **T1** `ghost6.inflozo.com` (6.58.0), read only, by the real-infra verifier through `record-shim.py`'s `load_env()`
+  (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`, never printed): `GET themes/` — `casper` active,
+  `racer`, `source`, no probe theme left; `GET settings/` — `logo` none; `GET custom_theme_settings/` — Casper's own ten
+  (its own `color_scheme` among them), no `dark_accent_color` or `dark_logo`; `GET /` — 200, no `scheme-*` class, no
+  stamp, no `--setting-dark-accent`. **Control:** the same read signed with a key Ghost never issued answered `401 Unknown
+  Admin API Key`. So §79's restore held.
+- **Ghost's source** (npm tarballs, extracted and read only): `fixtures.json` in 6.58.0 and 5.130.6 grants
+  `custom_theme_setting` to the Administrator role alone (the Owner holds every permission); 6.58.0's `updateSettings`
+  checks a colour against `/^#[0-9a-f]{6}$/i` and leaves an image unchecked; `ghost-storage-base` 1.0.0 (5.130.6) and
+  3.0.0 (6.58.0) name an upload with `getSanitizedFileName`, every character but `[\w@.]` to `-`.
+- **The verifier's local reproduction:** both trees compiled (Light only twice, byte-identical), both pinned gscans 0/0
+  with an empty quality verdict, GS100 and GS090 as controls, the stamp once, the canvas's token block unchanged, AD-36's
+  hostile values through Handlebars 4.7.9 and JSDOM, and Chromium's truth table (pinned Dark and Auto on a dark device draw
+  the set accent and the dark logo; with the options off nothing follows).
+- **Production at the Review head:** read after the push and recorded in the second Review commit.
+- **Not touched:** Supabase (no migration — no `supabase/migrations/` file in the diff), Resend and Dodo (nothing mails or
+  bills), any T1 write, T3 (retired, R-238).
 
 **The I/O matrix, row by row → the check that ran:**
 

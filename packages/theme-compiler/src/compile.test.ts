@@ -1548,6 +1548,16 @@ test('(7.11) the built-ins follow the user\'s settings in position order, and th
   assert.deepEqual(t.custom.emitted, Object.keys(custom(t)['custom'] as object))
   const style = settingsStyleOf(textOf(t.files)['default.hbs'] ?? '')
   assert.ok(style.includes('{{#if @custom.dark_accent_color}}--setting-dark-accent: {{@custom.dark_accent_color}};{{else if @custom.accent_colour}}--setting-dark-accent: {{@custom.accent_colour}};{{/if}}'), style)
+  // Story 7.11's review — the chain RENDERED as Ghost renders it (Handlebars 4.7.9): the Dark accent color when set, else
+  // the promoted accent, else no declaration, so the token block's own var() falls back to the pack's dark accent
+  const darkAccentOf = (custom: Record<string, string | null>): string => {
+    const out = Handlebars.compile(style)({}, { data: { custom: { dark_logo: null, ...custom } } })
+    const doc = new JSDOM(`<!DOCTYPE html><html><head>${out}</head><body></body></html>`).window.document as unknown as Page
+    return ((doc.querySelector('style') as unknown as { sheet: { cssRules: ArrayLike<Rule> } }).sheet.cssRules[0] as Rule).style.getPropertyValue('--setting-dark-accent').trim()
+  }
+  assert.equal(darkAccentOf({ dark_accent_color: '#3366FF', accent_colour: '#123456' }), '#3366FF', 'the Dark accent color, set')
+  assert.equal(darkAccentOf({ dark_accent_color: null, accent_colour: '#123456' }), '#123456', 'missing: the promoted accent')
+  assert.equal(darkAccentOf({ dark_accent_color: null, accent_colour: null }), '', 'neither: no declaration — the pack\'s, in screen.css\'s var()')
   // every declared key is read, and every reader declared — the last assertion passed, so GS100 and GS090 cannot fire
   const read = new Set(Object.values(textOf(t.files)).flatMap((b) => [...b.matchAll(/@custom\.([a-z0-9_]+)/g)].map((m) => m[1] as string)))
   assert.deepEqual([...read].sort(), Object.keys(custom(t)['custom'] as object).sort())
@@ -1560,6 +1570,11 @@ test('(7.11) a user\'s key equal to a built-in is refused with the module\'s sen
   // eighteen user rows are still the cap's refusal (DW-351), whatever the built-ins add
   const many = Array.from({ length: USER_SETTING_CAP + 1 }, (_, i) => row(`setting_${i + 1}`, 'boolean', control('primary-action')))
   assert.throws(() => promote(many), { message: SETTING_WORDS.cap })
+  // Story 7.11's review — and a user's condition can never name one: its target is looked for among the user's own
+  // settings, so a built-in is "another setting" no more than a key that does not exist (the 7.10 row's sentence)
+  for (const key of ['color_scheme', 'dark_accent_color', 'dark_logo']) {
+    assert.throws(() => promote([row('show_the_button', 'boolean', control('primary-action'), { visibility_condition: { key, value: 'Dark' } })]), /Only show when must name another setting/, key)
+  }
 })
 
 test('(7.11) AD-30: only the token block names a mode — default.hbs names the pin\'s two class names inside <body>\'s Color scheme chain and nowhere else, and no other emitted template names one', () => {
@@ -1611,15 +1626,17 @@ test('(7.11) AD-36: a hostile Dark logo is inert in the head — written inside 
   for (const none of [null, '']) assert.equal(rule(headWith(none)).style.getPropertyValue('--setting-dark-logo'), '', String(none))
   // CEILING, executed and stated rather than hidden (found at Story 7.11's Dev): Handlebars does not escape a line break,
   // and a line break ends a CSS string, so a value carrying one DOES add a CSS rule — never an element or a script, since
-  // `<` is still an entity. Ghost does not validate an image setting, but only a staff session writes
-  // `custom_theme_settings` (MEASUREMENTS §28: an integration token is refused), and an Administrator already holds Code
-  // Injection, so no one gains a power they lack. Recorded in the spec's Spec Change Log for the owner; a fix turns the
-  // second count below to one.
+  // `<` is still an entity. Ghost does not validate an image setting, but only the Administrator role (and the Owner) may
+  // write `custom_theme_settings` — read in both majors' `fixtures.json`, 5.130.6 and 6.58.0: no Editor, Author,
+  // Contributor or integration — and an Administrator already holds Code Injection, so no one gains a power they lack. It
+  // is Question 3 on Story 7.11's spec, for the owner; a fix turns the second count below to one.
   const broken = headWith('x\n");}#p{display:none}')
   assert.equal(broken.querySelectorAll('style').length, 1)
   assert.equal(broken.querySelectorAll('script, img').length, 0)
   assert.equal(sheet(broken).cssRules.length, 2, 'the ceiling: a line break in the value adds one CSS rule')
   // the second ceiling: Handlebars writes `=` and `&` as entities too, which a <style> never decodes, so a URL with a query
-  // string reaches CSS altered and does not load — Ghost's own uploads (`/content/images/…`) carry neither
+  // string reaches CSS altered and does not load (Chromium draws an empty box in dark, executed at the review) — Ghost's
+  // own uploads carry neither: `ghost-storage-base`'s `getSanitizedFileName` turns every character but `[\w@.]` into `-`
+  // (1.0.0 for Ghost 5.130.6, 3.0.0 for 6.58.0, read in source), under `/content/images/<year>/<month>/`
   assert.match(rule(headWith('https://x.example/a.png?w=1&h=2')).style.getPropertyValue('--setting-dark-logo'), /&#x3D;1&amp;h/)
 })

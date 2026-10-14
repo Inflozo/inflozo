@@ -1645,12 +1645,18 @@ def built_ins_phase(g, bi, logo_url, dark_logo_url):
     def by_device(readings):
         return {r['device']: r for r in readings}
 
-    previous = shim.start_guard(g)
     logo_before = site_logo(g)
     print(f'    the site\'s logo before the run: {logo_before!r}')
+    # Story 7.11's review: a run that died between setting the probe's logo and its `finally` leaves it as the site's, and
+    # "restoring" to it would pass the CONTROL below — so the run refuses before it writes anything
+    if unset(logo_before) is not None and urllib.parse.urlparse(str(logo_before)).path == urllib.parse.urlparse(logo_url).path:
+        raise Void(f'the site\'s logo is already the probe\'s picture ({logo_before!r}) — an earlier run died before its restore; '
+                   'set T1\'s logo back by hand (Settings → Design) and run again')
+    previous = shim.start_guard(g)
     try:
-        # (0) Light only: each built-in listed at its start — a run that failed before its cleanup left stored values
-        # under this name, so they are put back to the starts first (the CONTROL reads that they took)
+        # (0) Light only: each built-in at its start — Ghost keeps a deleted theme's stored values under its name, so they
+        # are put back to the starts first and the value rows read that put; the `default` rows are Ghost's own reading of
+        # the declared start, and Ghost seeding a NEW key from its default is §78's row (the review, 2026-10-14)
         deploy('light_only')
         put(**starts)
         got = listed()
@@ -1658,10 +1664,10 @@ def built_ins_phase(g, bi, logo_url, dark_logo_url):
         for key, start in starts.items():
             # an unset picture is empty in two spellings ('' from the cache, null from the database — §78), so both read as none
             row(key in got and unset(got[key].get('value')) == unset(start) and unset(got[key].get('default')) == unset(start), 'custom_theme_settings',
-                f'`{key}` listed at its Light only start', f'type {got.get(key, {}).get("type")!r}, value {got.get(key, {}).get("value")!r}, default {got.get(key, {}).get("default")!r}')
+                f'`{key}` declared at its Light only start (Ghost\'s `default`) and put back to it', f'type {got.get(key, {}).get("type")!r}, value {got.get(key, {}).get("value")!r}, default {got.get(key, {}).get("default")!r}')
         body = home(lambda b: light in pins(b))
         row(bi['page_word'] in body, '/', 'CONTROL — / serves this run\'s theme', f'page word {"found" if bi["page_word"] in body else "ABSENT"}')
-        row(pins(body) == [light], '/', 'a Light only site starts pinned Light: <body> carries scheme-light', pins(body))
+        row(pins(body) == [light], '/', 'Color scheme at its Light only start: <body> carries scheme-light', pins(body))
         # (1) the pin, changed in Ghost: Auto writes no class, Dark writes scheme-dark — and the page resolves dark under it
         put(color_scheme='Auto')
         body = home(lambda b: pins(b) == [])
@@ -1720,8 +1726,15 @@ def built_ins_phase(g, bi, logo_url, dark_logo_url):
         row(pins(body) == [light], '/', 'so the redeployed site is still pinned Light', pins(body))
     finally:
         try:
+            # Story 7.11's review: only into the probe — a failed upload or activation leaves the site's own theme active,
+            # and Casper declares a `color_scheme` of its own
+            if shim.active_theme(g) != BUILT_INS_THEME:
+                raise Void(f'the active theme is {shim.active_theme(g)!r}, not the probe — nothing put back')
             put(**starts)
-            print(f'    the probe\'s built-ins put back to their starts -> {({k: v.get("value") for k, v in listed().items()})}')
+            back = {k: v.get('value') for k, v in listed().items()}
+            print(f'    the probe\'s built-ins put back to their starts -> {back}')
+            rows.append((all(unset(back.get(k)) == unset(v) for k, v in starts.items()), 'custom_theme_settings',
+                         'CONTROL — the probe\'s built-ins read back at their starts', back))
         except Exception as e:  # the restores below still run, and decide
             print(f'    putting the built-ins back FAILED ({type(e).__name__}: {e}) — restoring anyway')
         try:
@@ -1888,7 +1901,7 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
             '- **Every theme carries the three dark built-ins, and each works the moment it is changed in Ghost.** A Light '
-            'only site started pinned Light; Color scheme set to Auto wrote no class and set to Dark pinned the page dark on '
+            'only site with Color scheme at its start was pinned Light; Color scheme set to Auto wrote no class and set to Dark pinned the page dark on '
             'a light device and a dark one alike; the Dark accent color reached the head and `--accent` in dark; and the '
             'Dark logo replaced Ghost\'s logo in dark while the picture drew Ghost\'s own in light — each on the next load, '
             'with no redeploy. Deployed again as Light + Dark, the site kept every value Ghost stored, so it stayed pinned '

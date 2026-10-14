@@ -6364,6 +6364,14 @@ Two trees, each gated 0/0 on both pinned gscans with an empty quality verdict be
 | `/` | so the redeployed site is still pinned Light — `['scheme-light']` | yes |
 | `settings` | CONTROL — the site's logo read back as it was before the run (no logo read as none in either spelling) — `None (before '')` | yes |
 
+*(Story 7.11's Review, 2026-10-14 — how to read the start rows.)* The run puts the three built-ins to their starts before
+it lists them, because Ghost keeps a deleted theme's stored values under its name; so each row's **value** reads back that
+put, its **default** is Ghost's own reading of the start the theme declared, and "a Light only site starts pinned Light"
+means the page with Color scheme at its Light only start. Ghost seeding a NEW key from its default is §78's row (Medium
+kept under a new start of Display). The recorder's wording says so from its next run, which also asserts the put-back as a
+CONTROL, refuses to start while the site's logo is still the probe's picture, and puts nothing back unless the probe is
+the active theme.
+
 ### What it means
 
 - **Every theme carries the three dark built-ins, and each works the moment it is changed in Ghost.** A Light only site started pinned Light; Color scheme set to Auto wrote no class and set to Dark pinned the page dark on a light device and a dark one alike; the Dark accent color reached the head and `--accent` in dark; and the Dark logo replaced Ghost's logo in dark while the picture drew Ghost's own in light — each on the next load, with no redeploy. Deployed again as Light + Dark, the site kept every value Ghost stored, so it stayed pinned Light (Question 2, which Story 7.18's Pre-flight says).

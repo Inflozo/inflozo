@@ -4373,6 +4373,10 @@ reason: each needs a vocabulary piece, a module or a field the pilot story does 
     the dark-mode toggle (no key); `<h1>` on the home page only; the skip link (E7's layout owns `<main>`);
   - the authored logo, and its `logoLight` for a dark ground — Orbit Weekly's `@site.logo` is drawn for a light ground,
     so the image is dark-on-dark in Dark mode (owner test step 14 carries the caveat);
+    *(Story 7.11's Review, 2026-10-14: since 7.11 the site's own Dark logo, set in Ghost, replaces `@site.logo` in dark —
+    by the PAGE's mode, through the stamp `data-site-logo`. A1 #1 offers no contrast ground, so its logo always sits on
+    the page's own ground; a header that prints `@site.logo` on a ground of the other mode — a contrast band — would show
+    the light logo on dark or the dark one on light, and is this entry's, with `logoLight`.)*
   - Shrink's motion (`header-scroll`) and the open drawer's markup (`nav-drawer`);
   - "Sign in", "Account" and "More" are fixed `data-t` strings: the spec draws them as editable fields, and their keys
     are not marked prop (re-marking a key is Ask First);
@@ -9489,6 +9493,12 @@ origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain
   Fourth recurrence, the same R-201 row as the first (2026-10-10, Story 7.9's Review): run 38036171816 on a1c3bb3c (a
   spec/ledger-only commit) — `check` failed at `floor.spec.mjs:77:3`, `#canvas > *` not found after 5s, 202 other stops
   passed; `rls` success, `deploy` skipped. Re-pushed with no app change at Deploy.
+  Fifth recurrence, the R-236 row again (2026-10-14, Story 7.11's Review): run 38601332100 on 980febcc (the Dev commit;
+  its app-side change is a runtime import, no screen) — `check` failed at `journey.spec.mjs:1736:1 › R-236 …`,
+  `#pack-editor-title` not found after 5s following Enter on `#style-pack-new`, 226 other stops passed (the 7.11 mode
+  test among them); `rls` and the render matrix success, `deploy` skipped, so the Dev head never deployed. Run cold on
+  this machine with `bash tools/keyboard/run-keyboard-gate.sh -g 'R-236 · the Style Pack panel'`: 1 passed. The Review
+  push re-runs it.
 owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
   the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
   then, re-push on a red R-201 stop with no app change.
@@ -9638,3 +9648,23 @@ owner: Story 10.93 (A28's first designs), whose card carries this entry with its
   touched) so the box re-reads its colour, and the block's parent computes its text colour as `rgb()`.
 location: `packages/library/modules/` (`mode-toggle`, Story 9.1) · A28's designs and stylesheet
 reason: no design carries `{{comments}}` before Story 10.93, so neither the fix nor its test has anything to run on.
+
+## Deferred from: code review of spec-7-11-the-three-dark-built-ins-always-declared-and-always-referenced (2026-10-14)
+
+### DW-357: the dark logo's picture swap is proved in Chromium alone on every push; Firefox and Safari were run once by hand
+
+plain: In dark mode the theme swaps the site's logo for its Dark logo with a CSS feature (`content` on the picture). Chrome
+  is tested on every push; Firefox and Safari's engine drew it right once, by hand, on 2026-10-14, and nothing re-checks
+  them — so a later change could break the Dark logo for Firefox and Safari visitors with every check still green.
+status: open
+severity: low
+origin: Story 7.11's Review (2026-10-14), the Verification Gap and Blind Hunter layers: `tools/keyboard/playwright.config.mjs`
+  and `tools/matrix/playwright.config.mjs` both pin `browserName: 'chromium'`; the Dev ran the same `mode.spec.mjs` page in
+  Playwright 1.61.1's `firefox-1532` and `webkit-2311` from a scratchpad install, never committed (the spec's Spec Change Log).
+owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id — the
+  story that decides which engines the suite drives; the 7.11 page (`mode.spec.mjs`' dark built-ins test, or a reduced
+  form of it: one pin, one picture, the computed `content` and the centre pixel) runs under Firefox and WebKit there,
+  outside `deploy`'s `needs` as the render matrix is (R-116).
+location: `tools/keyboard/mode.spec.mjs` · `tools/keyboard/playwright.config.mjs`
+reason: a second and third browser in CI is a new install and a new job, which a story with no screen does not own; the
+  claim is worded as the dated one-off it is in AD-17 and the spec.
