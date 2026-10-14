@@ -26,13 +26,15 @@ import {
   CONSUMED_DIRECTIVES,
   CONSUMED_DIRECTIVE_RE,
   DIRECTIVES,
+  FOREIGN_ATTR_RE,
   IMAGE_SIZES,
   i18nAttr,
   resolveStrings,
+  validateMarkup,
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
-import { PAGE_NUMBER_HBS, REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw, serializeMarks, srcsetExpr, stampControls } from './index.ts'
+import { PAGE_NUMBER_HBS, REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, SITE_LOGO_ATTR, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw, serializeMarks, srcsetExpr, stampControls } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { ControlDef } from '@inflozo/library'
 import type { RenderInput, RuntimeElement } from './index.ts'
@@ -1365,7 +1367,8 @@ test('row · two arms: {{#if f}}<if>{{else}}<else>{{/if}}, ONE guard where the c
   const src = '<a class="brand" href="/"><img class="logo" data-if="@site.logo" data-bind-attr="src:@site.logo" alt=""><span class="word" data-else data-bind="@site.title">·</span></a>'
   const theme = renderTheme(doc(), src, { target: 'default.hbs' }).template
   assert.equal((theme.match(/\{\{#if @site\.logo\}\}/g) ?? []).length, 1, `one {{#if @site.logo}}: ${theme}`)
-  assert.ok(theme.includes('{{#if @site.logo}}<img class="logo" alt="" src="{{@site.logo}}">{{else}}<span class="word">'), theme)
+  // Story 7.11: Ghost's logo carries the dark logo rule's stamp (moved on purpose)
+  assert.ok(theme.includes('{{#if @site.logo}}<img class="logo" alt="" src="{{@site.logo}}" data-site-logo="">{{else}}<span class="word">'), theme)
   assert.ok(theme.endsWith('</span>{{/if}}</a>'), theme)
   for (const logo of ['https://site.example/content/images/logo.png', '']) {
     const ghost = { '@site': { logo, title: 'Orbit Weekly' } }
@@ -1714,4 +1717,40 @@ test('Story 7.10\'s review — a catalog text promoted into an ATTRIBUTE keeps i
   // the control: a text with no catalog string has none to fall back on
   const plain = renderTheme(doc(), src.replace('aria-label:cta', 'aria-label:title'), promotedInput({ props: { title: 'title_words' } })).template
   assert.ok(plain.includes('aria-label="{{@custom.title_words}}"'), plain)
+})
+
+test('Story 7.11 — a picture of Ghost\'s logo carries data-site-logo on BOTH emitters, the dark logo rule\'s one hook; no other picture does, and the canvas drops it with the picture', () => {
+  const src = '<a class="brand" href="/"><img class="logo" data-if="@site.logo" data-bind-attr="src:@site.logo;alt:@site.title" alt=""><span class="word" data-else data-bind="@site.title">·</span></a>'
+  const ghost = { '@site': { logo: 'https://site.example/content/images/logo.png', title: 'Orbit Weekly' } }
+  const { canvas, theme } = agreeDecided(src, { target: 'default.hbs', ghost }, { '@site.logo': true, '@site.title': true })
+  for (const [name, html] of [['canvas', canvas], ['theme', theme]] as const) {
+    assert.equal((html.match(new RegExp(`${SITE_LOGO_ATTR}=""`, 'g')) ?? []).length, 1, `${name}: ${html}`)
+    assert.match(html, new RegExp(`<img class="logo"[^>]*${SITE_LOGO_ATTR}=""`), name)
+  }
+  // no logo: the canvas draws the wordmark and nothing carries the stamp
+  const none = renderCanvas(doc(), src, { target: 'default.hbs', ghost: { '@site': { logo: '', title: 'Orbit Weekly' } } })
+  assert.ok(none.includes('>Orbit Weekly<') && !none.includes(SITE_LOGO_ATTR), none)
+  // the control: a picture of anything else — a post's, or Ghost's logo in an attribute that is not `src` — is never stamped
+  for (const other of [
+    '<img class="p" data-bind-attr="src:feature_image" alt="">',
+    '<a class="a" data-bind-attr="href:@site.logo">·</a>',
+  ]) {
+    const both = bothWays(other, { target: 'post.hbs', ghost, content: {} })
+    assert.ok(!both.canvas.includes(SITE_LOGO_ATTR) && !both.theme.includes(SITE_LOGO_ATTR), other)
+  }
+})
+
+test('Story 7.11 — a design never writes the stamp: the validator refuses an authored data-site-logo, and the name is no directive, no leak and no control\'s', () => {
+  const codes = (html: string) => validateMarkup(html, { controls: [] }).map((f) => f.code)
+  assert.deepEqual(codes(`<section class="s" data-bg="surface" data-spacing="comfortable" data-divider="line"><img ${SITE_LOGO_ATTR} alt="" src="x.png"></section>`), ['site-logo-attribute'])
+  assert.deepEqual(codes('<section class="s" data-bg="surface" data-spacing="comfortable" data-divider="line"><img alt="" src="x.png"></section>'), [], 'the control')
+  assert.equal(DIRECTIVES[SITE_LOGO_ATTR], undefined, 'not a directive')
+  assert.ok(!CONSUMED_DIRECTIVES.includes(SITE_LOGO_ATTR), 'not a consumed directive, so AD-34\'s leak assertion never reads it as one')
+  assert.ok(FOREIGN_ATTR_RE.test(SITE_LOGO_ATTR.slice('data-'.length)), 'no control may be named like it')
+})
+
+test('Story 7.11 — R-34: a bare helper takes no argument, so no design can ask {{comments}} for a mode', () => {
+  assert.match(DIRECTIVES['data-helper']?.parse('comments mode=dark') ?? '', /data-helper/)
+  assert.equal(DIRECTIVES['data-helper']?.parse('comments'), null)
+  assert.equal(renderTheme(doc(), '<div class="c" data-helper="comments"></div>', { target: 'post.hbs' }).template, '<div class="c">{{comments}}</div>')
 })

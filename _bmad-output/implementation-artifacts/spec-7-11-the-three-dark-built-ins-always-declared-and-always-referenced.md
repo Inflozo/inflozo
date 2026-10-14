@@ -2,9 +2,10 @@
 title: 'Story 7.11 — The three dark built-ins, always declared and always referenced'
 type: 'feature'
 created: '2026-10-14'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: 'ab27d534892d9fa656b30e8aeab4f1b5dc267a5d'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -212,7 +213,7 @@ compiled theme is not proved there.
 
 **Execution:**
 
-- [ ] `packages/section-runtime/src/custom-settings.ts`, `custom-settings.test.ts`:
+- [x] `packages/section-runtime/src/custom-settings.ts`, `custom-settings.test.ts`:
   - `builtInSettings({ pack, darkEnabled })` returns the three rows in `RESERVED_SETTING_KEYS`' order, each labelled
     `ghostName(key)`, `site_wide`, with no condition: `color_scheme` (select, options `Auto`/`Light`/`Dark`, default
     `SCHEME_START[mode]`), `dark_accent_color` (color, default `pack.dark.accent`) and `dark_logo` (image, no default).
@@ -221,7 +222,7 @@ compiled theme is not proved there.
   - Tests: each row's `ghostEntry`, both starts, and `USER_SETTING_CAP` unchanged.
 
   -- one module for every fact about a built-in.
-- [ ] `packages/section-runtime/src/tokens.ts`, `tokens.test.ts`:
+- [x] `packages/section-runtime/src/tokens.ts`, `tokens.test.ts`:
   - Export `SCHEME_CLASS` (`light: 'scheme-light'`, `dark: 'scheme-dark'`) and rebuild `MODE_SELECTORS` from it, with its
     bytes unchanged.
   - Export `SETTING_DARK_ACCENT = '--setting-dark-accent'` and `SETTING_DARK_LOGO = '--setting-dark-logo'`.
@@ -235,7 +236,7 @@ compiled theme is not proved there.
     preset and Mono, and the logo rule appears under each dark condition and nowhere else.
 
   -- AD-17's "feed the same token block E6 owns", inside AD-30's one file.
-- [ ] `packages/section-runtime/src/core.ts`, `agreement.test.ts`, `ad36.test.ts`, `packages/library/src/validate.ts`:
+- [x] `packages/section-runtime/src/core.ts`, `agreement.test.ts`, `ad36.test.ts`, `packages/library/src/validate.ts`:
   - An `<img>` whose `src` binds `@site.logo` carries `data-site-logo` on BOTH emitters.
   - The validator refuses a design that writes `data-site-logo` itself, and Dev checks the name collides with no directive
     and no leak assertion.
@@ -243,7 +244,7 @@ compiled theme is not proved there.
   - The validator's refusal of an argument to `data-helper` (`comments mode=dark`) is asserted.
 
   -- the one hook the dark logo's rule selects, the same on every design that prints Ghost's logo.
-- [ ] `packages/theme-compiler/src/compile.ts`, `compile.test.ts`:
+- [x] `packages/theme-compiler/src/compile.ts`, `compile.test.ts`:
   - `customSettings` appends `builtInSettings` after the user's entries, and `record.emitted` lists all of them.
   - `config.custom` is always present.
   - `<body>`'s class is the `color_scheme` chain after `{{body_class}}`: the Light and Dark branches write
@@ -260,20 +261,20 @@ compiled theme is not proved there.
     re-anchored plants failing as they should.
 
   -- the readers are the mechanism (AD-17), so GS100 cannot fire.
-- [ ] `packages/theme-compiler/gate/custom-settings.test.ts`:
+- [x] `packages/theme-compiler/gate/custom-settings.test.ts`:
   - A compiled Light-only theme and a Light + Dark one each score 0/0 on both pins with an empty `qualityGate`.
   - 17 user settings plus the 3 pass, and the keys list carries the built-ins.
   - Controls: each built-in's reader removed is `GS100` naming that key, and `color_scheme` matched against a label that is
     not an option is `GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH`.
 
   -- the card's "gscan on a Light-only fixture, both specs", each claim behind a control that fails (standing rule 2).
-- [ ] `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs`:
+- [x] `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs`:
   - Row `:1314-1318` becomes "the pilot compile without settings declares exactly the three built-ins and reads each".
   - A Light-only pilot compile is gated 0/0 on both pins with the quality verdict empty.
   - Every per-design snapshot is unchanged, except A1 #1's attribute.
 
   -- CI holds the real library on every commit.
-- [ ] `tools/keyboard/mode.spec.mjs`: a 7.11 test over the THEME's token block (`packTokensCss` with the theme options), set
+- [x] `tools/keyboard/mode.spec.mjs`: a 7.11 test over the THEME's token block (`packTokensCss` with the theme options), set
   into a page:
   - Under every combination of device, pin and visitor: `--accent` and its fed values equal the dark accent property when
     dark resolves and it is set, and equal the pack's otherwise.
@@ -283,7 +284,7 @@ compiled theme is not proved there.
     a second browser.
 
   -- the chains, executed in a browser (standing rule 1).
-- [ ] `tools/probe/record-theme-assembly.py`, `SECTION = '79'`:
+- [x] `tools/probe/record-theme-assembly.py`, `SECTION = '79'`:
   - Upload the pilots compiled Light-only. `GET custom_theme_settings/` lists the three at their starts.
   - `/` carries `scheme-light`.
   - A `PUT` of `color_scheme` Auto, then Dark, changes the class, and the page resolves dark under the pin (reuse §69's
@@ -297,7 +298,7 @@ compiled theme is not proved there.
   - Written and gated locally at Dev, run in the main session on the owner's in-session go, recorded as MEASUREMENTS §79.
 
   -- R-82: Ghost renders what the compile wrote.
-- [ ] Propagation:
+- [x] Propagation:
   - `prd.md` FR-Q5, with dated notes: the starts as ruled, the comments reading, and the logo's mechanism.
   - FR-Q4: the canvas previews the compiled default — the pack's dark accent, which Ghost seeds and never empties — as
     7.10's criterion already says.
@@ -337,6 +338,33 @@ compiled theme is not proved there.
 - **AD-36.** Given a hostile dark logo, when the head renders, then it is inert beside a legitimate value that draws.
 
 ## Spec Change Log
+
+- **Dev, 2026-10-14 — a line break in a Dark logo value adds CSS rules (a ceiling, for the owner).** § Boundaries' AD-36
+  line says Handlebars writes `"`, `<` and `>` as entities so the value cannot close the string or the element. It cannot
+  close the element; but Handlebars leaves a line break as it is, and a line break ends a CSS string (a bad-string token),
+  so a value carrying one — `x\n");}#p{display:none}` — adds a CSS rule after `:root`'s. Executed in JSDOM
+  (`compile.test.ts`, pinned as the ceiling) and in Chromium (`#p` computed `display: none`). Never an element or a
+  script. Ghost does not validate an image setting, but only a staff session writes `custom_theme_settings` (§28: an
+  integration token is refused) and an Administrator already holds Code Injection, so no one gains a power they lack. The
+  matrix's own hostile value (no line break) is inert, as the row says. The Create's "§28 executed `url({{@custom.dark_logo}})`
+  against hostile values" is narrower in the record: §28 executed colour values only. Built as written (the spec names the
+  `url("…")` form). A second, harmless ceiling: Handlebars also writes `=` and `&` as entities, so a URL with a query
+  string reaches CSS altered and does not load — Ghost's uploads carry neither.
+  **Kept, as a routine call (main session, Dev, 2026-10-14):** read in Ghost 6.58.0's source
+  (`core/server/data/schema/fixtures/fixtures.json`, the npm tarball, read only), `custom_theme_setting` is granted to the
+  Administrator role alone — not Editor, Super Editor, Author, Contributor or any integration, Admin Integration included
+  — and the Owner holds every permission. Whoever can write the Dark logo can already add any script to every page through
+  Code Injection, so the ceiling gives nobody a power they lack; it is stated beside the code (`compile.ts`) and pinned in
+  `compile.test.ts`, and no question goes to the owner. A future writer of `dark_logo` that is not an Administrator — an
+  Inflozo write to Ghost, which AD-10's allowlist forbids today — would reopen it.
+- **Dev, 2026-10-14 — the browsers.** `mode.spec.mjs`' 7.11 test passed in Chromium (the gate), and the same page passed
+  in Firefox and WebKit from a scratchpad install (Playwright 1.61.1's `firefox-1532` and `webkit-2311`, WebKit's
+  missing system libraries unpacked from Ubuntu's own `.deb`s beside it) — `content` replaces an `<img>`'s picture in all
+  three, so § Ask First's halt did not apply. Nothing of the second browsers is committed.
+- **Dev, 2026-10-14 — the recorder's §78 invariants moved for the built-ins** (every tree now declares the three after the
+  user's settings, which the bare tree cannot clear), so the 7.10 phase puts them back to the bare tree's starts at its
+  start and in its `finally`; the 7.7 cascade probe now adds its setting beside the built-ins instead of replacing
+  `config.custom`. The local half gated every tree 0/0 on both gscans; the T1 run (§79) is the main session's.
 
 ## Design Notes
 
@@ -501,3 +529,65 @@ it reaches a screen, and the test Ghost proves it here.
   - Supabase gets no migration.
   - Resend and Dodo: nothing mails or bills.
   - T3 is retired (R-238).
+
+### Dev results (2026-10-14)
+
+**Commands, run on the final tree (Node 24.18.1):**
+- `pnpm check` — exit 0. Every 7.11 test is in its output and passed, in `custom-settings.test.ts`, `tokens.test.ts`,
+  `agreement.test.ts`, `ad36.test.ts`, `validate.test.ts`, `compile.test.ts` (with the 7.2 `package.json` row and 7.10's
+  accent row moved on purpose) and `gate/custom-settings.test.ts` (both pins), and `check-snapshots`' 7.11 rows, the Light
+  only pilots 0/0 on gscan 4.49.7 at `v5` and 6.4.2 at `v6` among them.
+- `pnpm build` — exit 0 (Theme settings' client bundle now carries `tokens.ts` and `colour.ts` through `SCHEME_CLASS`;
+  both are pure).
+- `pnpm keyboard` — green, `mode.spec.mjs:317` (the 7.11 test) included. **Control:** with `packTokensCss`' `darkSettings`
+  forced off, the same test fails — `paper: the dark block reads the dark accent nowhere` — and `tokens.ts` was restored
+  byte for byte (`cmp`).
+- Firefox and WebKit (Playwright 1.61.1 in the scratchpad, never committed): the same page passed in both, so CSS
+  `content` replaces an `<img>`'s picture in all three engines and § Ask First's halt did not apply.
+- `bash supabase/tests/run-rls-gate.sh` — exit 0, unchanged (no SQL).
+- The recorder's local half (inside the T1 run, before any upload): `built-ins-light_only` and `built-ins-light_dark` each
+  0 errors / 0 warnings on gscan 4.49.7 (`v5`) and 6.4.2 (`v6`), with an empty quality verdict, as is every earlier tree.
+
+**Real infrastructure (R-82):**
+- **T1** `ghost6.inflozo.com` (6.58.0), on the owner's go in this session (2026-10-14), run in the main session:
+  `python3 tools/probe/record-theme-assembly.py` read `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN` and `GHOST6_CONTENT_API_KEY`
+  through `shim.load_env()`, never printed, and exited 0 with every row held behind its controls — MEASUREMENTS §79.
+  What T1 returned for this story:
+  - `GET /ghost/api/admin/custom_theme_settings/` listed exactly `color_scheme` (select, `Light`), `dark_accent_color`
+    (color, `#E0805A`) and `dark_logo` (image, none) for the Light only upload.
+  - `/` carried `scheme-light`. After `PUT` Auto it carried no scheme class, and after `PUT` Dark it carried `scheme-dark`.
+    Chromium then read `--bg-page #171511` and `--accent #E0805A` (Paper's dark) on a light device and a dark device alike.
+    The controls held: the media query reported each emulated device, and `--accent` read empty with the stylesheets off.
+  - `PUT dark_accent_color #3366FF`: the head's settings `<style>` carried it, and `--accent` read `#3366FF` pinned Dark.
+  - `PUT dark_logo`, with the site's logo cleared: no picture carried the stamp and the header drew its wordmark.
+  - Then with the site's logo set to `/content/images/2026/10/inflozo-probe-rendition.png` (`PUT /ghost/api/admin/settings/`):
+    the logo picture carried `data-site-logo`. Pinned Dark, its computed `content` was the Dark logo's `url(…)` while its
+    `src` stayed Ghost's logo. Pinned Light, `content` was `normal` on both devices.
+  - A Light + Dark redeploy (start `Auto`) kept the stored `Light`, `#3366FF` and the Dark logo, and `/` stayed pinned Light
+    (Question 2's fact, re-executed).
+  - Restored and read back: the built-ins at their starts, the site's logo back to none (the CONTROL row), Casper active,
+    and the probe themes deleted (installed: `casper`, `racer`, `source`).
+  - The same run re-ran §70–§78's rows on today's compile: all held, §78's with the built-ins beside the promoted settings.
+- **Production:** untouched at Dev. CI and Vercel are the Review's reads, at the Dev head.
+- **Not touched:** Supabase (no migration), Resend and Dodo (nothing mails or bills), T3 (retired, R-238).
+
+**The I/O matrix, row by row → the check that ran:**
+
+| Row | Check(s) |
+|---|---|
+| Light + Dark project compiles | `compile.test.ts` "(7.11) a Light + Dark project…"; §79 `light_dark` upload |
+| Light-only project compiles | `compile.test.ts` "(7.11) a Light only project…"; `check-snapshots` Light only rows; §79 starts |
+| Promoted settings too | `compile.test.ts` "(7.11) the built-ins follow the user's settings…"; `gate/custom-settings.test.ts` 7.10 row (keys + built-ins, 0/0); §78 |
+| The pin in Ghost (incl. null) | `custom-settings.test.ts` "the pin's reader" (no `{{else}}`: Auto/null write nothing); `mode.spec.mjs` truth table; §79 Auto/Dark/Light rows |
+| Dark accent changed in Ghost | `tokens.test.ts` dark-accent rows (every preset, Mono); `mode.spec.mjs`; §79 `#3366FF` |
+| Dark accent absent | `compile.test.ts` "a promoted accent is the dark accent's fallback before the pack's"; `mode.spec.mjs` (unset → the pack's) |
+| Dark logo set | `tokens.test.ts` logo rule; `mode.spec.mjs` (computed `content` + pixels); §79 pinned Dark |
+| Dark logo unset | `mode.spec.mjs` (`normal`, the light picture's pixels); §79 pinned Light (`normal`) |
+| Dark logo, no site logo | `agreement.test.ts` (stamp only inside `{{#if @site.logo}}`; canvas wordmark, no stamp); §79 "the site has no logo" row |
+| No design prints a logo | `gate/custom-settings.test.ts` (fixture prints no logo: 0/0, no GS100) |
+| User key collides | `compile.test.ts` "(7.11) a user's key equal to a built-in is refused…"; `custom-settings.test.ts` door row |
+| At the cap | `gate/custom-settings.test.ts` "the cap with the built-ins" (17 + 3 pass; 18th = `GS010-PJ-CUST-THEME-TOTAL-SETTINGS`); `compile.test.ts` cap row |
+| A hostile dark logo | `compile.test.ts` "(7.11) AD-36: a hostile Dark logo is inert…" (the matrix's value inert, a legitimate URL draws; the line-break ceiling pinned — § Spec Change Log) |
+| Comments | `compile.test.ts` and `agreement.test.ts` R-34 rows (bare `{{comments}}`; `comments mode=dark` refused) |
+| A design authors the stamp | `agreement.test.ts`, `validate.test.ts`, `ad36.test.ts` (`site-logo-attribute`, markup and stylesheet) |
+| The canvas | `tokens.test.ts` "the canvas's call and every non-dark byte stand"; `agreement.test.ts` stamp on both emitters; `check-snapshots` (only A1 #1's attribute moved) |

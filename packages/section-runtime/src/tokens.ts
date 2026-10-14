@@ -426,26 +426,39 @@ export const GROUND_LINKS: Readonly<Record<string, string>> = {
  *  and under the `explicit` selector list. THIS IS THE ONLY PLACE THE PRECEDENCE IS WRITTEN — `packTokensCss` and
  *  `darkOverrideCss` build every mode-naming selector from it, and `tokens.test.ts` refuses any other.
  *
- *  The canvas — `data-mode` always set on its `<html>`, a bare `<body>` — resolves exactly as before Story 6.5. */
+ *  The canvas — `data-mode` always set on its `<html>`, a bare `<body>` — resolves exactly as before Story 6.5.
+ *
+ *  STORY 7.11 — the pin's two class names are `SCHEME_CLASS`, the one constant `default.hbs`'s `<body>` writes them from
+ *  (`schemeClassChain`, `custom-settings.ts`) and these selectors read; the bytes are Story 6.5's (`tokens.test.ts`). */
+export const SCHEME_CLASS = { light: 'scheme-light', dark: 'scheme-dark' } as const
 export const MODE_SELECTORS = {
   media: '(prefers-color-scheme: dark)',
-  system: ':root:not([data-mode="light"]):not(:has(> body.scheme-light))',
-  explicit: [':root:has(> body.scheme-dark)', ':root[data-mode="dark"]:not(:has(> body.scheme-light))'],
+  system: `:root:not([data-mode="light"]):not(:has(> body.${SCHEME_CLASS.light}))`,
+  explicit: [`:root:has(> body.${SCHEME_CLASS.dark})`, `:root[data-mode="dark"]:not(:has(> body.${SCHEME_CLASS.light}))`],
 } as const
 
 /** Story 7.10 — the custom property a promoted accent sets in `default.hbs`'s head, and the light block reads. */
 export const SETTING_ACCENT = '--setting-accent'
+/** Story 7.11 — the two custom properties the dark built-ins set in `default.hbs`'s head (AD-17): the dark accent, which
+ *  the dark blocks read wherever the pack's dark accent feeds, and the dark logo as a `url()`, which the dark logo rule
+ *  reads as `content` on every picture the runtime stamps `data-site-logo`. */
+export const SETTING_DARK_ACCENT = '--setting-dark-accent'
+export const SETTING_DARK_LOGO = '--setting-dark-logo'
+/** The stamp both emitters write on an `<img>` whose `src` binds Ghost's `@site.logo` (`core.ts`) — the one hook the dark
+ *  logo rule selects. The validator refuses a design that writes it (`site-logo-attribute`). */
+export const SITE_LOGO_ATTR = 'data-site-logo'
 
-/** Story 7.10's review — the light values that follow a promoted accent: only a token the accent FEEDS, one whose value
+/** Story 7.10's review — the values that follow a setting's accent: only a token the mode's accent FEEDS, one whose value
  *  moves when the accent does (found by nudging its last digit, never a list of names), so a pack whose accent is also
  *  another of its colours — Mono: accent and text both `#000000` — never hands the site's owner its body text, its
- *  contrast ground or its error colour; in each, the accent itself reads `var(--setting-accent, <hex>)`. */
-function followAccent(pack: Pack, tokens: Readonly<Record<string, string>>): Record<string, string> {
-  const hex = pack.light.accent
-  const still = modeTokens(pack, 'light')
-  const moved = modeTokens({ ...pack, light: { ...pack.light, accent: `${hex.slice(0, -1)}${(parseInt(hex.slice(-1), 16) ^ 1).toString(16)}` } }, 'light')
+ *  contrast ground or its error colour; in each, the accent itself reads `var(<property>, <hex>)`. Story 7.11 generalised
+ *  it to a mode: the light accent through `--setting-accent` (7.10), the dark accent through `--setting-dark-accent`. */
+function followAccent(pack: Pack, mode: 'light' | 'dark', property: string, tokens: Readonly<Record<string, string>>): Record<string, string> {
+  const hex = pack[mode].accent
+  const still = modeTokens(pack, mode)
+  const moved = modeTokens({ ...pack, [mode]: { ...pack[mode], accent: `${hex.slice(0, -1)}${(parseInt(hex.slice(-1), 16) ^ 1).toString(16)}` } }, mode)
   const accent = new RegExp(`${hex.replace(/[^#0-9a-f]/gi, '')}(?![0-9a-f])`, 'gi')
-  return Object.fromEntries(Object.entries(tokens).map(([k, v]) => [k, still[k] !== moved[k] ? v.replace(accent, (h) => `var(${SETTING_ACCENT}, ${h})`) : v]))
+  return Object.fromEntries(Object.entries(tokens).map(([k, v]) => [k, still[k] !== moved[k] ? v.replace(accent, (h) => `var(${property}, ${h})`) : v]))
 }
 
 /** A pack's token block — the only way a pack is emitted, so every block ends with R-173's link rule. `:root` declares
@@ -457,7 +470,7 @@ function followAccent(pack: Pack, tokens: Readonly<Record<string, string>>): Rec
  *  nowhere else — the owner's pin (the `scheme-*` body class), on Auto the visitor's `data-mode`, then the device. The
  *  canvas reuses `data-mode` to preview a mode, deliberately, so no fourth mode signal exists. AD-30: the token block is
  *  THE ONE FILE in a generated theme that names a mode — this block, then `darkOverrideCss`' per-section rules. */
-export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean; settingAccent?: boolean } = {}): string {
+export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean; settingAccent?: boolean; darkSettings?: boolean } = {}): string {
   const { light: tokens, tablet, mobile } = packTokens(pack)
   // AD-18, in the theme only (Story 7.4): a font chosen in Ghost Admin wins, the pack's family list is the fallback, and
   // one file holding both names is what gscan's GS051 asks for. The canvas calls with no option, so its bytes stand.
@@ -469,15 +482,25 @@ export function packTokensCss(pack: Pack, options: { ghostFonts?: boolean; setti
   // site owner's colour through `var()`, the pack's own value its fallback; `default.hbs`'s inline block sets the one
   // property from `{{@custom.*}}` and names no mode, so this block stays the one that does. The computed shades (the
   // tint, `--accent-on-contrast`) are new colours and keep the pack's — which is why the caution says contrast is in the
-  // site owner's hands — and the dark blocks are untouched until Story 7.11's dark built-in.
-  const light = options.settingAccent === true ? followAccent(pack, fonts) : fonts
+  // site owner's hands.
+  const light = options.settingAccent === true ? followAccent(pack, 'light', SETTING_ACCENT, fonts) : fonts
   const dark = modeTokens(pack, 'dark')
-  const perMode = Object.fromEntries(TOKEN_NAMES.filter((n) => Object.hasOwn(dark, n)).map((n) => [n, dark[n] as string]))
+  const plainDark = Object.fromEntries(TOKEN_NAMES.filter((n) => Object.hasOwn(dark, n)).map((n) => [n, dark[n] as string]))
+  // STORY 7.11 (AD-17, AD-30), in the theme only: the dark built-ins feed this block. In both dark blocks every value the
+  // DARK accent feeds that is or contains it reads `--setting-dark-accent` (7.10's rule, generalised to a mode), and under
+  // each dark condition one rule draws the dark logo as `content` on the stamped picture. With the property unset the
+  // `var()` has no fallback, so `content` is invalid at computed-value time and falls back to `normal`: the picture's own
+  // `src`, Ghost's logo. Every mode-naming selector is `MODE_SELECTORS`'; `default.hbs` sets the two properties and names
+  // no mode.
+  const darkSettings = options.darkSettings === true
+  const perMode = darkSettings ? followAccent(pack, 'dark', SETTING_DARK_ACCENT, plainDark) : plainDark
+  const logo = (conditions: readonly string[]) => `${conditions.map((c) => `${c} [${SITE_LOGO_ATTR}]`).join(', ')} { content: var(${SETTING_DARK_LOGO}); }`
   const bands = { tablet, mobile }
   return [
     block(':root', light),
-    `@media ${MODE_SELECTORS.media} {\n${indent(block(MODE_SELECTORS.system, perMode))}\n}`,
+    `@media ${MODE_SELECTORS.media} {\n${indent([block(MODE_SELECTORS.system, perMode), ...(darkSettings ? [logo([MODE_SELECTORS.system])] : [])].join('\n'))}\n}`,
     block(MODE_SELECTORS.explicit.join(', '), perMode),
+    ...(darkSettings ? [logo(MODE_SELECTORS.explicit)] : []),
     ...BANDS.map((b) => `@media ${b.query} {\n${indent(block(':root', bands[b.name]))}\n}`),
     `/* FR-E1 · link style, applied: a plain link reads the two link tokens (R-112, R-173), a post's body included (R-229) */\n${LINK_RULES}`,
     '',

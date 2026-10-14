@@ -28,18 +28,57 @@ import { CONTROL_VALUE_RE, valueWords, type ControlDef, type ControlType, type P
 import { getPath, markupProps, resolveControls, type ControlEntry } from './controls.ts'
 import type { DocInstance } from './doc-schema.ts'
 import { plainText } from './marks.ts'
-import type { Pack } from './tokens.ts'
+import { SCHEME_CLASS, type Pack } from './tokens.ts'
 
 /** What the accent's start reads of a pack — a `Pack` has it, and so does a project's own record. */
 export type AccentOf = { readonly light: Pick<Pack['light'], 'accent'> }
 
 /** Ghost's cap on a theme's settings (gscan `customSettingsKeys.length > 20`). */
 export const SETTING_CAP = 20
-/** FR-Q5's three dark built-ins every project emits — never a user's row, never counted in the meter. ONE list:
- *  `color_scheme` is FR-Q5's own name; the other two are Story 7.9's proposal for Story 7.11 to confirm or rename HERE. */
+/** FR-Q5's three dark built-ins every project emits — never a user's row, never counted in the meter. ONE list, and the
+ *  only spelling of the keys: Story 7.9 proposed `dark_accent_color` and `dark_logo` beside FR-Q5's `color_scheme`, and
+ *  Story 7.11 confirmed all three as AD-17 names them (2026-10-14). `builtInSettings` below builds each row from here. */
 export const RESERVED_SETTING_KEYS = ['color_scheme', 'dark_accent_color', 'dark_logo'] as const
 /** The user's share, derived — the cap trigger's `>= 17` (`complete_schema.sql`), which a test reads back. */
 export const USER_SETTING_CAP = SETTING_CAP - RESERVED_SETTING_KEYS.length
+
+/* ──────────────────────── Story 7.11 — the three dark built-ins (FR-Q5, AD-17), every fact in one place ──────────────────────── */
+
+const [SCHEME_KEY, DARK_ACCENT_KEY, DARK_LOGO_KEY] = RESERVED_SETTING_KEYS
+/** `color_scheme`'s three options, as Ghost's Design panel offers them (a select's labels, D6a's "Named values only"). */
+export const SCHEME_OPTIONS = ['Auto', 'Light', 'Dark'] as const
+/** THE STARTS — `color_scheme`'s start per project mode (Question 1, ruled option 1, owner, 2026-10-14): a Light + Dark
+ *  project starts on Auto (each visitor's device decides), a Light only one on Light, as it was designed. The dark accent
+ *  starts at the pack's dark accent and the dark logo at none (Ghost forbids an image default) — `builtInSettings`. */
+export const SCHEME_START: Readonly<Record<'lightDark' | 'lightOnly', (typeof SCHEME_OPTIONS)[number]>> = { lightDark: 'Auto', lightOnly: 'Light' }
+
+/** Each built-in's reader path, a constant the compiler writes — never through `customPath`, which refuses a reserved key
+ *  on purpose (AD-36: a user's key can never take a built-in's place). */
+export const BUILT_IN_PATH = { scheme: `@custom.${SCHEME_KEY}`, darkAccent: `@custom.${DARK_ACCENT_KEY}`, darkLogo: `@custom.${DARK_LOGO_KEY}` } as const
+
+/** The three built-in rows, in `RESERVED_SETTING_KEYS`' order, each named as Ghost names it (`ghostName`), Site wide and
+ *  never conditional: Color scheme (Auto · Light · Dark, starting per project mode), Dark accent color (the pack's dark
+ *  accent, a `#rrggbb` by `assertPack`) and Dark logo (no start). The same rows on every project, Light only included —
+ *  only `color_scheme`'s start depends on the mode (AD-17). Written after the user's rows by the compile, and never
+ *  counted toward `USER_SETTING_CAP`. */
+export function builtInSettings({ pack, darkEnabled }: { pack: { readonly dark: Pick<Pack['dark'], 'accent'> }; darkEnabled: boolean }): SettingRow[] {
+  const site = (key: string, rest: Pick<SettingRow, 'type' | 'options' | 'default_value'>): SettingRow =>
+    ({ key, label: ghostName(key), ...rest, group_name: 'site_wide', visibility_condition: null })
+  return [
+    site(SCHEME_KEY, { type: 'select', options: SCHEME_OPTIONS.map((label) => ({ value: label, label })), default_value: SCHEME_START[darkEnabled ? 'lightDark' : 'lightOnly'] }),
+    site(DARK_ACCENT_KEY, { type: 'color', options: null, default_value: pack.dark.accent }),
+    site(DARK_LOGO_KEY, { type: 'image', options: null, default_value: null }),
+  ]
+}
+
+/** The pin's reader, as `<body>`'s class carries it after `{{body_class}}` (FR-E4, AD-17): Light and Dark write the two
+ *  class names `MODE_SELECTORS` reads (`SCHEME_CLASS`), each with its leading space; Auto, and a value Ghost renders as
+ *  `null`, write nothing. Each branch compares one of `color_scheme`'s own labels in `{{#match}}`'s THREE-argument form,
+ *  the one gscan's GS090 checks against the select's options (`matchChain`'s reason, Story 7.10). */
+export const schemeClassChain = (): string => {
+  const [, light, dark] = SCHEME_OPTIONS
+  return `{{#match ${BUILT_IN_PATH.scheme} "=" "${light}"}} ${SCHEME_CLASS.light}{{else match ${BUILT_IN_PATH.scheme} "=" "${dark}"}} ${SCHEME_CLASS.dark}{{/match}}`
+}
 
 /** Ghost's five types, in gscan's order. Story 7.9 created `boolean` and `select`; Story 7.10 `text`, `image` and `color`. */
 export const GHOST_SETTING_TYPES = ['select', 'boolean', 'color', 'image', 'text'] as const

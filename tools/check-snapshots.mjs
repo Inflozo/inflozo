@@ -1062,7 +1062,9 @@ check('control — Story 7.6: one copy of the pilot theme with five defects plan
   const planted = {
     ...pilots76,
     'default.hbs': pilots76['default.hbs'].replace('    {{ghost_head}}\n', '').replace('    <link rel="stylesheet"', '    {{ghost_head}}\n    <link rel="stylesheet"')
-      .replace('<body class="{{body_class}}">', '<body class="{{body_class}} {{post_class}}">'),
+      // Story 7.11: anchored on the line's opening, since the pin's chain follows {{body_class}} — the row below fails if
+      // either replace finds nothing
+      .replace('<body class="{{body_class}}', '<body class="{{body_class}} {{post_class}}'),
     'partials/post-card.hbs': pilots76['partials/post-card.hbs'].replace(/\n *sizes="[^"]*"/, ''),
     [header]: pilots76[header].replace('data-portal="signup"', 'data-portal="share"'),
     [news]: `${pilots76[news]}<p>{{@member.email}}</p>\n`,
@@ -1311,10 +1313,46 @@ check('control — Story 7.10: the strip\'s oracle reads a promoted root as its 
   const sheets = { ...pilots710.css.sheets, 'a4/13': pilots710.css.sheets['a4/13'].replace(/\.a4-13\[data-headline-size="medium"\][^}]*\}/, '') }
   return mustFail(pilots.cssFailures({ ...pilots710, css: { ...pilots710.css, sheets } }, PILOT_LIBRARY).failures, /^FR-G7: a4\/13's sheet lost a rule a placed root reaches — .*data-headline-size="medium"/, 'a cut Medium rule')
 })
-check('Story 7.10 — the pilot compile without settings declares no config.custom and reads no @custom, so every row above reads today\'s theme', () => {
-  if ('custom' in JSON.parse(pilotTheme['package.json']).config) throw new Error('the pilot theme declares config.custom')
-  const hit = Object.entries(pilots.textFiles(pilotTheme)).filter(([, b]) => b.includes('@custom')).map(([p]) => p)
-  if (hit.length > 0) throw new Error(`@custom in ${hit.join(', ')}`)
+// ── Story 7.11: the three dark built-ins on every compile (FR-Q5, AD-17) ────────────────────────────────────────────────
+// The pilot compile without settings declares exactly the three built-ins and reads each (rewritten from 7.10's "declares
+// no config.custom"); a Light only pilot compile, the same three and the same readers with Color scheme on Light, is gated
+// 0/0 on both pinned checkers behind §73's scaffold with an empty quality verdict. Each behind its control.
+const BUILT_INS = ['color_scheme', 'dark_accent_color', 'dark_logo']
+const builtInFailures = (files) => {
+  const out = []
+  const custom = JSON.parse(files['package.json']).config.custom ?? {}
+  if (JSON.stringify(Object.keys(custom)) !== JSON.stringify(BUILT_INS)) out.push(`config.custom declares ${JSON.stringify(Object.keys(custom))}, not exactly the three built-ins`)
+  const read = new Set(Object.entries(pilots.textFiles(files)).filter(([p]) => p.endsWith('.hbs')).flatMap(([, b]) => [...b.matchAll(/@custom\.([a-z0-9_]+)/g)].map((m) => m[1])))
+  for (const k of BUILT_INS) if (!read.has(k)) out.push(`nothing reads @custom.${k}`)
+  for (const k of read) if (!BUILT_INS.includes(k)) out.push(`@custom.${k} is read and is no built-in`)
+  return out
+}
+check('Story 7.11 — the pilot compile without settings declares exactly the three dark built-ins and reads each, so every row above reads today\'s theme with them', () => {
+  const f = builtInFailures(pilotTheme)
+  if (f.length > 0) throw new Error(f.join(' · '))
+  return `config.custom: ${BUILT_INS.join(', ')} · Color scheme starts on ${JSON.parse(pilotTheme['package.json']).config.custom.color_scheme.default}`
+})
+check('control — Story 7.11: the pilot theme with the dark logo\'s reader taken out is named', () => {
+  const planted = { ...pilotTheme, 'default.hbs': pilotTheme['default.hbs'].replace(/\{\{#if @custom\.dark_logo\}\}.*?\{\{\/if\}\}/, '') }
+  if (planted['default.hbs'] === pilotTheme['default.hbs']) throw new Error('the plant changed nothing')
+  return mustFail(builtInFailures(planted), /^nothing reads @custom\.dark_logo$/, 'the dark logo unread')
+})
+const pilotsLight = pilots.compilePilots(WORDS, { ...THEME, darkEnabled: false })
+const gscanLight = await gscanOr({ ...pilotsLight.files, ...pilots.SCAFFOLD })
+for (const m of MAJORS) {
+  check(`Story 7.11 — the pilots compiled Light only raise no error and no warning under ${pinOf(m)} (behind §73's scaffold)`, () => {
+    const got = raised(gscanLight[m])
+    if (got.length > 0) throw new Error(got.join('\n'))
+  })
+}
+check('Story 7.11 — the Light only pilots declare the same three built-ins and readers, Color scheme on Light, default.hbs byte-identical to the Light + Dark compile\'s; their quality verdict is empty', () => {
+  const f = builtInFailures(pilotsLight.files)
+  if (f.length > 0) throw new Error(f.join(' · '))
+  const start = JSON.parse(pilotsLight.files['package.json']).config.custom.color_scheme.default
+  if (start !== 'Light') throw new Error(`Color scheme starts on ${start}, not Light (Question 1)`)
+  if (pilotsLight.files['default.hbs'] !== pilotTheme['default.hbs']) throw new Error('default.hbs differs between Light only and Light + Dark — the readers took a special case')
+  const q = qualityOf(pilotsLight.files)
+  if (q.blocked || q.errors.length + q.warnings.length > 0) throw new Error(said78(q).join('\n'))
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

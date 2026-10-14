@@ -758,7 +758,9 @@ both modes, every reference pack, hover and focus forced (Story 6.5's Verificati
 
 **The hook is the emitters' alone.** `data-instance` is stamped by both emitters on a root whose dark override is in
 force (`darkHook`: a hash of the section's `template_key:instanceId`); a design never writes it in its markup or
-selects on it (`instance-attribute`), and no control may be named `instance` (`bad-control-name`).
+selects on it (`instance-attribute`), and no control may be named `instance` (`bad-control-name`). The same holds for
+`data-site-logo`, the stamp on a picture of Ghost's logo that the dark logo rule selects *(Story 7.11,
+`site-logo-attribute`; § the binding example under `data-if`)*.
 
 #### The browser floor — what a stylesheet may use *(Story 4.8, FR-G8)*
 
@@ -1084,7 +1086,7 @@ from both majors — `packages/ghost-shim/fixtures/`, captured by `python3 tools
 | Directive | Grammar | Canvas | Theme |
 |---|---|---|---|
 | `data-bind-srcset` | `path\|img_url` — the size list is the shim's | one candidate per `image_sizes` key, at the recorded sized URLs, each asking a linked site's Ghost for WebP *(Story 7.6)*; an external or unlinked picture passes through | `srcset="{{img_url path size="xs" format="webp"}} 150w, …"`, one candidate per key from the one map (`srcsetExpr`); the element must carry the design's own `sizes` |
-| `data-helper` | one of the bare helpers | the shim's resolved value, as a **text node**; `navigation` builds Ghost's own `<ul class="nav">`; `content`/`comments` render Story 4.4's fixture and **refuse** without one (FR-H3); `content_api_key` is an inert placeholder; `total_paid_members` is a sample on an unlinked project, as `total_members` is; `content_api_url` is the linked site's own address and nothing on an unlinked one *(Story 5.24c, DW-99)* | the helper's own mustache — `{{content}}`, `{{total_members}}`, `{{content_api_key}}`; double braces, never triple |
+| `data-helper` | one of the bare helpers | the shim's resolved value, as a **text node**; `navigation` builds Ghost's own `<ul class="nav">`; `content`/`comments` render Story 4.4's fixture and **refuse** without one (FR-H3); `content_api_key` is an inert placeholder; `total_paid_members` is a sample on an unlinked project, as `total_members` is; `content_api_url` is the linked site's own address and nothing on an unlinked one *(Story 5.24c, DW-99)* | the helper's own mustache — `{{content}}`, `{{total_members}}`, `{{content_api_key}}`; double braces, never triple *(Story 7.11)* A helper takes **no argument** — `comments mode=dark` is refused by the grammar — so every theme ships `{{comments}}` bare: Ghost's comments box reads the computed colour of the words around it and draws itself light or dark to match the page (FR-Q5, R-34). **Its parent must compute its colour as `rgb()`** — comments-ui parses it so — so the element holding `data-helper="comments"` takes its `color` from a token and never from `color-mix()` or another function that computes to a `color(…)` or `oklab(…)` form. |
 | `data-pagination` | `prev` · `next` · `numbers` | `prev`/`next` get the resolved `page_url` and the element is removed where the page does not exist; `numbers` shows `page / pages` | `prev`/`next` emit `href="{{page_url pagination.prev}}"` inside `{{#if pagination.prev}}`; `numbers` emits `{{pagination.page}} / {{pagination.pages}}` |
 
 Three things the review of Story 4.3 settled about those rows, each read in Ghost's own source
@@ -1431,8 +1433,16 @@ same element** — one `{{#if}}`, not two (a child guarding the same field still
 <span class="brand__name" data-else data-bind="@site.title">Orbit Weekly</span>
 ```
 ```hbs
-{{#if @site.logo}}<img class="brand__logo" alt="" src="{{@site.logo}}">{{else}}<span class="brand__name">…</span>{{/if}}
+{{#if @site.logo}}<img class="brand__logo" alt="" src="{{@site.logo}}" data-site-logo="">{{else}}<span class="brand__name">…</span>{{/if}}
 ```
+
+**Ghost's logo carries a stamp you never write** *(Story 7.11, FR-Q5, AD-17)*. Both emitters add `data-site-logo` to
+every `<img>` whose `src` binds `@site.logo`, and the token block draws the site's **Dark logo** there in dark — `content`
+from Ghost's Dark logo setting, under each of `MODE_SELECTORS`' dark conditions — so every design that prints Ghost's
+logo gets the dark swap with nothing of its own. Unset, the picture draws its own `src`; with no logo at all, the
+`data-else` wordmark shows in both modes. A design never writes the attribute or selects on it
+(`site-logo-attribute`), and no control may be named `site-logo`. A header's own authored logo (A1's
+`logo`/`logoLight`) is Epic 9's, not this stamp's (DW-150, R-240).
 
 **What a condition may name.** `{{#if}}` tests truthiness, so a condition is legal wherever the context matrix
 allows the path as a **condition** (a boolean — `@site.allow_self_signup`), as a **value** (`@site.logo`,
@@ -1823,8 +1833,9 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | values that break their type's grammar — a toggle that is not exactly `on`/`off`, a stepper that is not ascending consecutive integers, a swatch row offering anything but the pack's roles, a named value that is not a kebab word — or a `valueLabels` key that is not a value | *(Story 4.5)* the grammar is what keeps the attribute selector, the panel's drawing and the stored value the same thing. A label for a value nobody can pick is a typo. |
 | `inherit`, `initial`, `unset` or `revert` anywhere in a control or a `universals` narrowing | *(Story 4.5)* FR-F2, R-23 — no `Inherit`, and no other CSS-wide word, at section level. |
 | more than `CONTROL_CAP` of one design's own controls | *(Story 4.5)* FR-F3. The universal trio and the Data group are not counted. |
-| a control name whose attribute is already a directive (`items`), Ghost's `data-portal`, the visitor's `data-mode`, a Koenig card's `data-kg-*`, a translation's `data-i18n-*` or the token block's per-section hook `data-instance` | *(Story 4.5; the next three Story 4.10's Fix; `instance` Story 6.5)* AD-3. A control's attribute must mean nothing but the control, and a stylesheet may select on the first five. |
+| a control name whose attribute is already a directive (`items`), Ghost's `data-portal`, the visitor's `data-mode`, a Koenig card's `data-kg-*`, a translation's `data-i18n-*`, the token block's per-section hook `data-instance` or the site logo's stamp `data-site-logo` | *(Story 4.5; the next three Story 4.10's Fix; `instance` Story 6.5; `site-logo` Story 7.11)* AD-3. A control's attribute must mean nothing but the control, and a stylesheet may select on the first five. |
 | `data-instance` in a design's markup or stylesheet (`instance-attribute`) | *(Story 6.5)* the emitters stamp it on a section whose dark override the token block writes (`darkOverrideCss`); authored, it would claim another section's dark look. |
+| `data-site-logo` in a design's markup or stylesheet (`site-logo-attribute`) | *(Story 7.11)* the emitters stamp it on a picture whose `src` binds `@site.logo`, and the token block draws the site's Dark logo there in dark; authored, it would draw the Dark logo over a picture that is not Ghost's logo. |
 | a selector naming a mode-scoped control's attribute that is not exactly `.<root>[data-<name>="<value>"]` at the top level, a root rule declaring anything but `--<root>-…` properties, or an offered value with no root rule or with a different property set (`mode-scoped-rule`) | *(Story 6.5, AD-30, DW-195)* a dark override reaches a visitor only as the dark value's root properties written into the token block for that one section; a rule keyed on the ground anywhere else would draw the light value for a dark visitor. § `style.css` above. |
 | JSON null anywhere in `design.json` or `content.json` (`json-null`, naming the path) | *(Story 4.10's Fix)* nothing there takes null — a field that does not apply is left out — and every later check reads through fields, so null is refused before any of them. |
 | a built design's setting that is not a row its own frame draws — its title with one of its values (a toggle's switch), or the drawn title the register's per-design rename replaces | *(Story 4.10's Fix)* R-74 for a setting's words, run by `tools/check-snapshots.mjs`: relabelling a setting to another row's registered title would move it between groups with every other check green. |

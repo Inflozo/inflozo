@@ -720,13 +720,17 @@ try {
   console.log('\nthe emitted CSS')
 
   /** The compiled theme's stylesheets as a browser reads them: screen.css, cards.css when the theme has one, and every
-   *  template `<style>` body with `{{asset "…"}}` read as `/assets/…`. */
+   *  template `<style>` body with `{{asset "…"}}` read as `/assets/…`. Story 7.11: `default.hbs`'s settings `<style>`
+   *  guards each custom property in `{{#if}}` (`{{else if}}`), which Ghost resolves before a browser reads the sheet — so
+   *  every branch is read as present and every other mustache as `x`, the worst case: every declaration at once. */
   const emitted = (files) => {
     const out = {}
     for (const p of ['assets/css/screen.css', 'assets/css/cards.css']) if (typeof files[p] === 'string') out[p] = files[p]
     for (const [p, text] of Object.entries(files)) {
       if (!p.endsWith('.hbs') || typeof text !== 'string') continue
-      for (const [i, [, body]] of [...text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].entries()) out[`${p} <style> ${i + 1}`] = body.replace(/\{\{\s*asset\s+"([^"]+)"\s*\}\}/g, '/assets/$1')
+      for (const [i, [, body]] of [...text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].entries()) {
+        out[`${p} <style> ${i + 1}`] = body.replace(/\{\{\s*asset\s+"([^"]+)"\s*\}\}/g, '/assets/$1').replace(/\{\{(?:#if|else|\/if)\b[^}]*\}\}/g, '').replace(/\{\{[^}]*\}\}/g, 'x')
+      }
     }
     return out
   }

@@ -15,8 +15,15 @@
 //   with `:hover` / `:focus-visible` forced through CDP on every element a design styles so — no pointer, so the gate's
 //   keyboard-only rule holds (no mouse or tap API appears in this file).
 //
+// - STORY 7.11 — THE DARK BUILT-INS OVER THE THEME'S TOKEN BLOCK (`packTokensCss` with the theme's options, `darkSettings`
+//   included), set into a page with the settings `<style>` `default.hbs` writes and a stamped `<img data-site-logo>`: under
+//   every combination of device, pin and visitor, the values the dark accent feeds equal the dark accent's property when
+//   dark resolves and it is set, and the pack's otherwise; the picture's computed `content` is the dark logo exactly when
+//   dark resolves and its property is set, and `normal` otherwise — and its pixels change with it.
+//
 // WHAT IT CANNOT PROVE: that Ghost renders the pin as `{{body_class}}` composes it — `tools/probe/record-mode-resolution.py`
-// (MEASUREMENTS §69, T1), and a compiled theme's at Story 7.35.
+// (MEASUREMENTS §69, T1) with a probe's `{{#is}}`, and since Story 7.11 `record-theme-assembly.py` (§79, T1) with the
+// compiled theme's own Color scheme chain; the whole compiled theme drawn against the canvas is Story 7.34's.
 
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
@@ -267,5 +274,93 @@ test('Story 6.5 — the agreement sweep: a dark override drawn the theme\'s way 
   if (forced === 0) throw new Error('the forced-state control: no element was read under :hover or :focus-visible, so "at rest and under" is not a result')
   test.info().annotations.push({ type: 'agreement', description: `${pairs} ordered pairs · ${withheldDiffers} differ with the block withheld` })
   console.log(`      agreement sweep: ${pairs} ordered pairs across the reference packs, each from three dark and three light inputs; and the pin over a visitor's opposite choice both ways; controls — ${withheldDiffers} of them differ with the block withheld, every Background pair whose link look changes differs with the link rules withheld, and forced-state readings were taken`)
+  expect(wrong, wrong.slice(0, 20).join('\n')).toEqual([])
+})
+
+// ── Story 7.11 — the dark built-ins, executed ────────────────────────────────────────────────────────────────────────
+
+/** a 40-px square of one colour, as a picture's address — the light logo red, the dark logo blue */
+const square = (fill) => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="${fill}"/></svg>`)}`
+const LIGHT_LOGO = square('#D00000')
+const DARK_LOGO = square('#0000D0')
+/** the colour a site's owner picks as the Dark accent color in Ghost — any `#rrggbb` (Ghost stores no other) */
+const SET_ACCENT = '#3366FF'
+
+/** The page: `default.hbs`'s settings `<style>` as Ghost would render it with these values (an unset one writes no
+ *  declaration — its `{{#if}}`), then the token block, then Ghost's logo stamped as the runtime stamps it. */
+const builtInPage = (css, { accent, logo }) => {
+  const settings = [accent ? `${RT.SETTING_DARK_ACCENT}: ${accent};` : '', logo ? `${RT.SETTING_DARK_LOGO}: url("${logo}");` : ''].join('')
+  return `<!doctype html><html><head><style>:root{${settings}}</style><style>${css}</style></head><body><img ${RT.SITE_LOGO_ATTR} src="${LIGHT_LOGO}" width="40" height="40" alt=""></body></html>`
+}
+
+/** what the page draws: the fed properties on `:root`, the picture's computed `content`, and the colour at its centre —
+ *  read off a screenshot of the element itself, decoded in the page, so the pixels are the browser's own drawing */
+async function drawn(page, fed) {
+  const read = await page.evaluate((names) => ({
+    root: Object.fromEntries(names.map((p) => [p, getComputedStyle(document.documentElement).getPropertyValue(p).trim().replace(/\s+/g, ' ')])),
+    content: getComputedStyle(document.querySelector('img')).content,
+  }), fed)
+  const png = (await page.locator('img').screenshot()).toString('base64')
+  const pixel = await page.evaluate(async (b64) => {
+    const img = new Image()
+    img.src = `data:image/png;base64,${b64}`
+    await img.decode()
+    const c = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height })
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0)
+    const [r, g, b] = ctx.getImageData(Math.floor(img.width / 2), Math.floor(img.height / 2), 1, 1).data
+    return b > 150 && r < 80 ? 'dark logo' : r > 150 && b < 80 ? 'light logo' : `rgb(${r}, ${g}, ${b})`
+  }, png)
+  return { ...read, pixel }
+}
+
+test('Story 7.11 — the dark built-ins over the theme\'s token block: the dark accent feeds every dark value it should and the dark logo replaces Ghost\'s, exactly when dark resolves and each is set, under every device, pin and visitor', async ({ page }) => {
+  test.setTimeout(600_000)
+  const DEVICES = ['light', 'dark']
+  const PINS = [null, 'scheme-light', 'scheme-dark']
+  const VISITORS = [null, 'light', 'dark', 'auto']
+  const STATES = [{ accent: null, logo: null }, { accent: SET_ACCENT, logo: null }, { accent: null, logo: DARK_LOGO }, { accent: SET_ACCENT, logo: DARK_LOGO }]
+  let rows = 0
+  const wrong = []
+  for (const pack of CASES.packs()) {
+    const p = CASES.presetPack(pack)
+    const tokens = RT.packTokens(p)
+    const themed = RT.packTokensCss(p, { ghostFonts: true, darkSettings: true })
+    // THE FED VALUES, read off the theme's own dark block — every declaration reading the dark accent's property — never a
+    // list written here; `--accent` is always among them
+    const head = `${RT.MODE_SELECTORS.explicit.join(', ')} {`
+    const block = themed.slice(themed.indexOf(head), themed.indexOf('}', themed.indexOf(head)))
+    const fedValue = Object.fromEntries([...block.matchAll(/^\s*(--[\w-]+): (.*var\(--setting-dark-accent, [^)]*\).*);$/gm)].map((m) => [m[1], m[2]]))
+    const fed = Object.keys(fedValue)
+    expect(fed, `${pack}: the dark block reads the dark accent nowhere`).toContain('--accent')
+    for (const state of STATES) {
+      await page.setContent(builtInPage(themed, state))
+      for (const device of DEVICES) for (const pin of PINS) for (const visitor of VISITORS) {
+        const where = `${pack} · accent ${state.accent ? 'set' : 'unset'} · logo ${state.logo ? 'set' : 'unset'} · device ${device} · pin ${pin ?? 'none (Auto)'} · visitor ${visitor ?? 'none'}`
+        held(await inputs(page, { device, pin, visitor }), { device, pin, visitor }, where)
+        const dark = ruled(device, pin, visitor) === 'dark'
+        const got = await drawn(page, fed)
+        for (const name of fed) {
+          // dark: the value as the block wrote it, its var() resolved to the set colour or the pack's own; light: the pack's
+          const want = dark ? fedValue[name].replace(/var\(--setting-dark-accent, ([^)]*)\)/, (_, hex) => state.accent ?? hex) : tokens.light[name]
+          if (got.root[name].toLowerCase() !== want.toLowerCase()) wrong.push(`${where}: ${name} ${got.root[name]} (want ${want})`)
+        }
+        const logo = dark && state.logo !== null
+        if (logo ? !got.content.includes(DARK_LOGO.slice(0, 40)) : got.content !== 'normal') wrong.push(`${where}: content ${got.content.slice(0, 60)} (want ${logo ? 'the dark logo' : 'normal'})`)
+        if (got.pixel !== (logo ? 'dark logo' : 'light logo')) wrong.push(`${where}: the picture draws ${got.pixel} (want the ${logo ? 'dark' : 'light'} logo)`)
+        rows++
+      }
+    }
+    // THE CONTROL (standing rule 2): the same page with the canvas's block — no `darkSettings` — under the pin's dark, both
+    // set: the accent stays the pack's and the picture its own, so the theme's block is what draws them above
+    await page.setContent(builtInPage(RT.packTokensCss(p, { ghostFonts: true }), { accent: SET_ACCENT, logo: DARK_LOGO }))
+    held(await inputs(page, { device: 'light', pin: 'scheme-dark', visitor: null }), { device: 'light', pin: 'scheme-dark', visitor: null }, `${pack} control`)
+    const control = await drawn(page, ['--accent'])
+    if (control.root['--accent'].toLowerCase() === SET_ACCENT.toLowerCase() || control.content !== 'normal' || control.pixel !== 'light logo') {
+      throw new Error(`${pack}: the control — without the theme's dark built-ins the page still drew ${JSON.stringify(control)}, so this run is not a result`)
+    }
+  }
+  test.info().annotations.push({ type: 'dark-built-ins', description: `${rows} combinations` })
+  console.log(`      dark built-ins: ${rows} combinations across the reference packs (device × pin × visitor × each built-in set or not), every one as ruled; controls held — the media query, the inputs read back, the canvas's block draws neither`)
   expect(wrong, wrong.slice(0, 20).join('\n')).toEqual([])
 })

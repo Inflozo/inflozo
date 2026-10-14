@@ -11,7 +11,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
-import { GSCAN_INERT, PAGE_NUMBER_HBS, allowedMarks, escapeUserText, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { GSCAN_INERT, PAGE_NUMBER_HBS, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SITE_LOGO_ATTR, allowedMarks, escapeUserText, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { REFERENCE_PACK } from './reference.ts'
 import { ghostEntry, propSettingOf } from './custom-settings.ts'
 import type { MarkNode } from './index.ts'
@@ -717,4 +717,18 @@ test('AD-36 (7.10) · a hostile text start is inert in package.json — one stri
     const theme = renderTheme(doc(), PROMO_SRC, { ...promo({ props: { title: 'title_words' } }), content: { title: words } }).template
     assert.ok(!theme.includes(words), theme)
   }
+})
+
+test('AD-36 (7.11) · the dark logo rule\'s stamp is the runtime\'s alone: no binding can write it and no design can author it; the runtime stamps Ghost\'s logo', () => {
+  // a binding into it is refused at the door, on both emitters (AD-36 3's allow-list)
+  assert.throws(() => assertBindableAttr(SITE_LOGO_ATTR), /not bindable/)
+  for (const render of [(s: string, i: RenderInput) => renderCanvas(doc(), s, i), (s: string, i: RenderInput) => renderTheme(doc(), s, i).template]) {
+    assert.throws(() => render(`<img data-bind-attr="${SITE_LOGO_ATTR}:@site.title" alt="">`, { target: 'default.hbs' }), /not bindable/)
+  }
+  // an authored one is refused by the validator (`agreement.test.ts`); the legitimate case: Ghost's logo, stamped
+  const theme = renderTheme(doc(), '<img class="l" data-bind-attr="src:@site.logo" alt="">', { target: 'default.hbs' }).template
+  assert.ok(theme.includes(`src="{{@site.logo}}" ${SITE_LOGO_ATTR}=""`), theme)
+  // and the token block reads only the two constant properties — no value of anyone's reaches it
+  const css = packTokensCss(REFERENCE_PACK, { ghostFonts: true, darkSettings: true })
+  assert.deepEqual([...new Set(css.match(/--setting-[a-z-]+/g))].sort(), [SETTING_DARK_ACCENT, SETTING_DARK_LOGO].sort())
 })

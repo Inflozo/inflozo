@@ -78,6 +78,7 @@ import {
 import { escapeUserText, flagOn, isRich, linkAttributes, linkGate, serializeMarks } from './marks.ts'
 import type { PropValue, ThemeSink } from './marks.ts'
 import { resolveControls, withData } from './controls.ts'
+import { SITE_LOGO_ATTR } from './tokens.ts'
 import { customPath, matchChain, type SettingRow } from './custom-settings.ts'
 import { HOOK_RE } from './dark-override.ts'
 import { formatTheme, indentBy, KEEP_NL } from './format.ts'
@@ -966,6 +967,12 @@ function emitBindings(
     }
     if (!removed && users !== null && mode === 'hide' && guardEntry !== undefined) {
       wrapGuard(doc, el, guardField(guardEntry.spec), tokens, zero(guardField(guardEntry.spec)))
+    }
+    // STORY 7.11 (AD-17): a picture of Ghost's own logo carries the stamp the token block's dark logo rule selects, on
+    // BOTH emitters, so every design that prints `@site.logo` draws the site's Dark logo in dark with nothing of its own.
+    // Nothing on the canvas reads it; the validator refuses a design that writes it.
+    if (!removed && el.tagName.toLowerCase() === 'img' && entries.some((e) => e.attr === 'src' && guardField(e.spec) === '@site.logo')) {
+      el.setAttribute(SITE_LOGO_ATTR, '')
     }
   }
 

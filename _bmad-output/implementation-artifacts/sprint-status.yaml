@@ -139,7 +139,7 @@ development_status:
   7-8-the-emitted-theme-quality-gate: done
   7-9-theme-settings-and-the-custom-settings-builder: done
   7-10-promoting-a-control-to-a-ghost-admin-setting: done
-  7-11-the-three-dark-built-ins-always-declared-and-always-referenc: ready-for-dev
+  7-11-the-three-dark-built-ins-always-declared-and-always-referenc: in-progress
   7-12-the-translations-surface-locales-emission-and-override-valid: backlog
   7-13-the-ghost-card-design-module-and-cards-css: backlog
   7-14-treatment-selection-from-theme-settings: backlog

@@ -8,7 +8,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
-import { checkSetting, ghostEntry, settingOf, SETTING_CAP, USER_SETTING_CAP, type SettingRow } from '@inflozo/section-runtime'
+import { builtInSettings, checkSetting, ghostEntry, RESERVED_SETTING_KEYS, settingOf, SETTING_CAP, USER_SETTING_CAP, type SettingRow } from '@inflozo/section-runtime'
 import type { DocInstance, ProjectDoc, SynthesisLibrary } from '@inflozo/section-runtime'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
 import type { ControlDef, PropDef, SectionRegistryEntry } from '@inflozo/library'
@@ -196,7 +196,7 @@ const SETTINGS: CompileSetting[] = [
   // parked: bound to a section shuffled onto a design without the choice
   { key: 'notice_size', type: 'select', group_name: 'homepage', visibility_condition: null, bound_to: ctl(PARKED_ID, 'headline-size'), position: 7 },
 ]
-function compiledWithSettings(settings: readonly CompileSetting[] = SETTINGS): Record<string, string | Uint8Array> {
+function compiledWithSettings(settings: readonly CompileSetting[] = SETTINGS, darkEnabled = true): Record<string, string | Uint8Array> {
   const doc = new JSDOM('<body></body>').window.document
   const home: ProjectDoc = { schemaVersion: 1, instances: [
     instance('a4/2', 'Latest post', { content: { headline: 'Big words', sub: { text: 'One essay, every Thursday.', marks: [{ start: 17, end: 25, mark: 'a', href: 'https://example.com' }] }, picture: 'asset-1' }, controls: { 'headline-size': 'display' } }),
@@ -205,7 +205,7 @@ function compiledWithSettings(settings: readonly CompileSetting[] = SETTINGS): R
   ] }
   const { files } = compileTheme(doc, {
     templates: { 'home.hbs': home }, library: (id) => PROMO_DESIGNS[id], pack: REFERENCE_PACK, assets: { 'asset-1': 'https://cdn.example/one.png' }, postsPerPage: 12,
-    theme: { name: 'gate-settings', version: '1.0.0', description: 'Settings' }, pairing: 'D1', fonts: poolFonts, darkEnabled: true,
+    theme: { name: 'gate-settings', version: '1.0.0', description: 'Settings' }, pairing: 'D1', fonts: poolFonts, darkEnabled,
     modules: { core: 'export function core(win, modules) {\n  return { stop() {}, paused: [] }\n}\n' }, ghostCards: { scripts: {}, licence: 'MIT\n' }, settings,
   })
   return { ...files, ...SCAFFOLD_FILES }
@@ -216,7 +216,8 @@ const library: SynthesisLibrary = (id) => PROMO_DESIGNS[id]
 test('(7.10) a theme compiled with a switch, a choice with a condition, a text, a rich text, a picture and the accent promoted and one parked scores 0/0 on both pinned gscans and an empty quality verdict', async () => {
   const files = compiledWithSettings()
   const custom = (JSON.parse(files['package.json'] as string) as { config: { custom: Record<string, unknown> } }).config.custom
-  assert.deepEqual(Object.keys(custom), ['show_the_button', 'headline_size', 'headline', 'sub', 'picture', 'accent_colour'], 'the parked one is neither declared…')
+  // Story 7.11 (moved on purpose): the three dark built-ins follow the user's settings
+  assert.deepEqual(Object.keys(custom), ['show_the_button', 'headline_size', 'headline', 'sub', 'picture', 'accent_colour', ...RESERVED_SETTING_KEYS], 'the parked one is neither declared…')
   for (const [path, body] of Object.entries(files)) if (typeof body === 'string') assert.doesNotMatch(body, /@custom\.notice_size/, `…nor read: ${path}`)
   for (const major of MAJORS) assert.deepEqual(await codesOf(files, major), [], `gscan ${GSCAN[major].version}`)
   const verdict = qualityGate(files, { pack: REFERENCE_PACK, library })
@@ -242,5 +243,58 @@ test('(7.10) the controls, each failing its own code on both pins: a reader remo
     assert.deepEqual(await codesOf(unread, major), ['GS100-NO-UNUSED-CUSTOM-THEME-SETTING'], `unread, gscan ${GSCAN[major].version}`)
     assert.deepEqual(await codesOf(unknown, major), ['GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH'], `unknown, gscan ${GSCAN[major].version}`)
     assert.deepEqual(await codesOf(dangling, major), ['GS010-PJ-CUST-THEME-SETTINGS-VISIBILITY-VALUE'], `dangling, gscan ${GSCAN[major].version}`)
+  }
+})
+
+// ─── Story 7.11 — the three dark built-ins, on every compiled theme, on both pinned gscans and the quality gate ────────
+//
+// The card's "gscan on a Light-only fixture, both specs": a theme compiled with no user setting declares the three
+// built-ins and reads each — Color scheme on <body>'s class, the dark accent and the dark logo in default.hbs's settings
+// <style> — and scores 0/0 on 4.49.7 and 6.4.2 with an empty quality verdict, Light only and Light + Dark alike. Each
+// control breaks one reader and fails its own code (standing rule 2).
+
+test('(7.11) a theme compiled Light only and one compiled Light + Dark, with no user setting, each score 0/0 on both pinned gscans and an empty quality verdict', async () => {
+  for (const darkEnabled of [false, true]) {
+    const files = compiledWithSettings([], darkEnabled)
+    const custom = (JSON.parse(files['package.json'] as string) as { config: { custom: Record<string, { default?: string }> } }).config.custom
+    assert.deepEqual(Object.keys(custom), [...RESERVED_SETTING_KEYS], `darkEnabled ${darkEnabled}`)
+    assert.equal(custom['color_scheme']?.default, darkEnabled ? 'Auto' : 'Light')
+    for (const major of MAJORS) assert.deepEqual(await codesOf(files, major), [], `darkEnabled ${darkEnabled}, gscan ${GSCAN[major].version}`)
+    const verdict = qualityGate(files, { pack: REFERENCE_PACK, library })
+    assert.deepEqual([...verdict.errors, ...verdict.warnings].map((f) => `${f.code}: ${f.detail ?? f.message}`), [], `darkEnabled ${darkEnabled}`)
+  }
+})
+
+test('(7.11) the cap with the built-ins: seventeen user settings and the three pass both pins; an eighteenth user setting is GS010-PJ-CUST-THEME-TOTAL-SETTINGS', async () => {
+  const many = (n: number) => Array.from({ length: n }, (_, i) => row(`setting_${i + 1}`, {}))
+  const builtIns = builtInSettings({ pack: REFERENCE_PACK, darkEnabled: false })
+  assert.equal(USER_SETTING_CAP + builtIns.length, SETTING_CAP)
+  for (const major of MAJORS) {
+    assert.deepEqual(await scan(customOf([...many(USER_SETTING_CAP), ...builtIns]), major), [], `gscan ${GSCAN[major].version}: ${USER_SETTING_CAP} + ${builtIns.length}`)
+    assert.deepEqual(await scan(customOf([...many(USER_SETTING_CAP + 1), ...builtIns]), major), ['GS010-PJ-CUST-THEME-TOTAL-SETTINGS'], `gscan ${GSCAN[major].version}: one more`)
+  }
+})
+
+test('(7.11) the controls on both pins: each built-in\'s reader removed is GS100 naming that key, and Color scheme matched against a label it does not offer is GS090', async () => {
+  const files = compiledWithSettings([], false)
+  const shell = files['default.hbs'] as string
+  const plant = (from: string | RegExp, to: string): Record<string, string | Uint8Array> => {
+    const out = shell.replace(from, to)
+    assert.notEqual(out, shell, `the plant ${String(from)} changed nothing`)
+    return { ...files, 'default.hbs': out }
+  }
+  const unread: Record<string, Record<string, string | Uint8Array>> = {
+    color_scheme: plant(/\{\{#match @custom\.color_scheme[^"]*"=" "Light"\}\}.*?\{\{\/match\}\}/, ''),
+    dark_accent_color: plant(/\{\{#if @custom\.dark_accent_color\}\}.*?\{\{\/if\}\}/, ''),
+    dark_logo: plant(/\{\{#if @custom\.dark_logo\}\}.*?\{\{\/if\}\}/, ''),
+  }
+  const unknown = plant('"=" "Dark"}} scheme-dark', '"=" "Night"}} scheme-dark')
+  for (const major of MAJORS) {
+    for (const [key, tree] of Object.entries(unread)) {
+      const got = (await runGscan(tree, major)).results
+      assert.deepEqual(got.map((r) => r.code), ['GS100-NO-UNUSED-CUSTOM-THEME-SETTING'], `${key}, gscan ${GSCAN[major].version}`)
+      assert.match(JSON.stringify(got[0]?.failures), new RegExp(key), `${key}: GS100 names it, gscan ${GSCAN[major].version}`)
+    }
+    assert.deepEqual(await codesOf(unknown, major), ['GS090-NO-UNKNOWN-CUSTOM-THEME-SELECT-VALUE-IN-MATCH'], `Night, gscan ${GSCAN[major].version}`)
   }
 })

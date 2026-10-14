@@ -57,6 +57,8 @@ export { hardToRead, MODE_WORDS, MODES, pairWords, ROLE_WORDS } from './tokens.t
 export { GROUND_LINKS, MODE_SELECTORS } from './tokens.ts'
 export { darkHook, darkOverrideCss, HOOK_RE, hookOf, sectionKey } from './dark-override.ts'
 export type { PlacedSection } from './dark-override.ts'
+// Story 7.11 — the pin's two class names, the dark built-ins' two custom properties and the site logo's stamp
+export { SCHEME_CLASS, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SITE_LOGO_ATTR } from './tokens.ts'
 export type { Face, HardPair, Pack, PackMode, PackRole, TokenRow, TokenSource } from './tokens.ts'
 // Story 6.6 — and `stepToContrast`, the engine's own walk to 4.5:1: the brand seed (`apps/web/lib/pack-edit.ts`'s
 // `brandSeed`) makes a site's accent and its on-accent readable with it, in the browser as on the server
@@ -179,6 +181,8 @@ export {
   visibilityNql,
   // Story 7.10 — what a promotion IS: the binding's shapes and state, each kind's Ghost type and start, the reader
   accentSettingOf, bindingId, bindingOf, bindingState, customPath, matchChain, PROMOTED_PROP_TYPE, propSettingOf, startOf,
+  // Story 7.11 — the three dark built-ins: their rows and starts, their readers' paths, and the pin's body-class chain
+  BUILT_IN_PATH, builtInSettings, SCHEME_OPTIONS, SCHEME_START, schemeClassChain,
 } from './custom-settings.ts'
 export type {
   AccentOf, Binding, BindingState, Derived, Holder, HolderDoc, HolderEntry, SettingGroup, SettingOption, SettingRow, SettingType, Visibility,

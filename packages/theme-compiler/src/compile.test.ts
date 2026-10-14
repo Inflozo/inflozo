@@ -37,6 +37,18 @@ import type { CompiledTheme, CompileInput, CompileSetting } from './compile.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
 
+/** Story 7.11 — `<body>`'s line as every theme now writes it: Ghost's class, then the owner's pin (Color scheme) as the
+ *  class `MODE_SELECTORS` reads. Written out, so a change to the chain is a pin moved on purpose. */
+const BODY_LINE = '<body class="{{body_class}}{{#match @custom.color_scheme "=" "Light"}} scheme-light{{else match @custom.color_scheme "=" "Dark"}} scheme-dark{{/match}}">'
+/** A plant on `<body>`'s class: the line's opening, which every theme carries whatever follows `{{body_class}}`. */
+const BODY_OPEN = '<body class="{{body_class}}'
+/** `default.hbs` with the pin's chain taken out, once — the AD-30 rows' reading: the chain is the only place it names a mode. */
+const unpinned = (shell: string): string => {
+  assert.equal(shell.split(BODY_LINE).length, 2, 'the pin\'s chain is on <body>, once')
+  return shell.replace(BODY_LINE, '<body class="{{body_class}}">')
+}
+const MODE_NAMED = /prefers-color-scheme|data-mode|scheme-(light|dark)/
+
 // ─── a small inline library ───────────────────────────────────────────────────────────────────────────────────────
 
 const TITLES: Record<string, string> = { a1: 'Headers', a3: 'Footers', a4: 'Heroes', a17: 'Post Grids', a22: 'Newsletter', a24: 'Post Headers', a30: 'Members Pages', a31: 'Error Pages', a32: 'Paywall / Content CTA' }
@@ -238,7 +250,8 @@ test('the site doc: headers before {{{body}}}, A3 footers after it, whatever ord
   assert.equal(body[header - 1], '    {{!-- Header · Headers · Rail --}}')
   // no site doc: default.hbs is still emitted, <main> around {{{body}}} and nothing else in the body
   const bare = compile({})
-  assert.match(bare['default.hbs'] ?? '', /<body class="\{\{body_class\}\}">\n {4}<main id="site-main">\n {6}\{\{\{body\}\}\}\n {4}<\/main>\n\n {4}\{\{ghost_foot\}\}\n {2}<\/body>/)
+  // Story 7.11: <body>'s class carries the owner's pin after Ghost's (moved on purpose)
+  assert.ok((bare['default.hbs'] ?? '').includes(`  ${BODY_LINE}\n    <main id="site-main">\n      {{{body}}}\n    </main>\n\n    {{ghost_foot}}\n  </body>`), bare['default.hbs'])
 })
 
 test('slugs collide: Hero, HERO and Héro on one template are hero, hero-2 and hero-3, in position order', () => {
@@ -483,7 +496,7 @@ const pkgOf = (over: Partial<CompileInput> = {}): string => compile({}, over)['p
 /** The value posts_per_page takes from a JavaScript caller, which the type does not stop. */
 const anyValue = (v: unknown) => v as number
 
-test('(7.2) a project: package.json is the spec\'s text — Casper\'s key order, engines.ghost and no ghost-api, the ruled author, card_assets true with no designed card, no custom, the marker last', () => {
+test('(7.2) a project: package.json is the spec\'s text — Casper\'s key order, engines.ghost and no ghost-api, the ruled author, card_assets true with no designed card, custom the three dark built-ins (7.11), the marker last', () => {
   const sizes = Object.entries(IMAGE_SIZES).map(([k, w]) => `      "${k}": {\n        "width": ${w}\n      }`).join(',\n')
   assert.equal(pkgOf(), [
     '{',
@@ -505,7 +518,26 @@ test('(7.2) a project: package.json is the spec\'s text — Casper\'s key order,
     '    "image_sizes": {',
     sizes,
     '    },',
-    '    "card_assets": true',
+    '    "card_assets": true,',
+    // Story 7.11 (moved on purpose): the three dark built-ins on every project, a Light + Dark one starting on Auto
+    '    "custom": {',
+    '      "color_scheme": {',
+    '        "type": "select",',
+    '        "options": [',
+    '          "Auto",',
+    '          "Light",',
+    '          "Dark"',
+    '        ],',
+    '        "default": "Auto"',
+    '      },',
+    '      "dark_accent_color": {',
+    '        "type": "color",',
+    `        "default": "${REFERENCE_PACK.dark.accent}"`,
+    '      },',
+    '      "dark_logo": {',
+    '        "type": "image"',
+    '      }',
+    '    }',
     '  },',
     '  "inflozo": true',
     '}',
@@ -513,7 +545,8 @@ test('(7.2) a project: package.json is the spec\'s text — Casper\'s key order,
   ].join('\n'))
   const parsed = JSON.parse(pkgOf()) as { engines: Record<string, string>; config: Record<string, unknown> }
   assert.deepEqual(Object.keys(parsed.engines), ['ghost'])
-  assert.ok(!('custom' in parsed.config) && !('license' in parsed), 'custom is 7.10\'s and 7.11\'s; FR-J2 names no license')
+  assert.ok(!('license' in parsed), 'FR-J2 names no license')
+  assert.deepEqual(Object.keys(parsed.config['custom'] as object), ['color_scheme', 'dark_accent_color', 'dark_logo'], 'custom is the three built-ins with no user setting')
   assert.equal(Object.keys(parsed).at(-1), THEME_MARKER)
 })
 
@@ -809,12 +842,15 @@ test('(7.4) Paper\'s fonts: the pool files of D1\'s faces as fonts returned them
   assert.deepEqual(preloadsOf(shell), ['fraunces-roman-latin.woff2', 'inter-roman-latin.woff2'])
   // the faces are fontFaceCss's, one {{asset}} address per file, inside one <style> between the preloads and the stylesheet
   const faces = fontFaceCss('D1', (f) => `{{asset "fonts/${f.file}"}}`).split('\n').map((l) => `      ${l}`).join('\n')
-  assert.ok(shell.includes(`crossorigin>\n    <style>\n${faces}\n    </style>\n    <link rel="stylesheet" href="{{asset "css/screen.css"}}">`), shell)
+  // Story 7.11 (moved on purpose): the settings <style> sits between the faces' element and the stylesheet
+  assert.ok(shell.includes(`crossorigin>\n    <style>\n${faces}\n    </style>\n    <style>:root{\n`), shell)
+  assert.ok(shell.indexOf('<style>:root{') < shell.indexOf('<link rel="stylesheet" href="{{asset "css/screen.css"}}">'), shell)
   // every preload href is, verbatim, the src of one of its faces
   const srcs = [...shell.matchAll(/src: url\((\{\{asset "fonts\/[^"]+"\}\})\) format\('woff2'\);/g)].map((m) => m[1])
   for (const file of preloadsOf(shell)) assert.equal(srcs.filter((s) => s === `{{asset "fonts/${file}"}}`).length, 1, file)
-  // the style holds faces only and names no mode (AD-30): screen.css stays the one file that does
-  assert.doesNotMatch(shell, /prefers-color-scheme|data-mode|scheme-(light|dark)/)
+  // the style holds faces only and names no mode (AD-30): screen.css stays the one file that does — and since Story 7.11
+  // default.hbs names the pin's two class names only inside <body>'s Color scheme chain
+  assert.doesNotMatch(unpinned(shell), MODE_NAMED)
   // each family's licence, its words unchanged and only its whitespace tidied (CRLF, a trailing space, the extra newline)
   for (const slug of ['fraunces', 'inter']) {
     assert.equal(files[`LICENSE-${slug}.txt`], `Copyright 2020 The licences/${slug}.txt Project Authors\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1.\n`, slug)
@@ -1233,19 +1269,27 @@ test('(7.6) Ghost\'s helpers out of place: each is named by checkGhostMarkup; th
   assert.deepEqual(checkGhostMarkup(site), [])
   const shell = site['default.hbs'] ?? ''
   const head = shell.replace('    {{ghost_head}}\n', '').replace('    <link rel="stylesheet"', '    {{ghost_head}}\n    <link rel="stylesheet"')
+  // Story 7.11: <body>'s line now carries the pin after {{body_class}}, so each plant on it is anchored on the line's
+  // opening and asserted to change the text — a replace that finds nothing would make its row vacuous
+  const plant = (from: string, to: string): string => {
+    const out = shell.replace(from, to)
+    assert.notEqual(out, shell, `the plant ${JSON.stringify(from)} changed nothing`)
+    return out
+  }
   const cases: [string, Record<string, string>, RegExp][] = [
     ['ghost_head above the stylesheet link', { ...site, 'default.hbs': head }, /^default\.hbs: \{\{ghost_head\}\} is not the last line before <\/head>/],
     ['a second ghost_foot', { ...site, 'default.hbs': shell.replace('{{ghost_foot}}', '{{ghost_foot}}\n    {{ghost_foot}}') }, /^default\.hbs: \{\{ghost_foot\}\} appears 2 times/],
     ['ghost_foot in a section', { ...site, 'partials/sections/home/newsletter.hbs': `${site['partials/sections/home/newsletter.hbs']}{{ghost_foot}}\n` }, /^partials\/sections\/home\/newsletter\.hbs: \{\{ghost_foot\}\} appears 1 time — /],
-    ['post_class on <body>', { ...site, 'default.hbs': shell.replace('<body class="{{body_class}}">', '<body class="{{body_class}} {{post_class}}">') }, /^default\.hbs: \{\{post_class\}\} outside <article/],
+    ['post_class on <body>', { ...site, 'default.hbs': plant(BODY_OPEN, `${BODY_OPEN} {{post_class}}`) }, /^default\.hbs: \{\{post_class\}\} outside <article/],
     ['post_class outside POST_ARTICLE', { ...site, 'home.hbs': `${site['home.hbs']}<div class="{{post_class}}"></div>\n` }, /^home\.hbs: \{\{post_class\}\} outside <article/],
     ['the article removed', { ...site, 'post.hbs': (site['post.hbs'] ?? '').replace(`  ${POST_ARTICLE}\n`, '').replace('  </article>\n', '') }, /^post\.hbs: the first line inside \{\{#post\}\} is not <article/],
     ['body_class in a section', { ...site, 'partials/sections/home/newsletter.hbs': `<div class="{{body_class}}"></div>\n${site['partials/sections/home/newsletter.hbs']}` }, /^partials\/sections\/home\/newsletter\.hbs: \{\{body_class\}\} appears 1 time/],
-    ['body_class off <body>', { ...site, 'default.hbs': shell.replace('<body class="{{body_class}}">', '<body>').replace('<main id="site-main">', '<main id="site-main" class="{{body_class}}">') }, /^default\.hbs: <body>'s class does not open with \{\{body_class\}\}/],
+    ['body_class off <body>', { ...site, 'default.hbs': plant(BODY_LINE, '<body>').replace('<main id="site-main">', '<main id="site-main" class="{{body_class}}">') }, /^default\.hbs: <body>'s class does not open with \{\{body_class\}\}/],
   ]
   for (const [what, files, pattern] of cases) assert.match(checkGhostMarkup(files).join('\n'), pattern, what)
-  // a later story's class after it is allowed (Story 7.11's scheme-*)
-  assert.deepEqual(checkGhostMarkup({ ...site, 'default.hbs': shell.replace('<body class="{{body_class}}">', '<body class="{{body_class}} scheme-dark">') }), [])
+  // a later story's class after it is allowed — Story 7.11's pin is one, and the compiled theme above carries it
+  assert.ok(shell.includes(BODY_LINE), shell)
+  assert.deepEqual(checkGhostMarkup({ ...site, 'default.hbs': plant(BODY_LINE, '<body class="{{body_class}} scheme-dark">') }), [])
 })
 
 test('(7.6) V1 at compile: a label typed into a template is named with its file; a customer\'s words, a marker, and a comment are not', () => {
@@ -1308,6 +1352,12 @@ const ALL = (): CompileSetting[] => [
 const promote = (settings: readonly CompileSetting[], home = promoHome(), over: Partial<CompileInput> = {}) =>
   build({ 'home.hbs': home }, { pageTwo: projectTwo(), library: (id) => PROMO_LIB[id], assets: { 'asset-1': 'https://cdn.example/one.png' }, settings, ...over })
 const custom = (t: CompiledTheme) => (JSON.parse(t.files['package.json'] as string) as { config: Record<string, unknown> }).config
+/** Story 7.11 — the three dark built-ins as a Light + Dark Paper project declares them, after any user setting */
+const BUILT_INS = {
+  color_scheme: { type: 'select', options: ['Auto', 'Light', 'Dark'], default: 'Auto' },
+  dark_accent_color: { type: 'color', default: REFERENCE_PACK.dark.accent },
+  dark_logo: { type: 'image' },
+}
 const sectionOf = (t: CompiledTheme) => textOf(t.files)['partials/sections/home/latest-post.hbs'] ?? ''
 
 test('(7.10) every kind compiles: config.custom carries each live setting last in config, in position order, at the start the CANVAS holds — and each key is read', () => {
@@ -1320,8 +1370,10 @@ test('(7.10) every kind compiles: config.custom carries each live setting last i
     sub: { type: 'text', default: 'One essay, every Thursday.' },
     picture: { type: 'image', group: 'homepage' },
     accent_colour: { type: 'color', default: REFERENCE_PACK.light.accent },
+    // Story 7.11 (moved on purpose): the three dark built-ins follow the user's settings
+    ...BUILT_INS,
   })
-  assert.deepEqual(t.custom, { emitted: ['show_the_button', 'headline_size', 'sub', 'picture', 'accent_colour'], parked: [] })
+  assert.deepEqual(t.custom, { emitted: ['show_the_button', 'headline_size', 'sub', 'picture', 'accent_colour', ...Object.keys(BUILT_INS)], parked: [] })
   const section = sectionOf(t)
   // a switch and a choice: the root's one attribute is the setting's {{#match}} reader, its {{else}} the start
   assert.ok(section.includes('data-primary-action="{{#match @custom.show_the_button true}}on{{else match @custom.show_the_button false}}off{{else}}on{{/match}}"'), section)
@@ -1358,11 +1410,21 @@ test('(7.10) a control another greys follows its promoted controller on the live
   assert.ok(sectionOf(t).includes('data-secondary-action="{{#match @custom.show_the_secondary true}}off{{else match @custom.show_the_secondary false}}off{{else}}off{{/match}}"'), sectionOf(t))
 })
 
-test('(7.10) the accent: one guarded inline block in default.hbs\'s head naming no mode, screen.css\'s light block reading it through var(), the dark blocks unchanged', () => {
+test('(7.10) the accent: one guarded declaration in default.hbs\'s one settings <style>, naming no mode, screen.css\'s light block reading it through var(), the dark blocks unchanged by it', () => {
   const t = promote(ALL().filter((r) => r.key === 'accent_colour'))
   const shell = textOf(t.files)['default.hbs'] ?? ''
-  assert.ok(shell.includes(`    </style>\n    {{#if @custom.accent_colour}}\n      <style>:root{--setting-accent: {{@custom.accent_colour}};}</style>\n    {{/if}}\n    <link rel="stylesheet" href="{{asset "css/screen.css"}}">`), shell)
-  assert.doesNotMatch(shell, /prefers-color-scheme|data-mode|scheme-(light|dark)/, 'default.hbs names no mode (AD-30)')
+  // Story 7.11 (moved on purpose): 7.10's guarded element became one declaration of the ONE settings <style>, and the dark
+  // accent falls back to the promoted accent before the pack's
+  assert.ok(shell.includes([
+    '    </style>',
+    '    <style>:root{',
+    '      {{#if @custom.accent_colour}}--setting-accent: {{@custom.accent_colour}};{{/if}}',
+    '      {{#if @custom.dark_accent_color}}--setting-dark-accent: {{@custom.dark_accent_color}};{{else if @custom.accent_colour}}--setting-dark-accent: {{@custom.accent_colour}};{{/if}}',
+    '      {{#if @custom.dark_logo}}--setting-dark-logo: url("{{@custom.dark_logo}}");{{/if}}',
+    '    }</style>',
+    '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
+  ].join('\n')), shell)
+  assert.doesNotMatch(unpinned(shell), MODE_NAMED, 'default.hbs names no mode outside the pin\'s chain (AD-30)')
   const screen = textOf(t.files)['assets/css/screen.css'] ?? ''
   assert.ok(screen.includes(packTokensCss(REFERENCE_PACK, { ghostFonts: true, settingAccent: true }).trimEnd().split('\n').slice(0, 3).join('\n')), 'the token block is the themed one')
   assert.ok(screen.includes(`--accent: var(--setting-accent, ${REFERENCE_PACK.light.accent});`))
@@ -1370,7 +1432,9 @@ test('(7.10) the accent: one guarded inline block in default.hbs\'s head naming 
   const without = textOf(promote([]).files)['assets/css/screen.css'] ?? ''
   const dark = (css: string) => css.slice(css.indexOf(`@media ${MODE_SELECTORS.media}`))
   assert.equal(dark(screen), dark(without))
-  assert.ok(!without.includes('--setting-accent') && !(textOf(promote([]).files)['default.hbs'] ?? '').includes('@custom'), 'the control: no accent, no block')
+  const bare = textOf(promote([]).files)['default.hbs'] ?? ''
+  assert.ok(!without.includes('--setting-accent') && !bare.includes('--setting-accent') && !bare.includes('@custom.accent_colour'), 'the control: no accent, no declaration')
+  assert.ok(bare.includes('{{#if @custom.dark_accent_color}}--setting-dark-accent: {{@custom.dark_accent_color}};{{/if}}'), 'and the dark accent has no promoted accent to fall back on')
 })
 
 test('(7.10) every value of a promoted control survives the strip, and the root carries one attribute (AD-3)', () => {
@@ -1388,11 +1452,11 @@ test('(7.10) parked by a shuffle: neither declared nor read, a condition naming 
   const shuffled = promoHome({ designId: 'a4/3', controls: {} })
   const settings = [...ALL().filter((r) => r.key !== 'accent_colour' && r.key !== 'sub'), row('headline', 'text', propOf('headline'), { visibility_condition: { key: 'show_the_button', value: true } })]
   const t = promote(settings, shuffled)
-  assert.deepEqual(custom(t)['custom'], { headline: { type: 'text', default: 'Big words', group: 'homepage' } })
-  assert.deepEqual(t.custom, { emitted: ['headline'], parked: ['show_the_button', 'headline_size', 'picture'] })
+  assert.deepEqual(custom(t)['custom'], { headline: { type: 'text', default: 'Big words', group: 'homepage' }, ...BUILT_INS })
+  assert.deepEqual(t.custom, { emitted: ['headline', ...Object.keys(BUILT_INS)], parked: ['show_the_button', 'headline_size', 'picture'] })
   for (const body of Object.values(textOf(t.files))) assert.doesNotMatch(body, /@custom\.(show_the_button|headline_size|picture)\b/)
-  // every setting parked: no custom at all
-  assert.ok(!('custom' in custom(promote(ALL().filter((r) => r.key === 'picture'), shuffled))))
+  // every setting parked: the three built-ins alone (Story 7.11, moved on purpose)
+  assert.deepEqual(custom(promote(ALL().filter((r) => r.key === 'picture'), shuffled))['custom'], BUILT_INS)
 })
 
 test('(7.10) a dangling, hidden, changed or over-cap project is refused with the module\'s sentence before anything renders', () => {
@@ -1429,4 +1493,133 @@ test('(7.10) the readers and the keys are one set: a theme that would declare a 
   // the control: one post picked, and the same setting is read
   const one = docOf(at('a17/1', 'Main feed', { isMainFeed: true }), at('a17/1', 'Picked', { instanceId: 'picked-0001-zq', data: { posts: { source: 'picked', picks: [{ id: '5f0000000000000000000001', title: 'One' }] } } }))
   assert.ok(Object.values(textOf(promote(perRow, one).files)).some((b) => b.includes('{{#match @custom.per_row "=" "Three"}}three')))
+})
+
+// ─── Story 7.11: the three dark built-ins, always declared and always referenced ────────────────────────────────────
+
+/** `default.hbs`'s one settings `<style>`, as its lines — from `<style>:root{` to `}</style>` */
+const settingsStyleOf = (shell: string): string => shell.slice(shell.indexOf('<style>:root{'), shell.indexOf('}</style>') + '}</style>'.length)
+const STYLE_NO_ACCENT = [
+  '<style>:root{',
+  '      {{#if @custom.dark_accent_color}}--setting-dark-accent: {{@custom.dark_accent_color}};{{/if}}',
+  '      {{#if @custom.dark_logo}}--setting-dark-logo: url("{{@custom.dark_logo}}");{{/if}}',
+  '    }</style>',
+].join('\n')
+
+test('(7.11) a Light + Dark project: config.custom is the three built-ins at their starts (Color scheme on Auto), <body> carries the pin\'s chain, the settings <style> sets the dark accent and the dark logo each guarded, and the dark blocks read them', () => {
+  const t = build({}, { darkEnabled: true })
+  const files = textOf(t.files)
+  assert.deepEqual(custom(t)['custom'], BUILT_INS)
+  assert.deepEqual(t.custom, { emitted: Object.keys(BUILT_INS), parked: [] })
+  const shell = files['default.hbs'] ?? ''
+  assert.ok(shell.includes(`\n  ${BODY_LINE}\n`), shell)
+  assert.equal(settingsStyleOf(shell), STYLE_NO_ACCENT)
+  // ONE settings <style>, after the faces' element and before the stylesheet
+  assert.equal(shell.split('<style>:root{').length, 2)
+  assert.ok(shell.indexOf('@font-face') < shell.indexOf('<style>:root{') && shell.indexOf('}</style>') < shell.indexOf('{{asset "css/screen.css"}}'), shell)
+  // the token block is the theme's, with the dark built-ins: both dark blocks read the dark accent, and the logo rule follows each
+  const screen = files['assets/css/screen.css'] ?? ''
+  assert.equal((screen.match(new RegExp(`--accent: var\\(--setting-dark-accent, ${REFERENCE_PACK.dark.accent}\\);`, 'g')) ?? []).length, 2, 'both dark blocks')
+  assert.equal((screen.match(/\[data-site-logo\] \{ content: var\(--setting-dark-logo\); \}/g) ?? []).length, 2, 'one rule per dark condition')
+  assert.ok(screen.includes(packTokensCss(REFERENCE_PACK, { ghostFonts: true, darkSettings: true }).trimEnd().split('\n').slice(0, 3).join('\n')))
+})
+
+test('(7.11) a Light only project takes the same path: the same three entries and readers, Color scheme starting on Light (Question 1), no section hook, and the pack\'s dark map standing', () => {
+  const dark = at('a22/1', 'Dark box', { content: NEWS, ...DARK })
+  const [off, on] = [false, true].map((darkEnabled) => build({ 'home.hbs': docOf(dark) }, { library: groundedLib, pageTwo: projectTwo(), darkEnabled }))
+  const [offFiles, onFiles] = [textOf((off as CompiledTheme).files), textOf((on as CompiledTheme).files)]
+  assert.deepEqual(custom(off as CompiledTheme)['custom'], { ...BUILT_INS, color_scheme: { ...BUILT_INS.color_scheme, default: 'Light' } })
+  // the one difference in package.json is that start; default.hbs is byte-identical — the readers are no special case
+  assert.equal(offFiles['package.json'], (onFiles['package.json'] ?? '').replace('"default": "Auto"', '"default": "Light"'))
+  assert.notEqual(offFiles['package.json'], onFiles['package.json'], 'the control: the start differs')
+  assert.equal(offFiles['default.hbs'], onFiles['default.hbs'])
+  // no hook, and the pack's dark map stands, reading the dark built-ins (Story 7.4's rule, unchanged)
+  assert.deepEqual(hooksIn((off as CompiledTheme).files), [])
+  const global = (off as CompiledTheme).css.global
+  assert.ok(global.includes(`${MODE_SELECTORS.explicit.join(', ')} {`) && global.includes('--setting-dark-accent') && global.includes('[data-site-logo]'), 'the dark map, with the built-ins')
+  // determinism: the same input, the same bytes
+  const again = build({ 'home.hbs': docOf(dark) }, { library: groundedLib, pageTwo: projectTwo(), darkEnabled: false })
+  for (const path of Object.keys((off as CompiledTheme).files)) assert.deepEqual(again.files[path], (off as CompiledTheme).files[path], path)
+})
+
+test('(7.11) the built-ins follow the user\'s settings in position order, and the record lists them all; a promoted accent is the dark accent\'s fallback before the pack\'s', () => {
+  const t = promote(ALL())
+  assert.deepEqual(Object.keys(custom(t)['custom'] as object), ['show_the_button', 'headline_size', 'sub', 'picture', 'accent_colour', 'color_scheme', 'dark_accent_color', 'dark_logo'])
+  assert.deepEqual(t.custom.emitted, Object.keys(custom(t)['custom'] as object))
+  const style = settingsStyleOf(textOf(t.files)['default.hbs'] ?? '')
+  assert.ok(style.includes('{{#if @custom.dark_accent_color}}--setting-dark-accent: {{@custom.dark_accent_color}};{{else if @custom.accent_colour}}--setting-dark-accent: {{@custom.accent_colour}};{{/if}}'), style)
+  // every declared key is read, and every reader declared — the last assertion passed, so GS100 and GS090 cannot fire
+  const read = new Set(Object.values(textOf(t.files)).flatMap((b) => [...b.matchAll(/@custom\.([a-z0-9_]+)/g)].map((m) => m[1] as string)))
+  assert.deepEqual([...read].sort(), Object.keys(custom(t)['custom'] as object).sort())
+})
+
+test('(7.11) a user\'s key equal to a built-in is refused with the module\'s sentence, as before; the built-ins never count toward the user\'s cap', () => {
+  for (const key of ['color_scheme', 'dark_accent_color', 'dark_logo']) {
+    assert.throws(() => promote([row(key, 'image', propOf('picture'))]), { message: `${JSON.stringify(key)}: ${SETTING_WORDS.reserved(key)}` }, key)
+  }
+  // eighteen user rows are still the cap's refusal (DW-351), whatever the built-ins add
+  const many = Array.from({ length: USER_SETTING_CAP + 1 }, (_, i) => row(`setting_${i + 1}`, 'boolean', control('primary-action')))
+  assert.throws(() => promote(many), { message: SETTING_WORDS.cap })
+})
+
+test('(7.11) AD-30: only the token block names a mode — default.hbs names the pin\'s two class names inside <body>\'s Color scheme chain and nowhere else, and no other emitted template names one', () => {
+  const t = textOf(build(project(), { pageTwo: projectTwo() }).files)
+  assert.doesNotMatch(unpinned(t['default.hbs'] ?? ''), MODE_NAMED)
+  for (const [path, body] of Object.entries(t)) if (path.endsWith('.hbs') && path !== 'default.hbs') assert.doesNotMatch(body, MODE_NAMED, path)
+  // the control: the stylesheet does name one
+  assert.match(t['assets/css/screen.css'] ?? '', MODE_NAMED)
+})
+
+test('(7.11) R-34: a design\'s comments ship as bare {{comments}}, never with a mode — the widget takes it from the colours the pin resolves', () => {
+  const commentsLib = (id: string) => (id === 'a24/1' ? { ...(LIB['a24/1'] as SectionRegistryEntry), html: '<section class="a24-1">\n  <h1 class="a24-1__title" data-bind="title" data-empty="hide">Title</h1>\n  <div class="a24-1__comments" data-helper="comments"></div>\n</section>' } : LIB[id])
+  const t = textOf(build({ 'post.hbs': docOf(at('a24/1', 'Header')) }, { library: commentsLib }).files)
+  const all = Object.values(t).join('\n')
+  assert.ok(all.includes('{{comments}}'), 'the control: the helper is emitted')
+  assert.doesNotMatch(all, /\{\{comments\s+[^}]/, 'no argument on any {{comments}}')
+})
+
+/** The settings `<style>` rendered as Ghost renders it — Handlebars 4.7.9, `@custom` as Ghost's data — inside a page. */
+type Page = { querySelector(s: string): unknown; querySelectorAll(s: string): ArrayLike<unknown> }
+type Rule = { selectorText: string; style: { getPropertyValue(p: string): string } }
+function headWith(darkLogo: string | null, darkAccent: string | null = REFERENCE_PACK.dark.accent): Page {
+  const style = settingsStyleOf(textOf(build({}).files)['default.hbs'] ?? '')
+  const out = Handlebars.compile(style)({}, { data: { custom: { dark_logo: darkLogo, dark_accent_color: darkAccent } } })
+  return new JSDOM(`<!DOCTYPE html><html><head>${out}</head><body><p id="p">x</p></body></html>`).window.document as unknown as Page
+}
+
+test('(7.11) AD-36: a hostile Dark logo is inert in the head — written inside the url() string as entities, so no rule, element or script is created — beside a legitimate one that draws', () => {
+  const legit = 'https://site.example/content/images/2026/10/dark-logo.png'
+  const good = headWith(legit)
+  const sheet = (d: Page) => (d.querySelector('style') as unknown as { sheet: { cssRules: ArrayLike<Rule> } }).sheet
+  const rule = (d: Page) => sheet(d).cssRules[0] as Rule
+  assert.equal(sheet(good).cssRules.length, 1)
+  assert.match(rule(good).style.getPropertyValue('--setting-dark-logo').trim(), new RegExp(`^url\\("?${legit.replace(/[.]/g, '\\.')}"?\\)$`))
+  assert.equal(rule(good).style.getPropertyValue('--setting-dark-accent').trim(), REFERENCE_PACK.dark.accent)
+  for (const hostile of [
+    'x");}body{display:none}</style><script>document.title="pwned"</script>',
+    "x');}body{display:none}",
+    'x"><img src=x onerror=alert(1)>',
+  ]) {
+    const d = headWith(hostile)
+    assert.equal(d.querySelectorAll('style').length, 1, `${hostile}: one <style>`)
+    assert.equal(d.querySelectorAll('script, img').length, 0, `${hostile}: no element`)
+    assert.equal((d.querySelector('#p') as { textContent: string } | null)?.textContent, 'x', hostile)
+    assert.equal(sheet(d).cssRules.length, 1, `${hostile}: no rule but :root's`)
+    assert.equal(rule(d).selectorText, ':root', hostile)
+  }
+  // unset (Ghost forbids an image default) and hidden (null): no declaration at all, so `content` falls back to the picture
+  for (const none of [null, '']) assert.equal(rule(headWith(none)).style.getPropertyValue('--setting-dark-logo'), '', String(none))
+  // CEILING, executed and stated rather than hidden (found at Story 7.11's Dev): Handlebars does not escape a line break,
+  // and a line break ends a CSS string, so a value carrying one DOES add a CSS rule — never an element or a script, since
+  // `<` is still an entity. Ghost does not validate an image setting, but only a staff session writes
+  // `custom_theme_settings` (MEASUREMENTS §28: an integration token is refused), and an Administrator already holds Code
+  // Injection, so no one gains a power they lack. Recorded in the spec's Spec Change Log for the owner; a fix turns the
+  // second count below to one.
+  const broken = headWith('x\n");}#p{display:none}')
+  assert.equal(broken.querySelectorAll('style').length, 1)
+  assert.equal(broken.querySelectorAll('script, img').length, 0)
+  assert.equal(sheet(broken).cssRules.length, 2, 'the ceiling: a line break in the value adds one CSS rule')
+  // the second ceiling: Handlebars writes `=` and `&` as entities too, which a <style> never decodes, so a URL with a query
+  // string reaches CSS altered and does not load — Ghost's own uploads (`/content/images/…`) carry neither
+  assert.match(rule(headWith('https://x.example/a.png?w=1&h=2')).style.getPropertyValue('--setting-dark-logo'), /&#x3D;1&amp;h/)
 })

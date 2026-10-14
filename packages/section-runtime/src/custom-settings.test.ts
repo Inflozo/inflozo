@@ -6,12 +6,14 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { CONTROL_TYPES, PROP_TYPES, type ControlDef, type PropDef } from '@inflozo/library'
 import {
-  accentSettingOf, bindingId, bindingOf, bindingState, checkSetting, claimKey, customPath, ghostName, GHOST_SETTING_TYPES, matchChain, postsPerPage,
+  accentSettingOf, BUILT_IN_PATH, bindingId, bindingOf, bindingState, builtInSettings, checkSetting, claimKey, customPath, ghostEntry, ghostName, GHOST_SETTING_TYPES,
+  matchChain, postsPerPage, SCHEME_OPTIONS, SCHEME_START, schemeClassChain,
   PROMOTED_PROP_TYPE, PROMOTED_TYPE, propSettingOf, RESERVED_SETTING_KEYS, SETTING_CAP, SETTING_WORDS, settingKey, settingOf, startOf, USER_SETTING_CAP,
   visibilityNql, type Binding, type HolderEntry, type SettingRow,
 } from './custom-settings.ts'
 import type { DocInstance } from './doc-schema.ts'
 import { REFERENCE_PACK } from './reference.ts'
+import { MODE_SELECTORS, SCHEME_CLASS } from './tokens.ts'
 
 const control = (over: Partial<ControlDef>): ControlDef =>
   ({ name: 'x', type: 'segmented', label: 'X', group: 'style', values: ['a', 'b'], default: 'a', ...over }) as ControlDef
@@ -242,4 +244,51 @@ test('(7.10) the reader: a {{#match}} chain over every value, its {{else}} the s
   assert.throws(() => matchChain('headline_size', choice, 'huge'), /none of the setting's values/)
   assert.throws(() => matchChain('headline_size', { type: 'select', options: [{ value: 'A}}', label: 'A' }, { value: 'b', label: 'B' }] }, 'b'), /AD-36/)
   assert.throws(() => matchChain('sub', { type: 'text', options: null }, 'x'), /no \{\{#match\}\} reader/)
+})
+
+// ─── Story 7.11 — the three dark built-ins, every fact in the one module ───────────────────────────────────────────────
+
+test('(7.11) the three built-ins in RESERVED_SETTING_KEYS\' order, each as Ghost reads it: Color scheme at the project mode\'s start, Dark accent color at the pack\'s dark accent, Dark logo with none', () => {
+  const lightDark = builtInSettings({ pack: REFERENCE_PACK, darkEnabled: true })
+  const lightOnly = builtInSettings({ pack: REFERENCE_PACK, darkEnabled: false })
+  for (const rows of [lightDark, lightOnly]) {
+    assert.deepEqual(rows.map((r) => r.key), [...RESERVED_SETTING_KEYS], 'the keys are the one list\'s, in its order')
+    for (const r of rows) {
+      assert.equal(r.label, ghostName(r.key), r.key)
+      assert.equal(r.group_name, 'site_wide', r.key)
+      assert.equal(r.visibility_condition, null, `${r.key}: no condition on a built-in`)
+    }
+  }
+  assert.deepEqual(lightDark.map(ghostEntry), [
+    { type: 'select', options: ['Auto', 'Light', 'Dark'], default: 'Auto' },
+    { type: 'color', default: REFERENCE_PACK.dark.accent },
+    { type: 'image' },
+  ])
+  assert.deepEqual(lightDark.map((r) => r.label), ['Color scheme', 'Dark accent color', 'Dark logo'], 'as Ghost\'s Design panel names them')
+  // only Color scheme's start depends on the project's mode (Question 1, ruled option 1)
+  assert.deepEqual(lightOnly.map(ghostEntry), [{ type: 'select', options: ['Auto', 'Light', 'Dark'], default: 'Light' }, ...lightDark.slice(1).map(ghostEntry)])
+  assert.deepEqual({ ...SCHEME_START }, { lightDark: 'Auto', lightOnly: 'Light' })
+  assert.ok(Object.values(SCHEME_START).every((s) => (SCHEME_OPTIONS as readonly string[]).includes(s)), 'each start is an option')
+  // the dark accent follows the pack it is handed
+  const ocean = { ...REFERENCE_PACK, dark: { ...REFERENCE_PACK.dark, accent: '#4CC3C5' } }
+  assert.equal(builtInSettings({ pack: ocean, darkEnabled: true })[1]?.default_value, '#4CC3C5')
+  // the cap is unchanged — the built-ins are Ghost's three slots, never the user's
+  assert.equal(USER_SETTING_CAP, SETTING_CAP - lightDark.length)
+})
+
+test('(7.11) a built-in never passes the user\'s door: keyRefusal refuses each key, customPath throws, and checkSetting refuses the row — so the compile emits it with ghostEntry, held by both gscans', () => {
+  for (const b of builtInSettings({ pack: REFERENCE_PACK, darkEnabled: true })) {
+    assert.equal(checkSetting(b, []), SETTING_WORDS.reserved(b.key), b.key)
+    assert.throws(() => customPath(b.key), /AD-36/, b.key)
+  }
+  // the readers are constants of their own
+  assert.deepEqual({ ...BUILT_IN_PATH }, { scheme: '@custom.color_scheme', darkAccent: '@custom.dark_accent_color', darkLogo: '@custom.dark_logo' })
+})
+
+test('(7.11) the pin\'s reader: Light and Dark write SCHEME_CLASS after {{body_class}}, Auto writes nothing, each branch comparing one of the select\'s own labels in the three-argument form', () => {
+  assert.equal(schemeClassChain(), '{{#match @custom.color_scheme "=" "Light"}} scheme-light{{else match @custom.color_scheme "=" "Dark"}} scheme-dark{{/match}}')
+  // every label it compares is an option (gscan's GS090), and every class it writes is one MODE_SELECTORS reads
+  for (const m of schemeClassChain().matchAll(/"=" "([^"]+)"/g)) assert.ok((SCHEME_OPTIONS as readonly string[]).includes(m[1] as string), m[1])
+  for (const c of Object.values(SCHEME_CLASS)) assert.ok([MODE_SELECTORS.system, ...MODE_SELECTORS.explicit].some((sel) => sel.includes(`body.${c}`)), c)
+  assert.doesNotMatch(schemeClassChain(), /\{\{else\}\}/, 'Auto, or a value Ghost renders as null, writes no class')
 })

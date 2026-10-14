@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { contrast } from './colour.ts'
-import { BASE_CSS, GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, SETTING_ACCENT, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
+import { BASE_CSS, GROUND_LINKS, LINK_RULES, MODE_SELECTORS, SCALES, SCHEME_CLASS, SETTING_ACCENT, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SITE_LOGO_ATTR, TOKEN_NAMES, TOKEN_ROWS, packTokens, packTokensCss } from './tokens.ts'
 import { REFERENCE_PACK, REFERENCE_TOKENS, referenceTokensCss } from './reference.ts'
 import { PRESETS } from '@inflozo/library/packs'
 import type { Pack, PackMode } from './tokens.ts'
@@ -407,4 +407,77 @@ test('Story 7.4 — the base: no browser margin and the pack\'s page ground, a t
   assert.equal(BASE_CSS, 'html, body { margin: 0; background: var(--bg-page); }')
   assert.ok(TOKEN_NAMES.includes('--bg-page'))
   assert.match(packTokensCss(REFERENCE_PACK).split(MODE_SELECTORS.explicit.join(', '))[1] ?? '', /--bg-page:/, 'dark redeclares the page ground')
+})
+
+/* STORY 7.11 — THE DARK BUILT-INS FEED THE TOKEN BLOCK (AD-17), inside AD-30's one file. The pin's class names are one
+   constant; with `darkSettings` the dark blocks read the dark accent where the pack's dark accent feeds, and one rule per
+   dark condition draws the dark logo; with no option the bytes are the canvas's. The browser half — every input, the
+   computed values and the picture's pixels — is the keyboard gate's (`tools/keyboard/mode.spec.mjs`). */
+test('Story 7.11 — the pin\'s two class names are SCHEME_CLASS, and MODE_SELECTORS is built from it with Story 6.5\'s bytes', () => {
+  assert.deepEqual({ ...SCHEME_CLASS }, { light: 'scheme-light', dark: 'scheme-dark' })
+  const named = [MODE_SELECTORS.system, ...MODE_SELECTORS.explicit].flatMap((sel) => sel.match(/scheme-[a-z]+/g) ?? [])
+  assert.deepEqual([...new Set(named)].sort(), Object.values(SCHEME_CLASS).sort(), 'every class a selector names is one of SCHEME_CLASS\'s')
+})
+
+const ALL_PACKS = (): [string, Pack][] => [...Object.entries(PACKS), ...PRESETS.map((p) => [p.id, p.pack as Pack] as [string, Pack])]
+/** a block's declarations by its head, from the first line equal to `head {` to its close */
+const declsUnder = (css: string, head: string): Record<string, string> => {
+  const at = css.indexOf(`${head} {\n`)
+  assert.notEqual(at, -1, `no ${head}`)
+  return Object.fromEntries([...css.slice(at, css.indexOf('}', at)).matchAll(/^\s*(--[\w-]+): (.*);$/gm)].map((m) => [m[1] as string, m[2] as string]))
+}
+const EXPLICIT = MODE_SELECTORS.explicit.join(', ')
+
+test('Story 7.11 — darkSettings in the theme only: the canvas\'s call and every non-dark byte stand; both dark blocks read the dark accent wherever the pack\'s dark accent feeds, for every preset and Mono', () => {
+  for (const [name, pack] of ALL_PACKS()) {
+    assert.equal(packTokensCss(pack, { darkSettings: false }), packTokensCss(pack), `${name}: the canvas's call is unchanged`)
+    for (const settingAccent of [false, true]) {
+      const plain = packTokensCss(pack, { ghostFonts: true, settingAccent })
+      const themed = packTokensCss(pack, { ghostFonts: true, settingAccent, darkSettings: true })
+      assert.notEqual(themed, plain, `${name}: the control — the option changed something`)
+      // the light block, the width bands and the link rule are byte-identical
+      const head = (css: string) => css.slice(0, css.indexOf('\n}\n') + 3)
+      const tail = (css: string) => css.slice(css.indexOf('@media (max-width: 1023px)'))
+      assert.equal(head(themed), head(plain), `${name}: the light block is untouched`)
+      assert.equal(tail(themed), tail(plain), `${name}: the bands and the link rule are untouched`)
+      const hex = pack.dark.accent
+      for (const where of [MODE_SELECTORS.system, EXPLICIT]) {
+        const [before, after] = [declsUnder(plain, where), declsUnder(themed, where)]
+        assert.deepEqual(Object.keys(after), Object.keys(before), `${name}: ${where} declares the same set`)
+        assert.equal(after['--accent'], `var(${SETTING_DARK_ACCENT}, ${hex})`, `${name}: ${where}`)
+        for (const [k, v] of Object.entries(before)) {
+          // a value either stands or is the pack's own with its dark accent read through the setting — nothing else changes
+          if (after[k] !== v) assert.equal(after[k], v.replace(new RegExp(hex, 'i'), (h) => `var(${SETTING_DARK_ACCENT}, ${h})`), `${name}: ${where} ${k}`)
+          // none of the pack's other roles ever follows it, whatever hex it shares with the accent (Mono: text = accent)
+          if (['--text-body', '--text-muted', '--bg-page', '--bg-surface', '--bg-contrast', '--border-hairline', '--negative'].includes(k)) assert.equal(after[k], v, `${name}: ${where} ${k} is not the accent's`)
+        }
+        // and the light accent's property never reaches a dark block
+        assert.ok(!Object.values(after).some((v) => v.includes(SETTING_ACCENT + ',')), `${name}: ${where}`)
+      }
+    }
+  }
+})
+
+test('Story 7.11 — Mono, whose dark accent IS its dark text (#FFFFFF): the dark accent takes the accent\'s roles and never the body text', () => {
+  const mono = PRESETS.find((p) => p.id === 'mono')?.pack as Pack
+  assert.equal(mono.dark.text.toLowerCase(), mono.dark.accent.toLowerCase(), 'the control: Mono\'s dark text really is its dark accent')
+  const dark = declsUnder(packTokensCss(mono, { ghostFonts: true, darkSettings: true }), EXPLICIT)
+  assert.equal(dark['--text-body'], mono.dark.text, 'the body text stays the pack\'s')
+  assert.equal(dark['--accent'], `var(${SETTING_DARK_ACCENT}, ${mono.dark.accent})`, 'the accent follows the setting')
+})
+
+test('Story 7.11 — the dark logo: one rule under each of MODE_SELECTORS\' two dark conditions, content from the dark logo\'s property, and nowhere else', () => {
+  const rule = (conditions: readonly string[]) => `${conditions.map((c) => `${c} [${SITE_LOGO_ATTR}]`).join(', ')} { content: var(${SETTING_DARK_LOGO}); }`
+  for (const [name, pack] of ALL_PACKS()) {
+    const css = packTokensCss(pack, { ghostFonts: true, darkSettings: true })
+    // under the media query, beside the system block — and the explicit list's own rule after the explicit block
+    const media = css.slice(css.indexOf(`@media ${MODE_SELECTORS.media} {`), css.indexOf('\n}\n', css.indexOf(`@media ${MODE_SELECTORS.media} {`)) + 2)
+    assert.ok(media.includes(`\n  ${rule([MODE_SELECTORS.system])}\n`), `${name}: the system condition's rule sits inside the media query`)
+    assert.ok(css.includes(`\n\n${rule(MODE_SELECTORS.explicit)}\n\n`), `${name}: the explicit conditions' rule`)
+    // the stamp is selected three times — once per condition — and every selector reaching it is one of those conditions
+    assert.equal((css.match(new RegExp(`\\[${SITE_LOGO_ATTR}\\]`, 'g')) ?? []).length, 1 + MODE_SELECTORS.explicit.length, name)
+    assert.equal((css.match(/content:/g) ?? []).length, 2, `${name}: two rules`)
+    // no option, no rule: the canvas's block never names the stamp or either property
+    assert.doesNotMatch(packTokensCss(pack), new RegExp(`${SITE_LOGO_ATTR}|${SETTING_DARK_ACCENT}|${SETTING_DARK_LOGO}`), name)
+  }
 })

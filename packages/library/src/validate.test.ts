@@ -125,6 +125,9 @@ test('Story 5.3 review — an authored data-inflozo-* is refused: the prefix is 
   // Story 6.5 — and its neighbour: the token block's per-section hook is the emitters' alone, on the root or anywhere
   refuses('instance-attribute', '<p data-instance="0a1b2c3d">x</p>', '<p data-prop="sub">x</p>')
   assert.deepEqual(codes(validateMarkup('<section class="s" data-bg="surface" data-spacing="comfortable" data-divider="line" data-instance="0a1b2c3d"><p>x</p></section>', { controls: [] })), ['instance-attribute'])
+  // Story 7.11 — and the site logo's stamp, which the token block's dark logo rule selects: the emitters' alone
+  refuses('site-logo-attribute', '<img data-site-logo alt="" data-bind-attr="src:@site.logo">', '<img alt="" data-bind-attr="src:@site.logo">')
+  assert.deepEqual(codes(validateMarkup('<section class="s" data-bg="surface" data-spacing="comfortable" data-divider="line" data-site-logo=""><p>x</p></section>', { controls: [] })), ['site-logo-attribute'])
 })
 
 // ─── Story 4.9 — the catalog at the lexical door ─────────────────────────────
@@ -1149,6 +1152,12 @@ test('Story 6.5 — a design never selects on the hook either: data-instance in 
   assert.deepEqual(said('.x [data-align="center"] { color: var(--text-body) }'), [])
 })
 
+test('Story 7.11 — nor on the site logo\'s stamp: data-site-logo in a stylesheet is refused, so no design can restyle the dark logo rule\'s picture', () => {
+  const said = (css: string) => codes(validateDesign({ html: EVERY_DIRECTIVE, design: design({ controlSchema: [align()] }), css })).filter((c) => c === 'site-logo-attribute')
+  assert.deepEqual(said('.x [data-site-logo] { content: none }'), ['site-logo-attribute'])
+  assert.deepEqual(said('.x [data-align="center"] { color: var(--text-body) }'), [])
+})
+
 // ─── Story 7.1 — the three rules the theme assembly rests on ──────────────────
 
 test('Story 7.1 (review) — white-space: pre* outside a pre or textarea is refused; nowrap, normal and a pre\'s own are not', () => {
@@ -1202,7 +1211,8 @@ test('Story 7.1 — a data-partial never takes one of Ghost\'s own partial names
 
 test('a control is never named like an attribute the page or Ghost owns', () => {
   // Story 6.5: and `instance` — `data-instance` is the token block's per-section hook (darkOverrideCss)
-  for (const name of ['mode', 'portal', 'kg-card', 'i18n-key', 'members-signout', 'instance']) alone({ controlSchema: [align({ name })] }, 'bad-control-name')
+  // Story 7.11: and `site-logo` — `data-site-logo` is the stamp the dark logo rule selects
+  for (const name of ['mode', 'portal', 'kg-card', 'i18n-key', 'members-signout', 'instance', 'site-logo']) alone({ controlSchema: [align({ name })] }, 'bad-control-name')
 })
 
 test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', () => {

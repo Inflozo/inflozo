@@ -137,7 +137,9 @@ for (const [name, body] of Object.entries(sharedPartials)) write(`partials/${nam
 
 const includes = (t) => rendered.filter((r) => r.tmpl === t).map((r) => `{{> "sections/${t}/${r.layer}"}}`).join('\n');
 
-// AD-17: all three FR-Q5 dark built-ins declared AND referenced through real chains.
+// AD-17: all three FR-Q5 dark built-ins declared AND referenced through real chains, under the keys AD-17 names (the
+// dark accent's renamed to match at Story 7.11; the compiler's own chains are packages/theme-compiler/src/compile.ts's,
+// which this fixture predates).
 // The scheme class is emitted BESIDE {{body_class}} (Round 2: body_class carries nothing from @custom).
 write('default.hbs', `<!DOCTYPE html>
 <html lang="{{@site.locale}}">
@@ -150,7 +152,7 @@ write('default.hbs', `<!DOCTYPE html>
   <style>
     :root {
       --accent: {{@custom.accent_colour}};
-      --dark-accent: {{@custom.dark_accent_colour}};
+      --dark-accent: {{@custom.dark_accent_color}};
     }
     {{#if @custom.dark_logo}}.scheme-dark .hdr__logo-img { content: url({{@custom.dark_logo}}); }{{/if}}
   </style>
@@ -196,7 +198,7 @@ write('package.json', JSON.stringify({
     image_sizes: Object.fromEntries(Object.entries(IMAGE_SIZES).map(([k, w]) => [k, { width: w }])),
     custom: {
       color_scheme: { type: 'select', options: ['Auto', 'Light', 'Dark'], default: 'Auto' },
-      dark_accent_colour: { type: 'color', default: '#8ab4f8' },
+      dark_accent_color: { type: 'color', default: '#8ab4f8' },
       dark_logo: { type: 'image' },
       accent_colour: { type: 'color', default: '#1f6feb' },
     },

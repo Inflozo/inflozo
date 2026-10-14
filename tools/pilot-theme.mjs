@@ -200,8 +200,9 @@ export function pilotSettings(templates) {
 export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', description: 'Pilot sections' }
 
 /** The compiled theme — path → text, or a font's bytes — with AD-14's record (`css`), and the project it came from.
- *  Story 7.5: `designedCards` reaches `package.json` and `cards.js`; `modules` replaces the files read, for CI's controls. */
-export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, designedCards, modules = moduleSources(), settings = false, fixture = false, edit } = {}) {
+ *  Story 7.5: `designedCards` reaches `package.json` and `cards.js`; `modules` replaces the files read, for CI's controls.
+ *  Story 7.11: `darkEnabled: false` compiles the project Light only — the same three dark built-ins, Color scheme on Light. */
+export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, designedCards, modules = moduleSources(), settings = false, fixture = false, edit, darkEnabled = true } = {}) {
   if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
   const find = fixture ? withFixture(given) : given
   const project = pilotProject(words, find, { fixture })
@@ -210,7 +211,7 @@ export function compilePilots(words, { theme, postsPerPage = 12, find: given = l
   const templates = project.templates
   const pageTwo = overTwo ?? project.pageTwo
   const { files, css, js, custom } = compileTheme(new JSDOM('<body></body>').window.document, {
-    templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled: true,
+    templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled,
     modules, ghostCards: ghostCards(), ...(designedCards === undefined ? {} : { designedCards }),
     ...(settings === false ? {} : { settings: settings === true ? pilotSettings(templates) : settings }),
   })

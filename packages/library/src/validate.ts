@@ -258,6 +258,12 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
         push(out, 'instance-attribute', `<${tag.name} data-instance> — the emitters stamp data-instance on a section whose dark override the token block writes (darkOverrideCss, Story 6.5). A design never writes one.`)
         continue
       }
+      // Story 7.11 — and the site logo's: the emitters stamp it on a picture of `@site.logo`, and the token block's dark
+      // logo rule selects it, so an authored one would draw the site's Dark logo over a picture that is not Ghost's logo
+      if (name === 'data-site-logo') {
+        push(out, 'site-logo-attribute', `<${tag.name} data-site-logo> — the emitters stamp data-site-logo on a picture whose src binds @site.logo, and the token block draws the site's Dark logo there in dark (Story 7.11). A design never writes one.`)
+        continue
+      }
 
       const retired = RETIRED_DIRECTIVES[name]
       if (retired !== undefined) {
@@ -1083,6 +1089,11 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
     // Story 6.5 — the token block's per-section hook (`darkOverrideCss`) is the emitters' alone
     if (name === 'instance') {
       push(out, 'instance-attribute', `style.css selects on ${text} — data-instance is the hook the emitters stamp on a section whose dark override the token block writes (darkOverrideCss); a design never selects on it.`)
+      continue
+    }
+    // Story 7.11 — the site logo's stamp is the token block's dark logo rule's alone
+    if (name === 'site-logo') {
+      push(out, 'site-logo-attribute', `style.css selects on ${text} — data-site-logo is the stamp the emitters write on a picture of @site.logo, and the token block's dark logo rule draws the site's Dark logo there; a design never selects on it.`)
       continue
     }
     const offered = Object.hasOwn(controlValues, name) ? controlValues[name] : undefined

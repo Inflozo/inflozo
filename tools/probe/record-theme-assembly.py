@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.10's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.11's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
 WebP `srcset`s, rendered by a REAL Ghost (T1); Story 7.3's paywall mechanism, on two hand-written probe themes; and since
 Story 7.7 the gscan gate (`@inflozo/theme-compiler/gate`): a customer's words, inert to gscan, read on a real page, and
-Ghost 6's own checker answering three probe uploads as the gate says; and since Story 7.8 the emitted-theme quality gate
-(`qualityGate`) against Ghost's own pages, a planted probe, and Ghost's Casper and Source as its negative control.
+Ghost 6's own checker answering three probe uploads as the gate says; since Story 7.8 the emitted-theme quality gate
+(`qualityGate`) against Ghost's own pages, a planted probe, and Ghost's Casper and Source as its negative control; since
+Story 7.10 promoted settings in Ghost's own Design panel; and since Story 7.11 the three dark built-ins every theme
+declares — Color scheme, Dark accent color and Dark logo — each changed in Ghost and drawn on the next load.
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -178,16 +180,36 @@ it, that Ghost reads it as claimed is a hypothesis.
      emptied leaves the page; `restarted` keeps every stored value under its new default; `without_sub` loses Sub, and
      `start` again brings it back at its start (Questions 1 and 2's facts). Its `finally` activates `bare`, which clears
      the probe's stored settings — Ghost deletes a theme's files and never its `custom_theme_settings` rows (read in
-     source, 6.58.0 `themes/storage.js` `destroy`) — then `restore_and_delete`.
+     source, 6.58.0 `themes/storage.js` `destroy`) — then `restore_and_delete`. Since Story 7.11 every one of the four
+     trees also declares the three dark built-ins (after the user's settings), which the bare tree declares too, so the
+     run puts them back to the bare tree's starts at its start (the CONTROL then reads them there) and in its `finally`.
+
+ 15. STORY 7.11 (§79) — THE THREE DARK BUILT-INS ON A REAL GHOST (FR-Q5, AD-17): two trees compiled under one name,
+     `inflozo-probe-dark-built-ins`, with no user setting — `light_only` (the pilots on a Light only project) and
+     `light_dark` — each gated 0/0 on both pinned gscans with an empty quality verdict, each declaring exactly the three
+     built-ins and reading each, their `default.hbs` byte-identical, before anything uploads. On T1, behind `start_guard`,
+     with the site's logo read first: `light_only`, its built-ins put to their starts (a CONTROL then lists them there),
+     and `/` carries `scheme-light`; a `PUT` of Color scheme Auto writes no class, Dark writes `scheme-dark`, and Chromium
+     reads `/` resolving dark on a light and a dark device (the dark ground, the dark accent Ghost seeded); a `PUT` of the
+     Dark accent color reaches the head and `--accent`; a `PUT` of the Dark logo (a published post's own picture, its URL
+     free of the characters Handlebars writes as entities) with the site's logo cleared stamps no picture and draws the
+     header's wordmark; with the site's logo then set to the run's picture, the stamped logo picture draws the Dark logo
+     pinned Dark and Ghost's logo
+     pinned Light; then `light_dark` is deployed and Ghost keeps every stored value under the new start (Question 2's
+     fact). Its `finally` puts the built-ins back to their starts, restores the site's logo and reads it back (a CONTROL),
+     then `restore_and_delete`.
 
 What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
 activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
 one probe picture, which stays (Ghost's API deletes no picture); Story 7.10's probe theme, uploaded and activated for
-each tree it deploys (the bare theme, `start`, `restarted`, `without_sub`, `start` again, and the bare theme to clear it), its own `custom_theme_settings` written through Ghost's API and cleared again before it is deleted — no content,
-no site setting, no key; keys are read by variable name and no URL that carries one is printed. To disk it writes
-MEASUREMENTS.md §78 alone, replacing an earlier §78 of its own so a re-run re-records; §70 to §77 stay Stories 7.1's to
-7.8's records. The Ghost 5 half is DW-326's.
+each tree it deploys (the bare theme, `start`, `restarted`, `without_sub`, `start` again, and the bare theme to clear it),
+its own `custom_theme_settings` written through Ghost's API and cleared again before it is deleted; Story 7.11's probe
+theme, uploaded and activated Light only and then Light + Dark, its three built-ins written through Ghost's API and put
+back to their starts before it is deleted; and the site's logo (`PUT settings/`), set to the run's picture for the Dark
+logo rows, restored and read back in a `finally` — no content, no other site setting, no key; keys are read by variable
+name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §79 alone, replacing an earlier §79 of
+its own so a re-run re-records; §70 to §78 stay Stories 7.1's to 7.10's records. The Ghost 5 half is DW-326's.
 """
 import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -200,7 +222,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '78'   # §70 to §77 stay Stories 7.1's to 7.8's records
+SECTION = '79'   # §70 to §78 stay Stories 7.1's to 7.10's records
 # Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
 # the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
 TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
@@ -933,7 +955,8 @@ def probe_trees(c):
     """The three probe trees, each the COMPILED pilot theme (no scaffold) with one change."""
     files = c['files']
     pkg = json.loads(files['package.json'])
-    pkg['config']['custom'] = {PROBE_SETTING: {'type': 'select', 'options': ['One', 'Two'], 'default': 'One', 'visibility': 'true'}}
+    # Story 7.11: beside the three dark built-ins every compile declares (and reads), so the probe still changes one thing
+    pkg['config'].setdefault('custom', {})[PROBE_SETTING] = {'type': 'select', 'options': ['One', 'Two'], 'default': 'One', 'visibility': 'true'}
     if files['default.hbs'].count('{{{body}}}') != 1:
         raise Void('default.hbs carries no single {{{body}}} — the cascade probe has nowhere to read its setting')
     return {
@@ -1259,6 +1282,7 @@ const root = process.env.ROOT
 const pilots = await import(`${root}/tools/pilot-theme.mjs`)
 const gate = await import(`${root}/packages/theme-compiler/gate/index.ts`)
 const { REFERENCE_PACK } = await import(`${root}/packages/section-runtime/src/reference.ts`)
+const rt = await import(`${root}/packages/section-runtime/src/index.ts`)
 const theme = { name: process.env.SETTINGS_THEME, version: '1.0.0', description: 'The pilots, promoted' }
 const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
 const base = { theme, postsPerPage: Number(process.env.PER_PAGE), find: pilots.library(), fixture: true }
@@ -1279,9 +1303,16 @@ process.stdout.write(JSON.stringify({
   }])),
   quality: [...q.errors, ...q.warnings].map((f) => `${f.code} ${f.refs.join(',')}`),
   scaffold: pilots.SCAFFOLD,
+  builtIns: rt.RESERVED_SETTING_KEYS,
 }))
 """
 READS_CUSTOM = re.compile(r'@custom\.([a-z0-9_]+)')
+
+
+def unset(v):
+    """An empty setting in either of Ghost's spellings — '' from the service's cache, null from the database (§78) — as
+    None; every other value, a boolean's False included, as it is."""
+    return None if v == '' else v
 
 
 def settings_compiled(nonce, per_page):
@@ -1312,13 +1343,14 @@ def settings_compiled(nonce, per_page):
         read = {k for p, b in files.items() if isinstance(b, str) and p.endswith('.hbs') for k in READS_CUSTOM.findall(b)}
         if read != set(custom[name]):
             raise Void(f'the {name} tree declares {sorted(custom[name])} and reads {sorted(read)} — GS100/GS090 would decide, not Ghost')
-    want = ['show_the_button', 'headline_size', 'sub', 'title', 'accent_colour', 'picture']
+    # Story 7.11: every tree also declares the three dark built-ins, after the user's settings
+    want = ['show_the_button', 'headline_size', 'sub', 'title', 'accent_colour', 'picture', *out['builtIns']]
     if list(custom['start']) != want or 'default' in custom['start']['picture']:
         raise Void(f'the start tree declares {list(custom["start"])} — the rows below are written for {want}, the picture with no start')
     if (custom['start']['headline_size'].get('default'), custom['restarted']['headline_size'].get('default')) != ('Large', 'Display'):
         raise Void('the restarted tree does not carry a new start for Headline size — the keep row would prove nothing')
-    if 'sub' in custom['without_sub'] or custom['bare']:
-        raise Void('the without_sub tree still declares sub, or the bare tree declares a setting — the forget and clear rows would prove nothing')
+    if 'sub' in custom['without_sub'] or list(custom['bare']) != out['builtIns']:
+        raise Void('the without_sub tree still declares sub, or the bare tree declares more than the three built-ins — the forget and clear rows would prove nothing')
     return {'trees': trees, 'custom': custom, 'page_word': words['PAGE_WORD']}
 
 
@@ -1350,6 +1382,10 @@ def settings_phase(g, nonce, picture_path, sc):
     def put(**values):
         g.api('PUT', 'custom_theme_settings/', {'custom_theme_settings': [{'key': k, 'value': v} for k, v in values.items()]})
 
+    # Story 7.11: every tree declares the three dark built-ins, which activating the bare tree cannot clear (it declares
+    # them too), and Ghost keeps a deleted theme's stored values — so they are put back to the bare tree's starts instead
+    built_in_starts = {k: sc['custom']['bare'][k].get('default') for k in sc['custom']['bare']}
+
     def home(until):
         body = ''
         for _ in range(10):
@@ -1366,14 +1402,19 @@ def settings_phase(g, nonce, picture_path, sc):
     try:
         # (0) a run that failed before its cleanup left stored values under this name: the bare theme, activated, clears them
         deploy('bare')
-        row(listed() == {}, 'custom_theme_settings', 'CONTROL — the probe theme declaring nothing lists no setting, so every value read below is this run\'s', 'none listed')
+        put(**built_in_starts)
+        bare = listed()
+        # an unset picture is empty in two spellings, '' from the service's cache and null from the database (§78's finding)
+        row(sorted(bare) == sorted(built_in_starts) and all(unset(bare[k].get('value')) == unset(v) for k, v in built_in_starts.items()), 'custom_theme_settings',
+            'CONTROL — the probe theme declaring no user setting lists only the three dark built-ins, at their starts, so every value read below is this run\'s',
+            {k: bare[k].get('value') for k in bare})
         # (1) each key at the start the canvas holds (Question 1)
         deploy('start')
         body = home(lambda b: 'data-headline-size=' in b)
         row(sc['page_word'] in body, '/', 'CONTROL — / serves this run\'s promoted theme', f'page word {"found" if sc["page_word"] in body else "ABSENT"}')
         got = listed()
         for key, entry in starts.items():
-            row(key in got and got[key].get('value') == entry.get('default'), 'custom_theme_settings', f'`{key}` listed at its start',
+            row(key in got and unset(got[key].get('value')) == unset(entry.get('default')), 'custom_theme_settings', f'`{key}` listed at its start',
                 f'type {got.get(key, {}).get("type")!r}, value {got.get(key, {}).get("value")!r}, start {entry.get("default")!r}')
         a4 = root_tag(body, 'a4-13')
         row('data-primary-action="on"' in a4 and 'data-headline-size="large"' in a4, '/', 'the switch and the choice draw their start', attrs_of(a4, 'data-primary-action', 'data-headline-size'))
@@ -1427,13 +1468,273 @@ def settings_phase(g, nonce, picture_path, sc):
     finally:
         try:
             deploy('bare')   # Ghost keeps a deleted theme's stored settings, so they are cleared while it is still active
-            print(f'    the probe theme\'s stored settings cleared -> {sorted(listed())}')
+            put(**built_in_starts)   # Story 7.11: the built-ins stay declared, so they are put back to their starts
+            print(f'    the probe theme\'s stored settings cleared -> {sorted(listed())}, the built-ins at their starts')
         except Exception as e:  # the restore below still runs, and decides
             print(f'    clearing the probe theme\'s stored settings FAILED ({type(e).__name__}: {e}) — restoring anyway')
         shim.restore_and_delete(g, previous, [SETTINGS_THEME])
     bad = [r for r in rows if r[2].startswith('CONTROL') and not r[0]]
     if bad:
         raise Void('A SETTINGS CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
+    return rows
+
+
+# ── Story 7.11 (§79): the three dark built-ins, on a real Ghost ────────────────────────────────────────────────────
+BUILT_INS_THEME = 'inflozo-probe-dark-built-ins'   # its own name, so its stored settings are its own (Ghost keys them by theme)
+DARK_ACCENT = '#3366FF'   # the Dark accent color this run picks in Ghost, a valid `#rrggbb` (custom-theme-settings-service.js:127-133)
+COMPILE_BUILT_INS = r"""
+const root = process.env.ROOT
+const pilots = await import(`${root}/tools/pilot-theme.mjs`)
+const gate = await import(`${root}/packages/theme-compiler/gate/index.ts`)
+const rt = await import(`${root}/packages/section-runtime/src/index.ts`)
+const { REFERENCE_PACK } = await import(`${root}/packages/section-runtime/src/reference.ts`)
+const theme = { name: process.env.BUILT_INS_THEME, version: '1.0.0', description: 'The pilots, with the dark built-ins' }
+const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
+const base = { theme, postsPerPage: Number(process.env.PER_PAGE), find: pilots.library() }
+const variants = { light_only: pilots.compilePilots(words, { ...base, darkEnabled: false }), light_dark: pilots.compilePilots(words, { ...base, darkEnabled: true }) }
+const enc = (files) => Object.fromEntries(Object.entries(files).map(([p, b]) => [p, typeof b === 'string' ? b : { base64: Buffer.from(b).toString('base64') }]))
+process.stdout.write(JSON.stringify({
+  variants: Object.fromEntries(Object.entries(variants).map(([name, v]) => {
+    const q = gate.qualityGate(v.files, { pack: REFERENCE_PACK, library: v.find })
+    return [name, { files: enc(v.files), custom: v.custom, failures: pilots.themeFailures(v.files, v.instanceIds), quality: [...q.errors, ...q.warnings].map((f) => `${f.code} ${f.refs.join(',')}`) }]
+  })),
+  scaffold: pilots.SCAFFOLD,
+  builtIns: rt.RESERVED_SETTING_KEYS, schemeClass: rt.SCHEME_CLASS, stamp: rt.SITE_LOGO_ATTR,
+  pack: { light: { accent: REFERENCE_PACK.light.accent, background: REFERENCE_PACK.light.background }, dark: { accent: REFERENCE_PACK.dark.accent, background: REFERENCE_PACK.dark.background } },
+}))
+"""
+
+
+def built_ins_compiled(nonce, per_page):
+    """Story 7.11's two trees, compiled under BUILT_INS_THEME with the run's page word and NO user setting: `light_only`
+    (the pilots on a Light only project) and `light_dark` (the same project, Light + Dark) — each with §73's scaffold,
+    each passing the check CI holds a theme to with an empty quality verdict. The controls that hold before anything
+    uploads: each declares exactly the three built-ins and reads each, Color scheme starts on Light and on Auto, the two
+    `default.hbs` are byte-identical (no special case), and the header's logo picture carries the stamp."""
+    words = {'PAGE_WORD': f'Page{nonce}', 'LAYER_WORD': f'Layer{nonce}'}
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', COMPILE_BUILT_INS], capture_output=True, text=True, timeout=300,
+                         env={**os.environ, 'ROOT': ROOT, 'PER_PAGE': str(per_page), 'BUILT_INS_THEME': BUILT_INS_THEME, **words})
+    if run.returncode != 0:
+        raise Void(f'the built-ins compile did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    trees, custom = {}, {}
+    for name, v in out['variants'].items():
+        if v['failures']:
+            raise Void(f'the {name} tree fails the check CI holds it to:\n      ' + '\n      '.join(v['failures']))
+        if v['quality']:
+            raise Void(f'the quality gate names findings on the {name} tree ({v["quality"]}) — STOP AND ASK the owner')
+        files = {p: base64.b64decode(b['base64']) if isinstance(b, dict) else b for p, b in v['files'].items()}
+        clash = [p for p in out['scaffold'] if p in files]
+        if clash:
+            raise Void(f'the scaffold would replace compiled files in {name}: {clash}')
+        trees[name] = {**files, **out['scaffold']}
+        custom[name] = (json.loads(files['package.json']).get('config') or {}).get('custom') or {}
+        read = {k for p, b in files.items() if isinstance(b, str) and p.endswith('.hbs') for k in READS_CUSTOM.findall(b)}
+        if list(custom[name]) != out['builtIns'] or read != set(out['builtIns']):
+            raise Void(f'the {name} tree declares {list(custom[name])} and reads {sorted(read)} — not exactly the three built-ins')
+    starts = (custom['light_only']['color_scheme'].get('default'), custom['light_dark']['color_scheme'].get('default'))
+    if starts != ('Light', 'Auto'):
+        raise Void(f'Color scheme starts on {starts} — Question 1 rules Light (Light only) and Auto (Light + Dark)')
+    if trees['light_only']['default.hbs'] != trees['light_dark']['default.hbs']:
+        raise Void('default.hbs differs between the two trees — the readers took a special case, and the keep row would read two themes')
+    if f'{out["stamp"]}=""' not in ''.join(b for p, b in trees['light_only'].items() if isinstance(b, str) and p.startswith('partials/')):
+        raise Void(f'no partial carries {out["stamp"]} — the dark logo rows would read a picture nothing stamps')
+    return {**out, 'trees': trees, 'custom': custom, 'page_word': words['PAGE_WORD']}
+
+
+# Chromium (the repository's Playwright) reading `/` as a visitor's browser does, on a device in light or dark: the pins
+# on <body>, the media query, `--accent` and `--bg-page` on :root, and the stamped picture's computed `content` and `src`;
+# with every stylesheet disabled, `--accent` reads empty (the CONTROL: the values are the theme's).
+BUILT_INS_DRIVER = r"""
+const { chromium } = require(process.env.PLAYWRIGHT)
+const job = JSON.parse(process.env.JOB)
+;(async () => {
+  const browser = await chromium.launch()
+  const out = []
+  try {
+    for (const device of job.devices) {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: device })
+      const page = await context.newPage()
+      const response = await page.goto(job.url, { waitUntil: 'load' })
+      const read = await page.evaluate(({ stamp, word }) => {
+        const html = document.documentElement
+        const img = document.querySelector(`img[${stamp}]`)
+        const r = {
+          ours: document.body.innerHTML.includes(word),
+          pins: [...document.body.classList].filter((c) => /^scheme-/.test(c)),
+          dark: matchMedia('(prefers-color-scheme: dark)').matches,
+          accent: getComputedStyle(html).getPropertyValue('--accent').trim(),
+          page: getComputedStyle(html).getPropertyValue('--bg-page').trim(),
+          logo: img === null ? null : { content: getComputedStyle(img).content, src: img.getAttribute('src') },
+        }
+        for (const s of document.styleSheets) s.disabled = true
+        r.withoutStyles = getComputedStyle(html).getPropertyValue('--accent').trim()
+        for (const s of document.styleSheets) s.disabled = false
+        return r
+      }, { stamp: job.stamp, word: job.word })
+      out.push({ device, status: response.status(), ...read })
+      await context.close()
+    }
+  } finally {
+    await browser.close()
+  }
+  process.stdout.write(JSON.stringify(out))
+})().catch((e) => { process.stderr.write(String((e && e.stack) || e)); process.exit(2) })
+"""
+
+
+def drawn(g, bi, devices=('light', 'dark')):
+    """`/` read in Chromium on each device — a list of readings, one per device."""
+    run = subprocess.run(['node', '-e', BUILT_INS_DRIVER], capture_output=True, text=True, timeout=300,
+                         env={**os.environ, 'PLAYWRIGHT': core.PLAYWRIGHT,
+                              'JOB': json.dumps({'url': g.url + '/', 'devices': list(devices), 'stamp': bi['stamp'], 'word': bi['page_word']})})
+    if run.returncode != 0:
+        raise Void(f'the Chromium driver failed:\n{run.stderr[-2000:]}')
+    return json.loads(run.stdout)
+
+
+def site_logo(g):
+    """The site's own logo setting, read through the staff token (`GET settings/`)."""
+    return next((x.get('value') for x in g.api('GET', 'settings/')['settings'] if x.get('key') == 'logo'), None)
+
+
+def set_site_logo(g, value):
+    g.api('PUT', 'settings/', {'settings': [{'key': 'logo', 'value': value}]})
+
+
+def built_ins_phase(g, bi, logo_url, dark_logo_url):
+    """§79 on T1, behind `start_guard`, the site's logo read first, and a `finally` that puts the probe's three built-ins
+    back to the Light only tree's starts (Ghost keeps a deleted theme's stored values), restores the site's logo and reads
+    it back, then restores the site's theme and deletes the probe (`restore_and_delete`). Returns the rows."""
+    rows = []
+    starts = {k: e.get('default') for k, e in bi['custom']['light_only'].items()}
+    light, dark = bi['schemeClass']['light'], bi['schemeClass']['dark']
+    pack = bi['pack']
+
+    def row(ok, page, what, detail):
+        rows.append((bool(ok), page, what, detail))
+        print(f'    {"PASS" if ok else "FAIL"}  {page:<26} {what} — {str(detail)[:120]}')
+
+    def deploy(variant):
+        st, res = g._multipart('themes/upload/', [('file', f'{BUILT_INS_THEME}.zip', 'application/zip', contexts.zip_bytes(bi['trees'][variant]))])
+        if res['themes'][0]['name'] != BUILT_INS_THEME:
+            raise Void(f'Ghost named the upload {res["themes"][0]["name"]!r}, not {BUILT_INS_THEME!r} — the finally would not delete it')
+        if shim.active_theme(g) != BUILT_INS_THEME:
+            g.api('PUT', f'themes/{BUILT_INS_THEME}/activate/')
+        print(f'    deployed {variant} -> HTTP {st}')
+
+    def listed():
+        return {x['key']: x for x in g.api('GET', 'custom_theme_settings/')['custom_theme_settings']}
+
+    def put(**values):
+        g.api('PUT', 'custom_theme_settings/', {'custom_theme_settings': [{'key': k, 'value': v} for k, v in values.items()]})
+
+    def pins(body):
+        m = re.search(r'<body[^>]*\sclass="([^"]*)"', body)
+        return [c for c in (m.group(1).split() if m else []) if c.startswith('scheme-')]
+
+    def home(until):
+        body = ''
+        for _ in range(10):
+            time.sleep(2)
+            _, body = g.page('/')
+            if bi['page_word'] in body and until(body):
+                break
+        return body
+
+    def by_device(readings):
+        return {r['device']: r for r in readings}
+
+    previous = shim.start_guard(g)
+    logo_before = site_logo(g)
+    print(f'    the site\'s logo before the run: {logo_before!r}')
+    try:
+        # (0) Light only: each built-in listed at its start — a run that failed before its cleanup left stored values
+        # under this name, so they are put back to the starts first (the CONTROL reads that they took)
+        deploy('light_only')
+        put(**starts)
+        got = listed()
+        row(sorted(got) == sorted(starts), 'custom_theme_settings', 'CONTROL — the probe lists exactly the three built-ins', sorted(got))
+        for key, start in starts.items():
+            # an unset picture is empty in two spellings ('' from the cache, null from the database — §78), so both read as none
+            row(key in got and unset(got[key].get('value')) == unset(start) and unset(got[key].get('default')) == unset(start), 'custom_theme_settings',
+                f'`{key}` listed at its Light only start', f'type {got.get(key, {}).get("type")!r}, value {got.get(key, {}).get("value")!r}, default {got.get(key, {}).get("default")!r}')
+        body = home(lambda b: light in pins(b))
+        row(bi['page_word'] in body, '/', 'CONTROL — / serves this run\'s theme', f'page word {"found" if bi["page_word"] in body else "ABSENT"}')
+        row(pins(body) == [light], '/', 'a Light only site starts pinned Light: <body> carries scheme-light', pins(body))
+        # (1) the pin, changed in Ghost: Auto writes no class, Dark writes scheme-dark — and the page resolves dark under it
+        put(color_scheme='Auto')
+        body = home(lambda b: pins(b) == [])
+        row(pins(body) == [], '/', 'Color scheme set to Auto in Ghost: no scheme class', pins(body) or 'none')
+        put(color_scheme='Dark')
+        body = home(lambda b: pins(b) == [dark])
+        row(pins(body) == [dark], '/', 'Color scheme set to Dark in Ghost: <body> carries scheme-dark', pins(body))
+        seen = by_device(drawn(g, bi))
+        for device, r in seen.items():
+            row(r['ours'] and r['status'] == 200, f'/ ({device} device)', 'CONTROL — Chromium reads this run\'s theme', f'HTTP {r["status"]}')
+            row(r['dark'] == (device == 'dark'), f'/ ({device} device)', 'CONTROL — the media query reports the emulated device', r['dark'])
+            row(r['withoutStyles'] == '', f'/ ({device} device)', 'CONTROL — with the stylesheets off `--accent` reads empty, so the values below are the theme\'s', repr(r['withoutStyles']))
+            row(r['pins'] == [dark] and r['page'].lower() == pack['dark']['background'].lower() and r['accent'].lower() == pack['dark']['accent'].lower(),
+                f'/ ({device} device)', 'pinned Dark: the page resolves dark on either device — the dark ground and the dark accent Ghost seeded',
+                f'pins {r["pins"]}, --bg-page {r["page"]}, --accent {r["accent"]}')
+        # (2) the dark accent, changed in Ghost: it reaches the head and `--accent` in dark
+        put(dark_accent_color=DARK_ACCENT)
+        body = home(lambda b: DARK_ACCENT in b)
+        row(f'--setting-dark-accent: {DARK_ACCENT}' in body, '/', 'Dark accent color set in Ghost: the head\'s settings <style> carries it', 'present' if f'--setting-dark-accent: {DARK_ACCENT}' in body else 'ABSENT')
+        seen = by_device(drawn(g, bi, ('light',)))
+        row(seen['light']['accent'].lower() == DARK_ACCENT.lower(), '/ (light device)', 'pinned Dark: `--accent` is the colour set in Ghost', seen['light']['accent'])
+        # (3) the dark logo with NO site logo: nothing prints a logo for `content` to replace, so the wordmark shows pinned Dark
+        set_site_logo(g, None)
+        put(dark_logo=dark_logo_url)
+        body = home(lambda b: dark_logo_url in b)
+        stamped, wordmark = f'{bi["stamp"]}=' in body, 'class="a1-1__wordmark"' in body
+        row(dark_logo_url in body and not stamped and wordmark, '/',
+            'Dark logo set, the site has no logo: no picture carries the stamp and the header draws its wordmark',
+            f'dark logo {"in the head" if dark_logo_url in body else "ABSENT"}, stamp {"PRESENT" if stamped else "none"}, wordmark {"drawn" if wordmark else "ABSENT"}')
+        # then the site's logo set for the run — the Dark logo drawn in dark, Ghost's in light
+        set_site_logo(g, logo_url)
+        body = home(lambda b: f'{bi["stamp"]}=""' in b and dark_logo_url in b)
+        row(f'{bi["stamp"]}=""' in body, '/', 'the site has a logo: the header\'s logo picture carries the stamp', 'stamped' if f'{bi["stamp"]}=""' in body else 'ABSENT')
+        row(f'--setting-dark-logo: url(&quot;{dark_logo_url}' in body or f'--setting-dark-logo: url("{dark_logo_url}' in body, '/',
+            'Dark logo set in Ghost: the head\'s settings <style> carries it as a url()', 'present' if dark_logo_url in body else 'ABSENT')
+        seen = by_device(drawn(g, bi, ('light',)))
+        logo = seen['light']['logo'] or {}
+        row(dark_logo_url in (logo.get('content') or '') and logo.get('src') == logo_url, '/ (light device)',
+            'pinned Dark: the logo picture draws the Dark logo, its own `src` still Ghost\'s logo', f'content {str(logo.get("content"))[:60]}, src {logo.get("src")}')
+        put(color_scheme='Light')
+        home(lambda b: pins(b) == [light])
+        seen = by_device(drawn(g, bi))
+        for device, r in seen.items():
+            logo = r['logo'] or {}
+            row(r['pins'] == [light] and logo.get('content') == 'normal' and logo.get('src') == logo_url, f'/ ({device} device)',
+                'pinned Light: the logo picture draws Ghost\'s logo — `content` is `normal`', f'pins {r["pins"]}, content {logo.get("content")}, src {logo.get("src")}')
+        # (4) Question 2's fact, re-executed: the project switched to Light + Dark and deployed again — Ghost keeps the stored
+        # values under the new start
+        deploy('light_dark')
+        got = listed()
+        row(got['color_scheme'].get('default') == 'Auto' and got['color_scheme'].get('value') == 'Light', 'custom_theme_settings',
+            'a Light + Dark deploy (start Auto) keeps the stored Light', f'default {got["color_scheme"].get("default")!r}, value {got["color_scheme"].get("value")!r}')
+        row(got['dark_accent_color'].get('value') == DARK_ACCENT and got['dark_logo'].get('value') == dark_logo_url, 'custom_theme_settings',
+            'and keeps the Dark accent color and the Dark logo set in Ghost', f'{got["dark_accent_color"].get("value")!r}, {str(got["dark_logo"].get("value"))[:60]!r}')
+        body = home(lambda b: pins(b) == [light])
+        row(pins(body) == [light], '/', 'so the redeployed site is still pinned Light', pins(body))
+    finally:
+        try:
+            put(**starts)
+            print(f'    the probe\'s built-ins put back to their starts -> {({k: v.get("value") for k, v in listed().items()})}')
+        except Exception as e:  # the restores below still run, and decide
+            print(f'    putting the built-ins back FAILED ({type(e).__name__}: {e}) — restoring anyway')
+        try:
+            set_site_logo(g, logo_before)
+            back = site_logo(g)
+            print(f'    the site\'s logo restored -> {back!r}')
+            rows.append((unset(back) == unset(logo_before), 'settings', 'CONTROL — the site\'s logo read back as it was before the run (no logo read as none in either spelling)', f'{back!r} (before {logo_before!r})'))
+        except Exception as e:
+            rows.append((False, 'settings', 'CONTROL — the site\'s logo read back as it was before the run', f'FAILED: {type(e).__name__}: {e}'))
+        shim.restore_and_delete(g, previous, [BUILT_INS_THEME])
+    bad = [r for r in rows if r[2].startswith('CONTROL') and not r[0]]
+    if bad:
+        raise Void('A BUILT-INS CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
     return rows
 
 
@@ -1446,7 +1747,7 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay, probes, local, q, promoted):
+def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
     today = datetime.date.today().isoformat()
     gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
@@ -1455,7 +1756,10 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted):
     licences = sorted(p for p in files if p.startswith('LICENSE-'))
     (tag, tag_n), (author, author_n) = rec['arch']['tag'], rec['arch']['author']
     qrows, qprobe, neg_rows, neg = q
-    out = [f'## {SECTION}. Promoted settings in Ghost\'s own Design panel — every kind at the canvas\'s start, a change per kind '
+    built_rows, logo_url, dark_logo_url = built
+    out = [f'## {SECTION}. The three dark built-ins in Ghost\'s own Design panel — a Light only site starting pinned Light, '
+           f'Color scheme, the Dark accent color and the Dark logo each changed in Ghost and drawn on the next load, and Ghost '
+           f'keeping each stored value across a Light + Dark redeploy — beside promoted settings: every kind at the canvas\'s start, a change per kind '
            f'reaching the page, a hidden setting drawing its start, Ghost keeping a value across a new start and forgetting a dropped '
            f'key — beside the emitted-theme quality gate: axe-core on Ghost\'s own pages agreeing with `qualityGate`, a '
            f'planted probe named by both, and Ghost\'s Casper and Source as its negative control, beside the gscan gate, a '
@@ -1469,12 +1773,15 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted):
            'cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back '
            'after each; Story 7.10\'s probe theme (`inflozo-probe-custom-settings`), uploaded and activated for each tree it deploys — the bare theme, `start`, `restarted`, `without_sub`, `start` again and the bare theme to clear it — its '
            'own `custom_theme_settings` written through Ghost\'s API and cleared by activating it with nothing declared, '
-           'then restored and deleted the same way; the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
-           'the first time it is asked for each; no content, no site setting and no key written. The picture is '
+           'then restored and deleted the same way; Story 7.11\'s probe theme (`' + BUILT_INS_THEME + '`), uploaded and activated '
+           'Light only and then Light + Dark, its three built-ins written through Ghost\'s API and put back to their starts '
+           'before it was deleted, and the site\'s logo set to the run\'s picture for the Dark logo rows, then restored and read '
+           'back; the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
+           'the first time it is asked for each; no content, no other site setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70 to §77 are Stories 7.1's to 7.8's records; this re-runs their rows beside Story 7.10's. Ghost 6.58.0's npm "
+           "§70 to §78 are Stories 7.1's to 7.10's records; this re-runs their rows beside Story 7.11's. Ghost 6.58.0's npm "
            f"tarball (`{GHOST_TARBALL}`) is read, never installed, for Casper and Source.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
@@ -1564,11 +1871,28 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted):
             '`without_sub` (Sub no longer promoted) and `bare` (nothing promoted), deployed in that story\'s order; each change '
             f'made through `PUT /ghost/api/admin/custom_theme_settings/`, with the accent `{SETTINGS_ACCENT}` and the picture '
             '`/content/images/' + rec['picture'] + '`. The run began and ended by activating `bare`, so the probe\'s stored '
-            'settings were cleared before the theme was deleted (Ghost deletes a theme\'s files, never its settings).', '']
+            'user settings were cleared before the theme was deleted (Ghost deletes a theme\'s files, never its settings); since '
+            'Story 7.11 every tree also declares the three dark built-ins, which `bare` declares too, so they were put back to '
+            'their starts instead.', '']
     out += table(promoted)
+    out += ['', f'### (h) The three dark built-ins — `{BUILT_INS_THEME}`: the pilots with no user setting, compiled Light only and '
+            'then Light + Dark (Story 7.11)', '',
+            'Two trees, each gated 0/0 on both pinned gscans with an empty quality verdict before anything uploaded, their '
+            '`default.hbs` byte-identical (no special case): Color scheme starts on Light and on Auto. Each change was made '
+            f'through `PUT /ghost/api/admin/custom_theme_settings/` — Auto, Dark, the Dark accent color `{DARK_ACCENT}`, the '
+            f'Dark logo `{dark_logo_url}` and Light — with the site\'s logo set to `{logo_url}` for the run through '
+            '`PUT /ghost/api/admin/settings/` and restored after. Chromium (the repository\'s Playwright) read `/` as a '
+            'visitor\'s browser does on a light and a dark device.', '']
+    out += table(built_rows)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **Every theme carries the three dark built-ins, and each works the moment it is changed in Ghost.** A Light '
+            'only site started pinned Light; Color scheme set to Auto wrote no class and set to Dark pinned the page dark on '
+            'a light device and a dark one alike; the Dark accent color reached the head and `--accent` in dark; and the '
+            'Dark logo replaced Ghost\'s logo in dark while the picture drew Ghost\'s own in light — each on the next load, '
+            'with no redeploy. Deployed again as Light + Dark, the site kept every value Ghost stored, so it stayed pinned '
+            'Light (Question 2, which Story 7.18\'s Pre-flight says).',
             '- **A promoted setting reaches Ghost\'s own Design panel and the page reads it.** Every key Inflozo declared was '
             'listed at the start the canvas holds; a switch, a choice, two texts, the accent and a picture each changed in Ghost '
             'and the page followed; a choice its condition hides drew its start while Ghost still stored the other value; and a '
@@ -1678,10 +2002,21 @@ if __name__ == '__main__':
         trees = probe_trees(c)
         # Story 7.10: the promoted trees, compiled and gated with the rest, before anything uploads
         sc = settings_compiled(nonce, per_page)
-        local = gated({'pilots': files, **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()}})
+        # Story 7.11: the Light only and Light + Dark trees with no user setting, the same way
+        bi = built_ins_compiled(nonce, per_page)
+        local = gated({'pilots': files, **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
+                       **{f'built-ins-{n}': t for n, t in bi['trees'].items()}})
         gates = clean(local, 'pilots')
         for n in sc['trees']:
             clean(local, f'settings-{n}')
+        for n in bi['trees']:
+            clean(local, f'built-ins-{n}')
+        # the Dark logo is a picture that is not the site's logo: a published post's own, never one this run uploads
+        st, pics = g.content('posts/?limit=all&filter=feature_image:-null&fields=feature_image')
+        # one Handlebars writes as it is: `&` and `=` reach the CSS as entities (compile.ts's stated ceiling) and would not load
+        dark_logo_url = next((p['feature_image'] for p in (pics or {}).get('posts', []) if p.get('feature_image') and not re.search(r'[&=<>"\'`\s]', p['feature_image'])), None)
+        if st != 200 or dark_logo_url is None:
+            raise Void(f'T1 has no published post with a picture (HTTP {st}) — the Dark logo rows need a picture other than the logo')
         # Story 7.8: the quality gate over the same tree and the probe's, before anything uploads — a finding on the
         # pilots is a question for the owner (the spec's Ask First), never a result
         local_q = quality(trees={'pilots': files, QUALITY_PROBE: quality_probe_tree(files, nonce)})
@@ -1694,15 +2029,19 @@ if __name__ == '__main__':
         qprobe = quality_probe(g, files, nonce, rec['post'], local_q)
         neg_rows, neg = negative_control()
         promoted = settings_phase(g, nonce, f'/content/images/{rec["picture"]}', sc)
+        logo_url = f'{g.url}/content/images/{rec["picture"]}'
+        if dark_logo_url == logo_url:
+            raise Void('the Dark logo would be the site\'s own logo — the rows could not tell the two pictures apart')
+        built_ins = built_ins_phase(g, bi, logo_url, dark_logo_url)
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted))
+    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url)))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)

@@ -52,6 +52,14 @@
 // `default.hbs`'s head that the token block reads through `var()` (AD-30). Its start is the canvas's (Question 1, ruled
 // option 1, owner, 2026-10-10), never the stored `default_value`. A last assertion holds the declared keys and the
 // readers to one set, so `GS100` and `GS090-NO-UNKNOWN-CUSTOM-THEME-SETTINGS` cannot fire.
+//
+// Story 7.11 (FR-Q5, AD-17, AD-30) makes every theme carry the three dark built-ins — Color scheme, Dark accent color and
+// Dark logo — after the user's settings, on every project, Light only included, with no special case: the runtime's ONE
+// module states them (`builtInSettings`, `SCHEME_START`, `BUILT_IN_PATH`), and the compile writes each with the line that
+// reads it. The pin is `<body>`'s class after `{{body_class}}` (`schemeClassChain`), which `MODE_SELECTORS` reads; the dark
+// accent and the dark logo are plain custom properties in `default.hbs`'s ONE settings `<style>`, which the token block's
+// dark blocks read (`packTokensCss`' `darkSettings`) — the logo as `content` on every picture the runtime stamps
+// `data-site-logo`. `{{comments}}` stays bare: Ghost's comments widget takes its mode from the colours the pin resolves.
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
@@ -62,9 +70,10 @@ import type { IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/l
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { faceOf, pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
 import {
-  BASE_CSS, bindingOf, bindingState, checkChromeLiterals, checkSetting, customPath, darkHook, darkOverrideCss, designate, feedQuery, ghostEntry, ghostName,
-  gscanInert, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls, sectionKey, SETTING_ACCENT, SETTING_WORDS,
-  srcsetExpr, synthesize, U0, U1, USER_SETTING_CAP, UserText, visibleFeed,
+  BASE_CSS, BUILT_IN_PATH, bindingOf, bindingState, builtInSettings, checkChromeLiterals, checkSetting, customPath, darkHook, darkOverrideCss, designate,
+  feedQuery, ghostEntry, ghostName, gscanInert, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls,
+  schemeClassChain, sectionKey, SETTING_ACCENT, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SETTING_WORDS, srcsetExpr, synthesize, U0, U1, USER_SETTING_CAP,
+  UserText, visibleFeed,
 } from '@inflozo/section-runtime'
 import type {
   DocInstance, Pack, PlacedSection, ProjectDoc, RenderInput, RuntimeDocument, SettingGroup, SettingRow, SettingType, SynthesisLibrary, Visibility,
@@ -104,7 +113,8 @@ export type CompileInput = {
   /** a font-pool file's bytes, by its path under `packages/library/fonts/` (`files/<file>`, a family's `licenceFile`),
    *  read by the shell (AD-1): the core reads no file */
   fonts: (path: string) => Uint8Array
-  /** `projects.dark_enabled`: false is Light-only — no section hook and no per-section dark rule (AD-30) */
+  /** `projects.dark_enabled`: false is Light-only — no section hook and no per-section dark rule (AD-30); since Story 7.11
+   *  it also decides `color_scheme`'s start (`SCHEME_START`), and nothing else about the built-ins */
   darkEnabled: boolean
   /** every file of `packages/library/modules/` by module name (`core`, `lightbox`), read by the shell (AD-1) — `main.js`
    *  carries `core` and each declared module found here (Story 7.5) */
@@ -114,7 +124,7 @@ export type CompileInput = {
   ghostCards: { scripts: Readonly<Record<string, string>>; licence: string }
   /** Story 7.10 — the project's custom settings as stored (`custom_settings`), read by the shell (AD-14: values): each row's
    *  key, type, group, condition, binding and place. Their `default_value` and `options` are NOT read — the start is the
-   *  canvas's (Question 1) — and a project with none emits no `config.custom`. */
+   *  canvas's (Question 1). Since Story 7.11 a project with none still emits `config.custom`: the three dark built-ins. */
   settings?: readonly CompileSetting[]
 }
 
@@ -152,9 +162,10 @@ export type CssRecord = {
  *  mounted module with no file yet, whose mounts ship in their no-JS state — both in registry order. CI's warning reads
  *  it rather than re-deriving it, and a deploy surface can say which sections rest. */
 export type JsRecord = { bundled: readonly string[]; atRest: readonly string[] }
-/** Story 7.10 — the settings record, for Story 7.18's Pre-flight: the keys `config.custom` declares, in its order, and the
- *  keys a shuffle parked (FR-D19), which this theme neither declares nor reads — and which Ghost forgets at the deploy that
- *  leaves them out (read in source, both majors: `_syncRepositoryWithTheme`; Question 2, ruled option 2). */
+/** Story 7.10 — the settings record, for Story 7.18's Pre-flight: the keys `config.custom` declares, in its order — the
+ *  user's, then (Story 7.11) the three dark built-ins — and the keys a shuffle parked (FR-D19), which this theme neither
+ *  declares nor reads — and which Ghost forgets at the deploy that leaves them out (read in source, both majors:
+ *  `_syncRepositoryWithTheme`; Question 2, ruled option 2). */
 export type CustomRecord = { emitted: readonly string[]; parked: readonly string[] }
 export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord; custom: CustomRecord }
 
@@ -256,9 +267,10 @@ function pageSize(v: unknown): number {
 }
 
 /** FR-J2's file: the refusals first, then the keys in Casper's and Source's order (a conditional key is omitted, never
- *  moved), then the marker. The user's words reach it through `JSON.stringify` alone (AD-36). `config.custom` is Story
- *  7.10's (7.2's Question 1, ruled option 1): last in `config`, in the settings' order, and absent when no setting is
- *  live — written only with the template lines that read each key (`customSettings`). */
+ *  moved), then the marker. The user's words reach it through `JSON.stringify` alone (AD-36). `config.custom` is Stories
+ *  7.10's and 7.11's (7.2's Question 1, ruled option 1): last in `config`, the user's live settings in their order and then
+ *  the three dark built-ins, so it is on every theme — written only with the template lines that read each key
+ *  (`customSettings`). */
 function packageJson(input: CompileInput, perPage: number, custom: Readonly<Record<string, unknown>>): string {
   const { name, version, description } = input.theme
   if (!THEME_NAME_RE.test(name)) throw new Error(`package.json: the theme name ${shown(name)} must match ${THEME_NAME_RE.source} (GS010-PJ-NAME-LC, GS010-PJ-NAME-HY).`)
@@ -279,7 +291,7 @@ function packageJson(input: CompileInput, perPage: number, custom: Readonly<Reco
       image_sizes: Object.fromEntries(Object.entries(IMAGE_SIZES).map(([key, width]) => [key, { width }])),
       // Question 2, ruled option 1: Ghost 5 reads an empty `exclude` as no card at all (`css/!().css` matches nothing)
       card_assets: cards.length === 0 ? true : { exclude: cards },
-      ...(Object.keys(custom).length === 0 ? {} : { custom }),
+      custom,
     },
     [THEME_MARKER]: true,
   }, null, 2)}\n`
@@ -635,7 +647,7 @@ function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; l
 
 /** What the compile does with the project's settings, decided before anything renders. */
 type Custom = {
-  /** `config.custom`, key → Ghost's entry, in the settings' order */
+  /** `config.custom`, key → Ghost's entry: the user's live settings in their order, then the three dark built-ins */
   entries: Record<string, unknown>
   /** what each instance's theme render is handed, by instance id */
   promoted: Map<string, { controls: Record<string, { key: string } & Pick<SettingRow, 'type' | 'options'>>; props: Record<string, string> }>
@@ -654,6 +666,11 @@ type Custom = {
  * derives — its type, options and start (Question 1), the stored group and condition — checked against the other live
  * ones by `checkSetting`, so every condition names a declared key of two or more characters and every value is one of
  * the target's.
+ *
+ * Story 7.11: then the three dark built-ins, `builtInSettings`' rows for this pack and project mode, each through `ghostEntry`
+ * — never `checkSetting`, which refuses a reserved key on purpose; both pinned gscans hold them instead
+ * (`gate/custom-settings.test.ts`). They are never counted toward `USER_SETTING_CAP`, and a user's condition can never name
+ * one (its target is looked for among the user's own settings).
  */
 function customSettings(input: CompileInput, docs: readonly ProjectDoc[]): Custom {
   const rows = [...(input.settings ?? [])].sort((a, b) => a.position - b.position || byCode(a.key, b.key))
@@ -689,7 +706,8 @@ function customSettings(input: CompileInput, docs: readonly ProjectDoc[]): Custo
     else if (l.binding.kind === 'control') at(l.binding.instanceId).controls[l.binding.controlKey] = { key: l.row.key, type: l.derived.type, options: l.derived.options }
     else at(l.binding.instanceId).props[l.binding.path] = l.row.key
   }
-  return { entries, promoted, accent, record: { emitted: live.map((l) => l.row.key), parked: rows.filter((r) => parked.has(r.key)).map((r) => r.key) } }
+  for (const b of builtInSettings({ pack: input.pack, darkEnabled: input.darkEnabled })) entries[b.key] = ghostEntry(b)
+  return { entries, promoted, accent, record: { emitted: Object.keys(entries), parked: rows.filter((r) => parked.has(r.key)).map((r) => r.key) } }
 }
 
 /** What one instance's render is handed: the promoted controls its design declares and the props it prints — a page 2's
@@ -701,6 +719,20 @@ function promotedFor(custom: Custom, instance: DocInstance, entry: SectionRegist
   const controls = Object.fromEntries(Object.entries(own.controls).filter(([name]) => entry.controlSchema.some((c) => c.name === name)))
   const props = Object.fromEntries(Object.entries(own.props).filter(([path]) => printed.includes(path)))
   return Object.keys(controls).length === 0 && Object.keys(props).length === 0 ? undefined : { controls, props }
+}
+
+/** Story 7.11 — `default.hbs`'s one settings `<style>`, its lines unindented: `:root{`, each declaration guarded on its own
+ *  line, `}`. `accent` is the promoted accent's reader path, or null. The paths are constants (`BUILT_IN_PATH`, AD-36). */
+function settingsStyle(accent: string | null): string[] {
+  const darkAccent = `{{#if ${BUILT_IN_PATH.darkAccent}}}${SETTING_DARK_ACCENT}: {{${BUILT_IN_PATH.darkAccent}}};`
+    + (accent === null ? '' : `{{else if ${accent}}}${SETTING_DARK_ACCENT}: {{${accent}}};`) + '{{/if}}'
+  return [
+    '<style>:root{',
+    ...(accent === null ? [] : [`  {{#if ${accent}}}${SETTING_ACCENT}: {{${accent}}};{{/if}}`]),
+    `  ${darkAccent}`,
+    `  {{#if ${BUILT_IN_PATH.darkLogo}}}${SETTING_DARK_LOGO}: url("{{${BUILT_IN_PATH.darkLogo}}}");{{/if}}`,
+    '}</style>',
+  ]
 }
 
 /** Every `@custom.<key>` a template reads, comments out — the readers the last assertion holds to the declared keys. */
@@ -731,7 +763,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     ...Object.keys(input.pageTwo ?? {}).sort(byCode).map((f) => input.pageTwo?.[f] as ProjectDoc),
   ]
   const custom = customSettings(input, storedDocs)
-  const tokens = packTokensCss(input.pack, { ghostFonts: true, settingAccent: custom.accent !== null })
+  const tokens = packTokensCss(input.pack, { ghostFonts: true, settingAccent: custom.accent !== null, darkSettings: true })
   noC0("the pack's CSS", [tokens])
   const perPage = pageSize(input.postsPerPage)
   const pkg = packageJson(input, perPage, custom.entries)
@@ -906,18 +938,23 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     '    <meta name="viewport" content="width=device-width, initial-scale=1">',
     '    <title>{{meta_title}}</title>',
     // Story 7.4: the preloads and the faces, each address one `{{asset}}` expression; the `<style>` holds `@font-face`
-    // rules only and names no mode, so `screen.css` stays the one file that does (AD-30)
+    // rules only and names no mode, so `screen.css` stays the one file whose style rules do (AD-30; since Story 7.11 the
+    // pin's two class names appear in `<body>`'s Color scheme chain below, the signal those rules read)
     ...fonts.head.map((l) => `    ${l}`),
-    // Story 7.10 (AD-30) — the promoted accent: ONE plain custom property from Ghost's value, its own element, naming no
-    // mode, which the token block reads through `var()` with the pack's light accent as its fallback. Guarded, because
-    // Ghost renders a setting its condition hides as `null`, and an empty custom property would empty every `var()` that
-    // reads it rather than fall back (`--x: ;` is a value) — so a hidden accent keeps the pack's. Ghost stores a colour only
-    // as `#rrggbb` (`custom-theme-settings-service.js:127-133`), so nothing else can reach the block.
-    ...(custom.accent === null ? [] : [
-      `    {{#if ${customPath(custom.accent)}}}`,
-      `      <style>:root{${SETTING_ACCENT}: {{${customPath(custom.accent)}}};}</style>`,
-      '    {{/if}}',
-    ]),
+    // Stories 7.10 and 7.11 (AD-30, AD-17) — THE ONE SETTINGS `<style>`: plain custom properties from Ghost's values,
+    // naming no mode, which the token block reads through `var()`. Each declaration is guarded, because Ghost renders a
+    // setting its condition hides as `null`, and an empty custom property would empty every `var()` that reads it rather
+    // than fall back (`--x: ;` is a value). The promoted accent (7.10), when there is one; the dark accent, falling back to
+    // the promoted accent and then, unset, to the pack's dark accent in the token block's own `var()`; the dark logo as a
+    // `url()`, which the dark logo rule draws as `content` (unset, `content` falls back to the picture's own `src`). Ghost
+    // stores a colour only as `#rrggbb` (`custom-theme-settings-service.js:127-133`); an image is not validated, so its URL
+    // is double-stashed inside a quoted string, where Handlebars writes `"`, `<` and `>` as entities (AD-36).
+    // ponytail: two ceilings, both stated in compile.test.ts — Handlebars leaves a line break as it is and a line break
+    // ends a CSS string, so a value carrying one adds CSS rules (never an element or a script; only the Administrator role
+    // may write a theme setting — Ghost 6.58.0's `fixtures.json`, no integration — and it already holds Code Injection;
+    // kept at Story 7.11's Dev, its spec's change log);
+    // and it writes `=` and `&` as entities too, so a URL with a query string does not load — Ghost's uploads carry neither.
+    ...settingsStyle(custom.accent === null ? null : customPath(custom.accent)).map((l) => `    ${l}`),
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
     // Story 7.5 (NFR-2 (3)): both scripts `defer`, in the head, so neither holds the page up
     `    ${MAIN_JS_TAG}`,
@@ -925,7 +962,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     ...guard.map((l) => `    ${l}`),
     '    {{ghost_head}}',
     '  </head>',
-    '  <body class="{{body_class}}">',
+    // Story 7.11 (FR-E4, AD-17): the owner's pin — Ghost's Color scheme — as the class `MODE_SELECTORS` reads
+    `  <body class="{{body_class}}${schemeClassChain()}">`,
     indent(bands.join('\n\n'), '    '),
     '  </body>',
     '</html>',

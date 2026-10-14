@@ -3565,6 +3565,14 @@ together with the lines that reference the three keys.
 `packTokensCss` writes it on every project, and Story 7.4 hands `darkOverrideCss` nothing and stamps no hook there. So
 which mode a Light-only site's visitors see is `color_scheme`'s compiled default, and this story's Create asks the owner
 (R-83) what that default is for each project mode.
+**And** *(as landed, Story 7.11's Dev, 2026-10-14)* the starts are the owner's (Question 1, option 1): Color scheme on
+**Auto** for a Light + Dark project and on **Light** for a Light only one. `color_scheme` is `<body>`'s class after
+`{{body_class}}`, which `MODE_SELECTORS` reads; the dark accent and the dark logo are plain custom properties in
+`default.hbs`'s one settings `<style>`, read by the token block's dark blocks — the dark accent falls back to a promoted
+light accent and then to the pack's dark accent, and the dark logo is `content` on every picture of Ghost's logo
+(stamped `data-site-logo` by the runtime), falling back to Ghost's logo and then the wordmark. `{{comments}}` stays
+bare: it **derives** from `color_scheme` through the page's colours, which Ghost's comments box reads (no `mode=`,
+R-34's one selector kept). Both pinned gscans score a Light only and a Light + Dark compile 0/0; T1 is MEASUREMENTS §79.
 
 **FRs:** FR-Q5. · **Owner test:** none. · **Verification:** gscan on a Light-only fixture, both specs.
 
