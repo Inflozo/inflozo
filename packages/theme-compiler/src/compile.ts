@@ -952,7 +952,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     // ponytail: two ceilings, both stated in compile.test.ts — Handlebars leaves a line break as it is and a line break
     // ends a CSS string, so a value carrying one adds CSS rules (never an element or a script; only the Administrator role
     // may write a theme setting — both majors' `fixtures.json`, 5.130.6 and 6.58.0, no integration — and it already holds
-    // Code Injection; Question 3 on Story 7.11's spec, for the owner);
+    // Code Injection; accepted as a stated limit, Story 7.11's Question 3, ruled option 1 (owner, 2026-10-14);
+    // it reopens if anything but an Administrator or the Owner ever writes `dark_logo`);
     // and it writes `=` and `&` as entities too, so a URL with a query string does not load and dark draws an empty box —
     // Ghost's uploads carry neither (`ghost-storage-base`'s `getSanitizedFileName`, both majors).
     ...settingsStyle(custom.accent === null ? null : customPath(custom.accent)).map((l) => `    ${l}`),

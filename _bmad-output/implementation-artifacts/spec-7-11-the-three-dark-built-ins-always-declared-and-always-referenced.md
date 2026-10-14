@@ -72,7 +72,10 @@ Question 2's sentence is on Story 7.18's card word for word, and Epic 7's preamb
   - The built-ins' reader paths are constants the compiler writes. They never pass through `customPath`, which refuses a
     reserved key on purpose.
   - A dark logo's value reaches CSS only as `url("{{@custom.dark_logo}}")`, double-stashed inside the settings `<style>`.
-    Handlebars writes `"`, `<` and `>` as entities, so the value cannot close the string or the element.
+    Handlebars writes `"`, `<` and `>` as entities, so the value cannot close the element or add an element or a
+    script. *(Corrected on Question 3, ruled option 1 (owner, 2026-10-14).)* A line break, which Handlebars leaves as it is, ends the CSS string, so a value
+    carrying one adds CSS rules — a stated limit, because only an Administrator or the Owner can write the setting and
+    both already hold Code Injection; it reopens if anything but them ever writes `dark_logo`.
   - Ghost stores a colour only as `#rrggbb` (§ Facts).
   - A hostile value is inert beside a legitimate one that works.
 - **The canvas is unchanged.** `packTokensCss` with no option writes today's bytes. The only canvas change is the
@@ -117,7 +120,7 @@ Question 2's sentence is on Story 7.18's card word for word, and Epic 7's preamb
 | No design prints a logo | No header placed | The reader stays in `default.hbs` and no rule matches. GS100 does not fire. | — |
 | User key collides | A promotion keyed `dark_logo` | Refused with `SETTING_WORDS.reserved` (unchanged) | — |
 | At the cap | 17 user settings | 20 entries; both gscans pass. | An 18th user row is refused with `SETTING_WORDS.cap` (unchanged) |
-| A hostile dark logo | `x");}body{display:none}</style><script>…` stored through Ghost's API, which does not validate an image | Rendered as entities inside the string, so no rule, element or script is created. A legitimate URL draws. | — |
+| A hostile dark logo | `x");}body{display:none}</style><script>…` stored through Ghost's API, which does not validate an image | Rendered as entities inside the string, so no element or script is created and this value adds no rule. A legitimate URL draws. *(Corrected on Question 3, ruled option 1 (owner, 2026-10-14): a value carrying a line break adds CSS rules, the stated limit in § Boundaries.)* | — |
 | Comments | A design with `data-helper="comments"` | Bare `{{comments}}`, no `mode=`. A design asking for an argument is refused by the validator. | — |
 | A design authors the stamp | A design's markup writes `data-site-logo` | Refused by the validator, because the attribute is the runtime's alone. | — |
 | The canvas | Any doc | The token block is byte-identical to today's, and the canvas DOM differs only by `data-site-logo` on a site-logo picture. | — |
@@ -335,7 +338,8 @@ compiled theme is not proved there.
   control can pass one (R-34).
 - **The canvas is unchanged.** Given the canvas, when it renders, then its token block is byte-identical and a site-logo
   picture carries `data-site-logo`.
-- **AD-36.** Given a hostile dark logo, when the head renders, then it is inert beside a legitimate value that draws.
+- **AD-36.** Given a hostile dark logo, when the head renders, then it is inert beside a legitimate value that draws —
+  save the stated limit (Question 3, ruled option 1 (owner, 2026-10-14)): a line break in the value adds CSS rules, never an element or a script.
 
 ### Review Findings (2026-10-14)
 
@@ -343,10 +347,11 @@ Five layers ran: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Au
 only, Ghost's source, the local compile, both gscans and Chromium), with CI and Vercel read in the main session (R-82) —
 results under § Verification. Every finding was read in the code before it was rated.
 
-- [ ] [Review][Decision] A Dark logo address carrying a line break adds CSS rules, which the approved AD-36 line ("cannot
+- [x] [Review][Decision] A Dark logo address carrying a line break adds CSS rules, which the approved AD-36 line ("cannot
   close the string") and the matrix row "A hostile dark logo" ("no rule … is created") say cannot happen. Dev kept it as a
   routine call while titling it "for the owner", and the frozen words are the owner's, so it is **Question 3**
-  [compile.ts `settingsStyle` · § Boundaries AD-36 · the matrix row]
+  [compile.ts `settingsStyle` · § Boundaries AD-36 · the matrix row] — **ruled option 1 (owner, 2026-10-14): accepted as a
+  stated limit**; the two sentences are corrected where they stand, and the limit is written beside the code and in AD-36
 - [x] [Review][Patch] Only `--accent` was pinned among the values the Dark accent color feeds, so the button fill and the
   link could stop following it with every check green. The fed set is now derived independently — the tokens a nudge of
   the pack's accent moves and that carry its hex — for every pack in both modes, Paper's pinned by name, and its control
@@ -435,6 +440,11 @@ pre-commit hook ran it; the Review records it).
   as approved until he rules, and this log is the record of where the build departs from them. The permission fact is now
   read in both majors (5.130.6's `fixtures.json` too), and "Ghost's uploads carry neither" is read in `ghost-storage-base`
   (1.0.0 and 3.0.0). No compiled byte changed at Review, so §79 on T1 stands for this tree; no T1 write was made.
+- **Review, 2026-10-14 — Question 3 ruled option 1 by the owner.** The line-break ceiling is accepted as a stated limit.
+  The two frozen sentences it contradicted (§ Boundaries' AD-36 line and the matrix row "A hostile dark logo") are
+  corrected where they stand, each marked with the ruling, and the AD-36 criterion names the limit. The limit is written
+  beside the code (`compile.ts`, `compile.test.ts`) and in AD-36, with what reopens it: any writer of `dark_logo` that is
+  not an Administrator or the Owner, an Inflozo write to Ghost among them (AD-10's allowlist forbids one today).
 
 ## Design Notes
 
@@ -446,6 +456,7 @@ Both were ruled by the owner on 2026-10-14, each the recommended option, so the 
 |---|---|---|
 | 1 — which mode a site starts in | option 1: Light + Dark starts **Auto**, Light only starts **Light** | § The starts; the matrix's first two rows; the recorder's first rows |
 | 2 — what a later Style Pack or mode change does to a deployed site | option 1: Story 7.18's Pre-flight says it — on its card word for word since the ruling | the propagation task's Story 7.18 line |
+| 3 — a Dark logo address with a line break adds page styles (raised at Review) | option 1: accepted as a stated limit, written beside the code and in AD-36, reopened only if anything but an Administrator or the Owner ever writes `dark_logo` | § Boundaries AD-36; the matrix row "A hostile dark logo"; the AD-36 criterion |
 
 ### The starts (one table; `SCHEME_START` and `builtInSettings` read it)
 
@@ -530,7 +541,7 @@ executed (R-238, DW-326).
 
 Questions 1 and 2 were raised at this story's Create and ruled by the owner in chat on 2026-10-14, each the recommended
 option (1 and 1). The spec is written to those rulings (§ Rulings this spec is written to). Story 7.18's card and Epic 7's
-preamble carry Question 2's sentence word for word (R-195). **Question 3 was raised at Review (2026-10-14) and is open.**
+preamble carry Question 2's sentence word for word (R-195). **Question 3 was raised at Review and ruled option 1 by the owner in chat on 2026-10-14.**
 
 ### Question 1 — Which mode a new site starts in
 
@@ -602,7 +613,7 @@ Every page then hides its main content. The same Administrator can already do ex
 3. **Remove it with a small script.** The theme's script sets the Dark logo safely. Visitors with scripts turned off
    would see the normal logo in dark.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-14).**
 
 ## Verification
 

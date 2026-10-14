@@ -1629,7 +1629,7 @@ test('(7.11) AD-36: a hostile Dark logo is inert in the head — written inside 
   // `<` is still an entity. Ghost does not validate an image setting, but only the Administrator role (and the Owner) may
   // write `custom_theme_settings` — read in both majors' `fixtures.json`, 5.130.6 and 6.58.0: no Editor, Author,
   // Contributor or integration — and an Administrator already holds Code Injection, so no one gains a power they lack. It
-  // is Question 3 on Story 7.11's spec, for the owner; a fix turns the second count below to one.
+  // is accepted as a stated limit (Story 7.11's Question 3, ruled option 1 (owner, 2026-10-14)); a fix turns the second count below to one.
   const broken = headWith('x\n");}#p{display:none}')
   assert.equal(broken.querySelectorAll('style').length, 1)
   assert.equal(broken.querySelectorAll('script, img').length, 0)
