@@ -141,7 +141,7 @@ development_status:
   7-10-promoting-a-control-to-a-ghost-admin-setting: done
   7-11-the-three-dark-built-ins-always-declared-and-always-referenc: done
   7-12-the-translations-surface-locales-emission-and-override-valid: done
-  7-13-the-ghost-card-design-module-and-cards-css: backlog
+  7-13-the-ghost-card-design-module-and-cards-css: ready-for-dev
   7-14-treatment-selection-from-theme-settings: backlog
   7-15-share-destinations-one-ordered-site-wide-list: backlog
   7-16-the-routes-manager: backlog

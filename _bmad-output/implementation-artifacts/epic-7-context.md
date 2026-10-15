@@ -342,6 +342,24 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - From `designedCards`, 7.5 ships `cards.js` and `LICENSE-ghost.txt` for the designed cards that have a script. 7.13 runs the first T1 proof with its first designed card.
     - Excluding `gallery` restores three gscan ERRORS on both checkers (`GS050-CSS-KGGC`, `-KGGR`, `-KGGI`; the other three scripted cards restore warnings), so `cards.css` must style those classes before a designed gallery can pass FR-J6.
   - **Story 7.5's Dev (2026-10-08):** Story 7.13's card carries both lines — `cards.js`'s first T1 proof with its first designed scripted card, and gallery's three gscan errors.
+  - **Story 7.13's Create (2026-10-15):** the spec is ready for Dev with three questions open (R-83); Dev waits for all three.
+    - **Q1 (DW-109):** the callout's background row. Recommended: rename it "Callout background" and keep its four drawn values.
+    - **Q2:** before A33's treatments, a card's panel carries the card's own controls only (recommended), or also the plane, padding, caption and width the treatment will own.
+    - **Q3:** the call-to-action card has no drawn panel. Recommended: one line, no controls.
+    - **Settled as readings.**
+      - **One registry.** `packages/library/src/cards.ts` lists every Koenig card in Ghost's menu order, with its chunk names and its panel; the editor, canvas and compiler all read it.
+      - **Start from Ghost.** A designed card starts from Ghost's own chunk, copied verbatim into `cards.css`, plus its changed values' rules. A card is excluded exactly while one value differs.
+      - **Storage and undo.** `card_designs` rides the editor's save as `CARDS_KEY` through a widened `sync_project_doc` (`p_cards`), so a reset is one ⌘Z. The column drop and the RPC are the Schema push.
+      - **Link order.** `cards.css` is linked before `screen.css`.
+      - **Corners.** They come from the pack's radius token.
+      - **`!important`.** Ghost's own `!important`s stay inside the copy, and none is in Inflozo's rules.
+      - **Entry.** The surface is **Editor cards**, entered from the switcher's Template surfaces group (EXPERIENCE's shell, not S14d's nav).
+      - **Canvas.** The canvas is a nonce'd document running Ghost's four card scripts.
+    - **Read in source (5.130.6 / 6.58.0, koenig-lexical 1.7.2 / 1.9.2, gscan 4.49.7 / 6.4.2).**
+      - **The menu.** Ghost's real menu order is not EXPERIENCE item 15's list, which is corrected at Dev. Email call to action is hidden by default on both majors.
+      - **Ghost 5's glob.** It is a prefix test: `!(header)` drops `header_v2` too.
+      - **gscan.** It restores a card's rules only while the card is excluded, matches unanchored in `.css` and `.hbs`, and asks for classes Ghost's own CSS lacks. On both pins that is button's `.kg-align-center`. On 4.49.7 alone it is callout's and video's names, which Ghost never prints. `cards.css` writes each as an alias.
+    - **Moved (R-118, R-195).** S14b's Treatment dropdown and read-only treatment block go to Story 10.110. The Contrast Band exclusions go to 10.111, and the HTML card's Rules/Contrast Band half is split between them. Epic 10's preamble lists all three.
   - **Story 7.1's Dev (2026-10-05):** the recorder's local gate refuses the compiled pilot theme with the scaffold the spec names — `GS110-NO-MISSING-PAGE-BUILDER-USAGE` (an error on gscan 4.49.7, a warning on 6.4.2), because the pilots compile no `page.hbs` and so nothing reads `@page.show_title_and_feature_image`. `page.hbs` is Story 7.3's; widening the scaffold is the owner's to rule (the spec's Ask First). **Ruled 2026-10-06:** the recorder carries a stand-in `page.hbs` labelled as 7.3's (the shape every earlier probe carried), and the run then gated 0/0 on both gscans and held every row on T1 (MEASUREMENTS §70). 7.3's own `page.hbs` must read `@page.show_title_and_feature_image`, or that gscan finding returns on a real compile.
     - **Story 7.3's Dev (2026-10-06):** 7.3's `page.hbs` reads the switch only around an A24 section, and an untouched Page the library leaves empty is not emitted (Question 1), so the stand-in stays, relabelled as Story 10.79's, which retires it once A24 #1 sits on `page.hbs`. The finding on a real project is DW-341, Story 7.7's.
 - **The Routes Manager writes `routes.yaml` so nobody hand-writes YAML, and deploy uploads it (7.16, 7.17, FR-I2–I5).** Collections with a per-route `limit:`, channels, custom routes and taxonomies, a live YAML preview, normative field→NQL with no nested parentheses and a round trip asserting the parsed filter; custom-template names refused on collision and never renamed once deployed; `POST /settings/routes/yaml` with the staff token and a byte-for-byte read-back, B16 as the designed fallback, two routes on demand, `/search/` never.

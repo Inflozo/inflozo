@@ -3702,6 +3702,8 @@ override `cards.css` on the `.kg-*` classes they legitimately style — **A33 ow
 column they sit in**
 **And** excluding a card **restores gscan's Koenig rules for it**, so checking scales with what Inflozo wrote
 **And** the surface matches S14a–e.
+*(Story 7.13's Create, 2026-10-15: S14b, the Contrast Band criterion above and the Rules and Contrast Band halves of the
+HTML card's sentence moved to Stories 10.110 and 10.111, word for word (R-118, R-195) — Epic 10's preamble lists them.)*
 
 **And** *(Story 5.20, DW-267)* **`project_treatments.paywall_design_id` is dropped** in this story's own Schema phase
 (R-99): the paywall is the `paywall` doc since Story 5.20 (AD-27(a0)), and the column has never had a reader or a writer
@@ -5108,6 +5110,18 @@ behind §4's blocking owner gate.
 > **Each category's Layers picture — DW-281 (Story 5.24e's Dev, 2026-10-02).** A category's first story adds its Layers picture,
 > extrapolated from S4 and D8's five (R-74); A1, A3, A4, A17 and A22 have theirs (Story 5.24e), and A2's nearest is
 > B7's announcement glyph. Until a category's first story lands, its rows and rail tiles draw Hero's.
+>
+> **Given owners by Story 7.13's Create (2026-10-15), word for word, so none is missed (R-195).** No A33 treatment exists
+> before Story 10.110, and R-118 draws no control before the story that makes it work, so these leave Story 7.13's card:
+>
+> 1. "the surface matches S14b": the Editor cards screen's Treatment dropdown above its Card dropdown, the treatment's own
+>    controls in the sidebar while no card's panel is open, the read-only "From the {treatment} treatment" block in every
+>    card's panel (S14e), and a card override a new treatment claims dropped with a one-line notice in the panel, never
+>    silently kept and outvoted. Goes to **Story 10.110**.
+> 2. "the HTML card emits no wrapper element so it cannot be a target of the Rules or Contrast Band values". The Rules half
+>    goes to **Story 10.110**, the Contrast Band half to **Story 10.111**.
+> 3. "those same three [`header_v2`, `signup`, `cta`] are excluded from a Contrast Band's inversion: a band's plane may run
+>    behind them but their surfaces stay the author's". Goes to **Story 10.111**.
 
 ### A4 · Heroes — 17 designs, 5 stories
 
@@ -8123,8 +8137,15 @@ So that I can start using Koenig Card Treatments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A33-<n> <Name>.dc.html` — and the category's `A33-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.13's Create, 2026-10-15, R-118 — word for word)* **the surface matches S14b**: the Editor cards
+screen's **Treatment** dropdown above its Card dropdown, the six A33 whole-set styles one active per project, the
+treatment's own controls in the sidebar while no card's panel is open, the read-only **"From the {treatment} treatment"**
+block (plane · space around · corners) in every card's panel (`S14 Editor Cards.dc.html` S14e), and **a card override
+that a new treatment claims is dropped with a one-line notice in the panel — never silently kept and outvoted**
+**And** *(from Story 7.13's Create, 2026-10-15 — word for word)* **the HTML card emits no wrapper element** so it cannot
+be a target of the **Rules** values
 
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A33). · **Frame:** `A33-<n> <Name>.dc.html` · `A33-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
+**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A33). · **Frame:** `A33-<n> <Name>.dc.html` · `A33-0 Category Proof.dc.html` · `S14 Editor Cards.dc.html` S14b. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
 #### Story 10.111: A33 — designs #5–6 (owner gate)
 
@@ -8145,6 +8166,10 @@ So that I can choose more widely within Koenig Card Treatments on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A33-<n> <Name>.dc.html` — and the category's `A33-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.13's Create, 2026-10-15 — word for word)* **those same three** — `header_v2`, `signup` and `cta`,
+whose colours the post author sets inline — **are excluded from a Contrast Band's inversion**: a band's plane may run
+behind them but their surfaces stay the author's; and **the HTML card emits no wrapper element** so it cannot be a target
+of the **Contrast Band** values
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
