@@ -2,7 +2,7 @@
 title: 'Story 7.12 — The Translations surface, locales/ emission, and override validation'
 type: 'feature'
 created: '2026-10-15'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'c065752d40f93cfd5a85a82df47c54c870cf7f31'
 owner_test: pending
 review_loop_iteration: 0
@@ -179,7 +179,7 @@ phase (R-99).
 - `apps/web/lib/style-pack.ts:299` — the canvas's `faces: fontFaceCss(id, fontHref('canvas'))`; every `fontFaceCss` call site in `apps/web` (also `style-guide.ts:168`, `controls-review.ts:120`) is listed by `grep -rn "fontFaceCss(" apps/web`.
 - `apps/web/lib/probe-rule.ts:669` — `settingsPatch` keeps `code_injection`, portal, `announcement`, `brand`, `members`, `plan_ask`; no `locale`.
 - `apps/web/app/(app)/app/(authed)/sites/actions.ts` — `useBrand` :732, its insert :935 (the one `linked_site_id` writer).
-- `supabase/migrations/20260904120000_complete_schema.sql` — `projects.language` :225, `rtl_ack_at` :233 (both in the update grant :1052); `translation_overrides` :343-355 (PK `(project_id, catalog_key)`, `credit_namespace_locked`), RLS :793/:821/:846, authenticated CRUD :1022. `RLS-TEST.sql:374-381` the credit row.
+- `supabase/migrations/20260904120000_complete_schema.sql` — `projects.language` :225, `rtl_ack_at` :233 (both in the insert grant :1052 and the update grant :1210); `translation_overrides` :343-355 (PK `(project_id, catalog_key)`, `credit_namespace_locked`), RLS :793/:821/:846, authenticated CRUD :1022. `RLS-TEST.sql:374-381` the credit row.
 
 ## Tasks & Acceptance
 
@@ -221,6 +221,73 @@ phase (R-99).
 - Given Question 1, then its ruled behaviour is built as Design Notes states it.
 - Given `pnpm check`, the gscan gate on the `de` and `ru` pilot compiles, the deployed walk's step 106 and T1 §80, then every one is green or recorded, each behind its control.
 
+### Review Findings (2026-10-15)
+
+Five layers ran: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the real-infra verifier (T1 read
+only, Ghost 6.58.0's source from the npm tarball, intl-messageformat 5.4.3 executed, production's schema read in a
+read-only transaction, the deployed routes signed out), with CI, Vercel and the deployed walk run in the main session
+(R-82) — results under § Verification. Every finding was read in the code before it was rated. No question for the owner
+came out of it.
+
+- [x] [Review][Patch] A backslash and DEL reached the judge's catch-all "Check its apostrophes and braces", which names
+  neither — executed against 5.4.3, a backslash is its escape character (`C:\temp` throws, an error on every page that
+  prints it; `\u0041` prints `A`) and DEL throws. DEL takes the control-character sentence; a backslash its own, naming it
+  in the customer's string [override.ts, override.test.ts, walk 106d, appendix-h1 S3 and V9]
+- [x] [Review][Patch] The RTL block was the Kit's notice Banner, which B18 does not draw: it is B18's strip (`:1794-1801`),
+  with two tokens taken from B18 (`marigold-ink`, `marigold-edge`), under the header; the rows' ground is the surface so an
+  odd row is B18's, and a refused row's words take `danger-panel-ink` as B18's do [translations.tsx, loading.tsx,
+  globals.css, DESIGN.md]
+- [x] [Review][Patch] Other… codes in a right-to-left script other than Arabic or Hebrew (`dv`, `syr`, `nqo`, `ff-Adlm`, and
+  Dari, Kashmiri, Balochi, South Azerbaijani) skipped Appendix G's Understood; `zh-TW`/`zh-HK`/`zh-MO` read as Simplified;
+  a private-use `en-x-arab` read as Arabic [languages.ts, languages.test.ts]
+- [x] [Review][Patch] The split of stored rows into what reaches the canvas and what is shown refused was held by a source
+  regex alone: it is `judgeOverrides` in `@inflozo/library/override`, executed in `override.test.ts`, and read by both of
+  `read.ts`'s reads [override.ts, read.ts, translations.test.ts]
+- [x] [Review][Patch] Five matrix rows had no check that ran in their state — Other…, `setLanguage`'s two guards past the
+  page, a stored refused override (row and canvas), the first link's language, and the whole faces actually served: the
+  walk's step 106k executes each behind its control; `pilots.test.ts` serves every whole face at its hash, and
+  `style-pack.test.ts` holds `packChoices`/`pairingChoices` under a script to `fontFaceCss` [run-verify-editor.cjs,
+  pilots.test.ts, style-pack.test.ts]
+- [x] [Review][Patch] `build-pool.py`'s same-commit guard held the latin files only, so a fontTools change could rewrite
+  every whole face silently: it holds them too [build-pool.py]
+- [x] [Review][Patch] `languages.ts` cited two fixture files that do not exist; the fixture said "both verbatim" of a
+  text whose one comma is a newline [languages.ts, admin-6.58.0.json]
+- [x] [Review][Patch] The rail's three Ghost links and the mismatch notice's link said "↗" and nothing else to a screen
+  reader: each says "(opens in a new tab)", the Layers panel's and the paywall notice's words [rail.tsx, translations.tsx,
+  lib/translations.ts, walk 106j]
+- [x] [Review][Patch] A choice from the language menu left Other… open; "every page" and the `pt-BR` placeholder sat
+  outside the one list (R-170); `EditorData.language` was returned and read by nothing [translations.tsx,
+  lib/translations.ts, read.ts]
+- [x] [Review][Patch] Places that still said the old thing: the PRD's risk row ("500s every page"), EXPERIENCE A9 #14
+  ("whole-site 500"), a face count written into `epic-7-context.md`, the Code Map's grant line; and the Spec Change Log now
+  records where the Dev put `readTranslations` and that no `refusalOf` exists [prd.md, EXPERIENCE.md, epic-7-context.md,
+  this spec]
+- [x] [Review][Defer] Three walks on the Dev head died on harness holds with 0 FAIL — step 53's paint after Back, and two
+  magic-link loads whose requests Vercel answered in under 250 ms — owner Story 15.1 — deferred, DW-352 (seen again)
+
+Dismissed, each read in the code: the three actions not checking the live lock on the server (Theme settings' own actions
+take the same posture; R-192 is the read-only page, and an override never races the canvas's journal); Use the default on
+a row already gone answering the save sentence (`useSubmitting` guards the double press; another tab is a reload away); a
+crafted post missing its acknowledgement or confirm getting the save sentence (the page always sends them; 106k replays
+both); `translatableKeys` rebuilt per call (catalog-sized); the judge importing the shim by path (the cycle it avoids is
+documented); a plural in an attribute (no design prints a plural; DW-141's rule is the element's); C1, U+2028 and bidi
+controls (5.4.3 and the shim print them alike — executed — and the Always says C0); a first link to a right-to-left site
+storing no acknowledgement (the matrix's own row: the page shows the block, and Story 7.18's Pre-flight blocks); a site
+connected before this story having no stored locale (no notice with none stored, as the matrix says); the notice hidden
+for a site whose address fails the http(s) check (connect validates the address); the empty-pairing fallback (`packs` is
+never empty); the Translations page reading `editorData` whole (cached per request); the address check written twice; the
+coverage type copied by shape (DW-323's reason); a case variant of `en` (stored and emitted exactly, as Ghost reads it); V3's
+per-file assertion (the spec asks for it); the canvas-key filter in three places; no search or filter (§ Never); no
+unsaved-edit warning (not in the spec); literal colours in the walk; `ownName`'s CLDR names under Node 24's full ICU;
+`comments.placeholder` listed though canvas-only (appendix-h1 §3 says it is listed); a refused stored row of a key no
+surface lists (only a direct write of an unknown key, never shown on the canvas and refused by the compile); a stale
+"has overrides" after another tab wrote one; the starting-words Edit link for a template no canvas opens (`read.ts` stores
+templates only under the canvases the switcher opens); `rtl_ack_at`'s timestamp format (PostgREST's ISO, both renders); a
+code longer than any locale (Ghost's rule accepts it, and nobody types one); the AD-36 plural twin rendered in the test
+(no product `{{plural}}` renderer exists yet; `contract.test.ts` records Ghost's fact); the settings layout's reads above
+both skeletons (the prefetch carries the layout); the Russian pilot gated locally rather than in CI (CI gates a Russian
+theme in `gate/locales.test.ts`; the pilot tree is recorded — "green or recorded").
+
 ## Spec Change Log
 
 - **Dev, 2026-10-15 — found by execution (standing rule 1); the owner renegotiated one matrix sentence (Question 3):**
@@ -235,6 +302,24 @@ phase (R-99).
   file verbatim; a `strings` record that leaves a key out ships that key's English (the render already read it so);
   the Theme settings page and its skeleton moved into a `(theme)` route group, so each settings page keeps its own
   `loading.tsx` under the shared rail (`busy.test.ts` unchanged).
+- **Review, 2026-10-15 — found by execution (standing rule 1), routine calls (said to the owner, not asked):**
+  - **A backslash and DEL.** Executed against 5.4.3: a backslash is its escape character (`C:\temp` throws, `\u0041`
+    prints `A`) and DEL (U+007F) throws; both reached the matrix's catch-all "Check its apostrophes and braces", which names
+    neither. DEL now takes the control-character sentence, and a backslash its own, in the brace sentence's shape: "The “\”
+    in “C:\temp” would break every page that shows it, or change what it prints. Remove it." (`OVERRIDE_WORDS.backslash`).
+  - **The RTL block is B18's own strip** (`:1794-1801`: the raised ground, the warning sign, `marigold-ink` title,
+    `marigold-text` sentence, a 30px white Understood with B18's marigold edge — two tokens added from B18), not the Kit's
+    notice Banner the Dev drew. It stays **under the header**, not at the card's foot: B18's foot is under seven rows, this
+    list's under every key. The rows' ground is the surface, so an odd row is B18's `#FDFCFA`, and a refused row's words
+    take `danger-panel-ink` as B18's do.
+  - **Other scripts that read right to left** (Thaana `dv`, Syriac `syr`, N'Ko `nqo`, Adlam `ff-Adlm`, and Dari, Kashmiri,
+    Balochi and South Azerbaijani in Arabic script) ask for Understood like Arabic; `zh-TW`, `zh-HK` and `zh-MO` are
+    Traditional Chinese; a script subtag counts only right after the language, where Ghost's rule puts it.
+  - **Where the Dev put two things:** `readTranslations` lives in `(editor)/read.ts` (server side, beside the judge), not
+    `lib/translations.ts` (browser-safe); there is no `refusalOf` — the actions map every database failure inline to "We
+    couldn't save that just now.". The judge's split of stored rows is `judgeOverrides` in `@inflozo/library/override`.
+  - The rail's and the mismatch notice's ↗ links say "(opens in a new tab)" to a screen reader; a choice from the language
+    menu closes Other…; the same-commit guard in `build-pool.py` holds the whole faces' bytes too.
 
 ## Design Notes
 
@@ -326,7 +411,7 @@ Do this on the real site after Deploy, on a laptop at full width, signed in as y
 | 8 | the same | Translations | Press **Use the default** on `post.reading_time`. Go back to the editor. | — | The box empties to *Falls back to English*; the Three Up cards read "… min read" again. |
 | 9 | the same | Translations | Type `{minutes} min` into `post.reading_time` and save, then choose **Deutsch** in the language button. Press **Cancel**. Then press **Use the default** on `post.reading_time`. | `{minutes} min` | A small window: "Switch to Deutsch? The labels you translated were written in Español. They stay, and ship in the Deutsch file until you change them." with **Cancel** focused. After Cancel: still Español. |
 | 10 | the same | Translations | Choose **Русский**. Then choose **日本語**. | — | Each saves and the column takes the language's name. Under the button, on the Paper pack (Fraunces headings, Inter text): "Inter covers Cyrillic: your theme ships its whole faces — about … KB of fonts instead of … KB." and "Fraunces doesn't cover Cyrillic, so your site shows Русский headings in each reader's own system font." For 日本語, one "doesn't cover Japanese" sentence for each font. On another pack the font names differ. |
-| 11 | the same | Translations | Choose **العربية**. Then press **Understood**. | — | A yellow box with a warning sign: "Right-to-left languages are not supported yet" / "Our designs are built left-to-right. Arabic, Hebrew and Farsi strings will translate, but the layouts will not mirror." and **Understood**; the button still shows the old language. After Understood it saves Arabic and the box says you acknowledged it today. |
+| 11 | the same | Translations | Choose **العربية**. Then press **Understood**. | — | A pale strip under the header with a gold warning sign, gold words and a white **Understood** button on its right: "Right-to-left languages are not supported yet" / "Our designs are built left-to-right. Arabic, Hebrew and Farsi strings will translate, but the layouts will not mirror."; the language button still shows the old language. After Understood it saves Arabic and the strip says you acknowledged it today. |
 | 12 | the same | Translations | Choose **English**. | — | English, no yellow box, no font sentence, the column reads ENGLISH, nothing overridden. |
 | 13 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04/settings` | Theme settings | Look at the left menu. | — | Below Translations: **Navigation ↗**, **Social accounts ↗**, **Code injection ↗**. Each opens that part of your Ghost site's own settings in a new tab (Ghost may ask you to sign in). |
 | 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings/translations` | Translations | Choose **Español** again and scroll to the bottom. | — | "Starting words you haven't retyped" listing **Three Up on Home** with its untouched words (e.g. “The archive”, “Browse the archive”) and an **Edit** link that opens Home. Choose **English** again: the block is gone. |
@@ -433,3 +518,30 @@ that library it would show `{minutes} Min. Lesezeit`.
 - **Not run at Dev, and why:** the deployed walk's step 106 needs this push deployed — it is the Review's, on
   production (Supabase through the app's own session, Vercel's deployment). Supabase was not written by Dev: no
   migration (every column, grant and check pre-exists). Resend and Dodo are not touched by this story.
+
+**What ran at Review, 2026-10-15 (R-82):**
+- **CI and Vercel** (`GITHUB_TOKEN`, `VERCEL_TOKEN`, read in-process): on the Dev head `376d8c3d`, CI's `rls`, `check` and
+  `deploy` and the Render matrix all succeeded; `dpl_5X28GxaK28MYL2jzCWSAaPjfednS` READY, serving `app.inflozo.com`.
+- **Supabase, production** (`SUPABASE_DB_POOLER_URL`, `BEGIN READ ONLY`, catalog views only): `projects.language` text
+  not null default `en`, `rtl_ack_at` timestamptz null, the six `translation_overrides` columns, `credit_namespace_locked`
+  and the `(project_id, catalog_key)` key, `authenticated`'s UPDATE on both project columns and CRUD on the table, RLS on —
+  the schema is at least as new as the code (R-99); controls: a made-up column and constraint absent, `revision` not granted.
+- **T1 `ghost6.inflozo.com`, read only** (`GHOST6_ADMIN_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`): `locale` is `en`, Casper
+  active, no probe theme left — the Dev's put-back holds; control: a forged Admin key answered 401.
+- **Ghost 6.58.0's source** (the npm tarball, read as data): the admin bundle's sha256 equals the fixture's; `fs` equals
+  `LANGUAGES` in order; Ghost's `ms` and `languageRefusal` agree on 1106 generated codes (a wrong rule as the control
+  disagreed on 1025); `i18n.js` names `locales/<locale>.json` with no normalisation and falls back to `en.json` on ENOENT
+  only; the four settings navids exist.
+- **intl-messageformat 5.4.3** (a fresh install resolves parser 2.1.3, the lockfile's pair): 22 matrix rows against
+  `override.ts`, each refused row behind its accepted twin; then the review's own: `C:\temp`, `back\` and DEL throw, `\u0041`
+  prints `A`, C1, U+2028 and a bidi override print as typed.
+- **The deployed routes, signed out:** Translations and Theme settings answer 307 to sign-in, a made-up project the same;
+  the whole faces are in the deployment's files at the pool's bytes and sha256 (the signed-in fetch is 106k's).
+- **The deployed walk on the Dev head**, three runs from a clean worktree at `376d8c3d`, none complete, **0 FAIL in each**:
+  260 PASS (died at step 53's paint after Back — the editor's request answered 200 in 777 ms), 668 PASS (died at a magic-link
+  load after step 96) and 701 PASS (the same after step 102). DW-352's holds; step 106 was not reached.
+- **Local:** `pnpm check` green under Node 24 (every package's tests with 0 fail, check-catalog, check-snapshots, and
+  test-vocabulary holding every pool file, whole faces included, at its sha256); `uv run tools/fonts/build-pool.py
+  --self-check` passes.; `pnpm keyboard` whole, every journey passed.
+- **Not run yet, and why:** the walk's new step 106k and a complete step 106 need this Review push deployed — they run on
+  the Review head and are appended in a second Review commit.

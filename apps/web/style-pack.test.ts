@@ -204,6 +204,20 @@ test('pairingChoices hands every pool pairing, in §D.c\'s order, with its fonts
   for (const f of Object.keys(POOL.families)) assert.ok(families.has(`${PACK_FAMILY_PREFIX}${f}`), f)
 })
 
+// Story 7.12's review: the editor hands `packChoices(script)` AND `pairingChoices(script)` (`editorData`), so an own pack or a
+// pairing switch on a Russian project wears the faces the theme ships for Cyrillic — the runtime's one rule, never latin's
+test('under a script, every preset and every pairing carries the faces fontFaceCss writes for it — and latin is today\'s', async () => {
+  const { fontFaceCss } = await import('@inflozo/section-runtime/fonts')
+  const { fontHref, pairingChoices } = await import('./lib/style-pack.ts')
+  for (const script of ['cyrillic', 'japanese'] as const) {
+    for (const p of pairingChoices(script)) assert.equal(p.faces, fontFaceCss(p.id, fontHref('canvas'), { script }), `${p.id} ${script}`)
+    for (const c of packChoices(script)) assert.equal(c.faces, fontFaceCss(c.record.pairing, fontHref('canvas'), { script }), `${c.id} ${script}`)
+  }
+  // the control: Cyrillic changes something (a covering family's whole faces), and latin is the default's text exactly
+  assert.ok(pairingChoices('cyrillic').some((p, i) => p.faces !== pairingChoices()[i]?.faces))
+  assert.deepEqual(pairingChoices('latin').map((p) => p.faces), pairingChoices().map((p) => p.faces))
+})
+
 test('Story 6.4 (the review) — "From your site" is the linked site\'s stored brand accent, as #RRGGBB, or nothing', () => {
   assert.equal(siteAccentOf({ brand: { accent: '#2f4a3e' } }), '#2F4A3E')
   assert.equal(siteAccentOf({ brand: { accent: '#abc' } }), '#AABBCC', 'three digits expanded')

@@ -81,6 +81,10 @@
   --color-sky-line: #D4E0FA;
   --color-mint-line: #BFE7D6;
   --color-marigold-line: #F5E3B8;
+  /* B18's right-to-left strip (B Missing Surfaces :1797, :1800): its title and Understood's words, and Understood's border
+     (Story 7.12's review) */
+  --color-marigold-ink: #5C4200;
+  --color-marigold-edge: #E8D9AE;
   --color-danger-line: #F5C6C9;
   --color-grey-field: #F2EFEA;     /* P0-0: a greyed control's fill */
   --color-grey-border: #EAE5DD;    /* P0-0: a greyed control's border */

@@ -3,8 +3,9 @@
 //
 // THE LIST IS GHOST'S. Ghost 6.58.0's admin offers Publication Language from the array `fs` of `{code,label}` in
 // `core/built/admin/assets/settings-KSWWQanQ.js` (read in source 2026-10-15; the bundle's own text is pinned in
-// `../fixtures/ghost-locale/languages-6.58.0.txt`, which `languages.test.ts` holds this list equal to), plus "Other...",
-// a free code checked by the `ms` validator beside it (pinned in `validator-6.58.0.txt` and run against this port).
+// `../fixtures/ghost-locale/admin-6.58.0.json`'s `languages`, which `languages.test.ts` holds this list equal to), plus
+// "Other...", a free code checked by the `ms` validator beside it (pinned in the same fixture's `validator` and run against
+// this port).
 // Ghost 5.130.6's admin is a free-text field. Ghost's server accepts any non-empty `locale`
 // (`default-settings.json`), and its theme i18n reads `locales/<that setting>.json` with NO normalisation
 // (`core/frontend/services/theme-engine/i18n/i18n.js:187-199`, both majors) — so a code is stored and emitted exactly,
@@ -102,28 +103,31 @@ export function languageRefusal(code: unknown): string | null {
 /** google/fonts' own subset names (`METADATA.pb`'s `subsets`), which is how a family declares the scripts it covers. */
 export type Script =
   | 'latin' | 'vietnamese' | 'cyrillic' | 'greek' | 'arabic' | 'hebrew' | 'devanagari' | 'bengali' | 'gurmukhi' | 'tamil'
-  | 'sinhala' | 'thai' | 'japanese' | 'korean' | 'chinese-simplified' | 'chinese-traditional'
+  | 'sinhala' | 'thai' | 'japanese' | 'korean' | 'chinese-simplified' | 'chinese-traditional' | 'thaana' | 'syriac' | 'nko' | 'adlam'
 
 /** Each script's name in a sentence ("Inter covers Cyrillic"). */
 export const SCRIPT_NAMES: Readonly<Record<Script, string>> = {
   latin: 'Latin', vietnamese: 'Vietnamese', cyrillic: 'Cyrillic', greek: 'Greek', arabic: 'Arabic', hebrew: 'Hebrew',
   devanagari: 'Devanagari', bengali: 'Bengali', gurmukhi: 'Gurmukhi', tamil: 'Tamil', sinhala: 'Sinhala', thai: 'Thai',
   japanese: 'Japanese', korean: 'Korean', 'chinese-simplified': 'Chinese', 'chinese-traditional': 'Traditional Chinese',
+  thaana: 'Thaana', syriac: 'Syriac', nko: "N'Ko", adlam: 'Adlam',
 }
 
 // An explicit script subtag (ISO 15924) → the script.
 const SUBTAG_SCRIPT: Readonly<Record<string, Script>> = {
   latn: 'latin', cyrl: 'cyrillic', grek: 'greek', arab: 'arabic', hebr: 'hebrew', deva: 'devanagari', beng: 'bengali',
   guru: 'gurmukhi', taml: 'tamil', sinh: 'sinhala', thai: 'thai', jpan: 'japanese', kore: 'korean', hans: 'chinese-simplified',
-  hant: 'chinese-traditional',
+  hant: 'chinese-traditional', thaa: 'thaana', syrc: 'syriac', nkoo: 'nko', adlm: 'adlam',
 }
 
 // A primary subtag's default script, where it is not Latin. Ghost's list first, then the right-to-left languages an
 // Other… code is likeliest to name. Serbian is Latin (Ghost lists "Serbian" and "Serbian (Cyrillic)" apart), and
 // Vietnamese is its own: its tone-marked letters sit outside `latin-ext`, in google/fonts' `vietnamese` subset.
 const PRIMARY_SCRIPT: Readonly<Record<string, Script>> = {
-  ar: 'arabic', fa: 'arabic', ur: 'arabic', ps: 'arabic', sd: 'arabic', ckb: 'arabic', ug: 'arabic',
+  ar: 'arabic', fa: 'arabic', ur: 'arabic', ps: 'arabic', sd: 'arabic', ckb: 'arabic', ug: 'arabic', prs: 'arabic', ks: 'arabic',
+  bal: 'arabic', azb: 'arabic',
   he: 'hebrew', yi: 'hebrew',
+  dv: 'thaana', syr: 'syriac', nqo: 'nko',
   bg: 'cyrillic', kz: 'cyrillic', kk: 'cyrillic', mk: 'cyrillic', mn: 'cyrillic', ru: 'cyrillic', uk: 'cyrillic', be: 'cyrillic',
   el: 'greek',
   hi: 'devanagari', ne: 'devanagari', mr: 'devanagari', bn: 'bengali', pa: 'gurmukhi', ta: 'tamil', si: 'sinhala', th: 'thai',
@@ -131,23 +135,24 @@ const PRIMARY_SCRIPT: Readonly<Record<string, Script>> = {
   vi: 'vietnamese',
 }
 
-/** The script a language writes in: an explicit script subtag first (`sr-Cyrl`, `zh-Hant`), else the primary subtag's
- *  default, else Latin. */
+// Chinese written in Taiwan, Hong Kong and Macau is Traditional when the code names the region and no script (`zh-TW`)
+const TRADITIONAL_REGIONS = new Set(['tw', 'hk', 'mo'])
+
+/** The script a language writes in: an explicit script subtag first (`sr-Cyrl`, `zh-Hant` — the subtag right after the
+ *  language, where Ghost's rule puts it, so a private-use `en-x-arab` is not one), then Chinese's Traditional regions, else
+ *  the primary subtag's default, else Latin. */
 export function scriptOf(code: string): Script {
-  const parts = code.toLowerCase().split('-')
-  for (const part of parts.slice(1)) {
-    if (part.length === 4 && Object.hasOwn(SUBTAG_SCRIPT, part)) return SUBTAG_SCRIPT[part] as Script
-  }
-  const primary = parts[0] as string
+  const [primary = '', second = ''] = code.toLowerCase().split('-')
+  if (second.length === 4 && Object.hasOwn(SUBTAG_SCRIPT, second)) return SUBTAG_SCRIPT[second] as Script
+  if (primary === 'zh' && TRADITIONAL_REGIONS.has(second)) return 'chinese-traditional'
   return Object.hasOwn(PRIMARY_SCRIPT, primary) ? (PRIMARY_SCRIPT[primary] as Script) : 'latin'
 }
 
+const RTL_SCRIPTS: ReadonlySet<Script> = new Set(['arabic', 'hebrew', 'thaana', 'syriac', 'nko', 'adlam'])
+
 /** Appendix G: a right-to-left script. Inflozo mirrors nothing and emits no `dir` — the choice needs the owner's
  *  acknowledgement (`projects.rtl_ack_at`). */
-export const isRtl = (code: string): boolean => {
-  const s = scriptOf(code)
-  return s === 'arabic' || s === 'hebrew'
-}
+export const isRtl = (code: string): boolean => RTL_SCRIPTS.has(scriptOf(code))
 
 /** A project first linked to a site takes that site's Ghost locale, exactly, when it is a code Inflozo accepts; else `en`. */
 export const languageAtLink = (siteLocale: unknown): string =>

@@ -57,6 +57,8 @@ export const TRANSLATION_WORDS = {
   resetting: 'Resetting…',
   other: 'Other…',
   otherLabel: 'Language code',
+  /** the Other… field's placeholder: a code Ghost's list does not hold */
+  otherExample: 'pt-BR',
   /** Appendix G's block — B18's title and its first two sentences; the last clause ("so we do not offer those locales…")
    *  contradicts FR-Q6, which offers an RTL language behind this acknowledgement (the spec's Design Notes) */
   rtlTitle: 'Right-to-left languages are not supported yet',
@@ -71,6 +73,8 @@ export const TRANSLATION_WORDS = {
   /** the linked site's own language differs: Ghost reads `locales/<its locale>.json`, exactly */
   mismatch: (locale: string) => `Your Ghost site's language is ${locale}, so visitors see the English wording, not these.`,
   changeIn: (code: string) => `Change it to ${code} in Ghost ↗`,
+  /** read after every ↗ link into Ghost, which the arrow alone does not say (the Layers panel's and the paywall notice's words) */
+  newTab: ' (opens in a new tab)',
   /** §D.b, at the moment of choice — per family and role, the whole faces' size from the pool's bytes */
   covers: (f: FamilyCoverage, script: Script) =>
     `${f.family} covers ${SCRIPT_NAMES[script]}: your theme ships its whole faces — about ${kb(f.bytes)} KB of fonts instead of ${kb(f.latinBytes)} KB.`,
@@ -80,6 +84,8 @@ export const TRANSLATION_WORDS = {
   untouchedTitle: "Starting words you haven't retyped",
   untouchedLead: 'These came with your sections and stay as written until you change them on the canvas.',
   untouchedOn: (layer: string, canvas: string) => `${layer} on ${canvas}:`,
+  /** the canvas a header or footer is on */
+  everyPage: 'every page',
   quoted: (words: readonly string[]) => words.map((w) => `“${w}”`).join(' · '),
   edit: 'Edit',
   loading: 'Loading translations…',
@@ -115,7 +121,7 @@ export function untouchedRows(projectId: string, rows: readonly { key: string; i
     .map((r) => {
       const page = pageOf(r.key).page
       const canvas = r.key === SITE.key ? 'home' : (canvasOfPageTwoKey(r.key) ?? canvasOfTemplateKey(r.key) ?? 'home')
-      return { id: `${r.key}:${r.instanceId}`, layer: r.layer, canvas: page === EVERY_PAGE ? 'every page' : page, words: r.words, href: canvasPath(projectId, canvas) }
+      return { id: `${r.key}:${r.instanceId}`, layer: r.layer, canvas: page === EVERY_PAGE ? TRANSLATION_WORDS.everyPage : page, words: r.words, href: canvasPath(projectId, canvas) }
     })
 }
 

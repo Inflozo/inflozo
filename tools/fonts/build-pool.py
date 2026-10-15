@@ -404,15 +404,16 @@ def main():
                        'capHeight': cap, 'tnum': tnum, 'files': files, **({'full': full} if full else {})}
         print(f'  {fid}: ' + ' · '.join(f"{x['subset']} {x['bytes']:,} B" for x in files + ([{'subset': FULL, **full}] if full else [])))
 
-    # 3. at an unchanged COMMIT every latin / latin-ext file already on disk keeps its bytes — or nothing is written
+    # 3. at an unchanged COMMIT every font file already on disk keeps its bytes — latin, latin-ext and, since Story 7.12's
+    #    review, each whole face — or nothing is written
     previous = os.path.join(OUT, 'pool.json')
     if os.path.exists(previous) and json.load(open(previous, encoding='utf8'))['source']['commit'] == COMMIT:
         def on_disk(file):
             path = os.path.join(OUT, 'files', file)
             return open(path, 'rb').read() if os.path.exists(path) else None
-        moved = changed(blobs, [x['file'] for r in record.values() for x in r['files']], on_disk)
+        moved = changed(blobs, [x['file'] for r in record.values() for x in r['files'] + ([r['full']] if 'full' in r else [])], on_disk)
         if moved:
-            raise Refused(f'{len(moved)} subset file(s) would change at the same commit {COMMIT[:12]} ({", ".join(moved[:5])}'
+            raise Refused(f'{len(moved)} font file(s) would change at the same commit {COMMIT[:12]} ({", ".join(moved[:5])}'
                           f'{", …" if len(moved) > 5 else ""}) — that is a COMMIT move and a mass rebaseline, never a side effect')
 
     os.makedirs(os.path.join(OUT, 'files'), exist_ok=True)

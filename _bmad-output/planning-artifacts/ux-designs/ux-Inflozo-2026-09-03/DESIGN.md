@@ -54,6 +54,8 @@ colors:
   sky-line: '#D4E0FA — the info banner's hairline (Editor Sidebar Kit :238). The four banner hairlines are drawn as their own solid hexes, never a tinted mix; added 2026-09-05 by Story 1.3's review'
   mint-line: '#BFE7D6 — the success banner's hairline (Editor Sidebar Kit :239)'
   marigold-line: '#F5E3B8 — the notice banner's hairline (Editor Sidebar Kit :240)'
+  marigold-ink: '#5C4200 — B18's right-to-left strip: its title and Understood's words (B Missing Surfaces :1797, :1800). Added 2026-10-15 by Story 7.12's review'
+  marigold-edge: '#E8D9AE — B18's Understood border (B Missing Surfaces :1800). Added 2026-10-15 by Story 7.12's review'
   danger-line: '#F5C6C9 — the error banner's hairline (Editor Sidebar Kit :241); not a button border, which 1.4.11 puts at 3:1'
   grey-field: '#F2EFEA — a greyed control's fill (P0-0 Greyed Control Pattern :76). The three greyed colours were transcribed by Story 1.3 and named here by its review, 2026-09-05'
   grey-border: '#EAE5DD — a greyed control's border (P0-0 :76)'

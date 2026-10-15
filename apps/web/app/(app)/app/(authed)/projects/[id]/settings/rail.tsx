@@ -5,7 +5,7 @@ import { useSelectedLayoutSegment } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { ring } from '@/components/kit/greyed'
 import { settingsPath, TRANSLATIONS, translationsPath } from '@/lib/editor'
-import { RAIL_WORDS } from '@/lib/translations'
+import { RAIL_WORDS, TRANSLATION_WORDS } from '@/lib/translations'
 
 /* D6a's LEFT RAIL (`D6 Theme Settings Completed.dc.html:41-48`, Story 7.12): the "SETTINGS" heading at 10.5/600 and each item
    at 12.5 in a 7×9 box of radius 8, the page in force coral-tint with coral-text at 600, the others ink-soft with D6a's faint
@@ -26,6 +26,7 @@ function Item({ href, current, children }: { href: string; current: boolean; chi
 const Out = ({ href, children }: { href: string; children: ReactNode }) => (
   <a href={href} target="_blank" rel="noreferrer" className={`${ITEM} text-ink-soft hover:bg-ink-wash`}>
     {children}
+    <span className="sr-only">{TRANSLATION_WORDS.newTab}</span>
   </a>
 )
 

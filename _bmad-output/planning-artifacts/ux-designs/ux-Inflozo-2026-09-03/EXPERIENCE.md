@@ -2268,7 +2268,9 @@ SECOND HALF — THE FRAMES THE UX PASS DEFERRED. IT RUNS IN THIS SAME SESSION (r
 14. `B Missing Surfaces` B18 · keys become dotted namespace.name — member.signup_cta,
     post.reading_time, archive.empty_heading — and add one error row: a translation containing a
     brace pair is refused with the reason "Braces would break every page of your site" (FR-Q8: a
-    malformed interpolation token is a whole-site 500). Keep the RTL note.
+    malformed interpolation token is a whole-site 500). Keep the RTL note. *(Story 7.12, 2026-10-15 —
+    corrected: MEASUREMENTS §80 recorded a 400 on the pages that print the broken label and on no other,
+    so the built sentence says "would break every page that shows it"; FR-Q8 and `:747` carry it.)*
 
 15. `B Missing Surfaces` B8 · delete the "Keep Free designs only" scope (ruling R-77). Add a second
     radio-card group ABOVE the existing scope group, titled "Re-roll what": Style Pack · Designs ·

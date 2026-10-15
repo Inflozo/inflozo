@@ -29,13 +29,16 @@ export default function Loading() {
             <div key={w} className="px-[14px] py-[10px]"><div className={`h-[10px] rounded-[3px] bg-line ${w}`} /></div>
           ))}
         </div>
-        {ROWS.map((n) => (
-          <div key={n} className={`grid grid-cols-1 border-b border-line-faint tablet:grid-cols-[180px_1fr_1fr] ${n % 2 === 1 ? 'bg-paper-raised/50' : 'bg-surface'}`}>
-            <div className="px-[14px] py-[13px]"><div className={`h-[10px] w-[120px] ${FAINT}`} /></div>
-            <div className="px-[14px] py-[12px]"><div className={`h-[12px] w-[60%] ${BAR}`} /></div>
-            <div className="px-[14px] py-[7px]"><div className="h-[32px] rounded-sm border border-line bg-surface" /></div>
-          </div>
-        ))}
+        {/* on the surface, as the page's list is, so an odd row is B18's alternate ground */}
+        <div className="bg-surface">
+          {ROWS.map((n) => (
+            <div key={n} className={`grid grid-cols-1 border-b border-line-faint tablet:grid-cols-[180px_1fr_1fr] ${n % 2 === 1 ? 'bg-paper-raised/50' : 'bg-surface'}`}>
+              <div className="px-[14px] py-[13px]"><div className={`h-[10px] w-[120px] ${FAINT}`} /></div>
+              <div className="px-[14px] py-[12px]"><div className={`h-[12px] w-[60%] ${BAR}`} /></div>
+              <div className="px-[14px] py-[7px]"><div className="h-[32px] rounded-sm border border-line bg-surface" /></div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

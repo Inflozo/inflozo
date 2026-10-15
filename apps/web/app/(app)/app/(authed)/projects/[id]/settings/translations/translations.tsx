@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { Fragment, startTransition, useActionState, useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { Fragment, startTransition, useActionState, useEffect, useRef, useState, useSyncExternalStore, type MouseEvent } from 'react'
 import { isRtl, languageRefusal, LANGUAGES, scriptOf, type Script } from '@inflozo/library/languages'
 import { Banner } from '@/components/kit/banner'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ReadOnly, ring } from '@/components/kit/greyed'
-import { ChevronDown } from '@/components/kit/icons'
+import { AlertTriangle, ChevronDown } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { HelperCaption } from '@/components/kit/labels'
 import { Menu, openPopover, type MenuItem } from '@/components/kit/select'
@@ -29,11 +29,13 @@ import { resetOverride, saveOverride, setLanguage, type TranslationResult } from
    input), its Save a `Submit` that shows while the row is being edited, and Use the default a link-weight submit under it
    while an override is stored; the menu is the Kit's `Menu` in `openPopover`'s popover; the scope sentence a caption under
    B18's; the coverage captions (§D.b) a strip under the header, at the moment of choice and before any save; the site's own
-   language a `Banner` notice; the switch confirm a `dialog.ts` sheet opening on Cancel (R-134); the RTL block the Kit's
-   notice `Banner` with its one button (`banner.tsx`'s Got it exception); Question 1's list a strip at the card's foot.
+   language a `Banner` notice; the switch confirm a `dialog.ts` sheet opening on Cancel (R-134); Question 1's list a strip at
+   the card's foot.
 
-   THE RTL BLOCK SITS UNDER THE HEADER, NOT AT THE CARD'S FOOT where B18 draws it: B18's foot is under seven rows, this list's
-   is under every key, and the block is what a choice of Arabic answers with while the button keeps the stored language.
+   THE RTL BLOCK IS B18's OWN STRIP (`:1794-1801`: the raised ground, the warning sign, the marigold title and sentence, and
+   Understood at 30px on the right), but it SITS UNDER THE HEADER, NOT AT THE CARD'S FOOT where B18 draws it: B18's foot is
+   under seven rows, this list's is under every key, and the strip is what a choice of Arabic answers with while the button
+   keeps the stored language (review, 2026-10-15: it had been the Kit's notice Banner, which B18 does not draw).
 
    READING ALONG (R-192): while another session holds the project's lock the card is the Kit's `ReadOnly` — every field, Save,
    Use the default, the language button and Understood disabled and dimmed, every value readable — and LOCK_COPY says why.
@@ -111,8 +113,9 @@ export function Translations({
   const needsConfirm = (code: string) => hasOverrides && code !== language
 
   /** A language picked from the menu or typed under Other…: right-to-left waits for Understood, a switch over stored
-   *  overrides asks first, anything else saves at once. */
+   *  overrides asks first, anything else saves at once. A choice from the menu closes Other… (review, 2026-10-15). */
   const choose = (code: string) => {
+    setOther(false)
     setPending(code === language ? null : code)
     if (code === language || isRtl(code)) return
     if (needsConfirm(code)) {
@@ -214,40 +217,38 @@ export function Translations({
               <div data-mismatch className="border-b border-line px-[18px] py-[12px]">
                 <Banner kind="notice">
                   {W.mismatch(siteLocale)}{' '}
-                  <a href={admin} target="_blank" rel="noreferrer" className="font-semibold text-sky-text underline underline-offset-2">{W.changeIn(language)}</a>
+                  <a href={admin} target="_blank" rel="noreferrer" className="font-semibold text-sky-text underline underline-offset-2">
+                    {W.changeIn(language)}
+                    <span className="sr-only">{W.newTab}</span>
+                  </a>
                 </Banner>
               </div>
             ) : null}
             {rtlShown ? (
-              <div data-rtl className="border-b border-line px-[18px] py-[12px]">
-                <Banner kind="notice">
-                  <span className="flex flex-col gap-[5px]">
-                    <span className="font-semibold">{W.rtlTitle}</span>
-                    <span className="text-[11.5px] leading-[1.5]">{W.rtlBody}</span>
-                    {rtlTarget === null ? (
-                      rtlAck === null ? null : <span data-acknowledged className="text-[11.5px] leading-[1.5]">{W.acknowledged(rtlAck)}</span>
-                    ) : (
-                      <form action={dispatch} className="pt-[3px]">
-                        <input type="hidden" name="project" value={projectId} />
-                        <input type="hidden" name="language" value={rtlTarget} />
-                        <input type="hidden" name="acknowledged" value="yes" />
-                        <Submit
-                          busy={W.saving}
-                          variant="secondary"
-                          size={32}
-                          // over stored overrides a change of language asks first; the sheet posts the acknowledgement too
-                          onClick={(event) => {
-                            if (!needsConfirm(rtlTarget)) return
-                            event.preventDefault()
-                            openOnCancel(confirm.current)
-                          }}
-                        >
-                          {W.understood}
-                        </Submit>
-                      </form>
-                    )}
-                  </span>
-                </Banner>
+              <div data-rtl className="flex items-start gap-[10px] border-b border-line bg-paper-raised p-[13px_18px]">
+                <AlertTriangle size={14} className="mt-[2px] shrink-0 text-marigold-text" />
+                <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+                  <span className="text-[12.5px] font-semibold text-marigold-ink">{W.rtlTitle}</span>
+                  <span className="text-[11.5px] leading-[1.5] text-marigold-text">{W.rtlBody}</span>
+                  {rtlTarget === null && rtlAck !== null ? (
+                    <span data-acknowledged className="text-[11.5px] leading-[1.5] text-marigold-text">{W.acknowledged(rtlAck)}</span>
+                  ) : null}
+                </div>
+                {rtlTarget === null ? null : (
+                  <form action={dispatch} className="shrink-0">
+                    <input type="hidden" name="project" value={projectId} />
+                    <input type="hidden" name="language" value={rtlTarget} />
+                    <input type="hidden" name="acknowledged" value="yes" />
+                    <UnderstoodButton
+                      // over stored overrides a change of language asks first; the sheet posts the acknowledgement too
+                      onClick={(event) => {
+                        if (!needsConfirm(rtlTarget)) return
+                        event.preventDefault()
+                        openOnCancel(confirm.current)
+                      }}
+                    />
+                  </form>
+                )}
               </div>
             ) : null}
 
@@ -256,7 +257,8 @@ export function Translations({
               <span className="px-[14px] py-2 text-[10.5px] font-semibold tracking-[0.04em] text-ink-soft">{W.english}</span>
               <span data-column className="px-[14px] py-2 text-[10.5px] font-semibold tracking-[0.04em] text-ink-soft">{column}</span>
             </div>
-            <ul aria-labelledby="translations-title" className="list-none">
+            {/* the rows' ground is the surface, so an odd row's raised half-wash is B18's alternate ground (`:1787`), not a wash of paper */}
+            <ul aria-labelledby="translations-title" className="list-none bg-surface">
               {rows.map((r, n) => (
                 <Row
                   key={r.key}
@@ -350,7 +352,7 @@ function OtherField({ projectId, dispatch, takeOver }: {
         }}
         mono
         size={30}
-        placeholder="pt-BR"
+        placeholder={W.otherExample}
         error={refusal}
         className="min-w-0 max-w-[260px] flex-1"
       />
@@ -427,8 +429,8 @@ function Row({ projectId, row, stored, refused, odd, placeholder }: {
             placeholder={placeholder}
             size={30}
             error={error}
-            // B18's empty row in italic, and its refused row's `danger-text` border and `danger-panel-ink` sentence
-            className={`min-w-0 flex-1 [&_input]:placeholder:italic ${error === null ? '' : '[&_input]:border-danger-text [&_[role=alert]]:text-danger-panel-ink'}`}
+            // B18's empty row in italic, and its refused row's `danger-text` border and `danger-panel-ink` words and sentence
+            className={`min-w-0 flex-1 [&_input]:placeholder:italic ${error === null ? '' : '[&_input]:border-danger-text [&_input]:text-danger-panel-ink [&_[role=alert]]:text-danger-panel-ink'}`}
           />
           {/* Save shows while the row is being edited — its field focused, its words changed, or refused */}
           <span className={dirty || error !== null ? '' : 'invisible group-focus-within:visible'}>
@@ -445,6 +447,27 @@ function Row({ projectId, row, stored, refused, odd, placeholder }: {
         )}
       </div>
     </li>
+  )
+}
+
+/** B18's Understood (`:1800`): 30px, white, the strip's marigold edge and ink, radius 9 — not the Kit's 32px secondary, whose
+ *  classes would contend with these in one utility layer — saying so while it works (R-98). The caller's `onClick` runs
+ *  first, so a click it cancels never claims the slot. */
+function UnderstoodButton({ onClick }: { onClick: (event: MouseEvent<HTMLButtonElement>) => void }) {
+  const { pending, guard } = useSubmitting()
+  return (
+    <button
+      type="submit"
+      onClick={(event) => {
+        onClick(event)
+        guard(event)
+      }}
+      aria-disabled={pending || undefined}
+      aria-busy={pending || undefined}
+      className={`inline-flex h-[30px] items-center rounded-[9px] border border-marigold-edge bg-surface px-[11px] text-[11.5px] font-semibold text-marigold-ink ${ring}`}
+    >
+      <BusyLabel pending={pending} busy={W.saving}>{W.understood}</BusyLabel>
+    </button>
   )
 }
 

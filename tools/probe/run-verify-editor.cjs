@@ -245,7 +245,11 @@
 // refused with A's own replay as the control; Use the default; the switch confirm (Cancel, then Switch keeping the
 // overrides); Arabic's block, its caption before any save, and Understood's one write; the Cyrillic and Japanese captions and
 // the canvas wearing the Cyrillic faces; the read-only tab; and, on a linked project, the rail's three Ghost links and the
-// site-language notice. The project is handed back English with no override and no site.
+// site-language notice. The project is handed back English with no override and no site. Its review adds 106k: Other…
+// (two refused codes, pt-BR stored exactly), setLanguage's two guards replayed past the page with the control that lands, a
+// refused override stored straight to the table (its row refused, the canvas on the default), the Cyrillic whole faces served
+// signed in with a made-up name's 404, and the first link's language through Use your brand on B (de, and "zz zz" as en);
+// 106d gains DEL and a backslash, and 106j the rail's new-tab words.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -8792,6 +8796,9 @@ async function main() {
       ['nav.more', "It's here", "It''s here"],
       ['post.reading_time', "It's {minutes} min", "'{minutes}' min"],
       ['nav.more', 'Mehr', 'Mehr\u0007'],
+      // review, 2026-10-15: DEL, which 5.4.3 cannot parse, and a backslash, its escape character
+      ['nav.more', 'Mehr', 'Mehr\u007f'],
+      ['nav.more', 'C: temp', 'C:\\temp'],
       ['nav.more', 'a'.repeat(OV106.OVERRIDE_MAX), 'a'.repeat(OV106.OVERRIDE_MAX + 1)],
       ['archive.posts_many', '% Beiträge', '% <b>posts</b>'],
       ['archive.posts_many', '% Beiträge', '% posts & more'],
@@ -8965,9 +8972,9 @@ async function main() {
     await open104(tp)
     const linked106 = await rail106(tp)
     const ghost106 = [[R106.navigation, 'navigation'], [R106.social, 'social-accounts'], [R106.injection, 'code-injection']]
-    check('step 106j — on a linked project the rail adds Navigation ↗, Social accounts ↗ and Code injection ↗, each opening that section of the site\'s own Ghost settings in a new tab (Question 2, ruled option 1)',
+    check('step 106j — on a linked project the rail adds Navigation ↗, Social accounts ↗ and Code injection ↗, each opening that section of the site\'s own Ghost settings in a new tab and saying so to a screen reader (Question 2, ruled option 1)',
       site106.status === 201 && linked106.items.length === 5 &&
-      ghost106.every(([text, navid], n) => linked106.items[n + 2]?.text === text && linked106.items[n + 2]?.href === PW106.adminAt(SITE106.url, navid) && linked106.items[n + 2]?.target === '_blank'), JSON.stringify(linked106))
+      ghost106.every(([text, navid], n) => linked106.items[n + 2]?.text === `${text}${W106.newTab}` && linked106.items[n + 2]?.href === PW106.adminAt(SITE106.url, navid) && linked106.items[n + 2]?.target === '_blank'), JSON.stringify(linked106))
     await open106(tp)
     const mismatch106 = await tp.locator('[data-mismatch]').evaluate((m) => ({ text: m.innerText.replace(/\s+/g, ' '), href: m.querySelector('a')?.getAttribute('href') ?? null, target: m.querySelector('a')?.getAttribute('target') ?? null })).catch(() => null)
     await call('/rest/v1', `/sites?id=eq.${siteId106}`, { method: 'PATCH', body: JSON.stringify({ site_settings: { locale: 'es' } }) })
@@ -8978,6 +8985,106 @@ async function main() {
       JSON.stringify({ mismatch106, agrees106 }))
     await patchProject104({ linked_site_id: null })
     const siteGone106 = await call('/rest/v1', `/sites?id=eq.${siteId106}`, { method: 'DELETE' })
+
+    // ── 106k — Story 7.12's review: the matrix rows that had no executed check — Other…, setLanguage's two guards replayed
+    //    past the page, a stored refused override, the whole faces behind 106h's CSS, and the first link's language ──
+    await wipe106()
+    await patchProject104({ language: 'en', rtl_ack_at: null })
+    await open106(tp)
+    // Other…: a code Ghost's list does not hold — refused in the field by Ghost's own rule with nothing sent, stored exactly once it passes
+    await tp.locator('#language').click()
+    await tp.waitForTimeout(250)
+    await tp.locator('#language-menu button').filter({ hasText: W106.other }).click()
+    await tp.locator('#language-other').waitFor({ state: 'visible', timeout: 10000 })
+    const other106 = {}
+    for (const bad of ['../x', 'english']) {
+      await tp.locator('#language-other').fill(bad)
+      await tp.locator('form[data-other] button[type="submit"]').click()
+      await tp.waitForTimeout(400)
+      other106[bad] = { said: await tp.locator('form[data-other]').innerText(), project: (await lang106())?.language }
+    }
+    let caughtLang106 = null
+    const catchLang106 = async (route) => {
+      const r = route.request()
+      if (isAction104(r) && caughtLang106 === null) caughtLang106 = { url: r.url(), headers: r.headers(), body: r.postDataBuffer() }
+      await route.continue()
+    }
+    await tp.route(ROUTE106, catchLang106)
+    await tp.locator('#language-other').fill('pt-BR')
+    const answeredPt106 = posted104(tp)
+    await tp.locator('form[data-other] button[type="submit"]').click()
+    await answeredPt106
+    await tp.unroute(ROUTE106, catchLang106)
+    const pt106 = await until104(tp, () => tp.locator('#language').getAttribute('data-language'), (v) => v === 'pt-BR')
+    check('step 106k — Other…: "../x" and "english" are refused in the field with Ghost\'s rule\'s sentence and nothing stored; "pt-BR" is stored exactly as typed, the button on it and the field closed',
+      Object.values(other106).every((o) => o.said.includes(LG106.LANGUAGE_REFUSAL) && o.project === 'en') && (await lang106())?.language === 'pt-BR' && pt106 === 'pt-BR' && (await tp.locator('form[data-other]').count()) === 0,
+      JSON.stringify({ other106, pt106 }))
+    // setLanguage's guards, replayed past the page: a right-to-left code with no Understood, and a switch over a stored override
+    // with no confirm, each answer the save sentence and write nothing; the same replay with nothing to confirm lands (the control)
+    const replayLang106 = async (code) => {
+      const headers = Object.fromEntries(Object.entries(caughtLang106.headers).filter(([k]) => !/^(cookie|content-length|host)$/i.test(k)))
+      const body = Buffer.from(caughtLang106.body.toString('latin1').replace('pt-BR', code), 'latin1')
+      const r = await tContext.request.post(caughtLang106.url, { headers: { ...headers, origin: new URL(caughtLang106.url).origin }, data: body, maxRedirects: 0 })
+      return (await r.body()).toString('utf8')
+    }
+    const noAck106 = caughtLang106 === null ? '' : await replayLang106('ar')
+    const afterAck106 = await lang106()
+    await plant106('nav.more', 'Mehr')
+    const noConfirm106 = caughtLang106 === null ? '' : await replayLang106('de')
+    const afterConfirm106 = await lang106()
+    await wipe106()
+    const landed106 = caughtLang106 === null ? '' : await replayLang106('de')
+    const afterLanded106 = await lang106()
+    check('step 106k — crafted language posts: Arabic with no Understood, and a switch over a stored override with no confirm, each answer "We couldn\'t save that just now." and leave pt-BR; with nothing to confirm the same replay stores de (the control)',
+      caughtLang106 !== null && noAck106.includes(OV106.OVERRIDE_WORDS.unsaved) && afterAck106?.language === 'pt-BR' && afterAck106?.rtl_ack_at === null &&
+      noConfirm106.includes(OV106.OVERRIDE_WORDS.unsaved) && afterConfirm106?.language === 'pt-BR' &&
+      !landed106.includes(OV106.OVERRIDE_WORDS.unsaved) && afterLanded106?.language === 'de',
+      JSON.stringify({ caught: caughtLang106 !== null, afterAck106, afterConfirm106, afterLanded106 }))
+    // a stored override the judge refuses, written straight to the table (AD-6), with a key no surface lists beside it: its row
+    // shows the refusal, the editor still opens, and the canvas keeps the default — 106c's override reaching it is the control
+    const BAD106 = '{minutes} min {'
+    await patchProject104({ language: 'es' })
+    const planted106 = [(await plant106('post.reading_time', BAD106)).status, (await plant106('no.such', 'x')).status]
+    await open106(tp)
+    const badRow106 = await look106('post.reading_time')
+    const badTimes106 = await times106()
+    check('step 106k — a refused override stored by another route: its row shows it in B18\'s refused look with the judge\'s sentence, and the editor opens with Three Up\'s reading times still "… min read" — never the stored words',
+      planted106.every((s) => s === 201) && badRow106.refused && badRow106.value === BAD106 && badRow106.said !== null && badRow106.said === OV106.overrideRefusal('post.reading_time', BAD106) &&
+      badTimes106.length > 0 && badTimes106.every((t) => t.endsWith('min read')), JSON.stringify({ planted106, badRow106, badTimes106 }))
+    await wipe106()
+    // the whole faces a Cyrillic canvas asks ?font= for are served, signed in, as the pool's own bytes; a name the pool does not
+    // record is a 404 (the control) — 106h held the faces' CSS text, this holds the files behind it
+    const fetched106 = []
+    for (const f of FT106.pairingFiles(pairing106, 'cyrillic').filter((x) => x.subset === 'full')) {
+      const r = await tContext.request.get(at(`/canvas?font=${f.file}&h=${SP106.fontHash(f.sha256)}`), { maxRedirects: 0 })
+      const body = await r.body()
+      fetched106.push({ file: f.file, status: r.status(), type: r.headers()['content-type'] ?? null, same: body.length === f.bytes && require('node:crypto').createHash('sha256').update(body).digest('hex') === f.sha256 })
+    }
+    const bogus106 = (await tContext.request.get(at('/canvas?font=inter-roman-fulll.woff2&h=000000000000'), { maxRedirects: 0 })).status()
+    check('step 106k — every whole face a Cyrillic canvas on Paper asks for answers 200 font/woff2 with the pool\'s own bytes and sha256; a name the pool does not record answers 404 (the control)',
+      fetched106.length > 0 && fetched106.every((f) => f.status === 200 && /font\/woff2/.test(f.type ?? '') && f.same) && bogus106 === 404, JSON.stringify({ fetched106, bogus106 }))
+    // the first link: Use your brand makes B's project for a site whose stored Ghost language is de — German — and for one whose
+    // locale Ghost's rule refuses ("zz zz"), English (the control). B's bare project goes first each time, so the press inserts
+    const BRAND106 = { accent: '#336699', logo: null, nav: [] }
+    const bContext106 = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const bp106 = steady(await bContext106.newPage())
+    await bp106.goto(await magic(emailB), { waitUntil: 'load' })
+    const siteB106 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: ids[1], url: `https://walk-106k-${stamp}.example.com`, title: 'Walk 106k', site_settings: { brand: BRAND106, locale: 'zz zz' } }) })
+    const sidB106 = siteB106.body?.[0]?.id
+    const firstLink106 = {}
+    for (const locale of ['zz zz', 'de']) {
+      await call('/rest/v1', `/projects?user_id=eq.${ids[1]}`, { method: 'DELETE' })
+      await call('/rest/v1', `/sites?id=eq.${sidB106}`, { method: 'PATCH', body: JSON.stringify({ site_settings: { brand: BRAND106, locale } }) })
+      await bp106.goto(at(`/sites/brand?site=${sidB106}`), { waitUntil: 'load' })
+      await bp106.locator('form:has(input[name="project_id"]) button[type="submit"]').click()
+      const made = await until104(bp106, async () => (await call('/rest/v1', `/projects?linked_site_id=eq.${sidB106}&select=language`)).body?.[0] ?? null, (v) => v !== null)
+      firstLink106[locale] = made?.language ?? null
+    }
+    await call('/rest/v1', `/projects?user_id=eq.${ids[1]}`, { method: 'DELETE' })
+    const siteBGone106 = await call('/rest/v1', `/sites?id=eq.${sidB106}`, { method: 'DELETE' })
+    await bContext106.close()
+    check('step 106k — the first link: Use your brand on a site whose stored Ghost language is de makes a German project; on one whose locale Ghost\'s rule refuses ("zz zz"), an English one (the control)',
+      siteB106.status === 201 && firstLink106.de === 'de' && firstLink106['zz zz'] === 'en' && siteBGone106.status < 300, JSON.stringify({ status: siteB106.status, firstLink106 }))
 
     // the project as this block found it — later steps inherit it
     await handBack(tp)

@@ -97,9 +97,9 @@ const EDITOR = 'app/(app)/app/(authed)/projects/[id]/(editor)'
 
 test('the canvas renders the overrides the judge passed, through the shim, and keeps a refused one off (FR-H5, AD-6)', () => {
   const read = readFileSync(`${EDITOR}/read.ts`, 'utf8')
-  const judged = read.slice(read.indexOf('function judged('), read.indexOf('\n}\n', read.indexOf('function judged(')))
-  assert.match(judged, /const sentence = overrideRefusal\(key, value\)\s+if \(sentence === null\) overrides\[key\] = value as string\s+else refused\[key\]/)
-  assert.match(read, /overrides: overridesRow\.error \? \{\} : judged\(overridesRow\.data \?\? \[\]\)\.overrides,/, 'only what the judge passes reaches the editor')
+  // the split itself is `judgeOverrides`, executed in `packages/library/src/override.test.ts` (review, 2026-10-15)
+  assert.match(read, /overrides: overridesRow\.error \? \{\} : judgeOverrides\(overridesRow\.data \?\? \[\]\)\.overrides,/, 'only what the judge passes reaches the editor')
+  assert.match(read, /\.\.\.judgeOverrides\(data \?\? \[\]\) \}/, 'Translations reads the same split')
   const editor = readFileSync(`${EDITOR}/editor.tsx`, 'utf8')
   assert.match(editor, /const strings = useMemo\(\(\) => resolveStrings\(overrides \?\? \{\}\), \[overrides\]\)/)
   assert.match(editor, /renderSection\(doc, entry, [\s\S]{0,400}visitor: now\.viewAs, strings,/, 'every section of the canvas is handed the strings')

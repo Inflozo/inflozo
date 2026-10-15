@@ -1497,8 +1497,9 @@ function openSection(id,sub){
   const s=document.getElementById(id);if(!s)return;
   if(openSec&&openSec!==s){openSec.hidden=true;store.append(openSec);}
   lastFocus=lastFocus||document.activeElement;
+  const wide=s.classList.contains('pd')||(!drawer.hidden&&drawer.classList.contains('wide'));   // a panel is a list; a story is prose, but one opened from a wide panel stays as wide
   openSec=s;dbody.append(s);s.hidden=false;drawer.hidden=false;scrim.hidden=false;paintTicks(s);
-  drawer.classList.toggle('wide',s.classList.contains('pd'));   // a panel is a list; a story is prose
+  drawer.classList.toggle('wide',wide);
   drawer.scrollTop=0;
   if(sub){const el=s.querySelector('[data-sub="'+sub+'"]');if(el)el.scrollIntoView({block:'start'});}
   drawer.querySelector('.close').focus();}

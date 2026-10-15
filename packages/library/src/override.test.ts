@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import imf from 'intl-messageformat'
 import imfPackage from 'intl-messageformat/package.json' with { type: 'json' }
 import { CATALOG, translatableKeys } from './catalog.ts'
-import { OVERRIDE_MAX, OVERRIDE_WORDS, overrideRefusal } from './override.ts'
+import { judgeOverrides, OVERRIDE_MAX, OVERRIDE_WORDS, overrideRefusal } from './override.ts'
 
 const IntlMessageFormat = imf.default
 
@@ -46,6 +46,10 @@ const ROWS: [string, string, string, string][] = [
   ['post.reading_time', "'{minutes}' min", OVERRIDE_WORDS.quoted("'{minutes}' min", 'minutes'), "It's {minutes} min"],
   ['nav.more', 'Mehr\u0007', OVERRIDE_WORDS.control, 'Mehr'],
   ['nav.more', 'Mehr\nweiter', OVERRIDE_WORDS.control, 'Mehr weiter'],
+  // review, 2026-10-15: DEL, which 5.4.3 cannot parse, and a backslash, its escape character
+  ['nav.more', 'Mehr\u007f', OVERRIDE_WORDS.control, 'Mehr'],
+  ['nav.more', 'C:\\temp', OVERRIDE_WORDS.backslash('C:\\temp'), 'C: temp'],
+  ['nav.more', '\\u0041 more', OVERRIDE_WORDS.backslash('\\u0041 more'), 'A more'],
   ['nav.more', 'x'.repeat(OVERRIDE_MAX + 1), OVERRIDE_WORDS.long, 'x'.repeat(OVERRIDE_MAX)],
   ['archive.posts_many', '% <b>posts</b>', OVERRIDE_WORDS.markup('<'), '% Beiträge'],
   ['archive.posts_many', '% posts & more', OVERRIDE_WORDS.markup('&'), '% posts and more'],
@@ -88,4 +92,27 @@ test('V9 compares Ghost with the canvas: a value only 5.4.3 renders differently 
   assert.equal(overrideRefusal('nav.more', "a''b"), OVERRIDE_WORDS.apostrophes)
   // and a `#` outside a plural is plain text in both
   assert.equal(overrideRefusal('nav.more', '# more'), null)
+})
+
+test('a backslash is refused because 5.4.3 reads it as an escape: one throws, another prints a different letter (executed)', () => {
+  assert.throws(() => new IntlMessageFormat('C:\\temp', 'en'))
+  assert.equal(new IntlMessageFormat('\\u0041 more', 'en').format(), 'A more')
+  assert.throws(() => new IntlMessageFormat('Mehr\u007f', 'en'))
+  assert.equal(overrideRefusal('nav.more', 'C:\\temp'), 'The “\\” in “C:\\temp” would break every page that shows it, or change what it prints. Remove it.')
+})
+
+test('stored rows are judged: what passes reaches the canvas, what is refused keeps its value and sentence, never both', () => {
+  const { overrides, refused } = judgeOverrides([
+    { catalog_key: 'nav.more', value: 'Mehr' },
+    { catalog_key: 'post.reading_time', value: '{minutes} min {' },
+    { catalog_key: 'no.such', value: 'x' },
+    { catalog_key: 'pagination.older', value: '   ' },
+    { catalog_key: 7, value: 'dropped' },
+  ])
+  assert.deepEqual(overrides, { 'nav.more': 'Mehr' })
+  assert.deepEqual(Object.keys(refused).sort(), ['no.such', 'pagination.older', 'post.reading_time'])
+  assert.deepEqual(refused['post.reading_time'], { value: '{minutes} min {', sentence: overrideRefusal('post.reading_time', '{minutes} min {') })
+  assert.equal(refused['pagination.older']?.sentence, OVERRIDE_WORDS.blank)
+  // the control: an empty read is nothing either way
+  assert.deepEqual(judgeOverrides([]), { overrides: {}, refused: {} })
 })

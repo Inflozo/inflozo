@@ -3,11 +3,11 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { canvasCaching, canvasSrc, harnessCanvasSrc, packed, previewSrc } from './lib/canvas.ts'
-import { carriesMemberVisibility, DESIGNS_DIR, docRefusal, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument, poolFont } from './lib/pilots.ts'
+import { carriesMemberVisibility, DESIGNS_DIR, docRefusal, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument, poolFont, poolFontIs } from './lib/pilots.ts'
 import { packTokensCss, parseDoc, type Pack } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { POOL, PRESETS } from '@inflozo/library/packs'
-import { fontHref, packCells, packChoices, PRESETS as CELLS, referenceSwatches } from './lib/style-pack.ts'
+import { fontHash, fontHref, packCells, packChoices, PRESETS as CELLS, referenceSwatches } from './lib/style-pack.ts'
 import { samples } from './lib/controls-review.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
@@ -176,6 +176,18 @@ test('a font is served only when its name is a file the pool records — never a
   for (const name of ['../../x', `../files/${first!.file}`, 'pool.json', '', 'fraunces-roman-latin', 'FRAUNCES-ROMAN-LATIN.WOFF2', '__proto__']) {
     assert.equal(poolFont(name), null, `${JSON.stringify(name)} was served`)
   }
+})
+
+// Story 7.12's review: a non-latin project's canvas asks `?font=` for each covering family's whole face (§D.b), so every one
+// is served as woff2 at its recorded hash — `POOL_FILES` dropping them would 404 every one while the faces' CSS still matched
+test('every whole face the pool records is served through ?font=, at the hash its address carries', () => {
+  const wholes = Object.values(POOL.faces).flatMap((f) => (f.full ? [f.full] : []))
+  assert.ok(wholes.length > 0, 'the pool records whole faces')
+  for (const { file, sha256 } of wholes) {
+    assert.equal(poolFont(file)?.subarray(0, 4).toString('latin1'), 'wOF2', file)
+    assert.equal(poolFontIs(file, fontHash(sha256)), true, file)
+  }
+  assert.equal(poolFont('inter-roman-fulll.woff2'), null, 'the control: a name the pool does not record')
 })
 
 test('every canvas document carries its pack\'s block and its pairing\'s faces from ?font= — Paper\'s block byte for byte', () => {

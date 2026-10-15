@@ -36,6 +36,9 @@ export const OVERRIDE_WORDS = {
   unsaved: "We couldn't save that just now.",
   blank: 'Type the wording, or press Use the default.',
   control: "This has a character your site can't show.",
+  // review, 2026-10-15 — executed against 5.4.3: a backslash is its escape character, so `C:\temp` throws (an error on the
+  // pages that print it) and `\u0041` prints `A`; the shim prints both as typed
+  backslash: (value: string) => `The “\\” in “${value}” would break every page that shows it, or change what it prints. Remove it.`,
   long: `Keep it to ${OVERRIDE_MAX} characters.`,
   markup: (ch: string) => `“${ch}” can't be used in this label: your site prints it as page code.`,
   percent: 'Keep the %: your site puts the number there.',
@@ -54,14 +57,15 @@ const PLACEHOLDER = /\{([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\}/g
 const QUOTED = /'\{([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\}/
 
 /** The override `value` for `key`, judged: null when it ships as typed, else the sentence refusing it. In order: a key the
- *  surface lists; not blank (R-106); no C0 character; at most `OVERRIDE_MAX` characters; for a `{{plural}}` string, which
- *  Ghost prints unescaped (DW-141), no `<` or `&` and its `%` kept; every brace a placeholder's (S3); the placeholder set
- *  the default's (V10); and Ghost's render equal to the canvas's (V9). */
+ *  surface lists; not blank (R-106); no C0 character or DEL; at most `OVERRIDE_MAX` characters; for a `{{plural}}` string,
+ *  which Ghost prints unescaped (DW-141), no `<` or `&` and its `%` kept; every brace a placeholder's (S3); the placeholder
+ *  set the default's (V10); no backslash, 5.4.3's escape character; and Ghost's render equal to the canvas's (V9). */
 export function overrideRefusal(key: string, value: unknown, catalog: Catalog = CATALOG): string | null {
   if (typeof key !== 'string' || !translatableKeys(catalog).includes(key) || typeof value !== 'string') return OVERRIDE_WORDS.unsaved
   const en = (catalog.keys[key] as { en: string }).en
   if (value.trim() === '') return OVERRIDE_WORDS.blank
-  if ([...value].some((c) => c.charCodeAt(0) < 0x20)) return OVERRIDE_WORDS.control
+  // C0, and DEL, which 5.4.3 cannot parse (executed, review 2026-10-15)
+  if ([...value].some((c) => c.charCodeAt(0) < 0x20 || c.charCodeAt(0) === 0x7f)) return OVERRIDE_WORDS.control
   if ([...value].length > OVERRIDE_MAX) return OVERRIDE_WORDS.long
   if (isPluralString(en)) {
     for (const ch of ['<', '&']) if (value.includes(ch)) return OVERRIDE_WORDS.markup(ch)
@@ -75,6 +79,7 @@ export function overrideRefusal(key: string, value: unknown, catalog: Catalog = 
   if (foreign !== undefined) return OVERRIDE_WORDS.foreign(foreign, own)
   const missing = own.find((p) => !used.includes(p))
   if (missing !== undefined) return OVERRIDE_WORDS.missing(missing)
+  if (value.includes('\\')) return OVERRIDE_WORDS.backslash(value)
   if (value.includes("''")) return OVERRIDE_WORDS.apostrophes
   // ICU's quoting starts at an apostrophe before a brace. 5.4.3's parser 2.1.3 prints `'{minutes}' min` as `'5' min`, as the
   // shim does (executed here, and on T1 6.58.0 — MEASUREMENTS §80); intl-messageformat 10.7.16 prints `{minutes} min`
@@ -89,4 +94,23 @@ export function overrideRefusal(key: string, value: unknown, catalog: Catalog = 
     return OVERRIDE_WORDS.differs
   }
   return ghost === t(value, sample) ? null : OVERRIDE_WORDS.differs
+}
+
+/** Stored rows judged: the overrides `overrideRefusal` passes, by key — what the canvas renders and a compile may ship — and
+ *  the ones it refuses, each with its value and sentence. A refused row can only arrive by a direct table write (AD-6): the
+ *  Translations page shows it refused on its row and the canvas keeps the default. A row whose key is not a string is
+ *  dropped, as nothing could show it. */
+export function judgeOverrides(rows: readonly { catalog_key: unknown; value: unknown }[]): {
+  overrides: Record<string, string>
+  refused: Record<string, { value: string; sentence: string }>
+} {
+  const overrides: Record<string, string> = {}
+  const refused: Record<string, { value: string; sentence: string }> = {}
+  for (const { catalog_key: key, value } of rows) {
+    if (typeof key !== 'string') continue
+    const sentence = overrideRefusal(key, value)
+    if (sentence === null) overrides[key] = value as string
+    else refused[key] = { value: typeof value === 'string' ? value : '', sentence }
+  }
+  return { overrides, refused }
 }

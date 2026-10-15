@@ -20,7 +20,7 @@ import { readViewed, type Visitor } from '@/lib/view-as'
 import { SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
 import { DEFAULT_LANGUAGE, scriptOf } from '@inflozo/library/languages'
 // SERVER ONLY (intl-messageformat 5.4.3): this file is imported by server modules and, as a type, by the editor — never as a value
-import { overrideRefusal } from '@inflozo/library/override'
+import { judgeOverrides } from '@inflozo/library/override'
 
 /**
  * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
@@ -104,21 +104,6 @@ export type Project = {
 const overrideRows = cache(async (projectId: string) =>
   (await supabaseServer()).from('translation_overrides').select('catalog_key, value').eq('project_id', projectId))
 
-/** Each stored override judged by FR-Q8's one judge (`overrideRefusal`): what may reach the canvas, and what may not, with the
- *  sentence that refuses it. A row the save action would have refused can only arrive by a direct table write (AD-6); it is
- *  shown refused on its row, kept out of the canvas, and fails the compile. */
-function judged(rows: readonly { catalog_key: unknown; value: unknown }[]) {
-  const overrides: Record<string, string> = {}
-  const refused: Record<string, { value: string; sentence: string }> = {}
-  for (const { catalog_key: key, value } of rows) {
-    if (typeof key !== 'string') continue
-    const sentence = overrideRefusal(key, value)
-    if (sentence === null) overrides[key] = value as string
-    else refused[key] = { value: typeof value === 'string' ? value : '', sentence }
-  }
-  return { overrides, refused }
-}
-
 export type Translations = {
   /** `projects.language`, exactly as stored — Ghost reads `locales/<its own locale>.json` with no normalisation */
   language: string
@@ -130,12 +115,14 @@ export type Translations = {
   refused: Readonly<Record<string, { value: string; sentence: string }>>
 }
 
-/** STORY 7.12 — what Translations shows: the language in force, its acknowledgement and the stored overrides, judged. A read
- *  that fails throws, as Theme settings' own does: an empty list over overrides that exist would invite overwriting them. */
+/** STORY 7.12 — what Translations shows: the language in force, its acknowledgement and the stored overrides, judged by FR-Q8's
+ *  one judge (`judgeOverrides`): a row it refuses can only arrive by a direct table write (AD-6), and is shown refused on its
+ *  row, kept off the canvas, and fails the compile. A read that fails throws, as Theme settings' own does: an empty list over
+ *  overrides that exist would invite overwriting them. */
 export async function readTranslations(projectId: string): Promise<Translations> {
   const [project, { data, error }] = await Promise.all([projectOf(projectId), overrideRows(projectId)])
   if (error) throw new Error(`the project's translations could not be read (${error.code})`)
-  return { language: project?.language ?? DEFAULT_LANGUAGE, rtlAck: project?.rtl_ack_at ?? null, ...judged(data ?? []) }
+  return { language: project?.language ?? DEFAULT_LANGUAGE, rtlAck: project?.rtl_ack_at ?? null, ...judgeOverrides(data ?? []) }
 }
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
@@ -249,9 +236,6 @@ export type EditorData = {
    *  warn about. A failed read is none, logged — the safe side the prefs read takes: the editor draws every promote action
    *  and no tag, and Theme settings stays the truth */
   settings: readonly StoredSetting[]
-  /** STORY 7.12 — `projects.language`, exactly as stored (FR-Q6). Optional only because the keyboard harness, which has no
-   *  project row, hands none: English */
-  language?: string
   /** STORY 7.12 — the stored overrides `overrideRefusal` passes, by catalog key (FR-H5): the canvas renders them through the
    *  shim. Optional for the harness's reason: none is English */
   overrides?: Readonly<Record<string, string>>
@@ -463,8 +447,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     pairingFaces: pairingGlyphFacesCss(canvasRouteOn((await headers()).get('host'))),
     siteAccent: siteAccentOf(siteRow?.data?.site_settings),
     settings: settingsRead(settingsRow),
-    language,
-    overrides: overridesRow.error ? {} : judged(overridesRow.data ?? []).overrides,
+    overrides: overridesRow.error ? {} : judgeOverrides(overridesRow.data ?? []).overrides,
   }
 }
 

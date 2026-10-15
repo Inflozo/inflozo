@@ -66,6 +66,10 @@ test('isRtl is true for exactly ar, fa, he and ur of Ghost\'s list', () => {
   assert.equal(isRtl('ar-EG'), true)
   assert.equal(isRtl('az-Arab'), true, 'an explicit script subtag decides')
   assert.equal(isRtl('en'), false)
+  // review, 2026-10-15: Other… reaches right-to-left scripts beyond Arabic and Hebrew, and each asks for Understood too
+  for (const code of ['dv', 'syr', 'nqo', 'ff-Adlm', 'prs', 'ks', 'yi']) assert.equal(isRtl(code), true, code)
+  // a private-use subtag is not a script subtag: `en-x-arab` is English
+  assert.equal(isRtl('en-x-arab'), false)
 })
 
 test('scriptOf: an explicit script subtag first, else the primary subtag, else Latin', () => {
@@ -80,6 +84,11 @@ test('scriptOf: an explicit script subtag first, else the primary subtag, else L
   assert.equal(scriptOf('pt-BR'), 'latin')
   assert.equal(scriptOf('uz-Cyrl'), 'cyrillic')
   assert.equal(scriptOf('x-private'), 'latin')
+  // review, 2026-10-15: Traditional by region when no script is named, and a script subtag only where Ghost's rule puts it
+  for (const code of ['zh-TW', 'zh-HK', 'zh-MO', 'zh-Hant-CN']) assert.equal(scriptOf(code), 'chinese-traditional', code)
+  assert.equal(scriptOf('zh-CN'), 'chinese-simplified')
+  assert.equal(scriptOf('zh-Hans-TW'), 'chinese-simplified', 'a named script wins over the region')
+  assert.equal(scriptOf('de-x-cyrl'), 'latin')
 })
 
 test("languageAtLink: the site's locale exactly when accepted, else en", () => {
