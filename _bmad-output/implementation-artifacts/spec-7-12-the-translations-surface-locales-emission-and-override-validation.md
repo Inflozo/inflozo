@@ -582,3 +582,15 @@ that library it would show `{minutes} Min. Lesezeit`.
   button disabled. The editor's own window moved on to Translations: no line, every control live — what the step as first
   written led to, since that window holds the lock. A third window opened while the first still held it: read-only again.
   The product is right; the step's order was wrong, and is corrected.
+
+**Deploy (2026-10-15).**
+
+- `Deployment: dpl_3ggjntQ1rneTHRGnzBWxkdvyofJ7` — READY, built from `789d1019` (the head, so it carries the Dev code and every
+  Review patch), aliased to `app.inflozo.com` (Vercel API, `VERCEL_TOKEN` and `VERCEL_TEAM_ID` read in-process). CI run
+  38714119241 at that sha: `rls`, `check` and `deploy` green; Render matrix run 38714119250 green (GitHub API,
+  `GITHUB_TOKEN`). No Schema phase: this story ships no migration, and the schema it reads was confirmed at Review
+  (R-99); the RLS gate ran green on this push.
+- Signed out, `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings/translations` answers 307 to
+  `https://app.inflozo.com/sign-in` — the address is live. Nothing was written to any database or Ghost site at Deploy;
+  T1 was not touched.
+- The owner's test above already carries the live URLs on `app.inflozo.com`. `owner_test` stays `pending`.
