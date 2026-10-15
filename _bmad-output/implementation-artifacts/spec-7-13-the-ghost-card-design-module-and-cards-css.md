@@ -104,8 +104,8 @@ treatments and their read-only block are Epic 10's (R-118).
   session, never a subagent.
 
 **Ask First:**
-- **Dev waits for all three questions below to be ruled.** The card table is written to each recommended option. A
-  different ruling changes the table's rows and nothing else.
+- **All three questions below were ruled option 1 (owner, 2026-10-15)**, and the card table is written to those
+  rulings.
 - Any card, control or value not in Design Notes' card table, or a frame row dropped beyond the table's stated rules.
 - Applying the Schema migration to production, and every T1 write: ask the owner in the session (memory's two refusal
   patterns). If the apply is refused, offer him the paste into Supabase's SQL editor.
@@ -337,7 +337,7 @@ Pasted into Story 10.110's card and Story 10.111's card, and listed in Epic 10's
 
 ### The card table (the one place the rulings change)
 
-Written to each question's RECOMMENDED option. **The start value is marked ▸.** It is the step nearest Ghost's own
+Written to the rulings: option 1 on all three questions (owner, 2026-10-15). **The start value is marked ▸.** It is the step nearest Ghost's own
 declaration, and it adds no rule.
 
 The rules that derive a panel from C1c:
@@ -474,8 +474,8 @@ each byte-identical to the copy the admin serves, and kg-default-nodes 2.0.1 and
 ## Owner's manual test
 
 Do this on the real site after Deploy, on a laptop at full width, signed in as yourself. **Pilot sections** is
-`b6d4db35-8e5e-45e1-a70f-4daa28916d51`. Steps 4, 9 and 11 test your rulings on Questions 1, 2 and 3 (the recommended
-options). Step 13 puts everything back.
+`b6d4db35-8e5e-45e1-a70f-4daa28916d51`. Steps 4, 9 and 11 test your rulings on Questions 1, 2 and 3 (option 1 on
+all three). Step 13 puts everything back.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -495,7 +495,7 @@ options). Step 13 puts everything back.
 
 ## Questions for the owner
 
-Dev waits for all three. Each is written in the spec to its RECOMMENDED option.
+All three were ruled option 1 (owner, 2026-10-15), and the spec is written to those rulings.
 
 ### Question 1 — The callout's background row: its name and its choices
 
@@ -516,7 +516,7 @@ section's, and you could pick Contrast for a dark callout with light text, but n
    panel says "A callout holds no picture" for the missing Image.
 3. **Leave the row out**: at Pack tokens every callout takes Surface, and the panel says so.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-15).**
 
 ### Question 2 — Until the card styles arrive, what can a card's panel change?
 
@@ -537,7 +537,7 @@ break out. When the card styles arrive, those rows are taken over, and each card
 2. **Offer them now as well.** You can set more today. Epic 10 then removes those rows with a one-line notice on each
    card you changed.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-15).**
 
 ### Question 3 — The call-to-action card has no drawing of its own panel
 
@@ -557,7 +557,7 @@ nothing to set. With option 2 this story stops until Claude Design draws its pan
 3. **Borrow from Signup**: give it the sign-up card's Field height and Split picture rows, which only partly fit (it
    has no field).
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-15).**
 
 ## Verification
 

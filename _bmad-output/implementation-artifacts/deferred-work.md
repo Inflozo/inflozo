@@ -3467,6 +3467,9 @@ reason: R-53 — one control name means one set of values, library-wide. The sec
   (R-103); the callout panel's row is four values, one of them (Tint) not a section role. Either the card
   row is renamed (it is a card treatment, not a section's ground) or its values are the section's — a call
   for the story that builds the card panels, which must not ship both under one name.
+note (Story 7.13's Create, 2026-10-15): ruled option 1 (owner) — the row is **Callout background**, keeping the drawn
+  Base · Surface · Tint · Accent (Tint is the pack's computed `--plate`), live only at Callout colours = Pack tokens.
+  Story 7.13's Dev builds it and closes this entry.
 
 ### DW-110: A1·4 needs to know whether the section below carries a picture, and adjacency asks only about above
 
