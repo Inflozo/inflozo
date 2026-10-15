@@ -3000,6 +3000,13 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 2. Pre-flight naming each of the two built-ins whose starting value has changed since the last deploy — the dark accent after a
 >    Style Pack switch, the colour scheme after a project-mode switch — with what Ghost keeps and a link to Ghost's Design panel —
 >    **Story 7.18**, word for word on its card: Ghost keeps a stored value across a new default (MEASUREMENTS §78).
+>
+> **Given owners by Story 7.12's Create (2026-10-15), so none is missed (R-195).**
+>
+> 1. FR-Q6's warning before a switch to a site whose locale differs, the language a project takes when it is first linked
+>    in the deploy wizard, the RTL language **repeated as a pre-deploy warning** (blocking while it is unacknowledged), and
+>    the warning that a non-English project's language differs from its site's locale — **Story 7.18**, word for word on
+>    its card: the site is chosen at its destination step and Pre-flight is its surface.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3902,6 +3909,13 @@ whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** *(given an owner by Story 7.10's Review, 2026-10-10 — DW-353)* Pre-flight says in plain words, naming the setting, each case `compileTheme` refuses that Theme settings shows as healthy — a promoted setting whose section prints nothing that reads it (a hand-picked list with nothing picked; a picture's description on a section with no picture), a shuffle onto a design that declares the control as another kind, two settings stored for one control by two promotes in one instant — instead of the compile's own sentence ("… is declared and nothing reads it … (GS100, GS090)"), and names an "Only show when" the theme drops because its setting is parked; closing the two-promote window in the database (a unique `bound_to` per project) is this story's Create's question if it is wanted.
 **And** *(given an owner by Story 7.10's Review, 2026-10-10 — DW-355)* this story's `Schema` migration also corrects `custom_settings.bound_to`'s column comment to the three shapes `custom-settings.ts`'s `Binding` states — `control`, `prop` and `token` — in the migration and in the architecture's `SCHEMA.sql`.
 **And** *(given an owner by Story 7.11's Create, its Question 2, ruled option 1, owner, 2026-10-14, word for word — R-195)* **"Say it at deploy. Story 7.18's deploy check names each of the two whose starting value has changed since your last deploy, says what Ghost keeps, and links to Ghost's Design panel."** The two are Story 7.11's built-ins: `dark_accent_color`, which starts at the Style Pack's dark accent, and `color_scheme`, which starts on Auto for a Light + Dark project and on Light for a Light only one (Story 7.11's Question 1, ruled option 1). Ghost seeds a new key from its default and keeps a stored value across a new default (read in source: 6.58.0 `custom-theme-settings-service.js:242-260`, 5.130.6 `CustomThemeSettingsService.js:203-221`; executed on T1, MEASUREMENTS §78), so a Style Pack switch, or a Light only → Light + Dark switch, after a site's first deploy leaves the value Ghost already holds. "Since your last deploy" compares this compile's starts with the last deploy's `config.custom`. What Ghost keeps is the value it already holds — the start an earlier deploy gave it, unless the site's owner changed it there; whether Pre-flight also reads Ghost's stored value is this story's Create's to decide. Nothing writes to the site that does not today (AD-10's four writes are unchanged).
+**And** *(given an owner by Story 7.12's Create, 2026-10-15, word for word — R-195)* **switching to a site whose locale differs
+warns before the switch**, because the overrides were written in the old language — where step 1's destination links
+the project to a site other than its linked one (FR-B5), the warning names both languages before the switch; a project
+linked to a site for the first time there takes `languageAtLink` of the site's locale; an RTL project language is
+**repeated as a pre-deploy warning** in Pre-flight, which **blocks** while `projects.rtl_ack_at` is empty and links to
+Translations; and Pre-flight warns when the project's language is not `en` and differs from the site's stored locale,
+because Ghost reads `locales/<its own locale>.json`, exactly.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
