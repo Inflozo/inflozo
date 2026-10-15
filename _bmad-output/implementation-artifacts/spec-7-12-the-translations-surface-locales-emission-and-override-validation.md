@@ -18,7 +18,9 @@ that would break your site — a stray brace, a placeholder like `{minutes}` lef
 empty box — is refused with a sentence naming the problem in your own words, never "fixed" for you. Choosing Arabic,
 Hebrew, Farsi or Urdu first shows the yellow "Right-to-left languages are not supported yet" notice with an **Understood**
 button, and choosing a language your fonts cannot draw (Russian on a Latin-only font, Japanese on any of them) says so
-under the menu at the moment you choose it.
+under the menu at the moment you choose it. On a non-English project the page also lists the sections whose own starting
+words you never retyped, each with an Edit link, and on a project linked to a Ghost site the menu links out to Ghost's
+own Navigation, Social accounts and Code injection settings (your rulings of 15 October).
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -107,7 +109,7 @@ phase (R-99).
 - **Plans:** ungated on Free and Pro (`prd.md:1261`). Review and the owner's test run on production (R-82).
 
 **Ask First:**
-- Questions 1 and 2. Dev waits for both.
+- Questions 1 and 2 are ruled (option 1 on both, owner, 2026-10-15); a change to either is a new question, not a Dev decision.
 - Any migration — none is planned (`translation_overrides` has no blank `CHECK`; the action refuses a blank, and
   `resolveStrings` and the compile refuse one stored by any other route).
 - The whole faces adding more than 25 MB to the repository, or any existing pool file's bytes changing (that is a
@@ -263,14 +265,14 @@ phase (R-99).
 > Translations; and Pre-flight warns when the project's language is not `en` and differs from the site's stored locale,
 > because Ghost reads `locales/<its own locale>.json`, exactly.
 
-### Question 1's behaviour as planned (option 1)
+### Question 1's behaviour (ruled option 1, owner, 2026-10-15)
 
 On a project whose language is not `en`, below the list: **"Starting words you haven't retyped"** and "These came with
 your sections and stay as written until you change them on the canvas." — one row per placed, visible section with a
 text prop still at its design `default` and no `catalog` key (`untouchedWords(docs, library)`, a new core function in
 `packages/section-runtime/src/starting-words.ts`, synthesized instances skipped), reading "<layer name> on <canvas>: “The
 archive” · “Browse the archive”" with **Edit** opening that canvas. The same function feeds Story 7.18's Pre-flight
-warning, pasted to its card on the ruling. Option 2 or 3 removes this block (and option 2 moves the work to Epics 9–10).
+warning — never a block — pasted to its card word for word with Epic 7's preamble list (R-195).
 
 ### A locale file (language `de`, `nav.more` overridden)
 
@@ -296,8 +298,7 @@ locales/de.json  { "pagination.label": "Pagination", …, "nav.more": "Mehr", �
 
 Do this on the real site after Deploy, on a laptop at full width, signed in as yourself. **Pilot sections** is
 `b6d4db35-8e5e-45e1-a70f-4daa28916d51` (links no site); **Ghost 6 Project** is `21d868cf-1262-4ad2-9a44-091fbf653a04`
-(linked). Steps 13 and 14 assume Questions 1 and 2 ruled as recommended; Deploy rewrites them to the rulings. Step 12 puts
-everything back.
+(linked). Steps 13 and 14 test your rulings on Questions 1 and 2 (option 1 on both). Step 12 puts everything back.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -319,8 +320,7 @@ everything back.
 
 ## Questions for the owner
 
-Two decisions are yours before Dev starts. The spec is written to the recommended option of each; a different answer
-changes one block (Question 1) or one menu (Question 2).
+Both questions were ruled option 1 (owner, 2026-10-15), and the spec is written to those rulings.
 
 ### Question 1 — On a non-English site, what happens to a section's starting words nobody retyped
 
@@ -345,7 +345,7 @@ archive" in English and nothing tells you.
 3. **Leave them.** They stay as the design wrote them; Translations says in one sentence that a section's own words are
    changed on the canvas.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-15).**
 
 ### Question 2 — The left menu's Navigation, Social accounts and Code injection
 
@@ -364,7 +364,7 @@ own Navigation settings in a new tab. Option 2 shows just Theme settings and Tra
 2. **Leave them out.** The menu holds Theme settings and Translations only, as we do for anything with no page yet.
 3. **Greyed.** Draw all three, greyed, with "Ghost owns this — change it in Ghost Admin." and no link.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-15).**
 
 ## Verification
 

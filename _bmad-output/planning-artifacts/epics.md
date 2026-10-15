@@ -3001,12 +3001,16 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    Style Pack switch, the colour scheme after a project-mode switch — with what Ghost keeps and a link to Ghost's Design panel —
 >    **Story 7.18**, word for word on its card: Ghost keeps a stored value across a new default (MEASUREMENTS §78).
 >
-> **Given owners by Story 7.12's Create (2026-10-15), so none is missed (R-195).**
+> **Given owners by Story 7.12's Create (2026-10-15; Question 1 ruled option 1 by the owner), so none is missed (R-195).**
 >
 > 1. FR-Q6's warning before a switch to a site whose locale differs, the language a project takes when it is first linked
 >    in the deploy wizard, the RTL language **repeated as a pre-deploy warning** (blocking while it is unacknowledged), and
 >    the warning that a non-English project's language differs from its site's locale — **Story 7.18**, word for word on
 >    its card: the site is chosen at its destination step and Pre-flight is its surface.
+>
+> 2. the deploy check repeating, as a warning and never a block, the list of sections whose starting words a non-English
+>    project never retyped — **Story 7.18** (Question 1, ruled option 1, owner, 2026-10-15; DW-145), word for word on its
+>    card; Story 7.12 builds the list on Translations and the function both read.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3916,6 +3920,11 @@ linked to a site for the first time there takes `languageAtLink` of the site's l
 **repeated as a pre-deploy warning** in Pre-flight, which **blocks** while `projects.rtl_ack_at` is empty and links to
 Translations; and Pre-flight warns when the project's language is not `en` and differs from the site's stored locale,
 because Ghost reads `locales/<its own locale>.json`, exactly.
+**And** *(given an owner by Story 7.12's Create, its Question 1, ruled option 1, owner, 2026-10-15, word for word — R-195)* **"On a
+non-English project, Translations lists every section with untouched starting words, each with an Edit link to its canvas,
+and the deploy check (Story 7.18) repeats the list as a warning — never a block."** — Pre-flight's half: the list
+`untouchedWords` (Story 7.12) gives, for a project whose language is not `en`, each section named by its layer and canvas
+with its untouched words (DW-145).
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
