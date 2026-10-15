@@ -9520,6 +9520,10 @@ origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain
   test among them); `rls` and the render matrix success, `deploy` skipped, so the Dev head never deployed. Run cold on
   this machine with `bash tools/keyboard/run-keyboard-gate.sh -g 'R-236 · the Style Pack panel'`: 1 passed. The Review
   push re-runs it.
+  Sixth recurrence, the same row (2026-10-15, Story 7.12's Review): run 38693776350 on 370bee33 (the first Review commit;
+  its screen change is the Translations page, which the R-236 stop never opens) — `check` failed at the same line,
+  `#pack-editor-title` not found after Enter on `#style-pack-new`, every other stop passed; `deploy` skipped. `pnpm
+  keyboard` whole on this machine an hour earlier, on the same tree: every journey passed. A second Review push re-runs it.
 owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
   the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
   then, re-push on a red R-201 stop with no app change.

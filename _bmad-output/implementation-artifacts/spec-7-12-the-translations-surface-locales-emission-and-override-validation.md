@@ -543,5 +543,9 @@ that library it would show `{minutes} Min. Lesezeit`.
 - **Local:** `pnpm check` green under Node 24 (every package's tests with 0 fail, check-catalog, check-snapshots, and
   test-vocabulary holding every pool file, whole faces included, at its sha256); `uv run tools/fonts/build-pool.py
   --self-check` passes.; `pnpm keyboard` whole, every journey passed.
-- **Not run yet, and why:** the walk's new step 106k and a complete step 106 need this Review push deployed — they run on
-  the Review head and are appended in a second Review commit.
+- **CI on the first Review commit `370bee33`:** `rls` and the Render matrix succeeded; `check` went red at the R-236 journey
+  stop (`#pack-editor-title` not found after Enter on New pack — DW-350's sixth recurrence; the stop never opens the
+  Translations page, and the same tree passed `pnpm keyboard` whole here), so `deploy` was skipped. A second Review push
+  re-runs it.
+- **Not run yet, and why:** the walk's new step 106k and a complete step 106 need a Review head deployed — they run on it
+  and are appended in a later Review commit.
