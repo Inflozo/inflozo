@@ -421,7 +421,7 @@ Do this on the real site after Deploy, on a laptop at full width, signed in as y
 | 12 | the same | Translations | Choose **English**. | — | English, no yellow box, no font sentence, the column reads ENGLISH, nothing overridden. |
 | 13 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04/settings` | Theme settings | Look at the left menu. | — | Below Translations: **Navigation ↗**, **Social accounts ↗**, **Code injection ↗**. Each opens that part of your Ghost site's own settings in a new tab (Ghost may ask you to sign in). |
 | 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings/translations` | Translations | Choose **Español** again and scroll to the bottom. | — | "Starting words you haven't retyped" listing **Post Grid — Three Up on Home** with its untouched words (e.g. “The archive”, “Browse the archive”) and an **Edit** link that opens Home. Choose **English** again: the block is gone. |
-| 15 | the same, in a second window | Translations, read-only | Open the project in a second window first, then its Translations there. | — | Every box, Save, Use the default and the language button greyed and doing nothing; the words readable. Close it. |
+| 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` in this window, then `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings/translations` in a **new** window | Editor here; Translations, read-only, in the new window | Open the project's **editor** in this window and leave it open — it is the window doing the editing. Then open a new window (Ctrl+N), paste the Translations address and press Enter. *(Corrected 2026-10-15 at the owner's test: the step first said to open Translations in the editor's own window, and that window stays editable because it is the one editing.)* | — | In the new window: the blue line "You are editing this site somewhere else — you are reading along here", and every box, Save, Use the default and the language button greyed and doing nothing; the words readable. Close the new window. |
 
 ## Questions for the owner
 
@@ -576,3 +576,9 @@ that library it would show `{minutes} Min. Lesezeit`.
     104 row and 105a–d (the cut stops at 105e, whose save reads step 102's names; run 7 passed 105e–i in full).
   - Read together: steps 1–105 passed in full runs 4, 6 and 7 with no FAIL the story owns, and step 106 passed whole on
     production. DW-352 carries the holds (seen again).
+- **The owner's step 15, checked on production after he reported it not working (2026-10-15, on `9421d62f`):** one
+  throwaway account, one browser, three tabs (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, read in-process). The editor open in
+  window 1 and Translations opened by its address in window 2: the reading-along line and 0 controls live, the language
+  button disabled. The editor's own window moved on to Translations: no line, every control live — what the step as first
+  written led to, since that window holds the lock. A third window opened while the first still held it: read-only again.
+  The product is right; the step's order was wrong, and is corrected.
