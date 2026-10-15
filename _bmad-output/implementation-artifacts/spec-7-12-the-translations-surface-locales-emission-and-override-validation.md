@@ -2,7 +2,7 @@
 title: 'Story 7.12 — The Translations surface, locales/ emission, and override validation'
 type: 'feature'
 created: '2026-10-15'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'c065752d40f93cfd5a85a82df47c54c870cf7f31'
 owner_test: passed
 review_loop_iteration: 0
