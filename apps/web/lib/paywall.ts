@@ -106,8 +106,16 @@ export const membersNotice = (members: Members | null, site: string): string[] =
  *  Settings → Membership is `#/settings/members`, Tiers is `#/settings/tiers`. Story 7.9 — and `settings`, Settings
  *  itself (`#/settings`), where Site basics sends the site's logo: Ghost 6.58.0's admin router declares `{path:'settings'}`
  *  (`core/built/admin/assets/index-BOJzlYiz.js:67`) and 5.130.6's `this.route("settings-x",{path:"/settings"})`
- *  (`core/built/admin/assets/ghost-060c0f30….js`), both read in source. ONE builder for every address. */
-export const adminAt = (url: string, anchor: 'members' | 'tiers' | 'settings'): string =>
+ *  (`core/built/admin/assets/ghost-060c0f30….js`), both read in source. ONE builder for every address.
+ *  Story 7.12 — and four more of Settings' sections, each a `navid` routed as `#/settings/<navid>`: `navigation`,
+ *  `social-accounts` and `code-injection` (D6a's rail, Question 2, ruled option 1) and `publication-language`
+ *  (Translations' mismatch notice). Read in source, both majors: Ghost 6.58.0's
+ *  `core/built/admin/assets/settings-KSWWQanQ.js` declares navid:`navigation`, `social-accounts`, `code-injection` and
+ *  `publication-language` (lines 2-4 of that minified file); 5.130.6's
+ *  `core/built/admin/assets/admin-x-settings/index-BVxh86CD.mjs` declares navid "navigation" (:29989), "social-accounts"
+ *  (:27394), "code-injection" (:20434) and "publication-language" (:22540). */
+export type AdminAnchor = 'members' | 'tiers' | 'settings' | 'navigation' | 'social-accounts' | 'code-injection' | 'publication-language'
+export const adminAt = (url: string, anchor: AdminAnchor): string =>
   `${url.replace(/\/+$/, '')}/ghost/#/settings${anchor === 'settings' ? '' : `/${anchor}`}`
 
 type Tier = { type?: unknown; visibility?: unknown; active?: unknown }

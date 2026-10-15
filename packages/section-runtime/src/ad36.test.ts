@@ -16,6 +16,8 @@ import { REFERENCE_PACK } from './reference.ts'
 import { ghostEntry, propSettingOf } from './custom-settings.ts'
 import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
+import { languageRefusal } from '@inflozo/library/languages'
+import { OVERRIDE_WORDS, overrideRefusal } from '@inflozo/library/override'
 import type { IconLookup } from '@inflozo/library'
 import type { RenderInput } from './index.ts'
 
@@ -732,3 +734,33 @@ test('AD-36 (7.11) · the dark logo rule\'s stamp is the runtime\'s alone: no bi
   const css = packTokensCss(REFERENCE_PACK, { ghostFonts: true, darkSettings: true })
   assert.deepEqual([...new Set(css.match(/--setting-[a-z-]+/g))].sort(), [SETTING_DARK_ACCENT, SETTING_DARK_LOGO].sort())
 })
+
+test('AD-36 (7.12) · the project language names a locale file, locales/<language>.json: a path is refused, and Ghost\'s own codes are the file name exactly', () => {
+  // Ghost joins the setting into the path unchecked (`i18n.js:197`, `path.join(basePath, `${locale}.json`)`), so the code is
+  // refused by Ghost's own shape rule, which admits letters, digits and hyphens alone
+  for (const bad of ['../package', '../../config', 'en/../x', 'a\\b', '.', 'en.json', 'de\u0000', ' de']) {
+    assert.notEqual(languageRefusal(bad), null, JSON.stringify(bad))
+  }
+  for (const good of ['en', 'de', 'pt-BR', 'sr-Cyrl', 'zh-Hant', 'de-DE']) {
+    assert.equal(languageRefusal(good), null, good)
+    assert.equal(`locales/${good}.json`.split('/').length, 2, `${good} stays one file under locales/`)
+  }
+})
+
+test('AD-36 (7.12) · a {{plural}} label\'s override carrying markup is refused — Ghost prints {{plural}} unescaped (DW-141) — while "% posts" still renders as words', () => {
+  // the recorded fact (`ghost-shim` contract, MEASUREMENTS §44): {{plural}} replaces the first % with the count and returns
+  // an UNESCAPED SafeString, so markup in the label reaches the page as markup
+  const plural = (label: string, count: number) => label.replace('%', String(count))
+  for (const [bad, ch] of [['% <b>posts</b>', '<'], ['% posts <img src=x onerror=alert(1)>', '<'], ['% posts &amp; more', '&']] as const) {
+    assert.equal(overrideRefusal('archive.posts_many', bad), OVERRIDE_WORDS.markup(ch), bad)
+  }
+  // the legitimate case: the default and a translation both ship, and print as words
+  for (const good of ['% posts', '% Beiträge']) {
+    assert.equal(overrideRefusal('archive.posts_many', good), null, good)
+    assert.doesNotMatch(plural(good, 3), /[<&]/)
+  }
+  assert.equal(plural('% Beiträge', 3), '3 Beiträge')
+  // and a non-plural label may carry them: {{t}} escapes its output (MEASUREMENTS §44's escape rows)
+  assert.equal(overrideRefusal('nav.more', 'Mehr & mehr'), null)
+})
+

@@ -2,7 +2,8 @@
 title: 'Story 7.12 — The Translations surface, locales/ emission, and override validation'
 type: 'feature'
 created: '2026-10-15'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'c065752d40f93cfd5a85a82df47c54c870cf7f31'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -134,7 +135,7 @@ phase (R-99).
 | Override saved | language `es`; `post.reading_time` = `{minutes} min de lectura` | upserted on `(project_id, catalog_key)`; the row shows it; the canvas's Three Up cards read "… min de lectura"; a compile writes it to `es.json` and the default to `en.json` | N/A |
 | Braces | `nav.more` = `Más {{` · `post.reading_time` = `{{minutes}} min` | refused: "The “{” in “Más {{” would break every page that shows it — braces mark a placeholder, and this label has none." / "…like {minutes}." | nothing stored; the row takes B18's refused look |
 | Placeholder dropped / foreign | `min de lectura` · `{mins} min` | "Keep {minutes}: your site fills it in." · "{mins} isn't one of this label's placeholders. It has {minutes}." | as above |
-| Apostrophes | `It''s here` · `post.reading_time` = `'{minutes}' min` · `It's {minutes} min` | "Two apostrophes in a row show as one on your site. Type one." (5.4.3 prints `It's`, the shim `It''s`) · "The “'” beside “{” in “'{minutes}' min” stops your site filling in {minutes}. Remove it." (5.4.3 quotes it) · accepted (a lone apostrophe away from a brace prints as typed on both) | as above; any other disagreement between 5.4.3 and the shim: "Your site would print this differently from the canvas. Check its apostrophes and braces." |
+| Apostrophes | `It''s here` · `post.reading_time` = `'{minutes}' min` · `It's {minutes} min` | "Two apostrophes in a row show as one on your site. Type one." (5.4.3 prints `It's`, the shim `It''s`) · "The “'” beside “{” in “'{minutes}' min” prints on your site as typed today, and a Ghost update could make it hide {minutes}. Remove it." (5.4.3 prints it as typed, intl-messageformat 10.7.16 quotes it — Question 3, ruled option 1, owner, 2026-10-15) · accepted (a lone apostrophe away from a brace prints as typed on both) | as above; any other disagreement between 5.4.3 and the shim: "Your site would print this differently from the canvas. Check its apostrophes and braces." |
 | Control character / too long | a value holding U+0007 · 501 characters | "This has a character your site can't show." · "Keep it to 500 characters." | as above |
 | Plural markup | `archive.posts_many` = `% <b>posts</b>` · `% posts & more` · `posts` | "“<” can't be used in this label: your site prints it as page code." · the same for "&" · "Keep the %: your site puts the number there." | as above |
 | Blank (R-106) | `"   "` | "Type the wording, or press Use the default." | nothing stored |
@@ -183,28 +184,28 @@ phase (R-99).
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/library/src/languages.ts` (new, core, exported) -- `LANGUAGES` (Ghost 6.58.0's `{code,label}` list, anchored), `languageRefusal(code)` (Ghost's `ms` shape, which also keeps `/`, `\`, `.` out of a file name), `scriptOf(code)` (an explicit script subtag first — `sr-Cyrl`, `zh-Hant` — else the primary subtag's default script from one table, `latin` otherwise, Vietnamese its own), `isRtl(code)`, `languageAtLink(siteLocale)` (`en` when refused) -- one list, one rule
-- [ ] `packages/library/src/override.ts` (new; `package.json` `exports["./override"]`, `dependencies["intl-messageformat"] = "5.4.3"`) -- `overrideRefusal(key, value)` in the Always order, and `OVERRIDE_WORDS`, every sentence of the matrix; `translatableKeys()` (catalog order, keys − locked − retired) beside it in `catalog.ts`, browser-safe -- V9, V10, DW-141, DW-142, R-106
-- [ ] `packages/library/src/override.test.ts`, `languages.test.ts` -- every refusal row behind its legitimate twin; every catalog default passes `overrideRefusal`; `LANGUAGES` holds Ghost's list (pinned from the bundle's text in a fixture); `isRtl` true for exactly `ar`, `fa`, `he`, `ur` of it -- the matrix
-- [ ] `tools/check-catalog.mjs` -- its listed-keys line reads keys − locked − retired, from `translatableKeys` -- counts derived
-- [ ] `tools/fonts/build-pool.py` -- per face also a whole-face woff2 (same instance, no glyph subset, hinting dropped) for every family whose `METADATA.pb` lists a subset other than `latin`, `latin-ext`, `menu`, `math` and `symbols`; `pool.json` gains each family's `subsets` (as `METADATA.pb` lists them) and each such face's `full` `{file, bytes, sha256}`; rerun at the SAME `COMMIT`; existing files byte-identical (asserted); `--self-check` gains a synthetic family with and without a non-latin subset -- §D.b
-- [ ] `tools/stress/test-vocabulary.mjs` -- holds the new records and sha256s; the latin ceiling unchanged -- CI
-- [ ] `packages/section-runtime/src/fonts.ts` -- `fontFaceCss(…, { script })`: a covering family's faces as whole-face rules with no `unicode-range`; `coverageOf(pairingId, script)` → covered and uncovered families with bytes, for the caption -- one rule for canvas and theme
-- [ ] `packages/theme-compiler/src/compile.ts` -- `CompileInput.language` (default `en`); refuse `languageRefusal` first; `locales/en.json` and `locales/<language>.json` as Always; every value written passes `overrideRefusal` or the build throws naming key and sentence; V3 asserted per file; `themeFonts` takes `scriptOf(language)` (whole faces, the preload naming the whole file) -- FR-Q6, FR-Q8
-- [ ] `packages/theme-compiler/src/compile.test.ts`, `packages/theme-compiler/gate/locales.test.ts` (new) -- the matrix's compile rows; a `de` + overrides compile and a `ru` compile pass gscan 4.49.7 and 6.4.2 at 0/0 (GS070 parses each file) with an empty `qualityGate` -- the gate
-- [ ] `packages/section-runtime/src/ad36.test.ts` -- the language-path pair and a plural override carrying `<b>` refused while `% posts` still renders -- AD-36
-- [ ] `tools/pilot-theme.mjs`, `tools/check-snapshots` -- a second pilot compile with `language: 'de'` and two overrides: both files, equal key sets, 0/0 on both pins -- CI
-- [ ] `apps/web/lib/probe-rule.ts` -- `settingsPatch` keeps `locale` (a string, else the previous value) -- the site's language
-- [ ] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- `useBrand`'s insert sets `language: languageAtLink(site.site_settings?.locale)` -- first link
-- [ ] `apps/web/lib/paywall.ts` -- `adminAt` anchors gain `navigation`, `social-accounts`, `code-injection`, `publication-language`, each read in 6.58.0's and 5.130.6's admin source and anchored in the comment -- one builder
-- [ ] `apps/web/lib/editor.ts` -- `TRANSLATIONS`, `translationsPath(projectId)` -- one path
-- [ ] `apps/web/lib/translations.ts` (new) -- `readTranslations(projectId)` (`{ language, rtlAck, overrides, refused }`, refused through `overrideRefusal`), `TRANSLATION_WORDS` (title, B18's sentence verbatim, scope, columns, placeholders, Save/Saving…, Use the default/Resetting…, the RTL block — B18's words without "so we do not offer those locales rather than shipping something broken", see Design Notes — the switch confirm, the mismatch notice, the font captions), `refusalOf`'s mapping -- R-170, one list
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/layout.tsx` (new) -- the back header and D6a's rail (Question 2), active item from the segment; `page.tsx` drops its header; `loading.tsx` drops what the layout now draws; `theme-settings.tsx`'s :59-60 note updated -- the rail
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/translations/{page,translations,actions,loading}.tsx` (new; actions `.ts`) -- B18 as the Always describes; actions `saveOverride`, `resetOverride`, `setLanguage` (RTL needs `acknowledged`; with overrides needs `confirmed`), each validating before the write and mapping Postgres codes; `revalidateProject` -- the surface
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts`, `apps/web/lib/canvas.ts`, `apps/web/lib/style-pack.ts` -- `editorData` carries `language` and the valid overrides; `renderSection` hands `strings`; the canvas faces take `scriptOf(language)` -- FR-H5, canvas parity
-- [ ] `apps/web/busy.test.ts` (no change expected) and `tools/probe/run-verify-editor.cjs` step **106** -- 106a the rail; b B18's header and columns; c an override saved and seen on the canvas; d each refusal sentence; e Use the default; f the switch confirm; g RTL and Understood; h the Cyrillic and Japanese captions; i read-only; j the deep links; each behind its control -- R-82
-- [ ] `tools/probe/record-theme-assembly.py` → §80 (local half: both gscans on the `de` and `ru` trees; T1 half on the owner's in-session go) -- T1 rows: `nav.more` reads "More" on `/` with `en.json` (7.6's row turned); locale `de` with `de.json` reads the override; locale `fr` with no `fr.json` reads `en.json` (VERIFY-AT-BUILD 32's file fallback, recorded); a probe theme whose `de.json` holds `Mehr {` on a `default.hbs` key and on a `post.hbs`-only key — status and body of `/` and a post, each behind the valid twin's 200 (DW-142's observation, read as a 400 in source); locale and Casper put back and read back -- standing rule 1
-- [ ] Propagation -- FR-Q6 and FR-Q8 (dated notes: languages are Ghost's list, exact file name, the observed status and "every page that shows it"), appendix-h1 (V3/V7/V9/V10 dated, S3's apostrophe line, the listed-keys line), ARCHITECTURE-SPINE (`intl-messageformat` row: a server runtime dependency of `@inflozo/library/override`, still never in the browser; the parser row; AD-36's instances), VERIFY-AT-BUILD row 32 (recorded), MEASUREMENTS §80, `EXPERIENCE.md:747` (dated note: the RTL sentence and the rail), Appendix D §D.b (dated note: whole faces built, coverage from `METADATA.pb`), DW-141/142/145 resolved, `epic-7-context.md` sub-bullets; then grep the repo for "whole-page 500" and "falls back to `en` for any key" -- standing rules 3 and 7
+- [x] `packages/library/src/languages.ts` (new, core, exported) -- `LANGUAGES` (Ghost 6.58.0's `{code,label}` list, anchored), `languageRefusal(code)` (Ghost's `ms` shape, which also keeps `/`, `\`, `.` out of a file name), `scriptOf(code)` (an explicit script subtag first — `sr-Cyrl`, `zh-Hant` — else the primary subtag's default script from one table, `latin` otherwise, Vietnamese its own), `isRtl(code)`, `languageAtLink(siteLocale)` (`en` when refused) -- one list, one rule
+- [x] `packages/library/src/override.ts` (new; `package.json` `exports["./override"]`, `dependencies["intl-messageformat"] = "5.4.3"`) -- `overrideRefusal(key, value)` in the Always order, and `OVERRIDE_WORDS`, every sentence of the matrix; `translatableKeys()` (catalog order, keys − locked − retired) beside it in `catalog.ts`, browser-safe -- V9, V10, DW-141, DW-142, R-106
+- [x] `packages/library/src/override.test.ts`, `languages.test.ts` -- every refusal row behind its legitimate twin; every catalog default passes `overrideRefusal`; `LANGUAGES` holds Ghost's list (pinned from the bundle's text in a fixture); `isRtl` true for exactly `ar`, `fa`, `he`, `ur` of it -- the matrix
+- [x] `tools/check-catalog.mjs` -- its listed-keys line reads keys − locked − retired, from `translatableKeys` -- counts derived
+- [x] `tools/fonts/build-pool.py` -- per face also a whole-face woff2 (same instance, no glyph subset, hinting dropped) for every family whose `METADATA.pb` lists a subset other than `latin`, `latin-ext`, `menu`, `math` and `symbols`; `pool.json` gains each family's `subsets` (as `METADATA.pb` lists them) and each such face's `full` `{file, bytes, sha256}`; rerun at the SAME `COMMIT`; existing files byte-identical (asserted); `--self-check` gains a synthetic family with and without a non-latin subset -- §D.b
+- [x] `tools/stress/test-vocabulary.mjs` -- holds the new records and sha256s; the latin ceiling unchanged -- CI
+- [x] `packages/section-runtime/src/fonts.ts` -- `fontFaceCss(…, { script })`: a covering family's faces as whole-face rules with no `unicode-range`; `coverageOf(pairingId, script)` → covered and uncovered families with bytes, for the caption -- one rule for canvas and theme
+- [x] `packages/theme-compiler/src/compile.ts` -- `CompileInput.language` (default `en`); refuse `languageRefusal` first; `locales/en.json` and `locales/<language>.json` as Always; every value written passes `overrideRefusal` or the build throws naming key and sentence; V3 asserted per file; `themeFonts` takes `scriptOf(language)` (whole faces, the preload naming the whole file) -- FR-Q6, FR-Q8
+- [x] `packages/theme-compiler/src/compile.test.ts`, `packages/theme-compiler/gate/locales.test.ts` (new) -- the matrix's compile rows; a `de` + overrides compile and a `ru` compile pass gscan 4.49.7 and 6.4.2 at 0/0 (GS070 parses each file) with an empty `qualityGate` -- the gate
+- [x] `packages/section-runtime/src/ad36.test.ts` -- the language-path pair and a plural override carrying `<b>` refused while `% posts` still renders -- AD-36
+- [x] `tools/pilot-theme.mjs`, `tools/check-snapshots` -- a second pilot compile with `language: 'de'` and two overrides: both files, equal key sets, 0/0 on both pins -- CI
+- [x] `apps/web/lib/probe-rule.ts` -- `settingsPatch` keeps `locale` (a string, else the previous value) -- the site's language
+- [x] `apps/web/app/(app)/app/(authed)/sites/actions.ts` -- `useBrand`'s insert sets `language: languageAtLink(site.site_settings?.locale)` -- first link
+- [x] `apps/web/lib/paywall.ts` -- `adminAt` anchors gain `navigation`, `social-accounts`, `code-injection`, `publication-language`, each read in 6.58.0's and 5.130.6's admin source and anchored in the comment -- one builder
+- [x] `apps/web/lib/editor.ts` -- `TRANSLATIONS`, `translationsPath(projectId)` -- one path
+- [x] `apps/web/lib/translations.ts` (new) -- `readTranslations(projectId)` (`{ language, rtlAck, overrides, refused }`, refused through `overrideRefusal`), `TRANSLATION_WORDS` (title, B18's sentence verbatim, scope, columns, placeholders, Save/Saving…, Use the default/Resetting…, the RTL block — B18's words without "so we do not offer those locales rather than shipping something broken", see Design Notes — the switch confirm, the mismatch notice, the font captions), `refusalOf`'s mapping -- R-170, one list
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/layout.tsx` (new) -- the back header and D6a's rail (Question 2), active item from the segment; `page.tsx` drops its header; `loading.tsx` drops what the layout now draws; `theme-settings.tsx`'s :59-60 note updated -- the rail
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/translations/{page,translations,actions,loading}.tsx` (new; actions `.ts`) -- B18 as the Always describes; actions `saveOverride`, `resetOverride`, `setLanguage` (RTL needs `acknowledged`; with overrides needs `confirmed`), each validating before the write and mapping Postgres codes; `revalidateProject` -- the surface
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts`, `apps/web/lib/canvas.ts`, `apps/web/lib/style-pack.ts` -- `editorData` carries `language` and the valid overrides; `renderSection` hands `strings`; the canvas faces take `scriptOf(language)` -- FR-H5, canvas parity
+- [x] `apps/web/busy.test.ts` (no change expected) and `tools/probe/run-verify-editor.cjs` step **106** -- 106a the rail; b B18's header and columns; c an override saved and seen on the canvas; d each refusal sentence; e Use the default; f the switch confirm; g RTL and Understood; h the Cyrillic and Japanese captions; i read-only; j the deep links; each behind its control -- R-82
+- [x] `tools/probe/record-theme-assembly.py` → §80 (local half: both gscans on the `de` and `ru` trees; T1 half on the owner's in-session go) -- T1 rows: `nav.more` reads "More" on `/` with `en.json` (7.6's row turned); locale `de` with `de.json` reads the override; locale `fr` with no `fr.json` reads `en.json` (VERIFY-AT-BUILD 32's file fallback, recorded); a probe theme whose `de.json` holds `Mehr {` on a `default.hbs` key and on a `post.hbs`-only key — status and body of `/` and a post, each behind the valid twin's 200 (DW-142's observation, read as a 400 in source); locale and Casper put back and read back -- standing rule 1
+- [x] Propagation -- FR-Q6 and FR-Q8 (dated notes: languages are Ghost's list, exact file name, the observed status and "every page that shows it"), appendix-h1 (V3/V7/V9/V10 dated, S3's apostrophe line, the listed-keys line), ARCHITECTURE-SPINE (`intl-messageformat` row: a server runtime dependency of `@inflozo/library/override`, still never in the browser; the parser row; AD-36's instances), VERIFY-AT-BUILD row 32 (recorded), MEASUREMENTS §80, `EXPERIENCE.md:747` (dated note: the RTL sentence and the rail), Appendix D §D.b (dated note: whole faces built, coverage from `METADATA.pb`), DW-141/142/145 resolved, `epic-7-context.md` sub-bullets; then grep the repo for "whole-page 500" and "falls back to `en` for any key" -- standing rules 3 and 7
 
 **Acceptance Criteria:**
 - Given Theme settings, when it opens, then D6a's rail shows **Theme settings** (active) and **Translations**, and Question 2's ruling decides Navigation, Social accounts and Code injection.
@@ -221,6 +222,19 @@ phase (R-99).
 - Given `pnpm check`, the gscan gate on the `de` and `ru` pilot compiles, the deployed walk's step 106 and T1 §80, then every one is green or recorded, each behind its control.
 
 ## Spec Change Log
+
+- **Dev, 2026-10-15 — found by execution (standing rule 1); the owner renegotiated one matrix sentence (Question 3):**
+  the apostrophe row said `'{minutes}' min` is refused because "5.4.3 quotes it". Executed, 5.4.3 (parser 2.1.3, the
+  pair both Ghost majors resolve) prints it `'<value>' min` — the placeholder filled, the apostrophes kept, as the shim
+  does — here and on T1 6.58.0 (MEASUREMENTS §80, `'0' Min. Lesezeit`), while intl-messageformat 10.7.16 prints
+  `{minutes} min`. The refusal stays as appendix-h1 S3's rule; the sentence "stops your site filling in {minutes}" was
+  false on today's Ghost, so it was put to the owner, who ruled option 1: "The “'” beside “{” in “'{minutes}' min” prints
+  on your site as typed today, and a Ghost update could make it hide {minutes}. Remove it." The matrix row carries it.
+- **Dev, 2026-10-15 — routine calls:** a locale file's `credit.*` keys are exempt from the fingerprint scan (CI's
+  `textFailures` and `compile.test.ts`), each held equal to the catalog's own words — S7 puts the credit in every locale
+  file verbatim; a `strings` record that leaves a key out ships that key's English (the render already read it so);
+  the Theme settings page and its skeleton moved into a `(theme)` route group, so each settings page keeps its own
+  `loading.tsx` under the shared rail (`busy.test.ts` unchanged).
 
 ## Design Notes
 
@@ -320,7 +334,8 @@ Do this on the real site after Deploy, on a laptop at full width, signed in as y
 
 ## Questions for the owner
 
-Both questions were ruled option 1 (owner, 2026-10-15), and the spec is written to those rulings.
+All three questions were ruled option 1 (owner, 2026-10-15), and the spec is written to those rulings. Question 3 was
+asked at Dev, in the session, after T1 contradicted the matrix's reason for one refusal.
 
 ### Question 1 — On a non-English site, what happens to a section's starting words nobody retyped
 
@@ -366,6 +381,24 @@ own Navigation settings in a new tab. Option 2 shows just Theme settings and Tra
 
 **Ruled: option 1 (owner, 2026-10-15).**
 
+### Question 3 — The words for an apostrophe right beside a placeholder
+
+**In plain English.**
+- A translation like `'{minutes}' min` — apostrophes around a placeholder — is refused, and the sentence approved at
+  Create said it "stops your site filling in {minutes}".
+- Tested on your Ghost test site: today's Ghost does fill it in and shows `'5' min`, apostrophes and all. The newer
+  version of the same text library would show `{minutes} min` instead, so refusing is still right; only the reason is wrong.
+
+**Example.** You type `'{minutes}' Min. Lesezeit`. Today your site shows `'5' Min. Lesezeit`; after a Ghost update to
+that library it would show `{minutes} Min. Lesezeit`.
+
+1. **Keep refusing, true words:** "The “'” beside “{” in “'{minutes}' min” prints on your site as typed today, and a Ghost
+   update could make it hide {minutes}. Remove it." **(RECOMMENDED)**
+2. **Keep the approved sentence**, although today's Ghost does fill the placeholder in.
+3. **Accept it:** today the site prints it exactly as the canvas shows it; a later Ghost could change that.
+
+**Ruled: option 1 (owner, 2026-10-15).**
+
 ## Verification
 
 **Commands:**
@@ -380,3 +413,23 @@ own Navigation settings in a new tab. Option 2 shows just Theme settings and Tra
 **Manual checks:**
 - The Translations page beside B18 at 1440 and 834: the header, the three columns, the refused row's colours, the
   marigold block.
+
+**What ran at Dev, 2026-10-15 (R-82):**
+- **T1 `ghost6.inflozo.com` (6.58.0)** — `python3 tools/probe/record-theme-assembly.py`, run in the main session on the
+  owner's in-session go (keys `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`, read by name). Every
+  row held behind its controls and MEASUREMENTS §80 is written: every §70–§79 row re-run, the More label now "More" from
+  `en.json` (7.6's row turned); under locale `de` the German pilots printed "Mehr" and "Min. Lesezeit" (`<html lang="de">`
+  the control); under `fr`, which no file names, "More" from `en.json` (VERIFY-AT-BUILD 32's file fallback, recorded);
+  `Mehr {` on a `default.hbs` label answered **HTTP 400** on `/` and on a post, `Teilen {` on a post-only label answered
+  400 on the post while `/` answered 200, each behind the valid twin's 200; `'{minutes}' Min. Lesezeit` printed
+  `'0' Min. Lesezeit` (5.4.3 does not quote it — Question 3). Both pinned gscans passed both broken `de.json` files (no
+  ICU check). The site's locale was put back to `en` and read back, Casper re-activated and the probe theme deleted.
+- **Local:** `pnpm check` green under Node 24 (every package's tests, check-catalog, check-snapshots with the German
+  pilot compile 0/0 on both pins, test-vocabulary); `node tools/check-catalog.mjs` prints the listed-keys line as every
+  key but the locked and the retired; `uv run tools/fonts/build-pool.py --self-check` passes and the pool rebuild added
+  whole faces and `pool.json` records only (no existing font file changed); the recorder's local half gated the `de`,
+  `ru`, `valid` and both broken trees 0/0 on gscan 4.49.7 and 6.4.2; intl-messageformat 10.7.16, installed in a
+  scratch directory, prints `'{minutes}' min` as `{minutes} min`; `python3 tools/doc-audit.py --check` green.
+- **Not run at Dev, and why:** the deployed walk's step 106 needs this push deployed — it is the Review's, on
+  production (Supabase through the app's own session, Vercel's deployment). Supabase was not written by Dev: no
+  migration (every column, grant and check pre-exists). Resend and Dodo are not touched by this story.

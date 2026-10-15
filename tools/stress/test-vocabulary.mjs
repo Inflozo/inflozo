@@ -436,7 +436,8 @@ check('Appendix D §D.c and packages/library/fonts/pool.json declare the same pa
 })
 
 const sha256 = (buf) => createHash('sha256').update(buf).digest('hex')
-const poolFiles = (pool) => Object.values(pool.faces).flatMap((f) => f.files)
+// Story 7.12: a face's whole face (`full`, §D.b) is a pool file like its subsets — on disk, at its bytes and sha256
+const poolFiles = (pool) => Object.values(pool.faces).flatMap((f) => [...f.files, ...(f.full ? [{ subset: 'full', ...f.full }] : [])])
 /** Every way the files on disk differ from what `pool` records of them. */
 function fileFaults(pool) {
   const files = poolFiles(pool)
@@ -461,8 +462,48 @@ check('every pool.json file is on disk with its sha256, and no other file sits i
   const [id, face] = Object.entries(POOL_JSON.faces)[0]
   const wrong = { ...POOL_JSON, faces: { ...POOL_JSON.faces, [id]: { ...face, files: face.files.map((f) => ({ ...f, sha256: sha256(f.sha256) })) } } }
   const { [id]: _dropped, ...fewer } = POOL_JSON.faces
-  if (fileFaults(wrong).length !== face.files.length || fileFaults({ ...POOL_JSON, faces: fewer }).length !== face.files.length) throw new Error('the file comparison is not a control')
-  console.log(`      ${files.length} files, every one its recorded sha256`)
+  if (fileFaults(wrong).length !== face.files.length || fileFaults({ ...POOL_JSON, faces: fewer }).length !== poolFiles({ faces: { [id]: face } }).length) throw new Error('the file comparison is not a control')
+  // Story 7.12: a whole face held the same way — its hash and its bytes each named
+  const [wid, whole] = Object.entries(POOL_JSON.faces).find(([, f]) => f.full) ?? []
+  if (!whole) throw new Error('pool.json records no whole face, so the whole-face control proves nothing')
+  const wholeWrong = (full) => fileFaults({ ...POOL_JSON, faces: { ...POOL_JSON.faces, [wid]: { ...whole, full } } })
+  if (wholeWrong({ ...whole.full, sha256: sha256(whole.full.sha256) }).length !== 1 || wholeWrong({ ...whole.full, bytes: whole.full.bytes + 1 }).length !== 1) throw new Error('the whole-face comparison is not a control')
+  console.log(`      ${files.length} files, every one its recorded sha256 (${files.filter((f) => f.subset === 'full').length} of them whole faces)`)
+})
+
+/** Story 7.12 (§D.b): every family records google/fonts' `subsets`, and a face has a whole face (`<face>-full.woff2`)
+ *  exactly when its family lists a script beyond latin — the builder's `whole_faces`, held both ways. */
+const LATIN_ONLY = new Set(['latin', 'latin-ext', 'menu', 'math', 'symbols'])
+function wholeFaults(pool) {
+  const out = []
+  for (const [family, f] of Object.entries(pool.families)) {
+    if (!Array.isArray(f.subsets) || f.subsets.length === 0 || !f.subsets.every((s) => typeof s === 'string')) out.push(`${family}: pool.json records no upstream subsets`)
+  }
+  for (const [id, face] of Object.entries(pool.faces)) {
+    const subsets = pool.families[face.family]?.subsets ?? []
+    const wants = subsets.some((s) => !LATIN_ONLY.has(s))
+    if (wants !== Boolean(face.full)) out.push(`${id}: ${face.family} lists ${subsets.join(' ') || 'no subsets'} and the face ${face.full ? 'has' : 'has no'} whole face`)
+    else if (face.full && face.full.file !== `${id}-full.woff2`) out.push(`${id}: its whole face is ${face.full.file}, not ${id}-full.woff2`)
+  }
+  return out
+}
+check('every family records its upstream subsets, and a face has a whole face exactly when its family lists a script beyond latin (§D.b)', () => {
+  const faults = wholeFaults(POOL_JSON)
+  if (faults.length) throw new Error(`${faults.join('\n       ')}\n       — re-run uv run tools/fonts/build-pool.py`)
+  // the controls: a family with no subsets, a latin-only family given a script, a face that loses its whole face — each named
+  const [covering] = Object.entries(POOL_JSON.families).find(([, f]) => f.subsets.some((s) => !LATIN_ONLY.has(s))) ?? []
+  const [latinOnly] = Object.entries(POOL_JSON.families).find(([, f]) => f.subsets.every((s) => LATIN_ONLY.has(s))) ?? []
+  if (!covering || !latinOnly) throw new Error('the pool has no covering family or no latin-only family, so a control is missing')
+  const fam = (name, subsets) => ({ ...POOL_JSON, families: { ...POOL_JSON.families, [name]: { ...POOL_JSON.families[name], subsets } } })
+  const facesOf = (name) => Object.values(POOL_JSON.faces).filter((f) => f.family === name).length
+  const [wid, whole] = Object.entries(POOL_JSON.faces).find(([, f]) => f.full)
+  const { full: _full, ...bare } = whole
+  const caught = [wholeFaults(fam(latinOnly, [])).length, wholeFaults(fam(latinOnly, ['cyrillic', 'latin'])).length,
+    wholeFaults({ ...POOL_JSON, faces: { ...POOL_JSON.faces, [wid]: bare } }).length,
+    wholeFaults({ ...POOL_JSON, faces: { ...POOL_JSON.faces, [wid]: { ...whole, full: { ...whole.full, file: 'x-full.woff2' } } } }).length]
+  if (caught[0] !== 1 || caught[1] !== facesOf(latinOnly) || caught[2] !== 1 || caught[3] !== 1) throw new Error(`the whole-face check is not a control: ${JSON.stringify(caught)}`)
+  const n = Object.values(POOL_JSON.faces).filter((f) => f.full).length
+  console.log(`      ${n} of ${Object.keys(POOL_JSON.faces).length} faces have a whole face; ${Object.values(POOL_JSON.families).filter((f) => f.subsets.some((s) => !LATIN_ONLY.has(s))).length} of ${Object.keys(POOL_JSON.families).length} families list a script beyond latin`)
 })
 
 /** D.a rule 5 as Design Notes reads it: at most five faces per pairing, at most 200 KB of LATIN files (§D.a). */

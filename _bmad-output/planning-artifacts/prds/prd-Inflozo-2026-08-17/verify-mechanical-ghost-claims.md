@@ -30,7 +30,7 @@ gscan fixtures were run under **both** `checkVersion: 'v5'` and `checkVersion: '
 | 2 | Colour defaults must be 6-digit hex, error level | **CONFIRMED** |
 | 3 | `package.json` required keys + `posts_per_page` type rule | **CONFIRMED** (one rule-code label to fix) |
 | 4 | `{{#get}}` limit capped at 100; new v6 gscan warnings | **PARTIALLY CORRECT** — Ghost **6 only**; cap is config-overridable; v5 unaffected |
-| 5 | Translation overrides are ICU and never validated | **PARTIALLY CORRECT** — never validated ✓, but a stray brace is **worse** than stated: whole-page 500, not "An error occurred" |
+| 5 | Translation overrides are ICU and never validated | **PARTIALLY CORRECT** — never validated ✓, but a stray brace is **worse** than stated: whole-page 500, not "An error occurred". *(Story 7.12, 2026-10-15 — corrected by reading: the constructor throw errors the pages that print that label, not the whole site — a 400 (`IncorrectUsageError`, `@tryghost/mw-error-handler` 1.0.13 `:59-90`), a bare 500 only where the error template prints the same label (`error-handler.js:35-39`); MEASUREMENTS §80 recorded T1's answer on 2026-10-15: HTTP 400 on the pages that print that label and on no other. Overrides are now validated, at entry and at compile, by `overrideRefusal`.)* |
 | 6 | `@member` missing `uuid`, `firstname`, `avatar_image`, `subscriptions` | **CONFIRMED** |
 | 7 | The `{{#get}}` resource list in the PRD is wrong | **PARTIALLY CORRECT** — facts right, framing wrong; deleting "Settings" would be a **regression** |
 | 8 | `@site.lang` correct for API, gscan **error** in a theme | **CONFIRMED** |

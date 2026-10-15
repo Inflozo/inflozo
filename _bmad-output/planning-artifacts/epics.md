@@ -165,7 +165,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-Q5** Dark-mode built-ins always declared **and always referenced** — `color_scheme`, dark accent, dark logo — with real fallback logic on every project, which is what keeps `GS100` unreachable. Colour promotion is accent-only in v1.
 - **FR-Q6** Translations module: every compiler-generated visitor-facing chrome string lives in one catalog with dotted keys and English defaults; `.hbs` consumes them exclusively via `{{t}}`, module strings resolve at compile into `data-i18n-*`; `credit.*` is a locked namespace; the theme always ships `en.json` plus the project-language file, emitted from one catalog in one pass. RTL is not supported in v1.
 - **FR-Q7** Ghost card design module: every Koenig card designed from a dedicated surface with per-card reset and a live preview against the style-guide fixture. Emission is `card_assets: { exclude: [...] }` — never `false` — which drops Ghost's CSS **and** JS, so four cards ship a vendored equivalent.
-- **FR-Q8** Translation override validation on entry and again at compile: it **refuses, it does not repair**, because one unbalanced brace returns a whole-page 500 across the entire site.
+- **FR-Q8** Translation override validation on entry and again at compile: it **refuses, it does not repair**, because one unbalanced brace returns a whole-page 500 across the entire site. *(Story 7.12, 2026-10-15: corrected by reading to an error on every page that shows that label — FR-Q8's dated note; MEASUREMENTS §80 recorded T1's answer, a 400, on 2026-10-15.)*
 - **FR-Q9** Treatment selection fallback: non-placeable treatments are selected from Theme Settings whenever their would-be host section is absent, and emission never depends on a host existing.
 - **FR-Q10** Share destinations are one ordered, site-wide list stored on the project doc, emitted as real `<a href>` URLs; an empty list renders no share affordance at all.
 
@@ -3649,6 +3649,18 @@ ships a `@font-face` that cannot render its own chrome strings."*
 **And** *(from Story 7.9's Dev, 2026-10-10)* this story's Create asks the owner (R-83) about D6a's left rail before it is
 drawn: besides Site basics and Translations it names **Navigation, Social accounts and Code injection**, which Ghost owns and
 no story builds — whether each is drawn (and as what, e.g. a "Change this in Ghost ↗" link as Site basics has) or left out.
+
+**And** *(Story 7.12's Dev, 2026-10-15 — as landed)* the languages are Ghost 6.58.0's own Publication Language list plus
+Other… under Ghost's own code rule, stored and emitted exactly (`packages/library/src/languages.ts`); one judge,
+`overrideRefusal` in the server-only `@inflozo/library/override` on intl-messageformat 5.4.3, refuses at the save action
+and again in `compileTheme`, which writes `locales/en.json` and the language's file and ships a covering family's whole
+faces under a non-latin script (§D.b, `fontFaceCss`' one rule, the canvas loading the same); the page is
+`/projects/<id>/settings/translations` inside D6a's rail — **Theme settings**, **Translations**, and on a linked project
+Navigation ↗, Social accounts ↗ and Code injection ↗ into the site's own Ghost settings (Question 2, ruled option 1) —
+and on a non-English project it lists each section's untouched starting words with an Edit link (Question 1, ruled
+option 1, DW-145). "Whole-page 500 across the entire site" above is corrected by reading to "every page that shows
+it" (a 400 on the pages that print the label, FR-Q8's dated note), and MEASUREMENTS §80's T1 run recorded it on
+2026-10-15: HTTP 400 on the pages that print that label and on no other (the Ghost 5 half is DW-326's, R-238).
 
 **FRs:** FR-Q6 (the surface and `locales/` emission halves), FR-Q8. · **Frame:** `B Missing Surfaces.dc.html`
 B18. · **Owner test:** yes.

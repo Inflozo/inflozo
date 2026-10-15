@@ -85,6 +85,15 @@ const hasMark = (e: CatalogEntry, m: CatalogMark) => e.marks.includes(m)
  *  `%` with the count (appendix-h1 §3.10). Derived from the default, like the placeholder set — never a mark. */
 export const isPluralString = (en: string): boolean => en.replace(PLACEHOLDER_RE, '').includes('%')
 
+/** Story 7.12 — the keys the Translations surface lists, in catalog order: every key but the locked ones (`credit.*`, S7,
+ *  never overridable on any plan) and the retired ones (no design prints one; each still ships in every locale file,
+ *  S4). `tools/check-catalog.mjs` prints the count from here. Browser-safe: the page's list is this one. */
+export const translatableKeys = (catalog: Catalog = CATALOG): string[] =>
+  Object.keys(catalog.keys).filter((k) => {
+    const e = catalog.keys[k] as CatalogEntry
+    return !hasMark(e, 'locked') && e.retired === undefined
+  })
+
 /** The catalog's format rules (S1, S3, S7, and the removal rule), as a list of sentences — empty when the
  *  catalog holds. `tools/check-catalog.mjs` runs it over the machine copy with a control per rule. */
 export function catalogFailures(catalog: Catalog): string[] {
@@ -211,7 +220,9 @@ export function jsKeyRefusal(key: string, catalog: Catalog = CATALOG): string | 
 /** THE one door an override passes, on its way to a render or a locale file. Returns every key's string —
  *  the English default, or the user's override — after the migration map has carried overrides forward
  *  (S2). Throws, never drops: a `credit.*` override is a tampered payload (S7), and an unknown key is one no
- *  surface offers. ICU validation of an override's TEXT (V9, V10) is Story 7.12's. */
+ *  surface offers. The TEXT of an override (V9, V10, DW-141, DW-142) is judged by `overrideRefusal` in the server-only
+ *  `@inflozo/library/override` (Story 7.12), at entry and again by the compile over every value it writes — never here,
+ *  because this file reaches the browser and intl-messageformat must not. */
 export function resolveStrings(overrides: Readonly<Record<string, unknown>>, catalog: Catalog = CATALOG): Record<string, string> {
   const given: Record<string, string> = {}
   for (const [key, value] of Object.entries(overrides)) {

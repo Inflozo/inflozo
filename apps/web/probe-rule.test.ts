@@ -742,3 +742,11 @@ test('R-215: the Sites question asks "No, it\'s off" FIRST — the primary is th
   assert.equal(portalState({}).portal_button, primary === 'yes')
   assert.notEqual(primary, secondary)
 })
+
+test('Story 7.12: the site\'s language (`locale`) is kept as Ghost holds it — a string is a reading, anything else leaves the stored one', () => {
+  assert.equal(settingsPatch({}, settingsOf(payload({ locale: 'pt-BR' }))).locale, 'pt-BR', 'exactly, case included')
+  assert.equal(settingsPatch({ locale: 'de' }, settingsOf(payload({ locale: 'es' }))).locale, 'es', 'a new reading replaces the stored one')
+  assert.equal(settingsPatch({ locale: 'de' }, settingsOf(payload({ title: 'x' }))).locale, 'de', 'a payload without it keeps the stored one')
+  assert.equal(settingsPatch({ locale: 'de' }, settingsOf(payload({ locale: 7 }))).locale, 'de', 'junk is no reading')
+  assert.equal(Object.hasOwn(settingsPatch({}, settingsOf(payload({ title: 'x' }))), 'locale'), false, 'nothing stored and nothing read: no key')
+})

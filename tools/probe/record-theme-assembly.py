@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.11's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.12's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
@@ -7,8 +7,10 @@ WebP `srcset`s, rendered by a REAL Ghost (T1); Story 7.3's paywall mechanism, on
 Story 7.7 the gscan gate (`@inflozo/theme-compiler/gate`): a customer's words, inert to gscan, read on a real page, and
 Ghost 6's own checker answering three probe uploads as the gate says; since Story 7.8 the emitted-theme quality gate
 (`qualityGate`) against Ghost's own pages, a planted probe, and Ghost's Casper and Source as its negative control; since
-Story 7.10 promoted settings in Ghost's own Design panel; and since Story 7.11 the three dark built-ins every theme
-declares — Color scheme, Dark accent color and Dark logo — each changed in Ghost and drawn on the next load.
+Story 7.10 promoted settings in Ghost's own Design panel; since Story 7.11 the three dark built-ins every theme
+declares — Color scheme, Dark accent color and Dark logo — each changed in Ghost and drawn on the next load; and since
+Story 7.12 the locale files every theme ships — `en.json`, and the project language's beside it — read by Ghost under its
+own Publication Language, and what Ghost does with a label 5.4.3 cannot parse.
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -34,8 +36,9 @@ alone on the pilots, whose `nav-drawer` and `member-form` have none yet and ship
 tag in `default.hbs`'s head after the stylesheet, and `README.md`'s Scripts section. `cards.js` is not uploaded here: the
 pilots design no card, and Story 7.13's first designed card runs its first T1 proof. Since Story 7.6 every template whose
 matrix row opens `{{#post}}` wraps its sections in `POST_ARTICLE` — `<article class="{{post_class}}{{#unless access}}
-post-access-{{visibility}}{{/unless}}">` — and every `srcset` candidate carries `format="webp"`; no `locales/` ships until
-Story 7.12, so Ghost prints each `{{t}}` key. `check-snapshots` holds the compiled tree in CI; until a real Ghost reads
+post-access-{{visibility}}{{/unless}}">` — and every `srcset` candidate carries `format="webp"`; since Story 7.12 it
+writes `locales/en.json` (the catalog's English) and, for a project language other than `en`, that language's file beside
+it, every value judged by `overrideRefusal`. `check-snapshots` holds the compiled tree in CI; until a real Ghost reads
 it, that Ghost reads it as claimed is a hypothesis.
 
   1. It compiles, through Node 24's type stripping and `tools/pilot-theme.mjs` (the project CI holds): the site doc's
@@ -107,8 +110,9 @@ it, that Ghost reads it as claimed is a hypothesis.
      `author-template author-<a>` on the archives, `paged` on each page 2) and never the bare class `post`; every theme
      page's `<head>` carries Ghost's generator meta once and Portal's `portal.min.js` script once; every `data-portal` on
      `/` matches `PORTAL_PAGE` (read from the library, never restated), their count recorded; the picture's
-     `size/w750/format/webp/` answers 200 as `image/webp` at its own path; and A1 #1's More label on `/` prints `nav.more`,
-     Ghost's answer for a key no shipped locale file holds (Story 7.12's run turns it to "More").
+     `size/w750/format/webp/` answers 200 as `image/webp` at its own path; and A1 #1's More label on `/` prints the English
+     "More" from the shipped `en.json` (§75 recorded `nav.more`, Ghost's answer for a key no locale file holds; Story 7.12
+     turned it).
   6. THE CONTROLS (standing rule 2), each voiding the run: the layer word IS in the uploaded templates and the hostile
      layer name is in the uploaded `home.hbs`, so their absence from every page is the comments' doing; the `noindex`
      meta IS in the uploaded `default.hbs` and no `error.hbs` is; every page read is this run's theme — `/` by its page
@@ -118,7 +122,8 @@ it, that Ghost reads it as claimed is a hypothesis.
      404, so a 200 is the file's own; and A17 #1's root on `/` carries no hook. Story 7.5's: `main.js` and its tag ARE in
      the uploaded tree before anything uploads, and `/assets/js/{nonce}.js` answers 404, so the 200 is `main.js`'s own.
      Story 7.6's: the uploaded `post.hbs` carries `POST_ARTICLE` and every uploaded `srcset` asks for WebP; no uploaded
-     file writes a generator meta or names `portal.min.js`, so both are `{{ghost_head}}`'s; no `locales/` is uploaded;
+     file writes a generator meta or names `portal.min.js`, so both are `{{ghost_head}}`'s; `locales/en.json` and no other
+     locale file is uploaded (Story 7.12), so the label row reads `en.json`;
      the Content API says the gated post is not public and the other is; `/` carries at least one `data-portal`; and
      `size/w751/format/webp/` — a width no theme declares — is redirected to the original.
   7. Its `finally` is record-shim.py's `restore_and_delete` — the previous theme re-activated and read back, the probe
@@ -199,6 +204,21 @@ it, that Ghost reads it as claimed is a hypothesis.
      fact). Its `finally` puts the built-ins back to their starts, restores the site's logo and reads it back (a CONTROL),
      then `restore_and_delete`.
 
+ 16. STORY 7.12 (§80) — THE LOCALE FILES ON A REAL GHOST (FR-Q6, FR-Q8, DW-142, VERIFY-AT-BUILD 32): the pilots compiled
+     in German with `tools/pilot-theme.mjs`'s `PILOT_DE` overrides and in Russian, under `inflozo-probe-locales`, each
+     gated 0/0 on both pinned gscans with an empty quality verdict before anything uploads — `en.json` and `de.json` with
+     equal key sets, and the Russian tree carrying a whole face (§D.b). Three probe trees are made from the German one,
+     never compiled: `valid` adds one `post.hbs`-only label (`{{t "post.share"}}`, "Teilen" in its `de.json`), and
+     `broken_default` and `broken_post` are `valid` with `Mehr {` on `nav.more` (printed by `default.hbs`'s header on every
+     page) or `Teilen {` on `post.share` (printed on a post only) — both passed by both gscans locally (no ICU check, a
+     row), which is why Inflozo's own judge must stop them. On T1, behind `start_guard`, the site's Publication Language
+     read first: the German tree under locale `de` prints "Mehr" and the reading time in German (`<html lang>` the CONTROL);
+     under `fr`, which no file names, it prints `en.json`'s "More" (VERIFY-AT-BUILD 32's file fallback); then, under `de`,
+     `valid` answers 200 on `/` and a post with both labels (the CONTROL twin), `broken_default` errors both pages, and
+     `broken_post` errors the post while `/` answers 200 — each status and the page's first words recorded (DW-142's
+     observation; the source reading is a 400, `IncorrectUsageError`). Its `finally` puts the site's locale back and reads
+     it back (a CONTROL), then `restore_and_delete`.
+
 What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
 activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
@@ -206,10 +226,13 @@ one probe picture, which stays (Ghost's API deletes no picture); Story 7.10's pr
 each tree it deploys (the bare theme, `start`, `restarted`, `without_sub`, `start` again, and the bare theme to clear it),
 its own `custom_theme_settings` written through Ghost's API and cleared again before it is deleted; Story 7.11's probe
 theme, uploaded and activated Light only and then Light + Dark, its three built-ins written through Ghost's API and put
-back to their starts before it is deleted; and the site's logo (`PUT settings/`), set to the run's picture for the Dark
-logo rows, restored and read back in a `finally` — no content, no other site setting, no key; keys are read by variable
-name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §79 alone, replacing an earlier §79 of
-its own so a re-run re-records; §70 to §78 stay Stories 7.1's to 7.10's records. The Ghost 5 half is DW-326's.
+back to their starts before it is deleted; the site's logo (`PUT settings/`), set to the run's picture for the Dark
+logo rows, restored and read back in a `finally`; and Story 7.12's probe theme (`inflozo-probe-locales`), uploaded and
+activated four times (German, `valid`, `broken_default`, `broken_post`) and deleted, with the site's Publication Language
+(`PUT settings/` `locale`) set to `de`, `fr` and `de` and put back and read back in a `finally` — no content, no other
+site setting, no key; keys are read by variable name and no URL that carries one is printed. To disk it writes
+MEASUREMENTS.md §80 alone, replacing an earlier §80 of its own so a re-run re-records; §70 to §79 stay Stories 7.1's to
+7.11's records. The Ghost 5 half is DW-326's.
 """
 import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -222,7 +245,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '79'   # §70 to §78 stay Stories 7.1's to 7.10's records
+SECTION = '80'   # §70 to §79 stay Stories 7.1's to 7.11's records
 # Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
 # the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
 TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
@@ -593,7 +616,8 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
     if 'assets/js/main.js' not in files or files['default.hbs'].count(c['mainTag']) != 1:
         raise Void('the uploaded tree carries no main.js, or default.hbs does not carry its tag once — the script rows would prove nothing')
     # Story 7.6: the article and the WebP candidates ARE uploaded; no uploaded file writes Ghost's generator meta or Portal's
-    # script, so a page carrying them has them from {{ghost_head}}; and no locales/ is uploaded, so a key is Ghost's answer
+    # script, so a page carrying them has them from {{ghost_head}}; and (Story 7.12) en.json is uploaded and no other locale
+    # file, so the label row reads en.json
     texts = {p: b for p, b in files.items() if isinstance(b, str)}
     if c['postArticle'] not in files['post.hbs']:
         raise Void('the uploaded post.hbs carries no POST_ARTICLE — the article rows would prove nothing')
@@ -602,8 +626,8 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
         raise Void('the uploaded templates carry no srcset, or a candidate that does not ask for WebP — the WebP row would prove nothing')
     if any('name="generator"' in b or 'portal.min.js' in b for b in texts.values()):
         raise Void('an uploaded file writes a generator meta or names portal.min.js — the head row would not be {{ghost_head}}\'s')
-    if any(p.startswith('locales/') for p in files):
-        raise Void('the uploaded tree carries locales/ — the label row reads Ghost\'s answer for a key no locale file holds')
+    if sorted(p for p in files if p.startswith('locales/')) != ['locales/en.json']:
+        raise Void('the uploaded tree does not carry locales/en.json alone — the label row would not read en.json')
     # Story 7.7: the customer's words ARE uploaded, each inert and none raw — so a page reading them back is the escaper's
     # doing, and the local gate's empty verdict on this tree is theirs
     hbs = [b for p, b in texts.items() if p.endswith('.hbs')]
@@ -846,7 +870,8 @@ def record(g, zipped, files, c, per_page, total, arch, nonce):
          f'HTTP {webp[750][0]} at {webp[750][1]}, {webp[750][2]!r}'),
         (webp[751][:2] == (200, original), sized(751).replace('/size/w751/', '/size/w751/format/webp/'),
          'CONTROL — size/w751/format/webp/, a width no theme declares, is redirected to the original', f'HTTP {webp[751][0]} at {webp[751][1]}'),
-        ((more.group(1) if more else None) == 'nav.more', '/', "A1 #1's More label prints nav.more — Ghost's answer for a key no shipped locale file holds (Story 7.12 ships en.json)",
+        ((more.group(1) if more else None) == json.loads(files['locales/en.json'])['nav.more'], '/',
+         "A1 #1's More label prints en.json's English — §75's `nav.more`, Ghost's answer for a key no locale file held, turned by Story 7.12",
          repr(more.group(1) if more else None)),
     ]
     # ── Story 7.7's row (§76): a customer's words, inert to gscan, read back as typed ──
@@ -1751,6 +1776,204 @@ def built_ins_phase(g, bi, logo_url, dark_logo_url):
     return rows
 
 
+# ── Story 7.12 (§80): the locale files, on a real Ghost ────────────────────────────────────────────────────────────
+LOCALES_THEME = 'inflozo-probe-locales'   # its own name, so nothing of the pilots' theme is touched
+POST_ONLY = 'post.share'   # a label the probe prints on post.hbs alone (no pilot prints it anywhere)
+POST_ONLY_LINE = f'<p class="probe-post-only">{{{{t "{POST_ONLY}"}}}}</p>'
+# the I/O matrix's apostrophe row said 5.4.3 "quotes" this; executed locally it prints `'5' Min. Lesezeit`, as the shim does —
+# planted in `valid` (and so in both broken probes) to read what T1's own 5.4.3 prints (the owner's Question 3)
+APOSTROPHE = "'{minutes}' Min. Lesezeit"
+COMPILE_LOCALES = r"""
+const root = process.env.ROOT
+const pilots = await import(`${root}/tools/pilot-theme.mjs`)
+const lib = await import(`${root}/packages/library/src/index.ts`)
+const gate = await import(`${root}/packages/theme-compiler/gate/index.ts`)
+const { REFERENCE_PACK } = await import(`${root}/packages/section-runtime/src/reference.ts`)
+const theme = { name: process.env.LOCALES_THEME, version: '1.0.0', description: 'The pilots, in another language' }
+const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
+const base = { theme, postsPerPage: Number(process.env.PER_PAGE), find: pilots.library() }
+const variants = {
+  de: pilots.compilePilots(words, { ...base, language: 'de', strings: lib.resolveStrings(pilots.PILOT_DE) }),
+  ru: pilots.compilePilots(words, { ...base, language: 'ru' }),
+}
+const enc = (files) => Object.fromEntries(Object.entries(files).map(([p, b]) => [p, typeof b === 'string' ? b : { base64: Buffer.from(b).toString('base64') }]))
+process.stdout.write(JSON.stringify({
+  variants: Object.fromEntries(Object.entries(variants).map(([name, v]) => {
+    const q = gate.qualityGate(v.files, { pack: REFERENCE_PACK, library: v.find })
+    return [name, { files: enc(v.files), failures: pilots.themeFailures(v.files, v.instanceIds), quality: [...q.errors, ...q.warnings].map((f) => `${f.code} ${f.refs.join(',')}`) }]
+  })),
+  scaffold: pilots.SCAFFOLD,
+  overrides: pilots.PILOT_DE,
+  english: { 'nav.more': lib.CATALOG.keys['nav.more'].en, [process.env.POST_ONLY]: lib.CATALOG.keys[process.env.POST_ONLY].en },
+}))
+"""
+
+
+def locales_compiled(nonce, per_page):
+    """Story 7.12's trees under LOCALES_THEME, with the run's page word: `de` (the pilots in German with `PILOT_DE`) and
+    `ru` (the pilots in Russian, for the local gate and §D.b's whole faces), each with §73's scaffold and passing the check
+    CI holds a theme to with an empty quality verdict; and three probe trees made from `de`, never compiled — `valid` (one
+    post-only label planted, "Teilen" in its `de.json`), `broken_default` (`Mehr {` on `nav.more`) and `broken_post`
+    (`Teilen {` on the planted label). The controls that hold before anything uploads: the two locale files and their equal
+    key sets, the overrides in `de.json`, a whole face in `ru`, and each probe differing from `valid` in its one value."""
+    words = {'PAGE_WORD': f'Page{nonce}', 'LAYER_WORD': f'Layer{nonce}'}
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', COMPILE_LOCALES], capture_output=True, text=True, timeout=300,
+                         env={**os.environ, 'ROOT': ROOT, 'PER_PAGE': str(per_page), 'LOCALES_THEME': LOCALES_THEME, 'POST_ONLY': POST_ONLY, **words})
+    if run.returncode != 0:
+        raise Void(f'the locales compile did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    trees = {}
+    for name, v in out['variants'].items():
+        if v['failures']:
+            raise Void(f'the {name} tree fails the check CI holds it to:\n      ' + '\n      '.join(v['failures']))
+        if v['quality']:
+            raise Void(f'the quality gate names findings on the {name} tree ({v["quality"]}) — STOP AND ASK the owner')
+        files = {p: base64.b64decode(b['base64']) if isinstance(b, dict) else b for p, b in v['files'].items()}
+        clash = [p for p in out['scaffold'] if p in files]
+        if clash:
+            raise Void(f'the scaffold would replace compiled files in {name}: {clash}')
+        locales = sorted(p for p in files if p.startswith('locales/'))
+        if locales != sorted(['locales/en.json', f'locales/{name}.json']):
+            raise Void(f'the {name} tree carries {locales} — not en.json and {name}.json')
+        if list(json.loads(files['locales/en.json'])) != list(json.loads(files[f'locales/{name}.json'])):
+            raise Void(f'the {name} tree\'s two locale files hold different keys (V3)')
+        trees[name] = {**files, **out['scaffold']}
+    de = json.loads(trees['de']['locales/de.json'])
+    if any(de.get(k) != v for k, v in out['overrides'].items()) or json.loads(trees['de']['locales/en.json'])['nav.more'] != out['english']['nav.more']:
+        raise Void('de.json does not carry PILOT_DE, or en.json does not carry the English — the label rows would read nothing of ours')
+    if not any(p.endswith('-full.woff2') for p in trees['ru']):
+        raise Void('the ru tree ships no whole face — §D.b\'s coverage would be unexercised')
+    if any(f'"{POST_ONLY}"' in b for p, b in trees['de'].items() if isinstance(b, str) and p.endswith('.hbs')):
+        raise Void(f'the compiled tree already prints {POST_ONLY} — the post-only probe would not be post-only')
+
+    def probe(values):
+        t = dict(trees['de'])
+        if not t['post.hbs'].startswith('{{!< default}}\n'):
+            raise Void('post.hbs does not open with its layout line — the planted label has no place to go')
+        t['post.hbs'] = t['post.hbs'].replace('{{!< default}}\n', '{{!< default}}\n' + POST_ONLY_LINE + '\n', 1)
+        t['locales/de.json'] = json.dumps({**de, **values}, indent=2, ensure_ascii=False) + '\n'
+        return t
+    valid = {'nav.more': de['nav.more'], POST_ONLY: 'Teilen', 'post.reading_time': APOSTROPHE}
+    probes = {'valid': probe(valid), 'broken_default': probe({**valid, 'nav.more': 'Mehr {'}),
+              'broken_post': probe({**valid, POST_ONLY: 'Teilen {'})}
+    return {'trees': trees, 'probes': probes, 'valid': valid, 'english': out['english'], 'overrides': out['overrides'],
+            'page_word': words['PAGE_WORD']}
+
+
+def site_locale(g):
+    """The site's Publication Language, read through the staff token (`GET settings/`)."""
+    return next((x.get('value') for x in g.api('GET', 'settings/')['settings'] if x.get('key') == 'locale'), None)
+
+
+def set_locale(g, value):
+    g.api('PUT', 'settings/', {'settings': [{'key': 'locale', 'value': value}]})
+
+
+MORE_LABEL = re.compile(r'class="a1-1__more-trigger"[^>]*>\s*([^<]*?)\s*<')
+
+
+def words_of(body):
+    """A page's first words, tags dropped — what an error page says."""
+    return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', body))).strip()[:120]
+
+
+def locales_phase(g, lc, post_path, local):
+    """§80 on T1, behind `start_guard`, the site's locale read first, and a `finally` that puts it back and reads it back,
+    then restores the site's theme and deletes the probe (`restore_and_delete`). Returns the rows."""
+    rows = []
+
+    def row(ok, page, what, detail):
+        rows.append((bool(ok), page, what, detail))
+        print(f'    {"PASS" if ok else "FAIL"}  {page:<26} {what} — {str(detail)[:120]}')
+
+    def deploy(tree, label):
+        st, res = g._multipart('themes/upload/', [('file', f'{LOCALES_THEME}.zip', 'application/zip', contexts.zip_bytes(tree))])
+        if res['themes'][0]['name'] != LOCALES_THEME:
+            raise Void(f'Ghost named the upload {res["themes"][0]["name"]!r}, not {LOCALES_THEME!r} — the finally would not delete it')
+        if shim.active_theme(g) != LOCALES_THEME:
+            g.api('PUT', f'themes/{LOCALES_THEME}/activate/')
+        print(f'    deployed {label} -> HTTP {st}')
+
+    def read(path, until, tries=12):
+        st, body = 0, ''
+        for _ in range(tries):
+            time.sleep(2)
+            st, body = g.page(path)
+            if until(st, body):
+                break
+        return st, body
+
+    def lang(body):
+        m = re.search(r'<html[^>]*\blang="([^"]*)"', body)
+        return m.group(1) if m else None
+
+    def more(body):
+        m = MORE_LABEL.search(body)
+        return m.group(1) if m else None
+
+    word = lc['page_word']
+    # the local half, recorded beside the T1 rows: both pinned gscans pass a de.json whose value 5.4.3 cannot parse
+    for name in ('broken_default', 'broken_post'):
+        for major, r in local[f'locales-{name}'].items():
+            v = r['verdict']
+            row(not v['errors'] and not v['warnings'], f'gscan {r["gscan"]}', f'gscan passes `{name}`\'s de.json — it parses JSON and reads no ICU, so only Inflozo\'s judge refuses the value',
+                f'{len(v["errors"])} error(s) / {len(v["warnings"])} warning(s)')
+    locale_before = site_locale(g)
+    print(f'    the site\'s locale before the run: {locale_before!r}')
+    if not locale_before:
+        raise Void('the site reports no locale — there is nothing to put back')
+    previous = shim.start_guard(g)
+    try:
+        # (1) the German tree under locale de: Ghost reads locales/de.json, exactly named
+        deploy(lc['trees']['de'], 'de')
+        set_locale(g, 'de')
+        st, body = read('/', lambda s, b: word in b and lang(b) == 'de')
+        row(word in body and lang(body) == 'de', '/', 'CONTROL — this run\'s theme, under locale de (`<html lang>`)', f'HTTP {st}, lang {lang(body)!r}')
+        row(more(body) == lc['overrides']['nav.more'], '/ (locale de)', 'A1 #1\'s More label prints de.json\'s override', repr(more(body)))
+        st, body = read(post_path, lambda s, b: lang(b) == 'de')
+        german = lc['overrides']['post.reading_time'].split('}', 1)[1].strip()
+        row(st == 200 and german in body and 'min read' not in body, f'{post_path} (locale de)', 'the post\'s reading time prints de.json\'s override', f'HTTP {st}, {german!r} {"found" if german in body else "ABSENT"}')
+        # (2) locale fr, which no file names: Ghost falls back to en.json (VERIFY-AT-BUILD 32's file fallback)
+        set_locale(g, 'fr')
+        st, body = read('/', lambda s, b: lang(b) == 'fr')
+        row(word in body and lang(body) == 'fr', '/', 'CONTROL — this run\'s theme, under locale fr (`<html lang>`)', f'HTTP {st}, lang {lang(body)!r}')
+        row(more(body) == lc['english']['nav.more'], '/ (locale fr)', 'with no fr.json, the More label prints en.json\'s English — the file fallback', repr(more(body)))
+        # (3) DW-142's observation, under de: the valid twin, then a broken value on every page's label and on a post's alone
+        set_locale(g, 'de')
+        deploy(lc['probes']['valid'], 'valid')
+        st_home, home = read('/', lambda s, b: lang(b) == 'de' and more(b) == lc['valid']['nav.more'])
+        st_post, post = read(post_path, lambda s, b: lc['valid'][POST_ONLY] in b)
+        row(st_home == 200 and word in home and more(home) == lc['valid']['nav.more'], '/ (valid)', 'CONTROL — the valid twin answers 200 with its More label', f'HTTP {st_home}, {more(home)!r}')
+        row(st_post == 200 and f'>{lc["valid"][POST_ONLY]}<' in post, f'{post_path} (valid)', 'CONTROL — the valid twin answers 200 on a post with the planted label', f'HTTP {st_post}')
+        quoted = re.search(r"'(\d+)' Min\. Lesezeit", html.unescape(post))
+        literal = '{minutes}' in html.unescape(post)
+        row(quoted is not None and not literal, f'{post_path} (valid)', f'`{APOSTROPHE}` prints its placeholder filled, the apostrophes kept — as 5.4.3 (parser 2.1.3) and the shim print it locally, so 5.4.3 does not quote it',
+            repr(quoted.group(0)) if quoted else ('the placeholder printed literally' if literal else 'no reading time found'))
+        deploy(lc['probes']['broken_default'], 'broken_default')
+        st_home, home = read('/', lambda s, b: s != 200)
+        st_post, post = read(post_path, lambda s, b: s != 200, tries=4)
+        row(st_home != 200, '/ (broken_default)', '`Mehr {` on a label default.hbs prints on every page: `/` errors', f'HTTP {st_home} — {words_of(home)!r}')
+        row(st_post != 200, f'{post_path} (broken_default)', 'and so does a post', f'HTTP {st_post} — {words_of(post)!r}')
+        deploy(lc['probes']['broken_post'], 'broken_post')
+        st_post, post = read(post_path, lambda s, b: s != 200)
+        st_home, home = read('/', lambda s, b: s == 200 and word in b, tries=6)
+        row(st_post != 200, f'{post_path} (broken_post)', '`Teilen {` on a label only a post prints: the post errors', f'HTTP {st_post} — {words_of(post)!r}')
+        row(st_home == 200 and word in home, '/ (broken_post)', 'while `/`, which does not print it, answers 200 — "every page that shows it"', f'HTTP {st_home}')
+    finally:
+        try:
+            set_locale(g, locale_before)
+            back = site_locale(g)
+            print(f'    the site\'s locale restored -> {back!r}')
+            rows.append((back == locale_before, 'settings', 'CONTROL — the site\'s locale read back as it was before the run', f'{back!r} (before {locale_before!r})'))
+        except Exception as e:  # the theme restore below still runs, and decides
+            rows.append((False, 'settings', 'CONTROL — the site\'s locale read back as it was before the run', f'FAILED: {type(e).__name__}: {e}'))
+        shim.restore_and_delete(g, previous, [LOCALES_THEME])
+    bad = [r for r in rows if r[2].startswith('CONTROL') and not r[0]]
+    if bad:
+        raise Void('A LOCALES CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
+    return rows
+
+
 # ── §72 ───────────────────────────────────────────────────────────────────────
 def table(rows):
     out = ['| Page | Row | Held |', '|---|---|---|']
@@ -1760,7 +1983,7 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
+def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc):
     today = datetime.date.today().isoformat()
     gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
@@ -1770,7 +1993,10 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
     (tag, tag_n), (author, author_n) = rec['arch']['tag'], rec['arch']['author']
     qrows, qprobe, neg_rows, neg = q
     built_rows, logo_url, dark_logo_url = built
-    out = [f'## {SECTION}. The three dark built-ins in Ghost\'s own Design panel — a Light only site starting pinned Light, '
+    loc_rows, lc = loc
+    out = [f'## {SECTION}. The locale files under Ghost\'s own Publication Language — `en.json` on every theme and the '
+           f'language\'s file beside it, read exactly by name with `en.json` the fallback, and a label 5.4.3 cannot parse '
+           f'erroring every page that shows it and no other — beside the three dark built-ins in Ghost\'s own Design panel — a Light only site starting pinned Light, '
            f'Color scheme, the Dark accent color and the Dark logo each changed in Ghost and drawn on the next load, and Ghost '
            f'keeping each stored value across a Light + Dark redeploy — beside promoted settings: every kind at the canvas\'s start, a change per kind '
            f'reaching the page, a hidden setting drawing its start, Ghost keeping a value across a new start and forgetting a dropped '
@@ -1789,12 +2015,15 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
            'then restored and deleted the same way; Story 7.11\'s probe theme (`' + BUILT_INS_THEME + '`), uploaded and activated '
            'Light only and then Light + Dark, its three built-ins written through Ghost\'s API and put back to their starts '
            'before it was deleted, and the site\'s logo set to the run\'s picture for the Dark logo rows, then restored and read '
-           'back; the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
+           'back; Story 7.12\'s probe theme (`' + LOCALES_THEME + '`), uploaded and activated four times (the German pilots, '
+           '`valid`, `broken_default`, `broken_post`) with the site\'s Publication Language set to `de`, `fr` and `de` through '
+           '`PUT /ghost/api/admin/settings/`, then the locale put back and read back and the theme restored and deleted the same way; '
+           'the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
            'the first time it is asked for each; no content, no other site setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70 to §78 are Stories 7.1's to 7.10's records; this re-runs their rows beside Story 7.11's. Ghost 6.58.0's npm "
+           "§70 to §79 are Stories 7.1's to 7.11's records; this re-runs their rows beside Story 7.12's. Ghost 6.58.0's npm "
            f"tarball (`{GHOST_TARBALL}`) is read, never installed, for Casper and Source.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
@@ -1809,8 +2038,8 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
            'file, `core` alone on the pilots, whose `nav-drawer` and `member-form` have no file yet and ship at rest — behind '
            'one `defer` tag in `default.hbs`\'s head after the stylesheet, and `README.md`\'s Scripts section. Story 7.6\'s '
            'wraps the sections of every template whose matrix row opens `{{#post}}` in `POST_ARTICLE` — '
-           f'`{c["postArticle"]}` — asks Ghost for WebP in every `srcset` candidate (`format="webp"`), and ships no '
-           '`locales/` (Story 7.12\'s), so Ghost prints each `{{t}}` key. Story 7.7\'s gate, `gscanGate` '
+           f'`{c["postArticle"]}` — and asks Ghost for WebP in every `srcset` candidate (`format="webp"`); since Story 7.12 '
+           'every theme ships `locales/en.json`, so a `{{t}}` label prints its English where §75 printed its key. Story 7.7\'s gate, `gscanGate` '
            '(`@inflozo/theme-compiler/gate`), runs each Ghost major\'s own pinned gscan over a compiled theme and maps it '
            'through one table (AD-24); the runtime\'s escaper and the boundary comment write gscan\'s brace-free trigger '
            'words inert (AD-36), so the page word carried the four error words after its nonce and the layer word '
@@ -1837,7 +2066,7 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
            'the override\'s doing; `main.js` and its tag were in the uploaded tree, and a script the theme does not carry '
            'answered 404, so the 200 read at the tag\'s address was `main.js`\'s own; the uploaded `post.hbs` carried the '
            'article and every uploaded `srcset` candidate asked for WebP, no uploaded file wrote a generator meta or named '
-           '`portal.min.js`, and no `locales/` was uploaded; the Content API said the gated post is not public and the other '
+           '`portal.min.js`, and `locales/en.json` and no other locale file was uploaded; the Content API said the gated post is not public and the other '
            'post is; `/` carried at least one `data-portal`; and `size/w751/format/webp/` was redirected to the original. '
            'For the paywall: the Content API says '
            'the post is not public, each read carried its own theme\'s marker, and the control theme rendered Ghost\'s own '
@@ -1897,9 +2126,25 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
             '`PUT /ghost/api/admin/settings/` and restored after. Chromium (the repository\'s Playwright) read `/` as a '
             'visitor\'s browser does on a light and a dark device.', '']
     out += table(built_rows)
+    out += ['', f'### (i) The locale files — `{LOCALES_THEME}`: the pilots compiled in German with two overrides, and three probes '
+            'made from it (Story 7.12)', '',
+            'Two trees compiled under one name, each gated 0/0 on both pinned gscans with an empty quality verdict before anything '
+            'uploaded: German (`' + ', '.join(f'{k} = "{v}"' for k, v in lc['overrides'].items()) + '`; `en.json` and `de.json` '
+            'with equal key sets) and Russian (Inter\'s whole faces beside Fraunces\' latin pair, §D.b — gated locally only). Three '
+            f'probes were made from the German tree, never compiled: `valid` adds `{POST_ONLY_LINE}` to `post.hbs` with '
+            f'"{lc["valid"][POST_ONLY]}" in its `de.json`; `broken_default` puts `Mehr {{` on `nav.more`, which A1 #1 prints in '
+            f'`default.hbs`\'s header on every page; `broken_post` puts `{lc["valid"][POST_ONLY]} {{` on `{POST_ONLY}`, which only '
+            'a post prints. The site\'s Publication Language was set through `PUT /ghost/api/admin/settings/` and put back.', '']
+    out += table(loc_rows)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **A theme speaks its project\'s language, under Ghost\'s own setting.** With the Publication Language `de`, Ghost '
+            'read `locales/de.json` and printed the overrides; with `fr`, which no file names, it printed `en.json`\'s English — '
+            'a file is read only by its exact name, and `en.json` is the fallback, so every theme ships it. A label Ghost\'s '
+            'intl-messageformat 5.4.3 cannot parse errored exactly the pages that print it (the statuses are in the table), and '
+            'both pinned gscans passed the file that carried it: Inflozo\'s own judge, `overrideRefusal`, at entry and again at '
+            'compile, is what keeps such a value off a site (FR-Q8).',
             '- **Every theme carries the three dark built-ins, and each works the moment it is changed in Ghost.** A Light '
             'only site with Color scheme at its start was pinned Light; Color scheme set to Auto wrote no class and set to Dark pinned the page dark on '
             'a light device and a dark one alike; the Dark accent color reached the head and `--accent` in dark; and the '
@@ -1940,9 +2185,8 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built):
             '- **Pictures are offered as WebP.** The rendition every `srcset` candidate asks for was served at its own path '
             'as `image/webp`, while a width no theme declares was redirected to the original; `src` keeps the picture\'s own '
             'format.',
-            '- **Labels go through `{{t}}`, and the language file is still to come.** A1 #1\'s More label printed `nav.more`, '
-            'Ghost\'s answer for a key no shipped locale file holds; Story 7.12 ships `en.json` and its run turns it to "More". '
-            'No visitor sees this: nothing deploys before Story 7.18.',
+            '- **Labels go through `{{t}}`, and `en.json` answers them.** A1 #1\'s More label printed the English from the '
+            'shipped `en.json`, where §75 printed `nav.more`. No visitor sees this yet: nothing deploys before Story 7.18.',
             '- **The theme\'s script reaches the page as built.** `/`\'s head carried `main.js`\'s tag once, `defer`, in the '
             'form `{{asset}}` resolves to, and its address answered with a JavaScript type and the compiled bytes — so '
             '`core` loads on every page without holding it up.',
@@ -2017,13 +2261,18 @@ if __name__ == '__main__':
         sc = settings_compiled(nonce, per_page)
         # Story 7.11: the Light only and Light + Dark trees with no user setting, the same way
         bi = built_ins_compiled(nonce, per_page)
+        # Story 7.12: the German and Russian trees and the three locale probes, the same way
+        lc = locales_compiled(nonce, per_page)
         local = gated({'pilots': files, **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
-                       **{f'built-ins-{n}': t for n, t in bi['trees'].items()}})
+                       **{f'built-ins-{n}': t for n, t in bi['trees'].items()},
+                       **{f'locales-{n}': t for n, t in lc['trees'].items()}, **{f'locales-{n}': t for n, t in lc['probes'].items()}})
         gates = clean(local, 'pilots')
         for n in sc['trees']:
             clean(local, f'settings-{n}')
         for n in bi['trees']:
             clean(local, f'built-ins-{n}')
+        for n in [*lc['trees'], 'valid']:
+            clean(local, f'locales-{n}')
         # the Dark logo is a picture that is not the site's logo: a published post's own, never one this run uploads
         st, pics = g.content('posts/?limit=all&filter=feature_image:-null&fields=feature_image')
         # one Handlebars writes as it is: `&` and `=` reach the CSS as entities (compile.ts's stated ceiling) and would not load
@@ -2046,15 +2295,16 @@ if __name__ == '__main__':
         if dark_logo_url == logo_url:
             raise Void('the Dark logo would be the site\'s own logo — the rows could not tell the two pictures apart')
         built_ins = built_ins_phase(g, bi, logo_url, dark_logo_url)
+        locales = locales_phase(g, lc, rec['post'], local)
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins + locales if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url)))
+    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url), (locales, lc)))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)

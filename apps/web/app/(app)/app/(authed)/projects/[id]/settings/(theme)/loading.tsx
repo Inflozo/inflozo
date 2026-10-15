@@ -1,6 +1,7 @@
 /**
- * THESE ROWS' OWN SHAPE, never a parent's (R-98, and the owner's test of Story 3.4, finding 2): the back arrow and the
- * heading, then D6a's two columns in the page's order. On the left, Posts per page (its heading, the stepper and its chip,
+ * THESE ROWS' OWN SHAPE, never a parent's (R-98, and the owner's test of Story 3.4, finding 2): D6a's two columns in the
+ * page's order. Since Story 7.12 the back arrow, the heading and D6a's rail are `settings/layout.tsx`'s, drawn above this
+ * boundary, so the skeleton draws neither. On the left, Posts per page (its heading, the stepper and its chip,
  * the caption), the rule, Site basics (its heading and line, three Ghost-owned rows) and R-131's block, flat under its rule
  * as D6a draws it (Question 4, owner, 2026-10-10) — "This project" over its pill and caption, the bordered clear row. On the
  * right, Custom settings (the heading and meter, two captions), the freeze notice, one setting's row and the dashed Promote
@@ -9,20 +10,17 @@
  * its link under its caption (Question 3), and a setting's row its start under its name.
  *
  * Its segment has no child routes, so this boundary stands over exactly one route — the half a first fix of that
- * finding got wrong, and what the `(editor)` route group next door exists to keep true (`busy.test.ts`).
+ * finding got wrong, and what the `(editor)` route group next door exists to keep true (`busy.test.ts`). Story 7.12 put it
+ * in the `(theme)` group for that reason: Translations is the settings segment's second child.
  */
 const BAR = 'rounded-[3px] bg-paper-sunk'
 const FAINT = 'rounded-[3px] bg-paper-sunk/70'
 
 export default function Loading() {
   return (
-    <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6" aria-busy>
+    <div className="flex flex-col gap-4 tablet:gap-5" aria-busy>
       <p className="sr-only">Loading theme settings…</p>
       <div aria-hidden className="flex flex-col gap-4 tablet:gap-5">
-        <div className="flex items-center gap-[10px]">
-          <div className="size-7 shrink-0 rounded-sm bg-paper-sunk/70" />
-          <div className={`h-[15px] w-[128px] ${BAR}`} />
-        </div>
         <div className="flex flex-col gap-6 tablet:flex-row tablet:items-start">
           <div className="flex min-w-0 flex-1 flex-col gap-[15px]">
             {/* Posts per page */}

@@ -167,6 +167,10 @@ export {
 // and by Story 7.3's compiler (AD-27(d)). Story 5.16 — `pageTwoStack` is what page 2 of a paginated canvas is
 // made of (R-179), and it replaced R-127's `indexStack`: the editor's page-2 preview and the compiler call it alike.
 export { isSynthesizable, pageTwoStack, synthesize, SYNTHESIS_DEFAULTS } from './synthesize.ts'
+// Story 7.12 — Question 1, ruled option 1: the sections whose own starting words were never retyped — Translations lists
+// them on a non-English project and Story 7.18's Pre-flight repeats the list as a warning
+export { untouchedWords } from './starting-words.ts'
+export type { StartingEntry, StartingWords } from './starting-words.ts'
 export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrary } from './synthesize.ts'
 // Story 5.19 — FR-H2's main feed: ONE designation rule beside `synthesize` (AD-27(d)) that the editor's every door and
 // Story 7.3's compiler pass each paginated doc through, the reassignment, a secondary feed's own query, the

@@ -26,6 +26,11 @@
 // the quality gate, and the recorder uploads to T1 (§78). `cssFailures` reads a promoted root as each value Ghost could
 // put there.
 //
+// Story 7.12: `compilePilots(words, { language: 'de', strings })` compiles the same project in German with overrides
+// (`PILOT_DE`: two labels, one with a placeholder) — the third pilot compile CI gates on both gscans: `locales/en.json` and
+// `locales/de.json` with equal key sets. The fingerprint scan reads a locale file without its `credit.*` keys, the catalog's
+// locked credit (S7), each held equal to the catalog's own words — the only builder words a locale file may carry.
+//
 // Node 24 (it imports the packages' TypeScript). Reads the designs, the font pool, the modules and Ghost's card scripts
 // from disk; the compile itself is pure.
 
@@ -196,13 +201,17 @@ export function pilotSettings(templates) {
   ].map((r, n) => ({ ...r, position: n + 1 }))
 }
 
+/** Story 7.12 — the German pilot's two overrides, one carrying its placeholder: what CI's third compile and §80's T1 run
+ *  hand `compilePilots` as `{ language: 'de', strings: lib.resolveStrings(PILOT_DE) }`. */
+export const PILOT_DE = { 'nav.more': 'Mehr', 'post.reading_time': '{minutes} Min. Lesezeit' }
+
 /** CI's fixed theme identity — `package.json`'s name, version and description. */
 export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', description: 'Pilot sections' }
 
 /** The compiled theme — path → text, or a font's bytes — with AD-14's record (`css`), and the project it came from.
  *  Story 7.5: `designedCards` reaches `package.json` and `cards.js`; `modules` replaces the files read, for CI's controls.
  *  Story 7.11: `darkEnabled: false` compiles the project Light only — the same three dark built-ins, Color scheme on Light. */
-export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, designedCards, modules = moduleSources(), settings = false, fixture = false, edit, darkEnabled = true } = {}) {
+export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, designedCards, modules = moduleSources(), settings = false, fixture = false, edit, darkEnabled = true, language, strings } = {}) {
   if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
   const find = fixture ? withFixture(given) : given
   const project = pilotProject(words, find, { fixture })
@@ -214,6 +223,7 @@ export function compilePilots(words, { theme, postsPerPage = 12, find: given = l
     templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled,
     modules, ghostCards: ghostCards(), ...(designedCards === undefined ? {} : { designedCards }),
     ...(settings === false ? {} : { settings: settings === true ? pilotSettings(templates) : settings }),
+    ...(language === undefined ? {} : { language }), ...(strings === undefined ? {} : { strings }),
   })
   const docs = [...Object.values(templates), ...Object.values(pageTwo)]
   return { files, css, js, custom, templates, pageTwo, find, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
@@ -243,6 +253,18 @@ export function unmarked(text) {
   return JSON.stringify(rest, null, 2)
 }
 
+/** Story 7.12 — a locale file without its `credit.*` keys: the catalog's locked credit (S7), which every locale file carries
+ *  verbatim, each held equal to the catalog's own words here — so the scan exempts those exact strings and nothing else. */
+export function uncredited(text) {
+  const rest = JSON.parse(text)
+  if (rest === null || typeof rest !== 'object' || Array.isArray(rest)) throw new Error('a locale file is not an object')
+  for (const key of Object.keys(rest).filter((k) => k.startsWith('credit.'))) {
+    if (rest[key] !== lib.CATALOG.keys[key]?.en) throw new Error(`"${key}" is not the catalog's own words`)
+    delete rest[key]
+  }
+  return JSON.stringify(rest, null, 2)
+}
+
 /** One text file's fingerprint scan — `[]` when it holds: no C0 character, no builder's name (outside `package.json`'s named
  *  marks, which must parse), no instance id, no internal reference, no generator line, and a template Handlebars 4.7.9
  *  parses. Every file of a compiled theme passes it, and since Story 7.5 every module file too, since its comments ship
@@ -253,6 +275,9 @@ export function textFailures(path, raw, instanceIds = []) {
   let body = raw
   if (path === 'package.json') {
     try { body = unmarked(raw) } catch (e) { return [...out, `package.json: it does not parse — ${e.message}`] }
+  }
+  if (/^locales\/[^/]+\.json$/.test(path)) {
+    try { body = uncredited(raw) } catch (e) { return [...out, `${path}: ${e.message}`] }
   }
   if (/inflozo/i.test(body)) out.push(`${path}: the builder's name`)
   for (const id of instanceIds) if (body.includes(id)) out.push(`${path}: the instance id ${id}`)

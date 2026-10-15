@@ -286,6 +286,11 @@ export function renderSection(
      *  markup the theme ships (`data-instance` on the root). The canvas never carries the per-section rules — it previews
      *  dark by re-stamping (Story 5.6) — so nothing it draws changes. Omitting it is exactly today's render. */
     instance?: string
+    /** Story 7.12 — the project's strings (FR-H5): every catalog key's English or the customer's override, as `resolveStrings`
+     *  returns them over the overrides `overrideRefusal` passed (`editorData`), so a label reads on the canvas as the site's
+     *  locale file prints it. Omitting it is the catalog's English, today's render — `/pilots`, the snapshots, the matrix,
+     *  the picker's cards and the ring's tiles pass none. */
+    strings?: Readonly<Record<string, string>>
   },
 ): string {
   const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject, o.perPage, o.visitor)
@@ -310,6 +315,7 @@ export function renderSection(
     ...(o.page === undefined ? {} : { tokens: { page_number: String(o.page) } }),
     ...(o.secondary === undefined ? {} : { feed: o.secondary }),
     ...(o.instance === undefined ? {} : { instance: o.instance }),
+    ...(o.strings === undefined ? {} : { strings: o.strings }),
   }))
 }
 

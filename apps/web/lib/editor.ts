@@ -168,6 +168,10 @@ export const canvasPath = (projectId: string, key: CanvasKey = 'home') =>
 export const SETTINGS = 'settings'
 export const settingsPath = (projectId: string) => `/projects/${projectId}/${SETTINGS}`
 
+/** STORY 7.12 — Theme settings' second page, FR-Q6's Translations (B18), a child of `settings` under D6a's rail. */
+export const TRANSLATIONS = 'translations'
+export const translationsPath = (projectId: string) => `${settingsPath(projectId)}/${TRANSLATIONS}`
+
 /** THE SCHEME'S SECOND NON-CANVAS SEGMENT (Story 5.8, R-131 applied a second time): the sync route AD-15's flush
  *  posts to — the one path the 3-minute timer, ⌘S and `fetch(..., { keepalive: true })` at tab close all take.
  *

@@ -4198,7 +4198,13 @@ reason: 4.8 may not change NFR-2's number or metric; the base is the same kind o
 plain: Almost every translated phrase is shown to visitors exactly as typed, tags and all as plain text. One route is
   different: a count phrase like "33 posts" goes through Ghost's plural helper, which shows whatever it is given as
   real page markup — so a customer who types HTML into that translation would change the page itself.
-status: open
+status: done 2026-10-15 (Story 7.12)
+resolution: Story 7.12's Dev (2026-10-15) — refused, never escaped: `overrideRefusal` (`@inflozo/library/override`)
+  answers "“<” can't be used in this label: your site prints it as page code." (and the same for `&`) for any key whose
+  default `isPluralString` reads as a `{{plural}}` string, and "Keep the %: your site puts the number there." when the
+  `%` is dropped — at the save action before the write and again in `compileTheme` over every value it writes, which
+  fails the build. `ad36.test.ts` carries the pair (`% <b>posts</b>` refused, `% Beiträge` shipping as words);
+  VERIFY-AT-BUILD row 32's note says so.
 severity: medium
 origin: Story 4.9's recording (MEASUREMENTS §44) — `{{plural pagination.total … plural=(t "probe.posts_many")}}` with
   `"% posts <i>many</i>"` printed `33 posts <i>many</i>` on 5.130.6 and 6.58.0; `helpers/plural.js:30-36` returns a
@@ -4215,7 +4221,14 @@ reason: 4.9 owns the catalog's format, not override validation; the fix is a ref
 plain: When a customer types a translation, the check that stops a broken one must judge it the way the customer's
   Ghost site will. The checker the architecture names is newer and more forgiving than the one inside Ghost, so
   it would let through a phrase that breaks the live page.
-status: open
+status: done 2026-10-15 (Story 7.12)
+resolution: Story 7.12's Dev (2026-10-15) — `overrideRefusal` renders every override through the exact
+  intl-messageformat 5.4.3 both majors bundle (a dependency of `@inflozo/library` reached only through the server
+  subpath `./override`, so never in a browser bundle) and through the shim's `t()`, with a string sample per
+  placeholder, and refuses any difference or throw, after appendix-h1 S3's brace and placeholder rules; the spine's
+  parser row is replaced word for word (not a dependency). The "whole-page 500" is corrected by reading in appendix-h1
+  V9, FR-Q8 and the claims sheet — a 400 on the pages that print the label — and MEASUREMENTS §80's T1 run (the main
+  session's, on the owner's go) records what Ghost answers.
 severity: medium
 origin: Story 4.9 (executed, MEASUREMENTS §44 (c)) — `@formatjs/icu-messageformat-parser` 3.5.18, the spine's
   "current", parses `'{'` as a literal brace and `It''s` as `It's`; 5.4.3 throws on `'{'`, and plain `{snake_case}`
@@ -4262,7 +4275,15 @@ reason: adding a singular key or rewording is Ask First; the module's author dec
 
 plain: A section's own starting words — a heading like "Latest posts" that the customer never retyped — are not in
   the list of translatable phrases, so on a German site they would stay in English unless the customer edits them.
-status: open
+status: done 2026-10-15 (Story 7.12)
+resolution: Story 7.12 — ruled at its Create as Question 1, option 1 (owner, 2026-10-15): the starting words stay the
+  section's content and are listed, never put on the catalog. `untouchedWords(docs, library)`
+  (`packages/section-runtime/src/starting-words.ts`, one core function) gives each placed, visible section (synthesized
+  `auto-*` instances skipped) with a text prop still at its design `default` and no `catalog` key; on a project whose
+  language is not `en`, Translations lists them under "Starting words you haven't retyped", each "<layer> on <canvas>"
+  with an Edit link to that canvas, and Story 7.18's Pre-flight repeats the same list as a warning, never a block — on
+  its card word for word and in Epic 7's preamble (R-195). Its ceiling: top-level props only (a list's item props are
+  not compared yet), stated beside the code.
 severity: medium
 origin: Story 4.9 — S6 links a text prop to a `prop`-marked catalog key only where appendix-h1 has one; every other
   `content.json` `default` is user text from the first render. `reconcile-designs.md:5929` raised it and it was

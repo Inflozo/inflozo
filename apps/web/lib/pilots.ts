@@ -132,8 +132,11 @@ export function pilotImage(name: string): Buffer | null {
   return readdirSync(IMAGES()).includes(`${name}.svg`) ? readFileSync(join(IMAGES(), `${name}.svg`)) : null
 }
 
-/** STORY 6.2 — every file the font pool records (`packages/library/fonts/pool.json`): the ONE list `?font=` serves from. */
-const POOL_FILES: ReadonlyMap<string, string> = new Map(Object.values(POOL.faces).flatMap((f) => f.files.map((x) => [x.file, x.sha256] as const)))
+/** STORY 6.2 — every file the font pool records (`packages/library/fonts/pool.json`): the ONE list `?font=` serves from.
+ *  Story 7.12: each face's whole face (`full`) too, which a non-latin project's canvas draws (§D.b). */
+const POOL_FILES: ReadonlyMap<string, string> = new Map(
+  Object.values(POOL.faces).flatMap((f) => [...f.files, ...(f.full ? [f.full] : [])].map((x) => [x.file, x.sha256] as const)),
+)
 
 /** One pool file's bytes, or null for any name that is not a file the pool records: a name is never joined into a path
  *  unchecked, so nothing but the pool's own woff2 can be read through `?font=`. */

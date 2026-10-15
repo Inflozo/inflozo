@@ -18,6 +18,9 @@ import { carriesMemberVisibility, docRefusal, pilot, pilotIds } from '@/lib/pilo
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { readViewed, type Visitor } from '@/lib/view-as'
 import { SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
+import { DEFAULT_LANGUAGE, scriptOf } from '@inflozo/library/languages'
+// SERVER ONLY (intl-messageformat 5.4.3): this file is imported by server modules and, as a type, by the editor — never as a value
+import { overrideRefusal } from '@inflozo/library/override'
 
 /**
  * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
@@ -71,12 +74,69 @@ import { SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme
  *  (`…complete_schema.sql:226-227`), so no migration and no Schema phase (R-99). */
 export const projectOf = cache(async (id: string): Promise<Project | null> => {
   if (!isUuid(id)) return null
-  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision, linked_site_id, posts_per_page, style_pack').eq('id', id).maybeSingle()
+  const { data, error } = await (await supabaseServer())
+    .from('projects')
+    .select('id, name, dark_enabled, revision, linked_site_id, posts_per_page, style_pack, language, rtl_ack_at')
+    .eq('id', id)
+    .maybeSingle()
   if (error) throw new Error(`the project could not be read (${error.code})`)
   return data
 })
 
-export type Project = { id: string; name: string; dark_enabled: boolean; revision: number; linked_site_id: string | null; posts_per_page: number; style_pack: unknown }
+/** Story 7.12 — `language` and `rtl_ack_at` join it (FR-Q6): the canvas's strings and faces, Theme settings' Translations page
+ *  and its actions all read the language in force off this one cached row. Both columns pre-exist with their grants
+ *  (`20260904120000_complete_schema.sql:225`, `:233`, `:1210`), so no migration and no Schema phase (R-99). */
+export type Project = {
+  id: string
+  name: string
+  dark_enabled: boolean
+  revision: number
+  linked_site_id: string | null
+  posts_per_page: number
+  style_pack: unknown
+  language: string
+  rtl_ack_at: string | null
+}
+
+/** STORY 7.12 — the project's translation overrides, through the caller's own session (RLS: the uniform owner policy and the
+ *  parent-ownership term, `…complete_schema.sql:816-855`). `cache`d, so the editor's read and the Translations page share one
+ *  query per request. */
+const overrideRows = cache(async (projectId: string) =>
+  (await supabaseServer()).from('translation_overrides').select('catalog_key, value').eq('project_id', projectId))
+
+/** Each stored override judged by FR-Q8's one judge (`overrideRefusal`): what may reach the canvas, and what may not, with the
+ *  sentence that refuses it. A row the save action would have refused can only arrive by a direct table write (AD-6); it is
+ *  shown refused on its row, kept out of the canvas, and fails the compile. */
+function judged(rows: readonly { catalog_key: unknown; value: unknown }[]) {
+  const overrides: Record<string, string> = {}
+  const refused: Record<string, { value: string; sentence: string }> = {}
+  for (const { catalog_key: key, value } of rows) {
+    if (typeof key !== 'string') continue
+    const sentence = overrideRefusal(key, value)
+    if (sentence === null) overrides[key] = value as string
+    else refused[key] = { value: typeof value === 'string' ? value : '', sentence }
+  }
+  return { overrides, refused }
+}
+
+export type Translations = {
+  /** `projects.language`, exactly as stored — Ghost reads `locales/<its own locale>.json` with no normalisation */
+  language: string
+  /** `projects.rtl_ack_at`: when the owner pressed Understood for a right-to-left language, else null */
+  rtlAck: string | null
+  /** every stored override `overrideRefusal` passes, by catalog key — what the canvas renders */
+  overrides: Readonly<Record<string, string>>
+  /** every stored override it refuses, with the sentence — shown on its row, never rendered */
+  refused: Readonly<Record<string, { value: string; sentence: string }>>
+}
+
+/** STORY 7.12 — what Translations shows: the language in force, its acknowledgement and the stored overrides, judged. A read
+ *  that fails throws, as Theme settings' own does: an empty list over overrides that exist would invite overwriting them. */
+export async function readTranslations(projectId: string): Promise<Translations> {
+  const [project, { data, error }] = await Promise.all([projectOf(projectId), overrideRows(projectId)])
+  if (error) throw new Error(`the project's translations could not be read (${error.code})`)
+  return { language: project?.language ?? DEFAULT_LANGUAGE, rtlAck: project?.rtl_ack_at ?? null, ...judged(data ?? []) }
+}
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
@@ -189,6 +249,12 @@ export type EditorData = {
    *  warn about. A failed read is none, logged — the safe side the prefs read takes: the editor draws every promote action
    *  and no tag, and Theme settings stays the truth */
   settings: readonly StoredSetting[]
+  /** STORY 7.12 — `projects.language`, exactly as stored (FR-Q6). Optional only because the keyboard harness, which has no
+   *  project row, hands none: English */
+  language?: string
+  /** STORY 7.12 — the stored overrides `overrideRefusal` passes, by catalog key (FR-H5): the canvas renders them through the
+   *  shim. Optional for the harness's reason: none is English */
+  overrides?: Readonly<Record<string, string>>
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -200,7 +266,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // `cache`d, and the 404 guard above this boundary already read it — so this is the linked site's id at no cost, and
   // the site's own row can join the reads below rather than follow them
   const linked = (await projectOf(projectId))?.linked_site_id ?? null
-  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -228,6 +294,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version').eq('id', linked).maybeSingle(),
     // Story 7.10 — the project's custom settings, through the user's own session as Theme settings reads them (RLS)
     sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', projectId).order('position').order('created_at'),
+    // Story 7.12 — the project's translation overrides (FR-H5: the canvas renders them through the shim)
+    overrideRows(projectId),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -352,6 +420,15 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // DW-273 (Story 5.24e): and the site's Ghost major, so the Paywall's untouched box is that major's own
   const site = siteWith(read, siteRow?.data?.site_settings, siteRow?.data?.ghost_version)
 
+  /* STORY 7.12 — THE PROJECT'S LANGUAGE, ON THE CANVAS (FR-H5). The stored overrides `overrideRefusal` passes are handed to the
+     editor, which renders them through the shim (`renderSection`'s `strings`); one it refuses stays off the canvas (its row on
+     Translations says why, and the compile refuses it). A failed read is English, logged — the safe side the prefs read takes:
+     the canvas shows the defaults and Translations, which throws on the same failure, stays the truth. The canvas faces are
+     the language's script's (`packChoices`, `pairingChoices`): the files the theme ships for it (§D.b). */
+  if (overridesRow.error) console.error('editorData: the translation overrides could not be read', { code: overridesRow.error.code })
+  const language = project?.language ?? DEFAULT_LANGUAGE
+  const script = scriptOf(language)
+
   return {
     docs,
     entries,
@@ -381,11 +458,13 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 6.4 — the pack in force may be one the project made (`packIdOf`), and its own packs come with it, validated
     preset: packIdOf(project?.style_pack ?? null),
     ownPacks: ownPacksOf(project?.style_pack ?? null),
-    packs: packChoices(),
-    pairings: pairingChoices(),
+    packs: packChoices(script),
+    pairings: pairingChoices(script),
     pairingFaces: pairingGlyphFacesCss(canvasRouteOn((await headers()).get('host'))),
     siteAccent: siteAccentOf(siteRow?.data?.site_settings),
     settings: settingsRead(settingsRow),
+    language,
+    overrides: overridesRow.error ? {} : judged(overridesRow.data ?? []).overrides,
   }
 }
 
@@ -394,3 +473,12 @@ function settingsRead(row: { data: unknown[] | null; error: { code?: string } | 
   if (row.error) console.error('editorData: the custom settings could not be read', { code: row.error.code })
   return row.error ? [] : storedSettings(row.data)
 }
+
+/** STORY 7.12 — the linked site's address and stored settings (its `locale`, read by `settingsPatch`), through the caller's own
+ *  session; `cache`d so Theme settings' layout (D6a's rail links into Ghost) and the Translations page share one query. A
+ *  failed read is null, logged — the rail's Ghost links are absent and no notice is drawn, never a black page. */
+export const linkedSiteOf = cache(async (siteId: string): Promise<{ url: string; site_settings: unknown } | null> => {
+  const { data, error } = await (await supabaseServer()).from('sites').select('url, site_settings').eq('id', siteId).maybeSingle()
+  if (error) console.error('projects/settings: the linked site could not be read', { code: error.code })
+  return error ? null : data
+})

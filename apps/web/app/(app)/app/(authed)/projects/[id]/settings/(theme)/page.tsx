@@ -1,17 +1,14 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { darkOverrideCount } from '@inflozo/section-runtime'
-import { ChevronLeft } from '@/components/kit/icons'
-import { ring } from '@/components/kit/greyed'
-import { canvasPath, templateKeyOf } from '@/lib/editor'
+import { templateKeyOf } from '@/lib/editor'
 import { siteAccentOf } from '@/lib/style-pack'
 import {
   boundLabels, liveHolder, orderedDocs, packInForce, placedControls, promotable, rowStates, SETTING_COLUMNS, siteBasics, storedSettings,
 } from '@/lib/theme-settings'
 import { supabaseServer } from '@/lib/supabase/server'
-import { editorData, projectOf } from '../(editor)/read'
-import { ThemeSettings } from './theme-settings'
+import { editorData, projectOf } from '../../(editor)/read'
+import { ThemeSettings } from '../theme-settings'
 
 /* THEME SETTINGS (R-131, owner 2026-09-18) — `/projects/<id>/settings`, the URL scheme's ONE non-canvas segment.
    It holds D6a's project-mode block and the project-level "Clear dark overrides" row, and nothing else that screen
@@ -41,7 +38,11 @@ import { ThemeSettings } from './theme-settings'
    STORY 7.10 — and the project's pack in force (the accent's start and its row), each row's state and start from the
    runtime's one module over the same stored docs (`rowStates`, `bindingState`), and `?promote=` — the editor's ↗ naming
    what the form opens on. The parameter is handed down as it came and compared with the ids the form offers, never
-   parsed into markup. */
+   parsed into markup.
+
+   STORY 7.12 — THE PAGE IS D6a's FIRST OF TWO, under `settings/layout.tsx`, which draws the back arrow, the heading and
+   D6a's rail above both pages' boundaries. It sits in the `(theme)` route group (no URL moved) so its `loading.tsx` stands
+   over this route alone and not over Translations beside it (`busy.test.ts`). */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const project = await projectOf((await params).id)
@@ -74,31 +75,18 @@ export default async function ThemeSettingsPage({ params, searchParams }: {
   const placed = placedControls(docs, entries, skip, pack)
 
   return (
-    <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6">
-      <div className="flex items-center gap-[10px]">
-        <Link
-          href={canvasPath(id)}
-          aria-label={`Back to ${project.name}`}
-          title={`Back to ${project.name}`}
-          className={`inline-flex size-7 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
-        >
-          <ChevronLeft size={15} />
-        </Link>
-        <h1 className="text-[16px] font-bold tracking-[-0.01em]">Theme settings</h1>
-      </div>
-      <ThemeSettings
-        projectId={id}
-        darkEnabled={project.dark_enabled !== false}
-        overriddenSections={darkOverrideCount(Object.values(docs), (designId) => entries[designId])}
-        postsPerPage={project.posts_per_page}
-        basics={siteRead === null ? null : siteBasics(siteRead.data, siteAccentOf(siteRead.data?.site_settings))}
-        settings={settings}
-        controls={promotable(placed, settings)}
-        bound={boundLabels(placed, settings)}
-        states={rowStates(settings, orderedDocs(docs, skip), entries, pack)}
-        promote={typeof asked === 'string' ? asked : null}
-        holder={liveHolder(lock)}
-      />
-    </div>
+    <ThemeSettings
+      projectId={id}
+      darkEnabled={project.dark_enabled !== false}
+      overriddenSections={darkOverrideCount(Object.values(docs), (designId) => entries[designId])}
+      postsPerPage={project.posts_per_page}
+      basics={siteRead === null ? null : siteBasics(siteRead.data, siteAccentOf(siteRead.data?.site_settings))}
+      settings={settings}
+      controls={promotable(placed, settings)}
+      bound={boundLabels(placed, settings)}
+      states={rowStates(settings, orderedDocs(docs, skip), entries, pack)}
+      promote={typeof asked === 'string' ? asked : null}
+      holder={liveHolder(lock)}
+    />
   )
 }

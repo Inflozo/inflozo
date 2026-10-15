@@ -6396,3 +6396,377 @@ the active theme.
 - **The paywall partial wins whenever a template invokes any partial**, with no explicit `{{> "content-cta"}}`; with no partial invoked, Ghost's own call to action shows. §15b's library rule is corrected (its dated note).
 - **Stories 7.1's and 7.2's rows still hold** on the larger tree: user text inert, comments shipped to no visitor, `package.json` read whole, and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`.
 - **What this does NOT say.** The scaffold is the later stories' (7.13, 10.79), nothing here deployed through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story 10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). No `cards.js` was uploaded: the pilots design no card, so a real Ghost first serves it with Story 7.13's first designed card; that excluding a card drops Ghost's own script is read in source (Story 7.5's Facts 1), not on a page. What `main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Ghost's post labels sit on each post's own page only, never on a card in a list (Story 7.6's Question 1, ruled option 1), so no list was read for them; gscan's deprecation rules are the local gate's, not a page read. Two shapes the compiler writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard `author` alone, so `{{#is "index, tag, author"}}` and the `index` and `tag` contexts rest on `helpers/is.js` (split on `,`, OR) read in source, not on a page read. Story 7.4's dark rule was read as served, never drawn: which mode a visitor sees is the token block's, held in Chromium by the keyboard gate (`mode.spec.mjs`), and the strip's soundness is CI's (`cssFailures`), not a page read.
+
+## 80. The locale files under Ghost's own Publication Language — `en.json` on every theme and the language's file beside it, read exactly by name with `en.json` the fallback, and a label 5.4.3 cannot parse erroring every page that shows it and no other — beside the three dark built-ins in Ghost's own Design panel — a Light only site starting pinned Light, Color scheme, the Dark accent color and the Dark logo each changed in Ghost and drawn on the next load, and Ghost keeping each stored value across a Light + Dark redeploy — beside promoted settings: every kind at the canvas's start, a change per kind reaching the page, a hidden setting drawing its start, Ghost keeping a value across a new start and forgetting a dropped key — beside the emitted-theme quality gate: axe-core on Ghost's own pages agreeing with `qualityGate`, a planted probe named by both, and Ghost's Casper and Source as its negative control, beside the gscan gate, a customer's words inert to gscan and the pilots compiled with Ghost's article, WebP `srcset`s, `main.js`, Paper's fonts, their licences, a section's dark hook, every standard template and the paywall mechanism, rendered by Ghost, T1 · 2026-10-15
+
+**Command.** `python3 tools/probe/record-theme-assembly.py` — three theme uploads (the compiled pilots, then two hand-written paywall probes), each activated, the previous theme restored and the probe theme deleted in a `finally` that encloses the upload (DW-332), both read back; Story 7.8's quality probe (the pilots plus a planted heading skip and a nameless link), activated, then restored and deleted the same way; Story 7.7's three probe uploads (the compiled pilots unscaffolded, a fatal probe, a cascade probe), none activated, each deleted in a `finally` that encloses its upload and the active theme read back after each; Story 7.10's probe theme (`inflozo-probe-custom-settings`), uploaded and activated for each tree it deploys — the bare theme, `start`, `restarted`, `without_sub`, `start` again and the bare theme to clear it — its own `custom_theme_settings` written through Ghost's API and cleared by activating it with nothing declared, then restored and deleted the same way; Story 7.11's probe theme (`inflozo-probe-dark-built-ins`), uploaded and activated Light only and then Light + Dark, its three built-ins written through Ghost's API and put back to their starts before it was deleted, and the site's logo set to the run's picture for the Dark logo rows, then restored and read back; Story 7.12's probe theme (`inflozo-probe-locales`), uploaded and activated four times (the German pilots, `valid`, `broken_default`, `broken_post`) with the site's Publication Language set to `de`, `fr` and `de` through `PUT /ghost/api/admin/settings/`, then the locale put back and read back and the theme restored and deleted the same way; the one `w750` rendition and the one `w750` WebP rendition Ghost saves the first time it is asked for each; no content, no other site setting and no key written. The picture is `/content/images/2026/10/inflozo-probe-rendition.png`. T1 only (R-238); the Ghost 5 half is DW-326's, at Story 15.7. §70 to §79 are Stories 7.1's to 7.11's records; this re-runs their rows beside Story 7.12's. Ghost 6.58.0's npm tarball (`https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`) is read, never installed, for Casper and Source.
+
+**Why.** Story 7.3's compiler resolves every standard template through `designate`, `synthesize` and `pageTwoStack`, writes an archive's designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in `<main id="site-main">`, puts FR-H2's `noindex` guard in `default.hbs`'s head, and leaves out an untouched `error.hbs` the library cannot fill (Question 1, ruled option 1). It writes a designed paywall as `partials/content-cta.hbs` with no explicit `{{> "content-cta"}}`, on the strength of a source reading that corrects §15b. Story 7.4's ships the pairing's pool woff2 files in `assets/fonts/`, preloads the two roman faces and writes their `@font-face` rules in `default.hbs`'s head through one `{{asset}}` address each, puts each family's licence at the root, and writes `screen.css` as the token block — AD-18's two `--gh-font-*` variables, then A4 #13's dark override on its hook — the canvas's base, and each design's sheet stripped to what its placed roots reach. Story 7.5's writes `assets/js/main.js` — `core` and each declared module with a file, `core` alone on the pilots, whose `nav-drawer` and `member-form` have no file yet and ship at rest — behind one `defer` tag in `default.hbs`'s head after the stylesheet, and `README.md`'s Scripts section. Story 7.6's wraps the sections of every template whose matrix row opens `{{#post}}` in `POST_ARTICLE` — `<article class="{{post_class}}{{#unless access}} post-access-{{visibility}}{{/unless}}">` — and asks Ghost for WebP in every `srcset` candidate (`format="webp"`); since Story 7.12 every theme ships `locales/en.json`, so a `{{t}}` label prints its English where §75 printed its key. Story 7.7's gate, `gscanGate` (`@inflozo/theme-compiler/gate`), runs each Ghost major's own pinned gscan over a compiled theme and maps it through one table (AD-24); the runtime's escaper and the boundary comment write gscan's brace-free trigger words inert (AD-36), so the page word carried the four error words after its nonce and the layer word `currency_symbol`. `check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate — the product's own, `gscanGate` (gscan reads `.js` too, so `main.js` is checked; §74 and §75 said otherwise, and carry a dated correction), with the scaffold (`cards.css`, Story 7.13's two widths alone — AD-18's lines left it, so `screen.css` answers GS051; the stand-in `page.hbs`, Story 10.79's, for GS110): Ghost 5 via gscan 4.49.7 at `v5` — 0 errors / 0 warnings · Ghost 6 via gscan 6.4.2 at `v6` — 0 errors / 0 warnings.
+
+**The tree uploaded** (28 files): `author.hbs`, `default.hbs`, `home.hbs`, `index.hbs`, `post.hbs`, `tag.hbs`, `assets/css/screen.css`, `assets/js/main.js`, `README.md`, `package.json`, 6 font files — `assets/fonts/fraunces-roman-latin-ext.woff2`, `assets/fonts/fraunces-roman-latin.woff2`, `assets/fonts/inter-italic-latin-ext.woff2`, `assets/fonts/inter-italic-latin.woff2`, `assets/fonts/inter-roman-latin-ext.woff2`, `assets/fonts/inter-roman-latin.woff2` — the licences `LICENSE-fraunces.txt`, `LICENSE-inter.txt`, and 7 partials — `partials/post-card.hbs`, `partials/sections/default/header-layerae389d6f105c3316-currency-symbol.hbs`, `partials/sections/home/latest-post-layerae389d6f105c3316-currency-symbol.hbs`, `partials/sections/post/post-header-layerae389d6f105c3316-currency-symbol.hbs`, `partials/sections/shared/newsletter-p-idleakleakpsitetitle-layerae389d6f105c3316-curr.hbs`, `partials/sections/shared/post-grid-layerae389d6f105c3316-currency-symbol.hbs`, `partials/sections/tag/post-grid-layerae389d6f105c3316-currency-symbol.hbs` — compiled; then the scaffold, `assets/css/cards.css` and `page.hbs`. `package.json` was handed `inflozo-probe-theme-assembly` · `1.0.0` · "The five pilots, compiled" and `posts_per_page` 8 (T1 publishes 33 posts; the tag `craft` 9 and the author `umang` 12, each the busiest of its kind).
+
+**The controls, each of which voids the run:** the layer word is in the uploaded templates and the hostile layer name in the uploaded `home.hbs`, so their absence from the pages is the comments' doing; the `noindex` meta is in the uploaded `default.hbs` and no `error.hbs` was uploaded; every page read was this run's theme (`/` by its page word, the others by the same `screen.css` asset hash); every page 2 read answered 200; under the site's own theme (`casper`), its `package` carries no marker and no 750 width, and `w750` was redirected to the original; after activation, `w751` was redirected to the original; a font and a licence the theme does not carry answered 404, so each 200 read was the file's own; A17 #1's root carried no hook, so A4 #13's is the override's doing; `main.js` and its tag were in the uploaded tree, and a script the theme does not carry answered 404, so the 200 read at the tag's address was `main.js`'s own; the uploaded `post.hbs` carried the article and every uploaded `srcset` candidate asked for WebP, no uploaded file wrote a generator meta or named `portal.min.js`, and `locales/en.json` and no other locale file was uploaded; the Content API said the gated post is not public and the other post is; `/` carried at least one `data-portal`; and `size/w751/format/webp/` was redirected to the original. For the paywall: the Content API says the post is not public, each read carried its own theme's marker, and the control theme rendered Ghost's own call to action. Story 7.7's: the uploaded templates carried each typed word's inert form and none raw, and the local gate gave the scaffolded tree an empty verdict on both checkers; for the three probes, the active theme read back after each was the site's own, the gate's raw report carried what each probe plants (the two `GS050`s, `GS005-TPL-ERR` fatal, `GS010-PJ-PARSE` with the cascade), and the active theme's custom settings read the same before and after the cascade probe. Every one held.
+
+### (a) The compiled pilots — T1 `ghost6.inflozo.com` (6.58.0), locale `en`
+
+| Page | Row | Held |
+|---|---|---|
+| `theme casper` | CONTROL — the site theme's package carries no marker — `keys ['name', 'description', 'demo', 'version', 'engines', '` | yes |
+| `theme casper` | CONTROL — the site theme declares no 750 width — `widths [30, 100, 300, 600, 1000, 2000]` | yes |
+| `/content/images/size/w750/2026/10/inflozo-probe-rendition.png` | CONTROL — under the site theme, w750 is redirected to the original — `HTTP 200 at /content/images/2026/10/inflozo-probe-rendition.` | yes |
+| `/` | CONTROL — under the site theme, ghost_head links cards.min.css — `card_assets True, ?v=Jw0334E-A8vpuWdm` | yes |
+| `/` | the page word (in A4 #13's eyebrow on Home) is on the page — `Pageae389d6f105c3316` | yes |
+| `/` | every placed section's root class, once each, in doc order — `['a1-1', 'a4-13', 'a17-1', 'a22-1'] (expected ['a1-1', 'a4-1` | yes |
+| `/` | no `{{` in the HTML — `absent` | yes |
+| `/` | no `}}` in the HTML — `absent` | yes |
+| `/` | no `{{!--` in the HTML — `absent` | yes |
+| `/` | no C0 character in the HTML — `absent` | yes |
+| `/` | no layer word in the HTML — `absent` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `Write {{title}} or {{#if @member}}yes{{/if}} here` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `A path C:\{{x}}, a "quote", an 'apostrophe' and <b>angle bra` | yes |
+| `/` | A22 #1's hostile text as its literal characters — `Close it: }} and }}} and {{{ and {{!-- too` | yes |
+| `/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `/page/2/` | every placed section's root class, once each, in doc order — `['a1-1', 'a17-1'] (expected ['a1-1', 'a17-1'])` | yes |
+| `/page/2/` | no `{{` in the HTML — `absent` | yes |
+| `/page/2/` | no `}}` in the HTML — `absent` | yes |
+| `/page/2/` | no `{{!--` in the HTML — `absent` | yes |
+| `/page/2/` | no C0 character in the HTML — `absent` | yes |
+| `/page/2/` | no layer word in the HTML — `absent` | yes |
+| `/page/2/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/page/2/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `/probe-gated-post/` | every placed section's root class, once each, in doc order — `['a1-1', 'a24-1', 'a22-1'] (expected ['a1-1', 'a24-1', 'a22-` | yes |
+| `/probe-gated-post/` | no `{{` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no `}}` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no `{{!--` in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no C0 character in the HTML — `absent` | yes |
+| `/probe-gated-post/` | no layer word in the HTML — `absent` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `Write {{title}} or {{#if @member}}yes{{/if}} here` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `A path C:\{{x}}, a "quote", an 'apostrophe' and <b>angle bra` | yes |
+| `/probe-gated-post/` | A22 #1's hostile text as its literal characters — `Close it: }} and }}} and {{{ and {{!-- too` | yes |
+| `/probe-gated-post/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/probe-gated-post/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `/on-typography-and-restraint/` | every placed section's root class, once each, in doc order — `['a1-1', 'a24-1', 'a22-1'] (expected ['a1-1', 'a24-1', 'a22-` | yes |
+| `/on-typography-and-restraint/` | no `{{` in the HTML — `absent` | yes |
+| `/on-typography-and-restraint/` | no `}}` in the HTML — `absent` | yes |
+| `/on-typography-and-restraint/` | no `{{!--` in the HTML — `absent` | yes |
+| `/on-typography-and-restraint/` | no C0 character in the HTML — `absent` | yes |
+| `/on-typography-and-restraint/` | no layer word in the HTML — `absent` | yes |
+| `/on-typography-and-restraint/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/on-typography-and-restraint/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `/tag/craft/` | every placed section's root class, once each, in doc order — `['a1-1', 'a17-1'] (expected ['a1-1', 'a17-1'])` | yes |
+| `/tag/craft/` | no `{{` in the HTML — `absent` | yes |
+| `/tag/craft/` | no `}}` in the HTML — `absent` | yes |
+| `/tag/craft/` | no `{{!--` in the HTML — `absent` | yes |
+| `/tag/craft/` | no C0 character in the HTML — `absent` | yes |
+| `/tag/craft/` | no layer word in the HTML — `absent` | yes |
+| `/tag/craft/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/tag/craft/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `/tag/craft/page/2/` | every placed section's root class, once each, in doc order — `['a1-1', 'a17-1'] (expected ['a1-1', 'a17-1'])` | yes |
+| `/tag/craft/page/2/` | no `{{` in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no `}}` in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no `{{!--` in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no C0 character in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | no layer word in the HTML — `absent` | yes |
+| `/tag/craft/page/2/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/tag/craft/page/2/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `/author/umang/` | every placed section's root class, once each, in doc order — `['a1-1'] (expected ['a1-1'])` | yes |
+| `/author/umang/` | no `{{` in the HTML — `absent` | yes |
+| `/author/umang/` | no `}}` in the HTML — `absent` | yes |
+| `/author/umang/` | no `{{!--` in the HTML — `absent` | yes |
+| `/author/umang/` | no C0 character in the HTML — `absent` | yes |
+| `/author/umang/` | no layer word in the HTML — `absent` | yes |
+| `/author/umang/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/author/umang/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `/author/umang/page/2/` | every placed section's root class, once each, in doc order — `['a1-1'] (expected ['a1-1'])` | yes |
+| `/author/umang/page/2/` | no `{{` in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no `}}` in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no `{{!--` in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no C0 character in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | no layer word in the HTML — `absent` | yes |
+| `/author/umang/page/2/` | `<html lang>` is the site's locale — `'en' (site 'en')` | yes |
+| `/author/umang/page/2/` | CONTROL — this run's theme (screen.css asset hash) — `vT6cbidmLYWUG17S` | yes |
+| `theme inflozo-probe-theme-assembly` | GET themes/ returns the compiled package.json, marker included — `inflozo=True, keys ['name', 'description', 'version', 'engin` | yes |
+| `/` | Home lists exactly posts_per_page A17 #1 cells — `8 cells (posts_per_page 8)` | yes |
+| `/page/5/` | the last page answers 200 (33 posts over 8) — `HTTP 200` | yes |
+| `/page/6/` | the page past the last answers 404 — `HTTP 404` | yes |
+| `/content/images/size/w750/2026/10/inflozo-probe-rendition.png` | w750, a width only this theme declares, is served at its path — `HTTP 200 at /content/images/size/w750/2026/10/inflozo-probe-` | yes |
+| `/content/images/size/w751/2026/10/inflozo-probe-rendition.png` | CONTROL — w751, a width no theme declares, is redirected to the original — `HTTP 200 at /content/images/2026/10/inflozo-probe-rendition.` | yes |
+| `/` | cards.min.css's hash equals the site theme's: every card, as Ghost's own default gives it — `Jw0334E-A8vpuWdm (site theme Jw0334E-A8vpuWdm)` | yes |
+| `/tag/craft/page/2/ /author/umang/page/2/` | CONTROL — every page 2 read answers 200 — `HTTP 200, 200` | yes |
+| `/tag/craft/` | the tag's page 1, untouched, draws its Synthesis Default's A17 #1 at per-row three — `data-per-row='three'` | yes |
+| `/tag/craft/page/2/` | the tag's page 2, designed, draws its own A17 #1 at per-row two — the {{#is "paged"}} split — `data-per-row='two'` | yes |
+| `/author/umang/page/2/` | the author's page 2 (no visible feed) carries the noindex meta inside <head> — `present` | yes |
+| `/author/umang/` | the author's page 1 carries no noindex meta — `absent` | yes |
+| `/tag/craft/page/2/` | the tag's page 2 (a visible feed) carries no noindex meta — `absent` | yes |
+| `/author/umang/page/2/` | Ghost's own canonical is the page's own URL, once — so the theme writes none — `['https://ghost6.inflozo.com/author/umang/page/2/']` | yes |
+| `/ae389d6f105c3316-missing/` | a missing page answers 404 with Ghost's own error page and none of this theme's screen.css (no error.hbs) — `HTTP 404, error-content in it, screen.css absent` | yes |
+| `/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a4-13', 'a17-1', 'a22-1'] (expecte` | yes |
+| `/page/2/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a17-1'] (expected ['a1-1'], ['a17-` | yes |
+| `/probe-gated-post/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a24-1', 'a22-1'] (expected ['a1-1'` | yes |
+| `/on-typography-and-restraint/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a24-1', 'a22-1'] (expected ['a1-1'` | yes |
+| `/tag/craft/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a17-1'] (expected ['a1-1'], ['a17-` | yes |
+| `/tag/craft/page/2/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside ['a17-1'] (expected ['a1-1'], ['a17-` | yes |
+| `/author/umang/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside [] (expected ['a1-1'], [])` | yes |
+| `/author/umang/page/2/` | exactly one <main id="site-main">, the page's section roots inside it and the header's outside — `before ['a1-1'], inside [] (expected ['a1-1'], [])` | yes |
+| `/` | <head> carries the compiled preloads, each as="font" type="font/woff2" crossorigin, each href verbatim the src of one @font-face rule in the page's own <style> — `2 preload(s), 6 src(s): fraunces-roman-latin.woff2, inter-ro` | yes |
+| `/` | every font file the theme ships is a face the page names — `6 faced, 6 shipped` | yes |
+| `/assets/fonts/ae389d6f105c3316.woff2` | CONTROL — a font the theme does not carry answers 404 — `HTTP 404` | yes |
+| `/LICENSE-ae389d6f105c3316.txt` | CONTROL — a licence the theme does not carry answers 404 — `HTTP 404` | yes |
+| `/assets/fonts/fraunces-roman-latin.woff2` | a font address answers 200 as font/woff2 with pool.json's sha256 — `HTTP 200, font/woff2, sha256 equal` | yes |
+| `/assets/fonts/fraunces-roman-latin-ext.woff2` | a font address answers 200 as font/woff2 with pool.json's sha256 — `HTTP 200, font/woff2, sha256 equal` | yes |
+| `/assets/fonts/inter-roman-latin.woff2` | a font address answers 200 as font/woff2 with pool.json's sha256 — `HTTP 200, font/woff2, sha256 equal` | yes |
+| `/assets/fonts/inter-roman-latin-ext.woff2` | a font address answers 200 as font/woff2 with pool.json's sha256 — `HTTP 200, font/woff2, sha256 equal` | yes |
+| `/assets/fonts/inter-italic-latin.woff2` | a font address answers 200 as font/woff2 with pool.json's sha256 — `HTTP 200, font/woff2, sha256 equal` | yes |
+| `/assets/fonts/inter-italic-latin-ext.woff2` | a font address answers 200 as font/woff2 with pool.json's sha256 — `HTTP 200, font/woff2, sha256 equal` | yes |
+| `/LICENSE-fraunces.txt` | the family's licence, as compiled — `HTTP 200, 4390 bytes` | yes |
+| `/LICENSE-inter.txt` | the family's licence, as compiled — `HTTP 200, 4376 bytes` | yes |
+| `/assets/css/screen.css` | the served screen.css equals the compiled one, byte for byte — `HTTP 200, 29687 bytes` | yes |
+| `/assets/css/screen.css` | it carries both var(--gh-font-…) forms, the base rule and the hook's rules — `dc5d8b50` | yes |
+| `/` | A4 #13's root carries the hook computed here, hookOf(sectionKey('home', …)) — `<section class="a4-13" data-card-side="right" data-show-tag=` | yes |
+| `/` | CONTROL — A17 #1's root carries no hook — `<section class="a17-1" data-per-row="three" data-ratio="land` | yes |
+| `/` | <head> carries the theme's script tag once, as Ghost renders MAIN_JS_TAG: <script defer src="/assets/js/main.js?v=…"></script> — `1 found ['/assets/js/main.js?v=y0yorz4xLOlBeS6Z']` | yes |
+| `/assets/js/main.js` | main.js answers 200 with a JavaScript content type (as served) — `HTTP 200, 'application/javascript; charset=UTF-8'` | yes |
+| `/assets/js/main.js` | its body is the compiled main.js, byte for byte — `7309 bytes served, 7309 compiled` | yes |
+| `/assets/js/ae389d6f105c3316.js` | CONTROL — a script the theme does not carry answers 404 — `HTTP 404` | yes |
+| `every 200 page` | each page read carries the tag once in its head — core loads on every page — `/: 1, /page/2/: 1, /probe-gated-post/: 1, /on-typography-and` | yes |
+| `/probe-gated-post/` | CONTROL — the Content API says the gated post is not public — `visibility 'paid'` | yes |
+| `/on-typography-and-restraint/` | CONTROL — the Content API says the newest public post is public — `visibility 'public'` | yes |
+| `/probe-gated-post/` | exactly one <article>, its class Ghost's post_class computed from the Content API's record, the page's section roots inside it and the header's outside — `class 'post no-image post-access-paid' (expected 'post no-im` | yes |
+| `/on-typography-and-restraint/` | exactly one <article>, its class Ghost's post_class computed from the Content API's record, the page's section roots inside it and the header's outside — `class 'post tag-craft tag-field-notes featured' (expected 'p` | yes |
+| `/` | <body>'s class carries Ghost's template class (home-template) and never the bare class post — `home-template` | yes |
+| `/page/2/` | <body>'s class carries Ghost's template class (paged) and never the bare class post — `paged` | yes |
+| `/probe-gated-post/` | <body>'s class carries Ghost's template class (post-template) and never the bare class post — `post-template` | yes |
+| `/on-typography-and-restraint/` | <body>'s class carries Ghost's template class (post-template) and never the bare class post — `post-template tag-craft tag-field-notes` | yes |
+| `/tag/craft/` | <body>'s class carries Ghost's template class (tag-template tag-craft) and never the bare class post — `tag-template tag-craft` | yes |
+| `/tag/craft/page/2/` | <body>'s class carries Ghost's template class (tag-template tag-craft paged) and never the bare class post — `tag-template tag-craft paged` | yes |
+| `/author/umang/` | <body>'s class carries Ghost's template class (author-template author-umang) and never the bare class post — `author-template author-umang` | yes |
+| `/author/umang/page/2/` | <body>'s class carries Ghost's template class (author-template author-umang paged) and never the bare class post — `author-template author-umang paged` | yes |
+| `/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/page/2/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/probe-gated-post/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/on-typography-and-restraint/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/tag/craft/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/tag/craft/page/2/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/author/umang/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/author/umang/page/2/` | <head> carries Ghost's generator meta once and Portal's portal.min.js script once — {{ghost_head}}'s — `generator 1, portal.min.js 1` | yes |
+| `/` | CONTROL — / carries at least one data-portal, so the Portal row reads something — `3 found` | yes |
+| `/` | every data-portal on / names a page both majors' Portal opens (PORTAL_PAGE) — `3: signin, signup` | yes |
+| `/content/images/size/w750/format/webp/2026/10/inflozo-probe-rendition.png` | the WebP rendition every srcset candidate asks for answers 200 as image/webp at its own path — `HTTP 200 at /content/images/size/w750/format/webp/2026/10/in` | yes |
+| `/content/images/size/w751/format/webp/2026/10/inflozo-probe-rendition.png` | CONTROL — size/w751/format/webp/, a width no theme declares, is redirected to the original — `HTTP 200 at /content/images/2026/10/inflozo-probe-rendition.` | yes |
+| `/` | A1 #1's More label prints en.json's English — §75's `nav.more`, Ghost's answer for a key no locale file held, turned by Story 7.12 — `'More'` | yes |
+| `/` | A4 #13's eyebrow reads exactly the typed words — gscan's four brace-free error words among them, written inert — `'Pageae389d6f105c3316 currency_symbol @site.lang @labs.membe` | yes |
+
+### (b) The paywall mechanism — two hand-written probe themes, signed out
+
+Both carry `partials/content-cta.hbs` with this run's marker and invoke `content-cta` nowhere. `inflozo-probe-paywall` invokes one other partial from `default.hbs`; `inflozo-probe-paywall-control` is the same theme with that line removed.
+
+| Page | Row | Held |
+|---|---|---|
+| `/probe-gated-post/` | CONTROL — the Content API says the post is not public — `visibility 'paid'` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall)` | CONTROL — the read is this theme's, signed out — `HTTP 200` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall)` | one other partial invoked from default.hbs, no content-cta invocation: the theme's content-cta.hbs renders, Ghost's own does not — `marker rendered, gh-post-upgrade-cta absent` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall-control)` | CONTROL — the read is this theme's, signed out — `HTTP 200` | yes |
+| `/probe-gated-post/ (inflozo-probe-paywall-control)` | CONTROL — no partial invoked anywhere: Ghost's own gh-post-upgrade-cta renders, the theme's does not — `gh-post-upgrade-cta rendered, marker absent` | yes |
+
+### (c) Ghost 6's own checker against the gate — three probe uploads, none activated
+
+`inflozo-probe-gate-pilot` is the compiled pilot theme with no scaffold; `inflozo-probe-gate-fatal` adds `custom-probe-fatal.hbs` invoking `{{> "no-such-partial"}}`; `inflozo-probe-gate-cascade` adds `config.custom.probe_setting`, a two-option select whose `visibility` is `"true"`, read once in `default.hbs`. Each row compares T1's answer with `runGscan(files, 6)` and `gscanGate` on the same files. The Ghost 5 half is DW-326's; gscan 4.49.7 judged the same trees locally: `inflozo-probe-gate-pilot` blocked — theme_check_rule GS050-CSS-KGWF, theme_check_rule GS050-CSS-KGWW, page_switch_unused GS110-NO-MISSING-PAGE-BUILDER-USAGE; `inflozo-probe-gate-fatal` blocked — theme_check_rule GS005-TPL-ERR, theme_check_rule GS050-CSS-KGWF, theme_check_rule GS050-CSS-KGWW, page_switch_unused GS110-NO-MISSING-PAGE-BUILDER-USAGE; `inflozo-probe-gate-cascade` blocked — package_check_failed GS010-PJ-PARSE, theme_check_rule GS050-CSS-KGWF, theme_check_rule GS050-CSS-KGWW, page_switch_unused GS110-NO-MISSING-PAGE-BUILDER-USAGE.
+
+| Page | Row | Held |
+|---|---|---|
+| `inflozo-probe-gate-pilot` | CONTROL — the active theme read back after the probe is the site's own: no probe was activated — `'casper' (before 'casper')` | yes |
+| `inflozo-probe-gate-pilot` | T1 answers 200 and installs it: no result is fatal — `HTTP 200, 'inflozo-probe-gate-pilot'` | yes |
+| `inflozo-probe-gate-pilot` | the errors on its theme record carry the same codes and fatal flags as runGscan(files, 6)'s — `T1 [('GS050-CSS-KGWF', False), ('GS050-CSS-KGWW', False)] · ` | yes |
+| `inflozo-probe-gate-pilot` | its warnings: Ghost empties them in production (validate.js), so [] is that premise; any it returns match the gate's — `T1 [] · gate [('GS110-NO-MISSING-PAGE-BUILDER-USAGE', False)` | yes |
+| `inflozo-probe-gate-pilot` | CONTROL — the gate's raw errors carry the two GS050 widths, so the comparison reads something — `[('GS050-CSS-KGWF', False), ('GS050-CSS-KGWW', False)]` | yes |
+| `inflozo-probe-gate-fatal` | CONTROL — the active theme read back after the probe is the site's own: no probe was activated — `'casper' (before 'casper')` | yes |
+| `inflozo-probe-gate-fatal` | CONTROL — the gate's raw errors carry GS005-TPL-ERR, fatal — `[('GS005-TPL-ERR', True), ('GS050-CSS-KGWF', False), ('GS050` | yes |
+| `inflozo-probe-gate-fatal` | T1 answers 422 ThemeValidationError: a fatal result refuses the theme — `HTTP 422, 'ThemeValidationError'` | yes |
+| `inflozo-probe-gate-fatal` | its errorDetails.errors carry the gate's codes and fatal flags — GS005-TPL-ERR fatal, with the two GS050s — `T1 [('GS005-TPL-ERR', True), ('GS050-CSS-KGWF', False), ('GS` | yes |
+| `inflozo-probe-gate-fatal` | gscanGate's verdict is blocked — `['theme_check_rule GS005-TPL-ERR', 'theme_check_rule GS050-C` | yes |
+| `inflozo-probe-gate-fatal` | GET themes/ lists no such theme after the 422 — `3 theme(s) listed` | yes |
+| `inflozo-probe-gate-cascade` | CONTROL — the active theme read back after the probe is the site's own: no probe was activated — `'casper' (before 'casper')` | yes |
+| `inflozo-probe-gate-cascade` | T1 answers 200 and installs it: no result is fatal — `HTTP 200, 'inflozo-probe-gate-cascade'` | yes |
+| `inflozo-probe-gate-cascade` | the errors on its theme record carry the same codes and fatal flags as runGscan(files, 6)'s — `T1 [('GS010-PJ-AUT-EM-REQ', False), ('GS010-PJ-AUT-EM-VAL', ` | yes |
+| `inflozo-probe-gate-cascade` | its warnings: Ghost empties them in production (validate.js), so [] is that premise; any it returns match the gate's — `T1 [] · gate [('GS010-PJ-CUST-THEME-SETTINGS-DESCRIPTION-LEN` | yes |
+| `inflozo-probe-gate-cascade` | CONTROL — the gate's raw report carries GS010-PJ-PARSE and the cascade — `['GS010-PJ-AUT-EM-REQ', 'GS010-PJ-AUT-EM-VAL', 'GS010-PJ-CUS` | yes |
+| `inflozo-probe-gate-cascade` | gscanGate returns one package_check_failed naming probe_setting, and no GS010-PJ-* finding — `Ghost's theme check can't read when theme setting “probe_set` | yes |
+| `inflozo-probe-gate-cascade` | CONTROL — the active theme's custom settings read the same before and after — `10 setting(s)` | yes |
+
+### (d) The quality gate against Ghost's own pages — the pilots as T1 renders them
+
+axe-core, the version `QUALITY_RULES` follows, runs `QUALITY_RULES`' own axe ids in jsdom over `/`, `/page/2/`, a post, the busiest tag and the busiest author, as Ghost served them under the compiled theme; each page's heading levels are compared with `readPages`' alternatives for its template, consecutive repeats collapsed (a repeat's body, which the gate reads once, renders once per post).
+
+| Page | Row | Held |
+|---|---|---|
+| `local` | CONTROL — the gate gave the uploaded tree an empty verdict before anything uploaded — `no finding` | yes |
+| `local` | CONTROL — axe-core 4.12.1 runs QUALITY_RULES' own axe ids — `nested-interactive, html-has-lang, meta-viewport, image-alt,` | yes |
+| `/` | axe-core reports no violation of QUALITY_RULES' axe ids on Ghost's rendered page (home.hbs), as the gate's empty verdict says — `none` | yes |
+| `/` | its heading levels are one of the gate's alternatives for home.hbs (consecutive repeats collapsed) — `h1 h2 h3 h2 · gate ['h1 h2 h3 h2']` | yes |
+| `/page/2/` | axe-core reports no violation of QUALITY_RULES' axe ids on Ghost's rendered page (index.hbs), as the gate's empty verdict says — `none` | yes |
+| `/page/2/` | its heading levels are one of the gate's alternatives for index.hbs (consecutive repeats collapsed) — `h2 h3 · gate ['h2 h3']` | yes |
+| `/probe-gated-post/` | axe-core reports no violation of QUALITY_RULES' axe ids on Ghost's rendered page (post.hbs), as the gate's empty verdict says — `none` | yes |
+| `/probe-gated-post/` | its heading levels are one of the gate's alternatives for post.hbs (consecutive repeats collapsed) — `h1 h2 · gate ['h1 h2']` | yes |
+| `/tag/craft/` | axe-core reports no violation of QUALITY_RULES' axe ids on Ghost's rendered page (tag.hbs), as the gate's empty verdict says — `none` | yes |
+| `/tag/craft/` | its heading levels are one of the gate's alternatives for tag.hbs (consecutive repeats collapsed) — `h2 h3 · gate ['h2 h3']` | yes |
+| `/author/umang/` | axe-core reports no violation of QUALITY_RULES' axe ids on Ghost's rendered page (author.hbs), as the gate's empty verdict says — `none` | yes |
+| `/author/umang/` | its heading levels are one of the gate's alternatives for author.hbs (consecutive repeats collapsed) — `none · gate ['']` | yes |
+
+### (e) The probe — `inflozo-probe-quality`: the pilots, plus an `<h4>` and an `<a href="#"></a>` after A24 #1's `<h1>` in `post.hbs`
+
+| Page | Row | Held |
+|---|---|---|
+| `local` | the gate reports exactly heading_skip and name_missing for post.hbs on the probe tree — `warning heading_skip post.hbs,post.hbs; warning name_missing` | yes |
+| `inflozo-probe-quality` | CONTROL — the active theme read back after the probe is the site's own — `'casper' (before 'casper')` | yes |
+| `/probe-gated-post/` | CONTROL — the read is the probe's own: its planted heading carries this run's nonce — `HTTP 200` | yes |
+| `/probe-gated-post/` | axe-core reports exactly heading-order and link-name on Ghost's rendered probe post — `heading-order, link-name` | yes |
+
+### (f) The negative control — Ghost 6.58.0's own Casper and Source, through `tools/quality-gate.mjs`
+
+Paper's pack and an empty library (a theme Inflozo did not compile has none, so the required set is `REQUIRED_TEMPLATES`). Every finding is shown at its line in the theme's own source. Their stylesheets, through the root `stylelint.config.mjs` (FR-G8's floor), warned: casper 5.12.1 (`assets/built/screen.css`) `inflozo/motion-gated` ×2, `inflozo/prefix-pairs` ×1, `max-nesting-depth` ×1, `plugin/use-baseline` ×6, `property-disallowed-list` ×25, `selector-pseudo-element-disallowed-list` ×8; source 1.7.1 (`assets/built/screen.css`) `inflozo/motion-gated` ×2, `inflozo/prefix-pairs` ×2, `plugin/use-baseline` ×1, `property-disallowed-list` ×19, `selector-pseudo-element-disallowed-list` ×5 — recorded, never gated: Ghost's themes are not held to Inflozo's floor.
+
+| Page | Row | Held |
+|---|---|---|
+| `casper 5.12.1` | CONTROL — gscan 6.4.2 at v6, its own Ghost's checker, passes it 0/0 — `0/0` | yes |
+| `casper 5.12.1` | it fails at least one rule of the quality gate — `6 finding(s)` | yes |
+| `casper 5.12.1` | error build_leftover (build-leftover) is real: its line in the theme's own source — `partials/icons/loader.hbs: no template invokes it (25 templa` | yes |
+| `casper 5.12.1` | error build_leftover (build-leftover) is real: its line in the theme's own source — `partials/icons/rss.hbs: no template invokes it (25 templates` | yes |
+| `casper 5.12.1` | error language_missing (html-has-lang) is real: its line in the theme's own source — `error.hbs:16: <html>` | yes |
+| `casper 5.12.1` | warning heading_skip (heading-order) is real: its line in the theme's own source — `error.hbs:54: <h3>{{t "Theme errors"}}</h3>` | yes |
+| `casper 5.12.1` | warning heading_skip (heading-order) is real: its line in the theme's own source — `post.hbs:50: <h4 class="author-name">{{authors}}</h4>` | yes |
+| `casper 5.12.1` | warning name_missing (link-name) is real: its line in the theme's own source — `author.hbs:54: <a class="author-profile-social-link" href="{` | yes |
+| `source 1.7.1` | CONTROL — gscan 6.4.2 at v6, its own Ghost's checker, passes it 0/0 — `0/0` | yes |
+| `source 1.7.1` | it fails at least one rule of the quality gate — `8 finding(s)` | yes |
+| `source 1.7.1` | error build_leftover (build-leftover) is real: its line in the theme's own source — `partials/icons/checkmark.hbs: no template invokes it (42 tem` | yes |
+| `source 1.7.1` | error build_leftover (build-leftover) is real: its line in the theme's own source — `partials/icons/fire.hbs: no template invokes it (42 template` | yes |
+| `source 1.7.1` | error build_leftover (build-leftover) is real: its line in the theme's own source — `partials/icons/rss.hbs: no template invokes it (42 templates` | yes |
+| `source 1.7.1` | error markup_invalid (duplicate-id) is real: its line in the theme's own source — `partials/icons/lock.hbs:1: <svg xmlns="http://www.w3.org/200` | yes |
+| `source 1.7.1` | error markup_invalid (one-main) is real: its line in the theme's own source — `partials/components/post-list.hbs:18: <main class="gh-main">` | yes |
+| `source 1.7.1` | warning heading_skip (heading-order) is real: its line in the theme's own source — `post.hbs:35: <h4 class="gh-article-author-name">{{authors}}<` | yes |
+| `source 1.7.1` | warning name_missing (link-name) is real: its line in the theme's own source — `author.hbs:23: <a class="gh-author-social-link" href="{{soci` | yes |
+| `source 1.7.1` | warning name_missing (link-name) is real: its line in the theme's own source — `post.hbs:30: <a href="{{url}}">{{> "icons/avatar"}}</a>` | yes |
+
+### (g) Promoted settings — `inflozo-probe-custom-settings`: the pilots with A4 #13's switch and choice, its Sub, A17 #1's Title, the accent and the controls fixture's picture promoted (Story 7.10)
+
+Four trees compiled under one name, each gated 0/0 on both pinned gscans before anything uploaded: `start` (each setting at the start the canvas holds), `restarted` (A4 #13's Headline size moved to Display on the canvas), `without_sub` (Sub no longer promoted) and `bare` (nothing promoted), deployed in that story's order; each change made through `PUT /ghost/api/admin/custom_theme_settings/`, with the accent `#1A2B3C` and the picture `/content/images/2026/10/inflozo-probe-rendition.png`. The run began and ended by activating `bare`, so the probe's stored user settings were cleared before the theme was deleted (Ghost deletes a theme's files, never its settings); since Story 7.11 every tree also declares the three dark built-ins, which `bare` declares too, so they were put back to their starts instead.
+
+| Page | Row | Held |
+|---|---|---|
+| `custom_theme_settings` | CONTROL — the probe theme declaring no user setting lists only the three dark built-ins, at their starts, so every value read below is this run's — `{'color_scheme': 'Auto', 'dark_accent_color': '#E0805A', 'da` | yes |
+| `/` | CONTROL — / serves this run's promoted theme — `page word found` | yes |
+| `custom_theme_settings` | `show_the_button` listed at its start — `type 'boolean', value True, start True` | yes |
+| `custom_theme_settings` | `headline_size` listed at its start — `type 'select', value 'Large', start 'Large'` | yes |
+| `custom_theme_settings` | `sub` listed at its start — `type 'text', value 'Orbit Weekly is a letter about the small` | yes |
+| `custom_theme_settings` | `title` listed at its start — `type 'text', value 'Everything Orbit Weekly published this s` | yes |
+| `custom_theme_settings` | `accent_colour` listed at its start — `type 'color', value '#D96C3F', start '#D96C3F'` | yes |
+| `custom_theme_settings` | `picture` listed at its start — `type 'image', value None, start None` | yes |
+| `custom_theme_settings` | `color_scheme` listed at its start — `type 'select', value 'Auto', start 'Auto'` | yes |
+| `custom_theme_settings` | `dark_accent_color` listed at its start — `type 'color', value '#E0805A', start '#E0805A'` | yes |
+| `custom_theme_settings` | `dark_logo` listed at its start — `type 'image', value None, start None` | yes |
+| `/` | the switch and the choice draw their start — `data-primary-action="on" data-headline-size="large"` | yes |
+| `/` | CONTROL — the secondary action, which follows the promoted primary (its disabledBy), is on while the primary is — `data-primary-action="on" data-secondary-action="on"` | yes |
+| `/` | the promoted rich text prints its start, its words alone — `Orbit Weekly is a letter about the small web — the sites peo` | yes |
+| `/` | the promoted title prints its start — `Everything Orbit Weekly published this spring` | yes |
+| `/` | `--setting-accent` is the pack's light accent — `#D96C3F` | yes |
+| `/` | a picture setting unset, on a section with no picture of its own: the element is left out — `no <img class="cx__picture">` | yes |
+| `/` | Headline size set to Medium in Ghost: the root reads medium — `data-headline-size="medium"` | yes |
+| `/` | Sub changed in Ghost: the page prints Ghost's words — `Sub ae389d6f105c3316` | yes |
+| `/` | Title changed in Ghost: the page prints Ghost's words — `Title ae389d6f105c3316` | yes |
+| `/` | the accent changed in Ghost: `--setting-accent` carries it — `#1A2B3C` | yes |
+| `/` | a picture chosen in Ghost: the section shows it — `<img class="cx__picture" alt="Cargo cranes over a harbour at` | yes |
+| `/` | the button off hides Headline size in Ghost: its reader draws the start — `data-primary-action="off" data-headline-size="large"` | yes |
+| `/` | the primary off in Ghost: the secondary action follows it off, so it never stands alone (a4/13's disabledBy) — `data-primary-action="off" data-secondary-action="off"` | yes |
+| `custom_theme_settings` | CONTROL — Ghost still stores Medium, so the start above is the hidden setting's — `Medium` | yes |
+| `/` | Sub emptied in Ghost: the line is left out — `absent` | yes |
+| `custom_theme_settings` | Sub emptied in Ghost is held empty — `''` | yes |
+| `custom_theme_settings` | a redeploy whose canvas starts at Display keeps the stored Medium — `default 'Display', value 'Medium'` | yes |
+| `custom_theme_settings` | and every other value Ghost holds stays — the emptied Sub still empty, never its start again — `accent '#1A2B3C', sub None, unchanged ['accent_colour', 'col` | yes |
+| `custom_theme_settings` | a deploy without Sub: Ghost no longer lists it — `['accent_colour', 'color_scheme', 'dark_accent_color', 'dark` | yes |
+| `custom_theme_settings` | promoted again and deployed: Sub returns at its start, not the value set before — `Orbit Weekly is a letter about the small web — the sites peo` | yes |
+
+### (h) The three dark built-ins — `inflozo-probe-dark-built-ins`: the pilots with no user setting, compiled Light only and then Light + Dark (Story 7.11)
+
+Two trees, each gated 0/0 on both pinned gscans with an empty quality verdict before anything uploaded, their `default.hbs` byte-identical (no special case): Color scheme starts on Light and on Auto. Each change was made through `PUT /ghost/api/admin/custom_theme_settings/` — Auto, Dark, the Dark accent color `#3366FF`, the Dark logo `https://static.ghost.org/v5.0.0/images/publication-cover.jpg` and Light — with the site's logo set to `https://ghost6.inflozo.com/content/images/2026/10/inflozo-probe-rendition.png` for the run through `PUT /ghost/api/admin/settings/` and restored after. Chromium (the repository's Playwright) read `/` as a visitor's browser does on a light and a dark device.
+
+| Page | Row | Held |
+|---|---|---|
+| `custom_theme_settings` | CONTROL — the probe lists exactly the three built-ins — `['color_scheme', 'dark_accent_color', 'dark_logo']` | yes |
+| `custom_theme_settings` | `color_scheme` declared at its Light only start (Ghost's `default`) and put back to it — `type 'select', value 'Light', default 'Light'` | yes |
+| `custom_theme_settings` | `dark_accent_color` declared at its Light only start (Ghost's `default`) and put back to it — `type 'color', value '#E0805A', default '#E0805A'` | yes |
+| `custom_theme_settings` | `dark_logo` declared at its Light only start (Ghost's `default`) and put back to it — `type 'image', value None, default None` | yes |
+| `/` | CONTROL — / serves this run's theme — `page word found` | yes |
+| `/` | Color scheme at its Light only start: <body> carries scheme-light — `['scheme-light']` | yes |
+| `/` | Color scheme set to Auto in Ghost: no scheme class — `none` | yes |
+| `/` | Color scheme set to Dark in Ghost: <body> carries scheme-dark — `['scheme-dark']` | yes |
+| `/ (light device)` | CONTROL — Chromium reads this run's theme — `HTTP 200` | yes |
+| `/ (light device)` | CONTROL — the media query reports the emulated device — `False` | yes |
+| `/ (light device)` | CONTROL — with the stylesheets off `--accent` reads empty, so the values below are the theme's — `''` | yes |
+| `/ (light device)` | pinned Dark: the page resolves dark on either device — the dark ground and the dark accent Ghost seeded — `pins ['scheme-dark'], --bg-page #171511, --accent #E0805A` | yes |
+| `/ (dark device)` | CONTROL — Chromium reads this run's theme — `HTTP 200` | yes |
+| `/ (dark device)` | CONTROL — the media query reports the emulated device — `True` | yes |
+| `/ (dark device)` | CONTROL — with the stylesheets off `--accent` reads empty, so the values below are the theme's — `''` | yes |
+| `/ (dark device)` | pinned Dark: the page resolves dark on either device — the dark ground and the dark accent Ghost seeded — `pins ['scheme-dark'], --bg-page #171511, --accent #E0805A` | yes |
+| `/` | Dark accent color set in Ghost: the head's settings <style> carries it — `present` | yes |
+| `/ (light device)` | pinned Dark: `--accent` is the colour set in Ghost — `#3366FF` | yes |
+| `/` | Dark logo set, the site has no logo: no picture carries the stamp and the header draws its wordmark — `dark logo in the head, stamp none, wordmark drawn` | yes |
+| `/` | the site has a logo: the header's logo picture carries the stamp — `stamped` | yes |
+| `/` | Dark logo set in Ghost: the head's settings <style> carries it as a url() — `present` | yes |
+| `/ (light device)` | pinned Dark: the logo picture draws the Dark logo, its own `src` still Ghost's logo — `content url("https://static.ghost.org/v5.0.0/images/publicat` | yes |
+| `/ (light device)` | pinned Light: the logo picture draws Ghost's logo — `content` is `normal` — `pins ['scheme-light'], content normal, src https://ghost6.in` | yes |
+| `/ (dark device)` | pinned Light: the logo picture draws Ghost's logo — `content` is `normal` — `pins ['scheme-light'], content normal, src https://ghost6.in` | yes |
+| `custom_theme_settings` | a Light + Dark deploy (start Auto) keeps the stored Light — `default 'Auto', value 'Light'` | yes |
+| `custom_theme_settings` | and keeps the Dark accent color and the Dark logo set in Ghost — `'#3366FF', 'https://static.ghost.org/v5.0.0/images/publicati` | yes |
+| `/` | so the redeployed site is still pinned Light — `['scheme-light']` | yes |
+| `custom_theme_settings` | CONTROL — the probe's built-ins read back at their starts — `{'color_scheme': 'Light', 'dark_accent_color': '#E0805A', 'd` | yes |
+| `settings` | CONTROL — the site's logo read back as it was before the run (no logo read as none in either spelling) — `None (before None)` | yes |
+
+### (i) The locale files — `inflozo-probe-locales`: the pilots compiled in German with two overrides, and three probes made from it (Story 7.12)
+
+Two trees compiled under one name, each gated 0/0 on both pinned gscans with an empty quality verdict before anything uploaded: German (`nav.more = "Mehr", post.reading_time = "{minutes} Min. Lesezeit"`; `en.json` and `de.json` with equal key sets) and Russian (Inter's whole faces beside Fraunces' latin pair, §D.b — gated locally only). Three probes were made from the German tree, never compiled: `valid` adds `<p class="probe-post-only">{{t "post.share"}}</p>` to `post.hbs` with "Teilen" in its `de.json`; `broken_default` puts `Mehr {` on `nav.more`, which A1 #1 prints in `default.hbs`'s header on every page; `broken_post` puts `Teilen {` on `post.share`, which only a post prints. The site's Publication Language was set through `PUT /ghost/api/admin/settings/` and put back.
+
+| Page | Row | Held |
+|---|---|---|
+| `gscan 4.49.7` | gscan passes `broken_default`'s de.json — it parses JSON and reads no ICU, so only Inflozo's judge refuses the value — `0 error(s) / 0 warning(s)` | yes |
+| `gscan 6.4.2` | gscan passes `broken_default`'s de.json — it parses JSON and reads no ICU, so only Inflozo's judge refuses the value — `0 error(s) / 0 warning(s)` | yes |
+| `gscan 4.49.7` | gscan passes `broken_post`'s de.json — it parses JSON and reads no ICU, so only Inflozo's judge refuses the value — `0 error(s) / 0 warning(s)` | yes |
+| `gscan 6.4.2` | gscan passes `broken_post`'s de.json — it parses JSON and reads no ICU, so only Inflozo's judge refuses the value — `0 error(s) / 0 warning(s)` | yes |
+| `/` | CONTROL — this run's theme, under locale de (`<html lang>`) — `HTTP 200, lang 'de'` | yes |
+| `/ (locale de)` | A1 #1's More label prints de.json's override — `'Mehr'` | yes |
+| `/probe-gated-post/ (locale de)` | the post's reading time prints de.json's override — `HTTP 200, 'Min. Lesezeit' found` | yes |
+| `/` | CONTROL — this run's theme, under locale fr (`<html lang>`) — `HTTP 200, lang 'fr'` | yes |
+| `/ (locale fr)` | with no fr.json, the More label prints en.json's English — the file fallback — `'More'` | yes |
+| `/ (valid)` | CONTROL — the valid twin answers 200 with its More label — `HTTP 200, 'Mehr'` | yes |
+| `/probe-gated-post/ (valid)` | CONTROL — the valid twin answers 200 on a post with the planted label — `HTTP 200` | yes |
+| `/probe-gated-post/ (valid)` | `'{minutes}' Min. Lesezeit` prints its placeholder filled, the apostrophes kept — as 5.4.3 (parser 2.1.3) and the shim print it locally, so 5.4.3 does not quote it — `"'0' Min. Lesezeit"` | yes |
+| `/ (broken_default)` | `Mehr {` on a label default.hbs prints on every page: `/` errors — `HTTP 400 — '400 — [default.hbs] Expected "\'", ",", [0-9], o` | yes |
+| `/probe-gated-post/ (broken_default)` | and so does a post — `HTTP 400 — '400 — [default.hbs] Expected "\'", ",", [0-9], o` | yes |
+| `/probe-gated-post/ (broken_post)` | `Teilen {` on a label only a post prints: the post errors — `HTTP 400 — '400 — [post.hbs] Expected "\'", ",", [0-9], or a` | yes |
+| `/ (broken_post)` | while `/`, which does not print it, answers 200 — "every page that shows it" — `HTTP 200` | yes |
+| `settings` | CONTROL — the site's locale read back as it was before the run — `'en' (before 'en')` | yes |
+
+### What it means
+
+- **A theme speaks its project's language, under Ghost's own setting.** With the Publication Language `de`, Ghost read `locales/de.json` and printed the overrides; with `fr`, which no file names, it printed `en.json`'s English — a file is read only by its exact name, and `en.json` is the fallback, so every theme ships it. A label Ghost's intl-messageformat 5.4.3 cannot parse errored exactly the pages that print it (the statuses are in the table), and both pinned gscans passed the file that carried it: Inflozo's own judge, `overrideRefusal`, at entry and again at compile, is what keeps such a value off a site (FR-Q8).
+- **Every theme carries the three dark built-ins, and each works the moment it is changed in Ghost.** A Light only site with Color scheme at its start was pinned Light; Color scheme set to Auto wrote no class and set to Dark pinned the page dark on a light device and a dark one alike; the Dark accent color reached the head and `--accent` in dark; and the Dark logo replaced Ghost's logo in dark while the picture drew Ghost's own in light — each on the next load, with no redeploy. Deployed again as Light + Dark, the site kept every value Ghost stored, so it stayed pinned Light (Question 2, which Story 7.18's Pre-flight says).
+- **A promoted setting reaches Ghost's own Design panel and the page reads it.** Every key Inflozo declared was listed at the start the canvas holds; a switch, a choice, two texts, the accent and a picture each changed in Ghost and the page followed; a choice its condition hides drew its start while Ghost still stored the other value; and a text emptied in Ghost left the page. A redeploy with a new start kept every stored value, and a deploy that left a key out made Ghost forget it — promoted again, it came back at its start (Questions 1 and 2, as ruled).
+- **The quality gate reads a theme as Ghost renders it.** On the five pages read, axe-core found nothing the gate's empty verdict did not already say, and every page's heading levels were one of the gate's alternatives for its template. With a heading skip and a nameless link planted, axe-core on Ghost's own page and the gate on the files named exactly those two.
+- **Ghost's own themes pass gscan and fail this gate.** Casper and Source score 0/0 on their own Ghost's checker, and each fails at least one quality rule — every finding shown at its line in their source. That is the gap FR-J17 exists for: gscan certifies a Ghost theme, not a good one.
+- **A customer's words never trip Ghost's checker, and visitors read them as typed.** The four words gscan counts as errors with no brace at all were typed into A4 #13's eyebrow and `currency_symbol` into every layer name; the templates carried each with one character as its HTML code, the gate found nothing on either checker, and `/` read the eyebrow back exactly as typed.
+- **Ghost 6's own checker answers as the gate says.** On the same files, the errors on T1's theme record — or, for the fatal probe, in its 422 `ThemeValidationError` — carried the codes and `fatal` flags `runGscan` gave; a fatal result refused the theme and left nothing installed, while non-fatal errors installed it. T1 returned no warnings, as Ghost empties them in production, so the page switch the gate warns on is never Ghost's to show. The cascade probe reported every `package.json` rule broken on T1, and the gate said it as one sentence naming `probe_setting`.
+- **Each post's page sits in Ghost's article.** The gated post, signed out, and the newest public post (`/on-typography-and-restraint/`) each carried one `<article>` around the page's sections, with the header outside, and its class was Ghost's `post_class` exactly as computed from the Content API's record — ending ` post-access-…` on the gated post (`post no-image post-access-paid`) and with nothing after it on the public one. So a site owner's own CSS can style a members-only, featured or tagged post. Nothing in Ghost styles these classes itself.
+- **Ghost's helpers sit where Ghost expects them.** Every page's `<body>` carried Ghost's template class and never the bare `post`, and every `<head>` carried Ghost's generator meta and Portal's script once each — `{{ghost_head}}`'s, since the theme writes neither.
+- **Every `data-portal` on `/` opens a real Portal page** (3 read, each matching `PORTAL_PAGE`).
+- **Pictures are offered as WebP.** The rendition every `srcset` candidate asks for was served at its own path as `image/webp`, while a width no theme declares was redirected to the original; `src` keeps the picture's own format.
+- **Labels go through `{{t}}`, and `en.json` answers them.** A1 #1's More label printed the English from the shipped `en.json`, where §75 printed `nav.more`. No visitor sees this yet: nothing deploys before Story 7.18.
+- **The theme's script reaches the page as built.** `/`'s head carried `main.js`'s tag once, `defer`, in the form `{{asset}}` resolves to, and its address answered with a JavaScript type and the compiled bytes — so `core` loads on every page without holding it up.
+- **The theme carries its own fonts, and Ghost serves them as built.** Each font address in the page's own `<style>` answered `font/woff2` with the bytes `pool.json` records, and each preload `href` was, verbatim, one face's `src` — one `{{asset}}` address, so the preload is the fetch. No visitor's browser asks a font host.
+- **The licences travel with the fonts**, served at the root as compiled.
+- **`screen.css` is served as compiled**, byte for byte: AD-18's two Ghost font variables (so a font picked in Ghost Admin wins, and GS051 is answered with no scaffold), the canvas's base, and A4 #13's dark rules on the hook its root carries — the key the editor hashes for Home's page 1.
+- **Every standard template ships.** An untouched Tag page compiled from its Synthesis Default and rendered its feed; a designed Tag page 2 rendered its own design inside `{{#is "paged"}}` while page 1 kept the default; an Author page whose one feed is hidden rendered its layout alone.
+- **FR-H2's guard is Ghost's to read.** The author's page 2 carried `noindex` in its `<head>` and its page 1 did not; the tag's page 2, which has a feed, carried none. Ghost's own canonical on that page 2 is the page's own URL, so a theme canonical "to page 1" would have been a second, contradicting one.
+- **`<main id="site-main">` wraps the page alone**, once on every page, with the header outside it — Story 9.1's skip link lands there.
+- **A missing `error.hbs` is Ghost's own error page**, served with a 404 and none of the theme's styles (Question 1, until Epic 10 brings an error design).
+- **The paywall partial wins whenever a template invokes any partial**, with no explicit `{{> "content-cta"}}`; with no partial invoked, Ghost's own call to action shows. §15b's library rule is corrected (its dated note).
+- **Stories 7.1's and 7.2's rows still hold** on the larger tree: user text inert, comments shipped to no visitor, `package.json` read whole, and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`.
+- **What this does NOT say.** The scaffold is the later stories' (7.13, 10.79), nothing here deployed through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story 10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). No `cards.js` was uploaded: the pilots design no card, so a real Ghost first serves it with Story 7.13's first designed card; that excluding a card drops Ghost's own script is read in source (Story 7.5's Facts 1), not on a page. What `main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Ghost's post labels sit on each post's own page only, never on a card in a list (Story 7.6's Question 1, ruled option 1), so no list was read for them; gscan's deprecation rules are the local gate's, not a page read. Two shapes the compiler writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard `author` alone, so `{{#is "index, tag, author"}}` and the `index` and `tag` contexts rest on `helpers/is.js` (split on `,`, OR) read in source, not on a page read. Story 7.4's dark rule was read as served, never drawn: which mode a visitor sees is the token block's, held in Chromium by the keyboard gate (`mode.spec.mjs`), and the strip's soundness is CI's (`cssFailures`), not a page read.

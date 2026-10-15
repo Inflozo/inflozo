@@ -60,15 +60,27 @@
 // accent and the dark logo are plain custom properties in `default.hbs`'s ONE settings `<style>`, which the token block's
 // dark blocks read (`packTokensCss`' `darkSettings`) — the logo as `content` on every picture the runtime stamps
 // `data-site-logo`. `{{comments}}` stays bare: Ghost's comments widget takes its mode from the colours the pin resolves.
+//
+// Story 7.12 (FR-Q6, FR-Q8, AD-36) makes it carry the project's language: `locales/en.json` on every theme, and
+// `locales/<language>.json` beside it when the language is not `en`, both from the ONE catalog in one pass — every key but
+// the canvas-only ones, in catalog order, retired keys included (S4), `credit.*` verbatim (S7). Ghost's theme i18n reads
+// `locales/<its locale setting>.json` exactly and falls back to `en.json` only when that file is missing (`i18n.js:187-199`,
+// both majors), so the code names the file as stored — refused first by `languageRefusal`, since it is a path. Every value
+// written is judged by `overrideRefusal`, the same judge the Translations page saves through, and a refusal fails the build
+// naming the key and the sentence: a row can reach the table by another route (AD-6), and Ghost errors every page that
+// prints a label 5.4.3 cannot parse. And it ships the faces the language needs: a family whose google/fonts `METADATA.pb`
+// lists the language's script ships each face whole, the rest keep their latin pair (§D.b) — `fontFaceCss`' one rule.
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
-  CUSTOM_TARGET_RE, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion, PAGINATED_TARGETS, PAYWALL_TARGET,
-  PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
+  CATALOG, CUSTOM_TARGET_RE, englishStrings, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion, PAGINATED_TARGETS,
+  PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile, translatableKeys,
 } from '@inflozo/library'
 import type { IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
-import { faceOf, pairingFaces, pairingFonts, pairingOf, POOL } from '@inflozo/library/packs'
+import { DEFAULT_LANGUAGE, languageRefusal, scriptOf, type Script } from '@inflozo/library/languages'
+import { overrideRefusal } from '@inflozo/library/override'
+import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
 import {
   BASE_CSS, BUILT_IN_PATH, bindingOf, bindingState, builtInSettings, checkChromeLiterals, checkSetting, customPath, darkHook, darkOverrideCss, designate,
   feedQuery, ghostEntry, ghostName, gscanInert, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls,
@@ -78,7 +90,7 @@ import {
 import type {
   DocInstance, Pack, PlacedSection, ProjectDoc, RenderInput, RuntimeDocument, SettingGroup, SettingRow, SettingType, SynthesisLibrary, Visibility,
 } from '@inflozo/section-runtime'
-import { fontFaceCss } from '@inflozo/section-runtime/fonts'
+import { fontFaceCss, pairingFiles, preloadFiles } from '@inflozo/section-runtime/fonts'
 import { claim, sectionSlug } from './slug.ts'
 import { ANY_VALUE, stripCss } from './strip.ts'
 
@@ -99,8 +111,12 @@ export type CompileInput = {
   pack: Pack
   /** asset id → URL; Story 7.4 points these at bundled files */
   assets: Readonly<Record<string, string>>
-  /** `resolveStrings`' output; the catalog's English when omitted */
+  /** `resolveStrings`' output over the project's stored overrides (`translation_overrides`); the catalog's English when
+   *  omitted. Since Story 7.12 every value is also written to the locale files, each judged by `overrideRefusal` */
   strings?: Readonly<Record<string, string>>
+  /** Story 7.12 — `projects.language`, exactly as stored (Ghost's own code, case included): `locales/<language>.json` beside
+   *  `en.json` when it is not `en`, and the script whose faces ship. `en` when omitted. Refused by `languageRefusal` first */
+  language?: string
   /** `projects.posts_per_page` — `package.json`'s `config.posts_per_page`, and a secondary feed's query is sized by it */
   postsPerPage: number
   /** `package.json`'s identity (Story 7.2): `name` and `version` are Story 7.24's frozen `inflozo-{slug}` and per-deploy
@@ -600,8 +616,13 @@ const fontWords = (f: Pack['fonts']): string => `${f.heading.family} with ${f.bo
 /** The pairing's pool files as `assets/fonts/` (the pool's own bytes, names and subsets — nothing subset, re-encoded or
  *  renamed), each shipped family's licence at the root, and `default.hbs`'s head lines: a preload of each distinct roman
  *  face's `latin` file (§D.a rule 6 — italics and `latin-ext` are fetched only by a page that needs them) and the faces'
- *  `<style>`, both through one `{{asset}}` address per file, so the preload is the fetch (Ghost's `?v=`). */
-function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; licences: Record<string, string>; head: string[] } {
+ *  `<style>`, both through one `{{asset}}` address per file, so the preload is the fetch (Ghost's `?v=`).
+ *
+ *  Story 7.12 (§D.b): `script` is the language's. A family whose pool record lists it ships each face WHOLE — one file, no
+ *  `unicode-range` — in place of its latin pair, and its preload names the whole file; a family that does not cover it
+ *  keeps its latin pair and the script falls back to the reader's system font. `pairingFiles`, `preloadFiles` and
+ *  `fontFaceCss` are the runtime's one rule, so the canvas loads the same files. */
+function themeFonts(input: CompileInput, script: Script): { files: Record<string, Uint8Array>; licences: Record<string, string>; head: string[] } {
   const want = pairingFonts(input.pairing)
   const got = input.pack.fonts
   const same = got.heading.family === want.heading.family && got.heading.capHeight === want.heading.capHeight &&
@@ -610,7 +631,7 @@ function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; l
   const files: Record<string, Uint8Array> = {}
   const licences: Record<string, string> = {}
   const faces = pairingFaces(input.pairing)
-  for (const f of faces.flatMap((face) => face.files)) {
+  for (const f of pairingFiles(input.pairing, script)) {
     if (!POOL_FILE_RE.test(f.file)) throw new Error(`fonts: the pool file ${JSON.stringify(f.file)} is no font file name the theme writes (${POOL_FILE_RE.source}).`)
     const bytes = input.fonts(`files/${f.file}`)
     if (!(bytes instanceof Uint8Array) || bytes.length !== f.bytes) throw new Error(`fonts: files/${f.file} read ${bytes instanceof Uint8Array ? bytes.length : 'no'} bytes, and the pool records ${f.bytes} — a short or changed read is refused, never shipped.`)
@@ -624,12 +645,7 @@ function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; l
     if (!(raw instanceof Uint8Array) || raw.length === 0) throw new Error(`fonts: ${record.licenceFile} read ${raw instanceof Uint8Array ? 'no' : 'no bytes and no'} licence text — ${family}'s licence ships with its files, so a missing read is refused.`)
     licences[`LICENSE-${record.slug}.txt`] = tidyLicence(new TextDecoder().decode(raw))
   }
-  const pairing = pairingOf(input.pairing)
-  const preloads = [...new Set([pairing.heading, pairing.body].map((role) => {
-    const latin = role.faces.map(faceOf).find((face) => face.style === 'normal')?.files.find((f) => f.subset === 'latin')
-    if (latin === undefined) throw new Error(`fonts: ${input.pairing}'s ${role.family} has no roman latin file to preload.`)
-    return latin.file
-  }))]
+  const preloads = preloadFiles(input.pairing, script)
   const asset = (file: string): string => `{{asset "fonts/${file}"}}`
   return {
     files,
@@ -637,10 +653,49 @@ function themeFonts(input: CompileInput): { files: Record<string, Uint8Array>; l
     head: [
       ...preloads.map((file) => `<link rel="preload" href="${asset(file)}" as="font" type="font/woff2" crossorigin>`),
       '<style>',
-      ...fontFaceCss(input.pairing, (f) => asset(f.file)).split('\n').map((l) => `  ${l}`),
+      ...fontFaceCss(input.pairing, (f) => asset(f.file), { script }).split('\n').map((l) => `  ${l}`),
       '</style>',
     ],
   }
+}
+
+// ── the locale files (Story 7.12, FR-Q6, FR-Q8) ─────────────────────────────────────────────────────────────────────────
+
+/** `locales/en.json`, and `locales/<language>.json` when the language is not `en`: every catalog key but the canvas-only
+ *  ones, in catalog order, retired keys included (S4), as `JSON.stringify(…, null, 2)` and a newline — the stress harness's
+ *  shape. With `en`, `en.json` carries `strings` (the overrides over the defaults); otherwise `en.json` carries the English
+ *  defaults and the language's file `strings`. Every value of a key the Translations surface lists is judged by
+ *  `overrideRefusal`, and any other key — `credit.*` (V7), a retired one — ships its default exactly; a refusal fails the
+ *  build naming the file, the key and the sentence. Equal key sets by construction, asserted per file (V3). */
+function localeFiles(language: string, strings: Readonly<Record<string, string>> | undefined): Record<string, string> {
+  const english = englishStrings()
+  const keys = Object.keys(CATALOG.keys).filter((k) => !(CATALOG.keys[k]?.marks ?? []).includes('canvas'))
+  const listed = new Set(translatableKeys())
+  const unknown = Object.keys(strings ?? {}).filter((k) => !Object.hasOwn(CATALOG.keys, k)).sort(byCode)
+  if (unknown.length > 0) throw new Error(`the strings carry ${unknown.map((k) => `"${k}"`).join(', ')}, which the catalog does not hold — nothing offers such a key, so the build fails rather than drop it.`)
+  const file = (path: string, values: Readonly<Record<string, string>>): string => {
+    const out: Record<string, string> = {}
+    for (const key of keys) {
+      const value = values[key]
+      if (typeof value !== 'string') throw new Error(`${path}: "${key}"'s string is not a string — a locale file holds every catalog key but the canvas-only ones, each a string (S4, V3).`)
+      if (listed.has(key)) {
+        const refused = overrideRefusal(key, value)
+        if (refused !== null) throw new Error(`${path}: "${key}" — ${refused}`)
+      } else if (value !== english[key]) {
+        throw new Error(`${path}: "${key}" carries an override, and ${key.startsWith('credit.') ? 'credit.* ships verbatim on every plan (S7, V7)' : 'no surface lists it'} — the build fails rather than ship it.`)
+      }
+      out[key] = value
+    }
+    const text = `${JSON.stringify(out, null, 2)}\n`
+    // V3, per file: exactly the catalog's keys, in its order
+    const back = Object.keys(JSON.parse(text) as Record<string, string>)
+    if (back.length !== keys.length || back.some((k, i) => k !== keys[i])) throw new Error(`${path}: its keys are not the catalog's (V3).`)
+    return text
+  }
+  // a key the strings leave out is its English, as the render reads it (`resolveStrings` hands every key)
+  const resolved = { ...english, ...strings }
+  if (language === DEFAULT_LANGUAGE) return { 'locales/en.json': file('locales/en.json', resolved) }
+  return { 'locales/en.json': file('locales/en.json', english), [`locales/${language}.json`]: file(`locales/${language}.json`, resolved) }
 }
 
 // ── the promoted settings (Story 7.10, FR-Q3, FR-Q4, DW-351) ────────────────────────────────────────────────────────────
@@ -743,8 +798,13 @@ const readers = (files: Readonly<Record<string, string>>): Set<string> =>
 /** Story 7.1's compile: the template docs, the library, the pack, the assets and the strings, as a Ghost theme's files —
  *  and, since Story 7.2, its `package.json`; since Story 7.3, every standard template, synthesized where untouched; since
  *  Story 7.4, its fonts, licences and stripped stylesheet, with AD-14's record; since Story 7.5, its scripts and README;
- *  since Story 7.6, Ghost's article around each post's sections, WebP candidates and the markup checks. */
+ *  since Story 7.6, Ghost's article around each post's sections, WebP candidates and the markup checks; since Story 7.12, its
+ *  locale files and its language's faces. */
 export function compileTheme(doc: RuntimeDocument, input: CompileInput): CompiledTheme {
+  // Story 7.12 (AD-36): the language names a file in the theme, so it is judged before anything else
+  const language = input.language ?? DEFAULT_LANGUAGE
+  const refusedLanguage = languageRefusal(language)
+  if (refusedLanguage !== null) throw new Error(`language ${JSON.stringify(language)}: ${refusedLanguage} It names the theme's locales/<language>.json, so the build stops before any file is written (AD-36).`)
   for (const file of Object.keys(input.templates).sort(byCode)) {
     if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
     if (!isCompileTarget(file)) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
@@ -767,7 +827,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   noC0("the pack's CSS", [tokens])
   const perPage = pageSize(input.postsPerPage)
   const pkg = packageJson(input, perPage, custom.entries)
-  const fonts = themeFonts(input)
+  const fonts = themeFonts(input, scriptOf(language))
+  // Story 7.12: the locale files, every value judged before anything renders
+  const locales = localeFiles(language, input.strings)
   noC0('a licence', Object.values(fonts.licences))
   // Story 7.5: the scripts the theme ships are read by the shell, so each is held to the same rule before it is copied
   const sorted = (o: Readonly<Record<string, string>>): string[] => Object.keys(o).sort(byCode).map((k) => o[k] as string)
@@ -1003,6 +1065,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   }
 
   tree['package.json'] = pkg   // JSON.stringify escapes every C0 character, so no user-text marker is in it to substitute
+  Object.assign(tree, locales)   // the same: JSON text, no marker
   // R-26: Tabler's MIT licence, verbatim, whenever a placed section draws an icon; each shipped family's beside it — text
   // files of the tree like any other, so the final checks read them too (review, 2026-10-08)
   Object.assign(tree, fonts.licences)

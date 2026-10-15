@@ -695,6 +695,11 @@ export function settingsPatch(previous: Record<string, unknown>, settings: Recor
   // unreadable pair leaves the previous record standing (the spread above), never an assumption over a reading
   const members = membersOf(settings)
   if (members !== null) next.members = members
+  // STORY 7.12 — Ghost's Publication Language (`locale`), the code its theme i18n names `locales/<locale>.json` after, read
+  // where every other Ghost setting is read: a string is a reading and is kept exactly as Ghost holds it; anything else
+  // leaves the stored one standing (the spread above). Translations compares it with the project's language, and a
+  // project first linked to the site takes it (`languageAtLink`).
+  if (typeof settings.locale === 'string') next.locale = settings.locale
   return next
 }
 

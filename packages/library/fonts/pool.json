@@ -14,294 +14,584 @@
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/alegreya.txt",
-      "upstream": "ofl/alegreya"
+      "upstream": "ofl/alegreya",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "greek",
+        "greek-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Alegreya Sans": {
       "slug": "alegreya-sans",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/alegreya-sans.txt",
-      "upstream": "ofl/alegreyasans"
+      "upstream": "ofl/alegreyasans",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "greek",
+        "greek-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Anton": {
       "slug": "anton",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/anton.txt",
-      "upstream": "ofl/anton"
+      "upstream": "ofl/anton",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Archivo": {
       "slug": "archivo",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/archivo.txt",
-      "upstream": "ofl/archivo"
+      "upstream": "ofl/archivo",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Bitter": {
       "slug": "bitter",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/bitter.txt",
-      "upstream": "ofl/bitter"
+      "upstream": "ofl/bitter",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Bodoni Moda": {
       "slug": "bodoni-moda",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/bodoni-moda.txt",
-      "upstream": "ofl/bodonimoda"
+      "upstream": "ofl/bodonimoda",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "math",
+        "menu",
+        "symbols"
+      ]
     },
     "Bricolage Grotesque": {
       "slug": "bricolage-grotesque",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/bricolage-grotesque.txt",
-      "upstream": "ofl/bricolagegrotesque"
+      "upstream": "ofl/bricolagegrotesque",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Chivo": {
       "slug": "chivo",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/chivo.txt",
-      "upstream": "ofl/chivo"
+      "upstream": "ofl/chivo",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Cormorant Garamond": {
       "slug": "cormorant-garamond",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/cormorant-garamond.txt",
-      "upstream": "ofl/cormorantgaramond"
+      "upstream": "ofl/cormorantgaramond",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Crimson Pro": {
       "slug": "crimson-pro",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/crimson-pro.txt",
-      "upstream": "ofl/crimsonpro"
+      "upstream": "ofl/crimsonpro",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "DM Sans": {
       "slug": "dm-sans",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/dm-sans.txt",
-      "upstream": "ofl/dmsans"
+      "upstream": "ofl/dmsans",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "DM Serif Display": {
       "slug": "dm-serif-display",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/dm-serif-display.txt",
-      "upstream": "ofl/dmserifdisplay"
+      "upstream": "ofl/dmserifdisplay",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Epilogue": {
       "slug": "epilogue",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/epilogue.txt",
-      "upstream": "ofl/epilogue"
+      "upstream": "ofl/epilogue",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Figtree": {
       "slug": "figtree",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/figtree.txt",
-      "upstream": "ofl/figtree"
+      "upstream": "ofl/figtree",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Fraunces": {
       "slug": "fraunces",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/fraunces.txt",
-      "upstream": "ofl/fraunces"
+      "upstream": "ofl/fraunces",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Gantari": {
       "slug": "gantari",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/gantari.txt",
-      "upstream": "ofl/gantari"
+      "upstream": "ofl/gantari",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "IBM Plex Mono": {
       "slug": "ibm-plex-mono",
       "fallback": "monospace",
       "licence": "OFL",
       "licenceFile": "licences/ibm-plex-mono.txt",
-      "upstream": "ofl/ibmplexmono"
+      "upstream": "ofl/ibmplexmono",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Instrument Sans": {
       "slug": "instrument-sans",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/instrument-sans.txt",
-      "upstream": "ofl/instrumentsans"
+      "upstream": "ofl/instrumentsans",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Inter": {
       "slug": "inter",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/inter.txt",
-      "upstream": "ofl/inter"
+      "upstream": "ofl/inter",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "greek",
+        "greek-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Jost": {
       "slug": "jost",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/jost.txt",
-      "upstream": "ofl/jost"
+      "upstream": "ofl/jost",
+      "subsets": [
+        "cyrillic",
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Karla": {
       "slug": "karla",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/karla.txt",
-      "upstream": "ofl/karla"
+      "upstream": "ofl/karla",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Lato": {
       "slug": "lato",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/lato.txt",
-      "upstream": "ofl/lato"
+      "upstream": "ofl/lato",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "greek",
+        "greek-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Libre Caslon Text": {
       "slug": "libre-caslon-text",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/libre-caslon-text.txt",
-      "upstream": "ofl/librecaslontext"
+      "upstream": "ofl/librecaslontext",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Literata": {
       "slug": "literata",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/literata.txt",
-      "upstream": "ofl/literata"
+      "upstream": "ofl/literata",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "greek",
+        "greek-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Lora": {
       "slug": "lora",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/lora.txt",
-      "upstream": "ofl/lora"
+      "upstream": "ofl/lora",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "latin",
+        "latin-ext",
+        "math",
+        "menu",
+        "symbols",
+        "vietnamese"
+      ]
     },
     "Manrope": {
       "slug": "manrope",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/manrope.txt",
-      "upstream": "ofl/manrope"
+      "upstream": "ofl/manrope",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "greek",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Newsreader": {
       "slug": "newsreader",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/newsreader.txt",
-      "upstream": "ofl/newsreader"
+      "upstream": "ofl/newsreader",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Nunito Sans": {
       "slug": "nunito-sans",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/nunito-sans.txt",
-      "upstream": "ofl/nunitosans"
+      "upstream": "ofl/nunitosans",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Outfit": {
       "slug": "outfit",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/outfit.txt",
-      "upstream": "ofl/outfit"
+      "upstream": "ofl/outfit",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Petrona": {
       "slug": "petrona",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/petrona.txt",
-      "upstream": "ofl/petrona"
+      "upstream": "ofl/petrona",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Playfair Display": {
       "slug": "playfair-display",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/playfair-display.txt",
-      "upstream": "ofl/playfairdisplay"
+      "upstream": "ofl/playfairdisplay",
+      "subsets": [
+        "cyrillic",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Poppins": {
       "slug": "poppins",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/poppins.txt",
-      "upstream": "ofl/poppins"
+      "upstream": "ofl/poppins",
+      "subsets": [
+        "devanagari",
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Public Sans": {
       "slug": "public-sans",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/public-sans.txt",
-      "upstream": "ofl/publicsans"
+      "upstream": "ofl/publicsans",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Rubik": {
       "slug": "rubik",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/rubik.txt",
-      "upstream": "ofl/rubik"
+      "upstream": "ofl/rubik",
+      "subsets": [
+        "arabic",
+        "cyrillic",
+        "cyrillic-ext",
+        "hebrew",
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Sora": {
       "slug": "sora",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/sora.txt",
-      "upstream": "ofl/sora"
+      "upstream": "ofl/sora",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Source Serif 4": {
       "slug": "source-serif-4",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/source-serif-4.txt",
-      "upstream": "ofl/sourceserif4"
+      "upstream": "ofl/sourceserif4",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "greek",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Space Grotesk": {
       "slug": "space-grotesk",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/space-grotesk.txt",
-      "upstream": "ofl/spacegrotesk"
+      "upstream": "ofl/spacegrotesk",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Space Mono": {
       "slug": "space-mono",
       "fallback": "monospace",
       "licence": "OFL",
       "licenceFile": "licences/space-mono.txt",
-      "upstream": "ofl/spacemono"
+      "upstream": "ofl/spacemono",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Spectral": {
       "slug": "spectral",
       "fallback": "serif",
       "licence": "OFL",
       "licenceFile": "licences/spectral.txt",
-      "upstream": "ofl/spectral"
+      "upstream": "ofl/spectral",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Syne": {
       "slug": "syne",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/syne.txt",
-      "upstream": "ofl/syne"
+      "upstream": "ofl/syne",
+      "subsets": [
+        "greek",
+        "latin",
+        "latin-ext",
+        "menu"
+      ]
     },
     "Unbounded": {
       "slug": "unbounded",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/unbounded.txt",
-      "upstream": "ofl/unbounded"
+      "upstream": "ofl/unbounded",
+      "subsets": [
+        "cyrillic",
+        "cyrillic-ext",
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     },
     "Work Sans": {
       "slug": "work-sans",
       "fallback": "sans-serif",
       "licence": "OFL",
       "licenceFile": "licences/work-sans.txt",
-      "upstream": "ofl/worksans"
+      "upstream": "ofl/worksans",
+      "subsets": [
+        "latin",
+        "latin-ext",
+        "menu",
+        "vietnamese"
+      ]
     }
   },
   "faces": {
@@ -325,7 +615,12 @@
           "bytes": 43484,
           "sha256": "0b9acba0a69857e088b4d36e43f93a1430114980aacb14a4727801b011875f7d"
         }
-      ]
+      ],
+      "full": {
+        "file": "alegreya-roman-full.woff2",
+        "bytes": 150892,
+        "sha256": "c0755529ad628f58f9ee52890070104d896b33f7df90b915a96d17901abba3be"
+      }
     },
     "alegreya-sans-italic-400": {
       "family": "Alegreya Sans",
@@ -347,7 +642,12 @@
           "bytes": 17620,
           "sha256": "875030f96353dd42b6e89f19c31d97075cd56635c0c11365aadaa4c4f0e71c1a"
         }
-      ]
+      ],
+      "full": {
+        "file": "alegreya-sans-italic-400-full.woff2",
+        "bytes": 67036,
+        "sha256": "cd35465e55953ada441537f87bddb58cc347a34fd80990a1273f8c7fbccb846c"
+      }
     },
     "alegreya-sans-italic-700": {
       "family": "Alegreya Sans",
@@ -369,7 +669,12 @@
           "bytes": 17472,
           "sha256": "b3890d9d837c08d7ead4b880e237b21a0708785fb0cce38984b28d0c0d37cc02"
         }
-      ]
+      ],
+      "full": {
+        "file": "alegreya-sans-italic-700-full.woff2",
+        "bytes": 67160,
+        "sha256": "eeafcd5bed875af8a40aa46c2eed5704aebf7665f63f3b6ef6e3a6c1a64464d5"
+      }
     },
     "alegreya-sans-roman-400": {
       "family": "Alegreya Sans",
@@ -391,7 +696,12 @@
           "bytes": 16988,
           "sha256": "8a4e171245cf7db502726a26069388ead3890d3f60c3933952522e314078634d"
         }
-      ]
+      ],
+      "full": {
+        "file": "alegreya-sans-roman-400-full.woff2",
+        "bytes": 63560,
+        "sha256": "1ae266fdf4ada973bcfd27642cc59fd0c32c563388dd305e57a9f24e9d2ecbc0"
+      }
     },
     "alegreya-sans-roman-700": {
       "family": "Alegreya Sans",
@@ -413,7 +723,12 @@
           "bytes": 17016,
           "sha256": "5feaf4b5c9f39160cc850a971f49d27a78f4d9383ff37ba9146a2f52f61978f3"
         }
-      ]
+      ],
+      "full": {
+        "file": "alegreya-sans-roman-700-full.woff2",
+        "bytes": 63876,
+        "sha256": "3067be804ff21d7676b9bc2ed28f557a9faf8203d1cdfbf5007a2aa34aa3b8e6"
+      }
     },
     "anton-roman-400": {
       "family": "Anton",
@@ -435,7 +750,12 @@
           "bytes": 22820,
           "sha256": "e23dfe472dc5273409f37f59b0b9bf991adb11328f39bda44c5dd5b232d1005b"
         }
-      ]
+      ],
+      "full": {
+        "file": "anton-roman-400-full.woff2",
+        "bytes": 36992,
+        "sha256": "3aa248941e221034d47c59e0421afbe13b7ebe0e0702abaa407ec52e794d5784"
+      }
     },
     "archivo-roman": {
       "family": "Archivo",
@@ -460,7 +780,12 @@
           "bytes": 20444,
           "sha256": "63240c4b160ce3236505105122ea3d604ac6c1fec6ca9b9b3dbcd21a99b32ef0"
         }
-      ]
+      ],
+      "full": {
+        "file": "archivo-roman-full.woff2",
+        "bytes": 48392,
+        "sha256": "bc8995cd5e4380c069715f2f96cf641106af130f46b93179f64093f97fa45669"
+      }
     },
     "bitter-roman": {
       "family": "Bitter",
@@ -482,7 +807,12 @@
           "bytes": 35408,
           "sha256": "da9b309bb4d5f1fccc3c98c4dfa75cff328018e3277a0df95e417fb2479adb0b"
         }
-      ]
+      ],
+      "full": {
+        "file": "bitter-roman-full.woff2",
+        "bytes": 103528,
+        "sha256": "a4f738b13a54949d02c4080d8ef83a9261626d5c8cdb68c68908ad5fbfd3304f"
+      }
     },
     "bodoni-moda-roman": {
       "family": "Bodoni Moda",
@@ -533,7 +863,12 @@
           "bytes": 16596,
           "sha256": "977c86943f23d412f583eee173eec488b9d66a4d654ffc3c1461470198887dda"
         }
-      ]
+      ],
+      "full": {
+        "file": "bricolage-grotesque-roman-full.woff2",
+        "bytes": 61404,
+        "sha256": "f25f87e0c5a92b2d6245060f6250fa3dcae3ff1ea52d277cc250e64464588f16"
+      }
     },
     "chivo-italic": {
       "family": "Chivo",
@@ -555,7 +890,12 @@
           "bytes": 23468,
           "sha256": "3321cefec1f81a35e8a2644b14f76ce2b36dc77bce2539f07b5b77776e41cae5"
         }
-      ]
+      ],
+      "full": {
+        "file": "chivo-italic-full.woff2",
+        "bytes": 61192,
+        "sha256": "59fc05ac87559a63fec0943d3f1b8b8e7507de6900cc83602aecaa00a8cf8bc6"
+      }
     },
     "chivo-roman": {
       "family": "Chivo",
@@ -577,7 +917,12 @@
           "bytes": 22348,
           "sha256": "47f3538902aa83bbaed1fc7ee1d068331155d219bc442c56fcf5e1ae6886da97"
         }
-      ]
+      ],
+      "full": {
+        "file": "chivo-roman-full.woff2",
+        "bytes": 56240,
+        "sha256": "f85226d5efe51ff26195800b0ffb6b786ffb2fa7fe9debfed1a7b564c951fdb4"
+      }
     },
     "cormorant-garamond-roman": {
       "family": "Cormorant Garamond",
@@ -599,7 +944,12 @@
           "bytes": 61352,
           "sha256": "a5736c5a0369796d7919e566a680f3d7267e0fc5983b9745ef1d13638e166707"
         }
-      ]
+      ],
+      "full": {
+        "file": "cormorant-garamond-roman-full.woff2",
+        "bytes": 205368,
+        "sha256": "be88305b9c027b9c2e8be7b2b3636ac11fdd693dc7204e5176867b448ed11615"
+      }
     },
     "crimson-pro-roman": {
       "family": "Crimson Pro",
@@ -621,7 +971,12 @@
           "bytes": 27724,
           "sha256": "735d2b36776d7dc143e24609fd5d8618cc1394cf61905598f3b61c2d436c2914"
         }
-      ]
+      ],
+      "full": {
+        "file": "crimson-pro-roman-full.woff2",
+        "bytes": 65892,
+        "sha256": "af527a40cb0d5d146d748e552770e3ad395f200b41ce81f9553c9f0b045a692c"
+      }
     },
     "dm-sans-italic": {
       "family": "DM Sans",
@@ -715,7 +1070,12 @@
           "bytes": 30648,
           "sha256": "02268cce461711590c9ce894a8efec2f98ca2bf6ce294e7e6075820d5ada79d6"
         }
-      ]
+      ],
+      "full": {
+        "file": "epilogue-roman-full.woff2",
+        "bytes": 55904,
+        "sha256": "e5d9511fb155fa83703ea825bd306b636a020c946e332b9a71663a40ea566aa5"
+      }
     },
     "figtree-italic": {
       "family": "Figtree",
@@ -786,7 +1146,12 @@
           "bytes": 29524,
           "sha256": "7b769b48cfb7454c52f9719a79b7cbc679a610e6715d87848837f3fa7d84f4d5"
         }
-      ]
+      ],
+      "full": {
+        "file": "fraunces-roman-full.woff2",
+        "bytes": 52668,
+        "sha256": "76411e98d3d909aa1be10db822fa423db648122a0e87ffee1af6e37219b801e5"
+      }
     },
     "gantari-roman": {
       "family": "Gantari",
@@ -830,7 +1195,12 @@
           "bytes": 9560,
           "sha256": "402740ce409336fac920aa15f08405622b8e500412871619186157be41f08a44"
         }
-      ]
+      ],
+      "full": {
+        "file": "ibm-plex-mono-italic-400-full.woff2",
+        "bytes": 27760,
+        "sha256": "84908c6f70c943c8965fb76895f534b7835a9965b963730cafeac9bfc437ab01"
+      }
     },
     "ibm-plex-mono-italic-700": {
       "family": "IBM Plex Mono",
@@ -852,7 +1222,12 @@
           "bytes": 9744,
           "sha256": "3b3248b14c5c1f96654de22893c7ac25f41d0b5390e5fb2646a1d35f3dfbf1b2"
         }
-      ]
+      ],
+      "full": {
+        "file": "ibm-plex-mono-italic-700-full.woff2",
+        "bytes": 27868,
+        "sha256": "7ab1ba30221eb5a66e8521ff6f7c983070bd8ef0244eb47968a54461d1a8f99e"
+      }
     },
     "ibm-plex-mono-roman-400": {
       "family": "IBM Plex Mono",
@@ -874,7 +1249,12 @@
           "bytes": 8336,
           "sha256": "6e0d14946c0408462bff247ac110861448039413a64d7a3d362f89e08a699ac4"
         }
-      ]
+      ],
+      "full": {
+        "file": "ibm-plex-mono-roman-400-full.woff2",
+        "bytes": 24004,
+        "sha256": "20e757ac07d2447887df9e52f09d1a3223a0f7a6388dc448bd8d21942d1a9fb1"
+      }
     },
     "ibm-plex-mono-roman-700": {
       "family": "IBM Plex Mono",
@@ -896,7 +1276,12 @@
           "bytes": 8348,
           "sha256": "013a3fb32af9c953eb7bd90f2e36d00cf8994949684841b8fb649dd0d4149e8c"
         }
-      ]
+      ],
+      "full": {
+        "file": "ibm-plex-mono-roman-700-full.woff2",
+        "bytes": 24212,
+        "sha256": "a75f00b809a1435f0e7d37d73df43830cbe8d98bd6a4993f01dc9e251015b97c"
+      }
     },
     "instrument-sans-roman": {
       "family": "Instrument Sans",
@@ -946,7 +1331,12 @@
           "bytes": 66956,
           "sha256": "e10b0293eb631f84fa292171c79aa288f2724710ab449d39f55caa0fe607b2f8"
         }
-      ]
+      ],
+      "full": {
+        "file": "inter-italic-full.woff2",
+        "bytes": 176732,
+        "sha256": "a59fde0e20716cfbf213db49d2aec1bb64846a0780ce7400cb5da7858992ca46"
+      }
     },
     "inter-roman": {
       "family": "Inter",
@@ -971,7 +1361,12 @@
           "bytes": 62252,
           "sha256": "50b2605bfb6e41cec8dce3082e2ea9e32f51f49ca8e5ba505544d78773edb984"
         }
-      ]
+      ],
+      "full": {
+        "file": "inter-roman-full.woff2",
+        "bytes": 165536,
+        "sha256": "7738d62b68407f7ab429289948338be7a207fd19f8c02f79b0670ca38eae8b2d"
+      }
     },
     "jost-italic": {
       "family": "Jost",
@@ -993,7 +1388,12 @@
           "bytes": 13304,
           "sha256": "55b590b49530c2ca9b3cd074aa29af5fff9d33dc236cf4b22886baaf7e879c14"
         }
-      ]
+      ],
+      "full": {
+        "file": "jost-italic-full.woff2",
+        "bytes": 40180,
+        "sha256": "9e2845480a381174794381173132521992b1d57b661c55ec0c1ffd1b1a7e70e2"
+      }
     },
     "jost-roman": {
       "family": "Jost",
@@ -1015,7 +1415,12 @@
           "bytes": 11616,
           "sha256": "b0eaf4cac3b0bbe13f599a137914e5a7d429cf999606e91d48e6e2f4ff28962e"
         }
-      ]
+      ],
+      "full": {
+        "file": "jost-roman-full.woff2",
+        "bytes": 33100,
+        "sha256": "f07381189e228a2ae82a84a9c973b35d79dd95a9a6aa805e9dac90b8410fbc6f"
+      }
     },
     "karla-italic": {
       "family": "Karla",
@@ -1081,7 +1486,12 @@
           "bytes": 61196,
           "sha256": "37132674df0670ab829a09f4fcc58120da636731d8918cab39d84b16254c57d7"
         }
-      ]
+      ],
+      "full": {
+        "file": "lato-italic-400-full.woff2",
+        "bytes": 172948,
+        "sha256": "b023ae6150250f6298c1bc446a641487a84e53949be4b421e4abebe73ef733d4"
+      }
     },
     "lato-italic-700": {
       "family": "Lato",
@@ -1103,7 +1513,12 @@
           "bytes": 60708,
           "sha256": "8d6f3fe651288a87c01b498ba744e77daa62eaf502b69d78ad194234a698dcba"
         }
-      ]
+      ],
+      "full": {
+        "file": "lato-italic-700-full.woff2",
+        "bytes": 171820,
+        "sha256": "d76cc70989d01d2b2515f8ab50d5beb5824a2f02a2e545b10d59fb93a56c13f0"
+      }
     },
     "lato-roman-400": {
       "family": "Lato",
@@ -1125,7 +1540,12 @@
           "bytes": 57152,
           "sha256": "60c8d459255cff051c152d6b250df18cbb9ae02f5f018cd47f2aa8d261e86cda"
         }
-      ]
+      ],
+      "full": {
+        "file": "lato-roman-400-full.woff2",
+        "bytes": 160848,
+        "sha256": "582d937b1757be54577f1409d2dea8b271c57b9afb5a7eab5c057fc4104e68c0"
+      }
     },
     "lato-roman-700": {
       "family": "Lato",
@@ -1147,7 +1567,12 @@
           "bytes": 56912,
           "sha256": "d983e0a0fe3eb0beaad1d34019661e3e6e9be97f229e74c67ee08d80a2704804"
         }
-      ]
+      ],
+      "full": {
+        "file": "lato-roman-700-full.woff2",
+        "bytes": 161164,
+        "sha256": "24eac5f5dd6c44ccdc4bd7ed63522f3c8ea65a0bb66097bc45ddb0cfb8e82385"
+      }
     },
     "libre-caslon-text-roman-700": {
       "family": "Libre Caslon Text",
@@ -1195,7 +1620,12 @@
           "bytes": 41320,
           "sha256": "c0c6b0c3c1942dfd02561906044e42496b7c54d226750665713b732f3e4214ac"
         }
-      ]
+      ],
+      "full": {
+        "file": "literata-roman-full.woff2",
+        "bytes": 134448,
+        "sha256": "f32e5af464d7d06a24b459b1067cccbe3de19c78d869eac90dc0434b96a42d63"
+      }
     },
     "lora-roman": {
       "family": "Lora",
@@ -1217,7 +1647,12 @@
           "bytes": 18276,
           "sha256": "72ad3648f8cd779059212a9a301f615efec8641720536357dcfea847d327344d"
         }
-      ]
+      ],
+      "full": {
+        "file": "lora-roman-full.woff2",
+        "bytes": 81688,
+        "sha256": "aa8891d3e6cba5b325fa214e15744b8bc8e40b1c4ab08015a012fb15fa61ba11"
+      }
     },
     "manrope-roman": {
       "family": "Manrope",
@@ -1239,7 +1674,12 @@
           "bytes": 13744,
           "sha256": "d62686a383b709aafbc360ec991ef297ebf43e5b24b56b2a2af940ac8d22f31c"
         }
-      ]
+      ],
+      "full": {
+        "file": "manrope-roman-full.woff2",
+        "bytes": 48212,
+        "sha256": "5415dc51255fbd1057466a4a58ceeb4e8efe99c9399cf3f3110b1878bfe57516"
+      }
     },
     "newsreader-italic": {
       "family": "Newsreader",
@@ -1264,7 +1704,12 @@
           "bytes": 24724,
           "sha256": "aa7bf41c2c8ef555639fcd0d922a3dc14b97b64a37352568988cf1f995311a65"
         }
-      ]
+      ],
+      "full": {
+        "file": "newsreader-italic-full.woff2",
+        "bytes": 79200,
+        "sha256": "d1ca2ed9ae3ec11dd8cac711da417beb365ce1323ce97d2ad5261f0eebded821"
+      }
     },
     "newsreader-roman": {
       "family": "Newsreader",
@@ -1289,7 +1734,12 @@
           "bytes": 22600,
           "sha256": "11395d2ae0dd6bfd5afe716826dbc7684338030f753bea2bf4be4083c5abe801"
         }
-      ]
+      ],
+      "full": {
+        "file": "newsreader-roman-full.woff2",
+        "bytes": 71260,
+        "sha256": "13059ae034432d1e6225243ee6613485fd671a4716ddefcb729ae8ec5629d3b7"
+      }
     },
     "nunito-sans-italic": {
       "family": "Nunito Sans",
@@ -1316,7 +1766,12 @@
           "bytes": 20884,
           "sha256": "ef703b7146efeb9f4011d3ba5fb2694dcd2ba1b3bbfdb2317ba4e79a18cdac79"
         }
-      ]
+      ],
+      "full": {
+        "file": "nunito-sans-italic-full.woff2",
+        "bytes": 59660,
+        "sha256": "f274fff079a1e913356473174c4052fbef1cdccdd2eb62128646ee21e5d7e5ac"
+      }
     },
     "nunito-sans-roman": {
       "family": "Nunito Sans",
@@ -1343,7 +1798,12 @@
           "bytes": 19388,
           "sha256": "8e15a739fd15f09b9ac86cbdd780646c14721acf2caaca0af30c2f1f218f054a"
         }
-      ]
+      ],
+      "full": {
+        "file": "nunito-sans-roman-full.woff2",
+        "bytes": 55700,
+        "sha256": "a5864124d8c47f3130abc98fb7eb4987b2eae071867ceb941901bde2d64dd58e"
+      }
     },
     "outfit-roman": {
       "family": "Outfit",
@@ -1387,7 +1847,12 @@
           "bytes": 25896,
           "sha256": "37bf93fab481a33e5aa4dded509a4759e2fbe661c4d80dd63db9bb0ea98fe566"
         }
-      ]
+      ],
+      "full": {
+        "file": "petrona-roman-full.woff2",
+        "bytes": 52832,
+        "sha256": "7be1772b50c9da2c226a4220e221affdd6c6272557f264240eec683b318118d9"
+      }
     },
     "playfair-display-roman": {
       "family": "Playfair Display",
@@ -1409,7 +1874,12 @@
           "bytes": 25828,
           "sha256": "17c61e54ab1acb5e557f520d621ef2dc95c3698c2a66b67e54ea68451b706f91"
         }
-      ]
+      ],
+      "full": {
+        "file": "playfair-display-roman-full.woff2",
+        "bytes": 103080,
+        "sha256": "0ba7ec2399e3a2b24dae9e8aadfb2f44c5bf5d8fad0e149eaf934c962eea4b5b"
+      }
     },
     "poppins-italic-400": {
       "family": "Poppins",
@@ -1431,7 +1901,12 @@
           "bytes": 5944,
           "sha256": "ad6cf1c3aa5fec06c38ca79e464679fa24e12e36bc09ecc1a1d40e43fb76ba35"
         }
-      ]
+      ],
+      "full": {
+        "file": "poppins-italic-400-full.woff2",
+        "bytes": 55124,
+        "sha256": "962384174c6426988efa6d24d214e9de9c5012f0910f7bccdd8108e83bea906a"
+      }
     },
     "poppins-italic-700": {
       "family": "Poppins",
@@ -1453,7 +1928,12 @@
           "bytes": 5876,
           "sha256": "0febe9ec39e0bd31f0d5c42a9ab48b01cfd70dcf916d363ce847fba111bcb063"
         }
-      ]
+      ],
+      "full": {
+        "file": "poppins-italic-700-full.woff2",
+        "bytes": 54228,
+        "sha256": "88619e4645990ec759c783efa3326b2fc6cd6f492175c643022e4ca64448ff47"
+      }
     },
     "poppins-roman-400": {
       "family": "Poppins",
@@ -1475,7 +1955,12 @@
           "bytes": 5548,
           "sha256": "e2adf5ff345451d68d11fba9a67a315045d1c50b609a038fbcd0c198b2a57623"
         }
-      ]
+      ],
+      "full": {
+        "file": "poppins-roman-400-full.woff2",
+        "bytes": 47908,
+        "sha256": "6ab9034578e9c4e38c5967d762667ba200cddee77c5c256474ffc4e9a1a7b4d8"
+      }
     },
     "poppins-roman-600": {
       "family": "Poppins",
@@ -1497,7 +1982,12 @@
           "bytes": 5576,
           "sha256": "dd785b0d1c812fdc46becafa279f6e2bee32bba633b4537a6fe3639a12dc8933"
         }
-      ]
+      ],
+      "full": {
+        "file": "poppins-roman-600-full.woff2",
+        "bytes": 47740,
+        "sha256": "808b175a390cc56932435c66ba1374d8a5cfe8bdf51333b8d4609fa4c89fef94"
+      }
     },
     "poppins-roman-700": {
       "family": "Poppins",
@@ -1519,7 +2009,12 @@
           "bytes": 5428,
           "sha256": "7f5b5143ace2f29f3d49b577443f8e69d74c8b26d1165c35cef8e454d14b7a1b"
         }
-      ]
+      ],
+      "full": {
+        "file": "poppins-roman-700-full.woff2",
+        "bytes": 47268,
+        "sha256": "ab3e9c8f9d2363faebe6440483671f6ac4034613d4e23f36306c570bedcdcec4"
+      }
     },
     "public-sans-italic": {
       "family": "Public Sans",
@@ -1541,7 +2036,12 @@
           "bytes": 16628,
           "sha256": "5ecf45fcdea1f5da97502c2b8c935c57a107262a93a05415b6c0cf3518f0d1bd"
         }
-      ]
+      ],
+      "full": {
+        "file": "public-sans-italic-full.woff2",
+        "bytes": 39700,
+        "sha256": "5eed6ec217b6258049e5bd0d466eab9065e37a5319eacab216c5c62f54bfb15c"
+      }
     },
     "public-sans-roman": {
       "family": "Public Sans",
@@ -1563,7 +2063,12 @@
           "bytes": 16056,
           "sha256": "beb6fdd60a31f69665920c763a059490ec71c62b1def0eda3910d779871a7124"
         }
-      ]
+      ],
+      "full": {
+        "file": "public-sans-roman-full.woff2",
+        "bytes": 36964,
+        "sha256": "1cc4f8a9d8e054c4696d64c8b73eeece30a68c2bcb6c6d8c674a68a50bc1d5c2"
+      }
     },
     "rubik-italic": {
       "family": "Rubik",
@@ -1585,7 +2090,12 @@
           "bytes": 19252,
           "sha256": "9e53558072afdae2061696418122830149244136df082b18c202dcbab4147ba5"
         }
-      ]
+      ],
+      "full": {
+        "file": "rubik-italic-full.woff2",
+        "bytes": 108572,
+        "sha256": "8ba37692f373436190aa399afb9a69a96d1e4601c68a001e44e5079a68acd59b"
+      }
     },
     "rubik-roman": {
       "family": "Rubik",
@@ -1607,7 +2117,12 @@
           "bytes": 17636,
           "sha256": "3805f2cd0ecce7baf4605795e6acedcf5d2a2550ca7d45ddfacecfb15a8b78c9"
         }
-      ]
+      ],
+      "full": {
+        "file": "rubik-roman-full.woff2",
+        "bytes": 106004,
+        "sha256": "1160946b72d6d4e03266239e628d74b40f60443e22535b98dd5a940a283133ef"
+      }
     },
     "sora-roman": {
       "family": "Sora",
@@ -1654,7 +2169,12 @@
           "bytes": 31420,
           "sha256": "25c28ad6fd383ebfae2510a0f0467ebab0fd0138b58a6c404b2a1f19130e48cf"
         }
-      ]
+      ],
+      "full": {
+        "file": "source-serif-4-italic-full.woff2",
+        "bytes": 98876,
+        "sha256": "641368d1e4fdf79476e9dbdf9d0cca40a57400e61d9d15b467c507c0df117cad"
+      }
     },
     "source-serif-4-roman": {
       "family": "Source Serif 4",
@@ -1679,7 +2199,12 @@
           "bytes": 39168,
           "sha256": "1177012108efd22f9e94f786a2b1b626f2e0eddf205aa8c23cf57af4c76df0fb"
         }
-      ]
+      ],
+      "full": {
+        "file": "source-serif-4-roman-full.woff2",
+        "bytes": 125504,
+        "sha256": "0141ad2be8711636ea88bde3d1a438109b90ac4b947fae5ee3113d15534edb38"
+      }
     },
     "space-grotesk-roman": {
       "family": "Space Grotesk",
@@ -1701,7 +2226,12 @@
           "bytes": 18252,
           "sha256": "f03e990facef095796a0cf174ae311b701fe68f30d0889a2c5933c4d861f8212"
         }
-      ]
+      ],
+      "full": {
+        "file": "space-grotesk-roman-full.woff2",
+        "bytes": 44040,
+        "sha256": "201505551d92da0084639589949d548b17363f13ba75475e122f3e9438859d06"
+      }
     },
     "space-mono-roman-700": {
       "family": "Space Mono",
@@ -1723,7 +2253,12 @@
           "bytes": 10240,
           "sha256": "1a3c00da0d15c9aa720dbcc7652e64a052e83b645702428d25c0abe7dd0dce5b"
         }
-      ]
+      ],
+      "full": {
+        "file": "space-mono-roman-700-full.woff2",
+        "bytes": 20588,
+        "sha256": "b0d84ebaa1f00cb9e0e355554a40a5e2508416311b87430de137eb498c039b4c"
+      }
     },
     "spectral-roman-700": {
       "family": "Spectral",
@@ -1745,7 +2280,12 @@
           "bytes": 16200,
           "sha256": "e7069f32958f15a8e44c58bb0b753aae743c951a10a532dab42762b8b8259f42"
         }
-      ]
+      ],
+      "full": {
+        "file": "spectral-roman-700-full.woff2",
+        "bytes": 61860,
+        "sha256": "27c49b46b6c401c87ff4850f382578b036ef57b0ed85fe575fcc9cca6c6e77c6"
+      }
     },
     "syne-roman": {
       "family": "Syne",
@@ -1767,7 +2307,12 @@
           "bytes": 19552,
           "sha256": "0b90dd6c5e3a62a000635a822762f79c6437849f1bda389e58f9b7f5f7c08cc8"
         }
-      ]
+      ],
+      "full": {
+        "file": "syne-roman-full.woff2",
+        "bytes": 69164,
+        "sha256": "c54ff21a89d02ea4b1882db901c920e027407ed99f1d39dda3607e1c156a8350"
+      }
     },
     "unbounded-roman": {
       "family": "Unbounded",
@@ -1789,7 +2334,12 @@
           "bytes": 92768,
           "sha256": "42beacbd7dfdfded7348348d8e99bc01a28d9dc4affd95e328f486e6d7076bbd"
         }
-      ]
+      ],
+      "full": {
+        "file": "unbounded-roman-full.woff2",
+        "bytes": 209116,
+        "sha256": "4a3cb1e583392f718443d8326a2eb9dc499829b5a96b36da9b6e0d8f7f9db1e2"
+      }
     },
     "work-sans-italic": {
       "family": "Work Sans",
@@ -1811,7 +2361,12 @@
           "bytes": 29556,
           "sha256": "7d0c59f10b7a3a6a7a6d6eeeb5c31963c2a9dcff805c351d1b7fa2fd72102bb5"
         }
-      ]
+      ],
+      "full": {
+        "file": "work-sans-italic-full.woff2",
+        "bytes": 89896,
+        "sha256": "e7d80186a540a31703fe23f5ba9b5fb827421ea42ed8627e1b97ac6515399188"
+      }
     },
     "work-sans-roman": {
       "family": "Work Sans",
@@ -1833,7 +2388,12 @@
           "bytes": 32396,
           "sha256": "6c17006a37c9f930ed5ccfc155852b43c1670f774de67e91c66c63c01e8e1f5a"
         }
-      ]
+      ],
+      "full": {
+        "file": "work-sans-roman-full.woff2",
+        "bytes": 95076,
+        "sha256": "d63711c3daec162e12a69e1b956765db95264020d964d4c0b6fedf426857377a"
+      }
     }
   },
   "pairings": [

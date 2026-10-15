@@ -32,7 +32,7 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '..')
 const require = createRequire(import.meta.url)
 const MessageFormat = require('intl-messageformat')
 const IMF_VERSION = JSON.parse(readFileSync(require.resolve('intl-messageformat/package.json'), 'utf8')).version
-const { catalogFailures, placeholdersOf } = await import(join(REPO, 'packages/library/src/catalog.ts'))
+const { catalogFailures, placeholdersOf, translatableKeys } = await import(join(REPO, 'packages/library/src/catalog.ts'))
 const { t } = await import(join(REPO, 'packages/ghost-shim/src/index.ts'))
 
 const APPENDIX_PATH = '_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/appendix-h1-string-catalog.md'
@@ -144,7 +144,7 @@ function agreementFailures(catalog) {
     try {
       ghost = new MessageFormat(e.en, 'en').format(params)
     } catch (err) {
-      out.push(`${key} — intl-messageformat ${IMF_VERSION} throws on ${JSON.stringify(e.en)}: ${err.message} (on a live site: "An error occurred", or a whole-page 500 where the constructor throws)`)
+      out.push(`${key} — intl-messageformat ${IMF_VERSION} throws on ${JSON.stringify(e.en)}: ${err.message} (on a live site: "An error occurred", or an error on every page that prints the label where the constructor throws — Story 7.12, appendix-h1 V9)`)
       continue
     }
     if (ghost !== shim) out.push(`${key} — Ghost renders ${JSON.stringify(ghost)} and the shim renders ${JSON.stringify(shim)}`)
@@ -266,7 +266,7 @@ for (const [ns, row] of namespaces) {
   console.log(`  ${ns.padEnd(12)}${cols.map((c) => String(row[c]).padStart(13)).join('')}`)
 }
 console.log(`  ${'total'.padEnd(12)}${cols.map((c) => String(total[c]).padStart(13)).join('')}`)
-console.log(`  listed in the Translations surface: ${total.keys - total.locked} (every key but the locked ones); in every locale file: ${total.keys - total.canvas} (every key but the canvas ones); migrations: ${CATALOG.migrations.length}`)
+console.log(`  listed in the Translations surface: ${translatableKeys(CATALOG).length} (every key but the locked and the retired ones — translatableKeys, Story 7.12); in every locale file: ${total.keys - total.canvas} (every key but the canvas ones); migrations: ${CATALOG.migrations.length}`)
 
 if (failed) {
   console.log(`\ncheck-catalog: FAIL — ${failed} check(s) failed\n`)

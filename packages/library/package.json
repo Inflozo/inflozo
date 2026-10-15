@@ -7,7 +7,9 @@
     ".": "./src/index.ts",
     "./icons": "./src/icons.ts",
     "./packs": "./src/packs.ts",
-    "./core": "./modules/core.js"
+    "./core": "./modules/core.js",
+    "./override": "./src/override.ts",
+    "./languages": "./src/languages.ts"
   },
   "browserslist": [
     "extends browserslist-config-baseline"
@@ -15,6 +17,9 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
     "test": "node --test 'src/**/*.test.ts' 'modules/*.test.mjs'"
+  },
+  "dependencies": {
+    "intl-messageformat": "5.4.3"
   },
   "devDependencies": {
     "@types/node": "24.13.4",

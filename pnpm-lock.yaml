@@ -114,6 +114,10 @@ importers:
         version: 7.0.2
 
   packages/library:
+    dependencies:
+      intl-messageformat:
+        specifier: 5.4.3
+        version: 5.4.3
     devDependencies:
       '@types/node':
         specifier: 24.13.4

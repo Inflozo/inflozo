@@ -24,11 +24,21 @@ declared range with fontTools' instancer (§D.a rule 4 — Google's own CSS2 API
 face is the declared weight's file. Each face is subset to `latin` and `latin-ext` with the `unicode-range`s
 `apps/web/app/fonts/fonts.css` carries (Google's own, word for word), every layout feature kept (§D.b: by script range,
 never by content) and TrueType hinting dropped (§D.a rule 5), and written as woff2 with no timestamp recalculated — so a
-second run is byte-identical. Into
-`packages/library/fonts/`: `files/*.woff2` (a file nothing declares is removed), `licences/<family>.txt`, and
-`pool.json`, the record of every file with its bytes and sha256, each face's cap height (OS/2) and `tnum`, each family's
-licence and CSS fallback, and the commit. `tools/stress/test-vocabulary.mjs` holds pool.json to §D.c and every file to
-its sha256 in CI. One step builds the canvas's files and the theme's (§D.b).
+second run is byte-identical.
+
+Story 7.12 (§D.b's whole faces, moved from Story 7.4): a family whose upstream `METADATA.pb` `subsets` lists any script
+beyond `latin`, `latin-ext`, `menu`, `math` and `symbols` (`whole_faces`) — google/fonts' own declaration of coverage,
+never assumed — also gets, per face, `<face>-full.woff2`: the same instance, NO glyph subsetting, every layout feature,
+hinting dropped, no timestamp. A language in any script but `latin` ships a covering family's whole faces in place of its
+latin pair (`packages/section-runtime/src/fonts.ts`). At an unchanged `COMMIT`, a `latin`/`latin-ext` file whose new
+bytes differ from the one on disk is a REFUSAL before anything is written: moving them is a `COMMIT` move and a mass
+rebaseline, never a side effect.
+
+Into `packages/library/fonts/`: `files/*.woff2` (a file nothing declares is removed), `licences/<family>.txt`, and
+`pool.json`, the record of every file with its bytes and sha256, each face's cap height (OS/2) and `tnum` (and `full`,
+its whole face, where its family qualifies), each family's licence, CSS fallback and upstream `subsets` (in
+`METADATA.pb`'s order), and the commit. `tools/stress/test-vocabulary.mjs` holds pool.json to §D.c and every file to its
+sha256 in CI. One step builds the canvas's files and the theme's (§D.b).
 
 Downloads are kept under `$XDG_CACHE_HOME/inflozo-fonts/<commit>/` (default `~/.cache`), so a re-run reads no network.
 """
@@ -61,6 +71,20 @@ COMMIT = '9710da1eacb3be272583c3224dcb70f9da6eadbb'
 RAW = f'https://raw.githubusercontent.com/google/fonts/{COMMIT}'
 LICENCES = {'OFL': ('ofl', 'OFL.txt'), 'APACHE2': ('apache', 'LICENSE.txt')}
 SUBSETS = ('latin', 'latin-ext')
+# METADATA.pb subsets that name no script a language writes in: a family listing only these gets no whole faces
+LATIN_ONLY = frozenset(('latin', 'latin-ext', 'menu', 'math', 'symbols'))
+FULL = 'full'
+
+
+def whole_faces(subsets):
+    """Does a family whose upstream `METADATA.pb` lists `subsets` get whole faces (§D.b)? Any script beyond LATIN_ONLY."""
+    return any(s not in LATIN_ONLY for s in subsets)
+
+
+def changed(blobs, names, on_disk):
+    """The files of `names` whose new bytes (`blobs`) differ from the file already on disk (`on_disk(name)` → bytes, or
+    None for a file not there yet, which is new, never changed)."""
+    return [n for n in names if (old := on_disk(n)) is not None and old != blobs[n]]
 # METADATA.pb's category → the CSS generic a family list falls back to. ponytail: DISPLAY → sans-serif because both
 # DISPLAY families in the pool (Syne, Anton) are sans faces; a serif display family would need its own word.
 GENERIC = {'SERIF': 'serif', 'SANS_SERIF': 'sans-serif', 'MONOSPACE': 'monospace', 'DISPLAY': 'sans-serif', 'HANDWRITING': 'cursive'}
@@ -192,11 +216,15 @@ def read_metadata(family):
     category = re.search(r'^category: "([^"]+)"', pb, re.M).group(1)
     if category not in GENERIC:  # here, before anything is written — never a KeyError after the files are
         raise Refused(f'{family}: upstream category {category} has no CSS fallback in GENERIC')
+    subsets = re.findall(r'^subsets: "([^"]+)"', pb, re.M)
+    if not subsets:  # coverage is read, never assumed: a family declaring none is a refusal, not a latin family
+        raise Refused(f'{family}: upstream METADATA.pb lists no subsets')
     fonts = [{'style': s, 'weight': int(w), 'filename': f} for s, w, f in
              re.findall(r'fonts \{[^}]*?style: "(\w+)"[^}]*?weight: (\d+)[^}]*?filename: "([^"]+)"', pb, re.S)]
     axes = {t: (float(lo), float(hi)) for t, lo, hi in
             re.findall(r'axes \{\s*tag: "(\w+)"\s*min_value: ([\d.]+)\s*max_value: ([\d.]+)', pb)}
-    return {'dir': f'{top}/{dir_name(family)}', 'licence': licence, 'category': category, 'fonts': fonts, 'axes': axes}
+    return {'dir': f'{top}/{dir_name(family)}', 'licence': licence, 'category': category, 'subsets': subsets,
+            'fonts': fonts, 'axes': axes}
 
 
 # ── the faces a pairing emits (§D.a rules 1–3) ─────────────────────────────────────────────────────────────────────
@@ -293,7 +321,8 @@ def build_face(face, meta):
     return source, round(cap / upm, 4), {k: (int(v) if float(v).is_integer() else v) for k, v in sorted(pinned.items())}
 
 
-def woff2(source, ranges):
+def woff2(source, ranges=None):
+    """The face as woff2: subset to `ranges`, or with `None` its whole face — every glyph kept (§D.b's whole faces)."""
     font = TTFont(io.BytesIO(source), recalcTimestamp=False)
     opts = subset.Options()
     opts.layout_features = ['*']
@@ -308,7 +337,10 @@ def woff2(source, ranges):
     opts.recalc_timestamp = False
     opts.flavor = 'woff2'
     sub = subset.Subsetter(opts)
-    sub.populate(unicodes=unicodes(ranges))
+    if ranges is None:
+        sub.populate(glyphs=font.getGlyphOrder())  # cmap keeps every mapping of a requested glyph
+    else:
+        sub.populate(unicodes=unicodes(ranges))
     sub.subset(font)
     buf = io.BytesIO()
     subset.save_font(font, buf, opts)
@@ -346,11 +378,10 @@ def main():
                          'heading': {'family': hfam, **heading, 'faces': role_faces(heading, hfam, built, 'heading')},
                          'body': {'family': bfam, **body, 'faces': role_faces(body, bfam, built, 'body')}})
 
-    # 2. build every face once
-    os.makedirs(os.path.join(OUT, 'files'), exist_ok=True)
-    os.makedirs(os.path.join(OUT, 'licences'), exist_ok=True)
-    written = set()
+    # 2. build every face once, in memory — nothing is written until the subset files are held below
+    blobs = {}
     record = {}
+    entry = lambda file, data: {'file': file, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
     for fid in sorted(faces):
         fam, style, kind, weight = faces[fid]['face']
         source, cap, pinned = build_face(faces[fid]['face'], families[fam])
@@ -359,16 +390,37 @@ def main():
             data, has_tnum = woff2(source, ranges[sub])
             tnum = tnum or (sub == 'latin' and has_tnum)
             file = f'{fid}-{sub}.woff2'
-            with open(os.path.join(OUT, 'files', file), 'wb') as f:
-                f.write(data)
-            written.add(file)
-            files.append({'subset': sub, 'file': file, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
+            blobs[file] = data
+            files.append({'subset': sub, **entry(file, data)})
+        full = None
+        if whole_faces(families[fam]['subsets']):
+            data, _ = woff2(source)
+            blobs[f'{fid}-{FULL}.woff2'] = data
+            full = entry(f'{fid}-{FULL}.woff2', data)
         record[fid] = {'family': fam, 'style': style, 'type': kind,
                        'weight': f'{weight[0]} {weight[1]}' if kind == 'V' else str(weight),
                        **({'pinned': pinned} if pinned else {}),
                        **({'cut': STATIC_CUTS[fam]} if kind == 'S' and fam in STATIC_CUTS else {}),
-                       'capHeight': cap, 'tnum': tnum, 'files': files}
-        print(f'  {fid}: ' + ' · '.join(f"{x['subset']} {x['bytes']:,} B" for x in files))
+                       'capHeight': cap, 'tnum': tnum, 'files': files, **({'full': full} if full else {})}
+        print(f'  {fid}: ' + ' · '.join(f"{x['subset']} {x['bytes']:,} B" for x in files + ([{'subset': FULL, **full}] if full else [])))
+
+    # 3. at an unchanged COMMIT every latin / latin-ext file already on disk keeps its bytes — or nothing is written
+    previous = os.path.join(OUT, 'pool.json')
+    if os.path.exists(previous) and json.load(open(previous, encoding='utf8'))['source']['commit'] == COMMIT:
+        def on_disk(file):
+            path = os.path.join(OUT, 'files', file)
+            return open(path, 'rb').read() if os.path.exists(path) else None
+        moved = changed(blobs, [x['file'] for r in record.values() for x in r['files']], on_disk)
+        if moved:
+            raise Refused(f'{len(moved)} subset file(s) would change at the same commit {COMMIT[:12]} ({", ".join(moved[:5])}'
+                          f'{", …" if len(moved) > 5 else ""}) — that is a COMMIT move and a mass rebaseline, never a side effect')
+
+    os.makedirs(os.path.join(OUT, 'files'), exist_ok=True)
+    os.makedirs(os.path.join(OUT, 'licences'), exist_ok=True)
+    for file, data in blobs.items():
+        with open(os.path.join(OUT, 'files', file), 'wb') as f:
+            f.write(data)
+    written = set(blobs)
     for stale in sorted(set(os.listdir(os.path.join(OUT, 'files'))) - written):
         os.remove(os.path.join(OUT, 'files', stale))
         print(f'  removed {stale}: no face declares it')
@@ -382,7 +434,7 @@ def main():
         with open(os.path.join(OUT, rel), 'wb') as f:
             f.write(text)
         fams[fam] = {'slug': slug(fam), 'fallback': GENERIC[meta['category']], 'licence': meta['licence'],
-                     'licenceFile': rel, 'upstream': meta['dir']}
+                     'licenceFile': rel, 'upstream': meta['dir'], 'subsets': meta['subsets']}
     keep = {f['licenceFile'].split('/', 1)[1] for f in fams.values()}
     for stale in sorted(set(os.listdir(os.path.join(OUT, 'licences'))) - keep):
         os.remove(os.path.join(OUT, 'licences', stale))
@@ -403,7 +455,11 @@ def main():
         ids = list(dict.fromkeys(p['heading']['faces'] + p['body']['faces']))
         latin = sum(next(x['bytes'] for x in record[i]['files'] if x['subset'] == 'latin') for i in ids)
         ext = sum(next(x['bytes'] for x in record[i]['files'] if x['subset'] == 'latin-ext') for i in ids)
-        print(f'{p["id"]} {p["name"]}: {len(ids)} faces · latin {latin / 1000:.1f} KB · latin-ext {ext / 1000:.1f} KB')
+        whole = [record[i]['full']['bytes'] for i in ids if 'full' in record[i]]
+        print(f'{p["id"]} {p["name"]}: {len(ids)} faces · latin {latin / 1000:.1f} KB · latin-ext {ext / 1000:.1f} KB · '
+              f'whole faces {len(whole)} of {len(ids)}, {sum(whole) / 1000:.1f} KB')
+    fulls = [r['full']['bytes'] for r in record.values() if 'full' in r]
+    print(f'whole faces: {len(fulls)} files, {sum(fulls):,} B')
     print(f'pool.json written: {len(pairings)} pairings, {len(record)} faces, {len(written)} files, at {COMMIT[:12]}')
 
 
@@ -427,18 +483,33 @@ def self_check():
     assert len(declared_faces('D0', {'type': 'V', 'range': [600, 700]}, body, 'X', 'X')) == 2  # control: rule 3 holds
     assert 'not covered' in refused(declared_faces, 'D0', {'type': 'V', 'range': [600, 900]}, body, 'X', 'X')
     real = metadata
+    latin = 'subsets: "latin"\nsubsets: "latin-ext"\nsubsets: "menu"\nsubsets: "math"\nsubsets: "symbols"\n'
     try:
         for licence, ok in (('OFL', True), ('APACHE2', True), ('UFL', False)):
-            pb = f'name: "X"\nlicense: "{licence}"\ncategory: "SERIF"\n'
+            pb = f'name: "X"\nlicense: "{licence}"\ncategory: "SERIF"\n{latin}'
             globals()['metadata'] = lambda family, pb=pb: ('ofl', pb)
             if ok:
                 assert read_metadata('X')['licence'] == licence
             else:
                 assert 'neither OFL nor Apache' in refused(read_metadata, 'X')
+        # Story 7.12: whole faces for a family declaring a script beyond latin — beside its control, latin and the
+        # non-script subsets only; and a family declaring no subsets at all is refused, never taken for latin
+        for extra, whole in (('', False), ('subsets: "cyrillic"\n', True), ('subsets: "vietnamese"\n', True)):
+            pb = f'name: "X"\nlicense: "OFL"\ncategory: "SERIF"\n{extra}{latin}'
+            globals()['metadata'] = lambda family, pb=pb: ('ofl', pb)
+            meta = read_metadata('X')
+            assert meta['subsets'][-5:] == ['latin', 'latin-ext', 'menu', 'math', 'symbols'], meta['subsets']  # METADATA.pb's order
+            assert whole_faces(meta['subsets']) is whole, (extra, whole)
+        globals()['metadata'] = lambda family: ('ofl', 'name: "X"\nlicense: "OFL"\ncategory: "SERIF"\n')
+        assert 'lists no subsets' in refused(read_metadata, 'X')
     finally:
         globals()['metadata'] = real
+    # an existing subset file's bytes held at the same commit: the same bytes and a new file pass (the controls), a change is named
+    assert changed({'a': b'1', 'b': b'2'}, ['a', 'b'], {'a': b'1'}.get) == []
+    assert changed({'a': b'1', 'b': b'2'}, ['a', 'b'], {'a': b'0', 'b': b'2'}.get) == ['a']
     print('self-check: build-pool refuses a V face static upstream, a clip upstream lacks, an S face variable-only '
-          'upstream or at another weight, an uncovered same-family heading and a UFL licence; each control builds')
+          'upstream or at another weight, an uncovered same-family heading, a UFL licence, a family declaring no subsets '
+          'and a changed subset file at the same commit; each control builds; whole faces exactly for a non-latin script')
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { memo, Profiler, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, paywallRing, postAccess, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, paywallRing, postAccess, resolveStrings, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
@@ -816,11 +816,15 @@ function EditorShell({
   pairingFaces,
   siteAccent,
   settings,
+  overrides,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
 }: EditorProps) {
   const pathname = usePathname()
+  /** Story 7.12 — the project's strings (FR-H5): the overrides the server's judge passed, over the catalog's English. Fixed for
+   *  the mount — Translations is a sibling route, so a change there remounts this editor on the way back */
+  const strings = useMemo(() => resolveStrings(overrides ?? {}), [overrides])
   /** the canvas document's address — and, since Story 5.19, where the sample's pictures are served for the panel too */
   const src = canvasPath ?? canvasSrc(isApp(pathname))
   // the layout 404s every segment that is not a canvas, so a null here is never drawn
@@ -3194,7 +3198,7 @@ function EditorShell({
         const content = lockedContent(i.content, Object.keys(bound.current.byInstance[i.instanceId]?.props ?? {}), entry.contentSchema)
         return renderSection(doc, entry, { ...i, content, controls: storedFor(entry, i, now.mode) }, {
           target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, instance: themeHook(entry, i, i),
-          assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs,
+          assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs, strings,
           live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
           secondary: secondary === undefined ? undefined : { query: secondary, rows: rowsFor(secondary, own?.[FEED_KEY]) },
         })

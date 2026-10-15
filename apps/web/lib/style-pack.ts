@@ -1,4 +1,5 @@
 import { familyList, pairingFonts, pairingOf, POOL, presetOf, PRESETS as LIBRARY_PRESETS, type PoolFile, type Preset as LibraryPreset } from '@inflozo/library/packs'
+import type { Script } from '@inflozo/library/languages'
 import { faceRulesCss, fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_TOKENS, referenceTokensCss } from '@inflozo/section-runtime/reference'
 import { packTokens, type Pack } from '@inflozo/section-runtime/tokens'
@@ -276,18 +277,21 @@ export function referenceSwatches(mode: 'light' | 'dark' = 'light', pack = DEFAU
  *  and `1b-faces` rules from the canvas route's own `?font=` — the very strings `/canvas?pack=` serves (`pilots.ts`'s
  *  `packHead`; `pilots.test.ts` holds the two equal). One derivation, so a switch paints the canvas the document a
  *  reload would be served. ponytail: derived per editor read (twelve engine runs, milliseconds); cache it if the read
- *  ever shows it. */
-export function packChoices(): PackChoice[] {
+ *  ever shows it. STORY 7.12 — in the project's language's `script` (`scriptOf`): the faces the canvas wears are the ones
+ *  the theme ships for that language, so a document served with the latin pair is worn in them before its first paint. */
+export function packChoices(script: Script = 'latin'): PackChoice[] {
   // STORY 6.4 — through `choiceOf`, the very derivation the browser runs for an own pack, each preset carrying its record
   // (what Edit pack opens on and Reset to defaults puts back). Paper's block stays `reference-tokens.css`'s, byte for byte
   return LIBRARY_PRESETS.map((p) => {
-    const choice = choiceOf(p.id, presetRecord(p), pairingChoice(p.pairing))
+    const choice = choiceOf(p.id, presetRecord(p), pairingChoice(p.pairing, script))
     return p.id === DEFAULT_PRESET ? { ...choice, tokens: referenceTokensCss() } : choice
   })
 }
 
-/** One pool pairing as the editor is handed it (`pairingChoices`). */
-function pairingChoice(id: string): PairingChoice {
+/** One pool pairing as the editor is handed it (`pairingChoices`). STORY 7.12 — its canvas faces in the project's language's
+ *  script (§D.b, FR-H5): a covering family's whole faces, every other family its latin pair, from the runtime's one rule
+ *  (`fontFaceCss`'s `script`) — the files the theme ships for that language, so the canvas draws what the site will. */
+function pairingChoice(id: string, script: Script): PairingChoice {
   const pairing = pairingOf(id)
   return {
     id,
@@ -296,7 +300,7 @@ function pairingChoice(id: string): PairingChoice {
     glyphFamily: familyList(pairing.heading.family, PACK_FAMILY_PREFIX),
     bodyGlyphFamily: familyList(pairing.body.family, PACK_FAMILY_PREFIX),
     fonts: pairingFonts(id) as PackFonts,
-    faces: fontFaceCss(id, fontHref('canvas')),
+    faces: fontFaceCss(id, fontHref('canvas'), { script }),
     families: [familyList(pairing.heading.family), familyList(pairing.body.family)],
   }
 }
@@ -304,7 +308,7 @@ function pairingChoice(id: string): PairingChoice {
 /** STORY 6.4 — EVERY POOL PAIRING, in §D.c's order, as the font rows, the pairing menu and the browser's engine need it: its
  *  families, the app's glyph faces, `pairingFonts`, and the canvas document's `1b-faces` rules from the canvas route's own
  *  `?font=` — the strings `packChoices` hands for a preset. Nothing of the pool's record (no licence, no sha256). */
-export const pairingChoices = (): PairingChoice[] => POOL.pairings.map((p) => pairingChoice(p.id))
+export const pairingChoices = (script: Script = 'latin'): PairingChoice[] => POOL.pairings.map((p) => pairingChoice(p.id, script))
 
 /** STORY 6.4 — THE PAIRING MENU'S AND THE FONT ROWS' GLYPH FACES, for the app's own document: the prefixed ROMAN face of
  *  every pool family that `packFacesCss` (the signed-in layout's) does not already declare — every heading the twelve

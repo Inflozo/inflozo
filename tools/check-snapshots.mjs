@@ -1355,6 +1355,74 @@ check('Story 7.11 — the Light only pilots declare the same three built-ins and
   if (q.blocked || q.errors.length + q.warnings.length > 0) throw new Error(said78(q).join('\n'))
 })
 
+// ── Story 7.12: the locale files (FR-Q6, FR-Q8) ──────────────────────────────────────────────────────────────────────
+// The pilot compile writes `locales/en.json` alone, the catalog's English; a third pilot compile in German with two
+// overrides (`PILOT_DE`) writes `en.json` and `de.json` with equal key sets — every catalog key but the canvas ones, in
+// catalog order — and is gated 0/0 on both pinned checkers behind §73's scaffold (GS070 parses each locale file), with an
+// empty quality verdict and a clean fingerprint scan. Each behind its control.
+const LOCALE_KEYS = Object.keys(lib.CATALOG.keys).filter((k) => !lib.CATALOG.keys[k].marks.includes('canvas'))
+const localeFailures = (files, language) => {
+  const out = []
+  const want = language === 'en' ? ['locales/en.json'] : ['locales/en.json', `locales/${language}.json`].sort()
+  const have = Object.keys(files).filter((p) => p.startsWith('locales/')).sort()
+  if (JSON.stringify(have) !== JSON.stringify(want)) out.push(`the locale files are ${JSON.stringify(have)}, not ${JSON.stringify(want)}`)
+  for (const path of have) {
+    let keys
+    try { keys = Object.keys(JSON.parse(files[path])) } catch (e) { out.push(`${path} does not parse: ${e.message}`); continue }
+    if (JSON.stringify(keys) !== JSON.stringify(LOCALE_KEYS)) out.push(`${path}: its keys are not the catalog's but the canvas ones, in order (V3)`)
+  }
+  return out
+}
+const pilotsDe = pilots.compilePilots(WORDS, { ...THEME, language: 'de', strings: lib.resolveStrings(pilots.PILOT_DE) })
+const gscanDe = await gscanOr({ ...pilotsDe.files, ...pilots.SCAFFOLD })
+check('Story 7.12 — the pilot theme carries locales/en.json alone, the catalog\'s English, every key but the canvas ones in catalog order', () => {
+  const f = localeFailures(pilotTheme, 'en')
+  const en = JSON.parse(pilotTheme['locales/en.json'])
+  for (const k of LOCALE_KEYS) if (en[k] !== lib.CATALOG.keys[k].en) f.push(`${k} is not the catalog's English`)
+  if (f.length > 0) throw new Error(f.join(' · '))
+  return `${LOCALE_KEYS.length} keys`
+})
+check('Story 7.12 — the German pilots carry en.json and de.json with equal key sets; de.json holds the two overrides, en.json the English', () => {
+  const f = localeFailures(pilotsDe.files, 'de')
+  const de = JSON.parse(pilotsDe.files['locales/de.json'])
+  const en = JSON.parse(pilotsDe.files['locales/en.json'])
+  for (const [k, v] of Object.entries(pilots.PILOT_DE)) {
+    if (de[k] !== v) f.push(`de.json's ${k} is ${JSON.stringify(de[k])}`)
+    if (en[k] !== lib.CATALOG.keys[k].en) f.push(`en.json's ${k} is not the English`)
+  }
+  if (f.length > 0) throw new Error(f.join(' · '))
+})
+check('control — Story 7.12: a locale file missing a key and a third locale file are each named', () => {
+  const { 'nav.more': _gone, ...rest } = JSON.parse(pilotsDe.files['locales/de.json'])
+  mustFail(localeFailures({ ...pilotsDe.files, 'locales/de.json': JSON.stringify(rest) }, 'de'), /^locales\/de\.json: its keys are not the catalog's/, 'a missing key')
+  return mustFail(localeFailures({ ...pilotsDe.files, 'locales/fr.json': '{}' }, 'de'), /^the locale files are /, 'a third file')
+})
+for (const m of MAJORS) {
+  check(`Story 7.12 — the German pilots raise no error and no warning under ${pinOf(m)} (behind §73's scaffold; GS070 parses each locale file)`, () => {
+    const got = raised(gscanDe[m])
+    if (got.length > 0) throw new Error(got.join('\n'))
+  })
+}
+const gscanDeBroken = await gscanOr({ ...pilotsDe.files, ...pilots.SCAFFOLD, 'locales/de.json': '{ "nav.more": "Mehr", }\n' })
+for (const m of MAJORS) {
+  check(`control — Story 7.12: a de.json that does not parse raises GS070-VALID-TRANSLATIONS under ${pinOf(m)}`, () => {
+    const got = raised(gscanDeBroken[m])
+    if (!got.some((g) => g.endsWith('GS070-VALID-TRANSLATIONS'))) throw new Error(`the broken theme raises ${JSON.stringify(got)}`)
+    return got.join(', ')
+  })
+}
+check('Story 7.12 — the German pilots\' quality verdict is empty and themeFailures is clean (a locale file\'s credit.* is the catalog\'s own words, nothing else exempt)', () => {
+  const q = qualityOf(pilotsDe.files)
+  if (q.blocked || q.errors.length + q.warnings.length > 0) throw new Error(said78(q).join('\n'))
+  const t = pilots.themeFailures(pilotsDe.files, pilotsDe.instanceIds)
+  if (t.length > 0) throw new Error(t.join('\n'))
+})
+check('control — Story 7.12: a builder\'s name outside a credit.* key, or a credit.* key not in the catalog\'s words, fails the fingerprint scan', () => {
+  const de = JSON.parse(pilotsDe.files['locales/de.json'])
+  mustFail(pilots.textFailures('locales/de.json', JSON.stringify({ ...de, 'nav.more': 'Mehr von Inflozo' })), /^locales\/de\.json: the builder's name$/, 'a name in a label')
+  return mustFail(pilots.textFailures('locales/de.json', JSON.stringify({ ...de, 'credit.built_with': 'Built with Inflozo!' })), /^locales\/de\.json: "credit\.built_with" is not the catalog's own words$/, 'a changed credit')
+})
+
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────
 const targets = rendered.reduce((t, r) => t + r.entry.compileTarget.length, 0)
 const files = rendered.reduce((t, r) => t + Object.keys(r.files).length, 0)

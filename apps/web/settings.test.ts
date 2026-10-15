@@ -441,7 +441,7 @@ test('(7.10) the actions: promote finds what it stores by the posted id and refu
   assert.ok(a >= 0 && a < promote.indexOf('.insert('), 'the confirm is checked before the insert')
   assert.doesNotMatch(fn('updateSetting'), /default_value|posted\('default'\)/, 'Question 1: the canvas decides the start')
   // the page opens on the editor's ↗ — `?promote=` handed down as it came, compared with the offered ids
-  const settingsPage = readFileSync(`${SETTINGS}/page.tsx`, 'utf8')
+  const settingsPage = readFileSync(`${SETTINGS}/(theme)/page.tsx`, 'utf8')
   assert.match(settingsPage, /promote=\{typeof asked === 'string' \? asked : null\}/)
   assert.match(page, /useState<string \| null>\(promote\)/)
   assert.match(page, /controls\.find\(\(c\) => c\.id === chosen\) \?\? controls\[0\]/)

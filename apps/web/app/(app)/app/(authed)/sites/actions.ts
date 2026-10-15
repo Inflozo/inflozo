@@ -33,6 +33,7 @@ import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
 import { brandPath, brandRetry, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { freeName, NAME_MAX, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
 import { brandPacks, brandWrite, defaultStylePack, type BrandRow } from '@/lib/style-pack'
+import { languageAtLink } from '@inflozo/library/languages'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { call, fetchWithKey, findSiteByAdminKeyId, remove, store, type CallResult } from '@/server/ghost-admin'
 import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
@@ -702,7 +703,7 @@ type BrandSite = {
   id: string
   title: string | null
   url: string
-  site_settings: { brand?: unknown; public_url?: string } | null
+  site_settings: { brand?: unknown; public_url?: string; locale?: unknown } | null
 }
 
 /**
@@ -933,6 +934,10 @@ export async function useBrand(formData: FormData): Promise<void> {
         // FR-B5's binding, and this is its first writer: it is what turns the Sites card's tally
         // from "0 projects" into "1 project".
         linked_site_id: site.id,
+        // STORY 7.12 — a project first linked to a site takes that site's Ghost language (`settingsPatch` keeps `locale`),
+        // exactly, when it is a code Ghost itself accepts; else `en` (`languageAtLink`). An RTL code arrives with a null
+        // `rtl_ack_at`, so Translations shows Appendix G's block until Understood is pressed.
+        language: languageAtLink(site.site_settings?.locale),
       })
       inserted = error
       if (!error) break

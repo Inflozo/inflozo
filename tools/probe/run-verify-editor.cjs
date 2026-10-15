@@ -237,6 +237,17 @@
 // lock pill with the link not drawn and ⌘B inert; the pack-switch ask; the delete and hide asks, the rows' states once
 // saved, and ⌘Z; the rows' starts; the demote bringing the link back; a plain text promoted with nothing to confirm (105l,
 // the review); the read-only window; and the project handed back.
+// Story 7.12 adds step 106, in contexts of its own: D6a's rail on Theme settings (Theme settings in force, Translations, and
+// no Ghost link on a project with no site) and pressed into Translations; B18's header, columns and rows against
+// `translatableKeys()`, Español saved from the menu, and Question 1's "Starting words you haven't retyped" against
+// `untouchedWords` over the stored docs; an override saved and read on Three Up's reading times; every refusal of the matrix
+// in B18's refused look, each behind its legitimate twin, and crafted posts (B's session, a credit.* key, an unknown key)
+// refused with A's own replay as the control; Use the default; the switch confirm (Cancel, then Switch keeping the
+// overrides); Arabic's block, its caption before any save, and Understood's one write; the Cyrillic and Japanese captions and
+// the canvas wearing the Cyrillic faces; the read-only tab; and, on a linked project, the rail's three Ghost links and the
+// site-language notice. The project is handed back English with no override and no site.
+// Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
+// three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
 // Site basics and the custom-settings meter (present), the seeded project's Site basics is its one no-site caption, and
 // Credits and D6a's rail rows stay absent (R-118). Step 104 walks the spec's I/O matrix row by row: + held mid-post saying
@@ -2685,9 +2696,11 @@ async function main() {
     }
     const settingsUrl = at(`/projects/${P}/settings`)
     // Story 7.9's words, from the modules that print them (R-170), never restated here
-    const [CS52, TS52] = await Promise.all([
+    const [CS52, TS52, TR52] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/custom-settings.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/theme-settings.ts')).href),
+      // Story 7.12 — D6a's rail, its words from the module that prints them
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/translations.ts')).href),
     ])
     const linked52 = (await call('/rest/v1', `/projects?id=eq.${P}&select=linked_site_id`)).body?.[0]?.linked_site_id ?? null
     // `BusyLabel` keeps both labels in one grid cell, so a segment's accessible name carries its busy word too: the
@@ -2712,9 +2725,11 @@ async function main() {
       // the seeded project links no site, so Site basics is its one caption and no Ghost-owned row (Question 2)
       noSite: document.body.innerText.includes(words.noSite),
       accent: document.body.innerText.includes(words.accent),
-      // R-118: what D6a leaves to Story 7.12 (its rail: Navigation, Social accounts, Translations, Code injection) and
-      // Story 7.28 (Credits) stays ABSENT — not greyed and not captioned
-      restOfD6a: ['Credits', 'Navigation', 'Social accounts', 'Translations', 'Code injection'].filter((w) => document.body.innerText.includes(w)),
+      // R-118: what D6a leaves to Story 7.28 (Credits) stays ABSENT — not greyed and not captioned. Story 7.12 RE-EXPECTS the
+      // rail: Theme settings and Translations are drawn, and Ghost's own Navigation, Social accounts and Code injection only
+      // on a project linked to a site (Question 2, ruled option 1) — the seeded project links none, so they stay absent
+      restOfD6a: ['Credits', 'Navigation', 'Social accounts', 'Code injection'].filter((w) => document.body.innerText.includes(w)),
+      rail: [...document.querySelectorAll('nav[data-settings-rail] a')].map((a) => a.textContent),
       // Story 7.9's Question 4 (owner, 2026-10-10): the block is flat in the column under its rule, as D6a draws it; the
       // clear row inside it is a bordered box, read the same way (the control)
       flat: (() => {
@@ -2733,7 +2748,8 @@ async function main() {
     check('step 52 — Story 7.9\'s Question 4: the mode block is flat as D6a draws it — a rule above, no side border, no shadow, no fill of its own — while its clear row is a bordered box (the control)',
       settings.flat.block?.shadow === 'none' && settings.flat.block?.top === '1px' && settings.flat.block?.left === '0px' && settings.flat.block?.bg === 'rgba(0, 0, 0, 0)' && settings.flat.row?.left === '1px', JSON.stringify(settings.flat))
     check('step 52 — Story 7.9 (Question 2): the seeded project links no site, so Site basics is its one caption and draws no Accent colour row', linked52 === null && settings.noSite && !settings.accent, JSON.stringify({ linked52, noSite: settings.noSite, accent: settings.accent }))
-    check('step 52 — R-118: every row D6a leaves to a later story — Credits (7.28) and the rail\'s Navigation, Social accounts, Translations and Code injection (7.12) — is ABSENT, not greyed and not captioned', settings.restOfD6a.length === 0 && !settings.reason && !settings.kept, settings.restOfD6a.join(' · '))
+    check('step 52 — R-118: Credits (7.28) is ABSENT, and so are the rail\'s Navigation, Social accounts and Code injection on a project that links no site (Story 7.12\'s Question 2) — not greyed and not captioned', settings.restOfD6a.length === 0 && !settings.reason && !settings.kept, settings.restOfD6a.join(' · '))
+    check('step 52 — Story 7.12: D6a\'s rail draws Theme settings and Translations', JSON.stringify(settings.rail) === JSON.stringify([TR52.RAIL_WORDS.theme, TR52.RAIL_WORDS.translations]), JSON.stringify(settings.rail))
 
     // ── step 53 — FR-D7's Light-only half, against the STORED docs, and back again ──
     await segment('off').click()
@@ -8616,6 +8632,362 @@ async function main() {
     const end105 = { rows: (await rows104()).length, home: same104(await home105(), seededHome105), pack: (await row103())?.style_pack?.preset }
     check('step 105 — the project is handed back as the seed made it: no custom setting, Home\'s doc as stored before the plant, Paper in force — and every context of the block recorded zero CSP violations',
       (restored105.status === 200 || restored105.status === 204) && end105.rows === 0 && end105.home && end105.pack === 'paper' && csp105.length === 0, JSON.stringify({ end105, csp105: csp105.slice(0, 3) }))
+
+    // ── step 106 — STORY 7.12: TRANSLATIONS — D6a's RAIL, B18, AN OVERRIDE ON THE CANVAS, EVERY REFUSAL, THE SWITCH, RTL, THE CAPTIONS ──
+    /* The spec's I/O matrix on production, in contexts of its own. Every sentence is the module's that prints it
+       (`lib/translations.ts`'s TRANSLATION_WORDS and RAIL_WORDS, the library's OVERRIDE_WORDS and `overrideRefusal`, the
+       languages' `LANGUAGE_REFUSAL`), every expectation is derived — the list from `translatableKeys()`, each refusal from the
+       judge itself, each coverage caption from `coverageOf` over Paper's pairing, the canvas faces from `fontFaceCss`, Question
+       1's rows from `untouchedWords` over the STORED docs — and every database effect is read back through the service key.
+       Each refusal stands behind its legitimate twin, saved first and still stored after. The project is handed back as the
+       seed made it: English, no acknowledgement, no override, no linked site. */
+    const [TR106, LG106, OV106, FT106, SP106, PW106] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/translations.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/languages.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/override.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/fonts.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/style-pack.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/paywall.ts')).href),
+    ])
+    const W106 = TR106.TRANSLATION_WORDS
+    const R106 = TR106.RAIL_WORDS
+    const translations106 = at(ED104.translationsPath(P))
+    const overrides106 = async () => (await call('/rest/v1', `/translation_overrides?project_id=eq.${P}&select=catalog_key,value`)).body ?? []
+    const stored106 = async (key) => (await overrides106()).find((r) => r.catalog_key === key)?.value ?? null
+    const lang106 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=language,rtl_ack_at,linked_site_id`)).body?.[0] ?? null
+    const wipe106 = () => call('/rest/v1', `/translation_overrides?project_id=eq.${P}`, { method: 'DELETE' })
+    const plant106 = (key, value) => call('/rest/v1', '/translation_overrides', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], catalog_key: key, value }) })
+    const pairing106 = presets102.find((pr) => pr.id === 'paper')?.pairing
+    const captions106 = (code) => TR106.coverageWords(FT106.coverageOf(pairing106, LG106.scriptOf(code)), LG106.scriptOf(code), TR106.ownName(code))
+    await wipe106()
+    await patchProject104({ language: 'en', rtl_ack_at: null, linked_site_id: null })
+    const start106 = { overrides: (await overrides106()).length, project: await lang106(), pack: (await row103())?.style_pack?.preset }
+    check('step 106 — the fixture: English, no acknowledgement, no override, no linked site, Paper in force, read back through the service key',
+      start106.overrides === 0 && start106.project?.language === 'en' && start106.project?.rtl_ack_at === null && start106.project?.linked_site_id === null && start106.pack === 'paper' && typeof pairing106 === 'string',
+      JSON.stringify(start106))
+
+    const tContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const csp106 = []
+    await recorder(tContext, csp106)
+    const tp = steady(await tContext.newPage())
+    tp.on('pageerror', (e) => note('pageerror 106', String(e)))
+    await tp.goto(await magic(emailA), { waitUntil: 'load' })
+    /** Translations, its card SHOWN (not in the stream's hidden holder) and hydrated — a press is the scripted path */
+    const open106 = async (p) => {
+      await p.goto(translations106, { waitUntil: 'load' })
+      await p.locator('section[data-translations]').waitFor({ state: 'visible', timeout: 20000 })
+      await p.waitForFunction(() => { const b = document.getElementById('language'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')) }, null, { timeout: 20000 })
+    }
+    const rail106 = (p) => p.locator('nav[data-settings-rail]').evaluate((n) => ({
+      heading: n.querySelector('span')?.textContent ?? null,
+      items: [...n.querySelectorAll('a')].map((a) => ({ text: a.textContent, href: a.getAttribute('href'), current: a.getAttribute('aria-current'), target: a.getAttribute('target') })),
+    }))
+    const choose106 = async (p, code) => {
+      await p.locator('#language').click()
+      await p.waitForTimeout(250)
+      await p.locator(`#language-menu button:has([data-code="${code}"])`).click()
+      await p.waitForTimeout(250)
+    }
+    const column106 = (p) => p.locator('[data-columns] [data-column]').textContent().catch(() => null)
+    const row106 = (key) => tp.locator(`li[data-key="${key}"]`)
+    /** the row as B18 draws it: refused or not, the sentence under the field, its tint, its key's ink, its field's border */
+    const look106 = (key) => row106(key).evaluate((li) => {
+      const input = li.querySelector('input[name="value"]')
+      return {
+        refused: li.hasAttribute('data-refused'), said: li.querySelector('[role="alert"]')?.textContent ?? null, value: input?.value ?? null,
+        placeholder: input?.getAttribute('placeholder') ?? null, reset: li.querySelector('input[name="intent"][value="reset"]') !== null,
+        bg: getComputedStyle(li).backgroundColor, keyInk: getComputedStyle(li.firstElementChild).color, border: getComputedStyle(input).borderTopColor,
+      }
+    })
+    const save106 = async (key, value) => {
+      await row106(key).locator('input[name="value"]').fill(value)
+      const answered = posted104(tp)
+      await row106(key).locator('form:has(input[name="intent"][value="save"]) button[type="submit"]').click()
+      await answered
+      await tp.waitForTimeout(500)
+      return look106(key)
+    }
+    const times106 = async () => {
+      await tp.goto(editorUrl(), { waitUntil: 'load' })
+      await tp.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+      await tp.waitForTimeout(600)
+      return tp.evaluate(() => [...(document.querySelector('section[aria-label="Canvas"] iframe')?.contentDocument?.querySelectorAll('.a17-1__time') ?? [])].map((e) => e.textContent.trim()))
+    }
+
+    // ── 106a — D6a's rail: SETTINGS, Theme settings in force, Translations; nothing of Ghost's on a project with no site ──
+    await open104(tp)
+    const railTheme106 = await rail106(tp)
+    check('step 106a — Theme settings carries D6a\'s rail: "SETTINGS", Theme settings (in force) and Translations, and no Ghost link on a project that links no site (Question 2, absent not greyed)',
+      railTheme106.heading === R106.heading && railTheme106.items.length === 2 &&
+      railTheme106.items[0]?.text === R106.theme && railTheme106.items[0]?.current === 'page' && (railTheme106.items[0]?.href ?? '').endsWith(ED104.settingsPath(P)) &&
+      railTheme106.items[1]?.text === R106.translations && railTheme106.items[1]?.current === null && (railTheme106.items[1]?.href ?? '').endsWith(ED104.translationsPath(P)), JSON.stringify(railTheme106))
+    await tp.locator('nav[data-settings-rail] a').filter({ hasText: R106.translations }).click()
+    const moved106 = await tp.waitForURL((u) => u.pathname.endsWith(ED104.translationsPath(P)), { timeout: 15000 }).then(() => true, () => false)
+    await tp.locator('section[data-translations]').waitFor({ state: 'visible', timeout: 20000 })
+    const railTr106 = await rail106(tp)
+    check('step 106a — pressed, Translations opens under the same rail with Translations in force', moved106 && railTr106.items[1]?.current === 'page' && railTr106.items[0]?.current === null, JSON.stringify(railTr106))
+
+    // ── 106b — B18's header and columns, every listed key in catalog order, and no credit.* key ──
+    await open106(tp)
+    const keys106 = LIB.translatableKeys()
+    const b18 = await tp.evaluate(() => {
+      const s = document.querySelector('section[data-translations]')
+      const rows = [...s.querySelectorAll('li[data-key]')]
+      const first = rows[0]?.querySelector('input[name="value"]')
+      return {
+        title: document.getElementById('translations-title')?.textContent ?? null,
+        header: s.querySelector('h2')?.parentElement?.innerText.replace(/\s+/g, ' ') ?? null,
+        scope: s.querySelector('[data-scope]')?.textContent ?? null,
+        button: { name: document.querySelector('#language span')?.textContent ?? null, code: document.querySelector('#language .font-mono')?.textContent ?? null },
+        heads: [...s.querySelectorAll('[data-columns] > span')].map((e) => e.textContent),
+        keys: rows.map((li) => li.dataset.key),
+        mono: rows[0] ? getComputedStyle(rows[0].firstElementChild).fontFamily : null,
+        grounds: rows.slice(0, 2).map((li) => getComputedStyle(li).backgroundColor),
+        placeholder: first?.getAttribute('placeholder') ?? null,
+        italic: first ? getComputedStyle(first, '::placeholder').fontStyle : null,
+        live: [...s.querySelectorAll('input, button')].filter((e) => !e.matches(':disabled')).length,
+        untouched: s.querySelectorAll('[data-untouched]').length,
+      }
+    })
+    check('step 106b — B18\'s header: "Translations", its sentence verbatim with locales/ in mono, the scope sentence naming Portal, comments and search, and the language button reading English with its mono code',
+      b18.title === W106.title && (b18.header ?? '').includes(`${W106.lead} ${W106.folder}.`) && b18.scope === W106.scope && /Portal/.test(b18.scope ?? '') && /comments/.test(b18.scope ?? '') && /search/.test(b18.scope ?? '') &&
+      b18.button.name === TR106.ownName('en') && b18.button.code === 'en', JSON.stringify({ title: b18.title, header: b18.header, scope: b18.scope, button: b18.button }))
+    check('step 106b — KEY · ENGLISH DEFAULT · ENGLISH; one row per translatableKeys() key in catalog order, no credit.* key, mono keys on alternating grounds, and an empty row says "Uses the default" in italic on an English project; no starting-words list in English',
+      JSON.stringify(b18.heads) === JSON.stringify([W106.key, W106.english, TR106.ownName('en').toUpperCase()]) && JSON.stringify(b18.keys) === JSON.stringify(keys106) &&
+      !b18.keys.some((k) => k.startsWith('credit.')) && /mono/i.test(b18.mono ?? '') && b18.grounds[0] !== b18.grounds[1] && b18.placeholder === W106.usesDefault && b18.italic === 'italic' && b18.untouched === 0,
+      JSON.stringify({ heads: b18.heads, rows: b18.keys.length, expected: keys106.length, mono: b18.mono, grounds: b18.grounds, placeholder: b18.placeholder, italic: b18.italic, untouched: b18.untouched }))
+    // Español from the menu: it saves at once (no override is stored), and the column takes its own name
+    const answeredEs106 = posted104(tp)
+    await choose106(tp, 'es')
+    await answeredEs106
+    const es106 = await until104(tp, () => column106(tp), (v) => v === TR106.ownName('es').toUpperCase())
+    const esRow106 = await look106('nav.more')
+    check('step 106b — Español chosen: stored exactly as "es", the column reads ESPAÑOL and an empty row "Falls back to English"',
+      (await lang106())?.language === 'es' && es106 === 'ESPAÑOL' && esRow106.placeholder === W106.fallsBack, JSON.stringify({ es106, esRow106, project: await lang106() }))
+    // Question 1, ruled option 1: on a non-English project, the sections whose own words were never retyped, derived from the stored docs
+    const docs106 = Object.fromEntries(((await call('/rest/v1', `/project_templates?project_id=eq.${P}&select=template_key,doc`)).body ?? []).map((r) => [r.template_key, parseDoc(r.doc, r.template_key)]))
+    const words106 = RT104.untouchedWords(docs106, (id) => pilot(id))
+    const shown106 = await tp.locator('[data-untouched-row]').evaluateAll((els) => els.map((e) => ({ id: e.getAttribute('data-untouched-row'), text: e.innerText.replace(/\s+/g, ' '), edit: e.querySelector('a')?.getAttribute('href') ?? null })))
+    check('step 106b — Question 1: "Starting words you haven\'t retyped" lists exactly the stored sections untouchedWords names, each with its quoted words and an Edit link to its canvas — Three Up on Home among them',
+      words106.length > 0 && shown106.length === words106.length && words106.every((w) => shown106.some((s) => s.id === `${w.key}:${w.instanceId}` && s.text.includes(W106.quoted(w.words)) && !!s.edit)) &&
+      shown106.some((s) => s.text.startsWith(W106.untouchedOn('Three Up', 'Home'))) && (await tp.locator('[data-untouched]').innerText()).includes(W106.untouchedTitle),
+      JSON.stringify({ expected: words106.map((w) => `${w.key}:${w.instanceId}`), shown106 }))
+
+    // ── 106c — an override saved, and seen on the canvas through the shim ──
+    const before106c = await times106()
+    await open106(tp)
+    const saved106c = await save106('post.reading_time', '{minutes} min de lectura')
+    const after106c = await times106()
+    check('step 106c — "{minutes} min de lectura" saved on post.reading_time: upserted as typed, the row keeps it with Use the default under it, and Three Up\'s reading times read "… min de lectura" where they read "… min read" before (the control)',
+      before106c.length > 0 && before106c.every((t) => t.endsWith('min read')) && (await stored106('post.reading_time')) === '{minutes} min de lectura' && !saved106c.refused && saved106c.reset &&
+      after106c.length === before106c.length && after106c.every((t) => t.endsWith('min de lectura')), JSON.stringify({ before106c, after106c, saved106c }))
+
+    // ── 106d — every refusal sentence, each behind its legitimate twin saved first and still stored after ──
+    await open106(tp)
+    const CASES106 = [
+      ['nav.more', 'Más', 'Más {{'],
+      ['post.reading_time', '{minutes} min', '{{minutes}} min'],
+      ['post.reading_time', '{minutes} min de lectura', 'min de lectura'],
+      ['post.reading_time', '{minutes} min de lectura', '{mins} min'],
+      ['nav.more', "It's here", "It''s here"],
+      ['post.reading_time', "It's {minutes} min", "'{minutes}' min"],
+      ['nav.more', 'Mehr', 'Mehr\u0007'],
+      ['nav.more', 'a'.repeat(OV106.OVERRIDE_MAX), 'a'.repeat(OV106.OVERRIDE_MAX + 1)],
+      ['archive.posts_many', '% Beiträge', '% <b>posts</b>'],
+      ['archive.posts_many', '% Beiträge', '% posts & more'],
+      ['archive.posts_many', '% Beiträge', 'posts'],
+      ['nav.more', 'Mehr', '   '],
+    ]
+    for (const [key, twin, value] of CASES106) {
+      const sentence = OV106.overrideRefusal(key, value)
+      const twinSaved = await save106(key, twin)
+      const twinStored = await stored106(key)
+      const refused = await save106(key, value)
+      const still = await stored106(key)
+      check(`step 106d — ${key} = ${JSON.stringify(value.length > 40 ? `${value.slice(0, 12)}…(${value.length})` : value)}: refused with the judge's own sentence in B18's refused look, nothing stored — behind ${JSON.stringify(twin.length > 40 ? `${twin.slice(0, 12)}…(${twin.length})` : twin)}, accepted and still stored (the control)`,
+        OV106.overrideRefusal(key, twin) === null && !twinSaved.refused && twinStored === twin &&
+        sentence !== null && refused.refused && refused.said === sentence && refused.value === value && still === twin &&
+        refused.bg === 'rgb(253, 236, 236)' && refused.keyInk === 'rgb(142, 44, 48)' && refused.border === 'rgb(196, 56, 60)',
+        JSON.stringify({ sentence, said: refused.said, twinStored, still, look: { bg: refused.bg, keyInk: refused.keyInk, border: refused.border } }))
+    }
+    check('step 106d — the matrix\'s brace sentence, word for word', OV106.overrideRefusal('nav.more', 'Más {{') === 'The “{” in “Más {{” would break every page that shows it — braces mark a placeholder, and this label has none.', OV106.overrideRefusal('nav.more', 'Más {{'))
+    // crafted posts: A's own nav.more save captured as it leaves, then replayed — under B's session, and under A's with a
+    // locked key, a retired-or-unknown key; A's own replay with new words lands (the control)
+    const ROUTE106 = (u) => u.pathname.endsWith('/translations')
+    let caught106 = null
+    const passing106 = async (route) => {
+      const r = route.request()
+      if (isAction104(r) && caught106 === null) caught106 = { url: r.url(), headers: r.headers(), body: r.postDataBuffer() }
+      await route.continue()
+    }
+    await tp.route(ROUTE106, passing106)
+    await save106('nav.more', 'Mehr')
+    await tp.unroute(ROUTE106, passing106)
+    const replay106 = async (ctx, swap) => {
+      const headers = Object.fromEntries(Object.entries(caught106.headers).filter(([k]) => !/^(cookie|content-length|host)$/i.test(k)))
+      const body = Buffer.from(swap(caught106.body.toString('latin1')), 'latin1')
+      const r = await ctx.request.post(caught106.url, { headers: { ...headers, origin: new URL(caught106.url).origin }, data: body, maxRedirects: 0 })
+      return (await r.body()).toString('utf8')
+    }
+    const b106Context = await browser.newContext()
+    await (await b106Context.newPage()).goto(await magic(emailB), { waitUntil: 'load' })
+    const asB106 = await replay106(b106Context, (s) => s.replace('Mehr', 'Mehr B'))
+    const afterB106 = await stored106('nav.more')
+    const credit106 = await replay106(tContext, (s) => s.replace('nav.more', 'credit.built_with'))
+    const unknown106 = await replay106(tContext, (s) => s.replace('nav.more', 'no.such'))
+    const asA106 = await replay106(tContext, (s) => s.replace('Mehr', 'Mehr A'))
+    const rows106d = await overrides106()
+    await b106Context.close()
+    check('step 106d — crafted posts answer "We couldn\'t save that just now." and store nothing: A\'s save replayed under B (RLS), a credit.* key, an unknown key; A\'s own replay with new words lands (the control)',
+      !!caught106 && asB106.includes(OV106.OVERRIDE_WORDS.unsaved) && afterB106 === 'Mehr' && credit106.includes(OV106.OVERRIDE_WORDS.unsaved) && unknown106.includes(OV106.OVERRIDE_WORDS.unsaved) &&
+      !asA106.includes(OV106.OVERRIDE_WORDS.unsaved) && rows106d.find((r) => r.catalog_key === 'nav.more')?.value === 'Mehr A' && !rows106d.some((r) => r.catalog_key.startsWith('credit.') || r.catalog_key === 'no.such'),
+      JSON.stringify({ caught: !!caught106, afterB106, rows: rows106d.map((r) => r.catalog_key) }))
+
+    // ── 106e — Use the default: the row deleted, the field empty to "Falls back to English", the canvas English again ──
+    await open106(tp)
+    await save106('post.reading_time', '{minutes} min de lectura')
+    const reset106 = posted104(tp)
+    await row106('post.reading_time').locator('form:has(input[name="intent"][value="reset"]) button[type="submit"]').click()
+    await reset106
+    await tp.waitForTimeout(500)
+    const reseted106 = await look106('post.reading_time')
+    const back106 = await times106()
+    check('step 106e — Use the default deletes the row; the field empties to "Falls back to English" with no Use the default; the canvas reads "… min read" again',
+      (await stored106('post.reading_time')) === null && reseted106.value === '' && reseted106.placeholder === W106.fallsBack && !reseted106.reset && back106.length > 0 && back106.every((t) => t.endsWith('min read')),
+      JSON.stringify({ reseted106, back106 }))
+
+    // ── 106f — a switch over stored overrides asks first, naming both languages, on Cancel; Cancel keeps es; Switch keeps them ──
+    await open106(tp)
+    await save106('post.reading_time', '{minutes} min')
+    await choose106(tp, 'de')
+    const ask106 = await tp.evaluate(() => {
+      const d = document.querySelector('dialog[aria-labelledby="switch-title"]')
+      return d && { open: d.open, title: document.getElementById('switch-title')?.textContent ?? null, body: document.getElementById('switch-body')?.textContent ?? null, focus: document.activeElement?.textContent?.trim() ?? null }
+    })
+    await tp.locator('dialog[aria-labelledby="switch-title"]').getByRole('button', { name: W106.cancel, exact: true }).click()
+    await tp.waitForTimeout(300)
+    const cancelled106 = { project: (await lang106())?.language, button: await tp.locator('#language').getAttribute('data-language'), open: await tp.locator('dialog[aria-labelledby="switch-title"]').evaluate((d) => d.open) }
+    check('step 106f — Deutsch over stored overrides asks "Switch to Deutsch?" and "The labels you translated were written in Español. They stay, and ship in the Deutsch file until you change them.", focus on Cancel; Cancel keeps es',
+      ask106?.open === true && ask106.title === W106.switchTitle('Deutsch') && ask106.body === W106.switchBody('Deutsch', 'Español') && ask106.focus === W106.cancel &&
+      cancelled106.project === 'es' && cancelled106.button === 'es' && cancelled106.open === false, JSON.stringify({ ask106, cancelled106 }))
+    await choose106(tp, 'de')
+    const switched106 = posted104(tp)
+    await tp.locator('dialog[aria-labelledby="switch-title"]').getByRole('button', { name: W106.switch, exact: true }).click()
+    await switched106
+    const de106 = await until104(tp, () => column106(tp), (v) => v === 'DEUTSCH')
+    check('step 106f — Switch stores de and keeps the overrides, to ship in the Deutsch file; the column reads DEUTSCH and no font caption shows (Latin)',
+      (await lang106())?.language === 'de' && (await stored106('post.reading_time')) === '{minutes} min' && de106 === 'DEUTSCH' && (await tp.locator('[data-coverage]').count()) === 0, JSON.stringify({ de106, project: await lang106() }))
+
+    // ── 106g — Arabic: the marigold block with Understood, nothing saved, the button on the stored language; Understood saves both ──
+    await wipe106()
+    await open106(tp)
+    await choose106(tp, 'ar')
+    const rtl106 = await tp.evaluate(() => ({
+      block: document.querySelector('[data-rtl]')?.innerText.replace(/\s+/g, ' ') ?? null,
+      button: document.getElementById('language')?.getAttribute('data-language') ?? null,
+      captions: [...document.querySelectorAll('[data-coverage] span')].map((e) => e.textContent),
+    }))
+    check('step 106g — العربية chosen: the marigold block "Right-to-left languages are not supported yet" with B18\'s first two sentences and Understood; nothing saved and the button still on Deutsch; the Arabic font caption already shows, before any save',
+      (rtl106.block ?? '').includes(W106.rtlTitle) && (rtl106.block ?? '').includes(W106.rtlBody) && (rtl106.block ?? '').includes(W106.understood) && rtl106.button === 'de' &&
+      (await lang106())?.language === 'de' && JSON.stringify(rtl106.captions) === JSON.stringify(captions106('ar')) && rtl106.captions.length > 0, JSON.stringify({ rtl106, expected: captions106('ar') }))
+    const understood106 = posted104(tp)
+    await tp.locator('[data-rtl] button[type="submit"]').click()
+    await understood106
+    await until104(tp, () => tp.locator('#language').getAttribute('data-language'), (v) => v === 'ar')
+    const acked106 = await lang106()
+    const ackLine106 = await tp.locator('[data-rtl] [data-acknowledged]').textContent().catch(() => null)
+    check('step 106g — Understood stores language "ar" and rtl_ack_at in one write; the block stays, its button replaced by "You acknowledged this on <date>."',
+      acked106?.language === 'ar' && typeof acked106?.rtl_ack_at === 'string' && ackLine106 === W106.acknowledged(acked106.rtl_ack_at) && (await tp.locator('[data-rtl] button').count()) === 0, JSON.stringify({ acked106, ackLine106 }))
+
+    // ── 106h — Cyrillic and Japanese: the coverage captions at the moment of choice, and the canvas wearing the same faces ──
+    const answeredRu106 = posted104(tp)
+    await choose106(tp, 'ru')
+    await answeredRu106
+    await until104(tp, () => column106(tp), (v) => v === TR106.ownName('ru').toUpperCase())
+    const ru106 = { project: await lang106(), captions: await tp.locator('[data-coverage] span').allTextContents(), rtl: await tp.locator('[data-rtl]').count() }
+    check('step 106h — Русский from Arabic: stored, rtl_ack_at cleared (leaving right-to-left asks again next time), no block, and the Cyrillic captions — each family\'s whole faces or the system font, as coverageOf says for Paper\'s pairing',
+      ru106.project?.language === 'ru' && ru106.project?.rtl_ack_at === null && ru106.rtl === 0 && ru106.captions.length > 0 && JSON.stringify(ru106.captions) === JSON.stringify(captions106('ru')),
+      JSON.stringify({ ru106, expected: captions106('ru') }))
+    await times106()
+    const faces106 = await tp.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe')?.contentDocument?.querySelector('style[data-order="1b-faces"]')?.textContent ?? null)
+    check('step 106h — the canvas wears the Cyrillic faces the theme ships: its 1b-faces are fontFaceCss over Paper\'s pairing for cyrillic, not the latin pair',
+      faces106 === FT106.fontFaceCss(pairing106, SP106.fontHref('canvas'), { script: 'cyrillic' }) && faces106 !== FT106.fontFaceCss(pairing106, SP106.fontHref('canvas')), (faces106 ?? '').slice(0, 160))
+    await open106(tp)
+    const answeredJa106 = posted104(tp)
+    await choose106(tp, 'ja')
+    await answeredJa106
+    await until104(tp, () => column106(tp), (v) => v === '日本語')
+    const ja106 = await tp.locator('[data-coverage] span').allTextContents()
+    check('step 106h — 日本語: one "doesn\'t cover Japanese" sentence per family of the pairing, every family on its latin pair',
+      (await lang106())?.language === 'ja' && ja106.length > 0 && JSON.stringify(ja106) === JSON.stringify(captions106('ja')) && ja106.every((c) => c.includes('doesn\'t cover Japanese')), JSON.stringify({ ja106, expected: captions106('ja') }))
+
+    // ── 106i — R-192: a second session holds the lock, and Translations in another tab reads along ──
+    await plant106('nav.more', 'Mehr')
+    await patchProject104({ language: 'ar', rtl_ack_at: null })
+    await handBack(tp)
+    const holder106 = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(holder106, csp106)
+    const hp106 = steady(await holder106.newPage())
+    await hp106.goto(await magic(emailA), { waitUntil: 'load' })
+    await hp106.goto(editorUrl(), { waitUntil: 'load' })
+    await hp106.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const holderSession106 = await hp106.evaluate(() => sessionStorage.getItem('inflozo-lock-session'))
+    const held106 = await until104(hp106, () => lockRead104(hp106), (r) => r?.holderSessionId === holderSession106)
+    const rd106 = steady(await tContext.newPage())
+    await rd106.goto(translations106, { waitUntil: 'load' })
+    await rd106.locator('section[data-translations]').waitFor({ state: 'visible', timeout: 20000 })
+    await rd106.waitForTimeout(1500)
+    const reading106 = await rd106.evaluate((reading) => {
+      const s = document.querySelector('section[data-translations]')
+      const controls = [...s.querySelectorAll('input:not([type="hidden"]), button')]
+      return {
+        banner: document.body.innerText.includes(reading), region: document.querySelector('[data-readonly]') !== null, controls: controls.length,
+        live: controls.filter((e) => !e.matches(':disabled')).map((e) => e.outerHTML.slice(0, 80)),
+        language: document.getElementById('language')?.matches(':disabled') ?? null,
+        understood: document.querySelector('[data-rtl] button')?.matches(':disabled') ?? null,
+        mehr: s.querySelector('li[data-key="nav.more"] input[name="value"]')?.value ?? null,
+        reset: s.querySelector('li[data-key="nav.more"] input[name="intent"][value="reset"]')?.form?.querySelector('button')?.matches(':disabled') ?? null,
+      }
+    }, LK104.LOCK_COPY.reading)
+    check('step 106i — R-192: with another session holding the lock, Translations says it is reading along and every field, Save, Use the default, the language button and Understood is disabled, the stored "Mehr" still readable (the editable page carried live controls — the control)',
+      held106?.holderSessionId === holderSession106 && reading106.banner && reading106.region && reading106.controls > 0 && reading106.live.length === 0 &&
+      reading106.language === true && reading106.understood === true && reading106.reset === true && reading106.mehr === 'Mehr' && b18.live > 0, JSON.stringify({ reading106, live: b18.live }))
+    await rd106.close()
+    await handBack(hp106)
+    await holder106.close()
+
+    // ── 106j — the deep links: on a linked project the rail opens Ghost's own three sections, and the site's own language is said ──
+    const SITE106 = { url: `https://walk-106-${stamp}.example.com`, title: 'Walk 106' }
+    const site106 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: ids[0], url: SITE106.url, title: SITE106.title, site_settings: { locale: 'en' } }) })
+    const siteId106 = site106.body?.[0]?.id
+    await wipe106()
+    await patchProject104({ linked_site_id: siteId106, language: 'es', rtl_ack_at: null })
+    await open104(tp)
+    const linked106 = await rail106(tp)
+    const ghost106 = [[R106.navigation, 'navigation'], [R106.social, 'social-accounts'], [R106.injection, 'code-injection']]
+    check('step 106j — on a linked project the rail adds Navigation ↗, Social accounts ↗ and Code injection ↗, each opening that section of the site\'s own Ghost settings in a new tab (Question 2, ruled option 1)',
+      site106.status === 201 && linked106.items.length === 5 &&
+      ghost106.every(([text, navid], n) => linked106.items[n + 2]?.text === text && linked106.items[n + 2]?.href === PW106.adminAt(SITE106.url, navid) && linked106.items[n + 2]?.target === '_blank'), JSON.stringify(linked106))
+    await open106(tp)
+    const mismatch106 = await tp.locator('[data-mismatch]').evaluate((m) => ({ text: m.innerText.replace(/\s+/g, ' '), href: m.querySelector('a')?.getAttribute('href') ?? null, target: m.querySelector('a')?.getAttribute('target') ?? null })).catch(() => null)
+    await call('/rest/v1', `/sites?id=eq.${siteId106}`, { method: 'PATCH', body: JSON.stringify({ site_settings: { locale: 'es' } }) })
+    await open106(tp)
+    const agrees106 = await tp.locator('[data-mismatch]').count()
+    check('step 106j — the site\'s own language differs (en against es): "Your Ghost site\'s language is en, so visitors see the English wording, not these." and "Change it to es in Ghost ↗" to its Publication Language; with the site on es, no notice (the control)',
+      (mismatch106?.text ?? '').includes(W106.mismatch('en')) && (mismatch106?.text ?? '').includes(W106.changeIn('es')) && mismatch106?.href === PW106.adminAt(SITE106.url, 'publication-language') && mismatch106?.target === '_blank' && agrees106 === 0,
+      JSON.stringify({ mismatch106, agrees106 }))
+    await patchProject104({ linked_site_id: null })
+    const siteGone106 = await call('/rest/v1', `/sites?id=eq.${siteId106}`, { method: 'DELETE' })
+
+    // the project as this block found it — later steps inherit it
+    await handBack(tp)
+    await tContext.close()
+    await wipe106()
+    await patchProject104({ language: 'en', rtl_ack_at: null, linked_site_id: null })
+    const end106 = { overrides: (await overrides106()).length, project: await lang106(), site: (await call('/rest/v1', `/sites?id=eq.${siteId106}&select=id`)).body?.length ?? null }
+    check('step 106 — the project is handed back as the seed made it: English, no acknowledgement, no override, no linked site, the throwaway site deleted — and every context of the block recorded zero CSP violations',
+      end106.overrides === 0 && end106.project?.language === 'en' && end106.project?.rtl_ack_at === null && end106.project?.linked_site_id === null && end106.site === 0 &&
+      (siteGone106.status === 200 || siteGone106.status === 204) && csp106.length === 0, JSON.stringify({ end106, csp106: csp106.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

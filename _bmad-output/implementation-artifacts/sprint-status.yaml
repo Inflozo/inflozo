@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 2026-10-14
+last_updated: 2026-10-15
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -140,7 +140,7 @@ development_status:
   7-9-theme-settings-and-the-custom-settings-builder: done
   7-10-promoting-a-control-to-a-ghost-admin-setting: done
   7-11-the-three-dark-built-ins-always-declared-and-always-referenc: done
-  7-12-the-translations-surface-locales-emission-and-override-valid: ready-for-dev
+  7-12-the-translations-surface-locales-emission-and-override-valid: in-progress
   7-13-the-ghost-card-design-module-and-cards-css: backlog
   7-14-treatment-selection-from-theme-settings: backlog
   7-15-share-destinations-one-ordered-site-wide-list: backlog

@@ -49,13 +49,17 @@ export type PoolFace = {
   capHeight: number
   tnum: boolean
   files: PoolFile[]
+  /** Story 7.12 — the whole face (§D.b: the same instance, no glyph subset), only where the family's upstream `subsets`
+   *  lists a script beyond latin; shipped in place of `files` for a language in a script the family covers */
+  full?: { file: string; bytes: number; sha256: string }
 }
 export type PoolRole = { family: string; type: 'V' | 'S'; range?: number[]; italic?: number[]; weights?: string[]; faces: string[] }
 export type Pairing = { id: string; name: string; heading: PoolRole; body: PoolRole }
 export type Pool = {
   source: { repository: string; commit: string }
   subsets: Record<string, string>
-  families: Record<string, { slug: string; fallback: string; licence: string; licenceFile: string; upstream: string }>
+  /** `subsets`: google/fonts' `METADATA.pb` list, in its order — the family's own declaration of the scripts it covers */
+  families: Record<string, { slug: string; fallback: string; licence: string; licenceFile: string; upstream: string; subsets: string[] }>
   faces: Record<string, PoolFace>
   pairings: Pairing[]
 }

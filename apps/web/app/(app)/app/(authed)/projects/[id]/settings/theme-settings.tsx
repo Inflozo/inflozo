@@ -56,8 +56,9 @@ import {
    for, with its way into Ghost (Question 3, ruled option 1). `compileTheme` writes `config.custom` with the lines that read
    each key; nothing deploys before Story 7.18.
 
-   STILL ABSENT, each a later story's (R-118: absent, not greyed): D6a's left rail (Story 7.12 gives the page a second
-   surface), and Credits and D6b's Free row (Story 7.28).
+   D6a's LEFT RAIL is Story 7.12's `settings/layout.tsx`, drawn above this page and Translations, its second.
+
+   STILL ABSENT, a later story's (R-118: absent, not greyed): Credits and D6b's Free row (Story 7.28).
 
    READING ALONG (R-192): while another session holds the project's lock, the whole page is the Kit's `ReadOnly` — every
    editing control disabled and dimmed as B5a dims the editor's panel, every value readable, and LOCK_COPY's one sentence
