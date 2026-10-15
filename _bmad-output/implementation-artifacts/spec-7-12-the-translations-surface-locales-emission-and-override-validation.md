@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-10-15'
 status: 'in-review'
 baseline_commit: 'c065752d40f93cfd5a85a82df47c54c870cf7f31'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -594,3 +594,5 @@ that library it would show `{minutes} Min. Lesezeit`.
   `https://app.inflozo.com/sign-in` — the address is live. Nothing was written to any database or Ghost site at Deploy;
   T1 was not touched.
 - The owner's test above already carries the live URLs on `app.inflozo.com`. `owner_test` stays `pending`.
+
+**Owner's test (2026-10-15).** The owner walked the manual test on the deployed site and reported: "passed". `owner_test: passed`; the story is Done on the owner's word (R-80).
