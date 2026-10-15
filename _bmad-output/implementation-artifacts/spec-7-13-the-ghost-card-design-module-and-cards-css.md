@@ -2,7 +2,8 @@
 title: 'Story 7.13 — The Ghost card design module and cards.css'
 type: 'feature'
 created: '2026-10-15'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '308898a3592c553f8192ac99cdd6f3ef1c32ee47'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -200,7 +201,7 @@ treatments and their read-only block are Epic 10's (R-118).
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `supabase/migrations/20261016120000_card_designs.sql` + `SCHEMA.sql` -- the drop and the widened RPC, re-runnable,
+- [x] `supabase/migrations/20261016120000_card_designs.sql` + `SCHEMA.sql` -- the drop and the widened RPC, re-runnable,
   comments outside the body. Pushed ALONE as `Story 7.13 - Schema - …` (R-99) after the RLS gate passes. Then ask the
   owner in-session and apply through the pooler (or his paste), and read back. -- the database is never older than the code.
 - [ ] `packages/library/src/cards.ts` + `cards.test.ts` -- the registry exactly as Design Notes' table, the parser, `cardsCss`
@@ -559,7 +560,60 @@ nothing to set. With option 2 this story stops until Claude Design draws its pan
 
 **Ruled: option 1 (owner, 2026-10-15).**
 
+### Question 4 — May this story's database change go on the live database now? (R-99)
+
+**In plain English.** The editor's save needs to learn to store card designs, and an unused paywall column goes. The
+change is written and passes every check on a copy of the database; with it left out, the check fails exactly where it
+should. Nothing on the live database had changed when this was asked.
+
+**Example.** Today, saving in the editor stores your pages and Style Pack; after this, the same save can also store
+"Callout: emoji hidden". Nothing you have saved changes, and the live editor keeps working before and after.
+
+1. **Go.** I apply it through the database connection and read it back. **(RECOMMENDED)**
+2. **I'll paste it into Supabase's SQL editor myself.**
+3. **Stop the story here.**
+
+**Ruled: option 1 (owner, 2026-10-15).** *"1. Go"*, asked in the Dev session before any production call. Applied
+through `SUPABASE_DB_POOLER_URL` in this session, read back and proved on production before any code (`## Verification`).
+
+### Question 5 — May this Dev run write to the Ghost test site T1? (R-82, R-238)
+
+**In plain English.** §81 uploads a test theme with a designed callout, toggle and gallery to T1, checks in a real
+browser that the toggle opens and the gallery lays out from the theme's own files, then puts Casper back and checks it.
+
+**Example.** For a few minutes T1's live theme is Inflozo's test theme instead of Casper; afterwards Casper is active
+again exactly as before.
+
+1. **Go** — upload, check, restore Casper. **(RECOMMENDED)**
+2. **Skip T1 in Dev**; run it at Review instead.
+3. **Stop the story here.**
+
+**Ruled: option 1 (owner, 2026-10-15).** *"1. Go"*, asked in the Dev session before any T1 write; the writes run in the
+main session, never a subagent.
+
 ## Verification
+
+**Executed — Schema phase (2026-10-15), before any code:**
+- `bash supabase/tests/run-rls-gate.sh` -- exit 0: no SCHEMA DRIFT, every earlier block still passing (6.4's width check
+  now reads `widest < 5`), and Story 7.13's ten PASS lines — one six-argument `sync_project_doc`, `paywall_design_id`
+  dropped, a cards-only call writing `card_designs` as the caller with one revision, a second call replacing the record
+  whole and keeping `card_treatment_id`, docs + preset + packs + cards in one call, a stale base writing none of them,
+  the five-, four- and three-argument calls leaving `card_designs` byte-equal, a non-object `p_cards` (string, array,
+  JSON null) answering null and writing nothing, another tenant's project answering null with its record kept, anon
+  42501.
+- Control: the same gate over a copy of `supabase/` without `20261016120000_card_designs.sql` and HEAD's `SCHEMA.sql`
+  (`INFLOZO_ARCH_DIR`) -- exit 3 at the 7.13 block ("1 sync_project_doc functions exist, the widest taking 5
+  arguments"), with 6.4's and 7.9's blocks passing first.
+- Supabase production, through `SUPABASE_DB_POOLER_URL` (read inside the script, never on argv), on the owner's go
+  (Question 4): before — one `sync_project_doc(p_project, p_docs, p_base, p_preset, p_packs)` and `project_treatments`
+  with `paywall_design_id` and 0 rows (none set); applied in one transaction; after — one function taking
+  `…, p_packs jsonb, p_cards jsonb`, its `prosrc` byte-identical to the migration's body, execute granted to
+  `authenticated` (and `postgres`) only, `project_treatments` columns `project_id, user_id, card_treatment_id,
+  pagination_design_id, card_designs, updated_at`.
+- Supabase production through PostgREST (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`) as a
+  throwaway user (generate_link + verifyOtp): the deployed three- and five-name calls applied and made no
+  `project_treatments` row; a `p_cards` call applied with one revision and read back as written, owned by the caller; a
+  stale base answered `applied: false` and kept it; anon 401 / 42501; user count 14 → 14 after the delete.
 
 **Commands:**
 - `bash supabase/tests/run-rls-gate.sh` -- expected: passes, no SCHEMA DRIFT, before the Schema push.

@@ -730,11 +730,14 @@ create index on public.notifications (created_at)
 create table public.project_treatments (
   project_id        uuid primary key references public.projects(id) on delete cascade,
   user_id           uuid not null references auth.users(id) on delete cascade,
-  paywall_design_id    text,   -- A32, one active per project (FR-H6's Paywall editor)
+  -- A32's paywall is the `paywall` doc in project_templates since Story 5.20; its `paywall_design_id`
+  -- had no reader and no writer and was dropped by Story 7.13's Schema phase (DW-267).
   card_treatment_id    text,   -- A33, one active per project (FR-Q7 / FR-Q9)
   pagination_design_id text,   -- A34, one active per project (FR-H2 / FR-Q9)
-  -- FR-Q7: per-Koenig-card control values. Keys are Ghost's own card names; the compiler derives
-  -- package.json's card_assets.exclude from exactly the keys present here.
+  -- FR-Q7: per-Koenig-card control values, written by sync_project_doc's `p_cards` (Story 7.13). Keys are
+  -- the card registry's keys (`@inflozo/library`'s `CARDS`), each holding only the controls whose value
+  -- differs from the card's start; `parseCardDesigns` is its one schema (AD-36). The compiler derives
+  -- package.json's card_assets.exclude from the Ghost chunk names of exactly the cards present here.
   card_designs      jsonb not null default '{}'::jsonb,
   updated_at        timestamptz not null default now()
 );
@@ -1757,10 +1760,19 @@ grant  execute on function public.restore_account() to authenticated;
 -- nothing, as a non-object `p_docs` does; the route validates every record before the call (AD-36). The
 -- four-argument function is gone for the same reason the three-argument one went.
 --
+-- STORY 7.13 — THE SAVE CARRIES THE PROJECT'S CARD DESIGNS. A card value change and a card reset are each one
+-- edit (FR-Q7, FR-D9, §AD1), so `p_cards` — the WHOLE `card_designs` record, defaulting to null — is upserted
+-- into the project's one `project_treatments` row in the same compare-and-set, leaving its other columns
+-- alone. `updated_at` is set in the upsert because `project_treatments` has no `_touch` trigger. A `p_cards`
+-- that is not an object answers null and writes nothing, as a non-object `p_packs` does; the route validates
+-- the record with `parseCardDesigns` before the call (AD-36). The five-argument function is gone for the
+-- same reason the three- and four-argument ones went.
+--
 -- Mirrors `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql`,
--- `20261004120000_sync_style_pack_preset.sql` and `20261004200000_sync_style_pack_packs.sql`; the RLS
--- gate diffs the database the migrations build against the one this file builds, so the two move together.
-create or replace function public.sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text default null, p_packs jsonb default null)
+-- `20261004120000_sync_style_pack_preset.sql`, `20261004200000_sync_style_pack_packs.sql` and
+-- `20261016120000_card_designs.sql`; the RLS gate diffs the database the migrations build against the one
+-- this file builds, so the two move together.
+create or replace function public.sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text default null, p_packs jsonb default null, p_cards jsonb default null)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
@@ -1769,7 +1781,8 @@ declare
   k text;
 begin
   if owner_id is null or p_docs is null or jsonb_typeof(p_docs) <> 'object'
-     or (p_packs is not null and jsonb_typeof(p_packs) <> 'object') then
+     or (p_packs is not null and jsonb_typeof(p_packs) <> 'object')
+     or (p_cards is not null and jsonb_typeof(p_cards) <> 'object') then
     return null;
   end if;
 
@@ -1792,6 +1805,12 @@ begin
     on conflict (project_id, template_key) do update set doc = excluded.doc;
   end loop;
 
+  if p_cards is not null then
+    insert into public.project_treatments(project_id, user_id, card_designs)
+      values (p_project, owner_id, p_cards)
+    on conflict (project_id) do update set card_designs = excluded.card_designs, updated_at = now();
+  end if;
+
   update public.projects
      set revision = current_rev + 1,
          style_pack = case
@@ -1809,8 +1828,8 @@ end $$;
 -- reachable without a session — `auth.uid()` is null for anon and the body returns null on the first
 -- line — but "returns null" is not the same as "cannot be called", and RLS-TEST.sql asserts the second
 -- (42501) rather than the first.
-revoke execute on function public.sync_project_doc(uuid, jsonb, bigint, text, jsonb) from public, anon;
-grant  execute on function public.sync_project_doc(uuid, jsonb, bigint, text, jsonb) to authenticated;
+revoke execute on function public.sync_project_doc(uuid, jsonb, bigint, text, jsonb, jsonb) from public, anon;
+grant  execute on function public.sync_project_doc(uuid, jsonb, bigint, text, jsonb, jsonb) to authenticated;
 
 -- ============================================================================
 -- 15. Story 5.24b — R-223: a ticket whose sign-in session has ended is refused at once

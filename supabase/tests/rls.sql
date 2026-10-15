@@ -1976,7 +1976,9 @@ declare n int; widest int;
 begin
   select count(*), max(p.pronargs) into n, widest from pg_proc p join pg_namespace s on s.oid = p.pronamespace
    where s.nspname = 'public' and p.proname = 'sync_project_doc';
-  if n <> 1 or widest <> 5 then
+  -- `widest < 5`, not `<> 5`: Story 7.13 widens the one function to six arguments (p_cards), and its own block
+  -- below asserts that width.
+  if n <> 1 or widest < 5 then
     raise exception 'FAIL (6.4): % sync_project_doc functions exist, the widest taking % arguments — the four-argument one must be replaced by the one taking p_packs', n, widest;
   end if;
   raise notice 'PASS (6.4): exactly one sync_project_doc exists, and it takes p_packs';
@@ -2252,3 +2254,203 @@ reset role;
 
 delete from auth.users where id in ('77777777-7900-0000-0000-000000000001',
                                     '77777777-7900-0000-0000-000000000002');
+
+-- ── STORY 7.13 — the save carries the project's card designs, in the same compare-and-set ─────────────────
+--
+-- BEHAVIOURAL, for 5.8's reason. `sync_project_doc()` gains `p_cards` (default null) and upserts it WHOLE into the
+-- project's one `project_treatments.card_designs` in the transaction that moves the revision. So: a cards-only call
+-- applies, moves the revision once and creates the row as the caller; a second replaces the record whole and keeps
+-- the row's other columns; docs, a preset, packs and cards land in one call; a stale base writes none of them; a null
+-- `p_cards` — every call the code deployed before this story makes — leaves `card_designs` byte-equal; a `p_cards`
+-- that is not an object answers null and writes nothing; another tenant's project answers null and keeps its record;
+-- anon cannot call it; the five-argument function is GONE; and `paywall_design_id` is dropped (DW-267).
+
+reset role;
+
+delete from auth.users where id in ('77777777-7130-0000-0000-000000000001',
+                                    '77777777-7130-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-7130-0000-0000-000000000001'),
+                                  ('77777777-7130-0000-0000-000000000002');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-7130-0000-0000-000000000001','77777777-7130-0000-0000-000000000001','Own cards','own-cards-713',
+   '{"preset":"paper"}');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('dddddddd-7130-0000-0000-000000000002','77777777-7130-0000-0000-000000000002','Theirs','theirs-713','{}');
+insert into public.project_treatments(project_id,user_id,card_designs) values
+  ('dddddddd-7130-0000-0000-000000000002','77777777-7130-0000-0000-000000000002','{"toggle":{"chevron":"left"}}');
+
+do $$
+declare n int; widest int;
+begin
+  select count(*), max(p.pronargs) into n, widest from pg_proc p join pg_namespace s on s.oid = p.pronamespace
+   where s.nspname = 'public' and p.proname = 'sync_project_doc';
+  if n <> 1 or widest <> 6 then
+    raise exception 'FAIL (7.13): % sync_project_doc functions exist, the widest taking % arguments — the five-argument one must be replaced by the one taking p_cards', n, widest;
+  end if;
+  raise notice 'PASS (7.13): exactly one sync_project_doc exists, and it takes p_cards';
+  if exists (select 1 from information_schema.columns
+              where table_schema = 'public' and table_name = 'project_treatments' and column_name = 'paywall_design_id') then
+    raise exception 'FAIL (7.13): project_treatments.paywall_design_id still exists (DW-267)';
+  end if;
+  raise notice 'PASS (7.13): project_treatments.paywall_design_id is dropped';
+end $$;
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7130-0000-0000-000000000001';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-7130-0000-0000-000000000001';
+  one jsonb = '{"callout":{"emoji":"hidden"}}'::jsonb;
+  two jsonb = '{"bookmark":{"thumbnailSide":"left"}}'::jsonb;
+  answer jsonb; rev bigint; now_rev bigint; cards jsonb; owner uuid; pack jsonb; stored jsonb; before text;
+begin
+  -- (1) cards with no doc, no preset and no packs is a write: applied, the revision moved once, the row made as the caller.
+  select revision into rev from public.projects where id = c_proj;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, null, one);
+  if (answer->>'applied')::boolean is not true or (answer->>'revision')::bigint <> rev + 1 then
+    raise exception 'FAIL (7.13): a cards-only call answered % on base %', answer, rev;
+  end if;
+  select t.card_designs, t.user_id into cards, owner from public.project_treatments t where t.project_id = c_proj;
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  if cards is distinct from one or owner <> '77777777-7130-0000-0000-000000000001' or now_rev <> rev + 1
+     or pack is distinct from '{"preset":"paper"}'::jsonb then
+    raise exception 'FAIL (7.13): a cards-only call left card_designs % (user %), style_pack %, revision %', cards, owner, pack, now_rev;
+  end if;
+  raise notice 'PASS (7.13): a cards-only call writes card_designs as the caller, moves the revision once and keeps style_pack';
+end $$;
+
+-- (2) a second call REPLACES the record whole and keeps the row's other columns.
+reset role;
+update public.project_treatments set card_treatment_id = 'plain' where project_id = 'cccccccc-7130-0000-0000-000000000001';
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7130-0000-0000-000000000001';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-7130-0000-0000-000000000001';
+  two jsonb = '{"bookmark":{"thumbnailSide":"left"}}'::jsonb;
+  made jsonb = '{"bookmark":{"thumbnailSide":"left"},"toggle":{"chevron":"left"}}'::jsonb;
+  answer jsonb; rev bigint; now_rev bigint; cards jsonb; treatment text; pack jsonb; stored jsonb; before text;
+begin
+  select revision into rev from public.projects where id = c_proj;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, null, two);
+  select t.card_designs, t.card_treatment_id into cards, treatment from public.project_treatments t where t.project_id = c_proj;
+  if (answer->>'applied')::boolean is not true or cards is distinct from two or treatment is distinct from 'plain' then
+    raise exception 'FAIL (7.13): a second cards call answered %, left card_designs % and card_treatment_id %', answer, cards, treatment;
+  end if;
+  raise notice 'PASS (7.13): a second call replaces card_designs whole and keeps the row''s other columns';
+
+  -- (3) docs, a preset, packs and cards in ONE call: all four land, one revision.
+  rev := (answer->>'revision')::bigint;
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"p"}]}'::jsonb), rev, 'mono',
+              '{"custom-1":{"name":"Studio Warm"}}'::jsonb, made);
+  select t.card_designs into cards from public.project_treatments t where t.project_id = c_proj;
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if (answer->>'applied')::boolean is not true or now_rev <> rev + 1 or pack->>'preset' <> 'mono'
+     or pack->'packs' is distinct from '{"custom-1":{"name":"Studio Warm"}}'::jsonb or cards is distinct from made
+     or stored->'instances'->0->>'instanceId' <> 'p' then
+    raise exception 'FAIL (7.13): docs, a preset, packs and cards in one call: % — pack %, cards %, revision %, doc %', answer, pack, cards, now_rev, stored;
+  end if;
+  raise notice 'PASS (7.13): docs, a preset, packs and cards land in one call and move the revision once';
+
+  -- (4) a STALE base writes none of them.
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"CLOBBER"}]}'::jsonb), rev, 'neon', '{}'::jsonb, '{}'::jsonb);
+  select t.card_designs into cards from public.project_treatments t where t.project_id = c_proj;
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if (answer->>'applied')::boolean is not false or now_rev <> rev + 1 or pack->>'preset' <> 'mono'
+     or cards is distinct from made or stored->'instances'->0->>'instanceId' <> 'p' then
+    raise exception 'FAIL (7.13): a stale base wrote something: % — pack %, cards %, revision %, doc %', answer, pack, cards, now_rev, stored;
+  end if;
+  raise notice 'PASS (7.13): a stale base writes neither the docs, the preset, the packs nor the cards';
+
+  -- (5) a NULL p_cards — the five-, four- and three-name calls the deployed code makes — leaves card_designs byte-equal.
+  before := cards::text;
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, '{"custom-1":{"name":"Again"}}'::jsonb);
+  if (answer->>'applied')::boolean is not true then
+    raise exception 'FAIL (7.13): a five-argument call did not apply (%)', answer;
+  end if;
+  rev := (answer->>'revision')::bigint;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, 'paper');
+  if (answer->>'applied')::boolean is not true then
+    raise exception 'FAIL (7.13): a four-argument call did not apply (%)', answer;
+  end if;
+  rev := (answer->>'revision')::bigint;
+  answer := public.sync_project_doc(c_proj, jsonb_build_object('home', '{"instances":[]}'::jsonb), rev);
+  select t.card_designs into cards from public.project_treatments t where t.project_id = c_proj;
+  select revision into now_rev from public.projects where id = c_proj;
+  if (answer->>'applied')::boolean is not true or now_rev <> rev + 1 or cards::text is distinct from before then
+    raise exception 'FAIL (7.13): a call with no p_cards touched card_designs (% against %), or did not apply (%)', cards, before, answer;
+  end if;
+  raise notice 'PASS (7.13): the five-, four- and three-argument calls apply and leave card_designs byte-equal';
+
+  -- (6) a `p_cards` that is not an object answers null and writes nothing — a string, an array and JSON null alike.
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, null, '"junk"'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (7.13): a string p_cards answered %', answer;
+  end if;
+  answer := public.sync_project_doc(c_proj, jsonb_build_object('home', '{"instances":[{"instanceId":"X"}]}'::jsonb), rev, 'neon', null, '[]'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (7.13): an array p_cards answered %', answer;
+  end if;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, null, 'null'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (7.13): a JSON-null p_cards answered %', answer;
+  end if;
+  select t.card_designs into cards from public.project_treatments t where t.project_id = c_proj;
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if now_rev <> rev or pack->>'preset' <> 'paper' or cards::text is distinct from before
+     or jsonb_array_length(stored->'instances') <> 0 then
+    raise exception 'FAIL (7.13): a non-object p_cards wrote something — cards %, pack %, doc %, revision % on %', cards, pack, stored, now_rev, rev;
+  end if;
+  raise notice 'PASS (7.13): a p_cards that is not an object answers null and writes nothing';
+end $$;
+
+-- (7) ANOTHER TENANT'S PROJECT: null, and its record untouched.
+do $$
+declare answer jsonb;
+begin
+  answer := public.sync_project_doc('dddddddd-7130-0000-0000-000000000002', '{}'::jsonb, 1::bigint, null, null,
+                                    '{"callout":{"emoji":"hidden"}}'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (7.13): another tenant''s project answered %', answer;
+  end if;
+end $$;
+
+reset role;
+
+do $$
+declare cards jsonb;
+begin
+  select card_designs into cards from public.project_treatments where project_id = 'dddddddd-7130-0000-0000-000000000002';
+  if cards is distinct from '{"toggle":{"chevron":"left"}}'::jsonb then
+    raise exception 'FAIL (7.13): another tenant wrote its card designs into this project (%)', cards;
+  end if;
+  raise notice 'PASS (7.13): another tenant''s project answers null and keeps its card designs';
+end $$;
+
+-- (8) anon cannot call the six-argument function.
+set request.jwt.claim.sub = '';
+set role anon;
+
+do $$
+declare answered text;
+begin
+  answered := public.sync_project_doc('cccccccc-7130-0000-0000-000000000001','{}'::jsonb,0::bigint,null,null,'{}'::jsonb)::text;
+  raise exception 'FAIL (7.13): anon executed sync_project_doc() and got %', coalesce(answered,'null');
+exception
+  when insufficient_privilege then
+    raise notice 'PASS (7.13): anon cannot execute the six-argument sync_project_doc() (42501)';
+end $$;
+
+reset role;
+
+delete from auth.users where id in ('77777777-7130-0000-0000-000000000001',
+                                    '77777777-7130-0000-0000-000000000002');
