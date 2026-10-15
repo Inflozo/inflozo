@@ -9540,6 +9540,15 @@ origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain
   its screen change is the Translations page, which the R-236 stop never opens) — `check` failed at the same line,
   `#pack-editor-title` not found after Enter on `#style-pack-new`, every other stop passed; `deploy` skipped. `pnpm
   keyboard` whole on this machine an hour earlier, on the same tree: every journey passed. A second Review push re-runs it.
+  Seventh recurrence, the same row (2026-10-15, Story 7.13's Dev): run on a5cc39e1 — `check` failed at the same line,
+  `deploy` skipped, so the owner saw no Editor cards. **The R-236 row's cause is found and fixed in that story, and it was
+  never the walk looking early** *(Story 7.13's Dev, 2026-10-15)*: repeated locally (`--grep R-236 --repeat-each 8`) it
+  failed 3 of 8, and the failure's page snapshot held an OPEN, EMPTY `<dialog>`. A dialog's `close` event is queued, not
+  fired as it closes, so Escape on Edit pack followed at once by + New pack opened the new pack first and the old close
+  then set the editor's pack to nothing. `PackEditor` (`pack-editor.tsx`) now ignores a close that arrives while its
+  dialog is open again; R-236 then passed 16 of 16. The R-201 row stays open here. Also seen once in Story 7.13's
+  main-session `pnpm keyboard`: Story 5.23a's "every whole-page change repaints" row ("a subject"), which then passed 10
+  of 10 alone and 80 of 80 with its group — a timing wait of the kind this entry describes.
 owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
   the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
   then, re-push on a red R-201 stop with no app change.

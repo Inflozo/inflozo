@@ -318,6 +318,14 @@ Dev, 2026-10-15 — routine calls made in Dev, each from a source read or an exe
   later design carrying one would have passed `pnpm check` and stopped every customer deploy that placed it. The library
   carries none today (swept: every design's `style.css`). `validateStylesheet` now refuses it (`stylesheet-important`),
   with a test and its control, and `docs/section-authoring.md` says so.
+- **CI's keyboard gate went red on the Dev push (`a5cc39e1`), so nothing deployed** — the owner's "I do not see Editor
+  cards link". The red test was Story 6.4's R-236 journey (Escape on Edit pack, then + New pack at once: no New pack).
+  Reproduced locally 3 of 8 (the same test at `4ded429c` in a clean worktree passed 8 of 8, but CI's history shows the
+  row red on six earlier pushes since 2026-10-09 — DW-350's R-236 recurrences — so it is that long-standing flake, not
+  this story's). Cause, read off the failure's page snapshot (an open, EMPTY dialog): a dialog's `close` event is
+  queued, so the old dialog's close landed after New pack had opened it again and set the editor back to nothing.
+  `PackEditor` now ignores a close that arrives while its dialog is open again; R-236 then 16 of 16. DW-350 carries the
+  finding (its R-201 row stays open).
 
 ## Design Notes
 
@@ -760,6 +768,9 @@ end Casper, English and the logo are back, and the script checks each one.
   cases, 0 violations, no baseline changed.
 - Real services in Dev: Supabase production at the Schema phase (above) and T1 for §81 (above), each on the owner's
   in-session go; nothing in Dev wrote to Vercel, Resend or Dodo. T3 retired (R-238): the Ghost 5 half is DW-326's.
+- The Dev push `a5cc39e1`: GitHub Actions CI `check` failed at `pnpm keyboard` (1 failed, 232 passed — R-236, above),
+  `rls` passed, `deploy` skipped, and Vercel production stayed on `4ded429c`; the render matrix workflow passed. Fixed
+  and pushed again as a second Dev commit (below the Spec Change Log entry).
 - Not run here: step 107 on the deployed site (Review).
 
 **Commands:**

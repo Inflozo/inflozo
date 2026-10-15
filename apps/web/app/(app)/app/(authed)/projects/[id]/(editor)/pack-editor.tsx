@@ -82,7 +82,12 @@ export const PackEditor = memo(function PackEditor({
       ref={dialog}
       data-pack-editor={editing?.kind ?? ''}
       onClick={closeOnBackdrop}
-      onClose={onClose}
+      // a dialog's `close` event is QUEUED, not fired as it closes: Escape on Edit pack then + New pack at once opened the
+      // new pack first, and the old close then emptied it — an open dialog with no form (CI's keyboard gate, Story 7.13's
+      // Dev). A close that arrives while the dialog is open again is that stale one, and ends nothing.
+      onClose={() => {
+        if (!dialog.current?.open) onClose()
+      }}
       aria-labelledby="pack-editor-title"
       aria-describedby="pack-editor-subtitle"
       className={wideSheet}
