@@ -262,8 +262,14 @@ came out of it.
   ("whole-site 500"), a face count written into `epic-7-context.md`, the Code Map's grant line; and the Spec Change Log now
   records where the Dev put `readTranslations` and that no `refusalOf` exists [prd.md, EXPERIENCE.md, epic-7-context.md,
   this spec]
+- [x] [Review][Patch] Run on production for the first time, step 106b expected the layer "Three Up" where Layers names it
+  "Post Grid — Three Up"; the check reads the name `untouchedWords` gives, and the owner's step 14 says what he will see
+  [run-verify-editor.cjs 106b, this spec]
+- [x] [Review][Patch] Step 105d (Story 7.10's) failed on a right answer: CDP hands a `text/x-component` body to Playwright
+  decoded as windows-1252, so even `body()` read "â€”"; the sentence is matched in either form [run-verify-editor.cjs 105d]
 - [x] [Review][Defer] Three walks on the Dev head died on harness holds with 0 FAIL — step 53's paint after Back, and two
-  magic-link loads whose requests Vercel answered in under 250 ms — owner Story 15.1 — deferred, DW-352 (seen again)
+  magic-link loads whose requests Vercel answered in under 250 ms — and four on the Review head the same way — owner Story
+  15.1 — deferred, DW-352 (seen again)
 
 Dismissed, each read in the code: the three actions not checking the live lock on the server (Theme settings' own actions
 take the same posture; R-192 is the read-only page, and an override never races the canvas's journal); Use the default on
@@ -414,7 +420,7 @@ Do this on the real site after Deploy, on a laptop at full width, signed in as y
 | 11 | the same | Translations | Choose **العربية**. Then press **Understood**. | — | A pale strip under the header with a gold warning sign, gold words and a white **Understood** button on its right: "Right-to-left languages are not supported yet" / "Our designs are built left-to-right. Arabic, Hebrew and Farsi strings will translate, but the layouts will not mirror."; the language button still shows the old language. After Understood it saves Arabic and the strip says you acknowledged it today. |
 | 12 | the same | Translations | Choose **English**. | — | English, no yellow box, no font sentence, the column reads ENGLISH, nothing overridden. |
 | 13 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04/settings` | Theme settings | Look at the left menu. | — | Below Translations: **Navigation ↗**, **Social accounts ↗**, **Code injection ↗**. Each opens that part of your Ghost site's own settings in a new tab (Ghost may ask you to sign in). |
-| 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings/translations` | Translations | Choose **Español** again and scroll to the bottom. | — | "Starting words you haven't retyped" listing **Three Up on Home** with its untouched words (e.g. “The archive”, “Browse the archive”) and an **Edit** link that opens Home. Choose **English** again: the block is gone. |
+| 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/settings/translations` | Translations | Choose **Español** again and scroll to the bottom. | — | "Starting words you haven't retyped" listing **Post Grid — Three Up on Home** with its untouched words (e.g. “The archive”, “Browse the archive”) and an **Edit** link that opens Home. Choose **English** again: the block is gone. |
 | 15 | the same, in a second window | Translations, read-only | Open the project in a second window first, then its Translations there. | — | Every box, Save, Use the default and the language button greyed and doing nothing; the words readable. Close it. |
 
 ## Questions for the owner
@@ -547,5 +553,26 @@ that library it would show `{minutes} Min. Lesezeit`.
   stop (`#pack-editor-title` not found after Enter on New pack — DW-350's sixth recurrence; the stop never opens the
   Translations page, and the same tree passed `pnpm keyboard` whole here), so `deploy` was skipped. A second Review push
   re-runs it.
-- **Not run yet, and why:** the walk's new step 106k and a complete step 106 need a Review head deployed — they run on it
-  and are appended in a later Review commit.
+- **CI on the second Review commit `8149174f`:** `rls`, `check` (the R-236 stop passed), `deploy` and the Render matrix all
+  succeeded; `dpl_BkLicScJa24T4CuhHtSsmQk2rXLv` READY, serving `app.inflozo.com`.
+- **The deployed walk on the Review head `8149174f`** (keys `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID`, loaded in-process; a clean detached worktree at that sha, its first line naming the READY deployment):
+  - **The committed walk**, run 4: 663 PASS, 0 FAIL, died at a magic-link `load` after step 8's sign-outs (Vercel answered
+    the 303 and the dashboard in under a second; nothing more was requested for 24 s).
+  - **A debug copy** (`tools/probe-debug/` in that worktree, never committed): the sign-in hop waits for
+    `domcontentloaded` (its cookie, not the dashboard's sub-resources); a server action's lost body is a note, not a death
+    (DW-352); step 106's waits 90 s. Run 6: 724 PASS, 0 FAIL, died at 104b's lost body (before the catch). Run 7: 777 PASS,
+    died at 106a's rail press with no request reaching Vercel for 37 s (a browser hold); its one FAIL was 105d, read in the
+    harness, below. Run 8: died at step 66, whose syncs were held and answered 409 (DW-352's step-66 row).
+  - **The same copy cut to steps 1–5 and 106** (the helpers 106 reads kept, the step-5 editor sent to `about:blank` so no
+    other session takes the lock): run 12, **80 PASS, 0 FAIL, exit 0** — every row of step 106, 106a to 106k, including
+    106d's DEL and backslash rows, 106j's new-tab words, and 106k's Other…, the replayed guards, the refused stored row, the
+    whole faces served (Inter's two, 200 `font/woff2` at the pool's sha256; a made-up name 404) and the first link (`de` →
+    `de`, `zz zz` → `en`); the project handed back and zero CSP violations. Run 11 before it found 106b's literal "Three Up"
+    (the layer is "Post Grid — Three Up"), fixed in the walk and in the owner's step 14.
+  - **Cut to steps 1–5, 104 and 105** (Theme settings under the new rail): run 13 found 105d's FAIL to be the harness —
+    the action answered "Confirm first — …" and CDP handed it to Playwright decoded as windows-1252 ("â€”"), while the
+    page's own alert reads it right; fixed in the walk (the sentence matched in either form); run 14: **0 FAIL** over every
+    104 row and 105a–d (the cut stops at 105e, whose save reads step 102's names; run 7 passed 105e–i in full).
+  - Read together: steps 1–105 passed in full runs 4, 6 and 7 with no FAIL the story owns, and step 106 passed whole on
+    production. DW-352 carries the holds (seen again).

@@ -8418,9 +8418,13 @@ async function main() {
     // sentence's em dash came back as "â€”" and the check failed on a right answer (the review's run 7 — a probe of the same
     // post read the page's own alert as the sentence, twice, nothing stored): the bytes, decoded as UTF-8
     const bare105 = (await (await answered105d).body()).toString('utf8')
+    // Story 7.12's review: and even the bytes can arrive already decoded — CDP hands Playwright `text/x-component` (no charset)
+    // as windows-1252 text, re-encoded, so "—" reads "â€”" (two runs on 8149174f; the page's own alert reads the sentence
+    // right, as 106d's refusals show) — the sentence is matched in either form
+    const confirm105 = [W105.confirm, new TextDecoder('windows-1252').decode(Buffer.from(W105.confirm, 'utf8'))]
     const refusedRow105 = await rowOf104('sub')
     check('step 105d — Cancel stores nothing, and the form posted by hand with no acknowledgement answers "Confirm first — promoting this changes what your theme carries." and stores nothing',
-      cancelled105 === null && bare105.includes(W105.confirm) && refusedRow105 === null, JSON.stringify({ cancelled105, refusedRow105 }))
+      cancelled105 === null && confirm105.some((c) => bare105.includes(c)) && refusedRow105 === null, JSON.stringify({ cancelled105, refusedRow105 }))
     await pe.locator('form:has(#promote-which) button[type="submit"]').first().click()
     await pe.waitForTimeout(300)
     const answered105dd = posted104(pe)
@@ -8774,7 +8778,7 @@ async function main() {
     const shown106 = await tp.locator('[data-untouched-row]').evaluateAll((els) => els.map((e) => ({ id: e.getAttribute('data-untouched-row'), text: e.innerText.replace(/\s+/g, ' '), edit: e.querySelector('a')?.getAttribute('href') ?? null })))
     check('step 106b — Question 1: "Starting words you haven\'t retyped" lists exactly the stored sections untouchedWords names, each with its quoted words and an Edit link to its canvas — Three Up on Home among them',
       words106.length > 0 && shown106.length === words106.length && words106.every((w) => shown106.some((s) => s.id === `${w.key}:${w.instanceId}` && s.text.includes(W106.quoted(w.words)) && !!s.edit)) &&
-      shown106.some((s) => s.text.startsWith(W106.untouchedOn('Three Up', 'Home'))) && (await tp.locator('[data-untouched]').innerText()).includes(W106.untouchedTitle),
+      shown106.some((s) => s.text.includes(`Three Up on Home:`) && s.text.startsWith(W106.untouchedOn(words106.find((w) => `${w.key}:${w.instanceId}` === s.id)?.layer ?? '', 'Home'))) && (await tp.locator('[data-untouched]').innerText()).includes(W106.untouchedTitle),
       JSON.stringify({ expected: words106.map((w) => `${w.key}:${w.instanceId}`), shown106 }))
 
     // ── 106c — an override saved, and seen on the canvas through the shim ──

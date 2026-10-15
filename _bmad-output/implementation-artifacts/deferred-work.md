@@ -9588,6 +9588,13 @@ origin: Story 7.9's Review (2026-10-10), on `d52974c5` (`dpl_Hs6Ntbzx6djJfJSyDP7
   complete — run 1 died at step 53's `painted('home')` after the Back link (its Vercel row: the editor answered 200 in
   777 ms), runs 2 and 3 at a magic-link `goto` waiting for `load` (the 303 and the dashboard's 200 both logged in under
   250 ms, so `load` waited on a sub-resource, not on Vercel) after 668 and 701 PASS.
+  And on the Review head `8149174f` (`dpl_BkLicScJa24T4CuhHtSsmQk2rXLv`), four more: a magic-link `load` after step 8's
+  sign-outs (663 PASS); 104b's action body lost ("No data found for resource", 724 PASS); 106a's rail press with no request
+  reaching Vercel for 37 s (777 PASS); step 66's syncs held and answered 409 (344 PASS, 4 FAIL, all step 66). A debug copy
+  that waits for `domcontentloaded` on the sign-in hop and notes a lost body instead of dying got past the first two; the
+  third and fourth are holds in the browser's own requests. Step 106 passed whole in a copy cut to steps 1–5 and 106.
+  Also found there: CDP can hand Playwright a `text/x-component` answer already decoded as windows-1252, so `body()` reads
+  "â€”" too — 105d now matches the sentence in either form.
 owner: Story 15.1 (the E2E suite), whose card carries this entry with its id — the story that hardens the walks against
   their environment, as DW-68 and DW-350 are.
 location: `tools/probe/run-verify-editor.cjs` (`posted104`, `promote104`; every step that reads a server action's body)
