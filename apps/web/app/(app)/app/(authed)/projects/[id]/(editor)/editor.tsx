@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { memo, Profiler, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, paywallRing, postAccess, resolveStrings, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, parseCardDesigns, paywallRing, postAccess, resolveStrings, ringFor, withoutCard, withValue, type CardDesigns, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
@@ -52,12 +52,13 @@ import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection,
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOfKey, isSiteFooter, isSurface, landWithin, settingsPath, SITE, siteSlot, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOfKey, isCards, isPaywall, isSiteFooter, isSurface, landWithin, settingsPath, SITE, siteSlot, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey } from '@/lib/cards'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, carries, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
-  flushDecision, hydratedPacks, hydratedPreset, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
+  CARDS_KEY, flushDecision, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
   SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal,
   type Restore, type SyncState,
 } from '@/lib/journal'
@@ -97,6 +98,7 @@ import { EditorSkeleton } from './editor-skeleton'
 import type { EditorData } from './read'
 import { PackEditor, type PackEditing } from './pack-editor'
 import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
+import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
@@ -557,6 +559,8 @@ type EditorProps = EditorData & {
 type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
 /** Story 7.10 — a section nothing has been promoted from, one value so the panel's `promotion` keeps its identity */
 const NOTHING_BOUND: Promotion['bound'] = { controls: {}, props: {} }
+/** Story 7.13 — no card designed: the harness's record, and every project's until its first card edit */
+const NO_CARDS: CardDesigns = {}
 
 /* ─── THE CANVAS CHROME (Stories 5.2 to 5.21 drew it; Story 5.23b made it a part of its own, R-208, R-210) ──────────────
  *
@@ -817,6 +821,8 @@ function EditorShell({
   siteAccent,
   settings,
   overrides,
+  cardDesigns: storedCards = NO_CARDS,
+  cardsRefused = null,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -833,6 +839,11 @@ function EditorShell({
   /** STORY 5.20 — THIS CANVAS IS A TEMPLATE SURFACE (the Paywall): not a page, so no site doc, no Section Picker, no
    *  Remix and no Preview, an ink bar, C3a's strip, and a paint of its own (`paywallPage`). */
   const surface = isSurface(key)
+  /** STORY 7.13 — WHICH SURFACE: the Paywall's own branches (its partial, its ring, its cut, its strip, its members-off
+   *  card, Back to post) key on `paywallNow`; Editor cards (`cardsNow`) shares the ink bar, the chip and every absence a
+   *  surface has, and draws its own three regions (`cards-surface.tsx`) */
+  const paywallNow = isPaywall(key)
+  const cardsNow = isCards(key)
   /* STORY 6.2 — S7a's roster in place of the rest panel: Change opens it with focus on the back button, and the back button
      or Esc returns with focus on Change. Esc is the ladder's own rung (`onEscape`). A selection replaces the rest panel, so it leaves the roster too. */
   const [packList, setPackList] = useState(false)
@@ -841,6 +852,22 @@ function EditorShell({
   const [pack, setPack] = useHanded(storedPreset)
   /** STORY 6.4 — THE PROJECT'S OWN PACKS, as the panels draw them (`latest.packs` is the handlers', written first) */
   const [ownPacks, setOwnPacks] = useHanded<PackRecords>(storedOwnPacks)
+  /** STORY 7.13 — THE PROJECT'S CARD DESIGNS, as Editor cards draws them (`latest.cards` is the handlers', written first):
+   *  `project_treatments.card_designs`, an edit like the pack's (`commitCards`) */
+  const [cardDesigns, setCardDesigns] = useHanded<CardDesigns>(storedCards)
+  /** STORY 7.13 — THE CARD EDITOR CARDS SHOWS: a view, never an edit (live reading along, R-192), kept per project in this
+   *  tab (`sessionStorage`, S14d's "with the last-viewed card selected"), else Callout — read after the first render, so
+   *  the server's markup is not contradicted on hydration */
+  const [cardKey, setCardKey] = useState<string>(FIRST_CARD)
+  useEffect(() => {
+    try {
+      const kept = tabStore()?.getItem(lastCardKey(project.id))
+      if (kept) setCardKey(cardOrFirst(kept).key)
+    } catch {
+      // a store that refuses is no store: Callout, as the frames draw it
+    }
+  }, [])
+  const cardsFrame = useRef<HTMLIFrameElement>(null)
   /** each own pack as the editor paints it, made once per record by the engine's own derivation (`choiceOf`) */
   const ownChoices = useRef(new Map<string, { record: PackRecord; choice: PackChoice }>())
   const ownChoice = (id: string, record: PackRecord): PackChoice => {
@@ -950,8 +977,10 @@ function EditorShell({
   /** D5b's third dot state: a canvas with no default stack — R-129's three and Private — that nothing has designed
    *  yet. Derived from `defaults`, which holds exactly the synthesizable canvases, so it needs no second list. */
   const empty = useMemo(
-    () => new Set(canvases.filter((k) => stacks[templateKeyOf(k)] === undefined && !isDesigned(docs[templateKeyOf(k)] ?? EMPTY_DOC))),
-    [canvases, stacks, docs],
+    () => new Set(canvases.filter((k) =>
+      // Story 7.13: Editor cards is designed while a card is customised (its amber count), and Ghost's own until then
+      isCards(k) ? customisedCount(cardDesigns) === 0 : stacks[templateKeyOf(k)] === undefined && !isDesigned(docs[templateKeyOf(k)] ?? EMPTY_DOC))),
+    [canvases, stacks, docs, cardDesigns],
   )
   const [selected, setSelected] = useHanded<Pick | null>(null)
   const [hovered, setHovered] = useHanded<Pick | null>(null)
@@ -1094,7 +1123,7 @@ function EditorShell({
   /** C3b's card is up: the Paywall canvas, members switched off by the record, and the canvas chosen to show the site's
    *  content — ONE rule, which the card's draw (`offCard`, below) and a re-read's voice both read */
   const cardUp = (key_: CanvasKey, record: typeof members, from: 'site' | 'sample') =>
-    isSurface(key_) && membersOff(record) && from === 'site' && site !== null && 'origin' in site
+    isPaywall(key_) && membersOff(record) && from === 'site' && site !== null && 'origin' in site
   const recheck = (pressed: boolean) => {
     if (site === null) return
     setRecheckRefusal(null)
@@ -1140,12 +1169,13 @@ function EditorShell({
    *  development (Strict Mode), and the keyboard journey counted two reads on the Paywall before this guard. */
   const handled = useRef<boolean | undefined>(undefined)
   useEffect(() => {
-    if (handled.current === surface) return
+    // Story 7.13: the Paywall's re-check — Editor cards reads nothing of the site's members
+    if (handled.current === paywallNow) return
     const opening = handled.current === undefined
-    handled.current = surface
-    if (surface || (opening && site !== null && site.surfaces !== undefined)) recheck(false)
+    handled.current = paywallNow
+    if (paywallNow || (opening && site !== null && site.surfaces !== undefined)) recheck(false)
     // entering the surface is the question; `recheck` reads the record and the site through refs
-  }, [surface])
+  }, [paywallNow])
   /** `painted.shown` as the handlers see it, in the same task the paint set it — before React has re-rendered */
   const paintedRef = useRef<Shown>(painted.shown)
 
@@ -1448,7 +1478,7 @@ function EditorShell({
   // Story 5.18: and the SOURCE chosen, the canvas's STORED subject (a paint resolves it against the source it paints
   // with) and the source the last paint counted pages in
   // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList, preset: storedPreset, packs: storedOwnPacks })
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList, preset: storedPreset, packs: storedOwnPacks, cards: storedCards })
   /* STORY 7.10 — WHAT THE PROJECT HAS HANDED TO GHOST: Theme settings' rows, server truth at load and again after every
      visit there (the page revalidates the project's subtree), by instance for the panel's tags, the canvas's plain-text
      lock, the delete and hide ask and the park note, and the accent for the Style Pack card and the pack-switch ask. The
@@ -1650,10 +1680,10 @@ function EditorShell({
       return
     }
     // Story 6.3: the pack in force rides with the docs, so a switch not yet sent survives a reload — and Story 6.4: the
-    // project's own packs, so an edit not yet sent does too
-    const { preset, packs: own } = latest.current
+    // project's own packs, so an edit not yet sent does too; Story 7.13: and the card designs
+    const { preset, packs: own, cards } = latest.current
     void (async () => {
-      const wrote = await s.save(project.id, { baseRevision: base.current, docs: { ...docs }, auto: [...auto], journal: j, preset, packs: own })
+      const wrote = await s.save(project.id, { baseRevision: base.current, docs: { ...docs }, auto: [...auto], journal: j, preset, packs: own, cards })
       const pushed = entry ? await s.push(project.id, entry, dropped ?? []) : true
       if (!wrote || !pushed) {
         toFallback()
@@ -1665,7 +1695,7 @@ function EditorShell({
   /** One transaction appended to the journal and written to the device — or, with the `txn` of one just begun, the next
    *  entry of it (Story 6.3). A doc's entry holds the doc either side; the pack's (`PACK_KEY`) the preset id either side;
    *  the own packs' (`PACK_RECORDS_KEY`, Story 6.4) the whole map either side. */
-  const journalise = (docKey: string, before: ProjectDoc | string | PackRecords, after: ProjectDoc | string | PackRecords, txn: string = crypto.randomUUID()) => {
+  const journalise = (docKey: string, before: ProjectDoc | string | PackRecords | CardDesigns, after: ProjectDoc | string | PackRecords | CardDesigns, txn: string = crypto.randomUUID()) => {
     const now = latest.current
     const { journal: next, entry, dropped } = append(now.journal, { txn, docKey, before, after })
     latest.current = { ...latest.current, journal: next }
@@ -1707,6 +1737,45 @@ function EditorShell({
     return true
   }
 
+  /** STORY 7.13 — THE PROJECT'S CARD DESIGNS, AS ONE EDIT (FR-Q7, FR-D9, §AD1, AD-16): the whole `card_designs` record either
+   *  side, under its own key (`CARDS_KEY`), through `heldBack`'s read-only guard — a window reading along journals nothing
+   *  (R-192). A value change and a card's reset are each ONE entry, so one ⌘Z brings it back; a record equal to the one in
+   *  force makes no entry. No server work starts here: the save is the editor's own indicator (R-98). True when it landed. */
+  const commitCards = (next: CardDesigns): boolean => {
+    if (heldBack({}, CARDS_KEY)) return false
+    const before = latest.current.cards
+    if (JSON.stringify(next) === JSON.stringify(before)) return false
+    latest.current = { ...latest.current, cards: next }
+    setCardDesigns(next)
+    journalise(CARDS_KEY, before, next)
+    return true
+  }
+
+  /** STORY 7.13 — Editor cards' three gestures. A card's choice is a view: it changes the panel and the canvas, keeps the
+   *  last-viewed card in this tab, and says which card is shown. A value and a reset are each ONE edit through
+   *  `commitCards` — the record's key leaves at its start (`withValue`), the card leaves on a reset (`withoutCard`) — and
+   *  `#editor-said` says what landed; reading along nothing lands and nothing is said. */
+  const chooseCard = (key: string) => {
+    const card = cardOrFirst(key)
+    setCardKey(card.key)
+    try {
+      tabStore()?.setItem(lastCardKey(project.id), card.key)
+    } catch {
+      // the choice stands for this view; a refused store only forgets it
+    }
+    setSaid(CARD_WORDS.chosen(card.label))
+  }
+  const setCardValue = (control: string, value: string) => {
+    const card = cardOrFirst(cardKey)
+    if (!commitCards(withValue(latest.current.cards, card.key, control, value))) return
+    const def = card.controls.find((c) => c.name === control)
+    setSaid(CARD_WORDS.changed(card.label, def?.label ?? control, def?.values.find((v) => v.value === value)?.label ?? value))
+  }
+  const resetCard = () => {
+    const card = cardOrFirst(cardKey)
+    if (commitCards(withoutCard(latest.current.cards, card.key))) setSaid(CARD_WORDS.wasReset(card.label))
+  }
+
   /**
    * An undo or a redo applied: every doc of the transaction, whole, and its pack (Story 6.3).
    *
@@ -1746,10 +1815,15 @@ function EditorShell({
     const own = r.packs === undefined ? now.packs : ownPacksIn(r.packs, packReader)
     const preset = r.preset !== undefined && rosterOf(own).some((p) => p.id === r.preset) ? r.preset : now.preset
     const was = packOf(now.preset, now.packs)
-    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal, preset, packs: own }
+    // Story 7.13 — and the card designs, whole: the journal's record is this device's copy too, so it passes AD-36's one
+    // schema before Editor cards draws from it (a refused one leaves the designs in force)
+    const readCards = r.cards === undefined ? null : parseCardDesigns(r.cards)
+    const cards = readCards === null || typeof readCards === 'string' ? now.cards : readCards
+    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal, preset, packs: own, cards }
     setDocs(next.docs)
     setJournal(r.journal)
     if (own !== now.packs) setOwnPacks(own)
+    if (cards !== now.cards) setCardDesigns(cards)
     const is = packOf(preset, own)
     if (preset !== now.preset || is.tokens !== was.tokens || is.faces !== was.faces) {
       setPack(preset)
@@ -1857,7 +1931,8 @@ function EditorShell({
     if (!now.lock.holder) return backoffOver()
     // Story 6.3: the pending docs AND the pending pack, in one call — one compare-and-set, one revision; Story 6.4: and the
     // project's own packs, whole, where they are owed
-    const payload = flushPayload(now.journal, now.docs, now.preset, now.packs)
+    // Story 7.13 — and the card designs, whole, where they are owed: still one call, one compare-and-set
+    const payload = flushPayload(now.journal, now.docs, now.preset, now.packs, now.cards)
     if (!carries(payload)) return
     if (inFlight.current) {
       // owed, not dropped: in fallback this edit is held NOWHERE else, and a ⌘S pressed mid-flight meant it
@@ -1873,7 +1948,7 @@ function EditorShell({
     // Story 5.17: the tab's lock session rides along, so the route can refuse work from a session that was taken over
     // from. `|| undefined` drops it from the JSON before the tab knows its id — never an empty id the route could read
     // as a stranger's.
-    const body = JSON.stringify({ base: base.current, docs: payload.docs, preset: payload.preset, packs: payload.packs, session: tabId.current || undefined })
+    const body = JSON.stringify({ base: base.current, docs: payload.docs, preset: payload.preset, packs: payload.packs, cards: payload.cards, session: tabId.current || undefined })
     let landed = false
     try {
       const answer = await fetch(syncUrl(), {
@@ -2039,7 +2114,7 @@ function EditorShell({
     const store = local.current
     if (!store) return
     void store.clearJournal(project.id)
-    void store.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL, preset: storedPreset, packs: storedOwnPacks })
+    void store.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL, preset: storedPreset, packs: storedOwnPacks, cards: storedCards })
   }
 
   const land = (answer: LockAnswer | null) => {
@@ -2948,7 +3023,7 @@ function EditorShell({
     // STORY 5.20 — ON THE PAYWALL CANVAS THE PANEL IS THE PAYWALL'S: "nothing selected" there is its one instance, where
     // a design is chosen, so its ring and its controls stay in the panel whatever the press — the box is the only thing
     // on the canvas a customer can change, and C3a draws it selected
-    const only = isSurface(latest.current.key) ? latest.current.stack[0] : undefined
+    const only = isPaywall(latest.current.key) ? latest.current.stack[0] : undefined
     const pick = asked === null && only !== undefined ? { doc: only.doc, instanceId: only.instanceId } : asked
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
@@ -3091,13 +3166,16 @@ function EditorShell({
     // waits for the hydrate above.
     if (pending.current) return
     const now = latest.current
+    // STORY 7.13: AND NEVER FOR EDITOR CARDS, whose canvas is its own document (`CardsCanvas`) — the page canvas stays as
+    // the last page painted it, hidden, and a switch back paints it from `latest`
+    if (isCards(now.key)) return
     // DW-275 (Story 5.24e): AND, ON A SURFACE, UNTIL ITS POST-BODY SHEET HAS LANDED. The sheet is no longer inlined in every
     // canvas document (`pilots.ts`), so the first Paywall paint links it in — before `3-pilots`, the place its `data-order`
     // always held, or last in the head where that is missing — and every paint waits until it is MARKED landed: its
     // `load` (or `error`, which paints without it rather than never) sets the mark and paints again. A link that is only
     // PRESENT is not enough — a paint in between drew the article unstyled and measured the cut on it (the review).
     const surfaceSheet = doc.querySelector<HTMLLinkElement>('[data-order="2b-surface"]')
-    if (isSurface(now.key) && !surfaceSheet?.hasAttribute('data-landed')) {
+    if (isPaywall(now.key) && !surfaceSheet?.hasAttribute('data-landed')) {
       if (surfaceSheet === null) {
         const link = doc.createElement('link')
         link.rel = 'stylesheet'
@@ -3168,7 +3246,7 @@ function EditorShell({
       const sampleSubject = orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
       // STORY 5.20 — THE PAYWALL SURFACE: a visitor who may read the paid post meets the whole article and no box, as
       // Ghost renders the partial only where access is false — so its instance, where one is chosen, renders nothing
-      const paywall = isSurface(now.key)
+      const paywall = isPaywall(now.key)
       const whole = paywall && postAccess({ visibility: 'paid' }, now.viewAs)
       const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject, postsPerPage)
       const url = at.currentUrl
@@ -3890,7 +3968,8 @@ function EditorShell({
    *  canvas and on every choice, and only once the hydrate has settled which docs this session shows. `seen` hands back
    *  the same array when the visitor is already in the record, so a canvas looked at before writes nothing. */
   useEffect(() => {
-    if (!hydrated) return
+    // Story 7.13: Editor cards offers no View as and is no `project_templates` row, so it keeps no looked-at record
+    if (!hydrated || isCards(key)) return
     // Story 5.16: the PAGE on screen — page 2 keeps a record of its own (R-167)
     const stored = ownKeyOf(key, page)
     const was = latest.current.viewed[stored] ?? []
@@ -3988,7 +4067,8 @@ function EditorShell({
       // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this — an
       // owed pack included, which the server's preset must then be (Story 6.3), and owed own packs, which the server's must
       // then be (Story 6.4)
-      const landed = held !== null && ownFlushLanded(held, revision, stored, storedPreset, storedOwnPacks)
+      // Story 7.13: and owed card designs, which the server's must then be
+      const landed = held !== null && ownFlushLanded(held, revision, stored, storedPreset, storedOwnPacks, storedCards)
       const how = landed ? ({ kind: 'local' } as const) : hydrationFor(held, revision)
       // STORY 5.17 — AD-15's clearing rule, BOTH halves in one call: the revision half above, and the generation
       // half — a take-over — which cannot have happened before this mount, because this session has never held the
@@ -4014,12 +4094,17 @@ function EditorShell({
           // `ownPacksIn` (AD-36): this device's copy is a value a browser can be made to hold, and it reaches CSS
           const keptPacks = hydratedPacks(how, held.packs === undefined ? null : { packs: ownPacksIn(held.packs, packReader) }, storedOwnPacks)
           const keptPreset = hydratedPreset(how, held, storedPreset, (id) => packs.some((p) => p.id === id) || (isCustom(id) && Object.hasOwn(keptPacks, id)))
+          // STORY 7.13 — AND THE CARD DESIGNS, by the same rule, through `card_designs`' one schema (AD-36): a record this
+          // device holds that it refuses is no record, and the server's is kept
+          const heldCards = held.cards === undefined ? null : parseCardDesigns(held.cards)
+          const keptCards = hydratedCards(how, heldCards === null || typeof heldCards === 'string' ? null : { cards: heldCards }, storedCards)
           const wasLook = packOf(storedPreset, storedOwnPacks)
-          latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library), preset: keptPreset, packs: keptPacks }
+          latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library), preset: keptPreset, packs: keptPacks, cards: keptCards }
           setDocs(docs)
           setAuto(new Set(back))
           setJournal(kept)
           if (keptPacks !== storedOwnPacks) setOwnPacks(keptPacks)
+          if (keptCards !== storedCards) setCardDesigns(keptCards)
           // a correction, never a gesture: instant, and it says nothing
           const isLook = packOf(keptPreset, keptPacks)
           if (keptPreset !== storedPreset || isLook.tokens !== wasLook.tokens || isLook.faces !== wasLook.faces) {
@@ -4033,7 +4118,7 @@ function EditorShell({
             switchPage(force.page)
             setSaid(leftBecause(force.reason ?? ''))
           }
-          if (landed) void opened.save(project.id, { baseRevision: revision, docs, auto: back, journal: kept, preset: keptPreset, packs: keptPacks })
+          if (landed) void opened.save(project.id, { baseRevision: revision, docs, auto: back, journal: kept, preset: keptPreset, packs: keptPacks, cards: keptCards })
           if (unsynced(kept)) rest()
           settle(true)
           return
@@ -4047,7 +4132,7 @@ function EditorShell({
       latest.current = { ...latest.current, journal: EMPTY_JOURNAL }
       setJournal(EMPTY_JOURNAL)
       // …and the server's pack (Story 6.3) and own packs (Story 6.4): the opening ones, already in force
-      await opened.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...synthesized], journal: EMPTY_JOURNAL, preset: storedPreset, packs: storedOwnPacks })
+      await opened.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...synthesized], journal: EMPTY_JOURNAL, preset: storedPreset, packs: storedOwnPacks, cards: storedCards })
       settle(true)
     })()
     return () => {
@@ -4566,7 +4651,7 @@ function EditorShell({
     const now = latest.current
     const design = entries[designId]
     const docKey = templateKeyOf(now.key)
-    if (design === undefined || !isSurface(now.key) || (docOf(docKey)?.instances.length ?? 0) > 0) return
+    if (design === undefined || !isPaywall(now.key) || (docOf(docKey)?.instances.length ?? 0) > 0) return
     const instance = {
       instanceId: crypto.randomUUID(),
       layerName: `${PAYWALL_WORDS.panel} — ${design.name}`,
@@ -4612,7 +4697,7 @@ function EditorShell({
   const stepDesign = (pick: Pick | null, by: number) => {
     const placed = pick ? latest.current.stack.find((i) => same(i, pick)) : undefined
     // Story 5.20 — an untouched paywall steps INTO its ring: ▶ chooses the first design and ◀ the last
-    if (!placed && isSurface(latest.current.key)) {
+    if (!placed && isPaywall(latest.current.key)) {
       const ring = paywallRing(Object.values(entries))
       const to = by > 0 ? ring[0] : ring[ring.length - 1]
       if (to !== undefined) choosePaywall(to.id)
@@ -5028,7 +5113,7 @@ function EditorShell({
   const onChange = (next: ControlState, kind: Edit, drawnFor: Placed | undefined) => {
     const now = latest.current
     // Story 5.20 — on the Paywall canvas the panel is its one instance's, selected or not (`choose`)
-    const only = isSurface(now.key) ? now.stack[0] : undefined
+    const only = isPaywall(now.key) ? now.stack[0] : undefined
     const pick = now.selected ?? (only === undefined ? null : { doc: only.doc, instanceId: only.instanceId })
     if (!pick) return
     const n = now.stack.findIndex((i) => same(i, pick))
@@ -5058,17 +5143,17 @@ function EditorShell({
   /** does the visitor View as previews read the paid post whole (Ghost's own rule) — S4d's indicator — or meet the cut? */
   const whole = postAccess({ visibility: 'paid' }, viewAs)
   /** the paywall designs this editor holds (A32 from Story 10.107; the harness's stand-ins), and where the chosen one is */
-  const paywalls = useMemo(() => (surface ? paywallRing(Object.values(entries)) : []), [surface, entries])
-  const paywallAt = surface && stack[0] !== undefined ? paywalls.findIndex((e) => e.id === stack[0]?.designId) : -1
+  const paywalls = useMemo(() => (paywallNow ? paywallRing(Object.values(entries)) : []), [paywallNow, entries])
+  const paywallAt = paywallNow && stack[0] !== undefined ? paywalls.findIndex((e) => e.id === stack[0]?.designId) : -1
   /** C3b's card: members switched off by the record, while the canvas is chosen to show the site's content (`cardUp`, the
    *  one rule a re-read's voice reads too) */
   const offCard = cardUp(key, members, source)
   /** the tier line counts the source in force's public tiers — absent where the site was chosen and could not be read */
-  const tiersShown = !surface
+  const tiersShown = !paywallNow
     ? null
     : tierText(livePage === null ? null : { rows: reads.current?.peek(PUBLIC_TIERS)?.rows }, painted.shown.cause !== null, orbitWeekly.tiers())
   /** Ghost admin's Tiers, for the site's own content alone */
-  const tiersHref = surface && livePage !== null && site !== null && 'origin' in site ? adminAt(site.origin, 'tiers') : null
+  const tiersHref = paywallNow && livePage !== null && site !== null && 'origin' in site ? adminAt(site.origin, 'tiers') : null
   /** the ink surround's words and hovers, for the controls that sit straight on the bar (C3a :1368-1386): the Kit's own
    *  utilities read these variables, so they are re-pointed for the bar's plain controls and for nothing else — never
    *  for a menu, whose card stays paper */
@@ -5096,14 +5181,15 @@ function EditorShell({
   const nextDevice = DEVICES[(DEVICES.findIndex((d) => d.name === device.name) + 1) % DEVICES.length] ?? DESKTOP
   const more: MenuItem[] = [
     ...(surface ? [] : [{ label: KEYMAP.find((b) => b.gesture === 'remix')?.action ?? 'Site Remix', icon: <Refresh size={13} />, keys: chipsOf('remix'), readOnly: !lock.holder, onSelect: () => remixDice.current?.press() }]),
-    ...(darkEnabled ? [{ label: modeWords(mode), icon: mode === 'dark' ? <Moon size={13} /> : <Sun size={13} />, keys: chipsOf('dark'), onSelect: () => flip(latest.current.mode === 'dark' ? 'light' : 'dark') }] : []),
-    { label: `Device — ${device.label}`, icon: <Laptop size={13} />, onSelect: () => pickDevice(nextDevice) },
+    // Story 7.13 — Editor cards' canvas is the post at reading width in the pack's light look: no mode, no device
+    ...(darkEnabled && !cardsNow ? [{ label: modeWords(mode), icon: mode === 'dark' ? <Moon size={13} /> : <Sun size={13} />, keys: chipsOf('dark'), onSelect: () => flip(latest.current.mode === 'dark' ? 'light' : 'dark') }] : []),
+    ...(cardsNow ? [] : [{ label: `Device — ${device.label}`, icon: <Laptop size={13} />, onSelect: () => pickDevice(nextDevice) }]),
     // Story 6.3 — the list, extrapolated from D8a's overflow menu (R-74): before Theme settings, absent on a template surface
     // (its rest panel is the Paywall's), and live reading along — the list is a view, its cells are what grey (R-192)
     ...(surface ? [] : [{ label: PACK_WORDS.name, icon: noGlyph, onSelect: openPackList }]),
     { label: 'Theme settings', icon: noGlyph, href: settingsPath(project.id) },
     ...(surface ? [] : [{ label: PREVIEW, icon: <PreviewEye size={13} />, keys: chipsOf('preview'), onSelect: enterPreview }]),
-    ...(surface ? [{ label: PAYWALL_WORDS.back, icon: noGlyph, href: pathOf('post') }] : []),
+    ...(paywallNow ? [{ label: PAYWALL_WORDS.back, icon: noGlyph, href: pathOf('post') }] : []),
   ]
   /** the rail's rows: the stack the page paints, in its order — none on a template surface, whose Layers holds no rows */
   const railRows = useMemo(
@@ -5388,10 +5474,13 @@ function EditorShell({
             not the switcher alone. Since Story 5.22 it is the grid's middle column rather than absolutely centred, and
             Template and View as keep their size and their words at every width (D8). */}
         <div id="editor-centre" className="flex w-max items-center gap-2">
-          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : on.pathOf} />
+          {/* Story 7.13 — S14d's amber count of customised cards follows Editor cards' row (absent at zero) */}
+          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : on.pathOf} customised={customisedCount(cardDesigns)} />
           {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
-              dot, because the page you are looking at is being looked at */}
-          <ViewAs visitor={viewAs} viewed={viewedHere} onChoose={on.chooseVisitor} />
+              dot, because the page you are looking at is being looked at. STORY 7.13 — on Editor cards the group's second
+              control is S14a's Card dropdown ("dropdowns in the template switcher's position", routine call 2): a card is
+              the same for every visitor, so View as has nothing to preview there */}
+          {cardsNow ? <CardMenu card={cardOrFirst(cardKey)} designs={cardDesigns} onChoose={chooseCard} /> : <ViewAs visitor={viewAs} viewed={viewedHere} onChoose={on.chooseVisitor} />}
         </div>
         {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY
             RIGHT OF IT, as the frame draws them; Ship it (7.18) lands beside them later (R-118). Undo and redo left
@@ -5439,8 +5528,9 @@ function EditorShell({
           {/* the sun sits straight on the bar, so on the ink surround its glyph takes the surround's words (`onInk`) —
               on the button itself, never a wrapper: R-132's cluster is read as the bar's own children (the deployed
               walk's steps 46 and 54), dice, sun, device track */}
-          {darkEnabled ? <ModeToggle mode={mode} onMode={on.flip} style={onInk} /> : null}
-          <DeviceSwitch device={device} onDevice={on.pickDevice} />
+          {/* Story 7.13 — ABSENT on Editor cards: its canvas is the post at reading width in the pack's light look */}
+          {darkEnabled && !cardsNow ? <ModeToggle mode={mode} onMode={on.flip} style={onInk} /> : null}
+          {cardsNow ? null : <DeviceSwitch device={device} onDevice={on.pickDevice} />}
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
               so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
               icon for it, and R-92 forbids inventing one here. */}
@@ -5458,7 +5548,7 @@ function EditorShell({
           {surface ? null : <PreviewButton onPress={on.enterPreview} />}
           {/* C3a :1385 — the way back to the canvas the paywall is part of: a navigation, never an edit, so it is live
               reading along (R-192). A link, as Theme settings is, so the editor stays mounted across it. */}
-          {surface ? (
+          {paywallNow ? (
             <Link
               href={pathOf('post')}
               id="paywall-back"
@@ -5534,7 +5624,10 @@ function EditorShell({
           </div>
           {/* B7's two groups, every row pressable — and R-123's third ground inside it (`controls/layers.tsx`). STORY 5.20 —
               on a template surface the panel keeps its name and holds no rows: C3a's "How readers reach it" card instead */}
-          {surface ? <HowReadersReachIt tiers={tiersShown} tiersHref={tiersHref} /> : (
+          {/* STORY 7.13 — on Editor cards, S14a's left panel in Layers' place: the customised cards and the site-wide sentence */}
+          {cardsNow ? (
+            <CardsLayers designs={cardDesigns} card={cardOrFirst(cardKey)} refused={cardsRefused !== null} onChoose={chooseCard} />
+          ) : surface ? <HowReadersReachIt tiers={tiersShown} tiersHref={tiersHref} /> : (
           <Layers
             readOnly={!lock.holder}
             site={siteRows}
@@ -5603,7 +5696,7 @@ function EditorShell({
             STORY 5.22 — `inert` while a sheet is open over it: the scrim takes the press that closes it, and nothing on
             the page behind can be reached (never in Preview, where there is no sheet to draw). */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col" inert={compact && sheet !== null && !preview}>
-        {surface && !offCard ? (
+        {paywallNow && !offCard ? (
           <div data-paywall-strip hidden={preview} className="flex shrink-0 items-center gap-[9px] border-b border-paywall-strip-line bg-paywall-strip px-4 py-2">
             {/* static text, never a menu (R-118): the visitor is View as's to choose */}
             <span data-paywall-showing className="flex items-center gap-[6px] rounded-pill border border-paywall-strip-line bg-paywall-pill px-[11px] py-1 text-[12px] text-ink-mid">
@@ -5617,8 +5710,22 @@ function EditorShell({
             <span className="ml-auto text-[11.5px] text-ink-mid">{PAYWALL_WORDS.context(whole)}</span>
           </div>
         ) : null}
+        {/* STORY 7.13 — Editor cards' own canvas, the card document (`CardsCanvas`); the page canvas below stays MOUNTED and
+            hidden, so a switch back never reloads its frame */}
+        {cardsNow ? (
+          <CardsCanvas
+            // the style-guide frame's `?view=cards` — the app's, or the harness's own beside its canvas (R-146)
+            src={`${canvasBase === undefined ? (isApp(pathname) ? '/app' : '') : '/app/harness'}/style-guide/frame?view=cards&card=${encodeURIComponent(cardKey)}`}
+            card={cardOrFirst(cardKey)}
+            designs={cardDesigns}
+            pack={choice}
+            frameRef={cardsFrame}
+            onChoose={chooseCard}
+          />
+        ) : null}
         <section
           ref={stage}
+          hidden={cardsNow}
           aria-label="Canvas"
           // Story 5.18: busy until the site's first paint lands, where one is being read
           aria-busy={readable && (paints === 0 || blanked) ? true : undefined}
@@ -5828,7 +5935,7 @@ function EditorShell({
             points at B5a's own sentence, which is the honest answer to "why does nothing here respond". */}
         <aside
           id="editor-controls"
-          aria-label={surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : packList ? PACK_WORDS.name : 'Page settings'}
+          aria-label={cardsNow ? CARD_WORDS.panel(cardOrFirst(cardKey).label) : surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : packList ? PACK_WORDS.name : 'Page settings'}
           hidden={!controlsShown}
           aria-describedby={lock.holder ? undefined : 'editor-lock-reason'}
           data-readonly={lock.holder ? undefined : ''}
@@ -5847,7 +5954,10 @@ function EditorShell({
                 {/* Story 5.20 — on the Paywall canvas the head is C3a's :1477: "Paywall", with "n / m" once a design is
                     chosen (the pill's own arithmetic, `pillPosition`). Story 6.2 — at rest with the roster open it is
                     S7a's: the back chevron and "Style Pack" */}
-                {resting && packList ? (
+                {cardsNow ? (
+                  // Story 7.13 — S14e's head: the card's name and its `customised` pill, the panel's only status
+                  <CardPanelHead card={cardOrFirst(cardKey)} designs={cardDesigns} />
+                ) : resting && packList ? (
                   <StylePackHead backRef={packBack} onBack={() => showPacks(false)} />
                 ) : (
                   <PanelLabel id="editor-panel-name">{surface ? PAYWALL_WORDS.panel : chosen ? chosen.layerName : 'Page'}</PanelLabel>
@@ -5884,7 +5994,18 @@ function EditorShell({
                   </p>
                 ))(askLine(members, siteName, entry, chosen))
             : null}
-          {surface && paywallAt < 0 ? (
+          {cardsNow ? (
+            // STORY 7.13 — S14e's panel: the card's own controls (greyed reading along, R-192), Reset to Ghost default
+            <CardPanel
+              card={cardOrFirst(cardKey)}
+              designs={cardDesigns}
+              readOnly={!lock.holder}
+              swatches={{ ...choice.swatches.light, tint: choice.cardDots[4] ?? '' }}
+              onValue={setCardValue}
+              onReset={resetCard}
+              onChoose={chooseCard}
+            />
+          ) : paywallNow && paywallAt < 0 ? (
             // STORY 5.20 — THE UNTOUCHED PAYWALL (R-197): Ghost's own box is on the canvas, and the panel says so; where
             // the editor holds paywall designs their ring is here to choose from, and absent while there are none (UX-DR3)
             <>

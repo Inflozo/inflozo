@@ -71,6 +71,8 @@ There is **no table card**. Tables reach the frontend only via the Markdown card
 
 **Count: 26 distinct card types are enumerated above** — 20 creatable in the current editor (image, gallery, bookmark, audio, video, file, toggle, callout, button, product, header, signup, call-to-action, transistor, embed, code, markdown, html, divider, blockquote-alt), plus paywall/public-preview and the two email-only cards, plus 3 legacy (collection, nft, before-after). Counting the `header` v1/v2 split as separate design targets gives 27 design surfaces.
 
+*(Story 7.13's Dev, 2026-10-15 — read in source at its Create, kg-default-nodes 2.0.1 and 2.2.0; the table above is left as written.)* **Signup waits for Portal.** Its renderer writes the card's wrapper with an inline `display: none`, and the card stays hidden until Portal reveals it — so the Signup row's "no" in *Needs Ghost JS* means no card chunk, not no script. Its inline styles are the wrapper's, the button's and the texts'.
+
 ### 1.3 Cross-cutting classes (not owned by any card chunk)
 
 `.kg-card` — on nearly every card root, the hook for card-level rhythm.
@@ -92,6 +94,8 @@ They are the theme's job unconditionally — which is exactly why gscan checks t
 - **Designable only via container/child selectors:** embed (`.kg-embed-card iframe`, `.kg-embed-card > *`), markdown (no wrapper — must be reached through the theme's content wrapper, e.g. `.gh-content table`), code-without-caption (`.gh-content > pre`), divider (`.gh-content > hr`).
 - **Not designable:** paywall (a comment), email/email-cta (never rendered on web).
 - **Fights inline styles:** header v2, signup, and cta write `style="background-color:…; color:…"` from editor settings straight onto the element. A theme cannot beat an inline style without `!important`, and **should not try** — those are per-post author choices. Inflozo's controls for those three must be limited to what the inline styles do not set (typography, spacing, radius, borders, button shape).
+
+*(Story 7.13's Dev, 2026-10-15 — corrected, read in source at its Create.)* **The call-to-action card's only inline colours are its button's** (`a.kg-cta-button`); its background is a class, `kg-cta-bg-<bg>`, beside its layout class `kg-cta-<layout>`. Header v2's inline styles are its wrapper's, texts' and button's, and signup's its wrapper's, button's and texts'. None of the three is offered a colour control (R-6), and no card is offered a radius: corners are the pack's token (FR-Q7).
 
 ---
 
@@ -197,6 +201,8 @@ Gotchas for an exclude list:
 - `blockquote` means `.kg-blockquote-alt` only.
 - There is **no `image` or `embed` chunk** — those are already 100% theme responsibility, always.
 - The docs' list omits `collection`, `cta`, `header_v2`, `transistor`.
+
+*(Story 7.13's Dev, 2026-10-15 — read in source at its Create: Ghost 5.130.6's `CardAssets.js:26-55` and globrex 0.1.2.)* **Ghost 5 matches the exclude list as a prefix, not a name.** It builds the glob `css/!(a|b).css`, and that negative group is a prefix lookahead: `!(header)` drops `header_v2` too, and `exclude: []` drops every chunk. Ghost 6.58.0 compares exact names (`card-assets.js:83-105`, above). So the header card names both `header` and `header_v2` (right on both majors), `card_assets` stays `true` while no card is designed (Story 7.2's Question 2), and no other chunk name is a prefix of another. When all four scripted cards are excluded, Ghost 5 can link a `cards.min.js` it never wrote (`:57-63`, lazy minify): a harmless 404, left for DW-326's Ghost 5 pass.
 
 ### 2.4 Where in the document it lands
 
@@ -386,6 +392,8 @@ ruleSet = _.pickBy(ruleSet.rules, function (rule, ruleCode) {
 Rules per card asset: `video` 17, `audio` 16, `callout` 12, `product` 11, `bookmark` 10, `file` 9, `nft` 9, `button` 5, `toggle` 5, `before-after` 3, `gallery` 3, `blockquote` 1.
 
 Two mismatches worth knowing: gscan lints `before-after`, for which Ghost 6.58 ships **no** CSS chunk; and gscan has **no** rules for `collection`, `cta`, `header`, `header_v2`, `signup`, `transistor`. So even `card_assets: false` does not get you checking on the big modern cards.
+
+*(Story 7.13's Dev, 2026-10-15 — executed from the two pinned gscans' specs at its Create.)* **Ghost 5's pin is not the same size.** gscan 4.49.7 carries 106 `GS050` rules and 6.4.2 carries 103, under the same gate (`050-koenig-css-classes.js:16-48` in both): a card's rules run only while it is excluded, `.css` and `.hbs` files are matched unanchored on `\.<class>`, and KGWW and KGWF are always on. **Ghost's own CSS does not pass every rule an exclusion restores**, so `cards.css` answers the gap: on both pins button needs `.kg-button-card.kg-align-center`, which `button.css` lacks, and gets a real rule centring as Ghost already does; 4.49.7 also asks for callout's `.kg-callout-card-emoji`, `-text` and `-background-<colour>` and video's `.kg-video-thumbnail`, `.kg-video-thumbnail.placeholder` and `.kg-video-title`, names Ghost never prints, each written into the selector list of the rule for the real class it stands for (matching nothing, never in a comment). `tools/check-snapshots.mjs` reads a compile designing every card with a panel at 0/0 on both pins, behind two controls.
 
 ### 3.6 Comparison
 
@@ -631,6 +639,8 @@ Rules:
 - **Pin the chunk names to a Ghost version** and re-verify on each Ghost minor. Unknown names are ignored silently by Ghost (`getCardNames` filters against `available`), so a stale list degrades quietly — but it degrades *toward* Ghost's CSS reappearing under your rules, which is a live regression. Guard it with a build-time check against a checked-in `cards.manifest` name list.
 - **Remember `header` vs `header_v2`.** Designing "the header card" must exclude **both** names.
 - **Never emit `!important` in `cards.css`.** Make it a lint rule on the generator's own output.
+
+*(Story 7.13's Dev, 2026-10-15 — as built.)* `cards.css` is not imported by the theme's stylesheet: `default.hbs` links it before `screen.css`, both before `{{ghost_head}}` (AD-18). It ships on every theme, D12's two width rules first; a designed card's "seed" is Ghost's own chunk copied byte for byte under one header, then the theme's settings, so an untouched card adds no rule. The exclude list is `excludedChunks`, derived from the vendored directory rather than a checked-in name list. Ghost's own `!important`s inside the audio and video copies stay byte for byte, as `cards.js` keeps Ghost's scripts; the compiler refuses `!important` anywhere else (`checkImportant`).
 
 ### 6.6 Canvas fidelity
 

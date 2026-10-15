@@ -1168,6 +1168,14 @@ test('Story 7.1 (review) — white-space: pre* outside a pre or textarea is refu
   assert.deepEqual(said('.x__t { white-space: nowrap } .x__u { white-space: normal } .x pre { white-space: pre } .x > textarea { white-space: pre-wrap }'), [])
 })
 
+test('Story 7.13 — !important in a design\'s stylesheet is refused, as the compiler refuses it; in a comment it is not', () => {
+  const said = (css: string) => codes(validateDesign({ html: EVERY_DIRECTIVE, design: design({ controlSchema: [align()] }), css })).filter((c) => c === 'stylesheet-important')
+  assert.deepEqual(said('.x__a { color: var(--text-body) !important }'), ['stylesheet-important'])
+  assert.deepEqual(said('.x__a { color: var(--text-body) ! IMPORTANT }'), ['stylesheet-important'])
+  // the control: the same rule without it, and the word inside a comment
+  assert.deepEqual(said('.x__a { color: var(--text-body) } /* never !important */'), [])
+})
+
 test('Story 7.1 — D13: a C0 control character in a design\'s markup or stylesheet is refused by line, a tab included (Question 2); line feed and carriage return are not', () => {
   const said = (html: string, css?: string) => validateDesign({ html, design: design({ controlSchema: [align()] }), ...(css === undefined ? {} : { css }) })
     .filter((f) => f.code === 'control-character').map((f) => f.message)

@@ -284,7 +284,8 @@ test('Story 7.4 (DW-331) — every stack row carries the key the theme hashes it
   const filled: Record<string, ProjectDoc> = { ...base }
   ;(Object.keys(CANVASES) as CanvasKey[]).forEach((canvas, n) => { filled[templateKeyOf(canvas)] ??= doc([one(pilotIds()[0] as string, n)]) })
   let checked = 0
-  for (const canvas of Object.keys(CANVASES) as CanvasKey[]) {
+  // Story 7.13: Editor cards is no page and holds no rows (its values are `card_designs`), so it has no theme key to carry
+  for (const canvas of (Object.keys(CANVASES) as CanvasKey[]).filter((c) => c !== 'cards')) {
     const file = CANVASES[canvas].file
     const two = PAGE_TWO[canvas]
     const cases: [Page, boolean][] = two === undefined ? [[1, false]] : [[1, false], [2, false], [2, true]]

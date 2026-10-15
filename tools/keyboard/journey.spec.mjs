@@ -4104,8 +4104,8 @@ const PAYWALL = await import(new URL('../../apps/web/lib/paywall.ts', import.met
 const P = PAYWALL.PAYWALL_WORDS
 const surfaceBox = (page) => canvasFrame(page).locator('[data-inflozo-box]')
 
-/** Template ▾, then End — the Template surfaces group is the menu's last — and Enter: one soft navigation, the editor
- *  mounted across it, and the Paywall canvas painted. */
+/** Template ▾, then End — the Template surfaces group is the menu's last — then ↑ to Paywall (Story 7.13: Editor cards
+ *  follows it), and Enter: one soft navigation, the editor mounted across it, and the Paywall canvas painted. */
 async function openPaywall(page) {
   await open(page)
   await page.locator('#editor-template').focus()
@@ -4113,6 +4113,8 @@ async function openPaywall(page) {
   // the menu opens ON ITS CHECKED ROW a frame after the key (R-171) — the next key waits for it, as `menuTo` does
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
+  // Story 7.13: Editor cards is the last row now, Paywall the one above it
+  await page.keyboard.press('ArrowUp')
   await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(page).toHaveURL(/\/app\/harness\/editor\/paywall$/)
@@ -4142,7 +4144,8 @@ test('5.20 · Template ▾ → Paywall: the ink bar says so, Layers holds C3a\'s
   await expect(page.locator('#editor-remix')).toHaveCount(0)
   await expect(page.locator('#editor-preview')).toHaveCount(0)
   // the switcher's row: R-130's "Empty" while the paywall is untouched, in the Template surfaces group
-  await expect(page.locator('#editor-template-surfaces')).toHaveText(P.group)
+  // Story 7.13: the heading is shared by the two surfaces now (`SURFACES_HEADING`)
+  await expect(page.locator('#editor-template-surfaces')).toHaveText(EDITOR_WORDS.SURFACES_HEADING)
   await expect(page.locator('[data-canvas="paywall"] [data-mark="empty"]')).toHaveCount(1)
   // Layers: no rows, no "+ Add section", and C3a's card with the sample's own tier line — and no admin link (no site)
   await expect(page.locator('[data-layer-row]')).toHaveCount(0)
@@ -4502,6 +4505,8 @@ test('5.21 · Sample content keeps both (the connection\'s, not the content\'s);
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
+  // Story 7.13: Editor cards is the last row now, Paywall the one above it
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
   await expect.poll(async () => (await shims(page)).surfaces).toBe(0)
@@ -4581,6 +4586,8 @@ test('5.21 · the editor re-reads the site ONCE per opening — reading along to
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="post"]')).toBeFocused()
   await page.keyboard.press('End')
+  // Story 7.13: Editor cards is the last row now, Paywall the one above it
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
   await expect.poll(() => rereads, 'entering the Paywall re-checks').toBe(2)
@@ -4697,6 +4704,8 @@ test('5.21 · From your Ghost site (the owner\'s finding): two Layers rows name 
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
+  // Story 7.13: Editor cards is the last row now, Paywall the one above it
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
   await expect(page.locator('[data-ghost-rows]')).toHaveCount(0)
@@ -6691,6 +6700,8 @@ test('R-215 (the review of 5.24e): a pointed-at Ghost row the re-read no longer 
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
+  // Story 7.13: Editor cards is the last row now, Paywall the one above it
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
   await expect.poll(() => rereads, 'entering the Paywall re-checks').toBe(2)
@@ -6993,6 +7004,8 @@ test('DW-275 (Story 5.24e): the Paywall\'s post-body sheet is no part of the can
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
+  // Story 7.13: Editor cards is the last row now, Paywall the one above it
+  await page.keyboard.press('ArrowUp')
   await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
   await page.keyboard.press('Enter')
   await expect.poll(() => asked, { message: 'the control: the Paywall asked for its sheet' }).toBe(true)
@@ -7869,4 +7882,161 @@ test('7.10 · Remix that moves a promoted section to a design without its contro
   const words = [THEME.parkNote('Show icons'), THEME.parkNote('Picture')].join(' ')
   await expect.poll(() => said(page)).toMatch(new RegExp(`^Remixed .+\\. ${words.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`))
   await expect.poll(() => canvasNotes(page), 'the note on the section').toEqual([words])
+})
+
+// ── Story 7.13 — EDITOR CARDS, THE SECOND TEMPLATE SURFACE (NFR-5; the stack and the record are the deployed walk's step 107) ──
+
+const CARDS_WORDS = await import(new URL('../../apps/web/lib/cards.ts', import.meta.url).href)
+const C = CARDS_WORDS.CARD_WORDS
+/** Editor cards' own document — the card document, never the page canvas beside it (hidden, and titled the same) */
+const cardsFrame = (page) => page.frameLocator('iframe[data-cards-frame]')
+/** the canvas's own `cards.css` half, as the editor last wrote it */
+const cardsCssOf = (page) => cardsFrame(page).locator('style[data-order="1c-cards.css"]').evaluate((s) => s.textContent)
+
+/** Template ▾, then End — Editor cards is the menu's last row — and Enter: one soft navigation, the editor mounted across
+ *  it, and the card document dressed (the selected card ringed). */
+async function openCards(page) {
+  await open(page)
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('End')
+  await expect(page.locator('[data-canvas="cards"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/\/app\/harness\/editor\/cards$/)
+  await expect(cardsFrame(page).locator('[data-inflozo-card-selected]')).toHaveCount(1)
+}
+
+test('7.13 · Template ▾ → Editor cards: the ink bar, the Card dropdown on Callout, the left panel\'s lines, the callout panel — and a value, ⌘Z and ⌘⇧Z from the keyboard', async ({ page }) => {
+  await openCards(page)
+  await expect(page.locator('[data-surface-chip]')).toHaveText(P.chip)
+  await expect(page.locator('#editor-card')).toContainText('Callout')
+  await expect(page.locator('#editor-view-as')).toHaveCount(0)
+  await expect(page.locator('[data-none-customised]')).toHaveText(C.noneCustomised)
+  await expect(page.locator('#editor-panel-name')).toHaveText('Callout')
+  // the matrix's "Stored record malformed" control: a record that reads says nothing about one that did not
+  await expect(page.locator('[data-cards-refused]')).toHaveCount(0)
+  await expect(page.getByText(C.malformed)).toHaveCount(0)
+  // P0-0: at Ghost's palette the background row is greyed, its four swatches dead and its reason said under it
+  const background = page.getByRole('radiogroup', { name: 'Callout background' })
+  const swatches = background.getByRole('radio')
+  await expect(swatches).toHaveCount(LIB.CARDS.find((c) => c.key === 'callout').controls.find((c) => c.name === 'background').values.length)
+  await expect(background).toHaveAttribute('aria-disabled', 'true')
+  for (const swatch of await swatches.all()) await expect(swatch).toBeDisabled()
+  await expect(page.getByText(C.greyed['callout.background'])).toBeVisible()
+  // a value: Callout colours from Ghost's palette to Pack tokens, by the radio group's own arrows
+  await page.getByRole('radio', { name: "Ghost's palette" }).focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.getByRole('radio', { name: 'Pack tokens' })).toHaveAttribute('aria-checked', 'true')
+  // …and the background row comes alive: no longer greyed, every swatch enabled, the reason gone
+  await expect(background).not.toHaveAttribute('aria-disabled', 'true')
+  for (const swatch of await swatches.all()) await expect(swatch).toBeEnabled()
+  await expect(page.getByText(C.greyed['callout.background'])).toHaveCount(0)
+  await expect.poll(() => cardsCssOf(page)).toContain('background: var(--bg-page)')
+  await expect(page.locator('#editor-said')).toHaveText(C.changed('Callout', 'Callout colours', 'Pack tokens'))
+  await expect(page.locator('[data-customised-card="callout"]')).toHaveText('Callout')
+  // the switcher's amber count, read as words
+  await expect(page.locator('[data-canvas="cards"] [data-count]')).toContainText(C.count(1))
+  // ⌘Z takes it back, ⌘⇧Z puts it back — one entry each way
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => cardsCssOf(page)).not.toContain('--bg-page')
+  await expect(page.locator('[data-customised-card]')).toHaveCount(0)
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await expect.poll(() => cardsCssOf(page)).toContain('background: var(--bg-page)')
+})
+
+test('7.13 · Reset to Ghost default opens S14c on Cancel — Cancel writes nothing; Reset card clears every badge; ⌘Z brings the values back', async ({ page }) => {
+  await openCards(page)
+  await page.getByRole('switch', { name: 'Emoji' }).focus()
+  await page.keyboard.press('Space')
+  await expect.poll(() => cardsCssOf(page)).toContain('div.kg-callout-emoji { display: none; }')
+  await page.locator('#card-reset').focus()
+  await page.keyboard.press('Enter')
+  const dialog = page.locator('dialog[open]')
+  await expect(dialog).toContainText(C.resetTitle('Callout'))
+  await expect(dialog).toContainText(CARDS_WORDS.resetSentence({ callout: { emoji: 'off' } }, 'callout'))
+  await expect(dialog.getByRole('button', { name: C.cancel })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(dialog).toHaveCount(0)
+  await expect(page.locator('[data-customised-card="callout"]')).toHaveCount(1)
+  // again, and Reset card
+  await page.locator('#card-reset').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('dialog[open]').getByRole('button', { name: C.cancel })).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('#card-reset-confirm')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-customised-card]')).toHaveCount(0)
+  await expect(page.locator('[data-canvas="cards"] [data-count]')).toHaveCount(0)
+  await expect(page.locator('#editor-said')).toHaveText(C.wasReset('Callout'))
+  await expect.poll(() => cardsCssOf(page)).not.toContain('kg-callout-emoji')
+  await page.locator('section[data-cards-canvas]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('[data-customised-card="callout"]')).toHaveCount(1)
+  await expect.poll(() => cardsCssOf(page)).toContain('div.kg-callout-emoji { display: none; }')
+})
+
+test('7.13 · the Card dropdown by keyboard: every card in Ghost\'s order, the no-colour mark on three rows; Signup\'s panel says so, and Call to action shows its one line', async ({ page }) => {
+  await openCards(page)
+  await page.locator('#editor-card').focus()
+  await page.keyboard.press('Enter')
+  const menu = page.locator('#editor-card-menu')
+  await expect(menu.locator('[data-card="callout"]')).toBeFocused()
+  await expect(menu.locator('[data-card]')).toHaveText(LIB.CARDS.map((c) => new RegExp(`^${c.label}`)))
+  await expect(menu.locator('[data-no-colour]')).toHaveCount(LIB.CARDS.filter((c) => !c.colour).length)
+  await page.keyboard.press('ArrowDown')
+  await expect(menu.locator('[data-card="signup"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-panel-name')).toHaveText('Signup')
+  await expect(page.locator('[data-no-colour-note]')).toHaveText(C.noColour)
+  await expect(cardsFrame(page).locator('[data-inflozo-card-selected]')).toHaveClass(/kg-signup-card/)
+  // Call to action: up two rows from Callout
+  await page.locator('#editor-card').focus()
+  await page.keyboard.press('Enter')
+  await expect(menu.locator('[data-card="signup"]')).toBeFocused()
+  await page.keyboard.press('ArrowUp')
+  await page.keyboard.press('ArrowUp')
+  await page.keyboard.press('ArrowUp')
+  await expect(menu.locator('[data-card="cta"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-card-none]')).toHaveText(C.none.cta)
+  await expect(page.locator('#card-reset')).toHaveCount(0)
+})
+
+test('7.13 · reading along (R-192): every card control is disabled and nothing journals — the Card dropdown still chooses', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+  await openCards(page)
+  await expect(page.getByRole('radio', { name: "Ghost's palette" })).toBeDisabled()
+  await expect(page.getByRole('switch', { name: 'Emoji' })).toBeDisabled()
+  await page.locator('#editor-card').focus()
+  await page.keyboard.press('Enter')
+  // the menu takes focus ON ITS CHECKED ROW a frame after the key: step only once it has
+  await expect(page.locator('#editor-card-menu [data-card="callout"]')).toBeFocused()
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await expect(page.locator('#editor-card-menu [data-card="toggle"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-panel-name')).toHaveText('Toggle')
+  // the canvas is live too: the ring moved to the toggle
+  await expect(cardsFrame(page).locator('[data-inflozo-card-selected]')).toHaveClass(/kg-toggle-card/)
+  await expect(page.getByRole('radio', { name: 'Left' })).toBeDisabled()
+  await expect(page.locator('[data-customised-card]')).toHaveCount(0)
+})
+
+test('7.13 · a stored record the editor\'s door refuses (a divider glyph the icon set does not draw): Editor cards opens on Ghost\'s defaults and says so once', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-cards': 'malformed' })
+  await openCards(page)
+  await expect(page.locator('[data-cards-refused]')).toHaveText(C.malformed)
+  await expect(page.getByText(C.malformed), 'said once').toHaveCount(1)
+  await expect(page.locator('#editor-panel-name')).toHaveText('Callout')
+  await expect(page.getByRole('radio', { name: "Ghost's palette" })).toHaveAttribute('aria-checked', 'true')
+  await expect(page.locator('[data-customised]')).toHaveCount(0)
+  await expect(page.locator('[data-none-customised]')).toHaveText(C.noneCustomised)
+  // no amber count on the switcher's row
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="cards"]')).toBeVisible()
+  await expect(page.locator('[data-canvas="cards"] [data-count]')).toHaveCount(0)
+  await page.keyboard.press('Escape')
 })

@@ -18,7 +18,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { orbitWeekly } from '@inflozo/library'
+import { cardOf, KOENIG_WIDTHS, orbitWeekly } from '@inflozo/library'
 import { presetOf } from '@inflozo/library/packs'
 import { CTA_STYLES } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
@@ -53,21 +53,20 @@ const VENDOR = () => join(ORBIT_WEEKLY_DIR(), 'vendor', 'cards')
 /** The major this surface previews. T1's, because it is the target the card chunks were vendored from. */
 export const PREVIEW_MAJOR: orbitWeekly.Major = '6'
 
-/**
- * THE CARDS THE USER HAS DESIGNED — and today there are none: no card treatment exists before A33
- * (Epic 10, FR-Q7), so the exclude list is empty and the simulated bundle is Ghost's whole chunk set,
- * which is the honest state. Nothing here is a list of chunks: the universe is the vendored directory.
- * ponytail: a constant until the first card design lands; A33's placement list replaces it.
- */
-export const DESIGNED_CARDS: readonly string[] = []
-
-/** The chunk names Ghost ships, read off the vendored directory — never written down. */
+/** The chunk names Ghost ships, read off the vendored directory — never written down. Story 7.13: the set `card_assets` may
+ *  exclude, and the one the card registry's `excludedChunks` is handed (the compiler's shell reads the same directory). */
 export const chunkUniverse = (kind: 'css' | 'js'): string[] =>
   readdirSync(join(VENDOR(), kind)).filter((f) => f.endsWith(`.${kind}`)).map((f) => f.slice(0, -kind.length - 1)).sort()
 
-/** The simulated `cards.min.css`: exactly the complement of the derived exclude list. */
-export function simulatedCardsCss(designed: readonly string[] = DESIGNED_CARDS): { chunks: string[]; css: string } {
-  const chunks = orbitWeekly.simulatedChunks(chunkUniverse('css'), designed)
+/** Story 7.13 — Ghost's stylesheet chunks as vendored, head and all, by chunk name: what `cardsCss` copies from. */
+export const cardChunks = (): Record<string, string> =>
+  Object.fromEntries(chunkUniverse('css').map((c) => [c, readFileSync(join(VENDOR(), 'css', `${c}.css`), 'utf8')]))
+
+/** The simulated `cards.min.css`: exactly the complement of the exclude list. Story 7.13: the list is the card registry's
+ *  (`excludedChunks` over the project's designs) — none excluded where no card is designed, which is every caller but the
+ *  Editor cards canvas, whose own document is rewritten in the browser as values change (`cardsDocument`). */
+export function simulatedCardsCss(excluded: readonly string[] = []): { chunks: string[]; css: string } {
+  const chunks = orbitWeekly.simulatedChunks(chunkUniverse('css'), excluded)
   return { chunks, css: chunks.map((c) => readFileSync(join(VENDOR(), 'css', `${c}.css`), 'utf8')).join('\n') }
 }
 
@@ -245,4 +244,41 @@ export function variationsDocument(nonce: string): string {
     return [label, b.html, opened]
   })
   return `${head('Variation sheet')}<body><main><article class="gh-content">${withImages(parts.join(''))}</article></main>${scripts(nonce)}</body></html>`
+}
+
+/**
+ * STORY 7.13 — THE EDITOR CARDS CANVAS (FR-Q7, FR-H3): the selected card's every recorded variation (the variation sheet's
+ * blocks for it) first, under C.4's article header, then C.4's whole article — all inside `.gh-content`, so `.kg-width-*` and
+ * every scoped selector read as on a site — with the stylesheets in the THEME's order: the tokens (the project's pack is worn
+ * on them in the browser, `wearPack`), the `cards.css` the compiler would emit (`1c-cards.css`), the theme stand-in, then the
+ * simulated `cards.min.css` (`3-cards.min.css`). The editor rewrites those two card `<style>` elements in place as values
+ * change, from the vendored chunks this document carries as data (`#card-chunks`), so a change never reloads the page.
+ *
+ * Ghost's four card scripts run here, each carrying the request's nonce, so a toggle opens and a gallery proportions: the
+ * editor's own canvas runs no script and refuses `eval` (`behaviours.ts`), and Ghost's chunks are IIFEs over the global
+ * `document` — which is why this is a document of its own (the style-guide frame's way). A card's choice reloads it, since
+ * those scripts run once, at load. `card` is a registry key; an unknown one draws the article alone.
+ */
+export function cardsDocument(nonce: string, card: string | null): string {
+  const entry = cardOf(card ?? '')
+  const ids = new Set(orbitWeekly.variants().filter((v) => entry?.sample !== null && v.card === entry?.sample).map((v) => v.id))
+  const variations = orbitWeekly.blocks(PREVIEW_MAJOR, 'variations').filter((b) => b.id !== null && ids.has(b.id)).map((b) => b.html).join('')
+  const tokens = readFileSync(join(PACKAGES(), 'section-runtime', 'reference-tokens.css'), 'utf8')
+  const all = simulatedCardsCss()
+  const accent = orbitWeekly.site().accent_color
+  // the chunks as data, never as script: `<` written as its escape, so nothing in a stylesheet can end the element
+  const data = JSON.stringify(cardChunks()).replace(/</g, '\\u003c')
+  const head = `<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Editor cards</title>` +
+    `<style data-order="1-tokens">${tokens}</style>` +
+    `<style data-order="1b-faces">${PAPER_FACES()}</style>` +
+    `<style data-order="1c-cards.css" data-cards-css>${KOENIG_WIDTHS}</style>` +
+    `<style data-order="2-theme">${THEME_CSS}</style>` +
+    `<style data-order="3-cards.min.css" data-chunks="${all.chunks.join(' ')}">${all.css}</style>` +
+    `<style data-order="4-ghost-accent">:root{--ghost-accent-color:${accent}}</style>` +
+    `<script type="application/json" id="card-chunks" nonce="${esc(nonce)}">${data}</script></head>`
+  const body = `<main>${postHead(orbitWeekly.subject('post'))}<article class="gh-content">${variations}${orbitWeekly.styleGuideBody(PREVIEW_MAJOR)}</article></main>`
+  const { chunks, js } = cardScripts()
+  // Portal un-hides every `[data-lexical-signup-form]` on load (`scripts`' own reason), and the card scripts run
+  const portal = `document.querySelectorAll('[data-lexical-signup-form]').forEach(function(e){e.style.display=''});`
+  return `${head}<body>${withImages(body)}<script nonce="${esc(nonce)}">${portal}</script><script nonce="${esc(nonce)}" data-chunks="${chunks.join(' ')}">${js}</script></body></html>`
 }

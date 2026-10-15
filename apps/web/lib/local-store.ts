@@ -1,3 +1,4 @@
+import type { CardDesigns } from '@inflozo/library'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import { EMPTY_JOURNAL, owedOf, type Journal, type JournalEntry, type OwedRecord } from './journal.ts'
 import type { PackRecords } from './pack-edit.ts'
@@ -42,6 +43,10 @@ export type LocalRecord = {
    *  ABSENT in a record written before 6.4, and then the server's are the ones the hydrate keeps. A new optional field of
    *  the one `meta` row, so no IndexedDB upgrade (`VERSION` stays). */
   packs?: PackRecords
+  /** STORY 7.13 — the project's card designs here, the whole `card_designs` record, held with the docs (a change not yet
+   *  sent survives a reload). ABSENT in a record written before 7.13, and then the server's are the ones the hydrate keeps;
+   *  the hydrate reads this through `parseCardDesigns` (AD-36). Another optional field of the one `meta` row. */
+  cards?: CardDesigns
 }
 
 type MetaRow = {
@@ -51,6 +56,7 @@ type MetaRow = {
   auto: string[]
   preset?: string
   packs?: PackRecords
+  cards?: CardDesigns
   undone: number
   synced: number
   pending: Record<string, number>
@@ -180,6 +186,8 @@ export async function openLocal(userId: string, gone?: () => void): Promise<Loca
         ...(typeof meta.preset === 'string' ? { preset: meta.preset } : {}),
         // Story 6.4 — read as stored; the hydrate validates it (`ownPacksIn`) before anything is drawn from it
         ...(typeof meta.packs === 'object' && meta.packs !== null ? { packs: meta.packs } : {}),
+        // Story 7.13 — the same: read as stored, and `parseCardDesigns` judges it before anything is drawn from it
+        ...(typeof meta.cards === 'object' && meta.cards !== null ? { cards: meta.cards } : {}),
       }
     }, null)
 
@@ -209,6 +217,7 @@ export async function openLocal(userId: string, gone?: () => void): Promise<Loca
           auto: record.auto,
           ...(record.preset === undefined ? {} : { preset: record.preset }),
           ...(record.packs === undefined ? {} : { packs: record.packs }),
+          ...(record.cards === undefined ? {} : { cards: record.cards }),
           undone: record.journal.undone,
           synced: record.journal.synced,
           pending: { ...record.journal.pending },

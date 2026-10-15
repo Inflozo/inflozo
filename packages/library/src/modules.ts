@@ -160,34 +160,44 @@ export const CARDS_JS_TAG = '<script defer src="{{asset "js/cards.js"}}"></scrip
 /** Ghost's card names (`package.json`'s `card_assets.exclude`): the one grammar a card name reaching a header holds. */
 const CARD_NAME_RE = /^[a-z0-9_]+$/
 
-/** `tools/probe/record-cards.py`'s two-line head on each vendored chunk, by its exact shape: the Ghost version, the card
- *  (its file's name) and Ghost's copyright line. It would ship a repo path and a repo tool's name, so it is cut. */
-const VENDORED_HEAD = /^\/\* Vendored verbatim from Ghost (\d+\.\d+\.\d+), core\/frontend\/src\/cards\/js\/([a-z0-9_]+)\.js, by `python3 tools\/probe\/record-cards\.py`\.\n {3}(Copyright \(c\) [^\n*]+?)\. MIT licence — the full text is vendor\/LICENSE-ghost\.txt\. \*\/\n/
+/** `tools/probe/record-cards.py`'s two-line head on each vendored chunk, by its exact shape: the Ghost version, the chunk's
+ *  directory and name (its file's), and Ghost's copyright line. It would ship a repo path and a repo tool's name, so it is
+ *  cut. Story 7.13: the same head opens every stylesheet chunk (`cards/css/<name>.css`), and is cut the same way. */
+const VENDORED_HEAD = /^\/\* Vendored verbatim from Ghost (\d+\.\d+\.\d+), core\/frontend\/src\/cards\/(css|js)\/([a-z0-9_]+)\.(css|js), by `python3 tools\/probe\/record-cards\.py`\.\n {3}(Copyright \(c\) [^\n*]+?)\. MIT licence — the full text is vendor\/LICENSE-ghost\.txt\. \*\/\n/
 
-/** Each named card's chunk, its head cut and read: one Ghost version and one copyright line for all of them. Throws,
- *  naming the card, on a name outside Ghost's card grammar, a card with no script, a head not as vendored, an empty or
- *  unterminated body, or a version or copyright that differs from the first card's. */
-function vendored(names: readonly string[], scripts: Readonly<Record<string, string>>): { version: string; copyright: string; cards: [string, string][] } {
-  const cards = [...new Set(names)].sort(byCode)
-  if (cards.length === 0) throw new Error('cards.js carries at least one card — a theme with no scripted card ships no cards.js')
+/** Each named chunk, its head cut and read, in the order given (each once): one Ghost version and one copyright line for
+ *  all of them. Throws, naming the chunk, on a name outside Ghost's card grammar, a name with no vendored file, a head not
+ *  as vendored, an empty body — or, for a script, one that does not end its last line (Ghost's stylesheets do not all end
+ *  theirs, so a copier adds the line break between two) — or a version or copyright that differs from the first's.
+ *  `cardsJs` and Story 7.13's `cardsCss` (`cards.ts`) are its two callers: one head-stripping for both of Ghost's files. */
+export function vendoredChunks(names: readonly string[], files: Readonly<Record<string, string>>, kind: 'css' | 'js'): { version: string; copyright: string; chunks: [string, string][] } {
+  const chunks = [...new Set(names)]
+  const file = kind === 'js' ? 'cards.js' : 'cards.css'
+  if (chunks.length === 0) throw new Error(`${file} carries at least one card's Ghost chunk — a theme with none ships ${kind === 'js' ? 'no cards.js' : "no Ghost block in cards.css"}`)
   let first: { version: string; copyright: string } | undefined
   const out: [string, string][] = []
-  for (const name of cards) {
+  for (const name of chunks) {
     if (!CARD_NAME_RE.test(name)) throw new Error(`${JSON.stringify(name)} is no Ghost card name (${CARD_NAME_RE.source})`)
-    const text = own(scripts, name)
-    if (text === undefined) throw new Error(`${name}: Ghost's card scripts hold no ${name}.js, so cards.js cannot carry it`)
+    const text = own(files, name)
+    if (text === undefined) throw new Error(`${name}: Ghost's card ${kind === 'js' ? 'scripts' : 'stylesheets'} hold no ${name}.${kind}, so ${file} cannot carry it`)
     const head = VENDORED_HEAD.exec(text)
-    if (head === null || head[2] !== name) throw new Error(`${name}.js does not open with record-cards.py's head naming ${name}.js, so it is not Ghost's chunk as vendored`)
+    if (head === null || head[2] !== kind || head[4] !== kind || head[3] !== name) throw new Error(`${name}.${kind} does not open with record-cards.py's head naming ${name}.${kind}, so it is not Ghost's chunk as vendored`)
     const body = text.slice(head[0].length)
-    if (body.trim() === '' || !body.endsWith('\n')) throw new Error(`${name}.js: Ghost's chunk is empty or does not end its last line, so it cannot be copied whole`)
-    const [, version = '', , copyright = ''] = head
+    if (body.trim() === '' || (kind === 'js' && !body.endsWith('\n'))) throw new Error(`${name}.${kind}: Ghost's chunk is empty${kind === 'js' ? ' or does not end its last line' : ''}, so it cannot be copied whole`)
+    const [, version = '', , , , copyright = ''] = head
     if (first === undefined) first = { version, copyright }
     else if (version !== first.version || copyright !== first.copyright) {
-      throw new Error(`${name}.js is copied from Ghost ${version} (${copyright}), and ${cards[0]}.js from Ghost ${first.version} (${first.copyright}) — cards.js copies one Ghost`)
+      throw new Error(`${name}.${kind} is copied from Ghost ${version} (${copyright}), and ${chunks[0]}.${kind} from Ghost ${first.version} (${first.copyright}) — ${file} copies one Ghost`)
     }
     out.push([name, body])
   }
-  return { ...(first as { version: string; copyright: string }), cards: out }
+  return { ...(first as { version: string; copyright: string }), chunks: out }
+}
+
+/** The scripts, in code-unit order — `cards.js`'s order since Story 7.5. */
+const vendored = (names: readonly string[], scripts: Readonly<Record<string, string>>): { version: string; copyright: string; cards: [string, string][] } => {
+  const { version, copyright, chunks } = vendoredChunks([...new Set(names)].sort(byCode), scripts, 'js')
+  return { version, copyright, cards: chunks }
 }
 
 /** The Ghost version the named cards' scripts are copied from — what README.md says beside `cards.js`. */

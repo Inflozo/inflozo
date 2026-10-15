@@ -641,18 +641,11 @@ export function previewFixtures(major: Major = '6'): { content: string; comments
 
 // ─── the simulated cards.min.css ──────────────────────────────────────────────
 
-/** FR-Q7's exclude list, derived from the cards the user designed: a designed card excludes its own
- *  chunk, and designing "the header card" excludes BOTH `header` and `header_v2`, which Ghost treats
- *  as separate names (research-ghost-koenig-cards.md §2.3). A designed card with no chunk (image,
- *  embed, code) contributes nothing — there is nothing of Ghost's to exclude. */
-export function cardAssetsExclude(chunks: readonly string[], designed: readonly string[]): string[] {
-  const want = new Set(designed.flatMap((c) => (c === 'header' || c === 'header_v2' ? ['header', 'header_v2'] : [c])))
-  return chunks.filter((c) => want.has(c))
-}
-
-/** The chunks the simulated `cards.min.css` carries: exactly the complement of the exclude list, in
- *  Ghost's own build order (filenames, sorted — `scripts/build-card-assets.mjs`). */
-export function simulatedChunks(chunks: readonly string[], designed: readonly string[]): string[] {
-  const out = new Set(cardAssetsExclude(chunks, designed))
+/** The chunks the simulated `cards.min.css` carries: exactly the complement of the exclude list, in Ghost's own build
+ *  order (filenames, sorted — `scripts/build-card-assets.mjs`). Story 7.13: the exclude list is the card registry's
+ *  (`excludedChunks` in `cards.ts`, the compiler's own), handed in — it names the header card's two chunks, and a designed
+ *  card with no chunk (an image, a divider, an embed) adds nothing. */
+export function simulatedChunks(chunks: readonly string[], excluded: readonly string[]): string[] {
+  const out = new Set(excluded)
   return [...chunks].sort((a, b) => compare(a, b)).filter((c) => !out.has(c))
 }

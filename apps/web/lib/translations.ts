@@ -9,6 +9,7 @@
  * Every sentence the surface prints is in ONE list (R-170), `TRANSLATION_WORDS`, and D6a's rail is `RAIL_WORDS`. */
 
 import { languageLabel, type Script, SCRIPT_NAMES } from '@inflozo/library/languages'
+import { CARD_WORDS } from './cards.ts'
 import { canvasPath, canvasOfPageTwoKey, canvasOfTemplateKey, SITE } from './editor.ts'
 import { EVERY_PAGE, pageOf } from './theme-settings.ts'
 
@@ -99,6 +100,8 @@ export const RAIL_WORDS = {
   label: 'Settings',
   theme: 'Theme settings',
   translations: TRANSLATION_WORDS.title,
+  /** Story 7.13 — S14d's second route to Editor cards, an internal item: the editor's own surface, one name (R-170) */
+  cards: CARD_WORDS.label,
   navigation: 'Navigation ↗',
   social: 'Social accounts ↗',
   injection: 'Code injection ↗',

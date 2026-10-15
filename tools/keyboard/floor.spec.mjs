@@ -16,6 +16,7 @@ import { devices, expect, test } from '@playwright/test'
 
 const HARNESS = '/app/harness/editor'
 const FLOOR = await import(new URL('../../apps/web/lib/floor.ts', import.meta.url).href)
+const { CARD_WORDS } = await import(new URL('../../apps/web/lib/cards.ts', import.meta.url).href)
 
 /** a descriptor, without the browser it would pick for itself */
 const device = (name) => {
@@ -420,6 +421,31 @@ test.describe('7.3 · D5f · the pill\'s bin, the one removing gesture no key re
     await page.locator('dialog[open] button', { hasText: EDITOR.EMPTY_TEMPLATE_ASK.confirm }).click()
     await expect.poll(own).toHaveLength(0)
     await expect(page.locator('#editor-said')).toHaveText(/ removed$/)
+  })
+})
+
+test.describe('7.13 · S14e: a card clicked on the Editor cards canvas is selected (1280 × 720)', () => {
+  test.use({ viewport: { width: 1280, height: 720 }, hasTouch: false })
+
+  test('a click on a toggle in the card document selects Toggle: its panel opens and the ring moves to it; a click on a bookmark selects it and never follows its link', async ({ page }) => {
+    await page.goto(`${HARNESS}/cards`)
+    const frame = page.frameLocator('iframe[data-cards-frame]')
+    const ringed = frame.locator('[data-inflozo-card-selected]')
+    await expect(ringed, 'the control: the surface opens on Callout, ringed').toHaveClass(/kg-callout-card/)
+    await expect(page.locator('#editor-panel-name')).toHaveText('Callout')
+    // the heading, as an author's reader would press it (the card's own click opens it too, which is Ghost's)
+    await frame.locator('.kg-toggle-card .kg-toggle-heading').first().click()
+    await expect(page.locator('#editor-panel-name')).toHaveText('Toggle')
+    await expect(ringed).toHaveClass(/kg-toggle-card/)
+    await expect(page.locator('#editor-said')).toHaveText(CARD_WORDS.chosen('Toggle'))
+    // a card that IS a link: the press selects Bookmark and the canvas never follows the link (AD-21's trap) — the frame
+    // stays the card document, asked for Bookmark
+    const link = frame.locator('a.kg-bookmark-container').first()
+    await expect(link, 'the control: the bookmark is a real link').toHaveAttribute('href', /^https?:\/\//)
+    await link.click()
+    await expect(page.locator('#editor-panel-name')).toHaveText('Bookmark')
+    await expect(ringed).toHaveClass(/kg-bookmark-card/)
+    await expect.poll(() => page.locator('iframe[data-cards-frame]').evaluate((f) => f.contentWindow?.location.href ?? '')).toMatch(/\/style-guide\/frame\?view=cards&card=bookmark$/)
   })
 })
 

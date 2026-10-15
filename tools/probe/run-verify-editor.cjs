@@ -250,6 +250,15 @@
 // refused override stored straight to the table (its row refused, the canvas on the default), the Cyrillic whole faces served
 // signed in with a made-up name's 404, and the first link's language through Use your brand on B (de, and "zz zz" as en);
 // 106d gains DEL and a backslash, and 106j the rail's new-tab words.
+// Story 7.13 adds step 107, in contexts of its own: EDITOR CARDS on production — the Template surfaces group holding Paywall
+// then Editor cards (Empty, no count), the surface's ink bar, Card dropdown, panels and the ringed callout; the dropdown in
+// the registry's order with the no-colour marks; Pack tokens and Tint turning every callout one colour, with the badges and
+// the amber count; Emoji off and ⌘Z; ⌘S storing `project_treatments.card_designs` whole (start values never stored) with the
+// revision moved by one, read back through the service key; a crafted value refused 422 with nothing written; the record
+// after a reload; S14c opening on Cancel, Cancel, then Reset card and an empty record saved; Theme settings' rail landing on
+// the last-viewed card; the read-only tab; and the record handed back. It RE-EXPECTS STEPS 6, 52, 95, 106a and 106j: `/cards`
+// answers 200 (it left step 6's 404 list for OFFERED), the rail's third item is Editor cards, and the surfaces' heading is
+// the editor's own `SURFACES_HEADING`.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -2753,7 +2762,7 @@ async function main() {
       settings.flat.block?.shadow === 'none' && settings.flat.block?.top === '1px' && settings.flat.block?.left === '0px' && settings.flat.block?.bg === 'rgba(0, 0, 0, 0)' && settings.flat.row?.left === '1px', JSON.stringify(settings.flat))
     check('step 52 — Story 7.9 (Question 2): the seeded project links no site, so Site basics is its one caption and draws no Accent colour row', linked52 === null && settings.noSite && !settings.accent, JSON.stringify({ linked52, noSite: settings.noSite, accent: settings.accent }))
     check('step 52 — R-118: Credits (7.28) is ABSENT, and so are the rail\'s Navigation, Social accounts and Code injection on a project that links no site (Story 7.12\'s Question 2) — not greyed and not captioned', settings.restOfD6a.length === 0 && !settings.reason && !settings.kept, settings.restOfD6a.join(' · '))
-    check('step 52 — Story 7.12: D6a\'s rail draws Theme settings and Translations', JSON.stringify(settings.rail) === JSON.stringify([TR52.RAIL_WORDS.theme, TR52.RAIL_WORDS.translations]), JSON.stringify(settings.rail))
+    check('step 52 — Story 7.12: D6a\'s rail draws Theme settings and Translations, and since Story 7.13 Editor cards', JSON.stringify(settings.rail) === JSON.stringify([TR52.RAIL_WORDS.theme, TR52.RAIL_WORDS.translations, TR52.RAIL_WORDS.cards]), JSON.stringify(settings.rail))
 
     // ── step 53 — FR-D7's Light-only half, against the STORED docs, and back again ──
     await segment('off').click()
@@ -6190,6 +6199,8 @@ async function main() {
        line is the library's own sample tiers through the app's own `tierLine`. */
     const PW95 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/paywall.ts')).href)
     const P95 = PW95.PAYWALL_WORDS
+    // Story 7.13: the group's heading is the editor's own (`SURFACES_HEADING`) now that it holds Editor cards too
+    const ED95 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href)
     await freshLoad('paywall')
     const bar95 = await page.evaluate(() => {
       const h = document.querySelector('header')
@@ -6251,7 +6262,7 @@ async function main() {
       fits: ((c) => (c ? c.scrollWidth <= c.clientWidth : false))(document.querySelector('[data-canvas="paywall"] [data-caption]')),
     }))
     check('step 95 — D5b\'s shape: "Template surfaces" holds Paywall, its caption on one line, and R-130\'s Empty mark while untouched',
-      menu95.group === P95.group && menu95.row === CANVASES.paywall.label && menu95.caption === CANVASES.paywall.caption && menu95.fits && menu95.mark === 'empty', JSON.stringify(menu95))
+      menu95.group === ED95.SURFACES_HEADING && menu95.row === CANVASES.paywall.label && menu95.caption === CANVASES.paywall.caption && menu95.fits && menu95.mark === 'empty', JSON.stringify(menu95))
     await page.keyboard.press('Escape')
     // Back to post: a soft navigation — the editor stays mounted, and the post canvas paints with the stylesheet off
     await page.locator('#paywall-back').click()
@@ -6398,8 +6409,9 @@ async function main() {
     check('step 6 — /home answers 308 to /projects/<id>', home.status() === 308 && new URL(home.headers().location, APP).pathname.endsWith(`/projects/${P}`), `HTTP ${home.status()} → ${home.headers().location}`)
     // `index` is 404 PERMANENTLY (R-127: page 2 has no canvas), `private` is 404 because this project's site has not
     // asked for one — a canvas the switcher does not offer must not be reachable by typing its address either
-    // (Story 5.20 opened `paywall`, the first template surface: it is in OFFERED now, and answers 200 above)
-    for (const key of ['index', 'private', 'cards', 'custom-x', 'custom-nonsense', 'nonsense']) {
+    // (Story 5.20 opened `paywall`, the first template surface, and Story 7.13 `cards`, Editor cards: both are in
+    // OFFERED now, and answer 200 above)
+    for (const key of ['index', 'private', 'custom-x', 'custom-nonsense', 'nonsense']) {
       const r = await context.request.get(editorUrl(key), { maxRedirects: 0 })
       check(`step 6 — /${key} answers 404`, r.status() === 404 && /Page not found/.test(await r.text()), `HTTP ${r.status()}`)
     }
@@ -8725,8 +8737,9 @@ async function main() {
     // ── 106a — D6a's rail: SETTINGS, Theme settings in force, Translations; nothing of Ghost's on a project with no site ──
     await open104(tp)
     const railTheme106 = await rail106(tp)
-    check('step 106a — Theme settings carries D6a\'s rail: "SETTINGS", Theme settings (in force) and Translations, and no Ghost link on a project that links no site (Question 2, absent not greyed)',
-      railTheme106.heading === R106.heading && railTheme106.items.length === 2 &&
+    check('step 106a — Theme settings carries D6a\'s rail: "SETTINGS", Theme settings (in force), Translations and (Story 7.13) Editor cards, and no Ghost link on a project that links no site (Question 2, absent not greyed)',
+      railTheme106.heading === R106.heading && railTheme106.items.length === 3 &&
+      railTheme106.items[2]?.text === R106.cards && railTheme106.items[2]?.current === null && (railTheme106.items[2]?.href ?? '').endsWith(ED104.canvasPath(P, 'cards')) &&
       railTheme106.items[0]?.text === R106.theme && railTheme106.items[0]?.current === 'page' && (railTheme106.items[0]?.href ?? '').endsWith(ED104.settingsPath(P)) &&
       railTheme106.items[1]?.text === R106.translations && railTheme106.items[1]?.current === null && (railTheme106.items[1]?.href ?? '').endsWith(ED104.translationsPath(P)), JSON.stringify(railTheme106))
     await tp.locator('nav[data-settings-rail] a').filter({ hasText: R106.translations }).click()
@@ -8977,8 +8990,8 @@ async function main() {
     const linked106 = await rail106(tp)
     const ghost106 = [[R106.navigation, 'navigation'], [R106.social, 'social-accounts'], [R106.injection, 'code-injection']]
     check('step 106j — on a linked project the rail adds Navigation ↗, Social accounts ↗ and Code injection ↗, each opening that section of the site\'s own Ghost settings in a new tab and saying so to a screen reader (Question 2, ruled option 1)',
-      site106.status === 201 && linked106.items.length === 5 &&
-      ghost106.every(([text, navid], n) => linked106.items[n + 2]?.text === `${text}${W106.newTab}` && linked106.items[n + 2]?.href === PW106.adminAt(SITE106.url, navid) && linked106.items[n + 2]?.target === '_blank'), JSON.stringify(linked106))
+      site106.status === 201 && linked106.items.length === 6 &&
+      ghost106.every(([text, navid], n) => linked106.items[n + 3]?.text === `${text}${W106.newTab}` && linked106.items[n + 3]?.href === PW106.adminAt(SITE106.url, navid) && linked106.items[n + 3]?.target === '_blank'), JSON.stringify(linked106))
     await open106(tp)
     const mismatch106 = await tp.locator('[data-mismatch]').evaluate((m) => ({ text: m.innerText.replace(/\s+/g, ' '), href: m.querySelector('a')?.getAttribute('href') ?? null, target: m.querySelector('a')?.getAttribute('target') ?? null })).catch(() => null)
     await call('/rest/v1', `/sites?id=eq.${siteId106}`, { method: 'PATCH', body: JSON.stringify({ site_settings: { locale: 'es' } }) })
@@ -9099,6 +9112,238 @@ async function main() {
     check('step 106 — the project is handed back as the seed made it: English, no acknowledgement, no override, no linked site, the throwaway site deleted — and every context of the block recorded zero CSP violations',
       end106.overrides === 0 && end106.project?.language === 'en' && end106.project?.rtl_ack_at === null && end106.project?.linked_site_id === null && end106.site === 0 &&
       (siteGone106.status === 200 || siteGone106.status === 204) && csp106.length === 0, JSON.stringify({ end106, csp106: csp106.slice(0, 3) }))
+
+    // ── step 107 — STORY 7.13: EDITOR CARDS ON PRODUCTION (FR-Q7, S14a–e, R-82) ──
+    /* In contexts of its own, on the seeded project. Every word is `lib/cards.ts`'s and every card, control and value the
+       library's registry (`CARDS`), never restated here. The record is read back through the service key
+       (`project_treatments.card_designs`), the revision moving by ONE per save — the docs' compare-and-set — and the
+       project is handed back with the record it started with. */
+    const CW107 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/cards.ts')).href)
+    const C107 = CW107.CARD_WORDS
+    const PW107 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/paywall.ts')).href)
+    const treat107 = async () => (await call('/rest/v1', `/project_treatments?project_id=eq.${P}&select=user_id,card_designs`)).body ?? null
+    const revision107 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision ?? null
+    const designs107 = (rows) => rows?.[0]?.card_designs ?? {}
+    const start107 = await treat107()
+    check('step 107 — the fixture: no card design stored for the project, read back through the service key',
+      Array.isArray(start107) && Object.keys(designs107(start107)).length === 0, JSON.stringify(start107))
+    const cardsUrl107 = editorUrl('cards')
+    const cContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const csp107 = []
+    await recorder(cContext, csp107)
+    let cp = steady(await cContext.newPage())
+    cp.on('pageerror', (e) => note('pageerror 107', String(e)))
+    await cp.goto(await magic(emailA), { waitUntil: 'load' })
+    const ringed107 = (p) => p.frameLocator('iframe[data-cards-frame]').locator('[data-inflozo-card-selected]').waitFor({ state: 'attached', timeout: 30000 })
+    /** the surface as a reader meets it: the bar, the panels, and the selected card on the canvas */
+    const surface107 = (p) => p.evaluate(() => {
+      const doc = document.querySelector('iframe[data-cards-frame]')?.contentDocument
+      const on = doc?.querySelector('[data-inflozo-card-selected]')
+      return {
+        chip: document.querySelector('[data-surface-chip]')?.textContent ?? null, card: document.querySelector('#editor-card')?.textContent ?? null,
+        viewAs: !!document.querySelector('#editor-view-as'), panel: document.querySelector('#editor-panel-name')?.textContent ?? null,
+        badge: document.querySelector('#editor-panel-name')?.parentElement?.querySelector('[data-customised]')?.textContent ?? null,
+        none: document.querySelector('[data-none-customised]')?.textContent ?? null, defaults: document.querySelector('[data-on-defaults]')?.textContent ?? null,
+        customised: [...document.querySelectorAll('[data-customised-card]')].map((e) => e.getAttribute('data-customised-card')),
+        ringed: on ? on.className : null, tag: doc?.querySelector('[data-inflozo-card-tag]')?.textContent ?? null,
+        backgrounds: [...(doc?.querySelectorAll('.kg-callout-card') ?? [])].map((e) => getComputedStyle(e).backgroundColor),
+        emoji: [...(doc?.querySelectorAll('.kg-callout-emoji') ?? [])].map((e) => getComputedStyle(e).display),
+        said: document.getElementById('editor-said')?.textContent ?? null,
+        // the panel's controls — never S14c's closed dialog, whose Cancel is a control of the confirm, not of the card
+        live: [...(document.querySelector('[data-card-panel]')?.querySelectorAll('button, input') ?? [])].filter((e) => !e.closest('dialog') && !e.matches(':disabled')).length,
+        controls: [...(document.querySelector('[data-card-panel]')?.querySelectorAll('button, input') ?? [])].filter((e) => !e.closest('dialog')).length,
+      }
+    })
+    const menu107 = async (p) => {
+      await p.locator('#editor-template').click()
+      await p.waitForTimeout(300)
+      const read = await p.evaluate(() => {
+        const row = document.querySelector('[data-canvas="cards"]')
+        const cap = row?.querySelector('[data-caption]')
+        return {
+          group: document.querySelector('#editor-template-surfaces')?.textContent ?? null,
+          surfaces: [...(document.querySelector('ul[aria-labelledby="editor-template-surfaces"]')?.querySelectorAll('[data-canvas]') ?? [])].map((r) => r.getAttribute('data-canvas')),
+          name: row?.querySelector('[data-name]')?.textContent ?? null, caption: cap?.textContent ?? null, fits: cap ? cap.scrollWidth <= cap.clientWidth : false,
+          mark: row?.querySelector('[data-mark]')?.getAttribute('data-mark') ?? null, count: row?.querySelector('[data-count]')?.textContent ?? null,
+        }
+      })
+      return read
+    }
+    const choose107 = async (p, key) => {
+      await p.locator('#editor-card').click()
+      await p.locator(`#editor-card-menu [data-card="${key}"]`).click()
+      await p.waitForFunction((label) => document.querySelector('#editor-panel-name')?.textContent === label, LIB.CARDS.find((c) => c.key === key).label, { timeout: 15000 })
+      await ringed107(p).catch(() => {})
+      await p.waitForTimeout(400)
+    }
+    const save107 = async (p) => {
+      await p.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+      await p.keyboard.press('ControlOrMeta+s')
+      return p.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED102, { timeout: 20000 }).then(() => true, () => false)
+    }
+
+    // 107a — Home → Template ▾: the Template surfaces group holds Paywall, then Editor cards, Empty and with no count
+    await cp.goto(editorUrl(), { waitUntil: 'load' })
+    await cp.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const menuA107 = await menu107(cp)
+    check('step 107a — the template menu\'s Template surfaces group holds Paywall then Editor cards, its one line on one line, R-130\'s Empty mark and no count while nothing is customised',
+      menuA107.group === ED104.SURFACES_HEADING && JSON.stringify(menuA107.surfaces) === JSON.stringify(['paywall', 'cards']) && menuA107.name === C107.label && menuA107.caption === C107.caption && menuA107.fits &&
+      menuA107.mark === 'empty' && menuA107.count === null, JSON.stringify(menuA107))
+    await cp.locator('[data-canvas="cards"]').click()
+    const moved107 = await cp.waitForURL((u) => u.pathname.endsWith(`/projects/${P}/cards`), { timeout: 15000 }).then(() => true, () => false)
+    await ringed107(cp)
+    await cp.waitForTimeout(600)
+    const first107 = await surface107(cp)
+    await cp.screenshot({ path: path.join(OUT, 'step107-cards.png') })
+    check('step 107a — Editor cards: /cards, the ink bar\'s NOT A PAGE SECTION and the Card dropdown on Callout (no View as), the callout panel, "No customised cards yet" and every card on Ghost\'s defaults, the first callout ringed and tagged',
+      moved107 && first107.chip === PW107.PAYWALL_WORDS.chip && (first107.card ?? '').includes('Callout') && !first107.viewAs && first107.panel === 'Callout' && first107.badge === null &&
+      first107.none === C107.noneCustomised && first107.defaults === C107.onDefaults(LIB.CARDS.length) && /kg-callout-card/.test(first107.ringed ?? '') && first107.tag === 'Callout',
+      JSON.stringify(first107))
+    check('step 107a — Ghost\'s palette: the sample\'s callouts carry more than one colour (the control for 107c)', new Set(first107.backgrounds).size > 1, JSON.stringify(first107.backgrounds))
+
+    // 107b — the Card dropdown: every card in the registry's order (Ghost's menu), the no-colour mark on the rows it names
+    await cp.locator('#editor-card').click()
+    await cp.waitForTimeout(300)
+    const drop107 = await cp.evaluate(() => {
+      const rows = [...document.querySelectorAll('#editor-card-menu [data-card]')]
+      return {
+        heading: document.querySelector('#editor-card-menu')?.textContent ?? '', keys: rows.map((r) => r.getAttribute('data-card')),
+        noColour: rows.filter((r) => r.querySelector('[data-no-colour]')).map((r) => r.getAttribute('data-card')),
+        marks: rows.map((r) => r.querySelector('[data-no-colour]')?.textContent).filter(Boolean),
+        badges: rows.filter((r) => r.querySelector('[data-customised]')).length, current: rows.find((r) => r.getAttribute('aria-current') === 'true')?.getAttribute('data-card') ?? null,
+      }
+    })
+    await cp.keyboard.press('Escape')
+    check('step 107b — the Card dropdown lists every card in Ghost\'s own menu order, "No colour controls" on exactly the cards the registry gives none, no customised badge, and Callout current',
+      drop107.heading.includes(C107.menuHeading) && JSON.stringify(drop107.keys) === JSON.stringify(LIB.CARDS.map((c) => c.key)) &&
+      JSON.stringify(drop107.noColour) === JSON.stringify(LIB.CARDS.filter((c) => !c.colour).map((c) => c.key)) && drop107.marks.every((m) => m === C107.noColourMark) &&
+      drop107.badges === 0 && drop107.current === 'callout', JSON.stringify(drop107))
+
+    // 107c — a value: Pack tokens, then Tint — every callout one colour, and the badges and the amber count
+    await cp.getByRole('radio', { name: 'Pack tokens' }).click()
+    await cp.getByRole('radio', { name: 'Tint' }).click()
+    await cp.waitForTimeout(800)
+    const tokens107 = await surface107(cp)
+    const menuC107 = await menu107(cp)
+    await cp.keyboard.press('Escape')
+    check('step 107c — Pack tokens then Tint: every callout on the sample takes ONE colour, the panel and the left panel say customised, the announcement names the change, and the switcher\'s amber count reads 1 (heard as words)',
+      tokens107.backgrounds.length > 1 && new Set(tokens107.backgrounds).size === 1 && tokens107.badge === C107.customised && JSON.stringify(tokens107.customised) === JSON.stringify(['callout']) &&
+      tokens107.said === C107.changed('Callout', 'Callout background', 'Tint') && (menuC107.count ?? '').startsWith('1') && (menuC107.count ?? '').includes(C107.count(1)) && menuC107.mark !== 'empty',
+      JSON.stringify({ tokens107, count: menuC107.count, mark: menuC107.mark }))
+
+    // 107d — Emoji off, then ⌘Z: one entry each way
+    await cp.getByRole('switch', { name: 'Emoji' }).click()
+    await cp.waitForTimeout(600)
+    const emojiOff107 = await surface107(cp)
+    await cp.locator('section[data-cards-canvas]').focus()
+    await cp.keyboard.press('ControlOrMeta+z')
+    await cp.waitForTimeout(800)
+    const emojiBack107 = await surface107(cp)
+    check('step 107d — Emoji off hides every callout\'s emoji; ⌘Z brings them back and leaves the colours as they were',
+      emojiOff107.emoji.length > 0 && emojiOff107.emoji.every((d) => d === 'none') && emojiBack107.emoji.every((d) => d !== 'none') && new Set(emojiBack107.backgrounds).size === 1,
+      JSON.stringify({ off: emojiOff107.emoji, back: emojiBack107.emoji }))
+
+    // 107e — ⌘S: the record, whole, in project_treatments, and the revision moved by ONE
+    const revBefore107 = await revision107()
+    const synced107 = await save107(cp)
+    const saved107 = await treat107()
+    const revAfter107 = await revision107()
+    const want107 = { callout: { colours: 'tokens', background: 'tint' } }
+    check('step 107e — ⌘S: project_treatments.card_designs holds exactly the callout\'s two changes (start values never stored), owned by the user, and the project\'s revision moved by exactly ONE',
+      synced107 && JSON.stringify(designs107(saved107)) === JSON.stringify(want107) && saved107?.[0]?.user_id === ids[0] && revAfter107 === (revBefore107 ?? -2) + 1,
+      JSON.stringify({ saved107, revBefore107, revAfter107 }))
+    // the route's one door: a value the registry does not offer is a 422 and writes nothing (the editor's save above landed — the control)
+    const crafted107 = await cp.evaluate(async ({ url, base }) => {
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ base, docs: {}, cards: { callout: { colours: 'neon' } } }) })
+      return { status: r.status, body: await r.text() }
+    }, { url: `${PREFIX}/projects/${P}/sync`, base: revAfter107 ?? 0 })
+    const kept107 = await treat107()
+    check('step 107e — a crafted post carrying a value no card offers answers 422 "Not a card design" and the stored record is untouched',
+      crafted107.status === 422 && crafted107.body.includes('Not a card design') && JSON.stringify(designs107(kept107)) === JSON.stringify(want107) && (await revision107()) === revAfter107,
+      JSON.stringify({ crafted107, kept107 }))
+
+    // 107f — a reload opens on the stored record
+    await cp.reload({ waitUntil: 'load' })
+    await ringed107(cp)
+    await cp.waitForTimeout(800)
+    const reloaded107 = await surface107(cp)
+    check('step 107f — after a reload Callout is still customised and every callout still one colour — the record read back, not the tab\'s memory',
+      reloaded107.panel === 'Callout' && reloaded107.badge === C107.customised && JSON.stringify(reloaded107.customised) === JSON.stringify(['callout']) && new Set(reloaded107.backgrounds).size === 1,
+      JSON.stringify(reloaded107))
+
+    // 107g — S14c: Reset to Ghost default opens on Cancel; Cancel writes nothing; Reset card clears the card
+    await cp.locator('#card-reset').click()
+    const dialog107 = cp.locator('dialog[open]')
+    await dialog107.waitFor({ state: 'visible', timeout: 10000 })
+    const ask107 = await cp.evaluate(() => {
+      const d = document.querySelector('dialog[open]')
+      return { title: d?.querySelector('h2')?.textContent ?? null, body: d?.querySelector('p')?.textContent ?? null, focus: document.activeElement?.textContent ?? null, cancel: document.activeElement?.hasAttribute('data-cancel') ?? false }
+    })
+    await cp.locator('dialog[open] [data-cancel]').click()
+    await cp.waitForTimeout(400)
+    const cancelled107 = await surface107(cp)
+    check('step 107g — S14c: "Reset Callout to Ghost\'s default?" with the derived sentence (2 changes — colours and background), opening on Cancel; Cancel keeps the card customised',
+      ask107.title === C107.resetTitle('Callout') && ask107.body === CW107.resetSentence(want107, 'callout') && ask107.cancel && ask107.focus === C107.cancel &&
+      JSON.stringify(cancelled107.customised) === JSON.stringify(['callout']), JSON.stringify({ ask107, after: cancelled107.customised }))
+    await cp.locator('#card-reset').click()
+    await cp.locator('#card-reset-confirm').click()
+    await cp.waitForTimeout(800)
+    const reset107 = await surface107(cp)
+    const menuG107 = await menu107(cp)
+    await cp.keyboard.press('Escape')
+    const syncedReset107 = await save107(cp)
+    const afterReset107 = await treat107()
+    check('step 107g — Reset card: Ghost\'s colours back, every customised badge and the amber count gone, "Callout is back to Ghost\'s default." said, and ⌘S stores an empty record',
+      new Set(reset107.backgrounds).size > 1 && reset107.badge === null && reset107.customised.length === 0 && reset107.none === C107.noneCustomised && reset107.said === C107.wasReset('Callout') &&
+      menuG107.count === null && menuG107.mark === 'empty' && syncedReset107 && Object.keys(designs107(afterReset107)).length === 0, JSON.stringify({ reset107, count: menuG107.count, afterReset107 }))
+
+    // 107h — Bookmark, then Theme settings' rail: Editor cards lands on the same screen with Bookmark selected (last viewed)
+    await choose107(cp, 'bookmark')
+    await cp.goto(at(ED104.settingsPath(P)), { waitUntil: 'load' })
+    await cp.locator('nav[data-settings-rail] a').filter({ hasText: C107.label }).waitFor({ state: 'visible', timeout: 20000 })
+    await cp.locator('nav[data-settings-rail] a').filter({ hasText: C107.label }).click()
+    const railed107 = await cp.waitForURL((u) => u.pathname.endsWith(`/projects/${P}/cards`), { timeout: 15000 }).then(() => true, () => false)
+    await ringed107(cp)
+    await cp.waitForTimeout(600)
+    const last107 = await surface107(cp)
+    check('step 107h — Theme settings → Editor cards opens the same surface with the last-viewed card (Bookmark) selected and ringed',
+      railed107 && last107.panel === 'Bookmark' && /kg-bookmark-card/.test(last107.ringed ?? '') && last107.live > 0, JSON.stringify(last107))
+
+    // 107i — R-192: a second session holds the lock, and Editor cards in another tab reads along
+    const live107 = last107.live
+    await handBack(cp)
+    await cp.close()
+    const holder107 = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    await recorder(holder107, csp107)
+    const hp107 = steady(await holder107.newPage())
+    await hp107.goto(await magic(emailA), { waitUntil: 'load' })
+    await hp107.goto(editorUrl(), { waitUntil: 'load' })
+    await hp107.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const holderSession107 = await hp107.evaluate(() => sessionStorage.getItem('inflozo-lock-session'))
+    const held107 = await until104(hp107, () => lockRead104(hp107), (r) => r?.holderSessionId === holderSession107)
+    cp = steady(await cContext.newPage())
+    await cp.goto(cardsUrl107, { waitUntil: 'load' })
+    await ringed107(cp)
+    await cp.waitForTimeout(1500)
+    const reading107 = await cp.evaluate((reading) => ({ banner: document.body.innerText.includes(reading) }), LK104.LOCK_COPY.reading)
+    const readPanel107 = await surface107(cp)
+    await choose107(cp, 'toggle')
+    const readToggle107 = await surface107(cp)
+    check('step 107i — R-192: with another session holding the lock, Editor cards says it is reading along, every control in the card\'s panel is disabled, and the Card dropdown still chooses (Toggle, its controls disabled too); the editable panel carried live controls (the control)',
+      held107?.holderSessionId === holderSession107 && reading107.banner && readPanel107.controls > 0 && readPanel107.live === 0 && live107 > 0 &&
+      readToggle107.panel === 'Toggle' && /kg-toggle-card/.test(readToggle107.ringed ?? '') && readToggle107.controls > 0 && readToggle107.live === 0 && readToggle107.customised.length === 0,
+      JSON.stringify({ held: held107?.holderSessionId === holderSession107, reading107, readPanel107: { live: readPanel107.live, controls: readPanel107.controls }, readToggle107: { panel: readToggle107.panel, live: readToggle107.live } }))
+    await cp.close()
+    await handBack(hp107)
+    await holder107.close()
+    await cContext.close()
+
+    // the project as this block found it — later steps inherit it
+    if (start107.length === 0) await call('/rest/v1', `/project_treatments?project_id=eq.${P}`, { method: 'DELETE' })
+    else await call('/rest/v1', `/project_treatments?project_id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ card_designs: start107[0].card_designs }) })
+    const end107 = await treat107()
+    check('step 107 — the project is handed back with the card record it started with, and every context of the block recorded zero CSP violations',
+      JSON.stringify(end107) === JSON.stringify(start107) && csp107.length === 0, JSON.stringify({ end107, csp107: csp107.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

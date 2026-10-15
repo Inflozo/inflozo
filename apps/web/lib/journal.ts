@@ -1,3 +1,4 @@
+import type { CardDesigns } from '@inflozo/library'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import type { PackRecords } from './pack-edit.ts'
 
@@ -32,6 +33,10 @@ import type { PackRecords } from './pack-edit.ts'
  * `PACK_RECORDS_KEY` to `style_pack.packs` — the way a doc key maps to a row, so 6.3's persisted preset entries stay valid
  * as they are. A New pack is 6.3's transaction grouping: the records entry and the switch, two entries, one edit.
  *
+ * STORY 7.13 — THE PROJECT'S CARD DESIGNS ARE EDITS TOO (FR-Q7), under a THIRD key, `CARDS_KEY`, whose entries' `before`
+ * and `after` are the WHOLE `project_treatments.card_designs` record — so a value change and a card's reset are each one
+ * entry, one ⌘Z, and the flush sends the record beside the docs and the pack in the same compare-and-set (`p_cards`).
+ *
  * TWO PIECES OF STATE DO TWO DIFFERENT JOBS, and collapsing them is the bug this comment exists to prevent.
  * `synced` is a WATERMARK over `seq` and answers AD-16's question — how many EDITS has the server not been told
  * about. `pending` is the set of DOC KEYS whose content differs from what the server last accepted, and answers the
@@ -52,24 +57,30 @@ export const PACK_KEY = 'style-pack'
  *  Never a template key (`sync/route.ts`'s `TEMPLATE_KEY` refuses it, `editor.test.ts` holds that), so never sent as a doc. */
 export const PACK_RECORDS_KEY = 'pack-records'
 
-/** One entry of a transaction: the touched doc either side of it — or, under `PACK_KEY`, the preset id either side, and
- *  under `PACK_RECORDS_KEY` the project's own packs either side (Story 6.4). */
+/** STORY 7.13 — the journal key the project's card designs are recorded under: the whole `card_designs` record either side.
+ *  Never a template key (`sync/route.ts`'s `TEMPLATE_KEY` refuses it, `editor.test.ts` holds that), so never sent as a doc. */
+export const CARDS_KEY = 'card-designs'
+
+/** One entry of a transaction: the touched doc either side of it — or, under `PACK_KEY`, the preset id either side, under
+ *  `PACK_RECORDS_KEY` the project's own packs either side (Story 6.4), and under `CARDS_KEY` the card designs (Story 7.13). */
 export type JournalEntry = {
   seq: number
   /** the transaction id §AD4 makes load-bearing — opaque here, never displayed, and the unit undo and the count read */
   txn: string
-  /** the `project_templates.template_key` this entry touched, or `PACK_KEY`, or `PACK_RECORDS_KEY` */
+  /** the `project_templates.template_key` this entry touched, or `PACK_KEY`, `PACK_RECORDS_KEY` or `CARDS_KEY` */
   docKey: string
-  before: ProjectDoc | string | PackRecords
-  after: ProjectDoc | string | PackRecords
+  before: ProjectDoc | string | PackRecords | CardDesigns
+  after: ProjectDoc | string | PackRecords | CardDesigns
 }
 
 /** Is this the pack's entry — a preset id either side, never a doc? */
 const isPack = (e: { docKey: string }) => e.docKey === PACK_KEY
 /** …or the own packs' entry — the whole map either side (Story 6.4)? */
 const isRecords = (e: { docKey: string }) => e.docKey === PACK_RECORDS_KEY
-/** A key the flush sends as a doc: neither of the pack's two. */
-const isDocKey = (key: string) => key !== PACK_KEY && key !== PACK_RECORDS_KEY
+/** …or the card designs' entry — the whole record either side (Story 7.13)? */
+const isCards = (e: { docKey: string }) => e.docKey === CARDS_KEY
+/** A key the flush sends as a doc: none of the pack's two, nor the cards'. */
+const isDocKey = (key: string) => key !== PACK_KEY && key !== PACK_RECORDS_KEY && key !== CARDS_KEY
 
 export type Journal = {
   entries: readonly JournalEntry[]
@@ -145,8 +156,9 @@ export function append(j: Journal, entry: Omit<JournalEntry, 'seq'>): { journal:
 }
 
 /** What an undo or a redo asks the editor to put back: every doc the transaction touched, whole, and — where it changed
- *  the Style Pack — the preset (Story 6.3) and the project's own packs, the whole map (Story 6.4). */
-export type Restore = { journal: Journal; docs: Readonly<Record<string, ProjectDoc>>; preset?: string; packs?: PackRecords }
+ *  the Style Pack — the preset (Story 6.3) and the project's own packs, the whole map (Story 6.4); and the card designs,
+ *  the whole record, where it changed them (Story 7.13). */
+export type Restore = { journal: Journal; docs: Readonly<Record<string, ProjectDoc>>; preset?: string; packs?: PackRecords; cards?: CardDesigns }
 
 /** One transaction's entries, as the editor puts them back: each doc, the preset and the own packs at the `side` given.
  *  Entries are applied in order, so a key touched twice ends at the value the side names last. */
@@ -154,12 +166,14 @@ const restoring = (entries: readonly JournalEntry[], side: 'before' | 'after'): 
   const docs: Record<string, ProjectDoc> = {}
   let preset: string | undefined
   let packs: PackRecords | undefined
+  let cards: CardDesigns | undefined
   for (const e of side === 'before' ? [...entries].reverse() : entries) {
     if (isPack(e)) preset = e[side] as string
     else if (isRecords(e)) packs = e[side] as PackRecords
+    else if (isCards(e)) cards = e[side] as CardDesigns
     else docs[e.docKey] = e[side] as ProjectDoc
   }
-  return { docs, ...(preset === undefined ? {} : { preset }), ...(packs === undefined ? {} : { packs }) }
+  return { docs, ...(preset === undefined ? {} : { preset }), ...(packs === undefined ? {} : { packs }), ...(cards === undefined ? {} : { cards }) }
 }
 /** Every key a transaction touched, owed to the server again at `stamp`. */
 const owing = (j: Journal, entries: readonly JournalEntry[], stamp: number) => ({
@@ -231,19 +245,19 @@ export type FlushCall = 'timer' | 'manual' | 'change' | 'retry' | 'unload' | 're
 export const flushDecision = (j: Journal, why: FlushCall, autosave: boolean): 'send' | 'acknowledge' | 'nothing' =>
   why === 'timer' && !autosave ? 'nothing' : unsynced(j) ? 'send' : why === 'manual' ? 'acknowledge' : 'nothing'
 
-/** What one flush sends: the pending docs, the preset where the Style Pack is owed (Story 6.3), and the project's own
- *  packs, whole, where they are owed (Story 6.4). */
-export type Payload = { docs: Record<string, ProjectDoc>; preset?: string; packs?: PackRecords }
+/** What one flush sends: the pending docs, the preset where the Style Pack is owed (Story 6.3), the project's own
+ *  packs, whole, where they are owed (Story 6.4), and the card designs, whole, where they are owed (Story 7.13). */
+export type Payload = { docs: Record<string, ProjectDoc>; preset?: string; packs?: PackRecords; cards?: CardDesigns }
 
 /** Does a payload carry anything at all? A flush with nothing to send makes no request. */
-export const carries = (p: Payload): boolean => Object.keys(p.docs).length > 0 || p.preset !== undefined || p.packs !== undefined
+export const carries = (p: Payload): boolean => Object.keys(p.docs).length > 0 || p.preset !== undefined || p.packs !== undefined || p.cards !== undefined
 
 /** The docs a flush must send: the pending keys, each with the doc as it stands NOW. A key whose doc has gone is
  *  skipped rather than sent as null — the RPC upserts what it is given and a synthesized doc is never written, which
  *  would materialise an untouched canvas and break AD-22. STORY 6.3: and the pack in force where `PACK_KEY` is pending —
  *  never as a doc — so the RPC writes both in one compare-and-set. STORY 6.4: and the own packs, the whole map, where
  *  `PACK_RECORDS_KEY` is pending — one call, one compare-and-set, one revision for all three. */
-export function flushPayload(j: Journal, docs: Readonly<Record<string, ProjectDoc>>, preset?: string, packs?: PackRecords): Payload {
+export function flushPayload(j: Journal, docs: Readonly<Record<string, ProjectDoc>>, preset?: string, packs?: PackRecords, cards?: CardDesigns): Payload {
   const out: Record<string, ProjectDoc> = {}
   for (const key of Object.keys(j.pending)) {
     if (!isDocKey(key)) continue
@@ -254,6 +268,8 @@ export function flushPayload(j: Journal, docs: Readonly<Record<string, ProjectDo
     docs: out,
     ...(Object.hasOwn(j.pending, PACK_KEY) && preset !== undefined ? { preset } : {}),
     ...(Object.hasOwn(j.pending, PACK_RECORDS_KEY) && packs !== undefined ? { packs } : {}),
+    // Story 7.13: the whole card designs record, where `CARDS_KEY` is pending — the same call, the same compare-and-set
+    ...(Object.hasOwn(j.pending, CARDS_KEY) && cards !== undefined ? { cards } : {}),
   }
 }
 
@@ -366,13 +382,13 @@ export const SIGNED_OUT_COPY = {
 /** One project's work this browser owes the server, as the flush would send it — with what a flush's 200 marks sent:
  *  the journal's own stamp and highest sequence (`flushed`). Story 6.3: and the preset, where the pack is owed. Story 6.4:
  *  and the own packs, where they are owed. */
-export type OwedRecord = { projectId: string; base: number; docs: Record<string, ProjectDoc>; preset?: string; packs?: PackRecords; edits: number; stamp: number; upTo: number }
+export type OwedRecord = { projectId: string; base: number; docs: Record<string, ProjectDoc>; preset?: string; packs?: PackRecords; cards?: CardDesigns; edits: number; stamp: number; upTo: number }
 
 /** What a local record owes, or null when it owes nothing: `flushPayload` over its own journal, AD-16's count beside it.
  *  A record owing only its pack owes (Story 6.3), or only its own packs (Story 6.4). */
-export const owedOf = (projectId: string, record: { baseRevision: number; docs: Readonly<Record<string, ProjectDoc>>; journal: Journal; preset?: string; packs?: PackRecords }): OwedRecord | null => {
+export const owedOf = (projectId: string, record: { baseRevision: number; docs: Readonly<Record<string, ProjectDoc>>; journal: Journal; preset?: string; packs?: PackRecords; cards?: CardDesigns }): OwedRecord | null => {
   if (!unsynced(record.journal)) return null
-  const payload = flushPayload(record.journal, record.docs, record.preset, record.packs)
+  const payload = flushPayload(record.journal, record.docs, record.preset, record.packs, record.cards)
   return !carries(payload) ? null
     : { projectId, base: record.baseRevision, ...payload, edits: unsyncedEdits(record.journal), stamp: record.journal.stamp, upTo: maxSeq(record.journal) }
 }
@@ -384,6 +400,7 @@ export const sendBody = (record: OwedRecord): string =>
     docs: record.docs,
     ...(record.preset === undefined ? {} : { preset: record.preset }),
     ...(record.packs === undefined ? {} : { packs: record.packs }),
+    ...(record.cards === undefined ? {} : { cards: record.cards }),
   })
 
 /** What the sync route's answer means to the sign-out: only a 200 is sent. A 409 (another writer), a 401 (no session), a
@@ -487,6 +504,12 @@ export const hydratedPreset = (how: Hydration, local: { preset?: string } | null
 export const hydratedPacks = (how: Hydration, local: { packs?: PackRecords } | null, cloud: PackRecords): PackRecords =>
   how.kind === 'local' && local?.packs !== undefined ? local.packs : cloud
 
+/** STORY 7.13 — THE CARD DESIGNS A HYDRATE OPENS ON, by the same rule: this device's where its record is KEPT, the server's
+ *  otherwise, and a record written before 7.13 takes the server's. The caller passes what it keeps through
+ *  `parseCardDesigns` (AD-36), since this device's copy is a value a browser can be made to hold. */
+export const hydratedCards = (how: Hydration, local: { cards?: CardDesigns } | null, cloud: CardDesigns): CardDesigns =>
+  how.kind === 'local' && local?.cards !== undefined ? local.cards : cloud
+
 /**
  * DOES THE JOURNAL GO? (AD-15, Story 5.17.)
  *
@@ -521,17 +544,20 @@ export const stable = (v: unknown): string =>
 /** STORY 6.3: an owed PACK is ours when the server's preset is the one this device holds, as an owed doc is. STORY 6.4:
  *  and owed own packs when the server's (as `ownPacksOf` reads them) are the very map this device holds. */
 export const ownFlushLanded = (
-  local: { baseRevision: number; docs: Readonly<Record<string, unknown>>; journal: Journal; preset?: string; packs?: PackRecords },
+  local: { baseRevision: number; docs: Readonly<Record<string, unknown>>; journal: Journal; preset?: string; packs?: PackRecords; cards?: CardDesigns },
   cloudRevision: number,
   cloudDocs: Readonly<Record<string, unknown>>,
   cloudPreset?: string,
   cloudPacks?: PackRecords,
+  cloudCards?: CardDesigns,
 ): boolean =>
   cloudRevision === local.baseRevision + 1 &&
   unsynced(local.journal) &&
   Object.keys(local.journal.pending).every((key) =>
     key === PACK_KEY ? local.preset !== undefined && local.preset === cloudPreset
     : key === PACK_RECORDS_KEY ? local.packs !== undefined && cloudPacks !== undefined && stable(local.packs) === stable(cloudPacks)
+    // Story 7.13: owed card designs are ours when the server's record is the very one this device holds
+    : key === CARDS_KEY ? local.cards !== undefined && cloudCards !== undefined && stable(local.cards) === stable(cloudCards)
     : key in cloudDocs && stable(cloudDocs[key]) === stable(local.docs[key]))
 
 /**

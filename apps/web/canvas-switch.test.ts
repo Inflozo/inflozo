@@ -35,9 +35,9 @@ const opened = (privateSite = false) => {
   return { docs, auto }
 }
 
-test('every canvas the project offers is either synthesizable or opens empty — and the never-synthesized set is R-129\'s three plus Private, and the paywall surface (5.20)', () => {
+test('every canvas the project offers is either synthesizable or opens empty — and the never-synthesized set is R-129\'s three plus Private, and the template surfaces (5.20, 7.13)', () => {
   const never = canvasesOf(true).filter((key) => !isSynthesizable(CANVASES[key].file))
-  assert.deepEqual(never.sort(), ['custom-member-home', 'custom-signin', 'custom-signup', 'paywall', 'private'])
+  assert.deepEqual(never.sort(), ['cards', 'custom-member-home', 'custom-signin', 'custom-signup', 'paywall', 'private'])
   for (const key of never) {
     assert.ok(isMembership(key) || key === 'private' || isSurface(key), key)
     assert.deepEqual(synthesize(CANVASES[key].file, held), { instances: [], dropped: [] }, key)

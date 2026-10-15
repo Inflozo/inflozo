@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { cache } from 'react'
-import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type CardDesigns, type SectionRegistryEntry } from '@inflozo/library'
 import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources } from '@/lib/controls-review'
@@ -13,6 +13,7 @@ import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
+import { storedCards } from '@/lib/cards'
 import type { PlanId } from '@/lib/plan'
 import { carriesMemberVisibility, docRefusal, pilot, pilotIds } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
@@ -127,9 +128,9 @@ export async function readTranslations(projectId: string): Promise<Translations>
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
- *  their shape). Every row of the project is checked, so a key with no `.hbs` of its own — `paywall` (5.20), `cards`
- *  (7.13) — throws for the whole editor the day its writer lands; the story that writes it extends this map in the
- *  same change (review, 2026-09-17). Story 5.16 is such a writer: a page-2 key compiles to the file `PAGE_TWO` names —
+ *  their shape). Every row of the project is checked, so a key with no `.hbs` of its own — `paywall` (5.20) — throws for
+ *  the whole editor the day its writer lands; the story that writes it extends this map in the same change (review,
+ *  2026-09-17). Story 7.13's `cards` is no `project_templates` row at all: its values are `project_treatments.card_designs`. Story 5.16 is such a writer: a page-2 key compiles to the file `PAGE_TWO` names —
  *  `index` to `index.hbs`, and an archive's `tag-paged` and `author-paged` to the archive's own file. */
 const fileOf = fileOfKey
 
@@ -239,6 +240,13 @@ export type EditorData = {
   /** STORY 7.12 — the stored overrides `overrideRefusal` passes, by catalog key (FR-H5): the canvas renders them through the
    *  shim. Optional for the harness's reason: none is English */
   overrides?: Readonly<Record<string, string>>
+  /** STORY 7.13 — the project's card designs (`project_treatments.card_designs`, FR-Q7), through `card_designs`' one schema,
+   *  `parseStoredCards` (AD-36, AD-27(a)): the Editor cards surface's values, the switcher's amber count and the canvas's
+   *  styles. Optional for the harness's reason: no card designed */
+  cardDesigns?: CardDesigns
+  /** STORY 7.13 — the sentence `parseStoredCards` refused a stored record with (a hand-made row, AD-6), or null: the screen
+   *  then opens every card on Ghost's defaults and says so once */
+  cardsRefused?: string | null
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -250,7 +258,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // `cache`d, and the 404 guard above this boundary already read it — so this is the linked site's id at no cost, and
   // the site's own row can join the reads below rather than follow them
   const linked = (await projectOf(projectId))?.linked_site_id ?? null
-  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow, cardsRow] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -280,8 +288,16 @@ export async function editorData(projectId: string): Promise<EditorData> {
     sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', projectId).order('position').order('created_at'),
     // Story 7.12 — the project's translation overrides (FR-H5: the canvas renders them through the shim)
     overrideRows(projectId),
+    // Story 7.13 — the project's card designs, through the user's own session (RLS: the uniform owner policy)
+    sb.from('project_treatments').select('card_designs').eq('project_id', projectId).maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
+  // Story 7.13: a failed read THROWS, as the templates' does — an editor opened on no designs would write that empty record
+  // over the stored one with its next card edit (the record rides the flush whole)
+  if (cardsRow.error) throw new Error(`the project's card designs could not be read (${cardsRow.error.code})`)
+  // read as the compile reads it — a glyph the icon set does not draw opens on Ghost's defaults too (`storedCards`, through `parseStoredCards`)
+  const cards = await storedCards(cardsRow.data?.card_designs ?? null)
+  if (cards.cardsRefused !== null) console.error('editorData: the stored card designs were refused, so the screen opens on Ghost\'s defaults', { sentence: cards.cardsRefused })
 
   const docs: Record<string, ProjectDoc> = {}
   const entries: Record<string, SectionRegistryEntry> = {}
@@ -448,6 +464,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     siteAccent: siteAccentOf(siteRow?.data?.site_settings),
     settings: settingsRead(settingsRow),
     overrides: overridesRow.error ? {} : judgeOverrides(overridesRow.data ?? []).overrides,
+    // Story 7.13 — a refused record opens on Ghost's defaults; its sentence is logged and said once on the screen
+    ...cards,
   }
 }
 

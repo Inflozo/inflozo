@@ -70,20 +70,28 @@
 // naming the key and the sentence: a row can reach the table by another route (AD-6), and Ghost errors every page that
 // prints a label 5.4.3 cannot parse. And it ships the faces the language needs: a family whose google/fonts `METADATA.pb`
 // lists the language's script ships each face whole, the rest keep their latin pair (§D.b) — `fontFaceCss`' one rule.
+//
+// Story 7.13 (FR-Q7, FR-J2, FR-J3, AD-18) makes it carry the project's card designs: `assets/css/cards.css` on EVERY theme,
+// linked before `screen.css` — D12's two Koenig widths, then Ghost's own stylesheet for each designed card, copied byte for
+// byte under one header naming Ghost, then the rules its changed values add (`cardsCss`, the library's one registry) — and
+// `card_assets: { exclude }` naming exactly the designed cards' Ghost chunks (`excludedChunks`), `true` while none is
+// designed. The stored record is parsed by `card_designs`' one schema before anything renders, a refusal is its sentence,
+// and no rule this theme writes carries `!important` (Ghost's own stay inside its copy).
 
 import {
-  bundle, byCategory, CARDS_JS_TAG, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
-  CATALOG, CUSTOM_TARGET_RE, englishStrings, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion, PAGINATED_TARGETS,
-  PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile, translatableKeys,
+  bundle, byCategory, CARDS_JS_TAG, cardsCss, cardsCssVersion, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
+  CATALOG, CUSTOM_TARGET_RE, englishStrings, excludedChunks, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion,
+  ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
+  translatableKeys,
 } from '@inflozo/library'
-import type { IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
+import type { CardDesigns, IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { DEFAULT_LANGUAGE, languageRefusal, scriptOf, type Script } from '@inflozo/library/languages'
 import { overrideRefusal } from '@inflozo/library/override'
 import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
 import {
   BASE_CSS, BUILT_IN_PATH, bindingOf, bindingState, builtInSettings, checkChromeLiterals, checkSetting, customPath, darkHook, darkOverrideCss, designate,
-  feedQuery, ghostEntry, ghostName, gscanInert, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls,
+  feedQuery, ghostEntry, ghostName, gscanInert, iconSvg, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls,
   schemeClassChain, sectionKey, SETTING_ACCENT, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SETTING_WORDS, srcsetExpr, synthesize, U0, U1, USER_SETTING_CAP,
   UserText, visibleFeed,
 } from '@inflozo/section-runtime'
@@ -122,8 +130,10 @@ export type CompileInput = {
   /** `package.json`'s identity (Story 7.2): `name` and `version` are Story 7.24's frozen `inflozo-{slug}` and per-deploy
    *  increment, `description` is `projects.name` */
   theme: { name: string; version: string; description: string }
-  /** the designed cards — the keys of `project_treatments.card_designs` (Story 7.13); none until then */
-  designedCards?: readonly string[]
+  /** Story 7.13 — `project_treatments.card_designs` AS STORED (no row: omitted or null), read by the shell: parsed here by
+   *  `card_designs`' one schema (`parseCardDesigns`), so a malformed row refuses the build with its sentence (AD-36). It
+   *  decides `card_assets`, `cards.css` and which of Ghost's card scripts `cards.js` carries */
+  cardDesigns?: unknown
   /** the pack's pairing (`D1` …, Appendix D §D.c) — `pack.fonts` must be its `pairingFonts` (Story 7.4) */
   pairing: string
   /** a font-pool file's bytes, by its path under `packages/library/fonts/` (`files/<file>`, a family's `licenceFile`),
@@ -136,8 +146,9 @@ export type CompileInput = {
    *  carries `core` and each declared module found here (Story 7.5) */
   modules: ModuleSources
   /** Ghost's card scripts as `tools/probe/record-cards.py` vendored them, by card name (`audio`, `gallery`, `toggle`,
-   *  `video`), and Ghost's licence — `packages/library/orbit-weekly/vendor/`, read by the shell (Story 7.5) */
-  ghostCards: { scripts: Readonly<Record<string, string>>; licence: string }
+   *  `video`), and Ghost's licence — `packages/library/orbit-weekly/vendor/`, read by the shell (Story 7.5). Story 7.13: and
+   *  its card stylesheets, by chunk name — the vendored directory IS the set of names `card_assets` may exclude */
+  ghostCards: { scripts: Readonly<Record<string, string>>; styles: Readonly<Record<string, string>>; licence: string }
   /** Story 7.10 — the project's custom settings as stored (`custom_settings`), read by the shell (AD-14: values): each row's
    *  key, type, group, condition, binding and place. Their `default_value` and `options` are NOT read — the start is the
    *  canvas's (Question 1). Since Story 7.11 a project with none still emits `config.custom`: the three dark built-ins. */
@@ -287,14 +298,15 @@ function pageSize(v: unknown): number {
  *  7.10's and 7.11's (7.2's Question 1, ruled option 1): last in `config`, the user's live settings in their order and then
  *  the three dark built-ins, so it is on every theme — written only with the template lines that read each key
  *  (`customSettings`). */
-function packageJson(input: CompileInput, perPage: number, custom: Readonly<Record<string, unknown>>): string {
+function packageJson(input: CompileInput, perPage: number, custom: Readonly<Record<string, unknown>>, cards: readonly string[]): string {
   const { name, version, description } = input.theme
   if (!THEME_NAME_RE.test(name)) throw new Error(`package.json: the theme name ${shown(name)} must match ${THEME_NAME_RE.source} (GS010-PJ-NAME-LC, GS010-PJ-NAME-HY).`)
   if (!VERSION_RE.test(version)) throw new Error(`package.json: the theme version ${shown(version)} must be MAJOR.MINOR.PATCH in plain digits (GS010-PJ-VERSION-SEM).`)
-  for (const card of input.designedCards ?? []) {
-    if (!CARD_RE.test(card)) throw new Error(`package.json: the designed card ${shown(card)} is no Ghost card name — card names use only the characters ${CARD_RE.source.slice(1, -2)}, because Ghost 5 splices them into a file glob (AD-36).`)
+  // Story 7.13: the names are the registry's chunk names the vendored directory holds (`excludedChunks`) — held to the glob's
+  // alphabet all the same, since a vendored file's name reaches here
+  for (const card of cards) {
+    if (!CARD_RE.test(card)) throw new Error(`package.json: the card chunk ${shown(card)} is no Ghost card name — card names use only the characters ${CARD_RE.source.slice(1, -2)}, because Ghost 5 splices them into a file glob (AD-36).`)
   }
-  const cards = [...new Set(input.designedCards ?? [])].sort(byCode)
   return `${JSON.stringify({
     name,
     description,
@@ -305,8 +317,10 @@ function packageJson(input: CompileInput, perPage: number, custom: Readonly<Reco
     config: {
       posts_per_page: perPage,
       image_sizes: Object.fromEntries(Object.entries(IMAGE_SIZES).map(([key, width]) => [key, { width }])),
-      // Question 2, ruled option 1: Ghost 5 reads an empty `exclude` as no card at all (`css/!().css` matches nothing)
-      card_assets: cards.length === 0 ? true : { exclude: cards },
+      // Question 2, ruled option 1: Ghost 5 reads an empty `exclude` as no card at all (`css/!().css` matches nothing).
+      // Story 7.13: the designed cards' Ghost chunk names — `header` and `header_v2` both for the header card, since Ghost 5's
+      // glob is a prefix test and Ghost 6 filters exact names; never `false`, never an empty list
+      card_assets: cards.length === 0 ? true : { exclude: [...cards] },
       custom,
     },
     [THEME_MARKER]: true,
@@ -790,6 +804,20 @@ function settingsStyle(accent: string | null): string[] {
   ]
 }
 
+/** Story 7.13 (FR-Q7): `!important` is never the mechanism — an excluded card needs no override. Every `.css` file and
+ *  every template `<style>` is read, `cards.css` without Ghost's block (`ownCardsCss`), comments out; returns sentences. */
+export function checkImportant(files: Readonly<Record<string, string>>): string[] {
+  const out: string[] = []
+  for (const path of Object.keys(files).sort(byCode)) {
+    const body = files[path] as string
+    const sheets = path.endsWith('.css')
+      ? [path === 'assets/css/cards.css' ? ownCardsCss(body) : body]
+      : path.endsWith('.hbs') ? [...body.replace(HBS_COMMENT, '').matchAll(/<style\b[^>]*>([^]*?)<\/style>/gi)].map((m) => m[1] as string) : []
+    for (const sheet of sheets) if (/!\s*important/i.test(stripCssComments(sheet))) out.push(`${path} carries !important outside Ghost's own block — a designed card is excluded, never overridden (FR-Q7)`)
+  }
+  return out
+}
+
 /** Every `@custom.<key>` a template reads, comments out — the readers the last assertion holds to the declared keys. */
 const READER = /@custom\.([A-Za-z0-9_]+)/g
 const readers = (files: Readonly<Record<string, string>>): Set<string> =>
@@ -826,7 +854,13 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const tokens = packTokensCss(input.pack, { ghostFonts: true, settingAccent: custom.accent !== null, darkSettings: true })
   noC0("the pack's CSS", [tokens])
   const perPage = pageSize(input.postsPerPage)
-  const pkg = packageJson(input, perPage, custom.entries)
+  // Story 7.13 (AD-36, AD-27(a)): the stored card designs, through their one schema before anything is written — a glyph
+  // must be an icon the set draws — so every byte `cards.css` carries comes from the registry, never from the row
+  const parsedCards = parseCardDesigns(input.cardDesigns ?? null, (name) => iconDrawing(name) !== undefined)
+  if (typeof parsedCards === 'string') throw new Error(`card designs: ${parsedCards} The build stops before any file is written (AD-36).`)
+  const cardDesigns: CardDesigns = parsedCards
+  const styles = input.ghostCards.styles
+  const pkg = packageJson(input, perPage, custom.entries, excludedChunks(cardDesigns, Object.keys(styles)))
   const fonts = themeFonts(input, scriptOf(language))
   // Story 7.12: the locale files, every value judged before anything renders
   const locales = localeFiles(language, input.strings)
@@ -835,10 +869,20 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const sorted = (o: Readonly<Record<string, string>>): string[] => Object.keys(o).sort(byCode).map((k) => o[k] as string)
   noC0('a module source', sorted(input.modules))
   noC0('a card script', sorted(input.ghostCards.scripts))
+  noC0('a card stylesheet', sorted(styles))
   noC0("Ghost's licence", [input.ghostCards.licence])
   // the designed cards Ghost has a script for (a callout has none): cards.js carries exactly these, or ships not at all
-  const scripted = [...new Set(input.designedCards ?? [])].filter((c) => Object.hasOwn(input.ghostCards.scripts, c)).sort(byCode)
+  const scripted = excludedChunks(cardDesigns, Object.keys(input.ghostCards.scripts))
   const cards = scripted.length === 0 ? undefined : { js: cardsJs(scripted, input.ghostCards.scripts), version: cardsVersion(scripted, input.ghostCards.scripts) }
+  // Story 7.13 — cards.css, on every theme; R-26: a divider's glyph is Tabler's drawing, so it ships Tabler's licence
+  let drewGlyph = false
+  const cardsSheet = cardsCss(cardDesigns, styles, (name) => {
+    const svg = iconSvg(name, iconDrawing)
+    if (svg !== null) drewGlyph = true
+    return svg
+  })
+  const sheetVersion = cardsCssVersion(cardDesigns, styles)
+  const copied = excludedChunks(cardDesigns, Object.keys(styles))
   const { stacks, pageTwos } = stacksOf(input)
 
   // ── render every visible instance, with ONE UserText — file by file, page 1 before page 2 ─────────────────────────────
@@ -1019,6 +1063,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     // and it writes `=` and `&` as entities too, so a URL with a query string does not load and dark draws an empty box —
     // Ghost's uploads carry neither (`ghost-storage-base`'s `getSanitizedFileName`, both majors).
     ...settingsStyle(custom.accent === null ? null : customPath(custom.accent)).map((l) => `    ${l}`),
+    // Story 7.13 (AD-18): cards.css before screen.css, both before {{ghost_head}} — so a design's own rules win on the
+    // `.kg-*` classes they legitimately style (A33 the card interiors, A25 the column)
+    '    <link rel="stylesheet" href="{{asset "css/cards.css"}}">',
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
     // Story 7.5 (NFR-2 (3)): both scripts `defer`, in the head, so neither holds the page up
     `    ${MAIN_JS_TAG}`,
@@ -1056,6 +1103,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     sheets[e.id] = `/* ${cssPart(e.categoryTitle)} · ${cssPart(e.name)} */\n${stripCss(tidyCss(e.css), rootClassOf(e.html), roots)}`
   }
   tree['assets/css/screen.css'] = `${[global, ...designs.map((e) => sheets[e.id] as string)].join('\n\n')}\n`
+  tree['assets/css/cards.css'] = cardsSheet
   // AD-14's record: each emitted root-level template but the shell reaches the site doc's designs, its own (both pages)
   // and, where Ghost's `{{content}}` can print the paywall, the paywall's
   const idsOf = (files: readonly string[]): string[] => designs.filter((e) => placed.some((p) => p.entry.id === e.id && files.includes(p.file))).map((e) => e.id)
@@ -1069,6 +1117,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // R-26: Tabler's MIT licence, verbatim, whenever a placed section draws an icon; each shipped family's beside it — text
   // files of the tree like any other, so the final checks read them too (review, 2026-10-08)
   Object.assign(tree, fonts.licences)
+  drewAny ||= drewGlyph
   if (drewAny && Object.hasOwn(tree, 'LICENSE-tabler.txt')) throw new Error("LICENSE-tabler.txt: a font family's licence is already at that name, and Tabler's would overwrite it — the pool's slugs may not be `ghost` or `tabler`.")
   if (drewAny) tree['LICENSE-tabler.txt'] = TABLER_LICENSE
 
@@ -1079,10 +1128,11 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const mounted = moduleUnion(placed.map((p) => p.entry))
   const js: JsRecord = { bundled: mounted.filter((n) => Object.hasOwn(input.modules, n)), atRest: mounted.filter((n) => !Object.hasOwn(input.modules, n)) }
   tree['assets/js/main.js'] = bundle(js.bundled, input.modules)
-  if (cards !== undefined) {
+  if (cards !== undefined) tree['assets/js/cards.js'] = cards.js
+  // Ghost's licence whenever cards.js or cards.css carries Ghost's bytes (Story 7.13)
+  if (cards !== undefined || sheetVersion !== null) {
     // three writers share the root's LICENSE-*.txt namespace (review, 2026-10-08): a family slug of `ghost` or `tabler` would overwrite one silently
     if (Object.hasOwn(tree, 'LICENSE-ghost.txt')) throw new Error("LICENSE-ghost.txt: a font family's licence is already at that name, and Ghost's would overwrite it — the pool's slugs may not be `ghost` or `tabler`.")
-    tree['assets/js/cards.js'] = cards.js
     tree['LICENSE-ghost.txt'] = tidyLicence(input.ghostCards.licence)
   }
   tree['README.md'] = [
@@ -1092,6 +1142,14 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     ...(cards === undefined ? [] : [
       `- \`assets/js/cards.js\` is Ghost's own code for these cards: ${scripted.join(' · ')}. It is copied unchanged from Ghost ${cards.version}, under the MIT licence in \`LICENSE-ghost.txt\`. This theme styles those cards itself, which switches off Ghost's own copy of their scripts, so it carries this one.`,
     ]),
+    '',
+    // Story 7.13: which blocks of cards.css are Ghost's
+    '## Styles',
+    '',
+    "- `assets/css/screen.css` is this theme's own stylesheet.",
+    sheetVersion === null
+      ? "- `assets/css/cards.css` is this theme's own styling for the cards Ghost's editor puts in posts: their wide and full widths."
+      : `- \`assets/css/cards.css\` styles the cards Ghost's editor puts in posts. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: ${copied.join(' · ')}, copied unchanged from Ghost ${sheetVersion} under the MIT licence in \`LICENSE-ghost.txt\`. The rest of the file is this theme's own: the cards' widths, and the settings that switch off Ghost's own copy of those styles.`,
     '',
   ].join('\n')
 
@@ -1106,6 +1164,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // as bundled and cards.js as copied
   const scripts = [...checkThemeJs(text, input.modules, input.ghostCards.scripts), ...checkThemeScripts(text)]
   if (scripts.length > 0) throw new Error(`the theme's scripts: ${scripts.join(' · ')}`)
+  // Story 7.13 (FR-Q7): no `!important` in a rule this theme writes — every stylesheet and template `<style>` but Ghost's
+  // own block in cards.css, whose seven stay byte for byte as cards.js keeps Ghost's scripts
+  const important = checkImportant(text)
+  if (important.length > 0) throw new Error(`the theme's styles: ${important.join(' · ')}`)
   // Story 7.6: Ghost's markup over the final text, and V1 over the tree before substitution — where a customer's words are
   // still markers, so a typed label and a customer's text are told apart
   const markup = [...checkGhostMarkup(text), ...checkChromeText(doc, tree)]

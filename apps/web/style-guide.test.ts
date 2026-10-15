@@ -2,9 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { orbitWeekly } from '@inflozo/library'
+import { cardOf, CARDS, excludedChunks, KOENIG_WIDTHS, orbitWeekly, type CardDesigns } from '@inflozo/library'
 import {
-  DESIGNED_CARDS, ORBIT_WEEKLY_DIR, articleDocument, cardScripts, chunkUniverse, simulatedCardsCss, variationsDocument, withImages,
+  ORBIT_WEEKLY_DIR, articleDocument, cardChunks, cardScripts, cardsDocument, chunkUniverse, simulatedCardsCss, variationsDocument, withImages,
 } from './lib/style-guide.ts'
 import { paywallPage } from './lib/canvas.ts'
 
@@ -15,23 +15,28 @@ import { paywallPage } from './lib/canvas.ts'
 const NONCE = 'dGVzdC1ub25jZQ=='
 const article = articleDocument(NONCE)
 const sheet = variationsDocument(NONCE)
+// Story 7.13 — the Editor cards canvas, on the card S14a and S14e draw
+const cards = cardsDocument(NONCE, 'callout')
 
 test('the theme stylesheet loads BEFORE the simulated cards.min.css, as the browser will meet them', () => {
-  for (const doc of [article, sheet]) {
+  for (const doc of [article, sheet, cards]) {
     const order = [...doc.matchAll(/<style data-order="([^"]+)"/g)].map((m) => m[1])
     assert.deepEqual(order, [...order].sort(), `stylesheets out of order: ${order.join(' → ')}`)
     assert.ok(order.indexOf('2-theme') < order.indexOf('3-cards.min.css'), 'the theme must precede Ghost\'s card CSS (prd.md §7.4)')
   }
 })
 
-test('the simulated bundle is exactly the complement of the derived exclude list', () => {
+test('the simulated bundle is exactly the complement of the exclude list the card registry derives (Story 7.13)', () => {
   const universe = chunkUniverse('css')
   assert.ok(universe.length > 0, 'no vendored css chunks — run python3 tools/probe/record-cards.py')
-  const { chunks } = simulatedCardsCss()
-  const excluded = orbitWeekly.cardAssetsExclude(universe, DESIGNED_CARDS)
-  assert.deepEqual([...chunks, ...excluded].sort(), [...universe].sort())
+  for (const designs of [{}, { callout: { emoji: 'off' } }, { header: { height: 'generous' }, gallery: { gutter: 'tight' } }] as CardDesigns[]) {
+    const excluded = excludedChunks(designs, universe)
+    const { chunks } = simulatedCardsCss(excluded)
+    assert.deepEqual([...chunks, ...excluded].sort(), [...universe].sort())
+    assert.ok(chunks.every((c) => !excluded.includes(c)))
+  }
   const carried = /<style data-order="3-cards.min.css" data-chunks="([^"]*)"/.exec(article)?.[1].split(' ')
-  assert.deepEqual(carried, chunks)
+  assert.deepEqual(carried, simulatedCardsCss().chunks)
 })
 
 test('the four card behaviour scripts are vendored with their source, version and licence, and every script carries the nonce', () => {
@@ -95,4 +100,47 @@ test("the recordings' import module is the list on disk, not a stale one", () =>
 test('the variation sheet shows the toggle closed as recorded, then open on the same bytes', () => {
   assert.match(sheet, /data-variant="toggle"[^]*?data-kg-toggle-state="close"[^]*?data-open-toggle/)
   assert.equal((sheet.match(/data-variant="/g) ?? []).length, orbitWeekly.variants().length + 1)
+})
+
+// ─── Story 7.13 — the Editor cards canvas and the vendored directory the registry is held to ─────────────────────────
+
+test('(7.13) every chunk name the registry lists is a vendored stylesheet — derived from the directory, a planted name the control', () => {
+  const universe = chunkUniverse('css')
+  const listed = CARDS.flatMap((c) => c.chunks)
+  const missing = (names: readonly string[]) => names.filter((n) => !universe.includes(n))
+  assert.deepEqual(missing(listed), [])
+  assert.deepEqual(missing([...listed, 'no_such_card']), ['no_such_card'], 'the control: a planted name is named')
+  // and every card the registry gives a script is a vendored script (cards.js copies those)
+  for (const c of CARDS) for (const n of c.chunks) if (chunkUniverse('js').includes(n)) assert.ok(c.chunks.includes(n))
+})
+
+test('(7.13) Ghost 5\'s glob is a prefix test: every vendored chunk name that is a prefix of another is listed on the same card as it', () => {
+  const universe = chunkUniverse('css')
+  const owner = (n: string) => CARDS.find((c) => c.chunks.includes(n))?.key
+  const pairs = universe.flatMap((a) => universe.filter((b) => b !== a && b.startsWith(a)).map((b) => [a, b] as const))
+  assert.ok(pairs.length > 0, 'the control: the directory holds a prefix pair (header, header_v2), so this row reads something')
+  for (const [a, b] of pairs) {
+    // a chunk no card lists is never excluded, so it cannot be dropped by another card's glob only if its prefix is unlisted too
+    assert.equal(owner(a), owner(b), `${a} is a prefix of ${b}: Ghost 5's !(${a}) drops ${b} too, so they must be designed together`)
+  }
+})
+
+test('(7.13) the cards document: the chosen card\'s recorded variations first, then C.4\'s article; the stylesheets in the theme\'s order; the vendored chunks as data; Ghost\'s four scripts nonce\'d', () => {
+  const order = [...cards.matchAll(/<style data-order="([^"]+)"/g)].map((m) => m[1])
+  assert.deepEqual(order.slice(0, 5), ['1-tokens', '1b-faces', '1c-cards.css', '2-theme', '3-cards.min.css'])
+  assert.ok(cards.includes(`<style data-order="1c-cards.css" data-cards-css>${KOENIG_WIDTHS}</style>`), 'the cards.css a project with nothing designed emits')
+  // the variations of the chosen card come before the article's body
+  const ids = orbitWeekly.variants().filter((v) => v.card === cardOf('callout')?.sample).map((v) => v.id)
+  assert.ok(ids.length > 1)
+  const first = orbitWeekly.blocks('6', 'variations').find((b) => b.id === ids[0])?.html ?? ''
+  assert.ok(first !== '' && cards.indexOf(first.slice(0, 80)) < cards.indexOf(orbitWeekly.styleGuideBody('6').slice(0, 80)))
+  // the chunks ride as data, parse back to the vendored files, and never end their element
+  const data = /<script type="application\/json" id="card-chunks" nonce="[^"]+">([^<]*)<\/script>/.exec(cards)?.[1]
+  assert.ok(data !== undefined)
+  assert.deepEqual(JSON.parse(data as string), cardChunks())
+  for (const t of [...cards.matchAll(/<script\b[^>]*>/g)].map((m) => m[0])) assert.ok(t.includes(`nonce="${NONCE}"`), t)
+  assert.ok(cards.includes('toggleHeadingElements') && cards.includes('kg-gallery-image img'))
+  // a card with no recorded sample draws the article alone; an unknown key too
+  assert.ok(cardsDocument(NONCE, 'email').includes(orbitWeekly.styleGuideBody('6').slice(0, 200)))
+  assert.ok(cardsDocument(NONCE, 'nft').includes(orbitWeekly.styleGuideBody('6').slice(0, 200)))
 })

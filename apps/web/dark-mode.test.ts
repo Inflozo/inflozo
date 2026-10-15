@@ -71,7 +71,8 @@ test('the control is ABSENT on a Light-only project, never disabled (UX-DR3, R-1
   // (Story 5.20 hands it the ink bar's colour variables as a prop — `style={onInk}` — rather than a wrapper, because the
   // deployed walk reads the cluster's order off the bar's own children; the condition is what this holds)
   // (Story 5.23b hands it `flip` as `on.flip`, the same handler at a fixed identity, so the memoized button skips a render)
-  assert.match(editor, /\{darkEnabled \? <ModeToggle mode=\{mode\} onMode=\{(?:on\.)?flip\}(?: style=\{onInk\})? \/> : null\}/)
+  // (Story 7.13 adds `&& !cardsNow`: Editor cards' canvas is the post at reading width in the pack's light look)
+  assert.match(editor, /\{darkEnabled(?: && !cardsNow)? \? <ModeToggle mode=\{mode\} onMode=\{(?:on\.)?flip\}(?: style=\{onInk\})? \/> : null\}/)
   assert.match(editor, /\bflip: useStable\(flip\)/, '`on.flip` is `flip` itself')
   // nothing anywhere greys it: a greyed control must carry a reason, and this one could never act here. (`ring` is
   // imported from `kit/greyed`, which is where the app's one focus ring lives — hence the narrow patterns.)

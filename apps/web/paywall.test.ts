@@ -7,6 +7,7 @@ import { isPaywallDesign, orbitWeekly, PAYWALL_TARGET, paywallRing, type Section
 import { defaultContent, renderCanvas, renderTheme, type RenderInput } from '@inflozo/section-runtime'
 import { iconDrawing } from '@inflozo/library/icons'
 import { paywallPage } from './lib/canvas.ts'
+import { SURFACES_HEADING } from './lib/editor.ts'
 import { contentCta } from '@inflozo/section-runtime'
 import { paywallSamples } from './lib/controls-review.ts'
 import { adminAt, askLine, askOf, membersNotice, membersOff, PAYWALL_WORDS, tierLine, tierText, warnsOn } from './lib/paywall.ts'
@@ -27,7 +28,9 @@ const doc = () => new JSDOM('<body></body>').window.document as unknown as Param
 const SITE = 'Orbit Weekly'
 
 test('every word is the spec\'s Design Notes table, written once (R-170)', () => {
-  assert.equal(PAYWALL_WORDS.group, 'Template surfaces')
+  // Story 7.13: the group heading is shared by both surfaces now (`SURFACES_HEADING`), and the chip is Editor cards' too
+  assert.equal(SURFACES_HEADING, 'Template surfaces')
+  assert.ok(!('group' in PAYWALL_WORDS), 'the heading has one home')
   assert.equal(PAYWALL_WORDS.chip, 'Not a page section')
   assert.equal(PAYWALL_WORDS.back, 'Back to post')
   assert.equal(`${PAYWALL_WORDS.showingLead} ${PAYWALL_WORDS.showing(false)}`, 'Showing: the cut only')

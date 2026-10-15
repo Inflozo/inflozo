@@ -1082,6 +1082,11 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
       push(out, 'white-space-pre', `style.css sets white-space: ${value} on "${prelude.trim()}" — the theme is formatted on the promise that text renders under normal or nowrap; only a pre or textarea may keep its whitespace (Story 7.1's formatting contract).`)
     }
   }
+  // Story 7.13 — the compiler refuses `!important` in every rule a theme writes (`checkImportant`, FR-Q7: a designed card is
+  // excluded, never overridden), so a design meets the rule here, at authoring, never at a customer's deploy
+  if (/!\s*important/i.test(stripCssComments(css))) {
+    push(out, 'stylesheet-important', "style.css carries !important — the compiler refuses it in every rule a theme writes (FR-Q7: Ghost's card styles are switched off, never overridden), so a design wins by the theme's stylesheet order alone.")
+  }
   const said = new Set<string>()
   for (const { text, name, op, value, flag } of attributeSelectors(css)) {
     if (said.has(text)) continue

@@ -3,8 +3,8 @@
 //
 // `/projects/<uuid>` is Home; `/projects/<uuid>/<key>` is another canvas; `/projects/<uuid>/home` 308s to the first.
 // The address names the project and the canvas and nothing else — selection, device, mode and folds are never in it.
-// Reserved and unknown segments (`cards`, an unbuilt `custom-…`) answer 404 until their story opens them (Story 5.20
-// opened `paywall`, the first TEMPLATE SURFACE — see `CANVASES`),
+// Reserved and unknown segments (an unbuilt `custom-…`) answer 404 until their story opens them (Story 5.20 opened
+// `paywall`, the first TEMPLATE SURFACE, and Story 7.13 `cards`, the second — see `CANVASES`),
 // and `index` answers 404 PERMANENTLY (R-127: page 2 has no canvas of its own; since Story 5.16 it is a design of its
 // own, reached from the page-2 switch on its canvas and stored under `PAGE_TWO`'s keys below). The spec's Design Notes
 // are the record of why.
@@ -19,6 +19,7 @@
 // "+ New template" to Story 7.16.
 
 import { CUSTOM_TARGET_RE, isSiteFooter } from '@inflozo/library'
+import { CARD_WORDS } from './cards.ts'
 
 /** Every canvas the editor can open, in D5b's row order: the template file it compiles into, its D5b label, and the
  *  one line the Template switcher prints under that label (R-171, owner, 2026-09-21 — "Add relevant one liners below
@@ -45,7 +46,16 @@ export const CANVASES = {
   // first "Where a members-only post stops": measured in the harness it overran the indented row by 7px and lost its
   // end (R-171's one line), so it says the same in the indicator's own word, "gated" (R-170).
   paywall: { file: 'partials/content-cta.hbs', label: 'Paywall', caption: 'Where a gated post stops', surface: true },
+  // STORY 7.13 — THE SECOND TEMPLATE SURFACE (FR-Q7, S14 as EXPERIENCE.md re-specifies it): Editor cards, where Ghost's
+  // own Koenig cards are styled once for the whole site. Its values are no `project_templates` row but
+  // `project_treatments.card_designs`, which rides the editor's save under `CARDS_KEY`; it compiles into `cards.css`.
+  // Entered from the switcher's Template surfaces group, after Paywall — never S14d's left-nav group (Layers keeps it).
+  cards: { file: 'assets/css/cards.css', label: CARD_WORDS.label, caption: CARD_WORDS.caption, surface: true },
 } as const
+
+/** The Template switcher's group of canvases that are not pages (EXPERIENCE.md:207-222) — a shared heading since Story
+ *  7.13 brought its second row; it was `PAYWALL_WORDS.group` while Paywall stood alone. */
+export const SURFACES_HEADING = 'Template surfaces'
 
 /** The one line under a custom template's row (R-171, the owner's own words). Custom templates reach the switcher with
  *  the Routes Manager, Story 7.16, which draws their rows with this line and `kit/icons.tsx`'s `CanvasCustom`. */
@@ -76,6 +86,14 @@ export const isMembership = (key: CanvasKey): boolean => CANVASES[key].file.star
 /** STORY 5.20 — a TEMPLATE SURFACE (the switcher's "Template surfaces" group): a canvas that is not a page. Every reader
  *  that would give it a site doc, a count in "Site-wide · N templates", a Section Picker or a page 2 asks this. */
 export const isSurface = (key: CanvasKey): boolean => 'surface' in CANVASES[key]
+
+/** STORY 7.13 — the PAYWALL alone, where a branch is the paywall's own and not every surface's: its partial and its one
+ *  design, its ring, its cut, its strip, its members-off card and its way back to Post. Editor cards shares the ink bar,
+ *  the chip and the absences (no Section Picker, no page 2, no Remix, no Preview) and none of these. */
+export const isPaywall = (key: CanvasKey): boolean => key === 'paywall'
+
+/** STORY 7.13 — EDITOR CARDS, the surface whose canvas is the card document (`style-guide.ts`'s `cardsDocument`). */
+export const isCards = (key: CanvasKey): boolean => key === 'cards'
 
 /** The canvases a project offers, in D5b's row order. Never a literal: a conditional canvas joins the list the day its
  *  condition holds, and the switcher, the Layers count and the site-wide confirm all read this one function. The
@@ -118,7 +136,8 @@ export const canvasOfPageTwoKey = (key: string): CanvasKey | null =>
  *  `index.hbs`, `tag-paged` → `tag.hbs`). `custom:custom-x.hbs` names its own. Moved here from `read.ts` by Story 5.19,
  *  whose main-feed rule asks it of every doc on the server read and in every edit (`designate` keys on the file).
  *  STORY 5.20 — A CANVAS'S KEY ANSWERS ITS OWN FILE FROM `CANVASES`, which is how `paywall` compiles to
- *  `partials/content-cta.hbs` rather than a `paywall.hbs` Ghost never reads; `cards` (7.13) arrives the same way. */
+ *  `partials/content-cta.hbs` rather than a `paywall.hbs` Ghost never reads; `cards` (7.13) names `assets/css/cards.css`,
+ *  though no doc is ever stored under it. */
 export const fileOfKey = (key: string): string => {
   const paged = canvasOfPageTwoKey(key)
   if (paged !== null) return PAGE_TWO[paged]?.file as string

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOfKey, isEditorPath, isMembership, isSiteFooter, isSurface, isUuid, landWithin, LOCK, siteSlot,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isSiteFooter, isSurface, isUuid, landWithin, LOCK, siteSlot,
   lockPath, PAGE_TWO,
   pageTwoKeyOf, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
@@ -30,7 +30,8 @@ test('every canvas key round-trips through its address', () => {
 })
 
 test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
-  for (const s of ['index', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK]) {
+  // Story 7.13 opened `cards` (Editor cards, the second template surface) — it is a canvas now, held below
+  for (const s of ['index', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)
@@ -307,7 +308,8 @@ test('R-127 stands: no page-2 key is a canvas, a segment or a switcher row — p
 })
 
 test('every key the editor writes is accepted word for word by the sync route AND by `template_key_shape`', () => {
-  const written = [SITE.key, ...(Object.keys(CANVASES) as CanvasKey[]).map(templateKeyOf), ...Object.values(PAGE_TWO).map((p) => p.key)]
+  // Story 7.13: Editor cards writes no doc — its values ride `CARDS_KEY` into `project_treatments` — so its key is no row's
+  const written = [SITE.key, ...(Object.keys(CANVASES) as CanvasKey[]).filter((k) => !isCards(k)).map(templateKeyOf), ...Object.values(PAGE_TWO).map((p) => p.key)]
   // the route's own pattern, read out of the file rather than restated (a route file may export only its handlers)
   const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
   const pattern = /const TEMPLATE_KEY = \/(.+)\/\n/.exec(route)?.[1]
@@ -327,7 +329,8 @@ test('every key the editor writes is accepted word for word by the sync route AN
 })
 
 test('Story 7.4 (DW-331): the library\'s templateKeyOfFile answers the app\'s own map — every canvas, every page-2 key and site', () => {
-  for (const key of Object.keys(CANVASES) as CanvasKey[]) {
+  // Story 7.13: Editor cards compiles into `cards.css` and stores no doc, so it has no template key to answer
+  for (const key of (Object.keys(CANVASES) as CanvasKey[]).filter((k) => !isCards(k))) {
     assert.equal(templateKeyOfFile(fileOfKey(templateKeyOf(key))), templateKeyOf(key), key)
     const two = PAGE_TWO[key]
     if (two === undefined) continue
@@ -352,9 +355,10 @@ test('Story 5.20: `paywall` is a canvas and a template surface — its key is it
   assert.equal(fileOfKey('paywall'), 'partials/content-cta.hbs')
   assert.equal(CANVASES.paywall.label, 'Paywall')
   assert.equal(CANVASES.paywall.caption, 'Where a gated post stops')
-  // offered on every project, and the only surface: every other canvas is a page
+  // offered on every project, and (Story 7.13) with Editor cards the two surfaces, in that order: every other canvas is a page
   assert.ok(canvasesOf().includes('paywall'))
-  assert.deepEqual((Object.keys(CANVASES) as CanvasKey[]).filter(isSurface), ['paywall'])
+  assert.deepEqual((Object.keys(CANVASES) as CanvasKey[]).filter(isSurface), ['paywall', 'cards'])
+  assert.deepEqual((Object.keys(CANVASES) as CanvasKey[]).filter(isPaywall), ['paywall'])
   assert.ok(!isMembership('paywall'))
   // fileOfKey still answers every other key exactly as before
   for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.equal(fileOfKey(templateKeyOf(key)), CANVASES[key].file, key)
@@ -415,10 +419,12 @@ test('Story 6.3: the sync route refuses a preset this build does not know BEFORE
   assert.ok(refused < route.indexOf("rpc('sync_project_doc'"), 'the preset is refused before the write')
   assert.match(route, /p_preset: \(preset as string \| undefined\) \?\? null/, 'the preset reaches the RPC, or null')
   // a body with only a preset is a write; one with neither docs nor a preset (nor, since 6.4, own packs) is the old 400
-  assert.match(route, /keys\.length === 0 && preset === undefined && packs === undefined\) return no\(400, 'Nothing to write'\)/)
+  // (Story 7.13: nor card designs)
+  assert.match(route, /keys\.length === 0 && preset === undefined && packs === undefined && parsedCards === undefined\) return no\(400, 'Nothing to write'\)/)
   // review: a pack-only body is "already there" only one write past its base — never adopted over another session's docs
   // (Story 6.4: and its own packs must be the server's too)
-  assert.match(route, /const ours = keys\.length > 0 \|\| answer\.revision === \(base as number\) \+ 1\n\s+if \(same && packThere && packsThere && ours\) return json\(200/)
+  // (Story 7.13: and its card designs must be the server's too)
+  assert.match(route, /const ours = keys\.length > 0 \|\| answer\.revision === \(base as number\) \+ 1\n\s+if \(same && packThere && packsThere && cardsThere && ours\) return json\(200/)
 })
 
 test('Story 6.3: Remix\'s Both writes neither when a design is refused — the fold first, the pack only once it landed, one txn (FR-D9)', () => {

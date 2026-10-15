@@ -22,7 +22,7 @@ import assert from 'node:assert/strict'
 import Handlebars from 'handlebars'
 import { JSDOM } from 'jsdom'
 import {
-  bundle, bundledNames, CARDS_JS_TAG, CATALOG, englishStrings, resolveStrings, cardsJs, checkThemeJs, checkThemeScripts, CONSUMED_DIRECTIVE_RE, HBS_COMMENT, i18nAttr, IMAGE_SIZES, MAIN_JS_TAG, moduleFunctionName,
+  bundle, bundledNames, CARDS_JS_TAG, CATALOG, englishStrings, resolveStrings, cardsCss, cardsJs, checkThemeJs, excludedChunks, KOENIG_WIDTHS, ownCardsCss, checkThemeScripts, CONSUMED_DIRECTIVE_RE, HBS_COMMENT, i18nAttr, IMAGE_SIZES, MAIN_JS_TAG, moduleFunctionName,
   MODULES, PAYWALL_TARGET, PORTAL_ACTIONS, PORTAL_PAGE,
 } from '@inflozo/library'
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
@@ -34,7 +34,7 @@ import { fontFaceCss, pairingFiles, preloadFiles } from '@inflozo/section-runtim
 import { OVERRIDE_WORDS } from '@inflozo/library/override'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
 import {
-  checkChromeText, checkGhostMarkup, checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, POST_ARTICLE, THEME_MARKER, THEME_MARKS, tidyLicence,
+  checkChromeText, checkGhostMarkup, checkImportant, checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, POST_ARTICLE, THEME_MARKER, THEME_MARKS, tidyLicence,
 } from './compile.ts'
 import type { CompiledTheme, CompileInput, CompileSetting } from './compile.ts'
 
@@ -164,10 +164,18 @@ const stub = (name: string) => `export function ${moduleFunctionName(name)}(el) 
 /** A chunk as `tools/probe/record-cards.py` vendors it: its two-line head, then Ghost's bytes. */
 const chunk = (name: string, body: string, version = '6.58.0') =>
   `/* Vendored verbatim from Ghost ${version}, core/frontend/src/cards/js/${name}.js, by \`python3 tools/probe/record-cards.py\`.\n   Copyright (c) 2013-2026 Ghost Foundation. MIT licence — the full text is vendor/LICENSE-ghost.txt. */\n${body}`
-/** Ghost's four scripted chunks and its licence as the shell reads them — the licence with CRLF, a trailing space and two
- *  final newlines, which `tidyLicence` tidies. */
+/** Story 7.13 — a stylesheet chunk, in the same head shape under `cards/css/`. */
+const cssChunk = (name: string, body: string, version = '6.58.0') =>
+  `/* Vendored verbatim from Ghost ${version}, core/frontend/src/cards/css/${name}.css, by \`python3 tools/probe/record-cards.py\`.\n   Copyright (c) 2013-2026 Ghost Foundation. MIT licence — the full text is vendor/LICENSE-ghost.txt. */\n${body}`
+/** Ghost 6.58.0's stylesheet directory's names (the spec's Design Notes), each a stand-in carrying its own class — audio and
+ *  video Ghost's `!important` too, which stays inside the copy; callout's last line unterminated, as Ghost's own is. */
+const CSS_NAMES = ['audio', 'blockquote', 'bookmark', 'button', 'callout', 'collection', 'cta', 'file', 'gallery', 'header', 'header_v2', 'nft', 'product', 'signup', 'toggle', 'transistor', 'video']
+const cssBody = (n: string) => `.kg-${n}-card {\n    display: block;\n}${n === 'audio' || n === 'video' ? `\n\n.kg-${n}-hide {\n    display: none !important;\n}` : ''}${n === 'callout' ? '' : '\n'}`
+/** Ghost's four scripted chunks, its stylesheets and its licence as the shell reads them — the licence with CRLF, a trailing
+ *  space and two final newlines, which `tidyLicence` tidies. */
 const GHOST_CARDS = {
   scripts: Object.fromEntries(['audio', 'gallery', 'toggle', 'video'].map((n) => [n, chunk(n, `(function() {\n    const ${n} = document.querySelectorAll('.kg-${n}-card');\n\n})();\n`)])),
+  styles: Object.fromEntries(CSS_NAMES.map((n) => [n, cssChunk(n, cssBody(n))])),
   licence: 'Copyright (c) 2013-2026 Ghost Foundation\r\n\r\nPermission is hereby granted, free of charge. \r\n\r\n',
 }
 
@@ -449,15 +457,16 @@ function statements(text: string): string[] {
 
 test('over every emitted file: it parses under Handlebars 4.7.9, carries one {{{body}}} and, with a paywall, {{{html}}} as its first line — no other triple-stash — no token, no stray comment, no fingerprint', () => {
   const templates = { ...project(), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
-  // Story 7.5: a designed toggle, so cards.js and Ghost's licence are read beside main.js and README.md
-  const files = build(templates, { pageTwo: projectTwo(), designedCards: ['toggle'] }).files
+  // Story 7.5: a designed toggle, so cards.js and Ghost's licence are read beside main.js and README.md — Story 7.13: and
+  // cards.css with Ghost's block and this theme's rules, a divider's glyph and Tabler's licence among them
+  const files = build(templates, { pageTwo: projectTwo(), cardDesigns: { toggle: { chevron: 'left' }, divider: { glyph: 'on' } } }).files
   // Story 7.4: a font is bytes, never text, so the text scans skip it — and the skip is not vacuous: the fonts are there
   const bytes = Object.entries(files).filter(([, b]) => b instanceof Uint8Array).map(([p]) => p)
   assert.ok(bytes.length > 0 && bytes.every((p) => /^assets\/fonts\/[a-z0-9-]+\.woff2$/.test(p)), bytes.join(' '))
   const out = textOf(files)
   assert.deepEqual(Object.keys(out).length + bytes.length, Object.keys(files).length)
   assert.ok(Object.keys(out).some((p) => p.startsWith('LICENSE-')), 'the licences are read as text, and meet rule 1')
-  for (const p of ['assets/js/main.js', 'assets/js/cards.js', 'LICENSE-ghost.txt', 'README.md']) assert.ok(p in out, `${p} is read by the scan`)
+  for (const p of ['assets/js/main.js', 'assets/js/cards.js', 'assets/css/cards.css', 'LICENSE-ghost.txt', 'LICENSE-tabler.txt', 'README.md']) assert.ok(p in out, `${p} is read by the scan`)
   const instanceIds = Object.values(templates).flatMap((d) => d.instances.map((i) => i.instanceId))
   let triples = 0
   for (const [path, body] of Object.entries(out)) {
@@ -493,9 +502,12 @@ test('determinism: the same input, its templates and every object\'s keys in ano
     schemaVersion: d.schemaVersion,
     instances: d.instances.map((i) => reverse({ ...i, content: reverse(i.content), controls: reverse(i.controls) }) as unknown as DocInstance),
   }]))
-  const cards = ['video', 'toggle', 'header_v2', 'header', 'bookmark']
-  const a = build(project(), { designedCards: cards })
-  const b = build(shuffled as Record<string, ProjectDoc>, { assets: reverse({ x: '/x', y: '/y' }), theme: reverse(THEME) as typeof THEME, designedCards: [...cards].reverse() })
+  const cards = { video: { play: 'large', bar: 'light' }, toggle: { chevron: 'left' }, header: { height: 'generous' }, bookmark: { side: 'left' } }
+  const a = build(project(), { cardDesigns: cards })
+  const b = build(shuffled as Record<string, ProjectDoc>, {
+    assets: reverse({ x: '/x', y: '/y' }), theme: reverse(THEME) as typeof THEME, cardDesigns: reverse(Object.fromEntries(Object.entries(cards).map(([k, v]) => [k, reverse(v)]))),
+    ghostCards: { ...GHOST_CARDS, styles: reverse(GHOST_CARDS.styles) },
+  })
   assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
   assert.deepEqual(Object.keys(a.files), [...Object.keys(a.files)].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0)), 'code-unit path order')
   // Story 7.4: `deepEqual`, so a font's bytes are compared by content, never by identity
@@ -563,14 +575,15 @@ test('(7.2) a project: package.json is the spec\'s text — Casper\'s key order,
   assert.equal(Object.keys(parsed).at(-1), THEME_MARKER)
 })
 
-test('(7.2) designed cards: card_assets excludes them, sorted in code-unit order, each name once', () => {
-  const pkg = JSON.parse(pkgOf({ designedCards: ['toggle', 'header_v2', 'header', 'toggle'] })) as { config: { card_assets: unknown } }
+test('(7.2, 7.13) designed cards: card_assets excludes their Ghost chunks, sorted in code-unit order, each name once — the header card both of its two', () => {
+  const pkg = JSON.parse(pkgOf({ cardDesigns: { toggle: { chevron: 'left' }, header: { height: 'generous' } } })) as { config: { card_assets: unknown } }
   assert.deepEqual(pkg.config.card_assets, { exclude: ['header', 'header_v2', 'toggle'] })
 })
 
-test('(7.2) a card name Ghost 5 would read as glob syntax is refused, naming the name and the alphabet', () => {
-  for (const card of ['x|*', 'Bookmark', '']) {
-    assert.throws(() => pkgOf({ designedCards: ['toggle', card] }), (e: Error) => e.message.startsWith('package.json: ') && e.message.includes(JSON.stringify(card)) && e.message.includes('a-z0-9_'), card)
+test('(7.13) a stored record card_designs\' schema refuses — an unknown card, control or value, a colour control on a no-colour card, a non-object — stops the build with parseCardDesigns\' sentence; the control: its legal neighbour compiles', () => {
+  assert.doesNotThrow(() => pkgOf({ cardDesigns: { callout: { emoji: 'off' } } }))
+  for (const raw of ['callout', [], { nft: { x: 'y' } }, { callout: { radius: 'large' } }, { callout: { emoji: 'hidden' } }, { signup: { background: 'tint' } }, { divider: { icon: 'no-such-icon' } }]) {
+    assert.throws(() => pkgOf({ cardDesigns: raw }), (e: Error) => e.message.startsWith('card designs: The card designs ') && e.message.includes('so none of them was read.'), JSON.stringify(raw))
   }
 })
 
@@ -1061,6 +1074,10 @@ const mountingLib = (id: string) => MOUNTING[id] ?? LIB[id]
 const mainOf = (files: CompiledTheme['files']): string => files['assets/js/main.js'] as string
 const headOf = (files: CompiledTheme['files']): string => (files['default.hbs'] as string).split('</head>')[0] as string
 const STYLESHEET = '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">'
+/** Story 7.13 (AD-18): cards.css, linked before screen.css on every theme. */
+const CARDS_STYLESHEET = '    <link rel="stylesheet" href="{{asset "css/cards.css"}}">'
+/** README's Styles section with no card designed — the widths alone. */
+const STYLES_NONE = "## Styles\n\n- `assets/css/screen.css` is this theme's own stylesheet.\n- `assets/css/cards.css` is this theme's own styling for the cards Ghost's editor puts in posts: their wide and full widths.\n"
 const SCRIPTS_LINE = "- `assets/js/main.js` is this theme's own code: a small runtime and one function for each behaviour its sections use. It carries no third-party code."
 
 test('(7.5) no module declared: main.js is bundle([]) — core alone; one defer tag after the stylesheet; README is the Scripts section alone; no cards.js, licence or cards tag', () => {
@@ -1069,7 +1086,7 @@ test('(7.5) no module declared: main.js is bundle([]) — core alone; one defer 
   assert.deepEqual(bundledNames(mainOf(files)), ['core'])
   assert.ok(headOf(files).includes(`${STYLESHEET}\n    ${MAIN_JS_TAG}\n`), headOf(files))
   assert.equal((files['default.hbs'] as string).split(MAIN_JS_TAG).length, 2, 'the tag once')
-  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n`)
+  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n\n${STYLES_NONE}`)
   for (const p of ['assets/js/cards.js', 'LICENSE-ghost.txt']) assert.ok(!(p in files), p)
   assert.ok(!(files['default.hbs'] as string).includes('js/cards.js'))
   assert.deepEqual(Object.keys(files).filter((p) => p.startsWith('assets/js/')), ['assets/js/main.js'])
@@ -1129,28 +1146,34 @@ test('(7.5) a module\'s strings: a placed countdown carries one data-i18n-* per 
 })
 
 test('(7.5) designed cards with scripts: cards.js is cardsJs of the scripted ones, Ghost\'s licence at the root, CARDS_JS_TAG after MAIN_JS_TAG, README\'s cards line, package.json excluding both', () => {
-  const { files } = build({}, { designedCards: ['toggle', 'callout'] })
+  const { files } = build({}, { cardDesigns: { toggle: { chevron: 'left' }, callout: { emoji: 'off' } } })
   assert.equal(files['assets/js/cards.js'], cardsJs(['toggle'], GHOST_CARDS.scripts))
   assert.equal(files['LICENSE-ghost.txt'], tidyLicence(GHOST_CARDS.licence))
   assert.equal(files['LICENSE-ghost.txt'], 'Copyright (c) 2013-2026 Ghost Foundation\n\nPermission is hereby granted, free of charge.\n')
   assert.ok(headOf(files).includes(`${STYLESHEET}\n    ${MAIN_JS_TAG}\n    ${CARDS_JS_TAG}\n`), headOf(files))
-  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n- \`assets/js/cards.js\` is Ghost's own code for these cards: toggle. It is copied unchanged from Ghost 6.58.0, under the MIT licence in \`LICENSE-ghost.txt\`. This theme styles those cards itself, which switches off Ghost's own copy of their scripts, so it carries this one.\n`)
+  assert.ok((files['README.md'] as string).startsWith(`## Scripts\n\n${SCRIPTS_LINE}\n- \`assets/js/cards.js\` is Ghost's own code for these cards: toggle. It is copied unchanged from Ghost 6.58.0, under the MIT licence in \`LICENSE-ghost.txt\`. This theme styles those cards itself, which switches off Ghost's own copy of their scripts, so it carries this one.\n\n## Styles\n`), files['README.md'] as string)
   assert.deepEqual((JSON.parse(files['package.json'] as string) as { config: { card_assets: unknown } }).config.card_assets, { exclude: ['callout', 'toggle'] })
   // every scripted card, in code-unit order
-  assert.match(build({}, { designedCards: ['video', 'gallery', 'audio', 'toggle'] }).files['assets/js/cards.js'] as string, /^\/\* Ghost's own scripts for these cards: audio · gallery · toggle · video — /)
+  assert.match(build({}, { cardDesigns: { video: { play: 'large' }, gallery: { gutter: 'tight' }, audio: { accent: 'text' }, toggle: { heading: 'small-head' } } }).files['assets/js/cards.js'] as string, /^\/\* Ghost's own scripts for these cards: audio · gallery · toggle · video — /)
 })
 
-test('(7.5) designed cards without scripts: no cards.js, no cards tag, no licence, no cards line', () => {
-  const { files } = build({}, { designedCards: ['callout'] })
-  for (const p of ['assets/js/cards.js', 'LICENSE-ghost.txt']) assert.ok(!(p in files), p)
+test('(7.5, 7.13) a designed card with no script: no cards.js, no cards tag, no cards.js line — and, since 7.13, Ghost\'s licence for its stylesheet in cards.css', () => {
+  const { files } = build({}, { cardDesigns: { callout: { emoji: 'off' } } })
+  assert.ok(!('assets/js/cards.js' in files))
   assert.ok(!(files['default.hbs'] as string).includes(CARDS_JS_TAG))
-  assert.equal(files['README.md'], `## Scripts\n\n${SCRIPTS_LINE}\n`)
+  assert.ok(!(files['README.md'] as string).includes('cards.js'))
+  assert.equal(files['LICENSE-ghost.txt'], tidyLicence(GHOST_CARDS.licence))
+  // a divider alone copies nothing of Ghost's: no licence of Ghost's, and README's widths line
+  const divider = build({}, { cardDesigns: { divider: { glyph: 'on' } } }).files
+  assert.ok(!('LICENSE-ghost.txt' in divider))
+  assert.ok((divider['README.md'] as string).endsWith(STYLES_NONE.replace('their wide and full widths.', 'their wide and full widths.')))
 })
 
 test('(7.5) a chunk not as vendored, or two chunks from two Ghost versions, throws naming the card', () => {
   const scripts = (over: Record<string, string>) => ({ ghostCards: { ...GHOST_CARDS, scripts: { ...GHOST_CARDS.scripts, ...over } } })
-  assert.throws(() => build({}, { designedCards: ['toggle'], ...scripts({ toggle: '(function() {})();\n' }) }), /toggle\.js does not open with record-cards\.py's head/)
-  assert.throws(() => build({}, { designedCards: ['audio', 'toggle'], ...scripts({ toggle: chunk('toggle', '(function() {})();\n', '5.130.6') }) }), /toggle\.js is copied from Ghost 5\.130\.6/)
+  const toggle = { toggle: { chevron: 'left' } }
+  assert.throws(() => build({}, { cardDesigns: toggle, ...scripts({ toggle: '(function() {})();\n' }) }), /toggle\.js does not open with record-cards\.py's head/)
+  assert.throws(() => build({}, { cardDesigns: { ...toggle, audio: { accent: 'text' } }, ...scripts({ toggle: chunk('toggle', '(function() {})();\n', '5.130.6') }) }), /toggle\.js is copied from Ghost 5\.130\.6/)
 })
 
 test('(7.5) a control character in a module source, a card script or Ghost\'s licence — a tab included — throws noC0\'s sentence', () => {
@@ -1163,8 +1186,9 @@ test('(7.5) determinism: the module files, the card scripts and the designed car
   const reverse = <T>(o: Record<string, T>): Record<string, T> => Object.fromEntries(Object.entries(o).reverse())
   const modules = { core: CORE, lightbox: stub('lightbox'), carousel: stub('carousel'), 'nav-drawer': stub('nav-drawer') }
   const templates = { 'default.hbs': docOf(at('a12/1', 'Header bits')), 'home.hbs': docOf(at('a12/2', 'Home bits')) }
-  const a = build(templates, { library: mountingLib, modules, designedCards: ['video', 'toggle', 'callout'], pageTwo: projectTwo() })
-  const b = build(templates, { library: mountingLib, modules: reverse(modules), designedCards: ['callout', 'toggle', 'video'], ghostCards: { ...GHOST_CARDS, scripts: reverse(GHOST_CARDS.scripts) }, pageTwo: projectTwo() })
+  const cards = { video: { play: 'small' }, toggle: { chevron: 'left' }, callout: { emoji: 'off' } }
+  const a = build(templates, { library: mountingLib, modules, cardDesigns: cards, pageTwo: projectTwo() })
+  const b = build(templates, { library: mountingLib, modules: reverse(modules), cardDesigns: reverse(cards), ghostCards: { ...GHOST_CARDS, scripts: reverse(GHOST_CARDS.scripts) }, pageTwo: projectTwo() })
   assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
   for (const k of Object.keys(a.files)) assert.deepEqual(b.files[k], a.files[k], k)
   assert.deepEqual(b.js, a.js)
@@ -1172,10 +1196,10 @@ test('(7.5) determinism: the module files, the card scripts and the designed car
 
 test('(7.5) the compile\'s own output: checkThemeJs and checkThemeScripts return no sentence over the final text — and the control: a design whose markup carries a <script> makes the compile throw that sentence', () => {
   const modules = { core: CORE, lightbox: stub('lightbox') }
-  for (const designedCards of [[], ['audio', 'callout', 'gallery']]) {
-    const out = textOf(build(project(), { library: mountingLib, modules, designedCards, pageTwo: projectTwo() }).files)
-    assert.deepEqual(checkThemeJs(out, modules, GHOST_CARDS.scripts), [], designedCards.join())
-    assert.deepEqual(checkThemeScripts(out), [], designedCards.join())
+  for (const cardDesigns of [{}, { audio: { accent: 'text' }, callout: { emoji: 'off' }, gallery: { gutter: 'loose' } }]) {
+    const out = textOf(build(project(), { library: mountingLib, modules, cardDesigns, pageTwo: projectTwo() }).files)
+    assert.deepEqual(checkThemeJs(out, modules, GHOST_CARDS.scripts), [], Object.keys(cardDesigns).join())
+    assert.deepEqual(checkThemeScripts(out), [], Object.keys(cardDesigns).join())
   }
   // review (2026-10-08): the throw itself, reached — the only way a script reaches a template is a design's own markup
   const scripted = design('a12/9', 'Scripted', { compileTarget: ['home.hbs'], html: '<section class="a12-9">\n  <script></script>\n</section>' })
@@ -1435,6 +1459,8 @@ test('(7.10) the accent: one guarded declaration in default.hbs\'s one settings 
     '      {{#if @custom.dark_accent_color}}--setting-dark-accent: {{@custom.dark_accent_color}};{{else if @custom.accent_colour}}--setting-dark-accent: {{@custom.accent_colour}};{{/if}}',
     '      {{#if @custom.dark_logo}}--setting-dark-logo: url("{{@custom.dark_logo}}");{{/if}}',
     '    }</style>',
+    // Story 7.13 (moved on purpose): cards.css's link, before screen.css (AD-18)
+    '    <link rel="stylesheet" href="{{asset "css/cards.css"}}">',
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
   ].join('\n')), shell)
   assert.doesNotMatch(unpinned(shell), MODE_NAMED, 'default.hbs names no mode outside the pin\'s chain (AD-30)')
@@ -1752,3 +1778,73 @@ test('(7.12, §D.b) Japanese on Paper: no family covers it, so every family keep
   }
 })
 
+
+// ─── Story 7.13: cards.css, card_assets and Ghost's licence — the spec's I/O matrix as compile rows ───────────────────
+
+const pkgCards = (files: CompiledTheme['files']): unknown => (JSON.parse(files['package.json'] as string) as { config: { card_assets: unknown } }).config.card_assets
+
+test('(7.13) no card designed: card_assets true, cards.css D12\'s two widths alone, linked before screen.css, both before {{ghost_head}}; no licence of Ghost\'s', () => {
+  for (const cardDesigns of [undefined, null, {}, { callout: { emoji: 'on' } }]) {
+    const { files } = build(project(), { pageTwo: projectTwo(), ...(cardDesigns === undefined ? {} : { cardDesigns }) })
+    assert.equal(pkgCards(files), true, JSON.stringify(cardDesigns))
+    assert.equal(files['assets/css/cards.css'], KOENIG_WIDTHS)
+    assert.ok(!('LICENSE-ghost.txt' in files))
+    const head = headOf(files)
+    assert.ok(head.includes(`${CARDS_STYLESHEET}\n${STYLESHEET}\n`), head)
+    assert.ok(head.indexOf(CARDS_STYLESHEET) < head.indexOf('{{ghost_head}}'))
+  }
+})
+
+test('(7.13) one static card: { callout: { emoji: off } } excludes callout alone; cards.css is cardsCss over Ghost\'s chunks; Ghost\'s licence; README names the block', () => {
+  const cardDesigns = { callout: { emoji: 'off' } }
+  const { files } = build({}, { cardDesigns })
+  assert.deepEqual(pkgCards(files), { exclude: ['callout'] })
+  assert.equal(files['assets/css/cards.css'], cardsCss(cardDesigns, GHOST_CARDS.styles))
+  const css = files['assets/css/cards.css'] as string
+  assert.ok(css.startsWith(KOENIG_WIDTHS) && css.includes(`/* callout.css */\n${cssBody('callout')}\n`), css)
+  assert.match(ownCardsCss(css), /\.kg-callout-card \{ border-radius: var\(--radius-card\); \}\n/)
+  assert.match(ownCardsCss(css), /\.kg-callout-card div\.kg-callout-emoji \{ display: none; \}\n$/)
+  assert.equal(files['LICENSE-ghost.txt'], tidyLicence(GHOST_CARDS.licence))
+  const readme = files['README.md'] as string
+  assert.match(readme, /- `assets\/css\/cards\.css` styles the cards Ghost's editor puts in posts\. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: callout, copied unchanged from Ghost 6\.58\.0 under the MIT licence in `LICENSE-ghost\.txt`\./)
+})
+
+test('(7.13) the header card excludes header AND header_v2 and copies both; a divider alone adds CSS and no name — card_assets stays true — with Tabler\'s licence for its glyph', () => {
+  const header = build({}, { cardDesigns: { header: { height: 'generous' } } }).files
+  assert.deepEqual(pkgCards(header), { exclude: ['header', 'header_v2'] })
+  assert.ok((header['assets/css/cards.css'] as string).includes('/* header.css */\n') && (header['assets/css/cards.css'] as string).includes('/* header_v2.css */\n'))
+  const divider = build({}, { cardDesigns: { divider: { glyph: 'on', icon: 'leaf' } } }).files
+  assert.equal(pkgCards(divider), true)
+  assert.match(divider['assets/css/cards.css'] as string, /^hr:not\(\[class\]\) \{ [^\n]*mask: url\("data:image\/svg\+xml,/m)
+  assert.equal(divider['LICENSE-tabler.txt'], TABLER_LICENSE)
+  // the control: the glyph off, nothing drawn, no Tabler licence (no placed section draws an icon in this project)
+  assert.ok(!('LICENSE-tabler.txt' in build({}, { cardDesigns: { divider: { icon: 'leaf' } } }).files))
+})
+
+test('(7.13) scripted cards: a designed gallery and toggle copy their chunks into cards.css and their scripts into cards.js, and both are excluded', () => {
+  const { files } = build({}, { cardDesigns: { gallery: { gutter: 'tight' }, toggle: { divider: 'rule' } } })
+  assert.deepEqual(pkgCards(files), { exclude: ['gallery', 'toggle'] })
+  assert.match(files['assets/css/cards.css'] as string, /Ghost's own styles for these cards: gallery · toggle — copied unchanged from Ghost 6\.58\.0/)
+  assert.equal(files['assets/js/cards.js'], cardsJs(['gallery', 'toggle'], GHOST_CARDS.scripts))
+  // the exclusion is derived from the directory: a chunk Ghost does not ship is neither excluded nor copied
+  const { header_v2: _gone, ...styles } = GHOST_CARDS.styles
+  const fewer = build({}, { cardDesigns: { header: { height: 'generous' } }, ghostCards: { ...GHOST_CARDS, styles } }).files
+  assert.deepEqual(pkgCards(fewer), { exclude: excludedChunks({ header: { height: 'generous' } }, Object.keys(styles)) })
+  assert.deepEqual(pkgCards(fewer), { exclude: ['header'] })
+})
+
+test('(7.13) no !important in a rule this theme writes — Ghost\'s own stay inside its copy; the control: one planted in a design\'s sheet, or in cards.css\'s own half, is refused', () => {
+  const files = textOf(build({}, { cardDesigns: { audio: { accent: 'text' }, video: { bar: 'light' } } }).files)
+  assert.match(files['assets/css/cards.css'] ?? '', /!important/, 'Ghost\'s copy keeps its own')
+  assert.deepEqual(checkImportant(files), [])
+  assert.deepEqual(checkImportant({ ...files, 'assets/css/cards.css': `${files['assets/css/cards.css']}.kg-audio-card { color: red !important; }\n` }), ['assets/css/cards.css carries !important outside Ghost\'s own block — a designed card is excluded, never overridden (FR-Q7)'])
+  assert.equal(checkImportant({ ...files, 'default.hbs': `${files['default.hbs']}<style>.x { color: red ! important; }</style>\n` }).length, 1)
+  // a comment that says it is no declaration
+  assert.deepEqual(checkImportant({ ...files, 'assets/css/screen.css': `${files['assets/css/screen.css']}/* never !important */\n` }), [])
+  const loud = design('a4/99', 'Loud', { compileTarget: ['home.hbs'], html: '<section class="a4-99"></section>', css: '.a4-99 { color: red !important; }\n' })
+  assert.throws(() => build({ 'home.hbs': docOf(at('a4/99', 'Loud')) }, { library: (id) => (id === 'a4/99' ? loud : LIB[id]) }), /^Error: the theme's styles: assets\/css\/screen\.css carries !important/)
+})
+
+test('(7.13) a control character in a card stylesheet throws noC0\'s sentence', () => {
+  assert.throws(() => build({}, { ghostCards: { ...GHOST_CARDS, styles: { ...GHOST_CARDS.styles, callout: `${GHOST_CARDS.styles['callout']}\u0007` } } }), /^Error: a card stylesheet carries a control character/)
+})

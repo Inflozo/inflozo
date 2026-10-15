@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { currentUser } from '@/lib/supabase/server'
-import { articleDocument, variationsDocument } from '@/lib/style-guide'
+import { articleDocument, cardsDocument, variationsDocument } from '@/lib/style-guide'
 
 /**
  * THE FIXTURE DOCUMENT, served whole into the review pages' iframes (Story 4.4).
@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
   // anywhere — the toggle just stops toggling. `proxy.ts` stamps the header on every app request.
   if (!nonce) return new NextResponse('no x-nonce on the request — proxy.ts did not run', { status: 500 })
   const view = request.nextUrl.searchParams.get('view')
-  const html = view === 'variations' ? variationsDocument(nonce) : articleDocument(nonce)
+  // Story 7.13 — `?view=cards&card=<key>`: the Editor cards canvas (`cardsDocument`), the editor's iframe on that surface
+  const html = view === 'variations' ? variationsDocument(nonce) : view === 'cards' ? cardsDocument(nonce, request.nextUrl.searchParams.get('card')) : articleDocument(nonce)
   return new NextResponse(html, {
     headers: {
       'content-type': 'text/html; charset=utf-8',

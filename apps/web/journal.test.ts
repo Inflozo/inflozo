@@ -1,10 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import type { CardDesigns } from '@inflozo/library'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import type { PackRecord, PackRecords } from './lib/pack-edit.ts'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
-  flushPayload, hydratedPacks, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, PACK_RECORDS_KEY, panelOpen, redo, undo, unsynced,
+  CARDS_KEY, flushPayload, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, PACK_RECORDS_KEY, panelOpen, redo, undo, unsynced,
   restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, type Journal, type OwedRecord, type SyncState,
 } from './lib/journal.ts'
 
@@ -517,4 +518,54 @@ test('6.4: a hydrate keeps this device\'s own packs with an equal revision, the 
   assert.equal(hydratedPacks(hydrationFor(null, 0), null, cloud), cloud, 'no record at all')
   // and a record from before 6.4 owes nothing of packs: its journal has no such key, so the flush sends none
   assert.deepEqual(flushPayload(edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal, { home: doc('a') }, 'paper'), { docs: { home: doc('a') } })
+})
+
+/* ── Story 7.13 — THE CARD DESIGNS, an edit like the pack's (FR-Q7, FR-D9, §AD1, AD-16) ─────────────────────────────────
+
+   `CARDS_KEY` maps to `project_treatments.card_designs`, its entries' `before` and `after` the WHOLE record, so a value change
+   and a card's reset are each one entry, one ⌘Z, and the flush sends the record in the docs' one compare-and-set. */
+
+const cardsEdit = (j: Journal, before: CardDesigns, after: CardDesigns) => append(j, { txn: `t${j.nextSeq}`, docKey: CARDS_KEY, before, after })
+
+test('(7.13) a card value is one entry under CARDS_KEY; ⌘Z restores the whole record, ⌘⇧Z puts it back — and a reset is one entry too', () => {
+  const tinted = { callout: { colours: 'tokens', background: 'tint' } }
+  const one = cardsEdit(EMPTY_JOURNAL, {}, { callout: { colours: 'tokens' } })
+  const two = cardsEdit(one.journal, { callout: { colours: 'tokens' } }, tinted)
+  const reset = cardsEdit(two.journal, tinted, {})
+  assert.equal(reset.journal.entries.length, 3, 'two values and a reset: three edits, each one entry')
+  const back = undo(reset.journal)
+  assert.deepEqual(back?.cards, tinted, 'the reset undone brings every value back')
+  assert.deepEqual(back?.docs, {}, 'no doc is touched')
+  assert.deepEqual(Object.keys(back?.journal.pending ?? {}), [CARDS_KEY])
+  assert.deepEqual(redo(back?.journal as Journal)?.cards, {})
+  // CARDS_KEY is never a template key: the flush sends it as `cards`, never as a doc
+  assert.notEqual(CARDS_KEY, PACK_KEY)
+  assert.notEqual(CARDS_KEY, PACK_RECORDS_KEY)
+})
+
+test('(7.13) the flush sends the card designs, whole, only while CARDS_KEY is owed — beside the docs, in one payload', () => {
+  const designs = { toggle: { chevron: 'left' } }
+  const owed = cardsEdit(EMPTY_JOURNAL, {}, designs).journal
+  assert.deepEqual(flushPayload(owed, {}, undefined, undefined, designs), { docs: {}, cards: designs })
+  // with a doc owed too: both, one call
+  const both = edit(owed, 'home', doc('a'), doc('a', 'b')).journal
+  assert.deepEqual(flushPayload(both, { home: doc('a', 'b') }, undefined, undefined, designs), { docs: { home: doc('a', 'b') }, cards: designs })
+  // the control: nothing owed under CARDS_KEY sends no cards, whatever the editor holds
+  assert.deepEqual(flushPayload(edit(EMPTY_JOURNAL, 'home', doc('a'), doc('b')).journal, { home: doc('b') }, undefined, undefined, designs), { docs: { home: doc('b') } })
+  // the sign-out's record and body carry them too
+  const record = owedOf('p', { baseRevision: 3, docs: {}, journal: owed, cards: designs })
+  assert.deepEqual(record?.cards, designs)
+  assert.deepEqual(JSON.parse(sendBody(record as OwedRecord)), { base: 3, docs: {}, cards: designs })
+})
+
+test('(7.13) a hydrate keeps this device\'s card designs where its record is kept, the server\'s otherwise; our own flush is recognised by the record', () => {
+  const mine = { callout: { emoji: 'off' } }
+  const cloud = { bookmark: { side: 'left' } }
+  assert.deepEqual(hydratedCards({ kind: 'local' }, { cards: mine }, cloud), mine)
+  assert.deepEqual(hydratedCards({ kind: 'cloud' }, { cards: mine }, cloud), cloud)
+  assert.deepEqual(hydratedCards({ kind: 'local' }, null, cloud), cloud, 'a record from before 7.13 holds none')
+  const owed = cardsEdit(EMPTY_JOURNAL, {}, mine).journal
+  const local = { baseRevision: 4, docs: {}, journal: owed, cards: mine }
+  assert.equal(ownFlushLanded(local, 5, {}, undefined, undefined, mine), true)
+  assert.equal(ownFlushLanded(local, 5, {}, undefined, undefined, cloud), false, 'another session\'s record is no flush of ours')
 })

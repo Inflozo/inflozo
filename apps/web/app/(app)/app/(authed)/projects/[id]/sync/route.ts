@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import type { CardDesigns } from '@inflozo/library'
 import { presetOf } from '@inflozo/library/packs'
 import { docSchema } from '@inflozo/section-runtime'
+import { parseStoredCards } from '@/lib/cards'
 import { isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
 import { heldElsewhere } from '@/lib/lock'
@@ -46,6 +48,13 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * survive `ownPacksOf` — the one reading rule every reader asks — or the body is a 422 "Not a Style Pack" and nothing is
  * written; what is written is what was validated. A `preset` may now name a pack the project made (`custom-<n>`), and
  * still nothing else.
+ *
+ * STORY 7.13 — AND THE PROJECT'S CARD DESIGNS (FR-Q7): the body may carry `cards`, the WHOLE `project_treatments.card_designs`
+ * record, beside the rest — or alone — and the RPC upserts it in the same compare-and-set (`p_cards`,
+ * `20261016120000_card_designs.sql`). It is parsed HERE by `card_designs`' one schema through `parseStoredCards`
+ * (AD-36, AD-27(a)): every key a listed card, every name one of its controls, every value one it offers — a divider's
+ * glyph one the icon set draws, the set imported only for a record that names one — or a 422 "Not a card design" and
+ * nothing written, BEFORE the write; what is written is the parsed record.
  */
 
 export const dynamic = 'force-dynamic'
@@ -77,7 +86,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
 
-  const { base, docs, session, preset, packs } = body as { base?: unknown; docs?: unknown; session?: unknown; preset?: unknown; packs?: unknown }
+  const { base, docs, session, preset, packs, cards } = body as { base?: unknown; docs?: unknown; session?: unknown; preset?: unknown; packs?: unknown; cards?: unknown }
   // `Number.isSafeInteger` and not `typeof === 'number'`: `NaN`, `Infinity` and `1e300` are all numbers, and a base
   // the database cannot compare is a compare-and-set that silently never matches.
   if (!Number.isSafeInteger(base) || (base as number) < 0) return no(400, 'Bad base revision')
@@ -90,9 +99,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // written. What reaches the RPC is what was validated.
   const owned = packs === undefined ? undefined : ownPacksOf({ packs })
   if (packs !== undefined && (typeof packs !== 'object' || packs === null || Array.isArray(packs) || Object.keys(owned ?? {}).length !== Object.keys(packs).length)) return no(422, 'Not a Style Pack')
+  // Story 7.13 — the card designs, whole: an object `parseStoredCards` reads (the divider's glyph judged by the icon set),
+  // else nothing is written (AD-36)
+  const parsedCards: CardDesigns | string | undefined = cards === undefined ? undefined
+    : typeof cards !== 'object' || cards === null || Array.isArray(cards) ? 'not an object' : await parseStoredCards(cards)
+  if (typeof parsedCards === 'string') return no(422, 'Not a card design')
   const keys = Object.keys(docs as Record<string, unknown>)
-  // a body with a preset or own packs and no docs is a write: the pack alone was changed
-  if (keys.length === 0 && preset === undefined && packs === undefined) return no(400, 'Nothing to write')
+  // a body with a preset, own packs or card designs and no docs is a write: that alone was changed
+  if (keys.length === 0 && preset === undefined && packs === undefined && parsedCards === undefined) return no(400, 'Nothing to write')
 
   const parsed: Record<string, unknown> = Object.create(null)
   // the designs read while checking this body, each once
@@ -138,6 +152,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     p_preset: (preset as string | undefined) ?? null,
     // Story 6.4: the validated own packs, whole, or null — which writes no `packs` at all
     p_packs: owned ?? null,
+    // Story 7.13: the parsed card designs, whole, or null — which writes no `card_designs` at all
+    p_cards: parsedCards ?? null,
   })
   if (error) {
     // the CODE, never the message: a Postgres message can quote the row it refused
@@ -156,9 +172,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // the editor adopts the revision. A real second writer's doc differs, and gets the 409 it always got. Story 6.3:
     // and the preset it carries is the server's `style_pack.preset` — a pack-only body asks that alone. Story 6.4: and the
     // own packs it carries are the server's `style_pack.packs`, as stored (`stable`)
-    const [{ data: rows }, { data: project }] = await Promise.all([
+    const [{ data: rows }, { data: project }, { data: treatments }] = await Promise.all([
       keys.length === 0 ? { data: [] } : supabase.from('project_templates').select('template_key, doc').eq('project_id', projectId).in('template_key', keys),
       preset === undefined && packs === undefined ? { data: null } : supabase.from('projects').select('style_pack').eq('id', projectId).maybeSingle(),
+      // Story 7.13: and the card designs as stored, where this body carries them
+      parsedCards === undefined ? { data: null } : supabase.from('project_treatments').select('card_designs').eq('project_id', projectId).maybeSingle(),
     ])
     const held = new Map((rows ?? []).map((r) => [r.template_key as string, docSchema.safeParse(r.doc)]))
     const same = keys.every((key) => {
@@ -168,12 +186,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const stored = project?.style_pack as { preset?: unknown; packs?: unknown } | null | undefined
     const packThere = preset === undefined || stored?.preset === preset
     const packsThere = owned === undefined || stable(stored?.packs ?? {}) === stable(owned)
+    const cardsThere = parsedCards === undefined || stable((treatments as { card_designs?: unknown } | null)?.card_designs ?? {}) === stable(parsedCards)
     // review, 2026-10-04 — A PACK-ONLY BODY PROVES FAR LESS THAN A DOC DOES: with no doc, `same` is true of nothing at all,
     // and one of twelve preset ids matching says nothing about who moved the revision. So it is "already there" only where
     // the server stands exactly ONE write past the base — this body's own, its answer lost. Further on, another session
     // wrote docs this editor has never read, and adopting that revision over them would let its next edit overwrite them.
     const ours = keys.length > 0 || answer.revision === (base as number) + 1
-    if (same && packThere && packsThere && ours) return json(200, { applied: true, revision: answer.revision })
+    if (same && packThere && packsThere && cardsThere && ours) return json(200, { applied: true, revision: answer.revision })
   }
   return json(answer.applied ? 200 : 409, { applied: answer.applied, revision: answer.revision })
 }

@@ -704,6 +704,15 @@ root (`.a22-1`, `.a22-1__field`, never a bare `p` or another design's class). A 
 (`stripCssComments`), so the theme's stylesheet carries no comment but `/* Tokens */` at its top and a header `/* {Category} · {Design} */`
 over each design.
 
+**A card's interior is never a design's** *(Story 7.13, FR-Q7)*. The Ghost cards inside `{{content}}` are styled by the
+theme's `assets/css/cards.css`, which every theme carries: D12's two width rules, then Ghost's own stylesheet for each
+card the customer designed in **Editor cards**, then that card's settings. A design may style the column a card sits in
+(A25's half of the PRD's ownership line); the card's interior is A33's, through the card module. `default.hbs` links
+`css/cards.css` **before** `css/screen.css`, both before `{{ghost_head}}` (AD-18), so a design's rule on a `.kg-*` class
+it legitimately styles comes after both and wins — without `!important`, which the compiler refuses anywhere but inside
+Ghost's own block, and which the validator therefore refuses in a design's `style.css` (`stylesheet-important`), so an
+author meets it in `pnpm check` rather than at a customer's deploy.
+
 #### A mode-scoped control: one root rule per value, declaring the root's own properties *(Story 6.5, AD-30, DW-195)*
 
 A **mode-scoped** control is one that takes a dark override (FR-D7): the Background role (`bg`), and any control
@@ -841,7 +850,9 @@ stack — passes, and the check keeps it passing.
 
 **Run `pnpm lint`** — it runs ESLint and then `stylelint "packages/**/*.css"` with the root
 `stylelint.config.mjs`. Ghost's vendored card CSS under `packages/library/orbit-weekly/vendor/` is not
-linted: it is Ghost's, as `cards.js` is. `pnpm check` also runs `tools/check-baseline.mjs`, which diffs the
+linted: it is Ghost's, as `cards.js` is. *(Story 7.13)* The same split holds in the theme: `compileTheme` writes
+`assets/css/cards.css` on every theme, and `tools/check-baseline.mjs` item 8 lints its own half (`ownCardsCss`) and
+skips Ghost's block, behind a planted prefixed-rule control. `pnpm check` also runs `tools/check-baseline.mjs`, which diffs the
 plugin against the pin row by row and proves each tool's control.
 
 **Moving the pin is an owner decision, and it needs a render-matrix re-run** (FR-G8, NFR-6(a)): a later date

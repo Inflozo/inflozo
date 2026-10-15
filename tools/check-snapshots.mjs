@@ -990,9 +990,11 @@ check('Story 7.5 — main.js is what the markup mounts: core, then each mounted 
   for (const w of got.warnings) console.log(`  ${w}`)
   return `main.js: ${lib.bundledNames(pilots75.files['assets/js/main.js']).join(' · ')}; mounted: ${got.mounted.join(', ') || 'none'}`
 })
-// every vendored scripted card designed: cards.js, Ghost's licence, the tag, README's line and the exclusions
+// every vendored scripted card designed: cards.js, Ghost's licence, the tag, README's line and the exclusions. Story 7.13:
+// through a card_designs record — every card with a panel designed (`CARDS_DESIGNED`), the four scripted ones among them
 const CARD_NAMES = Object.keys(GHOST.scripts)
-const pilotsCards = pilots.compilePilots(WORDS, { ...THEME, designedCards: CARD_NAMES })
+const pilotsCards = pilots.compilePilots(WORDS, { ...THEME, cardDesigns: pilots.CARDS_DESIGNED })
+if (CARD_NAMES.some((n) => !Object.hasOwn(pilots.CARDS_DESIGNED, n))) throw new Error(`CARDS_DESIGNED leaves out a scripted card (${CARD_NAMES.join(', ')}), so the rows below would prove less`)
 function cardsFailures(files) {
   const out = []
   if (files['assets/js/cards.js'] !== lib.cardsJs(CARD_NAMES, GHOST.scripts)) out.push('assets/js/cards.js is not cardsJs of every vendored chunk')
@@ -1165,23 +1167,29 @@ for (const m of MAJORS) {
 
 // ── Story 7.7: the gscan gate's verdicts, on both checkers (FR-J6, AD-24) ──────────────────────────────────────────────
 // `gscanGate` maps each major's own checker through the one table: errors block, warnings deploy. Today's pilot theme has
-// no `cards.css` (Story 7.13's) and no `page.hbs` reading Ghost's page switch (Story 10.79's), so it is blocked on the two
-// Koenig widths and warned on the switch; behind §73's scaffold, which supplies exactly those two files, it is clean.
+// no `page.hbs` reading Ghost's page switch (Story 10.79's), so it is warned on the switch; behind §73's scaffold, which
+// supplies exactly that file, it is clean. Story 7.13: the compiler writes `cards.css` on every theme, so the two Koenig
+// width errors are gone — and come back, the control, with `cards.css` taken out.
 const gateOr = async (files) => Object.fromEntries(await Promise.all(MAJORS.map(async (m) => [m, await gate.gscanGate(files, m)])))
 const shape = (v) => ({ blocked: v.blocked, errors: v.errors.map((f) => `${f.code} ${f.rule ?? ''}`.trim()), warnings: v.warnings.map((f) => `${f.code} ${f.rule ?? ''}`.trim()) })
 const sameShape = (got, want) => { if (JSON.stringify(shape(got)) !== JSON.stringify(want)) throw new Error(`the verdict is ${JSON.stringify(shape(got))}, not ${JSON.stringify(want)}`) }
 const clash = Object.keys(pilots.SCAFFOLD).filter((p) => p in pilotTheme)
 const gatePilots = await gateOr(pilotTheme)
 const gateScaffolded = await gateOr({ ...pilotTheme, ...pilots.SCAFFOLD })
+const { 'assets/css/cards.css': _cardsCss, ...noCardsCss } = pilotTheme
+const gateNoCardsCss = await gateOr(noCardsCss)
 for (const m of MAJORS) {
-  check(`control — Story 7.7: the pilot theme plus §73's scaffold (Story 7.13's cards.css, Story 10.79's page.hbs) gives an empty, unblocked verdict under ${pinOf(m)}`, () => {
+  check(`control — Story 7.7: the pilot theme plus §73's scaffold (Story 10.79's page.hbs) gives an empty, unblocked verdict under ${pinOf(m)}`, () => {
     if (clash.length > 0) throw new Error(`the scaffold would replace compiled files: ${clash.join(', ')}`)
     sameShape(gateScaffolded[m], { blocked: false, errors: [], warnings: [] })
   })
-  check(`Story 7.7 — the pilot theme's verdict under ${pinOf(m)}: blocked on exactly GS050-CSS-KGWF and -KGWW (ref styles), warned on exactly page_switch_unused`, () => {
-    sameShape(gatePilots[m], { blocked: true, errors: ['theme_check_rule GS050-CSS-KGWF', 'theme_check_rule GS050-CSS-KGWW'], warnings: ['page_switch_unused GS110-NO-MISSING-PAGE-BUILDER-USAGE'] })
-    const refs = gatePilots[m].errors.flatMap((f) => f.refs)
+  check(`control — Story 7.13: the pilot theme with cards.css taken out is blocked on exactly GS050-CSS-KGWF and -KGWW (ref styles) under ${pinOf(m)}`, () => {
+    sameShape(gateNoCardsCss[m], { blocked: true, errors: ['theme_check_rule GS050-CSS-KGWF', 'theme_check_rule GS050-CSS-KGWW'], warnings: ['page_switch_unused GS110-NO-MISSING-PAGE-BUILDER-USAGE'] })
+    const refs = gateNoCardsCss[m].errors.flatMap((f) => f.refs)
     if (refs.join() !== 'styles,styles') throw new Error(`the two GS050 errors name ${refs.join(', ')}, not styles`)
+  })
+  check(`Story 7.7 — the pilot theme's verdict under ${pinOf(m)}: unblocked, warned on exactly page_switch_unused — since Story 7.13 its own cards.css answers the two Koenig widths`, () => {
+    sameShape(gatePilots[m], { blocked: false, errors: [], warnings: ['page_switch_unused GS110-NO-MISSING-PAGE-BUILDER-USAGE'] })
     return gatePilots[m].warnings[0].detail
   })
 }
@@ -1421,6 +1429,71 @@ check('control — Story 7.12: a builder\'s name outside a credit.* key, or a cr
   const de = JSON.parse(pilotsDe.files['locales/de.json'])
   mustFail(pilots.textFailures('locales/de.json', JSON.stringify({ ...de, 'nav.more': 'Mehr von Inflozo' })), /^locales\/de\.json: the builder's name$/, 'a name in a label')
   return mustFail(pilots.textFailures('locales/de.json', JSON.stringify({ ...de, 'credit.built_with': 'Built with Inflozo!' })), /^locales\/de\.json: "credit\.built_with" is not the catalog's own words$/, 'a changed credit')
+})
+
+// ── Story 7.13: cards.css on every theme, and every card with a panel designed (FR-Q7, FR-J6) ─────────────────────────
+// The pilot theme carries `cards.css` with no scaffolded copy; the "cards" compile designs every card that has a panel,
+// each at one value off its start (`CARDS_DESIGNED`), so every card with a Ghost chunk is excluded and every one of gscan's
+// `GS050-CSS-KG*` rules for it is restored — and it reads 0/0 on both pins. Two controls prove those rules ran: Ghost's
+// gallery copy taken out of cards.css restores KGGC, KGGR and KGGI as errors on both; routine call 10's answers taken out
+// restore the button rule on both and the callout and video names on 4.49.7.
+const lt = await import(join(REPO, 'packages/library/src/cards.ts'))
+check('Story 7.13 — the pilot theme carries cards.css as the compiler writes it — D12\'s two widths alone, no card designed — and card_assets: true; §73\'s scaffold no longer carries one', () => {
+  if (pilotTheme['assets/css/cards.css'] !== lt.KOENIG_WIDTHS) throw new Error(`cards.css is ${JSON.stringify(pilotTheme['assets/css/cards.css'])}`)
+  if (JSON.parse(pilotTheme['package.json']).config.card_assets !== true) throw new Error('card_assets is not true')
+  if ('assets/css/cards.css' in pilots.SCAFFOLD) throw new Error('the scaffold still carries cards.css')
+})
+const cardsTheme = { ...pilotsCards.files, ...pilots.SCAFFOLD }
+const cardsCssOf = cardsTheme['assets/css/cards.css'] ?? ''
+/** cards.css with one of Ghost's copied chunks taken out, label and all, to the next label or the theme's own rules. */
+const withoutChunk = (css, name) => {
+  const from = css.indexOf(`/* ${name}.css */\n`)
+  if (from === -1) throw new Error(`cards.css carries no ${name}.css`)
+  const next = css.slice(from + 1).search(/\/\* [a-z0-9_]+\.css \*\/\n|\/\* This theme's card settings \*\/\n/)
+  return css.slice(0, from) + css.slice(from + 1 + next)
+}
+/** cards.css with routine call 10's answers taken out: the button's centring rule, and every name Ghost never prints. */
+const ALIASES = [...lt.cardOf('callout').always.slice(1), ...lt.cardOf('video').always, '.kg-button-card.kg-align-center { justify-content: center; }']
+const withoutAliases = (css) => ALIASES.reduce((out, rule) => {
+  if (!out.includes(`${rule}\n`)) throw new Error(`cards.css does not carry ${rule.slice(0, 60)}…`)
+  return out.replace(`${rule}\n`, '')
+}, css)
+const gscanCards = await gscanOr(cardsTheme)
+const gscanNoGallery = await gscanOr({ ...cardsTheme, 'assets/css/cards.css': withoutChunk(cardsCssOf, 'gallery') })
+const gscanNoAliases = await gscanOr({ ...cardsTheme, 'assets/css/cards.css': withoutAliases(cardsCssOf) })
+for (const m of MAJORS) {
+  check(`control — Story 7.13: the cards theme with Ghost's gallery copy taken out of cards.css raises GS050-CSS-KGGC, -KGGR and -KGGI as errors under ${pinOf(m)}`, () => {
+    const got = raised(gscanNoGallery[m]).filter((r) => / GS050-CSS-KGG/.test(r)).sort()
+    if (got.join() !== 'error GS050-CSS-KGGC,error GS050-CSS-KGGI,error GS050-CSS-KGGR') throw new Error(`the theme raises ${JSON.stringify(raised(gscanNoGallery[m]))}`)
+    return got.join(', ')
+  })
+  check(`control — Story 7.13: the cards theme with routine call 10's answers taken out raises the button rule${m === 5 ? ', and the callout and video names,' : ''} under ${pinOf(m)}`, () => {
+    const got = raised(gscanNoAliases[m])
+    if (!got.includes('warning GS050-CSS-KGBTNC')) throw new Error(`no GS050-CSS-KGBTNC: ${JSON.stringify(got)}`)
+    const named = got.filter((r) => / GS050-CSS-KG(CO|VID)/.test(r))
+    // 4.49.7 asks for the callout's and the video's names Ghost never prints; 6.4.2 for none of them (no count restated)
+    if (m === 5 && !(named.includes('warning GS050-CSS-KGCOE') && named.includes('warning GS050-CSS-KGVIDTI'))) throw new Error(`4.49.7 raises no callout or no video name: ${JSON.stringify(got)}`)
+    if (m !== 5 && named.length > 0) throw new Error(`${pinOf(m)} raises ${named.join(', ')}, which only 4.49.7 asks for`)
+    return got.join(', ')
+  })
+  check(`Story 7.13 — every card with a panel designed (${Object.keys(pilots.CARDS_DESIGNED).length} records) raises no error and no warning under ${pinOf(m)}: every restored GS050-CSS-KG* rule passes (behind §73's scaffold)`, () => {
+    const got = raised(gscanCards[m])
+    if (got.length > 0) throw new Error(got.join('\n'))
+    return `card_assets.exclude: ${JSON.parse(cardsTheme['package.json']).config.card_assets.exclude.join(', ')}`
+  })
+}
+check('Story 7.13 — the cards theme: cards.css is cardsCss of the record over the vendored stylesheets, its own half carries no !important, LICENSE-ghost.txt and README name Ghost\'s block, and themeFailures and the quality gate are clean', () => {
+  const want = lt.cardsCss(lt.parseCardDesigns(pilots.CARDS_DESIGNED), GHOST.styles, (n) => rt.iconSvg(n, iconDrawing))
+  if (cardsCssOf !== want) throw new Error('cards.css is not cardsCss of CARDS_DESIGNED')
+  if (/!\s*important/.test(lt.ownCardsCss(cardsCssOf))) throw new Error('the theme\'s own half carries !important')
+  if (!/!important/.test(cardsCssOf)) throw new Error('Ghost\'s own !important are gone from the copy')
+  if (pilotsCards.files['LICENSE-ghost.txt'] !== tidyLicence(GHOST.licence)) throw new Error('LICENSE-ghost.txt is not Ghost\'s licence')
+  if (!/Ghost's own stylesheet for these cards: [^\n]*header · header_v2/.test(pilotsCards.files['README.md'] ?? '')) throw new Error('README.md does not name Ghost\'s block')
+  const t = pilots.themeFailures(pilotsCards.files, pilotsCards.instanceIds)
+  if (t.length > 0) throw new Error(t.join('\n'))
+  const q = qualityOf(pilotsCards.files)
+  if (q.blocked || q.errors.length + q.warnings.length > 0) throw new Error(said78(q).join('\n'))
+  return `${Buffer.byteLength(cardsCssOf)} B, ${lt.ownCardsCss(cardsCssOf).split('\n').length - 1} line(s) of its own`
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

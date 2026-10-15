@@ -204,30 +204,31 @@ treatments and their read-only block are Epic 10's (R-118).
 - [x] `supabase/migrations/20261016120000_card_designs.sql` + `SCHEMA.sql` -- the drop and the widened RPC, re-runnable,
   comments outside the body. Pushed ALONE as `Story 7.13 - Schema - …` (R-99) after the RLS gate passes. Then ask the
   owner in-session and apply through the pooler (or his paste), and read back. -- the database is never older than the code.
-- [ ] `packages/library/src/cards.ts` + `cards.test.ts` -- the registry exactly as Design Notes' table, the parser, `cardsCss`
+- [x] `packages/library/src/cards.ts` + `cards.test.ts` -- the registry exactly as Design Notes' table, the parser, `cardsCss`
   and `excludedChunks`. Tests: every I/O row; each card's start values producing no rule; header naming two chunks; the
   list's chunk names a subset of the vendored directory (derived, with a planted name as control); every chunk name
   that is a prefix of another listed on the same card (Ghost 5's glob); no `!important` outside Ghost's block;
   determinism (two calls equal); and the parser's refusals, each behind a passing control. -- one source for three readers.
-- [ ] `packages/theme-compiler/src/compile.ts` + `compile.test.ts` -- `cardDesigns`, `cards.css` on every theme, the link order,
+- [x] `packages/theme-compiler/src/compile.ts` + `compile.test.ts` -- `cardDesigns`, `cards.css` on every theme, the link order,
   the licence and README lines, and the refusals. The I/O rows run as compile rows. -- FR-Q7's emission.
-- [ ] `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs` -- the scaffold's `cards.css` goes. A "cards" compile designs
+- [x] `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs` -- the scaffold's `cards.css` goes. A "cards" compile designs
   every card that has a panel, each with one non-start value, and gates 0/0 on both gscans with every restored
   `GS050-CSS-KG*` rule passing. Two controls: the same theme with the gallery copy removed (KGGC, KGGR and KGGI
   return as errors on both), and with routine call 10's aliases removed (the button rule on both, and the callout and
   video ones on 4.49.7). -- the gscan claim, executed.
-- [ ] `tools/probe/record-theme-assembly.py` -- §81. It uploads to T1 (main session, the owner's go) the pilot theme
+- [x] `tools/probe/record-theme-assembly.py` -- §81. It uploads to T1 (main session, the owner's go) the pilot theme
   with a designed callout, toggle and gallery, and reads back: `cards.css` and `cards.js` served at their `{{asset}}`
   addresses, Ghost's `cards.min.css` and `cards.min.js` no longer carrying the three, the toggle opening and the gallery
   proportioning in a real browser, and the paywall probes still 0/0. Casper is restored and read back. -- `cards.js`'s
-  first real Ghost.
-- [ ] `apps/web/lib/journal.ts`, `sync/route.ts`, `read.ts`, `editor.tsx` (`commitCards`) -- `CARDS_KEY` end to end, with
+  first real Ghost. *(Dev, 2026-10-15: built, its local half 0/0, and the T1 half run in the main session on the
+  owner's go — every row held, §81 written.)*
+- [x] `apps/web/lib/journal.ts`, `sync/route.ts`, `read.ts`, `editor.tsx` (`commitCards`) -- `CARDS_KEY` end to end, with
   `journal.test.ts` and `sync` route tests for the 422 and the one compare-and-set. -- one edit, one ⌘Z, one lock.
-- [ ] `apps/web/lib/cards.ts` -- `CARD_WORDS`: the switcher row and caption, the dropdown's heading, the `customised` badge,
+- [x] `apps/web/lib/cards.ts` -- `CARD_WORDS`: the switcher row and caption, the dropdown's heading, the `customised` badge,
   the no-colour mark and sentence, the left panel's lines, each card's `none` line, the reset confirm (S14c, with the
   count and names from `cardChanges`), the greyed reasons, the malformed-record line and the announcements. `cards.test.ts`
   holds them. -- R-170, standing rule 4.
-- [ ] `apps/web/lib/editor.ts`, `template-switcher.tsx`, `editor.tsx` -- the `cards` canvas:
+- [x] `apps/web/lib/editor.ts`, `template-switcher.tsx`, `editor.tsx` -- the `cards` canvas:
   - the ink bar with the switcher, the chip and the Card dropdown (S14a's rows, badges and marks, in list order);
   - the left panel (S14a: Customised · the cards on Ghost's defaults · the site-wide sentence);
   - the canvas (`cardsDocument`; the selected card's 2px accent ring and name tag, scrolled into view; a click on a
@@ -237,12 +238,13 @@ treatments and their read-only block are Epic 10's (R-118).
   - the confirm (S14c, opening on Cancel);
   - the last-viewed card kept per project in `sessionStorage` (wrapped in try/catch), else Callout.
   -- the surface.
-- [ ] `settings/rail.tsx` -- **Editor cards**, landing on the same screen. -- S14d's second route.
-- [ ] `tools/keyboard/journey.spec.mjs` -- a journey changes a callout value, undoes it, resets with Cancel then Reset
+- [x] `settings/rail.tsx` -- **Editor cards**, landing on the same screen. -- S14d's second route.
+- [x] `tools/keyboard/journey.spec.mjs` -- a journey changes a callout value, undoes it, resets with Cancel then Reset
   card, and walks the Card dropdown by keyboard. -- keyboard (NFR-5).
-- [ ] `tools/probe/run-verify-editor.cjs` -- step 107 on the deployed site (Review), reading `project_treatments` back
-  through the service key and handing the fixture back. -- R-82.
-- [ ] Docs, propagated (standing rule 3):
+- [x] `tools/probe/run-verify-editor.cjs` -- step 107 on the deployed site (Review), reading `project_treatments` back
+  through the service key and handing the fixture back. -- R-82. *(Dev: written, and its browser half dry-run on the
+  harness; the run itself is Review's.)*
+- [x] Docs, propagated (standing rule 3):
   - FR-Q7's dated note (the start-from-Ghost rule, the derived exclude list, the pack's corners);
   - dated corrections from this Create's source reads:
     - `EXPERIENCE.md` item 15: the menu order and gating;
@@ -277,6 +279,45 @@ treatments and their read-only block are Epic 10's (R-118).
 - Given a window reading along, then every card control is visibly disabled and nothing is journalled (R-192).
 
 ## Spec Change Log
+
+Dev, 2026-10-15 — routine calls made in Dev, each from a source read or an execution (none changes what a ruling decided):
+- **Product's Rating colour starts at Text**, not the table's ▸Accent: `product.css:104-109` draws the stars in
+  `currentColor`, the card's text, so ▸Accent would have counted every product card as designed and excluded Ghost's
+  chunk on every theme. Accent is the one value that writes a rule.
+- **Divider's Glyph starts at `asterisk`** (the table names no start): a Tabler name the vendored set draws, so turning
+  the glyph on shows one at once; `parseCardDesigns` asks the icon set whether a stored name is drawable.
+- **The no-colour mark reads "No colour controls"** (S14a's "NO COLOUR CTLS", in words), and the switcher's caption is
+  "Ghost's cards, styled once", the longest that fits the 284px menu on one line (R-171).
+- **The Template surfaces heading moved to `lib/editor.ts`'s `SURFACES_HEADING`** (`PAYWALL_WORDS.group` removed) now
+  that it heads two surfaces; the keyboard journeys that reached Paywall with End now go End then ↑.
+- **The harness editor gained its own style-guide frame route** (`app/harness/style-guide/frame`, `INFLOZO_HARNESS`
+  only), so `pnpm keyboard` reaches the card document; the worn pack's faces are rewritten to `../canvas?`.
+- **Kit's `SwatchRow` picked ring is fixed for every swatch row**: the picked state set two shadow utilities and the
+  hairline won, so no swatch row ever drew its ring. One shadow utility at a time now.
+- **The prefix-glob and vendored-subset rows live in `apps/web/style-guide.test.ts`**, not `cards.test.ts`: a core
+  package's test opens no file (AD-1), and that test reads the real vendored directory.
+- **AD-27's "a row per stored state" rule gains a dated note** (R18, decided as architecture): per-card overrides live
+  in `project_treatments.card_designs`, site-wide, under one schema, one writer and the docs' journal, undo and lock.
+- **A divider's glyph is judged by the icon set before the write** (`lib/cards.ts`' `parseStoredCards`, used by the
+  sync route and `read.ts`): the set is imported only for a record that names a glyph, so every other save reads none.
+- **The canvas's press handler read every press as no element** (found by the coverage check of "a click on a card
+  selects it"): it tested `event.target instanceof Element` with the editor's window, and a node of the card document
+  belongs to the frame's own realm — so no card was ever selected by a click and no link was held back. It now tests the
+  frame's own `Element`; `floor.spec.mjs` presses a toggle and a bookmark.
+- **§81's site probe is the T1 draft `inflozo-style-guide-page`** that `record-cards.py` keeps, read through the Admin
+  API and its preview URL. The recorder fails closed if the draft is gone.
+- **The canvas dressed a card document that had not loaded, and the editor fell to its error screen** (found by the main
+  session's own `pnpm keyboard` run: 1 of 233 failed, then 2, 6 and 3 of 18 over the 7.13 journeys repeated). The
+  `[designs, icons]` and pack effects touched `contentDocument` while it was the frame's next document still parsing —
+  the icon set landing mid-load, or a card's choice changing the address — and `chrome()`'s `doc.head.append` threw on
+  a null `head` ("Cannot read properties of null (reading 'append')" in `ringCard`, read off the caught error's
+  stack). Every touch now goes through `loadedDoc` (loaded, and the card document), the load listener dressing it when
+  it lands; the same journeys repeated five times then passed 30 of 30 with no unhandled error.
+- **`!important` is refused at authoring too** (the main session's review of the compile): `checkImportant` refuses it in
+  every stylesheet a theme writes, `screen.css` included, and nothing refused it in a design's own `style.css` — so a
+  later design carrying one would have passed `pnpm check` and stopped every customer deploy that placed it. The library
+  carries none today (swept: every design's `style.css`). `validateStylesheet` now refuses it (`stylesheet-important`),
+  with a test and its control, and `docs/section-authoring.md` says so.
 
 ## Design Notes
 
@@ -589,7 +630,24 @@ again exactly as before.
 3. **Stop the story here.**
 
 **Ruled: option 1 (owner, 2026-10-15).** *"1. Go"*, asked in the Dev session before any T1 write; the writes run in the
-main session, never a subagent.
+main session, never a subagent. Question 6 corrects the scope this question described.
+
+### Question 6 — Correction: the T1 run does more than Question 5 said (R-82, R-238)
+
+**In plain English.** The recorder takes no flags: it re-runs every earlier story's T1 check (§70–§80) before §81,
+because every Inflozo theme now carries its own `cards.css` and those checks prove the earlier themes still work on a
+real Ghost. T1 gets about a dozen test themes (each uploaded, switched on, checked, deleted); its logo, its Publication
+Language (German, French, back) and its theme settings are changed and put back, each read back; at most one small
+picture is uploaded, only if T1 hosts none (Ghost's API deletes no picture).
+
+**Example.** For the length of the run a visitor to ghost6.inflozo.com could see a test theme or a German page; at the
+end Casper, English and the logo are back, and the script checks each one.
+
+1. **Go** — the whole run, everything put back and checked. **(RECOMMENDED)**
+2. **Skip T1 in Dev**; run it at Review instead.
+3. **Stop the story here.**
+
+**Ruled: option 1 (owner, 2026-10-15).** *"1. Go"*, asked in the Dev session before the run; run in the main session.
 
 ## Verification
 
@@ -614,6 +672,95 @@ main session, never a subagent.
   throwaway user (generate_link + verifyOtp): the deployed three- and five-name calls applied and made no
   `project_treatments` row; a `p_cards` call applied with one revision and read back as written, owned by the caller; a
   stale base answered `applied: false` and kept it; anon 401 / 42501; user count 14 → 14 after the delete.
+
+**Executed — Dev phase (2026-10-15), locally under Node 24, nothing written to T1 or production:**
+- `pnpm check` -- exit 0: lint, typecheck and every package's tests, the 7.13 rows among them (`cards.test.ts` in the
+  library and the app, the compile rows, `journal.test.ts`, `style-guide.test.ts`'s vendored subset and prefix glob
+  each behind a planted control, `editor.test.ts` with surfaces `['paywall','cards']`, `busy.test.ts`).
+- `node tools/check-snapshots.mjs` -- PASS: the pilot theme's `cards.css` is `KOENIG_WIDTHS` and the scaffold carries
+  none; every card with a panel designed (`CARDS_DESIGNED`) raises no error and no warning on gscan 4.49.7 and 6.4.2;
+  the controls — gallery's copy taken out raises `GS050-CSS-KGGC`, `-KGGR`, `-KGGI` as errors on both, and routine
+  call 10's answers taken out raise `GS050-CSS-KGBTNC` on both and the callout and video names on 4.49.7 alone;
+  `cards.css` equals `cardsCss` of the record, its own half free of `!important`, `LICENSE-ghost.txt`, README,
+  `themeFailures` and the quality gate clean.
+- `node tools/check-baseline.mjs` -- PASS: `cards.css`' own half linted (Ghost's block skipped), every card value's
+  rules linted; the controls — a planted `-webkit-` rule refused, and Ghost's copy linted whole raising warnings.
+- `python3 tools/probe/record-theme-assembly.py`'s local half (its compile and gate functions, run without T1) -- 0/0 on
+  both pins for the pilots, the cards probe and both paywall probe trees; `CARDS_DRIVER` run in Chromium against a
+  local page built from the compiled tree: the toggle opens, the gallery proportions, the emoji is hidden, the toggle's
+  corner is `--radius-card`, and with `cards.js` refused the toggle stays shut (the control).
+- `run-verify-editor.cjs` step 107's browser half dry-run against the harness editor (no database): 107a, b, c, d, g,
+  h and i held. Its first dry run caught S14c's closed dialog's Cancel counted as a live panel control; the count now
+  leaves the dialog out.
+- `pnpm keyboard` -- every journey passed, re-run whole after the matrix audit's additions: the 7.13 journeys (a value
+  with ⌘Z and ⌘⇧Z and the greyed background row before it, S14c's Cancel then Reset card then ⌘Z, the Card dropdown by
+  keyboard, reading along with the ring moving, the malformed record), `floor.spec.mjs`' canvas click, and the earlier
+  Paywall journeys re-pointed (End then ↑, `SURFACES_HEADING`).
+- `python3 tools/doc-audit.py --check` -- PASS after regenerating the index and the story board.
+- The I/O matrix, row by row — the check that ran for each (Dev, locally), and what Review and §81 add:
+  - **No card designed** — `cards.test.ts` (library) "no card designed"; `compile.test.ts` "(7.13) no card designed"
+    (`card_assets` true, the two widths alone, linked before `screen.css`, no licence); `check-snapshots` (the pilot
+    theme's `cards.css` is `KOENIG_WIDTHS`, no scaffold, 0/0 on both pins).
+  - **One static card** — library "one static card" and `compile.test.ts` "(7.13) one static card" (exclude, the copy, the
+    corners, the hidden emoji, the licence, README's line); Ghost's `cards.min.css` no longer carrying it is
+    `style-guide.test.ts`' simulated bundle (the complement of `excludedChunks`) and, on a real Ghost, §81.
+  - **Header designed** — library "header designed" and `compile.test.ts` "(7.13) the header card excludes header AND
+    header_v2"; `style-guide.test.ts` holds Ghost 5's prefix glob (`header` before `header_v2`) behind a planted control.
+  - **A card with no chunk** — library "a card with no chunk" and the same compile row (`card_assets` stays `true`, Tabler's
+    licence for the glyph).
+  - **Scripted card** — library "a scripted card" and `compile.test.ts` "(7.13) scripted cards" (`cards.css` and `cards.js`);
+    `check-snapshots` (every card with a panel designed 0/0, and gallery's copy removed raising KGGC/KGGR/KGGI — the
+    control); the toggle opening and the gallery proportioning in a browser are §81's (T1), its driver dry-run locally.
+  - **Value back at its start** — library "a value back at its start leaves the record"; `pnpm keyboard` journey 1 (⌘Z
+    takes the value back and the customised row goes).
+  - **Reset** — library "reset" (S14c's count and names); `journal.test.ts` "(7.13) a card value is one entry … a reset is
+    one entry too"; `pnpm keyboard` journey 2 (S14c opens on Cancel, Cancel writes nothing, Reset card clears every badge
+    and the amber count, ⌘Z brings the values back).
+  - **Stored record malformed** — the compile half: `compile.test.ts` "(7.13) a stored record card_designs' schema refuses"
+    and the library's parser refusals, each behind its control. The editor half: `pnpm keyboard` "a stored record the
+    editor's door refuses" (`x-inflozo-harness-cards: malformed`, a divider glyph the icon set does not draw, read by
+    `read.ts`' own `storedCards`): the malformed line once, Callout at Ghost's palette, no badge, no amber count — journey 1
+    asserting the line absent is the control. The 422: at Dev by the parser's behavioural refusals, `apps/web/cards.test.ts`'
+    `parseStoredCards` row (an undrawn glyph refused, `leaf` kept, the set loaded only for a record naming a glyph) and the
+    route-order check (the parse before the lock read and the RPC, the parsed record handed to `p_cards`); on the deployed
+    site at Review by step 107e's crafted 422 with the stored record read back unchanged.
+  - **Colour control on a no-colour card** — library parser refusals (`signup` and `cta` given `background`) and the
+    compile's refusal row; the 422 as the row above (route order at Dev, step 107e at Review).
+  - **Reading along** — `pnpm keyboard` "reading along (R-192)": every card control disabled, the Card dropdown choosing
+    Toggle and the canvas ring moving to the toggle, nothing customised; on production at Review, step 107i.
+  - **Callout at Ghost's palette** — `pnpm keyboard` journey 1: before the change the Callout background row is
+    `aria-disabled`, its four swatches disabled and its reason shown; at Pack tokens enabled, the reason gone.
+  - **And the task "a click on a card selects it"** — `floor.spec.mjs` "7.13 · S14e" (a mouse at 1280): a click on the
+    toggle selects Toggle and rings it (Callout before it, the control), and a click on a bookmark selects Bookmark with
+    the canvas still the card document.
+- T1 `ghost6.inflozo.com` (Ghost 6.58.0), the whole recorder in the main session on the owner's go (Question 6), keys
+  `GHOST6_*` read inside the process: `python3 tools/probe/record-theme-assembly.py` -- exit 0, 264 PASS lines and none
+  failing, "MEASUREMENTS.md §81 written — every row held on T1, behind its controls". §70–§80 re-held with the
+  compiler's own `cards.css` on every theme (the pilots and the cards tree 0/0 on gscan 4.49.7 and 6.4.2; the three gate
+  probes BLOCKED as designed). §81: the designed callout, toggle and gallery gate 0/0 on both pins; under Casper,
+  Ghost's `cards.min.css` (46,231 bytes) carries the three and `cards.min.js` the toggle's and gallery's (the
+  CONTROL); under the probe the head links `cards.css` before `screen.css`, both before `{{ghost_head}}`'s bundle;
+  `cards.css` is served at its `{{asset}}` address as `text/css`, byte for byte the compiled file (5,486 bytes);
+  `cards.js` once, `defer`, as JavaScript (1,352 bytes), a script the theme lacks answering 404 (the control);
+  `LICENSE-ghost.txt` 200; Ghost's `cards.min.css` no longer carries the three while still carrying the 13 undesigned
+  chunks, and `cards.min.js` no longer carries the toggle's or gallery's while still carrying audio's and video's; on
+  the draft `inflozo-style-guide-page`'s preview in Chromium the toggle opens on a click, every gallery image's flex is
+  its width over its height, the callout's emoji is hidden, the toggle's corner is `--radius-card` (8px) and the
+  gallery's gap 2rem (Loose) — and with the theme's `cards.js` refused the toggle stays shut and nothing proportions
+  (the CONTROL). Restored and read back: the active theme `casper`, every probe deleted (installed: casper, racer,
+  source), the site's logo `None` as before, the locale `en`, the probes' built-ins at their starts; no picture uploaded
+  (this month's probe picture reused).
+- The main session's own run on the final tree, in CI's order, under Node 24.18.1 (`.nvmrc`): `pnpm keyboard` first went
+  1 failed / 232 passed — the canvas-load defect in the Spec Change Log, reproduced (2, 6, 3 of 18 over the 7.13
+  journeys repeated), its stack read, fixed (`loadedDoc`), then 30/30 repeated five times; after the fix and the
+  `stylesheet-important` rule: `pnpm check` exit 0; `pnpm keyboard` 233 passed; `pnpm build` exit 0;
+  `node tools/check-traces.mjs` "every route carries its files", no client chunk carrying the font pool's record;
+  `node tools/check-snapshots.mjs` PASS (5 designs at 10 targets); `node tools/check-baseline.mjs` PASS;
+  `bash tools/matrix/run-matrix-gate.sh` (every design, since this push touches `packages/library/src/`) 576 passed, 574
+  cases, 0 violations, no baseline changed.
+- Real services in Dev: Supabase production at the Schema phase (above) and T1 for §81 (above), each on the owner's
+  in-session go; nothing in Dev wrote to Vercel, Resend or Dodo. T3 retired (R-238): the Ghost 5 half is DW-326's.
+- Not run here: step 107 on the deployed site (Review).
 
 **Commands:**
 - `bash supabase/tests/run-rls-gate.sh` -- expected: passes, no SCHEMA DRIFT, before the Schema push.

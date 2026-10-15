@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.12's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.13's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
@@ -10,7 +10,9 @@ Ghost 6's own checker answering three probe uploads as the gate says; since Stor
 Story 7.10 promoted settings in Ghost's own Design panel; since Story 7.11 the three dark built-ins every theme
 declares — Color scheme, Dark accent color and Dark logo — each changed in Ghost and drawn on the next load; and since
 Story 7.12 the locale files every theme ships — `en.json`, and the project language's beside it — read by Ghost under its
-own Publication Language, and what Ghost does with a label 5.4.3 cannot parse.
+own Publication Language, and what Ghost does with a label 5.4.3 cannot parse; and since Story 7.13 `cards.css` on every
+theme and a designed callout, toggle and gallery switched off in Ghost's own card bundle, styled and run by the theme's
+own `cards.css` and `cards.js` — `cards.js`'s first real Ghost.
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -33,8 +35,8 @@ and faced in `default.hbs`'s head through one `{{asset}}` address each, each fam
 `screen.css` whose token block declares AD-18's two `--gh-font-*` variables and a section's dark override on its hook.
 Since Story 7.5 it writes `assets/js/main.js` (`bundle()` of `core` and every declared module that has a file — `core`
 alone on the pilots, whose `nav-drawer` and `member-form` have none yet and ship at rest) behind `MAIN_JS_TAG`, a `defer`
-tag in `default.hbs`'s head after the stylesheet, and `README.md`'s Scripts section. `cards.js` is not uploaded here: the
-pilots design no card, and Story 7.13's first designed card runs its first T1 proof. Since Story 7.6 every template whose
+tag in `default.hbs`'s head after the stylesheet, and `README.md`'s Scripts section. `cards.js` is uploaded by §81's own
+tree (step 17): the pilots design no card. Since Story 7.6 every template whose
 matrix row opens `{{#post}}` wraps its sections in `POST_ARTICLE` — `<article class="{{post_class}}{{#unless access}}
 post-access-{{visibility}}{{/unless}}">` — and every `srcset` candidate carries `format="webp"`; since Story 7.12 it
 writes `locales/en.json` (the catalog's English) and, for a project language other than `en`, that language's file beside
@@ -54,11 +56,11 @@ it, that Ghost reads it as claimed is a hypothesis.
      min(12, the published total − 1, each chosen archive's count − 1), so `/page/2/`, the tag's and the author's page 2
      exist. The tag and the author are the ones with the most published posts; the run is void when either has fewer
      than two. `package.json` is compiled, never scaffolded.
-  2. It adds the scaffold — new files only, each named for the story that owns it: `assets/css/cards.css` (Story 7.13,
-     D12: `.kg-width-wide` and `.kg-width-full` — Story 7.4's AD-18 lines left it, since `screen.css` now answers
-     GS051) and a stand-in `page.hbs` (Story 10.79's: GS110's page-builder switch — the compile leaves an untouched
-     `page.hbs` the library cannot fill out, Story 7.3's Question 1, ruled option 1, so the stand-in stays until A24
-     sits on `page.hbs`) — both `SCAFFOLD`, from tools/pilot-theme.mjs, the copy CI's clean-verdict control uses. It gates
+  2. It adds the scaffold — new files only, named for the story that owns it: a stand-in `page.hbs` (Story 10.79's:
+     GS110's page-builder switch — the compile leaves an untouched `page.hbs` the library cannot fill out, Story 7.3's
+     Question 1, ruled option 1, so the stand-in stays until A24 sits on `page.hbs`) — `SCAFFOLD`, from
+     tools/pilot-theme.mjs, the copy CI's clean-verdict control uses. Since Story 7.13 the compiler writes
+     `assets/css/cards.css` itself (D12's two widths on tokens, on every theme), so the scaffold no longer carries one. It gates
      the theme through the PRODUCT gate (Story 7.7: `gscanGate`, through Node 24, as `compiled()` calls
      tools/pilot-theme.mjs): an empty, unblocked verdict — 0 errors AND 0 warnings, after mapping — on gscan 4.49.7 at
      `v5` and 6.4.2 at `v6`, or nothing uploads; the gate naming anything the scaffold does not answer is a question for
@@ -145,7 +147,8 @@ it, that Ghost reads it as claimed is a hypothesis.
      #13's eyebrow as exactly the typed words.
  10. STORY 7.7 (§76) — GHOST 6'S OWN CHECKER AGAINST THE GATE: three probe uploads under their own names, none activated,
      each deleted in a `finally` that encloses its upload (`restore_and_delete`), the active theme read back after each.
-     (a) The compiled pilot theme, unscaffolded: T1 answers 200, and the `errors` on its theme record carry the same codes
+     (a) The compiled pilot theme, unscaffolded and (since Story 7.13, which compiles one) its `cards.css` taken out, so
+     the two Koenig width rules fire as §76 recorded them: T1 answers 200, and the `errors` on its theme record carry the same codes
      and `fatal` flags as `runGscan(files, 6)`'s errors (`GS050-CSS-KGWF`, `-KGWW`). Its `warnings` are empty in
      production (Ghost's `validate.js`), while the gate reports `GS110-NO-MISSING`: the row records both, and a warning
      list T1 does return must match. (b) A fatal probe — the pilot theme plus `custom-probe-fatal.hbs` invoking
@@ -219,6 +222,22 @@ it, that Ghost reads it as claimed is a hypothesis.
      observation; the source reading is a 400, `IncorrectUsageError`). Its `finally` puts the site's locale back and reads
      it back (a CONTROL), then `restore_and_delete`.
 
+ 17. STORY 7.13 (§81) — `cards.css` AND `cards.js` ON A REAL GHOST (FR-Q7, FR-J2, FR-J3, AD-18): the pilots compiled
+     under `inflozo-probe-cards` with a designed callout, toggle and gallery (`CARD_PROBE`, each one value off its start),
+     §73's scaffold beside them, gated 0/0 on both pinned gscans — every `GS050-CSS-KG*` rule the three restore answered by
+     Ghost's own copy in `cards.css` — with an empty quality verdict, and `card_assets.exclude`, `cards.css`'s copied
+     chunks, `cards.js`'s two scripts and the head's link order held before anything uploads. Under the site's own theme
+     first, Ghost's `cards.min.css` and `cards.min.js` carry the three (the CONTROL). On T1, behind `start_guard`: the tree
+     uploaded and activated; `/` links `cards.css` before `screen.css`, both before `{{ghost_head}}`'s bundle; `cards.css`
+     and `cards.js` answer at their `{{asset}}` addresses byte for byte as compiled (a script the theme does not carry
+     answers 404, the CONTROL), `LICENSE-ghost.txt` as compiled; Ghost's `cards.min.css` no longer carries the three while
+     the bookmark's chunk stays (the CONTROL), and `cards.min.js` neither the toggle's nor the gallery's script while
+     audio's or video's stays (the CONTROL). Then Chromium reads `record-cards.py`'s style-guide page (C.4's article as a
+     Ghost page, a draft) through its preview link, rendered by the stand-in `page.hbs`: the toggle opens on a click, every
+     gallery image's flex is its own width over height, the callout's emoji is hidden, the toggle's corner is the pack's
+     `--radius-card` and the gallery's gap the Loose gutter's — and with the theme's `cards.js` refused, the toggle stays
+     shut and nothing proportions (the CONTROL). Its `finally` is `restore_and_delete`, the site's theme read back.
+
 What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
 activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
@@ -229,10 +248,11 @@ theme, uploaded and activated Light only and then Light + Dark, its three built-
 back to their starts before it is deleted; the site's logo (`PUT settings/`), set to the run's picture for the Dark
 logo rows, restored and read back in a `finally`; and Story 7.12's probe theme (`inflozo-probe-locales`), uploaded and
 activated four times (German, `valid`, `broken_default`, `broken_post`) and deleted, with the site's Publication Language
-(`PUT settings/` `locale`) set to `de`, `fr` and `de` and put back and read back in a `finally` — no content, no other
-site setting, no key; keys are read by variable name and no URL that carries one is printed. To disk it writes
-MEASUREMENTS.md §80 alone, replacing an earlier §80 of its own so a re-run re-records; §70 to §79 stay Stories 7.1's to
-7.11's records. The Ghost 5 half is DW-326's.
+(`PUT settings/` `locale`) set to `de`, `fr` and `de` and put back and read back in a `finally`; and Story 7.13's probe
+theme (`inflozo-probe-cards`), uploaded, activated and deleted — no content, no other site setting, no key; the
+style-guide page is read through its preview link and never written; keys are read by variable name and no URL that
+carries one is printed. To disk it writes MEASUREMENTS.md §81 alone, replacing an earlier §81 of its own so a re-run
+re-records; §70 to §80 stay Stories 7.1's to 7.12's records. The Ghost 5 half is DW-326's.
 """
 import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -245,7 +265,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '80'   # §70 to §79 stay Stories 7.1's to 7.11's records
+SECTION = '81'   # §70 to §80 stay Stories 7.1's to 7.12's records
 # Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
 # the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
 TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
@@ -321,8 +341,10 @@ def compiled(nonce, per_page):
     return {**out, 'page_word': f'Page{nonce}', 'layer_word': f'Layer{nonce}', 'typed_page': words['PAGE_WORD']}
 
 
-# Story 7.13's (D12) — the two Koenig widths, for the two HAND-WRITTEN paywall probes, which are no compiled theme; the
-# compiled theme's scaffold is tools/pilot-theme.mjs's SCAFFOLD (Story 7.7), whose cards.css is these bytes
+# D12's two Koenig widths, for the two HAND-WRITTEN paywall probes, which are no compiled theme and carry no screen.css —
+# so these bytes stay theirs, byte for byte as Story 7.3 uploaded them: since Story 7.13 the compiler writes every theme's
+# own `cards.css` (on tokens, `KOENIG_WIDTHS`), and the scaffold no longer carries one. Never shrink or share this: a
+# probe without the two widths fails gscan's GS050-CSS-KGWW/-KGWF (memory: the paywall probes voided at 7.4 on it)
 CARDS_CSS = '.kg-width-wide { max-width: 1000px; }\n.kg-width-full { max-width: 100%; }\n'
 # The two HAND-WRITTEN paywall probes are no compiled theme and carry no screen.css, so they keep the two Ghost
 # custom-font reads they uploaded at Story 7.3 — their own GS051 answer, byte for byte what they carried then. The
@@ -334,9 +356,9 @@ PROBE_FONTS_CSS = ('body { font-family: var(--gh-font-body, var(--font-body)); }
 
 def scaffold(c):
     """New files only, each named for its story; never a compiled file changed. `package.json` is compiled (Story 7.2).
-    The files are tools/pilot-theme.mjs's `SCAFFOLD` — Story 7.13's `cards.css` (D12's two widths) and Story 10.79's
-    stand-in `page.hbs`, which reads GS110's page-builder switch until A24 sits on `page.hbs` (the owner's ruling on Story
-    7.1's Question 1; the compile leaves an untouched `page.hbs` out, Story 7.3's Question 1)."""
+    The files are tools/pilot-theme.mjs's `SCAFFOLD` — Story 10.79's stand-in `page.hbs` alone, which reads GS110's
+    page-builder switch until A24 sits on `page.hbs` (the owner's ruling on Story 7.1's Question 1; the compile leaves an
+    untouched `page.hbs` out, Story 7.3's Question 1). Since Story 7.13 `cards.css` is compiled on every theme (DW-334)."""
     added = c['scaffold']
     clash = [p for p in added if p in c['files']]
     if clash:
@@ -977,8 +999,10 @@ PROBE_SETTING = 'probe_setting'
 
 
 def probe_trees(c):
-    """The three probe trees, each the COMPILED pilot theme (no scaffold) with one change."""
-    files = c['files']
+    """The three probe trees, each the COMPILED pilot theme (no scaffold) with one change. Story 7.13: the compiler now
+    writes `cards.css`, which answers gscan's two Koenig width rules; it is taken out of each probe, so `GATE_PILOT`'s
+    comparison still reads the two `GS050` errors §76 recorded rather than an empty list (its CONTROL)."""
+    files = {p: b for p, b in c['files'].items() if p != 'assets/css/cards.css'}
     pkg = json.loads(files['package.json'])
     # Story 7.11: beside the three dark built-ins every compile declares (and reads), so the probe still changes one thing
     pkg['config'].setdefault('custom', {})[PROBE_SETTING] = {'type': 'select', 'options': ['One', 'Two'], 'default': 'One', 'visibility': 'true'}
@@ -1974,6 +1998,268 @@ def locales_phase(g, lc, post_path, local):
     return rows
 
 
+# ── Story 7.13 (§81): cards.css and cards.js on a real Ghost ─────────────────────────────────────────────────────────
+CARDS_THEME = 'inflozo-probe-cards'   # its own name, so nothing of the pilots' theme is touched
+# a designed callout, toggle and gallery (the spec's Tasks): one static card and the two scripted cards the browser rows
+# drive; each value is one the registry offers, and none is its start, so each card is excluded
+CARD_PROBE = {'callout': {'emoji': 'off'}, 'toggle': {'chevron': 'left'}, 'gallery': {'gutter': 'loose'}}
+# record-cards.py's own page — C.4's article created as a Ghost PAGE, a draft between its runs — read through its preview
+# link (`/p/<uuid>/`), which Ghost renders through the ACTIVE theme's `page.hbs` (the stand-in, which prints `{{content}}`;
+# no pilot prints a post's body yet). The article carries a callout, a toggle and a five-image gallery (corpus.json).
+STYLE_GUIDE_PAGE = 'inflozo-style-guide-page'
+COMPILE_CARDS = r"""
+const root = process.env.ROOT
+const pilots = await import(`${root}/tools/pilot-theme.mjs`)
+const lib = await import(`${root}/packages/library/src/index.ts`)
+const gate = await import(`${root}/packages/theme-compiler/gate/index.ts`)
+const { CARDS_JS_TAG } = await import(`${root}/packages/library/src/modules.ts`)
+const { REFERENCE_PACK } = await import(`${root}/packages/section-runtime/src/reference.ts`)
+const theme = { name: process.env.CARDS_THEME, version: '1.0.0', description: 'The pilots, with designed cards' }
+const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
+const cardDesigns = JSON.parse(process.env.CARD_DESIGNS)
+const v = pilots.compilePilots(words, { theme, postsPerPage: Number(process.env.PER_PAGE), cardDesigns })
+const q = gate.qualityGate(v.files, { pack: REFERENCE_PACK, library: v.find })
+const enc = (files) => Object.fromEntries(Object.entries(files).map(([p, b]) => [p, typeof b === 'string' ? b : { base64: Buffer.from(b).toString('base64') }]))
+const ghost = pilots.ghostCards()
+const designed = lib.designedCards(lib.parseCardDesigns(cardDesigns))
+process.stdout.write(JSON.stringify({
+  files: enc(v.files), failures: pilots.themeFailures(v.files, v.instanceIds), quality: [...q.errors, ...q.warnings].map((f) => `${f.code} ${f.refs.join(',')}`),
+  scaffold: pilots.SCAFFOLD,
+  // the registry's own words, read, never restated here: each designed card's root, Ghost's chunk names, the scripts
+  roots: Object.fromEntries(designed.map((c) => [c.key, c.root])),
+  exclude: lib.excludedChunks(lib.parseCardDesigns(cardDesigns), Object.keys(ghost.styles)),
+  scripted: lib.excludedChunks(lib.parseCardDesigns(cardDesigns), Object.keys(ghost.scripts)),
+  kept: Object.keys(ghost.styles).filter((n) => !lib.excludedChunks(lib.parseCardDesigns(cardDesigns), Object.keys(ghost.styles)).includes(n)),
+  keptScripts: Object.keys(ghost.scripts).filter((n) => !lib.excludedChunks(lib.parseCardDesigns(cardDesigns), Object.keys(ghost.scripts)).includes(n)),
+  ghostHead: lib.GHOST_BLOCK_HEAD, cardsJsTag: CARDS_JS_TAG, widths: lib.KOENIG_WIDTHS,
+}))
+"""
+
+
+def cards_compiled(nonce, per_page):
+    """Story 7.13's tree under CARDS_THEME, with the run's page word: the pilots with `CARD_PROBE` designed, §73's scaffold
+    beside it, passing the check CI holds a theme to with an empty quality verdict. The controls that hold before anything
+    uploads: `card_assets.exclude` names exactly the three's Ghost chunks; `cards.css` opens with D12's widths and carries
+    Ghost's block with each of the three's chunk and no other; `cards.js` carries the two scripted cards' chunks alone;
+    `default.hbs`'s head links `cards.css` before `screen.css` and carries the cards tag."""
+    words = {'PAGE_WORD': f'Page{nonce}', 'LAYER_WORD': f'Layer{nonce}'}
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', COMPILE_CARDS], capture_output=True, text=True, timeout=300,
+                         env={**os.environ, 'ROOT': ROOT, 'PER_PAGE': str(per_page), 'CARDS_THEME': CARDS_THEME,
+                              'CARD_DESIGNS': json.dumps(CARD_PROBE), **words})
+    if run.returncode != 0:
+        raise Void(f'the cards compile did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    if out['failures']:
+        raise Void('the cards tree fails the check CI holds it to:\n      ' + '\n      '.join(out['failures']))
+    if out['quality']:
+        raise Void(f'the quality gate names findings on the cards tree ({out["quality"]}) — STOP AND ASK the owner')
+    files = {p: base64.b64decode(b['base64']) if isinstance(b, dict) else b for p, b in out['files'].items()}
+    clash = [p for p in out['scaffold'] if p in files]
+    if clash:
+        raise Void(f'the scaffold would replace compiled files in the cards tree: {clash}')
+    tree = {**files, **out['scaffold']}
+    exclude = (json.loads(files['package.json']).get('config') or {}).get('card_assets')
+    if exclude != {'exclude': out['exclude']} or sorted(out['exclude']) != sorted(CARD_PROBE):
+        raise Void(f'card_assets is {exclude!r}, not {{"exclude": {out["exclude"]}}} naming the three cards — the rows below would read another exclusion')
+    css, js = files.get('assets/css/cards.css', ''), files.get('assets/js/cards.js', '')
+    copied = sorted(re.findall(r'^/\* ([a-z0-9_]+)\.css \*/$', css, re.M))
+    if not css.startswith(out['widths']) or out['ghostHead'] not in css or copied != sorted(out['exclude']):
+        raise Void(f'cards.css copies {copied} — not exactly the three cards\' chunks after D12\'s widths')
+    scripts = sorted(re.findall(r'^/\* ([a-z0-9_]+)\.js \*/$', js, re.M))
+    if scripts != sorted(out['scripted']) or not out['scripted']:
+        raise Void(f'cards.js carries {scripts}, not {out["scripted"]} — the browser rows would drive another script')
+    head = files['default.hbs'].split('</head>')[0]
+    link = '<link rel="stylesheet" href="{{asset "css/cards.css"}}">'
+    if head.count(link) != 1 or head.find(link) > head.find('{{asset "css/screen.css"}}') or head.count(out['cardsJsTag']) != 1:
+        raise Void('default.hbs\'s head does not link cards.css once before screen.css with the cards tag — nothing below would read the theme\'s own files')
+    return {**out, 'tree': tree, 'files': files, 'page_word': words['PAGE_WORD']}
+
+
+# Chromium (the repository's Playwright) on the preview page, as a visitor's browser: the toggle's state before and after a
+# click on its heading, each gallery image's flex against its own width and height, the callout's emoji and corner, the
+# gallery's gap, and which card scripts the page asked for. With `block`, every request for the theme's `cards.js` is
+# refused — the CONTROL: then the toggle must stay shut and no gallery image proportion, so what the first pass read is
+# the theme's own script, never Ghost's.
+CARDS_DRIVER = r"""
+const { chromium } = require(process.env.PLAYWRIGHT)
+const job = JSON.parse(process.env.JOB)
+;(async () => {
+  const browser = await chromium.launch()
+  const out = []
+  try {
+    for (const block of [false, true]) {
+      const context = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+      const page = await context.newPage()
+      const asked = []
+      page.on('request', (r) => { if (/\/(assets\/js\/cards\.js|public\/cards\.min\.js)/.test(r.url())) asked.push(new URL(r.url()).pathname) })
+      if (block) await page.route('**/assets/js/cards.js*', (r) => r.abort())
+      const response = await page.goto(job.url, { waitUntil: 'load' })
+      await page.waitForTimeout(600)
+      const before = await page.evaluate((r) => {
+        const t = document.querySelector(r.toggle)
+        return { theme: !!document.querySelector('link[href*="/assets/css/cards.css"]'), toggles: document.querySelectorAll(r.toggle).length, state: t && t.getAttribute('data-kg-toggle-state') }
+      }, job.roots)
+      let after = null
+      if (before.toggles > 0) {
+        await page.click(`${job.roots.toggle} .kg-toggle-heading`)
+        await page.waitForTimeout(1200)
+        after = await page.evaluate((r) => {
+          const t = document.querySelector(r.toggle)
+          const c = t.querySelector('.kg-toggle-content')
+          return { state: t.getAttribute('data-kg-toggle-state'), height: c ? c.getBoundingClientRect().height : 0 }
+        }, job.roots)
+      }
+      const read = await page.evaluate((r) => {
+        const images = [...document.querySelectorAll(`${r.gallery} .kg-gallery-image`)].map((el) => {
+          const img = el.querySelector('img')
+          return { flex: el.style.flex, ratio: img ? Number(img.getAttribute('width')) / Number(img.getAttribute('height')) : null }
+        })
+        const callout = document.querySelector(r.callout)
+        const emoji = callout && callout.querySelector('.kg-callout-emoji')
+        const gallery = document.querySelector(r.gallery)
+        const root = getComputedStyle(document.documentElement)
+        return {
+          images,
+          emoji: emoji ? getComputedStyle(emoji).display : null,
+          // the toggle's corner: Ghost's own is 4px (toggle.css), so the pack's reads apart from it
+          radius: document.querySelector(r.toggle) ? getComputedStyle(document.querySelector(r.toggle)).borderTopLeftRadius : null,
+          radiusCard: root.getPropertyValue('--radius-card').trim(),
+          gap: gallery ? getComputedStyle(gallery).getPropertyValue('--gap').trim() : null,
+        }
+      }, job.roots)
+      out.push({ block, status: response.status(), asked, before, after, ...read })
+      await context.close()
+    }
+  } finally {
+    await browser.close()
+  }
+  process.stdout.write(JSON.stringify(out))
+})().catch((e) => { process.stderr.write(String((e && e.stack) || e)); process.exit(2) })
+"""
+
+
+def card_bundle(body, ext):
+    """The address `{{ghost_head}}` writes for Ghost's own card bundle (`/public/cards.min.css?v=…`, `…js`), or None."""
+    m = re.search(r'(/public/cards\.min\.' + ext + r'\?v=[0-9A-Za-z_-]+)', body)
+    return m.group(1) if m else None
+
+
+def cards_phase(g, cc, local):
+    """§81 on T1: before anything uploads, Ghost's own card bundle under the site's theme carries the three (the CONTROL);
+    then, behind `start_guard` and a `finally` that restores the site's theme and deletes the probe (`restore_and_delete`,
+    Casper read back), the cards tree is uploaded and activated, and `/` and the style-guide page's preview are read: the
+    theme's `cards.css` and `cards.js` served at their `{{asset}}` addresses as compiled, Ghost's own bundle no longer
+    carrying the three, and in Chromium the toggle opening and the gallery proportioning from the theme's own script —
+    which stop when that one file is refused (the CONTROL). Returns the rows."""
+    rows = []
+
+    def row(ok, page, what, detail):
+        rows.append((bool(ok), page, what, detail))
+        print(f'    {"PASS" if ok else "FAIL"}  {page:<26} {what} — {str(detail)[:120]}')
+
+    # the local half: both pinned gscans over the uploaded tree, after mapping
+    for major, r in local['cards'].items():
+        v = r['verdict']
+        row(not v['errors'] and not v['warnings'] and not v['blocked'], f'gscan {r["gscan"]}', 'the designed callout, toggle and gallery gate 0/0 — every GS050 rule each restores is answered by its copy in cards.css',
+            f'{len(v["errors"])} error(s) / {len(v["warnings"])} warning(s)')
+    found = g.api('GET', f'pages/slug/{STYLE_GUIDE_PAGE}/').get('pages') or []
+    if not found or not found[0].get('uuid'):
+        raise Void(f'T1 holds no {STYLE_GUIDE_PAGE} — record-cards.py makes it; ask the owner before running that recorder')
+    preview = f'/p/{found[0]["uuid"]}/'
+    print(f'    the style-guide page ({found[0].get("status")}) previews at its own link')
+    css_bundle, js_bundle = 'cards.min.css', 'cards.min.js'
+    # BEFORE: under the site's own theme, Ghost's bundle carries the three — so their absence after is the exclusion's doing
+    st, home = g.page('/')
+    before_css = fetched(g, card_bundle(home, 'css') or '/public/none.css')
+    before_js = fetched(g, card_bundle(home, 'js') or '/public/none.js')
+    before_text = before_css[2].decode('utf8', 'replace')
+    row(before_css[0] == 200 and all(f'{cc["roots"][k]}' in before_text for k in CARD_PROBE), f'{css_bundle} (site theme)',
+        'CONTROL — under the site\'s own theme, Ghost\'s bundle carries the callout, the toggle and the gallery', f'HTTP {before_css[0]}, {len(before_text)} bytes')
+    row(before_js[0] == 200 and all(f'kg-{k}' in before_js[2].decode('utf8', 'replace') for k in cc['scripted']), f'{js_bundle} (site theme)',
+        'CONTROL — and its script bundle carries the toggle\'s and the gallery\'s', f'HTTP {before_js[0]}')
+    previous = shim.start_guard(g)
+    try:
+        st, res = g._multipart('themes/upload/', [('file', f'{CARDS_THEME}.zip', 'application/zip', contexts.zip_bytes(cc['tree']))])
+        if res['themes'][0]['name'] != CARDS_THEME:
+            raise Void(f'Ghost named the upload {res["themes"][0]["name"]!r}, not {CARDS_THEME!r} — the finally would not delete it')
+        g.api('PUT', f'themes/{CARDS_THEME}/activate/')
+        print(f'    deployed the cards tree -> HTTP {st}')
+        for _ in range(12):
+            time.sleep(2)
+            st, home = g.page('/')
+            if cc['page_word'] in home:
+                break
+        row(cc['page_word'] in home, '/', 'CONTROL — this run\'s theme, by its page word', f'HTTP {st}')
+        head = home.split('</head>')[0]
+        link_css = re.search(r'<link rel="stylesheet" href="(/assets/css/cards\.css\?v=[0-9A-Za-z_-]+)">', head)
+        link_screen = re.search(r'<link rel="stylesheet" href="/assets/css/screen\.css\?v=[0-9A-Za-z_-]+">', head)
+        bundle_at = head.find('/public/cards.min.css')
+        row(link_css is not None and link_screen is not None and link_css.start() < link_screen.start() and (bundle_at == -1 or link_screen.start() < bundle_at), '/',
+            'the head links cards.css before screen.css, both before {{ghost_head}}\'s card bundle', f'cards.css at {link_css.start() if link_css else None}, screen.css at {link_screen.start() if link_screen else None}, bundle at {bundle_at}')
+        st_css, type_css, body_css = fetched(g, link_css.group(1)) if link_css else (None, '', b'')
+        row(st_css == 200 and type_css.startswith('text/css') and body_css.decode('utf8') == cc['files']['assets/css/cards.css'], 'assets/css/cards.css',
+            'served at its {{asset}} address as text/css, byte for byte the compiled cards.css', f'HTTP {st_css}, {type_css}, {len(body_css)} bytes')
+        tag = re.search(r'<script defer src="(/assets/js/cards\.js\?v=[0-9A-Za-z_-]+)"></script>', head)
+        st_js, type_js, body_js = fetched(g, tag.group(1)) if tag else (None, '', b'')
+        row(tag is not None and head.count('/assets/js/cards.js') == 1 and st_js == 200 and type_js.split(';')[0] in JS_TYPES and body_js.decode('utf8') == cc['files']['assets/js/cards.js'],
+            'assets/js/cards.js', 'its tag once, defer, and its {{asset}} address answers a JavaScript type with the compiled cards.js — its first real Ghost',
+            f'HTTP {st_js}, {type_js}, {len(body_js)} bytes')
+        st_none = fetched(g, f'/assets/js/{CARDS_THEME}-{secrets.token_hex(4)}.js')[0]
+        row(st_none == 404, 'assets/js/', 'CONTROL — a script the theme does not carry answers 404, so the 200 above is cards.js\'s own', f'HTTP {st_none}')
+        st_lic, _, body_lic = fetched(g, '/LICENSE-ghost.txt')
+        row(st_lic == 200 and body_lic.decode('utf8') == cc['files']['LICENSE-ghost.txt'], 'LICENSE-ghost.txt', 'Ghost\'s licence, served at the root as compiled', f'HTTP {st_lic}')
+        after_css = fetched(g, card_bundle(home, 'css') or '/public/none.css')
+        after_text = after_css[2].decode('utf8', 'replace')
+        gone = [k for k in CARD_PROBE if cc['roots'][k] not in after_text]
+        row(after_css[0] == 200 and gone == list(CARD_PROBE), css_bundle, 'Ghost\'s own bundle no longer carries the callout, the toggle or the gallery',
+            f'HTTP {after_css[0]}, absent: {gone}')
+        kept = [n for n in cc['kept'] if f'.kg-{n}' in after_text]
+        row(after_css[0] == 200 and '.kg-bookmark-card' in after_text, css_bundle, 'CONTROL — it is still Ghost\'s bundle: a card not designed (the bookmark) is in it',
+            f'{len(after_text)} bytes, {len(kept)} undesigned chunk(s) found')
+        after_js = fetched(g, card_bundle(home, 'js') or '/public/none.js')
+        js_text = after_js[2].decode('utf8', 'replace')
+        row(after_js[0] == 200 and all(f'kg-{k}' not in js_text for k in cc['scripted']), js_bundle, 'Ghost\'s own script bundle no longer carries the toggle\'s or the gallery\'s',
+            f'HTTP {after_js[0]}, {len(js_text)} bytes')
+        row(after_js[0] == 200 and any(f'kg-{k}' in js_text for k in cc['keptScripts']), js_bundle, 'CONTROL — it is still Ghost\'s bundle: an undesigned card\'s script (audio, video) is in it',
+            ', '.join(k for k in cc['keptScripts'] if f'kg-{k}' in js_text) or 'none')
+        run = subprocess.run(['node', '-e', CARDS_DRIVER], capture_output=True, text=True, timeout=300,
+                             env={**os.environ, 'PLAYWRIGHT': core.PLAYWRIGHT, 'JOB': json.dumps({'url': g.url + preview, 'roots': cc['roots']})})
+        if run.returncode != 0:
+            raise Void(f'the Chromium driver failed:\n{run.stderr[-2000:]}')
+        live, blocked = json.loads(run.stdout)
+        where = f'{STYLE_GUIDE_PAGE} (preview)'
+        row(live['status'] == 200 and live['before']['theme'] and live['before']['toggles'] > 0 and live['images'], where,
+            'CONTROL — the preview is this theme\'s (its cards.css linked) and draws a toggle and a gallery', f'HTTP {live["status"]}, {live["before"]["toggles"]} toggle(s), {len(live["images"])} image(s)')
+        row('/assets/js/cards.js' in live['asked'], where, 'the page asked for the theme\'s cards.js', ', '.join(sorted(set(live['asked']))))
+        row(live['before']['state'] == 'close' and (live['after'] or {}).get('state') == 'open' and (live['after'] or {}).get('height', 0) > 0, where,
+            'the toggle opens: closed as rendered, open with its content shown after a click on its heading', f'{live["before"]["state"]} -> {live["after"]}')
+        def proportioned(i):
+            parts = i['flex'].split(' ')
+            try:
+                # the browser serialises the flex grow to six significant figures (`1.77778`), so it is compared to that
+                return bool(i['ratio']) and parts[1:] == ['1', '0%'] and abs(float(parts[0]) - i['ratio']) < 1e-4
+            except ValueError:
+                return False
+        row(live['images'] and all(proportioned(i) for i in live['images']), where, 'the gallery proportions: every image\'s flex is its own width over its height, as gallery.js sets it',
+            ', '.join(i['flex'] for i in live['images'][:5]))
+        row(live['emoji'] == 'none', where, 'the callout\'s emoji is hidden — the designed value\'s rule in cards.css reached the page', repr(live['emoji']))
+        row(live['radius'] == live['radiusCard'] and live['radius'] not in (None, '', '4px'), where, 'the toggle\'s corner is the pack\'s `--radius-card`, re-pointed after Ghost\'s copy (its own 4px), FR-Q7',
+            f'{live["radius"]} (--radius-card {live["radiusCard"]})')
+        row(live['gap'] == '2rem', where, 'the gallery\'s gap is the Loose gutter\'s', repr(live['gap']))
+        row(blocked['before']['state'] == 'close' and (blocked['after'] or {}).get('state') == 'close' and all(i['flex'] == '' for i in blocked['images']), where,
+            'CONTROL — with the theme\'s cards.js refused, the toggle stays shut and no image proportions: the rows above are that file\'s doing',
+            f'{blocked["before"]["state"]} -> {blocked["after"]}, flex {[i["flex"] for i in blocked["images"][:3]]}')
+    finally:
+        shim.restore_and_delete(g, previous, [CARDS_THEME])
+    active = shim.active_theme(g)
+    rows.append((active == previous, 'themes/', 'CONTROL — the site\'s own theme read back as active after the probe was deleted', f'{active!r} (before {previous!r})'))
+    print(f'    the site\'s theme read back -> {active!r}')
+    bad = [r for r in rows if r[2].startswith('CONTROL') and not r[0]]
+    if bad:
+        raise Void('A CARDS CONTROL FAILED — nothing here is a result:\n      ' + '\n      '.join(f'{p}: {w} — {d}' for _, p, w, d in bad))
+    return rows
+
+
 # ── §72 ───────────────────────────────────────────────────────────────────────
 def table(rows):
     out = ['| Page | Row | Held |', '|---|---|---|']
@@ -1983,7 +2269,7 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc):
+def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, carded):
     today = datetime.date.today().isoformat()
     gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
@@ -1994,7 +2280,10 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc):
     qrows, qprobe, neg_rows, neg = q
     built_rows, logo_url, dark_logo_url = built
     loc_rows, lc = loc
-    out = [f'## {SECTION}. The locale files under Ghost\'s own Publication Language — `en.json` on every theme and the '
+    card_rows, cc = carded
+    out = [f'## {SECTION}. `cards.css` on every theme, and a designed callout, toggle and gallery switched off in Ghost\'s own '
+           f'card bundle — styled by Ghost\'s own copy in the theme\'s `cards.css` and run by the theme\'s own `cards.js`, the '
+           f'toggle opening and the gallery proportioning in a real browser — beside the locale files under Ghost\'s own Publication Language — `en.json` on every theme and the '
            f'language\'s file beside it, read exactly by name with `en.json` the fallback, and a label 5.4.3 cannot parse '
            f'erroring every page that shows it and no other — beside the three dark built-ins in Ghost\'s own Design panel — a Light only site starting pinned Light, '
            f'Color scheme, the Dark accent color and the Dark logo each changed in Ghost and drawn on the next load, and Ghost '
@@ -2018,12 +2307,14 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc):
            'back; Story 7.12\'s probe theme (`' + LOCALES_THEME + '`), uploaded and activated four times (the German pilots, '
            '`valid`, `broken_default`, `broken_post`) with the site\'s Publication Language set to `de`, `fr` and `de` through '
            '`PUT /ghost/api/admin/settings/`, then the locale put back and read back and the theme restored and deleted the same way; '
+           'Story 7.13\'s probe theme (`' + CARDS_THEME + '`), uploaded, activated, then restored and deleted the same way, with '
+           f'`{STYLE_GUIDE_PAGE}` read through its preview link and never written; '
            'the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
            'the first time it is asked for each; no content, no other site setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70 to §79 are Stories 7.1's to 7.11's records; this re-runs their rows beside Story 7.12's. Ghost 6.58.0's npm "
+           "§70 to §80 are Stories 7.1's to 7.12's records; this re-runs their rows beside Story 7.13's. Ghost 6.58.0's npm "
            f"tarball (`{GHOST_TARBALL}`) is read, never installed, for Casper and Source.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
@@ -2046,13 +2337,13 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc):
            '`currency_symbol`. '
            '`check-snapshots` holds the tree in CI; this is a real Ghost reading it. Gate — the product\'s own, `gscanGate` '
            '(gscan reads `.js` too, so `main.js` is checked; §74 and §75 said otherwise, and carry a dated correction), '
-           f'with the scaffold (`cards.css`, Story 7.13\'s two widths alone — AD-18\'s lines left it, so `screen.css` '
-           f'answers GS051; the stand-in `page.hbs`, Story 10.79\'s, for GS110): {gline}.', '',
+           f'with the scaffold (the stand-in `page.hbs`, Story 10.79\'s, for GS110; since Story 7.13 the compiler writes '
+           f'`cards.css` itself, D12\'s two widths on tokens): {gline}.', '',
            f'**The tree uploaded** ({len(files)} files): ' + ', '.join(f'`{p}`' for p in templates)
-           + f', `assets/css/screen.css`, `assets/js/main.js`, `README.md`, `package.json`, {len(fonts)} font files — ' + ', '.join(f'`{p}`' for p in fonts)
+           + f', `assets/css/cards.css`, `assets/css/screen.css`, `assets/js/main.js`, `README.md`, `package.json`, {len(fonts)} font files — ' + ', '.join(f'`{p}`' for p in fonts)
            + ' — the licences ' + ', '.join(f'`{p}`' for p in licences)
            + f', and {len(parts)} partials — ' + ', '.join(f'`{p}`' for p in parts)
-           + ' — compiled; then the scaffold, `assets/css/cards.css` and `page.hbs`. `package.json` was handed '
+           + ' — compiled; then the scaffold, `page.hbs`. `package.json` was handed '
            f'`{THEME["name"]}` · `{THEME["version"]}` · "{THEME["description"]}" and `posts_per_page` {rec["per_page"]} '
            f'(T1 publishes {rec["total"]} posts; the tag `{tag}` {tag_n} and the author `{author}` {author_n}, each the '
            'busiest of its kind).', '',
@@ -2136,9 +2427,26 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc):
             f'`default.hbs`\'s header on every page; `broken_post` puts `{lc["valid"][POST_ONLY]} {{` on `{POST_ONLY}`, which only '
             'a post prints. The site\'s Publication Language was set through `PUT /ghost/api/admin/settings/` and put back.', '']
     out += table(loc_rows)
+    out += ['', f'### (j) Designed cards — `{CARDS_THEME}`: the pilots with a designed callout, toggle and gallery (Story 7.13)', '',
+            'One tree, gated 0/0 on both pinned gscans with an empty quality verdict before anything uploaded: `card_assets` '
+            f'`{{"exclude": {json.dumps(cc["exclude"])}}}`, `cards.css` D12\'s two widths, then Ghost\'s own '
+            + ' · '.join(f'`{n}.css`' for n in cc['exclude']) + ' under one header naming Ghost, then this theme\'s rules '
+            f'(the record `{json.dumps(CARD_PROBE)}`), and `cards.js` Ghost\'s ' + ' · '.join(f'`{n}.js`' for n in cc['scripted'])
+            + f'. Chromium (the repository\'s Playwright) read `{STYLE_GUIDE_PAGE}` — C.4\'s article as a Ghost page, a '
+            'draft, `record-cards.py`\'s — through its preview link, which Ghost renders with the active theme\'s `page.hbs`; '
+            'then again with every request for the theme\'s `cards.js` refused.', '']
+    out += table(card_rows)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **A designed card is the theme\'s, and only it.** Excluding the callout, the toggle and the gallery took '
+            'them out of the stylesheet and the script bundle Ghost injects, while the cards no one designed stayed in both; '
+            'the theme\'s `cards.css` and `cards.js` were served as compiled at their `{{asset}}` addresses, and on a real '
+            'page the toggle opened, the gallery proportioned and the designed values took effect — the toggle\'s corner the '
+            'pack\'s — from the theme\'s own files, since refusing `cards.js` alone stopped both. `cards.css` is linked '
+            'before `screen.css`, both before `{{ghost_head}}`\'s bundle, so the theme\'s own rules come after Ghost\'s copy '
+            'and a section\'s after both (AD-18). Both pinned gscans pass the tree: each rule an excluded card restores is '
+            'answered by Ghost\'s own copy, and the names Ghost\'s CSS lacks by the theme\'s own lines.',
             '- **A theme speaks its project\'s language, under Ghost\'s own setting.** With the Publication Language `de`, Ghost '
             'read `locales/de.json` and printed the overrides; with `fr`, which no file names, it printed `en.json`\'s English — '
             'a file is read only by its exact name, and `en.json` is the fallback, so every theme ships it. A label Ghost\'s '
@@ -2211,11 +2519,12 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc):
             "with no partial invoked, Ghost's own call to action shows. §15b's library rule is corrected (its dated note).",
             f'- **Stories 7.1\'s and 7.2\'s rows still hold** on the larger tree: user text inert, comments shipped to no '
             f'visitor, `package.json` read whole, and {cards_line}.',
-            "- **What this does NOT say.** The scaffold is the later stories' (7.13, 10.79), nothing here deployed "
+            "- **What this does NOT say.** The scaffold is Story 10.79's, nothing here deployed "
             "through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story "
-            "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired). No `cards.js` was uploaded: "
-            "the pilots design no card, so a real Ghost first serves it with Story 7.13's first designed card; that "
-            "excluding a card drops Ghost's own script is read in source (Story 7.5's Facts 1), not on a page. What "
+            "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired) — Ghost 5's prefix glob, which "
+            "makes `header` drop `header_v2` too, is read in source, and a Ghost 5 site with all four scripted cards "
+            "designed linking a `cards.min.js` it never wrote is recorded for that pass. The cards were read on a draft "
+            "page's preview through the stand-in `page.hbs`: no pilot prints a post's body before A25. What "
             "`main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Ghost's post labels sit on "
             "each post's own page only, never on a card in a list (Story 7.6's Question 1, ruled option 1), so no list was "
             "read for them; gscan's deprecation rules are the local gate's, not a page read. Two shapes the compiler "
@@ -2263,7 +2572,9 @@ if __name__ == '__main__':
         bi = built_ins_compiled(nonce, per_page)
         # Story 7.12: the German and Russian trees and the three locale probes, the same way
         lc = locales_compiled(nonce, per_page)
-        local = gated({'pilots': files, **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
+        # Story 7.13: the designed callout, toggle and gallery, the same way
+        cc = cards_compiled(nonce, per_page)
+        local = gated({'pilots': files, 'cards': cc['tree'], **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
                        **{f'built-ins-{n}': t for n, t in bi['trees'].items()},
                        **{f'locales-{n}': t for n, t in lc['trees'].items()}, **{f'locales-{n}': t for n, t in lc['probes'].items()}})
         gates = clean(local, 'pilots')
@@ -2273,6 +2584,7 @@ if __name__ == '__main__':
             clean(local, f'built-ins-{n}')
         for n in [*lc['trees'], 'valid']:
             clean(local, f'locales-{n}')
+        clean(local, 'cards')
         # the Dark logo is a picture that is not the site's logo: a published post's own, never one this run uploads
         st, pics = g.content('posts/?limit=all&filter=feature_image:-null&fields=feature_image')
         # one Handlebars writes as it is: `&` and `=` reach the CSS as entities (compile.ts's stated ceiling) and would not load
@@ -2296,15 +2608,16 @@ if __name__ == '__main__':
             raise Void('the Dark logo would be the site\'s own logo — the rows could not tell the two pictures apart')
         built_ins = built_ins_phase(g, bi, logo_url, dark_logo_url)
         locales = locales_phase(g, lc, rec['post'], local)
+        cards = cards_phase(g, cc, local)
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins + locales if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins + locales + cards if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url), (locales, lc)))
+    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url), (locales, lc), (cards, cc)))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)

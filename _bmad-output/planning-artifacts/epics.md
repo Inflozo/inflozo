@@ -3723,6 +3723,21 @@ carrying it. **Excluding `gallery` restores three gscan ERRORS** on both checker
 audio's, toggle's and video's restored rules are warnings — read in gscan 4.49.7 and 6.4.2), so `cards.css` styles
 those classes before a designed gallery can pass FR-J6.
 
+**And** *(Story 7.13's Dev, 2026-10-15 — as landed)* the registry is `CARDS` in `packages/library/src/cards.ts`, in
+Ghost's own editor-menu order, one source for the editor, the canvas and the compiler; `project_treatments.card_designs`
+holds only values that differ from a card's start, its one schema `parseCardDesigns` (the sync route's 422 "Not a card
+design", the compiler reads only parsed records), saved in the docs' compare-and-set through `sync_project_doc`'s
+`p_cards` (Schema 4ded429c; `paywall_design_id` dropped). `compileTheme(input.cardDesigns)` ships `cards.css` on every
+theme — `KOENIG_WIDTHS`, then Ghost's own chunks for each designed card verbatim under one labelled block, then the
+designed rules with corners on the pack's radius tokens — linked before `screen.css`, `card_assets` `true` until the
+first designed card and `{ exclude }` from then on, derived from the vendored chunk directory (`excludedChunks`);
+`LICENSE-ghost.txt` whenever `cards.css` or `cards.js` carries Ghost's bytes; `!important` refused outside Ghost's block.
+The pilot's scaffolded `cards.css` is gone (DW-334). The editor's surface is `/projects/<id>/cards`, the second row of
+**Template surfaces** in the switcher (Paywall, then **Editor cards**, the amber count of customised cards), and Theme
+settings' rail links it. The callout's background row is **Callout background** (Question 1), the panels carry each
+card's own controls only (Question 2), and call to action is listed with one line (Question 3). `cards.js`'s first T1
+proof is MEASUREMENTS §81.
+
 **FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes. · **Depends on E10:** the
 module and its `cards.css` emission are built here; **A33's six treatments arrive in E10** and are delivered
 *against* this module, which §8 requires to land first. *(Declared by the step-6 stress test, finding F3.)*

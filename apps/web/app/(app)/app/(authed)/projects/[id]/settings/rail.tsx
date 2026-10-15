@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useSelectedLayoutSegment } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { ring } from '@/components/kit/greyed'
-import { settingsPath, TRANSLATIONS, translationsPath } from '@/lib/editor'
+import { canvasPath, settingsPath, TRANSLATIONS, translationsPath } from '@/lib/editor'
 import { RAIL_WORDS, TRANSLATION_WORDS } from '@/lib/translations'
 
 /* D6a's LEFT RAIL (`D6 Theme Settings Completed.dc.html:41-48`, Story 7.12): the "SETTINGS" heading at 10.5/600 and each item
@@ -41,6 +41,8 @@ export function SettingsRail({ projectId, ghost }: { projectId: string; ghost: {
       <span aria-hidden className="px-2 text-[10.5px] font-semibold tracking-[0.04em] text-ink-soft min-[1024px]:pb-[6px]">{RAIL_WORDS.heading}</span>
       <Item href={settingsPath(projectId)} current={!onTranslations}>{RAIL_WORDS.theme}</Item>
       <Item href={translationsPath(projectId)} current={onTranslations}>{RAIL_WORDS.translations}</Item>
+      {/* Story 7.13 — S14d: Theme settings → Editor cards lands on the editor's surface, its last-viewed card selected */}
+      <Item href={canvasPath(projectId, 'cards')} current={false}>{RAIL_WORDS.cards}</Item>
       {ghost === null ? null : (
         <>
           <Out href={ghost.navigation}>{RAIL_WORDS.navigation}</Out>

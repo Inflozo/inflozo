@@ -206,7 +206,7 @@ function compiledWithSettings(settings: readonly CompileSetting[] = SETTINGS, da
   const { files } = compileTheme(doc, {
     templates: { 'home.hbs': home }, library: (id) => PROMO_DESIGNS[id], pack: REFERENCE_PACK, assets: { 'asset-1': 'https://cdn.example/one.png' }, postsPerPage: 12,
     theme: { name: 'gate-settings', version: '1.0.0', description: 'Settings' }, pairing: 'D1', fonts: poolFonts, darkEnabled,
-    modules: { core: 'export function core(win, modules) {\n  return { stop() {}, paused: [] }\n}\n' }, ghostCards: { scripts: {}, licence: 'MIT\n' }, settings,
+    modules: { core: 'export function core(win, modules) {\n  return { stop() {}, paused: [] }\n}\n' }, ghostCards: { scripts: {}, styles: {}, licence: 'MIT\n' }, settings,
   })
   return { ...files, ...SCAFFOLD_FILES }
 }

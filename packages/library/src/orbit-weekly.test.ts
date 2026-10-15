@@ -10,6 +10,7 @@
 //     difference must be DECLARED below, so a target bump that changes a card fails by name.
 
 import { test } from 'node:test'
+import { excludedChunks } from './cards.ts'
 import assert from 'node:assert/strict'
 // ponytail: a test-only RELATIVE import. `ghost-shim` depends on this package, so declaring the reverse
 // dependency would be a cycle; the two rows below that need the shim (the page links and the
@@ -18,7 +19,7 @@ import assert from 'node:assert/strict'
 import { bareHelper, navigationItems, pageUrl, paginationContext } from '../../ghost-shim/src/index.ts'
 import {
   BUNDLED, DEFAULT_LIMIT, DEFAULT_ORDER, bundledAt, MAJORS, MISSED_ADDRESS, ORBIT_WEEKLY_ORIGIN, ORBIT_WEEKLY_SEED, RECORDING_COMMAND,
-  articleOrder, assemble, authors, blocks, brand, cardAssetsExclude, commentCount, commentThreads, commentsFixture,
+  articleOrder, assemble, authors, blocks, brand, commentCount, commentThreads, commentsFixture,
   deepPagination, feedPage, feedPagination, feedPages, newsletters, postsPerPage, posts, previewFixtures, recording,
   fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, site, sortRows, styleGuideBody,
   styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants, PREVIEW_CUT, paywallPost,
@@ -376,14 +377,14 @@ test('`{{content}}` with no fixture still REFUSES by name; with the preview fixt
 
 // ─── the simulated cards.min.css ──────────────────────────────────────────────
 
-test('the simulated bundle is exactly the complement of the derived exclude list', () => {
+test('the simulated bundle is exactly the complement of the exclude list the card registry derives (Story 7.13)', () => {
   const chunks = ['video', 'audio', 'callout', 'header', 'header_v2', 'toggle']
   assert.deepEqual(simulatedChunks(chunks, []), ['audio', 'callout', 'header', 'header_v2', 'toggle', 'video'], 'nothing designed: every chunk, in build order')
-  assert.deepEqual(cardAssetsExclude(chunks, ['header']), ['header', 'header_v2'], 'header and header_v2 are separate names — designing one excludes both')
-  assert.deepEqual(simulatedChunks(chunks, ['callout', 'image']), ['audio', 'header', 'header_v2', 'toggle', 'video'], 'a designed card with no chunk excludes nothing')
-  for (const designed of [[], ['toggle'], ['header_v2', 'video']]) {
-    const inc = simulatedChunks(chunks, designed)
-    const exc = cardAssetsExclude(chunks, designed)
+  assert.deepEqual(excludedChunks({ header: { height: 'generous' } }, chunks), ['header', 'header_v2'], 'header and header_v2 are separate names — designing the header excludes both')
+  assert.deepEqual(simulatedChunks(chunks, excludedChunks({ callout: { emoji: 'off' }, divider: { glyph: 'on' } }, chunks)), ['audio', 'header', 'header_v2', 'toggle', 'video'], 'a designed card with no chunk excludes nothing')
+  for (const designs of [{}, { toggle: { chevron: 'left' } }, { header: { height: 'generous' }, video: { play: 'large' } }] as Record<string, Record<string, string>>[]) {
+    const exc = excludedChunks(designs, chunks)
+    const inc = simulatedChunks(chunks, exc)
     assert.deepEqual([...inc, ...exc].sort(), [...chunks].sort())
     assert.ok(inc.every((c) => !exc.includes(c)))
   }

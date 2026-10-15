@@ -13,6 +13,7 @@ import { harnessCanvasSrc } from '@/lib/canvas'
 import { hexOf, type PackRecord } from '@/lib/pack-edit'
 import { ownPacksOf, packChoices, packFacesCss, packIdOf, pairingChoices, pairingGlyphFacesCss } from '@/lib/style-pack'
 import { imagePool, linkResources, paywallSamples, samples } from '@/lib/controls-review'
+import { storedCards } from '@/lib/cards'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
@@ -106,6 +107,9 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * with no database. Without it, none: every promote action is drawn, linking to the harness project's Theme settings.
  * `x-inflozo-harness-promoted: full` stores as many rows as the user's cap allows, each bound to a section no doc holds, so
  * every promote action meets the cap greyed (nothing here is "In Ghost").
+ *
+ * STORY 7.13 — `x-inflozo-harness-cards: malformed` opens on a stored card record `read.ts`' door refuses (a divider glyph
+ * the icon set does not draw), so the Editor cards journey meets the malformed line once and every card on Ghost's defaults.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -258,6 +262,10 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     pairingFaces: pairingGlyphFacesCss('/app/harness/canvas'),
     siteAccent: siteAsked === null ? null : hexOf(orbitWeekly.site().accent_color),
     settings,
+    // Story 7.13 — `x-inflozo-harness-cards: malformed` plants a stored record the icon set refuses (a divider glyph Tabler
+    // does not draw, grammatical so only the set can refuse it), read by `read.ts`' own door, so `pnpm keyboard` meets
+    // the malformed line; without it, no card is designed
+    ...(await storedCards(asked.get('x-inflozo-harness-cards') === 'malformed' ? { divider: { glyph: 'on', icon: 'zz-no-such-icon' } } : null)),
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it

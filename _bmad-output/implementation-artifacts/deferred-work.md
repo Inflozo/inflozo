@@ -3454,7 +3454,11 @@ reason: R-26 rules the licence text ships in the theme and the inline cost is me
 plain: The settings for Ghost's callout box use the same name, "Background role", as every section's
   background row, but offer different choices (including "Tint"). One name meaning two different lists
   breaks a rule the owner already made.
-status: open
+status: done 2026-10-15 (Story 7.13)
+resolution: Story 7.13's Dev (2026-10-15) — ruled at its Create as Question 1, option 1 (owner, 2026-10-15): the row is
+  **Callout background**, Base · Surface · Tint · Accent (Tint is the pack's computed `--plate`), live only at Callout
+  colours = Pack tokens and greyed with its reason at Ghost's palette. One name, one set of values: the section universal
+  keeps "Background role" and its own five. The row is the callout's entry in `CARDS` (`packages/library/src/cards.ts`).
 severity: medium
 origin: Story 4.5 Create (2026-09-13) — writing the universal Background role once for the whole library.
 owner: Story 7.13 (The Ghost card design module and `cards.css`), whose criteria carry its requirement word for word
@@ -7581,7 +7585,11 @@ note (Story 5.20's Dev, 2026-09-26): Story 10.83's criteria now name the link (`
 
 plain: The database has an old column meant to remember which paywall a site uses. The editor stores the paywall with
   its words and settings in the same place as every page's design instead, so that column stays empty and should go.
-status: open
+status: done 2026-10-15 (Story 7.13)
+resolution: Story 7.13's Schema (2026-10-15, 4ded429c) — `supabase/migrations/20261016120000_card_designs.sql` drops
+  `project_treatments.paywall_design_id` (mirrored in `SCHEMA.sql`), pushed alone before any code (R-99), applied to
+  production through the pooler on the owner's go and read back: the column is gone and `sync_project_doc` takes
+  `p_cards`. AD-27(a0)'s dated note says so.
 severity: low
 origin: Story 5.20's Create (2026-09-26). `complete_schema.sql:702-712` holds `paywall_design_id text` with no reader or
   writer anywhere, and no column for a design's content or controls. Story 5.20 stores the paywall as the `paywall` doc
@@ -9203,7 +9211,12 @@ reason: Every repeated item in the library today is a grid item or a block (A17 
 plain: Every Ghost theme has to style two classes Ghost puts on wide and full-width pictures in a post, or Ghost's own
   checker reports an error. Round 3 ruled that the cards stylesheet always carries them; no story had written that down
   as something it builds.
-status: open
+status: done 2026-10-15 (Story 7.13)
+resolution: Story 7.13's Dev (2026-10-15) — `compileTheme` writes `assets/css/cards.css` on every theme, opening with
+  D12's two rules on tokens (`KOENIG_WIDTHS`: `.kg-width-wide { max-width: var(--site-width); }`,
+  `.kg-width-full { max-width: 100%; }`), designed card or not. `tools/pilot-theme.mjs`'s scaffolded copy is gone and the
+  pilot theme reads the compiler's own (`tools/check-snapshots.mjs`); the recorder's paywall probes keep their own copy
+  of the two rules. AD-18's dated note says so.
 severity: medium
 origin: Story 7.1's Create (2026-10-05), building the T1 recorder's scaffold. Round 3's D12 put `.kg-width-wide` and
   `.kg-width-full` in `cards.css` "on every theme" (AD-18), and MEASUREMENTS §14c recorded `GS050-CSS-KGWF` as an error

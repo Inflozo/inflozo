@@ -61,10 +61,15 @@ export function BarMenuRow({
   name,
   caption,
   trailing,
+  count,
   current = false,
   indent = false,
   ...button
-}: ButtonHTMLAttributes<HTMLButtonElement> & { glyph: ReactNode; name: string; caption: string; trailing?: ReactNode; current?: boolean; indent?: boolean }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  glyph: ReactNode; name: string; caption: string; trailing?: ReactNode; current?: boolean; indent?: boolean
+  /** Story 7.13 — S14d's amber count, directly after the name on its line (Editor cards' customised cards) */
+  count?: ReactNode
+}) {
   return (
     <button
       type="button"
@@ -74,7 +79,14 @@ export function BarMenuRow({
     >
       {glyph}
       <span className="flex min-w-0 flex-1 flex-col gap-px">
-        <span data-name className={`truncate text-ui-dense ${current ? 'font-semibold' : 'font-medium'}`}>{name}</span>
+        {count === undefined ? (
+          <span data-name className={`truncate text-ui-dense ${current ? 'font-semibold' : 'font-medium'}`}>{name}</span>
+        ) : (
+          <span className="flex min-w-0 items-center gap-[6px]">
+            <span data-name className={`truncate text-ui-dense ${current ? 'font-semibold' : 'font-medium'}`}>{name}</span>
+            {count}
+          </span>
+        )}
         <span data-caption className="truncate text-helper-caption text-ink-soft">{caption}</span>
       </span>
       {trailing}

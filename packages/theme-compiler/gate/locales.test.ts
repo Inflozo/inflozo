@@ -62,7 +62,7 @@ function compiled(language: string, strings?: Record<string, string>): Record<st
     templates: { 'home.hbs': { schemaVersion: 1, instances: [instance('a17/1', 'Post grid', { isMainFeed: true })] } },
     library: (id) => DESIGNS[id], pack: REFERENCE_PACK, assets: {}, postsPerPage: 12, theme: { name: 'gate-locales', version: '1.0.0', description: 'Locales' },
     pairing: 'D1', fonts: poolFonts, darkEnabled: true, modules: { core: 'export function core(win, modules) {\n  return { stop() {}, paused: [] }\n}\n' },
-    ghostCards: { scripts: {}, licence: 'MIT\n' }, language, ...(strings === undefined ? {} : { strings }),
+    ghostCards: { scripts: {}, styles: {}, licence: 'MIT\n' }, language, ...(strings === undefined ? {} : { strings }),
   })
   return { ...files, ...SCAFFOLD_FILES }
 }

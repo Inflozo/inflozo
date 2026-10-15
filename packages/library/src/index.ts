@@ -22,3 +22,6 @@ export * from './access.ts'
 // namespace rather than a flat re-export: `posts`, `tags` and `site` are too general to claim at the
 // package root.
 export * as orbitWeekly from './orbit-weekly.ts'
+// Story 7.13 — FR-Q7's card design module: every Koenig card in Ghost's menu order, its chunks and its panel; the one
+// schema of `card_designs` (`parseCardDesigns`), `cardsCss` and `excludedChunks`, read by the editor, canvas and compiler.
+export * from './cards.ts'

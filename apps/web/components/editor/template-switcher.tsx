@@ -3,13 +3,14 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { memo, useEffect, useRef, useState, useTransition } from 'react'
 import {
-  CanvasAuthor, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPaywall, CanvasPost, CanvasPrivate, CanvasSignin,
+  CanvasAuthor, CanvasCards, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPaywall, CanvasPost, CanvasPrivate, CanvasSignin,
   CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff,
 } from '@/components/kit/icons'
+import { CountBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
 import { BAR_POPOVER, BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
-import { CANVASES, canvasPath, isMembership, isSurface, type CanvasKey } from '@/lib/editor'
-import { PAYWALL_WORDS } from '@/lib/paywall'
+import { CARD_WORDS } from '@/lib/cards'
+import { CANVASES, canvasPath, isMembership, isSurface, SURFACES_HEADING, type CanvasKey } from '@/lib/editor'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { isApp } from '@/routing'
 
@@ -71,6 +72,7 @@ const GLYPH: Readonly<Record<CanvasKey, typeof CanvasHome>> = {
   error: CanvasError,
   private: CanvasPrivate,
   paywall: CanvasPaywall,
+  cards: CanvasCards,
 }
 
 /** The row's state mark, in D5b's two states plus R-130's third — since R-171 in the row's TRAILING slot, where its
@@ -101,6 +103,7 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
   auto,
   empty,
   pathOf,
+  customised = 0,
 }: {
   projectId: string
   /** the canvas the editor is showing — its row is highlighted and navigates nowhere */
@@ -114,6 +117,8 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
   /** Story 5.20 — where a canvas lives, when it is not the app's own `canvasPath`: the keyboard harness's pages, so its
    *  walk can switch canvas without a database (R-146). The app passes none. */
   pathOf?: (key: CanvasKey) => string
+  /** STORY 7.13 — S14d's amber count of customised cards, which follows Editor cards' label (absent at zero, never "0") */
+  customised?: number
 }) {
   const router = useRouter()
   // The internal `/app` prefix is on the path on localhost and never on the app host, so a push has to carry whatever
@@ -167,6 +172,8 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
           indent={isMembership(key) || isSurface(key)}
           glyph={<Glyph size={15} className="shrink-0 text-ink-soft" />}
           name={CANVASES[key].label}
+          // Story 7.13 — S14d's count, read as "N customised cards"; on no other row
+          count={key === 'cards' && customised > 0 ? <CountBadge n={customised} words={CARD_WORDS.count(customised)} /> : undefined}
           // R-98: the pressed row's line says what is happening while the transition runs
           caption={busy ? 'Opening…' : CANVASES[key].caption}
           trailing={
@@ -187,7 +194,7 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
   const before = (first === -1 ? canvases : canvases.slice(0, first)).filter((k) => !isSurface(k))
   const after = first === -1 ? [] : canvases.slice(first + membership.length).filter((k) => !isSurface(k))
   // STORY 5.20 — the TEMPLATE SURFACES group, last (EXPERIENCE.md:207-222): a canvas that is not a page, in D5b's
-  // Membership group's shape. It holds Paywall alone — Cards arrives with Story 7.13 (R-118), and Error pages is 404.
+  // Membership group's shape. Paywall, then Editor cards (Story 7.13); Error pages is 404.
   const surfaces = canvases.filter(isSurface)
 
   /** One of D5b's groups: a chevron BUTTON heading the group (the owner's test of Story 5.5 — a control that is present
@@ -264,7 +271,7 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
               between Author and 404, where D5b draws it, and Story 5.20's Template surfaces group last */}
           {group('editor-template-membership', 'Membership', membership, groupOpen, setGroupOpen)}
           {after.map(row)}
-          {group('editor-template-surfaces', PAYWALL_WORDS.group, surfaces, surfacesOpen, setSurfacesOpen)}
+          {group('editor-template-surfaces', SURFACES_HEADING, surfaces, surfacesOpen, setSurfacesOpen)}
         </BarMenuCard>
       </div>
     </>

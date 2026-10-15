@@ -27,7 +27,10 @@
 //     the compiled pilot theme's templates, mustaches masked, mapped to its web-features key; below Widely is refused
 //     unless a Tier-2 entry names that key, on its element (a planted `popover` and a `<link fetchpriority>` the controls);
 //  8. Story 7.8 — the emitted CSS: the compiled pilot theme's `screen.css`, each template `<style>` and `cards.css` when it
-//     has one, through the root config with no warning (a planted `@container style()` the control).
+//     has one, through the root config with no warning (a planted `@container style()` the control). Story 7.13: `cards.css`
+//     is on every theme and is split at the Ghost block's header (`ownCardsCss`): Inflozo's rules are linted, Ghost's copy is
+//     not, exactly as `vendor/` is not — its audio, video and bookmark chunks carry `-webkit-` prefixes the pin refuses —
+//     with every card that has a panel designed (`CARDS_DESIGNED`) and a planted prefixed rule in Inflozo's half the control.
 //
 //     node tools/check-baseline.mjs          (Node 24: it imports packages/library/src/modules.ts)
 
@@ -48,6 +51,8 @@ const require = createRequire(import.meta.url)
 const stylelint = (await import('stylelint')).default
 const { ESLint } = await import('eslint')
 const { MODULES, bundle, cardsJs } = await import(join(REPO, 'packages/library/src/modules.ts'))
+const { CARDS, cardsCss, GHOST_BLOCK_HEAD, ownCardsCss } = await import(join(REPO, 'packages/library/src/cards.ts'))
+const { iconDrawing } = await import(join(REPO, 'packages/library/src/icons.ts'))
 const webFeatures = require('web-features/data.json')
 const WEB_FEATURES = JSON.parse(readFileSync(join(dirname(require.resolve('web-features/data.json')), 'package.json'), 'utf8')).version
 const BASELINE = JSON.parse(readFileSync(join(REPO, 'packages/library/baseline.json'), 'utf8'))
@@ -725,7 +730,9 @@ try {
    *  every branch is read as present and every other mustache as `x`, the worst case: every declaration at once. */
   const emitted = (files) => {
     const out = {}
-    for (const p of ['assets/css/screen.css', 'assets/css/cards.css']) if (typeof files[p] === 'string') out[p] = files[p]
+    if (typeof files['assets/css/screen.css'] === 'string') out['assets/css/screen.css'] = files['assets/css/screen.css']
+    // Story 7.13: Inflozo's half of cards.css — the widths and this theme's card settings — never Ghost's copy
+    if (typeof files['assets/css/cards.css'] === 'string') out['assets/css/cards.css (its own rules)'] = ownCardsCss(files['assets/css/cards.css'])
     for (const [p, text] of Object.entries(files)) {
       if (!p.endsWith('.hbs') || typeof text !== 'string') continue
       for (const [i, [, body]] of [...text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].entries()) {
@@ -744,11 +751,41 @@ try {
     if (hit === undefined) fail(`not refused: ${JSON.stringify(got.map((w) => w.rule))}`)
     return hit.text
   })
-  await check("the compiled pilot theme's emitted CSS gives no warning through the root config — with and without its settings promoted", async () => {
+  /** Story 7.13 — the own half of `cardsCss` for each card at each non-start value of each control, one at a time (a divider's
+   *  icon with its glyph on), every distinct line once: each rule the registry can write, linted where it would ship. */
+  const everyCardValue = () => {
+    const ghostStyles = pilots.ghostCards().styles
+    const glyph = (n) => (iconDrawing(n) === undefined ? null : '<svg xmlns="http://www.w3.org/2000/svg"></svg>')
+    const lines = new Set()
+    for (const c of CARDS) for (const x of c.controls) for (const v of x.kind === 'icon' ? ['leaf'] : x.values.map((y) => y.value)) {
+      if (v === x.start) continue
+      const css = cardsCss({ [c.key]: { ...(c.key === 'divider' ? { glyph: 'on' } : {}), [x.name]: v } }, ghostStyles, glyph)
+      for (const line of ownCardsCss(css).split('\n')) if (line !== '' && !line.startsWith('/*')) lines.add(line)
+    }
+    return `${[...lines].join('\n')}\n`
+  }
+  // Story 7.13 — every card that has a panel designed, so every rule a card's value adds reaches the lint
+  const carded = pilots.compilePilots(pilots.CI_WORDS, { theme: pilots.PILOT_THEME, cardDesigns: pilots.CARDS_DESIGNED }).files
+  await check("the cards.css control: a -webkit- prefixed rule planted in Inflozo's half is refused; Ghost's copy, linted whole, carries prefixes the split skips", async () => {
+    const css = carded['assets/css/cards.css']
+    if (typeof css !== 'string' || !css.includes(GHOST_BLOCK_HEAD)) fail('the cards compile carries no Ghost block in cards.css, so the split proves nothing')
+    const planted = await lint(`${ownCardsCss(css)}.kg-bookmark-card .kg-bookmark-description { -webkit-line-clamp: 3; }\n`)
+    if (planted.length === 0) fail('the planted -webkit- rule in Inflozo\'s half was not refused')
+    const whole = await lint(css)
+    if (whole.length === 0) fail('Ghost\'s copy linted whole gives no warning, so skipping it is not what lets the row pass — re-read this control')
+    return `planted: ${planted[0].rule}; Ghost's copy whole: ${whole.length} warning(s), the split's reason`
+  })
+  await check("the compiled pilot theme's emitted CSS gives no warning through the root config — with and without its settings promoted, and with every card that has a panel designed", async () => {
     // Story 7.11's review: the settings compile promotes the accent, so default.hbs's `{{else if}}` branch reaches the lint
     const promoted = pilots.compilePilots(pilots.CI_WORDS, { theme: pilots.PILOT_THEME, settings: true }).files
     if (!(promoted['default.hbs'] ?? '').includes('{{else if @custom.')) fail('the settings compile writes no {{else if}} — this row lints nothing new')
-    const sheets = { ...emitted(compiled), ...Object.fromEntries(Object.entries(emitted(promoted)).map(([p, b]) => [`promoted ${p}`, b])) }
+    const sheets = {
+      ...emitted(compiled),
+      ...Object.fromEntries(Object.entries(emitted(promoted)).map(([p, b]) => [`promoted ${p}`, b])),
+      ...Object.fromEntries(Object.entries(emitted(carded)).filter(([p]) => p.startsWith('assets/css/cards.css')).map(([p, b]) => [`carded ${p}`, b])),
+      // and every value of every card's every control, one at a time — each rule the registry can write
+      'every card value (its own rules)': everyCardValue(),
+    }
     const dirty = await lintSheets(sheets)
     if (dirty.length > 0) fail(dirty.join('\n'))
     return `${Object.keys(sheets).join(' · ')}: no warning`

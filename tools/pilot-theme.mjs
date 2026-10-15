@@ -31,6 +31,10 @@
 // `locales/de.json` with equal key sets. The fingerprint scan reads a locale file without its `credit.*` keys, the catalog's
 // locked credit (S7), each held equal to the catalog's own words — the only builder words a locale file may carry.
 //
+// Story 7.13: `compilePilots(words, { cardDesigns })` hands in a `project_treatments.card_designs` record, and `ghostCards()`
+// reads Ghost's card stylesheets beside its scripts — the compiler emits `cards.css` on every theme, so §73's scaffold keeps
+// only Story 10.79's stand-in `page.hbs`; `CARDS_DESIGNED` is CI's and the recorder's every-panel record.
+//
 // Node 24 (it imports the packages' TypeScript). Reads the designs, the font pool, the modules and Ghost's card scripts
 // from disk; the compile itself is pure.
 
@@ -107,23 +111,29 @@ export const moduleSources = () => {
   return Object.fromEntries(files.sort().map((f) => [f.slice(0, -'.js'.length), readFileSync(join(MODULE_DIR, f), 'utf8')]))
 }
 
-/** Story 7.5 — Ghost's card scripts as `tools/probe/record-cards.py` vendored them, by card name, and Ghost's licence. */
+/** Story 7.5 — Ghost's card scripts as `tools/probe/record-cards.py` vendored them, by card name, and Ghost's licence.
+ *  Story 7.13 — and its card stylesheets, by chunk name: the directory is the set `card_assets` may exclude. */
 const VENDOR = join(REPO, 'packages/library/orbit-weekly/vendor')
-export const ghostCards = () => ({
-  scripts: Object.fromEntries(readdirSync(join(VENDOR, 'cards/js')).filter((f) => /^[a-z0-9_]+\.js$/.test(f)).sort()
-    .map((f) => [f.slice(0, -'.js'.length), readFileSync(join(VENDOR, 'cards/js', f), 'utf8')])),
-  licence: readFileSync(join(VENDOR, 'LICENSE-ghost.txt'), 'utf8'),
-})
+const chunksOf = (kind) => Object.fromEntries(readdirSync(join(VENDOR, `cards/${kind}`)).filter((f) => new RegExp(`^[a-z0-9_]+\\.${kind}$`).test(f)).sort()
+  .map((f) => [f.slice(0, -kind.length - 1), readFileSync(join(VENDOR, `cards/${kind}`, f), 'utf8')]))
+export const ghostCards = () => ({ scripts: chunksOf('js'), styles: chunksOf('css'), licence: readFileSync(join(VENDOR, 'LICENSE-ghost.txt'), 'utf8') })
+
+/** Story 7.13 — EVERY CARD THAT HAS A PANEL, designed: each card's first control at its first value that is not its start
+ *  (a divider's glyph switched on, its icon the start). CI's "cards" compile and the recorder's §81 both read it, so the
+ *  theme gscan judges is the theme T1 renders. Derived from the registry, never listed here. */
+export const CARDS_DESIGNED = Object.fromEntries(lib.CARDS.filter((c) => c.controls.length > 0).map((c) => {
+  const [first] = c.controls
+  return [c.key, { [first.name]: first.values.find((v) => v.value !== first.start).value }]
+}))
 
 /** CI's two words (check-snapshots, check-baseline's size row) — fixed, so the compiled theme is the same every run. */
 export const CI_WORDS = { pageWord: 'Pageword', layerWord: 'Layerword' }
 
-/** §73's scaffold — new files only, each labelled for the story that owns it: D12's two Koenig widths in `cards.css`
- *  (Story 7.13's; DW-334) and a stand-in `page.hbs` reading Ghost's page switch (Story 10.79's, until A24 sits on
- *  `page.hbs`). With it the pilot theme gates clean on both checkers. One copy: CI's control for the gate's clean verdict
- *  (`check-snapshots`, Story 7.7) and the recorder's upload scaffold (`record-theme-assembly.py`'s `scaffold()`). */
+/** §73's scaffold — new files only, labelled for the story that owns it: a stand-in `page.hbs` reading Ghost's page switch
+ *  (Story 10.79's, until A24 sits on `page.hbs`). With it the pilot theme gates clean on both checkers. One copy: CI's
+ *  control for the gate's clean verdict (`check-snapshots`, Story 7.7) and the recorder's upload scaffold
+ *  (`record-theme-assembly.py`'s `scaffold()`). Story 7.13: D12's two widths left it — the compiler writes `cards.css`. */
 export const SCAFFOLD = {
-  'assets/css/cards.css': '.kg-width-wide { max-width: 1000px; }\n.kg-width-full { max-width: 100%; }\n',
   'page.hbs': '{{!< default}}\n\n{{#post}}\n  {{#if @page.show_title_and_feature_image}}\n    <h1>{{title}}</h1>\n  {{/if}}\n  {{content}}\n{{/post}}\n',
 }
 
@@ -209,9 +219,10 @@ export const PILOT_DE = { 'nav.more': 'Mehr', 'post.reading_time': '{minutes} Mi
 export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', description: 'Pilot sections' }
 
 /** The compiled theme — path → text, or a font's bytes — with AD-14's record (`css`), and the project it came from.
- *  Story 7.5: `designedCards` reaches `package.json` and `cards.js`; `modules` replaces the files read, for CI's controls.
+ *  Story 7.5: `modules` replaces the files read, for CI's controls. Story 7.13: `cardDesigns` is a stored
+ *  `project_treatments.card_designs` record, reaching `package.json`, `cards.css` and `cards.js`.
  *  Story 7.11: `darkEnabled: false` compiles the project Light only — the same three dark built-ins, Color scheme on Light. */
-export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, designedCards, modules = moduleSources(), settings = false, fixture = false, edit, darkEnabled = true, language, strings } = {}) {
+export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, cardDesigns, modules = moduleSources(), settings = false, fixture = false, edit, darkEnabled = true, language, strings } = {}) {
   if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
   const find = fixture ? withFixture(given) : given
   const project = pilotProject(words, find, { fixture })
@@ -221,7 +232,7 @@ export function compilePilots(words, { theme, postsPerPage = 12, find: given = l
   const pageTwo = overTwo ?? project.pageTwo
   const { files, css, js, custom } = compileTheme(new JSDOM('<body></body>').window.document, {
     templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled,
-    modules, ghostCards: ghostCards(), ...(designedCards === undefined ? {} : { designedCards }),
+    modules, ghostCards: ghostCards(), ...(cardDesigns === undefined ? {} : { cardDesigns }),
     ...(settings === false ? {} : { settings: settings === true ? pilotSettings(templates) : settings }),
     ...(language === undefined ? {} : { language }), ...(strings === undefined ? {} : { strings }),
   })

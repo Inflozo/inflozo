@@ -103,3 +103,24 @@ export const TagChip = ({ children }: { children: ReactNode }) => (
     {children}
   </span>
 )
+
+/** STORY 7.13 — S14's `customised` marker: in the Card dropdown and the left panel the frame's quiet lowercase pill
+ *  (`marigold-tint`), at the panel head its solid one (`marigold`), both the marigold token (the spec: "the customised pill
+ *  uses the marigold token"). Words, never a control. */
+export const CustomisedBadge = ({ words, solid = false }: { words: string; solid?: boolean }) => (
+  <span
+    data-customised
+    className={`inline-flex shrink-0 items-center whitespace-nowrap font-semibold ${solid ? 'h-[18px] rounded-[5px] bg-marigold px-[7px] text-[10px] uppercase text-marigold-ink' : 'rounded-pill bg-marigold-tint px-[7px] py-px text-[9.5px] text-marigold-text'}`}
+  >
+    {words}
+  </span>
+)
+
+/** STORY 7.13 — S14d's amber count beside Editor cards: the number printed, its words (`CARD_WORDS.count`) what a screen
+ *  reader hears, as the frame's a11y note asks. Absent at zero, which is the caller's to decide (never "0"). */
+export const CountBadge = ({ n, words }: { n: number; words: string }) => (
+  <span data-count className="inline-flex h-[17px] shrink-0 items-center rounded-[5px] bg-marigold px-[6px] text-[10px] font-semibold text-marigold-ink">
+    <span aria-hidden>{n}</span>
+    <span className="sr-only">{words}</span>
+  </span>
+)

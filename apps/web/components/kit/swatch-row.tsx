@@ -83,7 +83,9 @@ export function SwatchRow({
             <span
               aria-hidden
               style={color === undefined ? undefined : { background: color }}
-              className={`flex size-6 items-center justify-center rounded-full shadow-hairline-inset ${glyph ? 'bg-surface text-ink-soft' : ''} ${one !== undefined ? 'opacity-40' : ''} ${picked ? 'shadow-[0_0_0_2px_var(--color-coral),var(--shadow-hairline-inset)]' : ''}`}
+              // ONE shadow utility at a time: with both on the element the stylesheet's order decided, and the hairline
+              // won — the picked ring never drew (found at Story 7.13, the callout's background row)
+              className={`flex size-6 items-center justify-center rounded-full ${picked ? 'shadow-[0_0_0_2px_var(--color-coral),var(--shadow-hairline-inset)]' : 'shadow-hairline-inset'} ${glyph ? 'bg-surface text-ink-soft' : ''} ${one !== undefined ? 'opacity-40' : ''}`}
             >
               {glyph}
             </span>

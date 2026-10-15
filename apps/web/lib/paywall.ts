@@ -25,9 +25,9 @@ import type { Members } from './probe-rule.ts'
 const tiersWord = (n: number) => `${n} ${n === 1 ? 'tier' : 'tiers'}`
 
 export const PAYWALL_WORDS = {
-  /** the Template switcher's group, D5b's Membership group's shape (EXPERIENCE.md:207-222) */
-  group: 'Template surfaces',
-  /** the ink top bar's chip — written in sentence case and uppercased by CSS, as C3a draws it */
+  // the Template switcher's group heading is `lib/editor.ts`'s `SURFACES_HEADING` since Story 7.13 brought its second row
+  /** the ink top bar's chip — written in sentence case and uppercased by CSS, as C3a draws it; Editor cards wears the same
+   *  chip (Story 7.13, R-170: one chip for one idea) */
   chip: 'Not a page section',
   back: 'Back to post',
   /** C3a's strip: the static "Showing" pill (R-118 — never a menu), the design chip and the note */

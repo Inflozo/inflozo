@@ -166,7 +166,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Main Feed Marker** | D5c | Layers · the section itself | Which feed is the paginated one, and reassign (FR-H2) |
 | **Page 2 Preview** | D5d | main-feed section · its **Preview page** row | Page 2 seen AND designed (Story 5.16): an exact copy of page 1 until the first change on it, then a design of its own that pages 3, 4, 5… share, never changing page 1 — the header and footer excepted, after the site-wide prompt; offered only where Ghost serves a page 2. "Page 2" with "Back to page 1", and under the row "Pages 3, 4, 5 and on use page 2's design." (FR-D21, R-176 to R-181, Appendix H) |
 | **Empty Template Warning** | D5f | removing the last section of a custom template | "The page still loads, wearing a different design" (FR-I1) |
-| **Editor Cards** | `S14 Editor Cards.dc.html` S14a–e | Editor left nav → Template surfaces | Every Koenig card, six A33 treatments, per-card reset (FR-Q7) |
+| **Editor Cards** | `S14 Editor Cards.dc.html` S14a–e | Editor left nav → Template surfaces *(Story 7.13, 2026-10-15: reached through the Template switcher's Template surfaces group, as the shell below says, and Theme settings' rail)* | Every Koenig card, six A33 treatments, per-card reset (FR-Q7) |
 | **Paywall Editor** | `C Post Body.dc.html` **C3a** | Editor left nav → Template surfaces | Its own canvas, one design active per project (FR-H6) |
 | **Post Content** | `C Post Body.dc.html` C2a | Post and Page canvases | The section that renders the article (A25) |
 | **Style-Guide Fixture** | `C Post Body.dc.html` C4 | every body, always | The generated article every post design is judged against (FR-H3, FR-H4) |
@@ -2035,7 +2035,20 @@ token corrections, never a redraw).
     Toggle, Video, Audio, File, Product, Header, Embed. Slot 8 is "Email call to action" — an
     email-only card that renders nothing on the web (MEASUREMENTS §35b), so it has no panel and
     that is where the NO COLOUR CTLS mark belongs. Keep a separate "Call to action" entry for the
-    web card, which does get its panel. Video before Audio.
+    web card, which does get its panel. Video before Audio. *(Story 7.13's Dev, 2026-10-15 —
+    corrected: the list above is the source files' order, not the menu's. Koenig's own menu, by
+    priority (koenig-lexical 1.9.2's `buildCardMenu.ts:24-103`; 1.7.2's main group is the same,
+    read at the story's Create), runs Image, Divider,
+    Button, Bookmark, Gallery, Public preview, Call to action, Email call to action, Email content,
+    Callout, Signup, Header, Toggle, Video, Audio, File, Product, GIF, HTML, Markdown, then the
+    Embeds group. Some entries are gated: Email call to action is hidden by default on both majors,
+    Signup shows only while sign-up access is "anyone", GIF only with a Klipy (6) or Tenor (5) key,
+    and Transistor is 6.x only and off by default. The built list is Ghost's menu without Public
+    preview (no element, P0·7) and Email call to action, with the Embeds group as one Embed entry.
+    The NO COLOUR CTLS mark sits on Call to action, Signup and Header (R-6), and Call to action has
+    no panel: one line saying its look is the author's (Story 7.13's Question 3, option 1). The
+    surface is **Editor cards** in every label (R-170), entered from the Template switcher's
+    Template surfaces group, after Paywall.)*
 
 16. EVERY APP FRAME · ONE FIXTURE IDENTITY.
     The session belongs to one person: Maya Chen · maya@orbitweekly.com · orbitweekly.com. Replace
