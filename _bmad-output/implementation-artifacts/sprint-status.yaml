@@ -142,7 +142,7 @@ development_status:
   7-11-the-three-dark-built-ins-always-declared-and-always-referenc: done
   7-12-the-translations-surface-locales-emission-and-override-valid: done
   7-13-the-ghost-card-design-module-and-cards-css: in-progress
-  7-14-treatment-selection-from-theme-settings: backlog
+  7-14-treatment-selection-from-theme-settings: ready-for-dev
   7-15-share-destinations-one-ordered-site-wide-list: backlog
   7-16-the-routes-manager: backlog
   7-17-uploading-routes-yaml-and-the-guided-fallback: backlog

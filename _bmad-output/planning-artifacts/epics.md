@@ -3759,6 +3759,10 @@ a pagination treatment for when one is added
 removal**
 **And** its pagination half offers A34's designs from the day they exist — Story 10.112 builds the Pagination style
 this surface shares (R-195) — and until then draws no pagination row (R-118).
+*(Story 7.14's Create, 2026-10-16: the pagination half of the criteria above — its Theme Settings row with D6a, and
+`partials/pagination.hbs` — moved to Story 10.112 word for word (R-118, R-195); Epic 10's preamble lists it. The card
+half holds since Story 7.13: card styling has no host section (S14d), and Theme settings' rail reaches Editor cards.
+Whether the owner tests this story by hand is its Question 1.)*
 
 **FRs:** FR-Q9. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a. · **Owner test:** yes.
 
@@ -5138,6 +5142,20 @@ behind §4's blocking owner gate.
 >    goes to **Story 10.110**, the Contrast Band half to **Story 10.111**.
 > 3. "those same three [`header_v2`, `signup`, `cta`] are excluded from a Contrast Band's inversion: a band's plane may run
 >    behind them but their surfaces stay the author's". Goes to **Story 10.111**.
+>
+> **Given owners by Story 7.14's Create (2026-10-16), word for word, so none is missed (R-195).** No A34 design exists
+> before Story 10.112, and R-118 draws no control before the story that makes it work, so FR-Q9's pagination half leaves
+> Story 7.14's card. Goes to **Story 10.112**, with the frame `D6 Theme Settings Completed.dc.html` D6a:
+>
+> 1. "the non-placeable treatments — Koenig card styling and pagination styling — are **selectable there**" (Theme
+>    Settings), its pagination half;
+> 2. "a template with no feed still carries a pagination treatment for when one is added";
+> 3. "**emission never depends on a host section existing**, and the selection **survives that section's removal**", for
+>    the pagination treatment;
+> 4. "its pagination half offers A34's designs from the day they exist — Story 10.112 builds the Pagination style this
+>    surface shares (R-195) — and until then draws no pagination row (R-118)";
+> 5. from `prd.md`'s file tree, `partials/pagination.hbs` — "a pagination treatment's override of Ghost's own partial —
+>    only when one is chosen".
 
 ### A4 · Heroes — 17 designs, 5 stories
 
@@ -8228,6 +8246,13 @@ Numbered / Load More / Infinite scroll**, and the Pagination control above D5d's
 are A34's designs (A34's reconciliation, note 1); ONE project-level value, `project_treatments.pagination_design_id`
 (AD-27 (a0)), rendered attached beneath the main feed on both emitters; and the same value Theme Settings offers where
 no feed is placed (FR-Q9, Story 7.14)
+**And** *(from Story 7.14's Create, 2026-10-16, R-118, R-195 — word for word)* Theme Settings' pagination half is built
+here, with the frame `D6 Theme Settings Completed.dc.html` D6a: "the non-placeable treatments — Koenig card styling and
+pagination styling — are **selectable there**"; "a template with no feed still carries a pagination treatment for when
+one is added"; "**emission never depends on a host section existing**, and the selection **survives that section's
+removal**"; "its pagination half offers A34's designs from the day they exist — Story 10.112 builds the Pagination style
+this surface shares (R-195) — and until then draws no pagination row (R-118)"; and `partials/pagination.hbs` — "a
+pagination treatment's override of Ghost's own partial — only when one is chosen" (`prd.md`'s file tree)
 **And** before it is built, the owner rules the two choices still open on it: which **[Free]** design an untouched
 template's pager is (DW-232 — the Synthesis Defaults name #1 Numbers, which R-212 makes Pro, and A34's [Free] pair is
 the owner's #2 and #9), and which list names the select's values (DW-233 — FR-H2's three words, D5c's None ·
