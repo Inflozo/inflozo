@@ -407,6 +407,27 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **EXPERIENCE F3; MEASUREMENTS §33, §37:** B16 names no menu path (Ghost 6 has no Labs or Advanced) and links Ghost's help for the major detected at connect; the integration key alone can read `routes.yaml` on both majors.
   - **Story 7.3's Dev (2026-10-06):** a routed custom template keeps shipping when emptied — `compileTheme`'s `routed`, which 7.16 hands in — so D5f's "stops shipping" is not its sentence: its warning words are 7.16's (its card says so). A missing route template is a 400, read in source; 7.17 records it with the first route.
     - **Story 7.3's review (2026-10-08, DW-344):** 7.16 hands the editor the routed list (so D5f never says "stops shipping" of a routed template) and the compiler the collection's context name (a main collection moved off `/` is not `index`, which `PAGED_CONTEXTS` keys on). The guard's comma form and the `index`/`tag` contexts are read in `helpers/is.js`, not rendered on T1 (§72 says so).
+  - **Story 7.16's Create (2026-10-16):** the spec is ready for Dev with four questions open (R-83). Dev waits for all four.
+    - **Read in Ghost 6.58.0's and 5.130.6's source, and run with Ghost's own modules from the npm tarballs (T1 untouched):**
+      - **Collection order.** Collections own posts in YAML order, and the first match wins (`lazy-url-service.js:300-303`).
+        A listing drops the posts it does not own (`controllers/collection.js:75-88`). So `EXPERIENCE.md:747`'s "index
+        collection first" leaves every other collection empty. The index goes **last**, carrying the inverse filter,
+        which is Ghost's own advice (`:65-74`).
+      - **Relative dates.** A relative date re-parses per request for listings, but ownership is compiled once at start
+        (`lazy-url-service.js:131-139`).
+      - **NQL.** Ghost wraps every filter `(${f})+type:post`, so a wholly bracketed filter loses its condition (the `yg`
+        bug). Unquoted one-letter values fail to lex.
+      - **Context names.** A collection's context is its path without slashes (`["paged","articles"]`).
+      - **Ghost does not check** duplicate paths, NQL or template existence.
+    - **Written to the recommended options:**
+      - Q1: split, with the editor half as a new 7.16b straight after, and R-128's pair moving with it.
+      - Q2: rolling dates on channels only.
+      - Q3: undrawn parts built from their neighbours, as an R-236-style exception.
+      - Q4: a route's delete keeps its template.
+    - **No migration.** Pure `routes.ts` in section-runtime. The page is `projects/[id]/routes`. MEASUREMENTS §82 comes
+      from `tools/probe/record-routes.mjs` (Ghost's own parsers locally; one T1 upload and restore on the owner's go).
+      The walk gains step 109. DW-361 renumbers register 2's 59/60 to 63/64. New VERIFY items 65 (order and ownership)
+      and 66 (`author:`).
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.
