@@ -929,7 +929,10 @@ column, whatever the panel says.
   and `floor.spec.mjs`' card-document keys, menu and history). An earlier whole run stopped at "the journey uses no
   pointer at all": the card-document row had been written into the keyboard journey with a click, and moved to
   `floor.spec.mjs`, the pointer file.
-- Not run here: step 107 on the Review head — after this push deploys, appended in a second Review commit.
+- The Review push `b4b9922b`: CI run 38841418049 `rls`, `check` and `deploy` success, the render matrix success; Vercel
+  `dpl_GUToLS5cBb7QdNgAC2r5TQSk9Z9G` READY at `b4b9922b`. Step 107 on that head, the committed walk cut the same way from a
+  worktree at `b4b9922b`: **0 FAIL, 54 PASS** — 107e's record and its 422 as above, 107i with the toggle ringed in the
+  reading-along window, users 14 → 14. One `stall` note (a project page's first GET timed out and was retried, no FAIL).
 
 **Commands:**
 - `bash supabase/tests/run-rls-gate.sh` -- expected: passes, no SCHEMA DRIFT, before the Schema push.
