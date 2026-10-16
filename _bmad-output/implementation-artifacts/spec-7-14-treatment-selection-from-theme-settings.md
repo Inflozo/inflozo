@@ -2,7 +2,7 @@
 title: 'Story 7.14 — Treatment selection from Theme Settings'
 type: 'feature'
 created: '2026-10-16'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'bf2df0ad9f118cf671ad9e94d499398273fe00aa'
 owner_test: none
 review_loop_iteration: 0
@@ -364,3 +364,13 @@ Theme settings' page — for example "Post cards · 1 customised · Open Editor 
   Bookmark not `FIRST_CARD` (`callout`) and the victim's name Home's alone; 108b's victim a row before the delete, and
   `updated_at` unchanged (`12:09:00.914426Z`); 108c reading attributes with the text, nothing but the caption matching;
   108d's reset moving `updated_at` to `12:09:27.561661Z`; zero CSP violations, users 14 → 14.
+
+**Deploy (2026-10-16), no screen, so Done at this commit (`owner_test: none`, Question 1 option 1):**
+- Deployment: `dpl_1nJwRVep3b2saeiRpTvxiL5XdivW` (inflozo-bdgffmel7-umangkagathara.vercel.app), READY at the Review head
+  `84624e8e26109a658d996241f6ad739e61adde8c`, the production deployment app.inflozo.com serves (`GET /` answers 307 to
+  sign-in). Read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT`, matched on `meta.githubCommitSha`.
+- CI on that head (`GITHUB_TOKEN`): run 38898638532 `rls`, `check` and `deploy` success; the render matrix (38898638575)
+  success.
+- No migration, so nothing to apply and no RLS-TEST.sql re-run beyond CI's `rls` job. No T1 write. The production proof of
+  FR-Q9's card half is step 108's two 46-of-46 runs under Review, on `b594b6de` and `ba424343`; `84624e8e` changed the spec
+  and the board only.
