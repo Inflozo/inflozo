@@ -452,6 +452,10 @@ still email the post. The Share button itself still needs JavaScript.)*
 
 Story 10.82 is not planned until the redrawn frame is in the export.
 
+The same prompt is saved on its own, with these steps, as
+[`claude-design-prompt-a24-14-share-redraw.md`](../planning-artifacts/design/claude-design-prompt-a24-14-share-redraw.md),
+and Story 10.82's first criterion stops its Create until the redraw has landed.
+
 ```
 This is a follow-up on A24 · Post Headers, which you have already designed. Redraw ONE design:
 #14 Share Row (`A24-14 Share Row.dc.html`). Change nothing else in the project.

@@ -7386,6 +7386,10 @@ So that I can choose more widely within Post Headers on my own site.
 
 **Acceptance Criteria:**
 
+**Given** ⛔ **the owner's action, owed before this story opens (DW-360, R-244)**: Post Headers #14 Share Row is redrawn in Claude Design from `design/claude-design-prompt-a24-14-share-redraw.md` (the same prompt as Story 7.15's spec)
+**When** this story's Create runs and `A24-14 Share Row.dc.html`'s native-share panel does not yet say the redraw has landed
+**Then** the Create plans nothing: it stops and asks the owner to run that prompt and land the export (R-74), and resumes only once the redrawn frame is in the export
+
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Sticky · #14 Share Row · #15 Slim · #16 Two Column are built **against that same model**, each with its own per-design control schema

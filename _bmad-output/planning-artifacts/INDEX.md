@@ -1,12 +1,12 @@
 ---
 title: Inflozo — Document Index
 generated: by `tools/doc-audit.py --generate` — do not hand-edit
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 # Document index
 
-**172 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
+**173 catalogued documents**, plus grouped sets. Generated from disk, so it cannot drift:
 `tools/doc-audit.py --check` fails if a document exists without a catalogue entry, if an entry
 points at a file that is gone, or if this file is out of date.
 
@@ -41,6 +41,7 @@ points at a file that is gone, or if this file is out of date.
 | **[Design patch prompts, pass three](_bmad-output/planning-artifacts/DESIGN-PATCH-PROMPTS-3.html)**<br>`_bmad-output/planning-artifacts/DESIGN-PATCH-PROMPTS-3.html` | The owner-facing page for the third patch pass — seven prompts, runnable in any order because nothing here depends on anything else. Carries the six spec-side rulings of 2026-09-02 (R-39 to R-47, less the three that changed a requirement and landed directly). RAN — verified by tools/verify-design-pass.py. |
 | **[Design patch prompts, pass two](_bmad-output/planning-artifacts/DESIGN-PATCH-PROMPTS-2.html)**<br>`_bmad-output/planning-artifacts/DESIGN-PATCH-PROMPTS-2.html` | The owner-facing page for the second patch pass — one prompt per category that has work, P0 first because the greyed-control treatment is drawn there once and every later category points at it. RAN — verified by tools/verify-design-pass.py. Nothing in it is a question: the normative half of every item is already in the PRD and the spine, and this carries it into the designs. Copy buttons and browser-stored progress ticks; verify each returned export with tools/verify-design-pass.py. |
 | **[Design patch prompts, per category](_bmad-output/planning-artifacts/DESIGN-PATCH-PROMPTS.html)**<br>`_bmad-output/planning-artifacts/DESIGN-PATCH-PROMPTS.html` | The owner-facing page for the design patch pass — one prompt per category plus P0, with copy buttons and browser-stored progress ticks. THE PASS RAN on 2026-08-31 and tools/verify-design-pass.py confirms it: every structural check passes. Kept live because it is generated and gated, and because re-patching one category is a copy-button away. Rosters DERIVE from the export, so the design numbers in it cannot drift. |
+| **[Design prompt — A24 #14 Share Row redraw (OWED)](_bmad-output/planning-artifacts/design/claude-design-prompt-a24-14-share-redraw.md)**<br>`_bmad-output/planning-artifacts/design/claude-design-prompt-a24-14-share-redraw.md` | NOT RUN — the owner runs it in Claude Design before Story 10.82 opens (DW-360). It redraws Post Headers #14 to ruling R-244: one Share trigger to Ghost's own share panel, with Copy link and Email on an older Ghost. The same prompt is kept in Story 7.15's spec. Once run and exported, this row becomes record. |
 | **[Document index (for AI)](_bmad-output/planning-artifacts/INDEX.md)**<br>`_bmad-output/planning-artifacts/INDEX.md` | Every document in the project with a one-line brief, generated from disk. Read this first when picking up the project cold. |
 | **[Document index (for humans)](_bmad-output/planning-artifacts/INDEX.html)**<br>`_bmad-output/planning-artifacts/INDEX.html` | The same index, browsable and grouped by status. |
 | **[Everything executed](_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md)**<br>`_bmad-output/planning-artifacts/architecture/.../MEASUREMENTS.md` | The evidence file: everything actually run against real infrastructure — the file is the count — each with the command and its output. Five confident claims in this project have been falsified by execution; this is where the executions live. The spine cites it rather than restating its numbers. |

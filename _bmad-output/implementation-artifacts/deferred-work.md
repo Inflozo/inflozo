@@ -9794,5 +9794,6 @@ owner: Story 10.82's Create (A24 #13–16), whose card carries this entry with i
   planned; the Create never plans against the old frame (R-74).
 location: `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A24-14 Share Row.dc.html` ·
   `A24 Post Headers - Spec.md` · `_bmad-output/implementation-artifacts/spec-7-15-share-destinations-one-ordered-site-wide-list.md`
-  (the prompt)
+  (the prompt) · `_bmad-output/planning-artifacts/design/claude-design-prompt-a24-14-share-redraw.md` (the same prompt,
+  saved on its own) · Story 10.82's first criterion, which stops its Create until the redraw lands
 reason: the export is Claude Design's (R-74) and only the owner runs it; nothing builds A24 #14 before Story 10.82.

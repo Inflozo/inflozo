@@ -174,6 +174,10 @@ DOCS = [
   'pass. Complete 2026-08-25; the export is now the authority on what it produced, and the specs have '
   'been patched twice since — the controls pass, then the design patch pass. It states the library '
   'size as it stood when written.'),
+ ('design/claude-design-prompt-a24-14-share-redraw.md', 'live', 'Design prompt — A24 #14 Share Row redraw (OWED)',
+  'NOT RUN — the owner runs it in Claude Design before Story 10.82 opens (DW-360). It redraws Post Headers #14 to '
+  'ruling R-244: one Share trigger to Ghost\'s own share panel, with Copy link and Email on an older Ghost. The '
+  'same prompt is kept in Story 7.15\'s spec. Once run and exported, this row becomes record.'),
  ('design/derived-fields-A1-A12.md', 'retired', 'Derived fields — A1 through A12',
   'SUPERSEDED WHOLESALE at the 2026-08-27 inventory merge (ruling R-16). It derived four missing '
   'fields for the first 12 exported categories by reading the export\'s prose; all 33 live '
