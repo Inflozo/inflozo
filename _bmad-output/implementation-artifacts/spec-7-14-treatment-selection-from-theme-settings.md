@@ -2,7 +2,7 @@
 title: 'Story 7.14 — Treatment selection from Theme Settings'
 type: 'feature'
 created: '2026-10-16'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'bf2df0ad9f118cf671ad9e94d499398273fe00aa'
 owner_test: none
 review_loop_iteration: 0
@@ -145,6 +145,38 @@ recommended option.
 - Given the work is done, then `pnpm check`, `python3 tools/doc-audit.py --check` and `bash supabase/tests/run-rls-gate.sh`
   pass, and step 108 holds on production with 0 FAIL.
 
+### Review Findings
+
+Review, 2026-10-16: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). 0 decision-needed, 12 patches (all applied), 0 deferred, 23 dismissed. No question for the owner.
+
+- [x] [Review][Patch] The `(7.14)` row could not see a dependency keyed on the compiled stacks: a plant that keeps the
+  card designs only while Post places a visible section passed every row. It now also compiles `project()` with every
+  section hidden (designed, never re-synthesized, so no stored template invokes a section) and that plant fails it alone
+  [packages/theme-compiler/src/compile.test.ts:1172]
+- [x] [Review][Patch] `cards.js`, its script tag and `LICENSE-ghost.txt` (toggle is scripted) were not compared across
+  the compiles; they are now, for both the empty and the hidden project [packages/theme-compiler/src/compile.test.ts:1172]
+- [x] [Review][Patch] The FR-Q9 comment said the row "holds" never-`stacksOf(input)` and read "whatever the templates
+  hold" as a dependency; reworded to "the same whatever", naming cards.js and the hidden case [packages/theme-compiler/src/compile.ts:878]
+- [x] [Review][Patch] R-118's "no `partials/pagination.hbs`" had no compile-side check; every compile in the row asserts
+  it [packages/theme-compiler/src/compile.test.ts:1172]
+- [x] [Review][Patch] The row's title said "every section placed" of a five-design slice; retitled to what it compiles
+  [packages/theme-compiler/src/compile.test.ts:1172]
+- [x] [Review][Patch] 108b's "the victim's name is gone" could pass vacuously; its control — the name WAS a row before
+  the delete — is now asserted [tools/probe/run-verify-editor.cjs:9419]
+- [x] [Review][Patch] 108b's "unwritten" (`updated_at` unchanged) had no control; 108d now asserts the reset's save,
+  which carries the record, moves `updated_at` [tools/probe/run-verify-editor.cjs:9467]
+- [x] [Review][Patch] The fixture did not check the victim's name is Home's alone, non-empty, with a section left after
+  it [tools/probe/run-verify-editor.cjs:9375]
+- [x] [Review][Patch] 108c's "last-viewed card" had no control: the fixture now asserts Bookmark is not `FIRST_CARD`
+  (Callout), the card the surface opens on with nothing viewed [tools/probe/run-verify-editor.cjs:9375]
+- [x] [Review][Patch] 108c read visible text only; it now reads `aria-label`, `title` and `placeholder` too, so a
+  pagination label in an attribute fails it [tools/probe/run-verify-editor.cjs:9428]
+- [x] [Review][Patch] "Facts this spec rests on" said D6 draws nothing about pagination, but D6a draws the Posts per page
+  caption ("…before paginating."); dated correction beside it [this spec, Design Notes]
+- [x] [Review][Patch] `epic-7-context.md`'s "Propagated" omitted the dated R-195 note in `reconcile-designs-decisions.md`
+  [_bmad-output/implementation-artifacts/epic-7-context.md:375]
+
 ## Spec Change Log
 
 Dev, 2026-10-16 — routine calls made in Dev, each from a source read or an execution (none changes what Question 1 decided):
@@ -167,6 +199,22 @@ Dev, 2026-10-16 — routine calls made in Dev, each from a source read or an exe
   Left), all read from `CARDS`.
 - **Standing rule 7.** `reconcile-designs-decisions.md` (live) R-195's "Theme Settings' pagination half (Story 7.14)"
   gains a dated note naming Story 10.112. Finished specs (5.19, 7.1, 7.3) that name 7.14 are left as written.
+
+Review, 2026-10-16 — routine calls made at Review, each from a source read or an execution (none changes what Question 1
+decided):
+- **"No section anywhere" gains its compiled reading.** An empty doc still compiles the library's defaults, so the
+  `(7.14)` row now also compiles every section HIDDEN: hiding is not emptying (`stacksOf`), so no template the project
+  stores invokes a section, Post's included. The Verification Gap layer's plant (card designs kept only while Post places
+  a visible section) passed the Dev row and fails the widened one alone.
+- **Step 108 is proved on a cut copy first.** As at 7.12's and 7.13's Reviews, the walk ran as steps 1–5 then step 108
+  (the step-5 editor hands its lock back and leaves first), from a worktree; the committed walk runs again on the Review
+  head the same way.
+- **The real-infra layer ran in the main session**, after the owner's in-session "Go" (2026-10-16): the classifier refused
+  the walk's production calls until then, and a subagent is never handed them.
+- **Dismissed, with the reason:** a throw inside step 108 ends the walk and its `finally` deletes both accounts with their
+  project, and only step 9 (no doc read) follows, so no try/finally restore; the link's equality is true on every theme by
+  7.13's design and is the claim, not a missing control; the fixed waits held on production (reopen as a DW row if they
+  flake); the hand-back accepting Home designated is the reading `read.ts` gives the seed, and nothing after reads it.
 
 ## Design Notes
 
@@ -201,6 +249,9 @@ Story 10.112's card, Epic 10's preamble and `prd.md` now name 10.112.
   the last-viewed card.
 - `D6 Theme Settings Completed.dc.html` draws nothing about treatments or pagination. Neither do A33's or A34's
   `- Spec.md` name a Theme Settings selector. A34's only Theme settings link is the posts-per-page "setting door".
+  *(Review, 2026-10-16: one correction — D6a draws Posts per page's caption, "How many posts your archives show before
+  paginating.", the page size's words and not a pagination row; step 108c takes that sentence out first, as the Dev log
+  says.)*
 
 ## Owner's manual test
 
@@ -280,3 +331,31 @@ Theme settings' page — for example "Post cards · 1 customised · Open Editor 
   step 108 PASS (revision +1, `card_designs` byte-equal, no pagination text, the rail landing on the customised card,
   the record handed back empty, zero CSP violations), 0 FAIL overall, users unchanged.
 - Not run: T1. No byte a theme carries changes. 7.13's §81 (MEASUREMENTS) is the cards' T1 record.
+
+**Review results (2026-10-16), on the real infrastructure after the owner's in-session "Go":**
+- CI on the Dev head `b594b6de` (`GITHUB_TOKEN`, read inside a scratch script): run 38889618999 `check`, `rls` and
+  `deploy` success, the render matrix (38889619084) success; Vercel (`VERCEL_*`): `dpl_4ix8Fp6CKDwCsHaDMWXK3AXnEVxE` READY
+  at `b594b6de`, the production deployment app.inflozo.com serves.
+- Step 108 on production at that head: a detached worktree at `b594b6de` (`node_modules` hard-linked), a cut copy in its
+  `tools/probe-debug/` (steps 1–5, the step-5 editor's lock handed back, the definitions step 108 reads, step 108,
+  `finally`; never committed), `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN` and `VERCEL_TEAM_ID` read inside the
+  process. It hit app.inflozo.com (the editor, `/cards`, Theme settings, `/sync`, `/lock`), Supabase REST
+  (`project_treatments`, `project_templates`, `projects`) and Auth admin through the service key. **0 FAIL, 46 PASS**:
+  - the fixture: no record, Home's last section "Newsletter — Inline Row";
+  - 108a: Bookmark's Thumbnail side → Left and ⌘S stored exactly `{ bookmark: { side: 'left' } }`, revision 0 → 1;
+  - 108b: the section deleted and ⌘S, revision 1 → 2, Home's stored doc one section short, and `card_designs` and
+    `updated_at` byte-equal (`11:43:39.29286Z` before and after);
+  - 108c: no `/paginat/i` text beyond the Posts per page caption (the control matched), and the rail's Editor cards landed
+    on Bookmark, customised, ringed, Left still chosen;
+  - 108d: ⌘Z put the four rows back and Home's doc back, Reset card + ⌘S stored `{}` and moved `updated_at` to
+    `11:43:56.00287Z` (the control the Review patch now asserts); zero CSP violations, users 14 → 14.
+- Production's schema is the code's: the story adds no migration, and the walk read `project_treatments.updated_at`
+  through PostgREST and saw `sync_project_doc` leave it alone on a docs-only save and move it on a cards save.
+- Locally, Node 24.18.1, after the patches: `pnpm check` exit 0 (each package's run printed its own count, none failing;
+  `check-snapshots: PASS`); the `(7.14)` row's control — `compileTheme` planted to keep the card designs only while Post
+  places a visible section: theme-compiler 209 pass, 1 fail, the `(7.14)` row alone; `compile.ts` restored, `cmp` equal;
+  `bash supabase/tests/run-rls-gate.sh` exit 0, "PASS (7.13): the five-, four- and three-argument calls apply and leave
+  card_designs byte-equal" among its notices; `node --check tools/probe/run-verify-editor.cjs` passes.
+- Standing rule 7: every live document and code line naming 7.14 beside pagination (`epics.md` ×2, R-195's line, `prd.md`
+  :616) carries the move to 10.112.
+- The committed walk with the Review patches runs on the deployed Review head next; its result is appended below.

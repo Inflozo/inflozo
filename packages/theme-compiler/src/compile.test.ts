@@ -1169,33 +1169,50 @@ test('(7.5, 7.13) a designed card with no script: no cards.js, no cards tag, no 
   assert.ok((divider['README.md'] as string).endsWith(STYLES_NONE.replace('their wide and full widths.', 'their wide and full widths, and its card settings.')), divider['README.md'] as string)
 })
 
-test('(7.14) FR-Q9: the card designs emit whatever the sections — project()\'s every section placed, or the same template keys each an empty doc, carry the same cards.css, card_assets and link; the control: the empty project with no card designed differs', () => {
+test('(7.14) FR-Q9: the card designs emit the same whatever the sections — project()\'s sections, the same templates each an empty doc, or every section hidden carry the same cards.css, card_assets, link, cards.js and its tag; no partials/pagination.hbs (Story 10.112\'s); the control: no card designed differs', () => {
   const cardDesigns = { callout: { emoji: 'off' }, toggle: { chevron: 'left' } }
   const emptied = (docs: Record<string, ProjectDoc>): Record<string, ProjectDoc> => Object.fromEntries(Object.keys(docs).map((k) => [k, docOf()]))
+  // hiding is not emptying: a doc whose every section is hidden is designed and never re-synthesized (`stacksOf`), so this
+  // compile places no visible section on any template — Post's included, where cards render (Review, 2026-10-16)
+  const hid = (docs: Record<string, ProjectDoc>): Record<string, ProjectDoc> => Object.fromEntries(Object.entries(docs).map(([k, d]) => [k, docOf(...d.instances.map((i) => ({ ...i, hidden: true })))]))
   const full = build(project(), { pageTwo: projectTwo(), cardDesigns }).files
   const bare = build(emptied(project()), { pageTwo: emptied(projectTwo()), cardDesigns }).files
+  const hidden = build(hid(project()), { pageTwo: hid(projectTwo()), cardDesigns }).files
   const none = build(emptied(project()), { pageTwo: emptied(projectTwo()), cardDesigns: {} }).files
   const cardsOf = (files: CompiledTheme['files']): unknown => (JSON.parse(files['package.json'] as string) as { config: { card_assets: unknown } }).config.card_assets
   const linked = (files: CompiledTheme['files']): boolean => headOf(files).includes(`${CARDS_STYLESHEET}\n${STYLESHEET}\n`)
-  // the premise: the two compiles differ in sections. The empty docs store none, yet the theme still renders what the
-  // library's own rules put on an empty template (Post's header, Home's fallback feed) — so the claim is that NOTHING THE
-  // USER PLACED decides the cards, read as the two section sets differing (the user's footer, header and newsletter gone)
+  // the premise: the compiles differ in sections. The empty docs store none, yet the theme still renders what the
+  // library's own rules put on an empty template (Post's header, Home's fallback feed), so `bare` reads as "nothing the
+  // user placed" (their footer, header and newsletter gone); in `hidden` no template the project stores invokes a section
+  // (an archive it never stored, author's, keeps the library's feed)
   const sectionFiles = (files: CompiledTheme['files']) => Object.keys(files).filter((f) => f.startsWith('partials/sections/'))
   assert.ok(sectionFiles(full).some((f) => !sectionFiles(bare).includes(f)), JSON.stringify({ full: sectionFiles(full), bare: sectionFiles(bare) }))
+  for (const file of Object.keys(project())) assert.ok(!(hidden[file] as string).includes('{{> "sections/'), `${file}: ${hidden[file] as string}`)
+  assert.ok((full['post.hbs'] as string).includes('{{> "sections/'), 'the premise\'s control: the same check sees Post\'s sections in full')
   // sections everywhere: Ghost's callout and toggle chunks, their rules, both excluded, cards.css before screen.css
   const css = full['assets/css/cards.css'] as string
   assert.equal(css, cardsCss(cardDesigns, GHOST_CARDS.styles))
   assert.ok(css.includes('/* callout.css */\n') && css.includes('/* toggle.css */\n') && ownCardsCss(css).includes('.kg-callout-card div.kg-callout-emoji { display: none; }'), css)
   assert.deepEqual(cardsOf(full), { exclude: ['callout', 'toggle'] })
   assert.ok(linked(full), headOf(full))
-  // no section anywhere: the same bytes, the same exclusion, the same link
-  assert.equal(bare['assets/css/cards.css'], css)
-  assert.deepEqual(cardsOf(bare), cardsOf(full))
-  assert.ok(linked(bare), headOf(bare))
+  assert.equal(full['assets/js/cards.js'], cardsJs(['toggle'], GHOST_CARDS.scripts))
+  assert.ok(headOf(full).includes(CARDS_JS_TAG), headOf(full))
+  // no section the user placed, and no visible section at all: the same bytes, exclusion, link, script and licence
+  for (const [label, files] of [['bare', bare], ['hidden', hidden]] as const) {
+    assert.equal(files['assets/css/cards.css'], css, label)
+    assert.deepEqual(cardsOf(files), cardsOf(full), label)
+    assert.ok(linked(files), `${label}: ${headOf(files)}`)
+    assert.equal(files['assets/js/cards.js'], full['assets/js/cards.js'], label)
+    assert.ok(headOf(files).includes(CARDS_JS_TAG), `${label}: ${headOf(files)}`)
+    assert.equal(files['LICENSE-ghost.txt'], full['LICENSE-ghost.txt'], label)
+  }
+  // R-118: the pagination half is Story 10.112's — no compile writes Ghost's pagination partial today
+  for (const files of [full, bare, hidden, none]) assert.ok(!('partials/pagination.hbs' in files))
   // the control — the check reads the record: no card designed, D12's two widths alone and card_assets true
   assert.equal(none['assets/css/cards.css'], KOENIG_WIDTHS)
   assert.notEqual(none['assets/css/cards.css'], css)
   assert.equal(cardsOf(none), true)
+  assert.ok(!('assets/js/cards.js' in none))
 })
 
 test('(7.5) a chunk not as vendored, or two chunks from two Ghost versions, throws naming the card', () => {

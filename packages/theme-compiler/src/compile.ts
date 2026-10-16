@@ -876,8 +876,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const scripted = excludedChunks(cardDesigns, Object.keys(input.ghostCards.scripts).filter((n) => Object.hasOwn(styles, n)))
   const cards = scripted.length === 0 ? undefined : { js: cardsJs(scripted, input.ghostCards.scripts), version: cardsVersion(scripted, input.ghostCards.scripts) }
   // Story 7.13 — cards.css, on every theme; R-26: a divider's glyph is Tabler's drawing, so it ships Tabler's licence.
-  // FR-Q9 (Story 7.14): it ships whatever the templates hold — card styling has no host section, so cards.css and
-  // `card_assets` read the record alone, never `stacksOf(input)`; `compile.test.ts`' (7.14) row holds it
+  // FR-Q9 (Story 7.14): it ships the same whatever the templates hold — card styling has no host section, so cards.css,
+  // cards.js and `card_assets` read the record alone, never `stacksOf(input)`; `compile.test.ts`' (7.14) row holds it
+  // across no stored section and every section hidden
   let drewGlyph = false
   const cardsSheet = cardsCss(cardDesigns, styles, (name) => {
     const svg = iconSvg(name, iconDrawing)

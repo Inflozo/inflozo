@@ -9372,8 +9372,12 @@ async function main() {
     const start108 = await treat108()
     const homeStart108 = await home108()
     const victim108 = homeStart108?.instances?.at(-1)?.layerName
-    check('step 108 — the fixture: no card design stored, and Home holds the section this step deletes, read back through the service key',
-      Array.isArray(start108) && Object.keys(designs107(start108)).length === 0 && typeof victim108 === 'string', JSON.stringify({ start108, victim108 }))
+    // the card is not the one Editor cards opens on with nothing viewed (`FIRST_CARD`), so 108c's landing is the memory's;
+    // the victim's name is Home's alone and Home keeps a section after it goes (Review, 2026-10-16)
+    check('step 108 — the fixture: no card design stored, Home holds the section this step deletes (its name its own, one section left after it), and the card is not the surface\'s first, read back through the service key',
+      Array.isArray(start108) && Object.keys(designs107(start108)).length === 0 && typeof victim108 === 'string' && victim108 !== '' &&
+      homeStart108.instances.filter((i) => i.layerName === victim108).length === 1 && homeStart108.instances.length >= 2 && card108.key !== CW107.FIRST_CARD,
+      JSON.stringify({ start108, victim108, first: CW107.FIRST_CARD }))
     const kContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
     const csp108 = []
     await recorder(kContext, csp108)
@@ -9412,16 +9416,18 @@ async function main() {
     const kept108 = await treat108()
     const homeDeleted108 = await home108()
     check(`step 108b — FR-Q9: "${victim108}" deleted from Home (Layers ⋯ → Delete) and ⌘S — the revision moves by ONE and Home's stored doc loses exactly that section, while project_treatments.card_designs reads back byte-equal and unwritten (updated_at unchanged)`,
-      namesDeleted108.length === namesStart108.length - 1 && !namesDeleted108.includes(victim108) && syncedDelete108 && revDeleted108 === (revDelete108 ?? -2) + 1 &&
+      namesStart108.includes(victim108) && namesDeleted108.length === namesStart108.length - 1 && !namesDeleted108.includes(victim108) && syncedDelete108 && revDeleted108 === (revDelete108 ?? -2) + 1 &&
       homeDeleted108?.instances?.length === homeStart108.instances.length - 1 && !homeDeleted108.instances.some((i) => i.layerName === victim108) &&
-      JSON.stringify(kept108) === JSON.stringify(stored108), JSON.stringify({ revDelete108, revDeleted108, stored108, kept108, names: namesDeleted108 }))
+      JSON.stringify(kept108) === JSON.stringify(stored108), JSON.stringify({ revDelete108, revDeleted108, stored108, kept108, start: namesStart108, names: namesDeleted108 }))
 
     // 108c — after a reload, Theme settings: no pagination text (R-118) — read with the Posts per page caption taken out, since
-    // it says "paginating" of the page size and is the regex's own control — and the rail's Editor cards lands on the card
+    // it says "paginating" of the page size and is the regex's own control; a label lives in attributes too, so they are read
+    // with the text (Review, 2026-10-16) — and the rail's Editor cards lands on the card
     await kp.reload({ waitUntil: 'load' })
     await home108Painted()
     await open104(kp)
-    const text108 = await kp.evaluate(() => document.body.innerText)
+    const text108 = await kp.evaluate(() => [document.body.innerText, ...[...document.querySelectorAll('[aria-label], [title], [placeholder]')]
+      .flatMap((e) => ['aria-label', 'title', 'placeholder'].map((a) => e.getAttribute(a) ?? ''))].join('\n'))
     const rest108 = text108.split(T104.postsCaption).join('')
     const lower108 = rest108.toLowerCase()
     check('step 108c — R-118: Theme settings draws no pagination row, label or caption — nothing but the Posts per page caption matches /paginat/i (the control: that caption does, and the text read carries D6a\'s rail and the page\'s rows)',
@@ -9458,9 +9464,11 @@ async function main() {
     await kp.waitForTimeout(800)
     const syncedReset108 = await save107(kp)
     const reset108 = await treat108()
-    check('step 108d — handed back through the product: ⌘Z on Home brings the section back where it was and ⌘S stores Home\'s doc equal to its start; Reset card and ⌘S store an empty record',
-      JSON.stringify(namesUndone108) === JSON.stringify(namesStart108) && syncedUndo108 && homeBack108 && syncedReset108 && Object.keys(designs107(reset108)).length === 0,
-      JSON.stringify({ namesUndone108, homeBack108, reset108 }))
+    // the reset's save carries the record, so its `updated_at` moves: 108b's "unwritten" control (Review, 2026-10-16)
+    check('step 108d — handed back through the product: ⌘Z on Home brings the section back where it was and ⌘S stores Home\'s doc equal to its start; Reset card and ⌘S store an empty record, its updated_at moving (108b\'s control)',
+      JSON.stringify(namesUndone108) === JSON.stringify(namesStart108) && syncedUndo108 && homeBack108 && syncedReset108 && Object.keys(designs107(reset108)).length === 0 &&
+      typeof reset108?.[0]?.updated_at === 'string' && reset108[0].updated_at !== kept108?.[0]?.updated_at,
+      JSON.stringify({ namesUndone108, homeBack108, reset108, kept: kept108?.[0]?.updated_at }))
     await handBack(kp)
     await kContext.close()
 
