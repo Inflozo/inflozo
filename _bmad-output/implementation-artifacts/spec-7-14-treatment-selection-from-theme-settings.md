@@ -156,8 +156,8 @@ recommended option.
    Theme settings' rail reaches. Story 10.110 builds the Treatment dropdown there.
 3. **No new gscan or T1 run.** No byte a theme carries changes. 7.13's §81 is the cards' T1 record, and its
    `check-snapshots` rows are the cards' 0/0 on both pins.
-4. **`owner_test: none`**, because nothing on screen changes under option 1. It becomes `pending` if the owner rules
-   option 2 or 3.
+4. **`owner_test: none`**, because nothing on screen changes under option 1, which the owner ruled (2026-10-16). The
+   story is Done at its Deploy commit.
 
 ### Moved at this Create (R-195), word for word, to Story 10.112
 
@@ -182,8 +182,8 @@ Story 10.112's card, Epic 10's preamble and `prd.md` now name 10.112.
 
 ## Owner's manual test
 
-**None under Question 1's recommended option**: nothing on screen changes, and step 108 proves the claim on the live
-site. If the owner rules **option 2**, these steps are his test, run after Deploy on a laptop at full width, signed in
+**None — Question 1 ruled option 1 (owner, 2026-10-16)**: nothing on screen changes, and step 108 proves the claim on
+the live site. The steps below were option 2's and are not run; had it been ruled, they would have been his test, run after Deploy on a laptop at full width, signed in
 as himself. **Pilot sections** is `b6d4db35-8e5e-45e1-a70f-4daa28916d51`. Step 6 puts everything back.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
@@ -197,7 +197,7 @@ as himself. **Pilot sections** is `b6d4db35-8e5e-45e1-a70f-4daa28916d51`. Step 6
 
 ## Questions for the owner
 
-Question 1 is open. Dev waits for it.
+Question 1 was ruled option 1 (owner, 2026-10-16), and the spec is written to it.
 
 ### Question 1 — This story's work is already done. What should it add?
 
@@ -224,7 +224,7 @@ Theme settings' page — for example "Post cards · 1 customised · Open Editor 
    cards. You test it by hand. It is new, extrapolated from Theme settings' other rows. It repeats the left menu's
    Editor cards link.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-16).**
 
 ## Verification
 

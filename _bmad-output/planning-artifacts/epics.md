@@ -3762,9 +3762,10 @@ this surface shares (R-195) — and until then draws no pagination row (R-118).
 *(Story 7.14's Create, 2026-10-16: the pagination half of the criteria above — its Theme Settings row with D6a, and
 `partials/pagination.hbs` — moved to Story 10.112 word for word (R-118, R-195); Epic 10's preamble lists it. The card
 half holds since Story 7.13: card styling has no host section (S14d), and Theme settings' rail reaches Editor cards.
-Whether the owner tests this story by hand is its Question 1.)*
+Its Question 1, ruled option 1 (owner, 2026-10-16): a machine proves it on the live site, with no new screen and no hand
+test.)*
 
-**FRs:** FR-Q9. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a. · **Owner test:** yes.
+**FRs:** FR-Q9. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a. · **Owner test:** none (Question 1, option 1).
 
 ### Story 7.15: Share destinations — one ordered, site-wide list
 
