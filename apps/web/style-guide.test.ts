@@ -120,7 +120,7 @@ test('(7.13) Ghost 5\'s glob is a prefix test: every vendored chunk name that is
   const pairs = universe.flatMap((a) => universe.filter((b) => b !== a && b.startsWith(a)).map((b) => [a, b] as const))
   assert.ok(pairs.length > 0, 'the control: the directory holds a prefix pair (header, header_v2), so this row reads something')
   for (const [a, b] of pairs) {
-    // a chunk no card lists is never excluded, so it cannot be dropped by another card's glob only if its prefix is unlisted too
+    // both chunks of a prefix pair belong to ONE card (or to none): excluding the shorter one drops the longer one too on Ghost 5
     assert.equal(owner(a), owner(b), `${a} is a prefix of ${b}: Ghost 5's !(${a}) drops ${b} too, so they must be designed together`)
   }
 })

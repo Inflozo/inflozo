@@ -1025,7 +1025,7 @@ const held = (page) =>
       const tx = db.transaction(['meta', 'journal'], 'readonly')
       const meta = tx.objectStore('meta').get(id)
       const entries = tx.objectStore('journal').index('byProject').count(id)
-      tx.oncomplete = () => { db.close(); resolve({ packs: meta.result?.packs ?? {}, entries: entries.result }) }
+      tx.oncomplete = () => { db.close(); resolve({ packs: meta.result?.packs ?? {}, cards: meta.result?.cards ?? null, entries: entries.result }) }
       tx.onerror = () => { db.close(); reject(tx.error) }
     }
   }), '00000000-0000-4000-8000-000000000009')
@@ -7897,6 +7897,10 @@ const cardsCssOf = (page) => cardsFrame(page).locator('style[data-order="1c-card
  *  it, and the card document dressed (the selected card ringed). */
 async function openCards(page) {
   await open(page)
+  await toCards(page)
+}
+/** …from an editor already open on Home */
+async function toCards(page) {
   await page.locator('#editor-template').focus()
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
@@ -7941,6 +7945,7 @@ test('7.13 · Template ▾ → Editor cards: the ink bar, the Card dropdown on C
   await page.keyboard.press('ControlOrMeta+z')
   await expect.poll(() => cardsCssOf(page)).not.toContain('--bg-page')
   await expect(page.locator('[data-customised-card]')).toHaveCount(0)
+  await expect(page.locator('#editor-said')).toHaveText(C.restyled(['Callout']))
   await page.keyboard.press('ControlOrMeta+Shift+z')
   await expect.poll(() => cardsCssOf(page)).toContain('background: var(--bg-page)')
 })
@@ -8039,4 +8044,93 @@ test('7.13 · a stored record the editor\'s door refuses (a divider glyph the ic
   await expect(page.locator('[data-canvas="cards"]')).toBeVisible()
   await expect(page.locator('[data-canvas="cards"] [data-count]')).toHaveCount(0)
   await page.keyboard.press('Escape')
+  // the first change here is what saves over the refused record, so the line has said its piece and goes (Review, 2026-10-16)
+  await page.getByRole('switch', { name: 'Emoji' }).focus()
+  await page.keyboard.press('Space')
+  await expect(page.locator('[data-customised-card="callout"]')).toHaveCount(1)
+  await expect(page.locator('[data-cards-refused]')).toHaveCount(0)
+})
+
+// ── Story 7.13's review (2026-10-16): the rows the layers found unheld ──
+
+test('7.13 · a greyed control\'s value is kept but is no change: Pack tokens → Tint → Ghost\'s palette leaves Callout on Ghost\'s look, and Pack tokens brings Tint back; the picked swatch draws its ring', async ({ page }) => {
+  await openCards(page)
+  await page.getByRole('radio', { name: "Ghost's palette" }).focus()
+  await page.keyboard.press('ArrowRight')
+  await page.getByRole('radio', { name: 'Tint' }).focus()
+  await page.keyboard.press('Space')
+  await expect(page.getByRole('radio', { name: 'Tint' })).toHaveAttribute('aria-checked', 'true')
+  await expect.poll(() => cardsCssOf(page)).toContain('background: var(--plate)')
+  // the Kit's SwatchRow: the picked swatch carries the 2px coral ring, an unpicked one the hairline alone
+  const shadow = (name) => page.getByRole('radio', { name }).locator('span[aria-hidden]').evaluate((s) => getComputedStyle(s).boxShadow)
+  expect(await shadow('Tint')).toMatch(/0px 0px 0px 2px/)
+  expect(await shadow('Base'), 'the control: an unpicked swatch has no ring').not.toMatch(/0px 0px 0px 2px/)
+  await page.getByRole('radio', { name: 'Pack tokens' }).focus()
+  await page.keyboard.press('ArrowLeft')
+  await expect(page.getByRole('radio', { name: "Ghost's palette" })).toHaveAttribute('aria-checked', 'true')
+  // the background row greys and keeps Tint legible (P0·0), but renders nothing: no badge, no count, Ghost's look whole
+  await expect(page.locator('[data-customised-card]')).toHaveCount(0)
+  await expect(page.locator('[data-canvas="cards"] [data-count]')).toHaveCount(0)
+  await expect.poll(() => cardsCssOf(page)).toBe(LIB.KOENIG_WIDTHS)
+  await expect(page.getByRole('radio', { name: 'Tint' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByRole('radio', { name: "Ghost's palette" }).focus()
+  await page.keyboard.press('ArrowRight')
+  await expect.poll(() => cardsCssOf(page), 'the control: Tint is in force again').toContain('background: var(--plate)')
+  await expect(page.locator('[data-customised-card="callout"]')).toHaveCount(1)
+})
+
+test('7.13 · the divider\'s glyph on the canvas is the chosen icon\'s own drawing, never an empty mask', async ({ page }) => {
+  await openCards(page)
+  await page.locator('#editor-card').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-card-menu [data-card="callout"]')).toBeFocused()
+  await page.locator('#editor-card-menu [data-card="divider"]').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-panel-name')).toHaveText('Divider')
+  await expect.poll(() => cardsCssOf(page), 'the control: no glyph while the rule shows').not.toContain('mask:')
+  await page.getByRole('switch', { name: 'Glyph instead of a rule' }).focus()
+  await page.keyboard.press('Space')
+  // the start icon's path data, encoded in the url — the empty fallback carries no path
+  await expect.poll(() => cardsCssOf(page)).toMatch(/hr:not\(\[class\]\) \{[^}]*mask: url\("data:image\/svg\+xml,%3Csvg[^"]*%3Cpath/)
+})
+
+test('7.13 · Editor cards draws no sun and no device switch, and their keys do nothing there (UX-DR3) — on Home they act (the control)', async ({ page }) => {
+  await open(page)
+  const pageCanvas = page.frameLocator('section[aria-label="Canvas"]:not([data-cards-canvas]) iframe').locator('html')
+  const mode = await pageCanvas.getAttribute('data-mode')
+  const device = await deviceOf(page)
+  await toCards(page)
+  await expect(page.locator('#editor-mode')).toHaveCount(0)
+  await expect(page.locator('#editor-device')).toHaveCount(0)
+  await page.locator('section[data-cards-canvas]').focus()
+  await page.keyboard.press('.')
+  await page.keyboard.press('2')
+  // back to Home: the page canvas as it was
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="cards"]')).toBeFocused()
+  await page.keyboard.press('Home')
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/\/app\/harness\/editor$/)
+  await expect(pageCanvas).toHaveAttribute('data-mode', mode)
+  expect(await deviceOf(page)).toBe(device)
+  await page.locator('section[aria-label="Canvas"]:not([data-cards-canvas])').focus()
+  await page.keyboard.press('2')
+  await expect.poll(() => deviceOf(page), 'the control: on Home the key picks a device').not.toBe(device)
+})
+
+test('7.13 · a card change not yet sent is kept on this device: a reload opens on it, and ⌘Z still undoes it (§AD1.1)', async ({ page }) => {
+  await openCards(page)
+  await page.getByRole('switch', { name: 'Emoji' }).focus()
+  await page.keyboard.press('Space')
+  // the device's record holds the card designs beside the docs (the harness has no database, so it is owed and never sent)
+  await expect.poll(async () => (await held(page)).cards, 'the change is written to the device').toEqual({ callout: { emoji: 'off' } })
+  await page.reload()
+  await expect(cardsFrame(page).locator('[data-inflozo-card-selected]')).toHaveCount(1)
+  await expect(page.locator('[data-customised-card="callout"]')).toHaveCount(1)
+  await expect.poll(() => cardsCssOf(page)).toContain('div.kg-callout-emoji { display: none; }')
+  await page.locator('section[data-cards-canvas]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('[data-customised-card]')).toHaveCount(0)
 })

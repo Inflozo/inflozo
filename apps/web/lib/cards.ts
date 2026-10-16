@@ -7,16 +7,20 @@
 // the editor, the canvas and the compiler read them; this file holds only the surface's own sentences. Pure and
 // client-safe, so `node --test` reaches it and the Shell may import it.
 
-import { cardOf, CARDS, cardChanges, designedCards, parseCardDesigns, type CardDesigns, type CardEntry } from '@inflozo/library'
+import { cardOf, cardChanges, designedCards, parseCardDesigns, type CardDesigns, type CardEntry } from '@inflozo/library'
 
 /** "colours, emoji and emoji size" — S14c's names, joined as the panel's other confirms join theirs. */
 const inWords = (words: readonly string[]): string =>
   words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`
 
+/** R-170: the surface is "Editor cards" everywhere — the switcher row, Theme settings' rail, the page title, every
+ *  announcement — where C3a's group draws "Cards" */
+const LABEL = 'Editor cards'
+
 export const CARD_WORDS = {
-  /** R-170: the surface is "Editor cards" everywhere — the switcher row, Theme settings' rail, the page title, every
-   *  announcement — where C3a's group draws "Cards" */
-  label: 'Editor cards',
+  label: LABEL,
+  /** the card document's own `<title>` and the iframe's accessible name */
+  canvasTitle: `${LABEL} canvas`,
   /** the switcher row's one line (R-171), written to fit the 284px menu */
   caption: "Ghost's cards, styled once",
   /** S14d's amber count, read aloud as words (the frame's a11y note); absent at zero, never "0" */
@@ -54,6 +58,8 @@ export const CARD_WORDS = {
     `Removes your ${count} ${count === 1 ? 'change' : 'changes'} — ${inWords(nouns)} — everywhere ${plural} appear. Posts keep their content.`,
   cancel: 'Cancel',
   resetCard: 'Reset card',
+  /** the arrow beside a changed control, as the section panel's (its accessible name and its title) */
+  resetControl: (control: string): string => `Reset ${control}`,
   /** P0-0's reason beside a greyed control, keyed `card.control` — every `greyedWhile` the registry declares has one
    *  (`cards.test.ts` holds that) */
   greyed: {
@@ -62,14 +68,17 @@ export const CARD_WORDS = {
     'callout.background': "Choose Pack tokens to set a background — Ghost's palette keeps each author's own colour.",
     'audio.thumbnail-size': 'Shown while the thumbnail shows.',
   } as Readonly<Record<string, string>>,
-  /** said once, where a stored record `parseCardDesigns` refused (a hand-made row) opened every card on Ghost's defaults */
+  /** shown where a stored record `parseCardDesigns` refused (a hand-made row) opened every card on Ghost's defaults, until
+   *  the first card change here saves over it */
   malformed: "Your saved card designs could not be read, so every card shows Ghost's default. Your next change here saves over them.",
-  /** the right panel's accessible name, and the canvas's name tag (uppercased by CSS) */
+  /** the right panel's accessible name */
   panel: (label: string): string => `${label} card settings`,
   /** `#editor-said`'s words */
   chosen: (label: string): string => `${label} selected`,
   changed: (label: string, control: string, value: string): string => `${label} — ${control}: ${value}`,
   wasReset: (label: string): string => `${label} is back to Ghost's default.`,
+  /** an undo or a redo that changed cards — said wherever it lands, since from another canvas the change is out of sight */
+  restyled: (labels: readonly string[]): string => `${inWords(labels)} restyled.`,
 } as const
 
 /** The number of customised cards — the switcher's amber count and the left panel's list. */
@@ -110,6 +119,3 @@ export async function storedCards(raw: unknown): Promise<{ cardDesigns: CardDesi
   const cards = await parseStoredCards(raw)
   return typeof cards === 'string' ? { cardDesigns: {}, cardsRefused: cards } : { cardDesigns: cards, cardsRefused: null }
 }
-
-/** Every card in the registry's order — re-exported for the surface, so the editor reads one list. */
-export { CARDS }

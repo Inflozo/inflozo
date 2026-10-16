@@ -2,7 +2,7 @@
 title: 'Story 7.13 — The Ghost card design module and cards.css'
 type: 'feature'
 created: '2026-10-15'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '308898a3592c553f8192ac99cdd6f3ef1c32ee47'
 owner_test: pending
 review_loop_iteration: 0
@@ -278,6 +278,88 @@ treatments and their read-only block are Epic 10's (R-118).
   theme's own files (§81).
 - Given a window reading along, then every card control is visibly disabled and nothing is journalled (R-192).
 
+### Review Findings (2026-10-16)
+
+Five layers ran: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the real-infra verifier (production's
+schema through the pooler in a read-only transaction, PostgREST, the deployed routes signed out, T1 read only, Vercel and
+CI). The deployed walk's step 107 ran in the main session on production (R-82); results under § Verification. Every
+finding was read in the code before it was rated. One question for the owner came out of it (Question 7).
+
+- [ ] [Review][Decision] Embed's Alignment does nothing on the site or on the canvas — Ghost and every Inflozo theme write
+  no embed rule, so a site shows embeds at the left while the panel starts on ▸Centred; on the canvas the stand-in centres
+  them after `cards.css`, so Left changes nothing there either. The table's start has no Ghost source to match (executed:
+  the compiled pilot theme carries no `.kg-embed-card` rule; T1's Casper centres embeds in its own `screen.css`) (Question 7)
+  [packages/library/src/cards.ts (embed) · apps/web/lib/style-guide.ts (THEME_CSS)]
+- [x] [Review][Patch] Step 107i failed twice on production: `choose107` waited for any ring — the last card's, still in
+  the document being replaced — and read the toggle's document mid-load. It now waits for the chosen card's own ring;
+  run 3 then 54 of 54 (the ring lands ~640 ms after the choice) [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Patch] The device copy (hydrate) and an undone record were judged without the icon set, while the sync route
+  judges a divider's glyph by it: one glyph the set does not draw (an icon renamed by a Tabler bump, a planted record) held
+  every later save — docs included — at 422 Retrying. The hydrate reads it through `parseStoredCards`; an undo judges it
+  with the loaded set (`loadedIcons`) [editor.tsx · icon-picker.tsx]
+- [x] [Review][Patch] A greyed control's leftover value kept its card customised: Pack tokens → Tint → Ghost's palette left
+  Callout badged, counted, excluded and its corners re-pointed while it showed Ghost's palette, with no way to clear it but
+  a whole-card reset. `valuesInForce` (a greyed control at its start) now drives the badge, the count, the exclusion,
+  S14c's sentence and the rules; the value is kept, so Pack tokens brings Tint back (P0·0) [cards.ts · cards.test.ts ·
+  journey]
+- [x] [Review][Patch] After a click on a card, focus is in the card document, which bound none of the editor's keys (⌘S
+  opened the browser's Save page, ⌘Z did nothing) and whose presses never closed an open menu. Each card document now
+  gets the page canvas's listeners (`wire`) [cards-surface.tsx · editor.tsx · floor.spec.mjs]
+- [x] [Review][Patch] Every card chosen pushed a history entry (a changed iframe `src`), so Back stepped the canvas
+  through older cards while the panel stayed put. The frame keeps its first address and a choice goes through
+  `location.replace` [cards-surface.tsx · floor.spec.mjs]
+- [x] [Review][Patch] The sun's `.` and the device keys still acted on Editor cards, which draws neither, changing the
+  hidden page canvas. They do nothing there now; `dark-mode.test.ts` requires the condition instead of allowing it
+  [editor.tsx · dark-mode.test.ts · journey]
+- [x] [Review][Patch] The malformed-record line stayed after the change that saved over the record; it goes with the first
+  card change [editor.tsx · lib/cards.ts · journey]
+- [x] [Review][Patch] An undo or redo of a card change said nothing, and from a page canvas it happens out of sight; it
+  says "Callout restyled." as an undone pack says its name [lib/cards.ts · editor.tsx · journey]
+- [x] [Review][Patch] The name tag was placed once and floated off its card as faces landed or a toggle opened above it;
+  a `ResizeObserver` re-places it. A failed icon download was an unhandled rejection; it is handled [cards-surface.tsx]
+- [x] [Review][Patch] The Tint swatch read `cardDots[4]` by a bare index with an empty-colour fallback; it reads
+  `PLATE_DOT` and passes no colour when there is none [pack-edit.ts · editor.tsx]
+- [x] [Review][Patch] `cards.js` took any designed card with a vendored script, though only a stylesheet chunk's name is
+  excluded; a script-only name would have run twice. It takes the names `card_assets` excludes [compile.ts]
+- [x] [Review][Patch] README said `cards.css` switches Ghost's copy off (`package.json`'s `card_assets` does), left out a
+  divider's settings, and listed the chunks in another order than the file's header; the test's divider row was a no-op
+  replace [compile.ts · compile.test.ts]
+- [x] [Review][Patch] Comments: the link-order claim held only for designed cards; `glyphRule` said `)` is encoded (it is
+  not — the url is double-quoted); "seven" counts in a comment and a test title (the Never list); a spliced paragraph in
+  `read.ts`; a garbled test comment [compile.ts · cards.ts · cards.test.ts · read.ts · style-guide.test.ts]
+- [x] [Review][Patch] R-170: the reset arrow's name, the canvas's title and the card document's `<title>` were spelled
+  outside `CARD_WORDS` [lib/cards.ts · cards-surface.tsx · style-guide.ts]
+- [x] [Review][Patch] The Card dropdown's current row lacked S14a's coral check (`S14 Editor Cards.dc.html:52`)
+  [cards-surface.tsx]
+- [x] [Review][Patch] `lib/cards.ts` re-exported `CARDS` for no importer; removed [lib/cards.ts]
+- [x] [Review][Patch] Opening Editor cards ran the site reads for the hidden page canvas; it reads nothing [editor.tsx]
+- [x] [Review][Patch] The route's `cardsThere` was pinned by name alone; its read and its comparison are pinned as
+  `packsThere`'s are [editor.test.ts]
+- [x] [Review][Patch] The divider's glyph rule `hr:not([class])` reaches every classless `<hr>` on a page, a section's
+  included; a design's bare `<hr>` is now refused at authoring (`bare-hr`) — none carries one today (the library's designs
+  swept) [validate.ts · validate.test.ts]
+- [x] [Review][Patch] Unheld rows, now journeys: an unsent card change survives a reload (the device record read back),
+  the divider's glyph on the canvas is the icon's own drawing, and the picked swatch draws its ring [journey.spec.mjs]
+- [x] [Review][Patch] Docs: `ARCHITECTURE-SPINE.md` AD-27(a0) still said `project_treatments` holds `paywall_design_id`;
+  the spec's sweep expected a narrower list than the repository rightly holds; View as's absence and the Editor cards
+  row's Empty mark are named in the Spec Change Log [ARCHITECTURE-SPINE.md · this spec]
+- [x] [Review][Defer] A stored record the schema refuses stops every build until a card is changed, and no screen yet
+  says so to a customer — DW-358, carried on Story 7.18's card [compile.ts · read.ts]
+- [x] [Review][Defer] The R-236 row reaches PackEditor's late close only when timing lines up — a note on DW-350 for a
+  row that always reproduces it (Story 15.1) [pack-editor.tsx · journey.spec.mjs]
+- [x] [Review][Defer] The card document reads the chunk directory twice per request, and a kept card other than Callout
+  loads Callout's document first — `ponytail:` notes beside the code, with their upgrade paths [style-guide.ts · editor.tsx]
+
+Dismissed, each read in the code: the journal's `labelOf`, `vanishedDesign` and `panelOpen` (none walks a card entry);
+the pack faces' `url(canvas?` rewrite (one generator writes it, unquoted); the migration not mirrored (`SCHEMA.sql` carries
+it); a direct authenticated RPC call storing an unparsed record (AD-6's hand-made row, the matrix's malformed row); an
+icon-first control in `pilot-theme.mjs` (none exists); step 107's lack of try/finally (the walk's `finally` deletes its
+accounts, which cascades); inline-style `!important` (AD-3 admits only a custom property); a second throw in
+`writeCardStyles` (only a vendored head could throw, and they are fixed); `CANVASES.cards`' file (every walker guards it);
+`ControlField` (its Kit controls are what the panel reuses); the Ghost block's `/* name.css */` labels; the theme's text
+scans reading Ghost's block (they fail closed, as over `cards.js`); the card tokens (every one is declared by the theme's
+tokens and `reference-tokens.css`, checked).
+
 ## Spec Change Log
 
 Dev, 2026-10-15 — routine calls made in Dev, each from a source read or an execution (none changes what a ruling decided):
@@ -326,6 +408,19 @@ Dev, 2026-10-15 — routine calls made in Dev, each from a source read or an exe
   queued, so the old dialog's close landed after New pack had opened it again and set the editor back to nothing.
   `PackEditor` now ignores a close that arrives while its dialog is open again; R-236 then 16 of 16. DW-350 carries the
   finding (its R-201 row stays open).
+
+Review, 2026-10-16 — routine calls made at Review, each from a source read or an execution:
+- **A greyed control's value is no change.** P0·0 keeps a greyed control's value legible "so the user sees what returns",
+  and routine call 3 makes "untouched" and "Ghost's default" one look, so `valuesInForce` puts a greyed control at its
+  start for the badge, the count, the exclusion, S14c's sentence and the rules, and the record keeps the value.
+- **View as is absent on Editor cards**, where S14a draws "View as Anonymous": the canvas is the sample post, which no
+  visitor changes, and R-118 draws no control before the story that makes it work. The deviation is named here (AC 1).
+- **The Editor cards row carries R-130's Empty mark** while no card is customised, as Paywall's does while no design is
+  chosen; owner test step 1's "no number" stands.
+- **A card's choice replaces the card document** (`location.replace`) rather than changing the frame's `src`, so it adds
+  no history entry.
+- **An undo or a redo that changes cards says so** (`CARD_WORDS.restyled`), as an undone pack says its name.
+- **A design's classless `<hr>` is refused at authoring** (`bare-hr`), because the divider's glyph rule reaches it.
 
 ## Design Notes
 
@@ -545,7 +640,8 @@ all three). Step 13 puts everything back.
 
 ## Questions for the owner
 
-All three were ruled option 1 (owner, 2026-10-15), and the spec is written to those rulings.
+All three were ruled option 1 (owner, 2026-10-15), and the spec is written to those rulings. Questions 4 to 6 were asked
+and ruled in the Dev session. Question 7 came out of the Review and is open.
 
 ### Question 1 — The callout's background row: its name and its choices
 
@@ -656,6 +752,28 @@ end Casper, English and the logo are back, and the script checks each one.
 3. **Stop the story here.**
 
 **Ruled: option 1 (owner, 2026-10-15).** *"1. Go"*, asked in the Dev session before the run; run in the main session.
+
+### Question 7 — The Embed card's Alignment does nothing yet: what should its two choices mean?
+
+**In plain English.**
+- Embeds are the videos and posts an author pastes into a Ghost post: YouTube, X, Vimeo, Spotify and the rest.
+- Editor cards gives Embed one control, **Alignment — Left · Centred**, starting on Centred as the design drew it.
+- But Ghost adds no styling to embeds, and no Inflozo theme does yet, so on a real site an embed sits at the left edge.
+  Choosing Left changes nothing there, and the "Centred" the panel shows is not what visitors see.
+- On the Editor cards sample the opposite happens: embeds show centred, and Left changes nothing there either.
+
+**Example.** An author pastes a YouTube link into a post. Today, on your site, the video sits at the left of the text
+column, whatever the panel says.
+
+1. **Every theme centres embeds, and Left moves them to the left.** The panel keeps the drawing's start (Centred), the
+   sample and your site agree, and both choices work. It is how Ghost's own Casper theme shows embeds (read on T1's live
+   Casper, 2026-10-16).
+   **(RECOMMENDED)**
+2. **Start on Left (Ghost's own look, no styling) and let Centred add the centring.** Both choices work, but the starting
+   value moves away from the drawing.
+3. **Remove the control.** Embed gets one line ("Embeds keep their own alignment") and no panel.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -773,6 +891,46 @@ end Casper, English and the logo are back, and the script checks each one.
   and pushed again as a second Dev commit (below the Spec Change Log entry).
 - Not run here: step 107 on the deployed site (Review).
 
+**Executed — Review phase (2026-10-16):**
+- CI on the Dev head `1037dcec` (`GITHUB_TOKEN`, read in process): run 38776469967 `rls`, `check` and `deploy` success, the
+  render matrix success; Vercel (`VERCEL_*`): `dpl_ukkD2Pev2Z9zNvit5oDwLwXMxk7x` READY at `1037dcec`, serving
+  app.inflozo.com and inflozo.com. The first Dev push `a5cc39e1`: `check` failed, `deploy` skipped, no deployment.
+- The deployed walk's step 107 on production, from a detached worktree at `1037dcec` (`node_modules` hard-linked) with a
+  cut copy — steps 1–5, then step 107 — in its `tools/probe-debug/` (never committed); `SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN` and `VERCEL_TEAM_ID` read inside the process. It hit app.inflozo.com (the editor,
+  `/cards`, Theme settings, `/sync`, `/lock`, the style-guide frame), Supabase REST (`project_treatments`, `projects`) and
+  Auth admin through the service key:
+  - run 1 — 53 PASS, 1 FAIL: 107i's reading-along window had every control disabled (0 live of 9, Toggle 0 of 6) and the
+    banner, but no ring on the toggle;
+  - run 2 — the same FAIL, with the detail added: `ringed: null, tag: null`, the toggle's document read mid-load;
+  - run 3 — with `choose107` waiting for the chosen card's own ring (the patch): **0 FAIL, 54 PASS**, the ring landing 555
+    ms (Bookmark) and 642 ms (Toggle) after the choice;
+  - every run: 107e stored exactly `{ callout: { colours: 'tokens', background: 'tint' } }`, owned by the user, revision
+    0 → 1, and the crafted post answered 422 "Not a card design" with the record and revision unchanged; the project
+    handed back as it started (`[]`), zero CSP violations, users 14 → 14.
+- The real-infra verifier, read only: production through `SUPABASE_DB_POOLER_URL` (a read-only transaction) — one
+  `sync_project_doc(uuid, jsonb, bigint, text, jsonb, jsonb)`, its `prosrc` equal to the migration's body (1,762
+  characters), EXECUTE for `authenticated` and `postgres` alone, `project_treatments` with `card_designs` and without
+  `paywall_design_id` (controls: the old five-argument signature resolves to nothing, the new one resolves); PostgREST
+  anonymous — the six-name and three-name calls 401 `42501` (found, then refused), an unknown argument 404 `PGRST202`
+  (the control); the deployed routes signed out — `/projects/<uuid>/cards` 307 to sign-in, `POST …/sync` 401 "Not signed
+  in", `GET …/sync` 405, an unknown inflozo.com path 404 (the control); T1 (`GHOST6_STAFF_ACCESS_TOKEN`, GET only) —
+  installed `casper` (active), `racer`, `source`, no probe left behind; the home links Ghost's `/public/cards.min.css`
+  (46,231 bytes, §81's figure) and no Inflozo `cards.css` (`/assets/cards.css` 404, `/assets/built/screen.css` 200, the
+  control).
+- Production's one `project_treatments` row is the owner's **Pilot sections** (eight cards customised, last written
+  2026-10-16T01:49Z): his own testing, not a walk's, and left alone. The verifier's "16 users" was read while a walk's two
+  throwaway accounts existed; every walk ended 14 → 14.
+- T1, read only (`curl` of the live Casper's `/assets/built/screen.css`): `.kg-embed-card{display:flex;flex-direction:
+  column;align-items:center;width:100%}`; the compiled pilot theme carries no `.kg-embed-card` rule at all (Question 7).
+- Locally after the patches, Node 24.18.1: `pnpm check` exit 0; `node tools/check-snapshots.mjs` PASS; `node
+  tools/check-baseline.mjs` PASS; `pnpm keyboard` whole — **238 passed** (the review's five rows among them: the greyed
+  value, the divider's glyph, no sun or device on Editor cards with Home as the control, the unsent change across a reload,
+  and `floor.spec.mjs`' card-document keys, menu and history). An earlier whole run stopped at "the journey uses no
+  pointer at all": the card-document row had been written into the keyboard journey with a click, and moved to
+  `floor.spec.mjs`, the pointer file.
+- Not run here: step 107 on the Review head — after this push deploys, appended in a second Review commit.
+
 **Commands:**
 - `bash supabase/tests/run-rls-gate.sh` -- expected: passes, no SCHEMA DRIFT, before the Schema push.
 - `pnpm check` -- expected: green. That includes `cards.test.ts`, `compile.test.ts`'s card rows, `journal.test.ts`,
@@ -785,7 +943,9 @@ end Casper, English and the logo are back, and the script checks each one.
   paywall probe trees. The T1 half is recorded as MEASUREMENTS §81 on the owner's in-session go, Casper restored.
 - `python3 tools/doc-audit.py --check` -- expected: passes.
 - `grep -rn --exclude=.env --exclude-dir=node_modules --exclude-dir=.claude 'paywall_design_id\|DESIGNED_CARDS' .` --
-  expected: only the migration that drops the column, dated records and this spec.
+  expected: the migration that drops the column and the two earlier ones that wrote it, `SCHEMA.sql`'s note, the RLS
+  gate's "it is gone" assertions (both copies), the spine's dated corollary, the epics and their context files, DW-267,
+  dated records, specs and the generated board — no live reader or writer (Review, 2026-10-16: the verifier's run).
 
 **Manual checks (if no CLI):**
 - Production: the read-back after the apply shows one `sync_project_doc` with six arguments and no `paywall_design_id`.

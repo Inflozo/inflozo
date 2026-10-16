@@ -123,6 +123,8 @@ export const ROLE_TOKENS: Readonly<Record<string, string>> = {
 
 const CELL_DOTS = ['--bg-page', '--accent', '--text-body', '--plate'] as const
 const CARD_DOTS = ['--bg-page', '--bg-surface', '--accent', '--text-body', '--plate'] as const
+/** Where the card's dots hold the pack's hover plate — Editor cards' Tint swatch (Story 7.13), the same token its rule paints */
+export const PLATE_DOT = CARD_DOTS.indexOf('--plate')
 
 /** A PACK AS THE EDITOR PAINTS IT, made by the very engine calls `packChoices` makes for a preset — its names, the cell's
  *  and the card's dots, the Background role's swatches per mode, its canvas `1-tokens` block and its pairing's

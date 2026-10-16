@@ -92,7 +92,8 @@ const CALLOUT_ROLES: Readonly<Record<string, readonly [string, string]>> = {
 }
 
 /** The divider's glyph as a CSS mask over the icon's own drawing (routine call 8): the `hr` stays bare, because a card
- *  may add no markup to `{{content}}` (A33 §0.4). `encodeURIComponent` leaves no `"`, `<` or `)` to end the url. */
+ *  may add no markup to `{{content}}` (A33 §0.4). `encodeURIComponent` leaves no `"` or `<`, and the url is double-quoted,
+ *  so the `(` and `)` it leaves cannot end it. */
 const glyphRule = (name: string, glyph: GlyphLookup | undefined): string => {
   const svg = glyph?.(name) ?? null
   if (svg === null) throw new Error(`the divider's glyph "${name}" is no icon Tabler draws, so cards.css cannot draw it`)
@@ -404,15 +405,27 @@ export function withoutCard(designs: CardDesigns, cardKey: string): CardDesigns 
   return out
 }
 
-/** The customised cards, in list order — every card holding a value that differs from its start. */
-export const designedCards = (designs: CardDesigns): CardEntry[] =>
-  CARDS.filter((c) => c.controls.some((x) => own(designs[c.key] ?? {}, x.name) && (designs[c.key] as Record<string, string>)[x.name] !== x.start))
+/** A card's values IN FORCE: `cardValues`, with every control another one greys (P0·0's `greyedWhile`) back at its start.
+ *  A greyed value is KEPT, so the panel shows what returns (P0·0), but it renders nothing — so it is no change: Pack tokens
+ *  → Tint → Ghost's palette leaves the card on Ghost's look, uncustomised and not excluded (routine call 3; Review,
+ *  2026-10-16). The badge, the count, the exclusion, S14c's sentence and the rules all read this. */
+export function valuesInForce(designs: CardDesigns, card: CardEntry): CardValues {
+  const v = cardValues(designs, card)
+  return Object.fromEntries(card.controls.map((c) => [c.name, c.greyedWhile !== undefined && c.greyedWhile.values.includes(v[c.greyedWhile.control] ?? '') ? c.start : (v[c.name] as string)]))
+}
 
-/** S14c's count and names: the controls of one card that differ from their start, in panel order. */
+/** The customised cards, in list order — every card with a value IN FORCE that differs from its start. */
+export const designedCards = (designs: CardDesigns): CardEntry[] =>
+  CARDS.filter((c) => {
+    const v = valuesInForce(designs, c)
+    return c.controls.some((x) => v[x.name] !== x.start)
+  })
+
+/** S14c's count and names: the controls of one card IN FORCE that differ from their start, in panel order. */
 export function cardChanges(designs: CardDesigns, cardKey: string): { count: number; nouns: string[] } {
   const card = cardOf(cardKey)
   if (card === undefined) return { count: 0, nouns: [] }
-  const v = cardValues(designs, card)
+  const v = valuesInForce(designs, card)
   const nouns = card.controls.filter((c) => v[c.name] !== c.start).map((c) => c.noun)
   return { count: nouns.length, nouns }
 }
@@ -446,7 +459,7 @@ export function cardsCss(designs: CardDesigns, chunks: Readonly<Record<string, s
     out += `${GHOST_BLOCK_HEAD}${copied.map(([n]) => n).join(' · ')} — copied unchanged from Ghost ${version}, core/frontend/src/cards/css/.\n   ${copyright}. MIT licence: the full text is LICENSE-ghost.txt. */\n`
     out += copied.map(([n, body]) => `/* ${n}.css */\n${body.endsWith('\n') ? body : `${body}\n`}`).join('')
   }
-  const rules = designed.flatMap((c) => [...(c.always ?? []), ...c.rules(cardValues(designs, c), glyph)])
+  const rules = designed.flatMap((c) => [...(c.always ?? []), ...c.rules(valuesInForce(designs, c), glyph)])
   if (rules.length > 0) out += `${OWN_RULES_HEAD}\n${rules.join('\n')}\n`
   return out
 }

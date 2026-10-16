@@ -1166,7 +1166,7 @@ test('(7.5, 7.13) a designed card with no script: no cards.js, no cards tag, no 
   // a divider alone copies nothing of Ghost's: no licence of Ghost's, and README's widths line
   const divider = build({}, { cardDesigns: { divider: { glyph: 'on' } } }).files
   assert.ok(!('LICENSE-ghost.txt' in divider))
-  assert.ok((divider['README.md'] as string).endsWith(STYLES_NONE.replace('their wide and full widths.', 'their wide and full widths.')))
+  assert.ok((divider['README.md'] as string).endsWith(STYLES_NONE.replace('their wide and full widths.', 'their wide and full widths, and its card settings.')), divider['README.md'] as string)
 })
 
 test('(7.5) a chunk not as vendored, or two chunks from two Ghost versions, throws naming the card', () => {
@@ -1806,7 +1806,7 @@ test('(7.13) one static card: { callout: { emoji: off } } excludes callout alone
   assert.match(ownCardsCss(css), /\.kg-callout-card div\.kg-callout-emoji \{ display: none; \}\n$/)
   assert.equal(files['LICENSE-ghost.txt'], tidyLicence(GHOST_CARDS.licence))
   const readme = files['README.md'] as string
-  assert.match(readme, /- `assets\/css\/cards\.css` styles the cards Ghost's editor puts in posts\. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: callout, copied unchanged from Ghost 6\.58\.0 under the MIT licence in `LICENSE-ghost\.txt`\./)
+  assert.match(readme, /- `assets\/css\/cards\.css` styles the cards Ghost's editor puts in posts\. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: callout, copied unchanged from Ghost 6\.58\.0 under the MIT licence in `LICENSE-ghost\.txt`\. The rest of the file is this theme's own: the cards' widths and its card settings\. `package\.json`'s `card_assets` switches off Ghost's own copy of these cards' styles\./)
 })
 
 test('(7.13) the header card excludes header AND header_v2 and copies both; a divider alone adds CSS and no name — card_assets stays true — with Tabler\'s licence for its glyph', () => {

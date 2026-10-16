@@ -9,7 +9,7 @@ import { CustomisedBadge } from '@/components/kit/badge'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ReadOnly, ring, type Greyed } from '@/components/kit/greyed'
-import { ChevronDown, ChevronUp, InfoCircle, Undo } from '@/components/kit/icons'
+import { Check, ChevronDown, ChevronUp, InfoCircle, Undo } from '@/components/kit/icons'
 import { Segmented } from '@/components/kit/segmented'
 import { SwatchRow } from '@/components/kit/swatch-row'
 import { Toggle } from '@/components/kit/toggle'
@@ -100,6 +100,8 @@ export function CardMenu({ card, designs, onChoose }: { card: CardEntry; designs
                   {customised.has(c.key) ? <CustomisedBadge words={CARD_WORDS.customised} /> : null}
                   {/* R-6's mark, S14a's "NO COLOUR CTLS" in words */}
                   {c.colour ? null : <span data-no-colour className="font-mono text-[9px] uppercase text-ink-soft">{CARD_WORDS.noColourMark}</span>}
+                  {/* S14a's coral check on the card in force (`S14 Editor Cards.dc.html:52`) */}
+                  {c.key === card.key ? <Check size={13} className="shrink-0 text-coral-deep" /> : null}
                 </span>
               </button>
             </li>
@@ -222,29 +224,37 @@ const loadedDoc = (frame: HTMLIFrameElement | null): Document | null => {
 /** The Editor cards canvas: the card document in a page card at reading width (S14a), with the pack worn, the two card
  *  stylesheets written for `designs`, and the selected card ringed. The document is asked for per card — Ghost's card
  *  scripts run once, at load — and a value change rewrites its styles in place. */
-export function CardsCanvas({ src, card, designs, pack, frameRef, onChoose }: {
+export function CardsCanvas({ src, card, designs, pack, frameRef, onChoose, wire }: {
   src: string
   card: CardEntry
   designs: CardDesigns
   pack: Pick<PackChoice, 'tokens' | 'faces'>
   frameRef: RefObject<HTMLIFrameElement | null>
   onChoose: (key: string) => void
+  /** the editor's own listeners on each card document — its keys (⌘S, ⌘Z, Esc, `?`) and the menus' light dismiss — as it
+   *  binds them on the page canvas's: focus is in here after a click on a card (Review, 2026-10-16) */
+  wire: (doc: Document) => void
 }) {
   const [icons, setIcons] = useState<((name: string) => string | null) | null>(null)
   // the pack's faces name the canvas route beside the page (`canvas?font=…`); this document is one level down
   // (`/style-guide/frame`), so they are worn as `../canvas?font=…` — the same files, the same addresses' cache
   const worn = useMemo(() => ({ tokens: pack.tokens, faces: pack.faces.replaceAll('url(canvas?', 'url(../canvas?') }), [pack.tokens, pack.faces])
-  const latest = useRef({ card, designs, pack: worn, icons, onChoose })
-  latest.current = { card, designs, pack: worn, icons, onChoose }
+  const latest = useRef({ card, designs, pack: worn, icons, onChoose, wire })
+  latest.current = { card, designs, pack: worn, icons, onChoose, wire }
   useEffect(() => {
     let alive = true
-    void loadIcons().then((m) => {
-      if (alive) setIcons(() => (name: string) => iconSvg(name, m.iconDrawing))
-    })
+    loadIcons().then(
+      (m) => {
+        if (alive) setIcons(() => (name: string) => iconSvg(name, m.iconDrawing))
+      },
+      // a failed download leaves the glyph undrawn here (`writeCardStyles`' empty mask); the picker's next open retries it
+      () => {},
+    )
     return () => {
       alive = false
     }
   }, [])
+  const listened = useRef(new WeakSet<Document>())
   const glyph = (name: string) => latest.current.icons?.(name) ?? null
   /** everything the document wears, from `latest`: the pack, the card styles, the ring */
   const dress = (scroll: boolean) => {
@@ -262,6 +272,9 @@ export function CardsCanvas({ src, card, designs, pack, frameRef, onChoose }: {
       const doc = loadedDoc(frame)
       if (!doc) return
       dress(true)
+      // each document's listeners once, whoever calls this for it (the mount's check and its load can both)
+      if (listened.current.has(doc)) return
+      listened.current.add(doc)
       // A PRESS SELECTS, AND A TOGGLE STILL OPENS: the press is never prevented on a card, so Ghost's own scripts answer
       // it; a link never navigates the canvas and a form never submits (the editor canvas's own traps, AD-21)
       doc.addEventListener('click', (event) => {
@@ -273,7 +286,11 @@ export function CardsCanvas({ src, card, designs, pack, frameRef, onChoose }: {
         if (hit !== undefined && hit.key !== latest.current.card.key) latest.current.onChoose(hit.key)
       })
       doc.addEventListener('submit', (event) => event.preventDefault())
-      doc.defaultView?.addEventListener('resize', () => ringCard(doc, latest.current.card, false))
+      latest.current.wire(doc)
+      // the name tag follows its card whenever the page moves under it — a resize, the pack's faces landing, a toggle
+      // opening above it, a gallery proportioning — never placed once and left floating
+      const win = doc.defaultView
+      if (win) new win.ResizeObserver(() => ringCard(doc, latest.current.card, false)).observe(doc.body)
     }
     frame.addEventListener('load', loaded)
     if (loadedDoc(frame)) loaded()
@@ -293,12 +310,22 @@ export function CardsCanvas({ src, card, designs, pack, frameRef, onChoose }: {
     const doc = loadedDoc(frameRef.current)
     if (doc) wearPack(doc, worn)
   }, [worn])
+  // A CARD'S CHOICE REPLACES THE DOCUMENT, never pushes one: a changed `src` would add a history entry per card, and Back
+  // would step the canvas through older cards while the panel stayed on this one (Review, 2026-10-16). The element keeps
+  // its first address; later ones go through `location.replace`.
+  const [first] = useState(src)
+  const shown = useRef(src)
+  useEffect(() => {
+    if (shown.current === src) return
+    shown.current = src
+    frameRef.current?.contentWindow?.location.replace(src)
+  }, [src])
   return (
     // one stop in the tab order, as the page canvas is (UX-DR9): the document inside leaves it (`tabIndex={-1}`)
     <section aria-label="Canvas" data-cards-canvas tabIndex={0} className="relative flex min-h-0 min-w-0 flex-1 flex-col items-center bg-canvas-ground px-7 pt-6">
       <div className="flex min-h-0 w-full max-w-[864px] flex-1 flex-col overflow-hidden rounded-[6px_6px_0_0] bg-paper-raised shadow-canvas-page">
-        {/* one element for the surface's life: a card's choice changes its address, so the load listener stays */}
-        <iframe ref={frameRef} data-cards-frame src={src} title={`${CARD_WORDS.label} canvas`} tabIndex={-1} className="block min-h-0 w-full flex-1 border-0" />
+        {/* one element for the surface's life: a card's choice replaces its document, so the load listener stays */}
+        <iframe ref={frameRef} data-cards-frame src={first} title={CARD_WORDS.canvasTitle} tabIndex={-1} className="block min-h-0 w-full flex-1 border-0" />
       </div>
     </section>
   )
@@ -336,8 +363,8 @@ export function CardPanel({ card, designs, readOnly, swatches, onValue, onReset,
     const aside = changed && !greyed ? (
       <button
         type="button"
-        aria-label={`Reset ${control.label}`}
-        title={`Reset ${control.label}`}
+        aria-label={CARD_WORDS.resetControl(control.label)}
+        title={CARD_WORDS.resetControl(control.label)}
         onClick={() => onValue(control.name, control.start)}
         className={`-my-1 inline-flex size-5 items-center justify-center rounded-sm text-ink-soft hover:bg-paper-sunk hover:text-ink ${ring}`}
       >

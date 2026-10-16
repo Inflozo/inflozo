@@ -9549,6 +9549,10 @@ origin: Story 7.7's Review (2026-10-09), reading CI for the story's commit chain
   dialog is open again; R-236 then passed 16 of 16. The R-201 row stays open here. Also seen once in Story 7.13's
   main-session `pnpm keyboard`: Story 5.23a's "every whole-page change repaints" row ("a subject"), which then passed 10
   of 10 alone and 80 of 80 with its group — a timing wait of the kind this entry describes.
+  *(Story 7.13's Review, 2026-10-16, the Verification Gap layer: the R-236 row reaches the late-close race only when the
+  timing lines up, so reverting `pack-editor.tsx`'s guard still passes most runs. A row that always reproduces the order —
+  close Edit pack and open + New pack in ONE task (`page.evaluate`), then New pack's form present — belongs with this
+  entry's owner.)*
 owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose card carries this entry with its id —
   the story that hardens the keyboard walks (DW-246 and DW-292 were closed by Story 5.24d's `rendersSettle`); until
   then, re-push on a red R-201 stop with no app change.
@@ -9729,3 +9733,25 @@ owner: Story 15.1 (the E2E suite, including the keyboard-only journey), whose ca
 location: `tools/keyboard/mode.spec.mjs` · `tools/keyboard/playwright.config.mjs`
 reason: a second and third browser in CI is a new install and a new job, which a story with no screen does not own; the
   claim is worded as the dated one-off it is in AD-17 and the spec.
+
+## Deferred from: code review of spec-7-13-the-ghost-card-design-module-and-cards-css (2026-10-16)
+
+### DW-358: a stored card record the schema refuses stops every theme build until a card is changed
+
+plain: If a project's saved card designs cannot be read (a row made by hand, or a value an older or newer build does not
+  know), the editor opens every card on Ghost's look and says so, and the next card change saves over the bad record. The
+  theme compiler, though, refuses the bad record outright, so until someone changes a card every deploy of that site
+  stops with a sentence about card designs — and nothing yet shows that sentence to the customer where they deploy.
+status: open
+severity: medium
+origin: Story 7.13's Review (2026-10-16), the Blind Hunter and Edge Case Hunter layers: `compile.ts`' `parseCardDesigns` refusal
+  ("card designs: … The build stops before any file is written (AD-36).") against `read.ts`' `storedCards`, which opens
+  the same row on Ghost's defaults with `CARD_WORDS.malformed`. Both halves are the spec's I/O row "Stored record
+  malformed" as ruled; what no story yet owns is the customer meeting the compile's refusal.
+owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — the story where a compile refusal
+  first reaches a customer: the wizard names the card designs as the cause and links Editor cards, where one change (or
+  Reset to Ghost default on any card) saves a readable record over it.
+location: `packages/theme-compiler/src/compile.ts` (`parseCardDesigns` before the tree) · `apps/web/lib/cards.ts`
+  (`CARD_WORDS.malformed`) · `read.ts` (`storedCards`)
+reason: no deploy path exists before Story 7.18, so there is no screen to say it on; refusing the build is the AD-36 floor
+  and stays.

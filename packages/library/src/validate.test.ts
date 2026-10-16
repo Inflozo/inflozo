@@ -108,6 +108,10 @@ test('Story 4.7 — data-module takes a registry name and an optional width, and
   assert.match(refusal('accordion:7.5'), /whole number of CSS pixels/)
 })
 
+test('Story 7.13 review — a classless <hr> is refused: the divider card\'s glyph rule (hr:not([class])) would restyle it', () => {
+  refuses('bare-hr', '<div><hr></div>', '<div><hr class="x__rule"></div>')
+})
+
 test('Story 4.7 review — authored script is refused at the door: a <script>, an on* handler, a javascript: URL', () => {
   refuses('authored-script', '<div><script>alert(1)</script></div>', '<div data-module="lightbox"></div>')
   refuses('authored-script', '<a onclick="x()">x</a>', '<a data-bind-attr="href:url">x</a>')

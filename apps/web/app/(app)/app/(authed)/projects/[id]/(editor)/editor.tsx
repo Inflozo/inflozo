@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { memo, Profiler, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, parseCardDesigns, paywallRing, postAccess, resolveStrings, ringFor, withoutCard, withValue, type CardDesigns, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { CARDS, categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, parseCardDesigns, paywallRing, postAccess, resolveStrings, ringFor, withoutCard, withValue, type CardDesigns, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
@@ -12,7 +12,7 @@ import {
   USER_SETTING_CAP, withData,
 } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, FeedRole, MarkNode, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
-import { loadIcons } from '@/components/controls/icon-picker'
+import { loadedIcons, loadIcons } from '@/components/controls/icon-picker'
 import { HowReadersReachIt, Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
@@ -53,7 +53,7 @@ import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type Chro
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
 import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOfKey, isCards, isPaywall, isSiteFooter, isSurface, landWithin, settingsPath, SITE, siteSlot, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
-import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey } from '@/lib/cards'
+import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey, parseStoredCards } from '@/lib/cards'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
@@ -69,7 +69,7 @@ import { askLock, lockSignals, lockUrl, tabSession, tabSessionKept, type LockAns
 import { edits, holdsCaret, IN_PREVIEW, KEYMAP, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { BACK_SAID, PAUSED, PAUSED_SAID, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
 import { FACES_WAIT_MS, otherPreset, PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
-import { brandSeed, choiceOf, isCustom, nextCustomId, ownPacksIn, PACK_EDIT_WORDS, samePack, withoutDefaults, type PackRecord, type PackRecords, type PairingChoice, type ScaleRow } from '@/lib/pack-edit'
+import { brandSeed, choiceOf, isCustom, nextCustomId, ownPacksIn, PACK_EDIT_WORDS, PLATE_DOT, samePack, withoutDefaults, type PackRecord, type PackRecords, type PairingChoice, type ScaleRow } from '@/lib/pack-edit'
 import { remixFold, remixPackSaid, remixPicks, remixSaid, remixable, type RemixWhat } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
@@ -858,6 +858,8 @@ function EditorShell({
   /** STORY 7.13 — THE CARD EDITOR CARDS SHOWS: a view, never an edit (live reading along, R-192), kept per project in this
    *  tab (`sessionStorage`, S14d's "with the last-viewed card selected"), else Callout — read after the first render, so
    *  the server's markup is not contradicted on hydration */
+  // ponytail: a kept card other than Callout loads Callout's document first, then its own (one extra load per open); mount
+  // the canvas after this read if that load ever shows (Story 7.13's review)
   const [cardKey, setCardKey] = useState<string>(FIRST_CARD)
   useEffect(() => {
     try {
@@ -868,6 +870,8 @@ function EditorShell({
     }
   }, [])
   const cardsFrame = useRef<HTMLIFrameElement>(null)
+  /** STORY 7.13 — a card change has been made since a refused stored record opened the screen, so its line goes */
+  const [cardsOverwritten, setCardsOverwritten] = useState(false)
   /** each own pack as the editor paints it, made once per record by the engine's own derivation (`choiceOf`) */
   const ownChoices = useRef(new Map<string, { record: PackRecord; choice: PackChoice }>())
   const ownChoice = (id: string, record: PackRecord): PackChoice => {
@@ -1748,6 +1752,8 @@ function EditorShell({
     latest.current = { ...latest.current, cards: next }
     setCardDesigns(next)
     journalise(CARDS_KEY, before, next)
+    // a refused stored record's line has said its piece: this change is what saves over it
+    setCardsOverwritten(true)
     return true
   }
 
@@ -1817,13 +1823,21 @@ function EditorShell({
     const was = packOf(now.preset, now.packs)
     // Story 7.13 — and the card designs, whole: the journal's record is this device's copy too, so it passes AD-36's one
     // schema before Editor cards draws from it (a refused one leaves the designs in force)
-    const readCards = r.cards === undefined ? null : parseCardDesigns(r.cards)
+    // — judged as the sync route judges it, a divider's glyph by the icon set (loaded wherever a glyph was chosen), or one
+    // record the route refuses would hold every later save at 422 (Review, 2026-10-16)
+    const icons = loadedIcons()
+    const readCards = r.cards === undefined ? null : parseCardDesigns(r.cards, icons === null ? undefined : (n) => icons.iconDrawing(n) !== undefined)
     const cards = readCards === null || typeof readCards === 'string' ? now.cards : readCards
     latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal, preset, packs: own, cards }
     setDocs(next.docs)
     setJournal(r.journal)
     if (own !== now.packs) setOwnPacks(own)
-    if (cards !== now.cards) setCardDesigns(cards)
+    if (cards !== now.cards) {
+      setCardDesigns(cards)
+      // said, as an undone pack is: on another canvas the cards change out of sight (Review, 2026-10-16)
+      const moved = CARDS.filter((c) => JSON.stringify(cards[c.key] ?? {}) !== JSON.stringify(now.cards[c.key] ?? {})).map((c) => c.label)
+      if (moved.length > 0) setSaid(CARD_WORDS.restyled(moved))
+    }
     const is = packOf(preset, own)
     if (preset !== now.preset || is.tokens !== was.tokens || is.faces !== was.faces) {
       setPack(preset)
@@ -3647,7 +3661,8 @@ function EditorShell({
       // Story 5.22: below 1280 `L` opens and closes Layers as the overlay, as "Show layers" does; at full width, the fold
       case 'layers': return latest.current.compact ? toggleLayers() : layers.toggle((was) => !was)
       // R-135: on a Light-only project there is no sun to press, so nothing happens and nothing is announced
-      case 'dark': return void (darkEnabled && flip(latest.current.mode === 'dark' ? 'light' : 'dark'))
+      // Story 7.13: and on Editor cards, which draws no sun (its canvas is the post in the pack's light look)
+      case 'dark': return void (darkEnabled && !isCards(latest.current.key) && flip(latest.current.mode === 'dark' ? 'light' : 'dark'))
       case 'shortcuts': return openShortcuts(shortcuts)
       // STORY 5.12 — the key presses the DICE, not the fold: the confirm opens at once and the cube rolls only on
       // the confirmed Remix (R-164), so `⇧R` and the button are one control down to the animation (R-141)
@@ -3659,7 +3674,8 @@ function EditorShell({
       case 'deselect': return
       default: {
         const next = DEVICES.find((d) => d.name === gesture)
-        if (next) pickDevice(next)
+        // Story 7.13: Editor cards draws no device switch, so its keys do nothing there (UX-DR3)
+        if (next && !isCards(latest.current.key)) pickDevice(next)
       }
     }
   }
@@ -3931,6 +3947,13 @@ function EditorShell({
     // R-141: the caret is usually IN HERE, so the keys are bound on this document too
     doc.addEventListener('keydown', onShortcut)
   }
+  /** STORY 7.13 — each card document's listeners, as the page canvas's: the keys (focus is in there after a click on a
+   *  card) and a press closing the menus, whose light dismiss never sees the frame (Review, 2026-10-16) */
+  const wireCards = (doc: Document) => {
+    doc.addEventListener('keydown', onEscape)
+    doc.addEventListener('keydown', onShortcut)
+    doc.addEventListener('pointerdown', () => closeMenus(), true)
+  }
 
   // a change of canvas is a soft navigation: the iframe keeps its document and is repainted, and nothing stays chosen
   // Story 5.23b (review, 2026-09-28): `latest`'s selection, page and stack move with the key IN THE SAME LAYOUT EFFECT
@@ -3949,7 +3972,8 @@ function EditorShell({
     asked.current.clear()
     // Story 5.18: opening the editor and a canvas are reads the customer asked for — on the site's content they are
     // read, then painted once; with the sample, or everything in hand, this paints at once exactly as before
-    request()
+    // Story 7.13: Editor cards paints no page, so it reads nothing of the site's
+    if (!isCards(key)) request()
     // Story 5.20 — and the Paywall canvas opens with its instance in the panel, where a design is chosen (`choose`)
     if (isSurface(key)) choose(null)
     // paint reads the latest values through `latest`
@@ -4094,9 +4118,11 @@ function EditorShell({
           // `ownPacksIn` (AD-36): this device's copy is a value a browser can be made to hold, and it reaches CSS
           const keptPacks = hydratedPacks(how, held.packs === undefined ? null : { packs: ownPacksIn(held.packs, packReader) }, storedOwnPacks)
           const keptPreset = hydratedPreset(how, held, storedPreset, (id) => packs.some((p) => p.id === id) || (isCustom(id) && Object.hasOwn(keptPacks, id)))
-          // STORY 7.13 — AND THE CARD DESIGNS, by the same rule, through `card_designs`' one schema (AD-36): a record this
-          // device holds that it refuses is no record, and the server's is kept
-          const heldCards = held.cards === undefined ? null : parseCardDesigns(held.cards)
+          // STORY 7.13 — AND THE CARD DESIGNS, by the same rule, through `card_designs`' one schema (AD-36) read as the sync
+          // route reads it (`parseStoredCards`: a divider's glyph judged by the icon set): a record this device holds that it
+          // refuses is no record, and the server's is kept — never one every later save is refused for (Review, 2026-10-16)
+          const heldCards = held.cards === undefined ? null : await parseStoredCards(held.cards)
+          if (!alive) return
           const keptCards = hydratedCards(how, heldCards === null || typeof heldCards === 'string' ? null : { cards: heldCards }, storedCards)
           const wasLook = packOf(storedPreset, storedOwnPacks)
           latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library), preset: keptPreset, packs: keptPacks, cards: keptCards }
@@ -5626,7 +5652,7 @@ function EditorShell({
               on a template surface the panel keeps its name and holds no rows: C3a's "How readers reach it" card instead */}
           {/* STORY 7.13 — on Editor cards, S14a's left panel in Layers' place: the customised cards and the site-wide sentence */}
           {cardsNow ? (
-            <CardsLayers designs={cardDesigns} card={cardOrFirst(cardKey)} refused={cardsRefused !== null} onChoose={chooseCard} />
+            <CardsLayers designs={cardDesigns} card={cardOrFirst(cardKey)} refused={cardsRefused !== null && !cardsOverwritten} onChoose={chooseCard} />
           ) : surface ? <HowReadersReachIt tiers={tiersShown} tiersHref={tiersHref} /> : (
           <Layers
             readOnly={!lock.holder}
@@ -5721,6 +5747,7 @@ function EditorShell({
             pack={choice}
             frameRef={cardsFrame}
             onChoose={chooseCard}
+            wire={wireCards}
           />
         ) : null}
         <section
@@ -6000,7 +6027,7 @@ function EditorShell({
               card={cardOrFirst(cardKey)}
               designs={cardDesigns}
               readOnly={!lock.holder}
-              swatches={{ ...choice.swatches.light, tint: choice.cardDots[4] ?? '' }}
+              swatches={{ ...choice.swatches.light, ...(choice.cardDots[PLATE_DOT] ? { tint: choice.cardDots[PLATE_DOT] } : {}) }}
               onValue={setCardValue}
               onReset={resetCard}
               onChoose={chooseCard}

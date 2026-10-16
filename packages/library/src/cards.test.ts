@@ -126,6 +126,15 @@ test('a value back at its start leaves the record: the key, then the card, so th
   assert.deepEqual(designedCards(d).map((c) => c.key), ['callout'])
   d = withValue(d, 'callout', 'colours', 'ghost')
   assert.deepEqual(d, { callout: { background: 'tint' } })
+  // the greyed background is KEPT (P0·0: the panel shows what returns) but renders nothing, so the card is Ghost's again:
+  // no badge, no count, no exclusion, no rule (Review, 2026-10-16) — and Pack tokens brings Tint back
+  assert.deepEqual(designedCards(d), [])
+  assert.deepEqual(excludedChunks(d, NAMES), [])
+  assert.equal(cardsCss(d, CHUNKS), KOENIG_WIDTHS)
+  assert.deepEqual(cardChanges(d, 'callout'), { count: 0, nouns: [] })
+  assert.deepEqual(designedCards(withValue(d, 'callout', 'colours', 'tokens')).map((c) => c.key), ['callout'], 'the control: Tint in force again')
+  // the same for every greyed control: a bookmark's side while its thumbnail is hidden is no second change
+  assert.deepEqual(cardChanges({ bookmark: { thumbnail: 'off', side: 'left' } }, 'bookmark'), { count: 1, nouns: ['thumbnail'] })
   d = withValue(d, 'callout', 'background', 'base')
   assert.deepEqual(d, {})
   assert.deepEqual(designedCards(d), [])
@@ -152,7 +161,7 @@ test('the callout at Pack tokens paints every callout in the chosen role\'s toke
   assert.doesNotMatch(ownCardsCss(cardsCss({ callout: { background: 'tint' } }, CHUNKS)), /--plate/)
 })
 
-test('no !important in a rule this theme writes: every card at every value, Ghost\'s own seven stay inside the copy', () => {
+test('no !important in a rule this theme writes: every card at every value, Ghost\'s own stay inside the copy', () => {
   // every card designed at every non-start value of every control, one control at a time
   for (const c of CARDS) {
     for (const x of c.controls) {

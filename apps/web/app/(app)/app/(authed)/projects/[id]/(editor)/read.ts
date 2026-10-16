@@ -130,8 +130,9 @@ export async function readTranslations(projectId: string): Promise<Translations>
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
  *  their shape). Every row of the project is checked, so a key with no `.hbs` of its own — `paywall` (5.20) — throws for
  *  the whole editor the day its writer lands; the story that writes it extends this map in the same change (review,
- *  2026-09-17). Story 7.13's `cards` is no `project_templates` row at all: its values are `project_treatments.card_designs`. Story 5.16 is such a writer: a page-2 key compiles to the file `PAGE_TWO` names —
- *  `index` to `index.hbs`, and an archive's `tag-paged` and `author-paged` to the archive's own file. */
+ *  2026-09-17). Story 5.16 is such a writer: a page-2 key compiles to the file `PAGE_TWO` names — `index` to `index.hbs`,
+ *  and an archive's `tag-paged` and `author-paged` to the archive's own file. Story 7.13's `cards` is no
+ *  `project_templates` row at all: its values are `project_treatments.card_designs`. */
 const fileOf = fileOfKey
 
 /** STORY 5.19's SERVER DOOR, ONE FUNCTION (DW-257): every doc the editor is handed leaves through the main-feed rule

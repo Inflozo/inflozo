@@ -80,8 +80,8 @@
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsCss, cardsCssVersion, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
-  CATALOG, CUSTOM_TARGET_RE, englishStrings, excludedChunks, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion,
-  ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
+  CATALOG, CUSTOM_TARGET_RE, designedCards, englishStrings, excludedChunks, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion,
+  OWN_RULES_HEAD, ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
   translatableKeys,
 } from '@inflozo/library'
 import type { CardDesigns, IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
@@ -871,8 +871,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   noC0('a card script', sorted(input.ghostCards.scripts))
   noC0('a card stylesheet', sorted(styles))
   noC0("Ghost's licence", [input.ghostCards.licence])
-  // the designed cards Ghost has a script for (a callout has none): cards.js carries exactly these, or ships not at all
-  const scripted = excludedChunks(cardDesigns, Object.keys(input.ghostCards.scripts))
+  // the designed cards Ghost has a script for (a callout has none): cards.js carries exactly these, or ships not at all —
+  // and only a name `card_assets` excludes, which is a STYLESHEET chunk's: a script Ghost still injects is never copied twice
+  const scripted = excludedChunks(cardDesigns, Object.keys(input.ghostCards.scripts).filter((n) => Object.hasOwn(styles, n)))
   const cards = scripted.length === 0 ? undefined : { js: cardsJs(scripted, input.ghostCards.scripts), version: cardsVersion(scripted, input.ghostCards.scripts) }
   // Story 7.13 — cards.css, on every theme; R-26: a divider's glyph is Tabler's drawing, so it ships Tabler's licence
   let drewGlyph = false
@@ -882,7 +883,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     return svg
   })
   const sheetVersion = cardsCssVersion(cardDesigns, styles)
-  const copied = excludedChunks(cardDesigns, Object.keys(styles))
+  // in cards.css's own order — the registry's — so README names the block as its header does
+  const copied = [...new Set(designedCards(cardDesigns).flatMap((c) => c.chunks).filter((n) => Object.hasOwn(styles, n)))]
+  const ownSettings = cardsSheet.includes(OWN_RULES_HEAD)
   const { stacks, pageTwos } = stacksOf(input)
 
   // ── render every visible instance, with ONE UserText — file by file, page 1 before page 2 ─────────────────────────────
@@ -1063,8 +1066,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     // and it writes `=` and `&` as entities too, so a URL with a query string does not load and dark draws an empty box —
     // Ghost's uploads carry neither (`ghost-storage-base`'s `getSanitizedFileName`, both majors).
     ...settingsStyle(custom.accent === null ? null : customPath(custom.accent)).map((l) => `    ${l}`),
-    // Story 7.13 (AD-18): cards.css before screen.css, both before {{ghost_head}} — so a design's own rules win on the
-    // `.kg-*` classes they legitimately style (A33 the card interiors, A25 the column)
+    // Story 7.13 (AD-18): cards.css before screen.css, both before {{ghost_head}} — so a design's own rules win over a
+    // DESIGNED card's on the `.kg-*` classes they legitimately style (A33 the card interiors, A25 the column). A card left
+    // to Ghost keeps Ghost's bundle, which `{{ghost_head}}` links after both.
     '    <link rel="stylesheet" href="{{asset "css/cards.css"}}">',
     '    <link rel="stylesheet" href="{{asset "css/screen.css"}}">',
     // Story 7.5 (NFR-2 (3)): both scripts `defer`, in the head, so neither holds the page up
@@ -1148,8 +1152,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     '',
     "- `assets/css/screen.css` is this theme's own stylesheet.",
     sheetVersion === null
-      ? "- `assets/css/cards.css` is this theme's own styling for the cards Ghost's editor puts in posts: their wide and full widths."
-      : `- \`assets/css/cards.css\` styles the cards Ghost's editor puts in posts. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: ${copied.join(' · ')}, copied unchanged from Ghost ${sheetVersion} under the MIT licence in \`LICENSE-ghost.txt\`. The rest of the file is this theme's own: the cards' widths, and the settings that switch off Ghost's own copy of those styles.`,
+      ? `- \`assets/css/cards.css\` is this theme's own styling for the cards Ghost's editor puts in posts: their wide and full widths${ownSettings ? ', and its card settings' : ''}.`
+      : `- \`assets/css/cards.css\` styles the cards Ghost's editor puts in posts. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: ${copied.join(' · ')}, copied unchanged from Ghost ${sheetVersion} under the MIT licence in \`LICENSE-ghost.txt\`. The rest of the file is this theme's own: the cards' widths and its card settings. \`package.json\`'s \`card_assets\` switches off Ghost's own copy of these cards' styles.`,
     '',
   ].join('\n')
 
@@ -1165,7 +1169,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const scripts = [...checkThemeJs(text, input.modules, input.ghostCards.scripts), ...checkThemeScripts(text)]
   if (scripts.length > 0) throw new Error(`the theme's scripts: ${scripts.join(' · ')}`)
   // Story 7.13 (FR-Q7): no `!important` in a rule this theme writes — every stylesheet and template `<style>` but Ghost's
-  // own block in cards.css, whose seven stay byte for byte as cards.js keeps Ghost's scripts
+  // own block in cards.css, whose own stay byte for byte as cards.js keeps Ghost's scripts
   const important = checkImportant(text)
   if (important.length > 0) throw new Error(`the theme's styles: ${important.join(' · ')}`)
   // Story 7.6: Ghost's markup over the final text, and V1 over the tree before substitution — where a customer's words are

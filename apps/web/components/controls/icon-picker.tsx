@@ -27,6 +27,9 @@ type IconsModule = typeof import('@inflozo/library/icons')
 
 let loaded: IconsModule | null = null
 let loading: Promise<IconsModule> | null = null
+/** The icon set if it has landed, else null — a synchronous reader's judge (Story 7.13's undo, AD-36). */
+export const loadedIcons = (): IconsModule | null => loaded
+
 /** The icon set, loaded once for the page — the picker and the canvas share it. */
 export function loadIcons(): Promise<IconsModule> {
   // review: a rejected import is not cached, so reopening the picker retries the download

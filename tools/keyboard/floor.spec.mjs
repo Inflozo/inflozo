@@ -447,6 +447,32 @@ test.describe('7.13 · S14e: a card clicked on the Editor cards canvas is select
     await expect(ringed).toHaveClass(/kg-bookmark-card/)
     await expect.poll(() => page.locator('iframe[data-cards-frame]').evaluate((f) => f.contentWindow?.location.href ?? '')).toMatch(/\/style-guide\/frame\?view=cards&card=bookmark$/)
   })
+
+  // Story 7.13's review (2026-10-16): the card document is the page canvas's equal for the editor's keys and its menus
+  test('after a click on a card, focus is in the card document and the editor\'s keys still answer there; a press there closes an open menu; a card\'s choice adds no history entry', async ({ page }) => {
+    await page.goto(`${HARNESS}/cards`)
+    const frame = page.frameLocator('iframe[data-cards-frame]')
+    const css = () => frame.locator('style[data-order="1c-cards.css"]').evaluate((s) => s.textContent)
+    await expect(frame.locator('[data-inflozo-card-selected]')).toHaveClass(/kg-callout-card/)
+    await page.getByRole('switch', { name: 'Emoji' }).click()
+    await expect.poll(css).toContain('div.kg-callout-emoji { display: none; }')
+    // a choice replaces the card document (`location.replace`): a pushed entry would let Back step the canvas through cards
+    const before = await page.evaluate(() => history.length)
+    await page.locator('#editor-card').click()
+    await page.locator('#editor-card-menu [data-card="toggle"]').click()
+    await expect(frame.locator('[data-inflozo-card-selected]')).toHaveClass(/kg-toggle-card/)
+    expect(await page.evaluate(() => history.length), 'no history entry for a card').toBe(before)
+    // the Card menu open, then a press on the canvas: it closes, as a press outside any menu does
+    await page.locator('#editor-card').click()
+    await expect(page.locator('#editor-card-menu')).toBeVisible()
+    await frame.locator('.kg-toggle-card').first().click()
+    await expect(page.locator('#editor-card-menu')).toBeHidden()
+    expect(await page.evaluate(() => document.activeElement?.matches('iframe[data-cards-frame]')), 'focus is in the card document').toBe(true)
+    // ⌘Z from in there undoes the emoji change
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect.poll(css).not.toContain('kg-callout-emoji')
+    await expect(page.locator('[data-customised-card]')).toHaveCount(0)
+  })
 })
 
 test.describe('R-202 · the line is 1280, on a fine pointer', () => {

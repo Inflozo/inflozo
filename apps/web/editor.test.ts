@@ -465,4 +465,7 @@ test('Story 6.4: the sync route refuses own packs that do not all survive ownPac
   assert.match(route, /p_packs: owned \?\? null/)
   // "already there" compares the server's own packs too
   assert.match(route, /const packsThere = owned === undefined \|\| stable\(stored\?\.packs \?\? \{\}\) === stable\(owned\)/)
+  // Story 7.13's review: and the server's own card designs, read where the body carries them — the record, never the row
+  assert.match(route, /parsedCards === undefined \? \{ data: null \} : supabase\.from\('project_treatments'\)\.select\('card_designs'\)\.eq\('project_id', projectId\)\.maybeSingle\(\)/)
+  assert.match(route, /const cardsThere = parsedCards === undefined \|\| stable\(\(treatments as \{ card_designs\?: unknown \} \| null\)\?\.card_designs \?\? \{\}\) === stable\(parsedCards\)/)
 })

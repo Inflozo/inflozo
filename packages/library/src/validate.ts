@@ -211,6 +211,12 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       }
     }
 
+    // Story 7.13's review — the divider card's glyph is `cards.css`' `hr:not([class])`, which reaches every classless `<hr>` on
+    // a page; a design's own rule carries its class, so only the post's own dividers (Ghost's bare `<hr>`) take the glyph
+    if (tag.name === 'hr' && attr('class') === undefined) {
+      push(out, 'bare-hr', `<hr> carries no class — a bare <hr> is how Ghost prints a post's divider card, and the divider's glyph (Editor cards) restyles every one on the page. Give the design's rule a class of its own.`)
+    }
+
     if (tag.name === 'script') {
       push(out, 'authored-script', `<script> — a design ships no script of its own: every script a theme runs is FR-G7's registry, bundled into main.js by bundle(), and checkThemeJs proves assets/js/ holds nothing else. Declare a module with data-module instead.`)
     }

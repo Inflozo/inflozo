@@ -9173,7 +9173,11 @@ async function main() {
       await p.locator('#editor-card').click()
       await p.locator(`#editor-card-menu [data-card="${key}"]`).click()
       await p.waitForFunction((label) => document.querySelector('#editor-panel-name')?.textContent === label, LIB.CARDS.find((c) => c.key === key).label, { timeout: 15000 })
-      await ringed107(p).catch(() => {})
+      // a card's choice LOADS a new card document (its scripts run once, at load): wait for THAT card's ring, never the last
+      // card's, still attached in the document being replaced (Review, 2026-10-16: 107i read the toggle's document mid-load
+      // twice on production, its ring landing ~640 ms after the choice)
+      const root = LIB.CARDS.find((c) => c.key === key).root
+      if (root !== null) await p.waitForFunction((r) => document.querySelector('iframe[data-cards-frame]')?.contentDocument?.querySelector('[data-inflozo-card-selected]')?.matches(r) ?? false, root, { timeout: 30000 })
       await p.waitForTimeout(400)
     }
     const save107 = async (p) => {

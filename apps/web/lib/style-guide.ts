@@ -23,6 +23,7 @@ import { presetOf } from '@inflozo/library/packs'
 import { CTA_STYLES } from '@inflozo/section-runtime'
 import { fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { withMedia } from './canvas.ts'
+import { CARD_WORDS } from './cards.ts'
 import { fontHref } from './style-pack.ts'
 
 /** `packages/`, from the working directory FIRST — and that form is load-bearing for the deployed app, not a style.
@@ -259,6 +260,8 @@ export function variationsDocument(nonce: string): string {
  * `document` — which is why this is a document of its own (the style-guide frame's way). A card's choice reloads it, since
  * those scripts run once, at load. `card` is a registry key; an unknown one draws the article alone.
  */
+// ponytail: every request reads the chunk directory twice (the bundle, then the data) and ships it twice; a module-level
+// cache if the frame route ever shows in Vercel's timings (Story 7.13's review)
 export function cardsDocument(nonce: string, card: string | null): string {
   const entry = cardOf(card ?? '')
   const ids = new Set(orbitWeekly.variants().filter((v) => entry?.sample !== null && v.card === entry?.sample).map((v) => v.id))
@@ -268,7 +271,7 @@ export function cardsDocument(nonce: string, card: string | null): string {
   const accent = orbitWeekly.site().accent_color
   // the chunks as data, never as script: `<` written as its escape, so nothing in a stylesheet can end the element
   const data = JSON.stringify(cardChunks()).replace(/</g, '\\u003c')
-  const head = `<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Editor cards</title>` +
+  const head = `<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${CARD_WORDS.canvasTitle}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
     `<style data-order="1b-faces">${PAPER_FACES()}</style>` +
     `<style data-order="1c-cards.css" data-cards-css>${KOENIG_WIDTHS}</style>` +
