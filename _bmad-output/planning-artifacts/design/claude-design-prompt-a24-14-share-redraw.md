@@ -3,8 +3,8 @@
 > **Run this before Story 10.82 opens.** Story 10.82 builds Post Headers #14 Share Row, and it cannot be planned
 > until this redraw is in the export (DW-360, ruling R-244). Its Create stops and asks you if it has not run.
 >
-> **Status: NOT RUN.** When it has run and the export has landed, a session marks this file `record` in
-> `tools/doc-audit.py`, closes DW-360 and writes the date here.
+> **Status: NOT RUN.** When it has run and the export has landed, a session writes the date here first, then
+> closes DW-360, and only then marks this file `record` in `tools/doc-audit.py` — a `record` file is never edited.
 
 **Why.** On 16 October 2026 you ruled Story 7.15's Question 1 option 3: sharing on your readers' sites is Ghost's own
 Share button, with Copy link and Email on an older Ghost. Post Headers #14 is still drawn the old way (your own row of
@@ -33,7 +33,8 @@ READ FIRST, in this project:
 - `A24 Post Headers - Spec.md` — 14 Share Row's section, and "Patch notes — the native-share ruling,
   1 September 2026" at the end of the document, above all its paragraph "What the redraw carries".
 - `A24-14 Share Row.dc.html` — the frame you are redrawing, including its dated native-share panel.
-- `A26-9 Share Row.dc.html` — its section "THE TWO SHARE STATES": the pattern to follow.
+- `A26-9 Share Row.dc.html` — its section headed "THE TWO SHARE STATES", which draws the four states
+  below: the pattern to follow.
 - `Calibration Set.dc.html` — the tokens, type scale, spacing and colour roles. Use nothing outside it.
 - `Editor Sidebar Kit.dc.html` — every sidebar control, panel, badge and greyed state. The panel uses
   these and nothing else.
@@ -47,7 +48,9 @@ WHAT THE REDRAW CARRIES — exactly this list, nothing added:
 4. The Links stepper (Two · Three · Four) CUT, not greyed — a control with nothing left to do is not a
    disabled control.
 5. In the editor panel, the Share destinations row greyed, with the reason beside it — "Ghost's own
-   share panel owns the destinations and their order" — and, on an older Ghost, saying which.
+   share panel owns the destinations and their order" — and, on an older Ghost, the row stays greyed
+   and says the fallback pair shows instead, as A26 #9's panel does ("Ghost's panel · fallback: Copy
+   link · Email").
 6. The site-wide setting reduced to two switches, Copy link and Email: the fallback pair only.
 7. No brand glyphs.
 8. The copied confirmation kept, inside the fallback only.
@@ -55,7 +58,7 @@ WHAT THE REDRAW CARRIES — exactly this list, nothing added:
 
 THE PATTERN. Draw #14's share row in A26 #9's four states, side by side and in A26 #9's order:
 (a) current Ghost — one trigger, Ghost's panel owns the destinations;
-(b) older Ghost — no panel, Email and Copy link in the same row;
+(b) older Ghost — no panel, Email and Copy link in the same row, Email first, as A26 #9 draws them;
 (c) older Ghost — the copied confirmation, which then reverts;
 (d) either version, no JavaScript — Email alone.
 The header above the row — tag, title, standfirst, byline and hairline — does not move between the
@@ -66,7 +69,11 @@ the frame, strike what the ruling superseded: the four destinations and their or
 the ten-platform ordered list, the per-platform brand glyphs, and the two arguments "three of the four
 destinations are ordinary links and one is not" and "Mastodon's link is the honest problem in the row".
 Keep every superseded sentence legible — struck and dated 16 October 2026 — so the reversal is visible.
-Then update the frame's dated native-share panel to say the redraw has landed.
+Then update the frame's dated native-share panel to say the redraw has landed. That panel says an
+older Ghost's "same link opens the sign-in box": correct it there and in 14 Share Row's section, because
+read in Portal 2.51's source a bare `#/share` matches none of its links and does nothing on an older
+Ghost — it is `data-portal="share"` that opens the sign-in or sign-up box. Leave the dated "Patch
+notes — the native-share ruling" section as written.
 
 RULES:
 - Design numbering unchanged: nothing renumbered, nothing deleted, no design added. Do not write a

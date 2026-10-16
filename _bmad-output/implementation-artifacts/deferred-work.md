@@ -9766,7 +9766,7 @@ plain: The tool that lists which designs need which script says two Stats design
 status: open
 severity: low
 origin: Story 7.15's Create (2026-10-16), executed again at its Dev: `python3 tools/derive-module-reach.py` lists `share`
-  for A10-9, A10-12, A24-14 and A26's twelve share designs. A10-9's line declares **none** and names `share` as the
+  for A10-9, A10-12, A24-14 and every A26 design that offers sharing. A10-9's line declares **none** and names `share` as the
   content its bar is drawn from; A10-12's says "`toc`, `accordion` and `share` are all absent". A9-7's line declares three
   modules, but `per_design` keeps only the text before the first `**JS off` (`tools/derive-module-reach.py:154`), so
   `scroll-spy` and `share`, which follow `accordion`'s JS-off sentence, are dropped. Research §2.1's row 21 "Declared by"
@@ -9797,3 +9797,22 @@ location: `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A
   (the prompt) · `_bmad-output/planning-artifacts/design/claude-design-prompt-a24-14-share-redraw.md` (the same prompt,
   saved on its own) · Story 10.82's first criterion, which stops its Create until the redraw lands
 reason: the export is Claude Design's (R-74) and only the owner runs it; nothing builds A24 #14 before Story 10.82.
+
+## Deferred from: code review of spec-7-15-share-destinations-one-ordered-site-wide-list (2026-10-16)
+
+### DW-361: `VERIFY-AT-BUILD.md` uses item numbers 59 and 60 twice each
+
+plain: The list of things to check when building numbers its items, and two of the numbers are used twice, so "item 59"
+  or "item 60" can point at either of two different checks. Nothing breaks yet, but a later reader can follow the wrong one.
+status: open
+severity: low
+origin: Story 7.15's Dev (2026-10-16), found while choosing item 62, and ledgered at its Review (the Blind Hunter layer):
+  `VERIFY-AT-BUILD.md` carries 59 (Ghost Admin's Template dropdown) and 60 (a collection's `limit:`) in one register, and 59
+  (`pgrst.db_pre_request`) and 60 (the pinned Supabase root CA) again in the 2026-09-29 register. Citations of both pairs
+  exist (`MEASUREMENTS.md` §56–§57, `deferred-work.md`, `spec-5-24b-…`). Pre-existing; not caused by Story 7.15.
+owner: Story 7.16's Create (the Routes Manager), whose card carries this entry with its id — the first story to cite the
+  first register's 60 (a collection's per-route `limit:`): the second pair takes the next free numbers and every live
+  citation is repointed; a closed spec or `record` document keeps its words with a dated note.
+location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` (both registers)
+reason: renumbering touches citations across closed specs and the ledger, which a documents-only review of another
+  story should not rewrite; no build reads the numbers.

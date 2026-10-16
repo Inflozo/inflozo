@@ -1098,7 +1098,8 @@ DOCS = [
   'session (P0) plus one patch prompt per category, the 39 recorded decisions D1-D39 (all ruled by '
   'the owner 2026-08-24), and the architect carry-forwards. The pass itself has RUN (2026-08-25); '
   'what keeps the file live is that it is the home of the D-numbers cited across the project, and '
-  'four have since been REVERSED and are marked in place — D3, D17, D26 and D27-in-half. '
+  'some have since been REVERSED and are marked in place — D3, D17, D26 and D27-in-half (2026-08-27), '
+  'and D15 (2026-10-16, ruling R-244). '
   'Hand-authored, no generator.'),
  ('tools/category-prompts.py', 'tool', 'Category prompt generator',
   'Extracts the master brief and the category table from the prompt file, reads which categories '

@@ -2,7 +2,7 @@
 title: 'Story 7.15 — Share destinations: one ordered, site-wide list'
 type: 'feature'
 created: '2026-10-16'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '899886c7fefa904b7e4f9021ceed805d9e36a77c'
 owner_test: none
 review_loop_iteration: 0
@@ -243,7 +243,83 @@ Read-only evidence:
 - Given the work is done, when the gate and CI run, then `python3 tools/doc-audit.py --check` passes, and CI's `check`,
   `rls` and `deploy` are green on the Dev head with the production deployment READY.
 
+### Review Findings
+
+Review, 2026-10-16: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). 0 decision-needed, 21 patches (all applied), 1 deferred, 13 dismissed. No question for the owner: every open
+reading is Story 10.82's to put to him (the frozen Ask First).
+
+- [x] [Review][Patch] FR-Q10 said that on Ghost 5 "the link would open Portal's default page instead". Read in Portal
+  2.51.5's source (`src/App.js:502-555`), a bare `#/share` matches none of its links and returns nothing, so the trigger
+  does nothing there; the default page is what `data-portal="share"` and `#/portal/share` open. Corrected word for word in
+  every copy, and the redraw prompt now has Claude Design correct the frame's "same link opens the sign-in box"
+  [_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md:391]
+- [x] [Review][Patch] Appendix B's and VERIFY-AT-BUILD family 31's dated notes left "opens the sign-in modal on every Ghost
+  5 site" uncorrected; each note now states the source reading [_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md:285]
+- [x] [Review][Patch] FR-Q10's body named the flag's source (`sites.ghost_version`) with nothing marking it open; it now
+  carries the ruling's ⚑, as its own note already said [_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md:391]
+- [x] [Review][Patch] Epic 7 still claimed FR-Q10 in its FRs-covered line and summary rows (`epics.md`, `prd.md` §8), and
+  Epic 10 did not list it; both moved, with a dated note [_bmad-output/planning-artifacts/epics.md:415]
+- [x] [Review][Patch] D15 was not marked reversed in `CONTROL-PROMPTS.html`, the D-numbers' home, and the catalogue brief
+  listed the reversed ones without it [_bmad-output/planning-artifacts/CONTROL-PROMPTS.html:5101]
+- [x] [Review][Patch] Research §7's `share` row promises its rewrite to Stories 10.23 and 10.82, and neither card said so
+  (R-195); both do now [_bmad-output/planning-artifacts/epics.md:5812]
+- [x] [Review][Patch] Stories 10.23 and 10.83–10.89 carry FR-Q10 criteria, but their FRs lines did not list it
+  [_bmad-output/planning-artifacts/epics.md:5815]
+- [x] [Review][Patch] No A25 design declares `share` in the export (drawn with the trigger alone), yet each draws the
+  fallback, whose Copy link is the `share` module's only job. Stories 10.83–10.85, the preamble's clause 5, the clause
+  table and research row 21 now say they declare it [_bmad-output/planning-artifacts/epics.md:7490]
+- [x] [Review][Patch] The FR list and `epic-7-context.md` summarised "both off" as no share affordance at all; FR-Q10 says
+  the fallback draws nothing, and the trigger is not governed by the switches [_bmad-output/planning-artifacts/epics.md:170]
+- [x] [Review][Patch] Reading 3 left two things unasked: whether the Email switch governs the JavaScript-off Email link,
+  and what reveals the trigger once a script runs, since `core` sets `js-enabled` only where it mounts a module (FR-G7(4))
+  [_bmad-output/planning-artifacts/epics.md:7451]
+- [x] [Review][Patch] The hand test asked for both switches on the owner's Ghost 6 site, which never draws the fallback, and
+  T3 is retired (R-238); reading 7 hands the route to 10.82's Create [_bmad-output/planning-artifacts/epics.md:7437]
+- [x] [Review][Patch] Reading 1 did not ask how a compile-time flag follows a site whose Ghost changes after a deploy,
+  nor say the generator meta carries major and minor only (T1: `Ghost 6.58`)
+  [_bmad-output/planning-artifacts/epics.md:7445]
+- [x] [Review][Patch] Reading 2 did not cover a connected site whose `ghost_version` is empty (the column is nullable)
+  [_bmad-output/planning-artifacts/epics.md:7447]
+- [x] [Review][Patch] Nothing asked what the trigger does on the editor canvas, where Portal is a shim; reading 8
+  [_bmad-output/planning-artifacts/epics.md:7460]
+- [x] [Review][Patch] Story 10.82's first criterion gated on the panel's free text alone; it now asks for every item the
+  prompt's "WHAT THE REDRAW CARRIES" lists [_bmad-output/planning-artifacts/epics.md:7390]
+- [x] [Review][Patch] The prompt file's landing steps marked it `record` before writing the date into it; reordered
+  [_bmad-output/planning-artifacts/design/claude-design-prompt-a24-14-share-redraw.md:6]
+- [x] [Review][Patch] The prompt named A26 #9's section "THE TWO SHARE STATES" and asked for four, gave the fallback's
+  order two ways, and item 5's "saying which" had no referent; each clarified from A26 #9's frame, both copies still
+  identical [this spec, Claude Design prompt]
+- [x] [Review][Patch] Dev results predate the second Dev commit (`a20e9fa0`), and AC5's file list is exceeded by
+  `tools/doc-audit.py`'s catalogue row, the new prompt file and three generated pages; recorded below, and R-244's
+  Targets gained the prompt file [this spec, Verification]
+- [x] [Review][Patch] Counts written down: DW-359's "A26's twelve share designs" and the context's "six readings"
+  [_bmad-output/implementation-artifacts/deferred-work.md:9769]
+- [x] [Review][Patch] R-244 said "Only A24 #14 still draws the list", leaving out the stale sub-frames at `A26-3:87` and
+  `A26-5:95` [_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md:5325]
+- [x] [Review][Patch] R-29's ledger rows kept open ⬜ boxes for a reversed ruling; each now points at R-244's Targets
+  [_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md:104]
+- [x] [Review][Defer] `VERIFY-AT-BUILD.md` uses item numbers 59 and 60 twice each [_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md:249] — deferred, pre-existing (DW-361)
+
+Dismissed: R-74's "drawn in the same project" for the Sharing block and A25's fallback (the frozen Boundaries extrapolate
+both, in R-242's shape); the stale `A26-3`/`A26-5` rows having no owner (each A26 story's criterion names them); the two
+prompt copies drifting (checked identical after this review's edits; a gate for a one-off prompt is more machinery than
+the risk); ⚑ and items 4/5 in the prompt (⚑ is Claude Design's own mark, and both items are the ruling's words); "T1 and
+T3" on 10.82's FRs line (R-238 reads every such card as T1); counts in the Dev results (a dated run's output) and the
+clause check's missing control (run below, with one); MEASUREMENTS holding read-in-source readings (labelled, as §37
+is); old wording kept beside dated notes (R-29 is reversed, not erased); Story 7.15's title and user statement (the board
+reads the title, and the statement still holds); "panel / page / popup" (Portal's own word is page; the strings are
+reading 5's); catalog and accessibility details (reading 5 and research §3.1's `aria-live` rule); the A25/A26 lines
+quoting fragments (the clause table assigns exactly those); `DESIGN-PATCH-PROMPTS-2.html`'s "site-wide share list" (a RAN
+page, generated, historical).
+
 ## Spec Change Log
+
+Review, 2026-10-16 — Design Notes amended where a review finding showed its text wrong or incomplete (none changes what
+Question 1 decided):
+- FR-Q10's Ghost 5 sentence: a bare `#/share` does nothing on Portal 2.51, read in its source; the flag clause carries ⚑.
+- The clause table: Stories 10.83–10.85 receive the Copy link clause, because their designs declare `share` for it.
+- "Handed to Story 10.82's Create": readings 1–3 gained a question each, and readings 7 and 8 are new.
 
 ## Design Notes
 
@@ -268,9 +344,9 @@ Read-only evidence:
 > themes use — which opens **Ghost's own share panel**. The panel owns the destinations and their order.
 >
 > **Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**, two links in the same
-> row. Ghost 5's Portal has no share page, so the link would open Portal's default page instead. A theme cannot ask
-> Ghost which version it runs, so **which of the two a site draws comes from a capability flag the app sets from the
-> connected site's Ghost** (`sites.ghost_version`).
+> row. Ghost 5's Portal has no share page, and a bare `#/share` matches none of its links, so there the trigger would
+> do nothing. A theme cannot ask Ghost which version it runs, so **which of the two a site draws comes from a
+> capability flag the app sets from the connected site's Ghost** (`sites.ghost_version`) ⚑.
 >
 > The project declares **one** sharing setting: **two switches, Copy link and Email — the fallback pair only**. It is
 > **stored once on the project, never per section** — a per-section setting is how two share rows on one site end up
@@ -294,7 +370,7 @@ Read-only evidence:
 | "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**" … "**capability flag**" | 10.82 (builds the flag) · each A25/A26 story above (draws the fallback; A25's is extrapolated from A26 #9) |
 | "**two switches, Copy link and Email — the fallback pair only**" · "**stored once on the project, never per section**" · "renders **no share affordance at all**" | 10.82 · each A25/A26 story above (both off: no fallback drawn) |
 | "**Email is a real `mailto:` link built at compile from the post's own canonical URL and title**" | 10.82 |
-| "**Copy link is the one destination needing Inflozo's script, and it is the `share` module's only job**" | 10.23 (first `share.js`, for A9 #7) · 10.82 |
+| "**Copy link is the one destination needing Inflozo's script, and it is the `share` module's only job**" | 10.23 (first `share.js`, for A9 #7) · 10.82 · 10.83, 10.84, 10.85 (A25's designs declare `share` for the fallback's Copy link — added at Review) |
 | "**With JavaScript off, the block draws Email alone**" | 10.82 · each A25/A26 story above |
 | Frames: A24 #14 redrawn · D6a's Credits row for the two switches · Owner test: yes | 10.82 |
 
@@ -305,14 +381,22 @@ Read-only evidence:
      pins a Portal with the page is not yet read.
    - Ghost 6.58.0 loads Portal only while members, donations or recommendations are on (`ghost_head.js:121-125`). On a
      Ghost 6 site with all three off, the trigger opens nothing.
-   - `{{ghost_head}}` also prints `<meta name="generator" content="Ghost …">` (`:415`), which a script can read. So the
+   - `{{ghost_head}}` also prints `<meta name="generator" content="Ghost …">` (`:415`), which a script can read — major
+     and minor only: T1 printed `Ghost 6.58` at Review. So the
      flag could be a compile-time read of `sites.ghost_version` (the ruling's ⚑ reading) or a run-time check in
      `share.js`. A run-time check would widen "copy-link … the module's only job". That choice is an R-83 question for
      the owner.
-2. **A project with no connected site.** The canvas and Story 7.26's theme ZIP export have no `ghost_version` to read.
+   - So is how a compile-time flag follows a site whose Ghost, or the Portal it floats to, changes after a deploy
+     *(added at Review)*.
+2. **A project with no connected site.** The canvas and Story 7.26's theme ZIP export have no `ghost_version` to read,
+   and nor has a connected site whose `ghost_version` is empty or unreadable (the column is nullable text) *(added at
+   Review)*.
 3. **The JavaScript-off state.** The block shows Email alone. That means the trigger and Copy link hide without a
    script. Whether Email also shows beside the trigger with JavaScript on (A26 #9's first state draws the trigger alone)
    is not settled.
+   - *(Added at Review.)* Nor is whether the Email switch governs that JavaScript-off Email link, or what reveals the
+     trigger once a script runs: `core` sets `js-enabled` only on an element whose module it mounts (FR-G7(4)), and
+     the trigger declares none.
 4. **Email's URL.** `mailto:?subject=…&body=…` from the title, and from `canonical_url` when set or else
    `{{url absolute="true"}}`, each through `{{encode}}`.
    - It must be guarded, because `encode.js:9-11` encodes Handlebars' options object when its argument is empty.
@@ -322,6 +406,11 @@ Read-only evidence:
    subject now that Ghost's panel names the destinations.
 6. **The editor panel.** Every A26 panel draws a greyed "Share destinations" row with its reason. A24 #14's redraw
    carries the same row.
+7. **The fallback's hand test** *(added at Review)*. T1 is Ghost 6.58.0 and T3 is retired (R-238), so how the owner
+   sees the fallback and both switches on a real site — a forced flag, a Ghost 5 server spun up for it, or DW-326's
+   end-of-project pass — is an R-83 question at 10.82's Create.
+8. **The canvas** *(added at Review)*. What the trigger draws and does on the editor canvas and in Preview, where Portal
+   is a shim, and NFR-6(c3)'s exclusion for Ghost's panel.
 
 ### Facts this spec rests on (read at this Create, 2026-10-16)
 
@@ -394,6 +483,38 @@ Read-only evidence:
 - Vercel, read with `VERCEL_TOKEN` and `VERCEL_TEAM_ID` -- expected: the deployment at that sha READY and served by
   app.inflozo.com.
 - Not run: T1 and Supabase. Nothing a theme carries or the database holds changes; the T1 facts are Story 10.82's.
+
+**Review results (2026-10-16), on the real infrastructure.** Keys read only into each command's environment, by name
+(`GITHUB_TOKEN`; `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`); no value printed. No write to any service.
+- **GitHub Actions on the Dev head `a20e9fa0`** (`actions/runs?head_sha=…`): CI run `38921260476` — `rls`, `check` and
+  `deploy` success, conclusion `success`; the render matrix run `38921260538` success. The first Dev commit `c0583492`
+  is green too (run `38913722969`). Control: an all-zero sha returns `total_count=0`.
+- **Vercel:** `a20e9fa0` → `dpl_8xhxVbWAifLf7KVDnVfvbTPeCJmf`, `READY`, target production; `/v4/aliases/app.inflozo.com`
+  and `inflozo.com` both point at it. Control: before `deploy` finished, both aliases read `c0583492`'s
+  `dpl_JCP7S8xeeu1NbHfuivyvBB381SWn` and `a20e9fa0` had no deployment, so the alias read was seen to change. Live:
+  `app.inflozo.com/` 307 (signed out), `/sign-in` 200, `inflozo.com/` 200.
+- **R-99:** the diff holds no migration and no `supabase/` or `apps/` path, so there is no schema to compare; no hosted
+  database read was made.
+- **T1, one public read** (`curl https://ghost6.inflozo.com/`): 200, `<meta name="generator" content="Ghost 6.58">` and
+  Portal from `cdn.jsdelivr.net/ghost/portal@~2.69/umd/portal.min.js`. The generator meta carries major and minor only,
+  handed to Story 10.82's reading 1.
+- **Standing rule 1, re-read from fresh npm tarballs** (ghost@6.58.0, ghost@5.130.6's `defaults.json`, @tryghost/portal
+  2.51.5 and 2.69.339): Casper `post.hbs:60` and Source `post.hbs:44` write `href="#/share"`; `ghost_head.js:121-125` and
+  `:415`; `encode.js:9-11`; Portal 2.51.5 `App.js:915`, `:927-931`, `:507`, `:1021`; Portal 2.69 `app.jsx:662`,
+  `:710-714` and `use-share-data.js:20-34`, `:52`; 2.51.5 and 2.69.339 the latest patches of `~2.51` and `~2.69` — each
+  held. Control: the same reading finds the share page in 2.69.339 and no `share` line at all in 2.51.5. **And one claim
+  failed:** FR-Q10's "the link would open Portal's default page" — `App.js:502-555` returns nothing for a bare `#/share`;
+  corrected (Review Findings).
+- **The diff's scope against AC5.** Beyond "documents, the two comments, `sprint-status.yaml` and the generated board",
+  the second Dev commit `a20e9fa0` added `design/claude-design-prompt-a24-14-share-redraw.md` and its catalogue row in
+  `tools/doc-audit.py` (data, the gate requires a row for every new document), and the gate regenerated `INDEX.md`,
+  `INDEX.html` and `CATEGORY-PROMPTS.html`; Review adds a second `tools/doc-audit.py` brief edit (D15). No behaviour, no
+  export path, no `supabase/` or `apps/` path. The Dev results line above predates `a20e9fa0`.
+- **Checks run at Review:** `python3 tools/verify-design-pass.py` exit 0, "every structural check passes"; the clause grep
+  re-run as a script over every story the clause table names and Epic 10's preamble — all found, and its control (a phrase
+  that is in no card) missed in both; every FRs line of 10.23 and 10.82–10.89 carries FR-Q10; the two prompt copies
+  compared block for block, identical; `python3 tools/doc-audit.py --check` twice. `pnpm check` was not re-run: Review
+  changed no package code, and CI's `check` runs it on the Review push.
 
 ## Owner's manual test
 
@@ -470,7 +591,8 @@ READ FIRST, in this project:
 - `A24 Post Headers - Spec.md` — 14 Share Row's section, and "Patch notes — the native-share ruling,
   1 September 2026" at the end of the document, above all its paragraph "What the redraw carries".
 - `A24-14 Share Row.dc.html` — the frame you are redrawing, including its dated native-share panel.
-- `A26-9 Share Row.dc.html` — its section "THE TWO SHARE STATES": the pattern to follow.
+- `A26-9 Share Row.dc.html` — its section headed "THE TWO SHARE STATES", which draws the four states
+  below: the pattern to follow.
 - `Calibration Set.dc.html` — the tokens, type scale, spacing and colour roles. Use nothing outside it.
 - `Editor Sidebar Kit.dc.html` — every sidebar control, panel, badge and greyed state. The panel uses
   these and nothing else.
@@ -484,7 +606,9 @@ WHAT THE REDRAW CARRIES — exactly this list, nothing added:
 4. The Links stepper (Two · Three · Four) CUT, not greyed — a control with nothing left to do is not a
    disabled control.
 5. In the editor panel, the Share destinations row greyed, with the reason beside it — "Ghost's own
-   share panel owns the destinations and their order" — and, on an older Ghost, saying which.
+   share panel owns the destinations and their order" — and, on an older Ghost, the row stays greyed
+   and says the fallback pair shows instead, as A26 #9's panel does ("Ghost's panel · fallback: Copy
+   link · Email").
 6. The site-wide setting reduced to two switches, Copy link and Email: the fallback pair only.
 7. No brand glyphs.
 8. The copied confirmation kept, inside the fallback only.
@@ -492,7 +616,7 @@ WHAT THE REDRAW CARRIES — exactly this list, nothing added:
 
 THE PATTERN. Draw #14's share row in A26 #9's four states, side by side and in A26 #9's order:
 (a) current Ghost — one trigger, Ghost's panel owns the destinations;
-(b) older Ghost — no panel, Email and Copy link in the same row;
+(b) older Ghost — no panel, Email and Copy link in the same row, Email first, as A26 #9 draws them;
 (c) older Ghost — the copied confirmation, which then reverts;
 (d) either version, no JavaScript — Email alone.
 The header above the row — tag, title, standfirst, byline and hairline — does not move between the
@@ -503,7 +627,11 @@ the frame, strike what the ruling superseded: the four destinations and their or
 the ten-platform ordered list, the per-platform brand glyphs, and the two arguments "three of the four
 destinations are ordinary links and one is not" and "Mastodon's link is the honest problem in the row".
 Keep every superseded sentence legible — struck and dated 16 October 2026 — so the reversal is visible.
-Then update the frame's dated native-share panel to say the redraw has landed.
+Then update the frame's dated native-share panel to say the redraw has landed. That panel says an
+older Ghost's "same link opens the sign-in box": correct it there and in 14 Share Row's section, because
+read in Portal 2.51's source a bare `#/share` matches none of its links and does nothing on an older
+Ghost — it is `data-portal="share"` that opens the sign-in or sign-up box. Leave the dated "Patch
+notes — the native-share ruling" section as written.
 
 RULES:
 - Design numbering unchanged: nothing renumbered, nothing deleted, no design added. Do not write a

@@ -101,7 +101,7 @@ downward correction; the owner took the upward decision the same day — **no ca
 | **R-26** inline icons, Tabler | ✅ FR-F1, `Appendix C`, FR-Q7 · scope clarified by **R-92** (§A17): Tabler is the sections', the app chrome draws the frames' own paths | ⬜ |
 | **R-27** inline-token allow-list | ✅ FR-G3, FR-D4, FR-F6 · **amended for one token by R-182** (§A37): `{page_number}` is accepted by every text and richtext prop and declared by none, and every declared token now carries a one-line description (R-185) | ⬜ |
 | **R-28** member PII never rendered | ✅ FR-H6 | ⬜ A30, A16 |
-| **R-29** share destinations *(reversed 2026-10-16 by R-244)* | ⬜ `Appendix B`, and **R11's FR still needs drafting** | ⬜ |
+| **R-29** share destinations *(reversed 2026-10-16 by R-244)* | ⬜ `Appendix B`, and **R11's FR still needs drafting** *(both closed: FR-Q10 was written 2026-08-31 and rewritten by R-244, whose Targets now carry what is owed)* | ⬜ *(see R-244's Targets)* |
 
 **The two roster decisions R-24 delegated to the merge, and how they were taken.**
 
@@ -180,7 +180,7 @@ work list for that prompt.
 | **R-45b** A9-12 Filter | ✅ **CUT ENTIRELY** *(owner, 2026-09-01, superseding the 2026-08-31 reading "the filter comes off, the design stays")*. The reason the control had to go is unchanged — there are no Ghost routes for FAQ rows somebody typed, so `filter-strip` cannot degrade honestly there. What changed is what was left once it went: **a plain list of questions and answers, which is design 3 Open List.** Two designs separated by nothing is what FR-G5's uniqueness bar exists to prevent. Recorded in `export-roster.py`'s deletion table; **number 12 retired** | ✅ done in the 2026-09-01 export |
 | **R-2** the avatar with no photograph | ✅ **FR-H8** gains the avatar as its one designed substitute, with the reason the two forms differ: `{{split}}` is Ghost ≥ 6.5 and a **gscan error below**, so two initials are unreachable for Ghost-sourced data. Authored lists bake two at compile; Ghost authors get one letter in pure CSS | ⬜ A12, A17, A24, A1-6, P0·5 |
 | **R-10** thirteen corrections | ✅ **#13 → FR-Q1** (every "posts per page" links to Inflozo's Theme Settings, never Ghost Admin, which has no such setting). ✅ **#8 → `appendix-h1` §3.9**, and it needed executing first — see below. ~~#1~~ and ~~#7~~ are **withdrawn**, both refuted | ⬜ #2–#6, #9–#12 are per-category corrections |
-| **R-29** share destinations | ✅ **FR-Q10 is written — this is the FR "R11" has been waiting for.** One ordered site-wide list, stored as one row on the project doc (**AD-27**), emitted as real `<a href>` URLs that work with JS off. ✅ **`Appendix B`** gains `share` as a *Ghost fact and not a destination*: absent on Ghost 5, where the link opens the **sign-in** modal, and an unstylable shadow-DOM iframe where it exists. *(Reversed 2026-10-16 by R-244: FR-Q10 is rewritten to Ghost's own share panel with Copy link and Email as its fallback, and Appendix B's `share` fact stands with its consequence changed.)* | ⬜ A24-14, A25, A26-9 |
+| **R-29** share destinations | ✅ **FR-Q10 is written — this is the FR "R11" has been waiting for.** One ordered site-wide list, stored as one row on the project doc (**AD-27**), emitted as real `<a href>` URLs that work with JS off. ✅ **`Appendix B`** gains `share` as a *Ghost fact and not a destination*: absent on Ghost 5, where the link opens the **sign-in** modal, and an unstylable shadow-DOM iframe where it exists. *(Reversed 2026-10-16 by R-244: FR-Q10 is rewritten to Ghost's own share panel with Copy link and Email as its fallback, and Appendix B's `share` fact stands with its consequence changed.)* | ⬜ A24-14, A25, A26-9 *(owed now under R-244's Targets, not this ruling)* |
 
 **R-10 #8 was not transcribed — it was executed, and the document it corrects had the reason backwards.**
 The ledger said *strike `%` from `comments.count_*`*; `appendix-h1` §3.9 said keep `%` **because the
@@ -5323,7 +5323,9 @@ ruled **option 1** (owner, 2026-10-05): *"1. Show the ticked project first in th
   `A25 Post Content Layouts - Spec.md:1371-1398`), and treated as live by R-49.
 - **Why this way.** It is the owner's later ruling, and the export is already drawn to it: A25's share designs and A26's
   draw one trigger, and A26 #9 draws the four states (trigger · Email and Copy link · copied · Email alone). Only A24 #14
-  still draws the list, and its own dated panel names it outstanding (`A24-14 Share Row.dc.html:307-310`).
+  is still designed as the list, and its own dated panel names it outstanding (`A24-14 Share Row.dc.html:307-310`); two
+  stale pre-ruling sub-frames also remain, `A26-3 Card.dc.html:87` and `A26-5 Split.dc.html:95`, which A26's stories
+  never follow (Epic 10's preamble; corrected at Story 7.15's Review).
 - **The rule.** FR-Q10 as rewritten (`prd.md`): every design that offers sharing draws **a label and one Share trigger**
   — `href="#/share"`, the form Ghost's own themes use — which opens **Ghost's own share panel**; **where the site's Ghost
   has no share panel, the trigger is replaced by Copy link and Email**, chosen by **a capability flag** the app sets from
@@ -5346,7 +5348,10 @@ ruled **option 1** (owner, 2026-10-05): *"1. Show the ticked project first in th
   10.23 and 10.83–10.89, and Epic 10's preamble (R-195) · ✅ `MEASUREMENTS.md` §29b · ✅ `VERIFY-AT-BUILD.md` family 31
   and item 62 · ✅ `ARCHITECTURE-SPINE.md` AD-27 · ✅ research §2.1 row 21, §3.1's and §7's `share` rows · ✅
   `EXPERIENCE.md`'s Theme Settings row · ✅ `vocabulary.ts`' `PORTAL_PAGE` comment · ✅ `tools/verify-design-pass.py`'s
-  `c_share_link` · ✅ DW-359, DW-360 · ✅ `epic-7-context.md` · ✅ `HANDOVER.md` and `build-sequence.md` (dated notes) ·
+  `c_share_link` · ✅ DW-359, DW-360 · ✅ `epic-7-context.md` · ✅ `HANDOVER.md` and `build-sequence.md` (dated notes) · ✅
+  `design/claude-design-prompt-a24-14-share-redraw.md` (the prompt, saved on its own) · ✅ at Story 7.15's Review: E7's and
+  E10's FRs-covered lines and summary rows in `epics.md` and `prd.md` §8, Stories 10.23 and 10.83–10.89's FRs lines, D15
+  marked reversed in `CONTROL-PROMPTS.html` (its home), and FR-Q10's Ghost 5 sentence corrected to Portal 2.51.5's source ·
   ⬜ A24 #14 redrawn by the owner in Claude Design (DW-360) · ⬜ Story 10.82 · ⬜ Story 10.23 · ⬜ Stories 10.83, 10.84
   and 10.85 (A25) · ⬜ Stories 10.86, 10.87, 10.88 and 10.89 (A26) · ⬜ item 62's facts recorded on T1 (Story 10.82).
 
