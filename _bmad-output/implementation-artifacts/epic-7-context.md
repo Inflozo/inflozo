@@ -380,7 +380,14 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **Story 7.15's Create (2026-10-16):** the spec is ready for Dev with one question open (R-83). Dev waits for it.
     - **Two rulings contradict.** FR-Q10 and R-29 (2026-08-31) say one Inflozo list, and Portal is never used. The owner's "native Ghost Share only, everywhere" (2026-09-01) says the opposite. That ruling is recorded only in the export (`A24 … Spec.md:1634-1667`, `A26 … Spec.md:1351, 1589`), and R-49 treats it as live. A25's and A26's share designs are drawn to it, A24 #14 to FR-Q10. `D6` draws no share row.
     - **Nothing renders the list before Story 10.82** (A24 #14 Share Row). The built designs are a1/1, a4/13, a17/1, a22/1 and a24/1. `packages/library/modules/` holds `core.js` alone. A9 #7 (Story 10.23) is the `share` module's first consumer, for copy-link only.
-    - **Q1, three options.** 1: FR-Q10's list, every clause moved word for word to 10.82, 10.23 and each A25/A26 story whose designs offer sharing (R-118, R-195). This one is recommended, and the spec is written to it: documents only, `owner_test: none`. 2: build the setting now. 3: Ghost's popup, with FR-Q10 rewritten.
+    - **Q1, three options.** 1: FR-Q10's list, every clause moved word for word to 10.82, 10.23 and each A25/A26 story whose designs offer sharing (R-118, R-195). 2: build the setting now. 3: Ghost's popup, with FR-Q10 rewritten.
+    - **Ruled: option 3 (owner, 2026-10-16).** The 1 September native-share ruling stands, and R-29 is reversed.
+      - Dev rewrites FR-Q10. Sharing becomes one `#/share` trigger to Ghost's panel. Where the site's Ghost has no panel, Copy link and Email take its place, chosen by a capability flag. The site setting becomes those two switches, stored once. With JavaScript off, the block draws Email alone.
+      - Dev moves each rewritten clause word for word to 10.82, 10.23 and the A25/A26 share stories, with Epic 10's preamble listing them.
+      - Dev dates R-29, R-49 and §29b, and the comments in `vocabulary.ts:351` and `verify-design-pass.py`.
+      - Dev writes the Claude Design prompt that redraws A24 #14 before 10.82.
+      - Documents and comments only; `owner_test: none`.
+    - **Found while writing the rewrite.** Ghost 6.58.0 loads Portal only while members, donations or recommendations are on (`ghost_head.js:121-125`), and prints a generator meta tag (`:415`). Both go to 10.82 as readings for the flag.
     - **Read in source** (ghost 5.130.6 and 6.58.0; portal 2.51.5 and 2.69.339):
       - `{{encode}}` is `encodeURIComponent` over its first argument, and an empty one encodes the options object.
       - `{{url absolute="true"}}` is the permalink, never `canonical_url`.
