@@ -259,6 +259,12 @@
 // the last-viewed card; the read-only tab; and the record handed back. It RE-EXPECTS STEPS 6, 52, 95, 106a and 106j: `/cards`
 // answers 200 (it left step 6's 404 list for OFFERED), the rail's third item is Editor cards, and the surfaces' heading is
 // the editor's own `SURFACES_HEADING`.
+// Story 7.14 adds step 108, in a context of its own: FR-Q9 on production — a card value stored through Editor cards
+// (Bookmark's first choice off its start, read from `CARDS`), then a Home section deleted from Layers ⋯ and saved: the
+// revision moves by one while `project_treatments.card_designs` reads back byte-equal and unwritten (`updated_at`); after a
+// reload Theme settings draws no pagination text (R-118 — the Posts per page caption, which says "paginating" of the page
+// size, is taken out first and is the regex's own control) and its rail's Editor cards lands on Bookmark, still
+// customised; handed back by ⌘Z on Home + ⌘S and Reset card + ⌘S, Home's doc read back equal to its start, the record empty.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -9348,6 +9354,121 @@ async function main() {
     const end107 = await treat107()
     check('step 107 — the project is handed back with the card record it started with, and every context of the block recorded zero CSP violations',
       JSON.stringify(end107) === JSON.stringify(start107) && csp107.length === 0, JSON.stringify({ end107, csp107: csp107.slice(0, 3) }))
+
+    // ── step 108 — STORY 7.14: FR-Q9 ON PRODUCTION — A SECTION'S REMOVAL LEAVES THE CARD RECORD, AND THEME SETTINGS REACHES IT (R-82) ──
+    /* In a context of its own, on the seeded project. Card styling has no host section (S14d), so a Home section deleted
+       and saved must leave `project_treatments.card_designs` byte-equal AND unwritten — `sync_project_doc` sets `updated_at`
+       only when a save carries `p_cards` — while the revision moves by ONE. After a reload Theme settings draws nothing
+       about pagination (R-118: no A34 design exists; the row is Story 10.112's) and its rail's Editor cards lands on the
+       card, still customised. The card, control and value are the registry's (`CARDS`), every word `lib/cards.ts`',
+       `lib/translations.ts`' or `lib/theme-settings.ts`'. Handed back through the product: ⌘Z on Home (undo is the journal
+       tail and survives a reload, EXPERIENCE § Editor shell) + ⌘S, then Reset card + ⌘S. */
+    const treat108 = async () => (await call('/rest/v1', `/project_treatments?project_id=eq.${P}&select=card_designs,updated_at`)).body ?? null
+    const home108 = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+    const card108 = LIB.CARDS.find((c) => c.key === 'bookmark')
+    const choice108 = card108.controls.find((c) => c.kind === 'choice')
+    const value108 = choice108.values.find((v) => v.value !== choice108.start)
+    const want108 = { [card108.key]: { [choice108.name]: value108.value } }
+    const start108 = await treat108()
+    const homeStart108 = await home108()
+    const victim108 = homeStart108?.instances?.at(-1)?.layerName
+    check('step 108 — the fixture: no card design stored, and Home holds the section this step deletes, read back through the service key',
+      Array.isArray(start108) && Object.keys(designs107(start108)).length === 0 && typeof victim108 === 'string', JSON.stringify({ start108, victim108 }))
+    const kContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const csp108 = []
+    await recorder(kContext, csp108)
+    const kp = steady(await kContext.newPage())
+    kp.on('pageerror', (e) => note('pageerror 108', String(e)))
+    await kp.goto(await magic(emailA), { waitUntil: 'load' })
+    const names108 = () => kp.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => r.querySelector('button').textContent))
+    const home108Painted = () => kp.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    const radio108 = () => kp.locator(`[data-card-panel="${card108.key}"]`).getByRole('radiogroup', { name: choice108.label, exact: true }).getByRole('radio', { name: value108.label, exact: true })
+
+    // 108a — a card value stored through Editor cards, ⌘S: the record this step watches
+    await kp.goto(cardsUrl107, { waitUntil: 'load' })
+    await ringed107(kp)
+    await choose107(kp, card108.key)
+    await radio108().click()
+    await kp.waitForTimeout(600)
+    const revCard108 = await revision107()
+    const syncedCard108 = await save107(kp)
+    const stored108 = await treat108()
+    const revStored108 = await revision107()
+    check(`step 108a — Editor cards: ${card108.label}'s ${choice108.label} set to ${value108.label} and ⌘S store exactly that change in project_treatments.card_designs, the revision moving by ONE`,
+      syncedCard108 && JSON.stringify(designs107(stored108)) === JSON.stringify(want108) && revStored108 === (revCard108 ?? -2) + 1, JSON.stringify({ stored108, revCard108, revStored108 }))
+
+    // 108b — a Home section deleted from Layers ⋯ and saved: the docs' save moves the revision, and never touches the record
+    await kp.goto(editorUrl(), { waitUntil: 'load' })
+    await home108Painted()
+    const namesStart108 = await names108()
+    await kp.locator('#editor-layers').getByRole('button', { name: `More for ${victim108}`, exact: true }).click()
+    await kp.waitForTimeout(250)
+    await kp.getByRole('button', { name: 'Delete', exact: true }).click()
+    await kp.waitForTimeout(400)
+    const namesDeleted108 = await names108()
+    const revDelete108 = await revision107()
+    const syncedDelete108 = await save107(kp)
+    const revDeleted108 = await revision107()
+    const kept108 = await treat108()
+    const homeDeleted108 = await home108()
+    check(`step 108b — FR-Q9: "${victim108}" deleted from Home (Layers ⋯ → Delete) and ⌘S — the revision moves by ONE and Home's stored doc loses exactly that section, while project_treatments.card_designs reads back byte-equal and unwritten (updated_at unchanged)`,
+      namesDeleted108.length === namesStart108.length - 1 && !namesDeleted108.includes(victim108) && syncedDelete108 && revDeleted108 === (revDelete108 ?? -2) + 1 &&
+      homeDeleted108?.instances?.length === homeStart108.instances.length - 1 && !homeDeleted108.instances.some((i) => i.layerName === victim108) &&
+      JSON.stringify(kept108) === JSON.stringify(stored108), JSON.stringify({ revDelete108, revDeleted108, stored108, kept108, names: namesDeleted108 }))
+
+    // 108c — after a reload, Theme settings: no pagination text (R-118) — read with the Posts per page caption taken out, since
+    // it says "paginating" of the page size and is the regex's own control — and the rail's Editor cards lands on the card
+    await kp.reload({ waitUntil: 'load' })
+    await home108Painted()
+    await open104(kp)
+    const text108 = await kp.evaluate(() => document.body.innerText)
+    const rest108 = text108.split(T104.postsCaption).join('')
+    const lower108 = rest108.toLowerCase()
+    check('step 108c — R-118: Theme settings draws no pagination row, label or caption — nothing but the Posts per page caption matches /paginat/i (the control: that caption does, and the text read carries D6a\'s rail and the page\'s rows)',
+      /paginat/i.test(T104.postsCaption) && text108.includes(T104.postsCaption) && !/paginat/i.test(rest108) &&
+      [T104.postsPerPage, R106.theme, R106.cards].every((w) => lower108.includes(w.toLowerCase())), JSON.stringify(rest108.match(/[^\n]*paginat[^\n]*/gi) ?? []))
+    await kp.locator('nav[data-settings-rail] a').filter({ hasText: C107.label }).click()
+    const railed108 = await kp.waitForURL((u) => u.pathname.endsWith(`/projects/${P}/cards`), { timeout: 15000 }).then(() => true, () => false)
+    await ringed107(kp)
+    await kp.waitForTimeout(600)
+    const landed108 = await surface107(kp)
+    const chosen108 = await radio108().getAttribute('aria-checked').catch(() => null)
+    check(`step 108c — FR-Q9: after the section's removal and a reload, Theme settings → Editor cards opens on the last-viewed card, ${card108.label}, still customised and ringed, ${value108.label} still chosen`,
+      railed108 && landed108.panel === card108.label && landed108.badge === C107.customised && JSON.stringify(landed108.customised) === JSON.stringify([card108.key]) &&
+      (landed108.ringed ?? '').split(/\s+/).includes(card108.root.replace(/^\./, '')) && chosen108 === 'true', JSON.stringify({ railed108, landed108, chosen108 }))
+
+    // 108d — handed back through the product: ⌘Z on Home + ⌘S, then Reset card + ⌘S
+    await kp.goto(editorUrl(), { waitUntil: 'load' })
+    await home108Painted()
+    await kp.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await kp.keyboard.press('ControlOrMeta+z')
+    await kp.waitForTimeout(800)
+    const namesUndone108 = await names108()
+    const syncedUndo108 = await save107(kp)
+    const homeEnd108 = await home108()
+    // equal to its start as stored, or as the editor reads it — `read.ts` designates a Home stored before the main-feed flag
+    // (the seed's), and the editor saves the doc it was handed
+    const homeRead108 = JSON.parse(JSON.stringify(designate(parseDoc(homeStart108, 'home'), CANVASES.home.file, heldBy)))
+    const homeBack108 = same104(homeEnd108, homeStart108) || same104(homeEnd108, homeRead108)
+    await kp.goto(cardsUrl107, { waitUntil: 'load' })
+    await ringed107(kp)
+    await choose107(kp, card108.key)
+    await kp.locator('#card-reset').click()
+    await kp.locator('#card-reset-confirm').click()
+    await kp.waitForTimeout(800)
+    const syncedReset108 = await save107(kp)
+    const reset108 = await treat108()
+    check('step 108d — handed back through the product: ⌘Z on Home brings the section back where it was and ⌘S stores Home\'s doc equal to its start; Reset card and ⌘S store an empty record',
+      JSON.stringify(namesUndone108) === JSON.stringify(namesStart108) && syncedUndo108 && homeBack108 && syncedReset108 && Object.keys(designs107(reset108)).length === 0,
+      JSON.stringify({ namesUndone108, homeBack108, reset108 }))
+    await handBack(kp)
+    await kContext.close()
+
+    // the project as this block found it — a reset leaves an empty row where there was none
+    if (start108.length === 0) await call('/rest/v1', `/project_treatments?project_id=eq.${P}`, { method: 'DELETE' })
+    const end108 = await treat108()
+    check('step 108 — the project is handed back with the card record it started with, and the block\'s context recorded zero CSP violations',
+      end108?.length === start108.length && JSON.stringify(designs107(end108)) === JSON.stringify(designs107(start108)) && csp108.length === 0, JSON.stringify({ end108, csp108: csp108.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

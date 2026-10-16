@@ -123,7 +123,7 @@ export const PAYWALL_TARGET = 'partials/content-cta.hbs'
  *  `partials/` (`engine.js`'s `partialsDir`, `overrides.json:6` — read in 5.130.6 and 6.58.0; `gift-toast` is 6.x's), so a
  *  theme partial of one of these names replaces Ghost's template across the whole site. A design's `data-partial` lands
  *  at that root and may never take one (AD-36); `cancel_link` cannot pass the grammar. The paywall's `content-cta` (7.3)
- *  and a pagination style's override (7.14) are the compiler's own, chosen by a treatment. */
+ *  and a pagination style's override (10.112) are the compiler's own, chosen by a treatment. */
 export const GHOST_OWN_PARTIALS = ['content-cta', 'gift-toast', 'navigation', 'pagination', 'recommendations'] as const
 
 export const COMPILE_TARGETS = [

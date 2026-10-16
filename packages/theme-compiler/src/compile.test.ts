@@ -1169,6 +1169,35 @@ test('(7.5, 7.13) a designed card with no script: no cards.js, no cards tag, no 
   assert.ok((divider['README.md'] as string).endsWith(STYLES_NONE.replace('their wide and full widths.', 'their wide and full widths, and its card settings.')), divider['README.md'] as string)
 })
 
+test('(7.14) FR-Q9: the card designs emit whatever the sections — project()\'s every section placed, or the same template keys each an empty doc, carry the same cards.css, card_assets and link; the control: the empty project with no card designed differs', () => {
+  const cardDesigns = { callout: { emoji: 'off' }, toggle: { chevron: 'left' } }
+  const emptied = (docs: Record<string, ProjectDoc>): Record<string, ProjectDoc> => Object.fromEntries(Object.keys(docs).map((k) => [k, docOf()]))
+  const full = build(project(), { pageTwo: projectTwo(), cardDesigns }).files
+  const bare = build(emptied(project()), { pageTwo: emptied(projectTwo()), cardDesigns }).files
+  const none = build(emptied(project()), { pageTwo: emptied(projectTwo()), cardDesigns: {} }).files
+  const cardsOf = (files: CompiledTheme['files']): unknown => (JSON.parse(files['package.json'] as string) as { config: { card_assets: unknown } }).config.card_assets
+  const linked = (files: CompiledTheme['files']): boolean => headOf(files).includes(`${CARDS_STYLESHEET}\n${STYLESHEET}\n`)
+  // the premise: the two compiles differ in sections. The empty docs store none, yet the theme still renders what the
+  // library's own rules put on an empty template (Post's header, Home's fallback feed) — so the claim is that NOTHING THE
+  // USER PLACED decides the cards, read as the two section sets differing (the user's footer, header and newsletter gone)
+  const sectionFiles = (files: CompiledTheme['files']) => Object.keys(files).filter((f) => f.startsWith('partials/sections/'))
+  assert.ok(sectionFiles(full).some((f) => !sectionFiles(bare).includes(f)), JSON.stringify({ full: sectionFiles(full), bare: sectionFiles(bare) }))
+  // sections everywhere: Ghost's callout and toggle chunks, their rules, both excluded, cards.css before screen.css
+  const css = full['assets/css/cards.css'] as string
+  assert.equal(css, cardsCss(cardDesigns, GHOST_CARDS.styles))
+  assert.ok(css.includes('/* callout.css */\n') && css.includes('/* toggle.css */\n') && ownCardsCss(css).includes('.kg-callout-card div.kg-callout-emoji { display: none; }'), css)
+  assert.deepEqual(cardsOf(full), { exclude: ['callout', 'toggle'] })
+  assert.ok(linked(full), headOf(full))
+  // no section anywhere: the same bytes, the same exclusion, the same link
+  assert.equal(bare['assets/css/cards.css'], css)
+  assert.deepEqual(cardsOf(bare), cardsOf(full))
+  assert.ok(linked(bare), headOf(bare))
+  // the control — the check reads the record: no card designed, D12's two widths alone and card_assets true
+  assert.equal(none['assets/css/cards.css'], KOENIG_WIDTHS)
+  assert.notEqual(none['assets/css/cards.css'], css)
+  assert.equal(cardsOf(none), true)
+})
+
 test('(7.5) a chunk not as vendored, or two chunks from two Ghost versions, throws naming the card', () => {
   const scripts = (over: Record<string, string>) => ({ ghostCards: { ...GHOST_CARDS, scripts: { ...GHOST_CARDS.scripts, ...over } } })
   const toggle = { toggle: { chevron: 'left' } }

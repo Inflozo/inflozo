@@ -211,6 +211,8 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 That group is the entry point for **Paywall Editor**, **Editor Cards** and **Error Pages**, and it
 is drawn in ink chrome rather than paper so a canvas that is not a page announces itself. It is
 also where FR-Q9's fallback lands: a treatment whose host section is absent is still selected here.
+*(Story 7.14, 2026-10-16: card styling has no host section — Editor cards, from the switcher and Theme
+settings' rail; the pagination half is Story 10.112's.)*
 
 ### Editor shell — what the frames fix, and what is open for the architect
 

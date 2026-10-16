@@ -4250,7 +4250,8 @@ three would have been controls with nothing to act on (R-118).
   - *"the main feed alone exposes Pagination style: Numbered / Load More / Infinite scroll"* → **Story 10.112** (A34's
     first story), with the Pagination control on page 2's copy of the main feed, the one project-level value it stores
     (`project_treatments.pagination_design_id`, AD-27 (a0)), Theme Settings' pagination half (Story 7.14) and the two
-    choices still open on it (DW-232, DW-233).
+    choices still open on it (DW-232, DW-233). *(Story 7.14's Dev, 2026-10-16: 7.14's Create moved that pagination half
+    to Story 10.112 as well, word for word — its card and Epic 10's preamble carry it.)*
   - *"load-more designs are main-feed-only"* → **Stories 10.58** (A17 #16 Load More) **and 10.62** (A18 #15 Load More).
   - *"a design may cap its own Count below the global and the panel states the reason"* → **every category story whose
     designs cap a Ghost-sourced Count**. The first ones come before Epic 10 — A2's posts source, capped at six (Story

@@ -2,7 +2,8 @@
 title: 'Story 7.14 — Treatment selection from Theme Settings'
 type: 'feature'
 created: '2026-10-16'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'bf2df0ad9f118cf671ad9e94d499398273fe00aa'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -105,27 +106,27 @@ recommended option.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/theme-compiler/src/compile.ts` -- on the `cards.css` comment at `:878`, add that it ships whatever the
+- [x] `packages/theme-compiler/src/compile.ts` -- on the `cards.css` comment at `:878`, add that it ships whatever the
   templates hold, because card styling has no host section (FR-Q9, Story 7.14) -- standing rule 3: the claim lives
   beside the code it governs.
-- [ ] `packages/theme-compiler/src/compile.test.ts` -- add `(7.14) FR-Q9: the card designs emit whatever the sections`
+- [x] `packages/theme-compiler/src/compile.test.ts` -- add `(7.14) FR-Q9: the card designs emit whatever the sections`
   with the matrix's three compile rows: `cards.css`, `card_assets` and `default.hbs`'s link equal across the full and
   the empty project, and the control differing -- the one runnable check of "emission never depends on a host
   section".
-- [ ] `tools/probe/run-verify-editor.cjs` -- add step 108, in a context of its own on the seeded project. Store a card
+- [x] `tools/probe/run-verify-editor.cjs` -- add step 108, in a context of its own on the seeded project. Store a card
   value through Editor cards and ⌘S. Delete one Home section (Layers ⋯ → Delete) and ⌘S. Read the revision moved by one
   and `card_designs` byte-equal to the record before the delete. Reload, open Theme settings, assert no text matching
   `/paginat/i` on the page (R-118), press the rail's **Editor cards**, and assert the card is selected and customised.
   Hand back with ⌘Z on Home + ⌘S (undo is the journal tail and survives a reload, EXPERIENCE:426) and Reset card: Home's
   doc read back equal to its start, the record empty. Record zero CSP violations. Add the
   header's step-108 lines -- the production proof of the section-removal row (R-82).
-- [ ] `packages/library/src/vocabulary.ts:126` -- "a pagination style's override (7.14)" becomes "(10.112)" -- standing
+- [x] `packages/library/src/vocabulary.ts:126` -- "a pagination style's override (7.14)" becomes "(10.112)" -- standing
   rule 7: the code comment still names the story this Create moved it from.
-- [ ] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:213` -- after "a treatment whose
+- [x] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:213` -- after "a treatment whose
   host section is absent is still selected here", add a dated note: *(Story 7.14, 2026-10-16: card styling has no host
   section — Editor cards, from the switcher and Theme settings' rail; the pagination half is Story 10.112's.)* --
   propagate the reading.
-- [ ] `_bmad-output/implementation-artifacts/epic-7-context.md` -- add a "Story 7.14's Dev" sub-bullet under Cards,
+- [x] `_bmad-output/implementation-artifacts/epic-7-context.md` -- add a "Story 7.14's Dev" sub-bullet under Cards,
   treatments and share destinations, saying what was built and held.
 
 **Acceptance Criteria:**
@@ -145,6 +146,27 @@ recommended option.
   pass, and step 108 holds on production with 0 FAIL.
 
 ## Spec Change Log
+
+Dev, 2026-10-16 — routine calls made in Dev, each from a source read or an execution (none changes what Question 1 decided):
+- **Step 108c's `/paginat/i` takes one sentence out first.** Theme settings already carries Story 7.9's Posts per page
+  caption, `THEME_WORDS.postsCaption` (`lib/theme-settings.ts:412`): "How many posts your archives show before
+  **paginating**…". That is the page size's caption, not a pagination row, so the task's literal regex would fail on the
+  page as 7.9 built it. The walk removes that one sentence, read from the module, then asserts no `/paginat/i` match; the
+  caption itself is the regex's control (it must match, and must be on the page), and the text read must carry Posts per
+  page, Theme settings and Editor cards.
+- **"No section anywhere" is the stored docs'.** An empty doc is not designed (`isDesigned`), so `stacksOf` gives each
+  template the library's default stack (`synthesize`): Post's and Page's headers and Home's feed. A25's Post content is
+  dropped there today because the library holds no A25 design. The `(7.14)` row therefore states its premise as "the two
+  compiles' section partials differ" (the user's header, footer and newsletter gone), and compares the cards across them.
+- **Step 108b proves the record unwritten, not only equal.** It compares `card_designs` with `updated_at`:
+  `sync_project_doc` sets `updated_at` only when a save carries `p_cards`.
+- **Step 108d accepts Home's doc as stored or as the editor reads it.** The seed's Home predates the main-feed flag;
+  `read.ts` designates it on open, and the editor saves back the doc it was handed (`designate(parseDoc(…))`, the walk's
+  own `MAIN_DESIGN` reading).
+- **The card is the registry's.** Bookmark, its first `choice` control, the first value off its start (Thumbnail side →
+  Left), all read from `CARDS`.
+- **Standing rule 7.** `reconcile-designs-decisions.md` (live) R-195's "Theme Settings' pagination half (Story 7.14)"
+  gains a dated note naming Story 10.112. Finished specs (5.19, 7.1, 7.3) that name 7.14 are left as written.
 
 ## Design Notes
 
@@ -234,6 +256,23 @@ Theme settings' page — for example "Post cards · 1 customised · Open Editor 
   section -- expected: the `(7.14)` row FAILs, and every earlier row still passes; revert.
 - `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0, 7.13's null-`p_cards` block still PASS.
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS.
+
+**Dev results (2026-10-16, Node 24.18.1, at baseline `bf2df0ad` plus this diff):**
+- `pnpm check` -- exit 0. library 275/275, ghost-shim 47/47, section-runtime 384/384, apps/web 774/774, theme-compiler
+  210/210, and the render-matrix case suite 13/13 with `check-snapshots: PASS` (each count is the run's own). `(7.14) FR-Q9: the card designs emit
+  whatever the sections …` passed; `busy.test.ts` is unchanged and its route and control checks passed.
+- The control -- planted `cardDesigns = {}` in `compileTheme` whenever templates are given and none holds an instance:
+  theme-compiler 209 pass, 1 fail, and the one failure was `(7.14)`. `compile.ts` restored and compared byte-equal (`cmp`).
+- `bash supabase/tests/run-rls-gate.sh` -- exit 0. Among its notices: "PASS (7.13): the five-, four- and three-argument
+  calls apply and leave card_designs byte-equal" and "PASS (7.13): a p_cards that is not an object answers null and writes
+  nothing".
+- `node --check tools/probe/run-verify-editor.cjs` -- passes. Every name step 108 uses (`open104`, `T104`, `R106`,
+  `same104`, `designate`, `parseDoc`, `CANVASES`, `heldBy`, the 107 helpers) is bound earlier in `main()`. The selectors
+  it presses (`#card-reset`, `#card-reset-confirm`, `[data-card-panel]`, the Segmented radiogroup, `More for <layer>`)
+  were read in the source.
+- **Real services hit in Dev: none.** No Supabase, Vercel, Resend, Dodo or T1 call was made, and none was needed: this
+  phase changes a comment, a test, two documents' notes and the walk script. Step 108 has not run yet; it is Review's,
+  on production.
 
 **Review, on the real infrastructure (R-82):**
 - `run-verify-editor.cjs` from a clean worktree at the deployed sha, against `https://app.inflozo.com` with
