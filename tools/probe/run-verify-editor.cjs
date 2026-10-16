@@ -2320,7 +2320,7 @@ async function main() {
       JSON.stringify({ ...d5b.list, popoverScrolls: d5b.popoverScrolls }))
     const memberRows = d5b.rows.filter((r, n) => isMembership(OFFERED[n]))
     check('step 40 — R-129\'s three membership canvases sit under a "Membership" heading, indented', d5b.groups.includes('Membership') && memberRows.length === OFFERED.filter(isMembership).length && memberRows.every((r) => r.indent === '31px'), JSON.stringify({ groups: d5b.groups, member: memberRows }))
-    check('step 40 — R-128: no "+ New template", no FROM THE ROUTES MANAGER heading and no rule — they arrive with Story 7.16', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 0, JSON.stringify({ rules: d5b.rules, text: d5b.text.slice(0, 200) }))
+    check('step 40 — R-128: no "+ New template", no FROM THE ROUTES MANAGER heading and no rule — they arrive with Story 7.16b', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 0, JSON.stringify({ rules: d5b.rules, text: d5b.text.slice(0, 200) }))
     // THE OWNER'S SECOND FINDING (2026-09-18): the heading drew a chevron and nothing happened. It is a button now,
     // so the group shuts and opens, and the rows are GONE while it is shut rather than merely hidden — a hidden button
     // is still one `arrowKeys` would step onto.

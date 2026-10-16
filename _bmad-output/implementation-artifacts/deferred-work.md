@@ -3826,7 +3826,8 @@ plain: A custom page reached through a site's route settings gets its Ghost info
 status: open
 severity: medium
 origin: Story 4.6 (2026-09-14) — appendix B.1 §3's route row, out of this story's scope
-owner: Story 7.16 (The Routes Manager), whose criteria carry its requirement word for word with its id (R-195).
+owner: Story 7.16b (Custom templates on the canvas), whose criteria carry its requirement word for word with its id (R-195).
+  *(Story 7.16's Create, 2026-10-16: was "Story 7.16 (The Routes Manager)" — R-245 split it, and the clause moved to 7.16b.)*
   *(Story 5.24a's Dev, 2026-09-28: was "Story 7.16 (the Routes Manager, FR-I2)")*
 location: packages/library/contexts/matrix.json `targets["custom-{name}.hbs"]` · appendix-b1-template-contexts.md §3
 reason: the matrix's one `custom-{name}.hbs` row is the ENTRY form (post block). The route form's root is flat
@@ -7224,7 +7225,8 @@ origin: Story 5.19's Create (2026-09-25). FR-H2 (`prd.md:312`) sizes the main fe
   `@config.posts_per_page` with a route's `limit` at render (`frontend/services/routing/controllers/collection.js:32-44`,
   `channel.js:33-45`, both majors, read in source). Story 7.16's criteria (`epics.md:3075-3127`) name the per-collection
   limit but neither the canvas reading it nor the channel's designation.
-owner: Story 7.16 (The Routes Manager), whose criteria already carry it with its id: the canvas sizes a main feed by
+owner: Story 7.16b (Custom templates on the canvas), whose criteria carry it with its id since R-245 split Story 7.16
+  (2026-10-16; was "Story 7.16 (The Routes Manager)"): the canvas sizes a main feed by
   its route's own `limit:`, and a channel or collection template is given its main feed at creation. *(Story 5.24a's
   Dev, 2026-09-28: was "Story 7.16 (the Routes Manager) — the canvas reads the route's `limit` where the template is
   reached through a collection that sets one, and a channel or collection template it creates is handed its main feed
@@ -9407,7 +9409,10 @@ origin: Story 7.3's code review (2026-10-08): `emptiesCustomTemplate(key, doc)` 
   cannot pick the routed sentence 7.16's card promises; `compileTheme`'s `PAGED_CONTEXTS` keys Home's page 2 on `index`,
   which `collection-router.js` names only while the main collection sits at `/` (`routerName = mainRoute === '/' ?
   'index' : …`, read in source).
-owner: Story 7.16 (The Routes Manager), whose card carries this entry with its id.
+owner: Story 7.16b (Custom templates on the canvas), whose card carries this entry with its id. *(Story 7.16's Create,
+  2026-10-16: was "Story 7.16 (The Routes Manager)" — R-245. Story 7.16a records the compiler half's answer for `/`:
+  Inflozo always emits the index collection at `/`, last, so Home's context stays `index`; each custom collection's
+  and channel's own context is 7.16b's.)*
 location: `apps/web/lib/editor.ts` (`emptiesCustomTemplate`) · `packages/theme-compiler/src/compile.ts`
   (`PAGED_CONTEXTS`, `routed`) · `epics.md` Story 7.16
 reason: Routes are 7.16's input; until it hands the editor the routed list and the compiler the collection names, both
@@ -9810,7 +9815,7 @@ origin: Story 7.15's Dev (2026-10-16), found while choosing item 62, and ledgere
   `VERIFY-AT-BUILD.md` carries 59 (Ghost Admin's Template dropdown) and 60 (a collection's `limit:`) in one register, and 59
   (`pgrst.db_pre_request`) and 60 (the pinned Supabase root CA) again in the 2026-09-29 register. Citations of both pairs
   exist (`MEASUREMENTS.md` §56–§57, `deferred-work.md`, `spec-5-24b-…`). Pre-existing; not caused by Story 7.15.
-owner: Story 7.16's Create (the Routes Manager), whose card carries this entry with its id — the first story to cite the
+owner: Story 7.16a's Dev (the Routes Manager; *Story 7.16 until R-245 split it, 2026-10-16*), whose card carries this entry with its id — the first story to cite the
   first register's 60 (a collection's per-route `limit:`): the second pair takes the next free numbers and every live
   citation is repointed; a closed spec or `record` document keeps its words with a dated note.
 location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` (both registers)

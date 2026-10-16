@@ -1,5 +1,5 @@
 ---
-title: 'Story 7.16 — The Routes Manager'
+title: 'Story 7.16a — The Routes Manager'
 type: 'feature'
 created: '2026-10-16'
 status: 'ready-for-dev'
@@ -48,14 +48,14 @@ Ghost that its source disproves (Design Notes' facts):
   - Each sheet's primary button, each drop and each taxonomy save writes through a server action, so the YAML pane is
     always the saved state, re-rendered.
   - Deletes come back with Undo.
-- This plan is written to Question 1's recommended split: the editor's half becomes Story 7.16b (Design Notes,
-  "Moved").
+- Question 1 split the story (**R-245**, owner, 2026-10-16): this is Story 7.16a, and the editor's half is Story 7.16b
+  (Design Notes, "Moved").
 
 ## Boundaries & Constraints
 
 **Always:**
 - **The frame is `S9 Routes.dc.html` S9a, S9b, S9c, S9d and S9e** as `EXPERIENCE.md:177-179, :353, :747` re-specify it.
-  - **The parts no frame draws** are built from the nearest drawn component, exactly, as Question 3 rules (its list is
+  - **The parts no frame draws** are built from the nearest drawn component, exactly, as Question 3 ruled (**R-247**; its list is
     the only list).
   - Tokens are the Kit's, never the frame's inline hex. YAML is mono, with line numbers in `--ink-soft-aa`
     (`DESIGN.md:343`), and sheets use the `modal` elevation and a 16px radius (`DESIGN.md:202, :436`).
@@ -100,15 +100,15 @@ Ghost that its source disproves (Design Notes' facts):
   owner in the Dev session and runs in the main session (memory's rule).
 
 **Ask First:**
-- **All four questions below**, before Dev. The spec is written to each one's recommended option, and each ruled value
-  lives in one place: Design Notes' "Ruled values" table.
+- **All four questions were ruled option 1 (owner, 2026-10-16)** — R-245, R-246, R-247 and R-248 — and the spec is
+  written to them. Each ruled value lives in one place: Design Notes' "Ruled values" table.
 - The T1 upload-and-restore run (R-82, R-238): ask in the Dev session for the whole run, before the first write.
 - Any undrawn part beyond Question 3's list, or any change to a frame string beyond the routine calls.
 
 **Never:**
 - Any editor-side change beyond the "Manage routes" row. Custom canvases, the switcher's `FROM THE ROUTES MANAGER`
   group, "+ New template" in the switcher, DW-126, DW-252, DW-344's editor half and D5f's routed sentence all belong to
-  Story 7.16b (Question 1).
+  Story 7.16b (R-245).
 - A `data:` key, a multi-segment path, `order:`, `rss: false`, `content_type`, a `routes:` entry for `/`, a route to a
   membership template, `/search/`, or an all-tags or all-authors route (FR-I5 makes those last two 7.17's).
 - Uploading anything to a customer's Ghost (Story 7.17), or a Ship-button state (Story 7.18, moved below).
@@ -132,7 +132,7 @@ Ghost that its source disproves (Design Notes' facts):
 | Unknown template | a stored config naming a file not among the project's `routes` templates | S9b: the line and its reason; any save carrying it refused | stored → S9b |
 | Name collision | a display name whose file is another template's, a membership file, or one in `deployed_template_names` | refused at the naming step with why | the `23505` backstop → the same sentence |
 | Bad name | slugs to nothing, a reserved stem (`prd.md:666`), or longer than Ghost's column allows | refused at entry, with the reason | — |
-| Relative date in a collection | (Question 2, option 1) not offered; a stored one is refused | S9b line | — |
+| Relative date in a collection | (R-246) not offered; a stored one is refused | S9b line | — |
 | Hostile values (AD-36) | a path carrying `:` or a newline, a slug `x'+tag:y`, template `../x`, limit `"abc"`/0/101, a stored non-object | refused by the schema; nothing reaches the YAML | stored → S9b line 1 |
 | Parenthesis plant | a model whose emission would nest `((` or wrap whole | the validator refuses it; the round trip mismatches | — |
 | Delete collection, channel or route | ⋯ → Delete | gone at once, Undo toast; Undo writes the previous config back | a failed write says so, keeps the item |
@@ -158,7 +158,7 @@ Ghost that its source disproves (Design Notes' facts):
 - `packages/section-runtime/package.json` -- export `./routes`. Test-only devDependencies:
   - `@tryghost/nql` at Ghost 6.58.0's pin (0.13.4) and at 5.130.6's (0.12.7, as an npm alias);
   - `js-yaml` at 4.3.0, Ghost 6.58.0's own routes parser.
-- `packages/section-runtime/src/ad36.test.ts:738-766` -- the 7.12 pair is the pattern for an `AD-36 (7.16) · …` pair.
+- `packages/section-runtime/src/ad36.test.ts:738-766` -- the 7.12 pair is the pattern for an `AD-36 (7.16a) · …` pair.
 - `packages/library/src/vocabulary.ts:530` -- `GHOST_SLUG_RE`, the one slug grammar. `CUSTOM_TARGET_RE` is the custom
   file grammar (`compile.ts:843-845` throws on anything else in `routed`).
 - `packages/theme-compiler/src/compile.ts`:
@@ -226,7 +226,7 @@ Ghost that its source disproves (Design Notes' facts):
   - each refusal behind a passing control.
 
   -- one source for the page, the actions and 7.16b, 7.17 and 7.18.
-- [ ] `packages/section-runtime/src/ad36.test.ts` -- `AD-36 (7.16)`: a hostile path, slug, template and limit never
+- [ ] `packages/section-runtime/src/ad36.test.ts` -- `AD-36 (7.16a)`: a hostile path, slug, template and limit never
   reach `routes.yaml`, and a sound config emits. -- AD-36 on arrival.
 - [ ] `tools/probe/record-routes.mjs` (+ its catalogue row in `tools/doc-audit.py`) -- MEASUREMENTS **§82**.
   - **The local half** downloads the 6.58.0 and 5.130.6 tarballs (read-only) to a fresh temp dir. It runs Ghost's own
@@ -257,7 +257,7 @@ Ghost that its source disproves (Design Notes' facts):
       - the bar: back to the editor, the title and the site chip;
       - Collections, as drawn, with a `DragGrip` and ⌥↑/⌥↓;
       - Custom routes;
-      - **Templates** (Question 3);
+      - **Templates** (R-247);
       - Taxonomies, editable;
       - the YAML pane: banner, header, Copy and Download, numbered lines.
     - **S9b** is any `validateRoutes` error. **S9d** is the empty state.
@@ -272,7 +272,8 @@ Ghost that its source disproves (Design Notes' facts):
   -- FR-I2, FR-I3.
 - [ ] `apps/web/lib/editor.ts`, `components/editor/template-switcher.tsx`, `components/kit/icons.tsx` -- the `ROUTES`
   segment and the "Manage routes" row. Re-point any keyboard journey that walks the switcher by row count (7.13's "End
-  then ↑" precedent). -- the entry S9a's caption names.
+  then ↑" precedent), and the walk's step 40 R-128 check: the rule and "Manage routes" arrive here, while
+  "+ New template" and `FROM THE ROUTES MANAGER` stay absent until Story 7.16b. -- the entry S9a's caption names.
 - [ ] `apps/web/components/kit/toast.tsx`, `dialog.ts` -- `onAction`, and the 480px sheet if missing. -- Undo; S9c's
   width.
 - [ ] `tools/probe/run-verify-editor.cjs` -- **step 109**, on production. It walks Design Notes' "Walk" list, keyboard
@@ -280,9 +281,10 @@ Ghost that its source disproves (Design Notes' facts):
 - [ ] Propagation (standing rules 3 and 7):
   - `EXPERIENCE.md:747` and A9 item 8's note get a dated correction: the index collection goes last, with the inverse
     filter. Cite §82.
-  - `prd.md` FR-I2 gets a dated correction, per Question 2's ruling: a relative date tracks the clock in a channel; in
+  - `prd.md` FR-I2 gets a dated correction, per R-246: a relative date tracks the clock in a channel; in
     a collection Ghost fixes ownership at start.
-  - FR-I3 per Question 4.
+  - FR-I3 per R-248: deleting a route never deletes its template; the designed-content warning belongs to a
+    template's delete (Story 7.16b).
   - `VERIFY-AT-BUILD` gets new items **65** (collection order decides ownership and what each listing shows) and **66**
     (the singular `author:` filter, deprecated for themes by gscan, is still accepted in `routes.yaml`). Both are
     re-read at each major.
@@ -297,7 +299,7 @@ Ghost that its source disproves (Design Notes' facts):
 - **Matches the frame (R-74).** Given the deployed page at 1440, when it is compared with `S9 Routes.dc.html`, then:
   - S9a, S9b, S9c, S9d and S9e match their frames in components, layout, copy and tokens, apart from the routine calls
     and the YAML's index position;
-  - each part on Question 3's list matches the drawn component it is built from;
+  - each part on R-247's list matches the drawn component it is built from;
   - the Review records a side-by-side check.
 - Given a collection, a channel, a route, a template and a taxonomy change saved in any order, when the page reloads,
   then the YAML pane, the cards and `routes_config.yaml` agree byte for byte with `routesYaml(config)`.
@@ -320,21 +322,26 @@ Ghost that its source disproves (Design Notes' facts):
 
 ### Rulings this spec is written to
 
-- **R-74.** The frame is S9a–S9e. Undrawn parts follow Question 3.
+- **R-74.** The frame is S9a–S9e. Undrawn parts follow **R-247**, its third stated exception: built from the drawings
+  beside them, exactly (owner: "Routes has been in Claude Design as S9 Routes.dc.html").
+- **R-245** (Question 1): the split. **R-246** (Question 2): rolling dates on channels only. **R-248** (Question 4): a
+  route's delete keeps its template.
 - **R-128.** "+ New template" in the switcher and the `FROM THE ROUTES MANAGER` heading arrive together. With the split
-  (Question 1) both go to 7.16b, and this story adds only "Manage routes".
+  (R-245) both go to 7.16b, and this story adds only "Manage routes".
 - **R-129.** Subscribe and Membership pages are ordinary templates made here, with no route. Membership files are
   never route templates and their names are reserved.
 - **R-170, R-171, R-98, R-82, R-238, AD-36, AD-14** are written into Boundaries.
 
 ### Ruled values (the one table a ruling changes)
 
-| Question | Recommended (built) | If another option is ruled |
-|---|---|---|
-| 1 — split | 7.16 = this page; 7.16b = the editor half ("Moved" below) | option 2 re-opens this Create for one spec |
-| 2 — relative dates | relative (`within the last` · `more than … ago`) offered **in channels only**, first, with S9c's sentence verbatim in the channel's block; a collection's Published date offers `after` · `on or after` · `before` · `on or before` an exact date, and its sentence reads "Published date takes an exact date — after Jan 1, 2026. A rolling window like the last 30 days is a channel's." | option 2: collections offer relative first too, with the warning sentence in the Question; option 3: as FR-I2 says, with no sentence |
-| 3 — undrawn parts | built from the nearest drawn component, exactly (an R-236 exception) | option 1: the prompt below runs first and Dev waits for the export |
-| 4 — deleting a route | a collection, channel or route's delete never deletes its template | option 2: a route's delete also deletes its template when no other route names it, in the same Undo |
+All four ruled option 1 (owner, 2026-10-16).
+
+| Question | Ruled, and built |
+|---|---|
+| 1 — split (R-245) | this story is 7.16a, the Routes page and "Manage routes"; Story 7.16b, straight after, is the editor half ("Moved" below) |
+| 2 — relative dates (R-246) | relative (`within the last` · `more than … ago`) offered **in channels only**, first, with S9c's sentence verbatim in the channel's block; a collection's Published date offers `after` · `on or after` · `before` · `on or before` an exact date, and its sentence reads "Published date takes an exact date — after Jan 1, 2026. A rolling window like the last 30 days is a channel's." |
+| 3 — undrawn parts (R-247) | built from the nearest drawn component, exactly; no Claude Design pass |
+| 4 — deleting a route (R-248) | a collection, channel or route's delete never deletes its template |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -371,26 +378,26 @@ Ghost that its source disproves (Design Notes' facts):
 17. A config back at Ghost's default stores `yaml` null. What a site that already has a `routes.yaml` then receives is
     7.17's decision, and a reading is added to its card at Dev.
 
-### Moved (R-195), word for word, at Dev after Question 1's ruling
+### Moved (R-195), word for word — done at this Create's ruling (2026-10-16)
 
-- **To Story 7.16b, "Custom templates on the canvas"** — straight after 7.16 in `sprint-status.yaml` — these clauses of
-  the 7.16 card, verbatim:
+- **To Story 7.16b, "Custom templates on the canvas"** — straight after 7.16a in `sprint-status.yaml`, its card in
+  `epics.md` — these clauses of the 7.16 card, verbatim, each struck on 7.16a's card with its destination:
   - the whole "the canvas sizes a main feed by that route's own `limit:` … (FR-H2, DW-252)" clause;
   - "custom templates appear in the template switcher as designable canvases — … in the shared row of R-171 — and
     '+ New template' is a shortcut that deep-links into this flow";
-  - "warns when the template has designed content, the canvas is deleted with it and recoverable via undo, and an editor
-    viewing it switches to Home with a notice";
+  - "deleting a custom template or its route warns when the template has designed content, the canvas is deleted with
+    it and recoverable via undo, and an editor viewing it switches to Home with a notice", with R-248's dated note;
   - the DW-126 clause;
-  - the routed-template warning clause;
-  - DW-344's editor half.
+  - the routed-template warning clause (7.16a keeps `routedOf`);
+  - the DW-344 clause (7.16a records the root half).
 
-  Also handed to 7.16b as readings:
-  - every custom collection's and channel's own `paged` context (F5), for the `noindex` guard where its template is
-    feed-less;
-  - the canvas's Home feed reading every post while the live `/` lists only unowned ones (FR-H3).
-- **To Story 7.18**: "blocking the deploy with the reason on the Ship button", read from `validateRoutes`.
-- `epics.md` gains 7.16b's card. `sprint-status.yaml` gains its key. The epic's preamble and `epic-7-context.md` list
-  each move.
+  7.16b's card also carries this Create's two readings: every custom collection's and channel's own `paged` context
+  (F5), for the `noindex` guard where its template is feed-less; and the canvas's Home feed reading every post while
+  the live `/` lists only unowned ones (FR-H3).
+- **To Story 7.18**: "blocking the deploy with the reason on the Ship button", read from `validateRoutes`, on its card.
+- Epic 7's preamble lists every move. `epic-7-context.md`, `deferred-work.md` (DW-126, DW-252, DW-344 to 7.16b; DW-361
+  to 7.16a), the register (R-245 to R-248; R-74, R-128, R-129, R-171 noted), `prd.md` FR-I1's warning-words owner and
+  every code comment naming "Story 7.16" follow (standing rule 7).
 
 ### The shape
 
@@ -469,7 +476,7 @@ The display name is at most 60 characters. There is no rename; the naming step's
   /tutorials/."
 - **The naming block:** "This name is permanent. Ghost remembers it on every page you assign, and renaming it later
   would quietly unassign them all." (`EXPERIENCE.md:272`).
-- **Extrapolated (Question 3), the prompt's words:** "TEMPLATES", "+ New template", "New template." and "A design you can
+- **Extrapolated (R-247):** "TEMPLATES", "+ New template", "New template." and "A design you can
   give a route, or pick for a page in Ghost.", "Name", "Ghost will show: {label}", "Used by {paths}", "Create
   template", "Its own page size", "Edit", "Delete", "Delete {name}?" and "Also removes {paths}. Undo brings both back.",
   "Deleted {name}" and "Undo", and "or add a custom route · a template". Each refusal is one sentence naming the reason
@@ -565,7 +572,8 @@ Steps 5, 6 and 11 test your rulings on Questions 2, 3 and 4. Step 14 puts everyt
 
 ## Questions for the owner
 
-All four are needed before Dev. The spec is written to each recommended option.
+All four were ruled option 1 (owner, 2026-10-16), and the spec is written to those rulings. Nothing waits on the owner
+before Dev except the T1 run's in-session go (Ask First).
 
 ### Question 1 — This story is two stories. May I split it?
 
@@ -591,7 +599,10 @@ Manager", where you design it, with **+ New template** beside it.
 2. **One story.** Everything at once. It is bigger and riskier, and I re-plan this spec first.
 3. **Split differently.** Tell me where.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-16).** *"Split it."* Recorded as **R-245**. This story is renamed **7.16a, The
+Routes Manager** (its spec file and sprint-status key with it); **Story 7.16b, Custom templates on the canvas** joins
+`epics.md` and `sprint-status.yaml` straight after it, carrying the moved criteria word for word (Design Notes,
+"Moved"); R-128's pair moves with them.
 
 ### Question 2 — "The last 30 days" works on a channel, but not reliably on a collection. Where may it be used?
 
@@ -611,7 +622,9 @@ it shows nowhere until Ghost restarts.
    decides a post's address when it starts, so a post can drop out of every list until Ghost restarts."
 3. **Allow it everywhere, no warning**, as the plan says now.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-16).** *"Rolling dates on channels only. A collection's date condition takes an exact
+date ("published after 1 January 2026"), and a short line says a rolling window is a channel's. I correct the plan's
+sentence."* Recorded as **R-246**. Dev corrects FR-I2's sentence and dates the correction.
 
 ### Question 3 — Parts of the Routes page were never drawn. May I build them from the drawings next to them?
 
@@ -638,7 +651,10 @@ The name box would be S9c's Path box with two grey lines under it.
    export, and tell me where you saved it. Dev waits for it.
 3. **Leave them out.** That is not possible here: the naming box and the page-size control are what the story is for.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-16).** *"Buidl them from drawings next to them. Routes has been in Claude Design as
+S9+Routes.dc.html"* — the export's `S9 Routes.dc.html`, which is the drawing every undrawn part is built beside.
+Recorded as **R-247**, R-74's third stated exception, for this story only. The prompt was not run, and it is no longer
+in this spec.
 
 ### Question 4 — When you delete a route, should its template go too?
 
@@ -653,39 +669,14 @@ in Ghost.
    About page or a new route. Deleting a template is its own action, with its own warning.
 2. **Landing goes too** when no other route uses it, with one Undo for both.
 
-**Ruled:** _(awaiting the owner)_
-
-## Claude Design prompt — S9 Routes, the undrawn parts (only if Question 3 is ruled option 2)
-
-In the Inflozo project, open `S9 Routes.dc.html` and add frames S9f to S9j. Use only the components, tokens and spacing
-already in S9a–S9e, the Editor Sidebar Kit and D6a; add no new colour, size or component.
-- **S9f.** S9a with a TEMPLATES section between Custom routes and Taxonomies. Each row is "Landing" over mono
-  `custom-landing.hbs`, then "Ghost shows: Landing", "Used by /landing/", and ⋯. End with "+ New template". Collection
-  cards gain a drag handle at their left.
-- **S9g.** The "+ New template" sheet, in S9c's anatomy:
-  - title "New template.", sub "A design you can give a route, or pick for a page in Ghost.";
-  - a Name input ("Landing");
-  - under it, mono `custom-landing.hbs` and "Ghost will show: Landing";
-  - the line "This name is permanent. Ghost remembers it on every page you assign, and renaming it later would quietly
-    unassign them all.";
-  - Cancel and "Create template".
-- **S9h.** S9c with its Template select open on "New template…", the naming block inline beneath it, and under S9c's
-  posts-per-page sentence D6a's Posts per page stepper behind a toggle "Its own page size". Draw the Published date
-  operators per the ruled Question 2.
-- **S9i.** S9e with "A channel" chosen, S9c's condition block, Template and page size appearing beneath it.
-- **S9j.** Three small states:
-  - a ⋯ menu (Edit, Delete);
-  - the delete confirm for a template used by routes ("Delete Reading List?" / "Also removes /reading-list/. Undo brings
-    both back." / Cancel focused / Delete), in D5f's anatomy with the danger colour;
-  - the bottom toast "Deleted /craft/ · Undo";
-  - S9d with the quiet line "or add a custom route · a template" under its button;
-  - the Template menu (D5b) ending with a rule and a "Manage routes" row in R-171's anatomy.
+**Ruled: option 1 (owner, 2026-10-16).** *"No. The route goes and the template stays, because a Ghost page may still use
+it."* Recorded as **R-248**. Dev corrects FR-I3's "(or its route)" and dates the correction.
 
 ## Verification
 
 **Commands (Dev):**
 - `pnpm check` -- exit 0. This covers lint, typecheck, `routes.test.ts` (every I/O row, both majors' NQL bare and wrapped,
-  `js-yaml`, each refusal behind its control), the `AD-36 (7.16)` pair, `editor.test.ts` (`routes` never a canvas),
+  `js-yaml`, each refusal behind its control), the `AD-36 (7.16a)` pair, `editor.test.ts` (`routes` never a canvas),
   and `busy.test.ts` (`routes/loading.tsx`, every Submit's busy label).
 - `node tools/probe/record-routes.mjs` -- PASS. Ghost 6.58.0's and 5.130.6's own route-settings code accepts every
   fixture. The control (`limit: abc`) is refused on 6.
@@ -705,4 +696,4 @@ already in S9a–S9e, the Editor Sidebar Kit and D6a; add no new colour, size or
   - a `custom_templates` row has `kind = 'routes'` and `filename` matching `CUSTOM_TARGET_RE`;
   - a second user cannot read either row;
   - anon gets 401 or 42501.
-- The side-by-side frame check (Question 3) is recorded with screenshots of S9a, S9c, S9d and S9e beside the frames.
+- The side-by-side frame check (R-247) is recorded with screenshots of S9a, S9c, S9d and S9e beside the frames.

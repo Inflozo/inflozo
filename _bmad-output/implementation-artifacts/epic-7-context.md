@@ -26,7 +26,8 @@ A user ships. The project compiles — purely, from what it is handed — into a
 - Story 7.13: The Ghost card design module and `cards.css`
 - Story 7.14: Treatment selection from Theme Settings
 - Story 7.15: Share destinations — one ordered, site-wide list
-- Story 7.16: The Routes Manager
+- Story 7.16a: The Routes Manager
+- Story 7.16b: Custom templates on the canvas *(split from 7.16 by R-245, 2026-10-16)*
 - Story 7.17: Uploading `routes.yaml`, and the guided fallback
 - Story 7.18: The deploy wizard
 - Story 7.19: The first-deploy credential step, and its decline path
@@ -403,11 +404,16 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **Story 7.1's Dev (2026-10-05):** the recorder's local gate refuses the compiled pilot theme with the scaffold the spec names — `GS110-NO-MISSING-PAGE-BUILDER-USAGE` (an error on gscan 4.49.7, a warning on 6.4.2), because the pilots compile no `page.hbs` and so nothing reads `@page.show_title_and_feature_image`. `page.hbs` is Story 7.3's; widening the scaffold is the owner's to rule (the spec's Ask First). **Ruled 2026-10-06:** the recorder carries a stand-in `page.hbs` labelled as 7.3's (the shape every earlier probe carried), and the run then gated 0/0 on both gscans and held every row on T1 (MEASUREMENTS §70). 7.3's own `page.hbs` must read `@page.show_title_and_feature_image`, or that gscan finding returns on a real compile.
     - **Story 7.3's Dev (2026-10-06):** 7.3's `page.hbs` reads the switch only around an A24 section, and an untouched Page the library leaves empty is not emitted (Question 1), so the stand-in stays, relabelled as Story 10.79's, which retires it once A24 #1 sits on `page.hbs`. The finding on a real project is DW-341, Story 7.7's.
 - **The Routes Manager writes `routes.yaml` so nobody hand-writes YAML, and deploy uploads it (7.16, 7.17, FR-I2–I5).** Collections with a per-route `limit:`, channels, custom routes and taxonomies, a live YAML preview, normative field→NQL with no nested parentheses and a round trip asserting the parsed filter; custom-template names refused on collision and never renamed once deployed; `POST /settings/routes/yaml` with the staff token and a byte-for-byte read-back, B16 as the designed fallback, two routes on demand, `/search/` never.
-  - **DW-126, DW-252 (Story 7.16):** a route-reached custom template is offered only its route's `data:` keys; the canvas sizes a main feed by the route's `limit:`, and a new channel or collection template gets its main feed through `designate`. **VERIFY-AT-BUILD 60:** `limit:` is in Ghost's code, not its docs — re-read at each major. **R-128, R-171:** "+ New template" arrives with 7.16; a custom row draws `CanvasCustom` and `CUSTOM_TEMPLATE_CAPTION`.
+  - **DW-126, DW-252 (Story 7.16b since R-245):** a route-reached custom template is offered only its route's `data:` keys; the canvas sizes a main feed by the route's `limit:`, and a new channel or collection template gets its main feed through `designate`. **VERIFY-AT-BUILD 60:** `limit:` is in Ghost's code, not its docs — re-read at each major. **R-128, R-171:** "+ New template" arrives with 7.16; a custom row draws `CanvasCustom` and `CUSTOM_TEMPLATE_CAPTION`.
   - **EXPERIENCE F3; MEASUREMENTS §33, §37:** B16 names no menu path (Ghost 6 has no Labs or Advanced) and links Ghost's help for the major detected at connect; the integration key alone can read `routes.yaml` on both majors.
   - **Story 7.3's Dev (2026-10-06):** a routed custom template keeps shipping when emptied — `compileTheme`'s `routed`, which 7.16 hands in — so D5f's "stops shipping" is not its sentence: its warning words are 7.16's (its card says so). A missing route template is a 400, read in source; 7.17 records it with the first route.
     - **Story 7.3's review (2026-10-08, DW-344):** 7.16 hands the editor the routed list (so D5f never says "stops shipping" of a routed template) and the compiler the collection's context name (a main collection moved off `/` is not `index`, which `PAGED_CONTEXTS` keys on). The guard's comma form and the `index`/`tag` contexts are read in `helpers/is.js`, not rendered on T1 (§72 says so).
-  - **Story 7.16's Create (2026-10-16):** the spec is ready for Dev with four questions open (R-83). Dev waits for all four.
+  - **Story 7.16's Create (2026-10-16):** the spec is ready for Dev. Its four questions were all ruled option 1 by the owner
+    the same day: **R-245** (split: this story is **7.16a**, the Routes page; **7.16b**, straight after, the editor half,
+    its criteria moved word for word and listed in Epic 7's preamble; the S9b Ship-button half to 7.18), **R-246**
+    (rolling dates in channels only), **R-247** (undrawn parts built beside `S9 Routes.dc.html`, R-74's third stated
+    exception) and **R-248** (a route's delete keeps its template). DW-126, DW-252 and DW-344 now name 7.16b; DW-361 names
+    7.16a's Dev. Nothing waits on the owner before Dev except the T1 run's in-session go.
     - **Read in Ghost 6.58.0's and 5.130.6's source, and run with Ghost's own modules from the npm tarballs (T1 untouched):**
       - **Collection order.** Collections own posts in YAML order, and the first match wins (`lazy-url-service.js:300-303`).
         A listing drops the posts it does not own (`controllers/collection.js:75-88`). So `EXPERIENCE.md:747`'s "index
@@ -419,11 +425,6 @@ A user ships. The project compiles — purely, from what it is handed — into a
         bug). Unquoted one-letter values fail to lex.
       - **Context names.** A collection's context is its path without slashes (`["paged","articles"]`).
       - **Ghost does not check** duplicate paths, NQL or template existence.
-    - **Written to the recommended options:**
-      - Q1: split, with the editor half as a new 7.16b straight after, and R-128's pair moving with it.
-      - Q2: rolling dates on channels only.
-      - Q3: undrawn parts built from their neighbours, as an R-236-style exception.
-      - Q4: a route's delete keeps its template.
     - **No migration.** Pure `routes.ts` in section-runtime. The page is `projects/[id]/routes`. MEASUREMENTS §82 comes
       from `tools/probe/record-routes.mjs` (Ghost's own parsers locally; one T1 upload and restore on the owner's go).
       The walk gains step 109. DW-361 renumbers register 2's 59/60 to 63/64. New VERIFY items 65 (order and ownership)

@@ -44,7 +44,7 @@ import { isApp } from '@/routing'
    the scope R-92 now excepts). Its word, "Empty", is a screen reader's since R-171, like "Auto-generated".
 
    WHAT IT DOES NOT SHIP, AND WHY (R-128, the owner, 2026-09-18): the rule, the `FROM THE ROUTES MANAGER` heading and
-   the `+ New template` row are ABSENT until Story 7.16 builds the Routes Manager for them to reach — R-118's rule, a
+   the `+ New template` row are ABSENT until Story 7.16b, after Story 7.16a builds the Routes Manager for them to reach (R-245) — R-118's rule, a
    second time. Nothing is greyed and nothing is captioned; an absent row asks no questions. The custom group would
    have had nothing to list anyway: `custom_templates` has no writer.
 
@@ -58,7 +58,7 @@ import { isApp } from '@/routing'
    lives in the `[id]` layout, which survives a change of its child segment. */
 
 /** R-171 (the owner, 2026-09-21): each canvas carries a Tabler glyph at the head of its row — "Use relevant icons from
- *  Tabler icons" — and a custom template from Story 7.16's Routes Manager will carry `CanvasCustom`. Keyed by canvas,
+ *  Tabler icons" — and a custom template from the Routes Manager will carry (Story 7.16b, R-245) `CanvasCustom`. Keyed by canvas,
  *  so a canvas added to `CANVASES` without a glyph is a type error, never a row that silently draws nothing. */
 const GLYPH: Readonly<Record<CanvasKey, typeof CanvasHome>> = {
   home: CanvasHome,

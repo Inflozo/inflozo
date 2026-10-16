@@ -99,7 +99,7 @@ export function pageOf(key: string): { page: string; group: SettingGroup; rank: 
   if (key === SITE.key) return { page: EVERY_PAGE, group: 'site_wide', rank: -1 }
   const paged = canvasOfPageTwoKey(key)
   const canvas = paged ?? canvasOfTemplateKey(key)
-  // ponytail: a custom template outside the switcher is named by its file until the Routes Manager (7.16) names them
+  // ponytail: a custom template outside the switcher is named by its file until Story 7.16b names them in the switcher
   if (canvas === null) return { page: fileOfKey(key), group: 'site_wide', rank: ORDER.length }
   const { label } = CANVASES[canvas]
   return {

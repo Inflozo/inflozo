@@ -1153,10 +1153,11 @@ name the frame its surface is built from.
 - Targets: `CLAUDE.md` (the design-export section states the ruling) · `build-sequence.md` steps 5,
   5b and 6 · `STEP-5-PROMPT.txt` · at step 6, every story with a surface carries a "matches the
   frame" acceptance criterion (owed when step 6 runs).
-- **Two stated exceptions.** **R-236** (owner, 2026-10-04, Story 6.4's Create): Story 6.4's undrawn parts are built from
-  the nearest existing drawings, exactly, without a Claude Design pass. **R-242** (owner, 2026-10-05, Story 6.6's
-  Create): the same for Story 6.6's two undrawn parts, S2c's chooser at scale and the Style Pack list's "From your site"
-  row. The rule stands for every other surface.
+- **Stated exceptions** *(this line counted them until Story 7.16's Create, 2026-10-16)*. **R-236** (owner, 2026-10-04,
+  Story 6.4's Create): Story 6.4's undrawn parts are built from the nearest existing drawings, exactly, without a Claude
+  Design pass. **R-242** (owner, 2026-10-05, Story 6.6's Create): the same for Story 6.6's two undrawn parts, S2c's
+  chooser at scale and the Style Pack list's "From your site" row. **R-247** (owner, 2026-10-16, Story 7.16's Create):
+  the same for the Routes Manager's undrawn parts, beside `S9 Routes.dc.html`. The rule stands for every other surface.
 
 **R-75 — the owner sees the product's own UI as static pages on his machine before it is built
 dynamically.** Clarified by the owner in the same session, and the clarification is the ruling:
@@ -2652,7 +2653,9 @@ dropped, the grid itself carries on with the next posts, and everything below it
 - Targets:
   - ✅ Story 5.5's spec · ✅ `epic-5-context.md` — Story 5.5's Create run (2026-09-18).
   - ⬜ `apps/web/components/editor/template-switcher.tsx` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.5's Dev.
-  - ⬜ `epics.md` Story 7.16 — at that story, which is where the row and its heading arrive.
+  - ⬜ `epics.md` Story 7.16 — at that story, which is where the row and its heading arrive. *(Story 7.16's Create,
+    2026-10-16 — R-245: Story 7.16 is split, and both the row and the heading are **Story 7.16b**'s, together as this
+    ruling binds them; Story 7.16a adds only "Manage routes".)*
 - **Deliberately not touched:** R-118, which is unchanged and now covers two surfaces; the export (R-74), whose D5b
   keeps the row it draws — this file is the record of the divergence; FR-I3, which says what the row does when it
   exists and is silent on when it appears.
@@ -2675,7 +2678,8 @@ Subscribe and Membership."*
     Ghost's page-editor Template dropdown — is untouched, and so is FR-I6's post-deploy checklist that prints it.
   - The group in the switcher stays the three FR-D6 names, which are also A30's three surfaces (FR-D13's partition).
     **Subscribe and Membership are ordinary custom page templates**, created in the Routes Manager (FR-I3) and listed
-    in the switcher's own Routes Manager group — the same `custom-*.hbs` mechanism, arriving with Story 7.16.
+    in the switcher's own Routes Manager group — the same `custom-*.hbs` mechanism, arriving with Story 7.16. *(R-245,
+    2026-10-16: created in Story 7.16a's Routes Manager, listed in the switcher by Story 7.16b.)*
   - `project_templates.template_key` for each is `custom:custom-{name}.hbs`, which the existing `template_key_shape`
     CHECK already admits; the editor's URL segment is `custom-{name}`. **Corrected at Story 5.5's review (2026-09-18,
     executed on production): the CHECK is MEANT to admit it and, as stored, refuses it — its pattern carries two
@@ -3646,7 +3650,7 @@ confusion."*
       is highlighted, not ticked.)*
   - **The Template rows.** Each leads with a Tabler glyph: `home` · `article` (Post) · `file-text` (Page) · `tag` ·
     `user` (Author) · `user-plus` (Signup) · `login-2` (Signin) · `user-circle` (Member home) · `error-404` · `lock`
-    (Private). A custom template from Story 7.16's Routes Manager takes `template`. Each glyph is emitted from
+    (Private). A custom template from Story 7.16's Routes Manager takes `template` *(its row is Story 7.16b's, R-245)*. Each glyph is emitted from
     `packages/library/icons/tabler.json`, which is R-92's third owner-named exception after R-130 and R-142.
   - **The one-liners.** Under each name sits one line (`CANVASES[key].caption`), and a custom template's reads
     "Custom template".
@@ -5354,6 +5358,71 @@ ruled **option 1** (owner, 2026-10-05): *"1. Show the ticked project first in th
   marked reversed in `CONTROL-PROMPTS.html` (its home), and FR-Q10's Ghost 5 sentence corrected to Portal 2.51.5's source ·
   ⬜ A24 #14 redrawn by the owner in Claude Design (DW-360) · ⬜ Story 10.82 · ⬜ Story 10.23 · ⬜ Stories 10.83, 10.84
   and 10.85 (A25) · ⬜ Stories 10.86, 10.87, 10.88 and 10.89 (A26) · ⬜ item 62's facts recorded on T1 (Story 10.82).
+
+**R-245 — Story 7.16 is split: 7.16a builds the Routes Manager page, and 7.16b, straight after it, the editor's half.**
+Story 7.16's Create, Question 1, ruled **option 1** (owner, 2026-10-16): *"Split it."*
+
+- **Why it was a question.** The card asked for two independently shippable things: a new page that builds `routes.yaml`
+  and names templates, and an editor that opens, designs and sizes those templates — which changes the editor's closed
+  list of canvases. Together they would have been the largest story yet, with the longest owner test.
+- **The rule.** **Story 7.16a, The Routes Manager** — S9a–S9e, the pure builder, its proofs on Ghost's own parsers and
+  T1, and **Manage routes** at the end of the Template menu. **Story 7.16b, Custom templates on the canvas** — straight
+  after it — the criteria moved word for word (R-195): the switcher's custom rows with "+ New template" (R-128's pair,
+  together), a route's own `limit:` on the canvas and the designation at creation (DW-252), the designed-content
+  delete warning and the editor switching to Home, DW-126, the routed template's warning words and DW-344's editor half.
+  The Ship button's half of S9b's error goes to Story 7.18.
+- **Declined.** One story; a different split.
+- Targets: ✅ this entry · ✅ R-128, R-129 and R-171 (dated notes) · ✅ Story 7.16a's spec (renamed) · ✅ `epics.md` —
+  Story 7.16a's card (struck, dated), Story 7.16b's card, Story 7.18's card, Stories 5.19's and 7.3's cards, Epic 7's
+  preamble · ✅ `sprint-status.yaml` · ✅ `prd.md` FR-I1 · ✅ DW-126, DW-252, DW-344, DW-361 · ✅ `epic-7-context.md` ·
+  ✅ the code comments naming Story 7.16 (standing rule 7) · ⬜ Story 7.16a · ⬜ Story 7.16b.
+
+**R-246 — a rolling publish date is a channel's; a collection's date condition takes an exact date.** Story 7.16's
+Create, Question 2, ruled **option 1** (owner, 2026-10-16): *"Rolling dates on channels only. A collection's date
+condition takes an exact date ("published after 1 January 2026"), and a short line says a rolling window is a
+channel's. I correct the plan's sentence."*
+
+- **Why it was a question.** FR-I2 said a relative filter "tracks the clock rather than freezing at compile", because
+  Ghost re-parses it per request. Read in Ghost 6.58.0's source and run with its own modules at the Create, that is true
+  of a listing (`fetch-data.js:70-72`) and false of ownership: the filter that decides which collection owns a post is
+  compiled once when the router registers and cached (`lazy-url-service.js:131-139`, nql's parse cache). A post that ages
+  out of a "last 30 days" collection leaves its list but stays owned, so the home feed drops it too, until Ghost restarts.
+  A channel owns nothing (posts keep their addresses), so a rolling date is exact there.
+- **The rule.** The relative form (`now-{n}{d|w|M|y}`, unquoted) is offered first **in channels**. A collection's
+  Published date offers after · on or after · before · on or before an exact date, with one line saying a rolling window
+  is a channel's. `validateRoutes` refuses a relative term in a collection.
+- **Declined.** Rolling dates on collections with a warning; rolling dates everywhere with no warning.
+- Targets: ✅ this entry · ✅ Story 7.16a's spec · ✅ `epics.md` Story 7.16a's card (dated) · ⬜ `prd.md` FR-I2's
+  sentence (dated, at 7.16a's Dev) · ⬜ MEASUREMENTS §82 (7.16a's Dev).
+
+**R-247 — the Routes Manager's undrawn parts are built from the drawings beside them, without a Claude Design pass:
+R-74's third stated exception.** Story 7.16's Create, Question 3, ruled **option 1** (owner, 2026-10-16): *"Buidl them
+from drawings next to them. Routes has been in Claude Design as S9+Routes.dc.html"* — the export's
+`S9 Routes.dc.html`.
+
+- **Why it was a question.** R-74 says a surface with no frame is drawn in the Claude Design project first. S9 leaves
+  out the template naming block, the Templates list, the ⋯ menus and Edit sheets, the delete confirm, the Undo toast,
+  the page-size control and drag handles its sentences promise, taxonomy editing, a channel's conditions, S9d's quiet
+  links and D5b's "Manage routes" row.
+- **The rule.** For Story 7.16a alone, each is built from the nearest drawn component — S9a–S9e, the Editor Sidebar
+  Kit, D6a's Posts per page, D5f, R-171's row — with no new component, colour or size. The Review records a side-by-side
+  check, and the owner compares them at his test. R-74 stands for every other surface.
+- **Declined.** A Claude Design pass from the prompt the spec carried, with Dev waiting for the export.
+- Targets: ✅ this entry · ✅ R-74's entry · ✅ Story 7.16a's spec (Question 3; the prompt removed) · ✅ `epics.md` Story
+  7.16a's card · ⬜ the side-by-side check (7.16a's Review).
+
+**R-248 — deleting a route never deletes its template.** Story 7.16's Create, Question 4, ruled **option 1** (owner,
+2026-10-16): *"No. The route goes and the template stays, because a Ghost page may still use it."*
+
+- **Why it was a question.** FR-I3 said deleting a custom template "(or its route)" warns and deletes the canvas, as if
+  a route and its template were one thing. On S9e a route only points at one of the project's templates, and a template
+  can also be chosen for a page in Ghost Admin.
+- **The rule.** A collection's, channel's or route's delete removes it alone, with Undo; the template stays in the
+  Templates list. Deleting a template is its own action: it removes the routes that name it (the confirm lists them),
+  and its designed-content warning is Story 7.16b's.
+- **Declined.** A route's delete also deleting its template when no other route names it.
+- Targets: ✅ this entry · ✅ Story 7.16a's spec · ✅ `epics.md` Stories 7.16a and 7.16b (dated) · ⬜ `prd.md` FR-I3's
+  sentence (dated, at 7.16a's Dev).
 
 ## B · Approved decisions superseded by this session
 

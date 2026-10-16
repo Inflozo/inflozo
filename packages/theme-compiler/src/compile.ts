@@ -111,7 +111,7 @@ export type CompileInput = {
    *  (`tag-paged`) and `author.hbs` (`author-paged`) — `pageTwoStack(file, pageOne, pageTwo, library)`'s shape. Story
    *  7.18 maps the keys with `canvasOfPageTwoKey`. */
   pageTwo?: Readonly<Record<string, ProjectDoc>>
-  /** the `custom-{name}.hbs` files a route names (Story 7.16): FR-I1's class that keeps shipping when emptied */
+  /** the `custom-{name}.hbs` files a route names (Story 7.16a's `routedOf`, handed in by Story 7.18): FR-I1's class that keeps shipping when emptied */
   routed?: readonly string[]
   /** the library, handed in (AD-14) — the same entries the editor reads */
   library: (designId: string) => SectionRegistryEntry | undefined
@@ -219,7 +219,7 @@ const PAGE_ONES: readonly string[] = [...PAGINATED_TARGETS].filter((f) => f !== 
  *  splits on `,` and reads as OR (its header: `{{#is "index, paged"}}`; read in source, both majors). Ceiling: `index` is
  *  the main collection's name only while it sits at `/` (`collection-router.js`: `routerName = mainRoute === '/' ? 'index'
  *  : …`) — a Routes Manager project whose main collection moves gets a context of the route's own, which is DW-344's,
- *  Story 7.16's. T1 rendered the single-context form alone (§72: `author`); the comma form is read, not executed. */
+ *  Story 7.16b's (R-245; Story 7.16a always emits the index collection at `/`, so `index` stays right for Home). T1 rendered the single-context form alone (§72: `author`); the comma form is read, not executed. */
 const PAGED_CONTEXTS: readonly (readonly [context: string, pageOne: string])[] = [['index', HOME], ['tag', 'tag.hbs'], ['author', 'author.hbs']]
 /** The files every theme carries. Ghost refuses a theme without `index.hbs` or `post.hbs` (`GS020-INDEX-REQ`,
  *  `GS020-POST-REQ`, fatal); the archives always ship their default stack. */

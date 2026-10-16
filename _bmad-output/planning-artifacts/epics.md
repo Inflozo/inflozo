@@ -2271,8 +2271,8 @@ toggles for date, author, excerpt, reading time and tag chip sit in Content, whe
 archives** — **exactly one section is the designated main feed**, bound to the native paginated `posts` context
 **never `{{#get}}`**, sized by the global `posts_per_page` **or by the route's own `limit:` where the template is
 reached through a collection that sets one**, and the canvas reads whichever value actually applies — the
-project's `posts_per_page` until routes exist; the route's own `limit:` is read by Story 7.16, which builds routes
-(DW-252)
+project's `posts_per_page` until routes exist; the route's own `limit:` is read by Story 7.16b, whose Story 7.16a builds routes
+(DW-252; *Story 7.16 split by R-245, 2026-10-16*)
 **And** all other feeds are `{{#get}}`-driven with a fixed Count that **caps at 100** and never emits
 `limit="all"`
 **And** **three requirements are built with the designs that need them, not here — R-195** (owner, 2026-09-25):
@@ -2282,7 +2282,7 @@ global and the panel states the reason"* to every category story whose designs c
 for word, listed in Epic 9's preamble
 **And** designation has a lifecycle **owned by this epic**: the first feed placed on a paginated template
 auto-designates; archives start with one from the Synthesis Defaults; a channel created in the Routes Manager is
-given one at creation (Story 7.16, through this story's rule — DW-252); deleting or hiding it transfers designation to
+given one at creation (Story 7.16b, through this story's rule — DW-252; *R-245*); deleting or hiding it transfers designation to
 the next feed section; the user may reassign it anytime; and the editor **marks the main feed visibly**
 **And** a paginated template with **zero** feed sections is allowed, and the archive case keeps its warning
 because `tag.hbs` and `author.hbs` have no second file to fall through to — in the editor here, as a note at the head
@@ -3012,6 +3012,22 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    project never retyped — **Story 7.18** (Question 1, ruled option 1, owner, 2026-10-15; DW-145), word for word on its
 >    card; Story 7.12 builds the list on Translations and the function both read.
 
+>
+> **Moved from Story 7.16 by its Question 1 (owner, 2026-10-16, R-245), word for word, so none is missed (R-195).** Story
+> 7.16 is split: **Story 7.16a** builds the Routes Manager page, and **Story 7.16b**, straight after it, the editor's half.
+>
+> 1. the canvas sizing a main feed by its route's own `limit:`, and a channel or collection template given its main feed at
+>    creation (FR-H2, DW-252) — **Story 7.16b**;
+> 2. custom templates in the template switcher as designable canvases, with "+ New template" deep-linking into the Routes
+>    Manager — **Story 7.16b**, the two together as R-128 binds them;
+> 3. the warning before a template with designed content is deleted, the canvas deleted with it and recoverable via undo,
+>    and an editor viewing it switching to Home with a notice — **Story 7.16b** (R-248: a route's delete never deletes
+>    its template);
+> 4. a route-reached custom template offered only its route's `data:` keys (DW-126) — **Story 7.16b**;
+> 5. a routed template's own warning words in place of D5f's, and the editor handed the routed list (DW-344's editor
+>    half) — **Story 7.16b**;
+> 6. a YAML error "blocking the deploy with the reason on the Ship button" — **Story 7.18**, which builds Ship it.
+
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
 As every theme Inflozo generates,
@@ -3121,7 +3137,7 @@ against the live slug, detaches silently on a retitle, and outranks the user's e
 from the defaults on the next compile; every conditional template **stops emitting entirely**; and **one class
 does not stop** — a Routes Manager custom template with a route pointing at it keeps emitting even when emptied,
 because a route whose template is missing raises `IncorrectUsageError`, a **400** *(read in source, Story 7.3's
-Create, 2026-10-06: this said 500)*; that class's warning words are Story 7.16's, never D5f's "stops shipping"
+Create, 2026-10-06: this said 500)*; that class's warning words are Story 7.16b's *(R-245)*, never D5f's "stops shipping"
 **And** **emptying a custom template warns before it takes effect, naming the consequence**, because Ghost's own
 fallback to `page.hbs` is silent and "the page still loads, wearing a different design" is exactly the failure a
 user discovers weeks later
@@ -3800,7 +3816,7 @@ criterion survives in substance as the rewritten Copy link clause. Nothing on sc
 
 **FRs:** FR-Q10. · **Frame:** none here — built with Story 10.82. · **Owner test:** none (Question 1, option 3).
 
-### Story 7.16: The Routes Manager
+### Story 7.16a: The Routes Manager
 
 As a user who wants a section of my site at its own URL,
 I want to build collections and routes visually,
@@ -3815,9 +3831,9 @@ defaulting to the global `posts_per_page` — with drag-to-reorder precedence
 **And** **a per-collection limit is genuinely offered**, because a `routes.yaml` route carrying an explicit
 `limit:` **overwrites `@config.posts_per_page` at render time for that route**; leaving it unset emits no `limit:`
 and inherits the global
-**And** the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
+**And** ~~the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
 collection that sets one, and a **channel or collection template created here is given its main feed at creation**
-through Story 5.19's designation rule (FR-H2, DW-252)
+through Story 5.19's designation rule (FR-H2, DW-252)~~ *(moved to Story 7.16b, R-245)*
 **And** I can define **channels** (filtered post streams with their own path and RSS feed), **custom routes**
 (static path → custom template) and taxonomy prefixes
 **And** a **live YAML preview pane** and validation run before save: path collisions, unknown templates, filter
@@ -3833,7 +3849,10 @@ only nesting corrupts — and validation asserts this **on the emitted string**
 **And** **published date is offered with relative syntax**: `published_at` with `>` `<` `>=` `<=` over an absolute
 ISO date or a relative `now-{n}{d|w|M|y}` term, **offering the relative form first** because "the last 30 days" is
 what a collection usually means — and Ghost **re-parses the filter per request**, so a relative filter tracks the
-clock rather than freezing at compile
+clock rather than freezing at compile *(Story 7.16's Question 2, ruled option 1, owner, 2026-10-16 — **R-246**: the relative
+form is offered **in channels only**; a collection's date condition takes an exact date, with a line saying a rolling
+window is a channel's, because Ghost fixes which collection owns a post when it starts — read in Ghost 6.58.0's source,
+`lazy-url-service.js:131-139` — so a post can drop out of every list until Ghost restarts)*
 **And** **relative dates are a `routes.yaml` capability and not a Data-group one**, because a fixed-Count feed
 with a relative filter would render a different set on every request
 **And** the builder **emits NQL and never parses it**, so validation is a **round trip over what the builder
@@ -3844,24 +3863,72 @@ naming step**: I type a display name, **see the derived filename and the Ghost d
 and am refused a name colliding with another template in the project or one already deployed
 **And** **renaming a deployed template is not offered at all, and the UI says why** — Ghost stores the filename on
 every page that selected it and never repairs it
-**And** custom templates appear in the template switcher as designable canvases — each row with Tabler's `template`
+**And** ~~custom templates appear in the template switcher as designable canvases — each row with Tabler's `template`
+glyph (`kit/icons.tsx`'s `CanvasCustom`) and the one line **"Custom template"** (`lib/editor.ts`'s
+`CUSTOM_TEMPLATE_CAPTION`), in the shared row of R-171 — and **"+ New template" is a
+shortcut that deep-links into this flow** — one creation flow, two entry points~~ *(moved to Story 7.16b, R-245)*
+**And** ~~deleting a custom template or its route **warns when the template has designed content**, the canvas is
+deleted with it and recoverable via undo, and an editor viewing it switches to Home with a notice~~ *(moved to Story
+7.16b, R-245)*
+**And** *(Story 7.16's Questions 1 and 4, owner, 2026-10-16 — R-245, R-248)* deleting a collection, channel, route or
+template on this page comes back with **Undo**, and **a route's delete never deletes its template**: the template stays
+in the page's Templates list, for a Ghost page or another route
+**And** *(R-245)* the editor's Template menu ends with **Manage routes**, which opens this page
+**And** with no routing the empty state is S9d's — "Your site uses Ghost's default routing. Nice and simple."
+(UX-DR6) — and a YAML error is S9b's line-numbered error ~~blocking the deploy with the reason on the Ship button~~
+*(moved to Story 7.18, which builds Ship it, R-245)*
+**And** the surfaces match S9a, S9b, S9d, S9c and S9e as re-specified.
+**And** ~~a custom template reached through a route this flow authors is offered only what that route supplies — appendix B.1 §3's route form, a flat root carrying exactly its `data:` keys — derived from the route, not the matrix's Admin-entry row for `custom-{name}.hbs` (DW-126).~~ *(moved to Story 7.16b, R-245)*
+**And** ~~a custom template a route names keeps shipping when every section is deleted — FR-I1's class that does not
+stop, built by Story 7.3 as `compileTheme`'s `routed` input, which this story hands in — so the editor's D5f warning
+("This template stops shipping") is not its sentence: **the warning before the last section leaves a routed template
+is this story's, in its own words** *(Story 7.3, 2026-10-06)*.~~ *(moved to Story 7.16b, R-245;
+this story keeps the routed list itself: `routedOf(config)` names the `custom-*.hbs` files a route names, which
+Story 7.18, `compileTheme`'s first product caller, hands in)*
+**And** ~~routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.~~ *(moved to Story 7.16b, R-245; this story records the root half: Inflozo always emits the index collection at `/`, last, so Home's context stays `index` — `collection-router.js:21`, read and executed at 7.16's Create)*
+**And** *(given an owner by Story 7.15's Review, 2026-10-16 — **DW-361**)* `VERIFY-AT-BUILD.md` uses item numbers 59 and 60 twice each, and this story is the first to cite the first register's 60 (a collection's per-route `limit:`): before it cites it, the second register's 59 and 60 take the next free numbers and every live citation of them is repointed, a closed spec or `record` document keeping its words with a dated note
+
+**FRs:** FR-I2, FR-I3. · **Frame:** `S9 Routes.dc.html` S9a · S9b · S9c · S9d · S9e; the parts no frame draws are
+built from the drawings beside them (R-247). · **Owner test:** yes.
+
+### Story 7.16b: Custom templates on the canvas
+
+As a user who made a template in the Routes Manager,
+I want to open and design it in the editor like any other page,
+So that a route I built shows a page I designed.
+
+**Acceptance Criteria:**
+
+*(Story 7.16's Question 1, ruled option 1, owner, 2026-10-16 — **R-245**: every criterion below moved here from Story
+7.16 word for word (R-195); this story runs straight after Story 7.16a, which builds the Routes Manager page.)*
+
+**Given** a custom template made in the Routes Manager (Story 7.16a)
+**When** I open the editor
+**Then** custom templates appear in the template switcher as designable canvases — each row with Tabler's `template`
 glyph (`kit/icons.tsx`'s `CanvasCustom`) and the one line **"Custom template"** (`lib/editor.ts`'s
 `CUSTOM_TEMPLATE_CAPTION`), in the shared row of R-171 — and **"+ New template" is a
 shortcut that deep-links into this flow** — one creation flow, two entry points
+**And** the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
+collection that sets one, and a **channel or collection template created here is given its main feed at creation**
+through Story 5.19's designation rule (FR-H2, DW-252)
 **And** deleting a custom template or its route **warns when the template has designed content**, the canvas is
-deleted with it and recoverable via undo, and an editor viewing it switches to Home with a notice
-**And** with no routing the empty state is S9d's — "Your site uses Ghost's default routing. Nice and simple."
-(UX-DR6) — and a YAML error is S9b's line-numbered error blocking the deploy with the reason on the Ship button
-**And** the surfaces match S9a, S9b, S9d, S9c and S9e as re-specified.
+deleted with it and recoverable via undo, and an editor viewing it switches to Home with a notice *(R-248, owner,
+2026-10-16: a route's delete never deletes its template, so the warning belongs to a template's delete)*
 **And** a custom template reached through a route this flow authors is offered only what that route supplies — appendix B.1 §3's route form, a flat root carrying exactly its `data:` keys — derived from the route, not the matrix's Admin-entry row for `custom-{name}.hbs` (DW-126).
 **And** a custom template a route names keeps shipping when every section is deleted — FR-I1's class that does not
 stop, built by Story 7.3 as `compileTheme`'s `routed` input, which this story hands in — so the editor's D5f warning
 ("This template stops shipping") is not its sentence: **the warning before the last section leaves a routed template
 is this story's, in its own words** *(Story 7.3, 2026-10-06)*.
 **And** routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.
-**And** *(given an owner by Story 7.15's Review, 2026-10-16 — **DW-361**)* `VERIFY-AT-BUILD.md` uses item numbers 59 and 60 twice each, and this story is the first to cite the first register's 60 (a collection's per-route `limit:`): before it cites it, the second register's 59 and 60 take the next free numbers and every live citation of them is repointed, a closed spec or `record` document keeping its words with a dated note
+**And** *(handed by Story 7.16's Create, 2026-10-16)* two readings for this story's Create, read in Ghost 6.58.0's source
+at 7.16's Create: every custom collection and channel renders its pages in its own context, `["paged","<its path
+without slashes>"]` (`collection-router.js:21`, `rendering/context.js:31-39`), which FR-H2's `noindex` guard must name
+wherever that template is feed-less; and the canvas's Home feed reads every post while the live `/` lists only the posts
+no collection owns (`controllers/collection.js:75-88`), which FR-H3 asks the canvas to show honestly.
 
-**FRs:** FR-I2, FR-I3. · **Frame:** `S9 Routes.dc.html` S9a · S9b · S9c · S9d · S9e. · **Owner test:** yes.
+**FRs:** FR-I3 (the switcher and canvas half), FR-H2 (a route's own `limit:`), FR-D6. · **Frame:** `D5 Canvas Markers
+and Template Switcher.dc.html` D5b (the `FROM THE ROUTES MANAGER` group and "+ New template", rows as R-171 and R-172
+re-specify them) and D5f. · **Owner test:** yes.
 
 ### Story 7.17: Uploading `routes.yaml`, and the guided fallback
 
@@ -3969,6 +4036,9 @@ non-English project, Translations lists every section with untouched starting wo
 and the deploy check (Story 7.18) repeats the list as a warning — never a block."** — Pre-flight's half: the list
 `untouchedWords` (Story 7.12) gives, for a project whose language is not `en`, each section named by its layer and canvas
 with its untouched words (DW-145).
+**And** *(moved word for word from Story 7.16 by its Question 1, ruled option 1, owner, 2026-10-16 — R-245, R-195)* a YAML
+error is S9b's line-numbered error **blocking the deploy with the reason on the Ship button** — the error and its line
+read from Story 7.16a's `validateRoutes` over the project's stored routes.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).

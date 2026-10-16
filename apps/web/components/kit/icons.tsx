@@ -310,7 +310,7 @@ export const CanvasCards = (p: IconProps) => (
     <path d="M20 6c.264 .112 .52 .217 .768 .315a1 1 0 0 1 .53 1.311l-2.298 5.374" />
   </Icon>
 )
-/** Tabler `template` — any custom template a user creates (Story 7.16) */
+/** Tabler `template` — any custom template a user creates (its row: Story 7.16b) */
 export const CanvasCustom = (p: IconProps) => (
   <Icon {...p}>
     <path d="M4 5a1 1 0 0 1 1 -1h14a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-14a1 1 0 0 1 -1 -1l0 -2" />

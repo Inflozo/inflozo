@@ -241,7 +241,7 @@ test('R-171: every canvas carries its own one line for the Template list, and a 
     assert.notEqual(c.caption.toLowerCase(), c.label.toLowerCase(), `${key}'s caption only repeats its name`)
   }
   assert.equal(new Set(captions).size, captions.length, 'no two templates are described the same way')
-  // the owner's own words for Story 7.16's custom templates
+  // the owner's own words for Story 7.16b's custom templates (R-245)
   assert.equal(CUSTOM_TEMPLATE_CAPTION, 'Custom template')
 })
 

@@ -5439,7 +5439,7 @@ function EditorShell({
         </Link>
         {/* THE NAME STOPS SHORT OF THE CENTRED GROUP BY CONSTRUCTION (Story 5.22): it grows to its own width and no further
             (`max-w-fit`) from a basis of nothing (`w-0`), so it adds nothing to the column's minimum and is what gives way,
-            truncating with an ellipsis where the column ends — at 1440, at 720 and beside Story 7.16's longest custom
+            truncating with an ellipsis where the column ends — at 1440, at 720 and beside Story 7.16b's longest custom
             template name alike. The deployed walk's step 90 measures it with a long name. */}
         <span className={`${surface ? 'text-ink-deep-text' : ''} w-0 min-w-0 max-w-fit grow truncate text-ui-dense font-semibold`}>{project.name}</span>
         {surface ? (

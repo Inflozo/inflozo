@@ -16,7 +16,7 @@
 //
 // THE ORDER OF `CANVASES` IS D5b'S ROW ORDER, and the switcher draws it straight through: Home · Post · Page · Tag ·
 // Author · the Membership group · 404 · Private. R-128 defers the rule, the `FROM THE ROUTES MANAGER` heading and
-// "+ New template" to Story 7.16.
+// "+ New template" to Story 7.16b (R-245).
 
 import { CUSTOM_TARGET_RE, isSiteFooter } from '@inflozo/library'
 import { CARD_WORDS } from './cards.ts'
@@ -33,7 +33,7 @@ export const CANVASES = {
   author: { file: 'author.hbs', label: 'Author', caption: "A writer's profile and posts" },
   // R-129 (owner, 2026-09-18): the filename is frozen public API and Ghost derives its own dropdown label from it
   // (`prd.md:636`), so it is chosen once. Signin, Sign up, Subscribe and Membership are different pages — Subscribe
-  // and Membership are ordinary custom page templates from the Routes Manager (FR-I3, Story 7.16), not rows here.
+  // and Membership are ordinary custom page templates from the Routes Manager (FR-I3, Story 7.16a), not rows here.
   'custom-signup': { file: 'custom-signup.hbs', label: 'Signup', caption: 'Where visitors join' },
   'custom-signin': { file: 'custom-signin.hbs', label: 'Signin', caption: 'Where members sign in' },
   'custom-member-home': { file: 'custom-member-home.hbs', label: 'Member home', caption: "A member's account page" },
@@ -58,7 +58,7 @@ export const CANVASES = {
 export const SURFACES_HEADING = 'Template surfaces'
 
 /** The one line under a custom template's row (R-171, the owner's own words). Custom templates reach the switcher with
- *  the Routes Manager, Story 7.16, which draws their rows with this line and `kit/icons.tsx`'s `CanvasCustom`. */
+ *  Story 7.16b, which draws their rows with this line and `kit/icons.tsx`'s `CanvasCustom`. */
 export const CUSTOM_TEMPLATE_CAPTION = 'Custom template'
 
 export type CanvasKey = keyof typeof CANVASES
