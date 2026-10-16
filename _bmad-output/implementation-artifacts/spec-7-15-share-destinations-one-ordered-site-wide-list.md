@@ -2,7 +2,7 @@
 title: 'Story 7.15 — Share destinations: one ordered, site-wide list'
 type: 'feature'
 created: '2026-10-16'
-status: 'in-review'
+status: 'done'
 baseline_commit: '899886c7fefa904b7e4f9021ceed805d9e36a77c'
 owner_test: none
 review_loop_iteration: 0
@@ -515,6 +515,17 @@ Question 1 decided):
   that is in no card) missed in both; every FRs line of 10.23 and 10.82–10.89 carries FR-Q10; the two prompt copies
   compared block for block, identical; `python3 tools/doc-audit.py --check` twice. `pnpm check` was not re-run: Review
   changed no package code, and CI's `check` runs it on the Review push.
+
+**Deploy (2026-10-16), on the real infrastructure (R-82).** Keys read only into each command's environment, by name
+(`GITHUB_TOKEN`; `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`); no value printed; no write to any service. The story
+changes documents and two comments, so there is no migration to apply and no RLS-TEST.sql run beyond CI's own `rls` job.
+- `Deployment: dpl_BXuCGNVp7i6LTadQCDcNJB4hRfgM` (`inflozo-1otsy1jd6-umangkagathara.vercel.app`), `READY`, target production,
+  built from the Review head `5727a069`.
+- **GitHub Actions on `5727a069`** (`actions/runs?head_sha=…`): CI run `38924267306` — `check`, `rls` and `deploy` success;
+  the render matrix run `38924267359` success. Control: an all-zero sha returns `total_count=0`.
+- **Aliases** (`/v4/aliases/app.inflozo.com`, `/v4/aliases/inflozo.com`): both point at `dpl_BXuCGNVp7i6LTadQCDcNJB4hRfgM`.
+  Live: `app.inflozo.com/sign-in` 200, `inflozo.com/` 200.
+- `owner_test: none` — no screen changed, so the story is Done at Deploy.
 
 ## Owner's manual test
 
