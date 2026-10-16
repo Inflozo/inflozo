@@ -358,4 +358,9 @@ Theme settings' page — for example "Post cards · 1 customised · Open Editor 
   card_designs byte-equal" among its notices; `node --check tools/probe/run-verify-editor.cjs` passes.
 - Standing rule 7: every live document and code line naming 7.14 beside pagination (`epics.md` ×2, R-195's line, `prd.md`
   :616) carries the move to 10.112.
-- The committed walk with the Review patches runs on the deployed Review head next; its result is appended below.
+- The Review push `ba424343`: CI run 38896287287 `rls`, `check` and `deploy` success, the render matrix success; Vercel
+  `dpl_FxujG6ydc86grVQSDk1bXTLCxnBq` READY at `ba424343`, served by app.inflozo.com. Step 108 on that head, the committed
+  walk (with the Review's controls) cut the same way from a worktree at `ba424343`: **0 FAIL, 46 PASS** — the fixture with
+  Bookmark not `FIRST_CARD` (`callout`) and the victim's name Home's alone; 108b's victim a row before the delete, and
+  `updated_at` unchanged (`12:09:00.914426Z`); 108c reading attributes with the text, nothing but the caption matching;
+  108d's reset moving `updated_at` to `12:09:27.561661Z`; zero CSP violations, users 14 → 14.
