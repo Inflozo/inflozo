@@ -265,6 +265,19 @@
 // reload Theme settings draws no pagination text (R-118 — the Posts per page caption, which says "paginating" of the page
 // size, is taken out first and is the regex's own control) and its rail's Editor cards lands on Bookmark, still
 // customised; handed back by ⌘Z on Home + ⌘S and Reset card + ⌘S, Home's doc read back equal to its start, the record empty.
+// Story 7.16a adds step 109, in a context of its own and reading only steps 1–5's names (so a cut copy can run it alone):
+// THE ROUTES MANAGER on production (FR-I2, FR-I3, S9a–S9e) — "Manage routes" reached from the Template menu by keyboard
+// (Enter, End, Enter), its line saying "Opening…" and the routes page's own skeleton in the document before S9d (and first in
+// the raw stream); a collection made pointer-free with a new template and its own page size; a second one reordered by ⌥↑
+// and by a pointer drag, the YAML's order and `/`'s inverse filter following; R-246's operators (exact dates in a collection,
+// rolling ones first in a channel); a channel, a static route and a taxonomy prefix; the four refusals (a template name
+// taken, "Home", `/page/`, an existing collection's path), each with nothing written and beside its control; Delete and Undo
+// for a collection and for a used template, whose confirm opens on Cancel; Copy and Download against the pane; a reload
+// agreeing with `routes_config` byte for byte; and the project cleaned up through the product to S9d and handed back. Every
+// sentence is `lib/routes.ts`' `ROUTES_WORDS` or the runtime's `ROUTE_WORDS`, every file the runtime's own `routesYaml` of
+// the expected config. It RE-EXPECTS STEP 40: the rule and "Manage routes" now end the Template menu, while "+ New template"
+// and FROM THE ROUTES MANAGER stay absent until Story 7.16b (R-245). And `finally` now counts PROJECTS before and after, as
+// it always counted users — both throwaway accounts' projects must go with them.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -326,6 +339,12 @@ const users = async () => {
     out.push(...body.users)
   }
 }
+/** Story 7.16a — every project on production, by PostgREST's own exact count (never a page of rows); null when unreadable */
+const projectCount = async () => {
+  const r = await fetch(`${SB}/rest/v1/projects?select=id`, { method: 'HEAD', headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}`, Prefer: 'count=exact' } })
+  const n = Number(r.headers.get('content-range')?.split('/')[1])
+  return r.ok && Number.isInteger(n) ? n : null
+}
 
 async function main() {
   if (!LOCAL) {
@@ -350,6 +369,8 @@ async function main() {
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
   note('users before', String(before))
+  const projectsBefore = await projectCount()
+  note('projects before', String(projectsBefore))
 
   const stamp = Date.now()
   const emailA = `editor-harness-a-${stamp}@inflozo.com`
@@ -2296,6 +2317,8 @@ async function main() {
           groups: [...pop.querySelectorAll('ul[aria-labelledby]')].map((g) => document.getElementById(g.getAttribute('aria-labelledby'))?.textContent.trim()),
           text: pop.textContent,
           rules: pop.querySelectorAll('hr').length,
+          // Story 7.16a — the menu's last row: "Manage routes", after the rule
+          manage: [...pop.querySelectorAll('button')].at(-1)?.matches('[data-manage-routes]') ? pop.querySelector('[data-manage-routes] [data-name]')?.textContent ?? null : null,
         }
       })
     }
@@ -2320,7 +2343,9 @@ async function main() {
       JSON.stringify({ ...d5b.list, popoverScrolls: d5b.popoverScrolls }))
     const memberRows = d5b.rows.filter((r, n) => isMembership(OFFERED[n]))
     check('step 40 — R-129\'s three membership canvases sit under a "Membership" heading, indented', d5b.groups.includes('Membership') && memberRows.length === OFFERED.filter(isMembership).length && memberRows.every((r) => r.indent === '31px'), JSON.stringify({ groups: d5b.groups, member: memberRows }))
-    check('step 40 — R-128: no "+ New template", no FROM THE ROUTES MANAGER heading and no rule — they arrive with Story 7.16b', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 0, JSON.stringify({ rules: d5b.rules, text: d5b.text.slice(0, 200) }))
+    // Story 7.16a: the rule and "Manage routes" arrive now (S9a's caption), while "+ New template" and FROM THE ROUTES MANAGER
+    // stay absent until Story 7.16b (R-128's pair, R-245)
+    check('step 40 — R-128: no "+ New template" and no FROM THE ROUTES MANAGER heading (Story 7.16b); since Story 7.16a one rule and "Manage routes" last', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 1 && d5b.manage === 'Manage routes', JSON.stringify({ rules: d5b.rules, manage: d5b.manage, text: d5b.text.slice(0, 200) }))
     // THE OWNER'S SECOND FINDING (2026-09-18): the heading drew a chevron and nothing happened. It is a button now,
     // so the group shuts and opens, and the rows are GONE while it is shut rather than merely hidden — a hidden button
     // is still one `arrowKeys` would step onto.
@@ -9478,6 +9503,689 @@ async function main() {
     check('step 108 — the project is handed back with the card record it started with, and the block\'s context recorded zero CSP violations',
       end108?.length === start108.length && JSON.stringify(designs107(end108)) === JSON.stringify(designs107(start108)) && csp108.length === 0, JSON.stringify({ end108, csp108: csp108.slice(0, 3) }))
 
+    // ── step 109 — STORY 7.16a: THE ROUTES MANAGER ON PRODUCTION (FR-I2, FR-I3, S9a–S9e, R-82) ──
+    /* In a context of its own, on the seeded project, and SELF-CONTAINED: it reads only steps 1–5's names (`P`, `ids`,
+       `magic`, `editorUrl`, `recorder`, `steady`, `steadyRequests`, `handBack`, `call`, `at`), so a cut copy can run steps
+       1–5 and this alone. Every sentence is `apps/web/lib/routes.ts`' `ROUTES_WORDS` or the runtime's `ROUTE_WORDS` (R-170);
+       every expected file is the runtime's own `routesYaml` of the expected config, and every refusal's sentence the runtime's
+       own answer (`templateName`, `validateRoutes`). Each write is read back through the service key — `routes_config.config`
+       compared key-order-free (jsonb reorders keys), `routes_config.yaml` and the pane byte for byte.
+       KEYBOARD ONLY where the spec's walk says so — the Template menu to "Manage routes" (109a), the first collection (109b)
+       and ⌥↑ (109c): `.focus()` or Tab, then keys, the walk's way, never a click. The drag is its own pointer check (109d);
+       the rest is pointer. Each refusal (109h) is read with NOTHING written — the row, the templates and the pane unchanged,
+       and no server action sent — beside its control, the same sheet with the value made legal, which saves (standing rule 2).
+       The project is cleaned up through the product to S9d (109m) and its routing row handed back as the step found it. */
+    const [RT109, RW109, ED109] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
+    ])
+    const W109 = RW109.ROUTES_WORDS
+    const canon109 = (v) => (Array.isArray(v) ? `[${v.map(canon109).join(',')}]`
+      : v !== null && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canon109(v[k])}`).join(',')}}` : JSON.stringify(v))
+    const rc109 = async () => (await call('/rest/v1', `/routes_config?project_id=eq.${P}&select=config,yaml,updated_at`)).body
+    const ct109 = async () => (await call('/rest/v1', `/custom_templates?project_id=eq.${P}&select=id,filename,display_name,kind,created_at&order=created_at`)).body
+    const files109 = async () => ((await ct109()) ?? []).map((r) => r.filename)
+    const ownProjects109 = async () => (await call('/rest/v1', `/projects?user_id=eq.${ids[0]}&select=id&order=id`)).body
+    const until109 = async (p, read, test, tries = 60) => {
+      let v
+      for (let i = 0; i < tries; i++) { v = await read(); if (test(v)) return v; await p.waitForTimeout(250) }
+      return v
+    }
+    const escape109 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const fieldLabel109 = (field) => RW109.FIELDS.find((f) => f.field === field).label
+    // a new condition exactly as the sheet starts it (`freshCondition`), so the expected config restates no default
+    const cond109 = (field, where, values) => ({ ...RW109.freshCondition(field, where, ''), ...(values ? { values } : {}) })
+    const SHEET109 = 'dialog[aria-labelledby="routes-sheet-title"][open]'
+    const CONFIRM109 = 'dialog[aria-labelledby="routes-delete-title"][open]'
+    /** the pane's file as the page shows it: each numbered line's words without its number, or null when it shows none */
+    const pane109 = (p) => p.evaluate(() => {
+      const lines = [...document.querySelectorAll('pre[data-yaml] [data-line]')]
+      return lines.length === 0 ? null : `${lines.map((l) => [...l.childNodes].slice(1).map((n) => n.textContent).join('').replace(/\n$/, '')).join('\n')}\n`
+    })
+    /** the page and the row agree on `want`: the pane is `routesYaml(want)` byte for byte, so is the stored yaml, and the
+     *  stored config is `want` key-order-free */
+    const agree109 = async (p, want) => {
+      const yaml = RT109.routesYaml(want)
+      const pane = await until109(p, () => pane109(p), (v) => v === yaml)
+      const row = (await rc109())?.[0] ?? null
+      return { ok: pane === yaml && row !== null && row.yaml === yaml && canon109(row.config) === canon109(want), pane, stored: row?.yaml ?? null, config: row?.config ?? null }
+    }
+    const lists109 = (p) => p.evaluate(() => ({
+      collections: [...document.querySelectorAll('[data-collection]')].map((e) => e.getAttribute('data-collection')),
+      routes: [...document.querySelectorAll('[data-route]')].map((e) => e.getAttribute('data-route')),
+      templates: [...document.querySelectorAll('[data-template]')].map((e) => e.getAttribute('data-template')),
+    }))
+    const sheet109 = (p) => p.locator(SHEET109)
+    const opened109 = (p) => sheet109(p).waitFor({ state: 'visible', timeout: 15000 })
+    /** the sheet gone — on a save it unmounts; one that stays is shut with Esc so a modal cannot block the next press */
+    const shut109 = async (p) => {
+      const gone = await p.waitForFunction((s) => !document.querySelector(s), SHEET109, { timeout: 20000 }).then(() => true, () => false)
+      if (!gone) await p.keyboard.press('Escape')
+      return gone
+    }
+    const submit109 = async (p) => { await sheet109(p).locator('button[type="submit"]').click(); return shut109(p) }
+    const dashed109 = (p, section, words) => p.locator(`section[aria-labelledby="${section}"] > button`, { hasText: words }).click()
+    /** S9c's "Choose…": the field picker, and the field by its label (`FIELDS`) */
+    const addCond109 = async (p, field) => {
+      const trigger = sheet109(p).locator('button[popovertarget$="-add-menu"]')
+      await trigger.click()
+      await p.locator(`[id="${await trigger.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${escape109(fieldLabel109(field))}`) }).click()
+      await p.waitForTimeout(200)
+    }
+    /** a Kit Select's row, by its exact words */
+    const pick109 = async (p, id, words) => {
+      await p.locator(`#${id}`).click()
+      await p.locator(`[id="${id}-menu"] button`).filter({ hasText: new RegExp(`^${escape109(words)}$`) }).click()
+      await p.waitForTimeout(200)
+    }
+    /** the one condition row's operator menu, read and shut on the row already in force (which changes nothing) */
+    const operators109 = async (p) => {
+      const button = sheet109(p).locator('button[aria-label^="Operator: "]').first()
+      await button.click()
+      const menu = p.locator(`[id="${await button.getAttribute('popovertarget')}"]`)
+      await menu.locator('button').first().waitFor({ state: 'visible', timeout: 5000 })
+      const words = await menu.locator('button').evaluateAll((bs) => bs.map((b) => b.textContent.trim()))
+      await menu.locator('button[aria-current="true"]').click()
+      await p.waitForTimeout(200)
+      return words
+    }
+    /** a row's ⋯ and one of its rows, by its exact words */
+    const menuRow109 = async (p, what, words) => {
+      const more = p.locator(`button[aria-label="${W109.more(what)}"]`)
+      await more.click()
+      await p.locator(`[id="${await more.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${escape109(words)}$`) }).click()
+    }
+    const toast109 = (p, words) => p.locator('[role="status"]', { hasText: words })
+    /** every control in the open sheet with no label — a `<label for>`, a wrapping label, or an aria name (A7 item 9) */
+    const unlabelled109 = (p) => p.evaluate((s) => [...document.querySelectorAll(`${s} input, ${s} select, ${s} textarea`)]
+      .filter((e) => e.labels.length === 0 && !e.hasAttribute('aria-label') && !e.hasAttribute('aria-labelledby')).map((e) => e.id || e.name || e.type), SHEET109)
+    /** Tab (or ⇧Tab) until focus is on `sel` — how a keyboard reaches a control, never a click */
+    const tabTo109 = async (p, sel, { words = null, back = false, tries = 40 } = {}) => {
+      for (let n = 0; n < tries; n++) {
+        if (await p.evaluate(([s, w]) => { const a = document.activeElement; return !!a && a.matches(s) && (w === null || a.textContent.trim() === w) }, [sel, words])) return true
+        await p.keyboard.press(back ? 'Shift+Tab' : 'Tab')
+      }
+      return false
+    }
+
+    // the fixture: Ghost's default routing, no Routes Manager template, no deployed name
+    const start109 = {
+      rc: await rc109(),
+      ct: await ct109(),
+      deployed: (await call('/rest/v1', `/deployed_template_names?project_id=eq.${P}&select=filename`)).body,
+      projects: await ownProjects109(),
+      ppp: (await call('/rest/v1', `/projects?id=eq.${P}&select=posts_per_page`)).body?.[0]?.posts_per_page,
+    }
+    const parsedStart109 = start109.rc?.[0] ? RT109.parseRoutesConfig(start109.rc[0].config) : null
+    check('step 109 — the fixture: the project\'s routing is Ghost\'s default (no routes_config row, or a default one with no yaml), it has no Routes Manager template and no deployed name, and its Posts per page reads — through the service key',
+      Array.isArray(start109.rc) && (start109.rc.length === 0 || (start109.rc[0].yaml === null && parsedStart109.ok && RT109.isDefaultRouting(parsedStart109.config))) &&
+      Array.isArray(start109.ct) && start109.ct.length === 0 && Array.isArray(start109.deployed) && start109.deployed.length === 0 && Array.isArray(start109.projects) && Number.isInteger(start109.ppp),
+      JSON.stringify(start109))
+    let cfg109 = { collections: [], routes: [], taxonomies: { ...RT109.DEFAULT_TAXONOMIES } }
+
+    const rContext = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+    const csp109 = []
+    await recorder(rContext, csp109)
+    // 109k reads Copy back from the clipboard itself — the walk's first clipboard READ, so both grants, on this context alone —
+    // and records what the page handed `writeText` on the way through, in case headless Chromium's clipboard cannot be read
+    await rContext.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: APP })
+    await rContext.addInitScript(() => {
+      const c = navigator.clipboard
+      if (!c) return
+      const write = c.writeText.bind(c)
+      c.writeText = (text) => { window.__handed109 = text; return write(text) }
+    })
+    const rp = steady(await rContext.newPage())
+    rp.on('pageerror', (e) => note('pageerror 109', String(e)))
+    let posts109 = 0
+    rp.on('request', (r) => { if (r.method() === 'POST' && r.headers()['next-action']) posts109++ })
+    await rp.goto(await magic(emailA), { waitUntil: 'load' })
+
+    // 109a — the Template menu, by keyboard: Enter opens it, End reaches its last row, Enter presses "Manage routes"
+    await rp.goto(editorUrl(), { waitUntil: 'load' })
+    await rp.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await rp.locator('#editor-template').focus()
+    await rp.keyboard.press('Enter')
+    await rp.waitForFunction(() => document.getElementById('editor-template-menu')?.matches(':popover-open'), null, { timeout: 10000 }).catch(() => {})
+    await rp.waitForTimeout(250)
+    await rp.keyboard.press('End')
+    const row109 = await rp.evaluate(() => {
+      const a = document.activeElement
+      return {
+        manage: !!a?.matches('[data-manage-routes]'),
+        last: [...document.querySelectorAll('#editor-template-menu a[href], #editor-template-menu button:not(:disabled)')].at(-1) === a,
+        name: a?.querySelector('[data-name]')?.textContent ?? null,
+        caption: a?.querySelector('[data-caption]')?.textContent ?? null,
+      }
+    })
+    check(`step 109a — keyboard: Enter on the Template trigger opens its menu and End lands on its last row, "${W109.manageRoutes}" over "${W109.manageRoutesCaption}"`,
+      row109.manage && row109.last && row109.name === W109.manageRoutes && row109.caption === W109.manageRoutesCaption, JSON.stringify(row109))
+    // what the press shows on its way — the row's line and the routes page's skeleton — recorded as it happens: the move is a
+    // soft navigation, so this window and its observer live through it
+    await rp.evaluate((w) => {
+      const seen = { captions: [], skeleton: false, skeletonBeforePage: null }
+      window.__seen109 = seen
+      const read = () => {
+        const cap = document.querySelector('[data-manage-routes] [data-caption]')?.textContent
+        if (cap !== undefined && cap !== seen.captions.at(-1)) seen.captions.push(cap)
+        if ([...document.querySelectorAll('[aria-busy="true"] > p.sr-only')].some((n) => n.textContent === w.loading)) seen.skeleton = true
+        if (seen.skeletonBeforePage === null && [...document.querySelectorAll('h2')].some((h) => h.textContent === w.empty)) seen.skeletonBeforePage = seen.skeleton
+      }
+      read()
+      new MutationObserver(read).observe(document.documentElement, { childList: true, subtree: true, characterData: true })
+    }, { loading: W109.loading, empty: W109.emptyTitle })
+    await rp.keyboard.press('Enter')
+    const arrived109 = await rp.waitForURL((u) => u.pathname.endsWith(ED109.routesPath(P)), { timeout: 30000 }).then(() => true, () => false)
+    const s9d109 = await rp.locator('h2', { hasText: W109.emptyTitle }).waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false)
+    const seen109 = await rp.evaluate(() => window.__seen109 ?? null)
+    check(`step 109a — Enter on "${W109.manageRoutes}": its line reads "${W109.opening}", the routes page's own skeleton ("${W109.loading}" under aria-busy) is in the document BEFORE the page, then S9d at /projects/<id>/routes — the observer's control: it heard the line at rest first`,
+      arrived109 && s9d109 && seen109?.captions[0] === W109.manageRoutesCaption && seen109.captions.includes(W109.opening) && seen109.skeleton && seen109.skeletonBeforePage === true,
+      JSON.stringify({ arrived109, s9d109, seen109, url: rp.url() }))
+    const s9dText109 = await rp.evaluate(() => document.body.innerText)
+    check(`step 109a — S9d: "${W109.emptyTitle}" and "${W109.emptyLead}", ${W109.newCollection} and R-247's quiet "${W109.orAdd} ${W109.aRoute} · ${W109.aTemplate}", and no YAML pane`,
+      [W109.title, W109.emptyTitle, W109.emptyLead, W109.newCollection, `${W109.orAdd} ${W109.aRoute} · ${W109.aTemplate}`].every((w) => s9dText109.includes(w)) && (await rp.locator('pre[data-yaml]').count()) === 0,
+      s9dText109.slice(0, 400))
+    // the deterministic half of R-98: the server streams the skeleton's sentence (its HTML, never the flight data) before S9d
+    const raw109 = await (await rContext.request.get(at(ED109.routesPath(P)), { maxRedirects: 0 })).text()
+    const stream109 = { skeleton: raw109.indexOf(`>${W109.loading}</p>`), page: raw109.indexOf(`>${W109.emptyLead}</p>`) }
+    stream109.busy = stream109.skeleton > -1 ? raw109.lastIndexOf('aria-busy="true"', stream109.skeleton) : -1
+    check(`step 109a — R-98 in the raw stream: the routes page's HTML carries the skeleton's "${W109.loading}" under aria-busy before S9d's words`,
+      stream109.skeleton > -1 && stream109.busy > -1 && stream109.page > stream109.skeleton, JSON.stringify(stream109))
+
+    // 109b — a collection, POINTER-FREE: Tab and Enter, typing, Home/End and Enter in the Kit's menus, Space on the switch
+    const fn109 = { path: '/field-notes/', tag: 'field-notes', display: 'Field Notes List' }
+    const fnNamed109 = RT109.templateName(fn109.display)
+    const keys109 = []
+    const land109 = async (what, sel, o) => { const ok = await tabTo109(rp, sel, o); keys109.push([what, ok]); return ok }
+    await land109(W109.newCollection, 'button', { words: W109.newCollection })
+    await rp.keyboard.press('Enter')
+    await opened109(rp)
+    const head109b = await sheet109(rp).evaluate((d) => ({ title: d.querySelector('#routes-sheet-title')?.textContent ?? null, text: d.innerText, theme: d.querySelector('a[href]')?.getAttribute('href') ?? null }))
+    await land109(W109.path, '#routes-path')
+    await rp.keyboard.type(fn109.path)
+    await land109(W109.choose, 'button[popovertarget$="-add-menu"]')
+    await rp.keyboard.press('Enter')
+    await rp.waitForFunction(() => !!document.activeElement?.closest('[popover]'), null, { timeout: 5000 }).catch(() => {})
+    await rp.keyboard.press('Home')
+    for (let n = 0; n < RW109.FIELDS.findIndex((f) => f.field === 'tag'); n++) await rp.keyboard.press('ArrowDown')
+    await rp.keyboard.press('Enter')
+    await rp.waitForTimeout(300)
+    await land109(W109.add, `${SHEET109} input[placeholder="${W109.add}"]`, { back: true })
+    await rp.keyboard.type(fn109.tag)
+    await rp.keyboard.press('Enter')
+    await rp.waitForTimeout(200)
+    await land109(W109.template, '#routes-template')
+    await rp.keyboard.press('Enter')
+    await rp.waitForFunction(() => !!document.activeElement?.closest('#routes-template-menu'), null, { timeout: 5000 }).catch(() => {})
+    await rp.keyboard.press('End')
+    const newOption109 = await rp.evaluate(() => document.activeElement?.textContent?.trim() ?? null)
+    await rp.keyboard.press('Enter')
+    await rp.waitForTimeout(300)
+    await land109(W109.ownPageSize, '#routes-own-size')
+    await rp.keyboard.press('Space')
+    await rp.waitForTimeout(250)
+    const own109 = await rp.locator('#routes-own-size').getAttribute('aria-checked')
+    // the stepper's second button steps up — Theme settings' Posts per page box, unchanged (R-247)
+    await land109(W109.pageSize, '#routes-page-size button:last-of-type')
+    const sizeFrom109 = Number(await rp.locator('#routes-page-size > span').textContent().catch(() => 'NaN'))
+    for (let n = 0; n < 2; n++) { await rp.keyboard.press('Enter'); await rp.waitForTimeout(150) }
+    const sizeTo109 = Number(await rp.locator('#routes-page-size > span').textContent().catch(() => 'NaN'))
+    const limit109 = Math.min(RW109.PAGE_SIZE.max, start109.ppp + 2)
+    // the Kit's box is "labelled by `${id}-label` — which the caller draws" (`kit/stepper.tsx`): the name must resolve
+    const sizeName109 = await rp.evaluate(() => { const by = document.getElementById('routes-page-size')?.getAttribute('aria-labelledby'); return by ? document.getElementById(by)?.textContent ?? null : null })
+    check(`step 109b — the page size box is named: its group's aria-labelledby resolves to "${W109.pageSize}", drawn beside it as Theme settings draws Posts per page's`, sizeName109 === W109.pageSize, JSON.stringify({ sizeName109 }))
+    await land109(W109.name, '#routes-sheet-template')
+    await rp.keyboard.type(fn109.display)
+    await rp.waitForTimeout(250)
+    const naming109 = await sheet109(rp).evaluate((d) => ({ file: d.querySelector('[data-file]')?.textContent ?? null, label: d.querySelector('[data-label]')?.textContent ?? null, text: d.innerText }))
+    await land109(W109.createCollection, `${SHEET109} button[type="submit"]`)
+    await rp.keyboard.press('Enter')
+    const shut109b = await shut109(rp)
+    check(`step 109b — keyboard: ${W109.newCollection} opens "${W109.newCollectionTitle}" (${W109.newCollectionLead}) with S9c's sentences and "${W109.postsLink}" linking Theme settings; the path typed, Tag added from the field picker, "${fn109.tag}" typed and Entered, the Template menu's End reaching "${W109.newTemplateOption}", "${W109.ownPageSize}" on by Space, the page size stepped from Posts per page (${start109.ppp}) to ${limit109} by Enter, the name typed, its file and Ghost's label shown with "This name is permanent…", and Create by Enter — every stop reached by Tab, and the sheet closed`,
+      keys109.every(([, ok]) => ok) && head109b.title === W109.newCollectionTitle && [W109.newCollectionLead, W109.match, W109.first, W109.exactDate, `${W109.postsBefore}${W109.postsLink}${W109.postsAfter(start109.ppp)}`].every((w) => head109b.text.includes(w)) &&
+      (head109b.theme ?? '').endsWith(ED109.settingsPath(P)) && newOption109 === W109.newTemplateOption && own109 === 'true' && sizeFrom109 === start109.ppp && sizeTo109 === limit109 &&
+      naming109.file === fnNamed109.file && naming109.label === W109.ghostWillShow(fnNamed109.label) && naming109.text.includes(W109.permanent) && shut109b,
+      JSON.stringify({ keys109, title: head109b.title, theme: head109b.theme, newOption109, own109, sizeFrom109, sizeTo109, naming: { file: naming109.file, label: naming109.label }, shut109b }))
+    const fnCol109 = { path: fn109.path, filter: { match: 'all', conditions: [cond109('tag', 'collection', [fn109.tag])] }, template: fnNamed109.file, limit: limit109 }
+    cfg109 = { ...cfg109, collections: [fnCol109] }
+    const agreed109b = await agree109(rp, cfg109)
+    const ctB109 = await ct109()
+    const card109b = await rp.locator(`[data-collection="${fn109.path}"]`).innerText().catch(() => '')
+    const valid109b = await rp.locator('[data-valid]').textContent().catch(() => null)
+    check(`step 109b — stored: routes_config.config is that one collection (limit ${limit109}) and routes_config.yaml is routesYaml(it), byte for byte the pane, with /'s inverse filter last; custom_templates gains exactly ${fnNamed109.file} (kind routes, "${fn109.display}"); the card reads ${RW109.cardName(fn109.path)}, its filter in words and NQL, its template and "${W109.perPage(limit109)}"; "${W109.valid}"`,
+      agreed109b.ok && Array.isArray(ctB109) && ctB109.length === 1 && ctB109[0].filename === fnNamed109.file && ctB109[0].display_name === fn109.display && ctB109[0].kind === 'routes' &&
+      [RW109.cardName(fn109.path), RW109.filterWords(fnCol109.filter), RT109.filterNql(fnCol109.filter), fn109.display, W109.perPage(limit109)].every((w) => card109b.includes(w)) && valid109b === W109.valid,
+      JSON.stringify({ agreed109b, ctB109, card109b, valid109b }))
+
+    // 109c — a second collection (pointer), R-246's exact-only operators on the way; then ⌥↑ on its handle (keyboard)
+    const cr109 = { path: '/craft/', tag: 'craft', display: 'Craft List' }
+    const crNamed109 = RT109.templateName(cr109.display)
+    await dashed109(rp, 'routes-collections', W109.newCollection)
+    await opened109(rp)
+    await sheet109(rp).locator('#routes-path').fill(cr109.path)
+    await addCond109(rp, 'published_at')
+    const exact109 = await operators109(rp)
+    await sheet109(rp).locator(`button[aria-label="${W109.removeCondition(fieldLabel109('published_at'))}"]`).click()
+    await addCond109(rp, 'tag')
+    await sheet109(rp).locator(`input[placeholder="${W109.add}"]`).fill(cr109.tag)
+    await sheet109(rp).locator(`input[placeholder="${W109.add}"]`).press('Enter')
+    await addCond109(rp, 'featured')
+    const rows109c = await sheet109(rp).locator('[role="group"][aria-label="Condition"]').count()
+    await pick109(rp, 'routes-template', W109.newTemplateOption)
+    await sheet109(rp).locator('#routes-sheet-template').fill(cr109.display)
+    const shut109c = await submit109(rp)
+    const crCol109 = { path: cr109.path, filter: { match: 'all', conditions: [cond109('tag', 'collection', [cr109.tag]), cond109('featured', 'collection')] }, template: crNamed109.file }
+    cfg109 = { ...cfg109, collections: [fnCol109, crCol109] }
+    const agreed109c = await agree109(rp, cfg109)
+    const listC109 = await lists109(rp)
+    const wantExact109 = RW109.EXACT_OPS.map((op) => RW109.EXACT_WORDS[op])
+    check(`step 109c — R-246 in a collection: Published date offers only an exact date (${wantExact109.join(' · ')}); then ${cr109.path} with All of Tag any of ${cr109.tag} and Featured is ${W109.yes}, and a new template "${cr109.display}", appended after ${fn109.path} — stored and in the pane byte for byte`,
+      JSON.stringify(exact109) === JSON.stringify(wantExact109) && rows109c === 2 && shut109c && agreed109c.ok && JSON.stringify(listC109.collections) === JSON.stringify([fn109.path, cr109.path]),
+      JSON.stringify({ exact109, rows109c, shut109c, agreed109c, listC109 }))
+    const inverseDown109 = RT109.indexFilter(cfg109.collections)
+    const said109 = (p) => p.locator('section[aria-labelledby="routes-collections"] p[aria-live="polite"]').textContent()
+    await rp.locator('[data-handle="1"]').focus()
+    await rp.keyboard.press('Alt+ArrowUp')
+    const saidUp109 = await until109(rp, () => said109(rp), (v) => v === W109.moved(cr109.path, 1, 2), 40)
+    const focusUp109 = await rp.evaluate(() => ({ handle: document.activeElement?.getAttribute('data-handle') ?? null, label: document.activeElement?.getAttribute('aria-label') ?? null }))
+    cfg109 = { ...cfg109, collections: [crCol109, fnCol109] }
+    const agreedUp109 = await agree109(rp, cfg109)
+    const listUp109 = await lists109(rp)
+    const inverseUp109 = RT109.indexFilter(cfg109.collections)
+    check(`step 109c — keyboard: ⌥↑ on ${cr109.path}'s handle moves it first — "${W109.moved(cr109.path, 1, 2)}" said, focus following onto its handle — and the YAML follows: ${cr109.path} before ${fn109.path}, and /'s inverse filter now "${inverseUp109}" (it was "${inverseDown109}"), stored and in the pane byte for byte`,
+      saidUp109 === W109.moved(cr109.path, 1, 2) && focusUp109.handle === '0' && focusUp109.label === W109.move(cr109.path) && JSON.stringify(listUp109.collections) === JSON.stringify([cr109.path, fn109.path]) &&
+      inverseUp109 !== inverseDown109 && agreedUp109.ok && (agreedUp109.pane ?? '').includes(`filter: "${inverseUp109}"`),
+      JSON.stringify({ saidUp109, focusUp109, listUp109, agreedUp109 }))
+
+    // 109d — the same reorder by POINTER: a drag on the handle; the dashed slot mid-drag with nothing stored, then the drop
+    const handle109 = await rp.locator('[data-handle="1"]').boundingBox()
+    const boxes109 = [await rp.locator('[data-row="0"]').boundingBox(), await rp.locator('[data-row="1"]').boundingBox()]
+    let mid109 = { slot: null, config: null, list: null }
+    if (handle109 && boxes109.every(Boolean)) {
+      const hx109 = handle109.x + handle109.width / 2
+      const hy109 = handle109.y + handle109.height / 2
+      // past the upper row's middle: the distance between the two rows' middles, and a little more
+      const lift109 = boxes109[1].y + boxes109[1].height / 2 - (boxes109[0].y + boxes109[0].height / 2) + 12
+      await rp.mouse.move(hx109, hy109)
+      await rp.mouse.down()
+      await rp.mouse.move(hx109, hy109 - lift109, { steps: 14 })
+      await rp.waitForTimeout(250)
+      mid109 = { slot: await rp.locator('[data-drop-slot]').count(), config: (await rc109())?.[0]?.config ?? null, list: (await lists109(rp)).collections }
+      await rp.mouse.up()
+    }
+    cfg109 = { ...cfg109, collections: [fnCol109, crCol109] }
+    const agreedDrag109 = await agree109(rp, cfg109)
+    const saidDrag109 = await until109(rp, () => said109(rp), (v) => v === W109.moved(fn109.path, 1, 2), 40)
+    const listDrag109 = await lists109(rp)
+    check(`step 109d — pointer: ${fn109.path} dragged by its handle above ${cr109.path} — mid-drag the dashed slot shows and nothing reorders or is stored; on the drop "${W109.moved(fn109.path, 1, 2)}" is said, ${fn109.path} is first again and /'s inverse filter is "${inverseDown109}" again, stored and in the pane byte for byte`,
+      mid109.slot === 1 && canon109(mid109.config) === canon109({ ...cfg109, collections: [crCol109, fnCol109] }) && JSON.stringify(mid109.list) === JSON.stringify([cr109.path, fn109.path]) &&
+      saidDrag109 === W109.moved(fn109.path, 1, 2) && JSON.stringify(listDrag109.collections) === JSON.stringify([fn109.path, cr109.path]) && agreedDrag109.ok && RT109.indexFilter(cfg109.collections) === inverseDown109,
+      JSON.stringify({ mid109: { slot: mid109.slot, list: mid109.list }, saidDrag109, listDrag109, agreedDrag109 }))
+
+    // 109e — a channel with a rolling date (R-246: rolling first, in channels only)
+    const rl109 = { path: '/reading-list/', display: 'Reading List' }
+    const rlNamed109 = RT109.templateName(rl109.display)
+    const rolling109 = cond109('published_at', 'channel')
+    await dashed109(rp, 'routes-custom', W109.customRoute)
+    await opened109(rp)
+    const head109e = await sheet109(rp).evaluate((d) => ({ title: d.querySelector('#routes-sheet-title')?.textContent ?? null, text: d.innerText, conditions: !!d.querySelector('button[popovertarget$="-add-menu"]') }))
+    await sheet109(rp).locator('#routes-path').fill(rl109.path)
+    await sheet109(rp).locator('label', { hasText: W109.channel }).click()
+    await rp.waitForTimeout(250)
+    await addCond109(rp, 'published_at')
+    const ops109e = await operators109(rp)
+    const text109e = await sheet109(rp).innerText()
+    await pick109(rp, 'routes-template', W109.newTemplateOption)
+    await sheet109(rp).locator('#routes-sheet-template').fill(rl109.display)
+    const unlabelled109e = await unlabelled109(rp)
+    const shut109e = await submit109(rp)
+    const rlRoute109 = { path: rl109.path, channel: { match: 'all', conditions: [rolling109] }, template: rlNamed109.file }
+    cfg109 = { ...cfg109, routes: [rlRoute109] }
+    const agreed109e = await agree109(rp, cfg109)
+    check(`step 109e — ${W109.customRoute}: "${W109.newRouteTitle}" asks "${W109.show}" (${W109.oneTemplate} · ${W109.channel}) with no condition until the channel is chosen; then Published date offers ${W109.within} and ${W109.moreThan} first and the exact ones after (R-246), starts at the last ${rolling109.at.ago} ${RW109.UNIT_WORDS[rolling109.at.unit]} (now-${rolling109.at.ago}${rolling109.at.unit}) under S9c's rolling sentence, and every control in the sheet has a label; Create route stores ${rl109.path} as a channel with "${RT109.filterNql(rlRoute109.channel)}" and ${rlNamed109.file} — and the pane byte for byte`,
+      head109e.title === W109.newRouteTitle && [W109.newRouteLead, W109.show, W109.oneTemplate, W109.oneTemplateHelp, W109.channel, W109.channelHelp].every((w) => head109e.text.includes(w)) && head109e.conditions === false &&
+      JSON.stringify(ops109e) === JSON.stringify([W109.within, W109.moreThan, ...wantExact109]) && text109e.includes(W109.rollingDate) && !text109e.includes(W109.exactDate) && text109e.includes(`now-${rolling109.at.ago}${rolling109.at.unit}`) &&
+      unlabelled109e.length === 0 && shut109e && agreed109e.ok,
+      JSON.stringify({ head109e: { title: head109e.title, conditions: head109e.conditions }, ops109e, unlabelled109e, shut109e, agreed109e }))
+
+    // 109f — a static route to a new template
+    const ld109 = { path: '/landing/', display: 'Landing' }
+    const ldNamed109 = RT109.templateName(ld109.display)
+    await dashed109(rp, 'routes-custom', W109.customRoute)
+    await opened109(rp)
+    await sheet109(rp).locator('#routes-path').fill(ld109.path)
+    await pick109(rp, 'routes-route-template', W109.newTemplateOption)
+    await sheet109(rp).locator('#routes-sheet-template').fill(ld109.display)
+    const shut109f = await submit109(rp)
+    cfg109 = { ...cfg109, routes: [rlRoute109, { path: ld109.path, template: ldNamed109.file }] }
+    const agreed109f = await agree109(rp, cfg109)
+    const tpl109f = await rp.locator(`[data-template="${ldNamed109.file}"]`).innerText().catch(() => '')
+    check(`step 109f — ${W109.oneTemplate}: ${ld109.path} → a new "${ld109.display}" stored as a static route (static before channels in the file), and the Templates list shows ${ld109.display} over ${ldNamed109.file}, "${W109.usedBy([ld109.path])}"`,
+      shut109f && agreed109f.ok && [ld109.display, ldNamed109.file, W109.usedBy([ld109.path])].every((w) => tpl109f.includes(w)), JSON.stringify({ shut109f, agreed109f, tpl109f }))
+
+    // 109g — a taxonomy prefix, saved
+    await rp.locator('#routes-tag').fill('topic')
+    await rp.locator('section[aria-labelledby="routes-taxonomies"] button[type="submit"]').click()
+    cfg109 = { ...cfg109, taxonomies: { ...cfg109.taxonomies, tag: 'topic' } }
+    const agreed109g = await agree109(rp, cfg109)
+    const saveGone109 = await rp.locator('section[aria-labelledby="routes-taxonomies"] button[type="submit"]').waitFor({ state: 'detached', timeout: 10000 }).then(() => true, () => false)
+    check(`step 109g — ${W109.taxonomies}: ${W109.tags} at /topic/ and ${W109.save} — stored, the pane byte for byte, and ${W109.save} gone once the field matches what is stored`,
+      agreed109g.ok && saveGone109 && (await rp.locator('#routes-tag').inputValue()) === 'topic', JSON.stringify({ agreed109g, saveGone109 }))
+
+    // 109h — every collision and reserved refusal, each with NOTHING written, each beside its control (the value made legal)
+    const refused109 = async (p) => {
+      const was = { rc: await rc109(), ct: await ct109(), pane: await pane109(p), posts: posts109 }
+      await sheet109(p).locator('button[type="submit"]').click()
+      const said = await until109(p, () => p.evaluate((s) => document.querySelector(`${s} form > p[role="alert"]`)?.textContent ?? null, SHEET109), (v) => typeof v === 'string' && v !== '', 20)
+      await p.waitForTimeout(700)
+      const now = { rc: await rc109(), ct: await ct109(), pane: await pane109(p), posts: posts109 }
+      return { said, open: await sheet109(p).isVisible(), unchanged: JSON.stringify(now.rc) === JSON.stringify(was.rc) && JSON.stringify(now.ct) === JSON.stringify(was.ct) && now.pane === was.pane, sent: now.posts - was.posts }
+    }
+    /** a New template sheet: the refused name, then its legal twin saved — the row alone, no config written */
+    const nameRefusal109 = async (refusedName, legalName, sentence) => {
+      await dashed109(rp, 'routes-templates', W109.newTemplate)
+      await opened109(rp)
+      const title = await sheet109(rp).locator('#routes-sheet-title').textContent()
+      await sheet109(rp).locator('#routes-new-template').fill(refusedName)
+      const want = RT109.templateName(refusedName, { project: await files109() })
+      const inline = await sheet109(rp).locator('#routes-new-template-error').textContent({ timeout: 5000 }).catch(() => null)
+      const r = await refused109(rp)
+      check(`step 109h — refused: a new template named "${refusedName}" — "${want.error}" under the name as it is typed and again on ${W109.createTemplate}, the sheet still open, and NOTHING written (routes_config, custom_templates and the pane unchanged, no server action sent)`,
+        title === W109.newTemplateTitle && want.error === sentence && inline === want.error && r.said === want.error && r.open && r.unchanged && r.sent === 0, JSON.stringify({ title, want, inline, r }))
+      const legal = RT109.templateName(legalName, { project: await files109() })
+      await sheet109(rp).locator('#routes-new-template').fill(legalName)
+      const shown = await sheet109(rp).locator('[data-file]').textContent().catch(() => null)
+      const was = { rc: await rc109(), ct: await ct109() }
+      const shut = await submit109(rp)
+      const ct = await until109(rp, ct109, (rows) => Array.isArray(rows) && rows.length === was.ct.length + 1)
+      const made = (ct ?? []).find((row) => row.filename === legal.file)
+      check(`step 109h — CONTROL: the same sheet with the name made legal, "${legalName}", creates ${legal.file} — one custom_templates row, kind routes — and leaves routes_config as it was (a template alone names no route)`,
+        typeof legal.file === 'string' && shown === legal.file && shut && made?.display_name === legalName && made?.kind === 'routes' && JSON.stringify(await rc109()) === JSON.stringify(was.rc), JSON.stringify({ legal, shown, shut, made }))
+    }
+    await nameRefusal109(ld109.display, `${ld109.display} 2`, RT109.ROUTE_WORDS.nameTaken(ldNamed109.label))
+    await nameRefusal109('Home', 'Home Page', RT109.ROUTE_WORDS.nameReserved('Home'))
+    /** a Custom route sheet to an existing template: the refused path, then its legal twin saved */
+    const pathRefusal109 = async (refusedPath, legalPath, why, isReason) => {
+      await dashed109(rp, 'routes-custom', W109.customRoute)
+      await opened109(rp)
+      await sheet109(rp).locator('#routes-path').fill(refusedPath)
+      await pick109(rp, 'routes-route-template', ld109.display)
+      const would = { ...cfg109, routes: [...cfg109.routes, { path: refusedPath, template: ldNamed109.file }] }
+      const want = RT109.validateRoutes(would, { templates: await files109() })[0]?.message ?? null
+      const r = await refused109(rp)
+      check(`step 109h — refused: a route at ${refusedPath} (${why}) — "${want}", the sheet still open, and NOTHING written (routes_config, custom_templates and the pane unchanged, no server action sent)`,
+        typeof want === 'string' && isReason(want) && r.said === want && r.open && r.unchanged && r.sent === 0, JSON.stringify({ want, r }))
+      await sheet109(rp).locator('#routes-path').fill(legalPath)
+      const shut = await submit109(rp)
+      cfg109 = { ...cfg109, routes: [...cfg109.routes, { path: legalPath, template: ldNamed109.file }] }
+      const agreed = await agree109(rp, cfg109)
+      check(`step 109h — CONTROL: the same sheet with the path made legal, ${legalPath}, saves — ${legalPath} → ${ldNamed109.file} stored and in the pane byte for byte`, shut && agreed.ok, JSON.stringify({ shut, agreed }))
+    }
+    await pathRefusal109('/page/', '/pages/', 'Ghost\'s page 2 of a list', (w) => w === RT109.ROUTE_WORDS.reserved('/page/', RT109.RESERVED_SEGMENTS.page))
+    // the collision's sentence is the validator's own (the owner's word lives there), so it is read as a `taken` sentence
+    // about this path — the runtime's own template up to the owner's word
+    await pathRefusal109(cr109.path, '/craft-picks/', 'an existing collection\'s path', (w) => w.startsWith(RT109.ROUTE_WORDS.taken(cr109.path, '').slice(0, -1)))
+
+    // 109i — Delete and Undo for a collection: gone at once, the template kept (R-248), and back exactly
+    const wasI109 = { rc: (await rc109())?.[0] ?? null, ct: await ct109(), pane: await pane109(rp), lists: await lists109(rp) }
+    await menuRow109(rp, cr109.path, W109.delete)
+    const toastI109 = await toast109(rp, W109.deleted(cr109.path)).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+    const agreedI109 = await agree109(rp, { ...cfg109, collections: cfg109.collections.filter((c) => c.path !== cr109.path) })
+    const listsI109 = await lists109(rp)
+    const ctI109 = await ct109()
+    check(`step 109i — ⋯ → ${W109.delete} on ${cr109.path}: gone at once with "${W109.deleted(cr109.path)}" and ${W109.undo}; the stored config and the pane lose exactly that collection, and its template "${cr109.display}" stays (R-248)`,
+      toastI109 && agreedI109.ok && !listsI109.collections.includes(cr109.path) && JSON.stringify(ctI109) === JSON.stringify(wasI109.ct) && listsI109.templates.includes(crNamed109.file),
+      JSON.stringify({ toastI109, agreedI109, listsI109 }))
+    await rp.getByRole('button', { name: W109.undo, exact: true }).click()
+    const agreedIU109 = await agree109(rp, cfg109)
+    const rcIU109 = (await rc109())?.[0] ?? null
+    const listsIU109 = await lists109(rp)
+    const toastGoneI109 = await toast109(rp, W109.deleted(cr109.path)).waitFor({ state: 'detached', timeout: 15000 }).then(() => true, () => false)
+    check(`step 109i — ${W109.undo}: ${cr109.path} comes back in the same place — the stored config and yaml equal to before the delete, the pane and the lists too — and the message goes`,
+      agreedIU109.ok && canon109(rcIU109?.config) === canon109(wasI109.rc?.config) && rcIU109?.yaml === wasI109.rc?.yaml && agreedIU109.pane === wasI109.pane && JSON.stringify(listsIU109) === JSON.stringify(wasI109.lists) && toastGoneI109,
+      JSON.stringify({ agreedIU109, listsIU109, toastGoneI109 }))
+
+    // 109j — Delete and Undo for a USED template: the confirm opens on Cancel; Cancel writes nothing; Delete takes its route
+    const wasJ109 = { rc: (await rc109())?.[0] ?? null, ct: await ct109(), pane: await pane109(rp), lists: await lists109(rp) }
+    await menuRow109(rp, rl109.display, W109.delete)
+    await rp.locator(CONFIRM109).waitFor({ state: 'visible', timeout: 10000 })
+    const ask109 = await rp.locator(CONFIRM109).evaluate((d) => ({ title: d.querySelector('#routes-delete-title')?.textContent ?? null, body: d.querySelector('p')?.textContent ?? null, cancel: !!document.activeElement?.hasAttribute('data-cancel') && d.contains(document.activeElement) }))
+    const sentJ109 = posts109
+    await rp.keyboard.press('Enter')
+    const cancelled109 = await rp.waitForFunction((s) => !document.querySelector(s), CONFIRM109, { timeout: 10000 }).then(() => true, () => false)
+    await rp.waitForTimeout(700)
+    const afterCancel109 = { rc: (await rc109())?.[0] ?? null, ct: await ct109(), pane: await pane109(rp), sent: posts109 - sentJ109 }
+    check(`step 109j — ⋯ → ${W109.delete} on the used template "${rl109.display}": "${W109.deleteTitle(rl109.display)}" says "${W109.alsoRemoves(RT109.pathsUsing(cfg109, rlNamed109.file))}" and opens on Cancel; Cancel (Enter on it) closes it and writes nothing — no action sent, the rows and the pane unchanged`,
+      ask109.title === W109.deleteTitle(rl109.display) && ask109.body === W109.alsoRemoves(RT109.pathsUsing(cfg109, rlNamed109.file)) && ask109.cancel && cancelled109 && afterCancel109.sent === 0 &&
+      JSON.stringify(afterCancel109.rc) === JSON.stringify(wasJ109.rc) && JSON.stringify(afterCancel109.ct) === JSON.stringify(wasJ109.ct) && afterCancel109.pane === wasJ109.pane,
+      JSON.stringify({ ask109, cancelled109, sent: afterCancel109.sent }))
+    await menuRow109(rp, rl109.display, W109.delete)
+    await rp.locator(CONFIRM109).waitFor({ state: 'visible', timeout: 10000 })
+    await rp.locator(`${CONFIRM109} button:not([data-cancel])`).click()
+    const toastJ109 = await toast109(rp, W109.deleted(rl109.display)).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+    const agreedJ109 = await agree109(rp, RT109.withoutTemplate(cfg109, rlNamed109.file))
+    const ctJ109 = await until109(rp, ct109, (rows) => Array.isArray(rows) && !rows.some((r) => r.filename === rlNamed109.file))
+    const listsJ109 = await until109(rp, () => lists109(rp), (l) => !l.templates.includes(rlNamed109.file))
+    check(`step 109j — ${W109.delete} confirmed: the config is written without ${rl109.path} and the template's row deleted — both gone from the page, the stored rows and the pane — with "${W109.deleted(rl109.display)}" and ${W109.undo}`,
+      toastJ109 && agreedJ109.ok && ctJ109?.length === wasJ109.ct.length - 1 && !listsJ109.routes.includes(rl109.path) && !listsJ109.templates.includes(rlNamed109.file),
+      JSON.stringify({ toastJ109, agreedJ109, ctJ109: ctJ109?.map((r) => r.filename), listsJ109 }))
+    await rp.getByRole('button', { name: W109.undo, exact: true }).click()
+    const ctJU109 = await until109(rp, ct109, (rows) => JSON.stringify(rows) === JSON.stringify(wasJ109.ct))
+    const agreedJU109 = await agree109(rp, cfg109)
+    const rcJU109 = (await rc109())?.[0] ?? null
+    const listsJU109 = await until109(rp, () => lists109(rp), (l) => JSON.stringify(l) === JSON.stringify(wasJ109.lists))
+    check(`step 109j — ${W109.undo}: the template comes back exactly — its id, name, file and created_at — and ${rl109.path} with it; the config and yaml equal to before, the pane and the lists in the same order`,
+      JSON.stringify(ctJU109) === JSON.stringify(wasJ109.ct) && agreedJU109.ok && canon109(rcJU109?.config) === canon109(wasJ109.rc?.config) && rcJU109?.yaml === wasJ109.rc?.yaml && agreedJU109.pane === wasJ109.pane && JSON.stringify(listsJU109) === JSON.stringify(wasJ109.lists),
+      JSON.stringify({ ctJU109: ctJU109?.map((r) => r.filename), agreedJU109, listsJU109 }))
+
+    // 109k — Copy and Download against the pane
+    const paneK109 = await pane109(rp)
+    await rp.locator(`button[aria-label="${W109.copy}"]`).click()
+    const copied109 = await rp.locator(`button[aria-label="${W109.copied}"]`).waitFor({ state: 'visible', timeout: 5000 }).then(() => true, () => false)
+    const clip109 = await rp.evaluate(async () => {
+      let read = null
+      let why = null
+      try { read = await navigator.clipboard.readText() } catch (e) { why = String(e) }
+      return { read, why, handed: window.__handed109 ?? null }
+    })
+    if (clip109.read === null) note('step 109k — the clipboard', `could not be read back (${clip109.why}); the check rests on what the page handed writeText and the tick`)
+    check(`step 109k — ${W109.copy}: the button turns to "${W109.copied}" and the clipboard holds the pane's file byte for byte (read back by navigator.clipboard.readText under the clipboard-read grant, beside the text the page handed writeText)`,
+      copied109 && typeof paneK109 === 'string' && clip109.handed === paneK109 && (clip109.read === paneK109 || clip109.read === null),
+      JSON.stringify({ copied109, read: clip109.read === paneK109 ? 'equal' : clip109.read, handed: clip109.handed === paneK109 ? 'equal' : clip109.handed, why: clip109.why }))
+    const [download109] = await Promise.all([
+      rp.waitForEvent('download', { timeout: 15000 }).catch(() => null),
+      rp.locator(`button[aria-label="${W109.download}"]`).click(),
+    ])
+    const bytes109 = download109 ? fs.readFileSync(await download109.path(), 'utf8') : null
+    const rcK109 = (await rc109())?.[0] ?? null
+    check(`step 109k — ${W109.download}: a file named ${W109.file} whose bytes are the pane's and routes_config.yaml's exactly`,
+      download109?.suggestedFilename() === W109.file && bytes109 === paneK109 && bytes109 === rcK109?.yaml, JSON.stringify({ name: download109?.suggestedFilename() ?? null, equal: bytes109 === paneK109, stored: bytes109 === rcK109?.yaml }))
+
+    // 109l — a reload agrees with routes_config byte for byte
+    await rp.reload({ waitUntil: 'load' })
+    await rp.locator('pre[data-yaml] [data-line]').first().waitFor({ state: 'visible', timeout: 30000 }).catch(() => {})
+    // hydrated: React's own props on a list's button, so the presses below are the page's and never a bare document
+    await rp.waitForFunction(() => { const b = document.querySelector('section[aria-labelledby="routes-collections"] > button'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')) }, null, { timeout: 20000 }).catch(() => {})
+    const paneL109 = await pane109(rp)
+    const rcL109 = (await rc109())?.[0] ?? null
+    const parsedL109 = rcL109 ? RT109.parseRoutesConfig(rcL109.config) : null
+    const listsL109 = await lists109(rp)
+    const ctL109 = await ct109()
+    const problemsL109 = await rp.locator('[data-problem]').count()
+    const validL109 = await rp.locator('[data-valid]').textContent().catch(() => null)
+    check('step 109l — a reload agrees with routes_config byte for byte: routesYaml(the stored config) IS the stored yaml IS the pane; the stored config is every change this step kept; the cards, routes and Templates list in their stored order; Valid, with no problem line',
+      parsedL109?.ok === true && RT109.routesYaml(parsedL109.config) === rcL109.yaml && rcL109.yaml === paneL109 && canon109(parsedL109.config) === canon109(cfg109) &&
+      JSON.stringify(listsL109.collections) === JSON.stringify(cfg109.collections.map((c) => c.path)) && JSON.stringify(listsL109.routes) === JSON.stringify(cfg109.routes.map((r) => r.path)) &&
+      JSON.stringify(listsL109.templates) === JSON.stringify((ctL109 ?? []).map((r) => r.filename)) && problemsL109 === 0 && validL109 === W109.valid,
+      JSON.stringify({ paneL109, stored: rcL109?.yaml ?? null, listsL109, problemsL109, validL109 }))
+
+    // 109n — THE STORED STATES NO SHEET CAN MAKE, each planted through the service key on this step's own project, read on the
+    // page, and restored and read back beside its control (the main session's matrix audit, 2026-10-17): (a) a stored
+    // collection naming a template that is no project row — S9b, and any save carrying it refused, the item kept; (b) a
+    // stored config that is not an object — S9b's line 1, no cards; (c) a canvas with a design, planted AFTER the page
+    // loaded, so the SERVER's refusal is what speaks.
+    const rowN109 = async () => (await rc109())?.[0] ?? null
+    const plant109 = (body) => call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'PATCH', body: JSON.stringify(body) })
+    const reloaded109 = async (p) => {
+      await p.reload({ waitUntil: 'load' })
+      await p.locator('[data-valid], [data-problem]').first().waitFor({ state: 'visible', timeout: 30000 }).catch(() => {})
+      await p.waitForFunction(() => { const b = document.querySelector('header a[aria-label]'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')) }, null, { timeout: 20000 }).catch(() => {})
+    }
+    const s9b109 = (p) => p.evaluate(() => ({
+      problems: [...document.querySelectorAll('[data-problem]')].map((e) => e.textContent),
+      marked: [...document.querySelectorAll('pre[data-yaml] [data-line]')].filter((l) => l.className.includes('bg-danger-tint')).map((l) => Number(l.getAttribute('data-line'))),
+      valid: document.querySelector('[data-valid]')?.textContent ?? null,
+      failed: document.querySelector('[data-failed]')?.textContent ?? null,
+      lines: document.querySelectorAll('pre[data-yaml] [data-line]').length,
+    }))
+    const pill109 = (p, n) => p.locator('section[aria-label="routes.yaml"] span', { hasText: new RegExp(`^${escape109(W109.errors(n))}$`) }).count()
+    const soundN109 = { rc: await rowN109(), lists: await lists109(rp) }
+    const filesN109 = await files109()
+
+    // (a) a collection naming `custom-inflozo-walk-gone.hbs`, a file no project row holds
+    const gone109 = 'custom-inflozo-walk-gone.hbs'
+    const plantedA109 = { ...cfg109, collections: cfg109.collections.map((c, n) => (n === 0 ? { ...c, template: gone109 } : c)) }
+    const wantA109 = RT109.validateRoutes(plantedA109, { templates: filesN109 })
+    await plant109({ config: plantedA109, yaml: RT109.routesYaml(plantedA109) })
+    await reloaded109(rp)
+    const seenA109 = await s9b109(rp)
+    const pillA109 = await pill109(rp, 1)
+    check(`step 109n (a) — a stored collection naming ${gone109}, which no project row holds: S9b — "${W109.line(wantA109[0]?.line, wantA109[0]?.message)}", "${W109.errors(1)}" on the pane, that line marked and no Valid banner`,
+      !filesN109.includes(gone109) && wantA109.length === 1 && wantA109[0].message === RT109.ROUTE_WORDS.unknownTemplate(gone109) &&
+      JSON.stringify(seenA109.problems) === JSON.stringify([W109.line(wantA109[0].line, wantA109[0].message)]) && JSON.stringify(seenA109.marked) === JSON.stringify([wantA109[0].line]) && pillA109 === 1 && seenA109.valid === null,
+      JSON.stringify({ wantA109, seenA109, pillA109 }))
+    // …and a save carrying it is refused: ⋯ → Delete on a SOUND item (a route, else the second collection) — refused with
+    // that reason, the item still there once the transition settles, and routes_config untouched
+    const soundItem109 = cfg109.routes[0]?.path ?? cfg109.collections[1]?.path ?? null
+    const plantedRowA109 = await rowN109()
+    const sentA109 = posts109
+    if (soundItem109 !== null) await menuRow109(rp, soundItem109, W109.delete)
+    const failedA109 = await until109(rp, () => s9b109(rp), (v) => v.failed !== null, 60)
+    await rp.waitForTimeout(700)
+    const listsA109 = await lists109(rp)
+    const rowA109 = await rowN109()
+    check(`step 109n (a) — any save carrying it is refused: ⋯ → ${W109.delete} on the sound ${soundItem109} sends its one write, which says "${RT109.ROUTE_WORDS.unknownTemplate(gone109)}", keeps ${soundItem109} on the page, and leaves routes_config exactly as planted (config, yaml, updated_at)`,
+      soundItem109 !== null && posts109 - sentA109 >= 1 && failedA109.failed === RT109.ROUTE_WORDS.unknownTemplate(gone109) &&
+      [...listsA109.collections, ...listsA109.routes].includes(soundItem109) && JSON.stringify(rowA109) === JSON.stringify(plantedRowA109),
+      JSON.stringify({ soundItem109, sent: posts109 - sentA109, failed: failedA109.failed, listsA109, same: JSON.stringify(rowA109) === JSON.stringify(plantedRowA109) }))
+    // the control: the sound config restored — Valid, no problem line, the lists as before
+    await plant109({ config: soundN109.rc.config, yaml: soundN109.rc.yaml })
+    await reloaded109(rp)
+    const backA109 = await s9b109(rp)
+    check('step 109n (a) — the control: the sound config restored reads Valid on a reload, with no problem line, no marked line and the lists as before',
+      backA109.valid === W109.valid && backA109.problems.length === 0 && backA109.marked.length === 0 && JSON.stringify(await lists109(rp)) === JSON.stringify(soundN109.lists) && canon109((await rowN109())?.config) === canon109(soundN109.rc.config),
+      JSON.stringify({ backA109 }))
+
+    // (b) a stored config that is not an object at all
+    const hostileB109 = 'collections:'
+    const wantB109 = RT109.validateRoutes(hostileB109, { templates: filesN109 })
+    await plant109({ config: hostileB109 })
+    await reloaded109(rp)
+    const seenB109 = await s9b109(rp)
+    const listsB109 = await lists109(rp)
+    const pillB109 = await pill109(rp, 1)
+    check(`step 109n (b) — a stored config that is not an object: S9b's line 1, "${W109.line(1, RT109.ROUTE_WORDS.unreadable)}", "${W109.errors(1)}", no file in the pane and no card, route or template listed`,
+      wantB109.length === 1 && wantB109[0].line === 1 && wantB109[0].message === RT109.ROUTE_WORDS.unreadable &&
+      JSON.stringify(seenB109.problems) === JSON.stringify([W109.line(1, RT109.ROUTE_WORDS.unreadable)]) && seenB109.lines === 0 && pillB109 === 1 && seenB109.valid === null &&
+      listsB109.collections.length === 0 && listsB109.routes.length === 0 && listsB109.templates.length === 0,
+      JSON.stringify({ wantB109, seenB109, listsB109, pillB109 }))
+    await plant109({ config: soundN109.rc.config, yaml: soundN109.rc.yaml })
+    await reloaded109(rp)
+    const backB109 = await s9b109(rp)
+    check('step 109n (b) — the control: the sound config restored reads Valid again, the file in the pane and the lists as before',
+      backB109.valid === W109.valid && backB109.problems.length === 0 && backB109.lines > 0 && JSON.stringify(await lists109(rp)) === JSON.stringify(soundN109.lists),
+      JSON.stringify({ backB109 }))
+
+    // (c) a design planted on a template's canvas AFTER the page loaded: the page's own list says no design, so the press
+    // reaches the server, whose `deleteTemplate` refuses it with `hasDesign` — the row, the config and the list unchanged
+    const ctC109 = await ct109()
+    const victimC109 = ctC109?.[0] ?? null
+    const keyC109 = victimC109 ? `custom:${victimC109.filename}` : null
+    const plantC109 = keyC109 === null ? { status: 0 } : await call('/rest/v1', '/project_templates', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: keyC109, doc: { instances: [] } }) })
+    const usedC109 = victimC109 !== null && RT109.pathsUsing(cfg109, victimC109.filename).length > 0
+    const rowC109 = await rowN109()
+    const sentC109 = posts109
+    if (victimC109 !== null) {
+      await menuRow109(rp, victimC109.display_name, W109.delete)
+      if (usedC109 && await rp.locator(CONFIRM109).waitFor({ state: 'visible', timeout: 10000 }).then(() => true, () => false)) {
+        await rp.locator(`${CONFIRM109} button:not([data-cancel])`).click()
+      }
+    }
+    const failedC109 = await until109(rp, () => s9b109(rp), (v) => v.failed !== null, 60)
+    await rp.waitForTimeout(700)
+    const afterC109 = { ct: await ct109(), row: await rowN109(), lists: await lists109(rp) }
+    const unplantC109 = keyC109 === null ? { status: 0 } : await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyC109)}`, { method: 'DELETE' })
+    const leftC109 = keyC109 === null ? null : (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyC109)}&select=template_key`)).body
+    check(`step 109n (c) — a design on ${victimC109?.filename ?? '(no template)'}'s canvas, planted after the page loaded: ⋯ → ${W109.delete}${usedC109 ? ' (through its confirm)' : ''} sends its write and the server refuses it — "${victimC109 ? W109.hasDesign(victimC109.display_name) : ''}" — the template still listed, custom_templates and routes_config unchanged; the plant removed and read back gone`,
+      victimC109 !== null && plantC109.status === 201 && posts109 - sentC109 >= 1 && failedC109.failed === W109.hasDesign(victimC109.display_name) &&
+      afterC109.lists.templates.includes(victimC109.filename) && JSON.stringify(afterC109.ct) === JSON.stringify(ctC109) && JSON.stringify(afterC109.row) === JSON.stringify(rowC109) &&
+      [200, 204].includes(unplantC109.status) && Array.isArray(leftC109) && leftC109.length === 0,
+      JSON.stringify({ victim: victimC109?.filename ?? null, plant: plantC109.status, sent: posts109 - sentC109, failed: failedC109.failed, unplant: unplantC109.status, leftC109 }))
+    // (d) Ghost's default routing stored while templates exist: S9a, not S9d — the Templates list, Valid, and the pane's
+    // one line saying the site uses Ghost's default routing (no file to show) — and the control, the sound config back
+    await plant109({ config: RT109.EMPTY_ROUTES, yaml: null })
+    await reloaded109(rp)
+    const seenD109 = await rp.evaluate(() => ({
+      s9d: [...document.querySelectorAll('h2')].map((h) => h.textContent),
+      pane: document.querySelector('pre[data-yaml]')?.textContent?.trim() ?? null,
+      valid: document.querySelector('[data-valid]')?.textContent ?? null,
+    }))
+    const listsD109 = await lists109(rp)
+    const ctD109 = await ct109()
+    check(`step 109n (d) — Ghost's default routing stored while templates exist: S9a with the Templates list (every template row), "${W109.valid}", and the pane's one line "${W109.emptyTitle}" with no numbered line — never S9d`,
+      seenD109.valid === W109.valid && seenD109.pane === W109.emptyTitle && listsD109.collections.length === 0 && listsD109.routes.length === 0 &&
+      JSON.stringify(listsD109.templates) === JSON.stringify((ctD109 ?? []).map((r) => r.filename)) && (ctD109 ?? []).length > 0 && seenD109.s9d.includes(W109.templates) && !seenD109.s9d.includes(W109.emptyTitle),
+      JSON.stringify({ seenD109, listsD109 }))
+    await plant109({ config: soundN109.rc.config, yaml: soundN109.rc.yaml })
+    await reloaded109(rp)
+    check('step 109n (d) — the control: the sound config restored draws its file again and the lists as before',
+      (await s9b109(rp)).lines > 0 && JSON.stringify(await lists109(rp)) === JSON.stringify(soundN109.lists), JSON.stringify(await lists109(rp)))
+    // the control for (c) is 109m's own delete of that same template, which goes through once the design is gone
+    await rp.reload({ waitUntil: 'load' })
+    await rp.waitForFunction(() => { const b = document.querySelector('section[aria-labelledby="routes-collections"] > button'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')) }, null, { timeout: 20000 }).catch(() => {})
+
+    // 109m — cleaned up THROUGH THE PRODUCT to S9d: each template from its ⋯ (a used one through its confirm, taking its
+    // routes with it), then Tags back to its default and Save
+    for (let guard = (ctL109 ?? []).length + 2; guard > 0; guard--) {
+      const row = (await ct109())?.[0]
+      if (!row) break
+      const stored = RT109.parseRoutesConfig((await rc109())?.[0]?.config ?? {})
+      const used = stored.ok && RT109.pathsUsing(stored.config, row.filename).length > 0
+      await menuRow109(rp, row.display_name, W109.delete)
+      if (used && await rp.locator(CONFIRM109).waitFor({ state: 'visible', timeout: 10000 }).then(() => true, () => false)) {
+        await rp.locator(`${CONFIRM109} button:not([data-cancel])`).click()
+      }
+      await until109(rp, ct109, (rows) => Array.isArray(rows) && !rows.some((r) => r.id === row.id))
+      await until109(rp, () => lists109(rp), (l) => !l.templates.includes(row.filename))
+    }
+    await rp.locator('#routes-tag').fill(RT109.DEFAULT_TAXONOMIES.tag)
+    await rp.locator('section[aria-labelledby="routes-taxonomies"] button[type="submit"]').click()
+    const s9dEnd109 = await rp.locator('h2', { hasText: W109.emptyTitle }).waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)
+    const rcM109 = (await rc109())?.[0] ?? null
+    const parsedM109 = rcM109 ? RT109.parseRoutesConfig(rcM109.config) : null
+    const ctM109 = await ct109()
+    check('step 109m — cleaned up through the product to S9d: every template deleted from its ⋯ (a used one through its confirm, its routes with it) and Tags back to its default, saved — the page draws S9d, routes_config reads Ghost\'s default with yaml null, and custom_templates holds none of the step\'s rows',
+      s9dEnd109 && parsedM109?.ok === true && RT109.isDefaultRouting(parsedM109.config) && rcM109.yaml === null && Array.isArray(ctM109) && ctM109.length === 0,
+      JSON.stringify({ s9dEnd109, rcM109, ctM109 }))
+
+    // the project as this step found it — a written default leaves a row where there may have been none; a cleanup that
+    // failed above is finished here through the service key, after its check has already said so
+    if (Array.isArray(ctM109) && ctM109.length > 0) await call('/rest/v1', `/custom_templates?project_id=eq.${P}`, { method: 'DELETE' })
+    // 109n (c)'s plant, should its own removal have failed — that exact key and no other, never a canvas the seed designed
+    if (keyC109 !== null) await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyC109)}`, { method: 'DELETE' })
+    if (start109.rc?.length === 0) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'DELETE' })
+    else if (start109.rc?.[0]) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ config: start109.rc[0].config, yaml: start109.rc[0].yaml }) })
+    await rp.reload({ waitUntil: 'load' })
+    const s9dBack109 = await rp.locator('h2', { hasText: W109.emptyTitle }).waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false)
+    await handBack(rp)
+    await rContext.close()
+    const end109 = { rc: await rc109(), ct: await ct109(), projects: await ownProjects109() }
+    check('step 109 — the project is handed back as the step found it (its routing row, no template) and S9d after a reload, A owns the same projects as before the step, and the block\'s context recorded zero CSP violations',
+      end109.rc?.length === start109.rc?.length && canon109(end109.rc?.[0]?.config ?? null) === canon109(start109.rc?.[0]?.config ?? null) && (end109.rc?.[0]?.yaml ?? null) === (start109.rc?.[0]?.yaml ?? null) &&
+      Array.isArray(end109.ct) && end109.ct.length === 0 && s9dBack109 && JSON.stringify(end109.projects) === JSON.stringify(start109.projects) && csp109.length === 0,
+      JSON.stringify({ end109, s9dBack109, csp109: csp109.slice(0, 3) }))
+
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())
     await steady(await streamContext.newPage()).goto(await magic(emailA), { waitUntil: 'load' })
@@ -9503,6 +10211,9 @@ async function main() {
     const afterList = await users()
     const after = afterList ? afterList.length : null
     check('DELETE both accounts and the user count is unchanged', dels.length === 2 && dels.every((s) => s === 200) && after === before, `HTTP ${dels.join(', ')}, users ${before} → ${after ?? 'unreadable'}`)
+    // Story 7.16a — the projects too: A's seeded one and B's bare one go with their accounts (`on delete cascade`)
+    const projectsAfter = await projectCount()
+    check('…and the project count is unchanged — both accounts\' projects went with them', projectsBefore !== null && projectsAfter === projectsBefore, `projects ${projectsBefore ?? 'unreadable'} → ${projectsAfter ?? 'unreadable'}`)
     console.log(results.join('\n'))
     console.log(`\n${fails} FAIL, ${results.filter((r) => r.startsWith('PASS')).length} PASS · screenshots in ${OUT}`)
     process.exitCode = fails ? 1 : 0

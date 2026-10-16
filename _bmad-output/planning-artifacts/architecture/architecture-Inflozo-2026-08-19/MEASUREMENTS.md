@@ -3934,7 +3934,7 @@ The harness after the apply: `rest-refused` **PASSES** — A1's token read its o
 
 The medians after sit inside the medians before; the difference between runs is the network. `pg_stat_statements` on production: `select "public"."session_guard"()` — **mean 0.283 ms** over 518 calls (max 7.544 ms) and **0.268 ms** over 72 (max 3.277 ms), the two entries `pg_stat_statements` keeps for it — against the lock beat's 3.836 ms and the save RPC's 4.743 ms (cumulative means since 2026-09-04). One index lookup per request, as the Create planned.
 
-**(e) What it does not cover, and where it could quietly stop.** Storage and Realtime are not PostgREST: this app reaches Storage only through the service role and has no Realtime (R-191). And the wiring is a ROLE setting, not an object in any schema: the RLS gate's schema diff cannot see it, no schema dump carries it (`RESTORE-RUNBOOK.md` step 3b re-wires it), and a platform reset of `authenticator`'s settings would reopen DW-40 **silently**. `VERIFY-AT-BUILD.md` item 59 holds that; `rest-refused` re-executes it on production on every run, and `RLS-TEST.sql` asserts it from `pg_db_role_setting` in the container.
+**(e) What it does not cover, and where it could quietly stop.** Storage and Realtime are not PostgREST: this app reaches Storage only through the service role and has no Realtime (R-191). And the wiring is a ROLE setting, not an object in any schema: the RLS gate's schema diff cannot see it, no schema dump carries it (`RESTORE-RUNBOOK.md` step 3b re-wires it), and a platform reset of `authenticator`'s settings would reopen DW-40 **silently**. `VERIFY-AT-BUILD.md` item 63 *(59 until Story 7.16a's Dev, 2026-10-17 — DW-361)* holds that; `rest-refused` re-executes it on production on every run, and `RLS-TEST.sql` asserts it from `pg_db_role_setting` in the container.
 
 ## 57. The app's line to the key store verified against Supabase's own root — the pinned CA connects, anything else is refused · 2026-09-29
 
@@ -3954,7 +3954,7 @@ The medians after sit inside the medians before; the difference between runs is 
 
 `run-verify-ghost-admin.py --check` re-executes the first two rows on every run. The deployed half — the function on Vercel decrypting through the pinned line — is **Test connection** on a connected site, run at Review and in the owner's manual test.
 
-**(d) Where it could stop.** The pin is the root, not the leaf, so Supabase re-issuing the pooler's leaf under the same intermediate changes nothing. A new ROOT — before the pinned one expires on 2031-04-26, or at it — makes every decryption fail loudly as `credential_store_unavailable`, never trust silently. `VERIFY-AT-BUILD.md` item 60 carries the date.
+**(d) Where it could stop.** The pin is the root, not the leaf, so Supabase re-issuing the pooler's leaf under the same intermediate changes nothing. A new ROOT — before the pinned one expires on 2031-04-26, or at it — makes every decryption fail loudly as `credential_store_unavailable`, never trust silently. `VERIFY-AT-BUILD.md` item 64 *(60 until Story 7.16a's Dev, 2026-10-17 — DW-361)* carries the date.
 
 ## 58. Ghost Admin's own labels for the two paths Manage keys names — read in the admin bundles of 5.130.6 and 6.58.0 · 2026-09-29
 
@@ -7205,3 +7205,90 @@ One tree, gated 0/0 on both pinned gscans with an empty quality verdict before a
 - **The paywall partial wins whenever a template invokes any partial**, with no explicit `{{> "content-cta"}}`; with no partial invoked, Ghost's own call to action shows. §15b's library rule is corrected (its dated note).
 - **Stories 7.1's and 7.2's rows still hold** on the larger tree: user text inert, comments shipped to no visitor, `package.json` read whole, and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`.
 - **What this does NOT say.** The scaffold is Story 10.79's, nothing here deployed through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story 10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired) — Ghost 5's prefix glob, which makes `header` drop `header_v2` too, is read in source, and a Ghost 5 site with all four scripted cards designed linking a `cards.min.js` it never wrote is recorded for that pass. The cards were read on a draft page's preview through the stand-in `page.hbs`: no pilot prints a post's body before A25. What `main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Ghost's post labels sit on each post's own page only, never on a card in a list (Story 7.6's Question 1, ruled option 1), so no list was read for them; gscan's deprecation rules are the local gate's, not a page read. Two shapes the compiler writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard `author` alone, so `{{#is "index, tag, author"}}` and the `index` and `tag` contexts rest on `helpers/is.js` (split on `,`, OR) read in source, not on a page read. Story 7.4's dark rule was read as served, never drawn: which mode a visitor sees is the token block's, held in Chromium by the keyboard gate (`mode.spec.mjs`), and the strip's soundness is CI's (`cssFailures`), not a page read.
+
+## 82. The Routes Manager's `routes.yaml` — every file `routesYaml` writes accepted and read back as meant by Ghost 6.58.0's and 5.130.6's own route-settings code, and one emitted file on T1: a tag collection owning its posts two per page, a featured channel's feed, the index-first control and T1's own file restored byte for byte · T1 · 2026-10-16
+
+**Command.** `node tools/probe/record-routes.mjs --t1` — three `POST settings/routes/yaml/` to T1 (the emitted file, the index-first control, and T1's own file restored in a `finally` that encloses both and read back), and nothing else: no post, tag, theme or setting.
+
+**Ghost.** T1 `ghost6.inflozo.com` (`site/` version 6.58), active theme `casper`; the tag `craft` (9 published posts); the template `custom-inflozo-probe.hbs` is in no theme, so the collection and the channel render with Ghost's fallback `index` (F6).
+
+**The controls, each of which voids the run:** `limit: abc` refused by Ghost 6's own parser; a collection with no `permalink:` refused by both majors' own code; under T1's own routing `/` links one of the tag's posts and both segments are free; and the same file with Ghost's default index FIRST (its inverse filter dropped too — the first router whose filter matches owns a post, `lazy-url-service.js:300-303`, so with the inverse in place `/`'s position alone changes nothing) leaves the collection owning none of its posts and puts them back under `/`.
+
+**The file uploaded** (`routesYaml`, never hand-written):
+
+```yaml
+collections:
+  /inflozo-probe/:
+    permalink: /inflozo-probe/{slug}/
+    template: custom-inflozo-probe
+    filter: "tag:'craft'"
+    limit: 2
+  /:
+    permalink: /{slug}/
+    template: index
+    filter: "tag:-'craft'"
+
+routes:
+  /inflozo-probe-featured/:
+    controller: channel
+    template: custom-inflozo-probe
+    filter: "featured:true"
+
+taxonomies:
+  tag: /tag/{slug}/
+  author: /author/{slug}/
+```
+
+### (a) Ghost's own route-settings code, from the npm tarballs (read only)
+
+| Ghost · file | Row | Got | Held |
+|---|---|---|---|
+| [6.58.0] tarball | sha512 is the pin and the registry's dist.integrity; its own pins installed | `js-yaml@4.3.0 zod@4.4.3 @tryghost/tpl@2.3.8 @tryghost/errors@3.3.8` | yes |
+| [5.130.6] tarball | sha512 is the pin and the registry's dist.integrity; its own pins installed | `js-yaml@4.1.0 lodash@4.17.21 @tryghost/tpl@0.1.35 @tryghost/errors@1.3.8` | yes |
+| [6.58.0] one collection | accepted, and read back as meant | `order /tutorials/ / · filters 2 · limits [10] · routes 0` | yes |
+| [5.130.6] one collection | accepted, and read back as meant | `order /tutorials/ / · filters 2 · limits [10] · routes 0` | yes |
+| [6.58.0] collection order — two All collections | accepted, and read back as meant | `order /craft/ /field-notes/ / · filters 3 · limits [6] · routes 0` | yes |
+| [5.130.6] collection order — two All collections | accepted, and read back as meant | `order /craft/ /field-notes/ / · filters 3 · limits [6] · routes 0` | yes |
+| [6.58.0] the owner's test — an All collection before a one-condition one | accepted, and read back as meant | `order /craft/ /field-notes/ / · filters 3 · limits [6] · routes 0` | yes |
+| [5.130.6] the owner's test — an All collection before a one-condition one | accepted, and read back as meant | `order /craft/ /field-notes/ / · filters 3 · limits [6] · routes 0` | yes |
+| [6.58.0] Any of several, multi-value and none-of | accepted, and read back as meant | `order /notes/ /quiet/ / · filters 3 · limits [] · routes 0` | yes |
+| [5.130.6] Any of several, multi-value and none-of | accepted, and read back as meant | `order /notes/ /quiet/ / · filters 3 · limits [] · routes 0` | yes |
+| [6.58.0] every field, a channel, a static route and taxonomies | accepted, and read back as meant | `order /members-picks/ / · filters 4 · limits [12, 4] · routes 3` | yes |
+| [5.130.6] every field, a channel, a static route and taxonomies | accepted, and read back as meant | `order /members-picks/ / · filters 4 · limits [12, 4] · routes 3` | yes |
+| [6.58.0] routes only — the index collection carries no filter | accepted, and read back as meant | `order / · filters 0 · limits [] · routes 1` | yes |
+| [5.130.6] routes only — the index collection carries no filter | accepted, and read back as meant | `order / · filters 0 · limits [] · routes 1` | yes |
+| [6.58.0] a relative channel of every unit and operator | accepted, and read back as meant | `order / · filters 2 · limits [] · routes 2` | yes |
+| [5.130.6] a relative channel of every unit and operator | accepted, and read back as meant | `order / · filters 2 · limits [] · routes 2` | yes |
+| [6.58.0] CONTROL limit: abc in "one collection" | refused as Ghost's ValidationError naming limit | `ValidationError: The following definition "collections['/tutorials/'].limit" is invalid: limit must be a number or "all" (e.g. limit: 5), but the text "abc" was` | yes |
+| [5.130.6] RECORDED limit: abc in "one collection" | what this Ghost does with it (F3: Ghost 5 checks nothing) | `accepted, limit read as "abc"` | yes |
+| [6.58.0] CONTROL a collection with no permalink in "one collection" | refused as Ghost's ValidationError naming permalink | `ValidationError: The following definition "collections['/tutorials/']" is invalid: Please define a permalink route, e.g. permalink: /{slug}/.` | yes |
+| [5.130.6] CONTROL a collection with no permalink in "one collection" | refused as Ghost's ValidationError naming permalink | `ValidationError: The following definition "/tutorials/" is invalid: Please define a permalink route.` | yes |
+| [6.58.0] the T1 file | accepted, and read back as meant | `order /inflozo-probe/ / · filters 3 · limits [2] · routes 1` | yes |
+| [6.58.0] the T1 control file (index first, unfiltered) | accepted, and read back as meant | `order / /inflozo-probe/ · filters 2 · limits [2] · routes 1` | yes |
+| [5.130.6] the T1 file | accepted, and read back as meant | `order /inflozo-probe/ / · filters 3 · limits [2] · routes 1` | yes |
+| [5.130.6] the T1 control file (index first, unfiltered) | accepted, and read back as meant | `order / /inflozo-probe/ · filters 2 · limits [2] · routes 1` | yes |
+
+### (b) T1 `ghost6.inflozo.com` (6.58)
+
+| Step | Row | Got | Held |
+|---|---|---|---|
+| 1 settings/routes/yaml/ | T1's own routes.yaml read and saved before any write | `130 bytes, sha256 b2d675260a6071be… → /tmp/inflozo-routes-xrKzcM/original-routes.yaml` | yes |
+| 1 themes/ | the active theme carries no custom-inflozo-probe.hbs, so the collection and channel render with Ghost's fallback index (F6) | `casper — custom templates: none` | yes |
+| 1 / | CONTROL — under T1's own routing, / links at least one of tag craft's posts | `6 of 9` | yes |
+| 1 /inflozo-probe/ · /inflozo-probe-featured/rss/ | CONTROL — both segments are free before the upload | `HTTP 404 · HTTP 404` | yes |
+| 2 POST settings/routes/yaml/ | the emitted file uploads | `HTTP 200` | yes |
+| 3 posts/ (Admin url) | every one of tag craft's published posts lives at /inflozo-probe/<slug>/ | `/inflozo-probe/on-typography-and-restraint/ /inflozo-probe/notes-from-a-slow-rebuild/ /inflozo-probe/against-the-redesign/ …` | yes |
+| 3 /inflozo-probe/on-typography-and-restraint/ | the tagged post answers 200 at its new address | `HTTP 200` | yes |
+| 3 /inflozo-probe/ | page 1 answers 200 and links exactly 2 of the tag's posts (limit: 2) | `HTTP 200, 2 linked: /inflozo-probe/on-typography-and-restraint/ /inflozo-probe/notes-from-a-slow-rebuild/` | yes |
+| 3 /inflozo-probe/page/2/ | page 2 answers 200 and links the next 2, none of page 1's | `HTTP 200, 2 linked: /inflozo-probe/against-the-redesign/ /inflozo-probe/the-paragraph-is-the-unit/` | yes |
+| 3 / | / links none of the tag's posts, at either address | `0 linked` | yes |
+| 3 /inflozo-probe-featured/rss/ | the featured channel's feed serves RSS | `HTTP 200, application/rss+xml; charset=utf-8, 8 items` | yes |
+| 4 POST settings/routes/yaml/ | the index-first control uploads | `HTTP 200` | yes |
+| 4 posts/ (Admin url) | CONTROL — with the default index first, every tagged post is back at /<slug>/ | `/on-typography-and-restraint/ /notes-from-a-slow-rebuild/ /against-the-redesign/` | yes |
+| 4 /inflozo-probe/ | CONTROL — the collection answers 200 and lists none of its posts | `HTTP 200, 0 linked` | yes |
+| 4 / | CONTROL — / links the tag's posts again | `6 linked` | yes |
+| 5 settings/routes/yaml/ | T1's own routes.yaml restored and read back byte for byte | `130 bytes, sha256 b2d675260a6071be… (saved b2d675260a6071be…)` | yes |
+
+- **Order decides ownership; the inverse filter decides it too.** With the index last carrying the inverse, the tag's posts live under the collection, two per page, and `/` lists none; with Ghost's default index first, the collection owns nothing. With the inverse in place the index's position is a second guard, not the operative one.
+- **`limit:` is the route's own page size**, read by the collection over `posts_per_page`; Ghost 6 refuses a non-number, and Ghost 5's answer is recorded above.
+- **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238: T3 retired) — its half here is its own code, read locally. Nothing deployed through Inflozo's own path (Story 7.17 uploads); no theme template was drawn for a route (Story 7.16b); a relative date in a collection was not executed (R-246 keeps rolling dates to channels).

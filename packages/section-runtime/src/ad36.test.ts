@@ -14,6 +14,7 @@ import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/lib
 import { GSCAN_INERT, PAGE_NUMBER_HBS, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SITE_LOGO_ATTR, allowedMarks, escapeUserText, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { REFERENCE_PACK } from './reference.ts'
 import { ghostEntry, propSettingOf } from './custom-settings.ts'
+import { parseRoutesConfig, routesYaml } from './routes.ts'
 import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import { languageRefusal } from '@inflozo/library/languages'
@@ -764,3 +765,26 @@ test('AD-36 (7.12) · a {{plural}} label\'s override carrying markup is refused 
   assert.equal(overrideRefusal('nav.more', 'Mehr & mehr'), null)
 })
 
+
+test('AD-36 (7.16a) · routes.yaml is a sink: a hostile path, slug, template or limit never reaches it, and a sound config emits', () => {
+  // each value is parsed and rebuilt, never interpolated: the grammar refuses it, so `routesYaml` is never handed it
+  const col = (over: object) => ({ collections: [{ path: '/x/', filter: { match: 'any', conditions: [{ field: 'tag', op: 'any', values: ['x'] }] }, template: 'custom-x.hbs', ...over }] })
+  const hostile = [
+    col({ path: '/x/:\n  data: tag.y\n/' }), // a newline and a colon would open a YAML key of the visitor's choosing
+    col({ path: '/x/\n/y/' }),
+    col({ filter: { match: 'any', conditions: [{ field: 'tag', op: 'any', values: ["x'+tag:y"] }] } }), // closes the NQL quote
+    col({ filter: { match: 'any', conditions: [{ field: 'tag', op: 'any', values: ['x"\n  rss: false'] }] } }), // closes the YAML scalar
+    col({ template: '../x' }),
+    col({ template: 'custom-x.hbs\n  controller: channel' }),
+    col({ limit: '1\n  order: title' }),
+    col({ limit: 0 }),
+  ]
+  for (const raw of hostile) assert.equal(parseRoutesConfig(raw).ok, false, JSON.stringify(raw))
+  // the legitimate case: the same shape, sound, writes its values verbatim and nothing else
+  const sound = parseRoutesConfig({ ...col({ limit: 10 }), taxonomies: { tag: 'topic', author: 'author' } })
+  assert.ok(sound.ok)
+  const yaml = routesYaml(sound.config) as string
+  assert.match(yaml, /^ {4}filter: "tag:'x'"$/m)
+  assert.match(yaml, /^ {4}limit: 10$/m)
+  assert.doesNotMatch(yaml, /data:|order:|rss:|controller:/)
+})

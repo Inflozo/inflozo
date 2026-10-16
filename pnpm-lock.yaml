@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@tryghost/nql@0.12.7>@tryghost/nql-lang': 0.6.3
+
 importers:
 
   .:
@@ -141,12 +144,21 @@ importers:
         specifier: 4.4.3
         version: 4.4.3
     devDependencies:
+      '@tryghost/nql':
+        specifier: 0.13.4
+        version: 0.13.4(supports-color@10.2.2)
       '@types/node':
         specifier: 24.13.4
         version: 24.13.4
+      js-yaml:
+        specifier: 4.3.0
+        version: 4.3.0
       jsdom:
         specifier: 30.0.1
         version: 30.0.1
+      nql5:
+        specifier: npm:@tryghost/nql@0.12.7
+        version: '@tryghost/nql@0.12.7(supports-color@10.2.2)'
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -1914,20 +1926,35 @@ packages:
   '@tryghost/mongo-knex@0.10.1':
     resolution: {integrity: sha512-6LRA4zVpNvCrVrA9hOhs8N4iylAiafGssiKuD8yML/13xg2PvKw6dzOZj6hg0CKQwG7tVp8TA+7Nw3iDOzy/jQ==}
 
+  '@tryghost/mongo-knex@0.11.2':
+    resolution: {integrity: sha512-0l7L/J609p+12+rA15Muya1JoIeSfBxIUZRB2FfROtJ2U+FTEOzZ/c0HgxB8eAArJMW2VXECmLCAbNUwygRzfg==}
+
   '@tryghost/mongo-knex@0.9.5':
     resolution: {integrity: sha512-etO6Kz8a1dgMV6yapD2C2JsoeLrUjkIoIUdXrkV9ELHQsMjMhtI2SAUnMV9AcLhxv0P7h8UWWD2rlNBwo8JJig==}
 
   '@tryghost/mongo-utils@0.6.6':
     resolution: {integrity: sha512-CeWSgFKfUhFqD/dk22zEugawFdzVpa9avRgzFExbogiIFmNOfMOuD4G12/GUwFYOGjyCRAdQyKp8xgWSF97SRg==}
 
+  '@tryghost/nql-lang@0.6.3':
+    resolution: {integrity: sha512-NnSdAjN3TIcm8g1/QW/EKLeGKAYIQR6CQZULMt1mbV+lVWnNjrgZNZchg4a90CdC5e0owOps+rz+2dmpDEC/Iw==}
+
   '@tryghost/nql-lang@0.6.7':
     resolution: {integrity: sha512-quholb52aCqHWCskYp1ZC2hY/E+BD8XmZtgsrp1TcTHm0si9O3DBV9NGX2GB1GEE1V+QHFL24gdp0j98TrhFIQ==}
+
+  '@tryghost/nql-lang@0.7.0':
+    resolution: {integrity: sha512-S3P66JRL7kiKhYR7VnYC5S5xnkKqS+A5aW60nCGi/lraAhk/G5+xmPisztQiJWbHxM1odIagt2GpDMbKCDXT2w==}
 
   '@tryghost/nql@0.12.11':
     resolution: {integrity: sha512-8Cb10OpQWT+v0Xvfrov9IkBwzyPlARsjF1EIC8f3ET/JZD3G+ARoQ3GEBQ7XeW6YcUd7MIh3zqJTv5ST+aDjZA==}
 
+  '@tryghost/nql@0.12.7':
+    resolution: {integrity: sha512-O58X36ug6KZ8n0/a/mkhb0My3vDO/xbH3HlK+U0t6houwQN7xUEOsZxBq7E0w/h4dXXwQCFeW5mIfuRD3FHWIg==}
+
   '@tryghost/nql@0.13.1':
     resolution: {integrity: sha512-TQRDur1miWd2ORa3XOhtw8Na8AUj/8h+epNMDgiutOyAH/RTw+d+ksLndMnm/Z9MhnKg7kFy7398peKZ7nF8bQ==}
+
+  '@tryghost/nql@0.13.4':
+    resolution: {integrity: sha512-XE3lEpkqZM3ueOyKz5suwb2W4muWAM/YfYYpXHrnu0H7r46Xuo7FZm1s6Ga2Cut/STtuax5E6NfZ1AFv017X4w==}
 
   '@tryghost/pretty-cli@1.2.52':
     resolution: {integrity: sha512-+DGSSeKlNHQ/zqcs167W3W0D+HYz1TzAdK7TyzTBUj4Hodqxd70GfkdcWxLMNGdggKd4d59UxGZ/6n0vjVhVSA==}
@@ -3291,6 +3318,10 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
+  js-yaml@4.3.0:
+    resolution: {integrity: sha512-1td788aAnnZ5qs7V2QIRl1owjtYpbKt749Y3xauqQgwIIGF/xXWz1wMTEBx5O3LK3lXLVuqXPdPxj2BoFHaW9Q==}
+    hasBin: true
+
   js-yaml@4.3.2:
     resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
@@ -3488,6 +3519,10 @@ packages:
   lru-cache@11.5.2:
     resolution: {integrity: sha512-4pfM1Ff0x50o0tQwb5ucw/RzNyD0/YJME6IVcStalZuMWxdt3sR3huStTtxz4PUmvZfRguvDejasvQ2kifR11g==}
     engines: {node: 20 || >=22}
+
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -6363,6 +6398,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@tryghost/mongo-knex@0.11.2(supports-color@10.2.2)':
+    dependencies:
+      debug: 4.4.3(supports-color@10.2.2)
+      lodash: 4.18.1
+    transitivePeerDependencies:
+      - supports-color
+
   '@tryghost/mongo-knex@0.9.5(supports-color@10.2.2)':
     dependencies:
       debug: 4.4.3(supports-color@10.2.2)
@@ -6374,9 +6416,17 @@ snapshots:
     dependencies:
       lodash: 4.18.1
 
+  '@tryghost/nql-lang@0.6.3':
+    dependencies:
+      date-fns: 2.30.0
+
   '@tryghost/nql-lang@0.6.7':
     dependencies:
       date-fns: 2.30.0
+
+  '@tryghost/nql-lang@0.7.0':
+    dependencies:
+      luxon: 3.7.2
 
   '@tryghost/nql@0.12.11(supports-color@10.2.2)':
     dependencies:
@@ -6388,11 +6438,30 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@tryghost/nql@0.12.7(supports-color@10.2.2)':
+    dependencies:
+      '@tryghost/mongo-knex': 0.9.5(supports-color@10.2.2)
+      '@tryghost/mongo-utils': 0.6.6
+      '@tryghost/nql-lang': 0.6.3
+      mingo: 2.5.3
+    transitivePeerDependencies:
+      - supports-color
+
   '@tryghost/nql@0.13.1(supports-color@10.2.2)':
     dependencies:
       '@tryghost/mongo-knex': 0.10.1(supports-color@10.2.2)
       '@tryghost/mongo-utils': 0.6.6
       '@tryghost/nql-lang': 0.6.7
+      lodash: 4.18.1
+      mingo: 2.5.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@tryghost/nql@0.13.4(supports-color@10.2.2)':
+    dependencies:
+      '@tryghost/mongo-knex': 0.11.2(supports-color@10.2.2)
+      '@tryghost/mongo-utils': 0.6.6
+      '@tryghost/nql-lang': 0.7.0
       lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:
@@ -7953,6 +8022,10 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
+  js-yaml@4.3.0:
+    dependencies:
+      argparse: 2.0.1
+
   js-yaml@4.3.2:
     dependencies:
       argparse: 2.0.1
@@ -8125,6 +8198,8 @@ snapshots:
     optional: true
 
   lru-cache@11.5.2: {}
+
+  luxon@3.7.2: {}
 
   magic-string@0.30.21:
     dependencies:

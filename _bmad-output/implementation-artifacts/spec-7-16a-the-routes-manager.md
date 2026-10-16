@@ -2,7 +2,8 @@
 title: 'Story 7.16a — The Routes Manager'
 type: 'feature'
 created: '2026-10-16'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '2b88aec2ed349d755a3070eae0f30339f1c06315'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -206,7 +207,7 @@ Ghost that its source disproves (Design Notes' facts):
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `VERIFY-AT-BUILD.md` + every live citation -- DW-361, done first, before anything cites register 1's item 60.
+- [x] `VERIFY-AT-BUILD.md` + every live citation -- DW-361, done first, before anything cites register 1's item 60.
   - The second register's 59 and 60 become **63 and 64**, the next free numbers.
   - These citations are repointed: `MEASUREMENTS.md` §56 and §57, `epic-3-context.md:74`, `epic-5-context.md:47` and
     `epic-7-context.md:405`.
@@ -215,7 +216,7 @@ Ghost that its source disproves (Design Notes' facts):
   - DW-361 closes.
 
   -- standing rule 4: a number that names two things names neither.
-- [ ] `packages/section-runtime/src/routes.ts` + `routes.test.ts` -- the module, exactly as Design Notes' shape. The tests:
+- [x] `packages/section-runtime/src/routes.ts` + `routes.test.ts` -- the module, exactly as Design Notes' shape. The tests:
   - every I/O row;
   - every emitted filter parsed by Ghost 6.58.0's and 5.130.6's `@tryghost/nql`, **bare and as `(${f})+type:post`**,
     deep-equal to the intended Mongo JSON (relative terms checked by shape);
@@ -226,9 +227,9 @@ Ghost that its source disproves (Design Notes' facts):
   - each refusal behind a passing control.
 
   -- one source for the page, the actions and 7.16b, 7.17 and 7.18.
-- [ ] `packages/section-runtime/src/ad36.test.ts` -- `AD-36 (7.16a)`: a hostile path, slug, template and limit never
+- [x] `packages/section-runtime/src/ad36.test.ts` -- `AD-36 (7.16a)`: a hostile path, slug, template and limit never
   reach `routes.yaml`, and a sound config emits. -- AD-36 on arrival.
-- [ ] `tools/probe/record-routes.mjs` (+ its catalogue row in `tools/doc-audit.py`) -- MEASUREMENTS **§82**.
+- [x] `tools/probe/record-routes.mjs` (+ its catalogue row in `tools/doc-audit.py`) -- MEASUREMENTS **§82**.
   - **The local half** downloads the 6.58.0 and 5.130.6 tarballs (read-only) to a fresh temp dir. It runs Ghost's own
     `route-settings-parser.js` (6) and `validate.js` (5) over every fixture `routes.test.ts` writes. Each must be
     accepted. Control: a planted `limit: abc` refused on 6.
@@ -242,8 +243,8 @@ Ghost that its source disproves (Design Notes' facts):
 
   Only an explicit `--t1` writes (memory: recorders ignore `--help`). -- standing rule 1 for every Ghost claim the page
   makes ("Ghost will accept this routing").
-- [ ] `apps/web/lib/routes.ts` -- `ROUTES_WORDS` (every string in Design Notes' "Words"), `routesPath`. -- R-170.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/routes/{page.tsx,loading.tsx,actions.ts,routes-manager.tsx}` -- the
+- [x] `apps/web/lib/routes.ts` -- `ROUTES_WORDS` (every string in Design Notes' "Words"), `routesPath`. -- R-170.
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/routes/{page.tsx,loading.tsx,actions.ts,routes-manager.tsx}` -- the
   page.
   - **The page:**
     - The server reads the following in one `Promise.all`:
@@ -270,15 +271,15 @@ Ghost that its source disproves (Design Notes' facts):
     - `restoreTemplate`, the Undo, which re-inserts the row and writes the previous config.
 
   -- FR-I2, FR-I3.
-- [ ] `apps/web/lib/editor.ts`, `components/editor/template-switcher.tsx`, `components/kit/icons.tsx` -- the `ROUTES`
+- [x] `apps/web/lib/editor.ts`, `components/editor/template-switcher.tsx`, `components/kit/icons.tsx` -- the `ROUTES`
   segment and the "Manage routes" row. Re-point any keyboard journey that walks the switcher by row count (7.13's "End
   then ↑" precedent), and the walk's step 40 R-128 check: the rule and "Manage routes" arrive here, while
   "+ New template" and `FROM THE ROUTES MANAGER` stay absent until Story 7.16b. -- the entry S9a's caption names.
-- [ ] `apps/web/components/kit/toast.tsx`, `dialog.ts` -- `onAction`, and the 480px sheet if missing. -- Undo; S9c's
+- [x] `apps/web/components/kit/toast.tsx`, `dialog.ts` -- `onAction`, and the 480px sheet if missing. -- Undo; S9c's
   width.
-- [ ] `tools/probe/run-verify-editor.cjs` -- **step 109**, on production. It walks Design Notes' "Walk" list, keyboard
+- [x] `tools/probe/run-verify-editor.cjs` -- **step 109**, on production. It walks Design Notes' "Walk" list, keyboard
   only where the list says so, against `ROUTES_WORDS`, and cleans up to S9d. -- the page on real infrastructure (R-82).
-- [ ] Propagation (standing rules 3 and 7):
+- [x] Propagation (standing rules 3 and 7):
   - `EXPERIENCE.md:747` and A9 item 8's note get a dated correction: the index collection goes last, with the inverse
     filter. Cite §82.
   - `prd.md` FR-I2 gets a dated correction, per R-246: a relative date tracks the clock in a channel; in
@@ -293,7 +294,7 @@ Ghost that its source disproves (Design Notes' facts):
   - DW-344's entry records its second half.
   - `epic-7-context.md` gets sub-bullets.
   - Finish with a grep for "index collection first" and "always first".
-- [ ] `python3 tools/doc-audit.py --check` twice, then `pnpm check`.
+- [x] `python3 tools/doc-audit.py --check` twice, then `pnpm check`.
 
 **Acceptance Criteria:**
 - **Matches the frame (R-74).** Given the deployed page at 1440, when it is compared with `S9 Routes.dc.html`, then:
@@ -317,6 +318,29 @@ Ghost that its source disproves (Design Notes' facts):
   shows before the page (R-98).
 
 ## Spec Change Log
+
+- **Dev, 2026-10-17 — F4, executed with both pins (`routes.test.ts`, `@tryghost/nql` 0.13.4 and 0.12.7 over nql-lang 0.7.0
+  and 0.6.3).** `tag:[a+b]` parses on BOTH majors, to different queries (`$and` on 0.13.4, `$all` on 0.12.7), and throws
+  with one-letter values on both; a bare `tag:b` lexes, and only `(tag:b)` and `tag:[a,b]` fail — so routine call 3's
+  "unquoted one-letter values fail to lex" holds inside a group or a list. `tag:true` does parse to the boolean. NQL also
+  merges same-key `$ne`s into one `$nin` (the same meaning). Nothing built changes: the builder still never writes
+  `tag:[a+b]` and always quotes; `prd.md` FR-I2's note carries the executed wording.
+- **Dev, 2026-10-17 — the `--t1` control (task `record-routes.mjs`, step 4).** "The same file with the index FIRST" cannot
+  empty the collection: the index carries the inverse filter, so it matches none of the collection's posts wherever it
+  stands, and the first router WHOSE FILTER MATCHES owns a post (`lazy-url-service.js:300-303`). The recorder's control is
+  therefore the index first WITHOUT its filter — Ghost's default `/` block, what F1 executed — still one upload, still
+  restored. The owner's go (2026-10-17, in the Dev session, for the whole run: read, the emitted file, "the same file with the
+  home list FIRST", the restore) covered three `routes.yaml` uploads restored byte for byte; the control's content changed
+  and not its kind, so the main session ran it under that go and says so in the Dev report. The order is a second guard
+  behind the inverse filter, not the operative one.
+- **Dev, 2026-10-17 — an exact date means the whole day (the main session's matrix audit).** Ghost compares
+  `published_at` with a written date as that day's first moment (UTC), so `>` D took D's own posts and `<=` D dropped them.
+  `nodeOf` now writes "after" D as `>=` D+1 and "on or before" D as `<` D+1 (`dayAfter`); the stored model and every
+  word the page says stay as chosen. Held on both NQL pins, bare and wrapped, and on Ghost's own in-memory matcher with
+  posts at 00:00, 10:00 and 23:59 UTC on D and D+1; the recorder's local half re-run and passed.
+- **Dev, 2026-10-17 — Kit additions the build needed, each beside the drawing it is built from (R-247):** `Button` size 38
+  (S9c/S9e's footers), `dialog.ts`'s `routeSheet` (S9c's 480, content-box), `RadioCard` (S9e's card with a native radio
+  and its select inside), `ConditionRow`'s `wide`/`operators`/`value`, `Toast`'s `onAction`/`busy`, Tabler `route`.
 
 ## Design Notes
 
@@ -687,6 +711,67 @@ it."* Recorded as **R-248**. Dev corrects FR-I3's "(or its route)" and dates the
 - `python3 tools/doc-audit.py --check` -- PASS, twice.
 - `grep -rn --exclude=.env "index collection first\|always first" _bmad-output docs` -- only dated, corrected
   mentions.
+
+**Results (Dev, 2026-10-17, on the final tree; the main session re-ran every gate itself after the implementation
+subagent returned):**
+- `pnpm check` -- exit 0: every package's suite green (each prints its own count), `routes.test.ts`,
+  `apps/web/routes.test.ts`, `routes-jitless.test.ts`, the `AD-36 (7.16a)` pair, `editor.test.ts`, `busy.test.ts`.
+- `pnpm keyboard` -- the whole gate, exit 0, every journey passed, the seven re-pointed past the new last row included.
+- `pnpm build` -- exit 0, `/app/projects/[id]/routes` in the route table; `node tools/check-traces.mjs` -- every route
+  carries its files.
+- `node tools/probe/record-routes.mjs` (local half; network reads from `registry.npmjs.org` only) -- PASS. Both tarballs
+  matched their sha512 pins and the registry's `dist.integrity`; every fixture was accepted and read back as meant by
+  Ghost 6.58.0's `route-settings-parser.js` and 5.130.6's `validate.js`. The exact-dates fixture was added after the day
+  fix and re-run by the subagent. Controls: `limit: abc` refused by 6 (Ghost's ValidationError naming `limit`) and
+  accepted by 5 (F3, recorded); a missing `permalink:` refused by both.
+- **T1** `ghost6.inflozo.com` (6.58.0) -- `node tools/probe/record-routes.mjs --t1`, main session, on the owner's
+  in-session go (2026-10-17, "Go"). Keys read in-process by name: `GHOST6_URL` and `GHOST6_STAFF_ACCESS_TOKEN`. Every row
+  held:
+  - `GET settings/routes/yaml/` gave T1's own file (130 bytes), saved before any write.
+  - Controls first: active theme `casper` has no `custom-inflozo-probe.hbs`. `/` lists 6 of tag `craft`'s 9 posts.
+    `/inflozo-probe/` and `/inflozo-probe-featured/rss/` both answered 404.
+  - `POST settings/routes/yaml/` (the `routesYaml` file) answered 200. Every `craft` post's Admin `url` became
+    `/inflozo-probe/<slug>/` and answered 200 there. `/inflozo-probe/` answered 200 with exactly 2 posts (`limit: 2`),
+    `/inflozo-probe/page/2/` with the next 2. `/` linked none of them. `/inflozo-probe-featured/rss/` served
+    `application/rss+xml` with 8 items.
+  - The control upload (the index first, unfiltered, as the change log says) answered 200. The posts went back to
+    `/<slug>/`; the collection answered 200 listing none of them; `/` linked 6 again.
+  - The restore: T1's own bytes uploaded and read back, byte for byte (sha256 equal).
+  - Recorded as `MEASUREMENTS.md` §82.
+- `python3 tools/doc-audit.py --check` -- PASS, twice.
+- `grep -rn --exclude=.env "index collection first\|always first" _bmad-output docs` -- only `EXPERIENCE.md:747`'s
+  dated correction, VERIFY item 65, this spec and an unrelated prototype string ("the style-guide article always first").
+- **Not touched at Dev:** Supabase, Vercel, Resend, Dodo. The page's reads and writes reach production Supabase only once
+  deployed, so they are step 109 and the PostgREST checks below, at Review. No migration, so no Schema phase (R-99).
+
+**Matrix row → check** (`rt` = `packages/section-runtime/src/routes.test.ts`, `art` = `apps/web/routes.test.ts`,
+fixture = `routes-fixtures.ts`, judged by both NQL pins in `rt` and by the recorder; `109x` = the walk, at Review):
+
+| Row | Check |
+|---|---|
+| Default | rt "Default…"; 109a (S9d); 109m (back to S9d); 109n(d) (S9a with templates, the pane's default line) |
+| One collection | rt "One collection…"; fixture "one collection"; 109b; T1 §82 |
+| Collection order | rt "Collection order…"; fixtures "collection order…", "the owner's test…"; 109c (⌥↑); 109d (drag); T1 §82's control |
+| Single condition / Any | rt "Single condition / Any…"; rt "The parenthesis plant…" |
+| Multi-value | rt "Multi-value…"; fixture "Any of several, multi-value and none-of" |
+| Channel | rt "Channel…"; fixtures "every field…", "a relative channel…"; 109e; T1 §82 (the feed) |
+| Static route | rt "Static route…"; 109f |
+| Taxonomy | rt "Taxonomy…"; 109g |
+| Path collision | rt "Path collision…"; 109h (`/craft/`, control `/craft-picks/`) |
+| Reserved segment | rt "Reserved segment…"; 109h (`/page/`, control `/pages/`) |
+| Unknown template | rt "Unknown template…"; 109n(a), the refused save included |
+| Name collision | rt "Naming…"; art "Name collision: the database's 23505 backstop…" (the trigger's own message read from the migration; the unique constraint as control); 109h ("Landing" again, control "Landing 2") |
+| Bad name | rt "Naming…" (empty, no letters, reserved stem, over 60, a stem past 100 through NFKD); 109h ("Home", control "Home Page") |
+| Relative date in a collection | rt "Relative date in a collection…"; 109c (only exact dates offered) |
+| Hostile values | rt "Hostile values (AD-36)…", "The emitter asserts its scalar…"; `ad36.test.ts` "AD-36 (7.16a)…"; 109n(b) (stored → line 1) |
+| Parenthesis plant | rt "The parenthesis plant…" |
+| Delete collection, channel or route | 109i (delete, Undo); 109n(a) (a refused write says so and keeps the item); rt "Deleting…" |
+| Delete a used template | 109j (the confirm opens on Cancel, Cancel writes nothing, Delete, Undo restores both exactly). **Ceiling:** "row delete failed" has no production path — nothing blocks the owner's delete of a `custom_templates` row once the config write held (no trigger, constraint or foreign key; RLS allows it) — and the write order (`actions.ts`, config first) keeps the in-between state valid |
+| Delete a template with a design | 109n(c) (a `project_templates` `custom:<file>` plant after load, so the server's refusal speaks; removed after) |
+
+Also executed at Dev, not in the matrix: an exact date means the whole day (rt "An exact date means the whole day…",
+"dayAfter…", and both pins' matcher at 00:00, 10:00 and 23:59 UTC on D and D+1, with the unshifted `>'D'` as the
+control).
 
 **Review (R-82), on the deployed Dev head:**
 - `node tools/probe/run-verify-editor.cjs` against production -- step 109 PASS row by row, each refusal behind its

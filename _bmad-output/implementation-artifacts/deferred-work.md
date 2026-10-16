@@ -1160,7 +1160,7 @@ resolution: Story 5.24b's Schema phase (2026-09-29), R-223 — the database now 
   reading); a throwaway account's ended sign-in was refused on GET, HEAD, PATCH and a `security definer` RPC. The
   harness asserts it on every run; `RLS-TEST.sql`'s Story 5.24b block asserts the wiring and the definer's shape, its
   control (the migration withheld) aborting at the block. `MEASUREMENTS.md` §56 (with the cost: 0.28 ms a request,
-  the save and the lock check-in unchanged within their spread); `VERIFY-AT-BUILD.md` item 59, because a role setting
+  the save and the lock check-in unchanged within their spread); `VERIFY-AT-BUILD.md` item 59 *(item 63 since Story 7.16a's Dev, 2026-10-17 — DW-361)*, because a role setting
   can be reset under us.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry and carries the Schema phase R-223 gave this entry, pushed first and alone (R-99). *(Story 5.24a's
@@ -1456,7 +1456,7 @@ resolution: Story 5.24b's Dev (2026-09-29) — the far end is verified. `server/
   host name are both checked. Executed from the app's own driver against the pooler (`MEASUREMENTS.md` §57): the PEM
   read out of `db.ts` connects; `tls.rootCertificates[0]` is refused `SELF_SIGNED_CERT_IN_CHAIN`; HEAD's `ssl:
   'require'` connects to anything, which was the finding. `run-verify-ghost-admin.py --check` re-executes the pair
-  every run; `VERIFY-AT-BUILD.md` item 60 carries the expiry. The deployed half — Test connection through the pinned
+  every run; `VERIFY-AT-BUILD.md` item 60 *(item 64 since Story 7.16a's Dev, 2026-10-17 — DW-361)* carries the expiry. The deployed half — Test connection through the pinned
   line — is Review's and the owner's step 4.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
@@ -9412,7 +9412,11 @@ origin: Story 7.3's code review (2026-10-08): `emptiesCustomTemplate(key, doc)` 
 owner: Story 7.16b (Custom templates on the canvas), whose card carries this entry with its id. *(Story 7.16's Create,
   2026-10-16: was "Story 7.16 (The Routes Manager)" — R-245. Story 7.16a records the compiler half's answer for `/`:
   Inflozo always emits the index collection at `/`, last, so Home's context stays `index`; each custom collection's
-  and channel's own context is 7.16b's.)*
+  and channel's own context is 7.16b's.)* *(Story 7.16a's Dev, 2026-10-17: the second half is recorded — `routesYaml`
+  always emits the index collection at `/`, so Home's context stays `index` (`collection-router.js:21`, `routerName =
+  mainRoute === '/' ? 'index' : …`) and `PAGED_CONTEXTS` needs no change, said in its comment in `compile.ts`. The
+  editor half — D5f's routed sentence, and each custom collection's and channel's own context for the `noindex` guard —
+  stays Story 7.16b's, so the entry stays open.)*
 location: `apps/web/lib/editor.ts` (`emptiesCustomTemplate`) · `packages/theme-compiler/src/compile.ts`
   (`PAGED_CONTEXTS`, `routed`) · `epics.md` Story 7.16
 reason: Routes are 7.16's input; until it hands the editor the routed list and the compiler the collection names, both
@@ -9809,7 +9813,15 @@ reason: the export is Claude Design's (R-74) and only the owner runs it; nothing
 
 plain: The list of things to check when building numbers its items, and two of the numbers are used twice, so "item 59"
   or "item 60" can point at either of two different checks. Nothing breaks yet, but a later reader can follow the wrong one.
-status: open
+status: done 2026-10-17 (Story 7.16a)
+resolution: Story 7.16a's Dev (2026-10-17), done first, before anything cites the first register's 60 — the 2026-09-29
+  register's 59 (`pgrst.db_pre_request`) and 60 (the pinned Supabase root CA) are now **63** and **64**, the next free
+  numbers (61 and 62 exist), each row dated with its old number. Repointed, the old number beside the new:
+  `MEASUREMENTS.md` §56 and §57, `epic-3-context.md` and `epic-5-context.md`. Kept as written, with a dated note:
+  `spec-5-24b-…`'s Registers line and its DW-50 handshake line, `spec-7-15-…`'s Code Map, DW-40 and DW-50.
+  `epic-7-context.md` cites only the first register's 60 (`limit:`), which keeps its number. A repo-wide grep for the
+  old numbers (standing rule 7) left only mentions of the first register (`prd.md` §7.4's Template dropdown, the
+  decisions file's 2026-09-04 rows, `EXPERIENCE.md`'s S9 row) and of the duplication itself.
 severity: low
 origin: Story 7.15's Dev (2026-10-16), found while choosing item 62, and ledgered at its Review (the Blind Hunter layer):
   `VERIFY-AT-BUILD.md` carries 59 (Ghost Admin's Template dropdown) and 60 (a collection's `limit:`) in one register, and 59

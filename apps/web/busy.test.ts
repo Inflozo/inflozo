@@ -291,3 +291,19 @@ test('a skeleton draws the shape that is coming, never a spinner', () => {
     assert.match(source, /sr-only/, `${file}: a reader gets one sentence in place of the drawing.`)
   }
 })
+
+/* ── STORY 7.16a (R-98): the Template menu's "Manage routes" row starts a navigation, so it says "Opening…" while it runs,
+   and the page it opens has a skeleton of its own shape, standing over that route alone — the two halves of R-98 the
+   walks above cover generally, held here by name because the spec names them. */
+test('Story 7.16a: "Manage routes" says "Opening…" while its push runs, and routes/ has its own loading.tsx', () => {
+  const switcher = readFileSync('components/editor/template-switcher.tsx', 'utf8')
+  const row = switcher.slice(switcher.indexOf('data-manage-routes'), switcher.indexOf('data-manage-routes') + WINDOW * 2)
+  assert.match(row, /setRouting\(true\)/, 'the press marks the row busy')
+  assert.match(row, /router\.push\(`\$\{prefix\}\$\{routesPath\(projectId\)\}`\)/, 'and it pushes to the routes page')
+  assert.match(row, /routing \? ROUTES_WORDS\.opening/, 'its line says "Opening…" while it runs')
+  assert.match(row, /aria-busy=\{routing/, 'and it says so to a screen reader')
+  assert.equal(readFileSync('lib/routes.ts', 'utf8').match(/opening: '([^']+)'/)?.[1], 'Opening…')
+  const dir = join(AUTHED, 'projects', '[id]', 'routes')
+  assert.ok(readdirSync(dir).includes('loading.tsx'), 'the routes page has its own skeleton')
+  assert.ok(!readdirSync(dir).some((f) => statSync(join(dir, f)).isDirectory()), 'and no child route for it to stand over')
+})

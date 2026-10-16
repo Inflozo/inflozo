@@ -505,6 +505,23 @@ DOCS = [
   "negative control reads Ghost 6.58.0's npm tarball (read only) for Casper and Source — gscan 6.4.2 at v6 passes each "
   "0/0 (the control) and tools/quality-gate.mjs fails each on at least one rule, every finding located at its line in the "
   "theme's own source, their stylesheets' warnings counted and recorded, never gated."),
+ ('tools/probe/record-routes.mjs', 'tool', 'Routes recorder',
+  "Story 7.16a's recorder (standing rule 1, R-82): every routes.yaml the Routes Manager writes, read by Ghost's own "
+  "route-settings code, and one emitted file on T1. Node 24; it imports packages/section-runtime/src/routes.ts and "
+  "routes-fixtures.ts, so the files judged are routesYaml's own. THE LOCAL HALF (no flag, read only): Ghost 6.58.0's and "
+  "5.130.6's npm tarballs, each refused unless its sha512 is the pin and the registry's dist.integrity, into a fresh temp "
+  "dir with only the packages their route-settings files require at each Ghost's own pins (--ignore-scripts); every "
+  "ROUTES_FIXTURES file through 6's yaml-parser.js and route-settings-parser.js and 5's yaml-parser.js and validate.js, "
+  "each accepted AND read back as meant — collection order with / last, every filter the fixture's hand-written NQL, "
+  "limits, templates, routes, taxonomies. Controls: limit: abc refused by Ghost 6 (Ghost 5's answer recorded, F3), and a "
+  "collection with no permalink refused by both. THE --t1 HALF (the owner's go, the main session, T1 only — R-238): T1's "
+  "own routes.yaml saved before any write; a public tag with three published posts, one on / under T1's routing; then one "
+  "emitted file (a tag collection at limit 2, a featured channel, the index last) uploaded and read back anonymously — "
+  "each tagged post at /<collection>/<slug>/, two per page, none on /, the channel's /rss/ serving; the control (Ghost's "
+  "default index first, its inverse filter dropped) leaving the collection empty; T1's own file restored in a finally and "
+  "read back byte for byte. Writes T1 three routes.yaml uploads and nothing else, and MEASUREMENTS.md §82 alone after a "
+  "full pass, replacing an earlier §82 of its own. Keys are read from tools/probe/.env in-process and never printed; any "
+  "argument but --t1 prints its header and exits 2."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '

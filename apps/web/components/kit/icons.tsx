@@ -321,6 +321,17 @@ export const CanvasCustom = (p: IconProps) => (
   </Icon>
 )
 
+/** Tabler `route` — the Template menu's "Manage routes" row (Story 7.16a). D5b draws no such row and R-171's ruling gives
+ *  every row of that menu a Tabler glyph, so it is the same stated exception, emitted from `tabler.json`'s own `route`
+ *  outline and verified path for path, never retyped. */
+export const Route = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 19a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+    <path d="M19 7a2 2 0 1 0 0 -4a2 2 0 0 0 0 4" />
+    <path d="M11 19h5.5a3.5 3.5 0 0 0 0 -7h-8a3.5 3.5 0 0 1 0 -7h4.5" />
+  </Icon>
+)
+
 export const Check = (p: IconProps) => (
   <Icon {...p}>
     <polyline points="20 6 9 17 4 12" />

@@ -1483,7 +1483,7 @@ string gone and new string present — before the re-apply script touched anythi
 | 5 D8b caption | ✅ | "the 44px rules and the small-screen notice" |
 | 6 D5b template file | ✅ | "Landing · custom-landing.hbs"; D5f's own `custom-membership.hbs` stays, as it should |
 | 7 the storage row | ✅ | S12b and M5 at 1440: "Asset storage · 100 MB · 5 GB"; S12a is the Pro account view and prints Pro's figures |
-| 8 S9 YAML pane and custom routes | ✅ | the two rows gone; the YAML opens `collections: / : permalink /{slug}/ template index`, then /articles/, /tutorials/, /notes/; S9c "Posts per page is your theme setting — 12 right now"; "in the last 30 days" first |
+| 8 S9 YAML pane and custom routes | ✅ | the two rows gone; the YAML opens `collections: / : permalink /{slug}/ template index`, then /articles/, /tutorials/, /notes/; S9c "Posts per page is your theme setting — 12 right now"; "in the last 30 days" first *(Story 7.16a's Dev, 2026-10-17 — corrected: this verifies the export, not Ghost. The order it verifies is wrong: the first collection whose filter matches a post owns it, so the build emits `/` **last**, carrying the inverse of every collection's filter, and the frame's index-first YAML is the one behavioural difference between S9a and the build (`EXPERIENCE.md`'s S9 row; `MEASUREMENTS.md` §82, VERIFY-AT-BUILD item 65). "In the last 30 days" is offered in channels only (R-246).)* |
 | 9 B22 | ✅ | three whole-site proposals, a starter × pack each, one sentence from the data; the tag-template card gone; "You can run this again from New project → Redesign one of my sites" |
 | 10 B15 | ✅ | "Publisher or higher" |
 | 11 S8a′ · S11a | ✅ | "Download your theme — it installs on a self-hosted Ghost, or on a Ghost(Pro) plan that allows custom themes" |

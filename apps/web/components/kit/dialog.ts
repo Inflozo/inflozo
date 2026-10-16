@@ -46,6 +46,12 @@ export const panelSheet = `m-auto ${panelBox} flex-col backdrop:bg-scrim open:fl
    vocabulary — the paper, the corner, the shadow, the scrim — at the frames' own width (R-74). */
 export const wideSheet = 'm-auto box-content max-h-[calc(100dvh-76px)] w-[520px] max-w-[calc(100vw-76px)] flex-col gap-5 overflow-y-auto rounded-lg bg-surface p-[28px] shadow-modal backdrop:bg-scrim open:flex'
 
+/* STORY 7.16a — S9c's NEW COLLECTION and S9e's NEW ROUTE (`S9 Routes.dc.html:176`, `:240`): `width:480px; padding:26px;
+   border-radius:16px; gap:18px`, in CSS's content-box model like S7c's, so the box drawn is 532 — `box-content` keeps the
+   frame's 480 of content (R-247, "exactly"). The sheet's body scrolls inside a short window rather than the page. The same
+   vocabulary — paper, corner, `modal` shadow, scrim (`DESIGN.md:202`, `:436`). */
+export const routeSheet = 'm-auto box-content max-h-[calc(100dvh-72px)] w-[480px] max-w-[calc(100vw-72px)] flex-col gap-[18px] overflow-y-auto rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex'
+
 /** The wide sheet's title: S7c's 22px at the frame's own line height, a step above the confirm's. */
 export const wideTitle = 'font-display text-[22px] font-bold leading-[normal] tracking-[-0.01em] text-ink'
 

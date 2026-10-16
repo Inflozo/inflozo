@@ -11,7 +11,10 @@ import { greyedProps, reason, ring, type Greyed } from './greyed'
    control switched off is greyed with its reason, and that lives on the controls. */
 
 type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | 'danger' | 'danger-outline' | 'marigold'
-type Size = 44 | 36 | 32
+/* STORY 7.16a — a fourth height, a frame's: the sheets' footers in S9c/S9e (`S9 Routes.dc.html:226-227`, `:268-269`) and S7c
+   draw 38 high at radius 10 and 13px, the primary 0 20 across. Said HERE, as the weight is, so no caller overrides a
+   height through `className` and loses to the stylesheet's order. */
+type Size = 44 | 38 | 36 | 32
 /* The Kit's own weight is 600. A FRAME MAY DRAW A DIFFERENT ONE, and it must be said HERE rather
    than passed through `className`: both are plain utilities in the same `@layer utilities`, so the
    class attribute's order is irrelevant and the stylesheet's decides — Tailwind emits font-weights
@@ -36,6 +39,7 @@ export const variants: Record<Variant, string> = {
 
 const sizes: Record<Size, string> = {
   44: 'h-11 px-5 text-ui rounded',
+  38: 'h-[38px] px-5 text-ui-dense rounded-thumb',
   36: 'h-9 px-4 text-ui-dense rounded',
   32: 'h-8 px-[13px] text-control-label rounded-thumb',
 }

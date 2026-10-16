@@ -4,13 +4,14 @@ import { usePathname, useRouter } from 'next/navigation'
 import { memo, useEffect, useRef, useState, useTransition } from 'react'
 import {
   CanvasAuthor, CanvasCards, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPaywall, CanvasPost, CanvasPrivate, CanvasSignin,
-  CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff,
+  CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff, Route,
 } from '@/components/kit/icons'
 import { CountBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
 import { BAR_POPOVER, BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
 import { CARD_WORDS } from '@/lib/cards'
-import { CANVASES, canvasPath, isMembership, isSurface, SURFACES_HEADING, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasPath, isMembership, isSurface, routesPath, SURFACES_HEADING, type CanvasKey } from '@/lib/editor'
+import { ROUTES_WORDS } from '@/lib/routes'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { isApp } from '@/routing'
 
@@ -43,9 +44,11 @@ import { isApp } from '@/routing'
    Question 4 with a GLYPH rather than a word: Tabler's `circle-off` (`kit/icons.tsx`'s header carries the licence and
    the scope R-92 now excepts). Its word, "Empty", is a screen reader's since R-171, like "Auto-generated".
 
-   WHAT IT DOES NOT SHIP, AND WHY (R-128, the owner, 2026-09-18): the rule, the `FROM THE ROUTES MANAGER` heading and
-   the `+ New template` row are ABSENT until Story 7.16b, after Story 7.16a builds the Routes Manager for them to reach (R-245) — R-118's rule, a
-   second time. Nothing is greyed and nothing is captioned; an absent row asks no questions. The custom group would
+   WHAT IT DOES NOT SHIP, AND WHY (R-128, the owner, 2026-09-18): the `FROM THE ROUTES MANAGER` heading and the
+   `+ New template` row are ABSENT until Story 7.16b, after Story 7.16a builds the Routes Manager for them to reach (R-245) — R-118's rule, a
+   second time. *(Story 7.16a, 2026-10-17: the RULE arrives now, with the one row 7.16a adds below it — "Manage routes", the
+   entry S9a's caption names, "opens from Template dropdown → Manage routes" — a `BarMenuRow` like every other, its glyph
+   Tabler's `route` (R-171's rule for this menu's rows), saying "Opening…" while its navigation runs, R-98.)* Nothing is greyed and nothing is captioned; an absent row asks no questions. The custom group would
    have had nothing to list anyway: `custom_templates` has no writer.
 
    ABSENT, NOT GREYED, THE OTHER WAY TOO: a conditional canvas the project does not call for (Private) is simply not in
@@ -129,6 +132,8 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
   const [open, setOpen] = useState(false)
   /** the row pressed, so only IT says "Opening…" while the transition is in flight */
   const [going, setGoing] = useState<CanvasKey | null>(null)
+  /** Story 7.16a — "Manage routes" pressed, so it alone says "Opening…" while the push runs (R-98) */
+  const [routing, setRouting] = useState(false)
   /** D5b's Membership group, open as the frame draws it — the chevron is the control that shuts it */
   const [groupOpen, setGroupOpen] = useState(true)
   /** Story 5.20 — the Template surfaces group, in the Membership group's shape and with its own chevron */
@@ -137,10 +142,11 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
 
   // the transition settling is the new canvas being there; the menu closes then, not on the press (R-98)
   useEffect(() => {
-    if (pending || going === null) return
+    if (pending || (going === null && !routing)) return
     setGoing(null)
+    setRouting(false)
     if (menu.current?.matches(':popover-open')) menu.current.hidePopover()
-  }, [pending, going])
+  }, [pending, going, routing])
 
   const go = (key: CanvasKey) => {
     // the current canvas closes the menu and navigates nowhere
@@ -272,6 +278,24 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
           {group('editor-template-membership', 'Membership', membership, groupOpen, setGroupOpen)}
           {after.map(row)}
           {group('editor-template-surfaces', SURFACES_HEADING, surfaces, surfacesOpen, setSurfacesOpen)}
+          {/* Story 7.16a — the rule, then "Manage routes", last (S9a's caption). Not a canvas: the Routes Manager is its
+              own page (`lib/editor.ts`'s `ROUTES`), so the row navigates and is never the current one */}
+          <li aria-hidden className="flex flex-col py-1"><hr className="mx-2 h-px border-0 bg-line" /></li>
+          <li className="flex flex-col">
+            <BarMenuRow
+              data-manage-routes=""
+              aria-disabled={routing || undefined}
+              aria-busy={routing || undefined}
+              onClick={() => {
+                if (pending) return
+                setRouting(true)
+                start(() => router.push(`${prefix}${routesPath(projectId)}`))
+              }}
+              glyph={<Route size={15} className="shrink-0 text-ink-soft" />}
+              name={ROUTES_WORDS.manageRoutes}
+              caption={routing ? ROUTES_WORDS.opening : ROUTES_WORDS.manageRoutesCaption}
+            />
+          </li>
         </BarMenuCard>
       </div>
     </>

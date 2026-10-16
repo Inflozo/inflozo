@@ -6,7 +6,7 @@ import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
   CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isSiteFooter, isSurface, isUuid, landWithin, LOCK, siteSlot,
   lockPath, PAGE_TWO,
-  pageTwoKeyOf, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
+  pageTwoKeyOf, ROUTES, routesPath, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 import { COMPACT, isCompact, isPhone, PHONE } from './lib/floor.ts'
@@ -31,7 +31,7 @@ test('every canvas key round-trips through its address', () => {
 
 test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
   // Story 7.13 opened `cards` (Editor cards, the second template surface) — it is a canvas now, held below
-  for (const s of ['index', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK]) {
+  for (const s of ['index', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK, ROUTES]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)
@@ -46,6 +46,19 @@ test('R-131: `settings` is the scheme\'s one NON-CANVAS segment — a real route
   assert.ok(!Object.hasOwn(CANVASES, SETTINGS), '`settings` must never join CANVASES')
   // and it is not the address of any canvas, so the two can never collide
   for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.notEqual(canvasPath(ID, key), settingsPath(ID), key)
+})
+
+test('Story 7.16a: `routes` is a non-canvas segment too — the Routes Manager, never a canvas', () => {
+  assert.equal(routesPath(ID), `/projects/${ID}/${ROUTES}`)
+  assert.ok(isEditorPath(routesPath(ID)), 'it is under the project')
+  // (1) it resolves as no canvas — it compiles into no template and stores no `project_templates` row
+  assert.equal(canvasOfPath(routesPath(ID)), null)
+  assert.equal(canvasOfTemplateKey(ROUTES), null)
+  assert.equal(canvasFromSegment(ROUTES), null)
+  assert.ok(!Object.hasOwn(CANVASES, ROUTES), '`routes` must never join CANVASES')
+  // (2) it collides with no canvas path, nor with the other non-canvas segments
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.notEqual(canvasPath(ID, key), routesPath(ID), key)
+  for (const other of [settingsPath(ID), syncPath(ID), lockPath(ID)]) assert.notEqual(routesPath(ID), other)
 })
 
 test('Story 5.8: `sync` is the scheme\'s SECOND non-canvas segment — the same three assertions `settings` carries', () => {

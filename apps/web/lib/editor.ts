@@ -191,6 +191,14 @@ export const settingsPath = (projectId: string) => `/projects/${projectId}/${SET
 export const TRANSLATIONS = 'translations'
 export const translationsPath = (projectId: string) => `${settingsPath(projectId)}/${TRANSLATIONS}`
 
+/** STORY 7.16a — THE ROUTES MANAGER (FR-I2, FR-I3; `S9 Routes.dc.html`), `/projects/<id>/routes`, reached from the Template
+ *  menu's "Manage routes" (S9a's caption). R-131's pattern a fourth time: named here once, NOT in `CANVASES` — it compiles
+ *  into no `.hbs` (its `routes.yaml` is the routes page's, not a template's), stores no `project_templates` row and opens no
+ *  Layers panel. A STATIC sibling of `[template]`, so Next resolves it first and `canvasFromSegment` is never asked about it;
+ *  `editor.test.ts` carries the same three assertions it carries for `settings`, `sync` and `lock`. */
+export const ROUTES = 'routes'
+export const routesPath = (projectId: string) => `/projects/${projectId}/${ROUTES}`
+
 /** THE SCHEME'S SECOND NON-CANVAS SEGMENT (Story 5.8, R-131 applied a second time): the sync route AD-15's flush
  *  posts to — the one path the 3-minute timer, ⌘S and `fetch(..., { keepalive: true })` at tab close all take.
  *

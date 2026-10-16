@@ -100,7 +100,7 @@ Documents Dev edits (all `live` in `INDEX.md`):
   - The last ruling is R-243 at `:5298`. The new entry goes after it.
 - `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/`
   - `MEASUREMENTS.md:2315-2327`: §29b, "D15 held" and "opens the **sign-in** modal".
-  - `VERIFY-AT-BUILD.md:285`: family 31, "D15 held unchanged". Its numbered register ends at item 60 (`:310`).
+  - `VERIFY-AT-BUILD.md:285`: family 31, "D15 held unchanged". Its numbered register ends at item 60 (`:310`). *(Story 7.16a's Dev, 2026-10-17: that 60 is item 64 since DW-361.)*
   - `ARCHITECTURE-SPINE.md:337`: AD-27 names "the share destinations" among the states that need a home.
 - `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/research-section-js-libraries.md`
   - `:173`: the `share` row, "`navigator.share()` where present".

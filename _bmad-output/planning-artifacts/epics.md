@@ -3951,6 +3951,11 @@ warning toast**
 **And** **projects that never open the Routes Manager compile with Ghost's default routing, with no exception**:
 a designed membership page emits no route, so a project can ship fully designed signup, signin and member-home
 pages and still deploy with **no `routes.yaml` at all**
+**And** *(a reading from Story 7.16a's Dev, 2026-10-17, its routine call 17)* a project whose routing is back at Ghost's
+default — every collection, channel and route deleted, the taxonomies at `tag` and `author` — stores
+`routes_config.yaml` **null**, as a project that never opened the Routes Manager does; what a site that already carries
+a non-default `routes.yaml` (an earlier deploy's, or one its owner uploaded in Ghost) then receives — Ghost's default
+file, uploaded, or nothing — is this story's to decide
 **And** **two routes are emitted on demand and only when a design that links to them is actually placed** —
 all-tags and all-authors, because Ghost serves neither natively — so a site is never given a page it does not use
 **And** **`/search/` is never emitted by anyone**, `{{ghost_head exclude="search"}}` is never emitted, and **no
@@ -4038,7 +4043,10 @@ and the deploy check (Story 7.18) repeats the list as a warning — never a bloc
 with its untouched words (DW-145).
 **And** *(moved word for word from Story 7.16 by its Question 1, ruled option 1, owner, 2026-10-16 — R-245, R-195)* a YAML
 error is S9b's line-numbered error **blocking the deploy with the reason on the Ship button** — the error and its line
-read from Story 7.16a's `validateRoutes` over the project's stored routes.
+read from Story 7.16a's `validateRoutes` over the project's stored routes *(Story 7.16a's Dev, 2026-10-17, its
+routine call 11: `validateRoutes` is `@inflozo/section-runtime/routes`)* — and S9b's own line, word for word, **"Deploys
+are blocked until routing is valid — the Ship button explains why."**, which Story 7.16a leaves unshown because no Ship
+button exists before this story.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).

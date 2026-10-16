@@ -429,6 +429,35 @@ A user ships. The project compiles — purely, from what it is handed — into a
       from `tools/probe/record-routes.mjs` (Ghost's own parsers locally; one T1 upload and restore on the owner's go).
       The walk gains step 109. DW-361 renumbers register 2's 59/60 to 63/64. New VERIFY items 65 (order and ownership)
       and 66 (`author:`).
+  - **Story 7.16a's Dev (2026-10-17):** built, no migration.
+    - **The module.** `packages/section-runtime/src/routes.ts` (`@inflozo/section-runtime/routes`): `parseRoutesConfig` (zod,
+      strict — no `data:`, `order:`, `rss:`, `content_type`), `filterNql`, `readNql` (the builder's own grammar, refusing every
+      parenthesis fault on the emitted string), `indexNode`/`indexFilter`, `yamlLines`/`routesYaml` (null at Ghost's default),
+      `validateRoutes` (`{ line, at, message }[]`), `filterProblem`, `templateName`/`ghostLabel`/`nameSlug`, `routedOf`,
+      `pathsUsing`, `withoutTemplate`, `RESERVED_SEGMENTS` (each with its 6.58.0 source line) and `ROUTE_WORDS`. Test-only:
+      `@tryghost/nql` 0.13.4 and `nql5` (0.12.7, its nql-lang pinned to Ghost 5's 0.6.3 by `pnpm-workspace.yaml`'s override)
+      and `js-yaml` 4.3.0; `routes-fixtures.ts` is the one list `routes.test.ts` and the recorder judge.
+    - **The page.** `projects/[id]/routes/` (`page.tsx`, `loading.tsx`, `actions.ts` — `saveRoutes`, `createTemplate`,
+      `deleteTemplate`, `restoreTemplate` — and `routes-manager.tsx`), `apps/web/lib/routes.ts` (`ROUTES_WORDS`), `ROUTES` and
+      `routesPath` in `lib/editor.ts`, "Manage routes" last in the Template menu after a rule (Tabler `route`). Kit: `Toast`'s
+      `onAction`, `dialog.ts`'s `routeSheet` (S9c's 480, content-box), `Button` size 38, `RadioCard`, and `ConditionRow`'s
+      `wide`/`operators`/`value`.
+    - **Found (executed with both pins):** `tag:[a+b]` parses on BOTH majors, to `$and` on 0.13.4 and `$all` on 0.12.7, and
+      throws with one-letter values; a bare `tag:b` lexes and only `(tag:b)` and `tag:[a,b]` do not; NQL merges same-key
+      `$ne`s into one `$nin` (the same meaning). The spec's F4 sentence is the Create's; `prd.md` FR-I2 carries the executed one.
+    - **The recorder.** `tools/probe/record-routes.mjs`: its local half accepts every fixture on Ghost 6.58.0's
+      `route-settings-parser.js` and 5.130.6's `validate.js` (control: `limit: abc` refused on 6, accepted on 5 as F3 says).
+      Its `--t1` control uploads the index FIRST WITH ITS FILTER DROPPED (Ghost's default `/`), because an inverse-filtered
+      `/` owns none of a collection's posts wherever it stands — the spec's "the same file with the index first" would not
+      empty the collection. §82 is written by the main session's `--t1` run.
+    - **Propagated:** VERIFY-AT-BUILD items 63/64 (DW-361, done) and 65/66; `EXPERIENCE.md:747` and A9 item 8's note;
+      FR-I2 (R-246, `readNql`) and FR-I3 (R-248); Story 7.17's card (routine call 17) and 7.18's (S9b's Ship clause); DW-344's
+      second half. Walk step 109 is written for Review.
+    - **After the matrix audit (Dev, 2026-10-17):** an exact date means the whole day — `nodeOf` writes "after" D as `>=`
+      D+1 and "on or before" D as `<` D+1 (`dayAfter`, arithmetic only), the model and the page's words unchanged; the
+      boundary is UTC midnight (`ponytail:`). The `23505` mapping is one pure function, `templateWriteRefusal`
+      (`apps/web/lib/routes.ts`), tested against the trigger's own message. Step 109n plants three stored states on the
+      walk's project (an unknown template, a non-object config, a design planted after load), each beside its control.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.

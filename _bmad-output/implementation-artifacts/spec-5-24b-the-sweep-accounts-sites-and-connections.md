@@ -446,7 +446,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
       of it).
     - **After.** Lock check-in median 414.9 · 411.9 ms, save 526.2 · 535.5 ms — inside the spread before.
       `pg_stat_statements`: the guard's mean is 0.283 ms (518 calls) and 0.268 ms (72).
-    - **Registers.** `MEASUREMENTS.md` §56; `VERIFY-AT-BUILD.md` item 59; R-223's built target ticked; DW-40 and DW-293
+    - **Registers.** `MEASUREMENTS.md` §56; `VERIFY-AT-BUILD.md` item 59 *(item 63 since Story 7.16a's Dev, 2026-10-17 — DW-361)*; R-223's built target ticked; DW-40 and DW-293
       closed; and, propagated beyond the task list, `RESTORE-RUNBOOK.md` step 3b — no schema dump carries a role
       setting, so a restore re-wires the guard, or the RLS proof refuses it.
 
@@ -1030,7 +1030,7 @@ its control first, then restored byte-identical and green.
 - **DW-50 — the handshake, from the app's own driver** (`SUPABASE_DB_POOLER_URL` by name, `select 1` only): the PEM
   read out of `db.ts` → connected; `tls.rootCertificates[0]` → refused `SELF_SIGNED_CERT_IN_CHAIN`; HEAD's
   `ssl: 'require'` → connected (it verifies nothing). The chain, read with `openssl s_client -starttls postgres`: leaf
-  to 2030-03-11 ← intermediate to 2033-10-21 ← root to 2031-04-26. `MEASUREMENTS.md` §57; `VERIFY-AT-BUILD.md` item 60.
+  to 2030-03-11 ← intermediate to 2033-10-21 ← root to 2031-04-26. `MEASUREMENTS.md` §57; `VERIFY-AT-BUILD.md` item 60 *(item 64 since Story 7.16a's Dev, 2026-10-17 — DW-361)*.
   `run-verify-ghost-admin.py --check`: exit 0, with `pinned-ca` PASS and `brand-keys` reading the three keys on T1 and T3.
 - **DW-86 — Ghost's admin, read in the npm tarballs** of 5.130.6 and 6.58.0 (`registry.npmjs.org`, read-only): the
   labels and files as in the Code Map; both majors open Integrations on `built-in` (`useState`). `MEASUREMENTS.md` §58.
