@@ -255,7 +255,11 @@ def c_share_link(S, lib):
     So `#/share` works on Ghost 6 and is what Ghost documents. On Ghost 5 (portal 2.51) neither
     the regex nor the share page exists, so no Portal share link works there at all — which is
     why R-29 kept our own share list rather than Portal's. No spec was changed on the bad advice.
-    The check is kept as a no-op record so the correction is not lost."""
+    The check is kept as a no-op record so the correction is not lost.
+
+    (Story 7.15, 2026-10-16: ruling R-244 reversed R-29. Sharing is Ghost's own panel at `#/share`, and
+    Copy link and Email are the fallback where the site's Ghost has none, so `#/share` is now what every
+    share design draws. The check is unchanged.)"""
     return True, 'withdrawn — `#/share` is correct (my R-10 item 1 was wrong; see the docstring)'
 
 

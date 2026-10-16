@@ -2326,6 +2326,17 @@ Portal renders in a shadow-DOM iframe; theme CSS reaches nothing inside it.
 **Consequence:** D15's own site-wide ordered share list stands unchanged — it works on both majors,
 carries Mastodon, and can be themed.
 
+*Dated note, 2026-10-16 (Story 7.15's Dev; the facts above are left as recorded).* **"D15 held" is reversed by ruling
+R-244** (`reconcile-designs-decisions.md`, Story 7.15's Question 1, option 3): sharing is Ghost's own share panel, and
+FR-Q10's Copy link and Email are its fallback where the site's Ghost has none. The facts stand and their consequence
+changed. Three readings sharpen them, read in source at Story 7.15's Create and re-read at its Dev from the npm tarballs:
+**Portal 2.51.5 opens its *default* page** for `data-portal="share"` and `#/portal/share` — sign-in, sign-up or the account page, by the
+visitor's state (`src/App.js:915`, `:927-931`) — and **a bare `#/share` does nothing there**, because its link handling
+matches `#/portal` paths only (`:507`, `:1021`); **Ghost 6.58.0's own themes write `href="#/share"`** (Casper's
+`post.hbs:60`, Source's `post.hbs:44`); and **Ghost 6.58.0 loads Portal only while members, donations or
+recommendations are on** (`core/frontend/helpers/ghost_head.js:121-125`), so on a Ghost 6 site with all three off the
+trigger opens nothing. None of this was executed on T1; recording it is Story 10.82's (`VERIFY-AT-BUILD.md` item 62).
+
 ### 29c. Ghost's native search — the sealed frame and the index's real field set
 
 Executed while ruling out a vendored search engine (decision R-24).

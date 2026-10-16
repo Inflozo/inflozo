@@ -101,7 +101,7 @@ downward correction; the owner took the upward decision the same day — **no ca
 | **R-26** inline icons, Tabler | ✅ FR-F1, `Appendix C`, FR-Q7 · scope clarified by **R-92** (§A17): Tabler is the sections', the app chrome draws the frames' own paths | ⬜ |
 | **R-27** inline-token allow-list | ✅ FR-G3, FR-D4, FR-F6 · **amended for one token by R-182** (§A37): `{page_number}` is accepted by every text and richtext prop and declared by none, and every declared token now carries a one-line description (R-185) | ⬜ |
 | **R-28** member PII never rendered | ✅ FR-H6 | ⬜ A30, A16 |
-| **R-29** share destinations | ⬜ `Appendix B`, and **R11's FR still needs drafting** | ⬜ |
+| **R-29** share destinations *(reversed 2026-10-16 by R-244)* | ⬜ `Appendix B`, and **R11's FR still needs drafting** | ⬜ |
 
 **The two roster decisions R-24 delegated to the merge, and how they were taken.**
 
@@ -146,7 +146,7 @@ done, and how it was closed matters more than that it was:
   names it. A name in category prose is not a declaration — that is what stops every A1 design
   claiming `accordion` by association. A17, A18 and A19 declared only in prose until a corrective
   Claude Design pass gave all of their designs the per-design declaration on 2026-08-31.
-- **R-2, R-10, R-12 and R-29's normative halves, and R-29's undrafted FR.** Carried forward — they now
+- **R-2, R-10, R-12 and R-29's normative halves, and R-29's undrafted FR** *(R-29 reversed 2026-10-16 by R-244)*. Carried forward — they now
   sit alongside R-30 … R-38 as the propagation still owed before E4/E9.
 
 ### R-30 … R-38 · propagation ledger *(the owner ruled on 2026-08-31 that this lands before step 5)*
@@ -180,7 +180,7 @@ work list for that prompt.
 | **R-45b** A9-12 Filter | ✅ **CUT ENTIRELY** *(owner, 2026-09-01, superseding the 2026-08-31 reading "the filter comes off, the design stays")*. The reason the control had to go is unchanged — there are no Ghost routes for FAQ rows somebody typed, so `filter-strip` cannot degrade honestly there. What changed is what was left once it went: **a plain list of questions and answers, which is design 3 Open List.** Two designs separated by nothing is what FR-G5's uniqueness bar exists to prevent. Recorded in `export-roster.py`'s deletion table; **number 12 retired** | ✅ done in the 2026-09-01 export |
 | **R-2** the avatar with no photograph | ✅ **FR-H8** gains the avatar as its one designed substitute, with the reason the two forms differ: `{{split}}` is Ghost ≥ 6.5 and a **gscan error below**, so two initials are unreachable for Ghost-sourced data. Authored lists bake two at compile; Ghost authors get one letter in pure CSS | ⬜ A12, A17, A24, A1-6, P0·5 |
 | **R-10** thirteen corrections | ✅ **#13 → FR-Q1** (every "posts per page" links to Inflozo's Theme Settings, never Ghost Admin, which has no such setting). ✅ **#8 → `appendix-h1` §3.9**, and it needed executing first — see below. ~~#1~~ and ~~#7~~ are **withdrawn**, both refuted | ⬜ #2–#6, #9–#12 are per-category corrections |
-| **R-29** share destinations | ✅ **FR-Q10 is written — this is the FR "R11" has been waiting for.** One ordered site-wide list, stored as one row on the project doc (**AD-27**), emitted as real `<a href>` URLs that work with JS off. ✅ **`Appendix B`** gains `share` as a *Ghost fact and not a destination*: absent on Ghost 5, where the link opens the **sign-in** modal, and an unstylable shadow-DOM iframe where it exists | ⬜ A24-14, A25, A26-9 |
+| **R-29** share destinations | ✅ **FR-Q10 is written — this is the FR "R11" has been waiting for.** One ordered site-wide list, stored as one row on the project doc (**AD-27**), emitted as real `<a href>` URLs that work with JS off. ✅ **`Appendix B`** gains `share` as a *Ghost fact and not a destination*: absent on Ghost 5, where the link opens the **sign-in** modal, and an unstylable shadow-DOM iframe where it exists. *(Reversed 2026-10-16 by R-244: FR-Q10 is rewritten to Ghost's own share panel with Copy link and Email as its fallback, and Appendix B's `share` fact stands with its consequence changed.)* | ⬜ A24-14, A25, A26-9 |
 
 **R-10 #8 was not transcribed — it was executed, and the document it corrects had the reason backwards.**
 The ledger said *strike `%` from `comments.count_*`*; `appendix-h1` §3.9 said keep `%` **because the
@@ -439,7 +439,7 @@ probe family 36 shrinks to its oEmbed-provider half · AD-23 fixtures.
 
 | # | Correction | Citation |
 |---|---|---|
-| 1 | ~~A25 ×6: `#/share` → `#/portal/share`~~ **WITHDRAWN 2026-08-31 — this correction was wrong.** It was read off Portal's `getPageFromLinkPath`, which handles `/portal/*` paths. Portal **also** carries a dedicated top-level regex, tested *first*: `d = /^\/share\/?$/` → `if (r && d.test(r)) return {showPopup:!0, page:'share'}`. So **`#/share` works on Ghost 6 and is the form Ghost documents.** On Ghost 5 (portal 2.51) neither the regex nor the share page exists, so no Portal share link works there at all — which is why **R-29** kept our own share list. Caught by the A25 design session, which read Ghost's docs and said so rather than complying. **No spec was changed on the bad advice.** | Portal 2.69 source, verified 2026-08-31 |
+| 1 | ~~A25 ×6: `#/share` → `#/portal/share`~~ **WITHDRAWN 2026-08-31 — this correction was wrong.** It was read off Portal's `getPageFromLinkPath`, which handles `/portal/*` paths. Portal **also** carries a dedicated top-level regex, tested *first*: `d = /^\/share\/?$/` → `if (r && d.test(r)) return {showPopup:!0, page:'share'}`. So **`#/share` works on Ghost 6 and is the form Ghost documents.** On Ghost 5 (portal 2.51) neither the regex nor the share page exists, so no Portal share link works there at all — which is why **R-29** kept our own share list *(reversed 2026-10-16 by R-244: `#/share` is now the trigger every share design draws, and Copy link and Email answer Ghost 5)*. Caught by the A25 design session, which read Ghost's docs and said so rather than complying. **No spec was changed on the bad advice.** | Portal 2.69 source, verified 2026-08-31 |
 | 2 | A21: author handles route through `{{social_url type=…}}`, never printed raw as hrefs | A21 finding 7 |
 | 3 | A27: related filter becomes `primary_tag:{{primary_tag.slug}}+id:-{{id}}` inside `{{#post}}` — helpers do not execute inside filter strings | `appendix-b1 §5` |
 | 4 | A31: the gate `<form>` drops its `action` attribute so Ghost's own `?r=` survives (`@path` is not a Ghost global) | `private.hbs:80`, `lib/middleware.js:67` |
@@ -794,6 +794,9 @@ struck; the `mailto:` fallback stands) · P0·6 · FR-I6 · **R26 closes**.
 
 **R-29 · D15 stands, unchanged** *(closed by execution — §C-2)*
 **Ruled: one site-wide ordered share-destinations list, ours. Portal's share modal is not used.**
+*(Reversed 2026-10-16 by **R-244** — Story 7.15's Question 1, option 3: sharing is Ghost's own share panel, with Copy
+link and Email where the site's Ghost has none. The Portal facts below stand; the ruling drawn from them does not. Kept
+as ruled.)*
 
 Portal 2.69 (Ghost 6.58.0) has a real `share` page — `getPageFromLinkPath` returns
 `{page: 'share'}` — offering X, Facebook, LinkedIn, Threads and Bluesky in a fixed order inside a
@@ -1012,7 +1015,7 @@ question was answered before it was asked. Each is now confirmed and carries int
 | # | Ruling | Where it lands |
 |---|---|---|
 | **R-48** | **The width floor is EXCLUSIVE — and my first statement of it was wrong.** Three lines needs a column **above** 306 px; at exactly 306 it is already refused and falls to two. A17's shared floor and its disabled-control table had said so twice; my example sentence implied the opposite. **The session caught my error rather than copying it** | ✅ `Appendix C` |
-| **R-49** | **A24's Links row: four stands until the native-share redraw, and nothing inherits a maximum after it.** Two of the owner's own rulings touched one row and pointed different ways; the sequencing is the answer, and the redrawn row has one trigger so there is no count to cap | ⬜ A24 spec |
+| **R-49** | **A24's Links row: four stands until the native-share redraw, and nothing inherits a maximum after it.** Two of the owner's own rulings touched one row and pointed different ways; the sequencing is the answer, and the redrawn row has one trigger so there is no count to cap. *(Story 7.15, 2026-10-16: R-244 confirms the native-share ruling, and the redraw now happens before Story 10.82, from Story 7.15's prompt (DW-360), so the four-maximum has no subject after it.)* | ⬜ A24 spec |
 | **R-50** | **Greying has no "but this is a mode" exception.** The shared Data-group panels HID controls where the rule greys them; the panels change and every category inherits it. A user cannot see which of the two they are looking at, and a vanished control teaches nothing either way | ✅ `Appendix C` · ⬜ P0·5, P0·3 |
 | **R-51** | **Image focus carries BOTH axes** — Centre · Top · Bottom **and** Centre · Left · Right. A wide photograph cropped tall loses its sides and a vertical-only control has nothing to say about which side survives | ✅ `Appendix C` · ⬜ A13 and every cropping design |
 | **R-52** | **No sort module, and that is a decision rather than an omission.** A gallery shows the order its owner arranged. A module for one design would also have to differ from its own no-JS state, which is a cost with no gain | ✅ research `§2` |
@@ -5309,6 +5312,44 @@ ruled **option 1** (owner, 2026-10-05): *"1. Show the ticked project first in th
   `brand-panel.tsx`, held by the keyboard gate's `6.6 · DW-70 ·` (red with the sort removed; executed 2026-10-05) · ✅
   approved before and after by the owner in the Review session (*"1. Approve"*).
 
+**R-244 — sharing is Ghost's own share panel; R-29 is reversed.** Story 7.15's Create, Question 1, ruled **option 3**
+(owner, 2026-10-16) — the option worded *"Ghost's own popup (1 September), built with Story 10.82"*.
+
+- **Why it was a question.** Two of the owner's rulings contradicted each other (standing rule 6). **R-29** (2026-08-31):
+  *"one site-wide ordered share-destinations list, ours. Portal's share modal is not used."* FR-Q10 and Story 7.15's
+  card were written from it. **The owner's ruling of 2026-09-01:** *"native Ghost Share only, everywhere; on an older
+  Ghost the share components grey out and show Copy link and Email alone, with no other social sharing"* — recorded only
+  in the export (`A24 Post Headers - Spec.md:1634-1667`, `A26 Post Footers - Spec.md:1351`, `:1589`, `:1638`,
+  `A25 Post Content Layouts - Spec.md:1371-1398`), and treated as live by R-49.
+- **Why this way.** It is the owner's later ruling, and the export is already drawn to it: A25's share designs and A26's
+  draw one trigger, and A26 #9 draws the four states (trigger · Email and Copy link · copied · Email alone). Only A24 #14
+  still draws the list, and its own dated panel names it outstanding (`A24-14 Share Row.dc.html:307-310`).
+- **The rule.** FR-Q10 as rewritten (`prd.md`): every design that offers sharing draws **a label and one Share trigger**
+  — `href="#/share"`, the form Ghost's own themes use — which opens **Ghost's own share panel**; **where the site's Ghost
+  has no share panel, the trigger is replaced by Copy link and Email**, chosen by **a capability flag** the app sets from
+  the connected site's Ghost ⚑; the project's one sharing setting is **two switches, Copy link and Email — the fallback
+  pair only**, **stored once on the project, never per section**, and both off renders **no share affordance at all**;
+  Email is a real `mailto:` link built at compile from the post's canonical URL and title; Copy link is the `share`
+  module's only job; **with JavaScript off, the block draws Email alone**. `data-portal="share"` stays refused
+  (`PORTAL_PAGE`), because on Ghost 5 it opens Portal's default page. The ⚑ — the flag decided at compile or at run time,
+  and what a site whose Ghost does not load Portal draws — is Story 10.82's to put to the owner (R-83).
+- **What it gives up.** **Styling** (Ghost's panel is a shadow-DOM iframe no theme reaches), **order** (Ghost's fixed
+  X · Facebook · LinkedIn · Threads · Bluesky), **Mastodon** (not in the panel), and **the trigger without JavaScript**
+  (with scripts off only Email draws). `MEASUREMENTS.md` §29b.
+- **Declined.** Option 1, R-29's own list built with Story 10.82; option 2, R-29's list built now in Theme settings.
+- **Where it is built.** Story 10.82 first — A24 #14 to its frame as the owner redraws it from Story 7.15's prompt (DW-360),
+  and Theme settings' two switches extrapolated from D6a's Credits row (R-74) — then Story 10.23 (`share.js` first, for
+  A9 #7's copy button) and every A25 and A26 story whose designs offer sharing; Epic 10's preamble lists each clause.
+- Targets: ✅ this entry · ✅ R-29's entry, its landing row and R-49 (dated notes) · ✅ Story 7.15's spec — Question 1
+  and the A24 #14 redraw prompt · ✅ `prd.md` FR-Q10 (rewritten), Appendix B's Portal paragraph and FR-G4/FR-G7's share
+  clauses (dated notes) · ✅ `epics.md` — the FR list, the coverage map, Story 7.15's card (struck, dated), Stories 10.82,
+  10.23 and 10.83–10.89, and Epic 10's preamble (R-195) · ✅ `MEASUREMENTS.md` §29b · ✅ `VERIFY-AT-BUILD.md` family 31
+  and item 62 · ✅ `ARCHITECTURE-SPINE.md` AD-27 · ✅ research §2.1 row 21, §3.1's and §7's `share` rows · ✅
+  `EXPERIENCE.md`'s Theme Settings row · ✅ `vocabulary.ts`' `PORTAL_PAGE` comment · ✅ `tools/verify-design-pass.py`'s
+  `c_share_link` · ✅ DW-359, DW-360 · ✅ `epic-7-context.md` · ✅ `HANDOVER.md` and `build-sequence.md` (dated notes) ·
+  ⬜ A24 #14 redrawn by the owner in Claude Design (DW-360) · ⬜ Story 10.82 · ⬜ Story 10.23 · ⬜ Stories 10.83, 10.84
+  and 10.85 (A25) · ⬜ Stories 10.86, 10.87, 10.88 and 10.89 (A26) · ⬜ item 62's facts recorded on T1 (Story 10.82).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
@@ -5324,7 +5365,7 @@ found one unbuildable or colliding. Four qualified. Each is marked reversed in
 
 Confirmed unchanged by this session, having been challenged: **D2** (the precedent R-5 follows),
 **D5** (its compile shape now named — R-20), **D6** (R-18), **D11** (its pattern generalised — R-16),
-**D15** (R-29), **D19** (R-15), **D31**, **D39**.
+**D15** (R-29 — *both reversed 2026-10-16 by R-244*), **D19** (R-15), **D31**, **D39**.
 
 ---
 

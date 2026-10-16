@@ -2,7 +2,8 @@
 title: 'Story 7.15 — Share destinations: one ordered, site-wide list'
 type: 'feature'
 created: '2026-10-16'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '899886c7fefa904b7e4f9021ceed805d9e36a77c'
 owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -142,14 +143,14 @@ Read-only evidence:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- the PRD decides behaviour, so the ruling
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- the PRD decides behaviour, so the ruling
   lands here first.
   - **FR-Q10.** Replace it with Design Notes' rewritten text. Add a dated italic note naming Question 1's ruling, the
     reversal of R-29, and the new ruling entry.
   - **Appendix B (`:941`).** Add a dated note: share designs open Ghost's share page with `href="#/share"` (Ghost's own
     form — Casper and Source 6.58.0, `post.hbs:60` / `:44`) wherever the site's Ghost has one. `share` is still not a
     Link Picker destination, and `data-portal="share"` stays refused.
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- this file is
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- this file is
   where rulings are reconciled.
   - **A new ruling, numbered after the last one in the file.** It records:
     - "Sharing is Ghost's own share panel; R-29 is reversed" — Question 1's ruling, quoting the 1 September words and
@@ -161,7 +162,7 @@ Read-only evidence:
   - **Dated notes.**
     - On R-29 (`:795`) and its landing row (`:183`): reversed by the new ruling.
     - On R-49 (`:1015`): the redraw now happens before Story 10.82, so the four-maximum has no subject after it.
-- [ ] `_bmad-output/planning-artifacts/epics.md` -- R-195's word-for-word moves, and R-118, because no share design
+- [x] `_bmad-output/planning-artifacts/epics.md` -- R-195's word-for-word moves, and R-118, because no share design
   exists before 10.82.
   - **The FR list (`:170`).** Rewrite the line to the new FR-Q10.
   - **Story 7.15's card.**
@@ -183,7 +184,7 @@ Read-only evidence:
   - **Epic 10's preamble.** Add a "Given owners by Story 7.15's Create" numbered list after 7.14's block, in the same
     form.
   - **The coverage map.** Change `FR-Q10 | E7` to `FR-Q10 | **E10** (Story 10.82 and the share designs, from 7.15)`.
-- [ ] `_bmad-output/implementation-artifacts/spec-7-15-share-destinations-one-ordered-site-wide-list.md` -- the
+- [x] `_bmad-output/implementation-artifacts/spec-7-15-share-destinations-one-ordered-site-wide-list.md` -- the
   redrawn frame must exist before Story 10.82 can match it (R-74), and the owner runs it.
   - Add `## Claude Design prompt — A24 #14 Share Row, the native-share redraw` after `## Questions for the owner`.
   - The prompt names the export's own files (`A24-14 Share Row.dc.html`, `A24 Post Headers - Spec.md`,
@@ -191,38 +192,38 @@ Read-only evidence:
   - It asks for exactly "What the redraw carries" (`A24 spec:1663-1667`), A26 #9's four states as the pattern, and no
     design total.
   - It carries the zero-width-entity warning for literal Handlebars.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` -- the facts
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` -- the facts
   stand; their consequence changed. On §29b, add a dated note:
   - "D15 held" is reversed by the new ruling;
   - Portal 2.51.5 opens its *default* page — sign-in, sign-up or the account page (`App.js:915`, `:927-931`) — and a
     bare `#/share` does nothing;
   - Ghost 6.58.0's own themes use `href="#/share"`;
   - Ghost 6.58.0 loads Portal only while members, donations or recommendations are on (`ghost_head.js:121-125`).
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` -- standing
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` -- standing
   rule 1: the flag rests on facts not yet executed.
   - On family 31 (`:285`), add a dated note.
   - Add the next numbered item: "which Ghost version first pins a Portal with the share page, and when Portal is not
     loaded". Owner: Story 10.82, recorded on T1.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` — on AD-27's
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` — on AD-27's
   `:337` rule, add a dated note: "the share destinations" are now the fallback pair, stored by Story 10.82 -- propagate.
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/research-section-js-libraries.md` — on `:173`, add a
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/research-section-js-libraries.md` — on `:173`, add a
   dated note: `share` copies a link and nothing else, there is no `navigator.share()`, and the trigger is Portal's. On
   `:102`, point at the DW row -- propagate.
-- [ ] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` — on `:174`'s Theme Settings row,
+- [x] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` — on `:174`'s Theme Settings row,
   add a dated note that the sharing fallback switches arrive with Story 10.82 -- propagate.
-- [ ] `packages/library/src/vocabulary.ts` — on `:351`, replace "D15 rules `share` out" with a dated reason. The
+- [x] `packages/library/src/vocabulary.ts` — on `:351`, replace "D15 rules `share` out" with a dated reason. The
   refusal stays because `data-portal="share"` opens Portal's default page on Ghost 5, and share designs use
   `href="#/share"` (Story 10.82) -- standing rule 3.
-- [ ] `tools/verify-design-pass.py` — in `c_share_link`'s docstring, add a dated line that the new ruling reversed R-29
+- [x] `tools/verify-design-pass.py` — in `c_share_link`'s docstring, add a dated line that the new ruling reversed R-29
   -- standing rule 7.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- standing rule 3. Add two DW rows:
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- standing rule 3. Add two DW rows:
   - `tools/derive-module-reach.py`'s `share` misreads (A10-9, A10-12, A9-7) and research `:102`. Owner: Story 10.23's
     Create.
   - The A24 #14 redraw, run by the owner from this spec's prompt. Owner: Story 10.82's Create, which does not plan
     against the old frame.
-- [ ] `_bmad-output/implementation-artifacts/epic-7-context.md` — add a "Story 7.15's Dev" sub-bullet under Cards,
+- [x] `_bmad-output/implementation-artifacts/epic-7-context.md` — add a "Story 7.15's Dev" sub-bullet under Cards,
   treatments and share destinations.
-- [ ] Standing rule 7 — grep live documents and code comments for `R-29`, `D15` (share sense), "own share list",
+- [x] Standing rule 7 — grep live documents and code comments for `R-29`, `D15` (share sense), "own share list",
   "Portal share page is not used" and "ordered, site-wide list". Every hit is dated or rewritten.
 
 **Acceptance Criteria:**
@@ -358,6 +359,36 @@ Read-only evidence:
 - Grep live documents and comments for `R-29`, "own share list" and "Portal share page is not used" -- expected: every
   hit carries the dated reversal.
 
+**Dev results (2026-10-16, Node 24.18.1, at baseline `899886c7` plus this diff):**
+- `python3 tools/doc-audit.py --check`, twice -- PASS (0 warnings) both times. An earlier run regenerated
+  `STORY-BOARD.html` and `CATEGORY-PROMPTS.html`.
+- `pnpm check` -- exit 0. library 275/275, ghost-shim 47/47, section-runtime 384/384, apps/web 774/774, theme-compiler
+  210/210, the render-matrix case suite 13/13, `check-snapshots: PASS` and `derive-module-reach.py --check` passing (each
+  count is the run's own). `busy.test.ts` is untouched.
+- `python3 tools/verify-design-pass.py` -- exit 0, "every structural check passes". Its output is byte-identical (`cmp`)
+  to the baseline copy of the script run against the same tree.
+- `git diff --name-only 899886c7` -- documents, `vocabulary.ts` (comment), `verify-design-pass.py` (docstring),
+  `sprint-status.yaml` and two generated pages. No export, `supabase/` or `apps/` path. The second generated page is
+  `CATEGORY-PROMPTS.html`, which `tools/category-prompts.py` builds from research §7: §7's `share` row gained its dated
+  note, so every category prompt carries it.
+- The clause grep -- a script checked every bolded phrase in Design Notes' table against each story it names (10.82,
+  10.23, 10.83–10.89) and against Epic 10's new preamble list. All were found.
+- The standing-rule-7 grep -- every live hit for `R-29`, "own share list", "Portal share page is not used" and
+  "ordered, site-wide list" carries the dated reversal, either on its line or in the note that follows its heading. Three
+  kinds of hit are left as they are: Story 7.15's own card title and sprint key, which the board reads; another story's
+  finished spec (`spec-7-6-ghost-correct-markup.md:443`); and historical text that names R-29 or D15 without claiming
+  it holds (`record` documents, the party memlog, `design-patch-prompts-2.py`, INDEX row 108's `doc-audit.py` string).
+- Two calls made at Dev:
+  - **VERIFY-AT-BUILD's new item is 62.** The Code Map's "ends at item 60" was wrong: 61 exists, and 59 and 60 are each
+    used twice.
+  - **More dated notes than the Code Map named.** They went on FR-G4's and FR-G7's share clauses, research §7, item 51,
+    R-10 #1, §B's D15 line, and `HANDOVER.md` / `build-sequence.md`. `HANDOVER.md`'s "Nothing is owed to Claude Design"
+    gained the A24 #14 exception.
+- The MEASUREMENTS §29b readings were re-read at Dev from the npm tarballs (ghost@6.58.0, @tryghost/portal@2.51.5). The
+  line numbers matched.
+- **Real services hit in Dev: none.** No Supabase, Vercel, Resend, Dodo or T1 call was made, and none was needed,
+  because this phase changes documents and two comments. CI and the deployment on the Dev head are Review's, below.
+
 **Review, on the real infrastructure (R-82).** A documents-only story still ships through CI.
 - GitHub Actions on the Dev head, read with `GITHUB_TOKEN` -- expected: `check`, `rls` and `deploy` success.
 - Vercel, read with `VERCEL_TOKEN` and `VERCEL_TEAM_ID` -- expected: the deployment at that sha READY and served by
@@ -410,3 +441,76 @@ redraw Post Headers #14 (Dev writes it).
 **Ruled: option 3 (owner, 2026-10-16).** *(A correction to option 3's last sentence, found while writing the rewrite:
 the drawings' JavaScript-off state is not nothing. A26 #9 draws **Email alone**, so a reader without JavaScript can
 still email the post. The Share button itself still needs JavaScript.)*
+
+## Claude Design prompt — A24 #14 Share Row, the native-share redraw
+
+**For the owner — before Story 10.82 opens (DW-360).**
+1. Open the Inflozo project in Claude Design.
+2. Copy everything in the box below into a new message and let it finish.
+3. Export the project into the repo as you did for the other passes, and tell the next session "the A24 #14 redraw
+   landed".
+
+Story 10.82 is not planned until the redrawn frame is in the export.
+
+```
+This is a follow-up on A24 · Post Headers, which you have already designed. Redraw ONE design:
+#14 Share Row (`A24-14 Share Row.dc.html`). Change nothing else in the project.
+
+WHY. On 1 September 2026 the owner ruled "native Ghost Share only, everywhere". A26 Post Footers was
+carried over in full that day; A24 #14 was not, and its frame says so in the dated panel at its foot
+("THE NATIVE-SHARE RULING · 1 SEPTEMBER 2026 · THIS FRAME IS SUPERSEDED IN PART"). On 16 October 2026 the
+owner confirmed that ruling and withdrew the older one (one ordered, site-wide list of our own share
+links). This pass is the redraw that panel names as outstanding.
+
+READ FIRST, in this project:
+- `A24 Post Headers - Spec.md` — 14 Share Row's section, and "Patch notes — the native-share ruling,
+  1 September 2026" at the end of the document, above all its paragraph "What the redraw carries".
+- `A24-14 Share Row.dc.html` — the frame you are redrawing, including its dated native-share panel.
+- `A26-9 Share Row.dc.html` — its section "THE TWO SHARE STATES": the pattern to follow.
+- `Calibration Set.dc.html` — the tokens, type scale, spacing and colour roles. Use nothing outside it.
+- `Editor Sidebar Kit.dc.html` — every sidebar control, panel, badge and greyed state. The panel uses
+  these and nothing else.
+
+WHAT THE REDRAW CARRIES — exactly this list, nothing added:
+1. One trigger: a label and one Share control — a link to `#/share` — which opens Ghost's own share
+   panel. Ghost's panel owns the destinations and their order.
+2. Copy link and Email as the older-Ghost fallback, two links in the same row the trigger sits in.
+3. The capability flag: which of the two draws comes from a flag the app sets when the site is
+   connected ⚑, because a theme cannot ask Ghost its version. Say so on the frame.
+4. The Links stepper (Two · Three · Four) CUT, not greyed — a control with nothing left to do is not a
+   disabled control.
+5. In the editor panel, the Share destinations row greyed, with the reason beside it — "Ghost's own
+   share panel owns the destinations and their order" — and, on an older Ghost, saying which.
+6. The site-wide setting reduced to two switches, Copy link and Email: the fallback pair only.
+7. No brand glyphs.
+8. The copied confirmation kept, inside the fallback only.
+9. A no-JavaScript state that reads Email alone — the trigger and Copy link both need a script.
+
+THE PATTERN. Draw #14's share row in A26 #9's four states, side by side and in A26 #9's order:
+(a) current Ghost — one trigger, Ghost's panel owns the destinations;
+(b) older Ghost — no panel, Email and Copy link in the same row;
+(c) older Ghost — the copied confirmation, which then reverts;
+(d) either version, no JavaScript — Email alone.
+The header above the row — tag, title, standfirst, byline and hairline — does not move between the
+four. Draw the design in light and dark, at 1440, 834 and 390, as A26 drew its share designs.
+
+REWRITE THE WORDS TO MATCH THE PICTURE. In 14 Share Row's section of `A24 Post Headers - Spec.md` and on
+the frame, strike what the ruling superseded: the four destinations and their order, the Links stepper,
+the ten-platform ordered list, the per-platform brand glyphs, and the two arguments "three of the four
+destinations are ordinary links and one is not" and "Mastodon's link is the honest problem in the row".
+Keep every superseded sentence legible — struck and dated 16 October 2026 — so the reversal is visible.
+Then update the frame's dated native-share panel to say the redraw has landed.
+
+RULES:
+- Design numbering unchanged: nothing renumbered, nothing deleted, no design added. Do not write a
+  total of designs anywhere.
+- The same components and tokens as the rest of A24 and the Editor Sidebar Kit. No new control,
+  colour, size or vocabulary.
+- A greyed control is drawn, never hidden, with its reason in one short sentence at the control.
+- Any literal Ghost Handlebars in markup you emit — for example the Email link's `{{encode}}` or
+  `{{url}}` — must be written with zero-width entities, `{&#8203;{` and `}&#8203;}`, because a bare
+  `{{ … }}` is a Claude Design value hole and renders EMPTY.
+- Change no other design, frame or spec section.
+
+WHEN DONE: list every file you changed and, for each of the nine items above, where it is drawn.
+```

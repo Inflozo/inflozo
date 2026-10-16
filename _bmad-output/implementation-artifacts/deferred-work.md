@@ -9755,3 +9755,44 @@ location: `packages/theme-compiler/src/compile.ts` (`parseCardDesigns` before th
   (`CARD_WORDS.malformed`) · `read.ts` (`storedCards`)
 reason: no deploy path exists before Story 7.18, so there is no screen to say it on; refusing the build is the AD-36 floor
   and stays.
+
+## Deferred from: Story 7.15's Create (2026-10-16 — DW-359 and DW-360, written at its Dev)
+
+### DW-359: `derive-module-reach.py` misreads `share`: two false hits in A10, and A9 #7 missed
+
+plain: The tool that lists which designs need which script says two Stats designs need the share script — they only
+  mention the word — and misses the FAQ design Index, whose copy button does need it. The research page copied that
+  wrong list, so the story that first writes the share script (Story 10.23) could be handed the wrong designs.
+status: open
+severity: low
+origin: Story 7.15's Create (2026-10-16), executed again at its Dev: `python3 tools/derive-module-reach.py` lists `share`
+  for A10-9, A10-12, A24-14 and A26's twelve share designs. A10-9's line declares **none** and names `share` as the
+  content its bar is drawn from; A10-12's says "`toc`, `accordion` and `share` are all absent". A9-7's line declares three
+  modules, but `per_design` keeps only the text before the first `**JS off` (`tools/derive-module-reach.py:154`), so
+  `scroll-spy` and `share`, which follow `accordion`'s JS-off sentence, are dropped. Research §2.1's row 21 "Declared by"
+  (`research-section-js-libraries.md:102`) inherits the list.
+owner: Story 10.23's Create (A9 #5–8), whose card carries this entry with its id — the story that first authors
+  `share.js`, for A9 #7's copy button: the tool reads every module a design's own line declares, not only the text before
+  its first JS-off sentence, counts no module named inside a declaration of none, and §2.1's row 21 is re-derived.
+location: `tools/derive-module-reach.py` (`per_design`) · `research-section-js-libraries.md` §2.1 row 21
+reason: no design that declares `share` is built before Story 10.23, so the list misleads no build yet; Story 7.15 changes
+  documents only.
+
+### DW-360: A24 #14 Share Row is still drawn as R-29's list; the owner redraws it in Claude Design before Story 10.82
+
+plain: Post Headers #14 Share Row is still drawn the old way — your own row of Bluesky, Mastodon, Email and Copy link —
+  which you reversed on 16 October. Before Story 10.82 builds it, you paste the prompt in Story 7.15's spec into Claude
+  Design, so the drawing shows one Share button, with Copy link and Email for an older Ghost. Until then there is no
+  picture to build it from.
+status: open
+severity: medium
+origin: Story 7.15's Create (2026-10-16), Question 1 ruled option 3: ruling R-244 makes sharing Ghost's own share panel.
+  `A24-14 Share Row.dc.html`'s dated native-share panel (`:307-310`) names the frame superseded and its redraw
+  outstanding, and `A24 Post Headers - Spec.md:1663-1667` lists what the redraw carries.
+owner: Story 10.82's Create (A24 #13–16), whose card carries this entry with its id — the owner runs Story 7.15's
+  `## Claude Design prompt — A24 #14 Share Row, the native-share redraw` and the export lands before the story is
+  planned; the Create never plans against the old frame (R-74).
+location: `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A24-14 Share Row.dc.html` ·
+  `A24 Post Headers - Spec.md` · `_bmad-output/implementation-artifacts/spec-7-15-share-destinations-one-ordered-site-wide-list.md`
+  (the prompt)
+reason: the export is Claude Design's (R-74) and only the owner runs it; nothing builds A24 #14 before Story 10.82.

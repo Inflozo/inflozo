@@ -647,7 +647,7 @@ carries the new rule.
 
 **Every ruling from the merge now has its normative half in — R-2, R-10 and R-29 included** (2026-08-31,
 on the owner's instruction to clear them before step 5). R-29's long-outstanding FR is written: it is
-**FR-Q10**, owned by E7. R-10 #1 and #7 are both **withdrawn**, each refuted by execution.
+**FR-Q10**, owned by E7. R-10 #1 and #7 are both **withdrawn**, each refuted by execution. *(2026-10-16, Story 7.15: R-29 is reversed by R-244 — FR-Q10 is rewritten to Ghost's own share panel and owned by E10 from Story 10.82, and A24 #14 is owed a Claude Design redraw first, DW-360.)*
 
 **The design half ran and is verified** — patch passes two to five, `reconcile-designs-decisions.md`
 §A5–§A9, checked by `tools/verify-design-pass.py`. `DESIGN-PATCH-PROMPTS-2.html`

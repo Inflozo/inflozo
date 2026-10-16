@@ -348,7 +348,9 @@ export const PORTAL_ACTIONS: Readonly<Record<string, string>> = {
  *  in source (`umd/portal.min.js`), whose click handler hands it the value as written. The `signup…` and `offers/<id>` forms
  *  may end in `/`; every other page matches exactly; `<id>` is word characters (`signup/free`, `/monthly` and `/yearly` are
  *  its words too). Anything else — the empty value included — opens Portal's DEFAULT page instead of the one meant. 2.69's
- *  `gift`, `gift/redeem/<token>` and `share` are refused: Ghost 5's Portal has neither, and D15 rules `share` out. */
+ *  `gift`, `gift/redeem/<token>` and `share` are refused: Ghost 5's Portal has neither. Story 7.15 (2026-10-16): since R-244
+ *  sharing IS Ghost's share page, and the refusal stays — `data-portal="share"` opens Portal's default page on Ghost 5,
+ *  and a share design opens the page with `href="#/share"`, Ghost's own themes' form (Story 10.82). */
 export const PORTAL_PAGE = /^(?:signup(?:\/\w+(?:\/(?:monthly|yearly))?)?\/?|offers\/\w+\/?|signin|account(?:\/(?:plans|profile|newsletters(?:\/(?:help|disabled))?))?|support(?:\/(?:success|error))?|recommendations)$/
 
 /** R-4 (Story 5.20) — WHAT A VISITOR IS ASKED TO JOIN AS. A free ask signs a visitor up; a paid ask signs them up to a

@@ -167,7 +167,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-Q7** Ghost card design module: every Koenig card designed from a dedicated surface with per-card reset and a live preview against the style-guide fixture. Emission is `card_assets: { exclude: [...] }` — never `false` — which drops Ghost's CSS **and** JS, so four cards ship a vendored equivalent.
 - **FR-Q8** Translation override validation on entry and again at compile: it **refuses, it does not repair**, because one unbalanced brace returns a whole-page 500 across the entire site. *(Story 7.12, 2026-10-15: corrected by reading to an error on every page that shows that label — FR-Q8's dated note; MEASUREMENTS §80 recorded T1's answer, a 400, on 2026-10-15.)*
 - **FR-Q9** Treatment selection fallback: non-placeable treatments are selected from Theme Settings whenever their would-be host section is absent, and emission never depends on a host existing.
-- **FR-Q10** Share destinations are one ordered, site-wide list stored on the project doc, emitted as real `<a href>` URLs; an empty list renders no share affordance at all.
+- **FR-Q10** Sharing is Ghost's own share panel: a label and one Share trigger (`#/share`), with Copy link and Email where the site's Ghost has none, chosen by a capability flag; the one site-wide setting is those two switches, stored once on the project, and with both off no share affordance renders. *(R-244, 2026-10-16 — Story 7.15's Question 1, option 3 — reversing R-29's ordered list.)*
 
 **FR-J · Theme Compiler & Deploy**
 
@@ -528,7 +528,7 @@ owning epics and say which half.
 | FR-D7 | E5 | FR-G1 | **E9** (Group 1) · **E10** (the rest) | FR-O2 | E11 | FR-O3 | E11 |
 | FR-D8 | E5 | FR-G2 | E11 | FR-O4 | E11 | FR-P3 | E14 |
 | FR-Q1 | E7 | FR-G3 | E4 | FR-Q5 | E7 | FR-Q8 | E7 |
-| FR-Q2 | E7 | FR-G4 | **E9** (Group 1) · **E10** (the rest) | FR-Q9 | E7 | FR-Q10 | E7 |
+| FR-Q2 | E7 | FR-G4 | **E9** (Group 1) · **E10** (the rest) | FR-Q9 | E7 | FR-Q10 | **E10** (Story 10.82 and the share designs, from 7.15) |
 | FR-Q3 | E7 | FR-G5 | **E9** (Group 1) · **E10** (the rest) | FR-Q7 | E7 | FR-P2 | E12 |
 | FR-Q4 | E7 | FR-G6 | **E9** (Group 1) · **E10** (the rest) | FR-Q6 | **E4** (catalog format) · **E7** (Translations surface, `locales/`) | FR-P1 | **E1** (1,2) · **E3** (3) · **E12** (4,6) · **E7** (5) |
 
@@ -3775,22 +3775,30 @@ So that two share rows never disagree.
 
 **Acceptance Criteria:**
 
-**Given** Theme Settings
-**When** I set share destinations
-**Then** a project declares **one ordered list**, and **every design that offers sharing renders that list in
-that order**
-**And** it is **stored as one row on the project doc**, not per section — a per-section list is how two share
-rows end up disagreeing
-**And** destinations are emitted as **real `<a href>` URLs built at compile from the post's own canonical URL**:
-no script, no SDK, no third-party button, and the whole set works with JavaScript off
-**And** **copy-link is the one destination needing a script**, and it is the `share` module's only job
-**And** **Ghost's own Portal share page is not used**, and the reason is a Ghost fact: it does not exist on
+**Given** ~~Theme Settings~~
+**When** ~~I set share destinations~~
+**Then** ~~a project declares **one ordered list**, and **every design that offers sharing renders that list in
+that order**~~
+**And** ~~it is **stored as one row on the project doc**, not per section — a per-section list is how two share
+rows end up disagreeing~~
+**And** ~~destinations are emitted as **real `<a href>` URLs built at compile from the post's own canonical URL**:
+no script, no SDK, no third-party button, and the whole set works with JavaScript off~~
+**And** ~~**copy-link is the one destination needing a script**, and it is the `share` module's only job~~
+**And** ~~**Ghost's own Portal share page is not used**, and the reason is a Ghost fact: it does not exist on
 Ghost 5 — where the link silently opens the **sign-in** modal — and where it does exist it is a shadow-DOM iframe
-a theme cannot style, with a fixed order and no Mastodon
-**And** the default list ships as an ordered set the owner may reorder or trim, and **an empty list renders no
-share affordance at all** rather than an empty container.
+a theme cannot style, with a fixed order and no Mastodon~~
+**And** ~~the default list ships as an ordered set the owner may reorder or trim, and **an empty list renders no
+share affordance at all** rather than an empty container.~~
+*(Story 7.15's Dev, 2026-10-16: every criterion above is struck and kept legible. Story 7.15's Question 1 was ruled
+option 3 (owner, 2026-10-16): the owner's native-share ruling of 2026-09-01 stands and R-29 is reversed (R-244). FR-Q10
+is rewritten to it in `prd.md` — sharing is Ghost's own share panel, with Copy link and Email where the site's Ghost has
+none. Each rewritten clause moved word for word (R-118, R-195): the trigger, the fallback and its capability flag, the two
+switches stored once, Email's `mailto:` and Email alone with JavaScript off to **Story 10.82** (A24 #14, redrawn first
+from this story's spec prompt, DW-360), and the share designs' clauses to **Stories 10.83 to 10.89**; the Copy link clause
+to **Story 10.23** (A9 #7, `share.js`'s first author) and 10.82. Epic 10's preamble lists each. The struck copy-link
+criterion survives in substance as the rewritten Copy link clause. Nothing on screen changes in this story.)*
 
-**FRs:** FR-Q10. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a. · **Owner test:** yes.
+**FRs:** FR-Q10. · **Frame:** none here — built with Story 10.82. · **Owner test:** none (Question 1, option 3).
 
 ### Story 7.16: The Routes Manager
 
@@ -5157,6 +5165,37 @@ behind §4's blocking owner gate.
 >    surface shares (R-195) — and until then draws no pagination row (R-118)";
 > 5. from `prd.md`'s file tree, `partials/pagination.hbs` — "a pagination treatment's override of Ghost's own partial —
 >    only when one is chosen".
+>
+> **Given owners by Story 7.15's Create (2026-10-16; Question 1 ruled option 3 by the owner), word for word, so none is
+> missed (R-195).** R-244 reverses R-29: FR-Q10 is rewritten to the owner's native-share ruling of 2026-09-01, and no
+> design that offers sharing is built before Story 10.82, so R-118 sends every clause to the stories that build share
+> designs. A24 #14 is redrawn first, from Story 7.15's spec prompt (DW-360). A25 draws no fallback state, so its stories
+> extrapolate it from A26 #9's; A26's stories never follow the stale rows at `A26-3 Card.dc.html:87` and
+> `A26-5 Split.dc.html:95`.
+>
+> 1. "Every design that offers sharing draws **a label and one Share trigger** — a link to `#/share`, the form Ghost's
+>    own themes use — which opens **Ghost's own share panel**. The panel owns the destinations and their order." Goes to
+>    **Story 10.82** (A24 #14, redrawn), **10.83** (A25 #3, #4), **10.84** (A25 #1, #7, #8), **10.85** (A25 #9),
+>    **10.86** (A26 #1, #3, #4, #6), **10.87** (A26 #2, #5), **10.88** (A26 #9, #10, #11) and **10.89** (A26 #13, #14,
+>    #15).
+> 2. "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**, two links in the same
+>    row. Ghost 5's Portal has no share page, so the link would open Portal's default page instead. A theme cannot ask
+>    Ghost which version it runs, so **which of the two a site draws comes from a capability flag the app sets from the
+>    connected site's Ghost** (`sites.ghost_version`)." Goes to **Story 10.82**, which builds the flag, and to each A25
+>    and A26 story above, which draws the fallback (A25's extrapolated from A26 #9).
+> 3. "The project declares **one** sharing setting: **two switches, Copy link and Email — the fallback pair only**. It is
+>    **stored once on the project, never per section** — a per-section setting is how two share rows on one site end up
+>    disagreeing. With both switches off, the fallback renders **no share affordance at all**, rather than an empty
+>    container." Goes to **Story 10.82** and each A25 and A26 story above (both off: no fallback drawn).
+> 4. "**Email is a real `mailto:` link built at compile from the post's own canonical URL and title.**" Goes to **Story
+>    10.82**.
+> 5. "**Copy link is the one destination needing Inflozo's script, and it is the `share` module's only job.** The trigger
+>    needs none of Inflozo's, because Portal opens the panel." Goes to **Story 10.23** (`share.js` first authored, for A9
+>    #7's copy button) and **Story 10.82**.
+> 6. "**With JavaScript off, the block draws Email alone** (A26 #9's drawn state)." Goes to **Story 10.82** and each A25
+>    and A26 story above.
+> 7. The frames and the hand test: A24 #14 as redrawn, `D6 Theme Settings Completed.dc.html` D6a's Credits row for the
+>    two switches (extrapolated, R-74), and the owner's test (R-80). Goes to **Story 10.82**.
 
 ### A4 · Heroes — 17 designs, 5 stories
 
@@ -5769,6 +5808,8 @@ So that I can choose more widely within FAQ on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A9-<n> <Name>.dc.html` — and the category's `A9-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #7 Index's copy button is where `share.js` is first authored: "**Copy link is the one destination needing Inflozo's script, and it is the `share` module's only job.**" — the module copies a link and does nothing else (no `navigator.share()`, no share links of its own), and Story 10.82's fallback Copy link is the same job
+**And** *(given an owner by Story 7.15's Create, 2026-10-16 — **DW-359**)* before `share.js` is authored, `tools/derive-module-reach.py` names `share` for A9 #7 and not for A10 #9 or #12: it reads every module a design's own line declares, not only the text before its first JS-off sentence, and counts no module named inside a declaration of none; research §2.1's row 21 is re-derived from it
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A9). · **Frame:** `A9-<n> <Name>.dc.html` · `A9-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7370,7 +7411,42 @@ result changes as designed, and approves
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
 
-**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
+**Given** *(moved from Story 7.15 by its Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195)* FR-Q10
+as rewritten by R-244: "**Sharing is Ghost's own share panel, and Inflozo's one site-wide share setting is its
+fallback**"
+**When** #14 Share Row and Theme settings' **Sharing** block are built — the library's first design that offers sharing
+**Then** "Every design that offers sharing draws **a label and one Share trigger** — a link to `#/share`, the form Ghost's own themes use — which opens **Ghost's own share panel**. The panel owns the destinations and their order."
+**And** "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**, two links in the same row. Ghost 5's Portal has no share page, so the link would open Portal's default page instead. A theme cannot ask Ghost which version it runs, so **which of the two a site draws comes from a capability flag the app sets from the connected site's Ghost** (`sites.ghost_version`)." — this story builds the flag, once the owner rules reading 1 below
+**And** "The project declares **one** sharing setting: **two switches, Copy link and Email — the fallback pair only**. It is **stored once on the project, never per section** — a per-section setting is how two share rows on one site end up disagreeing. With both switches off, the fallback renders **no share affordance at all**, rather than an empty container." — where it is stored is chosen here, against AD-27 and Story 7.13's precedent
+**And** "**Email is a real `mailto:` link built at compile from the post's own canonical URL and title.**"
+**And** "**Copy link is the one destination needing Inflozo's script, and it is the `share` module's only job.** The trigger needs none of Inflozo's, because Portal opens the panel." — the module Story 10.23 first authors for A9 #7
+**And** "**With JavaScript off, the block draws Email alone** (A26 #9's drawn state)."
+**And** #14 Share Row is built to its **redrawn** frame: `A24-14 Share Row.dc.html` as the owner redraws it in Claude
+Design from Story 7.15's spec (`## Claude Design prompt — A24 #14 Share Row, the native-share redraw`) before this story
+opens (DW-360) — never planned against the pre-ruling rows above that frame's dated native-share panel
+**And** Theme settings' **Sharing** block — the two switches, Copy link and Email — is extrapolated from
+`D6 Theme Settings Completed.dc.html` D6a's Credits row (R-74): the same components and tokens, no second vocabulary, and
+it **matches the frame**
+**And** the owner's hand test (R-80) covers the trigger on his Ghost 6 site — Share opens Ghost's own panel — and both
+switches: each one turned off leaves its link out of the fallback, and both off leave no share affordance at all
+**And** *(handed over at Story 7.15's Create, 2026-10-16 — its readings, this story's to settle)*: (1) **where the trigger
+actually works** — Portal 2.69's share page is in Ghost 6.58.0 and Portal 2.51 (Ghost 5.130.6) has none, and which Ghost
+version first pins a Portal with the page is not yet read; Ghost 6.58.0 loads Portal only while members, donations or
+recommendations are on (`ghost_head.js:121-125`), so on a Ghost 6 site with all three off the trigger opens nothing; and
+`{{ghost_head}}`'s generator meta (`:415`) is readable by a script, so whether the flag is a compile-time read of
+`sites.ghost_version` (the ruling's ⚑ reading) or a run-time check in `share.js` (which would widen the module's only
+job) is an R-83 question for the owner — `VERIFY-AT-BUILD.md` item 62, recorded on T1 first; (2) **a project with no
+connected site** — the canvas and Story 7.26's theme ZIP export have no `ghost_version` to read; (3) **the
+JavaScript-off state** — Email alone means the trigger and Copy link hide without a script, and whether Email also shows
+beside the trigger with JavaScript on is not settled (A26 #9's first state draws the trigger alone); (4) **Email's URL**
+— `mailto:?subject=…&body=…` from the title, and from `canonical_url` when set or else `{{url absolute="true"}}`, each
+through `{{encode}}`, guarded because `encode.js:9-11` encodes Handlebars' options object when its argument is empty,
+the href double-quoted, and executed on T1 first (standing rule 1); (5) **catalog strings** — `post.share` "Share"
+exists, "Email" has no key, and `post.share_on` "Share on {network}" has no subject now that Ghost's panel names the
+destinations; (6) **the editor panel** — every A26 panel draws a greyed "Share destinations" row with its reason, and
+A24 #14's redraw carries the same row
+
+**FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24), FR-Q10 (from Story 7.15). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html` · #14 as redrawn from Story 7.15's prompt · `D6 Theme Settings Completed.dc.html` D6a's Credits row, extrapolated (R-74). · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
 ### A25 · Post Content Layouts — 12 designs, 3 stories
 
@@ -7397,6 +7473,7 @@ So that I can start using Post Content Layouts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #3 Sheet and #4 Contrast Band offer sharing, and each draws "**a label and one Share trigger** … which opens **Ghost's own share panel**" as its frame does; "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**", read from the "**capability flag**" Story 10.82 builds — A25 draws no fallback state, so it is extrapolated from A26 #9's drawn state (`A26-9 Share Row.dc.html`, R-74); the pair follows the project's "**two switches, Copy link and Email — the fallback pair only**", "**stored once on the project, never per section**", and with both off the fallback renders "**no share affordance at all**"; and "**With JavaScript off, the block draws Email alone**"
 
 **And** *(Story 5.20, DW-266)* the Post Content panel carries C1a's **"Open paywall editor →"** (`C Post Body.dc.html:81`,
 and C1d's "Open Paywall →" at `:1064`): a navigation to the Paywall canvas Story 5.20 built, the second door beside the
@@ -7425,6 +7502,7 @@ So that I can choose more widely within Post Content Layouts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #1 Measured, #7 Sticky Index and #8 Index Top offer sharing, and each draws "**a label and one Share trigger** … which opens **Ghost's own share panel**" as its frame does; "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**", read from the "**capability flag**" Story 10.82 builds — A25 draws no fallback state, so it is extrapolated from A26 #9's drawn state (`A26-9 Share Row.dc.html`, R-74); the pair follows the project's "**two switches, Copy link and Email — the fallback pair only**", "**stored once on the project, never per section**", and with both off the fallback renders "**no share affordance at all**"; and "**With JavaScript off, the block draws Email alone**"
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7447,6 +7525,7 @@ So that I can choose more widely within Post Content Layouts on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #9 Share Rail offers sharing, and draws "**a label and one Share trigger** … which opens **Ghost's own share panel**" as its frame does; "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**", read from the "**capability flag**" Story 10.82 builds — A25 draws no fallback state, so it is extrapolated from A26 #9's drawn state (`A26-9 Share Row.dc.html`, R-74); the pair follows the project's "**two switches, Copy link and Email — the fallback pair only**", "**stored once on the project, never per section**", and with both off the fallback renders "**no share affordance at all**"; and "**With JavaScript off, the block draws Email alone**"
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -7488,6 +7567,7 @@ So that I can start using Post Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #1 Author Bio, #3 Card, #4 Contrast Band and #6 Slim offer sharing, and each draws "**a label and one Share trigger** … which opens **Ghost's own share panel**" as its frame does; "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**", read from the "**capability flag**" Story 10.82 builds, as A26 #9 draws it (`A26-9 Share Row.dc.html`) — never the stale pre-ruling rows at `A26-3 Card.dc.html:87` and `A26-5 Split.dc.html:95`; the pair follows the project's "**two switches, Copy link and Email — the fallback pair only**", "**stored once on the project, never per section**", and with both off the fallback renders "**no share affordance at all**"; and "**With JavaScript off, the block draws Email alone**"
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7510,6 +7590,7 @@ So that I can choose more widely within Post Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #2 Rows and #5 Split offer sharing, and each draws "**a label and one Share trigger** … which opens **Ghost's own share panel**" as its frame does; "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**", read from the "**capability flag**" Story 10.82 builds, as A26 #9 draws it (`A26-9 Share Row.dc.html`) — never the stale pre-ruling rows at `A26-3 Card.dc.html:87` and `A26-5 Split.dc.html:95`; the pair follows the project's "**two switches, Copy link and Email — the fallback pair only**", "**stored once on the project, never per section**", and with both off the fallback renders "**no share affordance at all**"; and "**With JavaScript off, the block draws Email alone**"
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7532,6 +7613,7 @@ So that I can choose more widely within Post Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #9 Share Row, #10 Big Type and #11 Portrait offer sharing, and each draws "**a label and one Share trigger** … which opens **Ghost's own share panel**" as its frame does; "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**", read from the "**capability flag**" Story 10.82 builds, as #9's own frame draws it in four states (`A26-9 Share Row.dc.html`) — never the stale pre-ruling rows at `A26-3 Card.dc.html:87` and `A26-5 Split.dc.html:95`; the pair follows the project's "**two switches, Copy link and Email — the fallback pair only**", "**stored once on the project, never per section**", and with both off the fallback renders "**no share affordance at all**"; and "**With JavaScript off, the block draws Email alone**"
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7554,6 +7636,7 @@ So that I can choose more widely within Post Footers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A26-<n> <Name>.dc.html` — and the category's `A26-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** *(from Story 7.15's Question 1, option 3 (owner, 2026-10-16), word for word — R-118, R-195; FR-Q10, R-244)* #13 Rail, #14 Ledger and #15 Grid offer sharing, and each draws "**a label and one Share trigger** … which opens **Ghost's own share panel**" as its frame does; "**Where the site's Ghost has no share panel, the trigger is replaced by Copy link and Email**", read from the "**capability flag**" Story 10.82 builds, as A26 #9 draws it (`A26-9 Share Row.dc.html`) — never the stale pre-ruling rows at `A26-3 Card.dc.html:87` and `A26-5 Split.dc.html:95`; the pair follows the project's "**two switches, Copy link and Email — the fallback pair only**", "**stored once on the project, never per section**", and with both off the fallback renders "**no share affordance at all**"; and "**With JavaScript off, the block draws Email alone**"
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan

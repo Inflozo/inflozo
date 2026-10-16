@@ -171,7 +171,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Post Content** | `C Post Body.dc.html` C2a | Post and Page canvases | The section that renders the article (A25) |
 | **Style-Guide Fixture** | `C Post Body.dc.html` C4 | every body, always | The generated article every post design is judged against (FR-H3, FR-H4) |
 | **Error Pages** | Editor left nav → Template surfaces *(A31 designs)* | Editor left nav | `error.hbs`, and `private.hbs` when a Private Gate is designed |
-| **Theme Settings** | `D6 Theme Settings Completed.dc.html` D6a Pro · D6b Free *(completes B17)* | Editor left nav | `posts_per_page`, project mode, credits, the custom-settings builder (FR-Q1/Q2/Q3) |
+| **Theme Settings** | `D6 Theme Settings Completed.dc.html` D6a Pro · D6b Free *(completes B17)* | Editor left nav | `posts_per_page`, project mode, credits, the custom-settings builder (FR-Q1/Q2/Q3) *(Story 7.15, 2026-10-16: and, from Story 10.82, a **Sharing** block — two switches, Copy link and Email, the fallback pair Ghost's own share panel leaves to Inflozo (FR-Q10, R-244), extrapolated from D6a's Credits row (R-74))* |
 | **Custom Settings Builder** | D6a right column · D6c Text-prop confirm | Theme Settings | Promote a control to a Ghost theme setting |
 | **Translations** | B18 *(re-specified)* | Theme Settings | Every chrome string the theme prints (FR-Q6) |
 | **Routes Manager** | `S9 Routes.dc.html` S9a · S9b error · S9d empty *(re-specified)* | Template Switcher → Manage routes | Collections, custom routes, taxonomies, live YAML |

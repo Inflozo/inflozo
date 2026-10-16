@@ -211,11 +211,11 @@ the corollary that a fact nobody fetches needs no fixture, and AD-27 the five do
 
 **Nothing from the merge is owed a normative half any more.** R-2, R-10 and R-29 landed 2026-08-31 on
 the owner's instruction to clear them before step 5, and R-29's long-outstanding FR is written —
-**FR-Q10**, owned by E7. R-10 #1 and #7 are **withdrawn**, each refuted by execution.
+**FR-Q10**, owned by E7. R-10 #1 and #7 are **withdrawn**, each refuted by execution. *(2026-10-16, Story 7.15: R-29 is reversed by R-244 — FR-Q10 is rewritten to Ghost's own share panel and owned by E10 from Story 10.82, and A24 #14 is owed a Claude Design redraw first, DW-360.)*
 
 **Step 4's design work has finished.** Patch passes two to five all ran and were verified
 (`reconcile-designs-decisions.md` §A5–§A9); `python3 tools/verify-design-pass.py` is the runnable
-record and every structural check passes. **The two Claude Design sessions of Appendix A ran (A7 with A8, then A1 to A6) and their export landed on 2026-09-04**; the runbook ran once, the spines and both builds were brought in line, and §A15 records the verification frame by frame: everything A1–A6 and A8 asked for landed; of A7's items, four landed partly. **A9 ran the same day, whole (R-86), and its export landed and was verified** (§A15, "A9 landed": nineteen of twenty items in full, item 3 in part and absorbed by the token). Nothing is owed to Claude Design. The same day he ruled the touch-device threshold at 834 (R-87), so § Responsive, the walkthrough and D8a agree.
+record and every structural check passes. **The two Claude Design sessions of Appendix A ran (A7 with A8, then A1 to A6) and their export landed on 2026-09-04**; the runbook ran once, the spines and both builds were brought in line, and §A15 records the verification frame by frame: everything A1–A6 and A8 asked for landed; of A7's items, four landed partly. **A9 ran the same day, whole (R-86), and its export landed and was verified** (§A15, "A9 landed": nineteen of twenty items in full, item 3 in part and absorbed by the token). Nothing is owed to Claude Design *(2026-10-16, Story 7.15: except A24 #14's native-share redraw, which the owner runs before Story 10.82 — DW-360)*. The same day he ruled the touch-device threshold at 834 (R-87), so § Responsive, the walkthrough and D8a agree.
 
 **When the patched export lands, there is a runbook and it is on the build board.** In short: replace
 the folder, then `verify-design-pass.py` (it also guards the two repo-side hand edits), then re-derive
