@@ -954,3 +954,18 @@ column, whatever the panel says.
 - Production: the read-back after the apply shows one `sync_project_doc` with six arguments and no `paywall_design_id`.
 - Review: `run-verify-editor.cjs` step 107 on the deployed head (the names in `CARD_WORDS`, the record read back, the
   read-only window), recorded with the real endpoints it hit (R-82).
+
+**Deploy (2026-10-16).**
+
+- `Deployment: dpl_4ZTFGpzUzGa1CoCcKsnCsPsNMVSf` — READY, production, built from `86326998` (the head: the Dev code, every Review
+  patch and the Review's record), aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` (Vercel API, `VERCEL_TOKEN`
+  and `VERCEL_TEAM_ID` read in-process). CI run 38843251125 at that sha: `rls`, `check` and `deploy` success; Render matrix run
+  38843251122 success (GitHub API, `GITHUB_TOKEN`). The code deployment before it, `dpl_GUToLS5cBb7QdNgAC2r5TQSk9Z9G` at
+  `b4b9922b`, is the one step 107 walked.
+- Schema: applied at the Schema phase (2026-10-15, Question 4) and read back at Review; nothing to apply at Deploy, and the
+  RLS gate ran green on this push.
+- Signed out, `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/cards` and the project's own address both
+  answer 307 to `https://app.inflozo.com/sign-in` — the addresses are live. Nothing was written to any database or Ghost
+  site at Deploy; T1 was not touched.
+- The owner's test above already carries the live URLs on `app.inflozo.com`. `owner_test` stays `pending`. Question 7
+  (Embed's Alignment) is still awaiting the owner; no step of his test depends on it.
