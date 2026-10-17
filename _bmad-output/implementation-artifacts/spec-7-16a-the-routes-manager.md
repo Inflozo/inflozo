@@ -1022,3 +1022,21 @@ control).
 
   Two differences surfaced, and both are patched above: Taxonomies' segment box, and the template pill crushing a
   card's name.
+
+**Review results — part 3, at the final Review head `8316f295`:**
+- CI: run 39002408686, with `check`, `rls` and `deploy` all success, and the render matrix 39002408658 success. Vercel:
+  `dpl_5SnVoN8nXpDkZ8tTT2aPMG7VEbWJ` READY at `8316f295`.
+- **Step 109** (the cut copy): **0 FAIL, 84 PASS**. The re-shot S9 screenshots show Taxonomies' segment fitted to its
+  word, `/ tag /{slug}/` and `/ author /{slug}/`. Users 14 → 14, projects 10 → 10.
+- **The whole walk** died in step 14 on a magic-link `goto` hold, with **0 FAIL and 664 PASS** before it. That is the
+  second whole run in a row to die on such a hold (memory: cut the copy when holds keep killing full runs).
+- **A cut copy of steps 1–5 and 98–109** (carrying the post-step-5 definitions and step 97's preamble that 98–101
+  read) gave **0 FAIL, 149 PASS** through step 98's tablet, 99's real 200% zoom, 100's 390 sweep, 101's 1280 crossing,
+  102's style pack, 103's packs, 104's Theme settings, 105's promote and 106 to 106d. Step 104 includes Theme settings'
+  condition rows, which carry this story's ConditionRow changes. The copy then died at 106d on a `waitForResponse` for a
+  held translation save (the DW-204 shape, no assertion). Users 14 → 14, projects 10 → 10.
+- **Across this Review, every step from 1 to 106d and step 109 held on production with 0 FAIL.** Steps 107 (Editor
+  cards) and 108 (FR-Q9) did not run this Review: no file they exercise changed, and they need the definitions of
+  steps 102–106 to run alone. Step 9 did not run either.
+- The debug copies (`tools/probe-debug/cut109.cjs`, `cut98.cjs`) lived only in the scratch worktrees and were never
+  committed. Both worktrees are removed.
