@@ -438,7 +438,8 @@ function Collections({ config, templates, onMove, onEdit, onDelete, onNew }: {
                 <span className="truncate text-control-label text-ink-soft">{filterWords(col.filter)}</span>
               </span>
               {nql === '' ? null : <span className="max-w-[30%] shrink truncate rounded-pill border border-line px-[9px] py-[2px] font-mono text-[11px] text-ink-soft">{nql}</span>}
-              <span className={`shrink-0 ${PILL}`}>{templateNameOf(templates, col.template)}</span>
+              {/* a long name (60 characters, or a stored file S9b names) truncates rather than crushing the card's own name */}
+              <span className={`min-w-0 max-w-[30%] shrink truncate ${PILL}`}>{templateNameOf(templates, col.template)}</span>
               {col.limit === undefined ? null : <span className="shrink-0 text-control-label text-ink-soft">{W.perPage(col.limit)}</span>}
               <RowMenu
                 id={`routes-collection-menu-${i}`}
@@ -540,7 +541,9 @@ function Taxonomies({ projectId, config, known, onSaved }: { projectId: string; 
           value={value}
           onChange={(event) => set(event.target.value.trim().toLowerCase())}
           size={Math.max(value.length, 3)}
-          className={`min-w-0 rounded-[4px] border border-transparent bg-transparent px-[2px] font-mono text-control-label text-ink caret-coral hover:border-line focus-visible:border-coral-text ${ring}`}
+          // as wide as its word, so the address reads `/topic/{slug}/` as S9a draws it; `size` is the fallback where
+          // `field-sizing` is not supported (review side-by-side, 2026-10-17)
+          className={`min-w-[3ch] [field-sizing:content] rounded-[4px] border border-transparent bg-transparent px-[2px] font-mono text-control-label text-ink caret-coral hover:border-line focus-visible:border-coral-text ${ring}`}
         />
         {'/{slug}/'}
       </span>

@@ -321,8 +321,9 @@ Ghost that its source disproves (Design Notes' facts):
 
 Review, 2026-10-17: five layers — the Blind Hunter (run twice, over the app and over the tools: the diff is past 5,000
 lines), the Edge Case Hunter, the Verification Gap reviewer, the Acceptance Auditor, and the Real-infra verifier, run in
-the main session (memory: key reads and production writes from a subagent are refused). 0 decision-needed, 25 patches
-(all applied), 1 deferred (DW-362), the rest dismissed with a reason each (below). No question for the owner.
+the main session (memory: key reads and production writes from a subagent are refused). 0 decision-needed, 27 patches
+(all applied; the last two from the side-by-side, after the first Review push), 1 deferred (DW-362), the rest dismissed
+with a reason each (below). No question for the owner.
 
 - [x] [Review][Patch] Walk step 109 would have died at 109c: it looked for the condition row's × by the picker's label
   ("Remove the Published date condition"), while the row and its × use S9c's shorter "Published" (`FIELDS`' `row`).
@@ -396,6 +397,12 @@ the main session (memory: key reads and production writes from a subagent are re
 - [x] [Review][Patch] Two counts were written down: "Step 109n plants three stored states" (it plants four) and "the
   seven re-pointed". Both are reworded so neither can go stale, and `epic-7-context.md` gains the Review's sub-bullet
   [epic-7-context.md, this spec's Verification]
+- [x] [Review][Patch] *(the side-by-side)* Taxonomies' editable segment was as wide as its `size`, not its word, so
+  `/tag/{slug}/` read "/ tag    /{slug}/" beside S9a's `/topic/{slug}/`; it is sized to its content (`field-sizing`,
+  `size` the fallback) [routes-manager.tsx `Taxonomies`]
+- [x] [Review][Patch] *(the side-by-side)* A collection card's template pill never shrank, so a long name (60 characters,
+  or a stored file S9b names) crushed the card's own name to "F…"; it truncates at 30%, as the filter pill does
+  [routes-manager.tsx `Collections`]
 - [x] [Review][Defer] An unreadable stored routing (S9b's line 1) leaves the page with no list, no sheet and no reset.
   The product cannot reach that state today, and the way out is an undrawn control (Ask First, R-247). Deferred as
   **DW-362** to Story 7.18's card, where it would first block a deploy
@@ -983,3 +990,35 @@ control).
   `node --check tools/probe/run-verify-editor.cjs` passes.
 - **Not run in this part:** T1 writes, because nothing a theme or `routes.yaml` carries changed at Review and §82 stands.
   Ghost 5 on a server is postponed to DW-326 (R-238). Resend and Dodo are untouched by this story.
+
+**Review results — part 2, at the first Review head `48da27e7`:**
+- CI: run 39000808824, with `check` (which runs `pnpm keyboard`), `rls` and `deploy` all success, and the render matrix
+  39000808809 success. Vercel: `dpl_3hv1vL1quDbDsuE5gKLjUKHZdSi5` READY at `48da27e7`.
+- **Step 109 on production, from a detached worktree at `48da27e7`** (the same cut copy, never committed): **0 FAIL,
+  84 PASS**. Every row passed: 109a–109n, the Review's 109c keyboard row, 109h's database floor and its control, and
+  109i's held Undo. Users 14 → 14, projects 10 → 10, and the block recorded zero CSP violations.
+- **The side-by-side frame check (R-74, R-247)** set the walk's new screenshots (`routes-s9a`, `-s9b`, `-s9c`, `-s9d`,
+  `-s9e`, 1440 × 900, production) beside `S9 Routes.dc.html`. The frame was rendered read-only in Chromium from the
+  export, and each frame group was captured.
+  - **S9a** matches in components, layout, copy and tokens:
+    - the 56px bar, its back arrow, "Routes & Templates" and the chip;
+    - COLLECTIONS with its helper, and cards of mono path, name and line, filter pill, template pill, "N / page" and ⋯;
+    - CUSTOM ROUTES rows of path, arrow, pill and ⋯, with dashed "+ …" buttons;
+    - TAXONOMIES' two rows with their pills;
+    - the pane: mint banner and "pass", the "routes.yaml · generated live…" header with Copy and Download, and numbered
+      lines with sky keys and mint values.
+
+    The differences are the stated ones: `/` last with the inverse filter, `custom-*` template names, and R-247's
+    drag grips and Templates list built from Custom routes' rows.
+  - **S9b** matches: the red banner "Line 4 — …", the "1 error" pill, and the marked line with its wavy underline. Its
+    "Deploys are blocked…" line is withheld for 7.18, as routine call 11 says.
+  - **S9c** matches: the title and lead, Path, "Show posts that match" with All conditions | Any, the 104 · 86 rows, the
+    chips with × and "add…", "Choose…", both sentences, Template beside the info box (its 12 now mono), and Cancel with
+    Create collection. R-247's page-size switch and Theme settings' stepper, and the naming block, sit under it.
+  - **S9d** matches: the signpost, the two lines and "+ New collection", with R-247's quiet "or add a custom route · a
+    template" under it.
+  - **S9e** matches: "New route." with its lead, Path, "What should it show?", and two radio cards (coral when chosen)
+    with routine call 8's helper. The channel's conditions follow the choice, built from S9c's.
+
+  Two differences surfaced, and both are patched above: Taxonomies' segment box, and the template pill crushing a
+  card's name.
