@@ -7225,8 +7225,10 @@ origin: Story 5.19's Create (2026-09-25). FR-H2 (`prd.md:312`) sizes the main fe
   `@config.posts_per_page` with a route's `limit` at render (`frontend/services/routing/controllers/collection.js:32-44`,
   `channel.js:33-45`, both majors, read in source). Story 7.16's criteria (`epics.md:3075-3127`) name the per-collection
   limit but neither the canvas reading it nor the channel's designation.
-owner: Story 7.16b (Custom templates on the canvas), whose criteria carry it with its id since R-245 split Story 7.16
-  (2026-10-16; was "Story 7.16 (The Routes Manager)"): the canvas sizes a main feed by
+owner: Story 7.16c (Collection and channel templates list their posts), whose criteria carry it word for word with its
+  id since R-249 (owner, 2026-10-17, Story 7.16b's Question 1) moved the post-list half there. *(Was "Story 7.16b (Custom
+  templates on the canvas)", whose criteria carried it with its id since R-245 split Story 7.16
+  (2026-10-16; was "Story 7.16 (The Routes Manager)").)* The canvas sizes a main feed by
   its route's own `limit:`, and a channel or collection template is given its main feed at creation. *(Story 5.24a's
   Dev, 2026-09-28: was "Story 7.16 (the Routes Manager) — the canvas reads the route's `limit` where the template is
   reached through a collection that sets one, and a channel or collection template it creates is handed its main feed
@@ -9409,7 +9411,11 @@ origin: Story 7.3's code review (2026-10-08): `emptiesCustomTemplate(key, doc)` 
   cannot pick the routed sentence 7.16's card promises; `compileTheme`'s `PAGED_CONTEXTS` keys Home's page 2 on `index`,
   which `collection-router.js` names only while the main collection sits at `/` (`routerName = mainRoute === '/' ?
   'index' : …`, read in source).
-owner: Story 7.16b (Custom templates on the canvas), whose card carries this entry with its id. *(Story 7.16's Create,
+owner: Story 7.16b (Custom templates on the canvas) for the editor half, D5f's routed sentence, and **Story 7.16c
+  (Collection and channel templates list their posts)** for the rest: each custom collection's and channel's own context
+  for the `noindex` guard, its card carrying the second half word for word *(R-249, owner, 2026-10-17, Story 7.16b's
+  Question 1)*. The entry stays open until 7.16c closes it. *(Was "Story 7.16b (Custom templates on the canvas), whose card
+  carries this entry with its id.")* *(Story 7.16's Create,
   2026-10-16: was "Story 7.16 (The Routes Manager)" — R-245. Story 7.16a records the compiler half's answer for `/`:
   Inflozo always emits the index collection at `/`, last, so Home's context stays `index`; each custom collection's
   and channel's own context is 7.16b's.)* *(Story 7.16a's Dev, 2026-10-17: the second half is recorded — `routesYaml`

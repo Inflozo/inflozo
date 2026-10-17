@@ -2271,8 +2271,8 @@ toggles for date, author, excerpt, reading time and tag chip sit in Content, whe
 archives** — **exactly one section is the designated main feed**, bound to the native paginated `posts` context
 **never `{{#get}}`**, sized by the global `posts_per_page` **or by the route's own `limit:` where the template is
 reached through a collection that sets one**, and the canvas reads whichever value actually applies — the
-project's `posts_per_page` until routes exist; the route's own `limit:` is read by Story 7.16b, whose Story 7.16a builds routes
-(DW-252; *Story 7.16 split by R-245, 2026-10-16*)
+project's `posts_per_page` until routes exist; the route's own `limit:` is read by Story 7.16c, whose Story 7.16a builds routes
+(DW-252; *Story 7.16 split by R-245, 2026-10-16; the post-list half moved from 7.16b to 7.16c by R-249, 2026-10-17*)
 **And** all other feeds are `{{#get}}`-driven with a fixed Count that **caps at 100** and never emits
 `limit="all"`
 **And** **three requirements are built with the designs that need them, not here — R-195** (owner, 2026-09-25):
@@ -2282,7 +2282,7 @@ global and the panel states the reason"* to every category story whose designs c
 for word, listed in Epic 9's preamble
 **And** designation has a lifecycle **owned by this epic**: the first feed placed on a paginated template
 auto-designates; archives start with one from the Synthesis Defaults; a channel created in the Routes Manager is
-given one at creation (Story 7.16b, through this story's rule — DW-252; *R-245*); deleting or hiding it transfers designation to
+given one at creation (Story 7.16c, through this story's rule — DW-252; *R-245, R-249*); deleting or hiding it transfers designation to
 the next feed section; the user may reassign it anytime; and the editor **marks the main feed visibly**
 **And** a paginated template with **zero** feed sections is allowed, and the archive case keeps its warning
 because `tag.hbs` and `author.hbs` have no second file to fall through to — in the editor here, as a note at the head
@@ -3017,7 +3017,7 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 7.16 is split: **Story 7.16a** builds the Routes Manager page, and **Story 7.16b**, straight after it, the editor's half.
 >
 > 1. the canvas sizing a main feed by its route's own `limit:`, and a channel or collection template given its main feed at
->    creation (FR-H2, DW-252) — **Story 7.16b**;
+>    creation (FR-H2, DW-252) — **Story 7.16b** *(moved on to Story 7.16c by R-249, 2026-10-17 — below)*;
 > 2. custom templates in the template switcher as designable canvases, with "+ New template" deep-linking into the Routes
 >    Manager — **Story 7.16b**, the two together as R-128 binds them;
 > 3. the warning before a template with designed content is deleted, the canvas deleted with it and recoverable via undo,
@@ -3027,6 +3027,17 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 5. a routed template's own warning words in place of D5f's, and the editor handed the routed list (DW-344's editor
 >    half) — **Story 7.16b**;
 > 6. a YAML error "blocking the deploy with the reason on the Ship button" — **Story 7.18**, which builds Ship it.
+>
+> **Moved from Story 7.16b by its Question 1 (owner, 2026-10-17, R-249), word for word, so none is missed (R-195).** Story
+> 7.16b keeps the editor's half without a post list, and **Story 7.16c**, straight after it, takes a collection's and a
+> channel's own post list. Both land before Story 7.18 deploys anything.
+>
+> 1. the canvas sizing a main feed by its route's own `limit:`, and a channel or collection template given its main feed at
+>    creation (FR-H2, DW-252) — **Story 7.16c**;
+> 2. a main collection moved off `/` rendering `/page/N/` in a context named after the route, which FR-H2's `noindex`
+>    guard names or the story records why it need not (DW-344's second half) — **Story 7.16c**;
+> 3. the two readings Story 7.16's Create handed on: every custom collection's and channel's own `paged` context for the
+>    `noindex` guard, and the canvas's Home feed against the live `/`'s unowned posts (FR-H3) — **Story 7.16c**.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3833,7 +3844,7 @@ defaulting to the global `posts_per_page` — with drag-to-reorder precedence
 and inherits the global
 **And** ~~the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
 collection that sets one, and a **channel or collection template created here is given its main feed at creation**
-through Story 5.19's designation rule (FR-H2, DW-252)~~ *(moved to Story 7.16b, R-245)*
+through Story 5.19's designation rule (FR-H2, DW-252)~~ *(moved to Story 7.16b, R-245; on to Story 7.16c, R-249)*
 **And** I can define **channels** (filtered post streams with their own path and RSS feed), **custom routes**
 (static path → custom template) and taxonomy prefixes
 **And** a **live YAML preview pane** and validation run before save: path collisions, unknown templates, filter
@@ -3885,7 +3896,7 @@ stop, built by Story 7.3 as `compileTheme`'s `routed` input, which this story ha
 is this story's, in its own words** *(Story 7.3, 2026-10-06)*.~~ *(moved to Story 7.16b, R-245;
 this story keeps the routed list itself: `routedOf(config)` names the `custom-*.hbs` files a route names, which
 Story 7.18, `compileTheme`'s first product caller, hands in)*
-**And** ~~routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.~~ *(moved to Story 7.16b, R-245; this story records the root half: Inflozo always emits the index collection at `/`, last, so Home's context stays `index` — `collection-router.js:21`, read and executed at 7.16's Create)*
+**And** ~~routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.~~ *(moved to Story 7.16b, R-245, its second half on to Story 7.16c, R-249; this story records the root half: Inflozo always emits the index collection at `/`, last, so Home's context stays `index` — `collection-router.js:21`, read and executed at 7.16's Create)*
 **And** *(given an owner by Story 7.15's Review, 2026-10-16 — **DW-361**)* `VERIFY-AT-BUILD.md` uses item numbers 59 and 60 twice each, and this story is the first to cite the first register's 60 (a collection's per-route `limit:`): before it cites it, the second register's 59 and 60 take the next free numbers and every live citation of them is repointed, a closed spec or `record` document keeping its words with a dated note
 
 **FRs:** FR-I2, FR-I3. · **Frame:** `S9 Routes.dc.html` S9a · S9b · S9c · S9d · S9e; the parts no frame draws are
@@ -3902,15 +3913,20 @@ So that a route I built shows a page I designed.
 *(Story 7.16's Question 1, ruled option 1, owner, 2026-10-16 — **R-245**: every criterion below moved here from Story
 7.16 word for word (R-195); this story runs straight after Story 7.16a, which builds the Routes Manager page.)*
 
+*(Story 7.16b's Questions 1 and 2, both ruled option 1, owner, 2026-10-17 — **R-249**: a collection's and a channel's own
+post list moves to **Story 7.16c**, straight after this one, word for word (R-195), each clause struck below with its
+destination; **R-250**: the notice an editor shows when the template it has open is deleted is built from B5a's strip,
+exactly, without a Claude Design pass.)*
+
 **Given** a custom template made in the Routes Manager (Story 7.16a)
 **When** I open the editor
 **Then** custom templates appear in the template switcher as designable canvases — each row with Tabler's `template`
 glyph (`kit/icons.tsx`'s `CanvasCustom`) and the one line **"Custom template"** (`lib/editor.ts`'s
 `CUSTOM_TEMPLATE_CAPTION`), in the shared row of R-171 — and **"+ New template" is a
 shortcut that deep-links into this flow** — one creation flow, two entry points
-**And** the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
+**And** ~~the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
 collection that sets one, and a **channel or collection template created here is given its main feed at creation**
-through Story 5.19's designation rule (FR-H2, DW-252)
+through Story 5.19's designation rule (FR-H2, DW-252)~~ *(moved to Story 7.16c, R-249)*
 **And** deleting a custom template or its route **warns when the template has designed content**, the canvas is
 deleted with it and recoverable via undo, and an editor viewing it switches to Home with a notice *(R-248, owner,
 2026-10-16: a route's delete never deletes its template, so the warning belongs to a template's delete)*
@@ -3919,16 +3935,49 @@ deleted with it and recoverable via undo, and an editor viewing it switches to H
 stop, built by Story 7.3 as `compileTheme`'s `routed` input, which this story hands in — so the editor's D5f warning
 ("This template stops shipping") is not its sentence: **the warning before the last section leaves a routed template
 is this story's, in its own words** *(Story 7.3, 2026-10-06)*.
-**And** routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.
+**And** routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; ~~and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.~~ *(the second half moved to Story 7.16c, R-249)*
+**And** ~~*(handed by Story 7.16's Create, 2026-10-16)* two readings for this story's Create, read in Ghost 6.58.0's source
+at 7.16's Create: every custom collection and channel renders its pages in its own context, `["paged","<its path
+without slashes>"]` (`collection-router.js:21`, `rendering/context.js:31-39`), which FR-H2's `noindex` guard must name
+wherever that template is feed-less; and the canvas's Home feed reads every post while the live `/` lists only the posts
+no collection owns (`controllers/collection.js:75-88`), which FR-H3 asks the canvas to show honestly.~~ *(moved to Story
+7.16c, R-249)*
+
+**FRs:** FR-I3 (the switcher and canvas half), FR-D6 *(FR-H2's route `limit:` moved to Story 7.16c, R-249)*. ·
+**Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5b (the `FROM THE ROUTES MANAGER` group and "+ New
+template", rows as R-171 and R-172 re-specify them) and D5f; the deleted-template notice from `B Missing Surfaces.dc.html`
+B5a's strip (R-250). · **Owner test:** yes.
+
+### Story 7.16c: Collection and channel templates list their posts
+
+As a user whose collection or channel has a template of its own,
+I want that template to list its posts the way Home lists the site's,
+So that the page at `/tutorials/` shows the tutorials, as many to a page as I chose.
+
+**Acceptance Criteria:**
+
+*(Story 7.16b's Question 1, ruled option 1, owner, 2026-10-17 — **R-249**: every criterion below moved here from Story
+7.16b word for word (R-195); this story runs straight after Story 7.16b, which opens Routes Manager templates on the
+canvas, and before Story 7.18 deploys anything.)*
+
+**Given** a collection or channel template made in the Routes Manager (Story 7.16a) and opened on the canvas (Story 7.16b)
+**When** I design it
+**Then** the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
+collection that sets one, and a **channel or collection template created here is given its main feed at creation**
+through Story 5.19's designation rule (FR-H2, DW-252)
+**And** *(DW-344's second half)* a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.
 **And** *(handed by Story 7.16's Create, 2026-10-16)* two readings for this story's Create, read in Ghost 6.58.0's source
 at 7.16's Create: every custom collection and channel renders its pages in its own context, `["paged","<its path
 without slashes>"]` (`collection-router.js:21`, `rendering/context.js:31-39`), which FR-H2's `noindex` guard must name
 wherever that template is feed-less; and the canvas's Home feed reads every post while the live `/` lists only the posts
 no collection owns (`controllers/collection.js:75-88`), which FR-H3 asks the canvas to show honestly.
 
-**FRs:** FR-I3 (the switcher and canvas half), FR-H2 (a route's own `limit:`), FR-D6. · **Frame:** `D5 Canvas Markers
-and Template Switcher.dc.html` D5b (the `FROM THE ROUTES MANAGER` group and "+ New template", rows as R-171 and R-172
-re-specify them) and D5f. · **Owner test:** yes.
+*(Two facts this story inherits, neither a moved criterion: Story 7.16b compiles every Routes Manager template flat, with
+no `{{#post}}`, so a collection's `posts` and `pagination` sit at that root (Ghost's `rendering/format-response.js:11-64`,
+read at 7.16b's Create); and R-7 lets `custom-{name}.hbs` collection templates take a paginated design.)*
+
+**FRs:** FR-H2 (a route's own `limit:`), FR-H3. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c and
+`P0-5 Populate From Panel.dc.html`, as Story 5.19 builds them. · **Owner test:** yes.
 
 ### Story 7.17: Uploading `routes.yaml`, and the guided fallback
 

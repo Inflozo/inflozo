@@ -1157,7 +1157,9 @@ name the frame its surface is built from.
   Story 6.4's Create): Story 6.4's undrawn parts are built from the nearest existing drawings, exactly, without a Claude
   Design pass. **R-242** (owner, 2026-10-05, Story 6.6's Create): the same for Story 6.6's two undrawn parts, S2c's
   chooser at scale and the Style Pack list's "From your site" row. **R-247** (owner, 2026-10-16, Story 7.16's Create):
-  the same for the Routes Manager's undrawn parts, beside `S9 Routes.dc.html`. The rule stands for every other surface.
+  the same for the Routes Manager's undrawn parts, beside `S9 Routes.dc.html`. **R-250** (owner, 2026-10-17, Story 7.16b's
+  Create): the same for the notice an editor shows when its open template is deleted, built from B5a's strip. The rule
+  stands for every other surface.
 
 **R-75 — the owner sees the product's own UI as static pages on his machine before it is built
 dynamically.** Clarified by the owner in the same session, and the clarification is the ruling:
@@ -5375,7 +5377,9 @@ Story 7.16's Create, Question 1, ruled **option 1** (owner, 2026-10-16): *"Split
 - Targets: ✅ this entry · ✅ R-128, R-129 and R-171 (dated notes) · ✅ Story 7.16a's spec (renamed) · ✅ `epics.md` —
   Story 7.16a's card (struck, dated), Story 7.16b's card, Story 7.18's card, Stories 5.19's and 7.3's cards, Epic 7's
   preamble · ✅ `sprint-status.yaml` · ✅ `prd.md` FR-I1 · ✅ DW-126, DW-252, DW-344, DW-361 · ✅ `epic-7-context.md` ·
-  ✅ the code comments naming Story 7.16 (standing rule 7) · ⬜ Story 7.16a · ⬜ Story 7.16b.
+  ✅ the code comments naming Story 7.16 (standing rule 7) · ⬜ Story 7.16a · ⬜ Story 7.16b. *(Story 7.16b's Create,
+  2026-10-17 — **R-249**: 7.16b's post-list half, the route `limit:` and designation at creation, DW-344's second half
+  and the two readings, moved on to Story 7.16c.)*
 
 **R-246 — a rolling publish date is a channel's; a collection's date condition takes an exact date.** Story 7.16's
 Create, Question 2, ruled **option 1** (owner, 2026-10-16): *"Rolling dates on channels only. A collection's date
@@ -5423,6 +5427,44 @@ from drawings next to them. Routes has been in Claude Design as S9+Routes.dc.htm
 - **Declined.** A route's delete also deleting its template when no other route names it.
 - Targets: ✅ this entry · ✅ Story 7.16a's spec · ✅ `epics.md` Stories 7.16a and 7.16b (dated) · ⬜ `prd.md` FR-I3's
   sentence (dated, at 7.16a's Dev).
+
+**R-249 — Story 7.16b is split again: it keeps the editor's half without a post list, and 7.16c, straight after it,
+takes a collection's and a channel's own post list.** Story 7.16b's Create, Question 1, ruled **option 1** (owner,
+2026-10-17): *"Split it. This story builds the first half. A new Story 7.16c, straight after, builds the second, with its
+criteria moved word for word. Both land before Story 7.18 deploys anything."*
+
+- **Why it was a question.** The card asked for two independently shippable things. One opens and designs Routes Manager
+  templates: the switcher rows, New template, the warnings, Undo and the move to Home. The other makes a collection's or
+  channel's template list its posts: a main feed sized by the route's own `limit:`, given at creation, its contents the
+  posts that address shows, its page 2's `noindex` context, and Home's feed leaving out the posts a collection owns. The
+  second rebuilds Story 5.19's post-list machinery (`PAGINATED_TARGETS` and every reader of it) and the canvas's sample
+  and live posts.
+- **The rule.** **Story 7.16b, Custom templates on the canvas** keeps the switcher half, the designed-content delete,
+  DW-126 and DW-344's editor half. **Story 7.16c, Collection and channel templates list their posts** takes, word for
+  word (R-195): the route `limit:` and main-feed-at-creation clause (DW-252), DW-344's second half, and the two readings
+  7.16's Create handed on (each custom collection's and channel's own `paged` context; Home's feed against the live
+  `/`'s unowned posts, FR-H3). Both land before Story 7.18 deploys anything.
+- **Declined.** One story; a different split.
+- Targets: ✅ this entry · ✅ R-245's entry (dated note) · ✅ Story 7.16b's spec · ✅ `epics.md` — Story 7.16b's card
+  (struck, dated), Story 7.16c's card, Story 5.19's card, Epic 7's preamble · ✅ `sprint-status.yaml` · ✅ DW-252,
+  DW-344 · ✅ `epic-7-context.md` · ✅ the code comments naming Story 7.16b for the moved half (standing rule 7) · ⬜
+  Story 7.16b · ⬜ Story 7.16c.
+
+**R-250 — the notice an editor shows when the template it has open is deleted is built from B5a's strip, without a
+Claude Design pass: R-74's fourth stated exception.** Story 7.16b's Create, Question 2, ruled **option 1** (owner,
+2026-10-17): *"Build it from B5a's strip, exactly. No new component, colour or size. You compare it at your test (step
+9), and the Review records a side-by-side check."*
+
+- **Why it was a question.** FR-I3 says an editor viewing a deleted template "switches to Home with a notice", and no
+  frame draws that notice. R-74 says a surface with no frame is drawn in the Claude Design project first.
+- **The rule.** For Story 7.16b alone, the notice is B5a's strip (`B Missing Surfaces.dc.html:1469-1487`, built as
+  `components/editor/lock-bar.tsx`): 38px above the canvas, `paper-sunk` with the `line` hairline, a 13px glyph, the
+  12px sentence and a 32px secondary **Dismiss**. There is no new component, colour or size. The owner compares it at
+  his test (step 9), and the Review records a side-by-side check. The story's other new sentences sit in windows already
+  drawn (D5f, the routes page's delete window). R-74 stands for every other surface.
+- **Declined.** A Claude Design pass first; a notice for screen readers only.
+- Targets: ✅ this entry · ✅ R-74's entry · ✅ Story 7.16b's spec · ✅ `epics.md` Story 7.16b's card · ⬜ the
+  side-by-side check (7.16b's Review).
 
 ## B · Approved decisions superseded by this session
 

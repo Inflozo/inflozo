@@ -48,7 +48,7 @@ D5f's "This template stops shipping" is also said of a template that a route kee
 - **The routes page** deletes a designed template with its design behind one warning, and Undo brings back all three
   writes.
 - D5f gains its routed sentence.
-- **Planned to Question 1's recommendation, which is open:** a collection's or channel's own post list on its template
+- **Question 1 split the story (R-249, owner, 2026-10-17):** a collection's or channel's own post list on its template
   is Story 7.16c's (Design Notes, "Moved").
 
 ## Boundaries & Constraints
@@ -59,8 +59,9 @@ D5f's "This template stops shipping" is also said of a template that a route kee
   - each row is a glyph, then the name over one line, with the mark's word as hover title and `sr-only` text;
   - the row in force is `coral-tint`, never ticked.
 
-  The routed warning is **D5f** (`:436-455`) with its own words. The deleted-template notice is built per Question 2's
-  ruling. Tokens are the Kit's, never the frame's hex.
+  The routed warning is **D5f** (`:436-455`) with its own words. The deleted-template notice is **B5a**'s strip
+  (`B Missing Surfaces.dc.html:1469-1487`, `lock-bar.tsx`), exactly, as Question 2 ruled (**R-250**, R-74's fourth
+  stated exception). Tokens are the Kit's, never the frame's hex.
 - **One form for every Routes Manager template (DW-126).** It is the route form, whether a route names the template or
   not:
   - **What it offers:** a design whose `compileTarget` lists `custom-{name}.hbs` and that binds `none` or a gettable
@@ -93,15 +94,15 @@ D5f's "This template stops shipping" is also said of a template that a route kee
   session, and run in the main session.
 
 **Ask First:**
-- **Questions 1 and 2 are open, and both are needed before Dev.** This spec is written to option 1 of each. Each ruled
-  value lives in one place: Design Notes' "Ruled values".
+- **Questions 1 and 2 were both ruled option 1 (owner, 2026-10-17):** **R-249** and **R-250**. The spec is written to
+  them, and each ruled value lives in one place: Design Notes' "Ruled values".
 - Before the first write, ask the owner for the T1 go covering the recorder's whole run (§83).
 - Any change to a frame string beyond Design Notes' routine calls, and any undrawn part beyond Question 2.
 
 **Never:**
 - **A collection's or channel's posts at a template's root.** That means no main feed on a Routes Manager template,
   no `PAGINATED_TARGETS` change, no route `limit:` on the canvas, no custom paged contexts in the `noindex` guard, and
-  no change to Home's feed. All of that is Story 7.16c's, per Question 1.
+  no change to Home's feed. All of that is Story 7.16c's (R-249).
 - A `data:` key, or any change to `routes.ts`'s emission. Only `MEMBERSHIP_FILES`' home moves.
 - A route or Routes Manager template for a membership canvas, or any change to the membership canvases' form.
 - **A migration.** `template_key_shape` already takes `custom:custom-<slug>.hbs`
@@ -261,7 +262,7 @@ D5f's "This template stops shipping" is also said of a template that a route kee
   - the group and New template (Design Notes, "Words");
   - every `CANVASES[key]` read through `fileOf`/`labelOf`;
   - D5f's routed sentence;
-  - the notice strip per Question 2, with the switch to Home (`router.replace`) at load and on the sync's answer, the
+  - the notice strip, B5a's (R-250), with the switch to Home (`router.replace`) at load and on the sync's answer, the
     gone key's pending work dropped and the sentence also said in `#editor-said`.
 
   -- FR-D6, FR-I3, D5b, D5f.
@@ -285,7 +286,7 @@ D5f's "This template stops shipping" is also said of a template that a route kee
   `tools/keyboard/journey.spec.mjs`: re-point every walk past the new tail. -- R-82.
 - [ ] Propagation (standing rules 3 and 7):
   - **DW-126** closes.
-  - **DW-344**'s first half is done; its second half follows Question 1.
+  - **DW-344**'s first half is done; its second half stays open under Story 7.16c (R-249).
   - **`prd.md`**: FR-I3 gets a dated note (the route form; the warning and Undo are built), and FR-J5 gets one (a
     Routes Manager template has no entry, so no article).
   - **`appendix-b1-template-contexts.md:100`** gets a note that the route row is built and that `posts` is 7.16c's.
@@ -300,7 +301,7 @@ D5f's "This template stops shipping" is also said of a template that a route kee
 - **Matches the frame (R-74).** Given the deployed switcher at 1440, compared with D5b as R-171 and R-172 re-specify it:
   - the group's heading, rows and "New template" match in components, layout, copy and tokens;
   - the routed warning is D5f's dialog;
-  - the notice matches what Question 2 rules;
+  - the notice matches B5a's strip (R-250);
   - the Review records a side-by-side check.
 - Given a Routes Manager template holding a22/1 and named by a static route on T1, when its address is read, then the
   section renders, and the entry-form control renders nothing there (§83).
@@ -320,7 +321,8 @@ D5f's "This template stops shipping" is also said of a template that a route kee
 - **R-74** sets the frames: D5b and D5f. **R-171** sets the row anatomy, the glyph and "Custom template". **R-172**
   highlights the row in force.
 - **R-128:** the heading and New template ship together, and that pair is this story's (R-245).
-- **R-129:** membership canvases keep their form and names. **R-245** made the split that created this story.
+- **R-129:** membership canvases keep their form and names. **R-245** made the split that created this story, and
+  **R-249** moved its post-list half to Story 7.16c. **R-250** builds the deleted-template notice from B5a.
 - **R-248:** a route's delete never deletes its template, so the designed-content warning belongs to the template's own
   delete.
 - **R-7:** `compileTarget` refuses, and its A29 line spells the Routes Manager target `custom-{name}.hbs`.
@@ -328,10 +330,12 @@ D5f's "This template stops shipping" is also said of a template that a route kee
 
 ### Ruled values (the one table a ruling changes)
 
-| Question | Planned (option 1, awaiting the owner) |
+Both ruled option 1 (owner, 2026-10-17).
+
+| Question | Ruled, and built |
 |---|---|
-| 1 — split | This story is the editor half without a post list. **Story 7.16c, "Collection and channel templates list their posts"**, comes straight after it in `sprint-status.yaml`. It takes the clauses in "Moved" below, word for word. |
-| 2 — the notice | The deleted-template notice is built from **B5a**'s strip (`lock-bar.tsx`). It is a 38px strip above the canvas: `paper-sunk`, with the `line` hairline, a 13px `CanvasCustom` glyph, the 12px sentence, and a 32px secondary **Dismiss** button. It stays until dismissed or until the next canvas switch. It is shown, not only announced. |
+| 1 — split (R-249) | This story is the editor half without a post list. **Story 7.16c, "Collection and channel templates list their posts"**, comes straight after it in `sprint-status.yaml`. It takes the clauses in "Moved" below, word for word. |
+| 2 — the notice (R-250) | The deleted-template notice is built from **B5a**'s strip (`lock-bar.tsx`). It is a 38px strip above the canvas: `paper-sunk`, with the `line` hairline, a 13px `CanvasCustom` glyph, the 12px sentence, and a 32px secondary **Dismiss** button. It stays until dismissed or until the next canvas switch. It is shown, not only announced. |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -365,7 +369,7 @@ D5f's "This template stops shipping" is also said of a template that a route kee
     side.
 13. **No migration.** See Never.
 
-### Moved (R-195), word for word — done when Question 1 is ruled option 1
+### Moved (R-195), word for word — done at this Create's ruling (2026-10-17, R-249)
 
 To **Story 7.16c, "Collection and channel templates list their posts"**, which goes straight after 7.16b in
 `sprint-status.yaml`, with its card in `epics.md` and a line in Epic 7's preamble. Each clause is struck on 7.16b's
@@ -384,7 +388,8 @@ card with its destination:
 Owners move with the clauses:
 - DW-252 moves to 7.16c.
 - DW-344 stays open under 7.16c.
-- `epic-7-context.md`, the register (R-249, R-250) and `deferred-work.md` follow.
+- `epic-7-context.md`, the register (R-249, R-250; R-74's exceptions and R-245 noted), `deferred-work.md` and
+  `compile.ts`'s `PAGED_CONTEXTS` comment follow.
 
 ### Words
 
@@ -446,7 +451,7 @@ Read in Ghost 6.58.0's and 5.130.6's source from the npm tarballs at this Create
 
 Do this on the real site after Deploy, on a laptop at full width, signed in as yourself, on **Pilot sections**
 (`b6d4db35-8e5e-45e1-a70f-4daa28916d51`). If it still has templates from an earlier test, delete them first on Routes &
-Templates. Step 9 tests your ruling on Question 2.
+Templates. Step 9 tests your ruling on Question 2 (R-250).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -464,8 +469,8 @@ Templates. Step 9 tests your ruling on Question 2.
 
 ## Questions for the owner
 
-Both are open, and both are needed before Dev. The spec is written to option 1 of each, and a different ruling changes
-Design Notes' "Ruled values" table.
+Both were ruled option 1 (owner, 2026-10-17), and the spec is written to those rulings. Nothing waits on the owner
+before Dev except the T1 run's in-session go (Ask First).
 
 ### Question 1 — Half of this story is only about templates that list posts. May I move that half to its own story?
 
@@ -489,7 +494,10 @@ posts on the canvas. Together the two would be one of the largest stories yet.
 2. **One story.** Everything at once, bigger and riskier. I re-plan this spec first.
 3. **Split differently.** Tell me where.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-17).** *"Split it. This story builds the first half. A new Story 7.16c, straight after,
+builds the second, with its criteria moved word for word. Both land before Story 7.18 deploys anything."* Recorded as
+**R-249**. Story 7.16c, "Collection and channel templates list their posts", joins `epics.md` and `sprint-status.yaml`
+straight after this story, carrying the moved clauses word for word (Design Notes, "Moved").
 
 ### Question 2 — The note shown when your open template is deleted was never drawn. May I build it from the strip above the canvas?
 
@@ -507,7 +515,9 @@ you're on Home." [Dismiss]
 2. **Draw it first.** I write the Claude Design prompt, and Dev waits for your export.
 3. **No visible note, only a sentence for screen readers.** I don't recommend it: the plan asks for a notice.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-17).** *"Build it from B5a's strip, exactly. No new component, colour or size. You
+compare it at your test (step 9), and the Review records a side-by-side check."* Recorded as **R-250**, R-74's fourth
+stated exception, for this story only.
 
 ## Verification
 
