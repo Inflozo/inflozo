@@ -810,4 +810,24 @@ the stored rows. Also re-run step 40 and step 109.
 - `pnpm keyboard`, whole, on the patched tree: 237 passed and 1 failed, the 7.13 divider journey. That journey died on
   "Execution context was destroyed" inside `cardsCssOf`. Run alone it passed 3 of 3. With the helper hardened (Review
   Findings), the 7.13 journeys passed 11 of 11. CI's `check` runs the whole gate on the push.
-- **Part 2** follows at the Review head: steps 109 and 110 on the deployed patches.
+
+**Review results — part 2, at the Review head `cac8a7a9`** (the main session again):
+- CI on `cac8a7a9`: run 39044642785, with `check` (which runs `pnpm keyboard` whole), `rls` and `deploy` all success, and
+  the render matrix (39044642727) success. Vercel: `dpl_8kpWvSeJNbQNg1hVhB1nJtu7Qbez` READY at `cac8a7a9`.
+- **Steps 109 + 110 on production, the same cut from the worktree moved to `cac8a7a9`.**
+  - **Run 1:** 109c, 109d, 109h's `/craft-picks/` control and 109i FAILed, then a HARNESS ERROR (`locator.click` timeout,
+    15:43:37Z). Every step 110 row before it passed. Vercel's request rows show why. The routes page's action POSTs stop
+    for about 29 seconds after 15:41:06 and for 75 seconds after 15:41:55, each a press the walk made and waited on: the
+    ⌥↑ reorder's save, then the `/craft-picks/` save and `/craft/`'s delete. None of those POSTs reached Vercel (DW-204's
+    class). 109d's FAIL follows from 109c's lost save.
+  - **Run 2, the same build straight after:** **0 FAIL, 107 PASS.** Step 109 (7.16a) held whole. Step 110 held whole on
+    the patched code:
+    - 110c: Create made the row through `insertTemplate`'s clear, and Name never read refused. The observer heard
+      "Signup" refused first (its control).
+    - 110g: the delete took its doc in the delete itself, and Undo brought back the row exactly, the doc byte-equal and
+      the routing as it was.
+    - 110h: page A's only edit was on the gone template, so its ⌘S met the sync route as patched (the lock first, then
+      the template read and the no-write answer). It still moved the editor to Home with the strip and stored nothing.
+
+    Users 14 → 14, projects 10 → 10, in both runs.
+- The review leaves the story in review: Deploy and the owner's test follow (R-80). Question 3 waits for the owner.
