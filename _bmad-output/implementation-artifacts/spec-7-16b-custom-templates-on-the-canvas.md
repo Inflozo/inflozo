@@ -1,0 +1,529 @@
+---
+title: 'Story 7.16b — Custom templates on the canvas'
+type: 'feature'
+created: '2026-10-17'
+status: 'ready-for-dev'
+owner_test: pending
+review_loop_iteration: 0
+context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
+---
+
+## In plain English
+
+After this story, the editor's Template menu lists every template you made on Routes & Templates under **From the
+Routes Manager**, each with its name and the line "Custom template". **New template** in that menu takes you straight to
+naming a new one, then opens it. You design it like any other page, using the sections that work at an address Ghost
+serves on its own, such as a hero or a newsletter row. A post's own title or text is never offered there, because a
+route has no post to give it. The theme Inflozo builds shows those sections at that address. Deleting a template that
+has a design now asks first, and Undo brings back both the template and its design. Removing a template's last section
+warns you in words that say whether a route still shows it. An editor that had the deleted template open moves to Home
+with a short note saying why.
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** Story 7.16a writes `custom_templates`, but the editor never reads it (`template-switcher.tsx:47-54`). So a
+template made on Routes & Templates cannot be opened, designed or deleted with its design. The routes page refuses
+that delete outright (`routes/actions.ts:184`). Three more gaps:
+- **The canvas key is a fixed list.** `CanvasKey = keyof typeof CANVASES` (`lib/editor.ts:64`), and an unknown
+  `custom-…` segment answers 404 (`[template]/layout.tsx:23-29`).
+- **No library design can sit on a template the user names.** `compilesTo` is a literal `includes`
+  (`placement.ts:134-135`).
+- **The theme would blank every section.** It wraps a custom template in `{{#post}}` (`compile.ts:1005-1013`), the
+  form for a template picked in Ghost Admin. A route's root carries no `post` (F1), so at the route's address every
+  section would print nothing.
+
+D5f's "This template stops shipping" is also said of a template that a route keeps shipping (DW-344).
+
+**Approach:**
+- **One form.** A Routes Manager template is the **route form** everywhere: appendix B.1 §3's flat root, and DW-126's
+  "derived from the route".
+  - The library spells "every Routes Manager template" as R-7's own `custom-{name}.hbs` in a design's `compileTarget`.
+  - The matrix gains that form's row, and both the canvas and the theme read it.
+- **The editor learns a fourth kind of canvas,** keyed by the template's file:
+  - read from `custom_templates` and `routes_config` on load;
+  - drawn in D5b's `FROM THE ROUTES MANAGER` group, with **New template** deep-linking into the routes page's own sheet;
+  - when the template is gone, the editor moves to Home with a notice, at load and at the canvas's next save.
+- **The routes page** deletes a designed template with its design behind one warning, and Undo brings back all three
+  writes.
+- D5f gains its routed sentence.
+- **Planned to Question 1's recommendation, which is open:** a collection's or channel's own post list on its template
+  is Story 7.16c's (Design Notes, "Moved").
+
+## Boundaries & Constraints
+
+**Always:**
+- **Frames (R-74).** The switcher is `D5 Canvas Markers and Template Switcher.dc.html` **D5b** (`:161-179`, the group
+  and "New template") as **R-171** and **R-172** re-specify it:
+  - each row is a glyph, then the name over one line, with the mark's word as hover title and `sr-only` text;
+  - the row in force is `coral-tint`, never ticked.
+
+  The routed warning is **D5f** (`:436-455`) with its own words. The deleted-template notice is built per Question 2's
+  ruling. Tokens are the Kit's, never the frame's hex.
+- **One form for every Routes Manager template (DW-126).** It is the route form, whether a route names the template or
+  not:
+  - **What it offers:** a design whose `compileTarget` lists `custom-{name}.hbs` and that binds `none` or a gettable
+    resource (`CONTEXTS_BY_TARGET` already answers that, `placement.ts:108-111`).
+  - **What the theme writes:** no `{{#post}}` and no article.
+  - **What keeps the entry form:** the membership canvases (R-129, A30), unchanged. `MEMBERSHIP_FILES` moves to
+    `@inflozo/library` (`vocabulary.ts`) as the one list, and `routes.ts:221` imports it.
+- **The segment is the file without `.hbs`,** checked against the database's own shape:
+  `template_key_shape`, `custom-[a-z0-9]+(-[a-z0-9]+)*`, not `CUSTOM_TARGET_RE`, which is looser.
+  - A segment outside that shape is still a synchronous 404.
+  - A segment inside it that names no template opens Home with the notice. A `notFound()` after a database read serves
+    Next's bare error page (`[template]/layout.tsx:13-17`).
+- **R-170.** Every new sentence lives in one list: `lib/editor.ts` beside `EMPTY_TEMPLATE_ASK` for the editor, and
+  `ROUTES_WORDS` for the routes page. The deployed walk reads both lists. The tab title and the switcher row use the
+  same name, which is the template's display name.
+- **R-98.**
+  - "New template" swaps its name to "Opening…", goes `aria-busy` + `aria-disabled`, and the routes page's skeleton
+    shows first.
+  - Create from that entry says "Creating…".
+  - `busy.test.ts` holds both.
+- **Writes keep every in-between state valid (7.16a's rule):**
+  - **Delete runs config → canvas doc → template row.** The config is written without the template's routes, then the
+    `custom:<file>` doc is deleted, then the row.
+  - **Undo runs row → doc → config.** The doc is parsed by `docSchema` and `docRefusal` before it is re-inserted,
+    because it comes back from the client (AD-36).
+  - Each action follows the house shape (`routes/actions.ts:31-53`).
+- **The sync never re-creates a deleted template's canvas.** A `custom:` key that is neither a membership file nor a
+  current template is left unwritten. Every other key in the body is written as usual. The answer names the key it left.
+- **R-82 and R-238.** Review and test run on production and T1 alone. T1 writes need the owner's go, asked in the Dev
+  session, and run in the main session.
+
+**Ask First:**
+- **Questions 1 and 2 are open, and both are needed before Dev.** This spec is written to option 1 of each. Each ruled
+  value lives in one place: Design Notes' "Ruled values".
+- Before the first write, ask the owner for the T1 go covering the recorder's whole run (§83).
+- Any change to a frame string beyond Design Notes' routine calls, and any undrawn part beyond Question 2.
+
+**Never:**
+- **A collection's or channel's posts at a template's root.** That means no main feed on a Routes Manager template,
+  no `PAGINATED_TARGETS` change, no route `limit:` on the canvas, no custom paged contexts in the `noindex` guard, and
+  no change to Home's feed. All of that is Story 7.16c's, per Question 1.
+- A `data:` key, or any change to `routes.ts`'s emission. Only `MEMBERSHIP_FILES`' home moves.
+- A route or Routes Manager template for a membership canvas, or any change to the membership canvases' form.
+- **A migration.** `template_key_shape` already takes `custom:custom-<slug>.hbs`
+  (`20260926120000_paywall_template_key.sql:20-22`), and `authenticated` holds full CRUD on both tables
+  (`complete_schema.sql:1016-1026`).
+- Uploading anything to a customer's Ghost (that is 7.17 and 7.18), or calling `compileTheme` from the product (7.18).
+- Editing `claude-design-export/`, a `record` document or a generated file, or writing a count down.
+
+## I/O & Edge-Case Matrix
+
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+|----------|--------------|---------------------------|----------------|
+| Switcher, no template | no `custom_templates` row of kind `routes` | after Template surfaces: a rule, **New template**, **Manage routes**; no heading | — |
+| Switcher, templates | two templates | after Template surfaces: a rule, `FROM THE ROUTES MANAGER`, one row each (`CanvasCustom`, display name, "Custom template", mark Empty or designed — never Auto-generated) in `templatesOf` order, a rule, New template, Manage routes; the open one highlighted | — |
+| New template | pressed in the switcher | "Opening…", the routes skeleton, then Routes & Templates with the New template sheet open and focus in Name | — |
+| Create from that entry | "Landing" | the row is written, then the editor opens `/projects/<id>/custom-landing`, empty | a refusal is 7.16a's sentence, nothing written |
+| Cancel from that entry | Cancel or Esc | the sheet closes and you stay on Routes & Templates | — |
+| Open | `/custom-landing`, the template exists | its canvas, with the tab titled `<project> · Landing — Inflozo` | — |
+| Stale address | `/custom-gone`, no such template, or a `custom:` doc whose row is gone | Home, URL replaced, the notice naming "Gone" (`ghostLabel`) | — |
+| Bad shape | `/custom-Bad_x`, `/custom--x` | 404, synchronous | — |
+| Offered | a Routes Manager canvas | a22/1 and a4/13 (and the site-wide designs, landing in the site doc); never a17/1 or a24/1 | — |
+| Compiled | a template holding a22/1, routed or not | `custom-<x>.hbs` holds the section with no `{{#post}}` and no `<article>`; emptied, it is `{{!< default}}`; `custom-signup.hbs` keeps `{{#post}}` + `POST_ARTICLE` | — |
+| D5f, unrouted | the last section on a template no route names | `EMPTY_TEMPLATE_ASK`, unchanged | — |
+| D5f, routed | the last section, `/landing/` names it | `ROUTED_EMPTY_ASK`, naming `/landing/` | — |
+| Delete, designed | ⋯ → Delete on a template with a `custom:<file>` doc | the confirm opens on Cancel and carries the design line, plus the paths if routed; config → doc → row; toast with Undo | a failed write says `couldNot`; the state left is valid |
+| Undo | pressed before the next change | row, doc (byte-equal), config | the same |
+| Open editor, template deleted | the editor is on Landing; Landing is deleted elsewhere; ⌘S | every other key is written; `custom:custom-landing.hbs` is not; the answer names it; the editor drops its pending work, replaces the URL with Home and shows the notice | — |
+| Orphan doc | a `custom:` doc with no template row | never a canvas; `read.ts` ignores it; the sync never writes one | — |
+
+</frozen-after-approval>
+
+## Code Map
+
+- `packages/library/src/vocabulary.ts`:
+  - `:134` `CUSTOM_TARGET_RE` and `:136-138` `isCompileTarget` gain the `custom-{name}.hbs` target. Add
+    `ROUTE_TEMPLATE_TARGET`, `MEMBERSHIP_FILES` (moved here) and `isRouteTemplate(file)`, which is a custom file that is
+    not a membership file.
+  - `:142-152` `templateKeyOfFile` is unchanged.
+- `packages/library/src/placement.ts`:
+  - `:134-135` `compilesTo`: a Routes Manager file matches a design listing the target.
+  - `:108-111` `CONTEXTS_BY_TARGET` already returns `none` plus gettables for any custom file, so it stays as it is.
+  - `:147` `offeredOn` follows from `compilesTo`.
+- `packages/library/src/validate.ts:588-599` -- the legal-target sentence; `context-unreachable` and `pagination-target`
+  need no change, since the target is not paginated.
+- `packages/library/contexts/matrix.json`:
+  - `:251-254` is the entry row (membership).
+  - Add the route row: a flat top scope with no fields of its own.
+  - `:178-189` offers `@page.show_title_and_feature_image` on custom files. It must not reach the route row: `@page`
+    exists only when a route resolves a page (§3), and Inflozo writes no `data:`.
+- `packages/library/src/contexts.ts` -- `:91-94` `targetContext`, `:197` `resolveUniversal` and `:323` `offerBindings`
+  each map a custom file to the one key. Make that one function pick the route row for `isRouteTemplate`.
+- `packages/library/designs/a4/13/design.json`, `a22/1/design.json` -- `compileTarget` gains the target (routine call 3).
+- `packages/theme-compiler/src/compile.ts`:
+  - `:1005-1013` `pageBody` reads `targetContext(file)?.block`, so the route row gives a flat body with no change here.
+  - `:397` `POST_ARTICLE` and `:481-497` (`checkGhostMarkup` rule 3) still hold.
+  - `:607-613` `stacksOf` and `:114-115`/`:843-845` `routed` are read and not changed.
+- `packages/section-runtime/src/agreement.test.ts` -- add a Routes Manager template case (canvas versus theme).
+- `packages/section-runtime/src/routes.ts` -- read only: `:221` `MEMBERSHIP_FILES` (now imported), `:600`
+  `ghostLabel`, `:635` `routedOf`, `:639` `pathsUsing`, `:644` `withoutTemplate`.
+- `packages/library/src/orbit-weekly.ts:399` `templateContext` -- for `custom-*` it already gives `@site`/`@config`
+  alone. Assert this; don't change it.
+- `apps/web/lib/editor.ts`:
+  - Already there: `:27-54` `CANVASES`, `:62` `CUSTOM_TEMPLATE_CAPTION`, `:64` `CanvasKey`, `:84` `isMembership`,
+    `:101` `canvasesOf`, `:106` `canvasOfTemplateKey`, `:111-112` `templateKeyOf`, `:141-147` `fileOfKey`, `:152-153`
+    `emptiesCustomTemplate`, `:158-168` `EMPTY_TEMPLATE_ASK`, `:175` `canvasPath`, `:228-238` `canvasFromSegment` and
+    `canvasOfPath`.
+  - Add `RouteCanvas` and `Canvas = CanvasKey | RouteCanvas`, and one `fileOf`/`labelOf` that every `CANVASES[key]`
+    reader goes through (eight in `editor.tsx`, plus the switcher, `read.ts` and the `CanvasKey` files named in
+    `editor.test.ts`).
+  - `emptiesCustomTemplate` takes the routed list.
+  - Add `ROUTED_EMPTY_ASK` and `TEMPLATE_GONE`.
+- `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/[template]/layout.tsx:23-29` -- accept the route shape
+  synchronously. `page.tsx` -- title from the display name.
+- `.../(editor)/read.ts`:
+  - `:253` `editorData`;
+  - `:263` the `project_templates` read (skip orphan `custom:` docs);
+  - `:305-314` `docRefusal`;
+  - `:331` `canvasesOf`.
+  - Add `custom_templates` (`templatesOf`, `lib/routes.ts:199-207`) and `routes_config` (`parseRoutesConfig` →
+    `routedOf`, `pathsUsing`) to its parallel reads.
+- `.../(editor)/editor.tsx`:
+  - `:837-838` the current key and canvas;
+  - `:922-923` `pathOf`;
+  - `:964` `designated`;
+  - `:4910-4923` `onRemove` (D5f, label from `labelOf`);
+  - `:5504` the switcher;
+  - `:5611` `LockBar`, the B5a strip whose shape the notice copies (`components/editor/lock-bar.tsx:25-80`);
+  - `:6189`/`:6200` the two live regions;
+  - `:6275-6320` the D5f dialog.
+- `apps/web/components/editor/template-switcher.tsx`:
+  - `:47-54` the R-128 comment, rewritten;
+  - `:67-80` `GLYPH`;
+  - `:103-126` props, which gain the templates;
+  - `:152-161` `go`;
+  - `:163-195` `row`;
+  - `:276-299` the tail.
+
+  `bar-menu.tsx:59` `BarMenuRow`. `kit/icons.tsx:313-322` `CanvasCustom` (Tabler `template`); a Tabler `plus` if the
+  Kit lacks one.
+- `apps/web/lib/pilots.ts:74-98` `docRefusal` -- follows `compilesTo`.
+- `.../projects/[id]/sync/route.ts`:
+  - `:71` `TEMPLATE_KEY` is unchanged;
+  - `:114-125` is the per-key loop, which reads the project's templates once when any key is a non-membership `custom:`
+    key;
+  - the answer gains the keys it left.
+- `.../projects/[id]/routes/`:
+  - `page.tsx` reads `?new=template`;
+  - `routes-manager.tsx`: `:71` `Sheet`, `:120` `open`, `:163-184` `dropTemplate`, `:241` `onDelete`, `:277-283` the
+    toast, `:1181-1204` `DeleteTemplate`;
+  - `actions.ts`: `:57-73` `contextOf`, `:157-168` `createTemplate` (return the file), `:171-200` `deleteTemplate` (drop
+    the `:184` refusal), `:211-243` `restoreTemplate` (take the doc).
+- `apps/web/lib/routes.ts` -- `ROUTES_WORDS` (`:38-159`; retire `hasDesign` `:145`, add the design lines).
+- `tools/probe/record-theme-assembly.py` -- gains the §83 leg.
+- `tools/probe/run-verify-editor.cjs`:
+  - the header (`:268-286`) gains step 110;
+  - step 40's R-128 check (`:2354`) is re-expected;
+  - step 109 is `:9512`.
+- `tools/keyboard/journey.spec.mjs` -- End then ↑↑ to Paywall: `:4109-4121`, `:4510`, `:4593`, `:4713`, `:6711`,
+  `:7017`. `apps/web/busy.test.ts:298-309`.
+
+## Tasks & Acceptance
+
+**Execution:**
+- [ ] `packages/library` (`vocabulary.ts`, `placement.ts`, `validate.ts`, `contexts.ts`, `contexts/matrix.json`, the
+  two `design.json`) and their tests:
+  - the target;
+  - `MEMBERSHIP_FILES`;
+  - `isRouteTemplate`;
+  - `compilesTo`;
+  - the matrix's route row, picked for every Routes Manager file and never for a membership one;
+  - a4/13 and a22/1 offered on `custom-landing.hbs` and not on `custom-signup.hbs`;
+  - a17/1 and a24/1 never offered.
+
+  Every refusal sits behind a passing control. -- DW-126, the one rule both emitters read.
+- [ ] `packages/theme-compiler` tests and `section-runtime`'s `agreement.test.ts`:
+  - a Routes Manager template compiles flat, with no `{{#post}}` and no article, routed or not;
+  - an emptied routed one is `{{!< default}}`;
+  - `custom-signup.hbs` is unchanged;
+  - the canvas and the theme agree node by node.
+
+  -- F1: the entry form would blank the route.
+- [ ] `packages/section-runtime/src/routes.ts` -- import `MEMBERSHIP_FILES`. Finish with a grep for any other copy of
+  the three names. -- one list (standing rule 3).
+- [ ] `apps/web/lib/editor.ts` + `editor.test.ts`:
+  - `RouteCanvas` and `Canvas`, with `fileOf` and `labelOf`;
+  - `canvasFromSegment` takes the database shape;
+  - `templateKeyOf` and `canvasOfTemplateKey` over both kinds;
+  - `emptiesCustomTemplate(key, doc, routed)`, `ROUTED_EMPTY_ASK` and `TEMPLATE_GONE`.
+
+  `editor.test.ts:34`'s `custom-x` refusal becomes "a Routes Manager segment, and a 404 outside the shape". -- the fourth kind of
+  canvas, as data.
+- [ ] `(editor)/[template]/layout.tsx`, `page.tsx`, `read.ts` -- the shape guard; the title; the templates, the routed
+  list and each template's paths read in the same `Promise.all`; orphan `custom:` docs skipped. -- load.
+- [ ] `sync/route.ts` -- leave a deleted template's key unwritten, write the rest, and name it in the answer. -- no
+  resurrection.
+- [ ] `editor.tsx`, `template-switcher.tsx`, `kit/icons.tsx`:
+  - the group and New template (Design Notes, "Words");
+  - every `CANVASES[key]` read through `fileOf`/`labelOf`;
+  - D5f's routed sentence;
+  - the notice strip per Question 2, with the switch to Home (`router.replace`) at load and on the sync's answer, the
+    gone key's pending work dropped and the sentence also said in `#editor-said`.
+
+  -- FR-D6, FR-I3, D5b, D5f.
+- [ ] `routes/{page.tsx,routes-manager.tsx,actions.ts}`, `lib/routes.ts`, `apps/web/routes.test.ts`:
+  - `?new=template` opens the sheet;
+  - Create from it pushes the new canvas;
+  - a designed template's delete is confirmed and Undo restores the row, the doc and the config;
+  - `hasDesign` is retired.
+
+  -- FR-I3's warning and Undo.
+- [ ] `tools/probe/record-theme-assembly.py` -- **§83** (main session, the owner's go): a project with a Routes Manager
+  template holding a22/1, and `routes.yaml` adding the static route `/inflozo-probe-template/` to T1's own file.
+  1. Read T1's `routes.yaml` and the active theme, and keep both.
+  2. Upload the compiled theme and the file.
+  3. `GET /inflozo-probe-template/` shows a22/1's marker.
+  4. **Control:** the same template hand-wrapped in the entry form (`{{#post}}` + `POST_ARTICLE`) does not show it.
+  5. Restore both, and read `routes.yaml` back byte for byte.
+
+  -- standing rule 1 for F1.
+- [ ] `tools/probe/run-verify-editor.cjs` -- step 110 (Design Notes, "Walk"); step 40 re-expected. Then
+  `tools/keyboard/journey.spec.mjs`: re-point every walk past the new tail. -- R-82.
+- [ ] Propagation (standing rules 3 and 7):
+  - **DW-126** closes.
+  - **DW-344**'s first half is done; its second half follows Question 1.
+  - **`prd.md`**: FR-I3 gets a dated note (the route form; the warning and Undo are built), and FR-J5 gets one (a
+    Routes Manager template has no entry, so no article).
+  - **`appendix-b1-template-contexts.md:100`** gets a note that the route row is built and that `posts` is 7.16c's.
+  - **`docs/section-authoring.md:180`** gets the target's meaning.
+  - **`epic-7-context.md`** gets sub-bullets.
+  - **7.18's card** gets one reading: hand `compileTheme` only membership canvases' and current templates' docs.
+  - Finish with a grep for `hasDesign`, "7.16b builds", "absent until Story 7.16b" and `CanvasKey`-only readers of
+    `CANVASES[`.
+- [ ] `python3 tools/doc-audit.py --check` twice, then `pnpm check` and `pnpm keyboard`.
+
+**Acceptance Criteria:**
+- **Matches the frame (R-74).** Given the deployed switcher at 1440, compared with D5b as R-171 and R-172 re-specify it:
+  - the group's heading, rows and "New template" match in components, layout, copy and tokens;
+  - the routed warning is D5f's dialog;
+  - the notice matches what Question 2 rules;
+  - the Review records a side-by-side check.
+- Given a Routes Manager template holding a22/1 and named by a static route on T1, when its address is read, then the
+  section renders, and the entry-form control renders nothing there (§83).
+- Given any Routes Manager template, when the canvas draws it and the theme compiles it, then the two agree node by
+  node (§7.3's exit criterion).
+- Given "New template" in the switcher, when it is pressed, then it reads "Opening…" and the routes page's own skeleton
+  shows before the sheet (R-98).
+- Given a designed template deleted and then undone, when the rows are read, then the template row, the `custom:` doc
+  and the config equal what they were before the delete, byte for byte.
+
+## Spec Change Log
+
+## Design Notes
+
+### Rulings this spec is written to
+
+- **R-74** sets the frames: D5b and D5f. **R-171** sets the row anatomy, the glyph and "Custom template". **R-172**
+  highlights the row in force.
+- **R-128:** the heading and New template ship together, and that pair is this story's (R-245).
+- **R-129:** membership canvases keep their form and names. **R-245** made the split that created this story.
+- **R-248:** a route's delete never deletes its template, so the designed-content warning belongs to the template's own
+  delete.
+- **R-7:** `compileTarget` refuses, and its A29 line spells the Routes Manager target `custom-{name}.hbs`.
+- **R-170, R-98, R-82, R-238 and AD-36** are written into Boundaries.
+
+### Ruled values (the one table a ruling changes)
+
+| Question | Planned (option 1, awaiting the owner) |
+|---|---|
+| 1 — split | This story is the editor half without a post list. **Story 7.16c, "Collection and channel templates list their posts"**, comes straight after it in `sprint-status.yaml`. It takes the clauses in "Moved" below, word for word. |
+| 2 — the notice | The deleted-template notice is built from **B5a**'s strip (`lock-bar.tsx`). It is a 38px strip above the canvas: `paper-sunk`, with the `line` hairline, a 13px `CanvasCustom` glyph, the 12px sentence, and a 32px secondary **Dismiss** button. It stays until dismissed or until the next canvas switch. It is shown, not only announced. |
+
+### Routine calls, one line each (said to the owner, not asked)
+
+1. **One form, the route form, for every Routes Manager template.** Unrouted templates take it too, so adding or
+   removing a route later never strands a section. No library design that reads a post's own fields targets
+   `custom-{name}.hbs` (the PRD's category table).
+2. **What `custom-{name}.hbs` means in a design's `compileTarget`.** It means every Routes Manager template: R-7's own
+   spelling (`sections-inventory.md:672`). Membership files are named by the designs that fit them (A30).
+3. **a4/13 and a22/1 gain the target.** Their categories are "any" (`sections-inventory.md:92`, the PRD's category
+   table). a17/1 does not, because its pagination is fatal off a paginated target (R-7). a24/1 does not, because it
+   binds `post`.
+4. **The theme writes a Routes Manager template with no `{{#post}}` and no article** (F1). FR-J5's article stays on
+   every template that has an entry.
+5. **The switcher's tail is:** Template surfaces, rule, `FROM THE ROUTES MANAGER` and its rows, rule, New template,
+   Manage routes. The heading shows only over rows ("an absent row asks no questions", R-128). D5b draws the group
+   after Private; it predates the Template surfaces group, and this keeps every routing row together.
+6. **Rows follow R-171's anatomy.** They show `CanvasCustom`, the display name and "Custom template", in `templatesOf`
+   order. A row's mark is designed or **Empty**, never Auto-generated, because FR-D6 says a custom template is never
+   synthesized. D5b's "Long read · Auto-generated" is the frame's slip, and behaviour is the PRD's (R-74's scope).
+7. **The New template row is D5b's:** a plus glyph and "New template" at 600, with no caption line.
+8. **New template opens Routes & Templates with its sheet open** (`?new=template`). Create from there opens the new
+   canvas. Cancel leaves you on the page.
+9. **A segment in the database's shape that names no template opens Home with the notice, not a 404.** Routine call
+   10's switch covers it, and there is no database read before a `notFound()`.
+10. **The editor learns a template is gone at load and at its next save of that canvas.** `ponytail:` there is no
+    poll. Add one if an open editor sitting on a deleted template is ever seen.
+11. **Delete runs config → doc → row; Undo runs row → doc → config.** `ponytail:` a save landing between the doc's
+    delete and the row's can re-store the doc. `read.ts` and the sync ignore a `custom:` doc whose template is gone,
+    and 7.18's card gets the matching reading.
+12. **An unreadable stored routing counts as no route.** D5f then says "stops shipping". DW-362, 7.18's, owns the page
+    side.
+13. **No migration.** See Never.
+
+### Moved (R-195), word for word — done when Question 1 is ruled option 1
+
+To **Story 7.16c, "Collection and channel templates list their posts"**, which goes straight after 7.16b in
+`sprint-status.yaml`, with its card in `epics.md` and a line in Epic 7's preamble. Each clause is struck on 7.16b's
+card with its destination:
+- the clause "the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
+  collection that sets one, and a **channel or collection template created here is given its main feed at creation**
+  through Story 5.19's designation rule (FR-H2, DW-252)";
+- DW-344's second half: "and a main collection moved off `/` renders `/page/N/` in a context named after the route, not
+  `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records
+  why it need not." 7.16a recorded the root half;
+- the two readings that 7.16's Create handed to this card: every custom collection's and channel's own `paged` context,
+  and the canvas's Home feed reading every post while the live `/` lists only unowned ones (FR-H3).
+
+7.16c inherits R-7's "`custom-{name}.hbs` collection templates" with pagination.
+
+Owners move with the clauses:
+- DW-252 moves to 7.16c.
+- DW-344 stays open under 7.16c.
+- `epic-7-context.md`, the register (R-249, R-250) and `deferred-work.md` follow.
+
+### Words
+
+All are new unless a frame string is quoted.
+- **The switcher:**
+  - the heading is "FROM THE ROUTES MANAGER" (D5b `:163`);
+  - each row's line is "Custom template" (`CUSTOM_TEMPLATE_CAPTION`);
+  - the action row is "New template" (D5b `:178`), and "Opening…" while busy.
+- **`ROUTED_EMPTY_ASK`** (D5f's dialog):
+  - title "Delete the last section from {label}?";
+  - body "This template keeps shipping, because {paths} shows it. Visitors there will see only your header and footer
+    until you add a section.";
+  - with two or more paths, they are joined with ", " and the verb is "show";
+  - "Keep it" and "Delete section".
+- **The routes page's delete window:**
+  - designed, no route: "Its design goes with it. Undo brings it back.";
+  - routed and designed: "Also removes {paths} and its design. Undo brings them back.";
+  - routed alone is 7.16a's line, unchanged.
+- **`TEMPLATE_GONE`:** "“{name}” is no longer one of your templates, so you're on Home." with "Dismiss".
+
+### Walk (step 110, production)
+
+1. On a project with no template, the Template menu shows no heading, then a rule, New template and Manage routes (the
+   same as step 40, re-expected).
+2. Press New template with the keyboard. Expect "Opening…", the skeleton, then the sheet with focus in Name.
+3. Type a name and press Create. The editor opens `/custom-<slug>` with an empty canvas and the tab title.
+4. In the switcher: the heading, then the row (glyph, name, "Custom template", Empty), highlighted.
+5. Open the picker. a22/1 and a4/13 are offered; a17/1 and a24/1 are not, and the control is that they are offered on
+   Home and Post. Place a22/1, press ⌘S, and confirm the doc is stored under `custom:<file>`. Reload: the mark reads
+   designed.
+6. On Routes & Templates, give the template a static route. Delete the last section: the dialog shows
+   `ROUTED_EMPTY_ASK` naming the path. Press Keep it. Remove the route: the dialog shows `EMPTY_TEMPLATE_ASK` (the
+   control).
+7. On Routes & Templates, delete the designed template. The confirm carries the design line; press Cancel and nothing
+   changes. Delete again and confirm: the rows are gone (a service read). Press Undo: the rows are back, and the doc is
+   byte-equal.
+8. Use two pages. Page A has the editor on the canvas; page B deletes the template. Page A presses ⌘S: the URL becomes
+   Home, the notice shows, and the doc is not re-stored. Load the old address: Home and the notice again.
+9. Clean up, then count users and projects before and after.
+
+### Facts this spec rests on
+
+Read in Ghost 6.58.0's and 5.130.6's source from the npm tarballs at this Create, 2026-10-17; T1 untouched.
+
+- **F1 — a route's root carries no `post`.**
+  - When a static route declares no `data:`, its controller renders `response = {}`
+    (`core/frontend/services/routing/controllers/static.js:47-69` on 6.58.0, `:46-68` on 5.130.6).
+  - `formatPageResponse` adds `posts`/`pagination` only from a list result, and `post` only from a `data:` page
+    (`core/frontend/services/rendering/format-response.js:11-64`, both majors).
+  - So `{{#post}}` prints nothing at a route's address, and the entry form (`compile.ts:1005-1013`) would blank every
+    section. Inflozo writes no `data:` (7.16a). §83 executes this on T1.
+- **F2 — a collection or channel puts `posts` and `pagination` at the root,** still with no `post` (the same
+  function). That half is 7.16c's.
+- **F3 — the canvas side is already flat.** `CONTEXTS_BY_TARGET` gives a custom file `none` plus the gettables
+  (`placement.ts:108-111`), and `templateContext` gives it `@site`/`@config` alone (`orbit-weekly.ts:399`). Only
+  `compilesTo` (`:134-135`) and the matrix row (`matrix.json:251-254`) are entry-shaped.
+
+## Owner's manual test
+
+Do this on the real site after Deploy, on a laptop at full width, signed in as yourself, on **Pilot sections**
+(`b6d4db35-8e5e-45e1-a70f-4daa28916d51`). If it still has templates from an earlier test, delete them first on Routes &
+Templates. Step 9 tests your ruling on Question 2.
+
+| # | URL | Screen | What to do | Dummy data | What you should see |
+|---|-----|--------|------------|------------|---------------------|
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open the Template menu (it says **Home**) and look at the bottom. | — | A line, then **New template** with a plus, then **Manage routes**. No "From the Routes Manager" heading yet. |
+| 2 | same | Template menu | Press **New template**. | — | It reads "Opening…", a grey outline of the page shows, then Routes & Templates with the **New template** window already open. |
+| 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes?new=template` | New template | Type the name. Press **Create template**. | `Landing Test` | Under the name: `custom-landing-test.hbs` and "Ghost will show: Landing Test". After Create, the editor opens on an empty **Landing Test** canvas. The browser tab says Landing Test. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Template menu | Open the Template menu. | — | Near the bottom: **FROM THE ROUTES MANAGER**, then a row with a template icon, **Landing Test**, the line "Custom template" and a hollow dot (hover: "Empty"). The row is highlighted, because it is open. It looks like D5b. |
+| 5 | same | Canvas | Add a section. Look at what is offered. Add **Newsletter — Inline Row**. Press ⌘S. | — | Offered: Newsletter and Heroes (Latest Post), plus your header and footer. **Not** Post Grids or Post Headers. After saving, the menu's dot for Landing Test is filled. |
+| 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Template menu → **Manage routes**. Press **+ Custom route**, choose "One of your templates" → Landing Test, and press **Create route**. Then press the back arrow, and open Landing Test from the Template menu. Delete the Newsletter section. | `/landing-test/` | A window: "Delete the last section from Landing Test?" — "This template keeps shipping, because /landing-test/ shows it. Visitors there will see only your header and footer until you add a section." Press **Keep it**: the section stays. |
+| 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the **/landing-test/** route (⋯ → Delete). Go back to Landing Test and try to delete the section again. | — | This time the window says "This template stops shipping…", the old warning, because no route shows it now. Press **Keep it**. |
+| 8 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Templates | On **Landing Test** press ⋯ → **Delete**. Press **Cancel**. Do it again and confirm. Press **Undo**. Then go back to the editor and open Landing Test. | — | The window says "Its design goes with it. Undo brings it back.", with **Cancel** focused. Cancel changes nothing. Delete removes it. Undo brings it back, and in the editor the Newsletter section is still on Landing Test. |
+| 9 | Window A: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` · Window B: `…/routes` | Two windows side by side | In window A, keep the editor open on Landing Test. In window B, delete Landing Test and confirm (no Undo). Back in window A, change any setting on the section and press ⌘S. | — | Window A jumps to **Home**. A grey strip above the canvas says "“Landing Test” is no longer one of your templates, so you're on Home." with **Dismiss**. It looks like the strip the editor shows when the project is open somewhere else (your Question 2 ruling). |
+| 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Editor | Type this old address into window A. | — | Home, with the same strip. |
+| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Template menu | Open the Template menu. | — | Back to step 1's picture: no heading, and no Landing Test. |
+
+## Questions for the owner
+
+Both are open, and both are needed before Dev. The spec is written to option 1 of each, and a different ruling changes
+Design Notes' "Ruled values" table.
+
+### Question 1 — Half of this story is only about templates that list posts. May I move that half to its own story?
+
+**In plain English.** The card asks for two things.
+- **The first:** open and design the templates you make on Routes & Templates. That covers the menu rows, New template,
+  the warnings, Undo, and the move to Home.
+- **The second:** a collection's or channel's template lists its posts the way Home does. That means a main list sized
+  by that collection's own "posts per page", showing only the posts that address will show, with page 2 kept out of
+  search engines when there is no list. It also means Home's own list leaving out the posts a collection takes.
+
+The second half rebuilds the post-list machinery that Story 5.19 made for Home, Tag and Author, plus the sample and live
+posts on the canvas. Together the two would be one of the largest stories yet.
+
+**An example.** You make `/tutorials/` with a template "Tutorials List".
+- After the first half, you open Tutorials List and design it with a hero and a newsletter row.
+- After the second half, you can also put a post grid on it. The grid shows only tutorials, 10 per page if you set 10,
+  and Home's grid stops showing them.
+
+1. **(RECOMMENDED) Split it.** This story builds the first half. A new **Story 7.16c**, straight after, builds the
+   second, with its criteria moved word for word. Both land before Story 7.18 deploys anything.
+2. **One story.** Everything at once, bigger and riskier. I re-plan this spec first.
+3. **Split differently.** Tell me where.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 2 — The note shown when your open template is deleted was never drawn. May I build it from the strip above the canvas?
+
+**In plain English.** Your rule R-74 says every screen comes from a drawing. Here is the case with no drawing: a
+template you have open in one window is deleted in another, so the editor moves to Home and must say why. The nearest
+drawing is the strip above the canvas that says the project is open somewhere else (B5a). Two other new sentences, the
+routed warning and the delete window's design line, sit inside windows that are already drawn, so I am not asking about
+those.
+
+**An example.** A grey strip above the canvas reads: [template icon] "“Landing” is no longer one of your templates, so
+you're on Home." [Dismiss]
+
+1. **(RECOMMENDED) Build it from B5a's strip, exactly.** No new component, colour or size. You compare it at your test
+   (step 9), and the Review records a side-by-side check.
+2. **Draw it first.** I write the Claude Design prompt, and Dev waits for your export.
+3. **No visible note, only a sentence for screen readers.** I don't recommend it: the plan asks for a notice.
+
+**Ruled:** _(awaiting the owner)_
+
+## Verification
+
+**Commands (Dev):**
+- `pnpm check` -- exit 0. This covers lint, typecheck, and the library's placement, matrix and validate tests (each
+  refusal behind its control). It also covers `compile.test.ts` (flat Routes Manager template, membership unchanged),
+  `agreement.test.ts` (the Routes Manager case), `editor.test.ts`, `picker.test.ts`, `apps/web/routes.test.ts` (the
+  designed delete and its Undo) and `busy.test.ts` (New template, the sheet from `?new=template`).
+- `pnpm keyboard` -- every journey passes, each re-pointed past the new tail.
+- `pnpm build` -- exit 0. `node tools/check-traces.mjs` passes.
+- `python3 tools/probe/record-theme-assembly.py` (main session, the owner's in-session go, T1 only) -- the §83 rows
+  hold: the section renders at `/inflozo-probe-template/`, the entry-form control renders nothing there, and T1's
+  theme and `routes.yaml` are restored with the file read back byte for byte. Ghost 5's half is DW-326's (R-238).
+- `python3 tools/doc-audit.py --check` -- PASS, twice.
+- `grep -rn --exclude=.env "hasDesign\|7.16b builds\|absent until Story 7.16b" apps packages tools docs` -- no live
+  hit.
+
+**Review (R-82):** walk step 110 on production at the deployed head, each run recorded, with Supabase service reads for
+the stored rows. Also re-run step 40 and step 109.

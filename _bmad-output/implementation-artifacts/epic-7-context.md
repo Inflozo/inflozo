@@ -465,6 +465,26 @@ A user ships. The project compiles — purely, from what it is handed — into a
       when its delete wrote one; every `routes.yaml` upload leaves Ghost's own dated backup in `content/settings` (read in
       both majors' source — a reading on 7.17's card); DW-362 (an unreadable stored routing has no way back on the page)
       goes to 7.18's card.
+  - **Story 7.16b's Create (2026-10-17):** ready for Dev, with two questions open and both needed before Dev.
+    - **Q1 — split.** Recommended: this story is the editor half without a post list. A new 7.16c takes the following
+      word for word: the route `limit:` and main-feed-at-creation clause (DW-252), DW-344's second half, and the two
+      readings (custom paged contexts; Home's feed versus the unowned posts, FR-H3).
+    - **Q2 — the deleted-template notice.** It is undrawn. Recommended: build it from B5a's strip.
+    - **Planned.**
+      - Every Routes Manager template is the route form: flat, offered `none` plus the gettables, compiled with no
+        `{{#post}}` and no article. Routed or not, so a route change never strands a section.
+      - A design reaches such a template by listing R-7's `custom-{name}.hbs`, which a4/13 and a22/1 gain.
+      - Membership canvases keep the entry form, and `MEMBERSHIP_FILES` moves to the library.
+      - Canvases are keyed `custom-<slug>`, read from `custom_templates` + `routes_config` on load.
+      - "New template" deep-links to `routes?new=template`.
+      - A designed template's delete runs config → doc → row, and Undo runs row → doc → config.
+      - The sync leaves a deleted template's key unwritten and says so, and the editor then moves to Home with the
+        notice.
+      - D5f gains a routed sentence.
+      - No migration.
+    - **Read in source (6.58.0 and 5.130.6):** a static route with no `data:` renders `{}` (`controllers/static.js:47-69`,
+      `rendering/format-response.js:11-64`), so the entry form's `{{#post}}` would blank every section at the route.
+      MEASUREMENTS §83 executes it on T1 (`record-theme-assembly.py`, the owner's go). The walk gains step 110.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.
