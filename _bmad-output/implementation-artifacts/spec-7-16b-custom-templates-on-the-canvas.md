@@ -572,14 +572,14 @@ Templates. Step 9 tests your ruling on Question 2 (R-250).
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open the Template menu (it says **Home**) and look at the bottom. | — | A line, then **New template** with a plus, then **Manage routes**. No "From Routes & Templates" heading yet. |
-| 2 | same | Template menu | Press **New template**. | — | It reads "Opening…", a grey outline of the page shows, then Routes & Templates with the **New template** window already open. |
+| 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Template menu | Press **New template**. | — | It reads "Opening…", a grey outline of the page shows, then Routes & Templates with the **New template** window already open. |
 | 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes?new=template` | New template | Type the name. Press **Create template**. | `Landing Test` | Under the name: `custom-landing-test.hbs` and "Ghost will show: Landing Test". After Create, the editor opens on an empty **Landing Test** canvas. The browser tab says Landing Test. |
 | 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Template menu | Open the Template menu. | — | Near the bottom: **FROM ROUTES & TEMPLATES** (your Question 3 ruling), then a row with a template icon, **Landing Test**, the line "Custom template" and a small crossed-out circle at the right (hover: "Empty"). The row is highlighted, because it is open. It looks like D5b. |
-| 5 | same | Canvas | Add a section. Look at what is offered. Add **Newsletter — Inline Row**. Press ⌘S. | — | Offered: Newsletter and Heroes (Latest Post), plus your header and footer. **Not** Post Grids or Post Headers. After saving, the menu's dot for Landing Test is filled. |
+| 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Canvas | Add a section. Look at what is offered. Add **Newsletter — Inline Row**. Press ⌘S. | — | Offered: Newsletter and Heroes (Latest Post), plus your header and footer. **Not** Post Grids or Post Headers. After saving, the menu's dot for Landing Test is filled. |
 | 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Template menu → **Manage routes**. Press **+ Custom route**, choose "One of your templates" → Landing Test, and press **Create route**. Then press the back arrow, and open Landing Test from the Template menu. Delete the Newsletter section. | `/landing-test/` | A window: "Delete the last section from Landing Test?" — "This template keeps shipping, because /landing-test/ shows it. Visitors there will see only your header and footer until you add a section." Press **Keep it**: the section stays. |
 | 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the **/landing-test/** route (⋯ → Delete). Go back to Landing Test and try to delete the section again. | — | This time the window says "This template stops shipping…", the old warning, because no route shows it now. Press **Keep it**. |
 | 8 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Templates | On **Landing Test** press ⋯ → **Delete**. Press **Cancel**. Do it again and confirm. Press **Undo**. Then go back to the editor and open Landing Test. | — | The window says "Its design goes with it. Undo brings it back.", with **Cancel** focused. Cancel changes nothing. Delete removes it. Undo brings it back, and in the editor the Newsletter section is still on Landing Test. |
-| 9 | Window A: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` · Window B: `…/routes` | Two windows side by side | In window A, keep the editor open on Landing Test. In window B, delete Landing Test and confirm (no Undo). Back in window A, change any setting on the section and press ⌘S. | — | Window A jumps to **Home**. A grey strip above the canvas says "“Landing Test” is no longer one of your templates, so you're on Home." with **Dismiss**. It looks like the strip the editor shows when the project is open somewhere else (your Question 2 ruling). |
+| 9 | Window A: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` · Window B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Two windows side by side | In window A, keep the editor open on Landing Test. In window B, delete Landing Test and confirm (no Undo). Back in window A, change any setting on the section and press ⌘S. | — | Window A jumps to **Home**. A grey strip above the canvas says "“Landing Test” is no longer one of your templates, so you're on Home." with **Dismiss**. It looks like the strip the editor shows when the project is open somewhere else (your Question 2 ruling). |
 | 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Editor | Type this old address into window A. | — | Home, with the same strip. |
 | 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Template menu | Open the Template menu. | — | Back to step 1's picture: no heading, and no Landing Test. |
 
@@ -856,3 +856,16 @@ the stored rows. Also re-run step 40 and step 109.
   - **Run 2, straight after:** **0 FAIL, 61 PASS**, the heading included.
 
   Users 14 → 14, projects 10 → 10, in both runs.
+
+**Deploy (2026-10-18).**
+
+- `Deployment: dpl_4dPAKjJkvufE74JsGuYEbqQKNfTE` — READY, production, built from `923b30a5` (the head: the Dev code, every
+  Review patch, R-251 and the Review's record; the last code change is `b8ed7bf1`'s `dpl_A1DV7NGXUdksimJefBsbNBbn1SzJ`, the one
+  the Review's final step 110 walked), aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` (Vercel API,
+  `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT` read in-process by a scratch script). CI run 39051256350 at that sha:
+  `rls`, `check` and `deploy` success; Render matrix run 39051256241 success (GitHub API, `GITHUB_TOKEN`).
+- Schema: none. The story adds no migration (R-99), so there was nothing to apply and no Schema phase; the RLS gate ran green
+  on this push.
+- Signed out, `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` answers 307 to `https://app.inflozo.com/sign-in`, so the address is live. Nothing was written to any
+  database or Ghost site at Deploy; T1 was not touched.
+- The owner's test above carries the live URL in every step. `owner_test` stays `pending`.
