@@ -189,7 +189,9 @@ error.hbs · private.hbs`, plus two kinds of custom template *(Story 7.16b, DW-1
 Two restrictions are enforced at validation, not left to render:
 
 - a design emitting **pagination** is restricted to paginated targets (`home` · `index` · `tag` ·
-  `author`). Outside them `{{pagination}}` is a **fatal render**, not a warning.
+  `author`, and — Story 7.16c, R-7's "A29" — the brace `custom-{name}.hbs`: a Routes Manager template a collection or
+  channel lists paginates, and on one no route lists a feed is a secondary feed whose pager is never rendered). Outside
+  them `{{pagination}}` is a **fatal render**, not a warning; a membership file, named by its own file, never paginates.
 - a design performing a **`{{#get}}`** excludes `error.hbs` and `private.hbs`. An error page that
   queries the database compounds the outage it is reporting.
 
@@ -1144,7 +1146,12 @@ hand-picked secondary feed is refused by name otherwise (review, 2026-09-25), be
 existence get's one row there while the canvas expanded every pick. Nothing more is asked of it, and nothing about it
 is declared twice.
 
-**On a paginated page exactly one feed is the MAIN FEED** — `home`, `index`, `tag` and `author`, both pages of each.
+**On a paginated page exactly one feed is the MAIN FEED** — `home`, `index`, `tag` and `author`, both pages of each,
+and *(Story 7.16c)* a Routes Manager template a collection or channel LISTS (`isPaginated`, `listsOf`): there the main feed
+renders the route's native posts, sized by the route's own `limit:` where it sets one, and lists exactly what the route's
+address lists — its filter, with the posts an earlier collection owns dropped from the window. A feed on a Routes Manager
+template no route lists is a SECONDARY feed (below), so a route added or removed later never strands it; list the brace
+`custom-{name}.hbs` LAST in a feed's `compileTarget`, after the four files, so the render matrix's axis stays `home.hbs`.
 `packages/section-runtime/src/main-feed.ts`'s `designate` is the one rule that keeps it so: the first feed placed is
 main; a deleted or hidden main feed hands the flag to the next visible feed below, else the nearest above; a duplicate's
 copy is never main; and a doc that breaks the rule is REPAIRED, never refused. The main feed renders exactly as authored:
@@ -1229,6 +1236,7 @@ against what T1 and T3 printed and against Ghost's own source by `packages/libra
 |---|---|---|
 | `post.hbs` · `page.hbs` · a membership `custom-{name}.hbs` | **inside the post block the TEMPLATE opens** — `{{#post}}`, never `{{#page}}` | `title`, `url`, `feature_image`, `tags` (a repeat)… |
 | a Routes Manager `custom-{name}.hbs` *(Story 7.16b)* | a **flat** route root — no post, no `@page` | the universal set and a get's rows alone |
+| a LISTED Routes Manager `custom-{name}.hbs` — a collection or channel names it *(Story 7.16c)* | the list root, as Home's (F3) — no post, no `@page` | `posts` (a repeat) and `pagination.*` |
 | `index.hbs` · `home.hbs` | the list root | `posts` (a repeat) and `pagination.*` — **not** `title` |
 | `tag.hbs` · `author.hbs` | the archive root | `tag.*` / `author.*`, `posts`, `pagination.*` |
 | `error.hbs` | the error root | `data-helper="statusCode"` / `"message"` |

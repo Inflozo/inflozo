@@ -1784,3 +1784,36 @@ test('Story 7.16b — a Routes Manager template: the canvas and the theme agree 
     assert.doesNotThrow(() => render(doc(), own, { target: 'custom-signup.hbs', ghost: { title: 'Join' } }))
   }
 })
+
+// ── Story 7.16c (F3, F4) — a LISTED Routes Manager template paginates as Home does: its main feed binds Ghost's native `posts`
+//    and `pagination` at the flat root (the matrix's list row). An UNLISTED one has neither, so a feed there is a secondary feed
+//    — its own `{{#get}}`, its pager left out. Both are compared node by node, as Home's are, each beside its control.
+
+test('Story 7.16c — a listed template\'s MAIN feed: native posts and pager at the flat root, the canvas and the theme node by node', () => {
+  const file = 'custom-tutorials-list.hbs'
+  const listed = new Set([file])
+  const { canvas, theme } = agree(FEED, feedInput(undefined, { target: file, listed }))
+  assert.ok(theme.includes('{{#foreach posts}}') && !theme.includes('{{#get'), theme)
+  assert.ok(theme.includes('{{page_url pagination.next}}'), 'the main feed keeps its pager')
+  assert.ok(canvas.includes('>Native one<') && canvas.includes('class="f__pager"'), canvas)
+  // THE CONTROL: the same file with no collection or channel listing it is no paginated page — R-7's refusal, on both
+  for (const render of [renderCanvas, renderTheme]) {
+    assert.throws(() => render(doc(), FEED, feedInput(undefined, { target: file })), /data-pagination restricts this design to a paginated target/)
+  }
+})
+
+test('Story 7.16c — an UNLISTED template\'s SECONDARY feed: its own get, no pager, the canvas and the theme node by node', () => {
+  const rows = [{ title: 'Picked one', url: 'https://site.example/one/' }]
+  // the route's root: `@site` and nothing of a list (F3) — no `posts`, no `pagination`
+  const route = { target: 'custom-landing.hbs', ghost: { '@site': { title: 'Orbit Weekly' } }, site: SITE }
+  for (const target of ['custom-landing.hbs', ROUTE_TEMPLATE_TARGET]) {
+    const { canvas, theme } = agree(FEED, feedInput({ query: QUERY, rows }, { ...route, target }))
+    assert.match(theme, loosely('{{#get "posts" limit="12" order="published_at desc" include="tags,authors"}}{{#if posts}}', { start: true }), target)
+    assert.ok(theme.includes('{{#foreach posts}}'), theme)
+    for (const html of [canvas, theme]) assert.ok(!html.includes('f__pager') && !html.includes('pagination'), html)
+    assert.ok(canvas.includes('>Picked one<'), canvas)
+  }
+  // THE CONTROL: as a main feed (no query handed) the same markup on the same unlisted file is refused — its pager and its
+  // native posts do not exist there
+  for (const render of [renderCanvas, renderTheme]) assert.throws(() => render(doc(), FEED, feedInput(undefined, route)), /R-7|FR-H7/)
+})

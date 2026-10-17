@@ -890,7 +890,7 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
                     <span className="text-control-label leading-[1.5] text-ink-soft">
                       {W.postsBefore}
                       <Link href={settingsPath(projectId)} className={`font-semibold text-ink hover:underline ${ring}`}>{W.postsLink}</Link>
-                      <PostsCount n={postsPerPage} />
+                      <PostsCount n={postsPerPage} kind={where} />
                     </span>
                   </div>
                 </div>
@@ -1009,9 +1009,9 @@ function Conditions({ where, filter, suggestions, onChange }: { where: 'collecti
   )
 }
 
-/** The rest of S9c's page-size sentence, its number in mono as drawn (`:222`). */
-const PostsCount = ({ n }: { n: number }) => {
-  const words = W.postsAfter(n)
+/** The rest of S9c's page-size sentence, its number in mono as drawn (`:222`) — naming the sheet's own kind (Story 7.16c). */
+const PostsCount = ({ n, kind }: { n: number; kind: 'collection' | 'channel' }) => {
+  const words = W.postsAfter(n, kind)
   const at = words.indexOf(String(n))
   return <>{words.slice(0, at)}<span className="font-mono text-[11px]">{n}</span>{words.slice(at + String(n).length)}</>
 }

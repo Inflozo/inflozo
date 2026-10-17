@@ -6,7 +6,9 @@
 // WHAT IS HERE: the config's grammar (`parseRoutesConfig`, zod — AD-6: what is stored is parsed on read), the filter
 // builder (`filterNql`) and its OWN reader (`readNql`), the index collection's inverse (`indexFilter`), the emitter
 // (`routesYaml`), the validator (`validateRoutes`, every problem on its YAML line), the naming rule (`templateName`, §7.4),
-// the files a route names (`routedOf`) and the addresses Ghost keeps for itself (`RESERVED_SEGMENTS`).
+// the files a route names (`routedOf`) and the addresses Ghost keeps for itself (`RESERVED_SEGMENTS`). Since Story 7.16c, what
+// each template LISTS (`listsOf`, the one place it is worked out), a route's context name (`contextOf`), the evaluator the
+// canvas cuts a list with (`holdsFor`) and the lists the canvas draws (`routeList`, `homeList`).
 //
 // THE FACTS IT RESTS ON (read in Ghost 6.58.0's and 5.130.6's source at Story 7.16's Create, 2026-10-16; the spec's F1–F7):
 //   - THE INDEX COLLECTION GOES LAST, carrying the inverse of every collection's filter. Collections register in YAML order
@@ -40,6 +42,7 @@
 
 import { z } from 'zod'
 import { CUSTOM_TARGET_RE, GHOST_SLUG_RE, MEMBERSHIP_FILES } from '@inflozo/library'
+import type { orbitWeekly } from '@inflozo/library'
 import { POSTS_PER_PAGE } from './custom-settings.ts'
 
 // zod's eval probe is refused by the app's CSP; the Routes page imports this module directly (`/routes`), not through the
@@ -645,3 +648,159 @@ export const withoutTemplate = (c: RoutesConfig, file: string): RoutesConfig => 
   collections: c.collections.filter((r) => r.template !== file),
   routes: c.routes.filter((r) => r.template !== file),
 })
+
+/* ───────────────────────────────────────────── what a template lists (Story 7.16c) ───────────────────────────────────────────── */
+//
+// READ IN GHOST 6.58.0's AND 5.130.6's SOURCE at Story 7.16c's Create (2026-10-18; the spec's F1–F6):
+//   - F1 — a collection's context is its path without slashes (`collection-router.js:21`, `:55`), a channel's the same
+//     (`static-routes-router.js:19`, `:79`); F2 — page 2 of `/x/` is `['paged','x']` (`rendering/context.js:32-33`, `:43`).
+//   - F3 — a collection and a channel put `posts` and `pagination` at the root and no `post` (`format-response.js:15`,
+//     `:20`, `:59-60`), so their template paginates as Home does; a static route serves no `/page/N/`.
+//   - F4 — A COLLECTION FETCHES ITS OWN FILTER'S WINDOW, THEN KEEPS ONLY THE POSTS IT OWNS (`controllers/collection.js:75-88`,
+//     `ownsResource`) and leaves `pagination` as the window's: a post an EARLIER collection matches is dropped, never
+//     refilled. A channel keeps every match (`controllers/channel.js:53-62`).
+//   - F5 — a route's `limit` replaces `posts_per_page` for that request (`collection.js:33-42`, `channel.js:34-43`).
+
+/** STORY 7.16c — a context name's own shape: one path segment, as `PATH_RE` holds it. The compiler holds every context it
+ *  writes into the guard's `{{#is}}` to it (AD-36). */
+export const CONTEXT_RE = SEGMENT_RE
+
+/** STORY 7.16c (F1, AD-36) — A COLLECTION'S OR CHANNEL'S CONTEXT NAME, rebuilt from its `PATH_RE`-checked path and never
+ *  spliced from stored text: the path without its slashes, as Ghost names it. Throws on any path `PATH_RE` refuses —
+ *  `/` included, which is the index collection's (`index`), and Inflozo writes that one itself. */
+export function contextOf(path: string): string {
+  if (!PATH_RE.test(path)) throw new Error(`${JSON.stringify(path)} is not a path the Routes Manager writes, so it names no context`)
+  return path.slice(1, -1)
+}
+
+/** STORY 7.16c — ONE LIST A TEMPLATE SHOWS: a collection's or a channel's that names it, with what its live address lists.
+ *  `node` is the route's own filter (null: a channel with no condition lists every post); `earlier` is the posts no EARLIER
+ *  collection owns — each earlier collection's filter negated and joined by `+`, `indexNode`'s own shape — or null where
+ *  nothing is dropped (the first collection, and every channel). */
+export type Listing = {
+  kind: 'collection' | 'channel'
+  path: string
+  context: string
+  limit?: number
+  node: Node | null
+  earlier: Node | null
+}
+/** Each LISTED file and its lists — collections first, in precedence order, then channels. A `Map`, so it is `isPaginated`'s
+ *  `listed` as it stands. */
+export type Lists = ReadonlyMap<string, readonly Listing[]>
+
+/** STORY 7.16c — THE ONE PLACE A FILE'S LISTS ARE WORKED OUT (the spec's "one predicate, one list"): the editor, `read.ts`,
+ *  the compiler's shell and the harness all take them from here. A file a collection or a channel names is LISTED: it
+ *  paginates, so a feed on it is its main feed. A static route lists nothing (F3), and an unreadable stored routing — null
+ *  here — lists nothing (7.16b's routine call 12). */
+export function listsOf(c: RoutesConfig | null): Lists {
+  const out = new Map<string, Listing[]>()
+  if (c === null) return out
+  const add = (file: string, l: Listing) => out.set(file, [...(out.get(file) ?? []), l])
+  const limited = (limit?: number) => (limit === undefined ? {} : { limit })
+  c.collections.forEach((col, n) =>
+    add(col.template, { kind: 'collection', path: col.path, context: contextOf(col.path), ...limited(col.limit), node: nodeOf(col.filter), earlier: indexNode(c.collections.slice(0, n)) }))
+  for (const r of c.routes) {
+    if (isChannel(r)) add(r.template, { kind: 'channel', path: r.path, context: contextOf(r.path), ...limited(r.limit), node: nodeOf(r.channel), earlier: null })
+  }
+  return out
+}
+
+/** A row as `holdsFor` reads it — the Content API's post shape, which the sample's rows and the site's whitelisted rows share. */
+export type ListedPost = Readonly<Record<string, unknown>>
+
+const SQL_OR_ISO = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?)?(Z|[+-]\d{2}:?\d{2})?$/
+/** An instant as UTC milliseconds, or NaN: Ghost's own SQL form (`YYYY-MM-DD HH:mm:ss`, UTC — nql-lang's `SQL_FORMAT`), an
+ *  ISO string with its zone, or a bare date (its first moment, UTC). To the second, as Ghost's datetime column stores it. */
+function instantOf(v: unknown): number {
+  const m = typeof v === 'string' ? SQL_OR_ISO.exec(v.trim()) : null
+  if (m === null) return Number.NaN
+  const zone = m[7] === undefined || m[7] === 'Z' ? 'Z' : m[7].includes(':') ? m[7] : `${m[7].slice(0, 3)}:${m[7].slice(3)}`
+  return Date.parse(`${m[1]}-${m[2]}-${m[3]}T${m[4] ?? '00'}:${m[5] ?? '00'}:${m[6] ?? '00'}${zone}`)
+}
+
+const DAY_MS = 86_400_000
+/** `now` less a relative term, as nql-lang resolves it (`scope.js`' `relDateToAbsolute`, luxon's `minus` in UTC): days and
+ *  weeks exactly, months and years on the calendar with the day clamped to the month's last. */
+function agoFrom(now: number, n: number, unit: DateUnit): number {
+  if (unit === 'd' || unit === 'w') return now - n * (unit === 'w' ? 7 : 1) * DAY_MS
+  const at = new Date(now)
+  const months = at.getUTCFullYear() * 12 + at.getUTCMonth() - n * (unit === 'y' ? 12 : 1)
+  const y = Math.floor(months / 12)
+  const mo = months - y * 12
+  const last = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate()
+  return Date.UTC(y, mo, Math.min(at.getUTCDate(), last), at.getUTCHours(), at.getUTCMinutes(), at.getUTCSeconds())
+}
+
+const slugsOf = (v: unknown): string[] => (Array.isArray(v) ? v.flatMap((x) => (typeof (x as { slug?: unknown })?.slug === 'string' ? [(x as { slug: string }).slug] : [])) : [])
+
+/**
+ * STORY 7.16c — A FILTER'S TREE, EVALUATED ON ONE POST: the canvas's half of the list a route shows, so the sample and the
+ * site's rows are cut exactly as Ghost cuts them (F4). Pure (AD-1): a relative date's "now" is HANDED IN by the shell —
+ * an ISO instant or Ghost's SQL form — and resolved as nql-lang resolves it. A date the post does not carry matches no
+ * comparison, as NQL's `$gt` on a missing field does.
+ *
+ * TWO READINGS, because Ghost reads one filter two ways (read in 6.58.0's source after §84 measured it on T1, 2026-10-18):
+ *   - OWNERSHIP (the default) — which router OWNS a post, so its URL and a collection's drop (`ownsResource`): in-memory
+ *     `@tryghost/nql` over `core/server/services/url/router-filter.js`'s EXPANSIONS (`primary_tag` → `primary_tag.slug`),
+ *     `lazy-url-service.js:285-303`. `primary_tag:-x` holds on a post with NO primary tag (`$ne` on null). `routes.test.ts`
+ *     holds this reading to the independent `holds` and to `@tryghost/nql` 0.13.4 on every fixture and "not owned earlier" node.
+ *   - LISTING (`listing: true`) — which posts a collection's, a channel's or the index's page FETCHES (the Content API and
+ *     the controllers' `fetchData`): SQL through `core/server/models/post.js:291-310`'s `filterExpansions`, where
+ *     `primary_tag` is `tags.slug` with `posts_tags.sort_order:0+tags.visibility:public` and `primary_author` is
+ *     `authors.slug` with `posts_authors.sort_order:0+authors.visibility:public`. So a NEGATED `primary_tag` or
+ *     `primary_author` leaf means "HAS that primary and it is not x": a post with no tags, or whose first tag is internal
+ *     (its computed `primary_tag` null, `post.js:1059-1064`), is in neither `primary_tag:x` nor `primary_tag:-x` (§84: 6 + 26
+ *     of 33). Every other leaf reads the same both ways (`tag:-x` keeps an untagged post).
+ * The canvas cuts a page's WINDOW with the listing reading and its drop with the ownership one (`routeList`, `homeList`).
+ */
+export function holdsFor(n: Node, post: ListedPost, now: string, listing = false): boolean {
+  if (isGroup(n)) return n.join === '+' ? n.of.every((c) => holdsFor(c, post, now, listing)) : n.of.some((c) => holdsFor(c, post, now, listing))
+  if ('is' in n) {
+    if (n.field === 'featured') return post['featured'] === n.is
+    const image = post['feature_image']
+    return (image !== null && image !== undefined) === n.is
+  }
+  if ('at' in n) {
+    const v = instantOf(post['published_at'])
+    const bound = 'date' in n.at ? instantOf(n.at.date) : agoFrom(instantOf(now), n.at.ago, n.at.unit)
+    if (Number.isNaN(v) || Number.isNaN(bound)) return false
+    return n.op === '>' ? v > bound : n.op === '>=' ? v >= bound : n.op === '<' ? v < bound : v <= bound
+  }
+  const one = (key: string) => {
+    const slug = (post[key] as { slug?: unknown } | null | undefined)?.slug
+    return typeof slug === 'string' ? [slug] : []
+  }
+  const has = n.field === 'visibility' ? [post['visibility']]
+    : n.field === 'tag' ? slugsOf(post['tags'])
+      : n.field === 'author' ? slugsOf(post['authors'])
+        : one(n.field)
+  const hit = (n.values as readonly string[]).some((v) => has.includes(v))
+  if (n.op === 'any') return hit
+  // listing (SQL): a negated primary holds only on a post that HAS that primary — `post.js:291-310`, above
+  return listing && (n.field === 'primary_tag' || n.field === 'primary_author') && has.length === 0 ? false : !hit
+}
+
+/** STORY 7.16c — ONE LIST AS THE CANVAS DRAWS IT (the library's `RouteList`, handed in because the library cannot import the
+ *  runtime): the address it sits at, the NQL the site is asked with, the window (the route's own filter, as Ghost's SQL
+ *  LISTS it) and what is kept of it (not owned earlier, as Ghost's in-memory OWNERSHIP decides — F4), and the route's own
+ *  page size (F5). */
+export function routeList(l: Listing, now: string): orbitWeekly.RouteList {
+  const { node, earlier } = l
+  return {
+    base: l.path,
+    filter: node === null ? null : writeNql(node),
+    window: node === null ? () => true : (post) => holdsFor(node, post, now, true),
+    keep: earlier === null ? () => true : (post) => holdsFor(earlier, post, now),
+    ...(l.limit === undefined ? {} : { limit: l.limit }),
+  }
+}
+
+/** STORY 7.16c — HOME'S LIST (FR-H3): the index collection's — `indexFilter` as Ghost's SQL LISTS it, so a post the inverse's
+ *  negated `primary_*` leaf cannot reach (no tags, or an internal first tag) is on no page of Home, though the index owns it
+ *  (DW-364) — at `/` and the project's own page size; or undefined while no collection exists, when Home lists every post.
+ *  Nothing is dropped: everything the index's SQL lists, it owns. */
+export function homeList(c: RoutesConfig | null, now: string): orbitWeekly.RouteList | undefined {
+  const node = c === null ? null : indexNode(c.collections)
+  return node === null ? undefined : { base: '/', filter: writeNql(node), window: (post) => holdsFor(node, post, now, true), keep: () => true }
+}

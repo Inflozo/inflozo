@@ -80,11 +80,11 @@
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsCss, cardsCssVersion, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
-  CATALOG, CUSTOM_TARGET_RE, designedCards, englishStrings, excludedChunks, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion,
+  CATALOG, CUSTOM_TARGET_RE, designedCards, englishStrings, excludedChunks, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isRouteTemplate, isSiteFooter, MAIN_JS_TAG, moduleUnion,
   OWN_RULES_HEAD, ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, ROUTE_TEMPLATE_TARGET, stripCssComments, targetContext, templateKeyOfFile,
   translatableKeys,
 } from '@inflozo/library'
-import type { CardDesigns, IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
+import type { CardDesigns, IconLookup, Listed, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
 import { DEFAULT_LANGUAGE, languageRefusal, scriptOf, type Script } from '@inflozo/library/languages'
 import { overrideRefusal } from '@inflozo/library/override'
@@ -99,6 +99,7 @@ import type {
   DocInstance, Pack, PlacedSection, ProjectDoc, RenderInput, RuntimeDocument, SettingGroup, SettingRow, SettingType, SynthesisLibrary, Visibility,
 } from '@inflozo/section-runtime'
 import { fontFaceCss, pairingFiles, preloadFiles } from '@inflozo/section-runtime/fonts'
+import { CONTEXT_RE } from '@inflozo/section-runtime/routes'
 import { claim, sectionSlug } from './slug.ts'
 import { ANY_VALUE, stripCss } from './strip.ts'
 
@@ -113,6 +114,12 @@ export type CompileInput = {
   pageTwo?: Readonly<Record<string, ProjectDoc>>
   /** the `custom-{name}.hbs` files a route names (Story 7.16a's `routedOf`, handed in by Story 7.18): FR-I1's class that keeps shipping when emptied */
   routed?: readonly string[]
+  /** STORY 7.16c — each LISTED Routes Manager file and its collections' and channels' context names (`listsOf`' `context`,
+   *  each rebuilt from a checked path by `contextOf` — handed in by Story 7.18 beside `routed`). A listed file paginates: its
+   *  first visible feed is its main feed (`designate`), compiled over Ghost's native `posts` at the flat root (the matrix's
+   *  list row, F3); and a listed file with no visible feed puts its contexts in FR-H2's `noindex` guard, since its page 2
+   *  repeats page 1 (F6). A key that is no Routes Manager file, or a context outside `contextOf`'s shape, is refused (AD-36) */
+  lists?: Readonly<Record<string, readonly string[]>>
   /** the library, handed in (AD-14) — the same entries the editor reads */
   library: (designId: string) => SectionRegistryEntry | undefined
   /** the pack in force, an own pack already resolved */
@@ -216,10 +223,12 @@ const INDEX = 'index.hbs'
 const PAGE_ONES: readonly string[] = [...PAGINATED_TARGETS].filter((f) => f !== INDEX).sort(byCode)
 /** FR-H2's SEO guard names Ghost's own context for each page 2, in this fixed order (`context.js`: `/page/2/` is
  *  `['paged','index']`, `/tag/x/page/2/` is `['paged','tag']`). The guard writes them as ONE comma list, which `helpers/is.js`
- *  splits on `,` and reads as OR (its header: `{{#is "index, paged"}}`; read in source, both majors). Ceiling: `index` is
- *  the main collection's name only while it sits at `/` (`collection-router.js`: `routerName = mainRoute === '/' ? 'index'
- *  : …`) — a Routes Manager project whose main collection moves gets a context of the route's own, which is DW-344's,
- *  Story 7.16c's (R-245, R-249; Story 7.16a always emits the index collection at `/`, so `index` stays right for Home). T1 rendered the single-context form alone (§72: `author`); the comma form is read, not executed. */
+ *  splits on `,` and reads as OR (its header: `{{#is "index, paged"}}`; read in source, both majors). `index` is the main
+ *  collection's name while it sits at `/` (`collection-router.js`: `routerName = mainRoute === '/' ? 'index' : …`), and Story
+ *  7.16a always emits the index collection at `/`, so `index` stays right for Home. STORY 7.16c (DW-344's second half) — a
+ *  collection's or channel's page 2 has a context of its own, its path without slashes (F1, F2: `/x/page/2/` is
+ *  `['paged','x']`), so each FEED-LESS listed template's contexts follow these three, in code order (`lists`). T1 rendered the
+ *  single-context form at §72 (`author`); §84 executes the comma form with a custom context. */
 const PAGED_CONTEXTS: readonly (readonly [context: string, pageOne: string])[] = [['index', HOME], ['tag', 'tag.hbs'], ['author', 'author.hbs']]
 /** The files every theme carries. Ghost refuses a theme without `index.hbs` or `post.hbs` (`GS020-INDEX-REQ`,
  *  `GS020-POST-REQ`, fatal); the archives always ship their default stack. */
@@ -567,6 +576,9 @@ const LEGAL = `${COMPILE_TARGETS.filter((f) => f !== INDEX).join(', ')} and cust
 /** A file's directory under `partials/sections/`: its name without `.hbs`, the paywall's `partials/` prefix dropped. */
 const stemOf = (file: string): string => file.replace(/^partials\//, '').replace(/\.hbs$/, '')
 
+/** STORY 7.16c — the listed Routes Manager files, as `isPaginated` and the matrix's list row read them: `lists`' keys. */
+const listedOf = (input: CompileInput): Listed => ({ has: (file) => Object.hasOwn(input.lists ?? {}, file) })
+
 /** One file to emit: its page-1 stack, and its page-2 stack when an archive's page 2 is designed (the split). */
 type Stack = { file: string; pageOne: readonly DocInstance[]; pageTwo?: readonly DocInstance[] }
 
@@ -581,9 +593,11 @@ type Stack = { file: string; pageOne: readonly DocInstance[]; pageTwo?: readonly
  */
 function stacksOf(input: CompileInput): { stacks: Stack[]; pageTwos: Readonly<Record<string, readonly DocInstance[]>> } {
   const library = input.library
+  const listed = listedOf(input)
   const stored = (file: string): ProjectDoc | undefined => {
     const d = input.templates[file]
-    return d === undefined ? undefined : designate(d, file, library)
+    // Story 7.16c: a listed Routes Manager file paginates, so its first visible feed is its main feed
+    return d === undefined ? undefined : designate(d, file, library, undefined, listed)
   }
   const storedTwo = (pageOne: string): ProjectDoc | undefined => {
     const d = input.pageTwo?.[pageOne]
@@ -604,8 +618,9 @@ function stacksOf(input: CompileInput): { stacks: Stack[]; pageTwos: Readonly<Re
     ...ALWAYS.map((file) => ({ file, pageOne: own(file), ...(PAGE_ONES.includes(file) && designed(storedTwo(file)) ? { pageTwo: pageTwos[file] } : {}) })),
     ...WHEN_FILLED.map((file) => ({ file, pageOne: own(file) })).filter((s) => s.pageOne.length > 0),
   ]
-  // a custom template ships when designed or when a route names it; `private.hbs` and the paywall when designed
-  const routed = new Set(input.routed ?? [])
+  // a custom template ships when designed or when a route names it — a listed one is named by its collection or channel
+  // (Story 7.16c); `private.hbs` and the paywall when designed
+  const routed = new Set([...(input.routed ?? []), ...Object.keys(input.lists ?? {})])
   const conditional = [...new Set([...Object.keys(input.templates).filter((f) => CUSTOM_TARGET_RE.test(f)), ...routed, 'private.hbs', PAYWALL_TARGET])]
   for (const file of conditional) {
     const d = stored(file)
@@ -845,6 +860,14 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   for (const file of [...(input.routed ?? [])].sort(byCode)) {
     if (!CUSTOM_TARGET_RE.test(file)) throw new Error(`routed '${file}': a route names a custom template, custom-{name}.hbs, and never another file.`)
   }
+  // Story 7.16c (AD-36): a listed file is a Routes Manager template, and each context reaches the guard's `{{#is}}` — so each
+  // is held to `contextOf`'s own shape before anything renders, never trusted as handed
+  for (const file of Object.keys(input.lists ?? {}).sort(byCode)) {
+    if (!isRouteTemplate(file)) throw new Error(`lists '${file}': a collection or channel lists a Routes Manager template, custom-{name}.hbs, and never another file.`)
+    for (const context of input.lists?.[file] ?? []) {
+      if (typeof context !== 'string' || !CONTEXT_RE.test(context)) throw new Error(`lists '${file}': ${JSON.stringify(context)} is not a context Ghost names a collection or channel by — its path without slashes, rebuilt by contextOf (AD-36).`)
+    }
+  }
   noC0('a string', Object.values(input.strings ?? {}))
   noC0('an asset URL', Object.values(input.assets))
   // Story 7.10 — the settings, judged before anything renders, over every stored doc: each page 1, then each page 2
@@ -892,6 +915,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const copied = [...new Set(designedCards(cardDesigns).flatMap((c) => c.chunks).filter((n) => Object.hasOwn(styles, n)))]
   const ownSettings = cardsSheet.includes(OWN_RULES_HEAD)
   const { stacks, pageTwos } = stacksOf(input)
+  const listed = listedOf(input)
 
   // ── render every visible instance, with ONE UserText — file by file, page 1 before page 2 ─────────────────────────────
   const users = new UserText()
@@ -916,7 +940,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
         // an empty layer name is reported as the design's name, as the boundary comment and the slug fall back to it
         const where = `${at} · ${instance.layerName || entry.name}`
         if (!compilesTo(entry.compileTarget, file)) throw new Error(`${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`)
-        const query = feedQuery(entry, instance, file, perPage)
+        const query = feedQuery(entry, instance, file, perPage, listed)
         // the place it fills, as the editor keys it (`templateKeyOfFile`); a hook only while an override changes its dark
         // look, and none at all on a Light-only project (AD-30)
         const key = sectionKey(templateKeyOfFile(file, page === 2), instance.instanceId)
@@ -927,6 +951,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
         try {
           out = renderTheme(doc, entry.html, {
             target: file,
+            listed,
             content: instance.content,
             schema: entry.contentSchema,
             controlSchema: entry.controlSchema,
@@ -1011,7 +1036,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const pageBody = (file: string, page: 1 | 2): string => {
     const own = placed.filter((p) => p.file === file && p.page === page).map(section)
     if (own.length === 0) return ''
-    const block = targetContext(file)?.block
+    const block = targetContext(file, listed)?.block
     if (block === undefined) return own.join('\n\n')
     const inner = block === 'post' ? `${POST_ARTICLE}\n${indent(own.join('\n\n'), '  ')}\n</article>` : own.join('\n\n')
     return `{{#${block}}}\n${indent(inner, '  ')}\n{{/${block}}}`
@@ -1044,8 +1069,13 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // FR-H2's guard (DW-234, DW-253): a page 2 with no visible feed would repeat page 1, so search engines are told not to
   // index it. `noindex` alone — `{{ghost_head}}` writes the canonical, page 2's pointing at itself
   // (`meta/canonical-url.js`), and a second canonical makes search engines ignore both
-  const unlisted = PAGED_CONTEXTS.filter(([, pageOne]) => !(pageTwos[pageOne] ?? []).some(visibleFeed(input.library))).map(([context]) => context)
-  const guard = unlisted.length === 0 ? [] : ['{{#is "paged"}}', `  {{#is "${unlisted.join(', ')}"}}`, '    <meta name="robots" content="noindex">', '  {{/is}}', '{{/is}}']
+  const unlisted = [
+    ...PAGED_CONTEXTS.filter(([, pageOne]) => !(pageTwos[pageOne] ?? []).some(visibleFeed(input.library))).map(([context]) => context),
+    // Story 7.16c — each feed-less listed template's contexts, after the three, in code order: its page 2 renders the same
+    // file (F6), so with no visible feed it repeats page 1. A listed template WITH a feed adds none, nor does an unlisted one
+    ...stacks.filter((st) => listed.has(st.file) && !st.pageOne.some(visibleFeed(input.library))).flatMap((st) => input.lists?.[st.file] ?? []).sort(byCode),
+  ]
+  const guard = unlisted.length === 0 ? [] : ['{{#is "paged"}}', `  {{#is "${[...new Set(unlisted)].join(', ')}"}}`, '    <meta name="robots" content="noindex">', '  {{/is}}', '{{/is}}']
   tree[SITE_DOC] = [
     '<!DOCTYPE html>',
     '<html lang="{{@site.locale}}">',
@@ -1121,7 +1151,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const idsOf = (files: readonly string[]): string[] => designs.filter((e) => placed.some((p) => p.entry.id === e.id && files.includes(p.file))).map((e) => e.id)
   const reach: Record<string, readonly string[]> = {}
   for (const file of Object.keys(tree).filter((f) => f.endsWith('.hbs') && !f.includes('/') && f !== SITE_DOC).sort(byCode)) {
-    reach[file] = idsOf([SITE_DOC, file, ...(targetContext(file)?.block === 'post' ? [PAYWALL_TARGET] : [])])
+    reach[file] = idsOf([SITE_DOC, file, ...(targetContext(file, listed)?.block === 'post' ? [PAYWALL_TARGET] : [])])
   }
 
   tree['package.json'] = pkg   // JSON.stringify escapes every C0 character, so no user-text marker is in it to substitute

@@ -288,7 +288,7 @@
 // production (FR-D6, FR-I3, D5b, D5f, R-250) — the Template menu's tail with no template (a rule, New template, Manage routes,
 // no heading); "New template" by keyboard saying "Opening…" over the routes page's own skeleton, the sheet up with focus in
 // Name, Esc leaving the page as it was; Create opening the new canvas empty with the tab's title; D5b's group and row (glyph,
-// display name, "Custom template", Empty, highlighted); the picker offering a22/1 and a4/13 and never a17/1 or a24/1 (Home and
+// display name, "Custom template", Empty, highlighted); the picker offering a22/1 and a4/13 and never a24/1 — a17/1 too since Story 7.16c (Home and
 // Post the control), a22/1 stored under `custom:<file>` and the mark designed after a reload; D5f's routed sentence with a
 // static route PLANTED through the service key, and EMPTY_TEMPLATE_ASK once it is removed (the control); the designed
 // template's delete confirmed (its design line), Cancel, Delete and Undo, the doc byte-equal; and two pages — a ⌘S on a
@@ -297,6 +297,14 @@
 // key shape), STEP 40 (New template above Manage routes, under the one rule) and STEP 109n (c) (a designed
 // template's delete takes its doc and Undo restores it, where 7.16a refused it in a sentence of its own). Besides the product's own
 // writes it writes THROUGH THE SERVICE KEY on that project alone: 110f's two `routes_config` plants and the hand-back.
+// Story 7.16c adds step 111, in a context of its own and reading only steps 1–5's names: COLLECTION AND CHANNEL TEMPLATES LIST
+// THEIR POSTS on production (FR-H2, FR-H3, D5c) — Home before any collection (the control); a collection made from its own
+// sheet (Primary tag `tools`, New template…, its own page size 3) writing row → doc → config, its doc's a17/1 FLAGGED (a service
+// read), its canvas the collection's first three with the chip, its Count `routeCount` with "Routes & Templates ↗" opening the
+// routes page; Home without the owned posts; a channel's new template keeping an owned post with 5.19's Count; a feed-less
+// listed template's Layers note; the collection removed (no chip, Home whole again); a static route's new template empty, a17/1
+// there a secondary feed. It RE-EXPECTS STEP 110e: a17/1 is offered on a Routes Manager canvas now (routine call 3). Besides the
+// product's own writes it writes THROUGH THE SERVICE KEY on that project alone: the hand-back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -10526,10 +10534,11 @@ async function main() {
     await p110.screenshot({ path: `${OUT}/switcher-routes-1440x900.png` })
     await closeMenu110(p110)
 
-    // 110e — the picker on the Routes Manager canvas: a22/1 and a4/13 (and the site-wide designs), never a17/1 or a24/1
+    // 110e — the picker on the Routes Manager canvas: a22/1 and a4/13 (and the site-wide designs), never a24/1 — and, RE-EXPECTED
+    // by Story 7.16c (routine call 3), a17/1 too: the main feed of a listed template, a secondary feed on this unlisted one
     const offerE110 = await offered110(p110)
-    check('step 110e — the picker on a Routes Manager canvas offers a22/1 and a4/13 and never a17/1 or a24/1 (110a holds the control)',
-      offerE110.includes('a22/1') && offerE110.includes('a4/13') && !offerE110.includes('a17/1') && !offerE110.includes('a24/1'), JSON.stringify(offerE110))
+    check('step 110e — the picker on a Routes Manager canvas offers a22/1, a4/13 and (Story 7.16c) a17/1, and never a24/1 (110a holds the control)',
+      offerE110.includes('a22/1') && offerE110.includes('a4/13') && offerE110.includes('a17/1') && !offerE110.includes('a24/1'), JSON.stringify(offerE110))
     await p110.locator('dialog[open][aria-label="Add a section"] [data-cell][data-design="a22/1"]').click()
     await p110.waitForTimeout(800)
     const ownE110 = await ownRows110(p110)
@@ -10674,6 +10683,261 @@ async function main() {
     check('step 110i — the project is handed back as the step found it (no template, no doc of the step\'s, its routing row), and the block\'s context recorded zero CSP violations',
       Array.isArray(end110.ct) && end110.ct.length === 0 && Array.isArray(end110.doc) && end110.doc.length === 0 && canon110(end110.rc) === canon110(start110.rc) && csp110.length === 0,
       JSON.stringify({ end110, csp110: csp110.slice(0, 3) }))
+
+    // ── step 111 — STORY 7.16c: COLLECTION AND CHANNEL TEMPLATES LIST THEIR POSTS, ON PRODUCTION (FR-H2, FR-H3, D5c, R-82) ──
+    /* In a context of its own, on the seeded project (unlinked, so every canvas draws the sample), and SELF-CONTAINED: it reads
+       only steps 1–5's names (`P`, `ids`, `magic`, `editorUrl`, `recorder`, `steady`, `steadyRequests`, `handBack`, `call`, `at`),
+       so a cut copy can run steps 1–5 and this alone. Every sentence is the one list that prints it — `DATA_WORDS` (the
+       runtime), `lib/data-group.ts`, `lib/routes.ts`' `ROUTES_WORDS`, `lib/editor.ts` (R-170) — and every expected list of posts
+       is the library's own sample, cut by the runtime's own `routeList`/`homeList` over the stored routing. Every write is the
+       product's (the routes page's sheets, the editor), read back through the service key; the hand-back alone is the key's.
+       The Design Notes' walk, in order: 111a Home before any collection (the CONTROL); 111b a collection made from its own sheet
+       — Primary tag `tools`, New template…, its own page size 3 — whose doc holds a17/1 FLAGGED (a service read), whose canvas
+       lists the collection's first three with the chip, and whose Count reads `routeCount` with "Routes & Templates ↗" opening
+       the routes page; 111c Home without the owned posts; 111d a channel's new template (Featured) keeping an owned post, its
+       Count 5.19's line; 111e a feed-less listed template's Layers note; 111f the collection removed — the flag gone, Home
+       whole again; 111g a static route's new template empty, and a17/1 there a secondary feed (Source, Count, Order); 111h the
+       project handed back. */
+    const [RT111, RW111, ED111, DG111, RTM111, LIB111] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/data-group.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/index.ts')).href),
+    ])
+    const W111 = RW111.ROUTES_WORDS
+    const canon111 = (v) => (Array.isArray(v) ? `[${v.map(canon111).join(',')}]`
+      : v !== null && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canon111(v[k])}`).join(',')}}` : JSON.stringify(v))
+    const ct111 = async () => (await call('/rest/v1', `/custom_templates?project_id=eq.${P}&select=id,filename,display_name,kind,created_at&order=created_at`)).body
+    const rc111 = async () => (await call('/rest/v1', `/routes_config?project_id=eq.${P}&select=config,yaml`)).body
+    const doc111 = async (key) => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key)}&select=doc`)).body
+    const ownProjects111 = async () => (await call('/rest/v1', `/projects?user_id=eq.${ids[0]}&select=id&order=id`)).body
+    const ppp111 = (await call('/rest/v1', `/projects?id=eq.${P}&select=posts_per_page`)).body?.[0]?.posts_per_page
+    const start111 = { ct: await ct111(), rc: await rc111(), projects: await ownProjects111() }
+    const parsed111 = start111.rc?.[0] ? RT111.parseRoutesConfig(start111.rc[0].config) : null
+    check('step 111 — the fixture: no Routes Manager template, Ghost\'s default routing, and Posts per page reads — through the service key',
+      Array.isArray(start111.ct) && start111.ct.length === 0 && Array.isArray(start111.rc) && (start111.rc.length === 0 || (parsed111.ok && RT111.isDefaultRouting(parsed111.config))) && Number.isInteger(ppp111),
+      JSON.stringify({ start111, ppp111 }))
+    // the sample, newest first, and what each list is expected to hold — the runtime's own cut, never a list written here
+    const posts111 = LIB111.orbitWeekly.posts()
+    const title111 = (p) => p.title
+    const ownedBy111 = (p) => p.primary_tag?.slug === 'tools'
+    const owned111 = posts111.filter(ownedBy111).map(title111)
+    const tutorials111 = { path: '/walk-list/', display: 'Walk List', tag: 'tools', limit: 3 }
+    const picks111 = { path: '/walk-picks/', display: 'Walk Picks' }
+    const landing111 = { path: '/walk-landing/', display: 'Walk Landing' }
+    const [listNamed111, picksNamed111, landingNamed111] = [tutorials111, picks111, landing111].map((t) => RT111.templateName(t.display))
+    const keyOf111 = (named) => `custom:${named.file}`
+    const canvasOf111 = (named) => named.file.replace(/\.hbs$/, '')
+
+    const ctx111 = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+    const csp111 = []
+    await recorder(ctx111, csp111)
+    const p111 = steady(await ctx111.newPage())
+    p111.on('pageerror', (e) => note('pageerror 111', String(e)))
+    await p111.goto(await magic(emailA), { waitUntil: 'load' })
+    const painted111 = (key) => p111.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 }).then(() => true, () => false)
+    const frame111 = () => p111.frameLocator('section[aria-label="Canvas"] iframe')
+    /** the canvas's A17 #1 cards, by their post titles, in order */
+    const cards111 = async () => frame111().locator('#canvas .a17-1__post-title').allInnerTexts().catch(() => [])
+    const openCanvas111 = async (key) => {
+      await p111.goto(editorUrl(key === 'home' ? undefined : key), { waitUntil: 'load' })
+      const ok = await painted111(key)
+      await p111.waitForTimeout(600)
+      return ok
+    }
+    const SHEET111 = 'dialog[aria-labelledby="routes-sheet-title"][open]'
+    const sheet111 = () => p111.locator(SHEET111)
+    const escape111 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pick111 = async (id, words) => {
+      await p111.locator(`#${id}`).click()
+      await p111.locator(`[id="${id}-menu"] button`).filter({ hasText: new RegExp(`^${escape111(words)}$`) }).click()
+      await p111.waitForTimeout(200)
+    }
+    const addCond111 = async (field) => {
+      const trigger = sheet111().locator('button[popovertarget$="-add-menu"]')
+      await trigger.click()
+      await p111.locator(`[id="${await trigger.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${escape111(RW111.FIELDS.find((f) => f.field === field).label)}`) }).click()
+      await p111.waitForTimeout(200)
+    }
+    const submit111 = async () => {
+      await sheet111().locator('button[type="submit"]').click()
+      const gone = await p111.waitForFunction((s) => !document.querySelector(s), SHEET111, { timeout: 20000 }).then(() => true, () => false)
+      if (!gone) await p111.keyboard.press('Escape')
+      return gone
+    }
+    const routesPage111 = async () => {
+      await p111.goto(at(ED111.routesPath(P)), { waitUntil: 'load' })
+      await p111.getByRole('heading', { name: W111.title, exact: true }).first().waitFor({ state: 'visible', timeout: 30000 }).catch(() => {})
+    }
+    const mainRow111 = () => p111.locator('#editor-layers [data-layer-row]:has([data-main-feed-chip])')
+    const dataOf111 = async (rowLocator) => {
+      await rowLocator.locator('button').first().click()
+      await p111.waitForTimeout(400)
+      const head = p111.locator('#editor-controls button[aria-expanded]').filter({ hasText: /^Data$/ })
+      if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
+      await p111.waitForTimeout(300)
+      return p111.locator('#editor-controls [data-data-group]').first().evaluate((g) => {
+        const c = g.querySelector('[role="group"][id$="-count"]')
+        const a = g.querySelector('a')
+        return {
+          value: c?.innerText.replace(/\s+/g, '') ?? null, greyed: c?.getAttribute('aria-disabled') ?? null, text: g.innerText.replace(/\s+/g, ' '),
+          link: a && { text: a.textContent, href: a.getAttribute('href') }, source: !!g.querySelector('button[id$="-source"]'), order: !!g.querySelector('[role="radiogroup"]'),
+        }
+      }).catch(() => null)
+    }
+
+    // 111a — THE CONTROL: Home before any collection lists the owned posts its first page reaches
+    await openCanvas111('home')
+    const homeA111 = await cards111()
+    const reachA111 = posts111.slice(0, ppp111).filter(ownedBy111).map(title111)
+    check(`step 111a — the control: before any collection Home lists ${reachA111.length} post(s) whose Primary tag is ${tutorials111.tag} (${reachA111.join(' · ')})`,
+      reachA111.length > 0 && reachA111.every((t) => homeA111.includes(t)), JSON.stringify({ homeA111, reachA111 }))
+
+    // 111b — a collection from its own sheet: Primary tag `tools`, New template… "Walk List", its own page size 3
+    await routesPage111()
+    await p111.getByRole('button', { name: W111.newCollection, exact: true }).first().click()
+    await sheet111().waitFor({ state: 'visible', timeout: 15000 })
+    await sheet111().locator('#routes-path').fill(tutorials111.path)
+    await addCond111('primary_tag')
+    await sheet111().locator(`input[placeholder="${W111.add}"]`).fill(tutorials111.tag)
+    await sheet111().locator(`input[placeholder="${W111.add}"]`).press('Enter')
+    await pick111('routes-template', W111.newTemplateOption)
+    await sheet111().locator('#routes-sheet-template').fill(tutorials111.display)
+    await sheet111().locator('#routes-own-size').click()
+    await p111.waitForTimeout(250)
+    for (let n = 0; n < 120; n++) {
+      const v = Number(await p111.locator('#routes-page-size > span').textContent().catch(() => 'NaN'))
+      if (v === tutorials111.limit || Number.isNaN(v)) break
+      await p111.locator(`#routes-page-size button:${v > tutorials111.limit ? 'first' : 'last'}-of-type`).click()
+      await p111.waitForTimeout(80)
+    }
+    const shutB111 = await submit111()
+    let storedB111 = []
+    for (let n = 0; n < 60 && storedB111.length === 0; n++) { storedB111 = (await doc111(keyOf111(listNamed111))) ?? []; if (storedB111.length === 0) await p111.waitForTimeout(250) }
+    const rcB111 = (await rc111())?.[0]?.config ?? null
+    const parsedB111 = rcB111 === null ? null : RT111.parseRoutesConfig(rcB111)
+    const startDoc111 = storedB111[0]?.doc?.instances ?? []
+    check(`step 111b — the collection's sheet wrote row → doc → config: ${listNamed111.file} starts with a17/1 "Post grid" FLAGGED the main feed (a service read of ${keyOf111(listNamed111)}), and the stored routing lists it at ${tutorials111.path} with limit ${tutorials111.limit}`,
+      shutB111 && startDoc111.length === 1 && startDoc111[0].designId === 'a17/1' && startDoc111[0].layerName === 'Post grid' && startDoc111[0].isMainFeed === true &&
+      parsedB111?.ok === true && RT111.listsOf(parsedB111.config).get(listNamed111.file)?.[0]?.limit === tutorials111.limit,
+      JSON.stringify({ shutB111, startDoc111, rcB111 }))
+    // the canvas: the collection's first three, the chip on the main feed's row and outline
+    await openCanvas111(canvasOf111(listNamed111))
+    const listB111 = await cards111()
+    const wantB111 = posts111.filter(ownedBy111).slice(0, tutorials111.limit).map(title111)
+    const chipB111 = await mainRow111().count()
+    check(`step 111b — the canvas lists the collection's first ${tutorials111.limit} (${wantB111.join(' · ')}), its post grid the MAIN FEED in Layers`,
+      JSON.stringify(listB111) === JSON.stringify(wantB111) && chipB111 === 1, JSON.stringify({ listB111, wantB111, chipB111 }))
+    const dataB111 = await dataOf111(mainRow111())
+    await p111.screenshot({ path: `${OUT}/route-count-1440x900.png` })   // R-74's side-by-side with D5c, for the Review
+    check(`step 111b — D5c: the Count greyed at ${tutorials111.limit} with "${RTM111.DATA_WORDS.routeCount(tutorials111.path)}" and "${DG111.ROUTES_LINK}" to the routes page`,
+      dataB111 !== null && dataB111.value?.includes(String(tutorials111.limit)) && dataB111.greyed === 'true' && dataB111.text.includes(RTM111.DATA_WORDS.routeCount(tutorials111.path)) &&
+      dataB111.link?.text === DG111.ROUTES_LINK && (dataB111.link?.href ?? '').endsWith(ED111.routesPath(P)) && !dataB111.source,
+      JSON.stringify(dataB111))
+    await p111.locator('#editor-controls [data-data-group] a').first().click()
+    const openedB111 = await p111.waitForURL((u) => u.pathname.endsWith(ED111.routesPath(P)), { timeout: 15000 }).then(() => true, () => false)
+    check('step 111b — pressed, the link opens Routes & Templates', openedB111, p111.url().replace(/\?.*/, ''))
+
+    // 111c — Home lacks the owned posts, and lists the ones no collection owns
+    await openCanvas111('home')
+    const homeC111 = await cards111()
+    const homeWant111 = posts111.filter((p) => !ownedBy111(p)).slice(0, ppp111).map(title111)
+    check(`step 111c — FR-H3: Home lists none of the ${owned111.length} posts /walk-list/ owns, and its first page is the posts no collection owns`,
+      !owned111.some((t) => homeC111.includes(t)) && homeWant111.every((t) => homeC111.includes(t)), JSON.stringify({ homeC111, homeWant111 }))
+
+    // 111d — a channel's new template (Featured): it keeps an owned post (a channel drops nothing), and its Count is 5.19's
+    await routesPage111()
+    await p111.getByRole('button', { name: W111.customRoute, exact: true }).first().click()
+    await sheet111().waitFor({ state: 'visible', timeout: 15000 })
+    await sheet111().locator('#routes-path').fill(picks111.path)
+    await sheet111().locator('label', { hasText: W111.channel }).click()
+    await p111.waitForTimeout(250)
+    const hintD111 = (await sheet111().innerText()).includes(W111.postsAfter(ppp111, 'channel').trim())
+    await addCond111('featured')
+    await pick111('routes-template', W111.newTemplateOption)
+    await sheet111().locator('#routes-sheet-template').fill(picks111.display)
+    const shutD111 = await submit111()
+    for (let n = 0; n < 60 && ((await doc111(keyOf111(picksNamed111))) ?? []).length === 0; n++) await p111.waitForTimeout(250)
+    await openCanvas111(canvasOf111(picksNamed111))
+    const listD111 = await cards111()
+    const wantD111 = posts111.filter((p) => p.featured).slice(0, ppp111).map(title111)
+    const keptD111 = wantD111.filter((t) => owned111.includes(t))
+    const dataD111 = await dataOf111(mainRow111())
+    check(`step 111d — a channel's new template starts with its main feed, lists every featured post (${keptD111.join(' · ')} among them, owned by /walk-list/ — a channel drops nothing), and its Count reads 5.19's line with "${DG111.THEME_SETTINGS_LINK}"; the sheet's hint said "${W111.postsAfter(ppp111, 'channel').trim()}"`,
+      shutD111 && hintD111 && keptD111.length > 0 && JSON.stringify(listD111) === JSON.stringify(wantD111) && dataD111 !== null && dataD111.text.includes(RTM111.DATA_WORDS.mainCount) && dataD111.link?.text === DG111.THEME_SETTINGS_LINK,
+      JSON.stringify({ shutD111, hintD111, listD111, wantD111, dataD111 }))
+
+    // 111e — a feed-less listed template: the channel's grid hidden, the Layers note names its address; ⌘Z brings it back
+    const moreE111 = mainRow111().locator('button[aria-label^="More for "]')
+    const layerE111 = ((await moreE111.getAttribute('aria-label').catch(() => null)) ?? '').slice('More for '.length)
+    await moreE111.click()
+    await p111.waitForTimeout(250)
+    await p111.locator(':popover-open').getByRole('button', { name: 'Hide', exact: true }).click()
+    await p111.waitForTimeout(600)
+    const noteE111 = await p111.locator('#editor-layers').innerText().catch(() => '')
+    await p111.locator('#editor-undo').click()
+    await p111.waitForTimeout(600)
+    const backE111 = await p111.locator('#editor-layers').innerText().catch(() => '')
+    check(`step 111e — the channel's template with no visible feed: "${DG111.FEEDLESS_ROUTE(picks111.path)}" heads Layers, and ⌘Z takes it away`,
+      noteE111.includes(DG111.FEEDLESS_ROUTE(picks111.path)) && !backE111.includes(DG111.FEEDLESS_ROUTE(picks111.path)), JSON.stringify({ layerE111 }))
+
+    // 111f — the collection removed: its template keeps its grid, no longer the main feed, and Home is whole again
+    await routesPage111()
+    const moreF111 = p111.locator(`button[aria-label="${W111.more(tutorials111.path)}"]`)
+    await moreF111.click()
+    await p111.locator(`[id="${await moreF111.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${escape111(W111.delete)}$`) }).click()
+    await p111.locator('[role="status"]', { hasText: W111.deleted(tutorials111.path) }).waitFor({ state: 'visible', timeout: 15000 }).catch(() => {})
+    await openCanvas111(canvasOf111(listNamed111))
+    const chipF111 = await mainRow111().count()
+    const listF111 = await cards111()
+    await openCanvas111('home')
+    const homeF111 = await cards111()
+    check('step 111f — the collection removed: Walk List keeps its grid with no MAIN FEED chip, now a secondary feed showing the newest posts, and Home lists the owned posts again',
+      chipF111 === 0 && JSON.stringify(listF111) === JSON.stringify(posts111.slice(0, ppp111).map(title111)) && reachA111.every((t) => homeF111.includes(t)),
+      JSON.stringify({ chipF111, listF111, homeF111 }))
+
+    // 111g — a static route's new template: no doc, opens empty; a17/1 placed there is a secondary feed — Source, Count, Order
+    await routesPage111()
+    await p111.getByRole('button', { name: W111.customRoute, exact: true }).first().click()
+    await sheet111().waitFor({ state: 'visible', timeout: 15000 })
+    await sheet111().locator('#routes-path').fill(landing111.path)
+    await pick111('routes-route-template', W111.newTemplateOption)
+    await sheet111().locator('#routes-sheet-template').fill(landing111.display)
+    const shutG111 = await submit111()
+    await p111.waitForTimeout(800)
+    const docG111 = await doc111(keyOf111(landingNamed111))
+    await openCanvas111(canvasOf111(landingNamed111))
+    const emptyG111 = await p111.locator('#editor-layers [data-layer-row]').evaluateAll((rs) => rs.filter((r) => !r.dataset.layerRow.startsWith('site:')).length)
+    await p111.locator('section[aria-label="Canvas"]').focus()
+    await p111.keyboard.press('ControlOrMeta+k')
+    await p111.locator('dialog[open][aria-label="Add a section"]').waitFor({ state: 'visible', timeout: 15000 }).catch(() => {})
+    await p111.waitForTimeout(400)
+    await p111.locator('dialog[open][aria-label="Add a section"] [data-cell][data-design="a17/1"]').first().click()
+    await p111.waitForTimeout(800)
+    const chipG111 = await mainRow111().count()
+    const ownRowG111 = p111.locator('#editor-layers [data-layer-row^="custom:"]').first()
+    const dataG111 = await dataOf111(ownRowG111)
+    check(`step 111g — ${landing111.path}'s new template writes no doc and opens empty; a17/1 placed there carries no chip, and its Data group shows Source, Count (at Posts per page, ${ppp111}) and Order`,
+      shutG111 && Array.isArray(docG111) && docG111.length === 0 && emptyG111 === 0 && chipG111 === 0 && dataG111 !== null && dataG111.source && dataG111.order && dataG111.value?.includes(String(ppp111)) && dataG111.greyed !== 'true',
+      JSON.stringify({ shutG111, docG111, emptyG111, chipG111, dataG111 }))
+    await p111.locator('#editor-undo').click()
+    await p111.waitForTimeout(400)
+
+    // 111h — the project handed back: no template, no doc of the step's, routing as the step found it
+    await call('/rest/v1', `/custom_templates?project_id=eq.${P}`, { method: 'DELETE' })
+    for (const named of [listNamed111, picksNamed111, landingNamed111]) await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyOf111(named))}`, { method: 'DELETE' })
+    if (start111.rc?.length === 0) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'DELETE' })
+    else if (start111.rc?.[0]) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ config: start111.rc[0].config, yaml: start111.rc[0].yaml }) })
+    await handBack(p111)
+    await ctx111.close()
+    const docsEnd111 = await Promise.all([listNamed111, picksNamed111, landingNamed111].map(async (n) => ((await doc111(keyOf111(n))) ?? []).length))
+    const end111 = { ct: await ct111(), rc: await rc111(), projects: await ownProjects111() }
+    check('step 111h — the project is handed back as the step found it (no template, no doc of the step\'s, its routing row), A owns the same projects, and the block\'s context recorded zero CSP violations',
+      Array.isArray(end111.ct) && end111.ct.length === 0 && docsEnd111.every((n) => n === 0) && canon111(end111.rc) === canon111(start111.rc) &&
+      JSON.stringify(end111.projects) === JSON.stringify(start111.projects) && csp111.length === 0,
+      JSON.stringify({ end111, docsEnd111, csp111: csp111.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

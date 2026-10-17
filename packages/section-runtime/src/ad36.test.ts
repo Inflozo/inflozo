@@ -14,7 +14,7 @@ import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/lib
 import { GSCAN_INERT, PAGE_NUMBER_HBS, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SITE_LOGO_ATTR, allowedMarks, escapeUserText, assertBindableAttr, bindExpr, linkAttributes, packTokens, packTokensCss, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import { REFERENCE_PACK } from './reference.ts'
 import { ghostEntry, propSettingOf } from './custom-settings.ts'
-import { parseRoutesConfig, routesYaml } from './routes.ts'
+import { CONTEXT_RE, contextOf, listsOf, parseRoutesConfig, routesYaml, type RoutesConfig } from './routes.ts'
 import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import { languageRefusal } from '@inflozo/library/languages'
@@ -787,4 +787,25 @@ test('AD-36 (7.16a) · routes.yaml is a sink: a hostile path, slug, template or 
   assert.match(yaml, /^ {4}filter: "tag:'x'"$/m)
   assert.match(yaml, /^ {4}limit: 10$/m)
   assert.doesNotMatch(yaml, /data:|order:|rss:|controller:/)
+})
+
+test('AD-36 (7.16c) · the noindex guard\'s {{#is}} is a sink: a context is rebuilt from a checked path, never spliced from stored text', () => {
+  // the guard writes each listed context inside `{{#is "index, tag, <context>"}}` — a quote, a brace or a comma there would
+  // close the string, open an expression or name another context. The stored path is the only text it comes from:
+  const channel = (path: string) => ({ routes: [{ path, channel: { match: 'any', conditions: [] }, template: 'custom-x.hbs' }] })
+  const hostile = ['/x"}}{{#each @site}}/', '/x, home/', '/x}}/', "/x'/", '/x\n/', '/a/b/', '/']
+  for (const path of hostile) {
+    // inert: the grammar refuses the stored config, so `listsOf` is never handed it…
+    assert.equal(parseRoutesConfig(channel(path)).ok, false, JSON.stringify(path))
+    // …and a config forged past the grammar names no context — `contextOf` throws rather than return one
+    assert.throws(() => listsOf({ collections: [], routes: [{ path, channel: { match: 'any', conditions: [] }, template: 'custom-x.hbs' }], taxonomies: { tag: 'tag', author: 'author' } } as RoutesConfig), /names no context/, JSON.stringify(path))
+    assert.throws(() => contextOf(path), /names no context/)
+  }
+  // the legitimate case: a sound channel names its context, exactly Ghost's (F1), in the shape the compiler holds it to
+  const sound = parseRoutesConfig({ ...channel('/staff-picks/'), taxonomies: { tag: 'tag', author: 'author' } })
+  assert.ok(sound.ok)
+  const [l] = listsOf(sound.config).get('custom-x.hbs') ?? []
+  assert.equal(l?.context, 'staff-picks')
+  assert.match(l?.context ?? '', CONTEXT_RE)
+  assert.doesNotMatch(l?.context ?? '', /["{},\s]/)
 })

@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { BARE_HELPERS, COMPILE_TARGETS, GET_SOURCES, MEMBERSHIP_FILES, ROUTE_TEMPLATE_TARGET } from './vocabulary.ts'
-import { CONTEXT_MATRIX as M, GHOST_LABELS, ROUTE_ROW, bindable, ghostLabel, matrixKey, offerBindings, rootScope, targetContext, versionAtLeast } from './contexts.ts'
+import { CONTEXT_MATRIX as M, GHOST_LABELS, LIST_ROW, ROUTE_ROW, bindable, ghostLabel, matrixKey, offerBindings, rootScope, targetContext, versionAtLeast } from './contexts.ts'
 import type { BindingPlace, MatrixField, ScopeEntry } from './contexts.ts'
 
 
@@ -285,7 +285,7 @@ test('Story 7.16b (DW-126, F1) — a Routes Manager template reads the ROUTE row
     // the universal set and a get still reach it (F3)
     assert.equal(bindable('@site.title', at(t)), null, `${t}: @site`)
     assert.equal(bindable('title', at(t, [{ get: 'posts' }])), null, `${t}: a get's rows`)
-    // and no resource's list is offered at its root — only the universal set's (posts are Story 7.16c's)
+    // and no resource's list is offered at its root — only the universal set's (a LISTED one's posts are Story 7.16c's, below)
     assert.deepEqual(offerBindings(at(t)).repeats.filter((r) => !r.startsWith('@')), [], `${t}: a resource list at a route's root`)
   }
   // THE CONTROL: the three membership files keep the entry row, so the same title binds and @page is offered there
@@ -297,6 +297,29 @@ test('Story 7.16b (DW-126, F1) — a Routes Manager template reads the ROUTE row
   }
   // and the route row names a scope with no field of its own
   assert.deepEqual(M.scopes[M.targets[ROUTE_ROW]?.top ?? ''], {})
+})
+
+test('Story 7.16c (F3) — a LISTED Routes Manager template reads the LIST row: Home\'s flat list scope, posts and pagination at the root; unlisted, the route row', () => {
+  const listed = new Set(['custom-tutorials-list.hbs', ROUTE_TEMPLATE_TARGET, 'custom-signup.hbs'])
+  for (const t of ['custom-tutorials-list.hbs', ROUTE_TEMPLATE_TARGET]) {
+    assert.equal(matrixKey(t, listed), LIST_ROW, t)
+    assert.equal(targetContext(t, listed)?.block, undefined, `${t}: no post at a collection's root (F3), so no block`)
+    assert.deepEqual(targetContext(t, listed), M.targets['index.hbs'], `${t}: Home's own list row`)
+    assert.equal(bindable('posts', { ...at(t), listed, use: 'repeat' }), null, `${t}: the route's posts`)
+    assert.equal(bindable('pagination.next', { ...at(t), listed }), null, `${t}: the route's pagination`)
+    assert.equal(bindable('title', { ...at(t, ['posts']), listed }), null, `${t}: a post field inside the posts`)
+    assert.ok(offerBindings({ ...at(t), listed }).repeats.includes('posts'), `${t}: posts offered`)
+    // never a post at the root, and never @page — a collection has no `data:` page (F1)
+    assert.match(bindable('title', { ...at(t), listed }) ?? '', /not a field of the list scope/, t)
+    assert.match(bindable('@page.show_title_and_feature_image', { ...at(t), listed, use: 'condition' }) ?? '', /§3b/, t)
+    // THE CONTROL: the same file, unlisted, is the route row — no posts at its root
+    assert.equal(matrixKey(t), ROUTE_ROW, `${t}: unlisted`)
+    assert.notEqual(bindable('posts', { ...at(t), use: 'repeat' }), null, `${t}: unlisted, no posts`)
+  }
+  // a membership file is never listed, whatever a set claims (FR-I1): it keeps the entry row; a standard file its own
+  assert.equal(targetContext('custom-signup.hbs', listed)?.block, 'post')
+  assert.equal(matrixKey('home.hbs', new Set(['home.hbs'])), 'home.hbs')
+  assert.equal(M.targets[LIST_ROW]?.top, 'list')
 })
 
 test('inside @site.navigation a bare url is Ghost\'s url helper and refuses, and label binds (Story 4.10\'s recording, MEASUREMENTS §45)', () => {

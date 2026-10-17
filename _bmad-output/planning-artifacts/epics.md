@@ -4120,6 +4120,13 @@ how to get out of it: the Routes page then draws no list and opens no sheet, so 
 canvases and of the project's CURRENT Routes Manager templates (`custom_templates` of kind `routes`): a `custom:` doc whose
 template row is gone — the moment between a template delete's doc and row steps, or a save that landed in it — is no
 canvas (`read.ts` skips it, the sync route never writes one) and must never ship as a file nothing names.
+*(Reading, from Story 7.16c's Dev, 2026-10-18)* beside `routed`, the compile is handed `lists`: each LISTED Routes Manager
+file — one a collection or a channel names — and its contexts, taken from `listsOf(config)` over the stored routing (`{ file:
+lists.map((l) => l.context) }`), never assembled anywhere else. A listed file paginates, so its first visible feed compiles as
+the main feed over the route's native posts, and a feed-less one puts its contexts in FR-H2's `noindex` guard; omitted, every
+Routes Manager file compiles as the route form and a feed there as a secondary `{{#get}}` — wrong for a collection's template.
+And before the first deploy uploads a `routes.yaml`, this story settles **DW-364** with the owner (R-83): with Inflozo's emitted
+index filter, a post with no tags (or an internal first tag) is listed on no page once a collection filters by Primary tag.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).

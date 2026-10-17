@@ -183,10 +183,28 @@ export function templateKeyOfFile(file: string, pageTwo = false): string {
   throw new Error(`${file} has no page 2 of its own — only home.hbs, tag.hbs and author.hbs do`)
 }
 
-/** R-7, half one: `{{pagination}}` outside a paginated context is a FATAL render, not a warning. */
+/** R-7, half one: `{{pagination}}` outside a paginated context is a FATAL render, not a warning. The four files Ghost
+ *  ALWAYS paginates; a Routes Manager template paginates only while a collection or channel lists it (`isPaginated`). */
 export const PAGINATED_TARGETS: ReadonlySet<string> = new Set([
   'home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs',
 ])
+
+/** STORY 7.16c — THE ROUTES MANAGER FILES A COLLECTION OR CHANNEL NAMES (the runtime's `listsOf`, whose `Map` is one): what
+ *  `isPaginated` and the matrix's list row ask. Anything that answers `has` — the library cannot import the runtime. */
+export type Listed = { has(file: string): boolean }
+/** No file listed: every call that hands none is exactly the call before Story 7.16c. */
+export const NONE_LISTED: Listed = { has: () => false }
+
+/** STORY 7.16c — a file `listed` may name: a Routes Manager template, or `ROUTE_TEMPLATE_TARGET`, which names them all — a
+ *  render AT the brace with the brace listed is a render on every listed one (`tools/check-snapshots.mjs`' a17/1). */
+export const listable = (file: string): boolean => file === ROUTE_TEMPLATE_TARGET || isRouteTemplate(file)
+
+/** STORY 7.16c — R-7's ONE PREDICATE: a file paginates when Ghost always paginates it, or when it is a Routes Manager
+ *  template a collection or channel lists — Ghost puts `posts` and `pagination` at its root (F3), so its first feed is
+ *  its MAIN feed and `{{pagination}}` is legal there. Every reader of `PAGINATED_TARGETS.has(file)` that can meet a
+ *  custom file asks this instead. A membership file is never listed (FR-I1), and a static route's file never paginates. */
+export const isPaginated = (file: string, listed: Listed = NONE_LISTED): boolean =>
+  PAGINATED_TARGETS.has(file) || (listable(file) && listed.has(file))
 /** R-7, half two: an error page that queries the database compounds the outage it is reporting. */
 export const GET_FORBIDDEN_TARGETS: ReadonlySet<string> = new Set(['error.hbs', 'private.hbs'])
 

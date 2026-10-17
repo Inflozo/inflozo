@@ -174,9 +174,58 @@ test('a secondary feed\'s query: posts, the page size, newest first — folded w
   assert.deepEqual(feedQuery(entry, { isMainFeed: false, data: { posts: { source: 'tag', tag: 'craft' } } }, HOME, 12), { source: 'posts', limit: 12, order: 'published_at desc', filter: "tag:'craft'" })
   assert.equal(feedQuery(entry, { isMainFeed: true, data: {} }, HOME, 12), undefined, 'the main feed renders the native posts')
   assert.equal(feedQuery(library('a4/13'), { isMainFeed: false, data: {} }, HOME, 12), undefined, 'no feed, no query')
-  assert.equal(feedQuery(entry, { isMainFeed: false, data: {} }, 'post.hbs', 12), undefined)
+  // Story 7.16c — a feed off a paginated page is SECONDARY: its own query (was undefined before the story)
+  assert.deepEqual(feedQuery(entry, { isMainFeed: false, data: {} }, 'post.hbs', 12), { source: 'posts', limit: 12, order: 'published_at desc' })
   // FR-H2: never limit="all" — the page size is held to 1–100
   assert.equal(feedBase(250).limit, 100)
   assert.equal(feedBase(0).limit, 1)
   assert.equal(mainFeedOf(doc(at('a', 'a17/2'), at('b', 'a17/1', { isMainFeed: true })))?.instanceId, 'b')
+})
+
+/* ───────────────────────────── Story 7.16c — a collection's or channel's template is LISTED ───────────────────────────── */
+
+const LISTED = 'custom-tutorials-list.hbs'
+const listed = new Set([LISTED])
+
+test('(7.16c) designation on a listed Routes Manager file: its first visible feed is the main feed, as on Home', () => {
+  const page = doc(at('hero', 'a4/13'), at('grid', 'a17/1'))
+  assert.deepEqual(flags(designate(page, LISTED, library, undefined, listed)), ['grid'])
+  // the lifecycle is the same rule: a second feed placed lands secondary, a delete hands the flag on
+  const first = designate(page, LISTED, library, undefined, listed)
+  const second = designate(ok(insertSection(first, 2, parseDoc({ schemaVersion: 1, instances: [at('more', 'a17/2')] }, 'home').instances[0]!)), LISTED, library, first, listed)
+  assert.deepEqual(flags(second), ['grid'])
+  assert.deepEqual(flags(designate(ok(removeSection(second, 'grid')), LISTED, library, second, listed)), ['more'])
+  // the control: the same doc on the same file with NO route listing it carries no flag
+  assert.deepEqual(flags(designate(page, LISTED, library)), [])
+})
+
+test('(7.16c) the flag is stripped once its template is unlisted — the route deleted, the feed secondary', () => {
+  const flagged = doc(at('grid', 'a17/1', { isMainFeed: true }))
+  assert.deepEqual(flags(designate(flagged, LISTED, library, undefined, listed)), ['grid'], 'the control: listed, it stays')
+  assert.deepEqual(flags(designate(flagged, LISTED, library, undefined, new Set())), [], 'unlisted, it goes')
+  // a membership file is never listed (FR-I1), whatever a set claims — and a standard file reads PAGINATED_TARGETS alone
+  assert.deepEqual(flags(designate(flagged, 'custom-signup.hbs', library, undefined, new Set(['custom-signup.hbs']))), [])
+  assert.deepEqual(flags(designate(flagged, 'post.hbs', library, undefined, new Set(['post.hbs']))), [])
+})
+
+test('(7.16c) feedQuery: the main feed of a listed template renders the native posts; a feed on an unlisted one is secondary', () => {
+  const entry = library('a17/1')
+  assert.equal(feedQuery(entry, { isMainFeed: true, data: {} }, LISTED, 12, listed), undefined)
+  assert.deepEqual(feedQuery(entry, { isMainFeed: false, data: {} }, 'custom-landing.hbs', 12), { source: 'posts', limit: 12, order: 'published_at desc' })
+  // a flag left on a feed whose template lost its route never makes it main: its own `{{#get}}`, starting at Posts per page
+  assert.deepEqual(feedQuery(entry, { isMainFeed: true, data: {} }, LISTED, 12), { source: 'posts', limit: 12, order: 'published_at desc' })
+})
+
+test('(7.16c) Make this the main feed: offered on a listed template, refused on an unlisted one', () => {
+  const two = doc(at('main', 'a17/1', { isMainFeed: true }), at('other', 'a17/2'))
+  assert.deepEqual(flags(ok(makeMainFeed(two, LISTED, 'other', library, listed))), ['other'])
+  assert.match(String(makeMainFeed(two, LISTED, 'other', library)), /no list of posts/)
+})
+
+test('(7.16c) a listed template with no visible feed is feed-less — its page 2 repeats page 1 (F6); an unlisted one never is', () => {
+  const hidden = doc(at('head', 'a4/13'), at('grid', 'a17/1', { hidden: true, isMainFeed: true }))
+  assert.equal(feedlessArchive(hidden, LISTED, library, listed), true)
+  assert.equal(feedlessArchive(doc(at('grid', 'a17/1')), LISTED, library, listed), false, 'the control: a visible feed')
+  assert.equal(feedlessArchive(hidden, LISTED, library), false, 'a static route serves no /page/N/ (F3)')
+  assert.equal(feedlessArchive(hidden, 'custom-signup.hbs', library, new Set(['custom-signup.hbs'])), false, 'a membership file is never listed')
 })

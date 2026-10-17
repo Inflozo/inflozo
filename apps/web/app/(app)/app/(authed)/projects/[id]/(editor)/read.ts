@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { cache } from 'react'
-import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type CardDesigns, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type CardDesigns, type Listed, type SectionRegistryEntry } from '@inflozo/library'
 import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources } from '@/lib/controls-review'
@@ -20,7 +20,7 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { readViewed, type Visitor } from '@/lib/view-as'
 import { SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
 import { templatesOf } from '@/lib/routes'
-import { parseRoutesConfig, pathsUsing } from '@inflozo/section-runtime/routes'
+import { listsOf, parseRoutesConfig, pathsUsing, type RoutesConfig } from '@inflozo/section-runtime/routes'
 import { DEFAULT_LANGUAGE, scriptOf } from '@inflozo/library/languages'
 // SERVER ONLY (intl-messageformat 5.4.3): this file is imported by server modules and, as a type, by the editor — never as a value
 import { judgeOverrides } from '@inflozo/library/override'
@@ -160,9 +160,11 @@ const fileOf = fileOfKey
  *  through. Reading alone writes nothing (AD-22); a doc that already
  *  satisfies the rule comes back as the same object. HERE, in the server read, and not in `lib/editor.ts`: that module is
  *  the Shell's too, and the runtime it would import more than doubled the client script of every signed-in page (Projects
- *  384,773 → 922,553 bytes, measured on a production build at Story 5.24d's Dev). */
-export const designateAll = (docs: Readonly<Record<string, ProjectDoc>>, library: SynthesisLibrary): Record<string, ProjectDoc> =>
-  Object.fromEntries(Object.entries(docs).map(([key, doc]) => [key, designate(doc, fileOf(key), library)]))
+ *  384,773 → 922,553 bytes, measured on a production build at Story 5.24d's Dev). STORY 7.16c — `listed`, the Routes
+ *  Manager files a collection or channel names (`listsOf`): a listed template paginates, so its first visible feed is
+ *  designated its main feed on the way in, and one whose last route went has its flag stripped. */
+export const designateAll = (docs: Readonly<Record<string, ProjectDoc>>, library: SynthesisLibrary, listed?: Listed): Record<string, ProjectDoc> =>
+  Object.fromEntries(Object.entries(docs).map(([key, doc]) => [key, designate(doc, fileOf(key), library, undefined, listed)]))
 
 export type EditorData = {
   /** every stored doc, by `template_key` — the site's, each canvas's, and since Story 5.16 each PAGE 2 that has a
@@ -210,6 +212,10 @@ export type EditorData = {
    *  each one's paths for D5f's routed sentence (`routes_config` through `pathsUsing`; none when the stored routing does
    *  not parse, routine call 12). Optional for the harness's reason: it has none */
   templates?: readonly RouteTemplate[]
+  /** STORY 7.16c — the project's stored routing, PARSED (`parseRoutesConfig`), or null where it cannot be read or does not
+   *  parse (routine call 12: an unreadable routing lists nothing). The editor derives `listsOf` from it once — which
+   *  templates are listed, what each lists and Home's own list — so the canvas lists what each live address lists */
+  routes: RoutesConfig | null
   /** Story 5.5 — EVERY synthesizable canvas's default stack, by stored key, whether or not it is untouched right now.
    *  AD-22's round trip needs the stack of a canvas that is DESIGNED at load too: taking its last section off returns
    *  it to untouched, and what re-renders is this. Keyed by `template_key`, as `docs` is. */
@@ -331,6 +337,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
   if (routingRow.error) console.error('editorData: the stored routing could not be read', { code: routingRow.error.code })
   const routing = routingRow.error ? null : parseRoutesConfig(routingRow.data?.config ?? {})
   const templates: RouteTemplate[] = routeRows.map((t) => ({ canvas: t.canvas, name: t.name, paths: routing?.ok === true ? pathsUsing(routing.config, t.file) : [] }))
+  // Story 7.16c — the routing as the editor reads it, and the files it lists (one `listsOf`, the spec's one list)
+  const routes = routing?.ok === true ? routing.config : null
   const current = new Set(templates.map((t) => templateKeyOf(t.canvas)))
 
   const docs: Record<string, ProjectDoc> = {}
@@ -415,7 +423,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
    * flag, or a main feed duplicated before this story — is REPAIRED here, in what is handed to the editor, and stored
    * repaired with the next edit of that canvas. Reading alone writes nothing (AD-22). A doc that already satisfies the
    * rule comes back as the same object, so a valid designation is never moved. */
-  Object.assign(docs, designateAll(docs, held))
+  Object.assign(docs, designateAll(docs, held, listsOf(routes)))
 
   /* STORY 5.13 — the stored preview subjects, by template key.
    *
@@ -486,6 +494,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     canvases,
     synthesized,
     templates,
+    routes,
     defaults,
     dropped,
     subjects,

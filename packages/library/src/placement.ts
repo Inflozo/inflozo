@@ -104,7 +104,10 @@ export const NATIVE_FILES: readonly string[] = Object.keys(NATIVE)
 /** Every binding context a design may reach on one template: its native set (§3) plus §5's `{{#get}}` resources,
  *  which R-7 withholds from `error.hbs` and `private.hbs`. A `custom-{name}.hbs` route renders through the list
  *  path with a flat root and only the data keys Inflozo itself declared (§3, the custom-route row), so it carries
- *  no resource natively and reaches the rest through a get. */
+ *  no resource natively and reaches the rest through a get. STORY 7.16c — one a collection or channel LISTS carries the
+ *  route's `posts` natively (F3, the matrix's list row), so a feed there is its main feed; `posts` is in the answer either
+ *  way (a get reaches it), so the set a design is offered by is the same, listed or not, and a route change never strands
+ *  a feed (routine call 3). */
 export const CONTEXTS_BY_TARGET = (file: string): readonly BindingContext[] => {
   const native = NATIVE[file] ?? ['none']
   return GET_FORBIDDEN_TARGETS.has(file) ? native : [...new Set([...native, ...GETTABLE])]

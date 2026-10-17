@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.16b's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.16c's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
@@ -14,7 +14,9 @@ own Publication Language, and what Ghost does with a label 5.4.3 cannot parse; a
 theme and a designed callout, toggle and gallery switched off in Ghost's own card bundle, styled and run by the theme's
 own `cards.css` and `cards.js` — `cards.js`'s first real Ghost; and since Story 7.16b (§83) a Routes Manager template the
 compiler writes FLAT, drawing its section at a static route added to T1's own `routes.yaml` (put back and read back byte for
-byte), where the same template hand-wrapped in the entry form — `{{#post}}` and the article — draws nothing (F1).
+byte), where the same template hand-wrapped in the entry form — `{{#post}}` and the article — draws nothing (F1); and since
+Story 7.16c (§84) a collection's and a channel's templates LISTED — the collection listing its own `limit:` of the posts it
+owns and Home none of them, and one `noindex` guard naming a feed-less channel's context beside a tag's (F1–F5).
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -251,6 +253,27 @@ it, that Ghost reads it as claimed is a hypothesis.
      Its `finally` uploads T1's own file back and reads it back byte for byte, then `restore_and_delete`; the address answers
      404 again.
 
+ 19. STORY 7.16c (§84) — A COLLECTION'S AND A CHANNEL'S TEMPLATES, LISTED (F1–F5, FR-H2, FR-H3, DW-344): read only first, a
+     Primary tag with posts on both sides of it — two or more of its own, so the collection has a page 2, and as many as
+     possible among Home's newest — and a relative window in days cut in a gap of two days between two posts' ages. The
+     pilots with `custom-probe-list.hbs` holding A17 #1 UNFLAGGED on the collection `/inflozo-probe-list/` (that tag,
+     `limit: 1`) — the rule makes it the main feed (`lists`) — `custom-probe-bare.hbs` holding A22 #1 alone on the channel
+     `/probe-channel/` (the window, `limit: 1`; its path carries no `inflozo` because its context reaches `default.hbs`'s
+     guard and the fingerprint scan refuses the builder's name), and `tag.hbs` with its one feed hidden, compiled under
+     `inflozo-probe-list-template` and gated 0/0 on both pinned gscans, its guard `{{#is "tag, author, probe-channel"}}`
+     checked before anything uploads. Read only on the Content API: the index filter lists exactly, by id, the posts whose
+     primary tag EXISTS and is not the collection's — Ghost's SQL (`post.js:291-310`), so a post with no primary is in
+     neither `primary_tag:x` nor `primary_tag:-x` (DW-364, found by §84's first run) — the channel's window lists exactly the
+     posts published inside it, and a malformed filter answers 400 (the CONTROL). Both addresses answer 404 first (the CONTROL). On T1, behind `start_guard`: the tree uploaded and
+     activated, `/` read under T1's own routing and showing a post the collection will take (the CONTROL); T1's
+     `routes.yaml` replaced by `routesYaml`'s file for the probe routing; then the collection lists exactly one post, whose
+     Primary tag is that tag, and has a page 2 with no `noindex` (the CONTROL: a listed template with a feed adds no
+     context); `/` lists none of the collection's posts; the channel's page 1 carries no `noindex` and its page 2 does; and
+     the busiest tag's page 1 carries none and its page 2 does; and, where T1 publishes a post with no primary tag, it is on
+     none of Home's pages nor the collection's while its own address answers (the index OWNS it in memory — DW-364; with
+     none, a printed note). Its `finally` uploads T1's own file back and reads it back byte for byte, then
+     `restore_and_delete`; both addresses answer 404 again.
+
 What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
 activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
@@ -264,11 +287,13 @@ activated four times (German, `valid`, `broken_default`, `broken_post`) and dele
 (`PUT settings/` `locale`) set to `de`, `fr` and `de` and put back and read back in a `finally`; and Story 7.13's probe
 theme (`inflozo-probe-cards`), uploaded, activated and deleted; and Story 7.16b's two probe themes
 (`inflozo-probe-route-template`, `inflozo-probe-route-entry`), each uploaded, activated and deleted, with T1's own
-`routes.yaml` (`POST settings/routes/yaml/`) given one line and put back and read back byte for byte in a `finally` — no
-content, no other site setting, no key; the style-guide page is read through its preview link and never written; keys are
-read by variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §83 alone, replacing an
-earlier §83 of its own so a re-run re-records; §70 to §81 stay Stories 7.1's to 7.13's records, and §82 is
-`record-routes.mjs`'s (Story 7.16a). The Ghost 5 half is DW-326's.
+`routes.yaml` (`POST settings/routes/yaml/`) given one line and put back and read back byte for byte in a `finally`; and
+Story 7.16c's probe theme (`inflozo-probe-list-template`), uploaded, activated and deleted, with T1's `routes.yaml` replaced
+by `routesYaml`'s file for the probe routing and put back and read back byte for byte in a `finally` — no content, no other
+site setting, no key; the style-guide page is read through its preview link and never written; keys are read by variable
+name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §84 alone, replacing an earlier §84 of its
+own so a re-run re-records; §70 to §81 stay Stories 7.1's to 7.13's records, §82 is `record-routes.mjs`'s (Story 7.16a) and
+§83 Story 7.16b's. The Ghost 5 half is DW-326's.
 """
 import os, re, sys, json, time, html, uuid, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
 import urllib.error, urllib.parse, urllib.request
@@ -281,7 +306,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '83'   # §70 to §81 stay Stories 7.1's to 7.13's records (§82 is record-routes.mjs's, Story 7.16a's)
+SECTION = '84'   # §70 to §81 stay Stories 7.1's to 7.13's records (§82 is record-routes.mjs's, Story 7.16a's; §83 is Story 7.16b's)
 # Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
 # the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
 TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
@@ -2448,6 +2473,305 @@ def route_phase(g, rc):
     return rows
 
 
+
+# ── Story 7.16c (§84): a COLLECTION'S and a CHANNEL'S template, LISTED (F1–F5) ────────────────────────────────────────────
+# The pilots with two Routes Manager templates and T1's `routes.yaml` replaced by `routesYaml`'s own file for them: a
+# COLLECTION at `/inflozo-probe-list/` — a Primary tag derived from T1's posts, with posts on both sides of it, `limit: 1` —
+# naming `custom-probe-list.hbs`, which holds A17 #1, its MAIN feed by the rule (`lists`, `designate`); and a CHANNEL naming
+# `custom-probe-bare.hbs`, which holds A22 #1 alone (feed-less), its filter a relative date chosen from T1's own posts,
+# `limit: 1`; and `tag.hbs` feed-less (its one A17 #1 hidden). So the guard names `tag`, `author` (the pilots' hidden author
+# feed) and the channel's context — the comma form with a custom context, executed for the first time — and not the
+# collection's, which has a feed (the CONTROL). The channel's path carries no `inflozo`: its context is written into
+# `default.hbs`'s guard, and the theme's fingerprint scan refuses the builder's name in any file (§83's reason for its file).
+LIST_THEME = 'inflozo-probe-list-template'   # its own name, so nothing of the pilots' theme is touched
+LIST_FILE = 'custom-probe-list.hbs'
+BARE_FILE = 'custom-probe-bare.hbs'
+LIST_PATH = '/inflozo-probe-list/'
+CHANNEL_PATH = '/probe-channel/'
+COMPILE_LIST = r"""
+const root = process.env.ROOT
+const pilots = await import(`${root}/tools/pilot-theme.mjs`)
+const rt = await import(`${root}/packages/section-runtime/src/index.ts`)
+const routes = await import(`${root}/packages/section-runtime/src/routes.ts`)
+const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
+const find = pilots.library()
+const [LIST, BARE] = [process.env.LIST_FILE, process.env.BARE_FILE]
+const config = {
+  collections: [{ path: process.env.LIST_PATH, filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: [process.env.LIST_TAG] }] }, template: LIST, limit: 1 }],
+  routes: [{ path: process.env.CHANNEL_PATH, channel: { match: 'all', conditions: [{ field: 'published_at', op: '>', at: { ago: Number(process.env.AGO_DAYS), unit: 'd' } }] }, template: BARE, limit: 1 }],
+  taxonomies: { ...routes.DEFAULT_TAXONOMIES },
+}
+const problems = routes.validateRoutes(config, { templates: [LIST, BARE] })
+if (problems.length > 0) throw new Error(`the probe routing does not validate: ${JSON.stringify(problems)}`)
+// the one list (`listsOf`): each listed file and its contexts, as Story 7.18 hands the compiler `lists`
+const lists = Object.fromEntries([...routes.listsOf(config)].map(([file, ls]) => [file, ls.map((l) => l.context)]))
+const one = (file, instanceId, designId, layer, over = {}) => rt.parseDoc({ schemaVersion: 1, instances: [{
+  instanceId, layerName: `${layer} ${words.layerWord}`, designId, content: { ...rt.defaultContent(find(designId).contentSchema), ...(over.content ?? {}) },
+  controls: {}, data: {}, darkOverrides: {}, ...(over.hidden === undefined ? {} : { hidden: over.hidden }),
+}] }, file)
+const edit = (project) => {
+  // the collection's template: A17 #1, UNFLAGGED — the rule designates it, as `listedStart` writes it flagged at creation
+  project.templates[LIST] = one(LIST, 'list-01-x9q', 'a17/1', 'List probe')
+  project.templates[BARE] = one(BARE, 'bare-01-x9q', 'a22/1', 'Channel probe', { content: { heading: process.env.CHANNEL_WORD } })
+  // a feed-less Tag page: its one feed hidden, its page 2 following
+  project.templates['tag.hbs'] = one('tag.hbs', 'tag-01-x9q', 'a17/1', 'Tag feed', { hidden: true })
+  delete project.pageTwo['tag.hbs']
+}
+const { files, templates, pageTwo } = pilots.compilePilots(words, { theme: JSON.parse(process.env.THEME), postsPerPage: Number(process.env.PER_PAGE), find, edit, routed: routes.routedOf(config), lists })
+const docs = [...Object.values(templates), ...Object.values(pageTwo)]
+process.stdout.write(JSON.stringify({
+  files: Object.fromEntries(Object.entries(files).map(([p, b]) => [p, typeof b === 'string' ? b : { base64: Buffer.from(b).toString('base64') }])),
+  yaml: routes.routesYaml(config), lists, scaffold: pilots.SCAFFOLD,
+  index: routes.indexFilter(config.collections), channel: routes.filterNql(config.routes[0].channel), list: routes.filterNql(config.collections[0].filter),
+  failures: pilots.themeFailures(files, docs.flatMap((d) => d.instances.map((i) => i.instanceId))),
+}))
+"""
+
+
+def all_posts(g, query=''):
+    """Every published post the Content API lists for `query` (`filter=…&` or ''), paged at Ghost 6's 100: `[{id, slug,
+    published_at}]`, or a Void naming the status."""
+    out, page = [], 1
+    while True:
+        st, got = g.content(f'posts/?{query}limit=100&page={page}&fields=id,slug,published_at')
+        if st != 200:
+            raise Void(f'the Content API did not list posts for {query or "all"} (HTTP {st})')
+        out += got.get('posts') or []
+        pages = ((got.get('meta') or {}).get('pagination') or {}).get('pages') or 1
+        if page >= pages:
+            return out
+        page += 1
+
+
+def primaries(g):
+    """Every published post with Ghost's own computed `primary_tag` (the Content API's, with `include=tags` — null for a post
+    with no tags or whose first tag is internal, `post.js:1059-1064`): `[{id, slug, path, primary, tags}]`, paged at 100,
+    asked with `formats=mobiledoc` so no body comes back (§51). Read only."""
+    out, page = [], 1
+    while True:
+        st, got = g.content(f'posts/?include=tags&formats=mobiledoc&limit=100&page={page}')
+        if st != 200:
+            raise Void(f'the Content API did not list posts with their tags (HTTP {st})')
+        for p in got.get('posts') or []:
+            out.append({'id': p['id'], 'slug': p['slug'], 'path': urllib.parse.urlparse(p.get('url') or '').path or f"/{p['slug']}/",
+                        'primary': (p.get('primary_tag') or {}).get('slug'), 'tags': len(p.get('tags') or [])})
+        pages = ((got.get('meta') or {}).get('pagination') or {}).get('pages') or 1
+        if page >= pages:
+            return out
+        page += 1
+
+
+def instant(iso):
+    """A Content API timestamp as an aware UTC datetime."""
+    return datetime.datetime.fromisoformat(iso.replace('Z', '+00:00')).astimezone(datetime.timezone.utc)
+
+
+def list_inputs(g, per_page):
+    """§84's inputs, read from T1 (read only): the Primary tag the collection takes — posts on both sides of it, at least two
+    of its own so the list has a page 2, and as many as possible among the newest `per_page` so Home's first page shows one
+    before the routing moves it (the CONTROL) — and the channel's relative window in days, cut in a gap of two days or more
+    between two posts' ages, so the request's own clock cannot move a post across it."""
+    everything = all_posts(g)
+    if len(everything) < 3:
+        raise Void(f'T1 publishes {len(everything)} post(s) — a collection with a page 2 and a Home left over needs three')
+    newest = {p['slug'] for p in sorted(everything, key=lambda p: p['published_at'], reverse=True)[:per_page]}
+    st, listed = g.content('tags/?limit=all&fields=slug')
+    slugs = sorted(x['slug'] for x in ((listed or {}).get('tags') or []))
+    if st != 200 or not slugs:
+        raise Void(f'the Content API lists no tags (HTTP {st})')
+    best = None
+    for slug in slugs:
+        own = {p['slug'] for p in all_posts(g, f'filter={urllib.parse.quote(f"primary_tag:{slug}", safe="")}&')}
+        if len(own) < 2 or len(own) >= len(everything):
+            continue
+        score = (len(own & newest), len(own), slug)
+        if best is None or score > best[0]:
+            best = (score, slug, own)
+    if best is None or best[0][0] == 0:
+        raise Void("no Primary tag on T1 has two posts of its own, a post outside it, and one among Home's newest — §84 needs one")
+    now = datetime.datetime.now(datetime.timezone.utc)
+    ages = sorted((now - instant(p['published_at'])).total_seconds() / 86400 for p in everything)
+    # the window: the widest cut with at least two posts inside it and a gap of two days either side of its edge, else
+    # every post (a whole number of days past the oldest)
+    cuts = [int(ages[i]) + 1 for i in range(1, len(ages) - 1) if ages[i + 1] - ages[i] >= 2 and int(ages[i]) + 1 - ages[i] >= 0.5 and ages[i + 1] - (int(ages[i]) + 1) >= 0.5]
+    ago = max(cuts) if cuts else int(ages[-1]) + 2
+    if ago > 999:
+        raise Void(f'the channel\'s window would be {ago} days — past the Routes Manager\'s 999 (AGO.max), so §84 cannot cut one on T1')
+    # what the index filter `primary_tag:-'<tag>'` LISTS, as Ghost's SQL means it (`post.js:291-310`'s `filterExpansions`:
+    # a primary that exists and is not the tag) — and the posts with no primary, which it lists on no page while the index
+    # still OWNS them in memory (`router-filter.js`, `lazy-url-service.js:285-303`): DW-364, measured by §84's first run
+    rich = primaries(g)
+    index_ids = sorted(p['id'] for p in rich if p['primary'] is not None and p['primary'] != best[1])
+    unreached = sorted((p for p in rich if p['primary'] is None), key=lambda p: (p['tags'], p['slug']))
+    return {'tag': best[1], 'owned': sorted(best[2]), 'total': len(everything), 'ago': ago, 'index_ids': index_ids, 'unreached': unreached}
+
+
+def list_compiled(nonce, per_page, li):
+    """§84's tree: the pilots with the two listed templates and a feed-less Tag page, §73's scaffold beside them, and the
+    routing as `routesYaml` writes it. The controls that hold before anything uploads: the collection's template opens no
+    block and carries its feed over the native posts (`{{#foreach posts}}`, no `{{#get}}`) and its pager; the channel's
+    template carries A22 #1 with the CHANNEL word and no feed; the guard names `tag`, `author` and the channel's context and
+    not the collection's; and the file names the collection's filter, its `limit: 1` and the index's inverse."""
+    words = {'PAGE_WORD': f'Page{nonce}', 'LAYER_WORD': f'Layer{nonce}'}
+    channel_word = f'Channel{nonce}'
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', COMPILE_LIST], capture_output=True, text=True, timeout=300,
+                         env={**os.environ, 'ROOT': ROOT, 'PER_PAGE': str(per_page), 'THEME': json.dumps({**THEME, 'name': LIST_THEME}),
+                              'LIST_FILE': LIST_FILE, 'BARE_FILE': BARE_FILE, 'LIST_PATH': LIST_PATH, 'CHANNEL_PATH': CHANNEL_PATH,
+                              'LIST_TAG': li['tag'], 'AGO_DAYS': str(li['ago']), 'CHANNEL_WORD': channel_word, **words})
+    if run.returncode != 0:
+        raise Void(f'the listed-template compile did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    if out['failures']:
+        raise Void('the listed-template tree fails the check CI holds it to:\n      ' + '\n      '.join(out['failures']))
+    files = {p: base64.b64decode(b['base64']) if isinstance(b, dict) else b for p, b in out['files'].items()}
+    clash = [p for p in out['scaffold'] if p in files]
+    if clash:
+        raise Void(f'the scaffold would replace compiled files in the listed-template tree: {clash}')
+    def invoked(file):
+        m = re.search(r'\{\{> "(sections/[^"]+)"\}\}', files.get(file) or '')
+        return files.get(f'partials/{m.group(1)}.hbs', '') if m else ''
+    channel_context = CHANNEL_PATH.strip('/')
+    want_guard = f'{{{{#is "tag, author, {channel_context}"}}}}'
+    feed, bare, shell = invoked(LIST_FILE), invoked(BARE_FILE), files.get('default.hbs', '')
+    if '{{#post}}' in (files.get(LIST_FILE) or '') or '{{#foreach posts}}' not in feed or '{{#get' in feed or 'pagination' not in feed:
+        raise Void(f'{LIST_FILE} is not the listed form — its feed over the native posts, pager and all:\n{files.get(LIST_FILE)}\n{feed}')
+    if channel_word not in bare or 'a22-1' not in bare or '{{#foreach' in bare or '{{#get' in bare:
+        raise Void(f'{BARE_FILE} does not carry A22 #1 alone with the CHANNEL word {channel_word}')
+    if want_guard not in shell or LIST_PATH.strip('/') in shell:
+        raise Void(f'the guard is not {want_guard} — the collection, which has a feed, must add none:\n{shell}')
+    yaml = out['yaml']
+    for line in (f'  {LIST_PATH}:', f'    filter: "{out["list"]}"', '    limit: 1', f'    filter: "{out["index"]}"', f'  {CHANNEL_PATH}:', '    controller: channel', f'    filter: "{out["channel"]}"'):
+        if f'\n{line}\n' not in f'\n{yaml}':
+            raise Void(f'routesYaml\'s file lacks the line {line!r}:\n{yaml}')
+    return {'tree': {**files, **out['scaffold']}, 'yaml': yaml, 'guard': want_guard, 'channel_word': channel_word,
+            'index': out['index'], 'channel': out['channel'], 'list': out['list'], 'lists': out['lists'], 'context': channel_context}
+
+
+CARD_HREF = re.compile(r'<a\b[^>]*\bclass="a17-1__card"[^>]*>')
+
+
+def card_slugs(body):
+    """The post slugs A17 #1's cards link to on a page, in order — each href's last path segment."""
+    out = []
+    for tag in CARD_HREF.findall(body):
+        m = re.search(r'\bhref="([^"]*)"', tag)
+        if m:
+            out.append(m.group(1).rstrip('/').rsplit('/', 1)[-1])
+    return out
+
+
+def head_of(body):
+    return body.split('</head>', 1)[0]
+
+
+def list_phase(g, lt, li, arch):
+    """§84 on T1, behind `start_guard` and a `finally` that puts T1's own `routes.yaml` back (read back byte for byte) and
+    then `restore_and_delete`: the tree activated, Home read under T1's own routing (the CONTROL: it shows a post the
+    collection will take), `routesYaml`'s file uploaded, then the collection, Home, both page 2s and a tag's read, and a post
+    with no primary tag looked for on every page and at its own address (DW-364); and the Content API read with the emitted
+    filters (read only) — the index's compared by id with what Ghost's SQL means — a malformed one its CONTROL. Returns the rows."""
+    rows = []
+
+    def row(ok, page, what, detail):
+        rows.append((bool(ok), page, what, detail))
+        print(f'    {"PASS" if ok else "FAIL"}  {page:<30} {what} — {str(detail)[:120]}')
+
+    owned = set(li['owned'])
+    tag = arch['tag'][0]
+    original = routes_yaml_get(g)
+    if not original:
+        raise Void("T1 answered an empty routes.yaml — nothing to restore, so nothing is written")
+    for path in (LIST_PATH, CHANNEL_PATH):
+        st, _ = g.page(path)
+        if st != 404:
+            raise Void(f'{path} answered HTTP {st} before the upload — a segment this run needs is taken')
+        row(True, path, 'CONTROL — the address is free before the upload (404)', f'HTTP {st}')
+    # read only, before anything is written: the Content API takes each emitted filter, and refuses a malformed one
+    # the index filter, as Ghost's SQL LISTS it: exactly the posts whose primary tag exists and is not the collection's, by id
+    # — a post with no primary (no tags, or an internal first tag) is in neither `primary_tag:x` nor `primary_tag:-x` (DW-364)
+    index_ids = {p['id'] for p in all_posts(g, f'filter={urllib.parse.quote(lt["index"], safe="")}&')}
+    want_ids = set(li['index_ids'])
+    row(index_ids == want_ids, 'content API posts/', f'the index filter `{lt["index"]}` lists exactly the {len(want_ids)} posts whose primary tag exists and is not `{li["tag"]}` (SQL), {len(li["unreached"])} with no primary left out',
+        f'{len(index_ids)} listed, {len(index_ids ^ want_ids)} differ')
+    now = datetime.datetime.now(datetime.timezone.utc)
+    expected = {p['id'] for p in all_posts(g) if instant(p['published_at']) > now - datetime.timedelta(days=li['ago'])}
+    got_ids = {p['id'] for p in all_posts(g, f'filter={urllib.parse.quote(lt["channel"], safe="")}&')}
+    row(got_ids == expected and len(expected) >= 2, 'content API posts/', f'the channel\'s window (now-{li["ago"]}d) lists exactly the posts published since, two or more (its page 2 exists)', f'{len(got_ids)} of {li["total"]}')
+    st, _ = g.content(f'posts/?filter={urllib.parse.quote("tag:" + chr(39) + "x", safe="")}&limit=1&fields=id')
+    row(st == 400, 'content API posts/', 'CONTROL — a malformed filter (an unclosed quote) answers 400, so a 200 above is the filter read', f'HTTP {st}')
+    previous = shim.start_guard(g)
+    wrote = False
+    try:
+        st, res = g._multipart('themes/upload/', [('file', f'{LIST_THEME}.zip', 'application/zip', contexts.zip_bytes(lt['tree']))])
+        g.api('PUT', f'themes/{res["themes"][0]["name"]}/activate/')
+        wrote = True
+        for _ in range(15):
+            st, body = g.page('/')
+            if shim.active_theme(g) == LIST_THEME and st == 200 and 'class="a1-1' in body:
+                break
+            time.sleep(2)
+        before = card_slugs(body)
+        row(st == 200 and bool(owned & set(before)), '/', f'CONTROL — under T1\'s own routing Home lists a post whose Primary tag is `{li["tag"]}`', ', '.join(sorted(owned & set(before))))
+        row(routes_yaml_post(g, lt['yaml'].encode('utf8')) in (200, 201), 'settings/routes/yaml/', "routesYaml's file for the probe routing uploads", f'{len(lt["yaml"])} bytes')
+        for _ in range(30):
+            st, body = g.page(LIST_PATH)
+            if st == 200 and 'class="a17-1' in body:
+                break
+            time.sleep(2)
+        cards = card_slugs(body)
+        row(st == 200 and len(cards) == 1, LIST_PATH, 'F5 — the collection lists exactly its own `limit: 1`', f'HTTP {st}, {len(cards)} card(s)')
+        row(len(cards) == 1 and cards[0] in owned, LIST_PATH, f'F3/F4 — the one post it lists has `{li["tag"]}` as its Primary tag', ', '.join(cards))
+        row(NOINDEX not in head_of(body), LIST_PATH, 'page 1 carries no noindex', 'none')
+        st, body = g.page(f'{LIST_PATH}page/2/')
+        row(st == 200 and len(card_slugs(body)) == 1 and 'class="a1-1' in body, f'{LIST_PATH}page/2/', 'the collection has a page 2, this theme\'s, with its next post', f'HTTP {st}')
+        row(NOINDEX not in head_of(body), f'{LIST_PATH}page/2/', 'CONTROL — a listed template WITH a feed adds no context to the guard: no noindex on its page 2', 'none')
+        st, body = g.page('/')
+        home = card_slugs(body)
+        row(st == 200 and len(home) > 0 and not (owned & set(home)), '/', f'FR-H3 — Home lists none of the posts the collection owns (its index filter `{lt["index"]}`)', f'{len(home)} card(s)')
+        st, body = g.page(CHANNEL_PATH)
+        row(st == 200 and lt['channel_word'] in body and 'class="a22-1' in body and NOINDEX not in head_of(body), CHANNEL_PATH, 'the channel draws its feed-less template, and page 1 carries no noindex', f'HTTP {st}')
+        st, body = g.page(f'{CHANNEL_PATH}page/2/')
+        row(st == 200 and lt['channel_word'] in body and NOINDEX in head_of(body), f'{CHANNEL_PATH}page/2/', f'F1/F2 — the channel\'s page 2 carries noindex: the comma form `{lt["guard"]}` names its own context', f'HTTP {st}')
+        st, body = g.page(f'/tag/{tag}/')
+        row(st == 200 and 'class="a1-1' in body and NOINDEX not in head_of(body), f'/tag/{tag}/', 'the feed-less Tag page 1 carries no noindex', f'HTTP {st}')
+        st, body = g.page(f'/tag/{tag}/page/2/')
+        row(st == 200 and 'class="a1-1' in body and NOINDEX in head_of(body), f'/tag/{tag}/page/2/', 'the feed-less Tag page 2 carries noindex in the same guard', f'HTTP {st}')
+        # DW-364, read only: a post with no primary tag is LISTED on no page — neither the collection's nor Home's — while the
+        # index still OWNS it, so its own address answers
+        if li['unreached']:
+            u = li['unreached'][0]
+
+            def walked(base):
+                seen, n = [], 1
+                while n <= li['total'] + 2:
+                    st, body = g.page(base if n == 1 else f'{base}page/{n}/')
+                    if st != 200:
+                        return seen, n - 1
+                    seen += card_slugs(body)
+                    n += 1
+                return seen, n - 1
+            in_list, list_pages = walked(LIST_PATH)
+            on_home, home_pages = walked('/')
+            row(u['slug'] not in in_list and u['slug'] not in on_home and home_pages >= 1, '/ and ' + LIST_PATH,
+                f'DW-364 — the post with no primary tag (`{u["slug"]}`, {u["tags"]} tag(s)) is on none of Home\'s {home_pages} page(s) nor the collection\'s {list_pages}', f'{len(on_home)} card(s) on Home')
+            st, body = g.page(u['path'])
+            row(st == 200 and 'class="a1-1' in body, u['path'], 'DW-364 — its own address still answers, this theme\'s: the index OWNS it in memory', f'HTTP {st}')
+        else:
+            print('    note  DW-364 — T1 publishes no post without a primary tag, so the unreached-post rows are not read')
+    finally:
+        if wrote:
+            try:
+                routes_yaml_post(g, original)
+                now_yaml = routes_yaml_get(g)
+                row(now_yaml == original, 'settings/routes/yaml/', "T1's own routes.yaml restored and read back byte for byte", f'{len(now_yaml)} bytes')
+            except Exception as err:
+                row(False, 'settings/routes/yaml/', "T1's own routes.yaml restored — RESTORE IT BY HAND", f'{type(err).__name__}: {err}')
+        shim.restore_and_delete(g, previous, [LIST_THEME])
+    for path in (LIST_PATH, CHANNEL_PATH):
+        st, _ = g.page(path)
+        row(st == 404, path, 'after the restore the address is free again (404) — T1 routes as it did', f'HTTP {st}')
+    return rows
+
 # ── §72 ───────────────────────────────────────────────────────────────────────
 def table(rows):
     out = ['| Page | Row | Held |', '|---|---|---|']
@@ -2457,7 +2781,7 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, carded, route):
+def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, carded, route, listing):
     today = datetime.date.today().isoformat()
     gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
@@ -2470,7 +2794,11 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
     loc_rows, lc = loc
     card_rows, cc = carded
     route_rows, rtc = route
-    out = [f'## {SECTION}. A Routes Manager template compiled FLAT — no `{{{{#post}}}}`, no article — drawing its section at a static '
+    list_rows, lt, li = listing
+    out = [f'## {SECTION}. A collection\'s and a channel\'s templates LISTED on T1 — the collection listing exactly its own `limit:` of '
+           f'the posts it owns and Home none of them, and the `noindex` guard naming a feed-less channel\'s context beside a tag\'s in '
+           f'one comma list while the collection\'s page 2, which has a feed, carries none — with T1\'s own `routes.yaml` put back byte '
+           f'for byte — beside a Routes Manager template compiled FLAT — no `{{{{#post}}}}`, no article — drawing its section at a static '
            f'route on T1, where the same template in the entry form draws nothing (F1), with T1\'s own `routes.yaml` put back byte '
            f'for byte — beside `cards.css` on every theme, and a designed callout, toggle and gallery switched off in Ghost\'s own '
            f'card bundle — styled by Ghost\'s own copy in the theme\'s `cards.css` and run by the theme\'s own `cards.js`, the '
@@ -2503,6 +2831,9 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
            'Story 7.16b\'s two probe themes (`' + ROUTE_THEME + '`, then `' + ROUTE_CONTROL_THEME + '`), each uploaded and activated, '
            f'and T1\'s own `routes.yaml` uploaded with one line added (`{rtc["route_line"].strip()}`), then put back and read back '
            'byte for byte, and the themes restored and deleted the same way; '
+           'Story 7.16c\'s probe theme (`' + LIST_THEME + '`), uploaded and activated, with T1\'s `routes.yaml` replaced by '
+           '`routesYaml`\'s file for the probe routing, then put back and read back byte for byte, and the theme restored and '
+           'deleted the same way; the Content API read with the emitted filters and one malformed one (a 400); '
            'the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
            'the first time it is asked for each; no content, no other site setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
@@ -2638,9 +2969,27 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
             f'anything uploaded. T1\'s own `routes.yaml` gained one line, `{rtc["route_line"].strip()}`, spelled as `routesYaml` '
             'spells it.', '']
     out += table(route_rows)
+    out += ['', f'### (l) A collection\'s and a channel\'s templates, listed — `{LIST_THEME}` (Story 7.16c)', '',
+            f'The pilots with `{LIST_FILE}` holding A17 #1 (unflagged — the rule designated it) on the collection `{LIST_PATH}` '
+            f'(Primary tag `{li["tag"]}`, which {len(li["owned"])} of T1\'s {li["total"]} published posts carry, `limit: 1`), '
+            f'`{BARE_FILE}` holding A22 #1 alone on the channel `{CHANNEL_PATH}` (`{lt["channel"]}`, `limit: 1`), and `tag.hbs` with its '
+            f'one feed hidden; `lists` was `{json.dumps(lt["lists"])}`, as `listsOf` gives it. Gated 0/0 on both pinned gscans before '
+            f'anything uploaded, its guard `{lt["guard"]}`. The file T1 was given is `routesYaml`\'s own:', '', '```yaml',
+            lt['yaml'].rstrip('\n'), '```', '']
+    out += table(list_rows)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **A collection\'s or a channel\'s template is a list page, and Ghost fills it as the canvas does.** The collection '
+            'listed exactly its own `limit:` of the posts whose Primary tag it names, Home listed none of them under the index '
+            'collection\'s inverse filter, and each had a page 2 that renders the same file. Ghost reads one filter two ways: '
+            'a page LISTS by SQL, where `primary_tag:-x` means a primary tag that exists and is not x, and a router OWNS by '
+            'in-memory NQL, where it also holds on a post with none — so a post with no primary tag is on no page at all once '
+            'a collection filters by Primary tag, though its own address answers (DW-364, the canvas cuts the same way). A feed-less template\'s page 2 — the '
+            'channel\'s — and a feed-less Tag page\'s carried `noindex` from ONE guard naming both contexts in a comma list, while '
+            'the collection\'s, which has a feed, carried none: Ghost names a collection\'s or channel\'s page by its path without '
+            'slashes, and `{{#is}}` reads the list as OR (F1, F2). The Content API answered the emitted index and relative-date '
+            'filters with the posts they mean, and refused a malformed one.',
             '- **A Routes Manager template is the route form, and Ghost draws it there.** A static route with no `data:` hands '
             'its template a root with no `post`, so a section inside `{{#post}}` printed nothing at the route\'s address — the '
             'control — while the same section written flat drew at its root. The editor offers such a canvas only what a flat '
@@ -2736,9 +3085,10 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
             "each post's own page only, never on a card in a list (Story 7.6's Question 1, ruled option 1), so no list was "
             "read for them; gscan's deprecation rules are the local gate's, not a page read. Two shapes the compiler "
             "writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was "
-            "uploaded; Story 10.79's run renders the compiler's own), and the guard's comma list — the pilots guard "
-            "`author` alone, so `{{#is \"index, tag, author\"}}` and the `index` and `tag` contexts rest on "
-            "`helpers/is.js` (split on `,`, OR) read in source, not on a page read. Story 7.4's dark rule was read as "
+            "uploaded; Story 10.79's run renders the compiler's own), and the `index` context — §84's guard carries `tag`, "
+            "`author` and a channel's context, rendered on their page 2s, while `index` rests on `helpers/is.js` read in "
+            "source (Home's page 2 has a feed here). Ghost 5 names a collection's context by the same rule "
+            "(`CollectionRouter.js`), read in source, not rendered (DW-326). Story 7.4's dark rule was read as "
             "served, never drawn: which mode a visitor sees is the token block's, held in Chromium by the keyboard gate "
             "(`mode.spec.mjs`), and the strip's soundness is CI's (`cssFailures`), not a page read.", '']
     return '\n'.join(out)
@@ -2769,6 +3119,8 @@ if __name__ == '__main__':
         arch = archives(g)
         # T1's published posts overflow it, and so do the busiest tag's and author's, so each has a page 2
         per_page = min(12, total - 1, arch['tag'][1] - 1, arch['author'][1] - 1)
+        # Story 7.16c: the collection's Primary tag and the channel's window, read from T1's posts (read only)
+        li = list_inputs(g, per_page)
         c = compiled(nonce, per_page)
         files = scaffold(c)
         # Story 7.7: the scaffolded tree and the three probe trees through the product gate, before anything uploads
@@ -2783,7 +3135,9 @@ if __name__ == '__main__':
         cc = cards_compiled(nonce, per_page)
         # Story 7.16b: a Routes Manager template, flat, and its entry-form control, the same way
         rtc = route_compiled(nonce, per_page)
-        local = gated({'pilots': files, 'cards': cc['tree'], 'route': rtc['tree'], 'route-entry': rtc['control'], **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
+        # Story 7.16c: a collection's and a channel's templates, listed, and a feed-less Tag page, the same way
+        lt = list_compiled(nonce, per_page, li)
+        local = gated({'pilots': files, 'cards': cc['tree'], 'route': rtc['tree'], 'route-entry': rtc['control'], 'list': lt['tree'], **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
                        **{f'built-ins-{n}': t for n, t in bi['trees'].items()},
                        **{f'locales-{n}': t for n, t in lc['trees'].items()}, **{f'locales-{n}': t for n, t in lc['probes'].items()}})
         gates = clean(local, 'pilots')
@@ -2796,6 +3150,7 @@ if __name__ == '__main__':
         clean(local, 'cards')
         clean(local, 'route')
         clean(local, 'route-entry')
+        clean(local, 'list')
         # the Dark logo is a picture that is not the site's logo: a published post's own, never one this run uploads
         st, pics = g.content('posts/?limit=all&filter=feature_image:-null&fields=feature_image')
         # one Handlebars writes as it is: `&` and `=` reach the CSS as entities (compile.ts's stated ceiling) and would not load
@@ -2821,15 +3176,16 @@ if __name__ == '__main__':
         locales = locales_phase(g, lc, rec['post'], local)
         cards = cards_phase(g, cc, local)
         routed = route_phase(g, rtc)
+        listed = list_phase(g, lt, li, arch)
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins + locales + cards + routed if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins + locales + cards + routed + listed if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url), (locales, lc), (cards, cc), (routed, rtc)))
+    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url), (locales, lc), (cards, cc), (routed, rtc), (listed, lt, li)))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)

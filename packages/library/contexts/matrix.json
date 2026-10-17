@@ -255,6 +255,9 @@
     "custom-{name}.hbs (route)": {
       "top": "route"
     },
+    "custom-{name}.hbs (list)": {
+      "top": "list"
+    },
     "tag.hbs": {
       "top": "tag-archive"
     },

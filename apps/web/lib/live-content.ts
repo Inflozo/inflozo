@@ -30,6 +30,7 @@ type Kind = orbitWeekly.SubjectKind
 type ContentSource = orbitWeekly.ContentSource
 type Pieces = orbitWeekly.Pieces
 type Pagination = orbitWeekly.Pagination
+type RouteLists = orbitWeekly.RouteLists
 
 /** A row as the canvas reads it — whitelisted, never Ghost's own object. */
 export type Row = Readonly<Record<string, unknown>>
@@ -127,11 +128,13 @@ export function subjectRead(s: Subject): LiveQuery | null {
 
 /** A LIST PAGE, as Ghost serves it: page `n` of Home's feed, or of a tag's or a writer's archive, `perPage` rows newest
  *  first with their tags, writers and tiers. Past the last page Ghost answers `200 []` (§51), so the offer of a page 2
- *  is decided by page 1's count alone. */
-export function feedRead(of: { kind: 'tag' | 'author'; slug: string } | null, page: number, perPage: number): LiveQuery | null {
+ *  is decided by page 1's count alone. STORY 7.16c — or a ROUTE's list (`filter`, the NQL `routes.ts`' `writeNql` wrote over
+ *  the stored routing's own grammar — never a customer's text): Home's index filter, or a collection's or a channel's own.
+ *  It reaches the address through `URLSearchParams` (`addressOf`), so it is sent encoded, never spliced (AD-36). */
+export function feedRead(of: { kind: 'tag' | 'author'; slug: string } | null, page: number, perPage: number, filter: string | null = null): LiveQuery | null {
   if (of !== null && !slugShaped(of.slug)) return null
   return read('posts', {
-    ...(of === null ? {} : { filter: `${of.kind === 'tag' ? 'tags' : 'authors'}:'${of.slug}'` }),
+    ...(of === null ? (filter === null ? {} : { filter }) : { filter: `${of.kind === 'tag' ? 'tags' : 'authors'}:'${of.slug}'` }),
     include: SEEN,
     limit: String(perPage),
     page: String(page),
@@ -316,8 +319,11 @@ const entryRow = (fields: readonly string[], words: (html: string) => string) =>
     tags,
     authors,
     ...(Array.isArray(r['tiers']) ? { tiers: r['tiers'].map(tierRow) } : {}),
-    primary_tag: r['primary_tag'] ? tagRow(r['primary_tag']) : (tags[0] ?? null),
-    primary_author: r['primary_author'] ? authorRow(r['primary_author']) : (authors[0] ?? null),
+    // Story 7.16c (§84): Ghost's own `primary_tag`/`primary_author` where it sent the key — a `null` it sent stays null (a post
+    // with no tags, or whose first tag is internal, `post.js:1059-1064`), because a route's listing reads exactly that
+    // (`holdsFor`'s listing reading); the first of the list only where Ghost sent no key at all
+    primary_tag: Object.hasOwn(r, 'primary_tag') ? (r['primary_tag'] ? tagRow(r['primary_tag']) : null) : (tags[0] ?? null),
+    primary_author: Object.hasOwn(r, 'primary_author') ? (r['primary_author'] ? authorRow(r['primary_author']) : null) : (authors[0] ?? null),
   }
 }
 
@@ -474,9 +480,14 @@ export type Want = {
   /** `@config.posts_per_page`: since Story 5.19 the PROJECT's (`projects.posts_per_page`, FR-H2), on the site's content as
    *  on the sample's — the size of every page of a list, and a secondary feed's starting Count */
   perPage: number
+  /** STORY 7.16c — the routes' lists (`routes.ts`' `routeList` and `homeList`, as the sample's canvas takes them): Home lists
+   *  the posts no collection owns, and a listed template its route's — the same filter, the same drop, the same page size */
+  lists?: RouteLists
 }
 
 const LIST_FILES = ['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs']
+/** STORY 7.16c — the list a route decides on `target`: Home's (the index collection's) or a listed template's — never an archive's */
+const routeOf = (w: Want, target: string) => (target === 'tag.hbs' || target === 'author.hbs' ? undefined : w.lists?.(target))
 /** `vocabulary.ts`'s `PAYWALL_TARGET` — imported, no longer restated, now this module reads the library (DW-258, Story
  *  5.24e: the stale "imports nothing but types" was the reason for the copy). */
 export const PAYWALL_FILE = PAYWALL_TARGET
@@ -509,6 +520,9 @@ export function siteSource(w: Want, r: Reader): ContentSource {
       return a === undefined || a.rows.length > 0
     },
     pages: (target, of) => {
+      // Story 7.16c — a route's list counts its own window at its own page size
+      const route = routeOf(w, target)
+      if (route !== undefined) return r.got(feedRead(null, 1, route.limit ?? w.perPage, route.filter))?.pages ?? 1
       if (!LIST_FILES.includes(target)) return 1
       const archive = archiveOf(target, of)
       if ((target === 'tag.hbs' || target === 'author.hbs') && archive === null) return 1
@@ -535,6 +549,17 @@ export function sitePieces(w: Want, subject: Subject | null, target: string, pag
     if (subject.slug === fixture['slug']) return { ...base, entry: fixture }
     const row = r.got(subjectRead(subject))?.rows[0]
     return { ...base, entry: row === undefined ? fixture : onClock(row, zone) }
+  }
+  // STORY 7.16c — A ROUTE'S LIST, as Ghost serves its address: the window of its filter at its own page size (F5), then the
+  // posts an earlier collection owns dropped from it — judged on the rows as Ghost sent them, before the site's clock moves
+  // their dates — and `pagination` left as the window's (F4). Home's is the index collection's filter, dropping nothing
+  const route = routeOf(w, target)
+  if (route !== undefined) {
+    const size = route.limit ?? w.perPage
+    const at = r.got(feedRead(null, page, size, route.filter))
+    const pagination: Pagination = { page, pages: at?.pages ?? 1, limit: size, total: at?.total ?? 0 }
+    const rows = (at?.rows ?? []).filter(route.keep).map((p) => onClock(p, zone))
+    return { ...base, postsPerPage: size, list: { rows, pagination, base: route.base } }
   }
   if (!LIST_FILES.includes(target)) return base
   const archive = archiveOf(target, subject)

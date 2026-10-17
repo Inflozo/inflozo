@@ -442,7 +442,7 @@ Content: deliveryTarget, eyebrow, heading, blurb, headingSmall, nameLabel, messa
 
 ### Group 3 · Ghost Content Sections
 
-**A17. Post Grids (18)** — Home, tag/author archives, custom pages. `bindingContext: posts` · `compileTarget: any` (native paginated context on collection templates, `{{#get}}` elsewhere — FR-H2).
+**A17. Post Grids (18)** — Home, tag/author archives, custom pages. `bindingContext: posts` · `compileTarget: any` (native paginated context on collection templates, `{{#get}}` elsewhere — FR-H2). *(Story 7.16c, 2026-10-18: as built, A17 #1 lists `home.hbs · index.hbs · tag.hbs · author.hbs · custom-{name}.hbs` — the brace LAST, so the render matrix's axis stays `home.hbs`. On a Routes Manager template a collection or channel lists it is the main feed over that route's native posts; on one no route lists it is a secondary `{{#get}}` feed (routine call 3). A new collection's or channel's template starts with it, flagged — the archive defaults' row.)*
 Content: filterValue, postRefs, emptyHeading, emptyBody. Controls: Per row, Image ratio, Excerpt, Meta, First cell, Background role (universal), Vertical spacing (universal), Top divider (universal), Alignment, ~~Feature~~, Lead side, Head side, Scrim, Title, Rule, Columns, Rows, Date, Tag, Cycle, Thumbnail, Thumbnail side, Tags, Strip, Batch, Button, Count, Panel edge, Inset, Head, Text. Data: group per FR-H2 (+ **Pagination style** — A34 — on the designated main feed only).
 <!-- roster:A17 -->
 1. **Three Up** [Free] — Three 416 cells, image above tag, title, excerpt and meta. The category's default and what a site gets when it types "posts".

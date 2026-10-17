@@ -2,11 +2,11 @@
 
 import { revalidatePath } from 'next/cache'
 import {
-  parseRoutesConfig, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
+  listsOf, parseRoutesConfig, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
 } from '@inflozo/section-runtime/routes'
-import { docSchema, type ProjectDoc } from '@inflozo/section-runtime'
+import { docSchema, listedStart, type ProjectDoc } from '@inflozo/section-runtime'
 import { isUuid, routesPath } from '@/lib/editor'
-import { docRefusal } from '@/lib/pilots'
+import { docRefusal, pilot, pilotIds } from '@/lib/pilots'
 import { ROUTES_WORDS, templatesOf, templateWriteRefusal, type Template } from '@/lib/routes'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
@@ -23,7 +23,8 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * Story 1.2 (`:274-288`, `:356-363`).
  *
  * EVERY MULTI-WRITE IS ORDERED SO EACH INTERMEDIATE STATE IS VALID: a new template's row is written before the config
- * that names it; a template's delete writes the config WITHOUT its routes first, then deletes its canvas's doc (Story
+ * that names it — and, since Story 7.16c, a collection's or channel's new template's starting doc between the two (row →
+ * doc → config: a template with or without its feed and no route are both valid); a template's delete writes the config WITHOUT its routes first, then deletes its canvas's doc (Story
  * 7.16b), then the row; its Undo inserts the row first, then the doc, then writes the previous config. So no stored config
  * ever names a template that is not there, and no doc outlives its template but for the moment between two writes (which
  * the editor's read and the sync route both treat as no canvas, routine call 11).
@@ -134,10 +135,32 @@ async function insertTemplate(sb: Supabase, id: string, userId: string, display:
   return { file: named.file }
 }
 
+/** STORY 7.16c (FR-H2 "at creation", routine call 2) — a NEW template a collection's or channel's own sheet names starts with
+ *  the archive defaults' feed, a17/1 "Post grid" flagged as its main feed (`listedStart`, synthesis's own placing), written
+ *  under its canvas's key before the config that lists it. False when the doc could not be written (logged); true when it
+ *  was, or when the library places nothing there (an empty doc is no doc, AD-22). Judged by `docRefusal`, as every doc is. */
+async function writeListedStart(sb: Supabase, id: string, userId: string, file: string): Promise<boolean> {
+  const held = (designId: string) => (pilotIds().includes(designId) ? pilot(designId) : undefined)
+  const { instances } = listedStart(file, held)
+  if (instances.length === 0) return true
+  const key = `custom:${file}`
+  const doc: ProjectDoc = { schemaVersion: 1, instances }
+  const refused = docRefusal(key, doc)
+  if (refused !== null) {
+    console.error('projects/routes: the new template\'s starting doc was refused', { sentence: refused })
+    return false
+  }
+  const { error } = await sb.from('project_templates').upsert({ project_id: id, user_id: userId, template_key: key, doc }, { onConflict: 'project_id,template_key' })
+  if (error) console.error('projects/routes: the new template\'s starting doc could not be written', { code: error.code })
+  return error === null
+}
+
 /**
  * THE WHOLE NEXT CONFIG — every sheet's primary button, every drop, every taxonomy save and every collection, channel or
  * route Undo. With `template_name`, the sheet also named a new template: its file must be the one the config names
- * (`template_file`), the config is judged with it counted BEFORE either write, and the row is written first.
+ * (`template_file`), the config is judged with it counted BEFORE either write, and the row is written first. STORY 7.16c —
+ * when the config LISTS it (a collection's or a channel's sheet), its starting doc is written next, then the config; a
+ * static route's new template, like "+ New template", opens empty (7.16b).
  */
 export async function saveRoutes(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {
   const id = idOf(formData)
@@ -158,6 +181,12 @@ export async function saveRoutes(_previous: RoutesResult | null, formData: FormD
     const made = await insertTemplate(sb, id, user.id, display, ctx)
     if ('error' in made) return made
     known.push(made.file)
+    const parsed = parseRoutesConfig(next)
+    if (parsed.ok && listsOf(parsed.config).has(made.file) && !(await writeListedStart(sb, id, user.id, made.file))) {
+      // the row stands, unrouted and without its feed — a valid state the page lists, so the sheet can be saved again
+      revalidate(id)
+      return couldNot()
+    }
   }
   const refused = await writeConfig(sb, id, user.id, next, known)
   if (refused !== null) {

@@ -548,6 +548,39 @@ A user ships. The project compiles — purely, from what it is handed — into a
         keeps every match.
       - A route's `limit` lasts one request.
       - Page 2 renders the same file. A static route serves no page 2.
+  - **Story 7.16c's Dev (2026-10-18):** built, no migration.
+    - **The runtime.** `routes.ts` gains `listsOf` (each listed file's `Listing`s — collections in precedence order, then
+      channels; `earlier` is `indexNode` of the collections before, built through `group`), `contextOf` and `CONTEXT_RE` (F1,
+      AD-36), `holdsFor` (the evaluator, "now" handed in; held to `holds` and `@tryghost/nql` 0.13.4 on every fixture and every
+      "not owned earlier" node), and `routeList`/`homeList` (the library's `RouteList`: base, filter, window, keep, limit).
+      `designate`, `makeMainFeed`, `feedQuery` and `feedlessArchive` take `listed`; a feed off a paginated page is secondary.
+      `core.ts`' `RenderInput.listed`; a secondary feed's pager goes BEFORE R-7's and FR-H7's refusals, and its bindings read the
+      list row on a Routes Manager target (its get's frame is Home's list scope). `DATA_WORDS.routeCount`, `FeedRole.route`,
+      `DataRow.route`. `listedStart` (synthesis's own placing of `FEED`).
+    - **The library.** `isPaginated(file, listed)` and `Listed` (`vocabulary.ts`; `listable` lets the brace stand for every
+      listed file); the matrix's `custom-{name}.hbs (list)` row (`LIST_ROW`, top `list`), picked by `matrixKey(target, listed)`;
+      `pagination-target` holds the brace legal; a17/1 lists the brace LAST; `orbit-weekly.ts`' `RouteList`/`RouteLists`, its
+      `listOf`, `templateContext` and `bundledAt` cutting the window, dropping per page and sizing by the route's `limit:`
+      (`@config.posts_per_page` too).
+    - **The compiler.** `CompileInput.lists` (file → contexts), refused on a key that is no Routes Manager file or a context
+      outside `CONTEXT_RE`; designation, feed queries, the row and the reach read it; the guard names each feed-less listed
+      file's contexts after `index`, `tag`, `author`, in code order.
+    - **The app.** `EditorData.routes` (parsed, or null); `designateAll` with `listsOf`; the editor derives `listed` and the
+      route lists ONCE (`now` read at mount), sizes each canvas by the limit in force, reads `filter=` on the site with the same
+      drop (`feedRead`'s `filter`, `sitePieces`, `siteSource.pages`); the Count's link chooses by row ("Routes & Templates ↗",
+      `ROUTES_LINK`); `FEEDLESS_ROUTE(path)`; `saveRoutes` writes a listed new template's `listedStart` doc row → doc → config;
+      the channel sheet's hint names a channel.
+    - **The harness and CI.** `x-inflozo-harness-routes: on` (a collection `/harness-list/` with A17 #1, limit 3; a static
+      route `/harness-landing/` with A22 #1); `pnpm keyboard` walks the flush's `left`, the routed D5f, the listed template and
+      Home's list, each behind its control (DW-363 done). `check-snapshots` renders a feed at the brace as listed.
+    - **T1** is §84 (`record-theme-assembly.py` leg 19: a primary-tag collection with `limit: 1`, a channel on a relative
+      window, a feed-less Tag; the guard `{{#is "tag, author, probe-channel"}}` — the channel's path carries no `inflozo`, since
+      its context reaches `default.hbs` and the fingerprint scan refuses the builder's name); the walk gains step 111 and
+      re-expects 110e (a17/1 offered on a Routes Manager canvas). DW-252, DW-344 and DW-363 are done; VERIFY-AT-BUILD 67/68.
+    - **§84's first T1 run (2026-10-18) found DW-364:** Ghost LISTS a filter in SQL, where `primary_tag:-x` means "a public
+      primary tag that is not x" (`post.js:291-310`), and OWNS in memory, where it also holds on a post with none — so with
+      Inflozo's emitted index filter a post with no tags is on no page once a collection filters by Primary tag. `holdsFor`
+      gained the listing reading (the window) beside ownership (the drop); the emission is Story 7.18's to decide (high).
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.

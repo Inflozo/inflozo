@@ -5,7 +5,7 @@
 // Extracted from `pilots/review.tsx`'s `paint()` and `shown()` (Story 4.10) without a change in behaviour.
 
 import { DEFAULT_LIMIT, orbitWeekly, postAccess, safeCssColor } from '@inflozo/library'
-import type { DataBinding, IconLookup, SectionRegistryEntry, Visitor } from '@inflozo/library'
+import type { DataBinding, IconLookup, Listed, SectionRegistryEntry, Visitor } from '@inflozo/library'
 import { contentCta, renderCanvas, withData } from '@inflozo/section-runtime'
 import { isCustom } from './pack-edit.ts'
 import { DEFAULT_PRESET } from './pack-switch.ts'
@@ -117,11 +117,13 @@ export function sitePage(
     perPage: number
     /** Story 5.20 — the visitor each post's `access` is re-read for; omitted, every row is the row Ghost answered */
     visitor?: Visitor
+    /** Story 7.16c — the routes' lists (Home's and each listed template's), read with their own filter and page size */
+    lists?: orbitWeekly.RouteLists
   },
 ): { need: readonly LiveQuery[] } | { nothing: 'tag' | 'author' } | { ready: SitePage } {
   const r = reader(look)
   const kind = orbitWeekly.subjectKindOf(o.file)
-  const w = { kind, styleGuide: { post: orbitWeekly.subject('post'), page: orbitWeekly.subject('page') }, perPage: o.perPage }
+  const w = { kind, styleGuide: { post: orbitWeekly.subject('post'), page: orbitWeekly.subject('page') }, perPage: o.perPage, ...(o.lists === undefined ? {} : { lists: o.lists }) }
   const source = siteSource(w, r)
   const { subject, fellBack } = orbitWeekly.resolveSubject(o.file, o.stored, source)
   // the subject waits on a read (R-193's list, or the stored one's own `filter=slug:`): everything that does not depend
@@ -291,12 +293,19 @@ export function renderSection(
      *  locale file prints it. Omitting it is the catalog's English, today's render — `/pilots`, the snapshots, the matrix,
      *  the picker's cards and the ring's tiles pass none. */
     strings?: Readonly<Record<string, string>>
+    /** Story 7.16c — the routes' lists, by target (`routeList`, `homeList`): the sample's list on Home and on a listed template
+     *  is the route's window, its drop and its page size. And `listed`, the Routes Manager files a collection or channel names:
+     *  there the render's target paginates and reads the list row (`isPaginated`). Omitting both is exactly today's render —
+     *  `/pilots`, the snapshots, the matrix, the picker's cards and the ring's tiles pass none. */
+    lists?: orbitWeekly.RouteLists
+    listed?: Listed
   },
 ): string {
-  const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject, o.perPage, o.visitor)
+  const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject, o.perPage, o.visitor, o.lists)
   const site = o.url === undefined ? ctx.site : { ...ctx.site, currentUrl: o.url }
   return withImages(renderCanvas(doc as unknown as RuntimeDocument, entry.html, {
     target: o.target,
+    ...(o.listed === undefined ? {} : { listed: o.listed }),
     content: state.content,
     schema: entry.contentSchema,
     controlSchema: entry.controlSchema,

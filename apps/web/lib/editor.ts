@@ -183,7 +183,8 @@ export const PAGE_TWO: Partial<Readonly<Record<CanvasKey, { key: string; file: s
   author: { key: 'author-paged', file: 'author.hbs' },
 }
 
-/** A canvas's page 2, or undefined for a canvas with none — a Routes Manager canvas never has one (its posts are 7.16c's). */
+/** A canvas's page 2, or undefined for a canvas with none — a Routes Manager canvas never has one: a collection's or channel's
+ *  template is designed on page 1 only, for now (R-252, Story 7.16c's Question 1), and its live page 2 serves page 1's design. */
 export const pageTwoOfCanvas = (canvas: Canvas): { key: string; file: string } | undefined => (isRouteCanvas(canvas) ? undefined : PAGE_TWO[canvas])
 
 /** The key a canvas's page 2 is stored under, or null for a canvas with no page 2. */

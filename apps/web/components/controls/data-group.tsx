@@ -14,7 +14,7 @@ import { openPopover, Select } from '@/components/kit/select'
 import { Stepper } from '@/components/kit/stepper'
 import {
   HOLDS, initialOf, NO_MATCHES, NO_PICKS, NOT_IN_SOURCE, optionsOf, PAST_SLOW, PAST_SLOW_BOLD, PICK_ADDED, PICK_LACKING,
-  PICK_REMOVED, PICKED, postsCount, SEARCH_POSTS, searchPosts, slow, THEME_SETTINGS_LINK, type Held, type Option,
+  PICK_REMOVED, PICKED, postsCount, SEARCH_POSTS, searchPosts, slow, THEME_SETTINGS_LINK, ROUTES_LINK, type Held, type Option,
 } from '@/lib/data-group'
 import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from '@/lib/reorder'
 
@@ -64,6 +64,7 @@ export function DataGroup({
   shown,
   design,
   settingsHref,
+  routesHref,
   onData,
 }: {
   id: string
@@ -80,6 +81,8 @@ export function DataGroup({
   /** Story 7.9 (DW-254) — Theme settings' address, drawn as D5c's link under the main feed's greyed Count; the keyboard
    *  harness, which has no project, hands none and draws none */
   settingsHref?: string
+  /** Story 7.16c — Routes & Templates' address, drawn as the same link under a main feed its route's own `limit:` sizes */
+  routesHref?: string
   /** one gesture's values, applied in order and committed once; answers the engine's refusal, or null */
   onData: (changes: readonly Change[]) => string | null
 }) {
@@ -152,6 +155,11 @@ export function DataGroup({
                 {settingsHref !== undefined && row.greyed === DATA_WORDS.mainCount ? (
                   <Link href={settingsHref} className={`self-start rounded-sm text-[11.5px] font-medium text-sky-text hover:underline ${ring}`}>
                     {THEME_SETTINGS_LINK}
+                  </Link>
+                ) : routesHref !== undefined && row.route !== undefined && row.greyed === DATA_WORDS.routeCount(row.route) ? (
+                  // Story 7.16c — the link chooses by its row: sized by a route's own `limit:`, it goes where that limit is set
+                  <Link href={routesHref} className={`self-start rounded-sm text-[11.5px] font-medium text-sky-text hover:underline ${ring}`}>
+                    {ROUTES_LINK}
                   </Link>
                 ) : null}
                 {refusal('count')}

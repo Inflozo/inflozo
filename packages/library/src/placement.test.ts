@@ -200,17 +200,21 @@ test('compilesTo: ROUTE_TEMPLATE_TARGET opens every Routes Manager file, and nev
   assert.equal(compilesTo(['custom-signup.hbs'], 'custom-landing.hbs'), false)
 })
 
-test('offeredOn: a4/13 and a22/1 are offered on a Routes Manager canvas and not on Signup; a17/1 and a24/1 never are', () => {
+test('offeredOn: a4/13, a22/1 and (Story 7.16c) a17/1 are offered on a Routes Manager canvas and not on Signup; a24/1 never is', () => {
   const real = (id: string, d: { bindingContext: readonly string[]; compileTarget: readonly string[] }) => entry(id, d.bindingContext as BindingContext[], [...d.compileTarget])
   const hero = real('a4/13', heroDesign)
   const band = real('a22/1', bandDesign)
-  for (const e of [hero, band]) {
+  // Story 7.16c (routine call 3) — the library's only feed goes on EVERY Routes Manager template: the main feed of a listed
+  // one, a secondary feed elsewhere, so a route change never strands it — and still never on a membership file
+  const feed = real('a17/1', feedDesign)
+  for (const e of [hero, band, feed]) {
     assert.ok(e.compileTarget.includes(ROUTE_TEMPLATE_TARGET), `${e.id} lists the target (routine call 3)`)
     assert.equal(offeredOn(e, 'custom-landing.hbs'), true, `${e.id} on a Routes Manager canvas`)
     assert.equal(offeredOn(e, 'custom-signup.hbs'), false, `${e.id} on a membership canvas`)
   }
+  assert.equal(feedDesign.compileTarget.at(-1), ROUTE_TEMPLATE_TARGET, 'a17/1 lists the brace LAST, so the render matrix\'s axis (compileTarget[0]) stays home.hbs')
   // never offered there — and the control is that each IS offered where it belongs
-  for (const [e, home] of [[real('a17/1', feedDesign), 'home.hbs'], [real('a24/1', postHeaderDesign), 'post.hbs']] as const) {
+  for (const [e, home] of [[real('a24/1', postHeaderDesign), 'post.hbs']] as const) {
     assert.equal(offeredOn(e, 'custom-landing.hbs'), false, `${e.id} on a Routes Manager canvas`)
     assert.equal(offeredOn(e, home), true, `the control: ${e.id} on ${home}`)
   }

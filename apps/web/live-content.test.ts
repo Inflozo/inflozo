@@ -11,6 +11,7 @@ import {
   searchFor, searchInForce, type Answer, type LiveQuery, type Look, type Reading, type Row,
 } from './lib/live-content.ts'
 import { liveStore, WIDTH } from './lib/live-client.ts'
+import { holdsFor, homeList, indexNode, listsOf, readNql, routeList, writeNql, type Collection } from '@inflozo/section-runtime/routes'
 import { sitePage } from './lib/canvas.ts'
 import { cappedPosts, SOURCE_WORDS, siteSubjects, subjectOptions } from './lib/preview-subject.ts'
 
@@ -897,4 +898,112 @@ test('DW-270 · a `tiers` post: the reads Ghost re-checks per visitor ask for it
   for (const dropped of ['monthly_price_id', 'yearly_price_id', 'welcome_page_url']) assert.ok(!JSON.stringify(row).includes(dropped), dropped)
   // a row Ghost sent no tiers for carries none — the rule then blocks it, as Ghost's own `!post.tiers` does
   assert.equal(Object.hasOwn(pick('posts', { posts: [tiered] }, words)?.rows[0] ?? {}, 'tiers'), false)
+})
+
+/* ── Story 7.16c — the site lists what each live address lists: the route's filter (`filter=`), an earlier collection's posts
+ *    dropped from the window, and its own page size — and Home the posts no collection owns. The fake Ghost answers `filter=`
+ *    by the runtime's own evaluator over the NQL it was sent, newest first, its `meta.pagination` the window's. */
+
+test('Story 7.16c · a listed template and Home on the site: the same filter, the same drop and the same page size as the sample', () => {
+  const NOW = '2026-10-18T00:00:00.000Z'
+  const post = (i: number, tags: string[]) => ({
+    id: `p${i}`, slug: `post-${i}`, title: `Post ${i}`, url: `https://ghost5.example/post-${i}/`, published_at: `2026-09-0${9 - i}T12:00:00.000Z`,
+    tags: tags.map((slug) => ({ id: slug, slug, name: slug })), authors: [], featured: false, feature_image: null, visibility: 'public',
+  })
+  // newest first: post 1 is tagged both — /a/ (archive) owns it, so /b/ (craft) drops it
+  const posts = [post(1, ['craft', 'archive']), post(2, ['craft']), post(3, ['craft']), post(4, ['archive']), post(5, ['notes'])]
+  const asked: string[] = []
+  const look = (q: LiveQuery): Answer | undefined => {
+    if (q.resource === 'settings') return pick('settings', settingsBody, words) ?? undefined
+    if (q.resource !== 'posts') return pick(q.resource, { [q.resource]: [], meta: { pagination: { total: 0, pages: 1 } } }, words) ?? undefined
+    const f = q.params['filter']
+    if (f !== undefined) asked.push(f)
+    const matched = f === undefined ? posts : posts.filter((p) => holdsFor(readNql(f), p, NOW))
+    const limit = Number(q.params['limit'] ?? 15)
+    const n = Number(q.params['page'] ?? 1)
+    return pick('posts', { posts: matched.slice((n - 1) * limit, n * limit), meta: { pagination: { total: matched.length, pages: Math.max(1, Math.ceil(matched.length / limit)) } } }, words) ?? undefined
+  }
+  const config = {
+    collections: [
+      { path: '/a/', filter: { match: 'any' as const, conditions: [{ field: 'tag' as const, op: 'any' as const, values: ['archive'] }] }, template: 'custom-a.hbs' },
+      { path: '/b/', filter: { match: 'any' as const, conditions: [{ field: 'tag' as const, op: 'any' as const, values: ['craft'] }] }, template: 'custom-b.hbs', limit: 2 },
+    ],
+    routes: [],
+    taxonomies: { tag: 'tag', author: 'author' },
+  }
+  const listed = listsOf(config)
+  const lists = (t: string) => (t === 'home.hbs' || t === 'index.hbs' ? homeList(config, NOW) : listed.has(t) ? routeList(listed.get(t)![0]!, NOW) : undefined)
+  const on = (file: string) => {
+    const v = sitePage(look, { file, stored: null, page: 1, pageFile: file, targets: [file], queries: {}, perPage: 12, lists })
+    assert.ok('ready' in v, file)
+    return v.ready
+  }
+  const b = on('custom-b.hbs')
+  const ctx = b.contexts['custom-b.hbs']!
+  assert.deepEqual((ctx.ghost['posts'] as { slug: string }[]).map((p) => p.slug), ['post-2'], 'the window is post 1 and 2; post 1 is /a/\'s, dropped, never refilled')
+  assert.deepEqual(ctx.ghost['pagination'], { page: 1, pages: 2, limit: 2, total: 3 }, 'pagination is the window\'s, as Ghost leaves it')
+  assert.deepEqual(ctx.ghost['@config'], { posts_per_page: 2 }, 'the route\'s own limit (F5)')
+  assert.equal(ctx.site.currentUrl, '/b/')
+  assert.equal(b.pages, 2, 'page 1\'s own count, at the route\'s size')
+  assert.ok(asked.includes("tag:'craft'"), 'the site is asked with the route\'s own filter')
+  // the sample canvas, handed the same lists, cuts the same way: its window at 2, an /a/ post dropped
+  const sample = orbitWeekly.templateContext('custom-b.hbs', 'first', null, 12, undefined, lists)
+  assert.equal((sample.ghost['pagination'] as { limit: number }).limit, 2)
+  // Home: the index collection's filter, the posts no collection owns
+  const home = on('home.hbs').contexts['home.hbs']!
+  assert.deepEqual((home.ghost['posts'] as { slug: string }[]).map((p) => p.slug), ['post-5'])
+  assert.ok(asked.includes(writeNql(indexNode(config.collections)!)), 'Home is asked with indexFilter')
+  // THE CONTROL: handed no lists, Home lists every post and the listed file renders the route form
+  const plain = sitePage(look, { file: 'home.hbs', stored: null, page: 1, pageFile: 'home.hbs', targets: ['home.hbs', 'custom-b.hbs'], queries: {}, perPage: 12 })
+  assert.ok('ready' in plain)
+  assert.equal((plain.ready.contexts['home.hbs']!.ghost['posts'] as unknown[]).length, 5)
+  assert.equal(plain.ready.contexts['custom-b.hbs']!.ghost['posts'], undefined)
+})
+
+test('Story 7.16c · feedRead takes a route\'s filter, sent through URLSearchParams — encoded, never spliced (AD-36)', () => {
+  const q = feedRead(null, 2, 3, "tag:-'craft'+featured:false") as LiveQuery
+  assert.deepEqual(q.params, { filter: "tag:-'craft'+featured:false", include: 'tags,authors,tiers', limit: '3', page: '2', formats: 'mobiledoc' })
+  const address = addressOf('https://ghost5.example', q, 'k')
+  assert.ok(address.includes(`filter=${encodeURIComponent("tag:-'craft'+featured:false").replace(/%20/g, '+').replace(/'/g, '%27')}`), address)
+  assert.equal(new URL(address).searchParams.get('filter'), "tag:-'craft'+featured:false", 'Ghost reads back exactly the filter sent')
+  // an archive's own filter wins where a subject is named; no filter, no `filter=`
+  assert.equal(feedRead({ kind: 'tag', slug: 'craft' }, 1, 12, "tag:'x'")?.params['filter'], "tags:'craft'")
+  assert.equal(feedRead(null, 1, 12)?.params['filter'], undefined)
+})
+
+test('Story 7.16c (§84) · an untagged post: Ghost sends its primary_tag as null and the whitelist keeps it null; Home leaves it out once a collection filters by Primary tag, and a later collection that lists it keeps it', () => {
+  const NOW = '2026-10-18T00:00:00.000Z'
+  const post = (i: number, tags: string[]) => ({
+    id: `q${i}`, slug: `q-${i}`, title: `Q ${i}`, url: `https://ghost5.example/q-${i}/`, published_at: `2026-09-0${9 - i}T12:00:00.000Z`,
+    tags: tags.map((slug) => ({ id: slug, slug, name: slug })), primary_tag: tags[0] === undefined ? null : { id: tags[0], slug: tags[0], name: tags[0] },
+    authors: [{ id: 'u', slug: 'umang', name: 'Umang' }], primary_author: { id: 'u', slug: 'umang', name: 'Umang' },
+    featured: false, feature_image: null, visibility: 'public',
+  })
+  const raw = [post(1, ['craft']), post(2, []), post(3, ['notes'])]
+  // the whitelist: Ghost's null stays null; a row Ghost sent with no key at all falls back to its first tag
+  const rows = (pick('posts', { posts: raw, meta: { pagination: { total: 3, pages: 1 } } }, words) as Answer).rows
+  assert.equal(rows[1]!['primary_tag'], null)
+  assert.equal(((pick('posts', { posts: [{ ...raw[0], primary_tag: undefined }].map(({ primary_tag: _, ...r }) => r), meta: {} }, words) as Answer).rows[0]!['primary_tag'] as Row)['slug'], 'craft')
+  // a fake Ghost answering `filter=` with its SQL (the LISTING reading) over the rows as sent
+  const look = (q: LiveQuery): Answer | undefined => {
+    if (q.resource === 'settings') return pick('settings', settingsBody, words) ?? undefined
+    if (q.resource !== 'posts') return pick(q.resource, { [q.resource]: [], meta: { pagination: { total: 0, pages: 1 } } }, words) ?? undefined
+    const f = q.params['filter']
+    const matched = f === undefined ? raw : raw.filter((p) => holdsFor(readNql(f), p, NOW, true))
+    return pick('posts', { posts: matched, meta: { pagination: { total: matched.length, pages: 1 } } }, words) ?? undefined
+  }
+  const craft = { path: '/craft/', filter: { match: 'all' as const, conditions: [{ field: 'primary_tag' as const, op: 'any' as const, values: ['craft'] }] }, template: 'custom-craft.hbs' }
+  const rest = { path: '/rest/', filter: { match: 'all' as const, conditions: [{ field: 'tag' as const, op: 'none' as const, values: ['craft'] }] }, template: 'custom-rest.hbs' }
+  const on = (collections: Collection[], file: string) => {
+    const config = { collections, routes: [], taxonomies: { tag: 'tag', author: 'author' } }
+    const listed = listsOf(config)
+    const lists = (t: string) => (t === 'home.hbs' ? homeList(config, NOW) : listed.has(t) ? routeList(listed.get(t)![0]!, NOW) : undefined)
+    const v = sitePage(look, { file, stored: null, page: 1, pageFile: file, targets: [file], queries: {}, perPage: 12, lists })
+    assert.ok('ready' in v, file)
+    return (v.ready.contexts[file]!.ghost['posts'] as { slug: string }[]).map((p) => p.slug)
+  }
+  assert.deepEqual(on([craft], 'home.hbs'), ['q-3'], 'Home (`primary_tag:-\'craft\'`) lists the notes post and NOT the untagged one (DW-364)')
+  assert.deepEqual(on([craft, rest], 'custom-rest.hbs'), ['q-2', 'q-3'], 'a later collection that lists it keeps it: /craft/ does not OWN it')
+  // THE CONTROL: with no collection, Home lists every post, the untagged one included
+  assert.deepEqual(on([], 'home.hbs'), ['q-1', 'q-2', 'q-3'])
 })

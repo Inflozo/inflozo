@@ -1,6 +1,7 @@
 // THE MAIN FEED, AND THE ONE RULE THAT KEEPS EXACTLY ONE (Story 5.19 — FR-H2, AD-27(d)).
 //
-// On a natively paginated page — `home.hbs`, its page 2 `index.hbs`, `tag.hbs` and `author.hbs`, both pages of each —
+// On a natively paginated page — `home.hbs`, its page 2 `index.hbs`, `tag.hbs` and `author.hbs`, both pages of each, and
+// since Story 7.16c a Routes Manager template a collection or channel lists (`isPaginated`) —
 // ONE list of posts renders the page's own `posts` and pages through them: the MAIN FEED. Every other list of posts on
 // that page is a SECONDARY feed with a fixed query of its own (`feedQuery`). Which one is main is STORED on the instance
 // (`isMainFeed`, AD-27) and never recomputed from position; this module is the rule that keeps the stored designation
@@ -19,8 +20,8 @@
 // PURE (AD-1): the library is HANDED in, in `synthesize`'s own shape, which is why `SynthesisEntry` carries
 // `bindingContext`.
 
-import { PAGINATED_TARGETS } from '@inflozo/library'
-import type { DataBinding } from '@inflozo/library'
+import { isPaginated, isRouteTemplate, NONE_LISTED } from '@inflozo/library'
+import type { DataBinding, Listed } from '@inflozo/library'
 import { FEED_KEY, withData } from './controls.ts'
 import type { DocInstance, ProjectDoc } from './doc-schema.ts'
 import type { SynthesisEntry, SynthesisLibrary } from './synthesize.ts'
@@ -54,7 +55,8 @@ function transferTarget(doc: ProjectDoc, previous: ProjectDoc | undefined, libra
 }
 
 /**
- * THE INVARIANT, on a doc whose file is natively paginated (`PAGINATED_TARGETS`): at most one instance carries the flag;
+ * THE INVARIANT, on a doc whose file paginates (`isPaginated`: the four Ghost always paginates and, since Story 7.16c, a
+ * Routes Manager template a collection or channel lists — `listed`): at most one instance carries the flag;
  * it is a FEED; and whenever the doc holds a visible feed, the flag is on a visible feed. On any other file no instance
  * carries it. Returns the doc satisfying it — THE SAME OBJECT when it already does.
  *
@@ -64,9 +66,11 @@ function transferTarget(doc: ProjectDoc, previous: ProjectDoc | undefined, libra
  * takes it back; and a duplicate's copy is never main (`duplicateSection` writes it false, and a second flag is repaired
  * to the first visible one).
  */
-export function designate(doc: ProjectDoc, file: string, library: SynthesisLibrary, previous?: ProjectDoc): ProjectDoc {
+export function designate(doc: ProjectDoc, file: string, library: SynthesisLibrary, previous?: ProjectDoc, listed: Listed = NONE_LISTED): ProjectDoc {
   const flagged = doc.instances.filter((i) => i.isMainFeed)
-  if (!PAGINATED_TARGETS.has(file)) return flagged.length === 0 ? doc : flagOnly(doc, null)
+  // STORY 7.16c — a template whose last route goes is no longer listed, so its flag goes with it and its feed is
+  // secondary; listed again, the first visible feed takes the flag back by the rule below
+  if (!isPaginated(file, listed)) return flagged.length === 0 ? doc : flagOnly(doc, null)
   const feed = (i: DocInstance) => isFeed(library(i.designId))
   const visible = doc.instances.filter(visibleFeed(library))
   const holder = flagged.length === 1 && feed(flagged[0] as DocInstance) ? flagged[0] : undefined
@@ -86,8 +90,8 @@ export const mainFeedOf = (doc: ProjectDoc | null | undefined): DocInstance | un
 /** **Make this the main feed** (D5c's Layers `⋯`): ONE edit that moves the flag, so the old main feed becomes a secondary
  *  feed with its own stored Data values. Refused — and never offered — on a hidden section, a section that is no feed and
  *  a page that does not paginate. */
-export function makeMainFeed(doc: ProjectDoc, file: string, instanceId: string, library: SynthesisLibrary): ProjectDoc | string {
-  if (!PAGINATED_TARGETS.has(file)) return 'This page has no list of posts to page through, so it has no main feed.'
+export function makeMainFeed(doc: ProjectDoc, file: string, instanceId: string, library: SynthesisLibrary, listed: Listed = NONE_LISTED): ProjectDoc | string {
+  if (!isPaginated(file, listed)) return 'This page has no list of posts to page through, so it has no main feed.'
   const target = doc.instances.find((i) => i.instanceId === instanceId)
   if (target === undefined) return `there is no section ${instanceId} on this template`
   if (!isFeed(library(target.designId))) return 'Only a list of posts can be the main feed.'
@@ -98,9 +102,10 @@ export function makeMainFeed(doc: ProjectDoc, file: string, instanceId: string, 
 /** FR-H2's archive case: a Tag or Author page with no VISIBLE feed. Ghost has no second file to fall through to there, so
  *  its page 2 onwards would repeat page 1. The editor's Layers note and Story 7.18's Pre-flight warning read it; Story
  *  7.3's SEO guard asks `visibleFeed` of every page 2 instead, Home's included (DW-253). Home never: its page 2 is
- *  another file (FR-I1). */
-export const feedlessArchive = (doc: ProjectDoc, file: string, library: SynthesisLibrary): boolean =>
-  (file === 'tag.hbs' || file === 'author.hbs') && !doc.instances.some(visibleFeed(library))
+ *  another file (FR-I1). STORY 7.16c — and a LISTED Routes Manager template with no visible feed: its collection's or
+ *  channel's page 2 renders the same file (F6), so it repeats page 1 there too, and the guard names its context. */
+export const feedlessArchive = (doc: ProjectDoc, file: string, library: SynthesisLibrary, listed: Listed = NONE_LISTED): boolean =>
+  (file === 'tag.hbs' || file === 'author.hbs' || (isRouteTemplate(file) && listed.has(file))) && !doc.instances.some(visibleFeed(library))
 
 /** A secondary feed's query before its stored values: its page's posts, newest first, as many as a page of the main
  *  feed shows — so a demoted main feed keeps showing its page 1. The page size is clamped to FR-H2's 1–100: a secondary
@@ -112,13 +117,16 @@ export const feedBase = (postsPerPage: number): DataBinding => ({
 })
 
 /** A SECONDARY feed's query — `feedBase` folded with the instance's `data.posts` through the one fold, `withData` — or
- *  `undefined` for the main feed, a section that is no feed, and a page that does not paginate. */
+ *  `undefined` for the main feed and a section that is no feed. STORY 7.16c — A FEED OFF A PAGINATED PAGE IS SECONDARY: on a
+ *  Routes Manager template no collection or channel lists there are no native `posts`, so a feed there is its own
+ *  `{{#get}}` (routine call 3), and a flag left on one (`designate` strips it) never makes it main. */
 export function feedQuery(
   entry: Pick<SynthesisEntry, 'bindingContext'> | undefined,
   instance: Pick<DocInstance, 'isMainFeed' | 'data'>,
   file: string,
   postsPerPage: number,
+  listed: Listed = NONE_LISTED,
 ): DataBinding | undefined {
-  if (!isFeed(entry) || instance.isMainFeed || !PAGINATED_TARGETS.has(file)) return undefined
+  if (!isFeed(entry) || (instance.isMainFeed && isPaginated(file, listed))) return undefined
   return withData({ [FEED_KEY]: feedBase(postsPerPage) }, instance.data)[FEED_KEY]
 }

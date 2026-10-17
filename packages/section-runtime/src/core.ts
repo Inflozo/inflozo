@@ -31,6 +31,8 @@ import {
   MEMBER_STATES,
   PAGINATED_TARGETS,
   MEDIA_FALLBACK_REFUSAL,
+  isPaginated,
+  listable,
   MODULES,
   TEXT_ATTRS,
   TEXT_DIRECTIVES,
@@ -54,7 +56,7 @@ import {
   splitFirst,
   tCallRefusals,
 } from '@inflozo/library'
-import type { BindingUse, ControlDef, DataBinding, IconLookup, PropDef, ScopeEntry, TCall, UniversalNarrowing } from '@inflozo/library'
+import type { BindingPlace, BindingUse, ControlDef, DataBinding, IconLookup, Listed, PropDef, ScopeEntry, TCall, UniversalNarrowing } from '@inflozo/library'
 // Story 4.3. The spine's package table says the three core packages may depend on `library` AND on
 // each other, so this import is inside the dependency rule. The DOM is injected because AD-1 forbids
 // reaching a global; the shim is PURE, so there is nothing to inject around it and threading it
@@ -176,6 +178,10 @@ export type RenderInput = {
    *  binding is checked against the context matrix at its scope (FR-H7, Story 4.6) and a field the
    *  matrix types `number` guards with `includeZero=true`; a render naming no template cannot be checked. */
   target?: string
+  /** STORY 7.16c — the Routes Manager files a collection or channel lists (the runtime's `listsOf`): on one of them `target`
+   *  paginates (`isPaginated`) and reads the matrix's list row — the route's `posts` and `pagination` at its root (F3).
+   *  Omitted, none is listed: every render before this story, which is the control. */
+  listed?: Listed
 
   // ── Story 4.5 — the controls engine's one door into both emitters ──────────
   /** the DESIGN's `controlSchema`. Given, the root's control attributes are `resolveControls`' and
@@ -643,14 +649,28 @@ function refuseUnrendered(root: RuntimeElement): void {
  *  context is a FATAL render. `compileTarget` is where the library states it (`validate.ts`'s
  *  `pagination-target`); this is the same rule at render, because a render with no target named is
  *  a render that cannot show it is legal. */
-function refuseUnpaginated(root: RuntimeElement, target?: string): void {
+function refuseUnpaginated(root: RuntimeElement, target?: string, listed?: Listed): void {
   if (all(root, '[data-pagination]').length === 0) return
-  if (target !== undefined && PAGINATED_TARGETS.has(target)) return
+  // Story 7.16c: the render's paginated fact is `isPaginated`'s — a Routes Manager template a collection or channel lists
+  if (target !== undefined && isPaginated(target, listed)) return
   throw new Error(
     `data-pagination restricts this design to a paginated target (R-7) and this render names ` +
-      `${target === undefined ? 'none' : `"${target}"`}. Paginated: ${[...PAGINATED_TARGETS].join(', ')}. ` +
+      `${target === undefined ? 'none' : `"${target}"`}. Paginated: ${[...PAGINATED_TARGETS].join(', ')}, and a Routes Manager template a collection or channel lists. ` +
       `A {{pagination}} outside a paginated context is a FATAL render, not a warning.`,
   )
+}
+
+/** STORY 7.16c — WHERE A BINDING IS CHECKED (FR-H7): the render's target, read through the list row where a collection or
+ *  channel lists it — and, for a SECONDARY feed on a Routes Manager template, the list row too. That section stands inside
+ *  its own `{{#get "posts"}}` on the theme, whose frame is Home's list scope exactly (its `posts` and the `pagination` the
+ *  pager it leaves out would read), and the canvas renders it against the same: so its `posts` repeat binds there, listed
+ *  or not, and a route change never strands it (routine call 3). Every other target reads its own row as before. */
+const placeOf = (input: RenderInput & { target: string }, scope: readonly ScopeEntry[]): BindingPlace => {
+  const target = input.target
+  const listed: Listed | undefined = input.feed !== undefined && listable(target)
+    ? { has: (file) => file === target || (input.listed?.has(file) ?? false) }
+    : input.listed
+  return { target, scope, ...(listed === undefined ? {} : { listed }) }
 }
 
 /** R-7, half two, at render: a `{{#get}}` on the error or private template compounds the outage it
@@ -790,7 +810,7 @@ function bindingRefusals(root: RuntimeElement, input: RenderInput & { target: st
   const out: string[] = []
   for (const el of root.querySelectorAll('*')) {
     for (const { attr, path, use, self } of ghostPaths(el, input)) {
-      const place = { target: input.target, scope: scopeOf(el, root, input, self), ...(input.version === undefined ? {} : { version: input.version }) }
+      const place = { ...placeOf(input, scopeOf(el, root, input, self)), ...(input.version === undefined ? {} : { version: input.version }) }
       // Story 4.10: `{{#if}}` tests truthiness, so a condition may name a boolean, a printable value (a logo, an
       // excerpt, a count) or a list (an empty one takes the else arm). `@member`, an object and a helper stay refused.
       const why = use === 'condition' && (bindable(path, { ...place, use: 'value' }) === null || bindable(path, { ...place, use: 'repeat' }) === null)
@@ -820,7 +840,7 @@ export function checkBindings(doc: RuntimeDocument, src: string, input: RenderIn
   // R-7's two target refusals are part of "does the destination carry this design": a gate that
   // answered [] and then threw at render would be no gate
   const out: string[] = []
-  for (const check of [() => refuseUnpaginated(root, target), () => refuseGetOnForbiddenTarget(root, { ...input, target })]) {
+  for (const check of [() => refuseUnpaginated(root, target, input.listed), () => refuseGetOnForbiddenTarget(root, { ...input, target })]) {
     try { check() } catch (e) { out.push((e as Error).message) }
   }
   return [...out, ...bindingRefusals(root, { ...input, target })]
@@ -828,14 +848,14 @@ export function checkBindings(doc: RuntimeDocument, src: string, input: RenderIn
 
 /** true when the matrix types `field` a number here — a render naming no target cannot know */
 const numberField = (field: string, input: RenderInput, where: readonly ScopeEntry[]): boolean =>
-  input.target !== undefined && fieldKind(field, { target: input.target, scope: where }) === 'number'
+  input.target !== undefined && fieldKind(field, placeOf({ ...input, target: input.target }, where)) === 'number'
 
 /** Story 5.3, R-122: a surviving Ghost word on the canvas names its field for the editor's lock pill, from the one list
  *  beside the matrix. Unnamed without a target — the editor always renders at one, and a render at one has already
  *  refused a binding the matrix does not carry. */
 function stampGhost(el: RuntimeElement, path: string, input: RenderInput, where: readonly ScopeEntry[], use: BindingUse): void {
   if (input.editing !== true || input.target === undefined) return
-  const name = ghostLabel(path, { target: input.target, scope: where }, use)
+  const name = ghostLabel(path, placeOf({ ...input, target: input.target }, where), use)
   if (name !== null) el.setAttribute('data-inflozo-ghost', name)
 }
 
@@ -1804,7 +1824,11 @@ function renderTree(
   // the vocabulary's sentence (FR-G7). Story 4.10: so does every other `emitted` directive — Portal's
   // `data-members-form`, `-email` and `-error`, and `data-ghost-search` — each parsed and kept.
   for (const d of EMITTED_DIRECTIVES) for (const el of all(root, `[${d}]`)) consume(el, d)
-  refuseUnpaginated(root, input.target)
+  // Story 5.19 — a secondary feed leaves its pager out on BOTH emitters. STORY 7.16c: BEFORE R-7's refusal and FR-H7's,
+  // since a pager that is never rendered emits no `{{pagination}}` — so a feed on a Routes Manager template no route lists
+  // (no `pagination` there, F3) renders as its own `{{#get}}`, and every other part of the design is still judged
+  if (input.feed !== undefined) pagerOf(root)?.remove()
+  refuseUnpaginated(root, input.target, input.listed)
   refuseGetOnForbiddenTarget(root, input)
   // R-2: two initials never come from Ghost — `{{split}}` is 6.5+ and a gscan error below it
   for (const el of all(root, '[data-initials]')) {
@@ -1836,14 +1860,11 @@ function renderTree(
       }
     }
   }
-  // Story 5.19 — a secondary feed leaves its pager out on BOTH emitters, after every refusal (the design is still judged
-  // whole); and at zero the canvas draws nothing at all, heading and container together — the theme's `{{#if posts}}`
-  if (input.feed !== undefined) {
-    pagerOf(root)?.remove()
-    if (users === null && feedRows.length === 0) {
-      root.innerHTML = ''
-      return { root, partials: {}, feed }
-    }
+  // Story 5.19 — a secondary feed's pager went before the refusals (above); at zero the canvas draws nothing at all,
+  // heading and container together — the theme's `{{#if posts}}` — after every refusal, so the design is still judged
+  if (input.feed !== undefined && users === null && feedRows.length === 0) {
+    root.innerHTML = ''
+    return { root, partials: {}, feed }
   }
   // Story 4.10 — after every refusal (a gated-away section still refuses what it would refuse shown) and before the
   // controls, the lists and the repeats, so a member gate is the outermost wrapper of its element on the theme

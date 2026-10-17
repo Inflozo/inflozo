@@ -23,7 +23,7 @@ import {
   memberAsks, modeScopedOffers, modeScopedRules, rootClassOf, stripCssComments, validateCategoryContent, validateDataBinding, validateDesign,
   validateDesignJson, validateMarkup,
 } from './validate.ts'
-import { GHOST_OWN_PARTIALS, ROUTE_TEMPLATE_TARGET } from './vocabulary.ts'
+import { GHOST_OWN_PARTIALS, MEMBERSHIP_FILES, ROUTE_TEMPLATE_TARGET } from './vocabulary.ts'
 import type { Failure } from './validate.ts'
 
 const codes = (f: Failure[]) => f.map((x) => x.code)
@@ -552,7 +552,7 @@ test('a design declaring pagination cannot list a non-paginated target (R-7)', (
     'pagination on paginated targets')
 })
 
-test('Story 7.16b (DW-126) — ROUTE_TEMPLATE_TARGET is a legal target, a misspelt brace is not, and it is no paginated target (R-7)', () => {
+test('Story 7.16b (DW-126) — ROUTE_TEMPLATE_TARGET is a legal target and a misspelt brace is not; Story 7.16c — it is a paginated target (R-7)', () => {
   clean(validateDesignJson(design({ compileTarget: ['home.hbs', ROUTE_TEMPLATE_TARGET] })), 'every Routes Manager template')
   // the control: a brace that is not R-7's spelling is refused, naming the legal set with the target in it
   for (const wrong of ['custom-{nme}.hbs', 'custom-{name}', '{name}.hbs']) {
@@ -560,10 +560,14 @@ test('Story 7.16b (DW-126) — ROUTE_TEMPLATE_TARGET is a legal target, a misspe
     assert.deepEqual(codes(f), ['bad-compile-target'], wrong)
     assert.match(f[0]?.message ?? '', /custom-\{name\}\.hbs \(every Routes Manager template\)/, wrong)
   }
-  // a route's root is not paginated (its posts are Story 7.16c's), so pagination there is R-7's refusal — beside its control
+  // Story 7.16c — R-7's "A29: compileTarget gains custom-{name}.hbs collection templates": a collection's or channel's template
+  // paginates (F3), and on one no route lists the design is a secondary feed whose pager is never rendered — so the brace
+  // holds pagination legally. A membership file, named by its own file, still refuses it (the control)
   const markup = root('<a data-pagination="next" href="#">Older</a>')
-  assert.ok(codes(validateDesignJson(design({ compileTarget: ['index.hbs', ROUTE_TEMPLATE_TARGET] }), markup)).includes('pagination-target'))
-  clean(validateDesignJson(design({ compileTarget: ['index.hbs'] }), markup), 'the control: pagination on index.hbs alone')
+  clean(validateDesignJson(design({ compileTarget: ['index.hbs', ROUTE_TEMPLATE_TARGET] }), markup), 'pagination on the brace')
+  const membership = validateDesignJson(design({ compileTarget: ['index.hbs', MEMBERSHIP_FILES[0] as string] }), markup)
+  assert.ok(codes(membership).includes('pagination-target'), 'the control: a membership file never paginates')
+  assert.match(membership.find((f) => f.code === 'pagination-target')?.message ?? '', new RegExp(`Paginated targets: .*${ROUTE_TEMPLATE_TARGET.replace(/[{}.]/g, '\\$&')}`))
 })
 
 test('a design performing a {{#get}} excludes error.hbs and private.hbs (R-7)', () => {

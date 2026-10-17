@@ -74,16 +74,23 @@ function assemble(d) {
   return entry
 }
 
+/** STORY 7.16c — a FEED at the brace renders as a LISTED Routes Manager template: a collection's root is Home's (F3), so its
+ *  main feed binds the native posts there and its theme text equals home.hbs's — one snapshot still holds every target. On a
+ *  template no route lists it would be a secondary feed, which `agreement.test.ts` and `compile.test.ts` hold. Every other
+ *  design renders at the brace as the route form, unlisted, as before. */
+const listedAt = (entry, target) => (target === lib.ROUTE_TEMPLATE_TARGET && entry.bindingContext.includes('posts') ? new Set([target]) : undefined)
+
 /** The render input for one target: content and controls at their defaults, Orbit Weekly for Ghost. */
 function input(entry, target, over = {}) {
-  const ctx = lib.orbitWeekly.templateContext(target, over.feed ?? 'first')
+  const listed = listedAt(entry, target)
+  const ctx = lib.orbitWeekly.templateContext(listed === undefined ? target : 'home.hbs', over.feed ?? 'first')
   const bindings = rt.withData(entry.dataBindings, {})
   const getRows = Object.fromEntries(Object.entries(bindings).map(([k, b]) => [k, lib.orbitWeekly.resolveSource(b)]))
   const { feed: _feed, ...rest } = over
   return {
     target, content: rt.defaultContent(entry.contentSchema), schema: entry.contentSchema,
     controlSchema: entry.controlSchema, universals: entry.universals, controls: {},
-    dataBindings: entry.dataBindings, getRows, icons: iconDrawing, ghost: ctx.ghost, site: ctx.site, ...rest,
+    dataBindings: entry.dataBindings, getRows, icons: iconDrawing, ghost: ctx.ghost, site: ctx.site, ...(listed === undefined ? {} : { listed }), ...rest,
   }
 }
 
@@ -134,7 +141,8 @@ function renderDesign(d) {
   let theme = null
   for (const target of entry.compileTarget) {
     // DW-168: at the oldest Ghost the design claims, so a field the matrix dates later is refused by its `since`
-    const refused = rt.checkBindings(doc(), entry.html, { target, dataBindings: entry.dataBindings, version: entry.ghostCompat.minVersion })
+    const listed = listedAt(entry, target)
+    const refused = rt.checkBindings(doc(), entry.html, { target, dataBindings: entry.dataBindings, version: entry.ghostCompat.minVersion, ...(listed === undefined ? {} : { listed }) })
     if (refused.length > 0) throw new Error(`${id} at ${target}: checkBindings refused\n  ${refused.join('\n  ')}`)
     rt.renderCanvas(doc(), entry.html, input(entry, target))
     const files = snapshotFiles(rt.renderTheme(doc(), entry.html, input(entry, target)))
@@ -224,6 +232,15 @@ check("control — the wrapper axis: A24 #1 at index.hbs is FR-H7's refusal nami
 check("control — pagination: A17 #1 at post.hbs is R-7's refusal", () => {
   const entry = assemble(byId('a17/1'))
   return mustThrow(() => rt.renderTheme(doc(), entry.html, input(entry, 'post.hbs')), /R-7/, 'A17 #1 at post.hbs')
+})
+check("control — Story 7.16c: A17 #1 at the brace is the main feed only where a route lists it — unlisted, R-7's refusal; listed, home.hbs's text", () => {
+  const entry = assemble(byId('a17/1'))
+  const at = lib.ROUTE_TEMPLATE_TARGET
+  const unlisted = { ...input(entry, at), listed: undefined }
+  const note = mustThrow(() => rt.renderTheme(doc(), entry.html, unlisted), /R-7/, 'A17 #1 at the brace with no route listing it')
+  const listed = rt.renderTheme(doc(), entry.html, input(entry, at)).template
+  if (listed !== rt.renderTheme(doc(), entry.html, input(entry, 'home.hbs')).template) throw new Error('A17 #1 listed at the brace does not render home.hbs\'s text')
+  return note
 })
 
 // ── the subject ───────────────────────────────────────────────────────────────────────────────────────────

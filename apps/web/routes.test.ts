@@ -2,9 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { docSchema, parseDoc } from '@inflozo/section-runtime'
+import { docSchema, listedStart, parseDoc } from '@inflozo/section-runtime'
 import { ROUTE_WORDS } from '@inflozo/section-runtime/routes'
-import { docRefusal } from './lib/pilots.ts'
+import { docRefusal, pilot, pilotIds } from './lib/pilots.ts'
 import { cardName, conditionWords, filterWords, freshCondition, ROUTES_WORDS, templatesOf, templateWriteRefusal } from './lib/routes.ts'
 
 // STORY 7.16a — the Routes page's pure half (`lib/routes.ts`): R-170's one list, the frame's strings verbatim where the spec
@@ -146,12 +146,13 @@ test('Story 7.16b (review): a new template clears what an earlier one of its nam
 test('Story 7.16b: the Undo\'s doc is judged as the sync route judges one — a doc a Routes Manager canvas can hold passes, and nothing else', () => {
   const doc = (...designIds: string[]) => ({ schemaVersion: 1, instances: designIds.map((designId, n) => ({ instanceId: `i${n}`, layerName: designId, designId, content: {}, controls: {}, data: {}, darkOverrides: {} })) })
   const key = 'custom:custom-landing.hbs'
-  for (const ok of [doc('a22/1'), doc('a4/13', 'a22/1'), doc()]) {
+  // Story 7.16c (routine call 3): a17/1 lists the route target too — the main feed of a listed template, a secondary one elsewhere
+  for (const ok of [doc('a22/1'), doc('a4/13', 'a22/1'), doc('a17/1'), doc()]) {
     const parsed = docSchema.safeParse(ok)
     assert.ok(parsed.success && docRefusal(key, parsed.data) === null, JSON.stringify(ok))
   }
   // THE CONTROL: a design that does not list the route target, a post-bound one, a stranger's key and a doc that is no doc
-  assert.match(docRefusal(key, parseDoc(doc('a17/1'), key)) ?? '', /never custom-landing\.hbs/)
+  assert.match(docRefusal(key, parseDoc(doc('a1/1'), key)) ?? '', /never custom-landing\.hbs/)
   assert.match(docRefusal(key, parseDoc(doc('a24/1'), key)) ?? '', /never custom-landing\.hbs/)
   assert.equal(docSchema.safeParse({ schemaVersion: 1, instances: [{ designId: 'a22/1' }] }).success, false)
   assert.equal(docSchema.safeParse({ ...doc('a22/1'), extra: true }).success, false, 'a strict schema: nothing rides along')
@@ -168,4 +169,36 @@ test('Story 7.16b: ?new=template opens the New template sheet, and Create from i
   // reload or Back never opens the sheet again
   assert.match(manager, /if \(props\.fromMenu === true && new URL\(window\.location\.href\)\.searchParams\.has\('new'\)\) window\.history\.replaceState\(null, '', window\.location\.pathname\)/)
   assert.match(manager, /const openCanvas = \(canvas: RouteCanvas\) => startOpening\(\(\) => router\.replace\(/)
+})
+
+/* ───────────────────────────── Story 7.16c ───────────────────────────── */
+
+test('Story 7.16c: a new template a collection\'s or channel\'s sheet names starts with the archive default\'s feed — row, then doc, then config', () => {
+  const save = body('saveRoutes')
+  const [row, doc, config] = [save.indexOf('insertTemplate('), save.indexOf('writeListedStart('), save.indexOf('writeConfig(')]
+  assert.ok(row > 0 && doc > row && config > doc, `saveRoutes' order: row ${row}, doc ${doc}, config ${config}`)
+  // only when the config LISTS the new file: a static route's new template, like "+ New template", opens empty (7.16b)
+  assert.match(save, /listsOf\(parsed\.config\)\.has\(made\.file\) && !\(await writeListedStart\(sb, id, user\.id, made\.file\)\)/)
+  assert.ok(!body('createTemplate').includes('writeListedStart'), '"+ New template" writes no doc')
+  // a failed doc write leaves the row unrouted and says couldNot — a valid state the page lists
+  assert.match(save, /revalidate\(id\)\n\s+return couldNot\(\)/)
+  // the doc is synthesis's own FEED row (`listedStart`), judged by `docRefusal` as every doc is, under the canvas's key
+  const at = ACTIONS.indexOf('async function writeListedStart(')
+  const fn = ACTIONS.slice(at, ACTIONS.indexOf('\n}\n', at))
+  assert.match(fn, /const \{ instances \} = listedStart\(file, held\)/)
+  assert.ok(fn.indexOf('docRefusal(key, doc)') < fn.indexOf(".from('project_templates').upsert("), 'judged before it is written')
+  // and what `listedStart` gives is a17/1 "Post grid", flagged the main feed, which the library holds on a Routes Manager file
+  const held = (id: string) => (pilotIds().includes(id) ? pilot(id) : undefined)
+  const { instances } = listedStart('custom-tutorials-list.hbs', held)
+  assert.deepEqual(instances.map((i) => [i.designId, i.layerName, i.isMainFeed]), [['a17/1', 'Post grid', true]])
+  assert.equal(docRefusal('custom:custom-tutorials-list.hbs', { schemaVersion: 1, instances }), null)
+  // THE CONTROL: a membership file takes none of it — a17/1 never compiles there, so synthesis drops the row
+  assert.deepEqual(listedStart('custom-signup.hbs', held).instances, [])
+})
+
+test('Story 7.16c (routine call 7): the page-size hint names the sheet\'s own kind — a channel\'s says "A channel"', () => {
+  assert.equal(ROUTES_WORDS.postsAfter(12, 'channel'), ' — 12 right now. A channel can set its own limit here.')
+  assert.equal(ROUTES_WORDS.postsAfter(12, 'collection'), ROUTES_WORDS.postsAfter(12), 'the control: a collection\'s, as S9c draws it')
+  const manager = readFileSync('app/(app)/app/(authed)/projects/[id]/routes/routes-manager.tsx', 'utf8')
+  assert.match(manager, /<PostsCount n=\{postsPerPage\} kind=\{where\} \/>/)
 })

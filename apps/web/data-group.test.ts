@@ -2,10 +2,12 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { POST_SOURCES, POST_SOURCE_WORDS } from '@inflozo/library'
 import { DATA_WORDS } from '@inflozo/section-runtime'
+import { readFileSync } from 'node:fs'
+import { ROUTES_WORDS } from './lib/routes.ts'
 import {
-  ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, HOLDS, initialOf, MAIN_FEED, MAKE_MAIN_FEED, NO_MATCHES, NO_PICKS, NOT_IN_SOURCE, NOW_MAIN,
+  ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, FEEDLESS_ROUTE, HOLDS, initialOf, MAIN_FEED, MAKE_MAIN_FEED, NO_MATCHES, NO_PICKS, NOT_IN_SOURCE, NOW_MAIN,
   optionsOf, PAST_SLOW, PAST_SLOW_BOLD, PICK_ADDED, PICK_LACKING, PICK_REMOVED, PICKED, postsCount, SEARCH_POSTS, searchPosts,
-  slow, SLOW_AFTER, withTransfer,
+  ROUTES_LINK, slow, SLOW_AFTER, withTransfer,
 } from './lib/data-group.ts'
 
 /* Story 5.19 — THE WORDS (R-170). Every string the spec's "The words" table gives, held here to the one module that
@@ -94,4 +96,25 @@ test('review 2026-09-25 · the words the review added — a search with no match
   assert.equal(PICK_REMOVED('Reading the margins'), 'Reading the margins removed.')
   assert.equal(CAPPED_LIST('tag', 100), 'Showing your 100 fullest tags.')
   assert.equal(CAPPED_LIST('author', 100), 'Showing your 100 fullest writers.')
+})
+
+/* Story 7.16c — D5c's reason line and link on a listed template's main feed, and the Layers note (the spec's "Words") */
+
+test('Story 7.16c: routeCount, its link "Routes & Templates ↗" (the page\'s own title, R-170) and the feed-less template\'s note', () => {
+  assert.equal(DATA_WORDS.routeCount('/tutorials/'), "This feed is sized by /tutorials/'s own page size. Change it in Routes & Templates.")
+  assert.equal(ROUTES_LINK, 'Routes & Templates ↗')
+  assert.equal(ROUTES_LINK, `${ROUTES_WORDS.title} ↗`, 'one name for the routes page: its title')
+  assert.ok(DATA_WORDS.routeCount('/x/').endsWith(`Change it in ${ROUTES_WORDS.title}.`))
+  assert.equal(FEEDLESS_ROUTE('/staff-picks/'), 'This template has no list of posts. Ghost still serves /staff-picks/page/2/ onwards, which would repeat page 1, so your theme asks search engines to skip them.')
+  // the archive's note in the archive's words: the same sentence after its subject (routine call 6)
+  assert.equal(FEEDLESS_ROUTE('/x/').split(' onwards')[1], FEEDLESS('Tag').split(' onwards')[1])
+  assert.ok((FEEDLESS('Tag').split(' onwards')[1] ?? '').length > 0)
+  // THE LINK CHOOSES BY ITS ROW: a route's Count links to the routes page, D5c's own to Theme settings, never both
+  const group = readFileSync('components/controls/data-group.tsx', 'utf8')
+  assert.match(group, /routesHref !== undefined && row\.route !== undefined && row\.greyed === DATA_WORDS\.routeCount\(row\.route\) \? \(\s*(?:\/\/[^\n]*\n\s*)?<Link href=\{routesHref\}/)
+  assert.ok(group.indexOf('{ROUTES_LINK}') > group.indexOf('{THEME_SETTINGS_LINK}'), 'one ternary: the settings link first, the routes link in its else')
+  const sidebar = readFileSync('components/controls/sidebar.tsx', 'utf8')
+  assert.match(sidebar, /routesHref=\{routesHref\}/)
+  const editor = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx', 'utf8')
+  assert.match(editor, /routesHref=\{routesPath\(project\.id\)\}/)
 })

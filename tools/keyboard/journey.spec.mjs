@@ -8160,3 +8160,107 @@ test('7.13 · a card change not yet sent is kept on this device: a reload opens 
   await page.keyboard.press('ControlOrMeta+z')
   await expect(page.locator('[data-customised-card]')).toHaveCount(0)
 })
+
+// ── Story 7.16c (DW-363) — THE ROUTES MANAGER'S TEMPLATES IN CI: `x-inflozo-harness-routes: on` gives the harness a collection
+//    `/harness-list/` (Primary tag `tools`, its own limit 3) naming `custom-harness-list.hbs`, which holds A17 #1, and a static
+//    route `/harness-landing/` naming `custom-harness-landing.hbs`, which holds A22 #1 alone (`harness/editor/layout.tsx`).
+//    Every word is read from the list that prints it (R-170); every claim beside its control.
+
+const ROUTES_ON = { 'x-inflozo-harness-routes': 'on' }
+const ROUTES_LIB = await import(new URL('../../apps/web/lib/routes.ts', import.meta.url).href)
+
+/** A Routes Manager canvas under the header, painted */
+async function openRouteCanvas(page, canvas) {
+  await page.setExtraHTTPHeaders(ROUTES_ON)
+  await page.goto(`${HARNESS}/${canvas}`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', canvas)
+  await expect(page.locator('[data-layer-row]').first()).toBeVisible()
+}
+
+/** One edit the flush must carry: the canvas's only section hidden from its Layers row (Space), then ⌘S */
+async function hideAndSave(page) {
+  const [own] = (await rows(page)).page
+  await page.locator(`[data-layer-row="${own}"]`).focus()
+  await page.keyboard.press(' ')
+  await expect(page.locator(`[data-layer-row="${own}"] [popover] button`).first()).toHaveText('Show')
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+s')
+}
+
+test('7.16c (DW-363) · the flush\'s `left`: a save the sync route answers naming the landing as gone moves the editor to Home with B5a\'s strip; the same save with no `left` stays', async ({ page }) => {
+  const key = `custom:custom-harness-landing.hbs`
+  let left = []
+  const sent = []
+  await page.route('**/sync', (route) => {
+    sent.push(route.request().postDataJSON())
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ applied: true, revision: sent.length, left }) })
+  })
+  await openRouteCanvas(page, 'custom-harness-landing')
+  // THE CONTROL: the route answers with nothing left — the editor stays, and no strip is drawn
+  await hideAndSave(page)
+  await expect.poll(() => sent.length, 'the save went up').toBe(1)
+  expect(Object.keys(sent[0].docs ?? {}), 'carrying the landing\'s doc').toContain(key)
+  await panelsSettle(page)
+  await expect(page).toHaveURL(/\/app\/harness\/editor\/custom-harness-landing$/)
+  await expect(page.locator('#editor-gone-bar')).toBeHidden()
+  // the same save, answered naming the landing's key as left unwritten: a template deleted elsewhere
+  left = [key]
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await page.keyboard.press('ControlOrMeta+s')
+  await expect.poll(() => sent.length, 'the second save went up').toBe(2)
+  await expect(page).toHaveURL(/\/app\/harness\/editor$/)
+  await expect(page.locator('#editor-gone-bar')).toBeVisible()
+  await expect(page.locator('#editor-said')).toHaveText(EDITOR.TEMPLATE_GONE.said('Harness Landing'))
+})
+
+test('7.16c (DW-363) · the routed D5f: the last section off the landing a static route shows asks in ROUTED_EMPTY_ASK\'s words, naming the route', async ({ page }) => {
+  await openRouteCanvas(page, 'custom-harness-landing')
+  const [own] = (await rows(page)).page
+  await select(page, own)
+  await page.keyboard.press('Delete')
+  const ask = page.locator('dialog[aria-labelledby="editor-empty-title"]')
+  await expect(ask).toBeVisible()
+  await expect(page.locator('dialog[open] [data-cancel]')).toBeFocused()
+  await expect(page.locator('#editor-empty-title')).toHaveText(EDITOR.ROUTED_EMPTY_ASK.title('Harness Landing'))
+  await expect(page.locator('#editor-empty-body')).toHaveText(EDITOR.ROUTED_EMPTY_ASK.body(['/harness-landing/']).join(''))
+  // the control is 7.3's journey above: an unrouted template asks in EMPTY_TEMPLATE_ASK's words — and those differ from these
+  expect(EDITOR.ROUTED_EMPTY_ASK.body(['/harness-landing/']).join('')).not.toBe(EDITOR.EMPTY_TEMPLATE_ASK.body('custom-harness-landing.hbs').join(''))
+  await page.keyboard.press('Escape')
+  await expect(ask).toBeHidden()
+  await panelsSettle(page)
+  expect((await rows(page)).page, 'Escape changes nothing').toEqual([own])
+})
+
+test('7.16c · the listed template: its feed is the MAIN feed, three to a page, its Count greyed by the route\'s own limit and linked to Routes & Templates; Home lacks the collection\'s posts', async ({ page }) => {
+  const owned = LIB.orbitWeekly.posts().filter((p) => p.primary_tag?.slug === 'tools').map((p) => p.title)
+  expect(owned.length, 'the sample holds posts the collection owns').toBeGreaterThan(3)
+  await openRouteCanvas(page, 'custom-harness-list')
+  // the chip on its Layers row, and three rows on the canvas — the collection's own three, newest first
+  await expect(chipRow(page)).toHaveCount(1)
+  await expect(canvasFrame(page).locator('#canvas .a17-1__cell')).toHaveCount(3)
+  for (const title of owned.slice(0, 3)) await expect(canvasFrame(page).locator('#canvas')).toContainText(title)
+  await select(page, await mainKey(page))
+  await expect.poll(() => inChrome(page, '[data-chrome="main-feed"]'), { message: 'the chip on its outline' }).toBe(1)
+  const data = await openData(page)
+  await expect(data).toContainText(RUNTIME.DATA_WORDS.routeCount('/harness-list/'))
+  await expect(data.locator('[role="group"][id$="-count"]')).toContainText('3')
+  const link = data.getByText(WORDS.ROUTES_LINK)
+  await expect(link).toHaveAttribute('href', EDITOR.routesPath(HARNESS_PROJECT_ID))
+  expect(WORDS.ROUTES_LINK).toBe(`${ROUTES_LIB.ROUTES_WORDS.title} ↗`)
+  await expect(data.getByText(WORDS.THEME_SETTINGS_LINK), 'one link, the route\'s').toHaveCount(0)
+  await expect(data.locator('button[id$="-source"]'), 'D5c: a main feed draws no Source').toHaveCount(0)
+  // Home, under the same routing, lists only the posts no collection owns (FR-H3)
+  await page.goto(HARNESS)
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect(canvasFrame(page).locator('#canvas .a17-1__cell').first()).toBeVisible()
+  for (const title of owned) await expect(canvasFrame(page).locator('#canvas')).not.toContainText(title)
+})
+
+test('7.16c · the CONTROL: without the routes header Home lists the posts the collection would own', async ({ page }) => {
+  const owned = LIB.orbitWeekly.posts().filter((p) => p.primary_tag?.slug === 'tools').map((p) => p.title)
+  const onFirstPage = LIB.orbitWeekly.posts().slice(0, LIB.orbitWeekly.postsPerPage()).map((p) => p.title).filter((t) => owned.includes(t))
+  expect(onFirstPage.length, 'Home\'s first page holds a post the collection owns').toBeGreaterThan(0)
+  await open(page)
+  for (const title of onFirstPage) await expect(canvasFrame(page).locator('#canvas')).toContainText(title)
+})

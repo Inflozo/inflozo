@@ -112,9 +112,22 @@ const HOME = 'home.hbs'
  * (AD-1), and the same untouched canvas must synthesize to the same doc on every open and on every compile.
  */
 export function synthesize(file: string, library: SynthesisLibrary): Synthesis {
+  return placed(file, SYNTHESIS_DEFAULTS[file] ?? [], library)
+}
+
+/** STORY 7.16c — WHAT A NEW COLLECTION'S OR CHANNEL'S TEMPLATE STARTS WITH (FR-H2: a channel's template "gets one at
+ *  creation", given "the same way" as an archive's — routine call 2): the archive defaults' own `FEED` row, a17/1 "Post
+ *  grid" flagged as the main feed, through the same placing as every default stack, so its drop rule and its derived ids
+ *  are synthesis's. Written once, by the routes page, for a template created in a collection's or channel's own sheet —
+ *  a Routes Manager file is still never SYNTHESIZED (`isSynthesizable`): an existing one, or a static route's, opens as
+ *  it is. */
+export const listedStart = (file: string, library: SynthesisLibrary): Synthesis => placed(file, FEED, library)
+
+/** One stack's rows, placed on `file` — the library asked each row's design, a row it cannot place dropped with its reason. */
+function placed(file: string, rows: readonly DefaultRow[], library: SynthesisLibrary): Synthesis {
   const instances: DocInstance[] = []
   const dropped: DroppedRow[] = []
-  for (const [n, row] of (SYNTHESIS_DEFAULTS[file] ?? []).entries()) {
+  for (const [n, row] of rows.entries()) {
     const entry = library(row.designId)
     if (entry === undefined) {
       dropped.push({ designId: row.designId, reason: `the library holds no design ${row.designId}` })

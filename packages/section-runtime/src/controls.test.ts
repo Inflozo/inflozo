@@ -21,7 +21,7 @@ import design2 from '../../library/fixtures/controls/2/design.json' with { type:
 import design3 from '../../library/fixtures/controls/3/design.json' with { type: 'json' }
 import content from '../../library/fixtures/controls/content.json' with { type: 'json' }
 import {
-  addItem, darkOverridesInForce, defaultContent, duplicateItem, itemsShown, moveItem, removeItem, resetChanges,
+  addItem, DATA_WORDS, darkOverridesInForce, defaultContent, duplicateItem, itemsShown, moveItem, removeItem, resetChanges,
   resetControl, resetSection, resolveControls, setContent, setControl, setData, sidebar, storedFor, switchControls,
   withData,
 } from './controls.ts'
@@ -639,6 +639,18 @@ test('Story 5.19 · the main feed\'s Data group is D5c\'s: Count greyed at the p
   assert.deepEqual(rowsOf(secondary, start()).map((r) => [r.key, r.control, r.value]), [['posts', 'source', 'latest'], ['posts', 'count', '12'], ['posts', 'order', 'newest']])
   const three = ok(setData(secondary, start(), 'posts', 'count', 3))
   assert.deepEqual(three.data, { posts: { count: 3 } })
+})
+
+test('Story 7.16c · a main feed sized by its route\'s own limit: Count greyed at the limit, routeCount naming the path, and the row carries the route', () => {
+  const main = { ...entry, dataBindings: {}, feed: { kind: 'main' as const, postsPerPage: 3, route: '/tutorials/' } }
+  const [count] = rowsOf(main, start())
+  assert.deepEqual([count?.control, count?.value, count?.greyed, count?.kind === 'data' ? count.route : null], ['count', '3', "This feed is sized by /tutorials/'s own page size. Change it in Routes & Templates.", '/tutorials/'])
+  assert.equal(DATA_WORDS.routeCount('/tutorials/'), count?.greyed)
+  assert.equal(typeof setData(main, start(), 'posts', 'count', 5), 'string', 'still greyed: the route owns the number')
+  // the control: with no route the row is D5c's own, linking to Theme settings, and carries none
+  const unrouted = { ...entry, dataBindings: {}, feed: { kind: 'main' as const, postsPerPage: 12 } }
+  const [plain] = rowsOf(unrouted, start())
+  assert.deepEqual([plain?.greyed, plain?.kind === 'data' ? plain.route : null], [DATA_WORDS.mainCount, undefined])
 })
 
 test('review 2026-09-25 · a main feed that also DECLARES a posts query keeps that query\'s rows under D5c\'s Count', () => {

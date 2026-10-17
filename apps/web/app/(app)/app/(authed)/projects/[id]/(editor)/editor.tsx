@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { memo, Profiler, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { CARDS, categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, parseCardDesigns, paywallRing, postAccess, resolveStrings, ringFor, withoutCard, withValue, type CardDesigns, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { CARDS, categoryOf, DEFAULT_LIMIT, isPaginated, isPaywallDesign, isRouteTemplate, orbitWeekly, parseCardDesigns, paywallRing, postAccess, resolveStrings, ringFor, withoutCard, withValue, type CardDesigns, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
@@ -52,7 +52,7 @@ import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection,
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, labelOf, landWithin, namesOf, ROUTED_EMPTY_ASK, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, labelOf, landWithin, namesOf, ROUTED_EMPTY_ASK, routesPath, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
 import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey, parseStoredCards } from '@/lib/cards'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
@@ -62,7 +62,7 @@ import {
   SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
   type Restore, type SyncState,
 } from '@/lib/journal'
-import { ghostLabel } from '@inflozo/section-runtime/routes'
+import { ghostLabel, homeList, listsOf, routeList } from '@inflozo/section-runtime/routes'
 import {
   askedNow, edgePoll, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, type AskedOf, type LockRow,
 } from '@/lib/lock'
@@ -90,7 +90,7 @@ import {
   bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, PUBLIC_TIERS, reader, retriable, SEARCH_DEBOUNCE_MS,
   searchFor, searchInForce, SETTINGS, siteLinks, siteTotal, subjectRead, withFound, type Cause, type LiveQuery,
 } from '@/lib/live-content'
-import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, NOW_MAIN, withTransfer } from '@/lib/data-group'
+import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, FEEDLESS_ROUTE, NOW_MAIN, withTransfer } from '@/lib/data-group'
 import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
@@ -827,6 +827,7 @@ function EditorShell({
   cardDesigns: storedCards = NO_CARDS,
   cardsRefused = null,
   templates: routeTemplates = NO_TEMPLATES,
+  routes,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -846,6 +847,27 @@ function EditorShell({
   const canvases = useMemo(() => (deleted.size === 0 ? served : served.filter((c) => !deleted.has(c))), [served, deleted])
   /** STORY 7.16b — the files a route shows, and each one's paths: D5f's routed sentence (DW-344's first half) */
   const routed = useMemo(() => routeTemplates.filter((t) => t.paths.length > 0).map((t) => fileOf(t.canvas)), [routeTemplates])
+  /* STORY 7.16c — WHAT EACH TEMPLATE LISTS, derived ONCE from the stored routing (`listsOf`, the spec's one list): `listed`, the
+     Routes Manager files a collection or channel names — they paginate, so a feed there is the main feed (`designate`,
+     `isPaginated`) — and the lists the canvas draws, on the sample and the connected site alike: Home's posts no collection
+     owns (`homeList`) and each listed template's FIRST list, collections before channels (`routeList`, routine call 4).
+     "Now", for a channel's rolling dates, is read once at mount: the shell's input to the runtime's pure evaluator (AD-1). */
+  const listed = useMemo(() => listsOf(routes), [routes])
+  const [now] = useState(() => new Date().toISOString())
+  const routeLists = useMemo<orbitWeekly.RouteLists>(() => {
+    const home = homeList(routes, now)
+    const byFile = new Map([...listed].map(([file, [first]]) => [file, first === undefined ? undefined : routeList(first, now)]))
+    return (target) => (target === 'home.hbs' || target === 'index.hbs' ? home : byFile.get(target))
+  }, [routes, listed, now])
+  /** STORY 7.16c — the page size in force on a file (F5): its route's own `limit:` where a collection or channel lists it,
+   *  else the theme's Posts per page */
+  const perPageOn = (file: string): number => routeLists(file)?.limit ?? postsPerPage
+  /** STORY 7.16c — a main feed's part (D5c): on a listed template whose route sets its own `limit:`, sized by it and naming the
+   *  route (`routeCount`, "Routes & Templates ↗"); everywhere else Posts per page, D5c's own line */
+  const mainRole = (file: string): FeedRole => {
+    const first = listed.get(file)?.[0]
+    return first?.limit === undefined ? { kind: 'main', postsPerPage } : { kind: 'main', postsPerPage: first.limit, route: first.path }
+  }
   // the layout 404s every segment that is not a canvas, so a null here is never drawn. STORY 7.16b — a Routes Manager
   // segment that names no template of this project is not a canvas it offers: the editor shows Home and says why (below)
   const addressed = canvasOfPath(stripApp(pathname)) ?? 'home'
@@ -958,14 +980,16 @@ function EditorShell({
    * `posts_per_page`, folded with the instance's `data.posts` — and every section's declared queries are FOLDED with its
    * Data values too. So a query is the INSTANCE's now, and its rows are too: the sample's resolved here
    * (`sampleRows`), the site's read per query through 5.18's one store (`sitePage`'s `queries`). */
-  const sampleSource = useMemo(() => orbitWeekly.bundledAt(postsPerPage), [postsPerPage])
+  const sampleSource = useMemo(() => orbitWeekly.bundledAt(postsPerPage, routeLists), [postsPerPage, routeLists])
   /** the Section Picker's cards and the ring's tiles preview a DESIGN as it always did: its declared queries, resolved */
   const designRows = useMemo(() => Object.fromEntries(Object.values(entries).map((e) => [e.id, sampleRows(e.dataBindings)])), [entries])
   /** A section's queries: its design's declared ones folded with its stored Data values, and a secondary feed's own. */
   const queriesOf = (i: DocInstance & { target: string }): Queries => {
     const design = entries[i.designId]
     if (design === undefined) return {}
-    const feed = feedQuery(design, i, i.target, postsPerPage)
+    // Story 7.16c: a feed off a paginated page — a Routes Manager template no route lists — is secondary. Its Count starts at
+    // the theme's Posts per page, as the compiled `{{#get}}` does (the compiler knows no route's limit)
+    const feed = feedQuery(design, i, i.target, postsPerPage, listed)
     return { ...withData(design.dataBindings, i.data), ...(feed === undefined ? {} : { [FEED_KEY]: feed }) }
   }
   /** A section's key among a page's queries — an `instanceId` is unique inside a doc, not across the two groups. */
@@ -976,7 +1000,7 @@ function EditorShell({
   const themeHook = (design: Parameters<typeof darkHook>[0], state: ControlState, placed: { themeKey: string; instanceId: string }) =>
     darkEnabled ? darkHook(design, state, sectionKey(placed.themeKey, placed.instanceId)) : undefined
   /** The doc as the main-feed rule leaves it — the one door, asked with the doc's own file (`fileOfKey`). */
-  const designated = (docKey: string, doc: ProjectDoc, previous?: ProjectDoc) => designate(doc, fileOfKey(docKey), library, previous)
+  const designated = (docKey: string, doc: ProjectDoc, previous?: ProjectDoc) => designate(doc, fileOfKey(docKey), library, previous, listed)
   /* ─── Story 5.16 — PAGE 2 (FR-D21, D5d, R-176 to R-180) ────────────────────────────────────────────────────────
    *
    * A CANVAS STATE beside the mode, the device, View as and Preview: session state, never in the URL, never stored,
@@ -2755,6 +2779,8 @@ function EditorShell({
       // Story 5.19 — every section's OWN queries, folded, and a secondary feed's: one read per distinct query
       queries: Object.fromEntries(now.stack.map((i) => [queryKey(i), queriesOf(i)])),
       perPage: postsPerPage,
+      // Story 7.16c — Home's and each listed template's own list: the same filter, the same drop, the same page size
+      lists: routeLists,
       // Story 5.20 — and each post's `access` re-read for the visitor View as previews (Ghost's own rule)
       visitor: now.viewAs,
     })
@@ -2886,7 +2912,7 @@ function EditorShell({
     const s = reads.current
     if (!siteShown || s === null) return undefined
     return (entry: SectionRegistryEntry, target: string): { context: RenderContext; rows: DesignRows | undefined } | null => {
-      const view = sitePage(s.peek, { file: canvas.file, stored: storedSubject, page: 1, pageFile: canvas.file, targets: [target], queries: { [entry.id]: entry.dataBindings ?? {} }, perPage: postsPerPage })
+      const view = sitePage(s.peek, { file: canvas.file, stored: storedSubject, page: 1, pageFile: canvas.file, targets: [target], queries: { [entry.id]: entry.dataBindings ?? {} }, perPage: postsPerPage, lists: routeLists })
       return 'ready' in view && s.reading().stopped === null ? { context: view.ready.contexts[target] as RenderContext, rows: view.ready.rows[entry.id] } : null
     }
   }, [siteShown, liveTick, canvas.file, storedSubject])
@@ -3306,7 +3332,7 @@ function EditorShell({
       // Ghost renders the partial only where access is false — so its instance, where one is chosen, renders nothing
       const paywall = isPaywall(now.key)
       const whole = paywall && postAccess({ visibility: 'paid' }, now.viewAs)
-      const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject, postsPerPage)
+      const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject, postsPerPage, undefined, routeLists)
       const url = at.currentUrl
       const pageNumber = now.page === 2 ? (at.pagination as { page?: number } | undefined)?.page : undefined
       /** One section's markup, exactly as every paint has drawn it. */
@@ -3334,7 +3360,7 @@ function EditorShell({
         const content = lockedContent(i.content, Object.keys(bound.current.byInstance[i.instanceId]?.props ?? {}), entry.contentSchema)
         return renderSection(doc, entry, { ...i, content, controls: storedFor(entry, i, now.mode) }, {
           target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, instance: themeHook(entry, i, i),
-          assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs, strings,
+          assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs, strings, lists: routeLists, listed,
           live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
           secondary: secondary === undefined ? undefined : { query: secondary, rows: rowsFor(secondary, own?.[FEED_KEY]) },
         })
@@ -4392,10 +4418,12 @@ function EditorShell({
      source in force's own, since a value belongs to the source it was chosen from. */
   const role = useMemo<FeedRole | undefined>(
     () =>
-      chosen === undefined || !isFeed(entry) || !PAGINATED_TARGETS.has(chosen.target) ? undefined
-      : chosen.isMainFeed ? { kind: 'main', postsPerPage }
+      chosen === undefined || !isFeed(entry) ? undefined
+      // Story 7.16c — a listed template's main feed is sized by its route's own `limit:` where it sets one, and says so (F5)
+      : chosen.isMainFeed && isPaginated(chosen.target, listed) ? mainRole(chosen.target)
+      // …and a feed off a paginated page — a Routes Manager template no route lists — is a secondary feed
       : { kind: 'secondary', base: feedBase(postsPerPage) },
-    [chosen, entry, postsPerPage],
+    [chosen, entry, postsPerPage, listed],
   )
   /** the panel's design, with its part in the page's feeds where it has one — one object per section and role */
   const panelEntry = useMemo(() => (entry === undefined || role === undefined ? entry : { ...entry, feed: role }), [entry, role])
@@ -4471,7 +4499,7 @@ function EditorShell({
     const queries = queriesOf(chosen)
     if (entry.bindingContext.includes('posts') && queries[FEED_KEY] === undefined && pagination !== undefined) {
       const whose = canvas.file === 'tag.hbs' ? 'tag' : canvas.file === 'author.hbs' ? 'author' : 'site'
-      const note = feedShortfall(whose, pagination.total ?? 0, pagination.pages ?? 1, postsPerPage)
+      const note = feedShortfall(whose, pagination.total ?? 0, pagination.pages ?? 1, perPageOn(chosen.target))
       if (note !== null) notes.push(note)
     }
     for (const binding of Object.values(queries)) {
@@ -4487,8 +4515,11 @@ function EditorShell({
   }, [livePage, chosen, entry, liveTick, canvas.file, postsPerPage])
   /** Story 5.19 — the Layers note's sentence while THIS page is a Tag or Author page with no visible feed, else null */
   const feedless = useMemo(
-    () => (feedlessArchive(editedDoc(docs, own, library) ?? EMPTY_DOC, pageFileOf(key, page), library) ? FEEDLESS(canvas.file === 'author.hbs' ? 'Author' : 'Tag') : null),
-    [docs, own, library, key, page, canvas.file],
+    () => (!feedlessArchive(editedDoc(docs, own, library) ?? EMPTY_DOC, pageFileOf(key, page), library, listed) ? null
+      // Story 7.16c — a listed template with no visible feed: its route's page 2 repeats page 1 too (F6), named by its path
+      : isRouteTemplate(canvas.file) ? FEEDLESS_ROUTE(listed.get(canvas.file)?.[0]?.path ?? '/')
+      : FEEDLESS(canvas.file === 'author.hbs' ? 'Author' : 'Tag')),
+    [docs, own, library, key, page, canvas.file, listed],
   )
   /** Story 5.19 — the chip's section on the canvas: the main feed, while it is hovered or selected (AD-37: never at rest) */
   const chipOn = pointed?.isMainFeed === true ? 'hovered' : chosen?.isMainFeed === true ? 'selected' : null
@@ -4591,7 +4622,8 @@ function EditorShell({
    *  band (`landWithin`) and a placement put before the first footer, so the two orders agree. */
   const rowsOf = (docKey: string): LayerRow[] => {
     // Story 5.19: only a natively paginated page has a main feed to mark or to hand on
-    const paginated = PAGINATED_TARGETS.has(fileOfKey(docKey))
+    // Story 7.16c: and a Routes Manager template a collection or channel lists
+    const paginated = isPaginated(fileOfKey(docKey), listed)
     // the doc AS EDITED: on page 2 its own design, or while it follows, the copy of page 1 (Story 5.16)
     return (editedDoc(docs, docKey, library)?.instances ?? []).map((i, at) => ({
       doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at, category: categoryOf(i.designId),
@@ -4609,7 +4641,7 @@ function EditorShell({
   /** Story 5.23b — the two groups' rows, derived again only when a doc changes: every field a row is drawn from is a
    *  primitive, so the rows whose fields did not change skip their render (`controls/layers.tsx`) */
   const siteRows = useMemo(() => rowsOf(SITE.key), [docs, library, entries, darkEnabled])
-  const pageRows = useMemo(() => rowsOf(own), [docs, own, library, entries, darkEnabled])
+  const pageRows = useMemo(() => rowsOf(own), [docs, own, library, entries, darkEnabled, listed])
 
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null.
    *  `about` names the section a site-wide change is about, for R-180's ask; it is the pick's own section by default.
@@ -4990,7 +5022,7 @@ function EditorShell({
    *  secondary feed with its own stored Data values — Latest, the page size and Newest where it has none. */
   const onMakeMainFeed = (row: LayerRow) => {
     const file = fileOfKey(row.doc)
-    if (edit(row, (doc) => makeMainFeed(doc, file, row.instanceId, library))) setSaid(NOW_MAIN(row.layerName))
+    if (edit(row, (doc) => makeMainFeed(doc, file, row.instanceId, library, listed))) setSaid(NOW_MAIN(row.layerName))
   }
 
   /* ─── Story 5.10 — opening the picker, and the one placement it makes (FR-D12, AD-15, AD-16, R-152) ──────────── */
@@ -6191,6 +6223,9 @@ function EditorShell({
               // Story 7.9 (DW-254) — D5c's "Theme settings ↗" under the main feed's greyed Count; the keyboard harness, which
               // has no project of its own (`canvasBase`), draws none
               settingsHref={canvasBase === undefined ? settingsPath(project.id) : undefined}
+              // Story 7.16c — "Routes & Templates ↗" under a main feed's Count its route's own `limit:` sizes; drawn in the
+              // harness too, so the keyboard gate reads its address
+              routesHref={routesPath(project.id)}
               // Story 7.10 — the promote action beside each control and prop Ghost can hold, or its "In Ghost" tag
               promotion={promotion}
             />

@@ -37,8 +37,10 @@ export type ControlEntry = {
 }
 
 /** STORY 5.19 — a feed section's part on its page. `main` renders the native `posts`, sized by `postsPerPage`; a
- *  `secondary` feed renders its own query, whose Data rows are this engine's over `data[FEED_KEY]`. */
-export type FeedRole = { kind: 'main'; postsPerPage: number } | { kind: 'secondary'; base: DataBinding }
+ *  `secondary` feed renders its own query, whose Data rows are this engine's over `data[FEED_KEY]`. STORY 7.16c — `route`
+ *  is the collection's or channel's path whose own `limit:` sizes a main feed (`postsPerPage` is then that limit, F5); absent,
+ *  the theme's Posts per page sizes it, as before. */
+export type FeedRole = { kind: 'main'; postsPerPage: number; route?: string } | { kind: 'secondary'; base: DataBinding }
 
 /** Where a secondary feed's Data values are stored: `data.posts`. A source name, which no declared `dataBindings` key
  *  may be (`validateDataBinding`'s `bad-get-key`), so it can never collide with a design's own query. */
@@ -256,6 +258,9 @@ export type DataRow = {
   picks?: readonly PickedPost[]
   /** `picks` on a FIXED query (R-108): it holds at most this many — the query's own limit */
   cap?: number
+  /** STORY 7.16c — the main feed's Count, sized by this route's own `limit:`: the panel links it to Routes & Templates, where
+   *  that limit is set, rather than to Theme settings */
+  route?: string
 }
 
 export type SidebarRow = ControlRow | PropRow | DataRow
@@ -376,6 +381,9 @@ export const DATA_WORDS = {
   /** the main feed's Count, greyed at the page size in force — D5c's two sentences; the panel draws the second's link to
    *  Theme settings under them (Story 7.9, DW-254) */
   mainCount: "This feed is sized by your theme's Posts per page. Change it in Theme settings.",
+  /** STORY 7.16c — …and on a collection's or channel's template whose route sets its own `limit:` (F5), in D5c's reason line
+   *  — the panel draws its link to Routes & Templates, the page's own title (R-170), under it */
+  routeCount: (path: string): string => `This feed is sized by ${path}'s own page size. Change it in Routes & Templates.`,
   /** setData's refusal of a Count outside 1–100 (FR-H2) */
   countRefused: 'Count is a number from 1 to 100.',
 } as const
@@ -422,7 +430,12 @@ function dataRows(entry: ControlEntry, state: ControlState): DataRow[] {
   const rows: DataRow[] = []
   if (entry.feed?.kind === 'main') {
     const size = String(entry.feed.postsPerPage)
-    rows.push({ kind: 'data', key: FEED_KEY, source: 'posts', control: 'count', label: 'Count', value: size, default: size, min: 1, max: 100, changed: false, greyed: DATA_WORDS.mainCount })
+    const route = entry.feed.route
+    rows.push({
+      kind: 'data', key: FEED_KEY, source: 'posts', control: 'count', label: 'Count', value: size, default: size, min: 1, max: 100, changed: false,
+      // Story 7.16c — sized by its route's own `limit:` (F5), it says so and names the route; else D5c's sentence, unchanged
+      ...(route === undefined ? { greyed: DATA_WORDS.mainCount } : { greyed: DATA_WORDS.routeCount(route), route }),
+    })
     // review (2026-09-25): and the design's DECLARED queries still draw their rows below — a feed design that also
     // declares a `dataBindings` posts query (none in the library today) keeps its Source while it is the main feed
   }

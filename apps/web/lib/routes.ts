@@ -94,7 +94,8 @@ export const ROUTES_WORDS = {
   /** S9c's sentence; "theme setting" links to Theme settings, never Ghost Admin (the epic's copy rule) */
   postsBefore: 'Posts per page is your ',
   postsLink: 'theme setting',
-  postsAfter: (n: number) => ` — ${n} right now. A collection can set its own limit here.`,
+  /** Story 7.16c (routine call 7) — the sheet's kind names itself: a channel's sheet said "A collection" before */
+  postsAfter: (n: number, kind: 'collection' | 'channel' = 'collection') => ` — ${n} right now. A ${kind} can set its own limit here.`,
   cancel: 'Cancel',
   createCollection: 'Create collection',
   // S9e

@@ -7227,7 +7227,16 @@ amended: Story 5.24d's Dev (2026-10-01) — THE CAPPED HALF IS DONE; the ring ti
 plain: Your main feed shows as many posts per page as your theme's Posts per page says. A collection you make later in
   the Routes Manager can set its own number, and a channel you make there should start with a main feed of its own.
   Neither exists yet, because the Routes Manager does not.
-status: open
+status: done 2026-10-18 (Story 7.16c)
+resolution: Story 7.16c's Dev (2026-10-18). A Routes Manager template a collection or channel names is LISTED (`listsOf`,
+  `routes.ts`, the one place a file's lists are worked out): it paginates (`isPaginated`, `vocabulary.ts`; the matrix's
+  `custom-{name}.hbs (list)` row), so `designate` makes its first visible feed the main feed, and the canvas lists what its
+  address lists — the route's filter, an earlier collection's posts dropped from the window (F4), at the route's own
+  `limit:` (F5), which is also its `@config.posts_per_page` (`orbit-weekly.ts`' `RouteList`, `lib/live-content.ts`' `filter=`
+  read). The main feed's Count says so (`DATA_WORDS.routeCount`, "Routes & Templates ↗"). A template created in a
+  collection's or channel's own sheet starts with the archive defaults' `FEED` row (`listedStart`, written row → doc →
+  config by `saveRoutes`). Held by the runtime's `routes.test.ts`, `main-feed.test.ts`, `orbit-weekly.test.ts`, `controls.test.ts`,
+  `live-content.test.ts`, the app's `routes.test.ts`, `pnpm keyboard`'s 7.16c journeys and the walk's step 111.
 severity: medium
 origin: Story 5.19's Create (2026-09-25). FR-H2 (`prd.md:312`) sizes the main feed "by the global `posts_per_page` … or by
   the route's own `limit:` where the template is reached through a `routes.yaml` collection that sets one", and gives
@@ -9415,7 +9424,14 @@ plain: Two rules Story 7.3 wrote assume a site with no custom routing. The warni
   keeps shipping). And the line that tells search engines not to index a feed-less page 2 names Ghost's standard page
   contexts; a site whose main post list was moved off the front page gets a context named after that route, which the
   line does not name. Both wait for the Routes Manager, which is where routes first exist.
-status: open
+status: done 2026-10-18 (Story 7.16c)
+resolution: the first half was Story 7.16b's Dev (2026-10-17, D5f's routed sentence). The SECOND HALF is Story 7.16c's Dev
+  (2026-10-18): `compileTheme` takes `lists` — each listed Routes Manager file and its collections' and channels' context
+  names, rebuilt by `contextOf` from a `PATH_RE`-checked path (F1) and held to `CONTEXT_RE` at compile (AD-36, an
+  `ad36.test.ts` pair) — and the `noindex` guard names each FEED-LESS listed template's contexts after `index`, `tag` and
+  `author`, in code order (`compile.test.ts`, each beside its control: a listed template with a feed adds none, an unlisted
+  feed-less one adds none). `index` stays right for Home: Story 7.16a always emits the index collection at `/`. MEASUREMENTS
+  §84 executes the comma form with a custom context on T1. Story 7.18 hands `lists` beside `routed` (its card says so).
 severity: medium
 origin: Story 7.3's code review (2026-10-08): `emptiesCustomTemplate(key, doc)` takes no route list, so the editor
   cannot pick the routed sentence 7.16's card promises; `compileTheme`'s `PAGED_CONTEXTS` keys Home's page 2 on `index`,
@@ -9887,7 +9903,14 @@ plain: When a template you have open is deleted somewhere else, the editor's nex
   strip, and deleting the last section of a template a route shows asks in its "keeps shipping" words. Both work on the
   real site (checked by hand at Review, every run), but the automatic checks that run on every push never reach them, so a
   later change could break either without anything going red.
-status: open
+status: done 2026-10-18 (Story 7.16c)
+resolution: Story 7.16c's Dev (2026-10-18). The harness editor gains Routes Manager templates under
+  `x-inflozo-harness-routes: on` (`harness/editor/layout.tsx`: a collection `/harness-list/` naming `custom-harness-list.hbs`
+  with A17 #1, and a static route `/harness-landing/` naming `custom-harness-landing.hbs` with A22 #1 alone), and
+  `tools/keyboard/journey.spec.mjs` walks both claims behind their controls: a flush answered with `left` naming the landing
+  moves the editor to Home with `#editor-gone-bar` and `TEMPLATE_GONE` (the same flush with no `left` stays), and deleting
+  the landing's last section by keyboard opens D5f in `ROUTED_EMPTY_ASK` naming `/harness-landing/` (7.3's journey holds
+  `EMPTY_TEMPLATE_ASK`). `deleteTemplate`'s put-backs and the sheet's "Creating…" stay the walk's (110c, 110g).
 severity: low
 origin: Story 7.16b's Review (2026-10-17), the Verification Gap layer: `editor.tsx`'s handling of the sync's `left` (the
   journal and docs dropped, `deleted`, the move Home, `TemplateGoneBar` and `#editor-said`), the editor's `routed` list and
@@ -9903,3 +9926,31 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (t
 reason: the behaviour holds on production today (step 110, 0 FAIL); what is missing is a CI guard, and the harness change
   belongs with the story that next builds on these canvases.
 
+
+## Deferred from: spec-7-16c-collection-and-channel-templates-list-their-posts (2026-10-18)
+
+### DW-364: a post with no tags is listed on no page once a collection filters by Primary tag
+
+plain: If you make a collection by Primary tag, any post that has no tags at all (or whose first tag is a hidden internal one)
+  disappears from your home page and from every list on your site. Its own page still opens, but no list links to it. With no
+  collections, Ghost would show it on your home page as normal.
+status: open
+severity: high
+origin: Story 7.16c's Dev T1 run (MEASUREMENTS §84's first run, 2026-10-18), read only on T1's Content API and in Ghost 6.58.0's
+  source: the index filter Inflozo emits on `/` (Story 7.16a's `indexFilter`, the inverse of every collection's filter) is
+  `primary_tag:-'craft'` for a `primary_tag:'craft'` collection, and a LISTING evaluates it in SQL (`core/server/models/post.js:
+  291-310`'s `filterExpansions`: `primary_tag` is `tags.slug` with `posts_tags.sort_order:0+tags.visibility:public`), so it
+  means "has a public primary tag and it is not craft" — T1's untagged `probe-gated-post` is in neither `primary_tag:craft` (6)
+  nor `primary_tag:-craft` (26 of 33). OWNERSHIP is in-memory NQL (`router-filter.js`, `lazy-url-service.js:285-303`), where
+  `$ne` on a null primary holds, so the index still owns the post and its address `/{slug}/` answers 200 — on no listing. The
+  same holds for `primary_author` (a post whose first author is not public) and for every collection whose inverse carries a
+  negated `primary_*` leaf. `tag:-x` keeps an untagged post, so a collection by Tag does not cause it. The canvas already shows
+  it truthfully (Story 7.16c: Home's list leaves such a post out, `holdsFor`'s listing reading).
+owner: Story 7.18 (The deploy wizard) — decide, asking the owner (R-83), before the first deploy uploads a `routes.yaml`: change
+  `routes.ts`' emission (for example, the index's inverse written so a post with no primary still matches — `primary_tag:null`
+  OR'd in, read in source and executed on T1 first), or warn in Pre-flight naming the posts no page lists. Changing the emission
+  was outside Story 7.16c (its Never list: "any change to `routes.ts`'s emission").
+location: `packages/section-runtime/src/routes.ts` (`indexNode`, `indexFilter`, `negate`) · `epics.md` Story 7.18 (its 7.16c
+  reading) · `tools/probe/record-theme-assembly.py` leg 19 (the DW-364 rows)
+reason: nothing deploys a `routes.yaml` before Story 7.18, so no live site is affected yet; the fix changes what every project's
+  routing emits and needs its own T1 proof, which is that story's.

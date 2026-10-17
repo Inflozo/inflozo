@@ -13,7 +13,7 @@
 
 import matrix from '../contexts/matrix.json' with { type: 'json' }
 import labels from '../contexts/labels.json' with { type: 'json' }
-import { CUSTOM_TARGET_RE, PATH_RE, ROUTE_TEMPLATE_TARGET, isCompileTarget, isRouteTemplate } from './vocabulary.ts'
+import { CUSTOM_TARGET_RE, NONE_LISTED, PATH_RE, isCompileTarget, listable, type Listed } from './vocabulary.ts'
 
 export type FieldKind = 'text' | 'url' | 'image' | 'color' | 'date' | 'number' | 'boolean' | 'list' | 'object' | 'helper'
 
@@ -55,6 +55,9 @@ export type BindingPlace = {
   readonly scope: readonly ScopeEntry[]
   /** the connected site's version, `x.y.z`. Absent or unparseable, it is the floor. */
   readonly version?: string
+  /** STORY 7.16c — the Routes Manager files a collection or channel lists (`isPaginated`'s): a listed one reads the LIST
+   *  row. Absent, none is — every place before this story */
+  readonly listed?: Listed
 }
 
 /** What a path is used AS. A value prints; a repeat iterates; a condition is tested (a boolean); a
@@ -92,26 +95,30 @@ export function versionAtLeast(version: string | undefined, since: string): bool
 const ENTRY_ROW = 'custom-{name}.hbs (entry)'
 /** …and the row every Routes Manager template reads (Story 7.16b, DW-126): §3's `custom-{name}` (route) row, flat. */
 export const ROUTE_ROW = 'custom-{name}.hbs (route)'
+/** STORY 7.16c — …and the row a LISTED one reads: a collection's or channel's template, whose root Ghost fills with the
+ *  route's `posts` and `pagination` and no `post` (F3) — Home's own `list` scope, flat. */
+export const LIST_ROW = 'custom-{name}.hbs (list)'
 
 /** STORY 7.16b — THE ONE MAP FROM A TARGET TO ITS MATRIX ROW, which `targetContext`, `resolveUniversal`'s `@page` test and
  *  `offerBindings`' `@page` offer all read: a Routes Manager template (and `ROUTE_TEMPLATE_TARGET`, which names them all)
  *  is the ROUTE row — a flat root, no `post`, no `@page`, since Inflozo writes no `data:` (F1) — and a membership file the
- *  ENTRY row (R-129, A30). Every other target is its own row. */
-export const matrixKey = (target: string): string =>
-  target === ROUTE_TEMPLATE_TARGET || isRouteTemplate(target) ? ROUTE_ROW : CUSTOM_TARGET_RE.test(target) ? ENTRY_ROW : target
+ *  ENTRY row (R-129, A30). Every other target is its own row. STORY 7.16c — a Routes Manager file in `listed` (a
+ *  collection or channel names it) is the LIST row instead — and the brace in `listed` is every listed one (`listable`). */
+export const matrixKey = (target: string, listed: Listed = NONE_LISTED): string =>
+  listable(target) ? (listed.has(target) ? LIST_ROW : ROUTE_ROW) : CUSTOM_TARGET_RE.test(target) ? ENTRY_ROW : target
 
-/** The matrix's row for a compile target — every custom file reads one of two rows, by `matrixKey`. */
-export function targetContext(target: string): { top: string; block?: string } | undefined {
-  return own(CONTEXT_MATRIX.targets, matrixKey(target))
+/** The matrix's row for a compile target — every custom file reads one of three rows, by `matrixKey`. */
+export function targetContext(target: string, listed?: Listed): { top: string; block?: string } | undefined {
+  return own(CONTEXT_MATRIX.targets, matrixKey(target, listed))
 }
 
 /** The scope a section's markup is evaluated in on this target: the template's top scope, or the
  *  scope of the block the TEMPLATE opens around every section (`{{#post}}` on post, page and a
  *  membership custom template — FR-H7, §7.4; a Routes Manager template opens none, Story 7.16b). The
  *  chain is outermost first; its last entry is the section's own top level, and `../` climbs it. */
-export function rootScope(target: string): { chain: string[]; block?: string } | string {
+export function rootScope(target: string, listed?: Listed): { chain: string[]; block?: string } | string {
   if (!isCompileTarget(target)) return `"${target}" is not a compile target`
-  const t = targetContext(target)
+  const t = targetContext(target, listed)
   if (t === undefined) return `the context matrix has no row for ${target}`
   if (t.block === undefined) return { chain: [t.top] }
   const opened = own(scopeFields(t.top), t.block)
@@ -157,7 +164,7 @@ function lookup(scopeName: string, path: string): Resolved | string {
 /** The chain of scopes a place stands in, innermost last, or the sentence saying why it cannot be
  *  built — an enclosing repeat that is itself not legal makes every binding inside it unreachable. */
 function chainAt(place: BindingPlace): string[] | string {
-  const root = rootScope(place.target)
+  const root = rootScope(place.target, place.listed)
   if (typeof root === 'string') return root
   const chain = [...root.chain]
   for (const [i, entry] of place.scope.entries()) {
@@ -169,7 +176,7 @@ function chainAt(place: BindingPlace): string[] | string {
       chain.push(getFrame(entry.get), row)
       continue
     }
-    const opened = resolve(entry, { target: place.target, scope: place.scope.slice(0, i) }, 'repeat')
+    const opened = resolve(entry, { target: place.target, scope: place.scope.slice(0, i), ...(place.listed === undefined ? {} : { listed: place.listed }) }, 'repeat')
     const bad = typeof opened === 'string' ? opened : kindRefusal(entry, opened.field, 'repeat')
     if (bad !== null) return `the enclosing data-repeat="${entry}" is not legal here — ${bad.replace(/\.$/, '')}`
     const of = (opened as Resolved).field.of
@@ -206,7 +213,7 @@ function resolveUniversal(path: string, place: BindingPlace): Resolved | string 
   const field = own(CONTEXT_MATRIX.universal, path)
   if (field === undefined) return `${path} is not in the universal set Ghost gives every template (appendix B.1 §2)`
   if (field.targets !== undefined) {
-    if (!field.targets.includes(matrixKey(place.target))) {
+    if (!field.targets.includes(matrixKey(place.target, place.listed))) {
       return `${path} is set only on ${field.targets.join(', ')} — on ${place.target} it is undefined and prints nothing (appendix B.1 §3b)`
     }
   }
@@ -331,7 +338,7 @@ export function offerBindings(place: BindingPlace): Offer {
   }
   const here = chain[chain.length - 1] as string
   walk(here, '', [here])
-  const key = matrixKey(place.target)
+  const key = matrixKey(place.target, place.listed)
   for (const [path, f] of Object.entries(CONTEXT_MATRIX.universal)) {
     if (!path.startsWith('@')) continue
     if (f.since !== undefined && !versionAtLeast(place.version, f.since)) continue

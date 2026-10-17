@@ -797,3 +797,63 @@ test('Story 7.16b (F3) — a Routes Manager canvas is handed @site and @config a
   assert.ok('posts' in templateContext('home.hbs').ghost)
   assert.ok('slug' in templateContext('post.hbs').ghost)
 })
+
+/* ── Story 7.16c (F3, F4, F5) — a route decides the list: a listed template's window, the drop and its own limit; Home's
+ *    posts no collection owns. The predicates are the shell's (`routes.ts`' `routeList` builds them from the stored routing;
+ *    the library cannot import the runtime), written here by hand over the bundled rows. ─────────────────────────────── */
+
+type Row = Readonly<Record<string, unknown>>
+const primary = (slug: string) => (p: Row) => (p['primary_tag'] as { slug?: string } | null)?.slug === slug
+const tagged = (slug: string) => (p: Row) => (p['tags'] as { slug: string }[]).some((t) => t.slug === slug)
+const slugs = (ctx: ReturnType<typeof templateContext>) => (ctx.ghost['posts'] as Row[]).map((p) => p['slug'])
+
+test('Story 7.16c — a listed template\'s canvas: the route\'s window at its own limit, which is also its @config.posts_per_page', () => {
+  const file = 'custom-tutorials-list.hbs'
+  const tools = posts().filter(primary('tools'))
+  const lists = (t: string) => (t === file ? { base: '/tutorials/', filter: "primary_tag:'tools'", window: primary('tools'), keep: () => true, limit: 3 } : undefined)
+  const ctx = templateContext(file, 'first', null, 12, undefined, lists)
+  assert.deepEqual(slugs(ctx), tools.slice(0, 3).map((p) => p.slug))
+  assert.deepEqual((ctx.ghost['@config'] as { posts_per_page: number }).posts_per_page, 3, 'F5: the route\'s limit replaces posts per page there')
+  assert.deepEqual(ctx.ghost['pagination'], { page: 1, pages: Math.ceil(tools.length / 3), limit: 3, total: tools.length })
+  assert.equal(ctx.site.currentUrl, '/tutorials/', 'the page knows its own address')
+  assert.equal(bundledAt(12, lists).pages(file), Math.ceil(tools.length / 3), 'pages counted over the window at the route\'s limit')
+  // no limit: the project's posts per page
+  const unlimited = (t: string) => (t === file ? { ...lists(file)!, limit: undefined } : undefined)
+  assert.equal((templateContext(file, 'first', null, 12, undefined, unlimited).ghost['pagination'] as { limit: number }).limit, 12)
+  // THE CONTROL: the same file handed no list is the route form, @site and @config alone (Story 7.16b)
+  assert.deepEqual(Object.keys(templateContext(file, 'first', null, 12).ghost).sort(), ['@config', '@site'])
+  // a filter matching nothing is an answer, never a back-fill (FR-H4, R-36): no posts, one page, the feed's empty state
+  const none = (t: string) => (t === file ? { base: '/tutorials/', filter: "primary_tag:'nothing'", window: () => false, keep: () => true, limit: 3 } : undefined)
+  const empty = templateContext(file, 'first', null, 12, undefined, none)
+  assert.deepEqual([empty.ghost['posts'], empty.ghost['pagination']], [[], { page: 1, pages: 1, limit: 3, total: 0 }])
+})
+
+test('Story 7.16c (F4) — ownership is Ghost\'s: the window is cut first, an earlier collection\'s posts dropped from it, never refilled, and pagination left as the window\'s', () => {
+  const file = 'custom-b.hbs'
+  // /a/ (tag tools) before /b/ (tag newsletter): a post tagged both is /a/'s, so /b/'s page shows fewer than its limit
+  const window = tagged('newsletter')
+  const keep = (p: Row) => !tagged('tools')(p)
+  const lists = (t: string) => (t === file ? { base: '/b/', filter: "tag:'newsletter'", window, keep, limit: 4 } : undefined)
+  const all = posts().filter(window)
+  const ctx = templateContext(file, 'first', null, 12, undefined, lists)
+  assert.deepEqual(slugs(ctx), all.slice(0, 4).filter(keep).map((p) => p.slug))
+  assert.ok(slugs(ctx).length < 4, 'a page of the window holds a post /a/ owns, so this page shows fewer — the control that the drop ran')
+  assert.deepEqual(ctx.ghost['pagination'], { page: 1, pages: Math.ceil(all.length / 4), limit: 4, total: all.length }, 'pagination uncorrected, as Ghost leaves it')
+})
+
+test('Story 7.16c (FR-H3) — Home lists the posts no collection owns, and its page count reads that set', () => {
+  const unowned = (p: Row) => !tagged('tools')(p)
+  const lists = (t: string) => (t === 'home.hbs' || t === 'index.hbs' ? { base: '/', filter: "tag:-'tools'", window: unowned, keep: () => true } : undefined)
+  const rest = posts().filter(unowned)
+  for (const target of ['home.hbs', 'index.hbs']) {
+    const ctx = templateContext(target, 'first', null, 12, undefined, lists)
+    assert.deepEqual(slugs(ctx), rest.slice(0, 12).map((p) => p.slug), target)
+    assert.equal((ctx.ghost['pagination'] as { total: number }).total, rest.length)
+    assert.equal(bundledAt(12, lists).pages(target), Math.ceil(rest.length / 12))
+  }
+  // an archive is never filtered by the routes: a tag page lists every post with its tag
+  const tagPage = templateContext('tag.hbs', 'first', { kind: 'tag', slug: 'tools' }, 12, undefined, lists)
+  assert.ok(slugs(tagPage).length > 0)
+  // THE CONTROL: no list handed, Home is the whole feed
+  assert.deepEqual(slugs(templateContext('home.hbs', 'first', null, 12)), posts().slice(0, 12).map((p) => p.slug))
+})

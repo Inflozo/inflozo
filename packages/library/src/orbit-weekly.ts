@@ -211,17 +211,40 @@ const subjectRow = (kind: 'tag' | 'author', slug: string): TagRow | AuthorRow =>
   return kind === 'tag' ? tagRow(use, dataset.posts) : authorRow(use, dataset.posts)
 }
 
+/**
+ * STORY 7.16c — WHAT A ROUTE LISTS, AS THE SHELL HANDS IT (the library cannot import the runtime, which owns the routes:
+ * `routes.ts`' `routeList` and `homeList` build these). Ghost's own semantics (F4, F5): the page is the WINDOW of the
+ * route's filter at its page size, and a post an earlier collection owns is then DROPPED from it — never refilled — while
+ * `pagination` is left as the window's. A channel and Home keep every match.
+ */
+export type RouteList = {
+  /** the address the list sits at — `/tutorials/`, and `/` for Home */
+  base: string
+  /** the NQL the connected site is asked with (`filter=`), null for every post */
+  filter: string | null
+  /** does a post match the route's own filter: the window Ghost pages through */
+  window: (row: Json) => boolean
+  /** is it kept once the window is cut: false for a post an earlier collection owns */
+  keep: (row: Json) => boolean
+  /** the route's own `limit:`, which replaces posts per page at its address (F5) */
+  limit?: number
+}
+/** STORY 7.16c — the list each target renders, where a route decides it: Home's two files and each listed Routes Manager
+ *  file; undefined everywhere else, which renders as before (the control). */
+export type RouteLists = (target: string) => RouteList | undefined
+
 /** STORY 5.19 — the bundled publication as a `ContentSource` whose lists are paginated at `perPage`: the project's
  *  `posts_per_page` (FR-H2 — the main feed is sized by the theme's setting, never the sample's). The dataset's own
- *  size by default, which is `BUNDLED`. */
-export function bundledAt(perPage: number = postsPerPage()): ContentSource {
+ *  size by default, which is `BUNDLED`. STORY 7.16c — and `lists`, the routes' lists: the pages counted over the posts a
+ *  route's window holds, at its own page size. */
+export function bundledAt(perPage: number = postsPerPage(), lists?: RouteLists): ContentSource {
   return {
     name: 'sample',
     starting: (file) => fixtureSubject(file),
     has: (subject) => subjectExists(subject),
     pages: (target, of) => {
-      const list = listOf(target, of)
-      return list === null ? 1 : paginationOver(list.rows.length, 1, list.of, perPage).pages
+      const list = listOf(target, of, lists)
+      return list === null ? 1 : paginationOver(list.rows.length, 1, list.of, list.limit ?? perPage).pages
     },
   }
 }
@@ -275,12 +298,21 @@ const addressOf = (n: number, base: string): string => (n <= 1 ? base : `${base}
  *  `pagination` flat beside it), and every other paginated render is the whole bundled feed under `/`. Null where the
  *  target does not paginate. ONE implementation for `templateContext` and `feedPages`, so the pages a render draws and
  *  the pages the editor offers can never disagree. */
-function listOf(target: string, of?: Subject | null): {
+function listOf(target: string, of?: Subject | null, lists?: RouteLists): {
   rows: PostRow[]
   base: string
   of: string
   taxonomy?: { kind: 'tag' | 'author'; row: TagRow | AuthorRow }
+  /** STORY 7.16c — what is kept of each page once it is cut (F4), and the route's own page size (F5) */
+  keep?: (row: Json) => boolean
+  limit?: number
 } | null {
+  // STORY 7.16c — a route decides the list on Home (the index collection's filter) and on a listed Routes Manager file
+  // (its collection's or channel's): the window of the route's filter, what an earlier collection owns dropped per page
+  const route = target === 'tag.hbs' || target === 'author.hbs' ? undefined : lists?.(target)
+  if (route !== undefined) {
+    return { rows: posts().filter(route.window), base: route.base, of: `the list at ${route.base}`, keep: route.keep, ...(route.limit === undefined ? {} : { limit: route.limit }) }
+  }
   if (!['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs'].includes(target)) return null
   if ((target === 'tag.hbs' || target === 'author.hbs') && of != null && of.kind === (target === 'tag.hbs' ? 'tag' : 'author')) {
     const kind = of.kind as 'tag' | 'author'
@@ -396,9 +428,13 @@ export function paywallPost(visitor: Visitor = 'anonymous', tiers: readonly Json
  *  matches; every other target keeps `/`.
  *
  *  STORY 5.18 — the pieces are assembled by `assemble`, the one function the connected site's rows go through too. */
-export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null, perPage: number = postsPerPage(), visitor?: Visitor): ReturnType<typeof assemble> {
+export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null, perPage: number = postsPerPage(), visitor?: Visitor, lists?: RouteLists): ReturnType<typeof assemble> {
   // Story 5.19 — `perPage` is the project's `posts_per_page`; the dataset's by default, so every existing call is unchanged
-  const pieces: Pieces = { site: dataset.site, postsPerPage: perPage }
+  // STORY 7.16c — `lists`, the routes' lists: Home lists the posts no collection owns, and a listed Routes Manager file
+  // its route's window with an earlier collection's posts dropped, at the route's own `limit:` — which is also its
+  // `@config.posts_per_page`, as Ghost sets it for that request (F5). None handed: exactly the render before this story
+  const list = listOf(target, of, lists)
+  const pieces: Pieces = { site: dataset.site, postsPerPage: list?.limit ?? perPage }
   // Story 5.20 — the paywall's partial: the POST AT THE ROOT (`content.js:28`), the style-guide article as a paid post
   if (target === PAYWALL_TARGET) return assemble(target, { ...pieces, entry: paywallPost(visitor) }, visitor)
   if (target === 'post.hbs' || target === 'page.hbs') {
@@ -412,14 +448,17 @@ export function templateContext(target: string, feed: FeedState = 'first', of?: 
   // Until Story 5.13 `tag.hbs` and `author.hbs` were handed the WHOLE bundled feed — the same rows `home.hbs` gets —
   // so the canvas drew a page Ghost would never serve. FR-D22's subject IS the filter, which is why the fix arrives
   // with it and not as an extra. `listOf` is that filter, and `feedPages` reads the same one.
-  const list = listOf(target, of)
   if (list === null) return assemble(target, pieces, visitor)
-  const pages = paginationOver(list.rows.length, 1, list.of, perPage).pages
+  const size = pieces.postsPerPage
+  const pages = paginationOver(list.rows.length, 1, list.of, size).pages
   const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : feed === 'second' ? 2 : 1
   const pagination = feed === 'empty'
-    ? { page: 1, pages: 1, limit: perPage, total: 0 }
-    : paginationOver(list.rows.length, n, list.of, perPage)
-  const rows = feed === 'empty' ? [] : list.rows.slice((n - 1) * pagination.limit, n * pagination.limit)
+    ? { page: 1, pages: 1, limit: size, total: 0 }
+    : paginationOver(list.rows.length, n, list.of, size)
+  // F4: the page is cut from the window FIRST and an earlier collection's posts dropped from it after — so a later
+  // collection's page can show fewer than its limit, and `pagination` stays the window's, as Ghost leaves it
+  const window = feed === 'empty' ? [] : list.rows.slice((n - 1) * pagination.limit, n * pagination.limit)
+  const rows = list.keep === undefined ? window : window.filter(list.keep)
   return assemble(target, { ...pieces, list: { rows, pagination, base: list.base, taxonomy: list.taxonomy } }, visitor)
 }
 

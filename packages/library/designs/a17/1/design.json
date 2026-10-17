@@ -2,7 +2,7 @@
   "name": "Three Up",
   "tier": "free",
   "bindingContext": ["posts"],
-  "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs"],
+  "compileTarget": ["home.hbs", "index.hbs", "tag.hbs", "author.hbs", "custom-{name}.hbs"],
   "controlSchema": [
     { "name": "per-row", "type": "segmented", "label": "Per row", "group": "layout", "values": ["two", "three", "four"], "default": "three" },
     { "name": "ratio", "type": "named-select", "label": "Image ratio", "group": "style", "values": ["landscape", "wide", "square", "portrait"], "default": "landscape",

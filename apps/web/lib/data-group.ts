@@ -48,6 +48,10 @@ export const SEARCH_POSTS = 'Search posts to add'
 /** D5c's link under the main feed's greyed Count (`D5 Canvas Markers and Template Switcher.dc.html:348`) — to Theme settings,
  *  where Posts per page is set, never into Ghost Admin (FR-Q1, R-10 #13). Story 7.9, DW-254. */
 export const THEME_SETTINGS_LINK = 'Theme settings ↗'
+/** STORY 7.16c — the same link's place under a main feed its route's own `limit:` sizes (`DATA_WORDS.routeCount`, D5c's reason
+ *  line): to Routes & Templates, where that limit is set — the page's own title (`ROUTES_WORDS.title`, R-170; this file
+ *  imports nothing, so `data-group.test.ts` holds the two equal) and the frame's arrow. */
+export const ROUTES_LINK = 'Routes & Templates ↗'
 export const NO_PICKS = 'No posts picked yet.'
 /** review (2026-09-25) — a search (posts, tags or writers) that matches nothing says so rather than showing an empty list */
 export const NO_MATCHES = 'Nothing matches.'
@@ -75,6 +79,10 @@ export const HOLDS = (design: string, n: number): string =>
 /** FR-H2's archive case, at the head of Layers while a Tag or Author page has no visible feed (D5a's marker's shape). */
 export const FEEDLESS = (kind: 'Tag' | 'Author'): string =>
   `This ${kind} page has no list of posts. Ghost still serves its page 2 onwards, which would repeat page 1, so your theme asks search engines to skip them.`
+/** STORY 7.16c (routine call 6) — …and while a collection's or channel's template has none: the same note in the archive's
+ *  words, naming the address whose page 2 onwards Ghost still serves (its first list, collections before channels). */
+export const FEEDLESS_ROUTE = (path: string): string =>
+  `This template has no list of posts. Ghost still serves ${path}page/2/ onwards, which would repeat page 1, so your theme asks search engines to skip them.`
 
 /** One taxonomy row of the tag or writer select, from the rows in hand: its slug, name, post count and — a writer's —
  *  picture. The count is DERIVED from the row, never written down. */

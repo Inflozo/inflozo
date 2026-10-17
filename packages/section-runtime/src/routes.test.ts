@@ -4,9 +4,9 @@ import nql6 from '@tryghost/nql'
 import nql5 from 'nql5'
 import { load } from 'js-yaml'
 import {
-  dayAfter, DEFAULT_TAXONOMIES, emittedProblem, EMPTY_ROUTES, isCalendarDate, filterNql, filterProblem, ghostLabel, holderOf, indexFilter, indexNode, nodeOf,
-  parseRoutesConfig, pathsUsing, readNql, RESERVED_SEGMENTS, ROUTE_WORDS, routedOf, routesYaml, templateName, validateRoutes, withoutTemplate,
-  writeNql, yamlLines, type Cond, type Filter, type Node, type RoutesConfig,
+  contextOf, CONTEXT_RE, dayAfter, DEFAULT_TAXONOMIES, emittedProblem, EMPTY_ROUTES, isCalendarDate, filterNql, filterProblem, ghostLabel, holderOf, holdsFor, homeList,
+  indexFilter, indexNode, listsOf, nodeOf, parseRoutesConfig, pathsUsing, PATH_RE, readNql, RESERVED_SEGMENTS, ROUTE_WORDS, routedOf, routeList, routesYaml, templateName,
+  validateRoutes, withoutTemplate, writeNql, yamlLines, type Cond, type Filter, type Node, type RoutesConfig,
 } from './routes.ts'
 import { MEMBERSHIP_FILES } from '@inflozo/library'
 import { RELATIVE, ROUTES_FIXTURES } from './routes-fixtures.ts'
@@ -469,4 +469,157 @@ test('every emitted file loads in js-yaml 4.3.0 (Ghost 6.58.0\'s own) to the int
     assert.deepEqual(Object.keys(file), ['collections', 'routes', 'taxonomies'])
     assert.equal(Object.keys(file.collections).at(-1), '/', `${name}: the index collection is last`)
   }
+})
+
+/* ───────────────────────────── Story 7.16c — what a template lists ───────────────────────────── */
+
+/** "now" as nql-lang resolves it — the shell's input to `holdsFor`, read by Ghost 6's own parser (the one clock read here) */
+const NOW = resolved('now-0d')
+
+/** every node Story 7.16c evaluates: each fixture's emitted filters, and each listing's "not owned earlier" node */
+const LISTED_NODES = ROUTES_FIXTURES.flatMap(({ name, config: c, filters }) => [
+  ...filters.map((f) => ({ where: `${name} · ${f.where}`, node: readNql(f.nql) })),
+  ...[...listsOf(c).values()].flat().flatMap((l) => (l.earlier === null ? [] : [{ where: `${name} · ${l.path} (not owned earlier)`, node: l.earlier }])),
+])
+
+test('(7.16c) the "not owned earlier" node is written through group: it writes and reads back through readNql as itself, on both majors', () => {
+  const earlier = LISTED_NODES.filter((n) => n.where.endsWith('(not owned earlier)'))
+  assert.ok(earlier.length > 0, 'a fixture with two collections gives a second collection something to drop')
+  for (const { where, node } of earlier) {
+    assert.equal(emittedProblem(writeNql(node), node), null, where)
+    for (const [, nql] of MAJORS) assert.doesNotMatch(JSON.stringify(nql(`(${writeNql(node)})+type:post`).parse()), /"yg"/, where)
+  }
+  // the first collection drops nothing, a channel drops nothing, and the last collection's is indexNode of those before it
+  const two = listsOf(ROUTES_FIXTURES[1]!.config)
+  assert.equal(two.get('custom-craft-list.hbs')?.[0]?.earlier, null)
+  assert.deepEqual(two.get('custom-field-notes-list.hbs')?.[0]?.earlier, indexNode([ROUTES_FIXTURES[1]!.config.collections[0]!]))
+})
+
+test('(7.16c) holdsFor agrees with holds and with Ghost 6.58.0\'s NQL on every fixture filter and every "not owned earlier" node', () => {
+  let compared = 0
+  for (const { where, node } of LISTED_NODES) {
+    const ghost = nql6(writeNql(node), { expansions: EXPANSIONS })
+    for (const post of POSTS) {
+      const ours = holdsFor(node, post, NOW)
+      assert.equal(ours, holds(node, post), `${where} on ${JSON.stringify(post)} — the independent oracle`)
+      assert.equal(ours, ghost.queryJSON(post), `${where} on ${JSON.stringify(post)} — Ghost's own matcher`)
+      compared += 1
+    }
+  }
+  assert.ok(compared > 0)
+  // the Content API's own shape reads the same: an ISO instant with its zone, and a whole-day bound
+  const post = { published_at: '2026-01-01T23:30:00.000+00:00', tags: [{ slug: 'a' }], authors: [], primary_tag: { slug: 'a' }, primary_author: null, featured: false, feature_image: null, visibility: 'public' }
+  assert.equal(holdsFor(nodeOf({ match: 'all', conditions: [{ field: 'published_at', op: '<=', at: { date: '2026-01-01' } }] }) as Node, post, NOW), true)
+  assert.equal(holdsFor(nodeOf({ match: 'all', conditions: [{ field: 'published_at', op: '>', at: { date: '2026-01-01' } }] }) as Node, post, NOW), false)
+  // a calendar month back clamps the day as luxon does: 31 March less a month is 28 February (2026 is no leap year)
+  const mar31 = '2026-03-31 12:00:00'
+  const lastMonth = (published_at: string) => holdsFor({ field: 'published_at', op: '>=', at: { ago: 1, unit: 'M' } }, { published_at }, mar31)
+  assert.deepEqual([lastMonth('2026-02-28 12:00:00'), lastMonth('2026-02-28 11:59:59')], [true, false])
+  // THE CONTROL: a planted wrong evaluation — the join flipped — disagrees with Ghost somewhere
+  const planted = { join: ',' as const, of: [{ field: 'tag' as const, op: 'any' as const, values: ['craft'] }, { field: 'featured' as const, is: true }] }
+  assert.ok(POSTS.some((p) => holdsFor(planted, p, NOW) !== nql6("tag:'craft'+featured:true", { expansions: EXPANSIONS }).queryJSON(p)))
+})
+
+test('(7.16c) listsOf: each listed file\'s lists, collections in precedence order then channels; a static route lists nothing', () => {
+  const c = config({
+    collections: [
+      { path: '/a/', filter: { match: 'any', conditions: [tag('x')] }, template: 'custom-shared.hbs' },
+      { path: '/b/', filter: { match: 'any', conditions: [tag('y')] }, template: 'custom-b.hbs', limit: 3 },
+    ],
+    routes: [
+      { path: '/picks/', channel: { match: 'any', conditions: [{ field: 'featured', is: true }] }, template: 'custom-shared.hbs' },
+      { path: '/landing/', template: 'custom-landing.hbs' },
+      { path: '/all/', channel: { match: 'all', conditions: [] }, template: 'custom-all.hbs' },
+    ],
+  })
+  const lists = listsOf(c)
+  assert.deepEqual([...lists.keys()].sort(), ['custom-all.hbs', 'custom-b.hbs', 'custom-shared.hbs'], 'the static route\'s file is not listed')
+  assert.deepEqual(lists.get('custom-shared.hbs')?.map((l) => [l.kind, l.path, l.context]), [['collection', '/a/', 'a'], ['channel', '/picks/', 'picks']], 'a shared template: its collection first (routine call 4)')
+  assert.deepEqual(lists.get('custom-b.hbs')?.[0], { kind: 'collection', path: '/b/', context: 'b', limit: 3, node: tag('y'), earlier: { field: 'tag', op: 'none', values: ['x'] } })
+  assert.deepEqual(lists.get('custom-all.hbs')?.[0], { kind: 'channel', path: '/all/', context: 'all', node: null, earlier: null }, 'a channel with no condition lists every post')
+  // an unreadable stored routing lists nothing (7.16b's routine call 12) — and Ghost's default lists nothing either
+  assert.equal(listsOf(null).size, 0)
+  assert.equal(listsOf(EMPTY_ROUTES).size, 0)
+})
+
+test('(7.16c) contextOf rebuilds Ghost\'s context from a checked path, and refuses any path PATH_RE refuses (AD-36)', () => {
+  assert.equal(contextOf('/staff-picks/'), 'staff-picks')
+  assert.equal(contextOf('/tutorials/'), 'tutorials')
+  assert.match(contextOf('/a-1/'), CONTEXT_RE)
+  for (const bad of ['/', 'tutorials', '/a/b/', '/A/', '/x"}}{{evil/', '/x y/', '/x\n/', '/-x/', '//']) {
+    assert.equal(PATH_RE.test(bad), false, bad)
+    assert.throws(() => contextOf(bad), /names no context/, JSON.stringify(bad))
+  }
+})
+
+test('(7.16c) routeList and homeList: the window, the drop, the limit and the filter the site is asked with', () => {
+  const posts = [
+    { slug: 'both', tags: [{ slug: 'x' }, { slug: 'y' }] },
+    { slug: 'only-y', tags: [{ slug: 'y' }] },
+    { slug: 'neither', tags: [{ slug: 'z' }] },
+  ]
+  const c = config({ collections: [
+    { path: '/a/', filter: { match: 'any', conditions: [tag('x')] }, template: 'custom-a.hbs' },
+    { path: '/b/', filter: { match: 'any', conditions: [tag('y')] }, template: 'custom-b.hbs', limit: 3 },
+  ] })
+  const b = routeList(listsOf(c).get('custom-b.hbs')![0]!, NOW)
+  assert.deepEqual([b.base, b.filter, b.limit], ['/b/', "tag:'y'", 3])
+  assert.deepEqual(posts.filter(b.window).map((p) => p.slug), ['both', 'only-y'], 'the window is the route\'s own filter')
+  assert.deepEqual(posts.filter(b.window).filter(b.keep).map((p) => p.slug), ['only-y'], 'the post /a/ owns is dropped (F4)')
+  const a = routeList(listsOf(c).get('custom-a.hbs')![0]!, NOW)
+  assert.deepEqual(posts.filter(a.window).filter(a.keep).map((p) => p.slug), ['both'], 'the first collection keeps every match')
+  const home = homeList(c, NOW)!
+  assert.deepEqual([home.base, home.filter, home.limit], ['/', indexFilter(c.collections), undefined])
+  assert.deepEqual(posts.filter(home.window).map((p) => p.slug), ['neither'], 'Home lists the posts no collection owns (FR-H3)')
+  // the controls: no collection, no Home list — every post; a channel keeps what an earlier collection owns
+  assert.equal(homeList(EMPTY_ROUTES, NOW), undefined)
+  assert.equal(homeList(null, NOW), undefined)
+  const ch = routeList(listsOf(config({ ...c, routes: [{ path: '/c/', channel: { match: 'any', conditions: [tag('x')] }, template: 'custom-c.hbs' }] })).get('custom-c.hbs')![0]!, NOW)
+  assert.deepEqual(posts.filter(ch.window).filter(ch.keep).map((p) => p.slug), ['both'])
+})
+
+test('(7.16c, §84) the LISTING reading is Ghost\'s SQL: a negated primary holds only on a post that HAS that primary — every other leaf, and every post with both primaries, as ownership reads it', () => {
+  // with both primaries, the two readings agree — with `holds` and with Ghost 6.58.0's own matcher — on every fixture node
+  const both = POSTS.filter((p) => p.primary_tag !== null && p.primary_author !== null)
+  let compared = 0
+  for (const { where, node } of LISTED_NODES) {
+    const ghost = nql6(writeNql(node), { expansions: EXPANSIONS })
+    for (const post of both) {
+      assert.equal(holdsFor(node, post, NOW, true), holds(node, post), `${where} — listing vs holds`)
+      assert.equal(holdsFor(node, post, NOW, true), ghost.queryJSON(post), `${where} — listing vs Ghost's matcher`)
+      compared += 1
+    }
+  }
+  assert.ok(compared > 0 && both.length < POSTS.length, 'the fixture holds posts with and without each primary')
+  // §84 on T1: the post with NO tags, and one whose first tag is internal (Ghost computes its primary_tag null), are in
+  // neither `primary_tag:x` nor `primary_tag:-x` when LISTED (`post.js:291-310`), while `tag:-x` keeps them
+  const base = { featured: false, feature_image: null, visibility: 'public', published_at: '2026-01-01 00:00:00', authors: [{ slug: 'ann' }], primary_author: { slug: 'ann' } }
+  const untagged = { ...base, tags: [], primary_tag: null }
+  const internalFirst = { ...base, tags: [{ slug: 'a' }], primary_tag: null }
+  const noAuthor = { ...base, tags: [{ slug: 'a' }], primary_tag: { slug: 'a' }, authors: [], primary_author: null }
+  const notPrimary = (field: 'primary_tag' | 'primary_author'): Node => ({ field, op: 'none', values: ['x'] })
+  const isPrimary = (field: 'primary_tag' | 'primary_author'): Node => ({ field, op: 'any', values: ['x'] })
+  for (const [post, field] of [[untagged, 'primary_tag'], [internalFirst, 'primary_tag'], [noAuthor, 'primary_author']] as const) {
+    assert.equal(holdsFor(notPrimary(field), post, NOW, true), false, `${field}:-x is not LISTED on a post with no ${field}`)
+    assert.equal(holdsFor(isPrimary(field), post, NOW, true), false, `…nor is ${field}:x`)
+    // THE CONTROL: OWNERSHIP holds the same negated leaf there — as Ghost's in-memory matcher does
+    assert.equal(holdsFor(notPrimary(field), post, NOW), true)
+    assert.equal(nql6(`${field}:-'x'`, { expansions: EXPANSIONS }).queryJSON(post), true)
+  }
+  // the plain leaves read the same both ways: `tag:-x` keeps the untagged post, `author:-x` the authorless one
+  assert.equal(holdsFor({ field: 'tag', op: 'none', values: ['x'] }, untagged, NOW, true), true)
+  assert.equal(holdsFor({ field: 'author', op: 'none', values: ['x'] }, noAuthor, NOW, true), true)
+  // and the canvas's lists: Home (the index's SQL) leaves the untagged post out once a collection filters by primary tag;
+  // a later collection that LISTS it (`tag:-craft`) keeps it, since no earlier collection OWNS it
+  const c = config({ collections: [
+    { path: '/craft/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: ['craft'] }] }, template: 'custom-craft-list.hbs' },
+    { path: '/rest/', filter: { match: 'all', conditions: [{ field: 'tag', op: 'none', values: ['craft'] }] }, template: 'custom-quiet.hbs' },
+  ] })
+  const home = homeList(config({ collections: [c.collections[0]!] }), NOW)!
+  assert.equal(home.filter, "primary_tag:-'craft'")
+  assert.equal(home.window(untagged), false, 'Home lists it on no page (DW-364)')
+  assert.equal(home.window({ ...base, tags: [{ slug: 'notes' }], primary_tag: { slug: 'notes' } }), true, 'the control: a tagged post Home owns is listed')
+  assert.equal(holdsFor(readNql(home.filter!), untagged, NOW), true, 'the control: the index OWNS it (its own address answers)')
+  const rest = routeList(listsOf(c).get('custom-quiet.hbs')![0]!, NOW)
+  assert.deepEqual([rest.window(untagged), rest.keep(untagged)], [true, true])
 })

@@ -2,7 +2,8 @@
 title: 'Story 7.16c — Collection and channel templates list their posts'
 type: 'feature'
 created: '2026-10-18'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '31547773c387972fb5a62de4dc76948d0c5752e4'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -225,7 +226,7 @@ list the posts a collection or channel serves there:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/section-runtime/src/routes.ts` + `routes.test.ts`:
+- [x] `packages/section-runtime/src/routes.ts` + `routes.test.ts`:
   - `listsOf(config)`: a map from file to `{ kind, path, context, limit?, node, earlier }[]`, collections in precedence
     order, then channels;
   - `contextOf(path)`;
@@ -238,7 +239,7 @@ list the posts a collection or channel serves there:
   - `contextOf` refuses any path `PATH_RE` refuses.
 
   -- F1–F5, one list (AD-1).
-- [ ] `packages/library` (`vocabulary.ts`, `contexts/matrix.json`, `contexts.ts`, `placement.ts`, `validate.ts`, a17/1's
+- [x] `packages/library` (`vocabulary.ts`, `contexts/matrix.json`, `contexts.ts`, `placement.ts`, `validate.ts`, a17/1's
   `design.json`, `orbit-weekly.ts`) and tests:
   - `isPaginated`;
   - the list row, picked only for a listed Routes Manager file;
@@ -248,7 +249,7 @@ list the posts a collection or channel serves there:
   - Home filtered by the index node, and page counts over the filtered set.
 
   Each refusal sits behind its control. -- R-7, FR-H2, FR-H3.
-- [ ] `main-feed.ts`, `core.ts`, `controls.ts` + tests:
+- [x] `main-feed.ts`, `core.ts`, `controls.ts` + tests:
   - designation on a listed file;
   - the flag stripped once it is unlisted;
   - `feedQuery` for a feed on an unlisted Routes Manager template;
@@ -257,7 +258,7 @@ list the posts a collection or channel serves there:
 
   `agreement.test.ts`: a listed template's main feed, and an unlisted template's secondary feed, canvas against theme node
   by node. `ad36.test.ts`: the context sink pair. -- one rule, both emitters.
-- [ ] `packages/theme-compiler` (`compile.ts`, `compile.test.ts`), `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs`:
+- [x] `packages/theme-compiler` (`compile.ts`, `compile.test.ts`), `tools/pilot-theme.mjs`, `tools/check-snapshots.mjs`:
   - `lists`;
   - the list row's body;
   - the guard's custom contexts, each beside its control (a listed template with a feed adds none; an unlisted feed-less
@@ -266,7 +267,7 @@ list the posts a collection or channel serves there:
   - a17/1's brace target rendered listed.
 
   -- DW-344's second half.
-- [ ] `read.ts`, `editor.tsx`, `lib/live-content.ts`, `lib/live-client.ts`, `lib/canvas.ts`:
+- [x] `read.ts`, `editor.tsx`, `lib/live-content.ts`, `lib/live-client.ts`, `lib/canvas.ts`:
   - `EditorData.routes`;
   - `listed` derived once;
   - the page size in force per canvas;
@@ -275,15 +276,15 @@ list the posts a collection or channel serves there:
   - `feedlessArchive` for listed files.
 
   `editor.test.ts` and `live-content`'s tests hold the reads. -- FR-H2's "the canvas reads whichever value applies".
-- [ ] `data-group.ts`, `components/controls/{data-group,sidebar}.tsx`, `data-group.test.ts`: the reason line and link
+- [x] `data-group.ts`, `components/controls/{data-group,sidebar}.tsx`, `data-group.test.ts`: the reason line and link
   per Design Notes' "Words", the Layers note, and the R-170 list held. -- D5c.
-- [ ] `routes/actions.ts`, `lib/routes.ts`, `apps/web/routes.test.ts`:
+- [x] `routes/actions.ts`, `lib/routes.ts`, `apps/web/routes.test.ts`:
   - a new template that `next` lists starts with the `FEED` row, written row → doc → config;
   - a static route's or standalone new template stays empty;
   - the channel sheet's hint.
 
   -- FR-H2 "at creation".
-- [ ] `harness/editor/layout.tsx` (header `x-inflozo-harness-routes: on`):
+- [x] `harness/editor/layout.tsx` (header `x-inflozo-harness-routes: on`):
   - a collection `/harness-list/` (limit 3) naming `custom-harness-list.hbs`, which holds a17/1;
   - a static route `/harness-landing/` naming `custom-harness-landing.hbs`, which holds a22/1 alone.
 
@@ -298,10 +299,10 @@ list the posts a collection or channel serves there:
      - Home's grid lacks the owned posts. **Control:** without the header, Home has them.
 
   -- DW-363, R-82's CI half.
-- [ ] `tools/probe/record-theme-assembly.py` -- **§84**, leg 19, in the main session on the owner's go (Design Notes, "T1").
+- [x] `tools/probe/record-theme-assembly.py` -- **§84**, leg 19, in the main session on the owner's go (Design Notes, "T1").
   -- standing rule 1 for F1–F5.
-- [ ] `tools/probe/run-verify-editor.cjs` -- step 111 (Design Notes, "Walk"). -- R-82.
-- [ ] Propagation (standing rules 3 and 7):
+- [x] `tools/probe/run-verify-editor.cjs` -- step 111 (Design Notes, "Walk"). -- R-82.
+- [x] Propagation (standing rules 3 and 7):
   - DW-252, DW-344 and DW-363 close.
   - `prd.md`: dated notes on FR-H2 (the route limit read, designation at creation, the guard's custom contexts), FR-H3
     (Home's honest list) and FR-D21 (Question 1's ruling).
@@ -314,7 +315,7 @@ list the posts a collection or channel serves there:
   - The `7.16c's` comments (`lib/editor.ts:186`, `compile.ts:222`, `validate.test.ts:563`, `contexts.test.ts:288`).
   - Finish with `git grep -n "PAGINATED_TARGETS.has("`: every remaining reader meets no custom file, or goes through
     `isPaginated`.
-- [ ] `python3 tools/doc-audit.py --check` twice, then `pnpm check` and `pnpm keyboard`.
+- [x] `python3 tools/doc-audit.py --check` twice, then `pnpm check` and `pnpm keyboard`.
 
 **Acceptance Criteria:**
 - **Matches the frame (R-74).** Given the deployed editor at 1440 on a collection's template, compared with D5c as 5.19
@@ -331,6 +332,39 @@ list the posts a collection or channel serves there:
   posts its live address lists: the same filter, the same drop and the same page size.
 
 ## Spec Change Log
+
+- **Dev, 2026-10-18 — §84's channel path is `/probe-channel/`, not `/inflozo-probe-channel/`** (Design Notes, "T1"). The channel's
+  template is feed-less by design, so its context — the path without slashes — is written into `default.hbs`'s guard, and
+  `themeFailures` (the check CI and the recorder hold every compiled theme to) refuses the builder's name in any file: §83 named
+  its file without `inflozo` for the same reason. The collection keeps `/inflozo-probe-list/` (it has a feed, so its context
+  reaches no file). The guard the leg expects is `{{#is "tag, author, probe-channel"}}` (the pilots' Author page is feed-less too).
+- **Dev, 2026-10-18 — three readings the build needed, each beside its test:** (1) the brace `custom-{name}.hbs` may stand in
+  `listed` for every listed file (`listable`), so a render AT the brace with the brace listed is a listed render —
+  `check-snapshots`' a17/1; (2) a SECONDARY feed on a Routes Manager target reads the matrix's list row for its bindings: its
+  section stands inside its own `{{#get "posts"}}`, whose frame is Home's list scope, and the canvas renders it against the same
+  (`core.ts`' `placeOf`; `agreement.test.ts`); (3) a secondary feed's starting Count stays the theme's Posts per page on a listed
+  page too, because the compiler knows no route's `limit:` and the canvas and the theme must agree.
+- **Dev, 2026-10-18 — §84's first T1 run DISPROVED a hypothesis in the Code Map** (standing rule 1). "The runtime evaluator must
+  agree with [`holds`] and with `@tryghost/nql` 0.13.4 on every fixture" holds for OWNERSHIP and not for LISTING. Every page row
+  held; one row failed, and it was a real finding: the index filter `primary_tag:-'craft'` listed 26 posts, not the 27 no
+  collection owns. Measured read only on T1's Content API (33 published posts, `craft` the primary tag of 6): the missing post,
+  `probe-gated-post`, has NO tags (`primary_tag` null) and is in neither `primary_tag:craft` (6) nor `primary_tag:-craft` (26);
+  `tag:-craft` = 24 and includes it; `primary_tag:-nobody-xyz` = 32 and `tag:-nobody-xyz` = 33; `author:-…` and
+  `primary_author:-…` = 33 (every post has an author); `primary_tag:-craft,featured:true` = 29 and `primary_tag:-craft+featured:false`
+  = 21, the untagged post excluded from both. Read in Ghost 6.58.0's source: a LISTING goes through SQL with `post.js:291-310`'s
+  `filterExpansions` — `primary_tag` is `tags.slug` with `posts_tags.sort_order:0+tags.visibility:public`, `primary_author`
+  `authors.slug` with `posts_authors.sort_order:0+authors.visibility:public` — so a negated primary leaf means "has that primary
+  and it is not x", and a post with no tags or an internal first tag (its computed `primary_tag` null, `post.js:1059-1064`) is
+  excluded; OWNERSHIP is in-memory NQL over `router-filter.js`'s EXPANSIONS (`lazy-url-service.js:285-303`), where `$ne` on null
+  holds, so the index still OWNS that post and its own address answers. **Built:** `holdsFor` takes `listing`; `routeList` cuts
+  the window with the listing reading and the drop with ownership, `homeList` its window with listing; the live whitelist keeps a
+  `primary_tag`/`primary_author` Ghost sent as null (the first of the list only where no key was sent); `routes.test.ts` holds
+  the listing reading to `holds` and Ghost's matcher on every post carrying both primaries, and on an untagged post, one with an
+  internal first tag and one with no author a negated primary leaf does not hold while `tag:-x` does, beside the ownership
+  control; leg 19's index row compares by id with the set Ghost's SQL means, and reads the untagged post on no page and its own
+  address 200. The consequence for Inflozo's emitted routing — such a post is listed nowhere once any collection filters by
+  Primary tag — is **DW-364** (high), Story 7.18's to settle before it deploys a `routes.yaml`; changing `routes.ts`' emission is
+  outside this story (its Never list).
 
 ## Design Notes
 
@@ -494,6 +528,94 @@ card, R-176's entry and `epic-7-context.md` follow; FR-D21's dated note is Dev's
 - `python3 tools/doc-audit.py --check` -- PASS, twice.
 - `git grep -n "PAGINATED_TARGETS.has("` -- no reader that can meet a Routes Manager file.
 - Dev's results add a **Matrix row → check** table: every I/O row maps to a check that ran in that row's state.
+
+**Results (Dev, 2026-10-18, re-run by the main session on the final tree, under Node 24):**
+- `pnpm check` -- exit 0: lint, typecheck and every package's suite, each printing its own count, with every 7.16c test
+  named in the table below (the main session added `editor.test.ts`' routine-call-4 row, a shared template previewing its
+  first list). `node tools/check-snapshots.mjs` -- PASS, with a17/1 at its new target (a feed at the brace renders listed, its
+  theme text home.hbs's) and its new control (unlisted at the brace: R-7's refusal).
+- `pnpm keyboard` -- exit 0, every journey passed, the four 7.16c ones included (the flush's `left`, the routed D5f, the listed
+  template, and Home's control), and "the journey uses no pointer at all".
+- `pnpm build` -- exit 0. `node tools/check-traces.mjs` -- "every route carries its files", and no client chunk carries the
+  font pool's record.
+- `python3 tools/doc-audit.py --check` -- PASS twice (the run before regenerated the story board, as it does after a change).
+- `git grep -n "PAGINATED_TARGETS.has("` -- `vocabulary.ts`' `isPaginated` itself, and `validate.ts`' `pagination-target`,
+  which reads design TARGETS: the brace is held legal by name there, and a membership file (the only custom file a target can
+  name) never paginates, which is `isPaginated`'s answer too. No reader that can meet a Routes Manager FILE remains.
+- **Controls planted (standing rule 2):** `holdsFor` with `none` read as `any` failed `routes.test.ts`; an evaluator ignoring
+  `listing` failed `routes.test.ts` and `live-content.test.ts`; the guard without the listed contexts failed `compile.test.ts`'
+  7.16c guard row. Each restored and re-run green.
+- **The walk:** step 111 is written (`run-verify-editor.cjs`, `node --check` clean) and step 110e re-expected (a17/1 is offered on a
+  Routes Manager canvas now); both are the Review's, on production.
+
+**Real services this phase hit (R-82):**
+- **T1 `ghost6.inflozo.com` (Ghost 6.58.0)** -- `python3 tools/probe/record-theme-assembly.py`, run twice in the main session on
+  the owner's in-session go (asked for each run), keys read in-process by name (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`,
+  `GHOST6_CONTENT_API_KEY`). Admin API: every leg's probe themes uploaded, activated and deleted, T1's `casper` re-activated and
+  read back after each; the logo and Publication Language set and put back (read back `None`, `'en'`); `POST
+  settings/routes/yaml/` given each leg's probe routing and T1's own 130-byte file put back and read back byte for byte. Content
+  API: read only. Site pages: read signed out.
+  - **Run 1:** every page row held; one row FAILED on a real finding -- the index filter `primary_tag:-'craft'` listed 26 posts,
+    not 27 (Spec Change Log, DW-364). Nothing written to MEASUREMENTS. Then read only, from the scratchpad, on the Content API:
+    the post in neither filter is the untagged `probe-gated-post`; `tag:-craft` keeps it, `primary_tag:-x` drops it.
+  - **Run 2, after the fix:** every row held, behind its controls, and MEASUREMENTS **§84** was written: the collection
+    `/inflozo-probe-list/` lists exactly its `limit: 1`, a `craft` post, with a page 2 and no `noindex` (the control); `/` lists
+    none of the collection's posts; the index filter lists by id exactly the posts whose primary tag exists and is not `craft`;
+    the untagged post is on none of Home's pages nor the collection's, and its own address answers 200; `/probe-channel/`'s page
+    1 carries no `noindex` and its page 2 does, and so do `/tag/craft/`'s, from one guard `{{#is "tag, author, probe-channel"}}`
+    (the comma form with a custom context, executed for the first time); a malformed filter answers 400 (the control); both
+    addresses 404 before and after.
+- **Ghost 6.58.0's source** (npm tarball, read only, scratchpad): `core/server/models/post.js:291-310`, `:1059-1064`;
+  `core/server/services/url/router-filter.js`; `lazy-url-service.js:285-303`.
+- **Ghost 5 (T3):** not run -- retired (R-238); the Ghost 5 half is DW-326's.
+- **Supabase, Vercel, Resend, Dodo:** not hit at Dev. No migration (routine call 8). Production is the Review's: step 111 with
+  Supabase service reads, steps 109 and 110, and CI's `pnpm keyboard` on the push.
+
+**Matrix row → check** table: every I/O row maps to a check that ran in that row's state.
+
+**Results (Dev, 2026-10-18, on the final tree, under Node 24):**
+- `pnpm check` -- exit 0: lint, typecheck and every package's suite, each printing its own count, with every 7.16c test
+  named in the table below. `node tools/check-snapshots.mjs` passes with a17/1 at its new target (a feed at the brace renders
+  listed, its theme text home.hbs's) and its new control (unlisted at the brace: R-7's refusal).
+- `pnpm keyboard` -- exit 0, every journey passed, the four 7.16c ones included (the flush's `left`, the routed D5f, the listed
+  template, and Home's control).
+- `pnpm build` -- exit 0. `node tools/check-traces.mjs` -- "every route carries its files", and no client chunk carries the
+  font pool's record.
+- `python3 tools/doc-audit.py --check` -- PASS twice (the run before regenerated the story board, as it does after a change).
+- `git grep -n "PAGINATED_TARGETS.has("` -- `vocabulary.ts`' `isPaginated` itself, and `validate.ts`' `pagination-target`,
+  which reads design TARGETS: the brace is held legal by name there, and a membership file (the only custom file a target can
+  name) never paginates, which is `isPaginated`'s answer too. No reader that can meet a Routes Manager FILE remains.
+- **Controls planted (standing rule 2):** `holdsFor` with `none` read as `any` failed `routes.test.ts` (2 tests); the guard without
+  the listed contexts failed `compile.test.ts`' 7.16c guard row. Both restored and re-run green.
+- **T1 (§84), first run (main session):** every page row held; the index-filter row failed on a real finding (Spec Change Log,
+  DW-364), and the leg was corrected — the index row compared by id with Ghost's SQL set, two read-only DW-364 rows added — for
+  the re-run.
+- **T1 (§84):** `tools/probe/record-theme-assembly.py` gains leg 19 (`list_inputs`, `list_compiled`, `list_phase`; `SECTION = '84'`).
+  Its LOCAL half — the compile, `themeFailures` and both pinned gscans — gated 0/0 on 4.49.7 (`v5`) and 6.4.2 (`v6`) with
+  `{{#is "tag, author, probe-channel"}}` and `routesYaml`'s file checked line by line, run from the module without touching T1.
+  The T1 run itself is the main session's, on the owner's in-session go (R-238; the Ghost 5 half is DW-326's).
+- **The walk:** step 111 is written (`run-verify-editor.cjs`, `node --check` clean) and step 110e re-expected (a17/1 is offered on a
+  Routes Manager canvas now); both are the Review's, on production.
+
+**Matrix row → check** (each ran in that row's state):
+
+| I/O row | The check that ran in it |
+|---|---|
+| Collection's new template | `routes.test.ts` (app): `saveRoutes` writes row → `writeListedStart` → config, only when `listsOf(next)` has the file, `listedStart` gives a17/1 "Post grid" flagged, judged by `docRefusal`; `orbit-weekly.test.ts`: the window at limit 3; keyboard "the listed template" (three rows, the chip); walk 111b |
+| Channel's new template | `routes.test.ts` (runtime) `listsOf`: a channel's `earlier` is null; `live-content.test.ts`: a channel keeps every match; walk 111d |
+| Other new templates | `routes.test.ts` (app): `createTemplate` writes no doc, a static route is not listed; walk 111g |
+| Existing template chosen | `main-feed.test.ts` (7.16c): designation on a listed file flags the first visible feed, an existing flag kept |
+| Two collections | `orbit-weekly.test.ts` (F4): fewer than the limit, `pagination` the window's; `live-content.test.ts`: the same drop on the site, and a later collection that lists an untagged post keeps it; `routes.test.ts`: `routeList` keep (ownership) and window (listing) |
+| Shared template | `routes.test.ts` `listsOf`: `[collection /a/, channel /picks/]` for one file; `editor.test.ts` (routine call 4): the editor takes the first list in its rows (`routeLists`), its Count (`mainRole`) and its Layers note (`FEEDLESS_ROUTE`) |
+| Home with collections | `orbit-weekly.test.ts` (FR-H3): rows, total and `bundledAt.pages` over the inverse; `live-content.test.ts`: `filter=indexFilter`, and an untagged post left out under a Primary-tag collection (its control: no collection lists it); `routes.test.ts`: `homeList` reads the index's SQL (DW-364); keyboard Home journey + its control; §84's index row by id |
+| Main feed, own limit | `controls.test.ts`: `routeCount`, the row's `route`; `data-group.test.ts`: the link chooses by row; `orbit-weekly.test.ts`: `@config.posts_per_page` is 3; keyboard: Count greyed, `href` the routes page |
+| Main feed, no limit | `controls.test.ts`' control (D5c's line, no `route`); walk 111d |
+| Unlisted feed | `main-feed.test.ts`: `feedQuery` on an unlisted file; `agreement.test.ts`: the secondary feed node by node, no pager; `compile.test.ts`: its `{{#get}}`; walk 111g |
+| Route removed | `main-feed.test.ts`: the flag stripped unlisted; walk 111f |
+| Feed-less listed | `main-feed.test.ts`: `feedlessArchive` with `listed`; `data-group.test.ts`: `FEEDLESS_ROUTE`; walk 111e |
+| Guard | `compile.test.ts`: `tag, a-side, b-side, staff-picks` with both controls, the bad keys and contexts refused; `ad36.test.ts`: the context sink pair; §84 on T1 (held, run 2) |
+| Page 2 | `editor.test.ts`: `pageTwoOfCanvas` undefined for a Routes Manager canvas; `compile.test.ts`: no `{{#is` in a listed file |
+| Nothing matches | `orbit-weekly.test.ts`: `posts: []`, one page, total 0 — the design's own empty state |
 
 **Review (R-82):**
 - Step 111 on production at the deployed head, with Supabase service reads for the new template's doc.

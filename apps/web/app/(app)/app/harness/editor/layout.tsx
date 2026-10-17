@@ -6,6 +6,7 @@ import type { ReactNode } from 'react'
 import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import { ghostName, USER_SETTING_CAP } from '@inflozo/section-runtime/custom-settings'
+import { DEFAULT_TAXONOMIES, listsOf, pathsUsing, type RoutesConfig } from '@inflozo/section-runtime/routes'
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { ShellUserContext } from '@/components/shell/shell'
@@ -14,7 +15,7 @@ import { hexOf, type PackRecord } from '@/lib/pack-edit'
 import { ownPacksOf, packChoices, packFacesCss, packIdOf, pairingChoices, pairingGlyphFacesCss } from '@/lib/style-pack'
 import { imagePool, linkResources, paywallSamples, samples } from '@/lib/controls-review'
 import { storedCards } from '@/lib/cards'
-import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
+import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCanvas } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
 import { harnessReread } from './actions'
@@ -111,6 +112,12 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * STORY 7.13 — `x-inflozo-harness-cards: malformed` opens on a stored card record `read.ts`' door refuses (a divider glyph
  * the icon set does not draw), so the Editor cards journey meets the malformed line once and every card on Ghost's defaults.
  *
+ * STORY 7.16c (DW-363) — `x-inflozo-harness-routes: on` gives the project two Routes Manager templates and the routing that
+ * shows them, as `read.ts` hands them: a COLLECTION `/harness-list/` (Primary tag `tools`, its own `limit: 3`) naming
+ * `custom-harness-list.hbs`, which holds A17 #1 — LISTED, so the rule below designates it the main feed and Home lists only the
+ * posts no collection owns — and a STATIC ROUTE `/harness-landing/` naming `custom-harness-landing.hbs`, which holds A22 #1
+ * alone, so 7.16b's gone-template move and its routed D5f have a template to meet in CI. Without it, no template and no route.
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -183,6 +190,9 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   if (Number.isFinite(cycled) && cycled > LONG_HOME_MAX) throw new Error(`x-inflozo-harness-home asks for ${cycled} sections; the harness builds at most ${LONG_HOME_MAX}`)
   const homeShown = Number.isInteger(cycled) && cycled > 0 && home.length > 0 ? Array.from({ length: cycled }, (_, n) => home[n % home.length]!) : home
 
+  // Story 7.16c — the two Routes Manager templates and their routing, when asked for (DW-363)
+  const routing = asked.get('x-inflozo-harness-routes') === 'on' ? HARNESS_ROUTES : null
+  const routeTemplates = routing === null ? [] : HARNESS_TEMPLATES.map((t) => ({ ...t, canvas: routeCanvasOf(t.file) as RouteCanvas }))
   const docs = designateAll(
     {
       [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
@@ -190,8 +200,11 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       // …and, under the same header, a Tag canvas of its own (the designs that compile to `tag.hbs`), so the gate can walk a
       // Tag page 2 that FOLLOWS page 1 — the DW-331 defect's own page. Without the header the Tag canvas stays as it was.
       ...(overriding ? { [templateKeyOf('tag')]: docOf(templateKeyOf('tag'), compiling(CANVASES.tag.file)) } : {}),
+      // Story 7.16c — each template's one design, unflagged: the main-feed rule designates the listed one's feed itself
+      ...Object.fromEntries(routeTemplates.map((t) => [templateKeyOf(t.canvas), docOf(templateKeyOf(t.canvas), [entries[t.design] as SectionRegistryEntry])])),
     },
     (id) => entries[id],
+    listsOf(routing),
   )
 
   // Story 6.4 — the project's stored `style_pack`, as the column would hold it for the pack header
@@ -227,7 +240,10 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     links: linkResources(),
     timezone: orbitWeekly.site().timezone,
     plan: 'free',
-    canvases: canvasesOf(),
+    canvases: [...canvasesOf(), ...routeTemplates.map((t) => t.canvas)],
+    // Story 7.16c — the templates as `read.ts` hands them, each with the paths that show it, and the routing itself
+    templates: routeTemplates.map(({ canvas, name, file }) => ({ canvas, name, paths: routing === null ? [] : pathsUsing(routing, file) })),
+    routes: routing,
     synthesized: [],
     defaults: {},
     dropped: {},
@@ -316,6 +332,19 @@ function atCap(): EditorData['settings'] {
     options: null, default_value: 'true', group_name: 'homepage' as const, visibility_condition: null,
     bound_to: { kind: 'control', instanceId: 'gone0000', controlKey: 'icons' }, position: n + 1, frozen_at: null,
   }))
+}
+
+/** Story 7.16c (DW-363) — the harness project's two Routes Manager templates, each with the one design it holds */
+const HARNESS_TEMPLATES = [
+  { file: 'custom-harness-list.hbs', name: 'Harness List', design: 'a17/1' },
+  { file: 'custom-harness-landing.hbs', name: 'Harness Landing', design: 'a22/1' },
+] as const
+/** …and the routing that shows them: a collection of the posts whose Primary tag is `tools`, three to a page, and a static
+ *  route — the stored config's own shape, as `parseRoutesConfig` reads it */
+const HARNESS_ROUTES: RoutesConfig = {
+  collections: [{ path: '/harness-list/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: ['tools'] }] }, template: 'custom-harness-list.hbs', limit: 3 }],
+  routes: [{ path: '/harness-landing/', template: 'custom-harness-landing.hbs' }],
+  taxonomies: { ...DEFAULT_TAXONOMIES },
 }
 
 /** Story 5.20 — where the harness's canvases live: its own two pages, never the app's `/projects/<id>` */

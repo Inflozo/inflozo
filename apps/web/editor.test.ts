@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, captionOf,
   CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, siteSlot,
-  lockPath, NEW_TEMPLATE_QUERY, newTemplatePath, PAGE_TWO,
+  lockPath, NEW_TEMPLATE_QUERY, newTemplatePath, PAGE_TWO, pageTwoOfCanvas,
   pageTwoKeyOf, routeCanvasOf, ROUTED_EMPTY_ASK, ROUTES, ROUTES_GROUP, routesPath, SETTINGS, settingsPath, SITE, SYNC, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
@@ -595,4 +595,34 @@ test('Story 6.4: the sync route refuses own packs that do not all survive ownPac
   // Story 7.13's review: and the server's own card designs, read where the body carries them — the record, never the row
   assert.match(route, /parsedCards === undefined \? \{ data: null \} : supabase\.from\('project_treatments'\)\.select\('card_designs'\)\.eq\('project_id', projectId\)\.maybeSingle\(\)/)
   assert.match(route, /const cardsThere = parsedCards === undefined \|\| stable\(\(treatments as \{ card_designs\?: unknown \} \| null\)\?\.card_designs \?\? \{\}\) === stable\(parsedCards\)/)
+})
+
+/* ── Story 7.16c — the editor reads what each template lists from ONE derivation, and every main-feed door asks it ── */
+
+test('Story 7.16c: read.ts hands the parsed routing and designates with listsOf; the editor derives listed once and every door reads it', () => {
+  const read = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts'), 'utf8')
+  assert.match(read, /const routes = routing\?\.ok === true \? routing\.config : null/)
+  assert.match(read, /designateAll\(docs, held, listsOf\(routes\)\)/)
+  assert.match(read, /designate\(doc, fileOf\(key\), library, undefined, listed\)/)
+  const editor = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'editor.tsx'), 'utf8')
+  assert.equal((editor.match(/listsOf\(/g) ?? []).length, 1, 'derived once')
+  for (const door of [
+    /designate\(doc, fileOfKey\(docKey\), library, previous, listed\)/,
+    /makeMainFeed\(doc, file, row\.instanceId, library, listed\)/,
+    /feedQuery\(design, i, i\.target, postsPerPage, listed\)/,
+    /isPaginated\(fileOfKey\(docKey\), listed\)/,
+    /feedlessArchive\(editedDoc\(docs, own, library\) \?\? EMPTY_DOC, pageFileOf\(key, page\), library, listed\)/,
+    /chosen\.isMainFeed && isPaginated\(chosen\.target, listed\) \? mainRole\(chosen\.target\)/,
+    /orbitWeekly\.bundledAt\(postsPerPage, routeLists\)/,
+  ]) assert.match(editor, door)
+  assert.ok(!/PAGINATED_TARGETS/.test(editor), 'no door reads the four files alone')
+  // a Routes Manager canvas still has no page 2 (R-252: a listed template is designed on page 1 only, for now)
+  for (const canvas of ['custom-tutorials-list', 'custom-landing'] as const) assert.equal(pageTwoOfCanvas(canvas as never), undefined)
+})
+
+test('Story 7.16c (routine call 4): a shared template previews its FIRST list — listsOf\'s order, collections before channels — in its rows, its Count and its Layers note', () => {
+  const editor = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'editor.tsx'), 'utf8')
+  assert.match(editor, /\[\.\.\.listed\]\.map\(\(\[file, \[first\]\]\) => \[file, first === undefined \? undefined : routeList\(first, now\)\]\)/)
+  assert.match(editor, /const first = listed\.get\(file\)\?\.\[0\]/)
+  assert.match(editor, /FEEDLESS_ROUTE\(listed\.get\(canvas\.file\)\?\.\[0\]\?\.path \?\? '\/'\)/)
 })

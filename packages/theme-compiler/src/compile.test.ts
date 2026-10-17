@@ -396,8 +396,9 @@ test('every refusal names its file and its layer', () => {
   // a page-2 section is named as page 2's
   assert.throws(() => compile({}, { pageTwo: { 'tag.hbs': docOf(at('a22/1', 'Box')) } }), /^Error: tag\.hbs \(page 2\) · Box: a22\/1 compiles to home\.hbs, page\.hbs, post\.hbs, custom-\{name\}\.hbs, never to tag\.hbs/)
   assert.throws(() => compile({ 'about.hbs': docOf() }), /about\.hbs: this compile writes no such template — the legal files are default\.hbs, home\.hbs[^]*custom-\{name\}\.hbs/)
-  // a renderer refusal (R-7) is rethrown with its place in front of the runtime's own sentence
-  const paged = design('a17/3', 'Paged', { compileTarget: ['home.hbs', 'post.hbs'], bindingContext: ['posts'], html: '<section class="a17-3"><nav class="a17-3__pager"><a class="a17-3__next" data-pagination="next" href="#" data-t="pagination.older">Older</a></nav></section>' })
+  // a renderer refusal (R-7) is rethrown with its place in front of the runtime's own sentence — a pager on a design that is
+  // no FEED, since a feed off a paginated page is a secondary feed whose pager is never rendered (Story 7.16c)
+  const paged = design('a17/3', 'Paged', { compileTarget: ['home.hbs', 'post.hbs'], bindingContext: ['none'], html: '<section class="a17-3"><nav class="a17-3__pager"><a class="a17-3__next" data-pagination="next" href="#" data-t="pagination.older">Older</a></nav></section>' })
   assert.throws(() => compile({ 'post.hbs': docOf(at('a17/3', 'Pager')) }, { library: (id) => (id === 'a17/3' ? paged : LIB[id]) }), /^Error: post\.hbs · Pager: data-pagination restricts this design to a paginated target \(R-7\)/)
 })
 
@@ -809,6 +810,76 @@ test('(7.16b) a Routes Manager template compiles flat — no {{#post}}, no artic
   assert.throws(() => compile({ 'custom-landing.hbs': docOf(at('a30/1', 'Join card')) }), /a30\/1 compiles to custom-signup\.hbs, custom-signin\.hbs, custom-member-home\.hbs, never to custom-landing\.hbs/)
   // the target that names every Routes Manager template is a design's word, never a file the compile writes
   assert.throws(() => compile({ [ROUTE_TEMPLATE_TARGET]: docOf() }), /^Error: custom-\{name\}\.hbs: this compile writes no such template/)
+})
+
+// ── Story 7.16c — a collection's or channel's template is LISTED (`lists`): it paginates as Home does, so its first visible
+//    feed is its main feed over Ghost's native posts at the flat root (F3); unlisted, a feed is a secondary feed in its own get.
+
+/** a17/1 as the library now holds it: the brace target last, with a pager the main feed keeps and a secondary feed leaves out */
+const PAGED_FEED = design('a17/1', 'Three Up', {
+  compileTarget: ['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs', ROUTE_TEMPLATE_TARGET],
+  bindingContext: ['posts'],
+  html: '<section class="a17-1">\n  <ul class="a17-1__grid">\n    <li class="a17-1__cell" data-repeat="posts">\n      <a class="a17-1__card" data-bind-attr="href:url" data-bind="title" data-empty="hide">Title</a>\n    </li>\n  </ul>\n  <nav class="a17-1__pager"><a class="a17-1__older" data-pagination="next" href="#" data-t="pagination.older">Older</a></nav>\n</section>',
+})
+const withPagedFeed = (id: string) => (id === 'a17/1' ? PAGED_FEED : LIB[id])
+
+test('(7.16c) a listed template: its feed is designated the main feed and compiles over the native posts, flat, pager and all — unlisted, the same doc is a secondary feed', () => {
+  const file = 'custom-tutorials-list.hbs'
+  const templates = { [file]: docOf(at('a17/1', 'Post grid')) }
+  const listed = compile(templates, { library: withPagedFeed, routed: [file], lists: { [file]: ['tutorials'] } })
+  // the section the template invokes — wherever it is hoisted to (byte-identical to the archives' Post grid, it is shared/'s)
+  const section = (out: Record<string, string>) => out[`partials/${/\{\{> "(sections\/[^"]+)"\}\}/.exec(out[file] ?? '')?.[1] ?? ''}.hbs`] ?? ''
+  const main = section(listed)
+  assert.ok(main.includes('{{#foreach posts}}') && !main.includes('{{#get'), main)
+  assert.ok(main.includes('pagination.next'), 'the main feed keeps its pager')
+  assert.ok(!(listed[file] ?? '').includes('{{#post}}') && !(listed[file] ?? '').includes('<article'), 'flat, the list row opens no block')
+  // R-252: designed on page 1 only — one stack, no `{{#is "paged"}}` split, so Ghost serves page 1's on every page (F6)
+  assert.ok(!(listed[file] ?? '').includes('{{#is'), 'no page-2 split in a listed template')
+  // its theme text is Home's main feed's, byte for byte (F3: Ghost hands both the same root) — so it shares one file with the
+  // archives' own Post grid, the same design at the same values
+  const home = compile({ 'home.hbs': docOf(at('a17/1', 'Post grid', { isMainFeed: true })) }, { library: withPagedFeed })
+  assert.equal(main, home[`partials/${/\{\{> "(sections\/[^"]+)"\}\}/.exec(home['home.hbs'] ?? '')?.[1] ?? ''}.hbs`], 'the same section on Home')
+  assert.match(listed[file] ?? '', /\{\{> "sections\/shared\/post-grid"\}\}/)
+  // THE CONTROL: no route lists it — a secondary feed, its own get, no pager
+  const unlisted = section(compile(templates, { library: withPagedFeed, routed: [file] }))
+  assert.match(unlisted, /^\{\{#get "posts" limit="12" order="published_at desc" include="tags,authors"\}\}/, unlisted)
+  assert.ok(!unlisted.includes('pagination'), unlisted)
+  // and a pager on an unlisted template that is no feed is R-7's refusal: the brace alone does not make a file paginate
+  const pagerOnly = design('a22/2', 'Pager', { compileTarget: [ROUTE_TEMPLATE_TARGET], html: '<section class="a22-2"><nav class="a22-2__p"><a class="a22-2__n" data-pagination="next" href="#" data-t="pagination.older">Older</a></nav></section>' })
+  const lib = (id: string) => (id === 'a22/2' ? pagerOnly : withPagedFeed(id))
+  assert.throws(() => compile({ [file]: docOf(at('a22/2', 'Pager')) }, { library: lib }), /data-pagination restricts this design to a paginated target/)
+  assert.doesNotThrow(() => compile({ [file]: docOf(at('a22/2', 'Pager')) }, { library: lib, lists: { [file]: ['tutorials'] } }))
+})
+
+test('(7.16c) the guard names each feed-less listed template\'s contexts after index, tag and author, in code order — each beside its control', () => {
+  const hiddenFeed = (name: string) => docOf(at('a17/1', name, { hidden: true, isMainFeed: true }))
+  const lists = { 'custom-staff-picks.hbs': ['staff-picks'], 'custom-tutorials-list.hbs': ['tutorials'], 'custom-zeta.hbs': ['b-side', 'a-side'] }
+  const routed = Object.keys(lists)
+  // Tag feed-less; /staff-picks/'s template feed-less (a section, no feed); /tutorials/' with a feed; zeta untouched (a shared one)
+  const out = compile({
+    'tag.hbs': hiddenFeed('Tag feed'),
+    'custom-staff-picks.hbs': docOf(at('a22/1', 'Newsletter', { content: NEWS })),
+    'custom-tutorials-list.hbs': docOf(at('a17/1', 'Post grid')),
+  }, { library: withPagedFeed, routed, lists })
+  assert.ok((out['default.hbs'] ?? '').includes(GUARD('tag, a-side, b-side, staff-picks')), out['default.hbs'])
+  // the controls: a listed template WITH a visible feed adds none — and an UNLISTED feed-less one adds none
+  const fed = compile({ 'custom-staff-picks.hbs': docOf(at('a17/1', 'Grid')) }, { library: withPagedFeed, routed: ['custom-staff-picks.hbs'], lists: { 'custom-staff-picks.hbs': ['staff-picks'] } })
+  assert.ok(!(fed['default.hbs'] ?? '').includes('{{#is'), fed['default.hbs'])
+  const unlisted = compile({ 'custom-staff-picks.hbs': docOf(at('a22/1', 'Newsletter', { content: NEWS })) }, { routed: ['custom-staff-picks.hbs'] })
+  assert.ok(!(unlisted['default.hbs'] ?? '').includes('{{#is'), 'a static route serves no page 2 (F3)')
+  // one guard, still — a single `noindex`
+  assert.equal(((out['default.hbs'] ?? '').match(/noindex/g) ?? []).length, 1)
+})
+
+test('(7.16c) lists is refused on a key that is no Routes Manager file, or a context outside contextOf\'s shape (AD-36); the control compiles', () => {
+  const file = 'custom-picks.hbs'
+  for (const key of ['home.hbs', 'tag.hbs', 'custom-signup.hbs', ROUTE_TEMPLATE_TARGET, 'custom-x.hbs/../y']) {
+    assert.throws(() => compile({}, { lists: { [key]: ['picks'] } }), /^Error: lists '[^']*': a collection or channel lists a Routes Manager template/, key)
+  }
+  for (const context of ['x"}}{{#each @site}}', 'index, tag', 'a/b', '', 'Picks', 'picks ', '-x', 'x--y']) {
+    assert.throws(() => compile({}, { routed: [file], lists: { [file]: [context] } }), /is not a context Ghost names a collection or channel by/, JSON.stringify(context))
+  }
+  assert.doesNotThrow(() => compile({}, { routed: [file], lists: { [file]: ['picks', 'staff-picks', 'a-1'] } }))
 })
 
 test('(7.3) every section hidden: a designed file\'s layout line alone, never re-synthesized', () => {
