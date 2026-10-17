@@ -3802,6 +3802,8 @@ exist."*
   Home's page 2 is still the middle page FR-D21 describes.
 - **Amended by R-179 (owner, 2026-09-22):** page 2 is its own design, so a hidden main feed on page 1 no longer removes
   the page-2 control. A page whose posts fit on one page still offers none.
+- *(Story 7.16c's Create, 2026-10-18 — **R-252**: a collection's or channel's template offers no page 2 for now, though
+  Ghost serves one; FR-D21's "nowhere else" holds for it.)*
 - Targets:
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word) ·
     ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md`.
@@ -5487,6 +5489,24 @@ and step 4 of your test would show the new heading."*
   routine call 5, the owner's test, the Spec Change Log) · ✅ `apps/web/lib/editor.ts`, `template-switcher.tsx`'s comment,
   `editor.test.ts` · ✅ the deployed walk's step 40 and 110a titles (110d derives the heading) · ✅ `epics.md` Story
   7.16b's card · ✅ `epic-7-context.md`.
+
+**R-252 — a collection's or channel's template is designed on page 1 only, for now: it offers no page-2 preview and no
+page-2 design.** Story 7.16c's Create, Question 1, ruled **option 1** (owner, 2026-10-18): *"Page 1 only, for now. These
+templates get no Preview page 2. On the live site, page 2 onwards uses page 1's design with the next posts, as Ghost's
+own themes do. If the template has no list, its page 2 is kept out of search engines. Nothing in the database changes."*
+
+- **Why it was a question.** Ghost serves a collection's and a channel's page 2 from the same template file
+  (`rendering/templates.js:49-67`, read in both majors' source at 7.16c's Create). FR-D21's principle is that page 2 is
+  offered where Ghost serves one, but its list (R-176) — Home, and a Tag or Author archive whose posts run past one page,
+  "and nowhere else" — was ruled before collections existed. A page-2 design of its own would need a new template key,
+  which the database's `template_key_shape` refuses (`20260926120000_paywall_template_key.sql:20-22`), so a migration.
+- **The rule.** A template a collection or channel lists has no **Preview page** row, no page-2 key and no
+  `{{#is "paged"}}` split in its file. Its live page 2 onwards renders page 1's stack with the next posts. Where that
+  stack has no visible feed, the theme's `noindex` guard names the route's own context (FR-H2, DW-344). R-176's list
+  stands as written.
+- **Declined.** Previewing and designing page 2 in Story 7.16c; the same in a new Story 7.16d.
+- Targets: ✅ this entry · ✅ R-176's entry (dated note) · ✅ Story 7.16c's spec · ✅ `epics.md` Story 7.16c's card ·
+  ✅ `epic-7-context.md` · ⬜ `prd.md` FR-D21 (dated, at 7.16c's Dev).
 
 ## B · Approved decisions superseded by this session
 

@@ -3981,6 +3981,10 @@ harness editor gains a Routes Manager template, which this story's post lists ne
 journeys for what only the hand-run walk reaches today — a flush answered with `left` naming the canvas on screen (the
 move to Home, B5a's strip, `#editor-said`) and the last section deleted from a routed template (D5f's routed sentence).)*
 
+*(Story 7.16c's Question 1, ruled option 1, owner, 2026-10-18 — **R-252**: a collection's or channel's template is
+designed on page 1 only, for now — no Preview page 2 and no page-2 design; its live page 2 onwards uses page 1's design
+with the next posts, and a feed-less one is kept out of search engines. FR-D21's "nowhere else" (R-176) holds for it.)*
+
 **FRs:** FR-H2 (a route's own `limit:`), FR-H3. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c and
 `P0-5 Populate From Panel.dc.html`, as Story 5.19 builds them. · **Owner test:** yes.
 

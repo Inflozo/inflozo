@@ -529,8 +529,9 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **Question 3, ruled option 1 (owner, 2026-10-17) — R-251:** the group's heading is "FROM ROUTES & TEMPLATES", the
       routes page's own title, for D5b's "FROM THE ROUTES MANAGER". `editor.test.ts` holds `ROUTES_GROUP.heading` to
       `ROUTES_WORDS.title`.
-  - **Story 7.16c's Create (2026-10-18):** ready for Dev, one question open — page 2 of a listed template, planned as
-    option 1 (page 1 only: no Preview page row, no page-2 key, no migration).
+  - **Story 7.16c's Create (2026-10-18):** ready for Dev. Its one question was ruled option 1 by the owner the same day —
+    **R-252**: a listed template is designed on page 1 only, for now (no Preview page row, no page-2 key, no migration);
+    its live page 2 onwards uses page 1's design, and a feed-less one is guarded. FR-D21's dated note is Dev's.
     - **Planned.**
       - A Routes Manager template is LISTED when a collection or channel names it (`listsOf`). A listed file paginates
         (`isPaginated`, the matrix's `custom-{name}.hbs (list)` row), so a17/1, now targeting the brace last, is its main

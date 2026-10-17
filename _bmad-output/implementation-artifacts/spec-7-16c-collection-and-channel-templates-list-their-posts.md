@@ -44,8 +44,8 @@ list the posts a collection or channel serves there:
   5.19's rule.
 - **The theme names each feed-less listed template's contexts in the guard.** DW-344 closes.
 - **The harness gains Routes Manager templates,** and `pnpm keyboard` gains DW-363's journeys and this story's.
-- **Question 1 (open):** page 2 of a listed template. The spec is written to its recommended option 1 (Design Notes,
-  "Ruled values").
+- **Question 1 was ruled option 1 (owner, 2026-10-18), R-252:** a listed template is designed on page 1 only, for
+  now (Design Notes, "Ruled values").
 
 ## Boundaries & Constraints
 
@@ -88,13 +88,13 @@ list the posts a collection or channel serves there:
   session for the recorder's whole run, and run in the main session.
 
 **Ask First:**
-- **Question 1 must be ruled before Dev starts.** Dev builds the ruled option; a ruling other than option 1 changes only
-  Design Notes' "Ruled values" row and what it names.
+- **Question 1 was ruled option 1 (owner, 2026-10-18), R-252.** The spec is written to it, and the ruled value lives
+  in one place: Design Notes' "Ruled values".
 - The T1 go, before the recorder's first write (§84).
 - Any frame string beyond Design Notes' "Words", and any undrawn surface.
 
 **Never:**
-- **A page-2 design or a page-2 preview of a Routes Manager template** (Question 1, option 1):
+- **A page-2 design or a page-2 preview of a Routes Manager template** (R-252):
   - no `PAGE_TWO` entry;
   - no key;
   - no migration;
@@ -340,16 +340,18 @@ list the posts a collection or channel serves there:
 - **R-7:** a paginated design is refused off a paginated target, and A29 gives `custom-{name}.hbs` collection templates.
 - **FR-H2** (5.19, R-36): exactly one main feed per paginated template; a channel's template gets one at creation; the
   canvas reads the size that applies.
-- **R-176** and FR-D21: page 2 is offered "nowhere else". That is Question 1.
+- **R-176** and FR-D21: page 2 is offered "nowhere else". **R-252** (Question 1) keeps that for a listed template.
 - **R-245** and **R-249** moved this story's criteria here word for word. **R-246:** relative dates appear in channels only.
   **R-248:** a route's delete keeps its template.
 - **R-170, R-98, R-82, R-238 and AD-36** are written into Boundaries.
 
 ### Ruled values (the one table a ruling changes)
 
-| Question | Planned (RECOMMENDED), awaiting the owner |
+Ruled option 1 (owner, 2026-10-18).
+
+| Question | Ruled, and built |
 |---|---|
-| 1 — page 2 of a listed template | Option 1, **page 1 only**. There is no Preview page row, no page-2 key and no migration. The live page 2 serves page 1's stack with the next posts, and a feed-less listed template is guarded. FR-D21 gets a dated note. If option 2 or 3 is ruled, Dev waits for the re-plan. |
+| 1 — page 2 of a listed template (R-252) | **Page 1 only, for now.** There is no Preview page row, no page-2 key and no migration. The live page 2 serves page 1's stack with the next posts, and a feed-less listed template is guarded. FR-D21 gets a dated note at Dev. |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -432,7 +434,7 @@ under `package/core/frontend/`, and 5.x names the routers `CollectionRouter.js` 
 
 Do this on the real site after Deploy, on a laptop at full width, signed in as yourself, on **Pilot sections**
 (`b6d4db35-8e5e-45e1-a70f-4daa28916d51`). It uses the sample posts. If routes or templates from an earlier test are
-there, delete them first on Routes & Templates. Step 4 tests the recommended answer to Question 1.
+there, delete them first on Routes & Templates. Step 4 tests your ruling on Question 1 (R-252).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -469,7 +471,10 @@ page, plus page-2 work in the editor and in the theme.
    by the page-2 work in the editor and the theme.
 3. **The same as 2, in a new Story 7.16d straight after this one.** This story ships as planned, and 7.16d adds page 2.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18).** *"Page 1 only, for now. These templates get no Preview page 2. On the live
+site, page 2 onwards uses page 1's design with the next posts, as Ghost's own themes do. If the template has no list, its
+page 2 is kept out of search engines. Nothing in the database changes."* Recorded as **R-252**. The spec, Story 7.16c's
+card, R-176's entry and `epic-7-context.md` follow; FR-D21's dated note is Dev's.
 
 ## Verification
 
