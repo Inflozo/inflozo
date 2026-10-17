@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { darkOverrideCount } from '@inflozo/section-runtime'
-import { templateKeyOf } from '@/lib/editor'
+import { namesOf, templateKeyOf } from '@/lib/editor'
 import { siteAccentOf } from '@/lib/style-pack'
 import {
   boundLabels, liveHolder, orderedDocs, packInForce, placedControls, promotable, rowStates, SETTING_COLUMNS, siteBasics, storedSettings,
@@ -61,7 +61,7 @@ export default async function ThemeSettingsPage({ params, searchParams }: {
   const project = await projectOf(id)
   if (!project) notFound()
   const sb = await supabaseServer()
-  const [{ docs, entries, synthesized, lock, preset, packs, ownPacks }, settingsRead, siteRead] = await Promise.all([
+  const [{ docs, entries, synthesized, lock, preset, packs, ownPacks, templates }, settingsRead, siteRead] = await Promise.all([
     editorData(id),
     sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', id).order('position').order('created_at'),
     project.linked_site_id === null ? null : sb.from('sites').select('url, title, site_settings').eq('id', project.linked_site_id).maybeSingle(),
@@ -72,7 +72,7 @@ export default async function ThemeSettingsPage({ params, searchParams }: {
   const settings = storedSettings(settingsRead.data)
   const skip = new Set(synthesized.map(templateKeyOf))
   const pack = packInForce(preset, packs, ownPacks)
-  const placed = placedControls(docs, entries, skip, pack)
+  const placed = placedControls(docs, entries, skip, pack, namesOf(templates))
 
   return (
     <ThemeSettings

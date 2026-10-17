@@ -62,6 +62,9 @@ test('Question 1\'s rows: in page order, the header\'s on every page and opening
     ['Byline', 'Post', '/projects/p1/post'],
   ])
   assert.equal(`${TRANSLATION_WORDS.untouchedOn('Three Up', 'Home')} ${TRANSLATION_WORDS.quoted(['The archive', 'Browse the archive'])}`, 'Three Up on Home: “The archive” · “Browse the archive”')
+  // Story 7.16b's review (R-170): a Routes Manager template's row names it as the switcher does, and Edit opens its canvas
+  const [landing] = untouchedRows('p1', [{ key: 'custom:custom-landing.hbs', instanceId: 'd', layer: 'Newsletter', words: ['One letter a week'] }], { 'custom-landing': 'Landing' })
+  assert.deepEqual([landing?.canvas, landing?.href], ['Landing', '/projects/p1/custom-landing'])
 })
 
 test('B18\'s RTL block keeps its title and first two sentences, without the clause FR-Q6 contradicts', () => {

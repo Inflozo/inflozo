@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { checkSetting, claimKey, clearProject, ghostName, parseDoc, postsPerPage, SETTING_WORDS, settingKey, USER_SETTING_CAP } from '@inflozo/section-runtime'
 import type { ProjectDoc, SettingGroup, SettingRow } from '@inflozo/section-runtime'
-import { isUuid, settingsPath, templateKeyOf } from '@/lib/editor'
+import { isUuid, namesOf, settingsPath, templateKeyOf } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { conditionOf, packInForce, placedControls, promotable, refusalOf, ruleRow, SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
 import { editorData, projectOf } from '../(editor)/read'
@@ -207,7 +207,7 @@ export async function promoteControl(_previous: SettingsResult | null, formData:
   }
   const synthesized = new Set(data.synthesized.map(templateKeyOf))
   const pack = packInForce(data.preset, data.packs, data.ownPacks)
-  const chosen = promotable(placedControls(data.docs, data.entries, synthesized, pack), rows).find((c) => c.id === formData.get('promote'))
+  const chosen = promotable(placedControls(data.docs, data.entries, synthesized, pack, namesOf(data.templates)), rows).find((c) => c.id === formData.get('promote'))
   if (chosen === undefined) return { error: SETTING_WORDS.noControl }
   if (chosen.confirm !== null && formData.get('confirmed') !== 'yes') return { error: SETTING_WORDS.confirm }
 

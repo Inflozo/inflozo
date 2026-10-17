@@ -10475,16 +10475,26 @@ async function main() {
     await p110.goto(at(`${ED110.newTemplatePath(P)}`), { waitUntil: 'load' })
     await p110.locator('dialog[aria-labelledby="routes-sheet-title"][open]').waitFor({ state: 'visible', timeout: 30000 }).catch(() => {})
     await p110.waitForTimeout(300)
-    await p110.keyboard.type(display110)
-    const namingC110 = await p110.evaluate(() => ({ file: document.querySelector('dialog[open] [data-file]')?.textContent ?? null, label: document.querySelector('dialog[open] [data-label]')?.textContent ?? null }))
     await p110.evaluate((w) => {
-      const seen = { creating: false }
+      // the Review's 110c (2026-10-17): and whether Name ever turned refused once Create was pressed — the page re-reads its
+      // templates when the row is written, and the name just made must not read as taken while the canvas opens
+      const seen = { creating: false, refused: null }
       window.__made110 = seen
       new MutationObserver(() => {
         const s = document.querySelector('dialog[aria-labelledby="routes-sheet-title"] button[type="submit"]')
         if (s && s.innerText.trim() === w) seen.creating = true
+        const name = document.getElementById('routes-new-template')
+        if (seen.refused === null && name?.getAttribute('aria-invalid') === 'true') seen.refused = document.getElementById('routes-new-template-error')?.textContent ?? 'aria-invalid'
       }).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true })
     }, W110.creating)
+    // THE OBSERVER'S CONTROL: a membership page's name is refused as taken under Name, and the observer hears it
+    await p110.keyboard.type('Signup')
+    await p110.waitForTimeout(400)
+    const heardC110 = await p110.evaluate(() => { const r = window.__made110.refused; window.__made110.refused = null; return r })
+    await p110.keyboard.press('ControlOrMeta+a')
+    await p110.keyboard.type(display110)
+    await p110.waitForTimeout(300)
+    const namingC110 = await p110.evaluate(() => ({ file: document.querySelector('dialog[open] [data-file]')?.textContent ?? null, label: document.querySelector('dialog[open] [data-label]')?.textContent ?? null, refused: window.__made110.refused }))
     await p110.keyboard.press('Enter')
     const openedC110 = await p110.waitForURL((u) => u.pathname.endsWith(`/projects/${P}/${canvas110}`), { timeout: 30000 }).then(() => true, () => false)
     const paintedC110 = await painted110(p110, canvas110)
@@ -10497,7 +10507,10 @@ async function main() {
       ctC110?.length === 1 && ctC110[0].filename === file110 && ctC110[0].display_name === display110 && ctC110[0].kind === 'routes' &&
       titleC110 === `${projectName110} · ${display110} — Inflozo` && ownC110.length === 0,
       JSON.stringify({ namingC110, openedC110, paintedC110, ctC110, titleC110, ownC110, url: p110.url() }))
-    note('step 110c — "Creating…" heard on the sheet\'s button while it wrote and opened the canvas', String((await p110.evaluate(() => window.__made110?.creating ?? null).catch(() => null)) ?? 'the page had moved on before it could be read'))
+    const madeC110 = await p110.evaluate(() => window.__made110 ?? null).catch(() => null)
+    note('step 110c — "Creating…" heard on the sheet\'s button while it wrote and opened the canvas', String(madeC110?.creating ?? 'the page had moved on before it could be read'))
+    check('step 110c — Name never read as refused while the new canvas opened: the name just made is not "taken" under the field — the observer\'s control: it heard "Signup" refused first (the Review, 2026-10-17)',
+      typeof heardC110 === 'string' && heardC110.length > 0 && namingC110.refused === null && madeC110 !== null && madeC110.refused === null, JSON.stringify({ heardC110, madeC110 }))
 
     // 110d — the switcher: the heading, then the row — glyph, name, "Custom template", Empty — highlighted, and the trigger's name
     await openMenu110(p110)

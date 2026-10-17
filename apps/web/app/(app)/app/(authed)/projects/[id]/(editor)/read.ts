@@ -10,7 +10,7 @@ import { ownPacksOf, packChoices, packIdOf, pairingChoices, pairingGlyphFacesCss
 import { canvasRouteOn } from '@/routing'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
-import { canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOf as fileOfCanvas, fileOfKey, isRouteCanvas, isUuid, routeCanvasOf, templateKeyOf, type Canvas, type RouteCanvas, type RouteTemplate } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOf as fileOfCanvas, fileOfKey, isRouteKey, isUuid, routeCanvasOf, templateKeyOf, type Canvas, type RouteCanvas, type RouteTemplate } from '@/lib/editor'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { storedCards } from '@/lib/cards'
@@ -340,8 +340,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // STORY 7.16b — AN ORPHAN DOC IS NEVER A CANVAS: a `custom:` doc of a Routes Manager file whose template row is gone
     // (`ponytail:` routine call 11 — a save landing between a delete's doc and row steps can re-store it). Skipped before it
     // is parsed or judged, so it is never drawn, counted or synthesized over; the sync never writes one either
-    const owner = canvasOfTemplateKey(key)
-    if (owner !== null && isRouteCanvas(owner) && !current.has(key)) continue
+    if (isRouteKey(key) && !current.has(key)) continue
     const doc = parseDoc(row.doc, key)
     // DW-235 (Story 5.24e): the placement rules — a paywall's one design, no treatment on a canvas, a design the library
     // holds, a file it compiles to — are `docRefusal`'s, which the sync route asks before it writes. A doc it refuses is

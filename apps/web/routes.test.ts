@@ -115,15 +115,32 @@ test('Story 7.16b: every in-between state is valid — the delete runs config, d
   const [config, doc, row] = [del.indexOf('writeConfig('), del.indexOf(".from('project_templates').delete()"), del.indexOf(".from('custom_templates').delete()")]
   assert.ok(config > 0 && doc > config && row > doc, `the delete's order: config ${config}, doc ${doc}, row ${row}`)
   assert.ok(!/ctx\.designed/.test(del), 'no refusal of a designed template')
-  assert.match(del, /return \{ ok: true, \.\.\.\(held\.data \? \{ doc \} : \{\}\) \}/, 'the doc it took is handed back for the Undo')
-  // a failed row delete puts the doc back: the template stands as it was, unrouted, never without its design and no Undo
+  assert.match(del, /return \{ ok: true, \.\.\.\(held \? \{ doc \} : \{\}\) \}/, 'the doc it took is handed back for the Undo')
+  // the doc handed back is the one the delete itself took — never a read made before it (review, 2026-10-17)
+  assert.match(del, /\.from\('project_templates'\)\.delete\(\)\.eq\('project_id', id\)\.eq\('template_key', key\)\.select\('doc'\)/)
+  assert.ok(!del.includes(".from('project_templates').select("), 'no read of the doc before its delete')
+  // a failed row delete puts the doc back: the template stands as it was, never without its design and no Undo
   assert.ok(del.indexOf(".from('project_templates').upsert(", row) > row, 'the doc goes back when the row delete fails')
+  // …and a failed doc or row delete puts the routes back, so a failed delete leaves the template as it was (review, 2026-10-17)
+  assert.match(del, /if \(routed && \(await writeConfig\(sb, id, user\.id, config, known\)\) !== null\)/)
+  assert.match(del, /if \(dropped\.error\) return failed\(/)
+  assert.match(del, /return failed\('template delete failed', error\?\.code\)/)
   const undo = body('restoreTemplate')
   const [rowBack, docBack, configBack] = [undo.indexOf(".from('custom_templates')\n      .insert("), undo.indexOf(".from('project_templates').upsert("), undo.indexOf('writeConfig(')]
   assert.ok(rowBack > 0 && docBack > rowBack && configBack > docBack, `the Undo's order: row ${rowBack}, doc ${docBack}, config ${configBack}`)
   // the doc comes back from the CLIENT, so it is judged before anything is written (AD-36)
   const judged = undo.indexOf('docSchema.safeParse(sent)')
   assert.ok(judged > 0 && judged < rowBack && undo.indexOf('docRefusal(key, parsed.data)') < rowBack, 'judged by docSchema and docRefusal first')
+})
+
+test('Story 7.16b (review): a new template clears what an earlier one of its name left — its doc and its prefs — before its row is written', () => {
+  const at = ACTIONS.indexOf('async function insertTemplate(')
+  const fn = ACTIONS.slice(at, ACTIONS.indexOf('\n}\n', at))
+  const [doc, prefs, row] = [fn.indexOf(".from('project_templates').delete()"), fn.indexOf(".from('project_template_prefs').delete()"), fn.indexOf(".from('custom_templates')")]
+  assert.ok(doc > 0 && prefs > 0 && row > doc && row > prefs, `clear ${doc}/${prefs}, then the row ${row}`)
+  // both by the new file's own key, and a clear that fails writes no row
+  assert.match(fn, /const key = `custom:\$\{named\.file\}`/)
+  assert.ok(fn.indexOf('if (unclear)') > prefs && fn.indexOf('if (unclear)') < row, 'a failed clear refuses before the row')
 })
 
 test('Story 7.16b: the Undo\'s doc is judged as the sync route judges one — a doc a Routes Manager canvas can hold passes, and nothing else', () => {
@@ -147,4 +164,8 @@ test('Story 7.16b: ?new=template opens the New template sheet, and Create from i
   assert.match(manager, /useState<Sheet \| null>\(props\.fromMenu === true \? \{ kind: 'template', entry: true \} : null\)/)
   assert.match(manager, /if \(open\.kind === 'template'\) document\.getElementById\('routes-new-template'\)\?\.focus\(\)/, 'focus lands in Name')
   assert.match(body('createTemplate'), /return \{ ok: true, file: made\.file \}/)
+  // review, 2026-10-17: the query is spent when its sheet closes, and Create REPLACES this entry with the new canvas — so a
+  // reload or Back never opens the sheet again
+  assert.match(manager, /if \(props\.fromMenu === true && new URL\(window\.location\.href\)\.searchParams\.has\('new'\)\) window\.history\.replaceState\(null, '', window\.location\.pathname\)/)
+  assert.match(manager, /const openCanvas = \(canvas: RouteCanvas\) => startOpening\(\(\) => router\.replace\(/)
 })

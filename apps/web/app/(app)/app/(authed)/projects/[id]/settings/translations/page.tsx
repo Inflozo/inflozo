@@ -4,6 +4,7 @@ import { CATALOG, translatableKeys } from '@inflozo/library'
 import { LANGUAGES, SCRIPT_NAMES, type Script } from '@inflozo/library/languages'
 import { untouchedWords } from '@inflozo/section-runtime'
 import { coverageOf } from '@inflozo/section-runtime/fonts'
+import { namesOf } from '@/lib/editor'
 import { adminAt } from '@/lib/paywall'
 import { liveHolder } from '@/lib/theme-settings'
 import { ownName, untouchedRows, type Coverage } from '@/lib/translations'
@@ -59,7 +60,7 @@ export default async function TranslationsPage({ params }: { params: Promise<{ i
       coverage={coverage}
       siteLocale={typeof locale === 'string' ? locale : null}
       admin={url === null ? null : adminAt(url, 'publication-language')}
-      untouched={untouchedRows(id, untouchedWords(data.docs, (designId) => data.entries[designId]))}
+      untouched={untouchedRows(id, untouchedWords(data.docs, (designId) => data.entries[designId]), namesOf(data.templates))}
       holder={liveHolder(data.lock)}
     />
   )

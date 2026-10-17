@@ -110,6 +110,19 @@ async function insertTemplate(sb: Supabase, id: string, userId: string, display:
   if (typeof display !== 'string') return { error: ROUTE_WORDS.nameEmpty }
   const named = templateName(display, { project: ctx.templates.map((t) => t.file), deployed: ctx.deployed })
   if ('error' in named) return named
+  // Story 7.16b's review: a name not in use here has no canvas yet, so whatever an earlier template of that name left is
+  // cleared first — a doc the delete's race re-stored (routine call 11), its preview subject and looked-at record — and the
+  // new template opens empty, never wearing the old one's sections
+  const key = `custom:${named.file}`
+  const cleared = await Promise.all([
+    sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key),
+    sb.from('project_template_prefs').delete().eq('project_id', id).eq('template_key', key),
+  ])
+  const unclear = cleared.find((c) => c.error !== null)?.error
+  if (unclear) {
+    console.error('projects/routes: an earlier template\'s leftovers could not be cleared', { code: unclear.code })
+    return { error: ROUTES_WORDS.couldNot }
+  }
   const { data, error } = await sb
     .from('custom_templates')
     .insert({ project_id: id, user_id: userId, display_name: display.trim(), filename: named.file, kind: 'routes' })
@@ -175,9 +188,11 @@ export async function createTemplate(_previous: RoutesResult | null, formData: F
 /**
  * A TEMPLATE'S DELETE (FR-I3; the designed half since Story 7.16b): the config WITHOUT every route naming it is written
  * first, then its canvas's doc (`custom:<file>`) is deleted, then the row — so every state between is valid: an unrouted
- * template with its design, then one without. The doc is answered back, so the toast's Undo restores it exactly. A failed
- * doc delete leaves the template unrouted and designed; a failed row delete puts the doc back, so the template stands as it
- * was, unrouted — never a template whose design was lost with no Undo to bring it back.
+ * template with its design, then one without. The doc is the one the delete itself took (`.select('doc')`), so a save that
+ * landed just before it is what Undo restores, and it is answered back for the toast's Undo. A later step that fails puts
+ * back what the earlier ones took — the doc, then the routes — so a failed delete leaves the template as it was (review,
+ * 2026-10-17). `ponytail:` a put-back that itself fails is logged and leaves the template unrouted or undesigned; one
+ * transaction across these writes is a database function, which is a migration.
  */
 export async function deleteTemplate(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {
   const id = idOf(formData)
@@ -189,39 +204,37 @@ export async function deleteTemplate(_previous: RoutesResult | null, formData: F
   const template = ctx?.templates.find((t) => t.id === templateId)
   if (!ctx || !template) return couldNot()
   const key = `custom:${template.file}`
-  const [config, held] = await Promise.all([storedConfig(sb, id), sb.from('project_templates').select('doc').eq('project_id', id).eq('template_key', key).maybeSingle()])
+  const config = await storedConfig(sb, id)
   if (!config) return couldNot()
-  if (held.error) {
-    console.error('projects/routes: the template\'s doc could not be read', { code: held.error.code })
-    return couldNot()
-  }
+  const known = ctx.templates.map((t) => t.file)
   const next = withoutTemplate(config, template.file)
-  if (next.collections.length !== config.collections.length || next.routes.length !== config.routes.length) {
-    const refused = await writeConfig(sb, id, user.id, next, ctx.templates.map((t) => t.file).filter((f) => f !== template.file))
+  const routed = next.collections.length !== config.collections.length || next.routes.length !== config.routes.length
+  if (routed) {
+    const refused = await writeConfig(sb, id, user.id, next, known.filter((f) => f !== template.file))
     if (refused !== null) return { error: refused }
   }
-  const doc: unknown = held.data?.doc
-  if (held.data) {
-    const dropped = await sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key).select('template_key')
-    if (dropped.error || !dropped.data || dropped.data.length === 0) {
-      console.error('projects/routes: the template\'s doc delete failed', { code: dropped.error?.code })
-      revalidate(id)
-      return couldNot()
-    }
-  }
-  const { data, error } = await sb.from('custom_templates').delete().eq('id', templateId).eq('project_id', id).select('id')
-  if (error || !data || data.length === 0) {
-    console.error('projects/routes: template delete failed', { code: error?.code })
-    // the doc goes back: a template that stays keeps its design
-    if (held.data) {
-      const back = await sb.from('project_templates').upsert({ project_id: id, user_id: user.id, template_key: key, doc }, { onConflict: 'project_id,template_key' })
-      if (back.error) console.error('projects/routes: the template\'s doc could not be put back', { code: back.error.code })
-    }
+  /** a later step failed: the routes this delete took go back — the template is still there to name — and it says so */
+  const failed = async (what: string, code: string | undefined): Promise<RoutesResult> => {
+    console.error(`projects/routes: ${what}`, { code })
+    if (routed && (await writeConfig(sb, id, user.id, config, known)) !== null) console.error('projects/routes: the template\'s routes could not be put back')
     revalidate(id)
     return couldNot()
   }
+  const dropped = await sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key).select('doc')
+  if (dropped.error) return failed('the template\'s doc delete failed', dropped.error.code)
+  const held = (dropped.data ?? []).length > 0
+  const doc: unknown = dropped.data?.[0]?.doc
+  const { data, error } = await sb.from('custom_templates').delete().eq('id', templateId).eq('project_id', id).select('id')
+  if (error || !data || data.length === 0) {
+    // the doc goes back first: a template that stays keeps its design
+    if (held) {
+      const back = await sb.from('project_templates').upsert({ project_id: id, user_id: user.id, template_key: key, doc }, { onConflict: 'project_id,template_key' })
+      if (back.error) console.error('projects/routes: the template\'s doc could not be put back', { code: back.error.code })
+    }
+    return failed('template delete failed', error?.code)
+  }
   revalidate(id)
-  return { ok: true, ...(held.data ? { doc } : {}) }
+  return { ok: true, ...(held ? { doc } : {}) }
 }
 
 /**

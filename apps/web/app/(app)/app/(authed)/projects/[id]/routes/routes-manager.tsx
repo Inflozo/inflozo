@@ -266,7 +266,12 @@ export function RoutesManager(props: Props) {
           deployed={deployed}
           postsPerPage={postsPerPage}
           suggestions={suggestions}
-          onClose={() => setOpen(null)}
+          onClose={() => {
+            setOpen(null)
+            // Story 7.16b's review — the Template menu's `?new=template` is spent once its sheet closes, so a reload or Back
+            // never opens it again; `replaceState`, as `email-card.tsx` drops its key: nothing navigates
+            if (props.fromMenu === true && new URL(window.location.href).searchParams.has('new')) window.history.replaceState(null, '', window.location.pathname)
+          }}
           onSaved={() => {
             setOpen(null)
             setUndo(null)
@@ -772,7 +777,8 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
   /** Story 7.16b — the new canvas opening after the Template menu's Create: the button keeps saying "Creating…" while the
    *  push runs (R-98), and the editor's own skeleton follows */
   const [pending, startOpening] = useTransition()
-  const openCanvas = (canvas: RouteCanvas) => startOpening(() => router.push(`${prefix}${canvasPath(projectId, canvas)}`))
+  // `replace`, so Back from the new canvas returns to where the menu was pressed, never to this sheet again (review, 2026-10-17)
+  const openCanvas = (canvas: RouteCanvas) => startOpening(() => router.replace(`${prefix}${canvasPath(projectId, canvas)}`))
   useEffect(() => {
     const el = dialog.current
     if (!el || el.open) return

@@ -2,7 +2,7 @@
 title: 'Story 7.16b — Custom templates on the canvas'
 type: 'feature'
 created: '2026-10-17'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '9f121a9ba53c155baa9b310ddcfc3a8d6b689c04'
 owner_test: pending
 review_loop_iteration: 0
@@ -313,6 +313,113 @@ D5f's "This template stops shipping" is also said of a template that a route kee
 - Given a designed template deleted and then undone, when the rows are read, then the template row, the `custom:` doc
   and the config equal what they were before the delete, byte for byte.
 
+### Review Findings
+
+Review, 2026-10-17: five layers — the Blind Hunter, the Edge Case Hunter, the Verification Gap reviewer, the Acceptance
+Auditor, and the Real-infra verifier (read-only: production's schema, grants and policies, T1's restore, the Vercel
+deployment) — and, in the main session, step 110 and the whole walk on production at the Dev head (Verification, "Review
+results"). 1 decision-needed (Question 3), 17 patches (all applied), 1 deferred (DW-363) and one reading added to DW-362,
+19 dismissed with a reason each (below).
+
+- [ ] [Review][Decision] The Template menu names the routes page twice — D5b's heading "FROM THE ROUTES MANAGER" over the
+  templates, and the page itself is "Routes & Templates" (the menu's own "Manage routes" opens it). R-170 asks for one
+  name; changing a frame string is Ask First. Question 3 [apps/web/lib/editor.ts `ROUTES_GROUP.heading`]
+- [x] [Review][Patch] A designed template's delete read its doc, then deleted it in a second call, so a save landing
+  between the two was deleted and Undo restored the older doc. The delete now takes the doc itself (`.delete()…select('doc')`),
+  one call fewer [apps/web/app/(app)/app/(authed)/projects/[id]/routes/actions.ts `deleteTemplate`]
+- [x] [Review][Patch] A failed doc or row delete left the template's routes removed, with "couldn't save" and no Undo —
+  and the comment promised a design was "never" lost. A later step that fails now puts back what the earlier ones took:
+  the doc, then the routes, so a failed delete leaves the template as it was. The one state left is a put-back that itself
+  fails, logged and named in a `ponytail:` [actions.ts `deleteTemplate`'s `failed`; routes.test.ts "every in-between
+  state is valid"]
+- [x] [Review][Patch] A template created under a name an earlier one had used could open wearing the old one's sections
+  (a doc routine call 11's race re-stored) and its looked-at record (`project_template_prefs`, which the delete never
+  clears). Creating a template now clears both for its own key before the row is written, and a failed clear writes no
+  row [actions.ts `insertTemplate`; routes.test.ts "a new template clears what an earlier one of its name left"]
+- [x] [Review][Patch] `?new=template` stayed in the address: after Cancel a reload opened the sheet again, and Back from
+  the new canvas landed in the sheet again. The query is now spent when its sheet closes (`replaceState`, as
+  `email-card.tsx` drops its key), and Create replaces that history entry with the canvas, so Back returns to where the menu
+  was pressed [routes-manager.tsx `onClose`, `openCanvas`; routes.test.ts "?new=template…"]
+- [x] [Review][Patch] The sync route read `custom_templates` before the lock boundary, so a failed read's 502 could hide a
+  take-over's 423; and a body carrying nothing but a gone template's doc still called the RPC, moving the revision for no
+  change. The read now follows the lock check, and such a body writes nothing and answers `left` [sync/route.ts;
+  editor.test.ts "the sync route never re-creates…"]
+- [x] [Review][Patch] The editor dropped the work of every key the sync's `left` named, but moved only Routes Manager
+  canvases to `deleted`. `left` is now filtered once to Routes Manager keys, by one helper the read, the sync and the
+  editor share (`isRouteKey`; the test's own copy of it retired) [lib/editor.ts `isRouteKey`; editor.tsx; read.ts]
+- [x] [Review][Patch] *(R-170)* Theme settings' "Which control" rows and Translations' "Starting words you haven't
+  retyped" named a Routes Manager template by its file (`custom-landing.hbs`) while the switcher, the tab and D5f say
+  "Landing" — judgement call 6's `ponytail:`, visible from this story on. Both now take the names from `editorData`
+  (`namesOf`), the file only where none was handed [lib/theme-settings.ts `pageOf`/`placedControls`, lib/translations.ts
+  `untouchedRows`, the two settings pages and the promote action; settings.test.ts, translations.test.ts]
+- [x] [Review][Patch] *(standing rules 3 and 7)* Routine call 2 made the literal brace mean every Routes Manager template,
+  but FR-D13 and three lines of the inventory still gave A30's (and A7's membership placements') `compileTarget` as
+  `custom-{name}.hbs` — Epic 10 would have built membership designs that land on Routes Manager templates and never on
+  Signup. Each now carries a dated note: they name the three membership files [prd.md FR-D13; sections-inventory.md
+  `bindingContext / compileTarget`, A7, A30]
+- [x] [Review][Patch] The context matrix keyed its membership row `custom-{name}.hbs` — the very string a design's
+  `compileTarget` now uses for the opposite, route form. It is `custom-{name}.hbs (entry)`, as appendix B.1 §3 and the
+  membership research name it [packages/library/contexts/matrix.json; contexts.ts `ENTRY_ROW`]
+- [x] [Review][Patch] `docs/section-authoring.md`'s new note sat under the sentence it contradicted ("`custom-{name}.hbs`
+  for a membership or Routes-Manager template"). The passage is rewritten as two kinds of custom target, and says a post
+  field on the route form is refused at render by both emitters (`bindingRefusals`, read in `core.ts`) [docs/section-authoring.md]
+- [x] [Review][Patch] AD-14's reach record counted the paywall's designs on every custom template, so NFR-2's per-template
+  CSS budget would charge a Routes Manager template for a paywall no `{{content}}` can print there (F1). The paywall now
+  joins only templates whose matrix row opens `{{#post}}`. Control: the old rule fails the new assertion
+  [packages/theme-compiler/src/compile.ts `reach`; compile.test.ts "(7.4) the record…"]
+- [x] [Review][Patch] Handing the compiler the brace as a file was refused with a sentence listing the brace as a legal file.
+  It now has its own sentence [compile.ts]
+- [x] [Review][Patch] `LEGAL_TARGETS` was inserted between DW-186's comment and the constant it governs; the comment is
+  back beside its code (standing rule 3) [packages/library/src/validate.ts]
+- [x] [Review][Patch] The notice strip truncates its one line, so a long template name hid "so you're on Home." from
+  sight; the sentence now carries itself as its hover title [components/editor/lock-bar.tsx `TemplateGoneBar`]
+- [x] [Review][Patch] The owner's test step 4 said the Empty row shows "a hollow dot"; Empty is R-130's crossed-out
+  circle (a hollow dot is Auto-generated). The step now says what the screen draws [this spec, Owner's manual test]
+- [x] [Review][Patch] *(the Acceptance Auditor's "Name may read as taken while Creating…")* Walk 110c gains a check that
+  Name never turns refused between Create and the canvas, behind its own control (the observer must first hear "Signup"
+  refused). At the Dev head it PASSED: the flash does not happen on production, so no app change was made for it
+  [tools/probe/run-verify-editor.cjs 110c]
+- [x] [Review][Patch] *(the Review's own `pnpm keyboard` run)* One full run lost 7.13's divider journey: the cards frame
+  was between two documents when `cardsCssOf` read it ("Execution context was destroyed"). It passed alone 3 of 3. The
+  helper now answers null there, so its `expect.poll` reads again; the 7.13 journeys passed 11 of 11 after it
+  [tools/keyboard/journey.spec.mjs `cardsCssOf`]
+- [x] [Review][Defer] The editor's handling of the sync's `left` (the strip, the move Home, the switcher), D5f's routed
+  sentence as the editor composes it, the delete's put-backs and "Creating…" during the push are proved only by the
+  hand-run production walk (110c, 110f, 110h) and by source-text tests: the harness editor has no Routes Manager template,
+  so no CI journey reaches them. DW-363, to Story 7.16c, whose canvases need one in the harness anyway [deferred-work.md]
+- [x] [Review][Defer] The Template menu's New template on a project whose stored routing cannot be read lands on the routes
+  page with no sheet — DW-362's dead end, reached one more way. A reading added to DW-362 (Story 7.18's) [deferred-work.md]
+
+**Dismissed, one line each:**
+- Undo's doc rides a server action (1 MB body limit): a canvas doc is a few KB per section; no design ceiling is near it.
+- `routes/page.tsx`'s own `isDesigned`: it reads the raw stored row, and the runtime's takes a parsed doc.
+- Two key regexes (`ROUTE_SEGMENT`, `CUSTOM_TARGET_RE`): `nameSlug` cannot make a stem outside the database's shape, and
+  Undo re-runs `templateName`.
+- `isCompileTarget` accepting the brace: grepped — only `rootScope` (which maps it to the route row) and the validator's
+  target checks ask it; the compiler refuses it as a file.
+- No validator rule for a post bind on the route target: FR-H7's `bindingRefusals` throws at render in both emitters, and
+  `offeredOn` offers only a design sharing a context.
+- `withoutDoc` and multi-key transactions: each journal entry has one `docKey`; a transaction's other entries stay.
+- The editor's `canvas` object is new each render: every reader depends on `canvas.file` or `canvas.label`, strings.
+- The notice for a never-existing in-shape segment, the effect's dependencies, and the straight apostrophe: routine call 9
+  and the spec's Words.
+- `generateMetadata` throwing on a failed templates read: `editorData` throws on the same cached read, by design.
+- `ROUTED_EMPTY_ASK`'s aliases: the tests and the walk read them (R-170's one list); ", " is the spec's join.
+- Two exports named `labelOf` in two modules: code names, not UI names.
+- `record-theme-assembly.py`'s fixed indent and the immediate 404 read: T1's file is Ghost's default (130 bytes, read
+  back byte for byte) and the read passed at Dev.
+- "New template" live in a read-only editor: it navigates to Routes & Templates, outside the lock (7.16a's routine call
+  15), as "Manage routes" does.
+- The 15px plus (D5b 12px): judgement call 7, the menu's glyph size; recorded in the side-by-side.
+- The design line only for a doc holding a section: FR-I3's "designed content" is AD-22's designed; an empty doc still
+  goes and comes back.
+- No server guard on a designed delete: the confirm reads the page's render, re-read after every write, and Undo restores
+  row, doc and routes.
+- Undo writes the parsed doc: every writer stores the parsed shape; 110g read it back byte-equal on production.
+- 110f plants its route through the service key: judgement call 2; step 109 walks the sheet.
+- An open editor keeps listing a template deleted elsewhere, or hides one restored by Undo, until its next save or a
+  reload: routine call 10's `ponytail:` (no poll).
+
 ## Spec Change Log
 
 ## Design Notes
@@ -459,7 +566,7 @@ Templates. Step 9 tests your ruling on Question 2 (R-250).
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open the Template menu (it says **Home**) and look at the bottom. | — | A line, then **New template** with a plus, then **Manage routes**. No "From the Routes Manager" heading yet. |
 | 2 | same | Template menu | Press **New template**. | — | It reads "Opening…", a grey outline of the page shows, then Routes & Templates with the **New template** window already open. |
 | 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes?new=template` | New template | Type the name. Press **Create template**. | `Landing Test` | Under the name: `custom-landing-test.hbs` and "Ghost will show: Landing Test". After Create, the editor opens on an empty **Landing Test** canvas. The browser tab says Landing Test. |
-| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Template menu | Open the Template menu. | — | Near the bottom: **FROM THE ROUTES MANAGER**, then a row with a template icon, **Landing Test**, the line "Custom template" and a hollow dot (hover: "Empty"). The row is highlighted, because it is open. It looks like D5b. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Template menu | Open the Template menu. | — | Near the bottom: **FROM THE ROUTES MANAGER**, then a row with a template icon, **Landing Test**, the line "Custom template" and a small crossed-out circle at the right (hover: "Empty"). The row is highlighted, because it is open. It looks like D5b. |
 | 5 | same | Canvas | Add a section. Look at what is offered. Add **Newsletter — Inline Row**. Press ⌘S. | — | Offered: Newsletter and Heroes (Latest Post), plus your header and footer. **Not** Post Grids or Post Headers. After saving, the menu's dot for Landing Test is filled. |
 | 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Template menu → **Manage routes**. Press **+ Custom route**, choose "One of your templates" → Landing Test, and press **Create route**. Then press the back arrow, and open Landing Test from the Template menu. Delete the Newsletter section. | `/landing-test/` | A window: "Delete the last section from Landing Test?" — "This template keeps shipping, because /landing-test/ shows it. Visitors there will see only your header and footer until you add a section." Press **Keep it**: the section stays. |
 | 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the **/landing-test/** route (⋯ → Delete). Go back to Landing Test and try to delete the section again. | — | This time the window says "This template stops shipping…", the old warning, because no route shows it now. Press **Keep it**. |
@@ -470,8 +577,8 @@ Templates. Step 9 tests your ruling on Question 2 (R-250).
 
 ## Questions for the owner
 
-Both were ruled option 1 (owner, 2026-10-17), and the spec is written to those rulings. Nothing waits on the owner
-before Dev except the T1 run's in-session go (Ask First).
+Questions 1 and 2 were ruled option 1 (owner, 2026-10-17), and the spec is written to those rulings. Question 3 came
+from the Review and is open; the build keeps the drawing's words until it is ruled, and your test reads either way.
 
 ### Question 1 — Half of this story is only about templates that list posts. May I move that half to its own story?
 
@@ -519,6 +626,24 @@ you're on Home." [Dismiss]
 **Ruled: option 1 (owner, 2026-10-17).** *"Build it from B5a's strip, exactly. No new component, colour or size. You
 compare it at your test (step 9), and the Review records a side-by-side check."* Recorded as **R-250**, R-74's fourth
 stated exception, for this story only.
+
+### Question 3 — The Template menu calls the routes page by two names. May I use one?
+
+**In plain English.** Open the Template menu on a project with a template of your own. Over your templates is a small
+heading copied from the drawing: "FROM THE ROUTES MANAGER". Two rows below it, "Manage routes" opens a page whose title
+is "Routes & Templates". So one page has two names in the same menu. Your rule R-170 asks for one name per thing, even
+where a drawing says otherwise. Changing a word the drawing gives is yours to decide, so I am asking.
+
+**An example.** The bottom of the menu reads:
+FROM THE ROUTES MANAGER · Landing · + New template · Manage routes.
+You press Manage routes and land on "Routes & Templates".
+
+1. **(RECOMMENDED) One name: the heading reads "FROM ROUTES & TEMPLATES".** The page's own title wins, because it is what
+   you see when you get there. One word list changes, and step 4 of your test would show the new heading.
+2. **Keep the drawing's "FROM THE ROUTES MANAGER".** Nothing changes.
+3. **Another wording.** Tell me which.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -617,3 +742,72 @@ toolchain, not this story):**
 
 **Review (R-82):** walk step 110 on production at the deployed head, each run recorded, with Supabase service reads for
 the stored rows. Also re-run step 40 and step 109.
+
+**Review results (2026-10-17), on the real infrastructure — part 1, at the Dev head `ee72796a`, run in the main session
+(keys read inside each process by name, never printed):**
+- CI on `ee72796a` (`GITHUB_TOKEN`, a scratch script): run 39039115314 with `check`, `rls` and `deploy` all success, and
+  the render matrix (39039115312) success. Vercel (`VERCEL_*`): `dpl_7L4RpmFSDdejwYZd24VngCmChWc1` READY at `ee72796a`,
+  the deployment app.inflozo.com serves.
+- **The Real-infra verifier (read-only):**
+  - **R-99, production's schema:** no migration in the diff. Through `SUPABASE_DB_POOLER_URL`, in a read-only
+    transaction, `template_key_shape` on `project_templates` and `project_template_prefs` accepts
+    `custom:custom-probe-template.hbs`, `custom:custom-landing-page.hbs` and `custom:custom-a1-b2.hbs`. **Control:** it
+    refuses `custom:custom--x.hbs`, `custom:custom-Bad_x.hbs`, `custom:x.hbs`, `custom:custom-.hbs` and `custom-x.hbs`.
+    The constraint's own text was evaluated, and no row was written. `ROUTE_SEGMENT` gave the same answer on every vector.
+  - `authenticated` holds select, insert, update and delete on `project_templates`, `custom_templates`, `routes_config`
+    and `project_template_prefs`, and select alone on `deployed_template_names`. **Control:** `anon` holds none. RLS is on,
+    with owner policies on all five.
+  - `sync_project_doc`'s body equals the newest migration's (md5 match).
+  - **T1** (6.58): `/inflozo-probe-template/` answers 404, and `/` answers 200 (the control). The active theme is
+    `casper`, with no `inflozo-probe-*` theme left. `settings/routes/yaml/` is T1's own 130-byte file with no probe line.
+    **Control:** a key that does not exist answers 401. §83's restore holds.
+- **Step 110 on production, a cut of steps 1–5 + 110 from a detached worktree at `ee72796a`** (`node_modules`
+  hard-linked, never committed): **0 FAIL, 60 PASS, first run.** Every row passed:
+  - 110a: the tail with no template, and the picker's control on Home and Post;
+  - 110b: by keyboard, "Opening…" with `aria-busy`, the skeleton before the sheet, focus in Name, and Esc;
+  - 110c: Create opens `custom-walk-landing` empty, titled "Pilot sections · Walk Landing — Inflozo";
+  - 110d: the group, the row and its Empty mark;
+  - 110e: a22/1 and a4/13 offered, a17/1 and a24/1 not, and the doc stored under `custom:custom-walk-landing.hbs`;
+  - 110f: `ROUTED_EMPTY_ASK` naming `/walk-landing/`, with its control `EMPTY_TEMPLATE_ASK`;
+  - 110g: the design line, Cancel writing nothing, Delete taking the row and the doc, and Undo with the row exact and the
+    doc byte-equal;
+  - 110h: two pages, the ⌘S moving Home with the strip (38px, `rgb(239, 236, 231)`) and `#editor-said`, nothing
+    re-stored, the old address doing the same, and Dismiss handing focus to the switcher;
+  - 110i: handed back with zero CSP violations.
+
+  Users 14 → 14, projects 10 → 10.
+- **The whole walk at `ee72796a`:** 1578 PASS and 0 FAIL until it died on a harness hold in step 106's save
+  (`page.waitForResponse` timeout at 14:52:47Z, `posted104` inside `save106`). Two stall notes were each retried once.
+  Step 40's 22 rows, re-expected for the new tail, all passed. Steps after 106 were not reached by that run, so it is not a
+  result for them.
+- **Steps 109 + 110, a second cut at `ee72796a`,** with the Review's new 110c check (the patched walk's 109–110 over the
+  deployed modules): **0 FAIL, 107 PASS.** Step 109 (7.16a) held whole. The new check passed: Name never turned refused
+  between Create and the canvas (`{"creating":true,"refused":null}`). Users and projects were unchanged.
+- **The side-by-side frame check (R-74, R-250).** The walk's `switcher-routes-1440x900` and `template-gone-1440x900`
+  (production) were set beside D5b and B5a, each rendered read-only in Chromium from the export.
+  - **D5b** matches in components, layout, copy and tokens:
+    - the rule (`line`, 5px 4px);
+    - "FROM THE ROUTES MANAGER" at 10/600 in `ink-soft` capitals, 0.04em, padded 2/10/5;
+    - unindented rows of the name over one line;
+    - a second rule;
+    - "New template" with a plus at 600 and no line.
+
+    The differences are the stated ones: R-171's glyph and "Custom template" under the name for the frame's mono file;
+    R-172's coral row in force; the mark R-130's (never the frame's "Auto-generated", routine call 6); the plus at 15px for
+    12px (judgement call 7, the menu's glyph size); the group after Template surfaces (routine call 5); and 7.16a's "Manage
+    routes" last.
+  - **B5a** (R-250) matches: a 38px strip above the canvas, `paper-sunk` (`#EFECE7`, measured `rgb(239, 236, 231)`) on the
+    `line` hairline, 12px side padding and 9px gaps, a 13px glyph where the padlock is, the 12px sentence in
+    `ink-soft-aa`, and the Kit's 32px secondary button at the right. Its size and ink are `LockBar`'s own, so the two
+    strips are one class (`STRIP`). The frame draws its button 26px; the ruled value is the Kit's 32px, as B5a's
+    "Request editing" ships.
+  - **D5f** is the existing dialog. 110f read its routed title, body and mono chip on production.
+- `pnpm check` on the patched tree (Node 24): exit 0. Every package's suite is green and prints its own count. The new
+  rows are `compile.test.ts`' reach assertion (**control:** under the old rule it fails, and it passes again restored),
+  `routes.test.ts`' delete, Undo, creation and `?new` rows, `editor.test.ts`' sync rows, and `settings.test.ts` /
+  `translations.test.ts`' template names.
+- `pnpm build`: exit 0. `node tools/check-traces.mjs`: every route carries its files, the routes page among them.
+- `pnpm keyboard`, whole, on the patched tree: 237 passed and 1 failed, the 7.13 divider journey. That journey died on
+  "Execution context was destroyed" inside `cardsCssOf`. Run alone it passed 3 of 3. With the helper hardened (Review
+  Findings), the 7.13 journeys passed 11 of 11. CI's `check` runs the whole gate on the push.
+- **Part 2** follows at the Review head: steps 109 and 110 on the deployed patches.

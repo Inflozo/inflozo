@@ -177,12 +177,15 @@ as two keys onto one object. What genuinely differs is the **product**, and that
 
 **`compileTarget` is a refusal, not a hint (R-7).** `any` is withdrawn wherever it was a lie. Legal
 targets are `default.hbs · home.hbs · index.hbs · post.hbs · page.hbs · tag.hbs · author.hbs ·
-error.hbs · private.hbs`, plus `custom-{name}.hbs` for a membership or Routes-Manager template.
-*(Story 7.16b, DW-126 —)* written **literally, braces and all**, `custom-{name}.hbs` means **every Routes Manager
-template**, whatever the user names it (R-7's own spelling, `ROUTE_TEMPLATE_TARGET`): such a template is the route form —
-a flat root with no `post`, offered `none` and the gettable resources — so list it only on a design that binds no post
-field (a hero, a newsletter row, a get's rows). A membership page is named by its own file (`custom-signup.hbs` …), never
-by the brace, and keeps the entry form (`{{#post}}`, A30).
+error.hbs · private.hbs`, plus two kinds of custom template *(Story 7.16b, DW-126)*:
+- **`custom-{name}.hbs`, written literally, braces and all**, means **every Routes Manager template**, whatever the user
+  names it (R-7's own spelling, `ROUTE_TEMPLATE_TARGET`). Such a template is the route form — a flat root with no `post`
+  and no `@page`, offered `none` and the gettable resources — so list it only on a design that binds no post field (a
+  hero, a newsletter row, a get's rows); a post field there is refused at render by both emitters (FR-H7's
+  `bindingRefusals`).
+- **A membership page is named by its own file** — `custom-signup.hbs` · `custom-signin.hbs` · `custom-member-home.hbs`
+  — never by the brace, and keeps the entry form (`{{#post}}`, A30). The context matrix calls that row
+  `custom-{name}.hbs (entry)`.
 Two restrictions are enforced at validation, not left to render:
 
 - a design emitting **pagination** is restricted to paginated targets (`home` · `index` · `tag` ·

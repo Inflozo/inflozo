@@ -88,7 +88,8 @@ export function TemplateGoneBar({ words, onDismiss, hidden }: { words: string; o
   return (
     <div id="editor-gone-bar" hidden={hidden} className={STRIP}>
       <CanvasCustom size={13} className="shrink-0 text-ink-soft-aa" />
-      <span className={STRIP_WORDS}>{words}</span>
+      {/* `title`: a long name truncates the strip's one line, and the whole sentence is still there on hover (review, 2026-10-17) */}
+      <span className={STRIP_WORDS} title={words}>{words}</span>
       <Button id="editor-gone-dismiss" variant="secondary" size={32} onClick={onDismiss}>
         {TEMPLATE_GONE.dismiss}
       </Button>

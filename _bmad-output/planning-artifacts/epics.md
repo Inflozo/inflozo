@@ -3976,6 +3976,11 @@ no collection owns (`controllers/collection.js:75-88`), which FR-H3 asks the can
 no `{{#post}}`, so a collection's `posts` and `pagination` sit at that root (Ghost's `rendering/format-response.js:11-64`,
 read at 7.16b's Create); and R-7 lets `custom-{name}.hbs` collection templates take a paginated design.)*
 
+*(Handed by Story 7.16b's Review, 2026-10-17 — **DW-363**, a reading for this story's Create, not a moved criterion: the
+harness editor gains a Routes Manager template, which this story's post lists need anyway, and `pnpm keyboard` gains
+journeys for what only the hand-run walk reaches today — a flush answered with `left` naming the canvas on screen (the
+move to Home, B5a's strip, `#editor-said`) and the last section deleted from a routed template (D5f's routed sentence).)*
+
 **FRs:** FR-H2 (a route's own `limit:`), FR-H3. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c and
 `P0-5 Populate From Panel.dc.html`, as Story 5.19 builds them. · **Owner test:** yes.
 

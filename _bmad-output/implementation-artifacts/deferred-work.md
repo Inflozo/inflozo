@@ -9875,3 +9875,31 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/routes/routes-manager.t
   (`parseRoutesConfig`) · `packages/section-runtime/src/routes.ts` (`validateRoutes`' line 1)
 reason: unreachable through the product today (every write is validated whole before it is stored), and the fix is an
   undrawn control, the owner's to rule.
+reading (Story 7.16b's Review, 2026-10-17, the Edge Case Hunter): the Template menu's **New template** reaches the same
+  page as `?new=template`, and with the stored routing unreadable it opens no sheet (`open !== null && config !== null`) —
+  the same dead end, reached from the editor. The way out 7.18's Create asks for covers it.
+
+## Deferred from: code review of spec-7-16b-custom-templates-on-the-canvas (2026-10-17)
+
+### DW-363: what the editor does with a gone template, and the routed D5f sentence, run in no CI journey
+
+plain: When a template you have open is deleted somewhere else, the editor's next save moves you to Home with the grey
+  strip, and deleting the last section of a template a route shows asks in its "keeps shipping" words. Both work on the
+  real site (checked by hand at Review, every run), but the automatic checks that run on every push never reach them, so a
+  later change could break either without anything going red.
+status: open
+severity: low
+origin: Story 7.16b's Review (2026-10-17), the Verification Gap layer: `editor.tsx`'s handling of the sync's `left` (the
+  journal and docs dropped, `deleted`, the move Home, `TemplateGoneBar` and `#editor-said`), the editor's `routed` list and
+  D5f's paths lookup, `deleteTemplate`'s put-backs when a later write fails, and the sheet's "Creating…" while the new
+  canvas opens are covered only by source-text tests (`editor.test.ts`, `routes.test.ts`, `busy.test.ts`) and by the hand-run
+  production walk (`run-verify-editor.cjs` 110c, 110f, 110h). The harness editor has no Routes Manager template, so no
+  `pnpm keyboard` journey can show one.
+owner: Story 7.16c, whose card carries this entry with its id: its post lists sit on Routes Manager canvases, so its
+  harness gains one anyway. Its Create adds journeys that answer a flush with `left` naming the canvas on screen
+  (`page.route('**/sync')`), and that delete the last section of a routed template.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the flush's `left`, `routed`, `onRemove`) ·
+  `routes/actions.ts` (`deleteTemplate`'s `failed`) · `tools/keyboard/journey.spec.mjs` · the harness editor
+reason: the behaviour holds on production today (step 110, 0 FAIL); what is missing is a CI guard, and the harness change
+  belongs with the story that next builds on these canvases.
+

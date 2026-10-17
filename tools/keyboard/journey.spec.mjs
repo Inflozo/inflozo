@@ -7908,8 +7908,10 @@ const CARDS_WORDS = await import(new URL('../../apps/web/lib/cards.ts', import.m
 const C = CARDS_WORDS.CARD_WORDS
 /** Editor cards' own document — the card document, never the page canvas beside it (hidden, and titled the same) */
 const cardsFrame = (page) => page.frameLocator('iframe[data-cards-frame]')
-/** the canvas's own `cards.css` half, as the editor last wrote it */
-const cardsCssOf = (page) => cardsFrame(page).locator('style[data-order="1c-cards.css"]').evaluate((s) => s.textContent)
+/** the canvas's own `cards.css` half, as the editor last wrote it — null while the frame is between two documents, so an
+ *  `expect.poll` reads again rather than dying on "Execution context was destroyed" (Story 7.16b's Review, 2026-10-17: one
+ *  full run of `pnpm keyboard` lost the divider journey that way, and it passed alone 3 of 3) */
+const cardsCssOf = (page) => cardsFrame(page).locator('style[data-order="1c-cards.css"]').evaluate((s) => s.textContent).catch(() => null)
 
 /** Template ▾, then End — Editor cards is the menu's last row — and Enter: one soft navigation, the editor mounted across
  *  it, and the card document dressed (the selected card ringed). */

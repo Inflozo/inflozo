@@ -949,13 +949,16 @@ test('(7.4) the base: BASE_CSS, the canvas document\'s own, right after the toke
   for (const [id, chunk] of Object.entries(css.sheets)) assert.match(chunk, /^\/\* [^*]+ \*\/\n/, id)
 })
 
-test('(7.4) the record: every root-level template but the shell reaches the site doc\'s designs and its own; post, page and a custom template add the paywall\'s', () => {
-  const templates = { ...project(), 'custom-signup.hbs': docOf(at('a30/1', 'Join')), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
+test('(7.4) the record: every root-level template but the shell reaches the site doc\'s designs and its own; post, page and a membership template add the paywall\'s', () => {
+  const templates = { ...project(), 'custom-signup.hbs': docOf(at('a30/1', 'Join')), 'custom-landing.hbs': docOf(at('a22/1', 'News', { content: NEWS })), [PAYWALL_TARGET]: docOf(at('a32/1', 'Paywall')) }
   const { files, css } = build(templates, { pageTwo: projectTwo() })
   const site = ['a1/1', 'a3/1']
   assert.deepEqual(css.reach['home.hbs'], [...site, 'a4/13', 'a17/1', 'a22/1'])
   assert.deepEqual(css.reach['post.hbs'], [...site, 'a22/1', 'a24/1', 'a32/1'])
   assert.deepEqual(css.reach['custom-signup.hbs'], [...site, 'a30/1', 'a32/1'])
+  // Story 7.16b's review — a Routes Manager template opens no {{#post}}, so no {{content}} prints the paywall there (F1);
+  // custom-signup.hbs above is its control
+  assert.deepEqual(css.reach['custom-landing.hbs'], [...site, 'a22/1'])
   assert.deepEqual(css.reach['index.hbs'], [...site, 'a17/1'])
   assert.deepEqual(Object.keys(css.reach), Object.keys(files).filter((p) => p.endsWith('.hbs') && !p.includes('/') && p !== 'default.hbs'))
 })

@@ -105,6 +105,11 @@ export const captionOf = (canvas: Canvas): string => (isRouteCanvas(canvas) ? CU
  *  it (`pathsUsing` over the stored routing; none when no route names it or the routing does not parse, routine call 12). */
 export type RouteTemplate = { canvas: RouteCanvas; name: string; paths: readonly string[] }
 
+/** …their display names by canvas, as `labelOf` takes them — the editor's rows and tab, and the settings pages' page
+ *  names (review, 2026-10-17: R-170, one name for a template wherever it is named). */
+export const namesOf = (templates: readonly RouteTemplate[] = []): Readonly<Record<string, string>> =>
+  Object.fromEntries(templates.map((t) => [t.canvas, t.name]))
+
 /** The site-wide doc's key in `project_templates`, and the file its sections compile into. */
 export const SITE = { key: 'site', file: 'default.hbs' } as const
 
@@ -150,6 +155,13 @@ export const canvasesOf = (privateSite = false): CanvasKey[] =>
 export const canvasOfTemplateKey = (key: string): Canvas | null =>
   (Object.keys(CANVASES) as CanvasKey[]).find((canvas) => templateKeyOf(canvas) === key) ??
   (key.startsWith('custom:') ? routeCanvasOf(key.slice('custom:'.length)) : null)
+
+/** STORY 7.16b — is this stored key a Routes Manager template's doc (`custom:` + a Routes Manager file)? By shape alone —
+ *  the one test the editor's read, the sync route and the editor's handling of the sync's `left` answer all ask. */
+export const isRouteKey = (key: string): boolean => {
+  const canvas = canvasOfTemplateKey(key)
+  return canvas !== null && isRouteCanvas(canvas)
+}
 
 /** The `project_templates.template_key` a canvas stores under. A membership canvas and a Routes Manager one are custom
  *  templates, so their key names their file; every other canvas's key IS its segment. */

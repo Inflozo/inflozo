@@ -118,11 +118,16 @@ export const coverageWords = (coverage: Coverage | undefined, script: Script, na
 export type UntouchedRow = { id: string; layer: string; canvas: string; words: readonly string[]; href: string }
 
 /** `untouchedWords`' rows for the page, in `pageOf`'s order. */
-export function untouchedRows(projectId: string, rows: readonly { key: string; instanceId: string; layer: string; words: readonly string[] }[]): UntouchedRow[] {
+export function untouchedRows(
+  projectId: string,
+  rows: readonly { key: string; instanceId: string; layer: string; words: readonly string[] }[],
+  /** Story 7.16b — each Routes Manager template's display name by canvas (`namesOf`): R-170, its page named as the switcher does */
+  names: Readonly<Record<string, string>> = {},
+): UntouchedRow[] {
   return [...rows]
     .sort((a, b) => pageOf(a.key).rank - pageOf(b.key).rank)
     .map((r) => {
-      const page = pageOf(r.key).page
+      const page = pageOf(r.key, names).page
       const canvas = r.key === SITE.key ? 'home' : (canvasOfPageTwoKey(r.key) ?? canvasOfTemplateKey(r.key) ?? 'home')
       return { id: `${r.key}:${r.instanceId}`, layer: r.layer, canvas: page === EVERY_PAGE ? TRANSLATION_WORDS.everyPage : page, words: r.words, href: canvasPath(projectId, canvas) }
     })

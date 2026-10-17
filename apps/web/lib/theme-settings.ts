@@ -15,7 +15,7 @@ import {
   accentSettingOf, bindingId, bindingOf, bindingState, ghostName, GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, propSettingOf, SETTING_WORDS,
   settingOf, type Binding, type Derived, type SettingGroup, type SettingRow, type Visibility,
 } from '@inflozo/section-runtime/custom-settings'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOfKey, isRouteCanvas, settingsPath, SITE } from './editor.ts'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOfKey, isRouteCanvas, labelOf, settingsPath, SITE } from './editor.ts'
 import { isStale, type LockRow } from './lock.ts'
 import { adminAt } from './paywall.ts'
 import { imageUrl } from './probe-rule.ts'
@@ -95,12 +95,13 @@ const ORDER = Object.keys(CANVASES)
 /** Where a stored doc's sections appear, in D5b's words, with the Ghost group that page suggests and its place in the
  *  menu: the site doc first (every page), then each canvas in D5b's order with its page 2 straight after it. Home is
  *  Ghost's Homepage and Post its Post; every other page suggests Site wide, the group Ghost shows everywhere. */
-export function pageOf(key: string): { page: string; group: SettingGroup; rank: number } {
+export function pageOf(key: string, names: Readonly<Record<string, string>> = {}): { page: string; group: SettingGroup; rank: number } {
   if (key === SITE.key) return { page: EVERY_PAGE, group: 'site_wide', rank: -1 }
   const paged = canvasOfPageTwoKey(key)
   const canvas = paged ?? canvasOfTemplateKey(key)
-  // ponytail: a Routes Manager template is named by its file here, after every canvas — Theme settings reads no
-  // `custom_templates` (the switcher names it since Story 7.16b); hand this the names if a promote from one is ever asked
+  // Story 7.16b — a Routes Manager template comes after every canvas, by its display name (`names`, `namesOf`: R-170, as
+  // its switcher row and tab say it; review, 2026-10-17), and by its file only where no name was handed
+  if (canvas !== null && isRouteCanvas(canvas) && Object.hasOwn(names, canvas)) return { page: labelOf(canvas, names), group: 'site_wide', rank: ORDER.length }
   if (canvas === null || isRouteCanvas(canvas)) return { page: fileOfKey(key), group: 'site_wide', rank: ORDER.length }
   const { label } = CANVASES[canvas]
   return {
@@ -138,6 +139,8 @@ export function placedControls(
   entries: Readonly<Record<string, SectionRegistryEntry>>,
   skip: ReadonlySet<string> = new Set(),
   pack?: PackInForce,
+  /** Story 7.16b — each Routes Manager template's display name by canvas (`namesOf`), so a row names its page as the switcher does */
+  templateNames: Readonly<Record<string, string>> = {},
 ): Promotable[] {
   const seen = new Set<string>()
   const names = new Map<string, number>()
@@ -160,7 +163,7 @@ export function placedControls(
   }
   for (const [key, doc] of walk) {
     if (skip.has(key)) continue
-    const { page, group } = pageOf(key)
+    const { page, group } = pageOf(key, templateNames)
     for (const i of doc.instances) {
       const entry = entries[i.designId]
       if (i.hidden || entry === undefined) continue

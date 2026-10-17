@@ -514,6 +514,20 @@ A user ships. The project compiles — purely, from what it is handed — into a
       `journal.test.ts`, `routes.test.ts`, `busy.test.ts`; `check-traces` holds the routes page's trace to the designs
       (`docRefusal` reads them). The walk's step 110 and the re-expected steps 40 and 109n (c) are the Review's; §83's local
       half gates both trees 0/0 on both gscans, and its T1 run is the main session's, on the owner's in-session go.
+  - **Story 7.16b's Review (2026-10-17):** step 110 held on production at the Dev head (0 FAIL), and 109 held with it.
+    - **The brace has one meaning.** In a design's `compileTarget`, `custom-{name}.hbs` is every Routes Manager template.
+      A membership design names its three files. FR-D13 and the inventory's A7/A30 lines carry the dated note. The
+      matrix's membership row is keyed `custom-{name}.hbs (entry)`, so no file uses the bare brace for the entry form.
+    - **The compiler's paywall reach.** AD-14's reach adds the paywall only where the matrix row opens `{{#post}}`, so a
+      Routes Manager template is never charged for it (NFR-2's budget).
+    - **Delete and create.** A template's delete takes its doc with the delete itself, and a failed later step puts back
+      the doc, then the routes. A new template clears any leftover `custom:<file>` doc and its `project_template_prefs` row
+      first.
+    - **The sync route.** It asks the lock before reading the templates. A body of only gone keys writes nothing.
+    - **Settings and Translations** name a Routes Manager template by its display name (`namesOf`, R-170).
+    - **DW-363** (CI journeys for `left` and the routed D5f) goes to 7.16c's card.
+    - **Question 3** (the heading "From the Routes Manager" against the page's "Routes & Templates") is open with the
+      owner.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.

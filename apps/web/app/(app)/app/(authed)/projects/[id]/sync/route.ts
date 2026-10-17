@@ -3,7 +3,7 @@ import type { CardDesigns } from '@inflozo/library'
 import { presetOf } from '@inflozo/library/packs'
 import { docSchema } from '@inflozo/section-runtime'
 import { parseStoredCards } from '@/lib/cards'
-import { canvasOfTemplateKey, isRouteCanvas, isUuid } from '@/lib/editor'
+import { isRouteKey, isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
 import { heldElsewhere } from '@/lib/lock'
 import { isCustom } from '@/lib/pack-edit'
@@ -132,25 +132,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const supabase = await supabaseServer()
 
-  // Story 7.16b — the Routes Manager keys, judged against the project's templates read ONCE (RLS: the caller's own rows)
-  const routeKeys = keys.filter((key) => {
-    const canvas = canvasOfTemplateKey(key)
-    return canvas !== null && isRouteCanvas(canvas)
-  })
-  let left: string[] = []
-  if (routeKeys.length > 0) {
-    const { data: rows, error: rowsError } = await supabase.from('custom_templates').select('filename').eq('project_id', projectId).eq('kind', 'routes')
-    // a read that fails writes nothing of these keys rather than risk re-creating a deleted canvas; the editor retries
-    if (rowsError) {
-      console.error('projects/sync: custom_templates read failed', { code: rowsError.code })
-      return no(502, 'The save could not be completed')
-    }
-    const current = new Set((rows ?? []).map((r) => `custom:${r.filename as string}`))
-    left = routeKeys.filter((key) => !current.has(key))
-    for (const key of left) delete parsed[key]
-  }
-  const written = keys.filter((key) => !left.includes(key))
-
   // STORY 5.17 — THE LOCK BOUNDARY, ENFORCED WHERE THE WORK IS WRITTEN (AD-15; `heldElsewhere` in `lib/lock.ts`).
   // A session that has been taken over from believes it holds until its next beat, and its autosave, ⌘S or tab-hide
   // flush would otherwise write the orphaned work the take-over warned "will be lost". 423 is its own answer, not the
@@ -168,6 +149,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { data: lock } = await supabase.from('edit_locks').select('holder_session_id').eq('project_id', projectId).maybeSingle()
     if (heldElsewhere((lock?.holder_session_id as string | undefined) ?? null, session)) return no(423, 'Another session holds this project')
   }
+
+  // Story 7.16b — the Routes Manager keys, judged against the project's templates read ONCE (RLS: the caller's own rows),
+  // after the lock boundary so a session taken over from hears 423 first (review, 2026-10-17)
+  const routeKeys = keys.filter(isRouteKey)
+  let left: string[] = []
+  if (routeKeys.length > 0) {
+    const { data: rows, error: rowsError } = await supabase.from('custom_templates').select('filename').eq('project_id', projectId).eq('kind', 'routes')
+    // a read that fails writes nothing of these keys rather than risk re-creating a deleted canvas; the editor retries
+    if (rowsError) {
+      console.error('projects/sync: custom_templates read failed', { code: rowsError.code })
+      return no(502, 'The save could not be completed')
+    }
+    const current = new Set((rows ?? []).map((r) => `custom:${r.filename as string}`))
+    left = routeKeys.filter((key) => !current.has(key))
+    for (const key of left) delete parsed[key]
+  }
+  const written = keys.filter((key) => !left.includes(key))
+  // …and a body that carried nothing but a gone template's doc writes nothing at all: the RPC would move the revision for
+  // no change. The answer still names what was left, so the editor moves to Home (review, 2026-10-17)
+  if (written.length === 0 && preset === undefined && packs === undefined && parsedCards === undefined) return json(200, { applied: true, revision: base as number, left })
 
   const { data, error } = await supabase.rpc('sync_project_doc', {
     p_project: projectId,

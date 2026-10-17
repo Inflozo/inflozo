@@ -836,7 +836,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   for (const file of Object.keys(input.templates).sort(byCode)) {
     if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
     // `ROUTE_TEMPLATE_TARGET` is a design's word for every Routes Manager template (Story 7.16b), never a file of its own
-    if (!isCompileTarget(file) || file === ROUTE_TEMPLATE_TARGET) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
+    if (file === ROUTE_TEMPLATE_TARGET) throw new Error(`${file}: this compile writes no such template — the brace is a design's word for every Routes Manager template; hand each one in under its own file, custom-<name>.hbs.`)
+    if (!isCompileTarget(file)) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
   }
   for (const file of Object.keys(input.pageTwo ?? {}).sort(byCode)) {
     if (!PAGE_ONES.includes(file)) throw new Error(`pageTwo['${file}']: only a paginated page 1 has a page 2 — page 2 is handed in under ${PAGE_ONES.join(', ')}.`)
@@ -1115,11 +1116,12 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   tree['assets/css/screen.css'] = `${[global, ...designs.map((e) => sheets[e.id] as string)].join('\n\n')}\n`
   tree['assets/css/cards.css'] = cardsSheet
   // AD-14's record: each emitted root-level template but the shell reaches the site doc's designs, its own (both pages)
-  // and, where Ghost's `{{content}}` can print the paywall, the paywall's
+  // and, where Ghost's `{{content}}` can print the paywall — inside the `{{#post}}` its matrix row opens, so never on a
+  // Routes Manager template (Story 7.16b's review: F1, a route's root has no post) — the paywall's
   const idsOf = (files: readonly string[]): string[] => designs.filter((e) => placed.some((p) => p.entry.id === e.id && files.includes(p.file))).map((e) => e.id)
   const reach: Record<string, readonly string[]> = {}
   for (const file of Object.keys(tree).filter((f) => f.endsWith('.hbs') && !f.includes('/') && f !== SITE_DOC).sort(byCode)) {
-    reach[file] = idsOf([SITE_DOC, file, ...(file === 'post.hbs' || file === 'page.hbs' || CUSTOM_TARGET_RE.test(file) ? [PAYWALL_TARGET] : [])])
+    reach[file] = idsOf([SITE_DOC, file, ...(targetContext(file)?.block === 'post' ? [PAYWALL_TARGET] : [])])
   }
 
   tree['package.json'] = pkg   // JSON.stringify escapes every C0 character, so no user-text marker is in it to substitute

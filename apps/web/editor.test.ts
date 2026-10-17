@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, captionOf,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, siteSlot,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, siteSlot,
   lockPath, NEW_TEMPLATE_QUERY, newTemplatePath, PAGE_TWO,
   pageTwoKeyOf, routeCanvasOf, ROUTED_EMPTY_ASK, ROUTES, ROUTES_GROUP, routesPath, SETTINGS, settingsPath, SITE, SYNC, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type CanvasKey,
 } from './lib/editor.ts'
@@ -520,16 +520,17 @@ test('Story 7.16b: the sync route never re-creates a deleted template\'s canvas 
   assert.ok(read > 0 && read < rpc, 'the templates are read before the write')
   // read ONCE, and only when a Routes Manager key is in the body — a membership key is never asked about
   assert.match(route, /if \(routeKeys\.length > 0\) \{/)
-  assert.match(route, /return canvas !== null && isRouteCanvas\(canvas\)/)
+  assert.match(route, /const routeKeys = keys\.filter\(isRouteKey\)/)
+  // after the lock boundary, so a session taken over from hears 423 first (review, 2026-10-17)
+  assert.ok(route.indexOf("return no(423, 'Another session holds this project')") < read, 'the lock is asked first')
+  // a body of nothing but gone keys writes nothing, and still names them (review, 2026-10-17)
+  assert.match(route, /if \(written\.length === 0 && preset === undefined && packs === undefined && parsedCards === undefined\) return json\(200, \{ applied: true, revision: base as number, left \}\)/)
+  assert.ok(route.indexOf('if (written.length === 0 &&') < rpc, 'before the RPC')
   // the left keys leave the RPC's docs, and the answer names them on every path
   assert.ok(route.indexOf('for (const key of left) delete parsed[key]') > read, 'the gone keys are dropped before the write')
   assert.match(route, /p_docs: parsed,/)
   assert.equal((route.match(/revision: answer\.revision, left \}\)/g) ?? []).length, 2, 'both answers name the keys left')
   // THE CONTROL, as data: the keys this route judges are the editor's own Routes Manager keys, and no membership key is one
-  const isRouteKey = (key: string) => {
-    const canvas = canvasOfTemplateKey(key)
-    return canvas !== null && isRouteCanvas(canvas)
-  }
   assert.ok(isRouteKey('custom:custom-landing.hbs'))
   for (const key of ['custom:custom-signup.hbs', 'custom:custom-signin.hbs', 'custom:custom-member-home.hbs', 'home', 'site', 'paywall', 'index']) assert.ok(!isRouteKey(key), key)
 })
@@ -538,7 +539,7 @@ test('Story 7.16b: an orphan doc is never a canvas — `editorData` skips a Rout
   const read = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts'), 'utf8')
   // the current templates are the same read the switcher's rows come from, so a doc is a canvas exactly when its row is
   assert.match(read, /const current = new Set\(templates\.map\(\(t\) => templateKeyOf\(t\.canvas\)\)\)/)
-  const skip = read.indexOf('if (owner !== null && isRouteCanvas(owner) && !current.has(key)) continue')
+  const skip = read.indexOf('if (isRouteKey(key) && !current.has(key)) continue')
   assert.ok(skip > 0 && skip < read.indexOf('const doc = parseDoc(row.doc, key)'), 'the orphan is skipped before it is parsed, judged or drawn')
   // and the canvases are the templates' — never a stored key's
   assert.match(read, /const canvases: Canvas\[\] = \[\.\.\.canvasesOf\(\), \.\.\.templates\.map\(\(t\) => t\.canvas\)\]/)

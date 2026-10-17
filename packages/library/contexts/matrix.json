@@ -180,13 +180,13 @@
       "targets": [
         "post.hbs",
         "page.hbs",
-        "custom-{name}.hbs"
+        "custom-{name}.hbs (entry)"
       ],
       "offered": [
         "page.hbs",
-        "custom-{name}.hbs"
+        "custom-{name}.hbs (entry)"
       ],
-      "note": "set by Ghost only when the entry is a page; a custom template is assigned to posts too, where it is undefined and prints nothing (§3b). It is offered on custom-{name}.hbs for the page-backed case and the always-present guard hides it on a post."
+      "note": "set by Ghost only when the entry is a page; a custom template is assigned to posts too, where it is undefined and prints nothing (§3b). It is offered on custom-{name}.hbs (entry), a membership page, for the page-backed case and the always-present guard hides it on a post."
     },
     "navigation": {
       "kind": "helper"
@@ -248,7 +248,7 @@
       "top": "page-entry",
       "block": "post"
     },
-    "custom-{name}.hbs": {
+    "custom-{name}.hbs (entry)": {
       "top": "entry",
       "block": "post"
     },

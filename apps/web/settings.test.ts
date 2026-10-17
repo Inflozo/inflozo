@@ -137,6 +137,11 @@ test('each stored doc\'s page in D5b\'s words, the Ghost group it suggests, and 
   assert.deepEqual(pageOf('home'), { page: 'Home', group: 'homepage', rank: 0 })
   assert.deepEqual(pageOf('index'), { page: 'Home page 2', group: 'homepage', rank: 0.5 })
   assert.equal(pageOf('post').group, 'post')
+  // Story 7.16b's review (R-170): a Routes Manager template is named as its switcher row names it, after every canvas — and by
+  // its file only where no name was handed (the control)
+  assert.deepEqual(pageOf('custom:custom-landing.hbs', { 'custom-landing': 'Landing' }), { page: 'Landing', group: 'site_wide', rank: pageOf('custom:custom-landing.hbs').rank })
+  assert.equal(pageOf('custom:custom-landing.hbs').page, 'custom-landing.hbs')
+  assert.ok(pageOf('custom:custom-landing.hbs').rank > pageOf('cards').rank, 'after every canvas')
   assert.deepEqual([pageOf('tag-paged').page, pageOf('tag-paged').group], ['Tag page 2', 'site_wide'])
   assert.equal(pageOf('error').page, '404')
   assert.equal(pageOf('custom:custom-signup.hbs').page, 'Signup', 'a membership canvas is a custom template with a name of its own')

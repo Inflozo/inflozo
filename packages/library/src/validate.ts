@@ -543,12 +543,12 @@ function valueGrammar(type: string, values: readonly string[]): string | null {
   }
 }
 
-/** DW-186 (R-124), review 5.24c: the names and labels Member visibility goes by — the editor says "Show to" (R-170), the
- *  doc field is `memberVisibility`, the ledger says "Member visibility" — refused as a control under any of them. */
 /** R-7's legal targets, in one sentence: the standard templates, `ROUTE_TEMPLATE_TARGET` for every Routes Manager template
  *  (Story 7.16b, DW-126), and a custom file by its own name — how a membership page is named (A30). */
 const LEGAL_TARGETS = `${COMPILE_TARGETS.join(' · ')} · ${ROUTE_TEMPLATE_TARGET} (every Routes Manager template) · a custom file by its own name (the membership pages: ${MEMBERSHIP_FILES.join(', ')})`
 
+/** DW-186 (R-124), review 5.24c: the names and labels Member visibility goes by — the editor says "Show to" (R-170), the
+ *  doc field is `memberVisibility`, the ledger says "Member visibility" — refused as a control under any of them. */
 const MEMBER_VISIBILITY_NAMES = new Set(['member-visibility', 'membervisibility', 'show-to', 'shown-to', 'visible-to', 'visibility'])
 const MEMBER_VISIBILITY_LABELS = new Set(['member visibility', 'show to', 'shown to', 'visible to', 'visibility'])
 

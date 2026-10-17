@@ -87,8 +87,9 @@ export function versionAtLeast(version: string | undefined, since: string): bool
   return true
 }
 
-/** The matrix row a custom file reads when it is a membership page: appendix B.1 §3's `custom-{name}` (entry) row. */
-const ENTRY_ROW = 'custom-{name}.hbs'
+/** The matrix row a custom file reads when it is a membership page: appendix B.1 §3's `custom-{name}` (entry) row. Named
+ *  apart from `ROUTE_TEMPLATE_TARGET` (review, 2026-10-17): in a design's `compileTarget` the bare brace means the ROUTE form. */
+const ENTRY_ROW = 'custom-{name}.hbs (entry)'
 /** …and the row every Routes Manager template reads (Story 7.16b, DW-126): §3's `custom-{name}` (route) row, flat. */
 export const ROUTE_ROW = 'custom-{name}.hbs (route)'
 

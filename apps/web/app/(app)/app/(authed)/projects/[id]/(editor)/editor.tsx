@@ -52,7 +52,7 @@ import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection,
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isSiteFooter, isSurface, labelOf, landWithin, ROUTED_EMPTY_ASK, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, labelOf, landWithin, namesOf, ROUTED_EMPTY_ASK, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
 import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey, parseStoredCards } from '@/lib/cards'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
@@ -839,7 +839,7 @@ function EditorShell({
   const src = canvasPath ?? canvasSrc(isApp(pathname))
   const router = useRouter()
   /** STORY 7.16b — each Routes Manager template's display name, by canvas (R-170: the row, the tab and every sentence) */
-  const names = useMemo(() => Object.fromEntries(routeTemplates.map((t) => [t.canvas, t.name])), [routeTemplates])
+  const names = useMemo(() => namesOf(routeTemplates), [routeTemplates])
   /** STORY 7.16b — the Routes Manager canvases the sync route has said are gone (its `left`): a template deleted elsewhere
    *  while this editor was open. They leave the canvases offered at once; a reload's read leaves them out anyway */
   const [deleted, setDeleted] = useState<ReadonlySet<Canvas>>(() => new Set())
@@ -2065,15 +2065,15 @@ function EditorShell({
       landed = true
       // STORY 7.16b — the keys the route LEFT unwritten are templates deleted elsewhere: their work is dropped here (the
       // journal's entries, their docs), and a canvas on screen among them moves to Home with the notice (`deleted`, above)
-      const left = Array.isArray(done.left) ? done.left.filter((k): k is string => typeof k === 'string') : []
+      // (review, 2026-10-17: only a Routes Manager key is ever dropped, whatever the answer names)
+      const left = Array.isArray(done.left) ? done.left.filter((k): k is string => typeof k === 'string' && isRouteKey(k)) : []
       const next = left.reduce(withoutDoc, flushed(latest.current.journal, sentStamp, upTo))
       const kept = left.length === 0 ? latest.current.docs : Object.fromEntries(Object.entries(latest.current.docs).filter(([k]) => !left.includes(k)))
       latest.current = { ...latest.current, journal: next, docs: kept }
       setJournal(next)
       if (left.length > 0) {
         setDocs(kept)
-        const goneNow = left.map(canvasOfTemplateKey).filter((c): c is Canvas => c !== null && isRouteCanvas(c))
-        setDeleted((was) => new Set([...was, ...goneNow]))
+        setDeleted((was) => new Set([...was, ...left.map((k) => canvasOfTemplateKey(k) as Canvas)]))
       }
       stopRetrying()
       attempt.current = 0
