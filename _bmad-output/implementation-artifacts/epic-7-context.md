@@ -529,6 +529,24 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **Question 3, ruled option 1 (owner, 2026-10-17) — R-251:** the group's heading is "FROM ROUTES & TEMPLATES", the
       routes page's own title, for D5b's "FROM THE ROUTES MANAGER". `editor.test.ts` holds `ROUTES_GROUP.heading` to
       `ROUTES_WORDS.title`.
+  - **Story 7.16c's Create (2026-10-18):** ready for Dev, one question open — page 2 of a listed template, planned as
+    option 1 (page 1 only: no Preview page row, no page-2 key, no migration).
+    - **Planned.**
+      - A Routes Manager template is LISTED when a collection or channel names it (`listsOf`). A listed file paginates
+        (`isPaginated`, the matrix's `custom-{name}.hbs (list)` row), so a17/1, now targeting the brace last, is its main
+        feed. Elsewhere it is a secondary `{{#get}}` feed.
+      - The canvas lists what the live address lists: the route's filter, an earlier collection's posts dropped, and the
+        route's `limit:`, else Posts per page. This holds on the sample and on the connected site (`filter=`). Home reads
+        `indexFilter`.
+      - A template created in a collection's or channel's own sheet starts with `synthesize`'s `FEED` row.
+      - The guard adds each feed-less listed file's contexts after `index`, `tag`, `author` (`contextOf`, an AD-36 pair).
+      - The harness gains Routes Manager templates and three journeys (DW-363). T1 is §84; the walk gains step 111.
+    - **Read in source (6.58.0 and 5.130.6):**
+      - A collection's and a channel's context is its path without slashes.
+      - A collection drops the posts it does not own from its window and leaves `pagination` uncorrected. A channel
+        keeps every match.
+      - A route's `limit` lasts one request.
+      - Page 2 renders the same file. A static route serves no page 2.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.
