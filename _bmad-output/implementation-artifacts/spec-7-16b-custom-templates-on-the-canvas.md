@@ -2,9 +2,9 @@
 title: 'Story 7.16b — Custom templates on the canvas'
 type: 'feature'
 created: '2026-10-17'
-status: 'in-review'
+status: 'done'
 baseline_commit: '9f121a9ba53c155baa9b310ddcfc3a8d6b689c04'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---

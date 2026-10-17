@@ -145,7 +145,7 @@ development_status:
   7-14-treatment-selection-from-theme-settings: done
   7-15-share-destinations-one-ordered-site-wide-list: done
   7-16a-the-routes-manager: done
-  7-16b-custom-templates-on-the-canvas: in-progress
+  7-16b-custom-templates-on-the-canvas: done
   7-16c-collection-and-channel-templates-list-their-posts: backlog
   7-17-uploading-routes-yaml-and-the-guided-fallback: backlog
   7-18-the-deploy-wizard: backlog
