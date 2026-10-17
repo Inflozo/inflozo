@@ -843,4 +843,16 @@ the stored rows. Also re-run step 40 and step 109.
       the template read and the no-write answer). It still moved the editor to Home with the strip and stored nothing.
 
     Users 14 → 14, projects 10 → 10, in both runs.
-- The review leaves the story in review: Deploy and the owner's test follow (R-80). Question 3 waits for the owner.
+- The review leaves the story in review: Deploy and the owner's test follow (R-80).
+
+**Review results — part 3, R-251 at `b8ed7bf1`** (Question 3 ruled; the main session):
+- CI on `b8ed7bf1`: run 39049615410, with `check`, `rls` and `deploy` all success, and the render matrix (39049615356)
+  success. Vercel: `dpl_A1DV7NGXUdksimJefBsbNBbn1SzJ` READY at `b8ed7bf1`. `pnpm check` exit 0 before the push.
+- **Step 110 on production** (the same cut, from a worktree at `b8ed7bf1`):
+  - **Run 1:** 110d read the heading as "FROM ROUTES & TEMPLATES" over the one row, and 110a read no heading over no
+    rows. Both rows derive the words from `ROUTES_GROUP`. The Section Picker then never opened: ⌘K offered nothing on Home,
+    Post or the template, so 110a's picker control and 110e FAILed, and a HARNESS ERROR (`locator.click` timeout,
+    16:49:50Z) ended the run. Nothing the picker reads changed since `cac8a7a9`, where it opened in every run.
+  - **Run 2, straight after:** **0 FAIL, 61 PASS**, the heading included.
+
+  Users 14 → 14, projects 10 → 10, in both runs.
