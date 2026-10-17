@@ -526,8 +526,9 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **The sync route.** It asks the lock before reading the templates. A body of only gone keys writes nothing.
     - **Settings and Translations** name a Routes Manager template by its display name (`namesOf`, R-170).
     - **DW-363** (CI journeys for `left` and the routed D5f) goes to 7.16c's card.
-    - **Question 3** (the heading "From the Routes Manager" against the page's "Routes & Templates") is open with the
-      owner.
+    - **Question 3, ruled option 1 (owner, 2026-10-17) — R-251:** the group's heading is "FROM ROUTES & TEMPLATES", the
+      routes page's own title, for D5b's "FROM THE ROUTES MANAGER". `editor.test.ts` holds `ROUTES_GROUP.heading` to
+      `ROUTES_WORDS.title`.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.

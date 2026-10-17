@@ -48,8 +48,8 @@ import { isApp } from '@/routing'
    the scope R-92 now excepts). Its word, "Empty", is a screen reader's since R-171, like "Auto-generated".
 
    THE ROUTES MANAGER'S TAIL (R-128's pair, R-245; built by Story 7.16b, D5b `:161-179`). After Template surfaces: a rule,
-   then — only over rows, because an absent row asks no questions — the `FROM THE ROUTES MANAGER` heading (D5b's 10/600 muted
-   capitals, not a fold) over one row per Routes Manager template (`RouteCanvas`, from `editorData`'s `custom_templates`
+   then — only over rows, because an absent row asks no questions — D5b's group heading (its 10/600 muted capitals, not a
+   fold), which names the routes page by its own title, "FROM ROUTES & TEMPLATES" (R-251, R-170's one name), over one row per Routes Manager template (`RouteCanvas`, from `editorData`'s `custom_templates`
    read, in `templatesOf` order), each R-171's anatomy: `CanvasCustom`, the template's display name, "Custom template" and its
    mark — designed or Empty, never Auto-generated, because a custom template is never synthesized (FR-D6; D5b's "Long read ·
    Auto-generated" is the frame's slip, routine call 6) — and a rule under them; then D5b's "New template" (a plus, the name at

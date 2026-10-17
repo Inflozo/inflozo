@@ -11,8 +11,8 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.m
 
 ## In plain English
 
-After this story, the editor's Template menu lists every template you made on Routes & Templates under **From the
-Routes Manager**, each with its name and the line "Custom template". **New template** in that menu takes you straight to
+After this story, the editor's Template menu lists every template you made on Routes & Templates under **From Routes &
+Templates**, each with its name and the line "Custom template". **New template** in that menu takes you straight to
 naming a new one, then opens it. You design it like any other page, using the sections that work at an address Ghost
 serves on its own, such as a hero or a newsletter row. A post's own title or text is never offered there, because a
 route has no post to give it. The theme Inflozo builds shows those sections at that address. Deleting a template that
@@ -321,9 +321,10 @@ deployment) — and, in the main session, step 110 and the whole walk on product
 results"). 1 decision-needed (Question 3), 17 patches (all applied), 1 deferred (DW-363) and one reading added to DW-362,
 19 dismissed with a reason each (below).
 
-- [ ] [Review][Decision] The Template menu names the routes page twice — D5b's heading "FROM THE ROUTES MANAGER" over the
+- [x] [Review][Decision] The Template menu names the routes page twice — D5b's heading "FROM THE ROUTES MANAGER" over the
   templates, and the page itself is "Routes & Templates" (the menu's own "Manage routes" opens it). R-170 asks for one
-  name; changing a frame string is Ask First. Question 3 [apps/web/lib/editor.ts `ROUTES_GROUP.heading`]
+  name; changing a frame string is Ask First. Question 3, **ruled option 1 (owner, 2026-10-17), R-251**: the heading
+  reads "FROM ROUTES & TEMPLATES", tied to the page's title by `editor.test.ts` [apps/web/lib/editor.ts `ROUTES_GROUP.heading`]
 - [x] [Review][Patch] A designed template's delete read its doc, then deleted it in a second call, so a save landing
   between the two was deleted and Undo restored the older doc. The delete now takes the doc itself (`.delete()…select('doc')`),
   one call fewer [apps/web/app/(app)/app/(authed)/projects/[id]/routes/actions.ts `deleteTemplate`]
@@ -422,6 +423,11 @@ results"). 1 decision-needed (Question 3), 17 patches (all applied), 1 deferred 
 
 ## Spec Change Log
 
+- **2026-10-17, the Review, R-251 (Question 3, owner).** The Template menu's group heading reads "FROM ROUTES & TEMPLATES",
+  the routes page's own title, where D5b draws "FROM THE ROUTES MANAGER". The frozen block's two mentions of
+  `FROM THE ROUTES MANAGER` (Approach; I/O row "Switcher, templates") name that group by its drawn words and stand as
+  written. Its words are R-251's, in Design Notes ("Words", routine call 5).
+
 ## Design Notes
 
 ### Rulings this spec is written to
@@ -457,7 +463,8 @@ Both ruled option 1 (owner, 2026-10-17).
    binds `post`.
 4. **The theme writes a Routes Manager template with no `{{#post}}` and no article** (F1). FR-J5's article stays on
    every template that has an entry.
-5. **The switcher's tail is:** Template surfaces, rule, `FROM THE ROUTES MANAGER` and its rows, rule, New template,
+5. **The switcher's tail is:** Template surfaces, rule, D5b's group heading (`FROM ROUTES & TEMPLATES` since **R-251**) and
+   its rows, rule, New template,
    Manage routes. The heading shows only over rows ("an absent row asks no questions", R-128). D5b draws the group
    after Private; it predates the Template surfaces group, and this keeps every routing row together.
 6. **Rows follow R-171's anatomy.** They show `CanvasCustom`, the display name and "Custom template", in `templatesOf`
@@ -503,7 +510,8 @@ Owners move with the clauses:
 
 All are new unless a frame string is quoted.
 - **The switcher:**
-  - the heading is "FROM THE ROUTES MANAGER" (D5b `:163`);
+  - the heading is "FROM ROUTES & TEMPLATES" — in D5b `:163`'s place, the routes page's own title for D5b's "the Routes
+    Manager" (**R-251**, owner, 2026-10-17: R-170's one name);
   - each row's line is "Custom template" (`CUSTOM_TEMPLATE_CAPTION`);
   - the action row is "New template" (D5b `:178`), and "Opening…" while busy.
 - **`ROUTED_EMPTY_ASK`** (D5f's dialog):
@@ -563,10 +571,10 @@ Templates. Step 9 tests your ruling on Question 2 (R-250).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open the Template menu (it says **Home**) and look at the bottom. | — | A line, then **New template** with a plus, then **Manage routes**. No "From the Routes Manager" heading yet. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open the Template menu (it says **Home**) and look at the bottom. | — | A line, then **New template** with a plus, then **Manage routes**. No "From Routes & Templates" heading yet. |
 | 2 | same | Template menu | Press **New template**. | — | It reads "Opening…", a grey outline of the page shows, then Routes & Templates with the **New template** window already open. |
 | 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes?new=template` | New template | Type the name. Press **Create template**. | `Landing Test` | Under the name: `custom-landing-test.hbs` and "Ghost will show: Landing Test". After Create, the editor opens on an empty **Landing Test** canvas. The browser tab says Landing Test. |
-| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Template menu | Open the Template menu. | — | Near the bottom: **FROM THE ROUTES MANAGER**, then a row with a template icon, **Landing Test**, the line "Custom template" and a small crossed-out circle at the right (hover: "Empty"). The row is highlighted, because it is open. It looks like D5b. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-landing-test` | Template menu | Open the Template menu. | — | Near the bottom: **FROM ROUTES & TEMPLATES** (your Question 3 ruling), then a row with a template icon, **Landing Test**, the line "Custom template" and a small crossed-out circle at the right (hover: "Empty"). The row is highlighted, because it is open. It looks like D5b. |
 | 5 | same | Canvas | Add a section. Look at what is offered. Add **Newsletter — Inline Row**. Press ⌘S. | — | Offered: Newsletter and Heroes (Latest Post), plus your header and footer. **Not** Post Grids or Post Headers. After saving, the menu's dot for Landing Test is filled. |
 | 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Template menu → **Manage routes**. Press **+ Custom route**, choose "One of your templates" → Landing Test, and press **Create route**. Then press the back arrow, and open Landing Test from the Template menu. Delete the Newsletter section. | `/landing-test/` | A window: "Delete the last section from Landing Test?" — "This template keeps shipping, because /landing-test/ shows it. Visitors there will see only your header and footer until you add a section." Press **Keep it**: the section stays. |
 | 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the **/landing-test/** route (⋯ → Delete). Go back to Landing Test and try to delete the section again. | — | This time the window says "This template stops shipping…", the old warning, because no route shows it now. Press **Keep it**. |
@@ -577,8 +585,8 @@ Templates. Step 9 tests your ruling on Question 2 (R-250).
 
 ## Questions for the owner
 
-Questions 1 and 2 were ruled option 1 (owner, 2026-10-17), and the spec is written to those rulings. Question 3 came
-from the Review and is open; the build keeps the drawing's words until it is ruled, and your test reads either way.
+All three were ruled option 1 (owner, 2026-10-17), and the spec is written to those rulings. Question 3 came from the
+Review.
 
 ### Question 1 — Half of this story is only about templates that list posts. May I move that half to its own story?
 
@@ -643,7 +651,11 @@ You press Manage routes and land on "Routes & Templates".
 2. **Keep the drawing's "FROM THE ROUTES MANAGER".** Nothing changes.
 3. **Another wording.** Tell me which.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-17).** *"One name: the heading reads "FROM ROUTES & TEMPLATES". The page's own title
+wins, because it is what you see when you get there. One word list changes, and step 4 of your test would show the new
+heading."* Recorded as **R-251**. `ROUTES_GROUP.heading` is "From Routes & Templates", set in capitals by the menu, and
+`editor.test.ts` holds it to `ROUTES_WORDS.title`, so the two cannot drift apart. Step 4 of the owner's test reads the new
+heading.
 
 ## Verification
 
@@ -787,7 +799,8 @@ the stored rows. Also re-run step 40 and step 109.
   (production) were set beside D5b and B5a, each rendered read-only in Chromium from the export.
   - **D5b** matches in components, layout, copy and tokens:
     - the rule (`line`, 5px 4px);
-    - "FROM THE ROUTES MANAGER" at 10/600 in `ink-soft` capitals, 0.04em, padded 2/10/5;
+    - "FROM THE ROUTES MANAGER" at 10/600 in `ink-soft` capitals, 0.04em, padded 2/10/5 (its words "FROM ROUTES &
+      TEMPLATES" since R-251, after this check);
     - unindented rows of the name over one line;
     - a second rule;
     - "New template" with a plus at 600 and no line.

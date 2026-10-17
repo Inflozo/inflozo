@@ -2374,7 +2374,7 @@ async function main() {
     check('step 40 — R-129\'s three membership canvases sit under a "Membership" heading, indented', d5b.groups.includes('Membership') && memberRows.length === OFFERED.filter(isMembership).length && memberRows.every((r) => r.indent === '31px'), JSON.stringify({ groups: d5b.groups, member: memberRows }))
     // Story 7.16a: the rule and "Manage routes" (S9a's caption). Story 7.16b RE-EXPECTS IT (R-128's pair, R-245): on a project
     // with no Routes Manager template, the rule, then D5b's "New template", then "Manage routes" — and no heading over no rows
-    check('step 40 — R-128 (Story 7.16b): no FROM THE ROUTES MANAGER heading on a project with no template; one rule, then "New template" (a glyph, 600, no line), then "Manage routes" last',
+    check('step 40 — R-128 (Story 7.16b): no FROM ROUTES & TEMPLATES heading (R-251) on a project with no template; one rule, then "New template" (a glyph, 600, no line), then "Manage routes" last',
       !new RegExp(ROUTES_GROUP.heading, 'i').test(d5b.text) && d5b.rules === 1 && d5b.ruleThenNew && d5b.manage === 'Manage routes' &&
       d5b.newTemplate?.name === ROUTES_GROUP.newTemplate && d5b.newTemplate.weight === '600' && d5b.newTemplate.caption === false && d5b.newTemplate.glyph,
       JSON.stringify({ rules: d5b.rules, ruleThenNew: d5b.ruleThenNew, manage: d5b.manage, newTemplate: d5b.newTemplate, text: d5b.text.slice(0, 200) }))
@@ -10421,7 +10421,7 @@ async function main() {
     await painted110(p110, 'home')
     await openMenu110(p110)
     const tailA110 = await tail110(p110)
-    check('step 110a — with no template, the menu ends: a rule, New template, Manage routes — no FROM THE ROUTES MANAGER heading over no rows (R-128)',
+    check('step 110a — with no template, the menu ends: a rule, New template, Manage routes — no FROM ROUTES & TEMPLATES heading (R-251) over no rows (R-128)',
       JSON.stringify(tailA110) === JSON.stringify(['rule', 'new', 'manage']), JSON.stringify(tailA110))
     // the picker's control, before the template exists: a17/1 is offered on Home and a24/1 on Post
     await closeMenu110(p110)

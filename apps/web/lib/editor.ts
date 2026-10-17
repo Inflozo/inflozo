@@ -17,7 +17,8 @@
 //
 // THE ORDER OF `CANVASES` IS D5b'S ROW ORDER, and the switcher draws it straight through: Home · Post · Page · Tag ·
 // Author · the Membership group · 404 · Private, then the Template surfaces group. Story 7.16b adds R-128's pair after them
-// — the `FROM THE ROUTES MANAGER` heading over one row per Routes Manager template (`RouteCanvas`), and "New template".
+// — D5b's group heading, `FROM ROUTES & TEMPLATES` since R-251, over one row per Routes Manager template (`RouteCanvas`),
+// and "New template".
 //
 // STORY 7.16b — THE FOURTH KIND OF CANVAS, AS DATA: a template the user made on Routes & Templates (`custom_templates` of
 // kind `routes`), keyed by its file without `.hbs` (`custom-landing`), stored under `custom:<file>` as a membership canvas
@@ -260,9 +261,11 @@ export const TEMPLATE_GONE = {
 } as const
 
 /** STORY 7.16b — R-128's pair in the Template menu (D5b `:163`, `:178`): the group's heading, set in capitals as the menu's
- *  own heading is, and the row that names a new template on Routes & Templates. */
+ *  own heading is, and the row that names a new template on Routes & Templates. The heading names that page by its own title
+ *  (`ROUTES_WORDS.title`), not D5b's "the Routes Manager" — **R-251** (owner, 2026-10-17), R-170's one name; `editor.test.ts`
+ *  holds the two together. */
 export const ROUTES_GROUP = {
-  heading: 'From the Routes Manager',
+  heading: 'From Routes & Templates',
   newTemplate: 'New template',
 } as const
 

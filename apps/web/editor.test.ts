@@ -11,6 +11,7 @@ import {
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 import { COMPACT, isCompact, isPhone, PHONE } from './lib/floor.ts'
 import { PACK_KEY, PACK_RECORDS_KEY } from './lib/journal.ts'
+import { ROUTES_WORDS } from './lib/routes.ts'
 import { templateKeyOfFile } from '@inflozo/library'
 
 // Story 5.1's URL scheme, held by the module the route, the Shell, the switcher and the harness read it from.
@@ -83,7 +84,10 @@ test('Story 7.16b — fileOf, labelOf and captionOf answer both kinds: CANVASES\
 })
 
 test('Story 7.16b — the menu\'s words and the New template entry\'s address (R-170, routine call 8)', () => {
-  assert.equal(ROUTES_GROUP.heading.toUpperCase(), 'FROM THE ROUTES MANAGER', 'D5b :163, set in capitals')
+  // R-251 (owner, 2026-10-17; R-170's one name): the heading names the routes page by its own title, not D5b's "the Routes
+  // Manager" — the control is the page's title itself, read from its one list
+  assert.equal(ROUTES_GROUP.heading, `From ${ROUTES_WORDS.title}`)
+  assert.equal(ROUTES_GROUP.heading.toUpperCase(), 'FROM ROUTES & TEMPLATES', 'D5b :163\'s place, set in capitals')
   assert.equal(ROUTES_GROUP.newTemplate, 'New template', 'D5b :178')
   assert.equal(newTemplatePath(ID), `${routesPath(ID)}?new=${NEW_TEMPLATE_QUERY.new}`)
   assert.equal(new URL(newTemplatePath(ID), 'https://x').searchParams.get('new'), 'template')

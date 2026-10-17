@@ -3944,8 +3944,8 @@ no collection owns (`controllers/collection.js:75-88`), which FR-H3 asks the can
 7.16c, R-249)*
 
 **FRs:** FR-I3 (the switcher and canvas half), FR-D6 *(FR-H2's route `limit:` moved to Story 7.16c, R-249)*. ·
-**Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5b (the `FROM THE ROUTES MANAGER` group and "+ New
-template", rows as R-171 and R-172 re-specify them) and D5f; the deleted-template notice from `B Missing Surfaces.dc.html`
+**Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5b (the `FROM THE ROUTES MANAGER` group, headed
+"FROM ROUTES & TEMPLATES" by **R-251** (owner, 2026-10-17), and "+ New template", rows as R-171 and R-172 re-specify them) and D5f; the deleted-template notice from `B Missing Surfaces.dc.html`
 B5a's strip (R-250). · **Owner test:** yes.
 
 ### Story 7.16c: Collection and channel templates list their posts

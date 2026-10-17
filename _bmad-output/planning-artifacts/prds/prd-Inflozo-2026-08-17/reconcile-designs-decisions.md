@@ -2657,7 +2657,8 @@ dropped, the grid itself carries on with the next posts, and everything below it
   - ⬜ `apps/web/components/editor/template-switcher.tsx` · ⬜ `tools/probe/run-verify-editor.cjs` — at 5.5's Dev.
   - ⬜ `epics.md` Story 7.16 — at that story, which is where the row and its heading arrive. *(Story 7.16's Create,
     2026-10-16 — R-245: Story 7.16 is split, and both the row and the heading are **Story 7.16b**'s, together as this
-    ruling binds them; Story 7.16a adds only "Manage routes".)*
+    ruling binds them; Story 7.16a adds only "Manage routes".)* *(Story 7.16b's Review, 2026-10-17 — **R-251**: the
+    heading reads "FROM ROUTES & TEMPLATES", the routes page's own title.)*
 - **Deliberately not touched:** R-118, which is unchanged and now covers two surfaces; the export (R-74), whose D5b
   keeps the row it draws — this file is the record of the divergence; FR-I3, which says what the row does when it
   exists and is silent on when it appears.
@@ -3632,6 +3633,8 @@ confusion."*
   ✅ `sections-inventory.md`'s A32 row · ✅ `epics.md` (FR-D16's summary and Story 5.14's criteria) ·
   ✅ `EXPERIENCE.md` (the IA row and S4d's) · ✅ `epic-5-context.md` · ✅ the deployed walk (steps 37 and 90) and the
   keyboard journey — Story 5.14's Dev (2026-09-21). ⬜ `B9` and `S4a`, on the next library pass.
+- *(Story 7.16b's Review, 2026-10-17 — **R-251** applies this rule to a page: the Template menu heads the user's own
+  templates "FROM ROUTES & TEMPLATES", the routes page's own title, for D5b's "FROM THE ROUTES MANAGER".)*
 
 **R-171 — the top bar's two menus, Template and View as, share one look.** The owner, on Story 5.14's deployed build
 (`6f2944ef`, 2026-09-21):
@@ -5464,7 +5467,26 @@ Claude Design pass: R-74's fourth stated exception.** Story 7.16b's Create, Ques
   drawn (D5f, the routes page's delete window). R-74 stands for every other surface.
 - **Declined.** A Claude Design pass first; a notice for screen readers only.
 - Targets: ✅ this entry · ✅ R-74's entry · ✅ Story 7.16b's spec · ✅ `epics.md` Story 7.16b's card · ⬜ the
-  side-by-side check (7.16b's Review).
+  side-by-side check (7.16b's Review). *(✅ recorded at Story 7.16b's Review, 2026-10-17.)*
+
+**R-251 — the Template menu's group of the user's own templates is headed "FROM ROUTES & TEMPLATES", the routes page's own
+title.** Story 7.16b's Review, Question 3, ruled **option 1** (owner, 2026-10-17): *"One name: the heading reads "FROM
+ROUTES & TEMPLATES". The page's own title wins, because it is what you see when you get there. One word list changes,
+and step 4 of your test would show the new heading."*
+
+- **Why it was a question.** D5b (`D5 Canvas Markers and Template Switcher.dc.html:163`) heads the group "FROM THE ROUTES
+  MANAGER", while the page those templates are made on is titled "Routes & Templates" (S9a, 7.16a's `ROUTES_WORDS.title`)
+  and the same menu's "Manage routes" opens it. R-170 asks for one name per thing, even where a frame says otherwise, and
+  changing a frame string is the owner's (R-74).
+- **The rule.** `ROUTES_GROUP.heading` (`apps/web/lib/editor.ts`) reads "From Routes & Templates", set in capitals by the
+  menu, and `editor.test.ts` holds it to `ROUTES_WORDS.title`, so the two cannot drift apart. The heading's place, size
+  and tokens stay D5b's. "Routes Manager" remains the FR-I feature's name in the planning documents, which no screen
+  shows.
+- **Declined.** D5b's "FROM THE ROUTES MANAGER"; another wording.
+- Targets: ✅ this entry · ✅ R-128's and R-170's entries (dated notes) · ✅ Story 7.16b's spec (Question 3, Words,
+  routine call 5, the owner's test, the Spec Change Log) · ✅ `apps/web/lib/editor.ts`, `template-switcher.tsx`'s comment,
+  `editor.test.ts` · ✅ the deployed walk's step 40 and 110a titles (110d derives the heading) · ✅ `epics.md` Story
+  7.16b's card · ✅ `epic-7-context.md`.
 
 ## B · Approved decisions superseded by this session
 
