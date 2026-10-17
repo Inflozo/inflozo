@@ -2,9 +2,9 @@
 title: 'Story 7.13 — The Ghost card design module and cards.css'
 type: 'feature'
 created: '2026-10-15'
-status: 'in-review'
+status: 'done'
 baseline_commit: '308898a3592c553f8192ac99cdd6f3ef1c32ee47'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
