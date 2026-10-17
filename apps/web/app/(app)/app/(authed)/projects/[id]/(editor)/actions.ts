@@ -1,7 +1,7 @@
 'use server'
 
 import { orbitWeekly } from '@inflozo/library'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, isUuid } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfTemplateKey, fileOf, isUuid } from '@/lib/editor'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
 import type { Members, Surfaces } from '@/lib/probe-rule'
 import { VISITORS, readViewed } from '@/lib/view-as'
@@ -50,7 +50,7 @@ export async function setPreviewSubject(projectId: string, templateKey: string, 
   if (!isUuid(projectId)) return { error: SAVE_REFUSED }
   const canvas = canvasOfTemplateKey(templateKey)
   if (canvas === null || typeof subject?.slug !== 'string' || subject.slug === '' || subject.slug.length > SLUG_MAX) return { error: SAVE_REFUSED }
-  if (orbitWeekly.subjectKindOf(CANVASES[canvas].file) !== subject.kind) return { error: SAVE_REFUSED }
+  if (orbitWeekly.subjectKindOf(fileOf(canvas)) !== subject.kind) return { error: SAVE_REFUSED }
   // Story 5.18 — the one mark a subject may carry: chosen over the connected site. Anything else is refused, never kept
   if (subject.source !== undefined && subject.source !== 'site') return { error: SAVE_REFUSED }
 

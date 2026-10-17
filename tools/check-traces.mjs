@@ -75,6 +75,9 @@ const ROUTES = [
   // DW-235 (Story 5.24e): the sync route asks `docRefusal` before every write, which reads each design off disk — a trace
   // without them would refuse every save
   ['the sync route', 'projects/[id]/sync/route.js.nft.json', designs],
+  // Story 7.16b: a template delete's Undo judges the doc it puts back with `docRefusal`, which reads each design off disk —
+  // the routes page's actions run in its own function, so a trace without them would refuse every designed Undo
+  ['the routes page', 'projects/[id]/routes/page.js.nft.json', designs],
   ['/controls', 'controls/page.js.nft.json', [...designs, ...controls]],
   ['/controls/frame', 'controls/frame/route.js.nft.json', [...designs, ...controls]],
   ['/style-guide', 'style-guide/page.js.nft.json', styleGuide],

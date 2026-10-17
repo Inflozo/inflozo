@@ -6,7 +6,7 @@
 // `design.json` field list and FR-G3's entry list are therefore DIFFERENT SETS, and reading one
 // as the other is the mistake this module removes.
 
-import type { BindingContext, ControlGroup, ControlType, DarkCapability, PropType, SidebarGroup } from './vocabulary.ts'
+import type { BindingContext, ControlGroup, ControlType, DarkCapability, PropType, SidebarGroup, Surface } from './vocabulary.ts'
 import { MODULES, parseModuleDeclaration } from './modules.ts'
 import { scanTags } from './validate.ts' // validate.ts imports only TYPES from here, so this edge is not a runtime cycle
 
@@ -55,17 +55,6 @@ export type Link = {
   newTab?: boolean
   rel?: readonly string[]
 }
-
-/** A30's three membership surfaces, by the canvas each is (R-129: `custom-signup.hbs` · `custom-signin.hbs` ·
- *  `custom-member-home.hbs`). Story 5.11 — FR-D13's partition rule names a surface and the library had no field to
- *  partition on: `bindingContext` and `compileTarget` cannot tell a signup page from a member home, because both
- *  compile to a custom route and bind nothing. So a design that is built for ONE of them says so, and the ring,
- *  Shuffle and Remix never cross between two (`samePartition`). NOTHING DECLARES IT TODAY — A30's designs are
- *  Epic 10's — so the field is inert until they land, which is exactly what makes it safe to add here now. */
-export type Surface = 'signup' | 'signin' | 'member-home'
-/** The same three as data, for the validator's `bad-surface` rule — derived from nowhere else, so the type and the
- *  check cannot drift. */
-export const SURFACES: readonly Surface[] = ['signup', 'signin', 'member-home']
 
 /** One path node of a vendored icon drawing — Tabler's own `[tag, attributes]` shape. */
 export type IconNode = readonly [string, Readonly<Record<string, string>>]

@@ -2,7 +2,8 @@
 title: 'Story 7.16b — Custom templates on the canvas'
 type: 'feature'
 created: '2026-10-17'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '9f121a9ba53c155baa9b310ddcfc3a8d6b689c04'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -226,7 +227,7 @@ D5f's "This template stops shipping" is also said of a template that a route kee
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/library` (`vocabulary.ts`, `placement.ts`, `validate.ts`, `contexts.ts`, `contexts/matrix.json`, the
+- [x] `packages/library` (`vocabulary.ts`, `placement.ts`, `validate.ts`, `contexts.ts`, `contexts/matrix.json`, the
   two `design.json`) and their tests:
   - the target;
   - `MEMBERSHIP_FILES`;
@@ -237,16 +238,16 @@ D5f's "This template stops shipping" is also said of a template that a route kee
   - a17/1 and a24/1 never offered.
 
   Every refusal sits behind a passing control. -- DW-126, the one rule both emitters read.
-- [ ] `packages/theme-compiler` tests and `section-runtime`'s `agreement.test.ts`:
+- [x] `packages/theme-compiler` tests and `section-runtime`'s `agreement.test.ts`:
   - a Routes Manager template compiles flat, with no `{{#post}}` and no article, routed or not;
   - an emptied routed one is `{{!< default}}`;
   - `custom-signup.hbs` is unchanged;
   - the canvas and the theme agree node by node.
 
   -- F1: the entry form would blank the route.
-- [ ] `packages/section-runtime/src/routes.ts` -- import `MEMBERSHIP_FILES`. Finish with a grep for any other copy of
+- [x] `packages/section-runtime/src/routes.ts` -- import `MEMBERSHIP_FILES`. Finish with a grep for any other copy of
   the three names. -- one list (standing rule 3).
-- [ ] `apps/web/lib/editor.ts` + `editor.test.ts`:
+- [x] `apps/web/lib/editor.ts` + `editor.test.ts`:
   - `RouteCanvas` and `Canvas`, with `fileOf` and `labelOf`;
   - `canvasFromSegment` takes the database shape;
   - `templateKeyOf` and `canvasOfTemplateKey` over both kinds;
@@ -254,11 +255,11 @@ D5f's "This template stops shipping" is also said of a template that a route kee
 
   `editor.test.ts:34`'s `custom-x` refusal becomes "a Routes Manager segment, and a 404 outside the shape". -- the fourth kind of
   canvas, as data.
-- [ ] `(editor)/[template]/layout.tsx`, `page.tsx`, `read.ts` -- the shape guard; the title; the templates, the routed
+- [x] `(editor)/[template]/layout.tsx`, `page.tsx`, `read.ts` -- the shape guard; the title; the templates, the routed
   list and each template's paths read in the same `Promise.all`; orphan `custom:` docs skipped. -- load.
-- [ ] `sync/route.ts` -- leave a deleted template's key unwritten, write the rest, and name it in the answer. -- no
+- [x] `sync/route.ts` -- leave a deleted template's key unwritten, write the rest, and name it in the answer. -- no
   resurrection.
-- [ ] `editor.tsx`, `template-switcher.tsx`, `kit/icons.tsx`:
+- [x] `editor.tsx`, `template-switcher.tsx`, `kit/icons.tsx`:
   - the group and New template (Design Notes, "Words");
   - every `CANVASES[key]` read through `fileOf`/`labelOf`;
   - D5f's routed sentence;
@@ -266,14 +267,14 @@ D5f's "This template stops shipping" is also said of a template that a route kee
     gone key's pending work dropped and the sentence also said in `#editor-said`.
 
   -- FR-D6, FR-I3, D5b, D5f.
-- [ ] `routes/{page.tsx,routes-manager.tsx,actions.ts}`, `lib/routes.ts`, `apps/web/routes.test.ts`:
+- [x] `routes/{page.tsx,routes-manager.tsx,actions.ts}`, `lib/routes.ts`, `apps/web/routes.test.ts`:
   - `?new=template` opens the sheet;
   - Create from it pushes the new canvas;
   - a designed template's delete is confirmed and Undo restores the row, the doc and the config;
   - `hasDesign` is retired.
 
   -- FR-I3's warning and Undo.
-- [ ] `tools/probe/record-theme-assembly.py` -- **§83** (main session, the owner's go): a project with a Routes Manager
+- [x] `tools/probe/record-theme-assembly.py` -- **§83** (main session, the owner's go): a project with a Routes Manager
   template holding a22/1, and `routes.yaml` adding the static route `/inflozo-probe-template/` to T1's own file.
   1. Read T1's `routes.yaml` and the active theme, and keep both.
   2. Upload the compiled theme and the file.
@@ -282,9 +283,9 @@ D5f's "This template stops shipping" is also said of a template that a route kee
   5. Restore both, and read `routes.yaml` back byte for byte.
 
   -- standing rule 1 for F1.
-- [ ] `tools/probe/run-verify-editor.cjs` -- step 110 (Design Notes, "Walk"); step 40 re-expected. Then
+- [x] `tools/probe/run-verify-editor.cjs` -- step 110 (Design Notes, "Walk"); step 40 re-expected. Then
   `tools/keyboard/journey.spec.mjs`: re-point every walk past the new tail. -- R-82.
-- [ ] Propagation (standing rules 3 and 7):
+- [x] Propagation (standing rules 3 and 7):
   - **DW-126** closes.
   - **DW-344**'s first half is done; its second half stays open under Story 7.16c (R-249).
   - **`prd.md`**: FR-I3 gets a dated note (the route form; the warning and Undo are built), and FR-J5 gets one (a
@@ -295,7 +296,7 @@ D5f's "This template stops shipping" is also said of a template that a route kee
   - **7.18's card** gets one reading: hand `compileTheme` only membership canvases' and current templates' docs.
   - Finish with a grep for `hasDesign`, "7.16b builds", "absent until Story 7.16b" and `CanvasKey`-only readers of
     `CANVASES[`.
-- [ ] `python3 tools/doc-audit.py --check` twice, then `pnpm check` and `pnpm keyboard`.
+- [x] `python3 tools/doc-audit.py --check` twice, then `pnpm check` and `pnpm keyboard`.
 
 **Acceptance Criteria:**
 - **Matches the frame (R-74).** Given the deployed switcher at 1440, compared with D5b as R-171 and R-172 re-specify it:
@@ -534,6 +535,85 @@ stated exception, for this story only.
 - `python3 tools/doc-audit.py --check` -- PASS, twice.
 - `grep -rn --exclude=.env "hasDesign\|7.16b builds\|absent until Story 7.16b" apps packages tools docs` -- no live
   hit.
+
+**Results (Dev, 2026-10-17, on the final tree; the main session re-ran every gate itself after the implementation
+subagent returned, under Node 24 — on the shell's default Node 22 the web suite's timer tests fail, which is the
+toolchain, not this story):**
+- `pnpm check` -- exit 0. Every package's suite is green and prints its own count, including each 7.16b test named
+  in the table below.
+- `pnpm build` -- exit 0, with `/app/projects/[id]/[template]` and `/app/projects/[id]/routes` in the route table.
+  `node tools/check-traces.mjs` -- "every route carries its files", including the routes page's new row: Undo's
+  `docRefusal` reads the designs off disk.
+- `pnpm keyboard` -- exit 0 on the final tree, every journey passed. The run before it had one failure:
+  "choosing a Layers row scrolls the canvas …", which this story does not touch, settled at 111px where 24 was
+  expected. It passed alone (`-g`), and then the whole gate passed.
+- **T1** `ghost6.inflozo.com` (6.58.0) -- `python3 tools/probe/record-theme-assembly.py`, run in the main session on
+  the owner's in-session go (2026-10-17, "Go", covering the recorder's whole run). Keys were read in-process by name
+  through `record-shim.py`'s `load_env` and never printed. Result: **273 PASS, 0 FAIL**, exit 0, written as
+  `MEASUREMENTS.md` §83. The §83 rows:
+  - **Control:** `/inflozo-probe-template/` answered 404 before any write.
+  - `GET settings/routes/yaml/` gave T1's own file (130 bytes), kept before any write. `POST settings/routes/yaml/`
+    with one line added (`/inflozo-probe-template/: custom-probe-template`, 180 bytes) answered 200.
+  - Under the route tree (`inflozo-probe-route-template`), the address answered 200. It drew A22 #1 with this run's
+    ROUTE word at the route's root, with no `{{` or `}}` on the page (F1: the flat form draws).
+  - **Control:** under the entry-form tree (`inflozo-probe-route-entry`, the same file inside `{{#post}}` and
+    `POST_ARTICLE`), the address answered 200 with the site header drawn. It drew no A22 #1, no ROUTE word and no
+    `<article>`: `{{#post}}` prints nothing at a route's root.
+  - The restore: T1's own `routes.yaml` was uploaded back and read back byte for byte (130 bytes). The active theme
+    read back `casper`. The address answered 404 again.
+  - Every earlier leg (§70 to §81) re-ran and held: each probe theme was restored and deleted, the active theme read
+    back `casper` after each leg, the logo was restored to none and the locale to `en`. The month's probe picture was
+    reused, so no picture was uploaded. The Ghost 5 half is DW-326's (R-238).
+- `python3 tools/doc-audit.py --check` -- PASS, twice.
+- `git grep -n "hasDesign\|7\.16b builds\|absent until Story 7\.16b" -- apps packages tools docs` -- no hit.
+  `git grep "CANVASES\["` in `apps/web` outside the tests finds only `lib/editor.ts`'s own readers (`fileOf`, `labelOf`,
+  `captionOf`, `isMembership`, `isSurface`, each guarded by `isRouteCanvas`), `harness/stand-ins.ts` (the membership
+  keys alone) and `lib/theme-settings.ts:105` (a `CanvasKey`, the subagent's `ponytail:` below). `MEMBERSHIP_FILES` and
+  `SURFACES` are each defined once, in `vocabulary.ts`.
+- **Added in the main session after the subagent returned:**
+  - **The sheet's Create stays busy while the new canvas opens (R-98).** The subagent's version showed "Creating…" as
+    the label but not `aria-busy`/`aria-disabled`, and a second press would re-submit. The Kit's `Submit` now takes an
+    optional `pending`: work the action started that outlives it, such as the push. While it is true, the button stays
+    busy and refuses a click or Enter's implicit one. `busy.test.ts` holds both.
+  - **The orphan-doc row's own test** in `editor.test.ts`: `editorData` skips a gone template's `custom:` doc before
+    it is parsed. The control is that a membership key is kept.
+  - **The recorder's docstring** gained step 18 (§83) and its write list, and says it writes §83.
+- **Not touched at Dev:** Supabase, Vercel, Resend, Dodo. The editor's and routes page's reads and writes reach
+  production Supabase only once deployed, so they are step 110's and the Review's service reads. No migration, so no
+  Schema phase (R-99).
+- **The subagent's judgement calls, for the Review to check:**
+  1. The probe file is `custom-probe-template.hbs`, because the theme's fingerprint scan refuses "inflozo" in partial
+     paths. The route is still `/inflozo-probe-template/`.
+  2. Walk 110f plants its route through the service key, since step 109 already walks the routes page's sheet.
+  3. Step 6 is re-expected: `custom-x` and `custom-nonsense` are in the key shape and now answer 200 (Home with the
+     notice). The 404 list is `custom--x` and `custom-Bad_x`.
+  4. When the row delete fails, `deleteTemplate` puts the doc back, so a design is never lost with no Undo offered.
+  5. The design line shows only for a doc holding a section. An empty doc is still deleted and restored with its
+     template.
+  6. Theme settings' "Which control" list names a Routes Manager page by its file (`ponytail:`).
+  7. The "New template" plus is 15px, like the menu's other glyphs; D5b draws it at 12px.
+
+**Matrix row → check** (`et` = `apps/web/editor.test.ts`, `art` = `apps/web/routes.test.ts`, `bt` = `busy.test.ts`,
+`110x` = the walk at Review):
+
+| Row | Check |
+|---|---|
+| Switcher, no template | et "the menu's words and the New template entry's address"; every keyboard journey re-pointed past the new tail (the harness has no template); 110a and step 40 |
+| Switcher, templates | et "fileOf, labelOf and captionOf answer both kinds"; 110d (heading, row anatomy, Empty, highlighted) |
+| New template | bt "New template says Opening…"; 110b (keyboard, the skeleton before the sheet, focus in Name) |
+| Create from that entry | art "?new=template opens the New template sheet, and Create from it answers the file"; bt (Creating…, busy through the push); 110c |
+| Cancel from that entry | 110b (Esc: the sheet closes, the page stays, nothing written) |
+| Open | 110c (the tab title from the display name) |
+| Stale address | et "a Routes Manager segment in the database's shape is a canvas"; et "an orphan doc is never a canvas"; 110h (the old address loaded) |
+| Bad shape | et (`custom-Bad_x`, `custom--x` are no canvas, a synchronous 404); step 6 re-expected |
+| Offered | `placement.test.ts` "offeredOn: a4/13 and a22/1 … a17/1 and a24/1 never are", "compilesTo: ROUTE_TEMPLATE_TARGET …"; `contexts.test.ts` route and entry rows, each the other's control; 110e (its control on Home and Post, 110a) |
+| Compiled | `compile.test.ts` "(7.16b) a Routes Manager template compiles flat …" (routed, unrouted, emptied; `custom-signup.hbs` unchanged); `agreement.test.ts` "Story 7.16b — a Routes Manager template: the canvas and the theme agree node by node"; T1 §83 |
+| D5f, unrouted | et "D5f's routed sentence" (its control: no route → `'stops'`); 110f's control |
+| D5f, routed | et "D5f's routed sentence" (`'keeps'`, the paths, "show"/"shows"); 110f |
+| Delete, designed | art "the delete window says what goes"; art "every in-between state is valid — config, doc, row"; 110g (opens on Cancel, Cancel writes nothing, Delete takes both) |
+| Undo | art "every in-between state is valid — … its Undo row, doc, config"; art "the Undo's doc is judged as the sync route judges one"; 110g (row exact, doc byte-equal, routes_config as it was) |
+| Open editor, template deleted | et "the sync route never re-creates a deleted template's canvas"; `journal.test.ts` "withoutDoc drops a gone template's work"; 110h (two pages, ⌘S, Home, the strip, the doc not re-stored) |
+| Orphan doc | et "an orphan doc is never a canvas"; et (the sync's `left`); 110h |
 
 **Review (R-82):** walk step 110 on production at the deployed head, each run recorded, with Supabase service reads for
 the stored rows. Also re-run step 40 and step 109.

@@ -125,9 +125,16 @@ export function Submit({
   busy,
   children,
   onClick,
+  pending: after = false,
   ...rest
-}: ComponentProps<typeof Button> & { busy: string }) {
-  const { pending, guard } = useSubmitting()
+}: ComponentProps<typeof Button> & {
+  busy: string
+  /** Story 7.16b — work the action STARTED that outlives it (the routes sheet's push to a new canvas): the control stays
+   *  busy, and refuses a second submit, until the caller says it has landed */
+  pending?: boolean
+}) {
+  const { pending: submitting, guard } = useSubmitting()
+  const pending = submitting || after
   return (
     <Button
       {...rest}
@@ -137,6 +144,8 @@ export function Submit({
       /* The caller's handler runs BEFORE the guard so a cancelled click cannot claim the
          in-flight slot — see `useSubmitting`. Nothing here reads what the guard sets. */
       onClick={(event) => {
+        // a click, or Enter's implicit one, while the started work runs submits nothing
+        if (after) return event.preventDefault()
         onClick?.(event)
         guard(event)
       }}

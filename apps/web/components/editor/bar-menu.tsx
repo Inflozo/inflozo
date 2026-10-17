@@ -64,12 +64,17 @@ export function BarMenuRow({
   count,
   current = false,
   indent = false,
+  strong = false,
   ...button
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
-  glyph: ReactNode; name: string; caption: string; trailing?: ReactNode; current?: boolean; indent?: boolean
+  /** Story 7.16b — no `caption` is a row with no line under its name: D5b's "New template" */
+  glyph: ReactNode; name: string; caption?: string; trailing?: ReactNode; current?: boolean; indent?: boolean
   /** Story 7.13 — S14d's amber count, directly after the name on its line (Editor cards' customised cards) */
   count?: ReactNode
+  /** Story 7.16b — the name at 600 though the row is not in force: D5b's "New template" */
+  strong?: boolean
 }) {
+  const weight = current || strong ? 'font-semibold' : 'font-medium'
   return (
     <button
       type="button"
@@ -80,14 +85,14 @@ export function BarMenuRow({
       {glyph}
       <span className="flex min-w-0 flex-1 flex-col gap-px">
         {count === undefined ? (
-          <span data-name className={`truncate text-ui-dense ${current ? 'font-semibold' : 'font-medium'}`}>{name}</span>
+          <span data-name className={`truncate text-ui-dense ${weight}`}>{name}</span>
         ) : (
           <span className="flex min-w-0 items-center gap-[6px]">
-            <span data-name className={`truncate text-ui-dense ${current ? 'font-semibold' : 'font-medium'}`}>{name}</span>
+            <span data-name className={`truncate text-ui-dense ${weight}`}>{name}</span>
             {count}
           </span>
         )}
-        <span data-caption className="truncate text-helper-caption text-ink-soft">{caption}</span>
+        {caption === undefined ? null : <span data-caption className="truncate text-helper-caption text-ink-soft">{caption}</span>}
       </span>
       {trailing}
     </button>

@@ -4,7 +4,9 @@ import { revalidatePath } from 'next/cache'
 import {
   parseRoutesConfig, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
 } from '@inflozo/section-runtime/routes'
+import { docSchema, type ProjectDoc } from '@inflozo/section-runtime'
 import { isUuid, routesPath } from '@/lib/editor'
+import { docRefusal } from '@/lib/pilots'
 import { ROUTES_WORDS, templatesOf, templateWriteRefusal, type Template } from '@/lib/routes'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
@@ -21,14 +23,18 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * Story 1.2 (`:274-288`, `:356-363`).
  *
  * EVERY MULTI-WRITE IS ORDERED SO EACH INTERMEDIATE STATE IS VALID: a new template's row is written before the config
- * that names it; a template's delete writes the config WITHOUT its routes first, then deletes the row; its Undo inserts the
- * row first, then writes the previous config. So no stored config ever names a template that is not there.
+ * that names it; a template's delete writes the config WITHOUT its routes first, then deletes its canvas's doc (Story
+ * 7.16b), then the row; its Undo inserts the row first, then the doc, then writes the previous config. So no stored config
+ * ever names a template that is not there, and no doc outlives its template but for the moment between two writes (which
+ * the editor's read and the sync route both treat as no canvas, routine call 11).
  *
  * OUTSIDE THE EDITOR'S LOCK, as Theme settings is (routine call 15): two tabs saving at once, the last write wins.
  * `ponytail:` — a compare-and-set on `routes_config.updated_at` if that is ever seen.
  */
 
-export type RoutesResult = { ok: true } | { error: string }
+/** `file` — a template just created (Story 7.16b: the Template menu's "New template" opens its canvas); `doc` — the canvas
+ *  doc a template's delete took with it, handed back so its Undo can restore it exactly (AD-36: it is judged again then). */
+export type RoutesResult = { ok: true; file?: string; doc?: unknown } | { error: string }
 
 type Supabase = Awaited<ReturnType<typeof supabaseServer>>
 
@@ -52,15 +58,14 @@ const jsonOf = (formData: FormData, key: string): unknown => {
 /** The page as Next sees it (under the internal `/app` prefix the proxy strips). */
 const revalidate = (id: string) => revalidatePath(`/app${routesPath(id)}`)
 
-/** What the writes are judged against, read under the caller's session: the project's Routes Manager templates, the
- *  names it has deployed, and the custom canvases that carry a design (`project_templates` under `custom:`). */
-async function contextOf(sb: Supabase, id: string): Promise<{ templates: Template[]; deployed: string[]; designed: string[] } | null> {
-  const [templates, deployed, designed] = await Promise.all([
+/** What the writes are judged against, read under the caller's session: the project's Routes Manager templates and the
+ *  names it has deployed. */
+async function contextOf(sb: Supabase, id: string): Promise<{ templates: Template[]; deployed: string[] } | null> {
+  const [templates, deployed] = await Promise.all([
     sb.from('custom_templates').select('id, filename, display_name, kind, created_at').eq('project_id', id).eq('kind', 'routes').order('created_at'),
     sb.from('deployed_template_names').select('filename').eq('project_id', id),
-    sb.from('project_templates').select('template_key').eq('project_id', id).like('template_key', 'custom:%'),
   ])
-  const failed = templates.error ?? deployed.error ?? designed.error
+  const failed = templates.error ?? deployed.error
   if (failed) {
     console.error('projects/routes: a read failed', { code: failed.code })
     return null
@@ -68,7 +73,6 @@ async function contextOf(sb: Supabase, id: string): Promise<{ templates: Templat
   return {
     templates: templatesOf(templates.data),
     deployed: (deployed.data ?? []).map((r) => r.filename as string),
-    designed: (designed.data ?? []).map((r) => (r.template_key as string).slice('custom:'.length)),
   }
 }
 
@@ -153,7 +157,8 @@ export async function saveRoutes(_previous: RoutesResult | null, formData: FormD
   return { ok: true }
 }
 
-/** "+ New template" on its own (R-247's Templates list): the row alone, no route. */
+/** "+ New template" on its own (R-247's Templates list): the row alone, no route. Story 7.16b — it answers the file it
+ *  made, which the Template menu's entry opens as a canvas. */
 export async function createTemplate(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {
   const id = idOf(formData)
   if (!id) return couldNot()
@@ -164,13 +169,15 @@ export async function createTemplate(_previous: RoutesResult | null, formData: F
   const made = await insertTemplate(sb, id, user.id, formData.get('name'), ctx)
   if ('error' in made) return made
   revalidate(id)
-  return { ok: true }
+  return { ok: true, file: made.file }
 }
 
 /**
- * A TEMPLATE'S DELETE: refused while its canvas carries a design (a `project_templates` row for `custom:<file>`, which
- * nothing writes before Story 7.16b; 7.16b builds the warning), else the config WITHOUT every route naming it is written
- * first and the row is deleted second. A failed row delete leaves the template, unrouted — a valid state.
+ * A TEMPLATE'S DELETE (FR-I3; the designed half since Story 7.16b): the config WITHOUT every route naming it is written
+ * first, then its canvas's doc (`custom:<file>`) is deleted, then the row — so every state between is valid: an unrouted
+ * template with its design, then one without. The doc is answered back, so the toast's Undo restores it exactly. A failed
+ * doc delete leaves the template unrouted and designed; a failed row delete puts the doc back, so the template stands as it
+ * was, unrouted — never a template whose design was lost with no Undo to bring it back.
  */
 export async function deleteTemplate(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {
   const id = idOf(formData)
@@ -181,29 +188,48 @@ export async function deleteTemplate(_previous: RoutesResult | null, formData: F
   const ctx = await contextOf(sb, id)
   const template = ctx?.templates.find((t) => t.id === templateId)
   if (!ctx || !template) return couldNot()
-  if (ctx.designed.includes(template.file)) return { error: ROUTES_WORDS.hasDesign(template.name) }
-  const config = await storedConfig(sb, id)
+  const key = `custom:${template.file}`
+  const [config, held] = await Promise.all([storedConfig(sb, id), sb.from('project_templates').select('doc').eq('project_id', id).eq('template_key', key).maybeSingle()])
   if (!config) return couldNot()
+  if (held.error) {
+    console.error('projects/routes: the template\'s doc could not be read', { code: held.error.code })
+    return couldNot()
+  }
   const next = withoutTemplate(config, template.file)
   if (next.collections.length !== config.collections.length || next.routes.length !== config.routes.length) {
     const refused = await writeConfig(sb, id, user.id, next, ctx.templates.map((t) => t.file).filter((f) => f !== template.file))
     if (refused !== null) return { error: refused }
   }
+  const doc: unknown = held.data?.doc
+  if (held.data) {
+    const dropped = await sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key).select('template_key')
+    if (dropped.error || !dropped.data || dropped.data.length === 0) {
+      console.error('projects/routes: the template\'s doc delete failed', { code: dropped.error?.code })
+      revalidate(id)
+      return couldNot()
+    }
+  }
   const { data, error } = await sb.from('custom_templates').delete().eq('id', templateId).eq('project_id', id).select('id')
   if (error || !data || data.length === 0) {
     console.error('projects/routes: template delete failed', { code: error?.code })
+    // the doc goes back: a template that stays keeps its design
+    if (held.data) {
+      const back = await sb.from('project_templates').upsert({ project_id: id, user_id: user.id, template_key: key, doc }, { onConflict: 'project_id,template_key' })
+      if (back.error) console.error('projects/routes: the template\'s doc could not be put back', { code: back.error.code })
+    }
     revalidate(id)
     return couldNot()
   }
   revalidate(id)
-  return { ok: true }
+  return { ok: true, ...(held.data ? { doc } : {}) }
 }
 
 /**
  * THE TEMPLATE DELETE'S UNDO: the row comes back exactly — its id, name, file and `created_at`, so the list's order is
- * the same — and then, when the delete took routes with it (`config` sent), the previous config is written, judged with
- * the row counted; a delete that took no route wrote no config, so its Undo writes none either and the stored rows
- * return exactly. The row is judged by the naming step before it is written, as every other insert is: its name must
+ * the same — then, when the delete took the canvas's doc (`doc` sent, Story 7.16b), that doc, and then, when the delete
+ * took routes with it (`config` sent), the previous config is written, judged with the row counted; a delete that took no
+ * route wrote no config, so its Undo writes none either and the stored rows return exactly. The doc comes back FROM THE
+ * CLIENT, so it is judged as the sync route judges one before it is written (AD-36): `docSchema`, then `docRefusal`. The row is judged by the naming step before it is written, as every other insert is: its name must
  * still make its file (review, 2026-10-17 — a request is not trusted to carry only what the page sent). A name this
  * project has since DEPLOYED cannot come back (the database's guard, `:1319-1347`); no deploy exists before Story 7.18,
  * so that is a sentence, not a path.
@@ -212,9 +238,17 @@ export async function restoreTemplate(_previous: RoutesResult | null, formData: 
   const id = idOf(formData)
   const row = jsonOf(formData, 'template') as { id?: unknown; name?: unknown; file?: unknown; created_at?: unknown } | undefined
   const previous = formData.has('config') ? jsonOf(formData, 'config') : null
-  if (!id || !row || previous === undefined) return couldNot()
+  const sent = formData.has('doc') ? jsonOf(formData, 'doc') : null
+  if (!id || !row || previous === undefined || sent === undefined) return couldNot()
   const [template] = templatesOf([{ id: row.id, filename: row.file, display_name: row.name, kind: 'routes' }])
   if (!template || !isUuid(template.id) || typeof row.created_at !== 'string') return couldNot()
+  const key = `custom:${template.file}`
+  let doc: ProjectDoc | null = null
+  if (sent !== null) {
+    const parsed = docSchema.safeParse(sent)
+    if (!parsed.success || docRefusal(key, parsed.data) !== null) return couldNot()
+    doc = parsed.data
+  }
   const user = await signedIn()
   const sb = await supabaseServer()
   const ctx = await contextOf(sb, id)
@@ -232,6 +266,14 @@ export async function restoreTemplate(_previous: RoutesResult | null, formData: 
     if (error || !data || data.length === 0) {
       console.error('projects/routes: template restore failed', { code: error?.code })
       return { error: templateWriteRefusal(error, template.file) ?? ROUTES_WORDS.couldNot }
+    }
+  }
+  if (doc !== null) {
+    const { error } = await sb.from('project_templates').upsert({ project_id: id, user_id: user.id, template_key: key, doc }, { onConflict: 'project_id,template_key' })
+    if (error) {
+      console.error('projects/routes: the template\'s doc restore failed', { code: error.code })
+      revalidate(id)
+      return couldNot()
     }
   }
   if (previous !== null) {

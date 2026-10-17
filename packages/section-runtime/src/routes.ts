@@ -39,7 +39,7 @@
 // Ghost's `@tryghost/nql` (both majors' pins) is a devDependency, so `routes.test.ts` holds the two in agreement.
 
 import { z } from 'zod'
-import { CUSTOM_TARGET_RE, GHOST_SLUG_RE, SURFACES } from '@inflozo/library'
+import { CUSTOM_TARGET_RE, GHOST_SLUG_RE, MEMBERSHIP_FILES } from '@inflozo/library'
 import { POSTS_PER_PAGE } from './custom-settings.ts'
 
 // zod's eval probe is refused by the app's CSP; the Routes page imports this module directly (`/routes`), not through the
@@ -217,8 +217,7 @@ export const RESERVED_SEGMENTS: Readonly<Record<string, string>> = {
 
 /** §7.4's reserved stems (`prd.md:666`), and R-129's membership pages, whose names are never a route template's. */
 const RESERVED_STEMS = ['index', 'home', 'post', 'page', 'tag', 'author', 'error', 'default', 'private', 'robots', 'amp']
-/** R-129's three membership files (`custom-signup.hbs` …) — never a route's template (FR-I1), their names reserved. */
-export const MEMBERSHIP_FILES: readonly string[] = SURFACES.map((s) => `custom-${s}.hbs`)
+// R-129's three membership files are the library's one list since Story 7.16b (`MEMBERSHIP_FILES`, `vocabulary.ts`)
 
 /* ───────────────────────────────────────────── parsing ───────────────────────────────────────────── */
 

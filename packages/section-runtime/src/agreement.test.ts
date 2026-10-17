@@ -30,6 +30,7 @@ import {
   IMAGE_SIZES,
   i18nAttr,
   resolveStrings,
+  ROUTE_TEMPLATE_TARGET,
   validateMarkup,
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
@@ -1753,4 +1754,33 @@ test('Story 7.11 — R-34: a bare helper takes no argument, so no design can ask
   assert.match(DIRECTIVES['data-helper']?.parse('comments mode=dark') ?? '', /data-helper/)
   assert.equal(DIRECTIVES['data-helper']?.parse('comments'), null)
   assert.equal(renderTheme(doc(), '<div class="c" data-helper="comments"></div>', { target: 'post.hbs' }).template, '<div class="c">{{comments}}</div>')
+})
+
+// ── Story 7.16b (DW-126, F1) — a ROUTES MANAGER TEMPLATE is the route form on both emitters: a flat root, `@site`, `@config`
+//    and a get's rows, and no `post`. The compiler writes its file with no `{{#post}}` (`compile.test.ts`), so a section there
+//    is evaluated at the root the canvas draws — the two agree node by node, at a named file and at the target naming them all.
+
+test('Story 7.16b — a Routes Manager template: the canvas and the theme agree node by node, and a post field is refused on both', () => {
+  const src = `<section class="rm" data-cols="two">
+  <h2 class="rm__site" data-bind="@site.title">s</h2>
+  <ul class="rm__list"><li class="rm__item" data-repeat="latest"><a class="rm__link" data-bind-attr="href:url" data-bind="title">t</a></li></ul>
+</section>`
+  const input: RenderInput = {
+    site: SITE,
+    ghost: { '@site': { title: 'Orbit Weekly' } },
+    dataBindings: { latest: { source: 'posts', limit: 1, order: 'published_at desc' } },
+    getRows: { latest: [{ title: 'one', url: 'https://s.example/1' }] },
+  }
+  for (const target of ['custom-landing.hbs', ROUTE_TEMPLATE_TARGET]) {
+    const { canvas, theme } = agree(src, { ...input, target })
+    assert.ok(canvas.includes('>Orbit Weekly<') && canvas.includes('>one<'), `${target}: ${canvas}`)
+    assert.ok(theme.includes('{{@site.title}}') && theme.includes('{{#get "posts"'), `${target}: ${theme}`)
+  }
+  // a post's own field at the route's root: refused on BOTH emitters (F1) — and the control, the same section renders on a
+  // membership file, whose template opens {{#post}} around it (R-129)
+  const own = '<section class="rm"><h1 class="rm__title" data-bind="title">t</h1></section>'
+  for (const render of [renderCanvas, renderTheme]) {
+    for (const target of ['custom-landing.hbs', ROUTE_TEMPLATE_TARGET]) assert.throws(() => render(doc(), own, { target }), /"title"[^]*route scope/, target)
+    assert.doesNotThrow(() => render(doc(), own, { target: 'custom-signup.hbs', ghost: { title: 'Join' } }))
+  }
 })

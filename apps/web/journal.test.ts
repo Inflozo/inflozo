@@ -6,7 +6,7 @@ import type { PackRecord, PackRecords } from './lib/pack-edit.ts'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
   CARDS_KEY, flushPayload, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, PACK_RECORDS_KEY, panelOpen, redo, undo, unsynced,
-  restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, type Journal, type OwedRecord, type SyncState,
+  restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, withoutDoc, type Journal, type OwedRecord, type SyncState,
 } from './lib/journal.ts'
 
 /* STORY 5.8 — the journal, the indicator and the backoff, asserted where `node --test` can reach them. Every row of
@@ -568,4 +568,25 @@ test('(7.13) a hydrate keeps this device\'s card designs where its record is kep
   const local = { baseRevision: 4, docs: {}, journal: owed, cards: mine }
   assert.equal(ownFlushLanded(local, 5, {}, undefined, undefined, mine), true)
   assert.equal(ownFlushLanded(local, 5, {}, undefined, undefined, cloud), false, 'another session\'s record is no flush of ours')
+})
+
+test('Story 7.16b — withoutDoc drops a gone template\'s work: its entries, its pending mark and its undo steps; every other key stands', () => {
+  const gone = 'custom:custom-landing.hbs'
+  let j = edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal
+  j = edit(j, gone, doc(), doc('b')).journal
+  j = edit(j, 'post', doc(), doc('c')).journal
+  j = edit(j, gone, doc('b'), doc('b', 'd')).journal
+  // one undone at the tail — the gone key's last entry — and one more undone that is not the gone key's
+  j = (undo(j) as { journal: Journal }).journal
+  j = (undo(j) as { journal: Journal }).journal
+  assert.equal(j.undone, 2)
+  const out = withoutDoc(j, gone)
+  assert.deepEqual(out.entries.map((e) => e.docKey), ['home', 'post'])
+  assert.ok(!Object.hasOwn(out.pending, gone), 'nothing of it is owed')
+  assert.ok(Object.hasOwn(out.pending, 'home') && Object.hasOwn(out.pending, 'post'), 'every other key is still owed')
+  // the pointer keeps its place: Post's edit is still the one undone, and redo puts it back
+  assert.equal(out.undone, 1)
+  assert.deepEqual(Object.keys((redo(out) as { docs: Record<string, ProjectDoc> }).docs), ['post'])
+  // THE CONTROL: a key the journal never touched leaves it as it was, field for field
+  assert.deepEqual(withoutDoc(j, 'tag'), j)
 })

@@ -15,7 +15,7 @@ import {
   accentSettingOf, bindingId, bindingOf, bindingState, ghostName, GHOST_SETTING_GROUPS, GHOST_SETTING_TYPES, GROUP_WORDS, propSettingOf, SETTING_WORDS,
   settingOf, type Binding, type Derived, type SettingGroup, type SettingRow, type Visibility,
 } from '@inflozo/section-runtime/custom-settings'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOfKey, settingsPath, SITE } from './editor.ts'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOfKey, isRouteCanvas, settingsPath, SITE } from './editor.ts'
 import { isStale, type LockRow } from './lock.ts'
 import { adminAt } from './paywall.ts'
 import { imageUrl } from './probe-rule.ts'
@@ -99,8 +99,9 @@ export function pageOf(key: string): { page: string; group: SettingGroup; rank: 
   if (key === SITE.key) return { page: EVERY_PAGE, group: 'site_wide', rank: -1 }
   const paged = canvasOfPageTwoKey(key)
   const canvas = paged ?? canvasOfTemplateKey(key)
-  // ponytail: a custom template outside the switcher is named by its file until Story 7.16b names them in the switcher
-  if (canvas === null) return { page: fileOfKey(key), group: 'site_wide', rank: ORDER.length }
+  // ponytail: a Routes Manager template is named by its file here, after every canvas — Theme settings reads no
+  // `custom_templates` (the switcher names it since Story 7.16b); hand this the names if a promote from one is ever asked
+  if (canvas === null || isRouteCanvas(canvas)) return { page: fileOfKey(key), group: 'site_wide', rank: ORDER.length }
   const { label } = CANVASES[canvas]
   return {
     page: paged === null ? label : `${label} page 2`,

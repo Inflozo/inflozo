@@ -307,3 +307,28 @@ test('Story 7.16a: "Manage routes" says "Opening…" while its push runs, and ro
   assert.ok(readdirSync(dir).includes('loading.tsx'), 'the routes page has its own skeleton')
   assert.ok(!readdirSync(dir).some((f) => statSync(join(dir, f)).isDirectory()), 'and no child route for it to stand over')
 })
+
+/* ── STORY 7.16b (R-98): the Template menu's "New template" starts a navigation to the routes page, so it says "Opening…"
+   in its NAME (the row has no line under it) and goes busy while the push runs, and the routes page's own skeleton stands
+   over it; Create from the sheet it opens says "Creating…", through the form and then through the push to the new canvas. */
+test('Story 7.16b: "New template" says "Opening…" while its push runs, and Create from its sheet says "Creating…" until the canvas opens', () => {
+  const switcher = readFileSync('components/editor/template-switcher.tsx', 'utf8')
+  const row = switcher.slice(switcher.indexOf('data-new-template'), switcher.indexOf('data-new-template') + WINDOW * 2)
+  assert.match(row, /setNaming\(true\)/, 'the press marks the row busy')
+  assert.match(row, /start\(\(\) => router\.push\(`\$\{prefix\}\$\{newTemplatePath\(projectId\)\}`\)\)/, 'and it pushes to the routes page, in the transition')
+  assert.match(row, /name=\{naming \? ROUTES_WORDS\.opening : ROUTES_GROUP\.newTemplate\}/, 'its name says "Opening…" while it runs')
+  assert.match(row, /aria-busy=\{naming/, 'and it says so to a screen reader')
+  assert.match(row, /aria-disabled=\{naming/, 'and it is not pressed twice')
+  // the page it lands on has its own skeleton, so the shape that is coming shows first
+  assert.ok(readdirSync(join(AUTHED, 'projects', '[id]', 'routes')).includes('loading.tsx'), 'the routes page has its own skeleton')
+  // the sheet's Create: the form's own busy word, then — once the row is written — the same word while the canvas opens
+  const manager = readFileSync(join(AUTHED, 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
+  assert.match(manager, /const \[pending, startOpening\] = useTransition\(\)/)
+  assert.match(manager, /if \(made !== null\) return openCanvas\(made\)/, 'Create from the entry opens the new canvas')
+  assert.match(manager, /<Submit variant="primary" size=\{38\} busy=\{busy\} pending=\{pending\}>\{primary\}<\/Submit>/, 'and stays busy, saying "Creating…", while it does')
+  // …which is the Kit's own busy state: the label, aria-busy and aria-disabled, and a second submit refused
+  const kit = readFileSync('components/kit/submit.tsx', 'utf8')
+  assert.match(kit, /const pending = submitting \|\| after/, 'the started work keeps the control busy')
+  assert.match(kit, /if \(after\) return event\.preventDefault\(\)/, 'and refuses a second submit while it runs')
+  assert.equal(readFileSync('lib/routes.ts', 'utf8').match(/creating: '([^']+)'/)?.[1], 'Creating…')
+})

@@ -129,6 +129,9 @@ export const ROUTES_WORDS = {
   more: (what: string) => `More for ${what}`,
   deleteTitle: (name: string) => `Delete ${name}?`,
   alsoRemoves: (paths: readonly string[]) => `Also removes ${paths.join(', ')}. Undo brings both back.`,
+  /** Story 7.16b — a designed template's delete: its canvas's design goes with it, and Undo brings it back */
+  designGoes: 'Its design goes with it. Undo brings it back.',
+  alsoRemovesDesign: (paths: readonly string[]) => `Also removes ${paths.join(', ')} and its design. Undo brings them back.`,
   deleted: (name: string) => `Deleted ${name}`,
   undo: 'Undo',
   orAdd: 'or add a',
@@ -142,7 +145,6 @@ export const ROUTES_WORDS = {
   move: (path: string) => `Move: ${path}`,
   removeCondition: (field: string) => `Remove the ${field} condition`,
   removeValue: (value: string) => `Remove ${value}`,
-  hasDesign: (name: string) => `“${name}” has a design on its canvas, so it stays — deleting a designed template arrives with its canvas.`,
   couldNot: "We couldn't save that just now. Try again in a moment.",
   // R-98's busy labels
   creating: 'Creating…',

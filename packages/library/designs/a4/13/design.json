@@ -2,7 +2,7 @@
   "name": "Latest Post",
   "tier": "pro",
   "bindingContext": ["none"],
-  "compileTarget": ["home.hbs"],
+  "compileTarget": ["home.hbs", "custom-{name}.hbs"],
   "controlSchema": [
     { "name": "card-side", "type": "segmented", "label": "Card side", "group": "layout",
       "values": ["right", "left"], "default": "right" },

@@ -252,6 +252,9 @@
       "top": "entry",
       "block": "post"
     },
+    "custom-{name}.hbs (route)": {
+      "top": "route"
+    },
     "tag.hbs": {
       "top": "tag-archive"
     },
@@ -277,6 +280,7 @@
   },
   "scopes": {
     "layout": {},
+    "route": {},
     "list": {
       "posts": {
         "kind": "list",

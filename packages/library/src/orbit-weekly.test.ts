@@ -24,7 +24,7 @@ import {
   fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, site, sortRows, styleGuideBody,
   styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants, PREVIEW_CUT, paywallPost,
 } from './orbit-weekly.ts'
-import { PAYWALL_TARGET } from './vocabulary.ts'
+import { PAYWALL_TARGET, ROUTE_TEMPLATE_TARGET } from './vocabulary.ts'
 import type { ContentSource, Major, Subject } from './orbit-weekly.ts'
 import { NATIVE_FILES, nativeResourceOf } from './placement.ts'
 import type { DataBinding } from './registry.ts'
@@ -785,4 +785,15 @@ test('THE CONTROL: handed no visitor, every canvas is exactly the context it was
   const feed = templateContext('home.hbs', 'first', undefined, undefined, 'anonymous').ghost['posts'] as { visibility: string; access: boolean; slug: string }[]
   assert.ok(feed.every((row) => row.access === (row.visibility === 'public')), 'a logged out user reads exactly the public posts')
   assert.deepEqual(feed.map((r) => r.slug), (templateContext('home.hbs').ghost['posts'] as { slug: string }[]).map((r) => r.slug))
+})
+
+test('Story 7.16b (F3) — a Routes Manager canvas is handed @site and @config alone: a route\'s root carries no post', () => {
+  for (const target of ['custom-landing.hbs', ROUTE_TEMPLATE_TARGET]) {
+    for (const feed of ['first', 'empty'] as const) {
+      assert.deepEqual(Object.keys(templateContext(target, feed).ghost).sort(), ['@config', '@site'], `${target}/${feed}`)
+    }
+  }
+  // the control: a list template on the same call carries its posts, an entry its post
+  assert.ok('posts' in templateContext('home.hbs').ghost)
+  assert.ok('slug' in templateContext('post.hbs').ghost)
 })

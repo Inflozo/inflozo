@@ -133,8 +133,38 @@ export const COMPILE_TARGETS = [
 /** A Routes-Manager or membership template: `custom-{name}.hbs` (FR-D6, FR-I1). */
 export const CUSTOM_TARGET_RE = /^custom-[a-z0-9][a-z0-9-]*\.hbs$/
 
+/** A30's three membership surfaces, by the canvas each is (R-129: `custom-signup.hbs` · `custom-signin.hbs` ·
+ *  `custom-member-home.hbs`). Story 5.11 — FR-D13's partition rule names a surface and the library had no field to
+ *  partition on: `bindingContext` and `compileTarget` cannot tell a signup page from a member home, because both
+ *  compile to a custom route and bind nothing. So a design that is built for ONE of them says so, and the ring,
+ *  Shuffle and Remix never cross between two (`samePartition`). NOTHING DECLARES IT TODAY — A30's designs are
+ *  Epic 10's — so the field is inert until they land, which is exactly what makes it safe to add here now.
+ *  (Moved here from `registry.ts` by Story 7.16b, so `MEMBERSHIP_FILES` below derives from it with no import cycle.) */
+export type Surface = 'signup' | 'signin' | 'member-home'
+/** The same three as data, for the validator's `bad-surface` rule — derived from nowhere else, so the type and the
+ *  check cannot drift. */
+export const SURFACES: readonly Surface[] = ['signup', 'signin', 'member-home']
+
+/** STORY 7.16b — R-129's three membership files (`custom-signup.hbs` …), THE ONE LIST: never a route's template (FR-I1),
+ *  their names reserved (`routes.ts` imports it), and the only custom files that keep the ENTRY form — `{{#post}}` and
+ *  Ghost's article, because Ghost hands them the page they are assigned to (R-129, A30). */
+export const MEMBERSHIP_FILES: readonly string[] = SURFACES.map((s) => `custom-${s}.hbs`)
+
+/** STORY 7.16b (DW-126) — EVERY ROUTES MANAGER TEMPLATE, as a design's `compileTarget` names it: R-7's own spelling
+ *  (`sections-inventory.md:672`). A design listing it may sit on every template the Routes Manager makes — routed or not,
+ *  so adding or removing a route never strands a section — and never on a membership file, which a design names by its
+ *  own file (A30). Such a template is the ROUTE form (appendix B.1 §3's `custom-{name}` (route) row): a flat root, no
+ *  `post`, so no design that reads a post's own fields targets it. A literal brace, so it is never a file name. */
+export const ROUTE_TEMPLATE_TARGET = 'custom-{name}.hbs'
+
+/** STORY 7.16b — A ROUTES MANAGER TEMPLATE: a custom file that is not a membership file. Its theme file is the route
+ *  form and the canvas reads the route row (`contexts.ts`' `matrixKey`); `ROUTE_TEMPLATE_TARGET` stands for all of them. */
+export const isRouteTemplate = (file: string): boolean => CUSTOM_TARGET_RE.test(file) && !MEMBERSHIP_FILES.includes(file)
+
+/** A legal `compileTarget` value: a standard template, a custom file by name, or `ROUTE_TEMPLATE_TARGET`. A compile asks
+ *  it of a FILE too, and refuses `ROUTE_TEMPLATE_TARGET` there itself (`compile.ts`): the brace is a target, never a file. */
 export function isCompileTarget(t: string): boolean {
-  return (COMPILE_TARGETS as readonly string[]).includes(t) || CUSTOM_TARGET_RE.test(t)
+  return (COMPILE_TARGETS as readonly string[]).includes(t) || CUSTOM_TARGET_RE.test(t) || t === ROUTE_TEMPLATE_TARGET
 }
 
 /** STORY 7.4 (DW-331) — THE KEY OF THE PLACE A SECTION FILLS in a compiled theme: the `template_key` the editor stores

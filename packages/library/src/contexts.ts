@@ -13,7 +13,7 @@
 
 import matrix from '../contexts/matrix.json' with { type: 'json' }
 import labels from '../contexts/labels.json' with { type: 'json' }
-import { CUSTOM_TARGET_RE, PATH_RE, isCompileTarget } from './vocabulary.ts'
+import { CUSTOM_TARGET_RE, PATH_RE, ROUTE_TEMPLATE_TARGET, isCompileTarget, isRouteTemplate } from './vocabulary.ts'
 
 export type FieldKind = 'text' | 'url' | 'image' | 'color' | 'date' | 'number' | 'boolean' | 'list' | 'object' | 'helper'
 
@@ -87,16 +87,27 @@ export function versionAtLeast(version: string | undefined, since: string): bool
   return true
 }
 
-/** The matrix's row for a compile target — `custom-{name}.hbs` is one row for every name. */
+/** The matrix row a custom file reads when it is a membership page: appendix B.1 §3's `custom-{name}` (entry) row. */
+const ENTRY_ROW = 'custom-{name}.hbs'
+/** …and the row every Routes Manager template reads (Story 7.16b, DW-126): §3's `custom-{name}` (route) row, flat. */
+export const ROUTE_ROW = 'custom-{name}.hbs (route)'
+
+/** STORY 7.16b — THE ONE MAP FROM A TARGET TO ITS MATRIX ROW, which `targetContext`, `resolveUniversal`'s `@page` test and
+ *  `offerBindings`' `@page` offer all read: a Routes Manager template (and `ROUTE_TEMPLATE_TARGET`, which names them all)
+ *  is the ROUTE row — a flat root, no `post`, no `@page`, since Inflozo writes no `data:` (F1) — and a membership file the
+ *  ENTRY row (R-129, A30). Every other target is its own row. */
+export const matrixKey = (target: string): string =>
+  target === ROUTE_TEMPLATE_TARGET || isRouteTemplate(target) ? ROUTE_ROW : CUSTOM_TARGET_RE.test(target) ? ENTRY_ROW : target
+
+/** The matrix's row for a compile target — every custom file reads one of two rows, by `matrixKey`. */
 export function targetContext(target: string): { top: string; block?: string } | undefined {
-  const key = CUSTOM_TARGET_RE.test(target) ? 'custom-{name}.hbs' : target
-  return own(CONTEXT_MATRIX.targets, key)
+  return own(CONTEXT_MATRIX.targets, matrixKey(target))
 }
 
 /** The scope a section's markup is evaluated in on this target: the template's top scope, or the
  *  scope of the block the TEMPLATE opens around every section (`{{#post}}` on post, page and a
- *  membership custom template — FR-H7, §7.4). The chain is outermost first; its last entry is the
- *  section's own top level, and `../` climbs it. */
+ *  membership custom template — FR-H7, §7.4; a Routes Manager template opens none, Story 7.16b). The
+ *  chain is outermost first; its last entry is the section's own top level, and `../` climbs it. */
 export function rootScope(target: string): { chain: string[]; block?: string } | string {
   if (!isCompileTarget(target)) return `"${target}" is not a compile target`
   const t = targetContext(target)
@@ -194,8 +205,7 @@ function resolveUniversal(path: string, place: BindingPlace): Resolved | string 
   const field = own(CONTEXT_MATRIX.universal, path)
   if (field === undefined) return `${path} is not in the universal set Ghost gives every template (appendix B.1 §2)`
   if (field.targets !== undefined) {
-    const key = CUSTOM_TARGET_RE.test(place.target) ? 'custom-{name}.hbs' : place.target
-    if (!field.targets.includes(key)) {
+    if (!field.targets.includes(matrixKey(place.target))) {
       return `${path} is set only on ${field.targets.join(', ')} — on ${place.target} it is undefined and prints nothing (appendix B.1 §3b)`
     }
   }
@@ -320,7 +330,7 @@ export function offerBindings(place: BindingPlace): Offer {
   }
   const here = chain[chain.length - 1] as string
   walk(here, '', [here])
-  const key = CUSTOM_TARGET_RE.test(place.target) ? 'custom-{name}.hbs' : place.target
+  const key = matrixKey(place.target)
   for (const [path, f] of Object.entries(CONTEXT_MATRIX.universal)) {
     if (!path.startsWith('@')) continue
     if (f.since !== undefined && !versionAtLeast(place.version, f.since)) continue

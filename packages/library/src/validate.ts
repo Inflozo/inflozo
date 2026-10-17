@@ -17,14 +17,13 @@ import {
   ASK_FLAGS, BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
   CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DARK_CAPABILITIES, DIRECTIVES, FOREIGN_ATTR_RE, GET_FORBIDDEN_TARGETS, GET_SOURCES,
   INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGE_NUMBER, PAGINATED_TARGETS, PAYWALL_TARGET, PLACEHOLDERS,
-  PROP_TYPES, RETIRED_DIRECTIVES,
-  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, formAsk, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
+  MEMBERSHIP_FILES, PROP_TYPES, RETIRED_DIRECTIVES, ROUTE_TEMPLATE_TARGET,
+  SIDEBAR_GROUPS, SURFACES, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, formAsk, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
   ORBIT_WEEKLY_SEED, PILL_CHARS, pillRefusal, portalAsk, safeUrl, splitFirst, splitTop, tCallRefusals, valueWords,
 } from './vocabulary.ts'
 import type { MemberAsk } from './vocabulary.ts'
 import { CATALOG, catalogPropRefusal } from './catalog.ts'
 import { CONTEXTS_BY_TARGET, PAYWALL_CATEGORIES } from './placement.ts'
-import { SURFACES } from './registry.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
 export type Failure = { code: string; message: string }
@@ -546,6 +545,10 @@ function valueGrammar(type: string, values: readonly string[]): string | null {
 
 /** DW-186 (R-124), review 5.24c: the names and labels Member visibility goes by — the editor says "Show to" (R-170), the
  *  doc field is `memberVisibility`, the ledger says "Member visibility" — refused as a control under any of them. */
+/** R-7's legal targets, in one sentence: the standard templates, `ROUTE_TEMPLATE_TARGET` for every Routes Manager template
+ *  (Story 7.16b, DW-126), and a custom file by its own name — how a membership page is named (A30). */
+const LEGAL_TARGETS = `${COMPILE_TARGETS.join(' · ')} · ${ROUTE_TEMPLATE_TARGET} (every Routes Manager template) · a custom file by its own name (the membership pages: ${MEMBERSHIP_FILES.join(', ')})`
+
 const MEMBER_VISIBILITY_NAMES = new Set(['member-visibility', 'membervisibility', 'show-to', 'shown-to', 'visible-to', 'visibility'])
 const MEMBER_VISIBILITY_LABELS = new Set(['member visibility', 'show to', 'shown to', 'visible to', 'visibility'])
 
@@ -587,14 +590,14 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
 
   const targets = Array.isArray(d.compileTarget) ? d.compileTarget : []
   if (targets.length === 0) {
-    push(out, 'compile-target-missing', `compileTarget is a set and is required. \`any\` is withdrawn (R-7) — a design says where it may be placed, and the compiler refuses an illegal placement. Legal: ${COMPILE_TARGETS.join(' · ')} · custom-{name}.hbs.`)
+    push(out, 'compile-target-missing', `compileTarget is a set and is required. \`any\` is withdrawn (R-7) — a design says where it may be placed, and the compiler refuses an illegal placement. Legal: ${LEGAL_TARGETS}.`)
   }
   if (new Set(targets).size !== targets.length) {
     push(out, 'duplicate-target', 'compileTarget lists a template twice — it is a set.')
   }
   for (const t of targets) {
     if (!isCompileTarget(t)) {
-      push(out, 'bad-compile-target', `compileTarget "${t}" is not a template Inflozo emits. Legal: ${COMPILE_TARGETS.join(' · ')} · custom-{name}.hbs.`)
+      push(out, 'bad-compile-target', `compileTarget "${t}" is not a template Inflozo emits. Legal: ${LEGAL_TARGETS}.`)
     }
   }
   // Story 5.20 — FR-H6: the paywall renders where `{{content}}` stops a post, so its partial is a place of its own and

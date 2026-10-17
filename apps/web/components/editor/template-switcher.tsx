@@ -3,14 +3,17 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { memo, useEffect, useRef, useState, useTransition } from 'react'
 import {
-  CanvasAuthor, CanvasCards, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPaywall, CanvasPost, CanvasPrivate, CanvasSignin,
-  CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff, Route,
+  CanvasAuthor, CanvasCards, CanvasCustom, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPaywall, CanvasPost, CanvasPrivate, CanvasSignin,
+  CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff, Plus, Route,
 } from '@/components/kit/icons'
 import { CountBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
 import { BAR_POPOVER, BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
 import { CARD_WORDS } from '@/lib/cards'
-import { CANVASES, canvasPath, isMembership, isSurface, routesPath, SURFACES_HEADING, type CanvasKey } from '@/lib/editor'
+import {
+  canvasPath, captionOf, isMembership, isRouteCanvas, isSurface, labelOf, newTemplatePath, ROUTES_GROUP, routesPath, SURFACES_HEADING, type Canvas,
+  type CanvasKey,
+} from '@/lib/editor'
 import { ROUTES_WORDS } from '@/lib/routes'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { isApp } from '@/routing'
@@ -24,7 +27,7 @@ import { isApp } from '@/routing'
    dots and words; the owner asked for it to look like View as's, so its card, heading, scrolling list and rows are
    `bar-menu.tsx`'s, which View as uses too: 284 wide (D5b's), radius 12, 6px padding, `shadow-lg`, headed
    "Templates", and each row a Tabler glyph for its canvas, the name at 13/500 over ONE line saying what the template
-   is (`CANVASES[key].caption`), and a trailing slot. The current row is HIGHLIGHTED — D5b's coral tint and its name at
+   is (`captionOf`), and a trailing slot. The current row is HIGHLIGHTED — D5b's coral tint and its name at
    600 — and carries no tick (R-172), as View as's does; the Membership group's rows are indented to 31px under a 13/600 heading with its 12px chevron. The list
    scrolls inside the card when it outgrows 420px, and opens on the checked row. `openMenu` places it, clamps both
    edges (R-126) and flips it, and the platform gives light dismiss, Escape and focus return because it is a
@@ -44,13 +47,17 @@ import { isApp } from '@/routing'
    Question 4 with a GLYPH rather than a word: Tabler's `circle-off` (`kit/icons.tsx`'s header carries the licence and
    the scope R-92 now excepts). Its word, "Empty", is a screen reader's since R-171, like "Auto-generated".
 
-   WHAT IT DOES NOT SHIP, AND WHY (R-128, the owner, 2026-09-18): the `FROM THE ROUTES MANAGER` heading and the
-   `+ New template` row are ABSENT until Story 7.16b, after Story 7.16a builds the Routes Manager for them to reach (R-245) — R-118's rule, a
-   second time. *(Story 7.16a, 2026-10-17: the RULE arrives now, with the one row 7.16a adds below it — "Manage routes", the
-   entry S9a's caption names, "opens from Template dropdown → Manage routes" — a `BarMenuRow` like every other, its glyph
-   Tabler's `route` (R-171's rule for this menu's rows), saying "Opening…" while its navigation runs, R-98.)* Of the two still absent, nothing is greyed and nothing is captioned; an absent row asks no questions.
-   The custom group's rows are 7.16b's to draw: the Routes page (`projects/[id]/routes/actions.ts`) is `custom_templates`'
-   one writer since Story 7.16a, and nothing here reads it yet.
+   THE ROUTES MANAGER'S TAIL (R-128's pair, R-245; built by Story 7.16b, D5b `:161-179`). After Template surfaces: a rule,
+   then — only over rows, because an absent row asks no questions — the `FROM THE ROUTES MANAGER` heading (D5b's 10/600 muted
+   capitals, not a fold) over one row per Routes Manager template (`RouteCanvas`, from `editorData`'s `custom_templates`
+   read, in `templatesOf` order), each R-171's anatomy: `CanvasCustom`, the template's display name, "Custom template" and its
+   mark — designed or Empty, never Auto-generated, because a custom template is never synthesized (FR-D6; D5b's "Long read ·
+   Auto-generated" is the frame's slip, routine call 6) — and a rule under them; then D5b's "New template" (a plus, the name at
+   600, no line under it), which opens Routes & Templates with its New template sheet (`?new=template`, routine call 8); then
+   Story 7.16a's "Manage routes", the entry S9a's caption names, its glyph Tabler's `route`. Both pushes say "Opening…" while
+   they run (R-98): "New template" in its NAME, having no line to say it in. The Routes page (`projects/[id]/routes/actions.ts`)
+   is `custom_templates`' one writer. D5b draws the group after Private; it predates the Template surfaces group, and this
+   keeps every routing row together (routine call 5).
 
    ABSENT, NOT GREYED, THE OTHER WAY TOO: a conditional canvas the project does not call for (Private) is simply not in
    `canvases`, and its address 404s — `lib/editor.ts`'s `canvasesOf` and `CONDITIONAL` decide, and `read.ts` hands the list over.
@@ -62,7 +69,7 @@ import { isApp } from '@/routing'
    lives in the `[id]` layout, which survives a change of its child segment. */
 
 /** R-171 (the owner, 2026-09-21): each canvas carries a Tabler glyph at the head of its row — "Use relevant icons from
- *  Tabler icons" — and a custom template from the Routes Manager will carry (Story 7.16b, R-245) `CanvasCustom`. Keyed by canvas,
+ *  Tabler icons" — and a custom template from the Routes Manager carries `CanvasCustom` (Story 7.16b). Keyed by canvas,
  *  so a canvas added to `CANVASES` without a glyph is a type error, never a row that silently draws nothing. */
 const GLYPH: Readonly<Record<CanvasKey, typeof CanvasHome>> = {
   home: CanvasHome,
@@ -98,6 +105,9 @@ const Mark = ({ state, word }: { state: 'designed' | 'auto' | 'empty'; word: str
   </span>
 )
 
+/** Story 7.16b — no Routes Manager template named: one value, so `memo` keeps its identity */
+const NO_NAMES: Readonly<Record<string, string>> = {}
+
 // Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
 // identity, so it redraws when what it shows changes and not on every render of the editor.
 export const TemplateSwitcher = memo(function TemplateSwitcher({
@@ -108,21 +118,24 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
   empty,
   pathOf,
   customised = 0,
+  names = NO_NAMES,
 }: {
   projectId: string
   /** the canvas the editor is showing — its row is highlighted and navigates nowhere */
-  current: CanvasKey
-  /** every canvas this project offers, in D5b's row order */
-  canvases: readonly CanvasKey[]
+  current: Canvas
+  /** every canvas this project offers, in D5b's row order, then each Routes Manager template's (Story 7.16b) */
+  canvases: readonly Canvas[]
   /** the canvases that are untouched: a hollow dot and the word "Auto-generated" (AD-22) */
-  auto: ReadonlySet<CanvasKey>
+  auto: ReadonlySet<Canvas>
   /** the canvases that are neither designed nor auto-generatable: R-130's `circle-off` glyph and the word "Empty" */
-  empty: ReadonlySet<CanvasKey>
+  empty: ReadonlySet<Canvas>
   /** Story 5.20 — where a canvas lives, when it is not the app's own `canvasPath`: the keyboard harness's pages, so its
    *  walk can switch canvas without a database (R-146). The app passes none. */
-  pathOf?: (key: CanvasKey) => string
+  pathOf?: (key: Canvas) => string
   /** STORY 7.13 — S14d's amber count of customised cards, which follows Editor cards' label (absent at zero, never "0") */
   customised?: number
+  /** STORY 7.16b — each Routes Manager template's display name, by canvas (`labelOf`) */
+  names?: Readonly<Record<string, string>>
 }) {
   const router = useRouter()
   // The internal `/app` prefix is on the path on localhost and never on the app host, so a push has to carry whatever
@@ -132,9 +145,11 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
   const [pending, start] = useTransition()
   const [open, setOpen] = useState(false)
   /** the row pressed, so only IT says "Opening…" while the transition is in flight */
-  const [going, setGoing] = useState<CanvasKey | null>(null)
+  const [going, setGoing] = useState<Canvas | null>(null)
   /** Story 7.16a — "Manage routes" pressed, so it alone says "Opening…" while the push runs (R-98) */
   const [routing, setRouting] = useState(false)
+  /** Story 7.16b — "New template" pressed, so it alone says "Opening…" while the push runs (R-98) */
+  const [naming, setNaming] = useState(false)
   /** D5b's Membership group, open as the frame draws it — the chevron is the control that shuts it */
   const [groupOpen, setGroupOpen] = useState(true)
   /** Story 5.20 — the Template surfaces group, in the Membership group's shape and with its own chevron */
@@ -143,13 +158,14 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
 
   // the transition settling is the new canvas being there; the menu closes then, not on the press (R-98)
   useEffect(() => {
-    if (pending || (going === null && !routing)) return
+    if (pending || (going === null && !routing && !naming)) return
     setGoing(null)
     setRouting(false)
+    setNaming(false)
     if (menu.current?.matches(':popover-open')) menu.current.hidePopover()
-  }, [pending, going, routing])
+  }, [pending, going, routing, naming])
 
-  const go = (key: CanvasKey) => {
+  const go = (key: Canvas) => {
     // the current canvas closes the menu and navigates nowhere
     if (key === current) {
       menu.current?.hidePopover()
@@ -160,14 +176,14 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
     start(() => router.push(pathOf ? pathOf(key) : `${prefix}${canvasPath(projectId, key)}`))
   }
 
-  const row = (key: CanvasKey) => {
+  const row = (key: Canvas) => {
     // three states: designed (filled), auto-generated (hollow) and never-auto-generated-and-not-yet-designed (R-130's
     // `circle-off`) — see the note above. Since R-171 the mark is the row's trailing glyph and its word is heard, not
     // printed: "Remove Auto generated and Empty text from right of list items. Instead show the relevant icons there".
     const state = auto.has(key) ? 'auto' : empty.has(key) ? 'empty' : 'designed'
     const word = state === 'auto' ? 'Auto-generated' : state === 'empty' ? 'Empty' : null
     const busy = going === key
-    const Glyph = GLYPH[key]
+    const Glyph = isRouteCanvas(key) ? CanvasCustom : GLYPH[key]
     return (
       <li key={key} className="flex flex-col">
         <BarMenuRow
@@ -178,11 +194,11 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
           onClick={() => go(key)}
           indent={isMembership(key) || isSurface(key)}
           glyph={<Glyph size={15} className="shrink-0 text-ink-soft" />}
-          name={CANVASES[key].label}
+          name={labelOf(key, names)}
           // Story 7.13 — S14d's count, read as "N customised cards"; on no other row
           count={key === 'cards' && customised > 0 ? <CountBadge n={customised} words={CARD_WORDS.count(customised)} /> : undefined}
           // R-98: the pressed row's line says what is happening while the transition runs
-          caption={busy ? 'Opening…' : CANVASES[key].caption}
+          caption={busy ? 'Opening…' : captionOf(key)}
           trailing={
             <>
               <Mark state={state} word={word} />
@@ -198,16 +214,20 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
   // three slices are cut out of the row order rather than re-ordered here (R-129's names are `lib/editor.ts`'s).
   const membership = canvases.filter(isMembership)
   const first = canvases.findIndex(isMembership)
-  const before = (first === -1 ? canvases : canvases.slice(0, first)).filter((k) => !isSurface(k))
-  const after = first === -1 ? [] : canvases.slice(first + membership.length).filter((k) => !isSurface(k))
+  const page = (k: Canvas) => !isSurface(k) && !isRouteCanvas(k)
+  const before = (first === -1 ? canvases : canvases.slice(0, first)).filter(page)
+  const after = first === -1 ? [] : canvases.slice(first + membership.length).filter(page)
   // STORY 5.20 — the TEMPLATE SURFACES group, last (EXPERIENCE.md:207-222): a canvas that is not a page, in D5b's
   // Membership group's shape. Paywall, then Editor cards (Story 7.13); Error pages is 404.
   const surfaces = canvases.filter(isSurface)
+  // STORY 7.16b — the Routes Manager's templates, under D5b's heading after the surfaces (routine call 5)
+  const routes = canvases.filter(isRouteCanvas)
+  const rule = (at: string) => <li key={at} aria-hidden className="flex flex-col py-1"><hr className="mx-2 h-px border-0 bg-line" /></li>
 
   /** One of D5b's groups: a chevron BUTTON heading the group (the owner's test of Story 5.5 — a control that is present
    *  must work), its rows indented under it, and its rows NOT RENDERED while it is shut, so `arrowKeys` never steps onto
    *  a row nobody can see. Never shut while one of its own rows is the only thing saying "Opening…" (R-98). */
-  const group = (id: string, heading: string, keys: readonly CanvasKey[], open: boolean, toggle: (next: (was: boolean) => boolean) => void) =>
+  const group = (id: string, heading: string, keys: readonly Canvas[], open: boolean, toggle: (next: (was: boolean) => boolean) => void) =>
     keys.length === 0 ? null : (
       <li className="flex flex-col">
         <ul aria-labelledby={id} className="flex list-none flex-col gap-px">
@@ -249,7 +269,7 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
         className={triggerClass(open)}
       >
         <span className={TRIGGER_LABEL}>Template</span>
-        <span className={TRIGGER_VALUE}>{CANVASES[current].label}</span>
+        <span className={TRIGGER_VALUE}>{labelOf(current, names)}</span>
         {open ? <ChevronUp size={12} className="text-ink-soft" /> : <ChevronDown size={12} className="text-ink-soft" />}
       </button>
       <div
@@ -279,9 +299,38 @@ export const TemplateSwitcher = memo(function TemplateSwitcher({
           {group('editor-template-membership', 'Membership', membership, groupOpen, setGroupOpen)}
           {after.map(row)}
           {group('editor-template-surfaces', SURFACES_HEADING, surfaces, surfacesOpen, setSurfacesOpen)}
-          {/* Story 7.16a — the rule, then "Manage routes", last (S9a's caption). Not a canvas: the Routes Manager is its
-              own page (`lib/editor.ts`'s `ROUTES`), so the row navigates and is never the current one */}
-          <li aria-hidden className="flex flex-col py-1"><hr className="mx-2 h-px border-0 bg-line" /></li>
+          {/* Story 7.16b — the rule; then, over rows only, D5b's heading, the Routes Manager's templates and a second rule */}
+          {rule('rule-routes')}
+          {routes.length === 0 ? null : (
+            <>
+              <li className="flex flex-col">
+                <p id="editor-template-routes" className="px-[10px] pb-[5px] pt-[2px] text-[10px] font-semibold uppercase tracking-[0.04em] text-ink-soft">
+                  {ROUTES_GROUP.heading}
+                </p>
+                <ul aria-labelledby="editor-template-routes" className="flex list-none flex-col gap-px">{routes.map(row)}</ul>
+              </li>
+              {rule('rule-new')}
+            </>
+          )}
+          {/* Story 7.16b — D5b's "New template": Routes & Templates with its sheet open (routine call 8). Not a canvas, so it
+              navigates and is never the current one; R-98's "Opening…" is its NAME, since the row has no line */}
+          <li className="flex flex-col">
+            <BarMenuRow
+              data-new-template=""
+              aria-disabled={naming || undefined}
+              aria-busy={naming || undefined}
+              onClick={() => {
+                if (pending) return
+                setNaming(true)
+                start(() => router.push(`${prefix}${newTemplatePath(projectId)}`))
+              }}
+              glyph={<Plus size={15} className="shrink-0 text-ink-soft" />}
+              name={naming ? ROUTES_WORDS.opening : ROUTES_GROUP.newTemplate}
+              strong
+            />
+          </li>
+          {/* Story 7.16a — "Manage routes", last (S9a's caption). Not a canvas: the Routes Manager is its own page
+              (`lib/editor.ts`'s `ROUTES`), so the row navigates and is never the current one */}
           <li className="flex flex-col">
             <BarMenuRow
               data-manage-routes=""

@@ -3,8 +3,9 @@
 //
 // `/projects/<uuid>` is Home; `/projects/<uuid>/<key>` is another canvas; `/projects/<uuid>/home` 308s to the first.
 // The address names the project and the canvas and nothing else — selection, device, mode and folds are never in it.
-// Reserved and unknown segments (an unbuilt `custom-…`) answer 404 until their story opens them (Story 5.20 opened
-// `paywall`, the first TEMPLATE SURFACE, and Story 7.13 `cards`, the second — see `CANVASES`),
+// Reserved and unknown segments answer 404 until their story opens them (Story 5.20 opened `paywall`, the first TEMPLATE
+// SURFACE, and Story 7.13 `cards`, the second — see `CANVASES`; Story 7.16b every `custom-…` in the database's shape, a
+// Routes Manager template's canvas — see `RouteCanvas`),
 // and `index` answers 404 PERMANENTLY (R-127: page 2 has no canvas of its own; since Story 5.16 it is a design of its
 // own, reached from the page-2 switch on its canvas and stored under `PAGE_TWO`'s keys below). The spec's Design Notes
 // are the record of why.
@@ -15,10 +16,15 @@
 // two cannot drift; `read.ts`'s `fileOf` is its inverse.
 //
 // THE ORDER OF `CANVASES` IS D5b'S ROW ORDER, and the switcher draws it straight through: Home · Post · Page · Tag ·
-// Author · the Membership group · 404 · Private. R-128 defers the rule, the `FROM THE ROUTES MANAGER` heading and
-// "+ New template" to Story 7.16b (R-245).
+// Author · the Membership group · 404 · Private, then the Template surfaces group. Story 7.16b adds R-128's pair after them
+// — the `FROM THE ROUTES MANAGER` heading over one row per Routes Manager template (`RouteCanvas`), and "New template".
+//
+// STORY 7.16b — THE FOURTH KIND OF CANVAS, AS DATA: a template the user made on Routes & Templates (`custom_templates` of
+// kind `routes`), keyed by its file without `.hbs` (`custom-landing`), stored under `custom:<file>` as a membership canvas
+// is, and drawn from `editorData`'s templates rather than from `CANVASES`. Every reader that used to index `CANVASES` goes
+// through `fileOf`, `labelOf` and `captionOf`, which answer both kinds.
 
-import { CUSTOM_TARGET_RE, isSiteFooter } from '@inflozo/library'
+import { CUSTOM_TARGET_RE, isRouteTemplate, isSiteFooter } from '@inflozo/library'
 import { CARD_WORDS } from './cards.ts'
 
 /** Every canvas the editor can open, in D5b's row order: the template file it compiles into, its D5b label, and the
@@ -57,11 +63,47 @@ export const CANVASES = {
  *  7.13 brought its second row; it was `PAYWALL_WORDS.group` while Paywall stood alone. */
 export const SURFACES_HEADING = 'Template surfaces'
 
-/** The one line under a custom template's row (R-171, the owner's own words). Custom templates reach the switcher with
- *  Story 7.16b, which draws their rows with this line and `kit/icons.tsx`'s `CanvasCustom`. */
+/** The one line under a custom template's row (R-171, the owner's own words). Story 7.16b draws every Routes Manager
+ *  template's row with this line and `kit/icons.tsx`'s `CanvasCustom`. */
 export const CUSTOM_TEMPLATE_CAPTION = 'Custom template'
 
 export type CanvasKey = keyof typeof CANVASES
+
+/** STORY 7.16b — A ROUTES MANAGER TEMPLATE'S CANVAS: its file without `.hbs` (`custom-landing`), in the database's own
+ *  shape. Branded, so a `CANVASES[…]` read of one is a type error: every such reader goes through `fileOf`/`labelOf`. */
+export type RouteCanvas = `custom-${string}` & { readonly __route: true }
+/** Every canvas the editor can open: one of `CANVASES`, or a Routes Manager template's. */
+export type Canvas = CanvasKey | RouteCanvas
+
+/** `template_key_shape`'s custom half, word for word (`20260904120000_complete_schema.sql:254`), without `custom:` and
+ *  `.hbs` — the one shape a Routes Manager canvas's segment may take. Not `CUSTOM_TARGET_RE`, which is looser (`custom--x`
+ *  passes it), because a canvas whose key the database refuses could never be saved. */
+const ROUTE_SEGMENT = /^custom-[a-z0-9]+(-[a-z0-9]+)*$/
+
+/** Is this a Routes Manager template's canvas — not one of `CANVASES`? */
+export const isRouteCanvas = (canvas: Canvas): canvas is RouteCanvas => !Object.hasOwn(CANVASES, canvas)
+
+/** The canvas a Routes Manager template's FILE is, or null for any other file — a membership file is `CANVASES`' own, and a
+ *  name outside the database's shape is no canvas at all. */
+export const routeCanvasOf = (file: string): RouteCanvas | null => {
+  const segment = file.endsWith('.hbs') ? file.slice(0, -'.hbs'.length) : ''
+  return ROUTE_SEGMENT.test(segment) && isRouteTemplate(file) ? (segment as RouteCanvas) : null
+}
+
+/** The template file a canvas compiles into — `CANVASES[key].file`, or a Routes Manager canvas's own. */
+export const fileOf = (canvas: Canvas): string => (isRouteCanvas(canvas) ? `${canvas}.hbs` : CANVASES[canvas].file)
+
+/** A canvas's name — its D5b label, or a Routes Manager template's display name (R-170: the tab title and the switcher row
+ *  say the same), from `names` by canvas; the segment itself where no name was handed. */
+export const labelOf = (canvas: Canvas, names: Readonly<Record<string, string>> = {}): string =>
+  isRouteCanvas(canvas) ? (Object.hasOwn(names, canvas) ? (names[canvas] as string) : canvas) : CANVASES[canvas].label
+
+/** The one line under a canvas's row in the switcher — R-171's, and `CUSTOM_TEMPLATE_CAPTION` for every Routes Manager one. */
+export const captionOf = (canvas: Canvas): string => (isRouteCanvas(canvas) ? CUSTOM_TEMPLATE_CAPTION : CANVASES[canvas].caption)
+
+/** STORY 7.16b — what the editor knows of one Routes Manager template: its canvas, its display name and the paths that show
+ *  it (`pathsUsing` over the stored routing; none when no route names it or the routing does not parse, routine call 12). */
+export type RouteTemplate = { canvas: RouteCanvas; name: string; paths: readonly string[] }
 
 /** The site-wide doc's key in `project_templates`, and the file its sections compile into. */
 export const SITE = { key: 'site', file: 'default.hbs' } as const
@@ -80,20 +122,21 @@ export const SITE = { key: 'site', file: 'default.hbs' } as const
  *  condition something to read opens its segment here and owns that problem with it (DW-192). */
 export const CONDITIONAL: Partial<Record<CanvasKey, 'private-site'>> = { private: 'private-site' }
 
-/** D5b's Membership group — derived from the filename, so R-129's three names are written once. */
-export const isMembership = (key: CanvasKey): boolean => CANVASES[key].file.startsWith('custom-')
+/** D5b's Membership group — derived from the filename, so R-129's three names are written once. A Routes Manager canvas is
+ *  a custom template too, and never one of these. */
+export const isMembership = (key: Canvas): boolean => !isRouteCanvas(key) && CANVASES[key].file.startsWith('custom-')
 
 /** STORY 5.20 — a TEMPLATE SURFACE (the switcher's "Template surfaces" group): a canvas that is not a page. Every reader
  *  that would give it a site doc, a count in "Site-wide · N templates", a Section Picker or a page 2 asks this. */
-export const isSurface = (key: CanvasKey): boolean => 'surface' in CANVASES[key]
+export const isSurface = (key: Canvas): boolean => !isRouteCanvas(key) && 'surface' in CANVASES[key]
 
 /** STORY 7.13 — the PAYWALL alone, where a branch is the paywall's own and not every surface's: its partial and its one
  *  design, its ring, its cut, its strip, its members-off card and its way back to Post. Editor cards shares the ink bar,
  *  the chip and the absences (no Section Picker, no page 2, no Remix, no Preview) and none of these. */
-export const isPaywall = (key: CanvasKey): boolean => key === 'paywall'
+export const isPaywall = (key: Canvas): boolean => key === 'paywall'
 
 /** STORY 7.13 — EDITOR CARDS, the surface whose canvas is the card document (`style-guide.ts`'s `cardsDocument`). */
-export const isCards = (key: CanvasKey): boolean => key === 'cards'
+export const isCards = (key: Canvas): boolean => key === 'cards'
 
 /** The canvases a project offers, in D5b's row order. Never a literal: a conditional canvas joins the list the day its
  *  condition holds, and the switcher, the Layers count and the site-wide confirm all read this one function. The
@@ -102,14 +145,16 @@ export const canvasesOf = (privateSite = false): CanvasKey[] =>
   (Object.keys(CANVASES) as CanvasKey[]).filter((key) => CONDITIONAL[key] === undefined || privateSite)
 
 /** The canvas a stored `template_key` belongs to — `templateKeyOf`'s inverse — or null for `site` and for a key no
- *  canvas owns. Derived from the same map, so the two can never disagree. */
-export const canvasOfTemplateKey = (key: string): CanvasKey | null =>
-  (Object.keys(CANVASES) as CanvasKey[]).find((canvas) => templateKeyOf(canvas) === key) ?? null
+ *  canvas owns. Derived from the same map, so the two can never disagree. Story 7.16b: a `custom:` key of a Routes Manager
+ *  file is that file's canvas by SHAPE — whether the template still exists is `editorData`'s question, never this one's. */
+export const canvasOfTemplateKey = (key: string): Canvas | null =>
+  (Object.keys(CANVASES) as CanvasKey[]).find((canvas) => templateKeyOf(canvas) === key) ??
+  (key.startsWith('custom:') ? routeCanvasOf(key.slice('custom:'.length)) : null)
 
-/** The `project_templates.template_key` a canvas stores under. A membership canvas is a custom template, so its key
- *  names its file; every other canvas's key IS its segment. */
-export const templateKeyOf = (key: CanvasKey): string =>
-  isMembership(key) ? `custom:${CANVASES[key].file}` : key
+/** The `project_templates.template_key` a canvas stores under. A membership canvas and a Routes Manager one are custom
+ *  templates, so their key names their file; every other canvas's key IS its segment. */
+export const templateKeyOf = (key: Canvas): string =>
+  isRouteCanvas(key) || isMembership(key) ? `custom:${fileOf(key)}` : key
 
 /** STORY 5.16 — PAGE 2 OF EACH CANVAS THAT PAGINATES, as data (R-178, R-179): the `project_templates.template_key` its
  *  own design is stored under, and the file that design compiles to. It is a design of its own, shared by every later
@@ -125,8 +170,11 @@ export const PAGE_TWO: Partial<Readonly<Record<CanvasKey, { key: string; file: s
   author: { key: 'author-paged', file: 'author.hbs' },
 }
 
+/** A canvas's page 2, or undefined for a canvas with none — a Routes Manager canvas never has one (its posts are 7.16c's). */
+export const pageTwoOfCanvas = (canvas: Canvas): { key: string; file: string } | undefined => (isRouteCanvas(canvas) ? undefined : PAGE_TWO[canvas])
+
 /** The key a canvas's page 2 is stored under, or null for a canvas with no page 2. */
-export const pageTwoKeyOf = (canvas: CanvasKey): string | null => PAGE_TWO[canvas]?.key ?? null
+export const pageTwoKeyOf = (canvas: Canvas): string | null => pageTwoOfCanvas(canvas)?.key ?? null
 
 /** `pageTwoKeyOf`'s inverse: the canvas a stored page-2 key belongs to, or null for every other key. */
 export const canvasOfPageTwoKey = (key: string): CanvasKey | null =>
@@ -142,15 +190,26 @@ export const fileOfKey = (key: string): string => {
   const paged = canvasOfPageTwoKey(key)
   if (paged !== null) return PAGE_TWO[paged]?.file as string
   const canvas = canvasOfTemplateKey(key)
-  if (canvas !== null) return CANVASES[canvas].file
+  if (canvas !== null) return fileOf(canvas)
   return key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
 }
 
 /** STORY 7.3 — D5f (FR-I1): WOULD THIS DELETE EMPTY A DESIGNED CUSTOM TEMPLATE? A `custom-{name}.hbs` doc holding exactly
  *  one instance — hidden ones counted, because hiding is not emptying (FR-D5) — stops shipping when it goes, and Ghost
- *  falls back to `page.hbs` without a word (`templates.js`), so the editor asks first. */
-export const emptiesCustomTemplate = (key: string, doc: { readonly instances: readonly unknown[] } | undefined): boolean =>
-  CUSTOM_TARGET_RE.test(fileOfKey(key)) && doc?.instances.length === 1
+ *  falls back to `page.hbs` without a word (`templates.js`), so the editor asks first.
+ *
+ *  STORY 7.16b (DW-344's first half) — AND WHICH ASK: `routed` is the files a route names (`routedOf`), and a routed template
+ *  KEEPS shipping when emptied (Story 7.3's `routed`: its layout line alone), so it is asked in `ROUTED_EMPTY_ASK`'s words,
+ *  never "stops shipping". Null when the delete empties no custom template. */
+export const emptiesCustomTemplate = (
+  key: string,
+  doc: { readonly instances: readonly unknown[] } | undefined,
+  routed: readonly string[] = [],
+): 'stops' | 'keeps' | null => {
+  const file = fileOfKey(key)
+  if (!CUSTOM_TARGET_RE.test(file) || doc?.instances.length !== 1) return null
+  return routed.includes(file) ? 'keeps' : 'stops'
+}
 
 /** …and its words, as one list (R-170), in `SITE_WIDE_ASK`'s shape. "Delete" for the frame's "Remove": the gesture, the
  *  Layers row and the site-wide confirm all say Delete. `label` is the canvas's D5b label and `file` is `fileOfKey`'s; the
@@ -167,12 +226,40 @@ export const EMPTY_TEMPLATE_ASK = {
   confirm: 'Delete section',
 } as const
 
+/** STORY 7.16b — D5f'S ROUTED SENTENCE (DW-344's first half), in its dialog: the last section off a template a route still
+ *  shows. The body comes split around the paths, which the dialog sets in D5f's mono chip as it does the file. */
+export const ROUTED_EMPTY_ASK = {
+  title: EMPTY_TEMPLATE_ASK.title,
+  body: (paths: readonly string[]) =>
+    [
+      'This template keeps shipping, because ',
+      paths.join(', '),
+      ` ${paths.length > 1 ? 'show' : 'shows'} it. Visitors there will see only your header and footer until you add a section.`,
+    ] as const,
+  cancel: EMPTY_TEMPLATE_ASK.cancel,
+  confirm: EMPTY_TEMPLATE_ASK.confirm,
+} as const
+
+/** STORY 7.16b — THE DELETED-TEMPLATE NOTICE (R-250): B5a's strip above the canvas, and the same sentence in `#editor-said`,
+ *  when the template an editor had open is no longer one of the project's — at load, or at the next save of that canvas. */
+export const TEMPLATE_GONE = {
+  said: (name: string) => `“${name}” is no longer one of your templates, so you're on Home.`,
+  dismiss: 'Dismiss',
+} as const
+
+/** STORY 7.16b — R-128's pair in the Template menu (D5b `:163`, `:178`): the group's heading, set in capitals as the menu's
+ *  own heading is, and the row that names a new template on Routes & Templates. */
+export const ROUTES_GROUP = {
+  heading: 'From the Routes Manager',
+  newTemplate: 'New template',
+} as const
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Checked before any query, so Postgres never sees `abc` (22P02). */
 export const isUuid = (id: string) => UUID.test(id)
 
-export const canvasPath = (projectId: string, key: CanvasKey = 'home') =>
+export const canvasPath = (projectId: string, key: Canvas = 'home') =>
   key === 'home' ? `/projects/${projectId}` : `/projects/${projectId}/${key}`
 
 /** THE SCHEME'S ONE NON-CANVAS SEGMENT (Story 5.6, R-131): Theme settings, `/projects/<id>/settings` — D6a's project-mode
@@ -198,6 +285,9 @@ export const translationsPath = (projectId: string) => `${settingsPath(projectId
  *  `editor.test.ts` carries the same three assertions it carries for `settings`, `sync` and `lock`. */
 export const ROUTES = 'routes'
 export const routesPath = (projectId: string) => `/projects/${projectId}/${ROUTES}`
+/** STORY 7.16b — the Template menu's "New template": Routes & Templates with its New template sheet open (routine call 8). */
+export const NEW_TEMPLATE_QUERY = { new: 'template' } as const
+export const newTemplatePath = (projectId: string) => `${routesPath(projectId)}?new=${NEW_TEMPLATE_QUERY.new}`
 
 /** THE SCHEME'S SECOND NON-CANVAS SEGMENT (Story 5.8, R-131 applied a second time): the sync route AD-15's flush
  *  posts to — the one path the 3-minute timer, ⌘S and `fetch(..., { keepalive: true })` at tab close all take.
@@ -224,15 +314,21 @@ export const lockPath = (projectId: string) => `/projects/${projectId}/${LOCK}`
 
 /** The canvas a segment names, or null for a reserved, unknown or CONDITIONAL one — a canvas the switcher offers to
  *  nobody must not be reachable by typing its address either, and refusing it here is the only refusal that is
- *  synchronous (see `CONDITIONAL`). `'home'` is a key; the route 308s it. */
-export const canvasFromSegment = (segment: string): CanvasKey | null =>
-  Object.hasOwn(CANVASES, segment) && CONDITIONAL[segment as CanvasKey] === undefined ? (segment as CanvasKey) : null
+ *  synchronous (see `CONDITIONAL`). `'home'` is a key; the route 308s it.
+ *
+ *  STORY 7.16b — A SEGMENT IN THE DATABASE'S SHAPE IS A ROUTES MANAGER CANVAS, decided here and synchronously, with no read:
+ *  one that names no template opens Home with the deleted-template notice (routine call 9), because a `notFound()` after a
+ *  database read serves Next's bare error page. A segment outside the shape (`custom-Bad_x`, `custom--x`) stays a 404. */
+export const canvasFromSegment = (segment: string): Canvas | null =>
+  Object.hasOwn(CANVASES, segment)
+    ? CONDITIONAL[segment as CanvasKey] === undefined ? (segment as CanvasKey) : null
+    : routeCanvasOf(`${segment}.hbs`)
 
 /** `/projects/<anything>` and below; never `/projects` itself. Takes a path with `/app` already stripped. */
 export const isEditorPath = (pathname: string) => /^\/projects\/[^/]+/.test(pathname)
 
 /** The canvas an editor path is showing (stripped path), or null when the segment is not a canvas. */
-export const canvasOfPath = (pathname: string): CanvasKey | null => {
+export const canvasOfPath = (pathname: string): Canvas | null => {
   const segment = pathname.split('/')[3]
   return segment === undefined || segment === '' ? 'home' : canvasFromSegment(segment)
 }

@@ -276,7 +276,7 @@
 // agreeing with `routes_config` byte for byte; and the project cleaned up through the product to S9d and handed back. Every
 // sentence is `lib/routes.ts`' `ROUTES_WORDS` or the runtime's `ROUTE_WORDS`, every file the runtime's own `routesYaml` of
 // the expected config. It RE-EXPECTS STEP 40: the rule and "Manage routes" now end the Template menu, while "+ New template"
-// and FROM THE ROUTES MANAGER stay absent until Story 7.16b (R-245). And `finally` now counts PROJECTS before and after, as
+// and FROM THE ROUTES MANAGER stayed out for Story 7.16b (R-245). And `finally` now counts PROJECTS before and after, as
 // it always counted users — both throwaway accounts' projects must go with them. Besides the product's own writes it writes
 // THROUGH THE SERVICE KEY on that project alone: 109n's plants and restores (`routes_config` PATCHes — a stored collection
 // naming a missing template, a config that is not an object, Ghost's default — and one `project_templates` `custom:` row,
@@ -284,6 +284,19 @@
 // (2026-10-17) adds: the condition row's × found by the ROW's word ("Published", `FIELDS`' `row`), never the picker's label;
 // the operator menu by keyboard (109c); the database's 23505 floor through the action, said as the naming step's sentence
 // (109h); and the toast's Undo held in flight — "Restoring…", aria-busy, a second press sending nothing (109i).
+// Story 7.16b adds step 110, in a context of its own and reading only steps 1–5's names: CUSTOM TEMPLATES ON THE CANVAS on
+// production (FR-D6, FR-I3, D5b, D5f, R-250) — the Template menu's tail with no template (a rule, New template, Manage routes,
+// no heading); "New template" by keyboard saying "Opening…" over the routes page's own skeleton, the sheet up with focus in
+// Name, Esc leaving the page as it was; Create opening the new canvas empty with the tab's title; D5b's group and row (glyph,
+// display name, "Custom template", Empty, highlighted); the picker offering a22/1 and a4/13 and never a17/1 or a24/1 (Home and
+// Post the control), a22/1 stored under `custom:<file>` and the mark designed after a reload; D5f's routed sentence with a
+// static route PLANTED through the service key, and EMPTY_TEMPLATE_ASK once it is removed (the control); the designed
+// template's delete confirmed (its design line), Cancel, Delete and Undo, the doc byte-equal; and two pages — a ⌘S on a
+// template deleted in the other moving the editor Home with B5a's strip (R-250) and storing nothing, the old address doing
+// the same. It RE-EXPECTS STEP 6 (`custom-nonsense` answers 200 now; the 404s are `custom--x` and `custom-Bad_x`, outside the
+// key shape), STEP 40 (New template above Manage routes, under the one rule) and STEP 109n (c) (a designed
+// template's delete takes its doc and Undo restores it, where 7.16a refused it in a sentence of its own). Besides the product's own
+// writes it writes THROUGH THE SERVICE KEY on that project alone: 110f's two `routes_config` plants and the hand-back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -431,7 +444,7 @@ async function main() {
     // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
     // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
     // of them since Story 5.5.
-    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize, designate, parseDoc }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, LIB, DEVICE, PV] = await Promise.all([
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize, designate, parseDoc }, { CANVASES, canvasesOf, isMembership, ROUTES_GROUP, templateKeyOf }, LIB, DEVICE, PV] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
@@ -2325,6 +2338,16 @@ async function main() {
           rules: pop.querySelectorAll('hr').length,
           // Story 7.16a — the menu's last row: "Manage routes", after the rule
           manage: [...pop.querySelectorAll('button')].at(-1)?.matches('[data-manage-routes]') ? pop.querySelector('[data-manage-routes] [data-name]')?.textContent ?? null : null,
+          // Story 7.16b — the row above it: D5b's "New template", its name at 600 and no line under it
+          newTemplate: (() => {
+            const b = [...pop.querySelectorAll('button')].at(-2)
+            return b?.matches('[data-new-template]') ? { name: b.querySelector('[data-name]')?.textContent ?? null, weight: getComputedStyle(b.querySelector('[data-name]')).fontWeight, caption: b.querySelector('[data-caption]') !== null, glyph: b.firstElementChild?.tagName.toLowerCase() === 'svg' } : null
+          })(),
+          // and the rule sits straight above it, after Template surfaces — no heading over no rows (R-128)
+          ruleThenNew: (() => {
+            const above = pop.querySelector('[data-new-template]')?.closest('li')?.previousElementSibling
+            return above?.querySelector('hr') != null
+          })(),
         }
       })
     }
@@ -2349,9 +2372,12 @@ async function main() {
       JSON.stringify({ ...d5b.list, popoverScrolls: d5b.popoverScrolls }))
     const memberRows = d5b.rows.filter((r, n) => isMembership(OFFERED[n]))
     check('step 40 — R-129\'s three membership canvases sit under a "Membership" heading, indented', d5b.groups.includes('Membership') && memberRows.length === OFFERED.filter(isMembership).length && memberRows.every((r) => r.indent === '31px'), JSON.stringify({ groups: d5b.groups, member: memberRows }))
-    // Story 7.16a: the rule and "Manage routes" arrive now (S9a's caption), while "+ New template" and FROM THE ROUTES MANAGER
-    // stay absent until Story 7.16b (R-128's pair, R-245)
-    check('step 40 — R-128: no "+ New template" and no FROM THE ROUTES MANAGER heading (Story 7.16b); since Story 7.16a one rule and "Manage routes" last', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 1 && d5b.manage === 'Manage routes', JSON.stringify({ rules: d5b.rules, manage: d5b.manage, text: d5b.text.slice(0, 200) }))
+    // Story 7.16a: the rule and "Manage routes" (S9a's caption). Story 7.16b RE-EXPECTS IT (R-128's pair, R-245): on a project
+    // with no Routes Manager template, the rule, then D5b's "New template", then "Manage routes" — and no heading over no rows
+    check('step 40 — R-128 (Story 7.16b): no FROM THE ROUTES MANAGER heading on a project with no template; one rule, then "New template" (a glyph, 600, no line), then "Manage routes" last',
+      !new RegExp(ROUTES_GROUP.heading, 'i').test(d5b.text) && d5b.rules === 1 && d5b.ruleThenNew && d5b.manage === 'Manage routes' &&
+      d5b.newTemplate?.name === ROUTES_GROUP.newTemplate && d5b.newTemplate.weight === '600' && d5b.newTemplate.caption === false && d5b.newTemplate.glyph,
+      JSON.stringify({ rules: d5b.rules, ruleThenNew: d5b.ruleThenNew, manage: d5b.manage, newTemplate: d5b.newTemplate, text: d5b.text.slice(0, 200) }))
     // THE OWNER'S SECOND FINDING (2026-09-18): the heading drew a chevron and nothing happened. It is a button now,
     // so the group shuts and opens, and the rows are GONE while it is shut rather than merely hidden — a hidden button
     // is still one `arrowKeys` would step onto.
@@ -6448,10 +6474,15 @@ async function main() {
     // asked for one — a canvas the switcher does not offer must not be reachable by typing its address either
     // (Story 5.20 opened `paywall`, the first template surface, and Story 7.13 `cards`, Editor cards: both are in
     // OFFERED now, and answer 200 above)
-    for (const key of ['index', 'private', 'custom-x', 'custom-nonsense', 'nonsense']) {
+    // Story 7.16b RE-EXPECTS IT: a `custom-…` segment in the database's key shape is a Routes Manager canvas, decided with
+    // no read — one that names no template answers 200 and the editor shows Home with the notice (step 110h) — so the
+    // 404s are the segments OUTSIDE that shape, still refused synchronously
+    for (const key of ['index', 'private', 'custom--x', 'custom-Bad_x', 'nonsense']) {
       const r = await context.request.get(editorUrl(key), { maxRedirects: 0 })
       check(`step 6 — /${key} answers 404`, r.status() === 404 && /Page not found/.test(await r.text()), `HTTP ${r.status()}`)
     }
+    const shaped6 = await context.request.get(editorUrl('custom-nonsense'), { maxRedirects: 0 })
+    check('step 6 — Story 7.16b: /custom-nonsense, in the key shape and naming no template, answers 200 (the editor moves to Home and says why, step 110h)', shaped6.status() === 200, `HTTP ${shaped6.status()}`)
     const fourOhFour = async (id) => {
       const r = await context.request.get(at(`/projects/${id}`), { maxRedirects: 0 })
       const body = await r.text()
@@ -10177,12 +10208,16 @@ async function main() {
       backB109.valid === W109.valid && backB109.problems.length === 0 && backB109.lines > 0 && JSON.stringify(await lists109(rp)) === JSON.stringify(soundN109.lists),
       JSON.stringify({ backB109 }))
 
-    // (c) a design planted on a template's canvas AFTER the page loaded: the page's own list says no design, so the press
-    // reaches the server, whose `deleteTemplate` refuses it with `hasDesign` — the row, the config and the list unchanged
+    // (c) a doc planted on a template's canvas AFTER the page loaded (empty, so the page's list still reads no design) —
+    // STORY 7.16b RE-EXPECTS IT: 7.16a's refusal is retired, so ⋯ → Delete reaches the server, whose `deleteTemplate`
+    // takes the doc WITH the row (config, then doc, then row): neither is left. The toast's Undo puts the row, the doc and the
+    // config back (row, then doc, then config), the doc byte-equal; the plant is then removed and read back gone
     const ctC109 = await ct109()
     const victimC109 = ctC109?.[0] ?? null
     const keyC109 = victimC109 ? `custom:${victimC109.filename}` : null
-    const plantC109 = keyC109 === null ? { status: 0 } : await call('/rest/v1', '/project_templates', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: keyC109, doc: { instances: [] } }) })
+    const docOfC109 = async () => (keyC109 === null ? null : (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyC109)}&select=doc`)).body)
+    const plantC109 = keyC109 === null ? { status: 0 } : await call('/rest/v1', '/project_templates', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: keyC109, doc: { schemaVersion: 1, instances: [] } }) })
+    const plantedDocC109 = await docOfC109()
     const usedC109 = victimC109 !== null && RT109.pathsUsing(cfg109, victimC109.filename).length > 0
     const rowC109 = await rowN109()
     const sentC109 = posts109
@@ -10192,16 +10227,22 @@ async function main() {
         await rp.locator(`${CONFIRM109} button:not([data-cancel])`).click()
       }
     }
-    const failedC109 = await until109(rp, () => s9b109(rp), (v) => v.failed !== null, 60)
+    const toastC109 = victimC109 !== null && await toast109(rp, W109.deleted(victimC109.display_name)).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+    const goneC109 = { ct: await ct109(), doc: await docOfC109() }
+    check(`step 109n (c) — Story 7.16b: a doc on ${victimC109?.filename ?? '(no template)'}'s canvas, planted after the page loaded: ⋯ → ${W109.delete}${usedC109 ? ' (through its confirm)' : ''} sends its write and the server takes the doc WITH the row — neither left — and the toast offers Undo`,
+      victimC109 !== null && plantC109.status === 201 && Array.isArray(plantedDocC109) && plantedDocC109.length === 1 && posts109 - sentC109 >= 1 && toastC109 &&
+      !goneC109.ct.some((r) => r.id === victimC109.id) && Array.isArray(goneC109.doc) && goneC109.doc.length === 0,
+      JSON.stringify({ victim: victimC109?.filename ?? null, plant: plantC109.status, sent: posts109 - sentC109, toast: toastC109, gone: goneC109 }))
+    if (toastC109) await toast109(rp, W109.deleted(victimC109.display_name)).locator('button').click()
+    await until109(rp, () => ct109(), (v) => Array.isArray(v) && v.some((r) => r.id === victimC109?.id), 60)
     await rp.waitForTimeout(700)
-    const afterC109 = { ct: await ct109(), row: await rowN109(), lists: await lists109(rp) }
+    const backC109 = { ct: await ct109(), doc: await docOfC109(), row: await rowN109() }
+    check('step 109n (c) — its Undo puts all three back: the template row exactly (id, name, file, created_at), the doc byte-equal, routes_config as it was',
+      JSON.stringify(backC109.ct) === JSON.stringify(ctC109) && canon109(backC109.doc) === canon109(plantedDocC109) && canon109(backC109.row?.config) === canon109(rowC109?.config) && backC109.row?.yaml === rowC109?.yaml,
+      JSON.stringify({ backC109, ctC109, plantedDocC109 }))
     const unplantC109 = keyC109 === null ? { status: 0 } : await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyC109)}`, { method: 'DELETE' })
-    const leftC109 = keyC109 === null ? null : (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyC109)}&select=template_key`)).body
-    check(`step 109n (c) — a design on ${victimC109?.filename ?? '(no template)'}'s canvas, planted after the page loaded: ⋯ → ${W109.delete}${usedC109 ? ' (through its confirm)' : ''} sends its write and the server refuses it — "${victimC109 ? W109.hasDesign(victimC109.display_name) : ''}" — the template still listed, custom_templates and routes_config unchanged; the plant removed and read back gone`,
-      victimC109 !== null && plantC109.status === 201 && posts109 - sentC109 >= 1 && failedC109.failed === W109.hasDesign(victimC109.display_name) &&
-      afterC109.lists.templates.includes(victimC109.filename) && JSON.stringify(afterC109.ct) === JSON.stringify(ctC109) && JSON.stringify(afterC109.row) === JSON.stringify(rowC109) &&
-      [200, 204].includes(unplantC109.status) && Array.isArray(leftC109) && leftC109.length === 0,
-      JSON.stringify({ victim: victimC109?.filename ?? null, plant: plantC109.status, sent: posts109 - sentC109, failed: failedC109.failed, unplant: unplantC109.status, leftC109 }))
+    const leftC109 = await docOfC109()
+    check('step 109n (c) — the plant removed and read back gone', [200, 204].includes(unplantC109.status) && Array.isArray(leftC109) && leftC109.length === 0, JSON.stringify({ unplant: unplantC109.status, leftC109 }))
     // (d) Ghost's default routing stored while templates exist: S9a, not S9d — the Templates list, Valid, and the pane's
     // one line saying the site uses Ghost's default routing (no file to show) — and the control, the sound config back
     await plant109({ config: RT109.EMPTY_ROUTES, yaml: null })
@@ -10265,6 +10306,361 @@ async function main() {
       end109.rc?.length === start109.rc?.length && canon109(end109.rc?.[0]?.config ?? null) === canon109(start109.rc?.[0]?.config ?? null) && (end109.rc?.[0]?.yaml ?? null) === (start109.rc?.[0]?.yaml ?? null) &&
       Array.isArray(end109.ct) && end109.ct.length === 0 && s9dBack109 && JSON.stringify(end109.projects) === JSON.stringify(start109.projects) && csp109.length === 0,
       JSON.stringify({ end109, s9dBack109, csp109: csp109.slice(0, 3) }))
+
+    // ── step 110 — STORY 7.16b: CUSTOM TEMPLATES ON THE CANVAS, ON PRODUCTION (FR-D6, FR-I3, D5b, D5f, R-250, R-82) ──
+    /* In a context of its own, on the seeded project, and SELF-CONTAINED: it reads only steps 1–5's names (`P`, `ids`,
+       `magic`, `editorUrl`, `recorder`, `steady`, `steadyRequests`, `handBack`, `call`, `at`), so a cut copy can run steps 1–5
+       and this alone. Every sentence is `apps/web/lib/editor.ts`' (`ROUTES_GROUP`, `ROUTED_EMPTY_ASK`, `EMPTY_TEMPLATE_ASK`,
+       `TEMPLATE_GONE`, `CUSTOM_TEMPLATE_CAPTION`) or `lib/routes.ts`' `ROUTES_WORDS` (R-170); every stored row is read back
+       through the service key. The route 110f gives the template is PLANTED through the service key — the routes page's own
+       sheets are step 109's — and removed the same way; every other write is the product's. The Design Notes' walk, in order:
+       110a the menu's tail with no template (step 40's, re-read here); 110b "New template" by keyboard — "Opening…", the routes
+       page's skeleton, the sheet with focus in Name; 110c Create — the canvas, empty, and the tab's title; 110d the switcher's
+       group and row; 110e the picker (its control on Home and Post), a22/1 placed and stored under `custom:<file>`, the mark
+       designed after a reload; 110f D5f's routed sentence, and its control once the route is gone; 110g the designed delete,
+       Cancel, Delete and Undo; 110h two pages — a ⌘S on a template deleted elsewhere moves the editor Home with the notice,
+       storing nothing, and the old address does the same; 110i the project handed back. */
+    const [RT110, RW110, ED110, JR110] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href),
+    ])
+    const W110 = RW110.ROUTES_WORDS
+    const SYNCED110 = JR110.labelOf({ kind: 'rest', owed: false })
+    const canon110 = (v) => (Array.isArray(v) ? `[${v.map(canon110).join(',')}]`
+      : v !== null && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canon110(v[k])}`).join(',')}}` : JSON.stringify(v))
+    const ct110 = async () => (await call('/rest/v1', `/custom_templates?project_id=eq.${P}&select=id,filename,display_name,kind,created_at&order=created_at`)).body
+    const rc110 = async () => (await call('/rest/v1', `/routes_config?project_id=eq.${P}&select=config,yaml`)).body
+    const doc110 = async (key) => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key)}&select=doc`)).body
+    const projectName110 = (await call('/rest/v1', `/projects?id=eq.${P}&select=name`)).body?.[0]?.name ?? null
+    const start110 = { ct: await ct110(), rc: await rc110() }
+    check('step 110 — the fixture: the project has no Routes Manager template, read through the service key, and its name reads',
+      Array.isArray(start110.ct) && start110.ct.length === 0 && Array.isArray(start110.rc) && typeof projectName110 === 'string', JSON.stringify({ start110, projectName110 }))
+    const display110 = 'Walk Landing'
+    const named110 = RT110.templateName(display110)
+    const file110 = named110.file
+    const canvas110 = file110.replace(/\.hbs$/, '')
+    const key110 = `custom:${file110}`
+    const path110 = '/walk-landing/'
+
+    const ctx110 = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+    const csp110 = []
+    await recorder(ctx110, csp110)
+    const p110 = steady(await ctx110.newPage())
+    p110.on('pageerror', (e) => note('pageerror 110', String(e)))
+    await p110.goto(await magic(emailA), { waitUntil: 'load' })
+    const painted110 = (p, key) => p.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 }).then(() => true, () => false)
+    const openMenu110 = async (p) => {
+      await p.locator('#editor-template').focus()
+      await p.keyboard.press('Enter')
+      await p.waitForFunction(() => document.getElementById('editor-template-menu')?.matches(':popover-open'), null, { timeout: 10000 }).catch(() => {})
+      await p.waitForTimeout(250)
+    }
+    const closeMenu110 = async (p) => { await p.keyboard.press('Escape'); await p.waitForTimeout(250) }
+    /** the menu's tail after Template surfaces: each item as a word — a rule, the group's heading with its rows, New template, Manage routes */
+    const tail110 = (p) => p.evaluate(() => {
+      const items = [...(document.querySelector('#editor-template-menu ul[aria-labelledby="editor-template-heading"]')?.children ?? [])]
+      const from = items.findIndex((li) => li.querySelector('#editor-template-surfaces'))
+      return items.slice(from + 1).map((li) => (li.querySelector('hr') ? 'rule'
+        : li.querySelector('[data-new-template]') ? 'new'
+          : li.querySelector('[data-manage-routes]') ? 'manage'
+            : li.querySelector('#editor-template-routes') ? `group:${[...li.querySelectorAll('button[data-canvas]')].map((b) => b.dataset.canvas).join(',')}` : 'other'))
+    })
+    const row110 = (p, canvas) => p.evaluate((c) => {
+      const b = document.querySelector(`#editor-template-menu button[data-canvas="${c}"]`)
+      if (!b) return null
+      const mark = b.querySelector('[data-mark]')
+      return {
+        heading: document.getElementById('editor-template-routes')?.innerText ?? null,
+        under: b.closest('ul')?.getAttribute('aria-labelledby') ?? null,
+        glyph: b.firstElementChild?.tagName.toLowerCase() === 'svg' && !b.firstElementChild.hasAttribute('data-mark'),
+        name: b.querySelector('[data-name]')?.textContent ?? null,
+        caption: b.querySelector('[data-caption]')?.textContent ?? null,
+        mark: mark?.getAttribute('data-mark') ?? null,
+        title: mark?.closest('[title]')?.getAttribute('title') ?? null,
+        word: b.querySelector('[data-word]')?.textContent ?? '',
+        current: b.getAttribute('aria-current') === 'true',
+        tint: getComputedStyle(b).backgroundColor,
+        trigger: document.querySelector('#editor-template')?.textContent ?? null,
+      }
+    }, canvas)
+    const save110 = async (p) => {
+      await p.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+      await p.keyboard.press('ControlOrMeta+s')
+      return p.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED110, { timeout: 20000 }).then(() => true, () => false)
+    }
+    const offered110 = async (p) => {
+      await p.locator('section[aria-label="Canvas"]').focus()
+      await p.keyboard.press('ControlOrMeta+k')
+      await p.locator('dialog[open][aria-label="Add a section"]').waitFor({ state: 'visible', timeout: 15000 }).catch(() => {})
+      await p.waitForTimeout(400)
+      return p.evaluate(() => [...document.querySelectorAll('dialog[open][aria-label="Add a section"] [data-cell]')].map((c) => c.dataset.design))
+    }
+    const ownRows110 = (p) => p.evaluate((k) => [...document.querySelectorAll(`#editor-layers [data-layer-row^="${k}:"]`)].map((r) => r.querySelector('button')?.textContent ?? ''), key110)
+    const askOf110 = (p) => p.evaluate(() => {
+      const d = document.querySelector('dialog[aria-labelledby="editor-empty-title"]')
+      return d?.open ? { title: document.getElementById('editor-empty-title')?.textContent ?? null, body: document.getElementById('editor-empty-body')?.textContent ?? null, chip: document.querySelector('#editor-empty-body span.font-mono')?.textContent ?? null, focus: document.activeElement?.hasAttribute('data-cancel') ?? false } : null
+    })
+    const deleteLast110 = async (p, layer) => {
+      await p.locator('#editor-layers').getByRole('button', { name: `More for ${layer}`, exact: true }).click()
+      await p.waitForTimeout(250)
+      await p.getByRole('button', { name: 'Delete', exact: true }).click()
+      await p.locator('dialog[aria-labelledby="editor-empty-title"][open]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {})
+      await p.waitForTimeout(250)
+      return askOf110(p)
+    }
+    const plantRoute110 = (config) => call('/rest/v1', '/routes_config?on_conflict=project_id', {
+      method: 'POST',
+      headers: { Prefer: 'return=representation,resolution=merge-duplicates' },
+      body: JSON.stringify({ project_id: P, user_id: ids[0], config, yaml: RT110.routesYaml(config), updated_at: new Date().toISOString() }),
+    })
+
+    // 110a — Home, no template: after Template surfaces a rule, New template and Manage routes, and no heading (R-128)
+    await p110.goto(editorUrl(), { waitUntil: 'load' })
+    await painted110(p110, 'home')
+    await openMenu110(p110)
+    const tailA110 = await tail110(p110)
+    check('step 110a — with no template, the menu ends: a rule, New template, Manage routes — no FROM THE ROUTES MANAGER heading over no rows (R-128)',
+      JSON.stringify(tailA110) === JSON.stringify(['rule', 'new', 'manage']), JSON.stringify(tailA110))
+    // the picker's control, before the template exists: a17/1 is offered on Home and a24/1 on Post
+    await closeMenu110(p110)
+    const homeOffer110 = await offered110(p110)
+    await p110.keyboard.press('Escape')
+    await p110.goto(editorUrl('post'), { waitUntil: 'load' })
+    await painted110(p110, 'post')
+    const postOffer110 = await offered110(p110)
+    await p110.keyboard.press('Escape')
+    check('step 110a — the picker\'s control: Home offers a17/1 and Post offers a24/1 — so their absence on a Routes Manager canvas (110e) is the canvas\'s, never a library missing them',
+      homeOffer110.includes('a17/1') && postOffer110.includes('a24/1'), JSON.stringify({ homeOffer110, postOffer110 }))
+
+    // 110b — New template, by KEYBOARD: End lands on Manage routes, ↑ on New template, Enter presses it
+    await p110.goto(editorUrl(), { waitUntil: 'load' })
+    await painted110(p110, 'home')
+    await openMenu110(p110)
+    await p110.keyboard.press('End')
+    await p110.keyboard.press('ArrowUp')
+    const focusB110 = await p110.evaluate(() => ({ new: !!document.activeElement?.matches('[data-new-template]'), name: document.activeElement?.querySelector('[data-name]')?.textContent ?? null }))
+    await p110.evaluate((w) => {
+      const seen = { names: [], busy: false, skeleton: false, skeletonBeforeSheet: null }
+      window.__seen110 = seen
+      const read = () => {
+        const b = document.querySelector('[data-new-template]')
+        const n = b?.querySelector('[data-name]')?.textContent
+        if (n !== undefined && n !== seen.names.at(-1)) seen.names.push(n)
+        if (b?.getAttribute('aria-busy') === 'true' && b.getAttribute('aria-disabled') === 'true') seen.busy = true
+        if ([...document.querySelectorAll('[aria-busy="true"] > p.sr-only')].some((x) => x.textContent === w.loading)) seen.skeleton = true
+        if (seen.skeletonBeforeSheet === null && document.querySelector('dialog[aria-labelledby="routes-sheet-title"][open]')) seen.skeletonBeforeSheet = seen.skeleton
+      }
+      read()
+      new MutationObserver(read).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true })
+    }, { loading: W110.loading })
+    await p110.keyboard.press('Enter')
+    const arrivedB110 = await p110.waitForURL((u) => u.pathname.endsWith(ED110.routesPath(P)) && u.searchParams.get('new') === ED110.NEW_TEMPLATE_QUERY.new, { timeout: 30000 }).then(() => true, () => false)
+    const sheetB110 = await p110.locator('dialog[aria-labelledby="routes-sheet-title"][open]').waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false)
+    await p110.waitForTimeout(300)
+    const atB110 = await p110.evaluate(() => ({ title: document.getElementById('routes-sheet-title')?.textContent ?? null, focus: document.activeElement?.id ?? null, seen: window.__seen110 ?? null }))
+    check(`step 110b — keyboard: End then ↑ lands on "${ED110.ROUTES_GROUP.newTemplate}"; Enter makes it read "${W110.opening}" (aria-busy + aria-disabled), the routes page's own skeleton shows BEFORE the sheet, and Routes & Templates opens with "${W110.newTemplateTitle}" up and focus in Name — the observer's control: it heard the name at rest first`,
+      focusB110.new && focusB110.name === ED110.ROUTES_GROUP.newTemplate && arrivedB110 && sheetB110 && atB110.title === W110.newTemplateTitle && atB110.focus === 'routes-new-template' &&
+      atB110.seen?.names[0] === ED110.ROUTES_GROUP.newTemplate && atB110.seen.names.includes(W110.opening) && atB110.seen.busy && atB110.seen.skeleton && atB110.seen.skeletonBeforeSheet === true,
+      JSON.stringify({ focusB110, arrivedB110, sheetB110, atB110, url: p110.url() }))
+    // Cancel from that entry: the sheet closes and the page stays (Esc, the platform's)
+    await p110.keyboard.press('Escape')
+    await p110.waitForTimeout(400)
+    const cancelB110 = await p110.evaluate(() => ({ sheet: !!document.querySelector('dialog[aria-labelledby="routes-sheet-title"][open]'), path: location.pathname }))
+    check('step 110b — Cancel from that entry (Esc): the sheet closes and the page stays on Routes & Templates, nothing written',
+      !cancelB110.sheet && cancelB110.path.endsWith(ED110.routesPath(P)) && JSON.stringify(await ct110()) === JSON.stringify(start110.ct), JSON.stringify(cancelB110))
+
+    // 110c — Create from the entry: the row is written, then the editor opens the new canvas, empty, with its title
+    await p110.goto(at(`${ED110.newTemplatePath(P)}`), { waitUntil: 'load' })
+    await p110.locator('dialog[aria-labelledby="routes-sheet-title"][open]').waitFor({ state: 'visible', timeout: 30000 }).catch(() => {})
+    await p110.waitForTimeout(300)
+    await p110.keyboard.type(display110)
+    const namingC110 = await p110.evaluate(() => ({ file: document.querySelector('dialog[open] [data-file]')?.textContent ?? null, label: document.querySelector('dialog[open] [data-label]')?.textContent ?? null }))
+    await p110.evaluate((w) => {
+      const seen = { creating: false }
+      window.__made110 = seen
+      new MutationObserver(() => {
+        const s = document.querySelector('dialog[aria-labelledby="routes-sheet-title"] button[type="submit"]')
+        if (s && s.innerText.trim() === w) seen.creating = true
+      }).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true })
+    }, W110.creating)
+    await p110.keyboard.press('Enter')
+    const openedC110 = await p110.waitForURL((u) => u.pathname.endsWith(`/projects/${P}/${canvas110}`), { timeout: 30000 }).then(() => true, () => false)
+    const paintedC110 = await painted110(p110, canvas110)
+    await p110.waitForTimeout(500)
+    const ctC110 = await ct110()
+    const titleC110 = await p110.title()
+    const ownC110 = await ownRows110(p110)
+    check(`step 110c — Create: the sheet names ${file110} and "${W110.ghostWillShow(named110.label)}", says "${W110.creating}", writes the row, then the editor opens /projects/<id>/${canvas110} EMPTY, the tab titled "${projectName110} · ${display110} — Inflozo"`,
+      namingC110.file === file110 && namingC110.label === W110.ghostWillShow(named110.label) && openedC110 && paintedC110 &&
+      ctC110?.length === 1 && ctC110[0].filename === file110 && ctC110[0].display_name === display110 && ctC110[0].kind === 'routes' &&
+      titleC110 === `${projectName110} · ${display110} — Inflozo` && ownC110.length === 0,
+      JSON.stringify({ namingC110, openedC110, paintedC110, ctC110, titleC110, ownC110, url: p110.url() }))
+    note('step 110c — "Creating…" heard on the sheet\'s button while it wrote and opened the canvas', String((await p110.evaluate(() => window.__made110?.creating ?? null).catch(() => null)) ?? 'the page had moved on before it could be read'))
+
+    // 110d — the switcher: the heading, then the row — glyph, name, "Custom template", Empty — highlighted, and the trigger's name
+    await openMenu110(p110)
+    const tailD110 = await tail110(p110)
+    const rowD110 = await row110(p110, canvas110)
+    check(`step 110d — D5b as R-171/R-172 re-specify it: after Template surfaces a rule, "${ED110.ROUTES_GROUP.heading.toUpperCase()}" over the one row, a rule, New template, Manage routes; the row a glyph, "${display110}", "${ED110.CUSTOM_TEMPLATE_CAPTION}" and R-130's Empty (never Auto-generated), highlighted coral with no tick, the trigger naming it`,
+      JSON.stringify(tailD110) === JSON.stringify(['rule', `group:${canvas110}`, 'rule', 'new', 'manage']) && rowD110 !== null &&
+      rowD110.heading === ED110.ROUTES_GROUP.heading.toUpperCase() && rowD110.under === 'editor-template-routes' && rowD110.glyph && rowD110.name === display110 &&
+      rowD110.caption === ED110.CUSTOM_TEMPLATE_CAPTION && rowD110.mark === 'empty' && rowD110.title === 'Empty' && rowD110.word === 'Empty' && rowD110.current && rowD110.tint === 'rgb(255, 237, 232)' &&
+      (rowD110.trigger ?? '').includes(display110),
+      JSON.stringify({ tailD110, rowD110 }))
+    // R-74's side-by-side: the switcher open on the Routes Manager canvas at 1440, for the Review to set beside D5b
+    await p110.screenshot({ path: `${OUT}/switcher-routes-1440x900.png` })
+    await closeMenu110(p110)
+
+    // 110e — the picker on the Routes Manager canvas: a22/1 and a4/13 (and the site-wide designs), never a17/1 or a24/1
+    const offerE110 = await offered110(p110)
+    check('step 110e — the picker on a Routes Manager canvas offers a22/1 and a4/13 and never a17/1 or a24/1 (110a holds the control)',
+      offerE110.includes('a22/1') && offerE110.includes('a4/13') && !offerE110.includes('a17/1') && !offerE110.includes('a24/1'), JSON.stringify(offerE110))
+    await p110.locator('dialog[open][aria-label="Add a section"] [data-cell][data-design="a22/1"]').click()
+    await p110.waitForTimeout(800)
+    const ownE110 = await ownRows110(p110)
+    const syncedE110 = await save110(p110)
+    const storedE110 = await doc110(key110)
+    check(`step 110e — a22/1 placed lands on the canvas's OWN doc, and ⌘S stores it under ${key110} — one section, a22/1`,
+      ownE110.length === 1 && syncedE110 && storedE110?.length === 1 && storedE110[0].doc?.instances?.length === 1 && storedE110[0].doc.instances[0].designId === 'a22/1',
+      JSON.stringify({ ownE110, syncedE110, storedE110 }))
+    const layer110 = ownE110[0] ?? ''
+    await p110.reload({ waitUntil: 'load' })
+    await painted110(p110, canvas110)
+    await openMenu110(p110)
+    const rowE110 = await row110(p110, canvas110)
+    await closeMenu110(p110)
+    check('step 110e — after a reload the row\'s mark reads designed: a FILLED dot and no word', rowE110?.mark === 'designed' && rowE110.word === '', JSON.stringify(rowE110))
+
+    // 110f — D5f's routed sentence: a static route names the template (planted), and the last section's delete asks in it
+    const routed110 = { collections: [], routes: [{ path: path110, template: file110 }], taxonomies: { ...RT110.DEFAULT_TAXONOMIES } }
+    const validF110 = RT110.validateRoutes(routed110, { templates: [file110] })
+    const plantF110 = await plantRoute110(routed110)
+    await p110.reload({ waitUntil: 'load' })
+    await painted110(p110, canvas110)
+    const askF110 = await deleteLast110(p110, layer110)
+    const wantF110 = ED110.ROUTED_EMPTY_ASK.body([path110])
+    check(`step 110f — ${path110} names it: deleting its last section asks D5f in its ROUTED words — "${ED110.ROUTED_EMPTY_ASK.title(display110)}" / "${wantF110.join('')}" — the path in the mono chip, opening on Keep it`,
+      validF110.length === 0 && [200, 201].includes(plantF110.status) && askF110 !== null && askF110.title === ED110.ROUTED_EMPTY_ASK.title(display110) &&
+      askF110.body === wantF110.join('') && askF110.chip === path110 && askF110.focus,
+      JSON.stringify({ validF110, plant: plantF110.status, askF110 }))
+    await p110.locator('dialog[aria-labelledby="editor-empty-title"] [data-cancel]').click()
+    await p110.waitForTimeout(400)
+    check(`step 110f — ${ED110.ROUTED_EMPTY_ASK.cancel}: the section stays`, JSON.stringify(await ownRows110(p110)) === JSON.stringify([layer110]), JSON.stringify(await ownRows110(p110)))
+    // the control: the route removed, the same delete asks in the old words — the template stops shipping
+    const plainF110 = await plantRoute110({ collections: [], routes: [], taxonomies: { ...RT110.DEFAULT_TAXONOMIES } })
+    await p110.reload({ waitUntil: 'load' })
+    await painted110(p110, canvas110)
+    const askG110 = await deleteLast110(p110, layer110)
+    check(`step 110f — the control: no route names it, so the same delete asks EMPTY_TEMPLATE_ASK, unchanged — "${ED110.EMPTY_TEMPLATE_ASK.body(file110).join('')}"`,
+      [200, 201].includes(plainF110.status) && askG110 !== null && askG110.title === ED110.EMPTY_TEMPLATE_ASK.title(display110) && askG110.body === ED110.EMPTY_TEMPLATE_ASK.body(file110).join('') && askG110.chip === file110,
+      JSON.stringify({ plain: plainF110.status, askG110 }))
+    await p110.locator('dialog[aria-labelledby="editor-empty-title"] [data-cancel]').click()
+    await p110.waitForTimeout(400)
+    await handBack(p110)
+
+    // 110g — Routes & Templates: the designed template's delete is confirmed, Cancel changes nothing, Delete takes all of it,
+    // Undo brings all of it back — the doc byte-equal
+    await p110.goto(at(ED110.routesPath(P)), { waitUntil: 'load' })
+    const menuG110 = async () => {
+      const more = p110.locator(`button[aria-label="${W110.more(display110)}"]`)
+      await more.waitFor({ state: 'visible', timeout: 30000 })
+      await more.click()
+      await p110.locator(`[id="${await more.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${W110.delete}$`) }).click()
+      return p110.locator('dialog[aria-labelledby="routes-delete-title"][open]').waitFor({ state: 'visible', timeout: 10000 }).then(() => true, () => false)
+    }
+    const beforeG110 = { ct: await ct110(), doc: await doc110(key110), rc: await rc110() }
+    const confirmG110 = await menuG110()
+    const wordsG110 = await p110.evaluate(() => {
+      const d = document.querySelector('dialog[aria-labelledby="routes-delete-title"][open]')
+      return d ? { text: d.querySelector('p')?.textContent ?? null, focus: document.activeElement?.hasAttribute('data-cancel') ?? false } : null
+    })
+    await p110.locator('dialog[aria-labelledby="routes-delete-title"][open] [data-cancel]').click()
+    await p110.waitForTimeout(500)
+    const cancelG110 = { ct: await ct110(), doc: await doc110(key110), rc: await rc110() }
+    check(`step 110g — ⋯ → ${W110.delete} on the designed template: the confirm opens on Cancel and says "${W110.designGoes}"; Cancel changes nothing (custom_templates, the doc and routes_config as they were)`,
+      confirmG110 && wordsG110?.text === W110.designGoes && wordsG110.focus && canon110(cancelG110) === canon110(beforeG110), JSON.stringify({ wordsG110, cancelG110, beforeG110 }))
+    await menuG110()
+    await p110.locator('dialog[aria-labelledby="routes-delete-title"][open] button:not([data-cancel])').click()
+    const toastG110 = await p110.locator('[role="status"]', { hasText: W110.deleted(display110) }).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+    const goneG110 = { ct: await ct110(), doc: await doc110(key110) }
+    check('step 110g — Delete confirmed: the row and its canvas\'s doc are both gone (a service read), and the toast offers Undo',
+      toastG110 && Array.isArray(goneG110.ct) && goneG110.ct.length === 0 && Array.isArray(goneG110.doc) && goneG110.doc.length === 0, JSON.stringify(goneG110))
+    await p110.locator('[role="status"]', { hasText: W110.deleted(display110) }).locator('button').click()
+    for (let n = 0; n < 60 && ((await ct110()) ?? []).length === 0; n++) await p110.waitForTimeout(250)
+    await p110.waitForTimeout(500)
+    const backG110 = { ct: await ct110(), doc: await doc110(key110), rc: await rc110() }
+    check('step 110g — Undo: the template row exactly (id, name, file, created_at), its doc BYTE-EQUAL, routes_config as it was',
+      JSON.stringify(backG110.ct) === JSON.stringify(beforeG110.ct) && canon110(backG110.doc) === canon110(beforeG110.doc) && canon110(backG110.rc) === canon110(beforeG110.rc),
+      JSON.stringify({ backG110, beforeG110 }))
+
+    // 110h — two pages: A has the editor on the canvas, B deletes the template; A's ⌘S stores nothing, moves Home and says why
+    const pageA110 = p110
+    await pageA110.goto(editorUrl(canvas110), { waitUntil: 'load' })
+    await painted110(pageA110, canvas110)
+    const pageB110 = steady(await ctx110.newPage())
+    pageB110.on('pageerror', (e) => note('pageerror 110 B', String(e)))
+    await pageB110.goto(at(ED110.routesPath(P)), { waitUntil: 'load' })
+    const moreB110 = pageB110.locator(`button[aria-label="${W110.more(display110)}"]`)
+    await moreB110.waitFor({ state: 'visible', timeout: 30000 })
+    await moreB110.click()
+    await pageB110.locator(`[id="${await moreB110.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${W110.delete}$`) }).click()
+    await pageB110.locator('dialog[aria-labelledby="routes-delete-title"][open]').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {})
+    await pageB110.locator('dialog[aria-labelledby="routes-delete-title"][open] button:not([data-cancel])').click()
+    await pageB110.locator('[role="status"]', { hasText: W110.deleted(display110) }).waitFor({ state: 'visible', timeout: 15000 }).catch(() => {})
+    const deletedH110 = { ct: await ct110(), doc: await doc110(key110) }
+    await pageB110.close()
+    // A makes a change on the canvas — its last section's delete, through D5f — and ⌘S
+    await pageA110.bringToFront()
+    await deleteLast110(pageA110, layer110)
+    await pageA110.locator('dialog[aria-labelledby="editor-empty-title"]').getByRole('button', { name: ED110.EMPTY_TEMPLATE_ASK.confirm, exact: true }).click()
+    await pageA110.waitForTimeout(400)
+    await pageA110.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await pageA110.keyboard.press('ControlOrMeta+s')
+    const homeH110 = await pageA110.waitForURL((u) => u.pathname.endsWith(`/projects/${P}`), { timeout: 30000 }).then(() => true, () => false)
+    await painted110(pageA110, 'home')
+    await pageA110.locator('#editor-gone-bar').waitFor({ state: 'visible', timeout: 10000 }).catch(() => {})
+    const goneWords110 = ED110.TEMPLATE_GONE.said(display110)
+    const barH110 = await pageA110.evaluate(() => {
+      const bar = document.getElementById('editor-gone-bar')
+      if (!bar) return null
+      const r = bar.getBoundingClientRect()
+      const c = getComputedStyle(bar)
+      return { text: bar.querySelector('span')?.textContent ?? null, dismiss: document.getElementById('editor-gone-dismiss')?.textContent ?? null, height: Math.round(r.height), bg: c.backgroundColor, glyph: bar.firstElementChild?.tagName.toLowerCase() === 'svg', said: document.getElementById('editor-said')?.textContent ?? '', switcher: [...document.querySelectorAll('#editor-template-menu button[data-canvas]')].map((b) => b.dataset.canvas) }
+    })
+    await pageA110.waitForTimeout(1500)
+    const storedH110 = await doc110(key110)
+    check(`step 110h — two pages: B deletes the template; A's ⌘S moves the editor to Home (the URL REPLACED), B5a's strip says "${goneWords110}" with "${ED110.TEMPLATE_GONE.dismiss}" and #editor-said the same, the switcher no longer lists it — and ${key110} is NOT re-stored`,
+      Array.isArray(deletedH110.ct) && deletedH110.ct.length === 0 && homeH110 && barH110 !== null && barH110.text === goneWords110 && barH110.dismiss === ED110.TEMPLATE_GONE.dismiss &&
+      barH110.height === 38 && barH110.glyph && barH110.said.includes(goneWords110) && !barH110.switcher.includes(canvas110) && Array.isArray(storedH110) && storedH110.length === 0,
+      JSON.stringify({ deletedH110, homeH110, barH110, storedH110 }))
+    // R-250's side-by-side: the notice strip at 1440, for the Review to set beside B5a
+    await pageA110.screenshot({ path: `${OUT}/template-gone-1440x900.png` })
+    // the old address, loaded: Home again, with the notice, Ghost's label for the file now that the editor never knew it
+    await pageA110.goto(editorUrl(canvas110), { waitUntil: 'load' })
+    const homeAgain110 = await pageA110.waitForURL((u) => u.pathname.endsWith(`/projects/${P}`), { timeout: 30000 }).then(() => true, () => false)
+    await painted110(pageA110, 'home')
+    const againWords110 = ED110.TEMPLATE_GONE.said(RT110.ghostLabel(file110))
+    const barAgain110 = await pageA110.locator('#editor-gone-bar span').textContent({ timeout: 10000 }).catch(() => null)
+    check(`step 110h — the old address, loaded: Home, the URL replaced, and the notice "${againWords110}"`, homeAgain110 && barAgain110 === againWords110, JSON.stringify({ homeAgain110, barAgain110 }))
+    // Dismiss: the strip goes, and focus lands on the Template switcher
+    await pageA110.locator('#editor-gone-dismiss').click()
+    await pageA110.waitForTimeout(300)
+    const dismissed110 = await pageA110.evaluate(() => ({ bar: !!document.getElementById('editor-gone-bar'), focus: document.activeElement?.id ?? null }))
+    check('step 110h — Dismiss: the strip goes, focus on the Template switcher', !dismissed110.bar && dismissed110.focus === 'editor-template', JSON.stringify(dismissed110))
+
+    // 110i — the project handed back: no template, no `custom:` doc of the step's, routing as the step found it
+    if (((await ct110()) ?? []).length > 0) await call('/rest/v1', `/custom_templates?project_id=eq.${P}`, { method: 'DELETE' })
+    await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key110)}`, { method: 'DELETE' })
+    if (start110.rc?.length === 0) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'DELETE' })
+    else if (start110.rc?.[0]) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ config: start110.rc[0].config, yaml: start110.rc[0].yaml }) })
+    await handBack(pageA110)
+    await ctx110.close()
+    const end110 = { ct: await ct110(), rc: await rc110(), doc: await doc110(key110) }
+    check('step 110i — the project is handed back as the step found it (no template, no doc of the step\'s, its routing row), and the block\'s context recorded zero CSP violations',
+      Array.isArray(end110.ct) && end110.ct.length === 0 && Array.isArray(end110.doc) && end110.doc.length === 0 && canon110(end110.rc) === canon110(start110.rc) && csp110.length === 0,
+      JSON.stringify({ end110, csp110: csp110.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

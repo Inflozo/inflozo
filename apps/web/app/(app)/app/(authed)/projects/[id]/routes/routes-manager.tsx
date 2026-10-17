@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useId, useOptimistic, useRef, useState, useTransition, type ReactNode } from 'react'
 import {
   DATE_UNITS, filterNql, filterProblem, holderOf, isChannel, isDefaultRouting, PATH_RE, pathsUsing, RESERVED_SEGMENTS, templateName, validateRoutes, VISIBILITIES,
@@ -24,7 +25,8 @@ import { StepperBox } from '@/components/kit/stepper'
 import { Submit } from '@/components/kit/submit'
 import { Toast } from '@/components/kit/toast'
 import { Toggle } from '@/components/kit/toggle'
-import { canvasPath, settingsPath } from '@/lib/editor'
+import { canvasPath, routeCanvasOf, settingsPath, type RouteCanvas } from '@/lib/editor'
+import { isApp } from '@/routing'
 import { addressOf, LISTS } from '@/lib/live-content'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from '@/lib/reorder'
@@ -66,9 +68,12 @@ type Props = {
   templates: readonly Template[]
   deployed: readonly string[]
   designed: readonly string[]
+  /** Story 7.16b — opened from the Template menu's "New template" (`?new=template`): the sheet is up on arrival */
+  fromMenu?: boolean
 }
 
-type Sheet = { kind: 'collection'; at: number | null } | { kind: 'route'; at: number | null } | { kind: 'template' }
+/** `entry` — Story 7.16b: the New template sheet the Template menu opened, whose Create opens the new canvas */
+type Sheet = { kind: 'collection'; at: number | null } | { kind: 'route'; at: number | null } | { kind: 'template'; entry?: true }
 type Undo = { words: string; run: () => Promise<RoutesResult> }
 
 const NEW = '\u0000new'
@@ -117,7 +122,7 @@ export function RoutesManager(props: Props) {
   const [undoing, startUndo] = useTransition()
   const [undo, setUndo] = useState<Undo | null>(null)
   const [failed, setFailed] = useState<string | null>(null)
-  const [open, setOpen] = useState<Sheet | null>(null)
+  const [open, setOpen] = useState<Sheet | null>(props.fromMenu === true ? { kind: 'template', entry: true } : null)
   const [confirm, setConfirm] = useState<Template | null>(null)
   const suggestions = useSuggestions(props.content)
   const known = templates.map((t) => t.file)
@@ -158,14 +163,11 @@ export function RoutesManager(props: Props) {
     const next = { ...config, [which]: config[which].filter((_, i) => i !== n) }
     save(next, { words: W.deleted(item.path), run: () => saveRoutes(null, formOf({ project: projectId, config: JSON.stringify(config) })) })
   }
-  /** A template's delete — the row leaves the list at once and stands gone only if the write does (its routes leave
-   *  with it, server side, config first). Awaited, so the confirm's Delete can say "Deleting…" until it is done (R-98). */
+  /** A template's delete — the row leaves the list at once and stands gone only if the write does (its routes and, since
+   *  Story 7.16b, its canvas's design leave with it, server side: config, then doc, then row). Awaited, so the confirm's
+   *  Delete can say "Deleting…" until it is done (R-98). */
   const dropTemplate = async (t: Template) => {
     if (config === null) return
-    if (designed.includes(t.file)) {
-      setFailed(W.hasDesign(t.name))
-      return
-    }
     const previous = config
     const routed = pathsUsing(config, t.file).length > 0
     setGone(t.id)
@@ -177,8 +179,14 @@ export function RoutesManager(props: Props) {
       setFailed(null)
       setUndo({
         words: W.deleted(t.name),
-        // the config only when the delete took routes with it — one that took none wrote none, so its Undo writes none
-        run: () => restoreTemplate(null, formOf({ project: projectId, template: JSON.stringify(t), ...(routed ? { config: JSON.stringify(previous) } : {}) })),
+        // the config only when the delete took routes with it — one that took none wrote none, so its Undo writes none —
+        // and the doc only when it took one (Story 7.16b): row, then doc, then config, server side
+        run: () => restoreTemplate(null, formOf({
+          project: projectId,
+          template: JSON.stringify(t),
+          ...(result.doc === undefined ? {} : { doc: JSON.stringify(result.doc) }),
+          ...(routed ? { config: JSON.stringify(previous) } : {}),
+        })),
       })
     }
   }
@@ -238,7 +246,7 @@ export function RoutesManager(props: Props) {
                   config={config}
                   templates={templates}
                   onNew={() => setOpen({ kind: 'template' })}
-                  onDelete={(t) => (pathsUsing(config, t.file).length > 0 && !designed.includes(t.file) ? setConfirm(t) : start(() => dropTemplate(t)))}
+                  onDelete={(t) => (pathsUsing(config, t.file).length > 0 || designed.includes(t.file) ? setConfirm(t) : start(() => dropTemplate(t)))}
                 />
                 <Taxonomies key={`${config.taxonomies.tag}/${config.taxonomies.author}`} projectId={projectId} config={config} known={known} onSaved={() => { setUndo(null); setFailed(null) }} />
               </>
@@ -270,6 +278,7 @@ export function RoutesManager(props: Props) {
         <DeleteTemplate
           template={confirm}
           paths={pathsUsing(config, confirm.file)}
+          designed={designed.includes(confirm.file)}
           onCancel={() => setConfirm(null)}
           onDelete={() => dropTemplate(confirm)}
         />
@@ -758,9 +767,18 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
   const [error, setError] = useState<string | null>(null)
   const known = templates.map((t) => t.file)
   const taken = { project: known, deployed }
+  const router = useRouter()
+  const prefix = isApp(usePathname()) ? '/app' : ''
+  /** Story 7.16b — the new canvas opening after the Template menu's Create: the button keeps saying "Creating…" while the
+   *  push runs (R-98), and the editor's own skeleton follows */
+  const [pending, startOpening] = useTransition()
+  const openCanvas = (canvas: RouteCanvas) => startOpening(() => router.push(`${prefix}${canvasPath(projectId, canvas)}`))
   useEffect(() => {
     const el = dialog.current
-    if (el && !el.open) el.showModal()
+    if (!el || el.open) return
+    el.showModal()
+    // Story 7.16b — a New template sheet opens with focus in Name, its one field (the Template menu's entry lands here)
+    if (open.kind === 'template') document.getElementById('routes-new-template')?.focus()
   }, [])
   const set = (patch: Partial<Draft>) => setD((was) => ({ ...was, ...patch }))
   const editing = open.kind !== 'template' && open.at !== null
@@ -825,6 +843,9 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
           }
           if ('error' in result) return setError(result.error)
           setError(null)
+          // Story 7.16b — the Template menu's entry opens the new canvas; the sheet stays up, saying "Creating…", until it does
+          const made = open.kind === 'template' && open.entry === true && result.file !== undefined ? routeCanvasOf(result.file) : null
+          if (made !== null) return openCanvas(made)
           dialog.current?.close()
           onSaved()
         }}
@@ -878,7 +899,7 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
         <div className="mt-[2px] flex justify-end gap-[10px]">
           {/* S9c's quiet Cancel (`:226`), as S7c's is drawn in `pack-editor.tsx` */}
           <button type="button" data-cancel onClick={() => dialog.current?.close()} className={`h-[38px] rounded-thumb px-[14px] text-ui-dense font-medium text-ink-soft transition-colors hover:bg-ink-wash ${ring}`}>{W.cancel}</button>
-          <Submit variant="primary" size={38} busy={busy}>{primary}</Submit>
+          <Submit variant="primary" size={38} busy={busy} pending={pending}>{primary}</Submit>
         </div>
       </form>
     </dialog>
@@ -1177,8 +1198,9 @@ function ValueOf({ id, c, where, suggestions, onChange }: { id: string; c: Cond;
 /* ───────────────────────────── the template delete's confirm ───────────────────────────── */
 
 /** S12c's confirm (`dialog.ts`'s `sheet`), extrapolated (R-247): it lists every route the delete removes and opens on Cancel
- *  (EXPERIENCE § Destructive confirms). */
-function DeleteTemplate({ template, paths, onCancel, onDelete }: { template: Template; paths: readonly string[]; onCancel: () => void; onDelete: () => Promise<void> }) {
+ *  (EXPERIENCE § Destructive confirms). Story 7.16b — and it says the design goes too, where the canvas holds one; Undo
+ *  brings all of it back. */
+function DeleteTemplate({ template, paths, designed, onCancel, onDelete }: { template: Template; paths: readonly string[]; designed: boolean; onCancel: () => void; onDelete: () => Promise<void> }) {
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     if (dialog.current && !dialog.current.open) openOnCancel(dialog.current)
@@ -1193,7 +1215,9 @@ function DeleteTemplate({ template, paths, onCancel, onDelete }: { template: Tem
         }}
       >
         <h2 id="routes-delete-title" className={confirmTitle}>{W.deleteTitle(template.name)}</h2>
-        <p className="mt-2 text-ui-dense leading-[1.5] text-ink-soft">{W.alsoRemoves(paths)}</p>
+        <p className="mt-2 text-ui-dense leading-[1.5] text-ink-soft">
+          {designed ? (paths.length > 0 ? W.alsoRemovesDesign(paths) : W.designGoes) : W.alsoRemoves(paths)}
+        </p>
         <div className="mt-6 flex justify-end gap-[10px]">
           <Button variant="secondary" data-cancel onClick={() => dialog.current?.close()}>{W.cancel}</Button>
           <Submit variant="danger" busy={W.deleting}>{W.delete}</Submit>

@@ -35,7 +35,7 @@
 // the final text as CI and the stress fixture do.
 //
 // Story 7.6 (FR-J5, AD-38, V1) makes the markup Ghost's: every template whose matrix row opens `{{#post}}` (`post.hbs`,
-// `page.hbs`, `custom-{name}.hbs`) wraps its sections in ONE `<article>`, `POST_ARTICLE`, carrying Ghost's `{{post_class}}`
+// `page.hbs`, a membership `custom-{name}.hbs`) wraps its sections in ONE `<article>`, `POST_ARTICLE`, carrying Ghost's `{{post_class}}`
 // and the `post-access-*` class Ghost's Casper writes for a visitor without access — no class of Inflozo's (AD-3), and
 // none on a design's own element (Question 1, ruled option 1, owner, 2026-10-08). Every `srcset` asks Ghost for WebP
 // (`srcsetExpr`, the runtime's one spelling). Two checks join the final ones: `checkGhostMarkup` over the final text —
@@ -81,7 +81,7 @@
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsCss, cardsCssVersion, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
   CATALOG, CUSTOM_TARGET_RE, designedCards, englishStrings, excludedChunks, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isSiteFooter, MAIN_JS_TAG, moduleUnion,
-  OWN_RULES_HEAD, ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, stripCssComments, targetContext, templateKeyOfFile,
+  OWN_RULES_HEAD, ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, ROUTE_TEMPLATE_TARGET, stripCssComments, targetContext, templateKeyOfFile,
   translatableKeys,
 } from '@inflozo/library'
 import type { CardDesigns, IconLookup, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
@@ -835,7 +835,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   if (refusedLanguage !== null) throw new Error(`language ${JSON.stringify(language)}: ${refusedLanguage} It names the theme's locales/<language>.json, so the build stops before any file is written (AD-36).`)
   for (const file of Object.keys(input.templates).sort(byCode)) {
     if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
-    if (!isCompileTarget(file)) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
+    // `ROUTE_TEMPLATE_TARGET` is a design's word for every Routes Manager template (Story 7.16b), never a file of its own
+    if (!isCompileTarget(file) || file === ROUTE_TEMPLATE_TARGET) throw new Error(`${file}: this compile writes no such template — the legal files are ${LEGAL}.`)
   }
   for (const file of Object.keys(input.pageTwo ?? {}).sort(byCode)) {
     if (!PAGE_ONES.includes(file)) throw new Error(`pageTwo['${file}']: only a paginated page 1 has a page 2 — page 2 is handed in under ${PAGE_ONES.join(', ')}.`)
@@ -1003,7 +1004,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   }
   /** A page's sections, inside the block its target opens — and, inside `{{#post}}`, inside Ghost's article (Story 7.6,
    *  FR-J5): `POST_ARTICLE` first, the sections one level in, `</article>` last. '' when it places none, so an emptied
-   *  post keeps its layout line alone (Story 7.3's rule), with no block and no article. */
+   *  post keeps its layout line alone (Story 7.3's rule), with no block and no article. STORY 7.16b (F1): a Routes Manager
+   *  template's row is the ROUTE row (`matrixKey`), which opens no block — a route's root carries no `post`, so `{{#post}}`
+   *  would print nothing there — so its sections sit flat, with no article, routed or not; a membership file keeps both. */
   const pageBody = (file: string, page: 1 | 2): string => {
     const own = placed.filter((p) => p.file === file && p.page === page).map(section)
     if (own.length === 0) return ''

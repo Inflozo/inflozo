@@ -23,7 +23,7 @@ import Handlebars from 'handlebars'
 import { JSDOM } from 'jsdom'
 import {
   bundle, bundledNames, CARDS_JS_TAG, CATALOG, englishStrings, resolveStrings, cardsCss, cardsJs, checkThemeJs, excludedChunks, KOENIG_WIDTHS, ownCardsCss, checkThemeScripts, CONSUMED_DIRECTIVE_RE, HBS_COMMENT, i18nAttr, IMAGE_SIZES, MAIN_JS_TAG, moduleFunctionName,
-  MODULES, PAYWALL_TARGET, PORTAL_ACTIONS, PORTAL_PAGE,
+  MODULES, PAYWALL_TARGET, PORTAL_ACTIONS, PORTAL_PAGE, ROUTE_TEMPLATE_TARGET,
 } from '@inflozo/library'
 import type { ControlDef, DataBinding, PropDef, SectionRegistryEntry } from '@inflozo/library'
 import { TABLER_LICENSE } from '@inflozo/library/icons'
@@ -84,7 +84,7 @@ const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
     html: '<footer class="a3-1">\n  <p class="a3-1__note" data-prop="note" data-empty="hide">Note</p>\n</footer>',
   }),
   design('a4/13', 'Latest Post', {
-    compileTarget: ['home.hbs'],
+    compileTarget: ['home.hbs', ROUTE_TEMPLATE_TARGET],
     contentSchema: { eyebrow: text('Eyebrow') },
     dataBindings: LATEST,
     html: `<section class="a4-13">
@@ -108,7 +108,7 @@ const LIB: Record<string, SectionRegistryEntry> = Object.fromEntries([
     html: '<section class="a17-1">\n  <ul class="a17-1__grid">\n    <li class="a17-1__cell" data-repeat="posts" data-partial="post-card">\n      <a class="a17-1__card" data-bind-attr="href:url" data-bind="title" data-empty="hide">Title</a>\n    </li>\n  </ul>\n</section>',
   }),
   design('a22/1', 'Inline Row', {
-    compileTarget: ['home.hbs', 'page.hbs', 'post.hbs'],
+    compileTarget: ['home.hbs', 'page.hbs', 'post.hbs', ROUTE_TEMPLATE_TARGET],
     contentSchema: { heading: text('Heading'), proof: { type: 'richtext', label: 'Proof', marks: ['strong'] } as PropDef },
     // A22 #1's own controls, so its root carries the ten attributes the real one does
     controlSchema: ([['align', 'center', 'start'], ['heading-size', 'large', 'display'], ['field-width', 'medium', 'wide'], ['below-field', 'note', 'nothing'], ['blurb', 'show', 'hide'], ['social-proof', 'off', 'member-count']] as const)
@@ -394,7 +394,7 @@ test('every refusal names its file and its layer', () => {
   assert.throws(() => compile({ 'home.hbs': docOf(at('a99/1', 'Mystery')) }), /^Error: home\.hbs · Mystery: the library holds no design "a99\/1"/)
   assert.throws(() => compile({ 'home.hbs': docOf(at('a24/1', 'Post header')) }), /^Error: home\.hbs · Post header: a24\/1 compiles to post\.hbs, page\.hbs, never to home\.hbs/)
   // a page-2 section is named as page 2's
-  assert.throws(() => compile({}, { pageTwo: { 'tag.hbs': docOf(at('a22/1', 'Box')) } }), /^Error: tag\.hbs \(page 2\) · Box: a22\/1 compiles to home\.hbs, page\.hbs, post\.hbs, never to tag\.hbs/)
+  assert.throws(() => compile({}, { pageTwo: { 'tag.hbs': docOf(at('a22/1', 'Box')) } }), /^Error: tag\.hbs \(page 2\) · Box: a22\/1 compiles to home\.hbs, page\.hbs, post\.hbs, custom-\{name\}\.hbs, never to tag\.hbs/)
   assert.throws(() => compile({ 'about.hbs': docOf() }), /about\.hbs: this compile writes no such template — the legal files are default\.hbs, home\.hbs[^]*custom-\{name\}\.hbs/)
   // a renderer refusal (R-7) is rethrown with its place in front of the runtime's own sentence
   const paged = design('a17/3', 'Paged', { compileTarget: ['home.hbs', 'post.hbs'], bindingContext: ['posts'], html: '<section class="a17-3"><nav class="a17-3__pager"><a class="a17-3__next" data-pagination="next" href="#" data-t="pagination.older">Older</a></nav></section>' })
@@ -788,6 +788,27 @@ test('(7.3) an emptied or untouched custom, private or paywall file is not emitt
   for (const templates of [{}, { 'custom-landing.hbs': docOf() }] as Record<string, ProjectDoc>[]) {
     assert.equal(compile(templates, { routed: ['custom-landing.hbs'] })['custom-landing.hbs'], '{{!< default}}\n')
   }
+})
+
+test('(7.16b) a Routes Manager template compiles flat — no {{#post}}, no article — routed or not; emptied and routed it is its layout line', () => {
+  const templates = { 'custom-landing.hbs': docOf(at('a22/1', 'Newsletter', { content: NEWS }), at('a4/13', 'Latest post')) }
+  const unrouted = build(templates)
+  const routed = build(templates, { routed: ['custom-landing.hbs'] })
+  const file = textOf(unrouted.files)['custom-landing.hbs'] ?? ''
+  // F1: a route's root carries no post, so the entry form's {{#post}} would print nothing there — the sections sit flat
+  assert.match(file, /^\{\{!< default\}\}\n\n\{\{!-- Newsletter · [^\n]+ --\}\}\n\{\{> "sections\/custom-landing\/newsletter"\}\}\n\n\{\{!-- Latest post · [^\n]+ --\}\}\n\{\{> "sections\/custom-landing\/latest-post"\}\}\n$/, file)
+  assert.ok(!file.includes('{{#post}}') && !file.includes('<article') && !file.includes('post_class'), file)
+  // routed or not, one form (routine call 1): a route added or removed later never strands a section
+  assert.equal(textOf(routed.files)['custom-landing.hbs'], file)
+  // emptied and routed: the layout line alone, as Story 7.3 ruled for a routed custom template
+  assert.equal(compile({ 'custom-landing.hbs': docOf() }, { routed: ['custom-landing.hbs'] })['custom-landing.hbs'], '{{!< default}}\n')
+  // THE CONTROL: a membership file keeps the entry form — {{#post}} and POST_ARTICLE (R-129)
+  const signup = compile({ 'custom-signup.hbs': docOf(at('a30/1', 'Join card')) })['custom-signup.hbs'] ?? ''
+  assert.ok(signup.includes(`{{#post}}\n  ${POST_ARTICLE}`), signup)
+  // and a design that names only membership files is refused on a Routes Manager template, by the library's one rule
+  assert.throws(() => compile({ 'custom-landing.hbs': docOf(at('a30/1', 'Join card')) }), /a30\/1 compiles to custom-signup\.hbs, custom-signin\.hbs, custom-member-home\.hbs, never to custom-landing\.hbs/)
+  // the target that names every Routes Manager template is a design's word, never a file the compile writes
+  assert.throws(() => compile({ [ROUTE_TEMPLATE_TARGET]: docOf() }), /^Error: custom-\{name\}\.hbs: this compile writes no such template/)
 })
 
 test('(7.3) every section hidden: a designed file\'s layout line alone, never re-synthesized', () => {

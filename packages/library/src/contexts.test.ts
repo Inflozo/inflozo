@@ -8,8 +8,8 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { BARE_HELPERS, COMPILE_TARGETS, GET_SOURCES } from './vocabulary.ts'
-import { CONTEXT_MATRIX as M, GHOST_LABELS, bindable, ghostLabel, offerBindings, rootScope, versionAtLeast } from './contexts.ts'
+import { BARE_HELPERS, COMPILE_TARGETS, GET_SOURCES, MEMBERSHIP_FILES, ROUTE_TEMPLATE_TARGET } from './vocabulary.ts'
+import { CONTEXT_MATRIX as M, GHOST_LABELS, ROUTE_ROW, bindable, ghostLabel, matrixKey, offerBindings, rootScope, targetContext, versionAtLeast } from './contexts.ts'
 import type { BindingPlace, MatrixField, ScopeEntry } from './contexts.ts'
 
 
@@ -225,7 +225,7 @@ test('the universal set also printed on both majors where Ghost computes it outs
 
 test('the matrix is internally whole: every target, every get source, every bare helper, every `of`', () => {
   for (const t of COMPILE_TARGETS) assert.ok(typeof rootScope(t) !== 'string', `${t} has no row`)
-  assert.ok(typeof rootScope('custom-members.hbs') !== 'string')
+  for (const t of [...MEMBERSHIP_FILES, 'custom-landing.hbs', ROUTE_TEMPLATE_TARGET]) assert.ok(typeof rootScope(t) !== 'string', `${t} has no row`)
   assert.equal(typeof rootScope('amp.hbs'), 'string')
   for (const s of GET_SOURCES) assert.ok(M.get[s] !== undefined, `{{#get "${s}"}} has no row scope`)
   const helpers = new Set([...Object.entries(M.universal), ...Object.values(M.scopes).flatMap((f) => Object.entries(f))].filter(([, f]) => f.kind === 'helper').map(([n]) => n))
@@ -262,12 +262,41 @@ test('the wrapper rule: a post field refuses at the top of index.hbs and names w
 })
 
 test('post and page: the template opens {{#post}}, so a section binds post fields at its top level on both', () => {
-  for (const t of ['post.hbs', 'page.hbs', 'custom-members.hbs']) {
+  for (const t of ['post.hbs', 'page.hbs', ...MEMBERSHIP_FILES]) {
     for (const p of ['title', 'url', 'feature_image']) assert.equal(bindable(p, at(t)), null, `${p} on ${t}`)
     const root = rootScope(t)
     assert.ok(typeof root !== 'string' && root.block === 'post', `${t} opens {{#post}}, never {{#page}} (FR-H7, §7.4)`)
   }
   assert.equal(bindable('../title', at('post.hbs')) !== null, true, 'above the post block is the wrapper, which has no title')
+})
+
+test('Story 7.16b (DW-126, F1) — a Routes Manager template reads the ROUTE row: flat, no post, no @page; a membership file keeps the entry row', () => {
+  // the one map: every Routes Manager file and the target that names them all take the route row, never a membership file
+  for (const t of ['custom-landing.hbs', 'custom-a-b-2.hbs', ROUTE_TEMPLATE_TARGET]) {
+    assert.equal(matrixKey(t), ROUTE_ROW, t)
+    assert.equal(targetContext(t)?.block, undefined, `${t}: a route's root carries no post (F1), so the template opens no block`)
+    const root = rootScope(t)
+    assert.ok(typeof root !== 'string' && root.block === undefined && root.chain.length === 1, `${t}: one flat scope`)
+    // a post's own field is refused at its top level — the control below binds it on a membership file
+    assert.match(bindable('title', at(t)) ?? '', /not a field of the route scope/, `${t}: title`)
+    // @page exists only when a route resolves a page, and Inflozo writes no `data:` (§3): never bindable, never offered
+    assert.match(bindable('@page.show_title_and_feature_image', { ...at(t), use: 'condition' }) ?? '', /§3b/, t)
+    assert.ok(!offerBindings(at(t)).conditions.includes('@page.show_title_and_feature_image'), `${t}: @page offered`)
+    // the universal set and a get still reach it (F3)
+    assert.equal(bindable('@site.title', at(t)), null, `${t}: @site`)
+    assert.equal(bindable('title', at(t, [{ get: 'posts' }])), null, `${t}: a get's rows`)
+    // and no resource's list is offered at its root — only the universal set's (posts are Story 7.16c's)
+    assert.deepEqual(offerBindings(at(t)).repeats.filter((r) => !r.startsWith('@')), [], `${t}: a resource list at a route's root`)
+  }
+  // THE CONTROL: the three membership files keep the entry row, so the same title binds and @page is offered there
+  for (const t of MEMBERSHIP_FILES) {
+    assert.notEqual(matrixKey(t), ROUTE_ROW, t)
+    assert.equal(targetContext(t)?.block, 'post', t)
+    assert.equal(bindable('title', at(t)), null, `${t}: title binds inside {{#post}}`)
+    assert.ok(offerBindings(at(t)).conditions.includes('@page.show_title_and_feature_image'), `${t}: @page offered on the entry row`)
+  }
+  // and the route row names a scope with no field of its own
+  assert.deepEqual(M.scopes[M.targets[ROUTE_ROW]?.top ?? ''], {})
 })
 
 test('inside @site.navigation a bare url is Ghost\'s url helper and refuses, and label binds (Story 4.10\'s recording, MEASUREMENTS §45)', () => {
@@ -345,7 +374,7 @@ test('DW-300 (Story 5.24e) — FR-H7: with no version the offer is the floor\'s,
   const all = [...Object.values(M.universal), ...Object.values(M.scopes).flatMap((f) => Object.values(f))]
   const versions = [undefined, M.floor, ...new Set(all.flatMap((f) => (f.since === undefined ? [] : [f.since])))]
   let offers = 0
-  for (const target of [...Object.keys(M.targets).filter((t) => !t.includes('{')), 'custom-members.hbs']) {
+  for (const target of [...Object.keys(M.targets).filter((t) => !t.includes('{')), 'custom-signup.hbs', 'custom-landing.hbs', ROUTE_TEMPLATE_TARGET]) {
     const scopes: ScopeEntry[][] = [[], ...Object.keys(M.get).map((get) => [{ get }]), ...offerBindings(at(target)).repeats.map((r) => [r])]
     for (const scope of scopes) {
       assert.deepEqual(offerBindings(at(target, scope)), offerBindings(at(target, scope, M.floor)), `no version is the floor at ${target} ${JSON.stringify(scope)}`)
@@ -388,7 +417,7 @@ test('nothing offerBindings returns is refused by bindable at the same place —
       if (depth < 2 && version === undefined) for (const r of o.repeats) visit(target, [...scope, r], depth + 1)
     }
   }
-  for (const target of [...Object.keys(M.targets).filter((t) => !t.includes('{')), 'custom-members.hbs']) {
+  for (const target of [...Object.keys(M.targets).filter((t) => !t.includes('{')), 'custom-signup.hbs', 'custom-landing.hbs', ROUTE_TEMPLATE_TARGET]) {
     visit(target, [], 0)
     for (const source of Object.keys(M.get)) visit(target, [{ get: source }], 1)
   }

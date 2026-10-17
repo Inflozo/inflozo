@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stories 7.1 to 7.13's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
+"""Stories 7.1 to 7.16b's recorder — the five pilots, compiled by `compileTheme` to the formatting contract with the
 `package.json` it writes, since Story 7.3 every standard template synthesized where untouched, since Story 7.4 the
 pairing's fonts, the licences and the stripped stylesheet with one section's dark hook, since Story 7.5 the theme's
 `main.js` behind its `defer` tag and its `README.md`, and since Story 7.6 Ghost's article around each post's sections and
@@ -12,7 +12,9 @@ declares — Color scheme, Dark accent color and Dark logo — each changed in G
 Story 7.12 the locale files every theme ships — `en.json`, and the project language's beside it — read by Ghost under its
 own Publication Language, and what Ghost does with a label 5.4.3 cannot parse; and since Story 7.13 `cards.css` on every
 theme and a designed callout, toggle and gallery switched off in Ghost's own card bundle, styled and run by the theme's
-own `cards.css` and `cards.js` — `cards.js`'s first real Ghost.
+own `cards.css` and `cards.js` — `cards.js`'s first real Ghost; and since Story 7.16b (§83) a Routes Manager template the
+compiler writes FLAT, drawing its section at a static route added to T1's own `routes.yaml` (put back and read back byte for
+byte), where the same template hand-wrapped in the entry form — `{{#post}}` and the article — draws nothing (F1).
 
     python3 tools/probe/record-theme-assembly.py
 
@@ -238,6 +240,17 @@ it, that Ghost reads it as claimed is a hypothesis.
      `--radius-card` and the gallery's gap the Loose gutter's — and with the theme's `cards.js` refused, the toggle stays
      shut and nothing proportions (the CONTROL). Its `finally` is `restore_and_delete`, the site's theme read back.
 
+ 18. STORY 7.16b (§83) — A ROUTES MANAGER TEMPLATE AT ITS STATIC ROUTE (F1, DW-126): the pilots with `custom-probe-template.hbs`
+     designed (A22 #1, its heading this run's ROUTE word), compiled with the route naming it, so the file is the ROUTE form —
+     flat, no `{{#post}}`, no article — under `inflozo-probe-route-template`; and its CONTROL tree, `inflozo-probe-route-entry`,
+     the same with that one file hand-wrapped in the entry form (`{{#post}}` + `POST_ARTICLE`). Both gated 0/0 on both pinned
+     gscans before anything uploads. T1's own `routes.yaml` is read and kept, and `/inflozo-probe-template/` must answer 404
+     (the CONTROL). On T1, behind `start_guard`: the route tree uploaded and activated, T1's file uploaded with ONE line added
+     under `routes:` (as `routesYaml` spells it), the address read until it draws A22 #1 with the ROUTE word; then the control
+     tree uploaded and activated, the address answering 200 with the header drawn and none of A22 #1, the word or an article.
+     Its `finally` uploads T1's own file back and reads it back byte for byte, then `restore_and_delete`; the address answers
+     404 again.
+
 What it writes to the SERVER: three theme uploads, their activations and deletes; Story 7.8's quality probe, its
 activation and delete; Story 7.7's three probe uploads, none activated, and their deletes; the `w750` rendition, and the one
 `w750` WebP rendition, Ghost saves the first time it is asked for each; and — only when T1 hosts no picture of its own —
@@ -249,12 +262,15 @@ back to their starts before it is deleted; the site's logo (`PUT settings/`), se
 logo rows, restored and read back in a `finally`; and Story 7.12's probe theme (`inflozo-probe-locales`), uploaded and
 activated four times (German, `valid`, `broken_default`, `broken_post`) and deleted, with the site's Publication Language
 (`PUT settings/` `locale`) set to `de`, `fr` and `de` and put back and read back in a `finally`; and Story 7.13's probe
-theme (`inflozo-probe-cards`), uploaded, activated and deleted — no content, no other site setting, no key; the
-style-guide page is read through its preview link and never written; keys are read by variable name and no URL that
-carries one is printed. To disk it writes MEASUREMENTS.md §81 alone, replacing an earlier §81 of its own so a re-run
-re-records; §70 to §80 stay Stories 7.1's to 7.12's records. The Ghost 5 half is DW-326's.
+theme (`inflozo-probe-cards`), uploaded, activated and deleted; and Story 7.16b's two probe themes
+(`inflozo-probe-route-template`, `inflozo-probe-route-entry`), each uploaded, activated and deleted, with T1's own
+`routes.yaml` (`POST settings/routes/yaml/`) given one line and put back and read back byte for byte in a `finally` — no
+content, no other site setting, no key; the style-guide page is read through its preview link and never written; keys are
+read by variable name and no URL that carries one is printed. To disk it writes MEASUREMENTS.md §83 alone, replacing an
+earlier §83 of its own so a re-run re-records; §70 to §81 stay Stories 7.1's to 7.13's records, and §82 is
+`record-routes.mjs`'s (Story 7.16a). The Ghost 5 half is DW-326's.
 """
-import os, re, sys, json, time, html, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
+import os, re, sys, json, time, html, uuid, base64, hashlib, datetime, secrets, shutil, subprocess, tarfile, tempfile, importlib.util
 import urllib.error, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -265,7 +281,7 @@ COMMAND = 'python3 tools/probe/record-theme-assembly.py'
 THEME_NAME = 'inflozo-probe-theme-assembly'   # Ghost names a theme by its zip's filename (VERIFY-AT-BUILD 30)
 # package.json's identity, handed to the compile (Story 7.2); the description must pass themeFailures' fingerprint scan
 THEME = {'name': THEME_NAME, 'version': '1.0.0', 'description': 'The five pilots, compiled'}
-SECTION = '81'   # §70 to §80 stay Stories 7.1's to 7.12's records
+SECTION = '83'   # §70 to §81 stay Stories 7.1's to 7.13's records (§82 is record-routes.mjs's, Story 7.16a's)
 # Story 7.7: the four brace-free words gscan counts as errors (its spec's Facts 7), typed after the nonce's page word, and
 # the inert form the runtime's escaper writes for each (`GSCAN_INERT`, AD-36)
 TYPED = 'currency_symbol @site.lang @labs.members ghost.url.api'
@@ -2260,6 +2276,178 @@ def cards_phase(g, cc, local):
     return rows
 
 
+
+# ── Story 7.16b (§83): a ROUTES MANAGER TEMPLATE at its static route (F1) ──────────────────────────────────────────────────
+# The pilots with one Routes Manager template designed — A22 #1, its heading this run's ROUTE word — compiled with the route
+# naming it (`routed`), so the template is the ROUTE form: flat, with no `{{#post}}` and no article (`matrixKey`'s route row).
+# T1's own `routes.yaml` gains ONE line, the static route to it, spelled as `routesYaml` spells one; nothing else of T1's file
+# changes, and it is put back and read back byte for byte. The CONTROL tree is the same template hand-wrapped in the ENTRY
+# form — `{{#post}}` and `POST_ARTICLE` around the same sections, as a membership page compiles — which must print nothing at
+# the route's address, because a static route with no `data:` renders `{}` (`controllers/static.js:47-69`,
+# `rendering/format-response.js:11-64`, read on 6.58.0 at the Create).
+ROUTE_THEME = 'inflozo-probe-route-template'          # each tree its own name, so nothing of the pilots' theme is touched
+ROUTE_CONTROL_THEME = 'inflozo-probe-route-entry'
+# no `inflozo` in the file's name: its partials' paths carry it, and the theme's fingerprint scan refuses the builder's name
+ROUTE_FILE = 'custom-probe-template.hbs'
+ROUTE_PATH = '/inflozo-probe-template/'
+COMPILE_ROUTE = r"""
+const root = process.env.ROOT
+const pilots = await import(`${root}/tools/pilot-theme.mjs`)
+const rt = await import(`${root}/packages/section-runtime/src/index.ts`)
+const routes = await import(`${root}/packages/section-runtime/src/routes.ts`)
+const { POST_ARTICLE } = await import(`${root}/packages/theme-compiler/src/index.ts`)
+const file = process.env.ROUTE_FILE
+const words = { pageWord: process.env.PAGE_WORD, layerWord: process.env.LAYER_WORD }
+const find = pilots.library()
+const e = find('a22/1')
+const edit = (project) => {
+  project.templates[file] = rt.parseDoc({ schemaVersion: 1, instances: [{
+    instanceId: 'route-01-x9q', layerName: `Route probe ${words.layerWord}`, designId: 'a22/1',
+    content: { ...rt.defaultContent(e.contentSchema), heading: process.env.ROUTE_WORD }, controls: {}, data: {}, darkOverrides: {},
+  }] }, file)
+}
+const { files, templates, pageTwo } = pilots.compilePilots(words, { theme: JSON.parse(process.env.THEME), postsPerPage: Number(process.env.PER_PAGE), find, edit, routed: [file] })
+const own = files[file]
+// the CONTROL: the route template's own sections, hand-wrapped in the ENTRY form a membership page compiles to
+const body = own.replace(/^\{\{!< default\}\}\n\n/, '').replace(/\n$/, '')
+const indent = (t, by) => t.split('\n').map((l) => (l === '' ? l : `${by}${l}`)).join('\n')
+const entry = `{{!< default}}\n\n{{#post}}\n  ${POST_ARTICLE}\n${indent(body, '    ')}\n  </article>\n{{/post}}\n`
+// the one line routes.yaml gains: the static route as `routesYaml` spells it, under its `routes:` key
+const yaml = routes.routesYaml({ collections: [], routes: [{ path: process.env.ROUTE_PATH, template: file }], taxonomies: { ...routes.DEFAULT_TAXONOMIES } })
+const lines = yaml.split('\n')
+const routeLine = lines[lines.indexOf('routes:') + 1]
+const docs = [...Object.values(templates), ...Object.values(pageTwo)]
+process.stdout.write(JSON.stringify({
+  files: Object.fromEntries(Object.entries(files).map(([p, b]) => [p, typeof b === 'string' ? b : { base64: Buffer.from(b).toString('base64') }])),
+  own, entry, routeLine, postArticle: POST_ARTICLE, scaffold: pilots.SCAFFOLD,
+  failures: pilots.themeFailures(files, docs.flatMap((d) => d.instances.map((i) => i.instanceId))),
+}))
+"""
+
+
+def route_compiled(nonce, per_page):
+    """§83's two trees, each the pilots with §73's scaffold: `tree`, the Routes Manager template as the compiler writes it,
+    and `control`, the same with that one file in the entry form. The controls that hold before anything uploads: the
+    compiled template opens no `{{#post}}` and no `<article`, and invokes its section's partial; the control file opens both
+    around the same invocation; the partial carries the ROUTE word; and the route line names the template's stem."""
+    words = {'PAGE_WORD': f'Page{nonce}', 'LAYER_WORD': f'Layer{nonce}'}
+    route_word = f'Route{nonce}'
+    run = subprocess.run([core.node24(), '--input-type=module', '-e', COMPILE_ROUTE], capture_output=True, text=True, timeout=300,
+                         env={**os.environ, 'ROOT': ROOT, 'PER_PAGE': str(per_page), 'THEME': json.dumps({**THEME, 'name': ROUTE_THEME}),
+                              'ROUTE_FILE': ROUTE_FILE, 'ROUTE_PATH': ROUTE_PATH, 'ROUTE_WORD': route_word, **words})
+    if run.returncode != 0:
+        raise Void(f'the route compile did not run:\n{run.stderr[-1500:]}')
+    out = json.loads(run.stdout)
+    if out['failures']:
+        raise Void('the route tree fails the check CI holds it to:\n      ' + '\n      '.join(out['failures']))
+    files = {p: base64.b64decode(b['base64']) if isinstance(b, dict) else b for p, b in out['files'].items()}
+    clash = [p for p in out['scaffold'] if p in files]
+    if clash:
+        raise Void(f'the scaffold would replace compiled files in the route tree: {clash}')
+    own, entry = out['own'], out['entry']
+    invoke = re.search(r'\{\{> "sections/[^"]+"\}\}', own or '')
+    partial = invoke and files.get(f'partials/{invoke.group(0)[5:-3]}.hbs', '')
+    if own is None or '{{#post}}' in own or '<article' in own or invoke is None:
+        raise Void(f'{ROUTE_FILE} is not the flat route form with its section invoked:\n{own}')
+    if not entry.startswith('{{!< default}}\n\n{{#post}}\n') or out['postArticle'] not in entry or invoke.group(0) not in entry:
+        raise Void(f'the control is not the entry form around the same invocation:\n{entry}')
+    if not partial or route_word not in partial or 'a22-1' not in partial:
+        raise Void(f'the template\'s partial does not carry A22 #1 with the ROUTE word {route_word}')
+    stem = ROUTE_FILE[:-len('.hbs')]
+    if out['routeLine'] != f'  {ROUTE_PATH}: {stem}':
+        raise Void(f'routesYaml spells the route {out["routeLine"]!r}, not "  {ROUTE_PATH}: {stem}"')
+    tree = {**files, **out['scaffold']}
+    return {'tree': tree, 'control': {**tree, ROUTE_FILE: entry}, 'own': own, 'entry': entry, 'route_word': route_word,
+            'route_line': out['routeLine'], 'invoke': invoke.group(0)}
+
+
+def routes_yaml_get(g):
+    """T1's `routes.yaml`, as bytes (`GET settings/routes/yaml/`, the staff token)."""
+    req = urllib.request.Request(f'{g.url}/ghost/api/admin/settings/routes/yaml/', headers=g._h())
+    with urllib.request.urlopen(req, timeout=45) as r:
+        return r.read()
+
+
+def routes_yaml_post(g, data):
+    """The upload Ghost Admin's Labs page makes — field `routes`, `routes.yaml`, `text/yaml` — answering its status."""
+    bnd = '----inflozo' + uuid.uuid4().hex
+    body = (f'--{bnd}\r\nContent-Disposition: form-data; name="routes"; filename="routes.yaml"\r\nContent-Type: text/yaml\r\n\r\n'
+            .encode() + data + f'\r\n--{bnd}--\r\n'.encode())
+    req = urllib.request.Request(f'{g.url}/ghost/api/admin/settings/routes/yaml/', data=body, method='POST',
+                                 headers=g._h({'Content-Type': f'multipart/form-data; boundary={bnd}'}))
+    with urllib.request.urlopen(req, timeout=90) as r:
+        return r.status
+
+
+def with_route(original, line):
+    """T1's own file with ONE line added under its `routes:` key, everything else as it was — or a Void naming why not."""
+    text = original.decode('utf8')
+    m = re.search(r'^routes:[ \t]*(\{\})?[ \t]*$', text, re.M)
+    if m is None:
+        raise Void("T1's routes.yaml has no top-level `routes:` line to add the probe's route under — nothing is written")
+    return (text[:m.start()] + 'routes:\n' + line + text[m.end():]).encode('utf8')
+
+
+def route_phase(g, rc):
+    """§83 on T1, behind `start_guard` and a `finally` that restores BOTH the site's theme (`restore_and_delete`) and T1's own
+    `routes.yaml` (uploaded back and read back byte for byte): the route tree activated with the route added, its address
+    reading A22 #1 with the ROUTE word; then the CONTROL tree — the entry form — activated, the same address answering 200
+    and reading none of it. Returns the rows."""
+    rows = []
+
+    def row(ok, page, what, detail):
+        rows.append((bool(ok), page, what, detail))
+        print(f'    {"PASS" if ok else "FAIL"}  {page:<26} {what} — {str(detail)[:120]}')
+
+    original = routes_yaml_get(g)
+    if not original:
+        raise Void("T1 answered an empty routes.yaml — nothing to restore, so nothing is written")
+    added = with_route(original, rc['route_line'])
+    st0, before = g.page(ROUTE_PATH)
+    if st0 != 404:
+        raise Void(f'{ROUTE_PATH} answered HTTP {st0} before the upload — a segment this run needs is taken')
+    row(True, ROUTE_PATH, 'CONTROL — the address is free before the upload (404)', f'HTTP {st0}')
+    previous = shim.start_guard(g)
+    wrote = False
+    try:
+        st, res = g._multipart('themes/upload/', [('file', f'{ROUTE_THEME}.zip', 'application/zip', contexts.zip_bytes(rc['tree']))])
+        g.api('PUT', f'themes/{res["themes"][0]["name"]}/activate/')
+        wrote = True
+        row(routes_yaml_post(g, added) in (200, 201), 'settings/routes/yaml/', f'T1\'s own file with one line added ("{rc["route_line"].strip()}") uploads', len(added))
+        for _ in range(30):
+            st, body = g.page(ROUTE_PATH)
+            if st == 200 and rc['route_word'] in body:
+                break
+            time.sleep(2)
+        row(st == 200, ROUTE_PATH, 'answers 200 under the route tree', f'HTTP {st}')
+        row(rc['route_word'] in body and 'class="a22-1' in body, ROUTE_PATH, 'F1 — the flat template draws A22 #1 with this run\'s ROUTE word at the route\'s root', rc['route_word'])
+        row('{{' not in body and '}}' not in body, ROUTE_PATH, 'no `{{` or `}}` reaches the page', 'clean')
+        # the CONTROL: the entry form, the only change — the same route, the same partial, inside {{#post}} and the article
+        st, res = g._multipart('themes/upload/', [('file', f'{ROUTE_CONTROL_THEME}.zip', 'application/zip', contexts.zip_bytes(rc['control']))])
+        g.api('PUT', f'themes/{res["themes"][0]["name"]}/activate/')
+        for _ in range(15):
+            st, body = g.page(ROUTE_PATH)
+            if shim.active_theme(g) == ROUTE_CONTROL_THEME and st == 200 and 'class="a1-1' in body:
+                break
+            time.sleep(2)
+        row(shim.active_theme(g) == ROUTE_CONTROL_THEME and st == 200 and 'class="a1-1' in body, ROUTE_PATH,
+            'CONTROL — the entry-form tree is active and the address still answers 200 with the site header drawn', f'HTTP {st}')
+        row(rc['route_word'] not in body and 'class="a22-1' not in body and '<article' not in body, ROUTE_PATH,
+            'CONTROL — in the entry form `{{#post}}` prints NOTHING at the route\'s root: no A22 #1, no ROUTE word, no article', 'none drawn')
+    finally:
+        if wrote:
+            try:
+                routes_yaml_post(g, original)
+                now = routes_yaml_get(g)
+                row(now == original, 'settings/routes/yaml/', "T1's own routes.yaml restored and read back byte for byte", f'{len(now)} bytes')
+            except Exception as err:
+                row(False, 'settings/routes/yaml/', "T1's own routes.yaml restored — RESTORE IT BY HAND", f'{type(err).__name__}: {err}')
+        shim.restore_and_delete(g, previous, [ROUTE_THEME, ROUTE_CONTROL_THEME])
+    st, _ = g.page(ROUTE_PATH)
+    row(st == 404, ROUTE_PATH, 'after the restore the address is free again (404) — T1 routes as it did', f'HTTP {st}')
+    return rows
+
+
 # ── §72 ───────────────────────────────────────────────────────────────────────
 def table(rows):
     out = ['| Page | Row | Held |', '|---|---|---|']
@@ -2269,7 +2457,7 @@ def table(rows):
     return out
 
 
-def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, carded):
+def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, carded, route):
     today = datetime.date.today().isoformat()
     gline = ' · '.join(f'Ghost {g["major"]} via gscan {g["gscan"]} at `{g["checkVersion"]}` — {g["errors"]} errors / {g["warnings"]} warnings' for g in gates)
     parts = sorted(p for p in files if p.startswith('partials/'))
@@ -2281,7 +2469,10 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
     built_rows, logo_url, dark_logo_url = built
     loc_rows, lc = loc
     card_rows, cc = carded
-    out = [f'## {SECTION}. `cards.css` on every theme, and a designed callout, toggle and gallery switched off in Ghost\'s own '
+    route_rows, rtc = route
+    out = [f'## {SECTION}. A Routes Manager template compiled FLAT — no `{{{{#post}}}}`, no article — drawing its section at a static '
+           f'route on T1, where the same template in the entry form draws nothing (F1), with T1\'s own `routes.yaml` put back byte '
+           f'for byte — beside `cards.css` on every theme, and a designed callout, toggle and gallery switched off in Ghost\'s own '
            f'card bundle — styled by Ghost\'s own copy in the theme\'s `cards.css` and run by the theme\'s own `cards.js`, the '
            f'toggle opening and the gallery proportioning in a real browser — beside the locale files under Ghost\'s own Publication Language — `en.json` on every theme and the '
            f'language\'s file beside it, read exactly by name with `en.json` the fallback, and a label 5.4.3 cannot parse '
@@ -2309,12 +2500,15 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
            '`PUT /ghost/api/admin/settings/`, then the locale put back and read back and the theme restored and deleted the same way; '
            'Story 7.13\'s probe theme (`' + CARDS_THEME + '`), uploaded, activated, then restored and deleted the same way, with '
            f'`{STYLE_GUIDE_PAGE}` read through its preview link and never written; '
+           'Story 7.16b\'s two probe themes (`' + ROUTE_THEME + '`, then `' + ROUTE_CONTROL_THEME + '`), each uploaded and activated, '
+           f'and T1\'s own `routes.yaml` uploaded with one line added (`{rtc["route_line"].strip()}`), then put back and read back '
+           'byte for byte, and the themes restored and deleted the same way; '
            'the one `w750` rendition and the one `w750` WebP rendition Ghost saves '
            'the first time it is asked for each; no content, no other site setting and no key written. The picture is '
            + (f'`{rec["uploaded"]}`, uploaded by this run because T1 hosts no picture of its own (owner, 2026-10-06, '
               'Story 7.2\'s Question 4) — it stays, as Ghost\'s API deletes no picture' if rec['uploaded'] else
               f'`/content/images/{rec["picture"]}`') + '. T1 only (R-238); the Ghost 5 half is DW-326\'s, at Story 15.7. '
-           "§70 to §80 are Stories 7.1's to 7.12's records; this re-runs their rows beside Story 7.13's. Ghost 6.58.0's npm "
+           "§70 to §81 are Stories 7.1's to 7.13's records (§82 is Story 7.16a's routes recorder); this re-runs their rows beside Story 7.16b's. Ghost 6.58.0's npm "
            f"tarball (`{GHOST_TARBALL}`) is read, never installed, for Casper and Source.", '',
            '**Why.** Story 7.3\'s compiler resolves every standard template through `designate`, `synthesize` and '
            '`pageTwoStack`, writes an archive\'s designed page 2 inside `{{#is "paged"}}`, wraps `{{{body}}}` in '
@@ -2436,9 +2630,22 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
             'draft, `record-cards.py`\'s — through its preview link, which Ghost renders with the active theme\'s `page.hbs`; '
             'then again with every request for the theme\'s `cards.js` refused.', '']
     out += table(card_rows)
+    out += ['', f'### (k) A Routes Manager template at its static route — `{ROUTE_THEME}` and its control `{ROUTE_CONTROL_THEME}` (Story 7.16b)', '',
+            f'The pilots with `{ROUTE_FILE}` designed — A22 #1, its heading this run\'s ROUTE word — compiled with the route naming '
+            'it, so the template is the ROUTE form (`matrixKey`\'s route row): its sections flat, with no `{{#post}}` and no '
+            f'article. The control is the same tree with that one file hand-wrapped in the ENTRY form a membership page compiles '
+            f'to — `{{{{#post}}}}` and `POST_ARTICLE` around the same `{rtc["invoke"]}`. Both gated 0/0 on both pinned gscans before '
+            f'anything uploaded. T1\'s own `routes.yaml` gained one line, `{rtc["route_line"].strip()}`, spelled as `routesYaml` '
+            'spells it.', '']
+    out += table(route_rows)
     cards_line = ("its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`" if rec['site_cards'] is True else
                   f"the cards hash was not compared: the site theme's `card_assets` is `{rec['site_cards']!r}`, not `true`")
     out += ['', '### What it means', '',
+            '- **A Routes Manager template is the route form, and Ghost draws it there.** A static route with no `data:` hands '
+            'its template a root with no `post`, so a section inside `{{#post}}` printed nothing at the route\'s address — the '
+            'control — while the same section written flat drew at its root. The editor offers such a canvas only what a flat '
+            'root can show (`@site`, `@config` and a get\'s rows), and the compiler writes it flat whether or not a route names it, '
+            'so adding or removing a route later never strands a section (DW-126, F1).',
             '- **A designed card is the theme\'s, and only it.** Excluding the callout, the toggle and the gallery took '
             'them out of the stylesheet and the script bundle Ghost injects, while the cards no one designed stayed in both; '
             'the theme\'s `cards.css` and `cards.js` were served as compiled at their `{{asset}}` addresses, and on a real '
@@ -2574,7 +2781,9 @@ if __name__ == '__main__':
         lc = locales_compiled(nonce, per_page)
         # Story 7.13: the designed callout, toggle and gallery, the same way
         cc = cards_compiled(nonce, per_page)
-        local = gated({'pilots': files, 'cards': cc['tree'], **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
+        # Story 7.16b: a Routes Manager template, flat, and its entry-form control, the same way
+        rtc = route_compiled(nonce, per_page)
+        local = gated({'pilots': files, 'cards': cc['tree'], 'route': rtc['tree'], 'route-entry': rtc['control'], **trees, **{f'settings-{n}': t for n, t in sc['trees'].items()},
                        **{f'built-ins-{n}': t for n, t in bi['trees'].items()},
                        **{f'locales-{n}': t for n, t in lc['trees'].items()}, **{f'locales-{n}': t for n, t in lc['probes'].items()}})
         gates = clean(local, 'pilots')
@@ -2585,6 +2794,8 @@ if __name__ == '__main__':
         for n in [*lc['trees'], 'valid']:
             clean(local, f'locales-{n}')
         clean(local, 'cards')
+        clean(local, 'route')
+        clean(local, 'route-entry')
         # the Dark logo is a picture that is not the site's logo: a published post's own, never one this run uploads
         st, pics = g.content('posts/?limit=all&filter=feature_image:-null&fields=feature_image')
         # one Handlebars writes as it is: `&` and `=` reach the CSS as entities (compile.ts's stated ceiling) and would not load
@@ -2609,15 +2820,16 @@ if __name__ == '__main__':
         built_ins = built_ins_phase(g, bi, logo_url, dark_logo_url)
         locales = locales_phase(g, lc, rec['post'], local)
         cards = cards_phase(g, cc, local)
+        routed = route_phase(g, rtc)
     except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as err:
         detail = err.read()[:400].decode('utf8', 'replace') if isinstance(err, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(err).__name__}: {err} {detail}')
         sys.exit(1)
-    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins + locales + cards if not v[0]]
+    failed = [v for v in rec['verdicts'] + pay + probes + qrows + qprobe + neg_rows + promoted + built_ins + locales + cards + routed if not v[0]]
     if failed:
         print(f'\n  ** {len(failed)} row(s) did not hold — nothing written. STOP AND ASK: Ghost does not render the '
               'compiled theme as the compiler claims.')
         sys.exit(1)
-    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url), (locales, lc), (cards, cc)))
+    write_section(section(rec, gates, files, c, pay, probes, local, (qrows, qprobe, neg_rows, neg), promoted, (built_ins, logo_url, dark_logo_url), (locales, lc), (cards, cc), (routed, rtc)))
     print(f'\n    MEASUREMENTS.md §{SECTION} written — every row held on T1, behind its controls.')
     sys.exit(0)

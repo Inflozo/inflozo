@@ -225,6 +225,23 @@ export const flushed = (j: Journal, sentStamp: number, upTo: number): Journal =>
   pending: Object.fromEntries(Object.entries(j.pending).filter(([, at]) => at > sentStamp)),
 })
 
+/**
+ * STORY 7.16b — A DOC'S WORK, DROPPED: every entry that touched `key` and its pending mark, as when the sync route left a
+ * deleted template's key unwritten (`left`). Its undo steps go with it — an undo could only put back a doc the server will
+ * never store again — and the pointer keeps its place among the entries that stay. Another key's work is untouched, and a
+ * transaction that also touched another key keeps that entry.
+ */
+export function withoutDoc(j: Journal, key: string): Journal {
+  const tail = j.entries.length - j.undone
+  const { [key]: _gone, ...pending } = j.pending
+  return {
+    ...j,
+    entries: j.entries.filter((e) => e.docKey !== key),
+    undone: j.entries.slice(tail).filter((e) => e.docKey !== key).length,
+    pending,
+  }
+}
+
 /** Who asked for a flush. `unload` is the tab going, which cannot be acknowledged and cannot be refused.
  *  `release` is STORY 5.17'S HAND OVER, and it is a member rather than a second function because the flush itself
  *  is this story's and is not rewritten: AD-15's flush contract is "unsynced work never crosses a lock boundary",

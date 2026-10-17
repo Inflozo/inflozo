@@ -2,8 +2,15 @@
 
 import { Button } from '@/components/kit/button'
 import { BusyLabel } from '@/components/kit/submit'
-import { Lock } from '@/components/kit/icons'
+import { CanvasCustom, Lock } from '@/components/kit/icons'
+import { TEMPLATE_GONE } from '@/lib/editor'
 import { LOCK_COPY } from '@/lib/lock'
+
+/** B5a's strip (`B Missing Surfaces.dc.html:1469-1487`): 38px above the canvas, `paper-sunk` on the `line` hairline, 12px of
+ *  side padding and 9px between its parts. Both strips below are drawn from this one class. */
+const STRIP = 'flex h-[38px] shrink-0 items-center gap-[9px] border-b border-line bg-paper-sunk px-3'
+/** …its 12px sentence, as the reader's */
+const STRIP_WORDS = 'flex-1 truncate text-control-label text-ink-soft-aa'
 
 /* B5a · READ-ONLY (`B Missing Surfaces.dc.html:1469-1487`) — the reader's whole affordance.
  *
@@ -41,18 +48,14 @@ export function LockBar({
   hidden?: boolean
 }) {
   return (
-    <div
-      id="editor-lock-bar"
-      hidden={hidden}
-      className="flex h-[38px] shrink-0 items-center gap-[9px] border-b border-line bg-paper-sunk px-3"
-    >
+    <div id="editor-lock-bar" hidden={hidden} className={STRIP}>
       <Lock size={13} className="shrink-0 text-ink-soft-aa" />
       {/* the sentence is the bar's own live text and is deliberately NOT a live region: the assertive notices are
           the editor's second region, and a bar that announced itself on every render would shout at every paint */}
       {/* the sentence carries an id because the dimmed settings panel is DESCRIBED by it: that is what tells a
           screen-reader user why nothing in the panel responds, and it is why the panel needs no `aria-disabled` of
           its own — which is not a global ARIA attribute and would be `aria-allowed-attr` on a landmark. */}
-      <span id="editor-lock-reason" className="flex-1 truncate text-control-label text-ink-soft-aa">
+      <span id="editor-lock-reason" className={STRIP_WORDS}>
         {unanswered ? unanswered.words : (notice ?? LOCK_COPY.reading)}
       </span>
       {unanswered ? (
@@ -73,6 +76,22 @@ export function LockBar({
           </BusyLabel>
         </Button>
       )}
+    </div>
+  )
+}
+
+/* STORY 7.16b — THE DELETED-TEMPLATE NOTICE, B5a's strip EXACTLY (R-250, R-74's fourth stated exception: no drawing exists).
+ * The same strip, with `CanvasCustom` at 13px where the padlock is, the sentence at 12px, and the Kit's 32px secondary
+ * Dismiss where the request is — no new component, colour or size. SHOWN, not only announced: the editor also says the
+ * sentence in `#editor-said`. It stays until Dismiss or the next canvas switch, and Preview hides it as it hides B5a. */
+export function TemplateGoneBar({ words, onDismiss, hidden }: { words: string; onDismiss: () => void; hidden?: boolean }) {
+  return (
+    <div id="editor-gone-bar" hidden={hidden} className={STRIP}>
+      <CanvasCustom size={13} className="shrink-0 text-ink-soft-aa" />
+      <span className={STRIP_WORDS}>{words}</span>
+      <Button id="editor-gone-dismiss" variant="secondary" size={32} onClick={onDismiss}>
+        {TEMPLATE_GONE.dismiss}
+      </Button>
     </div>
   )
 }

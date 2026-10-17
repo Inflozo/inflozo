@@ -4107,6 +4107,10 @@ button exists before this story.
 (S9b's line 1 — a row no sheet writes, by hand or by a later build's grammar), the reason on the Ship button also says
 how to get out of it: the Routes page then draws no list and opens no sheet, so this story's Create asks the owner
 (R-83) for that way out — a reset to Ghost's default routing on the Routes page, or the reason alone.
+*(Reading, from Story 7.16b's Dev, 2026-10-17 — routine call 11)* the compile is handed only the docs of the membership
+canvases and of the project's CURRENT Routes Manager templates (`custom_templates` of kind `routes`): a `custom:` doc whose
+template row is gone — the moment between a template delete's doc and row steps, or a save that landed in it — is no
+canvas (`read.ts` skips it, the sync route never writes one) and must never ship as a file nothing names.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).

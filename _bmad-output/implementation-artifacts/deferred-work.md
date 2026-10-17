@@ -3823,7 +3823,17 @@ reason: Ghost's key is `@site.navigation`, and tiers exist only through `{{#get}
 
 plain: A custom page reached through a site's route settings gets its Ghost information differently from one
   picked in Ghost Admin, and the new rules only know the second kind.
-status: open
+status: done 2026-10-17 (Story 7.16b)
+resolution: Story 7.16b's Dev (2026-10-17). Every Routes Manager template is ONE form, the route form, routed or not
+  (routine call 1): `matrix.json` gains the route row (`custom-{name}.hbs (route)`, a flat `route` scope with no fields of
+  its own, so no `@page`), and `contexts.ts`' one `matrixKey` picks it for every `isRouteTemplate` file and for
+  `ROUTE_TEMPLATE_TARGET`, never for a membership file, which keeps the entry row. A design reaches such a template by
+  listing R-7's `custom-{name}.hbs` in its `compileTarget` (`compilesTo`), and a4/13 and a22/1 do. The compiler writes the
+  route row's file flat — no `{{#post}}`, no article — through `pageBody`'s `targetContext(file)?.block`, unchanged. Held by
+  `contexts.test.ts` (route and entry rows, each behind the other as control), `placement.test.ts`, `compile.test.ts`'s
+  `(7.16b)` row and `agreement.test.ts`; MEASUREMENTS §83 executes F1 on T1 (the main session's run). The `data:` keys the
+  reason below anticipates are not written: Inflozo writes no `data:` (Story 7.16a), so the root is flat with no declared
+  key, and a collection's or channel's own `posts` at that root are Story 7.16c's (R-249).
 severity: medium
 origin: Story 4.6 (2026-09-14) — appendix B.1 §3's route row, out of this story's scope
 owner: Story 7.16b (Custom templates on the canvas), whose criteria carry its requirement word for word with its id (R-195).
@@ -9422,7 +9432,11 @@ owner: Story 7.16b (Custom templates on the canvas) for the editor half, D5f's r
   always emits the index collection at `/`, so Home's context stays `index` (`collection-router.js:21`, `routerName =
   mainRoute === '/' ? 'index' : …`) and `PAGED_CONTEXTS` needs no change, said in its comment in `compile.ts`. The
   editor half — D5f's routed sentence, and each custom collection's and channel's own context for the `noindex` guard —
-  stays Story 7.16b's, so the entry stays open.)*
+  stays Story 7.16b's, so the entry stays open.)* *(Story 7.16b's Dev, 2026-10-17: the FIRST HALF IS DONE —
+  `emptiesCustomTemplate(key, doc, routed)` answers `'keeps'` for a template a route names, and D5f then asks in
+  `ROUTED_EMPTY_ASK`'s words, naming the paths (`editorData` reads `routes_config` and hands each template's `pathsUsing`).
+  The second half — each custom collection's and channel's own context for the `noindex` guard — stays Story 7.16c's, so
+  the entry stays open.)*
 location: `apps/web/lib/editor.ts` (`emptiesCustomTemplate`) · `packages/theme-compiler/src/compile.ts`
   (`PAGED_CONTEXTS`, `routed`) · `epics.md` Story 7.16
 reason: Routes are 7.16's input; until it hands the editor the routed list and the compiler the collection names, both

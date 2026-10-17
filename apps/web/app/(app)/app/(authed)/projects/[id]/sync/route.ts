@@ -3,7 +3,7 @@ import type { CardDesigns } from '@inflozo/library'
 import { presetOf } from '@inflozo/library/packs'
 import { docSchema } from '@inflozo/section-runtime'
 import { parseStoredCards } from '@/lib/cards'
-import { isUuid } from '@/lib/editor'
+import { canvasOfTemplateKey, isRouteCanvas, isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
 import { heldElsewhere } from '@/lib/lock'
 import { isCustom } from '@/lib/pack-edit'
@@ -55,6 +55,12 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * (AD-36, AD-27(a)): every key a listed card, every name one of its controls, every value one it offers — a divider's
  * glyph one the icon set draws, the set imported only for a record that names one — or a 422 "Not a card design" and
  * nothing written, BEFORE the write; what is written is the parsed record.
+ *
+ * STORY 7.16b — THE SYNC NEVER RE-CREATES A DELETED TEMPLATE'S CANVAS. A Routes Manager `custom:` key whose template is no
+ * longer one of the project's (`custom_templates`, read once, only when the body carries such a key) is LEFT UNWRITTEN —
+ * an editor that had the template open would otherwise put its doc back the moment it saved. Every other key is written as
+ * usual, and the answer names each key it left (`left`), which is how the editor learns the template is gone and moves to
+ * Home with the notice. A membership key is never asked about: its canvas cannot be deleted.
  */
 
 export const dynamic = 'force-dynamic'
@@ -126,6 +132,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const supabase = await supabaseServer()
 
+  // Story 7.16b — the Routes Manager keys, judged against the project's templates read ONCE (RLS: the caller's own rows)
+  const routeKeys = keys.filter((key) => {
+    const canvas = canvasOfTemplateKey(key)
+    return canvas !== null && isRouteCanvas(canvas)
+  })
+  let left: string[] = []
+  if (routeKeys.length > 0) {
+    const { data: rows, error: rowsError } = await supabase.from('custom_templates').select('filename').eq('project_id', projectId).eq('kind', 'routes')
+    // a read that fails writes nothing of these keys rather than risk re-creating a deleted canvas; the editor retries
+    if (rowsError) {
+      console.error('projects/sync: custom_templates read failed', { code: rowsError.code })
+      return no(502, 'The save could not be completed')
+    }
+    const current = new Set((rows ?? []).map((r) => `custom:${r.filename as string}`))
+    left = routeKeys.filter((key) => !current.has(key))
+    for (const key of left) delete parsed[key]
+  }
+  const written = keys.filter((key) => !left.includes(key))
+
   // STORY 5.17 — THE LOCK BOUNDARY, ENFORCED WHERE THE WORK IS WRITTEN (AD-15; `heldElsewhere` in `lib/lock.ts`).
   // A session that has been taken over from believes it holds until its next beat, and its autosave, ⌘S or tab-hide
   // flush would otherwise write the orphaned work the take-over warned "will be lost". 423 is its own answer, not the
@@ -173,13 +198,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // and the preset it carries is the server's `style_pack.preset` — a pack-only body asks that alone. Story 6.4: and the
     // own packs it carries are the server's `style_pack.packs`, as stored (`stable`)
     const [{ data: rows }, { data: project }, { data: treatments }] = await Promise.all([
-      keys.length === 0 ? { data: [] } : supabase.from('project_templates').select('template_key, doc').eq('project_id', projectId).in('template_key', keys),
+      written.length === 0 ? { data: [] } : supabase.from('project_templates').select('template_key, doc').eq('project_id', projectId).in('template_key', written),
       preset === undefined && packs === undefined ? { data: null } : supabase.from('projects').select('style_pack').eq('id', projectId).maybeSingle(),
       // Story 7.13: and the card designs as stored, where this body carries them
       parsedCards === undefined ? { data: null } : supabase.from('project_treatments').select('card_designs').eq('project_id', projectId).maybeSingle(),
     ])
     const held = new Map((rows ?? []).map((r) => [r.template_key as string, docSchema.safeParse(r.doc)]))
-    const same = keys.every((key) => {
+    const same = written.every((key) => {
       const there = held.get(key)
       return there?.success === true && stable(there.data) === stable(parsed[key])
     })
@@ -191,8 +216,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // and one of twelve preset ids matching says nothing about who moved the revision. So it is "already there" only where
     // the server stands exactly ONE write past the base — this body's own, its answer lost. Further on, another session
     // wrote docs this editor has never read, and adopting that revision over them would let its next edit overwrite them.
-    const ours = keys.length > 0 || answer.revision === (base as number) + 1
-    if (same && packThere && packsThere && cardsThere && ours) return json(200, { applied: true, revision: answer.revision })
+    const ours = written.length > 0 || answer.revision === (base as number) + 1
+    if (same && packThere && packsThere && cardsThere && ours) return json(200, { applied: true, revision: answer.revision, left })
   }
-  return json(answer.applied ? 200 : 409, { applied: answer.applied, revision: answer.revision })
+  return json(answer.applied ? 200 : 409, { applied: answer.applied, revision: answer.revision, left })
 }

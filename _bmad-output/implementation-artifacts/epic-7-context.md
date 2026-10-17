@@ -489,6 +489,31 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **Read in source (6.58.0 and 5.130.6):** a static route with no `data:` renders `{}` (`controllers/static.js:47-69`,
       `rendering/format-response.js:11-64`), so the entry form's `{{#post}}` would blank every section at the route.
       MEASUREMENTS §83 executes it on T1 (`record-theme-assembly.py`, the owner's go). The walk gains step 110.
+  - **Story 7.16b's Dev (2026-10-17):** built, no migration.
+    - **The library.** `vocabulary.ts` gains `ROUTE_TEMPLATE_TARGET` (`custom-{name}.hbs`, legal in `isCompileTarget`),
+      `MEMBERSHIP_FILES` (moved from `routes.ts`, which imports it; `SURFACES` moved beside it, no cycle) and
+      `isRouteTemplate`; `compilesTo` opens every Routes Manager file to a design listing the target, never a membership
+      file; `contexts.ts`' one `matrixKey` gives every Routes Manager file the new `custom-{name}.hbs (route)` row (a flat
+      `route` scope, no `@page`) and every membership file the entry row; a4/13 and a22/1 list the target. The compiler is
+      unchanged but for refusing the brace as a file: `pageBody` reads the route row and writes the file flat, routed or not.
+    - **The editor.** `lib/editor.ts`: `RouteCanvas` (branded, so a `CANVASES[…]` read of one is a type error), `Canvas`,
+      `isRouteCanvas`, `routeCanvasOf` (the database's key shape, not `CUSTOM_TARGET_RE`), `fileOf`, `labelOf`, `captionOf`,
+      `pageTwoOfCanvas`, `emptiesCustomTemplate(key, doc, routed)` answering `'stops'`/`'keeps'`, `ROUTED_EMPTY_ASK`,
+      `TEMPLATE_GONE`, `ROUTES_GROUP`, `newTemplatePath`. `read.ts` reads `custom_templates` (`routeTemplatesOf`, `cache`d,
+      shared with the tab's title) and `routes_config` in the same `Promise.all`, skips an orphan `custom:` doc, and hands
+      `templates` (canvas, name, paths). The switcher draws the group and "New template" (`BarMenuRow` gained an optional
+      caption and `strong`); D5f asks in the routed words; the notice is `lock-bar.tsx`'s `TemplateGoneBar`, B5a's strip
+      (R-250), shown when the address names no current template — at load, or once the sync route's `left` names it.
+    - **The sync route** reads the project's templates once when the body carries a Routes Manager key, leaves a gone one
+      unwritten (never re-creating its canvas), writes the rest and answers `left`; the editor drops that key's journal
+      entries (`withoutDoc`) and docs.
+    - **The routes page.** `?new=template` opens the New template sheet (focus in Name) and Create opens the canvas; a
+      designed template's delete is confirmed with its design line, runs config → doc → row and answers the doc; Undo runs
+      row → doc → config, the doc judged by `docSchema` and `docRefusal` first (AD-36). `hasDesign`'s refusal is retired.
+    - **Held:** the library's, compiler's and runtime's tests (each refusal beside its control), `editor.test.ts`,
+      `journal.test.ts`, `routes.test.ts`, `busy.test.ts`; `check-traces` holds the routes page's trace to the designs
+      (`docRefusal` reads them). The walk's step 110 and the re-expected steps 40 and 109n (c) are the Review's; §83's local
+      half gates both trees 0/0 on both gscans, and its T1 run is the main session's, on the owner's in-session go.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.

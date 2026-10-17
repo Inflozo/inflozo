@@ -10,7 +10,7 @@ import { ownPacksOf, packChoices, packIdOf, pairingChoices, pairingGlyphFacesCss
 import { canvasRouteOn } from '@/routing'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOf as fileOfCanvas, fileOfKey, isRouteCanvas, isUuid, routeCanvasOf, templateKeyOf, type Canvas, type RouteCanvas, type RouteTemplate } from '@/lib/editor'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { storedCards } from '@/lib/cards'
@@ -19,6 +19,8 @@ import { carriesMemberVisibility, docRefusal, pilot, pilotIds } from '@/lib/pilo
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { readViewed, type Visitor } from '@/lib/view-as'
 import { SETTING_COLUMNS, storedSettings, type StoredSetting } from '@/lib/theme-settings'
+import { templatesOf } from '@/lib/routes'
+import { parseRoutesConfig, pathsUsing } from '@inflozo/section-runtime/routes'
 import { DEFAULT_LANGUAGE, scriptOf } from '@inflozo/library/languages'
 // SERVER ONLY (intl-messageformat 5.4.3): this file is imported by server modules and, as a type, by the editor — never as a value
 import { judgeOverrides } from '@inflozo/library/override'
@@ -126,6 +128,21 @@ export async function readTranslations(projectId: string): Promise<Translations>
   return { language: project?.language ?? DEFAULT_LANGUAGE, rtlAck: project?.rtl_ack_at ?? null, ...judgeOverrides(data ?? []) }
 }
 
+/** STORY 7.16b — the project's Routes Manager templates (`custom_templates` of kind `routes`, in their order, through the
+ *  caller's own session — RLS), each as the canvas it is: `templatesOf` keeps a row whose filename passes
+ *  `CUSTOM_TARGET_RE`, and `routeCanvasOf` the ones in the database's own key shape that are no membership file. `cache`d,
+ *  so the editor's read and the canvas page's title share one query per request. A failed read throws, as the docs' does:
+ *  an editor missing a template would move an open one to Home and say it is gone. */
+export const routeTemplatesOf = cache(async (projectId: string): Promise<{ canvas: RouteCanvas; file: string; name: string }[]> => {
+  const { data, error } = await (await supabaseServer())
+    .from('custom_templates').select('id, filename, display_name, kind, created_at').eq('project_id', projectId).eq('kind', 'routes').order('created_at')
+  if (error) throw new Error(`the project's templates could not be read (${error.code})`)
+  return templatesOf(data).flatMap((t) => {
+    const canvas = routeCanvasOf(t.file)
+    return canvas === null ? [] : [{ canvas, file: t.file, name: t.name }]
+  })
+})
+
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
  *  their shape). Every row of the project is checked, so a key with no `.hbs` of its own — `paywall` (5.20) — throws for
@@ -184,10 +201,15 @@ export type EditorData = {
    *  linked. Read through the user's own session, so RLS decides; a failed read is logged by code and answered null. */
   site: EditorSite
   plan: PlanId
-  /** Story 5.5 — the canvases this project offers, in D5b's row order; a conditional canvas is absent, not greyed */
-  canvases: CanvasKey[]
+  /** Story 5.5 — the canvases this project offers, in D5b's row order; a conditional canvas is absent, not greyed. Story
+   *  7.16b — then each Routes Manager template's, in `templatesOf` order */
+  canvases: Canvas[]
   /** Story 5.5 — the canvas keys whose doc came from `synthesize`: D5a's marker, as server truth (AD-22) */
-  synthesized: CanvasKey[]
+  synthesized: Canvas[]
+  /** STORY 7.16b — the project's Routes Manager templates as the editor draws them: the switcher's rows, the tab's name, and
+   *  each one's paths for D5f's routed sentence (`routes_config` through `pathsUsing`; none when the stored routing does
+   *  not parse, routine call 12). Optional for the harness's reason: it has none */
+  templates?: readonly RouteTemplate[]
   /** Story 5.5 — EVERY synthesizable canvas's default stack, by stored key, whether or not it is untouched right now.
    *  AD-22's round trip needs the stack of a canvas that is DESIGNED at load too: taking its last section off returns
    *  it to untouched, and what re-renders is this. Keyed by `template_key`, as `docs` is. */
@@ -259,7 +281,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // `cache`d, and the 404 guard above this boundary already read it — so this is the linked site's id at no cost, and
   // the site's own row can join the reads below rather than follow them
   const linked = (await projectOf(projectId))?.linked_site_id ?? null
-  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow, cardsRow] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow, cardsRow, routeRows, routingRow] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -291,6 +313,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
     overrideRows(projectId),
     // Story 7.13 — the project's card designs, through the user's own session (RLS: the uniform owner policy)
     sb.from('project_treatments').select('card_designs').eq('project_id', projectId).maybeSingle(),
+    // Story 7.16b — the project's Routes Manager templates (each a canvas) and its stored routing (which of them a route shows)
+    routeTemplatesOf(projectId),
+    sb.from('routes_config').select('config').eq('project_id', projectId).maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
   // Story 7.13: a failed read THROWS, as the templates' does — an editor opened on no designs would write that empty record
@@ -300,10 +325,23 @@ export async function editorData(projectId: string): Promise<EditorData> {
   const cards = await storedCards(cardsRow.data?.card_designs ?? null)
   if (cards.cardsRefused !== null) console.error('editorData: the stored card designs were refused, so the screen opens on Ghost\'s defaults', { sentence: cards.cardsRefused })
 
+  /* STORY 7.16b — THE ROUTES MANAGER'S TEMPLATES, AS CANVASES, and the paths that show each. A routing that cannot be read
+     or does not parse counts as no route (routine call 12): D5f then says "stops shipping", and the routes page owns the
+     repair (DW-362, Story 7.18's) — logged, never a black editor. */
+  if (routingRow.error) console.error('editorData: the stored routing could not be read', { code: routingRow.error.code })
+  const routing = routingRow.error ? null : parseRoutesConfig(routingRow.data?.config ?? {})
+  const templates: RouteTemplate[] = routeRows.map((t) => ({ canvas: t.canvas, name: t.name, paths: routing?.ok === true ? pathsUsing(routing.config, t.file) : [] }))
+  const current = new Set(templates.map((t) => templateKeyOf(t.canvas)))
+
   const docs: Record<string, ProjectDoc> = {}
   const entries: Record<string, SectionRegistryEntry> = {}
   for (const row of data ?? []) {
     const key = row.template_key as string
+    // STORY 7.16b — AN ORPHAN DOC IS NEVER A CANVAS: a `custom:` doc of a Routes Manager file whose template row is gone
+    // (`ponytail:` routine call 11 — a save landing between a delete's doc and row steps can re-store it). Skipped before it
+    // is parsed or judged, so it is never drawn, counted or synthesized over; the sync never writes one either
+    const owner = canvasOfTemplateKey(key)
+    if (owner !== null && isRouteCanvas(owner) && !current.has(key)) continue
     const doc = parseDoc(row.doc, key)
     // DW-235 (Story 5.24e): the placement rules — a paywall's one design, no treatment on a canvas, a design the library
     // holds, a file it compiles to — are `docRefusal`'s, which the sync route asks before it writes. A doc it refuses is
@@ -327,13 +365,14 @@ export async function editorData(projectId: string): Promise<EditorData> {
     entries[designId] = entry
     return entry
   }
-  // no condition can be true yet, so this is every unconditional canvas — `lib/editor.ts`'s `CONDITIONAL` carries why
-  const canvases = canvasesOf()
-  const synthesized: CanvasKey[] = []
+  // no condition can be true yet, so this is every unconditional canvas — `lib/editor.ts`'s `CONDITIONAL` carries why —
+  // then each Routes Manager template's (Story 7.16b), never synthesized (FR-D6)
+  const canvases: Canvas[] = [...canvasesOf(), ...templates.map((t) => t.canvas)]
+  const synthesized: Canvas[] = []
   const defaults: Record<string, ProjectDoc> = {}
   const dropped: Record<string, readonly DroppedRow[]> = {}
   for (const canvas of canvases) {
-    const file = CANVASES[canvas].file
+    const file = fileOfCanvas(canvas)
     const key = templateKeyOf(canvas)
     // A canvas that is never synthesized — R-129's three membership ones and Private — has no default stack at all,
     // so it opens EMPTY and takes no marker (`sections-inventory.md:785`).
@@ -447,6 +486,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     plan,
     canvases,
     synthesized,
+    templates,
     defaults,
     dropped,
     subjects,

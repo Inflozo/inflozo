@@ -3,10 +3,10 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
-  CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isSiteFooter, isSurface, isUuid, landWithin, LOCK, siteSlot,
-  lockPath, PAGE_TWO,
-  pageTwoKeyOf, ROUTES, routesPath, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
+  CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, captionOf,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, siteSlot,
+  lockPath, NEW_TEMPLATE_QUERY, newTemplatePath, PAGE_TWO,
+  pageTwoKeyOf, routeCanvasOf, ROUTED_EMPTY_ASK, ROUTES, ROUTES_GROUP, routesPath, SETTINGS, settingsPath, SITE, SYNC, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 import { COMPACT, isCompact, isPhone, PHONE } from './lib/floor.ts'
@@ -30,11 +30,65 @@ test('every canvas key round-trips through its address', () => {
 })
 
 test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
-  // Story 7.13 opened `cards` (Editor cards, the second template surface) — it is a canvas now, held below
-  for (const s of ['index', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK, ROUTES]) {
+  // Story 7.13 opened `cards` (Editor cards, the second template surface) — it is a canvas now, held below. Story 7.16b
+  // opened `custom-x` — a Routes Manager segment, held in the next test
+  for (const s of ['index', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK, ROUTES]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)
+})
+
+test('Story 7.16b — a Routes Manager segment in the database\'s shape is a canvas; one outside it is a 404, and a membership segment stays CANVASES\'', () => {
+  for (const s of ['custom-x', 'custom-landing', 'custom-landing-test', 'custom-2026']) {
+    const canvas = canvasFromSegment(s)
+    assert.ok(canvas !== null && isRouteCanvas(canvas), s)
+    assert.equal(canvasOfPath(`/projects/${ID}/${s}`), canvas, s)
+    assert.equal(canvasPath(ID, canvas), `/projects/${ID}/${s}`, `${s} round-trips through its address`)
+    // stored under its file, as a membership canvas is — and the map inverts, which `read.ts` and the sync route rely on
+    assert.equal(fileOf(canvas), `${s}.hbs`)
+    assert.equal(templateKeyOf(canvas), `custom:${s}.hbs`)
+    assert.equal(canvasOfTemplateKey(templateKeyOf(canvas)), canvas)
+    assert.equal(fileOfKey(templateKeyOf(canvas)), `${s}.hbs`)
+    assert.equal(templateKeyOfFile(fileOf(canvas)), templateKeyOf(canvas), 'the library\'s key for the file is the same (DW-331)')
+    // a fourth kind: no membership row, no surface, no page 2
+    assert.ok(!isMembership(canvas) && !isSurface(canvas) && pageTwoKeyOf(canvas) === null, s)
+  }
+  // OUTSIDE `template_key_shape` (`custom-[a-z0-9]+(-[a-z0-9]+)*`): still a synchronous 404 — `CUSTOM_TARGET_RE` would pass
+  // `custom--x`, which the database refuses as a key, so it is not the test
+  for (const s of ['custom-Bad_x', 'custom--x', 'custom-', 'custom-x-', 'custom-x.hbs', 'custom', 'Custom-x', 'custom-ä']) {
+    assert.equal(canvasFromSegment(s), null, s)
+    assert.equal(routeCanvasOf(`${s}.hbs`), null, s)
+  }
+  // THE CONTROL: R-129's three membership segments are `CANVASES`' own, never a Routes Manager canvas
+  for (const key of (Object.keys(CANVASES) as CanvasKey[]).filter(isMembership)) {
+    assert.equal(canvasFromSegment(key), key)
+    assert.ok(!isRouteCanvas(key))
+    assert.equal(routeCanvasOf(CANVASES[key].file), null, `${key}'s file is no Routes Manager canvas`)
+  }
+})
+
+test('Story 7.16b — fileOf, labelOf and captionOf answer both kinds: CANVASES\' own row, and a Routes Manager template\'s', () => {
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) {
+    assert.equal(fileOf(key), CANVASES[key].file, key)
+    assert.equal(labelOf(key, { [key]: 'not this' }), CANVASES[key].label, `${key}: a canvas's label is its own`)
+    assert.equal(captionOf(key), CANVASES[key].caption, key)
+  }
+  const landing = canvasFromSegment('custom-landing') as Canvas
+  // R-170: the switcher's row and the tab say the template's display name
+  assert.equal(labelOf(landing, { 'custom-landing': 'Landing' }), 'Landing')
+  assert.equal(labelOf(landing), 'custom-landing', 'no name handed: the segment, never a blank')
+  assert.equal(captionOf(landing), CUSTOM_TEMPLATE_CAPTION)
+  // `__proto__` handed as a name map key cannot answer for a canvas
+  assert.equal(labelOf(landing, Object.create({ 'custom-landing': 'inherited' }) as Record<string, string>), 'custom-landing')
+})
+
+test('Story 7.16b — the menu\'s words and the New template entry\'s address (R-170, routine call 8)', () => {
+  assert.equal(ROUTES_GROUP.heading.toUpperCase(), 'FROM THE ROUTES MANAGER', 'D5b :163, set in capitals')
+  assert.equal(ROUTES_GROUP.newTemplate, 'New template', 'D5b :178')
+  assert.equal(newTemplatePath(ID), `${routesPath(ID)}?new=${NEW_TEMPLATE_QUERY.new}`)
+  assert.equal(new URL(newTemplatePath(ID), 'https://x').searchParams.get('new'), 'template')
+  assert.equal(TEMPLATE_GONE.said('Gone'), '“Gone” is no longer one of your templates, so you\'re on Home.')
+  assert.equal(TEMPLATE_GONE.dismiss, 'Dismiss')
 })
 
 test('R-131: `settings` is the scheme\'s one NON-CANVAS segment — a real route, and never a canvas', () => {
@@ -266,17 +320,34 @@ test('Story 7.3 · D5f asks exactly where a delete would empty a designed custom
   const keys = Object.keys(CANVASES) as CanvasKey[]
   // the control: some canvas is a custom template and some is not, so a rule answering one way for all would fail
   assert.ok(keys.some(isMembership) && !keys.every(isMembership))
-  for (const canvas of keys) {
+  // Story 7.16b: a Routes Manager canvas is a custom template too
+  for (const canvas of [...keys, canvasFromSegment('custom-landing') as Canvas]) {
     const key = templateKeyOf(canvas)
-    assert.equal(emptiesCustomTemplate(key, doc(1)), isMembership(canvas), `${key}: its last section`)
-    assert.equal(emptiesCustomTemplate(key, doc(1, true)), isMembership(canvas), `${key}: its last section, hidden`)
-    assert.equal(emptiesCustomTemplate(key, doc(2)), false, `${key}: a section stays`)
-    assert.equal(emptiesCustomTemplate(key, doc(2, true)), false, `${key}: a hidden section stays`)
-    assert.equal(emptiesCustomTemplate(key, doc(0)), false, `${key}: nothing to delete`)
-    assert.equal(emptiesCustomTemplate(key, undefined), false, `${key}: untouched`)
+    const custom = isMembership(canvas) || isRouteCanvas(canvas)
+    assert.equal(emptiesCustomTemplate(key, doc(1)), custom ? 'stops' : null, `${key}: its last section`)
+    assert.equal(emptiesCustomTemplate(key, doc(1, true)), custom ? 'stops' : null, `${key}: its last section, hidden`)
+    assert.equal(emptiesCustomTemplate(key, doc(2)), null, `${key}: a section stays`)
+    assert.equal(emptiesCustomTemplate(key, doc(2, true)), null, `${key}: a hidden section stays`)
+    assert.equal(emptiesCustomTemplate(key, doc(0)), null, `${key}: nothing to delete`)
+    assert.equal(emptiesCustomTemplate(key, undefined), null, `${key}: untouched`)
   }
   // neither the site doc nor any page 2 is a custom template
-  for (const key of [SITE.key, ...keys.flatMap((c) => pageTwoKeyOf(c) ?? [])]) assert.equal(emptiesCustomTemplate(key, doc(1)), false, key)
+  for (const key of [SITE.key, ...keys.flatMap((c) => pageTwoKeyOf(c) ?? [])]) assert.equal(emptiesCustomTemplate(key, doc(1)), null, key)
+})
+
+test('Story 7.16b · D5f\'s routed sentence: a template a route still shows KEEPS shipping, and is asked in its own words', () => {
+  const doc = { instances: [{}] }
+  const key = 'custom:custom-landing.hbs'
+  assert.equal(emptiesCustomTemplate(key, doc, ['custom-landing.hbs']), 'keeps')
+  // THE CONTROL: the same delete with no route naming it, and with a route naming ANOTHER template, stops shipping
+  assert.equal(emptiesCustomTemplate(key, doc, []), 'stops')
+  assert.equal(emptiesCustomTemplate(key, doc, ['custom-about.hbs']), 'stops')
+  assert.equal(ROUTED_EMPTY_ASK.title('Landing'), 'Delete the last section from Landing?')
+  const one = ROUTED_EMPTY_ASK.body(['/landing/'])
+  assert.equal(one[1], '/landing/', 'the paths, alone, for the mono chip')
+  assert.equal(one.join(''), 'This template keeps shipping, because /landing/ shows it. Visitors there will see only your header and footer until you add a section.')
+  assert.equal(ROUTED_EMPTY_ASK.body(['/landing/', '/offer/']).join(''), 'This template keeps shipping, because /landing/, /offer/ show it. Visitors there will see only your header and footer until you add a section.')
+  assert.deepEqual([ROUTED_EMPTY_ASK.cancel, ROUTED_EMPTY_ASK.confirm], [EMPTY_TEMPLATE_ASK.cancel, EMPTY_TEMPLATE_ASK.confirm])
 })
 
 test("Story 7.3 · D5f's words: R-170's Delete, the canvas's label and the file its key compiles to", () => {
@@ -322,7 +393,8 @@ test('R-127 stands: no page-2 key is a canvas, a segment or a switcher row — p
 
 test('every key the editor writes is accepted word for word by the sync route AND by `template_key_shape`', () => {
   // Story 7.13: Editor cards writes no doc — its values ride `CARDS_KEY` into `project_treatments` — so its key is no row's
-  const written = [SITE.key, ...(Object.keys(CANVASES) as CanvasKey[]).filter((k) => !isCards(k)).map(templateKeyOf), ...Object.values(PAGE_TWO).map((p) => p.key)]
+  // Story 7.16b — and a Routes Manager canvas's
+  const written = [SITE.key, ...(Object.keys(CANVASES) as CanvasKey[]).filter((k) => !isCards(k)).map(templateKeyOf), ...Object.values(PAGE_TWO).map((p) => p.key), templateKeyOf(canvasFromSegment('custom-landing-test') as Canvas)]
   // the route's own pattern, read out of the file rather than restated (a route file may export only its handlers)
   const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
   const pattern = /const TEMPLATE_KEY = \/(.+)\/\n/.exec(route)?.[1]
@@ -437,7 +509,44 @@ test('Story 6.3: the sync route refuses a preset this build does not know BEFORE
   // review: a pack-only body is "already there" only one write past its base — never adopted over another session's docs
   // (Story 6.4: and its own packs must be the server's too)
   // (Story 7.13: and its card designs must be the server's too)
-  assert.match(route, /const ours = keys\.length > 0 \|\| answer\.revision === \(base as number\) \+ 1\n\s+if \(same && packThere && packsThere && cardsThere && ours\) return json\(200/)
+  // (Story 7.16b: over the keys it WROTE — a key it left for a deleted template proves nothing either way)
+  assert.match(route, /const ours = written\.length > 0 \|\| answer\.revision === \(base as number\) \+ 1\n\s+if \(same && packThere && packsThere && cardsThere && ours\) return json\(200/)
+})
+
+test('Story 7.16b: the sync route never re-creates a deleted template\'s canvas — it leaves the key, writes the rest and names what it left', () => {
+  const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
+  const read = route.indexOf(".from('custom_templates').select('filename').eq('project_id', projectId).eq('kind', 'routes')")
+  const rpc = route.indexOf("rpc('sync_project_doc'")
+  assert.ok(read > 0 && read < rpc, 'the templates are read before the write')
+  // read ONCE, and only when a Routes Manager key is in the body — a membership key is never asked about
+  assert.match(route, /if \(routeKeys\.length > 0\) \{/)
+  assert.match(route, /return canvas !== null && isRouteCanvas\(canvas\)/)
+  // the left keys leave the RPC's docs, and the answer names them on every path
+  assert.ok(route.indexOf('for (const key of left) delete parsed[key]') > read, 'the gone keys are dropped before the write')
+  assert.match(route, /p_docs: parsed,/)
+  assert.equal((route.match(/revision: answer\.revision, left \}\)/g) ?? []).length, 2, 'both answers name the keys left')
+  // THE CONTROL, as data: the keys this route judges are the editor's own Routes Manager keys, and no membership key is one
+  const isRouteKey = (key: string) => {
+    const canvas = canvasOfTemplateKey(key)
+    return canvas !== null && isRouteCanvas(canvas)
+  }
+  assert.ok(isRouteKey('custom:custom-landing.hbs'))
+  for (const key of ['custom:custom-signup.hbs', 'custom:custom-signin.hbs', 'custom:custom-member-home.hbs', 'home', 'site', 'paywall', 'index']) assert.ok(!isRouteKey(key), key)
+})
+
+test('Story 7.16b: an orphan doc is never a canvas — `editorData` skips a Routes Manager `custom:` doc whose template is gone, before it is parsed', () => {
+  const read = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts'), 'utf8')
+  // the current templates are the same read the switcher's rows come from, so a doc is a canvas exactly when its row is
+  assert.match(read, /const current = new Set\(templates\.map\(\(t\) => templateKeyOf\(t\.canvas\)\)\)/)
+  const skip = read.indexOf('if (owner !== null && isRouteCanvas(owner) && !current.has(key)) continue')
+  assert.ok(skip > 0 && skip < read.indexOf('const doc = parseDoc(row.doc, key)'), 'the orphan is skipped before it is parsed, judged or drawn')
+  // and the canvases are the templates' — never a stored key's
+  assert.match(read, /const canvases: Canvas\[\] = \[\.\.\.canvasesOf\(\), \.\.\.templates\.map\(\(t\) => t\.canvas\)\]/)
+  // THE CONTROL, as data: the skip names Routes Manager keys alone — a membership doc's key is CANVASES' own, so it is kept
+  assert.equal(canvasOfTemplateKey('custom:custom-gone.hbs'), 'custom-gone')
+  assert.ok(isRouteCanvas(canvasOfTemplateKey('custom:custom-gone.hbs')!))
+  assert.equal(canvasOfTemplateKey('custom:custom-signup.hbs'), 'custom-signup')
+  assert.ok(!isRouteCanvas(canvasOfTemplateKey('custom:custom-signup.hbs')!))
 })
 
 test('Story 6.3: Remix\'s Both writes neither when a design is refused — the fold first, the pack only once it landed, one txn (FR-D9)', () => {

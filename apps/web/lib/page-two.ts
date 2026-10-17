@@ -20,7 +20,7 @@
 
 import { orbitWeekly } from '@inflozo/library'
 import { isDesigned, mainFeedOf, pageTwoStack, type DocInstance, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasStack, isSurface, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from './editor.ts'
+import { canvasOfPageTwoKey, canvasOfTemplateKey, canvasStack, fileOf, isSurface, pageTwoOfCanvas, SITE, templateKeyOf, type Canvas } from './editor.ts'
 import { EMPTY_DOC } from './round-trip.ts'
 
 /** The page a canvas shows: its first, or its second — which stands for every later page (R-177). */
@@ -77,21 +77,21 @@ const ONE_PAGE = (kind: string) => `this ${kind}'s posts all fit on one page, so
  * where the canvas paginates, its page 1 has a main feed to carry the row, and the list that feed renders — the whole
  * feed on Home, the subject's own posts on an archive — runs to a second page. Nothing is invented (FR-H3).
  */
-export function noPageTwo(canvas: CanvasKey, docs: Docs, subject: Subject, source: Source = orbitWeekly.BUNDLED): string | null {
-  if (PAGE_TWO[canvas] === undefined) return NO_PAGES
+export function noPageTwo(canvas: Canvas, docs: Docs, subject: Subject, source: Source = orbitWeekly.BUNDLED): string | null {
+  if (pageTwoOfCanvas(canvas) === undefined) return NO_PAGES
   if (mainFeedOf(docs[templateKeyOf(canvas)]) === undefined) return NO_FEED
   // Story 5.18: the list the canvas renders is the SOURCE IN FORCE's — the site's own posts when that is what shows
-  if (orbitWeekly.feedPages(CANVASES[canvas].file, subject, source) < 2) return ONE_PAGE(subject?.kind ?? 'page')
+  if (orbitWeekly.feedPages(fileOf(canvas), subject, source) < 2) return ONE_PAGE(subject?.kind ?? 'page')
   return null
 }
 
-export const offersPageTwo = (canvas: CanvasKey, docs: Docs, subject: Subject, source?: Source): boolean =>
+export const offersPageTwo = (canvas: Canvas, docs: Docs, subject: Subject, source?: Source): boolean =>
   noPageTwo(canvas, docs, subject, source) === null
 
 /** THE PAGE IN FORCE: the one asked for, unless page 2 was asked for where it has stopped existing — a subject whose
  *  archive fits one page, a page 1 that lost its main feed to an undo, a source whose list fits one page — and then
  *  page 1, with the reason to say. */
-export function pageInForce(asked: Page, canvas: CanvasKey, docs: Docs, subject: Subject, source?: Source): { page: Page; reason: string | null } {
+export function pageInForce(asked: Page, canvas: Canvas, docs: Docs, subject: Subject, source?: Source): { page: Page; reason: string | null } {
   if (asked === 1) return { page: 1, reason: null }
   const why = noPageTwo(canvas, docs, subject, source)
   return why === null ? { page: 2, reason: null } : { page: 1, reason: why }
@@ -100,17 +100,17 @@ export function pageInForce(asked: Page, canvas: CanvasKey, docs: Docs, subject:
 /* ── WHAT PAGE 2 IS (R-178, R-179) ────────────────────────────────────────────────────────────────────────────── */
 
 /** Does this canvas's page 2 FOLLOW page 1 — no design of its own stored, or one with no instances (AD-22)? */
-export const follows = (docs: Docs, canvas: CanvasKey): boolean => {
-  const two = PAGE_TWO[canvas]
+export const follows = (docs: Docs, canvas: Canvas): boolean => {
+  const two = pageTwoOfCanvas(canvas)
   return two !== undefined && !isDesigned(docs[two.key] ?? EMPTY_DOC)
 }
 
 /** Page 2's doc AS IT IS SHOWN AND EDITED: its own design, or while it follows, the live copy of page 1 — the
  *  runtime's `pageTwoStack`, the one implementation Story 7.3's compiler calls too (AD-27(d)). */
-export function pageTwoOf(docs: Docs, canvas: CanvasKey, library: SynthesisLibrary): ProjectDoc {
-  const two = PAGE_TWO[canvas]
+export function pageTwoOf(docs: Docs, canvas: Canvas, library: SynthesisLibrary): ProjectDoc {
+  const two = pageTwoOfCanvas(canvas)
   if (two === undefined) return EMPTY_DOC
-  return { schemaVersion: 1, instances: pageTwoStack(CANVASES[canvas].file, docs[templateKeyOf(canvas)], docs[two.key], library).instances }
+  return { schemaVersion: 1, instances: pageTwoStack(fileOf(canvas), docs[templateKeyOf(canvas)], docs[two.key], library).instances }
 }
 
 /** The doc the editor EDITS under a stored key: a page-2 key's is `pageTwoOf`'s, every other key's is its own. Every
@@ -121,13 +121,13 @@ export const editedDoc = (docs: Docs, key: string, library: SynthesisLibrary): P
 }
 
 /** THE PAGE-AWARE OWN KEY — the doc this canvas edits on the page in force. The preview SUBJECT stays the canvas's. */
-export const ownKeyOf = (canvas: CanvasKey, page: Page): string =>
-  (page === 2 ? PAGE_TWO[canvas]?.key : undefined) ?? templateKeyOf(canvas)
+export const ownKeyOf = (canvas: Canvas, page: Page): string =>
+  (page === 2 ? pageTwoOfCanvas(canvas)?.key : undefined) ?? templateKeyOf(canvas)
 
 /** The file the page's own sections render at: `index.hbs` for Home's page 2, where Ghost renders `/page/2/`
  *  (`templates.js:67` puts `home.hbs` first only at exactly `/`), and an archive's own file on both of its pages. */
-export const pageFileOf = (canvas: CanvasKey, page: Page): string =>
-  (page === 2 ? PAGE_TWO[canvas]?.file : undefined) ?? CANVASES[canvas].file
+export const pageFileOf = (canvas: Canvas, page: Page): string =>
+  (page === 2 ? pageTwoOfCanvas(canvas)?.file : undefined) ?? fileOf(canvas)
 
 /** THE STACK A PAGE PAINTS, and Layers lists, and every edit is aligned with: the site-wide rows around the page's own
  *  — on page 2, page 2's doc (its own, or the copy), stamped with page 2's key and file. Because page 2's rows are a
@@ -137,11 +137,11 @@ export const pageFileOf = (canvas: CanvasKey, page: Page): string =>
  *  page 2 that follows page 1. That page has no markup of its own — `tag.hbs` serves page 1's on every page — so its
  *  rows take page 1's key, and the canvas draws the hook the visitor's page carries. Home's copy keeps `index`, because
  *  `index.hbs` is a file of its own. */
-export function stackOf(docs: Docs, canvas: CanvasKey, page: Page, library: SynthesisLibrary): Placed[] {
+export function stackOf(docs: Docs, canvas: Canvas, page: Page, library: SynthesisLibrary): Placed[] {
   const key = ownKeyOf(canvas, page)
   const target = pageFileOf(canvas, page)
   const own = key === templateKeyOf(canvas) ? docs[key] : pageTwoOf(docs, canvas, library)
-  const themeKey = page === 2 && target === CANVASES[canvas].file && follows(docs, canvas) ? templateKeyOf(canvas) : key
+  const themeKey = page === 2 && target === fileOf(canvas) && follows(docs, canvas) ? templateKeyOf(canvas) : key
   return canvasStack(
     // STORY 5.20 — a template SURFACE draws no site doc: the paywall is a partial inside a post, not a page
     isSurface(canvas) ? [] : (docs[SITE.key]?.instances ?? []).map((i) => ({ ...i, target: SITE.file as string, doc: SITE.key as string, themeKey: SITE.key as string })),
@@ -153,13 +153,13 @@ export function stackOf(docs: Docs, canvas: CanvasKey, page: Page, library: Synt
  *  to page 1 changes them too, so R-167's record runs out for them as well (`afterChange`'s `followers`). */
 export function followersOf(docs: Docs, touched: string): string[] {
   const canvas = canvasOfTemplateKey(touched)
-  const two = canvas === null ? undefined : PAGE_TWO[canvas]
+  const two = canvas === null ? undefined : pageTwoOfCanvas(canvas)
   return canvas !== null && two !== undefined && follows(docs, canvas) ? [two.key] : []
 }
 
 /** The main feed as it sits on the page on screen — the section whose panel carries D5d's row: page 1's first
  *  `isMainFeed` instance, and on page 2 its copy, where the row is the way back. */
-export function mainFeedOn(docs: Docs, canvas: CanvasKey, page: Page, library: SynthesisLibrary): { doc: string; instanceId: string } | null {
+export function mainFeedOn(docs: Docs, canvas: Canvas, page: Page, library: SynthesisLibrary): { doc: string; instanceId: string } | null {
   const doc = page === 2 ? pageTwoOf(docs, canvas, library) : docs[templateKeyOf(canvas)]
   const feed = mainFeedOf(doc)
   return feed === undefined ? null : { doc: ownKeyOf(canvas, page), instanceId: feed.instanceId }
@@ -171,7 +171,7 @@ export function mainFeedOn(docs: Docs, canvas: CanvasKey, page: Page, library: S
 export function carry(
   pick: { doc: string; instanceId: string } | null,
   to: Page,
-  canvas: CanvasKey,
+  canvas: Canvas,
   docs: Docs,
   library: SynthesisLibrary,
 ): { doc: string; instanceId: string } | null {

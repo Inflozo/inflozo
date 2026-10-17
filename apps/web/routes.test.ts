@@ -1,7 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { docSchema, parseDoc } from '@inflozo/section-runtime'
 import { ROUTE_WORDS } from '@inflozo/section-runtime/routes'
+import { docRefusal } from './lib/pilots.ts'
 import { cardName, conditionWords, filterWords, freshCondition, ROUTES_WORDS, templatesOf, templateWriteRefusal } from './lib/routes.ts'
 
 // STORY 7.16a — the Routes page's pure half (`lib/routes.ts`): R-170's one list, the frame's strings verbatim where the spec
@@ -87,4 +90,61 @@ test('Name collision: the database\'s 23505 backstop answers with the naming ste
   const actions = readFileSync('app/(app)/app/(authed)/projects/[id]/routes/actions.ts', 'utf8')
   assert.equal(actions.match(/templateWriteRefusal\(error, /g)?.length, 2)
   assert.doesNotMatch(actions, /'23505'/, 'no second mapping of the code beside the one function')
+})
+
+// ─── Story 7.16b — a designed template's delete and its Undo (FR-I3), and the sheet the Template menu opens ─────────────
+
+const ACTIONS = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'actions.ts'), 'utf8')
+const body = (name: string) => ACTIONS.slice(ACTIONS.indexOf(`export async function ${name}(`), ACTIONS.indexOf('\n}\n', ACTIONS.indexOf(`export async function ${name}(`)))
+
+test('Story 7.16b: the delete window says what goes — the design, the paths, or both — and Undo brings it back; 7.16a\'s refusal is retired', () => {
+  assert.equal(ROUTES_WORDS.designGoes, 'Its design goes with it. Undo brings it back.')
+  assert.equal(ROUTES_WORDS.alsoRemovesDesign(['/landing/']), 'Also removes /landing/ and its design. Undo brings them back.')
+  // routed alone is 7.16a's line, unchanged
+  assert.equal(ROUTES_WORDS.alsoRemoves(['/landing/']), 'Also removes /landing/. Undo brings both back.')
+  // a designed template is deleted with its design now, never refused: the design's two lines are the list's only design words
+  assert.deepEqual(Object.keys(ROUTES_WORDS).filter((k) => /design/i.test(k)).sort(), ['alsoRemovesDesign', 'designGoes'])
+  // the page picks the line by the two facts, and opens the confirm for either
+  const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
+  assert.match(manager, /\{designed \? \(paths\.length > 0 \? W\.alsoRemovesDesign\(paths\) : W\.designGoes\) : W\.alsoRemoves\(paths\)\}/)
+  assert.match(manager, /pathsUsing\(config, t\.file\)\.length > 0 \|\| designed\.includes\(t\.file\) \? setConfirm\(t\)/)
+})
+
+test('Story 7.16b: every in-between state is valid — the delete runs config, doc, row; its Undo row, doc, config', () => {
+  const del = body('deleteTemplate')
+  const [config, doc, row] = [del.indexOf('writeConfig('), del.indexOf(".from('project_templates').delete()"), del.indexOf(".from('custom_templates').delete()")]
+  assert.ok(config > 0 && doc > config && row > doc, `the delete's order: config ${config}, doc ${doc}, row ${row}`)
+  assert.ok(!/ctx\.designed/.test(del), 'no refusal of a designed template')
+  assert.match(del, /return \{ ok: true, \.\.\.\(held\.data \? \{ doc \} : \{\}\) \}/, 'the doc it took is handed back for the Undo')
+  // a failed row delete puts the doc back: the template stands as it was, unrouted, never without its design and no Undo
+  assert.ok(del.indexOf(".from('project_templates').upsert(", row) > row, 'the doc goes back when the row delete fails')
+  const undo = body('restoreTemplate')
+  const [rowBack, docBack, configBack] = [undo.indexOf(".from('custom_templates')\n      .insert("), undo.indexOf(".from('project_templates').upsert("), undo.indexOf('writeConfig(')]
+  assert.ok(rowBack > 0 && docBack > rowBack && configBack > docBack, `the Undo's order: row ${rowBack}, doc ${docBack}, config ${configBack}`)
+  // the doc comes back from the CLIENT, so it is judged before anything is written (AD-36)
+  const judged = undo.indexOf('docSchema.safeParse(sent)')
+  assert.ok(judged > 0 && judged < rowBack && undo.indexOf('docRefusal(key, parsed.data)') < rowBack, 'judged by docSchema and docRefusal first')
+})
+
+test('Story 7.16b: the Undo\'s doc is judged as the sync route judges one — a doc a Routes Manager canvas can hold passes, and nothing else', () => {
+  const doc = (...designIds: string[]) => ({ schemaVersion: 1, instances: designIds.map((designId, n) => ({ instanceId: `i${n}`, layerName: designId, designId, content: {}, controls: {}, data: {}, darkOverrides: {} })) })
+  const key = 'custom:custom-landing.hbs'
+  for (const ok of [doc('a22/1'), doc('a4/13', 'a22/1'), doc()]) {
+    const parsed = docSchema.safeParse(ok)
+    assert.ok(parsed.success && docRefusal(key, parsed.data) === null, JSON.stringify(ok))
+  }
+  // THE CONTROL: a design that does not list the route target, a post-bound one, a stranger's key and a doc that is no doc
+  assert.match(docRefusal(key, parseDoc(doc('a17/1'), key)) ?? '', /never custom-landing\.hbs/)
+  assert.match(docRefusal(key, parseDoc(doc('a24/1'), key)) ?? '', /never custom-landing\.hbs/)
+  assert.equal(docSchema.safeParse({ schemaVersion: 1, instances: [{ designId: 'a22/1' }] }).success, false)
+  assert.equal(docSchema.safeParse({ ...doc('a22/1'), extra: true }).success, false, 'a strict schema: nothing rides along')
+})
+
+test('Story 7.16b: ?new=template opens the New template sheet, and Create from it answers the file it made', () => {
+  const page = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'page.tsx'), 'utf8')
+  assert.match(page, /const fromMenu = \(await searchParams\)\.new === NEW_TEMPLATE_QUERY\.new/)
+  const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
+  assert.match(manager, /useState<Sheet \| null>\(props\.fromMenu === true \? \{ kind: 'template', entry: true \} : null\)/)
+  assert.match(manager, /if \(open\.kind === 'template'\) document\.getElementById\('routes-new-template'\)\?\.focus\(\)/, 'focus lands in Name')
+  assert.match(body('createTemplate'), /return \{ ok: true, file: made\.file \}/)
 })

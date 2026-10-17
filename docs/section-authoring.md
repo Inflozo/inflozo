@@ -178,6 +178,11 @@ as two keys onto one object. What genuinely differs is the **product**, and that
 **`compileTarget` is a refusal, not a hint (R-7).** `any` is withdrawn wherever it was a lie. Legal
 targets are `default.hbs · home.hbs · index.hbs · post.hbs · page.hbs · tag.hbs · author.hbs ·
 error.hbs · private.hbs`, plus `custom-{name}.hbs` for a membership or Routes-Manager template.
+*(Story 7.16b, DW-126 —)* written **literally, braces and all**, `custom-{name}.hbs` means **every Routes Manager
+template**, whatever the user names it (R-7's own spelling, `ROUTE_TEMPLATE_TARGET`): such a template is the route form —
+a flat root with no `post`, offered `none` and the gettable resources — so list it only on a design that binds no post
+field (a hero, a newsletter row, a get's rows). A membership page is named by its own file (`custom-signup.hbs` …), never
+by the brace, and keeps the entry form (`{{#post}}`, A30).
 Two restrictions are enforced at validation, not left to render:
 
 - a design emitting **pagination** is restricted to paginated targets (`home` · `index` · `tag` ·
@@ -1219,7 +1224,8 @@ against what T1 and T3 printed and against Ghost's own source by `packages/libra
 
 | Target | A section's top level is | So at the top level… |
 |---|---|---|
-| `post.hbs` · `page.hbs` · `custom-{name}.hbs` | **inside the post block the TEMPLATE opens** — `{{#post}}`, never `{{#page}}` | `title`, `url`, `feature_image`, `tags` (a repeat)… |
+| `post.hbs` · `page.hbs` · a membership `custom-{name}.hbs` | **inside the post block the TEMPLATE opens** — `{{#post}}`, never `{{#page}}` | `title`, `url`, `feature_image`, `tags` (a repeat)… |
+| a Routes Manager `custom-{name}.hbs` *(Story 7.16b)* | a **flat** route root — no post, no `@page` | the universal set and a get's rows alone |
 | `index.hbs` · `home.hbs` | the list root | `posts` (a repeat) and `pagination.*` — **not** `title` |
 | `tag.hbs` · `author.hbs` | the archive root | `tag.*` / `author.*`, `posts`, `pagination.*` |
 | `error.hbs` | the error root | `data-helper="statusCode"` / `"message"` |
@@ -1228,7 +1234,7 @@ against what T1 and T3 printed and against Ghost's own source by `packages/libra
 The universal set — `@site.*`, `@config.posts_per_page`, and `navigation`, `total_members`, `total_paid_members`,
 `content_api_key`, `content_api_url` as bare helpers — works everywhere, and an `@` path reads the root from any depth.
 `@page.show_title_and_feature_image` is legal on the post-block templates and offered only on `page.hbs`
-and `custom-{name}.hbs`. A `data-repeat` over a `dataBindings` key opens its source's row scope (a query
+and a membership `custom-{name}.hbs` — never on a Routes Manager one, whose route sets no page (Story 7.16b). A `data-repeat` over a `dataBindings` key opens its source's row scope (a query
 over `posts` holds post fields on any template); a context-path repeat opens the list it names; a
 `data-items` list opens no Ghost scope. `../` reads one scope up. **`@custom.*` refuses** (theme settings
 are FR-Q3's, Epic 7) and **`@member` refuses** (R-28: a member's details are never printed), each with

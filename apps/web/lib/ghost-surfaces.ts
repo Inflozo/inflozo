@@ -23,7 +23,7 @@
 
 import { escapeUserText, readMarks, serializeMarks, type MarkNode, type RichText } from '@inflozo/section-runtime'
 import type { PropDef } from '@inflozo/library'
-import { isSurface, type CanvasKey } from './editor.ts'
+import { isSurface, type Canvas } from './editor.ts'
 import type { EditorSite } from './live-content.ts'
 import { isAccent, PORTAL_ICONS, type Members, type PortalIcon, type Surfaces } from './probe-rule.ts'
 import { VISITORS, type Visitor } from './view-as.ts'
@@ -44,7 +44,7 @@ export type Shim = { attributes: Readonly<Record<string, string>>; html: string 
  *  handed only for a linked site that is not disconnected, `read.ts`), and never a template surface — the Paywall is a
  *  partial of a post, not a page Ghost prepends a bar to. What the content pill shows does not enter: these are the
  *  connection's settings, not its content. */
-export const shimsOn = (key: CanvasKey, site: EditorSite): boolean => !isSurface(key) && site !== null && site.surfaces !== undefined
+export const shimsOn = (key: Canvas, site: EditorSite): boolean => !isSurface(key) && site !== null && site.surfaces !== undefined
 
 /* ── THE STRIP — Ghost's announcement bar ─────────────────────────────────────────────────────────────────────────── */
 

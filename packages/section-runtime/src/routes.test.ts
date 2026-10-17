@@ -4,10 +4,11 @@ import nql6 from '@tryghost/nql'
 import nql5 from 'nql5'
 import { load } from 'js-yaml'
 import {
-  dayAfter, DEFAULT_TAXONOMIES, emittedProblem, EMPTY_ROUTES, isCalendarDate, filterNql, filterProblem, ghostLabel, holderOf, indexFilter, indexNode, MEMBERSHIP_FILES, nodeOf,
+  dayAfter, DEFAULT_TAXONOMIES, emittedProblem, EMPTY_ROUTES, isCalendarDate, filterNql, filterProblem, ghostLabel, holderOf, indexFilter, indexNode, nodeOf,
   parseRoutesConfig, pathsUsing, readNql, RESERVED_SEGMENTS, ROUTE_WORDS, routedOf, routesYaml, templateName, validateRoutes, withoutTemplate,
   writeNql, yamlLines, type Cond, type Filter, type Node, type RoutesConfig,
 } from './routes.ts'
+import { MEMBERSHIP_FILES } from '@inflozo/library'
 import { RELATIVE, ROUTES_FIXTURES } from './routes-fixtures.ts'
 
 // STORY 7.16a — the Routes Manager's one module, held: every I/O row of the spec, every emitted filter through BOTH majors'

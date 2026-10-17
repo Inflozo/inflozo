@@ -1,10 +1,12 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { byCategory, categoryOf, compilesTo, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT, POST_HEADER, ringFor, samePartition } from './placement.ts'
-import type { BindingContext } from './vocabulary.ts'
-import type { Surface } from './registry.ts'
+import { MEMBERSHIP_FILES, ROUTE_TEMPLATE_TARGET, type BindingContext, type Surface } from './vocabulary.ts'
+import headerDesign from '../designs/a1/1/design.json' with { type: 'json' }
+import heroDesign from '../designs/a4/13/design.json' with { type: 'json' }
 import feedDesign from '../designs/a17/1/design.json' with { type: 'json' }
 import bandDesign from '../designs/a22/1/design.json' with { type: 'json' }
+import postHeaderDesign from '../designs/a24/1/design.json' with { type: 'json' }
 
 // Story 5.4 — the matrix's placement rows. Neither rule can be exercised on the deployed editor, because
 // `packages/library/designs/` holds no A25, A32, A33 or A34 design: this is their whole proof.
@@ -177,4 +179,42 @@ test('offeredOn asks the same rule: the Section Picker on Home\'s page 2 offers 
   assert.equal(offeredOn(entry('a4/13', ['none'], ['home.hbs']), 'index.hbs'), true)
   // and a design that sits on neither is still withheld there
   assert.equal(offeredOn(entry('a24/1', ['post'], ['post.hbs']), 'index.hbs'), false)
+})
+
+// ─── Story 7.16b (DW-126) — a design reaches every Routes Manager template by listing ROUTE_TEMPLATE_TARGET ─────────────
+//
+// The real descriptors again, so the day a design's targets move this follows rather than lying. Routine call 3: a4/13
+// and a22/1 gain the target; a17/1 does not (its pagination is fatal off a paginated target, R-7), nor a24/1 (it binds
+// `post`, which a route's root never carries, F1).
+
+test('compilesTo: ROUTE_TEMPLATE_TARGET opens every Routes Manager file, and never a membership file or another template', () => {
+  for (const file of ['custom-landing.hbs', 'custom-landing-test.hbs', 'custom-x2.hbs']) {
+    assert.equal(compilesTo([ROUTE_TEMPLATE_TARGET], file), true, file)
+  }
+  // THE CONTROL: the same list reaches no membership file and no standard template
+  for (const file of [...MEMBERSHIP_FILES, 'home.hbs', 'index.hbs', 'page.hbs', 'post.hbs', 'default.hbs']) {
+    assert.equal(compilesTo([ROUTE_TEMPLATE_TARGET], file), false, file)
+  }
+  // a membership file is reached by naming it, as A30's designs do
+  assert.equal(compilesTo(['custom-signup.hbs'], 'custom-signup.hbs'), true)
+  assert.equal(compilesTo(['custom-signup.hbs'], 'custom-landing.hbs'), false)
+})
+
+test('offeredOn: a4/13 and a22/1 are offered on a Routes Manager canvas and not on Signup; a17/1 and a24/1 never are', () => {
+  const real = (id: string, d: { bindingContext: readonly string[]; compileTarget: readonly string[] }) => entry(id, d.bindingContext as BindingContext[], [...d.compileTarget])
+  const hero = real('a4/13', heroDesign)
+  const band = real('a22/1', bandDesign)
+  for (const e of [hero, band]) {
+    assert.ok(e.compileTarget.includes(ROUTE_TEMPLATE_TARGET), `${e.id} lists the target (routine call 3)`)
+    assert.equal(offeredOn(e, 'custom-landing.hbs'), true, `${e.id} on a Routes Manager canvas`)
+    assert.equal(offeredOn(e, 'custom-signup.hbs'), false, `${e.id} on a membership canvas`)
+  }
+  // never offered there — and the control is that each IS offered where it belongs
+  for (const [e, home] of [[real('a17/1', feedDesign), 'home.hbs'], [real('a24/1', postHeaderDesign), 'post.hbs']] as const) {
+    assert.equal(offeredOn(e, 'custom-landing.hbs'), false, `${e.id} on a Routes Manager canvas`)
+    assert.equal(offeredOn(e, home), true, `the control: ${e.id} on ${home}`)
+  }
+  // the site-wide header is the site doc's, never the route canvas's own (it lands in the site doc)
+  assert.equal(offeredOn(real('a1/1', headerDesign), 'custom-landing.hbs'), false)
+  assert.equal(offeredOn(real('a1/1', headerDesign), 'default.hbs'), true)
 })

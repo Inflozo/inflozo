@@ -2,7 +2,7 @@
   "name": "Inline Row",
   "tier": "free",
   "bindingContext": ["none"],
-  "compileTarget": ["home.hbs", "page.hbs", "post.hbs"],
+  "compileTarget": ["home.hbs", "page.hbs", "post.hbs", "custom-{name}.hbs"],
   "controlSchema": [
     { "name": "align", "type": "segmented", "label": "Alignment", "group": "layout", "values": ["center", "start"], "default": "center",
       "valueLabels": { "center": "Centred", "start": "Left" } },

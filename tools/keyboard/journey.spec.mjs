@@ -4113,8 +4113,9 @@ async function openPaywall(page) {
   // the menu opens ON ITS CHECKED ROW a frame after the key (R-171) — the next key waits for it, as `menuTo` does
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
-  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16a "Manage routes" is
-  // the menu's last row, under its rule, so Paywall is two above it
+  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16b "New template" and
+  // Story 7.16a's "Manage routes" close the menu under its rule, so Paywall is three above the end
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
@@ -4507,8 +4508,9 @@ test('5.21 · Sample content keeps both (the connection\'s, not the content\'s);
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
-  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16a "Manage routes" is
-  // the menu's last row, under its rule, so Paywall is two above it
+  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16b "New template" and
+  // Story 7.16a's "Manage routes" close the menu under its rule, so Paywall is three above the end
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
@@ -4590,8 +4592,9 @@ test('5.21 · the editor re-reads the site ONCE per opening — reading along to
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="post"]')).toBeFocused()
   await page.keyboard.press('End')
-  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16a "Manage routes" is
-  // the menu's last row, under its rule, so Paywall is two above it
+  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16b "New template" and
+  // Story 7.16a's "Manage routes" close the menu under its rule, so Paywall is three above the end
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
@@ -4710,8 +4713,9 @@ test('5.21 · From your Ghost site (the owner\'s finding): two Layers rows name 
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
-  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16a "Manage routes" is
-  // the menu's last row, under its rule, so Paywall is two above it
+  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16b "New template" and
+  // Story 7.16a's "Manage routes" close the menu under its rule, so Paywall is three above the end
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
@@ -6708,8 +6712,9 @@ test('R-215 (the review of 5.24e): a pointed-at Ghost row the re-read no longer 
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
-  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16a "Manage routes" is
-  // the menu's last row, under its rule, so Paywall is two above it
+  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16b "New template" and
+  // Story 7.16a's "Manage routes" close the menu under its rule, so Paywall is three above the end
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
@@ -7014,8 +7019,9 @@ test('DW-275 (Story 5.24e): the Paywall\'s post-body sheet is no part of the can
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
-  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16a "Manage routes" is
-  // the menu's last row, under its rule, so Paywall is two above it
+  // Story 7.13: Editor cards is the last canvas row, Paywall the one above it — and since Story 7.16b "New template" and
+  // Story 7.16a's "Manage routes" close the menu under its rule, so Paywall is three above the end
+  await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
@@ -7917,8 +7923,11 @@ async function toCards(page) {
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-canvas="home"]')).toBeFocused()
   await page.keyboard.press('End')
-  // Story 7.16a: "Manage routes" is the last row now, under its rule — Editor cards is the canvas above it
+  // Story 7.16a: "Manage routes" is the last row, and since Story 7.16b "New template" sits above it, under the rule — Editor
+  // cards is the canvas above both (no Routes Manager template in the harness, so no heading: R-128's "absent asks nothing")
   await expect(page.locator('[data-manage-routes]')).toBeFocused()
+  await page.keyboard.press('ArrowUp')
+  await expect(page.locator('[data-new-template]')).toBeFocused()
   await page.keyboard.press('ArrowUp')
   await expect(page.locator('[data-canvas="cards"]')).toBeFocused()
   await page.keyboard.press('Enter')

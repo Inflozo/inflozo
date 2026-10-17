@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { memo, Profiler, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { CARDS, categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, parseCardDesigns, paywallRing, postAccess, resolveStrings, ringFor, withoutCard, withValue, type CardDesigns, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
@@ -18,7 +18,7 @@ import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown, modeWords } from '@/components/editor/mode-toggle'
 import { PageTwoPill } from '@/components/editor/page-two-pill'
-import { LockBar } from '@/components/editor/lock-bar'
+import { LockBar, TemplateGoneBar } from '@/components/editor/lock-bar'
 import { LockRequest } from '@/components/editor/lock-request'
 import { LockTakeover } from '@/components/editor/lock-takeover'
 import { PaywallNotice } from '@/components/editor/paywall-notice'
@@ -52,16 +52,17 @@ import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection,
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOfKey, isCards, isPaywall, isSiteFooter, isSurface, landWithin, settingsPath, SITE, siteSlot, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isSiteFooter, isSurface, labelOf, landWithin, ROUTED_EMPTY_ASK, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
 import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey, parseStoredCards } from '@/lib/cards'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, carries, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
   CARDS_KEY, flushDecision, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
-  SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal,
+  SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
   type Restore, type SyncState,
 } from '@/lib/journal'
+import { ghostLabel } from '@inflozo/section-runtime/routes'
 import {
   askedNow, edgePoll, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, type AskedOf, type LockRow,
 } from '@/lib/lock'
@@ -561,6 +562,8 @@ type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
 const NOTHING_BOUND: Promotion['bound'] = { controls: {}, props: {} }
 /** Story 7.13 — no card designed: the harness's record, and every project's until its first card edit */
 const NO_CARDS: CardDesigns = {}
+/** Story 7.16b — no Routes Manager template: the harness's list, and every project's until its first */
+const NO_TEMPLATES: readonly RouteTemplate[] = []
 
 /* ─── THE CANVAS CHROME (Stories 5.2 to 5.21 drew it; Story 5.23b made it a part of its own, R-208, R-210) ──────────────
  *
@@ -802,7 +805,7 @@ function EditorShell({
   memberVisibility,
   timezone,
   plan,
-  canvases,
+  canvases: served,
   synthesized,
   defaults: stacks,
   subjects: storedSubjects,
@@ -823,6 +826,7 @@ function EditorShell({
   overrides,
   cardDesigns: storedCards = NO_CARDS,
   cardsRefused = null,
+  templates: routeTemplates = NO_TEMPLATES,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -833,9 +837,20 @@ function EditorShell({
   const strings = useMemo(() => resolveStrings(overrides ?? {}), [overrides])
   /** the canvas document's address — and, since Story 5.19, where the sample's pictures are served for the panel too */
   const src = canvasPath ?? canvasSrc(isApp(pathname))
-  // the layout 404s every segment that is not a canvas, so a null here is never drawn
-  const key = canvasOfPath(stripApp(pathname)) ?? 'home'
-  const canvas = CANVASES[key]
+  const router = useRouter()
+  /** STORY 7.16b — each Routes Manager template's display name, by canvas (R-170: the row, the tab and every sentence) */
+  const names = useMemo(() => Object.fromEntries(routeTemplates.map((t) => [t.canvas, t.name])), [routeTemplates])
+  /** STORY 7.16b — the Routes Manager canvases the sync route has said are gone (its `left`): a template deleted elsewhere
+   *  while this editor was open. They leave the canvases offered at once; a reload's read leaves them out anyway */
+  const [deleted, setDeleted] = useState<ReadonlySet<Canvas>>(() => new Set())
+  const canvases = useMemo(() => (deleted.size === 0 ? served : served.filter((c) => !deleted.has(c))), [served, deleted])
+  /** STORY 7.16b — the files a route shows, and each one's paths: D5f's routed sentence (DW-344's first half) */
+  const routed = useMemo(() => routeTemplates.filter((t) => t.paths.length > 0).map((t) => fileOf(t.canvas)), [routeTemplates])
+  // the layout 404s every segment that is not a canvas, so a null here is never drawn. STORY 7.16b — a Routes Manager
+  // segment that names no template of this project is not a canvas it offers: the editor shows Home and says why (below)
+  const addressed = canvasOfPath(stripApp(pathname)) ?? 'home'
+  const key: Canvas = canvases.includes(addressed) ? addressed : 'home'
+  const canvas = { file: fileOf(key), label: labelOf(key, names) }
   /** STORY 5.20 — THIS CANVAS IS A TEMPLATE SURFACE (the Paywall): not a page, so no site doc, no Section Picker, no
    *  Remix and no Preview, an ink bar, C3a's strip, and a paint of its own (`paywallPage`). */
   const surface = isSurface(key)
@@ -919,7 +934,7 @@ function EditorShell({
     ;(packList ? packBack : packChange).current?.focus()
   }, [packList])
   /** where a canvas lives — the app's address, or the harness's own pages (`canvasBase`) */
-  const pathOf = (k: CanvasKey) =>
+  const pathOf = (k: Canvas) =>
     canvasBase === undefined ? `${isApp(pathname) ? '/app' : ''}${pathOfCanvas(project.id, k)}` : k === 'home' ? canvasBase : `${canvasBase}/${k}`
   // STORY 5.8 — EDITS NO LONGER LIVE FOR THE SESSION. They are still held here, and they are also written to this
   // browser's IndexedDB on every `commit()` and sent to the server on the timer, at tab close and on ⌘S. The server's
@@ -927,7 +942,7 @@ function EditorShell({
   const [docs, setDocs] = useHanded(stored)
   /** Story 5.5 — the canvases that are UNTOUCHED right now: D5a's Layers marker and D5b's hollow dot read this one set.
    *  It starts as the server's `synthesized` and `commit()` is the only thing that changes it. */
-  const [auto, setAuto] = useHanded<ReadonlySet<CanvasKey>>(() => new Set(synthesized))
+  const [auto, setAuto] = useHanded<ReadonlySet<Canvas>>(() => new Set(synthesized))
   /** Story 5.16 — the library as page 2 asks it: R-127's fallback in `pageTwoStack` synthesizes, and that reads the
    *  designs this editor holds. `entries` never changes in a session, so every render's copy reads the same map. */
   const library = useCallback<SynthesisLibrary>((designId) => entries[designId], [entries])
@@ -969,7 +984,7 @@ function EditorShell({
    * its page 1, and the `[key]` effect below puts it back to page 1 for good — the way back included. Which pages
    * exist, what page 2 is and which stack it paints are `lib/page-two.ts`'s; the stack KNOWS THE PAGE, so the roots,
    * the picks, the marks, the restamps, the panel's fast path and every edit agree with what is painted. */
-  const [shownPage, setShownPage] = useHanded<{ key: CanvasKey; page: Page }>({ key, page: 1 })
+  const [shownPage, setShownPage] = useHanded<{ key: Canvas; page: Page }>({ key, page: 1 })
   const page: Page = shownPage.key === key ? shownPage.page : 1
   /** the doc this canvas EDITS on the page in force — page 2's own key on page 2; the preview SUBJECT stays the canvas's */
   const own = ownKeyOf(key, page)
@@ -1029,7 +1044,7 @@ function EditorShell({
    *  alone (Story 5.22's gate), so the store is there to read. */
   const [waiting] = useState(() =>
     Object.fromEntries(canvases.flatMap((canvas) => {
-      const pick = hasSubject(CANVASES[canvas].file) ? readPending(tabStore(), project.id, templateKeyOf(canvas)) : null
+      const pick = hasSubject(fileOf(canvas)) ? readPending(tabStore(), project.id, templateKeyOf(canvas)) : null
       return pick === null ? [] : [[templateKeyOf(canvas), pick] as const]
     })))
   const [subjects, setSubjects] = useHanded(() => ({ ...storedSubjects, ...waiting }))
@@ -1064,7 +1079,7 @@ function EditorShell({
   }
   const [source, setSource] = useHanded<'site' | 'sample'>(readable ? 'site' : 'sample')
   type Shown = { source: 'site' | 'sample'; cause: Cause | null; nothing: 'tag' | 'author' | null }
-  const [painted, setPainted] = useHanded<{ shown: Shown; site: SitePage | null; key: CanvasKey | null }>({
+  const [painted, setPainted] = useHanded<{ shown: Shown; site: SitePage | null; key: Canvas | null }>({
     shown: { source: readable ? 'site' : 'sample', cause: null, nothing: null },
     site: null,
     key: null,
@@ -1081,7 +1096,7 @@ function EditorShell({
    *  again by a paint, so the page falls to the sample as a press's does rather than retrying against Ghost's limiter */
   const editReads = useRef(new Set<string>())
   /** the canvas and page the last paint drew, and whether the canvas is blank for another page's reads (`blank`) */
-  const paintedAt = useRef<{ key: CanvasKey; page: Page } | null>(null)
+  const paintedAt = useRef<{ key: Canvas; page: Page } | null>(null)
   const [blanked, setBlanked] = useHanded(false)
   /** the named causes already said aloud, once each (FR-H4's named tier); choosing the site again forgets them */
   const announcedCauses = useRef(new Set<Cause>())
@@ -1126,7 +1141,7 @@ function EditorShell({
   const [recheckRefusal, setRecheckRefusal] = useHanded<string | null>(null)
   /** C3b's card is up: the Paywall canvas, members switched off by the record, and the canvas chosen to show the site's
    *  content — ONE rule, which the card's draw (`offCard`, below) and a re-read's voice both read */
-  const cardUp = (key_: CanvasKey, record: typeof members, from: 'site' | 'sample') =>
+  const cardUp = (key_: Canvas, record: typeof members, from: 'site' | 'sample') =>
     isPaywall(key_) && membersOff(record) && from === 'site' && site !== null && 'origin' in site
   const recheck = (pressed: boolean) => {
     if (site === null) return
@@ -1441,6 +1456,26 @@ function EditorShell({
   const pill = useRef<HTMLDivElement | null>(null)
   /** what a completed move says, politely — `moveSection`'s own words, announced from here so both grips announce */
   const [said, setSaid] = useSaid()
+  /* ─── Story 7.16b — THE DELETED-TEMPLATE NOTICE (R-250; routine calls 9 and 10) ─────────────────────────────────────
+   *
+   * An address naming a Routes Manager template this project no longer has — typed, reloaded, or the canvas on screen when
+   * the sync route left its key unwritten (`deleted`) — shows Home: the URL is REPLACED (`router.replace`), B5a's strip says
+   * why above the canvas (`TemplateGoneBar`), and `#editor-said` says the same. It stays until Dismiss or the next canvas
+   * switch. ONE PATH for the load and the save: either way the address names a canvas this editor does not offer. The
+   * name is the template's own while the editor knew it, Ghost's label for the file (`ghostLabel`) when it never did.
+   * `ponytail:` no poll — an editor sitting on a deleted template learns at its next save of that canvas (routine call 10);
+   * add one if that is ever seen. */
+  const [goneSaid, setGoneSaid] = useState<string | null>(null)
+  const lastKey = useRef<Canvas>(key)
+  useEffect(() => {
+    if (addressed !== key && isRouteCanvas(addressed)) {
+      const words = TEMPLATE_GONE.said(Object.hasOwn(names, addressed) ? labelOf(addressed, names) : ghostLabel(fileOf(addressed)))
+      setGoneSaid(words)
+      setSaid(words)
+      router.replace(pathOf('home'))
+    } else if (lastKey.current === 'home' && key !== 'home') setGoneSaid(null)
+    lastKey.current = key
+  }, [addressed, key])
   const [note, setNote] = useHanded<Note | null>(null)
   // the pill as the canvas document's handlers see it, in the same task it was set — paint reads it before React has
   // rendered the state
@@ -1676,7 +1711,7 @@ function EditorShell({
    * THE LOCAL WRITE, AND NOTHING AWAITS IT (FR-D10, NFR-1). `commit()` has already returned by the time this runs, so
    * a slow or failing IndexedDB changes the indicator and never the edit.
    */
-  const store = (j: Journal, docs: Readonly<Record<string, ProjectDoc>>, auto: ReadonlySet<CanvasKey>, entry?: Parameters<LocalStore['push']>[1], dropped?: readonly number[]) => {
+  const store = (j: Journal, docs: Readonly<Record<string, ProjectDoc>>, auto: ReadonlySet<Canvas>, entry?: Parameters<LocalStore['push']>[1], dropped?: readonly number[]) => {
     const s = local.current
     if (!s) {
       // FALLBACK: there is nowhere local to put it, so the cloud is the only place it can be
@@ -2025,12 +2060,21 @@ function EditorShell({
         return
       }
       if (!answer.ok) throw new Error(`HTTP ${answer.status}`)
-      const done = (await answer.json()) as { applied: boolean; revision: number }
+      const done = (await answer.json()) as { applied: boolean; revision: number; left?: unknown }
       base.current = done.revision
       landed = true
-      const next = flushed(latest.current.journal, sentStamp, upTo)
-      latest.current = { ...latest.current, journal: next }
+      // STORY 7.16b — the keys the route LEFT unwritten are templates deleted elsewhere: their work is dropped here (the
+      // journal's entries, their docs), and a canvas on screen among them moves to Home with the notice (`deleted`, above)
+      const left = Array.isArray(done.left) ? done.left.filter((k): k is string => typeof k === 'string') : []
+      const next = left.reduce(withoutDoc, flushed(latest.current.journal, sentStamp, upTo))
+      const kept = left.length === 0 ? latest.current.docs : Object.fromEntries(Object.entries(latest.current.docs).filter(([k]) => !left.includes(k)))
+      latest.current = { ...latest.current, journal: next, docs: kept }
       setJournal(next)
+      if (left.length > 0) {
+        setDocs(kept)
+        const goneNow = left.map(canvasOfTemplateKey).filter((c): c is Canvas => c !== null && isRouteCanvas(c))
+        setDeleted((was) => new Set([...was, ...goneNow]))
+      }
       stopRetrying()
       attempt.current = 0
       store(next, latest.current.docs, latest.current.auto)
@@ -2703,7 +2747,7 @@ function EditorShell({
     if (s === null) return null
     const pageFile = pageFileOf(now.key, now.page)
     return sitePage(s.peek, {
-      file: CANVASES[now.key].file,
+      file: fileOf(now.key),
       stored: now.stored,
       page: now.page,
       pageFile,
@@ -2760,7 +2804,7 @@ function EditorShell({
       const now = latest.current
       const view = now.source === 'site' ? siteOf(now) : null
       const ready = view !== null && 'ready' in view && reads.current?.reading().stopped === null ? view.ready : null
-      const subject = ready?.subject ?? orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
+      const subject = ready?.subject ?? orbitWeekly.resolveSubject(fileOf(now.key), now.stored).subject
       const force = pageInForce(now.page, now.key, now.docs, subject, ready?.source ?? sampleSource)
       if (force.page !== now.page) switchPage(force.page)
       paint()
@@ -3257,7 +3301,7 @@ function EditorShell({
         return
       }
       const live = view !== null && 'ready' in view && reading?.stopped === null ? view.ready : null
-      const sampleSubject = orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
+      const sampleSubject = orbitWeekly.resolveSubject(fileOf(now.key), now.stored).subject
       // STORY 5.20 — THE PAYWALL SURFACE: a visitor who may read the paid post meets the whole article and no box, as
       // Ghost renders the partial only where access is false — so its instance, where one is chosen, renders nothing
       const paywall = isPaywall(now.key)
@@ -4106,7 +4150,7 @@ function EditorShell({
         // drawn from, so a swap made in this browser survives the reload.
         const unknown = Object.values(held.docs).some((doc) => vanishedDesign(doc, (id) => entries[id] !== undefined))
         if (!unknown) {
-          const back = autoFrom(held.auto, canvases) as CanvasKey[]
+          const back = autoFrom(held.auto, canvases) as Canvas[]
           const kept = landed ? flushed(held.journal, held.journal.stamp, maxSeq(held.journal)) : held.journal
           base.current = landed ? revision : held.baseRevision
           // STORY 5.19 — the local hydrate is a door the main-feed rule stands at, as the server read is: a doc this
@@ -4885,7 +4929,9 @@ function EditorShell({
   }
   /** STORY 7.3 — D5f (FR-I1): the delete that would leave a designed custom template with no section asks first, opening
    *  on Keep it (UX-DR14). Only this door asks — undo, redo, a reload and Hide never do. */
-  const [emptyAsk, setEmptyAsk] = useHanded<{ row: Pick & { layerName: string }; label: string; file: string; promoted: readonly string[] } | null>(null)
+  /** STORY 7.16b — `paths`: the routes that keep showing the template once it is emptied, which D5f says in its routed
+   *  sentence (`ROUTED_EMPTY_ASK`); empty, it stops shipping (`EMPTY_TEMPLATE_ASK`, unchanged) */
+  const [emptyAsk, setEmptyAsk] = useHanded<{ row: Pick & { layerName: string }; label: string; file: string; paths: readonly string[]; promoted: readonly string[] } | null>(null)
   const emptying = useRef<HTMLDialogElement>(null)
   /** STORY 7.10 — FR-Q3's delete and hide warnings: a section a Ghost setting is promoted from asks first, naming the settings,
    *  in D5f's shape (`D5 Canvas Markers and Template Switcher.dc.html` D5f) — Keep it, or Delete section / Hide section —
@@ -4911,10 +4957,13 @@ function EditorShell({
     if (onSurfaceDoc(row.doc)) return
     const promoted = promotedOn(row)
     if (row.doc === SITE.key) return askFirst('remove', row, promoted)
-    if (emptiesCustomTemplate(row.doc, docOf(row.doc))) {
+    const empties = emptiesCustomTemplate(row.doc, docOf(row.doc), routed)
+    if (empties !== null) {
       const canvas = canvasOfTemplateKey(row.doc)
       const file = fileOfKey(row.doc)
-      setEmptyAsk({ row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, label: canvas === null ? file : CANVASES[canvas].label, file, promoted })
+      // Story 7.16b: a template a route still shows keeps shipping — D5f says which paths show it (DW-344's first half)
+      const paths = empties === 'keeps' ? (routeTemplates.find((t) => fileOf(t.canvas) === file)?.paths ?? []) : []
+      setEmptyAsk({ row: { doc: row.doc, instanceId: row.instanceId, layerName: row.layerName }, label: canvas === null ? file : labelOf(canvas, names), file, paths, promoted })
       // opened on the frame after the one that filled its words in, and asked again inside it, as FR-D5's confirm is
       return void requestAnimationFrame(() => { if (!emptying.current?.open) openOnCancel(emptying.current) })
     }
@@ -4954,7 +5003,7 @@ function EditorShell({
     setOpened(true)
     setPicking(true)
     // Story 5.18: a picker is a read the customer asked for — its cards' `{{#get}}` rows, from the one store
-    requestDesigns(offeredHere(entries, CANVASES[latest.current.key].file, SITE.file))
+    requestDesigns(offeredHere(entries, fileOf(latest.current.key), SITE.file))
     // opened on the frame after the one that mounted it, exactly as the site-wide confirm is. On every open AFTER
     // the first the dialog is already in the tree and this is simply the next frame (the owner's ruling of
     // 2026-09-20): nothing is re-created, and the previews are the ones already drawn.
@@ -5501,7 +5550,7 @@ function EditorShell({
             Template and View as keep their size and their words at every width (D8). */}
         <div id="editor-centre" className="flex w-max items-center gap-2">
           {/* Story 7.13 — S14d's amber count of customised cards follows Editor cards' row (absent at zero) */}
-          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : on.pathOf} customised={customisedCount(cardDesigns)} />
+          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : on.pathOf} customised={customisedCount(cardDesigns)} names={names} />
           {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
               dot, because the page you are looking at is being looked at. STORY 7.13 — on Editor cards the group's second
               control is S14a's Card dropdown ("dropdowns in the template switcher's position", routine call 2): a card is
@@ -5605,6 +5654,18 @@ function EditorShell({
         </div>
       </header>
 
+      {/* STORY 7.16b — the deleted-template notice, B5a's strip (R-250), in the same place; Dismiss hands focus to the
+          Template switcher, the control that names where you are now */}
+      {goneSaid === null ? null : (
+        <TemplateGoneBar
+          hidden={preview}
+          words={goneSaid}
+          onDismiss={() => {
+            setGoneSaid(null)
+            document.getElementById('editor-template')?.focus()
+          }}
+        />
+      )}
       {/* STORY 5.17 — B5a's bar, ABOVE the canvas and below the top bar, where the frame draws it. Hidden in
           Preview with everything else: Preview is the site, and the site has no chrome. */}
       {lock.holder ? null : (
@@ -6042,7 +6103,7 @@ function EditorShell({
                   <DesignPicker
                     ring={paywalls}
                     at={-1}
-                    target={CANVASES[key].file}
+                    target={fileOf(key)}
                     rows={designRows}
                     pool={pool}
                     icons={icons.current}
@@ -6276,7 +6337,8 @@ function EditorShell({
           not danger: the marigold chip and its triangle, the title, the body naming the file in a mono chip, then Keep it
           and a gold Delete section — R-170's "Delete" for the frame's "Remove", and `marigold-solid` for its resting gold, which
           fails AA. Here at the root beside FR-D5's confirm, because the pill's bin opens it too. Keep it, Esc and the scrim
-          change nothing; Delete section is the ordinary delete, so the template is left untouched (the switcher's Empty). */}
+          change nothing; Delete section is the ordinary delete, so the template is left untouched (the switcher's Empty).
+          STORY 7.16b — a template a route still shows keeps shipping, so its body is `ROUTED_EMPTY_ASK`'s, naming the paths. */}
       <dialog
         ref={emptying}
         onClick={closeOnBackdrop}
@@ -6293,8 +6355,8 @@ function EditorShell({
               {EMPTY_TEMPLATE_ASK.title(emptyAsk?.label ?? '')}
             </h2>
             <p id="editor-empty-body" className="text-ui-dense leading-[1.6] text-ink-mid">
-              {/* the middle part is the file, in D5f's mono chip */}
-              {EMPTY_TEMPLATE_ASK.body(emptyAsk?.file ?? '').map((part, n) =>
+              {/* the middle part is the file — or, Story 7.16b, the paths a route still shows it at — in D5f's mono chip */}
+              {(emptyAsk !== null && emptyAsk.paths.length > 0 ? ROUTED_EMPTY_ASK.body(emptyAsk.paths) : EMPTY_TEMPLATE_ASK.body(emptyAsk?.file ?? '')).map((part, n) =>
                 n === 1 ? <span key={n} className="rounded-[6px] border border-line bg-paper px-[6px] py-px font-mono text-[12px]">{part}</span> : part)}
               {/* Story 7.10 — the settings it carries, in the same dialog */}
               {emptyAsk !== null && emptyAsk.promoted.length > 0 ? ` ${THEME_WORDS.bindingAsk(emptyAsk.promoted, 'deleted')}` : null}

@@ -3,10 +3,17 @@ import { notFound } from 'next/navigation'
 import { parseRoutesConfig, routesYaml, validateRoutes } from '@inflozo/section-runtime/routes'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom } from '@/lib/live-content'
+import { NEW_TEMPLATE_QUERY } from '@/lib/editor'
 import { ROUTES_WORDS, templatesOf } from '@/lib/routes'
 import { supabaseServer } from '@/lib/supabase/server'
 import { projectOf } from '../(editor)/read'
 import { RoutesManager } from './routes-manager'
+
+/** A stored doc that holds a section — AD-22's "designed", read off the raw row (a doc the editor emptied holds none). */
+const isDesigned = (doc: unknown): boolean => {
+  const instances = (doc as { instances?: unknown } | null)?.instances
+  return Array.isArray(instances) && instances.length > 0
+}
 
 /* STORY 7.16a — THE ROUTES MANAGER (FR-I2, FR-I3), `/projects/<id>/routes`: `S9 Routes.dc.html` S9a (two panes), S9b (the
    pane's errors), S9c (New collection), S9d (the empty state) and S9e (New route), as `EXPERIENCE.md:177-179, :353, :747`
@@ -20,10 +27,14 @@ import { RoutesManager } from './routes-manager'
    ONE READ, IN ONE `Promise.all`, through the caller's own session (RLS): `routes_config`; the project's Routes Manager
    templates (`custom_templates` of kind `routes`, parsed — a filename outside `CUSTOM_TARGET_RE` is ignored, routine call
    14); the names this project has deployed (`deployed_template_names`, select-only); the custom canvases that carry a
-   design (`project_templates` under `custom:` — none before Story 7.16b); and the linked site's row for its name in the
+   design (`project_templates` under `custom:` holding a section — Story 7.16b's delete warns for them, and takes the doc
+   with the row); and the linked site's row for its name in the
    bar and, where its Content API is readable, the tag and writer suggestions the sheets offer. Posts per page is the
    project's own column off the cached row. Everything the page shows is DERIVED here from what is stored: the YAML is
-   `routesYaml(config)` and the errors `validateRoutes(config)` — the saved state, re-rendered after every write. */
+   `routesYaml(config)` and the errors `validateRoutes(config)` — the saved state, re-rendered after every write.
+
+   STORY 7.16b — `?new=template` is the Template menu's "New template" (`lib/editor.ts`'s `newTemplatePath`): the page opens
+   with its New template sheet up, and a template made there opens as its canvas (routine call 8). */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const project = await projectOf((await params).id)
@@ -33,8 +44,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
-export default async function RoutesPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RoutesPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { id } = await params
+  const fromMenu = (await searchParams).new === NEW_TEMPLATE_QUERY.new
   const project = await projectOf(id)
   if (!project) notFound()
   const sb = await supabaseServer()
@@ -42,7 +54,7 @@ export default async function RoutesPage({ params }: { params: Promise<{ id: str
     sb.from('routes_config').select('config').eq('project_id', id).maybeSingle(),
     sb.from('custom_templates').select('id, filename, display_name, kind, created_at').eq('project_id', id).eq('kind', 'routes').order('created_at'),
     sb.from('deployed_template_names').select('filename').eq('project_id', id),
-    sb.from('project_templates').select('template_key').eq('project_id', id).like('template_key', 'custom:%'),
+    sb.from('project_templates').select('template_key, doc').eq('project_id', id).like('template_key', 'custom:%'),
     project.linked_site_id === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at').eq('id', project.linked_site_id).maybeSingle(),
   ])
   for (const read of [configRead, templatesRead, deployedRead, designedRead]) {
@@ -69,7 +81,8 @@ export default async function RoutesPage({ params }: { params: Promise<{ id: str
       problems={problems}
       templates={templates}
       deployed={(deployedRead.data ?? []).map((r) => r.filename as string)}
-      designed={(designedRead.data ?? []).map((r) => (r.template_key as string).slice('custom:'.length))}
+      designed={(designedRead.data ?? []).filter((r) => isDesigned(r.doc)).map((r) => (r.template_key as string).slice('custom:'.length))}
+      fromMenu={fromMenu}
     />
   )
 }

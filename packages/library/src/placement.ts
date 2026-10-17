@@ -16,9 +16,9 @@
 //   - a second Post Content section is a REFUSAL of an action the user really did take, so `placementRefusal` answers
 //     with the sentence to show where the action was pressed.
 
-import { GET_FORBIDDEN_TARGETS, PAYWALL_TARGET } from './vocabulary.ts'
+import { GET_FORBIDDEN_TARGETS, isRouteTemplate, PAYWALL_TARGET, ROUTE_TEMPLATE_TARGET } from './vocabulary.ts'
 import type { BindingContext } from './vocabulary.ts'
-import type { Surface } from './registry.ts'
+import type { Surface } from './vocabulary.ts'
 
 /** STORY 5.20 — THE PAYWALL'S CATEGORIES: A32 Paywall / Content CTA, and R-158's two stand-ins for it
  *  (`packages/library/fixtures/paywall/`), which prove the choosing half until Story 10.107 brings A32's own designs and
@@ -130,9 +130,14 @@ export const nativeResourceOf = (file: string): 'post' | 'tag' | 'author' | null
  *  at exactly `/`), and `index.hbs` differs only in that `home` is not in its context, which no design reads. Home's
  *  page 2 is an exact copy of its page 1 until it is changed (R-179), so without this rule the copy of a Home holding
  *  a design that lists `home.hbs` alone would be refused on the next load. ONE rule for the three places that ask it:
- *  `offeredOn` below, `read.ts`'s stored-doc refusal and `synthesize`'s drop. */
+ *  `offeredOn` below, `read.ts`'s stored-doc refusal and `synthesize`'s drop.
+ *
+ *  STORY 7.16b (DW-126) — AND A SECOND WIDENING: a design listing `ROUTE_TEMPLATE_TARGET` may sit on EVERY Routes Manager
+ *  template (`isRouteTemplate`), whatever the user named it, and never on a membership file. The compiler asks this too. */
 export const compilesTo = (compileTarget: readonly string[], file: string): boolean =>
-  compileTarget.includes(file) || (file === 'index.hbs' && compileTarget.includes('home.hbs'))
+  compileTarget.includes(file) ||
+  (file === 'index.hbs' && compileTarget.includes('home.hbs')) ||
+  (isRouteTemplate(file) && compileTarget.includes(ROUTE_TEMPLATE_TARGET))
 
 /** DW-187 (Story 5.24e): the one spelling of "a site-wide section the page draws LAST" — A3's footers. Moved here from
  *  `apps/web/lib/editor.ts` by Story 7.1, so the canvas (`canvasStack`) and the compiler (`default.hbs`, footers after
