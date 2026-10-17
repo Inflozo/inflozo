@@ -507,6 +507,26 @@ export function routesYaml(c: RoutesConfig): string | null {
 
 export type RouteProblem = { line: number; at: string; message: string }
 
+/** Every first segment the config claims, in precedence order — collections, then routes, then the two prefixes — with
+ *  the words `ROUTE_WORDS.taken` says of its holder, and the one reserved segment a prefix may keep (its own default). */
+function claimsOf(c: RoutesConfig): { segment: string; at: string; what: string; own?: string }[] {
+  return [
+    ...c.collections.map((col, n) => ({ segment: col.path.slice(1, -1), at: `collections.${n}.path`, what: 'a collection' })),
+    ...c.routes.map((r, n) => ({ segment: r.path.slice(1, -1), at: `routes.${n}.path`, what: isChannel(r) ? 'a channel' : 'a custom route' })),
+    { segment: c.taxonomies.tag, at: 'taxonomies.tag', what: 'your tag addresses', own: DEFAULT_TAXONOMIES.tag },
+    { segment: c.taxonomies.author, at: 'taxonomies.author', what: 'your author addresses', own: DEFAULT_TAXONOMIES.author },
+  ]
+}
+
+/** WHAT ALREADY HOLDS `path`'s segment in `c`, in `ROUTE_WORDS.taken`'s words — skipping the claim at `except` (the item
+ *  a sheet is editing, `collections.N.path` or `routes.N.path`) — or null. The sheets ask it first, so a refusal names
+ *  what is ALREADY there: the validator names whichever claims first, and a collection claims before any route, so a new
+ *  collection on a route's path would be told it is "already a collection" (review, 2026-10-17). */
+export function holderOf(c: RoutesConfig, path: string, except?: string): string | null {
+  const segment = path.slice(1, -1)
+  return claimsOf(c).find((k) => k.segment === segment && k.at !== except)?.what ?? null
+}
+
 /** What the validator knows of the project: its Routes Manager templates (`custom_templates` of kind `routes`). */
 export type RoutesContext = { templates: readonly string[] }
 
@@ -539,17 +559,14 @@ export function validateRoutes(raw: unknown, ctx: RoutesContext): RouteProblem[]
   const owners = new Map<string, string>()
   const claim = (segment: string, at: string, what: string, own?: string): void => {
     const where = `/${segment}/`
-    const use = RESERVED_SEGMENTS[segment]
+    // own keys only: `/constructor/` is a legal path, and a plain lookup would find `Object.prototype`'s (review, 2026-10-17)
+    const use = Object.hasOwn(RESERVED_SEGMENTS, segment) ? RESERVED_SEGMENTS[segment] : undefined
     if (use !== undefined && segment !== own) return say(at, ROUTE_WORDS.reserved(where, use))
     const held = owners.get(segment)
     if (held !== undefined) say(at, ROUTE_WORDS.taken(where, held))
     else owners.set(segment, what)
   }
-  const segmentOf = (p: string) => p.slice(1, -1)
-  c.collections.forEach((col, n) => claim(segmentOf(col.path), `collections.${n}.path`, 'a collection'))
-  c.routes.forEach((r, n) => claim(segmentOf(r.path), `routes.${n}.path`, isChannel(r) ? 'a channel' : 'a custom route'))
-  claim(c.taxonomies.tag, 'taxonomies.tag', 'your tag addresses', DEFAULT_TAXONOMIES.tag)
-  claim(c.taxonomies.author, 'taxonomies.author', 'your author addresses', DEFAULT_TAXONOMIES.author)
+  for (const k of claimsOf(c)) claim(k.segment, k.at, k.what, k.own)
 
   const known = new Set(ctx.templates)
   const templateOk = (file: string, at: string) => {

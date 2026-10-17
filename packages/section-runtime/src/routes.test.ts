@@ -4,7 +4,7 @@ import nql6 from '@tryghost/nql'
 import nql5 from 'nql5'
 import { load } from 'js-yaml'
 import {
-  dayAfter, DEFAULT_TAXONOMIES, emittedProblem, EMPTY_ROUTES, isCalendarDate, filterNql, filterProblem, ghostLabel, indexFilter, indexNode, MEMBERSHIP_FILES, nodeOf,
+  dayAfter, DEFAULT_TAXONOMIES, emittedProblem, EMPTY_ROUTES, isCalendarDate, filterNql, filterProblem, ghostLabel, holderOf, indexFilter, indexNode, MEMBERSHIP_FILES, nodeOf,
   parseRoutesConfig, pathsUsing, readNql, RESERVED_SEGMENTS, ROUTE_WORDS, routedOf, routesYaml, templateName, validateRoutes, withoutTemplate,
   writeNql, yamlLines, type Cond, type Filter, type Node, type RoutesConfig,
 } from './routes.ts'
@@ -120,6 +120,24 @@ test('Path collision: two of {collection, channel, route, taxonomy prefix} on on
   assert.deepEqual(validateRoutes(config({ collections: [col], routes: [{ path: '/landing/', template: 'custom-landing.hbs' }], taxonomies: { tag: 'topic', author: 'people' } }), KNOWN), [])
 })
 
+test('holderOf: the sheet names what is ALREADY on a path, whichever kind claims first (review, 2026-10-17)', () => {
+  const col = { path: '/craft/', filter: { match: 'any' as const, conditions: [tag('craft')] }, template: 'custom-craft-list.hbs' }
+  const has = config({ collections: [col], routes: [{ path: '/landing/', template: 'custom-landing.hbs' }, { path: '/picks/', channel: { match: 'any', conditions: [] }, template: 'custom-picks.hbs' }], taxonomies: { tag: 'topic', author: 'author' } })
+  // a NEW collection on a route's path: the validator alone says "already a collection" (collections claim first) — the
+  // reason the sheet asks holderOf — and holderOf names the route that is there
+  const added = { ...has, collections: [...has.collections, { ...col, path: '/landing/' }] }
+  assert.ok(validateRoutes(added, KNOWN).some((p) => p.message === ROUTE_WORDS.taken('/landing/', 'a collection')))
+  assert.equal(holderOf(has, '/landing/'), 'a custom route')
+  assert.equal(holderOf(has, '/picks/'), 'a channel')
+  assert.equal(holderOf(has, '/craft/'), 'a collection')
+  assert.equal(holderOf(has, '/topic/'), 'your tag addresses')
+  // an edit is not its own holder; the controls: a free path, and the edited item's own path under `except`
+  assert.equal(holderOf(has, '/fresh/'), null)
+  assert.equal(holderOf(has, '/landing/', 'routes.0.path'), null)
+  assert.equal(holderOf(has, '/craft/', 'collections.0.path'), null)
+  assert.equal(holderOf(has, '/landing/', 'collections.0.path'), 'a custom route')
+})
+
 test('Reserved segment: each address Ghost keeps is refused with its reason; a taxonomy keeps its own default', () => {
   for (const segment of ['page', 'index', 'home', 'tag', 'author', 'rss', 'ghost', 'paged', 'post', 'private', 'search', 'p', 'members', 'assets', 'content']) {
     assert.ok(RESERVED_SEGMENTS[segment], segment)
@@ -128,7 +146,8 @@ test('Reserved segment: each address Ghost keeps is refused with its reason; a t
   }
   assert.ok(validateRoutes(config({ taxonomies: { tag: 'author', author: 'writer' } }), KNOWN).some((p) => p.at === 'taxonomies.tag'))
   // controls: the near neighbours are free, and each taxonomy may stand at its own default
-  for (const free of ['pages', 'indexes', 'homes', 'tags', 'authors']) assert.deepEqual(validateRoutes(config({ routes: [{ path: `/${free}/`, template: 'custom-landing.hbs' }] }), KNOWN), [], free)
+  // `constructor` is a key of every object's prototype, never one of Ghost's addresses (review, 2026-10-17)
+  for (const free of ['pages', 'indexes', 'homes', 'tags', 'authors', 'constructor']) assert.deepEqual(validateRoutes(config({ routes: [{ path: `/${free}/`, template: 'custom-landing.hbs' }] }), KNOWN), [], free)
   assert.deepEqual(validateRoutes(config({ taxonomies: { tag: 'tag', author: 'author' } }), KNOWN), [])
 })
 

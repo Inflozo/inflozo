@@ -515,11 +515,13 @@ DOCS = [
   "each accepted AND read back as meant — collection order with / last, every filter the fixture's hand-written NQL, "
   "limits, templates, routes, taxonomies. Controls: limit: abc refused by Ghost 6 (Ghost 5's answer recorded, F3), and a "
   "collection with no permalink refused by both. THE --t1 HALF (the owner's go, the main session, T1 only — R-238): T1's "
-  "own routes.yaml saved before any write; a public tag with three published posts, one on / under T1's routing; then one "
+  "own routes.yaml saved before any write; a public tag with at least three published posts, one on / under T1's routing; then one "
   "emitted file (a tag collection at limit 2, a featured channel, the index last) uploaded and read back anonymously — "
   "each tagged post at /<collection>/<slug>/, two per page, none on /, the channel's /rss/ serving; the control (Ghost's "
   "default index first, its inverse filter dropped) leaving the collection empty; T1's own file restored in a finally and "
-  "read back byte for byte. Writes T1 three routes.yaml uploads and nothing else, and MEASUREMENTS.md §82 alone after a "
+  "read back byte for byte. Writes T1 three routes.yaml uploads and nothing else (Ghost itself keeps a dated backup of "
+  "each file an upload replaces, in content/settings — 6.58.0's FileStore.js, read at 7.16a's Review), and "
+  "MEASUREMENTS.md §82 alone after a "
   "full pass, replacing an earlier §82 of its own. Keys are read from tools/probe/.env in-process and never printed; any "
   "argument but --t1 prints its header and exits 2."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',

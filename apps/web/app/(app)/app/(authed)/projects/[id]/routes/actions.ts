@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import {
-  EMPTY_ROUTES, parseRoutesConfig, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
+  parseRoutesConfig, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
 } from '@inflozo/section-runtime/routes'
 import { isUuid, routesPath } from '@/lib/editor'
 import { ROUTES_WORDS, templatesOf, templateWriteRefusal, type Template } from '@/lib/routes'
@@ -143,7 +143,12 @@ export async function saveRoutes(_previous: RoutesResult | null, formData: FormD
     known.push(made.file)
   }
   const refused = await writeConfig(sb, id, user.id, next, known)
-  if (refused !== null) return { error: refused }
+  if (refused !== null) {
+    // a template row written before a refused config is a valid state (unrouted) — the page must list it, or a retry of
+    // the same sheet is refused as a name it cannot see (review, 2026-10-17)
+    if (display !== null) revalidate(id)
+    return { error: refused }
+  }
   revalidate(id)
   return { ok: true }
 }
@@ -196,14 +201,17 @@ export async function deleteTemplate(_previous: RoutesResult | null, formData: F
 
 /**
  * THE TEMPLATE DELETE'S UNDO: the row comes back exactly — its id, name, file and `created_at`, so the list's order is
- * the same — and then the previous config is written, judged with the row counted. A name this project has since
- * DEPLOYED cannot come back (the database's guard, `:1319-1347`); no deploy exists before Story 7.18, so that is a
- * sentence, not a path.
+ * the same — and then, when the delete took routes with it (`config` sent), the previous config is written, judged with
+ * the row counted; a delete that took no route wrote no config, so its Undo writes none either and the stored rows
+ * return exactly. The row is judged by the naming step before it is written, as every other insert is: its name must
+ * still make its file (review, 2026-10-17 — a request is not trusted to carry only what the page sent). A name this
+ * project has since DEPLOYED cannot come back (the database's guard, `:1319-1347`); no deploy exists before Story 7.18,
+ * so that is a sentence, not a path.
  */
 export async function restoreTemplate(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {
   const id = idOf(formData)
   const row = jsonOf(formData, 'template') as { id?: unknown; name?: unknown; file?: unknown; created_at?: unknown } | undefined
-  const previous = jsonOf(formData, 'config')
+  const previous = formData.has('config') ? jsonOf(formData, 'config') : null
   if (!id || !row || previous === undefined) return couldNot()
   const [template] = templatesOf([{ id: row.id, filename: row.file, display_name: row.name, kind: 'routes' }])
   if (!template || !isUuid(template.id) || typeof row.created_at !== 'string') return couldNot()
@@ -212,8 +220,11 @@ export async function restoreTemplate(_previous: RoutesResult | null, formData: 
   const ctx = await contextOf(sb, id)
   if (!ctx) return couldNot()
   const known = [...ctx.templates.map((t) => t.file), template.file]
-  if (validateRoutes(previous, { templates: known }).length > 0) return couldNot()
+  if (previous !== null && validateRoutes(previous, { templates: known }).length > 0) return couldNot()
   if (!ctx.templates.some((t) => t.id === template.id)) {
+    const named = templateName(template.name, { project: ctx.templates.map((t) => t.file), deployed: ctx.deployed })
+    if ('error' in named) return named
+    if (named.file !== template.file || template.name !== template.name.trim()) return couldNot()
     const { data, error } = await sb
       .from('custom_templates')
       .insert({ id: template.id, project_id: id, user_id: user.id, display_name: template.name, filename: template.file, kind: 'routes', created_at: row.created_at })
@@ -223,8 +234,10 @@ export async function restoreTemplate(_previous: RoutesResult | null, formData: 
       return { error: templateWriteRefusal(error, template.file) ?? ROUTES_WORDS.couldNot }
     }
   }
-  const refused = await writeConfig(sb, id, user.id, previous ?? EMPTY_ROUTES, known)
-  if (refused !== null) return { error: refused }
+  if (previous !== null) {
+    const refused = await writeConfig(sb, id, user.id, previous, known)
+    if (refused !== null) return { error: refused }
+  }
   revalidate(id)
   return { ok: true }
 }

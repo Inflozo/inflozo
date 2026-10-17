@@ -3956,6 +3956,13 @@ default — every collection, channel and route deleted, the taxonomies at `tag`
 `routes_config.yaml` **null**, as a project that never opened the Routes Manager does; what a site that already carries
 a non-default `routes.yaml` (an earlier deploy's, or one its owner uploaded in Ghost) then receives — Ghost's default
 file, uploaded, or nothing — is this story's to decide
+**And** *(a reading from Story 7.16a's Review, 2026-10-17, read in Ghost's source)* **every upload leaves Ghost's own dated
+copy of the file it replaces** beside `routes.yaml` in the site's `content/settings`: Ghost 6.58.0's
+`FileStore.replace` writes `routes-YYYY-MM-DD-HH-mm-ss.yaml` per upload (`core/server/adapters/route-settings/FileStore.js:106-117`,
+`utils.js:9-20`), and 5.130.6's `RouteSettings.setFromFilePath` copies to one backup name fixed at boot
+(`route-settings/RouteSettings.js:94-96`, `index.js:19`) — so uploading on every deploy grows a Ghost 6 site's folder by
+one file per deploy; whether to upload only when the stored bytes differ from the site's (the byte read this story
+already makes) is this story's to decide
 **And** **two routes are emitted on demand and only when a design that links to them is actually placed** —
 all-tags and all-authors, because Ghost serves neither natively — so a site is never given a page it does not use
 **And** **`/search/` is never emitted by anyone**, `{{ghost_head exclude="search"}}` is never emitted, and **no
@@ -4047,6 +4054,10 @@ read from Story 7.16a's `validateRoutes` over the project's stored routes *(Stor
 routine call 11: `validateRoutes` is `@inflozo/section-runtime/routes`)* — and S9b's own line, word for word, **"Deploys
 are blocked until routing is valid — the Ship button explains why."**, which Story 7.16a leaves unshown because no Ship
 button exists before this story.
+**And** *(given an owner by Story 7.16a's Review, 2026-10-17 — DW-362)* where the stored routing cannot be read at all
+(S9b's line 1 — a row no sheet writes, by hand or by a later build's grammar), the reason on the Ship button also says
+how to get out of it: the Routes page then draws no list and opens no sheet, so this story's Create asks the owner
+(R-83) for that way out — a reset to Ghost's default routing on the Routes page, or the reason alone.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).

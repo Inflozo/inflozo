@@ -30,6 +30,10 @@ export const UNIT_WORDS: Readonly<Record<DateUnit, string>> = { d: 'days', w: 'w
 /** R-246: an exact date's four operators, the only ones a collection offers. */
 export const EXACT_WORDS: Readonly<Record<DateOp, string>> = { '>': 'after', '>=': 'on or after', '<': 'before', '<=': 'on or before' }
 export const EXACT_OPS: readonly DateOp[] = DATE_OPS
+/** S9c's rolling value words (`S9 Routes.dc.html:192`: "within · the last 30 days"), one spelling for the sheet's number
+ *  box and the card's line alike (R-170) */
+const THE_LAST = 'the last'
+const unitAgo = (unit: DateUnit) => `${UNIT_WORDS[unit]} ago`
 
 export const ROUTES_WORDS = {
   // S9a
@@ -73,8 +77,11 @@ export const ROUTES_WORDS = {
   add: 'add…',
   within: 'within',
   moreThan: 'more than',
-  theLast: (n: number, unit: DateUnit) => `the last ${n} ${UNIT_WORDS[unit]}`,
-  ago: (n: number, unit: DateUnit) => `${n} ${UNIT_WORDS[unit]} ago`,
+  theLast: (n: number, unit: DateUnit) => `${THE_LAST} ${n} ${UNIT_WORDS[unit]}`,
+  ago: (n: number, unit: DateUnit) => `${n} ${unitAgo(unit)}`,
+  /** the sheet's rolling value: "the last" before the number box ("within"), and each unit with "ago" ("more than") */
+  lastWord: THE_LAST,
+  unitAgo,
   /** the rolling window's two fields, each named for a screen reader */
   howFar: 'how far back',
   unit: 'unit',
@@ -173,6 +180,12 @@ export function conditionWords(c: Cond): string {
 
 /** A filter in words: its conditions joined by "and" (All) or "or" (Any). */
 export const filterWords = (f: Filter): string => f.conditions.map(conditionWords).join(f.match === 'all' ? ' and ' : ' or ')
+
+/** Today's calendar date where the customer is, `YYYY-MM-DD` — a new exact-date condition's first value. Local, never
+ *  `toISOString`'s UTC day, which is yesterday or tomorrow near midnight for anyone far from UTC (review, 2026-10-17). */
+export function localToday(now: Date = new Date()): string {
+  return `${String(now.getFullYear()).padStart(4, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}
 
 /** A new condition of a field, as the picker starts it: an empty value list, Yes, or an exact date (a collection) / the
  *  last 30 days (a channel — S9c's own default). */

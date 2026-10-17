@@ -98,8 +98,9 @@ export function RadioCard({
 }) {
   return (
     <div className={`flex flex-col gap-2 rounded-thumb border p-[12px_13px] has-[input:focus-visible]:shadow-focus ${checked ? 'border-coral bg-coral-tint' : 'border-line hover:border-line-strong'}`}>
-      <label className="flex min-w-0 cursor-pointer gap-[11px]">
-        <input type="radio" name={name} value={value} checked={checked} onChange={() => onChange(value)} className="sr-only" />
+      {/* a `<label for>` as well as the wrapping one (A7 item 9's letter) */}
+      <label htmlFor={`${name}-${value}`} className="flex min-w-0 cursor-pointer gap-[11px]">
+        <input id={`${name}-${value}`} type="radio" name={name} value={value} checked={checked} onChange={() => onChange(value)} className="sr-only" />
         <span aria-hidden className={`mt-px inline-flex size-4 shrink-0 items-center justify-center rounded-full border-[1.5px] ${checked ? 'border-coral' : 'border-line-strong'}`}>
           {checked ? <span className="size-2 rounded-full bg-coral" /> : null}
         </span>

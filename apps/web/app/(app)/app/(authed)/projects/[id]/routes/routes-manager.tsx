@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useEffect, useId, useOptimistic, useRef, useState, useTransition, type ReactNode } from 'react'
 import {
-  DATE_UNITS, filterNql, filterProblem, isChannel, isDefaultRouting, PATH_RE, pathsUsing, templateName, validateRoutes, VISIBILITIES, withoutTemplate,
+  DATE_UNITS, filterNql, filterProblem, holderOf, isChannel, isDefaultRouting, PATH_RE, pathsUsing, RESERVED_SEGMENTS, templateName, validateRoutes, VISIBILITIES,
+  withoutTemplate,
   type Channel, type Collection, type Cond, type DateOp, type DateUnit, type Filter, type Route, type RouteProblem, type RoutesConfig,
   type Visibility,
 } from '@inflozo/section-runtime/routes'
@@ -28,7 +29,7 @@ import { addressOf, LISTS } from '@/lib/live-content'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from '@/lib/reorder'
 import {
-  cardName, EXACT_OPS, EXACT_WORDS, FIELDS, filterWords, freshCondition, PAGE_SIZE, ROUTES_WORDS as W, UNIT_WORDS, VISIBILITY_WORDS, type Template,
+  cardName, EXACT_OPS, EXACT_WORDS, FIELDS, filterWords, freshCondition, localToday, PAGE_SIZE, ROUTES_WORDS as W, UNIT_WORDS, VISIBILITY_WORDS, type Template,
 } from '@/lib/routes'
 import { createTemplate, deleteTemplate, restoreTemplate, saveRoutes, type RoutesResult } from './actions'
 
@@ -85,12 +86,15 @@ const formOf = (fields: Record<string, string>) => {
 /** The site's tag and writer slugs, for the sheets' suggestions — two reads of its Content API, once, where readable. */
 function useSuggestions(content: Props['content']) {
   const [found, setFound] = useState<{ tag: string[]; author: string[] }>({ tag: [], author: [] })
+  // the two strings, not the object: `page.tsx` builds a fresh one on every render, and every write revalidates the page
+  const origin = content?.origin ?? null
+  const key = content?.key ?? null
   useEffect(() => {
-    if (content === null) return
+    if (origin === null || key === null) return
     const stop = new AbortController()
     const slugs = async (kind: 'tag' | 'author', plural: 'tags' | 'authors') => {
       try {
-        const answer = await fetch(addressOf(content.origin, LISTS[kind], content.key), { signal: stop.signal })
+        const answer = await fetch(addressOf(origin, LISTS[kind], key), { signal: stop.signal })
         const rows = answer.ok ? ((await answer.json()) as Record<string, { slug?: unknown }[]>)[plural] ?? [] : []
         return rows.map((r) => r.slug).filter((s): s is string => typeof s === 'string')
       } catch {
@@ -101,7 +105,7 @@ function useSuggestions(content: Props['content']) {
       if (!stop.signal.aborted) setFound({ tag, author })
     })
     return () => stop.abort()
-  }, [content])
+  }, [origin, key])
   return found
 }
 
@@ -121,11 +125,15 @@ export function RoutesManager(props: Props) {
   /** The whole next config, written. A delete passes its Undo; any other change clears the last one (routine call 16). */
   const save = (next: RoutesConfig, then?: Undo) =>
     start(async () => {
+      const was = undo
       setShown(next)
       setUndo(null)
       const result = await saveRoutes(null, formOf({ project: projectId, config: JSON.stringify(next) }))
-      if ('error' in result) setFailed(result.error)
-      else {
+      if ('error' in result) {
+        setFailed(result.error)
+        // a refused change is not a change: the last delete's Undo stands (routine call 16)
+        setUndo(was)
+      } else {
         setFailed(null)
         if (then) setUndo(then)
       }
@@ -159,6 +167,7 @@ export function RoutesManager(props: Props) {
       return
     }
     const previous = config
+    const routed = pathsUsing(config, t.file).length > 0
     setGone(t.id)
     setShown(withoutTemplate(config, t.file))
     setUndo(null)
@@ -168,7 +177,8 @@ export function RoutesManager(props: Props) {
       setFailed(null)
       setUndo({
         words: W.deleted(t.name),
-        run: () => restoreTemplate(null, formOf({ project: projectId, template: JSON.stringify(t), config: JSON.stringify(previous) })),
+        // the config only when the delete took routes with it — one that took none wrote none, so its Undo writes none
+        run: () => restoreTemplate(null, formOf({ project: projectId, template: JSON.stringify(t), ...(routed ? { config: JSON.stringify(previous) } : {}) })),
       })
     }
   }
@@ -197,7 +207,11 @@ export function RoutesManager(props: Props) {
       </header>
 
       {empty ? (
-        <EmptyState onCollection={() => setOpen({ kind: 'collection', at: null })} onRoute={() => setOpen({ kind: 'route', at: null })} onTemplate={() => setOpen({ kind: 'template' })} />
+        <>
+          {/* a refused Undo can land here, after the last item went (review, 2026-10-17) */}
+          {failed !== null ? <div data-failed className="px-6 pt-6"><Banner kind="error">{failed}</Banner></div> : null}
+          <EmptyState onCollection={() => setOpen({ kind: 'collection', at: null })} onRoute={() => setOpen({ kind: 'route', at: null })} onTemplate={() => setOpen({ kind: 'template' })} />
+        </>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto tablet:flex-row tablet:overflow-hidden">
           <div className="flex flex-[1.1] flex-col gap-[18px] border-line p-[22px_24px] tablet:overflow-y-auto tablet:border-r">
@@ -641,9 +655,12 @@ function YamlPane({ yaml, problems, unreadable }: { yaml: string | null; problem
                   onClick={() => {
                     const url = URL.createObjectURL(new Blob([yaml], { type: 'text/yaml' }))
                     const a = Object.assign(document.createElement('a'), { href: url, download: W.file })
+                    // in the document for the click, and the address kept a while: a detached anchor, or an address revoked
+                    // at once, can lose the download in some browsers (review, 2026-10-17)
+                    document.body.append(a)
                     a.click()
-                    // let the download take the bytes before the address goes
-                    setTimeout(() => URL.revokeObjectURL(url), 0)
+                    a.remove()
+                    setTimeout(() => URL.revokeObjectURL(url), 10_000)
                   }}
                 >
                   <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -753,6 +770,12 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
       return 'error' in named ? named.error : null
     }
     if (!PATH_RE.test(d.path)) return W.refused.path
+    // what is ALREADY on this path, by name — the validator names whichever claims first, and a collection claims before a
+    // route; a reserved segment is the validator's own sentence (review, 2026-10-17)
+    if (!Object.hasOwn(RESERVED_SEGMENTS, d.path.slice(1, -1))) {
+      const held = holderOf(config, d.path, open.at === null ? undefined : `${open.kind === 'collection' ? 'collections' : 'routes'}.${open.at}.path`)
+      if (held !== null) return W.refused.taken(d.path, held)
+    }
     if (d.show !== 'template') {
       const wrong = filterProblem(d.filter, where)
       if (wrong !== null) return wrong
@@ -837,7 +860,7 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
                     <span className="text-control-label leading-[1.5] text-ink-soft">
                       {W.postsBefore}
                       <Link href={settingsPath(projectId)} className={`font-semibold text-ink hover:underline ${ring}`}>{W.postsLink}</Link>
-                      {W.postsAfter(postsPerPage)}
+                      <PostsCount n={postsPerPage} />
                     </span>
                   </div>
                 </div>
@@ -918,7 +941,7 @@ const VALUE_BOX = 'flex min-h-9 min-w-0 flex-1 flex-wrap items-center gap-[5px] 
 
 function Conditions({ where, filter, suggestions, onChange }: { where: 'collection' | 'channel'; filter: Filter; suggestions: { tag: string[]; author: string[] }; onChange: (f: Filter) => void }) {
   const base = useId().replace(/:/g, '')
-  const today = new Date().toISOString().slice(0, 10)
+  const today = localToday()
   const put = (n: number, c: Cond) => onChange({ ...filter, conditions: filter.conditions.map((x, i) => (i === n ? c : x)) })
   const fieldItems = (active?: Cond['field']) => FIELDS.map((f) => ({
     value: f.field,
@@ -954,6 +977,13 @@ function Conditions({ where, filter, suggestions, onChange }: { where: 'collecti
       <span className="text-helper-caption leading-[1.5] text-ink-soft">{where === 'collection' ? W.exactDate : <Rolling />}</span>
     </div>
   )
+}
+
+/** The rest of S9c's page-size sentence, its number in mono as drawn (`:222`). */
+const PostsCount = ({ n }: { n: number }) => {
+  const words = W.postsAfter(n)
+  const at = words.indexOf(String(n))
+  return <>{words.slice(0, at)}<span className="font-mono text-[11px]">{n}</span>{words.slice(at + String(n).length)}</>
 }
 
 /** S9c's rolling-date sentence with its term in mono, as drawn (`:209`). */
@@ -1035,7 +1065,7 @@ function operatorOf(c: Cond, where: 'collection' | 'channel', set: (c: Cond) => 
       active: rolling ? o.value === (c.op === '>' || c.op === '>=' ? 'r>' : 'r<') : o.value === c.op,
     })),
     onOperator: (v) => {
-      const today = new Date().toISOString().slice(0, 10)
+      const today = localToday()
       if (v === 'r>' || v === 'r<') set({ field: 'published_at', op: v === 'r>' ? '>' : '<', at: 'ago' in c.at ? c.at : { ago: 30, unit: 'd' } })
       else set({ field: 'published_at', op: v as DateOp, at: 'date' in c.at ? c.at : { date: today } })
     },
@@ -1121,6 +1151,7 @@ function ValueOf({ id, c, where, suggestions, onChange }: { id: string; c: Cond;
   if (where === 'collection') return null
   return (
     <div className={`${VALUE_BOX} gap-2 px-[10px]`}>
+      {c.op === '>' || c.op === '>=' ? <span className="text-[12.5px] font-medium text-ink">{W.lastWord}</span> : null}
       <label htmlFor={`${id}-ago`} className="sr-only">{`${fieldLabel(c.field)} — ${W.howFar}`}</label>
       <input
         id={`${id}-ago`}
@@ -1133,7 +1164,7 @@ function ValueOf({ id, c, where, suggestions, onChange }: { id: string; c: Cond;
       />
       <label htmlFor={`${id}-unit`} className="sr-only">{`${fieldLabel(c.field)} — ${W.unit}`}</label>
       <select id={`${id}-unit`} value={at.unit} onChange={(e) => onChange({ ...c, at: { ...at, unit: e.target.value as DateUnit } })} className={`rounded-[4px] bg-transparent text-[12.5px] font-medium text-ink ${ring}`}>
-        {DATE_UNITS.map((u) => <option key={u} value={u}>{UNIT_WORDS[u]}{c.op === '<' || c.op === '<=' ? ' ago' : ''}</option>)}
+        {DATE_UNITS.map((u) => <option key={u} value={u}>{c.op === '<' || c.op === '<=' ? W.unitAgo(u) : UNIT_WORDS[u]}</option>)}
       </select>
       <span className="ml-auto font-mono text-[10px] text-ink-soft-aa">{`now-${at.ago}${at.unit}`}</span>
     </div>

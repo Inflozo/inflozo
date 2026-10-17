@@ -7208,7 +7208,7 @@ One tree, gated 0/0 on both pinned gscans with an empty quality verdict before a
 
 ## 82. The Routes Manager's `routes.yaml` — every file `routesYaml` writes accepted and read back as meant by Ghost 6.58.0's and 5.130.6's own route-settings code, and one emitted file on T1: a tag collection owning its posts two per page, a featured channel's feed, the index-first control and T1's own file restored byte for byte · T1 · 2026-10-16
 
-**Command.** `node tools/probe/record-routes.mjs --t1` — three `POST settings/routes/yaml/` to T1 (the emitted file, the index-first control, and T1's own file restored in a `finally` that encloses both and read back), and nothing else: no post, tag, theme or setting.
+**Command.** `node tools/probe/record-routes.mjs --t1` — three `POST settings/routes/yaml/` to T1 (the emitted file, the index-first control, and T1's own file restored in a `finally` that encloses both and read back), and nothing else: no post, tag, theme or setting. Ghost itself keeps a dated copy of each file an upload replaces (`routes-YYYY-MM-DD-HH-mm-ss.yaml` in `content/settings`, 6.58.0's `FileStore.js:106-117`), so a run leaves three such backups on T1's disk. *(This sentence added at Story 7.16a's Review, 2026-10-17, read in Ghost 6.58.0's source; the recorder now writes it.)*
 
 **Ghost.** T1 `ghost6.inflozo.com` (`site/` version 6.58), active theme `casper`; the tag `craft` (9 published posts); the template `custom-inflozo-probe.hbs` is in no theme, so the collection and the channel render with Ghost's fallback `index` (F6).
 

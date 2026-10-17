@@ -2,7 +2,7 @@
 title: 'Story 7.16a — The Routes Manager'
 type: 'feature'
 created: '2026-10-16'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '2b88aec2ed349d755a3070eae0f30339f1c06315'
 owner_test: pending
 review_loop_iteration: 0
@@ -317,7 +317,154 @@ Ghost that its source disproves (Design Notes' facts):
 - Given the Template menu, when "Manage routes" is pressed, then it reads "Opening…" and the routes page's own skeleton
   shows before the page (R-98).
 
+### Review Findings
+
+Review, 2026-10-17: five layers — the Blind Hunter (run twice, over the app and over the tools: the diff is past 5,000
+lines), the Edge Case Hunter, the Verification Gap reviewer, the Acceptance Auditor, and the Real-infra verifier, run in
+the main session (memory: key reads and production writes from a subagent are refused). 0 decision-needed, 25 patches
+(all applied), 1 deferred (DW-362), the rest dismissed with a reason each (below). No question for the owner.
+
+- [x] [Review][Patch] Walk step 109 would have died at 109c: it looked for the condition row's × by the picker's label
+  ("Remove the Published date condition"), while the row and its × use S9c's shorter "Published" (`FIELDS`' `row`).
+  It now uses `rowWord109`. Step 109 had never run before this Review [tools/probe/run-verify-editor.cjs 109c]
+- [x] [Review][Patch] 109n (a) and (b) counted two "1 error" pills: the pill's wrapper has the same words, since Copy and
+  Download carry only glyphs. It now counts the leaf only. The page was right [run-verify-editor.cjs `pill109`]
+- [x] [Review][Patch] `/constructor/` was refused as "an address Ghost uses function Object() { [native code] }",
+  because `RESERVED_SEGMENTS[segment]` read `Object.prototype`. The lookup now uses own keys only, and the test's free
+  list carries `constructor`. Control: the old lookup fails that test with that sentence
+  [packages/section-runtime/src/routes.ts `validateRoutes`]
+- [x] [Review][Patch] A path collision named the wrong holder. Collections claim before routes, so a NEW collection on
+  an existing route's path was told "/landing/ is already a collection." The sheets now ask `holderOf` first, which
+  names what is already there and skips the item being edited. The validator keeps its own order for S9b
+  [routes.ts `holderOf`/`claimsOf`, routes-manager.tsx `refusal`, routes.test.ts "holderOf…"]
+- [x] [Review][Patch] `restoreTemplate` inserted whatever name and file a request carried. A forged Undo could store
+  `custom-home.hbs`, a membership file as kind `routes`, a name over 60 characters, or a name that does not make its
+  file. It now re-runs `templateName` and requires the file to match
+  [apps/web/app/(app)/app/(authed)/projects/[id]/routes/actions.ts `restoreTemplate`]
+- [x] [Review][Patch] The Undo of a template no route used still wrote `routes_config` (a new row, or a moved
+  `updated_at`), so the stored rows did not return exactly. The page now sends a config only when the delete took routes
+  with it, and the action writes one only then [actions.ts `restoreTemplate`, routes-manager.tsx `dropTemplate`]
+- [x] [Review][Patch] A template row written before a refused config write left the page stale. A retry was then refused
+  as a name the customer could not see. That path now revalidates [actions.ts `saveRoutes`]
+- [x] [Review][Patch] `previous ?? EMPTY_ROUTES` could never apply. It is removed, with its import [actions.ts]
+- [x] [Review][Patch] The site's tag and writer suggestions were fetched again after every write. The effect depended on
+  `[content]`, an object `page.tsx` builds fresh on each render; it is now keyed on its two strings
+  [routes-manager.tsx `useSuggestions`]
+- [x] [Review][Patch] A refused Undo after the last item went (the empty state) showed no message. The banner now draws
+  there too [routes-manager.tsx]
+- [x] [Review][Patch] A refused change dropped the standing Undo of the last delete. A refused change is not a change
+  (routine call 16), so the Undo now stands [routes-manager.tsx `save`]
+- [x] [Review][Patch] A new exact date started on `toISOString`'s UTC day, which is yesterday or tomorrow near midnight
+  away from UTC. It now uses `localToday` [apps/web/lib/routes.ts]
+- [x] [Review][Patch] Two words in S9c's rolling value were wrong:
+  - "within" was drawn as "within [30] [days]", where the frame reads "within · the last 30 days";
+  - the units under "more than" appended a literal `' ago'` outside `ROUTES_WORDS` (R-170).
+
+  "the last" before the number and each unit's "… ago" are now `ROUTES_WORDS.lastWord` and `unitAgo`, one spelling with
+  the card's line [lib/routes.ts, routes-manager.tsx `ValueOf`]
+- [x] [Review][Patch] S9c's page-size sentence draws its number in 11px mono (`S9 Routes.dc.html:222`); the build drew it
+  plain [routes-manager.tsx `PostsCount`]
+- [x] [Review][Patch] S9e's radio had only a wrapping label. It now also has a `<label for>`, A7 item 9's letter
+  [apps/web/components/kit/radio-card.tsx]
+- [x] [Review][Patch] Download clicked a detached anchor and revoked its address at once; some browsers drop such a
+  download. The anchor now joins the document for the click, and the address lives ten seconds
+  [routes-manager.tsx `YamlPane`]
+- [x] [Review][Patch] The switcher's R-128 comment still said "`custom_templates` has no writer", and "nothing is
+  captioned" beside a captioned row [apps/web/components/editor/template-switcher.tsx]
+- [x] [Review][Patch] The database's `23505` floor was never reached through an action: every name refusal stopped in the
+  browser. 109h now plants a membership-kind row under a name both the page and the action pass. The action must answer
+  with the naming step's sentence and add nothing; with the plant removed, the same press is the control
+  [run-verify-editor.cjs 109h]
+- [x] [Review][Patch] ConditionRow's new arrow keys (its operator, field and value menus, Theme settings' rows included)
+  had no keyboard check. 109c now picks "on or after" by Enter, ArrowDown, Enter [run-verify-editor.cjs 109c]
+- [x] [Review][Patch] The toast's Undo busy state (R-98) was never read. 109i now holds the action and reads
+  "Restoring…", `aria-busy` and `aria-disabled`, and counts one action for two presses [run-verify-editor.cjs 109i]
+- [x] [Review][Patch] The walk's header did not name step 109's service-key writes: 109n's plants and restores, 109h's
+  plant, and the hand-back [run-verify-editor.cjs header]
+- [x] [Review][Patch] "Three uploads and nothing else" was a hypothesis about Ghost. Read in both majors' source, every
+  upload keeps Ghost's own dated backup of the file it replaces: 6.58.0 writes one per upload (`FileStore.js:106-117`),
+  5.130.6 one name per boot (`RouteSettings.js:94-96`, `index.js:19`). This now appears in the recorder's header and its
+  §82 text, the catalogue, §82 itself (dated), and as a reading on Story 7.17's card, where every deploy would add one
+  [record-routes.mjs, doc-audit.py, MEASUREMENTS.md §82, epics.md]
+- [x] [Review][Patch] Two overclaims, corrected:
+  - the recorder's header said every moved post "answers 200 there", but it fetches only the first;
+  - the catalogue said "three published posts" for a tag that needs at least three.
+
+  [record-routes.mjs, doc-audit.py]
+- [x] [Review][Patch] VERIFY item 65 still said "until §82 is written this item is read, not executed". It now has a
+  dated note [VERIFY-AT-BUILD.md item 65]
+- [x] [Review][Patch] Two counts were written down: "Step 109n plants three stored states" (it plants four) and "the
+  seven re-pointed". Both are reworded so neither can go stale, and `epic-7-context.md` gains the Review's sub-bullet
+  [epic-7-context.md, this spec's Verification]
+- [x] [Review][Defer] An unreadable stored routing (S9b's line 1) leaves the page with no list, no sheet and no reset.
+  The product cannot reach that state today, and the way out is an undrawn control (Ask First, R-247). Deferred as
+  **DW-362** to Story 7.18's card, where it would first block a deploy
+
+**Dismissed, one line each:**
+- A failed row delete after the config write leaves the template unrouted, with no Undo. That is the I/O row's own
+  stated outcome, and Verification's ceiling already records that no production path reaches it.
+- `page.tsx` and `actions.ts` each read the same three tables: two short reads, the house shape.
+- Focus after a delete. The toast is a `role="status"` and is announced, and the page's banner carries a refusal.
+- The keyboard-move announcement comes before the write. On a refusal the order reverts and the banner says why.
+- The delete confirm closes on a failure; the page's banner then says why.
+- Condition rows are keyed by index, so a half-typed chip can move rows only when a middle row is removed mid-typing.
+- `TemplateField` hides Select's label by a descendant class. It holds today, and Select has no prop for it.
+- The name box's `maxLength` of 80 is above `NAME_MAX` (60) on purpose, so the refusal can speak.
+- Automatically adding the path's slashes is a product choice. S9c draws the path typed whole, and the refusal says the
+  shape.
+- Taxonomies' `aria-describedby` and a Cancel: polish, not a defect. The field's `role="alert"` is read on a refusal.
+- `hasDesign`'s sentence. The state is unreachable before 7.16b, which builds the warning.
+- Tests that read source text are the house pattern (`busy.test.ts`).
+- The actions' write order has no unit test. 109j and the PostgREST run below execute it on production.
+- Arrays have no upper bounds. Only the owner's own project is affected, and Next's server-action body limit caps the
+  size.
+- The Kit's "Fields"/"Operators"/`Operator:` words are the Kit's own, as its "Settings"/"Values" were.
+  `ROUTES_WORDS.removeCondition` is the walk's mirror of the Kit's ×.
+- "Choose…" is S9c's drawn word for the field picker.
+- A taxonomy save racing a drop, or an edit sheet open while an earlier write reverts: last write wins (routine
+  call 15).
+- `navigator.clipboard` is undefined only on an insecure origin, and the app is https only.
+- An unrelated stored problem blocks a template delete: "any save carrying it refused" is the spec's own row.
+- Recorder: the `limit: 2` row has no explicit control. §82(b)'s step 1 shows `/` listing six of the tag's posts on one
+  page, so T1's page size is not 2.
+- Recorder: the control changes the index's place and its filter together. The change log records this with its source
+  line.
+- Recorder: permalinks are not compared locally. The T1 half executes them (every post's Admin `url`).
+- Recorder: rolling dates are not served on T1. Both NQL pins parse every relative term in `routes.test.ts`, and the
+  listing re-parses on every request (F2).
+- Recorder robustness: the plant regex, the Ghost order, a null fixture, SIGINT, the kept temp dir, §82's ownership,
+  the control file not shown, the title's wording, transitive pins, the Node check, `.env` quoting, and the duplicated
+  pin and `canon`. The recorder is run attended, and none of these is wrong today.
+- The keyboard journeys' pasted ArrowUp: a menu change fails them loudly. The gate never presses "Manage routes":
+  the spec asked only for re-pointing, and 109a presses it on production.
+- The project count is production-wide, the same shape as the user count, as the spec words it.
+- 109's helpers throw on a stall. The outer `finally` deletes both accounts, and their projects go by cascade.
+- 109n's plant PATCH statuses are not read. A failed plant fails the page check after it.
+- Account B reaching `/projects/<P>/routes` is step 6's identical-404 guard. Row-level security for both tables is
+  executed below.
+- 109k passes when the clipboard cannot be read. Its label says so, and a note is written.
+- 109n reports before 109m: cosmetic.
+- MatchSwitch is S9c's own drawn track at its 2/10 padding and 11px, keyed by the Kit's `radioKeys`.
+- Channel key order: Ghost reads the keys unordered, and the tests compare by content.
+- §82's date is the recorder's UTC stamp; VERIFY item 65's note now gives both dates.
+- The T1 control's content differed from the ask's wording. The Change Log and the Dev report already say so, and the
+  go covered three restored uploads.
+- Extra strings beyond the Words list (`manageRoutesCaption`, "Edit collection." and "Edit route.", "Copied",
+  `couldNot`, "Back to {project}") belong to parts on R-247's list, and are recorded in the Change Log below.
+
 ## Spec Change Log
+
+- **Review, 2026-10-17.** These strings were built for parts on R-247's list and are not in the Words list:
+  - the Template menu row's caption, "Collections, routes and templates";
+  - "Edit collection." and "Edit route.";
+  - "Copied";
+  - "We couldn't save that just now. Try again in a moment.";
+  - "Back to {project}" (the back arrow's name);
+  - `hasDesign`'s sentence;
+  - the rolling value's "the last" and "… ago" (S9c's own words).
+
+  DW-361's task also listed `epic-7-context.md:405` for repointing. That line cites the first register's 60 (`limit:`),
+  which keeps its number, so Dev rightly left it; DW-361's resolution says so.
 
 - **Dev, 2026-10-17 — F4, executed with both pins (`routes.test.ts`, `@tryghost/nql` 0.13.4 and 0.12.7 over nql-lang 0.7.0
   and 0.6.3).** `tag:[a+b]` parses on BOTH majors, to different queries (`$and` on 0.13.4, `$all` on 0.12.7), and throws
@@ -716,7 +863,7 @@ it."* Recorded as **R-248**. Dev corrects FR-I3's "(or its route)" and dates the
 subagent returned):**
 - `pnpm check` -- exit 0: every package's suite green (each prints its own count), `routes.test.ts`,
   `apps/web/routes.test.ts`, `routes-jitless.test.ts`, the `AD-36 (7.16a)` pair, `editor.test.ts`, `busy.test.ts`.
-- `pnpm keyboard` -- the whole gate, exit 0, every journey passed, the seven re-pointed past the new last row included.
+- `pnpm keyboard` -- the whole gate, exit 0, every journey passed, each one re-pointed past the new last row included.
 - `pnpm build` -- exit 0, `/app/projects/[id]/routes` in the route table; `node tools/check-traces.mjs` -- every route
   carries its files.
 - `node tools/probe/record-routes.mjs` (local half; network reads from `registry.npmjs.org` only) -- PASS. Both tarballs
@@ -782,3 +929,57 @@ control).
   - a second user cannot read either row;
   - anon gets 401 or 42501.
 - The side-by-side frame check (R-247) is recorded with screenshots of S9a, S9c, S9d and S9e beside the frames.
+
+**Review results (2026-10-17), on the real infrastructure — part 1, at the Dev head `d1be7566`, run in the main session
+(keys read inside each process by name, never printed):**
+- CI on `d1be7566` (`GITHUB_TOKEN`, read in a scratch script): run 38961588327, with `check`, `rls` and `deploy` all
+  success, and the render matrix (38961588502, 38983034569) success. Vercel (`VERCEL_*`): `dpl_25QydLx5nx2UbdWe5hqYavcX965b`
+  is READY at `d1be7566`, the deployment app.inflozo.com serves.
+- **The whole walk** ran from a detached worktree at `d1be7566` (`node_modules` hard-linked), with `SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN` and `VERCEL_TEAM_ID` loaded in-process. It reported **0 FAIL and 685 PASS through
+  step 97**, then died at step 98's magic-link `goto` (a 30 s harness hold with no assertion, the DW-204 shape; three
+  earlier `stall` notes were each retried once). Step 40 held as re-expected: one rule and "Manage routes" end the
+  Template menu, and neither "+ New template" nor FROM THE ROUTES MANAGER appears. Users 14 → 14, projects 10 → 10.
+- **Step 109, never run before this Review**, ran as a cut copy (steps 1–5, the step-5 editor's lock handed back, then
+  109; never committed, in the worktree's `tools/probe-debug/`) with the Review's walk patches, against that deployment.
+  The first pass found the walk's own × bug, which would have killed it at 109c. With that fixed, the result was **82 PASS,
+  2 FAIL**. Both FAILs were the walk counting two "1 error" pills (109n a and b) where the page drew one, and are now
+  fixed (`pill109`). Every other row held on production, including the Review's new rows:
+  - 109c: Enter, ArrowDown, Enter on the operator gave "Operator: after" → "Operator: on or after".
+  - 109h: the `23505` floor through `createTemplate` said "This project already has a template called “Field Guide”."
+    with one action sent and nothing added; with the plant removed, the same press created `custom-field-guide.hbs`.
+  - 109i: Undo held in flight read "Restoring…" with `aria-busy` and `aria-disabled`, and two presses sent one action.
+
+  Users 14 → 14, projects 10 → 10.
+- **Supabase production, PostgREST under real RLS sessions** (`rls-session-from-a-script`: two throwaway users, a bare
+  project each, `generate_link` + `verifyOtp` over the publishable key, `@supabase/supabase-js` from `apps/web`).
+  **17 PASS, 0 FAIL**:
+  - A's `custom_templates` insert reads back with `kind = 'routes'` and `custom-landing.hbs` in `CUSTOM_TARGET_RE`.
+  - A's `routes_config` upsert reads back with `yaml` byte-equal to `routesYaml` of the stored config, parsed (320 bytes).
+  - B reads zero rows of A's two tables. B's upsert onto A's project is refused `42501`, both as itself and claiming
+    A's `user_id`. B's template insert is refused `42501`, and B's delete reaches zero rows; A's rows are unchanged.
+    Control: B writes its own project's row.
+  - anon gets `401 / 42501` on both tables.
+  - A name in `deployed_template_names` is refused `23505` with the trigger's own message, and the control, a fresh
+    name, inserts.
+  - `deployed_template_names` is select-only for the owner (`42501`).
+  - Users 14 → 14, projects 10 → 10.
+- **Production's schema is the code's (R-99):** the story adds no migration, and the run above wrote every column the
+  actions write (`routes_config` `project_id, user_id, config, yaml, updated_at`; `custom_templates` `project_id,
+  user_id, display_name, filename, kind`) as an authenticated user.
+- **T1 `ghost6.inflozo.com`, read only** (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN` in-process):
+  - `GET settings/routes/yaml/` returned 200, **130 bytes, sha256 `b2d675260a6071be…` — §82's recorded hash of T1's own
+    file**, so the Dev run's restore still holds. Control: the same GET with no Authorization returned 403.
+  - `/inflozo-probe/` and `/inflozo-probe-featured/rss/` both answered 404, so T1 serves its own routing again.
+- **The recorder's local half** (`node tools/probe/record-routes.mjs`, no flag; network reads from registry.npmjs.org
+  only): **23 PASS, exit 0**, on the Review's tree. Both tarballs matched their pins, and every fixture was accepted and
+  read back as meant by 6.58.0's and 5.130.6's own code. Its controls held: `limit: abc` refused by 6 and recorded as
+  accepted by 5, and a missing `permalink:` refused by both.
+- **Ghost's source, read** (the 6.58.0 and 5.130.6 npm tarballs, fresh directories): every upload keeps a dated backup
+  of the file it replaces (Review Findings).
+- **Locally, Node 24.18.1, on the Review's tree:** `pnpm check` exit 0, with every package's run printing its own count
+  and none failing. Each new or changed test is behind a control: the reserved-segment test fails with `Object.prototype`'s
+  sentence on the old lookup, and "holderOf…" asserts the validator's own wrong-holder sentence beside `holderOf`'s.
+  `node --check tools/probe/run-verify-editor.cjs` passes.
+- **Not run in this part:** T1 writes, because nothing a theme or `routes.yaml` carries changed at Review and §82 stands.
+  Ghost 5 on a server is postponed to DW-326 (R-238). Resend and Dodo are untouched by this story.

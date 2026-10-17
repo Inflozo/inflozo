@@ -9833,3 +9833,25 @@ owner: Story 7.16a's Dev (the Routes Manager; *Story 7.16 until R-245 split it, 
 location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` (both registers)
 reason: renumbering touches citations across closed specs and the ledger, which a documents-only review of another
   story should not rewrite; no build reads the numbers.
+
+## Deferred from: code review of spec-7-16a-the-routes-manager (2026-10-17)
+
+### DW-362: a stored routing the Routes page cannot read leaves no way back on the page
+
+plain: If a project's saved routing ever cannot be read as Inflozo writes it (a row changed by hand, or a later build that
+  reads it more strictly), the Routes page shows "Line 1 — This routing could not be read…" and nothing else: no list, no
+  sheet, no way to reset. Nothing Inflozo writes today can get there — every save is checked whole by the same reader
+  first — so it is a dead end nobody can yet reach, but from Story 7.18 it would also block every deploy.
+status: open
+severity: low
+origin: Story 7.16a's Review (2026-10-17), the Blind Hunter, Edge Case Hunter and Acceptance Auditor layers:
+  `routes-manager.tsx` draws the lists and opens the sheets only when `config !== null`, and `page.tsx` hands it null when
+  `parseRoutesConfig` refuses the stored row (the spec's I/O row "Hostile values… stored → S9b line 1", met as written).
+  A way out would be a control no frame draws (a reset to Ghost's default routing), which is Ask First under R-247.
+owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — the story where this state first stops
+  something the customer does (the Ship button's reason, read from `validateRoutes`): its Create asks the owner (R-83)
+  for the way out.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/routes/routes-manager.tsx` (`config === null`) · `page.tsx`
+  (`parseRoutesConfig`) · `packages/section-runtime/src/routes.ts` (`validateRoutes`' line 1)
+reason: unreachable through the product today (every write is validated whole before it is stored), and the fix is an
+  undrawn control, the owner's to rule.

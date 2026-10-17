@@ -42,8 +42,8 @@
  *      last. Its template, `custom-inflozo-probe.hbs`, is in no theme, so both render with Ghost's fallback `index`
  *      (F6; recorded against `themes/`) — a theme's own `custom-*` files are post templates, and a listing drawn with
  *      one shows no posts to count.
- *   3. Read back anonymously: every tagged post's Admin `url` is `/inflozo-probe/<slug>/` and the page answers 200
- *      there; the collection's page 1 links exactly 2 of the tag's posts and `/page/2/` the next ones; `/` links none;
+ *   3. Read back anonymously: every tagged post's Admin `url` is `/inflozo-probe/<slug>/` and the first of them
+ *      answers 200 there; the collection's page 1 links exactly 2 of the tag's posts and `/page/2/` the next ones; `/` links none;
  *      `/inflozo-probe-featured/rss/` serves RSS. Posts are counted as links to known post addresses, so no theme's
  *      markup is assumed — the counts are printed.
  *   4. CONTROL: the same file with the index collection FIRST AND WITHOUT ITS FILTER — Ghost's default `/` block — is
@@ -53,7 +53,11 @@
  *   5. RESTORE, in a `finally` that encloses every write: T1's own bytes uploaded and read back, byte for byte.
  *
  * WHAT IT WRITES TO THE SERVER: T1 only, with --t1 only — three `POST settings/routes/yaml/` (the emitted file, the
- * index-first control, the restore) and nothing else: no post, tag, theme, member or setting.
+ * index-first control, the restore) and nothing else: no post, tag, theme, member or setting. GHOST ITSELF keeps a
+ * dated copy of the file each upload replaces — read in 6.58.0's source at Story 7.16a's Review (2026-10-17):
+ * `core/server/adapters/route-settings/FileStore.js:106-117`'s `replace` writes `routes-YYYY-MM-DD-HH-mm-ss.yaml`
+ * (`utils.js:9-20`) beside `routes.yaml` in `content/settings` before the new file — so each run leaves three such
+ * backups on T1's disk, Ghost's own and harmless, the same as an upload from Ghost Admin.
  * WHAT IT WRITES HERE: with --t1 and every row held, MEASUREMENTS.md §82 alone, replacing an earlier §82 of its own so a
  * re-run re-records. The local half writes nothing to the repo; its temp dir is removed, and a --t1 run keeps its own
  * (T1's original routes.yaml is in it) and prints where.
@@ -416,7 +420,7 @@ function section(t, today) {
   return [
     `## ${SECTION}. The Routes Manager's \`routes.yaml\` — every file \`routesYaml\` writes accepted and read back as meant by Ghost 6.58.0's and 5.130.6's own route-settings code, and one emitted file on T1: a tag collection owning its posts two per page, a featured channel's feed, the index-first control and T1's own file restored byte for byte · T1 · ${today}`,
     '',
-    `**Command.** \`${COMMAND}\` — three \`POST settings/routes/yaml/\` to T1 (the emitted file, the index-first control, and T1's own file restored in a \`finally\` that encloses both and read back), and nothing else: no post, tag, theme or setting.`,
+    `**Command.** \`${COMMAND}\` — three \`POST settings/routes/yaml/\` to T1 (the emitted file, the index-first control, and T1's own file restored in a \`finally\` that encloses both and read back), and nothing else: no post, tag, theme or setting. Ghost itself keeps a dated copy of each file an upload replaces (\`routes-YYYY-MM-DD-HH-mm-ss.yaml\` in \`content/settings\`, 6.58.0's \`FileStore.js:106-117\`), so a run leaves three such backups on T1's disk.`,
     '',
     `**Ghost.** T1 \`${t.host}\` (\`site/\` version ${t.version}), active theme \`${t.theme}\`; the tag \`${t.tag}\` (${t.count} published posts); the template \`${TEMPLATE}\` is in no theme, so the collection and the channel render with Ghost's fallback \`index\` (F6).`,
     '',

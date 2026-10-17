@@ -456,8 +456,15 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **After the matrix audit (Dev, 2026-10-17):** an exact date means the whole day — `nodeOf` writes "after" D as `>=`
       D+1 and "on or before" D as `<` D+1 (`dayAfter`, arithmetic only), the model and the page's words unchanged; the
       boundary is UTC midnight (`ponytail:`). The `23505` mapping is one pure function, `templateWriteRefusal`
-      (`apps/web/lib/routes.ts`), tested against the trigger's own message. Step 109n plants three stored states on the
-      walk's project (an unknown template, a non-object config, a design planted after load), each beside its control.
+      (`apps/web/lib/routes.ts`), tested against the trigger's own message. Step 109n plants the stored states no sheet
+      can make on the walk's project (an unknown template, a non-object config, a design planted after load, Ghost's
+      default with templates kept), each beside its control.
+    - **Review (2026-10-17):** the sheets name what is ALREADY on a path (`holderOf` — the validator alone names whichever
+      claims first, and a collection claims before a route); `RESERVED_SEGMENTS` is read by own key (`/constructor/` was
+      refused with `Object.prototype`'s); a template Undo re-runs the naming step server-side and writes a config only
+      when its delete wrote one; every `routes.yaml` upload leaves Ghost's own dated backup in `content/settings` (read in
+      both majors' source — a reading on 7.17's card); DW-362 (an unreadable stored routing has no way back on the page)
+      goes to 7.18's card.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.

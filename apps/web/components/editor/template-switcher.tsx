@@ -48,8 +48,9 @@ import { isApp } from '@/routing'
    `+ New template` row are ABSENT until Story 7.16b, after Story 7.16a builds the Routes Manager for them to reach (R-245) — R-118's rule, a
    second time. *(Story 7.16a, 2026-10-17: the RULE arrives now, with the one row 7.16a adds below it — "Manage routes", the
    entry S9a's caption names, "opens from Template dropdown → Manage routes" — a `BarMenuRow` like every other, its glyph
-   Tabler's `route` (R-171's rule for this menu's rows), saying "Opening…" while its navigation runs, R-98.)* Nothing is greyed and nothing is captioned; an absent row asks no questions. The custom group would
-   have had nothing to list anyway: `custom_templates` has no writer.
+   Tabler's `route` (R-171's rule for this menu's rows), saying "Opening…" while its navigation runs, R-98.)* Of the two still absent, nothing is greyed and nothing is captioned; an absent row asks no questions.
+   The custom group's rows are 7.16b's to draw: the Routes page (`projects/[id]/routes/actions.ts`) is `custom_templates`'
+   one writer since Story 7.16a, and nothing here reads it yet.
 
    ABSENT, NOT GREYED, THE OTHER WAY TOO: a conditional canvas the project does not call for (Private) is simply not in
    `canvases`, and its address 404s — `lib/editor.ts`'s `canvasesOf` and `CONDITIONAL` decide, and `read.ts` hands the list over.

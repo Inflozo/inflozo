@@ -277,7 +277,13 @@
 // sentence is `lib/routes.ts`' `ROUTES_WORDS` or the runtime's `ROUTE_WORDS`, every file the runtime's own `routesYaml` of
 // the expected config. It RE-EXPECTS STEP 40: the rule and "Manage routes" now end the Template menu, while "+ New template"
 // and FROM THE ROUTES MANAGER stay absent until Story 7.16b (R-245). And `finally` now counts PROJECTS before and after, as
-// it always counted users — both throwaway accounts' projects must go with them.
+// it always counted users — both throwaway accounts' projects must go with them. Besides the product's own writes it writes
+// THROUGH THE SERVICE KEY on that project alone: 109n's plants and restores (`routes_config` PATCHes — a stored collection
+// naming a missing template, a config that is not an object, Ghost's default — and one `project_templates` `custom:` row,
+// removed after), 109h's membership-kind `custom_templates` row (removed after), and the hand-back. Story 7.16a's Review
+// (2026-10-17) adds: the condition row's × found by the ROW's word ("Published", `FIELDS`' `row`), never the picker's label;
+// the operator menu by keyboard (109c); the database's 23505 floor through the action, said as the naming step's sentence
+// (109h); and the toast's Undo held in flight — "Restoring…", aria-busy, a second press sending nothing (109i).
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -9534,6 +9540,9 @@ async function main() {
     }
     const escape109 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const fieldLabel109 = (field) => RW109.FIELDS.find((f) => f.field === field).label
+    /** the word a condition ROW shows for its field — S9c's shorter "Published" (`FIELDS`' `row`), else the picker's label;
+     *  the row's × is named by it (`kit/condition-row.tsx`), never by the picker's longer label (review, 2026-10-17) */
+    const rowWord109 = (field) => { const f = RW109.FIELDS.find((x) => x.field === field); return f.row ?? f.label }
     // a new condition exactly as the sheet starts it (`freshCondition`), so the expected config restates no default
     const cond109 = (field, where, values) => ({ ...RW109.freshCondition(field, where, ''), ...(values ? { values } : {}) })
     const SHEET109 = 'dialog[aria-labelledby="routes-sheet-title"][open]'
@@ -9693,6 +9702,9 @@ async function main() {
     check(`step 109a — R-98 in the raw stream: the routes page's HTML carries the skeleton's "${W109.loading}" under aria-busy before S9d's words`,
       stream109.skeleton > -1 && stream109.busy > -1 && stream109.page > stream109.skeleton, JSON.stringify(stream109))
 
+    // R-74's side-by-side (review, 2026-10-17): each drawn state of the page, at 1440, for the Review to set beside its frame
+    await rp.screenshot({ path: `${OUT}/routes-s9d-1440x900.png` })
+
     // 109b — a collection, POINTER-FREE: Tab and Enter, typing, Home/End and Enter in the Kit's menus, Space on the switch
     const fn109 = { path: '/field-notes/', tag: 'field-notes', display: 'Field Notes List' }
     const fnNamed109 = RT109.templateName(fn109.display)
@@ -9739,6 +9751,7 @@ async function main() {
     await rp.keyboard.type(fn109.display)
     await rp.waitForTimeout(250)
     const naming109 = await sheet109(rp).evaluate((d) => ({ file: d.querySelector('[data-file]')?.textContent ?? null, label: d.querySelector('[data-label]')?.textContent ?? null, text: d.innerText }))
+    await rp.screenshot({ path: `${OUT}/routes-s9c-1440x900.png` })
     await land109(W109.createCollection, `${SHEET109} button[type="submit"]`)
     await rp.keyboard.press('Enter')
     const shut109b = await shut109(rp)
@@ -9766,7 +9779,24 @@ async function main() {
     await sheet109(rp).locator('#routes-path').fill(cr109.path)
     await addCond109(rp, 'published_at')
     const exact109 = await operators109(rp)
-    await sheet109(rp).locator(`button[aria-label="${W109.removeCondition(fieldLabel109('published_at'))}"]`).click()
+    // KEYBOARD in the operator's own menu (the Kit's `arrowKeys` on ConditionRow's popovers, new here): focus the operator,
+    // Enter opens its menu on the row in force ("after"), ArrowDown moves one, Enter picks it — "on or after". The control
+    // is the same menu read back by the button's own name; without the arrow keys Enter re-picks "after" (review, 2026-10-17)
+    const opButton109 = sheet109(rp).locator('button[aria-label^="Operator: "]').first()
+    const opBefore109 = await opButton109.getAttribute('aria-label')
+    await opButton109.focus()
+    await rp.keyboard.press('Enter')
+    await rp.locator(`[id="${await opButton109.getAttribute('popovertarget')}"] button`).first().waitFor({ state: 'visible', timeout: 5000 }).catch(() => {})
+    await rp.waitForTimeout(150)
+    const opFocus109 = await rp.evaluate(() => document.activeElement?.textContent?.trim() ?? null)
+    await rp.keyboard.press('ArrowDown')
+    await rp.keyboard.press('Enter')
+    await rp.waitForTimeout(250)
+    const opAfter109 = await opButton109.getAttribute('aria-label')
+    check(`step 109c — keyboard in the operator's menu: Enter opens it on "${RW109.EXACT_WORDS['>']}", ArrowDown and Enter pick "${RW109.EXACT_WORDS['>=']}" — the operator now reads so`,
+      opBefore109 === `Operator: ${RW109.EXACT_WORDS['>']}` && opFocus109 === RW109.EXACT_WORDS['>'] && opAfter109 === `Operator: ${RW109.EXACT_WORDS['>=']}`,
+      JSON.stringify({ opBefore109, opFocus109, opAfter109 }))
+    await sheet109(rp).locator(`button[aria-label="${W109.removeCondition(rowWord109('published_at'))}"]`).click()
     await addCond109(rp, 'tag')
     await sheet109(rp).locator(`input[placeholder="${W109.add}"]`).fill(cr109.tag)
     await sheet109(rp).locator(`input[placeholder="${W109.add}"]`).press('Enter')
@@ -9839,6 +9869,7 @@ async function main() {
     await pick109(rp, 'routes-template', W109.newTemplateOption)
     await sheet109(rp).locator('#routes-sheet-template').fill(rl109.display)
     const unlabelled109e = await unlabelled109(rp)
+    await rp.screenshot({ path: `${OUT}/routes-s9e-1440x900.png` })
     const shut109e = await submit109(rp)
     const rlRoute109 = { path: rl109.path, channel: { match: 'all', conditions: [rolling109] }, template: rlNamed109.file }
     cfg109 = { ...cfg109, routes: [rlRoute109] }
@@ -9905,6 +9936,28 @@ async function main() {
     }
     await nameRefusal109(ld109.display, `${ld109.display} 2`, RT109.ROUTE_WORDS.nameTaken(ldNamed109.label))
     await nameRefusal109('Home', 'Home Page', RT109.ROUTE_WORDS.nameReserved('Home'))
+    // THE DATABASE'S FLOOR UNDER THE NAMING STEP, through the action (review, 2026-10-17): a name the page and the action's
+    // own read both pass, refused by `unique (project_id, filename)` alone — a MEMBERSHIP-kind row of that file, planted
+    // through the service key after the sheet has its name (the action reads only kind `routes`, so only the insert meets
+    // it) — must come back as the naming step's own sentence (`templateWriteRefusal`), never a Postgres code, with nothing
+    // added. The plant is removed and the same press is the control: it creates the template.
+    const floor109 = { display: 'Field Guide' }
+    const floorNamed109 = RT109.templateName(floor109.display)
+    await dashed109(rp, 'routes-templates', W109.newTemplate)
+    await opened109(rp)
+    await sheet109(rp).locator('#routes-new-template').fill(floor109.display)
+    const plantF109 = await call('/rest/v1', '/custom_templates', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], display_name: floor109.display, filename: floorNamed109.file, kind: 'membership', surface: 'signup' }) })
+    const plantedF109 = plantF109.body?.[0]?.id ?? null
+    const rF109 = await refused109(rp)
+    const unplantF109 = plantedF109 === null ? null : (await call('/rest/v1', `/custom_templates?id=eq.${plantedF109}`, { method: 'DELETE' })).status
+    check(`step 109h — the database's floor: "${floor109.display}" passes the page and the action's own read, the insert meets unique (project_id, filename) and the sheet says "${RT109.ROUTE_WORDS.nameTaken(floorNamed109.label)}" — one action sent, nothing added, the sheet still open`,
+      plantF109.status === 201 && rF109.sent === 1 && rF109.said === RT109.ROUTE_WORDS.nameTaken(floorNamed109.label) && rF109.open && rF109.unchanged && (unplantF109 === 200 || unplantF109 === 204),
+      JSON.stringify({ plant: plantF109.status, rF109, unplant: unplantF109 }))
+    const wasF109 = await ct109()
+    const shutF109 = await submit109(rp)
+    const ctF109 = await until109(rp, ct109, (rows) => Array.isArray(rows) && rows.length === wasF109.length + 1)
+    check(`step 109h — CONTROL: the plant gone, the same press creates ${floorNamed109.file}, kind routes`,
+      shutF109 && (ctF109 ?? []).some((row) => row.filename === floorNamed109.file && row.kind === 'routes'), JSON.stringify({ shutF109, ctF109 }))
     /** a Custom route sheet to an existing template: the refused path, then its legal twin saved */
     const pathRefusal109 = async (refusedPath, legalPath, why, isReason) => {
       await dashed109(rp, 'routes-custom', W109.customRoute)
@@ -9937,7 +9990,30 @@ async function main() {
     check(`step 109i — ⋯ → ${W109.delete} on ${cr109.path}: gone at once with "${W109.deleted(cr109.path)}" and ${W109.undo}; the stored config and the pane lose exactly that collection, and its template "${cr109.display}" stays (R-248)`,
       toastI109 && agreedI109.ok && !listsI109.collections.includes(cr109.path) && JSON.stringify(ctI109) === JSON.stringify(wasI109.ct) && listsI109.templates.includes(crNamed109.file),
       JSON.stringify({ toastI109, agreedI109, listsI109 }))
-    await rp.getByRole('button', { name: W109.undo, exact: true }).click()
+    // R-98 ON THE TOAST'S UNDO (review, 2026-10-17): its action HELD in flight, the button says "Restoring…" with aria-busy
+    // and aria-disabled, and a second press sends nothing; then the held action goes on and the checks below read its result
+    let releaseI109 = () => {}
+    const gateI109 = new Promise((r) => { releaseI109 = r })
+    const holdI109 = async (route) => {
+      if (route.request().method() === 'POST' && route.request().headers()['next-action'] !== undefined) await gateI109
+      return route.fallback()
+    }
+    await rp.route('**/*', holdI109)
+    const sentI109 = posts109
+    const undoI109 = toast109(rp, W109.deleted(cr109.path)).locator('button')
+    await undoI109.click()
+    const busyI109 = await until109(rp, () => undoI109.evaluate((b) => ({
+      words: [...b.querySelectorAll('span > span')].find((x) => getComputedStyle(x).visibility !== 'hidden')?.textContent ?? null,
+      busy: b.getAttribute('aria-busy'),
+      disabled: b.getAttribute('aria-disabled'),
+    })).catch(() => null), (v) => v?.busy === 'true', 20)
+    await undoI109.click({ force: true, timeout: 3000 }).catch(() => {})
+    await rp.waitForTimeout(600)
+    const pressesI109 = posts109 - sentI109
+    releaseI109()
+    await rp.unroute('**/*', holdI109)
+    check(`step 109i — R-98 on ${W109.undo}: held in flight it reads "${W109.restoring}" with aria-busy and aria-disabled, and a second press sends nothing (one action, not two)`,
+      busyI109?.words === W109.restoring && busyI109.busy === 'true' && busyI109.disabled === 'true' && pressesI109 === 1, JSON.stringify({ busyI109, pressesI109 }))
     const agreedIU109 = await agree109(rp, cfg109)
     const rcIU109 = (await rc109())?.[0] ?? null
     const listsIU109 = await lists109(rp)
@@ -10007,6 +10083,7 @@ async function main() {
     await rp.locator('pre[data-yaml] [data-line]').first().waitFor({ state: 'visible', timeout: 30000 }).catch(() => {})
     // hydrated: React's own props on a list's button, so the presses below are the page's and never a bare document
     await rp.waitForFunction(() => { const b = document.querySelector('section[aria-labelledby="routes-collections"] > button'); return !!b && Object.keys(b).some((k) => k.startsWith('__reactProps')) }, null, { timeout: 20000 }).catch(() => {})
+    await rp.screenshot({ path: `${OUT}/routes-s9a-1440x900.png` })
     const paneL109 = await pane109(rp)
     const rcL109 = (await rc109())?.[0] ?? null
     const parsedL109 = rcL109 ? RT109.parseRoutesConfig(rcL109.config) : null
@@ -10039,7 +10116,9 @@ async function main() {
       failed: document.querySelector('[data-failed]')?.textContent ?? null,
       lines: document.querySelectorAll('pre[data-yaml] [data-line]').length,
     }))
-    const pill109 = (p, n) => p.locator('section[aria-label="routes.yaml"] span', { hasText: new RegExp(`^${escape109(W109.errors(n))}$`) }).count()
+    // the pill itself: a leaf whose words are exactly "{n} error(s)" — its wrapper's words are the same, since Copy and
+    // Download carry only glyphs, so a text match alone counted two (review, 2026-10-17)
+    const pill109 = (p, n) => p.evaluate(([sel, words]) => [...document.querySelectorAll(sel)].filter((e) => e.children.length === 0 && e.textContent === words).length, ['section[aria-label="routes.yaml"] span', W109.errors(n)])
     const soundN109 = { rc: await rowN109(), lists: await lists109(rp) }
     const filesN109 = await files109()
 
@@ -10050,6 +10129,7 @@ async function main() {
     await plant109({ config: plantedA109, yaml: RT109.routesYaml(plantedA109) })
     await reloaded109(rp)
     const seenA109 = await s9b109(rp)
+    await rp.screenshot({ path: `${OUT}/routes-s9b-1440x900.png` })
     const pillA109 = await pill109(rp, 1)
     check(`step 109n (a) — a stored collection naming ${gone109}, which no project row holds: S9b — "${W109.line(wantA109[0]?.line, wantA109[0]?.message)}", "${W109.errors(1)}" on the pane, that line marked and no Valid banner`,
       !filesN109.includes(gone109) && wantA109.length === 1 && wantA109[0].message === RT109.ROUTE_WORDS.unknownTemplate(gone109) &&
