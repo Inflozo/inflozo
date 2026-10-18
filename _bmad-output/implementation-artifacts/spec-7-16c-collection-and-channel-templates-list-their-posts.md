@@ -753,3 +753,13 @@ name, never printed):**
   files"; `python3 tools/doc-audit.py --check` PASS, twice.
 - The review leaves the story in review: the deployed walk of the patches (part 2), Question 2, Deploy and the owner's re-test
   follow (R-80).
+
+**Review results — part 2, at the Review head `4745438d`** (the main session again):
+- CI on `4745438d`: run 39093824133 with `rls`, `check` (which runs `pnpm keyboard` whole) and `deploy` all success, and the
+  render matrix (39093824073) success. Vercel: `dpl_3zgW1BSDZBsg5kvrNCfvqN7NP63n` READY at `4745438d`.
+- **Steps 109–111 on production, the same cut from the worktree moved to `4745438d`: 0 FAIL, 119 PASS, first run.** 109j read
+  the channel template's confirm naming its design, with the doc there by a service read; 109n (c) planted on
+  `custom-landing.hbs` (the static route's template, which holds no doc), its delete took the doc with the row and its Undo put
+  all three back byte-equal; 110 and 111 held whole again, `insertTemplate`'s patched clear included (every new template in
+  109–111 went through it). One `stall` note (03:45:20Z, a reload of the routes page retried once) and no FAIL. Users 14 → 14,
+  projects 10 → 10.
