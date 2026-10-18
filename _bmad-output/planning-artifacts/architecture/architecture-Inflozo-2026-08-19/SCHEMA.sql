@@ -173,6 +173,10 @@ create table public.sites (
   disconnected_at timestamptz,                            -- FR-C6: record survives; 90-day orphan rule
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
+  -- Story 7.17 (FR-I4, EXPERIENCE.md F3): why the routes step could not upload, which B16 names — no token, a token
+  -- that stopped working (401), a staff user below Administrator (403). Null = nothing owed. Written only by the
+  -- server; `authenticated` gains no write. LAST, because `alter table ... add column` appends.
+  routes_fallback text check (routes_fallback in ('no_token', 'revoked', 'role')),
   unique (user_id, url)
 );
 create index on public.sites (user_id) where disconnected_at is null;

@@ -2,7 +2,8 @@
 title: 'Story 7.17 — Uploading `routes.yaml`, and the guided fallback'
 type: 'feature'
 created: '2026-10-18'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '2fa1efe2a64aa08f2e5f499e0bc2460dfdc0c3c7'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -248,7 +249,7 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] **Schema, pushed first and alone (R-99):**
+- [x] **Schema, pushed first and alone (R-99):**
   - `supabase/migrations/20261018120000_routes_fallback.sql`, `SCHEMA.sql`, `RLS-TEST.sql` and `supabase/tests/rls.sql`.
   - `sites.routes_fallback text`, nullable, `check (routes_fallback in ('no_token','revoked','role'))`, commented with
     FR-I4 and F3. `authenticated` keeps its table-wide select and gains no write.
@@ -660,7 +661,56 @@ with a new template. Back in the editor, you change Home's headline and press �
 
 **Ruled: option 1 (owner, 2026-10-18).** *"Agree with all recommended."* Recorded as **R-258**.
 
+### Question 6 — May this story's database change go on the live database now? (R-99)
+
+**In plain English.** Each Ghost site gets one new empty field that remembers why Inflozo could not upload its routing
+file (no token, a token that stopped working, or a token whose staff account is below Administrator), so the "Upload
+routes.yaml yourself" card can say the right thing. It passes every check on a copy of the database, and with it left
+out the check fails exactly where it should. Nothing on the live database had changed when this was asked.
+
+**An example.** Today a site row has no such field. After this, every existing site has it, empty, and nothing you see
+in the app changes until Story 7.18 starts filling it.
+
+1. **(RECOMMENDED) Go.** I apply it through the database connection in this session and read it back, before any code.
+2. **I'll paste it into Supabase's SQL editor myself.**
+3. **Stop the story here.**
+
+**Ruled: option 1 (owner, 2026-10-18).** *"1. Go"*, asked in the Dev session before any production call. Applied
+through `SUPABASE_DB_POOLER_URL` in this session and read back before any code (`## Verification`).
+
+### Question 7 — May this Dev run write to the Ghost test site T1? (R-82, R-238)
+
+**In plain English.** The new recorder proves the real upload on T1. Its whole run: it saves T1's own `routes.yaml`
+first; checks that an identical file is not uploaded; uploads a test file with a probe collection `/inflozo-probe-up/`
+and reads it back byte for byte; uploads Ghost's default back and reads it back; tries two uploads Ghost must refuse
+(the Admin key → 403, a made-up staff token → 401) and checks neither changed anything; then, whatever happened, puts
+T1's original back and reads it back byte for byte. No post, tag, theme, member or setting is touched.
+
+**An example.** For a minute or two `ghost6.inflozo.com/inflozo-probe-up/` exists; afterwards T1's routing is exactly
+what it was.
+
+1. **(RECOMMENDED) Go** — the whole run above, in the main session only, never a subagent.
+2. **Skip T1 in Dev**; run it at Review instead.
+3. **Stop the story here.**
+
+**Ruled: option 1 (owner, 2026-10-18).** *"1. Go"*, asked in the Dev session before any T1 write; a second run after a
+fix gets its own ask.
+
 ## Verification
+
+**Executed — Schema phase (2026-10-18), before any code:**
+- `bash supabase/tests/run-rls-gate.sh` -- exit 0: no SCHEMA DRIFT, every earlier block still passing, and Story 7.17's
+  five PASS lines — `sites.routes_fallback` a nullable text taking `no_token`, `revoked`, `role` and null; a cause F3
+  does not name refused (23514); the tenant reads its own cause and not another tenant's site; the tenant cannot write
+  it (42501); the refused write leaves the server's value.
+- Control: the same gate over a scratch copy of `supabase/` without `20261018120000_routes_fallback.sql` and HEAD's
+  `SCHEMA.sql` (`INFLOZO_ARCH_DIR`) -- exit 3 at the 7.17 block ("public.sites.routes_fallback is missing, not text, or
+  not nullable"), with 7.13's block passing first.
+- Supabase production, through `SUPABASE_DB_POOLER_URL` (read inside the script, never on argv), on the owner's go
+  (Question 6): before — no `routes_fallback` column and no constraint; applied in one transaction; after —
+  `routes_fallback text`, nullable, the table's last column, `sites_routes_fallback_check` =
+  `CHECK ((routes_fallback = ANY (ARRAY['no_token'::text, 'revoked'::text, 'role'::text])))`, column UPDATE held by
+  `postgres` and `service_role` only, SELECT by `authenticated`; every existing site's value null.
 
 **Commands (Dev):**
 - `bash supabase/tests/run-rls-gate.sh` -- green, with its withheld-migration control aborting at the 7.17 block (Schema).

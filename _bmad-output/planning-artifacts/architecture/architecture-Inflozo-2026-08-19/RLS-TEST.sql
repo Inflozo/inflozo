@@ -2454,3 +2454,82 @@ reset role;
 
 delete from auth.users where id in ('77777777-7130-0000-0000-000000000001',
                                     '77777777-7130-0000-0000-000000000002');
+
+-- ── STORY 7.17 — the site stores why its routes.yaml could not be uploaded (FR-I4, EXPERIENCE.md F3) ───────────────
+--
+-- BEHAVIOURAL. `sites.routes_fallback` is the cause B16 names. It admits exactly F3's three causes and null; the tenant
+-- reads it on its own row and never on another's; and the tenant cannot write it, because only the server's routes
+-- step and Verify upload may (the column-limited update grant does not carry it).
+
+reset role;
+
+delete from auth.users where id in ('77777777-7170-0000-0000-000000000001',
+                                    '77777777-7170-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-7170-0000-0000-000000000001'),
+                                  ('77777777-7170-0000-0000-000000000002');
+insert into public.sites(id,user_id,url) values
+  ('eeeeeeee-7170-0000-0000-000000000001','77777777-7170-0000-0000-000000000001','https://own-717.example'),
+  ('eeeeeeee-7170-0000-0000-000000000002','77777777-7170-0000-0000-000000000002','https://theirs-717.example');
+
+-- (1) the column, and exactly F3's three causes and null.
+do $$
+declare cause text;
+begin
+  if not exists (select 1 from information_schema.columns
+                  where table_schema = 'public' and table_name = 'sites' and column_name = 'routes_fallback'
+                    and data_type = 'text' and is_nullable = 'YES') then
+    raise exception 'FAIL (7.17): public.sites.routes_fallback is missing, not text, or not nullable';
+  end if;
+  foreach cause in array array['no_token', 'revoked', 'role'] loop
+    update public.sites set routes_fallback = cause where id = 'eeeeeeee-7170-0000-0000-000000000001';
+  end loop;
+  update public.sites set routes_fallback = null where id = 'eeeeeeee-7170-0000-0000-000000000001';
+  raise notice 'PASS (7.17): sites.routes_fallback is a nullable text taking no_token, revoked, role and null';
+  begin
+    update public.sites set routes_fallback = 'unverified' where id = 'eeeeeeee-7170-0000-0000-000000000001';
+    raise exception 'FAIL (7.17): routes_fallback took a cause F3 does not name';
+  exception when check_violation then
+    raise notice 'PASS (7.17): a cause F3 does not name is refused (%)', sqlstate;
+  end;
+end $$;
+
+update public.sites set routes_fallback = 'role' where id = 'eeeeeeee-7170-0000-0000-000000000001';
+update public.sites set routes_fallback = 'revoked' where id = 'eeeeeeee-7170-0000-0000-000000000002';
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7170-0000-0000-000000000001';
+
+-- (2) the tenant reads its own cause and never another's; (3) it cannot write the cause.
+do $$
+declare mine text; theirs int;
+begin
+  select routes_fallback into mine from public.sites where id = 'eeeeeeee-7170-0000-0000-000000000001';
+  if mine is distinct from 'role' then
+    raise exception 'FAIL (7.17): the tenant read % for its own routes_fallback, not role', coalesce(mine, 'null');
+  end if;
+  select count(*) into theirs from public.sites where id = 'eeeeeeee-7170-0000-0000-000000000002';
+  if theirs <> 0 then
+    raise exception 'FAIL (7.17): the tenant can see another tenant''s site';
+  end if;
+  raise notice 'PASS (7.17): the tenant reads its own routes_fallback and not another tenant''s';
+  begin
+    update public.sites set routes_fallback = null where id = 'eeeeeeee-7170-0000-0000-000000000001';
+    raise exception 'FAIL (7.17): the tenant wrote routes_fallback directly';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.17): the tenant cannot write routes_fallback (%)', sqlstate;
+  end;
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+do $$
+begin
+  if (select routes_fallback from public.sites where id = 'eeeeeeee-7170-0000-0000-000000000001') is distinct from 'role' then
+    raise exception 'FAIL (7.17): the refused tenant write changed routes_fallback';
+  end if;
+  raise notice 'PASS (7.17): the refused write left routes_fallback as the server wrote it';
+end $$;
+
+delete from auth.users where id in ('77777777-7170-0000-0000-000000000001',
+                                    '77777777-7170-0000-0000-000000000002');
