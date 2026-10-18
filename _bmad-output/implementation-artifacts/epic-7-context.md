@@ -583,13 +583,13 @@ A user ships. The project compiles — purely, from what it is handed — into a
       gained the listing reading (the window) beside ownership (the drop); the emission is Story 7.18's to decide (high).
     - **7.16c's Fix (2026-10-18, the owner's Finding 1): a server-side doc write must move `projects.revision`.** AD-15's hydrate keeps a device's own docs while its base revision equals the project's, so a direct `project_templates` write is invisible to every editor that opened the project before. The routes page writes docs through `sync_project_doc` (`syncDocs`, `routes/actions.ts`); any later server writer of a doc does the same, and a merge path stays out (AD-15).
     - **7.16c's Review (2026-10-18):** a feed previewed on a Routes Manager canvas (the Section Picker's card, the ring's tile) draws as a listed template's main feed (`section-preview.tsx`), where R-7 had left it on its skeleton; a feed stands as one only where `feedsOn` (`main-feed.ts`: a file Ghost paginates, or a Routes Manager template); `validate.ts`' brace holds pagination only for a feed; `compileTheme` refuses a `lists` file with no context or a context the guard names itself (`paged`, `index`, `tag`, `author` — the routes page's half is DW-369, Story 7.18); a leftover doc's revision moves before it is cleared. Deferred: DW-365 and DW-368 (7.34: the connected-site lists and their shortfall note), DW-366 and DW-367 (7.17: an unreadable routing, a failed starting grid). Question 2, ruled option 1 (R-253): an editor open in a second tab may ask to reload after a template change, for now (the Fix's second-writer cost, now an AD-15 rule); DW-370 (7.17) spares it later.
-  - **Story 7.17's Create (2026-10-18):** ready for Dev, with five questions open (R-83). All five need the owner's ruling before Dev, and the spec is written to each recommended option.
-    - **The questions:**
-      - **Q1:** the step and B16 are built here, and 7.18's Ship it calls them; the card's hand test moves to 7.18.
-      - **Q2:** Ghost's default goes back only over Inflozo's own file (`routes_last_offered`).
-      - **Q3:** the all-tags and all-authors pages move to Story 9.12, where FR-F8 and FR-I5 disagree.
-      - **Q4:** DW-366 keeps the stored main feed.
-      - **Q5:** DW-370 adds a same-browser `MOVED_CHANNEL`, plus a rule in AD-15.
+  - **Story 7.17's Create (2026-10-18):** ready for Dev. Its five questions were all ruled option 1 by the owner the same day (*"Agree with all recommended."*), **R-254 to R-258**; nothing waits on him before Dev but the migration's apply and the T1 run's in-session go.
+    - **The rulings:**
+      - **Q1, R-254:** the step and B16 are built here, and 7.18's Ship it calls them; the card's hand test moves to 7.18.
+      - **Q2, R-255:** Ghost's default goes back only over Inflozo's own file (`routes_last_offered`).
+      - **Q3, R-256:** the all-tags and all-authors pages move to Story 9.12, where FR-F8 and FR-I5 disagree.
+      - **Q4, R-257:** DW-366 keeps the stored main feed.
+      - **Q5, R-258:** DW-370 adds a same-browser `MOVED_CHANNEL`, plus a rule in AD-15.
     - **Planned:**
       - `lib/routes-upload.ts` holds the pure rule: `routesToOffer` and `routesAnswer` (401 → revoked, 403 → role).
       - `server/routes-upload.ts` holds the shell: `offerRoutes`, which skips an unchanged file and reads it back byte for byte with the staff token, and `verifyRoutes`, which uses the Admin key.

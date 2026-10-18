@@ -9992,6 +9992,8 @@ owner: Story 7.17 (uploading `routes.yaml`), which reads the stored routing next
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (`routes`, `designateAll`) · `editor.tsx` (`listed`,
   `designated`)
 reason: an error path, and the fix changes a stated rule.
+ruling: R-257 (owner, 2026-10-18, Story 7.17's Question 4, option 1) — while the stored routing cannot be read, each template
+  keeps the main feed its stored doc flags (`flaggedListing`), sized by Posts per page; built at Story 7.17's Dev.
 
 ### DW-367: a new collection's template whose post grid failed to save cannot get it by saving again
 
@@ -10007,6 +10009,9 @@ owner: Story 7.17, the next story on the routes page: either give the starting g
   no doc and was made by that sheet's failed save, or say in the refusal what was left.
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/routes/actions.ts` (`saveRoutes`, `writeListedStart`)
 reason: an error path after a failed write, and the fix needs a rule for when an existing template still counts as new.
+planned: Story 7.17's Create (2026-10-18, a routine call) — the refusal names what was left (`listedStartFailed`), the sheet
+  keeps the template it made chosen, and its next Save writes the starting grid to that template only if it still has no doc
+  and no stored route names it; built at Story 7.17's Dev.
 
 ### DW-368: the editor's connected-site lists under routing run in no check
 
@@ -10058,4 +10063,7 @@ owner: Story 7.17, the next story on the routes page: its Create puts the approa
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/routes/actions.ts` (`syncDocs`) · `projects/[id]/sync/route.ts` (the
   409) · `editor.tsx` (the conflict dialog, the hydrate) · AD-15
 reason: it happens only with the editor open in a second tab or window, and sparing it needs a merge rule AD-15 does not have.
+ruling: R-258 (owner, 2026-10-18, Story 7.17's Question 5, option 1) — Routes & Templates posts the moves it made on
+  `MOVED_CHANNEL(projectId)`, and the editor holding the lock takes in a move from its own base, journal kept; an editor on
+  another device keeps R-253's 409. AD-15 gains the rule at Story 7.17's Dev, where this is built.
 

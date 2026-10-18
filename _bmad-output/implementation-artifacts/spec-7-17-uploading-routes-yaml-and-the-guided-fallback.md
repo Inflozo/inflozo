@@ -60,8 +60,8 @@ changed somewhere else".
 - **FR-I5's lint,** in `modules.ts` and `checkGhostMarkup`.
 - **The README's routes step.**
 - **The three deferred items:** DW-366 is Question 4, DW-370 is Question 5, and DW-367 is a routine call.
-- **Questions 1 to 5 are open.** The spec is written to each recommended option, and all five live in one table (Design
-  Notes, "Ruled values"). **All five need the owner's ruling before Dev.**
+- **Questions 1 to 5 were all ruled option 1 by the owner (2026-10-18), R-254 to R-258.** The ruled values live in one
+  table (Design Notes, "Ruled values"). No question is left open.
 
 ## Boundaries & Constraints
 
@@ -104,8 +104,8 @@ changed somewhere else".
   - The Ghost 5 half is DW-326's.
 
 **Ask First:**
-- **Questions 1–5** (Design Notes, "Ruled values"). Dev builds the ruled option of each, changing only that option's row in
-  the table and what the row names.
+- **Questions 1–5 were ruled option 1 (owner, 2026-10-18), R-254 to R-258.** The spec is written to them, and the ruled
+  values live in one place: Design Notes' "Ruled values".
 - The production apply of the migration (R-99) and every T1 write (§85). Each needs a go in that session.
 - Any string beyond Design Notes' "Words", and any place for B16 other than its two hosts.
 
@@ -368,11 +368,10 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
     - DW-51: the transport is done here, and 7.18 proves the theme upload;
     - DW-366, DW-367 and DW-370 close;
     - a new entry for anything left.
-  - **`epics.md`:**
-    - 7.18's card gets Question 1's moved items word for word, plus `routes` beside `routed` and `lists`;
-    - 9.12's card gets Question 3's;
-    - the Epic 7 and Epic 9 preambles list them;
-    - 7.35's card gets a dated note that the automatic upload is primary.
+  - **`epics.md`:** 7.35's card gets a dated note that the automatic upload is primary. (7.18's card, with Question 1's moved
+    items and `routes` beside `routed` and `lists`, 9.12's card with Question 3's, and the Epic 7 and Epic 9 preambles' lists
+    were written when the owner ruled, R-254 and R-256.)
+  - **`reconcile-designs-decisions.md`:** tick R-254 to R-258's Dev targets.
   - **`epic-7-context.md`.**
   - **Comments:** `sites/actions.ts:1278`, `site-health.ts:80-83` and `routes/actions.ts:21-22`.
   - **Finish with greps:** `git grep -n "Labs card"` and `git grep -n "non-Owner"`. Every hit that remains carries the dated
@@ -408,18 +407,19 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
 - **R-253** (7.16c's Question 2) is what Question 5 builds on.
 - **F-063** (`reconcile-designs-decisions.md:1329`): an Administrator's token suffices. **F-077:** the backup gate's
   downloads need the staff token.
+- **R-254 to R-258** are this story's own five rulings (Questions 1 to 5).
 
 ### Ruled values (the one table a ruling changes)
 
-All five questions are open. Each row is the recommended option, and Dev builds what its ruling says.
+Ruled option 1, all five (owner, 2026-10-18): *"Agree with all recommended."*
 
-| Question | Planned (recommended) |
+| Question | Ruled, and built |
 |---|---|
-| 1 — where the card is tested, since Ship it is 7.18's | **Built here; 7.18 calls it.** This story builds the step and B16 on its two hosts. Story 7.18's Ship it runs `offerRoutes` after activation, inside AD-19's lock, and opens B16 at its ending on a `fallback`. The card's hand test moves to 7.18 word for word, and this story's hand test is DW-370's. |
-| 2 — the project's routing is Ghost's default, and the site's file differs | **Ghost's default goes back only over Inflozo's own file**, meaning a live file equal to `routes_last_offered`. A file someone else wrote stays (`kept`). |
-| 3 — the all-tags and all-authors pages | **Moved word for word to Story 9.12**, whose A3 #13 "All 34 tags" is the library's first link to a tag index. Its Create settles FR-F8 against FR-I5. Nothing is built here. |
-| 4 — DW-366, an unreadable routing | **Each template keeps its stored main feed** (`flaggedListing`), sized by Posts per page until the routing reads again. |
-| 5 — DW-370's approach | **The routes page tells an editor open in the same browser what it changed** (`MOVED_CHANNEL`), and the editor takes it in from its own base, keeping its journal. Other devices keep R-253's 409. AD-15 gains the rule. |
+| 1 — where the card is tested, since Ship it is 7.18's (**R-254**) | **Built here; 7.18 calls it.** This story builds the step and B16 on its two hosts. Story 7.18's Ship it runs `offerRoutes` after activation, inside AD-19's lock, and opens B16 at its ending on a `fallback`. The card's hand test moves to 7.18 word for word, and this story's hand test is DW-370's. |
+| 2 — the project's routing is Ghost's default, and the site's file differs (**R-255**) | **Ghost's default goes back only over Inflozo's own file**, meaning a live file equal to `routes_last_offered`. A file someone else wrote stays (`kept`). |
+| 3 — the all-tags and all-authors pages (**R-256**) | **Moved word for word to Story 9.12**, whose A3 #13 "All 34 tags" is the library's first link to a tag index. Its Create settles FR-F8 against FR-I5. Nothing is built here. |
+| 4 — DW-366, an unreadable routing (**R-257**) | **Each template keeps its stored main feed** (`flaggedListing`), sized by Posts per page until the routing reads again. |
+| 5 — DW-370's approach (**R-258**) | **The routes page tells an editor open in the same browser what it changed** (`MOVED_CHANNEL`), and the editor takes it in from its own base, keeping its journal. Other devices keep R-253's 409. AD-15 gains the rule. |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -586,7 +586,7 @@ Story 7.18 on, your site goes live and the card opens: download, upload in Ghost
 2. **Build Story 7.18 first, then this story whole.** The next run plans 7.18. This spec waits, and is re-read against the
    Ship it that 7.18 builds.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18).** *"Agree with all recommended."* Recorded as **R-254**.
 
 ### Question 2 — Your project uses Ghost's default routing, but your site already has a different routing file. What happens when you ship?
 
@@ -605,7 +605,7 @@ You never open Routes & Templates, and you ship.
 3. **Never upload when your routing is Ghost's default.** Whatever is on the site stays, including a /tutorials/
    collection you deleted in Inflozo.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18).** *"Agree with all recommended."* Recorded as **R-255**.
 
 ### Question 3 — "All tags" and "All authors" pages: who makes them?
 
@@ -622,7 +622,7 @@ where "All 34 tags" goes, and the link stays hidden until you do.
 2. **Build them now,** and test them on a made-up design.
 3. **Drop them: FR-F8 wins everywhere.** You type each link, and Inflozo never adds a page.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18).** *"Agree with all recommended."* Recorded as **R-256**.
 
 ### Question 4 — If Inflozo can't read your routes for a moment, should a collection's post grid stay its main feed?
 
@@ -637,7 +637,7 @@ the grid is saved as an ordinary list. When the routes read again, the first gri
    your theme's Posts per page until the routes read again, and nothing is saved differently.
 2. **Leave it as it is today.**
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18).** *"Agree with all recommended."* Recorded as **R-257**.
 
 ### Question 5 — An editor open in a second tab: how should it take in a template made on Routes & Templates?
 
@@ -658,7 +658,7 @@ with a new template. Back in the editor, you change Home's headline and press �
    the whole project as changed.** This also works on other computers, but the editor doesn't see the new template until
    you reopen it. It is a bigger change to AD-15 and to how the editor loads. It is option 2 of 7.16c's Question 2.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18).** *"Agree with all recommended."* Recorded as **R-258**.
 
 ## Verification
 

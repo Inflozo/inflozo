@@ -5527,6 +5527,77 @@ own it, to let an open editor take in these changes without a reload."*
   Story 7.16c.
 - Targets: ✅ this entry · ✅ AD-15 (`ARCHITECTURE-SPINE.md`) · ✅ Story 7.16c's spec · ✅ DW-370 and `epics.md` Story 7.17's
   card · ✅ `epic-7-context.md` · ✅ `syncDocs`' comment.
+- *(Story 7.17's Create, 2026-10-18 — **R-258**: an editor open in the SAME browser now takes these changes in without a reload;
+  an editor on another device still meets the 409 this entry accepts.)*
+
+**R-254 — Story 7.17 builds the `routes.yaml` step and the B16 card; Story 7.18's Ship it calls them, and the card's hand test
+moves to 7.18.** Story 7.17's Create, Question 1, ruled **option 1** (owner, 2026-10-18), in his words for all five of that
+Create's questions: *"Agree with all recommended."*
+
+- **Why it was a question.** Story 7.17 uploads "when it deploys", and B16 appears after a deploy that could not upload, but
+  Ship it is Story 7.18's, so nothing on the live site could make the card appear for the owner's hand test (R-80).
+- **The rule.** Story 7.17 builds `offerRoutes` (upload with the staff token, an unchanged file skipped, a byte-for-byte
+  read-back), `verifyRoutes`, the chokepoint's `FormData` transport and B16 on Routes & Templates and the Sites card, and proves
+  the upload on T1 through the product's own request builder. Story 7.18's Ship it runs `offerRoutes` after activation, inside
+  AD-19's lock, opens B16 at its ending on a `fallback`, says a `failed` outcome as a sentence and its fix (AD-24), and hands the
+  compile `routes`. The card's hand test is 7.18's, word for word (Epic 7's preamble); 7.17's hand test is R-258's.
+- **Declined.** Building Story 7.18 first and 7.17 after it, whole.
+- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's and 7.18's cards and Epic 7's preamble ·
+  ✅ `epic-7-context.md` · ⬜ DW-51 (the transport, at 7.17's Dev).
+
+**R-255 — when a project's routing is Ghost's default and the site's live `routes.yaml` is not, Inflozo puts Ghost's default
+file back only over a file Inflozo put there itself.** Story 7.17's Create, Question 2, ruled **option 1** (owner,
+2026-10-18): *"Agree with all recommended."*
+
+- **Why it was a question.** Story 7.17's card left it open (a reading from Story 7.16a's Dev): a project at Ghost's default
+  stores no file, and the site may carry an earlier Inflozo deploy's file or one its owner wrote in Ghost before Inflozo.
+- **The rule.** "Inflozo's own" is a live file byte-equal to `sites.routes_last_offered`. Over it, Ghost's default file (130
+  bytes, read in both majors' source) is uploaded; a file anyone else wrote is kept, and nothing is written. A project with
+  routing still uploads its own file over whatever is there.
+- **Declined.** Always putting Ghost's default back; never uploading while the project's routing is the default.
+- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ `epic-7-context.md` · ⬜ `prd.md`
+  FR-I4 and FR-I5 (dated, at 7.17's Dev).
+
+**R-256 — the all-tags and all-authors pages move, word for word, to Story 9.12, whose Create settles FR-F8 against FR-I5.**
+Story 7.17's Create, Question 3, ruled **option 1** (owner, 2026-10-18): *"Agree with all recommended."*
+
+- **Why it was a question.** FR-I5 (R-24, R-25) has Inflozo emit the two routes when a placed design links to one; FR-F8
+  (owner, 2026-09-03) makes a link to a page Ghost does not publish an authored one that hides until set. The two disagree,
+  and no design in the library links to either page; A3 #13 Tags ("All 34 tags", Story 9.12) is the first.
+- **The rule.** Story 7.17 builds nothing for the two pages. Story 9.12 carries FR-I5's sentence word for word, and its Create
+  puts FR-F8 against FR-I5 to the owner (R-83) with A3 #13 in hand; the later designs that link to either page (A20, A21, A26,
+  A29) take that one decision ("the product should decide the route once", A20's Finding 1).
+- **Declined.** Building the two pages in Story 7.17 on a made-up design; dropping them for FR-F8 everywhere.
+- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's and 9.12's cards and Epic 7's and Epic 9's
+  preambles · ✅ `epic-7-context.md` · ⬜ `prd.md` FR-I5 (dated, at 7.17's Dev).
+
+**R-257 — while a project's stored routing cannot be read, each Routes Manager template keeps the main feed its stored doc
+flags.** Story 7.17's Create, Question 4, ruled **option 1** (owner, 2026-10-18): *"Agree with all recommended."*
+
+- **Why it was a question.** DW-366 (Story 7.16c's Review): with the routing unreadable, `listsOf(null)` lists nothing, so
+  `designate` stripped every listed template's flag on the way in and the next edit stored it, reversing 7.16b's routine call
+  12 ("an unreadable stored routing lists nothing").
+- **The rule.** With the routing unreadable, the files whose stored doc flags a main feed count as listed (`flaggedListing`);
+  the feed keeps its MAIN FEED and is sized by Posts per page until the routing reads again. A readable routing still strips a
+  flag from a file no collection or channel names.
+- **Declined.** Leaving it as built.
+- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ DW-366 · ✅ `epic-7-context.md`.
+
+**R-258 — Routes & Templates tells an editor open in the same browser what it changed, and the editor takes it in without a
+reload.** Story 7.17's Create, Question 5, ruled **option 1** (owner, 2026-10-18): *"Agree with all recommended."*
+
+- **Why it was a question.** DW-370 (R-253): since Story 7.16c's Fix the routes page moves `projects.revision` when it makes,
+  deletes or restores a template's doc, and an editor open in another tab then meets the 409 at its next save. R-253 accepted
+  it for now and gave Story 7.17 the approach, which changes AD-15.
+- **The rule.** Each routes-page result carries the moves it made (`{ from, to, docs, gone }`), posted on
+  `MOVED_CHANNEL(projectId)`. The editor that holds the lock takes a move made from its own base in: the docs as the server
+  judged them, a gone template dropped through R-250's move to Home, the base advanced, the journal (undo) kept, the Template
+  menu refreshed, a conflict dialog that came first closed and the flush retried. A move from any other base is ignored and the
+  409 follows (R-253). AD-15 gains this as its rule; an editor on another device is unchanged.
+- **Declined.** The editor saving then reloading by itself (no AD-15 change, undo lost); an open editor taking a never-held
+  canvas from the cloud while the routes page stops moving the revision (7.16c's Question 2, option 2).
+- Targets: ✅ this entry · ✅ R-253's entry (dated note) · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ DW-370 ·
+  ✅ `epic-7-context.md` · ⬜ AD-15 (`ARCHITECTURE-SPINE.md`, at 7.17's Dev).
 
 ## B · Approved decisions superseded by this session
 

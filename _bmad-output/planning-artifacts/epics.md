@@ -3038,6 +3038,16 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    guard names or the story records why it need not (DW-344's second half) — **Story 7.16c**;
 > 3. the two readings Story 7.16's Create handed on: every custom collection's and channel's own `paged` context for the
 >    `noindex` guard, and the canvas's Home feed against the live `/`'s unowned posts (FR-H3) — **Story 7.16c**.
+>
+> **Moved from Story 7.17 by its Questions 1 and 3 (owner, 2026-10-18, R-254, R-256), word for word, so none is missed
+> (R-195).** Story 7.17 builds the upload step and the B16 card; Ship it is 7.18's.
+>
+> 1. "**Given** a project with routing and a Staff Access Token **When** it deploys **Then** `routes.yaml` is uploaded
+>    **automatically**", "the fallback card matches B16 as corrected" as the card's hand test, and **Owner test:** yes for it —
+>    **Story 7.18**, whose Ship it runs Story 7.17's `offerRoutes` after activation and opens the card at its ending;
+> 2. "**two routes are emitted on demand and only when a design that links to them is actually placed** — all-tags and
+>    all-authors" — **Story 9.12**, whose A3 #13 Tags is the library's first link to a tag index, and whose Create settles
+>    FR-F8 against FR-I5.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -4036,6 +4046,17 @@ failed to save (`writeListedStart`) gets it on the sheet's next save, or the ref
 in a template Routes & Templates made, deleted or restored without asking to reload — its approach put to the owner at this
 story's Create (R-83).
 
+*(Story 7.17's Create, its five questions ruled option 1 by the owner, 2026-10-18 — "Agree with all recommended.")* **R-254:**
+this story builds the upload step (`offerRoutes`: the staff token, an unchanged file skipped, a byte-for-byte read-back) and the
+B16 card on Routes & Templates and the Sites card; Story 7.18's Ship it calls it after activation, and the card's hand test
+moves to 7.18 word for word (Epic 7's preamble). **R-255:** a project at Ghost's default routing puts Ghost's default file back
+only over a file Inflozo put there (`routes_last_offered`); a file anyone else wrote stays. **R-256:** the two routes emitted
+on demand move word for word to **Story 9.12**, whose Create settles FR-F8 against FR-I5. **R-257:** while the stored routing
+cannot be read, each template keeps the main feed its doc flags (DW-366). **R-258:** Routes & Templates tells an editor open in
+the same browser what it changed, and the editor takes it in (DW-370; AD-15 gains the rule). This story's own hand test is
+R-258's. *(Read at this Create in both majors' source: "a non-Owner connection" is a token whose role is below
+Administrator.)*
+
 **FRs:** FR-I4, FR-I5. · **Frame:** `B Missing Surfaces.dc.html` B16. · **Owner test:** yes. · **Verification:**
 a real upload and byte-comparison read-back on T1 and T3 (R-82).
 
@@ -4086,7 +4107,9 @@ ask or designed paywall — never for a synthesised instance, and nothing for a 
 **And** a free member ask compiled for a site whose Ghost is older than 5.62 — where `@site.allow_self_signup` does not
 exist, so R-4's guard hides every free ask — is named in Pre-flight, and this story's Create asks the owner (R-83)
 whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
-**And** the upload goes through the Admin chokepoint, which sends JSON only today: a `FormData` body passes untouched with no `Content-Type` set by Inflozo, proved by the first real upload to T1 and T3; Story 7.17's `routes_upload` uses the same shape (DW-51).
+**And** the upload goes through the Admin chokepoint, which sends JSON only today: a `FormData` body passes untouched with no `Content-Type` set by Inflozo, proved by the first real upload to T1 and T3; Story 7.17's `routes_upload` uses the same shape (DW-51). *(Story 7.17's Create, R-254: Story 7.17 lands that transport
+— `adminRequest`, a `FormData` passed untouched — for `routes_upload`; this story's theme upload uses it, and its proof on T1
+stays this story's.)*
 **And** once the first allowed Ghost write exists, the chokepoint's refusal is driven live: the harness asks the deploy path for a write outside `ADMIN_WRITES` and reads a `denied` audit row with no request reaching T1, beside the real upload's `admin_write` row (DW-54).
 **And** pressing Ship it in a session reading along first opens D8g's take-over (`lock-takeover.tsx` with D8g's strings), and the wizard never starts without the lock (DW-238).
 **And** a save the server refuses for good — the project deleted in another window, or this browser now signed in to another account (404), or a document it will not take (400, 422) — stops saying the work will be sent "when the connection returns", in the editor's save message and in Pre-flight's own flush; this story's Create asks the owner (R-83) for the sentence (DW-304, from Story 5.24e's Create, 2026-10-02).
@@ -4139,6 +4162,20 @@ index filter, a post with no tags (or an internal first tag) is listed on no pag
 And *(DW-369 — from Story 7.16c's Review, 2026-10-18)* before it hands `lists` to the compile, `validateRoutes` refuses at the
 naming step a collection or channel path whose context FR-H2's guard names itself (`/paged/`, `/index/`, `/tag/`,
 `/author/`), which `compileTheme` now refuses.
+
+*(Moved word for word from Story 7.17 by its Question 1 — owner, 2026-10-18, **R-254**.)* **Given** a project with routing and
+a Staff Access Token **When** it deploys **Then** `routes.yaml` is uploaded **automatically** — Ship it runs Story 7.17's
+`offerRoutes` after activation, inside AD-19's lock, and offers no routing when activation failed (the live theme lacks the
+templates the file names)
+**And** the fallback card matches B16 as corrected — Story 7.17's card, opened at the deploy's ending when the outcome is a
+`fallback` (no token, a revoked token, or a role below Administrator) — and **Owner test:** yes for it: the owner ships a
+project with routing to a site with no Staff Access Token, sees the card at the ending, downloads the file, uploads it in
+Ghost and presses Verify upload, and the card resolves to its one confirming line and is gone from Routes & Templates and
+Sites
+**And** a `failed` outcome (`ghost_refused`, `ghost_unavailable`, `ghost_unreachable`, `routes_unverified`,
+`routes_invalid`) is a sentence and its fix in AD-24's envelope, never a pass-through of Ghost's text
+**And** the compile is handed `routes` (the bytes `offerRoutes` offers, or null) beside `routed` and `lists`, so the README
+carries Story 7.17's routes step.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
@@ -4900,6 +4937,10 @@ button, link column, social row, inline newsletter form.
 > machine, but no design on a real project takes a picture the customer chooses until A1's authored logo (DW-150), so its
 > hand test cannot run on the live site before it. **Story 9.1** carries that hand test, word for word, as part of its own.
 >
+> **Moved in from Story 7.17 by its Question 3 (owner, 2026-10-18, R-256), word for word, so none is missed (R-195).** FR-I5's
+> two routes emitted on demand — all-tags and all-authors — go to **Story 9.12**, the first story whose design (A3 #13 Tags,
+> "All 34 tags") links to a tag index; its Create settles FR-F8 against FR-I5 with the owner before it builds either.
+>
 > **Each category's Layers picture — DW-281 (Story 5.24e's Dev, 2026-10-02).** A category's first story adds its Layers picture,
 > extrapolated from S4 and D8's five (R-74); A1, A3, A4, A17 and A22 have theirs (Story 5.24e), and A2's nearest is
 > B7's announcement glyph. Until a category's first story lands, its rows and rail tiles draw Hero's.
@@ -5268,6 +5309,11 @@ result changes as designed, and approves
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
+**And** *(moved word for word from Story 7.17 by its Question 3 — owner, 2026-10-18, **R-256**)* **two routes are emitted on
+demand and only when a design that links to them is actually placed** — all-tags and all-authors, because Ghost serves neither
+natively — so a site is never given a page it does not use; #13 Tags' "All 34 tags" is the library's first link to a tag
+index, and this story's Create puts FR-F8 (a link to a page Ghost does not publish is authored, and hides until set) against
+FR-I5 to the owner (R-83) before it builds either — the one decision A20, A21, A26 and A29 then follow
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
