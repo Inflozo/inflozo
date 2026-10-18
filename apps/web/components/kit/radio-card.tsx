@@ -86,6 +86,7 @@ export function RadioCard({
   title,
   consequence,
   onChange,
+  greyed,
   children,
 }: {
   name: string
@@ -94,19 +95,38 @@ export function RadioCard({
   title: string
   consequence: string
   onChange: (value: string) => void
+  /** STORY 7.18a — P0-0 on one card (UX-DR3, R-264's Deploy only): the card stays in the group and in the Tab order,
+   *  `aria-disabled` and never `disabled`, in P0-0's greyed tones, and the REASON takes its consequence's line — its caption
+   *  slot — so the sentence is what a screen reader hears with it. Choosing it does nothing. */
+  greyed?: Greyed
   children?: ReactNode
 }) {
+  const id = `${name}-${value}`
+  const tone = greyed ? 'border-grey-border bg-grey-field cursor-not-allowed' : checked ? 'border-coral bg-coral-tint' : 'border-line hover:border-line-strong'
   return (
-    <div className={`flex flex-col gap-2 rounded-thumb border p-[12px_13px] has-[input:focus-visible]:shadow-focus ${checked ? 'border-coral bg-coral-tint' : 'border-line hover:border-line-strong'}`}>
+    <div className={`flex flex-col gap-2 rounded-thumb border p-[12px_13px] has-[input:focus-visible]:shadow-focus ${tone}`}>
       {/* a `<label for>` as well as the wrapping one (A7 item 9's letter) */}
-      <label htmlFor={`${name}-${value}`} className="flex min-w-0 cursor-pointer gap-[11px]">
-        <input id={`${name}-${value}`} type="radio" name={name} value={value} checked={checked} onChange={() => onChange(value)} className="sr-only" />
+      <label htmlFor={id} className={`flex min-w-0 gap-[11px] ${greyed ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+        <input
+          id={id}
+          type="radio"
+          name={name}
+          value={value}
+          checked={checked}
+          onChange={() => (greyed ? undefined : onChange(value))}
+          className="sr-only"
+          {...(greyed ? { 'aria-disabled': true, 'aria-describedby': `${id}-reason` } : {})}
+        />
         <span aria-hidden className={`mt-px inline-flex size-4 shrink-0 items-center justify-center rounded-full border-[1.5px] ${checked ? 'border-coral' : 'border-line-strong'}`}>
           {checked ? <span className="size-2 rounded-full bg-coral" /> : null}
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
-          <span className="text-ui-dense font-semibold text-ink">{title}</span>
-          <span className="text-control-label leading-[1.5] text-ink-soft">{consequence}</span>
+          <span className={`text-ui-dense font-semibold ${greyed ? 'text-ink-faint' : 'text-ink'}`}>{title}</span>
+          {greyed ? (
+            <span id={`${id}-reason`} className="text-[11.5px] leading-[1.5] text-ink-soft">{greyed.reason}</span>
+          ) : (
+            <span className="text-control-label leading-[1.5] text-ink-soft">{consequence}</span>
+          )}
         </span>
       </label>
       {/* under the two lines, past the dot's 16 and its 11 gap — S9e's select inside the chosen card */}

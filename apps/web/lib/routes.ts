@@ -1,11 +1,13 @@
 import { CUSTOM_TARGET_RE } from '@inflozo/library'
 import { POSTS_PER_PAGE } from '@inflozo/section-runtime/custom-settings'
 import { type Cond, DATE_OPS, type DateOp, type DateUnit, type Filter, ghostLabel, ROUTE_WORDS, type SlugField, type Visibility } from '@inflozo/section-runtime/routes'
+import { routesPath } from './editor.ts'
 
 /* STORY 7.16a — THE ROUTES MANAGER'S WORDS AND ITS PAGE'S PURE HALF (R-170: one list). Every sentence the page says is
    `ROUTES_WORDS`, and the deployed walk (`tools/probe/run-verify-editor.cjs`, step 109) reads it from here. S9a–S9e's
    strings are verbatim except the spec's routine calls: route templates are `custom-{name}` (2); S9e's helper says "like a
-   landing page", because a membership page has no route (8); S9b's Ship-button line waits for Story 7.18a (11). The parts
+   landing page", because a membership page has no route (8); S9b's Ship-button line waited for Story 7.18a (11), which
+   draws it. The parts
    no frame draws are built beside the drawn ones (R-247), and their words are the "Extrapolated" list.
 
    The rules themselves — the grammar, the emitter, the validator, the naming step and every refusal's sentence — are the
@@ -60,6 +62,14 @@ export const ROUTES_WORDS = {
   // S9b
   line: (n: number, reason: string) => `Line ${n} — ${reason}`,
   errors: (n: number) => `${n} ${n === 1 ? 'error' : 'errors'}`,
+  /** Story 7.18a — S9b's own line under the file (`S9 Routes.dc.html:168`), now that the Ship button explains why */
+  blocked: 'Deploys are blocked until routing is valid — the Ship button explains why.',
+  // Story 7.18a — R-261's way out of an unreadable routing (undrawn, from S9's sheets; the spec's "The routing reset")
+  reset: "Start again from Ghost's default routing",
+  resetTitle: "Start again from Ghost's default routing?",
+  resetBody: "Your saved routing can't be read, so this page can't show it. Starting again replaces it with Ghost's default. Your templates are kept.",
+  startAgain: 'Start again',
+  startingAgain: 'Starting again…',
   // S9c
   newCollectionTitle: 'New collection.',
   newCollectionLead: 'A section of your site with its own URL and layout.',
@@ -225,3 +235,8 @@ export function templateWriteRefusal(error: { code?: string; message?: string } 
 
 /** The page size's stepper bounds — Theme settings' `POSTS_PER_PAGE`. */
 export const PAGE_SIZE = POSTS_PER_PAGE
+
+/** STORY 7.18a (R-261) — Routes & Templates with its "Start again" sheet up on arrival, while the stored routing cannot be
+ *  read: where the Ship button's "Start again on Routes & Templates" goes (`?new=template`'s pattern). */
+export const RESET_ROUTING_QUERY = { reset: 'routing' } as const
+export const resetRoutingPath = (projectId: string) => `${routesPath(projectId)}?reset=${RESET_ROUTING_QUERY.reset}`

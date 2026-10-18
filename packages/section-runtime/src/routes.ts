@@ -8,7 +8,8 @@
 // (`routesYaml`), the validator (`validateRoutes`, every problem on its YAML line), the naming rule (`templateName`, §7.4),
 // the files a route names (`routedOf`) and the addresses Ghost keeps for itself (`RESERVED_SEGMENTS`). Since Story 7.16c, what
 // each template LISTS (`listsOf`, the one place it is worked out), a route's context name (`contextOf`), the evaluator the
-// canvas cuts a list with (`holdsFor`) and the lists the canvas draws (`routeList`, `homeList`).
+// canvas cuts a list with (`holdsFor`) and the lists the canvas draws (`routeList`, `homeList`). Since Story 7.18a, the
+// index's `NoPrimary` leaf (R-260) and Pre-flight's check for posts no page lists (`unlistedPosts`).
 //
 // THE FACTS IT RESTS ON (read in Ghost 6.58.0's and 5.130.6's source at Story 7.16's Create, 2026-10-16; the spec's F1–F7):
 //   - THE INDEX COLLECTION GOES LAST, carrying the inverse of every collection's filter. Collections register in YAML order
@@ -30,12 +31,25 @@
 //     `POSTS_PER_PAGE`'s, Inflozo's own.
 //   - Ghost's parser checks no duplicate path, no collision, no NQL and no template (`route-settings-parser.js`, F6), so
 //     every one of those is checked here, before anything is stored.
+//   - STORY 7.18a (R-260, DW-364) — A NEGATED PRIMARY LEAF MEANS TWO THINGS, so the index carries `NO_PRIMARY` beside it.
+//     A LISTING is SQL: `post.js:291-310`'s `filterExpansions` writes every `primary_tag` leaf as `tags.slug` AND
+//     `posts_tags.sort_order:0+tags.visibility:public` (both majors), so `primary_tag:-'x'` lists only a post that HAS a
+//     public first tag, and `primary_tag:null` is `IN (… WHERE tags.slug IS NULL AND tags.visibility = 'public')`, which
+//     nothing matches (`tags.slug` is `nullable: false`, `schema.js:287`; 5: `:286`) — so Ghost cannot say "no primary tag"
+//     with the `primary_tag` key. It can with the expansion's own two terms, the visibility one negated:
+//     `(tags.visibility:-'public'+posts_tags.sort_order:0)` is mongo-knex's `posts.id NOT IN (SELECT posts_tags.post_id …
+//     INNER JOIN tags ON … AND posts_tags.sort_order = 0 WHERE tags.visibility IN ('public'))` — an `$and` group's join-table
+//     term rides in the ON (`convertor.js` 0.11.2 `:345-434`, 0.9.1 `:183-241`), and an all-negated relation group becomes
+//     `NOT IN` (0.11.2 `:465-554`, 0.9.1 `:269-348`) — executed through both pinned NQLs at Story 7.18a's Dev; proved on T1 by
+//     MEASUREMENTS §86 leg 4. OWNERSHIP is in-memory NQL over a record with no `posts_tags` key (Ghost 6 `lazy-url-service.js`,
+//     whose `filterScalarFields` skips dotted keys `:70-91`; Ghost 5 `Resources.js`), so the pair never holds there and the
+//     index owns exactly what it owned. `primary_author` is the same with `authors`/`posts_authors`.
 //
 // AD-36 — `routes.yaml` IS A SINK. The emitter writes only values that passed this file's grammars: one-segment paths
 // (`PATH_RE`), `CUSTOM_TARGET_RE` templates, `GHOST_SLUG_RE` slugs, whole limits within `POSTS_PER_PAGE`. NQL values are
 // always single-quoted (an unquoted one-letter value fails to lex inside a group, and `tag:true` would read as a boolean —
-// F4), except booleans, `null` and relative terms; every `filter:` is a double-quoted YAML scalar that can never hold `"`
-// or `\`, and the emitter asserts it.
+// F4), except booleans, `null`, relative terms and `NO_PRIMARY`'s constant `0` (Ghost's own expansion spells it bare); every
+// `filter:` is a double-quoted YAML scalar that can never hold `"` or `\`, and the emitter asserts it.
 //
 // NO THIRD-PARTY NQL PARSER IS A RUNTIME DEPENDENCY (FR-I2): `readNql` reads this builder's own grammar and nothing else.
 // Ghost's `@tryghost/nql` (both majors' pins) is a devDependency, so `routes.test.ts` holds the two in agreement.
@@ -269,9 +283,21 @@ export function filterProblem(f: Filter, where: 'collection' | 'channel'): strin
 
 /* ───────────────────────────────────────────── NQL ───────────────────────────────────────────── */
 
+/** STORY 7.18a (R-260) — "THIS POST HAS NO PUBLIC PRIMARY TAG" (or author): a leaf only the index's inverse carries, OR'd
+ *  beside each negated primary leaf (`listedToo`), never stored, never negated. Written as `NO_PRIMARY`'s pair (the header's
+ *  facts): in SQL it lists exactly the posts Ghost's computed primary is null for (`post.js:1059-1064`), in memory it never
+ *  holds. */
+export type NoPrimary = { field: 'primary_tag' | 'primary_author'; absent: true }
 /** A filter as a tree: a condition, or conditions joined by `+` (all) or `,` (any). Normalised: a group has two or more
  *  children and never a child of its own join. */
-export type Node = Cond | { join: '+' | ','; of: Node[] }
+export type Node = Cond | NoPrimary | { join: '+' | ','; of: Node[] }
+
+/** `NoPrimary` as NQL — Ghost's own expansion (`post.js:296`, `:300`) with its visibility term negated, ALWAYS in its
+ *  parentheses: it is a `+` pair that only ever sits in a `,` group, and alone it would be a filter wrapped whole. */
+export const NO_PRIMARY: Readonly<Record<NoPrimary['field'], string>> = {
+  primary_tag: "(tags.visibility:-'public'+posts_tags.sort_order:0)",
+  primary_author: "(authors.visibility:-'public'+posts_authors.sort_order:0)",
+}
 const isGroup = (n: Node): n is { join: '+' | ','; of: Node[] } => 'join' in n
 
 /** A group, normalised: same-join children flattened into it, a single child returned alone. */
@@ -297,7 +323,8 @@ function byTheDay(c: Cond): Cond {
 export const nodeOf = (f: Filter): Node | null => group(f.match === 'all' ? '+' : ',', f.conditions.map(byTheDay))
 
 const FLIP: Readonly<Record<DateOp, DateOp>> = { '>': '<=', '>=': '<', '<': '>=', '<=': '>' }
-function flip(c: Cond): Cond {
+function flip(c: Cond | NoPrimary): Cond {
+  if ('absent' in c) throw new Error('a NoPrimary leaf is never negated: only the finished inverse carries one')
   if ('values' in c) return { ...c, op: c.op === 'any' ? 'none' : 'any' } as Cond
   if ('is' in c) return { ...c, is: !c.is }
   return { ...c, op: FLIP[c.op] }
@@ -317,7 +344,7 @@ function condNql(c: Cond): string {
 
 /** The tree as NQL: a child group in parentheses, the whole never wrapped. */
 export function writeNql(n: Node, nested = false): string {
-  if (!isGroup(n)) return condNql(n)
+  if (!isGroup(n)) return 'absent' in n ? NO_PRIMARY[n.field] : condNql(n)
   const s = n.of.map((child) => writeNql(child, true)).join(n.join)
   return nested ? `(${s})` : s
 }
@@ -328,13 +355,23 @@ export const filterNql = (f: Filter): string => {
   return n === null ? '' : writeNql(n)
 }
 
-/** The index collection's tree: every collection's filter negated, joined by `+` (Ghost's own advice, F1). */
+/** STORY 7.18a (R-260) — every negated `primary_tag`/`primary_author` leaf OR'd with its `NoPrimary`, so the index's SQL
+ *  LISTS a post with no public primary as its in-memory filter OWNS it: (has a public primary, not x) or (has none) is
+ *  exactly "not a public primary x". A positive primary leaf needs nothing — both readings require the primary there. */
+const listedToo = (n: Node): Node =>
+  isGroup(n) ? (group(n.join, n.of.map(listedToo)) as Node)
+    : 'values' in n && n.op === 'none' && (n.field === 'primary_tag' || n.field === 'primary_author') ? { join: ',', of: [n, { field: n.field, absent: true }] }
+      : n
+
+/** The index collection's tree: every collection's filter negated, joined by `+` (Ghost's own advice, F1), each negated
+ *  primary leaf carrying `NoPrimary` (R-260). */
 export function indexNode(collections: readonly Collection[]): Node | null {
-  const parts = collections.map((c) => nodeOf(c.filter)).filter((n): n is Node => n !== null).map(negate)
+  const parts = collections.map((c) => nodeOf(c.filter)).filter((n): n is Node => n !== null).map((n) => listedToo(negate(n)))
   return group('+', parts)
 }
 /** The index collection's filter — null while no collection has one. A negated Any is flattened into the `+` chain; a
- *  negated All is an Any group, parenthesised only when it holds more than one condition and sits beside others. */
+ *  negated All is an Any group, parenthesised only when it holds more than one condition and sits beside others. Since
+ *  Story 7.18a a collection by Primary tag gives `primary_tag:-'craft',(tags.visibility:-'public'+posts_tags.sort_order:0)`. */
 export const indexFilter = (collections: readonly Collection[]): string | null => {
   const n = indexNode(collections)
   return n === null ? null : writeNql(n)
@@ -393,6 +430,14 @@ export function readNql(s: string): Node {
     return fail(`not a condition this builder writes: ${JSON.stringify(text)}`)
   }
   const term = (): Term => {
+    // STORY 7.18a — `NO_PRIMARY`'s exact text is one leaf, read as a parenthesised term: alone it is a filter wrapped
+    // whole, and `((…))` around it is a group whose sole content is another — both refused below, as for any group
+    for (const field of ['primary_tag', 'primary_author'] as const) {
+      if (s.startsWith(NO_PRIMARY[field], i)) {
+        i += NO_PRIMARY[field].length
+        return { node: { field, absent: true }, wrapped: true }
+      }
+    }
     if (s[i] !== '(') return { node: cond(), wrapped: false }
     i += 1
     const inner = expr()
@@ -752,10 +797,21 @@ const slugsOf = (v: unknown): string[] => (Array.isArray(v) ? v.flatMap((x) => (
  *     `primary_author` leaf means "HAS that primary and it is not x": a post with no tags, or whose first tag is internal
  *     (its computed `primary_tag` null, `post.js:1059-1064`), is in neither `primary_tag:x` nor `primary_tag:-x` (executed
  *     on T1, MEASUREMENTS §84). Every other leaf reads the same both ways (`tag:-x` keeps an untagged post).
+ *   - STORY 7.18a — `NoPrimary` (R-260): LISTED on a post with no primary (the SQL's `NOT IN` public first tag; the Content
+ *     API sends that post's `primary_tag` as null, `live-content.ts`' `entryRow`), and never OWNED (no `posts_tags` key in
+ *     memory). `ponytail:` a post whose first author is NOT public is in Ghost's SQL window for the author's pair, then
+ *     dropped from Home as the author collection's (memory's `primary_author` ignores visibility, `relations/authors.js:146-151`);
+ *     the Content API sends no author visibility, so this reading leaves it out of the window and Home's page may show one
+ *     post more than Ghost's. Ghost's users are public unless changed by hand; upgrade by reading `authors.visibility`.
  * The canvas cuts a page's WINDOW with the listing reading and its drop with the ownership one (`routeList`, `homeList`).
  */
 export function holdsFor(n: Node, post: ListedPost, now: string, listing = false): boolean {
   if (isGroup(n)) return n.join === '+' ? n.of.every((c) => holdsFor(c, post, now, listing)) : n.of.some((c) => holdsFor(c, post, now, listing))
+  const one = (key: string) => {
+    const slug = (post[key] as { slug?: unknown } | null | undefined)?.slug
+    return typeof slug === 'string' ? [slug] : []
+  }
+  if ('absent' in n) return listing && one(n.field).length === 0
   if ('is' in n) {
     if (n.field === 'featured') return post['featured'] === n.is
     const image = post['feature_image']
@@ -766,10 +822,6 @@ export function holdsFor(n: Node, post: ListedPost, now: string, listing = false
     const bound = 'date' in n.at ? instantOf(n.at.date) : agoFrom(instantOf(now), n.at.ago, n.at.unit)
     if (Number.isNaN(v) || Number.isNaN(bound)) return false
     return n.op === '>' ? v > bound : n.op === '>=' ? v >= bound : n.op === '<' ? v < bound : v <= bound
-  }
-  const one = (key: string) => {
-    const slug = (post[key] as { slug?: unknown } | null | undefined)?.slug
-    return typeof slug === 'string' ? [slug] : []
   }
   const has = n.field === 'visibility' ? [post['visibility']]
     : n.field === 'tag' ? slugsOf(post['tags'])
@@ -796,11 +848,38 @@ export function routeList(l: Listing, now: string): orbitWeekly.RouteList {
   }
 }
 
-/** STORY 7.16c — HOME'S LIST (FR-H3): the index collection's — `indexFilter` as Ghost's SQL LISTS it, so a post the inverse's
- *  negated `primary_*` leaf cannot reach (no tags, or an internal first tag) is on no page of Home, though the index owns it
- *  (DW-364) — at `/` and the project's own page size; or undefined while no collection exists, when Home lists every post.
- *  Nothing is dropped: everything the index's SQL lists, it owns. */
+/** STORY 7.16c — HOME'S LIST (FR-H3): the index collection's — `indexFilter` as Ghost's SQL LISTS it — at `/` and the
+ *  project's own page size; or undefined while no collection exists, when Home lists every post. Nothing is dropped:
+ *  everything the index's SQL lists, it owns. Since Story 7.18a (R-260) that includes a post with no primary tag (no tags, or
+ *  an internal first tag), which 7.16a's inverse left on no page of Home though the index owned it (DW-364). */
 export function homeList(c: RoutesConfig | null, now: string): orbitWeekly.RouteList | undefined {
   const node = c === null ? null : indexNode(c.collections)
   return node === null ? undefined : { base: '/', filter: writeNql(node), window: (post) => holdsFor(node, post, now, true), keep: () => true }
+}
+
+/** One post R-260's check names: its title and its slug, as the Content API sent them. */
+export type UnlistedPost = { title: string; slug: string }
+
+/**
+ * STORY 7.18a — R-260's CHECK: THE POSTS NO PAGE LISTS. For each post, the router that OWNS it — the collections in YAML
+ * order, then the index last (`lazy-url-service.js:300-303`; Ghost 5 `UrlGenerator.js:158-191`), by the OWNERSHIP reading —
+ * and whether that router's filter LISTS it (the LISTING reading, Ghost's SQL). Owned and not listed is named: its own
+ * address answers, and no list of Home or a collection links to it. Only Home and the collections count (routine call 23):
+ * a tag, author or channel page lists by subject. Empty for an unreadable routing (`null`) and for one with no collection,
+ * where Home lists every post.
+ *
+ * `posts` are the site's published posts in the Content API's shape, as `apps/web/lib/live-content.ts`' `pick('posts', …)`
+ * whitelists them (`Row`: `title`, `slug`, `tags`, `authors`, `primary_tag` — null where Ghost sent null — `primary_author`,
+ * `featured`, `feature_image`, `visibility`, `published_at`): `ListedPost`, `holdsFor`'s own input. `now` is `holdsFor`'s.
+ * `index` is the index's tree, `indexNode`'s by default — `routes.test.ts` hands in 7.16a's inverse as the control.
+ */
+export function unlistedPosts(c: RoutesConfig | null, posts: readonly ListedPost[], now: string, index: Node | null = c === null ? null : indexNode(c.collections)): UnlistedPost[] {
+  if (c === null || c.collections.length === 0) return []
+  const routers = [...c.collections.map((col) => nodeOf(col.filter)), index]
+  const text = (v: unknown) => (typeof v === 'string' ? v : '')
+  return posts.flatMap((post) => {
+    // a router with no filter owns and lists every post that reaches it
+    const owner = routers.find((n) => n === null || holdsFor(n, post, now))
+    return owner === undefined || owner === null || holdsFor(owner, post, now, true) ? [] : [{ title: text(post['title']), slug: text(post['slug']) }]
+  })
 }

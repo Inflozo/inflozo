@@ -971,7 +971,7 @@ test('Story 7.16c · feedRead takes a route\'s filter, sent through URLSearchPar
   assert.equal(feedRead(null, 1, 12)?.params['filter'], undefined)
 })
 
-test('Story 7.16c (§84) · an untagged post: Ghost sends its primary_tag as null and the whitelist keeps it null; Home leaves it out once a collection filters by Primary tag, and a later collection that lists it keeps it', () => {
+test('Story 7.16c (§84), 7.18a (R-260) · an untagged post: Ghost sends its primary_tag as null and the whitelist keeps it null; Home LISTS it once a collection filters by Primary tag (DW-364 fixed), and a later collection that lists it keeps it', () => {
   const NOW = '2026-10-18T00:00:00.000Z'
   const post = (i: number, tags: string[]) => ({
     id: `q${i}`, slug: `q-${i}`, title: `Q ${i}`, url: `https://ghost5.example/q-${i}/`, published_at: `2026-09-0${9 - i}T12:00:00.000Z`,
@@ -1002,7 +1002,9 @@ test('Story 7.16c (§84) · an untagged post: Ghost sends its primary_tag as nul
     assert.ok('ready' in v, file)
     return (v.ready.contexts[file]!.ghost['posts'] as { slug: string }[]).map((p) => p.slug)
   }
-  assert.deepEqual(on([craft], 'home.hbs'), ['q-3'], 'Home (`primary_tag:-\'craft\'`) lists the notes post and NOT the untagged one (DW-364)')
+  // R-260 (Story 7.18a): Home's filter also lists a post with no public primary tag, so the untagged post is on Home — before,
+  // `primary_tag:-'craft'` alone listed only the notes post (DW-364; `routes.test.ts` holds the old filter as the control)
+  assert.deepEqual(on([craft], 'home.hbs'), ['q-2', 'q-3'], 'Home lists the notes post AND the untagged one (R-260)')
   assert.deepEqual(on([craft, rest], 'custom-rest.hbs'), ['q-2', 'q-3'], 'a later collection that lists it keeps it: /craft/ does not OWN it')
   // THE CONTROL: with no collection, Home lists every post, the untagged one included
   assert.deepEqual(on([], 'home.hbs'), ['q-1', 'q-2', 'q-3'])

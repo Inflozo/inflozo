@@ -5,7 +5,7 @@ import { RoutesFallback } from '@/components/routes-fallback'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom } from '@/lib/live-content'
 import { NEW_TEMPLATE_QUERY } from '@/lib/editor'
-import { ROUTES_WORDS, templatesOf } from '@/lib/routes'
+import { RESET_ROUTING_QUERY, ROUTES_WORDS, templatesOf } from '@/lib/routes'
 import { isFallback } from '@/lib/routes-upload'
 import { supabaseServer } from '@/lib/supabase/server'
 import { projectOf } from '../(editor)/read'
@@ -40,7 +40,10 @@ const isDesigned = (doc: unknown): boolean => {
 
    STORY 7.17 — B16 at the top of the page, under the bar, for the LINKED site while it still needs its routing (its
    `routes_fallback` set and a file offered; a disconnected site is no site): the same card the site's card on Sites
-   carries (`components/routes-fallback.tsx`). */
+   carries (`components/routes-fallback.tsx`).
+
+   STORY 7.18a — R-261: `?reset=routing` (`lib/routes.ts`' `resetRoutingPath`, where the Ship button's reason links) opens
+   the "Start again" sheet on arrival, and only while the stored routing cannot be read (`config` null). */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const project = await projectOf((await params).id)
@@ -52,7 +55,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function RoutesPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const { id } = await params
-  const fromMenu = (await searchParams).new === NEW_TEMPLATE_QUERY.new
+  const query = await searchParams
+  const fromMenu = query.new === NEW_TEMPLATE_QUERY.new
+  const resetAsked = query.reset === RESET_ROUTING_QUERY.reset
   const project = await projectOf(id)
   if (!project) notFound()
   const sb = await supabaseServer()
@@ -93,6 +98,7 @@ export default async function RoutesPage({ params, searchParams }: { params: Pro
       deployed={(deployedRead.data ?? []).map((r) => r.filename as string)}
       designed={(designedRead.data ?? []).filter((r) => isDesigned(r.doc)).map((r) => (r.template_key as string).slice('custom:'.length))}
       fromMenu={fromMenu}
+      resetAsked={resetAsked && !parsed.ok}
       notice={fallback}
     />
   )

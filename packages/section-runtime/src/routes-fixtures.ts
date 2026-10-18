@@ -19,6 +19,9 @@ export type RoutesFixture = {
 }
 
 const tax = { tag: 'tag', author: 'author' }
+/** Story 7.18a (R-260) — `NO_PRIMARY` as Ghost's NQL reads it: no public first tag (author) in SQL, never in memory */
+const NO_TAG = { $and: [{ 'tags.visibility': { $ne: 'public' } }, { 'posts_tags.sort_order': 0 }] }
+const NO_AUTHOR = { $and: [{ 'authors.visibility': { $ne: 'public' } }, { 'posts_authors.sort_order': 0 }] }
 
 export const ROUTES_FIXTURES: readonly RoutesFixture[] = [
   {
@@ -117,9 +120,10 @@ export const ROUTES_FIXTURES: readonly RoutesFixture[] = [
         mongo: { $and: [{ primary_tag: 'picks' }, { primary_author: { $ne: 'bot' } }, { visibility: { $in: ['members', 'paid'] } }, { published_at: { $gte: '2026-01-01' } }] },
       },
       {
+        // Story 7.18a (R-260): the negated primary tag carries NO_PRIMARY beside it, so Home LISTS a post with none
         where: 'collections./',
-        nql: "primary_tag:-'picks',primary_author:'bot',visibility:-['members','paid'],published_at:<'2026-01-01'",
-        mongo: { $or: [{ primary_tag: { $ne: 'picks' } }, { primary_author: 'bot' }, { visibility: { $nin: ['members', 'paid'] } }, { published_at: { $lt: '2026-01-01' } }] },
+        nql: "primary_tag:-'picks',(tags.visibility:-'public'+posts_tags.sort_order:0),primary_author:'bot',visibility:-['members','paid'],published_at:<'2026-01-01'",
+        mongo: { $or: [{ primary_tag: { $ne: 'picks' } }, NO_TAG, { primary_author: 'bot' }, { visibility: { $nin: ['members', 'paid'] } }, { published_at: { $lt: '2026-01-01' } }] },
       },
       { where: 'routes./reading-list/', nql: 'published_at:>now-30d', mongo: { published_at: { $gt: RELATIVE } } },
       { where: 'routes./featured/', nql: "featured:true+visibility:-'paid'", mongo: { $and: [{ featured: true }, { visibility: { $ne: 'paid' } }] } },
@@ -168,6 +172,40 @@ export const ROUTES_FIXTURES: readonly RoutesFixture[] = [
     filters: [
       { where: 'routes./fresh/', nql: 'published_at:>now-2w,published_at:>=now-1M', mongo: { $or: [{ published_at: { $gt: RELATIVE } }, { published_at: { $gte: RELATIVE } }] } },
       { where: 'routes./archive-old/', nql: 'published_at:<now-1y+published_at:<=now-400d', mongo: { $and: [{ published_at: { $lt: RELATIVE } }, { published_at: { $lte: RELATIVE } }] } },
+    ],
+  },
+  {
+    // STORY 7.18a (R-260, DW-364): the owner's example — Home also lists a post with no primary tag
+    name: 'R-260 — one Primary tag collection',
+    config: {
+      collections: [{ path: '/craft/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: ['craft'] }] }, template: 'custom-craft-list.hbs' }],
+      routes: [],
+      taxonomies: tax,
+    },
+    filters: [
+      { where: 'collections./craft/', nql: "primary_tag:'craft'", mongo: { primary_tag: 'craft' } },
+      { where: 'collections./', nql: "primary_tag:-'craft',(tags.visibility:-'public'+posts_tags.sort_order:0)", mongo: { $or: [{ primary_tag: { $ne: 'craft' } }, NO_TAG] } },
+    ],
+  },
+  {
+    // two inverses each carrying NO_PRIMARY — three levels of parentheses once Ghost wraps the filter, never `((…))`
+    name: 'R-260 — a Primary tag collection, then a Primary author one',
+    config: {
+      collections: [
+        { path: '/craft/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: ['craft'] }] }, template: 'custom-craft-list.hbs' },
+        { path: '/by-ann/', filter: { match: 'any', conditions: [{ field: 'primary_author', op: 'any', values: ['ann'] }] }, template: 'custom-notes.hbs' },
+      ],
+      routes: [],
+      taxonomies: tax,
+    },
+    filters: [
+      { where: 'collections./craft/', nql: "primary_tag:'craft'", mongo: { primary_tag: 'craft' } },
+      { where: 'collections./by-ann/', nql: "primary_author:'ann'", mongo: { primary_author: 'ann' } },
+      {
+        where: 'collections./',
+        nql: "(primary_tag:-'craft',(tags.visibility:-'public'+posts_tags.sort_order:0))+(primary_author:-'ann',(authors.visibility:-'public'+posts_authors.sort_order:0))",
+        mongo: { $and: [{ $or: [{ primary_tag: { $ne: 'craft' } }, NO_TAG] }, { $or: [{ primary_author: { $ne: 'ann' } }, NO_AUTHOR] }] },
+      },
     ],
   },
 ]

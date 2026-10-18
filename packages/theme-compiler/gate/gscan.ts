@@ -27,6 +27,14 @@ export const GSCAN = {
 } as const
 
 const require = createRequire(import.meta.url)
+/** STORY 7.18a — each checker LOADED BY ITS LITERAL NAME, never a computed one: the deploy route bundles this file, and a
+ *  bundler resolves a computed `require` into gscan's own files (whose `lib/checks/` it then cannot follow) instead of
+ *  leaving it to Node. Written literally, `gscan4` and `gscan6` match `next.config.ts`' `serverExternalPackages` and are
+ *  loaded from `node_modules` at run time, as every test loads them. One table, keyed by major, beside `GSCAN`. */
+const LOAD = {
+  5: { checker: () => require('gscan4') as Gscan, pkg: () => require('gscan4/package.json') as { version: string }, spec: () => require('gscan4/lib/specs/v5.js') as Spec },
+  6: { checker: () => require('gscan6') as Gscan, pkg: () => require('gscan6/package.json') as { version: string }, spec: () => require('gscan6/lib/specs/v6.js') as Spec },
+} as const
 const PREFIX = 'inflozo-gscan-'
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -42,14 +50,13 @@ export class PinMoved extends Error {
 }
 
 /** The version of the checker installed under a major's alias, from its own `package.json`. */
-export const installedVersion = (major: Major): string => (require(`${GSCAN[major].pkg}/package.json`) as { version: string }).version
+export const installedVersion = (major: Major): string => LOAD[major].pkg().version
 
 /** A major's rule inventory, read from the pinned package's own spec for its `checkVersion` (`lib/specs/v5.js` on
  *  4.49.7, `v6.js` on 6.4.2 — each merges its predecessors): `{ code: { level, fatal, regex? } }` in code order, `regex`
  *  a regex rule's `String(regex)`. `tools/record-gscan.mjs` records it (AD-23); the gate's test holds it equal. */
 export function installedRules(major: Major): Record<string, { level: string; fatal: boolean; regex?: string }> {
-  const { pkg, checkVersion } = GSCAN[major]
-  const { rules } = require(`${pkg}/lib/specs/${checkVersion}.js`) as Spec
+  const { rules } = LOAD[major].spec()
   return Object.fromEntries(Object.keys(rules).sort(byCode).map((code) => {
     const r = rules[code] as Spec['rules'][string]
     return [code, { level: r.level, fatal: r.fatal === true, ...(r.regex === undefined ? {} : { regex: String(r.regex) }) }]
@@ -59,10 +66,10 @@ export function installedRules(major: Major): Record<string, { level: string; fa
 /** That major's pinned gscan over `files`, as data: errors then warnings, each in code order with its failures in ref
  *  order, recommendations dropped. Throws — `gscanGate` maps any throw to `theme_check_failed`. */
 export async function runGscan(files: ThemeFiles, major: Major): Promise<GscanReport> {
-  const { pkg, version, checkVersion } = GSCAN[major]
+  const { version, checkVersion } = GSCAN[major]
   const installed = installedVersion(major)
   if (installed !== version) throw new PinMoved(installed, version)
-  const gscan = require(pkg) as Gscan
+  const gscan = LOAD[major].checker()
   const dir = await mkdtemp(join(tmpdir(), PREFIX))
   try {
     for (const [path, body] of Object.entries(files)) {

@@ -346,3 +346,30 @@ test('Story 7.17: B16\'s Verify upload says "Verifying…" through the Kit\'s Su
   assert.match(kit, /aria-busy=\{pending \|\| undefined\}/)
   assert.match(kit, /aria-disabled=\{pending \|\| undefined\}/)
 })
+
+/* ── STORY 7.18a (R-98): every control the deploy wizard puts in flight says so in its present tense — Ship it on the bar
+   ("Opening…", while D8g's landed take-over reloads), Run checks ("Starting…"), Cancel ("Cancelling…"), Ship it in Pre-flight
+   ("Shipping…"), Re-activate ("Activating…") and D8g's "Take over and ship" ("Taking over…", `LockTakeover`'s own) — each
+   through `BusyLabel`, `aria-busy` and `aria-disabled`, never `disabled`. The wizard is a modal with no route, so it has no
+   loading.tsx to own. */
+test('Story 7.18a: Ship it, Run checks, Cancel, Ship it and Re-activate say they are working, and D8g\'s take-over does too', () => {
+  const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
+  assert.match(wizard, /<BusyLabel pending=\{busy\} busy=\{W\.opening\}>/, 'the bar\'s Ship it')
+  for (const [pressed, words] of [['start', 'starting'], ['cancel', 'cancelling'], ['ship', 'shipping'], ['activate', 'activating']]) {
+    assert.match(wizard, new RegExp(`<BusyLabel pending=\\{pressed === '${pressed}'\\} busy=\\{W\\.${words}\\}>`), `${words}: its label swaps`)
+    assert.match(wizard, new RegExp(`aria-busy=\\{pressed === '${pressed}' \\|\\| undefined\\}|'aria-busy': [^\\n]*pressed === '${pressed}'`), `${words}: aria-busy`)
+  }
+  assert.doesNotMatch(wizard, /\sdisabled[=\s}]/, 'never `disabled` — a busy control stays in the Tab order')
+  const button = readFileSync('components/kit/button.tsx', 'utf8')
+  const split = button.slice(button.indexOf('export function SplitButton'), button.indexOf('export function AddButton'))
+  assert.match(split, /aria-disabled=\{busy \|\| undefined\}/)
+  assert.match(split, /aria-busy=\{busy \|\| undefined\}/)
+  assert.match(split, /busy \? undefined : onPress\(\)/, 'a busy Ship it refuses the second press')
+  const editor = readFileSync(join(AUTHED, 'projects', '[id]', '(editor)', 'editor.tsx'), 'utf8')
+  assert.match(editor, /<LockTakeover\s+dialog=\{shipTakeover\}[\s\S]*?taking=\{lock\.taking\}/, 'D8g is B5c\'s component, busy while the take-over runs')
+  assert.match(readFileSync('components/editor/lock-takeover.tsx', 'utf8'), /confirmBusy = LOCK_COPY\.takingOver/)
+  const words = readFileSync('lib/deploy.ts', 'utf8')
+  for (const [key, said] of [['opening', 'Opening…'], ['starting', 'Starting…'], ['cancelling', 'Cancelling…'], ['shipping', 'Shipping…'], ['activating', 'Activating…']]) {
+    assert.match(words, new RegExp(`${key}: '${said}'`), `${key} is "${said}"`)
+  }
+})

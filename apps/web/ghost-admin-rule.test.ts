@@ -15,6 +15,9 @@ import {
   mintJwt,
   parseCredential,
   permitted,
+  CALL_TIMEOUT_MS,
+  ITEM_TIMEOUT_MS,
+  timeoutFor,
 } from './server/ghost-admin/admin-rule.ts'
 
 /* Story 3.1 — the Admin chokepoint's pure half, contract-first: every branch here is green
@@ -232,3 +235,24 @@ test('Story 7.17: fetchWithKey builds through adminRequest and returns the raw b
   assert.equal(decrypts(callBody.replace('decrypt(args.siteId, kind, args.route)', "decrypt(args.siteId, 'admin', args.route)")), false)
 })
 
+
+test('Story 7.18a: the theme upload alone waits two minutes for Ghost (its own gscan runs inside the call); every other item and every read keeps 15 s', () => {
+  assert.equal(timeoutFor('theme_upload'), 120_000)
+  for (const item of Object.keys(ADMIN_WRITES).filter((k) => k !== 'theme_upload') as (keyof typeof ADMIN_WRITES)[]) assert.equal(timeoutFor(item), CALL_TIMEOUT_MS, item)
+  assert.equal(timeoutFor(), 15_000)
+  assert.equal(timeoutFor(null), 15_000)
+  // the map names allowlisted items only, and stays inside AD-11's 300 s
+  for (const [item, ms] of Object.entries(ITEM_TIMEOUT_MS)) {
+    assert.ok(Object.hasOwn(ADMIN_WRITES, item), item)
+    assert.ok((ms as number) < 300_000, item)
+  }
+  // the upload's FormData, as the deploy sends it: a zip under `file`, named by the theme (Ghost names a theme by it)
+  const form = new FormData()
+  form.append('file', new Blob([new Uint8Array([80, 75, 5, 6])], { type: 'application/zip' }), 'inflozo-field-notes.zip')
+  const upload = adminRequest({ credential: KEY, siteUrl: 'https://ghost6.inflozo.com', method: 'POST', path: 'themes/upload/', body: form, major: 6, now: 1 })
+  assert.equal(upload.init.body, form)
+  assert.ok(!Object.keys(upload.init.headers as object).some((h) => h.toLowerCase() === 'content-type'), 'no Inflozo-set Content-Type')
+  assert.ok(permitted('POST', 'themes/upload/', form, 'theme_upload'))
+  assert.ok(permitted('PUT', 'themes/inflozo-field-notes/activate/', undefined, 'theme_activate'))
+  assert.ok(!permitted('POST', 'themes/upload/', form, 'theme_activate'), 'the control: an item admits its own write only')
+})

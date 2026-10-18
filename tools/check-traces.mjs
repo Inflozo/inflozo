@@ -28,7 +28,7 @@
 // relative imports reach `@inflozo/library/packs`. Seen red on Story 6.2's build: two chunks, every sha256 in each.
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -83,6 +83,14 @@ const ROUTES = [
   ['/style-guide', 'style-guide/page.js.nft.json', styleGuide],
   ['/style-guide/frame', 'style-guide/frame/route.js.nft.json', styleGuide],
   ['/style-guide/variations', 'style-guide/variations/page.js.nft.json', styleGuide],
+  // Story 7.18a: the deploy route compiles a stored project (`server/deploy/project-input.ts`) — every design (`pilot`,
+  // `docRefusal`), the font pool's files AND each family's licence (the compile ships both), the module files `main.js` is
+  // bundled from, and Ghost's vendored card scripts, stylesheets and licence
+  ['the deploy route', 'projects/[id]/deploy/route.js.nft.json', [
+    ...designs, ...fonts, ...set('packages/library/fonts/licences', 'packages/library/orbit-weekly/vendor'),
+    // the module files themselves, as `moduleSources` reads them (a registry name plus `.js`) — never their types or tests
+    ...set('packages/library/modules').filter((f) => /\/[a-z][a-z0-9-]*\.js$/.test(f)),
+  ]],
 ]
 
 let failed = 0
@@ -100,6 +108,35 @@ for (const [route, file, needs] of ROUTES) {
   }
   failed++
   console.log(`FAIL  ${route}: ${missing.length} of the ${needs.length} files it reads are not in ${relative(REPO, trace)} — ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ', …' : ''}`)
+}
+
+// ── Story 7.18a: the deploy route carries its three server externals (`next.config.ts`' `serverExternalPackages`) ─────
+// jsdom and both pinned gscans are loaded by Node at run time, never bundled, so the function ships them only if the trace
+// does: each one's own tree (its package.json and the entry the deploy reaches — gscan's checker and its major's spec,
+// jsdom's api) and the link Turbopack makes for it under `.next/node_modules`. The packages are found where the app finds
+// them, `apps/web/node_modules/<alias>`, and read by their real path — the form a trace records.
+{
+  const trace = join(AUTHED, 'projects/[id]/deploy/route.js.nft.json')
+  const carried = new Set(JSON.parse(readFileSync(trace, 'utf8')).files.map((f) => relative(REPO, resolve(dirname(trace), f))))
+  const EXTERNALS = [
+    ['gscan4', ['package.json', 'lib/checker.js', 'lib/specs/v5.js']],
+    ['gscan6', ['package.json', 'lib/checker.js', 'lib/specs/v6.js']],
+    ['jsdom', ['package.json', 'lib/api.js']],
+  ]
+  for (const [alias, entries] of EXTERNALS) {
+    const real = realpathSync(join(REPO, 'apps/web/node_modules', alias))
+    const needs = entries.map((e) => relative(REPO, join(real, e)))
+    const missing = needs.filter((f) => !carried.has(f))
+    // the link's name is Turbopack's (`<package>-<hash>`); one per real package, named after the package itself
+    const own = JSON.parse(readFileSync(join(real, 'package.json'), 'utf8')).name
+    const linked = [...carried].some((f) => f.startsWith('apps/web/.next/node_modules/') && realpathSync(join(REPO, f)) === real && f.slice('apps/web/.next/node_modules/'.length).startsWith(`${own}-`))
+    if (missing.length === 0 && linked) {
+      console.log(`PASS  the deploy route carries ${alias} (${needs.length} entries and its link)`)
+      continue
+    }
+    failed++
+    console.log(`FAIL  the deploy route: ${alias} is not shipped — ${[...missing, ...(linked ? [] : ['its .next/node_modules link'])].join(', ')}`)
+  }
 }
 console.log(failed === 0 ? 'RESULT: every route carries its files' : `RESULT: ${failed} route(s) would deploy without their files`)
 

@@ -377,14 +377,14 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
   withheld-migration control aborting at the 7.18 block.
 
 **Execution — Dev:**
-- [ ] `packages/section-runtime/src/core.ts` — DW-349: in the `data-prop` loop, an EMPTY non-catalog typed text in
+- [x] `packages/section-runtime/src/core.ts` — DW-349: in the `data-prop` loop, an EMPTY non-catalog typed text in
   `fallback` mode removes its element on both emitters, as `hide` does. Catalog-linked props are unchanged.
   `agreement.test.ts` and `ad36.test.ts` gain that vector, with a non-empty control. Every design snapshot stays
   byte-identical. Rationale: the ruling of 2026-10-08, so V1 can no longer fire on an emptied heading.
-- [ ] `packages/theme-compiler/src/compile.ts` — export `REFUSAL`, the leading words of each customer-caused throw, and
+- [x] `packages/theme-compiler/src/compile.ts` — export `REFUSAL`, the leading words of each customer-caused throw, and
   throw through it. No behaviour changes. Rationale: one spelling the plain-words table keys on, held by a test that
   reaches each throw for real.
-- [ ] `routes.ts`, `routes.test.ts`, `projects/[id]/routes/{page.tsx,routes-manager.tsx}` — routing:
+- [x] `routes.ts`, `routes.test.ts`, `projects/[id]/routes/{page.tsx,routes-manager.tsx}` — routing:
   - DW-364 per R-260: `indexNode`/`indexFilter` emit the ruled form, `holdsFor`'s listing reading follows, and every
     fixture stays accepted by both pinned NQLs;
   - R-260's check: `unlistedPosts(config, posts, now)` beside `holdsFor` — for each post, the collection that owns it
@@ -396,13 +396,13 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
     routing has problems;
   - DW-362 per R-261: the reset sheet and `resetRoutes` in `routes/actions.ts`, through the same save path and
     `sync_project_doc` rule.
-- [ ] `apps/web/lib/routes-upload.ts` and `server/routes-upload.ts` — DW-371:
+- [x] `apps/web/lib/routes-upload.ts` and `server/routes-upload.ts` — DW-371:
   - `routes_unverified` writes `routes_last_offered` = F with no cause, so Verify upload can compare;
   - `kept` over Ghost's default, when the project is at the default, clears `routes_fallback`;
   - `settle`'s failed write keeps the outcome and logs.
 
   Rationale: routine calls 15a–d.
-- [ ] `apps/web/lib/deploy.ts` (new, pure, no imports from `server/`) — the whole rule:
+- [x] `apps/web/lib/deploy.ts` (new, pure, no imports from `server/`) — the whole rule:
   - `STEPS` (Destination · Check · Ship · Live, a list 7.19 and 7.20 add to);
   - the stage → step map;
   - `versionOf(n)` (`${n}.0.0`) and `versionLabel` (`v${n}`), and `themeNameOf(slug)` (`inflozo-${slug}`);
@@ -415,43 +415,43 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
   - `DEPLOY_WORDS`.
 
   Rationale: one rule module (R-170), unit-tested over the matrix.
-- [ ] `apps/web/lib/style-pack.ts` — `enginePackOf(style_pack)` returns `{ pack, pairing }` by the editor's rule.
+- [x] `apps/web/lib/style-pack.ts` — `enginePackOf(style_pack)` returns `{ pack, pairing }` by the editor's rule.
   `editor.tsx:925-938` calls it. Rationale: one rule for the canvas and the compile.
-- [ ] `apps/web/server/deploy/zip.ts` (new) — a deterministic ZIP writer: sorted entries, DOS time 1980-01-01, deflate
+- [x] `apps/web/server/deploy/zip.ts` (new) — a deterministic ZIP writer: sorted entries, DOS time 1980-01-01, deflate
   through `node:zlib`'s `deflateRawSync` and `crc32`. Rationale: no dependency, and identical bytes for identical files
   (AD-14).
-- [ ] `apps/web/server/deploy/project-input.ts` (new) — `compileInputOf({ projectId, siteId, userId })`. It reads,
+- [x] `apps/web/server/deploy/project-input.ts` (new) — `compileInputOf({ projectId, siteId, userId })`. It reads,
   owned, the raw `project_templates` (through `parseDoc`/`docRefusal`, skipping orphan route docs), `projects`,
   `custom_settings`, `translation_overrides`, `card_designs`, `routes_config` and the current `custom_templates`, and
   the site. It returns `CompileInput` and the reads for the hash. Library, fonts (`files/` and `licences/`), modules and
   Ghost's cards come through `PACKAGES()`, as `pilot-theme.mjs` reads them. Rationale: the shell the compile has never
   had.
-- [ ] `apps/web/server/deploy/run.ts` (new) — `preflight`, `ship`, `activate`, `cancel` and `view`, each taking a
+- [x] `apps/web/server/deploy/run.ts` (new) — `preflight`, `ship`, `activate`, `cancel` and `view`, each taking a
   `DeployIo` handed in (the `offerRoutes` pattern). Each writes the stage and `stage_timings` at every edge, checks
   `cancel_requested` between stages, applies the retry rule, writes the binding on the first accepted upload, and calls
   `offerRoutes(…, ROUTES_IO)` after activation. Rationale: one testable shell.
-- [ ] `apps/web/server/deploy/deploy-io.ts` (new) — the real io: the service role scoped by `user_id`, storage,
+- [x] `apps/web/server/deploy/deploy-io.ts` (new) — the real io: the service role scoped by `user_id`, storage,
   `call()` with a per-item timeout, the gates and `JSDOM`. Rationale: named on both `server-wiring.test.ts` lists.
-- [ ] `apps/web/server/ghost-admin/index.ts` — a per-item timeout (`theme_upload` 120 s; every other item keeps 15 s).
+- [x] `apps/web/server/ghost-admin/index.ts` — a per-item timeout (`theme_upload` 120 s; every other item keeps 15 s).
   Rationale: one 15 s budget covers DNS, the upload and Ghost's own gscan.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts` (new) — handles POST
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts` (new) — handles POST
   `{ intent, session, job?, mode? }` and GET `?job=`. It checks the lock (the user's own client), answers the job id,
   and runs the work in `after()`. `export const maxDuration = 300`. Rationale: one door, the lock route's pattern.
-- [ ] `apps/web/package.json`, `next.config.ts`, `vercel.json`, `tools/check-traces.mjs` — wire the function:
+- [x] `apps/web/package.json`, `next.config.ts`, `vercel.json`, `tools/check-traces.mjs` — wire the function:
   - depend on `@inflozo/theme-compiler` and `jsdom` (30.0.1, already locked);
   - `serverExternalPackages: ['jsdom', 'gscan4', 'gscan6']`;
   - set AD-11's 4096 MB where Vercel lets it be set (read in the project's settings through the API first);
   - check-traces holds `fonts/licences`, `library/modules`, `vendor/cards` and both gscan trees reaching the route.
 
   Rationale: 7.7's "proved on Vercel within the function's limits".
-- [ ] `apps/web/components/kit/button.tsx` — `SplitButton` takes `onPress`, `busy`, `menu` (the Kit's `Menu`) and
+- [x] `apps/web/components/kit/button.tsx` — `SplitButton` takes `onPress`, `busy`, `menu` (the Kit's `Menu`) and
   `label`. Rationale: S4's control, used once.
-- [ ] `apps/web/components/editor/deploy-wizard.tsx` (new) — the modal, the rail, the four steps, and the endings (Live,
+- [x] `apps/web/components/editor/deploy-wizard.tsx` (new) — the modal, the rail, the four steps, and the endings (Live,
   S8d′, D2e, D2f, and the routes outcome with B16). It polls `view` while the stage is not terminal, announces each
   stage, and draws the static confetti under reduced motion. While the server checks run, it reads the linked site's
   published posts in the browser through `lib/live-content.ts`'s reader (the canvas's own path and Content key; 100 a
   page, within the reader's request ceiling) and draws R-260's row from `unlistedPosts`. Rationale: S8, D2, R-260.
-- [ ] `editor.tsx` — the editor's half:
+- [x] `editor.tsx` — the editor's half:
   - Ship it after `#editor-more`, visible at every width, labelled "Ship it" or "Ship update";
   - the ▾ menu's rows;
   - ⌘⏎;
@@ -461,11 +461,11 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
   - delete the absence entry at `:335`.
 
   Rationale: DW-238, R-145.
-- [ ] `apps/web/lib/lock.ts` — D8g's strings in `LOCK_COPY` (Words). Rationale: one list.
-- [ ] `apps/web/lib/keymap.ts`, `keymap.test.ts`, `tools/keyboard/journey.spec.mjs` — the `ship` gesture classified in
+- [x] `apps/web/lib/lock.ts` — D8g's strings in `LOCK_COPY` (Words). Rationale: one list.
+- [x] `apps/web/lib/keymap.ts`, `keymap.test.ts`, `tools/keyboard/journey.spec.mjs` — the `ship` gesture classified in
   `EDITS`, the row bound (`keys: ['enter'], meta: true`), and "the map is complete" asserted. The wizard's journeys run
   against canned job states through `page.route`, each behind its control. Rationale: R-145.
-- [ ] Tests — the I/O matrix:
+- [x] Tests — the I/O matrix:
   - `apps/web/deploy.test.ts` (the rule);
   - `apps/web/deploy-run.test.ts` (`run.ts` over a fake io: every stage, cancel, abandon, stale, retry, binding,
     routes);
@@ -473,7 +473,7 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
   - `compile.test.ts` (each `REFUSAL` reached);
   - `server-wiring.test.ts`;
   - `busy.test.ts`.
-- [ ] `tools/probe/record-deploy.mjs` (new; §86; the main session, on the owner's go) — on T1:
+- [x] `tools/probe/record-deploy.mjs` (new; §86; the main session, on the owner's go) — on T1:
   1. the pilot theme, zipped by `zip.ts`, uploaded and activated with the ADMIN key through `adminRequest`, and its page
      read;
   2. two concurrent uploads of one name, mapped by `uploadAnswer`;
@@ -482,9 +482,9 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
   5. Casper restored and the probes deleted, both read back.
 
   Rationale: DW-51's theme half; standing rule 1 on the Admin key's upload right.
-- [ ] `tools/probe/run-verify-editor.cjs` — step 113, the Review's: production, a throwaway account connecting T1,
+- [x] `tools/probe/run-verify-editor.cjs` — step 113, the Review's: production, a throwaway account connecting T1,
   the whole wizard, DW-54's denied row beside the upload's `admin_write ok`, and T1 restored.
-- [ ] Propagation at Dev:
+- [x] Propagation at Dev:
   - **The spine:** AD-11 (a dated note: F-075 makes Ship it a second invocation; memory 4096), the Stack table's row,
     AD-10 (the theme upload is the second multipart write), AD-20 (`awaiting_ship` landed) and AD-24 (the new codes).
   - **The PRD:** FR-J8's dated note.
@@ -546,6 +546,89 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
 
 ## Spec Change Log
 
+**Dev (2026-10-18) — readings and departures, each a routine call told in one line (none changes what a surface does):**
+- **`REFUSAL` is a tag, not a prefix match.** Four of the customer-caused sentences open with the customer's own words (a
+  layer's or a setting's name), which cannot be parsed back out reliably. So `packages/theme-compiler/src/refusal.ts` holds
+  the classes with their leading words, and every customer-caused throw goes through `refused(kind, message, parts)`: the
+  compile's sentence is unchanged (the Error's name stays `Error`), and the class and its parts ride on the Error.
+  `refusalWords` keys on the class. `compile.test.ts` reaches every class for real, with two unclassified throws as the
+  control. DW-353's "why" is read at the throw (`unreadWhy`): two rows for one binding, a section that rendered nothing, or a
+  prop left out with its element.
+- **`enginePackOf` is server-only (DW-323), so the editor shares its RULE rather than calling it.** `lib/style-pack.ts` is
+  imported by no client module, because it carries the font pool's record. The one rule is `lib/pack-edit.ts`'s
+  `recordInForce` (the project's own record under the id, else the library's), which `enginePackOf` runs on the server.
+- **The checkers load by their literal names.** `packages/theme-compiler/gate/gscan.ts`' computed `require(pkg)` made
+  Turbopack bundle gscan's own files, and the build then failed on gscan's `lib/checks/` read (executed in a scratch build).
+  One `LOAD` table now requires `gscan4` and `gscan6` literally, so they match `serverExternalPackages`. `apps/web` declares
+  both aliases (one copy each in the store), and the route's trace carries their trees and Turbopack's `.next/node_modules`
+  links (`tools/check-traces.mjs`, held against the scratch build).
+- **`vercel.json` is unchanged.** Vercel sets memory only project-wide (R-262 below), and `vercel.json` cannot set it.
+  `maxDuration = 300` is the route's own export.
+- **One test file beyond the list:** `deploy-input.test.ts` runs the compile's shell over a fake database holding real stored
+  rows, then the REAL compile and both REAL gates (0 errors on both pins). That is the proof that the shell assembles what
+  `tools/pilot-theme.mjs` assembles.
+- **R-260 reached two more files:** `apps/web/live-content.test.ts` (Home now lists the untagged post) and
+  `tools/probe/record-theme-assembly.py` leg 19 (its DW-364 rows now assert R-260: on Home, not on the collection).
+- **The release in the staleness hash** is the build's own `INFLOZO_CANVAS_V`. The CLI-built deployment carries
+  `VERCEL_GIT_COMMIT_SHA` as an empty string (`next.config.ts`), and with that every release would hash alike.
+- **The editor's roster keeps its own form of the pack rule.** `rosterOf`'s own-record test is `recordInForce`'s first branch
+  and its library branch is the preset itself, so `editor.tsx:925-938` is left as it was (no behaviour to move) — the rule
+  `enginePackOf` runs is the same.
+- **Ship it's drawing, where the frames and the floor met:** 14px padding (the Kit frame's; S4's 16 cannot keep D8b's 720
+  group centred), the ▾ 44px wide on touch (D8a draws 34, but D8a's own "≥ 44" touch rule is what the floor sweep holds), and
+  the label as wide as the wider of "Ship it" and "Opening…" (R-98's `BusyLabel`). Kit `Button` gains heights 40 and 42 for
+  S8's footers and the endings. S4d's divider is absent (the Kit `Menu` has none); Download routes.yaml carries no caption
+  (none is in Words). The running stage rows are static (no spinner, no byte bar); a blocked Pre-flight greys Ship it at
+  S8c's 35% with its reason under it. A Preview-only Destination is S8a′'s chip and B15's panel (title and body).
+- **⌘⏎ from a focused Layers row** ships: `components/controls/layers.tsx` no longer takes a MODIFIED Enter as the row's.
+- **Sizes step to MB** (`themeSize`): the frames draw "2.4 MB", which `sizeLabel` (a `routes.yaml`'s KB) could not say.
+- **The harness** takes `x-inflozo-harness-ship: full | shipped | live | preview` for the journeys (`live` is R-264 (a)'s
+  case); with no header it links no site.
+- **Step 113 is written, never run.** It links the walk's project to T1 through the service key (the connect wizard's
+  Skip links nothing; the product's site picker is 7.18b's), reads Home's listing through the Content API (with no staff token
+  no `routes.yaml` is uploaded, so T1's `/` keeps its own routing), proves the artefact unchanged from Pre-flight to Live
+  on Inflozo's side (Ghost answers no hash), and runs only with `T1_WRITES=1` — a fresh go per run. The Review iterates it
+  as a cut copy (steps 1–5 + 113) first.
+- **The recorder's `--t1` run** (MEASUREMENTS §86) ran in the main session on the owner's go and held every row; it
+  closed DW-51 and DW-364 and recorded R-264's `themes[0].active` (below).
+- **The routes outcome at the ending** rides in `deploy_jobs.stage_timings.routes` (NFR-9's structured log; no migration).
+  B16's file is `sites.routes_last_offered`, read by the wizard's GET.
+
+**Dev (2026-10-18) — the three questions Dev raised, each ruled option 1 by the owner the same day:**
+- **R-262 (Question 4) — the deploy runs at 4 GB.** The Vercel project's Function CPU is Performance (4 GB / 2 vCPU) for every
+  function, set through Vercel's API and read back by the main session; AD-11's 4096 MB is in force. The spine's AD-11 note,
+  its Stack row and VERIFY-AT-BUILD 73 say so. No code changed.
+- **R-263 (Question 5) — the bar below 768 on touch.** On a touch screen that is not a phone and narrower than 768px, Undo and
+  Redo move to the top of ⋯ (the same handlers and availability, `aria-disabled` when unavailable) and the centre group hides
+  the words "Template" and "View as" (their values and the eye stay, the full accessible names kept); at 768 and up nothing
+  changes. It amends R-143 at that width only. `floor.spec.mjs` sweeps 600, 640 and 720 on touch, Home and the Paywall,
+  beside the DW-283 stop and a control showing the overflow without the rule.
+- **R-264 (Question 6) — Deploy only's two guards.** (a) `lib/deploy.ts`' `uploadOnlyBlock` greys the ▾ row and S8a's card,
+  with R-264's sentence in each caption slot, while `ShipState.liveHere` holds (the site's latest activated deploy is this
+  project's, read in `read.ts`); a greyed press opens nothing, and the route refuses a `ship` in mode `upload` with 422
+  (`run.ts`' `uploadOnlyRefused`, asked again in `ship`). (b) `uploadAnswer` reads `themes[0].active`, and an upload Ghost
+  answers active is live at once in both modes — no `PUT activate`, routes offered, the ending Live (`goLive`). The owner's
+  manual test now sees D2f on the FIRST deploy (steps 8–10) and Deploy only greyed after it (steps 12–13); walk step 113 and
+  this spec's Walk list follow the same order; `record-deploy.mjs` leg 1b records the flag (the first upload, under an
+  inactive name, answers false — the control). Fact F8 records the source reading.
+
+**Dev (2026-10-18) — the main session's audit of the implementation, each a routine call:**
+- **Question 5's options were re-measured before the owner saw them.** The first draft's recommendation (Undo and Redo into ⋯
+  alone) fitted only from 720 on touch, and 720 itself — the editor's floor — was already broken on touch with no test
+  measuring it; the question carried the measured table and the combination that fits from 600 (R-263).
+- **One Ship it per row.** Two presses could each start `ship()` on the same `awaiting_ship` row and upload twice. `run.ts`'
+  clock gains `claim(stage)` — the stage write made only while the row still stands where it was read
+  (`deploy_jobs.update … eq('stage', from)`, `jobs.claim` in `deploy-io.ts`) — and `ship()` claims the row off
+  `awaiting_ship` (to `compiling` when stale, else `uploading`) before any work, `activate()` claims it to `activating`. A
+  second press's invocation finds the row moved and does nothing. `deploy-run.test.ts` holds it (two concurrent ships, one
+  upload; two re-activates, one PUT; a later row still ships — the control), and fails with the claim removed.
+- **R-260 on Home, end to end (§86 leg 6).** The recorder's leg 4 judged Ghost's SQL through the Content API alone, while
+  this spec asks for the untagged post "on Home". Leg 6 uploads the emitted `routes.yaml` with the staff token, reads every
+  page of `/` for it, uploads the old-filter control (the only hand edit, checked to be one line) and finds it on none, and
+  restores T1's own file byte for byte. Its first T1 run voided on the recorder's own `indexFilter(config)` call (the
+  function takes the collections), with the theme `finally` restoring Casper; the second held every row.
+- **The owner's step 9** said to press View site on D2f, which has no such button (Words); it opens the site in a new tab.
+
 ## Design Notes
 
 ### Rulings this spec is written to
@@ -568,6 +651,9 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
 | Q1 · R-259 | option 1 — three stories | This spec is 7.18a. 7.18b takes the Switch picker, the site linking and every warning-only row, with DW-297's question. 7.18c takes DW-304 (with its question), DW-307 (its own Schema) and DW-308. 7.32's "the wizard state matches D2e … the deploy-only ending matches D2f", (4), (5) and the one-click activate come here; 7.32 keeps D2d, (1)–(3) and (6). The rail's two first-deploy steps stay 7.19's and 7.20's. 7.25's lock span gains the routes upload. |
 | Q2 · R-260 | option 1, plus option 2's check | `indexNode` keeps a post with no primary tag (and no primary author) on the index's LIST. The exact NQL is chosen at Dev from Ghost's own code and is proved on T1 (§86 leg 4) before any Ship it uploads a routing. **And** Pre-flight's check names any post no page would list (`unlistedPosts`, read in the browser). |
 | Q3 · R-261 | option 1 — reset | Routes & Templates offers "Start again from Ghost's default routing" when the stored routing cannot be read. The Ship button's reason links there. |
+| Q4 · R-262 | option 1 — Performance | The Vercel project's Function CPU is Performance (4 GB / 2 vCPUs), set through Vercel's API at Dev and read back; it is the only way Vercel sets memory (project-wide, never in `vercel.json`). AD-11's 4096 MB is then in force for every function. |
+| Q5 · R-263 | option 1 — both, below 768 on touch | On a touch screen that is not a phone and narrower than 768 CSS px, Undo and Redo move to the top of ⋯ (same handlers, same availability, `aria-disabled` when unavailable), and the centre group hides the words "Template" and "View as" (the values and the eye stay; each control keeps its full accessible name). Amends R-143's "the pair will not collapse" at that width only. `floor.spec.mjs` sweeps 600, 640 and 720 on touch, Home and Paywall, with no bar control outside the window. |
+| Q6 · R-264 | option 1 — both guards | (a) "Deploy only" is greyed — the ▾ row and S8a's card — while Inflozo's own record says this project's theme is the one live on the site (the site's latest activated deploy is this project's), with the reason in its caption slot: "v{prev} is already live on {host}, so Ghost would switch to v{n} the moment it uploads. Use Deploy & activate." (b) Whenever Ghost's answer to an upload says the theme is active (`themes[0].active`), the deploy is live and activated, routes are offered and the ending is Live with confetti — never D2f — and no separate activation is sent. |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -645,6 +731,8 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
 - The menu rows: "Deploy & activate" / "Ship v{n} and make it live", and "Deploy only" / "Upload v{n}, keep v{prev}
   active". On a first deploy the second caption is "Upload v1, keep your current theme active".
 - "Download routes.yaml".
+- Deploy only greyed (R-264), the reason in the ▾ row's and S8a card's caption slot: "v{prev} is already live on {host}, so
+  Ghost would switch to v{n} the moment it uploads. Use Deploy & activate."
 
 **D8g.**
 - "Take over to ship?" and "Shipping needs the edit lock, and your other session is holding it."
@@ -771,8 +859,12 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
 4. Pre-flight's rows are compared with the two gates' verdicts. A planted unreadable routing blocks (a control), and so
    does a planted `card_designs`, through the service key.
 5. Cancel during Checking leaves no row.
-6. Ship it: Live, and B16 at the ending (no token). The page has no heading, and Home lists the untagged post.
-7. Deploy only, then Re-activate.
+6. The first ship is ▾ → Deploy only (R-264): D2f, v1 uploaded and not activated, and T1 still on the theme it served before
+   (the control). Re-activate v1: Live, and B16 at the ending (no token). The page has no heading, and the index filter's
+   listing holds the untagged post.
+7. "Ship update": ▾ shows Deploy only greyed with R-264's caption, and a press opens nothing and sends no deploy POST; S8a's
+   card is greyed the same. Deploy & activate ships v2: Ghost's upload answer says it is active, so it is Live with no
+   separate activation, and v1 is demoted.
 8. DW-54: the product's `call()` is asked for an off-list write on the walk's site. The step reads its `denied` row and
    the earlier `admin_write ok`, and T1's theme list is unchanged.
 9. Restore: Casper active, the probe theme deleted, T1's `routes.yaml` back byte for byte, the site disconnected and the
@@ -809,6 +901,10 @@ Users and projects are counted back unchanged.
 - **F6. The index filter `primary_tag:-'x'`** lists no post without a public primary tag in SQL, while ownership in
   memory holds (§84, `post.js:291-310`).
 - **F7. Ghost(Pro)'s theme limits and the Starter refusal are unobserved** (VERIFY 1–3 ⛔). No T2 exists (R-238).
+- **F8. An upload under the ACTIVE theme's name is live at once** *(read in source at Dev, 2026-10-18; R-264)*:
+  `core/server/services/themes/storage.js`' `setFromZip` calls `activateFromAPIOverride` when the name is the active theme's
+  (6.58.0 `:111-116`, 5.130.6 `:81-86`), and the answer carries `themes[0].active: true` (VERIFY-AT-BUILD 74; §86 leg 1b
+  executes it).
 
 ## Owner's manual test
 
@@ -829,18 +925,18 @@ after step 2.
 | 5 | `…/projects/<your project>/routes` | Routes & Templates | Press **+ New collection**. Add **Primary tag** and type the tag. For Template choose **New template…** and type the name. Press **Create collection**. | `/tutorials/` · `craft` · `Tutorials List` | The collection is listed. |
 | 6 | `…/projects/<your project>` in a second window (B) | Editor | In B, press **Ship it**. | — | "Take over to ship?" opens with **Wait** focused. |
 | 7 | same (B) | Take over to ship? | Press **Take over and ship**. | — | Window A becomes read-only. In B the wizard opens on **1 Destination**: ghost6 **Connected**, **Deploy & activate** chosen, Theme `inflozo-…`, chip **v1**. |
-| 8 | same (B) | Destination | Press **Run checks**. | — | **Compiling your theme…**, then **Checking your theme…** (Cancel works here). Then "Theme compiled", and "Checking your theme (Ghost will love it)" with **0 errors** and at least the warning "The switch that hides a page's title and feature image does nothing on this site.". Then "routes.yaml is valid · pass", "Every post appears on Home or a collection · pass" and "Warnings won't block your deploy.". |
-| 9 | same (B) | Pre-flight | Press **Ship it**. | — | "Shipping v1…", "Uploading to Ghost", then "Activating v1". **Cancel** is greyed with "Once it starts, it finishes". |
-| 10 | same (B) | Live | Look, then press **View site ↗**. | — | Confetti, and "Live! Your site just got gorgeous.". Below it: "Upload routes.yaml yourself". The site in the new tab shows your design, and the newsletter has no heading. |
+| 8 | same (B) | Destination | Choose the **Deploy only** card, then press **Run checks**. | — | The card reads "Upload v1, keep your current theme active for now.". Then **Compiling your theme…**, then **Checking your theme…** (Cancel works here). Then "Theme compiled", and "Checking your theme (Ghost will love it)" with **0 errors** and at least the warning "The switch that hides a page's title and feature image does nothing on this site.". Then "routes.yaml is valid · pass", "Every post appears on Home or a collection · pass" and "Warnings won't block your deploy.". |
+| 9 | same (B), then `https://ghost6.inflozo.com` in a new tab | Pre-flight | Press **Ship it**. When it ends, open the site in a new tab. | — | "Shipping v1…" and "Uploading to Ghost"; **Cancel** is greyed with "Once it starts, it finishes". Then "Uploaded. Not live yet." with "Activating v1 · Not requested", **Re-activate v1** and **Leave it for now**, and no confetti. The site in the new tab still shows its own theme (Casper). |
+| 10 | same (B) | Uploaded. Not live yet. | Press **Re-activate v1**, then **View site ↗**. | — | "Activating…", then confetti and "Live! Your site just got gorgeous.". Below it: "Upload routes.yaml yourself". The site in the new tab now shows your design, and the newsletter has no heading. |
 | 11 | ghost6's Ghost Admin, then the wizard (B) | B16 at the ending | Press **Download the file we generated**, upload it in Ghost where the card says, then press **Verify upload**. | the downloaded `routes.yaml` | "Ghost has your routes.yaml. Your routing is live." Press **Done**. Routes & Templates and Sites show no card. |
-| 12 | `…/projects/<your project>` (B) | Editor → Style pack | Make the text colour a pale grey, and accept the editor's "hard to read" warning. Then press **⌘⏎**. | `#DDDDDD` | The bar now says **Ship update**. ⌘⏎ opens the wizard (v1 → v2). After Run checks, Checking shows the contrast warning in the Style pack editor's own words, and Ship it is still pressable. Press **Back** and put the colour back. |
-| 13 | same (B) | ▾ → **Deploy only** | Run checks, then press **Ship it**. | — | "Uploaded. Not live yet." with "Activating v2 · Not requested". Press **Re-activate v2**: you see Live and confetti. |
+| 12 | `…/projects/<your project>` (B) | Editor → ▾ | Press the ▾ beside **Ship update**, then press **Deploy only**. | — | The bar now says **Ship update**. In the menu **Deploy only** is greyed, its caption reading "v1 is already live on ghost6.inflozo.com, so Ghost would switch to v2 the moment it uploads. Use Deploy & activate.". Pressing it opens nothing. |
+| 13 | same (B) | Editor → Style pack, then the wizard | Make the text colour a pale grey, and accept the editor's "hard to read" warning. Then press **⌘⏎**, **Run checks**, then **Ship it**. | `#DDDDDD` | ⌘⏎ opens the wizard (v1 → v2) with **Deploy & activate** chosen, and the **Deploy only** card greyed with the same caption. After Run checks, Checking shows the contrast warning in the Style pack editor's own words, and Ship it is still pressable. Ship it ends on Live with confetti, and the site shows the pale text. Put the colour back afterwards. |
 | 14 | ghost6's Ghost Admin → Integrations → Owner test 7.18, then the editor (B) | — | Press **Regenerate** on the Admin API key. In the editor, press **Ship it**, **Run checks**, then **Ship it**. | — | It fails at Ship: "Ghost said no — this Admin API key no longer works." with **Reconnect site**, which opens Manage keys. Paste the new key and ship again: Live. |
 | 15 | ghost6's Ghost Admin, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: **Settings → Design → Change theme → Casper → Activate**, delete the `inflozo-…` theme, upload the `routes.yaml` you saved at the start, and delete the Owner test 7.18 integration. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was. |
 
 ## Questions for the owner
 
-All three were ruled on 2026-10-18 (R-259–R-261); none is open.
+Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), and Questions 4–6, raised at Dev, the same day (R-262–R-264); none is open.
 
 ### Question 1 — This story is three stories. May I split it?
 
@@ -907,6 +1003,81 @@ the routing is plain Ghost again.
 **Ruled: option 1 (owner, 2026-10-18) — R-261.** *"A "Start again" on Routes & Templates, confirmed first, which
 replaces the unreadable routing with Ghost's default and keeps your templates."*
 
+### Question 4 — The deploy's memory: switch the whole Vercel project to 4 GB?
+
+**In plain English.** The architecture (AD-11) gives the theme builder 4 GB of memory, because several deploys can land
+on one Vercel server at once and each needs room. Vercel lets us set memory **only for the whole project, never for one
+function**: its docs say "You cannot set your memory size using `vercel.json`", and the setting is Settings → Functions →
+Advanced Settings → Function CPU. The project reads **Standard (2 GB, 1 CPU)** today (`defaultResourceConfig.
+functionDefaultMemoryType: standard`, read through Vercel's API at Dev). So AD-11's 4 GB is in force nowhere.
+
+**An example.** One theme build peaks at about 486 MB (MEASUREMENTS §14), and Vercel was measured putting up to four
+requests on one server (§17a). Four builds at once then use 95% of 2 GB (§17b), or 47% of 4 GB. Performance (4 GB, 2 CPUs)
+applies to every function — the editor's pages too — and Vercel bills more memory while requests run.
+
+1. **(RECOMMENDED) Switch the project to Performance (4 GB / 2 CPUs) now.** It is AD-11's ruling, applied the only way
+   Vercel allows. I change it through Vercel's API in this session and read it back; the next deploy picks it up, and the
+   Review records the function's memory from Vercel.
+2. **Stay on Standard (2 GB) for now.** The Review measures a real build on production, and AD-11 gets a dated note that
+   2 GB is in force until a measurement says otherwise.
+3. **Move the deploy into its own Vercel project** (AD-11's stated way out), so only it runs at 4 GB — a larger change, its
+   own story.
+
+**Ruled: option 1 (owner, 2026-10-18) — R-262.** *"1. Switch to 4 GB now"*
+
+### Question 5 — On a small upright tablet, Ship it does not fit in the top bar. What gives way?
+
+**In plain English.** The criteria say Ship it shows at every width. An earlier rule (DW-283) says no button of the
+editor's top bar may hang off the screen. On a touch screen narrower than about 760 pixels both cannot hold today: with
+Ship it added, the ▾ (and at 600, Ship it itself) falls off the right edge. Measured at Dev in the harness, on Home and on
+the Paywall alike, at three widths a real tablet has:
+
+| Width (touch) | As built | Undo and Redo into ⋯ | "Template" and "View as" words hidden | Both |
+|---|---|---|---|---|
+| 600 (small Android, upright) | Ship it and ▾ off | both still off | ▾ off | **fits** |
+| 640 (Galaxy Tab S9, upright) | both off | ▾ off | fits | **fits** |
+| 720 (the editor's floor) | ▾ off | fits | fits | **fits** |
+
+Your R-143 says Undo and Redo stay in the bar when the rest of the right side collapses ("the pair will not collapse with
+it"), and an earlier rule keeps Template and View as whole. Any option below changes one of those, so it is yours.
+
+**An example.** On a 640 tablet held upright with option 1, the bar reads: back · the save dot · "Paywall ▾" · "👁 Logged
+out user ▾" · ⋯ · Ship it ▾ — and ⋯ now holds Undo and Redo at the top of its list. A screen reader still hears
+"Template, Paywall" and "View as, Logged out user". At 768 and wider, nothing changes.
+
+1. **(RECOMMENDED) Below 768 pixels on a touch screen, do both:** Undo and Redo move to the top of ⋯, and the words
+   "Template" and "View as" are hidden (their values and the eye stay; screen readers keep the names). It is the only one
+   of the three that fits from 600 up. A gate sweep at 600, 640 and 720 holds it.
+2. **Below 768 on touch, Undo and Redo move into ⋯ only.** Fits at 720; at 640 and 600 the ▾ still falls off.
+3. **Below 768 on touch, Ship it moves into ⋯.** The bar fits, but "visible at every width" breaks there.
+
+**Ruled: option 1 (owner, 2026-10-18) — R-263.** *"1. Both, below 768 touch"*
+
+### Question 6 — "Deploy only" cannot keep the old version live once this project's theme is the live one. What should it do?
+
+**In plain English.** A project ships to a site under ONE theme name for good (`inflozo-<project>`, AD-19 — Ghost names a
+theme by its file). Read at Dev in Ghost's own code: when the uploaded file has the name of the theme that is live right
+now, Ghost replaces that theme's files AND makes them live at once (`core/server/services/themes/storage.js` — 6.58.0
+`:111-116`, 5.130.6 `:81-86`, `activateFromAPIOverride`), and its answer says so (`themes[0].active: true`,
+`to-json.js`). So after your first Deploy & activate, every later "Deploy only" to that site goes live the moment it
+uploads, and D2f's "v1 is still what readers see" would be untrue. "Deploy only" works as drawn while the site shows a
+different theme (a first deploy, or after you switch back in Ghost). §86's T1 run records Ghost's answer.
+
+**An example.** You ship v1 with Deploy & activate: your site shows v1. You change a colour and choose ▾ → Deploy only,
+hoping to look first. Ghost receives `inflozo-field-notes.zip`, sees that theme is live, and your readers see v2 straight
+away, while the wizard would say "Uploaded. Not live yet."
+
+1. **(RECOMMENDED) Both guards.** Grey "Deploy only" while Inflozo's own record says this project's theme is the one live
+   on the site, with the reason in its caption: "v{prev} is already live on {host}, so Ghost would switch to v{n} the
+   moment it uploads. Use Deploy & activate." (a new sentence, for your approval). And whenever Ghost's own answer says the
+   upload went live (you may have switched themes in Ghost since), the ending is Live with confetti, never D2f.
+2. **Grey "Deploy only" only**, by Inflozo's record.
+3. **Truthful ending only:** Deploy only stays pressable; when Ghost says it went live, the ending is Live.
+4. **Upload "Deploy only" under a second name** (`inflozo-field-notes-next`) and make Re-activate switch to it — a second
+   Inflozo theme on your site, and AD-19's one-name rule changes.
+
+**Ruled: option 1 (owner, 2026-10-18) — R-264.** *"1. Both guards"* — the caption sentence as written in option 1, approved with it.
+
 ## Verification
 
 **Commands:**
@@ -927,3 +1098,63 @@ replaces the unreadable routing with Ghost's default and keeps your templates."*
 - **The walk's step 113 on production** at Review, plus the deployed function's size and memory read from Vercel
   (`VERCEL_TOKEN`), and CI's `check`, `rls`, `deploy` and the render matrix green on the Review head.
 - **Ghost 5:** postponed to DW-326 (Story 15.7).
+
+**Executed — Schema phase (2026-10-18, pushed alone as `5cd03f0c` before any code, R-99):**
+- `bash supabase/tests/run-rls-gate.sh` — exit 0: no SCHEMA DRIFT, every earlier block passing, and the 7.18a block's PASS
+  lines: `job_stage` carries `awaiting_ship` after `checking`; `deploys.quality` (jsonb) and `deploys.inputs_sha256` (text)
+  exist; `bound_to`'s comment names the `prop` shape (DW-355); the tenant reads both columns on its own deploy and not on
+  another's; it cannot write either (42501) nor set a job's stage (42501); no cancel at `awaiting_ship`, with a cancel in
+  `checking` as the control; the refused writes leave the server's values.
+- Controls, over a scratch copy without `20261019120000_deploy_wizard.sql` and with HEAD's `SCHEMA.sql`
+  (`INFLOZO_ARCH_DIR`): exit 3 at the server-asserted list (`column "quality" of relation "deploys" does not exist`); and,
+  with that list's one line reverted, exit 3 at the 7.18a block itself ("job_stage is {queued,…,cancelled} — awaiting_ship
+  is missing or out of place"), 7.17's block passing first.
+
+**Executed — Dev, the main session on the final tree (2026-10-18, Node 24):**
+- `pnpm check` — exit 0: library 285 / ghost-shim 47 / section-runtime 441 / theme-compiler 219 / app 877 / tools 13 passing,
+  0 failing (each suite's own count, as it printed). `pnpm lint` re-run after the last journey edit — exit 0.
+- `pnpm keyboard` — exit 0, 269 passed (14.0 min). Its first full run had one red journey (R-264 (a)): the ▾ menu focuses its
+  first row a frame after it opens (`lib/menu.ts`) and the journey pressed ArrowDown before then; the same race sat in two
+  more journeys, all three now wait for that focus. Then `--grep "7\.18a|R-263|R-145|DW-283" --repeat-each 3` — 90 passed,
+  and the full gate above.
+- `pnpm build` — exit 0, `/app/projects/[id]/deploy` built. `node tools/check-traces.mjs` — "every route carries its files":
+  the deploy route carries all 273 files it reads, and `gscan4`, `gscan6` and `jsdom` with their links; no client chunk of 50
+  carries the font pool's record.
+- `python3 tools/doc-audit.py --check` — PASS on the second run (the first regenerated the index and the board).
+- `node --test --experimental-strip-types deploy-run.test.ts` — 21/21; with `ship()`'s claim removed, the double-press test
+  fails (the mutation check), and passes again restored.
+- `node --experimental-strip-types tools/probe/record-deploy.mjs` (the local half) — every row held: zip bytes equal twice
+  (321346 bytes), the pilot theme 0 errors · 0 warnings on gscan 4.49.7 and 6.4.2 and the quality gate, the planted theme
+  blocked on both on `GS005-TPL-ERR` (the control).
+
+**Real services the story hit (R-82; T1 only, R-238):**
+- **Supabase production** (`SUPABASE_DB_POOLER_URL`, read inside the script, never on argv; the owner's in-session go): before
+  — `job_stage` without `awaiting_ship`, no `quality`/`inputs_sha256`, no comment on `bound_to`; the migration applied;
+  after — the enum in order with `awaiting_ship` after `checking`, both columns nullable, the comment naming three shapes,
+  and 0 deploys and 0 deploy jobs before and after.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): the project read through `GET /v9/projects` —
+  `defaultResourceConfig.functionDefaultMemoryType: standard`, `functionDefaultTimeout: 300`, `fluid: true` (Question 4);
+  then, on the owner's ruling R-262, `PATCH /v9/projects` with `resourceConfig.functionDefaultMemoryType: performance` —
+  HTTP 200, and both `resourceConfig` and `defaultResourceConfig` read back `performance`. The deployed function's memory and
+  size are the Review's reading.
+- **T1 `ghost6.inflozo.com`, 6.58.0** — read only first (`GHOST6_CONTENT_API_KEY`): 33 published posts, one with no tags
+  (`probe-gated-post`). Then `record-deploy.mjs --t1` (MEASUREMENTS §86; the owner's in-session go for the whole run;
+  `GHOST6_ADMIN_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY` read in process). Its first run voided at leg
+  4 on the recorder's own `indexFilter(config)` call, with Casper restored and no routing touched; the second held every row:
+  - the ADMIN key uploaded the pilot theme (200, no Content-Type of Inflozo's own, `themes[0].active` false — R-264's
+    control) and activated it (200, `active` true); the home page carried the run's page word;
+  - leg 1b: the re-upload under the ACTIVE name answered `themes[0].active: true` and the probe stayed active with no PUT
+    (R-264 b, VERIFY-AT-BUILD 74);
+  - two concurrent uploads of one name answered 200 and 200 (§25f's EEXIST did not recur; `uploadAnswer` reads either);
+  - the planted fatal theme: 422 `ThemeValidationError`, read as `ghost_theme_refused`;
+  - leg 4 (Ghost's SQL): the new index filter listed `probe-gated-post` (27 posts), the old `primary_tag:-'craft'` did not
+    (26, the control); the collection's own post on neither; its address 200;
+  - leg 6 (Home, end to end): the emitted `routes.yaml` uploaded with the staff token (200), `/probe-gated-post/` linked from
+    a page of `/`; the old-filter control (200) left it on none, its address 200; T1's own 130-byte file restored and read
+    back byte for byte;
+  - Casper active again and no `inflozo-probe-` theme installed, read back.
+- **Resend, Dodo:** not touched — this story sends no email and takes no payment.
+- **Ghost 5:** postponed to DW-326 (Story 15.7), R-238.
+- **Still the Review's:** walk step 113 on production (written, never run; `T1_WRITES=1` and a fresh go naming its T1
+  writes), the deployed function's size and memory from Vercel, and CI's `check`, `rls`, `deploy` and the render matrix on
+  the Review head.

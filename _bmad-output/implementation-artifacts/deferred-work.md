@@ -1475,7 +1475,7 @@ reason: postgres.js 3.4.9 sets `rejectUnauthorized: false` for `ssl: 'require'` 
 
 plain: The one door Inflozo talks to a Ghost site through can only send text-shaped requests today; uploading
   a theme, which the deploy in Epic 7 needs, sends a file, so the door will need to learn that shape then.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose criteria carry its requirement word for word with its id (R-195). *(Story
   5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -1491,6 +1491,14 @@ note: Story 7.17's Dev (2026-10-18, routine call 5) — THE TRANSPORT IS BUILT, 
   passes untouched with no `Content-Type` of Inflozo's own (`ghost-admin-rule.test.ts`, a JSON body unchanged as its
   control); `CallResult.bytes` carries the raw answer; T1 takes the multipart routes upload (MEASUREMENTS §85). The entry
   stays open for its owner: Story 7.18 proves the THEME upload through the same transport on T1 (T3 is retired, R-238).
+note: Story 7.18a's Dev (2026-10-18) — THE THEME UPLOAD IS BUILT on that transport: Ship it posts the stored zip as a
+  `FormData` under `file`, named `{theme}.zip`, with the Admin key through `call()` (`server/deploy/deploy-io.ts`), and
+  `deploy-run.test.ts` holds that the uploaded bytes are the artefact Pre-flight checked. `tools/probe/record-deploy.mjs`'s
+  local half held; the entry closes on its `--t1` run (MEASUREMENTS §86, the main session's, on the owner's go).
+resolution: Story 7.18a's Dev (2026-10-18), MEASUREMENTS §86 on T1, every row behind its control: the pilot theme zipped by
+  `zip.ts`, posted as a `FormData` under `file` through `adminRequest` with no Content-Type of Inflozo's own, accepted with
+  the ADMIN key (200) and activated with it (200); a planted fatal theme refused with Ghost's 422 `ThemeValidationError`.
+  The theme half of the multipart transport holds. `call()`'s audit rows on production are the deployed walk's (step 113).
 
 ### DW-52: a Ghost that is down, rate-limited or answering 404 reads as "Ghost refused"
 
@@ -1584,6 +1592,9 @@ reason: R-82 wants every claim executed on the real infrastructure. With DW-48 h
   one present: DW-44's replace path on the live project. `secret-gone` still exercises the CASCADE path. So
   it is the write-denial, the staff removal and the decryption that are gate-only until Epic 7, Epic 7 and
   Story 3.3.
+note: Story 7.18a's Dev (2026-10-18) — the deploy is the theme writes' first product caller (`theme_upload`,
+  `theme_activate` through `call()`), and a thrown `write_not_allowed` is the wizard's own code. The live `denied` row beside
+  the upload's `admin_write ok` is the deployed walk's step 113, at Review; the entry closes there.
 
 ## Deferred from: code review of spec-3-2-the-connect-wizard-url-integration-guide-and-the-two-keys (2026-09-08)
 
@@ -6794,7 +6805,7 @@ plain: The plan says that if you press Ship it or Export while another window is
   first whether to take over — because otherwise you would publish an older copy of your site. There is no Ship it
   button and no Export button yet, so there is nothing to press and nothing to build. When those two arrive, the box
   that asks is already written and waiting for them.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: medium
 origin: Story 5.17's Create (2026-09-23). FR-D18's last sentence and the story's own acceptance criterion name it, and
   `EXPERIENCE.md:1053-1056` gives its frame — `D8 Editor Below 1440.dc.html` D8g, "Take over to ship?", focus opening
@@ -6809,6 +6820,14 @@ owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10
   Each renders `lock-takeover.tsx` with D8g's strings and refuses to start without the lock (AD-15's flush contract).")*
 location: `apps/web/components/editor/lock-takeover.tsx` · `apps/web/lib/keymap.ts:113` ·
   `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:1053-1056`
+resolution: Story 7.18a's Dev — Ship it from a session reading along opens D8g through `lock-takeover.tsx` (a second
+  `<LockTakeover id="editor-ship-takeover">`, focus on **Wait**) in `LOCK_COPY`'s new words, R-189's "your other session":
+  "Take over to ship?", "Shipping needs the edit lock, and your other session is holding it.", `willBeLost(n)`,
+  `lossIsFinal`, **Take over and ship** (busy "Taking over…") and **Wait**. **Take over and ship** runs the editor's own
+  `takeOver` and opens the wizard only once this session holds the lock (the ask survives the take-over's hydrate in the
+  tab's `sessionStorage`); a refused take-over keeps its sentence and opens nothing. `pnpm keyboard`'s 7.18a journey holds
+  each, the lock POST routed to a win and to a refusal; the owner's hand test is steps 6–7. Export's own take-over is Story
+  7.26's, whose card already says "export requires the edit lock, and from a read-only session it first prompts a take-over".
 
 ### DW-239: the lock's middle transport layer needs a Supabase client the browser does not have
 
@@ -9540,7 +9559,7 @@ reason: A design file is its owning story's (AD-35), so Story 7.6 may not edit i
 plain: When a customer deletes every word of a typed text, such as the newsletter heading, the editor shows the design's
   own sample sentence again, and the published theme would carry that English. Story 7.6's label check refuses it, so the
   publish would fail. The owner ruled the line is hidden instead, on the canvas and the site; Story 7.18 builds it.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: medium
 origin: Story 7.6's Dev (2026-10-08). `checkChromeText` (V1 at compile) refuses FR-H8's text default on a typed prop:
   `packages/section-runtime/src/core.ts`'s `data-prop` loop leaves the authored text in place when the value is empty
@@ -9553,6 +9572,12 @@ location: `packages/section-runtime/src/core.ts` (the `data-prop` loop's `propEm
 reason: Story 7.6's Question 2, ruled option 1 (owner, 2026-10-08): "If user deletes than he intends to delete that
   line". Hiding changes the editor (an emptied line leaves the canvas and comes back through the sidebar's text box), so
   it needs a screen and the owner's hand test, which Story 7.6 has neither of.
+resolution: Story 7.18a's Dev — `packages/section-runtime/src/core.ts`' `data-prop` loop removes the element of an EMPTY
+  `text` or `richtext` prop on both emitters, whatever its `data-empty`, as `hide` does; a catalog-linked prop still returns
+  `{{t}}` and every other kind keeps FR-H8's default. `agreement.test.ts` (node by node) and `ad36.test.ts` hold the vector
+  beside a typed control and a catalog control, each failing with the fix reverted; every design snapshot is byte-identical
+  (`check-snapshots`); `deploy-input.test.ts` compiles a stored project through the deploy's shell 0/0 on both pinned gscans.
+  The emptied A22 #1 heading on the canvas, in Preview and on the shipped site is the owner's hand test (steps 3–4, 10).
 
 ### DW-350: the keyboard gate's R-201 floor stop went red on a spec-only push, and that push never deployed
 
@@ -9694,7 +9719,7 @@ plain: Theme settings shows a promoted setting as healthy whenever its section i
   when" that names a setting a shuffle has parked is quietly dropped from the theme while Theme settings still prints it.
   The deploy wizard's Pre-flight builds the theme before anything is uploaded, so it is the place to say each of these in
   plain words and name the setting.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: low
 origin: Story 7.10's Review (2026-10-10), on `94065e62`. `compileTheme`'s last check (`compile.ts`, "is declared and nothing
   reads it — a setting ships with the line that reads it (GS100, GS090)") is reached by `compile.test.ts`'s own row "(7.10)
@@ -9711,6 +9736,13 @@ location: `packages/theme-compiler/src/compile.ts` (`customSettings`, the keys-a
 reason: every case is refused before anything reaches Ghost, so nothing ships wrong; what is missing is the owner's words
   at the moment a deploy meets one, which is the wizard's surface, and closing the two-promote window in the database is a
   Schema phase.
+resolution: Story 7.18a's Dev — every customer-caused compile refusal is tagged with its class (`REFUSAL`,
+  `packages/theme-compiler/src/refusal.ts`, the compile's sentences unchanged) and said by the wizard in plain words with its
+  link to Theme settings (`lib/deploy.ts`'s `refusalWords`): the cap, a deleted, hidden or changed binding as `SETTING_WORDS`
+  say them, and "{Setting} is in Theme settings, but nothing on your site shows it any more — {why}" for the four cases —
+  nothing picked, no picture, a section now on a design where the control works differently, and two settings made in one
+  instant (`unreadWhy`). `compile.test.ts` reaches every class for real; `deploy.test.ts` holds each sentence. No unique
+  constraint on `bound_to` (routine call 16). The dropped "Only show when" note is 7.18b's warning row (R-259).
 
 ### DW-354: a promoted picture over a section's own picture ships no `srcset` on either branch
 
@@ -9733,7 +9765,7 @@ reason: the `{{else}}` half needs the bundled rendition set that does not exist 
 plain: A note stored with the database column that holds what a setting was promoted from lists two kinds — a control and
   the accent — but Story 7.10 also stores a text or a picture. Nothing reads the note; it only misleads a person reading the
   database. Changing it needs a database change, which is done at the start of a story that changes the database anyway.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: low
 origin: Story 7.10's Review (2026-10-10). `20260904120000_complete_schema.sql`'s comment on `bound_to` and the architecture's
   `SCHEMA.sql` read `{kind:'control'|'token', instanceId?, controlKey?, token?}`; `custom-settings.ts`'s `Binding` type is the
@@ -9743,6 +9775,9 @@ owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10
 location: `supabase/migrations/20260904120000_complete_schema.sql` · `architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql`
 reason: an applied migration is never edited, and a migration for a comment alone is a Schema phase this story's spec rules
   out.
+resolution: Story 7.18a's Schema (`5cd03f0c`) — `20261019120000_deploy_wizard.sql` sets `comment on column
+  public.custom_settings.bound_to` to the three shapes (`control`, `prop`, `token`) as `custom-settings.ts`' `Binding` states
+  them, and `SCHEMA.sql`'s inline comment and `comment on` say the same; the RLS gate held.
 
 ### DW-356: Ghost's comments box does not follow a mode change made after it loads
 
@@ -9792,7 +9827,7 @@ plain: If a project's saved card designs cannot be read (a row made by hand, or 
   know), the editor opens every card on Ghost's look and says so, and the next card change saves over the bad record. The
   theme compiler, though, refuses the bad record outright, so until someone changes a card every deploy of that site
   stops with a sentence about card designs — and nothing yet shows that sentence to the customer where they deploy.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: medium
 origin: Story 7.13's Review (2026-10-16), the Blind Hunter and Edge Case Hunter layers: `compile.ts`' `parseCardDesigns` refusal
   ("card designs: … The build stops before any file is written (AD-36).") against `read.ts`' `storedCards`, which opens
@@ -9805,6 +9840,10 @@ location: `packages/theme-compiler/src/compile.ts` (`parseCardDesigns` before th
   (`CARD_WORDS.malformed`) · `read.ts` (`storedCards`)
 reason: no deploy path exists before Story 7.18, so there is no screen to say it on; refusing the build is the AD-36 floor
   and stays.
+resolution: Story 7.18a's Dev — the compile's `card designs: …` refusal is tagged `cardDesigns`, and the wizard says
+  "Your card designs can't be read, so the theme can't be built. Open Editor cards and change any card, or press Reset to
+  Ghost default on one — that saves a readable copy." with **Open Editor cards** (`refusalWords`); the refusal itself stays
+  the AD-36 floor.
 
 ## Deferred from: Story 7.15's Create (2026-10-16 — DW-359 and DW-360, written at its Dev)
 
@@ -9883,7 +9922,7 @@ plain: If a project's saved routing ever cannot be read as Inflozo writes it (a 
   reads it more strictly), the Routes page shows "Line 1 — This routing could not be read…" and nothing else: no list, no
   sheet, no way to reset. Nothing Inflozo writes today can get there — every save is checked whole by the same reader
   first — so it is a dead end nobody can yet reach, but from Story 7.18 it would also block every deploy.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: low
 origin: Story 7.16a's Review (2026-10-17), the Blind Hunter, Edge Case Hunter and Acceptance Auditor layers:
   `routes-manager.tsx` draws the lists and opens the sheets only when `config !== null`, and `page.tsx` hands it null when
@@ -9902,6 +9941,11 @@ ruling: R-261 (owner, 2026-10-18, Story 7.18's Question 3, option 1) — a "Star
 reading (Story 7.16b's Review, 2026-10-17, the Edge Case Hunter): the Template menu's **New template** reaches the same
   page as `?new=template`, and with the stored routing unreadable it opens no sheet (`open !== null && config !== null`) —
   the same dead end, reached from the editor. The way out 7.18's Create asks for covers it.
+resolution: Story 7.18a's Dev, R-261 — Routes & Templates offers **Start again from Ghost's default routing** while the
+  stored routing cannot be read, behind a confirm that opens on Cancel (UX-DR14); `resetRoutes` (`routes/actions.ts`) writes
+  Ghost's default through `saveRoutes`' own path and keeps every template; `?reset=routing` (`resetRoutingPath`) opens it, and
+  the Ship button's reason links there. S9b's "Deploys are blocked until routing is valid — the Ship button explains why."
+  shows whenever the stored routing has problems.
 
 ## Deferred from: code review of spec-7-16b-custom-templates-on-the-canvas (2026-10-17)
 
@@ -9942,7 +9986,7 @@ reason: the behaviour holds on production today (step 110, 0 FAIL); what is miss
 plain: If you make a collection by Primary tag, any post that has no tags at all (or whose first tag is a hidden internal one)
   disappears from your home page and from every list on your site. Its own page still opens, but no list links to it. With no
   collections, Ghost would show it on your home page as normal.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: high
 origin: Story 7.16c's Dev T1 run (MEASUREMENTS §84's first run, 2026-10-18), read only on T1's Content API and in Ghost 6.58.0's
   source: the index filter Inflozo emits on `/` (Story 7.16a's `indexFilter`, the inverse of every collection's filter) is
@@ -9966,6 +10010,16 @@ ruling: R-260 (owner, 2026-10-18, Story 7.18's Question 2, option 1 with option 
   what it writes: Home also lists posts with no primary tag, the exact wording proved with Ghost's own code and on T1 before
   any Ship it uploads a routing, stopping to ask if Ghost cannot say it; and Pre-flight adds a check naming the posts no page
   would list (`unlistedPosts`). Built at Story 7.18a's Dev.
+note: Story 7.18a's Dev (2026-10-18), R-260 — BUILT: the index filter adds `(tags.visibility:-'public'+posts_tags.sort_order:0)`
+  beside every negated `primary_tag` leaf (and the `authors.`/`posts_authors.` pair for `primary_author`), read in both majors'
+  source and run through both pinned NQLs (`routes.test.ts`, the old filter and `primary_tag:null` as controls; VERIFY-AT-BUILD
+  72); `holdsFor`'s listing reading follows; `unlistedPosts` names any post no page lists, drawn as Pre-flight's warning row.
+  The entry closes on MEASUREMENTS §86 leg 4 (T1's own SQL), which runs before any Ship it uploads a routing.
+resolution: Story 7.18a's Dev (2026-10-18), MEASUREMENTS §86 on T1, before any Ship it uploads a routing: leg 4 — through
+  Ghost's own SQL (`posts.browse` with the filter) the new index filter lists `probe-gated-post` (27 posts) and the old
+  `primary_tag:-'craft'` does not (26, the control); leg 6 — on Home itself, under the emitted `routes.yaml` uploaded with
+  the staff token, `/probe-gated-post/` is linked from a page of `/`, under the old-filter control from none, its own
+  address 200 throughout; T1's own `routes.yaml` restored byte for byte. Ghost 5 on a server is DW-326's (R-238).
 
 ## Deferred from: code review of spec-7-16c-collection-and-channel-templates-list-their-posts (2026-10-18)
 
@@ -10058,7 +10112,7 @@ reason: a check needs a connected site that answers under routing, which Story 7
 plain: A collection at an address like /paged/ would confuse the theme's "don't list page 2 in search engines" rule. Since
   Story 7.16c's Review the theme builder refuses such a project, but the Routes & Templates page still lets you type the
   address, so you would first meet the refusal when you deploy.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: low
 origin: Story 7.16c's Review (2026-10-18), the Edge Case Hunter layer: `contextOf('/paged/')` is `paged`, which would make the
   guard's outer `{{#is "paged"}}` match that page 1, and `/index/`, `/tag/` or `/author/` would noindex a page 2 that has
@@ -10068,6 +10122,8 @@ owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10
   step with a sentence, beside `RESERVED_SEGMENTS`.
 location: `packages/section-runtime/src/routes.ts` (`validateRoutes`, `RESERVED_SEGMENTS`) · `packages/theme-compiler/src/compile.ts`
 reason: nothing compiles from the product before Story 7.18.
+resolution: Story 7.18a's Dev — `RESERVED_SEGMENTS` (since 7.16a) already refuses `/paged/`, `/index/`, `/tag/` and
+  `/author/` at the naming step; `routes.test.ts` gains the collection and channel rows for each, `/notes/` the control.
 
 ### DW-370: an editor open in a second tab asks to reload after Routes & Templates changes a template's design
 
@@ -10114,7 +10170,7 @@ plain: If Ghost takes your routes file but Inflozo cannot read it back a moment 
   already holds Ghost's default (the step keeps the site as it is and clears nothing). And because a card's file replaces
   "the file Inflozo last offered" before Ghost ever holds it, a file Inflozo did put there earlier is no longer recognised as
   Inflozo's own: if you then go back to Ghost's default without uploading the card's file, the earlier file stays.
-status: open
+status: done 2026-10-18 (Story 7.18a)
 severity: low
 origin: Story 7.17's Dev (2026-10-18): the spec's matrix rules a read-back that differs or fails `failed: routes_unverified`
   with the state unchanged, while EXPERIENCE F3 names a *could not verify* state ("the file was uploaded, the read-back
@@ -10129,4 +10185,9 @@ owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10
 location: `apps/web/server/routes-upload.ts` (`offerRoutes`' read-back, `settle`) · `apps/web/lib/routes-upload.ts` (`routesWrite`,
   `routesToOffer`)
 reason: nothing calls the step before Story 7.18, and a fourth stored cause would be a migration.
+resolution: Story 7.18a's Dev, decided as the ledger asks (routine call 15): (a) an upload Ghost took whose read-back
+  failed or differed answers `routes_unverified` WITH its file, written as `routes_last_offered` and no cause, so the
+  ending's line and **Verify upload** can compare; (b) `settle` keeps the outcome when its write fails or throws, and logs;
+  (c) `kept` over a site already holding Ghost's default clears `routes_fallback`; (d) no "last confirmed" column — the
+  earlier-file edge is a stated ceiling in `routesWrite`'s comment. `routes-upload.test.ts` holds each.
 

@@ -23,6 +23,8 @@ const SITE_HEALTH = join('server', 'site-health.ts')
 const KEYS_SCREEN = join('app', '(app)', 'app', '(authed)', 'sites', 'keys-screen.tsx')
 const ROUTES_IO = join('server', 'routes-io.ts')
 const ROUTES_STEP = join('server', 'routes-upload.ts')
+const DEPLOY_IO = join('server', 'deploy', 'deploy-io.ts')
+const DEPLOY_RUN = join('server', 'deploy', 'run.ts')
 const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
 const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
 const MIGRATIONS = '../../supabase/migrations'
@@ -147,6 +149,12 @@ test('the service-role client is imported by the flag reader and by nothing else
   // favicon_url and updated_at on `sites`) — and reads the project's routing and templates for the same call. It is the
   // step's real `io`, handed to `server/routes-upload.ts` (which imports neither this nor the chokepoint), and every read and
   // the write carry `user_id`, the clause that stands in for the RLS the service role bypasses.
+  // The NINTH, added by Story 7.18a with its reason: the deploy's real `io`. `deploy_jobs`, `deploys` and
+  // `project_site_bindings` are server-written by grant — the tenant may read them and set `cancel_requested` alone
+  // (`…complete_schema.sql:1223-1224`) — the `deploy-artifacts` bucket has no Storage policy at all (server-only, AD-29), and
+  // `sites.capability` is server-asserted (AD-7, FR-C2's deploy-error mark). It reads the project's stored rows for the compile
+  // (`project-input.ts`, handed this client) and is handed to `server/deploy/run.ts`, which imports neither this nor the
+  // chokepoint (held below). Every query carries `user_id`, and a site read `disconnected_at is null`.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -156,6 +164,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     SITE_PROBE,
     SITE_HEALTH,
     ROUTES_IO,
+    DEPLOY_IO,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
@@ -464,9 +473,15 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     `routes_upload` POST (a `multipart/form-data` body, DW-51's transport) and the read-back with the same token, and
   //     the Admin key for B16's Verify upload. It is the real `io` handed to `server/routes-upload.ts`, which decides and
   //     imports no part of the chokepoint (held below), so the one Admin write this story adds has one importer.
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO]
+  //   - THE DEPLOY'S IO, Story 7.18a's: Ship it's two writes, `theme_upload` (`POST themes/upload/` with a `FormData` zip —
+  //     the second multipart write, DW-51's transport) and `theme_activate` (`PUT themes/{name}/activate/`), both with the
+  //     Admin key. It is the real `io` handed to `server/deploy/run.ts`, which decides and imports no part of the chokepoint
+  //     (held below); `ADMIN_WRITES` stays four (R-22) — both items were already on it.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO]
   assert.equal(reachesChokepoint(ROUTES_STEP), false, `${ROUTES_STEP} imports the chokepoint; its call() is handed in`)
   assert.equal(reachesChokepoint(ROUTES_IO), true, 'control: routes-io.ts imports the chokepoint')
+  assert.equal(reachesChokepoint(DEPLOY_RUN), false, `${DEPLOY_RUN} imports the chokepoint; its call() is handed in`)
+  assert.equal(reachesChokepoint(DEPLOY_IO), true, 'control: deploy-io.ts imports the chokepoint')
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => reachesChokepoint(p))

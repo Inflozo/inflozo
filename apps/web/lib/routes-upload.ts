@@ -25,8 +25,11 @@ export type RoutesOutcome =
   | { kind: 'uploaded'; file: string; sha256: string }
   | { kind: 'unchanged'; file: string; sha256: string }
   | { kind: 'fallback'; cause: RoutesFallback; file: string }
-  | { kind: 'kept' }
-  | { kind: 'failed'; code: RoutesFailure; detail?: string }
+  /** STORY 7.18a (DW-371 c): `clear` — the project is at Ghost's default and so is the site, so B16's cause is cleared */
+  | { kind: 'kept'; clear?: true }
+  /** STORY 7.18a (DW-371 a): an upload Ghost took whose read-back failed or differed carries the `file` it offered, which
+   *  is written as the file last offered (no cause), so B16's Verify upload has something to compare */
+  | { kind: 'failed'; code: RoutesFailure; detail?: string; file?: string }
 
 /** What **Verify upload** answers — `verified` carries the live file's sha. */
 export type VerifyOutcome = { kind: 'verified'; sha256: string } | { kind: 'notYet' } | { kind: 'unreachable' }
@@ -62,15 +65,18 @@ export function bytesEqual(a: Uint8Array, b: Uint8Array): boolean {
  *     write); otherwise it is offered, even when the live read failed (the read-back decides).
  *   - At Ghost's default: Ghost's default goes back ONLY over Inflozo's own file — a live file equal to `lastOffered`
  *     that is not already the default. Someone else's file, an unreadable one and the default itself are `kept`.
+ *   - STORY 7.18a (DW-371 c): the default over a site that already holds the default is `kept` AND clears B16's cause — the
+ *     site holds what the project asks for, so no card has anything left to ask.
  */
 export function routesToOffer(args: { project: string | null; live: Uint8Array | null; lastOffered: string | null }):
   | { kind: 'offer'; file: string }
   | { kind: 'unchanged'; file: string }
-  | { kind: 'kept' } {
+  | { kind: 'kept'; clear?: true } {
   const { project, live, lastOffered } = args
   if (project !== null) return live !== null && bytesEqual(live, utf8(project)) ? { kind: 'unchanged', file: project } : { kind: 'offer', file: project }
+  if (live !== null && bytesEqual(live, utf8(GHOST_DEFAULT_ROUTES))) return { kind: 'kept', clear: true }
   if (live === null || lastOffered === null) return { kind: 'kept' }
-  if (bytesEqual(live, utf8(GHOST_DEFAULT_ROUTES)) || !bytesEqual(live, utf8(lastOffered))) return { kind: 'kept' }
+  if (!bytesEqual(live, utf8(lastOffered))) return { kind: 'kept' }
   return { kind: 'offer', file: GHOST_DEFAULT_ROUTES }
 }
 
@@ -91,11 +97,16 @@ export function routesAnswer(status: number, ghostType?: string): { ok: true } |
 }
 
 /**
- * THE ROUTES STATE EACH OUTCOME WRITES — null for one that writes nothing (`kept`, every failure, Verify's `notYet` and
- * `unreachable`). `at` is the shell's clock (AD-1).
+ * THE ROUTES STATE EACH OUTCOME WRITES — null for one that writes nothing (`kept` but over the default, every failure but
+ * the unverified upload, Verify's `notYet` and `unreachable`). `at` is the shell's clock (AD-1).
  *   - uploaded or unchanged: the file, its sha, now, and no cause — Ghost holds what Inflozo offered.
  *   - fallback: the file offered and the cause B16 names; what was read stays as it was.
  *   - verified: the live sha, now, and no cause — the offered file is untouched, it is what was compared.
+ *   - STORY 7.18a (DW-371, decided as its ledger asks — routine call 15): an upload Ghost took but the read-back could not
+ *     confirm writes the file as last offered and no cause (a), so Verify upload compares against it and the daily check
+ *     records what Ghost holds; `kept` over the default clears the cause (c). No "last confirmed" column (d): `routes_live_sha256`
+ *     and `routes_verified_at` stay what was last READ, and the earlier-file edge — a file Inflozo did put there earlier is
+ *     no longer recognised as its own once a later file was offered and not confirmed — is a stated ceiling.
  */
 export function routesWrite(outcome: RoutesOutcome | VerifyOutcome, at: string): Record<string, string | null> | null {
   switch (outcome.kind) {
@@ -106,6 +117,10 @@ export function routesWrite(outcome: RoutesOutcome | VerifyOutcome, at: string):
       return { routes_last_offered: outcome.file, routes_fallback: outcome.cause }
     case 'verified':
       return { routes_live_sha256: outcome.sha256, routes_verified_at: at, routes_fallback: null }
+    case 'kept':
+      return outcome.clear === true ? { routes_fallback: null } : null
+    case 'failed':
+      return outcome.code === 'routes_unverified' && outcome.file !== undefined ? { routes_last_offered: outcome.file, routes_fallback: null } : null
     default:
       return null
   }

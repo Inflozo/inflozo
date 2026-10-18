@@ -8249,3 +8249,48 @@ taxonomies:
 
 - **The routes step holds on a real Ghost.** A file Ghost already holds is not posted (no dated copy, no write); an upload is stored as sent and live at once; Ghost's default goes back over a file Inflozo put there; the two refusals read as B16's `role` and `revoked`.
 - **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238: T3 retired) — its half here is its own parser, read locally. The 403 for an Editor's staff token is read in source only (F3); this run's 403 is the integration key's. Story 7.18 proves the theme upload and Ship it's call of `offerRoutes`; this run used the step's pure rule and its request builder, not `offerRoutes` or the chokepoint's `call` (its database, Vault and audit rows), which `routes-upload.test.ts` runs over a fake.
+
+## 86. The deploy's theme upload on T1 — the pilot theme zipped by Inflozo's own writer, uploaded and activated with the ADMIN key through `adminRequest` (DW-51's theme half), two concurrent uploads and a planted fatal theme read by `uploadAnswer`, R-260's index filter listing every post with no primary tag on Ghost's own SQL and on Home, and casper and T1's routes.yaml restored · T1 · 2026-10-18
+
+**Command.** `node --experimental-strip-types tools/probe/record-deploy.mjs --t1` — uploads of `inflozo-probe-deploy.zip` (one, then two at once) and `inflozo-probe-deploy-fatal.zip` (refused), one activation, every one with the Admin key; then, with the staff token, `casper` re-activated and both probe themes deleted in a `finally`, read back; then, with the staff token, the emitted `routes.yaml` and its control uploaded and T1's own file put back in a `finally`, read back byte for byte. No post, tag or other setting written.
+
+**Ghost.** T1 `ghost6.inflozo.com`; the theme active before the run `casper`; the collection's tag `craft`; the posts with no public primary tag `probe-gated-post`.
+
+**The controls, each of which voids the run:** the planted theme is blocked by both pinned gscans locally (`GS005-TPL-ERR`, fatal) and refused by Ghost with a 422; each zip is the same bytes twice; the OLD index filter lists none of the posts the NEW one must list.
+
+| Step | Row | Got | Held |
+|---|---|---|---|
+| zip · pilot | zipped twice (the second from the files in reverse order): the same bytes (AD-14) | `321354 bytes, sha256 38ac41e2fe6399fc…` | yes |
+| zip · planted | zipped twice (the second from the files in reverse order): the same bytes (AD-14) | `321541 bytes, sha256 d5a8119c899ace9a…` | yes |
+| gscan 4.49.7 · pilot | the pilot theme scores 0 errors at v5 | `0 errors · 0 warnings` | yes |
+| gscan 4.49.7 · planted | the planted theme is BLOCKED at v5, on GS005-TPL-ERR (the control) | `GS005-TPL-ERR, GS120-NO-UNKNOWN-GLOBALS` | yes |
+| gscan 6.4.2 · pilot | the pilot theme scores 0 errors at v6 | `0 errors · 0 warnings` | yes |
+| gscan 6.4.2 · planted | the planted theme is BLOCKED at v6, on GS005-TPL-ERR (the control) | `GS005-TPL-ERR, GS120-NO-UNKNOWN-GLOBALS` | yes |
+| quality gate · pilot | the pilot theme is not blocked | `0 errors · 0 warnings` | yes |
+| 1 POST themes/upload/ [admin key] | the pilot theme accepted with the Admin key; the request carried no Content-Type of Inflozo's own | `HTTP 200; themes[0].name inflozo-probe-deploy` | yes |
+| 1 POST themes/upload/ — themes[0].active | R-264 (b)'s control: an upload under an inactive name answers active false, read by uploadAnswer as not live | `active false` | yes |
+| 1 PUT themes/inflozo-probe-deploy/activate/ [admin key] | activated with the Admin key, read by activateAnswer as live; its body recorded (F3) | `{"status":200,"keys":["themes"],"theme":{"name":"inflozo-probe-deploy","active":true,"errors":0,"warnings":0}}` | yes |
+| 1 GET / | the home page is the pilot theme: it carries the run's page word | `HTTP 200` | yes |
+| 1 GET themes/ [staff] | the probe is installed and active | `inflozo-probe-deploy (active)` | yes |
+| 1b POST themes/upload/ (the active name) — themes[0].active | R-264 (b): an upload under the active theme's name answers active true, read by uploadAnswer as live, with no PUT | `HTTP 200; active true` | yes |
+| 1b GET themes/ [staff] | the probe is still the active theme, with no activation sent | `inflozo-probe-deploy` | yes |
+| 2 POST themes/upload/ ×2 at once | each answer reads as accepted or as deploy_running (§25f's EEXIST 500) — never Ghost's text | `200→ok · 200→ok` | yes |
+| 3 POST themes/upload/ (planted) | Ghost's 422 ThemeValidationError, read as ghost_theme_refused with Ghost's message as detail | `HTTP 422 ThemeValidationError; ghost_theme_refused; detail Theme "inflozo-probe-deploy-fatal" is not compatible or contains errors.` | yes |
+| 4 GET content/posts/?filter=<new index filter> | R-260: Home's filter lists every post with no public primary tag (1) | `primary_tag:-'craft',(tags.visibility:-'public'+posts_tags.sort_order:0) → 27 posts` | yes |
+| 4 GET content/posts/?filter=<old index filter> | the control: the old filter lists none of them (DW-364) | `primary_tag:-'craft' → 26 posts` | yes |
+| 4 the collection's own post | a post whose primary tag is the collection's is listed by neither index filter | `on-typography-and-restraint` | yes |
+| 4 GET /probe-gated-post/ | its own address answers (ownership unchanged) | `HTTP 200` | yes |
+| 5 PUT themes/casper/activate/ + DELETE + GET themes/ [staff] | casper active again and no probe theme installed, read back | `HTTP 200; active casper; probes none` | yes |
+| 6 GET settings/routes/yaml/ [staff] | T1's own routes.yaml read and saved before any write | `130 bytes, sha256 b2d675260a6071be… → /tmp/record-deploy-nVduJg/original-routes.yaml` | yes |
+| 6 routesYaml | the emitted file carries R-260's index filter once; the control differs from it in that one line | `filter: "primary_tag:-'craft',(tags.visibility:-'public'+posts_tags.sort_order:0)"` | yes |
+| 6 POST settings/routes/yaml/ [staff] | the emitted file uploads | `HTTP 200` | yes |
+| 6 GET / … /page/N/ | R-260 ON HOME: every post with no public primary tag is linked from a page of / (/probe-gated-post/) | `1 of 1 linked; 38 paths over Home's pages` | yes |
+| 6 POST settings/routes/yaml/ [staff] (control) | the control file (Story 7.16a's index filter) uploads | `HTTP 200` | yes |
+| 6 GET / … /page/N/ (control) | the CONTROL: under the old filter no such post is linked from any page of / (DW-364) | `0 of 1 still linked` | yes |
+| 6 GET /probe-gated-post/ (control) | its own address still answers — owned, listed nowhere | `HTTP 200` | yes |
+| 6 POST + GET settings/routes/yaml/ [staff] | T1's own routes.yaml restored and read back byte for byte | `HTTP 200; 130 bytes, sha256 b2d675260a6071be… (saved b2d675260a6071be…)` | yes |
+
+- **The Admin key uploads and activates a theme** (F4, until now a source reading of `tokenPermissionCheck`), through the product's request builder: a `FormData` body under `file`, the zip named by the theme, no Content-Type of Inflozo's own. The activation answered `{"status":200,"keys":["themes"],"theme":{"name":"inflozo-probe-deploy","active":true,"errors":0,"warnings":0}}`.
+- **Two uploads of one name at once** answered 200→ok and 200→ok.
+- **An upload under the ACTIVE theme's name goes live at once, and says so** (R-264 b, VERIFY-AT-BUILD 74): `themes[0].active` was true for the re-upload of the live probe, against false for the first upload under an inactive name (the control) — which is why Deploy only is greyed while the project's theme is the live one, and why Ship it reads the answer before any activation.
+- **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238). The product's `call()` (its database, Vault and audit rows) and the deploy route are the deployed walk's (step 113); Ghost(Pro)'s plan refusal is read in source only (F7, VERIFY 1–3). R-260 is executed twice: through the Content API's `posts.browse` (Ghost's SQL alone, leg 4) and on Home under the uploaded routing (leg 6), each behind the old filter as its control.

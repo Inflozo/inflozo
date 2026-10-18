@@ -821,7 +821,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
     }),
   },
   'data-empty': {
-    summary: 'the guard — `hide` removes the element, `fallback` keeps the authored text',
+    summary: 'the guard — `hide` removes the element, `fallback` keeps the authored text (an emptied typed text prop is removed either way, DW-349)',
     parse: inList('data-empty', ['hide', 'fallback']),
   },
   'data-repeat': {

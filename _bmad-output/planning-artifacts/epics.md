@@ -4170,7 +4170,8 @@ retry, AD-20)*
 **And** *(DW-371 — from Story 7.17's Dev, 2026-10-18)* an upload Ghost took whose read-back failed or differed
 (`routes_unverified`, which stores nothing) ends on a line saying the routing could not be confirmed, with Verify upload —
 EXPERIENCE F3's *could not verify* state — or, if that needs a stored cause, the owner rules it first (R-83: a fourth
-`routes_fallback` value is a migration)
+`routes_fallback` value is a migration) *(Story 7.18a's Dev, 2026-10-18 — routine call 15: no stored cause is needed; the unverified upload now writes its file as
+`routes_last_offered` with no cause, which Verify upload compares against, and the ending says the line with **Verify upload**)*
 **And** the compile is handed `routes` (the bytes `offerRoutes` offers, or null) beside `routed` and `lists`, so the README
 carries Story 7.17's routes step.
 
@@ -4181,6 +4182,15 @@ the previous one, untouched** — nothing is half-applied
 re-activate action, because "failed" would be wrong and silence would be worse
 **And** the wizard state matches D2e, and the deploy-only ending matches D2f —
 "Uploaded on purpose, not live, with Activate one click away" (UX-DR7).
+**And** *(Story 7.18a's Dev — owner, 2026-10-18, **R-264**)* while Inflozo's own record says this project's theme is the
+one live on the site (the site's latest activated deploy is this project's), **Deploy only is greyed** — the ▾ row and
+S8a's card — with "v{prev} is already live on {host}, so Ghost would switch to v{n} the moment it uploads. Use Deploy &
+activate." in its caption slot, and the server refuses it; and whenever Ghost's answer to an upload says the theme is
+active (`themes[0].active`), the deploy is live and activated, no separate activation is sent, routes are offered and the
+ending is Live with confetti — never D2f (Ghost makes an upload under the active theme's name live at once, VERIFY-AT-BUILD 74)
+**And** *(**R-263**, owner, 2026-10-18)* on a touch screen that is not a phone and narrower than 768px, Undo and Redo move
+to the top of ⋯ and the centre group hides the words "Template" and "View as", so Ship it and its ▾ fit the bar at every
+width; `floor.spec.mjs` sweeps 600, 640 and 720 on touch, Home and the Paywall
 
 **FRs:** FR-J8 (the wizard, and the partial-success half's wizard states from Story 7.32), FR-D11 (⌘⏎), FR-J17 (Pre-flight's
 quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′ · `D2 Deploy History Completed.dc.html` D2e ·

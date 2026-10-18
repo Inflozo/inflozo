@@ -505,6 +505,20 @@ DOCS = [
   "negative control reads Ghost 6.58.0's npm tarball (read only) for Casper and Source — gscan 6.4.2 at v6 passes each "
   "0/0 (the control) and tools/quality-gate.mjs fails each on at least one rule, every finding located at its line in the "
   "theme's own source, their stylesheets' warnings counted and recorded, never gated."),
+ ('tools/probe/record-deploy.mjs', 'tool', 'Deploy recorder',
+  "Story 7.18a's recorder (standing rule 1, R-82, MEASUREMENTS §86): the deploy's theme upload on T1. Node 24 with "
+  "--experimental-strip-types; it imports the product's own pieces — tools/pilot-theme.mjs's pilot theme, the deploy's zip "
+  "writer (apps/web/server/deploy/zip.ts), the request builder (adminRequest), Ghost's answers (uploadAnswer, "
+  "activateAnswer) and routes.ts' indexFilter. THE LOCAL HALF (no flag, writes nothing): the pilot theme and a planted "
+  "fatal one (GS005-TPL-ERR) each zipped twice to the same bytes and gated on both pinned gscans and the quality gate — "
+  "the pilot 0 errors, the planted one blocked (the control). THE --t1 HALF (the owner's go, the main session only): "
+  "record-shim.py's guards; the pilot theme uploaded and activated with the ADMIN key; R-264's fact — an upload under the "
+  "ACTIVE name answers themes[0].active true and goes live with no PUT, the first upload under an inactive name false; two "
+  "concurrent uploads of one name and the planted theme's 422, each read by uploadAnswer; R-260's index filter listing every post with no primary tag "
+  "on Ghost's SQL with the old filter as its control; the previous theme restored and every probe deleted, read back; "
+  "then R-260 on Home itself — the emitted routes.yaml uploaded with the staff token, every such post linked from a page "
+  "of /, the old-filter control leaving it on none, and T1's own routes.yaml restored byte for byte in a finally; "
+  "§86 written only when every row held. Any argument but --t1 prints the header and exits 2."),
  ('tools/probe/record-routes.mjs', 'tool', 'Routes recorder',
   "Story 7.16a's recorder (standing rule 1, R-82): every routes.yaml the Routes Manager writes, read by Ghost's own "
   "route-settings code, and one emitted file on T1. Node 24; it imports packages/section-runtime/src/routes.ts and "

@@ -413,7 +413,8 @@ export const Layers = memo(function Layers({
       event.preventDefault()
       setCurrent(keyOf(to))
       setFocusOn(keyOf(to))
-    } else if (event.key === 'Enter') {
+    } else if (event.key === 'Enter' && !event.metaKey && !event.ctrlKey) {
+      // a MODIFIED Enter is the map's, never the row's: ⌘⏎ ships from a focused row as from anywhere else (R-145, Story 7.18a)
       event.preventDefault()
       onSelect(row)
     } else if (event.key === ' ') {

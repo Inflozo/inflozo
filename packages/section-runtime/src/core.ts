@@ -562,7 +562,8 @@ type Guard = 'hide' | 'fallback'
  *    media → `hide`, the element it occupies — and a binding into a URL-valued attribute IS the
  *            media case, which is what makes the default mechanical rather than a judgement
  *
- *  `data-empty` overrides either way, and a value outside `hide`/`fallback` is refused, not ignored. */
+ *  `data-empty` overrides either way, and a value outside `hide`/`fallback` is refused, not ignored. One exception, on a
+ *  `data-prop` rather than a binding: an emptied typed text hides whatever its mode (DW-349, in `applyProps`). */
 function guardMode(el: RuntimeElement, media: boolean): Guard {
   const declared = consume(el, 'data-empty')
   if (declared === 'hide' || declared === 'fallback') return declared
@@ -1306,16 +1307,19 @@ function applyProps(
     // a date is the site's wall-clock day, printed unconverted; anything else is unset
     if (def?.type === 'date' && !isIsoDate(v)) v = undefined
     // Story 4.9 — S6: an untouched catalog-linked prop is the catalog string. "Untouched" is an EMPTY value,
-    // the test FR-H8's text default already applies below, so the editor keeps it empty until the customer types.
+    // the test the emptied-text rule below applies too, so the editor keeps it empty until the customer types.
     const linked = catalogProp(path, def)
     if (linked !== null && propEmpty(v)) {
       el.textContent = users !== null ? tokens.put(`{{t "${linked}"}}`) : (input.strings?.[linked] ?? '')
       continue
     }
     if (propEmpty(v)) {
-      // FR-H8's text default, on a prop rather than a binding: the authored text stays. `hide` is
-      // the explicit override, and DW-93's class — the marker must never survive either way.
-      if (mode === 'hide') el.remove()
+      // DW-349 (Story 7.6's Question 2, owner 2026-10-08: "delete means delete"): an emptied TYPED text or rich text
+      // leaves its element out on both emitters, whatever its `data-empty` — FR-H8's `fallback` kept the authored English,
+      // which the compile's V1 refuses. A catalog-linked one returned above, as its string; a promoted one on the theme
+      // returned above, guarded. Any other kind keeps FR-H8's default: the authored text stays, `hide` removes it, and
+      // DW-93's class — the marker must never survive either way.
+      if (mode === 'hide' || def?.type === 'text' || def?.type === 'richtext') el.remove()
       continue
     }
     if (users !== null) {

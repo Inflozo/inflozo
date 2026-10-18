@@ -11,6 +11,7 @@ import {
   majorOf,
   parseCredential,
   permitted,
+  timeoutFor,
 } from './admin-rule.ts'
 import { sql, type Client } from './db.ts'
 
@@ -66,7 +67,6 @@ export interface CallResult {
   code?: string
 }
 
-const TIMEOUT_MS = 15_000
 
 /**
  * DW-58, STORY 5.24b — WHERE THE NAME POINTS, DECIDED BEFORE ANY REQUEST. A customer types the address and may own the
@@ -77,7 +77,7 @@ const TIMEOUT_MS = 15_000
  * passing the wizard's shape check.
  * ponytail: `fetch` resolves the name AGAIN, so a record that answers public here and private a moment later (DNS
  * rebinding) still gets through; the upgrade is `https.request({ lookup })` pinned to the address checked here.
- * A resolver that does not answer inside `TIMEOUT_MS` is `unresolved` — the same "your Ghost did not answer" as a fetch
+ * A resolver that does not answer inside the call's budget (`timeoutFor`) is `unresolved` — the same "your Ghost did not answer" as a fetch
  * that fails, one sentence for both.
  */
 async function whereTo(url: string, budgetMs: number): Promise<'public' | 'blocked' | 'unresolved'> {
@@ -431,11 +431,13 @@ export async function fetchWithKey(args: {
   // DW-58: A BLOCKED ADDRESS IS REFUSED BEFORE ANY REQUEST, and it says so in the one record kept to
   // be trusted — `detail.blocked` — while the customer hears the same sentence as a Ghost that did
   // not answer: nothing about the network behind Inflozo is disclosed by the refusal.
-  // ONE `TIMEOUT_MS` FOR THE WHOLE CALL, the resolver's share taken out of the fetch's (review,
+  // ONE BUDGET FOR THE WHOLE CALL (`timeoutFor(item)`), the resolver's share taken out of the fetch's (review,
   // 2026-09-29): two full timeouts in a row would have let one Admin call sit for twice the ceiling
   // every caller — connect's three calls, the daily check's budget — was derived from.
-  const deadline = started + TIMEOUT_MS
-  const where = await whereTo(url, TIMEOUT_MS)
+  // Story 7.18a: the budget is the item's — `theme_upload` waits for Ghost's own gscan; everything else keeps 15 s
+  const budget = timeoutFor(args.item)
+  const deadline = started + budget
+  const where = await whereTo(url, budget)
   if (where !== 'public') {
     if (where === 'blocked') console.error('ghost-admin: ghost address refused', { code: 'address_blocked' })
     else console.error('ghost-admin: ghost unreachable', { code: 'address_unresolved' })

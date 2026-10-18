@@ -1,0 +1,545 @@
+// Story 7.18a — the deploy's shell (`server/deploy/run.ts`) over a fake io, the spec's I/O matrix row by row: every stage
+// edge, cancel, abandon, stale, the retry rule, the binding and the routes step. The real io is `deploy-io.ts`; the
+// rule (Ghost's answers, the sentences, the step) is `lib/deploy.ts`'s and has its own test (`deploy.test.ts`).
+import { test } from 'node:test'
+import assert from 'node:assert/strict'
+import { CompileRefusal } from '@inflozo/theme-compiler/refusal'
+import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
+import { DEPLOY_WORDS, endingOf, stepOf } from './lib/deploy.ts'
+import type { RoutesOutcome } from './lib/routes-upload.ts'
+import { activate, cancel, preflight, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
+import type { ProjectRead } from './server/deploy/project-input.ts'
+
+const P = '00000000-0000-4000-8000-0000000000aa'
+const S = '00000000-0000-4000-8000-0000000000bb'
+const U = '00000000-0000-4000-8000-0000000000cc'
+
+const finding = (level: 'error' | 'warning', code = level === 'error' ? 'markup_invalid' : 'contrast_low'): Finding =>
+  ({ code, message: `${code} said`, level, fatal: false, refs: ['home.hbs'] })
+const verdict = (errors: Finding[] = [], warnings: Finding[] = []): Verdict => ({ major: 6, gscan: '6.4.2', blocked: errors.length > 0, errors, warnings })
+const quality = (errors: Finding[] = [], warnings: Finding[] = []): QualityVerdict => ({ blocked: errors.length > 0, errors, warnings })
+
+type Answer = { ok: boolean; status: number; body: unknown; text: string }
+const okAnswer = (body: unknown = { themes: [{ name: 'inflozo-notes' }] }): Answer => ({ ok: true, status: 200, body, text: JSON.stringify(body) })
+const bad = (status: number, body: unknown = {}, text = JSON.stringify(body)): Answer => ({ ok: false, status, body, text })
+const adminError = (code: string) => Object.assign(new Error(code), { name: 'AdminError', code })
+
+/** One world: the rows, the bucket, Ghost's answers and every call made, in order. */
+function world(over: {
+  read?: () => ProjectRead | null
+  compile?: () => unknown
+  gscan?: Verdict
+  quality?: QualityVerdict
+  upload?: Array<Answer | Error>
+  activate?: Array<Answer | Error>
+  routes?: Array<RoutesOutcome | Error>
+  put?: Array<Error | null>
+  bind?: 'ok' | 'taken'
+  hash?: string[]
+  /** the project Inflozo's record says is live on the site; by default this project once it has an activated deploy */
+  liveProject?: string | null
+} = {}) {
+  let tick = Date.parse('2026-10-18T10:00:00Z')
+  const jobs = new Map<string, JobRow>()
+  const deploys = new Map<string, DeployRow & { settings_snapshot?: unknown }>()
+  const bucket = new Map<string, Uint8Array>()
+  const events: string[] = []
+  const calls: { method?: string; path: string; item?: string; body?: unknown }[] = []
+  const capability: boolean[] = []
+  const bound: string[] = []
+  let ids = 0
+  const id = () => `00000000-0000-4000-8000-${String(++ids).padStart(12, '0')}`
+  const upload = [...(over.upload ?? [okAnswer()])]
+  const activations = [...(over.activate ?? [okAnswer()])]
+  const routes = [...(over.routes ?? [{ kind: 'uploaded', file: 'routes:\n', sha256: 'x' } as RoutesOutcome])]
+  const puts = [...(over.put ?? [])]
+  const hashes = [...(over.hash ?? [])]
+  const baseRead = (): ProjectRead => ({
+    input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' } } as ProjectRead['input'],
+    reads: { project: 'p' },
+    routing: { config: null, unreadable: false, problems: [] },
+    site: { url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', site_settings: { brand: 1 } },
+    version: { n: 1, prev: null },
+    themeName: 'inflozo-notes',
+    bound: null,
+    projectName: 'Notes',
+    names: {},
+  })
+  const io: DeployIo = {
+    read: async () => (over.read ?? baseRead)(),
+    compile: () => {
+      events.push('compile')
+      if (over.compile) over.compile()
+      return { files: { 'package.json': '{}\n', 'index.hbs': 'x' }, css: {} as never, js: { bundled: [], atRest: [] }, custom: { emitted: [], parked: [] } }
+    },
+    gscan: async () => over.gscan ?? verdict(),
+    quality: () => over.quality ?? quality(),
+    zip: (files) => new TextEncoder().encode(Object.keys(files).join(',')),
+    hash: async () => hashes.shift() ?? 'h1',
+    jobs: {
+      insert: async (row) => {
+        const j: JobRow = { id: id(), ...row, stage: 'queued', cancel_requested: false, deploy_id: null, error: null, stage_timings: {}, updated_at: new Date(tick).toISOString() }
+        jobs.set(j.id, j)
+        return { ...j }
+      },
+      read: async (jid) => (jobs.has(jid) ? { ...(jobs.get(jid) as JobRow) } : null),
+      update: async (jid, _u, patch) => {
+        const j = jobs.get(jid) as JobRow
+        if (patch.stage !== undefined && patch.stage !== j.stage) events.push(`stage:${patch.stage}`)
+        jobs.set(jid, { ...j, ...patch, updated_at: new Date(tick).toISOString() })
+      },
+      claim: async (jid, _u, from, patch) => {
+        const j = jobs.get(jid) as JobRow
+        if (j.stage !== from) return false
+        if (patch.stage !== undefined && patch.stage !== j.stage) events.push(`stage:${patch.stage}`)
+        jobs.set(jid, { ...j, ...patch, updated_at: new Date(tick).toISOString() })
+        return true
+      },
+      resting: async () => [...jobs.values()].filter((j) => j.stage === 'awaiting_ship').map((j) => ({ ...j })),
+    },
+    deploys: {
+      insert: async (row) => {
+        const d = { id: id(), version: row.version, theme_name: row.theme_name, status: row.status, activated: false, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, activated_at: null }
+        deploys.set(d.id, d)
+        events.push('deploy:insert')
+        return { ...d }
+      },
+      read: async (did) => (deploys.has(did) ? { ...(deploys.get(did) as DeployRow) } : null),
+      update: async (did, _u, patch) => {
+        deploys.set(did, { ...(deploys.get(did) as DeployRow), ...patch })
+      },
+      remove: async (did) => {
+        events.push('deploy:remove')
+        deploys.delete(did)
+      },
+      demote: async ({ except }) => {
+        for (const [k, d] of deploys) if (k !== except && d.status === 'live') deploys.set(k, { ...d, status: 'uploaded' })
+      },
+      liveProject: async () => (over.liveProject !== undefined ? over.liveProject : [...deploys.values()].some((d) => d.activated) ? P : null),
+      previous: async ({ except }) => {
+        const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
+        return live === undefined ? null : Number(live.version.split('.')[0])
+      },
+    },
+    artifacts: {
+      put: async (path, bytes) => {
+        const e = puts.shift()
+        if (e) throw e
+        events.push(`put:${path}`)
+        bucket.set(path, bytes)
+      },
+      get: async (path) => bucket.get(path) as Uint8Array,
+      remove: async (path) => {
+        events.push('object:remove')
+        bucket.delete(path)
+      },
+    },
+    bind: async ({ themeName }) => {
+      bound.push(themeName)
+      return over.bind ?? 'ok'
+    },
+    capability: async ({ refused }) => {
+      capability.push(refused)
+    },
+    call: async (args) => {
+      calls.push(args)
+      const next = args.item === 'theme_upload' ? upload.shift() : activations.shift()
+      if (next instanceof Error) throw next
+      return next ?? okAnswer()
+    },
+    offerRoutes: async () => {
+      events.push('routes')
+      const next = routes.shift()
+      if (next instanceof Error) throw next
+      return next as RoutesOutcome
+    },
+    routesFile: async () => 'routes:\n  /x/: x\n',
+    english: (key) => (key === 'nav.more' ? 'More' : undefined),
+    now: () => new Date((tick += 1000)),
+    log: () => {},
+  }
+  return { io, jobs, deploys, bucket, events, calls, capability, bound, baseRead, advance: (ms: number) => (tick += ms) }
+}
+
+const begin = async (w: ReturnType<typeof world>) => {
+  const job = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  await preflight({ jobId: job.id, userId: U }, w.io)
+  return w.jobs.get(job.id) as JobRow
+}
+
+test('Pre-flight, clean: queued → compiling → checking → awaiting_ship; the deploy holds both verdicts, the artefact, its size, the hash and the settings snapshot', async () => {
+  const w = world({ gscan: verdict([], [finding('warning', 'page_switch_unused')]) })
+  const job = await begin(w)
+  assert.deepEqual(w.events.filter((e) => e.startsWith('stage:')), ['stage:compiling', 'stage:checking', 'stage:awaiting_ship'])
+  assert.equal(job.stage, 'awaiting_ship')
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow & { settings_snapshot: unknown }
+  assert.equal(d.status, 'checking')
+  assert.equal(d.version, '1.0.0')
+  assert.equal(d.theme_name, 'inflozo-notes')
+  assert.equal(d.inputs_sha256, 'h1')
+  assert.deepEqual(d.settings_snapshot, { brand: 1 })
+  assert.equal(d.gscan?.warnings.length, 1, 'warnings only: as clean, the warning kept')
+  assert.equal(d.artifact_path, `${P}/${d.id}.zip`)
+  assert.deepEqual(w.bucket.get(d.artifact_path as string), new TextEncoder().encode('package.json,index.hbs'))
+  assert.equal(d.artifact_bytes, w.bucket.get(d.artifact_path as string)?.length)
+  assert.equal(job.stage_timings.compiling?.bytes, d.artifact_bytes, 'Theme compiled shows the zip\'s size')
+  assert.ok((job.stage_timings.compiling?.ms ?? -1) >= 0 && (job.stage_timings.checking?.ms ?? -1) >= 0)
+  assert.equal(stepOf(job.stage, job.stage_timings), 'check')
+  assert.equal(w.calls.length, 0, 'Pre-flight never calls Ghost')
+})
+
+test('a gate error: the job fails on the first blocking finding; the deploy is failed with BOTH verdicts and no artefact', async () => {
+  const blocking = finding('error')
+  const w = world({ quality: quality([blocking], [finding('warning')]) })
+  const job = await begin(w)
+  assert.equal(job.stage, 'failed')
+  assert.deepEqual(job.error, blocking)
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.equal(d.status, 'failed')
+  assert.ok(d.gscan !== null && d.quality !== null)
+  assert.equal(d.artifact_path, null)
+  assert.equal(w.bucket.size, 0, 'nothing stored')
+  assert.equal(stepOf(job.stage, job.stage_timings), 'check', 'a blocked Pre-flight sits on Check')
+})
+
+test('routing unfit or unreadable, and a Ghost major outside 5–6, block before any compile, with no deploy row', async () => {
+  const unfit = world({ read: () => ({ ...unfit.baseRead(), routing: { config: null, unreadable: false, problems: [{ line: 4, at: 'x', message: 'Two routes share /x/.' }] } }) })
+  const a = await begin(unfit)
+  assert.deepEqual(a.error, { code: 'routes_invalid', message: DEPLOY_WORDS.routesLine(4, 'Two routes share /x/.') })
+  const unread = world({ read: () => ({ ...unread.baseRead(), routing: { config: null, unreadable: true, problems: [] } }) })
+  assert.equal((await begin(unread)).error?.code, 'routes_unreadable')
+  const old = world({ read: () => ({ ...old.baseRead(), site: { ...old.baseRead().site, ghost_version: '4.48.9' } }) })
+  const b = await begin(old)
+  assert.equal(b.error?.code, 'ghost_version_unsupported')
+  assert.equal(b.error?.message, DEPLOY_WORDS.versionUnsupported('ghost6.inflozo.com', '4.48.9'))
+  for (const w of [unfit, unread, old]) {
+    assert.ok(!w.events.includes('compile') && !w.events.includes('deploy:insert'), 'nothing compiled, no deploy row')
+  }
+  // the control: 5 and 6 both ship
+  const five = world({ read: () => ({ ...five.baseRead(), site: { ...five.baseRead().site, ghost_version: '5.130.6' } }) })
+  assert.equal((await begin(five)).stage, 'awaiting_ship')
+})
+
+test('a compile refusal: a customer-caused class in its plain words, an unclassified one as our fault with the compile\'s words kept for us — the deploy failed, nothing stored', async () => {
+  const theirs = world({ compile: () => { throw new CompileRefusal('cardDesigns', 'card designs: nope') } })
+  const a = await begin(theirs)
+  assert.equal(a.error?.code, 'compile_refused')
+  assert.equal(a.error?.message, DEPLOY_WORDS.cardDesigns)
+  assert.equal((theirs.deploys.get(a.deploy_id as string) as DeployRow).status, 'failed')
+  const ours = world({ compile: () => { throw new Error('partials/x.hbs: a library defect') } })
+  const b = await begin(ours)
+  assert.deepEqual(b.error, { code: 'compile_failed', message: DEPLOY_WORDS.ourFault, detail: 'partials/x.hbs: a library defect' })
+  assert.equal(ours.bucket.size + theirs.bucket.size, 0)
+})
+
+test('an infrastructure failure is retried once (and then succeeds), or fails the job as ours after the second', async () => {
+  const once = world({ put: [new Error('storage 503')] })
+  assert.equal((await begin(once)).stage, 'awaiting_ship')
+  const twice = world({ put: [new Error('storage 503'), new Error('storage 503')] })
+  const job = await begin(twice)
+  assert.equal(job.stage, 'failed')
+  assert.equal(job.error?.code, 'deploy_infrastructure')
+  assert.equal(job.error?.message, DEPLOY_WORDS.infrastructure)
+  // a gate result is never retried: one gscan run, one quality run
+  let runs = 0
+  const gated = world({})
+  gated.io.gscan = async () => (runs++, verdict([finding('error')]))
+  await begin(gated)
+  assert.equal(runs, 1)
+})
+
+test('Cancel during Checking: the work stops at the next edge, the job is cancelled, and the object then the deploy row are deleted', async () => {
+  const w = world({})
+  const job = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  w.io.gscan = async () => {
+    assert.equal(await cancel({ jobId: job.id, userId: U }, w.io), true)
+    return verdict()
+  }
+  await preflight({ jobId: job.id, userId: U }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  assert.equal(after.stage, 'cancelled')
+  assert.equal(after.deploy_id, null)
+  assert.equal(w.deploys.size, 0, 'no Deploy row')
+  assert.equal(w.bucket.size, 0, 'no object')
+  assert.equal(stepOf(after.stage), 'destination')
+  // a stage past cancelling refuses it
+  const done = world({})
+  const shipped = await begin(done)
+  await ship({ jobId: shipped.id, userId: U, mode: 'activate' }, done.io)
+  assert.equal(await cancel({ jobId: shipped.id, userId: U }, done.io), false)
+})
+
+test('Cancel once the artefact is stored: the object goes before the row (AD-29)', async () => {
+  const w = world({})
+  const job = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  const put = w.io.artifacts.put
+  w.io.artifacts.put = async (path, bytes) => {
+    await put(path, bytes)
+    await cancel({ jobId: job.id, userId: U }, w.io)
+  }
+  await preflight({ jobId: job.id, userId: U }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'cancelled')
+  const removes = w.events.filter((e) => e === 'object:remove' || e === 'deploy:remove')
+  assert.deepEqual(removes, ['object:remove', 'deploy:remove'])
+})
+
+test('an abandoned check: a newer Pre-flight cancels the one resting at awaiting_ship and deletes its deploy and object', async () => {
+  const w = world({})
+  const first = await begin(w)
+  assert.equal(first.stage, 'awaiting_ship')
+  const second = await begin(w)
+  assert.equal(w.jobs.get(first.id)?.stage, 'cancelled')
+  assert.equal(w.deploys.has(first.deploy_id as string), false)
+  assert.equal(second.stage, 'awaiting_ship')
+  assert.equal(w.bucket.size, 1, 'only the newer artefact')
+})
+
+test('Ship it, fresh: the stored artefact itself is uploaded (same bytes, `file` named by the theme), then activated; the binding is claimed at the first accepted upload; routes offered; Live', async () => {
+  const w = world({})
+  const job = await begin(w)
+  const stored = w.bucket.get((w.deploys.get(job.deploy_id as string) as DeployRow).artifact_path as string) as Uint8Array
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const done = w.jobs.get(job.id) as JobRow
+  assert.equal(done.stage, 'done')
+  assert.equal(w.events.filter((e) => e === 'compile').length, 1, 'one compile per deploy: a fresh artefact is not re-made')
+  const [up, act] = w.calls
+  assert.equal(up?.method, 'POST')
+  assert.equal(up?.path, 'themes/upload/')
+  assert.equal(up?.item, 'theme_upload')
+  const file = (up?.body as FormData).get('file') as File
+  assert.equal(file.name, 'inflozo-notes.zip')
+  assert.deepEqual(new Uint8Array(await file.arrayBuffer()), stored, 'Ghost receives the artefact Pre-flight checked')
+  assert.equal(act?.method, 'PUT')
+  assert.equal(act?.path, 'themes/inflozo-notes/activate/')
+  assert.equal(act?.item, 'theme_activate')
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.equal(d.status, 'live')
+  assert.equal(d.activated, true)
+  assert.ok(d.activated_at !== null)
+  assert.deepEqual(w.bound, ['inflozo-notes'])
+  assert.deepEqual(done.stage_timings.routes, { kind: 'live' })
+  assert.equal(endingOf(done.stage, d, done.stage_timings), 'live')
+  assert.deepEqual(w.capability, [false], 'an accepted upload clears a deploy-error mark')
+})
+
+test('two presses of Ship it on one row ship once: the invocation that moves it off awaiting_ship uploads, the other does nothing — and a double re-activate activates once', async () => {
+  const w = world({})
+  const job = await begin(w)
+  await Promise.all([ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io), ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)])
+  assert.equal(w.calls.filter((c) => c.item === 'theme_upload').length, 1, 'one upload for one row')
+  assert.equal((w.jobs.get(job.id) as JobRow).stage, 'done')
+  await Promise.all([activate({ jobId: job.id, userId: U }, w.io), activate({ jobId: job.id, userId: U }, w.io)])
+  assert.equal(w.calls.filter((c) => c.item === 'theme_activate').length, 1, 'one activation for one press, however many arrive')
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'live')
+  // CONTROL: one press after the other still ships the next row — the claim refuses only a row already moved
+  const next = await begin(w)
+  await ship({ jobId: next.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.calls.filter((c) => c.item === 'theme_upload').length, 2)
+})
+
+test('Deploy only: uploaded, not activated, no routes offered — D2f; Re-activate then makes it live and offers routes', async () => {
+  const w = world({})
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+  let done = w.jobs.get(job.id) as JobRow
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.equal(done.stage, 'done')
+  assert.equal(d.status, 'uploaded')
+  assert.equal(d.activated, false)
+  assert.ok(!w.events.includes('routes'))
+  assert.equal(endingOf(done.stage, d, done.stage_timings), 'uploadOnly')
+  await activate({ jobId: job.id, userId: U }, w.io)
+  done = w.jobs.get(job.id) as JobRow
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'live')
+  assert.ok(w.events.includes('routes'))
+  assert.equal(endingOf(done.stage, w.deploys.get(job.deploy_id as string) as DeployRow, done.stage_timings), 'live')
+})
+
+test('activation fails (upload 200, activate 422): uploaded, not live, D2e, no routes — nothing is called failed; a binding already held is not claimed again', async () => {
+  const w = world({ activate: [bad(422, { errors: [{ type: 'ValidationError', message: 'no such theme' }] })], read: () => ({ ...w.baseRead(), bound: 'inflozo-notes' }) })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const done = w.jobs.get(job.id) as JobRow
+  assert.equal(done.stage, 'done')
+  assert.equal(done.error, null)
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'uploaded')
+  assert.equal(endingOf(done.stage, w.deploys.get(job.deploy_id as string) as DeployRow, done.stage_timings), 'notLive')
+  assert.ok(!w.events.includes('routes'))
+  assert.deepEqual(w.bound, [])
+})
+
+test('Ghost\'s answers to the upload, each its own code and sentence; Ghost\'s text only ever as detail; the plan refusal marks the site Preview-only', async () => {
+  const cases: [Answer | Error, string][] = [
+    [bad(401, { errors: [{ type: 'UnauthorizedError' }] }), 'ghost_key_refused'],
+    [bad(500, { errors: [{ type: 'InternalServerError', message: "EEXIST: file already exists, mkdir '/var/lib/ghost'" }] }), 'deploy_running'],
+    [bad(422, { errors: [{ type: 'ThemeValidationError', message: 'Theme is not compatible' }] }), 'ghost_theme_refused'],
+    [bad(403, { errors: [{ type: 'HostLimitError', message: 'Upgrade' }] }), 'ghost_plan_refused'],
+    [bad(415, { errors: [{ type: 'UnsupportedMediaTypeError', code: 'COMPRESSED_TOO_LARGE' }] }), 'theme_too_large'],
+    [bad(503), 'ghost_unavailable'],
+    [bad(301), 'ghost_redirected'],
+    [adminError('ghost_unreachable'), 'ghost_unreachable'],
+    [adminError('write_not_allowed'), 'write_not_allowed'],
+  ]
+  for (const [answer, code] of cases) {
+    const w = world({ upload: [answer] })
+    const job = await begin(w)
+    await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+    const failed = w.jobs.get(job.id) as JobRow
+    assert.equal(failed.stage, 'failed', code)
+    assert.equal(failed.error?.code, code)
+    assert.ok(!JSON.stringify(failed.error?.message ?? '').includes('EEXIST'), `${code}: Ghost's text never in the message`)
+    assert.equal(stepOf(failed.stage, failed.stage_timings), 'ship', `${code}: S8d′ on Ship`)
+    assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'failed')
+    assert.equal(w.calls.length, 1, `${code}: a Ghost answer is never retried`)
+    assert.deepEqual(w.capability, code === 'ghost_plan_refused' ? [true] : [], code)
+    assert.deepEqual(w.bound, [], `${code}: no binding for a refused upload`)
+  }
+  const refused = world({ upload: [bad(422, { errors: [{ type: 'ThemeValidationError', message: 'Theme is not compatible' }] })] })
+  const j = await begin(refused)
+  await ship({ jobId: j.id, userId: U, mode: 'activate' }, refused.io)
+  assert.equal(refused.jobs.get(j.id)?.error?.detail, 'Theme is not compatible')
+})
+
+test('a thrown chokepoint error that is infrastructure is retried once; the key refused at activation fails with the deploy uploaded', async () => {
+  const w = world({ upload: [adminError('credential_store_unavailable'), okAnswer()] })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'done')
+  assert.equal(w.calls.filter((c) => c.item === 'theme_upload').length, 2)
+  const k = world({ activate: [bad(401)] })
+  const kj = await begin(k)
+  await ship({ jobId: kj.id, userId: U, mode: 'activate' }, k.io)
+  const failed = k.jobs.get(kj.id) as JobRow
+  assert.equal(failed.error?.code, 'ghost_key_refused')
+  assert.equal(failed.error?.message, DEPLOY_WORDS.keyRefused)
+  assert.equal(k.deploys.get(kj.deploy_id as string)?.status, 'uploaded')
+})
+
+test('stale at Ship: the same row re-runs compiling and checking, then uploads — or stops as a gate error when it is now blocked', async () => {
+  const w = world({ hash: ['h1', 'h2', 'h2'] })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.events.filter((e) => e === 'compile').length, 2)
+  assert.equal(w.deploys.size, 1, 'the same deploy row')
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.equal(d.inputs_sha256, 'h2')
+  assert.equal(d.status, 'live')
+  assert.equal(w.bucket.size, 1, 'the old object replaced')
+  let blocked = false
+  const v = world({ hash: ['h1', 'h2', 'h2'] })
+  v.io.gscan = async () => (blocked ? verdict([finding('error')]) : verdict())
+  const vj = await begin(v)
+  blocked = true
+  await ship({ jobId: vj.id, userId: U, mode: 'activate' }, v.io)
+  assert.equal(v.jobs.get(vj.id)?.stage, 'failed')
+  assert.equal(v.calls.length, 0, 'nothing uploaded')
+})
+
+test('a 23505 on the binding that is not this name stops the ship with AD-24\'s running sentence', async () => {
+  const w = world({ bind: 'taken' })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.jobs.get(job.id)?.error?.code, 'deploy_running')
+  assert.equal(w.calls.filter((c) => c.item === 'theme_activate').length, 0)
+})
+
+test('the routes step\'s outcomes at the ending: fallback, unverified, failed, kept, and a throw retried once then failed — the theme live in every case', async () => {
+  const cases: [Array<RoutesOutcome | Error>, unknown][] = [
+    [[{ kind: 'fallback', cause: 'no_token', file: 'f' }], { kind: 'fallback', cause: 'no_token' }],
+    [[{ kind: 'failed', code: 'routes_unverified' }], { kind: 'unverified' }],
+    [[{ kind: 'failed', code: 'ghost_unavailable' }], { kind: 'failed', reason: 'your site is busy or down' }],
+    [[{ kind: 'kept' }], { kind: 'none' }],
+    [[new Error('store'), { kind: 'unchanged', file: 'f', sha256: 's' }], { kind: 'live' }],
+    [[new Error('store'), new Error('store')], { kind: 'failed', reason: 'something went wrong on our side' }],
+  ]
+  for (const [routes, ending] of cases) {
+    const w = world({ routes })
+    const job = await begin(w)
+    await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+    const done = w.jobs.get(job.id) as JobRow
+    assert.equal(done.stage, 'done')
+    assert.deepEqual(done.stage_timings.routes, ending)
+    assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'live')
+  }
+  const f = world({ routes: [{ kind: 'fallback', cause: 'revoked', file: 'f' }] })
+  const fj = await begin(f)
+  await ship({ jobId: fj.id, userId: U, mode: 'activate' }, f.io)
+  assert.equal((await view({ jobId: fj.id, userId: U }, f.io))?.routesFile, 'routes:\n  /x/: x\n', 'B16 is handed its file')
+})
+
+test('view: the job and its deploy as the wizard reads them; a moving job no invocation has touched past AD-11\'s budget is failed, never polled for ever', async () => {
+  const w = world({})
+  const job = await begin(w)
+  const seen = await view({ jobId: job.id, userId: U }, w.io)
+  assert.equal(seen?.job.stage, 'awaiting_ship')
+  assert.equal(seen?.deploy?.version, '1.0.0')
+  assert.equal(seen?.previous, null)
+  const stuck = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  w.advance(400_000)
+  const gone = await view({ jobId: stuck.id, userId: U }, w.io)
+  assert.equal(gone?.job.stage, 'failed')
+  assert.equal(gone?.job.error?.code, 'deploy_infrastructure')
+  assert.equal(await view({ jobId: '00000000-0000-4000-8000-999999999999', userId: U }, w.io), null)
+})
+
+test('R-264 (b): an upload Ghost answers active (it replaced the live theme) is live at once in BOTH modes — no PUT activate, routes offered, the ending Live', async () => {
+  for (const mode of ['upload', 'activate'] as const) {
+    const w = world({ upload: [okAnswer({ themes: [{ name: 'inflozo-notes', active: true }] })], liveProject: 'someone-else' })
+    const job = await begin(w)
+    await ship({ jobId: job.id, userId: U, mode }, w.io)
+    const done = w.jobs.get(job.id) as JobRow
+    const d = w.deploys.get(job.deploy_id as string) as DeployRow
+    assert.equal(done.stage, 'done', mode)
+    assert.equal(d.status, 'live', mode)
+    assert.equal(d.activated, true, mode)
+    assert.ok(d.activated_at !== null, mode)
+    assert.deepEqual(w.calls.map((c) => c.item), ['theme_upload'], `${mode}: no separate activation`)
+    assert.equal(done.stage_timings.activating, undefined, mode)
+    assert.ok(w.events.includes('routes'), `${mode}: routes offered`)
+    assert.equal(endingOf(done.stage, d, done.stage_timings), 'live', `${mode}: Live, never D2f`)
+  }
+  // the control: an answer that does not say active (or says false) is not live — Deploy only ends on D2f
+  for (const body of [{ themes: [{ name: 'inflozo-notes', active: false }] }, { themes: [{ name: 'inflozo-notes' }] }]) {
+    const w = world({ upload: [okAnswer(body)], liveProject: 'someone-else' })
+    const job = await begin(w)
+    await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+    const done = w.jobs.get(job.id) as JobRow
+    assert.equal(endingOf(done.stage, w.deploys.get(job.deploy_id as string) as DeployRow, done.stage_timings), 'uploadOnly')
+  }
+})
+
+test('R-264 (a): Deploy only while Inflozo\'s record says this project\'s theme is the live one uploads nothing — the job rests; Deploy & activate, or another project live, goes ahead', async () => {
+  const w = world({ liveProject: P })
+  const job = await begin(w)
+  assert.equal(await uploadOnlyRefused({ projectId: P, siteId: S, userId: U }, w.io), true)
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'awaiting_ship', 'nothing moved')
+  assert.equal(w.calls.length, 0, 'nothing uploaded')
+  // Deploy & activate is never blocked
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'done')
+  // the controls: another project's theme live, or none yet — Deploy only is free
+  for (const live of ['another-project', null]) {
+    const free = world({ liveProject: live })
+    const j = await begin(free)
+    assert.equal(await uploadOnlyRefused({ projectId: P, siteId: S, userId: U }, free.io), false, String(live))
+    await ship({ jobId: j.id, userId: U, mode: 'upload' }, free.io)
+    assert.equal(free.calls.length, 1, String(live))
+  }
+})
+
+test('Re-activate whose PUT fails stays D2e: the deploy stays uploaded, nothing called failed — from D2f too', async () => {
+  const w = world({ activate: [bad(422, { errors: [{ type: 'ValidationError', message: 'busy' }] })], liveProject: 'someone-else' })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+  assert.equal(endingOf('done', w.deploys.get(job.deploy_id as string) as DeployRow, (w.jobs.get(job.id) as JobRow).stage_timings), 'uploadOnly', 'D2f first')
+  await activate({ jobId: job.id, userId: U }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.equal(after.stage, 'done')
+  assert.equal(after.error, null)
+  assert.equal(d.status, 'uploaded')
+  assert.equal(d.activated, false)
+  assert.equal(endingOf(after.stage, d, after.stage_timings), 'notLive', 'D2e')
+  assert.ok(!w.events.includes('routes'), 'no routes offered')
+})

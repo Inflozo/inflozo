@@ -3,7 +3,7 @@ import type { Script } from '@inflozo/library/languages'
 import { faceRulesCss, fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_TOKENS, referenceTokensCss } from '@inflozo/section-runtime/reference'
 import { packTokens, type Pack } from '@inflozo/section-runtime/tokens'
-import { brandSeed, choiceOf, hexOf, isCustom, ownPacksIn, ROLE_TOKENS, samePack, withoutDefaults, type PackFonts, type PackRecord, type PairingChoice } from './pack-edit.ts'
+import { brandSeed, choiceOf, hexOf, isCustom, ownPacksIn, packOf as packOfRecord, recordInForce, ROLE_TOKENS, samePack, withoutDefaults, type PackFonts, type PackRecord, type PairingChoice } from './pack-edit.ts'
 import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, type PackCellData, type PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 import { isAccent } from './probe-rule.ts'
@@ -151,6 +151,17 @@ export function packIdOf(stylePack: unknown): string {
 export const presetRecord = (p: LibraryPreset): PackRecord => {
   const { fonts: _fonts, ...authored } = p.pack
   return { name: p.name, pairing: p.pairing, ...authored } as PackRecord
+}
+
+/** STORY 7.18a — THE PACK THE THEME IS COMPILED IN, by the editor's rule: the pack in force (`packIdOf`), as this project's
+ *  own record where it has one (`ownPacksOf`), else the library's (`recordInForce`, the rule the editor's roster runs), with
+ *  its pairing's fonts — what `compileTheme` takes as `pack` and `pairing`. An id with no record is Paper's (`packIdOf`
+ *  never names one). Server only, like every reader of the presets here (DW-323). */
+export function enginePackOf(stylePack: unknown): { id: string; pack: Pack; pairing: string } {
+  const id = packIdOf(stylePack)
+  const library = Object.fromEntries(LIBRARY_PRESETS.map((p) => [p.id, presetRecord(p)]))
+  const record = recordInForce(id, ownPacksOf(stylePack), library) ?? (library[DEFAULT_PRESET] as PackRecord)
+  return { id, pack: packOfRecord(record, pairingFonts(record.pairing) as PackFonts), pairing: record.pairing }
 }
 
 /** EVERY PRESET'S HEADING FACES, for the app's own document, under `PACK_FAMILY_PREFIX` — so a pack cell's "Ag" is drawn

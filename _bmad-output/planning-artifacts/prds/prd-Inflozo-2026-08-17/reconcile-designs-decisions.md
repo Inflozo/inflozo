@@ -5639,7 +5639,7 @@ Pre-flight and it names the posts no page would list."*
   and names every post that Home and the collections would leave unlisted (`unlistedPosts`), as a warning that never blocks.
 - **Declined.** The warning alone; dropping Primary tag and Primary author from a collection's conditions.
 - Targets: ✅ this entry · ✅ Story 7.18a's spec · ✅ `epics.md` Story 7.18a's card · ✅ DW-364 · ✅ `epic-7-context.md` ·
-  ⬜ `routes.ts` and `prd.md` FR-I2 (Story 7.18a's Dev).
+  ✅ `routes.ts` and `prd.md` FR-I2 (Story 7.18a's Dev, 2026-10-18; T1 at MEASUREMENTS §86).
 
 **R-261 — when the stored routing cannot be read, Routes & Templates offers "Start again from Ghost's default routing".**
 Story 7.18's Create, Question 3, ruled **option 1** (owner, 2026-10-18): *"A "Start again" on Routes & Templates,
@@ -5652,7 +5652,60 @@ confirmed first, which replaces the unreadable routing with Ghost's default and 
   template. The reason on the Ship button names the state and links there.
 - **Declined.** The reason alone, with the repair done by hand.
 - Targets: ✅ this entry · ✅ Story 7.18a's spec · ✅ `epics.md` Story 7.18a's card · ✅ DW-362 · ✅ `epic-7-context.md` ·
-  ⬜ the Routes page (Story 7.18a's Dev).
+  ✅ the Routes page (Story 7.18a's Dev, 2026-10-18: `resetRoutes` and its sheet).
+
+**R-262 — the Vercel project runs every function at Performance (4 GB / 2 vCPUs), because that is the only way Vercel sets
+memory.** Story 7.18a's Dev, Question 4, ruled **option 1** (owner, 2026-10-18): *"1. Switch to 4 GB now"*.
+
+- **Why it was a question.** AD-11 rules 4096 MB for the compile, because Fluid compute co-locates up to four invocations
+  on one instance and four compiles at §14's 486 MB use 95% of 2 GB (MEASUREMENTS §17a–b). Read at Dev in Vercel's docs
+  (*Configuring Memory and CPU*, updated 2026-07-15): "You cannot set your memory size using `vercel.json`"; memory is the
+  project's Function CPU setting, for every function at once. The project read `functionDefaultMemoryType: standard`
+  (2 GB / 1 vCPU) through Vercel's API, so AD-11's figure was in force nowhere.
+- **The rule.** The project's Function CPU is **Performance**, set through Vercel's API (`PATCH /v9/projects`,
+  `resourceConfig.functionDefaultMemoryType: performance`) on the owner's go in Story 7.18a's Dev session and read back
+  (both `resourceConfig` and `defaultResourceConfig` answer `performance`); it takes effect from the next deployment, and
+  the Review records the deploy function's memory from Vercel. Every function, the editor's pages included, runs at it.
+- **Declined.** Staying at 2 GB with a dated note; moving the deploy into a Vercel project of its own (AD-11's way out).
+- Targets: ✅ this entry · ✅ Story 7.18a's spec · ✅ the Vercel project's setting (read back) · ✅ AD-11 and the Stack table
+  (`ARCHITECTURE-SPINE.md`, Story 7.18a's Dev) · ✅ `epic-7-context.md` · ✅ VERIFY-AT-BUILD 73.
+
+**R-263 — below 768 CSS px on a touch screen that is not a phone, Undo and Redo move into ⋯ and the centre group drops the
+words "Template" and "View as".** Story 7.18a's Dev, Question 5, ruled **option 1** (owner, 2026-10-18): *"1. Both, below
+768 touch"*.
+
+- **Why it was a question.** Story 7.18a's criterion puts Ship it in the bar at every width, and DW-283's stop forbids any
+  bar control outside the window. Measured at Dev in the harness on touch (Home and the Paywall alike): with Ship it added,
+  its ▾ falls off at 720 (the editor's floor), and Ship it with it at 600; moving Undo and Redo alone fits only from 720, and
+  hiding the two words alone only from 640; both together fit from 600. R-143 had said the pair "will not collapse", and the
+  centre group was never to relabel, so either change was the owner's.
+- **The rule.** On a touch screen that is not a phone (R-201) and narrower than 768 CSS px: Undo and Redo sit at the top of
+  ⋯ with their own handlers and availability (`aria-disabled` when unavailable), and the centre group's buttons hide the
+  words "Template" and "View as" while keeping their values, the eye and their full accessible names. At 768 and wider, and
+  on every fine pointer, nothing changes. `floor.spec.mjs` sweeps 600, 640 and 720 on touch.
+- **What it amends.** R-143's consequence "the pair will not collapse with it" — at that width, on touch, only.
+- **Declined.** Undo and Redo into ⋯ alone; Ship it into ⋯ below 768.
+- Targets: ✅ this entry · ✅ R-143's entry (dated note) · ✅ Story 7.18a's spec · ✅ the editor's bar and `floor.spec.mjs`
+  (Story 7.18a's Dev) · ✅ `EXPERIENCE.md` (beside R-202's rule) · ✅ `epics.md` Story 7.18a's card · ✅ `epic-7-context.md`.
+
+**R-264 — "Deploy only" is greyed while this project's theme is the live one, and an upload Ghost says went live ends Live.**
+Story 7.18a's Dev, Question 6, ruled **option 1** (owner, 2026-10-18): *"1. Both guards"*, with its caption sentence.
+
+- **Why it was a question.** A project ships to a site under one theme name for good (AD-19, FR-J10). Read at Dev in Ghost's
+  own code: an upload whose name is the active theme's replaces its files and activates them at once
+  (`core/server/services/themes/storage.js`, 6.58.0 `:111-116`, 5.130.6 `:81-86`, `activateFromAPIOverride`), and the answer
+  marks it `themes[0].active: true` (`to-json.js` through `package-json`'s filter). So once a project's theme is live, a
+  later "Deploy only" goes live as it uploads, and D2f's "v{prev} is still what readers see" would be untrue.
+- **The rule.** (a) The ▾ row "Deploy only" and S8a's card are greyed while Inflozo's own record says this project's theme
+  is the one live on the site — the site's latest activated deploy is this project's — with the reason in the caption slot:
+  "v{prev} is already live on {host}, so Ghost would switch to v{n} the moment it uploads. Use Deploy & activate."; the
+  server refuses a Deploy only in that state. (b) Whenever Ghost's answer to an upload says the theme is active, the deploy
+  is live and activated, the routes are offered and the ending is Live with confetti, in either mode, and no separate
+  activation is sent. D2f still ends a Deploy only made while the site shows another theme. Executed on T1 at §86.
+- **Declined.** The grey alone; the truthful ending alone; a second theme name for a Deploy only (it would change AD-19).
+- Targets: ✅ this entry · ✅ Story 7.18a's spec (Words, Ruled values) · ✅ `lib/deploy.ts`, `server/deploy/run.ts`, the route, the wizard
+  and the menu (Story 7.18a's Dev) · ✅ AD-19 (dated note) · ✅ `prd.md` FR-J8 · ✅ `EXPERIENCE.md` · ✅ `epics.md` Story
+  7.18a's card · ✅ `epic-7-context.md` · ✅ VERIFY-AT-BUILD 74 · ✅ MEASUREMENTS §86 (leg 1b, executed on T1).
 
 ## B · Approved decisions superseded by this session
 
@@ -5860,7 +5913,8 @@ Tabler Icons for different stages. Add title/labels so we can hover over it to k
   `opacity:.35`, `aria-disabled` and never `disabled`. R-141's keys still call the arrows' own handlers.
 - **One consequence to carry forward.** Story 5.22 collapses the bar's RIGHT cluster into D8b's `⋯` below 1440 *(below 1280 since R-202, 2026-09-27)*. The
   pair will not collapse with it — which is right for undo, and means that story re-tunes the project name's
-  truncation rather than the pair.
+  truncation rather than the pair. *(R-263, owner, 2026-10-18: on a touch screen narrower than 768 CSS px the
+  pair does move — to the top of ⋯ — because Ship it joined the bar and nothing else fits from 600 up.)*
 
 **R-144 — the resting indicator reports what is OWED: green when the server has it, grey when it does not.** The
 owner, 2026-09-19: *"Keep the dot as green until user makes any edits. So it shows clear status that the status is

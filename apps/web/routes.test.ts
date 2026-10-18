@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { docSchema, listedStart, parseDoc } from '@inflozo/section-runtime'
 import { ROUTE_WORDS } from '@inflozo/section-runtime/routes'
 import { docRefusal, pilot, pilotIds } from './lib/pilots.ts'
-import { cardName, conditionWords, filterWords, freshCondition, ROUTES_WORDS, templatesOf, templateWriteRefusal } from './lib/routes.ts'
+import { cardName, conditionWords, filterWords, freshCondition, resetRoutingPath, ROUTES_WORDS, templatesOf, templateWriteRefusal } from './lib/routes.ts'
 
 // STORY 7.16a — the Routes page's pure half (`lib/routes.ts`): R-170's one list, the frame's strings verbatim where the spec
 // keeps them, the card's words, and the stored templates the page will use.
@@ -18,14 +18,14 @@ test('the frame\'s strings are verbatim — every one ROUTES_WORDS keeps from S9
     W('title'), W('collectionsHelp'), W('newCollection'), W('customRoute'), W('tagTemplate'), W('authorTemplate'), W('valid'),
     W('newCollectionTitle'), W('newCollectionLead'), W('first'), W('rollingDate'), W('createCollection'),
     W('newRouteTitle'), W('newRouteLead'), W('oneTemplate'), W('channel'), W('channelHelp'), W('createRoute'), W('emptyTitle'),
-    W('emptyLead'), W('all'), W('any'), W('isAnyOf'), W('choose'),
+    W('emptyLead'), W('all'), W('any'), W('isAnyOf'), W('choose'), W('blocked'),
   ]
   const text = FRAME.replace(/<[^>]+>/g, '')
   for (const s of kept) assert.ok(text.includes(s), s)
-  // the routine calls: S9e's helper names a landing page, never a membership page (8), and S9b's Ship line waits for 7.18a (11)
+  // the routine calls: S9e's helper names a landing page, never a membership page (8); S9b's Ship line waited for 7.18a (11),
+  // whose Ship button explains why, and it is now the frame's, verbatim (in `kept` above)
   assert.ok(text.includes('A designed page — like your Members Signup.'))
   assert.equal(ROUTES_WORDS.oneTemplateHelp, 'A designed page — like a landing page.')
-  assert.ok(!Object.values(ROUTES_WORDS).some((v) => typeof v === 'string' && /Ship button/.test(v)))
   // R-246's two sentences are the spec's, and the collection's is the runtime's one spelling
   assert.equal(ROUTES_WORDS.exactDate, ROUTE_WORDS.relative)
   assert.equal(ROUTES_WORDS.refused, ROUTE_WORDS)
@@ -161,7 +161,7 @@ test('Story 7.16b: the Undo\'s doc is judged as the sync route judges one — a 
 
 test('Story 7.16b: ?new=template opens the New template sheet, and Create from it answers the file it made', () => {
   const page = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'page.tsx'), 'utf8')
-  assert.match(page, /const fromMenu = \(await searchParams\)\.new === NEW_TEMPLATE_QUERY\.new/)
+  assert.match(page, /const fromMenu = query\.new === NEW_TEMPLATE_QUERY\.new/)
   const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
   assert.match(manager, /useState<Sheet \| null>\(props\.fromMenu === true \? \{ kind: 'template', entry: true \} : null\)/)
   assert.match(manager, /if \(open\.kind === 'template'\) document\.getElementById\('routes-new-template'\)\?\.focus\(\)/, 'focus lands in Name')
@@ -257,4 +257,48 @@ test('Story 7.17 (DW-367): a failed starting grid says what was left, the sheet 
   const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
   assert.match(manager, /if \(result\.made !== undefined\) \{\s+setStarted\(result\.made\)\s+set\(\{ template: result\.made, name: '' \}\)\s+\}\s+return setError\(result\.error\)/)
   assert.match(manager, /\.\.\.\(file === null && started !== null && d\.template === started \? \{ start_file: started \} : \{\}\)/)
+})
+
+/* ───────────────────────────── Story 7.18a ───────────────────────────── */
+
+test('Story 7.18a (S9b): the pane says deploys are blocked whenever the stored routing has a problem, under the file as S9b draws it', () => {
+  const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
+  const pane = manager.slice(manager.indexOf('function YamlPane('), manager.indexOf('\n}\n', manager.indexOf('function YamlPane(')))
+  assert.match(pane, /const valid = problems\.length === 0/)
+  assert.match(pane, /\{valid \? null : <p data-blocked className="text-control-label text-ink-soft">\{W\.blocked\}<\/p>\}/)
+  assert.ok(pane.indexOf('W.blocked') > pane.indexOf('</pre>'), 'under the file')
+  // an unreadable routing is a problem too: `validateRoutes` answers it on line 1, so the line shows for it
+  const page = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'page.tsx'), 'utf8')
+  assert.match(page, /const problems = validateRoutes\(stored, \{ templates: templates\.map\(\(t\) => t\.file\) \}\)/)
+})
+
+test('Story 7.18a (R-261, DW-362): an unreadable routing offers "Start again", a confirm on Cancel that writes Ghost\'s default through saveRoutes\' own path and keeps the templates', () => {
+  // the words, exactly as the spec's "The routing reset" gives them
+  assert.equal(ROUTES_WORDS.reset, "Start again from Ghost's default routing")
+  assert.equal(ROUTES_WORDS.resetTitle, "Start again from Ghost's default routing?")
+  assert.equal(ROUTES_WORDS.resetBody, "Your saved routing can't be read, so this page can't show it. Starting again replaces it with Ghost's default. Your templates are kept.")
+  assert.deepEqual([ROUTES_WORDS.startAgain, ROUTES_WORDS.startingAgain, ROUTES_WORDS.cancel], ['Start again', 'Starting again…', 'Cancel'])
+  // the action: Ghost's default, through writeConfig (judged whole, yaml null), only over a routing that does not parse
+  const reset = body('resetRoutes')
+  assert.match(reset, /if \(!parseRoutesConfig\(stored\.data\?\.config \?\? \{\}\)\.ok\) \{\n\s+const refused = await writeConfig\(sb, id, user\.id, EMPTY_ROUTES, ctx\.templates\.map\(\(t\) => t\.file\)\)/)
+  // THE CONTROL: no template row and no doc is touched — the templates are kept, and no revision moves without a doc
+  assert.doesNotMatch(reset, /custom_templates'\)\.(delete|insert|update|upsert)|project_templates|syncDocs/)
+  assert.match(reset, /if \(!ctx \|\| stored\.error\)/, 'a failed read is couldNot, never a reset')
+  // the page: `?reset=routing` opens it on arrival, only while the routing is unreadable
+  const page = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'page.tsx'), 'utf8')
+  assert.match(page, /const resetAsked = query\.reset === RESET_ROUTING_QUERY\.reset/)
+  assert.match(page, /resetAsked=\{resetAsked && !parsed\.ok\}/)
+  assert.match(resetRoutingPath('p'), /^\/projects\/p\/routes\?reset=routing$/)
+  // the sheet: S12c's confirm, opening on Cancel (UX-DR14), the Kit's Submit saying "Starting again…" (R-98)
+  const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
+  const sheet = manager.slice(manager.indexOf('function ResetRouting('))
+  assert.match(sheet, /openOnCancel\(dialog\.current\)/)
+  assert.match(sheet, /<Button variant="secondary" data-cancel onClick=\{\(\) => dialog\.current\?\.close\(\)\}>\{W\.cancel\}<\/Button>/)
+  assert.match(sheet, /<Submit variant="danger" busy=\{W\.startingAgain\}>\{W\.startAgain\}<\/Submit>/)
+  assert.match(sheet, /\{W\.resetTitle\}/)
+  assert.match(sheet, /\{W\.resetBody\}/)
+  // reachable from the unreadable state's line 1, and only there
+  assert.match(manager, /onReset=\{config === null \? \(\) => setResetting\(true\) : null\}/)
+  assert.match(manager, /\{onReset === null \? null : <Button variant="secondary" data-reset className="self-start" onClick=\{onReset\}>\{W\.reset\}<\/Button>\}/)
+  assert.match(manager, /\{resetting && config === null \? \(/)
 })

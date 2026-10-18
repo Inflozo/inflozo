@@ -55,8 +55,10 @@ test('routesToOffer — the matrix\'s rows, each beside its control (R-255, rout
   // Default, someone else's file: never offered, or offered something else — kept, and nothing written
   assert.deepEqual(routesToOffer({ project: null, live: utf8(G), lastOffered: null }), { kind: 'kept' })
   assert.deepEqual(routesToOffer({ project: null, live: utf8(G), lastOffered: F }), { kind: 'kept' })
-  // Default everywhere: the live file is Ghost's default — kept, even when Inflozo offered it last
-  assert.deepEqual(routesToOffer({ project: null, live: utf8(GHOST_DEFAULT_ROUTES), lastOffered: GHOST_DEFAULT_ROUTES }), { kind: 'kept' })
+  // Default everywhere: the live file is Ghost's default — kept, even when Inflozo offered it last; and since Story 7.18a
+  // (DW-371 c) it clears B16's cause, whoever offered what
+  assert.deepEqual(routesToOffer({ project: null, live: utf8(GHOST_DEFAULT_ROUTES), lastOffered: GHOST_DEFAULT_ROUTES }), { kind: 'kept', clear: true })
+  assert.deepEqual(routesToOffer({ project: null, live: utf8(GHOST_DEFAULT_ROUTES), lastOffered: null }), { kind: 'kept', clear: true })
   // THE CONTROL on the bytes: a live file one byte away from F is not "already there"
   assert.deepEqual(routesToOffer({ project: F, live: utf8(`${F}\n`), lastOffered: F }), { kind: 'offer', file: F })
 })
@@ -82,9 +84,12 @@ test('routesWrite — the state each outcome writes, and the ones that write not
   assert.deepEqual(routesWrite({ kind: 'fallback', cause: 'no_token', file: F }, at), { routes_last_offered: F, routes_fallback: 'no_token' })
   assert.deepEqual(routesWrite({ kind: 'fallback', cause: 'role', file: F }, at), { routes_last_offered: F, routes_fallback: 'role' })
   assert.deepEqual(routesWrite({ kind: 'verified', sha256: sha(F) }, at), { routes_live_sha256: sha(F), routes_verified_at: at, routes_fallback: null })
-  for (const nothing of [{ kind: 'kept' }, { kind: 'failed', code: 'ghost_refused' }, { kind: 'notYet' }, { kind: 'unreachable' }] as const) {
+  for (const nothing of [{ kind: 'kept' }, { kind: 'failed', code: 'ghost_refused' }, { kind: 'failed', code: 'routes_unverified' }, { kind: 'notYet' }, { kind: 'unreachable' }] as const) {
     assert.equal(routesWrite(nothing, at), null, nothing.kind)
   }
+  // Story 7.18a (DW-371): an unverified upload writes its file as last offered, no cause (a); kept over the default clears (c)
+  assert.deepEqual(routesWrite({ kind: 'failed', code: 'routes_unverified', file: F }, at), { routes_last_offered: F, routes_fallback: null })
+  assert.deepEqual(routesWrite({ kind: 'kept', clear: true }, at), { routes_fallback: null })
 })
 
 test('the card\'s size and download: the frame\'s "1.4 KB", and a data: link that decodes to the file byte for byte', () => {
@@ -227,11 +232,14 @@ test('offerRoutes, Ghost refuses, is busy or away, or the read-back differs: a f
   const away = fake({ post: new AdminError({ code: 'ghost_unreachable', message: 'Your Ghost site did not answer.' }) })
   assert.deepEqual(await offerRoutes(ARGS, away.io), { kind: 'failed', code: 'ghost_unreachable' })
   assert.deepEqual(away.writes, [])
+  // Story 7.18a (DW-371 a): Ghost took the file and the read-back differs or fails — never claimed as live, but the file is
+  // written as the one last offered (no cause), so Verify upload has something to compare
   const differs = fake({ back: utf8(G) })
-  assert.deepEqual(await offerRoutes(ARGS, differs.io), { kind: 'failed', code: 'routes_unverified' })
-  assert.deepEqual(differs.writes, [])
+  assert.deepEqual(await offerRoutes(ARGS, differs.io), { kind: 'failed', code: 'routes_unverified', file: F })
+  assert.deepEqual(differs.writes, [{ routes_last_offered: F, routes_fallback: null }])
   const unread = fake({ back: null })
-  assert.deepEqual(await offerRoutes(ARGS, unread.io), { kind: 'failed', code: 'routes_unverified' }, 'a read-back that fails never claims the upload')
+  assert.deepEqual(await offerRoutes(ARGS, unread.io), { kind: 'failed', code: 'routes_unverified', file: F }, 'a read-back that fails never claims the upload')
+  assert.ok(!('routes_live_sha256' in (unread.writes[0] ?? {})), 'nothing read is recorded as read')
   // an infrastructure failure is not the step's to answer: thrown on, for 7.18a's job
   const store = fake({ post: new AdminError({ code: 'credential_store_unavailable', message: 'x' }) })
   await assert.rejects(offerRoutes(ARGS, store.io), (e: AdminError) => e.code === 'credential_store_unavailable')
@@ -244,7 +252,6 @@ test('offerRoutes at Ghost\'s default: back to default over Inflozo\'s own file;
   assert.ok(bytesEqual(new Uint8Array(await ((back.seen.find((s) => s.what.startsWith('POST'))!.body as FormData).get('routes') as File).arrayBuffer()), utf8(GHOST_DEFAULT_ROUTES)))
   for (const [name, over] of [
     ["someone else's", { read: { ...atDefault, lastOffered: null }, live: utf8(G) }],
-    ['the default everywhere', { read: { ...atDefault, lastOffered: GHOST_DEFAULT_ROUTES }, live: utf8(GHOST_DEFAULT_ROUTES) }],
     ['an unreadable live file', { read: { ...atDefault, lastOffered: F }, live: 'throws' as const }],
   ] as const) {
     const { io, seen, writes } = fake(over)
@@ -252,6 +259,19 @@ test('offerRoutes at Ghost\'s default: back to default over Inflozo\'s own file;
     assert.ok(!seen.some((s) => s.what.startsWith('POST')), `${name}: nothing sent`)
     assert.deepEqual(writes, [], `${name}: nothing written`)
   }
+  // Story 7.18a (DW-371 c): the default everywhere is kept, nothing sent — and B16's cause cleared
+  const everywhere = fake({ read: { ...atDefault, lastOffered: GHOST_DEFAULT_ROUTES }, live: utf8(GHOST_DEFAULT_ROUTES) })
+  assert.deepEqual(await offerRoutes(ARGS, everywhere.io), { kind: 'kept', clear: true })
+  assert.ok(!everywhere.seen.some((s) => s.what.startsWith('POST')))
+  assert.deepEqual(everywhere.writes, [{ routes_fallback: null }])
+  // DW-371 (b): a state write that fails — or throws — leaves the outcome standing
+  const failing = fake({ wrote: false })
+  assert.deepEqual(await offerRoutes(ARGS, failing.io), { kind: 'uploaded', file: F, sha256: sha(F) })
+  const throwing = fake({})
+  throwing.io.write = async () => {
+    throw new Error('the store')
+  }
+  assert.deepEqual(await offerRoutes(ARGS, throwing.io), { kind: 'uploaded', file: F, sha256: sha(F) })
 })
 
 test('offerRoutes, Stored routing unfit and First read fails', async () => {

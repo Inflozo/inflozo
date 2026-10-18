@@ -97,8 +97,9 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
   const multiline = o.def.type === 'richtext'
   const max = o.def.maxChars
   const node = el as unknown as MarkNode
-  // An empty value keeps the words it shows — a catalog string or the design's authored text — as its starting text, and
-  // stays empty until an edit makes those words the customer's.
+  // An empty value keeps the words it shows — a catalog string — as its starting text, and stays empty until an edit makes
+  // those words the customer's. (Since Story 7.18a an emptied non-catalog text prop is removed from the canvas — DW-349 —
+  // so its element is not there to edit inline; the sidebar's text box brings it back.)
   let base: PropValue = textOf(o.value) === '' ? readText(node) : o.value
   let words = textOf(base)
   let edited = false

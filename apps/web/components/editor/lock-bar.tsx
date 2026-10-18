@@ -27,7 +27,8 @@ const STRIP_WORDS = 'flex-1 truncate text-control-label text-ink-soft-aa'
  * R-98: the press SAYS IT IS WORKING — `aria-disabled` + `aria-busy` + the label swap, never `disabled`, and both
  * labels sit in one grid cell (`BusyLabel`) so the bar does not shift by the width of a word mid-press.
  *
- * IT IS ALSO WHAT D8g WILL REUSE VERBATIM when Story 7.18a lands Ship it (DW-238).
+ * D8g, Ship it's take-over for a session reading along (Story 7.18a, DW-238), is `lock-takeover.tsx` with its own words
+ * (`LOCK_COPY.shipTitle` …), not this bar.
  */
 export function LockBar({
   asking,

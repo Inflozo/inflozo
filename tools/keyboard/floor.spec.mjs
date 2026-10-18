@@ -12,6 +12,7 @@
 // the phone's claim is proved by the REQUESTS it never sends, with a tablet sending them as the control; the
 // `edit_locks` row itself is `tools/probe/run-verify-editor.cjs` step 97's, on production.
 
+import { readFileSync } from 'node:fs'
 import { devices, expect, test } from '@playwright/test'
 
 const HARNESS = '/app/harness/editor'
@@ -792,4 +793,124 @@ test('R-217 (DW-188, Story 5.24e): a mouse over a Layers row outlines its sectio
     const top = el.getBoundingClientRect().top
     return top >= 0 && top < el.ownerDocument.defaultView.innerHeight
   }), { message: 'the press reveals the section below the fold' }).toBe(true)
+})
+
+// ── Story 7.18a — Ship it and the wizard by pointer (S4, S8): a click opens it, the backdrop closes it, and once it
+// starts it finishes — a click on the backdrop while it uploads closes nothing. The route answers canned job states
+// (`page.route`), as the keyboard journey's do; the walk's step 113 ships for real.
+test.describe('7.18a · Ship it by pointer (1280 × 720)', () => {
+  test.use({ viewport: { width: 1280, height: 720 }, hasTouch: false })
+
+  test('a click opens the wizard and a click on the backdrop closes it — except while it uploads', async ({ page }) => {
+    const job = 'job-718'
+    const at = '2026-10-18T10:00:00.000Z'
+    const view = (stage, timings) => ({ job: { id: job, stage, error: null, timings, cancelRequested: false }, deploy: { version: '1.0.0', themeName: 'inflozo-pilot-sections', status: 'checking', activated: false, bytes: 1000, gscan: { major: 6, gscan: '4.49.7', blocked: false, errors: [], warnings: [] }, quality: { blocked: false, errors: [], warnings: [] } }, previous: null, routesFile: null })
+    let answer = view('awaiting_ship', { compiling: { at, ms: 1, bytes: 1000 }, checking: { at, ms: 1 } })
+    await page.route((url) => /\/projects\/[^/]+\/deploy$/.test(url.pathname), (route) => {
+      if (route.request().method() === 'POST') {
+        if (route.request().postDataJSON().intent === 'ship') answer = view('uploading', { compiling: { at, ms: 1, bytes: 1000 }, checking: { at, ms: 1 }, uploading: { at } })
+        return route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ job }) })
+      }
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(answer) })
+    })
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+    await page.goto(HARNESS)
+    await painted(page)
+    const wizard = page.locator('dialog[data-deploy-wizard]')
+    await page.locator('#editor-ship').click()
+    await expect(wizard).toHaveAttribute('data-deploy-wizard', 'destination')
+    // the backdrop: a point outside the sheet's box
+    await page.mouse.click(10, 700)
+    await expect(wizard).toHaveCount(0)
+    await page.locator('#editor-ship').click()
+    await page.locator('#deploy-run').click()
+    await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true')
+    await page.locator('#deploy-ship').click()
+    await expect(wizard).toHaveAttribute('data-deploy-wizard', 'ship')
+    await page.mouse.click(10, 700)
+    await expect(wizard, 'uploading: once it starts, it finishes').toBeVisible()
+  })
+})
+
+// ── Story 7.18a — R-263: a touch screen below 768 that is not a phone. Ship it shares the bar, so Undo and Redo lead ⋯ and
+// the words "Template" and "View as" go; at 768 and up nothing changes. The sweep holds no bar control outside the window
+// at 600, 640 and 720 on Home and on the Paywall; its CONTROL is the same sweep with the rule switched off in the page
+// (the editor's own media query answered "no"), where the bar really does leave the window — so the sweep measures
+// something. The query is read from `editor.tsx`, its one home.
+const NARROW_TOUCH = /const NARROW_TOUCH = '([^']+)'/.exec(readFileSync(new URL('../../apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx', import.meta.url), 'utf8'))?.[1]
+
+test.describe('7.18a · R-263 · the bar on a narrow touch screen', () => {
+  const at = async (browser, baseURL, width, path, { ruleOff = false } = {}) => {
+    const context = await browser.newContext({ baseURL, viewport: { width, height: 960 }, hasTouch: true, isMobile: true })
+    const page = await context.newPage()
+    if (ruleOff) {
+      await page.addInitScript((query) => {
+        const real = window.matchMedia.bind(window)
+        window.matchMedia = (q) => (q === query ? { matches: false, media: q, onchange: null, addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false } : real(q))
+      }, NARROW_TOUCH)
+    }
+    // the longest label the bar can carry: "Ship update"
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+    await page.goto(`${HARNESS}${path}`)
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', path ? 'paywall' : 'home')
+    return { context, page }
+  }
+
+  test('600, 640 and 720, Home and Paywall: no control of the bar leaves the window; Undo and Redo lead ⋯ with their state, and the two triggers keep their names', async ({ browser, baseURL }) => {
+    expect(NARROW_TOUCH, 'the editor names its query').toBeTruthy()
+    for (const width of [600, 640, 720]) {
+      for (const path of ['', '/paywall']) {
+        const { context, page } = await at(browser, baseURL, width, path)
+        const where = `touch ${width} ${path || '/'}`
+        expect((await barMeasure(page)).outside, `${where}: no control of the bar is outside the window`).toEqual([])
+        await expect(page.locator('#editor-history'), `${where}: the pair has left the bar`).toBeHidden()
+        await expect(page.locator('#editor-template')).toHaveAccessibleName(/^Template /)
+        await expect(page.locator('#editor-view-as')).toHaveAccessibleName(/^View as /)
+        expect(await page.locator('#editor-template > span').first().evaluate((s) => s.getBoundingClientRect().width), `${where}: "Template" is not drawn`).toBeLessThanOrEqual(1)
+        // ⋯ opens on Undo, then Redo, each unavailable on a fresh editor — the bar's own state for the pair
+        await page.locator('#editor-more').tap()
+        const rows = page.locator('#editor-more-menu li button, #editor-more-menu li a')
+        await expect(rows.nth(0)).toContainText('Undo')
+        await expect(rows.nth(1)).toContainText('Redo')
+        await expect(rows.nth(0)).toHaveAttribute('aria-disabled', 'true')
+        await expect(rows.nth(1)).toHaveAttribute('aria-disabled', 'true')
+        await context.close()
+      }
+    }
+  })
+
+  test('the CONTROL: with the rule switched off the same bar leaves the window at all three widths, and at 768 the rule is off by itself and nothing has moved', async ({ browser, baseURL }) => {
+    for (const width of [600, 640, 720]) {
+      const { context, page } = await at(browser, baseURL, width, '/paywall', { ruleOff: true })
+      expect((await barMeasure(page)).outside.length, `touch ${width}, rule off: the bar does leave the window`).toBeGreaterThan(0)
+      await expect(page.locator('#editor-history')).toBeVisible()
+      await context.close()
+    }
+    for (const path of ['', '/paywall']) {
+      const { context, page } = await at(browser, baseURL, 768, path)
+      expect((await barMeasure(page)).outside).toEqual([])
+      await expect(page.locator('#editor-history'), '768: the pair is in the bar').toBeVisible()
+      expect(await page.locator('#editor-template > span').first().evaluate((s) => s.getBoundingClientRect().width), '768: "Template" is drawn').toBeGreaterThan(1)
+      await page.locator('#editor-more').tap()
+      await expect(page.locator('#editor-more-menu li').first(), '768: ⋯ does not carry the pair').not.toContainText(/^Undo/)
+      await context.close()
+    }
+  })
+
+  test('an edit makes ⋯\'s Undo available, and pressing it undoes the edit — the bar\'s own handler', async ({ browser, baseURL }) => {
+    const { context, page } = await at(browser, baseURL, 720, '')
+    const rail = page.locator('[data-rail-row]')
+    const before = await rail.count()
+    // a page section (the first rail row is the site-wide header, which has no Duplicate — FR-D5)
+    await rail.nth(1).tap()
+    await page.keyboard.press('ControlOrMeta+d')
+    await expect.poll(() => rail.count()).toBe(before + 1)
+    await page.locator('#editor-more').tap()
+    const undo = page.locator('#editor-more-menu li button').first()
+    await expect(undo).toContainText('Undo')
+    await expect(undo).not.toHaveAttribute('aria-disabled', 'true')
+    await undo.tap()
+    await expect.poll(() => rail.count()).toBe(before)
+    await context.close()
+  })
 })

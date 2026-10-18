@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import {
-  listsOf, parseRoutesConfig, pathsUsing, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
+  EMPTY_ROUTES, listsOf, parseRoutesConfig, pathsUsing, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
 } from '@inflozo/section-runtime/routes'
 import { docSchema, listedStart, type ProjectDoc } from '@inflozo/section-runtime'
 import { isUuid, routesPath } from '@/lib/editor'
@@ -12,7 +12,7 @@ import { ROUTES_WORDS, templatesOf, templateWriteRefusal, type Template } from '
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
 /**
- * STORY 7.16a — THE ROUTES MANAGER'S FOUR WRITES (FR-I2, FR-I3), in the house shape (`settings/translations/actions.ts`):
+ * STORY 7.16a — THE ROUTES MANAGER'S WRITES (FR-I2, FR-I3), in the house shape (`settings/translations/actions.ts`):
  * the project id from the form and `isUuid`; the WHOLE next config re-validated here by the runtime's one validator
  * (`validateRoutes`) before anything is written, against the project's own templates read under the caller's session; RLS
  * through `supabaseServer()` (the uniform owner policy and the parent-ownership term, `…complete_schema.sql:814-855`, CRUD
@@ -282,6 +282,32 @@ export async function saveRoutes(_previous: RoutesResult | null, formData: FormD
   }
   revalidate(id)
   return withMoved({ ok: true }, moved)
+}
+
+/**
+ * STORY 7.18a — R-261 (DW-362): "START AGAIN FROM GHOST'S DEFAULT ROUTING", the way out of a stored routing this page cannot
+ * read. Ghost's default (`EMPTY_ROUTES`) is written through `writeConfig`, `saveRoutes`' own path — judged whole, `yaml` null.
+ * Only the config is written: every `custom_templates` row and every canvas's doc stays, so nothing here moves
+ * `projects.revision` (a doc write would, through `syncDocs`, 7.16c's rule), and an unrouted template is a valid state.
+ * Only an UNREADABLE routing is replaced: a failed read is `couldNot`, and a routing that reads (another tab already started
+ * again, or it was repaired) is left as it is and the page re-rendered, so a stale sheet never wipes a readable routing.
+ */
+export async function resetRoutes(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {
+  const id = idOf(formData)
+  if (!id) return couldNot()
+  const user = await signedIn()
+  const sb = await supabaseServer()
+  const [ctx, stored] = await Promise.all([contextOf(sb, id), sb.from('routes_config').select('config').eq('project_id', id).maybeSingle()])
+  if (!ctx || stored.error) {
+    if (stored.error) console.error('projects/routes: routes_config read failed', { code: stored.error.code })
+    return couldNot()
+  }
+  if (!parseRoutesConfig(stored.data?.config ?? {}).ok) {
+    const refused = await writeConfig(sb, id, user.id, EMPTY_ROUTES, ctx.templates.map((t) => t.file))
+    if (refused !== null) return { error: refused }
+  }
+  revalidate(id)
+  return { ok: true }
 }
 
 /** "+ New template" on its own (R-247's Templates list): the row alone, no route. Story 7.16b — it answers the file it

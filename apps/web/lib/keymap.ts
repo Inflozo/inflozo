@@ -7,10 +7,10 @@
  * A BINDING WHOSE ACTION HAS NOT BEEN BUILT IS ABSENT (R-145 — R-118 applied to a key for the first time): not
  * bound, not listed, never greyed and never captioned (UX-DR3). Such a row carries `story` and no `keys`, which is
  * the whole of the difference — nothing matches it and `sheetRows()` leaves it out. The row still exists, because
- * the alternative is losing the fact that the key is OWED: `⌘K` landed with 5.10, `[` `]` with 5.11, `⇧R` with 5.12
- * and `P` with 5.15, and `⌘⏎` lands with 7.18a, each a criterion of that story, and the map is complete when 7.18a
- * ships. It is the shape `lib/editor.ts`'s `CANVASES` + `CONDITIONAL` already uses: the scheme itself
- * refuses what is not offered.
+ * the alternative is losing the fact that the key is OWED: `⌘K` landed with 5.10, `[` `]` with 5.11, `⇧R` with 5.12,
+ * `P` with 5.15 and `⌘⏎` with 7.18a, each a criterion of that story — and with 7.18a THE MAP IS COMPLETE: no row is owed,
+ * and `keymap.test.ts` asserts it. The shape stays, for the next key FR-D11 ever adds. It is the shape `lib/editor.ts`'s
+ * `CANVASES` + `CONDITIONAL` already uses: the scheme itself refuses what is not offered.
  *
  * EVERY SINGLE-CHARACTER SHORTCUT IS LIVE ONLY WHILE THE SHELL HOLDS FOCUS, and never while a text field or a
  * `contenteditable` has it (UX-DR11, WCAG 2.1.4 — a Level A rule inside the AA threshold). `holdsCaret` is that
@@ -37,6 +37,7 @@ export type Gesture =
   | 'layers' | 'dark' | 'shortcuts' | 'deselect'
   | 'remix' | 'preview'
   | 'desktop' | 'tablet' | 'mobile'
+  | 'ship'
 
 /** R-192 — which gestures CHANGE the document. A session reading along ignores these, whatever key asks: `commit()`
  *  would refuse the change anyway, but the picker, the confirm and the dice would still open over nothing. A `Record`
@@ -48,6 +49,8 @@ const EDITS: Readonly<Record<Gesture, boolean>> = {
   layers: false, dark: false, shortcuts: false, deselect: false,
   remix: true, preview: false,
   desktop: false, tablet: false, mobile: false,
+  // Story 7.18a — Ship it changes no document, and a session reading along may press it: it opens D8g's take-over first
+  ship: false,
 }
 export const edits = (gesture: Gesture): boolean => EDITS[gesture]
 
@@ -123,7 +126,11 @@ export const KEYMAP: readonly Binding[] = [
   // a bare `r` is a letter and nobody's binding. Single-key, so WCAG 2.1.4's focus condition rides on it by
   // construction (`SINGLE_KEY` is derived below) — which is what lets a capital R still be typed into a headline.
   { gesture: 'remix', action: 'Site Remix', chips: ['⇧R'], keys: ['r'], shift: true },
-  { action: 'Ship it', chips: ['⌘⏎'], story: '7.18' },
+  // Story 7.18a — R-145's last owed key, arriving with the action it presses: the split button's Ship it (`editor.tsx`'s
+  // `openShip`, which D8g fronts for a session reading along). ⌘-modified, so it carries no WCAG 2.1.4 condition and
+  // works with the caret in a field (`shortcutFor`'s ⌘ branch gives way only for ⌘Z, ⇧⌘Z and ⌘K). The card's words are
+  // the button's own (`DEPLOY_WORDS.ship`, held equal by `keymap.test.ts` — this module stays importless).
+  { gesture: 'ship', action: 'Ship it', chips: ['⌘⏎'], keys: ['enter'], meta: true },
   // R-147 (owner, 2026-09-19): FR-D11's fourteenth key, and the one key that teaches all the others. `S3
   // Dashboard.dc.html:362` draws it on the account menu's row, and the editor draws no account menu
   // (`shell.tsx:295-297`), so inside the editor it is the card's only door. `?` arrives as `key: '?'` — the layout's

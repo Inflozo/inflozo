@@ -111,6 +111,12 @@ export type PairingChoice = {
 /** A record as the engine reads it: its authored values with its pairing's fonts. */
 export const packOf = ({ name: _name, pairing: _pairing, ...authored }: PackRecord, fonts: PackFonts): Pack => ({ ...authored, fonts })
 
+/** STORY 7.18a — THE RECORD IN FORCE for a pack id: the project's own record under that id, else the library's — the
+ *  editor's roster rule (`rosterOf`) and the compile's (`lib/style-pack.ts`'s `enginePackOf`), one rule for the canvas and
+ *  the theme. Pool-free, so the editor's client reads it too. */
+export const recordInForce = (id: string, own: PackRecords, library: Readonly<Record<string, PackRecord>>): PackRecord | undefined =>
+  Object.hasOwn(own, id) ? own[id] : Object.hasOwn(library, id) ? library[id] : undefined
+
 /** STORY 5.6's Background role and the token each of its dots is painted with — here since Story 6.4, because the
  *  browser now paints an own pack's swatches (`choiceOf`). `lib/style-pack.ts` and `lib/controls-review.ts` re-export it.
  *  Image has no colour: the panel draws the Kit's image glyph for it. */

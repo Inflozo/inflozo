@@ -15,3 +15,6 @@ export {
 } from './compile.ts'
 export type { CompiledTheme, CompileInput, CompileSetting, CssRecord, CustomRecord, JsRecord } from './compile.ts'
 export { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'
+// Story 7.18a — the compile's customer-caused refusals, one list (`refusal.ts`; also `@inflozo/theme-compiler/refusal`)
+export { CompileRefusal, REFUSAL, refusalOf } from './refusal.ts'
+export type { RefusalKind, RefusalTag } from './refusal.ts'

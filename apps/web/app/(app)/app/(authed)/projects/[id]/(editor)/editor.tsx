@@ -62,7 +62,7 @@ import {
   SENT_CHANNEL, takeMoves, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
   type Move, type Restore, type SyncState,
 } from '@/lib/journal'
-import { ghostLabel, homeList, listsOf, routeList, type Lists } from '@inflozo/section-runtime/routes'
+import { ghostLabel, homeList, listsOf, routeList, routesYaml, type Lists } from '@inflozo/section-runtime/routes'
 import {
   askedNow, edgePoll, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, type AskedOf, type LockRow,
 } from '@/lib/lock'
@@ -87,8 +87,8 @@ import { canvasFirst, counted, useHanded, useSaid, useStable } from '@/lib/rende
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
 import { GONE, SAVE_UNANSWERED, SUBJECT_SAID, bundledSource, cappedPosts, clearPending, hasSubject, readPending, siteSubjects, subjectOptions, writePending } from '@/lib/preview-subject'
 import {
-  bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, PUBLIC_TIERS, reader, retriable, SEARCH_DEBOUNCE_MS,
-  searchFor, searchInForce, SETTINGS, siteLinks, siteTotal, subjectRead, withFound, type Cause, type LiveQuery,
+  bindingReads, feedRead, feedShortfall, getShortfall, keyOf as liveKey, LIST_LIMIT, LISTS, LIVE_WORDS, named, PUBLIC_TIERS, reader, retriable, SEARCH_DEBOUNCE_MS,
+  searchFor, searchInForce, SETTINGS, siteLinks, siteTotal, subjectRead, withFound, type Cause, type LiveQuery, type Row,
 } from '@/lib/live-content'
 import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, FEEDLESS_ROUTE, NOW_MAIN, withTransfer } from '@/lib/data-group'
 import { liveStore, type LiveStore } from '@/lib/live-client'
@@ -100,6 +100,8 @@ import type { EditorData } from './read'
 import { PackEditor, type PackEditing } from './pack-editor'
 import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
+import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
+import type { Mode as ShipMode } from '@/lib/deploy'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
@@ -332,7 +334,7 @@ import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './
    the pack's preset's address (Paper's for a pack the project made) and wears the pack before its first paint. Edit pack
    and New pack are `pack-editor.tsx`, mounted at the root; the roster and its rows are `style-pack.tsx`.
 
-   ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18a), the name's rename underline (no story yet)
+   ABSENT, NOT GREYED (UX-DR3), each until its story: the name's rename underline (no story yet)
    (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
    VISITOR's `mode-toggle` and a different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before
    Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's
@@ -786,6 +788,21 @@ const tabStore = (): Storage | null => {
   }
 }
 
+/** STORY 7.18a — R-263 (owner, 2026-10-18): a touch screen narrower than 768 that is not a phone — a phone never reaches the
+ *  editor (R-201's notice, `lib/floor.ts`' PHONE) — where Ship it would push the bar past the window. There, Undo and Redo
+ *  move to the top of ⋯ and the centre group's words "Template" and "View as" are hidden (each control keeps its full
+ *  name); at 768 and up nothing changes. Live, as `compactNow` is. `floor.spec.mjs` reads this text from here. */
+const NARROW_TOUCH = '(pointer: coarse) and (width < 768px)'
+const narrowTouchNow = () => window.matchMedia(NARROW_TOUCH).matches
+const onNarrowTouch = (change: () => void) => {
+  const query = window.matchMedia(NARROW_TOUCH)
+  query.addEventListener('change', change)
+  return () => query.removeEventListener('change', change)
+}
+
+/** STORY 7.18a — D8g's "Take over and ship", kept in THIS tab across the take-over's reload (the tab's own store) */
+const SHIP_AFTER = 'inflozo:ship-after-takeover'
+
 /** R-202's rule, LIVE — `useSyncExternalStore` over `matchMedia(COMPACT)`, so a window crossing 1280 (or a zoom) re-renders
  *  the one editor and remounts nothing. Module-level, so the subscription is one function for the component's life. */
 const compactNow = () => window.matchMedia(COMPACT).matches
@@ -829,6 +846,7 @@ function EditorShell({
   templates: routeTemplates = NO_TEMPLATES,
   routes,
   unreadListed,
+  ship,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -857,6 +875,9 @@ function EditorShell({
   // with no list of its own — so its feed stays main at every edit and its Count falls back to Posts per page
   const listed = useMemo<Lists>(() => (routes === null && unreadListed !== undefined ? new Map(unreadListed.map((f) => [f, []] as const)) : listsOf(routes)), [routes, unreadListed])
   const [now] = useState(() => new Date().toISOString())
+  /** STORY 7.18a — the project's routing file, or null while it has none (Ghost's default, or unreadable): the ▾ menu's
+   *  Download routes.yaml is there only while this is, and Pre-flight's "routes.yaml is valid" row reads it too */
+  const shipRoutes = useMemo(() => (routes === null ? null : routesYaml(routes)), [routes])
   const routeLists = useMemo<orbitWeekly.RouteLists>(() => {
     const home = homeList(routes, now)
     const byFile = new Map([...listed].map(([file, [first]]) => [file, first === undefined ? undefined : routeList(first, now)]))
@@ -1436,6 +1457,8 @@ function EditorShell({
    * state is how "only one overlay at a time" (`D8:283`) holds by construction; a bar menu opening closes it too. It is
    * layout, never an edit, and it is session state that nothing stores. */
   const compact = useSyncExternalStore(onCompact, compactNow, () => false)
+  /** STORY 7.18a — R-263's narrow touch screen (`NARROW_TOUCH`) */
+  const narrowTouch = useSyncExternalStore(onNarrowTouch, narrowTouchNow, () => false)
   const [sheet, setSheet] = useHanded<'layers' | 'controls' | null>(null)
   /** what held focus when a sheet opened — where closing it gives focus back, or the canvas where it cannot */
   const sheetFrom = useRef<HTMLElement | null>(null)
@@ -2402,19 +2425,22 @@ function EditorShell({
     land(answer)
   }
 
-  /** B5c's **Take over anyway** — the CAS, and then the last synced snapshot. */
-  const takeOver = async () => {
+  /** B5c's **Take over anyway** — the CAS, and then the last synced snapshot. STORY 7.18a — D8g's **Take over and ship** is the
+   *  same take-over from its own dialog (`asked`), and `won` runs once the lock is this session's, before the hydrate's reload. */
+  const takeOver = async (asked: RefObject<HTMLDialogElement | null> = takeover, won?: () => void) => {
     const was = latest.current.lock
     const row = was.row
     if (row === null) {
       // the row has vanished, so the lock is free: acquire normally rather than compare against nothing
-      takeover.current?.close()
-      land(await askLock(lockAt(), { intent: 'acquire', session: tabId.current, unsynced: countNow() }))
+      asked.current?.close()
+      const answer = await askLock(lockAt(), { intent: 'acquire', session: tabId.current, unsynced: countNow() })
+      if (answer?.held === true) won?.()
+      land(answer)
       return
     }
     putLock({ ...was, taking: true })
     const answer = await askLock(lockAt(), { intent: 'takeover', session: tabId.current, generation: row.generation, unsynced: countNow() })
-    takeover.current?.close()
+    asked.current?.close()
     if (answer === null || !answer.won) {
       // ZERO ROWS MEANS THE GENERATION MOVED UNDER US. Re-read and report the new state, never retry blindly. `null`
       // is the server not reached at all (a 502 carries the route's logged code, `42501` included) — said politely,
@@ -2427,11 +2453,67 @@ function EditorShell({
     tell.current('took-over')
     heldGeneration.current = answer.row?.generation ?? row.generation + 1
     putLock({ ...latest.current.lock, taking: false, holder: true, row: answer.row, asking: false, askedAt: null, askedOf: null, unanswered: false })
+    won?.()
     // AND I AM EDITING THE LAST SYNCED SNAPSHOT. A RELOAD IS A HYDRATE — the conflict dialog beside this one says so
     // in as many words — so §AD1.1 runs exactly and the cloud doc is what comes back. This tab's session id survives
     // it in `sessionStorage`, so the lock just taken is still ours on the way back in — and `keeping` is what stops
     // the release on the way out from deleting the row this take-over has just won.
     hydrate()
+  }
+
+  /* ─── STORY 7.18a — SHIP IT (FR-J8, S4/S4d, S8, D8g) ───────────────────────────────────────────────────────────────────
+   *
+   * ONE PRESS, THREE DOORS: the split button, its ▾ rows and ⌘⏎ all call `openShip` (R-141). A session HOLDING the lock opens
+   * the wizard; a session READING ALONG meets D8g first — B5c's take-over in its own words (`LOCK_COPY.ship*`), opened on
+   * Wait (UX-DR14) — because the deploy route refuses a session without a fresh lock (423) and the wizard never opens
+   * without it. **Take over and ship** is `takeOver` itself, whose success reloads to the last synced snapshot (a hydrate):
+   * the ask survives that reload in THIS TAB's store (`SHIP_AFTER`), and the editor that comes back opens the wizard once it
+   * is the holder. A refused take-over says its existing sentence and opens nothing.
+   *
+   * The wizard is a modal with no route (EXPERIENCE: modes are never in the address), mounted only while open, at the root
+   * beside D8g so no hidden ancestor holds it. Run checks awaits the flush (`flushForShip`); "Fix in editor" is a link to that
+   * canvas; closing it after a job ended re-reads the page (`router.refresh()`), so the bar's label and versions follow. */
+  const shipTakeover = useRef<HTMLDialogElement>(null)
+  const [wizard, setWizard] = useHanded<ShipRequest | null>(null)
+  /** D8g's take-over landed and the reload that follows it is on its way: Ship it says so (R-98) */
+  const [shipOpening, setShipOpening] = useHanded(false)
+  /** the mode D8g was asked from — the ▾ row or Ship it's own press */
+  const shipAsked = useRef<ShipMode>('activate')
+  const openShip = (mode: ShipMode) => {
+    if (!latest.current.lock.holder) {
+      shipAsked.current = mode
+      openOnCancel(shipTakeover.current)
+      return
+    }
+    setWizard((was) => ({ mode, n: (was?.n ?? 0) + 1 }))
+  }
+  const takeOverToShip = () =>
+    void takeOver(shipTakeover, () => {
+      setShipOpening(true)
+      tabStore()?.setItem(SHIP_AFTER, JSON.stringify({ project: project.id, mode: shipAsked.current }))
+    })
+  /** Run checks' flush: whatever is in flight lands first, then everything owed is sent — true when nothing is left */
+  const flushForShip = async () => {
+    // ponytail: `handOver`'s wait — a flush already in flight makes `flush` return without sending
+    while (inFlight.current) await new Promise((r) => setTimeout(r, 150))
+    await flush('manual')
+    return !unsynced(latest.current.journal)
+  }
+  /** R-260's read: the site's published posts, a hundred a page, through the canvas's own store and its request ceiling —
+   *  null where the site cannot be read, a read fails, or the ceiling stops it */
+  const readSitePosts = async (): Promise<readonly Row[] | null> => {
+    const store = readsOf()
+    if (store === null) return null
+    const rows: Row[] = []
+    for (let page = 1; ; page++) {
+      const q = feedRead(null, page, LIST_LIMIT)
+      if (q === null) return null
+      await store.ensure([q])
+      const answer = store.peek(q)
+      if (answer === undefined) return null
+      rows.push(...answer.rows)
+      if (page >= answer.pages) return rows
+    }
   }
 
   /** A RELOAD THAT KEPT ITS TAB ID IS THE SAME SESSION, so it keeps the lock rather than flashing B5a's bar at its
@@ -2448,6 +2530,24 @@ function EditorShell({
       putLock({ ...latest.current.lock, holder: true, row: heldOnServer })
     }
     // mount only — one tab, one id
+  }, [])
+  /** STORY 7.18a — D8g's ask, back from its take-over's reload: this tab asked to ship, so the wizard opens once the lock is
+   *  this session's (the layout effect above has just said whether it is). Spent on read, so a later reload asks nothing. */
+  useEffect(() => {
+    const store = tabStore()
+    const kept = store?.getItem(SHIP_AFTER) ?? null
+    if (kept === null) return
+    store?.removeItem(SHIP_AFTER)
+    const asked = (() => {
+      try {
+        return JSON.parse(kept) as { project?: unknown; mode?: unknown }
+      } catch {
+        return null
+      }
+    })()
+    if (asked?.project !== project.id || !latest.current.lock.holder) return
+    setWizard({ mode: asked.mode === 'upload' ? 'upload' : 'activate', n: 1 })
+    // mount only — the ask is one reload's
   }, [])
 
   useEffect(() => {
@@ -3761,9 +3861,9 @@ function EditorShell({
    * functions the pill and the `⋯` menu call — so a key and its button cannot drift (R-141's rule, already proved by
    * ⌘Z at Story 5.8). Nothing below decides what a key DOES; `shortcutFor` decides what a press IS.
    *
-   * A BINDING WHOSE ACTION IS NOT BUILT NEVER REACHES HERE (R-145): `⌘⏎` carries no keys in the table — `⌘K`, `[`,
-   * `]`, `⇧R` and `P` left that list with the actions they drive — so `shortcutFor` returns null for it, nothing is
-   * prevented, nothing is announced and the `?` card does not list it.
+   * A BINDING WHOSE ACTION IS NOT BUILT NEVER REACHES HERE (R-145): such a row carries no keys in the table, so
+   * `shortcutFor` returns null for it, nothing is prevented, nothing is announced and the `?` card does not list it. None is
+   * left: `⌘K`, `[`, `]`, `⇧R`, `P` and, with Story 7.18a, `⌘⏎` each arrived with the action it drives.
    *
    * TWO GUARDS, AND THE SPLIT IS THE MODIFIER'S. A single-character press is inert while ANY text holds the caret
    * (UX-DR11, WCAG 2.1.4) — typing "dark" into a headline must never flip the canvas — and gives way to an open
@@ -3819,6 +3919,8 @@ function EditorShell({
       // STORY 5.15 — `P` is B3a's pill on the way in and B3b's Back to editing on the way out: one toggle, the very
       // handlers the two buttons call (R-141)
       case 'preview': return latest.current.preview ? leavePreview() : enterPreview()
+      // STORY 7.18a — ⌘⏎ is Ship it's own press (R-141): the wizard for the holder, D8g first for a session reading along
+      case 'ship': return openShip('activate')
       // the ladder below owns it; `shortcutFor` never returns it, and this arm is here so the union stays exhaustive
       case 'deselect': return
       default: {
@@ -5358,7 +5460,8 @@ function EditorShell({
      Theme settings' link, the pill's Preview — in the control's own words (R-170, the chips are `KEYMAP`'s). A row is
      absent where its control is (UX-DR3): no dark row on a Light-only project, no Remix or Preview on a template
      surface, which has Back to post instead. The device is ONE row that moves to the next device, because the menu is
-     "one item deep" (`D8:293`). Undo and redo stay beside the indicator (R-143), and D8a's Export row has no control at
+     "one item deep" (`D8:293`). Undo and redo stay beside the indicator (R-143) — except on a touch screen below 768, where
+     they lead ⋯ (R-263, Story 7.18a) — and D8a's Export row has no control at
      1440 to be (Ship it's own menu carries Download theme, 7.26). Only the Remix row edits, so it alone greys reading
      along (R-192). */
   const chipsOf = (gesture: Gesture) => KEYMAP.find((b) => b.gesture === gesture)?.chips
@@ -5367,6 +5470,14 @@ function EditorShell({
   const noGlyph = <span aria-hidden className="size-[13px] shrink-0" />
   const nextDevice = DEVICES[(DEVICES.findIndex((d) => d.name === device.name) + 1) % DEVICES.length] ?? DESKTOP
   const more: MenuItem[] = [
+    // STORY 7.18a — R-263: on a narrow touch screen Undo and Redo lead ⋯, calling the pair's own handlers with the pair's own
+    // availability — unavailable at the bar's 35%, `aria-disabled` (R-143 amended at that width only)
+    ...(narrowTouch
+      ? [
+          { label: 'Undo', icon: <UndoIcon size={13} />, keys: chipsOf('undo'), unavailable: !(lock.holder && canUndo(journal)), onSelect: onUndo },
+          { label: 'Redo', icon: <RedoIcon size={13} />, keys: chipsOf('redo'), unavailable: !(lock.holder && canRedo(journal)), onSelect: onRedo },
+        ]
+      : []),
     ...(surface ? [] : [{ label: KEYMAP.find((b) => b.gesture === 'remix')?.action ?? 'Site Remix', icon: <Refresh size={13} />, keys: chipsOf('remix'), readOnly: !lock.holder, onSelect: () => remixDice.current?.press() }]),
     // Story 7.13 — Editor cards' canvas is the post at reading width in the pack's light look: no mode, no device
     ...(darkEnabled && !cardsNow ? [{ label: modeWords(mode), icon: mode === 'dark' ? <Moon size={13} /> : <Sun size={13} />, keys: chipsOf('dark'), onSelect: () => flip(latest.current.mode === 'dark' ? 'light' : 'dark') }] : []),
@@ -5628,7 +5739,8 @@ function EditorShell({
             2px apart, the unavailable one at `opacity:.35`); only where they sit has moved.
             THE KEYS ARE THE ARROWS' OWN HANDLERS (R-141), so the two can never disagree.
             `aria-disabled`, never `disabled`: the control stays in the tab order and stays announced. */}
-        <div id="editor-history" style={onInk} className="flex shrink-0 items-center gap-[2px]">
+        {/* STORY 7.18a — R-263: hidden, never unmounted, on a narrow touch screen, where ⋯ carries the pair */}
+        <div id="editor-history" hidden={narrowTouch} style={onInk} className="flex shrink-0 items-center gap-[2px]">
           <IconButton
             id="editor-undo"
             label="Undo"
@@ -5659,8 +5771,14 @@ function EditorShell({
             widest name. S4d's "2 not viewed" marker is not drawn here: the owner moved the reminder into the menu
             (R-169), so nothing hangs off the trigger. The deployed walk measures THIS group against the bar (step 2),
             not the switcher alone. Since Story 5.22 it is the grid's middle column rather than absolutely centred, and
-            Template and View as keep their size and their words at every width (D8). */}
-        <div id="editor-centre" className="flex w-max items-center gap-2">
+            Template and View as keep their size and their words at every width (D8) — but on a touch screen below 768, where
+            Story 7.18a's Ship it shares the bar, their leading words go (R-263, below). */}
+        {/* STORY 7.18a — R-263: on a narrow touch screen the triggers' leading words go (`sr-only`), so each is still named
+            "Template Home" and "View as Logged out user" — the values stay */}
+        <div
+          id="editor-centre"
+          className={`flex w-max items-center gap-2 ${narrowTouch ? '[&_#editor-template>span:first-child]:sr-only [&_#editor-view-as>span:first-child]:sr-only' : ''}`}
+        >
           {/* Story 7.13 — S14d's amber count of customised cards follows Editor cards' row (absent at zero) */}
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : on.pathOf} customised={customisedCount(cardDesigns)} names={names} />
           {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
@@ -5670,7 +5788,7 @@ function EditorShell({
           {cardsNow ? <CardMenu card={cardOrFirst(cardKey)} designs={cardDesigns} onChoose={chooseCard} /> : <ViewAs visitor={viewAs} viewed={viewedHere} onChoose={on.chooseVisitor} />}
         </div>
         {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY
-            RIGHT OF IT, as the frame draws them; Ship it (7.18a) lands beside them later (R-118). Undo and redo left
+            RIGHT OF IT, as the frame draws them; Ship it (7.18a) sits after ⋯, below, at every width. Undo and redo left
             for the indicator's side at R-143. View as was once expected here, and that was an earlier story's guess and
             never a ruling: every drawn bar puts it in the centred group above, which is where Story 5.14 built it.
             The sun is ABSENT, NOT DISABLED, on a Light-only project (UX-DR3, R-118, R-128, and AD-17's own Rule in so
@@ -5725,7 +5843,8 @@ function EditorShell({
             href={settingsPath(project.id)}
             id="editor-theme-settings"
             style={onInk}
-            className={`rounded-sm px-[6px] py-1 text-ui-dense text-ink-soft transition-colors hover:bg-paper-sunk hover:text-ink ${ring}`}
+            // Story 7.18a — one line: Ship it now shares the column, and the grid's min-content would wrap it
+            className={`whitespace-nowrap rounded-sm px-[6px] py-1 text-ui-dense text-ink-soft transition-colors hover:bg-paper-sunk hover:text-ink ${ring}`}
           >
             Theme settings
           </Link>
@@ -5763,6 +5882,9 @@ function EditorShell({
           <div id="editor-more-menu" popover="auto" onKeyDown={arrowKeys} className="overflow-visible border-0 bg-transparent p-0">
             <Menu label="More editor actions" items={more} />
           </div>
+          {/* STORY 7.18a — S4's Ship it with S4d's ▾, AFTER ⋯ and at EVERY width (D8a/D8b draw it there below 1440): never in the
+              hidden cluster, and live reading along — it changes nothing, and a reader's press meets D8g first */}
+          <ShipButton ship={ship} routes={shipRoutes} busy={shipOpening} onShip={openShip} />
         </div>
       </header>
 
@@ -6644,6 +6766,42 @@ function EditorShell({
         taking={lock.taking}
         onConfirm={() => void takeOver()}
       />
+
+      {/* STORY 7.18a — D8g (`D8 Editor Below 1440.dc.html:459-489`): B5c's component in D8g's words, opened on Wait by
+          `openShip` for a session reading along; its confirm is the same take-over, then the wizard */}
+      <LockTakeover
+        dialog={shipTakeover}
+        id="editor-ship-takeover"
+        heading={LOCK_COPY.shipTitle}
+        body={LOCK_COPY.shipBody}
+        owed={lock.row?.unsyncedEdits ?? 0}
+        confirm={LOCK_COPY.shipConfirm}
+        taking={lock.taking}
+        onConfirm={takeOverToShip}
+      />
+      {/* STORY 7.18a — the deploy wizard (S8a–d, S8d′, D2e/D2f), mounted while open; focus goes back to Ship it on close */}
+      {wizard === null ? null : (
+        <DeployWizard
+          key={wizard.n}
+          request={wizard}
+          projectId={project.id}
+          ship={ship}
+          siteTitle={site?.title ?? null}
+          routes={routes}
+          routesFile={shipRoutes}
+          names={names}
+          prefix={isApp(pathname) ? '/app' : ''}
+          session={() => tabId.current}
+          flush={flushForShip}
+          readPosts={readSitePosts}
+          canvasHref={pathOf}
+          onClose={(shipped) => {
+            setWizard(null)
+            document.getElementById('editor-ship')?.focus()
+            if (shipped) router.refresh()
+          }}
+        />
+      )}
 
       {/* R-147's card, opened by `?` — the editor draws no account menu (`shell.tsx:295-297`), so this is its only
           door from in here. Its rows are the map's own (R-145): exactly the keys that work. */}

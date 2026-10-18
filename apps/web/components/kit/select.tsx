@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Fragment, type MouseEvent, type ReactNode } from 'react'
+import { Fragment, useId, type MouseEvent, type ReactNode } from 'react'
 import { anchorTo, arrowKeys } from '@/lib/menu'
 import { Check, ChevronDown, ChevronRight, Trash } from './icons'
 import { fieldTone, greyedProps, labelTone, ReadOnly, reason, ring, slimScrollbar, valueTone, type Greyed } from './greyed'
@@ -219,11 +219,18 @@ export type MenuItem = {
   /** Story 7.9 — the heading a row is listed under (the Promote menu's pages, the owner's Question 5): a row whose group is
    *  not the row before's opens it with its heading, drawn as D6a's rail heading ("SETTINGS", `:42`) */
   group?: string
+  /** STORY 7.18a — P0-0 on a row (UX-DR3, R-264's Deploy only): `aria-disabled`, never `disabled`, so the arrows still reach
+   *  it and its reason is heard; the reason takes the row's caption slot under its name, and a press does nothing */
+  greyed?: string
+  /** STORY 7.18a (R-263) — a row whose action has nothing to act on right now (Undo and Redo, moved into ⋯ on a narrow
+   *  touch screen): the bar's own state for the same control — `aria-disabled` at its 35% — and a press does nothing */
+  unavailable?: boolean
 }
 
 /** The dropdown itself: the active row is coral-tint with a check, danger sits last. Story 6.4 — `width` where the menu is
  *  as wide as what opened it (the pairing menu, as wide as its font row); the Kit's 210 otherwise. */
 export function Menu({ label, items, width = 'w-[210px]' }: { label: string; items: MenuItem[]; width?: string }) {
+  const id = useId()
   return (
     <ul
       aria-label={label}
@@ -236,8 +243,14 @@ export function Menu({ label, items, width = 'w-[210px]' }: { label: string; ite
           event.currentTarget.closest<HTMLElement>('[popover]')?.hidePopover()
           item.onSelect?.()
         }
+        const off = item.greyed !== undefined || item.unavailable === true
+        const reasonId = `${id}-${i}-reason`
         const className = `flex items-center gap-2 rounded-sm px-[10px] py-[7px] text-left text-ui-dense disabled:opacity-35 disabled:hover:bg-transparent ${ring} ${
-          item.active
+          item.greyed !== undefined
+            ? 'cursor-not-allowed font-medium text-ink-faint'
+            : item.unavailable
+              ? 'cursor-not-allowed font-medium text-ink opacity-35'
+              : item.active
             ? 'bg-coral-tint font-semibold text-ink'
             : item.danger
               ? 'font-medium text-danger-text hover:bg-danger-tint'
@@ -246,7 +259,12 @@ export function Menu({ label, items, width = 'w-[210px]' }: { label: string; ite
         const inside = (
           <>
             {item.danger ? <Trash size={13} /> : item.icon}
-            {item.contents ?? <span className="flex-1">{item.label}</span>}
+            {item.greyed !== undefined ? (
+              <span className="flex min-w-0 flex-1 flex-col gap-px">
+                <span>{item.label}</span>
+                <span id={reasonId} className="text-helper-caption font-normal leading-[1.45] text-ink-soft">{item.greyed}</span>
+              </span>
+            ) : (item.contents ?? <span className="flex-1">{item.label}</span>)}
             {item.keys?.map((k) => (
               <kbd key={k} className={kbd}>
                 {k}
@@ -270,7 +288,14 @@ export function Menu({ label, items, width = 'w-[210px]' }: { label: string; ite
                 </Link>
               ) : (
                 <ReadOnly on={item.readOnly === true}>
-                  <button type="button" aria-current={item.active ? 'true' : undefined} onClick={item.onSelect ? act : undefined} className={className}>
+                  <button
+                    type="button"
+                    aria-current={item.active ? 'true' : undefined}
+                    aria-disabled={off || undefined}
+                    aria-describedby={item.greyed === undefined ? undefined : reasonId}
+                    onClick={item.onSelect && !off ? act : undefined}
+                    className={className}
+                  >
                     {inside}
                   </button>
                 </ReadOnly>

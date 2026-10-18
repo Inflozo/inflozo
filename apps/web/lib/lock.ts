@@ -303,6 +303,12 @@ export const LOCK_COPY = {
     `That session has not responded for ${duration(ms)}.${owed ? ' It has edits that never reached the server.' : ''}`,
   willBeLost: (n: number) => `${edits(n)} will be lost`,
   lossIsFinal: 'They exist only in that session. We cannot retrieve them from here.',
+  /** STORY 7.18a — D8g (`D8 Editor Below 1440.dc.html:459-489`), B5c reused for Ship it from a session reading along: its own
+   *  heading, body and confirm, R-189's "your other session" in place of a person, and `willBeLost`, `lossIsFinal`,
+   *  `takingOver` and `wait` above. */
+  shipTitle: 'Take over to ship?',
+  shipBody: 'Shipping needs the edit lock, and your other session is holding it.',
+  shipConfirm: 'Take over and ship',
   /** the displaced session, announced assertively. "**This** session", not "that": it is read BY the session it is
    *  about, so one pronoun makes the sentence true from where it is read (R-189's routine judgement). */
   displaced: (n: number) => `This session had ${edits(n)}; they were not included.`,

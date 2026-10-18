@@ -106,15 +106,23 @@ export async function offerRoutes(
   // it, and Inflozo's own file would be `kept` over a project back at the default with no cause stored
   const live = (read.staff ? await readLive(io, siteId, route, 'staff') : null) ?? (await readLive(io, siteId, route, 'admin'))
   const pick = routesToOffer({ project, live, lastOffered: read.lastOffered })
-  if (pick.kind === 'kept') return pick
 
   const settle = async (outcome: RoutesOutcome): Promise<RoutesOutcome> => {
     const patch = routesWrite(outcome, io.now().toISOString())
-    // the outcome stands even when its state could not be written (logged): the upload has happened or not either way,
-    // and 7.18a opens B16 from what this answers
-    if (patch !== null) await io.write({ siteId, userId, patch })
+    // the outcome stands even when its state could not be written: the upload has happened or not either way, and 7.18a
+    // opens B16 from what this answers. STORY 7.18a (DW-371 b): a write that throws is caught and logged too, so it never
+    // turns a finished upload into a step 7.18a retries
+    if (patch === null) return outcome
+    let wrote = false
+    try {
+      wrote = await io.write({ siteId, userId, patch })
+    } catch {
+      wrote = false
+    }
+    if (!wrote) console.error('routes-upload: the outcome stands, its state was not written', { code: outcome.kind })
     return outcome
   }
+  if (pick.kind === 'kept') return settle(pick)
   if (pick.kind === 'unchanged') return settle({ kind: 'unchanged', file: pick.file, sha256: sha256(pick.file) })
   if (!read.staff) return settle({ kind: 'fallback', cause: 'no_token', file: pick.file })
 
@@ -134,7 +142,8 @@ export async function offerRoutes(
 
   // the read-back, with the token that uploaded, compared as bytes
   const back = await readLive(io, siteId, route, 'staff')
-  if (back === null || !bytesEqual(back, new TextEncoder().encode(pick.file))) return { kind: 'failed', code: 'routes_unverified' }
+  // DW-371 (a): Ghost took it; the file is written as last offered, so Verify upload can compare (`routesWrite`)
+  if (back === null || !bytesEqual(back, new TextEncoder().encode(pick.file))) return settle({ kind: 'failed', code: 'routes_unverified', file: pick.file })
   return settle({ kind: 'uploaded', file: pick.file, sha256: sha256(pick.file) })
 }
 

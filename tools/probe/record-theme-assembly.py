@@ -2597,11 +2597,13 @@ def list_inputs(g, per_page):
     ago = max(cuts) if cuts else int(ages[-1]) + 2
     if ago > 999:
         raise Void(f'the channel\'s window would be {ago} days — past the Routes Manager\'s 999 (AGO.max), so §84 cannot cut one on T1')
-    # what the index filter `primary_tag:-'<tag>'` LISTS, as Ghost's SQL means it (`post.js:291-310`'s `filterExpansions`:
-    # a primary that exists and is not the tag) — and the posts with no primary, which it lists on no page while the index
-    # still OWNS them in memory (`router-filter.js`, `lazy-url-service.js:285-303`): DW-364, measured by §84's first run
+    # what the index filter LISTS, as Ghost's SQL means it (`post.js:291-310`'s `filterExpansions`): DW-364, measured by §84's
+    # first run, found `primary_tag:-'<tag>'` alone listed only a primary that exists and is not the tag, so a post with no
+    # primary was on no page while the index still OWNED it in memory (`router-filter.js`, `lazy-url-service.js:285-303`).
+    # STORY 7.18a (R-260): the index filter now also lists a post with no public primary tag (`routes.ts`' `NO_PRIMARY`), so
+    # the index LISTS exactly what it OWNS — every post whose primary is not the collection's tag, a missing one included
     rich = primaries(g)
-    index_ids = sorted(p['id'] for p in rich if p['primary'] is not None and p['primary'] != best[1])
+    index_ids = sorted(p['id'] for p in rich if p['primary'] != best[1])
     unreached = sorted((p for p in rich if p['primary'] is None), key=lambda p: (p['tags'], p['slug']))
     return {'tag': best[1], 'owned': sorted(best[2]), 'total': len(everything), 'ago': ago, 'index_ids': index_ids, 'unreached': unreached}
 
@@ -2687,11 +2689,12 @@ def list_phase(g, lt, li, arch):
             raise Void(f'{path} answered HTTP {st} before the upload — a segment this run needs is taken')
         row(True, path, 'CONTROL — the address is free before the upload (404)', f'HTTP {st}')
     # read only, before anything is written: the Content API takes each emitted filter, and refuses a malformed one
-    # the index filter, as Ghost's SQL LISTS it: exactly the posts whose primary tag exists and is not the collection's, by id
-    # — a post with no primary (no tags, or an internal first tag) is in neither `primary_tag:x` nor `primary_tag:-x` (DW-364)
+    # the index filter, as Ghost's SQL LISTS it: exactly the posts whose primary tag is not the collection's, by id — since
+    # Story 7.18a (R-260) a post with no primary (no tags, or an internal first tag) included, which `primary_tag:-x` alone
+    # left out (DW-364)
     index_ids = {p['id'] for p in all_posts(g, f'filter={urllib.parse.quote(lt["index"], safe="")}&')}
     want_ids = set(li['index_ids'])
-    row(index_ids == want_ids, 'content API posts/', f'the index filter `{lt["index"]}` lists exactly the {len(want_ids)} posts whose primary tag exists and is not `{li["tag"]}` (SQL), {len(li["unreached"])} with no primary left out',
+    row(index_ids == want_ids, 'content API posts/', f'the index filter `{lt["index"]}` lists exactly the {len(want_ids)} posts whose primary tag is not `{li["tag"]}` (SQL) — R-260: the {len(li["unreached"])} with no primary among them',
         f'{len(index_ids)} listed, {len(index_ids ^ want_ids)} differ')
     now = datetime.datetime.now(datetime.timezone.utc)
     expected = {p['id'] for p in all_posts(g) if instant(p['published_at']) > now - datetime.timedelta(days=li['ago'])}
@@ -2736,8 +2739,8 @@ def list_phase(g, lt, li, arch):
         row(st == 200 and 'class="a1-1' in body and NOINDEX not in head_of(body), f'/tag/{tag}/', 'the feed-less Tag page 1 carries no noindex', f'HTTP {st}')
         st, body = g.page(f'/tag/{tag}/page/2/')
         row(st == 200 and 'class="a1-1' in body and NOINDEX in head_of(body), f'/tag/{tag}/page/2/', 'the feed-less Tag page 2 carries noindex in the same guard', f'HTTP {st}')
-        # DW-364, read only: a post with no primary tag is LISTED on no page — neither the collection's nor Home's — while the
-        # index still OWNS it, so its own address answers
+        # R-260 (Story 7.18a), read only: a post with no primary tag is LISTED on Home's pages — the index owns it and now lists
+        # it too (DW-364 fixed) — and never on the collection's; its own address answers
         if li['unreached']:
             u = li['unreached'][0]
 
@@ -2752,12 +2755,12 @@ def list_phase(g, lt, li, arch):
                 return seen, n - 1
             in_list, list_pages = walked(LIST_PATH)
             on_home, home_pages = walked('/')
-            row(u['slug'] not in in_list and u['slug'] not in on_home and home_pages >= 1, '/ and ' + LIST_PATH,
-                f'DW-364 — the post with no primary tag (`{u["slug"]}`, {u["tags"]} tag(s)) is on none of Home\'s {home_pages} page(s) nor the collection\'s {list_pages}', f'{len(on_home)} card(s) on Home')
+            row(u['slug'] not in in_list and u['slug'] in on_home and home_pages >= 1, '/ and ' + LIST_PATH,
+                f'R-260 — the post with no primary tag (`{u["slug"]}`, {u["tags"]} tag(s)) is on Home\'s {home_pages} page(s) and not on the collection\'s {list_pages}', f'{len(on_home)} card(s) on Home')
             st, body = g.page(u['path'])
-            row(st == 200 and 'class="a1-1' in body, u['path'], 'DW-364 — its own address still answers, this theme\'s: the index OWNS it in memory', f'HTTP {st}')
+            row(st == 200 and 'class="a1-1' in body, u['path'], 'its own address still answers, this theme\'s: the index OWNS it in memory', f'HTTP {st}')
         else:
-            print('    note  DW-364 — T1 publishes no post without a primary tag, so the unreached-post rows are not read')
+            print('    note  R-260 — T1 publishes no post without a primary tag, so the untagged-post rows are not read')
     finally:
         if wrote:
             try:

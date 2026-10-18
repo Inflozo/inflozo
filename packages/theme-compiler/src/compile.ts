@@ -97,13 +97,14 @@ import {
   BASE_CSS, BUILT_IN_PATH, bindingOf, bindingState, builtInSettings, checkChromeLiterals, checkSetting, customPath, darkHook, darkOverrideCss, designate,
   feedQuery, ghostEntry, ghostName, gscanInert, iconSvg, isDesigned, keyRefusal, markupProps, packTokensCss, pageTwoStack, renderTheme, resolveControls,
   schemeClassChain, sectionKey, SETTING_ACCENT, SETTING_DARK_ACCENT, SETTING_DARK_LOGO, SETTING_WORDS, srcsetExpr, synthesize, U0, U1, USER_SETTING_CAP,
-  UserText, visibleFeed,
+  UserText, visibleFeed, bindingId,
 } from '@inflozo/section-runtime'
 import type {
   DocInstance, Pack, PlacedSection, ProjectDoc, RenderInput, RuntimeDocument, SettingGroup, SettingRow, SettingType, SynthesisLibrary, Visibility,
 } from '@inflozo/section-runtime'
 import { fontFaceCss, pairingFiles, preloadFiles } from '@inflozo/section-runtime/fonts'
 import { CONTEXT_RE } from '@inflozo/section-runtime/routes'
+import { refused as refuse } from './refusal.ts'
 import { claim, sectionSlug } from './slug.ts'
 import { ANY_VALUE, stripCss } from './strip.ts'
 
@@ -567,9 +568,11 @@ export function checkGhostMarkup(files: Readonly<Record<string, string>>): strin
  * Found at Story 7.6's Dev: render-time V1 exempts text under a `data-bind` or `data-prop` element, but FR-H8's text
  * default (`fallback`) ships that element's AUTHORED English as a literal when the value is empty — `{{#if title}}{{title}}
  * {{else}}Title{{/if}}` for a binding, and the authored text itself for an emptied prop. This check refuses both. No library
- * design has one today (each text binding hides), so the pilots compile; a customer who empties a fallback-mode prop (A22
- * #1's heading, A4 #13's headline) makes the compile throw. The owner ruled such a text HIDDEN, on the canvas and in the
- * theme alike, built by Story 7.18a, the compiler's first product caller (Story 7.6's Question 2, 2026-10-08, DW-349).
+ * design has one today (each text binding hides), so the pilots compile. The owner ruled an emptied typed text HIDDEN, on
+ * the canvas and in the theme alike (Story 7.6's Question 2, 2026-10-08, DW-349), and Story 7.18a built it in the runtime:
+ * an empty `text` or `richtext` `data-prop` removes its element on both emitters whatever its mode, so a customer who
+ * empties A22 #1's heading or A4 #13's headline no longer makes the compile throw; a catalog-linked prop still returns
+ * `{{t}}`. This check still refuses a text BINDING's fallback.
  */
 export function checkChromeText(doc: RuntimeDocument, files: Readonly<Record<string, string>>): string[] {
   const marker = new RegExp(`${U0}\\d+${U1}`, 'g')
@@ -732,7 +735,7 @@ function localeFiles(language: string, strings: Readonly<Record<string, string>>
       if (typeof value !== 'string') throw new Error(`${path}: "${key}"'s string is not a string — a locale file holds every catalog key but the canvas-only ones, each a string (S4, V3).`)
       if (listed.has(key)) {
         const refused = overrideRefusal(key, value)
-        if (refused !== null) throw new Error(`${path}: "${key}" — ${refused}`)
+        if (refused !== null) throw refuse('translation', `${path}: "${key}" — ${refused}`, { key, sentence: refused })
       } else if (value !== english[key]) {
         throw new Error(`${path}: "${key}" carries an override, and ${key.startsWith('credit.') ? 'credit.* ships verbatim on every plan (S7, V7)' : 'no surface lists it'} — the build fails rather than ship it.`)
       }
@@ -781,7 +784,7 @@ type Custom = {
  */
 function customSettings(input: CompileInput, docs: readonly ProjectDoc[]): Custom {
   const rows = [...(input.settings ?? [])].sort((a, b) => a.position - b.position || byCode(a.key, b.key))
-  if (rows.length > USER_SETTING_CAP) throw new Error(SETTING_WORDS.cap)
+  if (rows.length > USER_SETTING_CAP) throw refuse('settingCap', SETTING_WORDS.cap)
   for (const row of rows) {
     const refused = keyRefusal(row.key)
     if (refused !== null) throw new Error(`${JSON.stringify(row.key)}: ${refused}`)
@@ -791,13 +794,21 @@ function customSettings(input: CompileInput, docs: readonly ProjectDoc[]): Custo
   for (const row of rows) {
     const name = ghostName(row.key)
     const binding = bindingOf(row.bound_to)
-    if (binding === null) throw new Error(SETTING_WORDS.changed(name))
+    if (binding === null) throw refuse('settingChanged', SETTING_WORDS.changed(name), { setting: name })
     const state = bindingState(binding, docs, input.library, row.type, input.pack)
     if (state.state === 'parked') {
       parked.add(row.key)
       continue
     }
-    if (state.state !== 'live') throw new Error(SETTING_WORDS[state.state](name))
+    if (state.state !== 'live') {
+      // Story 7.18a (DW-353): a `changed` binding whose section is still on the page is a section now on a design where the
+      // control works differently — the plain words name the section; with no section to name, the module's sentence
+      const section = state.state === 'changed' && binding.kind !== 'token'
+        ? docs.flatMap((d) => d.instances).find((i) => i.instanceId === binding.instanceId && !i.hidden)?.layerName ?? ''
+        : ''
+      const kind = state.state === 'deleted' ? 'settingDeleted' : state.state === 'hidden' ? 'settingHidden' : 'settingChanged'
+      throw refuse(kind, SETTING_WORDS[state.state](name), { setting: name, ...(section === '' ? {} : { section }) })
+    }
     live.push({ row, binding, derived: { key: row.key, label: name, ...state.setting, group_name: row.group_name, visibility_condition: row.visibility_condition } })
   }
   for (const l of live) if (l.derived.visibility_condition !== null && parked.has(l.derived.visibility_condition.key)) l.derived.visibility_condition = null
@@ -815,6 +826,30 @@ function customSettings(input: CompileInput, docs: readonly ProjectDoc[]): Custo
   }
   for (const b of builtInSettings({ pack: input.pack, darkEnabled: input.darkEnabled })) entries[b.key] = ghostEntry(b)
   return { entries, promoted, accent, record: { emitted: Object.keys(entries), parked: rows.filter((r) => parked.has(r.key)).map((r) => r.key) } }
+}
+
+/** STORY 7.18a (DW-353) — WHY a promoted setting nothing prints went unread, for the deploy wizard's plain words: two
+ *  settings stored for one binding (two promotes in one instant — `customSettings` keeps the last), a section that rendered
+ *  nothing (a hand-picked feed with nothing picked), or a prop its section left out with its element (a picture's
+ *  description on a section with no picture). Null when the first unread user setting is none of these — a binding this
+ *  cannot place is Inflozo's own fault, and the wizard says so. */
+function unreadWhy(input: CompileInput, unread: readonly string[], placed: readonly Placed[]): Record<string, string> | null {
+  const rows = input.settings ?? []
+  const idOf = (r: CompileSetting): string | null => {
+    const b = bindingOf(r.bound_to)
+    return b === null ? null : bindingId(b)
+  }
+  for (const key of unread) {
+    const row = rows.find((r) => r.key === key)
+    if (row === undefined) continue // a dark built-in, never the customer's
+    const binding = bindingOf(row.bound_to)
+    if (binding === null || binding.kind === 'token') return null
+    const setting = ghostName(key)
+    if (rows.some((r) => r !== row && idOf(r) === bindingId(binding))) return { setting, why: 'twice' }
+    if (!placed.some((p) => p.instance.instanceId === binding.instanceId)) return { setting, why: 'unpicked' }
+    return binding.kind === 'prop' ? { setting, why: 'noPicture' } : null
+  }
+  return null
 }
 
 /** What one instance's render is handed: the promoted controls its design declares and the props it prints — a page 2's
@@ -870,7 +905,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // Story 7.12 (AD-36): the language names a file in the theme, so it is judged before anything else
   const language = input.language ?? DEFAULT_LANGUAGE
   const refusedLanguage = languageRefusal(language)
-  if (refusedLanguage !== null) throw new Error(`language ${JSON.stringify(language)}: ${refusedLanguage} It names the theme's locales/<language>.json, so the build stops before any file is written (AD-36).`)
+  if (refusedLanguage !== null) throw refuse('language', `language ${JSON.stringify(language)}: ${refusedLanguage} It names the theme's locales/<language>.json, so the build stops before any file is written (AD-36).`, { code: language })
   for (const file of Object.keys(input.templates).sort(byCode)) {
     if (file === INDEX) throw new Error(`${file}: Home's page 2 is handed in as pageTwo['${HOME}'], never as a template — ${INDEX} is compiled from it.`)
     // `ROUTE_TEMPLATE_TARGET` is a design's word for every Routes Manager template (Story 7.16b), never a file of its own
@@ -912,7 +947,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // Story 7.13 (AD-36, AD-27(a)): the stored card designs, through their one schema before anything is written — a glyph
   // must be an icon the set draws — so every byte `cards.css` carries comes from the registry, never from the row
   const parsedCards = parseCardDesigns(input.cardDesigns ?? null, (name) => iconDrawing(name) !== undefined)
-  if (typeof parsedCards === 'string') throw new Error(`card designs: ${parsedCards} The build stops before any file is written (AD-36).`)
+  if (typeof parsedCards === 'string') throw refuse('cardDesigns', `card designs: ${parsedCards} The build stops before any file is written (AD-36).`)
   const cardDesigns: CardDesigns = parsedCards
   const styles = input.ghostCards.styles
   const pkg = packageJson(input, perPage, custom.entries, excludedChunks(cardDesigns, Object.keys(styles)))
@@ -966,10 +1001,10 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
         if (instance.hidden) continue
         const at = page === 2 ? `${file} (page 2)` : file
         const entry = input.library(instance.designId)
-        if (entry === undefined) throw new Error(`${at} · ${instance.layerName || instance.designId}: the library holds no design "${instance.designId}".`)
+        if (entry === undefined) throw refuse('staleDesign', `${at} · ${instance.layerName || instance.designId}: the library holds no design "${instance.designId}".`, { file, layer: instance.layerName || instance.designId })
         // an empty layer name is reported as the design's name, as the boundary comment and the slug fall back to it
         const where = `${at} · ${instance.layerName || entry.name}`
-        if (!compilesTo(entry.compileTarget, file)) throw new Error(`${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`)
+        if (!compilesTo(entry.compileTarget, file)) throw refuse('staleDesign', `${where}: ${entry.id} compiles to ${entry.compileTarget.join(', ')}, never to ${file}.`, { file, layer: instance.layerName || entry.name })
         const query = feedQuery(entry, instance, file, perPage, listed)
         // the place it fills, as the editor keys it (`templateKeyOfFile`); a hook only while an override changes its dark
         // look, and none at all on a Light-only project (AD-30)
@@ -1007,7 +1042,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
             // refused by name before `darkOverrideCss`, so the customer reads layer names, never keys (Story 7.18a shows it)
             const named = `"${instance.layerName || entry.name}" in ${at}`
             const met = hooks.get(hook)
-            if (met !== undefined) throw new Error(`Two sections share a hidden name, so neither one's dark look can ship: ${met} and ${named}. Delete one of them and add it again — it gets a new name.`)
+            if (met !== undefined) throw refuse('darkHook', `Two sections share a hidden name, so neither one's dark look can ship: ${met} and ${named}. Delete one of them and add it again — it gets a new name.`, { file })
             hooks.set(hook, named)
           }
           placed.push({ file, page, instance, entry, template: out.template, partials: out.partials, key, ...(hook === undefined ? {} : { hook }), ...(promoted === undefined ? {} : { promoted }) })
@@ -1256,7 +1291,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const unread = declared.filter((k) => !read.has(k))
   const undeclared = [...read].filter((k) => !declared.includes(k)).sort(byCode)
   if (unread.length > 0 || undeclared.length > 0) {
-    throw new Error(`the theme's settings: ${[...unread.map((k) => `${ghostName(k)} is declared and nothing reads it`), ...undeclared.map((k) => `@custom.${k} is read and never declared`)].join(' · ')} — a setting ships with the line that reads it (GS100, GS090).`)
+    const sentence = `the theme's settings: ${[...unread.map((k) => `${ghostName(k)} is declared and nothing reads it`), ...undeclared.map((k) => `@custom.${k} is read and never declared`)].join(' · ')} — a setting ships with the line that reads it (GS100, GS090).`
+    const why = undeclared.length === 0 ? unreadWhy(input, unread, placed) : null
+    throw why === null ? new Error(sentence) : refuse('settingUnread', sentence, why)
   }
   const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
   return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js, custom: custom.record }

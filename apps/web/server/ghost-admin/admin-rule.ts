@@ -131,6 +131,16 @@ export const ADMIN_WRITES = {
 export type AllowlistItem = keyof typeof ADMIN_WRITES
 
 /**
+ * STORY 7.18a — HOW LONG ONE CALL MAY TAKE, by item. Every call's budget is 15 s, DNS included, and it covers the whole
+ * call — which a theme upload cannot fit: Ghost answers it only after it has stored the zip AND run its own gscan over it
+ * (MEASUREMENTS §76's uploads ran with 180 s). So `theme_upload` alone gets two minutes; every other item, every read and
+ * the activation keep 15 s. Inside AD-11's 300 s, with Pre-flight's compile on the other invocation (F-075).
+ */
+export const CALL_TIMEOUT_MS = 15_000
+export const ITEM_TIMEOUT_MS: Readonly<Partial<Record<AllowlistItem, number>>> = { theme_upload: 120_000 }
+export const timeoutFor = (item?: AllowlistItem | null): number => (item ? ITEM_TIMEOUT_MS[item] : undefined) ?? CALL_TIMEOUT_MS
+
+/**
  * WHICH SETTINGS KEYS A BODY NAMES. Ghost's `PUT settings/` takes `{ settings: [{ key, value }] }`;
  * a caller that passes the flat object instead must not slip past the guard by having no
  * `settings` array, so both shapes are read.

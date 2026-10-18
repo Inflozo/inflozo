@@ -7,6 +7,7 @@ import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/li
 import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import { ghostName, USER_SETTING_CAP } from '@inflozo/section-runtime/custom-settings'
 import { DEFAULT_TAXONOMIES, listsOf, pathsUsing, type RoutesConfig } from '@inflozo/section-runtime/routes'
+import { requiredTemplates } from '@inflozo/theme-compiler'
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { ShellUserContext } from '@/components/shell/shell'
@@ -16,6 +17,7 @@ import { ownPacksOf, packChoices, packFacesCss, packIdOf, pairingChoices, pairin
 import { imagePool, linkResources, paywallSamples, samples } from '@/lib/controls-review'
 import { storedCards } from '@/lib/cards'
 import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCanvas } from '@/lib/editor'
+import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
 import { harnessReread } from './actions'
@@ -118,6 +120,15 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * posts no collection owns — and a STATIC ROUTE `/harness-landing/` naming `custom-harness-landing.hbs`, which holds A22 #1
  * alone, so 7.16b's gone-template move and its routed D5f have a template to meet in CI. Without it, no template and no route.
  *
+ * STORY 7.18a — `x-inflozo-harness-ship: <shape>` hands Ship it a site to ship to (`ShipState`, as `read.ts`' `shipStateOf`
+ * builds it): `full` a connected Ghost 6 site never shipped to (v1, "your current theme"), `shipped` the same site at v3 with
+ * v2 live (the bar reads "Ship update"), `live` the same with THIS project's theme the one live on the site (`liveHere`, so
+ * R-264 greys Deploy only), `preview` a Preview-only one (B15's words, no Run checks). Without it, NO SITE — the harness
+ * links none — so Destination says so and links to Sites. The deploy route itself is never reached here: every wizard
+ * journey answers it with canned job states through `page.route`. And `x-inflozo-harness-routes: negated` is the routing
+ * above with its collection's condition turned round (Primary tag NOT `tools`), the one shape whose collection OWNS a post
+ * with no primary tag but does not LIST it — so R-260's Pre-flight row has posts to name (`unlistedPosts`).
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -191,7 +202,8 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   const homeShown = Number.isInteger(cycled) && cycled > 0 && home.length > 0 ? Array.from({ length: cycled }, (_, n) => home[n % home.length]!) : home
 
   // Story 7.16c — the two Routes Manager templates and their routing, when asked for (DW-363)
-  const routing = asked.get('x-inflozo-harness-routes') === 'on' ? HARNESS_ROUTES : null
+  const routesAsked = asked.get('x-inflozo-harness-routes')
+  const routing = routesAsked === 'on' ? HARNESS_ROUTES : routesAsked === 'negated' ? NEGATED_ROUTES : null
   const routeTemplates = routing === null ? [] : HARNESS_TEMPLATES.map((t) => ({ ...t, canvas: routeCanvasOf(t.file) as RouteCanvas }))
   const docs = designateAll(
     {
@@ -282,6 +294,9 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     // does not draw, grammatical so only the set can refuse it), read by `read.ts`' own door, so `pnpm keyboard` meets
     // the malformed line; without it, no card is designed
     ...(await storedCards(asked.get('x-inflozo-harness-cards') === 'malformed' ? { divider: { glyph: 'on', icon: 'zz-no-such-icon' } } : null)),
+    // Story 7.18a — the site Ship it ships to, by header (above), and the templates Checking's pass line names, from the
+    // harness's own library as `read.ts` derives them
+    ship: shipOf(asked.get('x-inflozo-harness-ship'), requiredTemplates((id) => entries[id])),
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -345,6 +360,24 @@ const HARNESS_ROUTES: RoutesConfig = {
   collections: [{ path: '/harness-list/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: ['tools'] }] }, template: 'custom-harness-list.hbs', limit: 3 }],
   routes: [{ path: '/harness-landing/', template: 'custom-harness-landing.hbs' }],
   taxonomies: { ...DEFAULT_TAXONOMIES },
+}
+
+/** Story 7.18a — Ship it's state for `x-inflozo-harness-ship` (none, `full`, `shipped`, `live`, `preview`): the site at the
+ *  harness's own unanswering address (`sites.ts`), so View site names it and nothing is reached. `shipped` has uploaded
+ *  before and the site shows another theme (Deploy only free); `live` is R-264 (a)'s case — this project's theme is the one
+ *  live on the site, so Deploy only is greyed */
+function shipOf(shape: string | null, required: readonly string[]): ShipState {
+  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0' }
+  const base = { themeName: themeNameOf('pilot-sections'), required: [...required] }
+  if (shape === 'shipped' || shape === 'live') return { ...base, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live' }
+  if (shape === 'full' || shape === 'preview') return { ...base, site: { ...site, capability: shape === 'full' ? 'full' : 'preview_only' }, n: 1, prev: null, shipped: false, liveHere: false }
+  return { ...base, site: null, n: 1, prev: null, shipped: false, liveHere: false }
+}
+
+/** Story 7.18a — R-260's fixture: the same routing, its collection's Primary tag condition negated */
+const NEGATED_ROUTES: RoutesConfig = {
+  ...HARNESS_ROUTES,
+  collections: HARNESS_ROUTES.collections.map((c) => ({ ...c, filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'none', values: ['tools'] }] } })),
 }
 
 /** Story 5.20 — where the harness's canvases live: its own two pages, never the app's `/projects/<id>` */

@@ -3,6 +3,7 @@
 //
 //   env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=/tmp/x node tools/probe/run-verify-editor.cjs
 //   APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app …   # a local `next start`: no Vercel check, and not a deployed result
+//   T1_WRITES=1 …   # step 113 too (Story 7.18a): it WRITES TO T1, so only on the owner's in-session go, in the main session
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -325,6 +326,35 @@
 // step 112i — the two races on the editor's own sync request held by the walk (before the server: a 409 sent again from the
 // moved base; applied with its answer held: the move held, then taken) and "+ New template" with no doc told with no moves —
 // and reads B16's list role and "Show me where ↗"'s new-tab notice.
+// Story 7.18a adds step 113, in contexts of its own and reading only steps 1–5's names (so a cut copy can run it alone): THE
+// DEPLOY WIZARD on production AND T1 (FR-J8, AD-20's F-075, AD-10, R-260, R-261, DW-54, R-82). It is the one step that WRITES
+// TO T1 — the product's theme uploads and activation, and the restore — so it runs only with `T1_WRITES=1`, which the
+// Review sets on the owner's in-session go (R-82, R-238; never a subagent). A third throwaway account (`editor-harness-c-…`,
+// seeded "Walk 113 …" with step 1's fixture) connects T1 through the wizard with the Admin and Content keys and NO staff token,
+// and its project is linked to the site through the service key (choosing the site in the product is Story 7.18b's); T1's
+// active theme and routes.yaml are read first, and the step refuses to write while an `inflozo-` theme is active. 113b: a
+// Primary tag collection over T1's most-used public primary tag made on Routes & Templates, and R-260 evaluated in the walk over
+// T1's posts read through the app's own reader — no post named, and with 7.16a's index filter planted (`unlistedPosts`' `index`)
+// T1's untagged posts named (the control); the Inline Row's Heading emptied in the panel and saved, gone from the canvas
+// (DW-349). 113c: Ship it in the holding window opens the wizard (the control), a second window reading along meets D8g on
+// Wait, and "Take over and ship" opens Destination there. 113d: Pre-flight's rows against the two verdicts stored on the
+// `deploys` row, R-260's pass row, and the artefact in `deploy-artifacts`; then an unreadable `routes_config` and a malformed
+// `project_treatments.card_designs`, each planted through the service key, blocking with their reason and link, the earlier
+// resting check abandoned, each plant put back and read back. 113e: Cancel during Checking leaves no deploy row and no object.
+// 113f (R-264, the owner, 2026-10-18): the FIRST ship is ▾ → Deploy only — free on a first deploy (the control for 113g) — D2f,
+// v1 uploaded and not activated, T1's earlier theme still the live one (the control for "nothing went live"), the artefact
+// unchanged since Pre-flight and the binding claimed; then Re-activate v1 — Live, B16 `no_token`, T1's `/` with the Inline Row
+// and no heading, and the emitted index filter listing every untagged post on T1's Content API (no routing is uploaded with no
+// token). 113g: R-264 (a) — "Ship update", and Deploy only GREYED with its caption in the ▾ row (a dispatched press opens nothing
+// and sends no deploy request, counted) and on S8a's card. 113h: the server's guard replayed (ship in mode "upload" → 422,
+// nothing uploaded), then Deploy & activate for v2 — Live, v1 demoted — and R-264 (b): uploaded under the live name, v2 went
+// live on Ghost's own upload answer with NO activating stage, so no PUT. 113i: DW-54 — the product's `call()`, imported in this
+// process with `SUPABASE_DB_POOLER_URL` read from tools/probe/.env for that call alone, refuses `POST posts/`
+// (`write_not_allowed`), and `private.credential_audit` holds that `denied` row beside one `admin_write ok` per write the step
+// drove — upload, activate, upload — and T1's theme list is unchanged by it. 113j, in a `finally` whatever failed: T1's theme
+// restored and the step's theme deleted (staff token), T1's
+// routes.yaml byte for byte as before, the site disconnected through `/sites/disconnect`, the project's objects removed from the
+// bucket, the account deleted, and users and projects counted back. Keys are read in-process by name and scrubbed from errors.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -411,7 +441,8 @@ async function main() {
   const VA = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/view-as.ts')).href)
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
-  const stale = all.filter((u) => /^editor-harness-[ab]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
+  const stale = all.filter((u) => /^editor-harness-[abc]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -11478,6 +11509,666 @@ async function main() {
       end112.project?.linked_site_id === (start112.project?.linked_site_id ?? null) && JSON.stringify(end112.sites) === JSON.stringify(start112.sites) && JSON.stringify(end112.projects) === JSON.stringify(start112.projects) &&
       canon112(end112.home) === canon112(start112.home) && Array.isArray(end112.ct) && end112.ct.length === 0 && Array.isArray(end112.doc) && end112.doc.length === 0 && canon112(end112.rc) === canon112(start112.rc) && csp112.length === 0,
       JSON.stringify({ end: { ...end112, home: undefined }, homeBack: canon112(end112.home) === canon112(start112.home), csp112: csp112.slice(0, 3) }))
+
+    // ── step 113 — STORY 7.18a: THE DEPLOY WIZARD ON PRODUCTION AND T1 — CONNECT, PRE-FLIGHT, SHIP, DEPLOY ONLY, DW-54 (FR-J8, AD-20, AD-10, R-260, R-82) ──
+    /* THE REVIEW'S, ON THE OWNER'S IN-SESSION GO, IN THE MAIN SESSION (R-82, R-238; memory: test-site writes need an in-session go).
+       Every T1 WRITE this step causes, so the ask names them all: the product's upload of `inflozo-<slug>` v1 by Deploy only (113f,
+       not live) and its activation by Re-activate; its upload of v2 by Deploy & activate (113h — under the live name, so Ghost makes
+       it live itself and no activation is sent, R-264 b); and the restore (113j: the theme active before the step re-activated and
+       `inflozo-<slug>` deleted, with the staff token). 113h's replay of a blocked Deploy only must upload nothing (R-264 a) — were the
+       server's guard broken it would be one more upload, under the live name. Nothing else is written to T1: no staff token is
+       stored, so no routes.yaml is uploaded (B16 `no_token`), and DW-54's off-list write is refused before any request. Its T1 READS
+       (no ask): the theme list and routes.yaml (staff token), the Content API's posts (the app's own reader), and `/`.
+       Without `T1_WRITES=1` the step is a note, not a pass. SELF-CONTAINED: it reads only steps 1–5's names (`at`, `magic`,
+       `call`, `admin`, `users`, `projectCount`, `seed`, `browser`, `recorder`, `steady`, `steadyRequests`, `stamp`, `LIB`), so a cut
+       copy can run steps 1–5 and this alone. Every sentence is the one list that prints it — `lib/deploy.ts`' `DEPLOY_WORDS`,
+       `lib/lock.ts`' `LOCK_COPY`, `lib/routes.ts`' `ROUTES_WORDS`, `lib/routes-upload.ts`' `ROUTES_FALLBACK_WORDS`, `lib/connect-rule.ts`'
+       `DISCONNECT`, `lib/probe-rule.ts`' `BRAND_COPY` (R-170). Keys are read in-process by NAME from tools/probe/.env and scrubbed from
+       any error this step throws. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 113 — NOT RUN', 'it writes to T1 (two theme uploads and one activation through the product, and the restore): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp113 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP113, LK113, CR113, PR113, RW113, RT113, ED113, JR113, LC113, AR113, RU113] = await Promise.all([
+        imp113('apps/web/lib/deploy.ts'), imp113('apps/web/lib/lock.ts'), imp113('apps/web/lib/connect-rule.ts'), imp113('apps/web/lib/probe-rule.ts'),
+        imp113('apps/web/lib/routes.ts'), imp113('packages/section-runtime/src/routes.ts'), imp113('apps/web/lib/editor.ts'), imp113('apps/web/lib/journal.ts'),
+        imp113('apps/web/lib/live-content.ts'), imp113('apps/web/server/ghost-admin/admin-rule.ts'), imp113('apps/web/lib/routes-upload.ts'),
+      ])
+      const W113 = DEP113.DEPLOY_WORDS
+      const WR113 = RW113.ROUTES_WORDS
+      const SYNCED113 = JR113.labelOf({ kind: 'rest', owed: false })
+      const canon113 = DEP113.canonical
+      const esc113 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const sha113 = (b) => (b === null ? null : require('node:crypto').createHash('sha256').update(b).digest('hex'))
+      const until113 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      // the keys, by NAME, from tools/probe/.env — never argv, never this process's environment (save the pooler URL for 113i's
+      // one call), never printed
+      const ENV113 = {}
+      const NAMES113 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN', 'SUPABASE_DB_POOLER_URL']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES113.includes(m[1]) && m[2].trim()) ENV113[m[1]] = m[2].trim()
+      }
+      const missing113 = NAMES113.filter((k) => !ENV113[k])
+      if (missing113.length) throw new Error(`step 113: ${missing113.join(', ')} not in tools/probe/.env`)
+      const SECRETS113 = [ENV113.GHOST6_ADMIN_API_KEY, ENV113.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? ''])
+        .concat([ENV113.GHOST6_CONTENT_API_KEY, ENV113.SUPABASE_DB_POOLER_URL, (() => { try { return decodeURIComponent(new URL(ENV113.SUPABASE_DB_POOLER_URL).password) } catch { return '' } })()])
+        .filter((s) => s.length >= 8)
+      const scrub113 = (s) => SECRETS113.reduce((t, k) => t.split(k).join('<key>'), String(s))
+      const ORIGIN113 = new URL(ENV113.GHOST6_URL).origin
+      const HOST113 = CR113.hostOf(ENV113.GHOST6_URL)
+
+      /** T1's Admin API with the STAFF token, through the product's own request builder — the Admin key cannot `GET themes/` (F4) */
+      const staff113 = async (method, p) => {
+        const { url, init } = AR113.adminRequest({ credential: ENV113.GHOST6_STAFF_ACCESS_TOKEN, siteUrl: ENV113.GHOST6_URL, method, path: p, major: 6 })
+        const r = await fetch(url, init)
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let body = null
+        try { body = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body, bytes }
+      }
+      const themes113 = async () => {
+        const r = await staff113('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true, version: t.package?.version ?? null })) : null
+      }
+      const routesFile113 = async () => {
+        const r = await staff113('GET', RU113.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      /** T1's Content API exactly as the canvas reads it: the app's query, address, version header and whitelist (`lib/live-content.ts`) */
+      const posts113 = async (filter = null) => {
+        const rows = []
+        for (let n = 1; ; n++) {
+          const r = await fetch(LC113.addressOf(ORIGIN113, LC113.feedRead(null, n, LC113.LIST_LIMIT, filter), ENV113.GHOST6_CONTENT_API_KEY), { headers: { 'Accept-Version': LC113.API_VERSION } }).catch(() => null)
+          const answer = r?.ok ? LC113.pick('posts', await r.json(), (h) => h.replace(/<[^>]*>/g, '')) : null
+          if (answer === null) return null
+          rows.push(...answer.rows)
+          if (n >= answer.pages) return rows
+        }
+      }
+      /** an element by one class token in T1's served HTML — the element, never a stylesheet naming the class (memory: ghost_head CSS) */
+      const hasClass113 = (html, cls) => new RegExp(`class="(?:[^"]*\\s)?${esc113(cls)}(?:\\s[^"]*)?"`).test(html)
+
+      const emailC = `editor-harness-c-${stamp}@inflozo.com`
+      const usersBefore113 = (await users())?.length ?? null
+      const projectsBefore113 = await projectCount()
+      let idC = null
+      let P113 = null
+      let slug113 = null
+      let theme113 = null
+      let siteId113 = null
+      let prev113 = null
+      let routesBefore113 = null
+      /** T1's start guard passed: the restore has a theme to go back to */
+      let guard113 = false
+      /** the Admin writes the product made, in order — one `admin_write ok` audit row each (113i) */
+      const writes113 = []
+      const ctxs113 = []
+      const csp113 = []
+
+      const project113 = async () => (P113 === null ? null : (await call('/rest/v1', `/projects?id=eq.${P113}&select=slug,linked_site_id,revision`)).body?.[0] ?? null)
+      const site113 = async () => (await call('/rest/v1', `/sites?user_id=eq.${idC}&select=id,url,ghost_version,capability,credentials_present,disconnected_at,routes_fallback,routes_last_offered`)).body
+      const home113 = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P113}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+      const rc113 = async () => (await call('/rest/v1', `/routes_config?project_id=eq.${P113}&select=config,yaml`)).body?.[0] ?? null
+      const treat113 = async () => (await call('/rest/v1', `/project_treatments?project_id=eq.${P113}&select=card_designs`)).body
+      const JOB113 = 'id,stage,error,deploy_id,stage_timings,cancel_requested'
+      const job113 = async () => (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P113}&select=${JOB113}&order=started_at.desc&limit=1`)).body?.[0] ?? null
+      const jobById113 = async (id) => (await call('/rest/v1', `/deploy_jobs?id=eq.${id}&select=${JOB113}`)).body?.[0] ?? null
+      const deploy113 = async (id) => (id ? (await call('/rest/v1', `/deploys?id=eq.${id}&select=id,version,theme_name,status,activated,activated_at,artifact_path,artifact_bytes,gscan,quality,inputs_sha256`)).body?.[0] ?? null : null)
+      const storage113 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      /** the project's objects in the private `deploy-artifacts` bucket, as full paths — null when the listing fails */
+      const objects113 = async () => {
+        const r = await fetch(`${SB}/storage/v1/object/list/deploy-artifacts`, { method: 'POST', headers: { ...storage113, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix: P113, limit: 100, offset: 0 }) }).catch(() => null)
+        if (!r?.ok) return null
+        const b = await r.json()
+        return (Array.isArray(b) ? b : (b.objects ?? [])).map((o) => o.name).filter((n) => typeof n === 'string' && n.endsWith('.zip')).map((n) => (n.includes('/') ? n : `${P113}/${n}`))
+      }
+      const object113 = async (key) => {
+        const r = await fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { headers: storage113 }).catch(() => null)
+        return r?.ok ? Buffer.from(await r.arrayBuffer()) : null
+      }
+      /** the wizard as the page draws it (`components/editor/deploy-wizard.tsx`) — null while it is closed */
+      const wiz113 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const rows = d.querySelector('[data-check-rows]')
+        const ship = d.querySelector('#deploy-ship')
+        const reason = d.querySelector('#deploy-ship-reason')
+        const link = reason?.querySelector('a') ?? null
+        const b16 = d.querySelector('section[data-routes-fallback]')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          title: d.querySelector('#deploy-title')?.textContent ?? null,
+          text: d.innerText,
+          themeName: d.querySelector('[data-theme-name]')?.textContent ?? null,
+          mode: d.querySelector('input[name="deploy-mode"]:checked')?.value ?? null,
+          run: d.querySelector('#deploy-run') !== null,
+          passes: rows ? [...rows.querySelectorAll(':scope > div:not([data-finding])')].map((r) => r.querySelector(':scope > span')?.textContent ?? null) : [],
+          findings: [...d.querySelectorAll('[data-finding]')].map((f) => ({ level: f.getAttribute('data-finding'), message: f.querySelector('span[id^="deploy-finding-"]')?.textContent ?? null })),
+          unlisted: d.querySelector('[data-unlisted]')?.textContent ?? null,
+          ship: ship && { disabled: ship.getAttribute('aria-disabled'), describedBy: ship.getAttribute('aria-describedby') },
+          reason: reason && { text: reason.textContent, link: link && { text: link.textContent, href: link.getAttribute('href') } },
+          b16: b16 && { cause: b16.getAttribute('data-routes-fallback'), text: b16.innerText },
+          confetti: d.querySelector('[data-confetti]') !== null,
+          said: document.querySelector('[data-deploy-said]')?.textContent ?? null,
+        }
+      }).catch(() => null)
+      /** Deploy only's row in the open ▾ menu (R-264): its words — the reason a greyed row carries included, by `aria-describedby` too —
+       *  and whether it is greyed (`aria-disabled` on the row's control or its wrapper, or a disabled control) */
+      const menuRow113 = (p) => p.evaluate((words) => {
+        const li = [...document.querySelectorAll('#editor-ship-menu li')].find((l) => l.textContent.includes(words))
+        if (!li) return null
+        const all = [li, ...li.querySelectorAll('*')]
+        const described = all.flatMap((e) => (e.getAttribute('aria-describedby') ?? '').split(/\s+/)).filter(Boolean).map((id) => document.getElementById(id)?.textContent ?? '')
+        return { text: [li.textContent, ...described].join(' '), greyed: all.some((e) => e.getAttribute('aria-disabled') === 'true' || e.disabled === true) }
+      }, W113.uploadOnly).catch(() => null)
+      /** S8a's Deploy only card: the fieldset's child holding its radio, greyed by `aria-disabled` (or a disabled radio), and its words */
+      const uploadCard113 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        const input = d?.querySelector('input[name="deploy-mode"][value="upload"]') ?? null
+        if (!input) return null
+        let card = input
+        while (card.parentElement && card.parentElement.tagName !== 'FIELDSET' && card.parentElement !== d) card = card.parentElement
+        const all = [card, ...card.querySelectorAll('*')]
+        const described = all.flatMap((e) => (e.getAttribute('aria-describedby') ?? '').split(/\s+/)).filter(Boolean).map((id) => document.getElementById(id)?.textContent ?? '')
+        return { greyed: input.disabled || all.some((e) => e.getAttribute('aria-disabled') === 'true'), checked: input.checked, text: [card.textContent, ...described].join(' ') }
+      }).catch(() => null)
+      const painted113 = (p, key) => p.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 }).then(() => true, () => false)
+      const handBack113 = (p) => p.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${P113}/lock`).catch(() => {})
+      const context113 = async () => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs113.push(ctx)
+        await recorder(ctx, csp113)
+        const p = steady(await ctx.newPage())
+        p.on('pageerror', (e) => note('pageerror 113', String(e)))
+        await p.goto(await magic(emailC), { waitUntil: 'load' })
+        return p
+      }
+      /** Run checks on Destination, then the new job read until Pre-flight rests (awaiting_ship) or ends */
+      const runChecks113 = async (p) => {
+        const was = (await job113())?.id ?? null
+        await p.locator('#deploy-run').click()
+        return until113(job113, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 240000)
+      }
+      /** Back from a resting or blocked Pre-flight to Destination */
+      const back113 = async (p) => {
+        await p.locator('#deploy-back').click()
+        return until113(() => wiz113(p), (w) => w?.at === 'destination', 15000)
+      }
+      const uploaded113 = (deploy) => ['uploaded', 'live'].includes(deploy?.status)
+      /** Pre-flight resting clean, as drawn: on Check with Ship it pressable (no `aria-disabled` — R-98's busy and the greyed both set it) */
+      const restingClean113 = (w) => w != null && w.at === 'check' && w.ship !== null && w.ship.disabled === null
+
+      try {
+        // ── the fixture: the account, its project, and T1's start guard (reads only) ──
+        const made113 = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: emailC, email_confirm: true }) })
+        idC = made113.status === 200 ? made113.body.id ?? null : null
+        const seeded113 = UUID.test(idC ?? '') ? await seed({ email: emailC, name: `Walk 113 ${stamp}` }) : null
+        P113 = seeded113?.id ?? null
+        slug113 = (await project113())?.slug ?? null
+        theme113 = slug113 === null ? null : DEP113.themeNameOf(slug113)
+        const before113 = await themes113()
+        prev113 = before113?.find((t) => t.active)?.name ?? null
+        routesBefore113 = await routesFile113()
+        // record-shim.py's start_guard: a theme to go back to, never one of Inflozo's own (an earlier run or test that did not restore)
+        guard113 = prev113 !== null && !prev113.startsWith('inflozo-') && !before113.some((t) => t.name === theme113) && routesBefore113 !== null
+        check(`step 113 — the fixture: account C made and seeded, its project's slug read (theme ${theme113}), and T1's start guard — the active theme read with the staff token and none of Inflozo's (${prev113}), no ${theme113} installed, routes.yaml read (${routesBefore113?.length ?? 'unread'} bytes)`,
+          UUID.test(idC ?? '') && UUID.test(P113 ?? '') && typeof slug113 === 'string' && guard113, JSON.stringify({ made: made113.status, P113, slug113, prev113, inflozoThemes: (before113 ?? []).filter((t) => t.name.startsWith('inflozo-')).map((t) => t.name) }))
+        if (!guard113) throw new Error('step 113: the fixture or T1\'s start guard failed — nothing was written to T1')
+
+        // 113a — T1 connected through the wizard with the Admin and Content keys only (S2b), S2c skipped
+        const pa = await context113()
+        await pa.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pa.locator('#s2b-api-url').fill(ENV113.GHOST6_URL)
+        await pa.locator('#s2b-admin-key').fill(ENV113.GHOST6_ADMIN_API_KEY)
+        await pa.locator('#s2b-content-key').fill(ENV113.GHOST6_CONTENT_API_KEY)
+        await pa.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pa.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const skip113 = pa.getByRole('button', { name: PR113.BRAND_COPY.skip, exact: true })
+        if (await skip113.waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)) {
+          await skip113.click()
+          await pa.waitForURL((u) => u.pathname.endsWith('/sites'), { timeout: 30000 }).catch(() => {})
+        }
+        const sitesA113 = await site113()
+        const siteA113 = sitesA113?.[0] ?? null
+        siteId113 = UUID.test(siteA113?.id ?? '') ? siteA113.id : null
+        check(`step 113a — T1 connected through the wizard (the API URL, the Admin key and the Content key; S2c's "${PR113.BRAND_COPY.skip}"): one connected site at ${HOST113}, Ghost 6, capability full, its keys present and NO staff token (credentials_present.staff false)`,
+          sitesA113?.length === 1 && siteId113 !== null && siteA113.disconnected_at === null && CR113.hostOf(siteA113.url) === HOST113 && /^6\./.test(siteA113.ghost_version ?? '') &&
+          siteA113.capability === 'full' && siteA113.credentials_present?.admin === true && siteA113.credentials_present?.content === true && siteA113.credentials_present?.staff === false,
+          JSON.stringify({ sites: (sitesA113 ?? []).map((s) => ({ host: CR113.hostOf(s.url), v: s.ghost_version, capability: s.capability, keys: s.credentials_present, gone: s.disconnected_at })) }))
+        if (siteId113 === null) throw new Error('step 113: T1 did not connect — nothing to ship to')
+        const linked113 = await call('/rest/v1', `/projects?id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteId113 }) })
+        check('step 113a — the seeded project linked to the new site through the service key (the product\'s site picker is Story 7.18b\'s), read back',
+          [200, 204].includes(linked113.status) && (await project113())?.linked_site_id === siteId113, `HTTP ${linked113.status}`)
+
+        // 113b — R-260 over T1's own posts, evaluated in the walk: the tag, the untagged posts, and the control
+        const all113 = await posts113()
+        const untagged113 = (all113 ?? []).filter((p) => p.primary_tag === null).map((p) => p.slug)
+        const counts113 = new Map()
+        for (const p of all113 ?? []) if (p.primary_tag?.visibility === 'public') counts113.set(p.primary_tag.slug, (counts113.get(p.primary_tag.slug) ?? 0) + 1)
+        const tag113 = [...counts113.entries()].sort((x, y) => y[1] - x[1] || (x[0] < y[0] ? -1 : 1))[0]?.[0] ?? null
+        check(`step 113b — T1's published posts read through the app's own reader (feedRead, addressOf, pick): its most-used public primary tag (${tag113}) and the posts with no public primary tag (${untagged113.join(', ') || 'none'}) — DW-364 named probe-gated-post, read rather than assumed`,
+          Array.isArray(all113) && tag113 !== null && untagged113.length > 0, JSON.stringify({ posts: all113?.length ?? null, tag113, untagged113, gated: untagged113.includes('probe-gated-post') }))
+        if (tag113 === null || untagged113.length === 0) throw new Error('step 113: T1 has no tag or no untagged post to judge R-260 by')
+
+        // a Primary tag collection made on Routes & Templates with a new template (Story 7.16c's sheet, the product's own path)
+        const coll113 = { path: '/walk-113/', display: 'Walk 113 List' }
+        const file113 = RT113.templateName(coll113.display).file
+        const SHEET113 = 'dialog[aria-labelledby="routes-sheet-title"][open]'
+        await pa.goto(at(ED113.routesPath(P113)), { waitUntil: 'load' })
+        const newColl113 = pa.getByRole('button', { name: WR113.newCollection, exact: true }).first()
+        await newColl113.waitFor({ state: 'visible', timeout: 30000 })
+        await newColl113.click()
+        const sheet113 = pa.locator(SHEET113)
+        await sheet113.waitFor({ state: 'visible', timeout: 15000 })
+        await sheet113.locator('#routes-path').fill(coll113.path)
+        const addTrigger113 = sheet113.locator('button[popovertarget$="-add-menu"]')
+        await addTrigger113.click()
+        await pa.locator(`[id="${await addTrigger113.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${esc113(RW113.FIELDS.find((f) => f.field === 'primary_tag').label)}`) }).click()
+        await pa.waitForTimeout(200)
+        await sheet113.locator(`input[placeholder="${WR113.add}"]`).fill(tag113)
+        await sheet113.locator(`input[placeholder="${WR113.add}"]`).press('Enter')
+        await pa.locator('#routes-template').click()
+        await pa.locator('[id="routes-template-menu"] button').filter({ hasText: new RegExp(`^${esc113(WR113.newTemplateOption)}$`) }).click()
+        await pa.waitForTimeout(200)
+        await sheet113.locator('#routes-sheet-template').fill(coll113.display)
+        await sheet113.locator('button[type="submit"]').click()
+        const shut113 = await pa.waitForFunction((s) => !document.querySelector(s), SHEET113, { timeout: 20000 }).then(() => true, () => false)
+        const rcB113 = await until113(rc113, (r) => r !== null && RT113.parseRoutesConfig(r.config).ok && RT113.parseRoutesConfig(r.config).config.collections.length === 1, 20000)
+        const cfg113 = rcB113 && RT113.parseRoutesConfig(rcB113.config).ok ? RT113.parseRoutesConfig(rcB113.config).config : null
+        const c0113 = cfg113?.collections[0] ?? null
+        check(`step 113b — a collection ${coll113.path} by Primary tag "${tag113}" with a new template "${coll113.display}" made on Routes & Templates: stored as that one collection (${file113}), its file exactly routesYaml of it`,
+          shut113 && c0113?.path === coll113.path && c0113.template === file113 && canon113(c0113.filter.conditions) === canon113([{ field: 'primary_tag', op: 'any', values: [tag113] }]) && rcB113.yaml === RT113.routesYaml(cfg113),
+          JSON.stringify({ shut113, stored: rcB113 }))
+        if (cfg113 === null) throw new Error('step 113: the collection was not stored — Pre-flight has no routing to judge')
+        const now113 = new Date().toISOString()
+        const named113 = RT113.unlistedPosts(cfg113, all113, now113).map((p) => p.slug)
+        const OLD113 = `primary_tag:-'${tag113}'`
+        const namedOld113 = RT113.unlistedPosts(cfg113, all113, now113, RT113.readNql(OLD113)).map((p) => p.slug)
+        check(`step 113b — R-260, evaluated here over T1's posts: unlistedPosts names NO post under the stored routing (Home lists the untagged), and the CONTROL — 7.16a's index filter ${OLD113} planted as the index — names exactly T1's untagged posts`,
+          named113.length === 0 && canon113([...namedOld113].sort()) === canon113([...untagged113].sort()), JSON.stringify({ named113, namedOld113, emitted: RT113.indexFilter(cfg113.collections) }))
+
+        // the Inline Row's Heading emptied in the panel and saved (DW-349: its element goes, the section stays)
+        const news113 = (await home113())?.instances?.find((i) => i.designId === 'a22/1') ?? null
+        const textOf113 = (v) => (typeof v === 'string' ? v.replace(/<[^>]*>/g, '').trim() : null)
+        const inCanvas113 = (p) => p.evaluate(() => {
+          const d = document.querySelector('section[aria-label="Canvas"] iframe')?.contentDocument
+          return d ? { section: d.querySelectorAll('.a22-1').length, heading: d.querySelectorAll('.a22-1 .a22-1__heading').length, eyebrow: d.querySelectorAll('.a22-1 .a22-1__eyebrow').length } : null
+        }).catch(() => null)
+        await pa.goto(at(`/projects/${P113}`), { waitUntil: 'load' })
+        const homeA113 = await painted113(pa, 'home')
+        const canvasBefore113 = await inCanvas113(pa)
+        const rev0113 = (await project113())?.revision
+        await pa.locator(`#editor-layers [data-layer-row="home:${news113?.instanceId}"] button`).first().click()
+        await pa.waitForTimeout(400)
+        const content113 = pa.locator('#editor-controls').getByRole('button', { name: 'Content', exact: true })
+        if ((await content113.getAttribute('aria-expanded').catch(() => null)) !== 'true') await content113.click().catch(() => {})
+        const emptied113 = await pa.locator('#editor-controls').getByLabel('Heading', { exact: true }).fill('', { timeout: 15000 }).then(() => true, () => false)
+        const canvasAfter113 = await until113(() => inCanvas113(pa), (c) => c?.heading === 0, 8000)
+        await pa.locator('header').first().click({ position: { x: 2, y: 2 } }).catch(() => {})
+        await pa.keyboard.press('ControlOrMeta+s')
+        const rev1113 = await until113(async () => (await project113())?.revision, (v) => v > rev0113, 30000)
+        const synced113 = await pa.waitForFunction((s) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === s, SYNCED113, { timeout: 20000 }).then(() => true, () => false)
+        const storedNews113 = (await home113())?.instances?.find((i) => i.instanceId === news113?.instanceId) ?? null
+        check('step 113b — DW-349: the Inline Row\'s Heading emptied in the panel — gone from the canvas while the section and its eyebrow stay (the heading was drawn before: the control) — and ⌘S stores it empty, the revision moved and the bar Synced',
+          news113 !== null && homeA113 && canvasBefore113?.heading > 0 && emptied113 && canvasAfter113?.heading === 0 && canvasAfter113.section > 0 && canvasAfter113.eyebrow > 0 &&
+          rev1113 > rev0113 && synced113 && textOf113(news113.content?.heading) !== '' && textOf113(storedNews113?.content?.heading) === '',
+          JSON.stringify({ found: news113 !== null, canvasBefore113, emptied113, canvasAfter113, rev0113, rev1113, synced113, before: news113?.content?.heading ?? null, stored: storedNews113?.content?.heading ?? null }))
+
+        // 113c — the holding window's Ship it opens the wizard (the CONTROL); a second window reading along meets D8g
+        await pa.locator('#editor-ship').click()
+        const holder113 = await until113(() => wiz113(pa), (w) => w?.at === 'destination', 15000)
+        const holderD8g113 = await pa.locator('dialog:has(#editor-ship-takeover-title)[open]').count()
+        await pa.keyboard.press('Escape')
+        const holderBack113 = await pa.waitForFunction(() => !document.querySelector('dialog[data-deploy-wizard]') && document.activeElement?.id === 'editor-ship', null, { timeout: 5000 }).then(() => true, () => false)
+        check(`step 113c — the CONTROL: in the window holding the lock, Ship it opens the wizard straight on Destination with "${W113.activate}" chosen — no D8g — and Esc gives focus back to Ship it`,
+          holder113?.at === 'destination' && holder113.mode === 'activate' && holderD8g113 === 0 && holderBack113, JSON.stringify({ at: holder113?.at, mode: holder113?.mode, holderD8g113, holderBack113 }))
+        const pb = await context113()
+        await pb.goto(at(`/projects/${P113}`), { waitUntil: 'load' })
+        const homeB113 = await painted113(pb, 'home')
+        const D8G113 = 'dialog:has(#editor-ship-takeover-title)'
+        await pb.locator('#editor-ship').click()
+        const askedB113 = await pb.locator(`${D8G113}[open]`).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+        const d8g113 = await pb.evaluate((sel) => {
+          const d = document.querySelector(sel)
+          return d && { title: d.querySelector('#editor-ship-takeover-title')?.textContent ?? null, body: d.querySelector('#editor-ship-takeover-body')?.textContent ?? null, focused: d.contains(document.activeElement) ? document.activeElement.textContent.trim() : null, wizard: document.querySelector('dialog[data-deploy-wizard]') !== null }
+        }, D8G113)
+        check(`step 113c — a second window, reading along: Ship it opens D8g — "${LK113.LOCK_COPY.shipTitle}", "${LK113.LOCK_COPY.shipBody}" — with focus on "${LK113.LOCK_COPY.wait}", and no wizard`,
+          homeB113 && askedB113 && d8g113?.title === LK113.LOCK_COPY.shipTitle && d8g113.body === LK113.LOCK_COPY.shipBody && d8g113.focused === LK113.LOCK_COPY.wait && d8g113.wizard === false, JSON.stringify(d8g113))
+        const reloadB113 = pb.waitForEvent('load', { timeout: 45000 }).then(() => true, () => false)
+        await pb.locator('#editor-ship-takeover-confirm').click()
+        const reloadedB113 = await reloadB113
+        const destB113 = await until113(() => wiz113(pb), (w) => w?.at === 'destination', 45000)
+        // window A's part is done: it leaves, so its editor neither beats nor asks for the lock again
+        await pa.goto('about:blank').catch(() => {})
+        check(`step 113c — "${LK113.LOCK_COPY.shipConfirm}" takes the lock (the editor's reload) and opens the wizard there on Destination: ${HOST113} "${W113.connected}", "${W113.activate}" chosen, the theme ${theme113} and the chip "${W113.chip(1, null)}", Run checks offered`,
+          reloadedB113 && destB113?.at === 'destination' && destB113.mode === 'activate' && destB113.themeName === theme113 && destB113.run && destB113.text.includes(W113.connected) && destB113.text.includes(HOST113) && destB113.text.includes(W113.chip(1, null)),
+          JSON.stringify({ reloadedB113, ...(destB113 ?? {}), text: undefined }))
+
+        // 113d — a clean Pre-flight, its rows against the verdicts stored on the `deploys` row
+        const jobD113 = await runChecks113(pb)
+        const deployD113 = await deploy113(jobD113?.deploy_id)
+        const objectsD113 = await objects113()
+        const shownD113 = await until113(() => wiz113(pb), (w) => restingClean113(w) && (w.text.includes(W113.everyPostListed) || w.unlisted !== null), 30000)
+        const rowsD113 = deployD113 === null ? null : DEP113.checkRows({ gscan: deployD113.gscan, quality: deployD113.quality }, 6, [], {})
+        const timedD113 = jobD113?.stage_timings?.compiling
+        check(`step 113d — Pre-flight on production: the job rests at awaiting_ship (AD-20's F-075); its deploy is v1 "${DEP113.versionOf(1)}" named ${theme113}, both verdicts stored (gscan for Ghost 6) and neither blocking, the artefact at <project>/<deploy>.zip with the zip's own size, an inputs hash, and the object in deploy-artifacts`,
+          jobD113?.stage === 'awaiting_ship' && deployD113?.status === 'checking' && deployD113.version === DEP113.versionOf(1) && deployD113.theme_name === theme113 &&
+          deployD113.gscan?.major === 6 && deployD113.gscan.blocked === false && deployD113.quality?.blocked === false && deployD113.artifact_path === `${P113}/${deployD113.id}.zip` &&
+          Number(deployD113.artifact_bytes) === timedD113?.bytes && /^[0-9a-f]{64}$/.test(deployD113.inputs_sha256 ?? '') && (objectsD113 ?? []).includes(deployD113.artifact_path),
+          JSON.stringify({ job: jobD113 && { stage: jobD113.stage, error: jobD113.error, timings: jobD113.stage_timings }, deploy: deployD113 && { ...deployD113, gscan: deployD113.gscan && { major: deployD113.gscan.major, gscan: deployD113.gscan.gscan, errors: deployD113.gscan.errors.length, warnings: deployD113.gscan.warnings.length }, quality: deployD113.quality && { errors: deployD113.quality.errors.length, warnings: deployD113.quality.warnings.length } }, objectsD113 }))
+        // the templates line names `requiredTemplates(library)` (the editor's), so it is compared by its words' head; every other line exactly
+        const TPL113 = W113.passTemplates([]).replace(/\)$/, '')
+        const otherPasses113 = (list) => list.filter((p) => !p.startsWith(TPL113))
+        check(`step 113d — the wizard's rows are the stored verdicts': "${W113.compiled}" with the compile's time and the zip's size, "${W113.checked}" with both gates' counts, every finding's message in order, the pass lines, "${W113.routesValid}", "${W113.warningsOnly}" and Ship it live`,
+          rowsD113 !== null && shownD113 !== null && shownD113.text.includes(W113.compiledMeta(timedD113?.ms ?? -1, timedD113?.bytes ?? -1)) && shownD113.text.includes(W113.checkedMeta(rowsD113.errors, rowsD113.warnings)) &&
+          canon113(shownD113.findings.map((f) => [f.level, f.message])) === canon113(rowsD113.rows.map((r) => [r.level, r.message])) &&
+          canon113(otherPasses113(shownD113.passes)) === canon113(otherPasses113(rowsD113.passes)) && shownD113.passes.some((p) => p.startsWith(TPL113)) === rowsD113.passes.some((p) => p.startsWith(TPL113)) &&
+          shownD113.text.includes(W113.routesValid) && shownD113.text.includes(W113.warningsOnly) && restingClean113(shownD113),
+          JSON.stringify({ shown: shownD113 && { passes: shownD113.passes, findings: shownD113.findings, ship: shownD113.ship }, stored: rowsD113 && { errors: rowsD113.errors, warnings: rowsD113.warnings, passes: rowsD113.passes } }))
+        check(`step 113d — R-260's row: "${W113.everyPostListed}" · "${W113.pass}", no post named (the wizard read T1's posts through the canvas's own reader; 113b's control named ${untagged113.length} under the old index filter)`,
+          shownD113?.text.includes(W113.everyPostListed) === true && shownD113.unlisted === null, JSON.stringify({ unlisted: shownD113?.unlisted ?? null }))
+
+        // 113d — a planted UNREADABLE routing blocks, with R-261's way out; the resting check above is abandoned
+        const rcStart113 = await rc113()
+        const UNREADABLE113 = 'collections:'
+        await back113(pb)
+        const plantU113 = await call('/rest/v1', `/routes_config?project_id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ config: UNREADABLE113 }) })
+        const jobU113 = await runChecks113(pb)
+        const shownU113 = await until113(() => wiz113(pb), (w) => w?.reason !== null && w?.reason !== undefined, 20000)
+        const abandonedD113 = await jobById113(jobD113?.id)
+        const goneD113 = { deploy: await deploy113(deployD113?.id), objects: await objects113() }
+        const putBackU113 = await call('/rest/v1', `/routes_config?project_id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ config: rcStart113?.config, yaml: rcStart113?.yaml }) })
+        const backU113 = await rc113()
+        check(`step 113d — a routing that cannot be read (planted through the service key; parseRoutesConfig refuses it — the plant's own control) blocks Pre-flight before any compile: routes_unreadable, no deploy row, Ship it greyed with "${W113.routesUnreadable}" and "${W113.routesStartAgain}" linking to R-261's reset`,
+          RT113.parseRoutesConfig(UNREADABLE113).ok === false && [200, 204].includes(plantU113.status) && jobU113?.stage === 'failed' && jobU113.error?.code === 'routes_unreadable' && jobU113.deploy_id === null &&
+          shownU113?.reason?.text.startsWith(W113.routesUnreadable) && shownU113.reason.link?.text === W113.routesStartAgain && shownU113.reason.link.href === `${PREFIX}${RW113.resetRoutingPath(P113)}` && shownU113.ship?.disabled === 'true',
+          JSON.stringify({ plant: plantU113.status, job: jobU113 && { stage: jobU113.stage, error: jobU113.error, deploy: jobU113.deploy_id }, shown: shownU113 && { reason: shownU113.reason, ship: shownU113.ship } }))
+        check('step 113d — the abandoned check: the newer Pre-flight cancelled the one resting at awaiting_ship, and its deploy row and its object are gone',
+          abandonedD113?.stage === 'cancelled' && goneD113.deploy === null && Array.isArray(goneD113.objects) && !goneD113.objects.includes(deployD113?.artifact_path), JSON.stringify({ stage: abandonedD113?.stage, deploy: goneD113.deploy?.id ?? null, objects: goneD113.objects }))
+        check('step 113d — the routing plant put back: routes_config reads back as it was, config and file',
+          [200, 204].includes(putBackU113.status) && canon113(backU113) === canon113(rcStart113), `HTTP ${putBackU113.status}`)
+
+        // 113d — a planted malformed card_designs blocks with DW-358's words and its link
+        const treatStart113 = await treat113()
+        const BAD_CARDS113 = { 'walk-113-no-such-card': {} }
+        await back113(pb)
+        const plantC113 = Array.isArray(treatStart113) && treatStart113.length === 0
+          ? await call('/rest/v1', '/project_treatments', { method: 'POST', body: JSON.stringify({ project_id: P113, user_id: idC, card_designs: BAD_CARDS113 }) })
+          : await call('/rest/v1', `/project_treatments?project_id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ card_designs: BAD_CARDS113 }) })
+        const jobC113 = await runChecks113(pb)
+        const deployC113 = await deploy113(jobC113?.deploy_id)
+        const shownC113 = await until113(() => wiz113(pb), (w) => w?.reason !== null && w?.reason !== undefined, 20000)
+        const putBackC113 = Array.isArray(treatStart113) && treatStart113.length === 0
+          ? await call('/rest/v1', `/project_treatments?project_id=eq.${P113}`, { method: 'DELETE' })
+          : await call('/rest/v1', `/project_treatments?project_id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ card_designs: treatStart113?.[0]?.card_designs }) })
+        const backC113 = await treat113()
+        check(`step 113d — a card_designs record nothing can read (planted through the service key; parseCardDesigns refuses it — the plant's own control) blocks the compile: compile_refused in DW-358's plain words, the deploy failed with no artefact, Ship it greyed with that sentence and "${W113.openCards}" linking to Editor cards`,
+          typeof LIB.parseCardDesigns(BAD_CARDS113) === 'string' && [200, 201, 204].includes(plantC113.status) && jobC113?.stage === 'failed' && jobC113.error?.code === 'compile_refused' && jobC113.error.message === W113.cardDesigns &&
+          deployC113?.status === 'failed' && deployC113.artifact_path === null && shownC113?.reason?.text.startsWith(W113.cardDesigns) && shownC113.reason.link?.text === W113.openCards &&
+          shownC113.reason.link.href === `${PREFIX}${ED113.canvasPath(P113, 'cards')}` && shownC113.ship?.disabled === 'true',
+          JSON.stringify({ plant: plantC113.status, job: jobC113 && { stage: jobC113.stage, error: jobC113.error }, deploy: deployC113 && { status: deployC113.status, artifact: deployC113.artifact_path }, shown: shownC113 && { reason: shownC113.reason, ship: shownC113.ship } }))
+        check('step 113d — the card plant put back: project_treatments reads back as it was',
+          [200, 204].includes(putBackC113.status) && canon113(backC113) === canon113(treatStart113), `HTTP ${putBackC113.status}`)
+
+        // 113e — Cancel during Checking leaves nothing; a check that outruns the press is said, and asked once more
+        let cancelled113 = null
+        for (let attempt = 1; attempt <= 2 && cancelled113 === null; attempt++) {
+          await back113(pb)
+          const was = (await job113())?.id ?? null
+          await pb.locator('#deploy-run').click()
+          // Cancel is pressed once the wizard has SAID Checking (its view holds the job then — a press before that sends nothing),
+          // or this attempt is over once the new job has rested or ended without it
+          const seen = await until113(async () => ({ w: await wiz113(pb), j: await job113() }), (x) => x.w?.said === W113.sayChecking || (x.j !== null && x.j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(x.j.stage)), 240000)
+          const atChecking = await job113()
+          if (seen.w?.said !== W113.sayChecking || atChecking?.id === was || atChecking?.stage !== 'checking') {
+            note('step 113e', `attempt ${attempt}: the job was at ${atChecking?.stage} before Cancel could be pressed in Checking`)
+            await until113(job113, (j) => ['awaiting_ship', 'failed'].includes(j?.stage), 240000)
+            continue
+          }
+          await pb.locator('#deploy-cancel').click()
+          const ended = await until113(() => jobById113(atChecking.id), (j) => ['cancelled', 'awaiting_ship', 'failed'].includes(j?.stage), 120000)
+          if (ended?.stage !== 'cancelled') {
+            note('step 113e', `attempt ${attempt}: the checks finished (${ended?.stage}) before the Cancel landed`)
+            continue
+          }
+          cancelled113 = { job: ended, deployId: atChecking.deploy_id, shown: await until113(() => wiz113(pb), (w) => w?.at === 'destination', 15000) }
+        }
+        const objectsE113 = await objects113()
+        check('step 113e — Cancel pressed in Checking: the job ends cancelled with no deploy attached, the deploy row it had is deleted, the bucket holds no object for the project (113d\'s listing held one: the control), and the wizard is back at Destination',
+          cancelled113 !== null && cancelled113.job.deploy_id === null && UUID.test(cancelled113.deployId ?? '') && (await deploy113(cancelled113.deployId)) === null &&
+          Array.isArray(objectsE113) && objectsE113.length === 0 && cancelled113.shown?.at === 'destination',
+          JSON.stringify({ job: cancelled113?.job && { stage: cancelled113.job.stage, deploy: cancelled113.job.deploy_id }, deployId: cancelled113?.deployId ?? null, objectsE113, at: cancelled113?.shown?.at ?? null }))
+
+        // 113f — THE FIRST SHIP IS ▾ → DEPLOY ONLY (R-264: free on a first deploy): D2f, nothing live on T1; then Re-activate v1 → Live
+        if ((await wiz113(pb))?.at === 'check') await back113(pb)
+        await pb.keyboard.press('Escape')
+        await pb.waitForFunction(() => !document.querySelector('dialog[data-deploy-wizard]'), null, { timeout: 10000 }).catch(() => {})
+        await pb.locator('#editor-ship + button').click()
+        const rowF113 = await until113(() => menuRow113(pb), (r) => r !== null, 10000)
+        await pb.locator('#editor-ship-menu li', { hasText: W113.uploadOnly }).locator('button, a').first().click()
+        const destF113 = await until113(() => wiz113(pb), (w) => w?.at === 'destination', 15000)
+        const cardF113 = await uploadCard113(pb)
+        check(`step 113f — on a first deploy ▾ → "${W113.uploadOnly}" is free (its row not greyed and captioned "${W113.uploadOnlyCaption(1, null)}" — the control for 113g) and opens Destination with it chosen, "${W113.uploadOnlyCard(1, null)}" and the chip "${W113.chip(1, null)}"`,
+          rowF113?.greyed === false && rowF113.text.includes(W113.uploadOnlyCaption(1, null)) && destF113?.mode === 'upload' && cardF113?.greyed === false &&
+          destF113.text.includes(W113.uploadOnlyCard(1, null)) && destF113.text.includes(W113.chip(1, null)),
+          JSON.stringify({ rowF113, mode: destF113?.mode ?? null, cardF113: cardF113 && { greyed: cardF113.greyed, checked: cardF113.checked } }))
+        const jobF113 = await runChecks113(pb)
+        const deployF113 = await deploy113(jobF113?.deploy_id)
+        const shaF113 = sha113(deployF113?.artifact_path ? await object113(deployF113.artifact_path) : null)
+        await until113(() => wiz113(pb), restingClean113, 30000)
+        await pb.locator('#deploy-ship').click()
+        const endF113 = await until113(() => jobById113(jobF113?.id), (j) => ['done', 'failed'].includes(j?.stage), 300000)
+        const v1F113 = await deploy113(jobF113?.deploy_id)
+        if (uploaded113(v1F113)) writes113.push('theme_upload')
+        const d2fF113 = await until113(() => wiz113(pb), (w) => w?.title === W113.uploadOnlyTitle, 30000)
+        const themesD2f113 = await themes113()
+        const bindF113 = (await call('/rest/v1', `/project_site_bindings?project_id=eq.${P113}&select=site_id,theme_name,first_upload_at`)).body
+        check(`step 113f — Deploy only: the job runs uploading → done with no activation, v1 (${DEP113.versionOf(1)}) uploaded and NOT activated; the wizard ends on D2f — "${W113.uploadOnlyTitle}", "${W113.activatingNotRequested(1)}", no confetti`,
+          jobF113?.stage === 'awaiting_ship' && endF113?.stage === 'done' && endF113.stage_timings?.uploading !== undefined && endF113.stage_timings?.activating === undefined &&
+          v1F113?.version === DEP113.versionOf(1) && v1F113.status === 'uploaded' && v1F113.activated === false &&
+          d2fF113?.title === W113.uploadOnlyTitle && W113.activatingNotRequested(1).split(' · ').every((part) => d2fF113.text.includes(part)) && !d2fF113.confetti,
+          JSON.stringify({ job: endF113 && { stage: endF113.stage, error: endF113.error, timings: Object.keys(endF113.stage_timings ?? {}) }, v1: v1F113 && { version: v1F113.version, status: v1F113.status, activated: v1F113.activated }, title: d2fF113?.title ?? null }))
+        check(`step 113f — the CONTROL for "nothing went live": T1 (staff token) holds ${theme113}, NOT active, and ${prev113} — the theme active before the step — is still the one live (Ghost's upload answer was not "active": a new name)`,
+          themesD2f113?.some((t) => t.name === theme113 && !t.active) && themesD2f113.find((t) => t.active)?.name === prev113, JSON.stringify({ active: themesD2f113?.find((t) => t.active)?.name ?? null, ours: themesD2f113?.find((t) => t.name === theme113) ?? null }))
+        check(`step 113f — the artefact Ghost was sent is the one Pre-flight checked: the deploy's path, size and inputs hash and the stored object's sha-256 (${shaF113?.slice(0, 12)}…) unchanged since awaiting_ship, and compiling never re-entered`,
+          shaF113 !== null && v1F113?.artifact_path === deployF113?.artifact_path && v1F113.artifact_bytes === deployF113.artifact_bytes && v1F113.inputs_sha256 === deployF113.inputs_sha256 &&
+          sha113(await object113(v1F113.artifact_path)) === shaF113 && endF113?.stage_timings?.compiling?.at === jobF113?.stage_timings?.compiling?.at,
+          JSON.stringify({ before: deployF113 && { path: deployF113.artifact_path, bytes: deployF113.artifact_bytes }, after: v1F113 && { path: v1F113.artifact_path, bytes: v1F113.artifact_bytes }, compiling: [jobF113?.stage_timings?.compiling?.at, endF113?.stage_timings?.compiling?.at] }))
+        check(`step 113f — the first accepted upload claimed the name, deploy-only included: project_site_bindings holds ${theme113} for this site, its first upload stamped`,
+          bindF113?.length === 1 && bindF113[0].site_id === siteId113 && bindF113[0].theme_name === theme113 && typeof bindF113[0].first_upload_at === 'string', JSON.stringify(bindF113))
+        // Re-activate v1 (D2f's button): the same job, PUT activate, Live
+        await pb.locator('#deploy-reactivate').click()
+        const liveF113 = await until113(async () => ({ v1: await deploy113(jobF113?.deploy_id), job: await jobById113(jobF113?.id) }), (x) => (x.v1?.status === 'live' && x.job?.stage === 'done') || x.job?.stage === 'failed', 300000)
+        if (liveF113.v1?.activated === true) writes113.push('theme_activate')
+        const shownF113 = await until113(() => wiz113(pb), (w) => w?.title === W113.liveTitle && w.b16 !== null, 30000)
+        const siteF113 = (await site113())?.[0] ?? null
+        check(`step 113f — "${W113.reactivate(1)}": the same job activates v1 — activating then done, live and activated — and the wizard ends on "${W113.liveTitle}" with the confetti`,
+          liveF113.job?.stage === 'done' && liveF113.job.stage_timings?.activating !== undefined && liveF113.v1?.status === 'live' && liveF113.v1.activated === true && typeof liveF113.v1.activated_at === 'string' &&
+          shownF113?.title === W113.liveTitle && shownF113.confetti,
+          JSON.stringify({ job: liveF113.job && { stage: liveF113.job.stage, error: liveF113.job.error, timings: Object.keys(liveF113.job.stage_timings ?? {}) }, v1: liveF113.v1 && { status: liveF113.v1.status, activated: liveF113.v1.activated }, title: shownF113?.title ?? null }))
+        check(`step 113f — no staff token, so no routing uploaded: B16 at the ending ("${RU113.ROUTES_FALLBACK_WORDS.title}", the no_token body), the job's routes ending no_token, the site's routes_fallback no_token and its offered file exactly the project's routesYaml`,
+          shownF113?.b16?.cause === 'no_token' && shownF113.b16.text.includes(RU113.ROUTES_FALLBACK_WORDS.title) && shownF113.b16.text.includes(RU113.ROUTES_FALLBACK_WORDS.body.no_token) &&
+          canon113(liveF113.job?.stage_timings?.routes) === canon113({ kind: 'fallback', cause: 'no_token' }) && siteF113?.routes_fallback === 'no_token' && siteF113.routes_last_offered === RT113.routesYaml(cfg113),
+          JSON.stringify({ b16: shownF113?.b16?.cause ?? null, routes: liveF113.job?.stage_timings?.routes ?? null, fallback: siteF113?.routes_fallback ?? null, offered: siteF113?.routes_last_offered === RT113.routesYaml(cfg113) }))
+        const themesF113 = await themes113()
+        const pageF113 = await fetch(`${ORIGIN113}/?walk113=${stamp}`, { redirect: 'manual', headers: { 'Cache-Control': 'no-cache' } }).then(async (r) => ({ status: r.status, html: await r.text() })).catch(() => null)
+        check(`step 113f — on T1 (read with the staff token, and anonymously): ${theme113} is installed and active, and \`/\` draws the Inline Row with its eyebrow (the control) and NO heading — DW-349 on the shipped site`,
+          themesF113?.some((t) => t.name === theme113 && t.active) && pageF113?.status === 200 && hasClass113(pageF113.html, 'a22-1') && hasClass113(pageF113.html, 'a22-1__eyebrow') && !hasClass113(pageF113.html, 'a22-1__heading'),
+          JSON.stringify({ active: themesF113?.find((t) => t.active)?.name ?? null, status: pageF113?.status ?? null, section: pageF113 ? hasClass113(pageF113.html, 'a22-1') : null, eyebrow: pageF113 ? hasClass113(pageF113.html, 'a22-1__eyebrow') : null, heading: pageF113 ? hasClass113(pageF113.html, 'a22-1__heading') : null }))
+        // Home's listing: T1's routes.yaml is its own (nothing was uploaded), so what can be read is the Content API listing with the
+        // index filter the project's routing emits — the same SQL path Ghost's index collection runs (§86 leg 4)
+        const emitted113 = RT113.indexFilter(cfg113.collections)
+        const listedNew113 = new Set(((await posts113(emitted113)) ?? []).map((p) => p.slug))
+        const listedOld113 = new Set(((await posts113(OLD113)) ?? []).map((p) => p.slug))
+        check(`step 113f — R-260 on T1's SQL: the index filter the project's routing emits (${emitted113}) lists every untagged post, and the CONTROL — 7.16a's ${OLD113} — lists none of them`,
+          typeof emitted113 === 'string' && untagged113.every((s) => listedNew113.has(s)) && untagged113.every((s) => !listedOld113.has(s)) && listedOld113.size > 0,
+          JSON.stringify({ untagged113, listedNew: listedNew113.size, listedOld: listedOld113.size }))
+
+        // 113g — R-264 (a): v1 is live here, so the bar reads "Ship update" and Deploy only is GREYED, in the ▾ row and on S8a's card
+        const BLOCKED113 = W113.uploadOnlyBlocked(1, HOST113, 2)
+        await pb.locator('dialog[data-deploy-wizard]').getByRole('button', { name: W113.done, exact: true }).click()
+        const updateG113 = await pb.getByRole('button', { name: W113.shipUpdate, exact: true }).waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false)
+        let deployPostsG113 = 0
+        const countG113 = (r) => { if (r.method() === 'POST' && new URL(r.url()).pathname.endsWith(ED113.deployPath(P113))) deployPostsG113++ }
+        pb.on('request', countG113)
+        await pb.locator('#editor-ship + button').click()
+        const rowG113 = await until113(() => menuRow113(pb), (r) => r?.greyed === true, 15000)
+        // the press, as the handler hears it whatever the row's styling does to a pointer: a click dispatched on the row's own control
+        await pb.locator('#editor-ship-menu li', { hasText: W113.uploadOnly }).locator('button, a').first().dispatchEvent('click').catch(() => {})
+        await pb.waitForTimeout(1500)
+        const openedG113 = await pb.locator('dialog[data-deploy-wizard]').count()
+        pb.off('request', countG113)
+        await pb.keyboard.press('Escape')
+        check(`step 113g — after v1 went live the bar reads "${W113.shipUpdate}", and ▾'s "${W113.uploadOnly}" row is GREYED (aria-disabled) with R-264's caption "${BLOCKED113}"; a press on it opens no wizard and sends no deploy request (counted)`,
+          updateG113 && rowG113?.greyed === true && rowG113.text.includes(BLOCKED113) && openedG113 === 0 && deployPostsG113 === 0,
+          JSON.stringify({ updateG113, rowG113, openedG113, deployPostsG113 }))
+        await pb.locator('#editor-ship').click()
+        const destG113 = await until113(() => wiz113(pb), (w) => w?.at === 'destination', 15000)
+        const cardG113 = await uploadCard113(pb)
+        await pb.locator('dialog[data-deploy-wizard] input[name="deploy-mode"][value="upload"]').click({ force: true }).catch(() => {})
+        await pb.waitForTimeout(300)
+        const modeG113 = (await wiz113(pb))?.mode ?? null
+        check(`step 113g — S8a's "${W113.uploadOnly}" card is greyed with the same caption, "${W113.activate}" chosen and the chip "${W113.chip(2, 1)}"; a press on the greyed card leaves "${W113.activate}" chosen`,
+          destG113?.mode === 'activate' && cardG113?.greyed === true && (cardG113.text.includes(BLOCKED113) || destG113.text.includes(BLOCKED113)) && destG113.text.includes(W113.chip(2, 1)) && modeG113 === 'activate',
+          JSON.stringify({ mode: destG113?.mode ?? null, cardG113: cardG113 && { greyed: cardG113.greyed, checked: cardG113.checked }, modeG113 }))
+
+        // 113h — v2 by Deploy & activate: R-264 (b) — uploaded under the LIVE name, Ghost makes it live itself, and no PUT is sent
+        const jobH113 = await runChecks113(pb)
+        await until113(() => wiz113(pb), restingClean113, 30000)
+        // the server's own guard, replayed past the greyed row with this tab's lock session: 422, nothing uploaded, the job still resting
+        const replayH113 = await pb.evaluate(async ([url, job]) => {
+          const session = sessionStorage.getItem('inflozo-lock-session')
+          const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'ship', session, job, mode: 'upload' }) })
+          return { status: r.status, session: session !== null }
+        }, [`${PREFIX}${ED113.deployPath(P113)}`, jobH113?.id]).catch((e) => ({ status: null, error: String(e).slice(0, 80) }))
+        await pb.waitForTimeout(2000)
+        const restingH113 = await jobById113(jobH113?.id)
+        check('step 113h — R-264 (a) on the server: ship in mode "upload", replayed with this tab\'s own lock session while v1 is live, answers 422 and leaves the job resting at awaiting_ship (the audit rows below hold no upload for it)',
+          jobH113?.stage === 'awaiting_ship' && replayH113.session === true && replayH113.status === 422 && restingH113?.stage === 'awaiting_ship' && restingH113.stage_timings?.uploading === undefined,
+          JSON.stringify({ replayH113, stage: restingH113?.stage ?? null }))
+        await pb.locator('#deploy-ship').click()
+        const endH113 = await until113(() => jobById113(jobH113?.id), (j) => ['done', 'failed'].includes(j?.stage), 300000)
+        const v2H113 = await deploy113(jobH113?.deploy_id)
+        if (uploaded113(v2H113)) writes113.push('theme_upload')
+        // a PUT activate is sent only through the `activating` stage (run.ts' activateStep): its timing says whether one was
+        if (endH113?.stage_timings?.activating !== undefined) writes113.push('theme_activate')
+        const shownH113 = await until113(() => wiz113(pb), (w) => w?.title === W113.liveTitle, 30000)
+        const v1H113 = await deploy113(jobF113?.deploy_id)
+        const themesH113 = await themes113()
+        check(`step 113h — Deploy & activate: v2 (${DEP113.versionOf(2)}) live and activated, v1 demoted to uploaded, ${theme113} the active theme on T1, and the wizard ends on "${W113.liveTitle}" with the confetti and B16 no_token`,
+          endH113?.stage === 'done' && v2H113?.version === DEP113.versionOf(2) && v2H113.status === 'live' && v2H113.activated === true && v1H113?.status === 'uploaded' &&
+          themesH113?.find((t) => t.active)?.name === theme113 && shownH113?.title === W113.liveTitle && shownH113.confetti && shownH113.b16?.cause === 'no_token',
+          JSON.stringify({ job: endH113 && { stage: endH113.stage, error: endH113.error }, v2: v2H113 && { version: v2H113.version, status: v2H113.status, activated: v2H113.activated }, v1: v1H113?.status ?? null, active: themesH113?.find((t) => t.active)?.name ?? null, title: shownH113?.title ?? null }))
+        // R-264 (b), recorded: the one way to live with no `activating` stage is Ghost's upload answer saying `themes[0].active`
+        check('step 113h — R-264 (b): v2, uploaded under the name already live, went live on Ghost\'s own upload answer (themes[0].active) — the job has an uploading stage and NO activating one, so no PUT activate was sent',
+          endH113?.stage_timings?.uploading !== undefined && endH113.stage_timings.activating === undefined && v2H113?.status === 'live',
+          JSON.stringify({ timings: Object.keys(endH113?.stage_timings ?? {}), wentLiveOnUpload: endH113?.stage_timings?.activating === undefined && v2H113?.status === 'live' }))
+        await pb.locator('dialog[data-deploy-wizard]').getByRole('button', { name: W113.done, exact: true }).click().catch(() => {})
+
+        // 113i — DW-54: the product's call(), asked for an off-list write on this site, refuses before any request
+        const themesI0113 = await themes113()
+        let deniedI113 = null
+        let auditI113 = null
+        process.env.SUPABASE_DB_POOLER_URL = ENV113.SUPABASE_DB_POOLER_URL
+        try {
+          const [GA113, DB113] = await Promise.all([imp113('apps/web/server/ghost-admin/index.ts'), imp113('apps/web/server/ghost-admin/db.ts')])
+          try {
+            await GA113.call({ siteId: siteId113, method: 'POST', path: 'posts/', body: { posts: [{ title: 'Walk 113 — never sent' }] }, route: 'projects/deploy', kind: 'admin' })
+            deniedI113 = 'no throw'
+          } catch (e) {
+            deniedI113 = e?.name === 'AdminError' ? e.code : `threw ${e?.name ?? 'something'}`
+          }
+          auditI113 = await DB113.sql()`select allowlist_item, outcome, route from private.credential_audit where site_id = ${siteId113} and action = 'admin_write' order by occurred_at, id`
+          await DB113.sql().end({ timeout: 5 }).catch(() => {})
+        } finally {
+          delete process.env.SUPABASE_DB_POOLER_URL
+        }
+        const themesI1113 = await themes113()
+        const okI113 = (auditI113 ?? []).filter((r) => r.outcome === 'ok').map((r) => r.allowlist_item)
+        const deniedRowsI113 = (auditI113 ?? []).filter((r) => r.outcome === 'denied')
+        check('step 113i — DW-54: the product\'s call(), asked for POST posts/ (no allowlist item) on the walk\'s site, throws write_not_allowed',
+          deniedI113 === 'write_not_allowed', String(deniedI113))
+        check(`step 113i — private.credential_audit (the pooler): exactly one admin_write "denied" row for it, with no item, beside one admin_write "ok" row per write the step drove, in order (${writes113.join(', ')}) — and T1's theme list unchanged by the denied call`,
+          writes113.length > 0 && canon113(okI113) === canon113(writes113) && deniedRowsI113.length === 1 && deniedRowsI113[0].allowlist_item === null && deniedRowsI113[0].route === 'projects/deploy' &&
+          themesI0113 !== null && canon113(themesI1113) === canon113(themesI0113),
+          JSON.stringify({ okI113, writes113, denied: deniedRowsI113, themesSame: canon113(themesI1113) === canon113(themesI0113) }))
+      } catch (e) {
+        throw new Error(scrub113(e?.stack ?? e))
+      } finally {
+        // 113j — THE HAND-BACK, whatever failed, each piece read back and each in its own try so one failure leaves none of the rest undone
+        const restore113 = async (name, fn) => {
+          try { await fn() } catch (e) { check(`step 113j — ${name}`, false, scrub113(String(e?.message ?? e).split('\n')[0])) }
+        }
+        for (const ctx of ctxs113) {
+          for (const pg of ctx.pages()) await handBack113(pg)
+          await ctx.close().catch(() => {})
+        }
+        if (guard113) {
+          await restore113('T1\'s theme', async () => {
+            const now = await themes113()
+            if (now !== null && now.find((t) => t.active)?.name !== prev113) await staff113('PUT', `themes/${encodeURIComponent(prev113)}/activate/`)
+            if (now !== null && now.some((t) => t.name === theme113)) await staff113('DELETE', `themes/${encodeURIComponent(theme113)}/`)
+            const after = await themes113()
+            check(`step 113j — T1 restored with the staff token: ${prev113} active again and ${theme113} deleted, read back`,
+              after !== null && after.find((t) => t.active)?.name === prev113 && !after.some((t) => t.name === theme113), JSON.stringify({ active: after?.find((t) => t.active)?.name ?? null, left: (after ?? []).filter((t) => t.name === theme113).length }))
+          })
+          await restore113('T1\'s routes.yaml', async () => {
+            const after = await routesFile113()
+            check('step 113j — T1\'s routes.yaml byte for byte as before the step (no staff token, so nothing uploaded it)',
+              routesBefore113 !== null && after !== null && Buffer.compare(routesBefore113, after) === 0, `${routesBefore113?.length ?? 'unread'} → ${after?.length ?? 'unread'} bytes`)
+          })
+        }
+        if (siteId113 !== null) {
+          await restore113('the disconnect', async () => {
+            const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+            try {
+              const pd = steady(await ctx.newPage())
+              await pd.goto(await magic(emailC), { waitUntil: 'load' })
+              await pd.goto(at(`/sites/disconnect?site=${siteId113}`), { waitUntil: 'load' })
+              const button = pd.locator('form').getByRole('button', { name: CR113.DISCONNECT.menu, exact: true }).first()
+              await button.waitFor({ state: 'visible', timeout: 30000 })
+              await button.click()
+              const gone = await until113(async () => (await site113())?.find((s) => s.id === siteId113) ?? null, (s) => s?.disconnected_at != null, 30000)
+              check(`step 113j — the site disconnected through /sites/disconnect and "${CR113.DISCONNECT.menu}": disconnected_at set and every credential gone (credentials_present all false)`,
+                gone?.disconnected_at != null && gone.credentials_present?.admin === false && gone.credentials_present?.content === false && gone.credentials_present?.staff === false,
+                JSON.stringify({ gone: gone?.disconnected_at ?? null, keys: gone?.credentials_present ?? null }))
+            } finally {
+              await ctx.close().catch(() => {})
+            }
+          })
+        }
+        if (P113 !== null) {
+          await restore113('the bucket', async () => {
+            for (const key of (await objects113()) ?? []) await fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { method: 'DELETE', headers: storage113 })
+            const left = await objects113()
+            check('step 113j — the project\'s artefacts removed from deploy-artifacts (objects outlive their rows), the listing read back empty', Array.isArray(left) && left.length === 0, JSON.stringify(left))
+          })
+        }
+        if (idC !== null) {
+          await restore113('the account', async () => {
+            const del = await admin(`/admin/users/${idC}`, { method: 'DELETE', body: '{}' })
+            const usersAfter = (await users())?.length ?? null
+            const projectsAfter = await projectCount()
+            check('step 113j — account C deleted, and users and projects counted back as the step found them (its project, deploys, binding and site went with it)',
+              del.status === 200 && usersBefore113 !== null && usersAfter === usersBefore113 && projectsBefore113 !== null && projectsAfter === projectsBefore113,
+              `HTTP ${del.status}, users ${usersBefore113} → ${usersAfter}, projects ${projectsBefore113} → ${projectsAfter}`)
+          })
+        }
+      }
+      check('step 113 — the step\'s contexts recorded zero CSP violations', csp113.length === 0, JSON.stringify(csp113.slice(0, 3)))
+    }
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

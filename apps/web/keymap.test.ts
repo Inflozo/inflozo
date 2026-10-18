@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { DEVICES } from './lib/device.ts'
 import { edits, holdsCaret, IN_PREVIEW, KEYMAP, SINGLE_KEY, sheetRows, shortcutFor } from './lib/keymap.ts'
 import { PREVIEW } from './lib/preview.ts'
+import { DEPLOY_WORDS } from './lib/deploy.ts'
 
 /* STORY 5.9 — FR-D11's map, asserted where `node --test` can reach it. The I/O matrix's KEY rows are here; the
    gestures themselves are the keyboard journey's (`tools/keyboard/journey.spec.mjs`, `pnpm keyboard` — its own step in CI's `check` job) and the
@@ -13,8 +14,8 @@ import { PREVIEW } from './lib/preview.ts'
    that asserted no other key was bound: at 5.9 they are, and its replacement is the R-145 test below, which asserts
    the opposite half — that a key with nothing to press is bound by nothing and listed by nothing.
 
-   Nothing below counts anything it could derive: the device rows walk `DEVICES`, and the deferred rows walk the map
-   (standing rule 4). */
+   Nothing below counts anything it could derive: the device rows walk `DEVICES`, and the owed rows walk the map
+   (standing rule 4) — none is owed since Story 7.18a. */
 
 const press = (key: string, extra: Partial<Parameters<typeof shortcutFor>[0]> = {}) =>
   ({ key, metaKey: true, ctrlKey: false, shiftKey: false, ...extra })
@@ -104,22 +105,32 @@ test('a stray modifier is never a gesture', () => {
 
 // ── R-145: a key with nothing to press is bound by nothing and listed by nothing ────────────────────────────────
 
-test('R-145: every deferred row names its story, binds nothing and is not on the card', () => {
-  const deferred = KEYMAP.filter((b) => b.story !== undefined)
-  assert.ok(deferred.length > 0, 'the map must still name the keys that are owed')
-  const listed = new Set(sheetRows())
-  for (const b of deferred) {
-    assert.equal(b.keys, undefined, `${b.action}: a row with a story must bind nothing`)
-    assert.equal(b.gesture, undefined, `${b.action}: a row with a story has no gesture to ask for`)
-    assert.ok(!listed.has(b), `${b.action}: the card must not advertise a key that does nothing`)
-    assert.match(b.story as string, /^\d+\.\d+$/, `${b.action}: name the story that lands it`)
-  }
-  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10, `[` `]` at Story 5.11, ⇧R at
-  // Story 5.12 and P at Story 5.15, each with the action it drives (R-145), and the last row leaves it the same way
-  for (const chip of ['⌘⏎']) {
-    assert.ok(deferred.some((b) => b.chips.includes(chip)), `${chip} is owed and must stay named`)
-    assert.ok(!sheetRows().some((b) => b.chips.includes(chip)), `${chip} must not be on the card`)
-  }
+test('R-145: the map is complete — no row is owed, so nothing on the card or in the map waits for a story', () => {
+  // ⌘K left the owed rows at Story 5.10, `[` `]` at 5.11, ⇧R at 5.12, P at 5.15 and ⌘⏎ at 7.18a, each with the action it
+  // drives — the last one. The `story` field stays in the shape, for the next key FR-D11 ever adds (R-145's rule)
+  assert.deepEqual(KEYMAP.filter((b) => b.story !== undefined).map((b) => b.action), [], 'no key is owed any more')
+  assert.deepEqual([...sheetRows()], [...KEYMAP], 'so the card lists every row of the map')
+})
+
+/* STORY 7.18a — ⌘⏎ IS LANDED: Ship it, the split button's own press. ⌘-modified, so it works with the caret in a field
+   (the matrix's "anywhere in the editor, a field included"), and it changes no document — a session reading along presses
+   it and meets D8g first, which is the editor's to decide (`openShip`), not the map's. */
+test('Story 7.18a: ⌘⏎ is Ship it — bound, listed in the button\'s own words, live in a field, and no edit', () => {
+  const ship = KEYMAP.find((b) => b.gesture === 'ship')
+  assert.ok(ship, '⌘⏎ has no row')
+  assert.equal(ship.story, undefined, 'the row is live now')
+  assert.deepEqual(ship.chips, ['⌘⏎'])
+  assert.deepEqual(ship.keys, ['enter'])
+  assert.equal(ship.meta, true)
+  assert.equal(ship.action, DEPLOY_WORDS.ship, 'the card reads the button\'s one name (R-170)')
+  assert.ok(sheetRows().includes(ship), 'the `?` card lists it, because it works')
+  assert.equal(shortcutFor(press('Enter'), false), 'ship')
+  assert.equal(shortcutFor(press('Enter', { metaKey: false, ctrlKey: true }), false), 'ship', 'Ctrl elsewhere')
+  assert.equal(shortcutFor(press('Enter'), true), 'ship', 'a field included')
+  assert.equal(shortcutFor(bare('Enter'), false), null, 'a bare Enter presses what has focus, never Ship it')
+  assert.equal(shortcutFor(bare('Enter'), true), null)
+  assert.ok(!SINGLE_KEY.has('ship'), 'it stays ⌘-modified, so WCAG 2.1.4 has no condition to impose')
+  assert.equal(edits('ship'), false, 'it changes no document, so a reader may press it (and meets D8g)')
 })
 
 /* STORY 5.10 — ⌘K IS LANDED, AND NARROWED IN THE SHARED FUNCTION. It is the first of R-145's five owed keys to
@@ -237,7 +248,7 @@ test('R-192: a session reading along ignores every gesture that CHANGES the docu
   for (const g of ['undo', 'redo', 'add', 'duplicate', 'remove', 'prev', 'next', 'remix'] as const) assert.equal(edits(g), true, g)
   // what only changes the VIEW stays live for a reader: Layers, dark, the shortcuts card, Preview, the devices —
   // and ⌘S, which has nothing to send from a session that cannot edit
-  for (const g of ['save', 'layers', 'dark', 'shortcuts', 'deselect', 'preview', 'desktop', 'tablet', 'mobile'] as const) {
+  for (const g of ['save', 'layers', 'dark', 'shortcuts', 'deselect', 'preview', 'desktop', 'tablet', 'mobile', 'ship'] as const) {
     assert.equal(edits(g), false, g)
   }
 })

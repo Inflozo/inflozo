@@ -2047,14 +2047,11 @@ test('R-147: ? opens the card, it lists exactly the keys that work, and Esc retu
   const listed = await page.locator('[data-shortcut-row]').evaluateAll((els) => els.map((e) => e.dataset.shortcutRow))
   expect(listed.length).toBeGreaterThan(0)
   const chips = await page.locator('[data-shortcut-row] span span').allInnerTexts()
-  // R-145: a key whose action is not built is ABSENT — not greyed, not captioned, not listed
-  for (const dead of ['⌘⏎']) {
-    expect(chips, `${dead} has nothing to press yet and must not be advertised`).not.toContain(dead)
-  }
   // ⌘K joined this list at Story 5.10, which built the Section Picker it presses, `[` `]` at Story 5.11, which
-  // built the design ring they cycle, ⇧R at Story 5.12, which built Site Remix, and P at Story 5.15, which built
-  // Preview (R-145: a shortcut arrives with the action it drives)
-  for (const live of ['⌘K', '[', ']', '⇧R', 'P', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
+  // built the design ring they cycle, ⇧R at Story 5.12, which built Site Remix, P at Story 5.15, which built
+  // Preview, and ⌘⏎ at Story 7.18a, which built Ship it (R-145: a shortcut arrives with the action it drives) — the map is
+  // complete, so the card lists every row of it
+  for (const live of ['⌘K', '[', ']', '⇧R', 'P', '⌘⏎', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
     expect(chips, `${live} works and must be listed`).toContain(live)
   }
   await expect(sheet).not.toContainText(/not yet|coming|soon|unavailable/i)
@@ -2064,23 +2061,15 @@ test('R-147: ? opens the card, it lists exactly the keys that work, and Esc retu
   expect(await focused(page), 'the platform returns focus to where it was').toBe('SECTION[Canvas]')
 })
 
-test('R-145: a deferred key does nothing and announces nothing', async ({ page }) => {
+test('R-145: no key is owed any more — every row of the map is bound and on the card (⌘⏎ was the last, Story 7.18a)', async ({ page }) => {
+  // the map itself says so (`keymap.test.ts` holds it too), and the card drawn from it lists exactly that many rows
+  expect(KEYS.KEYMAP.filter((b) => b.story !== undefined).map((b) => b.action)).toEqual([])
   await open(page)
-  const { page: own } = await rows(page)
-  await select(page, own[0])
-  const before = { rows: (await rows(page)).all.length, mode: await modeOf(page), device: await deviceOf(page) }
   await page.locator('section[aria-label="Canvas"]').focus()
-  // ⌘K LEFT THIS LIST AT STORY 5.10, `[` `]` AT STORY 5.11, ⇧R AT STORY 5.12 and P AT STORY 5.15, each with the
-  // action it presses — R-145's rule is that a shortcut arrives with its action, so a key leaves here and gets a
-  // stop of its own below. One is still owed.
-  for (const key of ['ControlOrMeta+Enter']) {
-    await page.keyboard.press(key)
-  }
-  expect((await rows(page)).all).toHaveLength(before.rows)
-  expect(await modeOf(page)).toBe(before.mode)
-  expect(await deviceOf(page)).toBe(before.device)
-  expect(await said(page)).toBe('')
-  await expect(page.locator('dialog[open]')).toHaveCount(0)
+  await page.keyboard.press('?')
+  await expect(page.locator('dialog[data-shortcuts-sheet]')).toBeVisible()
+  await expect(page.locator('[data-shortcut-row]')).toHaveCount(KEYS.KEYMAP.length)
+  await page.keyboard.press('Escape')
 })
 
 /* ── Story 5.14 — View as (FR-D16, S4a, S4d) ───────────────────────────────────────────────────────────────────────
@@ -8292,4 +8281,648 @@ test('7.16c · the CONTROL: without the routes header Home lists the posts the c
   expect(onFirstPage.length, 'Home\'s first page holds a post the collection owns').toBeGreaterThan(0)
   await open(page)
   for (const title of onFirstPage) await expect(canvasFrame(page).locator('#canvas')).toContainText(title)
+})
+
+/* ── Story 7.18a — Ship it and the deploy wizard (FR-J8, S4/S4d, S8, D2e/D2f, D8g; R-98, R-145) ─────────────────────────────
+   The harness has no database, so the deploy route never answers here: every wizard journey answers it with CANNED job
+   states through `page.route` — a POST answers the job id, and each GET the next view of the sequence that intent picked —
+   which is the route's own wire (`lib/deploy.ts`' `DeployView`). Each journey is the other's control: a clean Pre-flight
+   leaves Ship it live and a blocked one greys it; an activated ship ends Live and a deploy-only one on D2f. The real route,
+   the real gates and Ghost are the deployed walk's (step 113) and §86's. */
+
+const DEPLOY = await import(new URL('../../apps/web/lib/deploy.ts', import.meta.url).href)
+const DW = DEPLOY.DEPLOY_WORDS
+const shipIt = (page) => page.locator('#editor-ship')
+const shipMenu = (page) => page.locator('#editor-ship-menu')
+const wizard = (page) => page.locator('dialog[data-deploy-wizard]')
+const deploySaid = (page) => page.locator('[data-deploy-said]').innerText()
+/** the deploy route's door, as the wizard asks it */
+const DEPLOY_PATH = new RegExp(`/projects/${HARNESS_PROJECT_ID}/deploy$`)
+
+/** a job's views, as the route would answer them (stage, timings, the deploy and its two verdicts) */
+const AT = '2026-10-18T10:00:00.000Z'
+const TIMED = { compiling: { at: AT, ms: 1400, bytes: 240_000 }, checking: { at: AT, ms: 2100 }, uploading: { at: AT, ms: 31_000 }, activating: { at: AT, ms: 1800 } }
+const WARNING = { code: 'page_switch_unused', message: 'The switch that hides a page’s title and feature image does nothing on this site.', detail: 'Ghost offers it on every page.', level: 'warning', fatal: false, refs: ['page.hbs'], rule: 'GS110-NO-MISSING-PAGE-BUILDER-USAGE' }
+const ERROR = { code: 'gs_fatal', message: 'A template uses a helper Ghost removed.', level: 'error', fatal: true, refs: ['post.hbs'], rule: 'GS001-DEPR-FIXTURE' }
+const verdictOf = (errors, warnings) => ({ major: 6, gscan: '4.49.7', blocked: errors.length > 0, errors, warnings })
+const deployOf = (extra = {}) => ({ version: '1.0.0', themeName: 'inflozo-pilot-sections', status: 'checking', activated: false, bytes: 240_000, gscan: verdictOf([], [WARNING]), quality: { blocked: false, errors: [], warnings: [] }, ...extra })
+const viewOf = (stage, timings, { error = null, deploy = deployOf(), previous = null, routesFile = null } = {}) =>
+  ({ job: { id: 'job-718', stage, error, timings, cancelRequested: false }, deploy, previous, routesFile })
+const CHECKED = { compiling: TIMED.compiling, checking: TIMED.checking }
+const PREFLIGHT = [
+  viewOf('queued', {}, { deploy: null }),
+  viewOf('compiling', { compiling: { at: AT } }, { deploy: null }),
+  viewOf('checking', { compiling: TIMED.compiling, checking: { at: AT } }),
+  viewOf('awaiting_ship', CHECKED),
+]
+const UPLOADING = viewOf('uploading', { ...CHECKED, uploading: { at: AT } })
+const ACTIVATING = viewOf('activating', { ...CHECKED, uploading: TIMED.uploading, activating: { at: AT } })
+const LIVE_ENDING = viewOf('done', { ...CHECKED, uploading: TIMED.uploading, activating: TIMED.activating, routes: { kind: 'fallback', cause: 'no_token' } },
+  { deploy: deployOf({ status: 'live', activated: true }), routesFile: 'routes:\n\ncollections:\n  /harness-list/:\n    permalink: /harness-list/{slug}/\n' })
+
+/** the route, answered: POST → the job id, each GET → the next view of the sequence the last POST's intent picked (its last
+ *  repeated). Every body the wizard sent is kept. The route alone: the lock's and the sync's beats pass untouched. */
+async function plantDeploy(page, plan) {
+  const sent = []
+  let seq = []
+  let n = 0
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), (route) => {
+    const req = route.request()
+    if (req.method() === 'POST') {
+      const body = req.postDataJSON()
+      sent.push(body)
+      seq = plan[body.intent] ?? []
+      n = 0
+      return route.fulfill({ status: body.intent === 'cancel' ? 200 : 202, contentType: 'application/json', body: JSON.stringify({ job: 'job-718' }) })
+    }
+    const view = seq[Math.min(n, seq.length - 1)]
+    n += 1
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(view) })
+  })
+  return sent
+}
+
+/** the wizard, opened from the keyboard: Ship it focused and pressed */
+async function openWizard(page) {
+  await shipIt(page).focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toBeVisible()
+}
+/** Destination → Run checks, and the Pre-flight landed: Ship it live, or greyed with its reason */
+async function runChecks(page) {
+  await page.locator('#deploy-run').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+}
+
+test('7.18a · Ship it is S4\'s coral split button after ⋯ with "Deploy options" as its ▾; Enter opens the wizard on Destination with Deploy & activate chosen, and Esc gives focus back to Ship it', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  await open(page)
+  // its NAME: the busy words sit in the same cell, hidden (R-98's `BusyLabel`), so the label never moves the bar
+  await expect(shipIt(page)).toHaveAccessibleName(DW.ship)
+  const look = await shipIt(page).evaluate((b) => ({ bg: getComputedStyle(b).backgroundColor, h: b.getBoundingClientRect().height, after: !!(document.getElementById('editor-more').compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) }))
+  expect(look, 'S4: coral-text, 32 high, after ⋯').toEqual({ bg: 'rgb(194, 56, 31)', h: 32, after: true })
+  await expect(page.locator('#editor-ship + button')).toHaveAttribute('aria-label', DW.options)
+  // the control: nothing is open before the press
+  await expect(page.locator('dialog[open]')).toHaveCount(0)
+  await openWizard(page)
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await expect(wizard(page).locator('input[value="activate"]')).toBeChecked()
+  expect(await page.evaluate(() => document.querySelector('dialog[data-deploy-wizard]').contains(document.activeElement)), 'focus moved in').toBe(true)
+  // the rail numbers its steps from STEPS — every one, in order
+  await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.STEPS.map((s, i) => new RegExp(`${i + 1}?\\s*${s.label}`)))
+  await expect(wizard(page).locator('[data-theme-name]')).toHaveText('inflozo-pilot-sections')
+  await expect(wizard(page)).toContainText(DW.chip(1, null))
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+  await expect(shipIt(page)).toBeFocused()
+})
+
+test('7.18a · Ship it is there at every width — after ⋯ in the compact bar too — and reads "Ship update" once the project has shipped', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 720 })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  // below 1280 Layers is an overlay, so `open`'s row is not drawn: the painted canvas is the landmark
+  await page.goto(HARNESS)
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect(page.locator('#editor-more')).toBeVisible()
+  await expect(shipIt(page)).toBeVisible()
+  await expect(shipIt(page)).toHaveAccessibleName(DW.shipUpdate)
+  const [more, ship] = await Promise.all([page.locator('#editor-more').boundingBox(), shipIt(page).boundingBox()])
+  expect(ship.x, 'Ship it sits right of ⋯').toBeGreaterThan(more.x + more.width)
+})
+
+test('7.18a · ⌘⏎ does what Ship it does — from the canvas and with the caret in a panel field — and the wizard it opens is the same', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  await open(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await page.keyboard.press('Escape')
+  await expect(shipIt(page), 'focus returns to Ship it, whatever opened it').toBeFocused()
+  // with the caret in a field: a ⌘ press, so it is not WCAG 2.1.4's to refuse
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await openGroup(page)
+  const field = page.locator('#editor-controls input[type="text"]:visible').first()
+  await field.focus()
+  await expect(field, 'a field nothing focused would prove nothing').toBeFocused()
+  await page.keyboard.press('ControlOrMeta+Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+})
+
+test('7.18a · the ▾ menu: Deploy & activate (⌘⏎) and Deploy only with their captions, Download routes.yaml only while the project has routing; Deploy only opens the wizard with Deploy only chosen', async ({ page }) => {
+  const menuRows = async () => {
+    const caret = page.locator('#editor-ship + button')
+    await caret.focus()
+    await page.keyboard.press('Enter')
+    await expect(shipMenu(page)).toBeVisible()
+    return shipMenu(page).locator('li button').allInnerTexts()
+  }
+  // the control: no routing, no Download routes.yaml
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  await open(page)
+  const plain = await menuRows()
+  expect(plain).toHaveLength(2)
+  await page.keyboard.press('Escape')
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-routes': 'on' })
+  await open(page)
+  const routed = await menuRows()
+  expect(routed[0]).toContain(DW.activate)
+  expect(routed[0]).toContain(DW.activateCaption(3))
+  expect(routed[0]).toContain('⌘⏎')
+  expect(routed[1]).toContain(DW.uploadOnly)
+  expect(routed[1]).toContain(DW.uploadOnlyCaption(3, 2))
+  expect(routed[2]).toContain(DW.downloadRoutes)
+  expect(routed.join(' '), 'Download theme and History are absent (UX-DR3)').not.toMatch(/Download theme|History/)
+  // ↓ to Deploy only, Enter: the wizard, with that card chosen
+  await page.keyboard.press('ArrowDown')
+  await expect(shipMenu(page).locator('li button').nth(1)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await expect(wizard(page).locator('input[value="upload"]')).toBeChecked()
+  await expect(wizard(page)).toContainText(DW.uploadOnlyCard(3, 2))
+})
+
+test('7.18a · a clean Pre-flight: Run checks starts one job, its rows land — compiled, checked over both gates, the pass lines, the warning, routes.yaml — and Ship it is live; Ship it goes through S8c to Live, each stage said as it starts', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full', 'x-inflozo-harness-routes': 'on' })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, UPLOADING, ACTIVATING, ACTIVATING, LIVE_ENDING] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  expect(sent[0]).toMatchObject({ intent: 'preflight', mode: 'activate' })
+  expect(typeof sent[0].session, 'the tab\'s lock session rides along').toBe('string')
+  await expect(wizard(page)).toContainText(DW.compiled)
+  await expect(wizard(page)).toContainText(DW.compiledMeta(TIMED.compiling.ms, TIMED.compiling.bytes))
+  await expect(wizard(page)).toContainText(DW.checked)
+  await expect(wizard(page)).toContainText(DW.checkedMeta(0, 1))
+  for (const line of [DW.passMajor(6), DW.passHelpers]) await expect(wizard(page)).toContainText(line)
+  await expect(wizard(page).locator('[data-finding="warning"]')).toContainText(WARNING.message)
+  await expect(wizard(page)).toContainText(DW.routesValid)
+  await expect(wizard(page)).toContainText(DW.warningsOnly)
+  // R-260: the routing has a filtered collection and the harness links no site to read, so the check says it could not run
+  await expect(wizard(page).locator('[data-unlisted]')).toHaveText(DW.unlistedUnread('harness.example'))
+  expect(await deploySaid(page)).toBe(DW.sayChecked(0, 1))
+  // a finding opens from the keyboard and says its detail
+  const toggle = wizard(page).locator('[data-finding] button[aria-expanded]').first()
+  await toggle.focus()
+  await page.keyboard.press('Enter')
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  await expect(wizard(page)).toContainText(WARNING.detail)
+  // Ship it: S8c, its Cancel greyed with the reason, then Live with the confetti and B16
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'ship')
+  expect(sent[1]).toMatchObject({ intent: 'ship', job: 'job-718', mode: 'activate' })
+  await expect(wizard(page)).toContainText(DW.shippingTitle(1))
+  await expect(page.locator('#deploy-cancel')).toHaveAttribute('aria-disabled', 'true')
+  await expect(page.locator('#deploy-cancel-reason')).toHaveText(DW.cannotCancel)
+  await expect.poll(() => deploySaid(page)).toBe(DW.sayUploading)
+  // once it starts, it finishes: Esc does not close it
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toBeVisible()
+  await expect.poll(() => deploySaid(page), { timeout: 15_000 }).toBe(DW.sayActivating(1))
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'live', { timeout: 15_000 })
+  await expect.poll(() => deploySaid(page)).toBe(DW.liveTitle)
+  await expect(wizard(page)).toContainText(DW.liveTitle)
+  await expect(wizard(page).locator('[data-confetti]')).toBeVisible()
+  await expect(wizard(page).locator('[data-routes-fallback="no_token"]')).toBeVisible()
+  const view = wizard(page).locator('a[target="_blank"]', { hasText: DW.viewSite.replace(/ ↗$/, '') })
+  await expect(view).toHaveAttribute('href', 'https://127.0.0.1:9')
+  await expect(view).toContainText(DW.newTab)
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+})
+
+test('7.18a · UX-DR15: the confetti falls once, and under prefers-reduced-motion it is drawn still', async ({ page }) => {
+  const live = async () => {
+    await plantDeploy(page, { preflight: PREFLIGHT, ship: [LIVE_ENDING] })
+    await open(page)
+    await openWizard(page)
+    await runChecks(page)
+    const ship = page.locator('#deploy-ship')
+    await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+    await ship.focus()
+    await page.keyboard.press('Enter')
+    await expect(wizard(page).locator('[data-confetti]')).toBeVisible({ timeout: 15_000 })
+    return wizard(page).locator('[data-confetti]').evaluate((svg) => [...svg.querySelectorAll('[data-piece]')].reduce((n, p) => n + p.getAnimations().length, 0))
+  }
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  // the control: with motion allowed, every piece is falling
+  expect(await live()).toBeGreaterThan(0)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  expect(await live(), 'reduced motion: still').toBe(0)
+})
+
+test('7.18a · a blocked Pre-flight greys Ship it with the reason in its caption, and a press sends nothing; an unreadable routing\'s reason links to the way out', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const blocked = viewOf('failed', CHECKED, { error: ERROR, deploy: deployOf({ status: 'failed', gscan: verdictOf([ERROR], [WARNING]) }) })
+  const sent = await plantDeploy(page, { preflight: [...PREFLIGHT.slice(0, 3), blocked] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(page.locator('#deploy-ship-reason')).toHaveText(DW.fixErrors(1), { timeout: 15_000 })
+  await expect(ship).toHaveAttribute('aria-disabled', 'true')
+  await expect(ship).toHaveAttribute('aria-describedby', 'deploy-ship-reason')
+  await expect(wizard(page)).toContainText(DW.checkedMeta(1, 1))
+  await expect(wizard(page).locator('[data-finding="error"]')).toContainText(ERROR.message)
+  await expect(wizard(page)).not.toContainText(DW.warningsOnly)
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(300)
+  expect(sent.map((b) => b.intent), 'the greyed Ship it sends nothing').toEqual(['preflight'])
+  expect(await deploySaid(page)).toBe(DW.sayChecked(1, 1))
+  // Back: Destination again
+  await page.locator('#deploy-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  // an unreadable routing: its reason and R-261's way out
+  await page.unrouteAll()
+  await plantDeploy(page, { preflight: [viewOf('failed', {}, { deploy: null, error: DEPLOY.deployError('routes_unreadable', { host: 'harness.example' }) })] })
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship-reason')).toContainText(DW.routesUnreadable)
+  const out = page.locator('#deploy-ship-reason a')
+  await expect(out).toHaveText(DW.routesStartAgain)
+  await expect(out).toHaveAttribute('href', `/app${ROUTES_LIB.resetRoutingPath(HARNESS_PROJECT_ID)}`)
+})
+
+test('7.18a · Cancel during Checking says "Cancelling…", and the cancelled job leaves the wizard back at Destination', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const checking = viewOf('checking', { compiling: TIMED.compiling, checking: { at: AT } })
+  const sent = await plantDeploy(page, { preflight: [PREFLIGHT[0], checking], cancel: [checking, viewOf('cancelled', { compiling: TIMED.compiling, checking: { at: AT } }, { deploy: null })] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const cancel = page.locator('#deploy-cancel')
+  await expect(cancel).toBeVisible()
+  await expect.poll(() => deploySaid(page)).toBe(DW.sayChecking)
+  await cancel.focus()
+  await page.keyboard.press('Enter')
+  expect.soft(await cancel.getAttribute('aria-busy')).toBe('true')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination', { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight', 'cancel'])
+  expect(sent[1].job).toBe('job-718')
+})
+
+test('7.18a · a refused key while shipping: S8d′ says Ghost\'s no in health\'s sentence with Reconnect site; Esc waits while it uploads, then closes', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const refused = DEPLOY.deployError('ghost_key_refused', { host: 'harness.example', siteId: '00000000-0000-4000-8000-000000000718' })
+  await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, UPLOADING, viewOf('failed', { ...CHECKED, uploading: { at: AT } }, { error: refused, deploy: deployOf({ status: 'failed' }) })] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'ship')
+  await page.keyboard.press('Escape')
+  await expect(wizard(page), 'uploading: Esc is refused').toBeVisible()
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.stageFailed(DEPLOY.STAGE_NAMES.uploading), { timeout: 15_000 })
+  await expect(wizard(page)).toContainText(DW.keyRefused)
+  await expect(wizard(page)).toContainText(DW.keyRefusedBody)
+  await expect(wizard(page).getByRole('link', { name: DW.reconnect })).toHaveAttribute('href', '/app/sites/keys?site=00000000-0000-4000-8000-000000000718')
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+})
+
+test('7.18a · Deploy only ends on D2f, "Activating · Not requested"; Re-activate says "Activating…", activates the same job and ends Live', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  const d2f = viewOf('done', { ...CHECKED, uploading: TIMED.uploading }, { deploy: deployOf({ version: '3.0.0', status: 'uploaded' }), previous: 2 })
+  const live = viewOf('done', { ...CHECKED, uploading: TIMED.uploading, activating: TIMED.activating, routes: { kind: 'live' } }, { deploy: deployOf({ version: '3.0.0', status: 'live', activated: true }), previous: 3 })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, d2f], activate: [d2f, viewOf('activating', { ...CHECKED, uploading: TIMED.uploading, activating: { at: AT } }, { deploy: deployOf({ version: '3.0.0', status: 'uploaded' }), previous: 2 }), live] })
+  await open(page)
+  await page.locator('#editor-ship + button').focus()
+  await page.keyboard.press('Enter')
+  await expect(shipMenu(page)).toBeVisible()
+  await expect(shipMenu(page).locator('li button').first()).toBeFocused() // focused a frame after it opens (`lib/menu.ts`)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('input[value="upload"]')).toBeChecked()
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.uploadOnlyTitle, { timeout: 15_000 })
+  expect(sent[1]).toMatchObject({ intent: 'ship', mode: 'upload' })
+  await expect(wizard(page)).toContainText(DW.uploadOnlyBody(3, 2, 'harness.example'))
+  for (const part of DW.activatingNotRequested(3).split(' · ')) await expect(wizard(page)).toContainText(part)
+  await expect(wizard(page)).toContainText(DW.liveChip(2))
+  await expect(wizard(page).locator('[data-confetti]'), 'no confetti on D2f').toHaveCount(0)
+  const again = page.locator('#deploy-reactivate')
+  await again.focus()
+  await page.keyboard.press('Enter')
+  expect.soft(await again.getAttribute('aria-busy')).toBe('true')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'live', { timeout: 15_000 })
+  expect(sent[2]).toMatchObject({ intent: 'activate', job: 'job-718' })
+  await expect(wizard(page).locator('[data-routes-ending="live"]')).toHaveText(DW.routesLive('harness.example'))
+})
+
+test('7.18a · an activation that did not complete ends on D2e, "Didn\'t complete", with v{prev} still live and no confetti', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  const d2e = viewOf('done', { ...CHECKED, uploading: TIMED.uploading, activating: TIMED.activating }, { deploy: deployOf({ version: '3.0.0', status: 'uploaded' }), previous: 2 })
+  await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, d2e] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.notLiveTitle, { timeout: 15_000 })
+  await expect(wizard(page)).toContainText(DW.notLiveBody(3, 2, 'harness.example'))
+  for (const part of DW.activatingDidnt(3).split(' · ')) await expect(wizard(page)).toContainText(part)
+  await expect(wizard(page).locator('[data-confetti]')).toHaveCount(0)
+  expect(await deploySaid(page)).toBe(DW.notLiveTitle)
+  await page.getByRole('button', { name: DW.leave }).focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveCount(0)
+})
+
+test('7.18a · no site to ship to: Destination says so and links to Sites, with no Run checks; a Preview-only site shows B15\'s words, with no Run checks', async ({ page }) => {
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page)).toContainText(DW.noSite)
+  await expect(wizard(page).getByRole('link', { name: DW.goToSites })).toHaveAttribute('href', '/app/sites')
+  await expect(page.locator('#deploy-run')).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'preview' })
+  await open(page)
+  await openWizard(page)
+  const PROBE = await import(new URL('../../apps/web/lib/probe-rule.ts', import.meta.url).href)
+  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.title)
+  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.body)
+  await expect(page.locator('#deploy-run')).toHaveCount(0)
+  // the control: a full site has Run checks
+  await page.keyboard.press('Escape')
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  await open(page)
+  await openWizard(page)
+  await expect(page.locator('#deploy-run')).toBeVisible()
+})
+
+test('7.18a · Run checks with an edit the flush could not send: nothing starts, and the wizard says why', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  // the save is refused, so the edit stays unsent
+  await page.route('**/sync', (route) => route.fulfill({ status: 503, body: '' }))
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).page.length).toBe(own.length + 1)
+  await openWizard(page)
+  await page.locator('#deploy-run').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-refused')).toHaveText(DW.editsUnsent, { timeout: 20_000 })
+  expect(sent, 'no job was asked for').toEqual([])
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+})
+
+test('7.18a · reading along, Ship it opens D8g on Wait in D8g\'s words; Esc closes it with no wizard, and a refused take-over keeps its sentence and opens nothing', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full', 'x-inflozo-harness-lock': 'reader' })
+  await open(page)
+  const d8g = page.locator('dialog:has(#editor-ship-takeover-title)')
+  await shipIt(page).focus()
+  await page.keyboard.press('Enter')
+  await expect(d8g).toBeVisible()
+  await expect(page.locator('#editor-ship-takeover-title')).toHaveText(LOCK.LOCK_COPY.shipTitle)
+  await expect(d8g).toContainText(LOCK.LOCK_COPY.shipBody)
+  await expect(d8g.getByRole('button', { name: LOCK.LOCK_COPY.wait })).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(d8g).toBeHidden()
+  await expect(wizard(page)).toHaveCount(0)
+  // ⌘⏎ is the same press
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+Enter')
+  await expect(d8g).toBeVisible()
+  // the harness's lock route reaches no database: the take-over is refused, its sentence is said, and no wizard opens
+  const was = await said(page)
+  const confirm = d8g.getByRole('button', { name: LOCK.LOCK_COPY.shipConfirm })
+  await confirm.focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(async () => { const s = await said(page); return s !== was && s === LOCK.LOCK_COPY.unreachable }, { timeout: 15_000 }).toBe(true)
+  await expect(wizard(page)).toHaveCount(0)
+})
+
+test('7.18a · D8g\'s take-over that lands opens the wizard — after the reload the take-over makes, in this same tab, holding the lock', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full', 'x-inflozo-harness-lock': 'reader' })
+  await open(page)
+  // the lock route alone, answered as a take-over that WON (the harness has no database); every other intent goes on
+  await page.route((url) => /\/projects\/[^/]+\/lock$/.test(url.pathname), (route) => {
+    const body = route.request().postDataJSON()
+    if (body?.intent !== 'takeover') return route.continue()
+    const row = { holderSessionId: body.session, generation: 2, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ won: true, held: true, row }) })
+  })
+  await shipIt(page).focus()
+  await page.keyboard.press('Enter')
+  const d8g = page.locator('dialog:has(#editor-ship-takeover-title)')
+  await expect(d8g).toBeVisible()
+  await expect(wizard(page), 'the control: no wizard before the take-over').toHaveCount(0)
+  // the page the take-over's hydrate reloads is no longer read along (the harness's header said so; now nobody holds it)
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const reloaded = page.waitForEvent('load')
+  await d8g.getByRole('button', { name: LOCK.LOCK_COPY.shipConfirm }).focus()
+  await page.keyboard.press('Enter')
+  await reloaded
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination', { timeout: 15_000 })
+  // and the ask was spent: a second reload opens nothing
+  await page.keyboard.press('Escape')
+  await page.reload()
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect(wizard(page)).toHaveCount(0)
+})
+
+test('7.18a · "Fix in editor" closes the wizard and opens the finding\'s canvas', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const blocked = viewOf('failed', CHECKED, { error: ERROR, deploy: deployOf({ status: 'failed', gscan: verdictOf([ERROR], []) }) })
+  await plantDeploy(page, { preflight: [blocked] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const fix = wizard(page).locator('[data-finding="error"] a', { hasText: DW.fixInEditor })
+  // the error's file is post.hbs, so its canvas is Post (`placeOf`)
+  await expect(wizard(page).locator('[data-finding="error"]')).toContainText(EDITOR.labelOf('post'))
+  await expect(fix).toHaveAttribute('href', `${HARNESS}/post`)
+  await fix.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveCount(0)
+  await expect(page).toHaveURL(new RegExp(`${HARNESS}/post$`))
+})
+
+/* ── Story 7.18a — R-264: Deploy only cannot keep the old version live once this project's theme is the live one ─────────────
+   (a) greyed — the ▾ row and S8a's card — with the reason in each one's caption slot, while Inflozo's record says so
+   (`x-inflozo-harness-ship: live`), and a press there sends nothing; `shipped` is the control, where Deploy only is free.
+   (b) whenever Ghost's answer says the upload went live, the ending is Live with the confetti — never D2f. */
+
+const BLOCKED_WORDS = DW.uploadOnlyBlocked(2, 'harness.example', 3)
+
+test('7.18a · R-264 (a): while this project\'s theme is live on the site, Deploy only is greyed — the ▾ row and S8a\'s card, each with the reason in its caption slot — and a press there opens and sends nothing', async ({ page }) => {
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  const uploadRow = () => shipMenu(page).locator('li button').nth(1)
+  const openShipMenu = async () => {
+    await page.locator('#editor-ship + button').focus()
+    await page.keyboard.press('Enter')
+    await expect(shipMenu(page)).toBeVisible()
+    // the menu focuses its first row a frame after it opens (`lib/menu.ts`): an arrow pressed before then lands nowhere
+    await expect(shipMenu(page).locator('li button').first()).toBeFocused()
+  }
+  // the control: shipped, but another theme live — Deploy only is free
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  await open(page)
+  await openShipMenu()
+  await expect(uploadRow()).not.toHaveAttribute('aria-disabled', 'true')
+  await expect(uploadRow()).toContainText(DW.uploadOnlyCaption(3, 2))
+  await page.keyboard.press('Escape')
+  // this project's theme is the live one
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'live' })
+  await open(page)
+  await openShipMenu()
+  await page.keyboard.press('ArrowDown')
+  await expect(uploadRow(), 'still reached, so its reason is heard').toBeFocused()
+  await expect(uploadRow()).toHaveAttribute('aria-disabled', 'true')
+  await expect(uploadRow()).toHaveAccessibleDescription(BLOCKED_WORDS)
+  await expect(uploadRow()).not.toContainText(DW.uploadOnlyCaption(3, 2))
+  await page.keyboard.press('Enter')
+  await expect(wizard(page), 'the greyed row opens nothing').toHaveCount(0)
+  await page.keyboard.press('Escape')
+  // S8a's card: greyed, its reason in its line, and choosing it moves nothing
+  await openWizard(page)
+  const upload = wizard(page).locator('input[value="upload"]')
+  await expect(upload).toHaveAttribute('aria-disabled', 'true')
+  await expect(upload).toHaveAccessibleDescription(BLOCKED_WORDS)
+  await expect(wizard(page)).not.toContainText(DW.uploadOnlyCard(3, 2))
+  await wizard(page).locator('input[value="activate"]').focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(wizard(page).locator('input[value="activate"]'), 'Deploy & activate stays chosen').toBeChecked()
+  await expect(upload).not.toBeChecked()
+  expect(sent, 'nothing was sent').toEqual([])
+  // Run checks asks for Deploy & activate
+  await runChecks(page)
+  expect(sent.map((b) => [b.intent, b.mode])).toEqual([['preflight', 'activate']])
+})
+
+test('7.18a · R-264: a Deploy only the route refuses (422) says the reason, and nothing ships', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await page.locator('#editor-ship + button').focus()
+  await page.keyboard.press('Enter')
+  await expect(shipMenu(page).locator('li button').first()).toBeFocused() // focused a frame after it opens (`lib/menu.ts`)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('input[value="upload"]')).toBeChecked()
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  // the server's record says this project's theme went live since this page was read: the ship is refused
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), (route) => {
+    const req = route.request()
+    if (req.method() !== 'POST') return route.fallback()
+    sent.push(req.postDataJSON())
+    return route.fulfill({ status: 422, contentType: 'text/plain', body: 'Deploy only is blocked' })
+  })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-refused')).toHaveText(BLOCKED_WORDS)
+  expect(sent.map((b) => [b.intent, b.mode])).toEqual([['preflight', 'upload'], ['ship', 'upload']])
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+})
+
+test('7.18a · R-264 (b): a Deploy only Ghost made live at once ends Live with the confetti — no D2f, no separate activation asked for', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  // Ghost's answer said `themes[0].active`: the deploy is live and activated, and no `activating` stage ran
+  const wentLive = viewOf('done', { ...CHECKED, uploading: TIMED.uploading, routes: { kind: 'live' } }, { deploy: deployOf({ version: '3.0.0', status: 'live', activated: true }), previous: 3 })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, wentLive] })
+  await open(page)
+  await page.locator('#editor-ship + button').focus()
+  await page.keyboard.press('Enter')
+  await expect(shipMenu(page).locator('li button').first()).toBeFocused() // focused a frame after it opens (`lib/menu.ts`)
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('input[value="upload"]')).toBeChecked()
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'live', { timeout: 15_000 })
+  await expect(wizard(page)).toContainText(DW.liveTitle)
+  await expect(wizard(page).locator('[data-confetti]')).toBeVisible()
+  await expect(wizard(page)).not.toContainText(DW.uploadOnlyTitle)
+  await expect(page.locator('#deploy-reactivate')).toHaveCount(0)
+  expect(sent.map((b) => [b.intent, b.mode])).toEqual([['preflight', 'upload'], ['ship', 'upload']])
+  await expect.poll(() => deploySaid(page)).toBe(DW.liveTitle)
+})
+
+/* ── Story 7.18a — R-260's row, every state: pass, one post, several, read from the site's Content API in the browser and
+   answered here (`page.route`, with Ghost's CORS). `x-inflozo-harness-routes: negated` is the routing whose collection owns a
+   post with no primary tag and does not list it; `on`, with the SAME posts, is each one's control — R-260's index fix lists
+   them, so the row passes. ("unread" is the clean Pre-flight's.) */
+
+const untagged = (n) => ({ id: `r260${String(n).padStart(20, '0')}`, slug: `office-hours-${n}`, title: `Office hours ${n}`, published_at: `2026-10-0${(n % 9) + 1}T09:00:00.000Z`, visibility: 'public', featured: false, feature_image: null, tags: [], authors: [], primary_tag: null, primary_author: null })
+const tagged = { ...untagged(0), id: 'r260tagged00000000000000', slug: 'harbour-notes', title: 'Harbour notes', tags: [{ slug: 'news', name: 'News', visibility: 'public' }], primary_tag: { slug: 'news', name: 'News', visibility: 'public' } }
+
+async function siteWithPosts(page, posts) {
+  const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' }
+  await page.route('**/ghost/api/content/**', (route) => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors })
+    const resource = new URL(route.request().url()).pathname.split('/').filter(Boolean).at(-1)
+    if (resource === 'settings') return route.fulfill({ json: { settings: SAMPLE.site }, headers: cors })
+    const rows = resource === 'posts' ? posts : []
+    return route.fulfill({ json: { [resource]: rows, meta: { pagination: { page: 1, limit: 100, pages: 1, total: rows.length } } }, headers: cors })
+  })
+}
+
+/** Pre-flight on the given routing, with the site answering these posts: R-260's row once it lands */
+async function r260Row(page, routes, posts) {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full', 'x-inflozo-harness-site': 'members-off', 'x-inflozo-harness-routes': routes })
+  await siteWithPosts(page, posts)
+  await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+}
+
+test('7.18a · R-260: one post its collection owns and does not list is named (unlistedOne); the same posts under R-260\'s index pass — the control', async ({ page }) => {
+  const posts = [untagged(1), tagged]
+  await r260Row(page, 'negated', posts)
+  await expect(wizard(page).locator('[data-unlisted]')).toHaveText(DW.unlistedOne('Office hours 1'))
+  await expect(page.locator('#deploy-ship'), 'a warning never blocks').not.toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('Escape')
+  await page.unrouteAll()
+  await r260Row(page, 'on', posts)
+  await expect(wizard(page)).toContainText(DW.everyPostListed)
+  await expect(wizard(page).locator('[data-unlisted]')).toHaveCount(0)
+})
+
+test('7.18a · R-260: several unlisted posts are named — five, and how many more (unlistedMany); the same posts under R-260\'s index pass — the control', async ({ page }) => {
+  const posts = [1, 2, 3, 4, 5, 6, 7].map(untagged)
+  await r260Row(page, 'negated', posts)
+  await expect(wizard(page).locator('[data-unlisted]')).toHaveText(DW.unlistedMany(posts.map((p) => p.title)))
+  await expect(wizard(page).locator('[data-unlisted]')).toContainText(', and 2 more')
+  await page.keyboard.press('Escape')
+  await page.unrouteAll()
+  await r260Row(page, 'on', posts)
+  await expect(wizard(page)).toContainText(DW.everyPostListed)
+})
+
+test('7.18a · R-264 (a): a wizard asked to open on Deploy only while it is greyed (D8g\'s kept ask) opens on Deploy & activate; where Deploy only is free it opens on it — the control', async ({ page }) => {
+  const ask = (mode) => page.addInitScript(([project, m]) => sessionStorage.setItem('inflozo:ship-after-takeover', JSON.stringify({ project, mode: m })), [HARNESS_PROJECT_ID, mode])
+  await ask('upload')
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+  await page.goto(HARNESS)
+  await expect(wizard(page).locator('input[value="upload"]'), 'the control: free, so the ask is kept').toBeChecked({ timeout: 15_000 })
+  await page.keyboard.press('Escape')
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'live' })
+  await page.goto(HARNESS)
+  await expect(wizard(page).locator('input[value="activate"]')).toBeChecked({ timeout: 15_000 })
+  await expect(wizard(page).locator('input[value="upload"]')).toHaveAttribute('aria-disabled', 'true')
 })

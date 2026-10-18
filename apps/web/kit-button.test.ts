@@ -71,3 +71,20 @@ test('the project menu imports the dialog vocabulary and keeps no copy of it', (
     'kit/dialog.ts: closeOnBackdrop must refuse a click on a child before it measures geometry.',
   )
 })
+
+// STORY 7.18a — P0-0 on a menu row and on one radio card (R-264's Deploy only; R-263's Undo and Redo in ⋯): greyed by
+// `aria-disabled`, never `disabled` — so the arrows still reach it and its reason is heard — with the reason in its caption
+// slot, and a press that does nothing.
+test('a greyed menu row and a greyed radio card say why, stay reachable, and act on nothing', () => {
+  const select = readFileSync('components/kit/select.tsx', 'utf8')
+  assert.match(select, /aria-disabled=\{off \|\| undefined\}/)
+  assert.match(select, /aria-describedby=\{item\.greyed === undefined \? undefined : reasonId\}/)
+  assert.match(select, /onClick=\{item\.onSelect && !off \? act : undefined\}/, 'a greyed or unavailable row does nothing')
+  assert.match(select, /<span id=\{reasonId\}[^>]*>\{item\.greyed\}<\/span>/, 'the reason, in the row\'s caption slot')
+  const card = readFileSync('components/kit/radio-card.tsx', 'utf8')
+  const one = card.slice(card.indexOf('export function RadioCard'))
+  assert.match(one, /'aria-disabled': true, 'aria-describedby': `\$\{id\}-reason`/)
+  assert.match(one, /onChange=\{\(\) => \(greyed \? undefined : onChange\(value\)\)\}/, 'choosing a greyed card changes nothing')
+  assert.match(one, /<span id=\{`\$\{id\}-reason`\}[^>]*>\{greyed\.reason\}<\/span>/, 'the reason, in the consequence\'s line')
+  assert.doesNotMatch(one, /\sdisabled[=\s}]/)
+})

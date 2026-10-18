@@ -312,3 +312,27 @@ test('brandWrite: always stale gives up after `tries` writes; an error or a vani
   const worn = { ...row, style_pack: { preset: 'paper', packs: brandPacks(row.style_pack, PINK)?.packs }, revision: 2 }
   assert.equal(await brandWrite(row, PINK, 3, async () => false, async () => worn), 'written')
 })
+
+test('Story 7.18a — enginePackOf: the pack in force as the compile takes it — a preset is the library\'s own pack and pairing, an own record of it wins, a custom pack is its record, anything else Paper', async () => {
+  const { enginePackOf } = await import('./lib/style-pack.ts')
+  const { presetOf } = await import('@inflozo/library/packs')
+  const ink = presetOf('ink') ?? presetOf('paper')
+  const id = ink === presetOf('paper') ? 'paper' : 'ink'
+  const plain = enginePackOf({ preset: id })
+  assert.equal(plain.id, id)
+  assert.equal(plain.pairing, (presetOf(id) as { pairing: string }).pairing)
+  assert.deepEqual(plain.pack, (presetOf(id) as { pack: unknown }).pack, 'a preset compiles in the library\'s own pack')
+  // an own record of the preset is the pack in force (the editor's roster rule)
+  const own = { ...plain.pack, light: { ...plain.pack.light, accent: '#123456' } } as typeof plain.pack
+  const { fonts: _f, ...authored } = own
+  const record = { name: 'Edited', pairing: plain.pairing, ...authored }
+  const edited = enginePackOf({ preset: id, packs: { [id]: record } })
+  assert.equal(edited.pack.light.accent, '#123456')
+  assert.deepEqual(edited.pack.fonts, plain.pack.fonts, 'with its pairing\'s fonts')
+  // a custom pack in force
+  const custom = enginePackOf({ preset: 'custom-1', packs: { 'custom-1': record } })
+  assert.equal(custom.id, 'custom-1')
+  assert.equal(custom.pack.light.accent, '#123456')
+  // anything this build does not know is Paper — the control
+  for (const junk of [null, {}, { preset: 'nope' }, { preset: 'custom-9' }]) assert.equal(enginePackOf(junk).id, 'paper', JSON.stringify(junk))
+})

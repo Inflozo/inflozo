@@ -34,6 +34,11 @@ const config: NextConfig = {
     '@inflozo/ghost-shim',
     '@inflozo/theme-compiler',
   ],
+  /* STORY 7.18a — THE DEPLOY FUNCTION'S THREE CHECKERS' ENGINES, NEVER BUNDLED: jsdom (the compile's document) and both pinned
+     gscans (AD-34: 4.49.7 for Ghost 5, 6.4.2 for Ghost 6) are loaded by Node from `node_modules` at run time, as they are in
+     every test — gscan reads its own rule files and specs off disk, and a bundled copy would not find them. Their trees
+     reach the deploy route's trace, which `tools/check-traces.mjs` holds after CI's build. */
+  serverExternalPackages: ['jsdom', 'gscan4', 'gscan6'],
 }
 
 export default config

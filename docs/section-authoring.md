@@ -1087,12 +1087,12 @@ These were executed in the stress harness and keep their names and grammar uncha
 
 | Directive | Grammar | Canvas | Theme |
 |---|---|---|---|
-| `data-prop` | a content prop path | the customer's literal text into the DOM; an `icon` prop's inline `<svg>` *(4.5)* | a marker, spliced into the emitted string after serialization; the same `<svg>` for an `icon` prop |
+| `data-prop` | a content prop path | the customer's literal text into the DOM; an `icon` prop's inline `<svg>` *(4.5)*; an EMPTY `text` or `richtext` prop removes its element whatever its `data-empty` *(7.18a, DW-349 — a catalog-linked prop keeps its catalog string)* | a marker, spliced into the emitted string after serialization; the same `<svg>` for an `icon` prop; an empty `text` or `richtext` prop's element left out, as on the canvas *(7.18a)* |
 | `data-initials` *(4.6)* | a content prop path to a **`text`** prop the user types | the first letter of the first and of the last word — "Jane Doe" → JD, "Madonna" → M — through `data-prop`'s user-text path; an empty name keeps the authored text, or hides with `data-empty="hide"` | the same initials, baked at compile as a marker; refused inside a `data-repeat` |
 | `data-prop-attr` | `attr:path` list, `;`-separated | the value onto the attribute; on `href` a link record through `linkAttributes`, on an `image` prop the asset id through `assets` *(4.5)* | the same, through the marker path |
 | `data-bind` | `path` or `path\|helper:arg` — a helper always takes its argument | the Ghost value, resolved | `{{path}}` / `{{helper path param="arg"}}` |
 | `data-bind-attr` | `attr:spec` list, `;`-separated | the resolved value onto the attribute | the mustache, carried through serialization as an opaque token |
-| `data-empty` | `hide` · `fallback` — `fallback` on a text binding only | `hide` removes the element; `fallback` keeps the authored text or attribute | `hide` wraps the element in `{{#if field}}`; `fallback` emits `{{#if field}}…{{else}}<authored>{{/if}}`; a `number` field adds `includeZero=true` |
+| `data-empty` | `hide` · `fallback` — `fallback` on a text binding only | `hide` removes the element; `fallback` keeps the authored text or attribute — except an emptied `text`/`richtext` `data-prop`, which is removed either way *(7.18a, DW-349)* | `hide` wraps the element in `{{#if field}}`; `fallback` emits `{{#if field}}…{{else}}<authored>{{/if}}`; a `number` field adds `includeZero=true` |
 | `data-repeat` | a Ghost context path, or a `dataBindings` key | expands against real rows | `{{#foreach …}}` / `{{#get …}}` |
 | `data-repeat-limit` | 1–100 | slices the rows | `limit="n"` on the block |
 | `data-items-limit` *(5.11)* | 1–100 | draws at most that many of the authored list's items | the same number of static blocks — one shared function, so the two cannot disagree |

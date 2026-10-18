@@ -328,6 +328,11 @@ export const syncPath = (projectId: string) => `/projects/${projectId}/${SYNC}`
 export const LOCK = 'lock'
 export const lockPath = (projectId: string) => `/projects/${projectId}/${LOCK}`
 
+/** STORY 7.18a — the deploy wizard's one door (`projects/[id]/deploy/route.ts`): POST a Pre-flight, a Ship it, a re-activate
+ *  or a Cancel; GET `?job=` reads the job until it ends. A route handler for the lock route's reasons. */
+export const DEPLOY = 'deploy'
+export const deployPath = (projectId: string) => `/projects/${projectId}/${DEPLOY}`
+
 /** The canvas a segment names, or null for a reserved, unknown or CONDITIONAL one — a canvas the switcher offers to
  *  nobody must not be reachable by typing its address either, and refusing it here is the only refusal that is
  *  synchronous (see `CONDITIONAL`). `'home'` is a key; the route 308s it.

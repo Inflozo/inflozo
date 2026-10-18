@@ -274,6 +274,34 @@ test('AD-36 (4) — a separator-valid but CSS-invalid colour falls back rather t
   }
 })
 
+// ── DW-349 (Story 7.6's Question 2, owner 2026-10-08): an emptied typed text leaves its element out on both emitters, so
+//    neither the design's English nor anything riding on an empty value — a hostile mark over no text — reaches a page ──
+test('DW-349 · an emptied text, in every empty shape, is absent on both emitters; a typed one ships inert and present; a catalog one is {{t}}', () => {
+  const schema = {
+    heading: { type: 'text', label: 'Heading' },
+    body: { type: 'richtext', label: 'Body', marks: ['a', 'strong'] },
+    cta: { type: 'text', label: 'Button text', catalog: 'member.signup_cta' },
+  } as unknown as RenderInput['schema']
+  const src = '<section class="s"><h2 class="s__h" data-prop="heading">Sample heading</h2><p class="s__p" data-prop="body">Sample body</p><button class="s__cta" type="submit" data-prop="cta">Subscribe</button></section>'
+  const render = (content: RenderInput['content']) => [
+    renderCanvas(doc(), src, { schema, content, strings: { 'member.signup_cta': 'Abonnieren' } }),
+    renderTheme(doc(), src, { schema, content }).template,
+  ]
+  const hostile = { start: 0, end: 0, mark: 'a', href: 'javascript:alert(1)' }
+  for (const emptied of [null, '', { text: '' }, { text: '', marks: [hostile] }]) {
+    for (const out of render({ heading: emptied, body: emptied })) {
+      assert.doesNotMatch(out, /s__h|s__p|Sample|<a|javascript:/, `an emptied ${JSON.stringify(emptied)} reached the page: ${out}`)
+    }
+  }
+  // the legitimate case: typed, the same props are present on both — a brace inert in the theme, literal on the canvas
+  const [canvas, theme] = render({ heading: 'Notes on {{title}}', body: { text: 'read this', marks: [{ start: 0, end: 4, mark: 'strong' }] } })
+  assert.ok(canvas!.includes('<h2 class="s__h">Notes on {{title}}</h2>') && canvas!.includes('<p class="s__p"><strong>read</strong> this</p>'), canvas)
+  assert.ok(theme!.includes('<h2 class="s__h">Notes on &#123;&#123;title&#125;&#125;</h2>') && theme!.includes('<p class="s__p"><strong>read</strong> this</p>'), theme)
+  // the catalog control: an untouched catalog label still returns as {{t}} in the theme and as the handed string on the canvas
+  const [c, t] = render({})
+  assert.ok(c!.includes('>Abonnieren</button>') && t!.includes('>{{t "member.signup_cta"}}</button>'), `${c}\n${t}`)
+})
+
 // ── what already held, re-asserted so a future change cannot quietly undo it ──
 test('AD-5 still holds — user braces ship as entities, never as a mustache', () => {
   const out = compile('<p data-prop="title">x</p>', {

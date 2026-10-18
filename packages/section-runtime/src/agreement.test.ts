@@ -962,6 +962,52 @@ test('FR-H8 — a cleared field falls back on the canvas the way {{#if}} does on
   assert.ok(theme.includes('{{else}}Post title{{/if}}'), theme)
 })
 
+// ── DW-349 (Story 7.6's Question 2, owner 2026-10-08, "delete means delete"): an emptied TYPED text is hidden on the
+//    canvas and in the theme alike — FR-H8's `fallback` used to keep the design's English, which the compile's V1 refuses ──
+const emptiedSchema: Record<string, PropDef> = {
+  heading: { type: 'text', label: 'Heading' },
+  body: { type: 'richtext', label: 'Body' },
+  submitLabel: { type: 'text', label: 'Button text', catalog: 'member.signup_cta' },
+}
+// the heading in FR-H8's default mode, the body declaring `fallback`: the rule holds whatever the mode
+const emptiedSrc = '<section class="s"><h2 class="s__h" data-prop="heading">Sample heading</h2><p class="s__b" data-prop="body" data-empty="fallback">Sample body</p><button class="s__cta" type="submit" data-prop="submitLabel">Subscribe</button></section>'
+
+test('DW-349 — an emptied text or rich text prop is absent on both emitters; typed, it is present and equal; a catalog one is its string', () => {
+  for (const emptied of [undefined, '', { text: '' }]) {
+    const input: RenderInput = { schema: emptiedSchema, content: { heading: emptied, body: emptied }, target: 'index.hbs' }
+    const { canvas, theme } = agree(emptiedSrc, input)
+    for (const [side, out] of [['canvas', canvas], ['theme', theme]] as const) {
+      assert.ok(!/s__h|s__b|Sample/.test(out), `${side}: ${JSON.stringify(emptied)} left its element or the design's English: ${out}`)
+    }
+    // the catalog control: an untouched catalog label is still {{t}} in the theme and the catalog's English on the canvas
+    assert.ok(theme.includes('<button class="s__cta" type="submit">{{t "member.signup_cta"}}</button>'), theme)
+    assert.ok(canvas.includes('<button class="s__cta" type="submit">Subscribe</button>'), canvas)
+    // the editor's canvas: the stamp goes with its element, so a re-render from the doc is the only way back
+    assert.doesNotMatch(renderCanvas(doc(), emptiedSrc, { ...input, editing: true }), /data-inflozo-prop="(heading|body)"/)
+  }
+  // the CONTROL: the same props typed are present on both emitters, in the same element and the same words
+  const typed = agree(emptiedSrc, { schema: emptiedSchema, content: { heading: 'Our heading', body: { text: 'Our body' } }, target: 'index.hbs' })
+  for (const out of [typed.canvas, typed.theme]) {
+    assert.ok(out.includes('<h2 class="s__h">Our heading</h2>') && out.includes('<p class="s__b">Our body</p>'), out)
+  }
+  // another kind keeps FR-H8's default: an unset date's authored text stays on both, and `hide` still removes it
+  const date: Record<string, PropDef> = { day: { type: 'date', label: 'Day' } }
+  const kept = agree('<time class="d" data-prop="day">Jul 18, 2025</time>', { schema: date, content: {} })
+  for (const out of [kept.canvas, kept.theme]) assert.ok(out.includes('>Jul 18, 2025</time>'), out)
+  const hidden = bothWays('<time class="d" data-prop="day" data-empty="hide">Jul 18, 2025</time>', { schema: date, content: {} })
+  assert.deepEqual([hidden.canvas, hidden.theme.trim()], ['', ''])
+})
+
+test('DW-349 — a promoted text keeps its own theme path: guarded on Ghost\'s value, emptied or typed; the canvas draws the start', () => {
+  const promoted: RenderInput['promoted'] = { props: { heading: 'heading_words', submitLabel: 'button_words' } }
+  const theme = renderTheme(doc(), emptiedSrc, { schema: emptiedSchema, content: { heading: '' }, promoted }).template
+  assert.match(theme, loosely('{{#if @custom.heading_words}}<h2 class="s__h">{{@custom.heading_words}}</h2>{{/if}}'))
+  assert.ok(theme.includes('{{#if @custom.button_words}}{{@custom.button_words}}{{else}}{{t "member.signup_cta"}}{{/if}}'), theme)
+  // the canvas draws the start (Story 7.10's Question 1): emptied, the theme's guard hides it, and so does the canvas
+  assert.doesNotMatch(renderCanvas(doc(), emptiedSrc, { schema: emptiedSchema, content: { heading: '' }, promoted }), /s__h/)
+  assert.ok(renderCanvas(doc(), emptiedSrc, { schema: emptiedSchema, content: { heading: 'Hi' }, promoted }).includes('<h2 class="s__h">Hi</h2>'))
+})
+
 // ── THE DIFFERENCE (1), nested: the canvas expands an inner repeat against the OUTER ROW, which is
 //    what {{#foreach tags}} inside {{#foreach posts}} reads on the site. ──
 test('a nested repeat on the canvas reads the outer row, and @site reads the root, like Handlebars', () => {

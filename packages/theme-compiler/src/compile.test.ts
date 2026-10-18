@@ -41,6 +41,7 @@ import {
   checkChromeText, checkGhostMarkup, checkImportant, checkPageData, checkPaywallReached, checkSizes, checkTripleStashes, compileTheme, POST_ARTICLE, THEME_MARKER, THEME_MARKS, tidyLicence,
 } from './compile.ts'
 import type { CompiledTheme, CompileInput, CompileSetting } from './compile.ts'
+import { REFUSAL, refusalOf, type RefusalKind } from './refusal.ts'
 
 const doc = () => new JSDOM('<body></body>').window.document
 
@@ -2077,4 +2078,51 @@ test('(7.17, AD-36) README\'s routes sink: a hostile file stays inside the inden
   const real = blockOf(build({}, { routes: ROUTES }).files['README.md'] as string)
   assert.equal(`${real.map((l) => l.slice(4)).join('\n')}\n`, ROUTES)
   assert.match(ROUTES, /^ {2}\/notes\/:$/m)
+})
+
+// ─── Story 7.18a: the compile's customer-caused refusals, one list (DW-353, DW-358) ───────────────────────────────────
+
+test('(7.18a) every REFUSAL class is reached for real: tagged with its class and parts, its sentence unchanged; an unclassified throw carries no tag', () => {
+  const tagOf = (run: () => unknown): { kind: string; parts: Record<string, string>; message: string } => {
+    try {
+      run()
+    } catch (e) {
+      const tag = refusalOf(e)
+      return { kind: tag?.kind ?? 'none', parts: { ...(tag?.parts ?? {}) }, message: (e as Error).message }
+    }
+    throw new Error('the compile did not refuse')
+  }
+  const reached = new Set<string>()
+  const expect = (run: () => unknown, kind: RefusalKind, parts: Record<string, string>, message?: string | RegExp) => {
+    const got = tagOf(run)
+    assert.equal(got.kind, kind, got.message)
+    assert.deepEqual(got.parts, parts)
+    if (typeof message === 'string') assert.equal(got.message, message)
+    else if (message !== undefined) assert.match(got.message, message)
+    reached.add(kind)
+  }
+  expect(() => build({}, { language: '../package' }), 'language', { code: '../package' }, /^language "\.\.\/package": /)
+  expect(() => pkgOf({ cardDesigns: { nope: {} } }), 'cardDesigns', {}, /^card designs: /)
+  const many = Array.from({ length: USER_SETTING_CAP + 1 }, (_, i) => row(`setting_${i + 1}`, 'boolean', control('primary-action')))
+  expect(() => promote(many), 'settingCap', {}, SETTING_WORDS.cap)
+  const head = [row('headline_size', 'select', control('headline-size'))]
+  expect(() => promote(head, docOf(at('a4/2', 'Other', { instanceId: 'someone-else' }))), 'settingDeleted', { setting: 'Headline size' }, SETTING_WORDS.deleted('Headline size'))
+  expect(() => promote(head, promoHome({ hidden: true })), 'settingHidden', { setting: 'Headline size' }, SETTING_WORDS.hidden('Headline size'))
+  // a section now on a design where the control is another kind names the section; an unreadable binding names none
+  expect(() => promote([row('headline_size', 'boolean', control('headline-size'))]), 'settingChanged', { setting: 'Headline size', section: 'Latest post' }, SETTING_WORDS.changed('Headline size'))
+  expect(() => promote([row('headline_size', 'select', { kind: 'control', instanceId: 'promo-0001-zq' })]), 'settingChanged', { setting: 'Headline size' }, SETTING_WORDS.changed('Headline size'))
+  // nothing prints the setting: a hand-picked feed with nothing picked, and two settings stored for one prop
+  const picked = docOf(at('a17/1', 'Main feed', { isMainFeed: true }), at('a17/1', 'Picked', { instanceId: 'picked-0001-zq', data: { posts: { source: 'picked', picks: [] } } }))
+  expect(() => promote([row('per_row', 'select', { kind: 'control', instanceId: 'picked-0001-zq', controlKey: 'per-row' })], picked), 'settingUnread', { setting: 'Per row', why: 'unpicked' }, /^the theme's settings: Per row is declared and nothing reads it/)
+  expect(() => promote([row('sub', 'text', propOf('sub')), row('sub_again', 'text', propOf('sub'))]), 'settingUnread', { setting: 'Sub', why: 'twice' }, /^the theme's settings: Sub is declared and nothing reads it/)
+  const pair = docOf(at('a22/1', 'First', { instanceId: 's10161', content: NEWS, ...DARK }), at('a22/1', 'Second', { instanceId: 's488360', content: NEWS, ...DARK }))
+  expect(() => build({ 'home.hbs': pair }, { library: groundedLib, pageTwo: projectTwo() }), 'darkHook', { file: 'home.hbs' }, /^Two sections share a hidden name/)
+  expect(() => build({}, { language: 'es', strings: { ...englishStrings(), 'nav.more': 'Más {' } }), 'translation', { key: 'nav.more', sentence: OVERRIDE_WORDS.brace('{', 'Más {', []) }, /^locales\/es\.json: "nav\.more" — /)
+  expect(() => compile({ 'home.hbs': docOf(at('a99/1', 'Mystery')) }), 'staleDesign', { file: 'home.hbs', layer: 'Mystery' }, /^home\.hbs · Mystery: the library holds no design/)
+  expect(() => compile({ 'post.hbs': docOf(at('a4/13', 'Hero on a post')) }), 'staleDesign', { file: 'post.hbs', layer: 'Hero on a post' }, /compiles to .*, never to post\.hbs\.$/)
+  // every class of the list was reached here — the list cannot grow a class this row does not throw
+  assert.deepEqual([...reached].sort(), Object.keys(REFUSAL).sort())
+  // the control: Inflozo's own refusal (a design's library defect, a file this compile never writes) carries no tag
+  assert.equal(tagOf(() => compile({ 'index.hbs': docOf() })).kind, 'none')
+  assert.equal(tagOf(() => build({}, { postsPerPage: 0 })).kind, 'none')
 })

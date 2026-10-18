@@ -34,7 +34,7 @@ import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from
 import {
   cardName, EXACT_OPS, EXACT_WORDS, FIELDS, filterWords, freshCondition, localToday, PAGE_SIZE, ROUTES_WORDS as W, UNIT_WORDS, VISIBILITY_WORDS, type Template,
 } from '@/lib/routes'
-import { createTemplate, deleteTemplate, restoreTemplate, saveRoutes, type RoutesResult } from './actions'
+import { createTemplate, deleteTemplate, resetRoutes, restoreTemplate, saveRoutes, type RoutesResult } from './actions'
 
 /* S9 · THE ROUTES MANAGER (`S9 Routes.dc.html`), as `EXPERIENCE.md:177-179, :353, :747` re-specify it. Every token is the
    Kit's (never the frame's inline hex), every sentence `ROUTES_WORDS` (R-170).
@@ -45,7 +45,10 @@ import { createTemplate, deleteTemplate, restoreTemplate, saveRoutes, type Route
    banner, the file's header with Copy and Download, and the numbered lines. ONE behaviour differs from the drawing: its
    YAML lists `/` first and this lists it last, with the inverse filter (the runtime's facts, standing rule 1).
    S9b — any `validateRoutes` problem: the red banner names each line and its reason, the pane's pill counts them and each
-   line is marked. Its "Deploys are blocked…" line waits for Story 7.18a's Ship button (routine call 11).
+   line is marked, and under the file S9b's "Deploys are blocked…" line, since Story 7.18a's Ship button explains why.
+   STORY 7.18a — R-261: a routing that cannot be read (`config` null) offers "Start again from Ghost's default routing"
+   under line 1, a confirm extrapolated from the template delete's (S12c's `sheet`, opening on Cancel), also opened on
+   arrival by `?reset=routing`.
    S9c / S9e — the sheets (`dialog.ts`'s `routeSheet`, S9c's 480), sharing one path block, one condition block, one
    template-and-page-size block and one naming block (R-247: the Path box with its two grey lines under it).
    S9d — Ghost's default routing and no template: the signpost, its two lines, "+ New collection", and R-247's quiet links.
@@ -73,6 +76,8 @@ type Props = {
   fromMenu?: boolean
   /** Story 7.17 — B16 for the linked site, drawn at the top under the bar while the site still needs its routing */
   notice?: ReactNode
+  /** Story 7.18a — `?reset=routing` on an unreadable routing: the "Start again" sheet is up on arrival (R-261) */
+  resetAsked?: boolean
 }
 
 /** `entry` — Story 7.16b: the New template sheet the Template menu opened, whose Create opens the new canvas */
@@ -150,6 +155,7 @@ export function RoutesManager(props: Props) {
   const [failed, setFailed] = useState<string | null>(null)
   const [open, setOpen] = useState<Sheet | null>(props.fromMenu === true ? { kind: 'template', entry: true } : null)
   const [confirm, setConfirm] = useState<Template | null>(null)
+  const [resetting, setResetting] = useState(props.resetAsked === true)
   const suggestions = useSuggestions(props.content)
   const known = templates.map((t) => t.file)
 
@@ -217,6 +223,12 @@ export function RoutesManager(props: Props) {
     }
   }
 
+  /** R-261's sheet closed — and `?reset=routing` spent, as `?new=template` is, so a reload never opens it again */
+  const closeReset = () => {
+    setResetting(false)
+    if (new URL(window.location.href).searchParams.has('reset')) window.history.replaceState(null, '', window.location.pathname)
+  }
+
   const empty = config !== null && isDefaultRouting(config) && templates.length === 0 && problems.length === 0
   const chip = siteName ?? projectName
 
@@ -280,7 +292,7 @@ export function RoutesManager(props: Props) {
               </>
             )}
           </div>
-          <YamlPane yaml={props.yaml} problems={problems} unreadable={config === null} />
+          <YamlPane yaml={props.yaml} problems={problems} onReset={config === null ? () => setResetting(true) : null} />
         </div>
       )}
 
@@ -314,6 +326,19 @@ export function RoutesManager(props: Props) {
           designed={designed.includes(confirm.file)}
           onCancel={() => setConfirm(null)}
           onDelete={() => dropTemplate(confirm)}
+        />
+      ) : null}
+      {resetting && config === null ? (
+        <ResetRouting
+          onClose={closeReset}
+          onReset={async () => {
+            const result = told(projectId, await resetRoutes(null, formOf({ project: projectId })))
+            if ('error' in result) return setFailed(result.error)
+            setFailed(null)
+            // the saved routing now reads, so the page re-renders without this sheet — which may unmount it before its
+            // `close` fires; a refusal instead closes it the usual way, and focus goes back to the button that opened it
+            closeReset()
+          }}
         />
       ) : null}
       {undo !== null ? (
@@ -643,7 +668,9 @@ function YamlText({ text, wrong }: { text: string; wrong: boolean }) {
   )
 }
 
-function YamlPane({ yaml, problems, unreadable }: { yaml: string | null; problems: readonly RouteProblem[]; unreadable: boolean }) {
+/** `onReset` — Story 7.18a: the stored routing cannot be read, and this opens R-261's "Start again" sheet (null otherwise) */
+function YamlPane({ yaml, problems, onReset }: { yaml: string | null; problems: readonly RouteProblem[]; onReset: (() => void) | null }) {
+  const unreadable = onReset !== null
   const [copied, setCopied] = useState(false)
   const lines = yaml === null ? [] : yaml.replace(/\n$/, '').split('\n')
   const wrong = new Set(problems.map((p) => p.line))
@@ -675,6 +702,8 @@ function YamlPane({ yaml, problems, unreadable }: { yaml: string | null; problem
           </span>
         </div>
       )}
+      {/* R-261's way out, under line 1 — outside the alert, so the alert says only what is wrong */}
+      {onReset === null ? null : <Button variant="secondary" data-reset className="self-start" onClick={onReset}>{W.reset}</Button>}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded border border-line bg-surface">
         <div className="flex items-center gap-2 border-b border-line p-[10px_16px]">
           <span className="font-mono text-control-label font-medium text-ink">{W.file}</span>
@@ -736,6 +765,8 @@ function YamlPane({ yaml, problems, unreadable }: { yaml: string | null; problem
           )}
         </pre>
       </div>
+      {/* S9b's line under the file (`S9 Routes.dc.html:168`): 12px in ink-soft, the pane's own 12px gap above it */}
+      {valid ? null : <p data-blocked className="text-control-label text-ink-soft">{W.blocked}</p>}
     </section>
   )
 }
@@ -1266,6 +1297,36 @@ function DeleteTemplate({ template, paths, designed, onCancel, onDelete }: { tem
         <div className="mt-6 flex justify-end gap-[10px]">
           <Button variant="secondary" data-cancel onClick={() => dialog.current?.close()}>{W.cancel}</Button>
           <Submit variant="danger" busy={W.deleting}>{W.delete}</Submit>
+        </div>
+      </form>
+    </dialog>
+  )
+}
+
+/* ───────────────────────────── Story 7.18a — R-261's reset ───────────────────────────── */
+
+/** "START AGAIN FROM GHOST'S DEFAULT ROUTING?" — undrawn, extrapolated from the template delete's confirm above (S12c's
+ *  `sheet`, `title`, Cancel and the Kit's `Submit`): its primary replaces what is stored, so it opens on Cancel (UX-DR14) and
+ *  says "Starting again…" while `resetRoutes` runs (R-98). The templates are kept; the page re-renders the saved state. */
+function ResetRouting({ onClose, onReset }: { onClose: () => void; onReset: () => Promise<void> }) {
+  const dialog = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    if (dialog.current && !dialog.current.open) openOnCancel(dialog.current)
+  }, [])
+  return (
+    <dialog ref={dialog} aria-labelledby="routes-reset-title" aria-describedby="routes-reset-body" className={sheet} onClose={onClose} onClick={closeOnBackdrop}>
+      <form
+        className="flex flex-col"
+        action={async () => {
+          await onReset()
+          dialog.current?.close()
+        }}
+      >
+        <h2 id="routes-reset-title" className={confirmTitle}>{W.resetTitle}</h2>
+        <p id="routes-reset-body" className="mt-2 text-ui-dense leading-[1.5] text-ink-soft">{W.resetBody}</p>
+        <div className="mt-6 flex justify-end gap-[10px]">
+          <Button variant="secondary" data-cancel onClick={() => dialog.current?.close()}>{W.cancel}</Button>
+          <Submit variant="danger" busy={W.startingAgain}>{W.startAgain}</Submit>
         </div>
       </form>
     </dialog>

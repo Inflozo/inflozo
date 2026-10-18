@@ -5,8 +5,8 @@ import nql5 from 'nql5'
 import { load } from 'js-yaml'
 import {
   contextOf, CONTEXT_RE, dayAfter, DEFAULT_TAXONOMIES, emittedProblem, EMPTY_ROUTES, isCalendarDate, filterNql, filterProblem, ghostLabel, holderOf, holdsFor, homeList,
-  indexFilter, indexNode, listsOf, nodeOf, parseRoutesConfig, pathsUsing, PATH_RE, readNql, RESERVED_SEGMENTS, ROUTE_WORDS, routedOf, routeList, routesYaml, templateName,
-  validateRoutes, withoutTemplate, writeNql, yamlLines, type Cond, type Filter, type Node, type RoutesConfig,
+  indexFilter, indexNode, listsOf, NO_PRIMARY, nodeOf, parseRoutesConfig, pathsUsing, PATH_RE, readNql, RESERVED_SEGMENTS, ROUTE_WORDS, routedOf, routeList, routesYaml, templateName,
+  unlistedPosts, validateRoutes, withoutTemplate, writeNql, yamlLines, type Cond, type Filter, type Node, type RoutesConfig,
 } from './routes.ts'
 import { MEMBERSHIP_FILES } from '@inflozo/library'
 import { RELATIVE, ROUTES_FIXTURES } from './routes-fixtures.ts'
@@ -150,6 +150,22 @@ test('Reserved segment: each address Ghost keeps is refused with its reason; a t
   // `constructor` is a key of every object's prototype, never one of Ghost's addresses (review, 2026-10-17)
   for (const free of ['pages', 'indexes', 'homes', 'tags', 'authors', 'constructor']) assert.deepEqual(validateRoutes(config({ routes: [{ path: `/${free}/`, template: 'custom-landing.hbs' }] }), KNOWN), [], free)
   assert.deepEqual(validateRoutes(config({ taxonomies: { tag: 'tag', author: 'author' } }), KNOWN), [])
+})
+
+test('(7.18a, DW-369) a collection or a channel at /paged/, /index/, /tag/ or /author/ is refused with its reason, as a route is', () => {
+  const kinds = {
+    collection: (path: string) => config({ collections: [{ path, filter: { match: 'any', conditions: [tag('x')] }, template: 'custom-tutorials.hbs' }] }),
+    channel: (path: string) => config({ routes: [{ path, channel: { match: 'any', conditions: [tag('x')] }, template: 'custom-reading-list.hbs' }] }),
+  }
+  for (const [kind, at] of Object.entries(kinds)) {
+    for (const segment of ['paged', 'index', 'tag', 'author']) {
+      const problems = validateRoutes(at(`/${segment}/`), KNOWN)
+      assert.deepEqual(problems.map((p) => p.message), [ROUTE_WORDS.reserved(`/${segment}/`, RESERVED_SEGMENTS[segment] as string)], `${kind} at /${segment}/`)
+      assert.equal(problems[0]?.at, kind === 'collection' ? 'collections.0.path' : 'routes.0.path')
+    }
+    // the control: the same kind on a free path
+    assert.deepEqual(validateRoutes(at('/notes/'), KNOWN), [], `${kind} at /notes/`)
+  }
 })
 
 test('Unknown template: S9b names its line; a membership file is never a route\'s', () => {
@@ -360,6 +376,8 @@ const POSTS = (() => {
 /** `readNql`'s tree, evaluated on one of `POSTS` — the meaning the builder intends, written independently of Ghost. */
 function holds(n: Node, post: Record<string, unknown>): boolean {
   if ('join' in n) return n.join === '+' ? n.of.every((c) => holds(c, post)) : n.of.some((c) => holds(c, post))
+  // Story 7.18a — NO_PRIMARY's `posts_tags.sort_order:0` names a key no record Ghost matches in memory carries
+  if ('absent' in n) return false
   if ('is' in n) return n.field === 'featured' ? post.featured === n.is : (post.feature_image !== null) === n.is
   if ('at' in n) {
     const at = n.at
@@ -609,17 +627,151 @@ test('(7.16c, §84) the LISTING reading is Ghost\'s SQL: a negated primary holds
   // the plain leaves read the same both ways: `tag:-x` keeps the untagged post, `author:-x` the authorless one
   assert.equal(holdsFor({ field: 'tag', op: 'none', values: ['x'] }, untagged, NOW, true), true)
   assert.equal(holdsFor({ field: 'author', op: 'none', values: ['x'] }, noAuthor, NOW, true), true)
-  // and the canvas's lists: Home (the index's SQL) leaves the untagged post out once a collection filters by primary tag;
-  // a later collection that LISTS it (`tag:-craft`) keeps it, since no earlier collection OWNS it
+  // and the canvas's lists: since Story 7.18a (R-260) Home LISTS the untagged post once a collection filters by primary tag,
+  // as the index OWNS it — 7.16a's inverse, `primary_tag:-'craft'`, listed it on no page (DW-364, the control); a later
+  // collection that LISTS it (`tag:-craft`) keeps it, since no earlier collection OWNS it
   const c = config({ collections: [
     { path: '/craft/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: ['craft'] }] }, template: 'custom-craft-list.hbs' },
     { path: '/rest/', filter: { match: 'all', conditions: [{ field: 'tag', op: 'none', values: ['craft'] }] }, template: 'custom-quiet.hbs' },
   ] })
   const home = homeList(config({ collections: [c.collections[0]!] }), NOW)!
-  assert.equal(home.filter, "primary_tag:-'craft'")
-  assert.equal(home.window(untagged), false, 'Home lists it on no page (DW-364)')
-  assert.equal(home.window({ ...base, tags: [{ slug: 'notes' }], primary_tag: { slug: 'notes' } }), true, 'the control: a tagged post Home owns is listed')
-  assert.equal(holdsFor(readNql(home.filter!), untagged, NOW), true, 'the control: the index OWNS it (its own address answers)')
+  assert.equal(home.filter, `primary_tag:-'craft',${NO_PRIMARY.primary_tag}`)
+  for (const post of [untagged, internalFirst]) assert.equal(home.window(post), true, 'Home lists a post with no primary tag (R-260)')
+  assert.equal(home.window({ ...base, tags: [{ slug: 'notes' }], primary_tag: { slug: 'notes' } }), true, 'a tagged post Home owns is listed')
+  assert.equal(home.window({ ...base, tags: [{ slug: 'craft' }], primary_tag: { slug: 'craft' } }), false, '…and a craft post, which /craft/ owns, is not')
+  assert.equal(holdsFor(readNql(home.filter!), untagged, NOW), true, 'the index OWNS it (its own address answers)')
+  // THE CONTROL: 7.16a's inverse, as it was emitted, lists the untagged post on no page of Home
+  assert.equal(holdsFor(readNql("primary_tag:-'craft'"), untagged, NOW, true), false)
   const rest = routeList(listsOf(c).get('custom-quiet.hbs')![0]!, NOW)
   assert.deepEqual([rest.window(untagged), rest.keep(untagged)], [true, true])
+})
+
+/* ───────────────────────────── Story 7.18a — R-260: Home lists what it owns ───────────────────────────── */
+
+test('(7.18a, R-260) on every fixture the index\'s SQL now LISTS exactly what its in-memory filter OWNS — 7.16a\'s inverse did not', () => {
+  // posts with and without each primary: no tags, an internal first tag (Ghost computes its primary_tag null), no author
+  const extra = POSTS.flatMap((p) => [{ ...p, tags: [{ slug: 'hash-x' }, ...(p.tags as object[])], primary_tag: null }, { ...p, authors: [], primary_author: null }])
+  const posts = [...POSTS, ...extra]
+  let compared = 0
+  for (const { name, config: c } of ROUTES_FIXTURES) {
+    const index = indexNode(c.collections)
+    if (index === null) continue
+    for (const post of posts) {
+      assert.equal(holdsFor(index, post, NOW, true), holdsFor(index, post, NOW), `${name} on ${JSON.stringify(post)}`)
+      compared += 1
+    }
+  }
+  assert.ok(compared > 0)
+  // THE CONTROL: 7.16a's inverse (the same tree with every NO_PRIMARY dropped) lists less than it owns on a primary fixture
+  const strip = (n: Node): Node => {
+    if (!('join' in n)) return n
+    const of = n.of.filter((x) => !('absent' in x)).map(strip)
+    return of.length === 1 ? (of[0] as Node) : { join: n.join, of }
+  }
+  const primary = ROUTES_FIXTURES.find((f) => f.name === 'R-260 — one Primary tag collection')!.config
+  const old = strip(indexNode(primary.collections)!)
+  assert.equal(writeNql(old), "primary_tag:-'craft'")
+  assert.ok(posts.some((p) => holdsFor(old, p, NOW, true) !== holdsFor(old, p, NOW)))
+})
+
+test('(7.18a, R-260) NO_PRIMARY is one leaf: it reads back as itself inside a group, and alone or doubly wrapped it is refused', () => {
+  const leaf: Node = { field: 'primary_tag', absent: true }
+  const pair: Node = { join: ',', of: [{ field: 'primary_tag', op: 'none', values: ['craft'] }, leaf] }
+  assert.deepEqual(readNql(writeNql(pair)), pair)
+  assert.equal(emittedProblem(writeNql(pair), pair), null)
+  for (const [, nql] of MAJORS) assert.doesNotMatch(JSON.stringify(nql(`(${writeNql(pair)})+type:post`).parse()), /"yg"/)
+  // refused: the pair alone (a filter wrapped whole — Ghost would make it ((…))), doubled parentheses, and the pair unwrapped
+  for (const planted of [NO_PRIMARY.primary_tag, `primary_tag:-'craft',(${NO_PRIMARY.primary_tag})`, NO_PRIMARY.primary_tag.slice(1, -1)]) {
+    assert.throws(() => readNql(planted), /at character/, planted)
+  }
+  // and it is never negated, nor stored: the grammar refuses it as a condition
+  assert.equal(parseRoutesConfig({ collections: [{ path: '/x/', filter: { match: 'any', conditions: [leaf] }, template: 'custom-x.hbs' }] }).ok, false)
+})
+
+/** Ghost's own `post.js:291-353` `filterExpansions` and `filterRelations` (6.58.0; 5.130.6 is the same), as
+ *  `@tryghost/bookshelf-filter` hands them to `nql(…).querySQL(qb)` — restated, since a test may not import Ghost */
+const SQL_EXPANSIONS = [
+  { key: 'primary_tag', replacement: 'tags.slug', expansion: 'posts_tags.sort_order:0+tags.visibility:public' },
+  { key: 'primary_author', replacement: 'authors.slug', expansion: 'posts_authors.sort_order:0+authors.visibility:public' },
+  { key: 'authors', replacement: 'authors.slug' }, { key: 'author', replacement: 'authors.slug' },
+  { key: 'tag', replacement: 'tags.slug' }, { key: 'tags', replacement: 'tags.slug' },
+]
+const SQL_RELATIONS = {
+  tags: { tableName: 'tags', type: 'manyToMany', joinTable: 'posts_tags', joinFrom: 'post_id', joinTo: 'tag_id' },
+  authors: { tableName: 'users', tableNameAs: 'authors', type: 'manyToMany', joinTable: 'posts_authors', joinFrom: 'post_id', joinTo: 'author_id' },
+}
+/** The WHERE mongo-knex builds, through a builder that records its calls as SQL text (no database, no knex). */
+function sqlOf(nql: typeof nql6, filter: string): string {
+  const lit = (v: unknown): string => (Array.isArray(v) ? `(${v.map(lit).join(', ')})` : typeof v === 'string' ? `'${v}'` : String(v))
+  const make = (table?: string) => {
+    const w: string[] = []
+    const add = (bool: string, text: string) => w.push(w.length === 0 ? text : `${bool} ${text}`)
+    let head = ''
+    const q: Record<string, unknown> = { _single: { table } }
+    const cond = (bool: string) => (a: unknown, op?: unknown, v?: unknown) => {
+      if (typeof a === 'function') { const g = make(); a.call(g, g); add(bool, `(${(g.where as () => string)()})`) }
+      else if (typeof v === 'function') { const s = make(); v.call(s, s); add(bool, `${a} ${op} (${(s.sql as () => string)()})`) }
+      else add(bool, `${a} ${v === undefined ? '=' : op} ${lit(v === undefined ? op : v)}`)
+      return q
+    }
+    Object.assign(q, {
+      where: (a?: unknown, op?: unknown, v?: unknown) => (a === undefined ? w.join(' ') : cond('AND')(a, op, v)), andWhere: cond('AND'), orWhere: cond('OR'),
+      whereNull: (c: string) => (add('AND', `${c} IS NULL`), q), whereNotNull: (c: string) => (add('AND', `${c} IS NOT NULL`), q),
+      orWhereNull: (c: string) => (add('OR', `${c} IS NULL`), q), orWhereNotNull: (c: string) => (add('OR', `${c} IS NOT NULL`), q),
+      select: (s: string) => ((head = `SELECT ${s}`), q), from: (f: string) => ((head += ` FROM ${f}`), q),
+      innerJoin: (t: string, fn: (this: unknown) => void) => {
+        const on: string[] = []
+        fn.call({ on: (a: string, o: string, b: string) => on.push(`${a} ${o} ${b}`), andOn: (a: string, o: string, b: unknown) => on.push(`${a} ${o} ${lit(b)}`) })
+        head += ` INNER JOIN ${t} ON ${on.join(' AND ')}`
+        return q
+      },
+      sql: () => `${head} WHERE ${w.join(' ')}`,
+      toSQL: () => ({ sql: `${head} WHERE ${w.join(' ')}` }),
+    })
+    return q
+  }
+  const qb = make('posts')
+  // `querySQL` is the api bookshelf-filter calls (`nql.js:81`), absent from the package's own types
+  ;(nql(`(${filter})+type:post`, { relations: SQL_RELATIONS, expansions: SQL_EXPANSIONS }) as unknown as { querySQL: (qb: unknown) => unknown }).querySQL(qb)
+  return (qb.where as () => string)()
+}
+
+for (const [version, nql] of MAJORS) {
+  test(`(7.18a, R-260) Ghost ${version}'s NQL writes NO_PRIMARY as "no public first tag" in SQL, and \`primary_tag:null\` as nothing at all`, () => {
+    // nql5 resolves mongo-knex 0.9.5 here; Ghost 5.130.6's yarn.lock pins 0.9.1, whose convertor differs only in grouping
+    // two RANGE operators on one column (read at Story 7.18a's Dev) — none of these filters has one
+    const noTag = "posts.id not in (SELECT posts_tags.post_id FROM posts_tags INNER JOIN tags ON tags.id = posts_tags.tag_id AND posts_tags.sort_order = 0 WHERE tags.visibility in ('public'))"
+    const hasPublicFirst = "posts.id in (SELECT posts_tags.post_id FROM posts_tags INNER JOIN tags ON tags.id = posts_tags.tag_id AND posts_tags.sort_order = 0 WHERE tags.visibility = 'public')"
+    const index = indexFilter(ROUTES_FIXTURES.find((f) => f.name === 'R-260 — one Primary tag collection')!.config.collections)!
+    const sql = sqlOf(nql, index)
+    assert.ok(sql.includes(`OR (${noTag})`), sql)
+    // THE CONTROLS: 7.16a's inverse demands a public first tag, and `primary_tag:null` (DW-364's first idea) asks for a
+    // first tag whose slug is null — a column Ghost declares `nullable: false` — so neither can list an untagged post
+    assert.ok(sqlOf(nql, "primary_tag:-'craft'").includes(`AND ${hasPublicFirst}`))
+    assert.ok(!sqlOf(nql, "primary_tag:-'craft'").includes(noTag))
+    assert.match(sqlOf(nql, 'primary_tag:null'), /^\(\(posts\.id in \(SELECT .* WHERE tags\.slug IS NULL AND tags\.visibility = 'public'\)\) AND posts\.type = 'post'\)$/)
+    // the author's pair, the same way round
+    assert.ok(sqlOf(nql, `primary_author:-'ann',${NO_PRIMARY.primary_author}`).includes("posts.id not in (SELECT posts_authors.post_id FROM posts_authors INNER JOIN users as authors ON authors.id = posts_authors.author_id AND posts_authors.sort_order = 0 WHERE authors.visibility in ('public'))"))
+  })
+}
+
+test('(7.18a, R-260) unlistedPosts names a post its owner does not list — the old index named the untagged post, the new one none', () => {
+  const post = (slug: string, tags: string[]) => ({
+    title: slug.replace(/-/g, ' '), slug, tags: tags.map((s) => ({ slug: s })), primary_tag: tags[0] === undefined ? null : { slug: tags[0] },
+    authors: [{ slug: 'ann' }], primary_author: { slug: 'ann' }, featured: false, feature_image: null, visibility: 'public', published_at: '2026-09-01T12:00:00.000Z',
+  })
+  const posts = [post('office-hours', []), post('a-craft-post', ['craft']), post('notes', ['notes'])]
+  const craft = config({ collections: [{ path: '/craft/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'any', values: ['craft'] }] }, template: 'custom-craft-list.hbs' }] })
+  assert.deepEqual(unlistedPosts(craft, posts, NOW), [], 'none: Home lists the untagged post (R-260)')
+  // THE CONTROL: 7.16a's index filter names it — the index owns it in memory and its SQL lists it nowhere (DW-364)
+  assert.deepEqual(unlistedPosts(craft, posts, NOW, readNql("primary_tag:-'craft'")), [{ title: 'office hours', slug: 'office-hours' }])
+  // some: a COLLECTION that owns a post its own SQL cannot list — `primary_tag:-'craft'` in a collection still means
+  // "has a public first tag, not craft" when listed, and the earlier collection's posts stay where they are
+  const rest = config({ collections: [...craft.collections, { path: '/rest/', filter: { match: 'all', conditions: [{ field: 'primary_tag', op: 'none', values: ['craft'] }] }, template: 'custom-quiet.hbs' }] })
+  assert.deepEqual(unlistedPosts(rest, posts, NOW).map((p) => p.slug), ['office-hours'])
+  // only Home and the collections count (routine call 23): a channel listing every post does not hide the gap
+  assert.deepEqual(unlistedPosts({ ...rest, routes: [{ path: '/all/', channel: { match: 'all', conditions: [] }, template: 'custom-fresh.hbs' }] }, posts, NOW).map((p) => p.slug), ['office-hours'])
+  // no collection, or an unreadable routing: Home lists every post, and nothing is named
+  assert.deepEqual(unlistedPosts(EMPTY_ROUTES, posts, NOW), [])
+  assert.deepEqual(unlistedPosts(null, posts, NOW), [])
 })
