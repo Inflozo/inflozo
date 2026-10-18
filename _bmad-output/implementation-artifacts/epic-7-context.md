@@ -583,6 +583,30 @@ A user ships. The project compiles — purely, from what it is handed — into a
       gained the listing reading (the window) beside ownership (the drop); the emission is Story 7.18's to decide (high).
     - **7.16c's Fix (2026-10-18, the owner's Finding 1): a server-side doc write must move `projects.revision`.** AD-15's hydrate keeps a device's own docs while its base revision equals the project's, so a direct `project_templates` write is invisible to every editor that opened the project before. The routes page writes docs through `sync_project_doc` (`syncDocs`, `routes/actions.ts`); any later server writer of a doc does the same, and a merge path stays out (AD-15).
     - **7.16c's Review (2026-10-18):** a feed previewed on a Routes Manager canvas (the Section Picker's card, the ring's tile) draws as a listed template's main feed (`section-preview.tsx`), where R-7 had left it on its skeleton; a feed stands as one only where `feedsOn` (`main-feed.ts`: a file Ghost paginates, or a Routes Manager template); `validate.ts`' brace holds pagination only for a feed; `compileTheme` refuses a `lists` file with no context or a context the guard names itself (`paged`, `index`, `tag`, `author` — the routes page's half is DW-369, Story 7.18); a leftover doc's revision moves before it is cleared. Deferred: DW-365 and DW-368 (7.34: the connected-site lists and their shortfall note), DW-366 and DW-367 (7.17: an unreadable routing, a failed starting grid). Question 2, ruled option 1 (R-253): an editor open in a second tab may ask to reload after a template change, for now (the Fix's second-writer cost, now an AD-15 rule); DW-370 (7.17) spares it later.
+  - **Story 7.17's Create (2026-10-18):** ready for Dev, with five questions open (R-83). All five need the owner's ruling before Dev, and the spec is written to each recommended option.
+    - **The questions:**
+      - **Q1:** the step and B16 are built here, and 7.18's Ship it calls them; the card's hand test moves to 7.18.
+      - **Q2:** Ghost's default goes back only over Inflozo's own file (`routes_last_offered`).
+      - **Q3:** the all-tags and all-authors pages move to Story 9.12, where FR-F8 and FR-I5 disagree.
+      - **Q4:** DW-366 keeps the stored main feed.
+      - **Q5:** DW-370 adds a same-browser `MOVED_CHANNEL`, plus a rule in AD-15.
+    - **Planned:**
+      - `lib/routes-upload.ts` holds the pure rule: `routesToOffer` and `routesAnswer` (401 → revoked, 403 → role).
+      - `server/routes-upload.ts` holds the shell: `offerRoutes`, which skips an unchanged file and reads it back byte for byte with the staff token, and `verifyRoutes`, which uses the Admin key.
+      - The chokepoint gains `adminRequest`, a `FormData` passed through (DW-51's transport), `CallResult.bytes` and `call`'s `kind`.
+      - One Schema push first: `sites.routes_fallback`.
+      - B16 sits on Routes & Templates and on the Sites card. Its download is a `data:` link.
+      - FR-I5's lint: `searchKeyRefusals`, and no argument on `{{ghost_head}}`.
+      - The README gains `## Routes`.
+      - DW-367's refusal names what was left, and the next Save adds the grid.
+      - T1 is §85 (`record-routes.mjs --upload`), and the walk gains step 112.
+    - **Read in source (6.58.0 and 5.130.6):**
+      - The upload needs `setting: edit`. Administrator holds `all`; Editor and the roles below hold browse and read.
+      - A staff key uses the user's permissions.
+      - The upload is validated before it is stored, stored as sent, and live at once.
+      - Ghost's default file is 130 bytes, sha `b2d675…`, the same on both majors.
+      - Ghost 6's own routes upload links `docs.ghost.org/themes/routing/`.
+      - So "a non-Owner connection" reads as a role below Administrator.
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.
