@@ -2,9 +2,9 @@
 title: 'Story 7.17 — Uploading `routes.yaml`, and the guided fallback'
 type: 'feature'
 created: '2026-10-18'
-status: 'in-review'
+status: 'done'
 baseline_commit: '2fa1efe2a64aa08f2e5f499e0bc2460dfdc0c3c7'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -616,6 +616,11 @@ ruling on Question 5; the routing card's own test is in Story 7.18 (Question 1).
 | 6 | A: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-tutorials-list` · B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Editor · Routes & Templates | In A, open Tutorials List. In B, delete it from Templates (**⋯ → Delete**, then confirm). | — | A moves to Home with the notice that the template was deleted. B offers **Undo**. |
 | 7 | B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Press **Undo**. Then, in A, open the Template menu. | — | Tutorials List is back in A's menu, and its grid still says **MAIN FEED**. |
 | 8 | B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete /tutorials/, then Tutorials List. In A, put Home's headline back and press ⌘S. Turn autosave back on. | — | Back to how step 1 found it. No step showed "changed somewhere else". |
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-10-18): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_CVaYzc6kzpJtwk6qgSfNPDUJAuh1`) and reported *"passed"*. No findings.
 
 ## Questions for the owner
 

@@ -147,7 +147,7 @@ development_status:
   7-16a-the-routes-manager: done
   7-16b-custom-templates-on-the-canvas: done
   7-16c-collection-and-channel-templates-list-their-posts: done
-  7-17-uploading-routes-yaml-and-the-guided-fallback: review
+  7-17-uploading-routes-yaml-and-the-guided-fallback: done
   7-18-the-deploy-wizard: backlog
   7-19-the-first-deploy-credential-step-and-its-decline-path: backlog
   7-20-the-backup-gate-and-the-pre-inflozo-snapshot: backlog
