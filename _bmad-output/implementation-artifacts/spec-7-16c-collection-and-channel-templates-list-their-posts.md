@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-10-18'
 status: 'in-progress'
 baseline_commit: '31547773c387972fb5a62de4dc76948d0c5752e4'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -365,6 +365,11 @@ list the posts a collection or channel serves there:
   address 200. The consequence for Inflozo's emitted routing — such a post is listed nowhere once any collection filters by
   Primary tag — is **DW-364** (high), Story 7.18's to settle before it deploys a `routes.yaml`; changing `routes.ts`' emission is
   outside this story (its Never list).
+- **Fix, 2026-10-18 — the owner's Finding 1: a new listed template opened without its feed.** `writeListedStart`'s direct
+  upsert moved no revision, so AD-15's hydrate kept each device's own docs. Every doc the routes page changes now goes
+  through `sync_project_doc` (`syncDocs`): the new template's starting doc, the delete's Undo doc, and the revision alone after
+  a delete that took a doc or a clear of a leftover doc. `routes.test.ts` holds each door and the remaining direct writes
+  (`Owner's test findings`).
 
 ## Design Notes
 
@@ -484,6 +489,28 @@ there, delete them first on Routes & Templates. Step 4 tests your ruling on Ques
 | 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Press **+ New template** and type the name. Then open it and add a **Post grid**. | `Plain Page` | It opens empty. The added grid has no MAIN FEED tag, and its Data group shows Source, Count and Order. |
 | 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the /tutorials/ collection (⋯ → Delete). Open Tutorials List, then Home. | — | Tutorials List keeps its grid, now without MAIN FEED, showing the newest posts. Home shows the two posts from step 1 again. |
 | 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the route and the three templates. | — | Back to how step 1 found it. |
+
+## Owner's test findings
+
+**Finding 1 (owner, 2026-10-18), before the Review — fixed in the Fix commit, re-test owed.** *"When I create the collection or
+Custom Route a post grid is not already there. I have to manually add it."* (steps 2–3 and 7–8.)
+- **What production held** (read only, on the owner's in-session go, 2026-10-18): Tutorials List's row at 02:09:59 and, at
+  02:12:07, a doc holding one a17/1 "Post Grids — Three Up" with a random instance id. That is the grid he added by hand, not
+  `listedStart`'s "Post grid" (`auto-custom-tutorials-list-1`). Staff Picks held only the Newsletter he added.
+- **The cause:** `writeListedStart` wrote the doc with a direct upsert, which moves no `projects.revision`. AD-15's hydrate keeps a
+  device's OWN docs whenever its `base_revision` equals the project's (`editor.tsx`' hydrate, `journal.ts`' `hydrationFor`).
+  So an editor that had opened the project before kept its copy, which has no such canvas, and the template opened empty. A
+  merge path is AD-15's "No merge path exists in v1", so the fix is on the writer's side.
+- **The fix:** every doc the routes page changes goes through `sync_project_doc` (`syncDocs` in `routes/actions.ts`), which
+  moves the revision with the doc in one compare-and-set (AD-31). That covers the new template's starting doc and the
+  delete's Undo doc. A template delete that took a doc, and a new template that cleared a leftover doc, move the revision alone.
+  The editor then takes the cloud's docs at its next hydrate. The same cause would also have shown a deleted template's old
+  design on a new template of the same name (7.16b's review promise), and that is closed with it. **Its cost is AD-15's, for
+  any second writer:** once a template is created or deleted on Routes & Templates, the editor's undo history from before is
+  cleared at its next open. Work already sent is kept, and leaving the editor sends what is owed.
+- **Static custom routes stay empty, as ruled** (routine call 2). Only a **channel** route — "A channel — a filtered stream of
+  posts" — starts with the grid (step 7).
+- **Re-test:** delete Tutorials List and Staff Picks on Routes & Templates, then run steps 2–4 and 7–8 again.
 
 ## Questions for the owner
 
@@ -616,6 +643,18 @@ card, R-176's entry and `epic-7-context.md` follow; FR-D21's dated note is Dev's
 | Guard | `compile.test.ts`: `tag, a-side, b-side, staff-picks` with both controls, the bad keys and contexts refused; `ad36.test.ts`: the context sink pair; §84 on T1 (held, run 2) |
 | Page 2 | `editor.test.ts`: `pageTwoOfCanvas` undefined for a Routes Manager canvas; `compile.test.ts`: no `{{#is` in a listed file |
 | Nothing matches | `orbit-weekly.test.ts`: `posts: []`, one page, total 0 — the design's own empty state |
+
+**Fix (2026-10-18, the owner's Finding 1):**
+- `routes.test.ts`: the new 7.16c row holds `syncDocs` (`projects.revision` read, then `sync_project_doc` with the docs,
+  retried at a refused call's revision) and each door: the listed start, the Undo's doc, the delete's and the clear's
+  revision-only moves. Its control is the remaining direct `project_templates` writes, listed exactly. The listed-start row
+  failed against the Dev head's direct upsert (the control) and passes now.
+- `pnpm check` -- exit 0. `python3 tools/doc-audit.py --check` -- PASS twice.
+- **Supabase (production), read only on the owner's in-session go**, by variable name (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`):
+  Pilot sections' `custom_templates`, `project_templates` (`custom:` keys) and `routes_config`. They returned what Finding 1
+  records. Nothing was written.
+- The end-to-end proof is the owner's re-test on the deployed Fix and the Review's step 111. Its browser has opened the editor
+  before the collection is made, which is the state this finding needs.
 
 **Review (R-82):**
 - Step 111 on production at the deployed head, with Supabase service reads for the new template's doc.

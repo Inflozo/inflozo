@@ -126,7 +126,7 @@ test('Story 7.16b: every in-between state is valid — the delete runs config, d
   assert.match(del, /if \(dropped\.error\) return failed\(/)
   assert.match(del, /return failed\('template delete failed', error\?\.code\)/)
   const undo = body('restoreTemplate')
-  const [rowBack, docBack, configBack] = [undo.indexOf(".from('custom_templates')\n      .insert("), undo.indexOf(".from('project_templates').upsert("), undo.indexOf('writeConfig(')]
+  const [rowBack, docBack, configBack] = [undo.indexOf(".from('custom_templates')\n      .insert("), undo.indexOf('syncDocs(sb, id, { [key]: doc })'), undo.indexOf('writeConfig(')]
   assert.ok(rowBack > 0 && docBack > rowBack && configBack > docBack, `the Undo's order: row ${rowBack}, doc ${docBack}, config ${configBack}`)
   // the doc comes back from the CLIENT, so it is judged before anything is written (AD-36)
   const judged = undo.indexOf('docSchema.safeParse(sent)')
@@ -140,7 +140,7 @@ test('Story 7.16b (review): a new template clears what an earlier one of its nam
   assert.ok(doc > 0 && prefs > 0 && row > doc && row > prefs, `clear ${doc}/${prefs}, then the row ${row}`)
   // both by the new file's own key, and a clear that fails writes no row
   assert.match(fn, /const key = `custom:\$\{named\.file\}`/)
-  assert.ok(fn.indexOf('if (unclear)') > prefs && fn.indexOf('if (unclear)') < row, 'a failed clear refuses before the row')
+  assert.ok(fn.indexOf('if (unclear') > prefs && fn.indexOf('if (unclear') < row, 'a failed clear refuses before the row')
 })
 
 test('Story 7.16b: the Undo\'s doc is judged as the sync route judges one — a doc a Routes Manager canvas can hold passes, and nothing else', () => {
@@ -178,7 +178,7 @@ test('Story 7.16c: a new template a collection\'s or channel\'s sheet names star
   const [row, doc, config] = [save.indexOf('insertTemplate('), save.indexOf('writeListedStart('), save.indexOf('writeConfig(')]
   assert.ok(row > 0 && doc > row && config > doc, `saveRoutes' order: row ${row}, doc ${doc}, config ${config}`)
   // only when the config LISTS the new file: a static route's new template, like "+ New template", opens empty (7.16b)
-  assert.match(save, /listsOf\(parsed\.config\)\.has\(made\.file\) && !\(await writeListedStart\(sb, id, user\.id, made\.file\)\)/)
+  assert.match(save, /listsOf\(parsed\.config\)\.has\(made\.file\) && !\(await writeListedStart\(sb, id, made\.file\)\)/)
   assert.ok(!body('createTemplate').includes('writeListedStart'), '"+ New template" writes no doc')
   // a failed doc write leaves the row unrouted and says couldNot — a valid state the page lists
   assert.match(save, /revalidate\(id\)\n\s+return couldNot\(\)/)
@@ -186,7 +186,8 @@ test('Story 7.16c: a new template a collection\'s or channel\'s sheet names star
   const at = ACTIONS.indexOf('async function writeListedStart(')
   const fn = ACTIONS.slice(at, ACTIONS.indexOf('\n}\n', at))
   assert.match(fn, /const \{ instances \} = listedStart\(file, held\)/)
-  assert.ok(fn.indexOf('docRefusal(key, doc)') < fn.indexOf(".from('project_templates').upsert("), 'judged before it is written')
+  assert.ok(fn.indexOf('docRefusal(key, doc)') < fn.indexOf('return syncDocs(sb, id, { [key]: doc })'), 'judged before it is written')
+  assert.ok(!fn.includes(".from('project_templates')"), 'no direct doc write: it would move no revision')
   // and what `listedStart` gives is a17/1 "Post grid", flagged the main feed, which the library holds on a Routes Manager file
   const held = (id: string) => (pilotIds().includes(id) ? pilot(id) : undefined)
   const { instances } = listedStart('custom-tutorials-list.hbs', held)
@@ -201,4 +202,29 @@ test('Story 7.16c (routine call 7): the page-size hint names the sheet\'s own ki
   assert.equal(ROUTES_WORDS.postsAfter(12, 'collection'), ROUTES_WORDS.postsAfter(12), 'the control: a collection\'s, as S9c draws it')
   const manager = readFileSync('app/(app)/app/(authed)/projects/[id]/routes/routes-manager.tsx', 'utf8')
   assert.match(manager, /<PostsCount n=\{postsPerPage\} kind=\{where\} \/>/)
+})
+
+test('Story 7.16c (the owner\'s test, 2026-10-18): every doc the routes page changes moves the revision, so the editor takes the cloud\'s docs at its next hydrate', () => {
+  // AD-15's hydrate keeps a device's OWN docs while its base revision equals the project's, and a direct write to
+  // `project_templates` moves none — a new collection's template opened without its feed on every device that had the
+  // project open before. `syncDocs` is `sync_project_doc`: the docs and the revision in one compare-and-set
+  const at = ACTIONS.indexOf('async function syncDocs(')
+  const sync = ACTIONS.slice(at, ACTIONS.indexOf('\n}\n', at))
+  assert.match(sync, /\.from\('projects'\)\.select\('revision'\)\.eq\('id', id\)\.maybeSingle\(\)/)
+  assert.match(sync, /\.rpc\('sync_project_doc', \{ p_project: id, p_docs: docs, p_base: base \}\)/)
+  // a refusal (an editor flushed in between) is retried at the revision it hands back, a bounded number of times
+  assert.match(sync, /for \(let tries = 0; tries < 3; tries\+\+\)/)
+  assert.match(sync, /if \(answer\.applied\) return true\n\s+base = answer\.revision/)
+  // each door: the new listed template's doc, the Undo's doc, and the revision alone after a delete took a doc or a new
+  // template cleared a leftover one
+  assert.match(body('restoreTemplate'), /if \(doc !== null && !\(await syncDocs\(sb, id, \{ \[key\]: doc \}\)\)\)/)
+  const del = body('deleteTemplate')
+  assert.ok(del.indexOf('if (held && !(await syncDocs(sb, id, {})))') > del.indexOf(".from('custom_templates').delete()"), 'after the row is gone')
+  const ins = ACTIONS.slice(ACTIONS.indexOf('async function insertTemplate('), ACTIONS.indexOf('async function writeListedStart('))
+  assert.match(ins, /\(cleared\[0\]\.data \?\? \[\]\)\.length > 0 && !\(await syncDocs\(sb, id, \{\}\)\)/)
+  // THE CONTROL: the only direct doc writes left are the delete's own two — the delete, and its put-back when the row
+  // delete fails, which restores exactly what the device already holds — and the new template's clear
+  assert.deepEqual(ACTIONS.match(/from\('project_templates'\)\.(upsert|insert|update|delete)\(/g), [
+    "from('project_templates').delete(", "from('project_templates').delete(", "from('project_templates').upsert(",
+  ])
 })

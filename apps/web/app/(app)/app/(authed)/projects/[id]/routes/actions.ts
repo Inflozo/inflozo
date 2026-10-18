@@ -116,12 +116,13 @@ async function insertTemplate(sb: Supabase, id: string, userId: string, display:
   // new template opens empty, never wearing the old one's sections
   const key = `custom:${named.file}`
   const cleared = await Promise.all([
-    sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key),
+    sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key).select('template_key'),
     sb.from('project_template_prefs').delete().eq('project_id', id).eq('template_key', key),
   ])
   const unclear = cleared.find((c) => c.error !== null)?.error
-  if (unclear) {
-    console.error('projects/routes: an earlier template\'s leftovers could not be cleared', { code: unclear.code })
+  // Story 7.16c: a doc cleared here moves the revision too (`syncDocs`), or the device that re-stored it keeps showing it
+  if (unclear || ((cleared[0].data ?? []).length > 0 && !(await syncDocs(sb, id, {})))) {
+    console.error('projects/routes: an earlier template\'s leftovers could not be cleared', { code: unclear?.code })
     return { error: ROUTES_WORDS.couldNot }
   }
   const { data, error } = await sb
@@ -138,8 +139,10 @@ async function insertTemplate(sb: Supabase, id: string, userId: string, display:
 /** STORY 7.16c (FR-H2 "at creation", routine call 2) — a NEW template a collection's or channel's own sheet names starts with
  *  the archive defaults' feed, a17/1 "Post grid" flagged as its main feed (`listedStart`, synthesis's own placing), written
  *  under its canvas's key before the config that lists it. False when the doc could not be written (logged); true when it
- *  was, or when the library places nothing there (an empty doc is no doc, AD-22). Judged by `docRefusal`, as every doc is. */
-async function writeListedStart(sb: Supabase, id: string, userId: string, file: string): Promise<boolean> {
+ *  was, or when the library places nothing there (an empty doc is no doc, AD-22). Judged by `docRefusal`, as every doc is.
+ *
+ *  Written through `syncDocs` (below), never a direct upsert: the owner's test (2026-10-18) found the grid missing. */
+async function writeListedStart(sb: Supabase, id: string, file: string): Promise<boolean> {
   const held = (designId: string) => (pilotIds().includes(designId) ? pilot(designId) : undefined)
   const { instances } = listedStart(file, held)
   if (instances.length === 0) return true
@@ -150,9 +153,37 @@ async function writeListedStart(sb: Supabase, id: string, userId: string, file: 
     console.error('projects/routes: the new template\'s starting doc was refused', { sentence: refused })
     return false
   }
-  const { error } = await sb.from('project_templates').upsert({ project_id: id, user_id: userId, template_key: key, doc }, { onConflict: 'project_id,template_key' })
-  if (error) console.error('projects/routes: the new template\'s starting doc could not be written', { code: error.code })
-  return error === null
+  return syncDocs(sb, id, { [key]: doc })
+}
+
+/** STORY 7.16c (the owner's test, 2026-10-18) — EVERY DOC THIS PAGE CHANGES MOVES THE REVISION, through `sync_project_doc`.
+ *  AD-15's hydrate keeps a device's OWN docs whenever its `base_revision` equals `projects.revision`, and a direct write to
+ *  `project_templates` moves no revision. So the editor kept its copy: a new collection's template opened without its
+ *  feed, and a deleted template's old doc could come back on a new one of the same name. The function writes the docs
+ *  handed to it (none, to move the revision alone) and moves the revision in one compare-and-set (AD-31), so the next
+ *  hydrate takes the cloud's. Its cost is AD-15's for any second writer: that device's journal, its undo history, is
+ *  cleared then. A refusal means an editor flushed in between, so it is retried at the revision the refusal hands back:
+ *  these keys are a canvas no editor can be holding (a new one, or one whose template was gone). `ponytail:` three tries,
+ *  then false; the caller says `couldNot` and the step is tried again. */
+async function syncDocs(sb: Supabase, id: string, docs: Record<string, ProjectDoc>): Promise<boolean> {
+  const { data: project, error: readError } = await sb.from('projects').select('revision').eq('id', id).maybeSingle()
+  if (readError || !project) {
+    console.error('projects/routes: the project\'s revision could not be read', { code: readError?.code })
+    return false
+  }
+  let base = project.revision as number
+  for (let tries = 0; tries < 3; tries++) {
+    const { data, error } = await sb.rpc('sync_project_doc', { p_project: id, p_docs: docs, p_base: base })
+    if (error || data === null) {
+      console.error('projects/routes: the doc write failed', { code: error?.code })
+      return false
+    }
+    const answer = data as { applied: boolean; revision: number }
+    if (answer.applied) return true
+    base = answer.revision
+  }
+  console.error('projects/routes: the doc write was refused three times by a moving revision')
+  return false
 }
 
 /**
@@ -182,7 +213,7 @@ export async function saveRoutes(_previous: RoutesResult | null, formData: FormD
     if ('error' in made) return made
     known.push(made.file)
     const parsed = parseRoutesConfig(next)
-    if (parsed.ok && listsOf(parsed.config).has(made.file) && !(await writeListedStart(sb, id, user.id, made.file))) {
+    if (parsed.ok && listsOf(parsed.config).has(made.file) && !(await writeListedStart(sb, id, made.file))) {
       // the row stands, unrouted and without its feed — a valid state the page lists, so the sheet can be saved again
       revalidate(id)
       return couldNot()
@@ -262,6 +293,9 @@ export async function deleteTemplate(_previous: RoutesResult | null, formData: F
     }
     return failed('template delete failed', error?.code)
   }
+  // Story 7.16c: the revision moves, so a device that holds the deleted doc drops it at its next hydrate (`syncDocs`) and a
+  // new template of the same name opens empty there too. The delete has landed either way, so a failure is only logged
+  if (held && !(await syncDocs(sb, id, {}))) console.error('projects/routes: the revision did not move after a template delete')
   revalidate(id)
   return { ok: true, ...(held ? { doc } : {}) }
 }
@@ -310,13 +344,11 @@ export async function restoreTemplate(_previous: RoutesResult | null, formData: 
       return { error: templateWriteRefusal(error, template.file) ?? ROUTES_WORDS.couldNot }
     }
   }
-  if (doc !== null) {
-    const { error } = await sb.from('project_templates').upsert({ project_id: id, user_id: user.id, template_key: key, doc }, { onConflict: 'project_id,template_key' })
-    if (error) {
-      console.error('projects/routes: the template\'s doc restore failed', { code: error.code })
-      revalidate(id)
-      return couldNot()
-    }
+  // Story 7.16c: through `syncDocs`, so a device that dropped the doc when the delete moved the revision takes it back
+  if (doc !== null && !(await syncDocs(sb, id, { [key]: doc }))) {
+    console.error('projects/routes: the template\'s doc restore failed')
+    revalidate(id)
+    return couldNot()
   }
   if (previous !== null) {
     const refused = await writeConfig(sb, id, user.id, previous, known)
