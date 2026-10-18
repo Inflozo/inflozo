@@ -307,6 +307,21 @@
 // product's own writes it writes THROUGH THE SERVICE KEY on that project alone: the hand-back. Its Review (2026-10-18)
 // RE-EXPECTS STEP 109j (the channel's new template starts with its grid, so its confirm names its design) and 109n (c) (its
 // plant goes on the first template holding NO doc, a static route's, since a listed one starts with its grid).
+// Story 7.17 adds step 112, in a context of its own and reading only steps 1–5's names: B16 AND DW-370 on production (FR-I4,
+// F3, R-98, R-258) — a site PLANTED through the service key (a `.invalid` address, no key, a three-line file offered, the
+// project linked to it): with no cause neither host draws the card (the control); `no_token` draws it on Sites (the card's
+// last child) and on Routes & Templates (under the bar) in the frame's copy, its size the file's own byte count, its download
+// decoding to the planted bytes, "Add the token instead" going to Manage keys; `revoked` and `role` change only the body, the
+// button and the footnote; Verify upload says "Verifying…" (aria-busy, aria-disabled), then `unreachable`, the card staying and
+// nothing written, on both hosts; Verify's own `verified` write, made by the key, takes the card away. Then one context, two
+// pages — the editor on Home and Routes & Templates: a collection with a new template made there is heard on
+// `MOVED_CHANNEL`, the editor's menu re-reads, its grid is the MAIN FEED, and an edit on Home + ⌘S lands one past the moved
+// base with no conflict; the template deleted moves the editor Home with TEMPLATE_GONE, its Undo lists it again, the journal
+// kept (⌘Z + ⌘S lands); and the CONTROL — the routes page's postMessage stubbed — meets R-253's "This project was changed
+// somewhere else". It RE-EXPECTS STEP 110h: B deletes from a context of its own (another device), because a page in the
+// editor's own browser now tells it (DW-370) and the editor would leave the canvas before A's gesture. Besides the product's
+// own writes it writes THROUGH THE SERVICE KEY: the planted site and its routes columns, the project's link, and the hand-back
+// (the link, the site, the step's template, the routing row and Home's doc), in a `finally`.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -10627,12 +10642,18 @@ async function main() {
       JSON.stringify(backG110.ct) === JSON.stringify(beforeG110.ct) && canon110(backG110.doc) === canon110(beforeG110.doc) && canon110(backG110.rc) === canon110(beforeG110.rc),
       JSON.stringify({ backG110, beforeG110 }))
 
-    // 110h — two pages: A has the editor on the canvas, B deletes the template; A's ⌘S stores nothing, moves Home and says why
+    // 110h — two pages: A has the editor on the canvas, B deletes the template; A's ⌘S stores nothing, moves Home and says why.
+    // Story 7.17 RE-EXPECTS IT (DW-370, R-258): Routes & Templates in the editor's OWN browser now tells the editor what it
+    // deleted, and the editor moves Home at once — so B is ANOTHER DEVICE here, a context of its own that no BroadcastChannel
+    // reaches, which is the case R-250's ⌘S path still owns. The same-browser case is step 112's.
     const pageA110 = p110
     await pageA110.goto(editorUrl(canvas110), { waitUntil: 'load' })
     await painted110(pageA110, canvas110)
-    const pageB110 = steady(await ctx110.newPage())
+    const ctxB110 = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+    await recorder(ctxB110, csp110)
+    const pageB110 = steady(await ctxB110.newPage())
     pageB110.on('pageerror', (e) => note('pageerror 110 B', String(e)))
+    await pageB110.goto(await magic(emailA), { waitUntil: 'load' })
     await pageB110.goto(at(ED110.routesPath(P)), { waitUntil: 'load' })
     const moreB110 = pageB110.locator(`button[aria-label="${W110.more(display110)}"]`)
     await moreB110.waitFor({ state: 'visible', timeout: 30000 })
@@ -10642,7 +10663,7 @@ async function main() {
     await pageB110.locator('dialog[aria-labelledby="routes-delete-title"][open] button:not([data-cancel])').click()
     await pageB110.locator('[role="status"]', { hasText: W110.deleted(display110) }).waitFor({ state: 'visible', timeout: 15000 }).catch(() => {})
     const deletedH110 = { ct: await ct110(), doc: await doc110(key110) }
-    await pageB110.close()
+    await ctxB110.close()
     // A makes a change on the canvas — its last section's delete, through D5f — and ⌘S
     await pageA110.bringToFront()
     await deleteLast110(pageA110, layer110)
@@ -10959,6 +10980,399 @@ async function main() {
       Array.isArray(end111.ct) && end111.ct.length === 0 && docsEnd111.every((n) => n === 0) && canon111(end111.rc) === canon111(start111.rc) &&
       JSON.stringify(end111.projects) === JSON.stringify(start111.projects) && csp111.length === 0,
       JSON.stringify({ end111, docsEnd111, csp111: csp111.slice(0, 3) }))
+
+    // ── step 112 — STORY 7.17: B16 ON BOTH HOSTS, VERIFY UPLOAD, AND THE EDITOR TOLD WHAT ROUTES & TEMPLATES MOVED (FR-I4, F3, R-98, R-258, R-82) ──
+    /* In a context of its own, on the seeded project, and SELF-CONTAINED: it reads only steps 1–5's names (`P`, `ids`, `stamp`,
+       `emailA`, `magic`, `editorUrl`, `recorder`, `steady`, `steadyRequests`, `handBack`, `call`, `at`), so a cut copy can run
+       steps 1–5 and this alone. Every sentence is the one list that prints it — `lib/routes-upload.ts`' `ROUTES_FALLBACK_WORDS`,
+       `lib/routes.ts`' `ROUTES_WORDS`, `lib/editor.ts`' `TEMPLATE_GONE` (R-170) — save the conflict dialog's title, which
+       `editor.tsx` writes inline. THE CARD IS PLANTED through the service key: a site of A's that holds no key, so the
+       chokepoint refuses Verify's read before any request (`credential_missing`), and whose name resolves nowhere (`.invalid`,
+       RFC 2606) should a key ever be found — either way `verifyRoutes` reads `unreachable`. `last_checked_at` is stamped so the
+       daily check, which takes the oldest first, leaves it alone. Its routes columns are server-asserted (AD-7), so the key
+       writes them as `offerRoutes` would (the file, the cause) and 112d writes `routesWrite`'s own `verified` patch — what
+       Verify writes. 112a–d: the control with no cause, each cause on both hosts (a screenshot of each at 1440 for R-74's
+       side-by-side), Verify on both, resolved. 112e–g: DW-370 in ONE context, two pages — the editor on Home holding the lock,
+       and Routes & Templates — every revision read through the service key, the channel heard by a listener of the walk's own
+       in the editor's page (the moves as posted), and every opening of the conflict dialog counted there, so one the editor
+       closes again (`heardMoved`) still counts; (c) stubs the routes page's `postMessage`, the control. The link, the site, the
+       step's template, the routing row and Home's doc are handed back in a `finally`. */
+    const [RU112, CR112, RW112, RT112, ED112, JR112] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/routes-upload.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/connect-rule.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/routes.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href),
+    ])
+    const W112 = RU112.ROUTES_FALLBACK_WORDS
+    const WR112 = RW112.ROUTES_WORDS
+    const SYNCED112 = JR112.labelOf({ kind: 'rest', owed: false })
+    const CONFLICT112 = 'This project was changed somewhere else'
+    // 66b's budget: one flush's own abort, its first backoff, and a margin — every number the app's own
+    const SYNC_WAIT112 = JR112.SYNC_TIMEOUT_MS + JR112.BACKOFF_S[0] * 1000 + 5000
+    const canon112 = (v) => (Array.isArray(v) ? `[${v.map(canon112).join(',')}]`
+      : v !== null && typeof v === 'object' ? `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canon112(v[k])}`).join(',')}}` : JSON.stringify(v))
+    const escape112 = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const until112 = async (read, test, tries = 80) => {
+      let v
+      for (let i = 0; i < tries; i++) { v = await read(); if (test(v)) return v; await new Promise((r) => setTimeout(r, 250)) }
+      return v
+    }
+    const project112 = async () => (await call('/rest/v1', `/projects?id=eq.${P}&select=linked_site_id,revision`)).body?.[0] ?? null
+    const ownSites112 = async () => (await call('/rest/v1', `/sites?user_id=eq.${ids[0]}&select=id&order=id`)).body
+    const ownProjects112 = async () => (await call('/rest/v1', `/projects?user_id=eq.${ids[0]}&select=id&order=id`)).body
+    const home112 = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+    const ct112 = async () => (await call('/rest/v1', `/custom_templates?project_id=eq.${P}&select=id,filename,display_name,kind,created_at&order=created_at`)).body
+    const rc112 = async () => (await call('/rest/v1', `/routes_config?project_id=eq.${P}&select=config,yaml`)).body
+    const doc112 = async (key) => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key)}&select=doc`)).body
+    let siteId112 = null
+    const site112 = async () => (siteId112 === null ? null : (await call('/rest/v1', `/sites?id=eq.${siteId112}&select=routes_fallback,routes_last_offered,routes_live_sha256,routes_verified_at`)).body?.[0] ?? null)
+    const setSite112 = (fields) => call('/rest/v1', `/sites?id=eq.${siteId112}`, { method: 'PATCH', body: JSON.stringify(fields) })
+
+    const start112 = { project: await project112(), sites: await ownSites112(), projects: await ownProjects112(), home: await home112(), ct: await ct112(), rc: await rc112() }
+    const parsed112 = start112.rc?.[0] ? RT112.parseRoutesConfig(start112.rc[0].config) : null
+    check('step 112 — the fixture, through the service key: the project and its revision read, Home\'s doc reads (a Latest Post on it), no Routes Manager template and Ghost\'s default routing (so Routes & Templates draws S9d, its landmark below), and A\'s sites and projects read',
+      Number.isInteger(start112.project?.revision) && (start112.home?.instances ?? []).some((i) => i.designId === 'a4/13') && Array.isArray(start112.ct) && start112.ct.length === 0 &&
+      Array.isArray(start112.rc) && (start112.rc.length === 0 || (start112.rc[0].yaml === null && parsed112.ok && RT112.isDefaultRouting(parsed112.config))) && Array.isArray(start112.sites) && Array.isArray(start112.projects),
+      JSON.stringify({ project: start112.project, sites: start112.sites, ct: start112.ct, rc: start112.rc }))
+    // three lines, one carrying an em dash — so the file's BYTES (what Ghost stores, what the chip counts) are not its characters
+    const FILE112 = 'routes:\n  /walk-112/: index\n# planted by the walk — step 112\n'
+    const BYTES112 = Buffer.byteLength(FILE112, 'utf8')
+    const SITE112 = { url: `https://walk-112-${stamp}.invalid`, title: 'Walk 112' }
+    const DATA112 = 'data:application/yaml;charset=utf-8,'
+    const CAUSES112 = ['no_token', 'revoked', 'role']
+    const HOSTS112 = ['sites', 'routes']
+    const collection112 = { path: '/walk-told/', tag: 'tools', display: 'Walk Told' }
+    const file112 = RT112.templateName(collection112.display).file
+    const key112 = `custom:${file112}`
+    const canvas112 = file112.replace(/\.hbs$/, '')
+    const typedA112 = 'Walk 112 told'
+    const typedC112 = 'Walk 112 untold'
+    const SHEET112 = 'dialog[aria-labelledby="routes-sheet-title"][open]'
+    const CONFIRM112 = 'dialog[aria-labelledby="routes-delete-title"][open]'
+    const csp112 = []
+    let ctx112 = null
+    try {
+      const planted112 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: ids[0], url: SITE112.url, title: SITE112.title, routes_last_offered: FILE112, last_checked_at: new Date().toISOString() }) })
+      siteId112 = planted112.body?.[0]?.id ?? null
+      const linked112 = UUID.test(siteId112 ?? '') ? await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteId112 }) }) : { status: 0 }
+      const plant112 = await site112()
+      check('step 112 — the plant, through the service key: a site of A\'s at a .invalid address with no key, its three-line file offered and NO cause yet, the project linked to it',
+        planted112.status === 201 && UUID.test(siteId112 ?? '') && [200, 204].includes(linked112.status) && plant112?.routes_last_offered === FILE112 && plant112.routes_fallback === null && (await project112())?.linked_site_id === siteId112,
+        JSON.stringify({ planted: planted112.status, linked: linked112.status, plant112 }))
+      if (!UUID.test(siteId112 ?? '')) throw new Error('step 112: the planted site was refused, so the card has no host — stopping')
+
+      ctx112 = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+      await recorder(ctx112, csp112)
+      const p112 = steady(await ctx112.newPage())
+      p112.on('pageerror', (e) => note('pageerror 112', String(e)))
+      await p112.goto(await magic(emailA), { waitUntil: 'load' })
+      /** a host loaded and read by its OWN landmark — the planted site's name on its Sites card, S9d's heading on Routes &
+       *  Templates — so "no card" is never a page that had not drawn yet */
+      const open112 = async (host) => {
+        await p112.goto(host === 'sites' ? at('/sites') : at(ED112.routesPath(P)), { waitUntil: 'load' })
+        const landmark = host === 'sites' ? p112.locator('article h2', { hasText: SITE112.title }) : p112.locator('h2', { hasText: WR112.emptyTitle })
+        return landmark.first().waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false)
+      }
+      /** B16 as the page draws it (`components/routes-fallback.tsx`), and where: the last child of an article (a Sites card),
+       *  or under the page's header bar */
+      const card112 = () => p112.evaluate(() => {
+        const all = [...document.querySelectorAll('section[data-routes-fallback]')]
+        const s = all[0]
+        if (!s) return { count: 0 }
+        const by = s.getAttribute('aria-labelledby')
+        const head = by ? document.getElementById(by) : null
+        const link = (sel) => { const e = s.querySelector(sel); return e && { text: e.textContent, href: e.getAttribute('href'), target: e.getAttribute('target'), download: e.getAttribute('download') } }
+        const article = s.closest('article')
+        const said = s.querySelector('[data-verify-said]')
+        return {
+          count: all.length,
+          cause: s.getAttribute('data-routes-fallback'),
+          heading: head?.tagName.toLowerCase() ?? null,
+          title: head?.textContent ?? null,
+          body: s.querySelector(':scope > div:first-child p')?.textContent ?? null,
+          steps: [...s.querySelectorAll('ol > li')].map((li) => li.innerText.replace(/\s+/g, ' ').trim()),
+          size: s.querySelector('[data-size]')?.textContent ?? null,
+          download: link('a[data-download]'),
+          where: link('a[data-where]'),
+          token: link('a[data-token]'),
+          verify: s.querySelector('form button[type="submit"]')?.innerText.trim() ?? null,
+          text: s.innerText,
+          said: said && { kind: said.getAttribute('data-verify-said'), text: said.textContent },
+          card: article && { title: article.querySelector('h2')?.textContent ?? null, last: article.lastElementChild?.lastElementChild === s },
+          underBar: s.parentElement?.previousElementSibling?.tagName === 'HEADER',
+        }
+      })
+      /** F3's words for `cause`, verbatim, and the card's place on `host` (an h3 under the Sites card's h2; an h2 under the
+       *  routes page's h1) — only the body, the secondary button and the footnote change with the cause */
+      const copy112 = (c, cause, host) => c.count === 1 && c.cause === cause && c.title === W112.title && c.body === W112.body[cause] &&
+        c.steps.length === 3 && c.steps[0].includes(W112.download) && c.steps[0].includes(W112.file) && c.steps[1].includes(`${W112.find} ${W112.where}`) && c.steps[2].includes(W112.verifyStep) &&
+        c.where?.text === W112.where && c.where.href === RU112.GHOST_ROUTES_HELP && c.where.target === '_blank' && c.verify === W112.verify &&
+        (W112.button[cause] === null ? c.token === null : c.token?.text === W112.button[cause] && (c.token.href ?? '').endsWith(CR112.keysPath(siteId112))) &&
+        Object.entries(W112.footnote).every(([k, f]) => f === null || c.text.includes(f) === (k === cause)) &&
+        (host === 'sites' ? c.heading === 'h3' && c.card?.title === SITE112.title && c.card.last === true : c.heading === 'h2' && c.underBar === true)
+      const where112 = (host) => (host === 'sites' ? 'Sites, the last child of the site\'s card (an h3)' : 'Routes & Templates, at the top under the bar (an h2)')
+
+      // 112a — THE CONTROL first: the file offered and the site linked, but no cause — neither host draws the card
+      const controlA112 = {}
+      for (const host of HOSTS112) controlA112[host] = { ready: await open112(host), count: (await card112()).count }
+      check('step 112a — the CONTROL: the file offered and the site linked but routes_fallback null — neither Sites nor Routes & Templates draws a [data-routes-fallback] card (each read once its own landmark had drawn)',
+        HOSTS112.every((h) => controlA112[h].ready && controlA112[h].count === 0), JSON.stringify(controlA112))
+      // 112a (no_token, the frame verbatim) and 112b (revoked, role): each cause on both hosts
+      const seen112 = {}
+      for (const cause of CAUSES112) {
+        const set = await setSite112({ routes_fallback: cause })
+        for (const host of HOSTS112) {
+          const ready = await open112(host)
+          const c = await card112()
+          seen112[`${cause}:${host}`] = c
+          await p112.screenshot({ path: `${OUT}/b16-${cause}-${host}-1440x900.png` })   // R-74's side-by-side with B16, for the Review
+          check(`step 112${cause === 'no_token' ? 'a' : 'b'} — ${cause}: B16 on ${where112(host)} in F3's words — "${W112.title}", the ${cause} body, the three steps (the file chip, "${W112.where}" opening Ghost's routing guide in a new tab, Verify) and "${W112.verify}"${W112.button[cause] === null ? ', with no secondary button and no footnote' : `, "${W112.button[cause]}" to Manage keys and "${W112.footnote[cause]}"`}`,
+            [200, 204].includes(set.status) && ready && copy112(c, cause, host), JSON.stringify({ set: set.status, ready, c: { ...c, text: undefined } }))
+        }
+      }
+      const size112 = RU112.sizeLabel(BYTES112)
+      const decode112 = (href) => (typeof href === 'string' && href.startsWith(DATA112) ? decodeURIComponent(href.slice(DATA112.length)) : null)
+      check(`step 112a — the file chip on both hosts: "${size112}", the planted file's own byte count (${BYTES112}, not its ${FILE112.length} characters), and the download a ${W112.file} whose data: link decodes to the planted bytes exactly`,
+        BYTES112 !== FILE112.length && HOSTS112.every((h) => { const c = seen112[`no_token:${h}`]; return c?.size === size112 && c.download?.download === W112.file && decode112(c.download.href) === FILE112 }),
+        JSON.stringify(HOSTS112.map((h) => ({ size: seen112[`no_token:${h}`]?.size, name: seen112[`no_token:${h}`]?.download?.download, decoded: decode112(seen112[`no_token:${h}`]?.download?.href) }))))
+
+      // 112c — Verify upload on each host: busy while asked, then `unreachable` — the card stays and nothing is written
+      const reset112 = await setSite112({ routes_fallback: 'no_token' })
+      const VERIFY112 = 'section[data-routes-fallback] form button[type="submit"]'
+      for (const host of HOSTS112) {
+        const ready = await open112(host)
+        const before = await site112()
+        await p112.evaluate(([sel, w]) => {
+          const seen = { labels: [], busy: false }
+          window.__verify112 = seen
+          const read = () => {
+            const b = document.querySelector(sel)
+            if (!b) return
+            const t = b.innerText.trim()
+            if (t !== seen.labels.at(-1)) seen.labels.push(t)
+            if (t === w && b.getAttribute('aria-busy') === 'true' && b.getAttribute('aria-disabled') === 'true') seen.busy = true
+          }
+          read()
+          new MutationObserver(read).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true })
+        }, [VERIFY112, W112.verifying])
+        await p112.locator(VERIFY112).click()
+        const answered = await p112.locator('section[data-routes-fallback] [data-verify-said]').waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false)
+        await p112.waitForFunction(([sel, w]) => document.querySelector(sel)?.innerText.trim() === w, [VERIFY112, W112.verify], { timeout: 10000 }).catch(() => {})
+        const seen = await p112.evaluate(() => window.__verify112 ?? null)
+        const c = await card112()
+        const verified = await p112.locator('section[data-routes-fallback="verified"]').count()
+        const after = await site112()
+        check(`step 112c — ${host}: R-98 — ${W112.verify} reads "${W112.verifying}" with aria-busy and aria-disabled while it asks, and its own label again after; the observer's control: it heard "${W112.verify}" at rest first`,
+          [200, 204].includes(reset112.status) && ready && answered && seen?.labels[0] === W112.verify && seen.labels.includes(W112.verifying) && seen.busy && seen.labels.at(-1) === W112.verify,
+          JSON.stringify({ reset: reset112.status, ready, answered, seen }))
+        check(`step 112c — ${host}: a site that answers nothing says "${W112.unreachable}" — the card stays no_token (never "verified") and nothing is written: the cause, the file, the sha and the time read back unchanged through the service key`,
+          c.said?.kind === 'unreachable' && c.said.text === W112.unreachable && c.count === 1 && c.cause === 'no_token' && verified === 0 && after?.routes_fallback === 'no_token' && canon112(after) === canon112(before),
+          JSON.stringify({ said: c.said, cause: c.cause, verified, before, after }))
+      }
+
+      // 112d — resolved: Verify's own `verified` write (`routesWrite`), made through the key — the card is gone on both
+      const sha112 = require('node:crypto').createHash('sha256').update(FILE112, 'utf8').digest('hex')
+      const wrote112 = await setSite112(RU112.routesWrite({ kind: 'verified', sha256: sha112 }, new Date().toISOString()))
+      const resolved112 = await site112()
+      const goneD112 = {}
+      for (const host of HOSTS112) goneD112[host] = { ready: await open112(host), count: (await card112()).count }
+      check(`step 112d — resolved: what Verify writes on a match (routes_fallback null, the planted file's sha ${sha112.slice(0, 12)}…, the time), written through the service key — at the next load neither host draws the card`,
+        [200, 204].includes(wrote112.status) && resolved112?.routes_fallback === null && resolved112.routes_live_sha256 === sha112 && typeof resolved112.routes_verified_at === 'string' && resolved112.routes_last_offered === FILE112 &&
+        HOSTS112.every((h) => goneD112[h].ready && goneD112[h].count === 0), JSON.stringify({ wrote: wrote112.status, resolved112, goneD112 }))
+      // the site's part is done: the link and the site go back now, so the editor below draws the sample, as steps 110–111 do
+      await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: start112.project?.linked_site_id ?? null }) })
+      await call('/rest/v1', `/sites?id=eq.${siteId112}`, { method: 'DELETE' })
+
+      // 112e–g — DW-370: ONE context, two pages — the editor on Home, holding the lock, and Routes & Templates (`p112`)
+      const e112 = steady(await ctx112.newPage())
+      e112.on('pageerror', (e) => note('pageerror 112 editor', String(e)))
+      const painted112 = (key) => e112.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 }).then(() => true, () => false)
+      await e112.goto(editorUrl(), { waitUntil: 'load' })
+      const homeUp112 = await painted112('home')
+      // the walk's own ear on the channel, and a count of every opening of the conflict dialog — on the editor's window,
+      // which every soft navigation below keeps (a reload would drop both, and `kept112` says so)
+      const ears112 = await e112.evaluate((channel) => {
+        window.__heard112 = []
+        window.__conflicts112 = 0
+        window.__ear112 = new BroadcastChannel(channel)
+        window.__ear112.onmessage = (event) => window.__heard112.push(event.data)
+        const d = document.querySelector('dialog[aria-labelledby="editor-conflict-title"]')
+        if (d) new MutationObserver(() => { if (d.open) window.__conflicts112++ }).observe(d, { attributes: true, attributeFilter: ['open'] })
+        return !!d
+      }, JR112.MOVED_CHANNEL(P))
+      const heard112 = () => e112.evaluate(() => (window.__heard112 ?? []).map((m) => ({ project: m?.project, moves: (m?.moves ?? []).map((x) => ({ from: x.from, to: x.to, docs: Object.keys(x.docs ?? {}), gone: x.gone })) })))
+      const conflicts112 = () => e112.evaluate(() => window.__conflicts112 ?? null)
+      const kept112 = () => e112.evaluate(() => Array.isArray(window.__heard112))
+      const listed112 = (want) => e112.waitForFunction(([c, w]) => !!document.querySelector(`#editor-template-menu button[data-canvas="${c}"]`) === w, [canvas112, want], { timeout: 30000 }).then(() => true, () => false)
+      const heroId112 = (start112.home?.instances ?? []).find((i) => i.designId === 'a4/13')?.instanceId ?? null
+      /** an edit on Home: Latest Post selected from its Layers row, its Headline typed in Controls (step 12's field) */
+      const editHome112 = async (words) => {
+        await e112.locator(`#editor-layers [data-layer-row="home:${heroId112}"] button`).first().click()
+        await e112.waitForTimeout(400)
+        const head = e112.locator('#editor-controls').getByRole('button', { name: 'Content', exact: true })
+        if ((await head.getAttribute('aria-expanded').catch(() => null)) !== 'true') await head.click().catch(() => {})
+        const filled = await e112.locator('#editor-controls').getByLabel('Headline', { exact: true }).fill(words, { timeout: 15000 }).then(() => true, () => false)
+        await e112.waitForTimeout(300)
+        return filled
+      }
+      const press112 = async () => {
+        await e112.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+        await e112.keyboard.press('ControlOrMeta+s')
+      }
+      /** the stored revision past `from`, waited for as long as one flush may take, then the indicator at rest */
+      const landed112 = async (from) => {
+        const revision = await until112(async () => (await project112())?.revision, (v) => v > from, Math.ceil(SYNC_WAIT112 / 250))
+        const synced = await e112.waitForFunction((s) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === s, SYNCED112, { timeout: 15000 }).then(() => true, () => false)
+        return { revision, synced }
+      }
+      const sheet112 = () => p112.locator(SHEET112)
+      const pick112 = async (id, words) => {
+        await p112.locator(`#${id}`).click()
+        await p112.locator(`[id="${id}-menu"] button`).filter({ hasText: new RegExp(`^${escape112(words)}$`) }).click()
+        await p112.waitForTimeout(200)
+      }
+      /** ⋯ → Delete on the step's template, through its confirm (it is used, and designed) — the toast with Undo */
+      const deleteTemplate112 = async () => {
+        const more = p112.locator(`button[aria-label="${WR112.more(collection112.display)}"]`)
+        await more.waitFor({ state: 'visible', timeout: 30000 })
+        await more.click()
+        await p112.locator(`[id="${await more.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${escape112(WR112.delete)}$`) }).click()
+        const asked = await p112.locator(CONFIRM112).waitFor({ state: 'visible', timeout: 10000 }).then(() => true, () => false)
+        if (asked) await p112.locator(`${CONFIRM112} button:not([data-cancel])`).click()
+        const toast = await p112.locator('[role="status"]', { hasText: WR112.deleted(collection112.display) }).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+        return { asked, toast }
+      }
+      const templateGone112 = async () => until112(async () => ({ ct: await ct112(), doc: await doc112(key112) }), (v) => Array.isArray(v.ct) && !v.ct.some((r) => r.filename === file112) && Array.isArray(v.doc) && v.doc.length === 0)
+
+      // 112e (a) — a collection with a NEW template made on Routes & Templates: the editor is told, takes it in, saves at the new base
+      await p112.goto(at(ED112.routesPath(P)), { waitUntil: 'load' })
+      await p112.bringToFront()
+      await p112.getByRole('button', { name: WR112.newCollection, exact: true }).first().waitFor({ state: 'visible', timeout: 30000 })
+      const rA112 = (await project112())?.revision
+      await p112.getByRole('button', { name: WR112.newCollection, exact: true }).first().click()
+      await sheet112().waitFor({ state: 'visible', timeout: 15000 })
+      await sheet112().locator('#routes-path').fill(collection112.path)
+      const addTrigger112 = sheet112().locator('button[popovertarget$="-add-menu"]')
+      await addTrigger112.click()
+      await p112.locator(`[id="${await addTrigger112.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${escape112(RW112.FIELDS.find((f) => f.field === 'primary_tag').label)}`) }).click()
+      await p112.waitForTimeout(200)
+      await sheet112().locator(`input[placeholder="${WR112.add}"]`).fill(collection112.tag)
+      await sheet112().locator(`input[placeholder="${WR112.add}"]`).press('Enter')
+      await pick112('routes-template', WR112.newTemplateOption)
+      await sheet112().locator('#routes-sheet-template').fill(collection112.display)
+      await sheet112().locator('button[type="submit"]').click()
+      const shutA112 = await p112.waitForFunction((s) => !document.querySelector(s), SHEET112, { timeout: 20000 }).then(() => true, () => false)
+      if (!shutA112) await p112.keyboard.press('Escape')
+      const docA112 = await until112(() => doc112(key112), (v) => Array.isArray(v) && v.length === 1)
+      const rMoved112 = (await project112())?.revision
+      // the editor's window forward again, as it sits beside the routes page in the owner's test — the message has already
+      // been sent while it was behind, so this decides nothing it heard; it only keeps a background tab's throttling out of the reads
+      await e112.bringToFront()
+      const toldA112 = await listed112(true)
+      const heardA112 = await heard112()
+      check(`step 112e — (a) a collection with a new template "${collection112.display}" made on Routes & Templates writes its grid (${key112}, a service read) and moves the revision; the page posts the move on ${JR112.MOVED_CHANNEL('<project>')} — one message, heard by the walk's own listener in the editor's page, from the revision the editor held — and the editor, holding the lock, re-reads: its Template menu lists ${canvas112}`,
+        ears112 && homeUp112 && shutA112 && docA112?.length === 1 && rMoved112 > rA112 && heardA112.length === 1 && heardA112[0].project === P && heardA112[0].moves[0]?.from === rA112 &&
+        heardA112[0].moves.at(-1)?.to === rMoved112 && heardA112[0].moves.some((m) => m.docs.includes(key112)) && toldA112,
+        JSON.stringify({ ears112, homeUp112, shutA112, rA112, rMoved112, heardA112, toldA112 }))
+      const filledA112 = await editHome112(typedA112)
+      await press112()
+      const savedA112 = await landed112(rMoved112)
+      const homeA112 = await home112()
+      const conflictsA112 = await conflicts112()
+      check(`step 112e — (a) then an edit on Home (Latest Post's Headline) and ⌘S: no "${CONFLICT112}" ever opened, the revision lands exactly one past the routes page's move, and Home's stored doc carries the edit — the save left from the base it was told of`,
+        heroId112 !== null && filledA112 && savedA112.synced && savedA112.revision === rMoved112 + 1 && JSON.stringify(homeA112).includes(typedA112) && conflictsA112 === 0,
+        JSON.stringify({ heroId112, filledA112, savedA112, rMoved112, conflictsA112, edited: JSON.stringify(homeA112).includes(typedA112) }))
+      await e112.locator('#editor-template').click()
+      await e112.waitForTimeout(300)
+      await e112.locator(`#editor-template-menu button[data-canvas="${canvas112}"]`).click({ timeout: 15000 }).catch(() => {})
+      const onA112 = await painted112(canvas112)
+      await e112.waitForTimeout(500)
+      const chipA112 = await e112.locator('#editor-layers [data-layer-row]:has([data-main-feed-chip])').count()
+      check(`step 112e — (a) ${canvas112}, pressed in the Template menu, opens with the grid the editor was told of — a17/1 the MAIN FEED in Layers — on the same window (no reload), no "${CONFLICT112}"`,
+        onA112 && chipA112 === 1 && (await kept112()) && (await conflicts112()) === 0, JSON.stringify({ onA112, chipA112, url: e112.url().replace(/\?.*/, '') }))
+
+      // 112f (b) — the template deleted on Routes & Templates while the editor shows it, then its Undo
+      await p112.bringToFront()
+      const rB112 = (await project112())?.revision
+      const confirmB112 = await deleteTemplate112()
+      const goneB112 = await templateGone112()
+      await e112.bringToFront()
+      const homeB112 = await e112.waitForURL((u) => u.pathname.endsWith(`/projects/${P}`), { timeout: 30000 }).then(() => true, () => false)
+      await painted112('home')
+      const barB112 = await e112.locator('#editor-gone-bar span').first().textContent({ timeout: 10000 }).catch(() => null)
+      // the template's own name while the editor still knew it, Ghost's label for the file once its menu had re-read (7.16b)
+      const wantB112 = [ED112.TEMPLATE_GONE.said(collection112.display), ED112.TEMPLATE_GONE.said(RT112.ghostLabel(file112))]
+      const droppedB112 = await listed112(false)
+      const heardB112 = await heard112()
+      check(`step 112f — (b) ⋯ → ${WR112.delete} on "${collection112.display}" (through its confirm) while the editor shows its canvas: the row and its doc go (a service read), the page posts the move (its key gone), and the editor, told, moves to Home on its own — the URL replaced, B5a's strip saying "${wantB112[0]}", the menu no longer listing ${canvas112}, no "${CONFLICT112}", no reload`,
+        confirmB112.asked && confirmB112.toast && Array.isArray(goneB112.ct) && !goneB112.ct.some((r) => r.filename === file112) && goneB112.doc?.length === 0 &&
+        heardB112.length === 2 && heardB112[1].moves[0]?.from === rB112 && heardB112[1].moves.some((m) => m.gone.includes(key112)) &&
+        homeB112 && wantB112.includes(barB112) && droppedB112 && (await kept112()) && (await conflicts112()) === 0,
+        JSON.stringify({ confirmB112, goneB112, rB112, heard: heardB112[1] ?? null, homeB112, barB112, droppedB112 }))
+      await p112.bringToFront()
+      await p112.locator('[role="status"]', { hasText: WR112.deleted(collection112.display) }).locator('button').click()
+      const backB112 = await until112(async () => ({ ct: await ct112(), doc: await doc112(key112) }), (v) => Array.isArray(v.ct) && v.ct.some((r) => r.filename === file112) && Array.isArray(v.doc) && v.doc.length === 1)
+      await e112.bringToFront()
+      const relistedB112 = await listed112(true)
+      const heardB2112 = await heard112()
+      check(`step 112f — (b) ${WR112.undo} on the routes page: the row and its doc come back (a service read), the editor is told (a third message, naming ${key112}) and its Template menu lists ${canvas112} again — no "${CONFLICT112}", no reload`,
+        Array.isArray(backB112.ct) && backB112.ct.some((r) => r.filename === file112) && backB112.doc?.length === 1 && heardB2112.length === 3 && heardB2112[2].moves.some((m) => m.docs.includes(key112)) &&
+        relistedB112 && (await kept112()) && (await conflicts112()) === 0,
+        JSON.stringify({ back: { ct: backB112.ct?.map((r) => r.filename), doc: backB112.doc?.length }, heard: heardB2112[2] ?? null, relistedB112 }))
+      // nothing it owed lost and its undo history KEPT through the three moves (a hydrate clears it — step 68): ⌘Z + ⌘S lands
+      const undoB112 = await e112.locator('#editor-undo').getAttribute('aria-disabled').catch(() => 'unread')
+      const rBack112 = (await project112())?.revision
+      await e112.locator('#editor-undo').click()
+      await e112.waitForTimeout(400)
+      await press112()
+      const savedB112 = await landed112(rBack112)
+      const homeB2112 = await home112()
+      check(`step 112f — (b) the journal KEPT through all three moves: the undo arrow awake, one press takes the Headline back, and ⌘S lands one past the base the editor was told of — Home's doc without "${typedA112}", no "${CONFLICT112}"`,
+        undoB112 !== 'true' && undoB112 !== 'unread' && savedB112.synced && savedB112.revision === rBack112 + 1 && homeB2112 !== null && !JSON.stringify(homeB2112).includes(typedA112) && (await conflicts112()) === 0,
+        JSON.stringify({ undoB112, rBack112, savedB112 }))
+
+      // 112g (c) — THE CONTROL: the routes page's postMessage stubbed, the same delete reaches no one, and ⌘S meets R-253
+      await p112.bringToFront()
+      await p112.evaluate(() => { BroadcastChannel.prototype.postMessage = function stubbed() {} })
+      const heardC112 = (await heard112()).length
+      const rC112 = (await project112())?.revision
+      const confirmC112 = await deleteTemplate112()
+      const goneC112 = await templateGone112()
+      const rC2112 = (await project112())?.revision
+      await e112.bringToFront()
+      const stillC112 = await e112.evaluate((c) => !!document.querySelector(`#editor-template-menu button[data-canvas="${c}"]`), canvas112)
+      const filledC112 = await editHome112(typedC112)
+      await press112()
+      const askedC112 = await e112.locator('dialog[aria-labelledby="editor-conflict-title"][open]').waitFor({ state: 'visible', timeout: SYNC_WAIT112 }).then(() => true, () => false)
+      const titleC112 = await e112.locator('#editor-conflict-title').textContent().catch(() => null)
+      const afterC112 = { heard: (await heard112()).length, conflicts: await conflicts112(), revision: (await project112())?.revision, home: await home112() }
+      check(`step 112g — the CONTROL (R-253): with the routes page's BroadcastChannel postMessage stubbed, the same delete reaches no one — no message heard, the editor's menu still listing ${canvas112} — and an edit on Home + ⌘S meets "${CONFLICT112}" (the dialog counter's own control), writing nothing: the revision where the delete left it, Home without "${typedC112}"`,
+        confirmC112.toast && Array.isArray(goneC112.ct) && !goneC112.ct.some((r) => r.filename === file112) && rC2112 > rC112 && afterC112.heard === heardC112 && stillC112 &&
+        filledC112 && askedC112 && titleC112?.trim() === CONFLICT112 && afterC112.conflicts > 0 && afterC112.revision === rC2112 && afterC112.home !== null && !JSON.stringify(afterC112.home).includes(typedC112),
+        JSON.stringify({ confirmC112, rC112, rC2112, heardC112, stillC112, filledC112, askedC112, titleC112, after: { ...afterC112, home: undefined } }))
+      await e112.locator('dialog[aria-labelledby="editor-conflict-title"][open] [data-cancel]').click({ timeout: 5000 }).catch(() => {})
+    } finally {
+      // the context first, so no flush of its own can land after the hand-back below (a stale base meets the 409 anyway)
+      if (ctx112 !== null) {
+        for (const pg of ctx112.pages()) await handBack(pg)
+        await ctx112.close().catch(() => {})
+      }
+      // the key's hand-back, every line idempotent, so a step that stopped early is put back too
+      await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: start112.project?.linked_site_id ?? null }) })
+      if (siteId112 !== null) await call('/rest/v1', `/sites?id=eq.${siteId112}`, { method: 'DELETE' })
+      await call('/rest/v1', `/custom_templates?project_id=eq.${P}&filename=eq.${encodeURIComponent(file112)}`, { method: 'DELETE' })
+      await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key112)}`, { method: 'DELETE' })
+      if (start112.rc?.length === 0) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'DELETE' })
+      else if (start112.rc?.[0]) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ config: start112.rc[0].config, yaml: start112.rc[0].yaml }) })
+      if (start112.home !== null) await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: start112.home }) })
+    }
+    const end112 = { project: await project112(), sites: await ownSites112(), projects: await ownProjects112(), home: await home112(), ct: await ct112(), rc: await rc112(), doc: await doc112(key112) }
+    check('step 112h — handed back as the step found it: the project linked as before, A owns the same sites (the planted one deleted) and projects, Home\'s doc as it was, no template or doc of the step\'s, the routing row as it was — and the block\'s context recorded zero CSP violations',
+      end112.project?.linked_site_id === (start112.project?.linked_site_id ?? null) && JSON.stringify(end112.sites) === JSON.stringify(start112.sites) && JSON.stringify(end112.projects) === JSON.stringify(start112.projects) &&
+      canon112(end112.home) === canon112(start112.home) && Array.isArray(end112.ct) && end112.ct.length === 0 && Array.isArray(end112.doc) && end112.doc.length === 0 && canon112(end112.rc) === canon112(start112.rc) && csp112.length === 0,
+      JSON.stringify({ end: { ...end112, home: undefined }, homeBack: canon112(end112.home) === canon112(start112.home), csp112: csp112.slice(0, 3) }))
 
     // ── step 9 — the skeleton streams first ──
     const streamContext = steadyRequests(await browser.newContext())

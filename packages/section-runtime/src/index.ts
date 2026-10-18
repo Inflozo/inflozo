@@ -176,7 +176,7 @@ export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrar
 // Story 7.3's compiler pass each paginated doc through, the reassignment, a secondary feed's own query, the
 // feed-less archive the editor's Layers note and Story 7.18's Pre-flight read, and `visibleFeed`, which Story 7.3's
 // guard asks of every page 2.
-export { designate, feedBase, feedlessArchive, feedQuery, feedsOn, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
+export { designate, feedBase, feedlessArchive, feedQuery, feedsOn, flaggedListing, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
 // Story 7.9 — FR-Q2's rules for a Ghost theme setting as data, one module: Theme settings' actions validate with it and
 // Story 7.10's `config.custom` emitter reads it
 export {

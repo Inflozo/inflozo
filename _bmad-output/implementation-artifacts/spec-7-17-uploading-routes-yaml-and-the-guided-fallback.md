@@ -257,7 +257,7 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - Apply it to production through the pooler on the owner's go in that session, and read it back.
 
   -- the cause B16 names (routine call 8).
-- [ ] `admin-rule.ts`, `ghost-admin/index.ts`, `ghost-admin-rule.test.ts`, `server-wiring.test.ts`:
+- [x] `admin-rule.ts`, `ghost-admin/index.ts`, `ghost-admin-rule.test.ts`, `server-wiring.test.ts`:
   - `adminRequest({ credential, siteUrl, method, path, body, major })` → `{ url, init }`. It is pure, it is the one request
     builder, and `fetchWithKey` uses it. A `FormData` body passes untouched with no `Content-Type`.
   - `CallResult.bytes` holds the answer's raw bytes (`text` is decoded from them).
@@ -269,7 +269,7 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - `kind: 'staff'` decrypts `staff_token_vault_ref`.
 
   -- DW-51's transport.
-- [ ] `apps/web/lib/routes-upload.ts` + `routes-upload.test.ts` (pure, AD-1):
+- [x] `apps/web/lib/routes-upload.ts` + `routes-upload.test.ts` (pure, AD-1):
   - `GHOST_DEFAULT_ROUTES`: F4's bytes, with its sha asserted in the test;
   - `routesToOffer({ project, live, lastOffered })`;
   - `routesAnswer(status, ghostType)`;
@@ -279,7 +279,7 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - `ROUTES_FALLBACK_WORDS`.
 
   Every matrix row from Upload to First read sits behind its control. -- one rule (Question 2).
-- [ ] `apps/web/server/routes-upload.ts`:
+- [x] `apps/web/server/routes-upload.ts`:
   - `offerRoutes({ projectId, siteId, userId, route })` runs, in order:
     1. read `routes_config`, the project's templates and the site row;
     2. check the stored routing (matrix, "Stored routing unfit");
@@ -292,9 +292,9 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - `server-wiring.test.ts` names this file. Tests over an injected `call` hold the order and every outcome.
 
   -- the step Story 7.18 calls (Question 1).
-- [ ] `server/site-health.ts`, `lib/health-rule.ts`, `health-rule.test.ts`: `writePlan` clears `routes_fallback` when the live
+- [x] `server/site-health.ts`, `lib/health-rule.ts`, `health-rule.test.ts`: `writePlan` clears `routes_fallback` when the live
   sha equals that of `routes_last_offered`. **Control:** it is left alone when the sha differs.
-- [ ] **B16:**
+- [x] **B16:**
   - `apps/web/components/routes-fallback.tsx` — the card per the frame and Design Notes' "Words".
     - The download is `<a download="routes.yaml" href="data:application/yaml;charset=utf-8,…">`, with its size from
       `sizeLabel`.
@@ -307,28 +307,28 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - `busy.test.ts` holds Verify.
 
   -- F3, R-74.
-- [ ] **Lints** (`modules.ts`, `modules.test.ts`, `compile.ts`, `compile.test.ts`):
+- [x] **Lints** (`modules.ts`, `modules.test.ts`, `compile.ts`, `compile.test.ts`):
   - `searchKeyRefusals(sources)` names a module source that reads `metaKey`, `ctrlKey` or `getModifierState`.
     `compileTheme` refuses a theme whose `main.js` it names.
   - `checkGhostMarkup`'s rule 1 refuses a `{{ghost_head}}` that carries any argument.
   - Each sits behind its control: `core.js` passes, and so does a plain `{{ghost_head}}`.
 
   -- FR-I5's lint, on the emitter.
-- [ ] **README** (`compile.ts`, `compile.test.ts`, `ad36.test.ts`):
+- [x] **README** (`compile.ts`, `compile.test.ts`, `ad36.test.ts`):
   - `CompileInput.routes?: string | null`, which 7.18 hands in.
   - When it is non-null, `## Routes` follows `## Styles`: the sentence, then the file, every line indented four spaces.
   - When it is null, no section (**control**).
   - `themeFailures` passes, with no builder name.
 
   -- DW-346's routes step.
-- [ ] **DW-366** (`main-feed.ts`, `read.ts`, `editor.tsx`, tests):
+- [x] **DW-366** (`main-feed.ts`, `read.ts`, `editor.tsx`, tests):
   - `flaggedListing(docs)` lists the Routes Manager files whose stored doc flags a main feed.
   - When the routing is unreadable, `read.ts` passes `designateAll` that listing and hands it to the editor as
     `EditorData.unreadListed`.
   - The editor's `listed` becomes `new Map(files.map((f) => [f, []]))`, so the Count falls back to Posts per page.
 
   -- Question 4.
-- [ ] **DW-367** (`routes/actions.ts`, `routes-manager.tsx`, `lib/routes.ts`, `apps/web/routes.test.ts`):
+- [x] **DW-367** (`routes/actions.ts`, `routes-manager.tsx`, `lib/routes.ts`, `apps/web/routes.test.ts`):
   - When the starting grid fails, `saveRoutes` answers `{ error: listedStartFailed(name), made: file }`.
   - The sheet then shows the template it made as its chosen template, and sends `start_file` on its next Save.
   - The server writes `listedStart` first, and only to this project's template that has no `project_templates` row and
@@ -336,7 +336,7 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - **Control:** an existing template chosen in the ordinary way is left as it is (7.16c's routine call 2).
 
   -- routine call 6.
-- [ ] **DW-370** (`lib/journal.ts`, `routes/actions.ts`, `routes-manager.tsx`, `editor.tsx`, `journal.test.ts`,
+- [x] **DW-370** (`lib/journal.ts`, `routes/actions.ts`, `routes-manager.tsx`, `editor.tsx`, `journal.test.ts`,
   `routes.test.ts`):
   - `journal.ts` gains `MOVED_CHANNEL(projectId)`, `MovedMessage` (`{ from, to, docs, gone }[]`), `isMovedMessage`, and
     `takeMoves(base, moves)`, a pure function that applies the moves in order from the base the editor holds.
@@ -351,10 +351,10 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - The spine's AD-15 gains Question 5's rule.
 
   -- Question 5.
-- [ ] `tools/probe/record-routes.mjs --upload`: §85, run in the main session on the owner's go (Design Notes, "T1"). --
-  standing rule 1 for F2–F4, and R-82.
-- [ ] `tools/probe/run-verify-editor.cjs`: step 112 (Design Notes, "Walk"), which the Review runs. -- R-82.
-- [ ] **Propagation** (standing rules 3 and 7):
+- [x] `tools/probe/record-routes.mjs --upload`: §85, run in the main session on the owner's go (Design Notes, "T1"). --
+  standing rule 1 for F2–F4, and R-82. *(Dev, 2026-10-18: built by the subagent; run on T1 in the main session on the owner's go, Question 7 — every row held, §85 written.)*
+- [x] `tools/probe/run-verify-editor.cjs`: step 112 (Design Notes, "Walk"), which the Review runs. -- R-82.
+- [x] **Propagation** (standing rules 3 and 7):
   - **`prd.md`, dated notes on:**
     - FR-I4: the role reading, B16 for "the guided Labs card", Question 2, the skip, Verify with the Admin key, and the
       transport;
@@ -377,7 +377,7 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   - **Comments:** `sites/actions.ts:1278`, `site-health.ts:80-83` and `routes/actions.ts:21-22`.
   - **Finish with greps:** `git grep -n "Labs card"` and `git grep -n "non-Owner"`. Every hit that remains carries the dated
     reading.
-- [ ] Run `python3 tools/doc-audit.py --check` twice, then `pnpm check`, `pnpm keyboard` and `pnpm build`.
+- [x] Run `python3 tools/doc-audit.py --check` twice, then `pnpm check`, `pnpm keyboard` and `pnpm build`.
 
 **Acceptance Criteria:**
 - **Matches the frame (R-74).** Given each cause planted on production (Walk), when Routes & Templates and Sites are drawn
@@ -395,6 +395,32 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
   until the answer lands (R-98).
 
 ## Spec Change Log
+
+- **Dev, 2026-10-18 — the step's real `io` is its own file, `server/routes-io.ts`.** `server/routes-upload.ts` takes `io` handed
+  in (`site-settings.ts`'s shape): `node --test` cannot resolve the app's `@/` alias, and the step then reaches neither the
+  service role nor the chokepoint — `routes-upload.test.ts` and `server-wiring.test.ts` hold both. So `server-wiring.test.ts`
+  names `routes-io.ts` on its two importer lists, with its reason, where the Tasks say "names this file".
+- **Dev, 2026-10-18 — the README sink's AD-36 pair is in `compile.test.ts`, not `ad36.test.ts`** (Boundaries' AD-36 bullet and
+  the README task name the latter). `packages/section-runtime` cannot import the compiler, which depends on it — a cycle — and
+  every other compile-side AD-36 pair already lives in `compile.test.ts`. The pair is the same: hostile lines stay in the
+  indented block and C0 controls other than `\n` are refused (CommonMark ends a line at `\r`); a real `routesYaml` file comes
+  back byte for byte. `tools/pilot-theme.mjs` passes `routes` through so `check-snapshots` holds `themeFailures` over a README
+  that carries one (and its control: a collection at `/inflozo/` is named).
+- **Dev, 2026-10-18 — readings the build needed, each beside its test (routine calls, said to the owner, not asked):**
+  - a 403 is `role` only when Ghost's error is `NoPermissionError`; any other 403 (a firewall's) is `ghost_refused`, so a
+    customer is never told his token's role is wrong by something that is not Ghost (`routesAnswer`);
+  - two failure codes beyond the matrix's: `ghost_redirected` for a 3xx (the chokepoint's own code) and `site_not_found` when
+    the project or the site is not the caller's (the owned read comes before any call);
+  - a staff token gone from the store between the read and the upload (`credential_missing`) is B16's `no_token`; every other
+    chokepoint error (the store, a malformed key, a bad address) is thrown on, for Story 7.18's job to retry (AD-20);
+  - Verify with no file offered says `notYet`, and a site that is not the caller's `unreachable` — never a success;
+  - an editor flush whose 409 answers a base it has since moved past (a move taken in while the request was out) is sent
+    again, never the conflict dialog — the other order of R-258's race;
+  - B16's title is an `h3` on a Sites card and an `h2` under Routes & Templates' `h1` (`heading`), and its download link is
+    named by step 1's own words and the file chip (`aria-labelledby`) — no new string.
+- **Dev, 2026-10-18 — DW-371 (new, Story 7.18's).** The matrix rules a read-back that differs or fails `failed:
+  routes_unverified` with the state unchanged, so EXPERIENCE F3's *could not verify* state has no card; 7.18's Ship it says it
+  at its ending, or puts a stored cause to the owner.
 
 ## Design Notes
 
@@ -728,7 +754,86 @@ fix gets its own ask.
   - the Ghost 5 half is DW-326's (R-238).
 - `python3 tools/doc-audit.py --check` -- PASS, twice.
 - `git grep -n "Labs card"` and `git grep -n "non-Owner"` -- every remaining hit carries the dated reading.
-- Dev's results add a **Matrix row → check** table: every I/O row maps to a check that ran in that row's state.
+- Dev's results add a **Re-run by the main session on the final tree (2026-10-18, Node 24), after the T1 run, before the commit:**
+- `pnpm check` -- exit 0: library 285 / ghost-shim 47 / section-runtime 432 / app 830 / theme-compiler 218 / tools 13
+  passing, 0 failing (each suite's own count, as it printed), the story's `(7.17)` and `Story 7.17` tests among them.
+- `pnpm build` -- exit 0. `node tools/check-traces.mjs` -- "every route carries its files", and no client chunk carries the
+  font pool's record.
+- `pnpm keyboard` -- exit 0, 243 passed (17.2 min).
+- `python3 tools/doc-audit.py --check` -- PASS on the second run (the first regenerated the index after §85 landed).
+
+**Matrix row → check** table: every I/O row maps to a check that ran in that row's state.
+
+**Results (Dev, 2026-10-18, on the final tree, under Node 24; the T1 run is the main session's):**
+- `pnpm check` -- exit 0: lint, typecheck and every package's suite, each printing its own count, with every 7.17 test named in
+  the table below.
+- `pnpm keyboard` -- exit 0, every journey passed. `pnpm build` -- exit 0. `node tools/check-traces.mjs` -- "every route carries
+  its files", and no client chunk carries the font pool's record.
+- `python3 tools/doc-audit.py --check` -- PASS twice (the run before regenerated the story board, as it does after a change; an
+  earlier run named DW-371 orphaned until Story 7.18's card carried it, R-195).
+- `git grep -n "Labs card"` and `git grep -n "non-Owner"` -- every live hit carries the dated reading (`prd.md` FR-I4 and the
+  Admin API line, `epics.md`'s coverage line and Story 7.17's card, `epic-7-context.md`'s open item); the rest are `record`
+  documents (`validation-report.md`, `review-rubric.md`, `encode-propagation-map.md`, `reconcile-designs.md` and its findings,
+  `review-st2-ghost-truth.md`, the v4.0 backup), left as written.
+- **Controls planted (standing rule 2)**, each failing its test and restored: `routesToOffer` offering an unchanged file; a 403
+  read as `role` whatever its type; Ghost's default put back over a file nobody offered; the read-back with the Admin key; a
+  stored file that is not `routesYaml(config)` let through; `writePlan` clearing the cause whatever the live sha; `takeMoves`
+  ignoring a move's `from`; `adminRequest` typing a `FormData` body as JSON. The packages' (the ⌘K throw, the head rule, the
+  README's indent, its section and a `\r` let through) were planted the same way.
+- **`tools/probe/record-routes.mjs --upload`** (§85) is built: every Admin call through the product's `adminRequest`, every
+  decision `routesToOffer`/`routesAnswer`/`bytesEqual`, the body `offerRoutes`' FormData; before any write
+  `GHOST_DEFAULT_ROUTES` is held byte-identical to both tarballs' `default-routes.yaml` and the probe and Ghost's default read
+  back as meant through both majors' own parsers. Its plain local half passed (`node tools/probe/record-routes.mjs`, npm reads
+  only); any other argument prints the header and exits 2. The whole leg ran against an in-process fake Ghost in the scratchpad
+  (the JWT, the headers, no `Content-Type` on the POST, the FormData part, the counts, the restore) — no request reached T1.
+- **T1 `ghost6.inflozo.com` (6.58.0), executed in the main session on the owner's go (Question 7), 2026-10-18** —
+  `node tools/probe/record-routes.mjs --upload` (Node 24; `GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN` and
+  `GHOST6_ADMIN_API_KEY` read in-process, never printed) -- exit 0, every row held, MEASUREMENTS §85 written:
+  - before any write: `GHOST_DEFAULT_ROUTES` byte-identical to both tarballs' `default-routes.yaml` (130 bytes, F4's sha
+    `b2d67526…`); the probe file and Ghost's default each accepted and read back as meant by 6.58.0's and 5.130.6's own
+    parsers; T1's own file read with the staff token through `adminRequest` and saved — F4's bytes; Casper active, no
+    `custom-inflozo-probe-up.hbs`; tag `craft` (9 published); `/inflozo-probe-up/` 404 (the control);
+  - step 2: `routesToOffer` with the project's file equal to T1's live file → `unchanged`, 0 POSTs;
+  - step 3: the probe (284 bytes) POSTed with the staff token → HTTP 200, `routesAnswer` `ok`; read back with the same token
+    byte for byte; `/inflozo-probe-up/` 200 after 1 s (F2: live at once);
+  - step 4: `routesToOffer({ project: null, live: probe, lastOffered: probe })` → offer `GHOST_DEFAULT_ROUTES`; POST 200; read
+    back F4's bytes; `/inflozo-probe-up/` 404 again;
+  - step 5 (controls): the probe POSTed with `GHOST6_ADMIN_API_KEY` → 403 `NoPermissionError`, read `role`; with a random
+    well-formed staff token → 401 `UnauthorizedError`, read `revoked`; the read-back after both byte-identical to step 4's;
+  - step 6: T1's own file restored in the `finally` with the staff token, HTTP 200, read back byte for byte (sha `b2d67526…`).
+    Three stored uploads and two refused; Ghost 6 keeps three dated copies in `content/settings` (F5). The Ghost 5 server
+    half is DW-326's (R-238).
+- **The walk:** step 112 is written (`run-verify-editor.cjs`, `node --check` clean), and step 110h re-expected: its routes page
+  now opens in a context of its own, because an editor in the same context hears the delete (DW-370) and moves to Home before
+  110h's next press. Both are the Review's, on production.
+
+**Matrix row → check** (each ran in that row's state; the T1 and walk rows wait for their runs):
+
+| I/O row | The check that ran in it |
+|---|---|
+| Upload | `routes-upload.test.ts`: `routesToOffer` offers F over G; `offerRoutes`' order read → GET [staff] → POST [staff, `routes_upload`, FormData `routes`/`routes.yaml`/`text/yaml` carrying F's bytes] → GET [staff] → write F, sha, now, null; §85 step 3 |
+| Already there | `routes-upload.test.ts`: `unchanged`, no POST, the same state written; §85 step 2 (its POST counter) |
+| No token | `routes-upload.test.ts`: the live read with the Admin key, no POST, `no_token` and the file written; walk 112a |
+| Token stopped working | `routes-upload.test.ts`: 401 → `revoked` written, no read-back; `routesAnswer`; §85's unknown-token control; walk 112b |
+| Role below Administrator | `routes-upload.test.ts`: 403 `NoPermissionError` → `role`, and any other 403 a refusal (the control); §85's Admin-key control; walk 112b |
+| Ghost refuses the file | `routes-upload.test.ts`: 422 → `ghost_refused` with Ghost's message as `detail`, nothing written |
+| Ghost busy or away | `routes-upload.test.ts`: 503 → `ghost_unavailable`, a thrown `ghost_unreachable` → `ghost_unreachable`, nothing written; any other chokepoint error thrown on |
+| Read-back differs | `routes-upload.test.ts`: G read back → `routes_unverified`, and a read-back that fails too, nothing written (DW-371) |
+| Back to default, Inflozo's file live | `routes-upload.test.ts`: `routesToOffer` and `offerRoutes` upload `GHOST_DEFAULT_ROUTES`; §85 step 4 |
+| Default, someone else's file | `routes-upload.test.ts`: `kept`, no POST, no write (never offered, or offered something else) |
+| Default everywhere | `routes-upload.test.ts`: `kept`, even when the default was offered last |
+| Stored routing unfit | `routes-upload.test.ts`: a config that does not parse, a template the project lacks, a spliced file — each `routes_invalid` with only the read made |
+| First read fails | `routes-upload.test.ts`: with F the upload goes and the read-back decides; without F `kept` |
+| Verify, Ghost has it | `routes-upload.test.ts`: the Admin key, bytes equal → `verified`, the cause cleared with the sha and the time; walk 112d |
+| Verify, not yet | `routes-upload.test.ts`: bytes differ → `notYet`, nothing written |
+| Verify, no answer | `routes-upload.test.ts`: a read that fails or throws → `unreachable`, nothing written; walk 112c on production, the columns read back unchanged |
+| Daily check | `health-rule.test.ts` (7.17): the cause cleared when the live sha is the offered one's, left with a different sha, no read, no cause, nothing offered; the shell's select, hash and bytes read from its source |
+| ⌘K lint | `modules.test.ts` (7.17): each of the three names and a bracketed read named, comments not; `compile.test.ts`: a bundled module that reads one throws, `core.js` and a comment the control; `check-snapshots`: every real module file passes, a planted one is named |
+| Head lint | `compile.test.ts`: `exclude="search"` and four spellings named, a bare and a `~`-trimmed `{{ghost_head}}` pass, `{{ghost_foot}}` unaffected |
+| README | `compile.test.ts`: `## Routes` after `## Styles`, the file indented four spaces and byte-equal once unindented, null and absent give the old README; the AD-36 pair; `check-snapshots`: `themeFailures` clean over the pilots' README with routes, a builder-named path its control |
+| DW-366 | `main-feed.test.ts` (7.17): `flaggedListing` lists only a flagged Routes Manager file; the flag kept through a read and an edit; a readable routing that does not list it strips it (the control); `editor.test.ts`: `read.ts` and the editor's `listed` |
+| DW-367 | `routes.test.ts` (7.17): `listedStartFailed`, `made`, the re-check (no doc, no stored route, listed), each clause's removal failing (the control), the grid before the config, the sheet's `start_file` |
+| DW-370 | `journal.test.ts` (7.17): `takeMoves` from the editor's base, a move from another base taking nothing (the control), the message's shape, the routes page's `told` on every action, the editor's `heardMoved` (holder only, journal kept, the refresh, the dialog) and the 409 retry; walk 112e–112g, the stubbed `postMessage` meeting R-253's dialog |
 
 **Real services (R-82):**
 - **Dev:** T1 `ghost6.inflozo.com` (6.58.0) via §85, and the production database for the migration's apply.

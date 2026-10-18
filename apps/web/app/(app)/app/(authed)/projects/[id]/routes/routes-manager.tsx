@@ -28,6 +28,7 @@ import { Toggle } from '@/components/kit/toggle'
 import { canvasPath, routeCanvasOf, settingsPath, type RouteCanvas } from '@/lib/editor'
 import { isApp } from '@/routing'
 import { addressOf, LISTS } from '@/lib/live-content'
+import { MOVED_CHANNEL, movedMessage } from '@/lib/journal'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from '@/lib/reorder'
 import {
@@ -70,6 +71,8 @@ type Props = {
   designed: readonly string[]
   /** Story 7.16b — opened from the Template menu's "New template" (`?new=template`): the sheet is up on arrival */
   fromMenu?: boolean
+  /** Story 7.17 — B16 for the linked site, drawn at the top under the bar while the site still needs its routing */
+  notice?: ReactNode
 }
 
 /** `entry` — Story 7.16b: the New template sheet the Template menu opened, whose Create opens the new canvas */
@@ -81,6 +84,24 @@ const SECTION = 'text-ui-dense font-semibold uppercase tracking-[0.04em] text-in
 const DASHED = `h-8 self-start rounded-sm border border-dashed border-line-strong px-[14px] text-control-label font-medium text-ink-soft transition-colors hover:border-coral hover:text-coral-deep ${ring}`
 const PILL = 'rounded-pill border border-line bg-paper px-[9px] py-[2px] text-control-label text-ink-soft'
 const MORE = `inline-flex h-6 shrink-0 items-center justify-center rounded-[6px] px-1 font-semibold tracking-[2px] text-ink-soft transition-colors hover:text-ink ${ring}`
+
+/**
+ * STORY 7.17 — DW-370, R-258: AN ANSWER THAT MOVED THE PROJECT'S REVISION IS TOLD TO AN EDITOR OPEN IN THIS BROWSER. Every
+ * write's answer carries its moves (`moved`, the actions' `syncDocs`), and they are posted on `MOVED_CHANNEL`, so that
+ * editor takes the docs in from its own base and its next save is not R-253's 409. Another device hears nothing and keeps
+ * R-253's ask (AD-15). A browser with no `BroadcastChannel` tells nobody — the 409 is the floor.
+ */
+function told(projectId: string, result: RoutesResult): RoutesResult {
+  if (result.moved === undefined || result.moved.length === 0 || typeof BroadcastChannel === 'undefined') return result
+  try {
+    const channel = new BroadcastChannel(MOVED_CHANNEL(projectId))
+    channel.postMessage(movedMessage(projectId, result.moved))
+    channel.close()
+  } catch {
+    // a channel that cannot be opened tells nobody, and the editor's next save meets R-253's 409
+  }
+  return result
+}
 
 const formOf = (fields: Record<string, string>) => {
   const fd = new FormData()
@@ -133,7 +154,7 @@ export function RoutesManager(props: Props) {
       const was = undo
       setShown(next)
       setUndo(null)
-      const result = await saveRoutes(null, formOf({ project: projectId, config: JSON.stringify(next) }))
+      const result = told(projectId, await saveRoutes(null, formOf({ project: projectId, config: JSON.stringify(next) })))
       if ('error' in result) {
         setFailed(result.error)
         // a refused change is not a change: the last delete's Undo stands (routine call 16)
@@ -146,7 +167,7 @@ export function RoutesManager(props: Props) {
   const undoNow = () => {
     if (undo === null) return
     startUndo(async () => {
-      const result = await undo.run()
+      const result = told(projectId, await undo.run())
       if ('error' in result) setFailed(result.error)
       else {
         setFailed(null)
@@ -173,7 +194,7 @@ export function RoutesManager(props: Props) {
     setGone(t.id)
     setShown(withoutTemplate(config, t.file))
     setUndo(null)
-    const result = await deleteTemplate(null, formOf({ project: projectId, template: t.id }))
+    const result = told(projectId, await deleteTemplate(null, formOf({ project: projectId, template: t.id })))
     if ('error' in result) setFailed(result.error)
     else {
       setFailed(null)
@@ -213,6 +234,8 @@ export function RoutesManager(props: Props) {
           <span className="truncate">{chip}</span>
         </span>
       </header>
+
+      {props.notice ? <div className="shrink-0 border-b border-line px-6 py-5">{props.notice}</div> : null}
 
       {empty ? (
         <>
@@ -573,7 +596,7 @@ function Taxonomies({ projectId, config, known, onSaved }: { projectId: string; 
           const next = { ...config, taxonomies: { tag, author } }
           const problem = validateRoutes(next, { templates: known }).find((p) => p.at.startsWith('taxonomies'))
           if (problem) return setError(problem.message)
-          const result = await saveRoutes(null, formOf({ project: projectId, config: JSON.stringify(next) }))
+          const result = told(projectId, await saveRoutes(null, formOf({ project: projectId, config: JSON.stringify(next) })))
           if ('error' in result) setError(result.error)
           else {
             setError(null)
@@ -770,6 +793,8 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
   const dialog = useRef<HTMLDialogElement>(null)
   const [d, setD] = useState<Draft>(() => draftOf(open, config, postsPerPage))
   const [error, setError] = useState<string | null>(null)
+  /** Story 7.17 — DW-367: the template this sheet made whose starting post grid failed (`made`), sent as `start_file` */
+  const [started, setStarted] = useState<string | null>(null)
   const known = templates.map((t) => t.file)
   const taken = { project: known, deployed }
   const router = useRouter()
@@ -838,16 +863,25 @@ function SheetDialog({ open, projectId, config, templates, deployed, postsPerPag
           const refused = refusal()
           if (refused !== null) return setError(refused)
           let result: RoutesResult
-          if (open.kind === 'template') result = await createTemplate(null, formOf({ project: projectId, name: d.name }))
+          if (open.kind === 'template') result = told(projectId, await createTemplate(null, formOf({ project: projectId, name: d.name })))
           else {
             const { next, file } = nextOf(open, d, config)
-            result = await saveRoutes(null, formOf({
+            result = told(projectId, await saveRoutes(null, formOf({
               project: projectId,
               config: JSON.stringify(next),
               ...(file === null ? {} : { template_name: d.name, template_file: file }),
-            }))
+              // Story 7.17 — DW-367: the template this sheet made, whose starting grid is still owed, while it stays chosen
+              ...(file === null && started !== null && d.template === started ? { start_file: started } : {}),
+            })))
           }
-          if ('error' in result) return setError(result.error)
+          if ('error' in result) {
+            // Story 7.17 — DW-367: the template was made and its grid was not — it stays chosen, and the next Save adds it
+            if (result.made !== undefined) {
+              setStarted(result.made)
+              set({ template: result.made, name: '' })
+            }
+            return setError(result.error)
+          }
           setError(null)
           // Story 7.16b — the Template menu's entry opens the new canvas; the sheet stays up, saying "Creating…", until it does
           const made = open.kind === 'template' && open.entry === true && result.file !== undefined ? routeCanvasOf(result.file) : null

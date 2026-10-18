@@ -602,7 +602,8 @@ test('Story 6.4: the sync route refuses own packs that do not all survive ownPac
 test('Story 7.16c: read.ts hands the parsed routing and designates with listsOf; the editor derives listed once and every door reads it', () => {
   const read = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts'), 'utf8')
   assert.match(read, /const routes = routing\?\.ok === true \? routing\.config : null/)
-  assert.match(read, /designateAll\(docs, held, listsOf\(routes\)\)/)
+  // Story 7.17 (DW-366): `listsOf` whenever the routing reads; the flagged listing only when it does not
+  assert.match(read, /designateAll\(docs, held, unreadListed === undefined \? listsOf\(routes\) : new Set\(unreadListed\)\)/)
   assert.match(read, /designate\(doc, fileOf\(key\), library, undefined, listed\)/)
   const editor = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'editor.tsx'), 'utf8')
   assert.equal((editor.match(/listsOf\(/g) ?? []).length, 1, 'derived once')
@@ -632,4 +633,18 @@ test('Story 7.16c (routine call 4): a shared template previews its FIRST list â€
   assert.match(editor, /\[\.\.\.listed\]\.map\(\(\[file, \[first\]\]\) => \[file, first === undefined \? undefined : routeList\(first, now\)\]\)/)
   assert.match(editor, /const first = listed\.get\(file\)\?\.\[0\]/)
   assert.match(editor, /FEEDLESS_ROUTE\(listed\.get\(canvas\.file\)\?\.\[0\]\?\.path \?\? '\/'\)/)
+})
+
+test('Story 7.17 (DW-366, R-257): an unreadable routing keeps each template\'s stored main feed â€” the read designates with what the docs flag, and the editor\'s Count falls back to Posts per page', () => {
+  const dir = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)')
+  const read = readFileSync(join(dir, 'read.ts'), 'utf8')
+  // only an UNREADABLE routing (`routes` null) lists the flagged files; a readable one is `listsOf`'s, which strips a file it
+  // does not list (main-feed.test.ts executes both through `designate`)
+  assert.match(read, /const unreadListed = routes === null \? flaggedListing\(docs\) : undefined\n\s+Object\.assign\(docs, designateAll\(docs, held, unreadListed === undefined \? listsOf\(routes\) : new Set\(unreadListed\)\)\)/)
+  assert.match(read, /\.\.\.\(unreadListed === undefined \? \{\} : \{ unreadListed \}\)/, 'handed to the editor')
+  const editor = readFileSync(join(dir, 'editor.tsx'), 'utf8')
+  // each listed with NO list of its own: `isPaginated` keeps the feed main at every edit, and `mainRole`/`perPageOn` find no
+  // route limit, so the Count is Posts per page
+  assert.match(editor, /const listed = useMemo<Lists>\(\(\) => \(routes === null && unreadListed !== undefined \? new Map\(unreadListed\.map\(\(f\) => \[f, \[\]\] as const\)\) : listsOf\(routes\)\), \[routes, unreadListed\]\)/)
+  assert.match(editor, /const first = listed\.get\(file\)\?\.\[0\]\n\s+return first\?\.limit === undefined \? \{ kind: 'main', postsPerPage \}/)
 })

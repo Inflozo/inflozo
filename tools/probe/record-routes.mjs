@@ -5,12 +5,14 @@
  * rule 1 for every Ghost claim the Routes page makes ("Ghost will accept this routing"): `routes.ts`' facts F1–F7 were read
  * in Ghost's source; this executes them.
  *
- *   node tools/probe/record-routes.mjs         # the local half: read only, writes nothing anywhere
- *   node tools/probe/record-routes.mjs --t1    # the local half, then T1 — the owner's go, in the MAIN session only
+ *   node tools/probe/record-routes.mjs           # the local half: read only, writes nothing anywhere
+ *   node tools/probe/record-routes.mjs --t1      # the local half, then T1 (§82) — the owner's go, in the MAIN session only
+ *   node tools/probe/record-routes.mjs --upload  # the local half, then T1 (§85) — the owner's go, in the MAIN session only
  *
- * THIS HEADER IS ITS HELP. Only an explicit `--t1` writes; ANY other argument (`--help` included) prints this and exits
- * 2 without a request. Node 24: it imports `packages/section-runtime/src/routes.ts` and `routes-fixtures.ts` through type
- * stripping, so the files judged are the ones `routesYaml` writes, never a copy.
+ * THIS HEADER IS ITS HELP. Only an explicit `--t1` or `--upload` writes; ANY other argument (`--help` included) prints
+ * this and exits 2 without a request. Node 24: it imports `packages/section-runtime/src/routes.ts` and
+ * `routes-fixtures.ts` through type stripping, so the files judged are the ones `routesYaml` writes, never a copy — and
+ * `--upload` imports the product's own routes step the same way (below).
  *
  * THE LOCAL HALF (both modes; network reads only: registry.npmjs.org). Into a FRESH temp dir it downloads the Ghost
  * 6.58.0 and 5.130.6 npm tarballs, each refused unless its sha512 is the pin below AND the registry's `dist.integrity`;
@@ -52,18 +54,46 @@
  *      FILTER MATCHES owns a post (`lazy-url-service.js:300-303`), so moving `/` alone changes nothing.
  *   5. RESTORE, in a `finally` that encloses every write: T1's own bytes uploaded and read back, byte for byte.
  *
- * WHAT IT WRITES TO THE SERVER: T1 only, with --t1 only — three `POST settings/routes/yaml/` (the emitted file, the
- * index-first control, the restore) and nothing else: no post, tag, theme, member or setting. GHOST ITSELF keeps a
- * dated copy of the file each upload replaces — read in 6.58.0's source at Story 7.16a's Review (2026-10-17):
- * `core/server/adapters/route-settings/FileStore.js:106-117`'s `replace` writes `routes-YYYY-MM-DD-HH-mm-ss.yaml`
- * (`utils.js:9-20`) beside `routes.yaml` in `content/settings` before the new file — so each run leaves three such
- * backups on T1's disk, Ghost's own and harmless, the same as an upload from Ghost Admin.
- * WHAT IT WRITES HERE: with --t1 and every row held, MEASUREMENTS.md §82 alone, replacing an earlier §82 of its own so a
- * re-run re-records. The local half writes nothing to the repo; its temp dir is removed, and a --t1 run keeps its own
- * (T1's original routes.yaml is in it) and prints where.
+ * THE --upload HALF (STORY 7.17, §85; T1 only, R-238). INFLOZO'S OWN ROUTES STEP ON A REAL GHOST: every Admin call is
+ * built by the product's `adminRequest` (`apps/web/server/ghost-admin/admin-rule.ts`) and sent as built; every decision is
+ * the product's `routesToOffer` / `routesAnswer` (`apps/web/lib/routes-upload.ts`); the upload body is exactly
+ * `offerRoutes`' (`apps/web/server/routes-upload.ts`). It runs only after the local half held, and before any write
+ * `GHOST_DEFAULT_ROUTES` must be both tarballs' `default-routes.yaml` byte for byte (F4) and the probe file and Ghost's
+ * default must read back as meant through both majors' own parsers. Each its own printed check:
+ *   1. `GET settings/routes/yaml/` with the STAFF token — T1's own file, saved to the temp dir and kept in memory BEFORE
+ *      any write (nothing is written if it cannot be); whether it is F4's is RECORDED, and it is put back whatever it
+ *      holds. Then, read only: `site/`, `themes/` (the active theme carries no `custom-inflozo-probe-up.hbs`), the busiest
+ *      public tag with a published post; `/inflozo-probe-up/` must answer 404, so the segment is free.
+ *   2. NO POST: `routesToOffer` with the project's file equal to T1's live file answers `unchanged`, and the leg's POST
+ *      counter (in its one upload helper) did not move.
+ *   3. THE PROBE: `routesYaml` of a config `validateRoutes` passes, never hand-written — one collection
+ *      `/inflozo-probe-up/` filtering that tag, the index last. `routesToOffer` offers it; the POST reads `ok`; the
+ *      read-back with the same token is the probe byte for byte; `/inflozo-probe-up/` answers 200 (F2: live at once).
+ *   4. BACK TO THE DEFAULT: `routesToOffer({ project: null, live: <the probe>, lastOffered: <the probe> })` offers
+ *      `GHOST_DEFAULT_ROUTES`; the POST reads `ok`; the read-back is F4's bytes; `/inflozo-probe-up/` answers 404.
+ *   5. CONTROLS: the probe POSTed again signed with `GHOST6_ADMIN_API_KEY` answers 403 `NoPermissionError`, read `role`;
+ *      signed with a well-formed staff token T1 does not know (random hex, never a real key) answers 401, read `revoked`;
+ *      a read-back after both is what step 4 left, byte for byte — neither wrote.
+ *   6. RESTORE, in a `finally` that encloses every write: T1's own bytes uploaded with the staff token and read back,
+ *      byte for byte; on a failure it prints where the saved file is.
  *
- * NO KEY IS EVER PRINTED: `GHOST6_URL` and `GHOST6_STAFF_ACCESS_TOKEN` are read from tools/probe/.env in-process (never
- * argv, never the environment), the token signs a 5-minute JWT, and every error is scrubbed of it.
+ * WHAT IT WRITES TO THE SERVER: T1 only, with --t1 or --upload only, and nothing but `POST settings/routes/yaml/`: no
+ * post, tag, theme, member or setting. --t1: three (the emitted file, the index-first control, the restore). --upload:
+ * three STORED (the probe, Ghost's default, the restore) and two REFUSED by Ghost (step 5's), which store nothing. GHOST
+ * ITSELF keeps a dated copy of the file each stored upload replaces — read in 6.58.0's source at Story 7.16a's Review
+ * (2026-10-17) and again at 7.17's Dev: `core/server/adapters/route-settings/FileStore.js:106-117`'s `replace` writes
+ * `routes-YYYY-MM-DD-HH-mm-ss.yaml` (`utils.js:9-20`) beside `routes.yaml` in `content/settings` before the new file —
+ * so each run leaves three such backups on T1's disk, Ghost's own and harmless, the same as an upload from Ghost Admin.
+ * The name is to the second and a same-second copy overwrites the last, so --upload spaces its POSTs two seconds apart
+ * and §85 states the count from its own counter.
+ * WHAT IT WRITES HERE: with --t1 and every row held, MEASUREMENTS.md §82 alone; with --upload and every row held, §85
+ * alone — each replacing an earlier section of its own number so a re-run re-records. The local half writes nothing to
+ * the repo; its temp dir is removed, and a --t1 or --upload run keeps its own (T1's original routes.yaml is in it) and
+ * prints where.
+ *
+ * NO KEY IS EVER PRINTED: `GHOST6_URL` and `GHOST6_STAFF_ACCESS_TOKEN` (and, for --upload, `GHOST6_ADMIN_API_KEY`) are
+ * read from tools/probe/.env in-process (never argv, never the environment), each key signs a 5-minute JWT, and every
+ * error is scrubbed of them.
  */
 import fs from 'node:fs'
 import os from 'node:os'
@@ -76,15 +106,16 @@ import { fileURLToPath } from 'node:url'
 const SELF = fileURLToPath(import.meta.url)
 const ARGS = process.argv.slice(2)
 // a recorder that ran on `--help` would write to T1; the header is the help (memory: probe recorders ignore --help)
-if (!(ARGS.length === 0 || (ARGS.length === 1 && ARGS[0] === '--t1'))) {
+if (!(ARGS.length === 0 || (ARGS.length === 1 && ['--t1', '--upload'].includes(ARGS[0])))) {
   console.error(fs.readFileSync(SELF, 'utf8').split('*/')[0])
   process.exit(2)
 }
 const T1 = ARGS[0] === '--t1'
+const UPLOAD = ARGS[0] === '--upload'
 const REPO = path.join(path.dirname(SELF), '..', '..')
 const MEASUREMENTS = path.join(REPO, '_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md')
-const SECTION = '82'
-const COMMAND = 'node tools/probe/record-routes.mjs --t1'
+const SECTION = UPLOAD ? '85' : '82'
+const COMMAND = `node tools/probe/record-routes.mjs ${UPLOAD ? '--upload' : '--t1'}`
 const SRC = path.join(REPO, 'packages/section-runtime/src')
 const { ROUTES_FIXTURES } = await import(path.join(SRC, 'routes-fixtures.ts'))
 const { parseRoutesConfig, validateRoutes, routesYaml } = await import(path.join(SRC, 'routes.ts'))
@@ -103,6 +134,11 @@ const NPM = path.join(path.dirname(process.execPath), 'npm')
 const COLL = 'inflozo-probe'
 const CHAN = 'inflozo-probe-featured'
 const TEMPLATE = 'custom-inflozo-probe.hbs'
+// --upload's own segment and template, so neither run's probe can be mistaken for the other's
+const UP = 'inflozo-probe-up'
+const UP_TEMPLATE = 'custom-inflozo-probe-up.hbs'
+/** F4: Ghost's `default-routes.yaml`, the same on both majors */
+const F4_SHA = 'b2d675260a6071be426ac6a67ea60da9428f6169e03e25cb14cc2d7ed74381a1'
 
 class Void extends Error {}
 /** every key this run read, scrubbed from anything it prints */
@@ -150,12 +186,14 @@ async function ghostTree(tmp, version, { integrity, needs }) {
   const req = createRequire(SELF)
   const at = (f) => req(path.join(dir, RS, f))
   const yaml = at('yaml-parser.js')
+  // F4's file as this Ghost ships it — what --upload holds `GHOST_DEFAULT_ROUTES` to
+  const defaults = fs.readFileSync(path.join(dir, RS, 'default-routes.yaml'))
   if (version.startsWith('6.')) {
     const { parseRouteSettings } = at('route-settings-parser.js')
-    return { version, pins, read: (text) => shape6(parseRouteSettings(yaml(text), text)) }
+    return { version, pins, defaults, read: (text) => shape6(parseRouteSettings(yaml(text), text)) }
   }
   const validate = at('validate.js')
-  return { version, pins, read: (text) => shape5(validate(yaml(text))) }
+  return { version, pins, defaults, read: (text) => shape5(validate(yaml(text))) }
 }
 
 /** Ghost 6's parsed settings, in one shape: collections in registration order, routes by path. */
@@ -246,14 +284,16 @@ async function localHalf(tmp) {
 
 /* ───────────────────────────── the --t1 half ───────────────────────────── */
 
-function loadEnv() {
+/** `GHOST6_URL`, the staff token and any `extra` keys (by name), each key and its secret half pushed into SECRETS. */
+function loadEnv(extra = []) {
+  const names = ['GHOST6_URL', 'GHOST6_STAFF_ACCESS_TOKEN', ...extra]
   const env = {}
   for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
-    const m = /^(GHOST6_URL|GHOST6_STAFF_ACCESS_TOKEN)=(.*)$/.exec(line)
-    if (m && m[2].trim()) env[m[1]] = m[2].trim()
+    const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+    if (m && names.includes(m[1]) && m[2].trim()) env[m[1]] = m[2].trim()
   }
-  for (const k of ['GHOST6_URL', 'GHOST6_STAFF_ACCESS_TOKEN']) if (!env[k]) throw new Void(`${k} is not in tools/probe/.env`)
-  SECRETS.push(env.GHOST6_STAFF_ACCESS_TOKEN, env.GHOST6_STAFF_ACCESS_TOKEN.split(':')[1])
+  for (const k of names) if (!env[k]) throw new Void(`${k} is not in tools/probe/.env`)
+  for (const k of names.slice(1)) SECRETS.push(...[env[k], env[k].split(':')[1]].filter(Boolean))
   return env
 }
 
@@ -412,11 +452,169 @@ async function t1Half(tmp, [g6, g5]) {
   return { host: new URL(g.origin).host, version: site?.version, theme: theme?.name, tag, count: pick.posts.length, text, control }
 }
 
+/* ───────────────────────────── the --upload half (§85) ───────────────────────────── */
+
+/** Inflozo's own routes step on T1: `adminRequest` builds every Admin call, `routesToOffer` / `routesAnswer` decide, and
+ *  the upload body is `offerRoutes`' — the product's code by path, never a second spelling of it (header, --upload). */
+async function uploadHalf(tmp, [g6, g5]) {
+  const from = rows.length
+  const { adminRequest, ghostError } = await import(path.join(REPO, 'apps/web/server/ghost-admin/admin-rule.ts'))
+  const { GHOST_DEFAULT_ROUTES, ROUTES_PATH, routesToOffer, routesAnswer, bytesEqual } = await import(path.join(REPO, 'apps/web/lib/routes-upload.ts'))
+  const utf8 = (s) => new TextEncoder().encode(s)
+  const sha64 = (b) => crypto.createHash('sha256').update(b).digest('hex')
+  const T = (where, what, ok, got) => row('t1', where, what, ok, got)
+
+  // 0. before any request: the product's default is F4's file as both Ghosts ship it
+  const def = utf8(GHOST_DEFAULT_ROUTES)
+  row('local', 'GHOST_DEFAULT_ROUTES', "byte-identical to both tarballs' default-routes.yaml, sha256 F4's", [g6, g5].every((gg) => bytesEqual(gg.defaults, def)) && sha64(def) === F4_SHA, `${def.length} bytes, sha256 ${sha(def)}…`)
+
+  const env = loadEnv(['GHOST6_ADMIN_API_KEY'])
+  const staff = env.GHOST6_STAFF_ACCESS_TOKEN
+  /** Every Admin call of this leg: the request `adminRequest` builds, sent as built (`redirect: 'manual'` included). */
+  const admin = async (credential, method, resource, body) => {
+    const { url, init } = adminRequest({ credential, siteUrl: env.GHOST6_URL, method, path: resource, body, major: 6 })
+    const r = await fetch(url, { ...init, signal: AbortSignal.timeout(15000) })
+    const bytes = new Uint8Array(await r.arrayBuffer())
+    let json
+    try {
+      json = JSON.parse(new TextDecoder().decode(bytes))
+    } catch {
+      json = undefined
+    }
+    return { status: r.status, ok: r.ok, bytes, json }
+  }
+  const get = async (resource) => {
+    const a = await admin(staff, 'GET', resource)
+    if (!a.ok) throw new Error(`T1 admin GET ${resource.split('?')[0]} answered HTTP ${a.status}: ${new TextDecoder().decode(a.bytes).slice(0, 300)}`)
+    return a
+  }
+  const live = async () => (await get(ROUTES_PATH)).bytes
+  /** THE ONE UPLOAD, and its counter. The body is `offerRoutes`' exactly. Two seconds between POSTs: Ghost names each
+   *  dated copy to the second (`utils.js:9-20`) and a same-second copy overwrites the last, so §85's count stays true. */
+  const posts = { made: 0, stored: 0 }
+  let last = 0
+  const upload = async (credential, file) => {
+    await new Promise((r) => setTimeout(r, Math.max(0, last + 2000 - Date.now())))
+    const form = new FormData()
+    form.append('routes', new Blob([file], { type: 'text/yaml' }), 'routes.yaml')
+    posts.made += 1
+    last = Date.now()
+    const a = await admin(credential, 'POST', ROUTES_PATH, form)
+    const type = ghostError(a.json)?.type
+    const answer = routesAnswer(a.status, type)
+    if ('ok' in answer) posts.stored += 1
+    return { status: a.status, type, answer }
+  }
+  // the anonymous visitor's read only: ghost()'s own signing is --t1's and no Admin call here uses it
+  const { origin, page } = ghost(env)
+
+  // 1. T1's own file, saved before anything else happens
+  const original = await live()
+  if (original.length === 0) throw new Void("T1 answered an empty routes.yaml — nothing to restore, so nothing is written")
+  const saved = path.join(tmp, 'original-routes.yaml')
+  fs.writeFileSync(saved, original)
+  T(`1 GET ${ROUTES_PATH}`, "T1's own routes.yaml read with the staff token through adminRequest, saved before any write", true, `${original.length} bytes, sha256 ${sha(original)}… → ${saved}`)
+  const isDefault = bytesEqual(original, def)
+  T(`1 GET ${ROUTES_PATH}`, "RECORDED — is it F4's file? It is put back whatever it holds", true, isDefault ? "yes: F4's bytes" : `NO — T1 holds a file of its own (sha256 ${sha(original)}…)`)
+  const site = (await get('site/')).json?.site
+  const theme = (await get('themes/')).json?.themes?.find((t) => t.active)
+  const themeHas = (theme?.templates ?? []).some((t) => [UP_TEMPLATE, stem(UP_TEMPLATE)].includes(t.filename))
+  T('1 themes/', `the active theme carries no ${UP_TEMPLATE}, so the probe collection renders with Ghost's fallback index`, !themeHas, `${theme?.name} — custom templates: ${(theme?.templates ?? []).map((t) => t.filename).join(', ') || 'none'}`)
+  const tags = (await get('tags/?include=count.posts&limit=all&filter=visibility:public')).json.tags.sort((a, b) => (b.count?.posts ?? 0) - (a.count?.posts ?? 0))
+  let pick = null
+  for (const t of tags.filter((x) => (x.count?.posts ?? 0) >= 1)) {
+    const published = (await get(`posts/?filter=${encodeURIComponent(`tag:'${t.slug}'+status:published`)}&limit=all&fields=id`)).json.posts
+    if (published.length >= 1) { pick = { tag: t.slug, count: published.length }; break }
+  }
+  if (pick === null) throw new Void('T1 has no public tag with a published post — the probe collection would own nothing')
+  T('1 tags/ · posts/', 'the busiest public tag with a published post', true, `${pick.tag} (${pick.count} published)`)
+  const free = await page(`/${UP}/`)
+  if (free.status !== 404) throw new Void(`/${UP}/ answered ${free.status} before any write — the segment is taken`)
+  T(`1 /${UP}/`, 'CONTROL — the segment is free before any write', true, `HTTP ${free.status}`)
+
+  // 2. no POST: the project's file is the one Ghost already holds
+  const made2 = posts.made
+  const same = routesToOffer({ project: new TextDecoder().decode(original), live: original, lastOffered: null })
+  T('2 routesToOffer', "the project's file equal to T1's live file: unchanged, and no POST is made", same.kind === 'unchanged' && posts.made === made2, `${same.kind}, ${posts.made - made2} POSTs`)
+
+  // 3. the probe — a config `validateRoutes` passes, emitted by `routesYaml`, never hand-written
+  const config = {
+    collections: [{ path: `/${UP}/`, filter: { match: 'all', conditions: [{ field: 'tag', op: 'any', values: [pick.tag] }] }, template: UP_TEMPLATE }],
+    routes: [],
+    taxonomies: { tag: 'tag', author: 'author' },
+  }
+  const parsed = parseRoutesConfig(config)
+  const problems = parsed.ok ? validateRoutes(config, { templates: [UP_TEMPLATE] }) : [parsed]
+  if (!parsed.ok || problems.length > 0) throw new Void(`routes.ts refuses the probe config: ${JSON.stringify(problems)}`)
+  const probe = routesYaml(parsed.config)
+  const filters = [{ where: `collections./${UP}/`, nql: `tag:'${pick.tag}'` }, { where: 'collections./', nql: `tag:-'${pick.tag}'` }]
+  for (const gg of [g6, g5]) {
+    judge(gg, 'the probe file', probe, intended(parsed.config, filters))
+    judge(gg, "Ghost's default (GHOST_DEFAULT_ROUTES)", GHOST_DEFAULT_ROUTES, intended({ collections: [], routes: [], taxonomies: { tag: 'tag', author: 'author' } }, []))
+  }
+  const offered = routesToOffer({ project: probe, live: original, lastOffered: null })
+  T('3 routesToOffer', "the probe over T1's own file: offer, the probe's own bytes", offered.kind === 'offer' && offered.file === probe, offered.kind)
+  if (rows.slice(from).some((r) => !r.ok)) throw new Void('a check before the first write did not hold — nothing is written')
+
+  const since = (t0) => `${Math.round((Date.now() - t0) / 1000)} s`
+  let wrote = false
+  try {
+    wrote = true
+    const up = await upload(staff, offered.file)
+    T(`3 POST ${ROUTES_PATH}`, 'the probe uploads with the staff token; routesAnswer reads ok', 'ok' in up.answer, `HTTP ${up.status} → ${canon(up.answer)}`)
+    const back3 = await live()
+    T(`3 GET ${ROUTES_PATH}`, 'read back with the same token: the probe, byte for byte (F2: stored as sent)', bytesEqual(back3, utf8(probe)), `${back3.length} bytes, sha256 ${sha(back3)}… (probe ${sha(utf8(probe))}…)`)
+    let at = null
+    let t0 = Date.now()
+    const on = await until(async () => (at = await page(`/${UP}/`)).status === 200)
+    T(`3 /${UP}/`, 'the probe collection answers 200 (F2: live at once)', on, `HTTP ${at.status} after ${since(t0)}`)
+
+    // 4. back to Ghost's default, over Inflozo's own file
+    const back = routesToOffer({ project: null, live: back3, lastOffered: probe })
+    const isDef = back.kind === 'offer' && back.file === GHOST_DEFAULT_ROUTES
+    T('4 routesToOffer', "the project at Ghost's default over the file Inflozo offered: offer GHOST_DEFAULT_ROUTES, exactly", isDef, back.kind)
+    if (!isDef) throw new Void("routesToOffer did not offer Ghost's default — nothing else is posted")
+    const down = await upload(staff, back.file)
+    T(`4 POST ${ROUTES_PATH}`, "Ghost's default uploads with the staff token; routesAnswer reads ok", 'ok' in down.answer, `HTTP ${down.status} → ${canon(down.answer)}`)
+    const left = await live()
+    T(`4 GET ${ROUTES_PATH}`, "read back: F4's bytes", bytesEqual(left, def), `${left.length} bytes, sha256 ${sha(left)}…`)
+    t0 = Date.now()
+    const off = await until(async () => (at = await page(`/${UP}/`)).status === 404)
+    T(`4 /${UP}/`, 'the probe address answers 404 again', off, `HTTP ${at.status} after ${since(t0)}`)
+
+    // 5. CONTROLS — the probe again, signed by a key that may not write and by one T1 does not know. The integration
+    // key's refusal is read in 6.58.0's source at 7.17's Dev: `web/api/endpoints/admin/middleware.js:50-94`'s
+    // `tokenPermissionCheck` allows an integration token `settings` for GET only and answers 403 NoPermissionError, inside
+    // `authAdminApi`, which `routes.js:90-95` runs before `upload.single('routes')` — so nothing is stored
+    const asAdmin = await upload(env.GHOST6_ADMIN_API_KEY, probe)
+    T(`5 POST ${ROUTES_PATH} (GHOST6_ADMIN_API_KEY)`, "CONTROL — the integration key: 403 NoPermissionError (§39's shape), read as role", asAdmin.status === 403 && asAdmin.type === 'NoPermissionError' && asAdmin.answer.fallback === 'role', `HTTP ${asAdmin.status} ${asAdmin.type} → ${canon(asAdmin.answer)}`)
+    const stranger = `${crypto.randomBytes(12).toString('hex')}:${crypto.randomBytes(32).toString('hex')}`
+    const asStranger = await upload(stranger, probe)
+    T(`5 POST ${ROUTES_PATH} (unknown staff token)`, 'CONTROL — a well-formed staff token T1 does not know: 401, read as revoked', asStranger.status === 401 && asStranger.answer.fallback === 'revoked', `HTTP ${asStranger.status} ${asStranger.type} → ${canon(asStranger.answer)}`)
+    const after = await live()
+    T(`5 GET ${ROUTES_PATH}`, 'CONTROL — neither wrote: the read-back is what step 4 left, byte for byte', bytesEqual(after, left), `${after.length} bytes, sha256 ${sha(after)}…`)
+  } finally {
+    // 6. RESTORE — whatever failed above
+    if (wrote) {
+      try {
+        const res = await upload(staff, original)
+        const now = await live()
+        const ok = 'ok' in res.answer && bytesEqual(now, original)
+        T(`6 POST + GET ${ROUTES_PATH}`, `T1's own routes.yaml restored with the staff token and read back byte for byte${ok ? '' : ` — RESTORE IT BY HAND from ${saved}`}`, ok, `HTTP ${res.status}; ${now.length} bytes, sha256 ${sha(now)}… (saved ${sha(original)}…)`)
+      } catch (err) {
+        T(`6 POST + GET ${ROUTES_PATH}`, `T1's own routes.yaml restored — RESTORE IT BY HAND from ${saved}`, false, clean(err.message))
+      }
+    }
+  }
+  return { from, host: new URL(origin).host, version: site?.version, theme: theme?.name, tag: pick.tag, count: pick.count, isDefault, probe, stored: posts.stored, refused: posts.made - posts.stored }
+}
+
 /* ───────────────────────────── §82 ───────────────────────────── */
 
 const cell = (s) => String(s).replace(/\|/g, '\\|').replace(/`/g, "'").replace(/\s+/g, ' ').slice(0, 160)
+const tableOf = (list, head) => [head, '|---|---|---|---|', ...list.map((r) => `| ${cell(r.where)} | ${cell(r.what)} | \`${cell(r.got)}\` | ${r.ok ? 'yes' : 'no'} |`)]
 function section(t, today) {
-  const table = (half, head) => [head, '|---|---|---|---|', ...rows.filter((r) => r.half === half).map((r) => `| ${cell(r.where)} | ${cell(r.what)} | \`${cell(r.got)}\` | ${r.ok ? 'yes' : 'no'} |`)]
+  const table = (half, head) => tableOf(rows.filter((r) => r.half === half), head)
   return [
     `## ${SECTION}. The Routes Manager's \`routes.yaml\` — every file \`routesYaml\` writes accepted and read back as meant by Ghost 6.58.0's and 5.130.6's own route-settings code, and one emitted file on T1: a tag collection owning its posts two per page, a featured channel's feed, the index-first control and T1's own file restored byte for byte · T1 · ${today}`,
     '',
@@ -446,11 +644,38 @@ function section(t, today) {
   ].join('\n')
 }
 
-/** Replace an earlier §82 written by this command in place, or append — a re-run re-records rather than leaving two
- *  (record-theme-assembly.py's `write_section`). */
-function writeSection(text) {
+/* ───────────────────────────── §85 ───────────────────────────── */
+
+function section85(t, today) {
+  return [
+    `## ${SECTION}. Inflozo's own routes step on T1 — a probe \`routes.yaml\` uploaded through the product's \`adminRequest\` with the staff token, read back byte for byte and live at once; a file Ghost already holds posting nothing; Ghost's default put back over Inflozo's own file; the integration key refused 403 \`NoPermissionError\` (read \`role\`) and an unknown staff token 401 (read \`revoked\`), neither writing; and T1's own file restored byte for byte · T1 · ${today}`,
+    '',
+    `**Command.** \`${COMMAND}\` — ${t.stored} stored \`POST settings/routes/yaml/\` to T1 with the staff token (the probe file, Ghost's default, and T1's own file restored in a \`finally\` that encloses every write and read back) and ${t.refused} that Ghost refused and stored nothing for (step 5's controls), and nothing else: no post, tag, theme, member or setting. Ghost 6 keeps a dated copy of the file each stored upload replaces (\`routes-YYYY-MM-DD-HH-mm-ss.yaml\` in \`content/settings\`, 6.58.0's \`adapters/route-settings/FileStore.js:106-117\`, F5), named to the second, so the uploads were spaced two seconds apart and the run leaves ${t.stored} such copies on T1's disk.`,
+    '',
+    `**Ghost.** T1 \`${t.host}\` (\`site/\` version ${t.version}), active theme \`${t.theme}\`; T1's own \`routes.yaml\` ${t.isDefault ? "was F4's file (Ghost's default) before the run" : 'was NOT F4\'s file — a file of its own, restored as found'}; the tag \`${t.tag}\` (${t.count} published posts); the template \`${UP_TEMPLATE}\` is in no theme, so the probe collection renders with Ghost's fallback \`index\`. Every Admin call is \`adminRequest\`'s (\`apps/web/server/ghost-admin/admin-rule.ts\`), sent as built; every decision is \`routesToOffer\`'s or \`routesAnswer\`'s (\`apps/web/lib/routes-upload.ts\`); the upload body is \`offerRoutes\`' (\`apps/web/server/routes-upload.ts\`).`,
+    '',
+    "**The controls, each of which voids the run:** `GHOST_DEFAULT_ROUTES` is both tarballs' `default-routes.yaml` byte for byte with F4's sha; the probe file and Ghost's default read back as meant through Ghost 6.58.0's and 5.130.6's own parsers before any write; `/inflozo-probe-up/` answers 404 before the upload; the probe POSTed again signed with `GHOST6_ADMIN_API_KEY` answers 403 `NoPermissionError` (§39's shape; 6.58.0's `web/api/endpoints/admin/middleware.js:50-94` allows an integration token `settings` for GET only, before the upload is read, `routes.js:90-95`) and signed with a well-formed staff token T1 does not know (random hex) answers 401; and a read-back after both is byte-identical to what the default's upload left — neither wrote.",
+    '',
+    '**The probe file** (`routesYaml`, never hand-written):',
+    '',
+    '```yaml',
+    t.probe.trimEnd(),
+    '```',
+    '',
+    `### T1 \`${t.host}\` (${t.version}) — and the two files through both majors' parsers first (the local half's fixture rows are §82's)`,
+    '',
+    ...tableOf(rows.slice(t.from), '| Step | Row | Got | Held |'),
+    '',
+    "- **The routes step holds on a real Ghost.** A file Ghost already holds is not posted (no dated copy, no write); an upload is stored as sent and live at once; Ghost's default goes back over a file Inflozo put there; the two refusals read as B16's `role` and `revoked`.",
+    "- **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238: T3 retired) — its half here is its own parser, read locally. The 403 for an Editor's staff token is read in source only (F3); this run's 403 is the integration key's. Story 7.18 proves the theme upload and Ship it's call of `offerRoutes`; this run used the step's pure rule and its request builder, not `offerRoutes` or the chokepoint's `call` (its database, Vault and audit rows), which `routes-upload.test.ts` runs over a fake.",
+  ].join('\n')
+}
+
+/** Replace an earlier section `n` written by this command in place, or append — a re-run re-records rather than leaving
+ *  two (record-theme-assembly.py's `write_section`). */
+function writeSection(n, text) {
   const body = fs.readFileSync(MEASUREMENTS, 'utf8').replace(/\n+$/, '')
-  const at = body.indexOf(`\n## ${SECTION}. `)
+  const at = body.indexOf(`\n## ${n}. `)
   const head = at === -1 ? body : body.slice(0, at)
   const rest = at === -1 ? '' : body.slice(at + 1)
   const next = rest.indexOf('\n## ')
@@ -466,21 +691,23 @@ try {
   console.log('\n  THE LOCAL HALF — Ghost\'s own route-settings code, from its npm tarballs')
   const ghosts = await localHalf(tmp)
   if (rows.some((r) => !r.ok)) throw new Void('the local half did not hold')
-  if (T1) {
-    console.log(`\n  THE T1 HALF — ${COMMAND}`)
-    const t = await t1Half(tmp, ghosts)
-    if (rows.some((r) => !r.ok)) throw new Void('a T1 row did not hold — STOP AND ASK: Ghost does not route the file as routes.ts claims')
-    writeSection(section(t, new Date().toISOString().slice(0, 10)))
+  if (T1 || UPLOAD) {
+    console.log(`\n  THE ${UPLOAD ? 'UPLOAD' : 'T1'} HALF — ${COMMAND}`)
+    const t = await (UPLOAD ? uploadHalf : t1Half)(tmp, ghosts)
+    if (rows.some((r) => !r.ok)) {
+      throw new Void(`a T1 row did not hold — STOP AND ASK: ${UPLOAD ? 'Ghost does not take the upload as routes-upload.ts claims' : 'Ghost does not route the file as routes.ts claims'}`)
+    }
+    writeSection(SECTION, (UPLOAD ? section85 : section)(t, new Date().toISOString().slice(0, 10)))
     console.log(`\n    MEASUREMENTS.md §${SECTION} written — ${path.relative(REPO, MEASUREMENTS)} — every row held, behind its controls.`)
   } else {
-    console.log('\n    PASS — every row held, behind its controls. The local half writes nothing; §82 is the --t1 run\'s.')
+    console.log('\n    PASS — every row held, behind its controls. The local half writes nothing; §82 is the --t1 run\'s and §85 the --upload run\'s.')
   }
 } catch (err) {
   const msg = String(err instanceof Void ? err.message : err.stack ?? err)
   console.log(`\n  ** RUN VOID — nothing written to MEASUREMENTS.md. ${clean(msg)}`)
   code = 1
 } finally {
-  if (T1) console.log(`    temp dir kept (T1's original routes.yaml is in it): ${tmp}`)
+  if (T1 || UPLOAD) console.log(`    temp dir kept (T1's original routes.yaml is in it): ${tmp}`)
   else fs.rmSync(tmp, { recursive: true, force: true })
 }
 process.exit(code)

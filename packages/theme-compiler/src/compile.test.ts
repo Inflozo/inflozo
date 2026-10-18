@@ -14,6 +14,9 @@
 // which V1 at compile refuses (the last row).
 // Story 7.12 — the locale files and the language's faces: `en.json` always, the language's file beside it, every value
 // judged by `overrideRefusal`, the language refused as a path, and a non-latin script's whole faces — the spec's I/O matrix.
+// Story 7.17 — FR-I5's two lints (a bundled module reading a modifier key, a `{{ghost_head}}` with an argument) and README's
+// routes step, with its AD-36 pair: `ad36.test.ts` lives in the runtime, which cannot reach `compileTheme` (the compiler
+// depends on the runtime), so the README sink's inert-and-legitimate pair is the last row here.
 //
 // A test may load `handlebars` to parse what the compiler emitted (FR-J1); product code may not (`eslint.config.js`).
 
@@ -31,6 +34,7 @@ import { pairingFaces, pairingFonts, POOL } from '@inflozo/library/packs'
 import { BASE_CSS, darkOverrideCss, GSCAN_INERT, hookOf, MODE_SELECTORS, packTokensCss, pageTwoStack, sectionKey, SETTING_WORDS, srcsetExpr, synthesize, U0, U1, T0, T1, USER_SETTING_CAP } from '@inflozo/section-runtime'
 import type { DocInstance, Pack, ProjectDoc } from '@inflozo/section-runtime'
 import { fontFaceCss, pairingFiles, preloadFiles } from '@inflozo/section-runtime/fonts'
+import { parseRoutesConfig, routesYaml } from '@inflozo/section-runtime/routes'
 import { OVERRIDE_WORDS } from '@inflozo/library/override'
 import { REFERENCE_PACK } from '@inflozo/section-runtime/reference'
 import {
@@ -1994,4 +1998,83 @@ test('(7.13) no !important in a rule this theme writes — Ghost\'s own stay ins
 
 test('(7.13) a control character in a card stylesheet throws noC0\'s sentence', () => {
   assert.throws(() => build({}, { ghostCards: { ...GHOST_CARDS, styles: { ...GHOST_CARDS.styles, callout: `${GHOST_CARDS.styles['callout']}\u0007` } } }), /^Error: a card stylesheet carries a control character/)
+})
+
+// ─── Story 7.17: FR-I5's two lints, and README's routes step ─────────────────────────────────────────────────────────
+
+/** A lightbox module whose key handler runs `code` — a module file as its category story writes one. */
+const keyed = (code: string) => `export function lightbox(el, ctx) {\n  el.addEventListener('keydown', (e) => { ${code} }, { signal: ctx.signal })\n}\n`
+
+test('(7.17) FR-I5: a bundled module reading a modifier key makes the compile throw searchKeyRefusals\' sentence; the control — one reading none, or a reader no placed design mounts — compiles', () => {
+  const home = { 'home.hbs': docOf(at('a12/6', 'Gallery')) }
+  for (const key of ['metaKey', 'ctrlKey', 'getModifierState']) {
+    assert.throws(() => build(home, { library: mountingLib, pageTwo: projectTwo(), modules: { core: CORE, lightbox: keyed(`if (e.${key}) el.hidden = true`) } }), new RegExp(`^Error: the theme's scripts: lightbox\\.js reads ${key} — .*\\(FR-I5\\)$`), key)
+  }
+  // core is in every main.js, so a core that reads one refuses every theme
+  assert.throws(() => build({}, { modules: { core: CORE.replace('return {', 'win.addEventListener("keydown", (e) => e.ctrlKey)\n  return {') } }), /^Error: the theme's scripts: core\.js reads ctrlKey/)
+  // the controls: the same design whose module reads no modifier key — its comment may name the rule — and a reader that
+  // ships in no main.js, since no placed design mounts it
+  const quiet = build(home, { library: mountingLib, pageTwo: projectTwo(), modules: { core: CORE, lightbox: keyed('/* never e.metaKey */ el.hidden = true') } }).files
+  assert.deepEqual(bundledNames(mainOf(quiet)), ['core', 'lightbox'])
+  assert.deepEqual(bundledNames(mainOf(build({}, { modules: { core: CORE, lightbox: keyed('if (e.metaKey) el.hidden = true') } }).files)), ['core'])
+})
+
+test('(7.17) FR-I5: checkGhostMarkup\'s rule 1 names a {{ghost_head}} carrying any argument; the control — the compiled theme\'s bare one — passes, and {{ghost_foot}} is untouched', () => {
+  const site = compileProject()
+  assert.deepEqual(checkGhostMarkup(site), [])
+  const shell = site['default.hbs'] ?? ''
+  assert.equal(shell.split('    {{ghost_head}}\n').length, 2, 'the bare head once')
+  assert.ok(shell.includes('    {{ghost_foot}}\n'), 'the bare foot')
+  const withHead = (head: string) => ({ ...site, 'default.hbs': shell.replace('    {{ghost_head}}\n', `    ${head}\n`) })
+  for (const head of ['{{ghost_head exclude="search"}}', '{{ghost_head exclude="portal,search"}}', '{{~ghost_head exclude="search"~}}', "{{ghost_head exclude='search'}}"]) {
+    assert.ok(checkGhostMarkup(withHead(head)).includes(`default.hbs: ${head} carries an argument — a theme writes {{ghost_head}} bare, since an exclude switches off what Ghost writes there, its own search among it (FR-I5).`), head)
+  }
+  // anywhere: the count rule names a second file's head, and this rule names its argument too
+  assert.match(checkGhostMarkup({ ...site, 'home.hbs': `${site['home.hbs']}{{ghost_head exclude="search"}}\n` }).join('\n'), /^home\.hbs: \{\{ghost_head exclude="search"\}\} carries an argument/m)
+  // whitespace control is no argument, and no other helper is read as the head
+  for (const head of ['{{~ghost_head~}}', '{{ ghost_head }}']) assert.ok(!checkGhostMarkup(withHead(head)).some((f) => f.includes('carries an argument')), head)
+  assert.ok(!checkGhostMarkup({ ...site, 'default.hbs': shell.replace('    {{ghost_foot}}\n', '    {{ghost_foot exclude="x"}}\n') }).some((f) => f.includes('carries an argument')), 'the foot is not the head')
+})
+
+/** A sound config with a collection, through the Routes Manager's one parser, and its file as `routesYaml` writes it. */
+const ROUTES = (() => {
+  const parsed = parseRoutesConfig({ collections: [{ path: '/notes/', filter: { match: 'any', conditions: [{ field: 'tag', op: 'any', values: ['notes'] }] }, template: 'custom-notes.hbs', limit: 10 }], taxonomies: { tag: 'topic', author: 'author' } })
+  assert.ok(parsed.ok)
+  return routesYaml(parsed.config) as string
+})()
+/** README's Routes section, written out — the heading, the sentence and the file four spaces in. */
+const ROUTES_SECTION = (file: string) => `## Routes\n\nGhost keeps this theme's routing outside the theme, in \`routes.yaml\`. Upload the file below wherever Ghost Admin accepts a routes file; Ghost's guide is https://docs.ghost.org/themes/routing/.\n\n${file.replace(/\n$/, '').split('\n').map((l) => `    ${l}`).join('\n')}\n`
+
+test('(7.17) README\'s routes step: handed routes, ## Routes follows ## Styles — the sentence, then the file every line four spaces in; the control — null or omitted — is no section', () => {
+  const bare = `## Scripts\n\n${SCRIPTS_LINE}\n\n${STYLES_NONE}`
+  assert.equal(build(project(), { pageTwo: projectTwo(), routes: ROUTES }).files['README.md'], `${bare}\n${ROUTES_SECTION(ROUTES)}`)
+  assert.ok(ROUTES.includes('\n\n'), 'the file carries blank lines, and each is four spaces in too')
+  assert.equal(build(project(), { pageTwo: projectTwo(), routes: null }).files['README.md'], bare)
+  assert.equal(build(project(), { pageTwo: projectTwo() }).files['README.md'], bare)
+  // nothing else of the theme changes (its text files; a font is bytes, the same pool either way)
+  const withRoutes = compileProject({ routes: ROUTES })
+  const without = compileProject()
+  assert.deepEqual(Object.keys(withRoutes).filter((p) => p !== 'README.md' && withRoutes[p] !== without[p]), [])
+})
+
+test('(7.17, AD-36) README\'s routes sink: a hostile file stays inside the indented code block or is refused; the legitimate file comes back byte for byte once the indent is taken off', () => {
+  /** The README's lines after the sentence: the code block, and what Markdown would read outside it. */
+  const blockOf = (readme: string): string[] => readme.split('\n\n').slice(-1)[0]?.replace(/\n$/, '').split('\n') ?? []
+  // inert: a heading, an HTML block, a fence, a link reference and a list each stay four spaces in — CommonMark reads every
+  // line as code, since an indented code block ends only at a line indented less, and none is
+  const hostile = 'routes:\n## Owned\n<script>alert(1)</script>\n```\n# x\n```\n[a]: javascript:alert(1)\n- item\n\n  </pre>\n'
+  const readme = build({}, { routes: hostile }).files['README.md'] as string
+  assert.ok(readme.endsWith(ROUTES_SECTION(hostile)), readme)
+  const block = blockOf(readme)
+  assert.ok(block.length > 1 && block.every((l) => l.startsWith('    ')), JSON.stringify(block))
+  assert.equal(readme.split('\n').filter((l) => /^#/.test(l)).length, 3, 'three headings at the margin: Scripts, Styles, Routes')
+  assert.ok(!/^ {0,3}(<|```|\[)/m.test(readme), 'no HTML block, fence or link reference at the margin')
+  // refused: a line ending CommonMark reads but the indent never reached (\r, \r\n), and every other C0 character
+  for (const bad of ['routes:\r## Owned\n', 'routes:\r\n## Owned\r\n', 'routes:\n\t## Owned\n', 'routes:\u000b\n', `routes:${String.fromCharCode(0)}\n`, `routes:${U0}0${U1}\n`]) {
+    assert.throws(() => build({}, { routes: bad }), /^Error: the routes file carries a control character, which the theme compiler refuses \(AD-36\)/, JSON.stringify(bad))
+  }
+  // the legitimate case: a real routesYaml file, with a collection, comes back exactly once the four spaces are taken off
+  const real = blockOf(build({}, { routes: ROUTES }).files['README.md'] as string)
+  assert.equal(`${real.map((l) => l.slice(4)).join('\n')}\n`, ROUTES)
+  assert.match(ROUTES, /^ {2}\/notes\/:$/m)
 })

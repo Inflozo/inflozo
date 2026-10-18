@@ -152,7 +152,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-I1** `home.hbs` is emitted when Home or its page 2 is designed; the standard template set always compiles, with untouched templates synthesised before assembly — one the library leaves with no section is left to Ghost's own fallback until Epic 10, `index.hbs` and `post.hbs` excepted, and `tag.hbs` and `author.hbs`, which always ship their default stack (Story 7.3's Question 1); `page.hbs` gates each Post Header on `@page.show_title_and_feature_image`; a designed paywall is `partials/content-cta.hbs`, opening `{{{html}}}`; there is no members template family — a designed membership page compiles to `custom-{name}.hbs` and emits no route; the emptying rule is general and differs by template class.
 - **FR-I2** Routes Manager: a visual builder for `routes.yaml` — collections with per-collection page size, a rich filter builder with normative NQL mappings, channels, custom routes, taxonomy prefixes, a live YAML pane and validation. The builder never emits redundant or nested parentheses; published date is offered with relative syntax.
 - **FR-I3** Custom templates compiled as `custom-{name}.hbs`, with the naming and collision scheme enforced at the naming step and renaming a deployed template not offered at all.
-- **FR-I4** `routes.yaml` uploads automatically via `POST /settings/routes/yaml` with the staff token, verified by reading the file back byte-for-byte; the guided Labs card remains as the designed fallback.
+- **FR-I4** `routes.yaml` uploads automatically via `POST /settings/routes/yaml` with the staff token, verified by reading the file back byte-for-byte; the guided Labs card remains as the designed fallback. *(Story 7.17's Dev, 2026-10-18: that card is B16, for no token, a revoked one or a role below Administrator — FR-I4's "non-Owner connection".)*
 - **FR-I5** Projects that never open the Routes Manager compile with Ghost's default routing. Two routes are emitted on demand — all-tags and all-authors, only when a design links to them — and `/search/` is never emitted by anyone.
 - **FR-I6** Template-binding flow: a deploy that emitted `custom-*.hbs` ends on a checklist naming each file and the exact dropdown label Ghost will derive, with the click-path and a deep link. It is a checklist, not a notification, and it says plainly that Inflozo cannot verify the binding.
 
@@ -4055,7 +4055,8 @@ on demand move word for word to **Story 9.12**, whose Create settles FR-F8 again
 cannot be read, each template keeps the main feed its doc flags (DW-366). **R-258:** Routes & Templates tells an editor open in
 the same browser what it changed, and the editor takes it in (DW-370; AD-15 gains the rule). This story's own hand test is
 R-258's. *(Read at this Create in both majors' source: "a non-Owner connection" is a token whose role is below
-Administrator.)*
+Administrator.)* *(Story 7.17's Dev, 2026-10-18: "the guided Labs card" is B16, "Upload routes.yaml yourself", which names
+no menu path and links Ghost's routing guide; the T1 half is §85 and the Ghost 5 half DW-326's, R-238.)*
 
 **FRs:** FR-I4, FR-I5. · **Frame:** `B Missing Surfaces.dc.html` B16. · **Owner test:** yes. · **Verification:**
 a real upload and byte-comparison read-back on T1 and T3 (R-82).
@@ -4173,7 +4174,13 @@ project with routing to a site with no Staff Access Token, sees the card at the 
 Ghost and presses Verify upload, and the card resolves to its one confirming line and is gone from Routes & Templates and
 Sites
 **And** a `failed` outcome (`ghost_refused`, `ghost_unavailable`, `ghost_unreachable`, `routes_unverified`,
-`routes_invalid`) is a sentence and its fix in AD-24's envelope, never a pass-through of Ghost's text
+`routes_invalid`) is a sentence and its fix in AD-24's envelope, never a pass-through of Ghost's text *(Story 7.17's Dev,
+2026-10-18: the step also answers `ghost_redirected` and `site_not_found`, and throws any other chokepoint error for the job to
+retry, AD-20)*
+**And** *(DW-371 — from Story 7.17's Dev, 2026-10-18)* an upload Ghost took whose read-back failed or differed
+(`routes_unverified`, which stores nothing) ends on a line saying the routing could not be confirmed, with Verify upload —
+EXPERIENCE F3's *could not verify* state — or, if that needs a stored cause, the owner rules it first (R-83: a fourth
+`routes_fallback` value is a migration)
 **And** the compile is handed `routes` (the bytes `offerRoutes` offers, or null) beside `routed` and `lists`, so the README
 carries Story 7.17's routes step.
 
@@ -4729,6 +4736,10 @@ So that "canvas and shipped output agree" is verified rather than assumed on eac
 **And** it **deploys to T1–T3**
 **And** the pilot project is **deployed and rolled back on all Ghost deploy targets**
 **And** routes **round-trip through the guided card and verify by byte comparison of the live `routes.yaml`**
+*(Story 7.17's Dev, 2026-10-18: the automatic upload is FR-I4's primary path — `offerRoutes` uploads with the Staff Access
+Token and reads back byte for byte, and Story 7.18's Ship it calls it — so the round trip is that upload's, and the guided
+card, B16, is its fallback for no token, a revoked one, or a role below Administrator; the gate proves the fallback's Verify
+upload beside it.)*
 **And** **the T4 clause is deferred with T4 itself and is not an exit condition for either epic**: a deploy
 attempt against T4 failing with the friendly Starter message and setting Preview-only is **carried forward to §4's
 pre-launch Ghost(Pro) gate**, owned by E15

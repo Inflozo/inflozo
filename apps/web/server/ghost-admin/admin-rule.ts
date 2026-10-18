@@ -219,6 +219,44 @@ export function headers(jwt: string, major?: number): Record<string, string> {
 }
 
 /**
+ * STORY 7.17 — THE ONE REQUEST BUILDER (DW-51's transport). Every Admin call `fetchWithKey` makes is built here, pure, so
+ * the shape that leaves for Ghost is what `node --test` and the T1 recorder (`record-routes.mjs --upload`) hold, never a
+ * second spelling of it:
+ *   - the address is `adminUrl`'s and the bearer `mintJwt`'s, with `Accept-Version` once the major is known (`headers`);
+ *   - a GET carries no body (fetch throws a TypeError for one);
+ *   - a `FormData` body — the multipart upload `POST settings/routes/yaml/` takes, its file under `routes` (Ghost 6.58.0's
+ *     `web/api/endpoints/admin/routes.js:90-95`) — PASSES UNTOUCHED, with no `Content-Type` of Inflozo's own: fetch writes
+ *     `multipart/form-data` with the boundary it chose, and any value set here would carry the wrong one;
+ *   - any other body is JSON, as every write before this story was;
+ *   - a redirect is answered, never followed, so the bearer is never re-sent to wherever a 3xx points.
+ * `now` is a parameter for the same reason `mintJwt`'s is: the test pins the token rather than racing a clock.
+ */
+export function adminRequest(args: {
+  credential: string
+  siteUrl: string
+  method?: string
+  path: string
+  body?: unknown
+  major?: number
+  now?: number
+}): { url: string; init: RequestInit } {
+  const method = (args.method ?? 'GET').toUpperCase()
+  const url = adminUrl(args.siteUrl, args.path)
+  const jwt = mintJwt(args.credential, args.now)
+  const form = args.body instanceof FormData
+  const body = method === 'GET' || args.body === undefined ? undefined : form ? (args.body as FormData) : JSON.stringify(args.body)
+  return {
+    url,
+    init: {
+      method,
+      headers: { ...headers(jwt, args.major), ...(body === undefined || form ? {} : { 'Content-Type': 'application/json' }) },
+      body,
+      redirect: 'manual',
+    },
+  }
+}
+
+/**
  * GHOST'S CAUSES, ONE ROW PER CODE (AD-24, MEASUREMENTS §37 — executed on both majors).
  *
  * "Your Admin key expired" is a failure that DOES NOT EXIST: `api_keys` has no expiry column and

@@ -148,9 +148,19 @@ export function emailAllowed({
  * that answered, and `last_health_email_at: null` on a recovery (R-101). THE STAMP ITSELF IS NOT
  * IN IT: it is written by the caller after a send that LANDED, because a stamp for an email nobody
  * received would hold the cap over the one message FR-P1 promises (the same review).
+ *
+ * STORY 7.17 — AND `routes_fallback: null` when B16 is up and the live file's sha is the offered
+ * file's (`routes_offered_sha256`, the caller's hash of `routes_last_offered`): the customer uploaded
+ * the card's file by hand and the card has nothing left to ask. A live file that differs leaves the
+ * cause exactly where it was.
  */
 export function writePlan(args: {
-  before: { health: Health; last_health_email_at: string | null }
+  before: {
+    health: Health
+    last_health_email_at: string | null
+    routes_fallback?: string | null
+    routes_offered_sha256?: string | null
+  }
   health: Health
   routes: { sha256: string } | null
   now: Date
@@ -167,6 +177,7 @@ export function writePlan(args: {
       health: args.health,
       last_checked_at: stamp,
       ...(args.routes ? { routes_live_sha256: args.routes.sha256, routes_verified_at: stamp } : {}),
+      ...(args.routes && args.before.routes_fallback && args.routes.sha256 === args.before.routes_offered_sha256 ? { routes_fallback: null } : {}),
       ...(transition === 'resolved' ? { last_health_email_at: null } : {}),
     },
     transition,

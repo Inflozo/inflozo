@@ -4,6 +4,7 @@ import { createHmac } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import {
   ADMIN_WRITES,
+  adminRequest,
   blockedAddress,
   AdminError,
   adminUrl,
@@ -185,3 +186,49 @@ test('DW-58: the addresses the server will not fetch, whoever’s DNS points the
   // A resolver answer that is not an address at all is not one to connect to.
   assert.equal(blockedAddress('not-an-address'), true)
 })
+
+/* ───────── STORY 7.17 — DW-51's TRANSPORT: the one request builder, and the credential `call` signs with. */
+
+test('Story 7.17: adminRequest passes a FormData body untouched, with no Content-Type of Inflozo\'s own — and a JSON body is unchanged', () => {
+  const form = new FormData()
+  form.append('routes', new Blob(['routes:\n'], { type: 'text/yaml' }), 'routes.yaml')
+  const at = 1_757_000_000_000
+  const upload = adminRequest({ credential: KEY, siteUrl: 'https://ghost6.inflozo.com', method: 'post', path: 'settings/routes/yaml/', body: form, major: 6, now: at })
+  assert.equal(upload.url, 'https://ghost6.inflozo.com/ghost/api/admin/settings/routes/yaml/')
+  assert.equal(upload.init.method, 'POST')
+  assert.equal(upload.init.body, form, 'the very FormData, never a copy or a string')
+  assert.equal(upload.init.redirect, 'manual')
+  // fetch writes `multipart/form-data; boundary=…` itself; a value set here would carry the wrong boundary
+  assert.deepEqual(upload.init.headers, { Authorization: `Ghost ${mintJwt(KEY, at)}`, 'Accept-Version': 'v6.0' })
+  // THE CONTROL: a JSON write is as it always was — serialised, and typed as JSON
+  const json = adminRequest({ credential: KEY, siteUrl: 'https://ghost6.inflozo.com', method: 'PUT', path: 'settings/', body: { settings: [] }, now: at })
+  assert.equal(json.init.body, '{"settings":[]}')
+  assert.deepEqual(json.init.headers, { Authorization: `Ghost ${mintJwt(KEY, at)}`, 'Content-Type': 'application/json' })
+  // a GET carries no body (fetch throws a TypeError for one), whatever it is handed
+  const read = adminRequest({ credential: KEY, siteUrl: 'https://ghost6.inflozo.com', path: 'settings/routes/yaml/', body: form, now: at })
+  assert.equal(read.init.method, 'GET')
+  assert.equal(read.init.body, undefined)
+  assert.deepEqual(read.init.headers, { Authorization: `Ghost ${mintJwt(KEY, at)}` })
+  // and it refuses what adminUrl and mintJwt refuse, before anything is sent
+  assert.throws(() => adminRequest({ credential: 'nocolon', siteUrl: 'https://ghost6.inflozo.com', path: 'config/' }), (e: AdminError) => e.code === 'credential_malformed')
+  assert.throws(() => adminRequest({ credential: KEY, siteUrl: 'https://ghost6.inflozo.com', path: '../content/posts/' }), (e: AdminError) => e.code === 'path_not_admin')
+})
+
+test('Story 7.17: fetchWithKey builds through adminRequest and returns the raw bytes; call signs with the kind it is handed', () => {
+  const index = readFileSync('server/ghost-admin/index.ts', 'utf8')
+  const code = index.replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+  const fetchWith = code.slice(code.indexOf('export async function fetchWithKey('))
+  assert.match(fetchWith, /const \{ url, init \} = adminRequest\(\{/, 'the one builder')
+  assert.match(fetchWith, /await fetch\(url, \{ \.\.\.init, signal:/, 'the request is the builder\'s, plus the deadline')
+  assert.doesNotMatch(fetchWith, /JSON\.stringify\(args\.body\)|'Content-Type'/, 'no second spelling of the body or its type')
+  assert.match(fetchWith, /bytes = new Uint8Array\(await response\.arrayBuffer\(\)\)\s+text = new TextDecoder\(\)\.decode\(bytes\)/, 'text is decoded FROM the bytes')
+  assert.match(fetchWith, /return \{ ok, status, body, text, bytes,/)
+  // `call`: the kind it is handed (the Admin key by default) is the kind decrypted — and `staff` is the staff column
+  const callBody = code.slice(code.indexOf('export async function call('), code.indexOf('export async function fetchWithKey('))
+  const decrypts = (body: string) => /const kind = args\.kind \?\? 'admin'/.test(body) && /decrypt\(args\.siteId, kind, args\.route\)/.test(body)
+  assert.ok(decrypts(callBody), 'call decrypts args.kind, the Admin key by default')
+  assert.match(code, /staff: \{ ref: 'staff_token_vault_ref', rotated: 'staff_token_rotated_at' \}/, "kind 'staff' reads staff_token_vault_ref")
+  // THE CONTROL: the hard-coded Admin key the chokepoint had before this story fails the same check
+  assert.equal(decrypts(callBody.replace('decrypt(args.siteId, kind, args.route)', "decrypt(args.siteId, 'admin', args.route)")), false)
+})
+

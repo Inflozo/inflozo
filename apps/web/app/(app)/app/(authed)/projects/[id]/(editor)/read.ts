@@ -1,7 +1,7 @@
 import { headers } from 'next/headers'
 import { cache } from 'react'
 import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type CardDesigns, type Listed, type SectionRegistryEntry } from '@inflozo/library'
-import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
+import { designate, flaggedListing, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources } from '@/lib/controls-review'
 import type { PackRecords, PairingChoice } from '@/lib/pack-edit'
@@ -216,6 +216,10 @@ export type EditorData = {
    *  parse (routine call 12: an unreadable routing lists nothing). The editor derives `listsOf` from it once — which
    *  templates are listed, what each lists and Home's own list — so the canvas lists what each live address lists */
   routes: RoutesConfig | null
+  /** STORY 7.17 — DW-366, R-257: where `routes` is null (unreadable), the Routes Manager files whose stored doc flags a main
+   *  feed (`flaggedListing`) — each keeps it, designated listed on the way in and by the editor at every edit, its Count
+   *  sized by Posts per page until the routing reads again. Absent while the routing reads. */
+  unreadListed?: readonly string[]
   /** Story 5.5 — EVERY synthesizable canvas's default stack, by stored key, whether or not it is untouched right now.
    *  AD-22's round trip needs the stack of a canvas that is DESIGNED at load too: taking its last section off returns
    *  it to untouched, and what re-renders is this. Keyed by `template_key`, as `docs` is. */
@@ -423,7 +427,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
    * flag, or a main feed duplicated before this story — is REPAIRED here, in what is handed to the editor, and stored
    * repaired with the next edit of that canvas. Reading alone writes nothing (AD-22). A doc that already satisfies the
    * rule comes back as the same object, so a valid designation is never moved. */
-  Object.assign(docs, designateAll(docs, held, listsOf(routes)))
+  // STORY 7.17 — DW-366, R-257: an UNREADABLE routing lists what the stored docs flag (`flaggedListing`), so a passing read
+  // failure never strips a template's main feed; a readable one is `listsOf`'s, which strips a file it does not list
+  const unreadListed = routes === null ? flaggedListing(docs) : undefined
+  Object.assign(docs, designateAll(docs, held, unreadListed === undefined ? listsOf(routes) : new Set(unreadListed)))
 
   /* STORY 5.13 — the stored preview subjects, by template key.
    *
@@ -495,6 +502,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     synthesized,
     templates,
     routes,
+    ...(unreadListed === undefined ? {} : { unreadListed }),
     defaults,
     dropped,
     subjects,

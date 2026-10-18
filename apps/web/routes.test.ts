@@ -115,7 +115,8 @@ test('Story 7.16b: every in-between state is valid — the delete runs config, d
   const [config, doc, row] = [del.indexOf('writeConfig('), del.indexOf(".from('project_templates').delete()"), del.indexOf(".from('custom_templates').delete()")]
   assert.ok(config > 0 && doc > config && row > doc, `the delete's order: config ${config}, doc ${doc}, row ${row}`)
   assert.ok(!/ctx\.designed/.test(del), 'no refusal of a designed template')
-  assert.match(del, /return \{ ok: true, \.\.\.\(held \? \{ doc \} : \{\}\) \}/, 'the doc it took is handed back for the Undo')
+  // Story 7.17: with the moves it made (DW-370)
+  assert.match(del, /return withMoved\(\{ ok: true, \.\.\.\(held \? \{ doc \} : \{\}\) \}, moved\)/, 'the doc it took is handed back for the Undo')
   // the doc handed back is the one the delete itself took — never a read made before it (review, 2026-10-17)
   assert.match(del, /\.from\('project_templates'\)\.delete\(\)\.eq\('project_id', id\)\.eq\('template_key', key\)\.select\('doc'\)/)
   assert.ok(!del.includes(".from('project_templates').select("), 'no read of the doc before its delete')
@@ -126,7 +127,7 @@ test('Story 7.16b: every in-between state is valid — the delete runs config, d
   assert.match(del, /if \(dropped\.error\) return failed\(/)
   assert.match(del, /return failed\('template delete failed', error\?\.code\)/)
   const undo = body('restoreTemplate')
-  const [rowBack, docBack, configBack] = [undo.indexOf(".from('custom_templates')\n      .insert("), undo.indexOf('syncDocs(sb, id, { [key]: doc })'), undo.indexOf('writeConfig(')]
+  const [rowBack, docBack, configBack] = [undo.indexOf(".from('custom_templates')\n      .insert("), undo.indexOf('syncDocs(sb, id, { [key]: doc }, moved)'), undo.indexOf('writeConfig(')]
   assert.ok(rowBack > 0 && docBack > rowBack && configBack > docBack, `the Undo's order: row ${rowBack}, doc ${docBack}, config ${configBack}`)
   // the doc comes back from the CLIENT, so it is judged before anything is written (AD-36)
   const judged = undo.indexOf('docSchema.safeParse(sent)')
@@ -164,7 +165,7 @@ test('Story 7.16b: ?new=template opens the New template sheet, and Create from i
   const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
   assert.match(manager, /useState<Sheet \| null>\(props\.fromMenu === true \? \{ kind: 'template', entry: true \} : null\)/)
   assert.match(manager, /if \(open\.kind === 'template'\) document\.getElementById\('routes-new-template'\)\?\.focus\(\)/, 'focus lands in Name')
-  assert.match(body('createTemplate'), /return \{ ok: true, file: made\.file \}/)
+  assert.match(body('createTemplate'), /return withMoved\(\{ ok: true, file: made\.file \}, moved\)/)
   // review, 2026-10-17: the query is spent when its sheet closes, and Create REPLACES this entry with the new canvas — so a
   // reload or Back never opens the sheet again
   assert.match(manager, /if \(props\.fromMenu === true && new URL\(window\.location\.href\)\.searchParams\.has\('new'\)\) window\.history\.replaceState\(null, '', window\.location\.pathname\)/)
@@ -178,15 +179,17 @@ test('Story 7.16c: a new template a collection\'s or channel\'s sheet names star
   const [row, doc, config] = [save.indexOf('insertTemplate('), save.indexOf('writeListedStart('), save.indexOf('writeConfig(')]
   assert.ok(row > 0 && doc > row && config > doc, `saveRoutes' order: row ${row}, doc ${doc}, config ${config}`)
   // only when the config LISTS the new file: a static route's new template, like "+ New template", opens empty (7.16b)
-  assert.match(save, /listsOf\(parsed\.config\)\.has\(made\.file\) && !\(await writeListedStart\(sb, id, made\.file\)\)/)
+  assert.match(save, /const lists = parsed\.ok \? listsOf\(parsed\.config\) : new Map\(\)/)
+  assert.match(save, /lists\.has\(made\.file\) && !\(await writeListedStart\(sb, id, made\.file, moved\)\)/)
   assert.ok(!body('createTemplate').includes('writeListedStart'), '"+ New template" writes no doc')
   // a failed doc write leaves the row unrouted and says couldNot — a valid state the page lists
-  assert.match(save, /revalidate\(id\)\n\s+return couldNot\(\)/)
+  // Story 7.17 (DW-367): …and says what was left, handing the file back so the sheet keeps it chosen
+  assert.match(save, /revalidate\(id\)\n\s+return withMoved\(\{ error: ROUTES_WORDS\.listedStartFailed\(\(display as string\)\.trim\(\)\), made: made\.file \}, moved\)/)
   // the doc is synthesis's own FEED row (`listedStart`), judged by `docRefusal` as every doc is, under the canvas's key
   const at = ACTIONS.indexOf('async function writeListedStart(')
   const fn = ACTIONS.slice(at, ACTIONS.indexOf('\n}\n', at))
   assert.match(fn, /const \{ instances \} = listedStart\(file, held\)/)
-  assert.ok(fn.indexOf('docRefusal(key, doc)') < fn.indexOf('return syncDocs(sb, id, { [key]: doc })'), 'judged before it is written')
+  assert.ok(fn.indexOf('docRefusal(key, doc)') < fn.indexOf('return (await syncDocs(sb, id, { [key]: doc }, moved)) !== null'), 'judged before it is written')
   assert.ok(!fn.includes(".from('project_templates')"), 'no direct doc write: it would move no revision')
   // and what `listedStart` gives is a17/1 "Post grid", flagged the main feed, which the library holds on a Routes Manager file
   const held = (id: string) => (pilotIds().includes(id) ? pilot(id) : undefined)
@@ -214,19 +217,44 @@ test('Story 7.16c (the owner\'s test, 2026-10-18): every doc the routes page cha
   assert.match(sync, /\.rpc\('sync_project_doc', \{ p_project: id, p_docs: docs, p_base: base \}\)/)
   // a refusal (an editor flushed in between) is retried at the revision it hands back, a bounded number of times
   assert.match(sync, /for \(let tries = 0; tries < 3; tries\+\+\)/)
-  assert.match(sync, /if \(answer\.applied\) return true\n\s+base = answer\.revision/)
+  assert.match(sync, /if \(answer\.applied\) \{\n\s+const move: Move = \{ from: base, to: answer\.revision, docs, gone \}\n\s+moved\.push\(move\)\n\s+return move\n\s+\}\n\s+base = answer\.revision/)
   // each door: the new listed template's doc, the Undo's doc, and the revision alone after a delete took a doc or a new
   // template cleared a leftover one
-  assert.match(body('restoreTemplate'), /if \(doc !== null && !\(await syncDocs\(sb, id, \{ \[key\]: doc \}\)\)\)/)
+  assert.match(body('restoreTemplate'), /if \(doc !== null && !\(await syncDocs\(sb, id, \{ \[key\]: doc \}, moved\)\)\)/)
   const del = body('deleteTemplate')
-  assert.ok(del.indexOf('if (held && !(await syncDocs(sb, id, {})))') > del.indexOf(".from('custom_templates').delete()"), 'after the row is gone')
+  assert.ok(del.indexOf('if (held && !(await syncDocs(sb, id, {}, moved, [key])))') > del.indexOf(".from('custom_templates').delete()"), 'after the row is gone')
   const ins = ACTIONS.slice(ACTIONS.indexOf('async function insertTemplate('), ACTIONS.indexOf('async function writeListedStart('))
   // the review: a leftover doc moves the revision BEFORE it is cleared, so a failed move is retried with the doc still there
-  assert.match(ins, /\(leftover \?\? \[\]\)\.length > 0 && !\(await syncDocs\(sb, id, \{\}\)\)/)
-  assert.ok(ins.indexOf('await syncDocs(sb, id, {})') < ins.indexOf(".from('project_templates').delete()"), 'the move before the clear')
+  assert.match(ins, /\(leftover \?\? \[\]\)\.length > 0 && !\(await syncDocs\(sb, id, \{\}, moved, \[key\]\)\)/)
+  assert.ok(ins.indexOf('await syncDocs(sb, id, {}, moved, [key])') < ins.indexOf(".from('project_templates').delete()"), 'the move before the clear')
   // THE CONTROL: the only direct doc writes left are the delete's own two — the delete, and its put-back when the row
   // delete fails, which restores exactly what the device already holds — and the new template's clear
   assert.deepEqual(ACTIONS.match(/from\('project_templates'\)\.(upsert|insert|update|delete)\(/g), [
     "from('project_templates').delete(", "from('project_templates').delete(", "from('project_templates').upsert(",
   ])
+})
+
+/* ───────────────────────────── Story 7.17 ───────────────────────────── */
+
+test('Story 7.17 (DW-367): a failed starting grid says what was left, the sheet keeps the template chosen, and the next Save adds the grid', () => {
+  assert.equal(ROUTES_WORDS.listedStartFailed('Tutorials List'), "Tutorials List was made, but its post grid wasn't added. Press Save again to add it.")
+  const save = body('saveRoutes')
+  // the retry: `start_file`, only without a new name, re-checked before anything is written — the grid FIRST, then the config
+  const branch = save.slice(save.indexOf("const start = formData.get('start_file')"), save.indexOf('const refused = await writeConfig('))
+  assert.ok(branch.length > 0 && save.indexOf("formData.get('start_file')") > save.indexOf('} else {'), 'start_file is read only when the sheet names no new template')
+  const rechecks = (text: string) =>
+    /ctx\.templates\.find\(\(t\) => t\.file === start\)/.test(text) && // this project's own template
+    /lists\.has\(template\.file\)/.test(text) && // that the config being saved lists
+    /\.from\('project_templates'\)\.select\('template_key'\)\.eq\('project_id', id\)\.eq\('template_key', `custom:\$\{template\.file\}`\)/.test(text) &&
+    /\(held\.data \?\? \[\]\)\.length === 0 && pathsUsing\(stored, template\.file\)\.length === 0 && !\(await writeListedStart\(sb, id, template\.file, moved\)\)/.test(text)
+  assert.ok(rechecks(branch), 'no doc yet and no stored route: only then the grid')
+  // THE CONTROL (7.16c's routine call 2): a template chosen in the ordinary way has a doc or a route already — drop either
+  // clause and the check fails, so neither can be taken out without this test seeing it
+  assert.equal(rechecks(branch.replace(' && pathsUsing(stored, template.file).length === 0', '')), false)
+  assert.equal(rechecks(branch.replace('(held.data ?? []).length === 0 && ', '')), false)
+  assert.ok(save.indexOf('writeListedStart(sb, id, template.file, moved)') < save.indexOf('const refused = await writeConfig('), 'the grid before the config')
+  // the sheet: `made` keeps the template chosen, and its next Save sends it as `start_file`
+  const manager = readFileSync(join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'routes', 'routes-manager.tsx'), 'utf8')
+  assert.match(manager, /if \(result\.made !== undefined\) \{\s+setStarted\(result\.made\)\s+set\(\{ template: result\.made, name: '' \}\)\s+\}\s+return setError\(result\.error\)/)
+  assert.match(manager, /\.\.\.\(file === null && started !== null && d\.template === started \? \{ start_file: started \} : \{\}\)/)
 })

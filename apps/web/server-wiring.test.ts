@@ -21,6 +21,8 @@ const SITE_PROBE = join('server', 'site-probe.ts')
 const SITE_SETTINGS = join('server', 'site-settings.ts')
 const SITE_HEALTH = join('server', 'site-health.ts')
 const KEYS_SCREEN = join('app', '(app)', 'app', '(authed)', 'sites', 'keys-screen.tsx')
+const ROUTES_IO = join('server', 'routes-io.ts')
+const ROUTES_STEP = join('server', 'routes-upload.ts')
 const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
 const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
 const MIGRATIONS = '../../supabase/migrations'
@@ -140,6 +142,11 @@ test('the service-role client is imported by the flag reader and by nothing else
   // whose check is due — every connected site, ordered by the oldest check — and, like the purge
   // beside it, acts for nobody: there is no session that could make its reads, and it is reachable
   // only behind Vercel's `CRON_SECRET` bearer (`lib/cron-auth.ts`'s `authorized`).
+  // The EIGHTH, added by Story 7.17 with its reason: FR-I4's routes step writes `routes_last_offered`, `routes_live_sha256`,
+  // `routes_verified_at` and `routes_fallback` — all four server-asserted by AD-7 (`authenticated` may update only title,
+  // favicon_url and updated_at on `sites`) — and reads the project's routing and templates for the same call. It is the
+  // step's real `io`, handed to `server/routes-upload.ts` (which imports neither this nor the chokepoint), and every read and
+  // the write carry `user_id`, the clause that stands in for the RLS the service role bypasses.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -148,6 +155,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     CONNECT_ACTIONS,
     SITE_PROBE,
     SITE_HEALTH,
+    ROUTES_IO,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
@@ -452,7 +460,13 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     is the narrowest use of Vault in the app — the split happens inside the database, so the
   //     decrypted value never enters Node at all — and it is here rather than on the `call()` path
   //     precisely because the ledger refused to put a write on the read path of every Ghost call.
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN]
+  //   - THE ROUTES STEP'S IO, Story 7.17's: FR-I4's upload. `call()` with `kind: 'staff'` for the live read, the
+  //     `routes_upload` POST (a `multipart/form-data` body, DW-51's transport) and the read-back with the same token, and
+  //     the Admin key for B16's Verify upload. It is the real `io` handed to `server/routes-upload.ts`, which decides and
+  //     imports no part of the chokepoint (held below), so the one Admin write this story adds has one importer.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO]
+  assert.equal(reachesChokepoint(ROUTES_STEP), false, `${ROUTES_STEP} imports the chokepoint; its call() is handed in`)
+  assert.equal(reachesChokepoint(ROUTES_IO), true, 'control: routes-io.ts imports the chokepoint')
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => reachesChokepoint(p))

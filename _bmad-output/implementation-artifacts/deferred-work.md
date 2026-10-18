@@ -1486,6 +1486,11 @@ reason: `fetchWithKey` serialises every body with `JSON.stringify` and sends `Co
   `theme_upload` is `POST themes/upload/` with `multipart/form-data`. The allowlist item exists, the
   transport does not. The story that first executes the upload (Epic 7) extends the body handling — a
   `FormData` passed through untouched with no `Content-Type` set — and proves it against T1 and T3.
+note: Story 7.17's Dev (2026-10-18, routine call 5) — THE TRANSPORT IS BUILT, because `routes.yaml`'s upload is the first
+  multipart write: `adminRequest` (`admin-rule.ts`) is the one request builder `fetchWithKey` sends, and a `FormData` body
+  passes untouched with no `Content-Type` of Inflozo's own (`ghost-admin-rule.test.ts`, a JSON body unchanged as its
+  control); `CallResult.bytes` carries the raw answer; T1 takes the multipart routes upload (MEASUREMENTS §85). The entry
+  stays open for its owner: Story 7.18 proves the THEME upload through the same transport on T1 (T3 is retired, R-238).
 
 ### DW-52: a Ghost that is down, rate-limited or answering 404 reads as "Ghost refused"
 
@@ -9994,6 +9999,12 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (`rou
 reason: an error path, and the fix changes a stated rule.
 ruling: R-257 (owner, 2026-10-18, Story 7.17's Question 4, option 1) — while the stored routing cannot be read, each template
   keeps the main feed its stored doc flags (`flaggedListing`), sized by Posts per page; built at Story 7.17's Dev.
+status: done 2026-10-18 (Story 7.17)
+resolution: Story 7.17's Dev — `flaggedListing(docs)` (`main-feed.ts`) lists the Routes Manager files whose stored doc flags a
+  main feed; when the routing is unreadable `read.ts` designates with it and hands it to the editor as
+  `EditorData.unreadListed`, whose `listed` holds each file with no list of its own, so the feed stays main at every edit
+  and its Count is Posts per page. `main-feed.test.ts` holds it through a read and an edit, with a readable routing that
+  does not list the file stripping the flag as its control; `editor.test.ts` holds the wiring.
 
 ### DW-367: a new collection's template whose post grid failed to save cannot get it by saving again
 
@@ -10012,6 +10023,11 @@ reason: an error path after a failed write, and the fix needs a rule for when an
 planned: Story 7.17's Create (2026-10-18, a routine call) — the refusal names what was left (`listedStartFailed`), the sheet
   keeps the template it made chosen, and its next Save writes the starting grid to that template only if it still has no doc
   and no stored route names it; built at Story 7.17's Dev.
+status: done 2026-10-18 (Story 7.17)
+resolution: Story 7.17's Dev — `saveRoutes` answers `{ error: listedStartFailed(name), made: file }` when the starting grid
+  fails; the sheet keeps that template chosen and sends `start_file` with its next Save; the server writes `listedStart`
+  first, and only to this project's template that has no `project_templates` row, that no stored route names and that the
+  config being saved lists, then the config. `routes.test.ts` holds the re-check, each clause's removal as its control.
 
 ### DW-368: the editor's connected-site lists under routing run in no check
 
@@ -10066,4 +10082,28 @@ reason: it happens only with the editor open in a second tab or window, and spar
 ruling: R-258 (owner, 2026-10-18, Story 7.17's Question 5, option 1) — Routes & Templates posts the moves it made on
   `MOVED_CHANNEL(projectId)`, and the editor holding the lock takes in a move from its own base, journal kept; an editor on
   another device keeps R-253's 409. AD-15 gains the rule at Story 7.17's Dev, where this is built.
+status: done 2026-10-18 (Story 7.17)
+resolution: Story 7.17's Dev — `syncDocs` answers and records each move (`{ from, to, docs, gone }`), every routes-page answer
+  carries `moved`, the page posts it on `MOVED_CHANNEL` (`told`), and the editor holding the lock takes it in from its own
+  base (`takeMoves`, `heardMoved`): the docs as judged, the gone keys through the `left` path, the record stored, the page
+  refreshed, a conflict dialog that came first closed and the save sent again, and a 409 that answers a base it has since
+  left retried. AD-15 states the rule. `journal.test.ts` holds `takeMoves` (a move from another base takes nothing, the
+  control) and the wiring; the deployed walk's step 112 and the owner's hand test are the Review's and the owner's.
+
+## Deferred from: spec-7-17-uploading-routes-yaml-and-the-guided-fallback (2026-10-18)
+
+### DW-371: an upload that landed but could not be read back leaves no card that says so
+
+plain: If Ghost takes your routes file but Inflozo cannot read it back a moment later, Inflozo reports a failure and stores
+  nothing, so no "Upload routes.yaml yourself" card appears to offer Verify again. Your routing is probably live, and the
+  next daily check notices it; until then nothing on screen says it could not be confirmed.
+status: open
+severity: low
+origin: Story 7.17's Dev (2026-10-18): the spec's matrix rules a read-back that differs or fails `failed: routes_unverified`
+  with the state unchanged, while EXPERIENCE F3 names a *could not verify* state ("the file was uploaded, the read-back
+  failed — say so and offer Verify again"). `offerRoutes` follows the matrix.
+owner: Story 7.18, whose Ship it calls `offerRoutes` and draws its ending: it says the routing could not be confirmed and
+  offers Verify — or puts the stored state to the owner (R-83) if that needs a fourth cause in `routes_fallback`.
+location: `apps/web/server/routes-upload.ts` (`offerRoutes`' read-back) · `apps/web/lib/routes-upload.ts` (`routesWrite`)
+reason: nothing calls the step before Story 7.18, and a fourth stored cause would be a migration.
 

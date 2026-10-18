@@ -58,11 +58,11 @@ import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORD
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, carries, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
-  CARDS_KEY, flushDecision, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
-  SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
+  CARDS_KEY, flushDecision, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, isMovedMessage, isSentMessage, journalCleared, maxSeq, MOVED_CHANNEL, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
+  SENT_CHANNEL, takeMoves, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
   type Restore, type SyncState,
 } from '@/lib/journal'
-import { ghostLabel, homeList, listsOf, routeList } from '@inflozo/section-runtime/routes'
+import { ghostLabel, homeList, listsOf, routeList, type Lists } from '@inflozo/section-runtime/routes'
 import {
   askedNow, edgePoll, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, type AskedOf, type LockRow,
 } from '@/lib/lock'
@@ -828,6 +828,7 @@ function EditorShell({
   cardsRefused = null,
   templates: routeTemplates = NO_TEMPLATES,
   routes,
+  unreadListed,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -852,7 +853,9 @@ function EditorShell({
      `isPaginated`) — and the lists the canvas draws, on the sample and the connected site alike: Home's posts no collection
      owns (`homeList`) and each listed template's FIRST list, collections before channels (`routeList`, routine call 4).
      "Now", for a channel's rolling dates, is read once at mount: the shell's input to the runtime's pure evaluator (AD-1). */
-  const listed = useMemo(() => listsOf(routes), [routes])
+  // STORY 7.17 — DW-366, R-257: an unreadable routing (`routes` null) lists the files whose stored doc flags a main feed, each
+  // with no list of its own — so its feed stays main at every edit and its Count falls back to Posts per page
+  const listed = useMemo<Lists>(() => (routes === null && unreadListed !== undefined ? new Map(unreadListed.map((f) => [f, []] as const)) : listsOf(routes)), [routes, unreadListed])
   const [now] = useState(() => new Date().toISOString())
   const routeLists = useMemo<orbitWeekly.RouteLists>(() => {
     const home = homeList(routes, now)
@@ -2021,7 +2024,9 @@ function EditorShell({
     // Story 5.17: the tab's lock session rides along, so the route can refuse work from a session that was taken over
     // from. `|| undefined` drops it from the JSON before the tab knows its id — never an empty id the route could read
     // as a stranger's.
-    const body = JSON.stringify({ base: base.current, docs: payload.docs, preset: payload.preset, packs: payload.packs, cards: payload.cards, session: tabId.current || undefined })
+    // Story 7.17 — DW-370: the base this request is sent FROM, so a 409 that answers it after a move was taken in is a retry
+    const sentBase = base.current
+    const body = JSON.stringify({ base: sentBase, docs: payload.docs, preset: payload.preset, packs: payload.packs, cards: payload.cards, session: tabId.current || undefined })
     let landed = false
     try {
       const answer = await fetch(syncUrl(), {
@@ -2051,6 +2056,13 @@ function EditorShell({
         stopRetrying()
         attempt.current = 0
         rest(true)
+        // STORY 7.17 — DW-370 (R-258): the routes page in this browser moved the revision while this request was out, and
+        // the move has been taken in (`heardMoved`): the refusal answers the base this request left from, so it is sent
+        // again from the new one, never the dialog. Queued, so it runs once this attempt's `finally` has let go
+        if (base.current !== sentBase) {
+          queueMicrotask(() => void flush('change'))
+          return
+        }
         setConflicted(true)
         requestAnimationFrame(() => openOnCancel(conflict.current))
         return
@@ -2153,6 +2165,51 @@ function EditorShell({
       return
     }
     channel.onmessage = (event: MessageEvent<unknown>) => heardSent.current(event.data)
+    return () => channel.close()
+    // one project, one mount
+  }, [])
+
+  /** STORY 7.17 — DW-370, R-258 (AD-15's rule): ROUTES & TEMPLATES, OPEN IN THIS BROWSER, MOVED THE REVISION, and says what it
+   *  wrote (`MOVED_CHANNEL`). Since 7.16c every doc that page writes moves `projects.revision` (`syncDocs`), so this editor's
+   *  next save met R-253's 409 and its ask to reload. Now, holding the lock, it takes the moves in FROM ITS OWN BASE
+   *  (`takeMoves`): the docs as the server judged them (never re-designated against a routing this editor has not yet
+   *  re-read), each gone key dropped through the `left` path (its journal entries and its doc; a canvas on screen among them
+   *  moves to Home with `TEMPLATE_GONE`), the record stored at the new base, the page re-read for the Template menu and the
+   *  routing (`router.refresh()`), and a conflict dialog that came first closed and the save sent again. Its journal — its
+   *  undo history — is kept: nothing it holds was overwritten. A message from any other base is ignored, so the 409 follows
+   *  as R-253 rules; a reader tab ignores it (it never flushes, `flush`'s DW-203 wall); another device hears nothing. */
+  const heardMoved = useRef<(message: unknown) => void>(() => {})
+  heardMoved.current = (message) => {
+    if (!isMovedMessage(message) || message.project !== project.id || !latest.current.lock.holder) return
+    const took = takeMoves(base.current, message.moves)
+    if (took === null) return
+    base.current = took.base
+    const gone = took.gone.filter((k) => isRouteKey(k) && !Object.hasOwn(took.docs, k))
+    const journal = gone.reduce(withoutDoc, latest.current.journal)
+    const docs = { ...Object.fromEntries(Object.entries(latest.current.docs).filter(([k]) => !gone.includes(k))), ...took.docs }
+    latest.current = { ...latest.current, journal, docs, stack: stackOf(docs, latest.current.key, latest.current.page, library) }
+    setJournal(journal)
+    setDocs(docs)
+    // a canvas the moves brought back (an Undo of its delete) is offered again; one they took is gone, as the `left` path's
+    const back = new Set(Object.keys(took.docs).filter(isRouteKey).map((k) => canvasOfTemplateKey(k) as Canvas))
+    setDeleted((was) => new Set([...[...was].filter((c) => !back.has(c)), ...gone.map((k) => canvasOfTemplateKey(k) as Canvas)]))
+    store(journal, docs, latest.current.auto)
+    router.refresh()
+    if (conflict.current?.open) {
+      conflict.current.close()
+      setConflicted(false)
+      void flush('change')
+    }
+  }
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return
+    let channel: BroadcastChannel
+    try {
+      channel = new BroadcastChannel(MOVED_CHANNEL(project.id))
+    } catch {
+      return
+    }
+    channel.onmessage = (event: MessageEvent<unknown>) => heardMoved.current(event.data)
     return () => channel.close()
     // one project, one mount
   }, [])

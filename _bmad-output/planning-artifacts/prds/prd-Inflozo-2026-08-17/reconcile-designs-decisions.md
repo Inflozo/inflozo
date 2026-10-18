@@ -5543,7 +5543,8 @@ Create's questions: *"Agree with all recommended."*
   compile `routes`. The card's hand test is 7.18's, word for word (Epic 7's preamble); 7.17's hand test is R-258's.
 - **Declined.** Building Story 7.18 first and 7.17 after it, whole.
 - Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's and 7.18's cards and Epic 7's preamble ·
-  ✅ `epic-7-context.md` · ⬜ DW-51 (the transport, at 7.17's Dev).
+  ✅ `epic-7-context.md` · ✅ DW-51 (the transport, at 7.17's Dev, 2026-10-18 — `adminRequest`; the entry stays open for
+  7.18's theme-upload proof).
 
 **R-255 — when a project's routing is Ghost's default and the site's live `routes.yaml` is not, Inflozo puts Ghost's default
 file back only over a file Inflozo put there itself.** Story 7.17's Create, Question 2, ruled **option 1** (owner,
@@ -5555,8 +5556,8 @@ file back only over a file Inflozo put there itself.** Story 7.17's Create, Ques
   bytes, read in both majors' source) is uploaded; a file anyone else wrote is kept, and nothing is written. A project with
   routing still uploads its own file over whatever is there.
 - **Declined.** Always putting Ghost's default back; never uploading while the project's routing is the default.
-- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ `epic-7-context.md` · ⬜ `prd.md`
-  FR-I4 and FR-I5 (dated, at 7.17's Dev).
+- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ `epic-7-context.md` · ✅ `prd.md`
+  FR-I4 and FR-I5 (dated, at 7.17's Dev, 2026-10-18) · ✅ `routesToOffer` (`apps/web/lib/routes-upload.ts`).
 
 **R-256 — the all-tags and all-authors pages move, word for word, to Story 9.12, whose Create settles FR-F8 against FR-I5.**
 Story 7.17's Create, Question 3, ruled **option 1** (owner, 2026-10-18): *"Agree with all recommended."*
@@ -5569,7 +5570,7 @@ Story 7.17's Create, Question 3, ruled **option 1** (owner, 2026-10-18): *"Agree
   A29) take that one decision ("the product should decide the route once", A20's Finding 1).
 - **Declined.** Building the two pages in Story 7.17 on a made-up design; dropping them for FR-F8 everywhere.
 - Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's and 9.12's cards and Epic 7's and Epic 9's
-  preambles · ✅ `epic-7-context.md` · ⬜ `prd.md` FR-I5 (dated, at 7.17's Dev).
+  preambles · ✅ `epic-7-context.md` · ✅ `prd.md` FR-I5 (dated, at 7.17's Dev, 2026-10-18).
 
 **R-257 — while a project's stored routing cannot be read, each Routes Manager template keeps the main feed its stored doc
 flags.** Story 7.17's Create, Question 4, ruled **option 1** (owner, 2026-10-18): *"Agree with all recommended."*
@@ -5581,7 +5582,8 @@ flags.** Story 7.17's Create, Question 4, ruled **option 1** (owner, 2026-10-18)
   the feed keeps its MAIN FEED and is sized by Posts per page until the routing reads again. A readable routing still strips a
   flag from a file no collection or channel names.
 - **Declined.** Leaving it as built.
-- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ DW-366 · ✅ `epic-7-context.md`.
+- Targets: ✅ this entry · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ DW-366 · ✅ `epic-7-context.md` ·
+  ✅ `flaggedListing`, `read.ts`' `unreadListed` and the editor's `listed` (7.17's Dev, 2026-10-18).
 
 **R-258 — Routes & Templates tells an editor open in the same browser what it changed, and the editor takes it in without a
 reload.** Story 7.17's Create, Question 5, ruled **option 1** (owner, 2026-10-18): *"Agree with all recommended."*
@@ -5597,7 +5599,8 @@ reload.** Story 7.17's Create, Question 5, ruled **option 1** (owner, 2026-10-18
 - **Declined.** The editor saving then reloading by itself (no AD-15 change, undo lost); an open editor taking a never-held
   canvas from the cloud while the routes page stops moving the revision (7.16c's Question 2, option 2).
 - Targets: ✅ this entry · ✅ R-253's entry (dated note) · ✅ Story 7.17's spec · ✅ `epics.md` Story 7.17's card · ✅ DW-370 ·
-  ✅ `epic-7-context.md` · ⬜ AD-15 (`ARCHITECTURE-SPINE.md`, at 7.17's Dev).
+  ✅ `epic-7-context.md` · ✅ AD-15 (`ARCHITECTURE-SPINE.md`, at 7.17's Dev, 2026-10-18) · ✅ `MOVED_CHANNEL`, `takeMoves`,
+  the routes page's `told` and the editor's `heardMoved` (7.17's Dev).
 
 ## B · Approved decisions superseded by this session
 

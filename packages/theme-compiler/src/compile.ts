@@ -77,12 +77,16 @@
 // `card_assets: { exclude }` naming exactly the designed cards' Ghost chunks (`excludedChunks`), `true` while none is
 // designed. The stored record is parsed by `card_designs`' one schema before anything renders, a refusal is its sentence,
 // and no rule this theme writes carries `!important` (Ghost's own stay inside its copy).
+//
+// Story 7.17 (FR-I5, AD-36, DW-346) adds FR-I5's two lints — no bundled module reads a modifier key (`searchKeyRefusals`),
+// and `{{ghost_head}}` carries no argument (`checkGhostMarkup`'s rule 1) — and README's routes step: handed the project's
+// `routes.yaml` (`routes`), `README.md` carries it after its Styles, as an indented code block Markdown cannot leave.
 
 import {
   bundle, byCategory, CARDS_JS_TAG, cardsCss, cardsCssVersion, cardsJs, cardsVersion, categoryOf, checkThemeJs, checkThemeScripts, COMPILE_TARGETS, compilesTo,
   CATALOG, CUSTOM_TARGET_RE, designedCards, englishStrings, excludedChunks, HBS_COMMENT, IMAGE_SIZES, isCompileTarget, isRouteTemplate, isSiteFooter, MAIN_JS_TAG, moduleUnion,
-  OWN_RULES_HEAD, ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, ROUTE_TEMPLATE_TARGET, stripCssComments, targetContext, templateKeyOfFile,
-  translatableKeys,
+  OWN_RULES_HEAD, ownCardsCss, PAGINATED_TARGETS, parseCardDesigns, PAYWALL_TARGET, PORTAL_PAGE, POST_HEADER, rootClassOf, ROUTE_TEMPLATE_TARGET, searchKeyRefusals, stripCssComments, targetContext,
+  templateKeyOfFile, translatableKeys,
 } from '@inflozo/library'
 import type { CardDesigns, IconLookup, Listed, ModuleSources, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing, TABLER_LICENSE } from '@inflozo/library/icons'
@@ -120,6 +124,10 @@ export type CompileInput = {
    *  list row, F3); and a listed file with no visible feed puts its contexts in FR-H2's `noindex` guard, since its page 2
    *  repeats page 1 (F6). A key that is no Routes Manager file, or a context outside `contextOf`'s shape, is refused (AD-36) */
   lists?: Readonly<Record<string, readonly string[]>>
+  /** STORY 7.17 — the project's `routes.yaml` bytes, `routesYaml(config)` (`@inflozo/section-runtime/routes`), handed in by
+   *  Story 7.18 beside `routed` and `lists`: README.md's Routes section carries it, every line indented four spaces. Null or
+   *  omitted (Ghost's default routing): no section. Refused when it carries any C0 character but `\n` (AD-36) */
+  routes?: string | null
   /** the library, handed in (AD-14) — the same entries the editor reads */
   library: (designId: string) => SectionRegistryEntry | undefined
   /** the pack in force, an own pack already resolved */
@@ -267,9 +275,17 @@ const cssPart = (s: string): string => {
  *  character, since the formatter's `KEEP_NL` and the runtime's tokens are C0 characters and `Tokens.resolve` would
  *  turn one into a line break or an expression. A design file is held to the same rule by `control-character`. */
 const C0 = /[\u0000-\u0009\u000b\u000c\u000e-\u001f]/   // a tab included (Question 2): the theme carries none
-const noC0 = (what: string, values: Iterable<string>): void => {
-  for (const v of values) if (C0.test(v)) throw new Error(`${what} carries a control character, which the theme compiler refuses (AD-36): ${JSON.stringify(v.slice(0, 40))}`)
+const noC0 = (what: string, values: Iterable<string>, re: RegExp = C0): void => {
+  for (const v of values) if (re.test(v)) throw new Error(`${what} carries a control character, which the theme compiler refuses (AD-36): ${JSON.stringify(v.slice(0, 40))}`)
 }
+/** Story 7.17 — the routes file's rule: every C0 character but `\n`. CommonMark ends a line at `\r` too, so a `\r` would
+ *  start a line README's four-space indent never reached — a heading or an HTML block outside the code block. */
+const ROUTES_C0 = /[\u0000-\u0009\u000b-\u001f]/
+
+/** Story 7.17 (DW-346) — README's routes step, in the spec's words (Design Notes, "Words"), kept here because a core
+ *  package reads no app's word list. The file follows the sentence as an indented code block. */
+const ROUTES_HEADING = '## Routes'
+const ROUTES_SENTENCE = "Ghost keeps this theme's routing outside the theme, in `routes.yaml`. Upload the file below wherever Ghost Admin accepts a routes file; Ghost's guide is https://docs.ghost.org/themes/routing/."
 
 // ── package.json (Story 7.2, FR-J2) ──────────────────────────────────────────────────────────────────────────────────
 
@@ -446,7 +462,9 @@ const nonBlank = (lines: readonly string[], from: number, step: 1 | -1): number 
  * comments out first. Each sentence names its file; `[]` when the markup is Ghost's:
  *   1. `{{ghost_head}}` and `{{ghost_foot}}` each appear once in the theme, in `default.hbs` — never in another file — the
  *      head's as the last line before `</head>`, so Ghost's own styles and the site's code injection come after the
- *      theme's stylesheet (AD-18), and the foot's as the last line before `</body>`;
+ *      theme's stylesheet (AD-18), and the foot's as the last line before `</body>`; since Story 7.17 (FR-I5), the head's
+ *      with no argument — `exclude` switches off what Ghost writes there, its search among it (`helpers/ghost_head.js`
+ *      reads `options.hash.exclude`, its one hash key: `:329` in 6.58.0, `:223` in 5.130.6, read in source);
  *   2. `{{body_class}}` appears once, in `default.hbs`, opening `<body>`'s `class` (a later story may add classes after it);
  *   3. `{{post_class}}` appears only in `POST_ARTICLE`, which is the first line inside every `{{#post}}`, whose last line
  *      is `</article>`;
@@ -470,6 +488,11 @@ export function checkGhostMarkup(files: Readonly<Record<string, string>>): strin
       const found = [...body.matchAll(MUSTACHE)].filter((m) => names(m[0], name)).length
       const want = path === SITE_DOC ? 1 : 0
       if (found !== want) out.push(`${path}: {{${name}}} appears ${found} time${found === 1 ? '' : 's'} — a theme carries it once, in ${SITE_DOC}, and in no other file.`)
+    }
+  }
+  for (const [path, body] of hbs) {
+    for (const m of body.matchAll(MUSTACHE)) {
+      if (names(m[0], 'ghost_head') && !/^\{\{~?\s*ghost_head\s*~?\}\}$/.test(m[0])) out.push(`${path}: ${m[0]} carries an argument — a theme writes {{ghost_head}} bare, since an exclude switches off what Ghost writes there, its own search among it (FR-I5).`)
     }
   }
   const site = hbs.find(([path]) => path === SITE_DOC)?.[1]
@@ -876,6 +899,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   }
   noC0('a string', Object.values(input.strings ?? {}))
   noC0('an asset URL', Object.values(input.assets))
+  noC0('the routes file', input.routes == null ? [] : [input.routes], ROUTES_C0)
   // Story 7.10 — the settings, judged before anything renders, over every stored doc: each page 1, then each page 2
   const storedDocs = [
     ...Object.keys(input.templates).sort(byCode).map((f) => input.templates[f] as ProjectDoc),
@@ -1176,6 +1200,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   const mounted = moduleUnion(placed.map((p) => p.entry))
   const js: JsRecord = { bundled: mounted.filter((n) => Object.hasOwn(input.modules, n)), atRest: mounted.filter((n) => !Object.hasOwn(input.modules, n)) }
   tree['assets/js/main.js'] = bundle(js.bundled, input.modules)
+  // Story 7.17 (FR-I5): no file main.js carries reads a modifier key, so the theme binds no ⌘K — Ghost's own search's
+  const keys = searchKeyRefusals(Object.fromEntries(['core', ...js.bundled].map((n) => [n, input.modules[n] as string])))
+  if (keys.length > 0) throw new Error(`the theme's scripts: ${keys.join(' · ')}`)
   if (cards !== undefined) tree['assets/js/cards.js'] = cards.js
   // Ghost's licence whenever cards.js or cards.css carries Ghost's bytes (Story 7.13)
   if (cards !== undefined || sheetVersion !== null) {
@@ -1199,6 +1226,9 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
       ? `- \`assets/css/cards.css\` is this theme's own styling for the cards Ghost's editor puts in posts: their wide and full widths${ownSettings ? ', and its card settings' : ''}.`
       : `- \`assets/css/cards.css\` styles the cards Ghost's editor puts in posts. Its block from the comment naming Ghost to the comment "This theme's card settings" is Ghost's own stylesheet for these cards: ${copied.join(' · ')}, copied unchanged from Ghost ${sheetVersion} under the MIT licence in \`LICENSE-ghost.txt\`. The rest of the file is this theme's own: the cards' widths and its card settings. \`package.json\`'s \`card_assets\` switches off Ghost's own copy of these cards' styles.`,
     '',
+    // Story 7.17 (DW-346, AD-36): the routes file, every line four spaces in — an indented code block, which no line of it
+    // can leave, since none starts nearer the margin and `ROUTES_C0` let no line ending but `\n` through
+    ...(input.routes == null ? [] : [ROUTES_HEADING, '', ROUTES_SENTENCE, '', ...input.routes.replace(/\n$/, '').split('\n').map((l) => `    ${l}`), '']),
   ].join('\n')
 
   // ── user text, once, last, over every text file; the record in code-unit path order; then the checks over the final

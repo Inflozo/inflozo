@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { PAGINATED_TARGETS } from '@inflozo/library'
 import { duplicateSection, insertSection, removeSection, setHidden, switchDesign } from './doc-edit.ts'
 import { parseDoc, type ProjectDoc } from './doc-schema.ts'
-import { designate, feedBase, feedlessArchive, feedQuery, feedsOn, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
+import { designate, feedBase, feedlessArchive, feedQuery, feedsOn, flaggedListing, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
 import type { SynthesisLibrary } from './synthesize.ts'
 
 // Story 5.19 — FR-H2's main-feed designation, every lifecycle row of the spec's I/O matrix that is not a pixel, over
@@ -233,3 +233,28 @@ test('(7.16c) a listed template with no visible feed is feed-less — its page 2
   assert.equal(feedlessArchive(hidden, LISTED, library), false, 'a static route serves no /page/N/ (F3)')
   assert.equal(feedlessArchive(hidden, 'custom-signup.hbs', library, new Set(['custom-signup.hbs'])), false, 'a membership file is never listed')
 })
+
+/* ───────────────────────────── Story 7.17 — DW-366, an unreadable routing (R-257) ───────────────────────────── */
+
+test('(7.17) an unreadable routing keeps each Routes Manager template\'s stored main feed: flaggedListing designates with what is stored', () => {
+  const flagged = doc(at('head', 'a4/13'), at('grid', 'a17/1', { isMainFeed: true }))
+  const plain = doc(at('grid', 'a17/1'))
+  const docs = {
+    [`custom:${LISTED}`]: flagged,
+    'custom:custom-landing.hbs': plain,
+    'custom:custom-signup.hbs': doc(at('grid', 'a17/1', { isMainFeed: true })),
+    home: doc(at('grid', 'a17/1', { isMainFeed: true })),
+  }
+  // only a Routes Manager file whose stored doc flags a feed: not an unflagged one, a membership file or a standard key
+  assert.deepEqual(flaggedListing(docs), [LISTED])
+  const unread = new Set(flaggedListing(docs))
+  // the flag is kept through the read and through the next edit (`designate` with the doc before it as `previous`)
+  assert.deepEqual(flags(designate(flagged, LISTED, library, undefined, unread)), ['grid'])
+  const edited = designate(ok(insertSection(flagged, 0, parseDoc({ schemaVersion: 1, instances: [at('more', 'a4/13')] }, 'home').instances[0]!)), LISTED, library, flagged, unread)
+  assert.deepEqual(flags(edited), ['grid'])
+  // a file with no stored flag gains none
+  assert.deepEqual(flags(designate(plain, 'custom-landing.hbs', library, undefined, unread)), [])
+  // THE CONTROL: a readable routing that does not list the file strips the flag (7.16c's rule, unchanged)
+  assert.deepEqual(flags(designate(flagged, LISTED, library, undefined, new Set())), [])
+})
+

@@ -181,6 +181,27 @@ test('an unreadable routes.yaml leaves both routes columns alone, and health is 
   assert.equal(plan('healthy', 'unhealthy', null, null).transition, 'opened', 'health never depends on the read')
 })
 
+test('Story 7.17: the daily check clears B16\'s cause when the live file is the one offered — and leaves it when it is not', () => {
+  const offered = ROUTES.sha256
+  const up = (fallback: string | null, offeredSha: string | null, routes: { sha256: string } | null = ROUTES) =>
+    writePlan({ before: { health: 'healthy', last_health_email_at: null, routes_fallback: fallback, routes_offered_sha256: offeredSha }, health: 'healthy', routes, now }).update
+  // the customer uploaded B16's file by hand and never pressed Verify: the live sha is the offered one's
+  assert.equal(up('no_token', offered).routes_fallback, null)
+  assert.ok('routes_fallback' in up('role', offered))
+  // THE CONTROL: a live file that differs leaves the cause where it was — so does an unreadable one, and a card not up
+  assert.ok(!('routes_fallback' in up('no_token', 'f'.repeat(64))), 'a different live file')
+  assert.ok(!('routes_fallback' in up('no_token', offered, null)), 'no read')
+  assert.ok(!('routes_fallback' in up(null, offered)), 'no cause to clear')
+  assert.ok(!('routes_fallback' in up('revoked', null)), 'nothing offered')
+  // and the shell hashes what it offered and reads the cause: one select, the plan's input
+  const source = readFileSync(join('server', 'site-health.ts'), 'utf8')
+  assert.match(source, /\.select\('health, last_health_email_at, title, url, credentials_present, site_settings, routes_last_offered, routes_fallback'\)/)
+  assert.match(source, /routes_offered_sha256: row\.routes_last_offered === null \? null : createHash\('sha256'\)\.update\(row\.routes_last_offered\)\.digest\('hex'\)/)
+  // the live file is hashed as BYTES, never as decoded text (FR-I4's read-back rule)
+  assert.match(source, /createHash\('sha256'\)\.update\(answer\.bytes\)/)
+  assert.doesNotMatch(source, /update\(answer\.text\)/)
+})
+
 test('THE OUT-OF-TIME RUN IS RED, NOT KILLED', async () => {
   // BATCH times three calls at the chokepoint's timeout is past the function's limit, and a killed
   // function answers nothing at all — no 500, no counts, no line (DW-46). With the deadline already

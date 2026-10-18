@@ -7,7 +7,9 @@ import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
   CARDS_KEY, flushPayload, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, PACK_RECORDS_KEY, panelOpen, redo, undo, unsynced,
   restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, withoutDoc, type Journal, type OwedRecord, type SyncState,
+  isMovedMessage, MOVED_CHANNEL, movedMessage, SENT_CHANNEL, takeMoves, type Move,
 } from './lib/journal.ts'
+import { readFileSync } from 'node:fs'
 
 /* STORY 5.8 — the journal, the indicator and the backoff, asserted where `node --test` can reach them. Every row of
    the spec's matrix that is a RULE rather than a gesture is here; the gestures themselves are
@@ -590,3 +592,75 @@ test('Story 7.16b — withoutDoc drops a gone template\'s work: its entries, its
   // THE CONTROL: a key the journal never touched leaves it as it was, field for field
   assert.deepEqual(withoutDoc(j, 'tag'), j)
 })
+
+/* ── STORY 7.17 — DW-370, R-258: Routes & Templates tells an editor open in this browser what it moved, and the editor takes
+   it in from its own base ─────────────────────────────────────────────────────────────────────────────────────────── */
+
+const EDITOR = 'app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx'
+const MANAGER = 'app/(app)/app/(authed)/projects/[id]/routes/routes-manager.tsx'
+const ROUTES_ACTIONS = 'app/(app)/app/(authed)/projects/[id]/routes/actions.ts'
+
+test('7.17 (DW-370): takeMoves applies the moves in order from the base the editor holds — and a move from another base takes nothing', () => {
+  const KEY = 'custom:custom-tutorials-list.hbs'
+  const made: Move = { from: 7, to: 8, docs: { [KEY]: doc('grid') }, gone: [] }
+  // a new template's doc: the base moves, the doc arrives
+  assert.deepEqual(takeMoves(7, [made]), { base: 8, docs: { [KEY]: doc('grid') }, gone: [] })
+  // a delete: the key goes; an Undo after it in the same list brings the doc back — the later move outranks
+  const del: Move = { from: 8, to: 9, docs: {}, gone: [KEY] }
+  assert.deepEqual(takeMoves(8, [del]), { base: 9, docs: {}, gone: [KEY] })
+  assert.deepEqual(takeMoves(7, [made, del]), { base: 9, docs: {}, gone: [KEY] })
+  assert.deepEqual(takeMoves(8, [del, { from: 9, to: 10, docs: { [KEY]: doc('grid') }, gone: [] }]), { base: 10, docs: { [KEY]: doc('grid') }, gone: [] })
+  // a leftover cleared before the new doc (insertTemplate, then writeListedStart): the doc stands, nothing gone
+  assert.deepEqual(takeMoves(7, [{ from: 7, to: 8, docs: {}, gone: [KEY] }, { from: 8, to: 9, docs: { [KEY]: doc('g') }, gone: [] }]), { base: 9, docs: { [KEY]: doc('g') }, gone: [] })
+  // THE CONTROL: a move whose `from` is not this editor's base takes nothing, so R-253's 409 follows at the next save
+  assert.equal(takeMoves(6, [made]), null)
+  assert.equal(takeMoves(8, [made]), null, 'a move this editor is already past')
+  assert.equal(takeMoves(7, []), null)
+})
+
+test('7.17 (DW-370): only a well-formed moved message is read, on its own channel beside the sign-out\'s', () => {
+  const moves: Move[] = [{ from: 3, to: 4, docs: { 'custom:custom-a.hbs': doc('x') }, gone: ['custom:custom-b.hbs'] }]
+  const told = movedMessage('p1', moves)
+  assert.deepEqual(told, { type: 'moved', project: 'p1', moves })
+  assert.equal(isMovedMessage(told), true)
+  assert.equal(isMovedMessage(structuredClone(told)), true, 'as BroadcastChannel delivers it')
+  for (const junk of [null, 'moved', { ...told, type: 'sent' }, { ...told, project: 1 }, { ...told, moves: 'x' },
+    { ...told, moves: [{ ...moves[0], from: '3' }] }, { ...told, moves: [{ ...moves[0], to: 3 }] }, { ...told, moves: [{ ...moves[0], gone: [1] }] },
+    { ...told, moves: [{ ...moves[0], docs: { k: { nope: true } } }] }, { ...told, moves: [{ ...moves[0], docs: [] }] }]) {
+    assert.equal(isMovedMessage(junk), false, JSON.stringify(junk))
+  }
+  assert.notEqual(MOVED_CHANNEL('p1'), SENT_CHANNEL('p1'))
+})
+
+test('7.17 (DW-370): the routes page posts every answer\'s moves, and the editor holding the lock takes them in, keeping its journal', () => {
+  const manager = readFileSync(MANAGER, 'utf8')
+  assert.match(manager, /channel\.postMessage\(movedMessage\(projectId, result\.moved\)\)/)
+  // every action the page calls goes through `told`, and nothing else posts or calls an action raw
+  const calls = [...manager.matchAll(/await (saveRoutes|deleteTemplate|createTemplate|restoreTemplate|undo\.run)\(/g)]
+  assert.ok(calls.length > 0)
+  for (const call of calls) assert.equal(manager.slice(call.index! - 'told(projectId, '.length, call.index), 'told(projectId, ', call[0])
+  // the actions: every move recorded, every answer — a refusal included — carrying them
+  const actions = readFileSync(ROUTES_ACTIONS, 'utf8')
+  assert.match(actions, /const move: Move = \{ from: base, to: answer\.revision, docs, gone \}\s+moved\.push\(move\)/)
+  for (const name of ['saveRoutes', 'createTemplate', 'deleteTemplate', 'restoreTemplate']) {
+    const at = actions.indexOf(`export async function ${name}(`)
+    const body = actions.slice(at, actions.indexOf('\n}\n', at))
+    assert.match(body, /return withMoved\(\{ ok: true/, `${name}: its success carries what it moved`)
+  }
+  // the delete's move names the key it took, so the editor drops it
+  assert.match(actions, /if \(held && !\(await syncDocs\(sb, id, \{\}, moved, \[key\]\)\)\)/)
+  // the editor: its own channel, the holder alone, from its own base, the left path, the record, the refresh, the dialog
+  const editor = readFileSync(EDITOR, 'utf8')
+  const at = editor.indexOf('heardMoved.current = (message) => {')
+  const heard = editor.slice(at, editor.indexOf('\n  }\n', at))
+  assert.match(heard, /if \(!isMovedMessage\(message\) \|\| message\.project !== project\.id \|\| !latest\.current\.lock\.holder\) return/, 'a reader tab ignores it')
+  assert.match(heard, /const took = takeMoves\(base\.current, message\.moves\)\s+if \(took === null\) return\s+base\.current = took\.base/)
+  assert.match(heard, /gone\.reduce\(withoutDoc, latest\.current\.journal\)/, 'the gone keys through the left path, the rest of the journal kept')
+  assert.doesNotMatch(heard, /EMPTY_JOURNAL|dropJournal|designated\(/, 'the journal is never cleared, and the docs are the server\'s as judged')
+  assert.match(heard, /store\(journal, docs, latest\.current\.auto\)\s+router\.refresh\(\)/)
+  assert.match(heard, /if \(conflict\.current\?\.open\) \{\s+conflict\.current\.close\(\)\s+setConflicted\(false\)\s+void flush\('change'\)/)
+  assert.match(editor, /new BroadcastChannel\(MOVED_CHANNEL\(project\.id\)\)\s+\} catch \{\s+return\s+\}\s+channel\.onmessage = \(event: MessageEvent<unknown>\) => heardMoved\.current\(event\.data\)/)
+  // a 409 that answers a base the editor has since moved past is sent again, never the dialog
+  assert.match(editor, /if \(base\.current !== sentBase\) \{\s+queueMicrotask\(\(\) => void flush\('change'\)\)\s+return\s+\}/)
+})
+

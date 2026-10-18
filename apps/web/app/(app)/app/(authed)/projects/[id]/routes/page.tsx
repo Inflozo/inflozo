@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { parseRoutesConfig, routesYaml, validateRoutes } from '@inflozo/section-runtime/routes'
+import { RoutesFallback } from '@/components/routes-fallback'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom } from '@/lib/live-content'
 import { NEW_TEMPLATE_QUERY } from '@/lib/editor'
 import { ROUTES_WORDS, templatesOf } from '@/lib/routes'
+import { isFallback } from '@/lib/routes-upload'
 import { supabaseServer } from '@/lib/supabase/server'
 import { projectOf } from '../(editor)/read'
 import { RoutesManager } from './routes-manager'
@@ -34,7 +36,11 @@ const isDesigned = (doc: unknown): boolean => {
    `routesYaml(config)` and the errors `validateRoutes(config)` — the saved state, re-rendered after every write.
 
    STORY 7.16b — `?new=template` is the Template menu's "New template" (`lib/editor.ts`'s `newTemplatePath`): the page opens
-   with its New template sheet up, and a template made there opens as its canvas (routine call 8). */
+   with its New template sheet up, and a template made there opens as its canvas (routine call 8).
+
+   STORY 7.17 — B16 at the top of the page, under the bar, for the LINKED site while it still needs its routing (its
+   `routes_fallback` set and a file offered; a disconnected site is no site): the same card the site's card on Sites
+   carries (`components/routes-fallback.tsx`). */
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const project = await projectOf((await params).id)
@@ -55,7 +61,7 @@ export default async function RoutesPage({ params, searchParams }: { params: Pro
     sb.from('custom_templates').select('id, filename, display_name, kind, created_at').eq('project_id', id).eq('kind', 'routes').order('created_at'),
     sb.from('deployed_template_names').select('filename').eq('project_id', id),
     sb.from('project_templates').select('template_key, doc').eq('project_id', id).like('template_key', 'custom:%'),
-    project.linked_site_id === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at').eq('id', project.linked_site_id).maybeSingle(),
+    project.linked_site_id === null ? null : sb.from('sites').select('id, url, title, content_key, disconnected_at, routes_fallback, routes_last_offered').eq('id', project.linked_site_id).maybeSingle(),
   ])
   for (const read of [configRead, templatesRead, deployedRead, designedRead]) {
     if (read.error) throw new Error(`the project's routing could not be read (${read.error.code})`)
@@ -63,6 +69,10 @@ export default async function RoutesPage({ params, searchParams }: { params: Pro
   // a failed site read is the bar without the site's name and no suggestions, never a black page
   if (siteRead?.error) console.error('projects/routes: the linked site could not be read', { code: siteRead.error.code })
   const site = siteRead && !siteRead.error && siteRead.data ? siteFrom(siteRead.data, normaliseSiteUrl, hostOf) : null
+  const row = siteRead && !siteRead.error ? siteRead.data : null
+  const fallback = row && row.disconnected_at === null && isFallback(row.routes_fallback) && typeof row.routes_last_offered === 'string'
+    ? <RoutesFallback siteId={row.id as string} cause={row.routes_fallback} file={row.routes_last_offered} heading="h2" />
+    : null
 
   const templates = templatesOf(templatesRead.data)
   const stored = configRead.data?.config ?? {}
@@ -83,6 +93,7 @@ export default async function RoutesPage({ params, searchParams }: { params: Pro
       deployed={(deployedRead.data ?? []).map((r) => r.filename as string)}
       designed={(designedRead.data ?? []).filter((r) => isDesigned(r.doc)).map((r) => (r.template_key as string).slice('custom:'.length))}
       fromMenu={fromMenu}
+      notice={fallback}
     />
   )
 }

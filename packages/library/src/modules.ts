@@ -7,6 +7,8 @@
 // and `CARDS_JS_TAG`, `checkThemeJs`'s comparison of `cards.js` (DW-135), `checkThemeScripts` over every template's
 // `<script>`s (DW-134), and `moduleKeyRefusals`, the registry half of DW-146 (its literal half is `eslint.config.js`).
 //
+// Story 7.17 (FR-I5) adds `searchKeyRefusals`: no module reads a modifier key, so none can bind ⌘K, Ghost's own search's.
+//
 // Pure under AD-1: sources are HANDED IN. This file reads no file and imports nothing from `src/` but the catalog, so
 // `vocabulary.ts` can import it without a cycle. The prose half of the one table — each module's no-JS
 // line and its edit-safe sentence — is research §7; `registry.json` beside `core.js` is what code reads,
@@ -374,6 +376,38 @@ export function moduleKeyRefusals(sources: ModuleSources, rows: readonly ModuleR
   return out
 }
 
+/** Story 7.17 — FR-I5's lint on the emitter: every module source (by name) whose code reads `metaKey`, `ctrlKey` or
+ *  `getModifierState`, each a sentence. FR-I5: no Inflozo design binds ⌘K or Ctrl-K, which Ghost's own search
+ *  (`sodo-search`) opens on, and a module that reads no modifier key binds neither. Comments are taken out first by
+ *  `topLevelShape`'s own lexer (`codeOf`), so a module may name the rule; a string is code, so `e['metaKey']` is a read.
+ *  ponytail: a word scan, not data flow — a computed name (`e['meta' + 'Key']`) is not seen; a parser if one is ever written. */
+export function searchKeyRefusals(sources: ModuleSources): string[] {
+  const out: string[] = []
+  for (const name of Object.keys(sources).sort(byCode)) {
+    const read = [...new Set([...codeOf(sources[name] as string).matchAll(/(?<![\w$])(metaKey|ctrlKey|getModifierState)(?![\w$])/g)].map((m) => m[1] as string))]
+    if (read.length > 0) out.push(`${name}.js reads ${read.join(', ')} — no module reads a modifier key, so none can bind ⌘K or Ctrl-K, which Ghost's own search opens on (FR-I5)`)
+  }
+  return out
+}
+
+/** A module source with its comments taken out, by `topLevelShape`'s lexer — or the source whole when its top level is not
+ *  one `export function` that lexer reads to its close, so a file it cannot read is scanned comments and all (it refuses
+ *  more, never less). Its ceiling is the lexer's: a regex literal straight after `)` or `}` is read as division. */
+function codeOf(src: string): string {
+  const at = skipTrivia(src, 0)
+  const head = /^export function\s+[\w$]+\s*\(/.exec(src.slice(at))
+  const comments: [number, number][] = []
+  const end = head === null ? -1 : closeOfDeclaration(src, at + head[0].length - 1, comments)
+  if (end === -1 || skipTrivia(src, end + 1) < src.length) return src
+  let code = ''
+  let from = at
+  for (const [a, b] of comments) {
+    code += `${src.slice(from, a)} `
+    from = b
+  }
+  return code + src.slice(from, end + 1)
+}
+
 // ─── the top-level shape of one module file ──────────────────────────────────
 
 /** null when `src`'s top level is exactly `export function <fn>(…) { … }`, comments and whitespace around it.
@@ -415,19 +449,24 @@ function skipTrivia(src: string, from: number): number {
 
 const REGEX_AFTER_WORD = new Set(['return', 'typeof', 'case', 'do', 'else', 'in', 'of', 'void', 'yield', 'await', 'delete', 'throw', 'new'])
 
-/** The index of the `}` that brings the bracket depth back to zero, starting at the parameter list's `(`. */
-function closeOfDeclaration(src: string, from: number): number {
+/** The index of the `}` that brings the bracket depth back to zero, starting at the parameter list's `(`. Story 7.17: each
+ *  comment it skips is pushed to `comments` as `[start, end)`, in order — `codeOf`'s cut. */
+function closeOfDeclaration(src: string, from: number, comments: [number, number][] = []): number {
   let depth = 0
   const templates: number[] = [] // the depth at which each open `${` resumes its template's text
   for (let i = from; i < src.length; i++) {
     const c = src[i]
     if (c === '/' && src[i + 1] === '/') {
+      const start = i
       i = src.indexOf('\n', i)
       if (i === -1) return -1
+      comments.push([start, i])
     } else if (c === '/' && src[i + 1] === '*') {
+      const start = i
       i = src.indexOf('*/', i + 2)
       if (i === -1) return -1
       i++
+      comments.push([start, i + 1])
     } else if (c === '"' || c === "'") {
       i = endOfQuoted(src, i, c)
       if (i === -1) return -1

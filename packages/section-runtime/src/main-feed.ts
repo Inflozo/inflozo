@@ -84,6 +84,20 @@ export function designate(doc: ProjectDoc, file: string, library: SynthesisLibra
   return flagOnly(doc, target?.instanceId ?? null)
 }
 
+/**
+ * STORY 7.17 — DW-366, R-257: WHEN THE ROUTING CANNOT BE READ, EACH TEMPLATE KEEPS ITS STORED MAIN FEED. A read that fails
+ * (or a stored config that does not parse) leaves no `listsOf`, and `designate` with nothing listed strips every flag off a
+ * Routes Manager file — so a passing database error made the next edit there save its grid as an ordinary list. This is
+ * the listing to designate with instead: the Routes Manager files (`custom:<file>`, never a membership file) whose STORED
+ * doc already flags a main feed. A file with no flag gains none; a readable routing never asks this (its `listsOf` is the
+ * truth, and strips a file it does not list).
+ */
+export const flaggedListing = (docs: Readonly<Record<string, ProjectDoc>>): string[] =>
+  Object.entries(docs).flatMap(([key, doc]) => {
+    const file = key.startsWith('custom:') ? key.slice('custom:'.length) : ''
+    return isRouteTemplate(file) && doc.instances.some((i) => i.isMainFeed) ? [file] : []
+  })
+
 /** The page's main feed, hidden or not — the first flagged instance, which after `designate` is the only one. */
 export const mainFeedOf = (doc: ProjectDoc | null | undefined): DocInstance | undefined => doc?.instances.find((i) => i.isMainFeed)
 

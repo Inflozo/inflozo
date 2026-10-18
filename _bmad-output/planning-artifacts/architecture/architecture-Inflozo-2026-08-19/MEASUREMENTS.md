@@ -8190,3 +8190,62 @@ taxonomies:
 - **The paywall partial wins whenever a template invokes any partial**, with no explicit `{{> "content-cta"}}`; with no partial invoked, Ghost's own call to action shows. §15b's library rule is corrected (its dated note).
 - **Stories 7.1's and 7.2's rows still hold** on the larger tree: user text inert, comments shipped to no visitor, `package.json` read whole, and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`.
 - **What this does NOT say.** The scaffold is Story 10.79's, nothing here deployed through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story 10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired) — Ghost 5's prefix glob, which makes `header` drop `header_v2` too, is read in source, and a Ghost 5 site with all four scripted cards designed linking a `cards.min.js` it never wrote is recorded for that pass. The cards were read on a draft page's preview through the stand-in `page.hbs`: no pilot prints a post's body before A25. What `main.js` does in a browser is `core.test.mjs`'s and §42's, not a page read here. Ghost's post labels sit on each post's own page only, never on a card in a list (Story 7.6's Question 1, ruled option 1), so no list was read for them; gscan's deprecation rules are the local gate's, not a page read. Two shapes the compiler writes were not rendered here (Story 7.3's review, 2026-10-08): the compiled `page.hbs` (the stand-in was uploaded; Story 10.79's run renders the compiler's own), and the `index` context — §84's guard carries `tag`, `author` and a channel's context, rendered on their page 2s, while `index` rests on `helpers/is.js` read in source (Home's page 2 has a feed here). Ghost 5 names a collection's context by the same rule (`CollectionRouter.js`), read in source, not rendered (DW-326). Story 7.4's dark rule was read as served, never drawn: which mode a visitor sees is the token block's, held in Chromium by the keyboard gate (`mode.spec.mjs`), and the strip's soundness is CI's (`cssFailures`), not a page read.
+
+## 85. Inflozo's own routes step on T1 — a probe `routes.yaml` uploaded through the product's `adminRequest` with the staff token, read back byte for byte and live at once; a file Ghost already holds posting nothing; Ghost's default put back over Inflozo's own file; the integration key refused 403 `NoPermissionError` (read `role`) and an unknown staff token 401 (read `revoked`), neither writing; and T1's own file restored byte for byte · T1 · 2026-10-18
+
+**Command.** `node tools/probe/record-routes.mjs --upload` — 3 stored `POST settings/routes/yaml/` to T1 with the staff token (the probe file, Ghost's default, and T1's own file restored in a `finally` that encloses every write and read back) and 2 that Ghost refused and stored nothing for (step 5's controls), and nothing else: no post, tag, theme, member or setting. Ghost 6 keeps a dated copy of the file each stored upload replaces (`routes-YYYY-MM-DD-HH-mm-ss.yaml` in `content/settings`, 6.58.0's `adapters/route-settings/FileStore.js:106-117`, F5), named to the second, so the uploads were spaced two seconds apart and the run leaves 3 such copies on T1's disk.
+
+**Ghost.** T1 `ghost6.inflozo.com` (`site/` version 6.58), active theme `casper`; T1's own `routes.yaml` was F4's file (Ghost's default) before the run; the tag `craft` (9 published posts); the template `custom-inflozo-probe-up.hbs` is in no theme, so the probe collection renders with Ghost's fallback `index`. Every Admin call is `adminRequest`'s (`apps/web/server/ghost-admin/admin-rule.ts`), sent as built; every decision is `routesToOffer`'s or `routesAnswer`'s (`apps/web/lib/routes-upload.ts`); the upload body is `offerRoutes`' (`apps/web/server/routes-upload.ts`).
+
+**The controls, each of which voids the run:** `GHOST_DEFAULT_ROUTES` is both tarballs' `default-routes.yaml` byte for byte with F4's sha; the probe file and Ghost's default read back as meant through Ghost 6.58.0's and 5.130.6's own parsers before any write; `/inflozo-probe-up/` answers 404 before the upload; the probe POSTed again signed with `GHOST6_ADMIN_API_KEY` answers 403 `NoPermissionError` (§39's shape; 6.58.0's `web/api/endpoints/admin/middleware.js:50-94` allows an integration token `settings` for GET only, before the upload is read, `routes.js:90-95`) and signed with a well-formed staff token T1 does not know (random hex) answers 401; and a read-back after both is byte-identical to what the default's upload left — neither wrote.
+
+**The probe file** (`routesYaml`, never hand-written):
+
+```yaml
+collections:
+  /inflozo-probe-up/:
+    permalink: /inflozo-probe-up/{slug}/
+    template: custom-inflozo-probe-up
+    filter: "tag:'craft'"
+  /:
+    permalink: /{slug}/
+    template: index
+    filter: "tag:-'craft'"
+
+routes:
+
+taxonomies:
+  tag: /tag/{slug}/
+  author: /author/{slug}/
+```
+
+### T1 `ghost6.inflozo.com` (6.58) — and the two files through both majors' parsers first (the local half's fixture rows are §82's)
+
+| Step | Row | Got | Held |
+|---|---|---|---|
+| GHOST_DEFAULT_ROUTES | byte-identical to both tarballs' default-routes.yaml, sha256 F4's | `130 bytes, sha256 b2d675260a6071be…` | yes |
+| 1 GET settings/routes/yaml/ | T1's own routes.yaml read with the staff token through adminRequest, saved before any write | `130 bytes, sha256 b2d675260a6071be… → /tmp/inflozo-routes-ln2J4Q/original-routes.yaml` | yes |
+| 1 GET settings/routes/yaml/ | RECORDED — is it F4's file? It is put back whatever it holds | `yes: F4's bytes` | yes |
+| 1 themes/ | the active theme carries no custom-inflozo-probe-up.hbs, so the probe collection renders with Ghost's fallback index | `casper — custom templates: none` | yes |
+| 1 tags/ · posts/ | the busiest public tag with a published post | `craft (9 published)` | yes |
+| 1 /inflozo-probe-up/ | CONTROL — the segment is free before any write | `HTTP 404` | yes |
+| 2 routesToOffer | the project's file equal to T1's live file: unchanged, and no POST is made | `unchanged, 0 POSTs` | yes |
+| [6.58.0] the probe file | accepted, and read back as meant | `order /inflozo-probe-up/ / · filters 2 · limits [] · routes 0` | yes |
+| [6.58.0] Ghost's default (GHOST_DEFAULT_ROUTES) | accepted, and read back as meant | `order / · filters 0 · limits [] · routes 0` | yes |
+| [5.130.6] the probe file | accepted, and read back as meant | `order /inflozo-probe-up/ / · filters 2 · limits [] · routes 0` | yes |
+| [5.130.6] Ghost's default (GHOST_DEFAULT_ROUTES) | accepted, and read back as meant | `order / · filters 0 · limits [] · routes 0` | yes |
+| 3 routesToOffer | the probe over T1's own file: offer, the probe's own bytes | `offer` | yes |
+| 3 POST settings/routes/yaml/ | the probe uploads with the staff token; routesAnswer reads ok | `HTTP 200 → {"ok":true}` | yes |
+| 3 GET settings/routes/yaml/ | read back with the same token: the probe, byte for byte (F2: stored as sent) | `284 bytes, sha256 1ca59f5d3e87c3dd… (probe 1ca59f5d3e87c3dd…)` | yes |
+| 3 /inflozo-probe-up/ | the probe collection answers 200 (F2: live at once) | `HTTP 200 after 1 s` | yes |
+| 4 routesToOffer | the project at Ghost's default over the file Inflozo offered: offer GHOST_DEFAULT_ROUTES, exactly | `offer` | yes |
+| 4 POST settings/routes/yaml/ | Ghost's default uploads with the staff token; routesAnswer reads ok | `HTTP 200 → {"ok":true}` | yes |
+| 4 GET settings/routes/yaml/ | read back: F4's bytes | `130 bytes, sha256 b2d675260a6071be…` | yes |
+| 4 /inflozo-probe-up/ | the probe address answers 404 again | `HTTP 404 after 0 s` | yes |
+| 5 POST settings/routes/yaml/ (GHOST6_ADMIN_API_KEY) | CONTROL — the integration key: 403 NoPermissionError (§39's shape), read as role | `HTTP 403 NoPermissionError → {"fallback":"role"}` | yes |
+| 5 POST settings/routes/yaml/ (unknown staff token) | CONTROL — a well-formed staff token T1 does not know: 401, read as revoked | `HTTP 401 UnauthorizedError → {"fallback":"revoked"}` | yes |
+| 5 GET settings/routes/yaml/ | CONTROL — neither wrote: the read-back is what step 4 left, byte for byte | `130 bytes, sha256 b2d675260a6071be…` | yes |
+| 6 POST + GET settings/routes/yaml/ | T1's own routes.yaml restored with the staff token and read back byte for byte | `HTTP 200; 130 bytes, sha256 b2d675260a6071be… (saved b2d675260a6071be…)` | yes |
+
+- **The routes step holds on a real Ghost.** A file Ghost already holds is not posted (no dated copy, no write); an upload is stored as sent and live at once; Ghost's default goes back over a file Inflozo put there; the two refusals read as B16's `role` and `revoked`.
+- **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238: T3 retired) — its half here is its own parser, read locally. The 403 for an Editor's staff token is read in source only (F3); this run's 403 is the integration key's. Story 7.18 proves the theme upload and Ship it's call of `offerRoutes`; this run used the step's pure rule and its request builder, not `offerRoutes` or the chokepoint's `call` (its database, Vault and audit rows), which `routes-upload.test.ts` runs over a fake.

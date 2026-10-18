@@ -4,13 +4,11 @@ import {
   AdminError,
   type AllowlistItem,
   type AuditDetail,
-  adminUrl,
+  adminRequest,
   blockedAddress,
   ghostCode,
   ghostError,
-  headers,
   majorOf,
-  mintJwt,
   parseCredential,
   permitted,
 } from './admin-rule.ts'
@@ -59,6 +57,12 @@ export interface CallResult {
    * spine's Logging rule).
    */
   text: string
+  /**
+   * STORY 7.17 — THE ANSWER'S RAW BYTES, which `text` is decoded from. FR-I4's read-back compares BYTES, never decoded
+   * text: a decode is lossy (an invalid sequence becomes U+FFFD, a leading BOM is dropped), so two different files can
+   * decode alike. The same response as `body` and `text`, and stored nowhere either.
+   */
+  bytes: Uint8Array
   code?: string
 }
 
@@ -332,6 +336,11 @@ async function decrypt(siteId: string, kind: CredentialKind, route: string) {
  * the allowlist does not admit never reaches the network: it is a `denied` row and a thrown
  * envelope, which is the difference between "Inflozo may do four things to your Ghost" being a
  * promise and being a sentence in a document.
+ *
+ * STORY 7.17 — `kind` IS WHICH CREDENTIAL SIGNS, the Admin key unless a caller names the staff token. FR-I4's upload
+ * needs the Staff Access Token (an integration key never carries `setting: edit` — EXPERIENCE F3), and its read-back
+ * uses the SAME credential that uploaded; everything else stays on the Admin key. Both kinds go through the same
+ * decryption and audit row, and the same allowlist.
  */
 export async function call(args: {
   siteId: string
@@ -340,13 +349,15 @@ export async function call(args: {
   body?: unknown
   item?: AllowlistItem
   route: string
+  kind?: CredentialKind
 }): Promise<CallResult> {
-  const row = await withStore(args.route, () => decrypt(args.siteId, 'admin', args.route))
+  const kind = args.kind ?? 'admin'
+  const row = await withStore(args.route, () => decrypt(args.siteId, kind, args.route))
   if (!row?.decrypted_secret) {
     throw new AdminError({
       code: 'credential_missing',
-      message: 'This site has no Admin API key stored.',
-      action: 'Add the key again from Manage keys.',
+      message: kind === 'staff' ? 'This site has no Staff Access Token stored.' : 'This site has no Admin API key stored.',
+      action: kind === 'staff' ? 'Add the token from Manage keys.' : 'Add the key again from Manage keys.',
     })
   }
   return fetchWithKey({
@@ -400,18 +411,22 @@ export async function fetchWithKey(args: {
     })
   }
 
-  const url = adminUrl(args.siteUrl, args.path)
-  // MINTED OUTSIDE THE TRY BELOW: a `credential_malformed` must stay its own code. Inside it,
-  // the catch would have logged it as "ghost unreachable" and thrown that (review, 2026-09-07).
-  const jwt = mintJwt(args.credential)
-  // A GET carries no body (fetch throws a TypeError for one, which the catch below would have
-  // called "ghost unreachable"), and a redirect is ANSWERED, never followed: the bearer must not
-  // be re-sent to wherever a 3xx points (review, 2026-09-07).
-  const payload = method === 'GET' || args.body === undefined ? undefined : JSON.stringify(args.body)
+  // BUILT (and MINTED) OUTSIDE THE TRY BELOW: a `credential_malformed` must stay its own code. Inside it, the catch would
+  // have logged it as "ghost unreachable" and thrown that (review, 2026-09-07). `adminRequest` is the one builder (Story
+  // 7.17): a GET carries no body, a `FormData` passes untouched, and a redirect is answered, never followed.
+  const { url, init } = adminRequest({
+    credential: args.credential,
+    siteUrl: args.siteUrl,
+    method,
+    path: args.path,
+    body: args.body,
+    major: args.major,
+  })
   const started = Date.now()
   let status = 0
   let body: unknown
   let text = ''
+  let bytes = new Uint8Array()
 
   // DW-58: A BLOCKED ADDRESS IS REFUSED BEFORE ANY REQUEST, and it says so in the one record kept to
   // be trusted — `detail.blocked` — while the customer hears the same sentence as a Ghost that did
@@ -440,18 +455,10 @@ export async function fetchWithKey(args: {
   }
 
   try {
-    const response = await fetch(url, {
-      method,
-      headers: {
-        ...headers(jwt, args.major),
-        ...(payload === undefined ? {} : { 'Content-Type': 'application/json' }),
-      },
-      body: payload,
-      redirect: 'manual',
-      signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
-    })
+    const response = await fetch(url, { ...init, signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())) })
     status = response.status
-    text = await response.text()
+    bytes = new Uint8Array(await response.arrayBuffer())
+    text = new TextDecoder().decode(bytes)
     try {
       body = text ? JSON.parse(text) : null
     } catch {
@@ -480,7 +487,7 @@ export async function fetchWithKey(args: {
   )
   // The BODY is returned to the caller and stored nowhere: Story 3.3 computes one boolean from a
   // settings read and discards it (the spine's Logging rule).
-  return { ok, status, body, text, ...(ok ? {} : { code: ghostCode(status, error) }) }
+  return { ok, status, body, text, bytes, ...(ok ? {} : { code: ghostCode(status, error) }) }
 }
 
 

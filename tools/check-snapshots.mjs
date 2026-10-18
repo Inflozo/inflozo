@@ -1513,6 +1513,33 @@ check('Story 7.13 — the cards theme: cards.css is cardsCss of the record over 
   return `${Buffer.byteLength(cardsCssOf)} B, ${lt.ownCardsCss(cardsCssOf).split('\n').length - 1} line(s) of its own`
 })
 
+// ── Story 7.17: FR-I5's module lint over the real module files, and README's routes step under the theme's scan ─────────
+// `searchKeyRefusals` reads the repo's own module files here (a core package's test opens no file, AD-1); the compile
+// refuses the same over what main.js bundles. The README row compiles the pilots with a real `routesYaml` file.
+check('control — Story 7.17 (FR-I5): a planted module reading metaKey beside the real ones is named by searchKeyRefusals', () =>
+  mustFail(lib.searchKeyRefusals({ ...MODULE_SRC, lightbox: "export function lightbox(el) { el.onkeydown = (e) => e.metaKey }\n" }), /^lightbox\.js reads metaKey — /, 'a modifier read'))
+check('Story 7.17 (FR-I5) — no module file reads a modifier key, so no theme binds ⌘K, Ghost\'s own search\'s: searchKeyRefusals over the real files says nothing', () => {
+  const f = lib.searchKeyRefusals(MODULE_SRC)
+  if (f.length > 0) throw new Error(f.join('\n'))
+  return `${Object.keys(MODULE_SRC).length} module file(s)`
+})
+const routesOf = await import(join(REPO, 'packages/section-runtime/src/routes.ts'))
+/** A collection at `/{segment}/`, through the Routes Manager's one parser, as `routesYaml` writes its file. */
+const routesFile = (segment) => {
+  const parsed = routesOf.parseRoutesConfig({ collections: [{ path: `/${segment}/`, filter: { match: 'any', conditions: [{ field: 'tag', op: 'any', values: [segment] }] }, template: `custom-${segment}.hbs` }], taxonomies: { tag: 'tag', author: 'author' } })
+  if (!parsed.ok) throw new Error(`the config for /${segment}/ does not parse: ${parsed.message}`)
+  return routesOf.routesYaml(parsed.config)
+}
+const pilotsRouted = pilots.compilePilots(WORDS, { ...THEME, routes: routesFile('notes') })
+check('control — Story 7.17: a routes file naming the builder puts its name in README.md, and themeFailures names it', () =>
+  mustFail(pilots.themeFailures(pilots.compilePilots(WORDS, { ...THEME, routes: routesFile('inflozo') }).files, []), /^README\.md: the builder's name$/, 'the builder\'s name in the routes file'))
+check('Story 7.17 — the pilots compiled with a routes file: README.md carries ## Routes after ## Styles, the file four spaces in, and themeFailures is clean (no builder named)', () => {
+  const readme = pilotsRouted.files['README.md'] ?? ''
+  if (!/\n## Styles\n[^]*\n## Routes\n\n[^\n]+\n\n {4}collections:\n/.test(readme)) throw new Error(`README.md has no Routes section after its Styles:\n${readme}`)
+  const t = pilots.themeFailures(pilotsRouted.files, pilotsRouted.instanceIds)
+  if (t.length > 0) throw new Error(t.join('\n'))
+})
+
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────
 const targets = rendered.reduce((t, r) => t + r.entry.compileTarget.length, 0)
 const files = rendered.reduce((t, r) => t + Object.keys(r.files).length, 0)

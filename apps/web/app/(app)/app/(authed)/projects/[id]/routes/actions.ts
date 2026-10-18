@@ -2,10 +2,11 @@
 
 import { revalidatePath } from 'next/cache'
 import {
-  listsOf, parseRoutesConfig, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
+  listsOf, parseRoutesConfig, pathsUsing, routesYaml, ROUTE_WORDS, templateName, validateRoutes, withoutTemplate, type RoutesConfig,
 } from '@inflozo/section-runtime/routes'
 import { docSchema, listedStart, type ProjectDoc } from '@inflozo/section-runtime'
 import { isUuid, routesPath } from '@/lib/editor'
+import type { Move } from '@/lib/journal'
 import { docRefusal, pilot, pilotIds } from '@/lib/pilots'
 import { ROUTES_WORDS, templatesOf, templateWriteRefusal, type Template } from '@/lib/routes'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
@@ -31,15 +32,30 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  *
  * OUTSIDE THE EDITOR'S LOCK, as Theme settings is (routine call 15): two tabs saving at once, the last write wins.
  * `ponytail:` — a compare-and-set on `routes_config.updated_at` if that is ever seen.
+ *
+ * `routes_config.yaml` IS NOT ONLY STORED (2026-10-18): Story 7.17's routes step (`server/routes-upload.ts`) reads it, judges
+ * it equal to `routesYaml(config)` and uploads it; Story 7.18's Ship it calls that step.
+ *
+ * STORY 7.17 — DW-370, R-258: EVERY ANSWER CARRIES WHAT IT MOVED. A write that moves `projects.revision` (`syncDocs`) records
+ * the move — from, to, the docs it wrote and the keys it took away — and every result, a refusal included when an earlier
+ * write of it moved the revision, hands the list back as `moved`. The page posts it on `MOVED_CHANNEL`, so an editor open
+ * in this browser takes the docs in from its own base instead of meeting R-253's 409 (AD-15's rule).
  */
 
 /** `file` — a template just created (Story 7.16b: the Template menu's "New template" opens its canvas); `doc` — the canvas
  *  doc a template's delete took with it, handed back so its Undo can restore it exactly (AD-36: it is judged again then). */
-export type RoutesResult = { ok: true; file?: string; doc?: unknown } | { error: string }
+export type RoutesResult =
+  | { ok: true; file?: string; doc?: unknown; moved?: Move[] }
+  /** `made` — Story 7.17, DW-367: the new template a collection's or channel's sheet named was made but its starting grid
+   *  was not, so the sheet keeps it chosen and sends `start_file` with its next Save */
+  | { error: string; made?: string; moved?: Move[] }
 
 type Supabase = Awaited<ReturnType<typeof supabaseServer>>
 
 const couldNot = (): RoutesResult => ({ error: ROUTES_WORDS.couldNot })
+
+/** A result with the moves its writes made, when they made any (DW-370) — an error result too. */
+const withMoved = (result: RoutesResult, moved: readonly Move[]): RoutesResult => (moved.length === 0 ? result : { ...result, moved: [...moved] })
 
 const idOf = (formData: FormData) => {
   const id = formData.get('project')
@@ -107,7 +123,7 @@ async function writeConfig(sb: Supabase, id: string, userId: string, next: unkno
 
 /** A new template row, named by §7.4's rule (`templateName`); the database's `23505` — `unique (project_id, filename)` or
  *  the deployed-name guard (`:1319-1347`) — answers with the naming step's own sentence. */
-async function insertTemplate(sb: Supabase, id: string, userId: string, display: unknown, ctx: { templates: Template[]; deployed: string[] }): Promise<{ file: string } | { error: string }> {
+async function insertTemplate(sb: Supabase, id: string, userId: string, display: unknown, ctx: { templates: Template[]; deployed: string[] }, moved: Move[]): Promise<{ file: string } | { error: string }> {
   if (typeof display !== 'string') return { error: ROUTE_WORDS.nameEmpty }
   const named = templateName(display, { project: ctx.templates.map((t) => t.file), deployed: ctx.deployed })
   if ('error' in named) return named
@@ -118,7 +134,7 @@ async function insertTemplate(sb: Supabase, id: string, userId: string, display:
   // Story 7.16c: a leftover doc moves the revision too (`syncDocs`), or the device that re-stored it keeps showing it — and
   // it moves BEFORE the clear (the review): a move that fails leaves the doc in place, so the next try moves it again
   const { data: leftover, error: unread } = await sb.from('project_templates').select('template_key').eq('project_id', id).eq('template_key', key)
-  if (unread || ((leftover ?? []).length > 0 && !(await syncDocs(sb, id, {})))) {
+  if (unread || ((leftover ?? []).length > 0 && !(await syncDocs(sb, id, {}, moved, [key])))) {
     console.error('projects/routes: an earlier template\'s leftover doc could not be read or its revision moved', { code: unread?.code })
     return { error: ROUTES_WORDS.couldNot }
   }
@@ -148,7 +164,7 @@ async function insertTemplate(sb: Supabase, id: string, userId: string, display:
  *  was, or when the library places nothing there (an empty doc is no doc, AD-22). Judged by `docRefusal`, as every doc is.
  *
  *  Written through `syncDocs` (below), never a direct upsert: the owner's test (2026-10-18) found the grid missing. */
-async function writeListedStart(sb: Supabase, id: string, file: string): Promise<boolean> {
+async function writeListedStart(sb: Supabase, id: string, file: string, moved: Move[]): Promise<boolean> {
   const held = (designId: string) => (pilotIds().includes(designId) ? pilot(designId) : undefined)
   const { instances } = listedStart(file, held)
   if (instances.length === 0) return true
@@ -159,7 +175,7 @@ async function writeListedStart(sb: Supabase, id: string, file: string): Promise
     console.error('projects/routes: the new template\'s starting doc was refused', { sentence: refused })
     return false
   }
-  return syncDocs(sb, id, { [key]: doc })
+  return (await syncDocs(sb, id, { [key]: doc }, moved)) !== null
 }
 
 /** STORY 7.16c (the owner's test, 2026-10-18) — EVERY DOC THIS PAGE CHANGES MOVES THE REVISION, through `sync_project_doc`.
@@ -171,26 +187,34 @@ async function writeListedStart(sb: Supabase, id: string, file: string): Promise
  *  cleared then, and an editor open in another tab meets the 409 at its next save — accepted for now (R-253, AD-15; DW-370
  *  spares it later). A refusal means an editor flushed in between, so it is retried at the revision the refusal hands back:
  *  these keys are a canvas no editor can be holding (a new one, or one whose template was gone). `ponytail:` three tries,
- *  then false; the caller says `couldNot` and the step is tried again. */
-async function syncDocs(sb: Supabase, id: string, docs: Record<string, ProjectDoc>): Promise<boolean> {
+ *  then null; the caller says `couldNot` and the step is tried again.
+ *
+ *  STORY 7.17 — DW-370: IT ANSWERS THE MOVE (`{ from, to, docs, gone }`, or null when nothing was written) and records it in
+ *  `moved`, the action's list. `gone` is the keys this move takes away (a deleted template's canvas), written by the caller
+ *  beside it; an editor in this browser told of the move takes the docs in and drops the gone keys from its own base. */
+async function syncDocs(sb: Supabase, id: string, docs: Record<string, ProjectDoc>, moved: Move[], gone: string[] = []): Promise<Move | null> {
   const { data: project, error: readError } = await sb.from('projects').select('revision').eq('id', id).maybeSingle()
   if (readError || !project) {
     console.error('projects/routes: the project\'s revision could not be read', { code: readError?.code })
-    return false
+    return null
   }
   let base = project.revision as number
   for (let tries = 0; tries < 3; tries++) {
     const { data, error } = await sb.rpc('sync_project_doc', { p_project: id, p_docs: docs, p_base: base })
     if (error || data === null) {
       console.error('projects/routes: the doc write failed', { code: error?.code })
-      return false
+      return null
     }
     const answer = data as { applied: boolean; revision: number }
-    if (answer.applied) return true
+    if (answer.applied) {
+      const move: Move = { from: base, to: answer.revision, docs, gone }
+      moved.push(move)
+      return move
+    }
     base = answer.revision
   }
   console.error('projects/routes: the doc write was refused three times by a moving revision')
-  return false
+  return null
 }
 
 /**
@@ -199,6 +223,13 @@ async function syncDocs(sb: Supabase, id: string, docs: Record<string, ProjectDo
  * (`template_file`), the config is judged with it counted BEFORE either write, and the row is written first. STORY 7.16c —
  * when the config LISTS it (a collection's or a channel's sheet), its starting doc is written next, then the config; a
  * static route's new template, like "+ New template", opens empty (7.16b).
+ *
+ * STORY 7.17 — DW-367 (routine call 6): A FAILED STARTING GRID SAYS WHAT WAS LEFT, AND THE NEXT SAVE ADDS IT. The row stands
+ * (unrouted, without its feed — a valid state), and the answer is `listedStartFailed(name)` with `made`, the file: the sheet
+ * keeps that template chosen and sends `start_file` with its next Save. The server re-checks before writing anything: the
+ * grid goes only to THIS project's template that has no `project_templates` row and that no stored route names, and only
+ * when the config being saved lists it — then the config. Anything else named as `start_file` is left as it is, so a
+ * template chosen in the ordinary way never gains a doc it did not have (7.16c's routine call 2).
  */
 export async function saveRoutes(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {
   const id = idOf(formData)
@@ -208,22 +239,38 @@ export async function saveRoutes(_previous: RoutesResult | null, formData: FormD
   const sb = await supabaseServer()
   const ctx = await contextOf(sb, id)
   if (!ctx) return couldNot()
+  const moved: Move[] = []
   const display = formData.get('template_name')
   const known = ctx.templates.map((t) => t.file)
+  const parsed = parseRoutesConfig(next)
+  const lists = parsed.ok ? listsOf(parsed.config) : new Map()
   if (display !== null) {
     const named = typeof display === 'string' ? templateName(display, { project: known, deployed: ctx.deployed }) : { error: ROUTE_WORDS.nameEmpty }
     if ('error' in named) return named
     if (named.file !== formData.get('template_file')) return couldNot()
     const problems = validateRoutes(next, { templates: [...known, named.file] })
     if (problems.length > 0) return { error: (problems[0] as { message: string }).message }
-    const made = await insertTemplate(sb, id, user.id, display, ctx)
-    if ('error' in made) return made
+    const made = await insertTemplate(sb, id, user.id, display, ctx, moved)
+    if ('error' in made) return withMoved(made, moved)
     known.push(made.file)
-    const parsed = parseRoutesConfig(next)
-    if (parsed.ok && listsOf(parsed.config).has(made.file) && !(await writeListedStart(sb, id, made.file))) {
+    if (lists.has(made.file) && !(await writeListedStart(sb, id, made.file, moved))) {
       // the row stands, unrouted and without its feed — a valid state the page lists, so the sheet can be saved again
       revalidate(id)
-      return couldNot()
+      return withMoved({ error: ROUTES_WORDS.listedStartFailed((display as string).trim()), made: made.file }, moved)
+    }
+  } else {
+    const start = formData.get('start_file')
+    const template = typeof start === 'string' ? ctx.templates.find((t) => t.file === start) : undefined
+    if (template !== undefined && lists.has(template.file)) {
+      const [held, stored] = await Promise.all([
+        sb.from('project_templates').select('template_key').eq('project_id', id).eq('template_key', `custom:${template.file}`),
+        storedConfig(sb, id),
+      ])
+      if (held.error || stored === null) return withMoved(couldNot(), moved)
+      // DW-367's re-check: no doc yet, and no stored route names it — a template made by the sheet whose grid failed
+      if ((held.data ?? []).length === 0 && pathsUsing(stored, template.file).length === 0 && !(await writeListedStart(sb, id, template.file, moved))) {
+        return withMoved({ error: ROUTES_WORDS.listedStartFailed(template.name), made: template.file }, moved)
+      }
     }
   }
   const refused = await writeConfig(sb, id, user.id, next, known)
@@ -231,10 +278,10 @@ export async function saveRoutes(_previous: RoutesResult | null, formData: FormD
     // a template row written before a refused config is a valid state (unrouted) — the page must list it, or a retry of
     // the same sheet is refused as a name it cannot see (review, 2026-10-17)
     if (display !== null) revalidate(id)
-    return { error: refused }
+    return withMoved({ error: refused }, moved)
   }
   revalidate(id)
-  return { ok: true }
+  return withMoved({ ok: true }, moved)
 }
 
 /** "+ New template" on its own (R-247's Templates list): the row alone, no route. Story 7.16b — it answers the file it
@@ -246,10 +293,11 @@ export async function createTemplate(_previous: RoutesResult | null, formData: F
   const sb = await supabaseServer()
   const ctx = await contextOf(sb, id)
   if (!ctx) return couldNot()
-  const made = await insertTemplate(sb, id, user.id, formData.get('name'), ctx)
-  if ('error' in made) return made
+  const moved: Move[] = []
+  const made = await insertTemplate(sb, id, user.id, formData.get('name'), ctx, moved)
+  if ('error' in made) return withMoved(made, moved)
   revalidate(id)
-  return { ok: true, file: made.file }
+  return withMoved({ ok: true, file: made.file }, moved)
 }
 
 /**
@@ -301,10 +349,12 @@ export async function deleteTemplate(_previous: RoutesResult | null, formData: F
     return failed('template delete failed', error?.code)
   }
   // Story 7.16c: the revision moves, so a device that holds the deleted doc drops it at its next hydrate (`syncDocs`) and a
-  // new template of the same name opens empty there too. The delete has landed either way, so a failure is only logged
-  if (held && !(await syncDocs(sb, id, {}))) console.error('projects/routes: the revision did not move after a template delete')
+  // new template of the same name opens empty there too. The delete has landed either way, so a failure is only logged.
+  // Story 7.17 (DW-370): the move names the key it took, so an editor in this browser drops it from its own base
+  const moved: Move[] = []
+  if (held && !(await syncDocs(sb, id, {}, moved, [key]))) console.error('projects/routes: the revision did not move after a template delete')
   revalidate(id)
-  return { ok: true, ...(held ? { doc } : {}) }
+  return withMoved({ ok: true, ...(held ? { doc } : {}) }, moved)
 }
 
 /**
@@ -352,15 +402,16 @@ export async function restoreTemplate(_previous: RoutesResult | null, formData: 
     }
   }
   // Story 7.16c: through `syncDocs`, so a device that dropped the doc when the delete moved the revision takes it back
-  if (doc !== null && !(await syncDocs(sb, id, { [key]: doc }))) {
+  const moved: Move[] = []
+  if (doc !== null && !(await syncDocs(sb, id, { [key]: doc }, moved))) {
     console.error('projects/routes: the template\'s doc restore failed')
     revalidate(id)
     return couldNot()
   }
   if (previous !== null) {
     const refused = await writeConfig(sb, id, user.id, previous, known)
-    if (refused !== null) return { error: refused }
+    if (refused !== null) return withMoved({ error: refused }, moved)
   }
   revalidate(id)
-  return { ok: true }
+  return withMoved({ ok: true }, moved)
 }

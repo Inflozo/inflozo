@@ -332,3 +332,17 @@ test('Story 7.16b: "New template" says "Opening…" while its push runs, and Cre
   assert.match(kit, /if \(after\) return event\.preventDefault\(\)/, 'and refuses a second submit while it runs')
   assert.equal(readFileSync('lib/routes.ts', 'utf8').match(/creating: '([^']+)'/)?.[1], 'Creating…')
 })
+
+/* ── STORY 7.17 (R-98): B16's **Verify upload** is the Kit's `Submit` with its busy label, inside the form that calls
+   `verifyRoutesAction` — so it reads "Verifying…" and is `aria-busy` and `aria-disabled` until the answer lands (the Kit's
+   own attributes, asserted above). No new route: the form's action is the server action through `useActionState`. */
+test('Story 7.17: B16\'s Verify upload says "Verifying…" through the Kit\'s Submit while its action runs', () => {
+  const card = readFileSync('components/routes-fallback.tsx', 'utf8')
+  assert.match(card, /useActionState<VerifyOutcome \| null, FormData>\(verifyRoutesAction, null\)/, 'the action, through the form\'s own state')
+  assert.match(card, /<form action=\{verify\}>\s*<input type="hidden" name="site_id" value=\{siteId\} \/>\s*<Submit variant="primary" size=\{36\} busy=\{W\.verifying\}>\{W\.verify\}<\/Submit>/, 'the Kit\'s Submit, in the form, with its busy label')
+  assert.equal(readFileSync('lib/routes-upload.ts', 'utf8').match(/verifying: '([^']+)'/)?.[1], 'Verifying…')
+  // and the Kit's Submit is what makes it busy and refuses the second press (the shared control's own test, above)
+  const kit = readFileSync('components/kit/submit.tsx', 'utf8')
+  assert.match(kit, /aria-busy=\{pending \|\| undefined\}/)
+  assert.match(kit, /aria-disabled=\{pending \|\| undefined\}/)
+})

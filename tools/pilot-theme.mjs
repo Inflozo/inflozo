@@ -222,7 +222,7 @@ export const PILOT_THEME = { name: 'inflozo-pilots', version: '1.0.0', descripti
  *  Story 7.5: `modules` replaces the files read, for CI's controls. Story 7.13: `cardDesigns` is a stored
  *  `project_treatments.card_designs` record, reaching `package.json`, `cards.css` and `cards.js`.
  *  Story 7.11: `darkEnabled: false` compiles the project Light only — the same three dark built-ins, Color scheme on Light. */
-export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, cardDesigns, modules = moduleSources(), settings = false, fixture = false, edit, darkEnabled = true, language, strings, routed, lists } = {}) {
+export function compilePilots(words, { theme, postsPerPage = 12, find: given = library(), pageTwo: overTwo, cardDesigns, modules = moduleSources(), settings = false, fixture = false, edit, darkEnabled = true, language, strings, routed, lists, routes } = {}) {
   if (!theme) throw new Error('compilePilots needs a theme { name, version, description } — CI passes PILOT_THEME')
   const find = fixture ? withFixture(given) : given
   const project = pilotProject(words, find, { fixture })
@@ -239,6 +239,8 @@ export function compilePilots(words, { theme, postsPerPage = 12, find: given = l
     ...(routed === undefined ? {} : { routed }),
     // Story 7.16c — the listed ones and their contexts (`listsOf`; the recorder's §84 lists a collection's and a channel's)
     ...(lists === undefined ? {} : { lists }),
+    // Story 7.17 — the routes file README.md carries (CI's themeFailures row over a routed README)
+    ...(routes === undefined ? {} : { routes }),
   })
   const docs = [...Object.values(templates), ...Object.values(pageTwo)]
   return { files, css, js, custom, templates, pageTwo, find, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }

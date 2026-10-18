@@ -4,7 +4,7 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { CARDS_JS_TAG, MAIN_JS_TAG, MODULES, RETIRED_MODULES, bundle, bundledNames, cardsJs, cardsVersion, checkThemeJs, checkThemeScripts, moduleFunctionName, moduleKeyRefusals, moduleStringsRefusals, moduleUnion, parseModuleDeclaration } from './modules.ts'
+import { CARDS_JS_TAG, MAIN_JS_TAG, MODULES, RETIRED_MODULES, bundle, bundledNames, cardsJs, cardsVersion, checkThemeJs, checkThemeScripts, moduleFunctionName, moduleKeyRefusals, moduleStringsRefusals, moduleUnion, parseModuleDeclaration, searchKeyRefusals } from './modules.ts'
 import { CATALOG } from './catalog.ts'
 
 // Story 5.15: every module file is ONE EXPORTED DECLARATION, because the editor imports `core` (DW-136) — and
@@ -248,4 +248,20 @@ test('(7.5) moduleKeyRefusals: every t() key a module calls derives from a strin
   assert.match(moduleKeyRefusals({ 'back-to-top': 'export function backToTop() {}' })[0] ?? '', /back-to-top\.js is no registry row/)
   // `set('x')` and `split("y")` are not t()
   assert.deepEqual(moduleKeyRefusals({ lightbox: 'export function lightbox(el) { el.dataset; new Set("x"); "a".split("y") }' }), [])
+})
+
+// ─── Story 7.17: FR-I5's lint — no module reads a modifier key, so none binds ⌘K ─────────────────────────────────────
+
+test('(7.17) searchKeyRefusals names each module reading metaKey, ctrlKey or getModifierState; a comment naming one is not a read', () => {
+  const reading = (code: string) => `export function lightbox(el, ctx) {\n  el.addEventListener('keydown', (e) => { ${code} }, { signal: ctx.signal })\n}\n`
+  for (const key of ['metaKey', 'ctrlKey', 'getModifierState']) {
+    assert.deepEqual(searchKeyRefusals({ core, lightbox: reading(`if (e.${key}) el.hidden = true`) }), [`lightbox.js reads ${key} — no module reads a modifier key, so none can bind ⌘K or Ctrl-K, which Ghost's own search opens on (FR-I5)`], key)
+  }
+  // a string is code: a bracketed read is a read
+  assert.match(searchKeyRefusals({ lightbox: reading("if (e['ctrlKey']) el.hidden = true") })[0] ?? '', /^lightbox\.js reads ctrlKey/)
+  // the control: no modifier read, and every comment naming one — around the function and inside it — is no read
+  const commented = '// metaKey is never read here\n/* nor ctrlKey */\nexport function countdown(el) {\n  // e.metaKey would be a read\n  el.hidden = /* getModifierState */ true\n}\n// ctrlKey\n'
+  assert.deepEqual(searchKeyRefusals({ core, lightbox: reading('el.hidden = true'), 'nav-drawer': navDrawer, countdown: commented }), [])
+  // a source the lexer cannot read is scanned whole, comments included — it refuses more, never less
+  assert.match(searchKeyRefusals({ lightbox: `${reading('el.hidden = true')}// metaKey\nwindow.x = 1\n` })[0] ?? '', /^lightbox\.js reads metaKey/)
 })

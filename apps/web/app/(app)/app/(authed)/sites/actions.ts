@@ -39,6 +39,9 @@ import { call, fetchWithKey, findSiteByAdminKeyId, remove, store, type CallResul
 import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
 import { isRedirect } from '@/lib/action-redirect'
 import { SEARCH_HEADER } from '@/routing'
+import type { VerifyOutcome } from '@/lib/routes-upload'
+import { ROUTES_IO } from '@/server/routes-io'
+import { verifyRoutes } from '@/server/routes-upload'
 import { checkSite } from '@/server/site-health'
 import { probeSite } from '@/server/site-probe'
 import { contentKeyPatch, patchSite } from '@/server/site-settings'
@@ -1275,7 +1278,8 @@ const KeyFields = z.object({
  *
  * THE STAFF TOKEN IS PARSED AND STORED, AND NOTHING VALIDATES IT AGAINST GHOST. It is a
  * `id:secret` pair that `parseCredential` reads identically to an Admin key, but the endpoints it
- * unlocks are Epic 7's (`GET /admin/themes/`, `PUT /admin/settings/routes/`), and calling one here
+ * unlocks are Epic 7's (`GET /admin/themes/`, `POST /admin/settings/routes/yaml/` — Story 7.17's upload,
+ * corrected 2026-10-18: Ghost 6.58.0's admin router has no `PUT /settings/routes/`, `routes.js:89-98`), and calling one here
  * to prove the token would be this story making an Admin call no story owns. `store()` refuses a
  * malformed one before Vault, which is the check that matters: a token that cannot sign is a typo.
  */
@@ -1493,4 +1497,18 @@ export async function testConnection(formData: FormData): Promise<void> {
     }
   }
   keysRedirect(KEYS_TESTED(base, result, status))
+}
+
+/**
+ * STORY 7.17 — B16's **Verify upload** (FR-I4). The live `routes.yaml` read with the Admin key and compared, byte for byte,
+ * with the file the routes step last offered (`verifyRoutes`, `server/routes-upload.ts`); `verified` clears the cause and
+ * records the sha and the time, and every other answer writes nothing. It ANSWERS rather than redirects — the card draws
+ * its result line (`components/routes-fallback.tsx`, through `useActionState`) — and it revalidates nothing, so a verified
+ * card stays its one line until the next load (F3). The site must be the caller's: `verifyRoutes`' owned read comes before
+ * Ghost is asked, and a bad id is `unreachable`, the card's "could not check", never a success.
+ */
+export async function verifyRoutesAction(_previous: VerifyOutcome | null, formData: FormData): Promise<VerifyOutcome> {
+  const at = await siteOf(formData, 'verify routes')
+  if (!at) return { kind: 'unreachable' }
+  return verifyRoutes({ siteId: at.siteId, userId: at.userId, route: 'sites/verify-routes' }, ROUTES_IO)
 }

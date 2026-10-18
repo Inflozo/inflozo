@@ -3,9 +3,11 @@ import { Banner } from '@/components/kit/banner'
 import { ring } from '@/components/kit/greyed'
 import { ExternalLink } from '@/components/kit/icons'
 import { Submit } from '@/components/kit/submit'
+import { RoutesFallback } from '@/components/routes-fallback'
 import { hostOf } from '@/lib/connect-rule'
 import { adminAt, membersNotice, PAYWALL_WORDS } from '@/lib/paywall'
 import { INJECTION_COPY, PLAN_COPY, PORTAL_ANSWERS, PORTAL_COPY, PREVIEW_COPY, storedMembers } from '@/lib/probe-rule'
+import { isFallback } from '@/lib/routes-upload'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
@@ -51,7 +53,10 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
    The card decides that with `hasBrand` and hands `SiteMenu` the boolean.
 
    THE FOUR PROBE BLOCKS BELOW ARE UNTOUCHED. DW-57 still binds all of them: they are the card's
-   LAST child, not a pill on the metadata line and not a word on the state line. */
+   LAST child, not a pill on the metadata line and not a word on the state line.
+
+   STORY 7.17 — B16 (`components/routes-fallback.tsx`) IS THE LAST OF THEM, where B15 sits: shown while the site still needs
+   its routing (`routes_fallback` set and a file offered), a card and never a Banner (F3). */
 
 export type NoticeSite = {
   id: string
@@ -70,6 +75,9 @@ export type NoticeSite = {
     /** Story 5.20 — FR-H6's record of the member switches: `unknown`, because `storedMembers` is its guard. */
     members?: unknown
   } | null
+  /** Story 7.17 — why B16 is up (or null), and the file it offers; both server-asserted, read only to draw with */
+  routes_fallback?: string | null
+  routes_last_offered?: string | null
 }
 
 /** The hidden field every one of the four forms carries, and the only input any of them takes. */
@@ -142,7 +150,8 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   // one condition for the early return and the draw: the notice needs the site's address for its link
   const url = site.url
   const members = url ? membersNotice(storedMembers(site.site_settings), name) : []
-  if (!injection && !planAsk && !portalAsk && !preview && members.length === 0) return null
+  const routes = isFallback(site.routes_fallback) && typeof site.routes_last_offered === 'string' ? { cause: site.routes_fallback, file: site.routes_last_offered } : null
+  if (!injection && !planAsk && !portalAsk && !preview && members.length === 0 && routes === null) return null
 
   return (
     <div className="flex flex-col gap-[10px]">
@@ -208,6 +217,8 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
           </span>
         </Banner>
       ) : null}
+
+      {routes === null ? null : <RoutesFallback siteId={site.id} cause={routes.cause} file={routes.file} />}
     </div>
   )
 }

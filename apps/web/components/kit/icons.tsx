@@ -478,6 +478,23 @@ export const Upload = (p: IconProps) => (
     <line x1="12" y1="3" x2="12" y2="15" />
   </Icon>
 )
+/* STORY 7.17 — B16's two glyphs, lifted verbatim from `B Missing Surfaces.dc.html:1233` (the header tile) and `:1246` (the
+   file chip's download), each at the frame's own stroke. */
+/** B16's tile: an arrow up inside a rounded square — a file going up to Ghost */
+export const SquareArrowUp = ({ strokeWidth = 1.7, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M12 16V8" />
+    <polyline points="8 12 12 8 16 12" />
+    <rect x="3" y="3" width="18" height="18" rx="3" />
+  </Icon>
+)
+/** B16's file chip: an arrow down — download */
+export const ArrowDown = ({ strokeWidth = 1.9, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <polyline points="8 13 12 17 16 13" />
+    <line x1="12" y1="6" x2="12" y2="17" />
+  </Icon>
+)
 export const InfoCircle = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="9" />

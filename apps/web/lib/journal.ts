@@ -444,6 +444,63 @@ export const isSentMessage = (m: unknown): m is SentMessage => {
     (['base', 'revision', 'stamp', 'upTo'] as const).every((k) => Number.isSafeInteger(o[k]))
 }
 
+/* ───────────────────────────── Story 7.17 — DW-370, R-258: what the routes page moved ───────────────────────────── */
+
+/** R-258 — the one channel Routes & Templates tells an editor of the project open in this browser on, per project. */
+export const MOVED_CHANNEL = (projectId: string) => `inflozo-moved-${projectId}`
+
+/** ONE WRITE OF THE ROUTES PAGE THAT MOVED THE PROJECT'S REVISION (`sync_project_doc`): from `from` to `to`, the docs it
+ *  wrote (as the server judged them, `docRefusal` first) and the keys it took away (a template's canvas, deleted). */
+export type Move = { from: number; to: number; docs: Record<string, ProjectDoc>; gone: string[] }
+
+/** Every move one routes-page action made, in order — posted on `MOVED_CHANNEL` once its answer lands. */
+export type MovedMessage = { type: 'moved'; project: string; moves: Move[] }
+
+export const movedMessage = (project: string, moves: Move[]): MovedMessage => ({ type: 'moved', project, moves })
+
+const isMove = (m: unknown): m is Move => {
+  if (typeof m !== 'object' || m === null) return false
+  const o = m as Record<string, unknown>
+  const docs = o['docs']
+  return Number.isSafeInteger(o['from']) && Number.isSafeInteger(o['to']) && (o['to'] as number) > (o['from'] as number) &&
+    typeof docs === 'object' && docs !== null && !Array.isArray(docs) &&
+    Object.values(docs).every((d) => typeof d === 'object' && d !== null && Array.isArray((d as { instances?: unknown }).instances)) &&
+    Array.isArray(o['gone']) && (o['gone'] as unknown[]).every((k) => typeof k === 'string')
+}
+
+/** A message off the channel, read as one only when every field is the shape `movedMessage` writes. */
+export const isMovedMessage = (m: unknown): m is MovedMessage => {
+  if (typeof m !== 'object' || m === null) return false
+  const o = m as Record<string, unknown>
+  return o['type'] === 'moved' && typeof o['project'] === 'string' && Array.isArray(o['moves']) && (o['moves'] as unknown[]).every(isMove)
+}
+
+/**
+ * THE MOVES, TAKEN FROM THE BASE THIS EDITOR HOLDS (R-258). In order: a move applies only from the revision the editor is
+ * at — its `from` IS that base — and takes it to `to`; its gone keys leave and its docs arrive, so a later move's doc
+ * outranks an earlier move's delete of the same key. A move from any other revision is someone else's step, or one this
+ * editor never saw the start of, and takes nothing. Null when nothing applied: the editor then meets R-253's 409 at its
+ * next save, as an editor on another device does. Pure.
+ */
+export function takeMoves(base: number, moves: readonly Move[]): { base: number; docs: Record<string, ProjectDoc>; gone: string[] } | null {
+  let at = base
+  const docs: Record<string, ProjectDoc> = {}
+  const gone = new Set<string>()
+  for (const m of moves) {
+    if (m.from !== at) continue
+    for (const key of m.gone) {
+      gone.add(key)
+      delete docs[key]
+    }
+    for (const [key, doc] of Object.entries(m.docs)) {
+      docs[key] = doc
+      gone.delete(key)
+    }
+    at = m.to
+  }
+  return at === base ? null : { base: at, docs, gone: [...gone] }
+}
+
 /** Nothing owed → erase → sign out. All sent → erase → sign out. Anything unsent → ask first: Wait keeps everything
  *  (no erase, no sign-out), Sign out anyway erases and signs out. An erase that fails still signs out. True when the
  *  sign-out ran. */

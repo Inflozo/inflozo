@@ -147,6 +147,8 @@ export const ROUTES_WORDS = {
   removeCondition: (field: string) => `Remove the ${field} condition`,
   removeValue: (value: string) => `Remove ${value}`,
   couldNot: "We couldn't save that just now. Try again in a moment.",
+  /** Story 7.17 — DW-367: a collection's or channel's new template was made, and its starting post grid was not written */
+  listedStartFailed: (name: string) => `${name} was made, but its post grid wasn't added. Press Save again to add it.`,
   // R-98's busy labels
   creating: 'Creating…',
   saving: 'Saving…',

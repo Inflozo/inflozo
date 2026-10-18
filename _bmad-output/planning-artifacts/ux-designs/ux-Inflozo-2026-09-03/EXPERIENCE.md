@@ -199,7 +199,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Partial Success** | D2e in the wizard · D2d the history row | upload succeeded, activation failed | "Your theme is on your site but isn't live yet" (FR-J8) |
 | **Preview-Only Destination** | S8a′ *(re-specified)* | step 1, Preview-only site | Export instead of deploy |
 | **Preview-Only Notice** | B15 *(re-specified)* | site card · Sites | What Preview-only is, and what clears it (FR-C2) |
-| **Routes Fallback Card** | B16 *(corrected 2026-09-04, A7 item 3)* | after deploy, when routes could not be uploaded | The guided manual upload (FR-I4) |
+| **Routes Fallback Card** | B16 *(corrected 2026-09-04, A7 item 3)* | after deploy, when routes could not be uploaded · since Story 7.17 (2026-10-18), the site card on Sites and the top of Routes & Templates while the cause stands | The guided manual upload (FR-I4) |
 | **Template Binding Checklist** | B19 *(corrected 2026-09-04, A7 item 1)* | Deploy Live, when custom templates were emitted | One row per emitted template (FR-I6) |
 | **Deploy History** | S8e · D2a pinning, Pro · D2b pin refusal · D2c Free | clock icon · Ship it ▾ → History | Versions, pinning, rollback, restore-to-original (FR-J7/J9, F8) |
 | **Grace Banner** | B24 *(corrected 2026-09-04, A7 item 5)* | every surface, while `pro_past_due` | 7 days, and what does not happen (FR-L2/L3) |
@@ -1112,6 +1112,13 @@ Administrator or Owner holds `setting: all`.
 3. **Come back and press Verify.** Without the token, what Verify can actually do is unproven
    (`NE-S-1`), so the copy claims only what it can do: it re-reads the routing through the Content
    API where it can, and otherwise says it could not confirm.
+   *(Story 7.17's Dev, 2026-10-18 — **NE-S-1 is answered by `MEASUREMENTS.md` §37**: the integration
+   key alone reads `GET /settings/routes/yaml/` on both majors, so Verify reads the live file with the
+   Admin key — never the Content API, which does not serve it — and compares its bytes with the file
+   Inflozo offered; it answers *verified* (the card becomes one line), *not yet* or *could not reach
+   your site*, and never claims success on a read that failed. Step 2's link is
+   `https://docs.ghost.org/themes/routing/` on both majors: Ghost publishes one routing guide, and Ghost
+   6.58.0's own "Upload routes file" links it.)*
 
 **"Fix the key instead" becomes "Add the token instead"**, and the footnote under it —
 "fixing the key makes this automatic again" — becomes **"adding the token makes this automatic from
@@ -1124,6 +1131,10 @@ and offer Verify again, never claim success).
 **It is not a warning toast.** It is a first-class surface, reachable afterwards from the site card
 and from the Routes Manager, and a project can sit in this state indefinitely without anything
 degrading except the automation.
+*(Story 7.17's Dev, 2026-10-18 — its two hosts are the last child of the site's card on Sites, where
+B15 sits, and the top of Routes & Templates for the linked site, each shown while `sites.routes_fallback`
+holds a cause; Story 7.18's Ship it opens it at its ending. The revoked and role cases change only the
+body, the secondary button and the footnote — role has neither, since a token cannot be given a role.)*
 
 ---
 

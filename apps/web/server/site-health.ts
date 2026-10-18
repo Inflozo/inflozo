@@ -11,6 +11,7 @@ import {
   type HealthReason,
   type SiteHealthData,
 } from '@/lib/health-rule'
+import { ROUTES_PATH } from '@/lib/routes-upload'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { APP } from '@/routing'
 import { backfillAdminKeyId, call } from '@/server/ghost-admin'
@@ -67,9 +68,6 @@ import { probeSite } from '@/server/site-probe'
  * `console.error` below names a site id and a code.
  */
 
-/** FR-I4's live read. A GET, so no allowlist item — `ADMIN_WRITES` is untouched by this story. */
-const ROUTES_PATH = 'settings/routes/yaml/'
-
 /**
  * WHAT THE ROUTES READ RECORDS, AND WHAT IT DELIBERATELY DOES NOT COMPARE. `GET /settings/routes/
  * yaml/` answers 200 with the Admin key alone on both majors — executed on T1 6.58.0 and T3
@@ -77,10 +75,12 @@ const ROUTES_PATH = 'settings/routes/yaml/'
  * Staff token. The bytes are hashed into `routes_live_sha256` and the read is stamped into
  * `routes_verified_at`.
  *
- * **DRIFT IS A COMPARISON AGAINST `routes_last_offered`, AND NOTHING WRITES THAT COLUMN UNTIL
- * EPIC 7.** So today this RECORDS and compares against nothing. Said here rather than shipped as a
- * comparison that silently always passes, which is a check that would go on passing the day it
- * stopped meaning anything.
+ * **DRIFT IS A COMPARISON AGAINST `routes_last_offered`, WHICH STORY 7.17's ROUTES STEP WRITES**
+ * (`server/routes-upload.ts`: the file it offered, uploaded or handed to B16). This check makes one
+ * comparison with it (2026-10-18): a live file whose sha is the offered one's clears `routes_fallback`
+ * (`writePlan`), because a customer who uploaded B16's file by hand and never pressed Verify has done
+ * what the card asked. The live file is hashed AS BYTES (`answer.bytes`), never as decoded text —
+ * FR-I4's read-back rule.
  *
  * A ROUTES READ THAT FAILS DOES NOT MAKE A SITE UNHEALTHY. Health is about the credential and the
  * version; `routes.yaml` is a file that may legitimately not be readable, and both columns are
@@ -93,13 +93,14 @@ async function readRoutes(siteId: string, route: string): Promise<{ sha256: stri
       console.error('site-health: routes unreadable', { siteId, code: answer.code })
       return null
     }
-    // THE BYTES, NOT A PARSE OF THEM. `answer.body` is null for YAML by construction (the
-    // chokepoint's `JSON.parse` fails and its catch says so), so `text` is what FR-I4 hashes.
-    if (!answer.text) {
+    // THE BYTES, NOT A PARSE OF THEM AND NOT A DECODE OF THEM. `answer.body` is null for YAML by
+    // construction (the chokepoint's `JSON.parse` fails and its catch says so), and `text` is a
+    // decode, so `bytes` is what FR-I4 hashes (Story 7.17).
+    if (answer.bytes.length === 0) {
       console.error('site-health: routes empty', { siteId, code: 'routes_empty' })
       return null
     }
-    return { sha256: createHash('sha256').update(answer.text).digest('hex') }
+    return { sha256: createHash('sha256').update(answer.bytes).digest('hex') }
   } catch (thrown) {
     const e = (thrown ?? {}) as { code?: string; name?: string }
     console.error('site-health: routes threw', { siteId, code: e.code ?? e.name })
@@ -110,6 +111,9 @@ async function readRoutes(siteId: string, route: string): Promise<{ sha256: stri
 type Row = {
   health: Health
   last_health_email_at: string | null
+  /** Story 7.17: the file the routes step last offered, and the cause B16 is up for (or null) */
+  routes_last_offered: string | null
+  routes_fallback: string | null
   title: string | null
   url: string
   credentials_present: { admin?: boolean } | null
@@ -135,9 +139,9 @@ export async function checkSite(args: {
   const undecided = (code: string) => ({ health: null, reason: code })
   const admin = supabaseAdmin()
 
-  const { data: before, error: readError } = await admin
+  const { data: row, error: readError } = await admin
     .from('sites')
-    .select('health, last_health_email_at, title, url, credentials_present, site_settings')
+    .select('health, last_health_email_at, title, url, credentials_present, site_settings, routes_last_offered, routes_fallback')
     .eq('id', args.siteId)
     .eq('user_id', args.userId)
     .is('disconnected_at', null)
@@ -145,12 +149,17 @@ export async function checkSite(args: {
   // FR-C6's KEPT RECORD IS NOT A SITE, so `disconnected_at` filters above rather than being
   // remembered by each caller — and a forged `site_id` reaches no row here for the same reason a
   // stranger's does: the `user_id` clause stands in for the RLS `supabaseAdmin()` bypasses.
-  if (readError || !before) {
+  if (readError || !row) {
     console.error('site-health: read failed', {
       siteId: args.siteId,
       code: readError?.code ?? 'site_not_found',
     })
     return undecided(readError?.code ?? 'site_not_found')
+  }
+  // STORY 7.17 — the offered file's sha, for `writePlan`'s `routes_fallback` rule: the pure plan hashes nothing (AD-1)
+  const before = {
+    ...row,
+    routes_offered_sha256: row.routes_last_offered === null ? null : createHash('sha256').update(row.routes_last_offered).digest('hex'),
   }
 
   // A PARTIALLY CREDENTIALED SITE IS A FIRST-CLASS STATE (UX-DR7), NOT A FAULT. With no Admin key

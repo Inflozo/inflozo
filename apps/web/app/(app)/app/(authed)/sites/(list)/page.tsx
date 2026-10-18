@@ -195,7 +195,7 @@ export default async function Sites({
       supabase
         .from('sites')
         .select(
-          'id, title, url, ghost_version, site_settings, settings_read_at, health, last_checked_at, capability, capability_source, code_injection_notice_shown_at',
+          'id, title, url, ghost_version, site_settings, settings_read_at, health, last_checked_at, capability, capability_source, code_injection_notice_shown_at, routes_fallback, routes_last_offered',
         )
         .is('disconnected_at', null)
         .order('created_at', { ascending: false }),
