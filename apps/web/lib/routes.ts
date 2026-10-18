@@ -5,12 +5,12 @@ import { type Cond, DATE_OPS, type DateOp, type DateUnit, type Filter, ghostLabe
 /* STORY 7.16a — THE ROUTES MANAGER'S WORDS AND ITS PAGE'S PURE HALF (R-170: one list). Every sentence the page says is
    `ROUTES_WORDS`, and the deployed walk (`tools/probe/run-verify-editor.cjs`, step 109) reads it from here. S9a–S9e's
    strings are verbatim except the spec's routine calls: route templates are `custom-{name}` (2); S9e's helper says "like a
-   landing page", because a membership page has no route (8); S9b's Ship-button line waits for Story 7.18 (11). The parts
+   landing page", because a membership page has no route (8); S9b's Ship-button line waits for Story 7.18a (11). The parts
    no frame draws are built beside the drawn ones (R-247), and their words are the "Extrapolated" list.
 
    The rules themselves — the grammar, the emitter, the validator, the naming step and every refusal's sentence — are the
    runtime's `@inflozo/section-runtime/routes` (`ROUTE_WORDS`, carried below as `refused`), so the page, its actions and
-   Stories 7.16b, 7.17 and 7.18 judge by one module. */
+   Stories 7.16b, 7.17 and 7.18a judge by one module. */
 
 /** S9c's field picker, in its order, with the NQL key it writes (the picker's mono hint) — and the word its ROW shows,
  *  where S9c draws a shorter one ("Published", `:192`, for the picker's "Published date"). */

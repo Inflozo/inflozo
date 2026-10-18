@@ -8,7 +8,7 @@
  * bound, not listed, never greyed and never captioned (UX-DR3). Such a row carries `story` and no `keys`, which is
  * the whole of the difference — nothing matches it and `sheetRows()` leaves it out. The row still exists, because
  * the alternative is losing the fact that the key is OWED: `⌘K` landed with 5.10, `[` `]` with 5.11, `⇧R` with 5.12
- * and `P` with 5.15, and `⌘⏎` lands with 7.18, each a criterion of that story, and the map is complete when 7.18
+ * and `P` with 5.15, and `⌘⏎` lands with 7.18a, each a criterion of that story, and the map is complete when 7.18a
  * ships. It is the shape `lib/editor.ts`'s `CANVASES` + `CONDITIONAL` already uses: the scheme itself
  * refuses what is not offered.
  *

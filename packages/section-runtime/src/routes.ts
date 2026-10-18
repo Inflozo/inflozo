@@ -1,6 +1,6 @@
 // STORY 7.16a — THE ROUTES MANAGER'S RULES, AS DATA IN ONE PLACE (FR-I2, FR-I3; AD-34's pattern, `custom-settings.ts`'s
 // shape). The Routes page and its server actions read it, and so will Story 7.16b (custom canvases), 7.17 (the upload) and
-// 7.18 (Pre-flight and `compileTheme`'s `routed`, through `routedOf`). Pure and deterministic (AD-1, AD-14): no clock, no
+// 7.18a (Pre-flight and `compileTheme`'s `routed`, through `routedOf`). Pure and deterministic (AD-1, AD-14): no clock, no
 // `Intl`, no locale reader — the naming rule's lowercase is `toLowerCase`, never `toLocaleLowerCase`.
 //
 // WHAT IS HERE: the config's grammar (`parseRoutesConfig`, zod — AD-6: what is stored is parsed on read), the filter
@@ -633,7 +633,7 @@ export function templateName(display: string, taken: { project?: readonly string
 
 /* ───────────────────────────────────────────── what routes name ───────────────────────────────────────────── */
 
-/** The `custom-*.hbs` files any collection or route names, sorted — `compileTheme`'s `routed` (Story 7.18 hands it in). */
+/** The `custom-*.hbs` files any collection or route names, sorted — `compileTheme`'s `routed` (Story 7.18a hands it in). */
 export const routedOf = (c: RoutesConfig): string[] =>
   [...new Set([...c.collections, ...c.routes].map((r) => r.template))].sort()
 

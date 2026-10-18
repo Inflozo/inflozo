@@ -18,7 +18,7 @@ import {
 
    IT IS A CARD, NEVER A TOAST OR A `Banner` (F3), and it has exactly two hosts, both server renders that mount it while the
    site still needs its routing (`sites.routes_fallback` set): the last child of the site's card on Sites
-   (`site-notices.tsx`, where B15 sits) and the top of Routes & Templates, for the linked site. Story 7.18's Ship it opens
+   (`site-notices.tsx`, where B15 sits) and the top of Routes & Templates, for the linked site. Story 7.18a's Ship it opens
    it at its ending on a `fallback`; nothing here uploads.
 
    THE CAUSE DECIDES THREE THINGS AND NOTHING ELSE: the body, the secondary button and the footnote

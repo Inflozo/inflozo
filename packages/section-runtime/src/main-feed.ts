@@ -30,7 +30,7 @@ import type { SynthesisEntry, SynthesisLibrary } from './synthesize.ts'
 export const isFeed = (entry: Pick<SynthesisEntry, 'bindingContext'> | undefined): boolean =>
   entry?.bindingContext.includes('posts') === true
 
-/** A section that lists the page's posts and is not hidden. ONE predicate for the editor's Layers note, Story 7.18's
+/** A section that lists the page's posts and is not hidden. ONE predicate for the editor's Layers note, Story 7.18b's
  *  Pre-flight warning and Story 7.3's SEO guard, which asks it of every page 2 (DW-253). */
 export const visibleFeed = (library: SynthesisLibrary) => (i: DocInstance): boolean => !i.hidden && isFeed(library(i.designId))
 
@@ -114,7 +114,7 @@ export function makeMainFeed(doc: ProjectDoc, file: string, instanceId: string, 
 }
 
 /** FR-H2's archive case: a Tag or Author page with no VISIBLE feed. Ghost has no second file to fall through to there, so
- *  its page 2 onwards would repeat page 1. The editor's Layers note and Story 7.18's Pre-flight warning read it; Story
+ *  its page 2 onwards would repeat page 1. The editor's Layers note and Story 7.18b's Pre-flight warning read it; Story
  *  7.3's SEO guard asks `visibleFeed` of every page 2 instead, Home's included (DW-253). Home never: its page 2 is
  *  another file (FR-I1). STORY 7.16c — and a LISTED Routes Manager template with no visible feed: its collection's or
  *  channel's page 2 renders the same file (F6), so it repeats page 1 there too, and the guard names its context. */

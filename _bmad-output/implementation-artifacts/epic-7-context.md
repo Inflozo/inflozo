@@ -30,7 +30,9 @@ A user ships. The project compiles — purely, from what it is handed — into a
 - Story 7.16b: Custom templates on the canvas *(split from 7.16 by R-245, 2026-10-16)*
 - Story 7.16c: Collection and channel templates list their posts *(split from 7.16b by R-249, 2026-10-17)*
 - Story 7.17: Uploading `routes.yaml`, and the guided fallback
-- Story 7.18: The deploy wizard
+- Story 7.18a: The deploy wizard *(split from 7.18 by R-259, 2026-10-18)*
+- Story 7.18b: Choosing the site, and Pre-flight's warnings *(split from 7.18 by R-259)*
+- Story 7.18c: The editor's lock and save leftovers *(split from 7.18 by R-259)*
 - Story 7.19: The first-deploy credential step, and its decline path
 - Story 7.20: The backup gate and the pre-Inflozo snapshot
 - Story 7.21: Pre-deploy drift detection
@@ -618,14 +620,19 @@ A user ships. The project compiles — purely, from what it is handed — into a
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.
-  - **Story 7.18's Create (2026-10-18):** ready for Dev with three questions open (R-83); Dev waits for all three.
-    - **Q1, the split (planned: three stories).**
+  - **Story 7.18's Create (2026-10-18):** ready for Dev. Its three questions were ruled by the owner the same day,
+    **R-259 to R-261**; nothing waits on him before Dev but the migration's apply and the T1 run's in-session go.
+    - **Q1, R-259 (option 1): three stories,** each moved criterion word for word on its new card (R-195).
       - **7.18a, this spec:** shipping. It takes 7.32's D2e/D2f endings with their one-click activate.
       - **7.18b:** choosing the site and every warning-only Pre-flight row, with DW-297's question.
       - **7.18c:** DW-304 (with its question), DW-307 and DW-308.
       - 7.32 keeps D2d. The two first-deploy steps stay 7.19's and 7.20's. 7.25's lock span gains the routes upload.
-    - **Q2, DW-364 (planned: fix the index filter so an untagged post stays listed, proved on T1 first).**
-    - **Q3, DW-362 (planned: "Start again from Ghost's default routing" on Routes & Templates).**
+    - **Q2, R-260 (option 1 with option 2's check):** the index filter is fixed so Home lists a post with no primary tag,
+      proved with Ghost's own code and on T1 before any Ship it uploads a routing (Dev stops and asks if Ghost cannot say
+      it); and Pre-flight names any post no page would list (`unlistedPosts`, read in the browser through
+      `lib/live-content.ts`; Home and the collections count, tag, author and channel pages do not).
+    - **Q3, R-261 (option 1):** "Start again from Ghost's default routing" on Routes & Templates, confirmed first, the
+      templates kept; the Ship button's reason links there.
     - **Planned.**
       - Pre-flight and Ship it are two invocations on one `deploy_jobs` row (F-075 over AD-11's sentence). Each answers
         the job id and works on in `after()`, and the wizard polls a GET.

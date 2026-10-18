@@ -7,7 +7,7 @@
 // that format is for. Errors block and warnings deploy, after mapping; gscan's recommendations are not part of a verdict,
 // because Ghost's own upload answer carries errors and warnings alone. Every field is plain text: gscan's HTML is
 // stripped and its entities decoded, and since a message can quote the theme's source, a customer's words among it,
-// Story 7.18 renders every field as text. A verdict is plain JSON (`deploys.gscan`, `deploy_jobs.error`), and each
+// Story 7.18a renders every field as text. A verdict is plain JSON (`deploys.gscan`, `deploy_jobs.error`), and each
 // finding is assignable to `AdminEnvelope` as it stands.
 
 export type Major = 5 | 6

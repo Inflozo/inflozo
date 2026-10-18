@@ -2503,7 +2503,7 @@ const config = {
 }
 const problems = routes.validateRoutes(config, { templates: [LIST, BARE] })
 if (problems.length > 0) throw new Error(`the probe routing does not validate: ${JSON.stringify(problems)}`)
-// the one list (`listsOf`): each listed file and its contexts, as Story 7.18 hands the compiler `lists`
+// the one list (`listsOf`): each listed file and its contexts, as Story 7.18a hands the compiler `lists`
 const lists = Object.fromEntries([...routes.listsOf(config)].map(([file, ls]) => [file, ls.map((l) => l.context)]))
 const one = (file, instanceId, designId, layer, over = {}) => rt.parseDoc({ schemaVersion: 1, instances: [{
   instanceId, layerName: `${layer} ${words.layerWord}`, designId, content: { ...rt.defaultContent(find(designId).contentSchema), ...(over.content ?? {}) },
@@ -3014,7 +3014,7 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
             'a light device and a dark one alike; the Dark accent color reached the head and `--accent` in dark; and the '
             'Dark logo replaced Ghost\'s logo in dark while the picture drew Ghost\'s own in light — each on the next load, '
             'with no redeploy. Deployed again as Light + Dark, the site kept every value Ghost stored, so it stayed pinned '
-            'Light (Question 2, which Story 7.18\'s Pre-flight says).',
+            'Light (Question 2, which Story 7.18b\'s Pre-flight says).',
             '- **A promoted setting reaches Ghost\'s own Design panel and the page reads it.** Every key Inflozo declared was '
             'listed at the start the canvas holds; a switch, a choice, two texts, the accent and a picture each changed in Ghost '
             'and the page followed; a choice its condition hides drew its start while Ghost still stored the other value; and a '
@@ -3050,7 +3050,7 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
             'as `image/webp`, while a width no theme declares was redirected to the original; `src` keeps the picture\'s own '
             'format.',
             '- **Labels go through `{{t}}`, and `en.json` answers them.** A1 #1\'s More label printed the English from the '
-            'shipped `en.json`, where §75 printed `nav.more`. No visitor sees this yet: nothing deploys before Story 7.18.',
+            'shipped `en.json`, where §75 printed `nav.more`. No visitor sees this yet: nothing deploys before Story 7.18a.',
             '- **The theme\'s script reaches the page as built.** `/`\'s head carried `main.js`\'s tag once, `defer`, in the '
             'form `{{asset}}` resolves to, and its address answered with a JavaScript type and the compiled bytes — so '
             '`core` loads on every page without holding it up.',
@@ -3076,7 +3076,7 @@ def section(rec, gates, files, c, pay, probes, local, q, promoted, built, loc, c
             f'- **Stories 7.1\'s and 7.2\'s rows still hold** on the larger tree: user text inert, comments shipped to no '
             f'visitor, `package.json` read whole, and {cards_line}.',
             "- **What this does NOT say.** The scaffold is Story 10.79's, nothing here deployed "
-            "through Inflozo's own path (Story 7.18), no paywall was compiled (no paywall design exists until Story "
+            "through Inflozo's own path (Story 7.18a), no paywall was compiled (no paywall design exists until Story "
             "10.107), and Ghost 5's half is DW-326's, at Story 15.7 (R-238: T3 retired) — Ghost 5's prefix glob, which "
             "makes `header` drop `header_v2` too, is read in source, and a Ghost 5 site with all four scripted cards "
             "designed linking a `cards.min.js` it never wrote is recorded for that pass. The cards were read on a draft "

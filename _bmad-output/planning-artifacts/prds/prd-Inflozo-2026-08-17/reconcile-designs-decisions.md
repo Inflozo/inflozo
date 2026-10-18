@@ -5602,6 +5602,58 @@ reload.** Story 7.17's Create, Question 5, ruled **option 1** (owner, 2026-10-18
   ✅ `epic-7-context.md` · ✅ AD-15 (`ARCHITECTURE-SPINE.md`, at 7.17's Dev, 2026-10-18) · ✅ `MOVED_CHANNEL`, `takeMoves`,
   the routes page's `told` and the editor's `heardMoved` (7.17's Dev).
 
+**R-259 — Story 7.18 is three stories: 7.18a ships, 7.18b chooses the site and warns, 7.18c finishes the lock and save
+leftovers; Story 7.32's wizard half comes into 7.18a.** Story 7.18's Create, Question 1, ruled **option 1** (owner,
+2026-10-18): *"Split it in three"*.
+
+- **Why it was a question.** The card had gathered three independent deliverables since Epic 5: shipping (Ship it, the
+  wizard, the two gates, the upload, every ending and the routes step), eleven warning-only Pre-flight rows with choosing a
+  different site, and three editor lock and save fixes parked there only because shipping needs the lock (DW-304, DW-307,
+  DW-308). Together they would have been the largest story and the longest owner test yet. "Deploy only" also had no ending
+  of its own: D2f is Story 7.32's frame.
+- **The rule.** **Story 7.18a** keeps shipping, and takes 7.32's (4), (5), "the wizard state matches D2e" and "the
+  deploy-only ending matches D2f", with the one-click activate; 7.32 keeps its history row (D2d). **Story 7.18b**, straight
+  after it, takes FR-D16's row, FR-H2's two warnings (DW-253), FR-H6's sentences (DW-260), DW-297 with its question, the
+  dropped settings (7.10's Question 2), the changed built-ins (7.11's Question 2), 7.12's locale and RTL lines and its
+  untouched-words list, and Switch itself (FR-B5). **Story 7.18c**, after that, takes DW-304 with its question, DW-307 with
+  its own `Schema` push, and DW-308. Every moved criterion is on its new card word for word. The rail's growth to six steps
+  arrives with Stories 7.19 and 7.20, whose steps join 7.18a's rail; the routes upload sits inside Story 7.25's lock span.
+- **Declined.** Two stories (shipping with every warning, then the lock and save leftovers); one story.
+- Targets: ✅ this entry · ✅ Story 7.18a's spec · ✅ `epics.md` Stories 7.18a, 7.18b, 7.18c, 7.19, 7.20, 7.25 and 7.32 and
+  Epic 7's preamble · ✅ `sprint-status.yaml` · ✅ DW-51, 54, 238, 253, 260, 297, 304, 307, 308, 349, 353, 355, 358, 362,
+  364, 369 and 371 re-owned · ✅ `epic-7-context.md` · ✅ the code comments naming Story 7.18.
+
+**R-260 — Inflozo fixes the index filter it writes so Home also lists a post with no primary tag, and Pre-flight names any
+post no page would list.** Story 7.18's Create, Question 2, ruled **option 1 with option 2's check beside it** (owner,
+2026-10-18): *"Fix what Inflozo writes. Home also lists posts with no primary tag. I prove the exact wording with Ghost's
+own code and on T1 before any Ship it uploads a routing. If Ghost cannot say it, I stop and ask you. Also add a check on
+Pre-flight and it names the posts no page would list."*
+
+- **Why it was a question.** DW-364 (Story 7.16c's T1 run, MEASUREMENTS §84): the index's inverse filter
+  `primary_tag:-'x'` is a LISTING in SQL meaning "has a public primary tag that is not x", so a post with no tags (or an
+  internal first tag) is owned by the index and listed nowhere, though its own address answers 200. Nothing had uploaded a
+  routing yet, so no site carried it.
+- **The rule.** `routes.ts`' `indexNode`/`indexFilter` emit a form under which such a post is listed on Home; the exact NQL
+  is chosen at Story 7.18a's Dev from Ghost's own code and both pinned NQLs and executed on T1 before any Ship it uploads a
+  routing, and if Ghost cannot express it Dev stops and asks. Beside it, Pre-flight reads the linked site's published posts
+  and names every post that Home and the collections would leave unlisted (`unlistedPosts`), as a warning that never blocks.
+- **Declined.** The warning alone; dropping Primary tag and Primary author from a collection's conditions.
+- Targets: ✅ this entry · ✅ Story 7.18a's spec · ✅ `epics.md` Story 7.18a's card · ✅ DW-364 · ✅ `epic-7-context.md` ·
+  ⬜ `routes.ts` and `prd.md` FR-I2 (Story 7.18a's Dev).
+
+**R-261 — when the stored routing cannot be read, Routes & Templates offers "Start again from Ghost's default routing".**
+Story 7.18's Create, Question 3, ruled **option 1** (owner, 2026-10-18): *"A "Start again" on Routes & Templates,
+confirmed first, which replaces the unreadable routing with Ghost's default and keeps your templates."*
+
+- **Why it was a question.** DW-362 (Story 7.16a's Review): a stored routing no sheet wrote (by hand, or by a later
+  build's grammar) leaves the Routes page with no list and no sheet, and Ship it must refuse to ship — with no way out.
+- **The rule.** Routes & Templates offers the reset when `parseRoutesConfig` fails; it is confirmed first, with focus on
+  Cancel (UX-DR14), replaces the stored routing with Ghost's default through the page's own save path, and keeps every
+  template. The reason on the Ship button names the state and links there.
+- **Declined.** The reason alone, with the repair done by hand.
+- Targets: ✅ this entry · ✅ Story 7.18a's spec · ✅ `epics.md` Story 7.18a's card · ✅ DW-362 · ✅ `epic-7-context.md` ·
+  ⬜ the Routes page (Story 7.18a's Dev).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

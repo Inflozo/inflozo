@@ -1476,7 +1476,7 @@ reason: postgres.js 3.4.9 sets `rejectUnauthorized: false` for `ssl: 'require'` 
 plain: The one door Inflozo talks to a Ghost site through can only send text-shaped requests today; uploading
   a theme, which the deploy in Epic 7 needs, sends a file, so the door will need to learn that shape then.
 status: open
-owner: Story 7.18 (The deploy wizard), whose criteria carry its requirement word for word with its id (R-195). *(Story
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose criteria carry its requirement word for word with its id (R-195). *(Story
   5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.1 code review (2026-09-07), the Edge Case Hunter layer
@@ -1556,7 +1556,7 @@ status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); **the decry
   nothing in the product had a way in for the token. **`write-denied` alone remains, and it is Epic 7's** — no
   product caller makes an allowed Ghost write until the deploy path exists, and `ADMIN_WRITES` still
   carries `announcement_clear` with no caller (DW-66).
-owner: Story 7.18 (The deploy wizard), whose criteria carry its requirement word for word with its id (R-195). *(Story
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose criteria carry its requirement word for word with its id (R-195). *(Story
   5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"; the decrypt path added by
@@ -6804,7 +6804,7 @@ reason: a take-over prompt for a control that does not exist is unreachable, and
   rule that an unbuilt feature is absent rather than greyed. Story 5.17 builds the component D8g is made of —
   `apps/web/components/editor/lock-takeover.tsx`, whose heading, body and confirm label are props for exactly this —
   so the remaining work is the gate itself, which belongs where deploy and export are written.
-owner: Story 7.18 (The deploy wizard), whose criteria carry its requirement word for word with its id (R-195). *(Story
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose criteria carry its requirement word for word with its id (R-195). *(Story
   5.24a's Dev, 2026-09-28: was "Story 7.18 (the deploy wizard) for Ship it, Story 7.26 (theme zip export) for Export.
   Each renders `lock-takeover.tsx` with D8g's strings and refuses to start without the lock (AD-15's flush contract).")*
 location: `apps/web/components/editor/lock-takeover.tsx` · `apps/web/lib/keymap.ts:113` ·
@@ -7276,7 +7276,7 @@ origin: Story 5.19's Create (2026-09-25), swept in `epics.md`: FR-H2 (`prd.md:31
   feed-less `tag.hbs`/`author.hbs`, and "the panel warns per section; the pre-deploy check warns per template" for
   hand-picked lists. No story's criteria name `noindex`, the canonical link, the archive warning or the per-template
   hand-picked warning (Story 7.18's Pre-flight names only FR-D16's member-state row, `epics.md:3158-3196`).
-owner: Stories 7.18 (The deploy wizard) and 7.3 (Synthesis Defaults and the emptying rules), whose criteria already
+owner: Stories 7.18b (choosing the site, and Pre-flight's warnings; *Story 7.18 until R-259 split it, 2026-10-18*) and 7.3 (Synthesis Defaults and the emptying rules), whose criteria already
   carry it with its id: 7.18's two Pre-flight warnings and 7.3's SEO guard. *(Story 5.24a's Dev, 2026-09-28: was "Story
   7.18 (the two Pre-flight warnings) and Story 7.3 (the guard the compiler emits) — their criteria name them since
   R-195's sweep (owner, 2026-09-25: "no requirement/feature is missed"). The archive's EDITOR warning is Story 5.19's
@@ -7470,11 +7470,11 @@ origin: Story 5.20's Create (2026-09-26). FR-H6 (`prd.md:336`) — "placing port
   on a site with members disabled warns in the editor, and a pre-deploy check repeats it" — and R-4 (`reconcile-designs-
   decisions.md:307-329`), "warn at connect and pre-deploy". Story 7.18's Pre-flight (`epics.md:3181` onward) names FR-D16's
   member-state row and FR-H2's warnings, never FR-H6's.
-owner: Story 7.18 (The deploy wizard), whose criteria already carry it with its id: Pre-flight repeats FR-H6's
+owner: Story 7.18b (choosing the site, and Pre-flight's warnings; *Story 7.18 until R-259 split it, 2026-10-18*), whose criteria already carry it with its id: Pre-flight repeats FR-H6's
   member-switch warnings. *(Story 5.24a's Dev, 2026-09-28: was "Story 7.18 (the deploy wizard's Pre-flight) — it reads
   Story 5.20's one record, `sites.site_settings.members`, and lists the same sentences the Sites screen uses
   (`apps/web/lib/paywall.ts`). Its criteria gain it in Story 5.20's docs task.")*
-location: `epics.md` Story 7.18 · `apps/web/lib/paywall.ts` (Story 5.20)
+location: `epics.md` Story 7.18b · `apps/web/lib/paywall.ts` (Story 5.20)
 reason: nothing deploys yet; Story 5.20 builds the record and the connect and editor halves, which is everything that
   can run before Epic 7.
 note (Story 5.20's Dev, 2026-09-26): Story 7.18's Pre-flight criteria now name it (`epics.md`), reading `site_settings.members`
@@ -8404,8 +8404,8 @@ origin: Story 5.24c's Create (2026-09-29), found while checking DW-168, read in 
   (`packages/library/src/vocabulary.ts:319-322`, `ASK_FLAGS`); that field arrived in Ghost 5.62.0, bisected in the npm
   releases (MEASUREMENTS §41, `packages/library/contexts/matrix.json:123-126`); and connect accepts any Ghost 5
   (`apps/web/lib/connect-rule.ts:14`, `MIN_GHOST_MAJOR`).
-owner: Story 7.18 (The deploy wizard), whose card names this entry.
-location: `packages/library/src/vocabulary.ts` `ASK_FLAGS` · the compiler's emission of a member ask · Story 7.18's
+owner: Story 7.18b (choosing the site, and Pre-flight's warnings; *Story 7.18 until R-259 split it, 2026-10-18*), whose card names this entry.
+location: `packages/library/src/vocabulary.ts` `ASK_FLAGS` · the compiler's emission of a member ask · Story 7.18b's
   Pre-flight
 reason: a design's own `ghostCompat.minVersion` cannot see it — the ask is a customer's link, not a field a design
   reads — so DW-168's check does not reach it. What a site below 5.62 should get (the ask kept, dropped, or the deploy
@@ -8578,7 +8578,7 @@ origin: Story 5.24e's Create (2026-10-02), the read-only pass on R-213, executed
   404 for a deleted project or another account's session (`:50`, `:114`), 400 for a malformed body (`:56-67`) and 422
   for a document it will not store (`:73`, `:75`, `:79`), and `editor.tsx`'s `flush` sends every one of them to the
   Retrying backoff (`:1643` → `:1656`). R-213 takes only "a refusal that signing in cures" — the 401.
-owner: Story 7.18 (the deploy wizard), whose card names this entry: its pre-deploy flush meets the same refusal, and its
+owner: Story 7.18c (the editor's lock and save leftovers; *Story 7.18 until R-259 split it, 2026-10-18*), whose card names this entry: its pre-deploy flush meets the same refusal, and its
   Create asks the owner (R-83) for the sentence both say.
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`flush`) ·
   `apps/web/components/editor/save-state.tsx` · `apps/web/lib/journal.ts`
@@ -8638,7 +8638,7 @@ origin: Story 5.24e's Dev (2026-10-02), the read-only audit of DW-240 and DW-244
   `release` at `0e8dcbb0` freed it within a check-in. The server cannot tell that close from a reload: both pages share
   the tab's session id (`sessionStorage`), and no column names the page a beat came from. The odds are the beat's
   round trip over `HEARTBEAT_MS`. The ceiling is named beside `leaving` in `editor.tsx` and in MEASUREMENTS §65.
-owner: Story 7.18 (the deploy wizard), whose card names this entry: the wizard requires the edit lock, and its Create
+owner: Story 7.18c (the editor's lock and save leftovers; *Story 7.18 until R-259 split it, 2026-10-18*), whose card names this entry: the wizard requires the edit lock, and its Create
   decides the per-page id — a column on the lock row, so a migration pushed first (R-99) — that lets a leave match its
   own page's beat whatever landed since.
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` (`leave`) · `apps/web/lib/lock.ts` ·
@@ -8659,7 +8659,7 @@ origin: Story 5.24e's review (2026-10-02), the Acceptance Auditor and the Blind 
   on its optimistic first paint and then lost its first `acquire` — no longer reaches the sync route's 423, whose path
   displaced the session and announced `LOCK_COPY.displaced`. The Dev named the ceiling in a `ponytail:` comment beside
   the wall and in DW-203's resolution, but gave it no entry and no owner.
-owner: Story 7.18 (the deploy wizard), whose card names this entry: the wizard requires the edit lock and already takes
+owner: Story 7.18c (the editor's lock and save leftovers; *Story 7.18 until R-259 split it, 2026-10-18*), whose card names this entry: the wizard requires the edit lock and already takes
   DW-307, so the lock's last two edges are closed together.
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`flush`'s wall, and `land()`)
 reason: the fix is `land()` telling a session that typed before its first answer, when that answer makes it a reader,
@@ -9547,9 +9547,9 @@ origin: Story 7.6's Dev (2026-10-08). `checkChromeText` (V1 at compile) refuses 
   and the element has no `data-empty="hide"`. Render-time V1 exempts text under `data-prop`, so only the compile sees it.
   A22 #1's heading and A4 #13's headline are such props; the pilots compile because their content is never empty. No
   library design binds a text (`data-bind`) in fallback mode, and none uses `data-initials`.
-owner: Story 7.18 (the deploy wizard, the compiler's first product caller), whose card carries this entry's words.
+owner: Story 7.18a (the deploy wizard, the compiler's first product caller; *Story 7.18 until R-259 split it, 2026-10-18*), whose card carries this entry's words.
 location: `packages/section-runtime/src/core.ts` (the `data-prop` loop's `propEmpty` branch) ·
-  `packages/theme-compiler/src/compile.ts` (`checkChromeText`) · `epics.md` Story 7.18
+  `packages/theme-compiler/src/compile.ts` (`checkChromeText`) · `epics.md` Story 7.18a
 reason: Story 7.6's Question 2, ruled option 1 (owner, 2026-10-08): "If user deletes than he intends to delete that
   line". Hiding changes the editor (an emptied line leaves the canvas and comes back through the sidebar's text box), so
   it needs a screen and the owner's hand test, which Story 7.6 has neither of.
@@ -9704,7 +9704,7 @@ origin: Story 7.10's Review (2026-10-10), on `94065e62`. `compileTheme`'s last c
   (`bindingState` then answers `changed`); `custom_settings` has no unique constraint on `bound_to`, so two concurrent
   promotes of one control store two rows, of which the compile reads one (`customSettings`' `at(…)` keeps the last); and
   `customSettings` drops a condition whose target is parked without a row note (`rowStates`) or a `CustomRecord` entry.
-owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — its Pre-flight runs the compile before
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose card carries this entry with its id — its Pre-flight runs the compile before
   any upload and already names a deployed setting a deploy would drop (Story 7.10's Question 2).
 location: `packages/theme-compiler/src/compile.ts` (`customSettings`, the keys-and-readers check) · `apps/web/lib/theme-settings.ts`
   (`rowStates`, `parkedOn`) · `supabase/migrations/20260904120000_complete_schema.sql` (`custom_settings`)
@@ -9738,7 +9738,7 @@ severity: low
 origin: Story 7.10's Review (2026-10-10). `20260904120000_complete_schema.sql`'s comment on `bound_to` and the architecture's
   `SCHEMA.sql` read `{kind:'control'|'token', instanceId?, controlKey?, token?}`; `custom-settings.ts`'s `Binding` type is the
   one statement of the three shapes and says so beside the code.
-owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — the next story with a planned `Schema`
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose card carries this entry with its id — the next story with a planned `Schema`
   phase on this project's deploy tables; a `comment on column` rides along with its migration.
 location: `supabase/migrations/20260904120000_complete_schema.sql` · `architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql`
 reason: an applied migration is never edited, and a migration for a comment alone is a Schema phase this story's spec rules
@@ -9798,7 +9798,7 @@ origin: Story 7.13's Review (2026-10-16), the Blind Hunter and Edge Case Hunter 
   ("card designs: … The build stops before any file is written (AD-36).") against `read.ts`' `storedCards`, which opens
   the same row on Ghost's defaults with `CARD_WORDS.malformed`. Both halves are the spec's I/O row "Stored record
   malformed" as ruled; what no story yet owns is the customer meeting the compile's refusal.
-owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — the story where a compile refusal
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose card carries this entry with its id — the story where a compile refusal
   first reaches a customer: the wizard names the card designs as the cause and links Editor cards, where one change (or
   Reset to Ghost default on any card) saves a readable record over it.
 location: `packages/theme-compiler/src/compile.ts` (`parseCardDesigns` before the tree) · `apps/web/lib/cards.ts`
@@ -9889,13 +9889,16 @@ origin: Story 7.16a's Review (2026-10-17), the Blind Hunter, Edge Case Hunter an
   `routes-manager.tsx` draws the lists and opens the sheets only when `config !== null`, and `page.tsx` hands it null when
   `parseRoutesConfig` refuses the stored row (the spec's I/O row "Hostile values… stored → S9b line 1", met as written).
   A way out would be a control no frame draws (a reset to Ghost's default routing), which is Ask First under R-247.
-owner: Story 7.18 (the deploy wizard), whose card carries this entry with its id — the story where this state first stops
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose card carries this entry with its id — the story where this state first stops
   something the customer does (the Ship button's reason, read from `validateRoutes`): its Create asks the owner (R-83)
   for the way out.
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/routes/routes-manager.tsx` (`config === null`) · `page.tsx`
   (`parseRoutesConfig`) · `packages/section-runtime/src/routes.ts` (`validateRoutes`' line 1)
 reason: unreachable through the product today (every write is validated whole before it is stored), and the fix is an
   undrawn control, the owner's to rule.
+ruling: R-261 (owner, 2026-10-18, Story 7.18's Question 3, option 1) — a "Start again" on Routes & Templates,
+  confirmed first, replaces the unreadable routing with Ghost's default and keeps the templates; the reason on the Ship button
+  links there. Built at Story 7.18a's Dev.
 reading (Story 7.16b's Review, 2026-10-17, the Edge Case Hunter): the Template menu's **New template** reaches the same
   page as `?new=template`, and with the stored routing unreadable it opens no sheet (`open !== null && config !== null`) —
   the same dead end, reached from the editor. The way out 7.18's Create asks for covers it.
@@ -9951,14 +9954,18 @@ origin: Story 7.16c's Dev T1 run (MEASUREMENTS §84's first run, 2026-10-18), re
   same holds for `primary_author` (a post whose first author is not public) and for every collection whose inverse carries a
   negated `primary_*` leaf. `tag:-x` keeps an untagged post, so a collection by Tag does not cause it. The canvas already shows
   it truthfully (Story 7.16c: Home's list leaves such a post out, `holdsFor`'s listing reading).
-owner: Story 7.18 (The deploy wizard) — decide, asking the owner (R-83), before the first deploy uploads a `routes.yaml`: change
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*) — decide, asking the owner (R-83), before the first deploy uploads a `routes.yaml`: change
   `routes.ts`' emission (for example, the index's inverse written so a post with no primary still matches — `primary_tag:null`
   OR'd in, read in source and executed on T1 first), or warn in Pre-flight naming the posts no page lists. Changing the emission
   was outside Story 7.16c (its Never list: "any change to `routes.ts`'s emission").
-location: `packages/section-runtime/src/routes.ts` (`indexNode`, `indexFilter`, `negate`) · `epics.md` Story 7.18 (its 7.16c
+location: `packages/section-runtime/src/routes.ts` (`indexNode`, `indexFilter`, `negate`) · `epics.md` Story 7.18a (its 7.16c
   reading) · `tools/probe/record-theme-assembly.py` leg 19 (the DW-364 rows)
 reason: nothing deploys a `routes.yaml` before Story 7.18, so no live site is affected yet; the fix changes what every project's
   routing emits and needs its own T1 proof, which is that story's.
+ruling: R-260 (owner, 2026-10-18, Story 7.18's Question 2, option 1 with option 2's check beside it) — Inflozo fixes
+  what it writes: Home also lists posts with no primary tag, the exact wording proved with Ghost's own code and on T1 before
+  any Ship it uploads a routing, stopping to ask if Ghost cannot say it; and Pre-flight adds a check naming the posts no page
+  would list (`unlistedPosts`). Built at Story 7.18a's Dev.
 
 ## Deferred from: code review of spec-7-16c-collection-and-channel-templates-list-their-posts (2026-10-18)
 
@@ -10057,7 +10064,7 @@ origin: Story 7.16c's Review (2026-10-18), the Edge Case Hunter layer: `contextO
   guard's outer `{{#is "paged"}}` match that page 1, and `/index/`, `/tag/` or `/author/` would noindex a page 2 that has
   its feed. `compileTheme` now refuses such a `lists` context (`compile.test.ts`). The routes page was outside 7.16c's
   changes (its Never list).
-owner: Story 7.18, which hands `lists` to the compile: before it ships, `validateRoutes` refuses those paths at the naming
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), which hands `lists` to the compile: before it ships, `validateRoutes` refuses those paths at the naming
   step with a sentence, beside `RESERVED_SEGMENTS`.
 location: `packages/section-runtime/src/routes.ts` (`validateRoutes`, `RESERVED_SEGMENTS`) · `packages/theme-compiler/src/compile.ts`
 reason: nothing compiles from the product before Story 7.18.
@@ -10112,7 +10119,7 @@ severity: low
 origin: Story 7.17's Dev (2026-10-18): the spec's matrix rules a read-back that differs or fails `failed: routes_unverified`
   with the state unchanged, while EXPERIENCE F3 names a *could not verify* state ("the file was uploaded, the read-back
   failed — say so and offer Verify again"). `offerRoutes` follows the matrix.
-owner: Story 7.18, whose Ship it calls `offerRoutes` and draws its ending: it says the routing could not be confirmed and
+owner: Story 7.18a (the deploy wizard; *Story 7.18 until R-259 split it, 2026-10-18*), whose Ship it calls `offerRoutes` and draws its ending: it says the routing could not be confirmed and
   offers Verify — or puts the stored state to the owner (R-83) if that needs a fourth cause in `routes_fallback`. The same
   Create decides the other three with it (the Review, 2026-10-18, the Blind Hunter and Edge Case Hunter layers): what a
   `settle` whose write failed answers (today the outcome stands and the write is only logged); whether a project back at

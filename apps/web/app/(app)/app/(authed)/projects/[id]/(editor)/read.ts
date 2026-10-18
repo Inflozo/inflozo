@@ -337,7 +337,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
 
   /* STORY 7.16b — THE ROUTES MANAGER'S TEMPLATES, AS CANVASES, and the paths that show each. A routing that cannot be read
      or does not parse counts as no route (routine call 12): D5f then says "stops shipping", and the routes page owns the
-     repair (DW-362, Story 7.18's) — logged, never a black editor. */
+     repair (DW-362, Story 7.18a's) — logged, never a black editor. */
   if (routingRow.error) console.error('editorData: the stored routing could not be read', { code: routingRow.error.code })
   const routing = routingRow.error ? null : parseRoutesConfig(routingRow.data?.config ?? {})
   const templates: RouteTemplate[] = routeRows.map((t) => ({ canvas: t.canvas, name: t.name, paths: routing?.ok === true ? pathsUsing(routing.config, t.file) : [] }))

@@ -22,7 +22,7 @@ test('the frame\'s strings are verbatim — every one ROUTES_WORDS keeps from S9
   ]
   const text = FRAME.replace(/<[^>]+>/g, '')
   for (const s of kept) assert.ok(text.includes(s), s)
-  // the routine calls: S9e's helper names a landing page, never a membership page (8), and S9b's Ship line waits for 7.18 (11)
+  // the routine calls: S9e's helper names a landing page, never a membership page (8), and S9b's Ship line waits for 7.18a (11)
   assert.ok(text.includes('A designed page — like your Members Signup.'))
   assert.equal(ROUTES_WORDS.oneTemplateHelp, 'A designed page — like a landing page.')
   assert.ok(!Object.values(ROUTES_WORDS).some((v) => typeof v === 'string' && /Ship button/.test(v)))

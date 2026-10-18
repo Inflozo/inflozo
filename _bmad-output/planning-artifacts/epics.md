@@ -1816,7 +1816,7 @@ So that the editor is usable rather than merely compliant.
 **And** **the five keys whose action no story has built are ABSENT — not bound, not listed, never greyed**
 (**R-145**, R-118 applied a seventh time and the first time to a key): **⌘K** arrives with the Section Picker
 (5.10), **`[` `]`** with the design ring (5.11), **⇧R** with Site Remix (5.12), **P** with Preview (5.15)
-and **⌘⏎** with the deploy wizard (7.18) — so the map is complete when 7.18 ships, and each key is tested by
+and **⌘⏎** with the deploy wizard (7.18a) — so the map is complete when 7.18a ships, and each key is tested by
 the story that lands it
 **And** **the map is ONE TABLE naming all thirteen with the story that lands each**, from which both the key
 handler and the card's rows are DERIVED — a key cannot be advertised without being bound, or bound without
@@ -2051,7 +2051,7 @@ nothing beside the toggle (**R-169**, owner, 2026-09-21, replacing S4d's "N not 
 to the page brings the reminder back** — **R-167** (owner,
 2026-09-21): a canvas edit, undo and redo included, leaves that canvas viewed only as the visitor on screen, and a
 header or footer edit does the same and empties every other canvas's record — which **never blocks**; the same
-record is listed again before deploy, in **Story 7.18's Pre-flight step**, and is what makes the owner's manual
+record is listed again before deploy, in **Story 7.18b's Pre-flight step**, and is what makes the owner's manual
 member-state pass at each category gate reliable rather than dependent on memory
 **And** the toggle matches S4a and S4d as corrected, with B9, as R-169 and R-170 amend them
 **And** **a link typed with the text toolbar takes the pack's link style, never the browser's blue** — **R-173**
@@ -2286,14 +2286,14 @@ given one at creation (Story 7.16c, through this story's rule — DW-252; *R-245
 the next feed section; the user may reassign it anytime; and the editor **marks the main feed visibly**
 **And** a paginated template with **zero** feed sections is allowed, and the archive case keeps its warning
 because `tag.hbs` and `author.hbs` have no second file to fall through to — in the editor here, as a note at the head
-of Layers on a Tag or Author page with no visible feed; at Pre-flight in Story 7.18, and as the compiled SEO guard in
+of Layers on a Tag or Author page with no visible feed; at Pre-flight in Story 7.18b, and as the compiled SEO guard in
 Story 7.3 (DW-253)
 **And** **hand-picked order is the drawn order** — picked references are held in the order dragged and handed to
 the template in that order, **never re-sorted by `published_at`** — because `filter="id:[…]"` discards the
 requested order and a re-sort silently renumbers an ordinal design
 **And** hand-picked has **no hard cap**: the panel **warns past 25** and lets the user proceed, worded for the
 case that bites — **the budget is per page, not per section** — with the pre-deploy check warning per template
-(Story 7.18, DW-253)
+(Story 7.18b, DW-253)
 **And** the Data group's `fallback` field **selects how the designed empty state renders and never what else to
 show instead**
 **And** **the main feed on page 2's own copy is a main feed too** (Story 5.16): page 2 starts as an exact copy of page
@@ -2616,7 +2616,7 @@ green.
 *R-211's third story, after 5.24b: Group C of 5.24a's triage — DW-4, 96, 99, 103, 104, 113, 125, 127, 129, 147, 159,
 161, 168, 171, 186, 196, 213, 224, 228, 237 and 288. At this story's Create (2026-09-29) DW-224's post-body half moved to
 Story 6.1, and so did DW-196 on the owner's ruling (Question 3: keep `darkCapabilities`, and give it a job later); two
-findings went to the stories that own them: DW-296 to Story 7.35, DW-297 to Story 7.18.*
+findings went to the stories that own them: DW-296 to Story 7.35, DW-297 to Story 7.18 (7.18b since R-259).*
 
 As the builder of every design still to come,
 I want the runtime, the validator and the test-site recordings to refuse what they should and record what is real,
@@ -2909,7 +2909,7 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 1. the pictures — `assets/images/`, content-hashed, each the 400 / 800 / 1600 px + original rendition set — the
 >    theme-size budget with its probe of the upload limits and its Pre-flight message, the inline icons' share of that
 >    budget (DW-108's budget half), the frame `S8 Deploy.dc.html` S8b and the over-budget message's hand test —
->    **Story 7.29** (Question 1): no picture of the customer's can sit in a section until Epic 8, and Pre-flight is 7.18's;
+>    **Story 7.29** (Question 1): no picture of the customer's can sit in a section until Epic 8, and Pre-flight is 7.18a's;
 > 2. the whole face for a language outside `latin` and `latin-ext`, and its coverage check — **Story 7.12**
 >    (Question 2), where the language is chosen.
 >
@@ -2917,7 +2917,7 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >
 > 1. FR-J5's `srcset` "from the rendition set for bundled assets" — **Story 7.29**, with the pictures Story 7.4's
 >    Question 1 moved there; a picture Ghost hosts takes `image_sizes` with `format="webp"` from Story 7.6 on;
-> 2. a typed text the customer empties is hidden, on the canvas and in the theme alike — **Story 7.18** (Question 2,
+> 2. a typed text the customer empties is hidden, on the canvas and in the theme alike — **Story 7.18a** (Question 2,
 >    ruled at Dev, DW-349): the compiler's first product caller, and a change to the editor that needs a hand test.
 >
 > **Given owners by Story 7.5's Create (2026-10-08), so none is missed (R-195).**
@@ -2929,15 +2929,15 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >
 > **Moved from Story 7.7 by its Question 2 (owner, 2026-10-09), word for word, so none is missed (R-195).**
 >
-> 1. "the Pre-flight step matches S8b as extended", with the frame `S8 Deploy.dc.html` S8b — **Story 7.18**, which
+> 1. "the Pre-flight step matches S8b as extended", with the frame `S8 Deploy.dc.html` S8b — **Story 7.18a**, which
 >    builds Pre-flight and the server step that compiles and gates a real project;
-> 2. the card's owner test, the hand test of the gscan check's rows — **Story 7.18**, whose own owner test covers it.
+> 2. the card's owner test, the hand test of the gscan check's rows — **Story 7.18a**, whose own owner test covers it.
 >
 > **Given owners by Story 7.7's Create (2026-10-09), so none is missed (R-195).**
 >
 > 1. Ghost's raw `500` when two uploads of one theme name collide (`EEXIST … mkdir '/var/…'`), mapped to AD-24's own
->    sentence and never passed through — **Story 7.18**, with the upload;
-> 2. carrying both pinned checkers inside the deploy function, proved on Vercel — **Story 7.18**;
+>    sentence and never passed through — **Story 7.18a**, with the upload;
+> 2. carrying both pinned checkers inside the deploy function, proved on Vercel — **Story 7.18a**;
 > 3. `GET /themes/` without the staff token (`501` on Ghost 5, `403` on Ghost 6) read as one Inflozo code — **Story 7.20**;
 > 4. a theme setting's key at least two characters long, so gscan's visibility test can read it — **Story 7.10**;
 > 5. a gscan pin moving only as a library release — **Story 7.27**; and re-running the whole library's lane before a
@@ -2945,16 +2945,16 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >
 > **Moved from Story 7.8 by its Question 1 (owner, 2026-10-09), word for word, so none is missed (R-195).**
 >
-> 1. "**Frame:** `S8 Deploy.dc.html` S8b." and its "matches the frame" criterion — **Story 7.18**, which builds
+> 1. "**Frame:** `S8 Deploy.dc.html` S8b." and its "matches the frame" criterion — **Story 7.18a**, which builds
 >    Pre-flight and the server step that compiles and gates a real project;
-> 2. "**Owner test:** yes (a failure message)." — **Story 7.18**, whose own owner test covers it beside the theme
+> 2. "**Owner test:** yes (a failure message)." — **Story 7.18a**, whose own owner test covers it beside the theme
 >    checker's.
 >
 > **Given owners by Story 7.8's Create (2026-10-09), so none is missed (R-195).**
 >
 > 1. showing the quality verdict in Pre-flight, storing it with the deploy (`deploy_jobs.error` for a blocking finding;
 >    a new column beside `deploys.gscan`, a `Schema` push first), recording the gate's time per deploy
->    (`deploy_jobs.stage_timings`, AD-34) and showing `refs[0]` by its canvas label — **Story 7.18**;
+>    (`deploy_jobs.stage_timings`, AD-34) and showing `refs[0]` by its canvas label — **Story 7.18a**;
 > 2. the gate over every design's synthetic theme at zero findings of either level — **Story 7.33**;
 > 3. axe-core's agreement with the gate over every design's pages — **Story 7.33**.
 >
@@ -2979,7 +2979,7 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > **Given owners by Story 7.10's Create (owner, 2026-10-10), so none is missed (R-195).**
 >
 > 1. Pre-flight names any setting already deployed that this deploy would drop, and says Ghost will forget its value —
->    **Story 7.18** (Question 2, option 2): Ghost deletes a stored theme setting's value when a theme without its key is
+>    **Story 7.18b** (Question 2, option 2): Ghost deletes a stored theme setting's value when a theme without its key is
 >    activated, read in its source on both majors;
 > 2. the hand test of promoting a picture — **Story 9.1** (Question 4, option 1), whose headers carry A1's authored logo,
 >    the first picture a customer chooses on a real project (DW-150); Story 7.10 builds picture promotion and proves it by
@@ -2988,9 +2988,9 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > **Given owners by Story 7.10's Review (2026-10-10), so none is missed (R-195).**
 >
 > 1. a promoted setting the compile refuses that Theme settings shows as healthy, said in Pre-flight in plain words, and an
->    "Only show when" dropped for a parked setting named there — **Story 7.18** (DW-353);
+>    "Only show when" dropped for a parked setting named there — **Story 7.18a** (DW-353);
 > 2. `custom_settings.bound_to`'s column comment brought to its three shapes in that story's `Schema` migration —
->    **Story 7.18** (DW-355);
+>    **Story 7.18a** (DW-355);
 > 3. a promoted picture's `srcset` over a section's own picture, on both branches — **Story 7.29** (DW-354).
 >
 > **Given owners by Story 7.11's Create (2026-10-14; Question 2 ruled option 1 by the owner), so none is missed (R-195).**
@@ -2999,17 +2999,17 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    `{{comments}}` before A28;
 > 2. Pre-flight naming each of the two built-ins whose starting value has changed since the last deploy — the dark accent after a
 >    Style Pack switch, the colour scheme after a project-mode switch — with what Ghost keeps and a link to Ghost's Design panel —
->    **Story 7.18**, word for word on its card: Ghost keeps a stored value across a new default (MEASUREMENTS §78).
+>    **Story 7.18b**, word for word on its card: Ghost keeps a stored value across a new default (MEASUREMENTS §78).
 >
 > **Given owners by Story 7.12's Create (2026-10-15; Question 1 ruled option 1 by the owner), so none is missed (R-195).**
 >
 > 1. FR-Q6's warning before a switch to a site whose locale differs, the language a project takes when it is first linked
 >    in the deploy wizard, the RTL language **repeated as a pre-deploy warning** (blocking while it is unacknowledged), and
->    the warning that a non-English project's language differs from its site's locale — **Story 7.18**, word for word on
+>    the warning that a non-English project's language differs from its site's locale — **Story 7.18b**, word for word on
 >    its card: the site is chosen at its destination step and Pre-flight is its surface.
 >
 > 2. the deploy check repeating, as a warning and never a block, the list of sections whose starting words a non-English
->    project never retyped — **Story 7.18** (Question 1, ruled option 1, owner, 2026-10-15; DW-145), word for word on its
+>    project never retyped — **Story 7.18b** (Question 1, ruled option 1, owner, 2026-10-15; DW-145), word for word on its
 >    card; Story 7.12 builds the list on Translations and the function both read.
 
 >
@@ -3026,11 +3026,11 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 4. a route-reached custom template offered only its route's `data:` keys (DW-126) — **Story 7.16b**;
 > 5. a routed template's own warning words in place of D5f's, and the editor handed the routed list (DW-344's editor
 >    half) — **Story 7.16b**;
-> 6. a YAML error "blocking the deploy with the reason on the Ship button" — **Story 7.18**, which builds Ship it.
+> 6. a YAML error "blocking the deploy with the reason on the Ship button" — **Story 7.18a**, which builds Ship it.
 >
 > **Moved from Story 7.16b by its Question 1 (owner, 2026-10-17, R-249), word for word, so none is missed (R-195).** Story
 > 7.16b keeps the editor's half without a post list, and **Story 7.16c**, straight after it, takes a collection's and a
-> channel's own post list. Both land before Story 7.18 deploys anything.
+> channel's own post list. Both land before Story 7.18a deploys anything.
 >
 > 1. the canvas sizing a main feed by its route's own `limit:`, and a channel or collection template given its main feed at
 >    creation (FR-H2, DW-252) — **Story 7.16c**;
@@ -3040,14 +3040,31 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    `noindex` guard, and the canvas's Home feed against the live `/`'s unowned posts (FR-H3) — **Story 7.16c**.
 >
 > **Moved from Story 7.17 by its Questions 1 and 3 (owner, 2026-10-18, R-254, R-256), word for word, so none is missed
-> (R-195).** Story 7.17 builds the upload step and the B16 card; Ship it is 7.18's.
+> (R-195).** Story 7.17 builds the upload step and the B16 card; Ship it is 7.18a's.
 >
 > 1. "**Given** a project with routing and a Staff Access Token **When** it deploys **Then** `routes.yaml` is uploaded
 >    **automatically**", "the fallback card matches B16 as corrected" as the card's hand test, and **Owner test:** yes for it —
->    **Story 7.18**, whose Ship it runs Story 7.17's `offerRoutes` after activation and opens the card at its ending;
+>    **Story 7.18a**, whose Ship it runs Story 7.17's `offerRoutes` after activation and opens the card at its ending;
 > 2. "**two routes are emitted on demand and only when a design that links to them is actually placed** — all-tags and
 >    all-authors" — **Story 9.12**, whose A3 #13 Tags is the library's first link to a tag index, and whose Create settles
 >    FR-F8 against FR-I5.
+>
+> **Moved from Story 7.18 by its Question 1 (owner, 2026-10-18, R-259), word for word, so none is missed (R-195).** Story
+> 7.18 is split: **Story 7.18a** builds the deploy wizard and ships; **Story 7.18b**, straight after it, choosing the site and
+> Pre-flight's warning-only rows; **Story 7.18c**, after that, the editor's lock and save leftovers. Every "Story 7.18"
+> this file wrote before 2026-10-18 now names the part that holds its item.
+>
+> 1. FR-D16's Pre-flight member-state row, FR-H2's two warnings (DW-253), FR-H6's member-switch sentences (DW-260), the
+>    free member ask below Ghost 5.62 with its question to the owner (DW-297), the deployed settings a deploy would drop
+>    (Story 7.10's Question 2), the two built-ins whose start changed (Story 7.11's Question 2), the locale switch warning,
+>    the first-link language, the RTL repeat and the locale mismatch (Story 7.12's Create), the untouched starting words
+>    (Story 7.12's Question 1), and Switch itself (FR-B5) — **Story 7.18b**;
+> 2. a save refused for good, with its question to the owner (DW-304), the lock row's per-page id with its `Schema` push
+>    (DW-307), and the first-moment typist turned reader (DW-308) — **Story 7.18c**;
+> 3. from **Story 7.32**: (4), (5), "the wizard state matches D2e" and "the deploy-only ending matches D2f", with the
+>    one-click activate — **Story 7.18a**, because "Deploy only" needs its ending; 7.32 keeps the history row, D2d;
+> 4. the rail's growth to six on a site's first deploy — **Stories 7.19 and 7.20**, whose Safety net and Backup steps join
+>    7.18a's rail; and the routes upload inside AD-19's lock span — **Story 7.25**, which builds the lock.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3364,7 +3381,7 @@ is judged as the target's own gate judges it on upload; **a gscan upgrade lands 
 full re-run of the whole inventory, never silently** *(as landed: the bump procedure in
 `packages/theme-compiler/fixtures/gscan/README.md`; this said one gscan for every target, corrected to R2-2's two)*
 **And** there is **one error envelope and one gscan mapping** (AD-24)
-**And** *(moved word for word to Story 7.18 by Question 2, ruled option 1, owner, 2026-10-09, R-195: "the Pre-flight
+**And** *(moved word for word to Story 7.18a by Question 2, ruled option 1, owner, 2026-10-09, R-195: "the Pre-flight
 step matches S8b as extended")*
 **And** *(Story 7.3, 2026-10-06; DW-341)* a theme in which no template reads Ghost's page switch — a designed Page
 with no Post header, or an untouched Page the library leaves with no section and so not emitted (7.3's Question 1,
@@ -3385,8 +3402,8 @@ rules — the runtime's escaper and the boundary comment write one character of 
 `GSCAN_INERT`) — and a visitor reads the typed text. gscan's recommendations are not shown: Ghost's own upload answer
 carries errors and warnings alone. CI (`check-snapshots`) holds the pilot theme's verdicts on both checkers.
 
-**FRs:** FR-J6. · **Frame:** none — `S8 Deploy.dc.html` S8b moved to Story 7.18 with the Pre-flight line (Question 2,
-owner, 2026-10-09). · **Owner test:** none — its hand test moved word for word to Story 7.18; this story is Done on its
+**FRs:** FR-J6. · **Frame:** none — `S8 Deploy.dc.html` S8b moved to Story 7.18a with the Pre-flight line (Question 2,
+owner, 2026-10-09). · **Owner test:** none — its hand test moved word for word to Story 7.18a; this story is Done on its
 Deploy commit (R-80). · **Verification:** gscan 4.49.7 at `v5` and 6.4.2 at `v6`; T1 (R-238 — the Ghost 5 half is
 DW-326's), MEASUREMENTS §76.
 
@@ -3419,7 +3436,7 @@ fail on a customer's content
 
 *(Story 7.8's Dev, 2026-10-09 — as landed: `@inflozo/theme-compiler/gate`'s `qualityGate(files, { pack, library })`, core, beside `gscanGate`; its rules are `QUALITY_RULES`, each naming the axe-core 4.12.1 rule it follows; AD-34's leak assertions are `leftovers`; the required set is `requiredTemplates(library)`. Contrast is `contrast_low`, always a warning (DW-315 closed). The Baseline floors — DW-137's markup and DW-139's functions and at-rule forms, with the emitted CSS — are held by `check-baseline` in CI rather than at deploy, because nothing a customer chooses adds an element, an attribute or a stylesheet feature. Re-run on both pins, the premise theme scores 0 errors and one warning, `GS051-CUSTOM-FONTS`, on each, and 0/0 with Ghost's two font variables (FR-J17's dated note). Casper 5.12.1 and Source 1.7.1 pass gscan 6.4.2 at `v6` 0/0 and each fail the gate, every finding real against their source.)*
 
-**FRs:** FR-J17. · **Frame:** none — moved word for word to Story 7.18 (Question 1, ruled option 1, owner, 2026-10-09). · **Owner test:** none — the failure-message hand test moved word for word to Story 7.18 (Question 1); Done on its Deploy commit (R-80). ·
+**FRs:** FR-J17. · **Frame:** none — moved word for word to Story 7.18a (Question 1, ruled option 1, owner, 2026-10-09). · **Owner test:** none — the failure-message hand test moved word for word to Story 7.18a (Question 1); Done on its Deploy commit (R-80). ·
 **Verification:** run against Casper and Source as the negative control (`node tools/quality-gate.mjs`); `pnpm check` (the gate's I/O matrix, the presets and the premise on both pinned gscans; `check-snapshots`' pilot verdict and axe-core's agreement; `check-baseline`'s floors); the stress fixture's measured gate; T1 renders the pilots and a planted probe, and axe-core on Ghost's real pages agrees with the gate (MEASUREMENTS §77).
 
 ### Story 7.9: Theme Settings and the custom-settings builder
@@ -3566,7 +3583,7 @@ when without its Default list.
 **And** *(Question 2, option 2, owner, 2026-10-10 — read in Ghost's source at this story's Create, both majors: a deploy
 that leaves a key out makes Ghost delete the value stored for it)* once a key is frozen, the shuffle note adds "Deploy
 before you switch back and Ghost forgets what your site's owner chose."; Story 7.9's frozen-delete sentence says the
-value comes back only if the key is promoted again before the next deploy; and Story 7.18's Pre-flight names any setting
+value comes back only if the key is promoted again before the next deploy; and Story 7.18b's Pre-flight names any setting
 already deployed that a deploy would drop, on its card word for word.
 **And** *(Question 3, option 1, owner, 2026-10-10)* Site basics' accent row says plainly that Ghost's own comments and
 card buttons take Ghost's accent — its "which your Style Pack maps to its accent role" is not true and is corrected — with
@@ -3897,7 +3914,7 @@ in the page's Templates list, for a Ghost page or another route
 **And** *(R-245)* the editor's Template menu ends with **Manage routes**, which opens this page
 **And** with no routing the empty state is S9d's — "Your site uses Ghost's default routing. Nice and simple."
 (UX-DR6) — and a YAML error is S9b's line-numbered error ~~blocking the deploy with the reason on the Ship button~~
-*(moved to Story 7.18, which builds Ship it, R-245)*
+*(moved to Story 7.18a, which builds Ship it, R-245)*
 **And** the surfaces match S9a, S9b, S9d, S9c and S9e as re-specified.
 **And** ~~a custom template reached through a route this flow authors is offered only what that route supplies — appendix B.1 §3's route form, a flat root carrying exactly its `data:` keys — derived from the route, not the matrix's Admin-entry row for `custom-{name}.hbs` (DW-126).~~ *(moved to Story 7.16b, R-245)*
 **And** ~~a custom template a route names keeps shipping when every section is deleted — FR-I1's class that does not
@@ -3905,7 +3922,7 @@ stop, built by Story 7.3 as `compileTheme`'s `routed` input, which this story ha
 ("This template stops shipping") is not its sentence: **the warning before the last section leaves a routed template
 is this story's, in its own words** *(Story 7.3, 2026-10-06)*.~~ *(moved to Story 7.16b, R-245;
 this story keeps the routed list itself: `routedOf(config)` names the `custom-*.hbs` files a route names, which
-Story 7.18, `compileTheme`'s first product caller, hands in)*
+Story 7.18a, `compileTheme`'s first product caller, hands in)*
 **And** ~~routes reach the two rules Story 7.3 wrote without them (DW-344): the editor is handed which `custom-*.hbs` files a route names, so D5f's "stops shipping" is never said of a routed template; and a main collection moved off `/` renders `/page/N/` in a context named after the route, not `index`, so FR-H2's `noindex` guard (`compileTheme`'s `PAGED_CONTEXTS`) names that context too, or this story records why it need not.~~ *(moved to Story 7.16b, R-245, its second half on to Story 7.16c, R-249; this story records the root half: Inflozo always emits the index collection at `/`, last, so Home's context stays `index` — `collection-router.js:21`, read and executed at 7.16's Create)*
 **And** *(given an owner by Story 7.15's Review, 2026-10-16 — **DW-361**)* `VERIFY-AT-BUILD.md` uses item numbers 59 and 60 twice each, and this story is the first to cite the first register's 60 (a collection's per-route `limit:`): before it cites it, the second register's 59 and 60 take the next free numbers and every live citation of them is repointed, a closed spec or `record` document keeping its words with a dated note
 
@@ -3968,7 +3985,7 @@ So that the page at `/tutorials/` shows the tutorials, as many to a page as I ch
 
 *(Story 7.16b's Question 1, ruled option 1, owner, 2026-10-17 — **R-249**: every criterion below moved here from Story
 7.16b word for word (R-195); this story runs straight after Story 7.16b, which opens Routes Manager templates on the
-canvas, and before Story 7.18 deploys anything.)*
+canvas, and before Story 7.18a deploys anything.)*
 
 **Given** a collection or channel template made in the Routes Manager (Story 7.16a) and opened on the canvas (Story 7.16b)
 **When** I design it
@@ -4048,8 +4065,8 @@ story's Create (R-83).
 
 *(Story 7.17's Create, its five questions ruled option 1 by the owner, 2026-10-18 — "Agree with all recommended.")* **R-254:**
 this story builds the upload step (`offerRoutes`: the staff token, an unchanged file skipped, a byte-for-byte read-back) and the
-B16 card on Routes & Templates and the Sites card; Story 7.18's Ship it calls it after activation, and the card's hand test
-moves to 7.18 word for word (Epic 7's preamble). **R-255:** a project at Ghost's default routing puts Ghost's default file back
+B16 card on Routes & Templates and the Sites card; Story 7.18a's Ship it calls it after activation, and the card's hand test
+moves to 7.18a word for word (Epic 7's preamble). **R-255:** a project at Ghost's default routing puts Ghost's default file back
 only over a file Inflozo put there (`routes_last_offered`); a file anyone else wrote stays. **R-256:** the two routes emitted
 on demand move word for word to **Story 9.12**, whose Create settles FR-F8 against FR-I5. **R-257:** while the stored routing
 cannot be read, each template keeps the main feed its doc flags (DW-366). **R-258:** Routes & Templates tells an editor open in
@@ -4061,7 +4078,11 @@ no menu path and links Ghost's routing guide; the T1 half is §85 and the Ghost 
 **FRs:** FR-I4, FR-I5. · **Frame:** `B Missing Surfaces.dc.html` B16. · **Owner test:** yes. · **Verification:**
 a real upload and byte-comparison read-back on T1 and T3 (R-82).
 
-### Story 7.18: The deploy wizard
+### Story 7.18a: The deploy wizard
+
+*(Story 7.18 split by its Question 1 — owner, 2026-10-18, **R-259**: this card keeps shipping; **Story 7.18b**, straight
+after it, takes choosing the site and every warning-only Pre-flight row, and **Story 7.18c**, after that, the editor's
+lock and save leftovers, each criterion word for word; Story 7.32's wizard half comes here, below.)*
 
 As a user ready to ship,
 I want a wizard that compiles, checks, uploads and activates,
@@ -4089,56 +4110,23 @@ mismatch; Starter-plan block
 **And** the wizard requires the **edit lock**, so a stale cloud snapshot can never silently ship
 **And** **`⌘⏎` is bound HERE** — the last key of FR-D11's map, landing with the action it drives and joining
 Story 5.9's one table and its `?` card; **with it the map is complete** (**R-145**)
-**And** **Pre-flight lists every canvas that ships with a member state nobody has looked at** (FR-D16, the pre-deploy
-half of Story 5.14's nudge): it reads `project_template_prefs.member_states_viewed` through `lib/view-as.ts`'s
-`unviewed` for each canvas the deploy compiles, names the canvas and the visitors still unviewed, and **never blocks**
-— the row reminds and Ship it stays pressable; R-167 decides when a record runs out, so an edit since the last look
-puts the canvas back on this list
-**And** **Pre-flight warns, and never blocks, on FR-H2's two cases** (DW-253): a Tag or Author page with no visible
-feed — its `/page/N/` would repeat page 1, and the compiled guard (Story 7.3) keeps it out of search — and any
-template whose hand-picked lists together pass 25 picks, naming the template and the total, because **the budget is
-per page, not per section**
 **And** in the compact bar (Story 5.22, D8a · D8b) Ship it stays in the bar, right of ⋯, and is 44px on a touch screen
 **And** the screens match S8a, S8b, S8c, S8d and S8d′ on failure.
 
-**And** *(Story 5.20, DW-260)* **Pre-flight repeats FR-H6's member-switch warnings**: it reads the site's one record,
-`sites.site_settings.members` (`storedMembers`), and where members are off, or free or paid sign-ups cannot be taken,
-lists the same sentences the Sites screen shows (`membersNotice`, `apps/web/lib/paywall.ts`) beside any placed member
-ask or designed paywall — never for a synthesised instance, and nothing for a site with no record yet (R-4)
-**And** a free member ask compiled for a site whose Ghost is older than 5.62 — where `@site.allow_self_signup` does not
-exist, so R-4's guard hides every free ask — is named in Pre-flight, and this story's Create asks the owner (R-83)
-whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** the upload goes through the Admin chokepoint, which sends JSON only today: a `FormData` body passes untouched with no `Content-Type` set by Inflozo, proved by the first real upload to T1 and T3; Story 7.17's `routes_upload` uses the same shape (DW-51). *(Story 7.17's Create, R-254: Story 7.17 lands that transport
 — `adminRequest`, a `FormData` passed untouched — for `routes_upload`; this story's theme upload uses it, and its proof on T1
 stays this story's.)*
 **And** once the first allowed Ghost write exists, the chokepoint's refusal is driven live: the harness asks the deploy path for a write outside `ADMIN_WRITES` and reads a `denied` audit row with no request reaching T1, beside the real upload's `admin_write` row (DW-54).
 **And** pressing Ship it in a session reading along first opens D8g's take-over (`lock-takeover.tsx` with D8g's strings), and the wizard never starts without the lock (DW-238).
-**And** a save the server refuses for good — the project deleted in another window, or this browser now signed in to another account (404), or a document it will not take (400, 422) — stops saying the work will be sent "when the connection returns", in the editor's save message and in Pre-flight's own flush; this story's Create asks the owner (R-83) for the sentence (DW-304, from Story 5.24e's Create, 2026-10-02).
-**And** closing the editing window while it checks in with the server frees the lock within a check-in, as any other close does: the lock row gains a per-page id (a migration, pushed first as `Schema`, R-99) so a going page's `leave` matches its own page's beat whatever landed since, and a reload still keeps its lock (DW-307, from Story 5.24e's Dev, 2026-10-02; R-228 accepted the wait until then).
-**And** a window that typed in its first moment — before the server answered that another session is editing — is told what it holds when it turns read-only, as a displaced session is told: "This session had N unsynced edits; they were not included." (`LOCK_COPY.displaced`), in memory only, never resetting the on-device record the holder shares (DW-308, from Story 5.24e's review, 2026-10-02).
 **And** *(moved word for word from Story 7.6's Question 2, ruled option 1, owner, 2026-10-08, DW-349)* **a typed text the customer empties is hidden, on the canvas and in the theme alike**: deleting every word of a section's typed text (A22 #1's heading, A4 #13's headline) removes that element, and typing in the sidebar's text box brings it back. The design's sample English never ships in its place, because V1 refuses it and Story 7.6's `checkChromeText` makes the compile throw on it. A text the catalog supplies (S6, such as a Subscribe label) still returns as its `{{t}}` string, and the owner's hand test covers the empty, the hidden line and the way back.
 **And** *(moved word for word from Story 7.7 by its Question 2, ruled option 1, owner, 2026-10-09, R-195)* the Pre-flight step matches S8b as extended. — with Story 7.7's hand test (its card's "**Owner test:** yes."), which this story's owner test now covers: Pre-flight's Checking row shows `gscanGate`'s verdict (`@inflozo/theme-compiler/gate`) in its sentences, errors blocking and warnings deployable — e.g. a project whose Page template has no Post header shows "0 errors · 1 warning" with the page-switch sentence, and Ship it still works. The verdict is stored as `deploys.gscan`, and a blocking finding as `deploy_jobs.error`, each field rendered as text, never as HTML (Story 7.7's spec, § What the gate returns).
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* Ghost's raw `500` when two uploads of one theme name collide — its message carries `EEXIST … mkdir '/var/…'`, a server path — is mapped to AD-24's own sentence ("another deploy to this site is already running — try again in a moment") and never passed through.
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* the deploy function carries both pinned checkers — `gscan4` (4.49.7, from `packages/theme-compiler/vendor/`) and `gscan6` (6.4.2) — and runs `gscanGate` for the site's major, proved on Vercel within the function's limits (Story 7.7 measured the two trees at hundreds of packages installed).
 **And** *(moved word for word from Story 7.8 by its Question 1, ruled option 1, owner, 2026-10-09, R-195)* "**Frame:** `S8 Deploy.dc.html` S8b." and "**Owner test:** yes (a failure message)." — the Pre-flight step matches S8b as extended, and this story's owner test covers one failure message of the quality gate, beside the theme checker's.
 **And** *(given an owner by Story 7.8's Create, 2026-10-09)* Pre-flight runs `qualityGate` (`@inflozo/theme-compiler/gate`) on the same compile as `gscanGate` and shows its rows beside gscan's in S8b as extended: errors block and warnings deploy — e.g. a project whose post grid's title was deleted on Home shows "Checking your theme — 0 errors · 1 warning" with the heading sentence, and Ship it still works. Its verdict is stored with the deploy beside `deploys.gscan` (a new column is a `Schema` push first, R-99), a blocking finding is stored as `deploy_jobs.error`, the gate's time goes in `deploy_jobs.stage_timings` (AD-34), and each finding's `refs[0]` is shown by its canvas label (`CANVASES`, R-170), never as a file name — and a finding whose `refs[0]` is not a template (`template_missing`, `build_leftover`, `contrast_low`) shows its message alone.
-**And** *(given an owner by Story 7.10's Create, its Question 2, ruled option 2, owner, 2026-10-10, word for word — R-195)* **Pre-flight names any setting already deployed that this deploy would drop, and says Ghost will forget its value.** Read in Ghost's source at Story 7.10's Create, both majors: activating a theme deletes the stored value of every setting whose key the theme no longer declares (`core/shared/custom-theme-settings-cache/custom-theme-settings-service.js:214-266` in 6.58.0; `CustomThemeSettingsService.js:175-227` in 5.130.6), so a setting deleted in Theme settings, or parked because its section moved to a design without its control, loses what the site's owner chose at this deploy and comes back, if ever, at its starting value. Story 7.10's `compileTheme` returns `custom: { emitted, parked }`; the keys the site already holds are its last deploy's `config.custom`.
 **And** *(given an owner by Story 7.10's Review, 2026-10-10 — DW-353)* Pre-flight says in plain words, naming the setting, each case `compileTheme` refuses that Theme settings shows as healthy — a promoted setting whose section prints nothing that reads it (a hand-picked list with nothing picked; a picture's description on a section with no picture), a shuffle onto a design that declares the control as another kind, two settings stored for one control by two promotes in one instant — instead of the compile's own sentence ("… is declared and nothing reads it … (GS100, GS090)"), and names an "Only show when" the theme drops because its setting is parked; closing the two-promote window in the database (a unique `bound_to` per project) is this story's Create's question if it is wanted.
 **And** *(given an owner by Story 7.13's Review, 2026-10-16 — DW-358)* where `compileTheme` refuses the project's stored card designs (a record `card_designs`' one schema refuses), Pre-flight says so in plain words and links Editor cards, where one card change — or Reset to Ghost default on any card — saves a readable record over it; the compile's own sentence ("card designs: … The build stops …") never reaches the customer.
 **And** *(given an owner by Story 7.10's Review, 2026-10-10 — DW-355)* this story's `Schema` migration also corrects `custom_settings.bound_to`'s column comment to the three shapes `custom-settings.ts`'s `Binding` states — `control`, `prop` and `token` — in the migration and in the architecture's `SCHEMA.sql`.
-**And** *(given an owner by Story 7.11's Create, its Question 2, ruled option 1, owner, 2026-10-14, word for word — R-195)* **"Say it at deploy. Story 7.18's deploy check names each of the two whose starting value has changed since your last deploy, says what Ghost keeps, and links to Ghost's Design panel."** The two are Story 7.11's built-ins: `dark_accent_color`, which starts at the Style Pack's dark accent, and `color_scheme`, which starts on Auto for a Light + Dark project and on Light for a Light only one (Story 7.11's Question 1, ruled option 1). Ghost seeds a new key from its default and keeps a stored value across a new default (read in source: 6.58.0 `custom-theme-settings-service.js:242-260`, 5.130.6 `CustomThemeSettingsService.js:203-221`; executed on T1, MEASUREMENTS §78), so a Style Pack switch, or a Light only → Light + Dark switch, after a site's first deploy leaves the value Ghost already holds. "Since your last deploy" compares this compile's starts with the last deploy's `config.custom`. What Ghost keeps is the value it already holds — the start an earlier deploy gave it, unless the site's owner changed it there; whether Pre-flight also reads Ghost's stored value is this story's Create's to decide. Nothing writes to the site that does not today (AD-10's four writes are unchanged).
-**And** *(given an owner by Story 7.12's Create, 2026-10-15, word for word — R-195)* **switching to a site whose locale differs
-warns before the switch**, because the overrides were written in the old language — where step 1's destination links
-the project to a site other than its linked one (FR-B5), the warning names both languages before the switch; a project
-linked to a site for the first time there takes `languageAtLink` of the site's locale; an RTL project language is
-**repeated as a pre-deploy warning** in Pre-flight, which **blocks** while `projects.rtl_ack_at` is empty and links to
-Translations; and Pre-flight warns when the project's language is not `en` and differs from the site's stored locale,
-because Ghost reads `locales/<its own locale>.json`, exactly.
-**And** *(given an owner by Story 7.12's Create, its Question 1, ruled option 1, owner, 2026-10-15, word for word — R-195)* **"On a
-non-English project, Translations lists every section with untouched starting words, each with an Edit link to its canvas,
-and the deploy check (Story 7.18) repeats the list as a warning — never a block."** — Pre-flight's half: the list
-`untouchedWords` (Story 7.12) gives, for a project whose language is not `en`, each section named by its layer and canvas
-with its untouched words (DW-145).
 **And** *(moved word for word from Story 7.16 by its Question 1, ruled option 1, owner, 2026-10-16 — R-245, R-195)* a YAML
 error is S9b's line-numbered error **blocking the deploy with the reason on the Ship button** — the error and its line
 read from Story 7.16a's `validateRoutes` over the project's stored routes *(Story 7.16a's Dev, 2026-10-17, its
@@ -4149,6 +4137,7 @@ button exists before this story.
 (S9b's line 1 — a row no sheet writes, by hand or by a later build's grammar), the reason on the Ship button also says
 how to get out of it: the Routes page then draws no list and opens no sheet, so this story's Create asks the owner
 (R-83) for that way out — a reset to Ghost's default routing on the Routes page, or the reason alone.
+*(**Ruled — R-261**, Story 7.18's Question 3, owner, 2026-10-18: a **"Start again"** on Routes & Templates, confirmed first, replaces the unreadable routing with Ghost's default and keeps the templates; the reason on the Ship button links there.)*
 *(Reading, from Story 7.16b's Dev, 2026-10-17 — routine call 11)* the compile is handed only the docs of the membership
 canvases and of the project's CURRENT Routes Manager templates (`custom_templates` of kind `routes`): a `custom:` doc whose
 template row is gone — the moment between a template delete's doc and row steps, or a save that landed in it — is no
@@ -4160,6 +4149,7 @@ the main feed over the route's native posts, and a feed-less one puts its contex
 Routes Manager file compiles as the route form and a feed there as a secondary `{{#get}}` — wrong for a collection's template.
 And before the first deploy uploads a `routes.yaml`, this story settles **DW-364** with the owner (R-83): with Inflozo's emitted
 index filter, a post with no tags (or an internal first tag) is listed on no page once a collection filters by Primary tag.
+*(**Ruled — R-260**, Story 7.18's Question 2, owner, 2026-10-18: Inflozo fixes what it writes — Home also lists posts with no primary tag, the exact wording proved with Ghost's own code and on T1 before any Ship it uploads a routing, and stopping to ask if Ghost cannot say it — **and** Pre-flight adds a check that names the posts no page would list.)*
 And *(DW-369 — from Story 7.16c's Review, 2026-10-18)* before it hands `lists` to the compile, `validateRoutes` refuses at the
 naming step a collection or channel path whose context FR-H2's guard names itself (`/paged/`, `/index/`, `/tag/`,
 `/author/`), which `compileTheme` now refuses.
@@ -4184,8 +4174,89 @@ EXPERIENCE F3's *could not verify* state — or, if that needs a stored cause, t
 **And** the compile is handed `routes` (the bytes `offerRoutes` offers, or null) beside `routed` and `lists`, so the README
 carries Story 7.17's routes step.
 
-**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
-**Verification:** real deploys to T1 and T3 (R-82).
+*(Moved word for word from Story 7.32 by Story 7.18's Question 1 — owner, 2026-10-18, **R-259**: "Deploy only" needs its
+ending, and Ghost's "uploaded but not switched on" is that same state.)* **And** **(4)** the site's active theme is **still
+the previous one, untouched** — nothing is half-applied
+**And** **(5)** the user is told plainly — **"Your theme is on your site but isn't live yet"** — with a
+re-activate action, because "failed" would be wrong and silence would be worse
+**And** the wizard state matches D2e, and the deploy-only ending matches D2f —
+"Uploaded on purpose, not live, with Activate one click away" (UX-DR7).
+
+**FRs:** FR-J8 (the wizard, and the partial-success half's wizard states from Story 7.32), FR-D11 (⌘⏎), FR-J17 (Pre-flight's
+quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′ · `D2 Deploy History Completed.dc.html` D2e ·
+D2f. · **Owner test:** yes. · **Verification:** real deploys to T1 (R-82; T1 only by R-238, the Ghost 5 half DW-326's).
+
+### Story 7.18b: Choosing the site, and Pre-flight's warnings
+
+*(Split from Story 7.18 by its Question 1 — owner, 2026-10-18, **R-259**. Every criterion below moved here word for word,
+but the first, which is R-259's own; it runs straight after Story 7.18a, whose wizard and Pre-flight it extends.)*
+
+As a user about to ship,
+I want to choose where my site goes and to be reminded of what I may have missed,
+So that nothing surprises me after it is live.
+
+**Acceptance Criteria:**
+
+**Given** the deploy wizard's Destination step (Story 7.18a)
+**When** the user presses **Switch**
+**Then** *(R-259)* the project can be linked to another of the user's connected sites — FR-B5, "a project targets at most
+one connected site at a time (switchable)" — from a picker extrapolated from S8a, where Story 7.18a leaves Switch absent
+**And** *(given an owner by Story 7.12's Create, 2026-10-15, word for word — R-195)* **switching to a site whose locale differs
+warns before the switch**, because the overrides were written in the old language — where step 1's destination links
+the project to a site other than its linked one (FR-B5), the warning names both languages before the switch; a project
+linked to a site for the first time there takes `languageAtLink` of the site's locale; an RTL project language is
+**repeated as a pre-deploy warning** in Pre-flight, which **blocks** while `projects.rtl_ack_at` is empty and links to
+Translations; and Pre-flight warns when the project's language is not `en` and differs from the site's stored locale,
+because Ghost reads `locales/<its own locale>.json`, exactly.
+**And** **Pre-flight lists every canvas that ships with a member state nobody has looked at** (FR-D16, the pre-deploy
+half of Story 5.14's nudge): it reads `project_template_prefs.member_states_viewed` through `lib/view-as.ts`'s
+`unviewed` for each canvas the deploy compiles, names the canvas and the visitors still unviewed, and **never blocks**
+— the row reminds and Ship it stays pressable; R-167 decides when a record runs out, so an edit since the last look
+puts the canvas back on this list
+**And** **Pre-flight warns, and never blocks, on FR-H2's two cases** (DW-253): a Tag or Author page with no visible
+feed — its `/page/N/` would repeat page 1, and the compiled guard (Story 7.3) keeps it out of search — and any
+template whose hand-picked lists together pass 25 picks, naming the template and the total, because **the budget is
+per page, not per section**
+**And** *(Story 5.20, DW-260)* **Pre-flight repeats FR-H6's member-switch warnings**: it reads the site's one record,
+`sites.site_settings.members` (`storedMembers`), and where members are off, or free or paid sign-ups cannot be taken,
+lists the same sentences the Sites screen shows (`membersNotice`, `apps/web/lib/paywall.ts`) beside any placed member
+ask or designed paywall — never for a synthesised instance, and nothing for a site with no record yet (R-4)
+**And** a free member ask compiled for a site whose Ghost is older than 5.62 — where `@site.allow_self_signup` does not
+exist, so R-4's guard hides every free ask — is named in Pre-flight, and this story's Create asks the owner (R-83)
+whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
+**And** *(given an owner by Story 7.10's Create, its Question 2, ruled option 2, owner, 2026-10-10, word for word — R-195)* **Pre-flight names any setting already deployed that this deploy would drop, and says Ghost will forget its value.** Read in Ghost's source at Story 7.10's Create, both majors: activating a theme deletes the stored value of every setting whose key the theme no longer declares (`core/shared/custom-theme-settings-cache/custom-theme-settings-service.js:214-266` in 6.58.0; `CustomThemeSettingsService.js:175-227` in 5.130.6), so a setting deleted in Theme settings, or parked because its section moved to a design without its control, loses what the site's owner chose at this deploy and comes back, if ever, at its starting value. Story 7.10's `compileTheme` returns `custom: { emitted, parked }`; the keys the site already holds are its last deploy's `config.custom`.
+**And** *(given an owner by Story 7.11's Create, its Question 2, ruled option 1, owner, 2026-10-14, word for word — R-195)* **"Say it at deploy. Story 7.18's deploy check names each of the two whose starting value has changed since your last deploy, says what Ghost keeps, and links to Ghost's Design panel."** The two are Story 7.11's built-ins: `dark_accent_color`, which starts at the Style Pack's dark accent, and `color_scheme`, which starts on Auto for a Light + Dark project and on Light for a Light only one (Story 7.11's Question 1, ruled option 1). Ghost seeds a new key from its default and keeps a stored value across a new default (read in source: 6.58.0 `custom-theme-settings-service.js:242-260`, 5.130.6 `CustomThemeSettingsService.js:203-221`; executed on T1, MEASUREMENTS §78), so a Style Pack switch, or a Light only → Light + Dark switch, after a site's first deploy leaves the value Ghost already holds. "Since your last deploy" compares this compile's starts with the last deploy's `config.custom`. What Ghost keeps is the value it already holds — the start an earlier deploy gave it, unless the site's owner changed it there; whether Pre-flight also reads Ghost's stored value is this story's Create's to decide. Nothing writes to the site that does not today (AD-10's four writes are unchanged).
+**And** *(given an owner by Story 7.12's Create, its Question 1, ruled option 1, owner, 2026-10-15, word for word — R-195)* **"On a
+non-English project, Translations lists every section with untouched starting words, each with an Edit link to its canvas,
+and the deploy check (Story 7.18) repeats the list as a warning — never a block."** — Pre-flight's half: the list
+`untouchedWords` (Story 7.12) gives, for a project whose language is not `en`, each section named by its layer and canvas
+with its untouched words (DW-145).
+
+**FRs:** FR-B5 (the switch), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-H6 (its pre-deploy
+half), FR-Q6 (the locale warnings and the RTL repeat). · **Frame:** `S8 Deploy.dc.html` S8a (Switch) · S8b as extended. ·
+**Owner test:** yes. · **Verification:** real Pre-flights against T1 (R-82, R-238).
+
+### Story 7.18c: The editor's lock and save leftovers
+
+*(Split from Story 7.18 by its Question 1 — owner, 2026-10-18, **R-259**. Every criterion below moved here word for word;
+it runs after Story 7.18b.)*
+
+As a user editing in more than one window,
+I want the lock and the save message to tell the truth,
+So that I am never told work will be sent when it never can be, nor kept waiting by a tab I closed.
+
+**Acceptance Criteria:**
+
+**Given** the editor's lock and save (Stories 5.17, 5.24e)
+**When** any of the three cases below happens
+**Then** each is handled as it says
+**And** a save the server refuses for good — the project deleted in another window, or this browser now signed in to another account (404), or a document it will not take (400, 422) — stops saying the work will be sent "when the connection returns", in the editor's save message and in Pre-flight's own flush; this story's Create asks the owner (R-83) for the sentence (DW-304, from Story 5.24e's Create, 2026-10-02).
+**And** closing the editing window while it checks in with the server frees the lock within a check-in, as any other close does: the lock row gains a per-page id (a migration, pushed first as `Schema`, R-99) so a going page's `leave` matches its own page's beat whatever landed since, and a reload still keeps its lock (DW-307, from Story 5.24e's Dev, 2026-10-02; R-228 accepted the wait until then).
+**And** a window that typed in its first moment — before the server answered that another session is editing — is told what it holds when it turns read-only, as a displaced session is told: "This session had N unsynced edits; they were not included." (`LOCK_COPY.displaced`), in memory only, never resetting the on-device record the holder shares (DW-308, from Story 5.24e's review, 2026-10-02).
+
+**FRs:** none new (AD-15's lock; R-228 accepted the wait until now). · **Frame:** `B Missing Surfaces.dc.html` B5a (the
+reader's bar) · B6 (the save state). · **Owner test:** yes. · **Verification:** `pnpm keyboard`'s journeys and the deployed
+walk on production (R-82).
 
 ### Story 7.19: The first-deploy credential step, and its decline path
 
@@ -4212,6 +4283,8 @@ may decline permanently and still ship**
 **And** the token can be added later at any time from Manage keys, and adding it **enables the snapshot from that
 point forward** without pretending to reconstruct one
 **And** the screens match D1b and D1c declined.
+**And** *(Story 7.18's Question 1 — owner, 2026-10-18, R-259)* its **Safety net** step joins Story 7.18a's step rail
+(`STEPS`) between Destination and Check, so with Story 7.20's Backup the rail counts six on a site's first deploy (UX-DR19).
 
 **FRs:** the deploy-time half of FR-C1 (E7's by §8). · **Frame:** `D1 First-Deploy Gates.dc.html` D1b · D1c. ·
 **Owner test:** yes.
@@ -4265,6 +4338,8 @@ degraded snapshot states match B12a and B12b as corrected.
 
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* `GET /themes/` without the staff token — `501` on Ghost 5,
 `403` on Ghost 6 (VERIFY-AT-BUILD 9) — is read as **one Inflozo code**, never two answers by major.
+**And** *(Story 7.18's Question 1 — owner, 2026-10-18, R-259)* its **Backup** step joins Story 7.18a's step rail after
+Story 7.19's Safety net, making the first deploy's six steps (UX-DR19).
 
 **FRs:** FR-J13. · **Frame:** `D1 First-Deploy Gates.dc.html` D1d · D1d′ · D1e · `B Missing Surfaces.dc.html`
 B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 and restored (R-82).
@@ -4417,6 +4492,10 @@ one deploy costs $0.000427 — and sized to be invisible to every honest user
 **And** a failed upload **never leaves a partially active theme**
 **And** **the §4 test targets are exempt from the rate limit**, because a single DoD run is 30 serialized deploys
 which the limit alone would stretch past three hours before compile time.
+**And** *(given an owner by Story 7.18's Create, 2026-10-18 — R-254, R-259)* the lock's span also covers `offerRoutes`, which
+Story 7.18a's Ship it runs after activation; `apps/web/server/ghost-admin/db.ts` holds ONE pooled connection, and a `begin`
+block on it may not call `sql()`, which `call()` does for its decrypt and audit rows — so the lock cannot simply wrap the
+upload there, and this story's Create settles how it is held.
 
 **FRs:** FR-J11. · **Owner test:** none.
 
@@ -4527,7 +4606,7 @@ before that
 resizes theme-bundled assets and a `srcset` built from the wrong set is a live defect
 **And** nothing large crosses a function boundary (AD-13).
 **And** *(moved word for word from Story 7.4 by its Question 1, owner, 2026-10-08 — no picture of the customer's can sit
-in a section until Epic 8, and Pre-flight, where the size check speaks, is Story 7.18's; this story's planning decides how
+in a section until Epic 8, and Pre-flight, where the size check speaks, is Story 7.18a's; this story's planning decides how
 to prove both before Epic 8's pictures exist)* **only assets actually referenced** are copied into `assets/images/` with
 content-hashed filenames, **each as a fixed rendition set — 400 / 800 / 1600 px plus the original** — so `srcset` has
 real files behind it
@@ -4617,14 +4696,13 @@ active badge**, so a retry is a **one-click re-activation rather than a recompil
 **And** **(2)** the **theme name freezes**, because the name is claimed the moment a theme lands
 **And** **(3)** the **drift baseline does not move**, because drift compares against what Inflozo last put
 **live**, and an uploaded-but-inactive theme is not what visitors are served
-**And** **(4)** the site's active theme is **still the previous one, untouched** — nothing is half-applied
-**And** **(5)** the user is told plainly — **"Your theme is on your site but isn't live yet"** — with a
-re-activate action, because "failed" would be wrong and silence would be worse
+**And** *(moved word for word to Story 7.18a by Story 7.18's Question 1 — owner, 2026-10-18, R-259: **(4)**, **(5)**, "the
+wizard state matches D2e" and "the deploy-only ending matches D2f", with their one-click activate — "Deploy only" needs its
+ending; this story keeps the history row)*
 **And** **(6)** it **sends no deploy-failure email**
-**And** the wizard state matches D2e, the history row matches D2d, and the deploy-only ending matches D2f —
-"Uploaded on purpose, not live, with Activate one click away" (UX-DR7).
+**And** the history row matches D2d.
 
-**FRs:** FR-J8 (the partial-success half). · **Frame:** `D2 Deploy History Completed.dc.html` D2d · D2e · D2f. ·
+**FRs:** FR-J8 (the partial-success half). · **Frame:** `D2 Deploy History Completed.dc.html` D2d. ·
 **Owner test:** yes.
 
 ### Story 7.33: Compile CI — synthetic themes over the whole library
@@ -4737,7 +4815,7 @@ So that "canvas and shipped output agree" is verified rather than assumed on eac
 **And** the pilot project is **deployed and rolled back on all Ghost deploy targets**
 **And** routes **round-trip through the guided card and verify by byte comparison of the live `routes.yaml`**
 *(Story 7.17's Dev, 2026-10-18: the automatic upload is FR-I4's primary path — `offerRoutes` uploads with the Staff Access
-Token and reads back byte for byte, and Story 7.18's Ship it calls it — so the round trip is that upload's, and the guided
+Token and reads back byte for byte, and Story 7.18a's Ship it calls it — so the round trip is that upload's, and the guided
 card, B16, is its fallback for no token, a revoked one, or a role below Administrator; the gate proves the fallback's Verify
 upload beside it.)*
 **And** **the T4 clause is deferred with T4 itself and is not an exit condition for either epic**: a deploy

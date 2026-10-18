@@ -33,7 +33,7 @@ import { LOCK_COPY } from '@/lib/lock'
  * edits" is "It has edits", the panel's "only in Rosa's browser" is "only in that session", and **"Or message Rosa"
  * does not exist** — there is nobody to message.
  *
- * ITS STRINGS ARE PROPS, AND THAT IS THE WHOLE OF WHAT THIS STORY OWES D8g (DW-238). Story 7.18 renders *"Take over
+ * ITS STRINGS ARE PROPS, AND THAT IS THE WHOLE OF WHAT THIS STORY OWES D8g (DW-238). Story 7.18a renders *"Take over
  * to ship?"* through this component and Story 7.26 does the same for export — one component, one vocabulary, and
  * the gate itself belongs where deploy and export are written.
  *

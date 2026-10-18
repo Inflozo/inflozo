@@ -45,7 +45,7 @@ import { createTemplate, deleteTemplate, restoreTemplate, saveRoutes, type Route
    banner, the file's header with Copy and Download, and the numbered lines. ONE behaviour differs from the drawing: its
    YAML lists `/` first and this lists it last, with the inverse filter (the runtime's facts, standing rule 1).
    S9b — any `validateRoutes` problem: the red banner names each line and its reason, the pane's pill counts them and each
-   line is marked. Its "Deploys are blocked…" line waits for Story 7.18's Ship button (routine call 11).
+   line is marked. Its "Deploys are blocked…" line waits for Story 7.18a's Ship button (routine call 11).
    S9c / S9e — the sheets (`dialog.ts`'s `routeSheet`, S9c's 480), sharing one path block, one condition block, one
    template-and-page-size block and one naming block (R-247: the Path box with its two grey lines under it).
    S9d — Ghost's default routing and no template: the signpost, its two lines, "+ New collection", and R-247's quiet links.

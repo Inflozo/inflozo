@@ -332,7 +332,7 @@ import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './
    the pack's preset's address (Paper's for a pack the project made) and wears the pack before its first paint. Edit pack
    and New pack are `pack-editor.tsx`, mounted at the root; the roster and its rows are `style-pack.tsx`.
 
-   ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18), the name's rename underline (no story yet)
+   ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18a), the name's rename underline (no story yet)
    (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
    VISITOR's `mode-toggle` and a different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before
    Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's
@@ -2006,7 +2006,7 @@ function EditorShell({
     // paint and then lost the `acquire` keeps those edits in its journal, unsent and unannounced, where before this wall
     // the 423 path displaced it and said so (review, 2026-09-24). The shared on-device record is deliberately NOT reset
     // here: in the same-browser race it is the holder's. The upgrade is `land()` telling a session that typed before its
-    // first answer, when that answer makes it a reader, what it holds — DW-308, Story 7.18's.
+    // first answer, when that answer makes it a reader, what it holds — DW-308, Story 7.18c's.
     if (!now.lock.holder) return backoffOver()
     // Story 6.3: the pending docs AND the pending pack, in one call — one compare-and-set, one revision; Story 6.4: and the
     // project's own packs, whole, where they are owed
@@ -2048,7 +2048,7 @@ function EditorShell({
       })
       // R-213 (Story 5.24e): THE ONE REFUSAL SIGNING IN CURES. Before it a 401 was "Retrying … when the connection
       // returns" — a connection that was fine, and a Retry that could only meet the same answer. The backoff keeps
-      // trying underneath; a 404, 400 or 422 cannot be cured by a sign-in and stays Retrying below (DW-304, 7.18).
+      // trying underneath; a 404, 400 or 422 cannot be cured by a sign-in and stays Retrying below (DW-304, 7.18c).
       signedOut.current = answer.status === 401
       if (answer.status === 401) {
         scheduleRetry()
@@ -2534,7 +2534,7 @@ function EditorShell({
      *  landing inside a beat's round trip, or a hard navigation whose request outlasts the next beat (the lock walk met
      *  it typing a URL away). A reload is unaffected — its own first beat keeps the row — and leaving by a link is a soft
      *  navigation, which keeps the lock anyway. The upgrade is a per-page token on the row: a column, so a migration —
-     *  DW-307, Story 7.18 (R-228: the owner kept this ceiling for v1). */
+     *  DW-307, Story 7.18c (R-228: the owner kept this ceiling for v1). */
     const leaving = () => {
       if (keeping.current || !latest.current.lock.holder) return
       // a tab whose id this browser does not keep comes back from a reload as ANOTHER session: the grace would only hold
@@ -5359,7 +5359,7 @@ function EditorShell({
      absent where its control is (UX-DR3): no dark row on a Light-only project, no Remix or Preview on a template
      surface, which has Back to post instead. The device is ONE row that moves to the next device, because the menu is
      "one item deep" (`D8:293`). Undo and redo stay beside the indicator (R-143), and D8a's Export row has no control at
-     1440 to be (Ship it's own menu carries Download theme, 7.18). Only the Remix row edits, so it alone greys reading
+     1440 to be (Ship it's own menu carries Download theme, 7.26). Only the Remix row edits, so it alone greys reading
      along (R-192). */
   const chipsOf = (gesture: Gesture) => KEYMAP.find((b) => b.gesture === gesture)?.chips
   /** the glyph slot of a row whose control draws none (Theme settings is words at 1440, and R-92 forbids inventing one):
@@ -5670,7 +5670,7 @@ function EditorShell({
           {cardsNow ? <CardMenu card={cardOrFirst(cardKey)} designs={cardDesigns} onChoose={chooseCard} /> : <ViewAs visitor={viewAs} viewed={viewedHere} onChoose={on.chooseVisitor} />}
         </div>
         {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY
-            RIGHT OF IT, as the frame draws them; Ship it (7.18) lands beside them later (R-118). Undo and redo left
+            RIGHT OF IT, as the frame draws them; Ship it (7.18a) lands beside them later (R-118). Undo and redo left
             for the indicator's side at R-143. View as was once expected here, and that was an earlier story's guess and
             never a ruling: every drawn bar puts it in the centred group above, which is where Story 5.14 built it.
             The sun is ABSENT, NOT DISABLED, on a Light-only project (UX-DR3, R-118, R-128, and AD-17's own Rule in so
@@ -5730,7 +5730,7 @@ function EditorShell({
             Theme settings
           </Link>
           {/* STORY 5.15 — B3a's Preview pill (`B Missing Surfaces.dc.html:645-649`), LAST in the cluster: B3a draws it
-              immediately left of the ship button, and Story 7.18 places "Ship it" to its right. */}
+              immediately left of the ship button, and Story 7.18a places "Ship it" to its right. */}
           {/* Story 5.20 — a template surface is no page of the site, so it has no Preview (`enterPreview`) */}
           {surface ? null : <PreviewButton onPress={on.enterPreview} />}
           {/* C3a :1385 — the way back to the canvas the paywall is part of: a navigation, never an edit, so it is live

@@ -232,7 +232,7 @@ test('offerRoutes, Ghost refuses, is busy or away, or the read-back differs: a f
   assert.deepEqual(differs.writes, [])
   const unread = fake({ back: null })
   assert.deepEqual(await offerRoutes(ARGS, unread.io), { kind: 'failed', code: 'routes_unverified' }, 'a read-back that fails never claims the upload')
-  // an infrastructure failure is not the step's to answer: thrown on, for 7.18's job
+  // an infrastructure failure is not the step's to answer: thrown on, for 7.18a's job
   const store = fake({ post: new AdminError({ code: 'credential_store_unavailable', message: 'x' }) })
   await assert.rejects(offerRoutes(ARGS, store.io), (e: AdminError) => e.code === 'credential_store_unavailable')
 })

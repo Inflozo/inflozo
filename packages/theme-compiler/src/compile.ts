@@ -109,23 +109,23 @@ import { ANY_VALUE, stripCss } from './strip.ts'
 
 export type CompileInput = {
   /** every STORED template doc, by its file — `default.hbs` is the site doc and `partials/content-cta.hbs` the paywall's
-   *  (Story 7.18 maps keys with `fileOfKey`). An untouched template has no doc (AD-22) and is synthesized here. Never
+   *  (Story 7.18a maps keys with `fileOfKey`). An untouched template has no doc (AD-22) and is synthesized here. Never
    *  `index.hbs`: Home's page 2 is `pageTwo['home.hbs']`. */
   templates: Readonly<Record<string, ProjectDoc>>
   /** page 2's own docs (R-178, R-179), keyed by their PAGE-1 file: `home.hbs` (stored as `index`), `tag.hbs`
    *  (`tag-paged`) and `author.hbs` (`author-paged`) — `pageTwoStack(file, pageOne, pageTwo, library)`'s shape. Story
-   *  7.18 maps the keys with `canvasOfPageTwoKey`. */
+   *  7.18a maps the keys with `canvasOfPageTwoKey`. */
   pageTwo?: Readonly<Record<string, ProjectDoc>>
-  /** the `custom-{name}.hbs` files a route names (Story 7.16a's `routedOf`, handed in by Story 7.18): FR-I1's class that keeps shipping when emptied */
+  /** the `custom-{name}.hbs` files a route names (Story 7.16a's `routedOf`, handed in by Story 7.18a): FR-I1's class that keeps shipping when emptied */
   routed?: readonly string[]
   /** STORY 7.16c — each LISTED Routes Manager file and its collections' and channels' context names (`listsOf`' `context`,
-   *  each rebuilt from a checked path by `contextOf` — handed in by Story 7.18 beside `routed`). A listed file paginates: its
+   *  each rebuilt from a checked path by `contextOf` — handed in by Story 7.18a beside `routed`). A listed file paginates: its
    *  first visible feed is its main feed (`designate`), compiled over Ghost's native `posts` at the flat root (the matrix's
    *  list row, F3); and a listed file with no visible feed puts its contexts in FR-H2's `noindex` guard, since its page 2
    *  repeats page 1 (F6). A key that is no Routes Manager file, or a context outside `contextOf`'s shape, is refused (AD-36) */
   lists?: Readonly<Record<string, readonly string[]>>
   /** STORY 7.17 — the project's `routes.yaml` bytes, `routesYaml(config)` (`@inflozo/section-runtime/routes`), handed in by
-   *  Story 7.18 beside `routed` and `lists`: README.md's Routes section carries it, every line indented four spaces. Null or
+   *  Story 7.18a beside `routed` and `lists`: README.md's Routes section carries it, every line indented four spaces. Null or
    *  omitted (Ghost's default routing): no section. Refused when it carries any C0 character but `\n` (AD-36) */
   routes?: string | null
   /** the library, handed in (AD-14) — the same entries the editor reads */
@@ -204,7 +204,7 @@ export type CssRecord = {
  *  mounted module with no file yet, whose mounts ship in their no-JS state — both in registry order. CI's warning reads
  *  it rather than re-deriving it, and a deploy surface can say which sections rest. */
 export type JsRecord = { bundled: readonly string[]; atRest: readonly string[] }
-/** Story 7.10 — the settings record, for Story 7.18's Pre-flight: the keys `config.custom` declares, in its order — the
+/** Story 7.10 — the settings record, for Story 7.18b's Pre-flight: the keys `config.custom` declares, in its order — the
  *  user's, then (Story 7.11) the three dark built-ins — and the keys a shuffle parked (FR-D19), which this theme neither
  *  declares nor reads — and which Ghost forgets at the deploy that leaves them out (read in source, both majors:
  *  `_syncRepositoryWithTheme`; Question 2, ruled option 2). */
@@ -569,7 +569,7 @@ export function checkGhostMarkup(files: Readonly<Record<string, string>>): strin
  * {{else}}Title{{/if}}` for a binding, and the authored text itself for an emptied prop. This check refuses both. No library
  * design has one today (each text binding hides), so the pilots compile; a customer who empties a fallback-mode prop (A22
  * #1's heading, A4 #13's headline) makes the compile throw. The owner ruled such a text HIDDEN, on the canvas and in the
- * theme alike, built by Story 7.18, the compiler's first product caller (Story 7.6's Question 2, 2026-10-08, DW-349).
+ * theme alike, built by Story 7.18a, the compiler's first product caller (Story 7.6's Question 2, 2026-10-08, DW-349).
  */
 export function checkChromeText(doc: RuntimeDocument, files: Readonly<Record<string, string>>): string[] {
   const marker = new RegExp(`${U0}\\d+${U1}`, 'g')
@@ -1004,7 +1004,7 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
         // a section that renders nothing — a hand-picked feed with nothing picked — contributes no file, no line, no label
         if (out.template !== '') {
           if (hook !== undefined) {
-            // refused by name before `darkOverrideCss`, so the customer reads layer names, never keys (Story 7.18 shows it)
+            // refused by name before `darkOverrideCss`, so the customer reads layer names, never keys (Story 7.18a shows it)
             const named = `"${instance.layerName || entry.name}" in ${at}`
             const met = hooks.get(hook)
             if (met !== undefined) throw new Error(`Two sections share a hidden name, so neither one's dark look can ship: ${met} and ${named}. Delete one of them and add it again — it gets a new name.`)

@@ -1,5 +1,5 @@
 // @inflozo/theme-compiler/gate — Ghost's own theme checker over a compiled theme, in a customer's words (Story 7.7,
-// FR-J6, AD-24, AD-34). The door Story 7.18's deploy and CI use. It is NOT exported from the package's root, so nothing
+// FR-J6, AD-24, AD-34). The door Story 7.18a's deploy and CI use. It is NOT exported from the package's root, so nothing
 // that only compiles loads either gscan.
 //
 // `gscanGate(files, major)` runs that major's pinned gscan (`GSCAN`) and maps its report through `verdict` — errors

@@ -6224,7 +6224,7 @@ test('R-213 (Story 5.24e): a save refused for sign-in says Signed out with a Sig
   expect(Date.now() - back, 'well inside the backoff: the visit back sent it, not the clock').toBeLessThan(1500)
   expect(sent.filter((r) => r.at >= back).length, 'exactly one request after the visit back').toBe(1)
   await expect(page.locator('#editor-signed-out')).toHaveCount(0)
-  // a refusal a sign-in cannot cure stays Retrying (DW-304, Story 7.18) — the server failing, and the route refusing
+  // a refusal a sign-in cannot cure stays Retrying (DW-304, Story 7.18c) — the server failing, and the route refusing
   await select(page, own[0])
   await page.keyboard.press('ControlOrMeta+d')
   for (const status of [422, 502, 404, 400]) {

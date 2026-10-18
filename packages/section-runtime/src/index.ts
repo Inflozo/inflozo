@@ -168,13 +168,13 @@ export {
 // made of (R-179), and it replaced R-127's `indexStack`: the editor's page-2 preview and the compiler call it alike.
 export { isSynthesizable, listedStart, pageTwoStack, synthesize, SYNTHESIS_DEFAULTS } from './synthesize.ts'
 // Story 7.12 — Question 1, ruled option 1: the sections whose own starting words were never retyped — Translations lists
-// them on a non-English project and Story 7.18's Pre-flight repeats the list as a warning
+// them on a non-English project and Story 7.18b's Pre-flight repeats the list as a warning
 export { untouchedWords } from './starting-words.ts'
 export type { StartingEntry, StartingWords } from './starting-words.ts'
 export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrary } from './synthesize.ts'
 // Story 5.19 — FR-H2's main feed: ONE designation rule beside `synthesize` (AD-27(d)) that the editor's every door and
 // Story 7.3's compiler pass each paginated doc through, the reassignment, a secondary feed's own query, the
-// feed-less archive the editor's Layers note and Story 7.18's Pre-flight read, and `visibleFeed`, which Story 7.3's
+// feed-less archive the editor's Layers note and Story 7.18b's Pre-flight read, and `visibleFeed`, which Story 7.3's
 // guard asks of every page 2.
 export { designate, feedBase, feedlessArchive, feedQuery, feedsOn, flaggedListing, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
 // Story 7.9 — FR-Q2's rules for a Ghost theme setting as data, one module: Theme settings' actions validate with it and

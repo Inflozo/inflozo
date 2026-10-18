@@ -6,8 +6,8 @@ import {
 
 /**
  * STORY 7.17 — FR-I4's ROUTES STEP, ON THE WIRE: `offerRoutes` uploads the project's `routes.yaml` to the site with its
- * Staff Access Token and reads it back byte for byte, and `verifyRoutes` is B16's **Verify upload**. Story 7.18's Ship it
- * calls `offerRoutes` after activation, inside AD-19's lock, and opens B16 on a `fallback` (R-254); before 7.18 only the
+ * Staff Access Token and reads it back byte for byte, and `verifyRoutes` is B16's **Verify upload**. Story 7.18a's Ship it
+ * calls `offerRoutes` after activation, inside AD-19's lock, and opens B16 on a `fallback` (R-254); before 7.18a only the
  * T1 recorder uploads (`record-routes.mjs --upload`). There is no "upload now" control anywhere.
  *
  * IT DECIDES NOTHING. Which file, how Ghost's answer reads and what each outcome writes are `lib/routes-upload.ts`'s pure
@@ -73,7 +73,7 @@ async function readLive(io: RoutesIo, siteId: string, route: string, kind: 'admi
 
 /** A thrown chokepoint error the step answers itself: no answer is `ghost_unreachable`, a staff token gone from the store
  *  between the read and the call is B16's `no_token`. Anything else (the store, a malformed key, a bad address) is an
- *  infrastructure failure and is thrown on, for 7.18's job to retry (AD-20). */
+ *  infrastructure failure and is thrown on, for 7.18a's job to retry (AD-20). */
 function thrownOutcome(thrown: unknown, file: string): RoutesOutcome {
   const code = (thrown as { name?: string; code?: string } | null)?.name === 'AdminError' ? (thrown as { code?: string }).code : undefined
   if (code === 'ghost_unreachable') return { kind: 'failed', code: 'ghost_unreachable' }
@@ -111,7 +111,7 @@ export async function offerRoutes(
   const settle = async (outcome: RoutesOutcome): Promise<RoutesOutcome> => {
     const patch = routesWrite(outcome, io.now().toISOString())
     // the outcome stands even when its state could not be written (logged): the upload has happened or not either way,
-    // and 7.18 opens B16 from what this answers
+    // and 7.18a opens B16 from what this answers
     if (patch !== null) await io.write({ siteId, userId, patch })
     return outcome
   }

@@ -34,7 +34,7 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * `ponytail:` — a compare-and-set on `routes_config.updated_at` if that is ever seen.
  *
  * `routes_config.yaml` IS NOT ONLY STORED (2026-10-18): Story 7.17's routes step (`server/routes-upload.ts`) reads it, judges
- * it equal to `routesYaml(config)` and uploads it; Story 7.18's Ship it calls that step.
+ * it equal to `routesYaml(config)` and uploads it; Story 7.18a's Ship it calls that step.
  *
  * STORY 7.17 — DW-370, R-258: EVERY ANSWER CARRIES WHAT IT MOVED. A write that moves `projects.revision` (`syncDocs`) records
  * the move — from, to, the docs it wrote and the keys it took away — and every result, a refusal included when an earlier
@@ -364,7 +364,7 @@ export async function deleteTemplate(_previous: RoutesResult | null, formData: F
  * route wrote no config, so its Undo writes none either and the stored rows return exactly. The doc comes back FROM THE
  * CLIENT, so it is judged as the sync route judges one before it is written (AD-36): `docSchema`, then `docRefusal`. The row is judged by the naming step before it is written, as every other insert is: its name must
  * still make its file (review, 2026-10-17 — a request is not trusted to carry only what the page sent). A name this
- * project has since DEPLOYED cannot come back (the database's guard, `:1319-1347`); no deploy exists before Story 7.18,
+ * project has since DEPLOYED cannot come back (the database's guard, `:1319-1347`); no deploy exists before Story 7.18a,
  * so that is a sentence, not a path.
  */
 export async function restoreTemplate(_previous: RoutesResult | null, formData: FormData): Promise<RoutesResult> {

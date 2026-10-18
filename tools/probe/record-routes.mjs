@@ -667,7 +667,7 @@ function section85(t, today) {
     ...tableOf(rows.slice(t.from), '| Step | Row | Got | Held |'),
     '',
     "- **The routes step holds on a real Ghost.** A file Ghost already holds is not posted (no dated copy, no write); an upload is stored as sent and live at once; Ghost's default goes back over a file Inflozo put there; the two refusals read as B16's `role` and `revoked`.",
-    "- **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238: T3 retired) — its half here is its own parser, read locally. The 403 for an Editor's staff token is read in source only (F3); this run's 403 is the integration key's. Story 7.18 proves the theme upload and Ship it's call of `offerRoutes`; this run used the step's pure rule and its request builder, not `offerRoutes` or the chokepoint's `call` (its database, Vault and audit rows), which `routes-upload.test.ts` runs over a fake.",
+    "- **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238: T3 retired) — its half here is its own parser, read locally. The 403 for an Editor's staff token is read in source only (F3); this run's 403 is the integration key's. Story 7.18a proves the theme upload and Ship it's call of `offerRoutes`; this run used the step's pure rule and its request builder, not `offerRoutes` or the chokepoint's `call` (its database, Vault and audit rows), which `routes-upload.test.ts` runs over a fake.",
   ].join('\n')
 }
 

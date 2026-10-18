@@ -5,7 +5,7 @@ import type { RoutesIo } from '@/server/routes-upload'
 
 /**
  * STORY 7.17 — THE ROUTES STEP'S REAL `io` (`server/routes-upload.ts` is handed it, so that file imports neither the
- * service role nor the chokepoint and its tests run over a fake). Story 7.18's Ship it hands in this one.
+ * service role nor the chokepoint and its tests run over a fake). Story 7.18a's Ship it hands in this one.
  *
  * EVERY READ AND THE WRITE ARE SCOPED BY `user_id`, because the service role reads past RLS: a project or a site that is
  * not the caller's — or a disconnected site, which FR-C6 keeps as a record and is no site — is no row, and the step then

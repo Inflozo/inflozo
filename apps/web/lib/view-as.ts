@@ -77,7 +77,7 @@ export const seen = (record: readonly Visitor[], v: Visitor): readonly Visitor[]
   record.includes(v) ? record : VISITORS.filter((x) => x === v || record.includes(x))
 
 /** The visitors this canvas has not been looked at as, in canonical order — the menu's rows that carry R-169's dot, and
- *  the list Story 7.18's Pre-flight row reads. */
+ *  the list Story 7.18b's Pre-flight row reads. */
 export const unviewed = (record: readonly Visitor[]): Visitor[] => VISITORS.filter((v) => !record.includes(v))
 
 /** The per-canvas records, keyed by `template_key` as the docs are. */

@@ -19,7 +19,7 @@ import { BACK, PREVIEW } from '@/lib/preview'
    for the pill, `line-strong` for its hover, `paper-sunk` and `ink-soft-aa` for the cap, `ink-soft` for the eye and
    `ink` for the bar — so nothing is rounded but B3b's shadow, whose .24 is `shadow-modal`'s .25 to within a hundredth
    (`tokens.test.ts` forbids a colour literal here, comments included). Built, not drawn: "Ship update" beside the pill
-   is Story 7.18's "Ship it", and it lands to the pill's right. */
+   is Story 7.18a's "Ship it", and it lands to the pill's right. */
 
 /** B3a `:645-649` — white, a 1px `line` border, the pill radius, `4px 10px 4px 8px` and a 7px gap: the eye at 13,
  *  "Preview" at 12/600 and the mono `P` cap at 10px. It hovers to `line-strong`. */

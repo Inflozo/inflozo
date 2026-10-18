@@ -54,7 +54,7 @@ import {
    accent carries D6a's colour caption (`:168-177`); Edit keeps Group and Only show when and no longer edits a Default
    (Question 1, ruled option 1: the canvas decides the start); and Site basics' accent says what Ghost's own colour is
    for, with its way into Ghost (Question 3, ruled option 1). `compileTheme` writes `config.custom` with the lines that read
-   each key; nothing deploys before Story 7.18.
+   each key; nothing deploys before Story 7.18a.
 
    D6a's LEFT RAIL is Story 7.12's `settings/layout.tsx`, drawn above this page and Translations, its second.
 

@@ -3,7 +3,7 @@
 // A design arrives with sample words — Three Up's eyebrow "The archive", its link "Browse the archive". They are the
 // section's CONTENT, not catalog labels (DW-145), so Translations never lists them and they stay exactly as written until
 // the customer retypes them on the canvas. On a project whose language is not English they would reach visitors in
-// English, so Translations lists them (each with an Edit link to its canvas) and Story 7.18's Pre-flight repeats the same
+// English, so Translations lists them (each with an Edit link to its canvas) and Story 7.18b's Pre-flight repeats the same
 // list as a warning — never a block. ONE function feeds both.
 //
 // "Untouched" is a text or rich-text prop the design prints, with an authored `default` and no `catalog` key (a catalog

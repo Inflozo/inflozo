@@ -1,5 +1,5 @@
 ---
-title: 'Story 7.18 — The deploy wizard'
+title: 'Story 7.18a — The deploy wizard'
 type: 'feature'
 created: '2026-10-18'
 status: 'ready-for-dev'
@@ -21,10 +21,10 @@ and a heading you empty now simply disappears from the page instead of stopping 
 
 ## Intent
 
-**This spec is written to Question 1's recommended split** (it is open; "Ruled values" in Design Notes is the one table
-a different ruling changes). It is **Story 7.18a — shipping a project**. The card's other halves move word for word at Dev
-(R-195): **7.18b** (choosing the site, and Pre-flight's warning-only rows) and **7.18c** (the editor's lock and save
-leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) comes in here.
+**Questions 1–3 were ruled by the owner (2026-10-18): R-259, R-260, R-261.** "Ruled values" in Design Notes is the one
+table they set. **This is Story 7.18a — shipping a project (R-259).** The card's other halves moved word for word
+(`epics.md`, R-195): **7.18b** (choosing the site, and Pre-flight's warning-only rows) and **7.18c** (the editor's lock
+and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) came in here.
 
 **Problem:**
 - **Nothing ships.** No Ship it exists. `editor.tsx:335` lists it as "ABSENT, NOT GREYED … Ship it (7.18)". No code reads
@@ -74,8 +74,9 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
 - **The six items.**
   - DW-349 is fixed in the runtime: both emitters hide an emptied typed text.
   - DW-353 and DW-358 become plain words.
-  - DW-362 is Question 3.
-  - DW-364 is Question 2.
+  - DW-362 is R-261: a "Start again" on Routes & Templates.
+  - DW-364 is R-260: the index filter is fixed so Home lists posts with no primary tag, proved first, **and** a
+    Pre-flight check names any post no page would list.
   - DW-371 is settled by four routine calls.
 
 ## Boundaries & Constraints
@@ -130,11 +131,12 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
   - The Ghost 5 half of every check goes to DW-326, Story 15.7.
 
 **Ask First:**
-- Questions 1–3 (below). Dev builds the ruled options.
+- Questions 1–3 were ruled (R-259–R-261). Dev builds the ruled options.
 - Applying the Schema migration to production (R-99), and every T1 write (§86, the walk's step 113).
 - If the deploy function cannot carry `gscan4`, `gscan6` and `jsdom` within Vercel's limits, or AD-11's memory cannot be
   set, stop. Do not split the function or drop a checker without asking.
-- If Question 2's ruled emission cannot be expressed in Ghost's NQL, as proved by Ghost's own code and T1, stop.
+- If R-260's emission cannot be expressed in Ghost's NQL, as proved by Ghost's own code and T1, stop (the owner's own
+  words).
 - A fifth `ADMIN_WRITES` entry, a fourth `routes_fallback` value, or any string beyond "Words".
 
 **Never:**
@@ -201,6 +203,9 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
 | Routes: failed | refused · unavailable · unreachable · redirected · invalid · site gone | the ending's line and its fix; the theme stays live | — |
 | Routes: thrown | a chokepoint error escapes `offerRoutes` | retried once, then "failed" | — |
 | Routes: back at default | the project is at Ghost's default, and the site holds Ghost's default | `kept`, and `routes_fallback` cleared | — |
+| Unlisted posts, none (R-260) | the routing has a filtered collection; every published post is listed by its owner | "Every post appears on Home or a collection" · pass | — |
+| Unlisted posts, some (R-260) | a post a collection or Home owns but whose filter does not list it | a warning row naming them; Ship it stays pressable | — |
+| Unlisted posts, unread | the site's posts cannot be read | a warning row saying the check could not run; never blocks | — |
 | Off-list write (DW-54) | the deploy path asked for a write outside `ADMIN_WRITES` | `write_not_allowed`; an `admin_write / denied` audit row; nothing sent | — |
 | Emptied typed text (DW-349) | a non-catalog text prop in fallback mode emptied | its element is removed on the canvas and in the theme; the sidebar's text box brings it back; a catalog text still returns as `{{t}}` | — |
 
@@ -352,7 +357,7 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
 
 ## Tasks & Acceptance
 
-**Dev gate:** Questions 1–3 must be ruled first. The Schema phase is its own push, before any code (R-99).
+**Dev gate:** Questions 1–3 are ruled (R-259–R-261). The Schema phase is its own push, before any code (R-99).
 
 **Execution — Schema phase (pushed first, alone):**
 - [ ] `supabase/migrations/20261019120000_deploy_wizard.sql` — change the schema:
@@ -379,12 +384,16 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
   throw through it. No behaviour changes. Rationale: one spelling the plain-words table keys on, held by a test that
   reaches each throw for real.
 - [ ] `routes.ts`, `routes.test.ts`, `projects/[id]/routes/{page.tsx,routes-manager.tsx}` — routing:
-  - DW-364 per Question 2: `indexNode`/`indexFilter` emit the ruled form, `holdsFor`'s listing reading follows, and
-    every fixture stays accepted by both pinned NQLs;
+  - DW-364 per R-260: `indexNode`/`indexFilter` emit the ruled form, `holdsFor`'s listing reading follows, and every
+    fixture stays accepted by both pinned NQLs;
+  - R-260's check: `unlistedPosts(config, posts, now)` beside `holdsFor` — for each post, the collection that owns it
+    (YAML order, the index last; ownership reading) and whether its filter LISTS it (listing reading). A post owned and
+    not listed is named. Its test holds the old index filter naming an untagged post (the control) and the new one
+    naming none;
   - DW-369's collection and channel rows at `/paged/`, `/index/`, `/tag/` and `/author/`;
   - S9b's line "Deploys are blocked until routing is valid — the Ship button explains why." shown whenever the stored
     routing has problems;
-  - DW-362 per Question 3: the reset sheet and `resetRoutes` in `routes/actions.ts`, through the same save path and
+  - DW-362 per R-261: the reset sheet and `resetRoutes` in `routes/actions.ts`, through the same save path and
     `sync_project_doc` rule.
 - [ ] `apps/web/lib/routes-upload.ts` and `server/routes-upload.ts` — DW-371:
   - `routes_unverified` writes `routes_last_offered` = F with no cause, so Verify upload can compare;
@@ -438,7 +447,9 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
   `label`. Rationale: S4's control, used once.
 - [ ] `apps/web/components/editor/deploy-wizard.tsx` (new) — the modal, the rail, the four steps, and the endings (Live,
   S8d′, D2e, D2f, and the routes outcome with B16). It polls `view` while the stage is not terminal, announces each
-  stage, and draws the static confetti under reduced motion. Rationale: S8, D2.
+  stage, and draws the static confetti under reduced motion. While the server checks run, it reads the linked site's
+  published posts in the browser through `lib/live-content.ts`'s reader (the canvas's own path and Content key; 100 a
+  page, within the reader's request ceiling) and draws R-260's row from `unlistedPosts`. Rationale: S8, D2, R-260.
 - [ ] `editor.tsx` — the editor's half:
   - Ship it after `#editor-more`, visible at every width, labelled "Ship it" or "Ship update";
   - the ▾ menu's rows;
@@ -466,7 +477,7 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
      read;
   2. two concurrent uploads of one name, mapped by `uploadAnswer`;
   3. a planted fatal theme's 422, mapped;
-  4. Question 2's index filter listing an untagged post on Home;
+  4. R-260's index filter listing an untagged post on Home (the old filter as its control, listing it nowhere);
   5. Casper restored and the probes deleted, both read back.
 
   Rationale: DW-51's theme half; standing rule 1 on the Admin key's upload right.
@@ -480,8 +491,8 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
   - **The registers:** VERIFY-AT-BUILD (the Admin key's upload executed; the plan refusal read in source) and
     MEASUREMENTS §86.
   - **The ledger:** DW-51, 54, 238, 349, 353, 355, 358, 362, 364, 369 and 371 closed or re-owned.
-  - **The epics:** Question 1's moves into 7.18b, 7.18c, 7.32, 7.23 and 7.25's cards and Epic 7's preamble (R-195),
-    and the epic context.
+  - **The epics:** R-259's moves already landed at the Create's Record (7.18b, 7.18c, 7.32, 7.19, 7.20 and 7.25's
+    cards, Epic 7's preamble, R-195); Dev's story bullet goes in the epic context.
   - Finish with a grep for the old names (standing rule 7).
 
 **Acceptance Criteria:**
@@ -511,6 +522,9 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
     "Fix in editor" where it has a canvas; the message alone when `refs[0]` is no template;
   - "routes.yaml is valid" shows when the project has routing;
   - "Warnings won't block your deploy." shows when nothing blocks.
+- Given a routing with a filtered collection, when Pre-flight runs, then R-260's row shows: a pass when every published
+  post is listed by Home or the collection that owns it, else a warning naming the posts, and a "could not check" warning
+  when the site's posts cannot be read. None of the three blocks.
 - Given any blocking row, when Pre-flight ends, then Ship it is greyed with the reason in its caption slot. The reason
   is S9b's for routing, and the class's plain words for a refusal. Nothing is uploaded.
 - Given Compiling or Checking running, when the user presses Cancel, then the job ends `cancelled`, no Deploy row or
@@ -544,15 +558,15 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
   only over Inflozo's own file).
 - **7.6's Question 2** (DW-349, hide), **7.7's** (the gscan rows, warnings deploy), **7.8's** (the quality rows,
   customer-caused findings as warnings) and **7.10's Review** (DW-353).
-- **Questions 1–3 below are OPEN.** This spec plans each one's option 1.
+- **R-259, R-260, R-261** (owner, 2026-10-18): Questions 1–3 below.
 
 ### Ruled values (the one table a ruling changes)
 
 | Question | Planned | What it sets |
 |---|---|---|
-| Q1 | option 1 — three stories | This spec is 7.18a. 7.18b takes the Switch picker, the site linking and every warning-only row, with DW-297's question. 7.18c takes DW-304 (with its question), DW-307 (its own Schema) and DW-308. 7.32's "the wizard state matches D2e … the deploy-only ending matches D2f", (4), (5) and the one-click activate come here; 7.32 keeps D2d, (1)–(3) and (6). The rail's two first-deploy steps stay 7.19's and 7.20's. 7.25's lock span gains the routes upload. |
-| Q2 | option 1 — fix the filter | `indexNode` keeps a post with no primary tag (and no primary author) on the index's LIST. The exact NQL is chosen at Dev from Ghost's own code and is proved on T1 (§86 leg 4) before any Ship it uploads a routing. |
-| Q3 | option 1 — reset | Routes & Templates offers "Start again from Ghost's default routing" when the stored routing cannot be read. The Ship button's reason links there. |
+| Q1 · R-259 | option 1 — three stories | This spec is 7.18a. 7.18b takes the Switch picker, the site linking and every warning-only row, with DW-297's question. 7.18c takes DW-304 (with its question), DW-307 (its own Schema) and DW-308. 7.32's "the wizard state matches D2e … the deploy-only ending matches D2f", (4), (5) and the one-click activate come here; 7.32 keeps D2d, (1)–(3) and (6). The rail's two first-deploy steps stay 7.19's and 7.20's. 7.25's lock span gains the routes upload. |
+| Q2 · R-260 | option 1, plus option 2's check | `indexNode` keeps a post with no primary tag (and no primary author) on the index's LIST. The exact NQL is chosen at Dev from Ghost's own code and is proved on T1 (§86 leg 4) before any Ship it uploads a routing. **And** Pre-flight's check names any post no page would list (`unlistedPosts`, read in the browser). |
+| Q3 · R-261 | option 1 — reset | Routes & Templates offers "Start again from Ghost's default routing" when the stored routing cannot be read. The Ship button's reason links there. |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -608,6 +622,9 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
     is built for it.
 22. **The ▾ menu.** "Download routes.yaml" is built here: S4d draws it, no story owned it, and it uses 7.17's
     `downloadHref`.
+23. **R-260's "no page".** The check counts Home and the collections, the pages that list the site's posts as its
+    stream. Tag, author and channel pages list by subject, so an author page listing every post does not hide the gap.
+    The read happens in the browser, through the canvas's own Content API path, so no new server fetch is added.
 
 ### The stages (AD-20, F-075)
 
@@ -653,6 +670,13 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
 - "Fix in editor".
 - "routes.yaml is valid".
 - "Warnings won't block your deploy." · "Back" · "Ship it" (busy "Shipping…").
+
+**R-260's row.**
+- "Every post appears on Home or a collection" · "pass".
+- One post: "“{title}” appears on no page — not on Home, not in any collection. Its own address still works."
+- Several: "{n} posts appear on no page — not on Home, not in any collection: {first five titles}{, and {k} more}. Their
+  own addresses still work."
+- Unread: "We couldn't read your posts from {host}, so we couldn't check that every one appears on a page."
 
 **Blocking reasons (the caption under a greyed Ship it).**
 - Gate errors: "Fix the error above to ship." / "Fix the {e} errors above to ship."
@@ -740,7 +764,8 @@ leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e and D2f) 
 ### Walk (step 113, production, the Review's; the owner's go for its T1 writes)
 
 1. A throwaway account connects T1 through the wizard, with no staff token.
-2. It places A22 #1, empties its heading, and adds a primary-tag collection with an untagged post's control (Q2).
+2. It places A22 #1, empties its heading, and adds a primary-tag collection. R-260's row reads pass, and with the old
+   index filter planted it names T1's untagged post (the control).
 3. A second window takes over through D8g.
 4. Pre-flight's rows are compared with the two gates' verdicts. A planted unreadable routing blocks (a control), and so
    does a planted `card_designs`, through the service key.
@@ -803,7 +828,7 @@ after step 2.
 | 5 | `…/projects/<your project>/routes` | Routes & Templates | Press **+ New collection**. Add **Primary tag** and type the tag. For Template choose **New template…** and type the name. Press **Create collection**. | `/tutorials/` · `craft` · `Tutorials List` | The collection is listed. |
 | 6 | `…/projects/<your project>` in a second window (B) | Editor | In B, press **Ship it**. | — | "Take over to ship?" opens with **Wait** focused. |
 | 7 | same (B) | Take over to ship? | Press **Take over and ship**. | — | Window A becomes read-only. In B the wizard opens on **1 Destination**: ghost6 **Connected**, **Deploy & activate** chosen, Theme `inflozo-…`, chip **v1**. |
-| 8 | same (B) | Destination | Press **Run checks**. | — | **Compiling your theme…**, then **Checking your theme…** (Cancel works here). Then "Theme compiled", and "Checking your theme (Ghost will love it)" with **0 errors** and at least the warning "The switch that hides a page's title and feature image does nothing on this site.". Then "routes.yaml is valid · pass" and "Warnings won't block your deploy.". |
+| 8 | same (B) | Destination | Press **Run checks**. | — | **Compiling your theme…**, then **Checking your theme…** (Cancel works here). Then "Theme compiled", and "Checking your theme (Ghost will love it)" with **0 errors** and at least the warning "The switch that hides a page's title and feature image does nothing on this site.". Then "routes.yaml is valid · pass", "Every post appears on Home or a collection · pass" and "Warnings won't block your deploy.". |
 | 9 | same (B) | Pre-flight | Press **Ship it**. | — | "Shipping v1…", "Uploading to Ghost", then "Activating v1". **Cancel** is greyed with "Once it starts, it finishes". |
 | 10 | same (B) | Live | Look, then press **View site ↗**. | — | Confetti, and "Live! Your site just got gorgeous.". Below it: "Upload routes.yaml yourself". The site in the new tab shows your design, and the newsletter has no heading. |
 | 11 | ghost6's Ghost Admin, then the wizard (B) | B16 at the ending | Press **Download the file we generated**, upload it in Ghost where the card says, then press **Verify upload**. | the downloaded `routes.yaml` | "Ghost has your routes.yaml. Your routing is live." Press **Done**. Routes & Templates and Sites show no card. |
@@ -814,7 +839,7 @@ after step 2.
 
 ## Questions for the owner
 
-All three are needed before Dev. The spec is written to each recommended option.
+All three were ruled on 2026-10-18 (R-259–R-261); none is open.
 
 ### Question 1 — This story is three stories. May I split it?
 
@@ -843,7 +868,7 @@ the third, closing a tab frees your editing lock at once, instead of after a min
 2. **Split in two.** 7.18a takes shipping and every warning; 7.18b takes the lock and save leftovers.
 3. **One story.** I re-plan this spec and ask the two moved questions now.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18) — R-259.** *"Split it in three"*
 
 ### Question 2 — A post with no tags disappears from every list once a collection uses "Primary tag". What should happen?
 
@@ -859,7 +884,10 @@ Today it would be on no page, neither Home nor `/tutorials/`. With option 1 it i
 2. **Keep it, and warn.** Pre-flight names the posts no page would list.
 3. **Remove "Primary tag" and "Primary author"** from a collection's conditions, offering "Tag" and "Author" only.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1, and option 2's check beside it (owner, 2026-10-18) — R-260.** *"Fix what Inflozo writes. Home also
+lists posts with no primary tag. I prove the exact wording with Ghost's own code and on T1 before any Ship it uploads a
+routing. If Ghost cannot say it, I stop and ask you. Also add a check on Pre-flight and it names the posts no page would
+list."*
 
 ### Question 3 — If your saved routing ever can't be read, how do you get out?
 
@@ -875,7 +903,8 @@ the routing is plain Ghost again.
    Ghost's default and keeps your templates.
 2. **The reason alone.** Ship it explains, and fixing it is ours, by hand.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18) — R-261.** *"A "Start again" on Routes & Templates, confirmed first, which
+replaces the unreadable routing with Ghost's default and keeps your templates."*
 
 ## Verification
 

@@ -318,7 +318,7 @@ export function vanishedDesign(doc: ProjectDoc, held: (designId: string) => bool
  * R-213 (owner, 2026-09-28) ADDED THE SIXTH, and only for the refusal signing in cures. Before it a save the route
  * refused for an ended session read "Retrying … when the connection returns", which blamed a connection that was fine
  * and offered a Retry that could never succeed. A 404, 400 or 422 is a refusal signing in cannot cure, and stays
- * Retrying (DW-304, Story 7.18). Extrapolated from B6 (R-74): the Retrying panel's shape, its red, one link where
+ * Retrying (DW-304, Story 7.18c). Extrapolated from B6 (R-74): the Retrying panel's shape, its red, one link where
  * Retry now stood.
  *
  * R-144 (owner, 2026-09-19) SPLIT THE RESTING STATE BY WHAT IS OWED, and it is a better machine than the one B6
