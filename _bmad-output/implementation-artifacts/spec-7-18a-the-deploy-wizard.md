@@ -2,7 +2,8 @@
 title: 'Story 7.18a — The deploy wizard'
 type: 'feature'
 created: '2026-10-18'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'ceaae4068372bef46d2745fc450f8625b83c6eea'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
@@ -360,7 +361,7 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
 **Dev gate:** Questions 1–3 are ruled (R-259–R-261). The Schema phase is its own push, before any code (R-99).
 
 **Execution — Schema phase (pushed first, alone):**
-- [ ] `supabase/migrations/20261019120000_deploy_wizard.sql` — change the schema:
+- [x] `supabase/migrations/20261019120000_deploy_wizard.sql` — change the schema:
   - `alter type public.job_stage add value 'awaiting_ship' after 'checking'`;
   - add `deploys.quality jsonb` (the `QualityVerdict`) and `deploys.inputs_sha256 text`;
   - set DW-355's comment: `comment on column public.custom_settings.bound_to is` the three shapes (`control`, `prop`,
@@ -368,10 +369,10 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
   - if the tenant's SELECT on `deploys` is column-granted, add the two columns to it.
 
   Rationale: AD-20's F-075 stage, 7.8's column, the staleness test, and DW-355.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` — identical: the enum in
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` — identical: the enum in
   that order, the two columns, the corrected inline comment and the same `comment on`. Rationale: the gate diffs
   `pg_dump -s`.
-- [ ] `supabase/tests/rls.sql` and `RLS-TEST.sql` (byte-identical) — the tenant reads the new columns of its own deploy,
+- [x] `supabase/tests/rls.sql` and `RLS-TEST.sql` (byte-identical) — the tenant reads the new columns of its own deploy,
   never another's, and writes neither. The server-asserted list (`:596-603`) names them. Rationale: AD-31, with the
   withheld-migration control aborting at the 7.18 block.
 

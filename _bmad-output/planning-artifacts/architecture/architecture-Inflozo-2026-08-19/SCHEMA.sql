@@ -345,7 +345,7 @@ create table public.custom_settings (
   default_value text,                                     -- FR-Q2: colour defaults must be 6-digit hex
   group_name    public.ghost_setting_group not null default 'site_wide',
   visibility_condition jsonb,
-  bound_to      jsonb not null,                           -- {kind:'control'|'token', instanceId?, controlKey?, token?}
+  bound_to      jsonb not null,                           -- {kind:'control', instanceId, controlKey} | {kind:'prop', instanceId, path} | {kind:'token', token:'accent'}
   position      integer not null default 0,
   frozen_at     timestamptz,                              -- set at first deploy or export; key immutable after
   created_at    timestamptz not null default now(),
@@ -354,6 +354,9 @@ create table public.custom_settings (
   constraint no_image_default check (type <> 'image' or default_value is null),
   constraint hex6_colour     check (type <> 'color' or default_value ~ '^#[0-9A-Fa-f]{6}$')
 );
+-- DW-355 (Story 7.18a): the three shapes, stated where the database itself carries them.
+comment on column public.custom_settings.bound_to is
+  'What the setting was promoted from: {kind:''control'', instanceId, controlKey} | {kind:''prop'', instanceId, path} | {kind:''token'', token:''accent''} — custom-settings.ts''s Binding is the one statement of the shapes.';
 
 -- FR-Q2's visible meter: 20 Ghost slots − 3 always-emitted built-ins (FR-Q5) = 17.
 create or replace function public.enforce_custom_setting_cap() returns trigger
@@ -433,7 +436,8 @@ create index on public.asset_usages (project_id);
 
 create type public.deploy_status as enum ('compiling','checking','uploaded','live','failed');
 create type public.deploy_kind   as enum ('normal','rollback','snapshot_restore','compat_redeploy','library_update');
-create type public.job_stage     as enum ('queued','compiling','checking','uploading','activating','done','failed','cancelled');
+-- Story 7.18a (AD-20's F-075): `awaiting_ship` is where Pre-flight parks the row and Ship it resumes it.
+create type public.job_stage     as enum ('queued','compiling','checking','awaiting_ship','uploading','activating','done','failed','cancelled');
 
 -- FR-J8: written from the FIRST stage, not on success — FR-J7 stores artifacts only on success,
 -- so without this a failed compile has nothing for the five-stage UI to poll.
@@ -484,7 +488,12 @@ create table public.deploys (
   -- `entitlements` to find the limit would be a second decider.
   pinned        boolean not null default false,
   created_at    timestamptz not null default now(),
-  activated_at  timestamptz
+  activated_at  timestamptz,
+  -- Story 7.18a: Story 7.8's quality verdict (`QualityVerdict`) beside `gscan`, and the staleness test — a sha-256 over
+  -- every row the compile read plus the release, so Ship it re-makes the artefact only when it moved. Written only by
+  -- the server; `authenticated` keeps its table-wide select and gains no write. LAST, because `add column` appends.
+  quality       jsonb,
+  inputs_sha256 text
 );
 create index on public.deploys (project_id, site_id, created_at desc);
 create index on public.deploys (site_id, created_at desc) where status = 'live';

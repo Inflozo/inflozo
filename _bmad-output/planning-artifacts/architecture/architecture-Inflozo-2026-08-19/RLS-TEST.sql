@@ -599,7 +599,7 @@ begin
     ('projects','revision','BOTH'),
     ('custom_settings','frozen_at','BOTH'),
     ('deploy_jobs','stage','BOTH'),('deploy_jobs','error','BOTH'),
-    ('deploys','pinned','BOTH'),
+    ('deploys','pinned','BOTH'),('deploys','quality','BOTH'),('deploys','inputs_sha256','BOTH'),
     ('template_binding_checklist','filename','BOTH')
   ) as v(t,c,verbs)
   cross join lateral (values ('INSERT'),('UPDATE')) as p(priv)
@@ -2552,3 +2552,124 @@ reset role;
 
 delete from auth.users where id in ('77777777-7170-0000-0000-000000000001',
                                     '77777777-7170-0000-0000-000000000002');
+
+-- ── STORY 7.18a — the deploy wizard: awaiting_ship, the quality verdict and the staleness hash (AD-20's F-075) ──────────
+--
+-- BEHAVIOURAL. Pre-flight parks its `deploy_jobs` row at `awaiting_ship` and Ship it resumes it; the tenant may not cancel
+-- there (FR-J8's lever is the first three stages only). `deploys.quality` and `deploys.inputs_sha256` are the server's:
+-- the tenant reads them on its own deploy, never on another's, and writes neither. With the 7.18a migration withheld this
+-- block ABORTS at its first check — the control that the gate sees the migration at all.
+
+reset role;
+
+delete from auth.users where id in ('77777777-718a-0000-0000-000000000001',
+                                    '77777777-718a-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-718a-0000-0000-000000000001'),
+                                  ('77777777-718a-0000-0000-000000000002');
+insert into public.sites(id,user_id,url) values
+  ('eeeeeeee-718a-0000-0000-000000000001','77777777-718a-0000-0000-000000000001','https://own-718.example'),
+  ('eeeeeeee-718a-0000-0000-000000000002','77777777-718a-0000-0000-000000000002','https://theirs-718.example');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-718a-0000-0000-000000000001','77777777-718a-0000-0000-000000000001','Own ship','own-ship-718','{}'),
+  ('dddddddd-718a-0000-0000-000000000002','77777777-718a-0000-0000-000000000002','Theirs','theirs-718','{}');
+
+-- (1) the stage, in its place, and the two columns.
+do $$
+declare stages text[];
+begin
+  select array_agg(e.enumlabel order by e.enumsortorder) into stages
+    from pg_enum e join pg_type t on t.oid = e.enumtypid
+   where t.typname = 'job_stage' and t.typnamespace = 'public'::regnamespace;
+  if stages is distinct from array['queued','compiling','checking','awaiting_ship','uploading','activating','done','failed','cancelled'] then
+    raise exception 'FAIL (7.18a): job_stage is % — awaiting_ship is missing or out of place', stages;
+  end if;
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'deploys' and is_nullable = 'YES'
+         and ((column_name = 'quality' and data_type = 'jsonb') or (column_name = 'inputs_sha256' and data_type = 'text'))) <> 2 then
+    raise exception 'FAIL (7.18a): deploys.quality (jsonb) or deploys.inputs_sha256 (text) is missing or not nullable';
+  end if;
+  if col_description('public.custom_settings'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.custom_settings'::regclass and attname = 'bound_to'))
+     not like '%kind:''prop''%' then
+    raise exception 'FAIL (7.18a): custom_settings.bound_to''s comment does not name the prop shape (DW-355)';
+  end if;
+  raise notice 'PASS (7.18a): job_stage carries awaiting_ship after checking; deploys has quality and inputs_sha256; bound_to names its three shapes';
+end $$;
+
+-- the server writes both deploys and both jobs (the service role, as `server/deploy/deploy-io.ts` does)
+set role service_role;
+insert into public.deploys(id,project_id,user_id,site_id,version,theme_name,status,quality,inputs_sha256) values
+  ('aaaaaaaa-718a-0000-0000-000000000001','cccccccc-718a-0000-0000-000000000001','77777777-718a-0000-0000-000000000001',
+   'eeeeeeee-718a-0000-0000-000000000001','1.0.0','inflozo-own-ship-718','checking','{"blocked":false,"findings":[]}','own-hash'),
+  ('aaaaaaaa-718a-0000-0000-000000000002','dddddddd-718a-0000-0000-000000000002','77777777-718a-0000-0000-000000000002',
+   'eeeeeeee-718a-0000-0000-000000000002','1.0.0','inflozo-theirs-718','checking','{"blocked":true,"findings":[]}','their-hash');
+insert into public.deploy_jobs(id,project_id,user_id,site_id,stage,deploy_id) values
+  ('bbbbbbbb-718a-0000-0000-000000000001','cccccccc-718a-0000-0000-000000000001','77777777-718a-0000-0000-000000000001',
+   'eeeeeeee-718a-0000-0000-000000000001','awaiting_ship','aaaaaaaa-718a-0000-0000-000000000001'),
+  ('bbbbbbbb-718a-0000-0000-000000000002','cccccccc-718a-0000-0000-000000000001','77777777-718a-0000-0000-000000000001',
+   'eeeeeeee-718a-0000-0000-000000000001','checking',null);
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-718a-0000-0000-000000000001';
+
+-- (2) the tenant reads its own verdict and hash, never another's; (3) it writes neither; (4) no cancel at awaiting_ship.
+do $$
+declare q jsonb; h text; theirs int; n int;
+begin
+  select quality, inputs_sha256 into q, h from public.deploys where id = 'aaaaaaaa-718a-0000-0000-000000000001';
+  if q is distinct from '{"blocked":false,"findings":[]}'::jsonb or h is distinct from 'own-hash' then
+    raise exception 'FAIL (7.18a): the tenant read % / % on its own deploy', q, h;
+  end if;
+  select count(*) into theirs from public.deploys where id = 'aaaaaaaa-718a-0000-0000-000000000002';
+  if theirs <> 0 then
+    raise exception 'FAIL (7.18a): the tenant can see another tenant''s deploy';
+  end if;
+  raise notice 'PASS (7.18a): the tenant reads quality and inputs_sha256 on its own deploy and not another tenant''s';
+  begin
+    update public.deploys set quality = '{}'::jsonb where id = 'aaaaaaaa-718a-0000-0000-000000000001';
+    raise exception 'FAIL (7.18a): the tenant wrote deploys.quality';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.18a): the tenant cannot write deploys.quality (%)', sqlstate;
+  end;
+  begin
+    update public.deploys set inputs_sha256 = 'forged' where id = 'aaaaaaaa-718a-0000-0000-000000000001';
+    raise exception 'FAIL (7.18a): the tenant wrote deploys.inputs_sha256';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.18a): the tenant cannot write deploys.inputs_sha256 (%)', sqlstate;
+  end;
+  begin
+    update public.deploy_jobs set stage = 'awaiting_ship' where id = 'bbbbbbbb-718a-0000-0000-000000000002';
+    raise exception 'FAIL (7.18a): the tenant parked its own job at awaiting_ship';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.18a): the tenant cannot set a job''s stage, awaiting_ship included (%)', sqlstate;
+  end;
+  update public.deploy_jobs set cancel_requested = true where id = 'bbbbbbbb-718a-0000-0000-000000000001';
+  get diagnostics n = row_count;
+  if n <> 0 then
+    raise exception 'FAIL (7.18a): the tenant cancelled a job at awaiting_ship — Cancel ends where checking ends';
+  end if;
+  -- CONTROL: the same tenant still cancels its own job in `checking`, so the refusal above is the stage's, not a tenant
+  -- with no lever at all
+  update public.deploy_jobs set cancel_requested = true where id = 'bbbbbbbb-718a-0000-0000-000000000002';
+  get diagnostics n = row_count;
+  if n <> 1 then
+    raise exception 'FAIL (7.18a): the control — the tenant could not cancel its own job in checking either';
+  end if;
+  raise notice 'PASS (7.18a): no cancel at awaiting_ship; the control cancels in checking';
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+do $$
+begin
+  if (select inputs_sha256 from public.deploys where id = 'aaaaaaaa-718a-0000-0000-000000000001') is distinct from 'own-hash'
+     or (select cancel_requested from public.deploy_jobs where id = 'bbbbbbbb-718a-0000-0000-000000000001') then
+    raise exception 'FAIL (7.18a): a refused tenant write changed the deploy or the parked job';
+  end if;
+  raise notice 'PASS (7.18a): the refused writes left the deploy and the parked job as the server wrote them';
+end $$;
+
+delete from auth.users where id in ('77777777-718a-0000-0000-000000000001',
+                                    '77777777-718a-0000-0000-000000000002');

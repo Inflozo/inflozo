@@ -148,7 +148,7 @@ development_status:
   7-16b-custom-templates-on-the-canvas: done
   7-16c-collection-and-channel-templates-list-their-posts: done
   7-17-uploading-routes-yaml-and-the-guided-fallback: done
-  7-18a-the-deploy-wizard: ready-for-dev
+  7-18a-the-deploy-wizard: in-progress
   7-18b-choosing-the-site-and-pre-flight-s-warnings: backlog
   7-18c-the-editor-s-lock-and-save-leftovers: backlog
   7-19-the-first-deploy-credential-step-and-its-decline-path: backlog
