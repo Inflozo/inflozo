@@ -618,6 +618,34 @@ A user ships. The project compiles — purely, from what it is handed — into a
 - **The deploy wizard compiles once, checks, uploads and activates, and tells the truth about the outcome (7.18, 7.31, 7.32, FR-J8).** Four steps, six on a site's first deploy; Pre-flight is the compile and gscan run on one `deploy_jobs` row and Ship it uploads that artefact; Cancel only before Uploading; a failure is a sentence and its fix, mailed as FR-P1's email (5) and written to notifications (AD-25), while an upload whose activation failed is `uploaded` — retained, name frozen, drift baseline unmoved, no email.
   - **DW-51, DW-54, DW-238, DW-253, DW-260 (Story 7.18):** a multipart `FormData` body through the Admin chokepoint; a `denied` audit row driven live; D8g's take-over through `lock-takeover.tsx`; Pre-flight's feed-less-archive and 25-pick warnings and FR-H6's member-switch sentences (`sites.site_settings.members`), all warning, never blocking.
   - **DW-297, DW-304, DW-307, DW-308 (Story 7.18):** the owner rules at Create what a free ask does below Ghost 5.62 and the sentence for a save refused for good; the lock row gains a per-page id in a Schema phase pushed first (R-99; R-228 accepted the wait); a first-moment typist turned reader is told what it holds. **R-145, R-167:** ⌘⏎ is bound here and completes FR-D11's map; a "looked at" record runs out at any change.
+  - **Story 7.18's Create (2026-10-18):** ready for Dev with three questions open (R-83); Dev waits for all three.
+    - **Q1, the split (planned: three stories).**
+      - **7.18a, this spec:** shipping. It takes 7.32's D2e/D2f endings with their one-click activate.
+      - **7.18b:** choosing the site and every warning-only Pre-flight row, with DW-297's question.
+      - **7.18c:** DW-304 (with its question), DW-307 and DW-308.
+      - 7.32 keeps D2d. The two first-deploy steps stay 7.19's and 7.20's. 7.25's lock span gains the routes upload.
+    - **Q2, DW-364 (planned: fix the index filter so an untagged post stays listed, proved on T1 first).**
+    - **Q3, DW-362 (planned: "Start again from Ghost's default routing" on Routes & Templates).**
+    - **Planned.**
+      - Pre-flight and Ship it are two invocations on one `deploy_jobs` row (F-075 over AD-11's sentence). Each answers
+        the job id and works on in `after()`, and the wizard polls a GET.
+      - The artefact is stored at Pre-flight only when nothing blocks. Staleness is `deploys.inputs_sha256`, a hash of
+        every row the compile read plus the release.
+      - The Schema push adds `awaiting_ship`, `deploys.quality`, `deploys.inputs_sha256` and DW-355's `comment on`.
+      - The compile reads STORED rows, never `editorData`'s synthesised docs. `index` routes to `pageTwo`.
+      - The theme upload and activation use the Admin key, proved on T1 (§86, `record-deploy.mjs`).
+      - The zip writer is ours, on `node:zlib`.
+      - `jsdom`, `gscan4` and `gscan6` are server externals, and the function's fit on Vercel is proved at Dev.
+      - DW-349 hides an emptied typed text on both emitters.
+      - DW-353 and DW-358 become plain words keyed on an exported `REFUSAL` list.
+      - DW-371 is settled by routine calls: an unverified upload writes `routes_last_offered` and offers Verify, with no
+        migration.
+      - DW-369 already held since 7.16a.
+      - The walk gains step 113.
+    - **Read:**
+      - `TIMEOUT_MS` (15 s) covers a whole call. §76's uploads ran with 180 s, so `theme_upload` gets its own.
+      - `edit_locks` has no service-role grant, so the lock check reads with the user's own client.
+      - AD-19's `pg_advisory_xact_lock` cannot wrap `call()` on `db.ts`'s single connection. That is 7.25's to solve.
 - **The first deploy asks for the Staff Access Token and survives a no (7.19, FR-C1).** It is disclosed as a full-Administrator credential, an Administrator's token suffices, and declining loses the snapshot, the drift check and the automated routes upload — said once — while the Admin API key still uploads and activates.
 - **The live theme is archived before the first upload, and drift stops a later one (7.20, 7.21, FR-J13, FR-J16).** The snapshot is read with the staff token, gated on the `package.json` marker, kept per site record outside quota and pruning, behind a backup gate whose master confirm waits for the last tick; drift compares content manifests (SHA-256, line endings normalized), fails open, names files by layer name, and demands zero false positives — a compiled filename never changes when nothing did.
   - **DW-75, DW-79 (Story 7.20):** the 90-day orphan purge is a cron deriving its deadline from `sites.disconnected_at`, deleting objects before rows through `drainPrefix`, and the 90 days get one home (`ORPHAN_SNAPSHOT_DAYS`).
