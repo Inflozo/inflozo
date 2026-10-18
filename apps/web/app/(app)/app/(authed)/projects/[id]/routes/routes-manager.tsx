@@ -90,12 +90,17 @@ const MORE = `inline-flex h-6 shrink-0 items-center justify-center rounded-[6px]
  * write's answer carries its moves (`moved`, the actions' `syncDocs`), and they are posted on `MOVED_CHANNEL`, so that
  * editor takes the docs in from its own base and its next save is not R-253's 409. Another device hears nothing and keeps
  * R-253's ask (AD-15). A browser with no `BroadcastChannel` tells nobody — the 409 is the floor.
+ *
+ * THE REVIEW (2026-10-18): A SUCCESS THAT MOVED NOTHING IS TOLD TOO, with no moves — a config-only save, "+ New template",
+ * a template with no doc deleted — so the editor re-reads its Template menu and routing rather than waiting for a reload.
+ * A refusal that moved nothing is not told: nothing changed.
  */
 function told(projectId: string, result: RoutesResult): RoutesResult {
-  if (result.moved === undefined || result.moved.length === 0 || typeof BroadcastChannel === 'undefined') return result
+  const moved = result.moved ?? []
+  if (('error' in result && moved.length === 0) || typeof BroadcastChannel === 'undefined') return result
   try {
     const channel = new BroadcastChannel(MOVED_CHANNEL(projectId))
-    channel.postMessage(movedMessage(projectId, result.moved))
+    channel.postMessage(movedMessage(projectId, moved))
     channel.close()
   } catch {
     // a channel that cannot be opened tells nobody, and the editor's next save meets R-253's 409

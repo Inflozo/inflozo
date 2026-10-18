@@ -2,10 +2,10 @@
 title: 'Story 7.17 — Uploading `routes.yaml`, and the guided fallback'
 type: 'feature'
 created: '2026-10-18'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '2fa1efe2a64aa08f2e5f499e0bc2460dfdc0c3c7'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -418,6 +418,29 @@ F is the project's file, `routesYaml(config)`. "State" means `sites.routes_last_
     again, never the conflict dialog — the other order of R-258's race;
   - B16's title is an `h3` on a Sites card and an `h2` under Routes & Templates' `h1` (`heading`), and its download link is
     named by step 1's own words and the file chip (`aria-labelledby`) — no new string.
+- **Review, 2026-10-18 — the live file is read with the Admin key when the staff token's read fails** (Tasks' step 3 said
+  "staff token if present, else the Admin key"). A token that had stopped working was taken for an unreadable site: a file
+  Ghost already held was offered, met the 401 and stored `revoked`, so B16 would ask for a hand upload of a file Ghost has;
+  and back at the default, Inflozo's own file was `kept` with no cause stored. The Admin key reads `routes.yaml` on both
+  majors (§37). The matrix's "First read fails" row now means both reads failed.
+- **Review, 2026-10-18 — `routesForm(file)` is the one upload body** (`lib/routes-upload.ts`): `offerRoutes` and
+  `record-routes.mjs --upload` both call it. The recorder had copied the two lines while claiming `offerRoutes`' body; §85's
+  run used that copy, which builds the same form, so T1 is not re-run (no §85 row changes).
+- **Review, 2026-10-18 — DW-370's editor, three additions the layers found** (AD-15 carries them): a move from the revision
+  the editor's own save is landing at, heard before that save's answer, is held until the answer sets the base, then taken
+  (`heldMoves`) — the third ordering of the race, which met R-253's dialog; a doc the editor still owes an edit to keeps the
+  editor's own and is sent from the new base (the AC's "nothing it owed is lost"), and only a Routes Manager canvas is ever
+  taken in; and a routes-page SUCCESS that wrote no doc is told with no moves, so the editor re-reads its Template menu and
+  routing — "+ New template", a config-only save, the delete of a template with no doc (the AC's "a template is made,
+  deleted or restored"). Walk step 112i walks the two races on a held sync request and the doc-less template.
+- **Review, 2026-10-18 — B16's list and link.** The steps' `<ol>` carries `role="list"` (Safari drops a list's semantics
+  under `list-style: none`; B15's beside it too), and "Show me where ↗" says "(opens in a new tab)" to a screen reader, as
+  C3b's link does. No visible string changes.
+- **Review, 2026-10-18 — accepted as built, recorded here:** the README sink's AD-36 pair lives in `compile.test.ts` (Dev's
+  entry above: the runtime cannot import the compiler), and README's heading and sentence live in `compile.ts` for the same
+  reason a core package reads no app's word list — `check-snapshots` now holds README's guide address equal to
+  `GHOST_ROUTES_HELP`, its control a different address FAILing. `routesWrite` takes `(outcome, at)`: the file travels in the
+  outcome (the Tasks wrote `(outcome, file)`).
 - **Dev, 2026-10-18 — DW-371 (new, Story 7.18's).** The matrix rules a read-back that differs or fails `failed:
   routes_unverified` with the state unchanged, so EXPERIENCE F3's *could not verify* state has no card; 7.18's Ship it says it
   at its ending, or puts a stored cause to the owner.
@@ -754,15 +777,14 @@ fix gets its own ask.
   - the Ghost 5 half is DW-326's (R-238).
 - `python3 tools/doc-audit.py --check` -- PASS, twice.
 - `git grep -n "Labs card"` and `git grep -n "non-Owner"` -- every remaining hit carries the dated reading.
-- Dev's results add a **Re-run by the main session on the final tree (2026-10-18, Node 24), after the T1 run, before the commit:**
-- `pnpm check` -- exit 0: library 285 / ghost-shim 47 / section-runtime 432 / app 830 / theme-compiler 218 / tools 13
-  passing, 0 failing (each suite's own count, as it printed), the story's `(7.17)` and `Story 7.17` tests among them.
+
+**Re-run by the main session on the final tree (2026-10-18, Node 24), after the T1 run, before the commit:**
+- `pnpm check` -- exit 0, 0 failing, every suite printing its own count (the Review took the counts out of this spec:
+  standing rule 4), the story's `(7.17)` and `Story 7.17` tests among them.
 - `pnpm build` -- exit 0. `node tools/check-traces.mjs` -- "every route carries its files", and no client chunk carries the
   font pool's record.
-- `pnpm keyboard` -- exit 0, 243 passed (17.2 min).
+- `pnpm keyboard` -- exit 0, every journey passed.
 - `python3 tools/doc-audit.py --check` -- PASS on the second run (the first regenerated the index after §85 landed).
-
-**Matrix row → check** table: every I/O row maps to a check that ran in that row's state.
 
 **Results (Dev, 2026-10-18, on the final tree, under Node 24; the T1 run is the main session's):**
 - `pnpm check` -- exit 0: lint, typecheck and every package's suite, each printing its own count, with every 7.17 test named in
@@ -807,7 +829,8 @@ fix gets its own ask.
   now opens in a context of its own, because an editor in the same context hears the delete (DW-370) and moves to Home before
   110h's next press. Both are the Review's, on production.
 
-**Matrix row → check** (each ran in that row's state; the T1 and walk rows wait for their runs):
+**Matrix row → check** (each ran in that row's state; the T1 rows ran at Dev, the walk rows and the Verify presses on
+production at the Review):
 
 | I/O row | The check that ran in it |
 |---|---|
@@ -823,18 +846,59 @@ fix gets its own ask.
 | Default, someone else's file | `routes-upload.test.ts`: `kept`, no POST, no write (never offered, or offered something else) |
 | Default everywhere | `routes-upload.test.ts`: `kept`, even when the default was offered last |
 | Stored routing unfit | `routes-upload.test.ts`: a config that does not parse, a template the project lacks, a spliced file — each `routes_invalid` with only the read made |
-| First read fails | `routes-upload.test.ts`: with F the upload goes and the read-back decides; without F `kept` |
-| Verify, Ghost has it | `routes-upload.test.ts`: the Admin key, bytes equal → `verified`, the cause cleared with the sha and the time; walk 112d |
-| Verify, not yet | `routes-upload.test.ts`: bytes differ → `notYet`, nothing written |
-| Verify, no answer | `routes-upload.test.ts`: a read that fails or throws → `unreachable`, nothing written; walk 112c on production, the columns read back unchanged |
+| First read fails | `routes-upload.test.ts`: with F the upload goes and the read-back decides; without F `kept` — since the Review, when the staff read AND the Admin key's fail (a staff read that fails alone is answered by the Admin key: its own test, with a staff read that answers as the control) |
+| Verify, Ghost has it | `routes-upload.test.ts`: the Admin key, bytes equal → `verified`, the cause cleared with the sha and the time; **the Review's T1 run: Verify PRESSED on production over T1's live bytes, the card's one line, `routes_fallback` read back null with T1's sha**; walk 112d draws the card gone after that write (made there through the service key) |
+| Verify, not yet | `routes-upload.test.ts`: bytes differ → `notYet`, nothing written; the Review's T1 run: Verify pressed over a file T1 does not hold → `notYet`, the row unchanged |
+| Verify, no answer | `routes-upload.test.ts`: a read that fails or throws → `unreachable`, nothing written, and since the Review a site that is not the caller's (no call) and a match whose write fails; walk 112c on production (its planted site holds no key, so the chokepoint refuses before any request), the columns read back unchanged |
 | Daily check | `health-rule.test.ts` (7.17): the cause cleared when the live sha is the offered one's, left with a different sha, no read, no cause, nothing offered; the shell's select, hash and bytes read from its source |
 | ⌘K lint | `modules.test.ts` (7.17): each of the three names and a bracketed read named, comments not; `compile.test.ts`: a bundled module that reads one throws, `core.js` and a comment the control; `check-snapshots`: every real module file passes, a planted one is named |
 | Head lint | `compile.test.ts`: `exclude="search"` and four spellings named, a bare and a `~`-trimmed `{{ghost_head}}` pass, `{{ghost_foot}}` unaffected |
 | README | `compile.test.ts`: `## Routes` after `## Styles`, the file indented four spaces and byte-equal once unindented, null and absent give the old README; the AD-36 pair; `check-snapshots`: `themeFailures` clean over the pilots' README with routes, a builder-named path its control |
 | DW-366 | `main-feed.test.ts` (7.17): `flaggedListing` lists only a flagged Routes Manager file; the flag kept through a read and an edit; a readable routing that does not list it strips it (the control); `editor.test.ts`: `read.ts` and the editor's `listed` |
 | DW-367 | `routes.test.ts` (7.17): `listedStartFailed`, `made`, the re-check (no doc, no stored route, listed), each clause's removal failing (the control), the grid before the config, the sheet's `start_file` |
-| DW-370 | `journal.test.ts` (7.17): `takeMoves` from the editor's base, a move from another base taking nothing (the control), the message's shape, the routes page's `told` on every action, the editor's `heardMoved` (holder only, journal kept, the refresh, the dialog) and the 409 retry; walk 112e–112g, the stubbed `postMessage` meeting R-253's dialog |
+| DW-370 | `journal.test.ts` (7.17): `takeMoves` from the editor's base, a move from another base taking nothing (the control), the message's shape, the routes page's `told` on every action, the editor's `heardMoved` (holder only, journal kept, the refresh, the dialog) and the 409 retry; walk 112e–112g, the stubbed `postMessage` meeting R-253's dialog; since the Review, walk 112i: both races on a held sync request, and a doc-less template told with no moves |
 
 **Real services (R-82):**
 - **Dev:** T1 `ghost6.inflozo.com` (6.58.0) via §85, and the production database for the migration's apply.
-- **Review:** production `app.inflozo.com` via walk step 112, and T1 if any §85 row changes.
+- **Review:** production `app.inflozo.com` via walk step 112 and Verify pressed end to end; production's schema through the
+  pooler; T1 read-only (no §85 row changed, so §85 was not re-run).
+
+**Review (2026-10-18) — the real infrastructure, the main session (R-82), keys read in-process by name, none printed:**
+- **CI on the Dev head `1af3b36b`:** `check`, `rls`, `deploy` and the render matrix all succeeded; Vercel's production
+  deployment `dpl_Gp262PfgdQtEpCG1JfoRvGwPZQwk` READY, built from it.
+- **Production's schema (R-99)**, through `SUPABASE_DB_POOLER_URL`: `sites.routes_fallback text`, nullable;
+  `sites_routes_fallback_check` = `CHECK ((routes_fallback = ANY (ARRAY['no_token', 'revoked', 'role'])))`; on that column
+  `authenticated` holds SELECT alone and `service_role` INSERT, SELECT and UPDATE; every site's value null. Control: a column
+  the code does not name reads absent.
+- **T1, read-only**, through the product's `adminRequest`: `GET settings/routes/yaml/` 200 with `GHOST6_STAFF_ACCESS_TOKEN` and
+  with `GHOST6_ADMIN_API_KEY`, the same 130 bytes, F4's sha `b2d67526…` — Dev's restore holds; `/inflozo-probe-up/` 404.
+  Control: a random well-formed staff token → 401 `UnauthorizedError`, which `routesAnswer` reads `revoked`.
+- **The walk on the Dev deployment**, cut to steps 1–5 + 109–112 (a scratchpad copy of `run-verify-editor.cjs` in a detached
+  worktree at `1af3b36b`, the launcher reading the four names in-process): **0 FAIL, first time** — 109–111 still hold and
+  110h's re-expectation with them; 112a–h hold: the control with no cause draws no card on either host; each cause on both
+  hosts in its own words (Sites' card's last child, an h3; under the routes page's bar, an h2); the chip's "63 bytes" (the
+  file's bytes, not its 61 characters) and the `data:` link decoding to the planted bytes; Verify's "Verifying…" with
+  `aria-busy` and `aria-disabled`, then `unreachable` with nothing written; the resolved card gone; DW-370's collection, its
+  template's delete and Undo told to the editor with no dialog and the journal kept; the stubbed `postMessage` meeting R-253's
+  dialog (the control); users and projects counted back unchanged.
+- **Verify upload pressed end to end against T1** (scratchpad `verify-t1.cjs`): a throwaway account connected T1 through the
+  product's wizard (Admin and Content keys; read-only on T1), the routes columns planted through the service key, and Verify
+  pressed on Sites — over a file T1 does not hold: "Ghost doesn't have this file yet…", the row unchanged (the control); over
+  T1's live bytes: "Ghost has your routes.yaml. Your routing is live.", `routes_fallback` read back null with T1's sha and the
+  time; the next load draws no card. Cleanup: disconnected through the product (`credentials_present` all false), the
+  account deleted with its rows, the user count unchanged. The first run died on a stalled `/sites` load after its `notYet`
+  half passed; the second, retrying an idempotent load once (a `note`), passed whole.
+- **R-74's side-by-side** — B16 at 1440 on both hosts (the walk's `b16-<cause>-<host>-1440x900.png`) against the frame's B16
+  rendered from the export: the same 600px card, tile and glyph, title, body, three numbered steps with the file chip, the
+  coral "Show me where ↗", Verify upload and the secondary. The differences, each a Kit convention: step text and file name in
+  ink `#1C1B1A` where the frame has `#3A3835` (no Kit token; B15 maps it the same); the Kit's size-36 buttons (radius 12, 13px)
+  against the frame's 10 and 12.5px; the Kit's icons with round joins; and a footer that wraps — the footnote takes its own
+  line, where the frame at the same 600px squeezes each button's label onto two lines; on a Sites card the buttons stack.
+- **The Review's patches, locally:** `pnpm check` exit 0; each new `routes-upload.test.ts` case FAILs with the old code planted
+  back (the staff-only read; Verify ignoring a failed write) and passes restored; `check-snapshots`' README guide row FAILs
+  with a different `GHOST_ROUTES_HELP` planted; `bash supabase/tests/run-rls-gate.sh` exit 0 with the 7.17 block's two new
+  controls (the tenant still writes its own title; the service role writes the cause); `pnpm keyboard` exit 0, every journey
+  passed, run whole before the push.
+- **After the Review's push:** walk step 112, with 112i, on the Review's own deployment — recorded in the next Review commit.
+- **Not run anywhere, held by regexes over the source only:** DW-367's `start_file` retry (production offers no lever to fail a
+  grid write) and `heardMoved`'s branches beyond what step 112i drives.

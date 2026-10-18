@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { parseRoutesConfig, routesYaml, validateRoutes } from '@inflozo/section-runtime/routes'
 import {
-  bytesEqual, routesAnswer, routesToOffer, routesWrite, ROUTES_PATH, type RoutesOutcome, type VerifyOutcome,
+  bytesEqual, routesAnswer, routesForm, routesToOffer, routesWrite, ROUTES_PATH, type RoutesOutcome, type VerifyOutcome,
 } from '../lib/routes-upload.ts'
 
 /**
@@ -22,7 +22,8 @@ import {
  *
  * THE ORDER: the stored routing, the project's templates and the site → the routing judged (the file must be the bytes
  * `routesYaml` emits from a config `validateRoutes` accepts — AD-36: never spliced again) → the live file (the staff
- * token when there is one, else the Admin key: both may read it, §37) → `routesToOffer` → the upload, `routes_upload`
+ * token when there is one, and the Admin key when there is none or the staff read fails: both may read it, §37) →
+ * `routesToOffer` → the upload, `routes_upload`
  * through the chokepoint with the staff token, as `multipart/form-data` (DW-51's transport) → the read-back with the SAME
  * token (FR-I4) → `routesWrite`.
  */
@@ -100,7 +101,10 @@ export async function offerRoutes(
   const project = routesYaml(parsed.config)
   if (project !== read.yaml) return { kind: 'failed', code: 'routes_invalid' }
 
-  const live = await readLive(io, siteId, route, read.staff ? 'staff' : 'admin')
+  // the Admin key reads it too (§37), so a staff token that stopped working is not taken for an unreadable site (the
+  // Review, 2026-10-18): without it, a file Ghost already holds would be offered and B16 would ask for a hand upload of
+  // it, and Inflozo's own file would be `kept` over a project back at the default with no cause stored
+  const live = (read.staff ? await readLive(io, siteId, route, 'staff') : null) ?? (await readLive(io, siteId, route, 'admin'))
   const pick = routesToOffer({ project, live, lastOffered: read.lastOffered })
   if (pick.kind === 'kept') return pick
 
@@ -114,12 +118,9 @@ export async function offerRoutes(
   if (pick.kind === 'unchanged') return settle({ kind: 'unchanged', file: pick.file, sha256: sha256(pick.file) })
   if (!read.staff) return settle({ kind: 'fallback', cause: 'no_token', file: pick.file })
 
-  // the upload Ghost Admin's own Upload routes file makes: field `routes`, `routes.yaml`, `text/yaml`
-  const form = new FormData()
-  form.append('routes', new Blob([pick.file], { type: 'text/yaml' }), 'routes.yaml')
   let posted
   try {
-    posted = await io.call({ siteId, method: 'POST', path: ROUTES_PATH, body: form, item: 'routes_upload', route, kind: 'staff' })
+    posted = await io.call({ siteId, method: 'POST', path: ROUTES_PATH, body: routesForm(pick.file), item: 'routes_upload', route, kind: 'staff' })
   } catch (thrown) {
     const outcome = thrownOutcome(thrown, pick.file)
     return outcome.kind === 'fallback' ? settle(outcome) : outcome

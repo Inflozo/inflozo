@@ -2518,6 +2518,13 @@ begin
   exception when insufficient_privilege then
     raise notice 'PASS (7.17): the tenant cannot write routes_fallback (%)', sqlstate;
   end;
+  -- CONTROL (the Review, 2026-10-18): the same tenant still writes a column its grant carries, so the refusal above is this
+  -- column's, not a tenant with no update at all
+  update public.sites set title = 'Own 717' where id = 'eeeeeeee-7170-0000-0000-000000000001';
+  if not found then
+    raise exception 'FAIL (7.17): the control — the tenant could not write its own site''s title either';
+  end if;
+  raise notice 'PASS (7.17): the control — the tenant still writes its own title';
 end $$;
 
 reset role;
@@ -2530,6 +2537,18 @@ begin
   end if;
   raise notice 'PASS (7.17): the refused write left routes_fallback as the server wrote it';
 end $$;
+
+-- (4) the server's writer: the service role writes the cause (the routes step and Verify upload, `server/routes-io.ts`)
+set role service_role;
+do $$
+begin
+  update public.sites set routes_fallback = null where id = 'eeeeeeee-7170-0000-0000-000000000001';
+  if not found or (select routes_fallback from public.sites where id = 'eeeeeeee-7170-0000-0000-000000000001') is not null then
+    raise exception 'FAIL (7.17): the service role could not write routes_fallback';
+  end if;
+  raise notice 'PASS (7.17): the service role writes routes_fallback';
+end $$;
+reset role;
 
 delete from auth.users where id in ('77777777-7170-0000-0000-000000000001',
                                     '77777777-7170-0000-0000-000000000002');

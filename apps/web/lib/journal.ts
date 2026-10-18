@@ -453,7 +453,8 @@ export const MOVED_CHANNEL = (projectId: string) => `inflozo-moved-${projectId}`
  *  wrote (as the server judged them, `docRefusal` first) and the keys it took away (a template's canvas, deleted). */
 export type Move = { from: number; to: number; docs: Record<string, ProjectDoc>; gone: string[] }
 
-/** Every move one routes-page action made, in order — posted on `MOVED_CHANNEL` once its answer lands. */
+/** Every move one routes-page action made, in order — posted on `MOVED_CHANNEL` once its answer lands. EMPTY for a success
+ *  that wrote no doc (the routing, or a template's row, changed): the editor then re-reads the page and takes nothing. */
 export type MovedMessage = { type: 'moved'; project: string; moves: Move[] }
 
 export const movedMessage = (project: string, moves: Move[]): MovedMessage => ({ type: 'moved', project, moves })

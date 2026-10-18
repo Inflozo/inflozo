@@ -58,9 +58,9 @@ import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORD
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, carries, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
-  CARDS_KEY, flushDecision, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, isMovedMessage, isSentMessage, journalCleared, maxSeq, MOVED_CHANNEL, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
+  CARDS_KEY, flushDecision, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, isMovedMessage, isSentMessage, journalCleared, maxSeq, MOVED_CHANNEL, movedMessage, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
   SENT_CHANNEL, takeMoves, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
-  type Restore, type SyncState,
+  type Move, type Restore, type SyncState,
 } from '@/lib/journal'
 import { ghostLabel, homeList, listsOf, routeList, type Lists } from '@inflozo/section-runtime/routes'
 import {
@@ -1349,6 +1349,9 @@ function EditorShell({
   const base = useRef(revision)
   const attempt = useRef(0)
   const inFlight = useRef(false)
+  /** Story 7.17's Review — DW-370: moves Routes & Templates posted from the revision this editor's own save is landing at,
+   *  held until that save's answer sets the base (`heardMoved`, `flush`'s `finally`) */
+  const heldMoves = useRef<Move[]>([])
   // Story 5.8's review: a flush asked for while one is in flight is OWED, never dropped; fallback is a fact about the
   // device and outlives every indicator state; and nothing is scheduled by a component that has gone
   const again = useRef(false)
@@ -2122,6 +2125,11 @@ function EditorShell({
       scheduleRetry()
     } finally {
       inFlight.current = false
+      // Story 7.17's Review (DW-370): the moves held while this request was out are taken now, from the base its answer set —
+      // a move from any other base still takes nothing, and the next save meets R-253's 409 as before
+      const held = heldMoves.current
+      heldMoves.current = []
+      if (held.length > 0) heardMoved.current(movedMessage(project.id, held))
       if (again.current) {
         again.current = false
         // only after a SUCCESS: a refusal or a failure already has its own next step (the dialog, the backoff)
@@ -2177,16 +2185,30 @@ function EditorShell({
    *  moves to Home with `TEMPLATE_GONE`), the record stored at the new base, the page re-read for the Template menu and the
    *  routing (`router.refresh()`), and a conflict dialog that came first closed and the save sent again. Its journal — its
    *  undo history — is kept: nothing it holds was overwritten. A message from any other base is ignored, so the 409 follows
-   *  as R-253 rules; a reader tab ignores it (it never flushes, `flush`'s DW-203 wall); another device hears nothing. */
+   *  as R-253 rules; a reader tab ignores it (it never flushes, `flush`'s DW-203 wall); another device hears nothing.
+   *
+   *  THE REVIEW (2026-10-18) ADDED THREE THINGS: a message with no move (the routing, or a template with no doc, changed) re-reads
+   *  the page alone; a move from the revision this editor's own save is landing at is held until that save's answer arrives
+   *  (`heldMoves`), so the order "its save landed, then the page moved, then its answer came" is no dialog either; and a doc
+   *  this editor still owes an edit to keeps the editor's own (its next save sends it from the new base — nothing it owed is
+   *  lost), while only a Routes Manager canvas is ever taken in. */
   const heardMoved = useRef<(message: unknown) => void>(() => {})
   heardMoved.current = (message) => {
     if (!isMovedMessage(message) || message.project !== project.id || !latest.current.lock.holder) return
+    if (message.moves.length === 0) {
+      router.refresh()
+      return
+    }
     const took = takeMoves(base.current, message.moves)
-    if (took === null) return
+    if (took === null) {
+      if (inFlight.current) heldMoves.current.push(...message.moves)
+      return
+    }
     base.current = took.base
     const gone = took.gone.filter((k) => isRouteKey(k) && !Object.hasOwn(took.docs, k))
     const journal = gone.reduce(withoutDoc, latest.current.journal)
-    const docs = { ...Object.fromEntries(Object.entries(latest.current.docs).filter(([k]) => !gone.includes(k))), ...took.docs }
+    const incoming = Object.fromEntries(Object.entries(took.docs).filter(([k]) => isRouteKey(k) && !Object.hasOwn(journal.pending, k)))
+    const docs = { ...Object.fromEntries(Object.entries(latest.current.docs).filter(([k]) => !gone.includes(k))), ...incoming }
     latest.current = { ...latest.current, journal, docs, stack: stackOf(docs, latest.current.key, latest.current.page, library) }
     setJournal(journal)
     setDocs(docs)

@@ -263,8 +263,9 @@ function PreviewOnly({ siteId, recheckFailed }: { siteId: string; recheckFailed?
           {PREVIEW_COPY.clearsTitle}
         </h4>
         {/* NUMBERED IN THE MARKUP, not only in the drawing: the frame's two circled digits are an
-            ordered list, so a screen reader hears "1 of 2" rather than a loose paragraph. */}
-        <ol className="flex list-none flex-col gap-[7px] p-0">
+            ordered list, so a screen reader hears "1 of 2" rather than a loose paragraph — `role="list"`
+            because Safari drops a list's semantics under `list-style: none` (Story 7.17's Review, B16 beside it). */}
+        <ol role="list" className="flex list-none flex-col gap-[7px] p-0">
           {PREVIEW_COPY.clears.map((line, index) => (
             <li key={line} className="flex items-start gap-[10px]">
               <span

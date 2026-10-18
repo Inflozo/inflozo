@@ -118,6 +118,15 @@ export const sizeLabel = (bytes: number): string => (bytes < 1024 ? `${bytes} by
 /** The file's byte length, as Ghost stores it (UTF-8). */
 export const byteLength = (text: string): number => utf8(text).length
 
+/** THE UPLOAD'S BODY, the one Ghost Admin's own "Upload routes file" makes: field `routes`, a file named `routes.yaml`,
+ *  `text/yaml` (Ghost 6.58.0's `web/api/endpoints/admin/routes.js:90-95`). `offerRoutes` sends it and the T1 recorder
+ *  (`record-routes.mjs --upload`) sends the same, never a second spelling of it (the Review, 2026-10-18). */
+export function routesForm(file: string): FormData {
+  const form = new FormData()
+  form.append('routes', new Blob([file], { type: 'text/yaml' }), 'routes.yaml')
+  return form
+}
+
 /** The card's download (routine call 10): a `data:` address, so no route is added and nothing new is stored. */
 export const downloadHref = (file: string): string => `data:application/yaml;charset=utf-8,${encodeURIComponent(file)}`
 

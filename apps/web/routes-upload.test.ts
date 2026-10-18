@@ -121,13 +121,18 @@ type Seen = { what: string; kind?: string; item?: string; body?: unknown }
 function fake(over: {
   read?: Partial<RoutesRead> | null
   live?: Uint8Array | null | 'throws'
+  /** the live read with the staff token alone, where it differs from the Admin key's (`live`) — a token that stopped working */
+  staffLive?: Uint8Array | null | 'throws'
   post?: { status: number; body?: unknown } | Error
   back?: Uint8Array | null
   lastOffered?: string | null
+  /** Verify's owned read finding no row (not the caller's site), and a state write that fails */
+  site?: null
+  wrote?: false
 } = {}) {
   const seen: Seen[] = []
   const writes: Record<string, string | null>[] = []
-  let gets = 0
+  let posted = false
   const read: RoutesRead | null = over.read === null ? null : { config: CONFIG, yaml: F, templates: [TEMPLATE], staff: true, lastOffered: null, ...over.read }
   const answer = (bytes: Uint8Array | null | undefined) => (bytes === null || bytes === undefined ? { ok: false, status: 503, body: null, bytes: new Uint8Array() } : { ok: true, status: 200, body: null, bytes })
   const io: RoutesIo = {
@@ -137,25 +142,28 @@ function fake(over: {
     },
     readSite: async () => {
       seen.push({ what: 'readSite' })
+      if (over.site === null) return null
       return over.lastOffered === undefined ? { lastOffered: F } : { lastOffered: over.lastOffered }
     },
     call: async (args) => {
       seen.push({ what: `${args.method ?? 'GET'} ${args.path}`, kind: args.kind ?? 'admin', item: args.item, body: args.body })
       if ((args.method ?? 'GET') === 'GET') {
-        gets += 1
-        if (gets === 1) {
-          if (over.live === 'throws') throw new AdminError({ code: 'ghost_unreachable', message: 'Your Ghost site did not answer.' })
-          return answer(over.live === undefined ? utf8(G) : over.live)
+        // before the POST, the live file (the staff token's own where given); after it, the read-back
+        if (!posted) {
+          const live = args.kind === 'staff' && over.staffLive !== undefined ? over.staffLive : over.live
+          if (live === 'throws') throw new AdminError({ code: 'ghost_unreachable', message: 'Your Ghost site did not answer.' })
+          return answer(live === undefined ? utf8(G) : live)
         }
         return answer(over.back === undefined ? utf8(F) : over.back)
       }
+      posted = true
       if (over.post instanceof Error) throw over.post
       return { ok: (over.post?.status ?? 200) < 300, status: over.post?.status ?? 200, body: over.post?.body ?? null, bytes: new Uint8Array() }
     },
     write: async ({ patch }) => {
       seen.push({ what: 'write' })
       writes.push(patch)
-      return true
+      return over.wrote !== false
     },
     now: () => new Date('2026-10-18T12:00:00.000Z'),
   }
@@ -262,9 +270,25 @@ test('offerRoutes, Stored routing unfit and First read fails', async () => {
   const stranger = fake({ read: null })
   assert.deepEqual(await offerRoutes(ARGS, stranger.io), { kind: 'failed', code: 'site_not_found' })
   assert.deepEqual(what(stranger.seen), ['read'])
-  // First read fails, with F: the upload goes anyway and the read-back decides
+  // First read fails, with F (the staff token's read and the Admin key's both): the upload goes anyway and the read-back decides
   const blind = fake({ live: 'throws' })
   assert.deepEqual(await offerRoutes(ARGS, blind.io), { kind: 'uploaded', file: F, sha256: sha(F) })
+  assert.deepEqual(what(blind.seen).slice(0, 3), ['read', 'GET settings/routes/yaml/ [staff]', 'GET settings/routes/yaml/ [admin]'])
+})
+
+test('offerRoutes (the Review, 2026-10-18): a staff token that stopped working is not an unreadable site — the Admin key reads the live file', async () => {
+  // Ghost already holds F: nothing is offered, so B16 never asks for a hand upload of a file Ghost has
+  const holds = fake({ staffLive: null, live: utf8(F) })
+  assert.deepEqual(await offerRoutes(ARGS, holds.io), { kind: 'unchanged', file: F, sha256: sha(F) })
+  assert.deepEqual(what(holds.seen), ['read', 'GET settings/routes/yaml/ [staff]', 'GET settings/routes/yaml/ [admin]', 'write'])
+  // back at the default over Inflozo's own file: Ghost's default is offered, and the token's 401 is stored as B16's cause
+  const atDefault = fake({ read: { config: {}, yaml: null, lastOffered: F }, staffLive: null, live: utf8(F), post: { status: 401, body: { errors: [{ type: 'UnauthorizedError' }] } } })
+  assert.deepEqual(await offerRoutes(ARGS, atDefault.io), { kind: 'fallback', cause: 'revoked', file: GHOST_DEFAULT_ROUTES })
+  assert.deepEqual(atDefault.writes, [{ routes_last_offered: GHOST_DEFAULT_ROUTES, routes_fallback: 'revoked' }])
+  // THE CONTROL: a staff read that answers is the only read — the Admin key is not asked
+  const answered = fake({ staffLive: utf8(F), live: utf8(G) })
+  assert.deepEqual(await offerRoutes(ARGS, answered.io), { kind: 'unchanged', file: F, sha256: sha(F) })
+  assert.ok(!answered.seen.some((s) => s.what.startsWith('GET') && s.kind === 'admin'))
 })
 
 test('verifyRoutes reads with the Admin key and compares bytes with the file offered; only verified writes', async () => {
@@ -283,6 +307,14 @@ test('verifyRoutes reads with the Admin key and compares bytes with the file off
   const nothing = fake({ lastOffered: null })
   assert.deepEqual(await verifyRoutes(ARGS, nothing.io), { kind: 'notYet' })
   assert.deepEqual(what(nothing.seen), ['readSite'])
+  // the Review (2026-10-18): a site that is not the caller's asks Ghost nothing, and a match whose write fails never claims
+  // success — each `unreachable`, the card's "could not check"
+  const stranger = fake({ site: null })
+  assert.deepEqual(await verifyRoutes(ARGS, stranger.io), { kind: 'unreachable' })
+  assert.deepEqual(what(stranger.seen), ['readSite'])
+  const unwritten = fake({ live: utf8(F), wrote: false })
+  assert.deepEqual(await verifyRoutes(ARGS, unwritten.io), { kind: 'unreachable' })
+  assert.deepEqual(what(unwritten.seen), ['readSite', 'GET settings/routes/yaml/ [admin]', 'write'])
 })
 
 test('the step is the only uploader, and it imports neither the service role nor the chokepoint (its io is handed in)', () => {

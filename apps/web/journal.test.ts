@@ -634,7 +634,9 @@ test('7.17 (DW-370): only a well-formed moved message is read, on its own channe
 
 test('7.17 (DW-370): the routes page posts every answer\'s moves, and the editor holding the lock takes them in, keeping its journal', () => {
   const manager = readFileSync(MANAGER, 'utf8')
-  assert.match(manager, /channel\.postMessage\(movedMessage\(projectId, result\.moved\)\)/)
+  assert.match(manager, /const moved = result\.moved \?\? \[\]\s+if \(\('error' in result && moved\.length === 0\) \|\| typeof BroadcastChannel === 'undefined'\) return result/,
+    'a success is told even when it moved nothing (the Review); a refusal only when it moved something')
+  assert.match(manager, /channel\.postMessage\(movedMessage\(projectId, moved\)\)/)
   // every action the page calls goes through `told`, and nothing else posts or calls an action raw
   const calls = [...manager.matchAll(/await (saveRoutes|deleteTemplate|createTemplate|restoreTemplate|undo\.run)\(/g)]
   assert.ok(calls.length > 0)
@@ -654,7 +656,14 @@ test('7.17 (DW-370): the routes page posts every answer\'s moves, and the editor
   const at = editor.indexOf('heardMoved.current = (message) => {')
   const heard = editor.slice(at, editor.indexOf('\n  }\n', at))
   assert.match(heard, /if \(!isMovedMessage\(message\) \|\| message\.project !== project\.id \|\| !latest\.current\.lock\.holder\) return/, 'a reader tab ignores it')
-  assert.match(heard, /const took = takeMoves\(base\.current, message\.moves\)\s+if \(took === null\) return\s+base\.current = took\.base/)
+  assert.match(heard, /if \(message\.moves\.length === 0\) \{\s+router\.refresh\(\)\s+return\s+\}/, 'a success that moved no doc re-reads the page alone (the Review)')
+  assert.match(heard, /const took = takeMoves\(base\.current, message\.moves\)\s+if \(took === null\) \{\s+if \(inFlight\.current\) heldMoves\.current\.push\(\.\.\.message\.moves\)\s+return\s+\}\s+base\.current = took\.base/,
+    'a move from another base takes nothing — held only while this editor\'s own save is out (the Review)')
+  // the Review: the held moves are taken once the save's answer has set the base, in `flush`'s `finally`, before an owed re-flush
+  assert.match(editor, /\} finally \{\s+inFlight\.current = false\s+(\/\/[^\n]*\n\s+)*const held = heldMoves\.current\s+heldMoves\.current = \[\]\s+if \(held\.length > 0\) heardMoved\.current\(movedMessage\(project\.id, held\)\)\s+if \(again\.current\)/)
+  // the Review: a doc this editor still owes keeps the editor's own, and only a Routes Manager canvas is taken in
+  assert.match(heard, /const incoming = Object\.fromEntries\(Object\.entries\(took\.docs\)\.filter\(\(\[k\]\) => isRouteKey\(k\) && !Object\.hasOwn\(journal\.pending, k\)\)\)/)
+  assert.match(heard, /\.\.\.incoming \}/)
   assert.match(heard, /gone\.reduce\(withoutDoc, latest\.current\.journal\)/, 'the gone keys through the left path, the rest of the journal kept')
   assert.doesNotMatch(heard, /EMPTY_JOURNAL|dropJournal|designated\(/, 'the journal is never cleared, and the docs are the server\'s as judged')
   assert.match(heard, /store\(journal, docs, latest\.current\.auto\)\s+router\.refresh\(\)/)

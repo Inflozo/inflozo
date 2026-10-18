@@ -1524,6 +1524,7 @@ check('Story 7.17 (FR-I5) — no module file reads a modifier key, so no theme b
   return `${Object.keys(MODULE_SRC).length} module file(s)`
 })
 const routesOf = await import(join(REPO, 'packages/section-runtime/src/routes.ts'))
+const { GHOST_ROUTES_HELP: ROUTES_HELP } = await import(join(REPO, 'apps/web/lib/routes-upload.ts'))
 /** A collection at `/{segment}/`, through the Routes Manager's one parser, as `routesYaml` writes its file. */
 const routesFile = (segment) => {
   const parsed = routesOf.parseRoutesConfig({ collections: [{ path: `/${segment}/`, filter: { match: 'any', conditions: [{ field: 'tag', op: 'any', values: [segment] }] }, template: `custom-${segment}.hbs` }], taxonomies: { tag: 'tag', author: 'author' } })
@@ -1536,6 +1537,8 @@ check('control — Story 7.17: a routes file naming the builder puts its name in
 check('Story 7.17 — the pilots compiled with a routes file: README.md carries ## Routes after ## Styles, the file four spaces in, and themeFailures is clean (no builder named)', () => {
   const readme = pilotsRouted.files['README.md'] ?? ''
   if (!/\n## Styles\n[^]*\n## Routes\n\n[^\n]+\n\n {4}collections:\n/.test(readme)) throw new Error(`README.md has no Routes section after its Styles:\n${readme}`)
+  // the Review (2026-10-18): README's guide is B16's "Show me where ↗" — one address, though a core package cannot import the app's
+  if (!readme.includes(ROUTES_HELP)) throw new Error(`README.md's Routes section does not link ${ROUTES_HELP}, the guide B16 links (GHOST_ROUTES_HELP)`)
   const t = pilots.themeFailures(pilotsRouted.files, pilotsRouted.instanceIds)
   if (t.length > 0) throw new Error(t.join('\n'))
 })

@@ -59,8 +59,9 @@ export function RoutesFallback({ siteId, cause, file, heading: Heading = 'h3' }:
         </div>
       </div>
       <div className="flex flex-col gap-[13px] p-[16px_20px]">
-        {/* an ordered list in the markup, as B15's steps are: a reader hears "1 of 3" */}
-        <ol className="flex list-none flex-col gap-[9px] p-0">
+        {/* an ordered list in the markup, as B15's steps are: a reader hears "1 of 3" — `role="list"` because Safari drops a
+            list's semantics under `list-style: none` (the Review, 2026-10-18) */}
+        <ol role="list" className="flex list-none flex-col gap-[9px] p-0">
           <li className="flex items-start gap-[11px]">
             <span aria-hidden className={step}>1</span>
             <div className="flex flex-1 flex-col gap-[7px]">
@@ -92,6 +93,8 @@ export function RoutesFallback({ siteId, cause, file, heading: Heading = 'h3' }:
                 className={`whitespace-nowrap border-b border-coral-text/35 font-semibold text-coral-text ${ring}`}
               >
                 {W.where}
+                {/* the frame draws the words alone, so the new tab is said to a screen reader rather than drawn (C3b's way) */}
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </span>
           </li>

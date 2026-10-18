@@ -459,7 +459,7 @@ async function t1Half(tmp, [g6, g5]) {
 async function uploadHalf(tmp, [g6, g5]) {
   const from = rows.length
   const { adminRequest, ghostError } = await import(path.join(REPO, 'apps/web/server/ghost-admin/admin-rule.ts'))
-  const { GHOST_DEFAULT_ROUTES, ROUTES_PATH, routesToOffer, routesAnswer, bytesEqual } = await import(path.join(REPO, 'apps/web/lib/routes-upload.ts'))
+  const { GHOST_DEFAULT_ROUTES, ROUTES_PATH, routesToOffer, routesAnswer, routesForm, bytesEqual } = await import(path.join(REPO, 'apps/web/lib/routes-upload.ts'))
   const utf8 = (s) => new TextEncoder().encode(s)
   const sha64 = (b) => crypto.createHash('sha256').update(b).digest('hex')
   const T = (where, what, ok, got) => row('t1', where, what, ok, got)
@@ -489,14 +489,14 @@ async function uploadHalf(tmp, [g6, g5]) {
     return a
   }
   const live = async () => (await get(ROUTES_PATH)).bytes
-  /** THE ONE UPLOAD, and its counter. The body is `offerRoutes`' exactly. Two seconds between POSTs: Ghost names each
+  /** THE ONE UPLOAD, and its counter. The body is `offerRoutes`' exactly: `routesForm`, the one builder both call (the
+   *  Review, 2026-10-18 — §85's run built the same two lines here by hand). Two seconds between POSTs: Ghost names each
    *  dated copy to the second (`utils.js:9-20`) and a same-second copy overwrites the last, so §85's count stays true. */
   const posts = { made: 0, stored: 0 }
   let last = 0
   const upload = async (credential, file) => {
     await new Promise((r) => setTimeout(r, Math.max(0, last + 2000 - Date.now())))
-    const form = new FormData()
-    form.append('routes', new Blob([file], { type: 'text/yaml' }), 'routes.yaml')
+    const form = routesForm(file)
     posts.made += 1
     last = Date.now()
     const a = await admin(credential, 'POST', ROUTES_PATH, form)

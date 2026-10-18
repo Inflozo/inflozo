@@ -321,7 +321,10 @@
 // somewhere else". It RE-EXPECTS STEP 110h: B deletes from a context of its own (another device), because a page in the
 // editor's own browser now tells it (DW-370) and the editor would leave the canvas before A's gesture. Besides the product's
 // own writes it writes THROUGH THE SERVICE KEY: the planted site and its routes columns, the project's link, and the hand-back
-// (the link, the site, the step's template, the routing row and Home's doc), in a `finally`.
+// (the link, the site, the step's template, the routing row and Home's doc), in a `finally`. Its Review (2026-10-18) adds
+// step 112i — the two races on the editor's own sync request held by the walk (before the server: a 409 sent again from the
+// moved base; applied with its answer held: the move held, then taken) and "+ New template" with no doc told with no moves —
+// and reads B16's list role and "Show me where ↗"'s new-tab notice.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -11009,6 +11012,8 @@ async function main() {
     const WR112 = RW112.ROUTES_WORDS
     const SYNCED112 = JR112.labelOf({ kind: 'rest', owed: false })
     const CONFLICT112 = 'This project was changed somewhere else'
+    // the Review (2026-10-18): "Show me where ↗" says its new tab to a screen reader, as C3b's link does (the component's inline words)
+    const NEWTAB112 = ' (opens in a new tab)'
     // 66b's budget: one flush's own abort, its first backoff, and a margin — every number the app's own
     const SYNC_WAIT112 = JR112.SYNC_TIMEOUT_MS + JR112.BACKOFF_S[0] * 1000 + 5000
     const canon112 = (v) => (Array.isArray(v) ? `[${v.map(canon112).join(',')}]`
@@ -11047,6 +11052,10 @@ async function main() {
     const file112 = RT112.templateName(collection112.display).file
     const key112 = `custom:${file112}`
     const canvas112 = file112.replace(/\.hbs$/, '')
+    // 112i (c)'s template with no doc (the Review)
+    const bare112 = { display: 'Walk Bare' }
+    const bareFile112 = RT112.templateName(bare112.display).file
+    const bareCanvas112 = bareFile112.replace(/\.hbs$/, '')
     const typedA112 = 'Walk 112 told'
     const typedC112 = 'Walk 112 untold'
     const SHEET112 = 'dialog[aria-labelledby="routes-sheet-title"][open]'
@@ -11100,6 +11109,7 @@ async function main() {
           verify: s.querySelector('form button[type="submit"]')?.innerText.trim() ?? null,
           text: s.innerText,
           said: said && { kind: said.getAttribute('data-verify-said'), text: said.textContent },
+          listRole: s.querySelector('ol')?.getAttribute('role') ?? null,
           card: article && { title: article.querySelector('h2')?.textContent ?? null, last: article.lastElementChild?.lastElementChild === s },
           underBar: s.parentElement?.previousElementSibling?.tagName === 'HEADER',
         }
@@ -11108,7 +11118,7 @@ async function main() {
        *  routes page's h1) — only the body, the secondary button and the footnote change with the cause */
       const copy112 = (c, cause, host) => c.count === 1 && c.cause === cause && c.title === W112.title && c.body === W112.body[cause] &&
         c.steps.length === 3 && c.steps[0].includes(W112.download) && c.steps[0].includes(W112.file) && c.steps[1].includes(`${W112.find} ${W112.where}`) && c.steps[2].includes(W112.verifyStep) &&
-        c.where?.text === W112.where && c.where.href === RU112.GHOST_ROUTES_HELP && c.where.target === '_blank' && c.verify === W112.verify &&
+        c.where?.text === `${W112.where}${NEWTAB112}` && c.where.href === RU112.GHOST_ROUTES_HELP && c.where.target === '_blank' && c.verify === W112.verify && c.listRole === 'list' &&
         (W112.button[cause] === null ? c.token === null : c.token?.text === W112.button[cause] && (c.token.href ?? '').endsWith(CR112.keysPath(siteId112))) &&
         Object.entries(W112.footnote).every(([k, f]) => f === null || c.text.includes(f) === (k === cause)) &&
         (host === 'sites' ? c.heading === 'h3' && c.card?.title === SITE112.title && c.card.last === true : c.heading === 'h2' && c.underBar === true)
@@ -11234,14 +11244,14 @@ async function main() {
         await p112.waitForTimeout(200)
       }
       /** ⋯ → Delete on the step's template, through its confirm (it is used, and designed) — the toast with Undo */
-      const deleteTemplate112 = async () => {
-        const more = p112.locator(`button[aria-label="${WR112.more(collection112.display)}"]`)
+      const deleteTemplate112 = async (name = collection112.display) => {
+        const more = p112.locator(`button[aria-label="${WR112.more(name)}"]`)
         await more.waitFor({ state: 'visible', timeout: 30000 })
         await more.click()
         await p112.locator(`[id="${await more.getAttribute('popovertarget')}"] button`).filter({ hasText: new RegExp(`^${escape112(WR112.delete)}$`) }).click()
         const asked = await p112.locator(CONFIRM112).waitFor({ state: 'visible', timeout: 10000 }).then(() => true, () => false)
         if (asked) await p112.locator(`${CONFIRM112} button:not([data-cancel])`).click()
-        const toast = await p112.locator('[role="status"]', { hasText: WR112.deleted(collection112.display) }).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+        const toast = await p112.locator('[role="status"]', { hasText: WR112.deleted(name) }).waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
         return { asked, toast }
       }
       const templateGone112 = async () => until112(async () => ({ ct: await ct112(), doc: await doc112(key112) }), (v) => Array.isArray(v.ct) && !v.ct.some((r) => r.filename === file112) && Array.isArray(v.doc) && v.doc.length === 0)
@@ -11333,6 +11343,100 @@ async function main() {
         undoB112 !== 'true' && undoB112 !== 'unread' && savedB112.synced && savedB112.revision === rBack112 + 1 && homeB2112 !== null && !JSON.stringify(homeB2112).includes(typedA112) && (await conflicts112()) === 0,
         JSON.stringify({ undoB112, rBack112, savedB112 }))
 
+      /* 112i — THE REVIEW (2026-10-18): THE TWO RACES, each on the editor's own sync request held by the walk (`route`, once),
+         and a template made with no doc. (a) the request held BEFORE the server: the routes page deletes the template, the
+         editor takes the move in while its save is out, the server answers 409 to the base it left from, and the save is
+         sent again from the new one — no dialog. (b) the request APPLIED and its ANSWER held: the routes page's Undo moves the
+         revision from the editor's new one while the editor still holds the old, so the move is held until the answer sets
+         the base, then taken — no dialog, and the next ⌘S lands one past it. (c) "+ New template" writes no doc and moves
+         nothing; the page tells the editor anyway (no moves), its Template menu lists the template, and its delete — no doc
+         either — takes it away again. */
+      const hold112 = async (mode) => {
+        let release
+        const gate = new Promise((r) => { release = r })
+        const state = { seen: false, status: null }
+        await e112.route('**/projects/*/sync', async (route) => {
+          if (route.request().method() !== 'POST') return route.continue()
+          state.seen = true
+          if (mode === 'before') { await gate; return route.continue() }
+          const response = await route.fetch()
+          state.status = response.status()
+          await gate
+          return route.fulfill({ response })
+        }, { times: 1 })
+        return { state, release: () => release() }
+      }
+      const menuLists112 = (c) => e112.evaluate((k) => !!document.querySelector(`#editor-template-menu button[data-canvas="${k}"]`), c)
+      // (a)
+      const rIa112 = (await project112())?.revision
+      const holdA112 = await hold112('before')
+      const filledIa112 = await editHome112('Walk 112 race one')
+      await press112()
+      const outIa112 = await until112(async () => holdA112.state.seen, (v) => v === true)
+      await p112.bringToFront()
+      const confirmIa112 = await deleteTemplate112()
+      const goneIa112 = await templateGone112()
+      await e112.bringToFront()
+      const takenIa112 = await listed112(false)
+      holdA112.release()
+      const savedIa112 = await landed112(rIa112 + 1)
+      const homeIa112 = await home112()
+      check(`step 112i — (a) the race, its request held BEFORE the server: the routes page deletes "${collection112.display}" while the editor's ⌘S is out; the editor takes the move in (its menu drops ${canvas112}), the server answers 409 to the base the save left from, and the save goes again from the new one — landing two past it (the delete's move, then the save), Home carrying the edit, no "${CONFLICT112}"`,
+        filledIa112 && outIa112 && confirmIa112.toast && goneIa112.doc?.length === 0 && takenIa112 && savedIa112.synced && savedIa112.revision === rIa112 + 2 &&
+        JSON.stringify(homeIa112).includes('Walk 112 race one') && (await conflicts112()) === 0 && (await kept112()),
+        JSON.stringify({ rIa112, outIa112, confirmIa112, takenIa112, savedIa112, conflicts: await conflicts112() }))
+      // (b)
+      const rIb112 = (await project112())?.revision
+      const holdB112 = await hold112('answer')
+      const filledIb112 = await editHome112('Walk 112 race two')
+      await press112()
+      const appliedIb112 = await until112(project112, (v) => v?.revision === rIb112 + 1)
+      const heardIb112 = (await heard112()).length
+      await p112.bringToFront()
+      await p112.locator('[role="status"]', { hasText: WR112.deleted(collection112.display) }).locator('button').click()
+      const backIb112 = await until112(async () => ({ ct: await ct112(), doc: await doc112(key112) }), (v) => Array.isArray(v.ct) && v.ct.some((r) => r.filename === file112) && Array.isArray(v.doc) && v.doc.length === 1)
+      await e112.bringToFront()
+      const toldIb112 = await until112(heard112, (h) => h.length === heardIb112 + 1)
+      const heldIb112 = !(await menuLists112(canvas112))
+      holdB112.release()
+      const takenIb112 = await listed112(true)
+      const syncedIb112 = await e112.waitForFunction((st) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === st, SYNCED112, { timeout: 15000 }).then(() => true, () => false)
+      const rIb2112 = (await project112())?.revision
+      const filledIb2112 = await editHome112('Walk 112 race three')
+      await press112()
+      const savedIb112 = await landed112(rIb2112)
+      check(`step 112i — (b) the race, its request APPLIED and its answer held: the routes page's ${WR112.undo} moves the revision from the one the editor's save made (${rIb112 + 1} → ${rIb112 + 2}) while the editor still holds ${rIb112}; the move is held, not taken, until the answer lands — then taken (the menu lists ${canvas112} again), and the next ⌘S lands one past it, no "${CONFLICT112}"`,
+        filledIb112 && appliedIb112?.revision === rIb112 + 1 && holdB112.state.status === 200 && backIb112.doc?.length === 1 && toldIb112.length === heardIb112 + 1 &&
+        toldIb112.at(-1)?.moves[0]?.from === rIb112 + 1 && heldIb112 && takenIb112 && syncedIb112 && rIb2112 === rIb112 + 2 && filledIb2112 && savedIb112.synced &&
+        savedIb112.revision === rIb2112 + 1 && (await conflicts112()) === 0 && (await kept112()),
+        JSON.stringify({ rIb112, applied: appliedIb112?.revision, answer: holdB112.state.status, told: toldIb112.at(-1) ?? null, heldIb112, takenIb112, syncedIb112, rIb2112, savedIb112, conflicts: await conflicts112() }))
+      // (c)
+      const rIc112 = (await project112())?.revision
+      const heardIc112 = (await heard112()).length
+      await p112.bringToFront()
+      await p112.locator('section[aria-labelledby="routes-templates"] > button', { hasText: WR112.newTemplate }).click()
+      await sheet112().waitFor({ state: 'visible', timeout: 15000 })
+      await sheet112().locator('#routes-new-template').fill(bare112.display)
+      await sheet112().locator('button[type="submit"]').click()
+      const shutIc112 = await p112.waitForFunction((sel) => !document.querySelector(sel), SHEET112, { timeout: 20000 }).then(() => true, () => false)
+      if (!shutIc112) await p112.keyboard.press('Escape')
+      const rowIc112 = await until112(ct112, (rows) => Array.isArray(rows) && rows.some((r) => r.filename === bareFile112))
+      await e112.bringToFront()
+      const toldIc112 = await until112(heard112, (h) => h.length === heardIc112 + 1)
+      const listedIc112 = await e112.waitForFunction((k) => !!document.querySelector(`#editor-template-menu button[data-canvas="${k}"]`), bareCanvas112, { timeout: 30000 }).then(() => true, () => false)
+      const rIc2112 = (await project112())?.revision
+      await p112.bringToFront()
+      const confirmIc112 = await deleteTemplate112(bare112.display)
+      const goneIc112 = await until112(ct112, (rows) => Array.isArray(rows) && !rows.some((r) => r.filename === bareFile112))
+      await e112.bringToFront()
+      const toldIc2112 = await until112(heard112, (h) => h.length === heardIc112 + 2)
+      const droppedIc112 = await e112.waitForFunction((k) => !document.querySelector(`#editor-template-menu button[data-canvas="${k}"]`), bareCanvas112, { timeout: 30000 }).then(() => true, () => false)
+      check(`step 112i — (c) "${WR112.newTemplate}" makes "${bare112.display}" with no doc and moves no revision, yet the page tells the editor (a message with no moves) and its Template menu lists ${bareCanvas112}; its delete (no doc either) is told the same way and the menu drops it — no "${CONFLICT112}"`,
+        shutIc112 && rowIc112.some((r) => r.filename === bareFile112) && toldIc112.length === heardIc112 + 1 && toldIc112.at(-1)?.moves.length === 0 && listedIc112 &&
+        rIc2112 === rIc112 && confirmIc112.toast && !goneIc112.some((r) => r.filename === bareFile112) && toldIc2112.length === heardIc112 + 2 && toldIc2112.at(-1)?.moves.length === 0 &&
+        droppedIc112 && (await project112())?.revision === rIc112 && (await conflicts112()) === 0,
+        JSON.stringify({ shutIc112, told: toldIc112.slice(heardIc112), listedIc112, rIc112, rIc2112, confirmIc112, droppedIc112 }))
+
       // 112g (c) — THE CONTROL: the routes page's postMessage stubbed, the same delete reaches no one, and ⌘S meets R-253
       await p112.bringToFront()
       await p112.evaluate(() => { BroadcastChannel.prototype.postMessage = function stubbed() {} })
@@ -11363,6 +11467,7 @@ async function main() {
       await call('/rest/v1', `/projects?id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: start112.project?.linked_site_id ?? null }) })
       if (siteId112 !== null) await call('/rest/v1', `/sites?id=eq.${siteId112}`, { method: 'DELETE' })
       await call('/rest/v1', `/custom_templates?project_id=eq.${P}&filename=eq.${encodeURIComponent(file112)}`, { method: 'DELETE' })
+      await call('/rest/v1', `/custom_templates?project_id=eq.${P}&filename=eq.${encodeURIComponent(bareFile112)}`, { method: 'DELETE' })
       await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key112)}`, { method: 'DELETE' })
       if (start112.rc?.length === 0) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'DELETE' })
       else if (start112.rc?.[0]) await call('/rest/v1', `/routes_config?project_id=eq.${P}`, { method: 'PATCH', body: JSON.stringify({ config: start112.rc[0].config, yaml: start112.rc[0].yaml }) })

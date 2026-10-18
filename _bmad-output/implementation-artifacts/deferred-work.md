@@ -10088,7 +10088,12 @@ resolution: Story 7.17's Dev — `syncDocs` answers and records each move (`{ fr
   base (`takeMoves`, `heardMoved`): the docs as judged, the gone keys through the `left` path, the record stored, the page
   refreshed, a conflict dialog that came first closed and the save sent again, and a 409 that answers a base it has since
   left retried. AD-15 states the rule. `journal.test.ts` holds `takeMoves` (a move from another base takes nothing, the
-  control) and the wiring; the deployed walk's step 112 and the owner's hand test are the Review's and the owner's.
+  control) and the wiring; the deployed walk's step 112 and the owner's hand test are the Review's and the owner's. **The
+  Review (2026-10-18)**: walk step 112 held on production (112e–g, the stubbed `postMessage` meeting R-253's dialog), and it
+  added three things the layers found — a move from the revision the editor's own save is landing at is held until that
+  save's answer sets the base (`heldMoves`, the third ordering of the race), a success that wrote no doc is told with no
+  moves so the editor re-reads its Template menu ("+ New template", a config-only save, a doc-less delete), and a doc the
+  editor still owes an edit to keeps the editor's own — with step 112i walking both races and the doc-less template.
 
 ## Deferred from: spec-7-17-uploading-routes-yaml-and-the-guided-fallback (2026-10-18)
 
@@ -10096,14 +10101,25 @@ resolution: Story 7.17's Dev — `syncDocs` answers and records each move (`{ fr
 
 plain: If Ghost takes your routes file but Inflozo cannot read it back a moment later, Inflozo reports a failure and stores
   nothing, so no "Upload routes.yaml yourself" card appears to offer Verify again. Your routing is probably live, and the
-  next daily check notices it; until then nothing on screen says it could not be confirmed.
+  next daily check records what Ghost holds, but nothing on screen compares it or says it could not be confirmed. Two more
+  cases leave the stored state behind the site (the Review, 2026-10-18): an upload Ghost took and read back whose own record
+  could not be written, and a card that stays up after your project goes back to Ghost's default routing while your site
+  already holds Ghost's default (the step keeps the site as it is and clears nothing). And because a card's file replaces
+  "the file Inflozo last offered" before Ghost ever holds it, a file Inflozo did put there earlier is no longer recognised as
+  Inflozo's own: if you then go back to Ghost's default without uploading the card's file, the earlier file stays.
 status: open
 severity: low
 origin: Story 7.17's Dev (2026-10-18): the spec's matrix rules a read-back that differs or fails `failed: routes_unverified`
   with the state unchanged, while EXPERIENCE F3 names a *could not verify* state ("the file was uploaded, the read-back
   failed — say so and offer Verify again"). `offerRoutes` follows the matrix.
 owner: Story 7.18, whose Ship it calls `offerRoutes` and draws its ending: it says the routing could not be confirmed and
-  offers Verify — or puts the stored state to the owner (R-83) if that needs a fourth cause in `routes_fallback`.
-location: `apps/web/server/routes-upload.ts` (`offerRoutes`' read-back) · `apps/web/lib/routes-upload.ts` (`routesWrite`)
+  offers Verify — or puts the stored state to the owner (R-83) if that needs a fourth cause in `routes_fallback`. The same
+  Create decides the other three with it (the Review, 2026-10-18, the Blind Hunter and Edge Case Hunter layers): what a
+  `settle` whose write failed answers (today the outcome stands and the write is only logged); whether a project back at
+  Ghost's default over a site already holding the default clears the card (`kept` writes nothing — the frozen matrix's
+  "Default everywhere" row); and whether "the file Ghost last confirmed" needs its own column beside `routes_last_offered`,
+  which today is both the card's download and R-255's test of Inflozo's own file (a migration, R-99).
+location: `apps/web/server/routes-upload.ts` (`offerRoutes`' read-back, `settle`) · `apps/web/lib/routes-upload.ts` (`routesWrite`,
+  `routesToOffer`)
 reason: nothing calls the step before Story 7.18, and a fourth stored cause would be a migration.
 
