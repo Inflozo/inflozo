@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-10-18'
 status: 'in-review'
 baseline_commit: '31547773c387972fb5a62de4dc76948d0c5752e4'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -496,12 +496,12 @@ there, delete them first on Routes & Templates. Step 4 tests your ruling on Ques
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at Home's post list. | — | It includes "The last analogue switchboard in Lisbon" and "Still broadcasting from a garden shed". |
 | 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Press **+ New collection**. Type the path. Add the condition **Primary tag** and type the tag. For Template, choose **New template…** and type the name. Turn on **Its own page size** and set it. Press **Create collection**. | `/tutorials/` · `tools` · `Tutorials List` · `3` | The collection is listed. Under Templates, Tutorials List says "Used by /tutorials/". |
 | 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-tutorials-list` | Editor, Tutorials List | Open it from the Template menu. | — | A post grid is already there, with a small **MAIN FEED** tag on its outline and on its Layers row. It shows three posts: "The last analogue switchboard in Lisbon", "Still broadcasting from a garden shed", "The domains nobody visits". The menu's dot for Tutorials List is filled. |
-| 4 | same | Panel | Click the post grid. Look under **Data**. | — | **Count** is greyed at 3, with the line "This feed is sized by /tutorials/'s own page size. Change it in Routes & Templates." and the link **Routes & Templates ↗**. There is no **Preview page** row (Question 1, option 1). It looks like D5c. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-tutorials-list` | Panel | Click the post grid. Look under **Data**. | — | **Count** is greyed at 3, with the line "This feed is sized by /tutorials/'s own page size. Change it in Routes & Templates." and the link **Routes & Templates ↗**. There is no **Preview page** row (Question 1, option 1). It looks like D5c. |
 | 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open Home. | — | Those two posts from step 1 are gone from Home's list. On your live site they move to /tutorials/. |
 | 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | From Tutorials List's panel, press **Routes & Templates ↗**. Edit /tutorials/, set the page size, save, and open Tutorials List again. | `5` | Five posts now, and the Count reads 5. |
 | 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Press **+ Custom route**. Type the path. Choose **A channel — a filtered stream of posts**. Add the condition **Featured**. Choose **New template…** and type the name. Look at the page-size line, then press **Create route**. | `/staff-picks/` · `Staff Picks` | The page-size line ends "A channel can set its own limit here." |
 | 8 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-staff-picks` | Editor, Staff Picks | Open it. Click the post grid. | — | A post grid with **MAIN FEED**. It starts "The night shift at the Port of Algeciras", "A short note on the Thursday letter". The sixth is "The domains nobody visits", a tutorial too, because a channel shares posts (you see it when Posts per page is 6 or more; it is 12 unless you changed it). The Count reads your theme's Posts per page with the old line and **Theme settings ↗**. |
-| 9 | same | Editor, Staff Picks | Add a **Newsletter** section. Then delete the post grid. Then press ⌘Z. | — | After the delete, a note at the top of Layers: "This template has no list of posts. Ghost still serves /staff-picks/page/2/ onwards, which would repeat page 1, so your theme asks search engines to skip them." ⌘Z brings the grid back with **MAIN FEED**. |
+| 9 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-staff-picks` | Editor, Staff Picks | Add a **Newsletter** section. Then delete the post grid. Then press ⌘Z. | — | After the delete, a note at the top of Layers: "This template has no list of posts. Ghost still serves /staff-picks/page/2/ onwards, which would repeat page 1, so your theme asks search engines to skip them." ⌘Z brings the grid back with **MAIN FEED**. |
 | 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Press **+ New template** and type the name. Then open it and add a **Post grid**. | `Plain Page` | It opens empty. The added grid has no MAIN FEED tag, and its Data group shows Source, Count and Order. |
 | 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the /tutorials/ collection (⋯ → Delete). Open Tutorials List, then Home. | — | Tutorials List keeps its grid, now without MAIN FEED, showing the newest posts. Home shows the two posts from step 1 again. |
 | 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete the route and the three templates. | — | Back to how step 1 found it. |
@@ -773,3 +773,19 @@ name, never printed):**
 **Review results — part 3, R-253** (Question 2 ruled option 1, the main session): records only — the register's R-253, AD-15's
 rule, DW-370 and Story 7.17's card, `epic-7-context.md` and `syncDocs`' comment. No code changed, so the part-2 walk at
 `4745438d` stands for the code. `python3 tools/doc-audit.py --check` PASS, twice.
+
+**Deploy (2026-10-18).**
+
+- `Deployment: dpl_6DoeEDStykEKybaHmfMaPknDthy1` — READY, production, built from `3f1a6168` (the head: the Dev code, the Fix for
+  the owner's Finding 1, every Review patch, R-252 and R-253; the last code change is `4745438d`'s
+  `dpl_3zgW1BSDZBsg5kvrNCfvqN7NP63n`, the one the Review's part-2 walk ran on). It serves `app.inflozo.com` and `inflozo.com`
+  (Vercel API, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT` read in-process by a scratch script, never on argv). CI run
+  39096743472 at that sha: `rls`, `check` and `deploy` success; Render matrix run 39096743435 success (GitHub API,
+  `GITHUB_TOKEN`).
+- Schema: none. The story adds no migration (R-99; the Review's read-only check found `sync_project_doc` already on production),
+  so there was nothing to apply and no Schema phase; the RLS gate ran green on this push.
+- Signed out, `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` answers 307 to
+  `https://app.inflozo.com/sign-in`, so the address is live. Nothing was written to any database or Ghost site at Deploy; T1 was
+  not touched.
+- The owner's test above carries the live URL in every step. `owner_test` goes from `issues` back to `pending`: Finding 1 is fixed
+  and deployed, and steps 2–4 and 7–8 are the re-test.
