@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { PAGINATED_TARGETS } from '@inflozo/library'
 import { duplicateSection, insertSection, removeSection, setHidden, switchDesign } from './doc-edit.ts'
 import { parseDoc, type ProjectDoc } from './doc-schema.ts'
-import { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
+import { designate, feedBase, feedlessArchive, feedQuery, feedsOn, isFeed, mainFeedOf, makeMainFeed, visibleFeed } from './main-feed.ts'
 import type { SynthesisLibrary } from './synthesize.ts'
 
 // Story 5.19 — FR-H2's main-feed designation, every lifecycle row of the spec's I/O matrix that is not a pixel, over
@@ -174,8 +174,12 @@ test('a secondary feed\'s query: posts, the page size, newest first — folded w
   assert.deepEqual(feedQuery(entry, { isMainFeed: false, data: { posts: { source: 'tag', tag: 'craft' } } }, HOME, 12), { source: 'posts', limit: 12, order: 'published_at desc', filter: "tag:'craft'" })
   assert.equal(feedQuery(entry, { isMainFeed: true, data: {} }, HOME, 12), undefined, 'the main feed renders the native posts')
   assert.equal(feedQuery(library('a4/13'), { isMainFeed: false, data: {} }, HOME, 12), undefined, 'no feed, no query')
-  // Story 7.16c — a feed off a paginated page is SECONDARY: its own query (was undefined before the story)
-  assert.deepEqual(feedQuery(entry, { isMainFeed: false, data: {} }, 'post.hbs', 12), { source: 'posts', limit: 12, order: 'published_at desc' })
+  // Story 7.16c — a feed on a Routes Manager template no route lists is SECONDARY: its own query, a flag left on it ignored
+  assert.deepEqual(feedQuery(entry, { isMainFeed: true, data: {} }, 'custom-landing.hbs', 12), { source: 'posts', limit: 12, order: 'published_at desc' })
+  // …and its review: on a file no feed stands on (`feedsOn`) it is no feed at all, as before the story, so R-7's refusal at
+  // render stays the backstop there
+  assert.equal(feedQuery(entry, { isMainFeed: false, data: {} }, 'post.hbs', 12), undefined)
+  assert.deepEqual(['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs', 'custom-landing.hbs', 'post.hbs', 'page.hbs', 'custom-signup.hbs'].map(feedsOn), [true, true, true, true, true, false, false, false])
   // FR-H2: never limit="all" — the page size is held to 1–100
   assert.equal(feedBase(250).limit, 100)
   assert.equal(feedBase(0).limit, 1)

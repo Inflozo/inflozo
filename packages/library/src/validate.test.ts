@@ -568,6 +568,10 @@ test('Story 7.16b (DW-126) — ROUTE_TEMPLATE_TARGET is a legal target and a mis
   const membership = validateDesignJson(design({ compileTarget: ['index.hbs', MEMBERSHIP_FILES[0] as string] }), markup)
   assert.ok(codes(membership).includes('pagination-target'), 'the control: a membership file never paginates')
   assert.match(membership.find((f) => f.code === 'pagination-target')?.message ?? '', new RegExp(`Paginated targets: .*${ROUTE_TEMPLATE_TARGET.replace(/[{}.]/g, '\\$&')}`))
+  // Story 7.16c's review — and only for a FEED: a pager on a design that lists no posts is never a secondary feed, so on a
+  // template no route lists the compiler would refuse it (R-7). The feed above is the control
+  const pagerOnly = validateDesignJson(design({ bindingContext: ['none'], compileTarget: ['index.hbs', ROUTE_TEMPLATE_TARGET] }), markup)
+  assert.ok(codes(pagerOnly).includes('pagination-target'), 'a pager on a design that lists no posts, at the brace')
 })
 
 test('a design performing a {{#get}} excludes error.hbs and private.hbs (R-7)', () => {

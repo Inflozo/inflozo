@@ -879,7 +879,13 @@ test('(7.16c) lists is refused on a key that is no Routes Manager file, or a con
   for (const context of ['x"}}{{#each @site}}', 'index, tag', 'a/b', '', 'Picks', 'picks ', '-x', 'x--y']) {
     assert.throws(() => compile({}, { routed: [file], lists: { [file]: [context] } }), /is not a context Ghost names a collection or channel by/, JSON.stringify(context))
   }
-  assert.doesNotThrow(() => compile({}, { routed: [file], lists: { [file]: ['picks', 'staff-picks', 'a-1'] } }))
+  // the review: none of the guard's own names — `paged` would match a page 1 under its outer test, and the three archives'
+  // would noindex a page 2 that has its feed — and never no context at all
+  for (const context of ['paged', 'index', 'tag', 'author']) {
+    assert.throws(() => compile({}, { routed: [file], lists: { [file]: [context] } }), /is a context FR-H2's guard names itself/, context)
+  }
+  assert.throws(() => compile({}, { routed: [file], lists: { [file]: [] } }), /names at least one context/)
+  assert.doesNotThrow(() => compile({}, { routed: [file], lists: { [file]: ['picks', 'staff-picks', 'a-1', 'paged-x', 'home'] } }))
 })
 
 test('(7.3) every section hidden: a designed file\'s layout line alone, never re-synthesized', () => {

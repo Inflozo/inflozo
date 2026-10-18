@@ -221,7 +221,9 @@ test('Story 7.16c (the owner\'s test, 2026-10-18): every doc the routes page cha
   const del = body('deleteTemplate')
   assert.ok(del.indexOf('if (held && !(await syncDocs(sb, id, {})))') > del.indexOf(".from('custom_templates').delete()"), 'after the row is gone')
   const ins = ACTIONS.slice(ACTIONS.indexOf('async function insertTemplate('), ACTIONS.indexOf('async function writeListedStart('))
-  assert.match(ins, /\(cleared\[0\]\.data \?\? \[\]\)\.length > 0 && !\(await syncDocs\(sb, id, \{\}\)\)/)
+  // the review: a leftover doc moves the revision BEFORE it is cleared, so a failed move is retried with the doc still there
+  assert.match(ins, /\(leftover \?\? \[\]\)\.length > 0 && !\(await syncDocs\(sb, id, \{\}\)\)/)
+  assert.ok(ins.indexOf('await syncDocs(sb, id, {})') < ins.indexOf(".from('project_templates').delete()"), 'the move before the clear')
   // THE CONTROL: the only direct doc writes left are the delete's own two — the delete, and its put-back when the row
   // delete fails, which restores exactly what the device already holds — and the new template's clear
   assert.deepEqual(ACTIONS.match(/from\('project_templates'\)\.(upsert|insert|update|delete)\(/g), [

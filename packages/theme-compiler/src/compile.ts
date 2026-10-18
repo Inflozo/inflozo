@@ -864,8 +864,14 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // is held to `contextOf`'s own shape before anything renders, never trusted as handed
   for (const file of Object.keys(input.lists ?? {}).sort(byCode)) {
     if (!isRouteTemplate(file)) throw new Error(`lists '${file}': a collection or channel lists a Routes Manager template, custom-{name}.hbs, and never another file.`)
-    for (const context of input.lists?.[file] ?? []) {
+    const contexts = input.lists?.[file] ?? []
+    // Story 7.16c's review: a listed file names at least one context — with none, a feed-less one would add nothing to the guard
+    if (!Array.isArray(contexts) || contexts.length === 0) throw new Error(`lists '${file}': a listed template is listed by at least one collection or channel, so it names at least one context.`)
+    for (const context of contexts) {
       if (typeof context !== 'string' || !CONTEXT_RE.test(context)) throw new Error(`lists '${file}': ${JSON.stringify(context)} is not a context Ghost names a collection or channel by — its path without slashes, rebuilt by contextOf (AD-36).`)
+      // …and none of the guard's own names: `paged` would make its outer test match a page 1, and `index`, `tag` or `author`
+      // would noindex a page 2 that has its feed (a collection at /paged/ is Ghost's context `paged`, F1)
+      if (context === 'paged' || PAGED_CONTEXTS.some(([own]) => own === context)) throw new Error(`lists '${file}': "${context}" is a context FR-H2's guard names itself, so a collection or channel at /${context}/ cannot be told apart from it there.`)
     }
   }
   noC0('a string', Object.values(input.strings ?? {}))
@@ -1069,13 +1075,13 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   // FR-H2's guard (DW-234, DW-253): a page 2 with no visible feed would repeat page 1, so search engines are told not to
   // index it. `noindex` alone — `{{ghost_head}}` writes the canonical, page 2's pointing at itself
   // (`meta/canonical-url.js`), and a second canonical makes search engines ignore both
-  const unlisted = [
+  const guarded = [
     ...PAGED_CONTEXTS.filter(([, pageOne]) => !(pageTwos[pageOne] ?? []).some(visibleFeed(input.library))).map(([context]) => context),
     // Story 7.16c — each feed-less listed template's contexts, after the three, in code order: its page 2 renders the same
     // file (F6), so with no visible feed it repeats page 1. A listed template WITH a feed adds none, nor does an unlisted one
     ...stacks.filter((st) => listed.has(st.file) && !st.pageOne.some(visibleFeed(input.library))).flatMap((st) => input.lists?.[st.file] ?? []).sort(byCode),
   ]
-  const guard = unlisted.length === 0 ? [] : ['{{#is "paged"}}', `  {{#is "${[...new Set(unlisted)].join(', ')}"}}`, '    <meta name="robots" content="noindex">', '  {{/is}}', '{{/is}}']
+  const guard = guarded.length === 0 ? [] : ['{{#is "paged"}}', `  {{#is "${[...new Set(guarded)].join(', ')}"}}`, '    <meta name="robots" content="noindex">', '  {{/is}}', '{{/is}}']
   tree[SITE_DOC] = [
     '<!DOCTYPE html>',
     '<html lang="{{@site.locale}}">',

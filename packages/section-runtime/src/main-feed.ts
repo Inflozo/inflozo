@@ -107,6 +107,12 @@ export function makeMainFeed(doc: ProjectDoc, file: string, instanceId: string, 
 export const feedlessArchive = (doc: ProjectDoc, file: string, library: SynthesisLibrary, listed: Listed = NONE_LISTED): boolean =>
   (file === 'tag.hbs' || file === 'author.hbs' || (isRouteTemplate(file) && listed.has(file))) && !doc.instances.some(visibleFeed(library))
 
+/** Story 7.16c's review — a file a feed stands on AS a feed: one Ghost always paginates, or a Routes Manager template, listed
+ *  (its main feed) or not (a secondary feed, its own `{{#get}}`). Anywhere else R-7 refuses its pager, as before this story,
+ *  so it is no feed there at all — the render's refusal stays the backstop on `post.hbs` and every other file. */
+export const feedsOn = (file: string): boolean => isPaginated(file, EVERY_LISTED)
+const EVERY_LISTED: Listed = { has: () => true }
+
 /** A secondary feed's query before its stored values: its page's posts, newest first, as many as a page of the main
  *  feed shows — so a demoted main feed keeps showing its page 1. The page size is clamped to FR-H2's 1–100: a secondary
  *  feed never emits `limit="all"`. */
@@ -117,9 +123,10 @@ export const feedBase = (postsPerPage: number): DataBinding => ({
 })
 
 /** A SECONDARY feed's query — `feedBase` folded with the instance's `data.posts` through the one fold, `withData` — or
- *  `undefined` for the main feed and a section that is no feed. STORY 7.16c — A FEED OFF A PAGINATED PAGE IS SECONDARY: on a
- *  Routes Manager template no collection or channel lists there are no native `posts`, so a feed there is its own
- *  `{{#get}}` (routine call 3), and a flag left on one (`designate` strips it) never makes it main. */
+ *  `undefined` for the main feed, a section that is no feed and a file no feed stands on (`feedsOn`). STORY 7.16c — A FEED
+ *  OFF A PAGINATED PAGE IS SECONDARY: on a Routes Manager template no collection or channel lists there are no native
+ *  `posts`, so a feed there is its own `{{#get}}` (routine call 3), and a flag left on one (`designate` strips it) never
+ *  makes it main. */
 export function feedQuery(
   entry: Pick<SynthesisEntry, 'bindingContext'> | undefined,
   instance: Pick<DocInstance, 'isMainFeed' | 'data'>,
@@ -127,6 +134,6 @@ export function feedQuery(
   postsPerPage: number,
   listed: Listed = NONE_LISTED,
 ): DataBinding | undefined {
-  if (!isFeed(entry) || (instance.isMainFeed && isPaginated(file, listed))) return undefined
+  if (!isFeed(entry) || !feedsOn(file) || (instance.isMainFeed && isPaginated(file, listed))) return undefined
   return withData({ [FEED_KEY]: feedBase(postsPerPage) }, instance.data)[FEED_KEY]
 }

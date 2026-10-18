@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
-import { defaultContent, type Mode } from '@inflozo/section-runtime'
+import { isRouteTemplate, type IconLookup, type SectionRegistryEntry, type orbitWeekly } from '@inflozo/library'
+import { defaultContent, isFeed, type Mode } from '@inflozo/section-runtime'
 import { Skeleton } from '@/components/kit/loading'
 import { addressOf, canvasAssets, mountSections, previewSrc, renderSection, wearPack, type DesignRows, type RenderContext } from '@/lib/canvas'
 import { DESKTOP } from '@/lib/device'
@@ -39,6 +39,9 @@ import type { Visitor } from '@/lib/view-as'
  *  to see in a tile that tall. Every pilot draws well inside it (a Post Grid, the tallest, is about one and a
  *  quarter). Lower it if a real design ever makes the grid slow. */
 const CEILING = DESKTOP.height * 2
+
+/** Story 7.16c's review — the list a feed's preview on a Routes Manager canvas draws: every sample post, as Home's card does */
+const EVERY_POST: orbitWeekly.RouteList = { base: '/', filter: null, window: () => true, keep: () => true }
 
 /** Story 5.18 — a card's or a tile's content from the connected site, or null where a read it needs is not in hand. */
 export type Live = (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
@@ -151,6 +154,10 @@ export function SectionPreview({
       const own = live?.(entry, target) ?? undefined
       mountSections(mount, renderSection(doc, entry, state, {
         target,
+        // Story 7.16c's review: a FEED previewed on a Routes Manager canvas is drawn as a listed template's main feed — the
+        // sample's posts at its root, the pager with them, as its card on Home is drawn — where R-7 would otherwise refuse
+        // its pager on a file no route lists and leave the card on its skeleton for good
+        ...(isRouteTemplate(target) && isFeed(entry) ? { listed: { has: (file: string) => file === target }, lists: (t: string) => (t === target ? EVERY_POST : undefined) } : {}),
         rows,
         feed: 'first',
         member,

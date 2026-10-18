@@ -9954,3 +9954,89 @@ location: `packages/section-runtime/src/routes.ts` (`indexNode`, `indexFilter`, 
   reading) · `tools/probe/record-theme-assembly.py` leg 19 (the DW-364 rows)
 reason: nothing deploys a `routes.yaml` before Story 7.18, so no live site is affected yet; the fix changes what every project's
   routing emits and needs its own T1 proof, which is that story's.
+
+## Deferred from: code review of spec-7-16c-collection-and-channel-templates-list-their-posts (2026-10-18)
+
+### DW-365: on a connected site, the post grid's "this site has N posts" note counts a route's posts
+
+plain: When your project is linked to your Ghost site and a collection's template (or Home, once a collection exists) has
+  fewer posts than fit on one page, the note under its post grid says "This site has 2 posts", but 2 is how many that
+  collection lists, not your whole site.
+status: open
+severity: low
+origin: Story 7.16c's Review (2026-10-18), the Blind Hunter and Verification Gap layers: `editor.tsx`'s shortfall note passes
+  `whose = 'site'` for every file but `tag.hbs` and `author.hbs`, while `pagination.total` is now the route's window on a
+  listed template and the index filter's on Home (`sitePieces`). New words are the owner's (7.16c's Ask First), so the
+  Review did not write them.
+owner: Story 7.34 (the canvas-vs-real-Ghost harness), the first to draw these lists from a connected site under routing: its
+  Create asks the owner for the words (R-83) — for example "/tutorials/ lists 2 posts; this section shows up to 3 per page."
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the shortfall memo) · `apps/web/lib/live-content.ts`
+  (`SHORTFALL.feed`, `feedShortfall`)
+reason: the note shows only on a connected site, and its new sentence is the owner's to approve.
+
+### DW-366: an unreadable stored routing shows every listed template's main feed as a secondary feed
+
+plain: If Inflozo ever fails to read your routes (a passing database error, or a stored routing it cannot parse), every
+  collection's or channel's template opens as if no route listed it: its post grid shows as an ordinary list with its own
+  Count, and your next edit there saves it that way. When the routes read again, the first grid becomes the main one
+  again, which is a different grid only if you had picked another with "Make this the main feed".
+status: open
+severity: low
+origin: Story 7.16c's Review (2026-10-18), the Blind Hunter and Edge Case Hunter layers: `read.ts` hands `routes: null`, so
+  `listsOf(null)` lists nothing and `designateAll` strips each flag on the way in, and the editor's `designated` does the
+  same on every edit. That is the spec's own rule as built ("An unreadable stored routing lists nothing", 7.16b's routine
+  call 12), so changing it is the owner's.
+owner: Story 7.17 (uploading `routes.yaml`), which reads the stored routing next: decide with the owner (R-83) whether an
+  unreadable routing keeps each template's stored designation — `designate` handed the Routes Manager files whose docs
+  carry a flag — rather than listing nothing.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (`routes`, `designateAll`) · `editor.tsx` (`listed`,
+  `designated`)
+reason: an error path, and the fix changes a stated rule.
+
+### DW-367: a new collection's template whose post grid failed to save cannot get it by saving again
+
+plain: If saving a new collection's or channel's template fails halfway, Inflozo says it could not save, but the template it
+  already made stays without its post grid, and saving the sheet again with that template chosen does not add one. You
+  would add the grid yourself, or delete the template and make it again.
+status: open
+severity: low
+origin: Story 7.16c's Review (2026-10-18), the Blind Hunter and Edge Case Hunter layers: `saveRoutes` writes the row, then
+  `writeListedStart`; when that fails the row stands unrouted (a valid state, the spec's rule), and a re-save names the
+  template as an existing one, which routine call 2 leaves as it is.
+owner: Story 7.17, the next story on the routes page: either give the starting grid to a template the sheet lists that has
+  no doc and was made by that sheet's failed save, or say in the refusal what was left.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/routes/actions.ts` (`saveRoutes`, `writeListedStart`)
+reason: an error path after a failed write, and the fix needs a rule for when an existing template still counts as new.
+
+### DW-368: the editor's connected-site lists under routing run in no check
+
+plain: When your project is linked to your Ghost site, the editor cuts Home's list and each collection's list from your
+  site's real posts by your routes. The automatic checks and the production walk both draw the sample posts, so a later
+  change could break the site path without anything going red.
+status: open
+severity: medium
+origin: Story 7.16c's Review (2026-10-18), the Verification Gap layer: `editor.tsx` hands `lists: routeLists` to `sitePage` (the
+  page and the picker's cards) and sizes the shortfall note by `perPageOn`, but `live-content.test.ts` calls `sitePage`
+  directly, the harness's linked sites answer nothing, and the walk's step 111 runs on an unlinked project. Removing
+  `lists: routeLists` from the page's call turns no check red.
+owner: Story 7.34, which compares the canvas with a real Ghost: it compares a listed template and Home under a collection on
+  T1 with the canvas drawn from the connected site.
+location: `editor.tsx` (the live page's `sitePage`, `cardLive`) · `apps/web/lib/live-content.ts` · `tools/probe/run-verify-editor.cjs`
+  step 111 · the harness editor
+reason: a check needs a connected site that answers under routing, which Story 7.34 builds.
+
+### DW-369: a collection or channel at /paged/ or /index/ is refused by the compile, not yet by the routes page
+
+plain: A collection at an address like /paged/ would confuse the theme's "don't list page 2 in search engines" rule. Since
+  Story 7.16c's Review the theme builder refuses such a project, but the Routes & Templates page still lets you type the
+  address, so you would first meet the refusal when you deploy.
+status: open
+severity: low
+origin: Story 7.16c's Review (2026-10-18), the Edge Case Hunter layer: `contextOf('/paged/')` is `paged`, which would make the
+  guard's outer `{{#is "paged"}}` match that page 1, and `/index/`, `/tag/` or `/author/` would noindex a page 2 that has
+  its feed. `compileTheme` now refuses such a `lists` context (`compile.test.ts`). The routes page was outside 7.16c's
+  changes (its Never list).
+owner: Story 7.18, which hands `lists` to the compile: before it ships, `validateRoutes` refuses those paths at the naming
+  step with a sentence, beside `RESERVED_SEGMENTS`.
+location: `packages/section-runtime/src/routes.ts` (`validateRoutes`, `RESERVED_SEGMENTS`) · `packages/theme-compiler/src/compile.ts`
+reason: nothing compiles from the product before Story 7.18.

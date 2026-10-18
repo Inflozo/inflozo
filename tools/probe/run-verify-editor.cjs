@@ -304,7 +304,9 @@
 // routes page; Home without the owned posts; a channel's new template keeping an owned post with 5.19's Count; a feed-less
 // listed template's Layers note; the collection removed (no chip, Home whole again); a static route's new template empty, a17/1
 // there a secondary feed. It RE-EXPECTS STEP 110e: a17/1 is offered on a Routes Manager canvas now (routine call 3). Besides the
-// product's own writes it writes THROUGH THE SERVICE KEY on that project alone: the hand-back.
+// product's own writes it writes THROUGH THE SERVICE KEY on that project alone: the hand-back. Its Review (2026-10-18)
+// RE-EXPECTS STEP 109j (the channel's new template starts with its grid, so its confirm names its design) and 109n (c) (its
+// plant goes on the first template holding NO doc, a static route's, since a listed one starts with its grid).
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -10071,8 +10073,12 @@ async function main() {
     const cancelled109 = await rp.waitForFunction((s) => !document.querySelector(s), CONFIRM109, { timeout: 10000 }).then(() => true, () => false)
     await rp.waitForTimeout(700)
     const afterCancel109 = { rc: (await rc109())?.[0] ?? null, ct: await ct109(), pane: await pane109(rp), sent: posts109 - sentJ109 }
-    check(`step 109j — ⋯ → ${W109.delete} on the used template "${rl109.display}": "${W109.deleteTitle(rl109.display)}" says "${W109.alsoRemoves(RT109.pathsUsing(cfg109, rlNamed109.file))}" and opens on Cancel; Cancel (Enter on it) closes it and writes nothing — no action sent, the rows and the pane unchanged`,
-      ask109.title === W109.deleteTitle(rl109.display) && ask109.body === W109.alsoRemoves(RT109.pathsUsing(cfg109, rlNamed109.file)) && ask109.cancel && cancelled109 && afterCancel109.sent === 0 &&
+    // Story 7.16c's Review: a channel's new template starts with its post grid (FR-H2 "at creation"), so it is designed, and
+    // its confirm names its design — read through the service key, never assumed
+    const designedJ109 = ((await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(`custom:${rlNamed109.file}`)}&select=template_key`)).body ?? []).length === 1
+    const askJ109 = W109.alsoRemovesDesign(RT109.pathsUsing(cfg109, rlNamed109.file))
+    check(`step 109j — ⋯ → ${W109.delete} on the used template "${rl109.display}", designed since Story 7.16c gave it its post grid: "${W109.deleteTitle(rl109.display)}" says "${askJ109}" and opens on Cancel; Cancel (Enter on it) closes it and writes nothing — no action sent, the rows and the pane unchanged`,
+      designedJ109 && ask109.title === W109.deleteTitle(rl109.display) && ask109.body === askJ109 && ask109.cancel && cancelled109 && afterCancel109.sent === 0 &&
       JSON.stringify(afterCancel109.rc) === JSON.stringify(wasJ109.rc) && JSON.stringify(afterCancel109.ct) === JSON.stringify(wasJ109.ct) && afterCancel109.pane === wasJ109.pane,
       JSON.stringify({ ask109, cancelled109, sent: afterCancel109.sent }))
     await menuRow109(rp, rl109.display, W109.delete)
@@ -10221,9 +10227,13 @@ async function main() {
     // takes the doc WITH the row (config, then doc, then row): neither is left. The toast's Undo puts the row, the doc and the
     // config back (row, then doc, then config), the doc byte-equal; the plant is then removed and read back gone
     const ctC109 = await ct109()
-    const victimC109 = ctC109?.[0] ?? null
+    // Story 7.16c's Review: a collection's or channel's new template starts with its post grid now, so the victim is the
+    // first template holding NO doc (a static route's), as this check needs the plant to be its only doc
+    const docAtC109 = async (file) => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(`custom:${file}`)}&select=doc`)).body
+    let victimC109 = null
+    for (const r of ctC109 ?? []) if (victimC109 === null && ((await docAtC109(r.filename)) ?? [null]).length === 0) victimC109 = r
     const keyC109 = victimC109 ? `custom:${victimC109.filename}` : null
-    const docOfC109 = async () => (keyC109 === null ? null : (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(keyC109)}&select=doc`)).body)
+    const docOfC109 = async () => (keyC109 === null ? null : docAtC109(victimC109.filename))
     const plantC109 = keyC109 === null ? { status: 0 } : await call('/rest/v1', '/project_templates', { method: 'POST', body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: keyC109, doc: { schemaVersion: 1, instances: [] } }) })
     const plantedDocC109 = await docOfC109()
     const usedC109 = victimC109 !== null && RT109.pathsUsing(cfg109, victimC109.filename).length > 0
@@ -10689,7 +10699,8 @@ async function main() {
        only steps 1–5's names (`P`, `ids`, `magic`, `editorUrl`, `recorder`, `steady`, `steadyRequests`, `handBack`, `call`, `at`),
        so a cut copy can run steps 1–5 and this alone. Every sentence is the one list that prints it — `DATA_WORDS` (the
        runtime), `lib/data-group.ts`, `lib/routes.ts`' `ROUTES_WORDS`, `lib/editor.ts` (R-170) — and every expected list of posts
-       is the library's own sample, cut by the runtime's own `routeList`/`homeList` over the stored routing. Every write is the
+       is the library's own sample, cut by the runtime's own `routeList`/`homeList` over the STORED routing (the Review made it
+       so; it had restated the filter). Only 111a's control and 111f, read with no collection stored, name the Primary tag. Every write is the
        product's (the routes page's sheets, the editor), read back through the service key; the hand-back alone is the key's.
        The Design Notes' walk, in order: 111a Home before any collection (the CONTROL); 111b a collection made from its own sheet
        — Primary tag `tools`, New template…, its own page size 3 — whose doc holds a17/1 FLAGGED (a service read), whose canvas
@@ -10722,8 +10733,9 @@ async function main() {
     // the sample, newest first, and what each list is expected to hold — the runtime's own cut, never a list written here
     const posts111 = LIB111.orbitWeekly.posts()
     const title111 = (p) => p.title
+    // the collection about to be made, for 111a's control and 111f, where no routing names it
     const ownedBy111 = (p) => p.primary_tag?.slug === 'tools'
-    const owned111 = posts111.filter(ownedBy111).map(title111)
+    const now111 = new Date().toISOString()
     const tutorials111 = { path: '/walk-list/', display: 'Walk List', tag: 'tools', limit: 3 }
     const picks111 = { path: '/walk-picks/', display: 'Walk Picks' }
     const landing111 = { path: '/walk-landing/', display: 'Walk Landing' }
@@ -10826,10 +10838,14 @@ async function main() {
     // the canvas: the collection's first three, the chip on the main feed's row and outline
     await openCanvas111(canvasOf111(listNamed111))
     const listB111 = await cards111()
-    const wantB111 = posts111.filter(ownedBy111).slice(0, tutorials111.limit).map(title111)
+    // the runtime's own cut over the stored routing: the window at the route's limit, then what an earlier collection owns dropped
+    const firstB111 = parsedB111?.ok === true ? RT111.listsOf(parsedB111.config).get(listNamed111.file)?.[0] : undefined
+    const cutB111 = firstB111 === undefined ? null : RT111.routeList(firstB111, now111)
+    const wantB111 = cutB111 === null ? [] : posts111.filter(cutB111.window).slice(0, tutorials111.limit).filter(cutB111.keep).map(title111)
+    const owned111 = firstB111 === undefined ? [] : posts111.filter((p) => RT111.holdsFor(firstB111.node, p, now111)).map(title111)
     const chipB111 = await mainRow111().count()
     check(`step 111b — the canvas lists the collection's first ${tutorials111.limit} (${wantB111.join(' · ')}), its post grid the MAIN FEED in Layers`,
-      JSON.stringify(listB111) === JSON.stringify(wantB111) && chipB111 === 1, JSON.stringify({ listB111, wantB111, chipB111 }))
+      wantB111.length === tutorials111.limit && JSON.stringify(listB111) === JSON.stringify(wantB111) && chipB111 === 1, JSON.stringify({ listB111, wantB111, chipB111 }))
     const dataB111 = await dataOf111(mainRow111())
     await p111.screenshot({ path: `${OUT}/route-count-1440x900.png` })   // R-74's side-by-side with D5c, for the Review
     check(`step 111b — D5c: the Count greyed at ${tutorials111.limit} with "${RTM111.DATA_WORDS.routeCount(tutorials111.path)}" and "${DG111.ROUTES_LINK}" to the routes page`,
@@ -10843,9 +10859,10 @@ async function main() {
     // 111c — Home lacks the owned posts, and lists the ones no collection owns
     await openCanvas111('home')
     const homeC111 = await cards111()
-    const homeWant111 = posts111.filter((p) => !ownedBy111(p)).slice(0, ppp111).map(title111)
+    const homeCut111 = parsedB111?.ok === true ? RT111.homeList(parsedB111.config, now111) : undefined
+    const homeWant111 = homeCut111 === undefined ? [] : posts111.filter(homeCut111.window).slice(0, ppp111).map(title111)
     check(`step 111c — FR-H3: Home lists none of the ${owned111.length} posts /walk-list/ owns, and its first page is the posts no collection owns`,
-      !owned111.some((t) => homeC111.includes(t)) && homeWant111.every((t) => homeC111.includes(t)), JSON.stringify({ homeC111, homeWant111 }))
+      owned111.length > 0 && homeWant111.length > 0 && !owned111.some((t) => homeC111.includes(t)) && homeWant111.every((t) => homeC111.includes(t)), JSON.stringify({ homeC111, homeWant111 }))
 
     // 111d — a channel's new template (Featured): it keeps an owned post (a channel drops nothing), and its Count is 5.19's
     await routesPage111()
@@ -10862,11 +10879,15 @@ async function main() {
     for (let n = 0; n < 60 && ((await doc111(keyOf111(picksNamed111))) ?? []).length === 0; n++) await p111.waitForTimeout(250)
     await openCanvas111(canvasOf111(picksNamed111))
     const listD111 = await cards111()
-    const wantD111 = posts111.filter((p) => p.featured).slice(0, ppp111).map(title111)
+    const rcD111 = (await rc111())?.[0]?.config ?? null
+    const parsedD111 = rcD111 === null ? null : RT111.parseRoutesConfig(rcD111)
+    const firstD111 = parsedD111?.ok === true ? RT111.listsOf(parsedD111.config).get(picksNamed111.file)?.[0] : undefined
+    const cutD111 = firstD111 === undefined ? null : RT111.routeList(firstD111, now111)
+    const wantD111 = cutD111 === null ? [] : posts111.filter(cutD111.window).slice(0, ppp111).filter(cutD111.keep).map(title111)
     const keptD111 = wantD111.filter((t) => owned111.includes(t))
     const dataD111 = await dataOf111(mainRow111())
     check(`step 111d — a channel's new template starts with its main feed, lists every featured post (${keptD111.join(' · ')} among them, owned by /walk-list/ — a channel drops nothing), and its Count reads 5.19's line with "${DG111.THEME_SETTINGS_LINK}"; the sheet's hint said "${W111.postsAfter(ppp111, 'channel').trim()}"`,
-      shutD111 && hintD111 && keptD111.length > 0 && JSON.stringify(listD111) === JSON.stringify(wantD111) && dataD111 !== null && dataD111.text.includes(RTM111.DATA_WORDS.mainCount) && dataD111.link?.text === DG111.THEME_SETTINGS_LINK,
+      shutD111 && hintD111 && firstD111?.kind === 'channel' && keptD111.length > 0 && JSON.stringify(listD111) === JSON.stringify(wantD111) && dataD111 !== null && dataD111.text.includes(RTM111.DATA_WORDS.mainCount) && dataD111.link?.text === DG111.THEME_SETTINGS_LINK,
       JSON.stringify({ shutD111, hintD111, listD111, wantD111, dataD111 }))
 
     // 111e — a feed-less listed template: the channel's grid hidden, the Layers note names its address; ⌘Z brings it back

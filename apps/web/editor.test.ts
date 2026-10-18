@@ -617,7 +617,14 @@ test('Story 7.16c: read.ts hands the parsed routing and designates with listsOf;
   ]) assert.match(editor, door)
   assert.ok(!/PAGINATED_TARGETS/.test(editor), 'no door reads the four files alone')
   // a Routes Manager canvas still has no page 2 (R-252: a listed template is designed on page 1 only, for now)
-  for (const canvas of ['custom-tutorials-list', 'custom-landing'] as const) assert.equal(pageTwoOfCanvas(canvas as never), undefined)
+  // (the review: each IS a Routes Manager canvas, and Home's page 2 is the control, so the check can fail)
+  for (const file of ['custom-tutorials-list.hbs', 'custom-landing.hbs']) {
+    const canvas = routeCanvasOf(file)
+    assert.ok(canvas !== null && isRouteCanvas(canvas), file)
+    assert.equal(pageTwoOfCanvas(canvas), undefined)
+  }
+  assert.deepEqual(pageTwoOfCanvas('home'), PAGE_TWO.home)
+  assert.notEqual(PAGE_TWO.home, undefined)
 })
 
 test('Story 7.16c (routine call 4): a shared template previews its FIRST list — listsOf\'s order, collections before channels — in its rows, its Count and its Layers note', () => {

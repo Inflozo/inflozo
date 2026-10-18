@@ -750,8 +750,8 @@ const slugsOf = (v: unknown): string[] => (Array.isArray(v) ? v.flatMap((x) => (
  *     `primary_tag` is `tags.slug` with `posts_tags.sort_order:0+tags.visibility:public` and `primary_author` is
  *     `authors.slug` with `posts_authors.sort_order:0+authors.visibility:public`. So a NEGATED `primary_tag` or
  *     `primary_author` leaf means "HAS that primary and it is not x": a post with no tags, or whose first tag is internal
- *     (its computed `primary_tag` null, `post.js:1059-1064`), is in neither `primary_tag:x` nor `primary_tag:-x` (§84: 6 + 26
- *     of 33). Every other leaf reads the same both ways (`tag:-x` keeps an untagged post).
+ *     (its computed `primary_tag` null, `post.js:1059-1064`), is in neither `primary_tag:x` nor `primary_tag:-x` (executed
+ *     on T1, MEASUREMENTS §84). Every other leaf reads the same both ways (`tag:-x` keeps an untagged post).
  * The canvas cuts a page's WINDOW with the listing reading and its drop with the ownership one (`routeList`, `homeList`).
  */
 export function holdsFor(n: Node, post: ListedPost, now: string, listing = false): boolean {

@@ -625,9 +625,12 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
   // STORY 7.16c — R-7's "A29: `compileTarget` gains `custom-{name}.hbs` collection templates": the brace names every Routes
   // Manager template, and one a collection or channel lists paginates (F3), so it is a paginated target here. On a template
   // no route lists, the design is a SECONDARY feed, which leaves its pager out on both emitters (`core.ts`), so it never
-  // emits `{{pagination}}` where Ghost has none. A membership file, named by its own file, never paginates.
+  // emits `{{pagination}}` where Ghost has none. A membership file, named by its own file, never paginates. Story 7.16c's
+  // review: and only a FEED (`posts` among its contexts) — a pager on a design that lists no posts is never a secondary
+  // feed, so on a template no route lists it would reach the compiler's own R-7 refusal
   if (markup !== undefined && /\bdata-pagination\b/.test(markup)) {
-    const illegal = targets.filter((t) => !PAGINATED_TARGETS.has(t) && t !== ROUTE_TEMPLATE_TARGET)
+    const feed = (contexts as readonly string[]).includes('posts')
+    const illegal = targets.filter((t) => !PAGINATED_TARGETS.has(t) && !(t === ROUTE_TEMPLATE_TARGET && feed))
     if (illegal.length > 0) {
       push(out, 'pagination-target', `this design emits pagination and lists ${illegal.join(', ')} among its targets. {{pagination}} outside a paginated context is a FATAL render, not a warning (R-7). Paginated targets: ${[...PAGINATED_TARGETS, ROUTE_TEMPLATE_TARGET].join(', ')} (a Routes Manager template a collection or channel lists).`)
     }

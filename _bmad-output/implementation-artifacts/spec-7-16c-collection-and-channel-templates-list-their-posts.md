@@ -2,10 +2,10 @@
 title: 'Story 7.16c — Collection and channel templates list their posts'
 type: 'feature'
 created: '2026-10-18'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '31547773c387972fb5a62de4dc76948d0c5752e4'
 owner_test: issues
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
 
@@ -370,6 +370,19 @@ list the posts a collection or channel serves there:
   through `sync_project_doc` (`syncDocs`): the new template's starting doc, the delete's Undo doc, and the revision alone after
   a delete that took a doc or a clear of a leftover doc. `routes.test.ts` holds each door and the remaining direct writes
   (`Owner's test findings`).
+- **Review, 2026-10-18 — patches, each behind a control that failed before it and passes after** (`## Verification`, Review):
+  (1) the Section Picker and the design ring left Three Up's card on its skeleton on every Routes Manager canvas, listed or not
+  (R-7 refused its pager at a render naming no `listed`): a feed previewed there is drawn as a listed template's main feed,
+  over every sample post (`section-preview.tsx`), and a keyboard journey reads the card drawn on both kinds; (2) a feed stands
+  as one only on a file Ghost paginates or a Routes Manager template (`feedsOn`): `feedQuery` and the editor's role on
+  `post.hbs` are as before the story, so R-7's refusal at render stays the backstop there; (3) `checkBindings` takes a
+  secondary feed's pager before R-7, as the render does; (4) `validate.ts`' brace holds pagination only for a feed;
+  (5) the compiler refuses a `lists` file with no context, and a context FR-H2's guard names itself (`paged`, `index`, `tag`,
+  `author`), DW-369 giving the routes page's half to 7.18; (6) `insertTemplate` moves the revision BEFORE it clears a
+  leftover doc, so a failed move is retried with the doc still there; (7) the two editor memos that read the route lists
+  depend on them; (8) the keyboard journey edits the listed template and reads its main feed kept (hidden and shown again);
+  (9) the walk re-expects 109j and 109n (c) to 7.16c's starting grid and cuts step 111's expected lists with the runtime's
+  own `routeList`/`homeList`. Deferred with owners: DW-365 to DW-369. The second-writer cost of the Fix is Question 2.
 
 ## Design Notes
 
@@ -537,6 +550,31 @@ site, page 2 onwards uses page 1's design with the next posts, as Ghost's own th
 page 2 is kept out of search engines. Nothing in the database changes."* Recorded as **R-252**. The spec, Story 7.16c's
 card, R-176's entry and `epic-7-context.md` follow; FR-D21's dated note is Dev's.
 
+### Question 2 — An editor left open in a second tab asks you to reload after a template change. Is that all right for now?
+
+**In plain English.** To fix your Finding 1 (the post grid missing on a new collection's template), Routes & Templates now
+saves a template's design the way the editor does: it marks the whole project as changed. An editor already open in
+another tab or window does not know that. The next time that tab saves, it says "This project was changed somewhere else"
+and asks you to reload. Reloading brings the new template in, but the edits you made in that tab since the change are let
+go. The same happens after you delete a template that had a design, or press Undo on that delete, and an editor showing
+the deleted template may say this instead of moving to Home with its notice. In one tab (Routes & Templates, then back to
+the editor) nothing is lost; only the editor's undo history starts again. The project's design rules (AD-15) warn against
+the server marking a project changed, so this is yours to accept or not.
+
+**An example.** The editor is open on Home in one window, and Routes & Templates in another. You make the collection
+/tutorials/ with a new template there. Back in the editor window you change Home's headline and press ⌘S. The editor says
+"This project was changed somewhere else". If you press Reload, the headline change is lost, and Tutorials List then opens
+with its post grid.
+
+1. **(RECOMMENDED) Accept it for now.** It happens only with the editor open in a second tab or window. Nothing already
+   saved is lost, and the editor says so plainly instead of overwriting anything. I add a later piece of work, with a
+   story to own it, to let an open editor take in these changes without a reload.
+2. **Fix it in this story.** The editor would take a new template's design from the cloud the first time it opens that
+   template, and Routes & Templates would stop marking the whole project changed. That is a new rule in AD-15 (a change to
+   the architecture) and a bigger Fix, with its own tests; your re-test waits for it.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Verification
 
 **Commands (Dev):**
@@ -598,9 +636,7 @@ card, R-176's entry and `epic-7-context.md` follow; FR-D21's dated note is Dev's
 - **Supabase, Vercel, Resend, Dodo:** not hit at Dev. No migration (routine call 8). Production is the Review's: step 111 with
   Supabase service reads, steps 109 and 110, and CI's `pnpm keyboard` on the push.
 
-**Matrix row → check** table: every I/O row maps to a check that ran in that row's state.
-
-**Results (Dev, 2026-10-18, on the final tree, under Node 24):**
+**Results (Dev, an earlier pass the same day, kept for its record of §84's local half):**
 - `pnpm check` -- exit 0: lint, typecheck and every package's suite, each printing its own count, with every 7.16c test
   named in the table below. `node tools/check-snapshots.mjs` passes with a17/1 at its new target (a feed at the brace renders
   listed, its theme text home.hbs's) and its new control (unlisted at the brace: R-7's refusal).
@@ -660,3 +696,60 @@ card, R-176's entry and `epic-7-context.md` follow; FR-D21's dated note is Dev's
 - Step 111 on production at the deployed head, with Supabase service reads for the new template's doc.
 - Steps 109 and 110 re-run.
 - CI's `pnpm keyboard` on the push.
+
+**Review results (2026-10-18) — part 1, at the Fix head `8c77a0eb`, run in the main session (keys read inside each process by
+name, never printed):**
+- **CI and the deploy** (`GITHUB_TOKEN`, `VERCEL_TOKEN`/`VERCEL_TEAM_ID`/`VERCEL_PROJECT`, a scratch script): CI run 39090350210
+  with `rls`, `check` (which runs `pnpm keyboard` whole) and `deploy` success, and the render matrix (39090350203) success.
+  Vercel: `dpl_ABp4Y23ygp3wVKypj6nnm65uTTUP` READY at `8c77a0eb`, the deployment `app.inflozo.com` and `inflozo.com` serve.
+- **The Real-infra verifier (a read-only subagent):**
+  - **R-99:** the diff adds no migration. Through `SUPABASE_DB_POOLER_URL`, in a read-only transaction: production has one
+    `sync_project_doc(uuid, jsonb, bigint, text, jsonb, jsonb)`, `authenticated` may execute it and `anon` may not, and its
+    body's md5 equals `20261016120000_card_designs.sql`'s. **Control:** `to_regprocedure` of a wrong signature is null. An
+    empty `p_docs` passes its object guard and moves the revision alone (read in its source). `template_key_shape` accepts
+    `custom:custom-tutorials-list.hbs` and `custom:custom-staff-picks.hbs` and refuses `custom:custom-tutorials-list` and
+    `custom:not a file` (the constraint's text evaluated, no row written). RLS and grants allow `insertTemplate`'s reads and
+    deletes for `authenticated`.
+  - **T1** (Content API read only, `GHOST6_CONTENT_API_KEY`; Admin GETs with `GHOST6_STAFF_ACCESS_TOKEN`): §84's facts hold —
+    the untagged `probe-gated-post` is in neither `primary_tag:'craft'` nor `primary_tag:-'craft'`, `tag:-'craft'` keeps it,
+    and Ghost SENDS `primary_tag: null` for it (the case `live-content.ts`' `Object.hasOwn` branch reads); a collection's
+    `filter=primary_tag:'craft'&limit=3` answers three `craft` rows with the window's pagination; `featured:true` answers 200.
+    **Control:** a malformed filter answers 400. T1 as restored: `routes.yaml` is its own 130 bytes, `casper` active, no
+    `inflozo-probe-*` theme, and every probe address 404.
+  - Signed out, the app's routes answer 307 to sign-in (a weak check — an unknown path does too); `/harness/editor` 404.
+- **Steps 109–111 on production, a cut of steps 1–5 + 109, 110 and 111 from a detached worktree at `8c77a0eb`** (`node_modules`
+  hard-linked, never committed):
+  - **Run 1: 2 FAIL, 117 PASS.** Step 111 held whole (111a–h): the collection's sheet wrote row → doc → config with a17/1 "Post
+    grid" flagged (a service read), the canvas listed the collection's first three with the chip, the Count greyed at 3 with
+    `routeCount` and "Routes & Templates ↗" opening the routes page, Home lacked every owned post, the channel kept an owned post
+    with 5.19's line, the feed-less note came and went, the removed collection left a secondary grid and Home whole, the static
+    route's template opened empty with a17/1 secondary (Source, Count, Order), and the project was handed back with zero CSP
+    violations. The editor had opened the project before each template was made, which is Finding 1's state: the Fix held on
+    production. Step 110 held whole. The two FAILs were step 109's expectations, stale to 7.16c's own behaviour: **109j** read
+    the used channel template's confirm as `alsoRemoves`, and it now says `alsoRemovesDesign` because the channel's new
+    template starts with its grid; **109n (c)** planted its doc with a POST that met the starting doc (409). Both were
+    re-expected (Spec Change Log, Review). Users 14 → 14, projects 10 → 10.
+  - **Run 2, the walk patched, the same deployment:** it died in 109h before reaching 109j — the "Landing 2" control's sheet
+    never closed, then a HARNESS ERROR (`locator.click` timeout, 03:03:36Z). Run 1 passed 109h on the same build. Users 14 → 14,
+    projects 10 → 10. The re-expected steps run again on the Review's deployment (part 2).
+- **R-74, side by side** (`route-count-1440x900.png` from run 1, beside D5c rendered from the export at 1440): the chip on the
+  outline's top-left and on the Layers row, the greyed Count with its reason line and the sky link with its arrow, in 5.19's
+  components and tokens, match D5c as 5.19 built it (a stepper Count, as 5.19 built). No Preview page row (R-252). The grid is
+  the template's first section, so its outline's chip sits under the site's sticky header, as 5.19's main feed does there.
+- **The review layers** (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier), triaged:
+  patched as the Spec Change Log's Review entry lists; deferred with owners as DW-365 to DW-369; the Fix's second-writer cost
+  put to the owner as Question 2; dismissed — the routes sheet's `routeCount` wording (the Words the owner approved), the Layers
+  note naming the first list (routine call 4), the brace-last rule left to the authoring guide (one feed design today), the
+  recorder's per-tag reads on T1 (efficiency only), the harness routing's hand-written shape (the journeys parse it through
+  `listsOf`), and the source-text tests (the repo's convention beside the behaviour checks).
+- **The patches' checks, each behind a control that failed:** `pnpm check` exit 0. Planted, each new check failed and passed
+  again once restored: `validate.test.ts` (the brace exemption for any design), `main-feed.test.ts` (`feedsOn` dropped from
+  `feedQuery`), `compile.test.ts` (the guard-name refusal dropped), and `pnpm keyboard -g "7\.16c"` — the picker journey failed
+  with the preview's fix taken out ("Three Up's card drawn on custom-harness-list", the skeleton the owner would have seen), and
+  the listed-template journey failed at "hidden, still the main feed" with `listed` taken out of the editor's `designate`.
+- **The gates on the patched tree, under Node 24:** `pnpm check` exit 0 (lint, typecheck, every package's suite and
+  `check-snapshots`, each printing its own count); `pnpm keyboard` whole, exit 0, every journey passed, the new 7.16c ones and
+  "the journey uses no pointer at all" included; `pnpm build` exit 0 and `node tools/check-traces.mjs` "every route carries its
+  files"; `python3 tools/doc-audit.py --check` PASS, twice.
+- The review leaves the story in review: the deployed walk of the patches (part 2), Question 2, Deploy and the owner's re-test
+  follow (R-80).

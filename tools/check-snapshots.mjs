@@ -78,7 +78,7 @@ function assemble(d) {
  *  main feed binds the native posts there and its theme text equals home.hbs's — one snapshot still holds every target. On a
  *  template no route lists it would be a secondary feed, which `agreement.test.ts` and `compile.test.ts` hold. Every other
  *  design renders at the brace as the route form, unlisted, as before. */
-const listedAt = (entry, target) => (target === lib.ROUTE_TEMPLATE_TARGET && entry.bindingContext.includes('posts') ? new Set([target]) : undefined)
+const listedAt = (entry, target) => (target === lib.ROUTE_TEMPLATE_TARGET && rt.isFeed(entry) ? new Set([target]) : undefined)
 
 /** The render input for one target: content and controls at their defaults, Orbit Weekly for Ghost. */
 function input(entry, target, over = {}) {

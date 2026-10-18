@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom'
 import { CARDS, categoryOf, DEFAULT_LIMIT, isPaginated, isPaywallDesign, isRouteTemplate, orbitWeekly, parseCardDesigns, paywallRing, postAccess, resolveStrings, ringFor, withoutCard, withValue, type CardDesigns, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
-  feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
+  feedQuery, feedsOn, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
   darkHook, renameSection, sectionKey, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
   USER_SETTING_CAP, withData,
 } from '@inflozo/section-runtime'
@@ -2915,7 +2915,7 @@ function EditorShell({
       const view = sitePage(s.peek, { file: canvas.file, stored: storedSubject, page: 1, pageFile: canvas.file, targets: [target], queries: { [entry.id]: entry.dataBindings ?? {} }, perPage: postsPerPage, lists: routeLists })
       return 'ready' in view && s.reading().stopped === null ? { context: view.ready.contexts[target] as RenderContext, rows: view.ready.rows[entry.id] } : null
     }
-  }, [siteShown, liveTick, canvas.file, storedSubject])
+  }, [siteShown, liveTick, canvas.file, storedSubject, routeLists])
 
   /** STORY 5.18's PRESS — A SOURCE, from the pill's SOURCE group or R-194's note in the panel: ONE action, two doors.
    *  A VIEW, never an edit: nothing is stored, journalled or undoable, and a session reading along can still switch
@@ -4418,7 +4418,8 @@ function EditorShell({
      source in force's own, since a value belongs to the source it was chosen from. */
   const role = useMemo<FeedRole | undefined>(
     () =>
-      chosen === undefined || !isFeed(entry) ? undefined
+      // Story 7.16c's review: and only where a feed stands as one (`feedsOn`) — never on `post.hbs` and the like, as before
+      chosen === undefined || !isFeed(entry) || !feedsOn(chosen.target) ? undefined
       // Story 7.16c — a listed template's main feed is sized by its route's own `limit:` where it sets one, and says so (F5)
       : chosen.isMainFeed && isPaginated(chosen.target, listed) ? mainRole(chosen.target)
       // …and a feed off a paginated page — a Routes Manager template no route lists — is a secondary feed
@@ -4512,7 +4513,7 @@ function EditorShell({
       if (note !== null) notes.push(note)
     }
     return notes.length === 0 ? null : notes.join(' ')
-  }, [livePage, chosen, entry, liveTick, canvas.file, postsPerPage])
+  }, [livePage, chosen, entry, liveTick, canvas.file, postsPerPage, routeLists])
   /** Story 5.19 — the Layers note's sentence while THIS page is a Tag or Author page with no visible feed, else null */
   const feedless = useMemo(
     () => (!feedlessArchive(editedDoc(docs, own, library) ?? EMPTY_DOC, pageFileOf(key, page), library, listed) ? null

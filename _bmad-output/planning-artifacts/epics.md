@@ -4025,7 +4025,13 @@ already makes) is this story's to decide
 all-tags and all-authors, because Ghost serves neither natively — so a site is never given a page it does not use
 **And** **`/search/` is never emitted by anyone**, `{{ghost_head exclude="search"}}` is never emitted, and **no
 Inflozo design may bind ⌘K**, which sodo-search already takes — a lint rule on the emitter, not a probe
-**And** the fallback card matches B16 as corrected.
+**And** the fallback card matches B16 as corrected
+**And** *(DW-366 — from Story 7.16c's Review, 2026-10-18)* it decides with the owner (R-83) whether a stored routing that
+cannot be read or parsed keeps each Routes Manager template's stored main-feed designation, rather than listing nothing
+(7.16b's routine call 12), which today shows a listed template's main feed as a secondary feed and stores it so on the
+next edit
+**And** *(DW-367 — from Story 7.16c's Review, 2026-10-18)* a collection's or channel's new template whose starting post grid
+failed to save (`writeListedStart`) gets it on the sheet's next save, or the refusal says what was left.
 
 **FRs:** FR-I4, FR-I5. · **Frame:** `B Missing Surfaces.dc.html` B16. · **Owner test:** yes. · **Verification:**
 a real upload and byte-comparison read-back on T1 and T3 (R-82).
@@ -4127,6 +4133,9 @@ the main feed over the route's native posts, and a feed-less one puts its contex
 Routes Manager file compiles as the route form and a feed there as a secondary `{{#get}}` — wrong for a collection's template.
 And before the first deploy uploads a `routes.yaml`, this story settles **DW-364** with the owner (R-83): with Inflozo's emitted
 index filter, a post with no tags (or an internal first tag) is listed on no page once a collection filters by Primary tag.
+And *(DW-369 — from Story 7.16c's Review, 2026-10-18)* before it hands `lists` to the compile, `validateRoutes` refuses at the
+naming step a collection or channel path whose context FR-H2's guard names itself (`/paged/`, `/index/`, `/tag/`,
+`/author/`), which `compileTheme` now refuses.
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-J17 (Pre-flight's quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
@@ -4654,7 +4663,12 @@ Ghost renders or by the theme trimming with Handlebars' `~`, chosen once the dif
 (left out of `main.js`, its no-JS state) while the canvas runs a no-op for it and draws its JavaScript branch, so A1 #1
 at phone width differs between the two (its nav as a list in the theme, behind a menu button on the canvas). The harness
 compares such a design and decides how the difference is shown or closed; Story 9.1's `nav-drawer` file ends A1 #1's
-case.
+case
+**And** *(DW-368 — from Story 7.16c's Review, 2026-10-18)* it compares a collection's listed template and Home under that
+collection on T1 against the canvas drawn from the CONNECTED site (`sitePage` handed the routes' lists), which no check
+runs today
+**And** *(DW-365 — from Story 7.16c's Review, 2026-10-18)* the main feed's shortfall note on a route's list names the route
+rather than "This site" — its words asked of the owner at this story's Create (R-83).
 
 **FRs:** none — this builds NFR-6(c3). · **Owner test:** none (a harness). · **Verification:** T1 (6.58.0) and
 T3 (5.130.6), a real deploy compared against a real canvas (R-82). · **Blocks:** E9 Story 9.1 cannot open until

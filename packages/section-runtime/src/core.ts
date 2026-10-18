@@ -838,7 +838,9 @@ export function checkBindings(doc: RuntimeDocument, src: string, input: RenderIn
   const root = doc.createElement('div')
   root.innerHTML = src
   // R-7's two target refusals are part of "does the destination carry this design": a gate that
-  // answered [] and then threw at render would be no gate
+  // answered [] and then threw at render would be no gate — so a secondary feed's pager goes first here too, as `renderTree`
+  // takes it (Story 7.16c's review: the gate refused a secondary feed on an unlisted Routes Manager template the render drew)
+  if (input.feed !== undefined) pagerOf(root)?.remove()
   const out: string[] = []
   for (const check of [() => refuseUnpaginated(root, target, input.listed), () => refuseGetOnForbiddenTarget(root, { ...input, target })]) {
     try { check() } catch (e) { out.push((e as Error).message) }

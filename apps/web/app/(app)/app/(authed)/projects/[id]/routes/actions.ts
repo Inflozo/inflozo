@@ -115,14 +115,20 @@ async function insertTemplate(sb: Supabase, id: string, userId: string, display:
   // cleared first — a doc the delete's race re-stored (routine call 11), its preview subject and looked-at record — and the
   // new template opens empty, never wearing the old one's sections
   const key = `custom:${named.file}`
+  // Story 7.16c: a leftover doc moves the revision too (`syncDocs`), or the device that re-stored it keeps showing it — and
+  // it moves BEFORE the clear (the review): a move that fails leaves the doc in place, so the next try moves it again
+  const { data: leftover, error: unread } = await sb.from('project_templates').select('template_key').eq('project_id', id).eq('template_key', key)
+  if (unread || ((leftover ?? []).length > 0 && !(await syncDocs(sb, id, {})))) {
+    console.error('projects/routes: an earlier template\'s leftover doc could not be read or its revision moved', { code: unread?.code })
+    return { error: ROUTES_WORDS.couldNot }
+  }
   const cleared = await Promise.all([
-    sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key).select('template_key'),
+    sb.from('project_templates').delete().eq('project_id', id).eq('template_key', key),
     sb.from('project_template_prefs').delete().eq('project_id', id).eq('template_key', key),
   ])
   const unclear = cleared.find((c) => c.error !== null)?.error
-  // Story 7.16c: a doc cleared here moves the revision too (`syncDocs`), or the device that re-stored it keeps showing it
-  if (unclear || ((cleared[0].data ?? []).length > 0 && !(await syncDocs(sb, id, {})))) {
-    console.error('projects/routes: an earlier template\'s leftovers could not be cleared', { code: unclear?.code })
+  if (unclear) {
+    console.error('projects/routes: an earlier template\'s leftovers could not be cleared', { code: unclear.code })
     return { error: ROUTES_WORDS.couldNot }
   }
   const { data, error } = await sb

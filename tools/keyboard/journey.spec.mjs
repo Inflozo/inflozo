@@ -8250,11 +8250,40 @@ test('7.16c · the listed template: its feed is the MAIN feed, three to a page, 
   expect(WORDS.ROUTES_LINK).toBe(`${ROUTES_LIB.ROUTES_WORDS.title} ↗`)
   await expect(data.getByText(WORDS.THEME_SETTINGS_LINK), 'one link, the route\'s').toHaveCount(0)
   await expect(data.locator('button[id$="-source"]'), 'D5c: a main feed draws no Source').toHaveCount(0)
+  // the review: an EDIT on the listed template keeps its main feed — every edit goes through `designate` with `listed`, and
+  // without it the first edit would strip the flag and store the grid as a secondary feed. Hidden by Space, the grid keeps
+  // its chip (a hidden sole feed holds the flag) and Layers names the route's page 2; shown again, the three rows are back
+  const feedKey = await mainKey(page)
+  await page.locator(`[data-layer-row="${feedKey}"]`).focus()
+  await page.keyboard.press(' ')
+  await expect(page.locator('#editor-layers')).toContainText(WORDS.FEEDLESS_ROUTE('/harness-list/'))
+  await expect(chipRow(page), 'hidden, still the main feed').toHaveCount(1)
+  await page.locator(`[data-layer-row="${feedKey}"]`).focus()
+  await page.keyboard.press(' ')
+  await expect(page.locator('#editor-layers')).not.toContainText(WORDS.FEEDLESS_ROUTE('/harness-list/'))
+  await expect(chipRow(page), 'shown, still the main feed').toHaveCount(1)
+  await expect(canvasFrame(page).locator('#canvas .a17-1__cell')).toHaveCount(3)
   // Home, under the same routing, lists only the posts no collection owns (FR-H3)
   await page.goto(HARNESS)
   await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
   await expect(canvasFrame(page).locator('#canvas .a17-1__cell').first()).toBeVisible()
   for (const title of owned) await expect(canvasFrame(page).locator('#canvas')).not.toContainText(title)
+})
+
+test('7.16c (review) · the Section Picker DRAWS Three Up\'s card on a Routes Manager canvas, listed or not (R-7 used to leave it on its skeleton)', async ({ page }) => {
+  for (const canvas of ['custom-harness-list', 'custom-harness-landing']) {
+    await openRouteCanvas(page, canvas)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+k')
+    await expect(picker(page)).toBeVisible()
+    const cell = picker(page).locator('[data-cell][data-design="a17/1"]').first()
+    await cell.focus()
+    // the card's own frame, once near, holds the drawn section — a skeleton's frame holds none
+    await expect.poll(() => cell.evaluate((b) => (b.closest('.group')?.querySelector('iframe')?.contentDocument?.querySelectorAll('#canvas .a17-1__cell').length ?? 0)),
+      { message: `Three Up's card drawn on ${canvas}`, timeout: 30_000 }).toBeGreaterThan(0)
+    await page.keyboard.press('Escape')
+    await expect(picker(page)).toHaveCount(0)
+  }
 })
 
 test('7.16c · the CONTROL: without the routes header Home lists the posts the collection would own', async ({ page }) => {
