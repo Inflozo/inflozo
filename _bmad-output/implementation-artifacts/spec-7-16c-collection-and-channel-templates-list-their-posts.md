@@ -383,6 +383,8 @@ list the posts a collection or channel serves there:
   depend on them; (8) the keyboard journey edits the listed template and reads its main feed kept (hidden and shown again);
   (9) the walk re-expects 109j and 109n (c) to 7.16c's starting grid and cuts step 111's expected lists with the runtime's
   own `routeList`/`homeList`. Deferred with owners: DW-365 to DW-369. The second-writer cost of the Fix is Question 2.
+- **Review, 2026-10-18 — Question 2 ruled option 1 (R-253):** the Fix stands as built; AD-15 gains the rule and DW-370 (Story
+  7.17) the later work. No code changes.
 
 ## Design Notes
 
@@ -404,6 +406,7 @@ Ruled option 1 (owner, 2026-10-18).
 | Question | Ruled, and built |
 |---|---|
 | 1 — page 2 of a listed template (R-252) | **Page 1 only, for now.** There is no Preview page row, no page-2 key and no migration. The live page 2 serves page 1's stack with the next posts, and a feed-less listed template is guarded. FR-D21 gets a dated note at Dev. |
+| 2 — an editor open in a second tab after a template change (R-253, the Review) | **Accepted for now.** Routes & Templates writes a template's doc through `sync_project_doc`, moving the revision, when it makes, deletes or restores one; an editor open elsewhere meets "This project was changed somewhere else" at its next save. DW-370 (Story 7.17) lets it take the change in without a reload. |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -573,7 +576,10 @@ with its post grid.
    template, and Routes & Templates would stop marking the whole project changed. That is a new rule in AD-15 (a change to
    the architecture) and a bigger Fix, with its own tests; your re-test waits for it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-18).** *"Accept it for now. It happens only with the editor open in a second tab or
+window. Nothing already saved is lost, and the editor says so plainly instead of overwriting anything. I add a later piece
+of work, with a story to own it, to let an open editor take in these changes without a reload."* Recorded as **R-253**. The
+Fix stands as built; AD-15 carries the rule, and the later work is **DW-370**, owned by Story 7.17.
 
 ## Verification
 
@@ -763,3 +769,7 @@ name, never printed):**
   all three back byte-equal; 110 and 111 held whole again, `insertTemplate`'s patched clear included (every new template in
   109–111 went through it). One `stall` note (03:45:20Z, a reload of the routes page retried once) and no FAIL. Users 14 → 14,
   projects 10 → 10.
+
+**Review results — part 3, R-253** (Question 2 ruled option 1, the main session): records only — the register's R-253, AD-15's
+rule, DW-370 and Story 7.17's card, `epic-7-context.md` and `syncDocs`' comment. No code changed, so the part-2 walk at
+`4745438d` stands for the code. `python3 tools/doc-audit.py --check` PASS, twice.

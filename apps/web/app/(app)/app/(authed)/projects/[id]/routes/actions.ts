@@ -168,7 +168,8 @@ async function writeListedStart(sb: Supabase, id: string, file: string): Promise
  *  feed, and a deleted template's old doc could come back on a new one of the same name. The function writes the docs
  *  handed to it (none, to move the revision alone) and moves the revision in one compare-and-set (AD-31), so the next
  *  hydrate takes the cloud's. Its cost is AD-15's for any second writer: that device's journal, its undo history, is
- *  cleared then. A refusal means an editor flushed in between, so it is retried at the revision the refusal hands back:
+ *  cleared then, and an editor open in another tab meets the 409 at its next save — accepted for now (R-253, AD-15; DW-370
+ *  spares it later). A refusal means an editor flushed in between, so it is retried at the revision the refusal hands back:
  *  these keys are a canvas no editor can be holding (a new one, or one whose template was gone). `ponytail:` three tries,
  *  then false; the caller says `couldNot` and the step is tried again. */
 async function syncDocs(sb: Supabase, id: string, docs: Record<string, ProjectDoc>): Promise<boolean> {

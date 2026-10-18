@@ -4031,7 +4031,10 @@ cannot be read or parsed keeps each Routes Manager template's stored main-feed d
 (7.16b's routine call 12), which today shows a listed template's main feed as a secondary feed and stores it so on the
 next edit
 **And** *(DW-367 — from Story 7.16c's Review, 2026-10-18)* a collection's or channel's new template whose starting post grid
-failed to save (`writeListedStart`) gets it on the sheet's next save, or the refusal says what was left.
+failed to save (`writeListedStart`) gets it on the sheet's next save, or the refusal says what was left
+**And** *(DW-370 — from Story 7.16c's Review, ruling R-253, 2026-10-18)* an editor left open in another tab or window takes
+in a template Routes & Templates made, deleted or restored without asking to reload — its approach put to the owner at this
+story's Create (R-83).
 
 **FRs:** FR-I4, FR-I5. · **Frame:** `B Missing Surfaces.dc.html` B16. · **Owner test:** yes. · **Verification:**
 a real upload and byte-comparison read-back on T1 and T3 (R-82).

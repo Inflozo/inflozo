@@ -10040,3 +10040,22 @@ owner: Story 7.18, which hands `lists` to the compile: before it ships, `validat
   step with a sentence, beside `RESERVED_SEGMENTS`.
 location: `packages/section-runtime/src/routes.ts` (`validateRoutes`, `RESERVED_SEGMENTS`) · `packages/theme-compiler/src/compile.ts`
 reason: nothing compiles from the product before Story 7.18.
+
+### DW-370: an editor open in a second tab asks to reload after Routes & Templates changes a template's design
+
+plain: If the editor is open in one tab or window and you make, delete or undo-delete a template on Routes & Templates in
+  another, the editor's next save says "This project was changed somewhere else" and asks you to reload, and the edits made
+  in that tab since then are let go when you do. Nothing already saved is lost. You accepted this for now (R-253).
+status: open
+severity: low
+origin: Story 7.16c's Review (2026-10-18), the Acceptance Auditor and the main session: the Fix for the owner's Finding 1 writes
+  the routes page's docs through `sync_project_doc` (`syncDocs`), moving `projects.revision`, and AD-15 has no merge path, so
+  an editor holding the old base meets the sync route's 409. Ruled option 1 (owner, 2026-10-18): accept it, and give the later
+  work a story (R-253).
+owner: Story 7.17, the next story on the routes page: its Create puts the approach to the owner (R-83) — for example the routes
+  page telling an editor open in the same browser to save and take the change in, or AD-15 gaining a rule that a canvas a
+  device has never held is taken from the cloud.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/routes/actions.ts` (`syncDocs`) · `projects/[id]/sync/route.ts` (the
+  409) · `editor.tsx` (the conflict dialog, the hydrate) · AD-15
+reason: it happens only with the editor open in a second tab or window, and sparing it needs a merge rule AD-15 does not have.
+

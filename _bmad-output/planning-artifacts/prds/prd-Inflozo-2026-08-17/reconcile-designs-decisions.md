@@ -5508,6 +5508,26 @@ own themes do. If the template has no list, its page 2 is kept out of search eng
 - Targets: ✅ this entry · ✅ R-176's entry (dated note) · ✅ Story 7.16c's spec · ✅ `epics.md` Story 7.16c's card ·
   ✅ `epic-7-context.md` · ⬜ `prd.md` FR-D21 (dated, at 7.16c's Dev).
 
+**R-253 — Routes & Templates may move a project's revision when it makes, deletes or restores a template's design, and an
+editor left open in a second tab then asks to reload; accepted for now.** Story 7.16c's Review, Question 2, ruled **option 1**
+(owner, 2026-10-18): *"Accept it for now. It happens only with the editor open in a second tab or window. Nothing already
+saved is lost, and the editor says so plainly instead of overwriting anything. I add a later piece of work, with a story to
+own it, to let an open editor take in these changes without a reload."*
+
+- **Why it was a question.** The owner's Finding 1 at 7.16c (a new collection's template opened without its post grid) came
+  from a doc written with no revision move, which AD-15's hydrate never takes in. The Fix writes every doc the routes page
+  changes through `sync_project_doc`, moving `projects.revision`. That makes the routes page a second writer outside the edit
+  lock: an editor open in another tab meets the 409 conflict at its next save, and its reload lets go the edits made since,
+  and an editor on a template deleted elsewhere may meet it instead of R-250's move to Home. AD-15 warns against a
+  server-side revision move, so the cost was the owner's to accept.
+- **The rule.** Accepted for now, as built: the new template's starting doc, a delete that took a doc, a clear of a leftover
+  doc, and a delete's Undo move the revision (`syncDocs`, `routes/actions.ts`). Nothing saved is lost, and the conflict dialog
+  says so. AD-15 states it as a rule of its own.
+- **Declined.** A merge rule in AD-15 now (an open editor taking a new template's doc from the cloud on first open), in
+  Story 7.16c.
+- Targets: ✅ this entry · ✅ AD-15 (`ARCHITECTURE-SPINE.md`) · ✅ Story 7.16c's spec · ✅ DW-370 and `epics.md` Story 7.17's
+  card · ✅ `epic-7-context.md` · ✅ `syncDocs`' comment.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
