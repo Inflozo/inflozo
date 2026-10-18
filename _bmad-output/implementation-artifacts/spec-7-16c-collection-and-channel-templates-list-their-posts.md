@@ -2,9 +2,9 @@
 title: 'Story 7.16c — Collection and channel templates list their posts'
 type: 'feature'
 created: '2026-10-18'
-status: 'in-review'
+status: 'done'
 baseline_commit: '31547773c387972fb5a62de4dc76948d0c5752e4'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -527,6 +527,8 @@ Custom Route a post grid is not already there. I have to manually add it."* (ste
 - **Static custom routes stay empty, as ruled** (routine call 2). Only a **channel** route — "A channel — a filtered stream of
   posts" — starts with the grid (step 7).
 - **Re-test:** delete Tutorials List and Staff Picks on Routes & Templates, then run steps 2–4 and 7–8 again.
+
+**Re-test (owner, 2026-10-18): passed.** The owner walked "Owner's manual test" on the deployed site (`dpl_6DoeEDStykEKybaHmfMaPknDthy1`), Finding 1's steps 2–4 and 7–8 included, and reported *"passed"*. No further findings.
 
 ## Questions for the owner
 
