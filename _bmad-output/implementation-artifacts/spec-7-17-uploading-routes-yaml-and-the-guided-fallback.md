@@ -899,6 +899,22 @@ production at the Review):
   with a different `GHOST_ROUTES_HELP` planted; `bash supabase/tests/run-rls-gate.sh` exit 0 with the 7.17 block's two new
   controls (the tenant still writes its own title; the service role writes the cause); `pnpm keyboard` exit 0, every journey
   passed, run whole before the push.
-- **After the Review's push:** walk step 112, with 112i, on the Review's own deployment — recorded in the next Review commit.
+- **After the Review's push — the walk on the Review's own deployment** (`1f25d883`, CI's `check`, `rls`, `deploy` and the render
+  matrix all succeeded, Vercel `dpl_E1hxrXsBzWoHE52L7Nogp8BB18ZK` READY; a fresh detached worktree at that commit, the same
+  launcher), every run recorded:
+  - **steps 1–5 + 112: 0 FAIL, first time and whole on the third run** — 112a–h as on the Dev deployment, now with B16's
+    `role="list"` and "Show me where ↗ (opens in a new tab)" read on both hosts, and **112i held**: (a) the request held
+    before the server, the delete taken in while the save was out, the 409 answering the old base sent again, landing two past
+    it, no dialog; (b) the request applied and its answer held, the Undo's move from the new revision HELD (the menu not yet
+    listing the template) and taken once the answer landed, the next ⌘S one past it, no dialog; (c) "+ New template" and its
+    delete each told with no moves, the editor's menu listing and then dropping the doc-less template, the revision unmoved.
+    The first run of the cut failed 112g alone — its toast not seen within 15 s while the delete itself landed and the
+    control's dialog opened — and the second died at step 2's sign-in navigation (a HARNESS ERROR before any story step).
+  - **steps 1–5 + 109–111: 0 FAIL on the second run** — 109–111 and 110h's re-expectation hold beside the Review's `told`
+    change. The first run's 110g delete never reached Vercel (its request rows end at the routes page's GET at 09:22:48Z with
+    no POST after it — DW-204's class, never the product), and the walk then died on the toast it waited for.
+  - **the first whole 1–5 + 109–112 runs** died the same ways: one at step 2's magic-link load; one where 109h's last control
+    save and 109i's delete never reached Vercel (no request row after 09:14:45Z).
+  - Users and projects counted back unchanged after every run, the dead ones included.
 - **Not run anywhere, held by regexes over the source only:** DW-367's `start_file` retry (production offers no lever to fail a
   grid write) and `heardMoved`'s branches beyond what step 112i drives.
