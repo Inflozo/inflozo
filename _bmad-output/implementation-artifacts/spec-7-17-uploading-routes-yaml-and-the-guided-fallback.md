@@ -611,8 +611,8 @@ ruling on Question 5; the routing card's own test is in Story 7.18 (Question 1).
 | 1 | A: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` · B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Editor, Home · Routes & Templates | Open both. | — | Home in A, and Routes & Templates in B. |
 | 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates (B) | Press **+ New collection**. Type the path. Add **Primary tag** and type the tag. For Template, choose **New template…** and type the name. Press **Create collection**. | `/tutorials/` · `tools` · `Tutorials List` | The collection is listed, and Tutorials List says "Used by /tutorials/". |
 | 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (A) | Don't reload. Click Home's headline, type the text, then press ⌘S. | `Hello from window A` | No "This project was changed somewhere else". The editor says it is saved. |
-| 4 | same | Editor (A) | Open the Template menu, and choose Tutorials List. | — | Tutorials List is in the menu. It opens with a post grid tagged **MAIN FEED**. |
-| 5 | same | Editor, Home (A) | Go back to Home. Press ⌘Z, then ⌘⇧Z, then ⌘S. | — | ⌘Z puts back the old headline, and ⌘⇧Z brings "Hello from window A" back. Your undo history was kept. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor (A) | Open the Template menu, and choose Tutorials List. | — | Tutorials List is in the menu. It opens with a post grid tagged **MAIN FEED**. |
+| 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (A) | Go back to Home. Press ⌘Z, then ⌘⇧Z, then ⌘S. | — | ⌘Z puts back the old headline, and ⌘⇧Z brings "Hello from window A" back. Your undo history was kept. |
 | 6 | A: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/custom-tutorials-list` · B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Editor · Routes & Templates | In A, open Tutorials List. In B, delete it from Templates (**⋯ → Delete**, then confirm). | — | A moves to Home with the notice that the template was deleted. B offers **Undo**. |
 | 7 | B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Press **Undo**. Then, in A, open the Template menu. | — | Tutorials List is back in A's menu, and its grid still says **MAIN FEED**. |
 | 8 | B: `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/routes` | Routes & Templates | Delete /tutorials/, then Tutorials List. In A, put Home's headline back and press ⌘S. Turn autosave back on. | — | Back to how step 1 found it. No step showed "changed somewhere else". |
@@ -918,3 +918,17 @@ production at the Review):
   - Users and projects counted back unchanged after every run, the dead ones included.
 - **Not run anywhere, held by regexes over the source only:** DW-367's `start_file` retry (production offers no lever to fail a
   grid write) and `heardMoved`'s branches beyond what step 112i drives.
+
+**Deploy (2026-10-18).**
+
+- `Deployment: dpl_CVaYzc6kzpJtwk6qgSfNPDUJAuh1` — READY, production, built from `b900744c` (the head). The last code change is
+  `1f25d883`'s `dpl_E1hxrXsBzWoHE52L7Nogp8BB18ZK`, also READY, the one the Review's walk ran on; the head after it changed the spec
+  and the story board only. The head's deployment is aliased to `app.inflozo.com` and `inflozo.com` (Vercel API, `VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID` and `VERCEL_PROJECT` read in-process by a script, never on argv). CI at `b900744c` and at `1f25d883`: `CI`
+  (`check`, `rls`, `deploy`) and the Render matrix completed success (GitHub API, `GITHUB_TOKEN`).
+- Schema: `sites.routes_fallback` was pushed first as the Schema phase (`02d659c2`, R-99), applied to production through the pooler
+  on the owner's go (Question 6) and read back at the Schema and again at the Review; `bash supabase/tests/run-rls-gate.sh` is
+  green on every push since, including the head's `rls` job. Nothing to apply at Deploy.
+- Signed out, `https://app.inflozo.com/` answers 307 to `https://app.inflozo.com/sign-in` and `https://inflozo.com/` answers 200,
+  so both addresses are live. Nothing was written to any database or Ghost site at Deploy; T1 was not touched.
+- The owner's test above carries the live URL in every step. `owner_test` stays `pending`.
