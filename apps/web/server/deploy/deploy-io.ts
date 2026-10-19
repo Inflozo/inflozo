@@ -20,8 +20,9 @@ import { zipTheme } from './zip.ts'
  *     read carries `disconnected_at is null` (`ROUTES_IO`'s rule).
  *   - THE CHOKEPOINT: `call()` with the Admin key for `theme_upload` (a multipart `FormData`, DW-51's transport — the second
  *     multipart write after the routes upload) and `theme_activate`; the routes step is Story 7.17's, with its own io.
- * The gates and JSDOM run here, in the one function AD-11 sizes; `jsdom`, `gscan4` and `gscan6` are server externals
- * (`next.config.ts`) and their trees reach the route's trace (`tools/check-traces.mjs`).
+ * The gates and JSDOM run here, in the one function AD-11 sizes; `gscan4` and `gscan6` are server externals
+ * (`next.config.ts`) and their trees reach the route's trace (`tools/check-traces.mjs`). jsdom is BUNDLED, never an external:
+ * Vercel refuses the require-of-ESM jsdom 30 is built on (the owner's test, 2026-10-19; `next.config.ts` says how).
  */
 
 const BUCKET = 'deploy-artifacts'

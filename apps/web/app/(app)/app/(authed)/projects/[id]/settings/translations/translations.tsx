@@ -12,7 +12,8 @@ import { TextInput } from '@/components/kit/input'
 import { HelperCaption } from '@/components/kit/labels'
 import { Menu, openPopover, type MenuItem } from '@/components/kit/select'
 import { BusyLabel, Submit, useSubmitting } from '@/components/kit/submit'
-import { LOCK_COPY, TAB_SESSION_KEY } from '@/lib/lock'
+import { LOCK_COPY } from '@/lib/lock'
+import { storedTabSession } from '@/lib/lock-client'
 import { arrowKeys } from '@/lib/menu'
 import { settingsReadOnly } from '@/lib/theme-settings'
 import { coverageWords, ownName, siteLocaleDiffers, TRANSLATION_WORDS as W, type Coverage, type UntouchedRow } from '@/lib/translations'
@@ -42,13 +43,8 @@ import { resetOverride, saveOverride, setLanguage, type TranslationResult } from
    The Edit links of Question 1's list navigate, so they stay live. */
 
 const noSubscribe = () => () => {}
-const tabSession = (): string | null => {
-  try {
-    return sessionStorage.getItem(TAB_SESSION_KEY)
-  } catch {
-    return null
-  }
-}
+/** this tab's lock id — `null` for none, and for one copied from another open tab (`lib/lock-client.ts`) */
+const tabSession = (): string | null => storedTabSession()
 
 const LINK = `shrink-0 rounded-sm text-[11.5px] font-medium text-sky-text hover:underline ${ring}`
 const alertOf = (state: TranslationResult | null) => (state && 'error' in state ? state.error : null)

@@ -6487,8 +6487,14 @@ test('DW-242 (Story 5.24e): a holder\'s own reload paints no frame of the reader
     const page = await context.newPage()
     await page.addInitScript(sample)
     // the harness's reader row names `harness-another-tab`: in the self arm THIS tab carries that id, as a holder's
-    // reload keeps its `sessionStorage` (`lib/lock.ts`'s TAB_SESSION_KEY)
-    if (self) await page.addInitScript(() => sessionStorage.setItem('inflozo-lock-session', 'harness-another-tab'))
+    // reload keeps its `sessionStorage` (`lib/lock.ts`'s TAB_SESSION_KEY) — with the mark its own `pagehide` left on it,
+    // which is what tells a reload from a copied tab since the owner's test of Story 7.18a (`lib/lock-client.ts`)
+    if (self) {
+      await page.addInitScript(() => {
+        sessionStorage.setItem('inflozo-lock-session', 'harness-another-tab')
+        sessionStorage.setItem('inflozo-lock-session:left', 'harness-another-tab')
+      })
+    }
     await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
     await open(page)
     await page.waitForTimeout(500)
@@ -6503,6 +6509,28 @@ test('DW-242 (Story 5.24e): a holder\'s own reload paints no frame of the reader
   const self = await frames(true)
   expect(self.length, 'frames were sampled').toBeGreaterThan(10)
   expect(self.filter(Boolean), 'the holder\'s own reload: not one frame of the reader\'s bar').toHaveLength(0)
+})
+
+test('7.18a (the owner\'s test): a tab copied from an open editor — Duplicate, ⌘-click, window.open copy `sessionStorage` — is a session of its own, so it reads along and Ship it asks D8g; a reload keeps its id', async ({ page }) => {
+  await open(page)
+  const idOf = (p) => p.evaluate(() => sessionStorage.getItem('inflozo-lock-session'))
+  const first = await idOf(page)
+  expect(first, 'the first tab has an id').toBeTruthy()
+  await page.evaluate(() => sessionStorage.setItem('journey-copy-marker', 'copied'))
+  // the copy: an auxiliary window the browser makes from this tab, which copies its `sessionStorage` (as Duplicate does)
+  const [copy] = await Promise.all([page.context().waitForEvent('page'), page.evaluate(() => void window.open(location.href))])
+  await copy.waitForLoadState()
+  await expect(copy.locator('#editor-ship')).toBeVisible()
+  // the control: the storage really was copied — without the rule this tab would have read the first tab's id
+  expect(await copy.evaluate(() => sessionStorage.getItem('journey-copy-marker')), 'the copy carries the first tab\'s storage').toBe('copied')
+  const second = await idOf(copy)
+  expect(second, 'the copy has an id').toBeTruthy()
+  expect(second, 'and it is not the first tab\'s').not.toBe(first)
+  await copy.close()
+  // a reload of the first tab is the same session: its id is kept
+  await page.reload()
+  await expect(page.locator('#editor-ship')).toBeVisible()
+  expect(await idOf(page), 'a reload keeps the id').toBe(first)
 })
 
 test('DW-223 (Story 5.24e): a subject picked and the page reloaded at once — before its write answered — comes back as the pick, and is sent again', async ({ page }) => {

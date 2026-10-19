@@ -20,7 +20,8 @@ import { MoonBadge } from '@/components/kit/moon-badge'
 import { Select } from '@/components/kit/select'
 import { StepperBox } from '@/components/kit/stepper'
 import { sitesPath } from '@/lib/connect-rule'
-import { LOCK_COPY, TAB_SESSION_KEY } from '@/lib/lock'
+import { LOCK_COPY } from '@/lib/lock'
+import { storedTabSession } from '@/lib/lock-client'
 import { isRich, type Mark, type PropValue } from '@inflozo/section-runtime'
 import {
   choicesOf, conditionWord, droppedWords, fileName, settingsReadOnly, startOf, THEME_WORDS, type Promotable, type RowState, type SiteBasics,
@@ -66,13 +67,8 @@ import {
    server's render assumes a live lock is someone else's and the tab corrects it before it can edit anything. */
 
 const noSubscribe = () => () => {}
-const tabSession = (): string | null => {
-  try {
-    return sessionStorage.getItem(TAB_SESSION_KEY)
-  } catch {
-    return null
-  }
-}
+/** this tab's lock id — `null` for none, and for one copied from another open tab (`lib/lock-client.ts`) */
+const tabSession = (): string | null => storedTabSession()
 
 const HEADING = 'font-display text-[20px] font-bold tracking-[-0.015em] text-ink'
 const LINK = `self-start rounded-sm text-[11.5px] font-medium text-sky-text hover:underline ${ring}`

@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-10-18'
 status: 'in-progress'
 baseline_commit: 'ceaae4068372bef46d2745fc450f8625b83c6eea'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -629,6 +629,11 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
   function takes the collections), with the theme `finally` restoring Casper; the second held every row.
 - **The owner's step 9** said to press View site on D2f, which has no such button (Words); it opens the site in a new tab.
 
+**Fix (2026-10-19) — the owner's two findings, before the Review** (`## Owner's test findings`): jsdom bundled, not an external
+(`next.config.ts`, `patches/jsdom@30.0.1.patch`, `tools/check-traces.mjs`); a copied tab a session of its own
+(`lib/lock-client.ts`, the two settings pages, a journey, DW-242's plant). The Wiring task's `serverExternalPackages: ['jsdom',
+…]` is superseded by the first.
+
 ## Design Notes
 
 ### Rulings this spec is written to
@@ -934,6 +939,42 @@ after step 2.
 | 14 | ghost6's Ghost Admin → Integrations → Owner test 7.18, then the editor (B) | — | Press **Regenerate** on the Admin API key. In the editor, press **Ship it**, **Run checks**, then **Ship it**. | — | It fails at Ship: "Ghost said no — this Admin API key no longer works." with **Reconnect site**, which opens Manage keys. Paste the new key and ship again: Live. |
 | 15 | ghost6's Ghost Admin, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: **Settings → Design → Change theme → Casper → Activate**, delete the `inflozo-…` theme, upload the `routes.yaml` you saved at the start, and delete the Owner test 7.18 integration. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was. |
 
+## Owner's test findings
+
+**Finding 1 (owner, 2026-10-19), before the Review — fixed in the Fix commit, re-test owed.** Run checks answered "Something
+went wrong on our side before anything reached your site. Try again.", the browser's console showing `POST …/deploy 500`.
+- **What production said** (Vercel's request log for `dpl_6167myuo9fcHFwcwrP7mthistAcd`, read with `VERCEL_TOKEN`): both
+  POSTs (04:06:48Z and 04:07:28Z) died at the route's first import — `Failed to load external module jsdom-…: Error
+  [ERR_REQUIRE_ESM]: require() of ES Module …/@exodus/bytes/encoding-lite.js from …/html-encoding-sniffer.js not
+  supported`, nodejs24.x. Every deploy POST and GET answered 500, before reading anything.
+- **The cause:** the deploy route loaded jsdom as a server external, so Node `require()`d it at run time, and jsdom 30 and its
+  dependencies `require()` ES modules (`@exodus/bytes`, `css-tree`, `@asamuzakjp/*`) — which Vercel's functions refuse,
+  though Node 24 allows it locally. That is why every local check passed. Reproduced locally: the production build under
+  `next start` with `NODE_OPTIONS=--no-experimental-require-module` answered the same 500 with the same log line.
+- **The fix:** jsdom is BUNDLED. `transpilePackages: [..., 'jsdom']` takes it off Next's own never-bundle list
+  (`next/dist/lib/server-external-packages.jsonc`), and `patches/jsdom@30.0.1.patch` moves the one file it read at load
+  (`default-stylesheet.css`, read through `__dirname`, which a bundle fixes at `/ROOT/…`) to its first use — only
+  `getComputedStyle`, which no compile calls. Executed: the same probe answers 401 "Not signed in" (the route loads); a real
+  compile through the built function (the shell, the compile, both gscans, the quality gate, the zip) gives 0/0/not
+  blocked and the SAME zip bytes as the unbundled jsdom every test uses (sha-256 `28839a97407be7ca…`). `check-traces`
+  now fails if the deploy route carries a jsdom link again.
+- **Re-test:** steps 6–10 of "Owner's manual test" once the Fix deploy is live.
+
+**Finding 2 (owner, 2026-10-19), before the Review — fixed in the Fix commit, re-test owed.** A second window opened from the
+first (the owner's answer, in session: duplicated, or opened from a link in it) did not show "Take over to ship?" — Ship it
+opened the wizard straight away.
+- **The cause:** the lock's "this tab" is an id in `sessionStorage`, and the browser COPIES `sessionStorage` into a tab made from
+  another (Duplicate, ⌘-click, `window.open`). So the copy carried the first tab's id and was its lock's holder too — two tabs
+  editing as one session (the Theme settings and Translations pages read the same id). Older than this story (Story 5.17's
+  lock); Ship it's D8g is what showed it.
+- **The fix:** `lib/lock-client.ts` marks the id LEFT as a page goes (`pagehide`) and keeps a stored id on load only when the
+  mark is on it — a reload, the take-over's own reload. A copy is taken while the first tab is open, so it carries no mark and
+  becomes a session of its own; it reads along, and Ship it there opens D8g. The settings pages read through the same rule
+  (`storedTabSession`). A new journey copies an open editor with `window.open` (the storage really copied — its control),
+  asserts the copy's id differs and that a reload keeps the first tab's; it fails with the rule switched off. DW-242's journey
+  now plants the mark a real reload leaves.
+- **Re-test:** steps 6–7 of "Owner's manual test" — the second window may be duplicated or typed fresh; either now reads along.
+
 ## Questions for the owner
 
 Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), and Questions 4–6, raised at Dev, the same day (R-262–R-264); none is open.
@@ -1158,3 +1199,22 @@ away, while the wizard would say "Uploaded. Not live yet."
 - **Still the Review's:** walk step 113 on production (written, never run; `T1_WRITES=1` and a fresh go naming its T1
   writes), the deployed function's size and memory from Vercel, and CI's `check`, `rls`, `deploy` and the render matrix on
   the Review head.
+
+**Executed — Fix (2026-10-19, the owner's two findings; the main session, Node 24):**
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`): the request log of `dpl_6167myuo9fcHFwcwrP7mthistAcd` — two POSTs to
+  `/projects/1ba29378-…/deploy`, both 500, each carrying the function's own `ERR_REQUIRE_ESM` line for jsdom's
+  `@exodus/bytes`, `functionMemorySize: 4096` (R-262 in force).
+- **The control, locally:** the Dev build under `next start` with `NODE_OPTIONS=--no-experimental-require-module` (Vercel's
+  behaviour) — POST and GET 500 with the same `Failed to load external module jsdom-…` line. Plain `require('jsdom')` loads
+  under Node 24's default and fails with the flag; `gscan4` and `gscan6` load either way.
+- **The fix, locally, the same way:** POST and GET 401 "Not signed in", no require-of-ESM line. A temporary route (deleted,
+  never committed) ran the compile shell, `compileTheme`, both gscans, the quality gate and `zipTheme` inside the built
+  function: 26 files, 0 errors on gscan 4.49.7 and 6.4.2, quality not blocked, 319855 bytes, sha-256 `28839a97407be7ca…` —
+  the same bytes the same input gives through the unbundled jsdom.
+- `pnpm build` — exit 0. `node tools/check-traces.mjs` — "every route carries its files", the new "the deploy route bundles
+  jsdom" line passing (the Dev build's trace carried the `jsdom-be25fed40bc74da3` link it now refuses).
+- `pnpm check` — exit 0: library 285 / ghost-shim 47 / section-runtime 441 / theme-compiler 219 / app 877 / tools 13, 0 failing.
+- `pnpm keyboard` — exit 0, 270 passed (17.0 min), the copied-tab journey among them. Before it: `--grep` over the lock
+  journeys `--repeat-each 3` — 81 passed; the copied-tab journey with the rule switched off — FAILED on "and it is not the
+  first tab's" (the mutation check), passing again restored.
+- **Still the owner's:** the re-test of steps 6–10 on the Fix deploy.

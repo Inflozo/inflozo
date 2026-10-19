@@ -1054,7 +1054,8 @@ grows only as the stakes do. That escalation is the design and it stands.
    or logged for display.**
 3. **Nobody is named, because there is nobody to name** (**R-189**, owner, 2026-09-23). A project carries one
    `user_id` and team seats are out of v1 (`prd.md` Appendix G), so the other editing context is always the same
-   person — another tab, another browser, another device. Every string says WHERE, never WHO; no avatar carries
+   person — another tab, another browser, another device *(a tab copied from another — Duplicate, ⌘-click — is another tab
+   too: the browser copies its storage, so the lock tells a copy from a reload; Story 7.18a's owner test, 2026-10-19)*. Every string says WHERE, never WHO; no avatar carries
    initials; **"Or message Rosa" does not exist**. The frames' shapes and their escalation are untouched.
 4. **The message is honest rather than reassuring.** A takeover is not a graceful hand-off. Work that
    had not synced is genuinely gone — the losing device's journal is cleared unconditionally on its

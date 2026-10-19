@@ -1,0 +1,24 @@
+diff --git a/lib/jsdom/living/css/helpers/computed-style.js b/lib/jsdom/living/css/helpers/computed-style.js
+index 6ee5cd43d1720fc86a96027f4578a754d6e9359a..c6c7dc5ba5a0df8240ba909abec66e00d40015d8 100644
+--- a/lib/jsdom/living/css/helpers/computed-style.js
++++ b/lib/jsdom/living/css/helpers/computed-style.js
+@@ -14,7 +14,9 @@ const { isGlobalKeyword } = require("./css-values.js");
+ const { absoluteFontSize } = require("./font-sizes.js");
+ const { systemColors } = require("./system-colors.js");
+ 
+-const defaultStyleSheet = fs.readFileSync(
++// Inflozo (Story 7.18a): read where it is first parsed, never at load. Bundled, `__dirname` is the bundler's own
++// (`/ROOT/...`), and only getComputedStyle needs this file, which Inflozo's compile never calls.
++const readDefaultStyleSheet = () => fs.readFileSync(
+   path.resolve(__dirname, "../../../browser/default-stylesheet.css"),
+   { encoding: "utf-8" }
+ );
+@@ -70,7 +72,7 @@ function applyStyleSheetRules(elementImpl, declaration) {
+     // The parsed default stylesheet will be composed of CSSOM objects from the first global object accessed. This is a
+     // bit strange, but since we only ever access the internals of `parsedDefaultStyleSheet`, and don't expose it to
+     // callers, it shouldn't cause any issues.
+-    parsedDefaultStyleSheet = parseStyleSheet(defaultStyleSheet, elementImpl._globalObject);
++    parsedDefaultStyleSheet = parseStyleSheet(readDefaultStyleSheet(), elementImpl._globalObject);
+   }
+ 
+   const specificities = new Map();

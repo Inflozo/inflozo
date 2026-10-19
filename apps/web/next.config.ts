@@ -33,12 +33,20 @@ const config: NextConfig = {
     '@inflozo/section-runtime',
     '@inflozo/ghost-shim',
     '@inflozo/theme-compiler',
+    // STORY 7.18a — taken off Next's own never-bundle list (`next/dist/lib/server-external-packages.jsonc` names jsdom; a
+    // package listed here is removed from it), so the deploy route BUNDLES jsdom: see `serverExternalPackages` below
+    'jsdom',
   ],
-  /* STORY 7.18a — THE DEPLOY FUNCTION'S THREE CHECKERS' ENGINES, NEVER BUNDLED: jsdom (the compile's document) and both pinned
-     gscans (AD-34: 4.49.7 for Ghost 5, 6.4.2 for Ghost 6) are loaded by Node from `node_modules` at run time, as they are in
-     every test — gscan reads its own rule files and specs off disk, and a bundled copy would not find them. Their trees
-     reach the deploy route's trace, which `tools/check-traces.mjs` holds after CI's build. */
-  serverExternalPackages: ['jsdom', 'gscan4', 'gscan6'],
+  /* STORY 7.18a — THE DEPLOY FUNCTION'S TWO CHECKERS, NEVER BUNDLED: both pinned gscans (AD-34: 4.49.7 for Ghost 5, 6.4.2 for
+     Ghost 6) are loaded by Node from `node_modules` at run time, as they are in every test — gscan reads its own rule files
+     and specs off disk, and a bundled copy would not find them. Their trees reach the deploy route's trace, which
+     `tools/check-traces.mjs` holds after CI's build.
+     JSDOM IS BUNDLED, deliberately (the owner's test, 2026-10-19; `transpilePackages` above): jsdom 30 and its dependencies `require()` ES modules
+     (`@exodus/bytes`, `css-tree`, `@asamuzakjp/*`), and Vercel's functions refuse require-of-ESM (`ERR_REQUIRE_ESM` on
+     nodejs24.x, read in the deploy route's own log), so an external jsdom threw at the route's first import and every POST
+     answered 500. Bundled, Turbopack resolves those modules at build time; the one file jsdom reads off disk
+     (`default-stylesheet.css`) rides in the route's trace, which check-traces holds too. */
+  serverExternalPackages: ['gscan4', 'gscan6'],
 }
 
 export default config

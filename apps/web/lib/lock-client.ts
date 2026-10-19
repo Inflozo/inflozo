@@ -113,6 +113,55 @@ export function lockSignals(projectId: string, heard: (signal: LockSignal) => vo
  */
 const SESSION_KEY = TAB_SESSION_KEY
 
+/* A COPIED TAB IS NOT THE SAME SESSION (the owner's test of Story 7.18a, 2026-10-19). The browser COPIES `sessionStorage`
+ * into a tab made from another — Duplicate, ⌘-click, `window.open` — so that tab read the first tab's id and was its lock's
+ * holder too: two tabs editing as one session, and Ship it skipping D8g. So each tab marks its id LEFT as its page goes
+ * (`pagehide` — a reload, a navigation, the take-over's own reload), and a load keeps the stored id only when that mark is
+ * on it. A copy is taken while the first tab is still open, so it carries the id without the mark, and starts as a session
+ * of its own. A page restored from the back-forward cache never reloaded, so its mark is cleared on `pageshow`.
+ * Judged once per page load (`judged`), in the browser only: the server has no tab, and a module-level memo there would be
+ * every visitor's. */
+const LEFT_KEY = `${SESSION_KEY}:left`
+let judged = false
+function judgeThisLoad(): void {
+  if (judged || typeof window === 'undefined') return
+  judged = true
+  try {
+    const held = sessionStorage.getItem(SESSION_KEY)
+    const left = sessionStorage.getItem(LEFT_KEY)
+    sessionStorage.removeItem(LEFT_KEY)
+    if (held !== null && held !== left) sessionStorage.removeItem(SESSION_KEY)
+    window.addEventListener('pagehide', () => {
+      try {
+        const now = sessionStorage.getItem(SESSION_KEY)
+        if (now !== null) sessionStorage.setItem(LEFT_KEY, now)
+      } catch {
+        // a refusing store mints a fresh id per load anyway
+      }
+    })
+    window.addEventListener('pageshow', (event) => {
+      if (!event.persisted) return
+      try {
+        sessionStorage.removeItem(LEFT_KEY)
+      } catch {
+        // as above
+      }
+    })
+  } catch {
+    // a refusing store: `tabSession` mints a fresh id per load, which is already a session of its own
+  }
+}
+
+/** This tab's id as the settings pages read it — never minted, null where this tab has none (or only a copied one). */
+export function storedTabSession(): string | null {
+  judgeThisLoad()
+  try {
+    return sessionStorage.getItem(SESSION_KEY)
+  } catch {
+    return null
+  }
+}
+
 /** Is this id the one this tab will read back on its next load? False where the id was never kept (a refusing store). */
 export function tabSessionKept(id: string): boolean {
   try {
@@ -123,6 +172,7 @@ export function tabSessionKept(id: string): boolean {
 }
 
 export function tabSession(): string {
+  judgeThisLoad()
   try {
     const held = sessionStorage.getItem(SESSION_KEY)
     if (held) return held

@@ -110,19 +110,27 @@ for (const [route, file, needs] of ROUTES) {
   console.log(`FAIL  ${route}: ${missing.length} of the ${needs.length} files it reads are not in ${relative(REPO, trace)} — ${missing.slice(0, 5).join(', ')}${missing.length > 5 ? ', …' : ''}`)
 }
 
-// ── Story 7.18a: the deploy route carries its three server externals (`next.config.ts`' `serverExternalPackages`) ─────
-// jsdom and both pinned gscans are loaded by Node at run time, never bundled, so the function ships them only if the trace
-// does: each one's own tree (its package.json and the entry the deploy reaches — gscan's checker and its major's spec,
-// jsdom's api) and the link Turbopack makes for it under `.next/node_modules`. The packages are found where the app finds
-// them, `apps/web/node_modules/<alias>`, and read by their real path — the form a trace records.
+// ── Story 7.18a: the deploy route carries its two server externals (`next.config.ts`' `serverExternalPackages`) ───────
+// Both pinned gscans are loaded by Node at run time, never bundled, so the function ships them only if the trace does: each
+// one's own tree (its package.json and the entry the deploy reaches — gscan's checker and its major's spec) and the link
+// Turbopack makes for it under `.next/node_modules`. The packages are found where the app finds them,
+// `apps/web/node_modules/<alias>`, and read by their real path — the form a trace records.
+// AND JSDOM IS NOT ONE OF THEM (the owner's test, 2026-10-19): an external jsdom is `require()`d by Node, and jsdom 30
+// `require()`s ES modules, which Vercel's functions refuse (`ERR_REQUIRE_ESM`) — every deploy POST answered 500. So jsdom is
+// bundled (`transpilePackages`), and this fails if the route carries a jsdom link again.
 {
   const trace = join(AUTHED, 'projects/[id]/deploy/route.js.nft.json')
   const carried = new Set(JSON.parse(readFileSync(trace, 'utf8')).files.map((f) => relative(REPO, resolve(dirname(trace), f))))
   const EXTERNALS = [
     ['gscan4', ['package.json', 'lib/checker.js', 'lib/specs/v5.js']],
     ['gscan6', ['package.json', 'lib/checker.js', 'lib/specs/v6.js']],
-    ['jsdom', ['package.json', 'lib/api.js']],
   ]
+  const jsdomLinks = [...carried].filter((f) => /^apps\/web\/\.next\/node_modules\/jsdom-/.test(f))
+  if (jsdomLinks.length === 0) console.log('PASS  the deploy route bundles jsdom: no external jsdom for Node to require() on Vercel')
+  else {
+    failed++
+    console.log(`FAIL  the deploy route loads jsdom as an external (${jsdomLinks[0]}) — Vercel refuses its require() of ES modules; keep it in transpilePackages`)
+  }
   for (const [alias, entries] of EXTERNALS) {
     const real = realpathSync(join(REPO, 'apps/web/node_modules', alias))
     const needs = entries.map((e) => relative(REPO, join(real, e)))

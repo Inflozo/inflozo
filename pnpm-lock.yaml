@@ -7,6 +7,9 @@ settings:
 overrides:
   '@tryghost/nql@0.12.7>@tryghost/nql-lang': 0.6.3
 
+patchedDependencies:
+  jsdom@30.0.1: fdc2e5b59cb60de2edd67faf5565e2999edfdbd50457d981899906c1df3232cf
+
 importers:
 
   .:
@@ -79,7 +82,7 @@ importers:
         version: gscan@6.4.2(@opentelemetry/core@2.11.0(@opentelemetry/api@1.9.1))(supports-color@10.2.2)
       jsdom:
         specifier: 30.0.1
-        version: 30.0.1
+        version: 30.0.1(patch_hash=fdc2e5b59cb60de2edd67faf5565e2999edfdbd50457d981899906c1df3232cf)
       next:
         specifier: 16.3.1
         version: 16.3.1(@opentelemetry/api@1.9.1)(@playwright/test@1.61.1)(@types/node@24.13.4)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -139,7 +142,7 @@ importers:
         version: 24.13.4
       jsdom:
         specifier: 30.0.1
-        version: 30.0.1
+        version: 30.0.1(patch_hash=fdc2e5b59cb60de2edd67faf5565e2999edfdbd50457d981899906c1df3232cf)
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -167,7 +170,7 @@ importers:
         version: 4.3.0
       jsdom:
         specifier: 30.0.1
-        version: 30.0.1
+        version: 30.0.1(patch_hash=fdc2e5b59cb60de2edd67faf5565e2999edfdbd50457d981899906c1df3232cf)
       nql5:
         specifier: npm:@tryghost/nql@0.12.7
         version: '@tryghost/nql@0.12.7(supports-color@10.2.2)'
@@ -201,7 +204,7 @@ importers:
         version: 4.7.9
       jsdom:
         specifier: 30.0.1
-        version: 30.0.1
+        version: 30.0.1(patch_hash=fdc2e5b59cb60de2edd67faf5565e2999edfdbd50457d981899906c1df3232cf)
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -8044,7 +8047,7 @@ snapshots:
 
   jsbn@0.1.1: {}
 
-  jsdom@30.0.1:
+  jsdom@30.0.1(patch_hash=fdc2e5b59cb60de2edd67faf5565e2999edfdbd50457d981899906c1df3232cf):
     dependencies:
       '@asamuzakjp/css-color': 6.0.7
       '@asamuzakjp/dom-selector': 8.3.2
