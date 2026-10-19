@@ -1428,4 +1428,7 @@ the bar; centred from about 1300 up, 6 px off at 1280."*
 - `pnpm keyboard` — exit 0, 273 passed (28.7 min). The new centring journey measures "Ship it" and "Ship update" at 1536, 1440,
   1366 and 1280: centred to within a pixel from 1366 up, within the ruled 6px at 1280. Its control: with the words drawn
   again beside the gear it FAILS at 1440 (45px off), passing again restored.
-- **Still owed:** the walk's step 2 on the next deploy (steps 1–5 only — no T1 write), recorded in the next commit.
+- **On production** (`c79a3030`: CI `check`, `rls`, `deploy` and the render matrix success; Vercel
+  `dpl_8Zvafvbs6jusfXk4CP48iQodMyUf` READY): the walk's steps 1–5 (a cut from a worktree at that commit, no T1 call) — 40 PASS,
+  0 FAIL, step 2 among them: S4a's centred group at 541–899 in the 1440 bar, its middle the bar's (it was 524–882, 17px left,
+  in every earlier run today).
