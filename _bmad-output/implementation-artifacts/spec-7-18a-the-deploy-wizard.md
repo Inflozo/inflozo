@@ -1241,3 +1241,9 @@ away, while the wizard would say "Uploaded. Not live yet."
   of the 258 files gscan 6.4.2 touches while checking (recorded locally with an fs hook). Fixed by `preloadChecks`; the new
   check-traces guard FAILED on the pre-fix build (128 missing for gscan4's 568 and gscan6's 258) and PASSES after.
   `pnpm check` — exit 0, app 878 (the preload test among them; with one check file dropped from the list it fails).
+- **After the second Fix deployed (`f11efbeb`, CI check, rls and deploy green):** the same production Pre-flight as a
+  throwaway account — 202, then `awaiting_ship` after 6 s: compiled 319992 bytes in 1657 ms, checked in 922 ms; gscan 6.4.2
+  0 errors and one warning, `page_switch_unused` ("The switch that hides a page's title and feature image does nothing on
+  this site." — the owner's step 8 expects it); quality 0/0, not blocked; the artefact stored (319992 bytes). The artefact and
+  the account deleted; production's counts (11 projects, 6 sites, 0 deploys, 0 jobs) back as before. The owner's re-test of
+  steps 6–10 is next.
