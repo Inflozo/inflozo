@@ -600,6 +600,7 @@ begin
     ('custom_settings','frozen_at','BOTH'),
     ('deploy_jobs','stage','BOTH'),('deploy_jobs','error','BOTH'),
     ('deploys','pinned','BOTH'),('deploys','quality','BOTH'),('deploys','inputs_sha256','BOTH'),
+    ('deploys','preflight','BOTH'),
     ('template_binding_checklist','filename','BOTH')
   ) as v(t,c,verbs)
   cross join lateral (values ('INSERT'),('UPDATE')) as p(priv)
@@ -2673,3 +2674,114 @@ end $$;
 
 delete from auth.users where id in ('77777777-718a-0000-0000-000000000001',
                                     '77777777-718a-0000-0000-000000000002');
+
+-- ── STORY 7.18b — Pre-flight's compile facts on the Deploy row, and `jobs.claim`'s condition run in Postgres ─────────────
+--
+-- BEHAVIOURAL. `deploys.preflight` is the server's: the tenant reads it on its own deploy, never on another's, and never
+-- writes it (AD-31). DW-378: Ship it's one-ship guard is `jobs.claim` — the service role's `update deploy_jobs … where
+-- id = $1 and stage = 'awaiting_ship'` — and until now only a fake ran it; here the first statement changes one row and
+-- the same statement again changes none. With the 7.18b migration withheld this block ABORTS at its first check — the
+-- control that the gate sees the migration at all.
+
+reset role;
+
+delete from auth.users where id in ('77777777-718b-0000-0000-000000000001',
+                                    '77777777-718b-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-718b-0000-0000-000000000001'),
+                                  ('77777777-718b-0000-0000-000000000002');
+insert into public.sites(id,user_id,url) values
+  ('eeeeeeee-718b-0000-0000-000000000001','77777777-718b-0000-0000-000000000001','https://own-718b.example'),
+  ('eeeeeeee-718b-0000-0000-000000000002','77777777-718b-0000-0000-000000000002','https://theirs-718b.example');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-718b-0000-0000-000000000001','77777777-718b-0000-0000-000000000001','Own facts','own-facts-718b','{}'),
+  ('dddddddd-718b-0000-0000-000000000002','77777777-718b-0000-0000-000000000002','Theirs','theirs-718b','{}');
+
+-- (1) the column, nullable jsonb, with its comment naming the shape.
+do $$
+begin
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'deploys' and column_name = 'preflight'
+         and data_type = 'jsonb' and is_nullable = 'YES') <> 1 then
+    raise exception 'FAIL (7.18b): deploys.preflight (jsonb, nullable) is missing';
+  end if;
+  if col_description('public.deploys'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.deploys'::regclass and attname = 'preflight'))
+     not like '%templates%custom%noindex%freeAsks%' then
+    raise exception 'FAIL (7.18b): deploys.preflight''s comment does not name {templates, custom, noindex, freeAsks}';
+  end if;
+  raise notice 'PASS (7.18b): deploys.preflight is nullable jsonb and its comment names its shape';
+end $$;
+
+-- the server writes both deploys and one parked job (the service role, as `server/deploy/deploy-io.ts` does)
+set role service_role;
+insert into public.deploys(id,project_id,user_id,site_id,version,theme_name,status,preflight) values
+  ('aaaaaaaa-718b-0000-0000-000000000001','cccccccc-718b-0000-0000-000000000001','77777777-718b-0000-0000-000000000001',
+   'eeeeeeee-718b-0000-0000-000000000001','1.0.0','inflozo-own-facts-718b','checking',
+   '{"templates":["index.hbs"],"custom":{},"noindex":["tag"],"freeAsks":[]}'),
+  ('aaaaaaaa-718b-0000-0000-000000000002','dddddddd-718b-0000-0000-000000000002','77777777-718b-0000-0000-000000000002',
+   'eeeeeeee-718b-0000-0000-000000000002','1.0.0','inflozo-theirs-718b','checking',
+   '{"templates":["index.hbs"],"custom":{},"noindex":[],"freeAsks":["index.hbs"]}');
+insert into public.deploy_jobs(id,project_id,user_id,site_id,stage,deploy_id) values
+  ('bbbbbbbb-718b-0000-0000-000000000001','cccccccc-718b-0000-0000-000000000001','77777777-718b-0000-0000-000000000001',
+   'eeeeeeee-718b-0000-0000-000000000001','awaiting_ship','aaaaaaaa-718b-0000-0000-000000000001');
+
+-- (2) DW-378: `jobs.claim`'s condition, as the service role runs it — one row the first time, none the second.
+do $$
+declare n int;
+begin
+  update public.deploy_jobs set stage = 'uploading', updated_at = now()
+   where id = 'bbbbbbbb-718b-0000-0000-000000000001' and user_id = '77777777-718b-0000-0000-000000000001'
+     and stage = 'awaiting_ship';
+  get diagnostics n = row_count;
+  if n <> 1 then
+    raise exception 'FAIL (7.18b): jobs.claim changed % rows on a job parked at awaiting_ship (expected 1)', n;
+  end if;
+  update public.deploy_jobs set stage = 'uploading', updated_at = now()
+   where id = 'bbbbbbbb-718b-0000-0000-000000000001' and user_id = '77777777-718b-0000-0000-000000000001'
+     and stage = 'awaiting_ship';
+  get diagnostics n = row_count;
+  if n <> 0 then
+    raise exception 'FAIL (7.18b): the same claim again changed % rows — a second Ship it would upload twice', n;
+  end if;
+  raise notice 'PASS (7.18b): jobs.claim''s condition changes one row, and the same statement again changes none';
+end $$;
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-718b-0000-0000-000000000001';
+
+-- (3) the tenant reads its own facts, never another's, and writes them never.
+do $$
+declare f jsonb; theirs int;
+begin
+  select preflight into f from public.deploys where id = 'aaaaaaaa-718b-0000-0000-000000000001';
+  if f is distinct from '{"templates":["index.hbs"],"custom":{},"noindex":["tag"],"freeAsks":[]}'::jsonb then
+    raise exception 'FAIL (7.18b): the tenant read % on its own deploy', f;
+  end if;
+  select count(*) into theirs from public.deploys where id = 'aaaaaaaa-718b-0000-0000-000000000002';
+  if theirs <> 0 then
+    raise exception 'FAIL (7.18b): the tenant can see another tenant''s deploy facts';
+  end if;
+  raise notice 'PASS (7.18b): the tenant reads preflight on its own deploy and not another tenant''s';
+  begin
+    update public.deploys set preflight = '{}'::jsonb where id = 'aaaaaaaa-718b-0000-0000-000000000001';
+    raise exception 'FAIL (7.18b): the tenant wrote deploys.preflight';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.18b): the tenant cannot write deploys.preflight (%)', sqlstate;
+  end;
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+do $$
+begin
+  if (select preflight->'noindex' from public.deploys where id = 'aaaaaaaa-718b-0000-0000-000000000001')
+     is distinct from '["tag"]'::jsonb then
+    raise exception 'FAIL (7.18b): a refused tenant write changed the deploy''s facts';
+  end if;
+  raise notice 'PASS (7.18b): the refused write left the facts as the server wrote them';
+end $$;
+
+delete from auth.users where id in ('77777777-718b-0000-0000-000000000001',
+                                    '77777777-718b-0000-0000-000000000002');

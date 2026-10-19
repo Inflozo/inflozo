@@ -2,7 +2,7 @@
 title: 'Story 7.18b — Choosing the site, and Pre-flight''s warnings'
 type: 'feature'
 created: '2026-10-19'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'b4e1a23cf24064ab5cd7d89bf9956787aead9487'
 owner_test: pending
 review_loop_iteration: 0
@@ -217,12 +217,12 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
 **Dev gate:** Questions 1–5 are ruled (R-267–R-271, Ruled values). The Schema phase is its own push, before any code (R-99).
 
 **Execution — Schema phase (pushed first, alone):**
-- [ ] `supabase/migrations/20261020120000_preflight_facts.sql` — add `deploys.preflight jsonb` (null on every earlier
+- [x] `supabase/migrations/20261020120000_preflight_facts.sql` — add `deploys.preflight jsonb` (null on every earlier
   row), with a `comment on column` naming its shape `{ templates, custom, noindex, freeAsks }`. Give the tenant SELECT on
   it as on 7.18a's two columns. Rationale: the facts the warning rows read, kept per deploy, so "since your last deploy"
   can compare.
-- [ ] `SCHEMA.sql` — the same column and comment. Rationale: the gate diffs `pg_dump -s`.
-- [ ] `supabase/tests/rls.sql` and `RLS-TEST.sql` (byte-identical) — the tenant reads `preflight` on its own deploy,
+- [x] `SCHEMA.sql` — the same column and comment. Rationale: the gate diffs `pg_dump -s`.
+- [x] `supabase/tests/rls.sql` and `RLS-TEST.sql` (byte-identical) — the tenant reads `preflight` on its own deploy,
   never on another's, and writes it never. The server-asserted list names it. DW-378: the service role's
   `update deploy_jobs … where id = $1 and stage = 'awaiting_ship'` changes one row, and the same statement again changes
   none. Rationale: AD-31; `jobs.claim`'s condition run in Postgres.
@@ -620,3 +620,21 @@ content, and the row stays blank until it finishes.
 - **Deploy:** the owner's Pro test account is made through the service key on his in-session go, and deleted after his
   test.
 - **Ghost 5:** postponed to DW-326 (Story 15.7). DW-297's row cannot be executed on a Ghost below 5.62 (F3).
+
+**Executed — Schema phase (2026-10-19, pushed alone before any code, R-99):**
+- `bash supabase/tests/run-rls-gate.sh` — exit 0: no SCHEMA DRIFT, every earlier block passing, and the 7.18b block's PASS
+  lines: `deploys.preflight` is nullable jsonb and its comment names `{templates, custom, noindex, freeAsks}`; `jobs.claim`'s
+  condition (the service role's `update deploy_jobs … where id = $1 and user_id = $2 and stage = 'awaiting_ship'`) changes
+  one row, and the same statement again changes none (DW-378); the tenant reads `preflight` on its own deploy and not on
+  another's, cannot write it (42501), and the refused write leaves the server's value. The server-asserted list names
+  `deploys.preflight`.
+- Controls, over a scratch copy without `20261020120000_preflight_facts.sql` and with HEAD's `SCHEMA.sql`
+  (`INFLOZO_ARCH_DIR`): exit 3 at the server-asserted list (`column "preflight" of relation "deploys" does not exist`);
+  and, with that list's one line reverted, exit 3 at the 7.18b block itself ("deploys.preflight (jsonb, nullable) is
+  missing"), 7.18a's block passing first.
+
+**Real services the Schema phase hit (R-82):**
+- **Supabase production** (`SUPABASE_DB_POOLER_URL`, read inside the script, never on argv; the owner's in-session go,
+  "1. Go"): before — `deploys` without `preflight` (3 deploys, 3 deploy jobs, 3 with `quality`); the migration applied in
+  one transaction; after — `preflight` jsonb nullable with its comment, 0 rows carrying it, the same 3 deploys, 3 jobs and
+  3 `quality` values, and `authenticated` holding SELECT on it and neither INSERT nor UPDATE.

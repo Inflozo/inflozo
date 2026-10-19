@@ -493,8 +493,13 @@ create table public.deploys (
   -- every row the compile read plus the release, so Ship it re-makes the artefact only when it moved. Written only by
   -- the server; `authenticated` keeps its table-wide select and gains no write. LAST, because `add column` appends.
   quality       jsonb,
-  inputs_sha256 text
+  inputs_sha256 text,
+  -- Story 7.18b: Pre-flight's compile facts, kept per deploy so "since your last deploy" can compare; the warning rows
+  -- are derived from them at read (`lib/preflight.ts`). Server-written, select-only to the client like the two above.
+  preflight     jsonb
 );
+comment on column public.deploys.preflight is
+  'Pre-flight''s compile facts (Story 7.18b): {templates: string[], custom: object, noindex: string[], freeAsks: string[]} — every .hbs file shipped, config.custom as shipped, FR-H2''s feed-guarded contexts, and the files carrying @site.allow_self_signup. Written only by the server; null before 7.18b.';
 create index on public.deploys (project_id, site_id, created_at desc);
 create index on public.deploys (site_id, created_at desc) where status = 'live';
 
