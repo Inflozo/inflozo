@@ -4,6 +4,7 @@
 //   env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=/tmp/x node tools/probe/run-verify-editor.cjs
 //   APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app …   # a local `next start`: no Vercel check, and not a deployed result
 //   T1_WRITES=1 …   # step 113 too (Story 7.18a): it WRITES TO T1, so only on the owner's in-session go, in the main session
+//                   (step 114, Story 7.18b, always runs: it writes to production through a throwaway account and reads T1)
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -357,6 +358,19 @@
 // last job waited to rest, T1's theme restored and the step's theme deleted (staff token), T1's
 // routes.yaml byte for byte as before, the site disconnected through `/sites/disconnect`, the project's objects removed from the
 // bucket, the account deleted, and users and projects counted back. Keys are read in-process by name and scrubbed from errors.
+// Story 7.18b adds step 114, the Review's, self-contained like 113 and WRITING NOTHING TO T1 (R-238): a fourth throwaway account
+// (`editor-harness-d-…`, Pro through the service key) connects T1 through the wizard with "Use your brand" (project A), seeds
+// project B and plants a second site row `walk-114.invalid` set to German. 114.1: B's Destination offers Choose a site; T1 there
+// asks the move's confirm on Cancel naming A; Cancel writes nothing (the control); Switch moves T1 to B and A reads unlinked; the
+// editor re-read on the new link opens the wizard again, and its canvas paints T1's content where it painted the sample. 114.2 (DW-374): A's Pre-flight started before the move fails
+// `site_unlinked` when shipped after it, and B's Pre-flight for T1, shipped after B moved to the planted site, fails `site_changed`
+// — neither entering uploading, and `private.credential_audit` (the pooler) holds no theme write for T1 since the step began.
+// 114.3: FR-Q6's confirm names both languages (Translations' own names) and B's language is unchanged. 114.4: Arabic
+// unacknowledged blocks before compiling with no Deploy row; then acknowledged, T1's row at Ghost 5.40 with members Nobody, an
+// earlier ACTIVATED deploy carrying `preflight.custom`, a 26-pick Home and a feed-less Tag, planted and read back — one
+// Pre-flight draws every warning row in Design Notes' order; T1's version put back is the free-ask row's control. 114.5 (DW-378):
+// an unreadable routing replaced by Start again, a template kept, and a readable one untouched (the control). 114.6: T1's row
+// disconnected through the product, the account deleted, users and projects counted back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -444,7 +458,8 @@ async function main() {
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
-  const stale = all.filter((u) => /^editor-harness-[abc]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.18b: `d` is step 114's
+  const stale = all.filter((u) => /^editor-harness-[abcd]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -12187,6 +12202,393 @@ async function main() {
         }
       }
       check('step 113 — the step\'s contexts recorded zero CSP violations', csp113.length === 0, JSON.stringify(csp113.slice(0, 3)))
+    }
+
+    // ── step 114 — STORY 7.18b: CHOOSING THE SITE AND PRE-FLIGHT'S WARNINGS, ON PRODUCTION, READING T1 (FR-B5, DW-374, FR-Q6, FR-H2, FR-H6, DW-297, DW-378, R-82) ──
+    /* THE REVIEW'S. IT WRITES NOTHING TO T1 (R-238): T1 is connected through the wizard (its keys READ to validate them), its
+       Content API is read by R-260's check, and nothing is uploaded — every ship this step asks for is refused before any
+       request (DW-374's two codes), and the warning rows need no Ghost at all. Its PRODUCTION writes are a throwaway account's
+       (`editor-harness-d-…`, Pro through the service key so it may hold two projects and two sites) and the plants below, each
+       through the service key and each read back: a second site row `walk-114.invalid` set to German, the project's language and
+       RTL acknowledgement, T1's row's members record and `ghost_version`, an earlier ACTIVATED deploy row carrying
+       `preflight.custom`, a feed-less Tag and a 26-pick Home, an unreadable routing and a template. SELF-CONTAINED: it reads
+       only steps 1–5's names (`at`, `magic`, `call`, `admin`, `users`, `projectCount`, `seed`, `browser`, `recorder`, `steady`,
+       `steadyRequests`, `stamp`), so a cut copy can run steps 1–5 and this alone. Every sentence is the one list that prints it
+       (`DEPLOY_WORDS`, `SWITCH_WORDS`, `PREFLIGHT_WORDS`, `TRANSLATION_WORDS`, `BRAND_COPY`, `ROUTES_WORDS`, R-170). */
+    {
+      const imp114 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP114, SW114, PF114, TR114, CR114, PR114, ED114, RW114, RT114, PL114, SR114] = await Promise.all([
+        imp114('apps/web/lib/deploy.ts'), imp114('apps/web/lib/site-switch.ts'), imp114('apps/web/lib/preflight.ts'), imp114('apps/web/lib/translations.ts'),
+        imp114('apps/web/lib/connect-rule.ts'), imp114('apps/web/lib/probe-rule.ts'), imp114('apps/web/lib/editor.ts'), imp114('apps/web/lib/routes.ts'),
+        imp114('packages/section-runtime/src/routes.ts'), imp114('apps/web/lib/pilots.ts'), imp114('packages/section-runtime/src/index.ts'),
+      ])
+      const W114 = DEP114.DEPLOY_WORDS
+      const S114 = SW114.SWITCH_WORDS
+      const P114 = PF114.PREFLIGHT_WORDS
+      const T114 = TR114.TRANSLATION_WORDS
+      const until114 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      // the keys, by NAME, from tools/probe/.env — never argv, never printed (the pooler URL for the audit read alone)
+      const ENV114 = {}
+      const NAMES114 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'SUPABASE_DB_POOLER_URL']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES114.includes(m[1]) && m[2].trim()) ENV114[m[1]] = m[2].trim()
+      }
+      const missing114 = NAMES114.filter((k) => !ENV114[k])
+      if (missing114.length) throw new Error(`step 114: ${missing114.join(', ')} not in tools/probe/.env`)
+      const SECRETS114 = [ENV114.GHOST6_ADMIN_API_KEY, ENV114.GHOST6_ADMIN_API_KEY.split(':')[1] ?? '', ENV114.GHOST6_CONTENT_API_KEY, ENV114.SUPABASE_DB_POOLER_URL,
+        (() => { try { return decodeURIComponent(new URL(ENV114.SUPABASE_DB_POOLER_URL).password) } catch { return '' } })()].filter((s) => s.length >= 8)
+      const scrub114 = (s) => SECRETS114.reduce((t, k) => t.split(k).join('<key>'), String(s))
+      const HOST114 = CR114.hostOf(ENV114.GHOST6_URL)
+      const PLANTED_URL114 = 'https://walk-114.invalid'
+      const PLANTED_HOST114 = CR114.hostOf(PLANTED_URL114)
+
+      const emailD = `editor-harness-d-${stamp}@inflozo.com`
+      const usersBefore114 = (await users())?.length ?? null
+      const projectsBefore114 = await projectCount()
+      let idD = null
+      let A114 = null
+      let B114 = null
+      let t1114 = null
+      let planted114 = null
+      const ctxs114 = []
+      const csp114 = []
+      const startedAt114 = new Date().toISOString()
+
+      const projects114 = async () => (await call('/rest/v1', `/projects?user_id=eq.${idD}&select=id,name,linked_site_id,language,rtl_ack_at,revision&order=created_at`)).body ?? []
+      const projectOf114 = async (id) => (await call('/rest/v1', `/projects?id=eq.${id}&select=id,name,linked_site_id,language,rtl_ack_at,revision`)).body?.[0] ?? null
+      const siteRow114 = async (id) => (await call('/rest/v1', `/sites?id=eq.${id}&select=id,url,ghost_version,site_settings,disconnected_at,credentials_present`)).body?.[0] ?? null
+      const JOB114 = 'id,stage,error,deploy_id,stage_timings,site_id'
+      const jobOf114 = async (id) => (await call('/rest/v1', `/deploy_jobs?id=eq.${id}&select=${JOB114}`)).body?.[0] ?? null
+      const deploysOf114 = async (P) => (await call('/rest/v1', `/deploys?project_id=eq.${P}&select=id,status,version,activated,preflight&order=created_at`)).body ?? []
+      /** the wizard as drawn: its step, its words, the picker and its rows, the confirm, the warning rows, Ship it and its reason */
+      const wiz114 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const picker = d.querySelector('[data-site-picker]')
+        const confirm = document.querySelector('dialog[data-switch-confirm]')
+        const ship = d.querySelector('#deploy-ship')
+        const reason = d.querySelector('#deploy-ship-reason')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          text: d.innerText,
+          switchLink: d.querySelector('#deploy-switch')?.textContent ?? null,
+          choose: d.querySelector('#deploy-choose')?.textContent ?? null,
+          picker: picker && { rows: [...picker.querySelectorAll('[data-site-row]')].map((r) => ({ id: r.getAttribute('data-site-row'), text: r.innerText, checked: r.querySelector('input')?.checked === true })) },
+          confirm: confirm?.open ? { title: confirm.querySelector('#deploy-switch-title')?.textContent ?? null, held: confirm.querySelector('[data-owed="held"]')?.textContent ?? null, language: confirm.querySelector('[data-owed="language"]')?.textContent ?? null, focused: confirm.contains(document.activeElement) ? document.activeElement.textContent.trim() : null } : null,
+          warnings: [...d.querySelectorAll('[data-preflight-rows] [data-warning]')].map((w) => ({ kind: w.getAttribute('data-warning'), text: w.innerText })),
+          rtlBlock: d.querySelector('#deploy-rtl-block')?.textContent ?? null,
+          ship: ship && { disabled: ship.getAttribute('aria-disabled') },
+          reason: reason && { text: reason.textContent, href: reason.querySelector('a')?.getAttribute('href') ?? null },
+        }
+      }).catch(() => null)
+      const context114 = async () => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs114.push(ctx)
+        await recorder(ctx, csp114)
+        const p = steady(await ctx.newPage())
+        p.on('pageerror', (e) => note('pageerror 114', String(e)))
+        await p.goto(await magic(emailD), { waitUntil: 'load' })
+        return p
+      }
+      const painted114 = (p, key) => p.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 }).then(() => true, () => false)
+      /** the deploy route, asked from the page with this tab's own lock session — the wizard's own door */
+      const route114 = (p, P, body) => p.evaluate(async ([url, b]) => {
+        const session = sessionStorage.getItem('inflozo-lock-session')
+        const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...b, session }) })
+        let job = null
+        try { job = (await r.json()).job ?? null } catch {}
+        return { status: r.status, job }
+      }, [`${PREFIX}/projects/${P}/deploy`, body]).catch(() => null)
+      const handBack114 = (p, P) => p.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${P}/lock`).catch(() => {})
+      const openShip114 = async (p) => {
+        await p.locator('#editor-ship').click()
+        return until114(() => wiz114(p), (w) => w?.at === 'destination', 20000)
+      }
+      /** the picker's choice: the site's row, then Use this site (a confirm owed opens; the caller answers it) */
+      const choose114 = async (p, siteId) => {
+        await p.locator(`[data-site-row="${siteId}"]`).click()
+        await p.locator('#deploy-pick-use').click()
+      }
+      /** a stored doc built through the editor's own door (`parseDoc` over the library's defaults), as the seed builds them */
+      const at114 = (designId, layerName, over = {}) => ({ instanceId: require('node:crypto').randomUUID(), layerName, designId, content: SR114.defaultContent(PL114.pilot(designId).contentSchema), controls: {}, data: {}, darkOverrides: {}, ...over })
+      const putDoc114 = async (P, key, instances) => {
+        const doc = SR114.parseDoc({ schemaVersion: 1, instances }, key)
+        const r = await call('/rest/v1', '/project_templates?on_conflict=project_id,template_key', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ project_id: P, user_id: idD, template_key: key, doc }) })
+        return [200, 201].includes(r.status)
+      }
+
+      try {
+        // ── the fixture: account D on Pro, T1 connected through the wizard with "Use your brand" (project A), project B, the planted site ──
+        const made114 = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: emailD, email_confirm: true }) })
+        idD = made114.status === 200 ? made114.body.id ?? null : null
+        const pro114 = UUID.test(idD ?? '') ? await call('/rest/v1', `/entitlements?user_id=eq.${idD}`, { method: 'PATCH', body: JSON.stringify({ state: 'pro_active' }) }) : null
+        check('step 114 — the fixture: account D made and set to pro_active through the service key (two projects, two sites)', UUID.test(idD ?? '') && [200, 204].includes(pro114?.status), `HTTP ${made114.status} / ${pro114?.status}`)
+        if (!UUID.test(idD ?? '')) throw new Error('step 114: account D was not made')
+        const pa = await context114()
+        await pa.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pa.locator('#s2b-api-url').fill(ENV114.GHOST6_URL)
+        await pa.locator('#s2b-admin-key').fill(ENV114.GHOST6_ADMIN_API_KEY)
+        await pa.locator('#s2b-content-key').fill(ENV114.GHOST6_CONTENT_API_KEY)
+        await pa.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pa.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use114 = pa.getByRole('button', { name: PR114.BRAND_COPY.use, exact: true })
+        const branded114 = await use114.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)
+        if (branded114) await use114.click()
+        const projs114 = await until114(projects114, (ps) => ps.length === 1 && ps[0].linked_site_id !== null, 45000)
+        A114 = projs114[0]?.id ?? null
+        t1114 = projs114[0]?.linked_site_id ?? null
+        const t1Row114 = t1114 === null ? null : await siteRow114(t1114)
+        check(`step 114 — T1 connected through the wizard and "${PR114.BRAND_COPY.use}" made project A, linked to ${HOST114} (its language ${projs114[0]?.language ?? '?'}, languageAtLink)`,
+          branded114 && UUID.test(A114 ?? '') && t1Row114 !== null && CR114.hostOf(t1Row114.url) === HOST114 && t1Row114.disconnected_at === null,
+          JSON.stringify({ branded114, projects: projs114.map((p) => ({ name: p.name, linked: p.linked_site_id !== null, language: p.language })) }))
+        if (A114 === null || t1114 === null) throw new Error('step 114: T1 did not connect, or no project was made')
+        const seededB114 = await seed({ email: emailD, name: `Walk 114 B ${stamp}` })
+        B114 = seededB114?.id ?? null
+        const plantedSite114 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: idD, url: PLANTED_URL114, title: 'Walk 114', ghost_version: '6.58.0', capability: 'full', site_settings: { locale: 'de' } }) })
+        planted114 = plantedSite114.body?.[0]?.id ?? null
+        const B0114 = B114 === null ? null : await projectOf114(B114)
+        check(`step 114 — project B seeded (no site, English) and a second site row planted through the service key at ${PLANTED_HOST114}, its stored locale "de"`,
+          UUID.test(B114 ?? '') && B0114?.linked_site_id === null && B0114.language === 'en' && UUID.test(planted114 ?? '') && (await siteRow114(planted114))?.site_settings?.locale === 'de',
+          JSON.stringify({ B: B0114, planted: plantedSite114.status }))
+        if (B114 === null || planted114 === null) throw new Error('step 114: project B or the planted site is missing')
+
+        // ── 114.2, first half (DW-374): a Pre-flight of A, started BEFORE the move ──
+        await pa.goto(at(`/projects/${A114}`), { waitUntil: 'load' })
+        await painted114(pa, 'home')
+        const startA114 = await route114(pa, A114, { intent: 'preflight' })
+        const restA114 = startA114?.job ? await until114(() => jobOf114(startA114.job), (j) => j !== null && ['awaiting_ship', 'failed'].includes(j.stage), 240000) : null
+        check('step 114.2 — A\'s Pre-flight, started before the move, rests at awaiting_ship on T1', startA114?.status === 202 && restA114?.stage === 'awaiting_ship' && restA114.site_id === t1114, JSON.stringify({ startA114, stage: restA114?.stage, error: restA114?.error ?? null }))
+
+        // ── 114.1 — the first link and the move (Question 1, R-267) ──
+        const pb = await context114()
+        await pb.goto(at(`/projects/${B114}`), { waitUntil: 'load' })
+        await painted114(pb, 'home')
+        // the AC's "the editor follows the new site": B, linked to nothing, paints the sample (the control for 114.1's last check)
+        const sourceOf114 = (p) => p.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.source ?? null).catch(() => null)
+        const sourceB0114 = await sourceOf114(pb)
+        const destB114 = await openShip114(pb)
+        check(`step 114.1 — B's Destination: "${W114.noSite}" with "${W114.chooseSite}" (and "${W114.goToSites}")`,
+          destB114?.choose === W114.chooseSite && destB114.text.includes(W114.noSite) && destB114.text.includes(W114.goToSites), JSON.stringify({ choose: destB114?.choose ?? null }))
+        await pb.locator('#deploy-choose').click()
+        const pickB114 = await until114(() => wiz114(pb), (w) => w?.picker !== null && w?.picker !== undefined, 15000)
+        const A0114 = await projectOf114(A114)
+        check(`step 114.1 — the picker lists both connected sites, T1's row saying "${S114.linkedTo(A0114?.name ?? '')}"`,
+          pickB114?.picker?.rows.some((r) => r.id === t1114 && r.text.includes(S114.linkedTo(A0114?.name ?? ''))) && pickB114.picker.rows.some((r) => r.id === planted114),
+          JSON.stringify(pickB114?.picker ?? null))
+        await choose114(pb, t1114)
+        const heldB114 = await until114(() => wiz114(pb), (w) => w?.confirm !== null && w?.confirm !== undefined, 15000)
+        check(`step 114.1 — S8e's confirm "${S114.confirmTitle(HOST114)}" opens on "${S114.cancel}", naming A: "${S114.held(HOST114, A0114?.name ?? '')}"`,
+          heldB114?.confirm?.title === S114.confirmTitle(HOST114) && heldB114.confirm.held === S114.held(HOST114, A0114?.name ?? '') && heldB114.confirm.focused === S114.cancel,
+          JSON.stringify(heldB114?.confirm ?? null))
+        await pb.locator('dialog[data-switch-confirm]').getByRole('button', { name: S114.cancel, exact: true }).click()
+        await pb.waitForTimeout(1500)
+        const [Ac114, Bc114] = [await projectOf114(A114), await projectOf114(B114)]
+        check('step 114.1 — the CONTROL: Cancel writes nothing — A still links T1, B none', Ac114?.linked_site_id === t1114 && Bc114?.linked_site_id === null, JSON.stringify({ A: Ac114?.linked_site_id, B: Bc114?.linked_site_id }))
+        await pb.locator('#deploy-pick-use').click()
+        await until114(() => wiz114(pb), (w) => w?.confirm !== null && w?.confirm !== undefined, 15000)
+        await pb.locator('#deploy-switch-confirm').click()
+        const moved114 = await until114(async () => [await projectOf114(A114), await projectOf114(B114)], ([a, b]) => a?.linked_site_id === null && b?.linked_site_id === t1114, 30000)
+        const reopenB114 = await until114(() => wiz114(pb), (w) => w?.at === 'destination' && w.switchLink === W114.switchSite && w.text.includes(HOST114), 45000)
+        check(`step 114.1 — "${S114.switch}" moves T1 to B (A reads unlinked), and the editor, re-read on the new link, opens the wizard again on Destination: ${HOST114} with "${W114.switchSite}"`,
+          moved114[0]?.linked_site_id === null && moved114[1]?.linked_site_id === t1114 && reopenB114?.at === 'destination' && reopenB114.switchLink === W114.switchSite,
+          JSON.stringify({ A: moved114[0]?.linked_site_id ?? null, B: moved114[1]?.linked_site_id ?? null, at: reopenB114?.at ?? null }))
+        // …and with no manual reload the canvas behind it now paints T1's own content, where it painted the sample before
+        const sourceB1114 = await until114(() => sourceOf114(pb), (src) => src === 'site', 45000)
+        check('step 114.1 — the canvas follows the new site without a reload: B painted the sample while unlinked (the control), T1\'s content once switched',
+          sourceB0114 === 'sample' && sourceB1114 === 'site', JSON.stringify({ before: sourceB0114, after: sourceB1114 }))
+
+        // ── 114.2, second half — A's Pre-flight shipped after the move: site_unlinked, nothing uploaded ──
+        const shipA114 = await route114(pa, A114, { intent: 'ship', job: startA114?.job, mode: 'activate' })
+        const endA114 = shipA114?.status === 202 ? await until114(() => jobOf114(startA114.job), (j) => j?.stage === 'failed' || j?.stage === 'done', 60000) : null
+        check(`step 114.2 — DW-374: A's Ship it after the move fails site_unlinked — "${W114.siteUnlinked(HOST114)}" — never entering uploading`,
+          endA114?.stage === 'failed' && endA114.error?.code === 'site_unlinked' && endA114.error?.message === W114.siteUnlinked(HOST114) && endA114.stage_timings?.uploading === undefined,
+          JSON.stringify({ shipA114, stage: endA114?.stage, error: endA114?.error ?? null }))
+
+        // B, now on T1: a Pre-flight for T1, then switched to the planted site behind FR-Q6's confirm, then shipped: site_changed
+        await pb.locator('dialog[data-deploy-wizard]').getByRole('button', { name: W114.close }).click().catch(() => {})
+        const startB114 = await route114(pb, B114, { intent: 'preflight' })
+        const restB114 = startB114?.job ? await until114(() => jobOf114(startB114.job), (j) => j !== null && ['awaiting_ship', 'failed'].includes(j.stage), 240000) : null
+        await openShip114(pb)
+        await pb.locator('#deploy-switch').click()
+        await until114(() => wiz114(pb), (w) => w?.picker !== null && w?.picker !== undefined, 15000)
+        await choose114(pb, planted114)
+        const langB114 = await until114(() => wiz114(pb), (w) => w?.confirm !== null && w?.confirm !== undefined, 15000)
+        // 114.3 — the language confirm, by Translations' own names
+        check(`step 114.3 — FR-Q6: the planted site, set to German, asks first — "${S114.language(PLANTED_HOST114, TR114.ownName('de'), TR114.ownName('en'))}"`,
+          langB114?.confirm?.language === S114.language(PLANTED_HOST114, TR114.ownName('de'), TR114.ownName('en')) && langB114.confirm.held === null && langB114.confirm.focused === S114.cancel,
+          JSON.stringify(langB114?.confirm ?? null))
+        await pb.locator('#deploy-switch-confirm').click()
+        const Bp114 = await until114(() => projectOf114(B114), (b) => b?.linked_site_id === planted114, 30000)
+        check('step 114.3 — the switch lands on the planted site, and B\'s language is unchanged (FR-Q6: a switch never changes it)', Bp114?.linked_site_id === planted114 && Bp114.language === 'en', JSON.stringify(Bp114))
+        await until114(() => wiz114(pb), (w) => w?.at === 'destination', 45000)
+        const shipB114 = restB114?.stage === 'awaiting_ship' ? await route114(pb, B114, { intent: 'ship', job: startB114.job, mode: 'activate' }) : null
+        const endB114 = shipB114?.status === 202 ? await until114(() => jobOf114(startB114.job), (j) => j?.stage === 'failed' || j?.stage === 'done', 60000) : null
+        check(`step 114.2 — DW-374: B's Pre-flight for T1, shipped after B moved to ${PLANTED_HOST114}, fails site_changed — "${W114.siteChanged(PLANTED_HOST114, HOST114)}"`,
+          endB114?.stage === 'failed' && endB114.error?.code === 'site_changed' && endB114.error?.message === W114.siteChanged(PLANTED_HOST114, HOST114) && endB114.stage_timings?.uploading === undefined,
+          JSON.stringify({ restB114: restB114?.stage, shipB114, stage: endB114?.stage, error: endB114?.error ?? null }))
+        // the audit holds no theme upload for T1 since this step began (the pooler, read in process; no key on argv)
+        let uploads114 = null
+        process.env.SUPABASE_DB_POOLER_URL = ENV114.SUPABASE_DB_POOLER_URL
+        try {
+          const DB114 = await imp114('apps/web/server/ghost-admin/db.ts')
+          uploads114 = await DB114.sql()`select count(*)::int as n from private.credential_audit where site_id = ${t1114} and allowlist_item in ('theme_upload', 'theme_activate') and occurred_at >= ${startedAt114}`
+          await DB114.sql().end({ timeout: 5 }).catch(() => {})
+        } finally {
+          delete process.env.SUPABASE_DB_POOLER_URL
+        }
+        check('step 114.2 — private.credential_audit holds no theme_upload or theme_activate row for T1 since the step began: nothing was sent', uploads114?.[0]?.n === 0, JSON.stringify(uploads114))
+
+        // back to T1 for the rows (a plain switch: T1 unheld now, both English — no confirm)
+        await pb.locator('#deploy-switch').click()
+        await until114(() => wiz114(pb), (w) => w?.picker !== null && w?.picker !== undefined, 15000)
+        await choose114(pb, t1114)
+        const backT1114 = await until114(() => projectOf114(B114), (b) => b?.linked_site_id === t1114, 30000)
+        check('step 114.4 — a plain switch back to T1 (unheld, both English): no confirm, linked', backT1114?.linked_site_id === t1114, JSON.stringify(backT1114))
+        // each window gives B's lock back as it leaves, so the next one opens holding it (a leave keeps it for its grace)
+        await handBack114(pb, B114)
+        await pb.goto('about:blank').catch(() => {})
+
+        // ── 114.4 — Pre-flight's rows on T1, each planted through the service key and read back ──
+        // (a) Arabic, unacknowledged: blocked before compile, no Deploy row
+        const deploysBefore114 = (await deploysOf114(B114)).length
+        await call('/rest/v1', `/projects?id=eq.${B114}`, { method: 'PATCH', body: JSON.stringify({ language: 'ar', rtl_ack_at: null }) })
+        const pc = await context114()
+        await pc.goto(at(`/projects/${B114}`), { waitUntil: 'load' })
+        await painted114(pc, 'home')
+        await openShip114(pc)
+        await pc.locator('#deploy-run').click()
+        const rtl114 = await until114(() => wiz114(pc), (w) => w?.rtlBlock !== null && w?.rtlBlock !== undefined, 60000)
+        check(`step 114.4 — B in Arabic, unacknowledged: Pre-flight blocks before compiling — "${T114.rtlTitle}", Ship it greyed with "${W114.rtlBlocked}" and "${W114.openTranslations}" — and no Deploy row is made`,
+          rtl114?.rtlBlock === T114.rtlTitle && rtl114.ship?.disabled === 'true' && rtl114.reason?.text.includes(W114.rtlBlocked) && rtl114.reason?.href?.endsWith(ED114.translationsPath(B114)) && (await deploysOf114(B114)).length === deploysBefore114,
+          JSON.stringify({ rtlBlock: rtl114?.rtlBlock ?? null, reason: rtl114?.reason ?? null }))
+        await handBack114(pc, B114)
+        await pc.goto('about:blank').catch(() => {})
+        // (b)–(h): acknowledged; T1's row Nobody + Ghost 5.40; an earlier ACTIVATED deploy with preflight.custom; a feed-less Tag; 26 picks
+        const ack114 = '2026-10-19T08:00:00.000Z'
+        await call('/rest/v1', `/projects?id=eq.${B114}`, { method: 'PATCH', body: JSON.stringify({ rtl_ack_at: ack114 }) })
+        const t1Settings114 = (await siteRow114(t1114))?.site_settings ?? {}
+        const t1Version114 = (await siteRow114(t1114))?.ghost_version ?? null
+        await call('/rest/v1', `/sites?id=eq.${t1114}`, { method: 'PATCH', body: JSON.stringify({ ghost_version: '5.40.0', site_settings: { ...t1Settings114, members: { signup_access: 'none', paid_enabled: false } } }) })
+        const earlier114 = await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({
+          project_id: B114, user_id: idD, site_id: t1114, version: '1.0.0', theme_name: 'inflozo-walk-114-earlier', status: 'uploaded', activated: true, activated_at: '2026-10-01T00:00:00.000Z',
+          preflight: { templates: [], custom: { color_scheme: { type: 'select', default: 'Light' }, dark_accent_color: { type: 'color', default: '#000001' }, dark_logo: { type: 'image' }, walk_note: { type: 'text', default: 'x' } }, noindex: [], freeAsks: [] },
+        }) })
+        const earlierId114 = earlier114.body?.[0]?.id ?? null
+        const picks114 = Array.from({ length: 26 }, (_, i) => ({ id: (i + 1).toString(16).padStart(24, 'a'), title: `Walk pick ${i + 1}` }))
+        const homeOk114 = await putDoc114(B114, 'home', [at114('a4/13', 'Hero — Latest Post'), at114('a17/1', 'Post Grid — Three Up', { isMainFeed: true }), at114('a22/1', 'Newsletter — Inline Row'), at114('a17/1', 'Walk picks', { data: { posts: { source: 'picked', picks: picks114 } } })])
+        const tagOk114 = await putDoc114(B114, 'tag', [at114('a17/1', 'Hidden tag feed', { hidden: true, isMainFeed: true })])
+        // the editor hydrates the cloud doc only when the revision moved (AD-15): moved, so the planted docs are what it opens
+        await call('/rest/v1', `/projects?id=eq.${B114}`, { method: 'PATCH', body: JSON.stringify({ revision: ((await projectOf114(B114))?.revision ?? 0) + 1 }) })
+        const t1Planted114 = await siteRow114(t1114)
+        check('step 114.4 — the plants read back: B acknowledged, T1\'s row at Ghost 5.40.0 with members Nobody, an earlier ACTIVATED deploy carrying preflight.custom, a 26-pick Home and a feed-less Tag',
+          (await projectOf114(B114))?.rtl_ack_at !== null && t1Planted114?.ghost_version === '5.40.0' && t1Planted114.site_settings?.members?.signup_access === 'none' && UUID.test(earlierId114 ?? '') && homeOk114 && tagOk114,
+          JSON.stringify({ earlier: earlier114.status, homeOk114, tagOk114 }))
+        const pd = await context114()
+        await pd.goto(at(`/projects/${B114}`), { waitUntil: 'load' })
+        await painted114(pd, 'home')
+        await openShip114(pd)
+        await pd.locator('#deploy-run').click()
+        const rows114 = await until114(() => wiz114(pd), (w) => w?.at === 'check' && w.ship?.disabled === null && w.warnings.length > 0, 240000)
+        // one kind per run of rows (the two built-ins are a row each); the locale row only where T1 stores a locale other than Arabic
+        const kinds114 = (rows114?.warnings ?? []).map((w) => w.kind).filter((k, i, all) => k !== all[i - 1])
+        const t1Locale114 = typeof t1Settings114.locale === 'string' && t1Settings114.locale.trim() !== '' ? t1Settings114.locale : null
+        const want114 = ['rtl', ...(t1Locale114 !== null && t1Locale114 !== 'ar' ? ['mismatch'] : []), 'untouched', 'members', 'freeAsks', 'dropped', 'builtIn', 'feedless', 'picks', 'unviewed']
+        const has114 = (kind, words) => (rows114?.warnings ?? []).some((w) => w.kind === kind && w.text.includes(words))
+        check(`step 114.4 — Pre-flight on T1 draws every warning row, in Design Notes' order (${want114.join(', ')}), and Ship it stays pressable — "${W114.warningsOnly}"`,
+          JSON.stringify(kinds114) === JSON.stringify(want114) && rows114?.text.includes(W114.warningsOnly) === true, JSON.stringify({ kinds114 }))
+        check('step 114.4 — each row in its own words: the RTL repeat, the locale, the members switch, the free asks below 5.62, the dropped setting, a changed built-in, the feed-less Tag, the picks',
+          has114('rtl', T114.rtlTitle) && (t1Locale114 === null || has114('mismatch', P114.mismatch(t1Locale114, TR114.ownName('ar')))) && has114('members', P114.members(HOST114)) && has114('freeAsks', P114.freeAsks(HOST114)) &&
+          has114('dropped', P114.dropped(1, HOST114)) && has114('builtIn', P114.builtIn('Color scheme')) && has114('feedless', P114.feedless('Tag')) && has114('picks', P114.picks(1)),
+          JSON.stringify(rows114?.warnings.map((w) => [w.kind, w.text.split('\n')[0]]) ?? null))
+        await handBack114(pd, B114)
+        await pd.goto('about:blank').catch(() => {})
+        // the free-ask row's control: Ghost 6.58.0 on the same row — no row
+        await call('/rest/v1', `/sites?id=eq.${t1114}`, { method: 'PATCH', body: JSON.stringify({ ghost_version: t1Version114 ?? '6.58.0' }) })
+        const pe = await context114()
+        await pe.goto(at(`/projects/${B114}`), { waitUntil: 'load' })
+        await painted114(pe, 'home')
+        await openShip114(pe)
+        await pe.locator('#deploy-run').click()
+        const rows2114 = await until114(() => wiz114(pe), (w) => w?.at === 'check' && w.ship?.disabled === null && w.warnings.length > 0, 240000)
+        check(`step 114.4 — the CONTROL: T1 back at ${t1Version114 ?? '6.58.0'}, the same Pre-flight draws no free-ask row and every other`,
+          rows2114 !== null && !rows2114.warnings.some((w) => w.kind === 'freeAsks') && rows2114.warnings.some((w) => w.kind === 'members'), JSON.stringify(rows2114?.warnings.map((w) => w.kind) ?? null))
+        await handBack114(pe, B114)
+        await pe.goto('about:blank').catch(() => {})
+
+        // ── 114.5 — DW-378: resetRoutes executed — an unreadable routing replaced by Start again, a readable one untouched, templates kept ──
+        const tpl114 = await call('/rest/v1', '/custom_templates', { method: 'POST', body: JSON.stringify({ project_id: B114, user_id: idD, display_name: 'Walk 114', filename: 'custom-walk-114.hbs', kind: 'routes' }) })
+        const UNREADABLE114 = 'collections:'
+        await call('/rest/v1', '/routes_config?on_conflict=project_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=representation' }, body: JSON.stringify({ project_id: B114, user_id: idD, config: UNREADABLE114 }) })
+        const rcOf114 = async () => (await call('/rest/v1', `/routes_config?project_id=eq.${B114}&select=config`)).body?.[0]?.config ?? null
+        const tplOf114 = async () => (await call('/rest/v1', `/custom_templates?project_id=eq.${B114}&select=filename`)).body ?? []
+        const pf = await context114()
+        await pf.goto(at(RW114.resetRoutingPath(B114)), { waitUntil: 'load' })
+        const sheet114 = pf.locator('dialog[aria-labelledby="routes-reset-title"][open]')
+        const offered114 = await sheet114.waitFor({ state: 'visible', timeout: 30000 }).then(() => true, () => false)
+        if (offered114) await sheet114.getByRole('button', { name: RW114.ROUTES_WORDS.startAgain, exact: true }).click()
+        const rcAfter114 = await until114(rcOf114, (c) => c !== null && RT114.parseRoutesConfig(c).ok, 20000)
+        const readable114 = RT114.parseRoutesConfig(rcAfter114 ?? UNREADABLE114).ok
+        check(`step 114.5 — an unreadable routing planted: "${RW114.ROUTES_WORDS.resetTitle}" offered on arrival, "${RW114.ROUTES_WORDS.startAgain}" replaces it with Ghost's default (readable), and the template is kept`,
+          [200, 201].includes(tpl114.status) && offered114 && readable114 && (await tplOf114()).some((t) => t.filename === 'custom-walk-114.hbs'),
+          JSON.stringify({ tpl: tpl114.status, offered114, readable114 }))
+        const rcKept114 = await rcOf114()
+        await pf.goto(at(RW114.resetRoutingPath(B114)), { waitUntil: 'load' })
+        await pf.waitForTimeout(2000)
+        const offeredAgain114 = await sheet114.count()
+        check('step 114.5 — the CONTROL: over a readable routing the same address offers nothing, and the routing is untouched', offeredAgain114 === 0 && JSON.stringify(await rcOf114()) === JSON.stringify(rcKept114), JSON.stringify({ offeredAgain114 }))
+        await pf.goto('about:blank').catch(() => {})
+      } catch (e) {
+        throw new Error(scrub114(e?.stack ?? e))
+      } finally {
+        // ── 114.6 — RESTORE, whatever failed: every plant goes with the account; T1's own row is disconnected through the product ──
+        const restore114 = async (name, fn) => {
+          try { await fn() } catch (e) { check(`step 114.6 — ${name}`, false, scrub114(String(e?.message ?? e).split('\n')[0])) }
+        }
+        for (const ctx of ctxs114) {
+          for (const pg of ctx.pages()) for (const P of [A114, B114]) if (P !== null) await handBack114(pg, P)
+          await ctx.close().catch(() => {})
+        }
+        if (t1114 !== null) {
+          await restore114('the disconnect', async () => {
+            const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+            try {
+              const pg = steady(await ctx.newPage())
+              await pg.goto(await magic(emailD), { waitUntil: 'load' })
+              await pg.goto(at(`/sites/disconnect?site=${t1114}`), { waitUntil: 'load' })
+              const button = pg.locator('form').getByRole('button', { name: CR114.DISCONNECT.menu, exact: true }).first()
+              await button.waitFor({ state: 'visible', timeout: 30000 })
+              await button.click()
+              const gone = await until114(() => siteRow114(t1114), (s) => s?.disconnected_at != null, 30000)
+              check('step 114.6 — T1\'s row disconnected through /sites/disconnect: every credential gone', gone?.disconnected_at != null && gone.credentials_present?.admin === false && gone.credentials_present?.content === false, JSON.stringify(gone?.credentials_present ?? null))
+            } finally {
+              await ctx.close().catch(() => {})
+            }
+          })
+        }
+        if (idD !== null) {
+          await restore114('the account', async () => {
+            const del = await admin(`/admin/users/${idD}`, { method: 'DELETE', body: '{}' })
+            const usersAfter = (await users())?.length ?? null
+            const projectsAfter = await projectCount()
+            check('step 114.6 — account D deleted (its projects, sites, deploys, plants and template with it), users and projects counted back as the step found them',
+              del.status === 200 && usersBefore114 !== null && usersAfter === usersBefore114 && projectsBefore114 !== null && projectsAfter === projectsBefore114,
+              `HTTP ${del.status}, users ${usersBefore114} → ${usersAfter}, projects ${projectsBefore114} → ${projectsAfter}`)
+          })
+        }
+      }
+      check('step 114 — the step\'s contexts recorded zero CSP violations', csp114.length === 0, JSON.stringify(csp114.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

@@ -7,7 +7,7 @@ import type { Finding } from '@inflozo/theme-compiler/gate'
 import { verifyRoutesAction } from '@/app/(app)/app/(authed)/sites/actions'
 import { ResultChip, VersionChip } from '@/components/kit/badge'
 import { Button, SplitButton } from '@/components/kit/button'
-import { closeOnBackdrop, wideTitle } from '@/components/kit/dialog'
+import { closeOnBackdrop, openOnCancel, wideTitle } from '@/components/kit/dialog'
 import { greyedProps, ring } from '@/components/kit/greyed'
 import { AlertCircle, AlertTriangle, Bolt, ChevronDown, ChevronRight, ChevronUp, ExternalLink, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
 import { RadioCard } from '@/components/kit/radio-card'
@@ -15,10 +15,13 @@ import { Menu, type MenuItem } from '@/components/kit/select'
 import { BusyLabel, Submit } from '@/components/kit/submit'
 import { RoutesFallback } from '@/components/routes-fallback'
 import {
-  CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, seconds, STAGE_NAMES, stepNumber, stepOf, STEPS, themeSize, UNSTOPPABLE, uploadOnlyBlock,
-  versionNumber, type DeployRequest, type DeployView, type Mode, type ShipState, type Stage, type Step,
+  CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, POSTS_CHECKED, seconds, STAGE_NAMES, stepNumber, stepOf, STEPS, themeSize, UNSTOPPABLE, uploadOnlyBlock,
+  versionNumber, type DeployRequest, type DeployView, type Mode, type ShipState, type Stage, type Step, type Timings,
 } from '@/lib/deploy'
 import { deployPath, type Canvas } from '@/lib/editor'
+import { preflightWarnings, rowCanvas, type PreflightInput, type PreflightRow } from '@/lib/preflight'
+import { SWITCH_WORDS as SW, switchPlan, type SwitchAnswer, type SwitchPlan, type SwitchSite } from '@/lib/site-switch'
+import { ownName, TRANSLATION_WORDS } from '@/lib/translations'
 import { KEYMAP } from '@/lib/keymap'
 import type { Row } from '@/lib/live-content'
 import { LOCK_COPY } from '@/lib/lock'
@@ -43,6 +46,12 @@ import { downloadHref, ROUTES_FALLBACK_WORDS as RW } from '@/lib/routes-upload'
  * EVERY STRING IS `DEPLOY_WORDS`' (R-170), the lock's are `LOCK_COPY`'s and B15's `PREVIEW_COPY`'s. A row whose label and meta
  * the frame draws apart but the list keeps as one sentence ("Uploaded to Ghost · 2.4 MB · 31s") is split at its first " · "
  * (`apart`), so one sentence stays one list entry.
+ *
+ * STORY 7.18b — CHOOSING THE SITE AND PRE-FLIGHT'S WARNINGS: S8a's Switch (`S8 Deploy.dc.html:54`) and Choose a site open a site
+ * picker inside the wizard (undrawn: S8a's card per row, D4d's radio list and coral wash `D4 Dashboard Sheets and Blocks.dc.html:
+ * 177-226`, S11's chips), its confirm S8e's dialog (`:337-345`) on Cancel — one plan, `lib/site-switch.ts`' `switchPlan`, for the
+ * picker, the confirm and the server. Pre-flight's warning rows are S8b's own (`:103-116`), derived by `lib/preflight.ts` from the
+ * compile's facts and the editor's state; the one blocking row is the server's RTL verdict. R-270's line sits under B15's panel.
  *
  * THE WORK IS THE SERVER'S (`projects/[id]/deploy/route.ts`): a POST answers the job id at once and the wizard reads the row
  * once a second while it moves (`isMoving`), and once more after each press until the row has moved past where the press
@@ -207,7 +216,8 @@ function Confetti() {
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     drawn.current?.querySelectorAll('[data-piece]').forEach((piece, i) =>
-      piece.animate([{ transform: 'translateY(-36px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 700, delay: i * 40, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'backwards' }))
+      // ONCE (DW-378: the count is the journey's to read, so it is written, not left to the default)
+      piece.animate([{ transform: 'translateY(-36px)', opacity: 0 }, { transform: 'translateY(0)', opacity: 1 }], { duration: 700, delay: i * 40, iterations: 1, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'backwards' }))
   }, [])
   return (
     <svg ref={drawn} data-confetti aria-hidden width="240" height="100" viewBox="0 0 240 100" className="pointer-events-none absolute left-1/2 top-[44px] -translate-x-1/2">
@@ -228,11 +238,18 @@ function Confetti() {
 
 type Answer = { ok: true; job: string } | { ok: false; status: number }
 /** R-260's row: still reading, read (the posts no page lists), or the site's posts could not be read */
-type PostsCheck = { kind: 'reading' } | { kind: 'read'; unlisted: readonly { title: string }[] } | { kind: 'unread' } | null
+type PostsCheck = { kind: 'reading' } | { kind: 'read'; unlisted: readonly { title: string }[]; capped: boolean } | { kind: 'unread' } | null
 type Pressed = 'start' | 'ship' | 'cancel' | 'activate' | null
 
 /** where the row stands, to wait past after a press: its stage and every stage edge it has recorded */
 const standing = (v: DeployView) => `${v.job.stage}:${JSON.stringify(v.job.timings)}`
+
+/** DW-378 — the stages the row has recorded entering, in the order they started (`at`, then the stage table's own order):
+ *  each the wizard says once, whether or not a read ever saw the row standing in it */
+const SAID_STAGES = ['compiling', 'checking', 'uploading', 'activating'] as const
+const entered = (timings: Timings): [(typeof SAID_STAGES)[number], string][] =>
+  SAID_STAGES.flatMap((st) => (timings[st] === undefined ? [] : [[st, (timings[st] as { at: string }).at] as [(typeof SAID_STAGES)[number], string]]))
+    .sort((a, b) => (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : SAID_STAGES.indexOf(a[0]) - SAID_STAGES.indexOf(b[0])))
 
 /** a blocked Pre-flight stores the gate's first blocking finding; every other failure is AD-24's envelope */
 const isFinding = (e: DeployView['job']['error']): e is Finding => e !== null && 'level' in e
@@ -250,6 +267,9 @@ export function DeployWizard({
   flush,
   readPosts,
   canvasHref,
+  client,
+  onSwitch,
+  onRelink,
   onClose,
 }: {
   request: ShipRequest
@@ -269,10 +289,18 @@ export function DeployWizard({
   session: () => string
   /** the editor's flush, awaited; true when nothing is left unsent */
   flush: () => Promise<boolean>
-  /** the linked site's published posts through the canvas's own Content API reader, or null where they cannot be read */
-  readPosts: () => Promise<readonly Row[] | null>
+  /** R-260's read (R-271): the linked site's NEWEST published posts, up to `POSTS_CHECKED`, through a reader of their own —
+   *  never the canvas's — with the site's total; null where they cannot be read */
+  readPosts: () => Promise<{ rows: readonly Row[]; total: number } | null>
   /** where a canvas lives — "Fix in editor" goes there */
   canvasHref: (canvas: Canvas) => string
+  /** Story 7.18b — the editor's own state Pre-flight's warning rows read beside the compile's facts, after Run checks' flush */
+  client: Pick<PreflightInput, 'docs' | 'library' | 'viewed' | 'members' | 'postsPerPage' | 'listed'>
+  /** Story 7.18b — choosing a site: the editor flushes, then asks `switchSite` (a confirm owed comes back as one) */
+  onSwitch: (siteId: string, confirmed: boolean) => Promise<SwitchAnswer>
+  /** Story 7.18b — the project's link changed (a switch landed, or Ship it found it changed): the editor re-reads the page, so
+   *  the canvas, the members record and Ship it follow the new site, and the wizard opens again on Destination */
+  onRelink: (mode: Mode) => void
   /** the wizard closed; `shipped` when a job reached its ending, so the bar re-reads its label and versions */
   onClose: (shipped: boolean) => void
 }) {
@@ -288,12 +316,20 @@ export function DeployWizard({
   /** a press refused before any work started: unsent edits, the lock gone, the route not reached */
   const [refused, setRefused] = useState<string | null>(null)
   const [posts, setPosts] = useState<PostsCheck>(null)
+  /** Story 7.18b — Destination's picker (S8a's Switch, or Choose a site): the row chosen, the confirm owed, and a refusal */
+  const [picking, setPicking] = useState(false)
+  const [chosen, setChosen] = useState<string | null>(null)
+  const [owed, setOwed] = useState<{ site: SwitchSite; plan: SwitchPlan } | null>(null)
+  const [switching, setSwitching] = useState<'use' | 'confirm' | null>(null)
+  const [switchRefused, setSwitchRefused] = useState<string | null>(null)
+  const confirmRef = useRef<HTMLDialogElement>(null)
+  const pickerRef = useRef<HTMLDivElement>(null)
   const [tick, setTick] = useState(0)
   const [said, say] = useSaid()
   /** the row's standing when a press was sent — it is read until it has moved past it */
   const waitFor = useRef<string | null>(null)
-  /** the last stage and sentence the polite region said */
-  const lastSaid = useRef('')
+  /** every stage start and ending the polite region has said for this job (DW-378: each stage `stage_timings` shows entered) */
+  const heard = useRef(new Set<string>())
   const alive = useRef(true)
   const route = `${prefix}${deployPath(projectId)}`
   const site = ship?.site ?? null
@@ -331,7 +367,7 @@ export function DeployWizard({
   }
   const back = () => {
     waitFor.current = null
-    lastSaid.current = ''
+    heard.current = new Set()
     setJob(null)
     setView(null)
     setPressed(null)
@@ -365,7 +401,7 @@ export function DeployWizard({
   const stage: Stage | null = view === null ? (job === null ? null : 'queued') : view.job.stage
   const timings = view?.job.timings ?? {}
   const at: Step = stage === null ? 'destination' : stepOf(stage, timings)
-  const ending = view === null ? null : endingOf(view.job.stage, view.deploy, timings)
+  const ending_ = view === null ? null : endingOf(view.job.stage, view.deploy, timings)
   /** the version this job ships, else the next one */
   const n = view?.deploy ? versionNumber(view.deploy.version) || (ship?.n ?? 1) : (ship?.n ?? 1)
   const prev = view === null ? (ship?.prev ?? null) : view.previous
@@ -396,23 +432,31 @@ export function DeployWizard({
   const failedAt: 'compiling' | 'checking' | 'uploading' | 'activating' =
     timings.activating !== undefined ? 'activating' : timings.uploading !== undefined ? 'uploading' : timings.checking !== undefined ? 'checking' : 'compiling'
 
-  /* ONE POLITE REGION: each stage as it starts, and the outcome once (its heading). Keyed on the stage and the sentence, so
-     a stale artefact's second Compiling is said again and a poll that changes nothing says nothing. */
-  const sentence: string | null =
-    stage === 'compiling' ? W.sayCompiling
-    : stage === 'checking' ? W.sayChecking
-    : stage === 'awaiting_ship' ? W.sayChecked(checked.errors, checked.warnings)
-    : stage === 'uploading' ? W.sayUploading
-    : stage === 'activating' ? W.sayActivating(n)
-    : stage === 'done' ? (ending === 'live' ? W.liveTitle : ending === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle)
+  /* ONE POLITE REGION: each stage as it starts, and the outcome once (its heading). DW-378 — EVERY STAGE `stage_timings` SHOWS
+     ENTERED is said, in order, even one that began and ended between two of the wizard's one-second reads (Checking ran 0.9 s
+     on production): the stages entered since the last read are said together, in the order they started. Each start is keyed
+     on its own `at`, so a stale artefact's second Compiling is said again and a read that changes nothing says nothing. */
+  const ending: string | null =
+    stage === 'awaiting_ship' ? W.sayChecked(checked.errors, checked.warnings)
+    : stage === 'done' ? (ending_ === 'live' ? W.liveTitle : ending_ === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle)
     : stage === 'failed' ? (at === 'ship' ? W.stageFailed(STAGE_NAMES[failedAt]) : checksDone ? W.sayChecked(checked.errors, checked.warnings) : block?.reason ?? null)
     : null
+  const starts = entered(timings)
+  const startsKey = starts.map(([st, t]) => `${st}@${t}`).join(',')
   useEffect(() => {
-    const key = `${stage}:${sentence}`
-    if (sentence === null || key === lastSaid.current) return
-    lastSaid.current = key
-    say(sentence)
-  }, [stage, sentence])
+    const fresh: string[] = []
+    for (const [st, t] of starts) {
+      const key = `start:${st}:${t}`
+      if (heard.current.has(key)) continue
+      heard.current.add(key)
+      fresh.push(st === 'compiling' ? W.sayCompiling : st === 'checking' ? W.sayChecking : st === 'uploading' ? W.sayUploading : W.sayActivating(n))
+    }
+    if (ending !== null && !heard.current.has(`end:${stage}:${ending}`)) {
+      heard.current.add(`end:${stage}:${ending}`)
+      fresh.push(ending)
+    }
+    if (fresh.length > 0) say(fresh.join(' '))
+  }, [startsKey, stage, ending])
 
   /** Run checks: the editor's flush first — work it cannot send is work the compile would not see */
   const runChecks = async () => {
@@ -433,12 +477,17 @@ export function DeployWizard({
     setPressed(null)
     setView(null)
     setJob(answer.job)
-    // R-260 — read in the browser while the server checks run, through the canvas's own reader (routine call 23)
+    // R-260 — read in the browser while the server checks run (routine call 23), the newest `POSTS_CHECKED` through a reader of
+    // their own (R-271): the canvas's allowance is never touched, and Ship it never waits for it
     if (filtered) {
       setPosts({ kind: 'reading' })
-      void readPosts().then((rows) => {
+      void readPosts().then((read) => {
         if (!alive.current) return
-        setPosts(rows === null ? { kind: 'unread' } : { kind: 'read', unlisted: unlistedPosts(routes, rows as readonly ListedPost[], new Date().toISOString()) })
+        setPosts(read === null ? { kind: 'unread' } : {
+          kind: 'read',
+          unlisted: unlistedPosts(routes, read.rows as readonly ListedPost[], new Date().toISOString()),
+          capped: read.total > POSTS_CHECKED,
+        })
       })
     }
   }
@@ -484,6 +533,211 @@ export function DeployWizard({
     </p>
   )
 
+  /* ── STORY 7.18b — choosing the site (FR-B5, R-267): the picker inside the wizard, and its confirm ── */
+  const planFor = (siteId: string): SwitchPlan | null =>
+    ship === undefined ? null : switchPlan({ project: { id: projectId, language: ship.language, linkedSiteId: site?.id ?? null }, site: siteId, sites: ship.sites })
+  const openPicker = () => {
+    setSwitchRefused(null)
+    setChosen(site?.id ?? ship?.sites[0]?.id ?? null)
+    setPicking(true)
+  }
+  const closePicker = () => {
+    setPicking(false)
+    setOwed(null)
+    setSwitchRefused(null)
+  }
+  // focus starts on the chosen row; back on Destination it returns to the control that opened the picker
+  const wasPicking = useRef(false)
+  useEffect(() => {
+    if (picking) pickerRef.current?.querySelector<HTMLElement>('input[type="radio"]:checked, input[type="radio"], a[href], button')?.focus()
+    else if (wasPicking.current) document.getElementById(site === null ? 'deploy-choose' : 'deploy-switch')?.focus()
+    wasPicking.current = picking
+  }, [picking])
+  // the confirm opens on Cancel (UX-DR14)
+  useEffect(() => {
+    if (owed !== null && confirmRef.current !== null && !confirmRef.current.open) openOnCancel(confirmRef.current)
+  }, [owed])
+  /** the editor flushes, then `switchSite` answers: linked (the page re-reads and the wizard opens again on Destination), a
+   *  confirm owed (another tab moved things meanwhile), or a refusal in its sentence */
+  const sendSwitch = async (target: SwitchSite, confirmed: boolean, how: 'use' | 'confirm') => {
+    if (switching !== null) return
+    setSwitching(how)
+    setSwitchRefused(null)
+    const answer = await onSwitch(target.id, confirmed).catch((): SwitchAnswer => ({ refused: W.infrastructure }))
+    if (!alive.current) return
+    setSwitching(null)
+    if ('ok' in answer) {
+      confirmRef.current?.close()
+      setOwed(null)
+      setPicking(false)
+      onRelink(mode)
+      return
+    }
+    if ('confirm' in answer) return setOwed({ site: target, plan: answer.confirm })
+    confirmRef.current?.close()
+    setOwed(null)
+    setSwitchRefused(answer.refused)
+    say(answer.refused)
+  }
+  const useSite = () => {
+    if (switching !== null || chosen === null || ship === undefined) return
+    const target = ship.sites.find((x) => x.id === chosen)
+    const plan = planFor(chosen)
+    if (target === undefined || plan === null) {
+      setSwitchRefused(SW.gone)
+      say(SW.gone)
+      return
+    }
+    // the linked site again: nothing to write, back to Destination
+    if (plan.same) return closePicker()
+    if (plan.confirm) return setOwed({ site: target, plan })
+    void sendSwitch(target, false, 'use')
+  }
+
+  /** S8a's chip: Connected's mint dot, or B15's Preview-only pill (S11's two states) */
+  const chipOf = (capability: 'full' | 'preview_only') =>
+    capability === 'preview_only' ? (
+      <span className="ml-auto inline-flex shrink-0 items-center gap-[6px] rounded-pill bg-marigold-tint px-[10px] py-[3px] text-helper-caption font-semibold text-marigold-text">
+        <InfoCircle size={11} />
+        {PREVIEW_COPY.chip}
+      </span>
+    ) : (
+      <span className="ml-auto inline-flex shrink-0 items-center gap-[5px] text-control-label font-medium text-mint-text">
+        <span aria-hidden className="size-[6px] rounded-full bg-mint" />
+        {W.connected}
+      </span>
+    )
+  const tile = (name: string) => (
+    <span aria-hidden className="flex size-[34px] shrink-0 items-center justify-center rounded-sm bg-ink font-display text-[16px] font-bold text-paper">
+      {name.slice(0, 1).toUpperCase()}
+    </span>
+  )
+  const sites = ship?.sites ?? []
+  /** S8a's Switch (`S8 Deploy.dc.html:54`), after the chip behind its divider, muted until hover — on the Preview-only card too
+   *  (routine call 4: that is the site a customer most needs to leave) */
+  const switchLink = (
+    <button
+      type="button"
+      id="deploy-switch"
+      onClick={openPicker}
+      className={`shrink-0 border-l border-line pl-[11px] text-control-label font-medium text-ink-soft transition-colors duration-160 hover:text-ink ${ring}`}
+    >
+      {W.switchSite}
+    </button>
+  )
+
+  /* ── the picker (undrawn: S8a's card per row, D4d's radio and coral wash, S11's chips, inside S8's 520px modal) ── */
+  const chosenPlan = chosen === null ? null : planFor(chosen)
+  const picker = (
+    <div ref={pickerRef} data-site-picker className="flex flex-col gap-[18px]">
+      <div className="flex flex-col gap-[6px]">
+        <h3 className="m-0 font-display text-[17px] font-bold tracking-[-0.01em] text-ink">{SW.title}</h3>
+        <p className="text-ui-dense leading-[1.55] text-ink-soft">{SW.lead}</p>
+      </div>
+      {sites.length === 0 ? null : (
+        <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+          <legend className="sr-only">{SW.title}</legend>
+          {sites.map((x) => {
+            const on = x.id === chosen
+            const first = on && chosenPlan?.firstLink === true
+            return (
+              <label
+                key={x.id}
+                data-site-row={x.id}
+                className={`flex cursor-pointer items-center gap-[11px] rounded-thumb border p-[11px_13px] transition-colors duration-160 has-[input:focus-visible]:shadow-focus ${on ? 'border-coral bg-coral-tint' : 'border-line hover:border-line-strong'}`}
+              >
+                <input type="radio" name="deploy-site" value={x.id} checked={on} onChange={() => setChosen(x.id)} className="sr-only" />
+                <span aria-hidden className={`inline-flex size-4 shrink-0 items-center justify-center rounded-full border-[1.5px] ${on ? 'border-coral' : 'border-line-strong'}`}>
+                  {on ? <span className="size-2 rounded-full bg-coral" /> : null}
+                </span>
+                {tile(x.title || x.host)}
+                <span className="flex min-w-0 flex-1 flex-col gap-px">
+                  <span className="truncate text-ui-dense font-semibold text-ink">{x.title || x.host}</span>
+                  <span className="truncate font-mono text-helper-caption text-ink-soft [font-variant-ligatures:none]">{x.host}</span>
+                  {x.heldBy === null || x.heldBy.id === projectId ? null : <span data-held className="text-helper-caption text-ink-soft">{SW.linkedTo(x.heldBy.name)}</span>}
+                  {first ? <span data-first-link className="text-helper-caption leading-[1.5] text-ink">{SW.firstLink(ownName(chosenPlan.language), x.host)}</span> : null}
+                </span>
+                {chipOf(x.capability)}
+              </label>
+            )
+          })}
+        </fieldset>
+      )}
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex items-center gap-[10px]">
+          <Link href={`${prefix}/sites`} onClick={close} className={`text-control-label font-semibold text-coral-text ${ring}`}>
+            {SW.goToSites}
+          </Link>
+          <Button id="deploy-pick-back" variant="ghost" size={38} weight="font-medium" className="ml-auto" onClick={closePicker}>
+            {SW.back}
+          </Button>
+          {sites.length === 0 ? null : (
+            <Button
+              id="deploy-pick-use"
+              variant="primary"
+              size={40}
+              aria-disabled={switching === 'use' || undefined}
+              aria-busy={switching === 'use' || undefined}
+              aria-describedby={switchRefused === null ? undefined : 'deploy-switch-refused'}
+              onClick={useSite}
+            >
+              <BusyLabel pending={switching === 'use'} busy={SW.switching}>{SW.use}</BusyLabel>
+            </Button>
+          )}
+        </div>
+        {switchRefused === null ? null : footerCaption('deploy-switch-refused', switchRefused)}
+      </div>
+      {/* the confirm — S8e's dialog (`S8 Deploy.dc.html:337-345`), opened on Cancel (UX-DR14), each owed sentence in its body */}
+      <dialog
+        ref={confirmRef}
+        data-switch-confirm
+        aria-labelledby="deploy-switch-title"
+        aria-describedby="deploy-switch-body"
+        onClick={(event) => {
+          // the wizard's own backdrop test must never see a click on this one
+          event.stopPropagation()
+          closeOnBackdrop(event)
+        }}
+        onClose={() => setOwed(null)}
+        className="m-auto w-[410px] max-w-[calc(100vw-20px)] flex-col gap-4 rounded-lg bg-surface p-6 shadow-modal backdrop:bg-scrim open:flex"
+      >
+        {owed === null ? null : (
+          <>
+            <div className="flex flex-col gap-[5px]">
+              <h3 id="deploy-switch-title" className="m-0 font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{SW.confirmTitle(owed.site.host)}</h3>
+              <div id="deploy-switch-body" className="flex flex-col gap-2 text-ui-dense leading-[1.5] text-ink-soft">
+                {owed.plan.heldBy === null ? null : <p data-owed="held">{SW.held(owed.site.host, owed.plan.heldBy.name)}</p>}
+                {owed.plan.warnLanguage && owed.site.locale !== null ? (
+                  <p data-owed="language">{SW.language(owed.site.host, ownName(owed.site.locale), ownName(owed.plan.language))}</p>
+                ) : null}
+              </div>
+            </div>
+            <div className="flex justify-end gap-[10px]">
+              <Button type="button" variant="ghost" size={38} weight="font-medium" data-cancel onClick={() => confirmRef.current?.close()}>
+                {SW.cancel}
+              </Button>
+              <Button
+                type="button"
+                id="deploy-switch-confirm"
+                variant="primary"
+                size={38}
+                aria-disabled={switching === 'confirm' || undefined}
+                aria-busy={switching === 'confirm' || undefined}
+                onClick={() => void sendSwitch(owed.site, true, 'confirm')}
+              >
+                <BusyLabel pending={switching === 'confirm'} busy={SW.switching}>{SW.switch}</BusyLabel>
+              </Button>
+            </div>
+          </>
+        )}
+      </dialog>
+    </div>
+  )
+
+  /** R-270 (DW-375): a site a REFUSED UPLOAD marked Preview-only keeps Run checks — an upgraded plan is only ever learned from
+   *  Ghost's own answer — and says so under B15's panel; a probe's Preview-only stays as 7.18a drew it */
+  const refusedPlan = site?.capability === 'preview_only' && site.source === 'deploy_error'
+
   /* ── S8a · Destination ── */
   const destination = (
     <div className="flex flex-col gap-5">
@@ -494,35 +748,31 @@ export function DeployWizard({
         </button>
       </div>
       <Rail at="destination" state="current" />
-      {site === null ? (
-        // no connected linked site: said, with the way to one — no Run checks (the matrix's row)
+      {picking ? picker : site === null ? (
+        // no connected linked site: said, with the ways to one — no Run checks (the matrix's row)
         <div className="flex flex-col items-start gap-3 rounded-thumb border border-line p-[13px]">
           <p className="text-ui-dense leading-[1.5] text-ink">{W.noSite}</p>
-          <Link href={`${prefix}/sites`} onClick={close} className={`inline-flex h-9 items-center rounded-thumb border border-line bg-surface px-4 text-ui-dense font-semibold text-ink transition-colors hover:bg-paper ${ring}`}>
-            {W.goToSites}
-          </Link>
+          <div className="flex items-center gap-[10px]">
+            {sites.length === 0 ? null : (
+              <Button id="deploy-choose" variant="primary" size={36} onClick={openPicker}>
+                {W.chooseSite}
+              </Button>
+            )}
+            <Link href={`${prefix}/sites`} onClick={close} className={`inline-flex h-9 items-center rounded-thumb border border-line bg-surface px-4 text-ui-dense font-semibold text-ink transition-colors hover:bg-paper ${ring}`}>
+              {W.goToSites}
+            </Link>
+          </div>
         </div>
       ) : (
         <>
           <div className="flex items-center gap-[11px] rounded-thumb border border-line p-[11px_13px]">
-            <span aria-hidden className="flex size-[34px] shrink-0 items-center justify-center rounded-sm bg-ink font-display text-[16px] font-bold text-paper">
-              {(siteTitle ?? host).slice(0, 1).toUpperCase()}
-            </span>
+            {tile(siteTitle ?? host)}
             <span className="flex min-w-0 flex-col gap-px">
               <span className="truncate text-ui-dense font-semibold text-ink">{siteTitle ?? host}</span>
               <span className="truncate font-mono text-helper-caption text-ink-soft [font-variant-ligatures:none]">{host}</span>
             </span>
-            {site.capability === 'preview_only' ? (
-              <span className="ml-auto inline-flex shrink-0 items-center gap-[6px] rounded-pill bg-marigold-tint px-[10px] py-[3px] text-helper-caption font-semibold text-marigold-text">
-                <InfoCircle size={11} />
-                {PREVIEW_COPY.chip}
-              </span>
-            ) : (
-              <span className="ml-auto inline-flex shrink-0 items-center gap-[5px] text-control-label font-medium text-mint-text">
-                <span aria-hidden className="size-[6px] rounded-full bg-mint" />
-                {W.connected}
-              </span>
-            )}
+            {chipOf(site.capability)}
+            {switchLink}
           </div>
           {site.capability === 'preview_only' ? (
             // B15's own words, in its sky panel — a plan that takes no custom theme has nothing to check (the matrix's row)
@@ -533,7 +783,9 @@ export function DeployWizard({
                 <p className="text-[12.5px] leading-[1.55]">{PREVIEW_COPY.body}</p>
               </div>
             </div>
-          ) : (
+          ) : null}
+          {refusedPlan ? <p data-plan-refused className="-mt-2 text-[12.5px] leading-[1.55] text-ink-mid">{W.planRefused(host)}</p> : null}
+          {site.capability === 'preview_only' && !refusedPlan ? null : (
             <>
               {/* the theme that will be created, in mono (FR-J10; EXPERIENCE's "plus one row under the destination card") */}
               <div className="flex items-center gap-[10px] rounded-thumb border border-line p-[11px_13px]">
@@ -582,7 +834,12 @@ export function DeployWizard({
   )
 
   /* ── S8b · Pre-flight ── */
-  const compileRow =
+  /** Story 7.18b — the one BLOCKING row of the warnings' kind: an unacknowledged right-to-left language, the server's verdict
+   *  before any compile (`rtl_unacknowledged`) — its title B18's, its way out under the greyed Ship it */
+  const rtlBlocked = stage === 'failed' && !isFinding(error) && error?.code === 'rtl_unacknowledged'
+  const compileRow = rtlBlocked ? (
+    <StageRow id="deploy-rtl-block" tone="failed" label={TRANSLATION_WORDS.rtlTitle} />
+  ) :
     timings.compiling?.ms !== undefined && timings.compiling.bytes !== undefined ? (
       <StageRow tone="done" label={W.compiled} meta={W.compiledMeta(timings.compiling.ms, timings.compiling.bytes)} />
     ) : stage === 'failed' && timings.compiling !== undefined ? (
@@ -602,6 +859,27 @@ export function DeployWizard({
     <StageRow tone={stage === 'checking' ? 'running' : 'pending'} label={W.checkingRow} />
   )
   const canShip = stage === 'awaiting_ship'
+  /** DW-374 (R-269): Ship it found the project linked elsewhere, or to nothing */
+  const relinked = stage === 'failed' && !isFinding(error) && (error?.code === 'site_changed' || error?.code === 'site_unlinked')
+  /** Story 7.18b — Pre-flight's warning rows: the compile's facts (this deploy's, and the last activated one's settings) and the
+   *  editor's own state, through the one rule module; none until the checks finished */
+  const warnings: PreflightRow[] =
+    !checksDone || site === null || ship === undefined
+      ? []
+      : preflightWarnings({
+          ...client,
+          host,
+          siteName: siteTitle ?? host,
+          siteUrl: site.url,
+          siteVersion: site.version,
+          siteLocale: site.locale,
+          language: ship.language,
+          rtlAckAt: ship.rtlAckAt,
+          facts: view?.deploy?.preflight ?? null,
+          previousCustom: view?.previousCustom ?? null,
+          names,
+          projectId,
+        })
   const preflight = (
     <div className="flex flex-col gap-[18px]">
       <Rail at="check" state={stage === 'failed' ? 'failed' : 'current'} />
@@ -629,9 +907,15 @@ export function DeployWizard({
           </div>
         ) : null}
         {checksDone && routesFile !== null ? <StageRow tone="done" label={W.routesValid} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} /> : null}
-        {checksDone && filtered && posts !== null && posts.kind !== 'reading' ? (
-          posts.kind === 'read' && posts.unlisted.length === 0 ? (
-            <StageRow tone="done" label={W.everyPostListed} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} />
+        {checksDone && filtered && posts !== null ? (
+          posts.kind === 'reading' ? (
+            // R-271 (DW-377): the read in flight says so, and never holds Ship it
+            <StageRow id="deploy-posts-reading" tone="running" label={W.postsReading} />
+          ) : posts.kind === 'read' && posts.unlisted.length === 0 ? (
+            <div data-posts-listed className="flex flex-col gap-1">
+              <StageRow tone="done" label={W.everyPostListed} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} />
+              {posts.capped ? <p data-posts-capped className="ml-[31px] text-control-label text-ink-soft">{W.postsCapped}</p> : null}
+            </div>
           ) : (
             <div data-unlisted className="flex items-start gap-[11px]">
               <Mark tone="warning" />
@@ -641,9 +925,18 @@ export function DeployWizard({
                   : posts.unlisted.length === 1
                     ? W.unlistedOne(posts.unlisted[0]?.title ?? '')
                     : W.unlistedMany(posts.unlisted.map((p) => p.title))}
+                {posts.kind === 'read' && posts.capped ? <span data-posts-capped> {W.postsCapped}</span> : null}
               </p>
             </div>
           )
+        ) : null}
+        {/* Story 7.18b — the warning rows, after R-260's, each S8b's row in Design Notes' order (`preflightWarnings`) */}
+        {checksDone && warnings.length > 0 ? (
+          <div data-preflight-rows className="ml-[31px] overflow-hidden rounded-thumb border border-line">
+            {warnings.map((row, i) => (
+              <WarningRow key={`${row.kind}:${i}`} row={row} n={i} canvasHref={canvasHref} onFix={close} />
+            ))}
+          </div>
         ) : null}
       </div>
       <div className="flex flex-col gap-[6px]">
@@ -663,7 +956,18 @@ export function DeployWizard({
               <BusyLabel pending={pressed === 'cancel'} busy={W.cancelling}>{W.cancel}</BusyLabel>
             </Button>
           ) : (
-            <Button id="deploy-back" variant="ghost" size={38} weight="font-medium" className="ml-auto" onClick={back}>
+            <Button
+              id="deploy-back"
+              variant="ghost"
+              size={38}
+              weight="font-medium"
+              className="ml-auto"
+              onClick={() => {
+                back()
+                // DW-374: the project's site changed under these checks — Destination must show the link as it stands now
+                if (relinked) onRelink(mode)
+              }}
+            >
               {W.back}
             </Button>
           )}
@@ -797,7 +1101,7 @@ export function DeployWizard({
 
   /* ── D2e · D2f · on the site, not live ── */
   const [uploadedLabel, uploadedMeta] = apart(W.uploadedRow(bytes ?? 0, timings.uploading?.ms ?? 0))
-  const [activatingLabel, activatingMeta] = apart(ending === 'notLive' ? W.activatingDidnt(n) : W.activatingNotRequested(n))
+  const [activatingLabel, activatingMeta] = apart(ending_ === 'notLive' ? W.activatingDidnt(n) : W.activatingNotRequested(n))
   const liveChip = W.liveChip(prev)
   const notLive = (
     <div className="flex flex-col gap-[18px]">
@@ -808,9 +1112,9 @@ export function DeployWizard({
         </span>
         <div className="flex flex-1 flex-col gap-[7px]">
           <h2 id="deploy-title" className="m-0 font-display text-[22px] font-bold leading-[1.2] tracking-[-0.01em] text-ink [text-wrap:pretty]">
-            {ending === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle}
+            {ending_ === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle}
           </h2>
-          <p className="text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{ending === 'notLive' ? W.notLiveBody(n, prev, host) : W.uploadOnlyBody(n, prev, host)}</p>
+          <p className="text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{ending_ === 'notLive' ? W.notLiveBody(n, prev, host) : W.uploadOnlyBody(n, prev, host)}</p>
         </div>
       </div>
       <div className="flex flex-col gap-[11px]">
@@ -851,7 +1155,7 @@ export function DeployWizard({
     at === 'destination' ? destination
     : at === 'check' ? preflight
     : at === 'ship' ? (stage === 'failed' ? failedShip : shipping)
-    : ending === 'live' ? live
+    : ending_ === 'live' ? live
     : notLive
 
   return (
@@ -863,10 +1167,28 @@ export function DeployWizard({
       onClick={(event) => (unstoppable ? undefined : closeOnBackdrop(event))}
       // Esc closes at every step but these: the cancel is refused, and so is the keydown that would ask for it — a second
       // Esc after a refused cancel would otherwise close it anyway
-      onCancel={(event) => (unstoppable ? event.preventDefault() : undefined)}
-      onKeyDown={(event) => (event.key === 'Escape' && unstoppable ? event.preventDefault() : undefined)}
-      onClose={() => {
-        if (dialog.current?.open) return
+      onCancel={(event) => {
+        // React carries a nested dialog's `cancel` up its own tree: the picker's confirm closing on Esc is its own business
+        if (event.target !== event.currentTarget) return
+        if (unstoppable) return event.preventDefault()
+        // the picker is a view of Destination: Esc goes back to it, never past it (its confirm closes itself first)
+        if (picking) {
+          event.preventDefault()
+          closePicker()
+        }
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== 'Escape') return
+        if (unstoppable) return event.preventDefault()
+        // the picker is a view of Destination: Esc goes back to it, never past it — and only once its confirm is closed, which
+        // takes its own Esc (a refused `cancel` alone would let a second Esc close the wizard, as the unstoppable case notes)
+        if (picking && confirmRef.current?.open !== true) {
+          event.preventDefault()
+          closePicker()
+        }
+      }}
+      onClose={(event) => {
+        if (event.target !== event.currentTarget || dialog.current?.open) return
         onClose(stage === 'done' || timings.uploading !== undefined)
       }}
       className="relative m-auto box-content max-h-[calc(100dvh-72px)] w-[520px] max-w-[calc(100vw-72px)] flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex"
@@ -910,6 +1232,53 @@ function FindingRow({ row, n, href, onFix }: { row: ReturnType<typeof checkRows>
           {W.fixInEditor}
         </Link>
       )}
+      {open ? <ChevronUp size={13} className="pointer-events-none relative mt-[2px] shrink-0 text-ink-soft" /> : <ChevronDown size={13} className="pointer-events-none relative shrink-0 text-ink-soft" />}
+    </div>
+  )
+}
+
+/** STORY 7.18b — ONE OF PRE-FLIGHT'S WARNING ROWS, S8b's own (`S8 Deploy.dc.html:103-116`, `FindingRow`'s shape): collapsed to its
+ *  title, with "Fix in editor" where it names one canvas; opened on the frame's warning wash, its body and its list — each item with its own
+ *  "Fix in editor" where it has a canvas (extrapolated from the opened row) — and Ghost's own page, in a new tab, where it has
+ *  one. Every field as text. Warnings open collapsed, and never block. */
+function WarningRow({ row, n, canvasHref, onFix }: { row: PreflightRow; n: number; canvasHref: (canvas: Canvas) => string; onFix: () => void }) {
+  const [open, setOpen] = useState(false)
+  const id = `deploy-warning-${n}`
+  const one = rowCanvas(row)
+  const fix = (canvas: Canvas) => (
+    <Link href={canvasHref(canvas)} onClick={onFix} className={`relative shrink-0 text-control-label font-medium text-coral-text ${ring}`}>
+      {W.fixInEditor}
+    </Link>
+  )
+  return (
+    <div data-warning={row.kind} className={`relative flex gap-[9px] border-t border-line px-[13px] first:border-t-0 ${open ? 'items-start bg-marigold-tint-soft py-[11px]' : 'items-center py-[10px]'}`}>
+      <button type="button" aria-expanded={open} aria-labelledby={id} onClick={() => setOpen(!open)} className={`absolute inset-0 ${ring}`} />
+      <AlertTriangle size={14} strokeWidth={1.8} className="pointer-events-none relative mt-px shrink-0 text-marigold-text" />
+      <div className="pointer-events-none relative flex min-w-0 flex-1 flex-col gap-[3px]">
+        <span id={id} className={`text-[12.5px] text-ink ${open ? 'font-semibold' : 'font-medium'}`}>{row.title}</span>
+        {open ? (
+          <>
+            {row.body === undefined ? null : <span className="text-control-label leading-[1.5] text-ink-soft">{row.body}</span>}
+            {row.items.length === 0 ? null : (
+              <ul className="m-0 flex list-none flex-col gap-1 p-0">
+                {row.items.map((item, i) => (
+                  <li key={`${i}:${item.text}`} className="flex items-start gap-2 text-control-label leading-[1.5] text-ink">
+                    <span className="min-w-0 flex-1">{item.text}</span>
+                    {item.canvas === undefined || one !== null ? null : <span className="pointer-events-auto">{fix(item.canvas)}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {row.link === undefined ? null : (
+              <a href={row.link.href} target="_blank" rel="noreferrer" className={`pointer-events-auto relative self-start text-control-label font-semibold text-coral-text ${ring}`}>
+                {row.link.words}
+                <span className="sr-only">{TRANSLATION_WORDS.newTab}</span>
+              </a>
+            )}
+          </>
+        ) : null}
+      </div>
+      {one === null ? null : fix(one)}
       {open ? <ChevronUp size={13} className="pointer-events-none relative mt-[2px] shrink-0 text-ink-soft" /> : <ChevronDown size={13} className="pointer-events-none relative shrink-0 text-ink-soft" />}
     </div>
   )

@@ -94,14 +94,16 @@ import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, FEEDLESS_ROUTE, NOW_MAIN, withTra
 import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
-import { recheckSite, setPreviewSubject, setViewedStates } from './actions'
+import { recheckSite, setPreviewSubject, setViewedStates, switchSite } from './actions'
 import { EditorSkeleton } from './editor-skeleton'
 import type { EditorData } from './read'
 import { PackEditor, type PackEditing } from './pack-editor'
 import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
-import type { Mode as ShipMode } from '@/lib/deploy'
+import { DEPLOY_WORDS, POSTS_CHECKED, type Mode as ShipMode } from '@/lib/deploy'
+import { queriesFor } from '@/lib/preflight'
+import type { SwitchAnswer } from '@/lib/site-switch'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
@@ -556,6 +558,9 @@ type EditorProps = EditorData & {
    *  one fixture site with a snapshot, so a database-less journey sees a re-read that LANDS redraw Ghost's two surfaces.
    *  The app passes none. */
   reread?: typeof recheckSite
+  /** STORY 7.18b — choosing the site, `switchSite` unless named: the keyboard harness names its own, which answers with no
+   *  database (`harnessSwitch`). The app passes none. */
+  switchTo?: typeof switchSite
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -850,6 +855,7 @@ function EditorShell({
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
+  switchTo = switchSite,
 }: EditorProps) {
   const pathname = usePathname()
   /** Story 7.12 — the project's strings (FR-H5): the overrides the server's judge passed, over the catalog's English. Fixed for
@@ -1012,9 +1018,9 @@ function EditorShell({
     const design = entries[i.designId]
     if (design === undefined) return {}
     // Story 7.16c: a feed off a paginated page — a Routes Manager template no route lists — is secondary. Its Count starts at
-    // the theme's Posts per page, as the compiled `{{#get}}` does (the compiler knows no route's limit)
-    const feed = feedQuery(design, i, i.target, postsPerPage, listed)
-    return { ...withData(design.dataBindings, i.data), ...(feed === undefined ? {} : { [FEED_KEY]: feed }) }
+    // the theme's Posts per page, as the compiled `{{#get}}` does (the compiler knows no route's limit). Story 7.18b: the rule
+    // is `lib/preflight.ts`' `queriesFor`, so Pre-flight's pick count reads what the canvas renders
+    return queriesFor(design, i, i.target, postsPerPage, listed)
   }
   /** A section's key among a page's queries — an `instanceId` is unique inside a doc, not across the two groups. */
   const queryKey = (i: { doc: string; instanceId: string }) => sectionKey(i.doc, i.instanceId)
@@ -2499,21 +2505,40 @@ function EditorShell({
     await flush('manual')
     return !unsynced(latest.current.journal)
   }
-  /** R-260's read: the site's published posts, a hundred a page, through the canvas's own store and its request ceiling —
-   *  null where the site cannot be read, a read fails, or the ceiling stops it */
-  const readSitePosts = async (): Promise<readonly Row[] | null> => {
-    const store = readsOf()
-    if (store === null) return null
+  /** R-260's read (R-271, DW-377): the site's NEWEST published posts, a hundred a page, up to `POSTS_CHECKED`, through a store
+   *  of their OWN — its own request ceiling, so the canvas's reads are never spent on it — with the site's total, so the row
+   *  can say when it checked the newest alone. Null where the site cannot be read or a read fails. */
+  const readSitePosts = async (): Promise<{ rows: readonly Row[]; total: number } | null> => {
+    if (site === null || !('key' in site)) return null
+    const store = liveStore(site.origin, site.key)
     const rows: Row[] = []
-    for (let page = 1; ; page++) {
+    let total = 0
+    for (let page = 1; rows.length < POSTS_CHECKED; page++) {
       const q = feedRead(null, page, LIST_LIMIT)
       if (q === null) return null
-      await store.ensure([q])
-      const answer = store.peek(q)
+      // newest first, said rather than left to Ghost's default
+      const newest = { ...q, params: { ...q.params, order: 'published_at desc' } }
+      await store.ensure([newest])
+      const answer = store.peek(newest)
       if (answer === undefined) return null
       rows.push(...answer.rows)
-      if (page >= answer.pages) return rows
+      total = answer.total
+      if (page >= answer.pages) break
     }
+    return { rows: rows.slice(0, POSTS_CHECKED), total }
+  }
+  /** STORY 7.18b — choosing the site (FR-B5): whatever is owed is sent first, then `switchSite` — edits left unsent write
+   *  nothing, in Run checks' own sentence */
+  const switchSiteNow = async (siteId: string, confirmed: boolean): Promise<SwitchAnswer> => {
+    if (!(await flushForShip())) return { refused: DEPLOY_WORDS.editsUnsent }
+    return switchTo(project.id, siteId, tabId.current, confirmed).catch((): SwitchAnswer => ({ refused: DEPLOY_WORDS.infrastructure }))
+  }
+  /** …and once the link has changed, the page re-reads: the editor mounts afresh on the new site (the `(editor)` layout keys
+   *  it on `linked_site_id`), so the canvas, the members record and Ship it all follow it, and this tab's kept ask opens the
+   *  wizard again on Destination — the take-over's `SHIP_AFTER` path */
+  const relink = (mode: ShipMode) => {
+    tabStore()?.setItem(SHIP_AFTER, JSON.stringify({ project: project.id, mode }))
+    router.refresh()
   }
 
   /** A RELOAD THAT KEPT ITS TAB ID IS THE SAME SESSION, so it keeps the lock rather than flashing B5a's bar at its
@@ -6803,7 +6828,12 @@ function EditorShell({
           flush={flushForShip}
           readPosts={readSitePosts}
           canvasHref={pathOf}
+          client={{ docs, library: (id) => entries[id], viewed, members, postsPerPage, listed }}
+          onSwitch={switchSiteNow}
+          onRelink={relink}
           onClose={(shipped) => {
+            // a relink's kept ask is spent: an editor the re-read did not remount (the harness) never reopens it later
+            tabStore()?.removeItem(SHIP_AFTER)
             setWizard(null)
             document.getElementById('editor-ship')?.focus()
             if (shipped) router.refresh()

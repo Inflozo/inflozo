@@ -27,7 +27,7 @@ import { zipTheme } from './zip.ts'
 
 const BUCKET = 'deploy-artifacts'
 const JOB_COLUMNS = 'id, project_id, user_id, site_id, stage, cancel_requested, deploy_id, error, stage_timings, updated_at'
-const DEPLOY_COLUMNS = 'id, version, theme_name, status, activated, artifact_path, artifact_bytes, gscan, quality, inputs_sha256, activated_at'
+const DEPLOY_COLUMNS = 'id, version, theme_name, status, activated, artifact_path, artifact_bytes, gscan, quality, inputs_sha256, activated_at, preflight'
 
 /** A write or read the database refused: thrown, marked as infrastructure for `run.ts`'s retry rule. Logged by code only. */
 function ok<T>(answer: { data: T; error: unknown }, what: string): T {
@@ -89,6 +89,13 @@ export const DEPLOY_IO: DeployIo = {
       const rows = ok(await supabaseAdmin().from('deploys').select('project_id').eq('site_id', siteId).eq('user_id', userId).eq('activated', true).order('activated_at', { ascending: false }).limit(1), 'live project') as { project_id: string }[] | null
       return rows?.[0]?.project_id ?? null
     },
+    async previousCustom({ projectId, siteId, userId, except }) {
+      let q = supabaseAdmin().from('deploys').select('preflight').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).eq('activated', true)
+      if (except !== undefined) q = q.neq('id', except)
+      const rows = ok(await q.order('activated_at', { ascending: false }).limit(1), 'previous custom') as { preflight: { custom?: unknown } | null }[] | null
+      const custom = rows?.[0]?.preflight?.custom
+      return typeof custom === 'object' && custom !== null && !Array.isArray(custom) ? (custom as Record<string, unknown>) : null
+    },
     async previous({ projectId, siteId, userId, except }) {
       let q = supabaseAdmin().from('deploys').select('version').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).eq('activated', true)
       if (except !== undefined) q = q.neq('id', except)
@@ -122,6 +129,20 @@ export const DEPLOY_IO: DeployIo = {
     if (refused) ok(await sites.update({ capability: 'preview_only', capability_source: 'deploy_error' }).eq('id', siteId).eq('user_id', userId).is('disconnected_at', null), 'capability')
     // FR-C2: a successful deploy clears a mark a refused one set — never a probe's or the owner's own answer
     else ok(await sites.update({ capability: 'full', capability_source: null }).eq('id', siteId).eq('user_id', userId).eq('capability_source', 'deploy_error'), 'capability')
+  },
+  // DW-374: the project's link NOW and the job's own site's address — owned by `user_id`, a disconnected site included (its
+  // address is still the one the sentence names)
+  async link({ projectId, siteId, userId }) {
+    const [project, was] = await Promise.all([
+      supabaseAdmin().from('projects').select('linked_site_id').eq('id', projectId).eq('user_id', userId).maybeSingle(),
+      supabaseAdmin().from('sites').select('url').eq('id', siteId).eq('user_id', userId).maybeSingle(),
+    ])
+    const linked = (ok(project, 'project link') as { linked_site_id: string | null } | null)?.linked_site_id ?? null
+    const wasUrl = (ok(was, 'job site') as { url: string } | null)?.url ?? null
+    if (linked === null) return { now: null, was: wasUrl }
+    if (linked === siteId) return { now: { id: linked, url: wasUrl ?? '' }, was: wasUrl }
+    const now = ok(await supabaseAdmin().from('sites').select('id, url').eq('id', linked).eq('user_id', userId).maybeSingle(), 'linked site') as { id: string; url: string } | null
+    return { now: now ?? { id: linked, url: '' }, was: wasUrl }
   },
   call: (args) => call({ ...args, kind: 'admin' }),
   offerRoutes: (a) => offerRoutes(a, ROUTES_IO),

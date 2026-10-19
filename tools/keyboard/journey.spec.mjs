@@ -8560,7 +8560,10 @@ test('7.18a · UX-DR15: the confetti falls once, and under prefers-reduced-motio
     await ship.focus()
     await page.keyboard.press('Enter')
     await expect(wizard(page).locator('[data-confetti]')).toBeVisible({ timeout: 15_000 })
-    return wizard(page).locator('[data-confetti]').evaluate((svg) => [...svg.querySelectorAll('[data-piece]')].reduce((n, p) => n + p.getAnimations().length, 0))
+    // DW-378 (Story 7.18b): it falls ONCE — every piece's one animation runs one iteration
+    const runs = await wizard(page).locator('[data-confetti]').evaluate((svg) => [...svg.querySelectorAll('[data-piece]')].flatMap((p) => p.getAnimations().map((a) => a.effect.getTiming().iterations)))
+    expect(runs.every((i) => i === 1), `each piece falls once: ${JSON.stringify(runs)}`).toBe(true)
+    return runs.length
   }
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
   // the control: with motion allowed, every piece is falling
@@ -8608,16 +8611,21 @@ test('7.18a · a blocked Pre-flight greys Ship it with the reason in its caption
 test('7.18a · Cancel during Checking says "Cancelling…", and the cancelled job leaves the wizard back at Destination', async ({ page }) => {
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
   const checking = viewOf('checking', { compiling: TIMED.compiling, checking: { at: AT } })
-  const sent = await plantDeploy(page, { preflight: [PREFLIGHT[0], checking], cancel: [checking, viewOf('cancelled', { compiling: TIMED.compiling, checking: { at: AT } }, { deploy: null })] })
+  const sent = await plantDeploy(page, { preflight: [PREFLIGHT[0], checking], cancel: [checking, checking, checking, viewOf('cancelled', { compiling: TIMED.compiling, checking: { at: AT } }, { deploy: null })] })
   await open(page)
   await openWizard(page)
   await runChecks(page)
   const cancel = page.locator('#deploy-cancel')
   await expect(cancel).toBeVisible()
-  await expect.poll(() => deploySaid(page)).toBe(DW.sayChecking)
+  // DW-378: Compiling began and ended before the first read, and it is said all the same, before Checking
+  await expect.poll(() => deploySaid(page)).toBe(`${DW.sayCompiling} ${DW.sayChecking}`)
   await cancel.focus()
   await page.keyboard.press('Enter')
   expect.soft(await cancel.getAttribute('aria-busy')).toBe('true')
+  // DW-378: "Cancelling…" is HELD on screen while the row still stands in Checking — past a read or two, not one frame
+  await expect(cancel).toHaveAccessibleName(DW.cancelling)
+  await page.waitForTimeout(1500)
+  if (await wizard(page).getAttribute('data-deploy-wizard') === 'check') await expect(cancel).toHaveAccessibleName(DW.cancelling)
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination', { timeout: 15_000 })
   expect(sent.map((b) => b.intent)).toEqual(['preflight', 'cancel'])
   expect(sent[1].job).toBe('job-718')
@@ -8636,6 +8644,8 @@ test('7.18a · a refused key while shipping: S8d′ says Ghost\'s no in health\'
   await page.keyboard.press('Enter')
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'ship')
   await page.keyboard.press('Escape')
+  // DW-378: a close would take a frame — settle past it before saying it stayed open
+  await page.waitForTimeout(400)
   await expect(wizard(page), 'uploading: Esc is refused').toBeVisible()
   // S8d′ names S8c's own row: "Uploading to Ghost failed" (the review, 2026-10-19)
   await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.stageFailed(DW.uploadingRow), { timeout: 15_000 })
@@ -8694,7 +8704,8 @@ test('7.18a · an activation that did not complete ends on D2e, "Didn\'t complet
   await expect(wizard(page)).toContainText(DW.notLiveBody(3, 2, 'harness.example'))
   for (const part of DW.activatingDidnt(3).split(' · ')) await expect(wizard(page)).toContainText(part)
   await expect(wizard(page).locator('[data-confetti]')).toHaveCount(0)
-  expect(await deploySaid(page)).toBe(DW.notLiveTitle)
+  // DW-378 (Story 7.18b): the activation began and ended between two reads, and is said all the same, before the ending
+  expect(await deploySaid(page)).toBe(`${DW.sayActivating(3)} ${DW.notLiveTitle}`)
   await page.getByRole('button', { name: DW.leave }).focus()
   await page.keyboard.press('Enter')
   await expect(wizard(page)).toHaveCount(0)
@@ -8752,6 +8763,8 @@ test('7.18a · reading along, Ship it opens D8g on Wait in D8g\'s words; Esc clo
   await expect(d8g.getByRole('button', { name: LOCK.LOCK_COPY.wait })).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(d8g).toBeHidden()
+  // DW-378: a wizard that opened late would open after a frame or two — settle before saying none did
+  await page.waitForTimeout(400)
   await expect(wizard(page)).toHaveCount(0)
   // ⌘⏎ is the same press
   await page.locator('section[aria-label="Canvas"]').focus()
@@ -8763,6 +8776,7 @@ test('7.18a · reading along, Ship it opens D8g on Wait in D8g\'s words; Esc clo
   await confirm.focus()
   await page.keyboard.press('Enter')
   await expect.poll(async () => { const s = await said(page); return s !== was && s === LOCK.LOCK_COPY.unreachable }, { timeout: 15_000 }).toBe(true)
+  await page.waitForTimeout(400)
   await expect(wizard(page)).toHaveCount(0)
 })
 
@@ -8846,6 +8860,7 @@ test('7.18a · R-264 (a): while this project\'s theme is live on the site, Deplo
   await expect(uploadRow()).toHaveAccessibleDescription(BLOCKED_WORDS)
   await expect(uploadRow()).not.toContainText(DW.uploadOnlyCaption(3, 2))
   await page.keyboard.press('Enter')
+  await page.waitForTimeout(400)
   await expect(wizard(page), 'the greyed row opens nothing').toHaveCount(0)
   await page.keyboard.press('Escape')
   // S8a's card: greyed, its reason in its line, and choosing it moves nothing
@@ -9017,4 +9032,384 @@ test('7.18a (review) · a checker that could not run checked nothing: its own ro
   await expect(wizard(page).locator('[data-finding="error"]')).toContainText(couldNot.errors[0].message)
   await expect(wizard(page).locator('[data-check-rows]')).not.toContainText(DW.pass)
   await expect(wizard(page)).not.toContainText(DW.fixErrors(1))
+})
+
+/* ── Story 7.18b — choosing the site, and Pre-flight's warnings (FR-B5, FR-D16, FR-H2, FR-H6, FR-Q6; R-267–R-271) ─────────────
+   The harness has no database, so the switch is `harnessSwitch` (the editor's `switchTo` seam): it answers linked, or what its
+   header asks. Each server action is SEEN here by its `next-action` header — counted, and held where a busy label must be read.
+   Pre-flight's rows come from a canned job that carries the compile's facts (`deploy.preflight`, `previousCustom`) and from the
+   editor's own state the harness opened with. Each journey carries its control. The editor following the NEW site after a real
+   switch is a remount the deployed walk's step 114 sees (the harness's fixture never changes). */
+
+const SWITCH = await import(new URL('../../apps/web/lib/site-switch.ts', import.meta.url).href)
+const SWW = SWITCH.SWITCH_WORDS
+const PREFLIGHT_LIB = await import(new URL('../../apps/web/lib/preflight.ts', import.meta.url).href)
+const PW = PREFLIGHT_LIB.PREFLIGHT_WORDS
+const TRANSLATIONS = await import(new URL('../../apps/web/lib/translations.ts', import.meta.url).href)
+const TW = TRANSLATIONS.TRANSLATION_WORDS
+const HARNESS_SITE_IDS = { linked: '00000000-0000-4000-8000-000000000718', held: '00000000-0000-4000-8000-000000000719', german: '00000000-0000-4000-8000-000000000720' }
+const sitePicker = (page) => wizard(page).locator('[data-site-picker]')
+const switchConfirm = (page) => page.locator('dialog[data-switch-confirm]')
+
+/** every server action the page sends that names a harness site — the switch's — kept, each answered after `hold` resolves */
+async function seeSwitches(page, hold = async () => {}) {
+  const calls = []
+  await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+    const req = route.request()
+    const body = req.method() === 'POST' && req.headers()['next-action'] ? (req.postData() ?? '') : ''
+    if (!Object.values(HARNESS_SITE_IDS).some((id) => body.includes(id))) return route.fallback()
+    calls.push(body)
+    await hold()
+    return route.fallback()
+  })
+  return calls
+}
+
+test('7.18b · Switch sits after S8a\'s Connected chip; it opens the picker on the linked site (S8a\'s card per row, D4d\'s radio, S11\'s chips); a held site asks first in S8e\'s dialog on Cancel, naming the project, and Cancel writes nothing; the same site writes nothing; Esc and Back go back to Destination', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const calls = await seeSwitches(page)
+  await open(page)
+  await openWizard(page)
+  const sw = wizard(page).locator('#deploy-switch')
+  await expect(sw).toHaveText(DW.switchSite)
+  expect(await sw.evaluate((b) => !!(b.previousElementSibling?.textContent?.includes('Connected'))), 'after the Connected chip').toBe(true)
+  await sw.focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toBeVisible()
+  await expect(sitePicker(page)).toContainText(SWW.title)
+  await expect(sitePicker(page)).toContainText(SWW.lead)
+  // focus starts on the chosen row — the linked site
+  await expect(sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.linked}"]`)).toBeFocused()
+  await expect(sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.linked}"]`)).toBeChecked()
+  await expect(sitePicker(page).locator(`[data-site-row="${HARNESS_SITE_IDS.held}"]`)).toContainText(SWW.linkedTo('Field Notes'))
+  await expect(sitePicker(page).locator(`[data-site-row="${HARNESS_SITE_IDS.linked}"] [data-held]`), 'the control: an unheld site says nothing of it').toHaveCount(0)
+  // the arrows move the choice (a native radio group): to the held site, then Use this site
+  await page.keyboard.press('ArrowDown')
+  await expect(sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.held}"]`)).toBeChecked()
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(switchConfirm(page)).toBeVisible()
+  await expect(switchConfirm(page).locator('#deploy-switch-title')).toHaveText(SWW.confirmTitle('held.harness.example'))
+  await expect(switchConfirm(page).locator('[data-owed="held"]')).toHaveText(SWW.held('held.harness.example', 'Field Notes'))
+  await expect(switchConfirm(page).locator('[data-owed="language"]'), 'both on English: no language sentence').toHaveCount(0)
+  await expect(switchConfirm(page).getByRole('button', { name: SWW.cancel })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(switchConfirm(page)).toBeHidden()
+  await page.waitForTimeout(400)
+  expect(calls, 'Cancel writes nothing').toEqual([])
+  // FR-Q6: the German site's confirm names both languages, by Translations' own names
+  await sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.held}"]`).focus()
+  await page.keyboard.press('ArrowDown')
+  await expect(sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.german}"]`)).toBeChecked()
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(switchConfirm(page).locator('[data-owed="language"]')).toHaveText(SWW.language('de.harness.example', TRANSLATIONS.ownName('de'), TRANSLATIONS.ownName('en')))
+  await expect(switchConfirm(page).locator('[data-owed="held"]')).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(switchConfirm(page)).toBeHidden()
+  await expect(sitePicker(page), 'Esc closed the confirm alone').toBeVisible()
+  // the linked site again: back to Destination, nothing written
+  await sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.german}"]`).focus()
+  await page.keyboard.press('ArrowUp')
+  await page.keyboard.press('ArrowUp')
+  await expect(sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.linked}"]`)).toBeChecked()
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toHaveCount(0)
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await page.waitForTimeout(400)
+  expect(calls, 'the same site writes nothing').toEqual([])
+  // Esc and Back: Destination again, focus back on Switch — never past it
+  await sw.focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(sitePicker(page)).toHaveCount(0)
+  await expect(wizard(page)).toBeVisible()
+  await expect(sw).toBeFocused()
+  await page.keyboard.press('Enter')
+  await page.locator('#deploy-pick-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toHaveCount(0)
+  await expect(wizard(page)).toBeVisible()
+})
+
+test('7.18b · no site linked: Choose a site opens the same picker; a first link names the language the project will take; Use this site says "Switching…" while it lands, and a site gone meanwhile says so — with no site connected at all, only Go to Sites (the control)', async ({ page }) => {
+  // the control first: no site to choose — Go to Sites alone
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page)).toContainText(DW.noSite)
+  await expect(wizard(page).locator('#deploy-choose')).toHaveCount(0)
+  await expect(wizard(page).getByRole('link', { name: DW.goToSites })).toBeVisible()
+  await page.keyboard.press('Escape')
+  // three sites to choose from
+  let release
+  const held = new Promise((r) => (release = r))
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'unlinked' })
+  const calls = await seeSwitches(page, () => held)
+  await open(page)
+  await openWizard(page)
+  const choose = wizard(page).locator('#deploy-choose')
+  await expect(choose).toHaveText(DW.chooseSite)
+  await choose.focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toBeVisible()
+  await expect(sitePicker(page).locator('input[type="radio"]').first()).toBeFocused()
+  // the first link to the German site takes its language, and the chosen row says so
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await expect(sitePicker(page).locator(`[data-site-row="${HARNESS_SITE_IDS.german}"] [data-first-link]`)).toHaveText(SWW.firstLink(TRANSLATIONS.ownName('de'), 'de.harness.example'))
+  await expect(sitePicker(page).locator('[data-first-link]'), 'on the chosen row alone').toHaveCount(1)
+  // …with no confirm owed: Use this site lands it — "Switching…" while the switch is in flight (R-98)
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => calls.length).toBe(1)
+  expect(calls[0]).toContain(HARNESS_SITE_IDS.german)
+  await expect(switchConfirm(page)).toBeHidden()
+  const use = page.locator('#deploy-pick-use')
+  await expect(use).toHaveAttribute('aria-busy', 'true')
+  await expect(use).toHaveAccessibleName(SWW.switching)
+  release()
+  await expect(sitePicker(page)).toHaveCount(0, { timeout: 15_000 })
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  // a site disconnected meanwhile: refused in its sentence, nothing linked
+  await page.keyboard.press('Escape')
+  await page.unrouteAll()
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'unlinked', 'x-inflozo-harness-switch': 'gone' })
+  await open(page)
+  await openWizard(page)
+  await wizard(page).locator('#deploy-choose').focus()
+  await page.keyboard.press('Enter')
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page).locator('#deploy-switch-refused')).toHaveText(SWW.gone, { timeout: 15_000 })
+  await expect(sitePicker(page)).toBeVisible()
+})
+
+test('7.18b · a switch with an edit the flush could not send writes nothing, and the picker says why in Run checks\' sentence — the control, with the save let through, sends the switch', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'unlinked' })
+  const calls = await seeSwitches(page)
+  // the save is refused, so the edit stays unsent; the control's save LANDS (the harness has no database, so the route answers it)
+  let refuse = true
+  let landed = 0
+  await page.route('**/sync', (route) =>
+    refuse ? route.fulfill({ status: 503, body: '' }) : route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ applied: true, revision: ++landed }) }))
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).page.length).toBe(own.length + 1)
+  await openWizard(page)
+  await wizard(page).locator('#deploy-choose').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toBeVisible()
+  // the German site: a first link, so no confirm stands between Use this site and the flush
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await expect(sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.german}"]`)).toBeChecked()
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page).locator('#deploy-switch-refused')).toHaveText(DW.editsUnsent, { timeout: 20_000 })
+  expect(calls, 'nothing was sent to switchSite').toEqual([])
+  await expect(sitePicker(page), 'the picker stays, its choice kept').toBeVisible()
+  // the control: the save goes through, and the same press now reaches the switch
+  refuse = false
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => calls.length, { timeout: 20_000 }).toBe(1)
+  expect(calls[0]).toContain(HARNESS_SITE_IDS.german)
+})
+
+test('7.18b · R-270: a site a refused upload marked Preview-only shows B15\'s panel, the line and Run checks; a probe\'s Preview-only has neither (the control)', async ({ page }) => {
+  const PROBE = await import(new URL('../../apps/web/lib/probe-rule.ts', import.meta.url).href)
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'refused' })
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.title)
+  await expect(wizard(page).locator('[data-plan-refused]')).toHaveText(DW.planRefused('harness.example'))
+  await expect(page.locator('#deploy-run')).toBeVisible()
+  await expect(wizard(page).locator('#deploy-switch'), 'Switch on the Preview-only card too (routine call 4)').toBeVisible()
+  await page.keyboard.press('Escape')
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'preview' })
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page)).toContainText(PROBE.PREVIEW_COPY.title)
+  await expect(wizard(page).locator('[data-plan-refused]')).toHaveCount(0)
+  await expect(page.locator('#deploy-run')).toHaveCount(0)
+})
+
+/** a canned job that carries the compile's facts — every row a server fact can raise — and "since your last deploy" */
+const FACTS = {
+  templates: ['author.hbs', 'default.hbs', 'home.hbs', 'index.hbs', 'post.hbs', 'tag.hbs'],
+  custom: { color_scheme: { type: 'select', default: 'Auto' }, dark_accent_color: { type: 'color', default: '#ff5500' }, dark_logo: { type: 'image' } },
+  noindex: ['tag'],
+  freeAsks: ['home.hbs'],
+}
+const PREVIOUS_CUSTOM = { ...FACTS.custom, dark_accent_color: { type: 'color', default: '#112233' }, note: { type: 'text', default: 'Hi' } }
+const withFacts = (views) => views.map((v) => (v.deploy === null ? v : { ...v, deploy: { ...v.deploy, preflight: FACTS }, previousCustom: PREVIOUS_CUSTOM }))
+
+test('7.18b · a finished Pre-flight draws every warning row in Design Notes\' order, each S8b\'s collapsed row with "Fix in editor" where it names one canvas; opened, its body and list; Ship it stays pressable — and with no facts on the job, no row (the control)', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full', 'x-inflozo-harness-site': 'members-off', 'x-inflozo-harness-preflight': 'all', 'x-inflozo-harness-picks': '26' })
+  await plantDeploy(page, { preflight: withFacts(PREFLIGHT) })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  const rows = wizard(page).locator('[data-preflight-rows] [data-warning]')
+  await expect(rows).toHaveCount(10)
+  expect(await rows.evaluateAll((els) => els.map((e) => e.getAttribute('data-warning')))).toEqual(['rtl', 'mismatch', 'untouched', 'members', 'freeAsks', 'dropped', 'builtIn', 'feedless', 'picks', 'unviewed'])
+  const row = (kind) => wizard(page).locator(`[data-warning="${kind}"]`)
+  await expect(row('rtl')).toContainText(TW.rtlTitle)
+  await expect(row('mismatch')).toContainText(PW.mismatch('en', TRANSLATIONS.ownName('ar')))
+  await expect(row('members')).toContainText(PW.members('harness.example'))
+  await expect(row('freeAsks')).toContainText(PW.freeAsks('harness.example'))
+  await expect(row('dropped')).toContainText(PW.dropped(1, 'harness.example'))
+  await expect(row('builtIn')).toContainText(PW.builtIn('Dark accent color'))
+  await expect(row('feedless')).toContainText(PW.feedless('Tag'))
+  await expect(row('picks')).toContainText(PW.picks(1))
+  await expect(row('unviewed')).toContainText(PW.unviewed)
+  // collapsed: "Fix in editor" exactly where the row names one canvas
+  for (const kind of ['freeAsks', 'feedless', 'picks']) await expect(row(kind).getByRole('link', { name: DW.fixInEditor }), kind).toHaveCount(1)
+  for (const kind of ['rtl', 'mismatch', 'dropped', 'builtIn']) await expect(row(kind).getByRole('link', { name: DW.fixInEditor }), kind).toHaveCount(0)
+  // opened from the keyboard: its body and its list, each item its own "Fix in editor"
+  const toggle = row('unviewed').locator('button[aria-expanded]')
+  await toggle.focus()
+  await page.keyboard.press('Enter')
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  await expect(row('unviewed')).toContainText(PW.unviewedBody)
+  await expect(row('unviewed').locator('li').first()).toContainText('Home:')
+  expect(await row('unviewed').getByRole('link', { name: DW.fixInEditor }).count()).toBeGreaterThan(1)
+  const built = row('builtIn').locator('button[aria-expanded]')
+  await built.focus()
+  await page.keyboard.press('Enter')
+  await expect(row('builtIn')).toContainText(PW.builtInBody('#ff5500', 'harness.example', '#112233'))
+  await expect(row('builtIn').getByRole('link', { name: new RegExp(PW.designPanel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) })).toHaveAttribute('href', 'https://127.0.0.1:9/ghost/#/settings/design/edit')
+  // FR-H6's sentences are the Sites card's own, beside the asks the site stops
+  const members = row('members').locator('button[aria-expanded]')
+  await members.focus()
+  await page.keyboard.press('Enter')
+  await expect(row('members')).toContainText('Members are switched off')
+  await expect(wizard(page)).toContainText(DW.warningsOnly)
+  // the control: the same Pre-flight with no facts on the job raises none of the compile's rows, and none over shipped pages
+  await page.keyboard.press('Escape')
+  await page.unrouteAll()
+  await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  for (const kind of ['members', 'freeAsks', 'dropped', 'builtIn', 'feedless', 'picks', 'unviewed']) await expect(row(kind), kind).toHaveCount(0)
+})
+
+test('7.18b · an unacknowledged right-to-left language blocks before compiling: its row in B18\'s title, Ship it greyed with "Acknowledge it in Translations to ship." and Open Translations; a press sends nothing', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const blocked = viewOf('failed', { compiling: { at: AT, ms: 40 } }, { deploy: null, error: DEPLOY.deployError('rtl_unacknowledged', { host: 'harness.example', projectId: HARNESS_PROJECT_ID }) })
+  const sent = await plantDeploy(page, { preflight: [PREFLIGHT[0], blocked] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(wizard(page).locator('#deploy-rtl-block')).toContainText(TW.rtlTitle, { timeout: 15_000 })
+  await expect(wizard(page)).not.toContainText(DW.stageFailed(DEPLOY.STAGE_NAMES.compiling))
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).toHaveAttribute('aria-disabled', 'true')
+  await expect(page.locator('#deploy-ship-reason')).toContainText(DW.rtlBlocked)
+  const out = page.locator('#deploy-ship-reason a')
+  await expect(out).toHaveText(DW.openTranslations)
+  await expect(out).toHaveAttribute('href', `/app/projects/${HARNESS_PROJECT_ID}/settings/translations`)
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(400)
+  expect(sent.map((b) => b.intent), 'the greyed Ship it sends nothing').toEqual(['preflight'])
+})
+
+test('7.18b · DW-374 (R-269): Ship it after the project\'s site changed says so, naming both sites, and nothing ships; Back re-reads the page (the link changed)', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const changed = DEPLOY.deployError('site_changed', { host: 'harness.example', to: 'blog.example.com' })
+  await plantDeploy(page, { preflight: PREFLIGHT, ship: [viewOf('failed', CHECKED, { error: changed })] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-ship-reason')).toHaveText(DW.siteChanged('blog.example.com', 'harness.example'), { timeout: 15_000 })
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  await expect(ship).toHaveAttribute('aria-disabled', 'true')
+  // Back: Destination, and the page re-read with this tab's ask kept — the editor that mounts on the new link opens the wizard
+  // again (`SHIP_AFTER`; the harness's fixture never changes its link, so here the wizard simply stays)
+  const kept = () => page.evaluate(() => sessionStorage.getItem('inflozo:ship-after-takeover'))
+  expect(await kept(), 'the control: nothing kept before Back').toBeNull()
+  await page.locator('#deploy-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  expect(JSON.parse((await kept()) ?? 'null')).toEqual({ project: HARNESS_PROJECT_ID, mode: 'activate' })
+  // closing spends it, so a later reload asks nothing
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+  expect(await kept()).toBeNull()
+})
+
+/** the site's posts, `count` in all, served page by page as Ghost serves them (100 a page); R-260's own reads — limit 100,
+ *  newest first, no filter — are counted, and the page given in `hold` waits for its release */
+async function siteWithPages(page, count, { total = count, hold = 0 } = {}) {
+  const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' }
+  const reads = []
+  let release
+  const held = new Promise((r) => (release = r))
+  await page.route('**/ghost/api/content/**', async (route) => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors })
+    const url = new URL(route.request().url())
+    const resource = url.pathname.split('/').filter(Boolean).at(-1)
+    if (resource === 'settings') return route.fulfill({ json: { settings: SAMPLE.site }, headers: cors })
+    const p = url.searchParams
+    // R-260's own read is a LIST PAGE (`feedRead`: a page number, the visitor's three includes), newest first, unfiltered —
+    // never a section's `{{#get}}` the canvas reads at the same size
+    const own = resource === 'posts' && p.get('limit') === '100' && p.get('order') === 'published_at desc' && !p.has('filter') && p.has('page')
+    if (!own) return route.fulfill({ json: { [resource]: [], meta: { pagination: { page: 1, limit: 100, pages: 1, total: 0 } } }, headers: cors })
+    const n = Number(p.get('page') ?? '1')
+    reads.push(n)
+    if (n === hold) await held
+    const start = (n - 1) * 100
+    const rows = Array.from({ length: Math.max(0, Math.min(100, count - start)) }, (_, i) => ({ ...tagged, id: `r271${String(start + i).padStart(20, '0')}`, slug: `post-${start + i}`, title: `Post ${start + i}` }))
+    return route.fulfill({ json: { posts: rows, meta: { pagination: { page: n, limit: 100, pages: Math.ceil(total / 100), total } } }, headers: cors })
+  })
+  return { reads, release: () => release() }
+}
+
+test('7.18b · R-271: while R-260\'s read is in flight its row says so, over two pages, and Ship it never waits; a site past 2,000 posts is read to its newest 2,000 alone, and says so', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full', 'x-inflozo-harness-site': 'members-off', 'x-inflozo-harness-routes': 'on' })
+  const site = await siteWithPages(page, 150, { hold: 2 })
+  await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await expect(wizard(page).locator('#deploy-posts-reading')).toContainText(DW.postsReading)
+  expect(site.reads).toEqual([1, 2])
+  site.release()
+  await expect(wizard(page)).toContainText(DW.everyPostListed, { timeout: 15_000 })
+  await expect(wizard(page).locator('#deploy-posts-reading')).toHaveCount(0)
+  await expect(wizard(page).locator('[data-posts-capped]'), 'the control: 150 posts were all read').toHaveCount(0)
+  // past the cap: the newest 2,000, never a read more
+  await page.keyboard.press('Escape')
+  await page.unrouteAll()
+  const big = await siteWithPages(page, 2500)
+  await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(wizard(page).locator('[data-posts-capped]')).toContainText(DW.postsCapped, { timeout: 30_000 })
+  expect(big.reads.length, 'POSTS_CHECKED / 100 reads, no more').toBe(DEPLOY.POSTS_CHECKED / 100)
+})
+
+test('7.18b · DW-378: a stage shorter than the wizard\'s read is said all the same — Checking, begun and ended between two reads, before the checks\' outcome', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const quick = viewOf('awaiting_ship', { compiling: TIMED.compiling, checking: { at: '2026-10-18T10:00:01.400Z', ms: 300 } })
+  await plantDeploy(page, { preflight: [PREFLIGHT[0], PREFLIGHT[1], quick] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect.poll(() => deploySaid(page), { timeout: 15_000 }).toBe(`${DW.sayChecking} ${DW.sayChecked(0, 1)}`)
 })

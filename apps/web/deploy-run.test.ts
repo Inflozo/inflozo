@@ -7,7 +7,7 @@ import { CompileRefusal } from '@inflozo/theme-compiler/refusal'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import { DEPLOY_WORDS, endingOf, stepOf } from './lib/deploy.ts'
 import type { RoutesOutcome } from './lib/routes-upload.ts'
-import { activate, cancel, preflight, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
+import { activate, cancel, preflight, preflightFacts, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
 import type { ProjectRead } from './server/deploy/project-input.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
@@ -38,6 +38,10 @@ function world(over: {
   hash?: string[]
   /** the project Inflozo's record says is live on the site; by default this project once it has an activated deploy */
   liveProject?: string | null
+  /** Story 7.18b — the project's link as Ship it reads it NOW; by default the job's own site */
+  link?: { now: { id: string; url: string } | null; was: string | null }
+  /** Story 7.18b — the compiled files (by default two) */
+  files?: Record<string, string>
 } = {}) {
   let tick = Date.parse('2026-10-18T10:00:00Z')
   const jobs = new Map<string, JobRow>()
@@ -55,7 +59,7 @@ function world(over: {
   const puts = [...(over.put ?? [])]
   const hashes = [...(over.hash ?? [])]
   const baseRead = (): ProjectRead => ({
-    input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' } } as ProjectRead['input'],
+    input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' }, language: 'en' } as ProjectRead['input'],
     reads: { project: 'p' },
     routing: { config: null, unreadable: false, problems: [] },
     site: { url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', site_settings: { brand: 1 } },
@@ -63,6 +67,7 @@ function world(over: {
     themeName: 'inflozo-notes',
     bound: null,
     projectName: 'Notes',
+    rtlAckAt: null,
     names: {},
   })
   const io: DeployIo = {
@@ -70,7 +75,7 @@ function world(over: {
     compile: () => {
       events.push('compile')
       if (over.compile) over.compile()
-      return { files: { 'package.json': '{}\n', 'index.hbs': 'x' }, css: {} as never, js: { bundled: [], atRest: [] }, custom: { emitted: [], parked: [] } }
+      return { files: over.files ?? { 'package.json': '{}\n', 'index.hbs': 'x' }, css: {} as never, js: { bundled: [], atRest: [] }, custom: { emitted: [], parked: [] }, noindex: [] }
     },
     gscan: async () => over.gscan ?? verdict(),
     quality: () => over.quality ?? quality(),
@@ -99,7 +104,7 @@ function world(over: {
     },
     deploys: {
       insert: async (row) => {
-        const d = { id: id(), version: row.version, theme_name: row.theme_name, status: row.status, activated: false, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, activated_at: null }
+        const d = { id: id(), version: row.version, theme_name: row.theme_name, status: row.status, activated: false, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, activated_at: null, preflight: null }
         deploys.set(d.id, d)
         events.push('deploy:insert')
         return { ...d }
@@ -116,6 +121,10 @@ function world(over: {
         for (const [k, d] of deploys) if (k !== except && d.status === 'live') deploys.set(k, { ...d, status: 'uploaded' })
       },
       liveProject: async () => (over.liveProject !== undefined ? over.liveProject : [...deploys.values()].some((d) => d.activated) ? P : null),
+      previousCustom: async ({ except }) => {
+        const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
+        return live?.preflight?.custom ?? null
+      },
       previous: async ({ except }) => {
         const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
         return live === undefined ? null : Number(live.version.split('.')[0])
@@ -141,6 +150,7 @@ function world(over: {
     capability: async ({ refused }) => {
       capability.push(refused)
     },
+    link: async () => over.link ?? { now: { id: S, url: 'https://ghost6.inflozo.com' }, was: 'https://ghost6.inflozo.com' },
     call: async (args) => {
       calls.push(args)
       const next = args.item === 'theme_upload' ? upload.shift() : activations.shift()
@@ -613,4 +623,72 @@ test('clearing a refused plan\'s mark is bookkeeping: a capability write that fa
   const after = w.jobs.get(job.id) as JobRow
   assert.equal(after.stage, 'done')
   assert.equal((w.deploys.get(job.deploy_id as string) as DeployRow).status, 'live')
+})
+
+/* ── Story 7.18b — the RTL block, the facts, DW-374's link and "since your last deploy" ─────────────────────────────────── */
+
+test('7.18b: an unacknowledged right-to-left language blocks before any compile — no deploy row, the way out to Translations; acknowledged, it checks (the control)', async () => {
+  const rtl = world({ read: () => ({ ...rtl.baseRead(), input: { ...rtl.baseRead().input, language: 'ar' } }) })
+  const job = await begin(rtl)
+  assert.equal(job.stage, 'failed')
+  assert.deepEqual(job.error, { code: 'rtl_unacknowledged', message: DEPLOY_WORDS.rtlBlocked, action: DEPLOY_WORDS.openTranslations, href: `/projects/${P}/settings/translations` })
+  assert.ok(!rtl.events.includes('compile') && !rtl.events.includes('deploy:insert'), 'nothing compiled, nothing stored')
+  const acked = world({ read: () => ({ ...acked.baseRead(), input: { ...acked.baseRead().input, language: 'ar' }, rtlAckAt: '2026-10-19T08:00:00Z' }) })
+  assert.equal((await begin(acked)).stage, 'awaiting_ship')
+})
+
+test('7.18b: Pre-flight writes the compile\'s facts beside the verdicts — every .hbs, config.custom as emitted, noindex, and the files carrying a free ask', async () => {
+  const files = {
+    'package.json': JSON.stringify({ name: 'inflozo-notes', config: { posts_per_page: 12, custom: { color_scheme: { type: 'select', default: 'Auto' } } } }),
+    'home.hbs': '{{!< default}}{{> "sections/home/news"}}',
+    'partials/sections/home/news.hbs': '{{#if @site.allow_self_signup}}<form data-members-form="signup"></form>{{/if}}',
+    'assets/css/screen.css': '@site.allow_self_signup',
+  }
+  const w = world({ files })
+  const job = await begin(w)
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.deepEqual(d.preflight, { templates: ['home.hbs', 'partials/sections/home/news.hbs'], custom: { color_scheme: { type: 'select', default: 'Auto' } }, noindex: [], freeAsks: ['partials/sections/home/news.hbs'] })
+  assert.deepEqual(preflightFacts({ files: { 'package.json': '{"config":{}}', 'index.hbs': 'x' }, noindex: ['tag'] }), { templates: ['index.hbs'], custom: null, noindex: ['tag'], freeAsks: [] }, 'no custom, no ask')
+})
+
+test('7.18b (DW-374, R-269): Ship it re-reads the project\'s link — unlinked or moved to another site, nothing is uploaded and both sites are named; an unchanged link ships (the control)', async () => {
+  const unlinked = world({ link: { now: null, was: 'https://ghost6.inflozo.com' } })
+  const a = await begin(unlinked)
+  await ship({ jobId: a.id, userId: U, mode: 'activate' }, unlinked.io)
+  const ua = unlinked.jobs.get(a.id) as JobRow
+  assert.equal(ua.stage, 'failed')
+  assert.deepEqual(ua.error, { code: 'site_unlinked', message: DEPLOY_WORDS.siteUnlinked('ghost6.inflozo.com') })
+  assert.equal(unlinked.calls.length, 0, 'nothing uploaded')
+  assert.equal(ua.stage_timings.uploading, undefined, 'never entered uploading')
+  assert.equal((unlinked.deploys.get(a.deploy_id as string) as DeployRow).status, 'failed')
+  const moved = world({ link: { now: { id: '00000000-0000-4000-8000-0000000000dd', url: 'https://blog.example.com' }, was: 'https://ghost6.inflozo.com' } })
+  const b = await begin(moved)
+  await ship({ jobId: b.id, userId: U, mode: 'activate' }, moved.io)
+  assert.deepEqual((moved.jobs.get(b.id) as JobRow).error, { code: 'site_changed', message: DEPLOY_WORDS.siteChanged('blog.example.com', 'ghost6.inflozo.com') })
+  assert.equal(moved.calls.length, 0)
+  assert.equal(DEPLOY_WORDS.siteChanged('blog.example.com', 'ghost6.inflozo.com'), 'This project now ships to blog.example.com, not ghost6.inflozo.com, so nothing was sent. Go back and run the checks again.')
+  const same = world({})
+  const c = await begin(same)
+  await ship({ jobId: c.id, userId: U, mode: 'activate' }, same.io)
+  assert.equal((same.jobs.get(c.id) as JobRow).stage, 'done')
+  assert.equal(same.calls.filter((x) => x.item === 'theme_upload').length, 1)
+})
+
+test('7.18b: the view carries the facts and "since your last deploy" — the latest ACTIVATED deploy\'s config.custom, never an uploaded one\'s', async () => {
+  const w = world({ files: { 'package.json': JSON.stringify({ config: { custom: { dark_accent_color: { type: 'color', default: '#000001' } } } }), 'home.hbs': 'x' } })
+  const first = await begin(w)
+  await ship({ jobId: first.id, userId: U, mode: 'activate' }, w.io)
+  const second = await begin(w)
+  // an uploaded, never-activated deploy between them: it is not "the last deploy" Ghost synced
+  const third = await begin(w)
+  ;(w.deploys.get(third.deploy_id as string) as DeployRow).preflight = { templates: [], custom: { other: {} }, noindex: [], freeAsks: [] }
+  w.deploys.set(third.deploy_id as string, { ...(w.deploys.get(third.deploy_id as string) as DeployRow), status: 'uploaded', activated: false })
+  const v = await view({ jobId: third.id, userId: U }, w.io)
+  assert.deepEqual(v?.previousCustom, { dark_accent_color: { type: 'color', default: '#000001' } })
+  assert.deepEqual(v?.deploy?.preflight?.custom, { other: {} })
+  // the control: before any activation there is no "last deploy"
+  const fresh = world({})
+  const j = await begin(fresh)
+  assert.equal((await view({ jobId: j.id, userId: U }, fresh.io))?.previousCustom, null)
+  void second
 })

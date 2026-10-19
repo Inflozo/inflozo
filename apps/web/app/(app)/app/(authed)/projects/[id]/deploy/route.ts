@@ -1,9 +1,9 @@
 import { after, NextResponse, type NextRequest } from 'next/server'
 import { INTENTS, MODES, type DeployIntent, type Mode } from '@/lib/deploy'
 import { isUuid } from '@/lib/editor'
-import { isStale, rowFrom } from '@/lib/lock'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { DEPLOY_IO } from '@/server/deploy/deploy-io'
+import { holdsLock } from '@/server/edit-lock'
 import { activate, cancel, preflight, ship, start, uploadOnlyRefused, view } from '@/server/deploy/run'
 
 /**
@@ -30,18 +30,6 @@ export const maxDuration = 300
 const no = (status: number, body: string) => new NextResponse(body, { status, headers: { 'Cache-Control': 'no-store' } })
 const json = (status: number, body: unknown) => NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 
-/** Does this tab's session hold the project's lock, fresh? Read through the user's own session (RLS scopes it). */
-async function holds(projectId: string, session: string): Promise<boolean> {
-  const { data, error } = await (await supabaseServer())
-    .from('edit_locks')
-    .select('holder_session_id, lock_generation, unsynced_edits, heartbeat_at, nudge_requested_by, nudge_requested_at')
-    .eq('project_id', projectId)
-    .maybeSingle()
-  if (error) console.error('projects/deploy: the lock could not be read', { code: error.code })
-  const row = error || !data ? null : rowFrom(data, Date.now())
-  return row !== null && !isStale(row) && row.holderSessionId === session
-}
-
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await currentUser()
   if (!user) return no(401, 'Not signed in')
@@ -62,7 +50,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (intent === 'ship' && (typeof mode !== 'string' || !(MODES as readonly string[]).includes(mode))) return no(400, 'Bad mode')
 
   const act = intent as DeployIntent
-  if (act !== 'cancel' && !(await holds(projectId, session))) return no(423, 'This session does not hold the edit lock')
+  if (act !== 'cancel' && !(await holdsLock(projectId, session))) return no(423, 'This session does not hold the edit lock')
 
   if (act === 'preflight') {
     // the project's linked site, through the user's own session: RLS decides that the project is theirs at all

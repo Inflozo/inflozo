@@ -210,7 +210,10 @@ export type JsRecord = { bundled: readonly string[]; atRest: readonly string[] }
  *  declares nor reads — and which Ghost forgets at the deploy that leaves them out (read in source, both majors:
  *  `_syncRepositoryWithTheme`; Question 2, ruled option 2). */
 export type CustomRecord = { emitted: readonly string[]; parked: readonly string[] }
-export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord; custom: CustomRecord }
+/** Story 7.18b — `noindex` is FR-H2's guard as it is emitted: the page-2 contexts `default.hbs`'s `noindex` names, deduped, in the
+ *  guard's own order (`index`, `tag`, `author`, then each feed-less listed template's) — none when no page 2 is feed-less. The
+ *  guard and Pre-flight's feed-less warning read this one fact. */
+export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord; custom: CustomRecord; noindex: readonly string[] }
 
 /** The site doc's file. */
 const SITE_DOC = 'default.hbs'
@@ -1140,7 +1143,8 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     // file (F6), so with no visible feed it repeats page 1. A listed template WITH a feed adds none, nor does an unlisted one
     ...stacks.filter((st) => listed.has(st.file) && !st.pageOne.some(visibleFeed(input.library))).flatMap((st) => input.lists?.[st.file] ?? []).sort(byCode),
   ]
-  const guard = guarded.length === 0 ? [] : ['{{#is "paged"}}', `  {{#is "${[...new Set(guarded)].join(', ')}"}}`, '    <meta name="robots" content="noindex">', '  {{/is}}', '{{/is}}']
+  const noindex = [...new Set(guarded)]
+  const guard = noindex.length === 0 ? [] : ['{{#is "paged"}}', `  {{#is "${noindex.join(', ')}"}}`, '    <meta name="robots" content="noindex">', '  {{/is}}', '{{/is}}']
   tree[SITE_DOC] = [
     '<!DOCTYPE html>',
     '<html lang="{{@site.locale}}">',
@@ -1296,5 +1300,5 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     throw why === null ? new Error(sentence) : refuse('settingUnread', sentence, why)
   }
   const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
-  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js, custom: custom.record }
+  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js, custom: custom.record, noindex }
 }

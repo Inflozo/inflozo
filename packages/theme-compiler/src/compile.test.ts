@@ -742,6 +742,16 @@ test('(7.3) FR-H2\'s guard: noindex in default.hbs\'s head for exactly the page 
   for (const o of [out, none]) assert.ok(!Object.values(o).some((b) => /rel="canonical"/.test(b)), 'the theme writes no canonical link of its own')
 })
 
+test('(7.18b) `noindex` is the guard\'s own contexts, deduped and in its order: a feed-less Tag names `tag`; a theme with every feed names none — the control', () => {
+  const hiddenFeed = (name: string) => docOf(at('a17/1', name, { hidden: true, isMainFeed: true }))
+  const feedless = build({ 'tag.hbs': hiddenFeed('Tag feed') }, { pageTwo: { 'home.hbs': docOf(at('a17/1', 'Home two', { isMainFeed: true })) } })
+  assert.deepEqual(feedless.noindex, ['tag'])
+  assert.ok((feedless.files['default.hbs'] as string).includes(GUARD('tag')), 'the guard and the record are one fact')
+  const every = build({}, { pageTwo: { 'home.hbs': docOf(at('a17/1', 'Home two', { isMainFeed: true })), 'author.hbs': docOf(at('a17/1', 'Writer feed', { isMainFeed: true })) } })
+  assert.deepEqual(every.noindex, [])
+  assert.ok(!(every.files['default.hbs'] as string).includes('noindex'))
+})
+
 test('(7.3) <main id="site-main"> appears once, wrapping {{{body}}} alone', () => {
   const out = compileProject()['default.hbs'] ?? ''
   assert.equal((out.match(/<main\b/g) ?? []).length, 1)

@@ -1,11 +1,15 @@
 'use server'
 
 import { orbitWeekly } from '@inflozo/library'
+import { DEPLOY_WORDS, shipStateOf } from '@/lib/deploy'
 import { canvasOfPageTwoKey, canvasOfTemplateKey, fileOf, isUuid } from '@/lib/editor'
+import { LOCK_COPY } from '@/lib/lock'
+import { switchWith, type SwitchAnswer } from '@/lib/site-switch'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
 import type { Members, Surfaces } from '@/lib/probe-rule'
 import { VISITORS, readViewed } from '@/lib/view-as'
 import { quietSession } from '@/lib/supabase/server'
+import { holdsLock } from '@/server/edit-lock'
 import { readSettings } from '@/server/site-probe'
 
 /**
@@ -170,4 +174,59 @@ export async function recheckSite(projectId: string): Promise<SiteResult> {
   }
   const read = await readSettings({ siteId: data.linked_site_id as string, userId: user.id, route: ROUTE })
   return read === null ? { refused: true } : read
+}
+
+/**
+ * STORY 7.18b — CHOOSING THE SITE (FR-B5; R-267, FR-Q6): the wizard's Switch and Choose a site land here. The rule is
+ * `lib/site-switch.ts`' — `switchPlan`, the same one the picker and its confirm read, re-run by `switchWith` over the rows as
+ * they stand; this action is its reads and writes.
+ *
+ * THROUGH THE CALLER'S OWN SESSION, and it writes `projects` alone (`linked_site_id`, and `language` at a first link — both
+ * granted to `authenticated`, `…complete_schema.sql:1210-1212`). The site is read with `disconnected_at is null`, so it is
+ * the user's own (RLS) and connected — the foreign key checks only that a site exists (`server/site-settings.ts`), so this read
+ * is the guard. THE LOCK FIRST, through the deploy route's helper (`holdsLock`): a session reading along changes nothing.
+ */
+export async function switchSite(projectId: string, siteId: string, session: string, confirmed: boolean): Promise<SwitchAnswer> {
+  const ours = { refused: DEPLOY_WORDS.infrastructure }
+  if (!isUuid(projectId) || !isUuid(siteId) || typeof session !== 'string' || session.length === 0 || session.length > 64) return ours
+  const { user, supabase } = await quietSession()
+  if (!user) return { refused: DEPLOY_WORDS.infrastructure }
+  // read QUIETLY too (R-213's reason): the lock through this action's own quiet client
+  if (!(await holdsLock(projectId, session, supabase))) return { refused: LOCK_COPY.reading }
+  const stamp = () => new Date().toISOString()
+  return switchWith({
+    async read() {
+      const [project, site, holder] = await Promise.all([
+        supabase.from('projects').select('language, linked_site_id').eq('id', projectId).maybeSingle(),
+        supabase.from('sites').select('id, title, url, capability, capability_source, site_settings').eq('id', siteId).is('disconnected_at', null).maybeSingle(),
+        supabase.from('projects').select('id, name').eq('linked_site_id', siteId).neq('id', projectId).maybeSingle(),
+      ])
+      if (project.error || site.error || holder.error || !project.data) {
+        console.error('projects/editor: the switch could not read its rows', { code: project.error?.code ?? site.error?.code ?? holder.error?.code })
+        return null
+      }
+      // the site as the picker lists it — `shipStateOf`'s own mapping, its holder beside it
+      const sites = site.data === null ? [] : shipStateOf({
+        projectId, slug: '', language: project.data.language, rtlAckAt: null, siteId: null, site: null, deploys: [], binding: null, liveHere: false, required: [],
+        sites: [site.data], linking: holder.data ? [{ ...holder.data, linked_site_id: siteId }] : [],
+      }).sites
+      return { project: { language: project.data.language, linkedSiteId: project.data.linked_site_id }, site: sites[0] ?? null }
+    },
+    async unlink() {
+      const { error } = await supabase.from('projects').update({ linked_site_id: null, updated_at: stamp() }).eq('linked_site_id', siteId).neq('id', projectId)
+      if (error) console.error('projects/editor: the held site could not be unlinked', { code: error.code })
+      return !error
+    },
+    async link(language) {
+      const { data, error } = await supabase
+        .from('projects')
+        .update({ linked_site_id: siteId, ...(language === null ? {} : { language }), updated_at: stamp() })
+        .eq('id', projectId)
+        .select('id')
+      if (!error && data?.length === 1) return 'ok'
+      if (error?.code === '23505') return 'taken'
+      console.error('projects/editor: the site could not be linked', { code: error?.code })
+      return 'error'
+    },
+  }, { projectId, siteId, confirmed })
 }

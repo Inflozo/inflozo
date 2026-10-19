@@ -10,7 +10,7 @@ import { paywallPage } from './lib/canvas.ts'
 import { SURFACES_HEADING } from './lib/editor.ts'
 import { contentCta } from '@inflozo/section-runtime'
 import { paywallSamples } from './lib/controls-review.ts'
-import { adminAt, askLine, askOf, membersNotice, membersOff, PAYWALL_WORDS, tierLine, tierText, warnsOn } from './lib/paywall.ts'
+import { adminAt, askLine, askOf, asksIn, askStopped, membersNotice, membersOff, PAYWALL_WORDS, tierLine, tierText, warnsOn } from './lib/paywall.ts'
 import { pilot } from './lib/pilots.ts'
 
 /* Story 5.20 — the Paywall canvas's words and pure rules (`lib/paywall.ts`), and the two stand-in paywalls rendered at
@@ -177,6 +177,35 @@ test('R-216: a placed section\'s line says what the site stops for the ask it ma
     assert.equal(askLine(invite, SITE, entry, { instanceId: 'auto-home-3' }), null)
   }
   assert.equal(line(invite, { html: '<section data-bg="base"><a data-portal="signin">Sign in</a></section>' }), null)
+})
+
+test('7.18b: asksIn reads a placed section\'s link props and inline links too — A4 #13\'s default Sign up is a free ask, and its panel line and Pre-flight say so; pointed at an href it asks nobody (the control)', () => {
+  const hero = pilot('a4/13')
+  assert.equal(askOf(hero).length, 0, 'the hero\'s markup alone asks nobody — the gap asksIn closes')
+  const placed = { instanceId: 'b1f0', content: defaultContent(hero.contentSchema) }
+  assert.deepEqual(asksIn(hero, placed).map((a) => a.ask), ['free'], 'its default primary action is { portal: "signup" }')
+  const nobody = { signup_access: 'none', paid_enabled: false } as const
+  const invite = { signup_access: 'invite', paid_enabled: true } as const
+  assert.equal(askLine(nobody, SITE, hero, placed), PAYWALL_WORDS.ask(SITE))
+  assert.equal(askLine(invite, SITE, hero, placed), membersNotice(invite, SITE)[0])
+  assert.equal(askStopped(invite, hero, placed), true)
+  // the control: the same hero pointed at an ordinary address asks nobody, and nothing warns
+  const pointed = { ...placed, content: { ...placed.content, primaryAction: { ...(placed.content['primaryAction'] as object), url: { href: 'https://example.com/join' } } } }
+  assert.deepEqual(asksIn(hero, pointed), [])
+  assert.equal(askLine(invite, SITE, hero, pointed), null)
+  assert.equal(askStopped(invite, hero, pointed), false)
+  // A1 #1's Subscribe starts at Portal's sign-up too (its Sign in and Account links ask nobody)
+  assert.deepEqual(asksIn(pilot('a1/1'), { content: defaultContent(pilot('a1/1').contentSchema) }).map((a) => a.ask), ['free'])
+  // an inline link a customer pointed at Portal's upgrade is a paid ask; one to an address is none
+  const sub = { ...placed.content, sub: { text: 'Go paid today', marks: [{ start: 0, end: 7, mark: 'a', portal: 'account/plans' }] } }
+  assert.ok(asksIn(hero, { content: sub }).some((a) => a.ask === 'paid'))
+  assert.ok(!asksIn(hero, { content: { ...sub, sub: { text: 'Go paid today', marks: [{ start: 0, end: 7, mark: 'a', href: 'https://example.com' }] } } }).some((a) => a.ask === 'paid'))
+  // a synthesized instance is never warned about (FR-H6)
+  assert.equal(askStopped(invite, hero, { ...placed, instanceId: 'auto-home-1' }), false)
+})
+
+test('7.18b: Ghost\'s Design panel is `#/settings/design/edit` on both majors (read in their admin bundles)', () => {
+  assert.equal(adminAt('https://ghost6.inflozo.com/', 'design'), 'https://ghost6.inflozo.com/ghost/#/settings/design/edit')
 })
 
 /* ── the stand-ins at the partial, node for node ─────────────────────────────────────────────────────────────── */

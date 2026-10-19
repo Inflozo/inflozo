@@ -4336,6 +4336,8 @@ reason: whether every visible default must have a catalog key, or a non-English 
   adds no key.
 
 ## Deferred from: code review of spec-4-9-the-string-catalog-keys-english-defaults-and-the-t-contract (2026-09-14)
+note (Story 7.18b's Dev, 2026-10-19): the Pre-flight half is built — `lib/preflight.ts`' untouched row reads `untouchedWords`
+  through Translations' own `untouchedRows` (one function feeds both), each item with "Fix in editor" on its canvas, never a block.
 
 ### DW-146: nothing asserts S5's inverse — a module that writes visitor-facing text must declare its keys
 
@@ -7294,7 +7296,7 @@ reason: no route exists, so the value in force is always the project's `posts_pe
 plain: Three things the plan promises for the live site have nobody to build them. A tag or writer page with no list of
   posts should warn you before you ship, and should tell search engines not to index its empty page 2 onwards; and a
   page carrying several hand-picked lists should warn you, before you ship, how much they slow the page in total.
-status: open
+status: done 2026-10-19 (Story 7.18b)
 severity: medium
 origin: Story 5.19's Create (2026-09-25), swept in `epics.md`: FR-H2 (`prd.md:312`) — "pre-deploy checks warn, and the
   compiler emits the SEO guard on those templates (`noindex` beyond page 1 plus a canonical link to page 1)" for a
@@ -7316,6 +7318,11 @@ note (Story 7.3's Dev, 2026-10-06): the guard, Story 7.3's half, is built — `n
   and no block where there is none. **No canonical link**: Ghost's `{{ghost_head}}` writes one on every page, page 2's
   pointing at itself (`meta/canonical-url.js`, read in source), so the page-1 canonical the origin quotes is corrected
   in FR-H2. Its two Pre-flight warnings stay with Story 7.18.
+resolution: Story 7.18b's Dev (2026-10-19) — the two Pre-flight warnings; 7.3 built the guard. `CompiledTheme.noindex` is the guard's
+  own contexts (deduped, in its order), kept on the deploy row in `deploys.preflight`, and `lib/preflight.ts` draws a row per
+  feed-less Tag or Author with `FEEDLESS`'s body and "Fix in editor"; `picksOn` (moved out of the editor's `queriesOf`, so the
+  canvas and the count read one rule) counts each shipped page's visible hand-picked ids with its site doc's, and one row
+  lists every page past 25. `preflight.test.ts` holds both, each with its control.
 
 ### DW-254: the main feed's Count says where Posts per page is set, but not yet "Change it in Theme settings" with its link
 
@@ -7489,7 +7496,7 @@ reason: the fix is either a paged read (several requests, and 5.18's per-key cac
 
 plain: When your site has members switched off, or cannot take free or paid sign-ups, the editor and the Sites screen
   warn you from Story 5.20 on. The plan also promises the same warning again just before you ship, and nobody builds it.
-status: open
+status: done 2026-10-19 (Story 7.18b)
 severity: medium
 origin: Story 5.20's Create (2026-09-26). FR-H6 (`prd.md:336`) — "placing portal/signup sections or designing the paywall
   on a site with members disabled warns in the editor, and a pre-deploy check repeats it" — and R-4 (`reconcile-designs-
@@ -7504,6 +7511,10 @@ reason: nothing deploys yet; Story 5.20 builds the record and the connect and ed
   can run before Epic 7.
 note (Story 5.20's Dev, 2026-09-26): Story 7.18's Pre-flight criteria now name it (`epics.md`), reading `site_settings.members`
   through `storedMembers` and printing `membersNotice`'s sentences — the ones the Sites screen already shows.
+resolution: Story 7.18b's Dev (2026-10-19) — Pre-flight's members row: every `membersNotice` sentence for the site (the Sites card's,
+  R-170), beside each placed, shipped section whose ask the record stops (`askStopped`, the panel line's own test) and a
+  designed Paywall, with "Change this in Ghost ↗". A member ask is now `asksIn`'s — the markup's, every link prop or inline link
+  pointed at Portal's sign-up or upgrade — so A4's and A1's default buttons count on the panel and in Pre-flight alike.
 
 ### DW-261: `partials/content-cta.hbs` has two compile rules no story names — the explicit reference and its own `{{{html}}}`
 
@@ -8422,7 +8433,7 @@ reason: naming every template's target in the stack means a stack per template t
 plain: A "Sign up" link or button on a customer's site shows only when their Ghost says it takes sign-ups. Ghost
   started saying so in version 5.62, but Inflozo connects any Ghost 5. So on a site running 5.0 to 5.61, every sign-up
   ask Inflozo ships would stay hidden, and nothing would tell the customer why.
-status: open
+status: done 2026-10-19 (Story 7.18b)
 severity: medium
 origin: Story 5.24c's Create (2026-09-29), found while checking DW-168, read in source and not executed (no Ghost older
   than 5.130.6 is reachable): R-4 (Story 5.20) wraps every free ask in `{{#if @site.allow_self_signup}}`
@@ -8438,6 +8449,10 @@ reason: a design's own `ghostCompat.minVersion` cannot see it — the ask is a c
   member-switch warnings (DW-260).
 note (Story 7.18b's Create, 2026-10-19): ruled **R-268**, option 1 — the guard stays; Pre-flight names each page carrying a
   free ask on a Ghost 5.x below 5.62 with "Update Ghost to show them", never blocking. Built at 7.18b's Dev.
+resolution: Story 7.18b's Dev (2026-10-19), as R-268 ruled — the compile is unchanged; `deploys.preflight.freeAsks` lists the files
+  carrying `@site.allow_self_signup` (synthesised asks included), and on a Ghost 5.x below the matrix's `since` (5.62) Pre-flight
+  names each page and says to update Ghost; an unparsable version draws no row. Proved in `preflight.test.ts` with 6.58 and
+  5.62 as controls, and by walk step 114's planted version; never executed on a real Ghost below 5.62 (F3).
 
 ## Deferred from: code review of spec-5-24c (2026-10-01)
 
@@ -10233,7 +10248,7 @@ reason: the compile budget and the per-project lock are 7.25's by this spec's Ne
 ### DW-374: Ship it uploads to the site its Pre-flight read, never re-checking the project's link
 
 plain: If a project is linked to another site between Run checks and Ship it, the theme still goes to the first site.
-status: open
+status: done 2026-10-19 (Story 7.18b)
 severity: low
 origin: Story 7.18a's Review (2026-10-19), the Blind Hunter and Edge Case Hunter layers — `ship()` reads `deploy_jobs.site_id`.
 owner: Story 7.18b (choosing the site), the first story in which the link can change from inside the product: `ship()` compares
@@ -10242,13 +10257,17 @@ location: `apps/web/server/deploy/run.ts` (`ship`) · `apps/web/app/(app)/app/(a
 reason: nothing in the product relinks a project before 7.18b's site picker.
 note (Story 7.18b's Create, 2026-10-19): ruled **R-269**, option 1 — `site_changed` and `site_unlinked`, each naming the sites
   (the spec's Words). Built at 7.18b's Dev.
+resolution: Story 7.18b's Dev (2026-10-19), as R-269 ruled — `ship()` re-reads the project's link (`DeployIo.link`) after R-264's
+  guard and before the claim: unlinked → `site_unlinked`, linked elsewhere → `site_changed`, each naming the sites, nothing
+  uploaded and the deploy marked failed; the wizard's Back after either re-reads the page. `deploy-run.test.ts` holds both with
+  an unchanged link as the control; walk step 114.2 drives both on production (the Review's run).
 
 ### DW-375: a site a plan refusal marked Preview-only has no way back in the product
 
 plain: When Ghost(Pro) refuses a custom theme, the site is marked Preview-only. After the customer upgrades their plan, Ship
   it's Destination still shows the Preview-only notice with no Run checks, and only an accepted upload clears the mark — which
   can never happen from there.
-status: open
+status: done 2026-10-19 (Story 7.18b)
 severity: medium
 origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `deploy-io.ts`' `capability` clears `deploy_error` on an
   accepted upload only, and `capabilityOf` writes nothing for Ghost(Pro) while its flag is off.
@@ -10258,6 +10277,9 @@ location: `apps/web/components/editor/deploy-wizard.tsx` (Destination) · `apps/
 reason: the plan refusal is read in source and never observed (F7); no customer can meet it before the Ghost(Pro) gate.
 note (Story 7.18b's Create, 2026-10-19): ruled **R-270**, option 1 — Run checks kept for a `deploy_error` Preview-only site,
   with one line under B15's panel. Built at 7.18b's Dev.
+resolution: Story 7.18b's Dev (2026-10-19), as R-270 ruled — `ShipState.site.source` carries `capability_source`; a Preview-only
+  site marked `deploy_error` shows B15's panel, the line "Ghost(Pro) refused a custom theme on {host} when you last shipped. …"
+  and Run checks; an accepted upload clears the mark (7.18a), a refused one sets it again; a probe's Preview-only is unchanged.
 
 ### DW-376: a failure after Ghost took the theme says "before anything reached your site"
 
@@ -10280,7 +10302,7 @@ reason: a new sentence is the owner's (the spec's Ask First), and the cases left
 plain: Pre-flight's "every post appears on a page" check reads every published post, a hundred at a time, through the same
   budget the canvas uses. A very large site (tens of thousands of posts) can spend that budget, after which the canvas
   itself falls back to sample content, and the check shows nothing while it is still reading.
-status: open
+status: done 2026-10-19 (Story 7.18b)
 severity: low
 origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `editor.tsx`' `readSitePosts`.
 owner: Story 7.18b (Pre-flight's warning rows): a page cap with its own sentence ("we checked your newest N posts") and a
@@ -10290,12 +10312,16 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`
 reason: the spec asked for the read "within the reader's request ceiling"; the ceiling's cost on a huge site is the new fact.
 note (Story 7.18b's Create, 2026-10-19): ruled **R-271**, option 1 — a reader of its own, the newest 2,000 posts, a reading
   row, and "We checked your newest 2,000 posts." over the cap. Built at 7.18b's Dev.
+resolution: Story 7.18b's Dev (2026-10-19), as R-271 ruled — `readSitePosts` reads through a `liveStore` of its own (never the
+  canvas's), newest first, up to `POSTS_CHECKED` (2,000), with the site's total; the row says "Checking that every post appears
+  on a page…" while it reads, never holding Ship it, and adds "We checked your newest 2,000 posts." past the cap. A journey reads
+  it over two pages and past the cap (twenty reads, no more).
 
 ### DW-378: what Story 7.18a's checks still do not execute
 
 plain: Some of the deploy's behaviour is proven only in the deployed walk (run on the owner's go, never in CI) or not at
   all, so a later change could break it with every gate green.
-status: open
+status: done 2026-10-19 (Story 7.18b)
 severity: low
 origin: Story 7.18a's Review (2026-10-19), the Verification Gap and Blind Hunter layers.
 owner: Story 7.18b (the next story on the wizard), each a check of its own:
@@ -10310,3 +10336,11 @@ owner: Story 7.18b (the next story on the wizard), each a check of its own:
 location: `apps/web/deploy-run.test.ts` · `apps/web/deploy-input.test.ts` · `tools/keyboard/journey.spec.mjs` ·
   `tools/check-traces.mjs`
 reason: none is a defect found; each is a check that would catch one.
+resolution: Story 7.18b (2026-10-19) — each a check of its own: `jobs.claim`'s condition run in Postgres by the RLS gate (the
+  Schema phase); `shipStateOf` moved to `lib/deploy.ts` (re-exported by `read.ts`) and unit-tested (`read.test.ts`); `resetRoutes`
+  executed by walk step 114.5 (an unreadable routing replaced, a template kept, a readable one untouched — written at Dev, run at the
+  Review); `fetchWithKey` handing
+  the fetch `timeoutFor(item)` (`ghost-admin.test.ts`, an injected fetch and timer, failing with the flat budget); `check-traces`'
+  recorder over the pilot theme; the journeys' "stays open" / "opens nothing" settled first, "Cancelling…" held past two reads, the
+  confetti's one iteration, R-260's read over two pages; and every stage `stage_timings` shows entered is announced, in order.
+

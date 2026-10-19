@@ -202,7 +202,7 @@ test('a theme\'s size as the frames draw it: bytes, then KB, then MB, one place'
 
 test('R-264: Deploy only\'s guard — greyed with the ruled sentence while this project\'s theme is the live one, free otherwise; Ghost\'s upload answer read for `active`', async () => {
   const { uploadOnlyBlock } = await import('./lib/deploy.ts')
-  const site = { id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full' as const }
+  const site = { id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full' as const, source: null, locale: null }
   assert.equal(uploadOnlyBlock({ liveHere: true, prev: 1, n: 2, site }), 'v1 is already live on ghost6.inflozo.com, so Ghost would switch to v2 the moment it uploads. Use Deploy & activate.')
   // the controls: another theme live (or none), no site, no state at all
   assert.equal(uploadOnlyBlock({ liveHere: false, prev: 1, n: 2, site }), null)
@@ -212,4 +212,19 @@ test('R-264: Deploy only\'s guard — greyed with the ruled sentence while this 
   assert.deepEqual(uploadAnswer(answer(200, { themes: [{ name: 'inflozo-notes', active: true }] })), { ok: true, theme: 'inflozo-notes', active: true })
   assert.deepEqual(uploadAnswer(answer(200, { themes: [{ name: 'inflozo-notes', active: false }] })), { ok: true, theme: 'inflozo-notes', active: false })
   assert.deepEqual(uploadAnswer(answer(200, { themes: [{ name: 'inflozo-notes', active: 'true' }] })), { ok: true, theme: 'inflozo-notes', active: false })
+})
+
+test('7.18b: the new codes, each its sentence and fix — DW-374\'s two name the sites (R-269), the RTL block links to Translations', () => {
+  assert.deepEqual(deployError('site_changed', { host: 'ghost6.inflozo.com', to: 'blog.example.com' }), {
+    code: 'site_changed', message: 'This project now ships to blog.example.com, not ghost6.inflozo.com, so nothing was sent. Go back and run the checks again.',
+  })
+  assert.deepEqual(deployError('site_unlinked', { host: 'ghost6.inflozo.com' }), { code: 'site_unlinked', message: 'This project is no longer linked to ghost6.inflozo.com, so nothing was sent.' })
+  assert.deepEqual(deployError('rtl_unacknowledged', { host: 'x', projectId: 'p1' }), {
+    code: 'rtl_unacknowledged', message: 'Acknowledge it in Translations to ship.', action: 'Open Translations', href: '/projects/p1/settings/translations',
+  })
+  // Destination's new words (the spec's Words)
+  assert.equal(DEPLOY_WORDS.switchSite, 'Switch')
+  assert.equal(DEPLOY_WORDS.chooseSite, 'Choose a site')
+  assert.equal(DEPLOY_WORDS.planRefused('ghost6.inflozo.com'),
+    "Ghost(Pro) refused a custom theme on ghost6.inflozo.com when you last shipped. If you've upgraded the plan since, run the checks and ship — Ghost's answer clears this.")
 })

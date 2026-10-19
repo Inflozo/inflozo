@@ -10,7 +10,7 @@
 
 import { languageLabel, type Script, SCRIPT_NAMES } from '@inflozo/library/languages'
 import { CARD_WORDS } from './cards.ts'
-import { canvasPath, canvasOfPageTwoKey, canvasOfTemplateKey, SITE } from './editor.ts'
+import { canvasPath, canvasOfPageTwoKey, canvasOfTemplateKey, SITE, type Canvas } from './editor.ts'
 import { EVERY_PAGE, pageOf } from './theme-settings.ts'
 
 /** A language's own name, as its speakers write it — "Español", "Deutsch", "Русский", "日本語" — first letter raised (the
@@ -115,7 +115,7 @@ export const coverageWords = (coverage: Coverage | undefined, script: Script, na
 
 /** One "Starting words you haven't retyped" row, as the page draws it: the layer, the page it is on, its words, and where
  *  Edit opens — the canvas (a header or footer opens Home, a page 2 its page 1). */
-export type UntouchedRow = { id: string; layer: string; canvas: string; words: readonly string[]; href: string }
+export type UntouchedRow = { id: string; layer: string; canvas: string; words: readonly string[]; href: string; at: Canvas }
 
 /** `untouchedWords`' rows for the page, in `pageOf`'s order. */
 export function untouchedRows(
@@ -129,7 +129,7 @@ export function untouchedRows(
     .map((r) => {
       const page = pageOf(r.key, names).page
       const canvas = r.key === SITE.key ? 'home' : (canvasOfPageTwoKey(r.key) ?? canvasOfTemplateKey(r.key) ?? 'home')
-      return { id: `${r.key}:${r.instanceId}`, layer: r.layer, canvas: page === EVERY_PAGE ? TRANSLATION_WORDS.everyPage : page, words: r.words, href: canvasPath(projectId, canvas) }
+      return { id: `${r.key}:${r.instanceId}`, layer: r.layer, canvas: page === EVERY_PAGE ? TRANSLATION_WORDS.everyPage : page, words: r.words, href: canvasPath(projectId, canvas), at: canvas }
     })
 }
 

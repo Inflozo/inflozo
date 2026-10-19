@@ -19,10 +19,11 @@ import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
 import {
   CANVASES, canvasPath, labelOf, routeCanvasOf, settingsPath, translationsPath, type Canvas, type CanvasKey,
 } from './editor.ts'
-import { keysPath } from './connect-rule.ts'
+import { hostOf, keysPath } from './connect-rule.ts'
 import { sizeLabel } from './routes-upload.ts'
 import { EVERY_PAGE } from './theme-settings.ts'
 import { RAIL_WORDS } from './translations.ts'
+import type { SwitchSite } from './site-switch.ts'
 
 // ── the stages and the rail ─────────────────────────────────────────────────────────────────────────────────────────
 
@@ -124,6 +125,8 @@ export type DeployCode =
   | 'ghost_version_unsupported' | 'routes_invalid' | 'routes_unreadable' | 'compile_refused' | 'compile_failed'
   | 'deploy_infrastructure' | 'ghost_key_refused' | 'deploy_running' | 'ghost_theme_refused' | 'ghost_plan_refused'
   | 'ghost_unavailable' | 'ghost_unreachable' | 'ghost_redirected' | 'theme_too_large' | 'write_not_allowed' | 'site_not_found'
+  // Story 7.18b: Ship it re-reads the project's link (DW-374, R-269), and an RTL language blocks until acknowledged (FR-Q6)
+  | 'site_changed' | 'site_unlinked' | 'rtl_unacknowledged'
 
 export type DeployError = { code: string; message: string; detail?: string; action?: string; href?: string }
 
@@ -200,6 +203,12 @@ export function thrownCode(thrown: unknown): 'ghost_unreachable' | 'write_not_al
 
 const s = (n: number) => (n === 1 ? '' : 's')
 
+/** R-271 (owner, 2026-10-19, Question 5): R-260's check reads the site's NEWEST posts, this many at most, through a reader of
+ *  its own — never the canvas's allowance. */
+export const POSTS_CHECKED = 2000
+/** …as its sentence prints it ("2,000"), locale-free (AD-1) */
+const POSTS_CHECKED_WORDS = String(POSTS_CHECKED).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+
 export const DEPLOY_WORDS = {
   // Ship it and the menu (S4, S4d)
   ship: 'Ship it',
@@ -229,6 +238,12 @@ export const DEPLOY_WORDS = {
   starting: 'Starting…',
   noSite: "This project isn't linked to a connected Ghost site yet.",
   goToSites: 'Go to Sites',
+  // Story 7.18b — Destination's way to another site (S8a `:54`), and to a first one (busy "Opening…", as Ship it's)
+  switchSite: 'Switch',
+  chooseSite: 'Choose a site',
+  /** R-270 (DW-375): under B15's panel, for a site a refused upload marked Preview-only — Run checks stays */
+  planRefused: (host: string) =>
+    `Ghost(Pro) refused a custom theme on ${host} when you last shipped. If you've upgraded the plan since, run the checks and ship — Ghost's answer clears this.`,
   // Pre-flight (S8b)
   preflightTitle: 'Pre-flight check.',
   preflightBody: 'We compile and test everything before it touches your site.',
@@ -258,6 +273,9 @@ export const DEPLOY_WORDS = {
     return `${titles.length} posts appear on no page — not on Home, not in any collection: ${shown.map((t) => `“${t}”`).join(', ')}${more > 0 ? `, and ${more} more` : ''}. Their own addresses still work.`
   },
   unlistedUnread: (host: string) => `We couldn't read your posts from ${host}, so we couldn't check that every one appears on a page.`,
+  /** R-271 (DW-377): while the read is in flight, and the line after a result over the cap */
+  postsReading: 'Checking that every post appears on a page…',
+  postsCapped: `We checked your newest ${POSTS_CHECKED_WORDS} posts.`,
   // the caption under a greyed Ship it
   fixErrors: (e: number) => (e === 1 ? 'Fix the error above to ship.' : `Fix the ${e} errors above to ship.`),
   routesLine: (line: number, message: string) => `Line ${line}: ${message}`,
@@ -266,6 +284,12 @@ export const DEPLOY_WORDS = {
   routesStartAgain: 'Start again on Routes & Templates',
   editsUnsent: "Your latest edits haven't reached Inflozo yet, so we can't check them. Try again once they're saved.",
   versionUnsupported: (host: string, version: string) => `Inflozo ships to Ghost 5 and 6. ${host} runs Ghost ${version}.`,
+  // Story 7.18b — the RTL block (FR-Q6, a server verdict before compile): the caption under a greyed Ship it, and its way out
+  rtlBlocked: 'Acknowledge it in Translations to ship.',
+  openTranslations: 'Open Translations',
+  // Story 7.18b — Ship it after the project's site changed (DW-374, R-269): nothing is sent, and both sites are named
+  siteChanged: (now: string, was: string) => `This project now ships to ${now}, not ${was}, so nothing was sent. Go back and run the checks again.`,
+  siteUnlinked: (was: string) => `This project is no longer linked to ${was}, so nothing was sent.`,
   // the compile's refusals in plain words (`refusalWords`)
   cardDesigns: "Your card designs can't be read, so the theme can't be built. Open Editor cards and change any card, or press Reset to Ghost default on one — that saves a readable copy.",
   openCards: 'Open Editor cards',
@@ -356,7 +380,7 @@ export const STAGE_NAMES: Readonly<Record<'compiling' | 'checking' | 'uploading'
 
 /** THE SENTENCE AND THE FIX FOR EACH CODE THIS MODULE OWNS — AD-24's envelope as the wizard stores it. `host` is the site's
  *  host as the wizard names it (`hostOf`), `version` its `ghost_version`, `siteId` for Reconnect. */
-export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string }): DeployError {
+export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string; projectId?: string; to?: string }): DeployError {
   const { host } = ctx
   const with_ = (message: string, extra: Partial<DeployError> = {}): DeployError => ({ code, message, ...(ctx.detail === undefined ? {} : { detail: ctx.detail }), ...extra })
   switch (code) {
@@ -380,6 +404,12 @@ export function deployError(code: DeployCode, ctx: { host: string; version?: str
       return { code, message: DEPLOY_WORDS.tooBig(host) }
     case 'routes_unreadable':
       return { code, message: DEPLOY_WORDS.routesUnreadable, action: DEPLOY_WORDS.routesStartAgain }
+    case 'rtl_unacknowledged':
+      return { code, message: DEPLOY_WORDS.rtlBlocked, action: DEPLOY_WORDS.openTranslations, ...(ctx.projectId === undefined ? {} : { href: translationsPath(ctx.projectId) }) }
+    case 'site_changed':
+      return { code, message: DEPLOY_WORDS.siteChanged(ctx.to ?? '', host) }
+    case 'site_unlinked':
+      return { code, message: DEPLOY_WORDS.siteUnlinked(host) }
     // the off-list write (DW-54), a site that is no longer the caller's, and every infrastructure failure: ours
     default:
       return with_(DEPLOY_WORDS.infrastructure)
@@ -539,8 +569,15 @@ export type RoutesEnding =
  *  it, the theme's frozen name, the next version and the one the site serves from this project — for the bar's label, the
  *  ▾ menu's captions and Destination. */
 export type ShipState = {
-  /** the linked site, when it is CONNECTED (a disconnected one is no site to ship to — Destination says so) */
-  site: { id: string; host: string; url: string; version: string | null; capability: 'full' | 'preview_only' } | null
+  /** the linked site, when it is CONNECTED (a disconnected one is no site to ship to — Destination says so). Story 7.18b —
+   *  with `source` (`capability_source`: `deploy_error` keeps Run checks, R-270) and its stored Ghost `locale` (FR-Q6) */
+  site: { id: string; host: string; url: string; version: string | null; capability: 'full' | 'preview_only'; source: string | null; locale: string | null } | null
+  /** Story 7.18b — `projects.language` and `rtl_ack_at` (FR-Q6): the switch's language rule and Pre-flight's RTL and locale rows */
+  language: string
+  rtlAckAt: string | null
+  /** Story 7.18b — the user's CONNECTED sites, newest first as Sites lists them, each with the other project that links it —
+   *  the picker's rows (`lib/site-switch.ts`) */
+  sites: readonly SwitchSite[]
   /** the binding's frozen name, or `themeNameOf(slug)` before the first upload */
   themeName: string
   /** this project's uploads to this site plus one */
@@ -556,6 +593,75 @@ export type ShipState = {
   required: readonly string[]
 }
 
+/** STORY 7.18a — SHIP IT'S STATE FROM THE STORED ROWS (`ShipState`): the site only while it is connected; the theme's name
+ *  the binding froze, else `themeNameOf(slug)`; n = this project's uploads to this site plus one; the version it serves =
+ *  its last activated deploy's. A failed read is logged and counted as none — the next Pre-flight counts again on the
+ *  server, which is the truth that ships.
+ *
+ *  STORY 7.18b — EXPORTED AND UNIT-TESTED (DW-378, `read.test.ts`), and it carries what choosing the site needs: the linked
+ *  site's `capability_source` and stored Ghost `locale`, the project's language and RTL acknowledgement, and every CONNECTED
+ *  site of the user's with the other project that links it (`heldBy`) — the picker's rows. A failed sites read is none, logged:
+ *  the picker then offers only Go to Sites, and `switchSite` judges again on the server. */
+export function shipStateOf(a: {
+  projectId: string
+  slug: string
+  language: string
+  rtlAckAt: string | null
+  sites: readonly { id?: unknown; title?: unknown; url?: unknown; capability?: unknown; capability_source?: unknown; site_settings?: unknown }[] | null
+  linking: readonly { id?: unknown; name?: unknown; linked_site_id?: unknown }[] | null
+  siteId: string | null
+  site: { url?: unknown; ghost_version?: unknown; capability?: unknown; capability_source?: unknown; disconnected_at?: unknown; site_settings?: unknown } | null
+  deploys: readonly { version: unknown; status: unknown; activated: unknown; activated_at: unknown }[] | null
+  binding: { theme_name?: unknown } | null
+  liveHere: boolean
+  required: readonly string[]
+}): ShipState {
+  if (a.deploys === null) console.error('editorData: the deploys could not be read')
+  if (a.sites === null || a.linking === null) console.error('editorData: the sites to choose from could not be read')
+  const rows = a.deploys ?? []
+  const url = typeof a.site?.url === 'string' ? a.site.url : ''
+  const connected = a.siteId !== null && a.site !== null && (a.site.disconnected_at === null || a.site.disconnected_at === undefined) && url !== ''
+  const activated = rows
+    .filter((r) => r.activated === true && typeof r.activated_at === 'string')
+    .sort((x, y) => (String(x.activated_at) < String(y.activated_at) ? 1 : -1))[0]
+  const prev = activated === undefined ? NaN : versionNumber(String(activated.version))
+  const localeOf = (settings: unknown): string | null => {
+    const locale = (settings as { locale?: unknown } | null | undefined)?.locale
+    return typeof locale === 'string' && locale.trim() !== '' ? locale : null
+  }
+  const linking = a.linking ?? []
+  const sites: SwitchSite[] = (a.sites ?? []).flatMap((r) => {
+    if (typeof r.id !== 'string' || typeof r.url !== 'string' || r.url === '') return []
+    const holder = linking.find((p) => p.linked_site_id === r.id && p.id !== a.projectId)
+    return [{
+      id: r.id, title: typeof r.title === 'string' ? r.title : '', host: hostOf(r.url), url: r.url,
+      capability: r.capability === 'preview_only' ? 'preview_only' : 'full',
+      source: typeof r.capability_source === 'string' ? r.capability_source : null,
+      locale: localeOf(r.site_settings),
+      heldBy: holder === undefined || typeof holder.id !== 'string' ? null : { id: holder.id, name: typeof holder.name === 'string' ? holder.name : '' },
+    }]
+  })
+  return {
+    site: connected
+      ? {
+          id: a.siteId as string, host: hostOf(url), url, version: typeof a.site?.ghost_version === 'string' ? a.site.ghost_version : null,
+          capability: a.site?.capability === 'preview_only' ? 'preview_only' : 'full',
+          source: typeof a.site?.capability_source === 'string' ? a.site.capability_source : null,
+          locale: localeOf(a.site?.site_settings),
+        }
+      : null,
+    language: a.language,
+    rtlAckAt: a.rtlAckAt,
+    sites,
+    themeName: typeof a.binding?.theme_name === 'string' ? a.binding.theme_name : themeNameOf(a.slug),
+    n: rows.length + 1,
+    prev: Number.isFinite(prev) ? prev : null,
+    shipped: rows.length > 0,
+    liveHere: connected && a.liveHere,
+    required: [...a.required],
+  }
+}
+
 /** R-264 (a) — DEPLOY ONLY'S GUARD, the one rule the ▾ row, S8a's card and the server ask: while Inflozo's own record says
  *  this project's theme is the one live on the site, an upload under its frozen name (AD-19) replaces the live theme's
  *  files and Ghost makes them live at once (VERIFY-AT-BUILD 74), so Deploy only could not keep v{prev} live. Answers the
@@ -563,6 +669,20 @@ export type ShipState = {
 export function uploadOnlyBlock(ship: Pick<ShipState, 'liveHere' | 'prev' | 'n' | 'site'> | null | undefined): string | null {
   if (!ship?.liveHere || ship.site === null) return null
   return DEPLOY_WORDS.uploadOnlyBlocked(ship.prev ?? Math.max(1, ship.n - 1), ship.site.host, ship.n)
+}
+
+/** STORY 7.18b — `deploys.preflight`: the facts Pre-flight's warning rows need that only the compile knows, kept per deploy so
+ *  "since your last deploy" can compare (the column's comment names the shape). Rows are derived at read (`lib/preflight.ts`),
+ *  so a word change needs no migration (routine call 12). */
+export type PreflightFacts = {
+  /** every `.hbs` file that ships, in code order */
+  templates: readonly string[]
+  /** `config.custom` as the emitted `package.json` carries it, or null when it declares none */
+  custom: Readonly<Record<string, unknown>> | null
+  /** FR-H2's guarded page-2 contexts (`CompiledTheme.noindex`) */
+  noindex: readonly string[]
+  /** the files that carry `@site.allow_self_signup` — a free member ask, synthesised asks included (DW-297) */
+  freeAsks: readonly string[]
 }
 
 /** GET `projects/[id]/deploy?job=`'s answer: the job, its deploy and what the ending reads. */
@@ -576,9 +696,14 @@ export type DeployView = {
     bytes: number | null
     gscan: Verdict | null
     quality: QualityVerdict | null
+    /** Story 7.18b — the facts only the compile knows (`deploys.preflight`), or null on a deploy made before them */
+    preflight: PreflightFacts | null
   } | null
   /** the version the site is serving from this project (its last activated deploy), or null — "your current theme" */
   previous: number | null
+  /** Story 7.18b — `config.custom` as this project's latest ACTIVATED deploy to the job's site shipped it (Ghost syncs a
+   *  theme's settings at activation, F2), or null: no such deploy, or one made before its facts were kept */
+  previousCustom: Readonly<Record<string, unknown>> | null
   /** B16's file, `sites.routes_last_offered`, when the ending is a fallback */
   routesFile: string | null
 }

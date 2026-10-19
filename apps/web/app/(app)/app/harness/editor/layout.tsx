@@ -20,9 +20,9 @@ import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCan
 import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
-import { harnessReread } from './actions'
+import { harnessReread, harnessSwitch } from './actions'
 import { standIns } from '../stand-ins'
-import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
+import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
  *
@@ -129,6 +129,13 @@ import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, S
  * above with its collection's condition turned round (Primary tag NOT `tools`), the one shape whose collection OWNS a post
  * with no primary tag but does not LIST it — so R-260's Pre-flight row has posts to name (`unlistedPosts`).
  *
+ * STORY 7.18b — the same header's two more shapes: `refused`, a site a refused upload marked Preview-only (R-270's line and Run
+ * checks), and `unlinked`, no site linked with three to choose from (Choose a site); every shape but none carries the picker's
+ * rows (`HARNESS_SITES`: one another project holds, one set to German). The switch itself is `actions.ts`' `harnessSwitch`
+ * (`x-inflozo-harness-switch: gone` refuses it, `confirm-held` asks the move's confirm again). `x-inflozo-harness-preflight:
+ * all` makes the project Arabic, acknowledged, on Ghost 5.40, and `x-inflozo-harness-picks: <n>` plants a second post grid
+ * hand-picked n deep — so a canned Pre-flight meets every warning row.
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -200,6 +207,16 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   const cycled = Number(asked.get('x-inflozo-harness-home'))
   if (Number.isFinite(cycled) && cycled > LONG_HOME_MAX) throw new Error(`x-inflozo-harness-home asks for ${cycled} sections; the harness builds at most ${LONG_HOME_MAX}`)
   const homeShown = Number.isInteger(cycled) && cycled > 0 && home.length > 0 ? Array.from({ length: cycled }, (_, n) => home[n % home.length]!) : home
+  // Story 7.18b — `x-inflozo-harness-picks: <n>`: a SECOND post grid on Home, hand-picked n posts deep (a secondary feed's
+  // stored picks, ids in Ghost's shape), so Pre-flight's picks row has a page past P0·5's 25 to name; bounded like the long Home
+  const picksAsked = Number(asked.get('x-inflozo-harness-picks'))
+  if (Number.isFinite(picksAsked) && picksAsked > LONG_HOME_MAX) throw new Error(`x-inflozo-harness-picks asks for ${picksAsked} picks; the harness plants at most ${LONG_HOME_MAX}`)
+  const grid = entries['a17/1']
+  const picked = Number.isInteger(picksAsked) && picksAsked > 0 && grid !== undefined
+    ? { ...instanceOf(grid), layerName: 'Hand-picked grid', data: { posts: { source: 'picked', picks: Array.from({ length: picksAsked }, (_, i) => ({ id: (i + 1).toString(16).padStart(24, 'a'), title: `Pick ${i + 1}` })) } } }
+    : null
+
+  const homeDoc = docOf(templateKeyOf('home'), homeShown, overriding)
 
   // Story 7.16c — the two Routes Manager templates and their routing, when asked for (DW-363)
   const routesAsked = asked.get('x-inflozo-harness-routes')
@@ -208,7 +225,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   const docs = designateAll(
     {
       [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
-      [templateKeyOf('home')]: docOf(templateKeyOf('home'), homeShown, overriding),
+      [templateKeyOf('home')]: picked === null ? homeDoc : parseDoc({ ...homeDoc, instances: [...homeDoc.instances, picked] }, templateKeyOf('home')),
       // …and, under the same header, a Tag canvas of its own (the designs that compile to `tag.hbs`), so the gate can walk a
       // Tag page 2 that FOLLOWS page 1 — the DW-331 defect's own page. Without the header the Tag canvas stays as it was.
       ...(overriding ? { [templateKeyOf('tag')]: docOf(templateKeyOf('tag'), compiling(CANVASES.tag.file)) } : {}),
@@ -296,7 +313,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     ...(await storedCards(asked.get('x-inflozo-harness-cards') === 'malformed' ? { divider: { glyph: 'on', icon: 'zz-no-such-icon' } } : null)),
     // Story 7.18a — the site Ship it ships to, by header (above), and the templates Checking's pass line names, from the
     // harness's own library as `read.ts` derives them
-    ship: shipOf(asked.get('x-inflozo-harness-ship'), requiredTemplates((id) => entries[id])),
+    ship: withPreflight(shipOf(asked.get('x-inflozo-harness-ship'), requiredTemplates((id) => entries[id])), asked.get('x-inflozo-harness-preflight')),
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -307,7 +324,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
       <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
-        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} {...data} />
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} {...data} />
       </ShellUserContext>
       {children}
     </>
@@ -367,11 +384,30 @@ const HARNESS_ROUTES: RoutesConfig = {
  *  before and the site shows another theme (Deploy only free); `live` is R-264 (a)'s case — this project's theme is the one
  *  live on the site, so Deploy only is greyed */
 function shipOf(shape: string | null, required: readonly string[]): ShipState {
-  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0' }
-  const base = { themeName: themeNameOf('pilot-sections'), required: [...required] }
+  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0', source: null, locale: 'en' }
+  // Story 7.18b — the picker's rows: the linked site, one another project holds (Question 1's confirm) and one set to German
+  // (FR-Q6's) — none at all with no header, so Destination offers Go to Sites alone
+  const sites: ShipState['sites'] = [
+    { id: site.id, title: 'Harness', host: site.host, url: site.url, capability: shape === 'preview' || shape === 'refused' ? 'preview_only' : 'full', source: shape === 'refused' ? 'deploy_error' : null, locale: 'en', heldBy: null },
+    { id: HARNESS_SITES.held, title: 'Field Notes site', host: 'held.harness.example', url: 'https://127.0.0.1:9', capability: 'full', source: null, locale: 'en', heldBy: { id: HARNESS_SITES.holder, name: 'Field Notes' } },
+    { id: HARNESS_SITES.german, title: 'Feldnotizen', host: 'de.harness.example', url: 'https://127.0.0.1:9', capability: 'full', source: null, locale: 'de', heldBy: null },
+  ]
+  const base = { themeName: themeNameOf('pilot-sections'), required: [...required], language: 'en', rtlAckAt: null, sites }
   if (shape === 'shipped' || shape === 'live') return { ...base, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live' }
   if (shape === 'full' || shape === 'preview') return { ...base, site: { ...site, capability: shape === 'full' ? 'full' : 'preview_only' }, n: 1, prev: null, shipped: false, liveHere: false }
-  return { ...base, site: null, n: 1, prev: null, shipped: false, liveHere: false }
+  // Story 7.18b — R-270: Preview-only because a refused upload marked it (`deploy_error`), so Run checks stays
+  if (shape === 'refused') return { ...base, site: { ...site, capability: 'preview_only', source: 'deploy_error' }, n: 1, prev: null, shipped: false, liveHere: false }
+  // Story 7.18b — `unlinked`: no site linked, three to choose from (Choose a site)
+  if (shape === 'unlinked') return { ...base, site: null, n: 1, prev: null, shipped: false, liveHere: false }
+  return { ...base, sites: [], site: null, n: 1, prev: null, shipped: false, liveHere: false }
+}
+
+/** Story 7.18b — `x-inflozo-harness-preflight: all`: the project whose Pre-flight meets every warning row the editor's own state
+ *  can raise — an Arabic project, acknowledged (the RTL repeat, the locale line against the site's English, the untouched
+ *  words), on a site running Ghost 5.40 (the free-ask row; the compile's facts come with the canned job) */
+function withPreflight(ship: ShipState, asked: string | null): ShipState {
+  if (asked !== 'all' || ship.site === null) return ship
+  return { ...ship, language: 'ar', rtlAckAt: '2026-10-19T08:00:00.000Z', site: { ...ship.site, version: '5.40.0' } }
 }
 
 /** Story 7.18a — R-260's fixture: the same routing, its collection's Primary tag condition negated */

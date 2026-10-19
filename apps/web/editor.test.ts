@@ -610,7 +610,8 @@ test('Story 7.16c: read.ts hands the parsed routing and designates with listsOf;
   for (const door of [
     /designate\(doc, fileOfKey\(docKey\), library, previous, listed\)/,
     /makeMainFeed\(doc, file, row\.instanceId, library, listed\)/,
-    /feedQuery\(design, i, i\.target, postsPerPage, listed\)/,
+    // Story 7.18b: the canvas's queries are `lib/preflight.ts`' `queriesFor`, Pre-flight's pick count's one rule — handed `listed`
+    /queriesFor\(design, i, i\.target, postsPerPage, listed\)/,
     /isPaginated\(fileOfKey\(docKey\), listed\)/,
     /feedlessArchive\(editedDoc\(docs, own, library\) \?\? EMPTY_DOC, pageFileOf\(key, page\), library, listed\)/,
     /chosen\.isMainFeed && isPaginated\(chosen\.target, listed\) \? mainRole\(chosen\.target\)/,

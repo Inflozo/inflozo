@@ -53,3 +53,10 @@ export const SURFACES_LATER_SITE: EditorData['site'] = { title: 'Harness site', 
  *  the editor its site by: a stored `ghost_version` of T3's shape and no snapshot, so the journey sees the major reach the
  *  Paywall canvas's box — the wiring neither `siteWith`'s unit test nor `paywallPage`'s can see. */
 export const GHOST_5_SITE: EditorData['site'] = siteWith({ title: 'Harness site', origin: 'https://127.0.0.1:9', key: 'harness' }, null, '5.130.6')
+
+/** Story 7.18b — the picker's other two sites and the project that holds one (ids of the harness's own, never the database's) */
+export const HARNESS_SITES = {
+  held: '00000000-0000-4000-8000-000000000719',
+  german: '00000000-0000-4000-8000-000000000720',
+  holder: '00000000-0000-4000-8000-000000000721',
+} as const

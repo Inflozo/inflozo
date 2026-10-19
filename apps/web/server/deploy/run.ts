@@ -1,9 +1,11 @@
 import type { CompiledTheme, CompileInput } from '@inflozo/theme-compiler'
+import { ASK_FLAGS } from '@inflozo/library'
+import { DEFAULT_LANGUAGE, isRtl } from '@inflozo/library/languages'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import type { RoutesOutcome } from '../../lib/routes-upload.ts'
 import {
   activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, isMoving, refusalWords, ROUTES_REASONS, thrownCode, uploadAnswer,
-  type DeployCode, type DeployError, type DeployStatus, type DeployView, type Mode, type RoutesEnding, type Stage, type Timings,
+  type DeployCode, type DeployError, type DeployStatus, type DeployView, type Mode, type PreflightFacts, type RoutesEnding, type Stage, type Timings,
 } from '../../lib/deploy.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
 import type { ProjectRead } from './project-input.ts'
@@ -51,6 +53,8 @@ export type DeployRow = {
   quality: QualityVerdict | null
   inputs_sha256: string | null
   activated_at: string | null
+  /** Story 7.18b — the compile's facts for Pre-flight's warning rows (`preflightFacts`) */
+  preflight: PreflightFacts | null
 }
 
 /** The chokepoint's `call()`, as much of it as a deploy uses — handed in (`RoutesCall`'s shape). */
@@ -93,7 +97,13 @@ export type DeployIo = {
     previous: (a: { projectId: string; siteId: string; userId: string; except?: string }) => Promise<number | null>
     /** R-264 (a): the project whose deploy was activated last on this site, or null — Inflozo's own record of what is live */
     liveProject: (a: { siteId: string; userId: string }) => Promise<string | null>
+    /** Story 7.18b — `config.custom` as this project's latest ACTIVATED deploy to the site shipped it (its `preflight.custom`),
+     *  other than `except`; null when there is none or it predates the facts */
+    previousCustom: (a: { projectId: string; siteId: string; userId: string; except?: string }) => Promise<Readonly<Record<string, unknown>> | null>
   }
+  /** Story 7.18b (DW-374) — the project's link as it stands NOW (`projects.linked_site_id` and that site's address, or null when
+   *  unlinked), and the job's own site's address — read at Ship it, so a theme only ever goes to the project's current site */
+  link: (a: { projectId: string; siteId: string; userId: string }) => Promise<{ now: { id: string; url: string } | null; was: string | null }>
   artifacts: {
     put: (path: string, bytes: Uint8Array) => Promise<void>
     get: (path: string) => Promise<Uint8Array>
@@ -256,6 +266,21 @@ const errorCtx = (read: ProjectRead | null, siteId: string, detail?: string) => 
   ...(detail === undefined ? {} : { detail }),
 })
 
+/** STORY 7.18b — `deploys.preflight`, from the compiled theme: every `.hbs` file that ships, `config.custom` as the emitted
+ *  `package.json` carries it, FR-H2's guarded contexts (`noindex`), and the files that carry a free member ask's flag — the
+ *  compile gates every free ask behind it, synthesised ones included (routine call 10). */
+export function preflightFacts(theme: Pick<CompiledTheme, 'files' | 'noindex'>): PreflightFacts {
+  const text = Object.entries(theme.files).filter((e): e is [string, string] => typeof e[1] === 'string')
+  const pkg = theme.files['package.json']
+  const custom = typeof pkg === 'string' ? (JSON.parse(pkg) as { config?: { custom?: Record<string, unknown> } }).config?.custom ?? null : null
+  return {
+    templates: text.map(([f]) => f).filter((f) => f.endsWith('.hbs')),
+    custom,
+    noindex: [...theme.noindex],
+    freeAsks: text.filter(([f, body]) => f.endsWith('.hbs') && body.includes(ASK_FLAGS.free)).map(([f]) => f),
+  }
+}
+
 /**
  * COMPILING AND CHECKING, on the job's row — Pre-flight's whole work, and Ship it's again when the artefact is stale. Ends
  * with the artefact stored on the `deploys` row and the answer `clean`, or the job failed or cancelled.
@@ -271,6 +296,12 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
   const major = shipsTo(read.site.ghost_version)
   if (major === null) {
     await fail(c, deployError('ghost_version_unsupported', errorCtx(read, job.site_id)))
+    return { kind: 'stopped' }
+  }
+  // Story 7.18b (FR-Q6): a right-to-left language ships only once acknowledged — a server verdict, before any compile, so
+  // nothing is stored (Translations' Understood writes `rtl_ack_at`)
+  if (isRtl(read.input.language ?? DEFAULT_LANGUAGE) && read.rtlAckAt === null) {
+    await fail(c, deployError('rtl_unacknowledged', { ...errorCtx(read, job.site_id), projectId: job.project_id }))
     return { kind: 'stopped' }
   }
   // the routing, before any compile (S9b's line, R-261's way out)
@@ -296,8 +327,8 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
   } else {
     // a stale artefact is re-made on the same row: the old object goes first
     if (deploy.artifact_path) await twice(io, 'artifact remove', () => io.artifacts.remove(deploy!.artifact_path as string))
-    await twice(io, 'deploy reset', () => io.deploys.update(deploy!.id, job.user_id, { status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null }))
-    deploy = { ...deploy, status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null }
+    await twice(io, 'deploy reset', () => io.deploys.update(deploy!.id, job.user_id, { status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, preflight: null }))
+    deploy = { ...deploy, status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, preflight: null }
   }
   const hash = await io.hash(read.reads)
 
@@ -319,9 +350,11 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
   await twice(io, 'deploy checking', () => io.deploys.update(deploy!.id, job.user_id, { status: 'checking' }))
   const gscan = await io.gscan(theme.files, major)
   const quality = io.quality(theme.files, read.input)
+  // Story 7.18b — the facts only the compile knows, kept beside the two verdicts (Pre-flight's warning rows read them)
+  const preflight = preflightFacts(theme)
   if (await cancelled(io, job, c)) return { kind: 'stopped' }
   if (gscan.blocked || quality.blocked) {
-    await twice(io, 'deploy blocked', () => io.deploys.update(deploy!.id, job.user_id, { status: 'failed', gscan, quality }))
+    await twice(io, 'deploy blocked', () => io.deploys.update(deploy!.id, job.user_id, { status: 'failed', gscan, quality, preflight }))
     const first = gscan.errors[0] ?? quality.errors[0] ?? { code: 'theme_check_failed', message: DEPLOY_WORDS.fixErrors(1), level: 'error', fatal: false, refs: [] }
     await fail(c, first as Finding)
     return { kind: 'stopped' }
@@ -330,7 +363,7 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
   // nothing blocks: the artefact is stored, and only now (routine call 6)
   const path = `${job.project_id}/${deploy.id}.zip`
   await twice(io, 'artifact put', () => io.artifacts.put(path, zip))
-  const patch = { gscan, quality, artifact_path: path, artifact_bytes: zip.length, inputs_sha256: hash, settings_snapshot: read.site.site_settings ?? null }
+  const patch = { gscan, quality, preflight, artifact_path: path, artifact_bytes: zip.length, inputs_sha256: hash, settings_snapshot: read.site.site_settings ?? null }
   await twice(io, 'deploy stored', () => io.deploys.update(deploy!.id, job.user_id, patch))
   deploy = { ...deploy, ...patch }
   if (await cancelled(io, job, c)) return { kind: 'stopped' }
@@ -396,6 +429,14 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode }, io:
     if (a.mode === 'upload' && (await twice(io, 'live project', () => uploadOnlyRefused(at, io)))) return
     let deploy = await twice(io, 'deploy read', () => io.deploys.read(job.deploy_id as string, job.user_id))
     if (deploy === null || deploy.artifact_path === null) return void (await fail(c, deployError('deploy_infrastructure', { host: '' })))
+    // DW-374 (R-269): the project's link, read NOW — a project switched or moved away since its Pre-flight sends nothing, and
+    // says which sites. Before the claim, so a refused Ship it leaves no stage it never entered
+    const link = await twice(io, 'link', () => io.link(at))
+    if (link.now === null || link.now.id !== job.site_id) {
+      await twice(io, 'deploy failed', () => io.deploys.update(deploy!.id, job.user_id, { status: 'failed' }))
+      const was = hostOf(link.was ?? '')
+      return void (await fail(c, link.now === null ? deployError('site_unlinked', { host: was }) : deployError('site_changed', { host: was, to: hostOf(link.now.url) })))
+    }
     read = await readProject(io, at)
     if (read === null) return void (await fail(c, { code: 'site_not_found', message: DEPLOY_WORDS.noSite }))
     const stale = (await io.hash(read.reads)) !== deploy.inputs_sha256
@@ -559,9 +600,12 @@ export async function view(a: { jobId: string; userId: string }, io: DeployIo): 
     job: { id: job.id, stage: job.stage, error: job.error, timings: job.stage_timings ?? {}, cancelRequested: job.cancel_requested },
     deploy: deploy === null ? null : {
       version: deploy.version, themeName: deploy.theme_name, status: deploy.status, activated: deploy.activated,
-      bytes: deploy.artifact_bytes, gscan: deploy.gscan, quality: deploy.quality,
+      bytes: deploy.artifact_bytes, gscan: deploy.gscan, quality: deploy.quality, preflight: deploy.preflight ?? null,
     },
     previous: await io.deploys.previous({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, ...(deploy === null ? {} : { except: deploy.id }) }),
+    // Story 7.18b — "since your last deploy": the latest ACTIVATED deploy to this site, never an uploaded one (Ghost syncs at
+    // activation, F2), and never this one
+    previousCustom: await io.deploys.previousCustom({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, ...(deploy === null ? {} : { except: deploy.id }) }),
     routesFile: routes?.kind === 'fallback' ? await io.routesFile({ siteId: job.site_id, userId: job.user_id }) : null,
   }
 }

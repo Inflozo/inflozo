@@ -228,10 +228,10 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
   none. Rationale: AD-31; `jobs.claim`'s condition run in Postgres.
 
 **Execution — Dev:**
-- [ ] `packages/theme-compiler/src/compile.ts` — `CompiledTheme` gains `noindex: readonly string[]`, the deduped
+- [x] `packages/theme-compiler/src/compile.ts` — `CompiledTheme` gains `noindex: readonly string[]`, the deduped
   `guarded` contexts in emitted order. `compile.test.ts` holds a feed-less Tag (`['tag']`) and a theme with every feed
   (`[]`, the control). Rationale: the warning and the guard read one fact.
-- [ ] `apps/web/lib/paywall.ts` — `asksIn(entry, instance)` returns the asks a section makes:
+- [x] `apps/web/lib/paywall.ts` — `asksIn(entry, instance)` returns the asks a section makes:
   - its markup asks (`askOf`);
   - every `url` prop whose value — the instance's, else the design's default — is a Portal ask (`portalAsk`, as
     `linkGate` reads it);
@@ -240,15 +240,15 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
   `askLine` reads `asksIn`, so the panel gains A4's and A1's default buttons. Also add `'design'` to `AdminAnchor`, read
   in both majors' admin bundles first (standing rule 1; Ask First). Rationale: one ask rule (R-170); a placed hero's
   "Sign up" is a placed ask.
-- [ ] `apps/web/lib/site-switch.ts` (new, pure) — `switchPlan({ project, site, sites })` returns `{ heldBy, firstLink,
+- [x] `apps/web/lib/site-switch.ts` (new, pure) — `switchPlan({ project, site, sites })` returns `{ heldBy, firstLink,
   language, warnLanguage }` per the matrix. Add `SWITCH_WORDS`. Rationale: one rule for the picker, the confirm and
   `switchSite`.
-- [ ] `apps/web/lib/preflight.ts` (new, pure) — `preflightWarnings(facts)` returns the ordered rows of Design Notes'
+- [x] `apps/web/lib/preflight.ts` (new, pure) — `preflightWarnings(facts)` returns the ordered rows of Design Notes'
   table, each `{ kind, title, body?, items: { text, canvas? }[], link? }`. Add `PREFLIGHT_WORDS`, and `picksOn(canvas,
   docs, library, …)`, moved out of `editor.tsx`'s `queriesOf` so the canvas and the count share it. The canvases that
   ship come from `templates` through `placeOf` and the page-2 keys; Editor cards is never one. Rationale: one rule module,
   unit-tested over the matrix.
-- [ ] `apps/web/lib/deploy.ts`:
+- [x] `apps/web/lib/deploy.ts`:
   - `ShipState.site` gains `source` and `locale`, and `ShipState` gains `language`, `rtlAckAt` and `sites`
     (`{ id, title, host, url, capability, source, locale, heldBy: { id, name } | null }[]`);
   - `DeployView.deploy` gains `preflight`, and the view gains `previousCustom`;
@@ -256,10 +256,10 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
   - Destination's new words go in `DEPLOY_WORDS`.
 
   Rationale: one wire type.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` — `shipStateOf` reads the additions, is exported,
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` — `shipStateOf` reads the additions, is exported,
   and is unit-tested (n, prev, liveHere, a disconnected site, Preview-only by each source, the sites list with `heldBy`).
   The sites and the user's linking projects are read with the user's own session. Rationale: DW-378; the picker's data.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` — `switchSite(projectId, siteId, session,
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` — `switchSite(projectId, siteId, session,
   confirmed)`:
   - check the lock through the deploy route's `holds`, extracted into one shared helper;
   - read the site with `disconnected_at is null`;
@@ -268,7 +268,7 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
   - on 23505, re-read and answer again.
 
   Rationale: FR-B5, Question 1, FR-Q6.
-- [ ] `apps/web/server/deploy/project-input.ts` and `run.ts`:
+- [x] `apps/web/server/deploy/project-input.ts` and `run.ts`:
   - select `rtl_ack_at`, and block before compile with `rtl_unacknowledged`;
   - write `deploys.preflight` beside `gscan`/`quality` — every `.hbs` file, `config.custom` from the emitted
     `package.json`, `theme.noindex`, and the files containing `@site.allow_self_signup`;
@@ -278,7 +278,7 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
     than this one).
 
   `deploy-io.ts`' `DEPLOY_COLUMNS` and reads follow. Rationale: the server facts; DW-374.
-- [ ] `apps/web/components/editor/deploy-wizard.tsx`:
+- [x] `apps/web/components/editor/deploy-wizard.tsx`:
   - Switch on the site card, the Preview-only card included;
   - "Choose a site" on the no-site branch;
   - the picker view and the confirm;
@@ -289,7 +289,7 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
     `iterations: 1`.
 
   Rationale: S8a, S8b, DW-375, DW-377.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`:
   - hand the wizard its client facts: docs, entries, `viewed`, `members`, names and `picksOn`;
   - a switch flushes first, then calls `switchSite`, then re-reads the page's data so the canvas, the members record and
     Ship it follow the new site, with the wizard staying open on Destination;
@@ -297,7 +297,7 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
     the canvas's `LiveStore`.
 
   Rationale: FR-B5, DW-377.
-- [ ] Tests:
+- [x] Tests:
   - `preflight.test.ts`, `site-switch.test.ts`, `paywall.test.ts` (`asksIn`, a hero pointed at an `href` as the
     control);
   - `deploy.test.ts`;
@@ -308,7 +308,7 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
   - DW-378: `fetchWithKey` passing `timeoutFor(item)` (an injected fetch sees 120 s for `theme_upload` and 15 s
     otherwise), and `check-traces`' recorder run over the pilot theme;
   - `busy.test.ts`.
-- [ ] `tools/keyboard/journey.spec.mjs` (harness `x-inflozo-harness-ship` gains `refused` and a sites list):
+- [x] `tools/keyboard/journey.spec.mjs` (harness `x-inflozo-harness-ship` gains `refused` and a sites list):
   - the picker, held and language confirms, Cancel focused, and the first-link line;
   - each row kind and the RTL block;
   - Q4's line;
@@ -317,9 +317,9 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
     iteration, and a 300 ms stage announced.
 
   Each journey has its control, and none is pointer-driven below the sentinel.
-- [ ] `tools/probe/run-verify-editor.cjs` — step 114, the Review's, on production and **writing nothing to T1**
+- [x] `tools/probe/run-verify-editor.cjs` — step 114, the Review's, on production and **writing nothing to T1**
   (Design Notes, "Walk").
-- [ ] Propagation at Dev:
+- [x] Propagation at Dev:
   - **EXPERIENCE:** Deploy Destination's row gains Switch, the picker and the confirm. Pre-flight's "(extended)" row
     lists its rows.
   - **PRD:** dated notes on FR-B5, FR-H2, FR-H6 and FR-Q6.
@@ -347,6 +347,51 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
 - Given every new control, when pressed, then it swaps to its busy label (R-98).
 
 ## Spec Change Log
+
+**Dev (2026-10-19) — readings and departures, each a routine call told in one line (none changes what a surface does):**
+- **`shipStateOf` lives in `lib/deploy.ts`, re-exported by `read.ts`.** `node --test` cannot load `read.ts` (its `@/` imports and
+  `next/headers`), so the rule moved beside the wire type it builds and `read.test.ts` reaches it there; `read.ts` still calls it
+  with the reads, now including the user's connected sites and the projects linking them (both through the user's own session).
+- **The editor follows the new site by mounting afresh.** The `(editor)` layout keys the editor on `linked_site_id`, so the
+  switch's `router.refresh()` remounts it on the new site — its live store, members record, Ghost's two Layers rows and Ship it's
+  versions all the new site's, as a way back from Theme settings already remounts it — and this tab's `SHIP_AFTER` ask (the
+  take-over's own path) opens the wizard again on Destination. The modal therefore closes and reopens across the remount.
+- **Languages are named by Translations' `nameOf`, which is `ownName`** — each language in its own speakers' words: "Deutsch",
+  "العربية", "English". The confirm and the first-link line read so; the owner's manual test (steps 5 and 8) now says so —
+  "العربية" — and walk step 114 expects `ownName`'s words.
+- **The members row lists the sections whose ask the record STOPS** (`askStopped`, the panel line's own test), and a designed
+  Paywall, over the canvases the compile shipped — a deploy kept before its facts lists none. A placed free form on a site that
+  only lacks Stripe is not listed.
+- **The panel's members-off line stays 5.20's** (`PAYWALL_WORDS.ask`, R-198) on a site set to Nobody; on every other fact it is
+  `membersNotice`'s sentence. Pre-flight carries `membersNotice`'s sentences on both. The AC's "both carry `membersNotice`'s sentence" is read
+  as "both warn, from R-216's one list": on an invite-only or paid-only site (the owner's test) the two are the same sentence.
+- **The free-ask row prints the version as major.minor** ("It runs Ghost 5.40"), as Question 2's ruled sentence does; 5.62 is read
+  from the context matrix's `since`, never restated.
+- **The unviewed row lists each shipped canvas and its page 2** (Home page 2, Tag page 2, Author page 2), each under its own record
+  (R-167), named as Theme settings names pages (`pageOf`); the picks row counts each shipped canvas's page 1 with its site doc.
+- **A switch with edits it cannot send writes nothing and says Run checks' own sentence** (`editsUnsent`), the one sentence for
+  unsent work (R-170) — no new string. **Choose a site opens the picker at once**, so its "Opening…" never shows.
+- **`holdsLock` (`server/edit-lock.ts`) takes the caller's client**: `switchSite` hands its quiet session (R-213), the deploy route
+  its own. The switch is two statements — the holder unlinked, then this project linked — never one transaction; a link that
+  fails for another reason after the unlink leaves the site with no project until the next switch (stated beside the code).
+- **Esc in the picker goes back to Destination, and in its confirm closes the confirm alone** — React carries a nested dialog's
+  `cancel` and `close` up its own tree, so the wizard's handlers answer only their own dialog's events.
+- **DW-378's announcer joins the stages a read missed**: "Compiling your theme. Checking your theme." in one announcement, in the
+  order they started. 7.18a's Cancel journey (its first read) and D2e journey (the activation) now expect it.
+- **The harness:** `x-inflozo-harness-ship` gains `refused` and `unlinked` and every shape but none a sites list (the linked one, one
+  "Field Notes" holds, one set to German); `x-inflozo-harness-preflight: all` (Arabic, acknowledged, Ghost 5.40) and
+  `x-inflozo-harness-picks: <n>`; the editor's new `switchTo` seam is `harnessSwitch` (`x-inflozo-harness-switch: gone` or
+  `confirm-held`).
+- **The main session's matrix audit (after the implementation) closed three gaps.** (1) `switchSite`'s server half had no test
+  that ran — the held move's order, the first link's language, a confirm owed writing nothing, a site gone meanwhile, and the
+  23505 race asking again: its loop is now `lib/site-switch.ts`' `switchWith` over an injected `SwitchIo` (`run.ts`' `DeployIo`
+  pattern), the action its reads and writes, and `site-switch.test.ts` holds each row, mutation-checked (one pass instead of
+  two, and the unlink skipped, each turn a test red). (2) The "Unsent edits" row had no journey: one now holds the switch
+  writing nothing behind a refused save, in Run checks' sentence, and the same press sending it once the save lands (the
+  control). (3) The AC's "the editor follows the new site" had no check of the canvas: walk step 114.1 now reads the canvas's
+  `data-source` — the sample while B is unlinked (the control), T1's content after the switch, with no reload.
+- **Step 114 is written, never run** (the Review's): production through a throwaway account `editor-harness-d-…` on Pro, T1 read
+  only; its start sweep now catches a killed run's `d` account too.
 
 ## Design Notes
 
@@ -494,10 +539,10 @@ Addresses that need a project's id are written `<A>` and `<B>`. Copy each from t
 | 2 | `https://app.inflozo.com/sites` | Sites | Press **Connect a site**, finish with the integration's keys, and press **Use your brand** at the end. | `https://ghost6.inflozo.com` + the two keys | ghost6 is **Connected**, and a project linked to it opens. This is project **A**. |
 | 3 | `https://ghost6.inflozo.com/ghost/` → Settings → Membership, then `https://app.inflozo.com/sites` | Ghost, then Sites | In Ghost, note what **Subscription access** says, set it to the invite-only choice, and save. In Inflozo, press ⋯ on ghost6, then **Re-check connection**. | — | The ghost6 card says "Only people you invite can join ghost6.inflozo.com, so free sign-up forms show nothing there." (It may show a second sentence about paid memberships too.) |
 | 4 | `https://app.inflozo.com/projects` | Projects | Press **New project**, choose **Blank canvas**, and create it. In its editor press ⌘K and add the newsletter design **Inline Row**. | — | Project **B** opens with Inline Row on Home. |
-| 5 | `https://app.inflozo.com/projects/<B>/settings/translations` | Translations | Choose **Arabic**, then press **Understood** on the right-to-left notice. | — | The language reads Arabic, with "You acknowledged this on …". |
+| 5 | `https://app.inflozo.com/projects/<B>/settings/translations` | Translations | Choose **العربية** (Arabic — Translations names each language in its own script), then press **Understood** on the right-to-left notice. | — | The language reads العربية, with "You acknowledged this on …". |
 | 6 | `https://app.inflozo.com/projects/<A>` in window 1 | Editor A → wizard | Press **Ship it**, then **Run checks**. Leave it on the finished checks. | — | The site card reads ghost6 · **Connected** · **Switch**. Pre-flight finishes with Ship it pressable. |
 | 7 | `https://app.inflozo.com/projects/<B>` in window 2 | Editor B → wizard | Press **Ship it**. | — | "This project isn't linked to a connected Ghost site yet." with **Choose a site** and **Go to Sites**. |
-| 8 | (B) | Choose a site | Press **Choose a site**, choose ghost6, and press **Use this site**. | — | The list shows ghost6 with "Linked to {A's name}". "Switch to ghost6.inflozo.com?" opens with **Cancel** focused. It says the site moves from A to this project, and that ghost6 is set to English while this project is in Arabic. |
+| 8 | (B) | Choose a site | Press **Choose a site**, choose ghost6, and press **Use this site**. | — | The list shows ghost6 with "Linked to {A's name}". "Switch to ghost6.inflozo.com?" opens with **Cancel** focused. It says the site moves from A to this project, and that ghost6.inflozo.com is set to English while this project is in العربية — Arabic, named in its own script, as Translations names every language. |
 | 9 | (B) | The confirm | Press **Switch**. | — | Destination shows ghost6 · **Connected** · **Switch**, and a v1 chip. Behind the wizard the canvas shows ghost6's posts. |
 | 10 | (A) window 1 | Pre-flight | Press **Ship it**. | — | Nothing is sent: "This project is no longer linked to ghost6.inflozo.com, so nothing was sent." **Back** shows **Choose a site**. |
 | 11 | (B) | Destination → Pre-flight | Press **Run checks**. Open each warning. | — | 0 errors. The warnings are: **Right-to-left languages are not supported yet** with your date; the language line with "Change it to ar in Ghost ↗"; **Starting words you haven't retyped** with "Inline Row on Home:" and its words in quotes; **ghost6.inflozo.com can't take every sign-up your pages ask for** with the same sentences the Sites card shows and "Inline Row on Home"; and **Not viewed as every visitor** listing Home and the other pages. Then "Warnings won't block your deploy.". Ship it is pressable. |
@@ -620,6 +665,31 @@ content, and the row stays blank until it finishes.
 - **Deploy:** the owner's Pro test account is made through the service key on his in-session go, and deleted after his
   test.
 - **Ghost 5:** postponed to DW-326 (Story 15.7). DW-297's row cannot be executed on a Ghost below 5.62 (F3).
+
+**Executed — Dev (2026-10-19, Node 24.18.1, on the Schema head 693e9836; the main session's final tree, after its matrix audit):**
+- `pnpm check` — exit 0 (lint, typecheck and every package's tests): library 285 / ghost-shim 47 / section-runtime 441 /
+  theme-compiler 220 / app 926 / tools 13 passing, 0 failing (each suite's own count, as it printed).
+- The new unit files each passing: `site-switch.test.ts` (the plan, and `switchWith` — the server's half — row by row: a site gone
+  or a failed read writing nothing, the same site writing nothing, the held move unlinking FIRST then linking, a failed unlink
+  never linking, the first link's language, a differing language confirmed and never written, the 23505 race asking again with
+  a cleared race linking as its control; mutation-checked — one pass instead of two, and the unlink skipped, each turned a test
+  red, restored green), `preflight.test.ts`, `read.test.ts`; and the extended ones — `paywall.test.ts` (`asksIn`, the href
+  control), `deploy.test.ts`, `deploy-run.test.ts` (the RTL block, both DW-374 codes and the unchanged-link control, the facts,
+  `previousCustom`), `deploy-input.test.ts` (the real compile's facts), `ghost-admin.test.ts` (DW-378's budget — red with
+  `timeoutFor()` in place of `timeoutFor(args.item)`, the mutation check, green restored), `compile.test.ts` (`noindex`, the
+  every-feed control), `server-wiring.test.ts` (R-213: `switchSite` reads the user quietly and refuses on none).
+- `pnpm keyboard` — exit 0, 282 passed (17.1 min): the 7.18b journeys — the unsent-edits switch and its control among them —
+  and DW-378's settled 7.18a ones.
+- `pnpm build` — exit 0. `node tools/check-traces.mjs` — "every route carries its files", the recorder now run over the pilot
+  theme: all 568 files gscan4 and all 258 gscan6 touch carried.
+- `python3 tools/doc-audit.py --check` — PASS on the second run (the first regenerated the board).
+- Ghost's source, read (rule 1): both releases' npm tarballs (`registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`, `…-5.130.6.tgz`),
+  read, never installed — the Design panel's `design/edit` (VERIFY-AT-BUILD 75) and the custom theme settings sync per theme
+  name (F2, VERIFY-AT-BUILD 76).
+- **Real services at Dev:** none beyond the Schema phase's production apply (below) — the npm registry read only. Nothing
+  touched T1 or production at Dev.
+- **Not run at Dev, the Review's:** walk step 114 on production (T1 read only); CI on the Dev head; the RLS gate (no SQL
+  changed since the Schema phase, where it ran with its control).
 
 **Executed — Schema phase (2026-10-19, pushed alone before any code, R-99):**
 - `bash supabase/tests/run-rls-gate.sh` — exit 0: no SCHEMA DRIFT, every earlier block passing, and the 7.18b block's PASS

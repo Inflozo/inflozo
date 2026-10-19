@@ -32,8 +32,11 @@ export default async function EditorLayout({ children, params }: { children: Rea
   )
 }
 
-async function Loaded({ project }: { project: { id: string; name: string } }) {
+async function Loaded({ project }: { project: { id: string; name: string; linked_site_id: string | null } }) {
   // DW-242 (Story 5.24e): no pre-paint self mark any more — the shell mounts from a layout effect and recognises a
-  // holder's own reload in one, before the first paint (`editor.tsx`), as it has since Story 5.22
-  return <Editor project={project} {...(await editorData(project.id))} />
+  // holder's own reload in one, before the first paint (`editor.tsx`), as it has since Story 5.22.
+  // STORY 7.18b — KEYED ON THE LINKED SITE: a switch (or a move away) re-reads the page, and the editor mounts afresh on the new
+  // site — its live store, members record, Ghost's two rows and Ship it all the new site's — exactly as a way back from Theme
+  // settings remounts it; nothing else changes the key, so a refresh on the same site keeps the editor mounted
+  return <Editor key={project.linked_site_id ?? 'no-site'} project={{ id: project.id, name: project.name }} {...(await editorData(project.id))} />
 }

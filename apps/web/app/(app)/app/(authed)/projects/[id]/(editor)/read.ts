@@ -25,7 +25,7 @@ import { DEFAULT_LANGUAGE, scriptOf } from '@inflozo/library/languages'
 // SERVER ONLY (intl-messageformat 5.4.3): this file is imported by server modules and, as a type, by the editor — never as a value
 import { judgeOverrides } from '@inflozo/library/override'
 import { requiredTemplates } from '@inflozo/theme-compiler'
-import { themeNameOf, versionNumber, type ShipState } from '@/lib/deploy'
+import { shipStateOf, type ShipState } from '@/lib/deploy'
 
 /**
  * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
@@ -298,7 +298,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // `cache`d, and the 404 guard above this boundary already read it — so this is the linked site's id at no cost, and
   // the site's own row can join the reads below rather than follow them
   const linked = (await projectOf(projectId))?.linked_site_id ?? null
-  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow, cardsRow, routeRows, routingRow, shipRows] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow, settingsRow, overridesRow, cardsRow, routeRows, routingRow, shipRows, sitesRows, linkingRows] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -323,7 +323,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // browser's path, never the server's (AD-10, `admin-rule.ts:164`).
     // Story 5.20 — and its `site_settings`, for FR-H6's record of the member switches (`storedMembers` reads the one key)
     // Story 5.21 — and for the snapshot Ghost's two surfaces are drawn from (`storedSurfaces`)
-    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version, capability').eq('id', linked).maybeSingle(),
+    // Story 7.18b — and its `capability_source` (R-270: a refused upload's mark keeps Run checks)
+    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version, capability, capability_source').eq('id', linked).maybeSingle(),
     // Story 7.10 — the project's custom settings, through the user's own session as Theme settings reads them (RLS)
     sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', projectId).order('position').order('created_at'),
     // Story 7.12 — the project's translation overrides (FR-H5: the canvas renders them through the shim)
@@ -340,6 +341,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
       // R-264 (a): the site's latest activated deploy, whichever project made it — is this project's theme the one live?
       sb.from('deploys').select('project_id').eq('site_id', linked).eq('activated', true).order('activated_at', { ascending: false }).limit(1),
     ]),
+    // Story 7.18b — the picker's rows: the user's CONNECTED sites, newest first as Sites lists them, and which of the user's
+    // projects links each (FR-B5, DW-69's one project per site) — both through the user's own session, so RLS decides
+    sb.from('sites').select('id, title, url, capability, capability_source, site_settings').is('disconnected_at', null).order('created_at', { ascending: false }),
+    sb.from('projects').select('id, name, linked_site_id').not('linked_site_id', 'is', null),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
   // Story 7.13: a failed read THROWS, as the templates' does — an editor opened on no designs would write that empty record
@@ -538,7 +543,12 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 7.13 — a refused record opens on Ghost's defaults; its sentence is logged and said once on the screen
     ...cards,
     ship: shipStateOf({
+      projectId,
       slug: project?.slug ?? '',
+      language,
+      rtlAckAt: project?.rtl_ack_at ?? null,
+      sites: sitesRows.error ? null : (sitesRows.data ?? []),
+      linking: linkingRows.error ? null : (linkingRows.data ?? []),
       siteId: linked,
       site: siteRow && !siteRow.error ? siteRow.data : null,
       deploys: shipRows?.[0].error ? null : (shipRows?.[0].data ?? []),
@@ -550,39 +560,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
   }
 }
 
-/** STORY 7.18a — SHIP IT'S STATE FROM THE STORED ROWS (`ShipState`): the site only while it is connected; the theme's name
- *  the binding froze, else `themeNameOf(slug)`; n = this project's uploads to this site plus one; the version it serves =
- *  its last activated deploy's. A failed read is logged and counted as none — the next Pre-flight counts again on the
- *  server, which is the truth that ships. */
-function shipStateOf(a: {
-  slug: string
-  siteId: string | null
-  site: { url?: unknown; ghost_version?: unknown; capability?: unknown; disconnected_at?: unknown } | null
-  deploys: readonly { version: unknown; status: unknown; activated: unknown; activated_at: unknown }[] | null
-  binding: { theme_name?: unknown } | null
-  liveHere: boolean
-  required: readonly string[]
-}): ShipState {
-  if (a.deploys === null) console.error('editorData: the deploys could not be read')
-  const rows = a.deploys ?? []
-  const url = typeof a.site?.url === 'string' ? a.site.url : ''
-  const connected = a.siteId !== null && a.site !== null && (a.site.disconnected_at === null || a.site.disconnected_at === undefined) && url !== ''
-  const activated = rows
-    .filter((r) => r.activated === true && typeof r.activated_at === 'string')
-    .sort((x, y) => (String(x.activated_at) < String(y.activated_at) ? 1 : -1))[0]
-  const prev = activated === undefined ? NaN : versionNumber(String(activated.version))
-  return {
-    site: connected
-      ? { id: a.siteId as string, host: hostOf(url), url, version: typeof a.site?.ghost_version === 'string' ? a.site.ghost_version : null, capability: a.site?.capability === 'preview_only' ? 'preview_only' : 'full' }
-      : null,
-    themeName: typeof a.binding?.theme_name === 'string' ? a.binding.theme_name : themeNameOf(a.slug),
-    n: rows.length + 1,
-    prev: Number.isFinite(prev) ? prev : null,
-    shipped: rows.length > 0,
-    liveHere: connected && a.liveHere,
-    required: [...a.required],
-  }
-}
+/** STORY 7.18a — SHIP IT'S STATE FROM THE STORED ROWS, the rule itself in `lib/deploy.ts` since Story 7.18b, where `node --test`
+ *  reaches it (`read.test.ts`, DW-378) — re-exported here, beside the reads that feed it. */
+export { shipStateOf }
 
 /** Story 7.10 — a failed settings read is none, logged by code, never a black editor (the prefs read's safe side). */
 function settingsRead(row: { data: unknown[] | null; error: { code?: string } | null }): StoredSetting[] {

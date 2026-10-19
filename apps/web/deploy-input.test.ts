@@ -13,6 +13,7 @@ import { readdirSync, readFileSync, realpathSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { defaultContent } from '@inflozo/section-runtime'
 import { compileInputOf } from './server/deploy/project-input.ts'
+import { preflightFacts } from './server/deploy/run.ts'
 import { pilot } from './lib/pilots.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
@@ -53,7 +54,7 @@ test('a stored project compiles through the shell into a theme both pinned gscan
   const filters: string[] = []
   const home = doc(at('a4/13'), at('a17/1', { isMainFeed: true }))
   const db = fakeDb({
-    projects: { id: P, name: 'Field Notes', slug: 'field-notes', dark_enabled: true, posts_per_page: 9, style_pack: { preset: 'paper' }, language: 'en' },
+    projects: { id: P, name: 'Field Notes', slug: 'field-notes', dark_enabled: true, posts_per_page: 9, style_pack: { preset: 'paper' }, language: 'en', rtl_ack_at: null },
     sites: { id: S, url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', site_settings: { members: true } },
     project_templates: [
       { template_key: 'home', doc: home },
@@ -102,6 +103,17 @@ test('a stored project compiles through the shell into a theme both pinned gscan
   }
   const q = qualityGate(theme.files, { pack: read.input.pack, library: read.input.library })
   assert.equal(q.blocked, false, JSON.stringify(q.errors.map((e) => e.code)))
+
+  // Story 7.18b — the facts Pre-flight's warning rows read, off the REAL compile
+  const facts = preflightFacts(theme)
+  assert.deepEqual(facts.templates, Object.keys(theme.files).filter((f) => f.endsWith('.hbs')), 'every .hbs, in the files\' order')
+  for (const file of ['default.hbs', 'home.hbs', 'index.hbs', 'post.hbs']) assert.ok(facts.templates.includes(file), file)
+  assert.deepEqual(Object.keys(facts.custom ?? {}), ['color_scheme', 'dark_accent_color', 'dark_logo'], 'config.custom as emitted: the three built-ins')
+  assert.deepEqual(facts.custom, JSON.parse(theme.files['package.json'] as string).config.custom)
+  assert.deepEqual(facts.noindex, theme.noindex)
+  // A1 #1's Subscribe and A4 #13's default Sign up both ship behind the free flag; a file without it is never listed
+  assert.ok(facts.freeAsks.length > 0)
+  for (const file of facts.templates) assert.equal(facts.freeAsks.includes(file), (theme.files[file] as string).includes('@site.allow_self_signup'), file)
 })
 
 test('the routing is read and judged with the rows: an unreadable one is flagged, a stored doc nothing could write throws (ours), a project not the caller\'s is null', async () => {

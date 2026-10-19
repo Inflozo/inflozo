@@ -47,6 +47,8 @@ export type ProjectRead = {
   /** the bound name already claimed in `project_site_bindings`, or null before the first accepted upload */
   bound: string | null
   projectName: string
+  /** Story 7.18b — `projects.rtl_ack_at` (FR-Q6): a right-to-left language ships only once acknowledged */
+  rtlAckAt: string | null
   /** the Routes Manager templates' display names by canvas, for the plain words */
   names: Record<string, string>
 }
@@ -99,7 +101,7 @@ function must<T>(answer: { data: T; error: { code?: string } | null }, what: str
 export async function compileInputOf(a: { projectId: string; siteId: string; userId: string }, db: SupabaseClient): Promise<ProjectRead | null> {
   const { projectId, siteId, userId } = a
   const [project, site, templates, settings, overrides, treatments, routing, customs, deploys, binding] = await Promise.all([
-    db.from('projects').select('id, name, slug, dark_enabled, posts_per_page, style_pack, language').eq('id', projectId).eq('user_id', userId).maybeSingle(),
+    db.from('projects').select('id, name, slug, dark_enabled, posts_per_page, style_pack, language, rtl_ack_at').eq('id', projectId).eq('user_id', userId).maybeSingle(),
     db.from('sites').select('id, url, ghost_version, capability, site_settings').eq('id', siteId).eq('user_id', userId).is('disconnected_at', null).maybeSingle(),
     db.from('project_templates').select('template_key, doc').eq('project_id', projectId).eq('user_id', userId).order('template_key'),
     db.from('custom_settings').select('key, type, group_name, visibility_condition, bound_to, position').eq('project_id', projectId).eq('user_id', userId).order('position').order('created_at'),
@@ -110,7 +112,7 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
     db.from('deploys').select('version, activated, activated_at').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('status', ['uploaded', 'live']),
     db.from('project_site_bindings').select('theme_name').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).maybeSingle(),
   ])
-  const p = must(project, 'the project') as { name: string; slug: string; dark_enabled: boolean; posts_per_page: number; style_pack: unknown; language: string } | null
+  const p = must(project, 'the project') as { name: string; slug: string; dark_enabled: boolean; posts_per_page: number; style_pack: unknown; language: string; rtl_ack_at?: string | null } | null
   const s = must(site, 'the site') as { url: string; ghost_version: string | null; capability: string; site_settings: unknown } | null
   if (p === null || s === null) return null
   const rows = (must(templates, 'the templates') ?? []) as { template_key: string; doc: unknown }[]
@@ -194,6 +196,7 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
     themeName,
     bound,
     projectName: p.name,
+    rtlAckAt: typeof p.rtl_ack_at === 'string' ? p.rtl_ack_at : null,
     names: Object.fromEntries(routeTemplates.flatMap((t) => {
       const canvas = routeCanvasOf(t.file)
       return canvas === null ? [] : [[canvas, t.name]]

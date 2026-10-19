@@ -29,7 +29,8 @@
 
 import { execFileSync } from 'node:child_process'
 import { createRequire } from 'node:module'
-import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -149,8 +150,10 @@ for (const [route, file, needs] of ROUTES) {
   // EVERY FILE EACH CHECKER TOUCHES WHILE IT CHECKS (the owner's test of Story 7.18a, 2026-10-19): gscan loads its checks by
   // listing `lib/checks/` and requiring each by a computed path, so the trace carried the check files but none of what they
   // require (semver, validator, Ghost's NQL, lodash's modules) — every Pre-flight on Vercel answered "We couldn't check your
-  // theme". So each pinned checker runs once here, in a child, over a minimal theme in a fresh temporary directory, with
-  // every file it reads, stats or resolves under `node_modules` recorded — and each one must be in the route's trace.
+  // theme". So each pinned checker runs once here, in a child, over a theme in a fresh temporary directory, with every file it
+  // reads, stats or resolves under `node_modules` recorded — and each one must be in the route's trace.
+  // STORY 7.18b (DW-378): the theme is the PILOT theme (`tools/pilot-theme.mjs`, CI's own compile — partials, locales, settings,
+  // fonts, cards, scripts), never a four-file stand-in, so every check a real theme makes gscan run is the trace's to carry.
   const TOUCH = `
 const fs = require('fs'), Module = require('module'), os = require('os'), path = require('path')
 const seen = new Set(), EX = fs.existsSync, RP = fs.realpathSync, ST = fs.statSync
@@ -164,15 +167,27 @@ for (const fn of ['readFile', 'stat', 'lstat', 'access', 'open']) {
 const resolveFilename = Module._resolveFilename
 Module._resolveFilename = function (...a) { const r = resolveFilename.apply(this, a); note(r); return r }
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'inflozo-trace-gscan-'))
-const theme = { 'package.json': JSON.stringify({ name: 'inflozo-trace', version: '1.0.0', engines: { ghost: '>=5.0.0' }, config: { posts_per_page: 5 } }), 'index.hbs': '{{!< default}}{{#foreach posts}}<a href="{{url}}">{{title}}</a>{{/foreach}}{{pagination}}', 'post.hbs': '{{!< default}}{{#post}}<h1>{{title}}</h1>{{content}}{{/post}}', 'default.hbs': '<!doctype html><html lang="{{@site.locale}}"><head>{{ghost_head}}</head><body class="{{body_class}}">{{{body}}}{{ghost_foot}}</body></html>' }
-for (const [f, body] of Object.entries(theme)) fs.writeFileSync(path.join(dir, f), body)
+// a fresh copy each run: gscan deletes the files it ignores under the system's temporary directory
+fs.cpSync(process.env.THEME_DIR, dir, { recursive: true })
 const gscan = require(process.env.GSCAN_ALIAS)
 gscan.check(dir, { checkVersion: process.env.GSCAN_SPEC }).then((t) => { gscan.format(t, { checkVersion: process.env.GSCAN_SPEC }); process.stdout.write(JSON.stringify([...seen])) }, (e) => { process.stderr.write(String(e && e.message)); process.exitCode = 1 }).finally(() => fs.rmSync(dir, { recursive: true, force: true }))
 `
+  const { compilePilots, CI_WORDS, PILOT_THEME } = await import('./pilot-theme.mjs')
+  const pilotDir = mkdtempSync(join(tmpdir(), 'inflozo-trace-pilot-'))
+  const pilotFiles = compilePilots(CI_WORDS, { theme: PILOT_THEME }).files
+  for (const [file, body] of Object.entries(pilotFiles)) {
+    mkdirSync(dirname(join(pilotDir, file)), { recursive: true })
+    writeFileSync(join(pilotDir, file), body)
+  }
+  // the control: a theme with no partial would leave the partial checks unexercised
+  if (!Object.keys(pilotFiles).some((f) => f.startsWith('partials/'))) {
+    failed++
+    console.log('FAIL  the pilot theme compiled with no partial — the recorder would not exercise a real theme')
+  }
   for (const [alias, spec] of [['gscan4', 'v5'], ['gscan6', 'v6']]) {
     let touched
     try {
-      touched = JSON.parse(execFileSync(process.execPath, ['-e', TOUCH], { cwd: join(REPO, 'apps/web'), env: { ...process.env, GSCAN_ALIAS: alias, GSCAN_SPEC: spec }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))
+      touched = JSON.parse(execFileSync(process.execPath, ['-e', TOUCH], { cwd: join(REPO, 'apps/web'), env: { ...process.env, GSCAN_ALIAS: alias, GSCAN_SPEC: spec, THEME_DIR: pilotDir }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))
     } catch (e) {
       failed++
       console.log(`FAIL  ${alias} could not be run to record what it touches — ${String(e.stderr || e.message).split('\n')[0]}`)
@@ -194,6 +209,7 @@ gscan.check(dir, { checkVersion: process.env.GSCAN_SPEC }).then((t) => { gscan.f
       console.log(`FAIL  the deploy route lacks ${absent.length} of the ${touched.length} files ${alias} touches while it checks — ${absent.slice(0, 4).map((f) => f.replace(/^node_modules\/\.pnpm\//, '')).join(', ')}${absent.length > 4 ? ', …' : ''}`)
     }
   }
+  rmSync(pilotDir, { recursive: true, force: true })
 }
 console.log(failed === 0 ? 'RESULT: every route carries its files' : `RESULT: ${failed} route(s) would deploy without their files`)
 

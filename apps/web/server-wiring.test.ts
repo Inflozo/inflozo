@@ -677,6 +677,8 @@ test('R-213: no editor action redirects a signed-out tab — each reads the user
     setPreviewSubject: '{ error: SAVE_REFUSED }',
     setViewedStates: '{ error: VIEWED_REFUSED }',
     recheckSite: '{ refused: true }',
+    // Story 7.18b — choosing the site (its other refusals are the lock's and the site's own sentences)
+    switchSite: '{ refused: DEPLOY_WORDS.infrastructure }',
   }
   /** the file's code, comments out (its prose names `signedIn()` and `redirect` to say why neither is called) */
   const code = readFileSync(EDITOR_ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, '').replace(/\/\/.*$/gm, '')

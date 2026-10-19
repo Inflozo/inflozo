@@ -18,7 +18,8 @@
  * recording moved — the spec's docs task, "correct either if the recording moves it".
  */
 
-import { memberAsks, type MemberAsk, type MemberAskAt } from '@inflozo/library'
+import { memberAsks, portalAsk, type MemberAsk, type PropDef } from '@inflozo/library'
+import { getPath, isRich, linkAttributes, markupProps } from '@inflozo/section-runtime'
 import type { Members } from './probe-rule.ts'
 
 /** A number of tiers as the card prints it: "1 tier", "5 tiers". */
@@ -114,9 +115,15 @@ export const membersNotice = (members: Members | null, site: string): string[] =
  *  `publication-language` (lines 2-4 of that minified file); 5.130.6's
  *  `core/built/admin/assets/admin-x-settings/index-BVxh86CD.mjs` declares navid "navigation" (:29989), "social-accounts"
  *  (:27394), "code-injection" (:20434) and "publication-language" (:22540). */
-export type AdminAnchor = 'members' | 'tiers' | 'settings' | 'navigation' | 'social-accounts' | 'code-injection' | 'publication-language'
+/*  Story 7.18b — and `design`, Ghost's Design panel (Pre-flight's changed built-in row, "Open Ghost's Design panel ↗"): the
+ *  settings route `design/edit` opens the Design and branding modal, where a theme's own settings live. Read in source, both
+ *  majors: Ghost 6.58.0's `core/built/admin/assets/index-BOJzlYiz.js` routes `{path:`design/edit`}` to
+ *  `design-and-theme-modal-DWZguwWX.js`, and `settings-KSWWQanQ.js`' Customize button (navid `design`) calls
+ *  `updateRoute(`design/edit`)`; 5.130.6's `core/built/admin/assets/admin-x-settings/index-BVxh86CD.mjs` maps
+ *  `"design/edit": "DesignAndThemeModal"` (:30208) and its Customize button calls `t("design/edit")` (:29965). */
+export type AdminAnchor = 'members' | 'tiers' | 'settings' | 'navigation' | 'social-accounts' | 'code-injection' | 'publication-language' | 'design'
 export const adminAt = (url: string, anchor: AdminAnchor): string =>
-  `${url.replace(/\/+$/, '')}/ghost/#/settings${anchor === 'settings' ? '' : `/${anchor}`}`
+  `${url.replace(/\/+$/, '')}/ghost/#/settings${anchor === 'settings' ? '' : anchor === 'design' ? '/design/edit' : `/${anchor}`}`
 
 type Tier = { type?: unknown; visibility?: unknown; active?: unknown }
 
@@ -135,8 +142,44 @@ export function tierText(site: { rows: readonly Tier[] | undefined } | null, fai
   return failed ? null : tierLine(sample)
 }
 
-/** The asks a design makes — read from the same attributes R-4's refusal reads (`memberAsks`, the validator's own). */
-export const askOf = (entry: { html: string }): MemberAskAt[] => memberAsks(entry.html)
+/** The asks a design's MARKUP makes — read from the same attributes R-4's refusal reads (`memberAsks`, the validator's own). */
+export const askOf = (entry: { html: string }): { ask: MemberAsk; how: string }[] => memberAsks(entry.html)
+
+/** A link value's Portal ask, read the way the one link sink reads it (`linkAttributes`, then `linkGate`'s `portalAsk`), or null. */
+const linkAsk = (link: unknown): MemberAsk | null => {
+  const action = linkAttributes(link)['data-portal']
+  return action === undefined ? null : portalAsk(action)
+}
+
+/** STORY 7.18b — EVERY ASK A PLACED SECTION MAKES (R-170: the panel's line and Pre-flight's members row read this one rule):
+ *  its markup's (`askOf`); every `url` prop the design prints whose value — the instance's, else the design's default — is a
+ *  Portal ask, as `linkGate` gates it (A4's "Sign up" and A1's Subscribe start as `{ portal: 'signup' }`); and every inline
+ *  `a` mark a rich text prop carries to one. `markupProps` decides what the design prints, so a prop it never draws asks
+ *  nobody. ponytail: top-level props only, as `untouchedWords` reads them — a list's item links (`items[].url`) are not read;
+ *  add them when a library design lists links a customer may point at Portal. */
+export function asksIn(
+  entry: { html: string; contentSchema?: Readonly<Record<string, PropDef>> },
+  instance: { content?: Readonly<Record<string, unknown>> },
+): { ask: MemberAsk; how: string }[] {
+  const out = askOf(entry)
+  const schema = entry.contentSchema ?? {}
+  for (const path of markupProps(entry.html)) {
+    const def = schema[path]
+    if (def === undefined || path.includes('[]')) continue
+    const stored = getPath(instance.content ?? {}, path)
+    const value = stored === undefined ? def.default : stored
+    if (def.type === 'url') {
+      const ask = linkAsk(value)
+      if (ask !== null) out.push({ ask, how: `${path}: Portal` })
+    } else if (def.type === 'richtext' && isRich(value)) {
+      for (const m of value.marks ?? []) {
+        const ask = m.mark === 'a' ? linkAsk(m) : null
+        if (ask !== null) out.push({ ask, how: `${path}: a link to Portal` })
+      }
+    }
+  }
+  return out
+}
 
 /** FR-H6: a SYNTHESIZED instance (`auto-<file>-<n>`, `synthesize.ts`) is never warned about — the customer did not
  *  place it, so a line about "this section" would be about a choice nobody made. */
@@ -145,9 +188,24 @@ export const warnsOn = (instance: { instanceId: string }): boolean => !instance.
 /** The member-ask line at a placed section's panel head, or null: a section the customer placed, whose design asks a
  *  visitor to join, on a site whose record stops that ask (R-216) — each fact that stops one of its asks, in `FACTS`'
  *  words, one sentence after another when two do. */
-export function askLine(members: Members | null | undefined, site: string, entry: { html: string }, instance: { instanceId: string }): string | null {
+export function askLine(
+  members: Members | null | undefined,
+  site: string,
+  entry: Parameters<typeof asksIn>[0],
+  instance: { instanceId: string } & Parameters<typeof asksIn>[1],
+): string | null {
   if (!warnsOn(instance)) return null
-  const asks = new Set(askOf(entry).map((a) => a.ask))
-  const said = factsOf(members).filter((f) => f.stops.some((ask) => asks.has(ask))).map((f) => (f.panel ?? f.sites)(site))
+  const said = stoppingFacts(members, entry, instance).map((f) => (f.panel ?? f.sites)(site))
   return said.length === 0 ? null : said.join(' ')
 }
+
+/** The facts the record holds that stop one of this section's asks (`asksIn`) — none for a section asking nobody to join. */
+const stoppingFacts = (members: Members | null | undefined, entry: Parameters<typeof asksIn>[0], instance: Parameters<typeof asksIn>[1]) => {
+  const asks = new Set(asksIn(entry, instance).map((a) => a.ask))
+  return factsOf(members).filter((f) => f.stops.some((ask) => asks.has(ask)))
+}
+
+/** STORY 7.18b — does the site's record stop one of this placed section's asks? Pre-flight's members row lists exactly the
+ *  sections the panel's line would warn on (a synthesized one never, FR-H6). */
+export const askStopped = (members: Members | null | undefined, entry: Parameters<typeof asksIn>[0], instance: { instanceId: string } & Parameters<typeof asksIn>[1]): boolean =>
+  warnsOn(instance) && stoppingFacts(members, entry, instance).length > 0
