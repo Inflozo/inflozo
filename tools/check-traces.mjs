@@ -145,6 +145,44 @@ for (const [route, file, needs] of ROUTES) {
     failed++
     console.log(`FAIL  the deploy route: ${alias} is not shipped — ${[...missing, ...(linked ? [] : ['its .next/node_modules link'])].join(', ')}`)
   }
+  // EVERY FILE EACH CHECKER TOUCHES WHILE IT CHECKS (the owner's test of Story 7.18a, 2026-10-19): gscan loads its checks by
+  // listing `lib/checks/` and requiring each by a computed path, so the trace carried the check files but none of what they
+  // require (semver, validator, Ghost's NQL, lodash's modules) — every Pre-flight on Vercel answered "We couldn't check your
+  // theme". So each pinned checker runs once here, in a child, over a minimal theme in a fresh temporary directory, with
+  // every file it reads, stats or resolves under `node_modules` recorded — and each one must be in the route's trace.
+  const TOUCH = `
+const fs = require('fs'), Module = require('module'), os = require('os'), path = require('path')
+const seen = new Set(), EX = fs.existsSync, RP = fs.realpathSync, ST = fs.statSync
+const note = (f) => { try { if (typeof f === 'string' && f.includes('/node_modules/') && EX(f)) { const r = RP(f); if (ST(r).isFile()) seen.add(r) } } catch {} }
+for (const fn of ['readFileSync', 'readdirSync', 'statSync', 'lstatSync', 'existsSync', 'openSync', 'realpathSync', 'accessSync']) {
+  const orig = fs[fn]; fs[fn] = function (f, ...rest) { note(f); return orig.call(this, f, ...rest) }
+}
+for (const fn of ['readFile', 'stat', 'lstat', 'access', 'open']) {
+  const orig = fs.promises[fn]; fs.promises[fn] = function (f, ...rest) { note(f); return orig.call(this, f, ...rest) }
+}
+const resolveFilename = Module._resolveFilename
+Module._resolveFilename = function (...a) { const r = resolveFilename.apply(this, a); note(r); return r }
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'inflozo-trace-gscan-'))
+const theme = { 'package.json': JSON.stringify({ name: 'inflozo-trace', version: '1.0.0', engines: { ghost: '>=5.0.0' }, config: { posts_per_page: 5 } }), 'index.hbs': '{{!< default}}{{#foreach posts}}<a href="{{url}}">{{title}}</a>{{/foreach}}{{pagination}}', 'post.hbs': '{{!< default}}{{#post}}<h1>{{title}}</h1>{{content}}{{/post}}', 'default.hbs': '<!doctype html><html lang="{{@site.locale}}"><head>{{ghost_head}}</head><body class="{{body_class}}">{{{body}}}{{ghost_foot}}</body></html>' }
+for (const [f, body] of Object.entries(theme)) fs.writeFileSync(path.join(dir, f), body)
+const gscan = require(process.env.GSCAN_ALIAS)
+gscan.check(dir, { checkVersion: process.env.GSCAN_SPEC }).then((t) => { gscan.format(t, { checkVersion: process.env.GSCAN_SPEC }); fs.rmSync(dir, { recursive: true, force: true }); process.stdout.write(JSON.stringify([...seen])) })
+`
+  for (const [alias, spec] of [['gscan4', 'v5'], ['gscan6', 'v6']]) {
+    const touched = JSON.parse(execFileSync(process.execPath, ['-e', TOUCH], { cwd: join(REPO, 'apps/web'), env: { ...process.env, GSCAN_ALIAS: alias, GSCAN_SPEC: spec }, encoding: 'utf8' }))
+    // the control: a checker that touched nothing would pass on nothing
+    if (touched.length < 50) {
+      failed++
+      console.log(`FAIL  ${alias} touched only ${touched.length} files while checking — the recorder saw nothing, so this proves nothing`)
+      continue
+    }
+    const absent = touched.map((f) => relative(REPO, f)).filter((f) => !carried.has(f))
+    if (absent.length === 0) console.log(`PASS  the deploy route carries all ${touched.length} files ${alias} touches while it checks a theme`)
+    else {
+      failed++
+      console.log(`FAIL  the deploy route lacks ${absent.length} of the ${touched.length} files ${alias} touches while it checks — ${absent.slice(0, 4).map((f) => f.replace(/^node_modules\/\.pnpm\//, '')).join(', ')}${absent.length > 4 ? ', …' : ''}`)
+    }
+  }
 }
 console.log(failed === 0 ? 'RESULT: every route carries its files' : `RESULT: ${failed} route(s) would deploy without their files`)
 

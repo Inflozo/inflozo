@@ -630,7 +630,9 @@ and save leftovers: DW-304, DW-307, DW-308). The wizard half of Story 7.32 (D2e 
 - **The owner's step 9** said to press View site on D2f, which has no such button (Words); it opens the site in a new tab.
 
 **Fix (2026-10-19) — the owner's two findings, before the Review** (`## Owner's test findings`): jsdom bundled, not an external
-(`next.config.ts`, `patches/jsdom@30.0.1.patch`, `tools/check-traces.mjs`); a copied tab a session of its own
+(`next.config.ts`, `patches/jsdom@30.0.1.patch`, `tools/check-traces.mjs`); every gscan check file preloaded by its literal
+name so the trace carries what the checks require (`gate/gscan.ts`' `preloadChecks`, its test, check-traces' touched-files
+guard); a copied tab a session of its own
 (`lib/lock-client.ts`, the two settings pages, a journey, DW-242's plant). The Wiring task's `serverExternalPackages: ['jsdom',
 …]` is superseded by the first.
 
@@ -958,6 +960,19 @@ went wrong on our side before anything reached your site. Try again.", the brows
   compile through the built function (the shell, the compile, both gscans, the quality gate, the zip) gives 0/0/not
   blocked and the SAME zip bytes as the unbundled jsdom every test uses (sha-256 `28839a97407be7ca…`). `check-traces`
   now fails if the deploy route carries a jsdom link again.
+- **A second cause, found before the owner's re-test** (the main session's production check, on the owner's in-session go,
+  2026-10-19): with the route loading, one real Pre-flight on production — a throwaway account, the seeded project linked to
+  a site row, the editor holding the lock, Run checks through the route — compiled (319992 bytes, 904 ms) and passed the
+  quality gate, then failed at Checking: "We couldn't check your theme" (`theme_check_failed`, gscan 6.4.2). gscan lists
+  `lib/checks/` and `require()`s each file by a computed path (6.4.2 `checker.js:13-19`; 4.49.7 through `require-dir`), so
+  the route's trace carried the check files but not what they require: the deployed function's own file list (Vercel's
+  `.vc-config.json` `filePathMap`) lacked 128 of the 258 files gscan 6.4.2 touches while it checks — semver, validator,
+  date-fns, Ghost's NQL packages and lodash's modules. The local trace had the same gap; `check-traces` had held three
+  files per checker. **The fix:** `gate/gscan.ts`' `preloadChecks` requires every check file by its literal name before gscan
+  does, so the build follows their imports; `apps/web/deploy-input.test.ts` fails when that list and a pin's `lib/checks/`
+  part; `check-traces` now runs each pinned checker in a child over a minimal theme, records every file it touches under
+  `node_modules`, and fails on any the route lacks — red on the build before the fix (128 missing for each checker), green
+  after (all 568 and 258).
 - **Re-test:** steps 6–10 of "Owner's manual test" once the Fix deploy is live.
 
 **Finding 2 (owner, 2026-10-19), before the Review — fixed in the Fix commit, re-test owed.** A second window opened from the
@@ -1218,3 +1233,11 @@ away, while the wizard would say "Uploaded. Not live yet."
   journeys `--repeat-each 3` — 81 passed; the copied-tab journey with the rule switched off — FAILED on "and it is not the
   first tab's" (the mutation check), passing again restored.
 - **Still the owner's:** the re-test of steps 6–10 on the Fix deploy.
+- **The second cause (gscan's untraced check imports):** a production Pre-flight as a throwaway account (Supabase
+  `SUPABASE_URL`/`SUPABASE_SECRET_KEY` for the account, seed and cleanup; app.inflozo.com through Playwright) — 202, then
+  `failed` at Checking with `theme_check_failed` after compiling 319992 bytes; quality not blocked; no artefact stored; the
+  account deleted and production's counts (11 projects, 6 sites, 0 deploys, 0 jobs) back as before. The deployed function's
+  `filePathMap` (`VERCEL_TOKEN`, `GET /v7/deployments/dpl_6qVoGkajduaV6msxj26oZPNhmUDa/files/<uid>`, 2754 entries) lacked 128
+  of the 258 files gscan 6.4.2 touches while checking (recorded locally with an fs hook). Fixed by `preloadChecks`; the new
+  check-traces guard FAILED on the pre-fix build (128 missing for gscan4's 568 and gscan6's 258) and PASSES after.
+  `pnpm check` — exit 0, app 878 (the preload test among them; with one check file dropped from the list it fails).

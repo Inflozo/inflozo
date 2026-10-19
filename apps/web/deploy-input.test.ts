@@ -7,7 +7,10 @@ import assert from 'node:assert/strict'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { JSDOM } from 'jsdom'
 import { compileTheme } from '@inflozo/theme-compiler'
-import { gscanGate, qualityGate } from '@inflozo/theme-compiler/gate'
+import { GSCAN, gscanGate, preloadChecks, qualityGate } from '@inflozo/theme-compiler/gate'
+import { createRequire } from 'node:module'
+import { readdirSync, realpathSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { defaultContent } from '@inflozo/section-runtime'
 import { compileInputOf } from './server/deploy/project-input.ts'
 import { pilot } from './lib/pilots.ts'
@@ -136,4 +139,18 @@ test('a project with routing hands the compile `routes`, `routed` and `lists` fr
   const theme = compileTheme(new JSDOM('<body></body>').window.document, read.input)
   assert.match(theme.files['README.md'] as string, /## Routes/)
   for (const major of [5, 6] as const) assert.equal((await gscanGate(theme.files, major)).errors.length, 0, `v${major}`)
+})
+
+test('the owner\'s test (2026-10-19): preloadChecks loads EVERY check file of each pinned checker by its literal name — the list and each pin\'s lib/checks/ never part, so the deploy route\'s trace follows every import a check makes', () => {
+  const req = createRequire(import.meta.url)
+  for (const major of [5, 6] as const) {
+    const dir = join(dirname(realpathSync(req.resolve(`${GSCAN[major].pkg}/package.json`))), 'lib', 'checks')
+    const files = readdirSync(dir).filter((f) => f.endsWith('.js')).map((f) => join(dir, f))
+    // the control: a pin with no check files would pass on nothing
+    assert.ok(files.length > 10, `${GSCAN[major].pkg} has ${files.length} check files`)
+    const loaded = preloadChecks(major)
+    assert.equal(loaded.length, files.length, `${GSCAN[major].pkg}: ${loaded.length} preloaded, ${files.length} in lib/checks/`)
+    const cached = new Set(Object.keys(req.cache).map((f) => realpathSync(f)))
+    for (const f of files) assert.ok(cached.has(realpathSync(f)), `${GSCAN[major].pkg}'s ${f.slice(dir.length + 1)} was not preloaded`)
+  }
 })

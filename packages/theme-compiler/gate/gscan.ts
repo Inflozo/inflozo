@@ -35,6 +35,32 @@ const LOAD = {
   5: { checker: () => require('gscan4') as Gscan, pkg: () => require('gscan4/package.json') as { version: string }, spec: () => require('gscan4/lib/specs/v5.js') as Spec },
   6: { checker: () => require('gscan6') as Gscan, pkg: () => require('gscan6/package.json') as { version: string }, spec: () => require('gscan6/lib/specs/v6.js') as Spec },
 } as const
+/** STORY 7.18a's owner test (2026-10-19) — EACH CHECK FILE LOADED BY ITS LITERAL NAME, before gscan loads them itself. gscan
+ *  lists `lib/checks/` and `require()`s each file by a computed path (6.4.2's `checker.js:13-19`; 4.49.7's `require-dir`),
+ *  so the deploy route's trace carried the check files but none of what they require — semver, validator, Ghost's NQL,
+ *  lodash's modules — and every Pre-flight on Vercel answered "We couldn't check your theme". Required here first, they are
+ *  in Node's cache when gscan asks for them, and the build follows their imports. `apps/web/deploy-input.test.ts` fails when this list and a
+ *  pinned version's `lib/checks/` part, and `tools/check-traces.mjs` when the route lacks a file either checker touches. */
+export const preloadChecks = (major: Major): unknown[] => (major === 5 ? [
+  require('gscan4/lib/checks/001-deprecations.js'), require('gscan4/lib/checks/002-comment-id.js'),
+  require('gscan4/lib/checks/005-template-compile.js'), require('gscan4/lib/checks/010-package-json.js'),
+  require('gscan4/lib/checks/020-theme-structure.js'), require('gscan4/lib/checks/030-assets.js'),
+  require('gscan4/lib/checks/040-ghost-head-foot.js'), require('gscan4/lib/checks/050-koenig-css-classes.js'),
+  require('gscan4/lib/checks/051-custom-fonts-css-properties.js'), require('gscan4/lib/checks/060-js-api-usage.js'),
+  require('gscan4/lib/checks/070-theme-translations.js'), require('gscan4/lib/checks/080-helper-usage.js'),
+  require('gscan4/lib/checks/090-template-syntax.js'), require('gscan4/lib/checks/100-custom-template-settings-usage.js'),
+  require('gscan4/lib/checks/110-page-builder-usage.js'), require('gscan4/lib/checks/120-no-unknown-globals.js'),
+] : [
+  require('gscan6/lib/checks/001-deprecations.js'), require('gscan6/lib/checks/002-comment-id.js'),
+  require('gscan6/lib/checks/005-template-compile.js'), require('gscan6/lib/checks/010-package-json.js'),
+  require('gscan6/lib/checks/020-theme-structure.js'), require('gscan6/lib/checks/030-assets.js'),
+  require('gscan6/lib/checks/040-ghost-head-foot.js'), require('gscan6/lib/checks/050-koenig-css-classes.js'),
+  require('gscan6/lib/checks/051-custom-fonts-css-properties.js'), require('gscan6/lib/checks/060-js-api-usage.js'),
+  require('gscan6/lib/checks/070-theme-translations.js'), require('gscan6/lib/checks/080-helper-usage.js'),
+  require('gscan6/lib/checks/090-template-syntax.js'), require('gscan6/lib/checks/100-custom-template-settings-usage.js'),
+  require('gscan6/lib/checks/110-page-builder-usage.js'), require('gscan6/lib/checks/120-no-unknown-globals.js'),
+  require('gscan6/lib/checks/130-template-inheritance.js'),
+])
 const PREFIX = 'inflozo-gscan-'
 const byCode = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0)
 
@@ -69,6 +95,7 @@ export async function runGscan(files: ThemeFiles, major: Major): Promise<GscanRe
   const { version, checkVersion } = GSCAN[major]
   const installed = installedVersion(major)
   if (installed !== version) throw new PinMoved(installed, version)
+  preloadChecks(major)
   const gscan = LOAD[major].checker()
   const dir = await mkdtemp(join(tmpdir(), PREFIX))
   try {
