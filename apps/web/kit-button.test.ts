@@ -86,5 +86,5 @@ test('a greyed menu row and a greyed radio card say why, stay reachable, and act
   assert.match(one, /'aria-disabled': true, 'aria-describedby': `\$\{id\}-reason`/)
   assert.match(one, /onChange=\{\(\) => \(greyed \? undefined : onChange\(value\)\)\}/, 'choosing a greyed card changes nothing')
   assert.match(one, /<span id=\{`\$\{id\}-reason`\}[^>]*>\{greyed\.reason\}<\/span>/, 'the reason, in the consequence\'s line')
-  assert.doesNotMatch(one, /\sdisabled[=\s}]/)
+  assert.doesNotMatch(one, /\sdisabled(?=[\s=}>/])/)
 })

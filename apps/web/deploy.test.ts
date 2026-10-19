@@ -7,7 +7,7 @@ import { CompileRefusal, REFUSAL } from '@inflozo/theme-compiler/refusal'
 import type { Finding } from '@inflozo/theme-compiler/gate'
 import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
 import {
-  activateAnswer, canonical, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash, placeOf, refusalWords,
+  activateAnswer, canonical, CHECK_FAILED, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash, placeOf, refusalWords,
   stepNumber, stepOf, STEPS, themeNameOf, thrownCode, uploadAnswer, versionLabel, versionNumber, versionOf,
 } from './lib/deploy.ts'
 import { keysPath } from './lib/connect-rule.ts'
@@ -102,7 +102,8 @@ test('deployError: each code its sentence and fix (S8d′), the host named; the 
 
 test('refusalWords: every REFUSAL class in its plain words with its link; anything else our fault, the compile\'s words only as detail', () => {
   const ctx = { projectId: P, english: (key: string) => (key === 'nav.more' ? 'More' : undefined), names: { 'custom-tutorials-list': 'Tutorials List' } }
-  const said = (kind: keyof typeof REFUSAL, message: string, parts: Record<string, string> = {}) => refusalWords(new CompileRefusal(kind, message, parts), ctx)
+  const reached = new Set<string>()
+  const said = (kind: keyof typeof REFUSAL, message: string, parts: Record<string, string> = {}) => (reached.add(kind), refusalWords(new CompileRefusal(kind, message, parts), ctx))
   const cases: [ReturnType<typeof said>, string, string | undefined][] = [
     [said('cardDesigns', 'card designs: x'), DEPLOY_WORDS.cardDesigns, `/projects/${P}/cards`],
     [said('language', 'language "xx": no', { code: 'xx' }), 'Your project\'s language "xx" isn\'t one Ghost accepts. Choose it again in Translations.', `/projects/${P}/settings/translations`],
@@ -119,18 +120,15 @@ test('refusalWords: every REFUSAL class in its plain words with its link; anythi
     [said('staleDesign', 'x', { file: 'custom-tutorials-list.hbs', layer: 'Grid' }), 'Grid on Tutorials List uses a design Inflozo no longer has. Replace it, then ship.', `/projects/${P}/custom-tutorials-list`],
     [said('darkHook', 'Two sections share a hidden name, so …', { file: 'post.hbs' }), 'Post: Two sections share a hidden name, so …', `/projects/${P}/post`],
   ]
-  const seen = new Set<string>()
   for (const [error, message, href] of cases) {
     assert.equal(error.code, 'compile_refused', message)
     assert.equal(error.message, message)
     assert.equal(error.href, href, message)
     assert.equal(error.detail, undefined, 'a customer-caused refusal carries no compile words')
   }
-  for (const [kind] of Object.entries(REFUSAL)) seen.add(kind)
-  assert.equal(seen.size, Object.keys(REFUSAL).length)
-  // every class is said by a case above — the list cannot grow a class this test does not word
-  const worded = new Set(['cardDesigns', 'language', 'translation', 'settingCap', 'settingDeleted', 'settingHidden', 'settingChanged', 'settingUnread', 'staleDesign', 'darkHook'])
-  assert.deepEqual([...worded].sort(), Object.keys(REFUSAL).sort())
+  // every class is said by a case above — read off the cases themselves (the review, 2026-10-19: a hand-typed list was
+  // compared with REFUSAL's own keys, so a class with no case passed) — and the list cannot grow one this test does not word
+  assert.deepEqual([...reached].sort(), Object.keys(REFUSAL).sort())
   // the control: an unclassified throw is our fault; the compile's own words go to detail, never the message
   const ours = refusalWords(new Error('partials/x.hbs: two bodies'), ctx)
   assert.deepEqual(ours, { code: 'compile_failed', message: DEPLOY_WORDS.ourFault, detail: 'partials/x.hbs: two bodies' })
@@ -174,6 +172,11 @@ test('checkRows: counts over BOTH gates, the three pass lines only where they ho
   assert.equal(blocked.rows[0]?.level, 'error')
   assert.equal(DEPLOY_WORDS.fixErrors(1), 'Fix the error above to ship.')
   assert.equal(DEPLOY_WORDS.fixErrors(2), 'Fix the 2 errors above to ship.')
+  // a checker that could not run checked nothing (the review, 2026-10-19 — production's first Pre-flight showed two passes
+  // beside "We couldn't check your theme"): its finding is the one row, and no pass line is drawn
+  const couldNot = checkRows({ gscan: { ...gscan, blocked: true, errors: [f({ level: 'error', code: CHECK_FAILED, message: 'We couldn\'t check your theme, so nothing was sent to your site.' })], warnings: [] }, quality }, 6, ['default.hbs'])
+  assert.deepEqual(couldNot.passes, [])
+  assert.equal(couldNot.rows[0]?.code, CHECK_FAILED)
 })
 
 test('R-260\'s row and the other sentences the matrix quotes', () => {

@@ -2680,11 +2680,13 @@ function EditorShell({
    *  confirm and picker the editor draws — Site Remix, the panel's Reset box, Clear dark overrides, Rename, the site-wide
    *  Hide confirm, the Section Picker — all of which edit, while the shortcuts card only lists keys and stays; and a
    *  field being typed in, ended by its own end, which redraws its section from the doc (the typing was refused by
-   *  `commit`'s guard). What only views — selection, View as, Template, the devices — stays live, as R-192 rules. */
+   *  `commit`'s guard). What only views — selection, View as, Template, the devices — stays live, as R-192 rules. The deploy
+   *  wizard while it uploads or activates stays too (Story 7.18a's review): the job runs on whatever this tab holds, and
+   *  "once it starts, it finishes" includes showing how it ended. */
   useEffect(() => {
     if (lock.holder) return
     closeMenus()
-    for (const open of document.querySelectorAll<HTMLDialogElement>('[data-editor] dialog[open]:not([data-shortcuts-sheet])')) open.close()
+    for (const open of document.querySelectorAll<HTMLDialogElement>('[data-editor] dialog[open]:not([data-shortcuts-sheet]):not([data-unstoppable])')) open.close()
     editing.current?.inline.end()
   }, [lock.holder])
 

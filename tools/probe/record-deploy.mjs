@@ -261,10 +261,11 @@ async function t1Half(local) {
       }
     }
   } finally {
-    // 5 — restore and delete, both read back whatever failed (record-shim.py's restore_and_delete)
-    const back = await g.staff('PUT', `themes/${previous}/activate/`)
-    for (const name of [PROBE, `${PROBE}-fatal`]) await g.staff('DELETE', `themes/${name}/`)
-    const after = await themesOf(g)
+    // 5 — restore and delete, both read back whatever failed (record-shim.py's restore_and_delete) — each call in its own
+    // try (the review, 2026-10-19), so a refused activation still deletes the probes, and the row says what is left
+    const back = await g.staff('PUT', `themes/${previous}/activate/`).catch((e) => ({ status: `threw ${e?.name ?? 'error'}` }))
+    for (const name of [PROBE, `${PROBE}-fatal`]) await g.staff('DELETE', `themes/${name}/`).catch(() => {})
+    const after = await themesOf(g).catch(() => [])
     const active = after.find((x) => x.active)?.name
     const probes = after.filter((x) => x.name.startsWith(PROBE_PREFIX)).map((x) => x.name)
     row('t1', `5 PUT themes/${previous}/activate/ + DELETE + GET themes/ [staff]`, `${previous} active again and no probe theme installed, read back`, active === previous && probes.length === 0, `HTTP ${back.status}; active ${active}; probes ${probes.join(', ') || 'none'}`)
@@ -365,7 +366,8 @@ async function homeLeg(g, t) {
 
 /* ───────────────────────────── §86 ───────────────────────────── */
 
-const cell = (s) => String(s).replace(/\|/g, '\\|').replace(/`/g, "'").replace(/\s+/g, ' ').slice(0, 200)
+// every cell scrubbed as the console is (the review, 2026-10-19): the record is a committed file
+const cell = (s) => clean(String(s)).replace(/\|/g, '\\|').replace(/`/g, "'").replace(/\s+/g, ' ').slice(0, 200)
 const tableOf = (list) => ['| Step | Row | Got | Held |', '|---|---|---|---|', ...list.map((r) => `| ${cell(r.where)} | ${cell(r.what)} | \`${cell(r.got)}\` | ${r.ok ? 'yes' : 'no'} |`)]
 function section(t, today) {
   return [

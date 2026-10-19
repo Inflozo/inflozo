@@ -15,7 +15,7 @@ import { Menu, type MenuItem } from '@/components/kit/select'
 import { BusyLabel, Submit } from '@/components/kit/submit'
 import { RoutesFallback } from '@/components/routes-fallback'
 import {
-  CANCELLABLE, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, ROUTES_REASONS, seconds, STAGE_NAMES, stepNumber, stepOf, STEPS, themeSize, UNSTOPPABLE, uploadOnlyBlock,
+  CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, seconds, STAGE_NAMES, stepNumber, stepOf, STEPS, themeSize, UNSTOPPABLE, uploadOnlyBlock,
   versionNumber, type DeployRequest, type DeployView, type Mode, type ShipState, type Stage, type Step,
 } from '@/lib/deploy'
 import { deployPath, type Canvas } from '@/lib/editor'
@@ -371,7 +371,8 @@ export function DeployWizard({
   const prev = view === null ? (ship?.prev ?? null) : view.previous
   const major = view?.deploy?.gscan?.major ?? (Number(site?.version?.split('.')[0]) || 6)
   const checked = checkRows({ gscan: view?.deploy?.gscan ?? null, quality: view?.deploy?.quality ?? null }, major, ship?.required ?? [], names)
-  const checksDone = timings.checking?.ms !== undefined || stage === 'awaiting_ship'
+  // the checks FINISHED when their verdicts are stored — a Checking that ended on a failure stored none (the review, 2026-10-19)
+  const checksDone = stage === 'awaiting_ship' || (timings.checking?.ms !== undefined && view?.deploy?.gscan != null)
   const filtered = routes !== null && routes.collections.some((c) => nodeOf(c.filter) !== null)
   const error = view?.job.error ?? null
 
@@ -384,6 +385,7 @@ export function DeployWizard({
    *  routing, or a refusal's plain words and its link — never a `compile_failed` detail */
   const block: { reason: string; link?: { words: string; href: string } } | null = (() => {
     if (stage !== 'failed' || at !== 'check') return null
+    if (isFinding(error) && error.code === CHECK_FAILED) return { reason: error.action ?? W.infrastructure }
     if (isFinding(error) || (error === null && checked.blocked)) return { reason: W.fixErrors(Math.max(1, checked.errors)) }
     if (error === null) return { reason: W.infrastructure }
     if (error.code === 'routes_invalid') return { reason: `${error.message} ${W.routesBlocked}` }
@@ -422,7 +424,7 @@ export function DeployWizard({
     const answer = sent ? await post({ intent: 'preflight', session: session(), mode }) : null
     if (!alive.current) return
     if (answer === null || !answer.ok) {
-      const why = answer === null ? W.editsUnsent : answer.status === 423 ? LOCK_COPY.reading : W.infrastructure
+      const why = answer === null ? W.editsUnsent : answer.status === 423 ? LOCK_COPY.reading : answer.status === 409 ? W.noSite : W.infrastructure
       setPressed(null)
       setRefused(why)
       say(why)
@@ -581,8 +583,8 @@ export function DeployWizard({
 
   /* ── S8b · Pre-flight ── */
   const compileRow =
-    timings.compiling?.ms !== undefined ? (
-      <StageRow tone="done" label={W.compiled} {...(timings.compiling.bytes === undefined ? {} : { meta: W.compiledMeta(timings.compiling.ms, timings.compiling.bytes) })} />
+    timings.compiling?.ms !== undefined && timings.compiling.bytes !== undefined ? (
+      <StageRow tone="done" label={W.compiled} meta={W.compiledMeta(timings.compiling.ms, timings.compiling.bytes)} />
     ) : stage === 'failed' && timings.compiling !== undefined ? (
       <StageRow tone="failed" label={W.stageFailed(STAGE_NAMES.compiling)} />
     ) : stage === 'failed' ? null : (
@@ -769,7 +771,7 @@ export function DeployWizard({
         {routing === undefined || routing.kind === 'none' ? null : routing.kind === 'live' ? (
           <p data-routes-ending="live" className="text-ui-dense text-ink">{W.routesLive(host)}</p>
         ) : routing.kind === 'failed' ? (
-          <p data-routes-ending="failed" className="text-ui-dense leading-[1.5] text-ink">{W.routesFailed(ROUTES_REASONS[routing.reason] ?? ROUTES_REASONS['thrown'] ?? '')}</p>
+          <p data-routes-ending="failed" className="text-ui-dense leading-[1.5] text-ink">{W.routesFailed(routing.reason)}</p>
         ) : routing.kind === 'unverified' ? (
           site === null ? null : <VerifyRouting siteId={site.id} />
         ) : site !== null && view?.routesFile ? (
@@ -856,6 +858,7 @@ export function DeployWizard({
     <dialog
       ref={dialog}
       data-deploy-wizard={at}
+      data-unstoppable={unstoppable || undefined}
       aria-labelledby="deploy-title"
       onClick={(event) => (unstoppable ? undefined : closeOnBackdrop(event))}
       // Esc closes at every step but these: the cancel is refused, and so is the keydown that would ask for it — a second
@@ -864,7 +867,7 @@ export function DeployWizard({
       onKeyDown={(event) => (event.key === 'Escape' && unstoppable ? event.preventDefault() : undefined)}
       onClose={() => {
         if (dialog.current?.open) return
-        onClose(stage === 'done')
+        onClose(stage === 'done' || timings.uploading !== undefined)
       }}
       className="relative m-auto box-content max-h-[calc(100dvh-72px)] w-[520px] max-w-[calc(100vw-72px)] flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex"
     >

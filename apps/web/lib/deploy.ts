@@ -16,9 +16,8 @@
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import { refusalOf, type RefusalTag } from '@inflozo/theme-compiler/refusal'
 import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
-import { CARD_WORDS } from './cards.ts'
 import {
-  CANVASES, canvasPath, isRouteCanvas, labelOf, routeCanvasOf, routesPath, settingsPath, translationsPath, type Canvas, type CanvasKey,
+  CANVASES, canvasPath, labelOf, routeCanvasOf, settingsPath, translationsPath, type Canvas, type CanvasKey,
 } from './editor.ts'
 import { keysPath } from './connect-rule.ts'
 import { sizeLabel } from './routes-upload.ts'
@@ -346,11 +345,12 @@ export const themeSize = (bytes: number): string => (bytes < 1024 * 1024 ? sizeL
 /** Seconds to one place, locale-free (AD-1). */
 export const seconds = (ms: number): string => (Math.max(0, ms) / 1000).toFixed(1)
 
-/** S8d′'s heading word per stage. */
+/** The failed stage's name in "{Stage} failed" — S8d′ names S8c's own row ("Uploading to Ghost failed", `S8 Deploy.dc.html`
+ *  S8d′), and Pre-flight's rows their stage. */
 export const STAGE_NAMES: Readonly<Record<'compiling' | 'checking' | 'uploading' | 'activating', string>> = {
   compiling: 'Compiling',
   checking: 'Checking',
-  uploading: 'Uploading',
+  uploading: DEPLOY_WORDS.uploadingRow,
   activating: 'Activating',
 }
 
@@ -467,6 +467,9 @@ export const fileLabel = (file: string, names: Readonly<Record<string, string>> 
 
 // ── Pre-flight's rows ───────────────────────────────────────────────────────────────────────────────────────────────
 
+/** The gate's code for a checker that could not run (`gate/verdict.ts`) — Inflozo's failure, never the theme's. */
+export const CHECK_FAILED = 'theme_check_failed'
+
 export type CheckRow = {
   level: 'error' | 'warning'
   code: string
@@ -493,11 +496,13 @@ export function checkRows(
   const warnings: Finding[] = [...(g?.warnings ?? []), ...(q?.warnings ?? [])]
   const all = [...errors, ...warnings]
   const passes: string[] = []
-  if (g !== null && g.errors.length === 0) passes.push(DEPLOY_WORDS.passMajor(major))
-  if (!all.some((f) => f.code === 'template_missing' || /^GS020-/.test(f.rule ?? ''))) {
+  // a checker that failed to run (`theme_check_failed`, the gate's own) checked nothing, so nothing passed
+  const ran = g !== null && !all.some((f) => f.code === CHECK_FAILED)
+  if (ran && g.errors.length === 0) passes.push(DEPLOY_WORDS.passMajor(major))
+  if (ran && !all.some((f) => f.code === 'template_missing' || /^GS020-/.test(f.rule ?? ''))) {
     passes.push(DEPLOY_WORDS.passTemplates(required.map((f) => f.replace(/\.hbs$/, ''))))
   }
-  if (g !== null && !all.some((f) => /^GS001-DEPR/.test(f.rule ?? ''))) passes.push(DEPLOY_WORDS.passHelpers)
+  if (ran && !all.some((f) => /^GS001-DEPR/.test(f.rule ?? ''))) passes.push(DEPLOY_WORDS.passHelpers)
   const rows = all.map((f): CheckRow => {
     const place = f.refs[0] === undefined ? null : placeOf(f.refs[0], names)
     return {

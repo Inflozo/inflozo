@@ -13,6 +13,7 @@ import { CONNECT_SITE_DIALOG } from '@/lib/connect-rule'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import type { PlanId } from '@/lib/plan'
 import { isEditorPath } from '@/lib/editor'
+import { storedTabSession } from '@/lib/lock-client'
 import { stripApp } from '@/routing'
 import { AccountMenu } from './account-menu'
 import type { ShellUser } from '@/lib/shell-user'
@@ -254,6 +255,10 @@ export function Shell({
   plan: PlanId
   children: ReactNode
 }) {
+  // EVERY signed-in page load judges this tab's lock id (Story 7.18a's review): a page that never read it left the mark a
+  // reload leaves, so a tab copied from it — a project ⌘-clicked from Projects after a reload — passed for the reload and
+  // shared the first tab's session again (`lib/lock-client.ts`, the owner's finding 2)
+  useEffect(() => void storedTabSession(), [])
   // The raw path is what a navigation is written with; `stripApp` answers "where am I" at both
   // addresses (see the note above `isActive`).
   const here = usePathname()

@@ -4241,6 +4241,12 @@ non-English project, Translations lists every section with untouched starting wo
 and the deploy check (Story 7.18) repeats the list as a warning — never a block."** — Pre-flight's half: the list
 `untouchedWords` (Story 7.12) gives, for a project whose language is not `en`, each section named by its layer and canvas
 with its untouched words (DW-145).
+**And** *(given an owner by Story 7.18a's Review, 2026-10-19)* Ship it uploads only to the project's CURRENT linked site:
+`ship()` compares `projects.linked_site_id` with the job's site and refuses with a sentence asked of the owner (R-83) (DW-374);
+a site a plan refusal marked Preview-only (`capability_source = 'deploy_error'`) is offered a way back on Destination — a
+re-check or Run checks, asked of the owner (DW-375); R-260's post read is capped or budgeted on its own, with a reading state,
+so a very large site neither spends the canvas's request ceiling nor shows nothing while it reads (DW-377); and the checks
+Story 7.18a left unexecuted each gain one (DW-378).
 
 **FRs:** FR-B5 (the switch), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-H6 (its pre-deploy
 half), FR-Q6 (the locale warnings and the RTL repeat). · **Frame:** `S8 Deploy.dc.html` S8a (Switch) · S8b as extended. ·
@@ -4419,6 +4425,10 @@ deploying can never be blocked by pinning
 rather than as a version
 **And** artifacts are **immutable** (NFR-4), and durability is stated per store — **Storage is not Postgres**
 (AD-29).
+**And** *(given an owner by Story 7.18a's Review, 2026-10-19)* a deploy's version stays "the next number" once old
+deploys are pruned: Story 7.18a counts this project's uploaded and live deploys plus one, which pruning stops and a deploy
+failed after Ghost took it skips, so the number becomes the highest stored version plus one, read from a record retention
+never deletes (DW-372).
 
 **FRs:** FR-J7. · **Frame:** `D2 Deploy History Completed.dc.html` D2a · D2b. · **Owner test:** yes.
 
@@ -4506,6 +4516,9 @@ which the limit alone would stretch past three hours before compile time.
 Story 7.18a's Ship it runs after activation; `apps/web/server/ghost-admin/db.ts` holds ONE pooled connection, and a `begin`
 block on it may not call `sql()`, which `call()` does for its decrypt and audit rows — so the lock cannot simply wrap the
 upload there, and this story's Create settles how it is held.
+**And** *(given an owner by Story 7.18a's Review, 2026-10-19)* a Pre-flight never runs beside another of the same project
+to the same site: Story 7.18a's `start` abandons only a check resting at `awaiting_ship`, so one still compiling or checking
+runs on beside the new one (DW-373).
 
 **FRs:** FR-J11. · **Owner test:** none.
 
@@ -4685,6 +4698,9 @@ So that I find out from Inflozo rather than from my site.
 **And** **an upload that succeeded while activation failed sends no failure email**, because the theme uploaded,
 the user is in the product looking at the result, and the state is recoverable in one click
 **And** the outcome is also written to the notifications table by this epic (AD-25).
+**And** *(given an owner by Story 7.18a's Review, 2026-10-19)* a failure after Ghost took the theme — the invocation's time
+ran out mid-ship, or a database write after the upload failed twice — is never told as "before anything reached your site":
+it gets its own sentence, asked of the owner (R-83), and the deploy's row is settled by the stage it reached (DW-376).
 
 **FRs:** FR-P1 email (5). · **Frame:** none — a transactional email is not a drawn surface; the owner sees its in-product counterpart on `S8 Deploy.dc.html` S8d′ and in the notifications feed. · **Owner test:** yes. · **Verification:** a real forced failure on T3 and a real
 Resend send (R-82).

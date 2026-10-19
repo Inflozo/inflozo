@@ -93,14 +93,17 @@ function must<T>(answer: { data: T; error: { code?: string } | null }, what: str
   return answer.data
 }
 
+/* EVERY LIST READ IS ORDERED (the review, 2026-10-19): Postgres returns rows in no promised order, and the staleness hash
+   is over these reads as read — two reads of unchanged rows in another order would hash apart and make Ship it re-compile.
+   The settings keep the editor's own order (`read.ts`: position, then created_at), which is the order the compile is handed. */
 export async function compileInputOf(a: { projectId: string; siteId: string; userId: string }, db: SupabaseClient): Promise<ProjectRead | null> {
   const { projectId, siteId, userId } = a
   const [project, site, templates, settings, overrides, treatments, routing, customs, deploys, binding] = await Promise.all([
     db.from('projects').select('id, name, slug, dark_enabled, posts_per_page, style_pack, language').eq('id', projectId).eq('user_id', userId).maybeSingle(),
     db.from('sites').select('id, url, ghost_version, capability, site_settings').eq('id', siteId).eq('user_id', userId).is('disconnected_at', null).maybeSingle(),
-    db.from('project_templates').select('template_key, doc').eq('project_id', projectId).eq('user_id', userId),
-    db.from('custom_settings').select('key, type, group_name, visibility_condition, bound_to, position').eq('project_id', projectId).eq('user_id', userId),
-    db.from('translation_overrides').select('catalog_key, value').eq('project_id', projectId).eq('user_id', userId),
+    db.from('project_templates').select('template_key, doc').eq('project_id', projectId).eq('user_id', userId).order('template_key'),
+    db.from('custom_settings').select('key, type, group_name, visibility_condition, bound_to, position').eq('project_id', projectId).eq('user_id', userId).order('position').order('created_at'),
+    db.from('translation_overrides').select('catalog_key, value').eq('project_id', projectId).eq('user_id', userId).order('catalog_key'),
     db.from('project_treatments').select('card_designs').eq('project_id', projectId).eq('user_id', userId).maybeSingle(),
     db.from('routes_config').select('config').eq('project_id', projectId).eq('user_id', userId).maybeSingle(),
     db.from('custom_templates').select('id, filename, display_name, kind, created_at').eq('project_id', projectId).eq('user_id', userId).eq('kind', 'routes').order('created_at'),

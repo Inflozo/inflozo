@@ -556,7 +556,8 @@ export const Layers = memo(function Layers({
                 aria-describedby="layers-ghost-how"
                 onKeyDown={(event) => {
                   if (event.target !== event.currentTarget) return
-                  if (event.key === 'Enter') {
+                  // a MODIFIED Enter is the map's, as on a section's row: ⌘⏎ ships from here too (Story 7.18a's review)
+                  if (event.key === 'Enter' && !event.metaKey && !event.ctrlKey) {
                     event.preventDefault()
                     ghost.onSelect(row.id)
                   } else if (event.key === ' ') {

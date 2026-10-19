@@ -10191,3 +10191,108 @@ resolution: Story 7.18a's Dev, decided as the ledger asks (routine call 15): (a)
   (c) `kept` over a site already holding Ghost's default clears `routes_fallback`; (d) no "last confirmed" column — the
   earlier-file edge is a stated ceiling in `routesWrite`'s comment. `routes-upload.test.ts` holds each.
 
+
+## Deferred from: code review of spec-7-18a-the-deploy-wizard (2026-10-19)
+
+### DW-372: a deploy's version is "uploads so far plus one", which retention and a failed-after-upload deploy both break
+
+plain: Inflozo numbers each ship v1, v2, v3… by counting this project's uploaded and live deploys to the site and adding
+  one. Once Story 7.22 deletes old deploys (Free keeps three), the count stops growing and every later ship would be called
+  the same version. A deploy Ghost took but Inflozo then marked failed (a name another deploy claimed first) drops out of
+  the count too, so the next ship reuses its number.
+status: open
+severity: low
+origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `project-input.ts`' `n = uploads.length + 1`, mirrored in
+  `read.ts`' `shipStateOf`.
+owner: Story 7.22 (artifacts, retention and pinning), whose pruning is what breaks the count: the number becomes the highest
+  stored version plus one, from a record retention never deletes.
+location: `apps/web/server/deploy/project-input.ts` (`n`) · `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts`
+  (`shipStateOf`)
+reason: no deploy is ever deleted before 7.22, and a reused number on one name is Ghost replacing that theme's files anyway.
+
+### DW-373: a second Pre-flight can run beside one still compiling or checking
+
+plain: Run checks while another check of the same project is still running (closed with Esc during Checking, then opened
+  again) starts a second compile beside the first. Only a check already resting at "ready to ship" is abandoned, so two can
+  end up resting side by side, the older one never cleaned up until the next Run checks.
+status: open
+severity: low
+origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `run.ts`' `start` abandons `awaiting_ship` rows only.
+owner: Story 7.25 (rate limits, the compile budget and the advisory lock), which bounds how many compiles one project runs.
+location: `apps/web/server/deploy/run.ts` (`start`) · `apps/web/server/deploy/deploy-io.ts` (`jobs.resting`)
+reason: the compile budget and the per-project lock are 7.25's by this spec's Never list.
+
+### DW-374: Ship it uploads to the site its Pre-flight read, never re-checking the project's link
+
+plain: If a project is linked to another site between Run checks and Ship it, the theme still goes to the first site.
+status: open
+severity: low
+origin: Story 7.18a's Review (2026-10-19), the Blind Hunter and Edge Case Hunter layers — `ship()` reads `deploy_jobs.site_id`.
+owner: Story 7.18b (choosing the site), the first story in which the link can change from inside the product: `ship()` compares
+  `projects.linked_site_id` with the job's site and refuses with a sentence (R-83 for its words).
+location: `apps/web/server/deploy/run.ts` (`ship`) · `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`
+reason: nothing in the product relinks a project before 7.18b's site picker.
+
+### DW-375: a site a plan refusal marked Preview-only has no way back in the product
+
+plain: When Ghost(Pro) refuses a custom theme, the site is marked Preview-only. After the customer upgrades their plan, Ship
+  it's Destination still shows the Preview-only notice with no Run checks, and only an accepted upload clears the mark — which
+  can never happen from there.
+status: open
+severity: medium
+origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `deploy-io.ts`' `capability` clears `deploy_error` on an
+  accepted upload only, and `capabilityOf` writes nothing for Ghost(Pro) while its flag is off.
+owner: Story 7.18b (Destination's site card), with the Ghost(Pro) gate's observation (VERIFY 1–3): a Preview-only mark whose
+  source is `deploy_error` offers a re-check or Run checks — an R-83 question there.
+location: `apps/web/components/editor/deploy-wizard.tsx` (Destination) · `apps/web/server/deploy/deploy-io.ts` (`capability`)
+reason: the plan refusal is read in source and never observed (F7); no customer can meet it before the Ghost(Pro) gate.
+
+### DW-376: a failure after Ghost took the theme says "before anything reached your site"
+
+plain: If the deploy loses track after Ghost accepted the upload — the server's time ran out mid-ship, or a database write
+  after the upload failed twice — the wizard says "Something went wrong on our side before anything reached your site",
+  which is then untrue (the theme may be on the site, even live), and the deploy's own row stays at "checking".
+status: open
+severity: low
+origin: Story 7.18a's Review (2026-10-19), the Blind Hunter, Edge Case Hunter and Acceptance Auditor layers — `run.ts`'
+  `failInfra` and `view`'s stall rule write `deploy_infrastructure` whatever stage the job reached. The Review made the
+  capability write after an accepted upload best-effort, which removes the likeliest case.
+owner: Story 7.31 (the deploy-failure email), which words every failure the customer is told about: a sentence for "Ghost
+  may have it" (R-83 — none is in this spec's Words), and the deploy row settled by stage.
+location: `apps/web/server/deploy/run.ts` (`failInfra`, `view`)
+reason: a new sentence is the owner's (the spec's Ask First), and the cases left need a killed invocation or two database
+  failures in a row.
+
+### DW-377: R-260's check reads a whole site's posts through the canvas's request ceiling
+
+plain: Pre-flight's "every post appears on a page" check reads every published post, a hundred at a time, through the same
+  budget the canvas uses. A very large site (tens of thousands of posts) can spend that budget, after which the canvas
+  itself falls back to sample content, and the check shows nothing while it is still reading.
+status: open
+severity: low
+origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `editor.tsx`' `readSitePosts`.
+owner: Story 7.18b (Pre-flight's warning rows): a page cap with its own sentence ("we checked your newest N posts") and a
+  reading state, or a budget of its own — an R-83 question there.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`readSitePosts`) ·
+  `apps/web/components/editor/deploy-wizard.tsx` (R-260's row)
+reason: the spec asked for the read "within the reader's request ceiling"; the ceiling's cost on a huge site is the new fact.
+
+### DW-378: what Story 7.18a's checks still do not execute
+
+plain: Some of the deploy's behaviour is proven only in the deployed walk (run on the owner's go, never in CI) or not at
+  all, so a later change could break it with every gate green.
+status: open
+severity: low
+origin: Story 7.18a's Review (2026-10-19), the Verification Gap and Blind Hunter layers.
+owner: Story 7.18b (the next story on the wizard), each a check of its own:
+  - `deploy-io.ts`' `jobs.claim` — its `stage` condition run against Postgres (the RLS gate's container), not the fake's;
+  - `read.ts`' `shipStateOf` (n, prev, liveHere, a disconnected site, Preview-only) — the harness replaces it everywhere;
+  - `routes/actions.ts`' `resetRoutes` executed (an unreadable config replaced, a readable one untouched, templates kept);
+  - `fetchWithKey` using `timeoutFor(item)` — only `timeoutFor`'s values are tested;
+  - `tools/check-traces.mjs`' touch recorder over the pilot theme rather than a four-file one;
+  - the journeys' "stays open" / "opens nothing" checks, which pass on their first poll — each needs a settle before it;
+  - the confetti's iteration count, R-260's read past one page, and "Cancelling…" held on screen;
+  - a stage shorter than the wizard's one-second read (Checking ran 0.9 s on production) can go unannounced.
+location: `apps/web/deploy-run.test.ts` · `apps/web/deploy-input.test.ts` · `tools/keyboard/journey.spec.mjs` ·
+  `tools/check-traces.mjs`
+reason: none is a defect found; each is a check that would catch one.

@@ -332,12 +332,14 @@
 // Review sets on the owner's in-session go (R-82, R-238; never a subagent). A third throwaway account (`editor-harness-c-…`,
 // seeded "Walk 113 …" with step 1's fixture) connects T1 through the wizard with the Admin and Content keys and NO staff token,
 // and its project is linked to the site through the service key (choosing the site in the product is Story 7.18b's); T1's
-// active theme and routes.yaml are read first, and the step refuses to write while an `inflozo-` theme is active. 113b: a
+// active theme and routes.yaml are read first, and the step refuses to write while an `inflozo-` theme is active or any walk's
+// theme is installed. 113b: a
 // Primary tag collection over T1's most-used public primary tag made on Routes & Templates, and R-260 evaluated in the walk over
 // T1's posts read through the app's own reader — no post named, and with 7.16a's index filter planted (`unlistedPosts`' `index`)
 // T1's untagged posts named (the control); the Inline Row's Heading emptied in the panel and saved, gone from the canvas
 // (DW-349). 113c: Ship it in the holding window opens the wizard (the control), a second window reading along meets D8g on
-// Wait, and "Take over and ship" opens Destination there. 113d: Pre-flight's rows against the two verdicts stored on the
+// Wait, and "Take over and ship" opens Destination there; the window that lost the lock is refused a Pre-flight by the route
+// (423, no job). 113d: Pre-flight's rows against the two verdicts stored on the
 // `deploys` row, R-260's pass row, and the artefact in `deploy-artifacts`; then an unreadable `routes_config` and a malformed
 // `project_treatments.card_designs`, each planted through the service key, blocking with their reason and link, the earlier
 // resting check abandoned, each plant put back and read back. 113e: Cancel during Checking leaves no deploy row and no object.
@@ -349,10 +351,10 @@
 // and sends no deploy request, counted) and on S8a's card. 113h: the server's guard replayed (ship in mode "upload" → 422,
 // nothing uploaded), then Deploy & activate for v2 — Live, v1 demoted — and R-264 (b): uploaded under the live name, v2 went
 // live on Ghost's own upload answer with NO activating stage, so no PUT. 113i: DW-54 — the product's `call()`, imported in this
-// process with `SUPABASE_DB_POOLER_URL` read from tools/probe/.env for that call alone, refuses `POST posts/`
+// process with `SUPABASE_DB_POOLER_URL` read from tools/probe/.env for that call alone, refuses `DELETE posts/<none>/`
 // (`write_not_allowed`), and `private.credential_audit` holds that `denied` row beside one `admin_write ok` per write the step
-// drove — upload, activate, upload — and T1's theme list is unchanged by it. 113j, in a `finally` whatever failed: T1's theme
-// restored and the step's theme deleted (staff token), T1's
+// drove — upload, activate, upload — and T1's theme list is unchanged by it. 113j, in a `finally` whatever failed: the step's
+// last job waited to rest, T1's theme restored and the step's theme deleted (staff token), T1's
 // routes.yaml byte for byte as before, the site disconnected through `/sites/disconnect`, the project's objects removed from the
 // bucket, the account deleted, and users and projects counted back. Keys are read in-process by name and scrubbed from errors.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
@@ -11722,8 +11724,10 @@ async function main() {
         prev113 = before113?.find((t) => t.active)?.name ?? null
         routesBefore113 = await routesFile113()
         // record-shim.py's start_guard: a theme to go back to, never one of Inflozo's own (an earlier run or test that did not restore)
-        guard113 = prev113 !== null && !prev113.startsWith('inflozo-') && !before113.some((t) => t.name === theme113) && routesBefore113 !== null
-        check(`step 113 — the fixture: account C made and seeded, its project's slug read (theme ${theme113}), and T1's start guard — the active theme read with the staff token and none of Inflozo's (${prev113}), no ${theme113} installed, routes.yaml read (${routesBefore113?.length ?? 'unread'} bytes)`,
+        // — and no walk's theme of ANY run installed (the review, 2026-10-19: each run's name is new, so naming only this one's
+        // could never refuse what a killed run left)
+        guard113 = prev113 !== null && !prev113.startsWith('inflozo-') && !before113.some((t) => t.name.startsWith('inflozo-walk-113-')) && routesBefore113 !== null
+        check(`step 113 — the fixture: account C made and seeded, its project's slug read (theme ${theme113}), and T1's start guard — the active theme read with the staff token and none of Inflozo's (${prev113}), no walk's theme installed, routes.yaml read (${routesBefore113?.length ?? 'unread'} bytes)`,
           UUID.test(idC ?? '') && UUID.test(P113 ?? '') && typeof slug113 === 'string' && guard113, JSON.stringify({ made: made113.status, P113, slug113, prev113, inflozoThemes: (before113 ?? []).filter((t) => t.name.startsWith('inflozo-')).map((t) => t.name) }))
         if (!guard113) throw new Error('step 113: the fixture or T1\'s start guard failed — nothing was written to T1')
 
@@ -11850,6 +11854,17 @@ async function main() {
         await pb.locator('#editor-ship-takeover-confirm').click()
         const reloadedB113 = await reloadB113
         const destB113 = await until113(() => wiz113(pb), (w) => w?.at === 'destination', 45000)
+        // the lock on the SERVER (the review, 2026-10-19 — only D8g, the UI's half, was walked): window A, no longer the holder,
+        // asks for a Pre-flight with its own session — 423, and no job is made
+        const jobsA113 = (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P113}&select=id`)).body?.length ?? null
+        const refusedA113 = await pa.evaluate(async (url) => {
+          const session = sessionStorage.getItem('inflozo-lock-session')
+          const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'preflight', session }) })
+          return { status: r.status, session: session !== null }
+        }, `${PREFIX}/projects/${P113}/deploy`).catch(() => null)
+        const jobsA2113 = (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P113}&select=id`)).body?.length ?? null
+        check('step 113c — the lock on the server: the window that lost it asks the deploy route for a Pre-flight with its own session — 423, and no job is made',
+          refusedA113?.status === 423 && refusedA113.session === true && jobsA113 !== null && jobsA2113 === jobsA113, JSON.stringify({ refusedA113, jobsA113, jobsA2113 }))
         // window A's part is done: it leaves, so its editor neither beats nor asks for the lock again
         await pa.goto('about:blank').catch(() => {})
         check(`step 113c — "${LK113.LOCK_COPY.shipConfirm}" takes the lock (the editor's reload) and opens the wizard there on Destination: ${HOST113} "${W113.connected}", "${W113.activate}" chosen, the theme ${theme113} and the chip "${W113.chip(1, null)}", Run checks offered`,
@@ -12085,7 +12100,9 @@ async function main() {
         try {
           const [GA113, DB113] = await Promise.all([imp113('apps/web/server/ghost-admin/index.ts'), imp113('apps/web/server/ghost-admin/db.ts')])
           try {
-            await GA113.call({ siteId: siteId113, method: 'POST', path: 'posts/', body: { posts: [{ title: 'Walk 113 — never sent' }] }, route: 'projects/deploy', kind: 'admin' })
+            // a write Ghost could not act on even were it sent (the review: a real `POST posts/` would have made a post on T1
+            // had the allowlist regressed) — a DELETE of a post id no Ghost holds
+            await GA113.call({ siteId: siteId113, method: 'DELETE', path: 'posts/000000000000000000000000/', route: 'projects/deploy', kind: 'admin' })
             deniedI113 = 'no throw'
           } catch (e) {
             deniedI113 = e?.name === 'AdminError' ? e.code : `threw ${e?.name ?? 'something'}`
@@ -12098,7 +12115,7 @@ async function main() {
         const themesI1113 = await themes113()
         const okI113 = (auditI113 ?? []).filter((r) => r.outcome === 'ok').map((r) => r.allowlist_item)
         const deniedRowsI113 = (auditI113 ?? []).filter((r) => r.outcome === 'denied')
-        check('step 113i — DW-54: the product\'s call(), asked for POST posts/ (no allowlist item) on the walk\'s site, throws write_not_allowed',
+        check('step 113i — DW-54: the product\'s call(), asked for DELETE posts/<none>/ (no allowlist item) on the walk\'s site, throws write_not_allowed',
           deniedI113 === 'write_not_allowed', String(deniedI113))
         check(`step 113i — private.credential_audit (the pooler): exactly one admin_write "denied" row for it, with no item, beside one admin_write "ok" row per write the step drove, in order (${writes113.join(', ')}) — and T1's theme list unchanged by the denied call`,
           writes113.length > 0 && canon113(okI113) === canon113(writes113) && deniedRowsI113.length === 1 && deniedRowsI113[0].allowlist_item === null && deniedRowsI113[0].route === 'projects/deploy' &&
@@ -12116,6 +12133,14 @@ async function main() {
           await ctx.close().catch(() => {})
         }
         if (guard113) {
+          // a ship the step started and then died beside is still running on Vercel: the restore waits for its job to rest (AD-11's
+          // budget at most), or the upload would land after the read-back below (the review, 2026-10-19)
+          if (P113 !== null) {
+            await restore113('the step\'s last job at rest', async () => {
+              const rest = await until113(job113, (j) => j === null || !['queued', 'compiling', 'checking', 'uploading', 'activating'].includes(j.stage), 330000)
+              if (rest !== null && ['queued', 'compiling', 'checking', 'uploading', 'activating'].includes(rest.stage)) throw new Error(`job ${rest.id} still ${rest.stage} after AD-11's budget`)
+            })
+          }
           await restore113('T1\'s theme', async () => {
             const now = await themes113()
             if (now !== null && now.find((t) => t.active)?.name !== prev113) await staff113('PUT', `themes/${encodeURIComponent(prev113)}/activate/`)

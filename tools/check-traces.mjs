@@ -28,6 +28,7 @@
 // relative imports reach `@inflozo/library/packs`. Seen red on Story 6.2's build: two chunks, every sha256 in each.
 
 import { execFileSync } from 'node:child_process'
+import { createRequire } from 'node:module'
 import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -166,14 +167,24 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'inflozo-trace-gscan-'))
 const theme = { 'package.json': JSON.stringify({ name: 'inflozo-trace', version: '1.0.0', engines: { ghost: '>=5.0.0' }, config: { posts_per_page: 5 } }), 'index.hbs': '{{!< default}}{{#foreach posts}}<a href="{{url}}">{{title}}</a>{{/foreach}}{{pagination}}', 'post.hbs': '{{!< default}}{{#post}}<h1>{{title}}</h1>{{content}}{{/post}}', 'default.hbs': '<!doctype html><html lang="{{@site.locale}}"><head>{{ghost_head}}</head><body class="{{body_class}}">{{{body}}}{{ghost_foot}}</body></html>' }
 for (const [f, body] of Object.entries(theme)) fs.writeFileSync(path.join(dir, f), body)
 const gscan = require(process.env.GSCAN_ALIAS)
-gscan.check(dir, { checkVersion: process.env.GSCAN_SPEC }).then((t) => { gscan.format(t, { checkVersion: process.env.GSCAN_SPEC }); fs.rmSync(dir, { recursive: true, force: true }); process.stdout.write(JSON.stringify([...seen])) })
+gscan.check(dir, { checkVersion: process.env.GSCAN_SPEC }).then((t) => { gscan.format(t, { checkVersion: process.env.GSCAN_SPEC }); process.stdout.write(JSON.stringify([...seen])) }, (e) => { process.stderr.write(String(e && e.message)); process.exitCode = 1 }).finally(() => fs.rmSync(dir, { recursive: true, force: true }))
 `
   for (const [alias, spec] of [['gscan4', 'v5'], ['gscan6', 'v6']]) {
-    const touched = JSON.parse(execFileSync(process.execPath, ['-e', TOUCH], { cwd: join(REPO, 'apps/web'), env: { ...process.env, GSCAN_ALIAS: alias, GSCAN_SPEC: spec }, encoding: 'utf8' }))
-    // the control: a checker that touched nothing would pass on nothing
-    if (touched.length < 50) {
+    let touched
+    try {
+      touched = JSON.parse(execFileSync(process.execPath, ['-e', TOUCH], { cwd: join(REPO, 'apps/web'), env: { ...process.env, GSCAN_ALIAS: alias, GSCAN_SPEC: spec }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))
+    } catch (e) {
       failed++
-      console.log(`FAIL  ${alias} touched only ${touched.length} files while checking — the recorder saw nothing, so this proves nothing`)
+      console.log(`FAIL  ${alias} could not be run to record what it touches — ${String(e.stderr || e.message).split('\n')[0]}`)
+      continue
+    }
+    // the control, derived (the review, 2026-10-19 — it was a written-down count): the recorder saw the checker load every
+    // one of its own check files, so a recorder that saw nothing cannot pass
+    const checks = join(dirname(realpathSync(createRequire(join(REPO, 'apps/web/package.json')).resolve(`${alias}/package.json`))), 'lib', 'checks')
+    const unseen = readdirSync(checks).filter((f) => f.endsWith('.js')).filter((f) => !touched.includes(join(checks, f)))
+    if (unseen.length > 0) {
+      failed++
+      console.log(`FAIL  ${alias}: the recorder did not see ${unseen.length} of its check files load (${unseen.slice(0, 3).join(', ')}) — it proves nothing`)
       continue
     }
     const absent = touched.map((f) => relative(REPO, f)).filter((f) => !carried.has(f))

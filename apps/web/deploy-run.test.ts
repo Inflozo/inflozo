@@ -543,3 +543,74 @@ test('Re-activate whose PUT fails stays D2e: the deploy stays uploaded, nothing 
   assert.equal(endingOf(after.stage, d, after.stage_timings), 'notLive', 'D2e')
   assert.ok(!w.events.includes('routes'), 'no routes offered')
 })
+
+/* ── the review (2026-10-19) ─────────────────────────────────────────────────────────────────────────────────────── */
+
+test('a Cancel that lands after the last edge\'s read and before awaiting_ship is written is honoured: the job ends cancelled, nothing left', async () => {
+  const w = world({})
+  const job = await start({ projectId: P, siteId: S, userId: U }, w.io)
+  const update = w.io.jobs.update
+  w.io.jobs.update = async (jid, u, patch) => {
+    // the press arrives while the row still stands at checking, after compileAndCheck's last look
+    if (patch.stage === 'awaiting_ship') assert.equal(await cancel({ jobId: jid, userId: U }, w.io), true)
+    await update(jid, u, patch)
+  }
+  await preflight({ jobId: job.id, userId: U }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'cancelled')
+  assert.equal(w.deploys.size, 0, 'no Deploy row')
+  assert.equal(w.bucket.size, 0, 'no object')
+})
+
+test('Cancel writes its flag only while the row still stands where it was read: a row that moved on to awaiting_ship refuses it', async () => {
+  const w = world({})
+  const job = await begin(w)
+  assert.equal(job.stage, 'awaiting_ship')
+  // the control for the conditional: the first read is a stale one, still saying checking
+  const read = w.io.jobs.read
+  let stale = true
+  w.io.jobs.read = async (jid, u) => {
+    const row = await read(jid, u)
+    if (stale && row !== null) {
+      stale = false
+      return { ...row, stage: 'checking' }
+    }
+    return row
+  }
+  assert.equal(await cancel({ jobId: job.id, userId: U }, w.io), false)
+  assert.equal(w.jobs.get(job.id)?.cancel_requested, false, 'nothing written')
+})
+
+test('Ship it on a row whose Cancel was set honours the Cancel: nothing uploaded, the job cancelled, its deploy and object gone', async () => {
+  const w = world({})
+  const job = await begin(w)
+  w.jobs.set(job.id, { ...(w.jobs.get(job.id) as JobRow), cancel_requested: true })
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.jobs.get(job.id)?.stage, 'cancelled')
+  assert.equal(w.calls.length, 0, 'nothing reached Ghost')
+  assert.equal(w.deploys.size + w.bucket.size, 0)
+})
+
+test('Deploy only\'s re-ask that cannot be read fails the job as ours — it never leaves the wizard waiting on a row that will not move', async () => {
+  const w = world({ liveProject: null })
+  const job = await begin(w)
+  w.io.deploys.liveProject = async () => {
+    throw Object.assign(new Error('db'), { infra: true })
+  }
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  assert.equal(after.stage, 'failed')
+  assert.equal(after.error?.code, 'deploy_infrastructure')
+  assert.equal(w.calls.length, 0, 'nothing uploaded')
+})
+
+test('clearing a refused plan\'s mark is bookkeeping: a capability write that fails after Ghost took the theme never fails the ship', async () => {
+  const w = world({})
+  const job = await begin(w)
+  w.io.capability = async () => {
+    throw Object.assign(new Error('db'), { infra: true })
+  }
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  assert.equal(after.stage, 'done')
+  assert.equal((w.deploys.get(job.deploy_id as string) as DeployRow).status, 'live')
+})

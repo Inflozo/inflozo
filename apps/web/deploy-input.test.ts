@@ -9,7 +9,7 @@ import { JSDOM } from 'jsdom'
 import { compileTheme } from '@inflozo/theme-compiler'
 import { GSCAN, gscanGate, preloadChecks, qualityGate } from '@inflozo/theme-compiler/gate'
 import { createRequire } from 'node:module'
-import { readdirSync, realpathSync } from 'node:fs'
+import { readdirSync, readFileSync, realpathSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { defaultContent } from '@inflozo/section-runtime'
 import { compileInputOf } from './server/deploy/project-input.ts'
@@ -36,7 +36,7 @@ function fakeDb(tables: Record<string, unknown>, filters: string[]): SupabaseCli
       eq: (col: string, v: unknown) => (seen.push(`${col}=${String(v)}`), q),
       is: (col: string) => (seen.push(`${col} is`), q),
       in: (col: string) => (seen.push(`${col} in`), q),
-      order: () => q,
+      order: (col: string) => (seen.push(`order ${col}`), q),
       maybeSingle: async () => done(),
       then: (resolve: (v: unknown) => void) => resolve(done()),
     }
@@ -74,6 +74,12 @@ test('a stored project compiles through the shell into a theme both pinned gscan
   assert.ok(read !== null)
   // every read carries the owner
   for (const f of filters) assert.match(f, new RegExp(`user_id=${U}`), f)
+  // …and its own project or site (the review, 2026-10-19): a read that lost that clause would compile another project's rows
+  for (const f of filters) assert.match(f, f.startsWith('projects:') ? new RegExp(` id=${P}`) : f.startsWith('sites:') ? new RegExp(` id=${S}`) : new RegExp(`project_id=${P}`), f)
+  // every list the staleness hash reads is ORDERED, so unchanged rows read in another order never hash apart
+  for (const [table, col] of [['project_templates', 'template_key'], ['custom_settings', 'position'], ['translation_overrides', 'catalog_key']]) {
+    assert.ok(filters.some((f) => f.startsWith(`${table}:`) && f.includes(`order ${col}`)), `${table} ordered by ${col}`)
+  }
   assert.ok(filters.some((f) => f.startsWith('sites:') && f.includes('disconnected_at is')), 'a disconnected site is no site')
   // stored rows only: Home and the site doc as files, Home's page 2 under its page-1 file, the orphan skipped
   assert.deepEqual(Object.keys(read.input.templates).sort(), ['default.hbs', 'home.hbs'])
@@ -141,6 +147,8 @@ test('a project with routing hands the compile `routes`, `routed` and `lists` fr
   for (const major of [5, 6] as const) assert.equal((await gscanGate(theme.files, major)).errors.length, 0, `v${major}`)
 })
 
+const GSCAN_SOURCE = readFileSync(new URL('../../packages/theme-compiler/gate/gscan.ts', import.meta.url), 'utf8')
+
 test('the owner\'s test (2026-10-19): preloadChecks loads EVERY check file of each pinned checker by its literal name — the list and each pin\'s lib/checks/ never part, so the deploy route\'s trace follows every import a check makes', () => {
   const req = createRequire(import.meta.url)
   for (const major of [5, 6] as const) {
@@ -150,7 +158,10 @@ test('the owner\'s test (2026-10-19): preloadChecks loads EVERY check file of ea
     assert.ok(files.length > 10, `${GSCAN[major].pkg} has ${files.length} check files`)
     const loaded = preloadChecks(major)
     assert.equal(loaded.length, files.length, `${GSCAN[major].pkg}: ${loaded.length} preloaded, ${files.length} in lib/checks/`)
-    const cached = new Set(Object.keys(req.cache).map((f) => realpathSync(f)))
-    for (const f of files) assert.ok(cached.has(realpathSync(f)), `${GSCAN[major].pkg}'s ${f.slice(dir.length + 1)} was not preloaded`)
+    // the NAMES, read from the source the build traces (the review, 2026-10-19): the module cache cannot tell — every gscan
+    // run above already required each check itself — but a list that names one file twice and drops another parts here
+    const alias = major === 5 ? 'gscan4' : 'gscan6'
+    const named = [...GSCAN_SOURCE.matchAll(new RegExp(`require\\('${alias}/lib/checks/([^']+)'\\)`, 'g'))].map((m) => m[1]).sort()
+    assert.deepEqual(named, files.map((f) => f.slice(dir.length + 1)).sort(), `${alias}: preloadChecks' literal names are lib/checks/'s`)
   }
 })

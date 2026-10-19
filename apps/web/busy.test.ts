@@ -359,7 +359,7 @@ test('Story 7.18a: Ship it, Run checks, Cancel, Ship it and Re-activate say they
     assert.match(wizard, new RegExp(`<BusyLabel pending=\\{pressed === '${pressed}'\\} busy=\\{W\\.${words}\\}>`), `${words}: its label swaps`)
     assert.match(wizard, new RegExp(`aria-busy=\\{pressed === '${pressed}' \\|\\| undefined\\}|'aria-busy': [^\\n]*pressed === '${pressed}'`), `${words}: aria-busy`)
   }
-  assert.doesNotMatch(wizard, /\sdisabled[=\s}]/, 'never `disabled` — a busy control stays in the Tab order')
+  assert.doesNotMatch(wizard, /\sdisabled(?=[\s=}>/])/, 'never `disabled` — a busy control stays in the Tab order')
   const button = readFileSync('components/kit/button.tsx', 'utf8')
   const split = button.slice(button.indexOf('export function SplitButton'), button.indexOf('export function AddButton'))
   assert.match(split, /aria-disabled=\{busy \|\| undefined\}/)

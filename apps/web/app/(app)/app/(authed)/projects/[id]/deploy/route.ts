@@ -106,7 +106,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const projectId = (await params).id
   const jobId = request.nextUrl.searchParams.get('job') ?? ''
   if (!isUuid(projectId) || !isUuid(jobId)) return no(404, 'Not found')
-  const row = await DEPLOY_IO.jobs.read(jobId, user.id).catch(() => null)
+  // a read that FAILED is not a job that is gone: 404 sends the wizard back to Destination, mid-upload (the review, 2026-10-19)
+  const row = await DEPLOY_IO.jobs.read(jobId, user.id).catch(() => undefined)
+  if (row === undefined) return no(502, 'The deploy could not be read')
   if (row === null || row.project_id !== projectId) return no(404, 'Not found')
   const answer = await view({ jobId, userId: user.id }, DEPLOY_IO).catch((e: unknown) => {
     console.error('projects/deploy: the job could not be read', { code: (e as { code?: string } | null)?.code })

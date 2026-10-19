@@ -2,7 +2,7 @@
 title: 'Story 7.18a — The deploy wizard'
 type: 'feature'
 created: '2026-10-18'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'ceaae4068372bef46d2745fc450f8625b83c6eea'
 owner_test: issues
 review_loop_iteration: 0
@@ -636,6 +636,55 @@ guard); a copied tab a session of its own
 (`lib/lock-client.ts`, the two settings pages, a journey, DW-242's plant). The Wiring task's `serverExternalPackages: ['jsdom',
 …]` is superseded by the first.
 
+**Review (2026-10-19) — five layers (Blind Hunter over the product and over the tests and tools, Edge Case Hunter, Verification
+Gap, Acceptance Auditor) and the real-infra checks in the main session; every patch a routine call, none changing what a
+surface is meant to do:**
+- **Routes "failed" at the ending named Ghost's reason, then looked it up again** as if it were a key, so every failed routing
+  upload said "something went wrong on our side". The wizard now shows the stored reason (a new journey, with the old sentence
+  as its control).
+- **Pre-flight drew "Theme compiled" for a compile that never ran** (a routing or version block closes the compiling stage
+  before any compile) **and a green "0 errors · 0 warnings" for checks that stored no verdict.** "Theme compiled" now needs the
+  zip's size, and the checks are finished only when their verdicts are stored; otherwise the row is "{Stage} failed".
+- **A checker that could not run** (`theme_check_failed`, production's first Pre-flight at the Fix) **showed "Required templates
+  present" and "No deprecated helpers" as passes and "Fix the error above to ship."** `checkRows` draws no pass line for a check
+  that did not run, and the caption is the gate's own "Try again in a moment." (`deploy.test.ts`, a journey).
+- **S8d′'s heading** is the frame's "Uploading to Ghost failed" (`STAGE_NAMES.uploading` is S8c's row name).
+- **The wizard no longer closes when the lock is lost while it uploads or activates** (DW-241's sweep spares `[data-unstoppable]`),
+  and **closing it after any job that reached Ghost re-reads the page**, so "Ship update" and the versions follow a failed
+  activation too.
+- **Cancel** writes its flag only while the row still stands where it was read (the service role skips the policy's stage test),
+  Pre-flight asks once more after writing `awaiting_ship`, and Ship it honours a Cancel already set (three `deploy-run.test.ts`
+  tests, each failing with its line removed).
+- **The wizard's read** answers 502, not 404, when the job cannot be read, so a database hiccup no longer sends it back to
+  Destination mid-upload; a 409 at Run checks says Destination's "isn't linked" sentence.
+- **The compile's reads are ordered** (templates by key, settings in the editor's own order, translations by key), so unchanged
+  rows never hash apart and force a re-compile at Ship it (`deploy-input.test.ts` holds every read's project, site, owner and
+  order).
+- **Every door's first read is under the retry rule**, R-264's re-ask at Ship it sits inside the job's failure handling (a throw
+  there fails the job instead of leaving it resting under "Shipping…"), and clearing a refused plan's mark after an accepted
+  upload is best-effort (a failed write is logged, never the ship's failure).
+- **The copied-tab rule (the owner's finding 2) judged only pages that read the lock,** so a reload on Projects left the mark and a
+  project ⌘-clicked from there shared the first tab's session again. The shell now judges every signed-in page load
+  (`tab-session.test.ts`, with the unjudged load as its control).
+- **⌘⏎ on a Ghost row in Layers** ships, as on a section's row; `lib/deploy.ts` drops three unused imports (one pulled `cards.ts`
+  into the wizard's bundle).
+- **Checks that could not fail:** `preloadChecks`' test compares the literal names with each pin's `lib/checks/` (the module cache
+  it read was already full; with one name duplicated it now fails); the refusal-words test derives its classes from its own
+  cases; the "never `disabled`" pattern now sees `disabled>` and `disabled/>`; `check-traces`' control is derived (every check
+  file seen loading) instead of a written-down count, and a checker that throws is a FAIL line; the rail's numbering is anchored.
+- **The walk's step 113 and §86's recorder, for T1's sake:** the start guard refuses ANY `inflozo-walk-113-` theme left by a killed
+  run; DW-54's off-list write is a `DELETE` of a post id no Ghost holds (a real `POST posts/` would have made a post had the
+  allowlist regressed); 113j waits for the step's last job to rest before restoring T1; 113c asks the route for a Pre-flight from
+  the window that lost the lock (423, no job — the server's half of the lock, until now walked only as D8g); the recorder's
+  restore runs each call in its own try, and every committed cell is scrubbed.
+- **Deferred, each with an owner on its card** (`deferred-work.md`): DW-372 (the version count under 7.22's retention), DW-373 (a
+  second Pre-flight beside a running one, 7.25), DW-374 (Ship it re-checking the project's link, 7.18b), DW-375 (a plan-refused
+  site's way back, 7.18b), DW-376 (a failure after Ghost took the theme, 7.31's sentence), DW-377 (R-260's read on a very large
+  site, 7.18b), DW-378 (the checks still unexecuted, 7.18b).
+- **AD-24's envelope carries `href` beside `action`** — the fix's address, as `lib/deploy.ts`' header states; Ghost's text is still
+  only `detail`. **A job that failed at activating leaves its deploy `uploaded`**, not `failed` as the stage table's last row
+  reads: the theme is on the site (the matrix's "Key refused" row), and the history's reading is 7.23's.
+
 ## Design Notes
 
 ### Rulings this spec is written to
@@ -992,7 +1041,8 @@ opened the wizard straight away.
 
 ## Questions for the owner
 
-Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), and Questions 4–6, raised at Dev, the same day (R-262–R-264); none is open.
+Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), and Questions 4–6, raised at Dev, the same day (R-262–R-264). **Question 7,
+raised at the Review (2026-10-19), is open.**
 
 ### Question 1 — This story is three stories. May I split it?
 
@@ -1134,6 +1184,32 @@ away, while the wizard would say "Uploaded. Not live yet."
 
 **Ruled: option 1 (owner, 2026-10-18) — R-264.** *"1. Both guards"* — the caption sentence as written in option 1, approved with it.
 
+### Question 7 — When your routing can't be sent at the end of a ship, may the line say why in these words?
+
+**In plain English.** After Ship it makes your theme live, Inflozo sends your routing file to Ghost. If that fails, the ending
+says "We couldn't send your routing to Ghost: {reason}. Your theme is live; ship again to retry." The spec's word list has
+that sentence but never said what `{reason}` may be, and Dev wrote seven short reasons without asking you — which the spec
+says needs your approval. (The Review also fixed a bug that showed the last one, "something went wrong on our side", for
+every cause.)
+
+**An example.** Your site is down for maintenance when you ship. Today the ending reads: "We couldn't send your routing to
+Ghost: your site is busy or down. Your theme is live; ship again to retry."
+
+The seven reasons, by cause:
+- Ghost refused the file → "Ghost refused the file"
+- busy or down → "your site is busy or down"
+- no answer → "your site didn't answer"
+- moved → "your site now answers at a different address"
+- the routing itself → "the routing isn't valid"
+- site gone → "the site is no longer connected"
+- anything else → "something went wrong on our side"
+
+1. **(RECOMMENDED) Approve the seven as written.** They reuse the words the failure screen already uses for the same causes.
+2. **One line for every cause:** "We couldn't send your routing to Ghost. Your theme is live; ship again to retry." — no reason.
+3. **Your own words:** tell me any you want changed.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Verification
 
 **Commands:**
@@ -1247,3 +1323,36 @@ away, while the wizard would say "Uploaded. Not live yet."
   this site." — the owner's step 8 expects it); quality 0/0, not blocked; the artefact stored (319992 bytes). The artefact and
   the account deleted; production's counts (11 projects, 6 sites, 0 deploys, 0 jobs) back as before. The owner's re-test of
   steps 6–10 is next.
+
+**Executed — Review (2026-10-19, the main session, Node 24; five review layers as subagents, every real-infra call here):**
+- **CI on the Fix head** `fc85175a` (`GITHUB_TOKEN`): CI's `check`, `rls` and `deploy` success, the render matrix success; Vercel
+  `dpl_8X9viKbL1o2X59aA1GhQWmkKtfye` READY on `fc85175a` (`VERCEL_TOKEN`).
+- **R-99, production's schema** (`SUPABASE_DB_POOLER_URL`, read in process; the owner's in-session go): `job_stage` is
+  `queued,compiling,checking,awaiting_ship,uploading,activating,done,failed,cancelled`; `deploys.quality` (jsonb) and
+  `deploys.inputs_sha256` (text) exist, nullable, and `authenticated` holds SELECT on both; `bound_to` carries its comment;
+  every column the new code writes on `deploys`, `deploy_jobs` and `project_site_bindings` is there.
+- **The deployed function** (`VERCEL_TOKEN`, the deployment's `.vc-config.json` for `app/projects/[id]/deploy.func`):
+  `nodejs24.x`, `maxDuration` 300, its `filePathMap` 2939 files (gscan's trees, jsdom's two links, the fonts' licences, the
+  modules, Ghost's cards); memory is project-wide (R-262) and the Fix's request log read `functionMemorySize: 4096`. Vercel's
+  files API carries no sizes, so the function's size in bytes is not readable there.
+- **The owner's own run on production this morning** (read only, the pooler): one account's project shipped to T1 —
+  Pre-flight, Deploy only (uploading 1115 ms, no activation), Re-activate (activating 911 ms, `live`), then v2 by Deploy &
+  activate going live on Ghost's upload answer with NO activating stage (R-264 b, uploading 1279 ms); the binding
+  `inflozo-ghost6` stamped at the first upload; `private.credential_audit` holds exactly `theme_upload ok`, `theme_activate
+  ok`, `theme_upload ok` for that site, in that order — one row per write, no PUT for v2. Routes ended `kind: none` (`kept`)
+  each time. A second account's Pre-flight of its own project rests at `awaiting_ship`. These are the owner's test, and his
+  findings are his to record.
+- **Walk step 113, run 1** (a cut copy: steps 1–5 + 113, from a clean worktree at `fc85175a`, `T1_WRITES=1` on the owner's
+  in-session go): steps 1–5 PASS; step 113's start guard REFUSED and wrote nothing to T1 — T1's active theme was
+  `inflozo-ghost6`, the owner's test's v2 (the guard's own control, held); account C, its project and both walk accounts
+  deleted, users and projects counted back unchanged.
+- **The Review's patches, locally:** `pnpm check` — exit 0 (library 285, ghost-shim 47, section-runtime 441, theme-compiler
+  219, app 886, tools 13; 0 failing); each new test failed with its line of code removed (the cancel race, the conditional
+  Cancel, a Cancel honoured at Ship it, `preloadChecks`' names with one duplicated); `pnpm build` — exit 0; `node
+  tools/check-traces.mjs` — "every route carries its files", 568 and 258 files touched by gscan4 and gscan6 all carried, and
+  with its recorder silenced the derived control FAILS both checkers; `pnpm keyboard` — exit 0, 272 passed (14.9 min), the
+  two review journeys among them.
+- **T1 put back for the walk** (the owner's in-session go, option 1, staff token): `casper` activated (200) and `inflozo-ghost6`
+  deleted (204), read back — Casper active, no Inflozo theme installed; T1's `routes.yaml` 130 bytes, unchanged by the owner's
+  test (his routing ended `kept`). His accounts and projects are untouched.
+- **Still owed:** the walk's step 113 on the Review's deploy (the same writes, the owner's go), recorded in a second Review commit.

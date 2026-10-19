@@ -8397,8 +8397,8 @@ test('7.18a · Ship it is S4\'s coral split button after ⋯ with "Deploy option
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
   await expect(wizard(page).locator('input[value="activate"]')).toBeChecked()
   expect(await page.evaluate(() => document.querySelector('dialog[data-deploy-wizard]').contains(document.activeElement)), 'focus moved in').toBe(true)
-  // the rail numbers its steps from STEPS — every one, in order
-  await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.STEPS.map((s, i) => new RegExp(`${i + 1}?\\s*${s.label}`)))
+  // the rail numbers its steps from STEPS — every one, in order, its number before its name (on Destination none is done yet)
+  await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.STEPS.map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`)))
   await expect(wizard(page).locator('[data-theme-name]')).toHaveText('inflozo-pilot-sections')
   await expect(wizard(page)).toContainText(DW.chip(1, null))
   await page.keyboard.press('Escape')
@@ -8568,11 +8568,14 @@ test('7.18a · a blocked Pre-flight greys Ship it with the reason in its caption
   await page.locator('#deploy-back').focus()
   await page.keyboard.press('Enter')
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
-  // an unreadable routing: its reason and R-261's way out
+  // an unreadable routing: its reason and R-261's way out — with the compiling stage closed as the server closes it on a block
+  // before any compile (an `ms`, no zip's `bytes`), so no "Theme compiled" is drawn for a compile that never ran (the review)
   await page.unrouteAll()
-  await plantDeploy(page, { preflight: [viewOf('failed', {}, { deploy: null, error: DEPLOY.deployError('routes_unreadable', { host: 'harness.example' }) })] })
+  await plantDeploy(page, { preflight: [viewOf('failed', { compiling: { at: AT, ms: 40 } }, { deploy: null, error: DEPLOY.deployError('routes_unreadable', { host: 'harness.example' }) })] })
   await runChecks(page)
   await expect(page.locator('#deploy-ship-reason')).toContainText(DW.routesUnreadable)
+  await expect(wizard(page)).not.toContainText(DW.compiled)
+  await expect(wizard(page)).toContainText(DW.stageFailed(DEPLOY.STAGE_NAMES.compiling))
   const out = page.locator('#deploy-ship-reason a')
   await expect(out).toHaveText(DW.routesStartAgain)
   await expect(out).toHaveAttribute('href', `/app${ROUTES_LIB.resetRoutingPath(HARNESS_PROJECT_ID)}`)
@@ -8610,7 +8613,8 @@ test('7.18a · a refused key while shipping: S8d′ says Ghost\'s no in health\'
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'ship')
   await page.keyboard.press('Escape')
   await expect(wizard(page), 'uploading: Esc is refused').toBeVisible()
-  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.stageFailed(DEPLOY.STAGE_NAMES.uploading), { timeout: 15_000 })
+  // S8d′ names S8c's own row: "Uploading to Ghost failed" (the review, 2026-10-19)
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.stageFailed(DW.uploadingRow), { timeout: 15_000 })
   await expect(wizard(page)).toContainText(DW.keyRefused)
   await expect(wizard(page)).toContainText(DW.keyRefusedBody)
   await expect(wizard(page).getByRole('link', { name: DW.reconnect })).toHaveAttribute('href', '/app/sites/keys?site=00000000-0000-4000-8000-000000000718')
@@ -8953,4 +8957,40 @@ test('7.18a · R-264 (a): a wizard asked to open on Deploy only while it is grey
   await page.goto(HARNESS)
   await expect(wizard(page).locator('input[value="activate"]')).toBeChecked({ timeout: 15_000 })
   await expect(wizard(page).locator('input[value="upload"]')).toHaveAttribute('aria-disabled', 'true')
+})
+
+/* ── Story 7.18a's review (2026-10-19): an ending and a Pre-flight the journeys above never drew ─────────────────────────── */
+
+const VERDICT = await import(new URL('../../packages/theme-compiler/gate/verdict.ts', import.meta.url).href)
+
+test('7.18a (review) · a routing upload that failed says Ghost\'s reason at the ending — never "something went wrong on our side" for a site that was busy', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const reason = DEPLOY.ROUTES_REASONS.ghost_unavailable
+  const ended = viewOf('done', { ...CHECKED, uploading: TIMED.uploading, activating: TIMED.activating, routes: { kind: 'failed', reason } }, { deploy: deployOf({ status: 'live', activated: true }) })
+  await plantDeploy(page, { preflight: PREFLIGHT, ship: [UPLOADING, ACTIVATING, ended] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  const ship = page.locator('#deploy-ship')
+  await expect(ship).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await ship.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'live', { timeout: 15_000 })
+  await expect(wizard(page).locator('[data-routes-ending="failed"]')).toHaveText(DW.routesFailed(reason))
+  // the control: the sentence the stored reason was once looked up into
+  await expect(wizard(page)).not.toContainText(DEPLOY.ROUTES_REASONS.thrown)
+})
+
+test('7.18a (review) · a checker that could not run checked nothing: its own row and "try again" under Ship it — no pass line, never "fix the error above"', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const couldNot = VERDICT.failed(6, '6.4.2')
+  const blocked = viewOf('failed', CHECKED, { error: couldNot.errors[0], deploy: deployOf({ status: 'failed', gscan: couldNot }) })
+  await plantDeploy(page, { preflight: [...PREFLIGHT.slice(0, 3), blocked] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship-reason')).toHaveText(couldNot.errors[0].action, { timeout: 15_000 })
+  await expect(wizard(page).locator('[data-finding="error"]')).toContainText(couldNot.errors[0].message)
+  await expect(wizard(page).locator('[data-check-rows]')).not.toContainText(DW.pass)
+  await expect(wizard(page)).not.toContainText(DW.fixErrors(1))
 })

@@ -348,17 +348,26 @@ export async function start(a: { projectId: string; siteId: string; userId: stri
 
 /** PRE-FLIGHT (Run checks): `queued → compiling → checking → awaiting_ship`, the artefact stored only when nothing blocks. */
 export async function preflight(a: { jobId: string; userId: string }, io: DeployIo): Promise<void> {
-  const job = await io.jobs.read(a.jobId, a.userId)
+  const job = await firstRead(io, a)
   if (job === null || job.stage !== 'queued') return
   const c = clock(io, job)
   try {
     if (job.cancel_requested) return void (await clear(io, job, c))
     const done = await compileAndCheck(io, job, c, null)
-    if (done.kind === 'clean') await c.end('awaiting_ship')
+    if (done.kind !== 'clean') return
+    await c.end('awaiting_ship')
+    // a Cancel that landed after the last edge's read and before this write (the review, 2026-10-19): `cancel` only sets the
+    // flag while the row still stands in a cancellable stage, so asked once more here, nothing it set is ever lost
+    await cancelled(io, job, c)
   } catch (e) {
     await failInfra(io, job, c, e)
   }
 }
+
+/** A door's first read, under AD-20's rule; null when the row is not there or cannot be read twice (a stalled row is
+ *  `view`'s to fail, since nothing can be written to a row that cannot be read). */
+const firstRead = (io: DeployIo, a: { jobId: string; userId: string }): Promise<JobRow | null> =>
+  twice(io, 'job read', () => io.jobs.read(a.jobId, a.userId)).catch(() => null)
 
 /** The last word on a throw no stage answered: infrastructure, said as ours. Never throws itself. */
 async function failInfra(io: DeployIo, job: JobRow, c: Clock, e: unknown): Promise<void> {
@@ -375,14 +384,16 @@ async function failInfra(io: DeployIo, job: JobRow, c: Clock, e: unknown): Promi
 /** SHIP IT: the same row, from `awaiting_ship` — re-made first only when stale — then `uploading`, `activating` when
  *  Deploy & activate was chosen, the routes step, and `done`. */
 export async function ship(a: { jobId: string; userId: string; mode: Mode }, io: DeployIo): Promise<void> {
-  const job = await io.jobs.read(a.jobId, a.userId)
+  const job = await firstRead(io, a)
   if (job === null || job.stage !== 'awaiting_ship' || job.deploy_id === null) return
   const at = { projectId: job.project_id, siteId: job.site_id, userId: job.user_id }
-  // R-264 (a), asked again on this invocation: a Deploy only that would go live at once is never uploaded — the job rests
-  if (a.mode === 'upload' && (await uploadOnlyRefused(at, io))) return
   const c = clock(io, job)
   let read: ProjectRead | null = null
   try {
+    // a Cancel that reached the row on its way to awaiting_ship is honoured, never shipped over
+    if (job.cancel_requested) return void (await clear(io, job, c))
+    // R-264 (a), asked again on this invocation: a Deploy only that would go live at once is never uploaded — the job rests
+    if (a.mode === 'upload' && (await twice(io, 'live project', () => uploadOnlyRefused(at, io)))) return
     let deploy = await twice(io, 'deploy read', () => io.deploys.read(job.deploy_id as string, job.user_id))
     if (deploy === null || deploy.artifact_path === null) return void (await fail(c, deployError('deploy_infrastructure', { host: '' })))
     read = await readProject(io, at)
@@ -405,7 +416,7 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode }, io:
     const posted = await callTwice(io, { siteId: job.site_id, method: 'POST', path: 'themes/upload/', body: form, item: 'theme_upload', route: ROUTE })
     const ctx = errorCtx(read, job.site_id)
     if ('thrown' in posted) {
-      await io.deploys.update(deploy.id, job.user_id, { status: 'failed' })
+      await twice(io, 'deploy failed', () => io.deploys.update(deploy!.id, job.user_id, { status: 'failed' }))
       return void (await fail(c, deployError(posted.thrown as DeployCode, ctx)))
     }
     const upload = uploadAnswer(posted)
@@ -422,7 +433,8 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode }, io:
         return void (await fail(c, deployError('deploy_running', ctx)))
       }
     }
-    await twice(io, 'capability', () => io.capability({ siteId: job.site_id, userId: job.user_id, refused: false }))
+    // clearing a refused plan's mark is bookkeeping: Ghost has the theme, so a failed write is logged, never the job's failure
+    await twice(io, 'capability', () => io.capability({ siteId: job.site_id, userId: job.user_id, refused: false })).catch(() => io.log('deploy: the capability mark was not cleared', { job: job.id }))
     // R-264 (b): Ghost's answer says the upload is ALREADY live — it replaced the active theme's files under the frozen name
     // and made them live (`storage.js`' `activateFromAPIOverride`) — so the deploy is live, no activation is sent, routes are
     // offered and the ending is Live, whichever mode was chosen
@@ -437,7 +449,7 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode }, io:
 
 /** RE-ACTIVATE (D2e's and D2f's button): the uploaded deploy of a job that ended `done` (or failed at activating), activated. */
 export async function activate(a: { jobId: string; userId: string }, io: DeployIo): Promise<void> {
-  const job = await io.jobs.read(a.jobId, a.userId)
+  const job = await firstRead(io, a)
   if (job === null || job.deploy_id === null || (job.stage !== 'done' && job.stage !== 'failed')) return
   const c = clock(io, job)
   try {
@@ -518,13 +530,17 @@ export function endingOfRoutes(outcome: RoutesOutcome): RoutesEnding {
   }
 }
 
-/** CANCEL: set on a job still in `queued`, `compiling` or `checking` (the policy's three); the work stops at its next edge.
- *  A job still `queued` with no work begun is cleared here. False when the job is past them. */
+/** CANCEL: set on a job still in `queued`, `compiling` or `checking` (the policy's three); the work stops at its next edge
+ *  (`preflight` asks once more after writing `awaiting_ship`). The flag is written only while the row still stands where it
+ *  was read — the service role bypasses the policy's own stage test — and a row that moved on is read again, once. False
+ *  when the job is past them. */
 export async function cancel(a: { jobId: string; userId: string }, io: DeployIo): Promise<boolean> {
-  const job = await io.jobs.read(a.jobId, a.userId)
-  if (job === null || !CANCELLABLE.includes(job.stage)) return false
-  await twice(io, 'cancel', () => io.jobs.update(job.id, job.user_id, { cancel_requested: true }))
-  return true
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const job = await io.jobs.read(a.jobId, a.userId)
+    if (job === null || !CANCELLABLE.includes(job.stage)) return false
+    if (await twice(io, 'cancel', () => io.jobs.claim(job.id, job.user_id, job.stage, { cancel_requested: true }))) return true
+  }
+  return false
 }
 
 /** THE WIZARD'S READ: the job, its deploy, the version the site serves from this project, and B16's file. A moving job
