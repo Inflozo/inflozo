@@ -2,9 +2,9 @@
 title: 'Story 7.18a — The deploy wizard'
 type: 'feature'
 created: '2026-10-18'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'ceaae4068372bef46d2745fc450f8625b83c6eea'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -1052,6 +1052,9 @@ opened the wizard straight away.
   asserts the copy's id differs and that a reload keeps the first tab's; it fails with the rule switched off. DW-242's journey
   now plants the mark a real reload leaves.
 - **Re-test:** steps 6–7 of "Owner's manual test" — the second window may be duplicated or typed fresh; either now reads along.
+
+**Owner's re-test (owner, 2026-10-19): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_8Zvafvbs6jusfXk4CP48iQodMyUf`) and reported *"passed"*. Findings 1 and 2 above are closed by it; no new findings.
 
 ## Questions for the owner
 

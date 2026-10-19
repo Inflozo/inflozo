@@ -1553,7 +1553,13 @@ plain: Story 3.1 proved four things on the live site through its temporary back 
   door out, as planned. Its own harness now presses the second button for real (reconnecting a disconnected
   site swaps the key); nothing in the product yet presses the other three — so until later stories do,
   those are proved by the local tests and the database gate only, not on the deployed site.
-status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); **the decrypt path closed by Story 3.3**
+status: closed
+closed: 2026-10-19 — Story 7.18a, the last part (`write-denied`). The deploy made the first product call of an allowed Ghost write,
+  and the Review's walk step 113 on production (a cut at `6e5afd91`, T1 restored after) asked `call()` for an off-list write on
+  the walk's site — a `DELETE` of a post id no Ghost holds — and it was refused as `write_not_allowed` with nothing sent, with one
+  `admin_write / denied` audit row beside `theme_upload`, `theme_activate`, `theme_upload` ok. The owner then tested the story on
+  the deployed site and it passed (2026-10-19). Spec: Verification, "Executed — Review".
+prior status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); **the decrypt path closed by Story 3.3**
   (Dev, 2026-09-08): its connect-time probes run on the STORED key through `call()`, so every connect leaves
   two `vault_decrypt` rows and two `admin_read` rows on the deployed function, and the harness's `decrypt-path`
   step asserts them every run. **`staff-removed` closed by Story 3.6** (Dev, 2026-09-09): Manage keys is the
