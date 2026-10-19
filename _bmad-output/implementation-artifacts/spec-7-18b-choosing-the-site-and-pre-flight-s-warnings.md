@@ -835,4 +835,12 @@ Inflozo yet, so we can't check them. Try again once they're saved."
   warning." for DW-374's sentence), the server's confirm unsaid (""), and an ending keyed once per job ("Activating v3." where
   "Your theme is on your site but isn't live yet." was owed). `pnpm build` — exit 0; `node tools/check-traces.mjs` — "every route
   carries its files" (568 and 258 files gscan4 and gscan6 touch, all carried).
+- **The Review's deploy** `fcbc98a6` (CI's `check`, `rls` and `deploy` success, the render matrix success; Vercel
+  `dpl_9BiTVdHtpBGKugJCYfmVggK2D8Gy` READY).
+- **Walk step 114 on the Review's deploy** (the cut, from a clean worktree at `fcbc98a6`, T1 read only): run 3 died before its
+  first check on a magic-link load that did not finish in 30 s (a HARNESS ERROR, the known DW-204 shape; account D was deleted and
+  users and projects counted back); **run 4: 0 FAIL, 68 PASS** — the same checks as run 2, now over the Review's code: the held
+  move with "Switching…" kept until the re-read, the wizard reopened on Destination on T1 and the canvas following it with no
+  reload, both DW-374 refusals with no theme write in the audit beside its control, the first link writing German, every
+  warning kind in order and its 6.58.0 control, R-270 from the stored row and its probe control, and the restore.
 
