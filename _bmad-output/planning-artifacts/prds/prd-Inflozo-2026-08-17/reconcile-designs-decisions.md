@@ -5742,6 +5742,80 @@ becomes S4's own 8 px (from 10). Every control stays in the bar; centred from ab
   and `kit/icons.tsx` · ✅ `editor.test.ts` and a `journey.spec.mjs` centring stop · ✅ `EXPERIENCE.md` (beside R-263) ·
   ✅ `epics.md` Story 7.18a's card · ✅ `epic-7-context.md`.
 
+**R-267 — a site another of the customer's projects holds is offered by Switch, and choosing it MOVES the site here after a
+confirm.** Story 7.18b's Create, Question 1, ruled **option 1** (owner, 2026-10-19): *"Move the site to this project, after a
+confirm. The confirm opens with Cancel focused: "blog.example.com is Field Notes's site now. Switching moves it here: Field
+Notes keeps its designs and its deploy history, and isn't linked to a site until you choose one for it.""*
+
+- **Why it was a question.** `projects_linked_site_id_key` (DW-69, Story 3.9) lets one project link a site at a time, and no
+  ruling said what Switch does with a site another project holds. Greying it would leave a duplicated project with no way
+  onto its own site. "Use your brand" had refused to re-point a project silently (`sites/actions.ts:831-835`).
+- **The rule.** The picker lists a held site with "Linked to {project}". Choosing it opens S8e's dialog with focus on Cancel
+  (UX-DR14) and the ruled sentence. **Switch** unlinks the holding project, then links this one, through the user's own
+  session under the edit lock; a race (23505) is re-read and asked again. The holding project keeps its designs, its
+  bindings and its deploy history; its Destination then offers "Choose a site". The one-project-per-site index is unchanged.
+- **Declined.** The site greyed with "Linked to {project}"; two projects sharing one site (undoing DW-69).
+- Targets: ✅ this entry · ✅ Story 7.18b's spec · ✅ `epics.md` Story 7.18b's card (dated) · ✅ `epic-7-context.md` ·
+  ⬜ `prd.md` FR-B5 (dated, at 7.18b's Dev) · ⬜ `EXPERIENCE.md`'s Deploy Destination row (at 7.18b's Dev).
+
+**R-268 — below Ghost 5.62 a free member ask stays hidden, and Pre-flight says so.** Story 7.18b's Create, Question 2,
+ruled **option 1** (owner, 2026-10-19): *"Keep them hidden, and say so in Pre-flight: "Free sign-ups stay hidden on
+blog.example.com. It runs Ghost 5.40, and only Ghost 5.62 or later tells a theme that free sign-ups are open. Update Ghost to
+show them." It names each page and never blocks."*
+
+- **Why it was a question.** DW-297 (Story 5.24c's Create): R-4 guards every free ask with `@site.allow_self_signup`, which
+  Ghost has only from 5.62.0 (`matrix.json:117-120`, MEASUREMENTS §41(e), read in source and never executed), while connect
+  accepts any Ghost 5. On 5.0–5.61 every free ask is hidden for good.
+- **The rule.** The compile is unchanged: one guard, one signal (R-4, FR-H8). When the site's Ghost is 5.x below 5.62 and a
+  compiled file carries `@site.allow_self_signup`, Pre-flight shows a warning row in the ruled words, naming each page that
+  carries one; it never blocks.
+- **Declined.** Dropping the guard below 5.62 (the ask always shown, the compile varying by version); an older signal
+  (unproven, and against Story 5.20's one-guard rule).
+- Targets: ✅ this entry · ✅ Story 7.18b's spec · ✅ `epics.md` Story 7.18b's card (dated) · ✅ DW-297 (note) ·
+  ✅ `epic-7-context.md`.
+
+**R-269 — Ship it refuses a job whose site is no longer the project's, in two sentences that name the sites.** Story
+7.18b's Create, Question 3, ruled **option 1** (owner, 2026-10-19): *"Name both sites: "This project now ships to
+blog.example.com, not ghost6.inflozo.com, so nothing was sent. Go back and run the checks again." When no site is linked any
+more: "This project is no longer linked to ghost6.inflozo.com, so nothing was sent.""*
+
+- **Why it was a question.** DW-374 (Story 7.18a's Review): `ship()` uploads to the site its Pre-flight read, and with Switch
+  (and R-267's move) the link can change between Run checks and Ship it. The card gave the sentence to the owner.
+- **The rule.** `ship()` re-reads `projects.linked_site_id` before it claims the row and fails the job with nothing uploaded:
+  `site_changed` ("This project now ships to {new host}, not {old host}, so nothing was sent. Go back and run the checks
+  again.") or `site_unlinked` ("This project is no longer linked to {old host}, so nothing was sent.").
+- **Declined.** One sentence for both cases; new words.
+- Targets: ✅ this entry · ✅ Story 7.18b's spec (Words) · ✅ `epics.md` Story 7.18b's card (dated) · ✅ DW-374 (note) ·
+  ✅ `epic-7-context.md`.
+
+**R-270 — a site Preview-only because Ghost(Pro) refused an upload keeps Run checks, with one line.** Story 7.18b's Create,
+Question 4, ruled **option 1** (owner, 2026-10-19): *"Keep Run checks for a site marked by a refused upload, with one line
+under the Preview-only panel: "Ghost(Pro) refused a custom theme on {your site} when you last shipped. If you've upgraded the
+plan since, run the checks and ship — Ghost's answer clears this." An accepted upload clears the mark; a refused one sets it
+again."*
+
+- **Why it was a question.** DW-375 (Story 7.18a's Review): a plan refusal marks the site `preview_only` with source
+  `deploy_error`; only an accepted upload clears it, Destination offered no Run checks, and "Re-check plan" writes nothing
+  for Ghost(Pro) while its flag is off (`capabilityOf`). An upgraded plan had no way back.
+- **The rule.** Destination shows B15's panel, the ruled line and Run checks for `capability_source = 'deploy_error'` only; a
+  site the probe marked is unchanged. Ghost's answer to the next upload clears or re-sets the mark (Story 7.18a's code).
+- **Declined.** An "I've upgraded my plan" button clearing the mark on the customer's word; waiting for the Ghost(Pro) gate.
+- Targets: ✅ this entry · ✅ Story 7.18b's spec (Words) · ✅ `epics.md` Story 7.18b's card (dated) · ✅ DW-375 (note) ·
+  ✅ `epic-7-context.md`.
+
+**R-271 — R-260's post check reads the newest 2,000 posts with an allowance of its own, and says while it reads.** Story
+7.18b's Create, Question 5, ruled **option 1** (owner, 2026-10-19): *"Check the newest 2,000 posts, with an allowance of its
+own. While it reads: "Checking that every post appears on a page…". On a larger site the result adds "We checked your newest
+2,000 posts." The canvas is never touched, and Ship it never waits for it."*
+
+- **Why it was a question.** DW-377 (Story 7.18a's Review): the check paged every published post through the canvas's own
+  store and its 500-request ceiling, so a very large site spent the canvas's reads, and the row stayed blank while it read.
+- **The rule.** The check reads through a reader of its own, newest first, at most 2,000 posts; a reading row says so while
+  it runs; over 2,000 the result adds the ruled sentence. The canvas's store is never used, and Ship it never waits.
+- **Declined.** Every post with progress; skipping the check above 2,000 posts.
+- Targets: ✅ this entry · ✅ Story 7.18b's spec (Words, Ruled values) · ✅ `epics.md` Story 7.18b's card (dated) · ✅ DW-377
+  (note) · ✅ `epic-7-context.md`.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

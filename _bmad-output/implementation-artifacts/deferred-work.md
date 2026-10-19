@@ -8436,6 +8436,8 @@ reason: a design's own `ghostCompat.minVersion` cannot see it — the ask is a c
   reads — so DW-168's check does not reach it. What a site below 5.62 should get (the ask kept, dropped, or the deploy
   warned) is the owner's decision, and Pre-flight is where a deploy already meets the site's version and its
   member-switch warnings (DW-260).
+note (Story 7.18b's Create, 2026-10-19): ruled **R-268**, option 1 — the guard stays; Pre-flight names each page carrying a
+  free ask on a Ghost 5.x below 5.62 with "Update Ghost to show them", never blocking. Built at 7.18b's Dev.
 
 ## Deferred from: code review of spec-5-24c (2026-10-01)
 
@@ -10238,6 +10240,8 @@ owner: Story 7.18b (choosing the site), the first story in which the link can ch
   `projects.linked_site_id` with the job's site and refuses with a sentence (R-83 for its words).
 location: `apps/web/server/deploy/run.ts` (`ship`) · `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`
 reason: nothing in the product relinks a project before 7.18b's site picker.
+note (Story 7.18b's Create, 2026-10-19): ruled **R-269**, option 1 — `site_changed` and `site_unlinked`, each naming the sites
+  (the spec's Words). Built at 7.18b's Dev.
 
 ### DW-375: a site a plan refusal marked Preview-only has no way back in the product
 
@@ -10252,6 +10256,8 @@ owner: Story 7.18b (Destination's site card), with the Ghost(Pro) gate's observa
   source is `deploy_error` offers a re-check or Run checks — an R-83 question there.
 location: `apps/web/components/editor/deploy-wizard.tsx` (Destination) · `apps/web/server/deploy/deploy-io.ts` (`capability`)
 reason: the plan refusal is read in source and never observed (F7); no customer can meet it before the Ghost(Pro) gate.
+note (Story 7.18b's Create, 2026-10-19): ruled **R-270**, option 1 — Run checks kept for a `deploy_error` Preview-only site,
+  with one line under B15's panel. Built at 7.18b's Dev.
 
 ### DW-376: a failure after Ghost took the theme says "before anything reached your site"
 
@@ -10282,6 +10288,8 @@ owner: Story 7.18b (Pre-flight's warning rows): a page cap with its own sentence
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`readSitePosts`) ·
   `apps/web/components/editor/deploy-wizard.tsx` (R-260's row)
 reason: the spec asked for the read "within the reader's request ceiling"; the ceiling's cost on a huge site is the new fact.
+note (Story 7.18b's Create, 2026-10-19): ruled **R-271**, option 1 — a reader of its own, the newest 2,000 posts, a reading
+  row, and "We checked your newest 2,000 posts." over the cap. Built at 7.18b's Dev.
 
 ### DW-378: what Story 7.18a's checks still do not execute
 

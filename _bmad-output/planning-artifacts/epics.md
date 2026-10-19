@@ -4252,6 +4252,14 @@ re-check or Run checks, asked of the owner (DW-375); R-260's post read is capped
 so a very large site neither spends the canvas's request ceiling nor shows nothing while it reads (DW-377); and the checks
 Story 7.18a left unexecuted each gain one (DW-378).
 
+*(Ruled at this story's Create, owner, 2026-10-19, each option 1:* **R-267** *— a site another project holds is offered,
+and choosing it moves the site here after S8e's confirm, Cancel focused, naming that project;* **R-268** *— below Ghost 5.62
+a free ask stays hidden and Pre-flight names each page with "Update Ghost to show them", never blocking (DW-297);* **R-269**
+*— the two refusal sentences, `site_changed` and `site_unlinked`, naming the sites (DW-374);* **R-270** *— a site marked
+Preview-only by a refused upload keeps Run checks with one line under B15's panel (DW-375);* **R-271** *— R-260's read takes
+the newest 2,000 posts with an allowance of its own, a reading row, and "We checked your newest 2,000 posts." over the cap
+(DW-377). The words are in the spec's Words.)*
+
 **FRs:** FR-B5 (the switch), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-H6 (its pre-deploy
 half), FR-Q6 (the locale warnings and the RTL repeat). · **Frame:** `S8 Deploy.dc.html` S8a (Switch) · S8b as extended. ·
 **Owner test:** yes. · **Verification:** real Pre-flights against T1 (R-82, R-238).

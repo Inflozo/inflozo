@@ -23,8 +23,8 @@ project no longer points at.
 
 ## Intent
 
-**Five questions are open for the owner (R-83).** Dev builds the option each one rules; "Ruled values" in Design Notes is
-the one table a ruling changes, and it is planned at each question's recommended option. **This is Story 7.18b (R-259):**
+**Questions 1–5 were ruled by the owner (2026-10-19), each option 1: R-267 to R-271.** "Ruled values" in Design Notes is
+the one table they set. **This is Story 7.18b (R-259):**
 choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
 
 **Problem:**
@@ -81,7 +81,7 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
 - **R-82, R-238:** Review and test run on production and T1 only. Ghost 5's half goes to DW-326.
 
 **Ask First:**
-- Questions 1–5 must all be ruled before Dev.
+- Questions 1–5 were ruled (R-267–R-271). Dev builds the ruled options.
 - Applying the Schema migration to production (R-99).
 - Any string beyond "Words".
 - Any change to `projects_linked_site_id_key`.
@@ -214,7 +214,7 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
 
 ## Tasks & Acceptance
 
-**Dev gate:** Questions 1–5 are ruled (Ruled values). The Schema phase is its own push, before any code (R-99).
+**Dev gate:** Questions 1–5 are ruled (R-267–R-271, Ruled values). The Schema phase is its own push, before any code (R-99).
 
 **Execution — Schema phase (pushed first, alone):**
 - [ ] `supabase/migrations/20261020120000_preflight_facts.sql` — add `deploys.preflight jsonb` (null on every earlier
@@ -355,17 +355,17 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
 - R-74, R-80–R-83, R-98, R-99, R-145, R-167, R-170, R-195, R-238, R-259, R-260, R-264.
 - 7.10's Q2 (dropped settings), 7.11's Q2 (changed built-ins), 7.12's Create and Q1 (locale lines, untouched words),
   5.20's R-4 and R-216 (asks), DW-69 (one project per site).
-- Questions 1–5 below (open).
+- **R-267 to R-271** (owner, 2026-10-19): Questions 1–5 below.
 
 ### Ruled values (the one table a ruling changes)
 
-| Question | Planned | What it sets |
+| Question | Ruled | What it sets |
 |---|---|---|
-| Q1 | option 1 — move, after a confirm | A held site is offered. The confirm names the holding project, and Switch unlinks it, then links this one. |
-| Q2 | option 1 — keep the guard, say so | The compile is unchanged. Pre-flight's free-ask row names each canvas and "update Ghost". |
-| Q3 | option 1 — name both sites | `site_changed` and `site_unlinked`, each with its own sentence (Words). |
-| Q4 | option 1 — Run checks stays | A `deploy_error` Preview-only site shows the line and Run checks. Probed Preview-only is unchanged. |
-| Q5 | option 1 — newest 2,000, own reader | `POSTS_CHECKED = 2000`, a reader of its own, the reading row, and the "newest" line over the cap. |
+| Q1 · R-267 | option 1 — move, after a confirm | A held site is offered. The confirm names the holding project, and Switch unlinks it, then links this one. |
+| Q2 · R-268 | option 1 — keep the guard, say so | The compile is unchanged. Pre-flight's free-ask row names each canvas and "update Ghost". |
+| Q3 · R-269 | option 1 — name both sites | `site_changed` and `site_unlinked`, each with its own sentence (Words). |
+| Q4 · R-270 | option 1 — Run checks stays | A `deploy_error` Preview-only site shows the line and Run checks. Probed Preview-only is unchanged. |
+| Q5 · R-271 | option 1 — newest 2,000, own reader | `POSTS_CHECKED = 2000`, a reader of its own, the reading row, and the "newest" line over the cap. |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -508,7 +508,7 @@ Addresses that need a project's id are written `<A>` and `<B>`. Copy each from t
 
 ## Questions for the owner
 
-Five decisions are yours. Each is planned at the option marked (RECOMMENDED), and Dev waits for all five.
+Questions 1–5 were ruled on 2026-10-19, each option 1 (R-267–R-271); none is open.
 
 ### Question 1 — The site you pick already belongs to another of your projects. What happens?
 
@@ -527,7 +527,7 @@ ship the new one to blog.example.com.
 3. **Let two projects share one site.** Both could ship there and replace each other's theme. This undoes Story 3.9's
    rule and is a larger change. Not recommended.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-19) — R-267.** *"Move the site to this project, after a confirm. The confirm opens with Cancel focused: "blog.example.com is Field Notes's site now. Switching moves it here: Field Notes keeps its designs and its deploy history, and isn't linked to a site until you choose one for it.""*
 
 ### Question 2 — Free sign-ups on a Ghost older than 5.62: keep them hidden?
 
@@ -545,7 +545,7 @@ those asks stay hidden, always. (Read in Ghost's code; no Ghost that old runs an
 3. **Use an older Ghost signal instead** ("members on, and not invite-only"). It is unproven (it needs Ghost's old code
    read and an old Ghost to test on), and it breaks Story 5.20's rule that one signal guards an ask.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-19) — R-268.** *"Keep them hidden, and say so in Pre-flight: "Free sign-ups stay hidden on blog.example.com. It runs Ghost 5.40, and only Ghost 5.62 or later tells a theme that free sign-ups are open. Update Ghost to show them." It names each page and never blocks."*
 
 ### Question 3 — Ship it after the project's site changed: what does it say?
 
@@ -562,7 +562,7 @@ move ghost6 to another project. Back in the first window you press Ship it.
    them again."
 3. **Your own words.**
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-19) — R-269.** *"Name both sites: "This project now ships to blog.example.com, not ghost6.inflozo.com, so nothing was sent. Go back and run the checks again." When no site is linked any more: "This project is no longer linked to ghost6.inflozo.com, so nothing was sent.""*
 
 ### Question 4 — A Ghost(Pro) site that refused a theme: how does it come back?
 
@@ -579,7 +579,7 @@ says Preview-only, with no way to try.
 2. **A button, "I've upgraded my plan"**, that clears the mark on your word. Ship it is then as normal.
 3. **Leave it** until the Ghost(Pro) plan check is built at the Ghost(Pro) launch gate.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-19) — R-270.** *"Keep Run checks for a site marked by a refused upload, with one line under the Preview-only panel: "Ghost(Pro) refused a custom theme on {your site} when you last shipped. If you've upgraded the plan since, run the checks and ship — Ghost's answer clears this." An accepted upload clears the mark; a refused one sets it again."*
 
 ### Question 5 — Checking every post on a very large site
 
@@ -598,7 +598,7 @@ content, and the row stays blank until it finishes.
 3. **Skip the check above 2,000 posts**, saying "Your site has more than 2,000 posts, so we didn't check that every one
    appears on a page."
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-19) — R-271.** *"Check the newest 2,000 posts, with an allowance of its own. While it reads: "Checking that every post appears on a page…". On a larger site the result adds "We checked your newest 2,000 posts." The canvas is never touched, and Ship it never waits for it."*
 
 ## Verification
 
