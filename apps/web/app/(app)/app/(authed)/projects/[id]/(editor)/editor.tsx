@@ -43,7 +43,7 @@ import { closeOnBackdrop, openOnCancel, sheet as dialogSheet, title } from '@/co
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { Skeleton } from '@/components/kit/loading'
 import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
-import { AlertTriangle, ChevronLeft, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, Undo as UndoIcon, X } from '@/components/kit/icons'
+import { AlertTriangle, ChevronLeft, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, ThemeSettingsGear, Undo as UndoIcon, X } from '@/components/kit/icons'
 import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { PanelLabel } from '@/components/kit/labels'
@@ -5797,7 +5797,9 @@ function EditorShell({
             many words): there is no toggle rather than a theme that declares less. The device track is NOT scoped by
             dark — R-135 scopes the mode and nothing else — so it is drawn on every project. */}
         {/* the right column: the cluster, or below 1280 the ⋯ it collapses into (Story 5.22) */}
-        <div className="flex min-w-0 items-center justify-end gap-[10px] coarse:gap-[6px]">
+        {/* R-266 (owner, 2026-10-19): the right side's spacing is S4's own 8px (`S4 Editor.dc.html`'s right group), so the
+            centred group stays centred beside Ship it from about 1300px up */}
+        <div className="flex min-w-0 items-center justify-end gap-2 coarse:gap-[6px]">
           {/* C3b's MEMBERS OFF chip, in the bar while the card is up (:1662). DW-283 (Story 5.24e): WHOLE OR NOT AT ALL, as
               the Paywall's NOT A PAGE SECTION chip is (`data-surface-chip`): truncated below 1280 it read as a fragment and
               pushed the bar past the window on a 600px tablet. Below 1280 it is not drawn, and nothing is lost — C3b's own
@@ -5810,7 +5812,7 @@ function EditorShell({
         {/* STORY 5.22 — HIDDEN BELOW 1280, NEVER UNMOUNTED: the ⋯ rows press these very controls, and the dice's confirm
             is portalled out of here so it still opens (`remix-dice.tsx`). The walk reads the cluster's order off this
             element's own children (steps 46 and 54). */}
-        <div hidden={compact} className="flex items-center gap-[10px]">
+        <div hidden={compact} className="flex items-center gap-2">
           {/* STORY 5.12 — the dice LEADS the cluster rather than following the sun, and the reason is R-135:
               `ModeToggle` is not rendered at all on a Light-only project, so a dice placed after it would move on
               some projects and not others. First, its seat is the same everywhere — and it is still "next to the
@@ -5839,16 +5841,20 @@ function EditorShell({
           {darkEnabled && !cardsNow ? <ModeToggle mode={mode} onMode={on.flip} style={onInk} /> : null}
           {cardsNow ? null : <DeviceSwitch device={device} onDevice={on.pickDevice} />}
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
-              so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
-              icon for it, and R-92 forbids inventing one here. */}
+              so it is never a shell-nav destination (`EXPERIENCE.md:172`). A GEAR since R-266 (owner, 2026-10-19, Story
+              7.18a's Review): with Ship it in the column, the words left S4's centred group 17px off centre at 1440 and
+              97px at 1280; the owner named the glyph (Tabler `settings`, one more of R-92's stated exceptions), and the words
+              stay as its name — read by a screen reader, by ⋯'s row (R-170: the row says the control's own words) and on
+              hover. */}
           <Link
             href={settingsPath(project.id)}
             id="editor-theme-settings"
             style={onInk}
-            // Story 7.18a — one line: Ship it now shares the column, and the grid's min-content would wrap it
-            className={`whitespace-nowrap rounded-sm px-[6px] py-1 text-ui-dense text-ink-soft transition-colors hover:bg-paper-sunk hover:text-ink ${ring}`}
+            title="Theme settings"
+            className={`inline-flex size-7 shrink-0 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk hover:text-ink ${ring}`}
           >
-            Theme settings
+            <ThemeSettingsGear size={16} />
+            <span className="sr-only">Theme settings</span>
           </Link>
           {/* STORY 5.15 — B3a's Preview pill (`B Missing Surfaces.dc.html:645-649`), LAST in the cluster: B3a draws it
               immediately left of the ship button, and Story 7.18a places "Ship it" to its right. */}

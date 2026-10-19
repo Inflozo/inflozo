@@ -583,7 +583,8 @@ export type DeployView = {
   routesFile: string | null
 }
 
-/** Routes' failure reason in the ending's line, per `RoutesFailure` code — Ghost's answer said plainly. */
+/** Routes' failure reason in the ending's line, per `RoutesFailure` code — Ghost's answer said plainly. The seven are the
+ *  owner's approved words (R-265, 2026-10-19, Story 7.18a's Review): the failure screen's own words for the same causes. */
 export const ROUTES_REASONS: Readonly<Record<string, string>> = {
   ghost_refused: 'Ghost refused the file',
   ghost_unavailable: 'your site is busy or down',

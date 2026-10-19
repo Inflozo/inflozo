@@ -685,6 +685,11 @@ surface is meant to do:**
   second Pre-flight beside a running one, 7.25), DW-374 (Ship it re-checking the project's link, 7.18b), DW-375 (a plan-refused
   site's way back, 7.18b), DW-376 (a failure after Ghost took the theme, 7.31's sentence), DW-377 (R-260's read on a very large
   site, 7.18b), DW-378 (the checks still unexecuted, 7.18b).
+- **The owner's rulings at the Review (2026-10-19):** R-265 approves the seven routing reasons as written (Words), and R-266
+  draws the bar's Theme settings link as a gear with its words kept as its name and tooltip, and spaces the bar's right side at
+  S4's 8px — `editor.tsx`, `kit/icons.tsx` (`ThemeSettingsGear`, Tabler's `settings`, one more of R-92's stated exceptions),
+  `editor.test.ts` (the paths against `tabler.json`) and a journey holding the centring at 1536, 1440, 1366 and 1280 beside
+  "Ship it" and "Ship update".
 - **AD-24's envelope carries `href` beside `action`** — the fix's address, as `lib/deploy.ts`' header states; Ghost's text is still
   only `detail`. **A job that failed at activating leaves its deploy `uploaded`**, not `failed` as the stage table's last row
   reads: the theme is on the site (the matrix's "Key refused" row), and the history's reading is 7.23's.
@@ -713,6 +718,8 @@ surface is meant to do:**
 | Q3 · R-261 | option 1 — reset | Routes & Templates offers "Start again from Ghost's default routing" when the stored routing cannot be read. The Ship button's reason links there. |
 | Q4 · R-262 | option 1 — Performance | The Vercel project's Function CPU is Performance (4 GB / 2 vCPUs), set through Vercel's API at Dev and read back; it is the only way Vercel sets memory (project-wide, never in `vercel.json`). AD-11's 4096 MB is then in force for every function. |
 | Q5 · R-263 | option 1 — both, below 768 on touch | On a touch screen that is not a phone and narrower than 768 CSS px, Undo and Redo move to the top of ⋯ (same handlers, same availability, `aria-disabled` when unavailable), and the centre group hides the words "Template" and "View as" (the values and the eye stay; each control keeps its full accessible name). Amends R-143's "the pair will not collapse" at that width only. `floor.spec.mjs` sweeps 600, 640 and 720 on touch, Home and Paywall, with no bar control outside the window. |
+| Q7 · R-265 | option 1 — the seven as written | The routes "failed" ending's `{reason}` is one of seven phrases (`ROUTES_REASONS`, Words below), the failure screen's own words for each cause. |
+| Q8 · R-266 | option 1 — a gear and 8px | The bar's "Theme settings" link is Tabler's `settings` gear, 28px, its words kept as its accessible name, ⋯'s row and its `title`; the bar's right side is spaced at S4's 8px (from 10). S4's centred group is centred beside Ship it from about 1300px up, 6px off at 1280. |
 | Q6 · R-264 | option 1 — both guards | (a) "Deploy only" is greyed — the ▾ row and S8a's card — while Inflozo's own record says this project's theme is the one live on the site (the site's latest activated deploy is this project's), with the reason in its caption slot: "v{prev} is already live on {host}, so Ghost would switch to v{n} the moment it uploads. Use Deploy & activate." (b) Whenever Ghost's answer to an upload says the theme is active (`themes[0].active`), the deploy is live and activated, routes are offered and the ending is Live with confetti — never D2f — and no separate activation is sent. |
 
 ### Routine calls, one line each (said to the owner, not asked)
@@ -866,7 +873,9 @@ surface is meant to do:**
 **Routes at the ending.**
 - uploaded/unchanged: "Your routing is live on {host}."
 - unverified: "Ghost took your routing, but we couldn't read it back to confirm it." with "Verify upload".
-- failed: "We couldn't send your routing to Ghost: {reason}. Your theme is live; ship again to retry."
+- failed: "We couldn't send your routing to Ghost: {reason}. Your theme is live; ship again to retry." — `{reason}` is one of
+  (R-265): "Ghost refused the file" · "your site is busy or down" · "your site didn't answer" · "your site now answers at a
+  different address" · "the routing isn't valid" · "the site is no longer connected" · "something went wrong on our side".
 - fallback: B16.
 
 **Failure (S8d′).**
@@ -1045,8 +1054,8 @@ opened the wizard straight away.
 
 ## Questions for the owner
 
-Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), and Questions 4–6, raised at Dev, the same day (R-262–R-264). **Questions 7
-and 8, raised at the Review (2026-10-19), are open.**
+Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), Questions 4–6, raised at Dev, the same day (R-262–R-264), and Questions 7
+and 8, raised at the Review, on 2026-10-19 (R-265, R-266); none is open.
 
 ### Question 1 — This story is three stories. May I split it?
 
@@ -1212,7 +1221,8 @@ The seven reasons, by cause:
 2. **One line for every cause:** "We couldn't send your routing to Ghost. Your theme is live; ship again to retry." — no reason.
 3. **Your own words:** tell me any you want changed.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-19) — R-265.** *"1. Approve the seven as written. They reuse the words the failure screen
+already uses for the same causes."*
 
 ### Question 8 — Ship it pushes "Template" and "View as" off the middle of the top bar on laptop screens. What gives way?
 
@@ -1239,7 +1249,9 @@ the bar.
    devices and "Theme settings" move into ⋯, as they do on a small screen today.
 3. **Leave it.** The middle sits a little left on laptop screens, and the walk's check is changed to expect that.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-19) — R-266.** *""Theme settings" becomes an icon in the bar (a gear, its full name kept
+for screen readers and as its tooltip), and the right side's spacing becomes S4's own 8 px (from 10). Every control stays in
+the bar; centred from about 1300 up, 6 px off at 1280."*
 
 ## Verification
 
@@ -1409,3 +1421,11 @@ the bar.
 - **Step 2 FAILS in every run, at the Dev head too** (`fc85175a`): S4's centred group sits 17 px left of the bar's middle at
   1440 — Ship it widened the right side past half the bar. Measured in the harness at 1536/1440/1366/1280 with each option
   applied: **Question 8**, the owner's.
+
+**Executed — the owner's rulings at the Review (2026-10-19, R-265 and R-266; the main session, Node 24):**
+- `pnpm check` — exit 0 (library 285, ghost-shim 47, section-runtime 441, theme-compiler 219, app 887, tools 13; 0 failing),
+  `editor.test.ts`' R-266 test holding the gear path for path against `tabler.json`.
+- `pnpm keyboard` — exit 0, 273 passed (28.7 min). The new centring journey measures "Ship it" and "Ship update" at 1536, 1440,
+  1366 and 1280: centred to within a pixel from 1366 up, within the ruled 6px at 1280. Its control: with the words drawn
+  again beside the gear it FAILS at 1440 (45px off), passing again restored.
+- **Still owed:** the walk's step 2 on the next deploy (steps 1–5 only — no T1 write), recorded in the next commit.

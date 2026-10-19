@@ -8419,6 +8419,30 @@ test('7.18a · Ship it is there at every width — after ⋯ in the compact bar 
   expect(ship.x, 'Ship it sits right of ⋯').toBeGreaterThan(more.x + more.width)
 })
 
+test('R-266 (Story 7.18a\'s Review): beside Ship it and "Ship update", S4\'s centred group stays centred in the bar from 1366 up, and within the ruled 6px at 1280; Theme settings is a gear named in its own words', async ({ page }) => {
+  // measured at the Review: as built it sat 17px left at 1440, 54 at 1366 and 97 at 1280 — this is that measure, held
+  const offsets = []
+  for (const ship of ['full', 'shipped']) {
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': ship })
+    for (const width of [1536, 1440, 1366, 1280]) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.goto(HARNESS)
+      await expect(shipIt(page)).toBeVisible()
+      await expect(page.locator('#editor-theme-settings')).toBeVisible()
+      const off = await page.evaluate(() => {
+        const g = document.getElementById('editor-centre').getBoundingClientRect()
+        const h = document.getElementById('editor-centre').closest('header').getBoundingClientRect()
+        return Math.abs((g.left + g.right) / 2 - (h.left + h.right) / 2)
+      })
+      offsets.push({ ship, width, off })
+    }
+  }
+  for (const o of offsets) expect(o.off, `${o.ship} at ${o.width}`).toBeLessThanOrEqual(o.width >= 1366 ? 1 : 7)
+  await expect(page.locator('#editor-theme-settings')).toHaveAccessibleName('Theme settings')
+  await expect(page.locator('#editor-theme-settings')).toHaveAttribute('title', 'Theme settings')
+  await expect(page.locator('#editor-theme-settings svg')).toHaveCount(1)
+})
+
 test('7.18a · ⌘⏎ does what Ship it does — from the canvas and with the caret in a panel field — and the wizard it opens is the same', async ({ page }) => {
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
   await open(page)

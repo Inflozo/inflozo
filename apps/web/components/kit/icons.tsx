@@ -48,6 +48,11 @@
  * surfaces read, and one name means one thing (R-170) — the precedent is `SyncCheck`, which is this same Tabler
  * `check` at a heavier stroke.
  *
+ * AND ONE ON 2026-10-19 (ruling R-266, Story 7.18a's Review): `settings`, the gear the bar's "Theme settings" link is drawn
+ * as so that S4's centred group stays centred beside Ship it — the owner named it ("a gear, its full name kept for screen
+ * readers and as its tooltip"), and no frame draws a gear. Another stated exception, same shape: `tabler.json`'s own `settings`,
+ * emitted from it, and `editor.test.ts` holds it path for path.
+ *
  * Tabler Icons — MIT Licence, Copyright (c) 2020-2024 Paweł Kuna. The full text ships with every
  * theme that draws one of these (`TABLER_LICENSE` in `@inflozo/library/icons`, R-26).
  *
@@ -110,6 +115,13 @@ export const Search = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="11" cy="11" r="7" />
     <path d="M21 21l-4.3-4.3" />
+  </Icon>
+)
+/** Tabler `settings` — the bar's Theme settings link, drawn as a gear (R-266). Its two paths are `tabler.json`'s. */
+export const ThemeSettingsGear = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065" />
+    <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
   </Icon>
 )
 /* Tabler's `circle-off` — the owner's own glyph for the Template switcher's "Empty" rows (R-130,

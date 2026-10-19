@@ -649,7 +649,10 @@ not a phone and narrower than **768px** the bar makes room for them twice over �
 the words "Template" and "View as"** (their values and the eye stay, and each keeps its full accessible name). It amends
 R-143's "the pair will not collapse" at that width only; at 768 and up nothing changes. Measured in the harness on Home and
 the Paywall: at 600 only both together fit, at 640 the words alone fit, at 720 either fits — `floor.spec.mjs` sweeps all
-three on touch.)*
+three on touch.)* *(Story 7.18a's Review, **R-266**, owner, 2026-10-19: at 1280 and up the full bar keeps S4a's centred group
+centred beside Ship it because the **"Theme settings" link is a gear** — Tabler's `settings` in a 28px target, "Theme
+settings" still its accessible name, ⋯'s row and its tooltip — and the right side is spaced at S4's own **8px**: centred from
+about 1300px up, 6px off at 1280. As first built it sat 17px off centre at 1440 and 97px at 1280.)*
 
 > **The floor is a device test, not a width test — and that distinction is load-bearing.** A 1440px
 > display at 200% browser zoom presents roughly a 720px CSS viewport. Keying the notice on CSS width

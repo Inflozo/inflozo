@@ -648,3 +648,17 @@ test('Story 7.17 (DW-366, R-257): an unreadable routing keeps each template\'s s
   assert.match(editor, /const listed = useMemo<Lists>\(\(\) => \(routes === null && unreadListed !== undefined \? new Map\(unreadListed\.map\(\(f\) => \[f, \[\]\] as const\)\) : listsOf\(routes\)\), \[routes, unreadListed\]\)/)
   assert.match(editor, /const first = listed\.get\(file\)\?\.\[0\]\n\s+return first\?\.limit === undefined \? \{ kind: 'main', postsPerPage \}/)
 })
+
+test('R-266 (Story 7.18a\'s Review): the bar\'s Theme settings link is Tabler\'s gear, path for path, its words kept as its name and tooltip; the right side is spaced at S4\'s 8px', () => {
+  const tabler = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'packages', 'library', 'icons', 'tabler.json'), 'utf8'))
+  const want = (tabler.icons.settings.outline as [string, { d: string }][]).map(([, a]) => a.d)
+  const icons = readFileSync(join(import.meta.dirname, 'components', 'kit', 'icons.tsx'), 'utf8')
+  const gear = icons.slice(icons.indexOf('export const ThemeSettingsGear'), icons.indexOf(')\n', icons.indexOf('export const ThemeSettingsGear')))
+  assert.deepEqual([...gear.matchAll(/<path d="([^"]+)" \/>/g)].map((m) => m[1]), want)
+  const editor = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'editor.tsx'), 'utf8')
+  const link = editor.slice(editor.indexOf('id="editor-theme-settings"'), editor.indexOf('</Link>', editor.indexOf('id="editor-theme-settings"')))
+  assert.match(link, /title="Theme settings"/)
+  assert.match(link, /<ThemeSettingsGear size=\{16\} \/>\s*<span className="sr-only">Theme settings<\/span>/, 'the words stay its name — ⋯\'s row reads them (R-170)')
+  assert.match(editor, /<div className="flex min-w-0 items-center justify-end gap-2 coarse:gap-\[6px\]">/)
+  assert.match(editor, /<div hidden=\{compact\} className="flex items-center gap-2">/)
+})

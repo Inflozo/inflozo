@@ -1692,7 +1692,8 @@ sections — not the actual Inflozo frame/chrome/UI."* So D1 and R-26's "Tabler"
 library — the Icon Picker (FR-F1, Appendix C) and every glyph in an emitted theme, where the licence
 text ships — and **Inflozo's own chrome draws what the export draws**, read verbatim (R-74). Nothing
 visible changed. The Tabler notice leaves the app kit and returns with the first Tabler path, which
-belongs in `packages/library`.
+belongs in `packages/library`. *(R-266, owner, 2026-10-19, Story 7.18a's Review: one more stated exception — the bar's Theme
+settings link is Tabler's `settings` gear, named by the owner, with its words kept as its name and tooltip.)*
 - Targets: ✅ `apps/web/components/kit/icons.tsx` (provenance stated, notice removed) · ✅ Story 1.3's
   spec (the constraint amended, the question ruled) · ✅ `epic-1-context.md` · ✅ `DESIGN.md` § Icons
   & Illustration · ✅ the R-26 row above. `prd.md` needs no edit: FR-F1, Appendix C and FR-Q7 already
@@ -5706,6 +5707,40 @@ Story 7.18a's Dev, Question 6, ruled **option 1** (owner, 2026-10-18): *"1. Both
 - Targets: ✅ this entry · ✅ Story 7.18a's spec (Words, Ruled values) · ✅ `lib/deploy.ts`, `server/deploy/run.ts`, the route, the wizard
   and the menu (Story 7.18a's Dev) · ✅ AD-19 (dated note) · ✅ `prd.md` FR-J8 · ✅ `EXPERIENCE.md` · ✅ `epics.md` Story
   7.18a's card · ✅ `epic-7-context.md` · ✅ VERIFY-AT-BUILD 74 · ✅ MEASUREMENTS §86 (leg 1b, executed on T1).
+
+**R-265 — the routes "failed" ending says why in seven approved phrases.** Story 7.18a's Review, Question 7, ruled **option 1**
+(owner, 2026-10-19): *"1. Approve the seven as written. They reuse the words the failure screen already uses for the same
+causes."*
+
+- **Why it was a question.** Words held "We couldn't send your routing to Ghost: {reason}. Your theme is live; ship again to
+  retry." but never said what `{reason}` may be; Dev wrote seven phrases without asking, and the spec's Ask First reserves
+  any string beyond Words. (The Review also fixed the ending showing the last phrase for every cause.)
+- **The rule.** `{reason}` is one of: "Ghost refused the file" · "your site is busy or down" · "your site didn't answer" ·
+  "your site now answers at a different address" · "the routing isn't valid" · "the site is no longer connected" ·
+  "something went wrong on our side" (`lib/deploy.ts`' `ROUTES_REASONS`).
+- **Declined.** One line with no reason; new words.
+- Targets: ✅ this entry · ✅ Story 7.18a's spec (Words, Ruled values) · ✅ `lib/deploy.ts` (`ROUTES_REASONS`'s comment).
+
+**R-266 — the bar's Theme settings link is a gear, and the bar's right side is spaced at S4's 8px, so S4's centred group
+stays centred beside Ship it.** Story 7.18a's Review, Question 8, ruled **option 1** (owner, 2026-10-19): *"Theme settings"
+becomes an icon in the bar (a gear, its full name kept for screen readers and as its tooltip), and the right side's spacing
+becomes S4's own 8 px (from 10). Every control stays in the bar; centred from about 1300 up, 6 px off at 1280.*
+
+- **Why it was a question.** S4 centres "Template" and "View as" in the bar. With Ship it added to a right side that had grown
+  since S4 was drawn (Remix, the sun, the devices, "Theme settings", Preview), the bar's grid could no longer keep the middle
+  centred below about 1480px: 17px left at 1440, 54 at 1366, 97 at 1280, where Story 5.22's compact bar begins (R-202). The
+  deployed walk's step 2 caught it at 1440, on the Dev head too. Every remedy changes a control's look or place.
+- **The rule.** On a fine pointer at 1280px and up, the "Theme settings" link is Tabler's `settings` gear in a 28px target —
+  "Theme settings" stays its accessible name, ⋯'s row (R-170) and its tooltip (`title`) — and the right side's gaps are 8px,
+  S4's own (touch keeps its 6px). Measured in the harness: centred at 1536, 1440 and 1366 beside "Ship it" and "Ship update",
+  6px left at 1280.
+- **What it amends.** R-92's scope gains one more stated exception (Tabler `settings`, named by the owner; no frame draws a
+  gear), and the editor's note that the link is "words, not a glyph".
+- **Declined.** The compact bar from about 1490 (Remix, the sun, the devices and Theme settings into ⋯ on most laptops);
+  leaving the middle off centre.
+- Targets: ✅ this entry · ✅ R-92's entry (dated note) · ✅ Story 7.18a's spec (Ruled values, Spec Change Log) · ✅ `editor.tsx`
+  and `kit/icons.tsx` · ✅ `editor.test.ts` and a `journey.spec.mjs` centring stop · ✅ `EXPERIENCE.md` (beside R-263) ·
+  ✅ `epics.md` Story 7.18a's card · ✅ `epic-7-context.md`.
 
 ## B · Approved decisions superseded by this session
 

@@ -4191,6 +4191,10 @@ ending is Live with confetti — never D2f (Ghost makes an upload under the acti
 **And** *(**R-263**, owner, 2026-10-18)* on a touch screen that is not a phone and narrower than 768px, Undo and Redo move
 to the top of ⋯ and the centre group hides the words "Template" and "View as", so Ship it and its ▾ fit the bar at every
 width; `floor.spec.mjs` sweeps 600, 640 and 720 on touch, Home and the Paywall
+**And** *(**R-265**, **R-266**, owner, 2026-10-19, Story 7.18a's Review)* the routes "failed" ending's reason is one of the
+seven approved phrases; and at 1280px and up S4's centred group stays centred beside Ship it — the "Theme settings" link is a
+gear (its words kept as its name and tooltip) and the bar's right side is spaced at S4's 8px — held by a journey at 1536, 1440,
+1366 and 1280
 
 **FRs:** FR-J8 (the wizard, and the partial-success half's wizard states from Story 7.32), FR-D11 (⌘⏎), FR-J17 (Pre-flight's
 quality rows, from Story 7.8). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′ · `D2 Deploy History Completed.dc.html` D2e ·
