@@ -4,7 +4,7 @@ type: 'feature'
 created: '2026-10-18'
 status: 'in-review'
 baseline_commit: 'ceaae4068372bef46d2745fc450f8625b83c6eea'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md']
 ---
@@ -979,29 +979,30 @@ Users and projects are counted back unchanged.
 
 You test as a fresh account on the Ghost 6 test site (T1). Before you start, in **ghost6.inflozo.com's Ghost Admin**:
 - make a new custom integration called **Owner test 7.18** and keep its Admin API key and Content API key open;
-- download T1's current `routes.yaml` (the routes download in Ghost's settings — Deploy confirms the exact place on T1
-  and writes it here).
+- download T1's current `routes.yaml`: in Ghost Admin (`https://ghost6.inflozo.com/ghost/`) open **Settings → Labs**, press
+  **Open**, stay on the **Beta features** tab, and press **Download current routes** in the **Routes** row. (Read in Ghost
+  6.58.0's own admin code at Deploy, not clicked through: if the words differ on screen, tell me what you see.)
 
-Addresses that need your new project's id are written `…/projects/<your project>`. Copy the id from the address bar
+Addresses that need your new project's id are written `https://app.inflozo.com/projects/<your project>`. Copy the id from the address bar
 after step 2.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias, and open the link in your inbox. | `umngkmr+ship718@gmail.com` | You land in the app, on Start. |
 | 2 | `https://app.inflozo.com/sites` | Sites | Press **Connect a site** and finish the wizard with the integration's two keys. | `https://ghost6.inflozo.com` + the two keys | ghost6 is **Connected**, and a project linked to it opens. |
-| 3 | `…/projects/<your project>` | Editor, Home | Look at the top bar. Then press ⌘K, add the newsletter design **Inline Row**, select it, and in the sidebar delete every word of its heading. | — | **Ship it** is a coral button after ⋯, with a ▾ beside it. The heading disappears from the canvas, and the rest of the section stays. |
-| 4 | same | Editor, Home | In the sidebar's heading box, type a heading. Then delete it again. | `Get the Thursday letter` | The heading comes back as you type, and disappears again. |
-| 5 | `…/projects/<your project>/routes` | Routes & Templates | Press **+ New collection**. Add **Primary tag** and type the tag. For Template choose **New template…** and type the name. Press **Create collection**. | `/tutorials/` · `craft` · `Tutorials List` | The collection is listed. |
-| 6 | `…/projects/<your project>` in a second window (B) | Editor | In B, press **Ship it**. | — | "Take over to ship?" opens with **Wait** focused. |
-| 7 | same (B) | Take over to ship? | Press **Take over and ship**. | — | Window A becomes read-only. In B the wizard opens on **1 Destination**: ghost6 **Connected**, **Deploy & activate** chosen, Theme `inflozo-…`, chip **v1**. |
-| 8 | same (B) | Destination | Choose the **Deploy only** card, then press **Run checks**. | — | The card reads "Upload v1, keep your current theme active for now.". Then **Compiling your theme…**, then **Checking your theme…** (Cancel works here). Then "Theme compiled", and "Checking your theme (Ghost will love it)" with **0 errors** and at least the warning "The switch that hides a page's title and feature image does nothing on this site.". Then "routes.yaml is valid · pass", "Every post appears on Home or a collection · pass" and "Warnings won't block your deploy.". |
-| 9 | same (B), then `https://ghost6.inflozo.com` in a new tab | Pre-flight | Press **Ship it**. When it ends, open the site in a new tab. | — | "Shipping v1…" and "Uploading to Ghost"; **Cancel** is greyed with "Once it starts, it finishes". Then "Uploaded. Not live yet." with "Activating v1 · Not requested", **Re-activate v1** and **Leave it for now**, and no confetti. The site in the new tab still shows its own theme (Casper). |
-| 10 | same (B) | Uploaded. Not live yet. | Press **Re-activate v1**, then **View site ↗**. | — | "Activating…", then confetti and "Live! Your site just got gorgeous.". Below it: "Upload routes.yaml yourself". The site in the new tab now shows your design, and the newsletter has no heading. |
-| 11 | ghost6's Ghost Admin, then the wizard (B) | B16 at the ending | Press **Download the file we generated**, upload it in Ghost where the card says, then press **Verify upload**. | the downloaded `routes.yaml` | "Ghost has your routes.yaml. Your routing is live." Press **Done**. Routes & Templates and Sites show no card. |
-| 12 | `…/projects/<your project>` (B) | Editor → ▾ | Press the ▾ beside **Ship update**, then press **Deploy only**. | — | The bar now says **Ship update**. In the menu **Deploy only** is greyed, its caption reading "v1 is already live on ghost6.inflozo.com, so Ghost would switch to v2 the moment it uploads. Use Deploy & activate.". Pressing it opens nothing. |
-| 13 | same (B) | Editor → Style pack, then the wizard | Make the text colour a pale grey, and accept the editor's "hard to read" warning. Then press **⌘⏎**, **Run checks**, then **Ship it**. | `#DDDDDD` | ⌘⏎ opens the wizard (v1 → v2) with **Deploy & activate** chosen, and the **Deploy only** card greyed with the same caption. After Run checks, Checking shows the contrast warning in the Style pack editor's own words, and Ship it is still pressable. Ship it ends on Live with confetti, and the site shows the pale text. Put the colour back afterwards. |
-| 14 | ghost6's Ghost Admin → Integrations → Owner test 7.18, then the editor (B) | — | Press **Regenerate** on the Admin API key. In the editor, press **Ship it**, **Run checks**, then **Ship it**. | — | It fails at Ship: "Ghost said no — this Admin API key no longer works." with **Reconnect site**, which opens Manage keys. Paste the new key and ship again: Live. |
-| 15 | ghost6's Ghost Admin, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: **Settings → Design → Change theme → Casper → Activate**, delete the `inflozo-…` theme, upload the `routes.yaml` you saved at the start, and delete the Owner test 7.18 integration. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was. |
+| 3 | `https://app.inflozo.com/projects/<your project>` | Editor, Home | Look at the top bar. Then press ⌘K, add the newsletter design **Inline Row**, select it, and in the sidebar delete every word of its heading. | — | **Ship it** is a coral button after ⋯, with a ▾ beside it. The heading disappears from the canvas, and the rest of the section stays. |
+| 4 | `https://app.inflozo.com/projects/<your project>` | Editor, Home | In the sidebar's heading box, type a heading. Then delete it again. | `Get the Thursday letter` | The heading comes back as you type, and disappears again. |
+| 5 | `https://app.inflozo.com/projects/<your project>/routes` | Routes & Templates | Press **+ New collection**. Add **Primary tag** and type the tag. For Template choose **New template…** and type the name. Press **Create collection**. | `/tutorials/` · `craft` · `Tutorials List` | The collection is listed. |
+| 6 | `https://app.inflozo.com/projects/<your project>` in a second window (B) | Editor | In B, press **Ship it**. | — | "Take over to ship?" opens with **Wait** focused. |
+| 7 | `https://app.inflozo.com/projects/<your project>` (B) | Take over to ship? | Press **Take over and ship**. | — | Window A becomes read-only. In B the wizard opens on **1 Destination**: ghost6 **Connected**, **Deploy & activate** chosen, Theme `inflozo-…`, chip **v1**. |
+| 8 | `https://app.inflozo.com/projects/<your project>` (B) | Destination | Choose the **Deploy only** card, then press **Run checks**. | — | The card reads "Upload v1, keep your current theme active for now.". Then **Compiling your theme…**, then **Checking your theme…** (Cancel works here). Then "Theme compiled", and "Checking your theme (Ghost will love it)" with **0 errors** and at least the warning "The switch that hides a page's title and feature image does nothing on this site.". Then "routes.yaml is valid · pass", "Every post appears on Home or a collection · pass" and "Warnings won't block your deploy.". |
+| 9 | `https://app.inflozo.com/projects/<your project>` (B), then `https://ghost6.inflozo.com` in a new tab | Pre-flight | Press **Ship it**. When it ends, open the site in a new tab. | — | "Shipping v1…" and "Uploading to Ghost"; **Cancel** is greyed with "Once it starts, it finishes". Then "Uploaded. Not live yet." with "Activating v1 · Not requested", **Re-activate v1** and **Leave it for now**, and no confetti. The site in the new tab still shows its own theme (Casper). |
+| 10 | `https://app.inflozo.com/projects/<your project>` (B) | Uploaded. Not live yet. | Press **Re-activate v1**, then **View site ↗**. | — | "Activating…", then confetti and "Live! Your site just got gorgeous.". Below it: "Upload routes.yaml yourself". The site in the new tab now shows your design, and the newsletter has no heading. |
+| 11 | `https://ghost6.inflozo.com/ghost/`, then the wizard in `https://app.inflozo.com/projects/<your project>` (B) | B16 at the ending | Press **Download the file we generated**, upload it in Ghost where the card says, then press **Verify upload**. | the downloaded `routes.yaml` | "Ghost has your routes.yaml. Your routing is live." Press **Done**. Routes & Templates and Sites show no card. |
+| 12 | `https://app.inflozo.com/projects/<your project>` (B) | Editor → ▾ | Press the ▾ beside **Ship update**, then press **Deploy only**. | — | The bar now says **Ship update**. In the menu **Deploy only** is greyed, its caption reading "v1 is already live on ghost6.inflozo.com, so Ghost would switch to v2 the moment it uploads. Use Deploy & activate.". Pressing it opens nothing. |
+| 13 | `https://app.inflozo.com/projects/<your project>` (B) | Editor → Style pack, then the wizard | Make the text colour a pale grey, and accept the editor's "hard to read" warning. Then press **⌘⏎**, **Run checks**, then **Ship it**. | `#DDDDDD` | ⌘⏎ opens the wizard (v1 → v2) with **Deploy & activate** chosen, and the **Deploy only** card greyed with the same caption. After Run checks, Checking shows the contrast warning in the Style pack editor's own words, and Ship it is still pressable. Ship it ends on Live with confetti, and the site shows the pale text. Put the colour back afterwards. |
+| 14 | `https://ghost6.inflozo.com/ghost/` → Settings → Integrations → Owner test 7.18, then the editor in `https://app.inflozo.com/projects/<your project>` (B) | — | Press **Regenerate** on the Admin API key. In the editor, press **Ship it**, **Run checks**, then **Ship it**. | — | It fails at Ship: "Ghost said no — this Admin API key no longer works." with **Reconnect site**, which opens Manage keys. Paste the new key and ship again: Live. |
+| 15 | `https://ghost6.inflozo.com/ghost/`, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: **Settings → Design → Change theme → Casper → Activate**, delete the `inflozo-…` theme, upload the `routes.yaml` you saved at the start (**Settings → Labs → Open → Upload routes file**), and delete the Owner test 7.18 integration. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was. |
 
 ## Owner's test findings
 
@@ -1432,3 +1433,31 @@ the bar; centred from about 1300 up, 6 px off at 1280."*
   `dpl_8Zvafvbs6jusfXk4CP48iQodMyUf` READY): the walk's steps 1–5 (a cut from a worktree at that commit, no T1 call) — 40 PASS,
   0 FAIL, step 2 among them: S4a's centred group at 541–899 in the 1440 bar, its middle the bar's (it was 524–882, 17px left,
   in every earlier run today).
+
+**Executed — Deploy (2026-10-19, the main session, Node 24):**
+- `Deployment: dpl_8Zvafvbs6jusfXk4CP48iQodMyUf` — READY, production, built from `c79a3030`, aliased to `app.inflozo.com`,
+  `inflozo.com` and `www.inflozo.com` (Vercel API, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT` read in-process by a
+  script, never on argv). It is the last code change: the head `2f46827a` changed the spec and the story board only, so it
+  built nothing. CI at `c79a3030`: `check`, `rls`, `deploy` and the render matrix success (`GITHUB_TOKEN`).
+- **CI at the head `2f46827a` is red, and nothing deployed from it:** `check` failed at `pnpm keyboard` on one journey of 273
+  (`journey.spec.mjs:2382`, "choosing a Layers row scrolls the canvas to that section": the section settled at 111px, not 24, inside
+  its 5 s poll) with `rls` success and `deploy` skipped. The commit touched no code. Run again here (Node 24.18.1, `pnpm keyboard
+  --grep "choosing a Layers row scrolls the canvas" --repeat-each 5`): 5 passed. It is the same scroll-settling timing family
+  as DW-222/DW-284; a green CI on the next push with code is the proof, and a red one again on this journey is a defect to chase,
+  not a flake to wait out. `GITHUB_TOKEN` is read-only, so the run was not re-dispatched.
+- Schema: `job_stage`'s `awaiting_ship`, `deploys.quality` and `deploys.inputs_sha256` were applied and read back at the Schema
+  phase and again at the Review (R-99); `bash supabase/tests/run-rls-gate.sh` is green in the `rls` job on every push since,
+  including the head's. Nothing to apply at Deploy.
+- Signed out, `https://app.inflozo.com/sign-in` answers 200, `https://app.inflozo.com/sites` 307 and `https://inflozo.com/` 200, so
+  both addresses are live. Nothing was written to any database or Ghost site at Deploy; T1 was not touched (it reports
+  `version: 6.58` on `GET /ghost/api/admin/site/`, no key).
+- **Where T1 downloads and uploads `routes.yaml`** (the owner's test needs it; read in source, rule 1): Ghost 6.58.0's own npm
+  tarball (`registry.npmjs.org/ghost/-/ghost-6.58.0.tgz`, read, never installed), `core/built/admin/assets/settings-KSWWQanQ.js`:
+  the **Labs** section (title `Labs`, `navid: labs`, an **Open**/**Close** button, a **Beta features** tab) renders a **Routes** row
+  with the buttons **Upload routes file** and **Edit** and the link **Download current routes** (`GET /settings/routes/yaml/`),
+  above a **Redirects** row. Not clicked through on T1's live admin. **This contradicts MEASUREMENTS §33's line "Ghost 6 has no
+  Settings → Labs"**: the bundle's route list has no `settings/labs` URL, but the Labs *section* exists in the settings page and is
+  where routes live. B16's copy already avoids a hard-coded path, so no code is wrong; §33's verdict wants a dated correction
+  note by whoever next owns that file (rule 3). The owner's test step is the first look at the live screen.
+- The owner's test above carries the live URL in every step. `owner_test` is `pending` again (the two findings are fixed and
+  deployed; the re-test of steps 6–10 is owed, and the rest of the test has not been walked end to end).
