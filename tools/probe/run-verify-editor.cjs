@@ -342,7 +342,7 @@
 // (423, no job). 113d: Pre-flight's rows against the two verdicts stored on the
 // `deploys` row, R-260's pass row, and the artefact in `deploy-artifacts`; then an unreadable `routes_config` and a malformed
 // `project_treatments.card_designs`, each planted through the service key, blocking with their reason and link, the earlier
-// resting check abandoned, each plant put back and read back. 113e: Cancel during Checking leaves no deploy row and no object.
+// resting check abandoned, each plant put back and read back. 113e: a Pre-flight cancelled through the route leaves no deploy row and no object.
 // 113f (R-264, the owner, 2026-10-18): the FIRST ship is ▾ → Deploy only — free on a first deploy (the control for 113g) — D2f,
 // v1 uploaded and not activated, T1's earlier theme still the live one (the control for "nothing went live"), the artefact
 // unchanged since Pre-flight and the binding claimed; then Re-activate v1 — Live, B16 `no_token`, T1's `/` with the Inline Row
@@ -11937,34 +11937,28 @@ async function main() {
         check('step 113d — the card plant put back: project_treatments reads back as it was',
           [200, 204].includes(putBackC113.status) && canon113(backC113) === canon113(treatStart113), `HTTP ${putBackC113.status}`)
 
-        // 113e — Cancel during Checking leaves nothing; a check that outruns the press is said, and asked once more
-        let cancelled113 = null
-        for (let attempt = 1; attempt <= 2 && cancelled113 === null; attempt++) {
-          await back113(pb)
-          const was = (await job113())?.id ?? null
-          await pb.locator('#deploy-run').click()
-          // Cancel is pressed once the wizard has SAID Checking (its view holds the job then — a press before that sends nothing),
-          // or this attempt is over once the new job has rested or ended without it
-          const seen = await until113(async () => ({ w: await wiz113(pb), j: await job113() }), (x) => x.w?.said === W113.sayChecking || (x.j !== null && x.j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(x.j.stage)), 240000)
-          const atChecking = await job113()
-          if (seen.w?.said !== W113.sayChecking || atChecking?.id === was || atChecking?.stage !== 'checking') {
-            note('step 113e', `attempt ${attempt}: the job was at ${atChecking?.stage} before Cancel could be pressed in Checking`)
-            await until113(job113, (j) => ['awaiting_ship', 'failed'].includes(j?.stage), 240000)
-            continue
-          }
-          await pb.locator('#deploy-cancel').click()
-          const ended = await until113(() => jobById113(atChecking.id), (j) => ['cancelled', 'awaiting_ship', 'failed'].includes(j?.stage), 120000)
-          if (ended?.stage !== 'cancelled') {
-            note('step 113e', `attempt ${attempt}: the checks finished (${ended?.stage}) before the Cancel landed`)
-            continue
-          }
-          cancelled113 = { job: ended, deployId: atChecking.deploy_id, shown: await until113(() => wiz113(pb), (w) => w?.at === 'destination', 15000) }
-        }
+        // 113e — Cancel while it compiles leaves nothing. On production a whole Pre-flight takes about 2.5 s, faster than the
+        // wizard's one-second read lets a press land: three presses of the wizard's Cancel lost that race at the Review
+        // (2026-10-19), each a Cancel refused as past cancelling, which is right. So the SERVER's half is walked here — a
+        // Pre-flight and its Cancel sent back to back through the route with this tab's lock session — and the wizard's own
+        // Cancel is the keyboard journeys' (over canned stages) and the owner's step 8.
+        await back113(pb)
+        const deploysE0113 = (await call('/rest/v1', `/deploys?project_id=eq.${P113}&select=id`)).body?.length ?? null
+        const sentE113 = await pb.evaluate(async (url) => {
+          const session = sessionStorage.getItem('inflozo-lock-session')
+          const post = (body) => fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ session, ...body }) })
+            .then(async (r) => ({ status: r.status, job: r.ok ? (await r.json()).job ?? null : null }))
+          const pre = await post({ intent: 'preflight', mode: 'activate' })
+          const stop = pre.job === null ? null : await post({ intent: 'cancel', job: pre.job })
+          return { preflight: pre.status, job: pre.job, cancel: stop?.status ?? null }
+        }, `${PREFIX}/projects/${P113}/deploy`).catch(() => null)
+        const endedE113 = sentE113?.job ? await until113(() => jobById113(sentE113.job), (j) => ['cancelled', 'awaiting_ship', 'failed'].includes(j?.stage), 120000) : null
         const objectsE113 = await objects113()
-        check('step 113e — Cancel pressed in Checking: the job ends cancelled with no deploy attached, the deploy row it had is deleted, the bucket holds no object for the project (113d\'s listing held one: the control), and the wizard is back at Destination',
-          cancelled113 !== null && cancelled113.job.deploy_id === null && UUID.test(cancelled113.deployId ?? '') && (await deploy113(cancelled113.deployId)) === null &&
-          Array.isArray(objectsE113) && objectsE113.length === 0 && cancelled113.shown?.at === 'destination',
-          JSON.stringify({ job: cancelled113?.job && { stage: cancelled113.job.stage, deploy: cancelled113.job.deploy_id }, deployId: cancelled113?.deployId ?? null, objectsE113, at: cancelled113?.shown?.at ?? null }))
+        const deploysE1113 = (await call('/rest/v1', `/deploys?project_id=eq.${P113}&select=id`)).body?.length ?? null
+        check('step 113e — a Pre-flight and its Cancel sent back to back: 202 then 200, the job ends cancelled with no deploy attached, no deploy row left of it (the project\'s count as before), and the bucket holds no object for the project (113d\'s listing held one: the control)',
+          sentE113?.preflight === 202 && sentE113.cancel === 200 && endedE113?.stage === 'cancelled' && endedE113.deploy_id === null &&
+          deploysE0113 !== null && deploysE1113 === deploysE0113 && Array.isArray(objectsE113) && objectsE113.length === 0,
+          JSON.stringify({ sentE113: sentE113 && { ...sentE113, job: undefined }, stage: endedE113?.stage ?? null, deploy: endedE113?.deploy_id ?? null, deploysE0113, deploysE1113, objectsE113 }))
 
         // 113f — THE FIRST SHIP IS ▾ → DEPLOY ONLY (R-264: free on a first deploy): D2f, nothing live on T1; then Re-activate v1 → Live
         if ((await wiz113(pb))?.at === 'check') await back113(pb)

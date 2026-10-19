@@ -672,6 +672,10 @@ surface is meant to do:**
   it read was already full; with one name duplicated it now fails); the refusal-words test derives its classes from its own
   cases; the "never `disabled`" pattern now sees `disabled>` and `disabled/>`; `check-traces`' control is derived (every check
   file seen loading) instead of a written-down count, and a checker that throws is a FAIL line; the rail's numbering is anchored.
+- **The walk's step 113e walks the server's Cancel** — a Pre-flight and its Cancel sent back to back through the route — because a
+  whole Pre-flight on production (about 2.5 s) finishes before a press of the wizard's Cancel can land (five attempts lost the
+  race at this Review: four found the checks already done, and one press was refused as past cancelling, which is right); the
+  wizard's Cancel stays the journeys' and the owner's.
 - **The walk's step 113 and §86's recorder, for T1's sake:** the start guard refuses ANY `inflozo-walk-113-` theme left by a killed
   run; DW-54's off-list write is a `DELETE` of a post id no Ghost holds (a real `POST posts/` would have made a post had the
   allowlist regressed); 113j waits for the step's last job to rest before restoring T1; 113c asks the route for a Pre-flight from
@@ -1041,8 +1045,8 @@ opened the wizard straight away.
 
 ## Questions for the owner
 
-Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), and Questions 4–6, raised at Dev, the same day (R-262–R-264). **Question 7,
-raised at the Review (2026-10-19), is open.**
+Questions 1–3 were ruled on 2026-10-18 (R-259–R-261), and Questions 4–6, raised at Dev, the same day (R-262–R-264). **Questions 7
+and 8, raised at the Review (2026-10-19), are open.**
 
 ### Question 1 — This story is three stories. May I split it?
 
@@ -1210,6 +1214,33 @@ The seven reasons, by cause:
 
 **Ruled:** _(awaiting the owner)_
 
+### Question 8 — Ship it pushes "Template" and "View as" off the middle of the top bar on laptop screens. What gives way?
+
+**In plain English.** The design (S4) keeps the two dropdowns "Template · Home" and "View as" exactly in the middle of the
+editor's top bar. The right side of the bar has grown over several stories (Remix, the sun, the devices, "Theme settings",
+Preview), and with Ship it added it no longer fits beside a centred middle below about 1480 pixels wide, so the middle slides
+left. The deployed walk caught it at 1440 (its check of S4 now fails). Before this story it stayed centred down to 1280, where
+the editor switches to its compact bar. Measured in the editor, how far left of centre the middle sits:
+
+| Screen width | As built | Option 1 | Option 2 | Option 3 |
+|---|---|---|---|---|
+| 1536 | centred | centred | centred | centred |
+| 1440 (the frame's width) | 17 px left | centred | centred | 17 px left |
+| 1366 (a common laptop) | 54 px left | centred | centred | 54 px left |
+| 1280 | 97 px left | 6 px left | centred | 97 px left |
+
+**An example.** On a 1366 laptop today, "Template · Home ▾ · 👁 View as ▾" sits about a thumb's width left of the middle of
+the bar.
+
+1. **(RECOMMENDED) "Theme settings" becomes an icon in the bar** (a gear, its full name kept for screen readers and as its
+   tooltip), **and the right side's spacing becomes S4's own 8 px** (from 10). Every control stays in the bar; centred from
+   about 1300 up, 6 px off at 1280.
+2. **Use the compact bar below about 1490 instead of below 1280.** Always centred, but on most laptops Remix, the sun, the
+   devices and "Theme settings" move into ⋯, as they do on a small screen today.
+3. **Leave it.** The middle sits a little left on laptop screens, and the walk's check is changed to expect that.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Verification
 
 **Commands:**
@@ -1355,4 +1386,26 @@ The seven reasons, by cause:
 - **T1 put back for the walk** (the owner's in-session go, option 1, staff token): `casper` activated (200) and `inflozo-ghost6`
   deleted (204), read back — Casper active, no Inflozo theme installed; T1's `routes.yaml` 130 bytes, unchanged by the owner's
   test (his routing ended `kept`). His accounts and projects are untouched.
-- **Still owed:** the walk's step 113 on the Review's deploy (the same writes, the owner's go), recorded in a second Review commit.
+- **The Review's deploy** `6e5afd91` (CI `check`, `rls`, `deploy` and the render matrix success; Vercel
+  `dpl_2FDA7yfrz8kYjmHPqWy5vSK1iorw` READY).
+- **Walk step 113, run 2** (the cut: steps 1–5 + 113, from a worktree at `6e5afd91`, `T1_WRITES=1` on the owner's go): every
+  check of 113 held but 113e — T1 connected through the wizard; R-260 over T1's 33 posts (no post named; the old filter names
+  `probe-gated-post`, the control); DW-349's emptied heading gone from the canvas and from T1's `/`; D8g in a second window,
+  and the window that lost the lock refused by the route (423, no job); Pre-flight resting at `awaiting_ship` with both verdicts,
+  its rows the stored verdicts, R-260's pass row; the planted unreadable routing and card designs each blocking with their
+  words and links, put back; Deploy only on the first deploy → D2f with Casper still live (the control), the uploaded zip the
+  one Pre-flight checked (same sha-256, compiling never re-entered), the binding claimed; Re-activate → Live, B16 `no_token`;
+  "Ship update" with Deploy only greyed in the ▾ row and on S8a's card (a press sends nothing); the route's 422 for Deploy only
+  while live; v2 by Deploy & activate live on Ghost's upload answer with NO activating stage; DW-54's off-list `DELETE` refused
+  (`write_not_allowed`) with one `denied` audit row beside `theme_upload, theme_activate, theme_upload` ok; T1 restored (Casper
+  active, the walk's theme deleted, routes.yaml 130 → 130 bytes), the site disconnected, every account deleted and counted back.
+  **113e** lost its race twice: a whole Pre-flight takes about 2.5 s on production, and by the wizard's next one-second read
+  the checks had already finished. Run 3 (pressing from Compiling on) lost it three times: twice the same way, and once a press
+  that landed after the checks and was refused as past cancelling (which is right).
+- **113e reworked and run 4** (a cut with 113f–113i left out, so no T1 write at all): a Pre-flight and its Cancel sent back to
+  back through the route with the tab's lock session — 202, 200, the job `cancelled` with no deploy attached, the project's
+  deploy count as before and its bucket empty (113d's listing held one: the control). The wizard's own Cancel is the keyboard
+  journeys' (canned stages) and the owner's step 8.
+- **Step 2 FAILS in every run, at the Dev head too** (`fc85175a`): S4's centred group sits 17 px left of the bar's middle at
+  1440 — Ship it widened the right side past half the bar. Measured in the harness at 1536/1440/1366/1280 with each option
+  applied: **Question 8**, the owner's.
