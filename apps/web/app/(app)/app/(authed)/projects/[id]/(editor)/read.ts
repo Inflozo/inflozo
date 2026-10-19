@@ -547,6 +547,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
       slug: project?.slug ?? '',
       language,
       rtlAckAt: project?.rtl_ack_at ?? null,
+      overridden: !overridesRow.error && (overridesRow.data ?? []).length > 0,
       sites: sitesRows.error ? null : (sitesRows.data ?? []),
       linking: linkingRows.error ? null : (linkingRows.data ?? []),
       siteId: linked,

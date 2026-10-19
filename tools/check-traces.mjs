@@ -174,42 +174,46 @@ gscan.check(dir, { checkVersion: process.env.GSCAN_SPEC }).then((t) => { gscan.f
 `
   const { compilePilots, CI_WORDS, PILOT_THEME } = await import('./pilot-theme.mjs')
   const pilotDir = mkdtempSync(join(tmpdir(), 'inflozo-trace-pilot-'))
-  const pilotFiles = compilePilots(CI_WORDS, { theme: PILOT_THEME }).files
-  for (const [file, body] of Object.entries(pilotFiles)) {
-    mkdirSync(dirname(join(pilotDir, file)), { recursive: true })
-    writeFileSync(join(pilotDir, file), body)
-  }
-  // the control: a theme with no partial would leave the partial checks unexercised
-  if (!Object.keys(pilotFiles).some((f) => f.startsWith('partials/'))) {
-    failed++
-    console.log('FAIL  the pilot theme compiled with no partial — the recorder would not exercise a real theme')
-  }
-  for (const [alias, spec] of [['gscan4', 'v5'], ['gscan6', 'v6']]) {
-    let touched
-    try {
-      touched = JSON.parse(execFileSync(process.execPath, ['-e', TOUCH], { cwd: join(REPO, 'apps/web'), env: { ...process.env, GSCAN_ALIAS: alias, GSCAN_SPEC: spec, THEME_DIR: pilotDir }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))
-    } catch (e) {
-      failed++
-      console.log(`FAIL  ${alias} could not be run to record what it touches — ${String(e.stderr || e.message).split('\n')[0]}`)
-      continue
+  // the temporary theme goes whatever throws (the Review, 2026-10-19)
+  try {
+    const pilotFiles = compilePilots(CI_WORDS, { theme: PILOT_THEME }).files
+    for (const [file, body] of Object.entries(pilotFiles)) {
+      mkdirSync(dirname(join(pilotDir, file)), { recursive: true })
+      writeFileSync(join(pilotDir, file), body)
     }
-    // the control, derived (the review, 2026-10-19 — it was a written-down count): the recorder saw the checker load every
-    // one of its own check files, so a recorder that saw nothing cannot pass
-    const checks = join(dirname(realpathSync(createRequire(join(REPO, 'apps/web/package.json')).resolve(`${alias}/package.json`))), 'lib', 'checks')
-    const unseen = readdirSync(checks).filter((f) => f.endsWith('.js')).filter((f) => !touched.includes(join(checks, f)))
-    if (unseen.length > 0) {
+    // the control: a theme with no partial would leave the partial checks unexercised
+    if (!Object.keys(pilotFiles).some((f) => f.startsWith('partials/'))) {
       failed++
-      console.log(`FAIL  ${alias}: the recorder did not see ${unseen.length} of its check files load (${unseen.slice(0, 3).join(', ')}) — it proves nothing`)
-      continue
+      console.log('FAIL  the pilot theme compiled with no partial — the recorder would not exercise a real theme')
     }
-    const absent = touched.map((f) => relative(REPO, f)).filter((f) => !carried.has(f))
-    if (absent.length === 0) console.log(`PASS  the deploy route carries all ${touched.length} files ${alias} touches while it checks a theme`)
-    else {
-      failed++
-      console.log(`FAIL  the deploy route lacks ${absent.length} of the ${touched.length} files ${alias} touches while it checks — ${absent.slice(0, 4).map((f) => f.replace(/^node_modules\/\.pnpm\//, '')).join(', ')}${absent.length > 4 ? ', …' : ''}`)
+    for (const [alias, spec] of [['gscan4', 'v5'], ['gscan6', 'v6']]) {
+      let touched
+      try {
+        touched = JSON.parse(execFileSync(process.execPath, ['-e', TOUCH], { cwd: join(REPO, 'apps/web'), env: { ...process.env, GSCAN_ALIAS: alias, GSCAN_SPEC: spec, THEME_DIR: pilotDir }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }))
+      } catch (e) {
+        failed++
+        console.log(`FAIL  ${alias} could not be run to record what it touches — ${String(e.stderr || e.message).split('\n')[0]}`)
+        continue
+      }
+      // the control, derived (the review, 2026-10-19 — it was a written-down count): the recorder saw the checker load every
+      // one of its own check files, so a recorder that saw nothing cannot pass
+      const checks = join(dirname(realpathSync(createRequire(join(REPO, 'apps/web/package.json')).resolve(`${alias}/package.json`))), 'lib', 'checks')
+      const unseen = readdirSync(checks).filter((f) => f.endsWith('.js')).filter((f) => !touched.includes(join(checks, f)))
+      if (unseen.length > 0) {
+        failed++
+        console.log(`FAIL  ${alias}: the recorder did not see ${unseen.length} of its check files load (${unseen.slice(0, 3).join(', ')}) — it proves nothing`)
+        continue
+      }
+      const absent = touched.map((f) => relative(REPO, f)).filter((f) => !carried.has(f))
+      if (absent.length === 0) console.log(`PASS  the deploy route carries all ${touched.length} files ${alias} touches while it checks a theme`)
+      else {
+        failed++
+        console.log(`FAIL  the deploy route lacks ${absent.length} of the ${touched.length} files ${alias} touches while it checks — ${absent.slice(0, 4).map((f) => f.replace(/^node_modules\/\.pnpm\//, '')).join(', ')}${absent.length > 4 ? ', …' : ''}`)
+      }
     }
+  } finally {
+    rmSync(pilotDir, { recursive: true, force: true })
   }
-  rmSync(pilotDir, { recursive: true, force: true })
 }
 console.log(failed === 0 ? 'RESULT: every route carries its files' : `RESULT: ${failed} route(s) would deploy without their files`)
 

@@ -2589,8 +2589,9 @@ begin
          and ((column_name = 'quality' and data_type = 'jsonb') or (column_name = 'inputs_sha256' and data_type = 'text'))) <> 2 then
     raise exception 'FAIL (7.18a): deploys.quality (jsonb) or deploys.inputs_sha256 (text) is missing or not nullable';
   end if;
-  if col_description('public.custom_settings'::regclass,
-       (select attnum from pg_attribute where attrelid = 'public.custom_settings'::regclass and attname = 'bound_to'))
+  -- coalesce: a column with NO comment reads null, and `null not like …` is null — no exception (the Review, 2026-10-19)
+  if coalesce(col_description('public.custom_settings'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.custom_settings'::regclass and attname = 'bound_to')), '')
      not like '%kind:''prop''%' then
     raise exception 'FAIL (7.18a): custom_settings.bound_to''s comment does not name the prop shape (DW-355)';
   end if;
@@ -2704,8 +2705,9 @@ begin
          and data_type = 'jsonb' and is_nullable = 'YES') <> 1 then
     raise exception 'FAIL (7.18b): deploys.preflight (jsonb, nullable) is missing';
   end if;
-  if col_description('public.deploys'::regclass,
-       (select attnum from pg_attribute where attrelid = 'public.deploys'::regclass and attname = 'preflight'))
+  -- coalesce: a column with NO comment reads null, and `null not like …` is null — no exception (the Review, 2026-10-19)
+  if coalesce(col_description('public.deploys'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.deploys'::regclass and attname = 'preflight')), '')
      not like '%templates%custom%noindex%freeAsks%' then
     raise exception 'FAIL (7.18b): deploys.preflight''s comment does not name {templates, custom, noindex, freeAsks}';
   end if;

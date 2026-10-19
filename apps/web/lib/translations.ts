@@ -73,6 +73,8 @@ export const TRANSLATION_WORDS = {
   switching: 'Switching…',
   /** the linked site's own language differs: Ghost reads `locales/<its locale>.json`, exactly */
   mismatch: (locale: string) => `Your Ghost site's language is ${locale}, so visitors see the English wording, not these.`,
+  /** Story 7.18b — the same fact in Pre-flight's warning row, which names the project's language (the spec's Words) */
+  mismatchOn: (locale: string, language: string) => `Your Ghost site's language is ${locale}, so visitors see the English wording, not your ${language} labels.`,
   changeIn: (code: string) => `Change it to ${code} in Ghost ↗`,
   /** read after every ↗ link into Ghost, which the arrow alone does not say (the Layers panel's and the paywall notice's words) */
   newTab: ' (opens in a new tab)',

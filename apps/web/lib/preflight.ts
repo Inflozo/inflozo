@@ -20,10 +20,10 @@
 import { ASK_FLAGS, CONTEXT_MATRIX, type DataBinding, type Listed, NONE_LISTED, type PropDef } from '@inflozo/library'
 import { FEED_KEY, feedQuery, isDesigned, untouchedWords, withData, type DocInstance, type ProjectDoc } from '@inflozo/section-runtime'
 import { ghostName, RESERVED_SETTING_KEYS } from '@inflozo/section-runtime/custom-settings'
-import { isRtl } from '@inflozo/library/languages'
+import { DEFAULT_LANGUAGE, isRtl } from '@inflozo/library/languages'
 import { FEEDLESS, SLOW_AFTER } from './data-group.ts'
 import { placeOf, type PreflightFacts } from './deploy.ts'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOf, isRouteCanvas, pageTwoKeyOf, SITE, templateKeyOf, type Canvas } from './editor.ts'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, fileOf, isRouteCanvas, pageTwoKeyOf, pageTwoOfCanvas, SITE, templateKeyOf, type Canvas } from './editor.ts'
 import { adminAt, askStopped, membersNotice } from './paywall.ts'
 import type { Members } from './probe-rule.ts'
 import { EVERY_PAGE, pageOf } from './theme-settings.ts'
@@ -84,7 +84,8 @@ export type PreflightInput = {
 
 /** Every sentence a warning row says beyond the lists it borrows (the spec's Words, R-170). */
 export const PREFLIGHT_WORDS = {
-  mismatch: (locale: string, language: string) => `Your Ghost site's language is ${locale}, so visitors see the English wording, not your ${language} labels.`,
+  /** Translations' own list holds it (R-170: the RTL, locale and untouched words are `TRANSLATION_WORDS`') */
+  mismatch: TRANSLATION_WORDS.mismatchOn,
   members: (host: string) => `${host} can't take every sign-up your pages ask for`,
   membersItem: (layer: string, canvas: string) => `${layer} on ${canvas}`,
   membersLink: 'Change this in Ghost ↗',
@@ -124,10 +125,13 @@ export function queriesFor(design: Pick<PreflightEntry, 'dataBindings' | 'bindin
 }
 
 /** P0·5's count, per PAGE (routine call 7): every hand-picked id the canvas's visible sections read, and its header's and
- *  footer's — the site doc's lists load on that page too. A template surface (Paywall, Editor cards) has no site doc. */
-export function picksOn(canvas: Canvas, docs: Readonly<Record<string, ProjectDoc>>, library: PreflightInput['library'], postsPerPage: number, listed: Listed = NONE_LISTED): number {
+ *  footer's — the site doc's lists load on that page too. A template surface (Paywall, Editor cards) has no site doc. With
+ *  `pageTwo`, the canvas's designed page 2 instead of its page 1 — a page of its own (R-167; the Review, 2026-10-19). */
+export function picksOn(canvas: Canvas, docs: Readonly<Record<string, ProjectDoc>>, library: PreflightInput['library'], postsPerPage: number, listed: Listed = NONE_LISTED, pageTwo = false): number {
   const surface = !isRouteCanvas(canvas) && 'surface' in CANVASES[canvas]
-  const pages: [ProjectDoc | undefined, string][] = [[docs[templateKeyOf(canvas)], fileOf(canvas)], ...(surface ? [] : [[docs[SITE.key], SITE.file] as [ProjectDoc | undefined, string]])]
+  const own = pageTwo ? (pageTwoOfCanvas(canvas) ?? null) : { key: templateKeyOf(canvas), file: fileOf(canvas) }
+  if (own === null) return 0
+  const pages: [ProjectDoc | undefined, string][] = [[docs[own.key], own.file], ...(surface ? [] : [[docs[SITE.key], SITE.file] as [ProjectDoc | undefined, string]])]
   let n = 0
   for (const [doc, target] of pages) {
     for (const i of doc?.instances ?? []) {
@@ -189,7 +193,7 @@ export function preflightWarnings(f: PreflightInput): PreflightRow[] {
   }
 
   // DW-145's Pre-flight half (7.12's Question 1): the same list Translations shows
-  if (f.language !== 'en') {
+  if (f.language !== DEFAULT_LANGUAGE) {
     const untouched = untouchedRows(f.projectId, untouchedWords(f.docs, (id) => f.library(id)), f.names)
     if (untouched.length > 0) {
       rows.push({
@@ -253,12 +257,18 @@ export function preflightWarnings(f: PreflightInput): PreflightRow[] {
   }
 
   if (shipped !== null) {
-    // FR-H2 (DW-253): more than P0·5's 25 picks on one page
+    // FR-H2 (DW-253): more than P0·5's 25 picks on one page — each shipped canvas's page 1, and its page 2 where one is designed
     const heavy = shipped
-      .map((c) => ({ canvas: c, total: picksOn(c, f.docs, f.library, f.postsPerPage, f.listed) }))
+      .flatMap((c) => {
+        const two = pageTwoKeyOf(c)
+        return [
+          { key: templateKeyOf(c), canvas: c, total: picksOn(c, f.docs, f.library, f.postsPerPage, f.listed) },
+          ...(two === null || f.docs[two] === undefined ? [] : [{ key: two, canvas: c, total: picksOn(c, f.docs, f.library, f.postsPerPage, f.listed, true) }]),
+        ]
+      })
       .filter((p) => p.total > SLOW_AFTER)
     if (heavy.length > 0) {
-      rows.push({ kind: 'picks', title: W.picks(heavy.length), body: W.picksBody, items: heavy.map((p) => ({ text: W.picksItem(pageName(templateKeyOf(p.canvas)), p.total), canvas: p.canvas })) })
+      rows.push({ kind: 'picks', title: W.picks(heavy.length), body: W.picksBody, items: heavy.map((p) => ({ text: W.picksItem(pageName(p.key), p.total), canvas: p.canvas })) })
     }
     // FR-D16: every shipped page — and its page 2 — whose record lacks a visitor; a page never opened lacks all three (routine call 8)
     const pages = shipped.flatMap((c) => [templateKeyOf(c), ...(pageTwoKeyOf(c) === null ? [] : [pageTwoKeyOf(c) as string])])

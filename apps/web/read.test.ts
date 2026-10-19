@@ -7,7 +7,7 @@ import { shipStateOf, themeNameOf } from './lib/deploy.ts'
 const P = 'p-this'
 const SITE = '00000000-0000-4000-8000-0000000000bb'
 const base = (over: Partial<Parameters<typeof shipStateOf>[0]> = {}): Parameters<typeof shipStateOf>[0] => ({
-  projectId: P, slug: 'field-notes', language: 'en', rtlAckAt: null, siteId: SITE,
+  projectId: P, slug: 'field-notes', language: 'en', rtlAckAt: null, overridden: false, siteId: SITE,
   site: { url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', capability_source: null, disconnected_at: null, site_settings: { locale: 'en' } },
   deploys: [], binding: null, liveHere: false, required: ['index.hbs', 'post.hbs'],
   sites: [], linking: [], ...over,
@@ -46,6 +46,11 @@ test('a disconnected site is no site — and never "live here"; no linked site l
   const gone = shipStateOf(base({ site: { ...base().site, disconnected_at: '2026-10-10T00:00:00Z' }, liveHere: true }))
   assert.equal(gone.site, null)
   assert.equal(gone.liveHere, false)
+  // …but the LINK stands (the Review): the picker plans a switch from the link the server reads, so a project still linked to a
+  // disconnected site is no first link on either side
+  assert.equal(gone.linkedSiteId, SITE)
+  assert.equal(shipStateOf(base({ siteId: null, site: null })).linkedSiteId, null)
+  assert.equal(shipStateOf(base({ overridden: true })).overridden, true)
   assert.equal(shipStateOf(base({ siteId: null, site: null })).site, null)
 })
 

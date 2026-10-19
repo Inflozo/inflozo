@@ -2,7 +2,7 @@
 title: 'Story 7.18b — Choosing the site, and Pre-flight''s warnings'
 type: 'feature'
 created: '2026-10-19'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'b4e1a23cf24064ab5cd7d89bf9956787aead9487'
 owner_test: pending
 review_loop_iteration: 0
@@ -393,6 +393,50 @@ choosing the site, and Pre-flight's warning-only rows, on Story 7.18a's wizard.
 - **Step 114 is written, never run** (the Review's): production through a throwaway account `editor-harness-d-…` on Pro, T1 read
   only; its start sweep now catches a killed run's `d` account too.
 
+**Review (2026-10-19) — five layers as subagents (Blind Hunter over the product and over the tests and tools, Edge Case Hunter,
+Verification Gap, Acceptance Auditor) and the real-infra checks in the main session; every patch a routine call, none changing what
+a surface is meant to do. Three findings are the owner's: Questions 6–8.**
+- **Re-activate re-reads the project's link too** (DW-374's rule, extended): a project whose site was switched or moved away while
+  it rested on D2e/D2f no longer activates its theme on a site another project now holds. `linkRefusal` is Ship it's and
+  Re-activate's one check; the theme stays uploaded where it is, and S8d′ says "Activating failed" with the same two sentences.
+- **A confirm covers only what it named** (`Confirmed`, `confirmedOf`, `confirmedFrom`): the confirm's Switch sends the project it
+  named and whether it named two languages, and the server asks again unless that covers what is owed NOW — so a site another tab
+  handed to a third project is never moved without that project being named. The action's argument is that shape or nothing (a
+  truthy stranger confirmed nothing). A confirm the server asks for is said in the polite region when the open dialog's words change.
+- **The lock check moved into `switchWith`** (`SwitchIo.holds`), so a tab reading along is refused by a test that runs.
+- **R-134 at a first link:** a project holding translation overrides keeps its language and gets FR-Q6's confirm, as Translations
+  never changes the language over overrides without its own confirm — routine call 2's "a language the customer chose is never
+  overwritten", extended to words they typed. `ShipState.overridden` and the action's own count of `translation_overrides`.
+- **The picker plans from the link the server reads** (`ShipState.linkedSiteId`): a project still linked to a DISCONNECTED site is
+  no first link on either side (the picker promised the site's language; the server kept English).
+- **"Switching…" holds until the re-read lands** (R-98): the editor's re-read runs in a transition (`relinking`), so Destination
+  never redraws the old link with a live Run checks before the editor remounts on the new site.
+- **The polite region:** a refusal after the checks (DW-374's two, Ship it's own) is said in its own words, never the checks'
+  outcome again; an ending is keyed on the last stage it followed, so a Re-activate that ends on D2e again is said again.
+- **Focus starts on the chosen row** (a selector list matches in document order, so the checked radio is asked for alone); the
+  first-link line shows only when the language changes (never "English, {host}'s language" for a site that stores none).
+- **Pre-flight:** a designed page 2 counts its own hand-picked posts (a page of its own, routine call 7); the mismatch title moved
+  into `TRANSLATION_WORDS` (`mismatchOn`, R-170 — the words unchanged); `DEFAULT_LANGUAGE` for the literal. Q4's line is 12px ink-soft,
+  S8a′'s caption.
+- **Checks that could not fail:** the RLS gate's two comment checks passed on a column with NO comment (`null not like …` is null —
+  `coalesce`, proved in a PG17 container: the old check passed, the new one raises, the control passes); the RTL rule's control
+  now includes an unacknowledged German project that checks and a Hebrew one that blocks; the walk's kinds collapse built-in rows
+  alone and its free-ask control compares the whole order; its audit check carries a positive control (the connect's own rows);
+  `ghost-admin.test.ts` restores the real `AbortSignal.timeout` and never lets a shell's pooler URL reach its audit write;
+  `check-traces`' pilot theme is removed whatever throws; the journeys' "Cancelling…" check is unconditional, the unsent-edits
+  control asserts the flush landed, R-260's reads are polled, the rows' count is derived from the kinds, and the no-facts control
+  anchors on a drawn row. New journeys: a confirm the server asks for (`confirm-held`, now answering with a third project unless
+  the press named it), and a Re-activate said twice and refused by DW-374. New walk sub-steps: a first link writes German on
+  production (`switchSite`'s own write), and R-270 from the stored `capability_source`.
+- **Deferred, each with an owner on its card** (`deferred-work.md`, `epics.md`): DW-379 (a switch beside a deploy already past its
+  claim, 7.25's lock), DW-380 (a refused or abandoned check's zip, 7.22's retention), DW-381 (a failed sites read drawn as an empty
+  picker, 7.18c — a new sentence).
+- **Dismissed after reading the code:** `updated_at` refused by a column grant (the walk's switches land on production); FR-Q6's
+  confirm on an English project and the raw locale code in the mismatch title (the matrix and Words say so); the feed-less row
+  for Home's page 2 and Routes templates, members items without "Fix in editor", built-ins only, no row before a deploy kept its
+  facts (each as the matrix or Words reads); the picker's Preview-only chip (S8a's card per row, as Destination's own); a free-ask
+  flag negated in a template (no design negates it).
+
 ## Design Notes
 
 ### Rulings this spec is written to
@@ -546,14 +590,15 @@ Addresses that need a project's id are written `<A>` and `<B>`. Copy each from t
 | 9 | (B) | The confirm | Press **Switch**. | — | Destination shows ghost6 · **Connected** · **Switch**, and a v1 chip. Behind the wizard the canvas shows ghost6's posts. |
 | 10 | (A) window 1 | Pre-flight | Press **Ship it**. | — | Nothing is sent: "This project is no longer linked to ghost6.inflozo.com, so nothing was sent." **Back** shows **Choose a site**. |
 | 11 | (B) | Destination → Pre-flight | Press **Run checks**. Open each warning. | — | 0 errors. The warnings are: **Right-to-left languages are not supported yet** with your date; the language line with "Change it to ar in Ghost ↗"; **Starting words you haven't retyped** with "Inline Row on Home:" and its words in quotes; **ghost6.inflozo.com can't take every sign-up your pages ask for** with the same sentences the Sites card shows and "Inline Row on Home"; and **Not viewed as every visitor** listing Home and the other pages. Then "Warnings won't block your deploy.". Ship it is pressable. |
-| 12 | (B) | Editor | Close the wizard. On Home, choose each of the three visitors in **View as**. Run the checks again. | — | Home is gone from the "Not viewed" list; the other pages stay. |
+| 12 | (B) | Editor | Close the wizard. On Home, choose each of the three visitors in **View as**. Run the checks again. | — | Home is gone from the "Not viewed" list; the other pages stay — **Home page 2** among them, which is a page of its own. |
 | 13 | `https://app.inflozo.com/projects/<B>/settings`, then the editor | Theme settings, then the wizard | Press **Promote a control**, choose **Note (Inline Row)**, and save. Then in the editor press **Ship it**, **Run checks**, **Ship it**. | — | Live, with confetti. |
 | 14 | `https://app.inflozo.com/projects/<B>/settings`, then the editor | Theme settings, editor, wizard | Delete that setting. In the editor, choose any other Style Pack. On the **Tag** canvas, hide the list of posts in Layers. Then **Ship it**, **Run checks**. | — | Three more warnings: **Ghost will forget 1 setting on ghost6.inflozo.com** naming it; **Dark accent color's starting value changed** with the old and new colours and **Open Ghost's Design panel ↗** (it opens Ghost's Design settings in a new tab); and **Tag page has no list of posts** with **Fix in editor**. |
 | 15 | `https://ghost6.inflozo.com/ghost/`, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: set Subscription access back to what it was. Activate **Casper**, delete the `inflozo-…` theme, and delete the Owner test 7.18b integration. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was. |
 
 ## Questions for the owner
 
-Questions 1–5 were ruled on 2026-10-19, each option 1 (R-267–R-271); none is open.
+Questions 1–5 were ruled on 2026-10-19, each option 1 (R-267–R-271). Questions 6–8 were raised at the Review and are open. The
+code stands as each question's "as built" option until he rules, so nothing else waits on them.
 
 ### Question 1 — The site you pick already belongs to another of your projects. What happens?
 
@@ -645,6 +690,55 @@ content, and the row stays blank until it finishes.
 
 **Ruled: option 1 (owner, 2026-10-19) — R-271.** *"Check the newest 2,000 posts, with an allowance of its own. While it reads: "Checking that every post appears on a page…". On a larger site the result adds "We checked your newest 2,000 posts." The canvas is never touched, and Ship it never waits for it."*
 
+### Question 6 — Pre-flight's sign-up warning: which sections does it list?
+
+**In plain English.** Pre-flight warns when your site's member settings stop a sign-up that your pages ask for. As built, it
+lists only the sections those settings actually stop, so its title — "{site} can't take every sign-up your pages ask for" —
+is always true. The plan's table reads more widely (every sign-up section, whenever the site has any member notice), so the
+choice is yours.
+
+**An example.** Your site has no Stripe, so paid sign-ups are off. Home has a free newsletter form and no paid button. The free
+form works.
+
+1. **(RECOMMENDED) List only the sections the settings stop** (as built). In the example: no warning, because nothing on your
+   pages is stopped.
+2. **List every sign-up section whenever the site has any member notice.** In the example: "ghost6.inflozo.com can't take every
+   sign-up your pages ask for", listing the newsletter form — which works.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 7 — Sign-ups set to Nobody: does a section's own line keep its words?
+
+**In plain English.** When a site's Subscription access is Nobody, a placed sign-up section's panel keeps Story 5.20's sentence
+about "this section" (your ruling R-198), while Pre-flight says the Sites screen's sentence. The plan's check says both should say
+the Sites sentence. The two rulings disagree, so this is yours.
+
+**An example.** The site is set to Nobody, and a hero with Sign up is on Home. The panel says: "Members are switched off on
+ghost6.inflozo.com, so this section's sign-up form shows nothing there." Pre-flight says: "Members are switched off on
+ghost6.inflozo.com — subscription access is set to Nobody — so its sign-up forms show nothing and its paywall cannot sign anyone
+up."
+
+1. **(RECOMMENDED) Keep both as built.** The panel speaks about the section (R-198), Pre-flight about the site. Both warn.
+2. **The panel says the Sites sentence too**, word for word, and R-198's panel sentence is retired.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 8 — The sentence when unsent edits stop a switch
+
+**In plain English.** Choosing a site sends your latest edits first. If they cannot be sent, nothing is switched, and the picker
+shows Run checks' sentence, which talks about "checking" — not quite right for a switch. A new sentence needs your word.
+
+**An example.** Your connection drops for a moment, you press **Use this site**, and see: "Your latest edits haven't reached
+Inflozo yet, so we can't check them. Try again once they're saved."
+
+1. **(RECOMMENDED) One shorter sentence for both places:** "Your latest edits haven't reached Inflozo yet. Try again once they're
+   saved."
+2. **A second sentence for the switch alone:** "Your latest edits haven't reached Inflozo yet, so we can't switch the site. Try
+   again once they're saved."
+3. **Keep Run checks' sentence for both** (as built).
+
+**Ruled:** _(awaiting the owner)_
+
 ## Verification
 
 **Commands:**
@@ -708,3 +802,37 @@ content, and the row stays blank until it finishes.
   "1. Go"): before — `deploys` without `preflight` (3 deploys, 3 deploy jobs, 3 with `quality`); the migration applied in
   one transaction; after — `preflight` jsonb nullable with its comment, 0 rows carrying it, the same 3 deploys, 3 jobs and
   3 `quality` values, and `authenticated` holding SELECT on it and neither INSERT nor UPDATE.
+
+**Executed — Review (2026-10-19/20, the main session, Node 24.18.1; five review layers as subagents, every real-infra call here):**
+- **CI on the Dev head** `f8d62354` (`GITHUB_TOKEN`, read in process): CI's `check`, `rls` and `deploy` success, the render matrix
+  success; Vercel `dpl_6zWqkDbaMtiuDQiRoe3tQWS7FWcW` READY on `f8d62354` (`VERCEL_TOKEN`).
+- **R-99, production's schema** (`SUPABASE_DB_POOLER_URL`, read in process, read only): `deploys.preflight` jsonb, nullable, its
+  comment naming `{templates, custom, noindex, freeAsks}`; `authenticated` holds SELECT on it and nothing else; every column the
+  code writes or reads is there (`projects.rtl_ack_at`, `sites.capability_source`, `deploys.preflight`). One deploy already carries
+  facts (4 deploys, 4 jobs, 14 projects, 7 sites).
+- **Walk step 114, run 1** (a cut: steps 1–5 + 114, from a clean worktree at the Dev head, no `T1_WRITES`): **0 FAIL, 66 PASS** —
+  T1 connected through the wizard with "Use your brand" (project A); B's "Choose a site"; the picker's rows (T1 "Linked to
+  Ghost6", the planted German site with its first-link line); S8e's held confirm on Cancel, Cancel writing nothing (the control),
+  Switch moving T1 to B with A unlinked; the canvas painting the sample before and T1's content after, with no reload; A's
+  Pre-flight from before the move refused `site_unlinked` and B's for T1 refused `site_changed` after B moved to the planted
+  site, neither entering uploading, and `private.credential_audit` holding no theme write for T1; FR-Q6's confirm naming Deutsch
+  and English with B's language kept; the RTL block (no Deploy row); every warning kind in Design Notes' order on T1 with the
+  planted facts, and the 6.58.0 control without the free-ask row; DW-378's `resetRoutes` and its control; the disconnect
+  (credentials all false) and the account deleted, users and projects counted back.
+- **Walk step 114, run 2** (the same cut, the Review's extended step built from the patched walk, still at the Dev head):
+  **0 FAIL, 68 PASS** — the audit's control holding (0 theme writes beside the connect's own 10 rows); A's FIRST link to the
+  planted site writing `language = 'de'` on production with the row's "This project will use Deutsch, walk-114.invalid's
+  language." (B's earlier switch kept English: the control); the free-ask control comparing the whole order; R-270 from the stored
+  row (T1's row marked `deploy_error`: Q4's line and Run checks; marked `probe`: neither). T1 was read only in both runs.
+- **The Review's patches, locally:** `pnpm check` — exit 0 (library 285, ghost-shim 47, section-runtime 441, theme-compiler 220,
+  app 933, tools 13; 0 failing). Each new unit test failed with its line of code removed or altered, then passed restored: the
+  lock check, the held and the language coverage, the overrides guard, the confirm's shape check, Re-activate's link guard, the
+  RTL rule read as "anything but English", the page-2 picks, and `linkedSiteId` held only while connected.
+  `bash supabase/tests/run-rls-gate.sh` — exit 0, the 7.18b block passing with the `coalesce`d comment check; in a scratch PG17
+  container the old check PASSED on a column with no comment (the defect), the new one raised, and with the comment it passed
+  (the control). `pnpm keyboard` — exit 0, 284 passed (16.1 min). The three journeys the Review wrote or extended each FAILED
+  against their mutation, at their own line, then passed: the refusal said as the checks' outcome ("Checks finished: 0 errors, 1
+  warning." for DW-374's sentence), the server's confirm unsaid (""), and an ending keyed once per job ("Activating v3." where
+  "Your theme is on your site but isn't live yet." was owed). `pnpm build` — exit 0; `node tools/check-traces.mjs` — "every route
+  carries its files" (568 and 258 files gscan4 and gscan6 touch, all carried).
+

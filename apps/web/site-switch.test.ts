@@ -2,7 +2,8 @@
 // confirm and the server's `switchSite` all read.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { SWITCH_WORDS, switchPlan, switchWith, type SwitchIo, type SwitchSite } from './lib/site-switch.ts'
+import { confirmedFrom, confirmedOf, SWITCH_WORDS, switchPlan, switchWith, type Confirmed, type SwitchIo, type SwitchSite } from './lib/site-switch.ts'
+import { LOCK_COPY } from './lib/lock.ts'
 import { DEPLOY_WORDS } from './lib/deploy.ts'
 import { TRANSLATION_WORDS } from './lib/translations.ts'
 
@@ -18,7 +19,7 @@ const SITES = [
   site('upper', { locale: 'EN' }),
   site('none', { locale: null }),
 ]
-const plan = (project: { language: string; linkedSiteId: string | null }, id: string) => switchPlan({ project: { id: P, ...project }, site: id, sites: SITES })
+const plan = (project: { language: string; linkedSiteId: string | null; overridden?: boolean }, id: string) => switchPlan({ project: { id: P, ...project }, site: id, sites: SITES })
 
 test('same site: nothing to write, no confirm', () => {
   const p = plan({ language: 'en', linkedSiteId: 'linked' }, 'linked')
@@ -80,19 +81,20 @@ test('the confirm\'s buttons are Translations\' own (R-170)', () => {
 
 /** A fake `SwitchIo` over one project and its candidate site: `reads` are answered in turn (the last one repeats), every write
  *  is recorded, and `links` are the link's answers in turn. */
-function io(reads: (Awaited<ReturnType<SwitchIo['read']>>)[], links: ('ok' | 'taken' | 'error')[] = ['ok'], unlinks = true) {
+function io(reads: (Awaited<ReturnType<SwitchIo['read']>>)[], links: ('ok' | 'taken' | 'error')[] = ['ok'], unlinks = true, holds = true) {
   const writes: string[] = []
   let r = 0
   let l = 0
   const fake: SwitchIo = {
+    holds: async () => holds,
     read: async () => reads[Math.min(r++, reads.length - 1)] ?? null,
     unlink: async () => (writes.push('unlink'), unlinks),
     link: async (language) => (writes.push(`link:${language ?? '-'}`), links[Math.min(l++, links.length - 1)] ?? 'ok'),
   }
-  return { fake, writes }
+  return { fake, writes, read: () => r }
 }
-const on = (language: string, linkedSiteId: string | null, s: SwitchSite | null) => ({ project: { language, linkedSiteId }, site: s })
-const go = (fake: SwitchIo, id: string, confirmed = false) => switchWith(fake, { projectId: P, siteId: id, confirmed })
+const on = (language: string, linkedSiteId: string | null, s: SwitchSite | null, overridden = false) => ({ project: { language, linkedSiteId, overridden }, site: s })
+const go = (fake: SwitchIo, id: string, confirmed: Confirmed = null) => switchWith(fake, { projectId: P, siteId: id, confirmed })
 
 test('switchWith: a site gone or disconnected meanwhile is refused in its sentence, and nothing is written; a failed read is ours', async () => {
   const gone = io([on('en', 'linked', null)])
@@ -119,10 +121,10 @@ test('switchWith (Q1, R-267): a held site unconfirmed answers the confirm and wr
   assert.ok('confirm' in answer && answer.confirm.heldBy?.name === 'Field Notes')
   assert.deepEqual(asked.writes, [], 'a confirm owed writes nothing')
   const moved = io([on('en', 'linked', held)])
-  assert.deepEqual(await go(moved.fake, 'held', true), { ok: true })
+  assert.deepEqual(await go(moved.fake, 'held', { heldBy: 'p-other', language: false }), { ok: true })
   assert.deepEqual(moved.writes, ['unlink', 'link:-'])
   const refused = io([on('en', 'linked', held)], ['ok'], false)
-  assert.deepEqual(await go(refused.fake, 'held', true), { refused: DEPLOY_WORDS.infrastructure })
+  assert.deepEqual(await go(refused.fake, 'held', { heldBy: 'p-other', language: false }), { refused: DEPLOY_WORDS.infrastructure })
   assert.deepEqual(refused.writes, ['unlink'], 'a failed unlink never links')
 })
 
@@ -134,7 +136,7 @@ test('switchWith (FR-Q6): a first link writes languageAtLink\'s language; a lang
   assert.ok('confirm' in (await go(differs.fake, 'german')))
   assert.deepEqual(differs.writes, [])
   const confirmed = io([on('fr', 'linked', site('german', { locale: 'de' }))])
-  assert.deepEqual(await go(confirmed.fake, 'german', true), { ok: true })
+  assert.deepEqual(await go(confirmed.fake, 'german', { heldBy: null, language: true }), { ok: true })
   assert.deepEqual(confirmed.writes, ['link:-'], 'the project keeps its language')
 })
 
@@ -152,4 +154,66 @@ test('switchWith: a 23505 race re-reads and asks again — another project took 
   assert.deepEqual(twice.writes, ['link:-', 'link:-'])
   const broken = io([on('en', 'linked', site('free'))], ['error'])
   assert.deepEqual(await go(broken.fake, 'free'), { refused: DEPLOY_WORDS.infrastructure })
+})
+
+test('switchWith: a tab that does not hold the lock is refused in the lock\'s words, and nothing is read or written', async () => {
+  const reader = io([on('en', 'linked', site('free'))], ['ok'], true, false)
+  assert.deepEqual(await go(reader.fake, 'free'), { refused: LOCK_COPY.reading })
+  assert.equal(reader.read(), 0)
+  assert.deepEqual(reader.writes, [])
+  // the control: the same switch from the holder links
+  const holder = io([on('en', 'linked', site('free'))])
+  assert.deepEqual(await go(holder.fake, 'free'), { ok: true })
+  assert.deepEqual(holder.writes, ['link:-'])
+})
+
+test('switchWith (the Review): a confirm covers only what it named — a site another tab handed to a third project is asked again, naming it; a language confirm never moves a held site', async () => {
+  const nowHeldBy = (id: string, name: string) => site('held', { heldBy: { id, name } })
+  const third = io([on('en', 'linked', nowHeldBy('p-third', 'Third'))])
+  const asked = await go(third.fake, 'held', { heldBy: 'p-other', language: false })
+  assert.ok('confirm' in asked && asked.confirm.heldBy?.name === 'Third', 'asked again, naming the project that holds it now')
+  assert.deepEqual(third.writes, [], 'nothing written')
+  const languageOnly = io([on('en', 'linked', site('german', { locale: 'de', heldBy: { id: 'p-other', name: 'Field Notes' } }))])
+  assert.ok('confirm' in (await go(languageOnly.fake, 'german', { heldBy: null, language: true })))
+  assert.deepEqual(languageOnly.writes, [])
+  const heldOnly = io([on('en', 'linked', site('german', { locale: 'de', heldBy: { id: 'p-other', name: 'Field Notes' } }))])
+  assert.ok('confirm' in (await go(heldOnly.fake, 'german', { heldBy: 'p-other', language: false })), 'a held move never covers the languages')
+  // the control: the confirm that named both lands — the holder unlinked first
+  const both = io([on('en', 'linked', site('german', { locale: 'de', heldBy: { id: 'p-other', name: 'Field Notes' } }))])
+  const plan = switchPlan({ project: { id: P, language: 'en', linkedSiteId: 'linked' }, site: 'german', sites: [site('german', { locale: 'de', heldBy: { id: 'p-other', name: 'Field Notes' } })] })
+  assert.ok(plan !== null)
+  assert.deepEqual(await go(both.fake, 'german', confirmedOf(plan)), { ok: true })
+  assert.deepEqual(both.writes, ['unlink', 'link:-'])
+  // a confirm owed for a holder that has since let go is not owed any more: a plain link
+  const released = io([on('en', 'linked', site('free'))])
+  assert.deepEqual(await go(released.fake, 'free', { heldBy: 'p-other', language: false }), { ok: true })
+  assert.deepEqual(released.writes, ['link:-'])
+})
+
+test('switchWith (the Review): the half-move — the holder unlinked, then the link fails — is ours, never a second write', async () => {
+  const held = site('held', { heldBy: { id: 'p-other', name: 'Field Notes' } })
+  const half = io([on('en', 'linked', held)], ['error'])
+  assert.deepEqual(await go(half.fake, 'held', { heldBy: 'p-other', language: false }), { refused: DEPLOY_WORDS.infrastructure })
+  assert.deepEqual(half.writes, ['unlink', 'link:-'])
+})
+
+test('confirmedFrom: the action\'s argument is the confirm\'s own shape or none — a truthy stranger confirms nothing', () => {
+  assert.deepEqual(confirmedFrom({ heldBy: 'p-other', language: false }), { heldBy: 'p-other', language: false })
+  assert.deepEqual(confirmedFrom({ heldBy: null, language: true }), { heldBy: null, language: true })
+  for (const v of [true, 'true', 'false', 1, {}, { heldBy: 'p', language: 'yes' }, { heldBy: 3, language: true }, null, undefined]) assert.equal(confirmedFrom(v), null, JSON.stringify(v))
+})
+
+test('R-134 (the Review): a project holding translation overrides keeps its language at a first link, and is asked FR-Q6\'s confirm instead', () => {
+  const kept = plan({ language: 'en', linkedSiteId: null, overridden: true }, 'german')
+  assert.deepEqual(kept, { same: false, heldBy: null, firstLink: false, language: 'en', warnLanguage: true, confirm: true })
+  // the control: with none, the first link takes the site's language
+  assert.equal(plan({ language: 'en', linkedSiteId: null, overridden: false }, 'german')?.language, 'de')
+})
+
+test('switchWith (R-134): the server reads the overrides too — a first link over them writes no language', async () => {
+  const kept = io([on('en', null, site('german', { locale: 'de' }), true)])
+  assert.ok('confirm' in (await go(kept.fake, 'german')), 'the language confirm is owed')
+  const confirmed = io([on('en', null, site('german', { locale: 'de' }), true)])
+  assert.deepEqual(await go(confirmed.fake, 'german', { heldBy: null, language: true }), { ok: true })
+  assert.deepEqual(confirmed.writes, ['link:-'], 'English kept')
 })

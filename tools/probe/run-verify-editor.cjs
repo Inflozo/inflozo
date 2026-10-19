@@ -12207,7 +12207,9 @@ async function main() {
     // ── step 114 — STORY 7.18b: CHOOSING THE SITE AND PRE-FLIGHT'S WARNINGS, ON PRODUCTION, READING T1 (FR-B5, DW-374, FR-Q6, FR-H2, FR-H6, DW-297, DW-378, R-82) ──
     /* THE REVIEW'S. IT WRITES NOTHING TO T1 (R-238): T1 is connected through the wizard (its keys READ to validate them), its
        Content API is read by R-260's check, and nothing is uploaded — every ship this step asks for is refused before any
-       request (DW-374's two codes), and the warning rows need no Ghost at all. Its PRODUCTION writes are a throwaway account's
+       request (DW-374's two codes), and the warning rows need no Ghost at all. (Were DW-374's guard ever to regress, 114.2's two
+       presses WOULD upload to T1: the audit check right after them goes red, and T1 is put back by hand on the owner's go — a
+       guard that sends nothing can only be proved by asking it to send.) Its PRODUCTION writes are a throwaway account's
        (`editor-harness-d-…`, Pro through the service key so it may hold two projects and two sites) and the plants below, each
        through the service key and each read back: a second site row `walk-114.invalid` set to German, the project's language and
        RTL acknowledgement, T1's row's members record and `ghost_version`, an earlier ACTIVATED deploy row carrying
@@ -12443,12 +12445,14 @@ async function main() {
         process.env.SUPABASE_DB_POOLER_URL = ENV114.SUPABASE_DB_POOLER_URL
         try {
           const DB114 = await imp114('apps/web/server/ghost-admin/db.ts')
-          uploads114 = await DB114.sql()`select count(*)::int as n from private.credential_audit where site_id = ${t1114} and allowlist_item in ('theme_upload', 'theme_activate') and occurred_at >= ${startedAt114}`
+          // `all`, the control (the Review): the connect's own audited credential writes for T1 since the step began — a query that
+          // could see none of T1's rows would read 0 theme writes too
+          uploads114 = await DB114.sql()`select count(*) filter (where allowlist_item in ('theme_upload', 'theme_activate'))::int as n, count(*)::int as "all" from private.credential_audit where site_id = ${t1114} and occurred_at >= ${startedAt114}`
           await DB114.sql().end({ timeout: 5 }).catch(() => {})
         } finally {
           delete process.env.SUPABASE_DB_POOLER_URL
         }
-        check('step 114.2 — private.credential_audit holds no theme_upload or theme_activate row for T1 since the step began: nothing was sent', uploads114?.[0]?.n === 0, JSON.stringify(uploads114))
+        check('step 114.2 — private.credential_audit holds no theme_upload or theme_activate row for T1 since the step began: nothing was sent (the control: it holds the connect\'s own rows for T1)', uploads114?.[0]?.n === 0 && uploads114[0].all > 0, JSON.stringify(uploads114))
 
         // back to T1 for the rows (a plain switch: T1 unheld now, both English — no confirm)
         await pb.locator('#deploy-switch').click()
@@ -12459,6 +12463,23 @@ async function main() {
         // each window gives B's lock back as it leaves, so the next one opens holding it (a leave keeps it for its grace)
         await handBack114(pb, B114)
         await pb.goto('about:blank').catch(() => {})
+
+        // 114.3, the first link (the Review: the action's own language write, executed): A — unlinked by the move, still English —
+        // chooses the planted German site, now free: "Choose a site", the row's first-link line, no confirm, and A takes German
+        await pa.goto(at(`/projects/${A114}`), { waitUntil: 'load' })
+        await painted114(pa, 'home')
+        const destA114 = await openShip114(pa)
+        await pa.locator('#deploy-choose').click()
+        await until114(() => wiz114(pa), (w) => w?.picker !== null && w?.picker !== undefined, 15000)
+        await pa.locator(`[data-site-row="${planted114}"]`).click()
+        const lineA114 = await pa.locator(`[data-site-row="${planted114}"] [data-first-link]`).textContent().catch(() => null)
+        await pa.locator('#deploy-pick-use').click()
+        const firstA114 = await until114(() => projectOf114(A114), (a) => a?.linked_site_id === planted114, 30000)
+        check(`step 114.3 — a FIRST link writes the site's language: A (unlinked, English) chooses ${PLANTED_HOST114} — "${S114.firstLink(TR114.ownName('de'), PLANTED_HOST114)}", no confirm — and is linked in German (B's switch above kept English: the control)`,
+          destA114?.choose === W114.chooseSite && lineA114 === S114.firstLink(TR114.ownName('de'), PLANTED_HOST114) && firstA114?.linked_site_id === planted114 && firstA114.language === 'de',
+          JSON.stringify({ choose: destA114?.choose ?? null, lineA114, A: firstA114 }))
+        await handBack114(pa, A114)
+        await pa.goto('about:blank').catch(() => {})
 
         // ── 114.4 — Pre-flight's rows on T1, each planted through the service key and read back ──
         // (a) Arabic, unacknowledged: blocked before compile, no Deploy row
@@ -12501,8 +12522,10 @@ async function main() {
         await openShip114(pd)
         await pd.locator('#deploy-run').click()
         const rows114 = await until114(() => wiz114(pd), (w) => w?.at === 'check' && w.ship?.disabled === null && w.warnings.length > 0, 240000)
-        // one kind per run of rows (the two built-ins are a row each); the locale row only where T1 stores a locale other than Arabic
-        const kinds114 = (rows114?.warnings ?? []).map((w) => w.kind).filter((k, i, all) => k !== all[i - 1])
+        // one kind per run of BUILT-IN rows (a row each), every other kind exactly once (the Review: a doubled row is a FAIL); the
+        // locale row only where T1 stores a locale other than Arabic
+        const kindsOf114 = (ws) => ws.map((w) => w.kind).filter((k, i, all) => k !== 'builtIn' || k !== all[i - 1])
+        const kinds114 = kindsOf114(rows114?.warnings ?? [])
         const t1Locale114 = typeof t1Settings114.locale === 'string' && t1Settings114.locale.trim() !== '' ? t1Settings114.locale : null
         const want114 = ['rtl', ...(t1Locale114 !== null && t1Locale114 !== 'ar' ? ['mismatch'] : []), 'untouched', 'members', 'freeAsks', 'dropped', 'builtIn', 'feedless', 'picks', 'unviewed']
         const has114 = (kind, words) => (rows114?.warnings ?? []).some((w) => w.kind === kind && w.text.includes(words))
@@ -12522,10 +12545,30 @@ async function main() {
         await openShip114(pe)
         await pe.locator('#deploy-run').click()
         const rows2114 = await until114(() => wiz114(pe), (w) => w?.at === 'check' && w.ship?.disabled === null && w.warnings.length > 0, 240000)
-        check(`step 114.4 — the CONTROL: T1 back at ${t1Version114 ?? '6.58.0'}, the same Pre-flight draws no free-ask row and every other`,
-          rows2114 !== null && !rows2114.warnings.some((w) => w.kind === 'freeAsks') && rows2114.warnings.some((w) => w.kind === 'members'), JSON.stringify(rows2114?.warnings.map((w) => w.kind) ?? null))
+        check(`step 114.4 — the CONTROL: T1 back at ${t1Version114 ?? '6.58.0'}, the same Pre-flight draws no free-ask row and every other, in order`,
+          rows2114 !== null && JSON.stringify(kindsOf114(rows2114.warnings)) === JSON.stringify(want114.filter((k) => k !== 'freeAsks')), JSON.stringify(rows2114?.warnings.map((w) => w.kind) ?? null))
         await handBack114(pe, B114)
         await pe.goto('about:blank').catch(() => {})
+
+        // 114.4, R-270 (DW-375) from the stored row (the Review: `read.ts`' new `capability_source`, executed): T1's row marked
+        // Preview-only by a refused upload keeps Run checks and says Q4's line; marked by a probe, neither (the control)
+        const marked114 = async (source) => {
+          await call('/rest/v1', `/sites?id=eq.${t1114}`, { method: 'PATCH', body: JSON.stringify({ capability: 'preview_only', capability_source: source }) })
+          const pm = await context114()
+          await pm.goto(at(`/projects/${B114}`), { waitUntil: 'load' })
+          await painted114(pm, 'home')
+          await openShip114(pm)
+          const seen = await pm.evaluate(() => ({ line: document.querySelector('[data-plan-refused]')?.textContent ?? null, run: document.querySelector('#deploy-run') !== null })).catch(() => null)
+          await handBack114(pm, B114)
+          await pm.goto('about:blank').catch(() => {})
+          return seen
+        }
+        const refused114 = await marked114('deploy_error')
+        const probed114 = await marked114('probe')
+        await call('/rest/v1', `/sites?id=eq.${t1114}`, { method: 'PATCH', body: JSON.stringify({ capability: 'full', capability_source: null }) })
+        check(`step 114.4 — R-270: T1's row marked Preview-only by a refused upload keeps Run checks with "${W114.planRefused(HOST114)}"; marked by a probe, neither (the control)`,
+          refused114?.line === W114.planRefused(HOST114) && refused114.run === true && probed114?.line === null && probed114.run === false,
+          JSON.stringify({ refused114, probed114 }))
 
         // ── 114.5 — DW-378: resetRoutes executed — an unreadable routing replaced by Start again, a readable one untouched, templates kept ──
         const tpl114 = await call('/rest/v1', '/custom_templates', { method: 'POST', body: JSON.stringify({ project_id: B114, user_id: idD, display_name: 'Walk 114', filename: 'custom-walk-114.hbs', kind: 'routes' }) })

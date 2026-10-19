@@ -5756,7 +5756,8 @@ Notes keeps its designs and its deploy history, and isn't linked to a site until
   bindings and its deploy history; its Destination then offers "Choose a site". The one-project-per-site index is unchanged.
 - **Declined.** The site greyed with "Linked to {project}"; two projects sharing one site (undoing DW-69).
 - Targets: ✅ this entry · ✅ Story 7.18b's spec · ✅ `epics.md` Story 7.18b's card (dated) · ✅ `epic-7-context.md` ·
-  ⬜ `prd.md` FR-B5 (dated, at 7.18b's Dev) · ⬜ `EXPERIENCE.md`'s Deploy Destination row (at 7.18b's Dev).
+  ✅ `prd.md` FR-B5 (dated, at 7.18b's Dev) · ✅ `EXPERIENCE.md`'s Deploy Destination row (at 7.18b's Dev; both ticked at its
+  Review, 2026-10-19).
 
 **R-268 — below Ghost 5.62 a free member ask stays hidden, and Pre-flight says so.** Story 7.18b's Create, Question 2,
 ruled **option 1** (owner, 2026-10-19): *"Keep them hidden, and say so in Pre-flight: "Free sign-ups stay hidden on

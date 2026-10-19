@@ -392,14 +392,14 @@ function shipOf(shape: string | null, required: readonly string[]): ShipState {
     { id: HARNESS_SITES.held, title: 'Field Notes site', host: 'held.harness.example', url: 'https://127.0.0.1:9', capability: 'full', source: null, locale: 'en', heldBy: { id: HARNESS_SITES.holder, name: 'Field Notes' } },
     { id: HARNESS_SITES.german, title: 'Feldnotizen', host: 'de.harness.example', url: 'https://127.0.0.1:9', capability: 'full', source: null, locale: 'de', heldBy: null },
   ]
-  const base = { themeName: themeNameOf('pilot-sections'), required: [...required], language: 'en', rtlAckAt: null, sites }
-  if (shape === 'shipped' || shape === 'live') return { ...base, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live' }
-  if (shape === 'full' || shape === 'preview') return { ...base, site: { ...site, capability: shape === 'full' ? 'full' : 'preview_only' }, n: 1, prev: null, shipped: false, liveHere: false }
+  const base = { themeName: themeNameOf('pilot-sections'), required: [...required], language: 'en', rtlAckAt: null, overridden: false, sites }
+  if (shape === 'shipped' || shape === 'live') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live' }
+  if (shape === 'full' || shape === 'preview') return { ...base, linkedSiteId: site.id, site: { ...site, capability: shape === 'full' ? 'full' : 'preview_only' }, n: 1, prev: null, shipped: false, liveHere: false }
   // Story 7.18b — R-270: Preview-only because a refused upload marked it (`deploy_error`), so Run checks stays
-  if (shape === 'refused') return { ...base, site: { ...site, capability: 'preview_only', source: 'deploy_error' }, n: 1, prev: null, shipped: false, liveHere: false }
+  if (shape === 'refused') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'preview_only', source: 'deploy_error' }, n: 1, prev: null, shipped: false, liveHere: false }
   // Story 7.18b — `unlinked`: no site linked, three to choose from (Choose a site)
-  if (shape === 'unlinked') return { ...base, site: null, n: 1, prev: null, shipped: false, liveHere: false }
-  return { ...base, sites: [], site: null, n: 1, prev: null, shipped: false, liveHere: false }
+  if (shape === 'unlinked') return { ...base, linkedSiteId: null, site: null, n: 1, prev: null, shipped: false, liveHere: false }
+  return { ...base, linkedSiteId: null, sites: [], site: null, n: 1, prev: null, shipped: false, liveHere: false }
 }
 
 /** Story 7.18b — `x-inflozo-harness-preflight: all`: the project whose Pre-flight meets every warning row the editor's own state

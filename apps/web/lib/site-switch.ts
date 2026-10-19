@@ -7,7 +7,9 @@
  *     unlinked, keeps its designs and its deploy history, and has no site until one is chosen for it (DW-69: one project
  *     per site);
  *   - a FIRST LINK — from no site, while the language is still `en` (routine call 2) — takes the site's Ghost language
- *     (`languageAtLink`, FR-Q6's "default at first link"); a language the customer chose is never overwritten;
+ *     (`languageAtLink`, FR-Q6's "default at first link"); a language the customer chose is never overwritten, and nor is
+ *     one whose words they typed (the Review, 2026-10-19): a project holding translation overrides keeps its language, as
+ *     Translations never changes it without its own confirm (R-134), and gets FR-Q6's confirm instead;
  *   - otherwise the language stays (FR-Q6: "always user-editable" — Translations changes it), and a site whose stored locale
  *     differs from it EXACTLY, case included, as Ghost reads `locales/<locale>.json` (`i18n.js:187-199`), is confirmed
  *     first; a site with no stored locale never warns (7.12's rule).
@@ -16,6 +18,7 @@
 
 import { DEFAULT_LANGUAGE, languageAtLink } from '@inflozo/library/languages'
 import { DEPLOY_WORDS } from './deploy.ts'
+import { LOCK_COPY } from './lock.ts'
 import { TRANSLATION_WORDS } from './translations.ts'
 
 /** One of the user's connected sites, as Ship it reads it (`ShipState.sites`). */
@@ -49,13 +52,13 @@ export type SwitchPlan = {
 }
 
 /** THE PLAN FOR ONE CHOICE, or null when the site is none of the user's connected sites (gone, or disconnected meanwhile). */
-export function switchPlan(a: { project: { id: string; language: string; linkedSiteId: string | null }; site: string; sites: readonly SwitchSite[] }): SwitchPlan | null {
+export function switchPlan(a: { project: { id: string; language: string; linkedSiteId: string | null; overridden?: boolean }; site: string; sites: readonly SwitchSite[] }): SwitchPlan | null {
   const site = a.sites.find((s) => s.id === a.site)
   if (site === undefined) return null
   const { project } = a
   const same = project.linkedSiteId === site.id
   const heldBy = same || site.heldBy === null || site.heldBy.id === project.id ? null : site.heldBy
-  const firstLink = !same && project.linkedSiteId === null && project.language === DEFAULT_LANGUAGE
+  const firstLink = !same && project.linkedSiteId === null && project.language === DEFAULT_LANGUAGE && project.overridden !== true
   const language = firstLink ? languageAtLink(site.locale) : project.language
   const warnLanguage = !same && !firstLink && typeof site.locale === 'string' && site.locale.trim() !== '' && site.locale !== project.language
   return { same, heldBy, firstLink, language, warnLanguage, confirm: heldBy !== null || warnLanguage }
@@ -85,25 +88,43 @@ export const SWITCH_WORDS = {
 /** What `switchSite` answers: linked, a confirm owed (its plan, re-run on the server), or refused with its sentence. */
 export type SwitchAnswer = { ok: true } | { confirm: SwitchPlan } | { refused: string }
 
+/** WHAT THE CUSTOMER CONFIRMED — the confirm as it was drawn: the project it named moving away, and whether it named two
+ *  languages — or null for a press that saw no confirm. The server asks again unless this covers what is owed NOW, so a
+ *  site another tab handed to a third project is never moved without that project being named (the Review, 2026-10-19). */
+export type Confirmed = { heldBy: string | null; language: boolean } | null
+export const confirmedOf = (plan: SwitchPlan): Confirmed => ({ heldBy: plan.heldBy?.id ?? null, language: plan.warnLanguage })
+const covers = (plan: SwitchPlan, c: Confirmed): boolean =>
+  c !== null && (plan.heldBy === null || plan.heldBy.id === c.heldBy) && (!plan.warnLanguage || c.language)
+/** the action's argument, as a stranger may send it: anything but the confirm's own shape is no confirm */
+export const confirmedFrom = (v: unknown): Confirmed => {
+  const c = v as { heldBy?: unknown; language?: unknown } | null
+  return typeof c === 'object' && c !== null && (c.heldBy === null || typeof c.heldBy === 'string') && typeof c.language === 'boolean'
+    ? { heldBy: c.heldBy as string | null, language: c.language }
+    : null
+}
+
 /** The rows `switchSite` reads and the two writes it makes, through the caller's own session — handed in, as `run.ts`' `DeployIo`
  *  is, so the server's half of the rule runs under test (`site-switch.test.ts`). */
 export type SwitchIo = {
-  /** the project, and the site as one of the user's CONNECTED sites with the other project that links it (null: gone, or
+  /** does this tab's session hold the project's edit lock, fresh? (`holdsLock`) — a session reading along changes nothing */
+  holds: () => Promise<boolean>
+  /** the project (`overridden`: it holds translation overrides), and the site as one of the user's CONNECTED sites with the other project that links it (null: gone, or
    *  disconnected); null when a read failed */
-  read: () => Promise<{ project: { language: string; linkedSiteId: string | null }; site: SwitchSite | null } | null>
+  read: () => Promise<{ project: { language: string; linkedSiteId: string | null; overridden: boolean }; site: SwitchSite | null } | null>
   /** unlink every OTHER project of the user's linking the site; false when the write failed */
   unlink: () => Promise<boolean>
   /** link this project, with `language` set at a first link; `taken` is Postgres' 23505 (another project linked it meanwhile) */
   link: (language: string | null) => Promise<'ok' | 'taken' | 'error'>
 }
 
-/** THE SERVER'S HALF OF A SWITCH (`switchSite`, the lock already checked): the plan re-run over the rows as they stand; a confirm
- *  owed and not given answered with the plan, and nothing written; a held site unlinked from its project, THEN linked here —
- *  DW-69's partial unique index refuses two projects on one site; a 23505 on the link read again and answered again, a fresh
- *  confirm when one is now owed. ponytail: two statements, not one transaction — a link that fails for another reason after the
+/** THE SERVER'S HALF OF A SWITCH (`switchSite`): the lock first; the plan re-run over the rows as they stand; a confirm owed
+ *  and not covered by what the customer confirmed answered with the plan, and nothing written; a held site unlinked from its
+ *  project, THEN linked here — DW-69's partial unique index refuses two projects on one site; a 23505 on the link read again
+ *  and answered again, a fresh confirm when what is owed now is not what was confirmed. ponytail: two statements, not one transaction — a link that fails for another reason after the
  *  unlink leaves the site with no project, which the next switch repairs; an RPC would make it one. */
-export async function switchWith(io: SwitchIo, a: { projectId: string; siteId: string; confirmed: boolean }): Promise<SwitchAnswer> {
+export async function switchWith(io: SwitchIo, a: { projectId: string; siteId: string; confirmed: Confirmed }): Promise<SwitchAnswer> {
   const ours = { refused: DEPLOY_WORDS.infrastructure }
+  if (!(await io.holds())) return { refused: LOCK_COPY.reading }
   for (let attempt = 0; attempt < 2; attempt++) {
     const rows = await io.read()
     if (rows === null) return ours
@@ -111,8 +132,8 @@ export async function switchWith(io: SwitchIo, a: { projectId: string; siteId: s
     const plan = switchPlan({ project: { id: a.projectId, ...rows.project }, site: a.siteId, sites: [rows.site] })
     if (plan === null) return { refused: SWITCH_WORDS.gone }
     if (plan.same) return { ok: true }
-    // a confirm owed and not given — or owed afresh on the second read (the race the 23505 below met)
-    if (plan.confirm && (!a.confirmed || attempt > 0)) return { confirm: plan }
+    // a confirm owed and not given — or owed for something the customer never saw (another holder; the race a 23505 met)
+    if (plan.confirm && !covers(plan, a.confirmed)) return { confirm: plan }
     if (plan.heldBy !== null && !(await io.unlink())) return ours
     const linked = await io.link(plan.firstLink && plan.language !== rows.project.language ? plan.language : null)
     if (linked === 'ok') return { ok: true }

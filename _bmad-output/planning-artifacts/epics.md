@@ -4281,6 +4281,7 @@ So that I am never told work will be sent when it never can be, nor kept waiting
 **And** a save the server refuses for good — the project deleted in another window, or this browser now signed in to another account (404), or a document it will not take (400, 422) — stops saying the work will be sent "when the connection returns", in the editor's save message and in Pre-flight's own flush; this story's Create asks the owner (R-83) for the sentence (DW-304, from Story 5.24e's Create, 2026-10-02).
 **And** closing the editing window while it checks in with the server frees the lock within a check-in, as any other close does: the lock row gains a per-page id (a migration, pushed first as `Schema`, R-99) so a going page's `leave` matches its own page's beat whatever landed since, and a reload still keeps its lock (DW-307, from Story 5.24e's Dev, 2026-10-02; R-228 accepted the wait until then).
 **And** a window that typed in its first moment — before the server answered that another session is editing — is told what it holds when it turns read-only, as a displaced session is told: "This session had N unsynced edits; they were not included." (`LOCK_COPY.displaced`), in memory only, never resetting the on-device record the holder shares (DW-308, from Story 5.24e's review, 2026-10-02).
+**And** *(given an owner by Story 7.18b's Review, 2026-10-19)* a failed read of the user's connected sites is said in the deploy wizard's site picker, never drawn as an empty list: `ShipState.sites` keeps the failure, and this story's Create asks the owner (R-83) for the sentence (DW-381).
 
 **FRs:** none new (AD-15's lock; R-228 accepted the wait until now). · **Frame:** `B Missing Surfaces.dc.html` B5a (the
 reader's bar) · B6 (the save state). · **Owner test:** yes. · **Verification:** `pnpm keyboard`'s journeys and the deployed
@@ -4441,6 +4442,9 @@ rather than as a version
 deploys are pruned: Story 7.18a counts this project's uploaded and live deploys plus one, which pruning stops and a deploy
 failed after Ghost took it skips, so the number becomes the highest stored version plus one, read from a record retention
 never deletes (DW-372).
+**And** *(given an owner by Story 7.18b's Review, 2026-10-19)* a stored zip nothing can ship is pruned too: a Ship it Story
+7.18b refused because the project's site changed (DW-374) marks its deploy failed and keeps the zip, and a check left resting
+on the old site after a switch keeps its own (DW-380).
 
 **FRs:** FR-J7. · **Frame:** `D2 Deploy History Completed.dc.html` D2a · D2b. · **Owner test:** yes.
 
@@ -4531,6 +4535,9 @@ upload there, and this story's Create settles how it is held.
 **And** *(given an owner by Story 7.18a's Review, 2026-10-19)* a Pre-flight never runs beside another of the same project
 to the same site: Story 7.18a's `start` abandons only a check resting at `awaiting_ship`, so one still compiling or checking
 runs on beside the new one (DW-373).
+**And** *(given an owner by Story 7.18b's Review, 2026-10-19)* a switch never moves a site while a deploy to it is uploading
+or activating: Story 7.18b's `switchSite` and Ship it's re-read of the link (DW-374) do not see a job already past its claim, so
+the switch takes the site's lock, or waits for the job moving on it (DW-379).
 
 **FRs:** FR-J11. · **Owner test:** none.
 

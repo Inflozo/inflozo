@@ -83,6 +83,8 @@ test('DW-297 (Q2): a file carrying a free ask on Ghost 5 below 5.62 names its ca
   assert.equal(row?.body, 'It runs Ghost 5.40, and only Ghost 5.62 or later tells a theme that free sign-ups are open. Update Ghost to show them.')
   assert.deepEqual(row?.items, [{ text: 'Home', canvas: 'home' }])
   for (const v of ['6.58.0', '5.62.0', 'banana', null]) assert.ok(!kinds(preflightWarnings(input({ facts: free, siteVersion: v }))).includes('freeAsks'), String(v))
+  // the boundary (the Review): the last Ghost without the flag warns
+  assert.ok(kinds(preflightWarnings(input({ facts: free, siteVersion: '5.61.9' }))).includes('freeAsks'), '5.61.9')
 })
 
 test('7.10\'s Q2: a key the last ACTIVATED deploy declared and this one lacks is named by Ghost\'s label; no earlier deploy, none', () => {
@@ -92,6 +94,7 @@ test('7.10\'s Q2: a key the last ACTIVATED deploy declared and this one lacks is
   assert.equal(row?.title, 'Ghost will forget 1 setting on ghost6.inflozo.com')
   assert.deepEqual(row?.items, [{ text: 'Note' }])
   assert.ok(!kinds(preflightWarnings(input({ previousCustom: null }))).includes('dropped'))
+  assert.equal(W.dropped(2, 'ghost6.inflozo.com'), 'Ghost will forget 2 settings on ghost6.inflozo.com')
 })
 
 test('7.11\'s Q2: a built-in whose start moved gets one row naming both values and the Design panel; an unchanged one, none', () => {
@@ -126,6 +129,11 @@ test('FR-H2: past 25 hand-picked posts on one page — the site doc\'s counted w
   assert.ok(!kinds(preflightWarnings(input({ docs: { home: home(25) } }))).includes('picks'))
   // a hidden section loads nothing
   assert.equal(picksOn('home', { home: doc(at('a17/1', { isMainFeed: true }), at('a17/1', { data: picks(30), hidden: true })) }, library, 12), 0)
+  // the Review: a designed page 2 is a page of its own — its picks are counted apart from page 1's, and named so
+  const two = preflightWarnings(input({ docs: { home: home(3), index: home(26) } })).find((r) => r.kind === 'picks')
+  assert.deepEqual(two?.items, [{ text: W.picksItem('Home page 2', 26), canvas: 'home' }])
+  assert.equal(picksOn('home', { home: home(3), index: home(26) }, library, 12, undefined, true), 26)
+  assert.equal(picksOn('post', { post: home(26) }, library, 12, undefined, true), 0, 'a canvas with no page 2 has none to count')
 })
 
 test('FR-D16: every shipped page and its page 2 whose record lacks a visitor, never-opened ones lacking all three; Editor cards never', () => {
@@ -143,15 +151,15 @@ test('FR-D16: every shipped page and its page 2 whose record lacks a visitor, ne
   assert.ok(never?.items.some((i) => i.text === W.unviewedItem('Home page 2', ALL.map((v) => ROWS[v].title))))
 })
 
-test('the order is routine call 13\'s: RTL, locale, untouched, members, free asks, dropped, built-ins, feed-less, picks, unviewed', () => {
+test('the order is routine call 13\'s: RTL, locale, untouched, members, free asks, dropped, built-ins, feed-less, picks, unviewed — every kind present', () => {
   const rows = preflightWarnings(input({
     language: 'ar', siteLocale: 'en', rtlAckAt: '2026-10-19T08:00:00Z', siteVersion: '5.40.0',
     members: { signup_access: 'invite', paid_enabled: true },
     facts: facts({ noindex: ['author'], freeAsks: ['home.hbs'] }),
     previousCustom: { ...facts().custom, gone: { type: 'text' }, color_scheme: { type: 'select', default: 'Light' } },
-    docs: { home: doc(at('a4/13')) }, viewed: {},
+    docs: { home: doc(at('a4/13'), at('a17/1', { data: { posts: { source: 'picked', picks: Array.from({ length: 26 }, (_, i) => ({ id: (i + 1).toString(16).padStart(24, 'a'), title: `Pick ${i}` })) } } })) }, viewed: {},
   }))
-  assert.deepEqual(kinds(rows), ['rtl', 'mismatch', 'untouched', 'members', 'freeAsks', 'dropped', 'builtIn', 'feedless', 'unviewed'])
+  assert.deepEqual(kinds(rows), ['rtl', 'mismatch', 'untouched', 'members', 'freeAsks', 'dropped', 'builtIn', 'feedless', 'picks', 'unviewed'])
 })
 
 test('R-271: the cap and its words', () => {

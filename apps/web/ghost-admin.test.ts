@@ -33,8 +33,12 @@ test('a malformed credential is refused before the network, and is not reported 
 test('Story 7.18b (DW-378): the theme upload\'s fetch is handed two minutes, every other call fifteen seconds', async () => {
   const KEY = '6512a1b2c3d4e5f60718293a:' + 'ab'.repeat(32)
   const seen: number[] = []
-  const timeout = AbortSignal.timeout.bind(AbortSignal)
+  const original = AbortSignal.timeout
+  const timeout = original.bind(AbortSignal)
   const realFetch = globalThis.fetch
+  // the audit row after the answer must never reach a real database, whatever the shell holds (the Review)
+  const pooler = process.env.SUPABASE_DB_POOLER_URL
+  delete process.env.SUPABASE_DB_POOLER_URL
   AbortSignal.timeout = (ms: number) => (seen.push(ms), timeout(ms))
   globalThis.fetch = (async () => new Response('{"themes":[]}', { status: 200 })) as typeof fetch
   try {
@@ -53,7 +57,8 @@ test('Story 7.18b (DW-378): the theme upload\'s fetch is handed two minutes, eve
     const read = await budget({ method: 'GET', path: 'site/' })
     assert.ok(read > 10_000 && read <= 15_000, `read: ${read}`)
   } finally {
-    AbortSignal.timeout = timeout
+    AbortSignal.timeout = original
     globalThis.fetch = realFetch
+    if (pooler !== undefined) process.env.SUPABASE_DB_POOLER_URL = pooler
   }
 })

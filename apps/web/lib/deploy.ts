@@ -565,7 +565,7 @@ export type RoutesEnding =
   | { kind: 'failed'; reason: string }
   | { kind: 'none' }
 
-/** WHAT THE EDITOR KNOWS BEFORE ANY JOB, as server truth (`read.ts`'s `shipStateOf`): the linked site as Ship it ships to
+/** WHAT THE EDITOR KNOWS BEFORE ANY JOB, as server truth (`shipStateOf`, below, over `read.ts`' reads): the linked site as Ship it ships to
  *  it, the theme's frozen name, the next version and the one the site serves from this project — for the bar's label, the
  *  ▾ menu's captions and Destination. */
 export type ShipState = {
@@ -575,6 +575,10 @@ export type ShipState = {
   /** Story 7.18b — `projects.language` and `rtl_ack_at` (FR-Q6): the switch's language rule and Pre-flight's RTL and locale rows */
   language: string
   rtlAckAt: string | null
+  /** `projects.linked_site_id` as stored — a disconnected site included, which `site` is not — so the picker plans a switch from
+   *  the link the server reads (the Review, 2026-10-19), and whether the project holds translation overrides (R-134) */
+  linkedSiteId: string | null
+  overridden: boolean
   /** Story 7.18b — the user's CONNECTED sites, newest first as Sites lists them, each with the other project that links it —
    *  the picker's rows (`lib/site-switch.ts`) */
   sites: readonly SwitchSite[]
@@ -607,6 +611,7 @@ export function shipStateOf(a: {
   slug: string
   language: string
   rtlAckAt: string | null
+  overridden: boolean
   sites: readonly { id?: unknown; title?: unknown; url?: unknown; capability?: unknown; capability_source?: unknown; site_settings?: unknown }[] | null
   linking: readonly { id?: unknown; name?: unknown; linked_site_id?: unknown }[] | null
   siteId: string | null
@@ -652,6 +657,8 @@ export function shipStateOf(a: {
       : null,
     language: a.language,
     rtlAckAt: a.rtlAckAt,
+    linkedSiteId: a.siteId,
+    overridden: a.overridden,
     sites,
     themeName: typeof a.binding?.theme_name === 'string' ? a.binding.theme_name : themeNameOf(a.slug),
     n: rows.length + 1,

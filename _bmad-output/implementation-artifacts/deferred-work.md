@@ -4334,10 +4334,10 @@ location: appendix-h1 S6 · each category's content.json `default`s
 reason: whether every visible default must have a catalog key, or a non-English project must be prompted to retype
   them, is an owner decision the Translations surface forces; 4.9 builds the mechanism (`catalog` on a prop) and
   adds no key.
+note (Story 7.18b's Dev, 2026-10-19; moved under its entry at the Review): the Pre-flight half is built — `lib/preflight.ts`' untouched row reads `untouchedWords`
+  through Translations' own `untouchedRows` (one function feeds both), each item with "Fix in editor" on its canvas, never a block.
 
 ## Deferred from: code review of spec-4-9-the-string-catalog-keys-english-defaults-and-the-t-contract (2026-09-14)
-note (Story 7.18b's Dev, 2026-10-19): the Pre-flight half is built — `lib/preflight.ts`' untouched row reads `untouchedWords`
-  through Translations' own `untouchedRows` (one function feeds both), each item with "Fix in editor" on its canvas, never a block.
 
 ### DW-146: nothing asserts S5's inverse — a module that writes visitor-facing text must declare its keys
 
@@ -10315,7 +10315,7 @@ note (Story 7.18b's Create, 2026-10-19): ruled **R-271**, option 1 — a reader 
 resolution: Story 7.18b's Dev (2026-10-19), as R-271 ruled — `readSitePosts` reads through a `liveStore` of its own (never the
   canvas's), newest first, up to `POSTS_CHECKED` (2,000), with the site's total; the row says "Checking that every post appears
   on a page…" while it reads, never holding Ship it, and adds "We checked your newest 2,000 posts." past the cap. A journey reads
-  it over two pages and past the cap (twenty reads, no more).
+  it over two pages and past the cap (`POSTS_CHECKED` ÷ 100 reads, no more).
 
 ### DW-378: what Story 7.18a's checks still do not execute
 
@@ -10344,3 +10344,45 @@ resolution: Story 7.18b (2026-10-19) — each a check of its own: `jobs.claim`'s
   recorder over the pilot theme; the journeys' "stays open" / "opens nothing" settled first, "Cancelling…" held past two reads, the
   confetti's one iteration, R-260's read over two pages; and every stage `stage_timings` shows entered is announced, in order.
 
+
+## Deferred from: code review of spec-7-18b-choosing-the-site-and-pre-flight-s-warnings (2026-10-19)
+
+### DW-379: a switch can move a site while a deploy to it is already uploading or activating
+
+plain: If one of your projects is in the middle of sending its theme to a site, and in another window you move that site to
+  a different project, the theme being sent still arrives and can go live — on a site that now belongs to the other project.
+status: open
+severity: low
+origin: Story 7.18b's Review (2026-10-19), the Blind Hunter and Edge Case Hunter layers. DW-374's re-read sits before Ship it's
+  claim, so a job already past it (uploading, activating — or a stale artefact re-compiling after the claim) is not stopped,
+  and `switchSite` reads neither the holder's lock nor its jobs.
+owner: Story 7.25 (rate limits, the compile budget and the advisory lock), whose per-site lock serialises a deploy against
+  anything else that changes what the site serves: a switch takes the same lock, or waits for a job moving on that site.
+location: `apps/web/lib/site-switch.ts` (`switchWith`) · `apps/web/server/deploy/run.ts` (`ship`, after the claim)
+reason: it needs the advisory lock 7.25 builds; the same user, two windows, inside a deploy's seconds — and the next Ship it
+  from either project re-reads the link (DW-374).
+
+### DW-380: a Ship it refused for a changed site, and a check left behind by a switch, keep their stored theme zip
+
+plain: When Ship it refuses because the project's site changed, or a project switches sites while finished checks wait for
+  the old one, the theme Inflozo built for those checks stays in storage with nothing that will ever ship it.
+status: open
+severity: low
+origin: Story 7.18b's Review (2026-10-19), the Blind Hunter and Edge Case Hunter layers: `ship()` marks the deploy `failed` and
+  keeps `artifact_path` (as every failed upload does); `start()` abandons only jobs resting on the SAME site.
+owner: Story 7.22 (artifacts, retention and pinning), whose pruning removes stored zips no version can restore.
+location: `apps/web/server/deploy/run.ts` (`ship`, `start`)
+reason: storage is not counted against the customer, and retention is 7.22's; until then the rows are inert.
+
+### DW-381: a sites read that fails shows the picker with no sites and no sentence
+
+plain: If Inflozo cannot read your connected sites when the editor opens, Switch opens a list with nothing in it and does not
+  say why, which looks like having no other site.
+status: open
+severity: low
+origin: Story 7.18b's Review (2026-10-19), the Blind Hunter layer — `shipStateOf` logs a failed sites read and counts it as
+  none (`lib/deploy.ts`).
+owner: Story 7.18c (the editor's lock and save leftovers), the next story on this editor: `ShipState.sites` keeps the failure,
+  and the picker says it in a sentence of the owner's (Ask First: a new string).
+location: `apps/web/lib/deploy.ts` (`shipStateOf`) · `apps/web/components/editor/deploy-wizard.tsx` (the picker)
+reason: a new sentence is Ask First; Go to Sites still works, and `switchSite` judges on the server.

@@ -431,11 +431,10 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode }, io:
     if (deploy === null || deploy.artifact_path === null) return void (await fail(c, deployError('deploy_infrastructure', { host: '' })))
     // DW-374 (R-269): the project's link, read NOW — a project switched or moved away since its Pre-flight sends nothing, and
     // says which sites. Before the claim, so a refused Ship it leaves no stage it never entered
-    const link = await twice(io, 'link', () => io.link(at))
-    if (link.now === null || link.now.id !== job.site_id) {
+    const moved = await linkRefusal(io, job)
+    if (moved !== null) {
       await twice(io, 'deploy failed', () => io.deploys.update(deploy!.id, job.user_id, { status: 'failed' }))
-      const was = hostOf(link.was ?? '')
-      return void (await fail(c, link.now === null ? deployError('site_unlinked', { host: was }) : deployError('site_changed', { host: was, to: hostOf(link.now.url) })))
+      return void (await fail(c, moved))
     }
     read = await readProject(io, at)
     if (read === null) return void (await fail(c, { code: 'site_not_found', message: DEPLOY_WORDS.noSite }))
@@ -488,6 +487,16 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode }, io:
   }
 }
 
+/** DW-374 (R-269) — THE PROJECT'S LINK, READ NOW: null while it is still the job's site, else the refusal naming the site the
+ *  project now ships to and the one it left (or the one alone, when it is linked to none). Ship it and Re-activate both ask it,
+ *  so a theme only ever goes to — or goes live on — the project's current site. */
+async function linkRefusal(io: DeployIo, job: JobRow): Promise<DeployError | null> {
+  const link = await twice(io, 'link', () => io.link({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id }))
+  if (link.now !== null && link.now.id === job.site_id) return null
+  const was = hostOf(link.was ?? '')
+  return link.now === null ? deployError('site_unlinked', { host: was }) : deployError('site_changed', { host: was, to: hostOf(link.now.url) })
+}
+
 /** RE-ACTIVATE (D2e's and D2f's button): the uploaded deploy of a job that ended `done` (or failed at activating), activated. */
 export async function activate(a: { jobId: string; userId: string }, io: DeployIo): Promise<void> {
   const job = await firstRead(io, a)
@@ -496,6 +505,10 @@ export async function activate(a: { jobId: string; userId: string }, io: DeployI
   try {
     const deploy = await twice(io, 'deploy read', () => io.deploys.read(job.deploy_id as string, job.user_id))
     if (deploy === null || deploy.status !== 'uploaded') return
+    // DW-374 at Re-activate too (the Review, 2026-10-19): a theme goes live only on the project's CURRENT site — never on one
+    // another project took since the upload. The theme stays uploaded where it is; nothing is sent
+    const moved = await linkRefusal(io, job)
+    if (moved !== null) return void (await fail(c, moved))
     const read = await readProject(io, { projectId: job.project_id, siteId: job.site_id, userId: job.user_id })
     if (read === null) return void (await fail(c, { code: 'site_not_found', message: DEPLOY_WORDS.noSite }))
     // one re-activate per row, as one Ship it (above): a double press's second invocation finds it `activating`

@@ -103,7 +103,7 @@ import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
 import { DEPLOY_WORDS, POSTS_CHECKED, type Mode as ShipMode } from '@/lib/deploy'
 import { queriesFor } from '@/lib/preflight'
-import type { SwitchAnswer } from '@/lib/site-switch'
+import type { Confirmed, SwitchAnswer } from '@/lib/site-switch'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
@@ -2529,16 +2529,18 @@ function EditorShell({
   }
   /** STORY 7.18b — choosing the site (FR-B5): whatever is owed is sent first, then `switchSite` — edits left unsent write
    *  nothing, in Run checks' own sentence */
-  const switchSiteNow = async (siteId: string, confirmed: boolean): Promise<SwitchAnswer> => {
+  const switchSiteNow = async (siteId: string, confirmed: Confirmed): Promise<SwitchAnswer> => {
     if (!(await flushForShip())) return { refused: DEPLOY_WORDS.editsUnsent }
     return switchTo(project.id, siteId, tabId.current, confirmed).catch((): SwitchAnswer => ({ refused: DEPLOY_WORDS.infrastructure }))
   }
   /** …and once the link has changed, the page re-reads: the editor mounts afresh on the new site (the `(editor)` layout keys
    *  it on `linked_site_id`), so the canvas, the members record and Ship it all follow it, and this tab's kept ask opens the
-   *  wizard again on Destination — the take-over's `SHIP_AFTER` path */
+   *  wizard again on Destination — the take-over's `SHIP_AFTER` path. In a transition, so the wizard's press can stay busy until
+   *  the re-read lands (`relinking`, R-98) */
+  const [relinking, startRelink] = useTransition()
   const relink = (mode: ShipMode) => {
     tabStore()?.setItem(SHIP_AFTER, JSON.stringify({ project: project.id, mode }))
-    router.refresh()
+    startRelink(() => router.refresh())
   }
 
   /** A RELOAD THAT KEPT ITS TAB ID IS THE SAME SESSION, so it keeps the lock rather than flashing B5a's bar at its
@@ -6831,6 +6833,7 @@ function EditorShell({
           client={{ docs, library: (id) => entries[id], viewed, members, postsPerPage, listed }}
           onSwitch={switchSiteNow}
           onRelink={relink}
+          relinking={relinking}
           onClose={(shipped) => {
             // a relink's kept ask is spent: an editor the re-read did not remount (the harness) never reopens it later
             tabStore()?.removeItem(SHIP_AFTER)

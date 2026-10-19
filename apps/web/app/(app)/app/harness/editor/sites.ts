@@ -59,4 +59,6 @@ export const HARNESS_SITES = {
   held: '00000000-0000-4000-8000-000000000719',
   german: '00000000-0000-4000-8000-000000000720',
   holder: '00000000-0000-4000-8000-000000000721',
+  /** the project `x-inflozo-harness-switch: confirm-held` says took the held site meanwhile */
+  other: '00000000-0000-4000-8000-000000000722',
 } as const

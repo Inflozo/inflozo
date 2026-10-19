@@ -20,7 +20,7 @@ import {
 } from '@/lib/deploy'
 import { deployPath, type Canvas } from '@/lib/editor'
 import { preflightWarnings, rowCanvas, type PreflightInput, type PreflightRow } from '@/lib/preflight'
-import { SWITCH_WORDS as SW, switchPlan, type SwitchAnswer, type SwitchPlan, type SwitchSite } from '@/lib/site-switch'
+import { confirmedOf, SWITCH_WORDS as SW, switchPlan, type Confirmed, type SwitchAnswer, type SwitchPlan, type SwitchSite } from '@/lib/site-switch'
 import { ownName, TRANSLATION_WORDS } from '@/lib/translations'
 import { KEYMAP } from '@/lib/keymap'
 import type { Row } from '@/lib/live-content'
@@ -270,6 +270,7 @@ export function DeployWizard({
   client,
   onSwitch,
   onRelink,
+  relinking,
   onClose,
 }: {
   request: ShipRequest
@@ -297,10 +298,12 @@ export function DeployWizard({
   /** Story 7.18b — the editor's own state Pre-flight's warning rows read beside the compile's facts, after Run checks' flush */
   client: Pick<PreflightInput, 'docs' | 'library' | 'viewed' | 'members' | 'postsPerPage' | 'listed'>
   /** Story 7.18b — choosing a site: the editor flushes, then asks `switchSite` (a confirm owed comes back as one) */
-  onSwitch: (siteId: string, confirmed: boolean) => Promise<SwitchAnswer>
+  onSwitch: (siteId: string, confirmed: Confirmed) => Promise<SwitchAnswer>
   /** Story 7.18b — the project's link changed (a switch landed, or Ship it found it changed): the editor re-reads the page, so
    *  the canvas, the members record and Ship it follow the new site, and the wizard opens again on Destination */
   onRelink: (mode: Mode) => void
+  /** the editor's re-read after `onRelink` is in flight — a switch's press stays busy until it lands (R-98) */
+  relinking: boolean
   /** the wizard closed; `shipped` when a job reached its ending, so the bar re-reads its label and versions */
   onClose: (shipped: boolean) => void
 }) {
@@ -429,20 +432,28 @@ export function DeployWizard({
     if (error.code === 'compile_failed') return { reason: W.ourFault }
     return { reason: error.message, ...(error.action !== undefined && error.href !== undefined ? { link: { words: error.action, href: hrefOn(prefix, error.href) } } : {}) }
   })()
+  // a Re-activate DW-374 refused (the deploy still `uploaded`, the project's site changed) failed at activating, which it never
+  // entered: nothing was sent
+  const reactivateRefused = stage === 'failed' && error !== null && !isFinding(error) && (error.code === 'site_changed' || error.code === 'site_unlinked') && view?.deploy?.status === 'uploaded'
   const failedAt: 'compiling' | 'checking' | 'uploading' | 'activating' =
-    timings.activating !== undefined ? 'activating' : timings.uploading !== undefined ? 'uploading' : timings.checking !== undefined ? 'checking' : 'compiling'
+    timings.activating !== undefined || reactivateRefused ? 'activating' : timings.uploading !== undefined ? 'uploading' : timings.checking !== undefined ? 'checking' : 'compiling'
 
   /* ONE POLITE REGION: each stage as it starts, and the outcome once (its heading). DW-378 — EVERY STAGE `stage_timings` SHOWS
      ENTERED is said, in order, even one that began and ended between two of the wizard's one-second reads (Checking ran 0.9 s
      on production): the stages entered since the last read are said together, in the order they started. Each start is keyed
      on its own `at`, so a stale artefact's second Compiling is said again and a read that changes nothing says nothing. */
+  // a refusal in AD-24's envelope after the checks finished (DW-374's two, Ship it's own) is said in its own words — the checks'
+  // outcome was said already (the Review, 2026-10-19)
+  const envelope = error !== null && !isFinding(error)
   const ending: string | null =
     stage === 'awaiting_ship' ? W.sayChecked(checked.errors, checked.warnings)
     : stage === 'done' ? (ending_ === 'live' ? W.liveTitle : ending_ === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle)
-    : stage === 'failed' ? (at === 'ship' ? W.stageFailed(STAGE_NAMES[failedAt]) : checksDone ? W.sayChecked(checked.errors, checked.warnings) : block?.reason ?? null)
+    : stage === 'failed' ? (at === 'ship' ? W.stageFailed(STAGE_NAMES[failedAt]) : checksDone && !envelope ? W.sayChecked(checked.errors, checked.warnings) : block?.reason ?? null)
     : null
   const starts = entered(timings)
   const startsKey = starts.map(([st, t]) => `${st}@${t}`).join(',')
+  /** an ending is keyed on the last stage it followed, so the same ending after a Re-activate is said again (the Review) */
+  const endKey = `end:${stage}:${ending}:${starts.at(-1)?.[1] ?? ''}`
   useEffect(() => {
     const fresh: string[] = []
     for (const [st, t] of starts) {
@@ -451,12 +462,12 @@ export function DeployWizard({
       heard.current.add(key)
       fresh.push(st === 'compiling' ? W.sayCompiling : st === 'checking' ? W.sayChecking : st === 'uploading' ? W.sayUploading : W.sayActivating(n))
     }
-    if (ending !== null && !heard.current.has(`end:${stage}:${ending}`)) {
-      heard.current.add(`end:${stage}:${ending}`)
+    if (ending !== null && !heard.current.has(endKey)) {
+      heard.current.add(endKey)
       fresh.push(ending)
     }
     if (fresh.length > 0) say(fresh.join(' '))
-  }, [startsKey, stage, ending])
+  }, [startsKey, stage, ending, endKey])
 
   /** Run checks: the editor's flush first — work it cannot send is work the compile would not see */
   const runChecks = async () => {
@@ -535,7 +546,7 @@ export function DeployWizard({
 
   /* ── STORY 7.18b — choosing the site (FR-B5, R-267): the picker inside the wizard, and its confirm ── */
   const planFor = (siteId: string): SwitchPlan | null =>
-    ship === undefined ? null : switchPlan({ project: { id: projectId, language: ship.language, linkedSiteId: site?.id ?? null }, site: siteId, sites: ship.sites })
+    ship === undefined ? null : switchPlan({ project: { id: projectId, language: ship.language, linkedSiteId: ship.linkedSiteId, overridden: ship.overridden }, site: siteId, sites: ship.sites })
   const openPicker = () => {
     setSwitchRefused(null)
     setChosen(site?.id ?? ship?.sites[0]?.id ?? null)
@@ -549,7 +560,8 @@ export function DeployWizard({
   // focus starts on the chosen row; back on Destination it returns to the control that opened the picker
   const wasPicking = useRef(false)
   useEffect(() => {
-    if (picking) pickerRef.current?.querySelector<HTMLElement>('input[type="radio"]:checked, input[type="radio"], a[href], button')?.focus()
+    // the CHOSEN row first: a selector list matches in document order, so the checked radio is asked for alone
+    if (picking) (pickerRef.current?.querySelector<HTMLElement>('input[type="radio"]:checked') ?? pickerRef.current?.querySelector<HTMLElement>('input[type="radio"], a[href], button'))?.focus()
     else if (wasPicking.current) document.getElementById(site === null ? 'deploy-choose' : 'deploy-switch')?.focus()
     wasPicking.current = picking
   }, [picking])
@@ -557,23 +569,48 @@ export function DeployWizard({
   useEffect(() => {
     if (owed !== null && confirmRef.current !== null && !confirmRef.current.open) openOnCancel(confirmRef.current)
   }, [owed])
+  /** the sentences a confirm owes, in its order (Question 1's, FR-Q6's) */
+  const owedWords = (x: SwitchSite, plan: SwitchPlan): { held: string | null; language: string | null } => ({
+    held: plan.heldBy === null ? null : SW.held(x.host, plan.heldBy.name),
+    language: plan.warnLanguage && x.locale !== null ? SW.language(x.host, ownName(x.locale), ownName(plan.language)) : null,
+  })
+  /** a switch that landed, while the page re-reads: the press stays busy until the re-read has (R-98) */
+  const landing = useRef<'pending' | 'reading' | null>(null)
+  useEffect(() => {
+    if (landing.current === null) return
+    if (relinking) return void (landing.current = 'reading')
+    if (landing.current !== 'reading') return
+    // the re-read landed and this editor was not remounted on a new site (the harness's): back to Destination
+    landing.current = null
+    confirmRef.current?.close()
+    setOwed(null)
+    setSwitching(null)
+    setPicking(false)
+  }, [relinking])
   /** the editor flushes, then `switchSite` answers: linked (the page re-reads and the wizard opens again on Destination), a
    *  confirm owed (another tab moved things meanwhile), or a refusal in its sentence */
-  const sendSwitch = async (target: SwitchSite, confirmed: boolean, how: 'use' | 'confirm') => {
+  const sendSwitch = async (target: SwitchSite, confirmed: Confirmed, how: 'use' | 'confirm') => {
     if (switching !== null) return
     setSwitching(how)
     setSwitchRefused(null)
     const answer = await onSwitch(target.id, confirmed).catch((): SwitchAnswer => ({ refused: W.infrastructure }))
     if (!alive.current) return
-    setSwitching(null)
     if ('ok' in answer) {
-      confirmRef.current?.close()
-      setOwed(null)
-      setPicking(false)
+      // R-98: "Switching…" until the re-read lands — the editor then mounts afresh on the new site, and Destination never
+      // shows the old link in between (the Review, 2026-10-19)
+      landing.current = 'pending'
       onRelink(mode)
       return
     }
-    if ('confirm' in answer) return setOwed({ site: target, plan: answer.confirm })
+    setSwitching(null)
+    if ('confirm' in answer) {
+      // owed afresh on the server (another tab moved things meanwhile): the confirm says it, and so does the region when the
+      // confirm was already open and only its words changed
+      setOwed({ site: target, plan: answer.confirm })
+      const words = owedWords(target, answer.confirm)
+      say([words.held, words.language].filter((w) => w !== null).join(' '))
+      return
+    }
     confirmRef.current?.close()
     setOwed(null)
     setSwitchRefused(answer.refused)
@@ -591,7 +628,7 @@ export function DeployWizard({
     // the linked site again: nothing to write, back to Destination
     if (plan.same) return closePicker()
     if (plan.confirm) return setOwed({ site: target, plan })
-    void sendSwitch(target, false, 'use')
+    void sendSwitch(target, null, 'use')
   }
 
   /** S8a's chip: Connected's mint dot, or B15's Preview-only pill (S11's two states) */
@@ -639,7 +676,8 @@ export function DeployWizard({
           <legend className="sr-only">{SW.title}</legend>
           {sites.map((x) => {
             const on = x.id === chosen
-            const first = on && chosenPlan?.firstLink === true
+            // a first link that CHANGES the language says so — never "English, {host}'s language" for a site that stores none
+            const first = on && chosenPlan?.firstLink === true && chosenPlan.language !== ship?.language
             return (
               <label
                 key={x.id}
@@ -706,10 +744,8 @@ export function DeployWizard({
             <div className="flex flex-col gap-[5px]">
               <h3 id="deploy-switch-title" className="m-0 font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{SW.confirmTitle(owed.site.host)}</h3>
               <div id="deploy-switch-body" className="flex flex-col gap-2 text-ui-dense leading-[1.5] text-ink-soft">
-                {owed.plan.heldBy === null ? null : <p data-owed="held">{SW.held(owed.site.host, owed.plan.heldBy.name)}</p>}
-                {owed.plan.warnLanguage && owed.site.locale !== null ? (
-                  <p data-owed="language">{SW.language(owed.site.host, ownName(owed.site.locale), ownName(owed.plan.language))}</p>
-                ) : null}
+                {owedWords(owed.site, owed.plan).held === null ? null : <p data-owed="held">{owedWords(owed.site, owed.plan).held}</p>}
+                {owedWords(owed.site, owed.plan).language === null ? null : <p data-owed="language">{owedWords(owed.site, owed.plan).language}</p>}
               </div>
             </div>
             <div className="flex justify-end gap-[10px]">
@@ -723,7 +759,7 @@ export function DeployWizard({
                 size={38}
                 aria-disabled={switching === 'confirm' || undefined}
                 aria-busy={switching === 'confirm' || undefined}
-                onClick={() => void sendSwitch(owed.site, true, 'confirm')}
+                onClick={() => void sendSwitch(owed.site, confirmedOf(owed.plan), 'confirm')}
               >
                 <BusyLabel pending={switching === 'confirm'} busy={SW.switching}>{SW.switch}</BusyLabel>
               </Button>
@@ -784,7 +820,7 @@ export function DeployWizard({
               </div>
             </div>
           ) : null}
-          {refusedPlan ? <p data-plan-refused className="-mt-2 text-[12.5px] leading-[1.55] text-ink-mid">{W.planRefused(host)}</p> : null}
+          {refusedPlan ? <p data-plan-refused className="-mt-2 text-[12px] leading-[1.55] text-ink-soft">{W.planRefused(host)}</p> : null}
           {site.capability === 'preview_only' && !refusedPlan ? null : (
             <>
               {/* the theme that will be created, in mono (FR-J10; EXPERIENCE's "plus one row under the destination card") */}

@@ -634,7 +634,12 @@ test('7.18b: an unacknowledged right-to-left language blocks before any compile 
   assert.deepEqual(job.error, { code: 'rtl_unacknowledged', message: DEPLOY_WORDS.rtlBlocked, action: DEPLOY_WORDS.openTranslations, href: `/projects/${P}/settings/translations` })
   assert.ok(!rtl.events.includes('compile') && !rtl.events.includes('deploy:insert'), 'nothing compiled, nothing stored')
   const acked = world({ read: () => ({ ...acked.baseRead(), input: { ...acked.baseRead().input, language: 'ar' }, rtlAckAt: '2026-10-19T08:00:00Z' }) })
-  assert.equal((await begin(acked)).stage, 'awaiting_ship')
+  assert.equal((await begin(acked)).stage, 'awaiting_ship')  // the Review: it is the DIRECTION that blocks — Hebrew unacknowledged blocks too; German, a left-to-right language with no
+  // acknowledgement at all, checks (the control a rule of "anything but English" would fail)
+  const he = world({ read: () => ({ ...he.baseRead(), input: { ...he.baseRead().input, language: 'he' } }) })
+  assert.equal((await begin(he)).error?.code, 'rtl_unacknowledged')
+  const de = world({ read: () => ({ ...de.baseRead(), input: { ...de.baseRead().input, language: 'de' } }) })
+  assert.equal((await begin(de)).stage, 'awaiting_ship')
 })
 
 test('7.18b: Pre-flight writes the compile\'s facts beside the verdicts — every .hbs, config.custom as emitted, noindex, and the files carrying a free ask', async () => {
@@ -672,6 +677,32 @@ test('7.18b (DW-374, R-269): Ship it re-reads the project\'s link — unlinked o
   await ship({ jobId: c.id, userId: U, mode: 'activate' }, same.io)
   assert.equal((same.jobs.get(c.id) as JobRow).stage, 'done')
   assert.equal(same.calls.filter((x) => x.item === 'theme_upload').length, 1)
+})
+
+test('7.18b (DW-374, the Review): Re-activate re-reads the project\'s link too — unlinked or moved, nothing is activated and the theme stays uploaded; the link unchanged, it activates (the control)', async () => {
+  for (const link of [{ now: null, was: 'https://ghost6.inflozo.com' }, { now: { id: '00000000-0000-4000-8000-0000000000dd', url: 'https://blog.example.com' }, was: 'https://ghost6.inflozo.com' }]) {
+    const over: Parameters<typeof world>[0] = { liveProject: 'someone-else' }
+    const w = world(over)
+    const job = await begin(w)
+    await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+    const sent = w.calls.length
+    // another tab switches the project, or moves its site to another project, while this one rests on D2f
+    over.link = link
+    await activate({ jobId: job.id, userId: U }, w.io)
+    const after = w.jobs.get(job.id) as JobRow
+    assert.equal(after.stage, 'failed')
+    assert.deepEqual(after.error, link.now === null
+      ? { code: 'site_unlinked', message: DEPLOY_WORDS.siteUnlinked('ghost6.inflozo.com') }
+      : { code: 'site_changed', message: DEPLOY_WORDS.siteChanged('blog.example.com', 'ghost6.inflozo.com') })
+    assert.equal(w.calls.length, sent, 'no activation sent')
+    assert.equal((w.deploys.get(job.deploy_id as string) as DeployRow).status, 'uploaded', 'the theme stays uploaded where it is')
+    assert.equal(after.stage_timings.activating, undefined, 'never entered activating')
+  }
+  const same = world({ liveProject: 'someone-else' })
+  const job = await begin(same)
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, same.io)
+  await activate({ jobId: job.id, userId: U }, same.io)
+  assert.equal(same.calls.filter((x) => x.item === 'theme_activate').length, 1)
 })
 
 test('7.18b: the view carries the facts and "since your last deploy" — the latest ACTIVATED deploy\'s config.custom, never an uploaded one\'s', async () => {
