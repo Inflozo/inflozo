@@ -2,9 +2,9 @@
 title: 'Story 7.18c — The editor''s lock and save leftovers'
 type: 'bugfix'
 created: '2026-10-20'
-status: 'in-review'
+status: 'done'
 baseline_commit: '6095de06ede01b2b1617f59e3f24ca2ea00647ca'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-18b-choosing-the-site-and-pre-flight-s-warnings.md']
 ---
@@ -543,6 +543,12 @@ try again."
 **Ruled: option 1 (owner, 2026-10-20) — R-277.** *"One sentence, yours from Question 2, in both places. The Sites page also
 says "Your connected sites couldn't be loaded just now. Reload the page to try again." — reloading works there too. One line
 of words, read by both."*
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-10-20): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_5YgADvd1pnexWm7W1vvpuzZEVpTM`, `https://app.inflozo.com`) as `umngkmr+site718@gmail.com` and reported *"passed"*. No
+findings.
 
 ## Verification
 
