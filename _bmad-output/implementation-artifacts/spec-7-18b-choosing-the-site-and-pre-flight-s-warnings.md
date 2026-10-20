@@ -2,9 +2,9 @@
 title: 'Story 7.18b — Choosing the site, and Pre-flight''s warnings'
 type: 'feature'
 created: '2026-10-19'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'b4e1a23cf24064ab5cd7d89bf9956787aead9487'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-18a-the-deploy-wizard.md']
 ---
@@ -598,6 +598,12 @@ Addresses that need a project's id are written `<A>` and `<B>`. Copy each from t
 | 13 | `https://app.inflozo.com/projects/<B>/settings`, then `https://app.inflozo.com/projects/<B>` | Theme settings, then the wizard | Press **Promote a control**, choose **Note (Inline Row)**, and save. Then in the editor press **Ship it**, **Run checks**, **Ship it**. | — | Live, with confetti. |
 | 14 | `https://app.inflozo.com/projects/<B>/settings`, then `https://app.inflozo.com/projects/<B>` | Theme settings, editor, wizard | Delete that setting. In the editor, choose any other Style Pack. On the **Tag** canvas, hide the list of posts in Layers. Then **Ship it**, **Run checks**. | — | Three more warnings: **Ghost will forget 1 setting on ghost6.inflozo.com** naming it; **Dark accent color's starting value changed** with the old and new colours and **Open Ghost's Design panel ↗** (it opens Ghost's Design settings in a new tab); and **Tag page has no list of posts** with **Fix in editor**. |
 | 15 | `https://ghost6.inflozo.com/ghost/`, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: set Subscription access back to what it was. Activate **Casper**, delete the `inflozo-…` theme, and delete the Owner test 7.18b integration. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was. |
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-10-20): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_CW8Sgt8hupNEPJSdganvFfjLLKy5`, `https://app.inflozo.com`) as `umngkmr+site718@gmail.com` and reported *"passed"*. No
+findings.
 
 ## Questions for the owner
 
