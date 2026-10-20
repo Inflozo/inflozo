@@ -4330,6 +4330,16 @@ point forward** without pretending to reconstruct one
 **And** *(Story 7.18's Question 1 — owner, 2026-10-18, R-259)* its **Safety net** step joins Story 7.18a's step rail
 (`STEPS`) between Destination and Check, so with Story 7.20's Backup the rail counts six on a site's first deploy (UX-DR19).
 
+*(Ruled at this story's Create, owner, 2026-10-20, each option 1:* **R-278** *— a Not now is recorded per site
+(`sites.staff_token_declined_at`, a `Schema` push first): each site's first deploy asks once, a decline on one site never
+silences another, and a declined site is never asked again, by any project, even after a disconnect and reconnect;*
+**R-279** *— D1b's picture is the owner's own screenshot of T1's profile with the token blurred
+(`user-provided-assets/Staff-access-token-screen.png`);* **R-280** *— a pasted token is checked with Ghost
+(`GET /admin/users/me/?include=roles`) before anything is stored, in Safety net and Manage keys alike, and only an Owner's
+or an Administrator's is kept, with one sentence per cause: "This token belongs to an Editor. The safety net needs an
+Administrator's or the Owner's token.", "Ghost doesn't recognise this token. Copy the current one from your Ghost
+profile." and "That's an integration's Admin API key. Your Staff Access Token is on your own Ghost profile.")*
+
 **FRs:** the deploy-time half of FR-C1 (E7's by §8). · **Frame:** `D1 First-Deploy Gates.dc.html` D1b · D1c. ·
 **Owner test:** yes.
 

@@ -5916,6 +5916,70 @@ too. One line of words, read by both."*
   ✅ DW-381's note · ✅ `epic-7-context.md` · ✅ `EXPERIENCE.md`'s Deploy Destination row · ✅ `apps/web/lib/connect-rule.ts`,
   `lib/site-switch.ts`, the Sites page and `site-switch.test.ts` (7.18c's Review).
 
+**R-278 — a "Not now" to the Staff Access Token is recorded per site, and that site is never asked again.** Story 7.19's
+Create, Question 1, ruled **option 1** (owner, 2026-10-20): *"Once per site. Each site's first deploy asks once. A Not now
+on Orbit Weekly never silences Field Notes, which asks once on its own. Orbit Weekly is never asked again, by any project,
+even after a disconnect and reconnect."*
+
+- **Why it was a question.** The sources disagreed on the grain. PRD Appendix H (`prd.md:1449`) and EXPERIENCE J1's Ending B
+  say "never raised again for that project". EXPERIENCE's IA row ("first deploy to a site only"), FR-J13 and the D1 frame
+  say per site, and the token itself is stored per site. Nothing recorded a decline at all, so a first deploy that stopped
+  before its upload would have asked again (standing rule 6).
+- **The rule.** One column, `sites.staff_token_declined_at`, pushed first as `Schema` (R-99). The tenant reads it, and only
+  the server writes it, with the service role. Safety net is offered only while four things hold: the site is connected
+  with Run checks, it has no `project_site_bindings` row among the user's projects, it holds no token, and the column is
+  null. Connect re-adopts a reconnected record, so the decline stays with it.
+- **Declined.** Option 2, once per project, on any site. Option 3, once per account.
+- Targets:
+  - done now: ✅ this entry · ✅ Story 7.19's spec (Question 1, Ruled values) · ✅ `epics.md` Story 7.19's card (dated) ·
+    ✅ `epic-7-context.md`;
+  - at 7.19's Dev: ⬜ the migration, `SCHEMA.sql` and the RLS gate's 7.19 block · ⬜ `prd.md` FR-C1's dated note and
+    Appendix H's "for that project" · ⬜ `EXPERIENCE.md`'s IA rows and J1's Ending B.
+
+**R-279 — D1b's picture is the owner's own screenshot of his Ghost profile, with the token blurred.** Story 7.19's Create,
+Question 2, ruled **option 1** (owner, 2026-10-20). He saved it at
+`_bmad-output/planning-artifacts/user-provided-assets/Staff-access-token-screen.png`. It is 570×650: Ghost 6's dark profile
+sheet, with the Staff access token box outlined in red and the token blurred.
+
+- **Why it was a question.** D1b draws a placeholder ("screenshot: the Staff Access Token panel on a staff user's own
+  profile in Ghost Admin"). Taking it needs a Ghost Admin login, and `tools/probe/.env` holds none. Story 3.2's connect
+  screenshot was the precedent (ruled option 2 there, 2026-09-08).
+- **The rule.** It is copied in as `apps/web/public/deploy/staff-token.png` and drawn in D1b's 280×150 slot with
+  `object-fit: cover` and `object-position: bottom`, so the outlined box shows.
+- **Declined.** Option 2, a test Administrator login with a headless capture. Option 3, the path in words instead of a
+  picture.
+- Targets:
+  - done now: ✅ this entry · ✅ Story 7.19's spec (Question 2, the picture's task) · ✅ `epics.md` Story 7.19's card
+    (dated);
+  - at 7.19's Dev: ⬜ `apps/web/public/deploy/staff-token.png` and D1b's `<img>`.
+
+**R-280 — a pasted Staff Access Token is checked with Ghost before anything is stored, in Safety net and in Manage keys
+alike, with one sentence per cause.** Story 7.19's Create, Question 3, ruled **option 1** (owner, 2026-10-20): *"Ask Ghost
+first, keep nothing that fails, one sentence per cause. This applies in Safety net and in Manage keys alike."*
+
+- **Why it was a question.** Manage keys stored any `id:hex` pair unchecked (`sites/actions.ts`' `saveKeys` header). That
+  let in an Editor's token, or the integration's Admin key pasted by mistake, to fail later as B16's `role` cause. FR-C1
+  says Inflozo *may* verify the role. New sentences are the owner's.
+- **The rule.** `addStaffToken` (`apps/web/server/staff-token.ts`) asks `GET /admin/users/me/?include=roles` with the
+  pasted token through `fetchWithKey`, a read under no new write. It calls `store()` only for an Owner or an
+  Administrator: Administrator holds `theme: all` and `setting: all`, and the Owner passes every check (Ghost 6.58.0's and
+  5.130.6's `fixtures.json` and `can-this.js`, read in source). The causes:
+  - a role below Administrator: "This token belongs to {an Editor}. The safety net needs an Administrator's or the Owner's
+    token.";
+  - a 401: "Ghost doesn't recognise this token. Copy the current one from your Ghost profile.";
+  - the integration's key, a 404 `NotFoundError` (read in source; executed at Dev): "That's an integration's Admin API
+    key. Your Staff Access Token is on your own Ghost profile.";
+  - a Ghost that does not answer keeps the chokepoint's own sentence.
+
+  Nothing that fails is stored.
+- **Declined.** Option 2, keep the token anyway and warn once. Option 3, no check, as before.
+- Targets:
+  - done now: ✅ this entry · ✅ Story 7.19's spec (Question 3, Ruled values) · ✅ `epics.md` Story 7.19's card (dated) ·
+    ✅ `epic-7-context.md`;
+  - at 7.19's Dev: ⬜ `apps/web/lib/connect-rule.ts` (`token_role`, `token_unknown`, `token_integration`, `KEYS.staff.full`)
+    · ⬜ `server/staff-token.ts` and `saveKeys` · ⬜ `prd.md` FR-C1 and FR-C8 · ⬜ the spine's AD-10 ·
+    ⬜ VERIFY-AT-BUILD's next item and MEASUREMENTS §88 (T1, executed).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

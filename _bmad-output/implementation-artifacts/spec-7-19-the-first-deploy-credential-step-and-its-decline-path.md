@@ -22,8 +22,8 @@ asks again on that site — you can still add the token any time from Manage key
 
 ## Intent
 
-**Three questions are open for the owner (R-83) and Dev waits for all three.** The spec plans option 1 of each; "Ruled
-values" in Design Notes is the one table their answers set.
+**Questions 1–3 were ruled by the owner (2026-10-20), each option 1: R-278, R-279 and R-280.** "Ruled values" in Design
+Notes is the one table they set.
 
 **Problem:**
 - **Nothing asks for the Staff Access Token at the moment it matters.** The connect wizard keeps it out on purpose
@@ -86,7 +86,7 @@ values" in Design Notes is the one table their answers set.
   half goes to DW-326.
 
 **Ask First:**
-- Questions 1–3 are open. Dev builds the ruled options from "Ruled values".
+- Questions 1–3 were ruled (R-278–R-280). Dev builds the ruled options from "Ruled values".
 - Applying the Schema migration to production (R-99): an in-session R-83 ask, then the pooler.
 - Any T1 call, the recorder's and the walk's included: an in-session go before the first one. This run's own read-only
   probe was refused by the classifier.
@@ -221,17 +221,16 @@ Paths are under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed
 
 ## Tasks & Acceptance
 
-**Dev gate.** Before any code that writes the column is pushed:
-- Questions 1–3 are ruled.
-- The Schema push is made, green, and applied to production on the owner's in-session go (R-99).
-- If Question 2 is ruled option 1 or 2, the picture is in hand.
+**Dev gate.** Questions 1–3 are ruled (R-278–R-280), and the picture is in hand
+(`_bmad-output/planning-artifacts/user-provided-assets/Staff-access-token-screen.png`). The Schema push is made, green,
+and applied to production on the owner's in-session go (R-99), before any code that writes the column is pushed.
 
 **Execution — the `Schema` push (alone, first; R-99):**
 - [ ] `supabase/migrations/20261022120000_staff_token_decline.sql` -- add `sites.staff_token_declined_at timestamptz`
   (null = never declined), with a `comment on` naming FR-C1, D1c's "raised once, never again" and Question 1's grain. It
   must be re-runnable (`if not exists`). The header says there is no new grant: the tenant reads it through table-wide
-  select, and only the server writes it, with the service role, as `routes_fallback` -- the decline's one home.
-  *(Question 1 option 2 moves it to `projects`, option 3 to the user's metadata; see "Ruled values".)*
+  select, and only the server writes it, with the service role, as `routes_fallback` -- the decline's one home (R-278:
+  per site).
 - [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the column in
   `sites` beside `routes_fallback` (`:179`) -- the gate diffs it against the migrations.
 - [ ] `…/RLS-TEST.sql`, then copied byte-identical to `supabase/tests/rls.sql` -- a **7.19 block**:
@@ -308,9 +307,12 @@ Paths are under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed
   -- D1b, D1c and the rail.
 - [ ] `E/editor.tsx` -- hold `answered` (a site id) beside `wizard`, and pass `answered` and `onAnswered` to the
   wizard -- a reopen in the same page never asks again.
-- [ ] `public/deploy/staff-token.png` (**new**, per Question 2) -- the picture, with `width`/`height` on the `<img>`,
-  eager, and the alt text from "Words". The `routing.test.ts` walk serves it on the app host, as
-  `public/connect/integration.png` -- D1b's picture.
+- [ ] `public/deploy/staff-token.png` (**new**, R-279) -- the owner's screenshot, copied in byte for byte from
+  `_bmad-output/planning-artifacts/user-provided-assets/Staff-access-token-screen.png`. It is 570×650: Ghost 6's dark
+  profile sheet, the Staff access token box outlined in red with the token blurred, and Close and Save under it. It is
+  drawn in D1b's 280×150 slot with `object-fit: cover` and `object-position: bottom`, so the slot shows the box and the
+  field above it. `width`/`height` go on the `<img>`, it loads eagerly, and its alt text comes from "Words". The
+  `routing.test.ts` walk serves it on the app host, as `public/connect/integration.png` -- D1b's picture.
 - [ ] `app/(app)/app/harness/editor/layout.tsx`:
   - `x-inflozo-harness-ship: first` (as `full`, with `firstDeploy: true`, `staff: false`, `declined: false`);
   - `full` stays not offered (`firstDeploy: false`), so existing journeys are unchanged;
@@ -401,12 +403,12 @@ Paths are under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed
 ## Design Notes
 
 **Ruled values — the one table the three questions set.** Dev builds this table; a different ruling changes it and
-nothing else. *(Planned at option 1 of each; all three await the owner.)*
+nothing else. *(Ruled: option 1 of each — R-278, R-279 and R-280, owner, 2026-10-20.)*
 
 | Key | Value (option 1) | Where |
 |---|---|---|
 | The decline's grain (Q1) | per **site record**: asked once per site; a decline on one site never silences another, and stays through disconnect and reconnect (connect re-adopts the record, `sites/actions.ts:278`) | `sites.staff_token_declined_at` |
-| D1b's picture (Q2) | the owner's own screenshot of T1's profile, with the token covered, at `public/deploy/staff-token.png` | D1b's 280×150 slot |
+| D1b's picture (Q2) | the owner's own screenshot of T1's profile, the token blurred (`user-provided-assets/Staff-access-token-screen.png`), served as `public/deploy/staff-token.png` | D1b's 280×150 slot |
 | Below Administrator (Q3) | "This token belongs to {an Editor}. The safety net needs an Administrator's or the Owner's token." | `token_role(role)` |
 | Not recognised (Q3) | "Ghost doesn't recognise this token. Copy the current one from your Ghost profile." | `token_unknown` |
 | The integration's key (Q3) | "That's an integration's Admin API key. Your Staff Access Token is on your own Ghost profile." | `token_integration` |
@@ -468,7 +470,7 @@ code (Verification).
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+safety719@gmail.com` | Start. |
 | 2 | `https://app.inflozo.com/sites` | Sites | Press **Connect a site** and finish the wizard with the integration's two keys. | `https://ghost6.inflozo.com` + the two keys | ghost6 is **Connected**, and a project linked to it opens. |
 | 3 | `https://app.inflozo.com/projects/<P>` | Editor | Press **Ship it**. | — | The wizard opens. The button reads **Next**, not Run checks, and the steps read **Destination · Safety net · Check · Ship · Live**. |
-| 4 | same | Safety net | Press **Next**. | — | A wider card: "One more step unlocks a safety net". The sentence "It is a full-Administrator credential…" is in dark text, there is a token box with the picture beside it and "Stored encrypted, and only ever sent to ghost6.inflozo.com.", **Back** on the left, and **Add token** and **Not now** the same size. |
+| 4 | same | Safety net | Press **Next**. | — | A wider card: "One more step unlocks a safety net". The sentence "It is a full-Administrator credential…" is in dark text, there is a token box with your screenshot beside it (the Staff access token box outlined in red) and "Stored encrypted, and only ever sent to ghost6.inflozo.com.", **Back** on the left, and **Add token** and **Not now** the same size. |
 | 5 | same | Safety net | Press **Back**, then **Next** again. | — | Back to the first step, then Safety net again. |
 | 6 | same | Safety net | Type in the box and press **Add token**. | `hello` | "That doesn't look like a Staff Access Token — copy the whole thing…" under the box. |
 | 7 | same | Safety net | Replace it with this made-up token and press **Add token**. | `aaaaaaaaaaaaaaaaaaaaaaaa:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` | "Adding…", then Question 3's "Ghost doesn't recognise this token…" under the box. |
@@ -484,8 +486,8 @@ code (Verification).
 
 ## Questions for the owner
 
-All three are open, and Dev waits for all three. The spec is planned at option 1 of each ("Ruled values" in Design
-Notes).
+Questions 1–3 were ruled on 2026-10-20, each option 1 (R-278, R-279, R-280); none is open. "Ruled values" in Design
+Notes holds what they set.
 
 ### Question 1 — After "Not now", where does Inflozo stop asking?
 
@@ -504,7 +506,9 @@ Field Notes, and ship there for the first time. Should Inflozo offer the safety 
    on Orbit Weekly.
 3. **Once per account.** One Not now, and Inflozo never asks on any site.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-278.** *"Once per site. Each site's first deploy asks once. A Not now on Orbit
+Weekly never silences Field Notes, which asks once on its own. Orbit Weekly is never asked again, by any project, even
+after a disconnect and reconnect."*
 
 ### Question 2 — The picture beside the token box
 
@@ -523,7 +527,10 @@ button, the token itself blurred out, so a customer sees exactly where to look.
 3. **No picture.** The slot shows the path in words instead: "Ghost Admin → your avatar → Your profile → Staff Access
    Token."
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-279.** *"You take one screenshot on ghost6.inflozo.com: your avatar → Your
+profile → the Staff access token box, with the token blurred or cut off."* He saved it at
+`_bmad-output/planning-artifacts/user-provided-assets/Staff-access-token-screen.png`. It is 570×650, Ghost 6's dark
+profile sheet with the box outlined in red and the token blurred.
 
 ### Question 3 — When a pasted token cannot do the job
 
@@ -547,7 +554,8 @@ integration's Admin API key by mistake: it looks just like a token.
 3. **Don't ask** (as Manage keys does today). Any token that looks right is kept, and a wrong one shows up later on the
    routes card.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-280.** *"Ask Ghost first, keep nothing that fails, one sentence per cause.
+This applies in Safety net and in Manage keys alike."*
 
 ## Verification
 
