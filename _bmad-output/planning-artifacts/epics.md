@@ -9728,6 +9728,10 @@ first promote that way and reproduced a 74-second hold in a probe (DW-352)
 Firefox and WebKit too, not Chromium alone: `mode.spec.mjs`' dark built-ins page, or a reduced form of it (one pin, one
 picture, the computed `content` and the centre pixel), outside `deploy`'s `needs` as the render matrix is (DW-357, from
 Story 7.11's Review, 2026-10-14)
+**And** *(given an owner by Story 7.18c's Review, 2026-10-20)* the lock route's page-id statements run through the route
+itself on a real stack — a first acquire, a page's beat, its leave, then that page's late beat changing nothing — where today
+only the production lock walk sends them through PostgREST (DW-387); and the lock walk's early stops (Hand over, the matrix's
+Heartbeat, DW-240 (a)'s held reload) stop failing intermittently against production (DW-382)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 
@@ -9753,6 +9757,8 @@ case** (UX-DR21)
 (UX-DR12, UX-DR21)
 **And** any mass rebaseline requires **the owner's approval on a sampled visual review** — one design per
 category, both modes — landing as its own commit touching baselines only and naming the change that caused it.
+**And** *(given an owner by Story 7.18c's Review, 2026-10-20)* the screen-reader pass decides whether the save panel's sentence
+— Retrying's, Signed out's and Can't sync's alike — joins the polite region, and is said again when its cause changes (DW-384)
 
 **Owner test:** yes (the sampled visual review, if a rebaseline is needed).
 
@@ -9814,6 +9820,13 @@ included quotas
 **and no user content, no Ghost credentials and no `codeinjection_*`, ever**.
 **And** a failed scheduled job reaches a person: the account purge (which answers 500 when an account failed) and the site-health cron report each failure to Sentry as an error with an alert the owner receives, never only a red line in Vercel's log (DW-46).
 
+**And** *(given an owner by Story 7.18c's Review, 2026-10-20)* a save the platform refuses for good outside the sync route's
+own answers — a 413 for a body over the request limit — is no Retrying for ever: it is decided which such statuses are a
+refusal no retry cures, in the owner's words if a new sentence is needed (DW-383)
+**And** *(the same)* an editor left open on a deleted project stops asking the lock route each heartbeat, whose insert is
+refused and logged as a 502 every 15 s (DW-385)
+**And** *(the same)* a first opener whose save goes out before its first lock answer and meets the sync route's 423 never
+rewrites the shared on-device record its holder keeps — the journal emptied in memory, as `land()` does (DW-386)
 **Owner test:** none. · **Verification:** a real restore drill on the production project (R-82).
 
 ### Story 15.6: G1 and G2, measured rather than asserted

@@ -66,7 +66,8 @@ export const countPatch = (unsynced: unknown): { unsynced_edits?: number } =>
 /* DW-307 (Story 7.18c): A LEAVE MATCHES ITS OWN PAGE, no longer the beat it last heard. The heard beat, its shape check
  * and its forward-move test are gone: the leave filters on `page_id` (the id every call carries, `lock-client.ts`'
  * `pageId()`) and marks it `page_left`, and the forward-move guard is `heartbeat_at > leaveStamp(now)` inside the statement
- * (`lock/route.ts`; the RLS gate's 7.18c block runs every ordering). A heard-beat filter missed whenever a beat was still
+ * (`lock/route.ts`; the RLS gate's 7.18c block runs every ordering of a beat and a leave, and the one
+ * three-event ordering that still misses, `lock/route.ts`' ponytail). A heard-beat filter missed whenever a beat was still
  * in flight as the page went, and the other window then waited ~60 s. */
 
 /** DW-244: WHEN A SESSION THAT DOES NOT HOLD THE LOCK SHOULD ASK AGAIN, beyond the heartbeat. A live row that goes stale

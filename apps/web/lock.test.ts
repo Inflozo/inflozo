@@ -271,6 +271,9 @@ test('DW-240: a going holder\'s `leave` keeps the row its own for the grace and 
   assert.ok(LEAVE_GRACE_MS < HEARTBEAT_MS && LEAVE_GRACE_MS < NUDGE_MS)
   // the grace is the ruled default's figure, pinned: changing it is a decision, never a drift (addendum's table)
   assert.equal(LEAVE_GRACE_MS, 10_000)
+  // …and the stale threshold beside it: the RLS gate's 7.18c block writes `leaveStamp(now)` as `now() - 50 s`, which is
+  // these two, so moving either is a red test here before it is a gate testing a stamp the route no longer writes (the review)
+  assert.equal(STALE_MS - LEAVE_GRACE_MS, 50_000)
 })
 
 test('DW-244: a session that does not hold the lock polls once more at a live row\'s staleness edge — and never otherwise', () => {
@@ -291,7 +294,7 @@ test('DW-240: a beat that carries no count leaves the stored one standing — a 
 })
 
 /* DW-307 (Story 7.18c): THE ROUTE'S TWO STATEMENTS, READ FROM ITS SOURCE — `editor.test.ts`'s route-order precedent. What they
-   DO is executed in Postgres, every ordering, by the RLS gate's 7.18c block (P's beat then leave → 1; leave then beat → 0; leave
+   DO is executed in Postgres, every ordering of a beat and a leave, by the RLS gate's 7.18c block (P's beat then leave → 1; leave then beat → 0; leave
    then Q's beat → 1; Q's beat then P's leave → 0; a leave over a row older than its stamp → 0); this holds that the route
    sends exactly those statements. */
 const ROUTE = readFileSync('app/(app)/app/(authed)/projects/[id]/lock/route.ts', 'utf8')
@@ -317,9 +320,12 @@ test('DW-307: a beat names its page and is refused by a row its own page has lef
   assert.match(beat, /\.update\(\{ heartbeat_at: stamp\(\), \.\.\.count, \.\.\.mark \}\)/)
   assert.match(beat, /page === null \? mine : mine\.or\(`page_left\.is\.false,page_id\.neq\.\$\{page\}`\)/, 'a page-less beat (an old tab) works as before')
   assert.match(ROUTE, /const mark = page === null \? \{\} : \{ page_id: page, page_left: false \}/)
-  // `page_left` is outside the INSERT grant (the RLS gate's 42501), so the insert names the page alone
-  assert.match(ROUTE, /\.insert\(\{ [^}]*\.\.\.\(page === null \? \{\} : \{ page_id: page \}\) \}\)/)
-  assert.equal((ROUTE.match(/\.\.\.mark,\n/g) ?? []).length, 2, 'the take-over and the stale CAS')
+  // `page_left` is outside the INSERT grant (the RLS gate's 42501), so the insert names the page alone — the whole object
+  // read, so a `page_left` slipped in anywhere is a red test, never a 502 on every first acquire (the review)
+  assert.match(ROUTE, /\.insert\(\{ project_id: projectId, user_id: user\.id, holder_session_id: session, heartbeat_at: stamp\(\), unsynced_edits: count\.unsynced_edits \?\? 0, \.\.\.\(page === null \? \{\} : \{ page_id: page \}\) \}\)/)
+  // the take-over and the stale CAS, each in its own statement
+  assert.match(between("if (intent === 'takeover' && held !== null)", "if (intent === 'beat')"), /\.\.\.mark,\n/, 'the take-over')
+  assert.match(between('const there = await read()', "\n}\n"), /nudge_requested_at: null,\n\s*\.\.\.mark,\n\s*\}\)\n\s*\.eq\('project_id', projectId\)\n\s*\.eq\('lock_generation', row\.generation\)/, 'the stale CAS')
 })
 
 test('DW-307: the page is a UUID before it reaches the beat\'s filter string, and a leave without one is refused', () => {

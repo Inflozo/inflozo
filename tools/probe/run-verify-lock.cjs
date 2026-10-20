@@ -23,7 +23,8 @@
  *   Story 6.3: the reader's Style Pack list opens (a view) with every cell greyed and unclickable, beside the holder's live one
  *   Story 5.24e, last: a reload keeps the lock with the other session reading inside its gap, and a late leave changes
  *   nothing (DW-240) · a tab going with an edit owed and a slow flush keeps the lock for it (DW-244) · Story 7.18c: a
- *   tab that goes with its beat in flight frees the lock within the grace and one poll (DW-307) · Sign out sends
+ *   tab that goes with its beat in flight frees the lock within the grace and one poll, after a same-run control whose
+ *   leave matches nothing waits for the row to go stale, and a beat from the page that left revives nothing (DW-307) · Sign out sends
  *   the owed edit and erases this browser's copy (R-214)
  *
  * EVERY EXPECTATION IS DERIVED FROM THE APP'S OWN MODULES (`apps/web/lib/lock.ts`'s `LOCK_COPY` and its constants),
@@ -925,19 +926,27 @@ async function main() {
     // navigates away. Before this story the leave was filtered on the heard beat and matched nothing, so the row stayed fresh
     // and the other session, polling on its own, waited for it to go stale (~60 s, R-228's ceiling). Now the leave names its
     // page and matches it whichever landed first, and the other session holds within the grace and one poll.
-    // THE CONTROL is this same stop run against production BEFORE the Dev push lands, where the wait is ~60 s: the bug shown,
-    // then gone (the spec's Verification). The going page comes back to the editor afterwards, as a reader, for R-214. AFTER
-    // DW-244, so that stop runs in the state it always ran in.
-    // both sessions in the editor first: DW-244's going tab is left on Projects, and a session that is not in the editor
-    // never polls, so it could never take the lock however soon the row went stale (the second run at the Dev, 2026-10-20)
-    for (const p of [A, B]) if (!new URL(p.url()).pathname.endsWith(`/projects/${P}`)) await p.goto(editor, { waitUntil: 'load' })
-    const flight = await whoHolds()
-    if (flight === null) check('DW-307 — fixture: one of the two sessions holds the lock', false)
-    else {
+    // THE CONTROL RUNS FIRST, IN THE SAME RUN (Story 7.18c's Review: the Dev's "same stop before the Dev push" was void three
+    // times, and once Dev deployed it could never run again): the same stop with the leave's page taken out, so the route
+    // answers 400 and nothing matches — the row stays fresh and the other session must NOT hold within the grace and one poll,
+    // only once the row goes stale. That is DW-307's ~60 s shown on the real stack, so the stop can tell the two apart.
+    // Between the leave and the tab going, the going page beats once more on purpose — the refusing half of the beat's
+    // PostgREST `or` (`page_left.is.false,page_id.neq.<page>`), which no other stop reaches: a page that has left revives
+    // nothing. The going page comes back to the editor afterwards, as a reader, for R-214. AFTER DW-244, so that stop runs in
+    // the state it always ran in.
+    const flightStop = async (pageless) => {
+      const name = pageless ? 'DW-307 control (a leave with no page)' : 'DW-307'
+      // both sessions in the editor first: DW-244's going tab is left on Projects, and a session that is not in the editor
+      // never polls, so it could never take the lock however soon the row went stale (the second run at the Dev, 2026-10-20)
+      for (const p of [A, B]) if (!new URL(p.url()).pathname.endsWith(`/projects/${P}`)) await p.goto(editor, { waitUntil: 'load' })
+      const flight = await whoHolds()
+      if (flight === null) return check(`${name} — fixture: one of the two sessions holds the lock`, false)
       const { H, R, rTab } = flight
+      const hTab = await tabOf(H)
       let beatLanded = null
       let fetchError = null
       let fetchMs = null
+      let beatAt = null
       let releaseBeat = () => {}
       const beatGate = new Promise((done) => { releaseBeat = done })
       const leaves = []
@@ -948,42 +957,89 @@ async function main() {
           const sentAt = Date.now()
           const answer = await route.fetch().catch((e) => { fetchError = String(e?.message ?? e).split('\n')[0]; return null })
           fetchMs = Date.now() - sentAt
+          beatAt = Date.now()
           beatLanded = answer === null ? 'unsent' : answer.status()
           // its ANSWER held: the page never hears the beat it sent, as a close inside a beat's round trip never does
           await beatGate
           await route.fulfill(answer ? { response: answer } : { status: 204 }).catch(() => {})
           return
         }
-        if (isLockCall(route.request()) && (call.intent === 'leave' || call.intent === 'release')) leaves.push(call)
+        if (isLockCall(route.request()) && (call.intent === 'leave' || call.intent === 'release')) {
+          leaves.push(call)
+          // the control: the same leave, its page taken out — the route's 400, a leave that can match nothing
+          if (pageless) return route.continue({ postData: JSON.stringify({ ...call, page: undefined }) }).catch(() => {})
+        }
         await route.continue().catch(() => {})
       }
+      // when the other session's own lock calls were answered, and what they said (the reader's poll, its edge poll, its gain)
+      const heard = []
+      const listen = async (r) => {
+        if (!isLockCall(r.request())) return
+        const body = await r.json().catch(() => null)
+        heard.push({ at: Date.now(), intent: callOf(r.request()).intent, status: r.status(), held: body?.held ?? null, ageMs: body?.row?.ageMs ?? null })
+      }
+      R.on('response', listen)
       await H.route('**/projects/*/lock', inFlight)
       for (const by = Date.now() + LOCK.HEARTBEAT_MS + 5000; (beatLanded === null || beatLanded === 'sent') && Date.now() < by;) await H.waitForTimeout(100)
-      const leaveAnswered = H.waitForResponse((r) => isLockCall(r.request()) && ['leave', 'release'].includes(callOf(r.request()).intent), { timeout: 8000 }).then((r) => r.status(), () => null)
+      const leaveAnswered = H.waitForResponse((r) => isLockCall(r.request()) && ['leave', 'release'].includes(callOf(r.request()).intent), { timeout: 8000 })
+        .then(async (r) => { const body = await r.json().catch(() => null); return { status: r.status(), won: body?.won ?? null, ageMs: body?.row?.ageMs ?? null } }, () => ({ status: null, won: null, ageMs: null }))
+      const leftAt = Date.now()
       await H.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: false })))
-      const leaveStatus = await leaveAnswered
+      const leave = { ...(await leaveAnswered), ms: Date.now() - leftAt }
       const goneAt = Date.now()
+      const left = leaves.find((c) => c.intent === 'leave' && typeof c.page === 'string')
+      // the going page beats once more, from the page that left: the route's refusing half — the row must stay as the leave left it
+      const late = pageless || !left ? null : await H.evaluate(async ({ url, session, page }) => {
+        const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'beat', session, page, unsynced: 0 }) })
+        return { status: r.status, ageMs: (await r.json().catch(() => null))?.row?.ageMs ?? null }
+      }, { url: `${PREFIX}/projects/${P}/lock`, session: hTab, page: left.page }).catch((e) => ({ status: null, error: String(e?.message ?? e).split('\n')[0] }))
       // the tab goes at once — its real `pagehide` may send a second leave, which changes nothing a first one did not
       await H.goto(at('/projects'), { waitUntil: 'commit' })
       releaseBeat()
-      // the other session's own polling, untouched: when does it hold?
+      // the other session's own polling, untouched: when does it hold? Read from the going tab's Projects page, which never
+      // reloads — the other session reloads the moment it gains (`hydrate`), and a read through it is blind while it does
+      const bound = LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS + 3000
       let taken
+      let freeBy = null
       for (const by = goneAt + LOCK.STALE_MS + LOCK.HEARTBEAT_MS + 10000; Date.now() < by; await new Promise((r) => setTimeout(r, 500))) {
-        taken = await rowNow(R)
+        taken = (await rowNow(H)) ?? (await rowNow(R))
+        if (pageless && freeBy === null && Date.now() - goneAt > bound) freeBy = taken ? held(taken) : 'unread'
         if (taken && taken.holderSessionId === rTab) break
       }
       const waited = Date.now() - goneAt
+      R.off('response', listen)
       await H.unroute('**/projects/*/lock', inFlight)
-      const control = beatLanded === 200 && leaves.length > 0 && leaveStatus === 200
-      check('DW-307 — control: the holder\'s beat reached the server and its answer was held, then the page\'s own leave was sent and answered, and the tab went',
-        control, JSON.stringify({ beatLanded, fetchMs, fetchError, leaves: leaves.map((c) => ({ intent: c.intent, page: typeof c.page === 'string', beat: typeof c.beat === 'string' })), leaveStatus }))
-      record('DW-307 — the tab gone → the other session holding', `${waited} ms (the grace and one poll: ${LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS} ms; stale: ${LOCK.STALE_MS} ms)`)
-      check(`DW-307 — a close with its beat in flight frees the lock within the grace and one poll (${LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS} ms), never the ~${LOCK.STALE_MS / 1000} s a stale row takes`,
-        control && !!taken && taken.holderSessionId === rTab && waited <= LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS + 3000,
-        (control ? '' : 'control not met — ') + JSON.stringify({ waitedMs: waited, row: taken && held(taken) }))
+      // the real stop's leave must MATCH (`won`): the row it answers is the one it backdated
+      const met = beatLanded === 200 && left !== undefined && (pageless ? leave.status === 400 : leave.status === 200 && leave.won === true)
+      check(`${name} — fixture: the holder's beat reached the server and its answer was held, then the page's own leave (naming its page) was sent and answered ${pageless ? '400 with its page taken out' : '200, matching the row'}, and the tab went`,
+        met, JSON.stringify({ beatLanded, fetchMs, fetchError, beatBeforeGoneMs: beatAt === null ? null : goneAt - beatAt, leaves: leaves.map((c) => ({ intent: c.intent, page: typeof c.page === 'string' })), leave }))
+      record(`${name} — the tab gone → the other session holding`, `${waited} ms (the grace and one poll: ${LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS} ms; stale: ${LOCK.STALE_MS} ms)`)
+      record(`${name} — the other session's lock answers after the leave`, JSON.stringify(heard.filter((h) => h.at >= goneAt - 1000).map((h) => ({ ...h, at: h.at - goneAt }))))
+      if (pageless) {
+        // standing rule 2: the control must show what the stop is about — a leave that cannot match keeps the lock from the
+        // other session past the grace and one poll, and the row then goes stale on its own
+        // "only once stale": the row's age when the other session took it, from its last answer that did not hold (its own
+        // server-measured age, carried forward to the answer that did) — the held beat's own landing, never the leave's
+        // moment, is what it ages from, and the two can be seconds apart
+        const gain = heard.find((h) => h.held === true && h.at >= goneAt)
+        const before = gain === undefined ? undefined : heard.filter((h) => h.held === false && typeof h.ageMs === 'number' && h.at < gain.at).at(-1)
+        const ageAtGain = gain === undefined || before === undefined ? null : before.ageMs + (gain.at - before.at)
+        check(`${name} — the bug shown: with nothing matched the other session does NOT hold within the grace and one poll (${bound} ms), only once the row has gone stale on its own`,
+          met && freeBy !== null && freeBy !== 'unread' && freeBy.holder !== rTab && !!taken && taken.holderSessionId === rTab && ageAtGain !== null && ageAtGain >= LOCK.STALE_MS - 1000,
+          JSON.stringify({ atTheBound: freeBy, waitedMs: waited, ageAtGainMs: ageAtGain }))
+      } else {
+        check('DW-307 — the refusing half of the beat\'s `or`, on the real stack: a beat from the page that LEFT revives nothing — the row stays as its leave backdated it',
+          met && late?.status === 200 && typeof late.ageMs === 'number' && late.ageMs >= LOCK.STALE_MS - LOCK.LEAVE_GRACE_MS - 2000 && typeof leave.ageMs === 'number' && leave.ageMs >= LOCK.STALE_MS - LOCK.LEAVE_GRACE_MS - 2000,
+          JSON.stringify({ leave, late }))
+        check(`DW-307 — a close with its beat in flight frees the lock within the grace and one poll (${LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS} ms), never the ~${LOCK.STALE_MS / 1000} s a stale row takes`,
+          met && !!taken && taken.holderSessionId === rTab && waited <= bound,
+          (met ? '' : 'fixture not met — ') + JSON.stringify({ waitedMs: waited, row: taken && held(taken) }))
+      }
       // back to the editor, reading along, for the stops below
       await H.goto(editor, { waitUntil: 'load' })
     }
+    await flightStop(true)
+    await flightStop(false)
 
     // ── R-214: SIGNING OUT SENDS WHAT THIS BROWSER STILL OWES, ERASES ITS COPY, AND ONLY THEN SIGNS OUT ──
     // The holder makes one edit with its every flush refused, so the edit is owed in this browser alone; a second tab of

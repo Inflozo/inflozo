@@ -5045,8 +5045,9 @@ Story 5.24e's Dev, Question 2, ruled **option 1** (owner, 2026-10-02): *"1. Acce
 - **Closed (Story 7.18c's Dev, 2026-10-20).** DW-307 is built: `edit_locks` gained `page_id` and `page_left` (the `Schema`
   push, applied to production on the owner's go), every lock call names its page, and a leave matches its own page in
   either order of landing — so a close with its check-in in flight frees the lock within the grace and one poll, as a
-  close does at any other moment, and a reload still keeps it. The RLS gate runs every ordering (MEASUREMENTS §87); the
-  lock walk's DW-307 stop is its deployed proof. The ceiling this ruling accepted is gone; the `ponytail:` beside
+  close does at any other moment, and a reload still keeps it. The RLS gate runs every ordering of a beat and a leave (MEASUREMENTS §87); the
+  lock walk's DW-307 stop is its deployed proof — green at the Review beside a same-run control (§87 (c)). One three-event
+  ordering still misses once and heals on the next beat (§87 (d), the route's ponytail). The ceiling this ruling accepted is gone; the `ponytail:` beside
   `leaving` now says what holds, and the addendum's Leave grace row carries the dated note.
 
 **R-229 — a link inside a post's body takes the pack's link look too.** Story 6.1's Create, Question 1, ruled

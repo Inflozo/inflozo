@@ -2849,7 +2849,7 @@ reset role;
 set role authenticated;
 set request.jwt.claim.sub = '77777777-718c-0000-0000-000000000001';
 
--- (2) every ordering, each statement's row_count asserted — and (3) the control, HEAD's heard-beat leave.
+-- (2) every ordering of a beat and a leave, each statement's row_count asserted — and (3) the control, HEAD's heard-beat leave.
 do $$
 declare n int; L constant uuid := 'cccccccc-718c-0000-0000-000000000001';
         stamp constant timestamptz := now() - interval '50 seconds'; hb timestamptz; pid text; gone boolean;
@@ -2863,9 +2863,25 @@ begin
   exception when insufficient_privilege then
     raise notice 'PASS (7.18c): page_left is not settable at INSERT (42501)';
   end;
-  -- an acquire's first row names its page (INSERT grant)
+  -- the length check: a page id is 1–64 characters, so neither an empty one nor a 65-character one is stored (23514) —
+  -- each tried on the tenant's own project, where the INSERT grant holds, so the refusal can only be the check's
+  begin
+    insert into public.edit_locks(project_id,user_id,holder_session_id,page_id)
+      values (L,'77777777-718c-0000-0000-000000000001','S','');
+    raise exception 'FAIL (7.18c): an empty page_id was stored';
+  exception when check_violation then null;
+  end;
+  begin
+    insert into public.edit_locks(project_id,user_id,holder_session_id,page_id)
+      values (L,'77777777-718c-0000-0000-000000000001','S',repeat('p', 65));
+    raise exception 'FAIL (7.18c): a 65-character page_id was stored';
+  exception when check_violation then null;
+  end;
+  raise notice 'PASS (7.18c): page_id is refused empty and at 65 characters (23514)';
+  -- an acquire's first row names its page (INSERT grant) — 64 characters is inside the check
   insert into public.edit_locks(project_id,user_id,holder_session_id,heartbeat_at,page_id)
-    values (L,'77777777-718c-0000-0000-000000000001','S',now() - interval '5 seconds','P');
+    values (L,'77777777-718c-0000-0000-000000000001','S',now() - interval '5 seconds',repeat('p', 64));
+  update public.edit_locks set page_id = 'P' where project_id = L;
 
   -- (3) THE CONTROL FIRST: P heard the beat 5 s ago; its next beat is in flight and lands; then HEAD's leave, filtered on
   -- the beat it heard, matches nothing — the other window would wait ~60 s. That is DW-307, reproduced on this fixture.
@@ -2932,6 +2948,38 @@ begin
   end if;
   raise notice 'PASS (7.18c): a leave over a row already older than the stamp changes 0 rows';
 
+  -- (2f) THE ONE THREE-EVENT ORDERING THAT STILL MISSES (the review of 7.18c; `lock/route.ts`' ponytail): P leaves, its
+  -- reload Q beats, and only then P's in-flight beat lands — page_left is false, so it matches and names P again; Q's
+  -- leave before its own next beat then matches nothing. Asserted as it is, and then the self-heal: Q's next beat names
+  -- Q again, and Q's leave matches.
+  update public.edit_locks set heartbeat_at = now() - interval '5 seconds', page_id = 'P', page_left = false where project_id = L;
+  update public.edit_locks set heartbeat_at = stamp, page_left = true
+   where project_id = L and holder_session_id = 'S' and page_id = 'P' and page_left = false and heartbeat_at > stamp;
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'FAIL (7.18c): (2f) P''s leave changed % rows (expected 1)', n; end if;
+  update public.edit_locks set heartbeat_at = now(), page_id = 'Q', page_left = false
+   where project_id = L and holder_session_id = 'S' and (page_left = false or page_id <> 'Q');
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'FAIL (7.18c): (2f) Q''s beat changed % rows (expected 1)', n; end if;
+  update public.edit_locks set heartbeat_at = now(), page_id = 'P', page_left = false
+   where project_id = L and holder_session_id = 'S' and (page_left = false or page_id <> 'P');
+  get diagnostics n = row_count;
+  select page_id into strict pid from public.edit_locks where project_id = L;
+  if n <> 1 or pid <> 'P' then raise exception 'FAIL (7.18c): (2f) P''s late beat after Q''s changed % rows, page % — the limit is not as the route says', n, pid; end if;
+  update public.edit_locks set heartbeat_at = stamp, page_left = true
+   where project_id = L and holder_session_id = 'S' and page_id = 'Q' and page_left = false and heartbeat_at > stamp;
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'FAIL (7.18c): (2f) Q''s leave over P''s late beat changed % rows (expected 0, the limit)', n; end if;
+  update public.edit_locks set heartbeat_at = now(), page_id = 'Q', page_left = false
+   where project_id = L and holder_session_id = 'S' and (page_left = false or page_id <> 'Q');
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'FAIL (7.18c): (2f) Q''s next beat changed % rows (expected 1, the self-heal)', n; end if;
+  update public.edit_locks set heartbeat_at = stamp, page_left = true
+   where project_id = L and holder_session_id = 'S' and page_id = 'Q' and page_left = false and heartbeat_at > stamp;
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'FAIL (7.18c): (2f) Q''s leave after its own next beat changed % rows (expected 1)', n; end if;
+  raise notice 'PASS (7.18c): (2f) P''s beat landing after Q''s names P again and Q''s leave then misses (the known limit); Q''s next beat names Q, and its leave matches';
+
   -- (4) another tenant's lock: both statements, aimed at it with its own session and page, reach nothing (RLS).
   update public.edit_locks set heartbeat_at = now(), page_id = 'theirs-p', page_left = false
    where project_id = 'dddddddd-718c-0000-0000-000000000002' and holder_session_id = 'theirs-s'
@@ -2949,15 +2997,18 @@ end $$;
 reset role;
 set request.jwt.claim.sub = '';
 
+-- read INTO STRICT: a missing row is no_data_found, never three nulls that `or` to null and raise nothing (the review)
 do $$
+declare pid text; gone boolean; hb timestamptz;
 begin
-  if (select page_left from public.edit_locks where project_id = 'dddddddd-718c-0000-0000-000000000002')
-     or (select page_id from public.edit_locks where project_id = 'dddddddd-718c-0000-0000-000000000002') <> 'theirs-p'
-     or (select heartbeat_at from public.edit_locks where project_id = 'dddddddd-718c-0000-0000-000000000002')
-        < now() - interval '1 minute' then
+  select page_id, page_left, heartbeat_at into strict pid, gone, hb
+    from public.edit_locks where project_id = 'dddddddd-718c-0000-0000-000000000002';
+  if gone or pid is distinct from 'theirs-p' or hb < now() - interval '1 minute' then
     raise exception 'FAIL (7.18c): another tenant''s lock was changed';
   end if;
   raise notice 'PASS (7.18c): the other tenant''s lock is as its own session wrote it';
+exception when no_data_found then
+  raise exception 'FAIL (7.18c): another tenant''s lock is gone';
 end $$;
 
 delete from auth.users where id in ('77777777-718c-0000-0000-000000000001',

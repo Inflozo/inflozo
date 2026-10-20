@@ -12641,8 +12641,8 @@ async function main() {
        steps 1–5's names, so a cut copy can run steps 1–5 and this alone. Every sentence is `REFUSED_COPY`'s or `LOCK_COPY`'s
        (R-170), and the glyph is read out of `tabler.json` (step 61's `glyph58`, derived here as its own).
        (a) DW-304: the project is deleted from a second page of the same browser; the editor's ⌘S then meets the sync route's 404
-           — Can't sync, the *gone* sentence, Tabler `x`, Go to Projects and no Retry now — and NOTHING is sent for six seconds,
-           longer than the backoff's first wait, where HEAD's Retrying retried for ever.
+           — Can't sync, the *gone* sentence, Tabler `x`, Go to Projects and no Retry now — and NOTHING is sent for longer than
+           the backoff's first wait (`BACKOFF_S[0]`), where HEAD's Retrying retried for ever.
        (b) DW-308: two pages of one context; B opens first, its lock calls held (`route`, then let through), and paints editable;
            A opens and holds; B types one edit on its optimistic first paint — then B's first acquire meets A's live row: B reads along, says
            `LOCK_COPY.displaced(1)` assertively and in B5a's sentence slot, and sends nothing (the revision unmoved). A, the
@@ -12750,13 +12750,18 @@ async function main() {
         await pa.waitForTimeout((J115.BACKOFF_S[0] + 1) * 1000)
         const still115 = await shown115(pa)
         check('step 115a — the backoff STOPPED: no request for longer than its first wait, and still Can\'t sync', syncs115.length === quiet115 && still115.state === R115.title, `${syncs115.length - quiet115} requests, ${still115.state}`)
+        // 115b's project is seeded FIRST, so E still has one: an account with none is sent on from Projects to `/start` (the
+        // app's own rule — the Review's first run met it), and the list then shows a row, the control that it was read
+        const nameB115 = `Walk 115 B ${stamp}`
+        const R115b = (await seed({ email: emailE, name: nameB115 }))?.id ?? null
+        if (!UUID.test(R115b ?? '')) throw new Error('step 115: project B is missing')
         await pa.locator('#editor-go-projects').click()
         const projects115 = await pa.waitForURL((u) => u.pathname.replace(/\/$/, '') === PREFIX, { timeout: 30000 }).then(() => true, () => false)
-        check(`step 115a — "${R115.projects}" opens Projects in this tab, without the deleted project`, projects115 && (await pa.locator(`button[aria-label="Options for ${nameT115}"]`).count()) === 0, pa.url().replace(/\?.*$/, ''))
+        const listed115 = await pa.locator(`button[aria-label="Options for ${nameB115}"]`).waitFor({ timeout: 30000 }).then(() => true, () => false)
+        check(`step 115a — "${R115.projects}" opens Projects in this tab, listing E's other project and not the deleted one`,
+          projects115 && listed115 && (await pa.locator(`button[aria-label="Options for ${nameT115}"]`).count()) === 0, pa.url().replace(/\?.*$/, ''))
 
         // ── 115b — DW-308: B typed on its optimistic first paint; its first acquire, held, then meets A's live row ──
-        const R115b = (await seed({ email: emailE, name: `Walk 115 B ${stamp}` }))?.id ?? null
-        if (!UUID.test(R115b ?? '')) throw new Error('step 115: project B is missing')
         // B FIRST, on a project no session holds yet — so its server render draws no live row and B paints EDITABLE, the
         // optimistic first paint DW-308 is about (opened after A, B's own render would see A's row and read along from the start)
         const pB = await context115()

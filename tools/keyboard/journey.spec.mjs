@@ -6358,6 +6358,133 @@ test('7.18c · R-275 in fallback: with no copy on this device, a refusal is Can\
   }
 })
 
+test('7.18c · R-275 (the review): an Undo that lands while the save it would cure is still out is sent the moment that save is refused — never left unsent under "Undo it"', async ({ page }) => {
+  await open(page)
+  const { page: own } = await rows(page)
+  let release
+  const out = new Promise((r) => (release = r))
+  const sent = []
+  await page.route('**/sync', async (route) => {
+    sent.push(Date.now())
+    if (sent.length === 1) {
+      await out
+      return route.fulfill({ status: 422, body: 'refused' })
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ applied: true, revision: 1 }) })
+  })
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(page)).toHaveText('Saved on this device')
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+s')
+  await expect.poll(() => sent.length, 'the save is out').toBe(1)
+  // the Undo, while that save is still out: one request at a time, so nothing sends it yet
+  await page.keyboard.press('ControlOrMeta+z')
+  await page.waitForTimeout(500)
+  expect(sent.length, 'the Undo waits: a save is already out').toBe(1)
+  // the save is refused (a 422, *change*): the Undo goes up at once, unasked, and its 200 rests green
+  release()
+  await expect(saveState(page), 'the Undo was sent and landed').toHaveText('Synced', { timeout: 3000 })
+  expect(sent.length, 'exactly one more request: the Undo').toBe(2)
+  await expect(page.locator('#editor-refused')).toHaveCount(0)
+})
+
+test('7.18c · R-275 (the review): no clock re-sends a refused save — autosave\'s tick sends an owed edit (the control), and sends nothing while Can\'t sync holds, gone or change', async ({ page }) => {
+  // autosave on (the harness opens with it off), and the page's clock the test's to move
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-autosave': 'on' })
+  await page.clock.install()
+  await open(page)
+  const { page: own } = await rows(page)
+  let status = 404
+  const sent = []
+  await page.route('**/sync', (route) => {
+    sent.push(status)
+    return route.fulfill({ status, body: 'refused' })
+  })
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(page)).toHaveText('Saved on this device')
+  // THE CONTROL: the tick itself sends the owed edit — and meets the route's 404
+  await page.clock.fastForward(JOURNAL.FLUSH_MS + 1000)
+  await expect.poll(() => sent.length, 'the timer sent the owed edit').toBe(1)
+  await expect(saveState(page)).toHaveText(JOURNAL.REFUSED_COPY.title)
+  await expect(page.locator('#editor-refused')).toContainText(JOURNAL.REFUSED_COPY.gone)
+  // gone: the next tick sends nothing
+  await page.clock.fastForward(JOURNAL.FLUSH_MS + 1000)
+  await page.waitForTimeout(1000)
+  expect(sent.length, 'gone: no tick sends it again').toBe(1)
+  // change: a visit back meets a 422 — and the next tick sends nothing either
+  status = 422
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+  await expect.poll(() => sent.length, 'the visit back asked once').toBe(2)
+  await expect(page.locator('#editor-refused')).toContainText(JOURNAL.REFUSED_COPY.change)
+  await page.clock.fastForward(JOURNAL.FLUSH_MS + 1000)
+  await page.waitForTimeout(1000)
+  expect(sent.length, 'change: no tick sends it again').toBe(2)
+  await expect(saveState(page)).toHaveText(JOURNAL.REFUSED_COPY.title)
+})
+
+test('7.18c · R-275 (the review): taken over from while Can\'t sync — read-only, and the indicator leaves Can\'t sync, never telling a reader to Undo', async ({ page }) => {
+  // DW-241's lock route: the holder's own row, then taken over by another session at the next generation
+  let taken = false
+  const row = (holder, generation) => ({ holderSessionId: holder, generation, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null })
+  await page.route('**/lock', (route) => {
+    const { session } = JSON.parse(route.request().postData() ?? '{}')
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(taken ? { row: row('another-session', 2), held: false, won: false } : { row: row(session, 1), held: true, won: true }),
+    })
+  })
+  await page.route('**/sync', (route) => route.fulfill({ status: 422, body: 'refused' }))
+  await open(page)
+  await expect.poll(() => page.evaluate(() => document.getElementById('editor-lock-bar') === null)).toBe(true)
+  await select(page, (await rows(page)).page[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+s')
+  await expect(saveState(page), 'the control: refused for good').toHaveText(JOURNAL.REFUSED_COPY.title)
+  await expect(page.locator('#editor-refused')).toContainText(JOURNAL.REFUSED_COPY.change)
+  taken = true
+  await page.evaluate((id) => new BroadcastChannel(`inflozo-lock-${id}`).postMessage('took-over'), HARNESS_PROJECT_ID)
+  await expect(page.locator('#editor-lock-bar')).toBeVisible()
+  await expect(saveState(page), 'a session taken over from owes nothing: Can\'t sync is over').toHaveText('Synced')
+  await expect(page.locator('#editor-refused')).toHaveCount(0)
+})
+
+test('7.18c · R-275 (the review): a device that lets go of its copy WHILE Can\'t sync keeps the panel and its sentence — the refusal still stands', async ({ context }) => {
+  const a = await context.newPage()
+  await open(a)
+  const { page: own } = await rows(a)
+  const sent = []
+  await a.route('**/sync', (route) => {
+    sent.push(Date.now())
+    return route.fulfill({ status: 404, body: 'refused' })
+  })
+  await select(a, own[0])
+  await a.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(a)).toHaveText('Saved on this device')
+  await a.locator('section[aria-label="Canvas"]').focus()
+  await a.keyboard.press('ControlOrMeta+s')
+  await expect(saveState(a)).toHaveText(JOURNAL.REFUSED_COPY.title)
+  // R-214's erase, from a second tab of this browser: the editor's `versionchange` lets go of its copy (FR-D10)
+  const b = await context.newPage()
+  await b.goto('/app/harness/error')
+  await b.evaluate(() => new Promise((done) => {
+    const erase = indexedDB.deleteDatabase('inflozo-doc-harness')
+    erase.onsuccess = erase.onerror = () => done(null)
+  }))
+  await a.waitForTimeout(500)
+  await expect(saveState(a), 'still Can\'t sync — never "Syncing every change to the cloud" over a refusal that stands').toHaveText(JOURNAL.REFUSED_COPY.title)
+  await expect(a.locator('#editor-refused')).toContainText(JOURNAL.REFUSED_COPY.gone)
+  // THE CONTROL that the device let go: in fallback every edit goes straight up — in *gone* with a copy, none would
+  const edited = sent.length
+  await select(a, own[0])
+  await a.keyboard.press('ControlOrMeta+d')
+  await expect.poll(() => sent.length, 'fallback: the edit itself went up').toBe(edited + 1)
+  await expect(saveState(a)).toHaveText(JOURNAL.REFUSED_COPY.title)
+})
+
 test('R-227 (Story 5.24e): signed out while this device holds no copy — after a sign-out in another tab erased it — the panel says the work is only in this tab, never R-213\'s "safe on this device"', async ({ context }) => {
   const a = await context.newPage()
   await open(a)
@@ -6841,6 +6968,103 @@ test('DW-308 (Story 7.18c): a first opener that typed before its first answer an
     expect(syncs, `${arm}: nothing was sent`).toEqual([])
     await context.close()
   }
+})
+
+test('DW-308 (the review of 7.18c): what a first opener is told is what THIS PAGE typed — a reload that adopted an edit this device already held, then typed one more, is told 1, never the record\'s leftover too', async ({ browser }) => {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  // the first load holds the lock; the reload's lock calls are HELD until it has typed, then answered with another session's row
+  let phase = 'held'
+  let release
+  const gate = new Promise((r) => (release = r))
+  const asked = []
+  const row = (holder) => ({ holderSessionId: holder, generation: 1, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null })
+  await page.route((url) => /\/projects\/[^/]+\/lock$/.test(url.pathname), async (route) => {
+    const body = route.request().postDataJSON()
+    if (phase === 'held') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ row: row(body.session), held: true, won: true }) }).catch(() => {})
+    asked.push(body.intent)
+    await gate
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ row: row('another-session'), held: false, won: false }) }).catch(() => {})
+  })
+  // nothing goes up: the first load's edit stays owed on this device, for the reload to adopt
+  await page.route('**/sync', (route) => route.abort())
+  await open(page)
+  await expect(saveState(page)).toHaveText('Synced')
+  await select(page, (await rows(page)).page[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(page)).toHaveText('Saved on this device')
+  await expect.poll(async () => JSON.parse(await record(page)).entries.length, 'one edit owed on this device').toBe(1)
+  phase = 'gated'
+  await open(page)
+  await expect.poll(() => asked.includes('acquire'), 'the reload\'s first acquire left, and is held').toBe(true)
+  await expect(saveState(page), 'the reload adopted the edit this device held').toHaveText('Saved on this device')
+  await expect(page.locator('#editor-lock-bar'), 'and paints editable').toHaveCount(0)
+  // one more edit, typed in the reload's first moment
+  await select(page, (await rows(page)).page[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => JSON.parse(await record(page)).entries.length, 'two on this device now').toBe(2)
+  release()
+  await expect(page.locator('#editor-lock-bar'), 'a reader now').toBeVisible()
+  await expect(page.locator('#editor-announced'), 'told what THIS page typed: one, not the adopted leftover too').toHaveText(LOCK.LOCK_COPY.displaced(1))
+  await expect(page.locator('#editor-lock-reason')).toHaveText(LOCK.LOCK_COPY.displaced(1))
+  await context.close()
+})
+
+test('DW-308 (the review of 7.18c): a first opener answered with another session\'s row WHILE this device\'s copy is still opening adopts nothing — the hydrate asks again after its read, so a reader never draws the record\'s owed work', async ({ browser }) => {
+  const context = await browser.newContext()
+  const page = await context.newPage()
+  // this device's database opens only when the test says so, on a load that asks for it (`hold-open` in this tab's storage)
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('hold-open') !== '1') return
+    let let_go
+    const held = new Promise((r) => (let_go = r))
+    window.__openNow = () => let_go()
+    const real = IDBFactory.prototype.open
+    IDBFactory.prototype.open = function (...args) {
+      const late = {}
+      void held.then(() => {
+        const request = real.apply(this, args)
+        Object.defineProperty(late, 'result', { get: () => request.result })
+        Object.defineProperty(late, 'error', { get: () => request.error })
+        request.onupgradeneeded = (e) => late.onupgradeneeded?.(e)
+        request.onsuccess = (e) => late.onsuccess?.(e)
+        request.onerror = (e) => late.onerror?.(e)
+        request.onblocked = (e) => late.onblocked?.(e)
+      })
+      return late
+    }
+  })
+  let foreign = false
+  const row = (holder) => ({ holderSessionId: holder, generation: 1, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null })
+  await page.route((url) => /\/projects\/[^/]+\/lock$/.test(url.pathname), (route) => {
+    const body = route.request().postDataJSON()
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(foreign ? { row: row('another-session'), held: false, won: false } : { row: row(body.session), held: true, won: true }) }).catch(() => {})
+  })
+  await page.route('**/sync', (route) => route.abort())
+  // the first load holds, and leaves one edit owed on this device
+  await open(page)
+  await expect(saveState(page)).toHaveText('Synced')
+  await select(page, (await rows(page)).page[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(page)).toHaveText('Saved on this device')
+  await expect.poll(async () => JSON.parse(await record(page)).entries.length, 'one edit owed on this device').toBe(1)
+  const before = await record(page)
+  // the next load: its device copy held shut, and its first answer another session's row
+  foreign = true
+  await page.evaluate(() => sessionStorage.setItem('hold-open', '1'))
+  // not `open`: the canvas's first paint waits for the hydrate (Story 5.18), which is what is held here
+  await page.goto(HARNESS)
+  await expect(page.locator('#editor-lock-bar'), 'a reader, answered while its copy was still opening').toBeVisible()
+  await expect(page.locator('#editor-save-state [role="status"]'), 'the control: not hydrated yet — the indicator waits for the device').toHaveCount(0)
+  await page.evaluate(() => window.__openNow())
+  await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first(), 'the hydrate settled and the canvas painted').toBeVisible()
+  await expect(saveState(page), 'it adopted nothing: no owed work drawn on a reader').toHaveText('Synced')
+  await page.waitForTimeout(1000)
+  await expect(saveState(page)).toHaveText('Synced')
+  await expect(page.locator('#editor-lock-reason'), 'nothing typed here, nothing displaced').toHaveText(LOCK.LOCK_COPY.reading)
+  await page.evaluate(() => sessionStorage.removeItem('hold-open'))
+  expect(await record(page), 'and the record on this device untouched').toBe(before)
+  await context.close()
 })
 
 test('DW-248 (Story 5.24e): the title search at Ghost is the posts list\'s alone — a term typed in the pill on the Post canvas asks once, on the Tag canvas nothing', async ({ page }) => {

@@ -8363,3 +8363,40 @@ The walk's stop runs at the Review, after the Dev deploy, where it must hold wit
 **What this does NOT say.** PostgREST's spelling of the beat's `or` filter (`page_left.is.false,page_id.neq.<page>`) is
 executed only by the walk on the real stack (DW-240 (a) and (b) and the DW-307 stop); the gate runs the SQL it stands for.
 
+**(c) The Review (2026-10-20, the main session, on the owner's in-session go for up to three runs of each walk).**
+The Dev's control — the same stop BEFORE the Dev push — could never run once Dev deployed, so the stop now carries its own,
+in the same run: the same stop with the leave's page taken out (the route's 400, a leave that can match nothing), where
+the other session must NOT hold within the grace and one poll, only once the row has gone stale on its own. Between the
+real stop's leave and the tab going, the going page beats once more from the page that left — the REFUSING half of the
+`or`, which nothing else reaches. Against `app.inflozo.com` at the Dev head `d8bf78bd` (`dpl_AAPUStVpTGZoVoiDbWT3ETBB8qM8`),
+from a detached worktree at that commit, the stop as a `tools/probe-debug/` copy of the patched walk:
+
+    run 1  (the Dev's stop, unpatched) 2 FAIL, 90 PASS — DW-307: 31424 ms, over the bound (25000 + 3000); the walk then
+           recorded neither the leave's `won` nor the reader's answers, so the cause is not known. Also "…and B,
+           unanswered, reads the ruled sentence with the ROW's count" (an early stop, DW-382)
+    run 2  (patched, a wrong control criterion) — the real stop PASS: the leave answered 200 won:true at ageMs 50083, the
+           late beat from the page that left left the row at 50767 ms (not revived), the other session held at 14892 ms;
+           the control showed the bug (not held at the bound; held at 50412 ms) but its check asked "waited > 55 s" from
+           the leave's ANSWER, which in the control arrives ~10 s after the held beat landed — fixed to the row's age at
+           the gain. DW-240 (a)'s control not met (the going page's leave never landed, inGap ageMs 9284: DW-382), and
+           a HARNESS ERROR at R-214's `goto` after the stop
+    run 3  0 FAIL, 95 PASS — control: leave 400 (answered in 10003 ms), not held at the bound, held at 51055 ms with the
+           row 60211 ms old (stale on its own); the real stop: beat landed 655 ms before the tab went, leave 200 won:true
+           at ageMs 50064 (563 ms), the late beat from the page that left 200 at ageMs 50638 (nothing revived), the other
+           session holding at 11158 ms; R-214 and every early stop PASS; no fixture leaked (16 before · 16 after)
+
+So DW-307 is closed on the real stack: a close with its beat in flight frees the lock within the grace and one poll, the
+leave matches its own page, and a beat from a page that left changes nothing through PostgREST — each beside a control
+that shows the ~60 s the bug cost. What still runs only on production, never in CI, is DW-387's.
+
+**(d) One three-event ordering still misses, and closes by itself** (the Review; `lock/route.ts`' ponytail): P leaves, its
+reload Q beats, and only then P's in-flight beat lands — `page_left` is false again, so it matches and names P; Q's leave
+before its own next beat then matches nothing (that one close waits ~60 s, R-228's old ceiling), and Q's next beat names Q
+again. It needs P's beat to outlast a whole reload. The gate's 7.18c block asserts it as it is, and the self-heal:
+
+    NOTICE:  PASS (7.18c): (2f) P's beat landing after Q's names P again and Q's leave then misses (the known limit); Q's next beat names Q, and its leave matches
+
+with the block's length check (`page_id` refused empty and at 65 characters, 23514) and the other tenant's row now read
+`into strict` — with that row deleted first (a scratch copy of both byte-identical files), the gate exits 3 at "another
+tenant's lock is gone", where three null subqueries joined by `or` raised nothing.
+

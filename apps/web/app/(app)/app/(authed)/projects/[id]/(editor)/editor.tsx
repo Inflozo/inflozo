@@ -2151,6 +2151,10 @@ function EditorShell({
         stopRetrying()
         attempt.current = 0
         setSync({ kind: 'refused', why: refused.current })
+        // …AND AN EDIT THAT LANDED WHILE THIS REQUEST WAS OUT may be the very Undo that cures *change*: nothing sent it (a
+        // flush in flight sends nothing, and `store` sends at once only once the refusal is known), so it goes now, once
+        // this attempt's `finally` has let go (the review, 2026-10-20). The same refusal again moves no stamp: no loop
+        if (refused.current === 'change' && latest.current.journal.stamp !== sentStamp) queueMicrotask(() => void flush('change'))
         return
       }
       if (!answer.ok) throw new Error(`HTTP ${answer.status}`)
@@ -4471,6 +4475,12 @@ function EditorShell({
           // refuses is no record, and the server's is kept — never one every later save is refused for (Review, 2026-10-16)
           const heldCards = held.cards === undefined ? null : await parseStoredCards(held.cards)
           if (!alive) return
+          // DW-308: and asked once more after this await — the adopt below is the last place a reader could come to hold the
+          // record's work (the review of 7.18c)
+          if (!latest.current.lock.holder) {
+            settle(true)
+            return
+          }
           const keptCards = hydratedCards(how, heldCards === null || typeof heldCards === 'string' ? null : { cards: heldCards }, storedCards)
           const wasLook = packOf(storedPreset, storedOwnPacks)
           latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library), preset: keptPreset, packs: keptPacks, cards: keptCards }
@@ -4525,7 +4535,9 @@ function EditorShell({
     const tick = setInterval(() => {
       // the matrix's own row: nothing unsynced means NO REQUEST AT ALL, and the indicator does not move. `flush`
       // asks `flushDecision` the same question, so this is the cheap guard and not a second rule.
-      if (unsynced(latest.current.journal)) void flush('timer')
+      // R-275 (the review of 7.18c): and no tick while Can't sync holds — a refusal no retry cures is not re-sent by a
+      // clock; an edit (for *change*) or a visit back to the tab (for both) is what asks again
+      if (unsynced(latest.current.journal) && refused.current === null) void flush('timer')
     }, FLUSH_MS)
     return () => clearInterval(tick)
   }, [hydrated, autosave])

@@ -138,6 +138,7 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  *
  * STORY 7.18c — two more: `sites-failed`, `full` with its sites unread (`sites: null`, DW-381 — the picker's R-276 sentence),
  * and `sites-failed-unlinked`, the same on a project with no site (Choose a site still offered, so the sentence is reachable).
+ * Its review adds `x-inflozo-harness-autosave: on`: autosave on, so the timer's tick is a journey's to see (R-275's no-tick).
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -267,7 +268,8 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     revision: 0,
     // IndexedDB is per ORIGIN, so the harness names its own database and never collides with a real session's
     userId: 'harness',
-    autosave: false,
+    // the review of 7.18c: `x-inflozo-harness-autosave: on` turns the 3-minute timer on, so a journey can prove what it sends
+    autosave: asked.get('x-inflozo-harness-autosave') === 'on',
     links: linkResources(),
     timezone: orbitWeekly.site().timezone,
     plan: 'free',

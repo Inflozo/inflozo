@@ -2,7 +2,7 @@
 title: 'Story 7.18c — The editor''s lock and save leftovers'
 type: 'bugfix'
 created: '2026-10-20'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '6095de06ede01b2b1617f59e3f24ca2ea00647ca'
 owner_test: pending
 review_loop_iteration: 0
@@ -298,6 +298,34 @@ implementation subagent (the owner's go of 2026-10-20 covers the apply and one l
   sentence in its slot; the picker's sentence 7.18b's picker, set as its lead.
 - Given the migration withheld, when the RLS gate runs, then the 7.18c block aborts at its first check.
 
+### Review Findings
+
+Five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor as subagents; the Real-infra verifier in
+the main session, on the owner's in-session go). 1 decision for the owner, 15 patches (all applied), 5 deferred, 11 dismissed.
+
+- [ ] [Review][Decision] One sentence for a failed sites read — the Sites page's own and R-276's picker sentence say one
+  failure two ways (R-170). Question 3.
+- [x] [Review][Patch] An Undo landing while a refused save is out was never sent [`(editor)/editor.tsx` `flush`'s refused branch]
+- [x] [Review][Patch] Autosave's 3-minute tick re-sent a refused save in both causes [`(editor)/editor.tsx` the timer effect]
+- [x] [Review][Patch] The hydrate's second "still holder?" came before its last await [`(editor)/editor.tsx` the hydrate]
+- [x] [Review][Patch] The lock walk's DW-307 stop had no control left to run [`tools/probe/run-verify-lock.cjs` `flightStop`]
+- [x] [Review][Patch] The beat's refusing `or` half ran nowhere on the real stack [`tools/probe/run-verify-lock.cjs`]
+- [x] [Review][Patch] The stop counted any leave, and logged a `beat` field the client no longer sends [`tools/probe/run-verify-lock.cjs`]
+- [x] [Review][Patch] Walk step 115a expected Projects for an account left with no project (the app sends it to `/start`) [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Patch] "Every ordering" overclaimed: P's late beat after Q's names P again [`lock/route.ts` header · `supabase/tests/rls.sql` (2f)]
+- [x] [Review][Patch] The other tenant's final check passed with the row missing [`supabase/tests/rls.sql` · `RLS-TEST.sql`]
+- [x] [Review][Patch] The length check was claimed, never exercised [`supabase/tests/rls.sql` · `RLS-TEST.sql`]
+- [x] [Review][Patch] The insert check's `[^}]*` let a `page_left` through; `...mark` counted, not placed; `STALE_MS` unpinned [`apps/web/lock.test.ts`]
+- [x] [Review][Patch] No journey for: a take-over while Can't sync, a fall-back while Can't sync, `adoptedUpTo`, the hydrate's second ask [`tools/keyboard/journey.spec.mjs`]
+- [x] [Review][Patch] DW-307's resolution claimed a red-then-green walk that never ran [`deferred-work.md`]
+- [x] [Review][Patch] A restated "four journeys" missed two [`epic-7-context.md`]
+- [x] [Review][Patch] Step 115's comment restated "six seconds" [`tools/probe/run-verify-editor.cjs`]
+- [x] [Review][Defer] A 413 (or any status outside 404/400/422) still Retrying for ever [`lib/journal.ts` `refusalOf`] — deferred, pre-existing (DW-383, Story 15.5)
+- [x] [Review][Defer] The save panel's sentence is never said to a screen reader [`components/editor/save-state.tsx`] — deferred, pre-existing (DW-384, Story 15.2)
+- [x] [Review][Defer] An editor open on a deleted project polls the lock route into a 502 every heartbeat [`lock/route.ts`] — deferred, pre-existing (DW-385, Story 15.5)
+- [x] [Review][Defer] The sync route's 423 path can reset the holder's on-device record in DW-308's window [`(editor)/editor.tsx` `flush`] — deferred, pre-existing (DW-386, Story 15.5)
+- [x] [Review][Defer] The lock route's page-id statements run nowhere in CI [`lock/route.ts`] — deferred, pre-existing (DW-387, Story 15.1)
+
 ## Spec Change Log
 
 **Dev (2026-10-20) — readings and departures, each a routine call told in one line (none changes what a surface does):**
@@ -326,6 +354,47 @@ implementation subagent (the owner's go of 2026-10-20 covers the apply and one l
   dated note that the page id closed it — so the standing-rule-7 grep still finds those two names there and nowhere live.
   Retrying's own sentence ("…when the connection returns") is unchanged: a dropped connection does return.
 
+**Review (2026-10-20) — five layers, then production in the main session; every patch a routine call that makes the frozen
+intent true where it was not, none changing what a surface is meant to do. One finding is the owner's: Question 3.**
+- **The Undo that cures *change* is never left unsent.** An edit that landed while a save was out sent nothing (one request at a
+  time, and `store` sends at once only once the refusal is known), so an Undo made in that moment sat under "Undo it" until
+  the next edit. Now a *change* refusal whose journal moved since the request left sends again the moment it lets go; the
+  same refusal again moves no stamp, so it cannot loop.
+- **No clock re-sends a refused save.** Autosave's 3-minute tick still sent while Can't sync held, in both causes — against
+  AC 1's "no retry runs" and the comments' "only a visit back tries again". The tick now skips while it holds; an edit
+  (*change*) and a visit back (both) still ask. The harness gained `x-inflozo-harness-autosave: on` to show it.
+- **The hydrate asks "still holder?" after its last await too** (`parseStoredCards`), where the adopt follows — the Dev's ask
+  sat one await early.
+- **The lock walk's DW-307 stop got a control it can run**: the same stop with a leave that cannot match (its page taken out,
+  the route's 400), which must NOT free the lock within the grace and one poll — the ~60 s the bug cost, shown on the real
+  stack in the same run. The stop also requires a leave naming its page that MATCHED (`won`), reads the row from the going
+  tab's Projects page (the other session reloads the moment it gains), and beats once from the page that left — the `or`'s
+  refusing half, which nothing reached on the real stack.
+- **Walk step 115a** seeds E's other project before Go to Projects: an account left with no project is sent on to `/start`
+  (the app's own rule; the Review's first run met it), so the list it lands on is the control.
+- **One three-event ordering still misses** — P leaves, Q beats, then P's in-flight beat lands and names P again; Q's leave
+  before its next beat then misses (~60 s, once) and Q's next beat heals it. Named as a `ponytail:` beside the route's
+  statements and asserted as it is by the RLS block's (2f); the "every ordering" claims now say which.
+- **Checks that could not fail:** the other tenant's final check is read `into strict` (three null subqueries passed it with
+  the row gone); the length check is exercised (empty and 65 characters, 23514); `lock.test.ts` reads the whole insert
+  object, places `...mark` in the take-over and the stale CAS, and pins `STALE_MS - LEAVE_GRACE_MS` to the block's 50 s.
+- **New journeys, each red against the code without what it holds:** the in-flight Undo; the tick's silence (with its control,
+  the tick that does send an owed edit); a take-over while Can't sync (the indicator leaves it); a fall-back while Can't sync
+  (the panel stays — every edit then goes up, the control); a reload that adopted an owed edit and typed one more is told 1;
+  an answer landing while this device's copy is still opening adopts nothing.
+- **Owner's manual test step 6** says what an alias with no other project sees (the New project screen).
+- **Deferred, each with an owner on its card** (`deferred-work.md`, `epics.md`): DW-383 (a 413 still Retrying, 15.5), DW-384
+  (the panel's sentence never said to a screen reader, 15.2), DW-385 (a deleted project's editor polling into 502s, 15.5),
+  DW-386 (the sync route's 423 path resetting the holder's record in DW-308's window, 15.5), DW-387 (the lock route's
+  statements in CI, 15.1); DW-382 re-owned to 15.1 with the Review's runs.
+- **Dismissed after reading the code:** 400 as *change* (R-275's table; every 400 the route answers is a body the editor's own
+  client cannot send); no control on *change*, and fallback's *change* naming no tab (both ruled — the matrix's Fallback
+  row); a deleted project's record kept on the device (the matrix: "the journal is kept"); the DW-308 branch reaching a
+  holder whose row vanished, and counting only this page's typing (the Dev's change log and Design Notes); a first answer
+  with no row (unreachable: an acquire answers its row or a 502); the wizard's `?? W.editsUnsent` (the type needs it);
+  `deploy.test.ts`' source regexes (the journeys execute the same); *gone*'s other-account cause on production (the owner's
+  test, steps 8–10); a `page_left` row in the F3 audit (F3 lists server-asserted columns; the 7.18c block asserts the grant).
+
 ## Design Notes
 
 **Ruled values — the one table the two questions set.** Dev builds this table; a different ruling changes it and nothing
@@ -347,7 +416,7 @@ state in the same red panel, and Retrying keeps meaning "the connection, and it 
 that cannot pass is the false sentence DW-304 is about. *gone* still tries once on a visit back to the tab, because
 signing back in to the right account cures it (the cookie jar is shared — R-213's executed fact).
 
-**The lock's page id, every ordering** (P is the going page, Q its reload, both with the tab's one session `S`):
+**The lock's page id, every ordering of a beat and a leave** (P is the going page, Q its reload, both with the tab's one session `S`):
 
 ```
 beat/acquire(X):  set heartbeat_at = now, page_id = X, page_left = false
@@ -392,7 +461,7 @@ machine proves each (Verification).
 | 3 | `https://app.inflozo.com/` | Projects (tab 2) | Open a second tab here. On **Throwaway 7.18c** press ⋯ → **Delete**, type its name and confirm. | `Throwaway 7.18c` | It leaves the list. |
 | 4 | `https://app.inflozo.com/projects/<A>` | Editor (tab 1) | Press ⌘K, add any design, then press ⌘S. Hover the save icon. | — | The icon turns red with an ✕, and hovering says **Can't sync**. A red panel opens under it: "Your changes can't reach this project: it was deleted, or this browser is now signed in to another account." and **Go to Projects**. There is no countdown. |
 | 5 | same | Editor (tab 1) | Wait one minute. | — | Still **Can't sync**; it never says "Retrying". |
-| 6 | same | Editor (tab 1) | Press **Go to Projects**. | — | Projects, without Throwaway 7.18c. |
+| 6 | same | Editor (tab 1) | Press **Go to Projects**. | — | Projects, without Throwaway 7.18c. (If the alias has no other project, Inflozo goes on to the New project screen instead — that is right too.) |
 | 7 | `https://app.inflozo.com/` | Projects (tab 1) | **New project** → **Blank canvas**, create. In its editor add any design and press ⌘S. | `Account 7.18c` | Project **B**; the icon is the green check. |
 | 8 | any page (tab 2) | Account menu | Sign out. Sign in as **your own account** in tab 2 and open its link. | `umngkmr@gmail.com` | Your own Projects in tab 2. |
 | 9 | `https://app.inflozo.com/projects/<B>` | Editor (tab 1) | Click tab 1 and add another design. | — | The icon turns red: **Can't sync**, with step 4's sentence. |
@@ -403,8 +472,8 @@ machine proves each (Verification).
 
 ## Questions for the owner
 
-Questions 1 and 2 were ruled on 2026-10-20, each option 1 (R-275, R-276); none is open. "Ruled values" in Design Notes
-holds what they set.
+Questions 1 and 2 were ruled on 2026-10-20, each option 1 (R-275, R-276). "Ruled values" in Design Notes holds what they
+set. Question 3, raised at the Review, is open.
 
 ### Question 1 — When Inflozo can never save your work, what does the save message say?
 
@@ -450,6 +519,24 @@ Sites".
 **Ruled: option 1 (owner, 2026-10-20) — R-276.** *"A sentence in place of the list: "Your connected sites couldn't be
 loaded just now. Reload the page to try again." Go to Sites and Back stay. On a project with no site, Choose a site still
 shows, so the sentence is reachable there too."*
+
+### Question 3 — The same failure has two sentences. Should they be one?
+
+**In plain English.** When Inflozo cannot load your connected sites, two places now say so, in different words. The Sites
+page (since before this story) says one sentence; the deploy wizard's site list (your Question 2 ruling) says another. Your
+rule is one name for one thing (R-170). Changing the Sites page is outside what you ruled, so it is yours to say.
+
+**An example.** A database hiccup while you work. On **Sites** you read "We couldn't load your sites just now. Try again in
+a moment." In the editor, Ship it → **Switch** reads "Your connected sites couldn't be loaded just now. Reload the page to
+try again."
+
+1. **(RECOMMENDED) One sentence, yours from Question 2, in both places.** The Sites page also says "Your connected sites
+   couldn't be loaded just now. Reload the page to try again." — reloading works there too. One line of words, read by both.
+2. **Keep both as they are.** Each page keeps its own sentence.
+3. **One sentence, the Sites page's, in both places.** The wizard says "We couldn't load your sites just now. Try again in a
+   moment." instead.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -571,3 +658,47 @@ each with its own throwaway account made and deleted through `SUPABASE_URL` + `S
   (`char_length` 1–64), `page_left` boolean not null default false with its comment, `authenticated` holding
   INSERT(`page_id`), UPDATE(`page_id`), UPDATE(`page_left`) (and the table-wide SELECT), the same 5 rows, none carrying a
   page or `page_left`.
+
+**Executed — Review (2026-10-20, the main session, Node 24.18.1; four review layers as subagents, every production call here,
+on the owner's in-session go — "1. Go, up to 3 runs each"):**
+- **CI on the Dev head `d8bf78bd`** (`GITHUB_TOKEN`, read in-process): CI `check`, `rls`, `deploy` success; Render matrix
+  success. **Vercel** (`VERCEL_TOKEN` / `VERCEL_TEAM_ID`): `dpl_AAPUStVpTGZoVoiDbWT3ETBB8qM8` READY at `d8bf78bd`.
+- **Production's schema (R-99), read only through `SUPABASE_DB_POOLER_URL`** (read in-process, nothing printed): `page_id` text
+  nullable, no default, its comment, `edit_locks_page_id_check` (`char_length` 1–64); `page_left` boolean not null default
+  false, its comment; `authenticated` holding INSERT(`page_id`), UPDATE(`page_id`), UPDATE(`page_left`); the negative
+  control — `has_column_privilege` false for `authenticated` INSERT on `page_left` and for `anon` UPDATE on `page_id`.
+- **The lock walk** (`run-verify-lock.cjs` from a detached worktree at `d8bf78bd`; runs 2–3 the patched stop as a
+  `tools/probe-debug/` copy; keys read in-process by a scratchpad launcher, never on argv) — three runs, MEASUREMENTS §87 (c):
+  run 1 (the Dev's stop) 2 FAIL, 90 PASS: DW-307 31424 ms over its bound, cause unrecorded by that walk, and one early stop
+  (DW-382); run 2 the real stop PASS (14892 ms, the leave `won`, the late beat left the row at 50767 ms) with the control's
+  criterion wrong (fixed) and DW-240 (a)'s own control unmet (DW-382), then a `goto` timeout at R-214; **run 3 0 FAIL, 95
+  PASS** — the control holding the lock until the row went stale on its own (51055 ms, 60211 ms old at the gain), the real
+  close freeing it in 11158 ms, its leave matched (ageMs 50064), and a beat from the page that left reviving nothing
+  (ageMs 50638); no fixture leaked (16 before · 16 after), every run.
+- **The editor walk** (`run-verify-editor.cjs` from the same worktree): run 1, the whole walk, 0 FAIL, 261 PASS then a HARNESS
+  ERROR (a 30 s paint wait after step 53, before steps 61, 69 and 115 — a hold, not a result); run 2, a cut of steps 1–5 and
+  115, 1 FAIL, 57 PASS — Go to Projects landed on `/start` for an account left with no project (the app's rule; the step
+  re-expected, seeding E's other project first); **run 3, the same cut from the patched walk, 0 FAIL, 58 PASS**: ⌘S on the
+  project deleted from a second page → Can't sync, the hover and live region "Can't sync", Tabler `x`, B6's fill, radius and
+  padding, the *gone* sentence, Go to Projects in this tab, no request for longer than the backoff's first wait, Projects
+  listing the other project and not the deleted one; B opened first, its lock held, typed one edit, then read along told
+  "This session had 1 unsynced edit; they were not included." assertively and in B5a's slot, sent nothing (revision 0 → 0),
+  A the control still editing; zero CSP violations; accounts and projects counted back. Steps 8, 61 and 69 did not run in a
+  Review run (run 1 died before them; the cuts carry steps 1–5 and 115); they read nothing this story changed.
+- **The Review's patches, locally, on the final tree:** `pnpm check` — exit 0 (library 285, ghost-shim 47, section-runtime 441,
+  theme-compiler 220, app 941, each suite's own printed count, 0 failing); a mutation of the insert (a `page_left` slipped
+  in) turns `lock.test.ts` red. `bash supabase/tests/run-rls-gate.sh` — exit 0, no SCHEMA DRIFT, the 7.18c block's PASS lines
+  with the length check and (2f); the control — a scratch copy of both byte-identical files with the other tenant's row
+  deleted first — exits 3 at "another tenant's lock is gone". The six new journeys — 6 passed; **all six FAILED against the
+  code without what each holds, each at its own assertion** ("the Undo was sent and landed", "gone: no tick sends it again",
+  "Can't sync is over", "still Can't sync — never 'Syncing every change to the cloud'", "told what THIS page typed: one",
+  "it adopted nothing"), then the tree restored byte-identical (`cmp`). `pnpm keyboard` (the whole suite, nothing else
+  running) — exit 0, **295 passed** (33.6 min), 0 failed, 0 flaky.
+
+**Real services the Review hit (R-82):** **Supabase production** (the pooler, read only; three lock-walk and three editor-walk
+runs, each with its own throwaway accounts made and deleted through `SUPABASE_URL` + `SUPABASE_SECRET_KEY`); **Vercel**
+(`app.inflozo.com`, deployment `dpl_AAPUStVpTGZoVoiDbWT3ETBB8qM8` at `d8bf78bd`); **GitHub Actions** (read only). No Ghost
+write (R-238): run 1 stopped before steps 113–114, the walk's T1 steps, and the cuts leave them out. The walks ran at the Dev
+head, and the Review's own patches change nothing they press: the resend acts only on *change*, the tick only after three
+minutes of autosave, and the hydrate's later ask is a no-op for a holder — the journeys hold all three. CI and Vercel on the
+Review head follow its push.

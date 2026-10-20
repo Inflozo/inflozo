@@ -8641,6 +8641,10 @@ resolution: Story 7.18c's Dev (2026-10-20), R-275 built — `refusalOf` (`lib/jo
   answers, 401/409/423/5xx/no answer as controls), `deploy.test.ts`, and the keyboard journeys (R-213's loop flipped, a 502
   the control; Run checks and Switch after a 422, an aborted save the control), each first seen red against HEAD's
   behaviour; walk step 115 (a) on production is the Review's.
+  Review (2026-10-20): walk step 115 (a) PASS on production (0 FAIL, 58 PASS, its Go to Projects now landing on a list
+  because the step seeds E's other project first — an account with none is sent on to `/start`); and two holes closed with
+  journeys red against the Dev code first — an Undo landing while a refused save was still out is sent the moment the
+  refusal answers, and autosave's 3-minute tick sends nothing while Can't sync holds (`x-inflozo-harness-autosave: on`).
 
 ### DW-305: on an invite-only site, a section asking people to pay is not warned, though Ghost blocks its sign-up too
 
@@ -8704,9 +8708,13 @@ resolution: Story 7.18c (2026-10-20). Schema 28ce5f6e: `edit_locks.page_id` and 
   row its own page has left, and a leave matches its own page, unleft and later than its stamp, marking it gone — so a
   close with its beat in flight frees the lock within the grace and one poll in either order of landing, and a reload's
   new page keeps the row. The heard-beat filter and its two helpers are gone. Executed in Postgres by the RLS gate's 7.18c
-  block, every ordering with a heard-beat control (MEASUREMENTS §87); `lock.test.ts` reads both statements from the
-  route. R-228's ceiling is closed (its entry carries the note). The lock walk's DW-307 stop — red against production
-  before the Dev push, green after — is the main session's run.
+  block, every ordering of a beat and a leave with a heard-beat control (MEASUREMENTS §87); `lock.test.ts` reads both statements from the
+  route. R-228's ceiling is closed (its entry carries the note). The lock walk's DW-307 stop was never red against
+  production before the Dev push (its three runs there were void, MEASUREMENTS §87 (b)); the Review gave it a same-run
+  control instead — the same stop with a leave that cannot match, which holds the lock until the row goes stale on its own
+  (51055 ms) — and ran it green on production: the real close freed the lock in 11158 ms, its leave matched, and a beat
+  from the page that left revived nothing (§87 (c), run 3: 0 FAIL, 95 PASS). One three-event ordering still misses and
+  closes by itself on the next beat (§87 (d), the route's ponytail).
 
 ### DW-308: a window that types in its first moment and then finds another session editing keeps that typing, unsent and unsaid
 
@@ -8736,6 +8744,11 @@ resolution: Story 7.18c's Dev (2026-10-20) — `land()` tells an optimistic hold
   ceiling left (the record keeps that typing; on another device it returns only if the holder wrote nothing since). Held by
   the keyboard journey (the first acquire held, one edit typed, answered with another session's row; `held: true` the
   control), first seen red against HEAD's behaviour; walk step 115 (b) on production is the Review's.
+  Review (2026-10-20): walk step 115 (b) PASS on production (B, opened first with its lock calls held, typed one edit, then
+  read along told `displaced(1)` and sent nothing; A the control). The hydrate's second ask moved past its last await
+  (`parseStoredCards`), and two journeys hold what no check reached, each red against the code without it: a reload that
+  adopted an owed edit and typed one more is told 1 (`adoptedUpTo`), and an answer landing while this device's copy is
+  still opening adopts nothing. The sync route's 423 path in the same window is older and DW-386's.
 
 ## Deferred from: Story 6.1's Create (2026-10-03)
 
@@ -10434,8 +10447,94 @@ origin: Story 7.18c's Dev (2026-10-20), three runs of `tools/probe/run-verify-lo
   head `28ce5f6e` (HEAD's lock code): run 1 passed every early stop; run 2 failed matrix "Heartbeat" (the beat's count read 0),
   "the reload kept A's UNSYNCED work" and "the second opener wrote NOTHING"; run 3 failed "B gains the lock" (Hand over) and
   then died on a 30 s click timeout on a disabled Layers "More" button (MEASUREMENTS §87 (b)).
-owner: Story 7.18c's Review, which runs the walk after the Dev deploy — if an early stop fails again there, it is read with
-  `editor-harness-timeouts`' method (re-run, both runs recorded; the same line twice is a signal) before the Review closes.
+owner: Story 15.1 (the E2E suite), whose card now carries it (*Story 7.18c's Review until it re-owned it, 2026-10-20*): the
+  walk's opening stops wait on what they read, as the editor walk's did at 5.24d.
+note (Story 7.18c's Review, 2026-10-20): read by `editor-harness-timeouts`' method over three runs at the Dev head `d8bf78bd`
+  (MEASUREMENTS §87 (c)) — never the same line twice: run 1 "…and B, unanswered, reads the ruled sentence with the ROW's
+  count"; run 2 DW-240 (a)'s own control unmet (the going page's leave never landed — the reload's `pagehide` request,
+  which 5.24e's runs met in some runs and missed in others) and a 30 s `goto` timeout at R-214; run 3 0 FAIL, 95 PASS. No
+  product change of 7.18c touches those stops.
 location: `tools/probe/run-verify-lock.cjs` (the opening stops, Hand over)
 reason: no product change of this story touches those stops (run 1 passed them on the same deployment), and the owner's go
   for production runs at the Dev was used up.
+
+## Deferred from: code review of spec-7-18c-the-editor-s-lock-and-save-leftovers (2026-10-20)
+
+### DW-383: a save refused for a reason outside 404, 400 and 422 still says Retrying for ever
+
+plain: If the server refuses a save for a reason Inflozo does not list — the hosting platform turning away a very large save,
+  for one — the save icon still counts down and promises to send it "when the connection returns", and retries for ever.
+status: open
+severity: low
+origin: Story 7.18c's Review (2026-10-20), the Blind Hunter and Edge Case Hunter layers. R-275 maps the sync route's own
+  answers (404 → *gone*; 400, 422 → *change*) and, by the spec's own Always, "everything else → Retrying". A 413 is Vercel's
+  request-body limit (the function never runs), and a 403 or 405 is no answer the route gives; each falls into the backoff.
+owner: Story 15.5 (reliability — alarms and the restore drill), whose card already owns the autosave queue's retry rule: it
+  decides which platform statuses are a refusal for good, and the words, if a new sentence is needed (Ask First).
+location: `apps/web/lib/journal.ts` (`refusalOf`) · `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`
+  (`flush`)
+reason: the route's own statuses were ruled (R-275) and are built; a body over the platform's limit needs a project far
+  larger than any made so far, and a new cause needs the owner's words.
+
+### DW-384: the save panel's sentence is not said to a screen reader
+
+plain: When the save icon turns red, a screen reader hears its name ("Retrying", "Signed out", "Can't sync") but not the
+  sentence under it that says why, nor that the reason changed.
+status: open
+severity: low
+origin: Story 7.18c's Review (2026-10-20), the Blind Hunter layer. The Kit's indicator speaks its label (R-142's text
+  equivalent, the polite region of EXPERIENCE's live-region table); the panel's sentence is visible text outside any live
+  region, for Retrying (B6), Signed out (R-213) and Can't sync (R-275) alike, and a change of cause (*change* → *gone*)
+  changes only that text.
+owner: Story 15.2 (final render-matrix and accessibility sign-off), whose manual screen-reader pass per surface verifies the
+  live-region announcements: it decides whether the panel's sentence joins the polite region, for all three states at once.
+location: `apps/web/components/editor/save-state.tsx` · `apps/web/components/kit/persistence-indicator.tsx`
+reason: the same pattern for all three panels since Story 5.8; changing one alone would make them disagree.
+
+### DW-385: an editor left open on a deleted project asks the lock route every heartbeat, and each is a logged 502
+
+plain: If a project is deleted while its editor is still open in another tab, that tab keeps checking in with the server
+  every 15 seconds for as long as it stays open; each check-in fails quietly and leaves an error in the server's log.
+status: open
+severity: low
+origin: Story 7.18c's Review (2026-10-20), the Blind Hunter layer, read in the code: the deleted project's lock row goes with
+  it (`on delete cascade`), so the holder's beat finds no row and re-polls with `acquire`, whose insert is refused (the
+  project is gone) — `failed()` logs it and answers 502, `askLock` reads null, and nothing changes until the next beat.
+  Older than this story; Can't sync's *gone* is now what that tab shows.
+owner: Story 15.5 (reliability — alarms and the restore drill), whose Sentry and alerting decide what a 502 means: the lock
+  route answers a missing project as the sync route does (404), and the editor stops polling on it.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` (the insert's error) ·
+  `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`poll`)
+reason: no customer sees it — the tab already says Can't sync and Go to Projects — and it ends when the tab closes.
+
+### DW-386: a first opener that saves before its first lock answer can reset the holder's copy in this browser
+
+plain: In the split second after an editor window opens, before the server has said who is editing, pressing ⌘S (or
+  switching tabs) in a window that turns out to be the second one can wipe the unsent changes the first window keeps on
+  this computer.
+status: open
+severity: low
+origin: Story 7.18c's Review (2026-10-20), the Acceptance Auditor layer. DW-308 closed the `land()` path in memory only, but
+  the sync route's 423 path in `flush` still calls `dropJournal()`, which rewrites this browser's shared record to the
+  server's snapshot — reachable only if the optimistic first paint SENDS (⌘S, or a tab switch's `unload` flush) before its
+  first `acquire` answers. Older than this story (Story 5.17's 423 path; 5.24e's review named the race).
+owner: Story 15.5 (reliability — alarms and the restore drill): the 423 path empties the journal in memory when the session
+  never held (`heldGeneration` null), as `land()` now does, and leaves the record to its holder.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`flush`'s 423 branch, `dropJournal`)
+reason: it needs a save inside the first lock round trip (well under a second), in the same browser as a holder with unsent
+  work; the device's record is a convenience copy and the holder's own next save still sends what it holds in memory.
+
+### DW-387: the lock route's two page-id statements run nowhere in CI
+
+plain: The rules that let your other window take over when you close the editing one are proved on the live site and in a
+  database test, but nothing in the automatic checks that run on every push sends them through the real route.
+status: open
+severity: low
+origin: Story 7.18c's Review (2026-10-20), the Verification Gap layer. `lock.test.ts` reads the route's statements from its
+  source, the RLS gate runs the SQL they stand for in Postgres, and the keyboard journeys answer `**/lock` themselves; only
+  the lock walk (`run-verify-lock.cjs`, production) sends them through PostgREST — the Review's run executed both halves of
+  the beat's `or` and the leave's match (MEASUREMENTS §87 (c)). A misspelt filter would pass `pnpm check` and the gate.
+owner: Story 15.1 (the E2E suite), whose suite runs the app against a real stack: one lock journey there — first acquire,
+  a page's beat, its leave, then that page's late beat changing nothing — through the route itself.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` · `apps/web/lock.test.ts` · `supabase/tests/rls.sql`
+reason: CI has no PostgREST in front of the gate's container; the walk is the Review's proof until 15.1's suite exists.

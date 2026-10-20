@@ -39,15 +39,21 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * that page has gone. A beat, the insert, the stale CAS and the take-over write `page_id` (and clear `page_left`); a beat
  * is refused by a row its OWN page has left, so the beat that was still in flight as the page went changes nothing; and a
  * leave matches its own page, not the beat it last heard — so it lands in either order, where a heard-beat leave missed
- * whenever a beat was in flight and the other window waited ~60 s (R-228's ceiling, closed). In SQL, executed in every
- * ordering by the RLS gate's 7.18c block:
+ * whenever a beat was in flight and the other window waited ~60 s (R-228's ceiling, closed). In SQL, executed by the RLS
+ * gate's 7.18c block in each ordering of a beat and a leave, and in the three-event one below:
  *
  *   beat/acquire(X):  set heartbeat_at = now, page_id = X, page_left = false
  *                     where holder = S and (page_left = false or page_id <> X)
  *   leave(P):         set heartbeat_at = leaveStamp(now), page_left = true
  *                     where holder = S and page_id = P and page_left = false and heartbeat_at > leaveStamp(now)
  *
- * A reload's new page keeps the row (`page_id <> X`), and a late leave from the page it replaced matches nothing. A call
+ * A reload's new page keeps the row (`page_id <> X`), and a late leave from the page it replaced matches nothing.
+ * ponytail: ONE THREE-EVENT ORDERING STILL MISSES — P leaves, its reload Q beats (clearing `page_left`), and only THEN P's
+ * in-flight beat lands: `page_left` is false, so it matches and names P again, and if Q closes before its own next beat
+ * (≤ one heartbeat) Q's leave matches nothing and that one close waits ~60 s, R-228's old ceiling. Q's next beat names Q
+ * again, so the window closes by itself (the gate asserts both). It needs P's beat to outlast a whole reload; the upgrade
+ * is a reload naming the page it replaces (kept in `sessionStorage`), so a beat from a replaced page is refused (the
+ * review of 7.18c). A call
  * with no page (a tab open across the deploy) beats as before, and its leave is a 400: that row goes stale in ~60 s, once.
  * The page id is opaque and compared only — a UUID, checked here before it reaches a filter string.
  *
