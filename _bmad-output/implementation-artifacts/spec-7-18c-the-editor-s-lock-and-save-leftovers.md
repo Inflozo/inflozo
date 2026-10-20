@@ -460,19 +460,19 @@ machine proves each (Verification).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+site718@gmail.com` | Projects. |
-| 2 | `https://app.inflozo.com/` | Projects (tab 1) | **New project** → **Blank canvas**, name it, create. | `Throwaway 7.18c` | Its editor opens: project **A**. |
+| 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+site718@gmail.com` | The New project screen (the alias has no project yet; it is on Pro). |
+| 2 | `https://app.inflozo.com/` | New project (tab 1) | Press **New project** in the top bar → **Blank canvas**, name it, create. | `Throwaway 7.18c` | Its editor opens: project **A**. |
 | 3 | `https://app.inflozo.com/` | Projects (tab 2) | Open a second tab here. On **Throwaway 7.18c** press ⋯ → **Delete**, type its name and confirm. | `Throwaway 7.18c` | It leaves the list. |
 | 4 | `https://app.inflozo.com/projects/<A>` | Editor (tab 1) | Press ⌘K, add any design, then press ⌘S. Hover the save icon. | — | The icon turns red with an ✕, and hovering says **Can't sync**. A red panel opens under it: "Your changes can't reach this project: it was deleted, or this browser is now signed in to another account." and **Go to Projects**. There is no countdown. |
-| 5 | same | Editor (tab 1) | Wait one minute. | — | Still **Can't sync**; it never says "Retrying". |
-| 6 | same | Editor (tab 1) | Press **Go to Projects**. | — | Projects, without Throwaway 7.18c. (If the alias has no other project, Inflozo goes on to the New project screen instead — that is right too.) |
-| 7 | `https://app.inflozo.com/` | Projects (tab 1) | **New project** → **Blank canvas**, create. In its editor add any design and press ⌘S. | `Account 7.18c` | Project **B**; the icon is the green check. |
-| 8 | any page (tab 2) | Account menu | Sign out. Sign in as **your own account** in tab 2 and open its link. | `umngkmr@gmail.com` | Your own Projects in tab 2. |
+| 5 | `https://app.inflozo.com/projects/<A>` | Editor (tab 1) | Wait one minute. | — | Still **Can't sync**; it never says "Retrying". |
+| 6 | `https://app.inflozo.com/projects/<A>` | Editor (tab 1) | Press **Go to Projects**. | — | Projects, without Throwaway 7.18c. (If the alias has no other project, Inflozo goes on to the New project screen instead — that is right too.) |
+| 7 | `https://app.inflozo.com/` | New project (tab 1) | Press **New project** in the top bar → **Blank canvas**, create. In its editor add any design and press ⌘S. | `Account 7.18c` | Project **B**; the icon is the green check. |
+| 8 | `https://app.inflozo.com/` in tab 2 | Account menu | Sign out. Sign in as **your own account** in tab 2 and open its link. | `umngkmr@gmail.com` | Your own Projects in tab 2. |
 | 9 | `https://app.inflozo.com/projects/<B>` | Editor (tab 1) | Click tab 1 and add another design. | — | The icon turns red: **Can't sync**, with step 4's sentence. |
-| 10 | any page (tab 2) | Account menu | Sign out, sign in as the alias again, then click back to tab 1. | `umngkmr+site718@gmail.com` | Within a few seconds the icon is the green check again: the work reached project B. |
+| 10 | `https://app.inflozo.com/` in tab 2 | Account menu | Sign out, sign in as the alias again, then click back to tab 1. | `umngkmr+site718@gmail.com` | Within a few seconds the icon is the green check again: the work reached project B. |
 | 11 | `https://app.inflozo.com/projects/<B>` in two **windows** side by side | Editor | Open B in a second window: one window edits, the other reads along. Close the one that edits. Once the other can edit, open B in a new window and close the editing one again — three times in all. | — | Each time, within about 15–25 seconds, the remaining window's reading-along bar goes away and you can edit there. |
-| 12 | same | Editor | With both windows open, press reload in the window that edits. | — | It comes back still editing; the other window keeps reading along. |
-| 13 | `https://app.inflozo.com/` | Projects | Delete **Account 7.18c** (type its name). | `Account 7.18c` | The alias holds only the projects it had before this test. |
+| 12 | `https://app.inflozo.com/projects/<B>` in the same two windows | Editor | With both windows open, press reload in the window that edits. | — | It comes back still editing; the other window keeps reading along. |
+| 13 | `https://app.inflozo.com/` | Projects | Delete **Account 7.18c** (type its name). | `Account 7.18c` | The alias holds no project again, as it did before this test. |
 
 ## Questions for the owner
 
@@ -719,3 +719,14 @@ minutes of autosave, and the hydrate's later ask is a no-op for a holder — the
   R-276 journey over the new wiring — 1 passed. The Sites page's failed read cannot be reached by a hand on production (a database hiccup); the
   test holds the wiring and `connect-rule.test.ts` holds that an unread list is that banner.
 
+**Executed — Deploy (2026-10-20, the main session, Node 24.18.1):**
+- `Deployment: dpl_5YgADvd1pnexWm7W1vvpuzZEVpTM` — READY, production, built from `811fba01` (the head, the last code change:
+  R-277's one sentence), the newest production deployment (Vercel API, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT` read
+  in process, never on argv); `https://app.inflozo.com/sign-in` answers 200. CI at `811fba01` (`GITHUB_TOKEN`): `check` (the whole
+  keyboard gate inside it), `rls` and `deploy` success; the Render matrix success.
+- Schema: `edit_locks.page_id` and `page_left` were applied at the Schema phase and read back there and at the Review (R-99);
+  nothing has touched the schema since, `RLS-TEST.sql` is green in the `rls` job at the head. Nothing to apply at Deploy.
+- The owner's test account (read only, `SUPABASE_URL` and `SUPABASE_SECRET_KEY` read in process): `umngkmr+site718@gmail.com`
+  exists, `entitlements.state` `pro_active`, no project and no connected site — so the test starts on the New project screen and
+  can make A and B. Nothing was written; no Ghost call (T1 untouched, R-238).
+- `owner_test: pending` — the owner's manual test above is next, on `https://app.inflozo.com`.
