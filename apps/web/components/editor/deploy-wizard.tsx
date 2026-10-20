@@ -9,15 +9,17 @@ import { ResultChip, VersionChip } from '@/components/kit/badge'
 import { Button, SplitButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, wideTitle } from '@/components/kit/dialog'
 import { greyedProps, ring } from '@/components/kit/greyed'
-import { AlertCircle, AlertTriangle, Bolt, ChevronDown, ChevronRight, ChevronUp, ExternalLink, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
+import { AlertCircle, AlertTriangle, Bolt, ChevronDown, ChevronRight, ChevronUp, Copy, ExternalLink, Eye, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
+import { TextInput } from '@/components/kit/input'
 import { RadioCard } from '@/components/kit/radio-card'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { BusyLabel, Submit } from '@/components/kit/submit'
 import { RoutesFallback } from '@/components/routes-fallback'
 import {
-  CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, POSTS_CHECKED, seconds, STAGE_NAMES, stepNumber, stepOf, STEPS, themeSize, UNSTOPPABLE, uploadOnlyBlock,
-  versionNumber, type DeployRequest, type DeployView, type Mode, type ShipState, type Stage, type Step, type Timings,
+  CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, POSTS_CHECKED, SAFETY_PICTURE, SAFETY_WORDS as SN, safetyOffered, STAGE_NAMES, stepNumber, stepOf,
+  stepsFor, themeSize, UNSTOPPABLE, uploadOnlyBlock, versionNumber, type DeployRequest, type DeployView, type Mode, type RailStep, type ShipState, type Stage, type Step, type Timings,
 } from '@/lib/deploy'
+import { CONNECT_MAX } from '@/lib/connect-rule'
 import { deployPath, type Canvas } from '@/lib/editor'
 import { preflightWarnings, rowCanvas, type PreflightInput, type PreflightRow } from '@/lib/preflight'
 import { confirmedOf, SWITCH_WORDS as SW, switchPlan, type Confirmed, type SwitchAnswer, type SwitchPlan, type SwitchSite } from '@/lib/site-switch'
@@ -165,10 +167,13 @@ function StageRow({ tone, label, meta, chip, id }: { tone: Tone; label: ReactNod
   )
 }
 
-/** the rail, numbered from `STEPS` (a list 7.19 and 7.20 add to): done steps mint-ticked, the current one coral — or red
- *  where it failed, green once Live — and the rest dimmed; D2e/D2f's Live is not reached (`waiting`) */
-function Rail({ at, state }: { at: Step; state: 'current' | 'failed' | 'live' | 'waiting' }) {
-  const c = stepNumber(at) - 1
+/** the rail, numbered from the steps that show (`stepsFor` — Story 7.19's Safety net on a first deploy that offers it): done
+ *  steps mint-ticked, the current one coral — or red where it failed, green once Live — and the rest dimmed; D2e/D2f's Live is
+ *  not reached (`waiting`). An ANSWERED Safety net stays ticked, back on Destination too (`answered`) */
+function Rail({ at, state, steps, answered = false }: { at: Step; state: 'current' | 'failed' | 'live' | 'waiting'; steps: readonly RailStep[]; answered?: boolean }) {
+  const STEPS = steps
+  const c = stepNumber(at, steps) - 1
+  const long = steps.length > stepsFor(false).length
   const tick = (stroke: string) => (
     <svg aria-hidden width="10" height="10" viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={stroke}>
       <polyline points="20 6 9 17 4 12" />
@@ -177,7 +182,7 @@ function Rail({ at, state }: { at: Step; state: 'current' | 'failed' | 'live' | 
   return (
     <ol className="m-0 flex list-none items-center gap-2 p-0">
       {STEPS.map((s, i) => {
-        const done = i < c || (i === c && state === 'live')
+        const done = i < c || (i === c && state === 'live') || (s.id === 'safety' && answered && i !== c)
         const now = i === c && state !== 'waiting'
         const round = 'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold leading-none'
         const disc =
@@ -193,9 +198,11 @@ function Rail({ at, state }: { at: Step; state: 'current' | 'failed' | 'live' | 
           <li key={s.id} aria-current={i === c ? 'step' : undefined} className={`flex items-center gap-2 ${i < STEPS.length - 1 ? 'flex-1' : ''}`}>
             <span className={`inline-flex shrink-0 items-center gap-[6px] ${!done && !now ? 'opacity-55' : ''}`}>
               {disc}
-              <span className={`text-[11px] leading-none ${words}`}>{s.label}</span>
+              {/* STORY 7.19 (extrapolated — no frame draws the longer rail narrow): below `tablet` a rail longer than an
+                  ordinary deploy's names its current step alone, the others their discs, so the five never run off the card */}
+              <span className={`whitespace-nowrap text-[11px] leading-none ${words} ${long && i !== c ? 'max-tablet:sr-only' : ''}`}>{s.label}</span>
             </span>
-            {i < STEPS.length - 1 ? <span aria-hidden className={`h-px flex-1 ${i < c ? 'bg-mint/40' : 'bg-line'}`} /> : null}
+            {i < STEPS.length - 1 ? <span aria-hidden className={`h-px flex-1 ${long ? 'min-w-[10px]' : ''} ${i < c ? 'bg-mint/40' : 'bg-line'}`} /> : null}
           </li>
         )
       })}
@@ -271,6 +278,10 @@ export function DeployWizard({
   onSwitch,
   onRelink,
   relinking,
+  answered,
+  onAnswered,
+  addToken,
+  decline,
   onClose,
 }: {
   request: ShipRequest
@@ -305,6 +316,15 @@ export function DeployWizard({
   onRelink: (mode: Mode) => void
   /** the editor's re-read after `onRelink` is in flight — a switch's press stays busy until it lands (R-98) */
   relinking: boolean
+  /** STORY 7.19 — the site this page has already answered the Safety net for (Add token or Not now), else null: a reopen in
+   *  the same page never asks again, before the next read of the stored state does the same */
+  answered: string | null
+  /** …and the answer, told to the editor */
+  onAnswered: (siteId: string) => void
+  /** STORY 7.19 — Add token (`addSafetyToken`): ok, or the one sentence for why the token was not kept (R-280) */
+  addToken: (token: string) => Promise<{ ok: true } | { refused: string }>
+  /** STORY 7.19 — Not now (`declineSafetyNet`): recorded on the site, never awaited by the deploy */
+  decline: () => Promise<{ ok: boolean }>
   /** the wizard closed; `shipped` when a job reached its ending, so the bar re-reads its label and versions */
   onClose: (shipped: boolean) => void
 }) {
@@ -338,6 +358,18 @@ export function DeployWizard({
   const route = `${prefix}${deployPath(projectId)}`
   const site = ship?.site ?? null
   const host = site?.host ?? ''
+  /** STORY 7.19 — the first deploy's Safety net (D1b/D1c), FIXED AT MOUNT: offered by the server's truth (`safetyOffered`) unless
+   *  this page already answered it for the site — so a step answered in this mount stays on the rail, ticked, all session */
+  const [safety] = useState(() => safetyOffered(ship) && (site === null || answered !== site.id))
+  const steps = stepsFor(safety)
+  /** …answered in this mount (Add token kept, or Not now): Destination then shows Run checks again (a cancelled job's way back
+   *  included), and the rail keeps Safety net ticked */
+  const [safeAnswered, setSafeAnswered] = useState(false)
+  /** while no job exists: Destination, D1b's offer, or D1c's decline */
+  const [local, setLocal] = useState<'destination' | 'offer' | 'declined'>('destination')
+  const [token, setToken] = useState('')
+  const [tokenRefused, setTokenRefused] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
 
   useEffect(() => {
     alive.current = true
@@ -376,6 +408,7 @@ export function DeployWizard({
     setView(null)
     setPressed(null)
     setPosts(null)
+    setLocal('destination')
   }
 
   // THE READ: once a second while the row moves, or until it has moved past where a press found it.
@@ -404,7 +437,7 @@ export function DeployWizard({
 
   const stage: Stage | null = view === null ? (job === null ? null : 'queued') : view.job.stage
   const timings = view?.job.timings ?? {}
-  const at: Step = stage === null ? 'destination' : stepOf(stage, timings)
+  const at: Step = stage === null ? (local === 'destination' ? 'destination' : 'safety') : stepOf(stage, timings)
   const ending_ = view === null ? null : endingOf(view.job.stage, view.deploy, timings)
   /** the version this job ships, else the next one */
   const n = view?.deploy ? versionNumber(view.deploy.version) || (ship?.n ?? 1) : (ship?.n ?? 1)
@@ -471,21 +504,21 @@ export function DeployWizard({
   }, [startsKey, stage, ending, endKey])
 
   /** Run checks: the editor's flush first — work it cannot send is work the compile would not see */
-  const runChecks = async () => {
-    if (pressed !== null || site === null) return
+  const runChecks = async (): Promise<boolean> => {
+    if (pressed !== null || site === null) return false
     setPressed('start')
     setRefused(null)
     const unsent = await flush()
-    if (!alive.current) return
+    if (!alive.current) return false
     const answer = unsent === null ? await post({ intent: 'preflight', session: session(), mode }) : null
-    if (!alive.current) return
+    if (!alive.current) return false
     if (answer === null || !answer.ok) {
       // Pre-flight's own flush tells the truth (DW-304): the editor's sentence for what it could not send, word for word
       const why = answer === null ? (unsent ?? W.editsUnsent) : answer.status === 423 ? LOCK_COPY.reading : answer.status === 409 ? W.noSite : W.infrastructure
       setPressed(null)
       setRefused(why)
       say(why)
-      return
+      return false
     }
     setPressed(null)
     setView(null)
@@ -503,7 +536,50 @@ export function DeployWizard({
         })
       })
     }
+    return true
   }
+
+  /* ── STORY 7.19 — the Safety net's three presses (FR-C1, R-278, R-280) ── */
+  /** Add token: Ghost is asked whose token it is (`addSafetyToken`) and only an Owner's or an Administrator's is kept; a kept
+   *  token goes straight on to the checks ("Adding…", then "Starting…"). A refusal is its one sentence under the box, and no
+   *  step changes. Should the checks then refuse to start (unsent edits, the lock), Destination says why — the token is kept */
+  const addSafety = async () => {
+    if (adding || pressed !== null || site === null) return
+    setAdding(true)
+    setTokenRefused(null)
+    setRefused(null)
+    const answer = await addToken(token).catch(() => ({ refused: W.infrastructure }))
+    if (!alive.current) return
+    setAdding(false)
+    if (!('ok' in answer)) {
+      setTokenRefused(answer.refused)
+      say(answer.refused)
+      return
+    }
+    setSafeAnswered(true)
+    onAnswered(site.id)
+    setToken('')
+    if (!(await runChecks()) && alive.current) setLocal('destination')
+  }
+  /** Not now: D1c at once — the decline is the decision, D1c its acknowledgement — and the record is written WITHOUT WAITING;
+   *  a failed write is logged by the action and the offer returns on a later page, while this deploy goes on (FR-J8, AD-10) */
+  const notNow = () => {
+    if (adding || pressed !== null || site === null) return
+    setLocal('declined')
+    setSafeAnswered(true)
+    onAnswered(site.id)
+    void decline().catch(() => undefined)
+  }
+  // focus as each view arrives: D1b on its token box, D1c on Continue, and Back's Destination on Next — and D1b's and D1c's
+  // headings said in the polite region, since focus lands on a control and not on the words that changed (UX-DR12)
+  const wasLocal = useRef(local)
+  useEffect(() => {
+    if (wasLocal.current === local) return
+    const id = local === 'offer' ? 'deploy-token' : local === 'declined' ? 'deploy-continue' : wasLocal.current === 'offer' ? (safeAnswered ? 'deploy-run' : 'deploy-next') : null
+    wasLocal.current = local
+    if (id !== null) document.getElementById(id)?.focus()
+    if (local !== 'destination') say(local === 'offer' ? SN.title : SN.declinedTitle)
+  }, [local])
 
   /** a press on a job that is already there (Ship it, Cancel, Re-activate): sent, then the row is read until it moves */
   const press = async (intent: 'ship' | 'cancel' | 'activate') => {
@@ -791,7 +867,7 @@ export function DeployWizard({
           <X size={16} />
         </button>
       </div>
-      <Rail at="destination" state="current" />
+      <Rail at="destination" state="current" steps={steps} answered={safeAnswered} />
       {picking ? picker : site === null ? (
         // no connected linked site: said, with the ways to one — no Run checks (the matrix's row)
         <div className="flex flex-col items-start gap-3 rounded-thumb border border-line p-[13px]">
@@ -853,21 +929,29 @@ export function DeployWizard({
               <div className="flex flex-col gap-[6px]">
                 <div className="flex items-center">
                   <VersionChip>{W.chip(n, prev)}</VersionChip>
-                  <Button
-                    id="deploy-run"
-                    variant="primary"
-                    size={40}
-                    className="ml-auto"
-                    aria-disabled={pressed === 'start' || undefined}
-                    aria-busy={pressed === 'start' || undefined}
-                    aria-describedby={refused === null ? undefined : 'deploy-refused'}
-                    onClick={() => void runChecks()}
-                  >
-                    <BusyLabel pending={pressed === 'start'} busy={W.starting}>
-                      {W.runChecks}
+                  {safety && !safeAnswered ? (
+                    // STORY 7.19 — D1a's Next (`D1 First-Deploy Gates.dc.html:89`): the Safety net comes first, and nothing starts
+                    <Button id="deploy-next" variant="primary" size={40} className="ml-auto" onClick={() => setLocal('offer')}>
+                      {W.next}
                       <ChevronRight size={13} strokeWidth={1.8} />
-                    </BusyLabel>
-                  </Button>
+                    </Button>
+                  ) : (
+                    <Button
+                      id="deploy-run"
+                      variant="primary"
+                      size={40}
+                      className="ml-auto"
+                      aria-disabled={pressed === 'start' || undefined}
+                      aria-busy={pressed === 'start' || undefined}
+                      aria-describedby={refused === null ? undefined : 'deploy-refused'}
+                      onClick={() => void runChecks()}
+                    >
+                      <BusyLabel pending={pressed === 'start'} busy={W.starting}>
+                        {W.runChecks}
+                        <ChevronRight size={13} strokeWidth={1.8} />
+                      </BusyLabel>
+                    </Button>
+                  )}
                 </div>
                 {refused === null ? null : footerCaption('deploy-refused', refused)}
               </div>
@@ -927,7 +1011,7 @@ export function DeployWizard({
         })
   const preflight = (
     <div className="flex flex-col gap-[18px]">
-      <Rail at="check" state={stage === 'failed' ? 'failed' : 'current'} />
+      <Rail at="check" state={stage === 'failed' ? 'failed' : 'current'} steps={steps} />
       <div className="flex flex-col gap-1">
         <h2 id="deploy-title" className={`m-0 ${wideTitle}`}>{W.preflightTitle}</h2>
         <p className="text-ui-dense text-ink-soft">{W.preflightBody}</p>
@@ -1042,7 +1126,7 @@ export function DeployWizard({
   const bytes = view?.deploy?.bytes ?? timings.compiling?.bytes
   const shipping = (
     <div className="flex flex-col gap-[18px]">
-      <Rail at="ship" state="current" />
+      <Rail at="ship" state="current" steps={steps} />
       <div className="flex flex-col gap-1">
         <h2 id="deploy-title" className={`m-0 ${wideTitle}`}>{W.shippingTitle(n)}</h2>
         <p className="text-ui-dense text-ink-soft">{W.shippingBody}</p>
@@ -1065,7 +1149,7 @@ export function DeployWizard({
   const failure = error === null || isFinding(error) ? null : error
   const failedShip = (
     <div className="flex flex-col gap-[18px]">
-      <Rail at="ship" state="failed" />
+      <Rail at="ship" state="failed" steps={steps} />
       <StageRow tone="failed" label={<span id="deploy-title">{W.stageFailed(STAGE_NAMES[failedAt])}</span>} />
       <div className="flex flex-col gap-1 rounded-thumb bg-danger-tint p-[14px_16px]">
         <span className="text-ui font-semibold text-ink">{failure?.message ?? W.infrastructure}</span>
@@ -1098,7 +1182,7 @@ export function DeployWizard({
   const live = (
     <div className="flex flex-col gap-[18px]">
       <Confetti />
-      <Rail at="live" state="live" />
+      <Rail at="live" state="live" steps={steps} />
       <div className="flex flex-col items-center gap-[14px] pt-[6px] text-center">
         <svg aria-hidden width="56" height="56" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="11.2" className="stroke-mint-line" strokeWidth="0.7" />
@@ -1150,7 +1234,7 @@ export function DeployWizard({
   const liveChip = W.liveChip(prev)
   const notLive = (
     <div className="flex flex-col gap-[18px]">
-      <Rail at="live" state="waiting" />
+      <Rail at="live" state="waiting" steps={steps} />
       <div className="flex items-start gap-[13px]">
         <span aria-hidden className="flex size-11 shrink-0 items-center justify-center rounded-full bg-sky-tint text-sky-text">
           <Upload size={22} strokeWidth={1.8} />
@@ -1196,8 +1280,132 @@ export function DeployWizard({
     </div>
   )
 
+  /* ── STORY 7.19 — D1b · the Safety net's offer, and D1c · its decline (`D1 First-Deploy Gates.dc.html:95-151`, `:153-206`),
+     700 wide. No ✕ on either, as on S8b: Esc and the backdrop close the wizard as they always have. Below `tablet` the picture
+     stacks under the field. Every word is `SAFETY_WORDS`' — the disclosure `KEYS.staff.full`, the action Manage keys' "Add
+     token" (R-170) ── */
+  const paragraph = 'text-[12.5px] leading-[1.65] text-ink-soft-aa [text-wrap:pretty]'
+  const offer = (
+    <div className="flex flex-col gap-5">
+      <Rail at="safety" state="current" steps={steps} />
+      <div className="flex flex-col gap-[7px]">
+        <h2 id="deploy-title" className={`m-0 ${wideTitle} [text-wrap:pretty]`}>{SN.title}</h2>
+        <p className="max-w-[560px] text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{SN.lead}</p>
+      </div>
+      <div className="flex max-w-[600px] flex-col gap-[7px]">
+        <p className={paragraph}>
+          {SN.who} <span data-safety-full className="font-medium text-ink">{SN.full}</span>
+        </p>
+        <p className={paragraph}>{SN.uses}</p>
+      </div>
+      <div className="flex flex-col items-stretch gap-[18px] tablet:flex-row tablet:items-start">
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <TextInput
+            id="deploy-token"
+            label={SN.label}
+            placeholder={SN.placeholder}
+            value={token}
+            onChange={(event) => setToken(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.metaKey && !event.ctrlKey) {
+                event.preventDefault()
+                void addSafety()
+              }
+            }}
+            maxLength={CONNECT_MAX}
+            autoComplete="off"
+            mono
+            size={44}
+            error={tokenRefused}
+          />
+          <p className="text-helper-caption leading-[1.55] text-ink-soft">{SN.note(host)}</p>
+        </div>
+        {/* R-279: the owner's own screenshot, drawn from its bottom — the Staff access token box and the field above it */}
+        <img
+          src={SAFETY_PICTURE.src}
+          width={SAFETY_PICTURE.width}
+          height={SAFETY_PICTURE.height}
+          alt={SN.alt}
+          className="h-[150px] w-full shrink-0 rounded-[10px] object-cover object-bottom tablet:w-[280px]"
+        />
+      </div>
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex items-center gap-3">
+          <Button id="deploy-safety-back" variant="ghost" size={38} weight="font-medium" className="px-[14px] text-[13px]" onClick={() => setLocal('destination')}>
+            {SN.back}
+          </Button>
+          <div className="ml-auto flex gap-[10px]">
+            <Button
+              id="deploy-add-token"
+              variant="primary"
+              size={42}
+              aria-disabled={adding || pressed === 'start' || undefined}
+              aria-busy={adding || pressed === 'start' || undefined}
+              onClick={() => void addSafety()}
+            >
+              <BusyLabel pending={adding || pressed === 'start'} busy={adding ? SN.adding : W.starting}>{SN.add}</BusyLabel>
+            </Button>
+            <Button id="deploy-not-now" variant="secondary" size={42} aria-disabled={adding || pressed === 'start' || undefined} onClick={notNow}>
+              {SN.notNow}
+            </Button>
+          </div>
+        </div>
+        {refused === null ? null : footerCaption('deploy-refused', refused)}
+      </div>
+    </div>
+  )
+  const lostGlyph = [Copy, Eye, Upload] as const
+  const declined = (
+    <div className="flex flex-col gap-5">
+      <Rail at="safety" state="current" steps={steps} />
+      <div className="flex flex-col gap-[7px]">
+        <h2 id="deploy-title" className={`m-0 ${wideTitle} [text-wrap:pretty]`}>{SN.declinedTitle}</h2>
+        <p className="max-w-[560px] text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{SN.declinedLead}</p>
+      </div>
+      <ul data-safety-lost className="m-0 flex list-none flex-col gap-[9px] p-0">
+        {SN.lost.map((words, i) => {
+          const Glyph = lostGlyph[i] ?? Upload
+          return (
+            <li key={words} className="flex items-center gap-[13px] rounded-[12px] border border-line p-[13px]">
+              <span aria-hidden className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-paper text-ink-soft">
+                <Glyph size={16} strokeWidth={1.6} />
+              </span>
+              <span className="flex-1 text-[13.5px] leading-[1.5] text-ink">{words}</span>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="text-[13px] leading-[1.6] text-ink-soft-aa">
+        {SN.footBefore}
+        <span className="font-semibold text-ink">{SN.footKeys}</span>
+        {SN.footAfter}
+      </p>
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex">
+          <Button
+            id="deploy-continue"
+            variant="primary"
+            size={42}
+            className="ml-auto px-6"
+            aria-disabled={pressed === 'start' || undefined}
+            aria-busy={pressed === 'start' || undefined}
+            aria-describedby={refused === null ? undefined : 'deploy-refused'}
+            onClick={() => void runChecks()}
+          >
+            <BusyLabel pending={pressed === 'start'} busy={W.starting}>
+              {SN.continue}
+              <ChevronRight size={13} strokeWidth={1.8} />
+            </BusyLabel>
+          </Button>
+        </div>
+        {refused === null ? null : footerCaption('deploy-refused', refused)}
+      </div>
+    </div>
+  )
+
   const step =
     at === 'destination' ? destination
+    : at === 'safety' ? (local === 'declined' ? declined : offer)
     : at === 'check' ? preflight
     : at === 'ship' ? (stage === 'failed' ? failedShip : shipping)
     : ending_ === 'live' ? live
@@ -1236,7 +1444,8 @@ export function DeployWizard({
         if (event.target !== event.currentTarget || dialog.current?.open) return
         onClose(stage === 'done' || timings.uploading !== undefined)
       }}
-      className="relative m-auto box-content max-h-[calc(100dvh-72px)] w-[520px] max-w-[calc(100vw-72px)] flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex"
+      // STORY 7.19: D1b and D1c are drawn 700 wide; every other step keeps S8's 520 (R-74)
+      className={`relative m-auto box-content max-h-[calc(100dvh-72px)] ${at === 'safety' ? 'w-[700px]' : 'w-[520px]'} max-w-[calc(100vw-72px)] flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex`}
     >
       <div ref={body} tabIndex={-1} className="outline-none">
         {step}

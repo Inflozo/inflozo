@@ -190,6 +190,10 @@ const NO_SKELETON: Record<string, string> = {
     'Story 6.6 (DW-70; review, 2026-10-05): the keyboard gate\'s mount of S2c\'s brand offer with stand-in rows, where ' +
     'the chooser\'s bound and floor are measured — no user reaches it, it answers notFound() unless INFLOZO_HARNESS=1, ' +
     'and a loading.tsx would commit the 200 before that notFound() ran (DW-67)',
+  [join(APP, 'app', 'harness', 'keys')]:
+    'Story 7.19: the keyboard gate\'s mount of S11e\'s Manage keys window with a stand-in site, where the Staff Access ' +
+    'Token\'s refusals are read under its box — no user reaches it, it answers notFound() unless INFLOZO_HARNESS=1, and a ' +
+    'loading.tsx would commit the 200 before that notFound() ran (DW-67)',
   [join(APP, 'app', 'harness', 'pilots')]:
     'Story 7.4 (DW-331): the keyboard gate\'s mount of the pilots review on the harness\'s canvas route — no user reaches ' +
     'it, it answers notFound() unless INFLOZO_HARNESS=1, and a loading.tsx would commit the 200 before that notFound() ' +
@@ -352,13 +356,24 @@ test('Story 7.17: B16\'s Verify upload says "Verifying…" through the Kit\'s Su
    ("Shipping…"), Re-activate ("Activating…") and D8g's "Take over and ship" ("Taking over…", `LockTakeover`'s own) — each
    through `BusyLabel`, `aria-busy` and `aria-disabled`, never `disabled`. The wizard is a modal with no route, so it has no
    loading.tsx to own. */
-test('Story 7.18a: Ship it, Run checks, Cancel, Ship it and Re-activate say they are working, and D8g\'s take-over does too', () => {
+test('Story 7.18a: Ship it, Run checks, Cancel, Ship it and Re-activate say they are working, and D8g\'s take-over does too — and Story 7.19\'s Add token and Continue', () => {
   const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
   assert.match(wizard, /<BusyLabel pending=\{busy\} busy=\{W\.opening\}>/, 'the bar\'s Ship it')
   for (const [pressed, words] of [['start', 'starting'], ['cancel', 'cancelling'], ['ship', 'shipping'], ['activate', 'activating']]) {
     assert.match(wizard, new RegExp(`<BusyLabel pending=\\{pressed === '${pressed}'\\} busy=\\{W\\.${words}\\}>`), `${words}: its label swaps`)
     assert.match(wizard, new RegExp(`aria-busy=\\{pressed === '${pressed}' \\|\\| undefined\\}|'aria-busy': [^\\n]*pressed === '${pressed}'`), `${words}: aria-busy`)
   }
+  // Story 7.19 (R-98): D1b's Add token says "Adding…" while Ghost is asked, then "Starting…" as the checks start; D1c's Continue
+  // says "Starting…" — each through BusyLabel with aria-busy and aria-disabled
+  const add = wizard.slice(wizard.indexOf('id="deploy-add-token"'), wizard.indexOf('id="deploy-not-now"'))
+  assert.match(add, /aria-disabled=\{adding \|\| pressed === 'start' \|\| undefined\}/)
+  assert.match(add, /aria-busy=\{adding \|\| pressed === 'start' \|\| undefined\}/)
+  assert.match(add, /<BusyLabel pending=\{adding \|\| pressed === 'start'\} busy=\{adding \? SN\.adding : W\.starting\}>\{SN\.add\}<\/BusyLabel>/, 'Add token: its label swaps')
+  const go = wizard.slice(wizard.indexOf('id="deploy-continue"'), wizard.indexOf('</Button>', wizard.indexOf('id="deploy-continue"')))
+  assert.match(go, /aria-busy=\{pressed === 'start' \|\| undefined\}/)
+  assert.match(go, /aria-disabled=\{pressed === 'start' \|\| undefined\}/)
+  assert.match(go, /<BusyLabel pending=\{pressed === 'start'\} busy=\{W\.starting\}>/, 'Continue: its label swaps')
+  assert.match(readFileSync('lib/deploy.ts', 'utf8'), /adding: KEYS\.staff\.addBusy,/, 'the Safety net\'s busy words are Manage keys\' own')
   assert.doesNotMatch(wizard, /\sdisabled(?=[\s=}>/])/, 'never `disabled` — a busy control stays in the Tab order')
   const button = readFileSync('components/kit/button.tsx', 'utf8')
   const split = button.slice(button.indexOf('export function SplitButton'), button.indexOf('export function AddButton'))

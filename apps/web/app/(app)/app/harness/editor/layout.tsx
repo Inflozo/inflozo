@@ -20,7 +20,7 @@ import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCan
 import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
-import { harnessReread, harnessSwitch } from './actions'
+import { harnessAddToken, harnessDecline, harnessReread, harnessSwitch } from './actions'
 import { standIns } from '../stand-ins'
 import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
@@ -138,6 +138,13 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  *
  * STORY 7.18c — two more: `sites-failed`, `full` with its sites unread (`sites: null`, DW-381 — the picker's R-276 sentence),
  * and `sites-failed-unlinked`, the same on a project with no site (Choose a site still offered, so the sentence is reachable).
+ *
+ * STORY 7.19 — and `first`: `full` as a FIRST deploy to the site (`firstDeploy: true`, no token, no decline), so the wizard
+ * offers the Safety net (D1b/D1c). Every other shape is not a first deploy, so `full` stays the four-step control. Add token
+ * is `actions.ts`' `harnessAddToken`: `x-inflozo-harness-token: ok` keeps the token, `role` answers an Editor's, `unknown`
+ * Ghost's 401 and `integration` the integration key's 404 — each as `addStaffToken`'s code through `tokenRefusal`, so the
+ * journeys read the sentences the app says. Not now is `harnessDecline` (recorded, nothing written; under
+ * `x-inflozo-harness-decline: fail` the write that did not land, so a journey holds that the deploy goes on).
  * Its review adds `x-inflozo-harness-autosave: on`: autosave on, so the timer's tick is a journey's to see (R-275's no-tick).
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
@@ -328,7 +335,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
       <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
-        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} {...data} />
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} {...data} />
       </ShellUserContext>
       {children}
     </>
@@ -388,7 +395,7 @@ const HARNESS_ROUTES: RoutesConfig = {
  *  before and the site shows another theme (Deploy only free); `live` is R-264 (a)'s case — this project's theme is the one
  *  live on the site, so Deploy only is greyed */
 function shipOf(shape: string | null, required: readonly string[]): ShipState {
-  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0', source: null, locale: 'en' }
+  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0', source: null, locale: 'en', staff: false, declined: false }
   // Story 7.18b — the picker's rows: the linked site, one another project holds (Question 1's confirm) and one set to German
   // (FR-Q6's) — none at all with no header, so Destination offers Go to Sites alone
   const sites: ShipState['sites'] = [
@@ -396,7 +403,10 @@ function shipOf(shape: string | null, required: readonly string[]): ShipState {
     { id: HARNESS_SITES.held, title: 'Field Notes site', host: 'held.harness.example', url: 'https://127.0.0.1:9', capability: 'full', source: null, locale: 'en', heldBy: { id: HARNESS_SITES.holder, name: 'Field Notes' } },
     { id: HARNESS_SITES.german, title: 'Feldnotizen', host: 'de.harness.example', url: 'https://127.0.0.1:9', capability: 'full', source: null, locale: 'de', heldBy: null },
   ]
-  const base = { themeName: themeNameOf('pilot-sections'), required: [...required], language: 'en', rtlAckAt: null, overridden: false, sites }
+  // Story 7.19 — every shape but `first` is NOT a first deploy (`firstDeploy: false`), so no journey before 7.19's meets the
+  // Safety net; `first` is `full` on a site no project has uploaded to, with no token and no recorded decline — offered
+  const base = { themeName: themeNameOf('pilot-sections'), required: [...required], language: 'en', rtlAckAt: null, overridden: false, sites, firstDeploy: false }
+  if (shape === 'first') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false, firstDeploy: true }
   if (shape === 'shipped' || shape === 'live') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live' }
   // Story 7.18c — DW-381: the sites read failed (`sites: null`), linked as `full` or with no site
   if (shape === 'sites-failed') return { ...base, linkedSiteId: site.id, sites: null, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false }

@@ -61,6 +61,8 @@ const HARNESS_ONLY = [
   join('harness', 'error', 'page.tsx'),
   join('harness', 'connect', 'page.tsx'),
   join('harness', 'brand', 'page.tsx'),
+  // Story 7.19 — S11e's Manage keys window, so the token box's R-280 sentences are read in a browser
+  join('harness', 'keys', 'page.tsx'),
   join('harness', 'pilots', 'page.tsx'),
 ]
 

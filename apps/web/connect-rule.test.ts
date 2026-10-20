@@ -29,7 +29,11 @@ import {
   oneCredential,
   pathOf,
   pathRefused,
+  roleWord,
   SITES_EMPTY,
+  STAFF_ROLES_OK,
+  staffRoleOf,
+  tokenRefusal,
   sitesPath,
   sitesScreen,
   siteWrite,
@@ -739,4 +743,48 @@ test('the 90-day orphan window agrees between the app and the migration', async 
         `${ORPHAN_SNAPSHOT_DAYS} — one of the two was changed alone, which is DW-79 exactly.`,
     )
   }
+})
+
+/* ── STORY 7.19 — WHOSE TOKEN IT IS (R-280): the role rule and its sentences, one for both surfaces ── */
+
+test('7.19: the token\'s role is read from Ghost\'s answer — users[0].roles[0].name — for each of Ghost\'s roles, and a malformed body is none', () => {
+  const me = (name: unknown) => ({ users: [{ id: 'u1', name: 'Umang', roles: [{ id: 'r1', name }] }] })
+  for (const role of ['Owner', 'Administrator', 'Editor', 'Super Editor', 'Author', 'Contributor']) assert.equal(staffRoleOf(me(role)), role)
+  for (const junk of [null, {}, { users: [] }, { users: [{}] }, { users: [{ roles: [] }] }, me(7), { users: 'x' }]) assert.equal(staffRoleOf(junk), null, JSON.stringify(junk))
+  assert.deepEqual([...STAFF_ROLES_OK], ['Owner', 'Administrator'])
+})
+
+test('7.19: roleWord is a closed list — Ghost\'s six roles with their article, and null for anything else (a URL\'s ?role= included)', () => {
+  assert.deepEqual(['Owner', 'Administrator', 'Editor', 'Super Editor', 'Author', 'Contributor'].map(roleWord),
+    ['the Owner', 'an Administrator', 'an Editor', 'a Super Editor', 'an Author', 'a Contributor'])
+  for (const junk of ['editor', 'Admin', '<script>', '', 'constructor', 'toString', undefined, null, 3]) assert.equal(roleWord(junk), null, String(junk))
+})
+
+test('7.19 (R-280): the three ruled sentences, each under the token box in Manage keys too', () => {
+  assert.equal(connectMessage('token_role', 'Editor'), "This token belongs to an Editor. The safety net needs an Administrator's or the Owner's token.")
+  assert.equal(connectMessage('token_role', 'Super Editor'), "This token belongs to a Super Editor. The safety net needs an Administrator's or the Owner's token.")
+  // a name outside the closed list keeps the second sentence alone — never a stranger's text
+  assert.equal(connectMessage('token_role', 'Wizard'), "The safety net needs an Administrator's or the Owner's token.")
+  assert.equal(connectMessage('token_role', ''), "The safety net needs an Administrator's or the Owner's token.")
+  assert.equal(connectMessage('token_unknown'), "Ghost doesn't recognise this token. Copy the current one from your Ghost profile.")
+  assert.equal(connectMessage('token_integration'), "That's an integration's Admin API key. Your Staff Access Token is on your own Ghost profile.")
+  for (const code of ['token_role', 'token_unknown', 'token_integration', 'token_malformed', 'token_empty']) assert.equal(keysFieldOf(code), 'staff_token', code)
+  // the control: the Admin key's own refusals stay under the Admin field, and the banner's stay the banner's
+  assert.equal(keysFieldOf('ghost_unknown_key'), 'admin_key')
+  assert.equal(keysFieldOf('ghost_unavailable'), null)
+})
+
+test('7.19: tokenRefusal says the codes table\'s own sentence — the role, the status, the host — and "nothing changed" for a code it cannot name', () => {
+  assert.equal(tokenRefusal({ code: 'token_role', role: 'Editor' }, 'ghost6.inflozo.com'), connectMessage('token_role', 'Editor'))
+  assert.equal(tokenRefusal({ code: 'token_unknown' }, 'h'), connectMessage('token_unknown'))
+  assert.equal(tokenRefusal({ code: 'ghost_refused', status: 403 }, 'h'), 'Ghost refused the connection (HTTP 403). Check the address and the keys.')
+  assert.equal(tokenRefusal({ code: 'ghost_unreachable' }, 'ghost6.inflozo.com'), connectMessage('ghost_unreachable', 'ghost6.inflozo.com'))
+  assert.equal(tokenRefusal({ code: 'ghost_unavailable' }, 'h'), connectMessage('ghost_unavailable'))
+  // nothing is stored before the check passes, so "nothing changed" is true for these
+  for (const code of ['credential_store_unavailable', 'no_such_code', 'ghost_refused']) assert.equal(tokenRefusal({ code }, 'h'), connectMessage('keys_failed'), code)
+})
+
+test('7.19 (FR-C3, R-170): the full-Administrator disclosure is ONE sentence, and Manage keys\' row is built from it', () => {
+  assert.equal(KEYS.staff.full, 'It is a full-Administrator credential: anything that user can do in Ghost Admin, this token can do.')
+  assert.equal(KEYS.staff.enables, `Uploads routes.yaml, and reads the live theme for the snapshot and the drift report. ${KEYS.staff.full} Add or remove it at any time.`)
 })

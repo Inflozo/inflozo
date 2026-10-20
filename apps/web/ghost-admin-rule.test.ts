@@ -120,6 +120,9 @@ test('the URL builder only ever addresses the Admin API', () => {
   assert.equal(adminUrl('https://ghost6.inflozo.com/', '/settings/'), 'https://ghost6.inflozo.com/ghost/api/admin/settings/')
   // A subdirectory install keeps its path: Ghost supports `https://example.com/blog`.
   assert.equal(adminUrl('https://example.com/blog', 'config/'), 'https://example.com/blog/ghost/api/admin/config/')
+  // Story 7.19: the Safety net's role read keeps its query string (`new URL(relative, base)`) — the check asks for the roles
+  assert.equal(adminUrl('https://ghost6.inflozo.com', 'users/me/?include=roles'), 'https://ghost6.inflozo.com/ghost/api/admin/users/me/?include=roles')
+  assert.equal(adminUrl('https://example.com/blog', 'users/me/?include=roles'), 'https://example.com/blog/ghost/api/admin/users/me/?include=roles')
   assert.throws(() => adminUrl('https://example.com/blog', '../../content/posts/'), (e: AdminError) => e.code === 'path_not_admin')
   // A dot segment the allowlist's `[^/]+` would admit: `themes/../activate/` is not an activate.
   for (const dotted of ['themes/../activate/', 'themes/./activate/', '.', '..']) {

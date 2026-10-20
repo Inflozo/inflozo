@@ -18,6 +18,7 @@ import {
   oneCredential,
   pathOf,
   pathRefused,
+  roleWord,
   sitesPath,
   siteWrite,
   storeOrUndo,
@@ -43,6 +44,7 @@ import type { VerifyOutcome } from '@/lib/routes-upload'
 import { ROUTES_IO } from '@/server/routes-io'
 import { verifyRoutes } from '@/server/routes-upload'
 import { checkSite } from '@/server/site-health'
+import { addStaffToken } from '@/server/staff-token'
 import { probeSite } from '@/server/site-probe'
 import { contentKeyPatch, patchSite } from '@/server/site-settings'
 
@@ -1204,17 +1206,19 @@ async function keysSite(
   url: string
   site_settings: { public_url?: string } | null
   credentials_present: Record<string, boolean> | null
+  ghost_version: string | null
 }> {
   const supabase = await supabaseServer()
   const { data: site, error } = await supabase
     .from('sites')
-    .select('id, url, site_settings, credentials_present, disconnected_at')
+    .select('id, url, site_settings, credentials_present, ghost_version, disconnected_at')
     .eq('id', at.siteId)
     .maybeSingle<{
       id: string
       url: string
       site_settings: { public_url?: string } | null
       credentials_present: Record<string, boolean> | null
+      ghost_version: string | null
       disconnected_at: string | null
     }>()
   // THE SAME SPLIT `sites/keys/page.tsx` MAKES, and for the same reasons — a malformed id is
@@ -1276,12 +1280,14 @@ const KeyFields = z.object({
  * would prove the wrong thing — so with scripts off it is stored unchecked, exactly as connect
  * stores it.
  *
- * THE STAFF TOKEN IS PARSED AND STORED, AND NOTHING VALIDATES IT AGAINST GHOST. It is a
- * `id:secret` pair that `parseCredential` reads identically to an Admin key, but the endpoints it
- * unlocks are Epic 7's (`GET /admin/themes/`, `POST /admin/settings/routes/yaml/` — Story 7.17's upload,
- * corrected 2026-10-18: Ghost 6.58.0's admin router has no `PUT /settings/routes/`, `routes.js:89-98`), and calling one here
- * to prove the token would be this story making an Admin call no story owns. `store()` refuses a
- * malformed one before Vault, which is the check that matters: a token that cannot sign is a typo.
+ * THE STAFF TOKEN IS ASKED OF GHOST BEFORE IT IS STORED (Story 7.19, R-280 — until then it was parsed and stored, unchecked).
+ * It is an `id:secret` pair that `parseCredential` reads identically to an Admin key, so the commonest wrong paste — the
+ * integration's own Admin key — and an Editor's token both looked right and were kept, failing later as B16's `role` cause.
+ * Now `addStaffToken` (`server/staff-token.ts`) asks `GET users/me/?include=roles` with the token in hand and keeps only an
+ * Owner's or an Administrator's — the roles that hold `setting: edit` and `theme: read`, which the routes upload and the
+ * snapshot need. It is THE SAME CHECK the first deploy's Safety net runs, with the same sentences under the token box (R-170):
+ * a refused token leaves nothing behind. The role in a refusal's URL is one of Ghost's six names (`roleWord`), never Ghost's
+ * text as it came.
  */
 export async function saveKeys(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'save keys')
@@ -1399,16 +1405,19 @@ export async function saveKeys(formData: FormData): Promise<void> {
   }
 
   if (staffToken) {
-    try {
-      await store({ siteId: site.id, userId: at.userId, kind: 'staff', secret: staffToken, route: KEYS_ROUTE })
-    } catch (thrown) {
-      // `credential_malformed` under the TOKEN's own name: the Admin key's sentence names the
-      // integration, and a Staff Access Token is not on the integration at all.
-      if (thrown instanceof AdminError) {
-        keysRedirect(KEYS_REFUSED(base, thrown.code === 'credential_malformed' ? 'token_malformed' : thrown.code))
-      }
+    // STORY 7.19 (R-280): Ghost is asked whose token it is BEFORE anything is stored — `addStaffToken` is the one check, the
+    // first deploy's Safety net's too. `credential_malformed` comes back under the TOKEN's own name (`token_malformed`): the
+    // Admin key's sentence names the integration, and a Staff Access Token is not on the integration at all.
+    const added = await addStaffToken({
+      siteId: site.id, userId: at.userId, url: site.url, version: site.ghost_version, token: staffToken, route: KEYS_ROUTE,
+    }).catch((thrown: unknown) => {
       console.error('sites: keys token store failed', { name: (thrown as { name?: string })?.name })
-      keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
+      return { ok: false as const, code: 'keys_failed' }
+    })
+    if (!added.ok) {
+      // the role rides only as one of Ghost's own six names — anything else is dropped, and the sentence then names no role
+      const role = 'role' in added && roleWord(added.role) !== null ? `&role=${encodeURIComponent(added.role as string)}` : ''
+      keysRedirect(`${KEYS_REFUSED(base, added.code, 'status' in added ? added.status : undefined)}${role}`)
     }
   }
 

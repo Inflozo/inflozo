@@ -19,7 +19,7 @@ import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
 import {
   CANVASES, canvasPath, labelOf, routeCanvasOf, settingsPath, translationsPath, type Canvas, type CanvasKey,
 } from './editor.ts'
-import { hostOf, keysPath } from './connect-rule.ts'
+import { hostOf, KEYS, keysPath } from './connect-rule.ts'
 import { sizeLabel } from './routes-upload.ts'
 import { EVERY_PAGE } from './theme-settings.ts'
 import { RAIL_WORDS } from './translations.ts'
@@ -32,15 +32,22 @@ export type Stage = 'queued' | 'compiling' | 'checking' | 'awaiting_ship' | 'upl
 /** `deploy_status`. */
 export type DeployStatus = 'compiling' | 'checking' | 'uploaded' | 'live' | 'failed'
 
-/** THE RAIL'S STEPS, in order — a list Stories 7.19 and 7.20 add their first-deploy steps to (the Safety net, the Backup),
- *  so the rail numbers itself from this and never from a literal. */
+/** THE RAIL'S STEPS, in order — every step any deploy can show. Story 7.19 added the first deploy's Safety net (D1b/D1c);
+ *  Story 7.20 adds Backup after it. A deploy's own rail is `stepsFor`'s — the steps THAT show — and the rail numbers itself
+ *  from that list, never from a literal (D1's "the rail grows to show it"). */
 export const STEPS = [
   { id: 'destination', label: 'Destination' },
+  { id: 'safety', label: 'Safety net' },
   { id: 'check', label: 'Check' },
   { id: 'ship', label: 'Ship' },
   { id: 'live', label: 'Live' },
 ] as const
 export type Step = (typeof STEPS)[number]['id']
+export type RailStep = (typeof STEPS)[number]
+
+/** STORY 7.19 — the rail a deploy shows: Safety net only where it is offered (`safetyOffered`, fixed for the wizard's mount, so
+ *  a step answered stays ticked); every other deploy is the four. */
+export const stepsFor = (safety: boolean): readonly RailStep[] => STEPS.filter((s) => s.id !== 'safety' || safety)
 
 /** The stages a Cancel may stop (FR-J8, AD-20's F-075 — the policy `deploy_jobs_owner_cancel` holds the same three). */
 export const CANCELLABLE: readonly Stage[] = ['queued', 'compiling', 'checking']
@@ -76,8 +83,8 @@ export function stepOf(stage: Stage, timings: Timings = {}): Step {
   }
 }
 
-/** The step's number on the rail, from 1, derived from `STEPS`. */
-export const stepNumber = (step: Step): number => STEPS.findIndex((s) => s.id === step) + 1
+/** The step's number on the rail, from 1, counted in the rail that shows (`stepsFor`). */
+export const stepNumber = (step: Step, steps: readonly RailStep[]): number => steps.findIndex((s) => s.id === step) + 1
 
 /** The job's ending once it is `done`: Live (activated), D2e (activation asked for and not done) or D2f (Deploy only). */
 export function endingOf(stage: Stage, deploy: { activated: boolean } | null, timings: Timings = {}): 'live' | 'notLive' | 'uploadOnly' | null {
@@ -235,6 +242,8 @@ export const DEPLOY_WORDS = {
   theme: 'Theme',
   chip: (n: number, prev: number | null) => (prev === null ? versionLabel(n) : `${versionLabel(prev)} → ${versionLabel(n)}`),
   runChecks: 'Run checks',
+  /** STORY 7.19 — Destination's button while Safety net is still to come (D1a `:89`): nothing starts, so no busy label */
+  next: 'Next',
   starting: 'Starting…',
   noSite: "This project isn't linked to a connected Ghost site yet.",
   goToSites: 'Go to Sites',
@@ -358,6 +367,43 @@ export const DEPLOY_WORDS = {
   sayUploading: 'Uploading to Ghost.',
   sayActivating: (n: number) => `Activating ${versionLabel(n)}.`,
 } as const
+
+/** STORY 7.19 — THE FIRST DEPLOY'S SAFETY NET, every word D1b (the offer) and D1c (the decline) say, the frame's own
+ *  (`D1 First-Deploy Gates.dc.html:95-206`) but where R-170 names one: the disclosure is `KEYS.staff.full` (Manage keys'
+ *  `enables` is built from it), the action is Manage keys' "Add token" (D1b draws "Add the token"), the box is named as Manage
+ *  keys names the credential, and Back is the wizard's own. */
+export const SAFETY_WORDS = {
+  rail: 'Safety net',
+  title: 'One more step unlocks a safety net',
+  lead: 'A copy of your current theme before we replace it, plus a check that nothing else has changed it.',
+  who: "This is a Staff Access Token, from the site Owner or an Administrator. Every staff user has one on their own profile, and an Administrator's is enough.",
+  full: KEYS.staff.full,
+  uses: 'Inflozo uses it for two things only — uploading routes.yaml, and reading the live theme for the snapshot and the drift report. You can remove it at any time.',
+  label: KEYS.staff.name,
+  placeholder: 'a1f4c9e07b2d…:6f83b1c4d90e…',
+  note: (host: string) => `Stored encrypted, and only ever sent to ${host}.`,
+  alt: 'The Staff Access Token box on a staff user\'s own profile in Ghost Admin',
+  back: DEPLOY_WORDS.back,
+  add: KEYS.staff.add,
+  adding: KEYS.staff.addBusy,
+  notNow: 'Not now',
+  declinedTitle: 'Continuing without the token',
+  declinedLead: "Deploys work exactly the same. Three things won't be available:",
+  lost: [
+    'No copy of your current theme before we replace it',
+    'No check that the live theme changed since we last shipped',
+    'routes.yaml uploads by hand, with a guided card',
+  ],
+  /** D1c's foot, its middle in ink at 600 — not a link (`:200`) */
+  footBefore: 'You can add it any time from ',
+  footKeys: 'Manage keys',
+  footAfter: '.',
+  continue: 'Continue',
+} as const
+
+/** D1b's picture (R-279): the owner's own screenshot of T1's profile sheet, the token blurred — 570×650, drawn in the 280×150
+ *  slot from its bottom, where the Staff access token box is */
+export const SAFETY_PICTURE = { src: '/deploy/staff-token.png', width: 570, height: 650 } as const
 
 /** Ghost's own guide to which plans take custom themes (FR-C2's docs link; S8d′ draws the button and no address). */
 export const GHOST_PLANS_HELP = 'https://ghost.org/pricing/'
@@ -572,7 +618,16 @@ export type RoutesEnding =
 export type ShipState = {
   /** the linked site, when it is CONNECTED (a disconnected one is no site to ship to — Destination says so). Story 7.18b —
    *  with `source` (`capability_source`: `deploy_error` keeps Run checks, R-270) and its stored Ghost `locale` (FR-Q6) */
-  site: { id: string; host: string; url: string; version: string | null; capability: 'full' | 'preview_only'; source: string | null; locale: string | null } | null
+  site: {
+    id: string; host: string; url: string; version: string | null; capability: 'full' | 'preview_only'; source: string | null; locale: string | null
+    /** STORY 7.19 — `credentials_present.staff`: a Staff Access Token is stored for the site */
+    staff: boolean
+    /** STORY 7.19 — `staff_token_declined_at` is set: a Not now on the Safety net was recorded for the site (R-278: per site) */
+    declined: boolean
+  } | null
+  /** STORY 7.19 — FR-J13's "first deploy to a site", per site record: no project of the user's has a binding for the linked site
+   *  (a binding is written at the first upload Ghost accepts). A failed read counts as none */
+  firstDeploy: boolean
   /** Story 7.18b — `projects.language` and `rtl_ack_at` (FR-Q6): the switch's language rule and Pre-flight's RTL and locale rows */
   language: string
   rtlAckAt: string | null
@@ -618,14 +673,21 @@ export function shipStateOf(a: {
   sites: readonly { id?: unknown; title?: unknown; url?: unknown; capability?: unknown; capability_source?: unknown; site_settings?: unknown }[] | null
   linking: readonly { id?: unknown; name?: unknown; linked_site_id?: unknown }[] | null
   siteId: string | null
-  site: { url?: unknown; ghost_version?: unknown; capability?: unknown; capability_source?: unknown; disconnected_at?: unknown; site_settings?: unknown } | null
+  site: {
+    url?: unknown; ghost_version?: unknown; capability?: unknown; capability_source?: unknown; disconnected_at?: unknown; site_settings?: unknown
+    credentials_present?: unknown; staff_token_declined_at?: unknown
+  } | null
   deploys: readonly { version: unknown; status: unknown; activated: unknown; activated_at: unknown }[] | null
-  binding: { theme_name?: unknown } | null
+  /** STORY 7.19 — every binding to the linked site among the user's projects (RLS scopes the read): this project's gives the
+   *  frozen theme name, and none at all is a first deploy to the site. Null when the read failed — counted as none */
+  bindings: readonly { project_id?: unknown; theme_name?: unknown }[] | null
   liveHere: boolean
   required: readonly string[]
 }): ShipState {
   if (a.deploys === null) console.error('editorData: the deploys could not be read')
   if (a.sites === null || a.linking === null) console.error('editorData: the sites to choose from could not be read')
+  if (a.bindings === null) console.error('editorData: the site\'s bindings could not be read')
+  const binding = (a.bindings ?? []).find((b) => b.project_id === a.projectId) ?? null
   const rows = a.deploys ?? []
   const url = typeof a.site?.url === 'string' ? a.site.url : ''
   const connected = a.siteId !== null && a.site !== null && (a.site.disconnected_at === null || a.site.disconnected_at === undefined) && url !== ''
@@ -656,20 +718,34 @@ export function shipStateOf(a: {
           capability: a.site?.capability === 'preview_only' ? 'preview_only' : 'full',
           source: typeof a.site?.capability_source === 'string' ? a.site.capability_source : null,
           locale: localeOf(a.site?.site_settings),
+          staff: (a.site?.credentials_present as { staff?: unknown } | null | undefined)?.staff === true,
+          declined: typeof a.site?.staff_token_declined_at === 'string',
         }
       : null,
+    firstDeploy: (a.bindings ?? []).length === 0,
     language: a.language,
     rtlAckAt: a.rtlAckAt,
     linkedSiteId: a.siteId,
     overridden: a.overridden,
     sites,
-    themeName: typeof a.binding?.theme_name === 'string' ? a.binding.theme_name : themeNameOf(a.slug),
+    themeName: typeof binding?.theme_name === 'string' ? binding.theme_name : themeNameOf(a.slug),
     n: rows.length + 1,
     prev: Number.isFinite(prev) ? prev : null,
     shipped: rows.length > 0,
     liveHere: connected && a.liveHere,
     required: [...a.required],
   }
+}
+
+/** STORY 7.19 — THE MATRIX'S "OFFERED": the Safety net step shows on a deploy whose Destination draws Run checks (a connected
+ *  `full` site, or a Preview-only one a refused upload marked, R-270), to a site no project of the user's has uploaded to
+ *  (FR-J13's per-site first deploy), that holds no Staff Access Token and has no recorded Not now (R-278). A token stored or
+ *  a decline recorded skips the step: nothing would be asked. */
+export function safetyOffered(ship: Pick<ShipState, 'site' | 'firstDeploy'> | null | undefined): boolean {
+  const site = ship?.site ?? null
+  if (site === null) return false
+  const runChecks = site.capability === 'full' || site.source === 'deploy_error'
+  return runChecks && ship?.firstDeploy === true && !site.staff && !site.declined
 }
 
 /** R-264 (a) — DEPLOY ONLY'S GUARD, the one rule the ▾ row, S8a's card and the server ask: while Inflozo's own record says

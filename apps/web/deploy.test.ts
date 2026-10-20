@@ -9,8 +9,10 @@ import type { Finding } from '@inflozo/theme-compiler/gate'
 import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
 import {
   activateAnswer, canonical, CHECK_FAILED, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash, placeOf, refusalWords,
-  stepNumber, stepOf, STEPS, themeNameOf, thrownCode, uploadAnswer, versionLabel, versionNumber, versionOf,
+  SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, stepNumber, stepOf, STEPS, stepsFor, themeNameOf, thrownCode, uploadAnswer, versionLabel, versionNumber, versionOf,
+  type ShipState,
 } from './lib/deploy.ts'
+import { KEYS } from './lib/connect-rule.ts'
 import { keysPath } from './lib/connect-rule.ts'
 import { REFUSED_COPY } from './lib/journal.ts'
 
@@ -18,9 +20,15 @@ const P = '00000000-0000-4000-8000-0000000000aa'
 const answer = (status: number, body: unknown = {}, text = JSON.stringify(body)) => ({ ok: status >= 200 && status < 300, status, body, text })
 const ghost = (type: string, extra: Record<string, string> = {}) => ({ errors: [{ type, ...extra }] })
 
-test('the rail is STEPS, numbered from it; every stage maps to its step (the spec\'s stage table)', () => {
-  assert.deepEqual(STEPS.map((s) => s.label), ['Destination', 'Check', 'Ship', 'Live'])
-  assert.deepEqual(STEPS.map((s) => stepNumber(s.id)), STEPS.map((_, i) => i + 1))
+test('the rail is the steps that show, numbered from them; every stage maps to its step (the spec\'s stage table)', () => {
+  // Story 7.19: an ordinary deploy is the four (7.18a's pin, kept as the `false` case), a first deploy that offers the Safety
+  // net five — D1's rail less Backup (7.20's), in D1's order
+  assert.deepEqual(stepsFor(false).map((s) => s.label), ['Destination', 'Check', 'Ship', 'Live'])
+  assert.deepEqual(stepsFor(true).map((s) => s.label), ['Destination', 'Safety net', 'Check', 'Ship', 'Live'])
+  assert.deepEqual(stepsFor(true), STEPS, 'every step any deploy shows')
+  for (const steps of [stepsFor(false), stepsFor(true)]) assert.deepEqual(steps.map((s) => stepNumber(s.id, steps)), steps.map((_, i) => i + 1))
+  assert.equal(stepNumber('check', stepsFor(true)), 3, 'Check is step 3 behind the Safety net')
+  assert.equal(stepNumber('check', stepsFor(false)), 2)
   for (const stage of ['queued', 'compiling', 'checking', 'awaiting_ship'] as const) assert.equal(stepOf(stage), 'check', stage)
   assert.equal(stepOf('uploading'), 'ship')
   assert.equal(stepOf('activating'), 'ship')
@@ -204,7 +212,7 @@ test('a theme\'s size as the frames draw it: bytes, then KB, then MB, one place'
 
 test('R-264: Deploy only\'s guard — greyed with the ruled sentence while this project\'s theme is the live one, free otherwise; Ghost\'s upload answer read for `active`', async () => {
   const { uploadOnlyBlock } = await import('./lib/deploy.ts')
-  const site = { id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full' as const, source: null, locale: null }
+  const site = { id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full' as const, source: null, locale: null, staff: false, declined: false }
   assert.equal(uploadOnlyBlock({ liveHere: true, prev: 1, n: 2, site }), 'v1 is already live on ghost6.inflozo.com, so Ghost would switch to v2 the moment it uploads. Use Deploy & activate.')
   // the controls: another theme live (or none), no site, no state at all
   assert.equal(uploadOnlyBlock({ liveHere: false, prev: 1, n: 2, site }), null)
@@ -246,3 +254,55 @@ test('R-275 (Story 7.18c, DW-304): Run checks and Switch say the refusal\'s own 
   for (const why of ['gone', 'change'] as const) assert.notEqual(REFUSED_COPY[why], DEPLOY_WORDS.editsUnsent)
 })
 
+
+/* ── STORY 7.19 — the first deploy's Safety net (FR-C1, R-278–R-280) ── */
+
+test('7.19: the Safety net is OFFERED on a first deploy to a site with no token and no recorded decline, where Run checks shows — and nowhere else', () => {
+  const site = (over: Partial<NonNullable<ShipState['site']>> = {}): NonNullable<ShipState['site']> => ({
+    id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full', source: null, locale: 'en', staff: false, declined: false, ...over,
+  })
+  assert.equal(safetyOffered({ site: site(), firstDeploy: true }), true, 'Offered')
+  // first deploy × token × declined × capability, each flipped alone
+  assert.equal(safetyOffered({ site: site(), firstDeploy: false }), false, 'not the first deploy: a binding exists')
+  assert.equal(safetyOffered({ site: site({ staff: true }), firstDeploy: true }), false, 'a token already stored')
+  assert.equal(safetyOffered({ site: site({ declined: true }), firstDeploy: true }), false, 'declined before')
+  assert.equal(safetyOffered({ site: site({ capability: 'preview_only', source: 'probe' }), firstDeploy: true }), false, 'probed Preview-only: no Run checks')
+  assert.equal(safetyOffered({ site: site({ capability: 'preview_only', source: 'deploy_error' }), firstDeploy: true }), true, 'R-270: a refused upload keeps Run checks, so it is offered')
+  assert.equal(safetyOffered({ site: null, firstDeploy: true }), false, 'no site')
+  assert.equal(safetyOffered(undefined), false)
+})
+
+test('7.19: D1b\'s and D1c\'s words — the frame\'s, with the disclosure and the action Manage keys\' own (R-170)', () => {
+  assert.equal(DEPLOY_WORDS.next, 'Next')
+  assert.equal(SAFETY_WORDS.rail, 'Safety net')
+  assert.equal(SAFETY_WORDS.rail, STEPS.find((s) => s.id === 'safety')?.label, 'the rail says the step\'s own name')
+  assert.equal(SAFETY_WORDS.title, 'One more step unlocks a safety net')
+  assert.equal(SAFETY_WORDS.full, KEYS.staff.full, 'one disclosure, read by both surfaces')
+  assert.match(SAFETY_WORDS.full, /^It is a full-Administrator credential: anything that user can do in Ghost Admin, this token can do\.$/)
+  assert.ok(KEYS.staff.enables.includes(KEYS.staff.full), 'Manage keys\' row is built from it')
+  assert.match(SAFETY_WORDS.who, /an Administrator's is enough/)
+  assert.equal(SAFETY_WORDS.add, 'Add token', 'one name for the action: Manage keys\' (D1b draws "Add the token")')
+  assert.equal(SAFETY_WORDS.add, KEYS.staff.add)
+  assert.equal(SAFETY_WORDS.adding, 'Adding…')
+  assert.equal(SAFETY_WORDS.label, KEYS.staff.name)
+  assert.equal(SAFETY_WORDS.back, DEPLOY_WORDS.back)
+  assert.equal(SAFETY_WORDS.note('ghost6.inflozo.com'), 'Stored encrypted, and only ever sent to ghost6.inflozo.com.')
+  assert.deepEqual(SAFETY_WORDS.lost, [
+    'No copy of your current theme before we replace it',
+    'No check that the live theme changed since we last shipped',
+    'routes.yaml uploads by hand, with a guided card',
+  ])
+  assert.equal(`${SAFETY_WORDS.footBefore}${SAFETY_WORDS.footKeys}${SAFETY_WORDS.footAfter}`, 'You can add it any time from Manage keys.')
+  // R-279: the owner's screenshot, its real size (the `<img>`'s width/height), served from `public/`
+  const png = readFileSync(`public${SAFETY_PICTURE.src}`)
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [SAFETY_PICTURE.width, SAFETY_PICTURE.height])
+  assert.ok(png.equals(readFileSync('../../_bmad-output/planning-artifacts/user-provided-assets/Staff-access-token-screen.png')), 'byte for byte the owner\'s file')
+})
+
+test('7.19: the token is never asked at connect — the connect wizard draws no token field and names no KEYS.staff word', () => {
+  const wizard = readFileSync('app/(app)/app/(authed)/sites/connect-wizard.tsx', 'utf8')
+  assert.doesNotMatch(wizard, /staff_token/)
+  assert.doesNotMatch(wizard, /KEYS\.staff/)
+  // the control: the same read finds the field where it IS drawn
+  assert.match(readFileSync('app/(app)/app/(authed)/sites/keys-panel.tsx', 'utf8'), /name="staff_token"/)
+})

@@ -104,7 +104,8 @@ test('the proxy matcher leaves the root-served identity files alone and still se
   // inside the matcher while the other stays out (review, 2026-09-08).
   // …and `connect/` is a PREFIX for the screenshot's folder: `/connect` itself, with no slash, is a
   // page path and stays inside (review 2, 2026-09-08).
-  for (const path of ['/', '/sites', '/sites/connect', '/connect', '/apply', '/sign-in', '/branding']) {
+  // Story 7.19: `deploy/` is the Safety net's picture's folder, and the deploy ROUTE (`/projects/{id}/deploy`) stays inside
+  for (const path of ['/', '/sites', '/sites/connect', '/connect', '/apply', '/sign-in', '/branding', '/deploy', '/projects/x/deploy']) {
     assert.ok(matcher.test(path), `${path} escaped the proxy — no rewrite, no CSP, no session refresh`)
   }
 })

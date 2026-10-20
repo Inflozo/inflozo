@@ -371,6 +371,21 @@
 // Pre-flight draws every warning row in Design Notes' order; T1's version put back is the free-ask row's control. 114.5 (DW-378):
 // an unreadable routing replaced by Start again, a template kept, and a readable one untouched (the control). 114.6: T1's row
 // disconnected through the product, the account deleted, users and projects counted back.
+// Story 7.19 RE-EXPECTS STEPS 113 AND 114: a first deploy to a site with no token offers the Safety net before Run checks, so
+// each step's fixture answers it as a Not now does (`staff_token_declined_at`, through the service key, read back) and its
+// presses of Run checks are unchanged. And it adds step 116, self-contained like 114 and WRITING NOTHING TO T1 (R-238; its T1 calls are GETs — the connect
+// wizard's key checks and one `users/me/?include=roles` — so it runs on the owner's in-session go, as 114 does): THE FIRST
+// DEPLOY'S SAFETY NET (FR-C1, R-278–R-280). (a) A throwaway account F (`editor-harness-f-…`) with a seeded project linked,
+// through the service key, to a PLANTED connected site `walk-116.invalid` (no token, no binding): Ship it → Next → D1b (the
+// token box focused, the disclosure, the picture served); Back is Destination on Next; Not now → D1c on Continue, its three
+// losses, and `staff_token_declined_at` written BEFORE Continue is pressed; Continue → a job, the rail's Safety net ticked;
+// closed and reopened → Run checks with four steps; reloaded → the same, from the stored decline. (b) The decline cleared
+// through the service key: Add token with `hello` → `token_malformed`, a well-formed token → the unreachable sentence (the
+// planted host resolves nowhere), `credentials_present.staff` still false. (c) A second throwaway account G connects T1
+// through the wizard ("Use your brand"): Add token with `GHOST6_STAFF_ACCESS_TOKEN` → the checks start, `credentials_present.staff`
+// true, and `private.credential_audit` (the pooler) holds ONE `admin_read` ok row for the check and one staff `credential_change`
+// in; then Disconnect, after which `credentials_present` is all false. Every artefact a Pre-flight stored is removed from the
+// bucket, both accounts are deleted, and users and projects are counted back. Keys are read in-process by name, never printed.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -458,8 +473,8 @@ async function main() {
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
-  // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's
-  const stale = all.filter((u) => /^editor-harness-[abcde]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's
+  const stale = all.filter((u) => /^editor-harness-[abcdefg]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -11768,6 +11783,12 @@ async function main() {
           siteA113.capability === 'full' && siteA113.credentials_present?.admin === true && siteA113.credentials_present?.content === true && siteA113.credentials_present?.staff === false,
           JSON.stringify({ sites: (sitesA113 ?? []).map((s) => ({ host: CR113.hostOf(s.url), v: s.ghost_version, capability: s.capability, keys: s.credentials_present, gone: s.disconnected_at })) }))
         if (siteId113 === null) throw new Error('step 113: T1 did not connect — nothing to ship to')
+        // STORY 7.19 RE-EXPECTS THIS STEP: a first deploy to a site that holds no token now offers the Safety net (D1b) before
+        // Run checks, and step 116 walks it. This step ships with no token as it always has, so the site's Safety net is
+        // answered as a Not now answers it — `staff_token_declined_at`, through the service key — and read back
+        const declined113 = await call('/rest/v1', `/sites?id=eq.${siteId113}`, { method: 'PATCH', body: JSON.stringify({ staff_token_declined_at: new Date().toISOString() }) })
+        check('step 113a — Story 7.19: the site\'s Safety net answered "Not now" through the service key (step 116 walks the step itself), read back set',
+          [200, 204].includes(declined113.status) && typeof (await call('/rest/v1', `/sites?id=eq.${siteId113}&select=staff_token_declined_at`)).body?.[0]?.staff_token_declined_at === 'string', `HTTP ${declined113.status}`)
         const linked113 = await call('/rest/v1', `/projects?id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteId113 }) })
         check('step 113a — the seeded project linked to the new site through the service key (the product\'s site picker is Story 7.18b\'s), read back',
           [200, 204].includes(linked113.status) && (await project113())?.linked_site_id === siteId113, `HTTP ${linked113.status}`)
@@ -12357,6 +12378,11 @@ async function main() {
           branded114 && UUID.test(A114 ?? '') && t1Row114 !== null && CR114.hostOf(t1Row114.url) === HOST114 && t1Row114.disconnected_at === null,
           JSON.stringify({ branded114, projects: projs114.map((p) => ({ name: p.name, linked: p.linked_site_id !== null, language: p.language })) }))
         if (A114 === null || t1114 === null) throw new Error('step 114: T1 did not connect, or no project was made')
+        // STORY 7.19 RE-EXPECTS THIS STEP: a first deploy to T1 with no token now offers the Safety net (D1b) before Run checks,
+        // which step 116 walks — so T1's row is answered as a Not now answers it, through the service key, and read back
+        const declined114 = await call('/rest/v1', `/sites?id=eq.${t1114}`, { method: 'PATCH', body: JSON.stringify({ staff_token_declined_at: new Date().toISOString() }) })
+        check('step 114 — Story 7.19: T1\'s Safety net answered "Not now" through the service key (step 116 walks the step itself), read back set',
+          [200, 204].includes(declined114.status) && typeof (await call('/rest/v1', `/sites?id=eq.${t1114}&select=staff_token_declined_at`)).body?.[0]?.staff_token_declined_at === 'string', `HTTP ${declined114.status}`)
         const seededB114 = await seed({ email: emailD, name: `Walk 114 B ${stamp}` })
         B114 = seededB114?.id ?? null
         const plantedSite114 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: idD, url: PLANTED_URL114, title: 'Walk 114', ghost_version: '6.58.0', capability: 'full', site_settings: { locale: 'de' } }) })
@@ -12816,6 +12842,277 @@ async function main() {
         }
       }
       check('step 115 — the step\'s contexts recorded zero CSP violations', csp115.length === 0, JSON.stringify(csp115.slice(0, 3)))
+    }
+
+    // ── step 116 — STORY 7.19: THE FIRST DEPLOY'S SAFETY NET, ON PRODUCTION, READING T1 (FR-C1, R-278, R-279, R-280, R-82) ──
+    /* WRITES NOTHING TO T1 (R-238): (c)'s T1 calls are the connect wizard's key checks and the token check's one GET. Its
+       production writes are two throwaway accounts' (`editor-harness-f-…`, `editor-harness-g-…`), the product's own (the decline,
+       the token, the Pre-flights and their artefacts, the disconnect) and, through the service key, F's planted site and its
+       project's link and (b)'s cleared decline — each read back. SELF-CONTAINED, as 114 is: it reads only steps 1–5's names.
+       Every sentence is the one list that prints it (`DEPLOY_WORDS`, `SAFETY_WORDS`, `CONNECT_MESSAGES`, `KEYS`, R-170). */
+    {
+      const imp116 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP116, CR116, PR116, SS116] = await Promise.all([imp116('apps/web/lib/deploy.ts'), imp116('apps/web/lib/connect-rule.ts'), imp116('apps/web/lib/probe-rule.ts'), imp116('apps/web/lib/site-switch.ts')])
+      const W116 = DEP116.DEPLOY_WORDS
+      const SN116 = DEP116.SAFETY_WORDS
+      const until116 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      // the keys, by NAME, from tools/probe/.env — never argv, never printed (the pooler URL for the audit read alone)
+      const ENV116 = {}
+      const NAMES116 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN', 'SUPABASE_DB_POOLER_URL']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES116.includes(m[1]) && m[2].trim()) ENV116[m[1]] = m[2].trim()
+      }
+      const missing116 = NAMES116.filter((k) => !ENV116[k])
+      if (missing116.length) throw new Error(`step 116: ${missing116.join(', ')} not in tools/probe/.env`)
+      const SECRETS116 = [ENV116.GHOST6_ADMIN_API_KEY, ENV116.GHOST6_ADMIN_API_KEY.split(':')[1] ?? '', ENV116.GHOST6_CONTENT_API_KEY,
+        ENV116.GHOST6_STAFF_ACCESS_TOKEN, ENV116.GHOST6_STAFF_ACCESS_TOKEN.split(':')[1] ?? '', ENV116.SUPABASE_DB_POOLER_URL,
+        (() => { try { return decodeURIComponent(new URL(ENV116.SUPABASE_DB_POOLER_URL).password) } catch { return '' } })()].filter((s) => s.length >= 8)
+      const scrub116 = (s) => SECRETS116.reduce((t, k) => t.split(k).join('<key>'), String(s))
+      const HOST116 = CR116.hostOf(ENV116.GHOST6_URL)
+      const PLANTED_URL116 = 'https://walk-116.invalid'
+      const PLANTED_HOST116 = CR116.hostOf(PLANTED_URL116)
+      // a well-formed token no Ghost holds (random hex, never a real key) — so only the planted host's silence answers it
+      const FAKE116 = `${require('node:crypto').randomBytes(12).toString('hex')}:${require('node:crypto').randomBytes(32).toString('hex')}`
+      const FIVE116 = DEP116.stepsFor(true).map((s) => s.label)
+      const FOUR116 = DEP116.stepsFor(false).map((s) => s.label)
+
+      const emailF = `editor-harness-f-${stamp}@inflozo.com`
+      const emailG = `editor-harness-g-${stamp}@inflozo.com`
+      const usersBefore116 = (await users())?.length ?? null
+      const projectsBefore116 = await projectCount()
+      const ids116 = { F: null, G: null }
+      const projects116 = { F: null, G: null }
+      let siteF116 = null
+      let siteG116 = null
+      const ctxs116 = []
+      const csp116 = []
+
+      const siteRow116 = async (id) => (await call('/rest/v1', `/sites?id=eq.${id}&select=id,url,credentials_present,staff_token_declined_at,disconnected_at`)).body?.[0] ?? null
+      const jobsOf116 = async (P) => (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P}&select=id,stage,site_id&order=started_at.desc`)).body ?? []
+      const bindings116 = async (siteId) => (await call('/rest/v1', `/project_site_bindings?site_id=eq.${siteId}&select=project_id`)).body ?? []
+      const storage116 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const objects116 = async (P) => {
+        const r = await fetch(`${SB}/storage/v1/object/list/deploy-artifacts`, { method: 'POST', headers: { ...storage116, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix: P, limit: 100, offset: 0 }) }).catch(() => null)
+        if (!r?.ok) return null
+        const b = await r.json()
+        return (Array.isArray(b) ? b : (b.objects ?? [])).map((o) => o.name).filter((n) => typeof n === 'string' && n.endsWith('.zip')).map((n) => (n.includes('/') ? n : `${P}/${n}`))
+      }
+      /** the wizard as drawn: its step, the rail's words, the button Destination offers, D1b's and D1c's own marks, and focus */
+      const wiz116 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const img = d.querySelector('img')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          title: d.querySelector('#deploy-title')?.textContent ?? null,
+          rail: [...d.querySelectorAll('ol li')].map((li) => li.textContent.trim()),
+          next: d.querySelector('#deploy-next') !== null,
+          run: d.querySelector('#deploy-run') !== null,
+          full: d.querySelector('[data-safety-full]')?.textContent ?? null,
+          error: d.querySelector('#deploy-token-error')?.textContent ?? null,
+          lost: [...d.querySelectorAll('[data-safety-lost] li')].map((li) => li.textContent.trim()),
+          img: img && { src: img.getAttribute('src'), loaded: img.complete && img.naturalWidth > 0 },
+          focused: document.activeElement?.id ?? null,
+          width: d.getBoundingClientRect().width - parseFloat(getComputedStyle(d).paddingLeft) - parseFloat(getComputedStyle(d).paddingRight),
+        }
+      }).catch(() => null)
+      const labels116 = (rail) => (rail ?? []).map((t) => t.replace(/^\d+/, ''))
+      const context116 = async (email) => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs116.push(ctx)
+        await recorder(ctx, csp116)
+        const p = steady(await ctx.newPage())
+        p.on('pageerror', (e) => note('pageerror 116', scrub116(String(e))))
+        await p.goto(await magic(email), { waitUntil: 'load' })
+        return p
+      }
+      const painted116 = (p, key) => p.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 }).then(() => true, () => false)
+      const openShip116 = async (p) => {
+        await p.locator('#editor-ship').click()
+        return until116(() => wiz116(p), (w) => w?.at === 'destination', 20000)
+      }
+      const toOffer116 = async (p) => {
+        await p.locator('#deploy-next').click()
+        return until116(() => wiz116(p), (w) => w?.at === 'safety' && w.title === SN116.title, 15000)
+      }
+      const addToken116 = async (p, token) => {
+        await p.locator('#deploy-token').fill(token)
+        await p.locator('#deploy-add-token').click()
+      }
+      const handBack116 = (p, P) => p.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${P}/lock`).catch(() => {})
+      /** a Pre-flight the step started, at rest (AD-11's budget at most) — so nothing is still writing when the step cleans up */
+      const rested116 = (P) => until116(() => jobsOf116(P), (js) => js.every((j) => !['queued', 'compiling', 'checking'].includes(j.stage)), 330000)
+
+      try {
+        // ── 116a — the offer and the decline (R-278), on a planted site ──
+        const madeF = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: emailF, email_confirm: true }) })
+        ids116.F = madeF.status === 200 ? madeF.body.id ?? null : null
+        if (!UUID.test(ids116.F ?? '')) throw new Error('step 116: account F was not made')
+        projects116.F = (await seed({ email: emailF, name: `Walk 116 ${stamp}` }))?.id ?? null
+        const plantedF = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: ids116.F, url: PLANTED_URL116, title: 'Walk 116', ghost_version: '6.58.0', capability: 'full' }) })
+        siteF116 = plantedF.body?.[0]?.id ?? null
+        const linkedF = UUID.test(projects116.F ?? '') && UUID.test(siteF116 ?? '')
+          ? await call('/rest/v1', `/projects?id=eq.${projects116.F}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteF116 }) }) : null
+        const rowF0 = siteF116 === null ? null : await siteRow116(siteF116)
+        check(`step 116a — the fixture: account F, a seeded project linked through the service key to a planted connected site at ${PLANTED_HOST116} — no Staff Access Token, no recorded decline, no binding`,
+          UUID.test(projects116.F ?? '') && [200, 204].includes(linkedF?.status) && rowF0?.credentials_present?.staff === false && rowF0.staff_token_declined_at === null && (await bindings116(siteF116)).length === 0,
+          JSON.stringify({ project: projects116.F, site: plantedF.status, link: linkedF?.status, row: rowF0 }))
+        if (!linkedF) throw new Error('step 116: F\'s project or site is missing')
+        const pf = await context116(emailF)
+        await pf.goto(at(`/projects/${projects116.F}`), { waitUntil: 'load' })
+        await painted116(pf, 'home')
+        const d0 = await openShip116(pf)
+        check(`step 116a — a first deploy: Destination offers "${W116.next}" (no Run checks) and the rail reads ${FIVE116.join(' · ')}`,
+          d0?.next === true && d0.run === false && JSON.stringify(labels116(d0.rail)) === JSON.stringify(FIVE116), JSON.stringify(d0))
+        const d1 = await toOffer116(pf)
+        check(`step 116a — Next opens D1b at 700: "${SN116.title}", the token box focused, the disclosure in KEYS.staff.full's words, Safety net current at 2, and the owner's picture served`,
+          d1?.at === 'safety' && d1.focused === 'deploy-token' && d1.full === CR116.KEYS.staff.full && d1.rail[1] === `2${SN116.rail}` && d1.img?.loaded === true && d1.img.src === DEP116.SAFETY_PICTURE.src && Math.round(d1.width) === 700,
+          JSON.stringify(d1))
+        await pf.locator('#deploy-safety-back').click()
+        const d2 = await until116(() => wiz116(pf), (w) => w?.at === 'destination', 10000)
+        check('step 116a — Back is Destination, with Next focused', d2?.at === 'destination' && d2.focused === 'deploy-next', JSON.stringify(d2))
+        await toOffer116(pf)
+        await pf.locator('#deploy-not-now').click()
+        const d3 = await until116(() => wiz116(pf), (w) => w?.title === SN116.declinedTitle, 10000)
+        const declined116 = await until116(() => siteRow116(siteF116), (r) => typeof r?.staff_token_declined_at === 'string', 20000)
+        check(`step 116a — Not now opens D1c at once on Continue — "${SN116.declinedTitle}", its three losses — and the decline is stored on the SITE before Continue is pressed (staff_token_declined_at set)`,
+          d3?.focused === 'deploy-continue' && JSON.stringify(d3.lost) === JSON.stringify(SN116.lost) && typeof declined116?.staff_token_declined_at === 'string',
+          JSON.stringify({ d3, declined: declined116?.staff_token_declined_at ?? null }))
+        await pf.locator('#deploy-continue').click()
+        const d4 = await until116(() => wiz116(pf), (w) => w?.at === 'check', 20000)
+        const jobF = await until116(() => jobsOf116(projects116.F), (js) => js.length === 1, 20000)
+        check('step 116a — Continue starts the checks: one Pre-flight job for the planted site, and the rail keeps Safety net ticked at 2 with Check current at 3',
+          d4?.at === 'check' && jobF.length === 1 && jobF[0].site_id === siteF116 && d4.rail[1] === SN116.rail && d4.rail[2] === `3${FOUR116[1]}`, JSON.stringify({ d4, jobF }))
+        await rested116(projects116.F)
+        await pf.keyboard.press('Escape')
+        await until116(() => wiz116(pf), (w) => w === null, 10000)
+        const d5 = await openShip116(pf)
+        check(`step 116a — reopened in the same page: no Safety net — "${W116.runChecks}" and four steps`, d5?.run === true && d5.next === false && JSON.stringify(labels116(d5.rail)) === JSON.stringify(FOUR116), JSON.stringify(d5))
+        await pf.keyboard.press('Escape')
+        await pf.reload({ waitUntil: 'load' })
+        await painted116(pf, 'home')
+        const d6 = await openShip116(pf)
+        check('step 116a — reloaded: still none, from the stored decline (the server\'s truth, not the page\'s)', d6?.run === true && d6.next === false && JSON.stringify(labels116(d6.rail)) === JSON.stringify(FOUR116), JSON.stringify(d6))
+        await pf.keyboard.press('Escape')
+
+        // ── 116b — the decline cleared through the service key: a malformed token, then one the planted host cannot answer ──
+        const cleared = await call('/rest/v1', `/sites?id=eq.${siteF116}`, { method: 'PATCH', body: JSON.stringify({ staff_token_declined_at: null }) })
+        check('step 116b — the planted site\'s decline cleared through the service key, read back null', [200, 204].includes(cleared.status) && (await siteRow116(siteF116))?.staff_token_declined_at === null, `HTTP ${cleared.status}`)
+        await pf.reload({ waitUntil: 'load' })
+        await painted116(pf, 'home')
+        await openShip116(pf)
+        const b0 = await toOffer116(pf)
+        check('step 116b — the control: with the decline gone the Safety net is offered again', b0?.at === 'safety', JSON.stringify(b0))
+        await addToken116(pf, 'hello')
+        const b1 = await until116(() => wiz116(pf), (w) => w?.error !== null, 20000)
+        check(`step 116b — Add token with "hello": "${CR116.connectMessage('token_malformed')}" under the box, and no step change`,
+          b1?.error === CR116.connectMessage('token_malformed') && b1.at === 'safety', JSON.stringify(b1))
+        await addToken116(pf, FAKE116)
+        const unreachable116 = CR116.connectMessage('ghost_unreachable', PLANTED_HOST116)
+        const b2 = await until116(() => wiz116(pf), (w) => w?.error === unreachable116, 40000)
+        const rowF2 = await siteRow116(siteF116)
+        check(`step 116b — a well-formed token for a site that does not answer: "${unreachable116}", no step change, and nothing stored (credentials_present.staff false)`,
+          b2?.error === unreachable116 && b2.at === 'safety' && rowF2?.credentials_present?.staff === false, scrub116(JSON.stringify({ b2, keys: rowF2?.credentials_present })))
+        // the matrix's "site gone": the planted site disconnected meanwhile, through the service key, while D1b is open — the
+        // action's own read of the link (`disconnected_at is null`) finds no site, so it says so and asks Ghost nothing
+        const goneF = await call('/rest/v1', `/sites?id=eq.${siteF116}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: new Date().toISOString() }) })
+        await addToken116(pf, FAKE116)
+        const b3 = await until116(() => wiz116(pf), (w) => w?.error === SS116.SWITCH_WORDS.gone, 20000)
+        const rowF3 = await siteRow116(siteF116)
+        check(`step 116b — the site disconnected meanwhile: Add token says "${SS116.SWITCH_WORDS.gone}", no step change, and nothing stored`,
+          [200, 204].includes(goneF.status) && b3?.error === SS116.SWITCH_WORDS.gone && b3.at === 'safety' && rowF3?.credentials_present?.staff === false,
+          scrub116(JSON.stringify({ disconnect: goneF.status, b3, keys: rowF3?.credentials_present })))
+        await handBack116(pf, projects116.F)
+
+        // ── 116c — T1, through the wizard: a real Administrator's token kept, and the disconnect taking it out ──
+        const madeG = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: emailG, email_confirm: true }) })
+        ids116.G = madeG.status === 200 ? madeG.body.id ?? null : null
+        if (!UUID.test(ids116.G ?? '')) throw new Error('step 116: account G was not made')
+        const pg = await context116(emailG)
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV116.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV116.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV116.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use116 = pg.getByRole('button', { name: PR116.BRAND_COPY.use, exact: true })
+        if (await use116.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use116.click()
+        const projsG = await until116(async () => (await call('/rest/v1', `/projects?user_id=eq.${ids116.G}&select=id,linked_site_id`)).body ?? [], (ps) => ps.length === 1 && ps[0].linked_site_id !== null, 45000)
+        projects116.G = projsG[0]?.id ?? null
+        siteG116 = projsG[0]?.linked_site_id ?? null
+        const rowG0 = siteG116 === null ? null : await siteRow116(siteG116)
+        check(`step 116c — T1 connected through the wizard (its keys checked with GETs) and a project linked to ${HOST116}, with no Staff Access Token`,
+          UUID.test(projects116.G ?? '') && CR116.hostOf(rowG0?.url ?? '') === HOST116 && rowG0.credentials_present?.staff === false && rowG0.disconnected_at === null, JSON.stringify({ projects: projsG.length, keys: rowG0?.credentials_present }))
+        if (siteG116 === null) throw new Error('step 116: T1 did not connect')
+        await pg.goto(at(`/projects/${projects116.G}`), { waitUntil: 'load' })
+        await painted116(pg, 'home')
+        await openShip116(pg)
+        await toOffer116(pg)
+        await addToken116(pg, ENV116.GHOST6_STAFF_ACCESS_TOKEN)
+        const c1 = await until116(() => wiz116(pg), (w) => w?.at === 'check' || (w?.error ?? null) !== null, 60000)
+        const rowG1 = await until116(() => siteRow116(siteG116), (r) => r?.credentials_present?.staff === true, 15000)
+        check('step 116c — Add token with T1\'s own staff token: Ghost answers the Owner or an Administrator, the checks start (Pre-flight) with Safety net ticked, and credentials_present.staff is true',
+          c1?.at === 'check' && c1.rail[1] === SN116.rail && rowG1?.credentials_present?.staff === true, scrub116(JSON.stringify({ c1, keys: rowG1?.credentials_present })))
+        let audit116 = null
+        process.env.SUPABASE_DB_POOLER_URL = ENV116.SUPABASE_DB_POOLER_URL
+        try {
+          const DB116 = await imp116('apps/web/server/ghost-admin/db.ts')
+          audit116 = await DB116.sql()`select action, outcome, allowlist_item, detail from private.credential_audit where site_id = ${siteG116} and route = 'projects/editor/safety-token' order by occurred_at, id`
+          await DB116.sql().end({ timeout: 5 }).catch(() => {})
+        } finally {
+          delete process.env.SUPABASE_DB_POOLER_URL
+        }
+        const reads116 = (audit116 ?? []).filter((r) => r.action === 'admin_read')
+        const changes116 = (audit116 ?? []).filter((r) => r.action === 'credential_change')
+        check('step 116c — private.credential_audit (the pooler): ONE admin_read "ok" row for the check (HTTP 200, no allowlist item — a GET) and one staff credential_change "in", nothing else on the route',
+          audit116 !== null && reads116.length === 1 && reads116[0].outcome === 'ok' && reads116[0].allowlist_item === null && reads116[0].detail?.status === 200 &&
+          changes116.length === 1 && changes116[0].detail?.kind === 'staff' && changes116[0].detail?.direction === 'in' && audit116.length === 2,
+          JSON.stringify((audit116 ?? []).map((r) => ({ action: r.action, outcome: r.outcome, item: r.allowlist_item, status: r.detail?.status ?? null, kind: r.detail?.kind ?? null }))))
+        await rested116(projects116.G)
+        await pg.keyboard.press('Escape')
+        await handBack116(pg, projects116.G)
+        await pg.goto(at(`/sites/disconnect?site=${siteG116}`), { waitUntil: 'load' })
+        const off116 = pg.locator('form').getByRole('button', { name: CR116.DISCONNECT.menu, exact: true }).first()
+        await off116.waitFor({ state: 'visible', timeout: 30000 })
+        await off116.click()
+        const gone116 = await until116(() => siteRow116(siteG116), (r) => r?.disconnected_at != null, 30000)
+        check(`step 116c — "${CR116.DISCONNECT.menu}" through /sites/disconnect: disconnected_at set and credentials_present all false — the token went with the keys`,
+          gone116?.disconnected_at != null && gone116.credentials_present?.admin === false && gone116.credentials_present?.content === false && gone116.credentials_present?.staff === false,
+          JSON.stringify({ gone: gone116?.disconnected_at ?? null, keys: gone116?.credentials_present ?? null }))
+      } catch (e) {
+        check('step 116 — the step ran to its end', false, scrub116(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        for (const ctx of ctxs116) await ctx.close().catch(() => {})
+        for (const who of ['F', 'G']) {
+          const P = projects116[who]
+          if (P !== null) {
+            await rested116(P).catch(() => {})
+            for (const key of (await objects116(P)) ?? []) await fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { method: 'DELETE', headers: storage116 }).catch(() => {})
+            const left = await objects116(P)
+            check(`step 116 — ${who}'s Pre-flight artefacts removed from deploy-artifacts (objects outlive their rows), the listing read back empty`, Array.isArray(left) && left.length === 0, JSON.stringify(left))
+          }
+        }
+        const dels116 = []
+        for (const who of ['F', 'G']) if (ids116[who] !== null) dels116.push((await admin(`/admin/users/${ids116[who]}`, { method: 'DELETE', body: '{}' })).status)
+        const usersAfter = (await users())?.length ?? null
+        const projectsAfter = await projectCount()
+        check('step 116 — accounts F and G deleted (their projects, sites, jobs and deploys with them), users and projects counted back as the step found them',
+          dels116.every((st) => st === 200) && usersBefore116 !== null && usersAfter === usersBefore116 && projectsBefore116 !== null && projectsAfter === projectsBefore116,
+          `HTTP ${dels116.join(', ')}, users ${usersBefore116} → ${usersAfter}, projects ${projectsBefore116} → ${projectsAfter}`)
+      }
+      check('step 116 — the step\'s contexts recorded zero CSP violations', csp116.length === 0, JSON.stringify(csp116.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

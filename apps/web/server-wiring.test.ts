@@ -25,6 +25,7 @@ const ROUTES_IO = join('server', 'routes-io.ts')
 const ROUTES_STEP = join('server', 'routes-upload.ts')
 const DEPLOY_IO = join('server', 'deploy', 'deploy-io.ts')
 const DEPLOY_RUN = join('server', 'deploy', 'run.ts')
+const STAFF_TOKEN = join('server', 'staff-token.ts')
 const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
 const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
 const MIGRATIONS = '../../supabase/migrations'
@@ -155,6 +156,11 @@ test('the service-role client is imported by the flag reader and by nothing else
   // `sites.capability` is server-asserted (AD-7, FR-C2's deploy-error mark). It reads the project's stored rows for the compile
   // (`project-input.ts`, handed this client) and is handed to `server/deploy/run.ts`, which imports neither this nor the
   // chokepoint (held below). Every query carries `user_id`, and a site read `disconnected_at is null`.
+  // The TENTH, added by Story 7.19 with its reason: the editor's Safety net records a Not now on the SITE
+  // (`sites.staff_token_declined_at`, R-278), a column server-asserted by the same AD-7 rule as `routes_fallback` — no
+  // `authenticated` update grant — so `declineSafetyNet` writes it with the service role, scoped by `user_id` and
+  // `disconnected_at is null`, after the caller's own session has read the project's link (RLS). It is the file's one such
+  // write; its token write goes through `server/staff-token.ts` and the chokepoint, never this client.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -165,6 +171,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     SITE_HEALTH,
     ROUTES_IO,
     DEPLOY_IO,
+    EDITOR_ACTIONS,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
@@ -477,7 +484,13 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     the second multipart write, DW-51's transport) and `theme_activate` (`PUT themes/{name}/activate/`), both with the
   //     Admin key. It is the real `io` handed to `server/deploy/run.ts`, which decides and imports no part of the chokepoint
   //     (held below); `ADMIN_WRITES` stays four (R-22) — both items were already on it.
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO]
+  //   - THE STAFF TOKEN'S CHECK, Story 7.19's (R-280): `addStaffToken` asks `GET users/me/?include=roles` with the pasted
+  //     token IN HAND (`fetchWithKey`, a GET — no allowlist item) and only then `store({ kind: 'staff' })`. It is the ONE check
+  //     both callers run — the first deploy's Safety net (`(editor)/actions.ts`, which imports this file and no part of the
+  //     chokepoint, held below) and Manage keys (`sites/actions.ts`, already listed) — so a token that fails leaves nothing.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN]
+  assert.equal(reachesChokepoint(STAFF_TOKEN), true, 'control: staff-token.ts imports the chokepoint')
+  assert.equal(reachesChokepoint(EDITOR_ACTIONS), false, `${EDITOR_ACTIONS} imports the chokepoint; the token goes through staff-token.ts`)
   assert.equal(reachesChokepoint(ROUTES_STEP), false, `${ROUTES_STEP} imports the chokepoint; its call() is handed in`)
   assert.equal(reachesChokepoint(ROUTES_IO), true, 'control: routes-io.ts imports the chokepoint')
   assert.equal(reachesChokepoint(DEPLOY_RUN), false, `${DEPLOY_RUN} imports the chokepoint; its call() is handed in`)
@@ -679,6 +692,9 @@ test('R-213: no editor action redirects a signed-out tab — each reads the user
     recheckSite: '{ refused: true }',
     // Story 7.18b — choosing the site (its other refusals are the lock's and the site's own sentences)
     switchSite: '{ refused: DEPLOY_WORDS.infrastructure }',
+    // Story 7.19 — the Safety net's two writes (the token's other refusals are its check's own sentences)
+    addSafetyToken: '{ refused: DEPLOY_WORDS.infrastructure }',
+    declineSafetyNet: '{ ok: false }',
   }
   /** the file's code, comments out (its prose names `signedIn()` and `redirect` to say why neither is called) */
   const code = readFileSync(EDITOR_ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, '').replace(/\/\/.*$/gm, '')

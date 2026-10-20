@@ -94,7 +94,7 @@ import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, FEEDLESS_ROUTE, NOW_MAIN, withTra
 import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
-import { recheckSite, setPreviewSubject, setViewedStates, switchSite } from './actions'
+import { addSafetyToken, declineSafetyNet, recheckSite, setPreviewSubject, setViewedStates, switchSite } from './actions'
 import { EditorSkeleton } from './editor-skeleton'
 import type { EditorData } from './read'
 import { PackEditor, type PackEditing } from './pack-editor'
@@ -561,6 +561,10 @@ type EditorProps = EditorData & {
   /** STORY 7.18b — choosing the site, `switchSite` unless named: the keyboard harness names its own, which answers with no
    *  database (`harnessSwitch`). The app passes none. */
   switchTo?: typeof switchSite
+  /** STORY 7.19 — the Safety net's two writes, `addSafetyToken` and `declineSafetyNet` unless named: the keyboard harness names
+   *  its own, which answer with no database (`harnessAddToken`, `harnessDecline`). The app passes none. */
+  addToken?: typeof addSafetyToken
+  decline?: typeof declineSafetyNet
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -856,6 +860,8 @@ function EditorShell({
   canvasBase,
   reread = recheckSite,
   switchTo = switchSite,
+  addToken = addSafetyToken,
+  decline = declineSafetyNet,
 }: EditorProps) {
   const pathname = usePathname()
   /** Story 7.12 — the project's strings (FR-H5): the overrides the server's judge passed, over the catalog's English. Fixed for
@@ -2543,6 +2549,9 @@ function EditorShell({
    * canvas; closing it after a job ended re-reads the page (`router.refresh()`), so the bar's label and versions follow. */
   const shipTakeover = useRef<HTMLDialogElement>(null)
   const [wizard, setWizard] = useHanded<ShipRequest | null>(null)
+  /** STORY 7.19 — the site this page answered the Safety net for (Add token or Not now): a reopen in the same page never asks
+   *  again; a reload reads the stored token or decline instead (`ship.site.staff`, `ship.site.declined`) */
+  const [answered, setAnswered] = useState<string | null>(null)
   /** D8g's take-over landed and the reload that follows it is on its way: Ship it says so (R-98) */
   const [shipOpening, setShipOpening] = useHanded(false)
   /** the mode D8g was asked from — the ▾ row or Ship it's own press */
@@ -6915,6 +6924,10 @@ function EditorShell({
           onSwitch={switchSiteNow}
           onRelink={relink}
           relinking={relinking}
+          answered={answered}
+          onAnswered={setAnswered}
+          addToken={(token) => addToken(project.id, token)}
+          decline={() => decline(project.id)}
           onClose={(shipped) => {
             // a relink's kept ask is spent: an editor the re-read did not remount (the harness) never reopens it later
             tabStore()?.removeItem(SHIP_AFTER)

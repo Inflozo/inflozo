@@ -8400,3 +8400,26 @@ with the block's length check (`page_id` refused empty and at 65 characters, 235
 `into strict` — with that row deleted first (a scratch copy of both byte-identical files), the gate exits 3 at "another
 tenant's lock is gone", where three null subqueries joined by `or` raised nothing.
 
+## 88. Whose Staff Access Token it is, on T1 — `GET users/me/?include=roles` through the product's `adminRequest` and read by its own `addStaffToken`: the staff token's user is the Owner, one flipped digit is a 401, and the integration's Admin API key a 404 `NotFoundError` · T1 · 2026-10-20
+
+**Command.** `node --experimental-strip-types tools/probe/record-staff-token.mjs --t1` — three GETs, nothing written anywhere: `addStaffToken` is handed an io whose fetch sends `adminRequest`'s request to T1 and whose store records that it was asked.
+
+**Ghost.** T1 `ghost6.inflozo.com` (6.x). Ghost 5's half is DW-326's (R-238, Story 15.7).
+
+**The control, which voids the run:** the same token with its last hex digit changed must answer 401 and be refused, so the read can refuse at all.
+
+| Step | Row | Got | Held |
+|---|---|---|---|
+| adminRequest | the read is a GET of users/me with the roles, no body, at v6.0 | `https://ghost.example/ghost/api/admin/users/me/?include=roles` | yes |
+| flipped | the control token is well-formed and differs from the real one in its last digit alone | `89 characters` | yes |
+| addStaffToken · owner | read as {"ok":true}, the store asked once | `{"ok":true}` | yes |
+| addStaffToken · editor | read as {"ok":false,"code":"token_role","role":"Editor"}, the store asked never | `{"ok":false,"code":"token_role","role":"Editor"}` | yes |
+| addStaffToken · unknown | read as {"ok":false,"code":"token_unknown"}, the store asked never | `{"ok":false,"code":"token_unknown"}` | yes |
+| addStaffToken · integration | read as {"ok":false,"code":"token_integration"}, the store asked never | `{"ok":false,"code":"token_integration"}` | yes |
+| GET users/me/?include=roles [staff] | 200, the token's own user is the Owner or an Administrator, and addStaffToken keeps it | `HTTP 200 · errors[0].type — · role Owner · read kept · stored asked once (recorded, not written)` | yes |
+| GET users/me/?include=roles [flipped] (control) | 401 — a token Ghost does not know; token_unknown, nothing kept | `HTTP 401 · errors[0].type UnauthorizedError · role — · read token_unknown · stored nothing` | yes |
+| GET users/me/?include=roles [admin] | 404 NotFoundError — an integration's key has no user; token_integration, nothing kept | `HTTP 404 · errors[0].type NotFoundError · role — · read token_integration · stored nothing` | yes |
+
+- **`users/me` with a staff token is the token's own user** (read in source: `api/endpoints/users.js:30`, `serializers/input/users.js:17,25`), roles included (`ALLOWED_INCLUDES`): T1 answered 200 with `Owner`, so Story 7.19's check keeps an Owner's or an Administrator's token and the Safety net can be added on T1.
+- **An integration's Admin API key answers 404 `NotFoundError`** — the reading `token_integration` keys on (an Admin key has no `context.user`, so `me` stays literal and `findOne` finds nobody). Read in source until now; executed here.
+- **What this does NOT say.** An Editor's token was not executed: T1 has no Editor, so `token_role` rests on both majors' `fixtures.json` and `staff-token.test.ts`. The product's `call()` path (Vault, `credentials_present`, the `admin_read` audit row) is the deployed walk's step 116 (c).

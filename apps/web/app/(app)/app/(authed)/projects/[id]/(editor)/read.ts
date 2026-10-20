@@ -324,7 +324,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 5.20 — and its `site_settings`, for FR-H6's record of the member switches (`storedMembers` reads the one key)
     // Story 5.21 — and for the snapshot Ghost's two surfaces are drawn from (`storedSurfaces`)
     // Story 7.18b — and its `capability_source` (R-270: a refused upload's mark keeps Run checks)
-    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version, capability, capability_source').eq('id', linked).maybeSingle(),
+    // Story 7.19 — and whether it holds a Staff Access Token or recorded a Not now (the Safety net's offer, `safetyOffered`)
+    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version, capability, capability_source, credentials_present, staff_token_declined_at').eq('id', linked).maybeSingle(),
     // Story 7.10 — the project's custom settings, through the user's own session as Theme settings reads them (RLS)
     sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', projectId).order('position').order('created_at'),
     // Story 7.12 — the project's translation overrides (FR-H5: the canvas renders them through the shim)
@@ -337,7 +338,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 7.18a — the deploys and the binding Ship it counts from, through the user's own session (the tenant reads both)
     linked === null ? null : Promise.all([
       sb.from('deploys').select('version, status, activated, activated_at').eq('project_id', projectId).eq('site_id', linked).in('status', ['uploaded', 'live']),
-      sb.from('project_site_bindings').select('theme_name').eq('project_id', projectId).eq('site_id', linked).maybeSingle(),
+      // Story 7.19 — EVERY binding to the site among the user's projects (RLS: the owner's own rows): this project's gives the
+      // frozen name, and none at all is FR-J13's first deploy to the site — the Safety net's offer
+      sb.from('project_site_bindings').select('project_id, theme_name').eq('site_id', linked),
       // R-264 (a): the site's latest activated deploy, whichever project made it — is this project's theme the one live?
       sb.from('deploys').select('project_id').eq('site_id', linked).eq('activated', true).order('activated_at', { ascending: false }).limit(1),
     ]),
@@ -553,7 +556,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
       siteId: linked,
       site: siteRow && !siteRow.error ? siteRow.data : null,
       deploys: shipRows?.[0].error ? null : (shipRows?.[0].data ?? []),
-      binding: shipRows?.[1].error ? null : (shipRows?.[1].data ?? null),
+      bindings: shipRows === null ? [] : shipRows[1].error ? null : (shipRows[1].data ?? []),
       // a failed read is "not live here" — Deploy only stays offered, and the server's own guard reads again
       liveHere: !shipRows?.[2].error && (shipRows?.[2].data?.[0] as { project_id?: unknown } | undefined)?.project_id === projectId,
       required: requiredTemplates(held),

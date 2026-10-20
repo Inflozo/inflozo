@@ -113,5 +113,7 @@ export async function proxy(req: NextRequest) {
 // is a PREFIX reserved for static files: a page route must never be placed under `brand/`,
 // `connect/` or `orbit-weekly/` (Story 5.24e's DW-102: the sample publication's audio and video,
 // which the style guide and the Paywall canvas play), because it would escape the proxy — no
-// rewrite, no CSP, no session refresh.
-export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|icon.png|apple-icon.png|brand/|connect/|orbit-weekly/).*)'] }
+// rewrite, no CSP, no session refresh. Story 7.19 adds `deploy/`: the first deploy's Safety net draws the owner's
+// screenshot of Ghost's Staff access token box (R-279) from `public/deploy/`. No page lives at `/deploy` — the deploy
+// route is `/projects/{id}/deploy`, under `projects/`.
+export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|icon.png|apple-icon.png|brand/|connect/|deploy/|orbit-weekly/).*)'] }

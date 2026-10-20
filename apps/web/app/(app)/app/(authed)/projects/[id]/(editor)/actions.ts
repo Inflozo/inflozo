@@ -1,15 +1,17 @@
 'use server'
 
 import { orbitWeekly } from '@inflozo/library'
+import { CONNECT_MAX, hostOf, tokenRefusal } from '@/lib/connect-rule'
 import { DEPLOY_WORDS, shipStateOf } from '@/lib/deploy'
 import { canvasOfPageTwoKey, canvasOfTemplateKey, fileOf, isUuid } from '@/lib/editor'
-import { confirmedFrom, switchWith, type SwitchAnswer } from '@/lib/site-switch'
+import { confirmedFrom, SWITCH_WORDS, switchWith, type SwitchAnswer } from '@/lib/site-switch'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
 import type { Members, Surfaces } from '@/lib/probe-rule'
 import { VISITORS, readViewed } from '@/lib/view-as'
-import { quietSession } from '@/lib/supabase/server'
+import { quietSession, supabaseAdmin } from '@/lib/supabase/server'
 import { holdsLock } from '@/server/edit-lock'
 import { readSettings } from '@/server/site-probe'
+import { addStaffToken } from '@/server/staff-token'
 
 /**
  * STORY 5.13 — THE ONE WRITE THE EDITOR'S OWN CHROME MAKES (FR-D22).
@@ -210,7 +212,7 @@ export async function switchSite(projectId: string, siteId: string, session: str
       }
       // the site as the picker lists it — `shipStateOf`'s own mapping, its holder beside it
       const sites = site.data === null ? [] : shipStateOf({
-        projectId, slug: '', language: project.data.language, rtlAckAt: null, overridden: false, siteId: null, site: null, deploys: [], binding: null, liveHere: false, required: [],
+        projectId, slug: '', language: project.data.language, rtlAckAt: null, overridden: false, siteId: null, site: null, deploys: [], bindings: [], liveHere: false, required: [],
         sites: [site.data], linking: holder.data ? [{ ...holder.data, linked_site_id: siteId }] : [],
       }).sites
       return { project: { language: project.data.language, linkedSiteId: project.data.linked_site_id, overridden: (overrides.count ?? 0) > 0 }, site: sites?.[0] ?? null }
@@ -232,4 +234,75 @@ export async function switchSite(projectId: string, siteId: string, session: str
       return 'error'
     },
   }, { projectId, siteId, confirmed: confirmedFrom(confirmed) })
+}
+
+/**
+ * STORY 7.19 — THE FIRST DEPLOY'S SAFETY NET (FR-C1, D1b/D1c): the wizard's two writes, beside `switchSite`. Each writes the
+ * SITE, never the project, so neither takes the edit lock; each reads the project's link through the CALLER'S OWN session first
+ * (RLS decides it is theirs), and the site with `disconnected_at is null`, so a site disconnected or unlinked meanwhile is
+ * `SWITCH_WORDS.gone` and nothing is written. Neither logs the token, which arrives in the action's body and goes to the
+ * chokepoint alone.
+ *
+ * `addSafetyToken` — R-280: `addStaffToken` is Manage keys' check too, so a token is asked of Ghost (`GET users/me/?include=
+ * roles`) and only an Owner's or an Administrator's is stored (Vault, the flag, the audit row). It answers ok, or the one
+ * sentence for the cause (`tokenRefusal`, the codes table's own).
+ *
+ * `declineSafetyNet` — R-278: a Not now is recorded on the SITE record (`sites.staff_token_declined_at`), so no project of the
+ * user's asks again on that site. The column is server-asserted (no `authenticated` update grant — the Schema's header), so the
+ * write is the service role's, scoped by `user_id` and `disconnected_at is null`, the clause that stands in for the RLS it
+ * bypasses — the one reason this file is on `server-wiring.test.ts`' service-role list. The deploy never waits on it: the wizard
+ * does not await its answer, and a failed write is logged and the offer returns on a later open.
+ */
+const TOKEN_ROUTE = 'projects/editor/safety-token'
+
+export type SafetyAnswer = { ok: true } | { refused: string }
+
+/** the project's linked site, CONNECTED, through the caller's own session (RLS) — null when there is none any more */
+async function linkedSite(supabase: Awaited<ReturnType<typeof quietSession>>['supabase'], projectId: string) {
+  const { data: project, error } = await supabase.from('projects').select('linked_site_id').eq('id', projectId).maybeSingle()
+  if (error || !project?.linked_site_id) {
+    if (error) console.error('projects/editor: the safety net could not read the project', { code: error.code })
+    return null
+  }
+  const { data: site, error: siteError } = await supabase
+    .from('sites').select('id, url, ghost_version').eq('id', project.linked_site_id as string).is('disconnected_at', null).maybeSingle()
+  if (siteError) console.error('projects/editor: the safety net could not read the site', { code: siteError.code })
+  return (site as { id: string; url: string; ghost_version: string | null } | null) ?? null
+}
+
+export async function addSafetyToken(projectId: string, token: string): Promise<SafetyAnswer> {
+  if (!isUuid(projectId) || typeof token !== 'string' || token.length > CONNECT_MAX) return { refused: tokenRefusal({ code: 'token_malformed' }, '') }
+  const { user, supabase } = await quietSession()
+  if (!user) return { refused: DEPLOY_WORDS.infrastructure }
+  const site = await linkedSite(supabase, projectId)
+  if (site === null) return { refused: SWITCH_WORDS.gone }
+  const answer = await addStaffToken({
+    siteId: site.id, userId: user.id, url: site.url, version: site.ghost_version, token, route: TOKEN_ROUTE,
+  }).catch((thrown: unknown) => {
+    console.error('projects/editor: the safety token could not be added', { name: (thrown as { name?: string })?.name })
+    return { ok: false as const, code: 'keys_failed' }
+  })
+  if (answer.ok) return { ok: true }
+  if (answer.code === 'site_not_found') return { refused: SWITCH_WORDS.gone }
+  return { refused: tokenRefusal(answer, hostOf(site.url)) }
+}
+
+export async function declineSafetyNet(projectId: string): Promise<{ ok: boolean }> {
+  if (!isUuid(projectId)) return { ok: false }
+  const { user, supabase } = await quietSession()
+  if (!user) return { ok: false }
+  const site = await linkedSite(supabase, projectId)
+  if (site === null) return { ok: false }
+  const { data, error } = await supabaseAdmin()
+    .from('sites')
+    .update({ staff_token_declined_at: new Date().toISOString() })
+    .eq('id', site.id)
+    .eq('user_id', user.id)
+    .is('disconnected_at', null)
+    .select('id')
+  if (error || !data?.length) {
+    console.error('projects/editor: the safety net decline was not recorded', { code: error?.code ?? 'no_row' })
+    return { ok: false }
+  }
+  return { ok: true }
 }

@@ -1,11 +1,13 @@
 'use server'
 
 import { headers } from 'next/headers'
-import type { SiteResult } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/actions'
+import type { SafetyAnswer, SiteResult } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/actions'
 import { HARNESS } from '@/lib/harness'
 import { DEPLOY_WORDS } from '@/lib/deploy'
 import { storedSurfaces } from '@/lib/probe-rule'
 import { confirmedFrom, SWITCH_WORDS, type SwitchAnswer } from '@/lib/site-switch'
+import { tokenRefusal } from '@/lib/connect-rule'
+import { addStaffToken, type StaffTokenIo } from '@/server/staff-token'
 import { HARNESS_PROJECT, HARNESS_SITES, SURFACES } from './sites'
 
 /**
@@ -45,4 +47,38 @@ export async function harnessSwitch(projectId: string, siteId: string, session: 
   }
   void siteId
   return { ok: true }
+}
+
+/**
+ * STORY 7.19 — THE HARNESS'S `addSafetyToken`, the editor's `addToken` seam: no database and no Ghost, so the REAL check runs
+ * (`addStaffToken` — empty, then not `id:hex`, then Ghost's answer, then the role) over an `io` that answers as Ghost would
+ * under `x-inflozo-harness-token`: `ok` an Administrator's token (kept, nothing written), `role` an Editor's, `integration`
+ * the integration key's 404 `NotFoundError`, anything else the 401 of a token Ghost does not know. Each sentence is
+ * `tokenRefusal`'s, the app's own. Only the harness project, and only where the harness exists at all.
+ */
+export async function harnessAddToken(projectId: string, token: string): Promise<SafetyAnswer> {
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof token !== 'string') return { refused: DEPLOY_WORDS.infrastructure }
+  const asked = (await headers()).get('x-inflozo-harness-token')
+  const answer = (status: number, body: unknown) => {
+    const text = JSON.stringify(body)
+    return { ok: status === 200, status, body, text, bytes: new TextEncoder().encode(text), ...(status === 200 ? {} : { code: status === 401 ? 'ghost_unknown_key' : 'ghost_refused' }) }
+  }
+  const io: StaffTokenIo = {
+    fetchWithKey: async () =>
+      asked === 'ok' ? answer(200, { users: [{ roles: [{ name: 'Administrator' }] }] })
+      : asked === 'role' ? answer(200, { users: [{ roles: [{ name: 'Editor' }] }] })
+      : asked === 'integration' ? answer(404, { errors: [{ type: 'NotFoundError' }] })
+      : answer(401, { errors: [{ type: 'UnauthorizedError' }] }),
+    store: async () => ({ ref: 'harness' }),
+  }
+  const added = await addStaffToken({ siteId: HARNESS_PROJECT.id, userId: 'harness', url: 'https://127.0.0.1:9', version: '6.58.0', token, route: 'harness' }, io)
+  return added.ok ? { ok: true } : { refused: tokenRefusal(added, 'harness.example') }
+}
+
+/** STORY 7.19 — THE HARNESS'S `declineSafetyNet`: recorded, with nothing to write — or, under `x-inflozo-harness-decline: fail`,
+ *  the write that did not land (`{ ok: false }`, as the real action answers one), so a journey holds that the deploy goes on.
+ *  Only the harness project. */
+export async function harnessDecline(projectId: string): Promise<{ ok: boolean }> {
+  if ((await headers()).get('x-inflozo-harness-decline') === 'fail') return { ok: false }
+  return { ok: HARNESS && projectId === HARNESS_PROJECT.id }
 }

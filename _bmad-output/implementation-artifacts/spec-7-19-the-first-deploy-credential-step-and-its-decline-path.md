@@ -241,7 +241,7 @@ and applied to production on the owner's in-session go (R-99), before any code t
   -- one gate, run in Postgres.
 
 **Execution — Dev:**
-- [ ] `lib/connect-rule.ts` -- the strings, the codes and the role rule:
+- [x] `lib/connect-rule.ts` -- the strings, the codes and the role rule:
   - `KEYS.staff.full` (the disclosure), with `enables` composed from it;
   - `staffRoleOf(body)`, which takes `users[0].roles[0].name` as a string, or null;
   - `STAFF_ROLES_OK` (Owner, Administrator);
@@ -249,7 +249,7 @@ and applied to production on the owner's in-session go (R-99), before any code t
   - `CONNECT_MESSAGES.token_role(role)`, `token_unknown`, `token_integration` from "Ruled values";
   - `keysFieldOf` maps the three to `staff_token`
   -- one pure rule for both surfaces.
-- [ ] `server/staff-token.ts` (**new**) -- `addStaffToken({ siteId, userId, url, version, token, route }, io?)`:
+- [x] `server/staff-token.ts` (**new**) -- `addStaffToken({ siteId, userId, url, version, token, route }, io?)`:
   1. parse the token, and answer `token_empty` or `token_malformed`;
   2. `fetchWithKey` with `GET users/me/?include=roles`, the token in hand, and the site id and user id for the audit
      row;
@@ -260,21 +260,21 @@ and applied to production on the owner's in-session go (R-99), before any code t
 
   It answers `{ ok: true } | { ok: false; code; role? }`, and the `io` is handed in so it can be tested
   -- one check, two callers.
-- [ ] `server/server-wiring.test.ts`'s two lists -- name `staff-token.ts`, as `routes-io.ts` is named -- the
+- [x] `server/server-wiring.test.ts`'s two lists -- name `staff-token.ts`, as `routes-io.ts` is named -- the
   chokepoint stays the only Admin caller.
-- [ ] `sites/actions.ts` -- `saveKeys`' staff branch calls `addStaffToken` and maps its code to `KEYS_REFUSED`, with
+- [x] `sites/actions.ts` -- `saveKeys`' staff branch calls `addStaffToken` and maps its code to `KEYS_REFUSED`, with
   `&role=` only from `roleWord`'s closed list. The header `:1279-1283` is rewritten to say what is checked now, and
   why -- Manage keys checks too (R-170).
-- [ ] `sites/keys-panel.tsx` -- the error slot reads the new codes, and a `role` param outside the closed list reads as
+- [x] `sites/keys-panel.tsx` -- the error slot reads the new codes, and a `role` param outside the closed list reads as
   `token_role` with no name. `enables` comes from `KEYS.staff.full` -- S11e unchanged on screen.
-- [ ] `E/actions.ts` -- two server actions beside `switchSite`:
+- [x] `E/actions.ts` -- two server actions beside `switchSite`:
   - `addSafetyToken(projectId, token)`: the user's own read of the project's link and the site row (connected, its
     `url` and `ghost_version`), then `addStaffToken`; it answers the sentence or ok;
   - `declineSafetyNet(projectId)`: the service role sets `staff_token_declined_at = now()`, scoped by `user_id` and
     `.is('disconnected_at', null)`, and answers ok or not.
 
   Neither takes the lock (they write the site, not the project), and neither logs the token -- the wizard's two writes.
-- [ ] `lib/deploy.ts`:
+- [x] `lib/deploy.ts`:
   - `STEPS` gains `{ id: 'safety', label: 'Safety net' }` after Destination;
   - `stepsFor(safety)` returns the list with or without it, and `stepNumber(at, steps)` counts from it;
   - `ShipState.site` gains `staff` and `declined`, and `ShipState` gains `firstDeploy`;
@@ -285,10 +285,10 @@ and applied to production on the owner's in-session go (R-99), before any code t
   - the comment `:35` is updated
 
   -- the rule, pure.
-- [ ] `E/read.ts` -- the site's select gains `credentials_present, staff_token_declined_at`; the binding read becomes
+- [x] `E/read.ts` -- the site's select gains `credentials_present, staff_token_declined_at`; the binding read becomes
   `select('project_id, theme_name').eq('site_id', linked)`, so it gives this project's name and whether any project
   uploaded; both are passed to `shipStateOf` -- server truth for the offer.
-- [ ] `components/editor/deploy-wizard.tsx`:
+- [x] `components/editor/deploy-wizard.tsx`:
   - a `safety` flag, fixed at mount from `safetyOffered(ship)` and the editor's `answered` site, so the rail keeps
     Safety net ticked through the session;
   - while `stage` is null, a local view `'destination' | 'offer' | 'declined'`;
@@ -305,21 +305,21 @@ and applied to production on the owner's in-session go (R-99), before any code t
   - focus on D1b goes to the token box, Back returns it to Next, and on D1c it goes to Continue
 
   -- D1b, D1c and the rail.
-- [ ] `E/editor.tsx` -- hold `answered` (a site id) beside `wizard`, and pass `answered` and `onAnswered` to the
+- [x] `E/editor.tsx` -- hold `answered` (a site id) beside `wizard`, and pass `answered` and `onAnswered` to the
   wizard -- a reopen in the same page never asks again.
-- [ ] `public/deploy/staff-token.png` (**new**, R-279) -- the owner's screenshot, copied in byte for byte from
+- [x] `public/deploy/staff-token.png` (**new**, R-279) -- the owner's screenshot, copied in byte for byte from
   `_bmad-output/planning-artifacts/user-provided-assets/Staff-access-token-screen.png`. It is 570×650: Ghost 6's dark
   profile sheet, the Staff access token box outlined in red with the token blurred, and Close and Save under it. It is
   drawn in D1b's 280×150 slot with `object-fit: cover` and `object-position: bottom`, so the slot shows the box and the
   field above it. `width`/`height` go on the `<img>`, it loads eagerly, and its alt text comes from "Words". The
   `routing.test.ts` walk serves it on the app host, as `public/connect/integration.png` -- D1b's picture.
-- [ ] `app/(app)/app/harness/editor/layout.tsx`:
+- [x] `app/(app)/app/harness/editor/layout.tsx`:
   - `x-inflozo-harness-ship: first` (as `full`, with `firstDeploy: true`, `staff: false`, `declined: false`);
   - `full` stays not offered (`firstDeploy: false`), so existing journeys are unchanged;
   - `x-inflozo-harness-token: ok | role | unknown | integration` answers `addSafetyToken`, as `harnessSwitch` does
 
   -- the journeys' state.
-- [ ] `deploy.test.ts` · `read.test.ts` · `connect-rule.test.ts` · `staff-token.test.ts` (**new**) ·
+- [x] `deploy.test.ts` · `read.test.ts` · `connect-rule.test.ts` · `staff-token.test.ts` (**new**) ·
   `admin-rule.test.ts` -- every pure row of the matrix:
   - `stepsFor` (both lists; the four-label pin kept as the `false` case);
   - `safetyOffered` across first deploy × token × declined × capability;
@@ -332,9 +332,9 @@ and applied to production on the owner's in-session go (R-99), before any code t
   - a source read of `connect-wizard.tsx`: no `staff_token` field and no `KEYS.staff`
 
   -- each assertion first seen red.
-- [ ] `busy.test.ts` -- the wizard's press list gains Add token (`KEYS.staff.addBusy`) and Continue (`W.starting`) --
+- [x] `busy.test.ts` -- the wizard's press list gains Add token (`KEYS.staff.addBusy`) and Continue (`W.starting`) --
   R-98.
-- [ ] `tools/keyboard/journey.spec.mjs`, pointer-free, with a control for each:
+- [x] `tools/keyboard/journey.spec.mjs`, pointer-free, with a control for each:
   - (a) `first`: Ship it → **Next** focused → D1b with the box focused and five labels in the rail → Esc closes → reopen
     → Back → Next; the control is `full`, which still says Run checks with four labels;
   - (b) Not now → D1c with Continue focused, then Continue → the canned Pre-flight with Safety net ticked at 2; a reopen
@@ -342,9 +342,9 @@ and applied to production on the owner's in-session go (R-99), before any code t
   - (c) `token: role`, then `unknown`, then `integration` → each sentence in the box's alert, with no step change;
     then `ok` → "Adding…", then Pre-flight;
   - (d) Manage keys at `/sites?manage=` with a refused token → the same sentence under the token box.
-- [ ] `tools/keyboard/floor.spec.mjs` -- D1b at 1440 (a 700px card, the picture beside the field) and at 390 (stacked,
+- [x] `tools/keyboard/floor.spec.mjs` -- D1b at 1440 (a 700px card, the picture beside the field) and at 390 (stacked,
   no horizontal scroll) -- the frame's two widths.
-- [ ] `tools/probe/record-staff-token.mjs` (**new**; a `doc-audit.py` catalogue row) -- T1, read-only, keys read
+- [x] `tools/probe/record-staff-token.mjs` (**new**; a `doc-audit.py` catalogue row) -- T1, read-only, keys read
   in-process by name:
   - `users/me/?include=roles` with `GHOST6_STAFF_ACCESS_TOKEN` → 200 and its role;
   - the same token with its last hex flipped → 401 (the control);
@@ -352,7 +352,7 @@ and applied to production on the owner's in-session go (R-99), before any code t
   - each through the product's own `adminRequest`, printing status, `errors[0].type` and the role only
 
   -- standing rule 1 executed.
-- [ ] `tools/probe/run-verify-editor.cjs` -- **step 116** on production:
+- [x] `tools/probe/run-verify-editor.cjs` -- **step 116** on production:
   - (a) a throwaway project linked to a planted connected site (no token, no binding): Ship it → Next → D1b; Back; Not
     now → D1c → Continue → a job; close and reopen → Run checks; `staff_token_declined_at` read back set;
   - (b) the planted row's decline cleared: Add token with `hello` → `token_malformed`, then a well-formed token → the
@@ -361,7 +361,7 @@ and applied to production on the owner's in-session go (R-99), before any code t
     checks start, `credentials_present.staff` is true and one `admin_read` row is written; then Disconnect, after which
     `credentials_present` is all false
   -- R-82 on the real stack, read-only on T1.
-- [ ] Docs -- each finding reaches its document:
+- [x] Docs -- each finding reaches its document:
   - **PRD:**
     - FR-C1 (`:200-206`): a dated note on the grain, the stored decline, the role check and its sentences, and Manage
       keys checking too;
@@ -373,8 +373,8 @@ and applied to production on the owner's in-session go (R-99), before any code t
     - J1's row 10 and Ending B (`:852`, `:877`).
   - **The spine:** AD-10 (`:173-177`): the role read is a `GET` signed by the token in hand, and nothing is stored
     before it.
-  - **VERIFY-AT-BUILD:** the next item, `users/me` with the staff token, executed on T1.
-  - **MEASUREMENTS:** §88, with the recorder's output.
+  - **VERIFY-AT-BUILD:** the next item, `users/me` with the staff token, executed on T1. *(Dev: item 77 — EXECUTED on T1 by the main session's `--t1` run, §88.)*
+  - **MEASUREMENTS:** §88, with the recorder's output. *(Dev: written by the main session's `--t1` run on the owner's in-session go — the staff token 200 `Owner`, one flipped digit 401, the integration's Admin key 404 `NotFoundError`.)*
   - **The epic context:** the 7.19 sub-bullet.
 
   Then `grep -rn` for "NOTHING VALIDATES IT AGAINST GHOST", "for that project" and the four-label rail outside its
@@ -399,6 +399,44 @@ and applied to production on the owner's in-session go (R-99), before any code t
 - Given the migration is withheld, when the RLS gate runs, then the 7.19 block aborts at its first check.
 
 ## Spec Change Log
+
+**Dev (2026-10-21) — readings and departures, each a routine call told in one line (none changes what a surface does):**
+- **The decline's write is `(editor)/actions.ts`', so THAT file joins `server-wiring.test.ts`' service-role list**, with its
+  reason; `server/staff-token.ts` joins the chokepoint list. It imports no service role, so naming it there would hold nothing.
+  Both new actions refuse a signed-out call with their own answer (R-213's rule, held by the same test).
+- **A role outside Ghost's six says the ruled sentence's second half alone** — "The safety net needs an Administrator's or the
+  Owner's token." — because there is no article to say it with and no new words were added; Manage keys' `?role=` outside the
+  closed list reads the same.
+- **A Ghost that does not answer** says the codes table's own sentence for its code (`tokenRefusal`, R-170): `ghost_unreachable`
+  "We couldn't reach {host}. Check the address — it's your Ghost site's own.", `ghost_unavailable`, `ghost_refused` with its
+  status; the store unreachable reads `keys_failed`'s "nothing changed" (true: nothing is stored before the check passes).
+- **A token kept whose checks then refuse to start** (unsent edits, the lock) lands on Destination, which says why under Run
+  checks; the token stays kept and the step answered.
+- **The five-step rail below `tablet`** names its current step alone (the others' names sr-only, their discs kept) and its
+  connectors keep D1's 10px; labels never wrap, as D1 draws them. No frame draws the longer rail narrow; at 390 it ran off the
+  card (seen in the floor's screenshot, then held by `floor.spec.mjs`). The four-step rail is as 7.18a built it.
+- **Journey (d) mounts S11e at `/app/harness/keys`** — the real `KeysPanel` in the real `PanelModal`, `?keys=` and `?role=` as
+  `saveKeys`' redirect lands them — because the keyboard harness has no database to serve `/sites?manage=`; the press itself
+  is walk step 116 (production). `app-routes.test.ts`' HARNESS_ONLY and `busy.test.ts`' NO_SKELETON name it.
+- **The harness's Add token runs the REAL `addStaffToken`** over a fake Ghost picked by `x-inflozo-harness-token`, so the
+  journeys read the product's own codes and sentences.
+- **D1c's three glyphs are the Kit's `Copy`, `Eye` and `Upload`** (Tabler; the frame's paths differ by a corner radius). The
+  token box is the Kit's 44 (S2b·2's), its label the Kit's 13px against D1b's 12. The picture is a plain `<img>`, as connect's.
+- **`proxy.ts` excludes `deploy/`**, so the picture is served on the app host (`routing.test.ts` walks `public/`; the deploy
+  ROUTE, `/projects/{id}/deploy`, is pinned inside the matcher).
+- **The recorder reads its keys in-process by name** (`record-deploy.mjs`' pattern) rather than Verification's `env $(grep …)`
+  line, which puts the values on argv: `node --experimental-strip-types tools/probe/record-staff-token.mjs --t1`.
+- **Walk steps 113 and 114 are re-expected**: each fixture answers the Safety net as a Not now does (the column, through the
+  service key, read back), so their Run checks presses are unchanged; step 116 walks the step itself. The stale-account sweep
+  takes `f` and `g`.
+- **Written, not run here** (no T1 or production call from Dev, on the coordinator's instruction): the recorder's `--t1` half
+  (§88, which also moves VERIFY-AT-BUILD 77 to EXECUTED) and walk step 116 — both the main session's, on the owner's go.
+  The main session ran the recorder's `--t1` half at Dev (§88 written, item 77 EXECUTED); step 116 is the Review's, on the
+  deployed sha.
+- **The matrix audit (main session) added two checks for rows no run covered:** "Add token, site gone" is step 116b's last
+  check (the planted site disconnected through the service key while D1b is open → `SWITCH_WORDS.gone`, nothing stored);
+  "Not now, a failed write" is journey 7.19 (b2) over `x-inflozo-harness-decline: fail` (`harnessDecline` answers the real
+  action's `{ ok: false }`) — D1c still shows and Continue still starts the checks.
 
 ## Design Notes
 
@@ -588,6 +626,47 @@ R-82's real services for this story:
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS.
 - `grep -rn --exclude=.env -e 'NOTHING VALIDATES IT AGAINST GHOST' -e 'for that project' apps tools _bmad-output/planning-artifacts`
   -- expected: nothing stale. The record documents keep theirs.
+
+**Executed — Dev (2026-10-21, Node 24; no T1 or production call):**
+- `pnpm check` — green (lint, typecheck, every package's tests; `apps/web`'s count printed by the run).
+- The 7.19 journeys (a)–(d), the D1b floor at 1440 and 390, and the re-pointed 7.18a rail stop (`-g '7\.19|Ship it is S4|R-266'`)
+  — PASS; the full `pnpm keyboard` — 301 passed (17.5 min), then the 7.19 journeys and floor again after D1b's and D1c's
+  headings were added to the polite region — PASS. **Red at HEAD:** the same six run against e184d629's app in a scratch
+  worktree — all six FAIL (no Next, no D1b, no `/app/harness/keys`).
+- `node --experimental-strip-types tools/probe/record-staff-token.mjs` (the local half) — every row PASS; `--help` exits 2.
+- `node --check tools/probe/run-verify-editor.cjs` — clean.
+- `python3 tools/doc-audit.py --check` — PASS.
+- The grep for "NOTHING VALIDATES IT AGAINST GHOST" and "for that project" — only this story's test asserting the first's
+  absence, the dated corrections, and the ruling ledger's own quotes.
+
+**Executed — Dev, the main session (2026-10-21 IST; the real services, each by its variable name):**
+- **Supabase (local gate):** `bash supabase/tests/run-rls-gate.sh` — green, the 7.19 block's six PASS lines (the column, the
+  service role's write, the tenant's own read and not another's, the tenant's 42501 with its title control, the declines
+  unchanged). **Control:** a scratch copy without `20261022120000_staff_token_decline.sql` (and HEAD's `SCHEMA.sql`) —
+  exit 3 at `FAIL (7.19): public.sites.staff_token_declined_at (timestamptz, nullable, no default) is missing`, the block's
+  first check, right after 7.18c's last PASS.
+- **GitHub CI** (`GITHUB_TOKEN`, read only) on the Schema push `e184d6299c5ab472fd464805a72ef5f88282de9e`: CI `rls` ✓,
+  `check` ✓, `deploy` ✓; Render matrix ✓.
+- **Supabase production** (`SUPABASE_DB_POOLER_URL`, read in-process, on the owner's in-session go — R-83 asked,
+  "1. Yes, both"): before the apply the column was absent (0 rows, the control); the migration applied in one
+  transaction; read back — `information_schema.columns`: `timestamp with time zone`, nullable, no default;
+  `col_description`: the migration's comment verbatim; `authenticated`: SELECT true, INSERT false, UPDATE false
+  (`information_schema.column_privileges`: SELECT only); `sites`' `authenticated` UPDATE columns still `favicon_url, title,
+  updated_at`; no site row has a decline yet.
+- **T1** `ghost6.inflozo.com` (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_ADMIN_API_KEY`, read in-process; three
+  GETs, nothing written; the same go): `node --experimental-strip-types tools/probe/record-staff-token.mjs --t1` — every row
+  PASS. `GET users/me/?include=roles` with the staff token → **200, role `Owner`**, kept; the same token with its last hex
+  digit flipped → **401 `UnauthorizedError`**, `token_unknown` (the control, which held); the integration's Admin API key →
+  **404 `NotFoundError`**, `token_integration` — so its trigger stands as built. `MEASUREMENTS.md` §88 written by the run;
+  VERIFY-AT-BUILD 77 moved to EXECUTED. Ghost 5's half: DW-326 (R-238).
+- `pnpm keyboard` (Node 24), the whole gate on the subagent's tree — 301 passed, 0 failed (16.9 min). Then, after the
+  matrix audit's journey (b2) was added, `-g '7\.19'` — the D1b floor at 1440 and 390 and journeys (a), (b), (b2), (c), (d)
+  — all PASS. **(b2)'s control:** the wizard rebuilt to wait on the decline's answer before D1c — (b2) FAILS at D1c's title
+  while (b) still passes; restored byte-identical from its copy.
+- `pnpm check` (Node 24) — green: lint, typecheck, and every package's tests, 0 failed (each package prints its own count).
+- `node --check tools/probe/run-verify-editor.cjs` — clean after step 116b's site-gone check was added.
+- **Vercel** (`app.inflozo.com`) and walk step 116 (with 113 and 114 re-expected): the Review's, on the Dev push's deployed
+  sha, from a clean worktree.
 
 **Manual checks:**
 - The owner walks "Owner's manual test" on `app.inflozo.com` after Deploy (R-80).

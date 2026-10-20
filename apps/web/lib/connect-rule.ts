@@ -275,6 +275,9 @@ export const DISCONNECT = {
  */
 export const ORPHAN_SNAPSHOT_DAYS = 90
 
+/** STORY 7.19 — the full-Administrator disclosure (FR-C3, R-170): `KEYS.staff.full`, and the middle of `KEYS.staff.enables`. */
+const STAFF_FULL = 'It is a full-Administrator credential: anything that user can do in Ghost Admin, this token can do.'
+
 /**
  * STORY 3.6 — MANAGE KEYS' EVERY WORD, AND THEY LIVE HERE AND NOWHERE ELSE, exactly as
  * `DISCONNECT` above does. `keys-panel.tsx` draws them and `run-verify-ghost-admin.py` reads them
@@ -353,14 +356,13 @@ export const KEYS = {
   },
   staff: {
     name: 'Staff Access Token',
-    /* B20's sentence, and then D1b's disclosure VERBATIM and unsoftened — "It is a
-       full-Administrator credential: anything that user can do in Ghost Admin, this token can do."
-       (A1, 2026-09-04). FR-C3's honesty rule: Ghost offers no narrower credential, so saying so
-       plainly is the only lever there is. */
-    enables:
-      'Uploads routes.yaml, and reads the live theme for the snapshot and the drift report. ' +
-      'It is a full-Administrator credential: anything that user can do in Ghost Admin, this ' +
-      'token can do. Add or remove it at any time.',
+    /* D1b's disclosure VERBATIM and unsoftened (A1, 2026-09-04) — FR-C3's honesty rule: Ghost offers
+       no narrower credential, so saying so plainly is the only lever there is. STORY 7.19 (R-170): ONE
+       SENTENCE, READ BY BOTH SURFACES — the first deploy's Safety net (D1b) draws it in ink, and
+       `enables` below is built from it, so neither says anything narrower than the other. */
+    full: STAFF_FULL,
+    /* B20's sentence, then `full`, then the way back out. */
+    enables: `Uploads routes.yaml, and reads the live theme for the snapshot and the drift report. ${STAFF_FULL} Add or remove it at any time.`,
     /* NOTHING RETROACTIVE IS OFFERED, and this line is why it is not merely omitted: adding the
        token starts the safety net from that moment, and a customer who reads "reads the live
        theme for the snapshot" could reasonably expect one of the theme already replaced. */
@@ -561,6 +563,40 @@ export const keysPopupPath = (siteId: string, q?: string | null) => sitesPath(q,
  */
 export const brandPopupPath = (siteId: string, q?: string | null) => sitesPath(q, { brand: siteId })
 
+/* ───────── STORY 7.19 — WHOSE TOKEN IT IS (R-280), one pure rule for both surfaces.
+
+   Ghost answers `GET users/me/?include=roles` signed with a Staff Access Token with the TOKEN'S OWN USER
+   (`api/endpoints/users.js:30`, `serializers/input/users.js:17,25` — 6.58.0; `:29`, `:8,16` in 5.130.6), its roles included
+   (`ALLOWED_INCLUDES`, `users.js:12`). Only the Owner and an Administrator hold what the token is for: `setting: edit` (the
+   routes upload) and `theme: read` (the snapshot and the drift download) — Administrator holds `theme: all` and `setting:
+   all`, Editor and Super Editor browse and read, Author and Contributor less (`fixtures.json`, both majors), and the Owner
+   passes every check (`can-this.js:68-71`). Read in source; T1's half is `record-staff-token.mjs` (§88). */
+
+/** The two roles whose token the safety net keeps. */
+export const STAFF_ROLES_OK: readonly string[] = ['Owner', 'Administrator']
+
+/** Ghost's six staff roles, each with its article — the closed list a role name is said from (and read back from a URL). */
+const ROLE_WORDS: Readonly<Record<string, string>> = {
+  Owner: 'the Owner',
+  Administrator: 'an Administrator',
+  Editor: 'an Editor',
+  'Super Editor': 'a Super Editor',
+  Author: 'an Author',
+  Contributor: 'a Contributor',
+}
+
+/** A role as the sentence says it ("an Editor"), or null for anything that is not one of Ghost's six. */
+export const roleWord = (role: unknown): string | null =>
+  typeof role === 'string' && Object.prototype.hasOwnProperty.call(ROLE_WORDS, role) ? (ROLE_WORDS[role] as string) : null
+
+/** The token's user's role from Ghost's answer — `users[0].roles[0].name` — or null when the body has no such string. */
+export function staffRoleOf(body: unknown): string | null {
+  const users = (body as { users?: unknown } | null)?.users
+  const roles = Array.isArray(users) ? (users[0] as { roles?: unknown } | undefined)?.roles : undefined
+  const name = Array.isArray(roles) ? (roles[0] as { name?: unknown } | undefined)?.name : undefined
+  return typeof name === 'string' ? name : null
+}
+
 /**
  * THE CODES → SENTENCES TABLE, AND IT LIVES HERE AND NOWHERE ELSE. The action answers a code and
  * a subject; the wizard renders the sentence. Two copies of a refusal sentence is how a refusal
@@ -653,6 +689,19 @@ export const CONNECT_MESSAGES = {
   credential_empty: () => 'Paste the new Admin API key first — this box is empty.',
   content_key_empty: () => 'Paste the new Content API key first — this box is empty.',
   token_empty: () => 'Paste your Staff Access Token first — this box is empty.',
+  /* STORY 7.19 — R-280 (owner, 2026-10-20, Question 3): A PASTED TOKEN IS ASKED OF GHOST BEFORE IT IS KEPT
+     (`GET users/me/?include=roles`, `server/staff-token.ts`), in the first deploy's Safety net and in Manage keys alike, and
+     each cause has one sentence. A token whose user is below Administrator cannot do the safety net's work (`setting: edit`,
+     `theme: read` — both majors' `fixtures.json`); a 401 is a token Ghost does not know, whichever of the four reasons
+     (R-100: "another site's" and "a wrong one" are one answer); an integration's Admin API key — `id:hex`, just like a
+     token — has no user behind it, so `me` finds nobody (404). The role is Ghost's own name, said with its article
+     (`roleWord`); a name outside Ghost's six keeps the second sentence alone. */
+  token_role: (role: string) => {
+    const who = roleWord(role)
+    return `${who === null ? '' : `This token belongs to ${who}. `}The safety net needs an Administrator's or the Owner's token.`
+  },
+  token_unknown: () => "Ghost doesn't recognise this token. Copy the current one from your Ghost profile.",
+  token_integration: () => "That's an integration's Admin API key. Your Staff Access Token is on your own Ghost profile.",
   /* Everything on this screen that is ours rather than the customer's: a read that failed, a write
      that would not land. It says nothing changed, because nothing did — every write here is
      validated before it is made. */
@@ -706,7 +755,7 @@ export const oneCredential = (form: FormData): boolean => KEY_FIELDS.filter((fie
 export const keysFieldOf = (code: string): ConnectField | null =>
   code === 'content_key_unknown' || code === 'content_key_malformed' || code === 'content_key_empty'
     ? 'content_key'
-    : code === 'token_malformed' || code === 'token_empty'
+    : code === 'token_malformed' || code === 'token_empty' || code === 'token_role' || code === 'token_unknown' || code === 'token_integration'
       ? 'staff_token'
       : code === 'credential_malformed' || code === 'credential_empty' || code === 'keys_other_site' || code === 'ghost_unknown_key' || code === 'ghost_unauthorized'
         ? 'admin_key'
@@ -830,6 +879,19 @@ export const CONNECT_MAX = 300
  * per-code argument list would be a second thing to keep in step with it.
  */
 export const connectMessage = (code: MessageCode, subject = ''): string => CONNECT_MESSAGES[code](subject)
+
+/**
+ * STORY 7.19 — A REFUSED TOKEN AS THE SAFETY NET SAYS IT, from `addStaffToken`'s answer: the codes table's own sentence (R-170 —
+ * Manage keys draws the same one under its token box), the role for `token_role`, the status for `ghost_refused`, the host for
+ * the rest. A code with no sentence of its own here — the store that would not answer, a status-less refusal — is `keys_failed`'s
+ * "nothing changed", which is true: nothing is stored before the check passes.
+ */
+export function tokenRefusal(answer: { code: string; role?: string; status?: number }, host: string): string {
+  const named = Object.prototype.hasOwnProperty.call(CONNECT_MESSAGES, answer.code) && answer.code !== 'credential_store_unavailable'
+    && !(answer.code === 'ghost_refused' && answer.status === undefined)
+  const code = (named ? answer.code : 'keys_failed') as MessageCode
+  return connectMessage(code, code === 'token_role' ? (answer.role ?? '') : code === 'ghost_refused' ? String(answer.status) : host)
+}
 
 /**
  * The `http://` warning, under the URL field as it is typed. It is a WARNING and not a refusal:

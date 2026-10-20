@@ -1,5 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
-import { hostOf, sitesPath } from '@/lib/connect-rule'
+import { hostOf, roleWord, sitesPath } from '@/lib/connect-rule'
 import { supabaseServer } from '@/lib/supabase/server'
 import { credentialsOf } from '@/server/ghost-admin'
 import { KeysPanel } from './keys-panel'
@@ -44,6 +44,8 @@ export type KeysSearchParams = {
   keys?: string | string[]
   status?: string | string[]
   test?: string | string[]
+  /** STORY 7.19 — `?role=`: the role a refused token's user holds, read back only as one of Ghost's own six names (`roleWord`) */
+  role?: string | string[]
   /** THE LIST'S OWN SEARCH, when this is the window over it (DW-82): every way out lands back on it. */
   q?: string | string[]
 }
@@ -69,7 +71,7 @@ export async function KeysScreen({
       from and travels into every form so the actions answer onto this chrome (`keysBase`). */
   popup?: boolean
 }) {
-  const { site, manage, keys, status, test, q } = await searchParams
+  const { site, manage, keys, status, test, role, q } = await searchParams
   const siteId = first(popup ? manage : site)
   /* WHERE EVERY WAY OUT OF THE WINDOW LANDS: the list, with its own search kept (DW-82). The full page came from no list,
      and its ✕ and Cancel go to the bare one. */
@@ -148,6 +150,9 @@ export async function KeysScreen({
          `?keys=` follows by being a lookup key and never a sentence. */
       status={/^\d{3}$/.test(first(status) ?? '') ? (first(status) as string) : null}
       tested={first(test) ?? null}
+      /* ONE OF GHOST'S SIX ROLE NAMES OR NOTHING — `?role=` is typed by whoever holds the URL, and a name outside the closed
+         list reads as `token_role` with no name (Story 7.19) */
+      role={roleWord(first(role)) === null ? null : (first(role) as string)}
       popup={popup}
       back={back}
     />

@@ -5933,8 +5933,8 @@ even after a disconnect and reconnect."*
 - Targets:
   - done now: ✅ this entry · ✅ Story 7.19's spec (Question 1, Ruled values) · ✅ `epics.md` Story 7.19's card (dated) ·
     ✅ `epic-7-context.md`;
-  - at 7.19's Dev: ⬜ the migration, `SCHEMA.sql` and the RLS gate's 7.19 block · ⬜ `prd.md` FR-C1's dated note and
-    Appendix H's "for that project" · ⬜ `EXPERIENCE.md`'s IA rows and J1's Ending B.
+  - at 7.19's Dev: ✅ the migration, `SCHEMA.sql` and the RLS gate's 7.19 block (Schema e184d629) · ✅ `prd.md` FR-C1's
+    dated note and Appendix H's "for that project" · ✅ `EXPERIENCE.md`'s IA rows and J1's Ending B.
 
 **R-279 — D1b's picture is the owner's own screenshot of his Ghost profile, with the token blurred.** Story 7.19's Create,
 Question 2, ruled **option 1** (owner, 2026-10-20). He saved it at
@@ -5951,7 +5951,7 @@ sheet, with the Staff access token box outlined in red and the token blurred.
 - Targets:
   - done now: ✅ this entry · ✅ Story 7.19's spec (Question 2, the picture's task) · ✅ `epics.md` Story 7.19's card
     (dated);
-  - at 7.19's Dev: ⬜ `apps/web/public/deploy/staff-token.png` and D1b's `<img>`.
+  - at 7.19's Dev: ✅ `apps/web/public/deploy/staff-token.png` and D1b's `<img>`.
 
 **R-280 — a pasted Staff Access Token is checked with Ghost before anything is stored, in Safety net and in Manage keys
 alike, with one sentence per cause.** Story 7.19's Create, Question 3, ruled **option 1** (owner, 2026-10-20): *"Ask Ghost
@@ -5976,9 +5976,10 @@ first, keep nothing that fails, one sentence per cause. This applies in Safety n
 - Targets:
   - done now: ✅ this entry · ✅ Story 7.19's spec (Question 3, Ruled values) · ✅ `epics.md` Story 7.19's card (dated) ·
     ✅ `epic-7-context.md`;
-  - at 7.19's Dev: ⬜ `apps/web/lib/connect-rule.ts` (`token_role`, `token_unknown`, `token_integration`, `KEYS.staff.full`)
-    · ⬜ `server/staff-token.ts` and `saveKeys` · ⬜ `prd.md` FR-C1 and FR-C8 · ⬜ the spine's AD-10 ·
-    ⬜ VERIFY-AT-BUILD's next item and MEASUREMENTS §88 (T1, executed).
+  - at 7.19's Dev: ✅ `apps/web/lib/connect-rule.ts` (`token_role`, `token_unknown`, `token_integration`, `KEYS.staff.full`)
+    · ✅ `server/staff-token.ts` and `saveKeys` · ✅ `prd.md` FR-C1 and FR-C8 · ✅ the spine's AD-10 ·
+    ✅ VERIFY-AT-BUILD's next item (77, EXECUTED) · ✅ MEASUREMENTS §88 (T1, executed at Dev on the owner's in-session
+    go: the staff token 200 `Owner`, one flipped digit 401, the integration's Admin key 404 `NotFoundError`).
 
 ## B · Approved decisions superseded by this session
 

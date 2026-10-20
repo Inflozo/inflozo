@@ -8834,8 +8834,9 @@ test('7.18a · Ship it is S4\'s coral split button after ⋯ with "Deploy option
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
   await expect(wizard(page).locator('input[value="activate"]')).toBeChecked()
   expect(await page.evaluate(() => document.querySelector('dialog[data-deploy-wizard]').contains(document.activeElement)), 'focus moved in').toBe(true)
-  // the rail numbers its steps from STEPS — every one, in order, its number before its name (on Destination none is done yet)
-  await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.STEPS.map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`)))
+  // the rail numbers the steps that show — every one, in order, its number before its name (on Destination none is done yet);
+  // `full` is no first deploy, so Story 7.19's Safety net is not among them
+  await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.stepsFor(false).map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`)))
   await expect(wizard(page).locator('[data-theme-name]')).toHaveText('inflozo-pilot-sections')
   await expect(wizard(page)).toContainText(DW.chip(1, null))
   await page.keyboard.press('Escape')
@@ -10018,4 +10019,187 @@ test('7.18b · the Review (DW-378): a Re-activate that ends where it began — D
   await page.keyboard.press('Enter')
   await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.stageFailed(DEPLOY.STAGE_NAMES.activating), { timeout: 15_000 })
   await expect(wizard(page)).toContainText(DW.siteUnlinked('harness.example'))
+})
+
+/* ── Story 7.19 — the first deploy's Safety net (FR-C1, D1a's Next, D1b, D1c; R-278–R-280, R-98) ─────────────────────────────
+   `x-inflozo-harness-ship: first` is `full` as a FIRST deploy to the site with no token and no recorded decline, so the wizard
+   offers the Safety net; `full` is not a first deploy, and is every journey's control. Add token runs the REAL check
+   (`addStaffToken`) over the harness's Ghost, whose answer is `x-inflozo-harness-token` (`harnessAddToken`); Not now is
+   `harnessDecline`. The real Ghost and the real column are the deployed walk's step 116 and §88's. */
+
+const CONNECT = await import(new URL('../../apps/web/lib/connect-rule.ts', import.meta.url).href)
+const SN = DEPLOY.SAFETY_WORDS
+const FIRST = { 'x-inflozo-harness-ship': 'first' }
+/** a well-formed token (`id:hex`), so only the harness's Ghost decides */
+const TOKEN = `6512a1b2c3d4e5f60718293a:${'ab'.repeat(32)}`
+const railOf = (steps) => steps.map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`))
+/** Destination → Next → D1b, from the keyboard, its token box focused */
+async function toOffer(page) {
+  const next = page.locator('#deploy-next')
+  await next.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'safety')
+  await expect(page.locator('#deploy-token')).toBeFocused()
+}
+
+test('7.19 · (a) a first deploy: Destination says Next and the rail reads Destination · Safety net · Check · Ship · Live; Next opens D1b on the token box, with no ✕; Esc closes; reopened, Back is Destination on Next — the control, `full`, says Run checks with four', async ({ page }) => {
+  // the control first: not a first deploy — Run checks, four steps, no Next
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  await open(page)
+  await openWizard(page)
+  await expect(page.locator('#deploy-run')).toBeVisible()
+  await expect(page.locator('#deploy-next')).toHaveCount(0)
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor(false)))
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+
+  await page.setExtraHTTPHeaders(FIRST)
+  await open(page)
+  await openWizard(page)
+  await expect(page.locator('#deploy-next')).toHaveAccessibleName(DW.next)
+  await expect(page.locator('#deploy-run')).toHaveCount(0)
+  expect(DEPLOY.stepsFor(true).map((s) => s.label)).toEqual(['Destination', 'Safety net', 'Check', 'Ship', 'Live'])
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor(true)))
+  await toOffer(page)
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.title)
+  await expect.poll(() => deploySaid(page), { message: 'D1b\'s heading said politely, focus being on the box' }).toBe(SN.title)
+  await expect(wizard(page).locator('[data-safety-full]')).toHaveText(CONNECT.KEYS.staff.full)
+  await expect(wizard(page).locator('ol li[aria-current="step"]')).toHaveText(/^2\s*Safety net$/)
+  await expect(wizard(page).locator('ol li').first(), 'Destination ticked, its number gone').toHaveText(/^Destination$/)
+  await expect(wizard(page).locator('img')).toHaveAttribute('alt', SN.alt)
+  await expect(wizard(page)).toContainText(SN.note('harness.example'))
+  await expect(wizard(page).getByRole('button', { name: DW.close }), 'no ✕ on D1b, as on S8b').toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+  await expect(shipIt(page)).toBeFocused()
+  // reopened: nothing was answered, so it is offered again; Back is Destination, on Next
+  await openWizard(page)
+  await toOffer(page)
+  await page.locator('#deploy-safety-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await expect(page.locator('#deploy-next')).toBeFocused()
+})
+
+test('7.19 · (b) Not now opens D1c on Continue — the three losses, once — and records the decline at once; Continue starts the checks with Safety net ticked at 2; a reopen in the same page says Run checks with four steps', async ({ page }) => {
+  await page.setExtraHTTPHeaders(FIRST)
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  // the decline's action: the project id alone in its body (the editor's re-read sends the same, so it is counted from the press)
+  let declines = 0
+  await page.route((url) => url.pathname.startsWith(HARNESS), (route) => {
+    const req = route.request()
+    if (req.method() === 'POST' && req.headers()['next-action'] && req.postData() === JSON.stringify([HARNESS_PROJECT_ID])) declines++
+    return route.fallback()
+  })
+  await open(page)
+  await openWizard(page)
+  await toOffer(page)
+  const before = declines
+  await page.locator('#deploy-not-now').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.declinedTitle)
+  await expect(page.locator('#deploy-continue')).toBeFocused()
+  await expect.poll(() => deploySaid(page)).toBe(SN.declinedTitle)
+  await expect(wizard(page).locator('[data-safety-lost] li')).toHaveText(SN.lost)
+  await expect(wizard(page)).toContainText(`${SN.footBefore}${SN.footKeys}${SN.footAfter}`)
+  await expect.poll(() => declines - before, { message: 'Not now records the decline without waiting for Continue' }).toBe(1)
+  expect(sent, 'nothing started yet').toEqual([])
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  expect(sent.map((b) => b.intent)).toEqual(['preflight'])
+  // Safety net ticked at 2 (its number gone), Check current at 3
+  await expect(wizard(page).locator('ol li').nth(1)).toHaveText(/^Safety net$/)
+  await expect(wizard(page).locator('ol li[aria-current="step"]')).toHaveText(/^3\s*Check$/)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+  // the same page: the editor holds the answer — Run checks, four steps
+  await openWizard(page)
+  await expect(page.locator('#deploy-run')).toBeVisible()
+  await expect(page.locator('#deploy-next')).toHaveCount(0)
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor(false)))
+})
+
+test('7.19 · (b2) Not now whose record does not land: D1c still shows on Continue, and Continue still starts the checks — the deploy never waits on the safety net', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-decline': 'fail' })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await openWizard(page)
+  await toOffer(page)
+  await page.locator('#deploy-not-now').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.declinedTitle)
+  await expect(page.locator('#deploy-continue')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  expect(sent.map((b) => b.intent)).toEqual(['preflight'])
+})
+
+test('7.19 · (c) Add token: an Editor\'s, an unknown and an integration\'s each say their ruled sentence under the box, with no step change; an Administrator\'s says "Adding…", then the checks start', async ({ page }) => {
+  await page.setExtraHTTPHeaders(FIRST)
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  // the Add token action, held on the wire while `hold` is set, so its busy label is really on screen to be read
+  let hold = null
+  await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+    const req = route.request()
+    if (req.method() === 'POST' && req.headers()['next-action'] && (req.postData() ?? '').includes(TOKEN) && hold) await hold
+    return route.fallback()
+  })
+  await open(page)
+  await openWizard(page)
+  await toOffer(page)
+  await page.keyboard.insertText(TOKEN)
+  const error = page.locator('#deploy-token-error')
+  await expect(error, 'the control: no sentence before a press').toHaveCount(0)
+  for (const [answer, words] of [
+    ['role', CONNECT.connectMessage('token_role', 'Editor')],
+    ['unknown', CONNECT.connectMessage('token_unknown')],
+    ['integration', CONNECT.connectMessage('token_integration')],
+  ]) {
+    await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-token': answer })
+    await page.locator('#deploy-add-token').focus()
+    await page.keyboard.press('Enter')
+    await expect(error, answer).toHaveText(words)
+    await expect(error).toHaveAttribute('role', 'alert')
+    await expect(wizard(page), `${answer}: no step change`).toHaveAttribute('data-deploy-wizard', 'safety')
+    await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.title)
+  }
+  expect(sent, 'no refused token starts the checks').toEqual([])
+  // an Administrator's token: "Adding…" while Ghost is asked, then the checks
+  await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-token': 'ok' })
+  let release
+  hold = new Promise((r) => { release = r })
+  const add = page.locator('#deploy-add-token')
+  await add.focus()
+  await page.keyboard.press('Enter')
+  await expect(add).toHaveAccessibleName(SN.adding)
+  await expect(add).toHaveAttribute('aria-busy', 'true')
+  await expect(add).toHaveAttribute('aria-disabled', 'true')
+  hold = null
+  release()
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check', { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight'])
+  await expect(wizard(page).locator('ol li').nth(1)).toHaveText(/^Safety net$/)
+  expect(page.url(), 'the token never reaches the address').not.toContain(TOKEN.split(':')[1])
+})
+
+test('7.19 · (d) Manage keys: a refused token says the same ruled sentence under the token box; a role outside Ghost\'s six names none; an Admin key\'s refusal stays under its own box (the control)', async ({ page }) => {
+  const staff = page.locator('#keys-staff-error')
+  for (const [query, words] of [
+    ['keys=token_role&role=Editor', CONNECT.connectMessage('token_role', 'Editor')],
+    ['keys=token_role&role=%3Cscript%3E', "The safety net needs an Administrator's or the Owner's token."],
+    ['keys=token_unknown', CONNECT.connectMessage('token_unknown')],
+    ['keys=token_integration', CONNECT.connectMessage('token_integration')],
+  ]) {
+    await page.goto(`/app/harness/keys?${query}`)
+    await expect(staff, query).toHaveText(words)
+  }
+  // the same sentence the Safety net says (one table, R-170)
+  expect(CONNECT.tokenRefusal({ code: 'token_role', role: 'Editor' }, 'h')).toBe(CONNECT.connectMessage('token_role', 'Editor'))
+  await page.goto('/app/harness/keys?keys=ghost_unknown_key')
+  await expect(staff).toHaveCount(0)
+  await expect(page.locator('#keys-admin-error')).toHaveText(CONNECT.connectMessage('ghost_unknown_key'))
+  // the row still says the safety-net copy starts from then on, and the disclosure is the one sentence
+  await expect(page.getByText(CONNECT.KEYS.staff.forward)).toBeVisible()
+  await expect(page.getByText(CONNECT.KEYS.staff.enables, { exact: false })).toBeVisible()
 })

@@ -519,6 +519,18 @@ DOCS = [
   "then R-260 on Home itself — the emitted routes.yaml uploaded with the staff token, every such post linked from a page "
   "of /, the old-filter control leaving it on none, and T1's own routes.yaml restored byte for byte in a finally; "
   "§86 written only when every row held. Any argument but --t1 prints the header and exits 2."),
+ ('tools/probe/record-staff-token.mjs', 'tool', 'Staff token recorder',
+  "Story 7.19's recorder (standing rule 1, R-82, R-280, MEASUREMENTS §88): whose Staff Access Token it is, asked of T1 "
+  "exactly as the Safety net and Manage keys ask it. Node 24 with --experimental-strip-types; every request is built by "
+  "the product's adminRequest and every reading is addStaffToken's own (apps/web/server/staff-token.ts), handed an io whose "
+  "store records and writes nothing. THE LOCAL HALF (no flag, no request, writes nothing): the read is a GET of "
+  "users/me/?include=roles at v6.0; the flipped control token is well-formed and one digit off; addStaffToken over a fake "
+  "Ghost reads an Owner's 200 as kept, an Editor's as token_role, a 401 as token_unknown and a 404 NotFoundError as "
+  "token_integration. THE --t1 HALF (the owner's go, the main session only; read only, three GETs): the staff token is "
+  "200 with an Owner's or an Administrator's role and kept, the same token with its last digit flipped is 401 (the "
+  "control), and the integration's Admin API key is 404 NotFoundError — status, errors[0].type and role printed, keys read "
+  "from tools/probe/.env in-process by name; §88 written only when every row held. Any argument but --t1 prints the "
+  "header and exits 2."),
  ('tools/probe/record-routes.mjs', 'tool', 'Routes recorder',
   "Story 7.16a's recorder (standing rule 1, R-82): every routes.yaml the Routes Manager writes, read by Ghost's own "
   "route-settings code, and one emitted file on T1. Node 24; it imports packages/section-runtime/src/routes.ts and "

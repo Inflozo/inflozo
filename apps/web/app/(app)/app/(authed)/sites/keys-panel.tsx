@@ -244,6 +244,7 @@ export function KeysPanel({
   refused,
   status,
   tested,
+  role = null,
   popup,
   back,
 }: {
@@ -260,6 +261,8 @@ export function KeysPanel({
   status: string | null
   /** `?test=ok` or `?test=<code>` — what the last press of Test connection proved. */
   tested: string | null
+  /** STORY 7.19 — `?role=`, already read back as one of Ghost's six names or null: the subject of `token_role`'s sentence */
+  role?: string | null
   /** Where the ✕ and Cancel go: the list, with its own search kept in the window (DW-82, `sitesPath`). */
   back: string
 }) {
@@ -274,7 +277,8 @@ export function KeysPanel({
   // — so a 403 from the customer's Ghost read "(HTTP My Blog)" (review, 2026-09-09). The status
   // travels beside the code and the screen has already refused anything that is not digits. (A 429
   // or a 5xx is `ghost_unavailable` since Story 5.24b, DW-52, and takes no subject at all.)
-  const subjectFor = (code: string) => (code === 'ghost_refused' ? (status ?? '') : site.name)
+  // STORY 7.19: `token_role` takes the role (null reads as no name — the sentence then names none)
+  const subjectFor = (code: string) => (code === 'ghost_refused' ? (status ?? '') : code === 'token_role' ? (role ?? '') : site.name)
   // …and `ghost_refused` without its status is unnamed too: "(HTTP )" is not a sentence.
   const said =
     refused && hasSentence(refused) && !(refused === 'ghost_refused' && !status)

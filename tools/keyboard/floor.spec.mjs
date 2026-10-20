@@ -832,6 +832,67 @@ test.describe('7.18a · Ship it by pointer (1280 × 720)', () => {
   })
 })
 
+// ── Story 7.19 — D1b at the frame's two widths (`D1 First-Deploy Gates.dc.html:95-151`): at 1440 the card is 700 wide and the
+// picture sits beside the token box, its 280 × 150 slot; at 390 (a narrow desktop window — a fine pointer keeps the editor,
+// R-76) the picture stacks under the box and nothing scrolls sideways. `first` is the harness's first deploy (the Safety net
+// offered); D1c shares D1b's width.
+test.describe('7.19 · the Safety net at 1440 and 390', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const width of [1440, 390]) {
+    test(`D1b at ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'first' })
+      await page.goto(HARNESS)
+      await painted(page)
+      const wizard = page.locator('dialog[data-deploy-wizard]')
+      await page.locator('#editor-ship').click()
+      await page.locator('#deploy-next').click()
+      await expect(wizard).toHaveAttribute('data-deploy-wizard', 'safety')
+      await expect(page.locator('#deploy-token')).toBeFocused()
+      const m = await page.evaluate(() => {
+        const box = (el) => el.getBoundingClientRect()
+        const dialog = document.querySelector('dialog[data-deploy-wizard]')
+        const style = getComputedStyle(dialog)
+        const input = box(document.getElementById('deploy-token'))
+        const img = document.querySelector('dialog[data-deploy-wizard] img')
+        return {
+          content: box(dialog).width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+          right: box(dialog).right,
+          input: { left: input.left, right: input.right, top: input.top, bottom: input.bottom },
+          img: { left: box(img).left, top: box(img).top, width: box(img).width, height: box(img).height, loaded: img.complete && img.naturalWidth > 0, fit: getComputedStyle(img).objectFit, pos: getComputedStyle(img).objectPosition },
+          scroll: document.documentElement.scrollWidth,
+          inner: window.innerWidth,
+          // the rail's last step, against the card's own inner edge, and no step's words or disc running into the next's
+          rail: box(document.querySelector('dialog[data-deploy-wizard] ol li:last-child')).right - (box(dialog).right - parseFloat(style.paddingRight)),
+          touching: [...document.querySelectorAll('dialog[data-deploy-wizard] ol li')].map((li) => li.firstElementChild.getBoundingClientRect())
+            .some((r, i, all) => i > 0 && r.left < all[i - 1].right + 8),
+        }
+      })
+      expect(m.img.loaded, 'the picture is served on this host (`public/deploy/`, outside the proxy)').toBe(true)
+      expect([m.img.fit, m.img.pos, m.img.height]).toEqual(['cover', '50% 100%', 150])
+      expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
+      expect(m.right).toBeLessThanOrEqual(m.inner)
+      expect(m.rail, 'the rail\'s five steps stay inside the card').toBeLessThanOrEqual(0.5)
+      expect(m.touching, 'each step stands clear of the next').toBe(false)
+      if (width === 1440) {
+        expect(m.content, 'D1b is 700 wide').toBe(700)
+        expect(m.img.width).toBe(280)
+        expect(m.img.left, 'the picture beside the box').toBeGreaterThan(m.input.right)
+        expect(m.img.top).toBeLessThan(m.input.bottom)
+      } else {
+        expect(m.content, 'held by the window').toBeLessThan(700)
+        expect(m.img.top, 'the picture under the box').toBeGreaterThan(m.input.bottom)
+      }
+      // the control: Destination keeps S8's 520
+      await page.locator('#deploy-safety-back').click()
+      await expect(wizard).toHaveAttribute('data-deploy-wizard', 'destination')
+      if (width === 1440) {
+        expect(await wizard.evaluate((d) => d.getBoundingClientRect().width - parseFloat(getComputedStyle(d).paddingLeft) * 2)).toBe(520)
+      }
+    })
+  }
+})
+
 // ── Story 7.18a — R-263: a touch screen below 768 that is not a phone. Ship it shares the bar, so Undo and Redo lead ⋯ and
 // the words "Template" and "View as" go; at 768 and up nothing changes. The sweep holds no bar control outside the window
 // at 600, 640 and 720 on Home and on the Paywall; its CONTROL is the same sweep with the rule switched off in the page
