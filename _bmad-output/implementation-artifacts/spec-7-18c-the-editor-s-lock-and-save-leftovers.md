@@ -303,8 +303,8 @@ implementation subagent (the owner's go of 2026-10-20 covers the apply and one l
 Five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor as subagents; the Real-infra verifier in
 the main session, on the owner's in-session go). 1 decision for the owner, 15 patches (all applied), 5 deferred, 11 dismissed.
 
-- [ ] [Review][Decision] One sentence for a failed sites read — the Sites page's own and R-276's picker sentence say one
-  failure two ways (R-170). Question 3.
+- [x] [Review][Decision] One sentence for a failed sites read — the Sites page's own and R-276's picker sentence say one
+  failure two ways (R-170). Question 3, ruled option 1 (R-277), built.
 - [x] [Review][Patch] An Undo landing while a refused save is out was never sent [`(editor)/editor.tsx` `flush`'s refused branch]
 - [x] [Review][Patch] Autosave's 3-minute tick re-sent a refused save in both causes [`(editor)/editor.tsx` the timer effect]
 - [x] [Review][Patch] The hydrate's second "still holder?" came before its last await [`(editor)/editor.tsx` the hydrate]
@@ -383,6 +383,9 @@ intent true where it was not, none changing what a surface is meant to do. One f
   (the panel stays — every edit then goes up, the control); a reload that adopted an owed edit and typed one more is told 1;
   an answer landing while this device's copy is still opening adopts nothing.
 - **Owner's manual test step 6** says what an alias with no other project sees (the New project screen).
+- **Question 3, ruled option 1 the same day (R-277):** the Sites page's banner for a failed read says R-276's sentence. It
+  lives once, as `SITES_EMPTY.unread` (`lib/connect-rule.ts`, the Sites list's words), and `SWITCH_WORDS.unread` reads it;
+  the page's own literal is gone.
 - **Deferred, each with an owner on its card** (`deferred-work.md`, `epics.md`): DW-383 (a 413 still Retrying, 15.5), DW-384
   (the panel's sentence never said to a screen reader, 15.2), DW-385 (a deleted project's editor polling into 502s, 15.5),
   DW-386 (the sync route's 423 path resetting the holder's record in DW-308's window, 15.5), DW-387 (the lock route's
@@ -410,6 +413,7 @@ else. *(Ruled: option 1 of each — R-275 and R-276, owner, 2026-10-20.)*
 | *change*'s control | none — Undo sits beside the indicator (R-143), and an edit in this state is sent at once | — |
 | Run checks and Switch after a refusal | the panel's sentence, word for word | `flushForShip` |
 | The picker, sites unread | "Your connected sites couldn't be loaded just now. Reload the page to try again." | `SWITCH_WORDS.unread` |
+| The Sites page, sites unread *(Question 3, the Review — R-277)* | the same sentence, one line of words read by both | `SITES_EMPTY.unread`, which `SWITCH_WORDS.unread` reads |
 
 **Why a seventh state and not Retrying's words.** R-213 set the precedent: a refusal of a different kind gets its own
 state in the same red panel, and Retrying keeps meaning "the connection, and it will pass". A countdown over a refusal
@@ -472,8 +476,8 @@ machine proves each (Verification).
 
 ## Questions for the owner
 
-Questions 1 and 2 were ruled on 2026-10-20, each option 1 (R-275, R-276). "Ruled values" in Design Notes holds what they
-set. Question 3, raised at the Review, is open.
+Questions 1 and 2 were ruled on 2026-10-20, each option 1 (R-275, R-276); Question 3, raised at the Review, was ruled the
+same day, option 1 (R-277). "Ruled values" in Design Notes holds what they set; none is open.
 
 ### Question 1 — When Inflozo can never save your work, what does the save message say?
 
@@ -536,7 +540,9 @@ try again."
 3. **One sentence, the Sites page's, in both places.** The wizard says "We couldn't load your sites just now. Try again in a
    moment." instead.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-277.** *"One sentence, yours from Question 2, in both places. The Sites page also
+says "Your connected sites couldn't be loaded just now. Reload the page to try again." — reloading works there too. One line
+of words, read by both."*
 
 ## Verification
 
@@ -704,3 +710,12 @@ minutes of autosave, and the hydrate's later ask is a no-op for a holder — the
 - **The Review's deploy** `72f7d396` (read with `GITHUB_TOKEN` and `VERCEL_TOKEN` / `VERCEL_TEAM_ID`): CI `check` (the whole
   keyboard suite with it), `rls` and `deploy` success; the Render matrix success; Vercel `dpl_2AJHwQHhf4UPWAyGsUYUMcrsAGug`
   READY at `72f7d396` on `app.inflozo.com`. Deploy and the owner's test follow (R-80); Question 3 waits for him.
+
+**Executed — Review, the owner's ruling (2026-10-20, R-277, Question 3 option 1; the main session, Node 24.18.1):**
+- `site-switch.test.ts`' R-277 test — the ruled words, `SWITCH_WORDS.unread` the same sentence as `SITES_EMPTY.unread`, the
+  Sites page drawing `{SITES_EMPTY.unread}` with no literal of its own; the control: the page's old sentence put back turns
+  it red (1 failing), the page then restored byte-identical (`cmp`). `pnpm check` — exit 0 on the final tree (library 285,
+  ghost-shim 47, section-runtime 441, theme-compiler 220, app 942 — each suite's own printed count, 0 failing); the picker's
+  R-276 journey over the new wiring — 1 passed. The Sites page's failed read cannot be reached by a hand on production (a database hiccup); the
+  test holds the wiring and `connect-rule.test.ts` holds that an unread list is that banner.
+

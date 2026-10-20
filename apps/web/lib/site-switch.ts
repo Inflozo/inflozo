@@ -17,6 +17,7 @@
  * Pure: no import beyond the library's language rule and the app's words. */
 
 import { DEFAULT_LANGUAGE, languageAtLink } from '@inflozo/library/languages'
+import { SITES_EMPTY } from './connect-rule.ts'
 import { DEPLOY_WORDS } from './deploy.ts'
 import { LOCK_COPY } from './lock.ts'
 import { TRANSLATION_WORDS } from './translations.ts'
@@ -77,8 +78,8 @@ export const SWITCH_WORDS = {
   switching: TRANSLATION_WORDS.switching,
   gone: 'That site is no longer connected.',
   /** R-276 (Story 7.18c, DW-381): the connected sites could not be read (`ShipState.sites` null) — said in place of the list,
-   *  so a failed read never looks like having no other site */
-  unread: "Your connected sites couldn't be loaded just now. Reload the page to try again.",
+   *  so a failed read never looks like having no other site. R-277: the Sites page's banner's words too, so one list holds it */
+  unread: SITES_EMPTY.unread,
   confirmTitle: (host: string) => `Switch to ${host}?`,
   cancel: TRANSLATION_WORDS.cancel,
   switch: TRANSLATION_WORDS.switch,

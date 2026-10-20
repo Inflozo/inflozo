@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs'
 import { confirmedFrom, confirmedOf, SWITCH_WORDS, switchPlan, switchWith, type Confirmed, type SwitchIo, type SwitchSite } from './lib/site-switch.ts'
 import { LOCK_COPY } from './lib/lock.ts'
 import { DEPLOY_WORDS } from './lib/deploy.ts'
+import { SITES_EMPTY } from './lib/connect-rule.ts'
 import { TRANSLATION_WORDS } from './lib/translations.ts'
 
 const P = 'p-this'
@@ -85,6 +86,14 @@ test('R-276 (Story 7.18c, DW-381): a failed sites read is said in R-276\'s words
   assert.match(wizard, /\{sitesUnread \? <p data-sites-unread className="text-ui-dense leading-\[1\.55\] text-ink-soft">\{SW\.unread\}<\/p> : null\}/, 'set as the lead is')
   assert.match(wizard, /if \(sitesUnread\) say\(SW\.unread\)/, 'said in the polite region as the picker opens')
   assert.match(wizard, /\{sites\.length === 0 && !sitesUnread \? null : \(\s*<Button id="deploy-choose"/, 'Choose a site stays on a project with no site')
+})
+
+test('R-277 (owner, 2026-10-20, Story 7.18c\'s Review): a failed read of the connected sites is ONE sentence — the Sites page\'s banner and the picker read one line of words', () => {
+  assert.equal(SITES_EMPTY.unread, "Your connected sites couldn't be loaded just now. Reload the page to try again.")
+  assert.equal(SWITCH_WORDS.unread, SITES_EMPTY.unread)
+  const sites = readFileSync('app/(app)/app/(authed)/sites/(list)/page.tsx', 'utf8')
+  assert.match(sites, /<Banner kind="error">\{SITES_EMPTY\.unread\}<\/Banner>/, 'the Sites page draws the list\'s sentence')
+  assert.doesNotMatch(sites, /load your sites/i, 'and no sentence of its own beside it')
 })
 
 // ── the server's half (`switchWith`, which `switchSite` runs after the lock): what it writes, in what order, and when it asks ──

@@ -5899,7 +5899,22 @@ site still shows, so the sentence is reachable there too."*
   with nothing said.
 - Targets: ✅ this entry · ✅ Story 7.18c's spec (Question 2, Ruled values) · ✅ `epics.md` Story 7.18c's card (dated) ·
   ✅ DW-381's note · ✅ `epic-7-context.md` · ✅ `EXPERIENCE.md`'s Deploy Destination row (7.18c's Dev, 2026-10-20) ·
-  ✅ `apps/web/lib/site-switch.ts` `SWITCH_WORDS.unread` and the picker (7.18c's Dev).
+  ✅ `apps/web/lib/site-switch.ts` `SWITCH_WORDS.unread` and the picker (7.18c's Dev). *(Extended to the Sites page by R-277.)*
+
+**R-277 — a failed read of the connected sites is one sentence, R-276's, on the Sites page and in the picker.** Story 7.18c's
+Review, Question 3, ruled **option 1** (owner, 2026-10-20): *"One sentence, yours from Question 2, in both places. The Sites
+page also says "Your connected sites couldn't be loaded just now. Reload the page to try again." — reloading works there
+too. One line of words, read by both."*
+
+- **Why it was a question.** The Review's Blind Hunter: R-276 gave the picker its sentence while the Sites page kept its own
+  for the same failure ("We couldn't load your sites just now. Try again in a moment."), against R-170's one name for one
+  thing. Changing the Sites page was outside what R-276 ruled, and a string beyond Ruled values is Ask First.
+- **The rule.** One line of words, `SITES_EMPTY.unread` in `apps/web/lib/connect-rule.ts` (the Sites list's words); the Sites
+  page's error banner draws it, and `SWITCH_WORDS.unread` reads it, so the two can never drift apart.
+- **Declined.** Option 2, each place its own sentence; option 3, the Sites page's sentence in both.
+- Targets: ✅ this entry · ✅ Story 7.18c's spec (Question 3, Ruled values) · ✅ `epics.md` Story 7.18c's card (dated) ·
+  ✅ DW-381's note · ✅ `epic-7-context.md` · ✅ `EXPERIENCE.md`'s Deploy Destination row · ✅ `apps/web/lib/connect-rule.ts`,
+  `lib/site-switch.ts`, the Sites page and `site-switch.test.ts` (7.18c's Review).
 
 ## B · Approved decisions superseded by this session
 

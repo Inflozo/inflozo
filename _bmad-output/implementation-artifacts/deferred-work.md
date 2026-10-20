@@ -10435,6 +10435,8 @@ resolution: Story 7.18c's Dev (2026-10-20), R-276 built — `shipStateOf` answer
   in the wizard's polite region, with no list and no Use this site; Choose a site shows whenever the sites are unread or
   any are listed. Held by `read.test.ts` (either read failing, a successful empty read the control), `site-switch.test.ts`,
   and the keyboard journey over the harness's `sites-failed` and `sites-failed-unlinked` shapes (the empty-sites control).
+note (Story 7.18c's Review, 2026-10-20): ruled **R-277**, option 1 — the Sites page's banner for a failed read says the same
+  sentence; one line of words, `SITES_EMPTY.unread`, which `SWITCH_WORDS.unread` reads. Built at the Review.
 
 ### DW-382: the lock walk's early stops fail intermittently against production
 

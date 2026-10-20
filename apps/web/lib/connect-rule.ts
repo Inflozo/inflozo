@@ -217,6 +217,9 @@ export const SITES_EMPTY = {
   sub: 'Connect your Ghost site — it takes about a minute.',
   /** "No sites match …", the Projects grid's own answer to a search that found nothing. */
   noMatch: (query: string) => `No sites match “${query}”.`,
+  /** R-277 (owner, 2026-10-20, Story 7.18c's Review): a read of the connected sites that failed — this page's banner and the
+   *  deploy wizard's site picker (`SWITCH_WORDS.unread`) say this one sentence, R-276's (R-170: one line of words, read by both) */
+  unread: "Your connected sites couldn't be loaded just now. Reload the page to try again.",
 } as const
 
 /**

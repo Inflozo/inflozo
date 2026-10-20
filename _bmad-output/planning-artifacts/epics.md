@@ -4295,6 +4295,8 @@ deleted, or this browser is now signed in to another account." with Go to Projec
 accept your latest change. Undo it, and your work will sync again.", and Run checks and Switch say the same (DW-304);*
 **R-276** *— a failed sites read is said in the picker in place of the list, "Your connected sites couldn't be loaded just
 now. Reload the page to try again.", with Go to Sites and Back kept and Choose a site still shown (DW-381).)*
+*(Ruled at this story's Review, owner, 2026-10-20, option 1:* **R-277** *— the Sites page's banner for a failed read says the
+same sentence, one line of words read by both (R-170).)*
 
 **FRs:** none new (AD-15's lock; R-228 accepted the wait until now). · **Frame:** `B Missing Surfaces.dc.html` B5a (the
 reader's bar) · B6 (the save state). · **Owner test:** yes. · **Verification:** `pnpm keyboard`'s journeys and the deployed

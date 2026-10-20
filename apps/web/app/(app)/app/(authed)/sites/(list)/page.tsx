@@ -262,7 +262,8 @@ export default async function Sites({
     return (
       <div className="flex flex-col gap-4 p-[16px_20px] tablet:p-6">
         <h1 className="sr-only">Sites</h1>
-        <Banner kind="error">We couldn&rsquo;t load your sites just now. Try again in a moment.</Banner>
+        {/* R-277: the one sentence for a failed read of the connected sites, the wizard's picker's too */}
+        <Banner kind="error">{SITES_EMPTY.unread}</Banner>
       </div>
     )
   }
