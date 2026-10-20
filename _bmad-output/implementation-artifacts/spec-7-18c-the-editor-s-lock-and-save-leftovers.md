@@ -700,5 +700,7 @@ runs, each with its own throwaway accounts made and deleted through `SUPABASE_UR
 (`app.inflozo.com`, deployment `dpl_AAPUStVpTGZoVoiDbWT3ETBB8qM8` at `d8bf78bd`); **GitHub Actions** (read only). No Ghost
 write (R-238): run 1 stopped before steps 113–114, the walk's T1 steps, and the cuts leave them out. The walks ran at the Dev
 head, and the Review's own patches change nothing they press: the resend acts only on *change*, the tick only after three
-minutes of autosave, and the hydrate's later ask is a no-op for a holder — the journeys hold all three. CI and Vercel on the
-Review head follow its push.
+minutes of autosave, and the hydrate's later ask is a no-op for a holder — the journeys hold all three.
+- **The Review's deploy** `72f7d396` (read with `GITHUB_TOKEN` and `VERCEL_TOKEN` / `VERCEL_TEAM_ID`): CI `check` (the whole
+  keyboard suite with it), `rls` and `deploy` success; the Render matrix success; Vercel `dpl_2AJHwQHhf4UPWAyGsUYUMcrsAGug`
+  READY at `72f7d396` on `app.inflozo.com`. Deploy and the owner's test follow (R-80); Question 3 waits for him.
