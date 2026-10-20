@@ -694,6 +694,24 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **Held:** `journal.test.ts`, `lock.test.ts` (the route's two statements read from source), `tab-session.test.ts` (`pageId`), `read.test.ts`, `deploy.test.ts`, `site-switch.test.ts`, `settings.test.ts`; the journeys (R-213's loop flipped; R-275's error column; R-275 in fallback; Run checks and Switch after a 422; DW-308's held acquire with its `held: true` and N = 0 arms; R-276), each first seen red against HEAD's behaviour; the RLS gate's 7.18c block. Written, the main session's to run: walk step 115 (production) and the lock walk's DW-307 stop.
   - **Story 7.18c's Review (2026-10-20):** five layers, then production on the owner's in-session go. Walk step 115 PASS (0 FAIL, 58 PASS; Go to Projects with no other project lands on `/start`, so the step seeds one first); the lock walk 0 FAIL, 95 PASS with DW-307's stop given a same-run control (a leave that cannot match waits for the row to go stale, 51 s) and the `or`'s refusing half run through PostgREST (a beat from a page that left revives nothing). Patched: an Undo landing while a refused save is out is sent the moment the refusal answers; autosave's tick sends nothing while Can't sync holds (the harness's `x-inflozo-harness-autosave: on`); the hydrate asks "still holder?" after its last await too; the RLS block's length check, a three-event ordering asserted as the route's ponytail names it, and a null-safe other-tenant read. Deferred with owners: DW-383–387 (15.5, 15.2, 15.1). Question 3 (one sentence for a failed sites read on Sites and in the picker) was ruled option 1 the same day, **R-277**: one line of words, `SITES_EMPTY.unread`, the Sites page's banner and `SWITCH_WORDS.unread` alike.
 - **The first deploy asks for the Staff Access Token and survives a no (7.19, FR-C1).** It is disclosed as a full-Administrator credential, an Administrator's token suffices, and declining loses the snapshot, the drift check and the automated routes upload — said once — while the Admin API key still uploads and activates.
+  - **Story 7.19's Create (2026-10-20):** ready for Dev, with three questions open (R-83).
+    - **Q1, the decline's grain:** planned per site, as `sites.staff_token_declined_at`, with a `Schema` push first. Appendix H and J1 say "for that project"; the IA and FR-J13 say "per site".
+    - **Q2, D1b's picture:** planned as the owner's own T1 screenshot (3.2's precedent).
+    - **Q3, a token that cannot do the job:** planned as checked with `GET users/me/?include=roles` through `fetchWithKey` before `store()`, in Safety net and Manage keys alike, one sentence per cause.
+    - **Planned.**
+      - `STEPS` gains Safety net (`stepsFor`).
+      - `safetyOffered` holds when four things are true: Run checks shows, the site has no binding among the user's projects, no token is stored, and no decline is recorded.
+      - Destination's button reads Next (D1a). D1b and D1c are 700px.
+      - Add token runs the checks at once. Not now writes the decline without waiting.
+      - "Add token" is the one name (R-170).
+      - `server/staff-token.ts`' `addStaffToken` is the one check.
+      - The walk gains step 116. `record-staff-token.mjs` is §88.
+    - **Read in source (6.58.0, 5.130.6):**
+      - `users/me` resolves to the token's user.
+      - An Admin key leaves `me` literal, which should be a 404; Dev executes it.
+      - Administrator holds `theme: all` and `setting: all`. Editor and Super Editor hold browse and read. The Owner passes every check.
+      - A theme download is `read`.
+      - This Create's read-only T1 probe was refused by the classifier, so the T1 run waits for an in-session go at Dev.
 - **The live theme is archived before the first upload, and drift stops a later one (7.20, 7.21, FR-J13, FR-J16).** The snapshot is read with the staff token, gated on the `package.json` marker, kept per site record outside quota and pruning, behind a backup gate whose master confirm waits for the last tick; drift compares content manifests (SHA-256, line endings normalized), fails open, names files by layer name, and demands zero false positives — a compiled filename never changes when nothing did.
   - **DW-75, DW-79 (Story 7.20):** the 90-day orphan purge is a cron deriving its deadline from `sites.disconnected_at`, deleting objects before rows through `drainPrefix`, and the 90 days get one home (`ORPHAN_SNAPSHOT_DAYS`).
   - **VERIFY-AT-BUILD 9, 10, 61; MEASUREMENTS §33:** the staff token lifts `GET /themes/` on both majors; a restore can be refused with a 422 and must say so; "Ghost keeps the previous theme" holds for the first upload only; Ghost Admin's backup paths differ by major, so the gate links Ghost's help.
