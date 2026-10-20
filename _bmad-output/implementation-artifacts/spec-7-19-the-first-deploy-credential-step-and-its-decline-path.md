@@ -2,7 +2,7 @@
 title: 'Story 7.19 — The first-deploy credential step, and its decline path'
 type: 'feature'
 created: '2026-10-20'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '10559fd767dcac60d54df6b2172acbf3b19fd799'
 owner_test: pending
 review_loop_iteration: 0
@@ -226,14 +226,14 @@ Paths are under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed
 and applied to production on the owner's in-session go (R-99), before any code that writes the column is pushed.
 
 **Execution — the `Schema` push (alone, first; R-99):**
-- [ ] `supabase/migrations/20261022120000_staff_token_decline.sql` -- add `sites.staff_token_declined_at timestamptz`
+- [x] `supabase/migrations/20261022120000_staff_token_decline.sql` -- add `sites.staff_token_declined_at timestamptz`
   (null = never declined), with a `comment on` naming FR-C1, D1c's "raised once, never again" and Question 1's grain. It
   must be re-runnable (`if not exists`). The header says there is no new grant: the tenant reads it through table-wide
   select, and only the server writes it, with the service role, as `routes_fallback` -- the decline's one home (R-278:
   per site).
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the column in
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the column in
   `sites` beside `routes_fallback` (`:179`) -- the gate diffs it against the migrations.
-- [ ] `…/RLS-TEST.sql`, then copied byte-identical to `supabase/tests/rls.sql` -- a **7.19 block**:
+- [x] `…/RLS-TEST.sql`, then copied byte-identical to `supabase/tests/rls.sql` -- a **7.19 block**:
   - the column's type, nullability and comment (coalesce, as 7.18b's block);
   - as the tenant: an update of `staff_token_declined_at` is refused (42501), and a select of its own row returns it;
   - as another tenant: the row is not visible;

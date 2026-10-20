@@ -3013,3 +3013,113 @@ end $$;
 
 delete from auth.users where id in ('77777777-718c-0000-0000-000000000001',
                                     '77777777-718c-0000-0000-000000000002');
+
+-- ── STORY 7.19 — the site remembers a declined first-deploy credential step (FR-C1, D1c, R-278) ─────────────────────────
+--
+-- BEHAVIOURAL. `sites.staff_token_declined_at` is the server's record of a Not now on D1b: the tenant reads it on its own
+-- row (the editor's read decides the offer from it) and never on another's, and the tenant cannot write it — only the
+-- server's `declineSafetyNet` may, with the service role. `sites`' column-limited update grant is still exactly
+-- (favicon_url, title, updated_at). With the 7.19 migration withheld this block ABORTS at its first check — the control
+-- that the gate sees the migration at all.
+
+reset role;
+
+delete from auth.users where id in ('77777777-7190-0000-0000-000000000001',
+                                    '77777777-7190-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-7190-0000-0000-000000000001'),
+                                  ('77777777-7190-0000-0000-000000000002');
+insert into public.sites(id,user_id,url) values
+  ('eeeeeeee-7190-0000-0000-000000000001','77777777-7190-0000-0000-000000000001','https://own-719.example'),
+  ('eeeeeeee-7190-0000-0000-000000000002','77777777-7190-0000-0000-000000000002','https://theirs-719.example');
+
+-- (1) the column: nullable timestamptz, its comment, and no client write on either verb; the update grant unchanged.
+do $$
+declare cols text;
+begin
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'sites' and column_name = 'staff_token_declined_at'
+         and data_type = 'timestamp with time zone' and is_nullable = 'YES' and column_default is null) <> 1 then
+    raise exception 'FAIL (7.19): public.sites.staff_token_declined_at (timestamptz, nullable, no default) is missing';
+  end if;
+  -- coalesce: a column with NO comment reads null, and `null not like …` is null — no exception (7.18b's Review)
+  if coalesce(col_description('public.sites'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.sites'::regclass and attname = 'staff_token_declined_at')), '')
+     not like '%FR-C1%raised once, never again%Per site record (R-278)%' then
+    raise exception 'FAIL (7.19): sites.staff_token_declined_at''s comment does not name FR-C1, D1c''s rule and its grain';
+  end if;
+  if has_column_privilege('authenticated', 'public.sites', 'staff_token_declined_at', 'INSERT')
+     or has_column_privilege('authenticated', 'public.sites', 'staff_token_declined_at', 'UPDATE') then
+    raise exception 'FAIL (7.19): authenticated can write sites.staff_token_declined_at';
+  end if;
+  select string_agg(attname, ', ' order by attname) into cols
+    from pg_attribute
+   where attrelid = 'public.sites'::regclass and attnum > 0 and not attisdropped
+     and has_column_privilege('authenticated', attrelid, attnum, 'UPDATE');
+  if cols is distinct from 'favicon_url, title, updated_at' then
+    raise exception 'FAIL (7.19): authenticated''s update columns on sites are (%), not (favicon_url, title, updated_at)', cols;
+  end if;
+  raise notice 'PASS (7.19): sites.staff_token_declined_at is a nullable timestamptz with its comment, and sites'' update grant is still (favicon_url, title, updated_at)';
+end $$;
+
+-- the server records both declines (the service role, as `declineSafetyNet` does)
+set role service_role;
+do $$
+begin
+  update public.sites set staff_token_declined_at = '2026-10-21 12:00:00+00'
+   where id = 'eeeeeeee-7190-0000-0000-000000000001' and user_id = '77777777-7190-0000-0000-000000000001'
+     and disconnected_at is null;
+  if not found then raise exception 'FAIL (7.19): the service role could not record a decline'; end if;
+  update public.sites set staff_token_declined_at = '2026-10-20 12:00:00+00'
+   where id = 'eeeeeeee-7190-0000-0000-000000000002';
+  raise notice 'PASS (7.19): the service role records a decline';
+end $$;
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7190-0000-0000-000000000001';
+
+-- (2) the tenant reads its own decline and never another's; (3) it cannot write the decline, and the control still writes
+do $$
+declare mine timestamptz; theirs int;
+begin
+  select staff_token_declined_at into strict mine from public.sites where id = 'eeeeeeee-7190-0000-0000-000000000001';
+  if mine is distinct from '2026-10-21 12:00:00+00'::timestamptz then
+    raise exception 'FAIL (7.19): the tenant read % for its own staff_token_declined_at', coalesce(mine::text, 'null');
+  end if;
+  select count(*) into theirs from public.sites where id = 'eeeeeeee-7190-0000-0000-000000000002';
+  if theirs <> 0 then
+    raise exception 'FAIL (7.19): the tenant can see another tenant''s site';
+  end if;
+  raise notice 'PASS (7.19): the tenant reads its own staff_token_declined_at and not another tenant''s';
+  begin
+    update public.sites set staff_token_declined_at = null where id = 'eeeeeeee-7190-0000-0000-000000000001';
+    raise exception 'FAIL (7.19): the tenant wrote staff_token_declined_at directly';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.19): the tenant cannot write staff_token_declined_at (%)', sqlstate;
+  end;
+  -- CONTROL: the same tenant still writes a column its grant carries, so the refusal above is this column's
+  update public.sites set title = 'Own 719' where id = 'eeeeeeee-7190-0000-0000-000000000001';
+  if not found then
+    raise exception 'FAIL (7.19): the control — the tenant could not write its own site''s title either';
+  end if;
+  raise notice 'PASS (7.19): the control — the tenant still writes its own title';
+exception when no_data_found then
+  raise exception 'FAIL (7.19): the tenant cannot read its own site';
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+do $$
+begin
+  if (select staff_token_declined_at from public.sites where id = 'eeeeeeee-7190-0000-0000-000000000001')
+     is distinct from '2026-10-21 12:00:00+00'::timestamptz
+     or (select staff_token_declined_at from public.sites where id = 'eeeeeeee-7190-0000-0000-000000000002')
+     is distinct from '2026-10-20 12:00:00+00'::timestamptz then
+    raise exception 'FAIL (7.19): a refused tenant write changed a recorded decline';
+  end if;
+  raise notice 'PASS (7.19): the refused write left both declines as the server wrote them';
+end $$;
+
+delete from auth.users where id in ('77777777-7190-0000-0000-000000000001',
+                                    '77777777-7190-0000-0000-000000000002');

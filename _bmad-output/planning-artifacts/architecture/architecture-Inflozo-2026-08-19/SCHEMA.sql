@@ -177,8 +177,14 @@ create table public.sites (
   -- that stopped working (401), a staff user below Administrator (403). Null = nothing owed. Written only by the
   -- server; `authenticated` gains no write. LAST, because `alter table ... add column` appends.
   routes_fallback text check (routes_fallback in ('no_token', 'revoked', 'role')),
+  -- Story 7.19 (FR-C1, D1c): when the customer declined the first-deploy Staff Access Token step. Per site record
+  -- (R-278), so no project asks again on this site. Null = never declined. Server-written, select-only to the client
+  -- like `routes_fallback`. LAST, because `add column` appends.
+  staff_token_declined_at timestamptz,
   unique (user_id, url)
 );
+comment on column public.sites.staff_token_declined_at is
+  'When the customer pressed Not now on the first-deploy Staff Access Token step (Story 7.19, FR-C1, D1c: raised once, never again). Per site record (R-278): no project of the user''s asks again on this site, through disconnect and reconnect; another site still asks once. Null = never declined. Written only by the server.';
 create index on public.sites (user_id) where disconnected_at is null;
 create index on public.sites (last_checked_at) where disconnected_at is null;
 
