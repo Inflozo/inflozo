@@ -4287,6 +4287,13 @@ So that I am never told work will be sent when it never can be, nor kept waiting
 **And** a window that typed in its first moment — before the server answered that another session is editing — is told what it holds when it turns read-only, as a displaced session is told: "This session had N unsynced edits; they were not included." (`LOCK_COPY.displaced`), in memory only, never resetting the on-device record the holder shares (DW-308, from Story 5.24e's review, 2026-10-02).
 **And** *(given an owner by Story 7.18b's Review, 2026-10-19)* a failed read of the user's connected sites is said in the deploy wizard's site picker, never drawn as an empty list: `ShipState.sites` keeps the failure, and this story's Create asks the owner (R-83) for the sentence (DW-381).
 
+*(Ruled at this story's Create, owner, 2026-10-20, each option 1:* **R-275** *— a save refused for good is a seventh save
+state, "Can't sync", in B6's red panel: the retrying stops, a 404 says "Your changes can't reach this project: it was
+deleted, or this browser is now signed in to another account." with Go to Projects, a 400 or 422 says "Inflozo couldn't
+accept your latest change. Undo it, and your work will sync again.", and Run checks and Switch say the same (DW-304);*
+**R-276** *— a failed sites read is said in the picker in place of the list, "Your connected sites couldn't be loaded just
+now. Reload the page to try again.", with Go to Sites and Back kept and Choose a site still shown (DW-381).)*
+
 **FRs:** none new (AD-15's lock; R-228 accepted the wait until now). · **Frame:** `B Missing Surfaces.dc.html` B5a (the
 reader's bar) · B6 (the save state). · **Owner test:** yes. · **Verification:** `pnpm keyboard`'s journeys and the deployed
 walk on production (R-82).

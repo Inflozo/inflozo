@@ -8630,6 +8630,8 @@ reason: the honest answer is a state and a sentence no frame draws and no ruling
   Story 6.3's Review (2026-10-04) adds one more of the same kind: the route's 422 "Not a Style Pack" for a pending
   preset the deployed build does not hold — reachable only by a tab kept open across a build that drops a preset, and
   the docs in the same body wait with it. The sign-out's send (`owedOf`) meets the same answer.
+note (Story 7.18c's Create, 2026-10-20): ruled **R-275**, option 1 — a seventh save state, "Can't sync", one sentence per
+  cause (404; 400 and 422), the retrying stopped, Run checks and Switch saying the same. To be built at 7.18c's Dev.
 
 ### DW-305: on an invite-only site, a section asking people to pay is not warned, though Ghost blocks its sign-up too
 
@@ -10386,3 +10388,6 @@ owner: Story 7.18c (the editor's lock and save leftovers), the next story on thi
   and the picker says it in a sentence of the owner's (Ask First: a new string).
 location: `apps/web/lib/deploy.ts` (`shipStateOf`) · `apps/web/components/editor/deploy-wizard.tsx` (the picker)
 reason: a new sentence is Ask First; Go to Sites still works, and `switchSite` judges on the server.
+note (Story 7.18c's Create, 2026-10-20): ruled **R-276**, option 1 — `ShipState.sites` null on a failed read, and the
+  picker says "Your connected sites couldn't be loaded just now. Reload the page to try again." in place of the list. To be
+  built at 7.18c's Dev.

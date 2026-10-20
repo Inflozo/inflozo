@@ -5855,6 +5855,44 @@ reached Inflozo yet. Try again once they're saved.""*
 - Targets: ✅ this entry · ✅ `apps/web/lib/deploy.ts` (`editsUnsent`) and `deploy.test.ts` (the ruled words) · ✅ Story 7.18b's
   spec (Question 8, Words) · ✅ `epic-7-context.md`.
 
+**R-275 — a save Inflozo refuses for good is a seventh save state, "Can't sync", with one sentence per cause.** Story 7.18c's
+Create, Question 1, ruled **option 1** (owner, 2026-10-20): *"A seventh state, "Can't sync", in the same red panel; the
+retrying stops; one sentence per cause."*
+
+- **Why it was a question.** DW-304 (Story 5.24e's Create): the sync route answers 404 for a project deleted elsewhere or
+  another account's session, and 400 or 422 for a body or document it will not take, and the editor sent all three to the
+  Retrying backoff under "we will send it when the connection returns" — for ever. R-213 took only the refusal signing in
+  cures (401). Run checks and Switch then said R-274's "Try again once they're saved." A new sentence is the owner's.
+- **The rule.** In B6's red panel, extrapolated as R-213's Signed out was: the label and title **Can't sync** (R-190's word,
+  never "unsaved"), Tabler `x` in the red circle. A 404 says *"Your changes can't reach this project: it was deleted, or this
+  browser is now signed in to another account."* with a **Go to Projects** link, and a visit back to the tab tries once, so
+  signing back in to the right account recovers. A 400 or 422 says *"Inflozo couldn't accept your latest change. Undo it,
+  and your work will sync again."*, with no control: Undo sits beside the indicator (R-143) and an edit in this state is sent
+  at once. The backoff stops; the journal is kept; a 200 rests green. Run checks and Switch say the same sentence. A 401 stays
+  Signed out and every other failure Retrying.
+- **Declined.** Option 2, one sentence for every cause with no link; option 3, Retrying kept with its countdown and only
+  "when the connection returns" dropped.
+- Targets: ✅ this entry · ✅ Story 7.18c's spec (Question 1, Ruled values) · ✅ `epics.md` Story 7.18c's card (dated) ·
+  ✅ DW-304's note · ✅ `epic-7-context.md` · ⬜ `prd.md` FR-D10 and Appendix H's seven names (at 7.18c's Dev) ·
+  ⬜ `EXPERIENCE.md`'s persistence rows (at 7.18c's Dev) · ⬜ `apps/web/lib/journal.ts` `REFUSED_COPY` (at 7.18c's Dev).
+
+**R-276 — a failed read of the connected sites is said in the site picker, never drawn as an empty list.** Story 7.18c's
+Create, Question 2, ruled **option 1** (owner, 2026-10-20): *"A sentence in place of the list: "Your connected sites
+couldn't be loaded just now. Reload the page to try again." Go to Sites and Back stay. On a project with no site, Choose a
+site still shows, so the sentence is reachable there too."*
+
+- **Why it was a question.** DW-381 (Story 7.18b's Review): `shipStateOf` logged a failed sites read and counted it as none,
+  so Switch opened an empty list and a project with no site hid "Choose a site" — which looks like having no other site. A
+  new sentence is Ask First.
+- **The rule.** `ShipState.sites` is null when the sites or linking read failed. The picker then says the ruled sentence
+  (`SWITCH_WORDS.unread`) in place of the list and Use this site, and says it in the wizard's polite region; Go to Sites and
+  Back stay; "Choose a site" shows on a project with no site whenever the sites are unread or any are listed.
+- **Declined.** Option 2, a Try again button re-reading the sites without a reload; option 3, Switch and Choose a site hidden
+  with nothing said.
+- Targets: ✅ this entry · ✅ Story 7.18c's spec (Question 2, Ruled values) · ✅ `epics.md` Story 7.18c's card (dated) ·
+  ✅ DW-381's note · ✅ `epic-7-context.md` · ⬜ `EXPERIENCE.md`'s Deploy Destination row (at 7.18c's Dev) ·
+  ⬜ `apps/web/lib/site-switch.ts` `SWITCH_WORDS.unread` (at 7.18c's Dev).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

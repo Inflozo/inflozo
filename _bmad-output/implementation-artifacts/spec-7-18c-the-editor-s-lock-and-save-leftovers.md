@@ -22,8 +22,8 @@ sites, the deploy wizard's site list says so instead of looking empty.
 
 ## Intent
 
-**Two questions are open for the owner (R-83) and Dev waits for both.** The spec plans option 1 of each; "Ruled values"
-in Design Notes is the one table their answers set. **This is Story 7.18c (R-259):** the editor's lock and save
+**Questions 1 and 2 were ruled by the owner (2026-10-20), each option 1: R-275 and R-276.** "Ruled values" in Design
+Notes is the one table they set. **This is Story 7.18c (R-259):** the editor's lock and save
 leftovers, on the editor Stories 5.8, 5.17, 5.24e, 7.18a and 7.18b built.
 
 **Problem:**
@@ -77,7 +77,7 @@ leftovers, on the editor Stories 5.8, 5.17, 5.24e, 7.18a and 7.18b built.
 - **R-82:** Review and test on production's Supabase and Vercel. This story makes no Ghost call, so no T1 write.
 
 **Ask First:**
-- Questions 1 and 2 (open). Dev builds the ruled options from "Ruled values".
+- Questions 1 and 2 were ruled (R-275, R-276). Dev builds the ruled options from "Ruled values".
 - Applying the Schema migration to production (R-99): an in-session R-83 ask, then the pooler.
 - Any string beyond "Ruled values".
 
@@ -194,8 +194,8 @@ Paths under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed)/pr
 
 ## Tasks & Acceptance
 
-**Dev gate.** Both questions ruled; the Schema push made, green, and applied to production on the owner's in-session go
-(R-99), before any code that writes the columns is pushed.
+**Dev gate.** Both questions are ruled (R-275, R-276). The Schema push is made, green, and applied to production on the
+owner's in-session go (R-99), before any code that writes the columns is pushed.
 
 **Execution — the `Schema` push (alone, first; R-99):**
 - [ ] `supabase/migrations/20261021120000_edit_lock_page.sql` -- add `edit_locks.page_id text` (null, or 1–64
@@ -301,7 +301,7 @@ Paths under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed)/pr
 ## Design Notes
 
 **Ruled values — the one table the two questions set.** Dev builds this table; a different ruling changes it and nothing
-else. *(Planned at option 1 of each; both await the owner.)*
+else. *(Ruled: option 1 of each — R-275 and R-276, owner, 2026-10-20.)*
 
 | Key | Value (option 1) | Where |
 |---|---|---|
@@ -375,7 +375,8 @@ machine proves each (Verification).
 
 ## Questions for the owner
 
-Both are open, and Dev waits for both. The spec is planned at option 1 of each ("Ruled values" in Design Notes).
+Questions 1 and 2 were ruled on 2026-10-20, each option 1 (R-275, R-276); none is open. "Ruled values" in Design Notes
+holds what they set.
 
 ### Question 1 — When Inflozo can never save your work, what does the save message say?
 
@@ -400,7 +401,8 @@ lost if you close the tab — we will send it when the connection returns." It n
 3. **Keep "Retrying" and its countdown,** and only drop "when the connection returns" for these three. It still retries
    for ever, uselessly.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-275.** *"A seventh state, "Can't sync", in the same red panel; the retrying
+stops; one sentence per cause."*
 
 ### Question 2 — If Inflozo cannot load your connected sites, what does the site list say?
 
@@ -417,7 +419,9 @@ Sites".
    to build.
 3. **Hide Switch and Choose a site** when the read fails; only Go to Sites stays. Nothing explains why.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-276.** *"A sentence in place of the list: "Your connected sites couldn't be
+loaded just now. Reload the page to try again." Go to Sites and Back stay. On a project with no site, Choose a site still
+shows, so the sentence is reachable there too."*
 
 ## Verification
 
