@@ -575,8 +575,8 @@ project B, and plants a second site row, `walk-114.invalid`, with `site_settings
 
 ## Owner's manual test
 
-You test as a fresh account **on Pro**, so it can hold two projects. **The Deploy run makes that account for you on your
-go** (`umngkmr+site718@gmail.com`). Before you start, in **ghost6.inflozo.com's Ghost Admin** make a custom integration
+You test as a fresh account **on Pro**, so it can hold two projects: **`umngkmr+site718@gmail.com`, made fresh on Pro at
+Deploy (2026-10-20, on your go — Question 9)**, with no project and no site yet. Before you start, in **ghost6.inflozo.com's Ghost Admin** make a custom integration
 called **Owner test 7.18b**, and keep its Admin API key and Content API key open.
 
 Addresses that need a project's id are written `<A>` and `<B>`. Copy each from the address bar when it opens.
@@ -590,19 +590,19 @@ Addresses that need a project's id are written `<A>` and `<B>`. Copy each from t
 | 5 | `https://app.inflozo.com/projects/<B>/settings/translations` | Translations | Choose **العربية** (Arabic — Translations names each language in its own script), then press **Understood** on the right-to-left notice. | — | The language reads العربية, with "You acknowledged this on …". |
 | 6 | `https://app.inflozo.com/projects/<A>` in window 1 | Editor A → wizard | Press **Ship it**, then **Run checks**. Leave it on the finished checks. | — | The site card reads ghost6 · **Connected** · **Switch**. Pre-flight finishes with Ship it pressable. |
 | 7 | `https://app.inflozo.com/projects/<B>` in window 2 | Editor B → wizard | Press **Ship it**. | — | "This project isn't linked to a connected Ghost site yet." with **Choose a site** and **Go to Sites**. |
-| 8 | (B) | Choose a site | Press **Choose a site**, choose ghost6, and press **Use this site**. | — | The list shows ghost6 with "Linked to {A's name}". "Switch to ghost6.inflozo.com?" opens with **Cancel** focused. It says the site moves from A to this project, and that ghost6.inflozo.com is set to English while this project is in العربية — Arabic, named in its own script, as Translations names every language. |
-| 9 | (B) | The confirm | Press **Switch**. | — | Destination shows ghost6 · **Connected** · **Switch**, and a v1 chip. Behind the wizard the canvas shows ghost6's posts. |
-| 10 | (A) window 1 | Pre-flight | Press **Ship it**. | — | Nothing is sent: "This project is no longer linked to ghost6.inflozo.com, so nothing was sent." **Back** shows **Choose a site**. |
-| 11 | (B) | Destination → Pre-flight | Press **Run checks**. Open each warning. | — | 0 errors. The warnings are: **Right-to-left languages are not supported yet** with your date; the language line with "Change it to ar in Ghost ↗"; **Starting words you haven't retyped** with "Inline Row on Home:" and its words in quotes; **ghost6.inflozo.com can't take every sign-up your pages ask for** with the same sentences the Sites card shows and "Inline Row on Home"; and **Not viewed as every visitor** listing Home and the other pages. Then "Warnings won't block your deploy.". Ship it is pressable. |
-| 12 | (B) | Editor | Close the wizard. On Home, choose each of the three visitors in **View as**. Run the checks again. | — | Home is gone from the "Not viewed" list; the other pages stay — **Home page 2** among them, which is a page of its own. |
-| 13 | `https://app.inflozo.com/projects/<B>/settings`, then the editor | Theme settings, then the wizard | Press **Promote a control**, choose **Note (Inline Row)**, and save. Then in the editor press **Ship it**, **Run checks**, **Ship it**. | — | Live, with confetti. |
-| 14 | `https://app.inflozo.com/projects/<B>/settings`, then the editor | Theme settings, editor, wizard | Delete that setting. In the editor, choose any other Style Pack. On the **Tag** canvas, hide the list of posts in Layers. Then **Ship it**, **Run checks**. | — | Three more warnings: **Ghost will forget 1 setting on ghost6.inflozo.com** naming it; **Dark accent color's starting value changed** with the old and new colours and **Open Ghost's Design panel ↗** (it opens Ghost's Design settings in a new tab); and **Tag page has no list of posts** with **Fix in editor**. |
+| 8 | `https://app.inflozo.com/projects/<B>` in window 2 | Choose a site | Press **Choose a site**, choose ghost6, and press **Use this site**. | — | The list shows ghost6 with "Linked to {A's name}". "Switch to ghost6.inflozo.com?" opens with **Cancel** focused. It says the site moves from A to this project, and that ghost6.inflozo.com is set to English while this project is in العربية — Arabic, named in its own script, as Translations names every language. |
+| 9 | `https://app.inflozo.com/projects/<B>` in window 2 | The confirm | Press **Switch**. | — | Destination shows ghost6 · **Connected** · **Switch**, and a v1 chip. Behind the wizard the canvas shows ghost6's posts. |
+| 10 | `https://app.inflozo.com/projects/<A>` in window 1 | Pre-flight | Press **Ship it**. | — | Nothing is sent: "This project is no longer linked to ghost6.inflozo.com, so nothing was sent." **Back** shows **Choose a site**. |
+| 11 | `https://app.inflozo.com/projects/<B>` in window 2 | Destination → Pre-flight | Press **Run checks**. Open each warning. | — | 0 errors. The warnings are: **Right-to-left languages are not supported yet** with your date; the language line with "Change it to ar in Ghost ↗"; **Starting words you haven't retyped** with "Inline Row on Home:" and its words in quotes; **ghost6.inflozo.com can't take every sign-up your pages ask for** with the same sentences the Sites card shows and "Inline Row on Home"; and **Not viewed as every visitor** listing Home and the other pages. Then "Warnings won't block your deploy.". Ship it is pressable. |
+| 12 | `https://app.inflozo.com/projects/<B>` in window 2 | Editor | Close the wizard. On Home, choose each of the three visitors in **View as**. Run the checks again. | — | Home is gone from the "Not viewed" list; the other pages stay — **Home page 2** among them, which is a page of its own. |
+| 13 | `https://app.inflozo.com/projects/<B>/settings`, then `https://app.inflozo.com/projects/<B>` | Theme settings, then the wizard | Press **Promote a control**, choose **Note (Inline Row)**, and save. Then in the editor press **Ship it**, **Run checks**, **Ship it**. | — | Live, with confetti. |
+| 14 | `https://app.inflozo.com/projects/<B>/settings`, then `https://app.inflozo.com/projects/<B>` | Theme settings, editor, wizard | Delete that setting. In the editor, choose any other Style Pack. On the **Tag** canvas, hide the list of posts in Layers. Then **Ship it**, **Run checks**. | — | Three more warnings: **Ghost will forget 1 setting on ghost6.inflozo.com** naming it; **Dark accent color's starting value changed** with the old and new colours and **Open Ghost's Design panel ↗** (it opens Ghost's Design settings in a new tab); and **Tag page has no list of posts** with **Fix in editor**. |
 | 15 | `https://ghost6.inflozo.com/ghost/`, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: set Subscription access back to what it was. Activate **Casper**, delete the `inflozo-…` theme, and delete the Owner test 7.18b integration. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was. |
 
 ## Questions for the owner
 
 Questions 1–5 were ruled on 2026-10-19, each option 1 (R-267–R-271). Questions 6–8, raised at the Review, were ruled on
-2026-10-20, each option 1 (R-272–R-274); none is open.
+2026-10-20, each option 1 (R-272–R-274). Question 9 was asked and ruled in the Deploy session; none is open.
 
 ### Question 1 — The site you pick already belongs to another of your projects. What happens?
 
@@ -743,6 +743,22 @@ Inflozo yet, so we can't check them. Try again once they're saved."
 
 **Ruled: option 1 (owner, 2026-10-20) — R-274.** *"One shorter sentence for both places: "Your latest edits haven't reached Inflozo yet. Try again once they're saved.""*
 
+### Question 9 — Your test account already existed: what to do with it?
+
+**In plain English.** The test needs a fresh account on Pro. At Deploy, `umngkmr+site718@gmail.com` already existed: you had made
+it on 2026-10-19, on Free, with ghost6 connected, one "Untitled project" linked to it, and one unfinished check. ghost6 itself was
+clean (Casper live, no Inflozo theme).
+
+**An example.** Kept as it was, step 2 ("Connect a site… Use your brand") would fail, because ghost6 was already connected there.
+
+1. **(RECOMMENDED) Fresh start:** delete that account — its project, its ghost6 connection and its record with it, nothing on
+   ghost6 changed — and make it again on Pro, so the test runs from step 1 as written.
+2. **Keep it, set to Pro;** skip step 2 and use "Untitled project" as project A.
+3. **A new alias instead** (`umngkmr+site718b@gmail.com`), leaving yesterday's account connected to ghost6.
+4. **Not now.**
+
+**Ruled: option 1 (owner, 2026-10-20), asked in the Deploy session.** *"Fresh start (RECOMMENDED)"*
+
 ## Verification
 
 **Commands:**
@@ -855,4 +871,21 @@ Inflozo yet, so we can't check them. Try again once they're saved."
 - `pnpm check` — exit 0 (library 285, ghost-shim 47, section-runtime 441, theme-compiler 220, app 934, tools 13; 0 failing).
   `bash tools/keyboard/run-keyboard-gate.sh --grep` over the two unsent-edits journeys — 2 passed, each drawing the ruled sentence;
   the whole keyboard gate runs in CI's `check` before this commit can deploy.
+
+**Executed — Deploy (2026-10-20, the main session, Node 24.18.1):**
+- `Deployment: dpl_CW8Sgt8hupNEPJSdganvFfjLLKy5` — READY, production, built from `f1777bde` (the head, the last code change: R-274's
+  sentence), aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` (Vercel API, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and
+  `VERCEL_PROJECT` read in process, never on argv); it is the newest production deployment. CI at `f1777bde`: `check` (the whole
+  keyboard gate inside it), `rls`, `deploy` and the render matrix success (`GITHUB_TOKEN`).
+- Schema: `deploys.preflight` was applied at the Schema phase and read back there and at the Review (R-99: nullable jsonb, its
+  comment, `authenticated` SELECT only); `RLS-TEST.sql` is green in the `rls` job at the head and locally at the Review. Nothing to
+  apply at Deploy.
+- T1, read only with `GHOST6_STAFF_ACCESS_TOKEN` (in process): `casper` active, `racer` and `source` installed, no Inflozo theme;
+  `routes.yaml` 130 bytes; Ghost 6.58. Nothing was written to T1.
+- **The owner's test account** (Question 9, his in-session go; `SUPABASE_URL` and `SUPABASE_SECRET_KEY` read in process): the
+  existing `umngkmr+site718@gmail.com` (made 2026-10-19 16:44 UTC, Free) had ghost6 disconnected THROUGH THE PRODUCT
+  (`/sites/disconnect`, so Vault dropped its keys — `credentials_present` all false), its one stored zip removed from
+  `deploy-artifacts` (200), and was deleted (200; users 16 → 15); it was then made again (200) and set to `pro_active` (204, read
+  back), with no project and no site; users 15 → 16. No email was sent; Ghost was not called.
+- `owner_test: pending` — the owner's manual test above is next, on `https://app.inflozo.com`.
 
