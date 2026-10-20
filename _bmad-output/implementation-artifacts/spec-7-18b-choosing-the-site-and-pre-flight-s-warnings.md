@@ -455,6 +455,9 @@ a surface is meant to do. Three findings are the owner's: Questions 6–8.**
 | Q3 · R-269 | option 1 — name both sites | `site_changed` and `site_unlinked`, each with its own sentence (Words). |
 | Q4 · R-270 | option 1 — Run checks stays | A `deploy_error` Preview-only site shows the line and Run checks. Probed Preview-only is unchanged. |
 | Q5 · R-271 | option 1 — newest 2,000, own reader | `POSTS_CHECKED = 2000`, a reader of its own, the reading row, and the "newest" line over the cap. |
+| Q6 · R-272 (Review) | option 1 — the stopped sections only | The members row lists each placed section whose ask the record stops, and a designed Paywall; none, no row. |
+| Q7 · R-273 (Review) | option 1 — both as built | On a Nobody site the panel keeps R-198's line; Pre-flight says the Sites sentences. |
+| Q8 · R-274 (Review) | option 1 — one shorter sentence | `DEPLOY_WORDS.editsUnsent`, Run checks' refusal and a switch's alike (Words). |
 
 ### Routine calls, one line each (said to the owner, not asked)
 
@@ -498,6 +501,7 @@ a surface is meant to do. Three findings are the owner's: Questions 6–8.**
 - The first-link line: "This project will use {language}, {host}'s language."
 - "Go to Sites" · "Back" · "Use this site" (busy "Switching…").
 - The refusal: "That site is no longer connected."
+- Unsent edits (R-274, Run checks' too): "Your latest edits haven't reached Inflozo yet. Try again once they're saved."
 
 **The confirm.**
 - "Switch to {host}?" · "Cancel" · "Switch" (busy "Switching…"), which are `TRANSLATION_WORDS`' cancel, switch and
@@ -597,8 +601,8 @@ Addresses that need a project's id are written `<A>` and `<B>`. Copy each from t
 
 ## Questions for the owner
 
-Questions 1–5 were ruled on 2026-10-19, each option 1 (R-267–R-271). Questions 6–8 were raised at the Review and are open. The
-code stands as each question's "as built" option until he rules, so nothing else waits on them.
+Questions 1–5 were ruled on 2026-10-19, each option 1 (R-267–R-271). Questions 6–8, raised at the Review, were ruled on
+2026-10-20, each option 1 (R-272–R-274); none is open.
 
 ### Question 1 — The site you pick already belongs to another of your projects. What happens?
 
@@ -705,7 +709,7 @@ form works.
 2. **List every sign-up section whenever the site has any member notice.** In the example: "ghost6.inflozo.com can't take every
    sign-up your pages ask for", listing the newsletter form — which works.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-272.** *"List only the sections the settings stop (as built). In the example: no warning, because nothing on your pages is stopped."*
 
 ### Question 7 — Sign-ups set to Nobody: does a section's own line keep its words?
 
@@ -721,7 +725,7 @@ up."
 1. **(RECOMMENDED) Keep both as built.** The panel speaks about the section (R-198), Pre-flight about the site. Both warn.
 2. **The panel says the Sites sentence too**, word for word, and R-198's panel sentence is retired.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-273.** *"Keep both as built. The panel speaks about the section (R-198), Pre-flight about the site. Both warn."*
 
 ### Question 8 — The sentence when unsent edits stop a switch
 
@@ -737,7 +741,7 @@ Inflozo yet, so we can't check them. Try again once they're saved."
    again once they're saved."
 3. **Keep Run checks' sentence for both** (as built).
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-20) — R-274.** *"One shorter sentence for both places: "Your latest edits haven't reached Inflozo yet. Try again once they're saved.""*
 
 ## Verification
 
@@ -843,4 +847,12 @@ Inflozo yet, so we can't check them. Try again once they're saved."
   move with "Switching…" kept until the re-read, the wizard reopened on Destination on T1 and the canvas following it with no
   reload, both DW-374 refusals with no theme write in the audit beside its control, the first link writing German, every
   warning kind in order and its 6.58.0 control, R-270 from the stored row and its probe control, and the restore.
+
+**Executed — the owner's rulings at the Review (2026-10-20, R-272 to R-274, each option 1; the main session, Node 24.18.1):**
+- R-272 and R-273 keep the code as built; R-274 changes `DEPLOY_WORDS.editsUnsent` to the ruled sentence, which Run checks' refusal
+  and the picker's both read (one name, R-170). `deploy.test.ts` holds the ruled words; the two journeys that press against unsent
+  edits (7.18a's Run checks, 7.18b's switch) read the sentence from the list.
+- `pnpm check` — exit 0 (library 285, ghost-shim 47, section-runtime 441, theme-compiler 220, app 934, tools 13; 0 failing).
+  `bash tools/keyboard/run-keyboard-gate.sh --grep` over the two unsent-edits journeys — 2 passed, each drawing the ruled sentence;
+  the whole keyboard gate runs in CI's `check` before this commit can deploy.
 

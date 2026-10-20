@@ -228,3 +228,7 @@ test('7.18b: the new codes, each its sentence and fix — DW-374\'s two name the
   assert.equal(DEPLOY_WORDS.planRefused('ghost6.inflozo.com'),
     "Ghost(Pro) refused a custom theme on ghost6.inflozo.com when you last shipped. If you've upgraded the plan since, run the checks and ship — Ghost's answer clears this.")
 })
+
+test('R-274 (owner, 2026-10-20): one shorter sentence for edits that have not reached Inflozo — Run checks\' refusal and a switch\'s alike', () => {
+  assert.equal(DEPLOY_WORDS.editsUnsent, "Your latest edits haven't reached Inflozo yet. Try again once they're saved.")
+})

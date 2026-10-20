@@ -4259,6 +4259,10 @@ a free ask stays hidden and Pre-flight names each page with "Update Ghost to sho
 Preview-only by a refused upload keeps Run checks with one line under B15's panel (DW-375);* **R-271** *— R-260's read takes
 the newest 2,000 posts with an allowance of its own, a reading row, and "We checked your newest 2,000 posts." over the cap
 (DW-377). The words are in the spec's Words.)*
+*(Story 7.18b's Review, owner, 2026-10-20 — **R-272**: Pre-flight's sign-up row lists only the sections the site's member
+settings stop, and a designed Paywall; **R-273**: on a site set to Nobody a section's panel keeps R-198's line while Pre-flight
+says the Sites sentence; **R-274**: one sentence for unsent edits at Run checks and at a switch — "Your latest edits haven't
+reached Inflozo yet. Try again once they're saved.")*
 
 **FRs:** FR-B5 (the switch), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings), FR-H6 (its pre-deploy
 half), FR-Q6 (the locale warnings and the RTL repeat). · **Frame:** `S8 Deploy.dc.html` S8a (Switch) · S8b as extended. ·

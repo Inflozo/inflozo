@@ -5817,6 +5817,44 @@ own. While it reads: "Checking that every post appears on a page…". On a large
 - Targets: ✅ this entry · ✅ Story 7.18b's spec (Words, Ruled values) · ✅ `epics.md` Story 7.18b's card (dated) · ✅ DW-377
   (note) · ✅ `epic-7-context.md`.
 
+**R-272 — Pre-flight's sign-up warning lists only the sections the site's member settings actually stop.** Story 7.18b's
+Review, Question 6, ruled **option 1** (owner, 2026-10-20): *"List only the sections the settings stop (as built). In the
+example: no warning, because nothing on your pages is stopped."*
+
+- **Why it was a question.** The spec's I/O matrix (frozen at its Create) read "`membersNotice` non-empty, and a placed ask or a
+  designed Paywall → a row"; Dev built the row over `askStopped`, the panel line's own test, so its title — "{host} can't take
+  every sign-up your pages ask for" — is always true. On a site whose only fact is "no Stripe" with only a free form placed, the
+  two readings differ.
+- **The rule.** The members row lists each placed section whose ask the site's record stops, and a designed Paywall that
+  ships; no such section, no row. Its body is every sentence the record gives (`membersNotice`, the Sites card's).
+- **Declined.** Every placed sign-up section whenever the record says anything.
+- Targets: ✅ this entry · ✅ Story 7.18b's spec (Question 6, the Change Log's Dev reading) · ✅ `epic-7-context.md` — no code
+  change (built so at Dev).
+
+**R-273 — on a site set to Nobody, a placed section's panel keeps R-198's sentence about the section; Pre-flight says the
+site's.** Story 7.18b's Review, Question 7, ruled **option 1** (owner, 2026-10-20): *"Keep both as built. The panel speaks about
+the section (R-198), Pre-flight about the site. Both warn."*
+
+- **Why it was a question.** Story 7.18b's acceptance criterion read "both [the panel and Pre-flight] carry `membersNotice`'s
+  sentence" on a site set to Nobody, while R-198 (Story 5.20) set the panel's members-off line (`PAYWALL_WORDS.ask`) — two
+  approved decisions in conflict (standing rule "flag, do not guess").
+- **The rule.** `FACTS`' members-off entry keeps its `panel` sentence; Pre-flight's members row carries the Sites sentences. The
+  AC is read as "both warn", as Dev's Change Log recorded. R-198 stands.
+- **Declined.** The panel saying the Sites sentence word for word.
+- Targets: ✅ this entry · ✅ Story 7.18b's spec (Question 7) · ✅ `epic-7-context.md` — no code change.
+
+**R-274 — one shorter sentence for edits that have not reached Inflozo, at Run checks and at a switch alike.** Story 7.18b's
+Review, Question 8, ruled **option 1** (owner, 2026-10-20): *"One shorter sentence for both places: "Your latest edits haven't
+reached Inflozo yet. Try again once they're saved.""*
+
+- **Why it was a question.** A switch whose flush cannot send the journal writes nothing and borrowed Run checks' sentence
+  (Story 7.18a), whose "so we can't check them" is wrong for a switch; a new string is Ask First.
+- **The rule.** `DEPLOY_WORDS.editsUnsent` is the ruled sentence, the one name for unsent work in the wizard (R-170): Run checks'
+  refusal and the picker's.
+- **Declined.** A second sentence for the switch alone; keeping the old one for both.
+- Targets: ✅ this entry · ✅ `apps/web/lib/deploy.ts` (`editsUnsent`) and `deploy.test.ts` (the ruled words) · ✅ Story 7.18b's
+  spec (Question 8, Words) · ✅ `epic-7-context.md`.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

@@ -282,7 +282,8 @@ export const DEPLOY_WORDS = {
   routesBlocked: 'Deploys are blocked until routing is valid — the Ship button explains why.',
   routesUnreadable: "Your saved routing can't be read.",
   routesStartAgain: 'Start again on Routes & Templates',
-  editsUnsent: "Your latest edits haven't reached Inflozo yet, so we can't check them. Try again once they're saved.",
+  /** R-274 (owner, 2026-10-20): the one sentence for unsent work — Run checks' refusal and a switch's alike */
+  editsUnsent: "Your latest edits haven't reached Inflozo yet. Try again once they're saved.",
   versionUnsupported: (host: string, version: string) => `Inflozo ships to Ghost 5 and 6. ${host} runs Ghost ${version}.`,
   // Story 7.18b — the RTL block (FR-Q6, a server verdict before compile): the caption under a greyed Ship it, and its way out
   rtlBlocked: 'Acknowledge it in Translations to ship.',
