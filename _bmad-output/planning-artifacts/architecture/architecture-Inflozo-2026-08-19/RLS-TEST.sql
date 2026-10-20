@@ -2920,7 +2920,7 @@ begin
   end if;
   raise notice 'PASS (7.18c): Q''s beat then P''s leave — the leave changes 0 rows';
 
-  -- (2e) a leave over a row already older than the stamp would REVIVE it: nothing (`leaveBacks`, now in the statement).
+  -- (2e) a leave over a row already older than the stamp would REVIVE it: nothing (the forward-move guard, now in the statement).
   update public.edit_locks set heartbeat_at = now() - interval '55 seconds', page_id = 'P', page_left = false
    where project_id = L;
   update public.edit_locks set heartbeat_at = stamp, page_left = true

@@ -22,7 +22,8 @@
  *   and learns it when it can reach the server again
  *   Story 6.3: the reader's Style Pack list opens (a view) with every cell greyed and unclickable, beside the holder's live one
  *   Story 5.24e, last: a reload keeps the lock with the other session reading inside its gap, and a late leave changes
- *   nothing (DW-240) · a tab going with an edit owed and a slow flush keeps the lock for it (DW-244) · Sign out sends
+ *   nothing (DW-240) · a tab going with an edit owed and a slow flush keeps the lock for it (DW-244) · Story 7.18c: a
+ *   tab that goes with its beat in flight frees the lock within the grace and one poll (DW-307) · Sign out sends
  *   the owed edit and erases this browser's copy (R-214)
  *
  * EVERY EXPECTATION IS DERIVED FROM THE APP'S OWN MODULES (`apps/web/lib/lock.ts`'s `LOCK_COPY` and its constants),
@@ -676,8 +677,8 @@ async function main() {
     const isLockCall = (request) => /\/projects\/[^/]+\/lock$/.test(new URL(request.url()).pathname) && callOf(request).session !== 'harness-observer'
     const readNow = (page) => page.evaluate((name) => { const c = new BroadcastChannel(name); c.postMessage('released'); c.close() }, `inflozo-lock-${P}`)
     /** the page's own next beat, answered — after it the next is a heartbeat away, so a page that goes now cannot send
-     *  one on its way out whose answer it never hears (a beat in flight moves the row past the one its leave carries:
-     *  the ceiling `editor.tsx`'s `leaving` names, wider on a hard navigation, whose request runs before the unload) */
+     *  one on its way out whose answer it never hears (before Story 7.18c a beat in flight made the leave miss; DW-307's
+     *  stop after DW-244 goes with one in flight on purpose) */
     const beatAnswered = (page) => page.waitForResponse((r) => isLockCall(r.request()) && ['beat', 'acquire'].includes(callOf(r.request()).intent), { timeout: LOCK.HEARTBEAT_MS + 5000 }).then(() => true, () => false)
     /** a row read that survives the page reloading under it (a session that gains the lock reloads) */
     const rowNow = (page) => lockRow(page, P).catch(() => undefined)
@@ -778,8 +779,9 @@ async function main() {
 
     // ── DW-240 (b): THE OUTGOING PAGE'S LEAVE LANDS AFTER THE RELOADED PAGE HAS BEATEN ──
     // `review, 2026-09-24` saw this one with no second session at all: the reload's own re-acquire landed, then the old
-    // page's release — filtered on the SAME session id — deleted it. The leave is filtered on the beat it last heard too,
-    // so one that arrives after the reloaded page's beat matches nothing. The leave is held here, then sent.
+    // page's release — filtered on the SAME session id — deleted it. The leave is filtered on its own page too (DW-307,
+    // Story 7.18c; the beat it last heard before that), so one that arrives after the reloaded page's beat matches nothing.
+    // The leave is held here, then sent.
     // ITS PAGEHIDE IS DISPATCHED IN THE PAGE, then the page reloads: a request an unloading document sends is one the
     // route met in some runs and missed in another (Story 5.24e's local runs), so the leave the walk holds is sent from
     // the live page by the editor's own `pagehide` listener — the same request — and the real reload's own, met or not,
@@ -866,7 +868,7 @@ async function main() {
       }
       await H.route('**/projects/*/sync', slowFlush)
       await H.route('**/projects/*/lock', holdLeave)
-      // the tab goes straight after its own beat has answered — the designed path, never the in-flight beat's ceiling
+      // the tab goes straight after its own beat has answered — the designed path (a beat in flight is DW-307's stop, below)
       await beatAnswered(H)
       await H.evaluate(() => {
         Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
@@ -914,6 +916,73 @@ async function main() {
         control && flushAnswer === 200 && victim !== null && !cloud.includes(victim), unmet + JSON.stringify({ flushAnswer, inCloud: victim !== null && cloud.includes(victim) }))
       check('DW-244 — …and the other session then takes the lock, at the grace\'s edge rather than a heartbeat later',
         control && !!taken && taken.holderSessionId === rTab, unmet + JSON.stringify(taken && held(taken)))
+    }
+
+    // ── DW-307 (Story 7.18c): THE HOLDER GOES WHILE ITS BEAT IS IN FLIGHT ──
+    // The holder's next beat REACHES THE SERVER (`route.fetch()`) and its answer is HELD, so the row has moved past the beat
+    // the page last heard; then the page goes — its own `pagehide` dispatched in the live page (DW-240 (b)'s reason: a request
+    // an unloading document sends is one the route does not reliably meet), the leave let through and answered, and the tab
+    // navigates away. Before this story the leave was filtered on the heard beat and matched nothing, so the row stayed fresh
+    // and the other session, polling on its own, waited for it to go stale (~60 s, R-228's ceiling). Now the leave names its
+    // page and matches it whichever landed first, and the other session holds within the grace and one poll.
+    // THE CONTROL is this same stop run against production BEFORE the Dev push lands, where the wait is ~60 s: the bug shown,
+    // then gone (the spec's Verification). The going page comes back to the editor afterwards, as a reader, for R-214. AFTER
+    // DW-244, so that stop runs in the state it always ran in.
+    // both sessions in the editor first: DW-244's going tab is left on Projects, and a session that is not in the editor
+    // never polls, so it could never take the lock however soon the row went stale (the second run at the Dev, 2026-10-20)
+    for (const p of [A, B]) if (!new URL(p.url()).pathname.endsWith(`/projects/${P}`)) await p.goto(editor, { waitUntil: 'load' })
+    const flight = await whoHolds()
+    if (flight === null) check('DW-307 — fixture: one of the two sessions holds the lock', false)
+    else {
+      const { H, R, rTab } = flight
+      let beatLanded = null
+      let fetchError = null
+      let fetchMs = null
+      let releaseBeat = () => {}
+      const beatGate = new Promise((done) => { releaseBeat = done })
+      const leaves = []
+      const inFlight = async (route) => {
+        const call = callOf(route.request())
+        if (isLockCall(route.request()) && call.intent === 'beat' && beatLanded === null) {
+          beatLanded = 'sent'
+          const sentAt = Date.now()
+          const answer = await route.fetch().catch((e) => { fetchError = String(e?.message ?? e).split('\n')[0]; return null })
+          fetchMs = Date.now() - sentAt
+          beatLanded = answer === null ? 'unsent' : answer.status()
+          // its ANSWER held: the page never hears the beat it sent, as a close inside a beat's round trip never does
+          await beatGate
+          await route.fulfill(answer ? { response: answer } : { status: 204 }).catch(() => {})
+          return
+        }
+        if (isLockCall(route.request()) && (call.intent === 'leave' || call.intent === 'release')) leaves.push(call)
+        await route.continue().catch(() => {})
+      }
+      await H.route('**/projects/*/lock', inFlight)
+      for (const by = Date.now() + LOCK.HEARTBEAT_MS + 5000; (beatLanded === null || beatLanded === 'sent') && Date.now() < by;) await H.waitForTimeout(100)
+      const leaveAnswered = H.waitForResponse((r) => isLockCall(r.request()) && ['leave', 'release'].includes(callOf(r.request()).intent), { timeout: 8000 }).then((r) => r.status(), () => null)
+      await H.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: false })))
+      const leaveStatus = await leaveAnswered
+      const goneAt = Date.now()
+      // the tab goes at once — its real `pagehide` may send a second leave, which changes nothing a first one did not
+      await H.goto(at('/projects'), { waitUntil: 'commit' })
+      releaseBeat()
+      // the other session's own polling, untouched: when does it hold?
+      let taken
+      for (const by = goneAt + LOCK.STALE_MS + LOCK.HEARTBEAT_MS + 10000; Date.now() < by; await new Promise((r) => setTimeout(r, 500))) {
+        taken = await rowNow(R)
+        if (taken && taken.holderSessionId === rTab) break
+      }
+      const waited = Date.now() - goneAt
+      await H.unroute('**/projects/*/lock', inFlight)
+      const control = beatLanded === 200 && leaves.length > 0 && leaveStatus === 200
+      check('DW-307 — control: the holder\'s beat reached the server and its answer was held, then the page\'s own leave was sent and answered, and the tab went',
+        control, JSON.stringify({ beatLanded, fetchMs, fetchError, leaves: leaves.map((c) => ({ intent: c.intent, page: typeof c.page === 'string', beat: typeof c.beat === 'string' })), leaveStatus }))
+      record('DW-307 — the tab gone → the other session holding', `${waited} ms (the grace and one poll: ${LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS} ms; stale: ${LOCK.STALE_MS} ms)`)
+      check(`DW-307 — a close with its beat in flight frees the lock within the grace and one poll (${LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS} ms), never the ~${LOCK.STALE_MS / 1000} s a stale row takes`,
+        control && !!taken && taken.holderSessionId === rTab && waited <= LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS + 3000,
+        (control ? '' : 'control not met — ') + JSON.stringify({ waitedMs: waited, row: taken && held(taken) }))
+      // back to the editor, reading along, for the stops below
+      await H.goto(editor, { waitUntil: 'load' })
     }
 
     // ── R-214: SIGNING OUT SENDS WHAT THIS BROWSER STILL OWES, ERASES ITS COPY, AND ONLY THEN SIGNS OUT ──

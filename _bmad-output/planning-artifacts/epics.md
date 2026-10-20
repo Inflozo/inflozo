@@ -1775,7 +1775,9 @@ deploy or export**, with manual ⌘S always available
 **never a spinner**, with the expanded panel appearing only on Retrying and counting down ("Retrying · 12s")
 (UX-DR8, UX-DR19) *(R-213, owner, 2026-09-28, built by Story 5.24e on 2026-10-02: a sixth state, **Signed out**, takes
 a save the server refuses for sign-in (401); it opens the same panel, with a **Sign in** link and no Retry now, and in
-fallback says R-227's sentence instead; DW-202)*
+fallback says R-227's sentence instead; DW-202)* *(R-275, owner, 2026-10-20, built by Story 7.18c on 2026-10-20: a seventh
+state, **Can't sync**, takes a save refused for good — a 404 (project deleted, or another account) with **Go to Projects**,
+or a 400/422 (a change refused), whose next edit is sent at once; the same panel, the retrying stopped; DW-304)*
 **And** where local storage is unavailable or a write fails, the editor **falls back to immediate per-change
 cloud sync and says so in the indicator — never a false "Saved on this device"**
 **And** turning periodic cloud autosave off shows an explicit data-loss warning

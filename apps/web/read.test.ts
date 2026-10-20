@@ -79,6 +79,10 @@ test('the sites list: every connected site with the OTHER project that links it 
     { id: 'site-b', title: 'Blog', host: 'blog.example.com', url: 'https://blog.example.com', capability: 'preview_only', source: 'deploy_error', locale: 'de', heldBy: { id: 'p-a', name: 'Field Notes' } },
     { id: 'site-c', title: '', host: 'c.example.com', url: 'https://c.example.com', capability: 'full', source: null, locale: null, heldBy: null },
   ])
-  // a failed read is none, so the picker offers only Go to Sites
-  assert.deepEqual(shipStateOf(base({ sites: null, linking: null })).sites, [])
+  // STORY 7.18c (DW-381, R-276): a failed read is NULL, never none — either read failing; the picker says so in place of a list
+  assert.equal(shipStateOf(base({ sites: null, linking: null })).sites, null)
+  assert.equal(shipStateOf(base({ sites: null })).sites, null, 'the sites read failed')
+  assert.equal(shipStateOf(base({ linking: null })).sites, null, 'the linking read failed: no row could say who holds it')
+  // the control: a read that succeeded with no site is an empty list, as 7.18b drew it
+  assert.deepEqual(shipStateOf(base({ sites: [], linking: [] })).sites, [])
 })

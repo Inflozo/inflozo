@@ -305,21 +305,29 @@ export function vanishedDesign(doc: ProjectDoc, held: (designId: string) => bool
 
 /* ───────────────────────────── B6's indicator, as a machine ─────────────────────────────
  *
- * Six states, and NOTHING ELSE MAY DRIVE IT (`B Missing Surfaces.dc.html:1351-1388`, five drawn; the sixth is R-213's).
+ * Seven states, and NOTHING ELSE MAY DRIVE IT (`B Missing Surfaces.dc.html:1351-1388`, five drawn; the sixth is R-213's,
+ * the seventh R-275's).
  *
  *   at rest, nothing owed ────▶ "Synced"                 (green · check)
  *     └──── commit ────────────▶ "Saved on this device"   (grey · clock)
  *     └──── flush starts ──────▶ "Syncing"                (coral · arrow up)
  *             ├── ok ──────────▶ back to rest, now owing nothing → "Synced"
  *             ├── 401 ─────────▶ "Signed out"             (red · logout) + its panel, the backoff still trying
+ *             ├── 404/400/422 ─▶ "Can't sync"             (red · x) + its panel, the backoff STOPPED
  *             └── fail ────────▶ "Retrying · {n}s"        (red · exclamation) + B6's panel
  *   no IndexedDB ─────────────▶ "Syncing every change to the cloud"  (grey · upload, sticky)
  *
  * R-213 (owner, 2026-09-28) ADDED THE SIXTH, and only for the refusal signing in cures. Before it a save the route
  * refused for an ended session read "Retrying … when the connection returns", which blamed a connection that was fine
- * and offered a Retry that could never succeed. A 404, 400 or 422 is a refusal signing in cannot cure, and stays
- * Retrying (DW-304, Story 7.18c). Extrapolated from B6 (R-74): the Retrying panel's shape, its red, one link where
- * Retry now stood.
+ * and offered a Retry that could never succeed. Extrapolated from B6 (R-74): the Retrying panel's shape, its red, one
+ * link where Retry now stood.
+ *
+ * R-275 (owner, 2026-10-20, Story 7.18c, DW-304) ADDED THE SEVENTH, for a refusal no retry can cure: a 404 (the project
+ * was deleted, or this browser is now another account's — the route answers both as one) is *gone*, and a 400 or 422 (a
+ * body or document the route will not take) is *change* (`refusalOf`). The backoff stops — a countdown over a refusal
+ * that cannot pass is the false sentence DW-304 was — and the panel says which, in `REFUSED_COPY`'s words. *gone* tries
+ * once more on a visit back to the tab (signing back in to the right account cures it); *change* sends the next edit —
+ * an Undo included — at once. Same shape again: B6's red panel, the state's own word, one link for *gone*.
  *
  * R-144 (owner, 2026-09-19) SPLIT THE RESTING STATE BY WHAT IS OWED, and it is a better machine than the one B6
  * drew. B6 flashed "Synced" for four seconds after a save and then faded to "Saved on this device" for ever — so
@@ -343,9 +351,11 @@ export type SyncState =
   /** R-213: the route answered 401. The backoff keeps trying (no countdown is shown), and a visit back to the tab
    *  tries at once — a sign-in in another tab rides this tab's next request, because the cookie jar is shared. */
   | { kind: 'signed-out' }
+  /** R-275 (DW-304): the route refused for good — `refusalOf`'s answer. No backoff runs; the journal is kept. */
+  | { kind: 'refused'; why: Refusal }
   | { kind: 'fallback' }
 
-/** B6's five labels and R-213's sixth; the compile error for a seventh is the Kit's own union
+/** B6's five labels, R-213's sixth and R-275's seventh; the compile error for an eighth is the Kit's own union
  *  (`kit/persistence-indicator.tsx`). */
 export type SyncLabel =
   | 'Saved on this device'
@@ -353,19 +363,43 @@ export type SyncLabel =
   | 'Synced'
   | 'Retrying'
   | 'Signed out'
+  | "Can't sync"
   | 'Syncing every change to the cloud'
 
 export const labelOf = (s: SyncState): SyncLabel =>
   s.kind === 'syncing' ? 'Syncing'
   : s.kind === 'retrying' ? 'Retrying'
   : s.kind === 'signed-out' ? 'Signed out'
+  : s.kind === 'refused' ? REFUSED_COPY.title
   : s.kind === 'fallback' ? 'Syncing every change to the cloud'
   : s.owed ? 'Saved on this device'
   : 'Synced'
 
 /** B6's panel opens on Retrying AND ON NOTHING ELSE — the frame's own note, and an acceptance criterion — save R-213's
- *  Signed out, which is a refusal of the same weight and carries its own panel. */
-export const panelOpen = (s: SyncState) => s.kind === 'retrying' || s.kind === 'signed-out'
+ *  Signed out and R-275's Can't sync, refusals of the same weight that carry panels of their own. */
+export const panelOpen = (s: SyncState) => s.kind === 'retrying' || s.kind === 'signed-out' || s.kind === 'refused'
+
+/** R-275's two causes: *gone* (the project is not this session's to write — deleted, or another account's) and *change*
+ *  (the route will not take what was sent). */
+export type Refusal = 'gone' | 'change'
+
+/** DW-304: WHICH SYNC ANSWERS NO RETRY CAN CURE — the route's own status, never a guess (`sync/route.ts`). 404 is the RPC's
+ *  one answer to "no such project" and "not yours"; 400 and 422 are a body or a document it will not take. Everything else
+ *  is null: a 401 is Signed out (R-213), 409 and 423 have flows of their own, and a 5xx or no answer is Retrying. */
+export const refusalOf = (status: number | null): Refusal | null =>
+  status === 404 ? 'gone' : status === 400 || status === 422 ? 'change' : null
+
+/**
+ * THE CAN'T SYNC PANEL'S WORDS (R-275), one list read by the panel, by Run checks and Switch (`flushForShip`), and by every
+ * check that asserts them (R-170). Neither sentence names the device, so fallback says them too.
+ */
+export const REFUSED_COPY = {
+  title: "Can't sync",
+  gone: "Your changes can't reach this project: it was deleted, or this browser is now signed in to another account.",
+  change: "Inflozo couldn't accept your latest change. Undo it, and your work will sync again.",
+  /** *gone*'s one link, to the app's Projects page, in this tab */
+  projects: 'Go to Projects',
+} as const
 
 /**
  * THE SIGNED-OUT PANEL'S WORDS (R-213, R-227), one list read by the panel and by every check that asserts it (R-170).

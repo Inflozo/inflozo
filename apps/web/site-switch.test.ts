@@ -2,6 +2,7 @@
 // confirm and the server's `switchSite` all read.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { confirmedFrom, confirmedOf, SWITCH_WORDS, switchPlan, switchWith, type Confirmed, type SwitchIo, type SwitchSite } from './lib/site-switch.ts'
 import { LOCK_COPY } from './lib/lock.ts'
 import { DEPLOY_WORDS } from './lib/deploy.ts'
@@ -75,6 +76,15 @@ test('the confirm\'s buttons are Translations\' own (R-170)', () => {
   assert.equal(SWITCH_WORDS.switch, TRANSLATION_WORDS.switch)
   assert.equal(SWITCH_WORDS.switching, TRANSLATION_WORDS.switching)
   assert.equal(SWITCH_WORDS.confirmTitle('ghost6.inflozo.com'), 'Switch to ghost6.inflozo.com?')
+})
+
+test('R-276 (Story 7.18c, DW-381): a failed sites read is said in R-276\'s words, in place of the list — and the wizard draws it so', () => {
+  assert.equal(SWITCH_WORDS.unread, "Your connected sites couldn't be loaded just now. Reload the page to try again.")
+  const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
+  assert.match(wizard, /const sitesUnread = ship !== undefined && ship\.sites === null/)
+  assert.match(wizard, /\{sitesUnread \? <p data-sites-unread className="text-ui-dense leading-\[1\.55\] text-ink-soft">\{SW\.unread\}<\/p> : null\}/, 'set as the lead is')
+  assert.match(wizard, /if \(sitesUnread\) say\(SW\.unread\)/, 'said in the polite region as the picker opens')
+  assert.match(wizard, /\{sites\.length === 0 && !sitesUnread \? null : \(\s*<Button id="deploy-choose"/, 'Choose a site stays on a project with no site')
 })
 
 // ── the server's half (`switchWith`, which `switchSite` runs after the lock): what it writes, in what order, and when it asks ──

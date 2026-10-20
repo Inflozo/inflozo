@@ -76,6 +76,9 @@ export const SWITCH_WORDS = {
   use: 'Use this site',
   switching: TRANSLATION_WORDS.switching,
   gone: 'That site is no longer connected.',
+  /** R-276 (Story 7.18c, DW-381): the connected sites could not be read (`ShipState.sites` null) — said in place of the list,
+   *  so a failed read never looks like having no other site */
+  unread: "Your connected sites couldn't be loaded just now. Reload the page to try again.",
   confirmTitle: (host: string) => `Switch to ${host}?`,
   cancel: TRANSLATION_WORDS.cancel,
   switch: TRANSLATION_WORDS.switch,

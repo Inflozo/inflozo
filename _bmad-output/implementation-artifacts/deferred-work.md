@@ -8614,7 +8614,7 @@ reason: a keyboard-gate stop needs a harness mount of the wizard with its browse
 plain: If a project is deleted in another window while it is open in the editor, or this browser is now signed in to a
   different account, the editor keeps saying it will send your work "when the connection returns" — and it never will.
   Signing in again cannot fix it either, so the signed-out message Story 5.24e builds (R-213) does not cover it.
-status: open
+status: done 2026-10-20 (Story 7.18c)
 severity: low
 origin: Story 5.24e's Create (2026-10-02), the read-only pass on R-213, executed in the harness: `sync/route.ts` answers
   404 for a deleted project or another account's session (`:50`, `:114`), 400 for a malformed body (`:56-67`) and 422
@@ -8632,6 +8632,15 @@ reason: the honest answer is a state and a sentence no frame draws and no ruling
   the docs in the same body wait with it. The sign-out's send (`owedOf`) meets the same answer.
 note (Story 7.18c's Create, 2026-10-20): ruled **R-275**, option 1 — a seventh save state, "Can't sync", one sentence per
   cause (404; 400 and 422), the retrying stopped, Run checks and Switch saying the same. To be built at 7.18c's Dev.
+resolution: Story 7.18c's Dev (2026-10-20), R-275 built — `refusalOf` (`lib/journal.ts`, pure) maps the sync route's 404 to
+  *gone* and 400/422 to *change*; `flush` stops the backoff there, keeps the journal, and shows the seventh state **Can't
+  sync** in B6's red panel (`save-state.tsx`, id `editor-refused`) with `REFUSED_COPY`'s sentence — Go to Projects for
+  *gone*, no control for *change*, whose next edit (an Undo included) `store` sends at once; a visit back to the tab tries
+  once. `flushForShip` answers the refusal's sentence, so Run checks and Switch say it word for word; R-274's stays for edits
+  merely unsent. The Kit's indicator gained `SyncRefused` (Tabler `x`). Held by `journal.test.ts` (every status the route
+  answers, 401/409/423/5xx/no answer as controls), `deploy.test.ts`, and the keyboard journeys (R-213's loop flipped, a 502
+  the control; Run checks and Switch after a 422, an aborted save the control), each first seen red against HEAD's
+  behaviour; walk step 115 (a) on production is the Review's.
 
 ### DW-305: on an invite-only site, a section asking people to pay is not warned, though Ghost blocks its sign-up too
 
@@ -8673,7 +8682,7 @@ reason: no A2 design exists, so no page can hold a bar and a header today; wheth
 plain: When you close the window that is editing, your other window normally takes over in about 15 seconds. About one
   close in fifty — when the window is closed in the split second it is checking in with the server — the other window
   waits about a minute instead. Nothing is lost; it only waits longer. You accepted this for now (R-228).
-status: open
+status: done 2026-10-20 (Story 7.18c)
 severity: low
 origin: Story 5.24e's Dev (2026-10-02), the read-only audit of DW-240 and DW-244: a going tab's `leave` backdates the
   row only when the beat it carries is the row's `heartbeat_at`, so a late leave from before a reload can never backdate
@@ -8689,6 +8698,15 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` (`leave`
   `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`leaving`)
 reason: the fix needs a column, and Story 5.24e forbids a migration (R-99, its Never); the owner ruled the wait
   acceptable until then (R-228, Story 5.24e's Question 2).
+resolution: Story 7.18c (2026-10-20). Schema 28ce5f6e: `edit_locks.page_id` and `page_left`, applied to production on
+  the owner's go and read back. Dev: every lock call carries `pageId()` (`lib/lock-client.ts`: one per page load, a new one
+  after a back-forward restore); the route's beat, insert, stale CAS and take-over write the page, a beat is refused by a
+  row its own page has left, and a leave matches its own page, unleft and later than its stamp, marking it gone — so a
+  close with its beat in flight frees the lock within the grace and one poll in either order of landing, and a reload's
+  new page keeps the row. The heard-beat filter and its two helpers are gone. Executed in Postgres by the RLS gate's 7.18c
+  block, every ordering with a heard-beat control (MEASUREMENTS §87); `lock.test.ts` reads both statements from the
+  route. R-228's ceiling is closed (its entry carries the note). The lock walk's DW-307 stop — red against production
+  before the Dev push, green after — is the main session's run.
 
 ### DW-308: a window that types in its first moment and then finds another session editing keeps that typing, unsent and unsaid
 
@@ -8696,7 +8714,7 @@ plain: When you open a project, the editor lets you start at once while it asks 
   windows is already editing. If one is, this window turns read-only. Anything you typed in that first moment — well
   under a second — stays in this window and is never sent, and nothing tells you so. Before Story 5.24e the server
   refused that typing and the window said the edits were not included.
-status: open
+status: done 2026-10-20 (Story 7.18c)
 severity: low
 origin: Story 5.24e's review (2026-10-02), the Acceptance Auditor and the Blind Hunter: DW-203's wall in `flush`
   (`if (!now.lock.holder) return`) stops a tab reading along from sending, so the first-opener race — a tab that typed
@@ -8710,6 +8728,14 @@ reason: the fix is `land()` telling a session that typed before its first answer
   what it holds — in memory only, because in the same-browser race the on-device record is the holder's and must not
   be reset. That is a change to the lock's landing found at a review, with a window of one round trip; it wants its own
   control (a journey that types inside the optimistic paint), not a patch beside forty other closures.
+resolution: Story 7.18c's Dev (2026-10-20) — `land()` tells an optimistic holder (painted editable, no confirmed
+  generation) whose first answer is another session's live row what IT typed, `LOCK_COPY.displaced(n)`, assertively and in
+  B5a's sentence slot; `n` counts this page's edits above the seqs the hydrate adopted (`adoptedUpTo`), and the journal is
+  emptied in memory only — the record on the device is never reset from there. The hydrate asks again after its read, so a
+  session that turned reader meanwhile adopts nothing (DW-203's rule). The `ponytail:` beside DW-203's wall names the one
+  ceiling left (the record keeps that typing; on another device it returns only if the holder wrote nothing since). Held by
+  the keyboard journey (the first acquire held, one edit typed, answered with another session's row; `held: true` the
+  control), first seen red against HEAD's behaviour; walk step 115 (b) on production is the Review's.
 
 ## Deferred from: Story 6.1's Create (2026-10-03)
 
@@ -10380,7 +10406,7 @@ reason: storage is not counted against the customer, and retention is 7.22's; un
 
 plain: If Inflozo cannot read your connected sites when the editor opens, Switch opens a list with nothing in it and does not
   say why, which looks like having no other site.
-status: open
+status: done 2026-10-20 (Story 7.18c)
 severity: low
 origin: Story 7.18b's Review (2026-10-19), the Blind Hunter layer — `shipStateOf` logs a failed sites read and counts it as
   none (`lib/deploy.ts`).
@@ -10391,3 +10417,25 @@ reason: a new sentence is Ask First; Go to Sites still works, and `switchSite` j
 note (Story 7.18c's Create, 2026-10-20): ruled **R-276**, option 1 — `ShipState.sites` null on a failed read, and the
   picker says "Your connected sites couldn't be loaded just now. Reload the page to try again." in place of the list. To be
   built at 7.18c's Dev.
+resolution: Story 7.18c's Dev (2026-10-20), R-276 built — `shipStateOf` answers `sites: null` when the sites or the
+  linking read failed (`[]` stays a read with none); the picker says `SWITCH_WORDS.unread` as its lead's next paragraph and
+  in the wizard's polite region, with no list and no Use this site; Choose a site shows whenever the sites are unread or
+  any are listed. Held by `read.test.ts` (either read failing, a successful empty read the control), `site-switch.test.ts`,
+  and the keyboard journey over the harness's `sites-failed` and `sites-failed-unlinked` shapes (the empty-sites control).
+
+### DW-382: the lock walk's early stops fail intermittently against production
+
+plain: The automatic check that walks the edit lock on the live site sometimes fails in its first few steps — handing the
+  lock over, the edit count a check-in carries — on code that passed them minutes earlier, so a run can end before it reaches
+  the checks a story added.
+status: open
+severity: low
+origin: Story 7.18c's Dev (2026-10-20), three runs of `tools/probe/run-verify-lock.cjs` against `app.inflozo.com` at the Schema
+  head `28ce5f6e` (HEAD's lock code): run 1 passed every early stop; run 2 failed matrix "Heartbeat" (the beat's count read 0),
+  "the reload kept A's UNSYNCED work" and "the second opener wrote NOTHING"; run 3 failed "B gains the lock" (Hand over) and
+  then died on a 30 s click timeout on a disabled Layers "More" button (MEASUREMENTS §87 (b)).
+owner: Story 7.18c's Review, which runs the walk after the Dev deploy — if an early stop fails again there, it is read with
+  `editor-harness-timeouts`' method (re-run, both runs recorded; the same line twice is a signal) before the Review closes.
+location: `tools/probe/run-verify-lock.cjs` (the opening stops, Hand over)
+reason: no product change of this story touches those stops (run 1 passed them on the same deployment), and the owner's go
+  for production runs at the Dev was used up.

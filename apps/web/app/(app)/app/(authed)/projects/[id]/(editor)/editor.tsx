@@ -59,14 +59,14 @@ import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/pay
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, carries, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
   CARDS_KEY, flushDecision, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, isMovedMessage, isSentMessage, journalCleared, maxSeq, MOVED_CHANNEL, movedMessage, ownFlushLanded, PACK_KEY, PACK_RECORDS_KEY, redo as redoIn, restingState,
-  SENT_CHANNEL, takeMoves, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
-  type Move, type Restore, type SyncState,
+  REFUSED_COPY, refusalOf, SENT_CHANNEL, takeMoves, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, withoutDoc, type FlushCall, type Journal,
+  type Move, type Refusal, type Restore, type SyncState,
 } from '@/lib/journal'
 import { ghostLabel, homeList, listsOf, routeList, routesYaml, type Lists } from '@inflozo/section-runtime/routes'
 import {
   askedNow, edgePoll, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, type AskedOf, type LockRow,
 } from '@/lib/lock'
-import { askLock, lockSignals, lockUrl, tabSession, tabSessionKept, type LockAnswer, type LockSignal } from '@/lib/lock-client'
+import { askLock, lockSignals, lockUrl, pageId, tabSession, tabSessionKept, type LockAnswer, type LockSignal } from '@/lib/lock-client'
 import { edits, holdsCaret, IN_PREVIEW, KEYMAP, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { BACK_SAID, PAUSED, PAUSED_SAID, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
 import { FACES_WAIT_MS, otherPreset, PACK_WORDS, type PackChoice } from '@/lib/pack-switch'
@@ -1386,6 +1386,9 @@ function EditorShell({
   /** R-213 (Story 5.24e): the last answer the sync route gave was 401 — the session ended. The backoff keeps running
    *  while it holds, showing Signed out rather than a countdown, and a visit back to the tab tries at once */
   const signedOut = useRef(false)
+  /** R-275 (Story 7.18c, DW-304): the last answer the sync route gave was a refusal no retry cures (`refusalOf`) — which of
+   *  the two, or null. No backoff runs while it holds; `change` sends the next edit at once, and a visit back tries once */
+  const refused = useRef<Refusal | null>(null)
   const gone = useRef(false)
   const clocks = useRef<{ retry?: ReturnType<typeof setInterval> }>({})
 
@@ -1751,9 +1754,10 @@ function EditorShell({
   /*  R-213 (Story 5.24e): Signed out is a flush's state too, kept exactly as Retrying is — and both are kept IN FALLBACK
    *  as well, which they were not: there every edit sends at once, so an edit that closed the panel had it reopen one
    *  round trip later, a flicker per keystroke over the very sentence (R-227's) a fallback tab most needs to read. */
+  /*  R-275 (Story 7.18c): and Can't sync is kept the same way — the edit that cures a *change* is the very one calling this. */
   const rest = (done = false) =>
     setSync((was) =>
-      !done && (was.kind === 'syncing' || was.kind === 'retrying' || was.kind === 'signed-out') ? was
+      !done && (was.kind === 'syncing' || was.kind === 'retrying' || was.kind === 'signed-out' || was.kind === 'refused') ? was
       : fellBack.current ? { kind: 'fallback' }
       : restingState(latest.current.journal))
 
@@ -1762,8 +1766,9 @@ function EditorShell({
   const toFallback = () => {
     local.current = null
     fellBack.current = true
-    // a new object even when Retrying or Signed out stays, so the panel re-renders with the fallback's own sentence
-    setSync((was) => (was.kind === 'retrying' || was.kind === 'signed-out' ? { ...was } : { kind: 'fallback' }))
+    // a new object even when Retrying or Signed out stays, so the panel re-renders with the fallback's own sentence — and
+    // Can't sync (R-275), whose sentences name no device, so fallback says them too
+    setSync((was) => (was.kind === 'retrying' || was.kind === 'signed-out' || was.kind === 'refused' ? { ...was } : { kind: 'fallback' }))
   }
 
   /**
@@ -1777,6 +1782,10 @@ function EditorShell({
       void flush('change')
       return
     }
+    // R-275 (Story 7.18c, DW-304): A CHANGE INFLOZO REFUSED IS CURED BY THE NEXT EDIT — an Undo above all, which the panel
+    // asks for — so while Can't sync says *change* each edit goes at once, autosave on or off (`flushDecision` stops the
+    // timer alone). *gone* waits: no edit can cure it, so only a visit back to the tab tries again
+    if (refused.current === 'change') void flush('change')
     // Story 6.3: the pack in force rides with the docs, so a switch not yet sent survives a reload — and Story 6.4: the
     // project's own packs, so an edit not yet sent does too; Story 7.13: and the card designs
     const { preset, packs: own, cards } = latest.current
@@ -2003,6 +2012,8 @@ function EditorShell({
   const syncUrl = () => `${isApp(pathname) ? '/app' : ''}${syncPath(project.id)}`
   /** R-213 — the sign-in page Signed out's link opens, by the same rule */
   const signInUrl = `${isApp(pathname) ? '/app' : ''}/sign-in`
+  /** R-275 — the Projects page Can't sync's *gone* opens, by the same rule (the shell's `/`) */
+  const projectsUrl = isApp(pathname) ? '/app' : '/'
 
   const flush = async (why: FlushCall) => {
     const now = latest.current
@@ -2023,6 +2034,7 @@ function EditorShell({
     const backoffOver = () => {
       if (why !== 'retry') return
       signedOut.current = false
+      refused.current = null
       attempt.current = 0
       rest(true)
     }
@@ -2031,11 +2043,12 @@ function EditorShell({
     // IndexedDB, and before this it adopted the holder's pending journal, sent it when hidden, took the 423 and then
     // dropped the holder's own on-device record (executed at 5.24e's Create). The hydrate no longer adopts it either;
     // this is the second wall, and the one that holds whatever a reader's journal came to hold.
-    // ponytail: the FIRST-OPENER RACE no longer reaches the sync route's 423 — a tab that typed on its optimistic first
-    // paint and then lost the `acquire` keeps those edits in its journal, unsent and unannounced, where before this wall
-    // the 423 path displaced it and said so (review, 2026-09-24). The shared on-device record is deliberately NOT reset
-    // here: in the same-browser race it is the holder's. The upgrade is `land()` telling a session that typed before its
-    // first answer, when that answer makes it a reader, what it holds — DW-308, Story 7.18c's.
+    // THE FIRST-OPENER RACE (DW-308, Story 7.18c): a tab that typed on its optimistic first paint and then lost the
+    // `acquire` never reaches the sync route's 423 — `land()` tells it what it typed, in the displaced sentence, and empties
+    // its journal in memory, so nothing is left here for this wall to stop.
+    // ponytail: the on-device record keeps what that page typed (in the same-browser race it is the holder's, so it is
+    // never reset from here). On another device, a later gain of the lock re-reads it by §AD1.1, so it comes back only if
+    // the holder wrote nothing since; the upgrade is a record per page.
     if (!now.lock.holder) return backoffOver()
     // Story 6.3: the pending docs AND the pending pack, in one call — one compare-and-set, one revision; Story 6.4: and the
     // project's own packs, whole, where they are owed
@@ -2051,8 +2064,9 @@ function EditorShell({
     // the clock this request is sending AT: an edit that lands while it is in flight has a higher stamp and is kept
     const sentStamp = now.journal.stamp
     const upTo = maxSeq(now.journal)
-    // R-213: Signed out stays up while the backoff's attempt is in flight, so its Sign in link never blinks away
-    setSync((was) => (was.kind === 'fallback' || was.kind === 'signed-out' ? was : { kind: 'syncing' }))
+    // R-213: Signed out stays up while the backoff's attempt is in flight, so its Sign in link never blinks away — and
+    // Can't sync (R-275) while the edit that may cure it is out, so the panel does not flicker shut once per keystroke
+    setSync((was) => (was.kind === 'fallback' || was.kind === 'signed-out' || was.kind === 'refused' ? was : { kind: 'syncing' }))
     // Story 5.17: the tab's lock session rides along, so the route can refuse work from a session that was taken over
     // from. `|| undefined` drops it from the JSON before the tab knows its id — never an empty id the route could read
     // as a stranger's.
@@ -2077,8 +2091,9 @@ function EditorShell({
       })
       // R-213 (Story 5.24e): THE ONE REFUSAL SIGNING IN CURES. Before it a 401 was "Retrying … when the connection
       // returns" — a connection that was fine, and a Retry that could only meet the same answer. The backoff keeps
-      // trying underneath; a 404, 400 or 422 cannot be cured by a sign-in and stays Retrying below (DW-304, 7.18c).
+      // trying underneath; a 404, 400 or 422 cannot be cured by a sign-in, nor by waiting, and is Can't sync below (R-275).
       signedOut.current = answer.status === 401
+      refused.current = refusalOf(answer.status)
       if (answer.status === 401) {
         scheduleRetry()
         return
@@ -2124,7 +2139,18 @@ function EditorShell({
         dropJournal()
         setAnnounced(LOCK_COPY.displaced(owed))
         setLost(owed > 0 ? LOCK_COPY.displaced(owed) : null)
-        land(await askLock(lockAt(), { intent: 'beat', session: tabId.current, unsynced: 0 }))
+        land(await askLock(lockAt(), { intent: 'beat', session: tabId.current, unsynced: 0, page: pageId() }))
+        return
+      }
+      if (refused.current !== null) {
+        // R-275 (Story 7.18c, DW-304): REFUSED FOR GOOD. A 404 (the project deleted, or this browser now another account's)
+        // or a 400/422 (a body or document the route will not take) is no connection that will return: before this it
+        // fell into the backoff below, whose panel promised to send the work "when the connection returns" and retried
+        // for ever. Now the backoff stops, the journal is KEPT (the device still holds the work), and Can't sync says
+        // which. *change*'s next edit goes at once (`store`); a visit back to the tab tries once (both causes).
+        stopRetrying()
+        attempt.current = 0
+        setSync({ kind: 'refused', why: refused.current })
         return
       }
       if (!answer.ok) throw new Error(`HTTP ${answer.status}`)
@@ -2151,6 +2177,7 @@ function EditorShell({
     } catch {
       // offline, a 5xx, a dropped connection: the local doc is untouched and nothing is lost
       signedOut.current = false
+      refused.current = null
       scheduleRetry()
     } finally {
       inFlight.current = false
@@ -2185,6 +2212,7 @@ function EditorShell({
     if (!isSentMessage(message) || message.project !== project.id || message.base !== base.current) return
     base.current = message.revision
     signedOut.current = false
+    refused.current = null
     const next = flushed(latest.current.journal, message.stamp, message.upTo)
     latest.current = { ...latest.current, journal: next }
     setJournal(next)
@@ -2281,6 +2309,14 @@ function EditorShell({
   /** AD-16's count as the lock is told it — none until this device's journal is read, so a reload's first beat never
    *  writes 0 over the count the row kept (DW-240, Story 5.24e; `countPatch`) */
   const countNow = () => (hydratedRef.current ? owedNow() : undefined)
+  /** DW-308 (Story 7.18c): the highest journal seq the hydrate ADOPTED from this device's record, 0 when it adopted none —
+   *  so what THIS PAGE typed is told apart from the leftovers it picked up, which the holder in this browser adopted too */
+  const adoptedUpTo = useRef(0)
+  /** …and what this page typed and has not sent: AD-16's count over the journal with the adopted seqs counted as sent */
+  const typedNow = () => {
+    const j = latest.current.journal
+    return unsyncedEdits({ ...j, synced: Math.max(j.synced, adoptedUpTo.current) })
+  }
 
   const putLock = (next: LockUi) => {
     latest.current = { ...latest.current, lock: next }
@@ -2321,9 +2357,11 @@ function EditorShell({
       heldGeneration.current = null
       dropJournal()
       // R-213: a session displaced while Signed out owes nothing a sign-in could send, so it leaves that state and its
-      // backoff — `dropJournal` never re-rests the indicator, and it would otherwise say Signed out for good
-      if (signedOut.current) {
+      // backoff — `dropJournal` never re-rests the indicator, and it would otherwise say Signed out for good. R-275: nor
+      // anything Can't sync could be cured of
+      if (signedOut.current || refused.current !== null) {
         signedOut.current = false
+        refused.current = null
         stopRetrying()
         attempt.current = 0
         rest(true)
@@ -2333,6 +2371,26 @@ function EditorShell({
       setAnnounced(LOCK_COPY.displaced(owed))
       // SHOWN only when something was lost: with nothing owed, the reading-along bar already says all there is
       setLost(owed > 0 ? LOCK_COPY.displaced(owed) : null)
+    } else if (was.holder && heldGeneration.current === null && !mine && row !== null) {
+      // DW-308 (Story 7.18c): AN OPTIMISTIC HOLDER THAT NEVER HELD. The first paint is editable before the first answer
+      // (`holder: isStale(heldOnServer)`), and a tab that typed in that moment and is then answered with ANOTHER SESSION'S
+      // row is a reader: what it typed can never be sent (DW-203's wall), and the displaced test above has no confirmed
+      // generation to compare. So it is told as a displaced session is, in the same sentence, with ITS OWN typing counted
+      // (`typedNow`: never the record's leftovers it adopted, which the holder in this browser adopted too and will send),
+      // and its journal goes IN MEMORY ONLY — `dropJournal` would reset the record on the device, which in the same-browser
+      // race is the holder's. The indicator rests on the emptied journal. Nothing typed, nothing said: the bar says it all.
+      const typed = typedNow()
+      latest.current = { ...latest.current, journal: EMPTY_JOURNAL }
+      setJournal(EMPTY_JOURNAL)
+      signedOut.current = false
+      refused.current = null
+      stopRetrying()
+      attempt.current = 0
+      rest(true)
+      if (typed > 0) {
+        setAnnounced(LOCK_COPY.displaced(typed))
+        setLost(LOCK_COPY.displaced(typed))
+      }
     }
     if (mine) setLost(null)
     // AND A SESSION THAT IS NO LONGER THE HOLDER GOES BACK TO ACQUIRING. Without this a holder whose ROW VANISHED —
@@ -2377,7 +2435,7 @@ function EditorShell({
     if (was.asking) return
     setLost(null)
     putLock({ ...was, asking: true, unanswered: false })
-    const answer = await askLock(lockAt(), { intent: 'nudge', session: tabId.current })
+    const answer = await askLock(lockAt(), { intent: 'nudge', session: tabId.current, page: pageId() })
     if (answer === null || !answer.won) {
       // the write did not land: the button comes back, stays pressable, and the polite region SAYS so (the matrix's
       // own row — "reports it" is a sentence, not a label reverting)
@@ -2407,7 +2465,7 @@ function EditorShell({
       putLock({ ...latest.current.lock, handingOver: false, handOverFailed: true })
       return
     }
-    const answer = await askLock(lockAt(), { intent: 'release', session: tabId.current })
+    const answer = await askLock(lockAt(), { intent: 'release', session: tabId.current, page: pageId() })
     if (answer === null) {
       putLock({ ...latest.current.lock, handingOver: false, handOverFailed: true })
       return
@@ -2421,7 +2479,7 @@ function EditorShell({
 
   /** B5b's **Keep editing** — the nudge columns are cleared, and no take-over is offered from that request. */
   const keepEditing = async () => {
-    const answer = await askLock(lockAt(), { intent: 'keep', session: tabId.current })
+    const answer = await askLock(lockAt(), { intent: 'keep', session: tabId.current, page: pageId() })
     // DISMISSED ONLY ONCE THE WRITE LANDED. Dismissed first, a `null` answer took the card away while the row still
     // carried the request, and the requester was then offered a take-over the holder had never turned down (review,
     // 2026-09-24). Not landed → the card stays and Keep editing is pressable again.
@@ -2439,13 +2497,13 @@ function EditorShell({
     if (row === null) {
       // the row has vanished, so the lock is free: acquire normally rather than compare against nothing
       asked.current?.close()
-      const answer = await askLock(lockAt(), { intent: 'acquire', session: tabId.current, unsynced: countNow() })
+      const answer = await askLock(lockAt(), { intent: 'acquire', session: tabId.current, unsynced: countNow(), page: pageId() })
       if (answer?.held === true) won?.()
       land(answer)
       return
     }
     putLock({ ...was, taking: true })
-    const answer = await askLock(lockAt(), { intent: 'takeover', session: tabId.current, generation: row.generation, unsynced: countNow() })
+    const answer = await askLock(lockAt(), { intent: 'takeover', session: tabId.current, generation: row.generation, unsynced: countNow(), page: pageId() })
     asked.current?.close()
     if (answer === null || !answer.won) {
       // ZERO ROWS MEANS THE GENERATION MOVED UNDER US. Re-read and report the new state, never retry blindly. `null`
@@ -2498,12 +2556,15 @@ function EditorShell({
       setShipOpening(true)
       tabStore()?.setItem(SHIP_AFTER, JSON.stringify({ project: project.id, mode: shipAsked.current }))
     })
-  /** Run checks' flush: whatever is in flight lands first, then everything owed is sent — true when nothing is left */
-  const flushForShip = async () => {
+  /** Run checks' flush: whatever is in flight lands first, then everything owed is sent — null when nothing is left, else the
+   *  sentence that says why: Can't sync's own, word for word, when the save was refused for good (R-275, DW-304), and
+   *  R-274's when the edits are merely not sent yet */
+  const flushForShip = async (): Promise<string | null> => {
     // ponytail: `handOver`'s wait — a flush already in flight makes `flush` return without sending
     while (inFlight.current) await new Promise((r) => setTimeout(r, 150))
     await flush('manual')
-    return !unsynced(latest.current.journal)
+    if (!unsynced(latest.current.journal)) return null
+    return refused.current === null ? DEPLOY_WORDS.editsUnsent : REFUSED_COPY[refused.current]
   }
   /** R-260's read (R-271, DW-377): the site's NEWEST published posts, a hundred a page, up to `POSTS_CHECKED`, through a store
    *  of their OWN — its own request ceiling, so the canvas's reads are never spent on it — with the site's total, so the row
@@ -2528,9 +2589,10 @@ function EditorShell({
     return { rows: rows.slice(0, POSTS_CHECKED), total }
   }
   /** STORY 7.18b — choosing the site (FR-B5): whatever is owed is sent first, then `switchSite` — edits left unsent write
-   *  nothing, in Run checks' own sentence */
+   *  nothing, in Run checks' own sentence (a refusal's, since 7.18c) */
   const switchSiteNow = async (siteId: string, confirmed: Confirmed): Promise<SwitchAnswer> => {
-    if (!(await flushForShip())) return { refused: DEPLOY_WORDS.editsUnsent }
+    const unsent = await flushForShip()
+    if (unsent !== null) return { refused: unsent }
     return switchTo(project.id, siteId, tabId.current, confirmed).catch((): SwitchAnswer => ({ refused: DEPLOY_WORDS.infrastructure }))
   }
   /** …and once the link has changed, the page re-reads: the editor mounts afresh on the new site (the `(editor)` layout keys
@@ -2594,7 +2656,7 @@ function EditorShell({
       // set ONLY when the server confirmed the lock is ours, which is exactly the question this asks.
       const wasHolder = heldGeneration.current !== null
       const holding = wasHolder || Date.now() - gaveAt.current < NUDGE_MS
-      const answer = await askLock(lockAt(), { intent: holding ? 'beat' : 'acquire', session: tabId.current, unsynced: countNow() })
+      const answer = await askLock(lockAt(), { intent: holding ? 'beat' : 'acquire', session: tabId.current, unsynced: countNow(), page: pageId() })
       if (!alive) return
       // A BEAT THAT FOUND NO ROW AT ALL MEANS THE LOCK IS FREE — take it NOW, and let the ACQUIRE'S answer be the one
       // that lands, so the state never passes through "reader" on the way.
@@ -2651,23 +2713,21 @@ function EditorShell({
      *  the way back in, because the new mount's `acquire` and the old one's `release` carry the SAME session id from
      *  `sessionStorage`, so the release deleted the row the re-acquire had just inserted (executed, 2026-09-23). The
      *  same id is also what makes not releasing free: coming back re-reads its own row and simply beats. */
-    /*  DW-240 (Story 5.24e): IT LEAVES, IT DOES NOT RELEASE. `leave` backdates this tab's own beat — the one it last heard,
-     *  so a late leave matches nothing once the reloaded page has beaten — and the row stays this tab's for
-     *  `LEAVE_GRACE_MS`: a reload's first beat keeps it, where the DELETE let another window's poll acquire in the gap. A
-     *  closed tab is stale after the grace, for the next opener's edge poll. With no beat heard yet it releases, as
-     *  before; Hand over keeps `release`, because there the row must go at once.
-     *  ponytail: a beat still in flight as the tab goes moves `heartbeat_at` past the one heard, so that leave matches
-     *  nothing and the going tab's row goes stale as a crashed tab's does (~60 s, the matrix's own error row): a close
-     *  landing inside a beat's round trip, or a hard navigation whose request outlasts the next beat (the lock walk met
-     *  it typing a URL away). A reload is unaffected — its own first beat keeps the row — and leaving by a link is a soft
-     *  navigation, which keeps the lock anyway. The upgrade is a per-page token on the row: a column, so a migration —
-     *  DW-307, Story 7.18c (R-228: the owner kept this ceiling for v1). */
+    /*  DW-240 (Story 5.24e): IT LEAVES, IT DOES NOT RELEASE. `leave` backdates this tab's row, and the row stays this tab's
+     *  for `LEAVE_GRACE_MS`: a reload's first beat keeps it, where the DELETE let another window's poll acquire in the gap.
+     *  A closed tab is stale after the grace, for the next opener's edge poll. Hand over keeps `release`, because there the
+     *  row must go at once.
+     *  DW-307 (Story 7.18c): THE LEAVE NAMES THIS PAGE, not the beat it last heard. The row remembers the page that last
+     *  wrote it (`page_id`), and the leave matches its own page and marks it gone (`page_left`) — so a beat still in flight
+     *  as the tab goes no longer makes the leave miss (it used to, and the other window waited ~60 s, R-228's ceiling): if
+     *  the beat lands first the leave still matches it, and if the leave lands first the late beat matches nothing. A
+     *  reload's new page id keeps the row, and a late leave from this page then matches nothing. */
     const leaving = () => {
       if (keeping.current || !latest.current.lock.holder) return
       // a tab whose id this browser does not keep comes back from a reload as ANOTHER session: the grace would only hold
       // the lock against it, so that tab releases, as before (`tabSessionKept`)
-      const beat = tabSessionKept(tabId.current) ? (latest.current.lock.row?.beat ?? null) : null
-      void askLock(lockAt(), beat === null ? { intent: 'release', session: tabId.current } : { intent: 'leave', session: tabId.current, beat }, true)
+      const intent = tabSessionKept(tabId.current) ? 'leave' : 'release'
+      void askLock(lockAt(), { intent, session: tabId.current, page: pageId() }, true)
     }
     window.addEventListener('pagehide', leaving)
     return () => {
@@ -4368,6 +4428,12 @@ function EditorShell({
       }
       const held = await opened.read(project.id)
       if (!alive) return
+      // DW-308 (Story 7.18c): ASKED AGAIN AFTER THE READ. An optimistic first paint answered meanwhile with another session's
+      // row is a reader now, and a reader adopts nothing (DW-203's rule, as `reading` above)
+      if (!latest.current.lock.holder) {
+        settle(true)
+        return
+      }
       // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this — an
       // owed pack included, which the server's preset must then be (Story 6.3), and owed own packs, which the server's must
       // then be (Story 6.4)
@@ -4388,6 +4454,8 @@ function EditorShell({
         if (!unknown) {
           const back = autoFrom(held.auto, canvases) as Canvas[]
           const kept = landed ? flushed(held.journal, held.journal.stamp, maxSeq(held.journal)) : held.journal
+          // DW-308: everything up to here is the record's, not this page's typing
+          adoptedUpTo.current = maxSeq(kept)
           base.current = landed ? revision : held.baseRevision
           // STORY 5.19 — the local hydrate is a door the main-feed rule stands at, as the server read is: a doc this
           // device kept from before the rule is repaired here and stored repaired with the next edit of its canvas
@@ -4474,8 +4542,9 @@ function EditorShell({
       // in-flight guard, and AUTOSAVE OFF STILL DOES NOT STOP IT (AD-15): `flushDecision` lets `unload` through.
       if (document.visibilityState === 'hidden') void flush('unload')
       // R-213 (Story 5.24e): BACK ON THE TAB WHILE SIGNED OUT, ONE TRY AT ONCE. The cookie jar is shared, so a sign-in
-      // in another tab rides this tab's next request (executed at the Create) — and coming back is the moment to make it
-      else if (signedOut.current) retryNow()
+      // in another tab rides this tab's next request (executed at the Create) — and coming back is the moment to make it.
+      // R-275 (Story 7.18c): and while Can't sync, for the same reason — signing back in to the right account cures *gone*
+      else if (signedOut.current || refused.current !== null) retryNow()
     }
     document.addEventListener('visibilitychange', leaving)
     return () => document.removeEventListener('visibilitychange', leaving)
@@ -5759,7 +5828,7 @@ function EditorShell({
         <span id="editor-save-state" className="shrink-0">
           {/* nothing is claimed before the device has answered: the initial state is green "Synced", and a reload with
               edits owed must never show that for the moment IndexedDB takes (the review) */}
-          {hydrated ? <SaveState state={sync} onRetry={on.retryNow} retrying={pressingRetry} held={!fellBack.current} signIn={signInUrl} /> : null}
+          {hydrated ? <SaveState state={sync} onRetry={on.retryNow} retrying={pressingRetry} held={!fellBack.current} signIn={signInUrl} projects={projectsUrl} /> : null}
         </span>
         {/* R-143 (owner, 2026-09-19): THE PAIR SITS HERE, immediately after the indicator, and no longer in S4a's
             right-hand cluster where `S4 Editor.dc.html:41-43` draws it. His reason is the one the frame could not

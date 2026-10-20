@@ -196,7 +196,7 @@ test('Site basics reads the linked site\'s title, logo and accent, and links Gho
 
 test('R-192: the page reads along while another session holds a live lock', () => {
   const row = (holderSessionId: string, ageMs: number) =>
-    ({ holderSessionId, generation: 1, unsyncedEdits: 0, ageMs, nudgeRequestedBy: null, nudgeAgeMs: null, beat: null, request: null })
+    ({ holderSessionId, generation: 1, unsyncedEdits: 0, ageMs, nudgeRequestedBy: null, nudgeAgeMs: null, request: null })
   assert.equal(liveHolder(null), null)
   assert.equal(liveHolder(row('a', 1000)), 'a')
   assert.equal(liveHolder(row('a', 61_000)), null, 'a stale row holds nothing')

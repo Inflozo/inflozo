@@ -215,50 +215,50 @@ implementation subagent (the owner's go of 2026-10-20 covers the apply and one l
   tenant's lock unchanged by each -- one gate, run in Postgres.
 
 **Execution — Dev:**
-- [ ] `lib/journal.ts` -- `SyncState` gains `{ kind: 'refused'; why: 'gone' | 'change' }`; `SyncLabel` and `labelOf`
+- [x] `lib/journal.ts` -- `SyncState` gains `{ kind: 'refused'; why: 'gone' | 'change' }`; `SyncLabel` and `labelOf`
   the ruled label; `panelOpen` includes it; `refusalOf(status)` (404 → `'gone'`, 400 · 422 → `'change'`, else null);
   `REFUSED_COPY` (title, `gone`, `change`, `projects`) from "Ruled values"; the machine's comment says seven states and
   drops the DW-304 sentence -- one pure rule `node --test` reaches.
-- [ ] `components/kit/icons.tsx`, `components/kit/persistence-indicator.tsx`, `app/(app)/app/(authed)/kit/page.tsx` --
+- [x] `components/kit/icons.tsx`, `components/kit/persistence-indicator.tsx`, `app/(app)/app/(authed)/kit/page.tsx` --
   `SyncRefused` (Tabler `x`, noted in the header's list) and the seventh `look` row on `bg-danger-text`; the Kit page
   shows it -- R-142's indicator, one more state.
-- [ ] `components/editor/save-state.tsx` -- the refused panel in B6's shape: id `editor-refused`, `REFUSED_COPY.title`,
+- [x] `components/editor/save-state.tsx` -- the refused panel in B6's shape: id `editor-refused`, `REFUSED_COPY.title`,
   its sentence by `why`, **Go to Projects** (a link in Retry now's style, same tab) for `gone` only, nothing for
   `change` -- B6 extrapolated as R-213's was.
-- [ ] `E` -- `flush`: `refusalOf(answer.status)` before the `!answer.ok` throw → stop the backoff, `attempt` 0,
+- [x] `E` -- `flush`: `refusalOf(answer.status)` before the `!answer.ok` throw → stop the backoff, `attempt` 0,
   `signedOut` false, `setSync({ kind: 'refused', why })`, keep the journal, no retry; `rest` keeps `refused` as it keeps
   `retrying` and `signed-out`; a 200 leaves it; `store` sends an edit at once while `why` is `change`; the visit back to
   the tab (`:4478`) tries once while refused; `flushForShip` answers `null` (all sent), the refusal's sentence, or
   `DEPLOY_WORDS.editsUnsent`; `switchSiteNow` refuses with that sentence; the comments at `:2078-2080` updated -- DW-304.
-- [ ] `components/editor/deploy-wizard.tsx` -- `flush: () => Promise<string | null>`; Run checks says the sentence it
+- [x] `components/editor/deploy-wizard.tsx` -- `flush: () => Promise<string | null>`; Run checks says the sentence it
   answers (`:477-486`) -- Pre-flight's own flush tells the truth.
-- [ ] `lib/lock.ts` · `lib/lock-client.ts` -- delete `leaveBeat`, `leaveBacks`, `LockRow.beat` and `rowFrom`'s `beat`;
+- [x] `lib/lock.ts` · `lib/lock-client.ts` -- delete `leaveBeat`, `leaveBacks`, `LockRow.beat` and `rowFrom`'s `beat`;
   `pageId()` minted once per page load, re-minted on a `pageshow` that is `persisted`; `LockCall.page` replaces `beat`
   -- DW-307's client half.
-- [ ] `lock/route.ts` -- `page` read and checked with `isUuid` (400 `Bad page`), required for `leave`; `beat()`, the
+- [x] `lock/route.ts` -- `page` read and checked with `isUuid` (400 `Bad page`), required for `leave`; `beat()`, the
   insert, the stale CAS and `takeover` write `page_id` (and `page_left: false`) when a page is sent, `beat()` with
   `.or('page_left.is.false,page_id.neq.<page>')`; `leave` as Design Notes (`.eq('page_id', page)`,
   `.eq('page_left', false)`, `.gt('heartbeat_at', leaveStamp(now))`, writing `page_left: true`); the file's header
   rewritten -- DW-307's server half.
-- [ ] `E` -- every `askLock` carries `page: pageId()`; `leaving` sends `{ intent: 'leave', session, page }` (release
+- [x] `E` -- every `askLock` carries `page: pageId()`; `leaving` sends `{ intent: 'leave', session, page }` (release
   where `tabSessionKept` is false, as now); the `ponytail:` at `:2659-2664` replaced by what now holds -- DW-307.
-- [ ] `E` -- `land()`: an optimistic holder (`was.holder`, `heldGeneration` null) whose answer is another session's
+- [x] `E` -- `land()`: an optimistic holder (`was.holder`, `heldGeneration` null) whose answer is another session's
   live row: `typed` = this page's edits (`adoptedUpTo`), the in-memory journal emptied (state and `latest`, never
   `local.current`), the indicator rested, and when `typed > 0` `setAnnounced`/`setLost(LOCK_COPY.displaced(typed))`;
   the hydrate records `adoptedUpTo` and asks `latest.current.lock.holder` again after its read; the `ponytail:` at
   `:2034-2038` rewritten (Design Notes' ceiling) -- DW-308.
-- [ ] `lib/deploy.ts` · `lib/site-switch.ts` · `deploy-wizard.tsx` -- `ShipState.sites: readonly SwitchSite[] | null`
+- [x] `lib/deploy.ts` · `lib/site-switch.ts` · `deploy-wizard.tsx` -- `ShipState.sites: readonly SwitchSite[] | null`
   (null: the sites or linking read failed); `SWITCH_WORDS.unread`; the picker draws it as its lead's next paragraph in
   place of the list and Use this site, and says it in the polite region on open; "Choose a site" shows when `sites` is
   null or non-empty; every reader of `sites` handles null -- DW-381.
-- [ ] `app/(app)/app/harness/editor/layout.tsx` -- `x-inflozo-harness-ship: sites-failed` (as `full`, `sites: null`),
+- [x] `app/(app)/app/harness/editor/layout.tsx` -- `x-inflozo-harness-ship: sites-failed` (as `full`, `sites: null`),
   documented with the other shapes; `READER_LOCK` loses `beat` -- the journeys' state.
-- [ ] `journal.test.ts` · `lock.test.ts` · `read.test.ts` · `settings.test.ts` · `deploy.test.ts` -- `refusalOf` over
+- [x] `journal.test.ts` · `lock.test.ts` · `read.test.ts` · `settings.test.ts` · `deploy.test.ts` -- `refusalOf` over
   every status the route answers (401, 409, 423, 502 and a network failure as controls); seven distinct labels and
   `panelOpen`'s three kinds; `REFUSED_COPY`; the route's beat and leave statements read from its source (as `:312`
   does) with the page filters; `pageId` stable within a load; `shipStateOf` → `sites: null` on either failed read,
   `[]` on a read with none; the `beat` fixtures gone -- the I/O matrix's pure rows.
-- [ ] `tools/keyboard/journey.spec.mjs` -- (a) R-213's loop flipped: 404 → gone panel with Go to Projects, 400 and
+- [x] `tools/keyboard/journey.spec.mjs` -- (a) R-213's loop flipped: 404 → gone panel with Go to Projects, 400 and
   422 → change panel, no `/sync` request for 6 s after each (502 still Retrying, the control); an Undo in *change* sends
   at once and a 200 rests green; (b) Run checks and Switch after a 422 say the change sentence (an aborted sync, R-274's
   — the control); (c) DW-308: the first `acquire` held (D8g's intent filter + DW-223's held route), one edit typed,
@@ -266,15 +266,15 @@ implementation subagent (the owner's go of 2026-10-20 covers the apply and one l
   `displaced(1)`, no `/sync` request, the IndexedDB record's journal as it was before the answer; control: the same
   with `held: true` says nothing; (d) `sites-failed` → the picker's sentence, no radio, no Use this site, Choose a site
   on a no-site project; the empty-sites control at `:9139` unchanged -- every behaviour with its control.
-- [ ] `tools/probe/run-verify-editor.cjs` -- **step 115** on production: (a) a throwaway project, deleted from a second
+- [x] `tools/probe/run-verify-editor.cjs` -- **step 115** on production: (a) a throwaway project, deleted from a second
   page; the editor's ⌘S → Can't sync, the *gone* sentence, the `x` glyph (`glyph58`), Go to Projects, and no `/sync`
   for 6 s; (b) DW-308 with two pages of one context — B's first acquire held until A holds and B has typed — then B
   says `displaced(1)` and sends nothing; step 61's comment says seven states -- R-82 on the real stack.
-- [ ] `tools/probe/run-verify-lock.cjs` -- a DW-307 stop beside DW-240's: the holder's beat reaches the server but its
+- [x] `tools/probe/run-verify-lock.cjs` -- a DW-307 stop beside DW-240's: the holder's beat reaches the server but its
   answer is held (`route.fetch`, then hold), the holder closes, the reader acquires within the grace plus one poll;
   its control is the same stop run against production before the Dev push lands, where the wait is ~60 s -- the bug
   shown, then gone.
-- [ ] Docs -- PRD FR-D10 (`:228`), FR-D18 (`:238`), the data model (`:697`) and Appendix H (`:1457`, seven names);
+- [x] Docs -- PRD FR-D10 (`:228`), FR-D18 (`:238`), the data model (`:697`) and Appendix H (`:1457`, seven names);
   EXPERIENCE `:158`, `:186`, `:319`, `:375-376` (a Can't sync row), `:554`, `:768`, F2 `:1049`; `addendum.md` `:44`,
   `:47`, `:71`; MEASUREMENTS §65 (a dated note: closed by the page id, `:4386`'s "Story 7.18" corrected) and §87 (the
   gate's orderings and the walk's stop, with output); R-228's entry (a closing note); `epics.md:1776` (a dated note on
@@ -299,6 +299,32 @@ implementation subagent (the owner's go of 2026-10-20 covers the apply and one l
 - Given the migration withheld, when the RLS gate runs, then the 7.18c block aborts at its first check.
 
 ## Spec Change Log
+
+**Dev (2026-10-20) — readings and departures, each a routine call told in one line (none changes what a surface does):**
+- **`pageId`'s test lives in `tab-session.test.ts`,** beside the module-per-load harness `lock-client.ts`' other per-load rule
+  already uses; `lock.test.ts` holds the route's statements.
+- **The harness has two failed-sites shapes:** `sites-failed` (as `full`, `sites: null`) and `sites-failed-unlinked` (no site,
+  `sites: null`) — journey (d)'s "Choose a site on a no-site project" needs the second.
+- **Can't sync stays drawn while the edit that may cure it is out,** as Signed out stays through its attempt (R-213), so the
+  panel never flickers shut once per keystroke; a 200 then rests green.
+- **The DW-308 branch is the spec's own condition** (`was.holder`, `heldGeneration` null, another session's row), so it also
+  reaches a holder whose row vanished and whose re-acquire met another session's row (the poll clears `heldGeneration`
+  first): that tab too is told what it typed, rather than keeping it unsent and unsaid.
+- **`leaving` no longer releases when it heard no beat:** a kept tab always sends `leave` with its page (a page that never
+  wrote the row matches nothing), and a tab whose id is not kept still releases.
+- **Go to Projects is a plain link** (`/` on `app.inflozo.com`, `/app` on localhost — the sync route's prefix rule), a full
+  navigation in this tab, as Sign in is a plain link.
+- **`actions.ts` changes by one optional chain** (`sites?.[0]`): `shipStateOf`'s `sites` is nullable in its type; the
+  server's re-read is otherwise as it was.
+- **Walk step 115b opens B before A** (the main session, at the audit): B must paint optimistically, which it cannot once A's
+  live row is in its own server render.
+- **The lock walk's DW-307 stop runs after DW-244's**, with both sessions put back in the editor first, so DW-244 runs in the
+  state it always ran in (the main session, after its first production run).
+- **Walk step 115 uses its own throwaway account `editor-harness-e-…`,** and the walk's start sweep now catches a killed
+  run's `e` account too.
+- **MEASUREMENTS §65 keeps its 2026-10-02 text** (an execution record naming the heard-beat helpers as they were then), with a
+  dated note that the page id closed it — so the standing-rule-7 grep still finds those two names there and nowhere live.
+  Retrying's own sentence ("…when the connection returns") is unchanged: a dropped connection does return.
 
 ## Design Notes
 
@@ -452,6 +478,78 @@ made, so T1 is not touched (R-238).
 
 **Manual checks:**
 - The owner walks "Owner's manual test" on `app.inflozo.com` after Deploy (R-80).
+
+**Executed — Dev (2026-10-20, Node 24.18.1, on the Schema head 28ce5f6e; an implementation subagent — no production call):**
+- `pnpm check` — exit 0 (lint, typecheck and every package's tests, each suite's own printed count: library 285, ghost-shim 47,
+  section-runtime 441, theme-compiler 220, app 941, tools 13; 0 failing). Mutation checks, each restored green: `refusalOf` with
+  400 dropped, the route's leave without `.eq('page_left', false)`, and `shipStateOf` folding a failed read to `[]` each turned
+  a test red.
+- `pnpm keyboard` — exit 0, 287 passed (19.9 min); the DW-308 journey re-run alone after its hydration wait was added, 1
+  passed. The four new or flipped journeys were first seen RED against HEAD's behaviour (the refusal branch, the DW-308
+  branch and the unread-sites flag each put back as HEAD has them): R-213's loop at "404 is Can't sync" (Received
+  "Retrying"); DW-308 at "said assertively" (Received ""); Run checks after a 422 at the change sentence (Received R-274's);
+  R-276 at "sites-failed: the ruled sentence" (not found). Their controls (a 502, an aborted save, `held: true`, the
+  empty-sites read) passed.
+- **The main session's Matrix Test Audit (four rows with no check in their state), closed:** "Gone (404)"'s error column and
+  "Still refused" by a visit and by an edit — journey `7.18c · R-275, the error column` (the record on this device unchanged
+  after the 404 and Undo still live; a visit back sends exactly one request at once, a 404 keeping *gone*, a 200 resting on
+  Synced; in *change* an edit goes up at once and a 404 switches the panel to *gone*'s sentence and Go to Projects);
+  "Fallback" — `7.18c · R-275 in fallback` (R-227's erase, then 404 and 422 each Can't sync with its sentence, nothing about
+  the device); "DW-308, N = 0" — the DW-308 journey's third arm (a reader, the assertive region and B5a's sentence
+  unchanged, no `/sync`, the record untouched). `--repeat-each 3`: 9 passed. Red first, each at its own line: HEAD's refusal
+  branch → "Can't sync" received "Retrying" (error column, and fallback's "404: Can't sync, in fallback too"); HEAD's visit
+  back → "the visit back sent one request at once" received 0; no send-at-once in *change* → "the edit itself went up, at
+  once" received 0; the `typed > 0` guard removed → "the assertive region unchanged" received "This session had 0 unsynced
+  edits; they were not included." Restored, then `pnpm check` exit 0 (app 941, 0 failing). The whole `pnpm keyboard` after
+  these is the main session's.
+- `bash supabase/tests/run-rls-gate.sh` — exit 0 twice (the second after a comment-only change to the 7.18c block in both
+  byte-identical copies), no SCHEMA DRIFT, the 7.18c block's ten PASS lines (MEASUREMENTS §87).
+- `python3 tools/doc-audit.py --check` — PASS on the second run (the first regenerated the index and the board).
+- The standing-rule-7 grep (`leaveBeat`, `leaveBacks`, "only six", "six states", "connection returns") — no live hit: the
+  two helper names survive only in MEASUREMENTS §65's 2026-10-02 execution text (dated note beside it), and "connection
+  returns" only in Retrying's own sentence, the frame, the rulings and the tests that assert it is absent from Can't sync.
+- **Left for the Review (R-82):** walk step 115 from a clean worktree at the deployed sha, the lock walk's DW-307 stop after the
+  Dev deploy, and CI on the Dev head.
+
+**Executed — Dev, the main session (2026-10-20, Node 24.18.1, on the final tree):**
+- `pnpm check` — exit 0: library 285, ghost-shim 47, section-runtime 441, theme-compiler 220, app 941, tools 13 — each suite's
+  own printed count, 0 failing.
+- `pnpm keyboard` (the whole suite, nothing else running) — exit 0, **289 passed** (16.6 min), 0 failed, 0 flaky.
+- `bash supabase/tests/run-rls-gate.sh` — exit 0, no SCHEMA DRIFT, the 7.18c block's ten PASS lines; the two copies
+  byte-identical (`cmp`).
+- The standing-rule-7 grep over tracked files (`git ls-files apps tools _bmad-output/planning-artifacts`; untracked build
+  output such as `.next-harness/` excluded) — `leaveBeat` / `leaveBacks` only in MEASUREMENTS §65's 2026-10-02 execution text
+  (with the dated note), no "only six" or "six states"; "connection returns" only in Retrying's own sentence and the files
+  that quote or assert it (the frame, the prototype, the rulings, epics.md's AC, the tests, a comment naming what DW-304 was).
+- **The I/O matrix, row by row → the check that ran in that state:** Gone, Refused change, Signed out and Dropped (the
+  controls) → R-213's journey (its loop: 502 Retrying; 404 gone + Go to Projects; 400, 422 change; no `/sync` for longer
+  than the backoff's first wait; an Undo in *change* sent at once, a 200 green) and `7.18c · R-275, the error column` (the
+  journal kept, a visit back's one request, Still refused by a visit and by an edit); Run checks after a refusal, merely
+  unsent, Switch after a refusal → `7.18c · R-275: after a save refused for good (a 422)…`; Fallback → `7.18c · R-275 in
+  fallback`; the four lock orderings and a leave over a stale row → the RLS gate's 7.18c block, with its heard-beat control;
+  Reload and Back-forward restore → the gate's (2c)/(2d) and `tab-session.test.ts`' page-id test; Old tab mid-deploy →
+  `lock.test.ts` (a page-less beat carries no `or`, a page-less leave is a 400); First-moment typist, N = 0 and Confirmed
+  holder → the DW-308 journey's three arms; Sites unread and Sites read, none → `read.test.ts` and the R-276 journey with
+  its empty-sites control. Every one of these ran in the two runs above.
+- **The lock walk against production BEFORE the Dev push** (`run-verify-lock.cjs` from a detached worktree at the deployed
+  `28ce5f6e`, the new stop as an uncommitted copy in `tools/probe-debug/`; the keys read inside the process via a scratchpad
+  launcher, never on argv; the owner's in-session go — "1. Go, both", then "1. Yes, up to two runs"): **three runs, no result
+  for the DW-307 stop, each void and said so** (MEASUREMENTS §87 (b)): run 1 — its control unmet (the held beat never
+  reached the server, `"beatLanded":"unsent"`, journeys were running on the same machine), 87 PASS / 5 FAIL; run 2 — its
+  control met (`"beatLanded":200,"fetchMs":605`, the leave 200) but void, the stop having been moved after DW-244 whose going
+  tab stays on Projects, so the other session was not in the editor to poll (108659 ms) — fixed: both sessions are put back
+  in the editor first; 88 PASS / 4 FAIL; run 3 — died at Hand over before the stop. DW-240 (a) and (b) and DW-244 PASSED in
+  run 2. The early stops' intermittent failures on HEAD's code are DW-382, the Review's to re-read. The bug itself is shown
+  by the RLS gate's control (§65's heard-beat leave after the in-flight beat: 0 rows).
+- **Walk step 115b reordered** (the main session's read of the subagent's step): with A opened first, B's own server render
+  saw A's live row and B read along from its first paint — never the optimistic first paint DW-308 is about — so B now opens
+  first, its lock calls held, A opens and holds, then B types and its held acquire meets A's row.
+
+**Real services the Dev phase hit (R-82):** **Vercel** + **Supabase production** — `app.inflozo.com` (deployment
+`dpl_gaHZftLS3r4r417RpN2f1yB8LuCQ`, READY at `28ce5f6e`, read with `VERCEL_TOKEN` / `VERCEL_TEAM_ID`), three lock-walk runs,
+each with its own throwaway account made and deleted through `SUPABASE_URL` + `SUPABASE_SECRET_KEY` ("no fixture leaked —
+16 before · 16 after", every run). **GitHub Actions** (`GITHUB_TOKEN`, read-only): the Schema push's CI — `rls`, `check`,
+`deploy` success; Render matrix success. No Ghost call: T1 untouched (R-238).
 
 **Executed — Schema phase (2026-10-20, pushed alone before any code, R-99):**
 - `bash supabase/tests/run-rls-gate.sh` — exit 0: no SCHEMA DRIFT (`SCHEMA.sql` carries both columns LAST in `edit_locks`,

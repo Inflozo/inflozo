@@ -5042,6 +5042,12 @@ Story 5.24e's Dev, Question 2, ruled **option 1** (owner, 2026-10-02): *"1. Acce
 - Targets: ✅ this entry · ✅ Story 5.24e's spec — Question 2 and its owner's test, step 13 · ✅ DW-307 in
   `deferred-work.md` · ✅ `epics.md` — Story 7.18's card · ✅ MEASUREMENTS §65 and the `ponytail:` beside `leaving` in
   `editor.tsx` name DW-307 · ✅ `addendum.md`'s Leave grace row.
+- **Closed (Story 7.18c's Dev, 2026-10-20).** DW-307 is built: `edit_locks` gained `page_id` and `page_left` (the `Schema`
+  push, applied to production on the owner's go), every lock call names its page, and a leave matches its own page in
+  either order of landing — so a close with its check-in in flight frees the lock within the grace and one poll, as a
+  close does at any other moment, and a reload still keeps it. The RLS gate runs every ordering (MEASUREMENTS §87); the
+  lock walk's DW-307 stop is its deployed proof. The ceiling this ruling accepted is gone; the `ponytail:` beside
+  `leaving` now says what holds, and the addendum's Leave grace row carries the dated note.
 
 **R-229 — a link inside a post's body takes the pack's link look too.** Story 6.1's Create, Question 1, ruled
 **option 1** (owner, 2026-10-03): *"The same look everywhere"*.
@@ -5873,8 +5879,9 @@ retrying stops; one sentence per cause."*
 - **Declined.** Option 2, one sentence for every cause with no link; option 3, Retrying kept with its countdown and only
   "when the connection returns" dropped.
 - Targets: ✅ this entry · ✅ Story 7.18c's spec (Question 1, Ruled values) · ✅ `epics.md` Story 7.18c's card (dated) ·
-  ✅ DW-304's note · ✅ `epic-7-context.md` · ⬜ `prd.md` FR-D10 and Appendix H's seven names (at 7.18c's Dev) ·
-  ⬜ `EXPERIENCE.md`'s persistence rows (at 7.18c's Dev) · ⬜ `apps/web/lib/journal.ts` `REFUSED_COPY` (at 7.18c's Dev).
+  ✅ DW-304's note · ✅ `epic-7-context.md` · ✅ `prd.md` FR-D10 and Appendix H's seven names (7.18c's Dev, 2026-10-20) ·
+  ✅ `EXPERIENCE.md`'s persistence rows and a Can't sync row (7.18c's Dev) · ✅ `apps/web/lib/journal.ts` `REFUSED_COPY`, the
+  panel, Run checks and Switch (7.18c's Dev).
 
 **R-276 — a failed read of the connected sites is said in the site picker, never drawn as an empty list.** Story 7.18c's
 Create, Question 2, ruled **option 1** (owner, 2026-10-20): *"A sentence in place of the list: "Your connected sites
@@ -5890,8 +5897,8 @@ site still shows, so the sentence is reachable there too."*
 - **Declined.** Option 2, a Try again button re-reading the sites without a reload; option 3, Switch and Choose a site hidden
   with nothing said.
 - Targets: ✅ this entry · ✅ Story 7.18c's spec (Question 2, Ruled values) · ✅ `epics.md` Story 7.18c's card (dated) ·
-  ✅ DW-381's note · ✅ `epic-7-context.md` · ⬜ `EXPERIENCE.md`'s Deploy Destination row (at 7.18c's Dev) ·
-  ⬜ `apps/web/lib/site-switch.ts` `SWITCH_WORDS.unread` (at 7.18c's Dev).
+  ✅ DW-381's note · ✅ `epic-7-context.md` · ✅ `EXPERIENCE.md`'s Deploy Destination row (7.18c's Dev, 2026-10-20) ·
+  ✅ `apps/web/lib/site-switch.ts` `SWITCH_WORDS.unread` and the picker (7.18c's Dev).
 
 ## B · Approved decisions superseded by this session
 

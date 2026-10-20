@@ -213,7 +213,7 @@ export async function switchSite(projectId: string, siteId: string, session: str
         projectId, slug: '', language: project.data.language, rtlAckAt: null, overridden: false, siteId: null, site: null, deploys: [], binding: null, liveHere: false, required: [],
         sites: [site.data], linking: holder.data ? [{ ...holder.data, linked_site_id: siteId }] : [],
       }).sites
-      return { project: { language: project.data.language, linkedSiteId: project.data.linked_site_id, overridden: (overrides.count ?? 0) > 0 }, site: sites[0] ?? null }
+      return { project: { language: project.data.language, linkedSiteId: project.data.linked_site_id, overridden: (overrides.count ?? 0) > 0 }, site: sites?.[0] ?? null }
     },
     async unlink() {
       const { error } = await supabase.from('projects').update({ linked_site_id: null, updated_at: stamp() }).eq('linked_site_id', siteId).neq('id', projectId)

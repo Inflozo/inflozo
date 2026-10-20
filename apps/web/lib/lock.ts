@@ -63,19 +63,11 @@ export const leaveStamp = (now: number): string => new Date(now - STALE_MS + LEA
 export const countPatch = (unsynced: unknown): { unsynced_edits?: number } =>
   Number.isSafeInteger(unsynced) && (unsynced as number) >= 0 ? { unsynced_edits: unsynced as number } : {}
 
-/** A `leave`'s beat: the `heartbeat_at` this tab last heard, opaque and compared only — PostgREST's own shape of a
- *  `timestamptz` (date, `T`, time, optional fraction, then `Z` or an offset), 64 characters or fewer, that `Date.parse`
- *  reads; anything else is refused with a 400, never handed to Postgres to fail as a 502. The route filters on it, so a
- *  late leave carrying an OLD beat matches nothing once the reloaded page has beaten (executed in a `postgres:17`
- *  container at the Create: 0 rows, where HEAD's DELETE changed 1). */
-const TIMESTAMPTZ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}(:?\d{2})?)$/
-export const leaveBeat = (beat: unknown): beat is string =>
-  typeof beat === 'string' && beat.length <= 64 && TIMESTAMPTZ.test(beat) && Number.isFinite(Date.parse(beat))
-
-/** A leave only ever moves a beat BACK: it writes `leaveStamp(now)` only where the beat it carries is later than that.
- *  A beat already at or before it is a row that is stale, or nearly, and writing the stamp would REVIVE it — moving
- *  `heartbeat_at` forward for a tab that is going (Story 5.24e's review). */
-export const leaveBacks = (heard: string, now: number): boolean => Date.parse(heard) > Date.parse(leaveStamp(now))
+/* DW-307 (Story 7.18c): A LEAVE MATCHES ITS OWN PAGE, no longer the beat it last heard. The heard beat, its shape check
+ * and its forward-move test are gone: the leave filters on `page_id` (the id every call carries, `lock-client.ts`'
+ * `pageId()`) and marks it `page_left`, and the forward-move guard is `heartbeat_at > leaveStamp(now)` inside the statement
+ * (`lock/route.ts`; the RLS gate's 7.18c block runs every ordering). A heard-beat filter missed whenever a beat was still
+ * in flight as the page went, and the other window then waited ~60 s. */
 
 /** DW-244: WHEN A SESSION THAT DOES NOT HOLD THE LOCK SHOULD ASK AGAIN, beyond the heartbeat. A live row that goes stale
  *  before the next beat would otherwise be found up to a whole heartbeat late — after a `leave`, a grace plus 15 s — so
@@ -109,10 +101,6 @@ export type LockRow = {
   nudgeRequestedBy: string | null
   /** how long ago it asked, or null */
   nudgeAgeMs: number | null
-  /** DW-240 (Story 5.24e): the raw `heartbeat_at` — OPAQUE, compared and never read as a time, so no surface trusts two
-   *  clocks. A going page sends it back with `leave`, and the route filters on it, so only the beat this tab last heard
-   *  can backdate the row. Null when the row carried none. */
-  beat: string | null
   /** WHICH REQUEST is waiting — its session AND the moment it was made — or null when none is. The same tab asking
    *  twice is TWO requests, and Keep editing answers ONE: keyed by the session alone, a holder that pressed Keep
    *  editing once never saw that tab ask again, and the requester was then offered a take-over for a request the
@@ -138,7 +126,6 @@ export const rowFrom = (
   generation: Number(row.lock_generation),
   unsyncedEdits: Number(row.unsynced_edits ?? 0),
   ageMs: since(row.heartbeat_at, now) ?? 0,
-  beat: typeof row.heartbeat_at === 'string' ? row.heartbeat_at : null,
   nudgeRequestedBy: typeof row.nudge_requested_by === 'string' ? row.nudge_requested_by : null,
   nudgeAgeMs: since(row.nudge_requested_at, now),
   // every `nudge` stamps `nudge_requested_at` afresh (`lock/route.ts`), so the pair names one request exactly

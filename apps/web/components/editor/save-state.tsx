@@ -3,12 +3,13 @@
 import { memo } from 'react'
 import { PersistenceIndicator, type PersistenceState } from '@/components/kit/persistence-indicator'
 import { ring } from '@/components/kit/greyed'
-import { labelOf, panelOpen, SIGNED_OUT_COPY, type SyncState } from '@/lib/journal'
+import { labelOf, panelOpen, REFUSED_COPY, SIGNED_OUT_COPY, type SyncState } from '@/lib/journal'
 
-/* B6 · PERSISTENCE, FIVE STATES DRAWN (`B Missing Surfaces.dc.html:1351-1388`) AND R-213'S SIXTH, in the editor's top bar.
+/* B6 · PERSISTENCE, FIVE STATES DRAWN (`B Missing Surfaces.dc.html:1351-1388`), R-213'S SIXTH AND R-275'S SEVENTH, in the
+ * editor's top bar.
  *
  * THE INDICATOR ITSELF IS STORY 1.3'S KIT COMPONENT and is not rebuilt here — mounted, handed a state and a
- * countdown. Its union — B6's five and R-213's Signed out — is the compile error for a seventh label, which is why
+ * countdown. Its union — B6's five, R-213's Signed out and R-275's Can't sync — is the compile error for an eighth label, which is why
  * `labelOf` below is typed against it: the machine in `lib/journal.ts` and the Kit's union are checked against each
  * other at build time rather than kept in step by hand.
  *
@@ -20,8 +21,8 @@ import { labelOf, panelOpen, SIGNED_OUT_COPY, type SyncState } from '@/lib/journ
  * written here that are not. The Kit component carries all of that; this file places it and owns the panel.
  *
  * THE PANEL OPENS ON RETRYING — the frame's own note and an acceptance criterion — AND, SINCE R-213, ON SIGNED OUT, AND
- * ON NOTHING ELSE, expressed as `panelOpen(state)` so there is one predicate rather than a condition written at each of
- * two places. B6 draws it as
+ * SINCE R-275 ON CAN'T SYNC, AND ON NOTHING ELSE, expressed as `panelOpen(state)` so there is one predicate rather than a
+ * condition written at each of three places. B6 draws it as
  * a card in a catalogue; in the bar it is ANCHORED UNDER THE INDICATOR (R-74's extrapolation rule), with its fill,
  * radius, padding, ink, type and control all the frame's verbatim.
  *
@@ -33,6 +34,12 @@ import { labelOf, panelOpen, SIGNED_OUT_COPY, type SyncState } from '@/lib/journ
  * one control is a **Sign in** link in Retry now's style, opening the sign-in page in a NEW TAB so this tab — and the
  * work only it may hold — stays put. No Retry now: pressing it could only meet the same 401. The backoff keeps trying
  * underneath, and a visit back to this tab tries at once (`editor.tsx`), so a sign-in elsewhere lands the work.
+ *
+ * R-275'S SEVENTH, CAN'T SYNC (Story 7.18c, DW-304), is the same panel again, extrapolated as Signed out was: the title is
+ * the state's own word and the sentence `REFUSED_COPY`'s, one per cause. *gone* (a 404: the project deleted, or another
+ * account's) carries one link in Retry now's style, **Go to Projects**, in THIS tab — there is nothing here left to keep.
+ * *change* (a 400 or 422) carries none: Undo sits beside the indicator (R-143), and an edit in that state is sent at once.
+ * No Retry now on either — retrying could only meet the same refusal — and no countdown, because nothing is scheduled.
  *
  * ONE CONTROL, NOT TWO. B6 draws "Retry now" beside "Download a copy"; **R-140 (owner, 2026-09-19)** leaves the second
  * out — nothing in Inflozo reads such a file back in — so it is ABSENT, never greyed and never captioned (UX-DR3,
@@ -57,12 +64,15 @@ export const SaveState = memo(function SaveState({
   retrying,
   held,
   signIn,
+  projects,
 }: {
   state: SyncState
   /** B6's "Retry now": the backoff resets and the flush fires at once */
   onRetry: () => void
   /** R-213 — the app's sign-in page, as this tab must address it (the sync route's own `/app` prefix rule) */
   signIn: string
+  /** R-275 — the app's Projects page, by the same rule: *gone*'s one link */
+  projects: string
   /** that press is in flight — R-98's swapped label, `aria-disabled` and `aria-busy` */
   retrying: boolean
   /** the device is holding the work. False in FR-D10's fallback, where the frame's sentence would be a lie */
@@ -76,27 +86,40 @@ export const SaveState = memo(function SaveState({
       <PersistenceIndicator state={label} seconds={state.kind === 'retrying' ? state.seconds : undefined} />
       {open ? (
         <div
-          // two ids, one shape: the deployed walk's step 61 reads `editor-retrying` as Retrying's panel and nothing else
-          id={state.kind === 'retrying' ? 'editor-retrying' : 'editor-signed-out'}
+          // three ids, one shape: the deployed walk's step 61 reads `editor-retrying` as Retrying's panel and nothing else
+          id={state.kind === 'retrying' ? 'editor-retrying' : state.kind === 'signed-out' ? 'editor-signed-out' : 'editor-refused'}
           // B6 :1379 — `danger-tint`, 10px radius, 11/12 padding, 7px between its rows. Anchored under the indicator,
           // which is the only thing this extrapolation adds to the frame.
           className="absolute left-0 top-[calc(100%+8px)] z-20 flex w-[280px] flex-col gap-[7px] rounded-thumb bg-danger-tint p-[11px_12px] shadow-md"
         >
           <span className="text-[12px] font-semibold text-danger-panel-ink">
-            {state.kind === 'retrying' ? attemptTitle(state.attempt) : SIGNED_OUT_COPY.title}
+            {state.kind === 'retrying' ? attemptTitle(state.attempt) : state.kind === 'signed-out' ? SIGNED_OUT_COPY.title : REFUSED_COPY.title}
           </span>
           {/* THE FRAME'S OWN SENTENCE, verbatim (:1381) — except in fallback, where this device holds nothing and the
               indicator "never says your work is safe when it is not" (the review). Signed out says R-213's, or in
-              fallback R-227's, from `lib/journal.ts` (R-170) */}
+              fallback R-227's, and Can't sync R-275's by its cause — neither names the device — from `lib/journal.ts` (R-170) */}
           <span className="text-[11.5px] leading-[1.5] text-danger-panel-ink">
-            {state.kind === 'signed-out'
+            {state.kind === 'refused'
+              ? REFUSED_COPY[state.why]
+              : state.kind === 'signed-out'
               ? held ? SIGNED_OUT_COPY.held : SIGNED_OUT_COPY.fallback
               : held
                 ? 'Your work is safe on this device. Nothing is lost if you close the tab — we will send it when the connection returns.'
                 : 'Your latest changes have not reached the cloud yet. Keep this tab open — we will send them when the connection returns.'}
           </span>
+          {state.kind === 'refused' && state.why === 'change' ? null : (
           <div className="flex gap-[7px] pt-[2px]">
-            {state.kind === 'signed-out' ? (
+            {state.kind === 'refused' ? (
+              // R-275's one control, for *gone* alone: a LINK in Retry now's style, in this tab — the project is not this
+              // session's to write any more, so there is nothing here to keep
+              <a
+                id="editor-go-projects"
+                href={projects}
+                className={`inline-flex h-7 items-center rounded-sm border border-danger-panel-line bg-surface px-[11px] text-[11.5px] font-semibold text-danger-panel-ink ${ring}`}
+              >
+                {REFUSED_COPY.projects}
+              </a>
+            ) : state.kind === 'signed-out' ? (
               // R-213's one control, in Retry now's style: a LINK, because it goes somewhere, and to a new tab, so this
               // one keeps the work it may alone be holding. `noopener`: the sign-in page has no business with this window
               <a
@@ -128,6 +151,7 @@ export const SaveState = memo(function SaveState({
               </button>
             )}
           </div>
+          )}
         </div>
       ) : null}
     </span>

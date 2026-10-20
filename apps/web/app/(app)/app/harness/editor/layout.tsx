@@ -136,6 +136,9 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * all` makes the project Arabic, acknowledged, on Ghost 5.40, and `x-inflozo-harness-picks: <n>` plants a second post grid
  * hand-picked n deep — so a canned Pre-flight meets every warning row.
  *
+ * STORY 7.18c — two more: `sites-failed`, `full` with its sites unread (`sites: null`, DW-381 — the picker's R-276 sentence),
+ * and `sites-failed-unlinked`, the same on a project with no site (Choose a site still offered, so the sentence is reachable).
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -176,7 +179,6 @@ const READER_LOCK: EditorData['lock'] = {
   nudgeRequestedBy: null,
   nudgeAgeMs: null,
   request: null,
-  beat: null,
 }
 
 export default async function EditorHarness({ children }: { children: ReactNode }) {
@@ -394,6 +396,9 @@ function shipOf(shape: string | null, required: readonly string[]): ShipState {
   ]
   const base = { themeName: themeNameOf('pilot-sections'), required: [...required], language: 'en', rtlAckAt: null, overridden: false, sites }
   if (shape === 'shipped' || shape === 'live') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'full' }, n: 3, prev: 2, shipped: true, liveHere: shape === 'live' }
+  // Story 7.18c — DW-381: the sites read failed (`sites: null`), linked as `full` or with no site
+  if (shape === 'sites-failed') return { ...base, linkedSiteId: site.id, sites: null, site: { ...site, capability: 'full' }, n: 1, prev: null, shipped: false, liveHere: false }
+  if (shape === 'sites-failed-unlinked') return { ...base, linkedSiteId: null, sites: null, site: null, n: 1, prev: null, shipped: false, liveHere: false }
   if (shape === 'full' || shape === 'preview') return { ...base, linkedSiteId: site.id, site: { ...site, capability: shape === 'full' ? 'full' : 'preview_only' }, n: 1, prev: null, shipped: false, liveHere: false }
   // Story 7.18b — R-270: Preview-only because a refused upload marked it (`deploy_error`), so Run checks stays
   if (shape === 'refused') return { ...base, linkedSiteId: site.id, site: { ...site, capability: 'preview_only', source: 'deploy_error' }, n: 1, prev: null, shipped: false, liveHere: false }

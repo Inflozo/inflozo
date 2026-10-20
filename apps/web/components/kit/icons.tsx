@@ -53,6 +53,10 @@
  * readers and as its tooltip"), and no frame draws a gear. Another stated exception, same shape: `tabler.json`'s own `settings`,
  * emitted from it, and `editor.test.ts` holds it path for path.
  *
+ * AND ONE ON 2026-10-20 (ruling R-275, Story 7.18c): `x`, the persistence indicator's seventh glyph, Can't sync — R-142's
+ * own exception reaching the state R-275 added, as R-213's `logout` reached Signed out. Same shape: `tabler.json`'s own
+ * `x`, emitted from it, and `journal.test.ts` holds it path for path.
+ *
  * Tabler Icons — MIT Licence, Copyright (c) 2020-2024 Paweł Kuna. The full text ships with every
  * theme that draws one of these (`TABLER_LICENSE` in `@inflozo/library/icons`, R-26).
  *
@@ -168,7 +172,7 @@ export const PlaceholderInsert = (p: IconProps) => (
     <path d="M15 18h6" />
   </Icon>
 )
-/* ── R-142's five, the persistence indicator's states (Story 5.8) ────────────────────────────────────────
+/* ── R-142's five, the persistence indicator's states (Story 5.8), with R-213's sixth and R-275's seventh ──────────
    Each is Tabler's own `outline`, emitted from `packages/library/icons/tabler.json`. They default to a 2.5
    stroke rather than the file's 1.5: these are drawn at 10px inside a 16px circle, where 1.5 on a 24-unit
    viewBox resolves to two thirds of a device pixel and disappears. NONE OF THEM ANIMATES — B6's "never a
@@ -210,6 +214,15 @@ export const SyncSignedOut = ({ strokeWidth = 2.5, ...p }: IconProps) => (
     <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
     <path d="M9 12h12l-3 -3" />
     <path d="M18 15l3 -3" />
+  </Icon>
+)
+/** Tabler `x` — Can't sync (R-275, Story 7.18c) — the route refused for good, so nothing will go up by waiting. Red as
+ *  Retrying and Signed out are, because a save is refused in all three — and a SHAPE of its own, so red is never the only
+ *  thing telling them apart (R-142) */
+export const SyncRefused = ({ strokeWidth = 2.5, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M18 6l-12 12" />
+    <path d="M6 6l12 12" />
   </Icon>
 )
 /** Tabler `upload` — Syncing every change to the cloud — this browser holds nothing, so everything goes straight up */

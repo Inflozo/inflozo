@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { isUuid } from '@/lib/editor'
-import { countPatch, leaveBacks, leaveBeat, leaveStamp, nextGeneration, rowFrom, STALE_MS, type LockAnswer, type LockRow } from '@/lib/lock'
+import { countPatch, leaveStamp, nextGeneration, rowFrom, STALE_MS, type LockAnswer, type LockRow } from '@/lib/lock'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -33,6 +33,23 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * carrying AD-16's edit count) · `nudge` · `keep` · `release` (Hand over's DELETE) · `leave` (a going page's backdated
  * beat, Story 5.24e) · `takeover` (the CAS). A non-holder's `beat` changes no rows and falls through to the re-read,
  * which is how a reader polls without an intent of its own.
+ *
+ * EVERY WRITE NAMES ITS PAGE (DW-307, Story 7.18c). The browser mints a page id per page load (`pageId()`, again on a
+ * back-forward restore) and every call carries it; `page_id` is the page that last wrote the row and `page_left` whether
+ * that page has gone. A beat, the insert, the stale CAS and the take-over write `page_id` (and clear `page_left`); a beat
+ * is refused by a row its OWN page has left, so the beat that was still in flight as the page went changes nothing; and a
+ * leave matches its own page, not the beat it last heard — so it lands in either order, where a heard-beat leave missed
+ * whenever a beat was in flight and the other window waited ~60 s (R-228's ceiling, closed). In SQL, executed in every
+ * ordering by the RLS gate's 7.18c block:
+ *
+ *   beat/acquire(X):  set heartbeat_at = now, page_id = X, page_left = false
+ *                     where holder = S and (page_left = false or page_id <> X)
+ *   leave(P):         set heartbeat_at = leaveStamp(now), page_left = true
+ *                     where holder = S and page_id = P and page_left = false and heartbeat_at > leaveStamp(now)
+ *
+ * A reload's new page keeps the row (`page_id <> X`), and a late leave from the page it replaced matches nothing. A call
+ * with no page (a tab open across the deploy) beats as before, and its leave is a 400: that row goes stale in ~60 s, once.
+ * The page id is opaque and compared only — a UUID, checked here before it reaches a filter string.
  *
  * DELIBERATELY NO TIMING RULE ON `takeover` — no "a nudge was on the row", no "~30 s passed". Every session that can
  * reach this row is the SAME account's (`projects.user_id` is one person and team seats are out of v1), so the ~30 s
@@ -73,8 +90,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
 
-  // `beat` is the intent below; the body's field is the beat this tab last HEARD, which `leave` filters on
-  const { intent, session, generation, unsynced, beat: heard } = body as Record<string, unknown>
+  const { intent, session, generation, unsynced, page: sent } = body as Record<string, unknown>
   if (typeof intent !== 'string' || !(INTENTS as readonly string[]).includes(intent)) return no(400, 'Not an intent')
   // the session id is the browser's own `crypto.randomUUID()`, and it is only ever COMPARED — never parsed and never
   // interpolated. Bounded anyway: it is stored in a `text` column.
@@ -86,7 +102,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const count = countPatch(unsynced)
   const held = Number.isSafeInteger(generation) && (generation as number) > 0 ? (generation as number) : null
   if (intent === 'takeover' && held === null) return no(400, 'Bad generation')
-  if (intent === 'leave' && !leaveBeat(heard)) return no(400, 'Bad beat')
+  // DW-307 (Story 7.18c): the page this call comes from — the browser's own `crypto.randomUUID()`, opaque and compared only,
+  // and a UUID before it is interpolated into the beat's `or` filter. Optional (a tab open across the deploy sends none), but
+  // a leave without one has nothing to match, so it is refused
+  if (sent !== undefined && (typeof sent !== 'string' || !isUuid(sent))) return no(400, 'Bad page')
+  const page = typeof sent === 'string' ? sent : null
+  if (intent === 'leave' && page === null) return no(400, 'Bad page')
+  /** what every write that holds the row names: its page, not yet gone. `page_left` is outside the INSERT grant, so the
+   *  insert names `page_id` alone and the column's default is the `false` */
+  const mark = page === null ? {} : { page_id: page, page_left: false }
 
   const supabase = await supabaseServer()
   const table = () => supabase.from('edit_locks')
@@ -113,13 +137,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     json(200, { row, held: row !== null && row.holderSessionId === session, won } satisfies LockAnswer)
 
   /** The heartbeat, filtered on `project_id` AND my own `holder_session_id` — so a session that no longer holds the
-   *  lock changes zero rows, which IS the displacement signal. */
+   *  lock changes zero rows, which IS the displacement signal. DW-307: and never onto a row THIS page has left — the beat
+   *  still in flight as the page went — while another page of the session (a reload, a restore) keeps it. */
   const beat = async () => {
-    const { data, error } = await table()
-      .update({ heartbeat_at: stamp(), ...count })
+    const mine = table()
+      .update({ heartbeat_at: stamp(), ...count, ...mark })
       .eq('project_id', projectId)
       .eq('holder_session_id', session)
-      .select(COLUMNS)
+    const { data, error } = await (page === null ? mine : mine.or(`page_left.is.false,page_id.neq.${page}`)).select(COLUMNS)
     return { rows: data as Rows, code: error?.code }
   }
 
@@ -131,20 +156,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return answer(await read(), true)
   }
 
-  if (intent === 'leave' && leaveBeat(heard)) {
+  if (intent === 'leave' && page !== null) {
     // DW-240 · DW-244 (Story 5.24e): A GOING PAGE BACKDATES ITS OWN BEAT rather than deleting the row, so the row is still
     // its own for `LEAVE_GRACE_MS` — a reload's first beat lands inside that and keeps it — and stale after it, for the
-    // next opener. FILTERED ON THE BEAT THIS TAB LAST HEARD as well as on its session: a late leave carrying an old beat
-    // (the reloaded page has beaten since) matches nothing and changes nothing. `heartbeat_at` is in `authenticated`'s
-    // UPDATE grant and the guards fire only on a rewound generation or a changed holder, so no migration (the Create).
-    // A beat already at or before the stamp is a row stale, or nearly: writing would REVIVE it (`leaveBacks`), so not.
+    // next opener. DW-307 (Story 7.18c): FILTERED ON ITS OWN PAGE, never on a remembered beat, and it marks that page
+    // gone — so it matches whether its last beat landed before it or lands after (that beat then matches nothing), and a
+    // late leave from a page a reload has replaced (`page_id` moved on) changes nothing. `heartbeat_at > stamp` is the
+    // forward-move guard inside the statement: a row already stale, or nearly, would be REVIVED by the stamp, so it is not.
     const now = Date.now()
-    if (!leaveBacks(heard, now)) return answer(await read(), false)
     const { data, error } = await table()
-      .update({ heartbeat_at: leaveStamp(now) })
+      .update({ heartbeat_at: leaveStamp(now), page_left: true })
       .eq('project_id', projectId)
       .eq('holder_session_id', session)
-      .eq('heartbeat_at', heard)
+      .eq('page_id', page)
+      .eq('page_left', false)
+      .gt('heartbeat_at', leaveStamp(now))
       .select(COLUMNS)
     if (error) return failed('leave', error.code)
     const left = first(data as Rows)
@@ -180,6 +206,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         heartbeat_at: stamp(),
         nudge_requested_by: null,
         nudge_requested_at: null,
+        ...mark,
       })
       .eq('project_id', projectId)
       .eq('lock_generation', held)
@@ -207,7 +234,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const there = await read()
   if (there === null) {
     const { data, error } = await table()
-      .insert({ project_id: projectId, user_id: user.id, holder_session_id: session, heartbeat_at: stamp(), unsynced_edits: count.unsynced_edits ?? 0 })
+      .insert({ project_id: projectId, user_id: user.id, holder_session_id: session, heartbeat_at: stamp(), unsynced_edits: count.unsynced_edits ?? 0, ...(page === null ? {} : { page_id: page }) })
       .select(COLUMNS)
     if (!error) return answer(first(data as Rows) ?? (await read()), true)
     // 23505: another session inserted between the read and the insert. Fall through to the CAS path below.
@@ -240,6 +267,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       unsynced_edits: count.unsynced_edits ?? 0,
       nudge_requested_by: null,
       nudge_requested_at: null,
+      ...mark,
     })
     .eq('project_id', projectId)
     .eq('lock_generation', row.generation)

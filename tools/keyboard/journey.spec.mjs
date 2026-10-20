@@ -6162,7 +6162,7 @@ const saveState = (page) => page.locator('#editor-save-state [role="status"]')
 const SUBJECT_WORDS = await import(new URL('../../apps/web/lib/preview-subject.ts', import.meta.url).href)
 const EDITOR_WORDS = await import(new URL('../../apps/web/lib/editor.ts', import.meta.url).href)
 
-test('R-213 (Story 5.24e): a save refused for sign-in says Signed out with a Sign in link and no Retry now, keeps trying on its backoff, and lands at once on a visit back — a dropped connection, a 422, a 502, a 404 and a 400 stay Retrying', async ({ page, context }) => {
+test('R-213 (Story 5.24e): a save refused for sign-in says Signed out with a Sign in link and no Retry now, keeps trying on its backoff, and lands at once on a visit back — a dropped connection and a 502 stay Retrying; R-275 (Story 7.18c): a 404 is Can\'t sync gone with Go to Projects, a 400 and a 422 Can\'t sync change, the backoff stopped, and an Undo in change is sent at once', async ({ page, context }) => {
   await open(page)
   const { page: own } = await rows(page)
   // the sync route, answered here: dropped, a status, or the write landing — every request written down with its moment
@@ -6213,17 +6213,148 @@ test('R-213 (Story 5.24e): a save refused for sign-in says Signed out with a Sig
   expect(Date.now() - back, 'well inside the backoff: the visit back sent it, not the clock').toBeLessThan(1500)
   expect(sent.filter((r) => r.at >= back).length, 'exactly one request after the visit back').toBe(1)
   await expect(page.locator('#editor-signed-out')).toHaveCount(0)
-  // a refusal a sign-in cannot cure stays Retrying (DW-304, Story 7.18c) — the server failing, and the route refusing
+  // R-275 (Story 7.18c, DW-304): a refusal NO retry can cure — the route's 404 (deleted, or another account's), 400 or 422 —
+  // is Can't sync, its sentence by cause, and the backoff STOPS. A 502 is the control: the server failing, which will pass,
+  // stays Retrying. Each refusal is followed by a silence longer than the backoff's first wait (no `/sync` at all)
   await select(page, own[0])
   await page.keyboard.press('ControlOrMeta+d')
-  for (const status of [422, 502, 404, 400]) {
+  const refused = page.locator('#editor-refused')
+  for (const [status, why] of [[502, null], [404, 'gone'], [400, 'change'], [422, 'change']]) {
     answer = status
     const answered = page.waitForResponse((r) => new URL(r.url()).pathname.endsWith('/sync') && r.status() === status)
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press('ControlOrMeta+s')
     await answered
-    await expect(saveState(page), `${status} is Retrying`).toHaveText('Retrying')
     await expect(page.locator('#editor-signed-out'), `${status} is never Signed out`).toHaveCount(0)
+    if (why === null) {
+      await expect(saveState(page), `${status} is Retrying — the control`).toHaveText('Retrying')
+      await expect(refused, `${status} is no refusal for good`).toHaveCount(0)
+      continue
+    }
+    await expect(saveState(page), `${status} is Can't sync`).toHaveText(JOURNAL.REFUSED_COPY.title)
+    await expect(refused).toContainText(JOURNAL.REFUSED_COPY.title)
+    await expect(refused, `${status}: its cause's sentence`).toContainText(JOURNAL.REFUSED_COPY[why])
+    await expect(refused, 'nothing promises a connection that will return').not.toContainText('when the connection returns')
+    await expect(page.locator('#editor-retrying')).toHaveCount(0)
+    await expect(page.locator('#editor-retry-now'), 'no Retry now: it could only meet the same refusal').toHaveCount(0)
+    const projects = page.locator('#editor-go-projects')
+    await expect(projects, `${status}: Go to Projects for gone alone`).toHaveCount(why === 'gone' ? 1 : 0)
+    if (why === 'gone') {
+      await expect(projects).toHaveText(JOURNAL.REFUSED_COPY.projects)
+      expect(await projects.getAttribute('href'), 'the Projects page, by the sync route\'s own prefix rule').toMatch(/^\/(app)?$/)
+      expect(await projects.getAttribute('target'), 'in this tab').toBeNull()
+    }
+    const quiet = sent.length
+    await page.waitForTimeout((JOURNAL.BACKOFF_S[0] + 1) * 1000)
+    expect(sent.length, `${status}: the backoff stopped — no request for longer than its first wait`).toBe(quiet)
+    await expect(saveState(page)).toHaveText(JOURNAL.REFUSED_COPY.title)
+  }
+  // …and in *change* the next edit is the cure: an Undo is sent AT ONCE (no ⌘S, whatever autosave says), and its 200 rests green
+  answer = 'landed'
+  const undone = Date.now()
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(saveState(page), 'the Undo went up and landed').toHaveText('Synced', { timeout: 1500 })
+  expect(sent.filter((r) => r.at >= undone).length, 'the Undo itself sent it: one request').toBe(1)
+  await expect(refused).toHaveCount(0)
+})
+
+test('7.18c · R-275, the error column: after a 404 the journal is KEPT on this device and a visit back sends ONE request at once — a 404 again stays gone (Still refused, by a visit), a 200 rests green; in change an edit goes up at once, and a 404 answering it switches the panel to gone\'s sentence and Go to Projects (Still refused, by an edit)', async ({ page }) => {
+  await open(page)
+  const { page: own } = await rows(page)
+  let answer = 404
+  const sent = []
+  await page.route('**/sync', (route) => {
+    sent.push({ at: Date.now(), answer })
+    return answer === 'landed'
+      ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ applied: true, revision: sent.length }) })
+      : route.fulfill({ status: answer, body: 'refused' })
+  })
+  const refused = page.locator('#editor-refused')
+  const projects = page.locator('#editor-go-projects')
+  const after = (at) => sent.filter((r) => r.at >= at).length
+  /** the route's next answer, and the press that asks for it: ⌘S on the canvas */
+  const save = async (status) => {
+    answer = status
+    const answered = page.waitForResponse((r) => new URL(r.url()).pathname.endsWith('/sync') && r.status() === status)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+s')
+    await answered
+  }
+  // one edit, on this device
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(page)).toHaveText('Saved on this device')
+  await expect.poll(async () => JSON.parse(await record(page)).entries.length, 'the edit is written to this device').toBe(1)
+  const kept = await record(page)
+  // GONE (404): Can't sync, and the journal KEPT — the record on this device still holds the edit, and Undo still reaches it
+  await save(404)
+  await expect(saveState(page)).toHaveText(JOURNAL.REFUSED_COPY.title)
+  await expect(refused).toContainText(JOURNAL.REFUSED_COPY.gone)
+  expect(await record(page), 'gone: the record on this device is as it was — the edit kept').toBe(kept)
+  expect(JSON.parse(kept).entries.length, 'and it holds the edit').toBe(1)
+  expect(await page.locator('#editor-undo').getAttribute('aria-disabled'), 'gone: Undo still reaches the edit').not.toBe('true')
+  // a visit back to the tab (R-213's way): ONE request, at once — answered 404 again, it stays gone (Still refused, by a visit)
+  const visit = Date.now()
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+  await expect.poll(() => after(visit), { message: 'the visit back sent one request at once', timeout: 1500 }).toBe(1)
+  await page.waitForTimeout(1500)
+  expect(after(visit), 'exactly one: no backoff runs behind it').toBe(1)
+  await expect(saveState(page)).toHaveText(JOURNAL.REFUSED_COPY.title)
+  await expect(refused, 'still gone, by the visit\'s own 404').toContainText(JOURNAL.REFUSED_COPY.gone)
+  await expect(projects).toHaveCount(1)
+  // …and a visit back answered 200 (the right account signed in again): one request, at once, resting on green
+  answer = 'landed'
+  const cured = Date.now()
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+  await expect(saveState(page), 'the visit back landed it').toHaveText('Synced', { timeout: 1500 })
+  expect(after(cured), 'from exactly one request').toBe(1)
+  await expect(refused).toHaveCount(0)
+  // CHANGE (422), then an EDIT: it goes up at once, and the route's 404 switches the panel to gone's sentence and its link
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await save(422)
+  await expect(refused).toContainText(JOURNAL.REFUSED_COPY.change)
+  await expect(projects, 'change carries no control').toHaveCount(0)
+  answer = 404
+  const edited = Date.now()
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(() => after(edited), { message: 'the edit itself went up, at once', timeout: 1500 }).toBe(1)
+  await expect(refused, 'the sentence follows the new status').toContainText(JOURNAL.REFUSED_COPY.gone)
+  await expect(refused).not.toContainText(JOURNAL.REFUSED_COPY.change)
+  await expect(projects, 'and gone\'s link is there').toHaveText(JOURNAL.REFUSED_COPY.projects)
+  await expect(saveState(page)).toHaveText(JOURNAL.REFUSED_COPY.title)
+})
+
+test('7.18c · R-275 in fallback: with no copy on this device, a refusal is Can\'t sync with the same sentence — nothing about the device — for gone and for change', async ({ context }) => {
+  const a = await context.newPage()
+  await open(a)
+  const { page: own } = await rows(a)
+  let status = 404
+  await a.route('**/sync', (route) => route.fulfill({ status, body: 'refused' }))
+  // R-227's way to a device holding nothing: a second tab of this browser deletes the database (R-214's erase), and the
+  // editor's own `versionchange` lets go of it and falls back (FR-D10)
+  const b = await context.newPage()
+  await b.goto('/app/harness/error')
+  await b.evaluate(() => new Promise((done) => {
+    const erase = indexedDB.deleteDatabase('inflozo-doc-harness')
+    erase.onsuccess = erase.onerror = () => done(null)
+  }))
+  await expect(saveState(a), 'the control: the editor holds nothing on this device now').toHaveText(JOURNAL.labelOf({ kind: 'fallback' }))
+  const refused = a.locator('#editor-refused')
+  for (const [answer, why] of [[404, 'gone'], [422, 'change']]) {
+    status = answer
+    // an edit in fallback goes straight to the cloud, and meets the refusal
+    const answered = a.waitForResponse((r) => new URL(r.url()).pathname.endsWith('/sync') && r.status() === answer)
+    await select(a, own[0])
+    await a.keyboard.press('ControlOrMeta+d')
+    await answered
+    await expect(saveState(a), `${answer}: Can't sync, in fallback too`).toHaveText(JOURNAL.REFUSED_COPY.title)
+    await expect(refused).toContainText(JOURNAL.REFUSED_COPY[why])
+    const words = await refused.innerText()
+    expect(words, `${answer}: nothing about the device`).not.toMatch(/device/i)
+    expect(words, `${answer}: never the fallback's Retrying sentence`).not.toContain('have not reached the cloud yet')
   }
 })
 
@@ -6383,7 +6514,7 @@ test('DW-225 (Story 5.24e): only the lock\'s holder records what was looked at �
 test('DW-241 (Story 5.24e): losing the lock closes every menu, confirm and picker the holder had open — the bar is up and nothing stays open over it', async ({ page }) => {
   // the lock route answers as the holder's own row, then as taken over by another session at the next generation
   let taken = false
-  const row = (holder, generation) => ({ holderSessionId: holder, generation, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null })
+  const row = (holder, generation) => ({ holderSessionId: holder, generation, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null })
   await page.route('**/lock', (route) => {
     const { session } = JSON.parse(route.request().postData() ?? '{}')
     return route.fulfill({
@@ -6454,7 +6585,7 @@ test('DW-241 (Story 5.24e): losing the lock closes every menu, confirm and picke
 
 test('DW-244 (Story 5.24e): a live row near its staleness edge is asked about AT the edge — the next lock call comes a quarter-second past it, never a heartbeat later', async ({ page }) => {
   // another session's live row, five seconds from stale, answered to every call
-  const row = { holderSessionId: 'another-session', generation: 1, unsyncedEdits: 0, ageMs: LOCK.STALE_MS - 5000, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null }
+  const row = { holderSessionId: 'another-session', generation: 1, unsyncedEdits: 0, ageMs: LOCK.STALE_MS - 5000, nudgeRequestedBy: null, nudgeAgeMs: null, request: null }
   const calls = []
   await page.route('**/lock', (route) => {
     calls.push(Date.now())
@@ -6602,7 +6733,7 @@ test('DW-223 (the review of 5.24e): a pick whose write got NO answer says so in 
 test('the review of 5.24e: a backoff whose turn finds no lock to send under is over — taken over from while Retrying, the indicator leaves Retrying on that turn', async ({ page }) => {
   // DW-241's lock route: the holder's own row, then taken over by another session at the next generation
   let taken = false
-  const row = (holder, generation) => ({ holderSessionId: holder, generation, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null })
+  const row = (holder, generation) => ({ holderSessionId: holder, generation, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null })
   await page.route('**/lock', (route) => {
     const { session } = JSON.parse(route.request().postData() ?? '{}')
     return route.fulfill({
@@ -6628,6 +6759,88 @@ test('the review of 5.24e: a backoff whose turn finds no lock to send under is o
   // its turn comes, finds nothing this session may send, and ends: never Retrying for good
   await expect(saveState(page)).not.toHaveText('Retrying', { timeout: (JOURNAL.BACKOFF_S[0] + 3) * 1000 })
   await expect(page.locator('#editor-retrying')).toHaveCount(0)
+})
+
+/** Story 7.18c — this browser's record of the harness project, the meta row's journal and the journal entries, as one
+ *  comparable string */
+const record = (page) => page.evaluate((id) => new Promise((resolve, reject) => {
+  const req = indexedDB.open('inflozo-doc-harness')
+  req.onerror = () => reject(req.error)
+  req.onsuccess = () => {
+    const db = req.result
+    const tx = db.transaction(['meta', 'journal'], 'readonly')
+    const meta = tx.objectStore('meta').get(id)
+    const entries = tx.objectStore('journal').index('byProject').getAll(id)
+    tx.oncomplete = () => { db.close(); resolve(JSON.stringify({ journal: meta.result?.journal ?? null, entries: entries.result })) }
+    tx.onerror = () => { db.close(); reject(tx.error) }
+  }
+}), HARNESS_PROJECT_ID)
+
+test('DW-308 (Story 7.18c): a first opener that typed before its first answer and is then answered with another session\'s live row turns reader and is TOLD what it typed — nothing sent, the record on this device untouched; answered as the holder, nothing is said (the control); answered so having typed NOTHING, it reads along and nothing is said (N = 0)', async ({ browser }) => {
+  for (const [held, typing] of [[false, true], [true, true], [false, false]]) {
+    const arm = held ? 'the control (held)' : typing ? 'another session\'s row' : 'another session\'s row, nothing typed (N = 0)'
+    // each arm in a browser of its own: a fresh device, holding no record of the project yet
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    // the lock route, HELD until this tab has typed (D8g's intent filter; DW-223's held route), then answered — every call
+    let release
+    const gate = new Promise((r) => (release = r))
+    const calls = []
+    await page.route((url) => /\/projects\/[^/]+\/lock$/.test(url.pathname), async (route) => {
+      const body = route.request().postDataJSON()
+      calls.push(body)
+      await gate
+      const row = { holderSessionId: held ? body.session : 'another-session', generation: 1, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null }
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ row, held, won: held }) }).catch(() => {})
+    })
+    const syncs = []
+    const seen = (r) => { if (new URL(r.url()).pathname.endsWith('/sync')) syncs.push(r.url()) }
+    page.on('request', seen)
+    await open(page)
+    await expect.poll(() => calls.length, `${arm}: the first acquire left, and is held`).toBeGreaterThan(0)
+    expect(calls[0].intent, `${arm}: an optimistic first paint asks to acquire`).toBe('acquire')
+    // DW-307: every lock call names this page, one UUID for the load
+    expect(calls[0].page).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
+    await expect(page.locator('#editor-lock-bar'), `${arm}: the optimistic first paint is editable`).toHaveCount(0)
+    // hydrated (the indicator is drawn only then), so the device's record can never overwrite the edit below
+    await expect(saveState(page)).toHaveText('Synced')
+    // one edit, typed in the first moment — or, in the N = 0 arm, none
+    if (typing) {
+      await select(page, (await rows(page)).page[0])
+      await page.keyboard.press('ControlOrMeta+d')
+      await expect(saveState(page)).toHaveText('Saved on this device')
+    }
+    await expect.poll(async () => JSON.parse(await record(page)).entries.length, `${arm}: what this device holds`).toBe(typing ? 1 : 0)
+    const before = await record(page)
+    const was = await page.locator('#editor-announced').innerText()
+    release()
+    if (held) {
+      // answered as the holder: still editing, nothing said, the edit still owed
+      await expect.poll(() => calls.length).toBeGreaterThan(0)
+      await page.waitForTimeout(1000)
+      await expect(page.locator('#editor-lock-bar')).toHaveCount(0)
+      expect(await page.locator('#editor-announced').innerText(), 'nothing said').toBe(was)
+      await expect(saveState(page), 'the journal kept').toHaveText('Saved on this device')
+    } else if (!typing) {
+      // N = 0: a reader, and nothing to tell — the bar's own sentence, nothing displaced, nothing announced
+      await expect(page.locator('#editor-lock-bar'), `${arm}: a reader now`).toBeVisible()
+      await page.waitForTimeout(1000)
+      expect(await page.locator('#editor-announced').innerText(), `${arm}: the assertive region unchanged`).toBe(was)
+      await expect(page.locator('#editor-lock-reason'), `${arm}: B5a's own sentence, nothing displaced`).toHaveText(LOCK.LOCK_COPY.reading)
+      await expect(saveState(page), `${arm}: the indicator at rest`).toHaveText('Synced')
+      expect(await record(page), `${arm}: the record on this device untouched`).toBe(before)
+    } else {
+      await expect(page.locator('#editor-lock-bar'), 'a reader now').toBeVisible()
+      await expect(page.locator('#editor-announced'), 'said assertively').toHaveText(LOCK.LOCK_COPY.displaced(1))
+      await expect(page.locator('#editor-lock-reason'), 'and shown in B5a\'s sentence slot').toHaveText(LOCK.LOCK_COPY.displaced(1))
+      await expect(saveState(page), 'the indicator rests on the emptied journal').toHaveText('Synced')
+      await page.waitForTimeout(1000)
+      expect(await record(page), 'the record on this device is as it was before the answer').toBe(before)
+    }
+    expect(new Set(calls.map((c) => c.page)).size, `${arm}: one page id for every call of the load`).toBe(1)
+    expect(syncs, `${arm}: nothing was sent`).toEqual([])
+    await context.close()
+  }
 })
 
 test('DW-248 (Story 5.24e): the title search at Ghost is the posts list\'s alone — a term typed in the pill on the Post canvas asks once, on the Tag canvas nothing', async ({ page }) => {
@@ -8789,7 +9002,7 @@ test('7.18a · D8g\'s take-over that lands opens the wizard — after the reload
   await page.route((url) => /\/projects\/[^/]+\/lock$/.test(url.pathname), (route) => {
     const body = route.request().postDataJSON()
     if (body?.intent !== 'takeover') return route.continue()
-    const row = { holderSessionId: body.session, generation: 2, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null }
+    const row = { holderSessionId: body.session, generation: 2, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null }
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ won: true, held: true, row }) })
   })
   await shipIt(page).focus()
@@ -9221,6 +9434,85 @@ test('7.18b · a switch with an edit the flush could not send writes nothing, an
   await expect.poll(() => calls.length, { timeout: 20_000 }).toBe(1)
   expect(calls[0]).toContain(HARNESS_SITE_IDS.german)
   expect(landed, 'the flush landed before the switch was sent (the Review)').toBeGreaterThan(0)
+})
+
+test('7.18c · R-275: after a save refused for good (a 422), Run checks and a switch say Can\'t sync\'s change sentence word for word and start nothing — an aborted save says R-274\'s (the control)', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'full' })
+  const jobs = await plantDeploy(page, { preflight: PREFLIGHT })
+  // the save: refused for good (a 422), or the connection dropped (the control)
+  let answer = 422
+  await page.route('**/sync', (route) => (answer === 'abort' ? route.abort() : route.fulfill({ status: answer, body: 'refused' })))
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).page.length).toBe(own.length + 1)
+  await openWizard(page)
+  await runChecksRefused(page, JOURNAL.REFUSED_COPY.change)
+  expect(jobs, 'no job was asked for over a refusal').toEqual([])
+  await expect(saveState(page), 'the flush Run checks made was refused for good').toHaveText(JOURNAL.REFUSED_COPY.title)
+  // the control: the same press after a DROPPED save says R-274's sentence — merely unsent, which will pass
+  answer = 'abort'
+  await runChecksRefused(page, DW.editsUnsent)
+  expect(jobs).toEqual([])
+  await page.keyboard.press('Escape')
+  // a switch, from a project with no site (a first link: no confirm stands between Use this site and the flush)
+  answer = 422
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'unlinked' })
+  const calls = await seeSwitches(page)
+  await open(page)
+  await select(page, (await rows(page)).page[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await openWizard(page)
+  await wizard(page).locator('#deploy-choose').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page)).toBeVisible()
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await expect(sitePicker(page).locator(`input[value="${HARNESS_SITE_IDS.german}"]`)).toBeChecked()
+  await page.locator('#deploy-pick-use').focus()
+  await page.keyboard.press('Enter')
+  await expect(sitePicker(page).locator('#deploy-switch-refused')).toHaveText(JOURNAL.REFUSED_COPY.change, { timeout: 20_000 })
+  expect(calls, 'switchSite was never called').toEqual([])
+})
+/** Run checks pressed from Destination, and its refusal read: nothing started, the wizard still on Destination */
+async function runChecksRefused(page, words) {
+  await page.locator('#deploy-run').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-refused')).toHaveText(words, { timeout: 20_000 })
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+}
+
+test('7.18c · R-276 (DW-381): the sites read failed — the picker says so as its lead\'s next paragraph, in the polite region as it opens, with no row and no Use this site; Choose a site still opens it on a project with no site', async ({ page }) => {
+  for (const shape of ['sites-failed', 'sites-failed-unlinked']) {
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': shape })
+    await open(page)
+    await openWizard(page)
+    const opener = wizard(page).locator(shape === 'sites-failed' ? '#deploy-switch' : '#deploy-choose')
+    await expect(opener, `${shape}: the picker is reachable`).toBeVisible()
+    const was = await deploySaid(page)
+    await opener.focus()
+    await page.keyboard.press('Enter')
+    await expect(sitePicker(page)).toBeVisible()
+    const unread = sitePicker(page).locator('[data-sites-unread]')
+    await expect(unread, `${shape}: the ruled sentence`).toHaveText(SWW.unread)
+    // set as the lead is: the lead's next paragraph, in its type
+    expect(await unread.evaluate((p) => p.previousElementSibling?.textContent), 'right after the lead').toBe(SWW.lead)
+    const look = (sel) => sitePicker(page).locator(sel).first().evaluate((p) => { const c = getComputedStyle(p); return [c.fontSize, c.lineHeight, c.color].join(' ') })
+    expect(await look('[data-sites-unread]')).toBe(await look(`p:text-is("${SWW.lead}")`))
+    await expect(sitePicker(page).locator('input[type="radio"]'), `${shape}: no empty list`).toHaveCount(0)
+    await expect(page.locator('#deploy-pick-use'), `${shape}: no Use this site`).toHaveCount(0)
+    await expect(sitePicker(page).getByRole('link', { name: SWW.goToSites })).toBeVisible()
+    await expect.poll(async () => { const s = await deploySaid(page); return s !== was && s === SWW.unread }, { message: `${shape}: said politely on open` }).toBe(true)
+    await page.keyboard.press('Escape')
+    await page.keyboard.press('Escape')
+  }
+  // the control: a read that SUCCEEDED with no site — 7.18b's: no sentence, no Choose a site, Go to Sites alone
+  await page.setExtraHTTPHeaders({})
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page).locator('#deploy-choose')).toHaveCount(0)
+  await expect(wizard(page).locator('[data-sites-unread]')).toHaveCount(0)
 })
 
 test('7.18b · R-270: a site a refused upload marked Preview-only shows B15\'s panel, the line and Run checks; a probe\'s Preview-only has neither (the control)', async ({ page }) => {

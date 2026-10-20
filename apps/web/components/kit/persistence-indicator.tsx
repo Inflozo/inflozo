@@ -1,4 +1,4 @@
-import { SyncAlert, SyncArrowUp, SyncCheck, SyncClock, SyncSignedOut, SyncUpload } from './icons'
+import { SyncAlert, SyncArrowUp, SyncCheck, SyncClock, SyncRefused, SyncSignedOut, SyncUpload } from './icons'
 
 /* THE PERSISTENCE INDICATOR — B Missing Surfaces, B6 · "PERSISTENCE, FIVE STATES", as ruling R-142 amends it.
  *
@@ -21,7 +21,8 @@ import { SyncAlert, SyncArrowUp, SyncCheck, SyncClock, SyncSignedOut, SyncUpload
  * frame's own resting gold measured 3.61:1 and the resting fill became the frame's darker hover shade (Story 1.5,
  * ruled by the owner 2026-09-06). Same hues, the export's own deeper value of each.
  *
- * THE LABELS ARE B6'S FIVE AND R-213'S SIXTH (Story 5.24e), and the union is the compile error for a seventh. They are no longer
+ * THE LABELS ARE B6'S FIVE, R-213'S SIXTH (Story 5.24e) AND R-275'S SEVENTH (Story 7.18c), and the union is the compile
+ * error for an eighth. They are no longer
  * PRINTED; they are the `title` a hover shows and the accessible name a screen reader reads, which is the text
  * equivalent `EXPERIENCE.md`'s accessibility floor requires every state to have. A sighted user gets glyph +
  * colour; everyone gets the word.
@@ -36,6 +37,7 @@ export type PersistenceState =
   | 'Synced'
   | 'Retrying'
   | 'Signed out'
+  | "Can't sync"
   | 'Syncing every change to the cloud'
 
 /** Per state: the circle's fill, and the glyph inside it. Colour and shape are redundant with each other by
@@ -49,6 +51,8 @@ const look: Record<PersistenceState, { fill: string; Glyph: typeof SyncCheck }> 
   Retrying: { fill: 'bg-danger-text', Glyph: SyncAlert },
   // R-213: Retrying's red, because a save is refused in both — and a glyph of its own, so shape tells them apart (R-142)
   'Signed out': { fill: 'bg-danger-text', Glyph: SyncSignedOut },
+  // R-275: refused for good — the same red, and Tabler's `x`, a shape of its own beside the other two reds
+  "Can't sync": { fill: 'bg-danger-text', Glyph: SyncRefused },
   // no local storage: the device holds nothing, so every change goes straight up. Grey like the resting state
   // and told apart from it by its glyph, never by its colour.
   'Syncing every change to the cloud': { fill: 'bg-ink-soft', Glyph: SyncUpload },

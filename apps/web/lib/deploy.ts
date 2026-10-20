@@ -581,8 +581,9 @@ export type ShipState = {
   linkedSiteId: string | null
   overridden: boolean
   /** Story 7.18b — the user's CONNECTED sites, newest first as Sites lists them, each with the other project that links it —
-   *  the picker's rows (`lib/site-switch.ts`) */
-  sites: readonly SwitchSite[]
+   *  the picker's rows (`lib/site-switch.ts`). Story 7.18c (DW-381, R-276): NULL when the sites or the linking projects could
+   *  not be read — the picker says so in place of an empty list, which would look like having no other site */
+  sites: readonly SwitchSite[] | null
   /** the binding's frozen name, or `themeNameOf(slug)` before the first upload */
   themeName: string
   /** this project's uploads to this site plus one */
@@ -605,8 +606,9 @@ export type ShipState = {
  *
  *  STORY 7.18b — EXPORTED AND UNIT-TESTED (DW-378, `read.test.ts`), and it carries what choosing the site needs: the linked
  *  site's `capability_source` and stored Ghost `locale`, the project's language and RTL acknowledgement, and every CONNECTED
- *  site of the user's with the other project that links it (`heldBy`) — the picker's rows. A failed sites read is none, logged:
- *  the picker then offers only Go to Sites, and `switchSite` judges again on the server. */
+ *  site of the user's with the other project that links it (`heldBy`) — the picker's rows. STORY 7.18c (DW-381): a failed
+ *  sites or linking read is logged and answered as `sites: null`, never as none — the picker says R-276's sentence in its
+ *  place — and `switchSite` judges again on the server. */
 export function shipStateOf(a: {
   projectId: string
   slug: string
@@ -636,7 +638,7 @@ export function shipStateOf(a: {
     return typeof locale === 'string' && locale.trim() !== '' ? locale : null
   }
   const linking = a.linking ?? []
-  const sites: SwitchSite[] = (a.sites ?? []).flatMap((r) => {
+  const sites: SwitchSite[] | null = a.sites === null || a.linking === null ? null : a.sites.flatMap((r) => {
     if (typeof r.id !== 'string' || typeof r.url !== 'string' || r.url === '') return []
     const holder = linking.find((p) => p.linked_site_id === r.id && p.id !== a.projectId)
     return [{

@@ -29,8 +29,9 @@ export type LockCall = {
   /** AD-16's count: EDITS, never operations — absent until this device's journal is read, when a beat keeps the stored
    *  count rather than write a 0 over it (`countPatch`, DW-240) */
   unsynced?: number
-  /** `leave`'s filter: the `heartbeat_at` this tab last heard (DW-240, Story 5.24e) */
-  beat?: string
+  /** DW-307 (Story 7.18c): the page this call comes from — `pageId()`, on every call, so a beat names the page that last
+   *  wrote the row and a leave matches its own page whichever of the two lands first */
+  page: string
 }
 
 /** THE LOCK ROUTE'S ADDRESS AS THE BROWSER MUST ASK FOR IT — `syncUrl()`'s rule, read from the same `isApp`, because
@@ -123,9 +124,16 @@ const SESSION_KEY = TAB_SESSION_KEY
  * every visitor's. */
 const LEFT_KEY = `${SESSION_KEY}:left`
 let judged = false
+/** DW-307: this page load's id, minted at first ask */
+let page: string | null = null
 function judgeThisLoad(): void {
   if (judged || typeof window === 'undefined') return
   judged = true
+  // DW-307: A PAGE RESTORED FROM THE BACK-FORWARD CACHE IS A NEW PAGE — its `pagehide` already left, so its old id is the
+  // one a late beat must not revive; the next call mints another. Outside the `try`: it needs no storage
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) page = null
+  })
   try {
     const held = sessionStorage.getItem(SESSION_KEY)
     const left = sessionStorage.getItem(LEFT_KEY)
@@ -150,6 +158,17 @@ function judgeThisLoad(): void {
   } catch {
     // a refusing store: `tabSession` mints a fresh id per load, which is already a session of its own
   }
+}
+
+/**
+ * DW-307 (Story 7.18c): THIS PAGE LOAD'S ID — minted once per load (a module memo, so a reload or a new tab is a new page)
+ * and again after a back-forward restore (`judgeThisLoad`'s `pageshow`). Every lock call carries it: the row remembers the
+ * page that last wrote it, so a going page's leave matches its own page in either order, and a reload's new page keeps the
+ * row. Opaque, compared only; in the browser only — the server never asks it.
+ */
+export function pageId(): string {
+  judgeThisLoad()
+  return (page ??= crypto.randomUUID())
 }
 
 /** This tab's id as the settings pages read it — never minted, null where this tab has none (or only a copied one). */

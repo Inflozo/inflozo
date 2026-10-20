@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
-  askedNow, countPatch, displacedBy, duration, edgePoll, edits, HEARTBEAT_MS, isStale, LEAVE_GRACE_MS, leaveBacks, leaveBeat, leaveStamp,
+  askedNow, countPatch, displacedBy, duration, edgePoll, edits, HEARTBEAT_MS, isStale, LEAVE_GRACE_MS, leaveStamp,
   LOCK_COPY, NUDGE_MS, nextGeneration, partyOf, RESTART_EVENTS, heldElsewhere, restartsNudge, rowFrom, secondsLeft, STALE_MS,
   type LockRow,
 } from './lib/lock.ts'
@@ -27,7 +27,6 @@ const row = (over: Partial<LockRow> = {}): LockRow => ({
   nudgeRequestedBy: null,
   nudgeAgeMs: null,
   request: null,
-  beat: null,
   ...over,
 })
 
@@ -211,8 +210,6 @@ test('the row maps once, and the two ages are measured on the server rather than
     nudgeRequestedBy: MINE,
     nudgeAgeMs: 30_000,
     request: `${MINE}@2026-09-23T11:59:30.000Z`,
-    // DW-240: the beat itself, carried opaque beside the age measured from it
-    beat: '2026-09-23T11:59:50.000Z',
   })
   assert.equal(isStale(mapped), false)
 })
@@ -269,17 +266,9 @@ test('DW-240: a going holder\'s `leave` keeps the row its own for the grace and 
   assert.equal(isStale(rowFrom(stamped, left)), false, 'live the moment it leaves: a reload\'s first beat keeps it')
   assert.equal(isStale(rowFrom(stamped, left + LEAVE_GRACE_MS)), false, 'live to the end of the grace')
   assert.equal(isStale(rowFrom(stamped, left + LEAVE_GRACE_MS + 1)), true, 'stale after it: the next opener takes it')
-  // the beat a leave filters on is the row's own `heartbeat_at`, carried opaque
-  assert.equal(rowFrom(stamped, left).beat, stamped.heartbeat_at)
   // three times the reload gap, and inside one heartbeat and one nudge (§AD4's other two), so the edge poll frees a closed
   // tab no later than at HEAD
   assert.ok(LEAVE_GRACE_MS < HEARTBEAT_MS && LEAVE_GRACE_MS < NUDGE_MS)
-  // what a beat may be: PostgREST's own timestamptz shape, 64 characters or fewer — and nothing else, not even a time
-  // `Date.parse` reads but Postgres would refuse (a 502 where a 400 belongs)
-  for (const good of [stamped.heartbeat_at, '2026-10-02T12:00:00.123456+00:00', '2026-10-02T12:00:00+05:30', '2026-10-02T12:00:00Z']) assert.equal(leaveBeat(good), true, good)
-  for (const bad of [undefined, null, '', 42, 'not a time', '2026-10-02T12:00:00.000Z'.padEnd(65, '0'), 'Fri, 02 Oct 2026 12:00:00 GMT', '2026-10-02', '2026/10/02 12:00:00', '2026-10-02 12:00:00']) {
-    assert.equal(leaveBeat(bad), false, String(bad))
-  }
   // the grace is the ruled default's figure, pinned: changing it is a decision, never a drift (addendum's table)
   assert.equal(LEAVE_GRACE_MS, 10_000)
 })
@@ -301,19 +290,41 @@ test('DW-240: a beat that carries no count leaves the stored one standing — a 
   for (const none of [undefined, null, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '3']) assert.deepEqual(countPatch(none), {}, String(none))
 })
 
-test('DW-240: a leave only ever moves a beat BACK — one already at or before its stamp would be revived, and is left alone', () => {
-  const now = Date.parse('2026-10-02T12:00:00.000Z')
-  assert.equal(leaveBacks(new Date(now).toISOString(), now), true, 'a fresh beat is backdated into the grace')
-  assert.equal(leaveBacks(new Date(now - STALE_MS + LEAVE_GRACE_MS + 1).toISOString(), now), true, 'a beat a millisecond later than the stamp still moves back')
-  assert.equal(leaveBacks(leaveStamp(now), now), false, 'exactly the stamp: nothing to move')
-  assert.equal(leaveBacks(new Date(now - STALE_MS - 1).toISOString(), now), false, 'a stale row would be REVIVED by the stamp')
+/* DW-307 (Story 7.18c): THE ROUTE'S TWO STATEMENTS, READ FROM ITS SOURCE — `editor.test.ts`'s route-order precedent. What they
+   DO is executed in Postgres, every ordering, by the RLS gate's 7.18c block (P's beat then leave → 1; leave then beat → 0; leave
+   then Q's beat → 1; Q's beat then P's leave → 0; a leave over a row older than its stamp → 0); this holds that the route
+   sends exactly those statements. */
+const ROUTE = readFileSync('app/(app)/app/(authed)/projects/[id]/lock/route.ts', 'utf8')
+const between = (from: string, to: string) => {
+  const at = ROUTE.indexOf(from)
+  assert.ok(at > -1, `the route still has ${from}`)
+  return ROUTE.slice(at, ROUTE.indexOf(to, at))
+}
+
+test('DW-307: a leave matches ITS OWN PAGE, unleft, and only a row still later than its stamp — and marks the page gone', () => {
+  const leave = between("if (intent === 'leave' && page !== null)", "if (intent === 'nudge'")
+  assert.match(leave, /\.update\(\{ heartbeat_at: leaveStamp\(now\), page_left: true \}\)/, 'backdated, and the page marked gone')
+  assert.match(
+    leave,
+    /\.eq\('holder_session_id', session\)\s*\n\s*\.eq\('page_id', page\)\s*\n\s*\.eq\('page_left', false\)\s*\n\s*\.gt\('heartbeat_at', leaveStamp\(now\)\)/,
+    'filtered on the session, its own page, not yet left, and later than the stamp (a stale row is never revived)',
+  )
+  assert.doesNotMatch(leave, /heard/, 'never the beat it last heard — that filter missed a beat in flight (DW-307)')
 })
 
-test('DW-240: the route\'s leave filters on the beat this tab last heard, and asks `leaveBacks` before it writes', () => {
-  // the precedent is `editor.test.ts`'s route-order rows: the SQL is executed (MEASUREMENTS §65), the wiring is read here
-  const route = readFileSync('app/(app)/app/(authed)/projects/[id]/lock/route.ts', 'utf8')
-  const leave = route.slice(route.indexOf("if (intent === 'leave' && leaveBeat(heard))"), route.indexOf("if (intent === 'nudge'"))
-  assert.ok(leave.length > 0, 'the leave branch is where this test looks')
-  assert.match(leave, /\.eq\('holder_session_id', session\)\s*\n\s*\.eq\('heartbeat_at', heard\)/, 'the UPDATE is filtered on the session AND the heard beat')
-  assert.ok(leave.indexOf('leaveBacks(heard, now)') > -1 && leave.indexOf('leaveBacks(heard, now)') < leave.indexOf('.update('), 'the forward-move guard runs before the write')
+test('DW-307: a beat names its page and is refused by a row its own page has left; the insert, the stale CAS and the take-over name it too', () => {
+  const beat = between('const beat = async () => {', '\n  }\n')
+  assert.match(beat, /\.update\(\{ heartbeat_at: stamp\(\), \.\.\.count, \.\.\.mark \}\)/)
+  assert.match(beat, /page === null \? mine : mine\.or\(`page_left\.is\.false,page_id\.neq\.\$\{page\}`\)/, 'a page-less beat (an old tab) works as before')
+  assert.match(ROUTE, /const mark = page === null \? \{\} : \{ page_id: page, page_left: false \}/)
+  // `page_left` is outside the INSERT grant (the RLS gate's 42501), so the insert names the page alone
+  assert.match(ROUTE, /\.insert\(\{ [^}]*\.\.\.\(page === null \? \{\} : \{ page_id: page \}\) \}\)/)
+  assert.equal((ROUTE.match(/\.\.\.mark,\n/g) ?? []).length, 2, 'the take-over and the stale CAS')
+})
+
+test('DW-307: the page is a UUID before it reaches the beat\'s filter string, and a leave without one is refused', () => {
+  assert.match(ROUTE, /if \(sent !== undefined && \(typeof sent !== 'string' \|\| !isUuid\(sent\)\)\) return no\(400, 'Bad page'\)/)
+  assert.match(ROUTE, /if \(intent === 'leave' && page === null\) return no\(400, 'Bad page'\)/)
+  // the beat's `or` interpolates `page`, and nothing assigns it but the checked value
+  assert.match(ROUTE, /const page = typeof sent === 'string' \? sent : null/)
 })

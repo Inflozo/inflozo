@@ -458,8 +458,8 @@ async function main() {
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
-  // Story 7.18b: `d` is step 114's
-  const stale = all.filter((u) => /^editor-harness-[abcd]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's
+  const stale = all.filter((u) => /^editor-harness-[abcde]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -3428,7 +3428,8 @@ async function main() {
 
     // ── step 61 — R-142's circle, R-144's green rest, and R-143's moved pair ──
     // The GLYPH is asserted by its own path data, read out of `packages/library/icons/tabler.json` — the file the
-    // component was generated from — so the six states (R-213's Signed out the sixth) cannot silently come to share an icon, which is the one
+    // component was generated from — so the seven states (R-213's Signed out the sixth, R-275's Can't sync the seventh — step 115)
+    // cannot silently come to share an icon, which is the one
     // way R-142's guarantee could rot (standing rule 4: derived, never retyped).
     const TABLER58 = JSON.parse(require('node:fs').readFileSync(path.join(REPO, 'packages/library/icons/tabler.json'), 'utf8')).icons
     const glyph58 = (n) => TABLER58[n].outline.filter(([el]) => el === 'path').map(([, a]) => a.d).join(' | ')
@@ -12632,6 +12633,184 @@ async function main() {
         }
       }
       check('step 114 — the step\'s contexts recorded zero CSP violations', csp114.length === 0, JSON.stringify(csp114.slice(0, 3)))
+    }
+
+    // ── step 115 — STORY 7.18c: A SAVE REFUSED FOR GOOD, AND THE FIRST-MOMENT TYPIST, ON PRODUCTION (DW-304, DW-308, R-275, R-82) ──
+    /* NO GHOST CALL AND NO T1 WRITE (R-238): the step's production writes are a throwaway account's (`editor-harness-e-…`), two
+       seeded projects, and the product's own Delete of one of them from a second page. SELF-CONTAINED, as 114 is: it reads only
+       steps 1–5's names, so a cut copy can run steps 1–5 and this alone. Every sentence is `REFUSED_COPY`'s or `LOCK_COPY`'s
+       (R-170), and the glyph is read out of `tabler.json` (step 61's `glyph58`, derived here as its own).
+       (a) DW-304: the project is deleted from a second page of the same browser; the editor's ⌘S then meets the sync route's 404
+           — Can't sync, the *gone* sentence, Tabler `x`, Go to Projects and no Retry now — and NOTHING is sent for six seconds,
+           longer than the backoff's first wait, where HEAD's Retrying retried for ever.
+       (b) DW-308: two pages of one context; B opens first, its lock calls held (`route`, then let through), and paints editable;
+           A opens and holds; B types one edit on its optimistic first paint — then B's first acquire meets A's live row: B reads along, says
+           `LOCK_COPY.displaced(1)` assertively and in B5a's sentence slot, and sends nothing (the revision unmoved). A, the
+           control, still edits. */
+    {
+      const imp115 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [J115, L115] = await Promise.all([imp115('apps/web/lib/journal.ts'), imp115('apps/web/lib/lock.ts')])
+      const R115 = J115.REFUSED_COPY
+      const TABLER115 = JSON.parse(fs.readFileSync(path.join(REPO, 'packages/library/icons/tabler.json'), 'utf8')).icons
+      const glyph115 = (n) => TABLER115[n].outline.filter(([el]) => el === 'path').map(([, a]) => a.d).join(' | ')
+      const until115 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const emailE = `editor-harness-e-${stamp}@inflozo.com`
+      const usersBefore115 = (await users())?.length ?? null
+      const projectsBefore115 = await projectCount()
+      let idE = null
+      const ctxs115 = []
+      const csp115 = []
+      const context115 = async () => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs115.push(ctx)
+        await recorder(ctx, csp115)
+        const p = steady(await ctx.newPage())
+        p.on('pageerror', (e) => note('pageerror 115', String(e)))
+        await p.goto(await magic(emailE), { waitUntil: 'load' })
+        return p
+      }
+      const painted115 = (p, key) => p.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 }).then(() => true, () => false)
+      const stateIs115 = (p, state, ms = 20000) => p.waitForFunction((s) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === s, state, { timeout: ms }).then(() => true, () => false)
+      /** one edit, through the editor's own gesture: a page section selected in Layers and duplicated (one transaction) */
+      const edit115 = async (p) => {
+        await p.locator('[data-layer-row]:not([data-layer-row^="site:"])').first().click()
+        await p.keyboard.press('ControlOrMeta+d')
+      }
+      const isSync115 = (r) => r.method() === 'POST' && /\/projects\/[^/]+\/sync$/.test(new URL(r.url()).pathname)
+      const isLock115 = (r) => r.method() === 'POST' && /\/projects\/[^/]+\/lock$/.test(new URL(r.url()).pathname)
+      const revision115 = async (id) => (await call('/rest/v1', `/projects?id=eq.${id}&select=revision`)).body?.[0]?.revision ?? null
+      /** the indicator and Can't sync's panel, as drawn */
+      const shown115 = (p) => p.evaluate(() => {
+        const circle = document.querySelector('#editor-save-state [data-sync-state]')
+        const panel = document.getElementById('editor-refused')
+        const go = document.getElementById('editor-go-projects')
+        const cs = panel && getComputedStyle(panel)
+        return {
+          state: circle?.getAttribute('data-sync-state') ?? null,
+          title: circle?.getAttribute('title') ?? null,
+          label: document.querySelector('#editor-save-state [role="status"]')?.textContent ?? null,
+          glyphPaths: [...(circle?.querySelectorAll('svg path') ?? [])].map((x) => x.getAttribute('d')).join(' | '),
+          panel: panel && { fill: cs.backgroundColor, radius: cs.borderTopLeftRadius, padding: `${cs.paddingTop} ${cs.paddingLeft}`, first: panel.children[0]?.textContent ?? null, sentence: panel.children[1]?.textContent?.replace(/\s+/g, ' ').trim() ?? null, text: panel.innerText },
+          go: go && { text: go.textContent, href: go.getAttribute('href'), target: go.getAttribute('target') },
+          retryNow: document.getElementById('editor-retry-now') !== null,
+          retrying: document.getElementById('editor-retrying') !== null,
+        }
+      })
+      try {
+        const made115 = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: emailE, email_confirm: true }) })
+        idE = made115.status === 200 ? made115.body.id ?? null : null
+        check('step 115 — the fixture: account E made through the service key', UUID.test(idE ?? ''), `HTTP ${made115.status}`)
+        if (!UUID.test(idE ?? '')) throw new Error('step 115: account E was not made')
+
+        // ── 115a — DW-304: the project deleted from a second page, then the editor's ⌘S ──
+        const nameT115 = `Throwaway 115 ${stamp}`
+        const T115 = (await seed({ email: emailE, name: nameT115 }))?.id ?? null
+        check('step 115a — a throwaway project seeded for E', UUID.test(T115 ?? ''), String(T115))
+        if (!UUID.test(T115 ?? '')) throw new Error('step 115: the throwaway project is missing')
+        const pa = await context115()
+        const syncs115 = []
+        pa.on('request', (r) => { if (isSync115(r)) syncs115.push(Date.now()) })
+        const heldA115 = pa.waitForResponse(async (r) => isLock115(r.request()) && r.status() === 200 && (await r.json().catch(() => ({}))).held === true, { timeout: 30000 }).then(() => true, () => false)
+        await pa.goto(at(`/projects/${T115}`), { waitUntil: 'load' })
+        // hydrated first (the indicator is drawn only then), so the edit is never overwritten by the device's record
+        const opened115 = (await painted115(pa, 'home')) && (await heldA115) && (await stateIs115(pa, 'Synced'))
+        await edit115(pa)
+        const owed115 = await stateIs115(pa, 'Saved on this device')
+        check('step 115a — the editor opens holding the lock, and one edit is owed ("Saved on this device")', opened115 && owed115, JSON.stringify(await shown115(pa)))
+        const pd = steady(await pa.context().newPage())
+        await pd.goto(at('/'), { waitUntil: 'load' })
+        await pd.locator(`button[aria-label="Options for ${nameT115}"]`).click()
+        await pd.getByRole('button', { name: 'Delete', exact: true }).first().click()
+        await pd.locator(`#delete-${T115}-typed`).fill(nameT115)
+        await pd.locator(`dialog:has(#delete-${T115}-title) button[type="submit"]`).click()
+        const left115 = await until115(async () => (await call('/rest/v1', `/projects?id=eq.${T115}&select=id`)).body?.length ?? -1, (n) => n === 0, 30000)
+        check('step 115a — the project deleted from a second page of the same browser, through Projects\' own Delete (its name typed)', left115 === 0, String(left115))
+        await pd.close().catch(() => {})
+        const before115 = syncs115.length
+        await pa.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+        await pa.keyboard.press('ControlOrMeta+s')
+        const refused115 = await stateIs115(pa, R115.title)
+        const a115 = await shown115(pa)
+        check(`step 115a — R-275: ⌘S meets the route's 404 and the indicator is "${R115.title}" — the label, the hover and the live region`,
+          refused115 && syncs115.length > before115 && a115.state === R115.title && a115.title === R115.title && a115.label === R115.title, JSON.stringify(a115))
+        check('step 115a — R-142: its circle wears Tabler `x`, a glyph of its own beside Retrying\'s and Signed out\'s', a115.glyphPaths === glyph115('x') && a115.glyphPaths !== glyph115('exclamation-mark') && a115.glyphPaths !== glyph115('logout'), a115.glyphPaths)
+        check(`step 115a — B6's red panel as Signed out extends it (fill, radius, padding), titled "${R115.title}", saying the *gone* sentence — and nothing about a connection that will return`,
+          a115.panel?.fill === 'rgb(253, 236, 236)' && a115.panel.radius === '10px' && a115.panel.padding === '11px 12px' && a115.panel.first === R115.title && a115.panel.sentence === R115.gone && !/connection returns/.test(a115.panel.text),
+          JSON.stringify(a115.panel))
+        check(`step 115a — its one control is "${R115.projects}", a link in this tab; no Retry now, no Retrying panel`,
+          a115.go?.text === R115.projects && a115.go.target === null && (a115.go.href ?? '').replace(/\/$/, '') === PREFIX && !a115.retryNow && !a115.retrying, JSON.stringify(a115))
+        const quiet115 = syncs115.length
+        await pa.waitForTimeout((J115.BACKOFF_S[0] + 1) * 1000)
+        const still115 = await shown115(pa)
+        check('step 115a — the backoff STOPPED: no request for longer than its first wait, and still Can\'t sync', syncs115.length === quiet115 && still115.state === R115.title, `${syncs115.length - quiet115} requests, ${still115.state}`)
+        await pa.locator('#editor-go-projects').click()
+        const projects115 = await pa.waitForURL((u) => u.pathname.replace(/\/$/, '') === PREFIX, { timeout: 30000 }).then(() => true, () => false)
+        check(`step 115a — "${R115.projects}" opens Projects in this tab, without the deleted project`, projects115 && (await pa.locator(`button[aria-label="Options for ${nameT115}"]`).count()) === 0, pa.url().replace(/\?.*$/, ''))
+
+        // ── 115b — DW-308: B typed on its optimistic first paint; its first acquire, held, then meets A's live row ──
+        const R115b = (await seed({ email: emailE, name: `Walk 115 B ${stamp}` }))?.id ?? null
+        if (!UUID.test(R115b ?? '')) throw new Error('step 115: project B is missing')
+        // B FIRST, on a project no session holds yet — so its server render draws no live row and B paints EDITABLE, the
+        // optimistic first paint DW-308 is about (opened after A, B's own render would see A's row and read along from the start)
+        const pB = await context115()
+        pB.on('pageerror', (e) => note('pageerror 115b', String(e)))
+        let open115
+        const gate115 = new Promise((r) => (open115 = r))
+        const calls115 = []
+        const bSyncs115 = []
+        pB.on('request', (r) => { if (isSync115(r)) bSyncs115.push(r.url()) })
+        await pB.route((u) => /\/projects\/[^/]+\/lock$/.test(u.pathname), async (route) => {
+          calls115.push(route.request().postDataJSON())
+          await gate115
+          await route.continue().catch(() => {})
+        })
+        await pB.goto(at(`/projects/${R115b}`), { waitUntil: 'load' })
+        await painted115(pB, 'home')
+        await stateIs115(pB, 'Synced')
+        const first115 = await until115(() => calls115.length, (n) => n > 0, 15000)
+        // …then A, a second page of the same browser, opens and holds while B's first acquire is still held
+        const pA = steady(await pB.context().newPage())
+        pA.on('pageerror', (e) => note('pageerror 115b', String(e)))
+        const heldB115a = pA.waitForResponse(async (r) => isLock115(r.request()) && r.status() === 200 && (await r.json().catch(() => ({}))).held === true, { timeout: 30000 }).then(() => true, () => false)
+        await pA.goto(at(`/projects/${R115b}`), { waitUntil: 'load' })
+        const aHolds115 = (await painted115(pA, 'home')) && (await heldB115a)
+        check('step 115b — while B\'s first acquire is held, A (a second page of the same browser) opens project B and holds the lock', aHolds115)
+        const rev115 = await revision115(R115b)
+        const optimistic115 = await pB.evaluate(() => document.getElementById('editor-lock-bar') === null)
+        await edit115(pB)
+        const typed115 = await stateIs115(pB, 'Saved on this device')
+        check('step 115b — B\'s first acquire is held; B paints editable (optimistic) and types one edit before any answer',
+          first115 > 0 && calls115[0]?.intent === 'acquire' && optimistic115 && typed115, JSON.stringify({ calls: calls115.map((c) => c.intent), optimistic115, typed115 }))
+        check('step 115b — DW-307: every lock call B makes names its page — one UUID for the load', calls115.every((c) => UUID.test(c.page ?? '') && c.page === calls115[0].page), JSON.stringify(calls115.map((c) => c.page)))
+        open115()
+        const said115 = L115.LOCK_COPY.displaced(1)
+        const told115 = await pB.waitForFunction((w) => document.getElementById('editor-announced')?.textContent === w && document.getElementById('editor-lock-reason')?.textContent === w, said115, { timeout: 30000 }).then(() => true, () => false)
+        const b115 = await pB.evaluate(() => ({ bar: document.getElementById('editor-lock-bar') !== null, announced: document.getElementById('editor-announced')?.textContent ?? null, reason: document.getElementById('editor-lock-reason')?.textContent ?? null }))
+        check(`step 115b — B reads along and is told, assertively and in B5a's sentence slot: "${said115}"`, told115 && b115.bar && b115.announced === said115 && b115.reason === said115, JSON.stringify(b115))
+        await pB.waitForTimeout(3000)
+        check('step 115b — and B sent nothing: no /sync from B, and the project\'s revision unmoved', bSyncs115.length === 0 && (await revision115(R115b)) === rev115, JSON.stringify({ syncs: bSyncs115.length, before: rev115, after: await revision115(R115b) }))
+        check('step 115b — the control: A still edits, with no reading-along bar', await pA.evaluate(() => document.getElementById('editor-lock-bar') === null))
+      } catch (e) {
+        check('step 115 — the step ran to its end', false, String(e?.message ?? e).split('\n')[0])
+      } finally {
+        for (const ctx of ctxs115) await ctx.close().catch(() => {})
+        if (idE !== null) {
+          const del = await admin(`/admin/users/${idE}`, { method: 'DELETE', body: '{}' })
+          const usersAfter = (await users())?.length ?? null
+          const projectsAfter = await projectCount()
+          check('step 115 — account E deleted (its projects with it), users and projects counted back as the step found them',
+            del.status === 200 && usersBefore115 !== null && usersAfter === usersBefore115 && projectsBefore115 !== null && projectsAfter === projectsBefore115,
+            `HTTP ${del.status}, users ${usersBefore115} → ${usersAfter}, projects ${projectsBefore115} → ${projectsAfter}`)
+        }
+      }
+      check('step 115 — the step\'s contexts recorded zero CSP violations', csp115.length === 0, JSON.stringify(csp115.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

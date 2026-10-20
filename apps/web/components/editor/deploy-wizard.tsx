@@ -288,8 +288,9 @@ export function DeployWizard({
   prefix: string
   /** this tab's edit-lock session (`lib/lock-client.ts`) */
   session: () => string
-  /** the editor's flush, awaited; true when nothing is left unsent */
-  flush: () => Promise<boolean>
+  /** the editor's flush, awaited; null when nothing is left unsent, else the sentence that says why — Can't sync's own when the
+   *  save was refused for good (R-275, Story 7.18c), R-274's when the edits are merely not sent yet */
+  flush: () => Promise<string | null>
   /** R-260's read (R-271): the linked site's NEWEST published posts, up to `POSTS_CHECKED`, through a reader of their own —
    *  never the canvas's — with the site's total; null where they cannot be read */
   readPosts: () => Promise<{ rows: readonly Row[]; total: number } | null>
@@ -474,12 +475,13 @@ export function DeployWizard({
     if (pressed !== null || site === null) return
     setPressed('start')
     setRefused(null)
-    const sent = await flush()
+    const unsent = await flush()
     if (!alive.current) return
-    const answer = sent ? await post({ intent: 'preflight', session: session(), mode }) : null
+    const answer = unsent === null ? await post({ intent: 'preflight', session: session(), mode }) : null
     if (!alive.current) return
     if (answer === null || !answer.ok) {
-      const why = answer === null ? W.editsUnsent : answer.status === 423 ? LOCK_COPY.reading : answer.status === 409 ? W.noSite : W.infrastructure
+      // Pre-flight's own flush tells the truth (DW-304): the editor's sentence for what it could not send, word for word
+      const why = answer === null ? (unsent ?? W.editsUnsent) : answer.status === 423 ? LOCK_COPY.reading : answer.status === 409 ? W.noSite : W.infrastructure
       setPressed(null)
       setRefused(why)
       say(why)
@@ -546,11 +548,15 @@ export function DeployWizard({
 
   /* ── STORY 7.18b — choosing the site (FR-B5, R-267): the picker inside the wizard, and its confirm ── */
   const planFor = (siteId: string): SwitchPlan | null =>
-    ship === undefined ? null : switchPlan({ project: { id: projectId, language: ship.language, linkedSiteId: ship.linkedSiteId, overridden: ship.overridden }, site: siteId, sites: ship.sites })
+    ship === undefined || ship.sites === null ? null : switchPlan({ project: { id: projectId, language: ship.language, linkedSiteId: ship.linkedSiteId, overridden: ship.overridden }, site: siteId, sites: ship.sites })
+  /** STORY 7.18c (DW-381, R-276): the connected sites could not be read — the picker says so in place of its list */
+  const sitesUnread = ship !== undefined && ship.sites === null
   const openPicker = () => {
     setSwitchRefused(null)
-    setChosen(site?.id ?? ship?.sites[0]?.id ?? null)
+    setChosen(site?.id ?? ship?.sites?.[0]?.id ?? null)
     setPicking(true)
+    // said politely as it opens, as the list would be read — nothing else on the picker tells a screen reader why it is bare
+    if (sitesUnread) say(SW.unread)
   }
   const closePicker = () => {
     setPicking(false)
@@ -618,7 +624,7 @@ export function DeployWizard({
   }
   const useSite = () => {
     if (switching !== null || chosen === null || ship === undefined) return
-    const target = ship.sites.find((x) => x.id === chosen)
+    const target = ship.sites?.find((x) => x.id === chosen)
     const plan = planFor(chosen)
     if (target === undefined || plan === null) {
       setSwitchRefused(SW.gone)
@@ -670,6 +676,8 @@ export function DeployWizard({
       <div className="flex flex-col gap-[6px]">
         <h3 className="m-0 font-display text-[17px] font-bold tracking-[-0.01em] text-ink">{SW.title}</h3>
         <p className="text-ui-dense leading-[1.55] text-ink-soft">{SW.lead}</p>
+        {/* R-276 (DW-381): a failed read said as the lead's next paragraph, set as the lead is — no list, no Use this site */}
+        {sitesUnread ? <p data-sites-unread className="text-ui-dense leading-[1.55] text-ink-soft">{SW.unread}</p> : null}
       </div>
       {sites.length === 0 ? null : (
         <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
@@ -789,7 +797,8 @@ export function DeployWizard({
         <div className="flex flex-col items-start gap-3 rounded-thumb border border-line p-[13px]">
           <p className="text-ui-dense leading-[1.5] text-ink">{W.noSite}</p>
           <div className="flex items-center gap-[10px]">
-            {sites.length === 0 ? null : (
+            {/* R-276: offered on a failed read too, so the picker's sentence is reachable from a project with no site */}
+            {sites.length === 0 && !sitesUnread ? null : (
               <Button id="deploy-choose" variant="primary" size={36} onClick={openPicker}>
                 {W.chooseSite}
               </Button>

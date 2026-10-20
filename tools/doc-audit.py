@@ -1504,7 +1504,7 @@ DOCS = [
   "Story 5.24b (DW-91) opens /app/harness/error, a harness-only page that throws on purpose, and reads the app error "
   "boundary's tab title, \"Something went wrong · Inflozo\", over its heading — red with error.tsx's title line deleted. "
   "Story 5.24e walks the editor's sweep: R-213's sixth state (a 401 is Signed out, with Sign in and no Retry now; a dropped "
-  "connection and a 422 stay Retrying); DW-203's reader in one browser adopting and sending nothing; DW-225's reader "
+  "connection and a 502 stay Retrying, and since Story 7.18c a 404, 400 or 422 is R-275's seventh, Can't sync); DW-203's reader in one browser adopting and sending nothing; DW-225's reader "
   "recording nothing; DW-241's lost lock closing every menu, confirm and picker; DW-242's rAF sampler (a holder's reload "
   "never greyed, a genuine reader greyed from its first frame); DW-223's pick surviving a reload with its action held; "
   "DW-290's chrome faces prepared before any gesture; DW-229 and DW-226's PAUSED said once and chipped by width; DW-281's "

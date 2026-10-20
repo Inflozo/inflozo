@@ -3,6 +3,7 @@
 // the words the matrix names.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { CompileRefusal, REFUSAL } from '@inflozo/theme-compiler/refusal'
 import type { Finding } from '@inflozo/theme-compiler/gate'
 import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
@@ -11,6 +12,7 @@ import {
   stepNumber, stepOf, STEPS, themeNameOf, thrownCode, uploadAnswer, versionLabel, versionNumber, versionOf,
 } from './lib/deploy.ts'
 import { keysPath } from './lib/connect-rule.ts'
+import { REFUSED_COPY } from './lib/journal.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
 const answer = (status: number, body: unknown = {}, text = JSON.stringify(body)) => ({ ok: status >= 200 && status < 300, status, body, text })
@@ -232,3 +234,15 @@ test('7.18b: the new codes, each its sentence and fix — DW-374\'s two name the
 test('R-274 (owner, 2026-10-20): one shorter sentence for edits that have not reached Inflozo — Run checks\' refusal and a switch\'s alike', () => {
   assert.equal(DEPLOY_WORDS.editsUnsent, "Your latest edits haven't reached Inflozo yet. Try again once they're saved.")
 })
+
+test('R-275 (Story 7.18c, DW-304): Run checks and Switch say the refusal\'s own sentence, word for word; R-274\'s stays for edits merely unsent', () => {
+  const editor = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx', 'utf8')
+  // the editor's one answer: null (all sent), Can't sync's sentence, or R-274's
+  assert.match(editor, /if \(!unsynced\(latest\.current\.journal\)\) return null\n\s*return refused\.current === null \? DEPLOY_WORDS\.editsUnsent : REFUSED_COPY\[refused\.current\]/)
+  assert.match(editor, /const unsent = await flushForShip\(\)\n\s*if \(unsent !== null\) return \{ refused: unsent \}/, 'a switch is refused with it, and switchSite is never called')
+  const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
+  assert.match(wizard, /const answer = unsent === null \? await post\(/, 'Run checks starts no job over a refusal')
+  assert.match(wizard, /const why = answer === null \? \(unsent \?\? W\.editsUnsent\)/)
+  for (const why of ['gone', 'change'] as const) assert.notEqual(REFUSED_COPY[why], DEPLOY_WORDS.editsUnsent)
+})
+

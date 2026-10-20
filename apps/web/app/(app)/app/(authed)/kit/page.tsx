@@ -514,6 +514,8 @@ export default function KitGallery() {
           <PersistenceIndicator state="Syncing every change to the cloud" />
           {/* R-213's sixth (Story 5.24e): a save refused because the sign-in has run out */}
           <PersistenceIndicator state="Signed out" />
+          {/* R-275's seventh (Story 7.18c): a save refused for good — the project gone, or a change Inflozo won't take */}
+          <PersistenceIndicator state="Can't sync" />
         </Group>
       </div>
 

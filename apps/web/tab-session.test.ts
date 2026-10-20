@@ -6,7 +6,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
-type Tab = { store: Map<string, string>; hide: () => void }
+type Tab = { store: Map<string, string>; hide: () => void; show?: (persisted: boolean) => void }
 let loads = 0
 
 /** one page load in a tab: the module fresh, `window` and `sessionStorage` this tab's */
@@ -21,6 +21,7 @@ async function load(tab: Tab) {
     },
   })
   tab.hide = () => listeners['pagehide']?.forEach((fn) => fn({}))
+  tab.show = (persisted: boolean) => listeners['pageshow']?.forEach((fn) => fn({ persisted }))
   return (await import(`./lib/lock-client.ts?load=${++loads}`)) as typeof import('./lib/lock-client.ts')
 }
 const newTab = (): Tab => ({ store: new Map(), hide: () => {} })
@@ -49,4 +50,23 @@ test('a page that judges the load (the shell) clears the reload\'s mark, so a ta
 
 test('the shell judges every signed-in page load', () => {
   assert.match(readFileSync('components/shell/shell.tsx', 'utf8'), /useEffect\(\(\) => void storedTabSession\(\), \[\]\)/)
+})
+
+test('DW-307 (Story 7.18c): the page id is stable within a load, new on every load, and new again after a back-forward restore', async () => {
+  const a = newTab()
+  const first = await load(a)
+  const id = first.pageId()
+  assert.match(id, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/, 'a UUID — what the route checks')
+  assert.equal(first.pageId(), id, 'every lock call of one load names one page')
+  a.show?.(false)
+  assert.equal(first.pageId(), id, 'an ordinary pageshow (the first) changes nothing')
+  a.hide()
+  a.show?.(true)
+  const restored = first.pageId()
+  assert.notEqual(restored, id, 'a restore from the back-forward cache already left on its pagehide: a new page')
+  assert.equal(first.pageId(), restored)
+  a.hide()
+  const reload = await load(a)
+  assert.equal(reload.tabSession(), first.tabSession(), 'the control: a reload keeps the SESSION…')
+  assert.notEqual(reload.pageId(), restored, '…and is a new PAGE, so its beat keeps the row the old page left')
 })

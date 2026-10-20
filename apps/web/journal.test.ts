@@ -7,6 +7,7 @@ import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
   CARDS_KEY, flushPayload, hydratedCards, hydratedPacks, hydratedPreset, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, PACK_KEY, PACK_RECORDS_KEY, panelOpen, redo, undo, unsynced,
   restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, withoutDoc, type Journal, type OwedRecord, type SyncState,
+  REFUSED_COPY, refusalOf,
   isMovedMessage, MOVED_CHANNEL, movedMessage, SENT_CHANNEL, takeMoves, type Move,
 } from './lib/journal.ts'
 import { readFileSync } from 'node:fs'
@@ -156,22 +157,63 @@ test('FR-D9: a restored doc naming a design the library no longer holds is refus
 
 // ── B6's indicator ─────────────────────────────────────────────────────────────────────────────────────────────
 
-test('B6: every state has its own name, the panel opens on Retrying and on R-213\'s Signed out, and on nothing else', () => {
+test('B6: every state has its own name, the panel opens on Retrying, on R-213\'s Signed out and on R-275\'s Can\'t sync, and on nothing else', () => {
   const states: SyncState[] = [
     { kind: 'rest', owed: true },
     { kind: 'rest', owed: false },
     { kind: 'syncing' },
     { kind: 'retrying', attempt: 1, seconds: 5 },
     { kind: 'signed-out' },
+    { kind: 'refused', why: 'gone' },
     { kind: 'fallback' },
   ]
   const labels = states.map(labelOf)
   assert.equal(new Set(labels).size, states.length, 'no two states answer to the same name')
-  assert.deepEqual(states.filter(panelOpen).map((s) => s.kind), ['retrying', 'signed-out'])
+  assert.deepEqual(states.filter(panelOpen).map((s) => s.kind), ['retrying', 'signed-out', 'refused'])
   assert.equal(labelOf({ kind: 'signed-out' }), 'Signed out')
+  // R-275: one name for both causes — the panel's sentence tells them apart, never the label
+  assert.equal(labelOf({ kind: 'refused', why: 'gone' }), "Can't sync")
+  assert.equal(labelOf({ kind: 'refused', why: 'change' }), REFUSED_COPY.title)
   // the resting names are B6's own, not S4a's "Saved" — the divergence the Code Map records
   assert.equal(labelOf({ kind: 'rest', owed: true }), 'Saved on this device')
   assert.equal(labelOf({ kind: 'fallback' }), 'Syncing every change to the cloud')
+})
+
+test('R-275 (DW-304): the route\'s own status decides — 404 is gone, 400 and 422 a change; 401, 409, 423, a 5xx and no answer are no refusal for good', () => {
+  assert.equal(refusalOf(404), 'gone', 'the RPC\'s one answer to "no such project" and "not yours"')
+  assert.equal(refusalOf(400), 'change')
+  assert.equal(refusalOf(422), 'change')
+  // the controls, each with a flow of its own: Signed out (R-213), the conflict dialog, the displaced session, Retrying
+  for (const status of [200, 401, 409, 423, 500, 502, 503, 504, null]) assert.equal(refusalOf(status), null, String(status))
+})
+
+test('R-275: Can\'t sync\'s words are the ruled ones, one list (R-170) — R-190\'s "unsynced" word, and no "connection returns"', () => {
+  assert.deepEqual(REFUSED_COPY, {
+    title: "Can't sync",
+    gone: "Your changes can't reach this project: it was deleted, or this browser is now signed in to another account.",
+    change: "Inflozo couldn't accept your latest change. Undo it, and your work will sync again.",
+    projects: 'Go to Projects',
+  })
+  for (const words of Object.values(REFUSED_COPY)) {
+    assert.doesNotMatch(words, /connection returns|unsaved/i, words)
+    assert.doesNotMatch(words, /device/i, 'neither names the device, so fallback says them too')
+  }
+  // the panel, the indicator and Run checks read this list, never a literal of their own
+  const panel = readFileSync('components/editor/save-state.tsx', 'utf8')
+  assert.match(panel, /REFUSED_COPY\[state\.why\]/)
+  assert.match(panel, /id="editor-go-projects"[\s\S]*?\{REFUSED_COPY\.projects\}/)
+  assert.match(panel, /state\.kind === 'refused' && state\.why === 'change' \? null/, '*change* carries no control')
+})
+
+test('R-275: Can\'t sync\'s glyph is Tabler\'s `x`, path for path, in the Kit\'s red circle', () => {
+  const tabler = JSON.parse(readFileSync('../../packages/library/icons/tabler.json', 'utf8'))
+  const want = (tabler.icons.x.outline as [string, { d: string }][]).map(([, a]) => a.d)
+  const icons = readFileSync('components/kit/icons.tsx', 'utf8')
+  const at = icons.indexOf('export const SyncRefused')
+  assert.ok(at > -1)
+  const glyph = icons.slice(at, icons.indexOf(')\n', at))
+  assert.deepEqual([...glyph.matchAll(/<path d="([^"]+)" \/>/g)].map((m) => m[1]), want)
+  assert.match(readFileSync('components/kit/persistence-indicator.tsx', 'utf8'), /"Can't sync": \{ fill: 'bg-danger-text', Glyph: SyncRefused \}/)
 })
 
 test('R-144: the resting state reports what is OWED — green with nothing to send, grey the moment there is', () => {

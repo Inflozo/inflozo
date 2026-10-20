@@ -4383,11 +4383,18 @@ at the grace's edge. Two things the runs found and the code now carries:
   the hide in the live page, the editor's own listeners sending the same requests, and leaves straight after the page's
   own beat has answered: a beat in flight as a tab goes moves the row past the beat its leave carries, and that close
   then goes stale as a crashed tab's does (~60 s), a ceiling named beside `leaving` in `editor.tsx`. The owner kept it
-  for now (R-228, 2026-10-02); the per-page id that removes it, a migration, is DW-307, Story 7.18.
+  for now (R-228, 2026-10-02); the per-page id that removes it, a migration, is DW-307, Story 7.18c.
 
 Two rows that predate the story were stale since Story 5.22 and are re-read: the first-frame sampler counts a sample of
 the server's skeleton as not yet drawn (the shell mounts in the browser alone), and the hand-over row accepts a row
 already taken by the other session's own poll.
+
+*(Dated note, Story 7.18c, 2026-10-20: R-228's ceiling above is CLOSED by the page id (DW-307). `edit_locks` gained
+`page_id` and `page_left` (`20261021120000_edit_lock_page.sql`); the leave now filters on its own page, unleft, and keeps
+this section's forward-move guard inside the statement (`heartbeat_at > leaveStamp(now)`), and a beat is refused by a row
+its own page has left — so a close with its beat in flight frees the lock in either order of landing. The heard-beat
+filter, its shape check and its forward-move function are gone from `lib/lock.ts` and the route. The orderings are §87.
+"Story 7.18" above was corrected to 7.18c, the story R-259 split it into.)*
 
 ## 66. §60's reading, wired into CI's `rls` job — the two values read from Vercel's production env by name · 2026-10-02
 
@@ -8294,3 +8301,65 @@ taxonomies:
 - **Two uploads of one name at once** answered 200→ok and 200→ok.
 - **An upload under the ACTIVE theme's name goes live at once, and says so** (R-264 b, VERIFY-AT-BUILD 74): `themes[0].active` was true for the re-upload of the live probe, against false for the first upload under an inactive name (the control) — which is why Deploy only is greyed while the project's theme is the live one, and why Ship it reads the answer before any activation.
 - **What this does NOT say.** Ghost 5 on a server is DW-326's, at Story 15.7 (R-238). The product's `call()` (its database, Vault and audit rows) and the deploy route are the deployed walk's (step 113); Ghost(Pro)'s plan refusal is read in source only (F7, VERIFY 1–3). R-260 is executed twice: through the Content API's `posts.browse` (Ghost's SQL alone, leg 4) and on Home under the uploaded routing (leg 6), each behind the old filter as its control.
+
+## 87. The edit lock's page id — a closing page's leave matches its own page in either order, executed in Postgres; the lock walk's in-flight close · 2026-10-20
+
+**Why.** DW-307 (Story 7.18c): §65's `leave` matched only the beat a going page had last HEARD, so a beat still in flight
+as the page went moved `heartbeat_at` past it, the leave matched nothing, and the other window waited for the row to go
+stale (~60 s) — R-228's ceiling; in the reverse order the leave landed and the late beat revived the row. Now every write
+that holds the row names its page (`page_id`, the browser's own random id per page load, again on a back-forward restore)
+and a leave marks that page gone (`page_left`):
+
+```
+beat/acquire(X):  set heartbeat_at = now, page_id = X, page_left = false
+                  where holder = S and (page_left = false or page_id <> X)
+leave(P):         set heartbeat_at = leaveStamp(now), page_left = true
+                  where holder = S and page_id = P and page_left = false and heartbeat_at > leaveStamp(now)
+```
+
+**(a) Executed in Postgres** — the RLS gate's 7.18c block (`supabase/tests/rls.sql`, byte-identical to `RLS-TEST.sql`),
+the tenant's own session on its own lock (`edit_locks` has no service-role grant), `now() - 50 s` as the leave's stamp
+(`STALE_MS - LEAVE_GRACE_MS`), each statement's `row_count` asserted. `bash supabase/tests/run-rls-gate.sh`, exit 0, no
+SCHEMA DRIFT (2026-10-20, the Dev phase's run):
+
+    NOTICE:  PASS (7.18c): edit_locks.page_id and page_left are typed, defaulted, commented and granted as DW-307 needs
+    NOTICE:  PASS (7.18c): page_left is not settable at INSERT (42501)
+    NOTICE:  PASS (7.18c): control — HEAD's heard-beat leave after P's in-flight beat changes 0 rows (DW-307 reproduced)
+    NOTICE:  PASS (7.18c): P's beat then P's leave — the leave changes 1 row, backdated with page_left
+    NOTICE:  PASS (7.18c): P's leave then P's beat — the beat changes 0 rows and the row stays backdated
+    NOTICE:  PASS (7.18c): P's leave then Q's beat — 1 row, page_id Q and page_left false
+    NOTICE:  PASS (7.18c): Q's beat then P's leave — the leave changes 0 rows
+    NOTICE:  PASS (7.18c): a leave over a row already older than the stamp changes 0 rows
+    NOTICE:  PASS (7.18c): neither statement reaches another tenant's lock
+    NOTICE:  PASS (7.18c): the other tenant's lock is as its own session wrote it
+
+The control is the third line: §65's heard-beat leave, replayed after P's in-flight beat on the same fixture, changes 0
+rows — DW-307 reproduced, so the fixture is real. With the migration withheld (a scratch copy of `supabase/` without
+`20261021120000_edit_lock_page.sql`, `INFLOZO_ARCH_DIR` at the prior `SCHEMA.sql`) the gate exits 3 at the block's first
+check, 7.18b's block passing first (the Schema phase, 2026-10-20). `lock.test.ts` holds that the route sends exactly these
+two statements (read from its source, each filter in place), and `tab-session.test.ts` that the page id is one UUID per
+load, a new one after a back-forward restore.
+
+**(b) The lock walk's stop** (`tools/probe/run-verify-lock.cjs`, DW-307, after DW-244's, both sessions put back in the
+editor first): the holder's beat reaches the server (`route.fetch()`) and its answer is held, then the page's own `pagehide`
+leave is sent and answered and the tab goes; the other session, polling on its own, must hold within the grace and one poll
+(`LEAVE_GRACE_MS + HEARTBEAT_MS`). Its control was meant to be the same stop against production BEFORE the Dev push, where the
+wait is ~60 s. Three runs against `app.inflozo.com` (deployment `dpl_gaHZftLS3r4r417RpN2f1yB8LuCQ`, the Schema head
+`28ce5f6e`, still HEAD's lock code; the owner's in-session go for at most three) produced NO result for it — each void, and
+said so:
+
+    run 1  DW-307 control FAIL — {"beatLanded":"unsent", …, "leaveStatus":null}; 18324 ms (the beat never reached the
+           server — Playwright journeys were running on the same machine; DW-244 after it failed its own control too)
+    run 2  DW-307 control PASS — {"beatLanded":200,"fetchMs":605,"fetchError":null, …,"leaveStatus":200}; 108659 ms, the row
+           still the gone tab's — VOID: the stop had been moved after DW-244, whose going tab stays on Projects, so the
+           other session was not in the editor to poll (fixed: both sessions are put back in the editor first)
+    run 3  died at Hand over ("B gains the lock" FAIL, then a 30 s click timeout on a disabled Layers button) before
+           the stop — the walk's early stops, on HEAD's code, also failed in run 2 (the beat's count, the second opener)
+           and passed in run 1: flaky beside this story, recorded for the Review
+
+So the bug is shown by (a)'s control alone: §65's heard-beat leave, after the in-flight beat, changes 0 rows in Postgres.
+The walk's stop runs at the Review, after the Dev deploy, where it must hold within the grace and one poll.
+
+**What this does NOT say.** PostgREST's spelling of the beat's `or` filter (`page_left.is.false,page_id.neq.<page>`) is
+executed only by the walk on the real stack (DW-240 (a) and (b) and the DW-307 stop); the gate runs the SQL it stands for.
+
