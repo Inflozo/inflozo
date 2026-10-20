@@ -150,7 +150,7 @@ development_status:
   7-17-uploading-routes-yaml-and-the-guided-fallback: done
   7-18a-the-deploy-wizard: done
   7-18b-choosing-the-site-and-pre-flight-s-warnings: done
-  7-18c-the-editor-s-lock-and-save-leftovers: ready-for-dev
+  7-18c-the-editor-s-lock-and-save-leftovers: in-progress
   7-19-the-first-deploy-credential-step-and-its-decline-path: backlog
   7-20-the-backup-gate-and-the-pre-inflozo-snapshot: backlog
   7-21-pre-deploy-drift-detection: backlog

@@ -593,6 +593,8 @@ begin
     ('suggestions','status','BOTH'),('suggestions','hidden','BOTH'),
     ('suggestions','merged_into','BOTH'),('suggestions','anonymized_at','BOTH'),
     ('assets','stored_bytes','BOTH'),('assets','bytes','BOTH'),
+    -- edit_locks.page_id / page_left (Story 7.18c, DW-307) are DELIBERATELY ABSENT: the holder's own protocol, like
+    -- heartbeat_at — page_id is granted at INSERT and UPDATE, page_left at UPDATE only, asserted in the 7.18c block.
     ('edit_locks','lock_generation','INSERT'),
     ('profiles','is_admin','BOTH'),('profiles','free_editable_project_id','BOTH'),
     ('sites','deploy_rate_limit_exempt','BOTH'),('sites','capability','BOTH'),
@@ -2787,3 +2789,176 @@ end $$;
 
 delete from auth.users where id in ('77777777-718b-0000-0000-000000000001',
                                     '77777777-718b-0000-0000-000000000002');
+
+-- ── STORY 7.18c — the edit lock's page id: a closing page's leave matches its own page, in either order (DW-307) ─────────
+--
+-- BEHAVIOURAL. `lock/route.ts`' two statements, as the tenant runs them on its own lock (`edit_locks` has no service-role
+-- grant — every write is the user's own session's). P is the going page, Q its reload, S the tab's one session:
+--   beat(X):  set heartbeat_at = now, page_id = X, page_left = false  where holder = S and (page_left = false or page_id <> X)
+--   leave(P): set heartbeat_at = leaveStamp(now), page_left = true
+--             where holder = S and page_id = P and page_left = false and heartbeat_at > leaveStamp(now)
+-- `leaveStamp(now)` is `now - STALE_MS + LEAVE_GRACE_MS` (`lib/lock.ts`): now − 50 s. `now()` is one instant per block,
+-- which is the route's own case — one stamp per request. The control replays HEAD's heard-beat leave over the same
+-- in-flight beat and changes nothing: DW-307 reproduced, so the fixture is real. With the 7.18c migration withheld this
+-- block ABORTS at its first check — the control that the gate sees the migration at all.
+
+reset role;
+
+delete from auth.users where id in ('77777777-718c-0000-0000-000000000001',
+                                    '77777777-718c-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-718c-0000-0000-000000000001'),
+                                  ('77777777-718c-0000-0000-000000000002');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-718c-0000-0000-000000000001','77777777-718c-0000-0000-000000000001','Own lock','own-lock-718c','{}'),
+  ('dddddddd-718c-0000-0000-000000000002','77777777-718c-0000-0000-000000000002','Theirs','theirs-718c','{}');
+
+-- (1) the two columns: types, default, the length check, both comments, and the tenant's grants on them.
+do $$
+begin
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'edit_locks'
+         and ((column_name = 'page_id' and data_type = 'text' and is_nullable = 'YES' and column_default is null)
+           or (column_name = 'page_left' and data_type = 'boolean' and is_nullable = 'NO' and column_default = 'false'))) <> 2 then
+    raise exception 'FAIL (7.18c): edit_locks.page_id (text, nullable) and page_left (boolean, not null, default false) are missing';
+  end if;
+  -- coalesce: a column with NO comment reads null, and `null not like …` is null — no exception (7.18b's Review)
+  if coalesce(col_description('public.edit_locks'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.edit_locks'::regclass and attname = 'page_id')), '')
+     not like '%DW-307%leave matches its own page%'
+     or coalesce(col_description('public.edit_locks'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.edit_locks'::regclass and attname = 'page_left')), '')
+     not like '%DW-307%late beat%matches nothing%' then
+    raise exception 'FAIL (7.18c): edit_locks.page_id / page_left''s comments do not say what they hold (DW-307)';
+  end if;
+  if not has_column_privilege('authenticated', 'public.edit_locks', 'page_id', 'INSERT')
+     or not has_column_privilege('authenticated', 'public.edit_locks', 'page_id', 'UPDATE')
+     or not has_column_privilege('authenticated', 'public.edit_locks', 'page_left', 'UPDATE')
+     or has_column_privilege('authenticated', 'public.edit_locks', 'page_left', 'INSERT') then
+    raise exception 'FAIL (7.18c): authenticated must hold INSERT (page_id) and UPDATE (page_id, page_left) on edit_locks, and no INSERT on page_left';
+  end if;
+  raise notice 'PASS (7.18c): edit_locks.page_id and page_left are typed, defaulted, commented and granted as DW-307 needs';
+end $$;
+
+-- the other tenant's live lock, written by its own session
+set role authenticated;
+set request.jwt.claim.sub = '77777777-718c-0000-0000-000000000002';
+insert into public.edit_locks(project_id,user_id,holder_session_id,heartbeat_at,page_id)
+  values ('dddddddd-718c-0000-0000-000000000002','77777777-718c-0000-0000-000000000002','theirs-s',now(),'theirs-p');
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-718c-0000-0000-000000000001';
+
+-- (2) every ordering, each statement's row_count asserted — and (3) the control, HEAD's heard-beat leave.
+do $$
+declare n int; L constant uuid := 'cccccccc-718c-0000-0000-000000000001';
+        stamp constant timestamptz := now() - interval '50 seconds'; hb timestamptz; pid text; gone boolean;
+begin
+  -- page_left is the column's default at INSERT, never the client's — tried on the tenant's OWN project, so the 42501
+  -- can only be the grant's (on another tenant's project RLS answers 42501 too, and would prove nothing)
+  begin
+    insert into public.edit_locks(project_id,user_id,holder_session_id,page_left)
+      values (L,'77777777-718c-0000-0000-000000000001','S',true);
+    raise exception 'FAIL (7.18c): a client chose page_left at INSERT';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.18c): page_left is not settable at INSERT (42501)';
+  end;
+  -- an acquire's first row names its page (INSERT grant)
+  insert into public.edit_locks(project_id,user_id,holder_session_id,heartbeat_at,page_id)
+    values (L,'77777777-718c-0000-0000-000000000001','S',now() - interval '5 seconds','P');
+
+  -- (3) THE CONTROL FIRST: P heard the beat 5 s ago; its next beat is in flight and lands; then HEAD's leave, filtered on
+  -- the beat it heard, matches nothing — the other window would wait ~60 s. That is DW-307, reproduced on this fixture.
+  select heartbeat_at into strict hb from public.edit_locks where project_id = L;
+  update public.edit_locks set heartbeat_at = now(), page_id = 'P', page_left = false
+   where project_id = L and holder_session_id = 'S' and (page_left = false or page_id <> 'P');
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'FAIL (7.18c): P''s in-flight beat changed % rows (expected 1)', n; end if;
+  update public.edit_locks set heartbeat_at = stamp
+   where project_id = L and holder_session_id = 'S' and heartbeat_at = hb;
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'FAIL (7.18c): the control''s heard-beat leave changed % rows — the fixture does not reproduce DW-307', n; end if;
+  raise notice 'PASS (7.18c): control — HEAD''s heard-beat leave after P''s in-flight beat changes 0 rows (DW-307 reproduced)';
+
+  -- (2a) P's beat landed, then P's leave: the leave matches P — backdated and page_left (DW-307's case, the same state).
+  update public.edit_locks set heartbeat_at = stamp, page_left = true
+   where project_id = L and holder_session_id = 'S' and page_id = 'P' and page_left = false and heartbeat_at > stamp;
+  get diagnostics n = row_count;
+  select heartbeat_at, page_left into strict hb, gone from public.edit_locks where project_id = L;
+  if n <> 1 or hb <> stamp or not gone then
+    raise exception 'FAIL (7.18c): P''s leave after its own beat changed % rows (expected 1, backdated and page_left)', n;
+  end if;
+  raise notice 'PASS (7.18c): P''s beat then P''s leave — the leave changes 1 row, backdated with page_left';
+
+  -- (2b) P's leave landed, then P's in-flight beat: the beat matches nothing; the row stays backdated.
+  update public.edit_locks set heartbeat_at = now(), page_id = 'P', page_left = false
+   where project_id = L and holder_session_id = 'S' and (page_left = false or page_id <> 'P');
+  get diagnostics n = row_count;
+  select heartbeat_at, page_left into strict hb, gone from public.edit_locks where project_id = L;
+  if n <> 0 or hb <> stamp or not gone then
+    raise exception 'FAIL (7.18c): P''s late beat after its leave changed % rows (expected 0, the row still backdated)', n;
+  end if;
+  raise notice 'PASS (7.18c): P''s leave then P''s beat — the beat changes 0 rows and the row stays backdated';
+
+  -- (2c) P's leave, then its reload Q beats inside the grace: Q keeps the row (DW-240 unchanged).
+  update public.edit_locks set heartbeat_at = now(), page_id = 'Q', page_left = false
+   where project_id = L and holder_session_id = 'S' and (page_left = false or page_id <> 'Q');
+  get diagnostics n = row_count;
+  select page_id, page_left, heartbeat_at into strict pid, gone, hb from public.edit_locks where project_id = L;
+  if n <> 1 or pid <> 'Q' or gone or hb <> now() then
+    raise exception 'FAIL (7.18c): Q''s beat after P''s leave changed % rows, page % left %', n, pid, gone;
+  end if;
+  raise notice 'PASS (7.18c): P''s leave then Q''s beat — 1 row, page_id Q and page_left false';
+
+  -- (2d) Q has beaten, then P's late leave: page_id is Q, so nothing (DW-240's second stop unchanged).
+  update public.edit_locks set heartbeat_at = stamp, page_left = true
+   where project_id = L and holder_session_id = 'S' and page_id = 'P' and page_left = false and heartbeat_at > stamp;
+  get diagnostics n = row_count;
+  select page_id, page_left, heartbeat_at into strict pid, gone, hb from public.edit_locks where project_id = L;
+  if n <> 0 or pid <> 'Q' or gone or hb <> now() then
+    raise exception 'FAIL (7.18c): P''s late leave over Q''s beat changed % rows', n;
+  end if;
+  raise notice 'PASS (7.18c): Q''s beat then P''s leave — the leave changes 0 rows';
+
+  -- (2e) a leave over a row already older than the stamp would REVIVE it: nothing (`leaveBacks`, now in the statement).
+  update public.edit_locks set heartbeat_at = now() - interval '55 seconds', page_id = 'P', page_left = false
+   where project_id = L;
+  update public.edit_locks set heartbeat_at = stamp, page_left = true
+   where project_id = L and holder_session_id = 'S' and page_id = 'P' and page_left = false and heartbeat_at > stamp;
+  get diagnostics n = row_count;
+  select heartbeat_at into strict hb from public.edit_locks where project_id = L;
+  if n <> 0 or hb <> now() - interval '55 seconds' then
+    raise exception 'FAIL (7.18c): a leave over a row older than its stamp changed % rows — it revived a stale row', n;
+  end if;
+  raise notice 'PASS (7.18c): a leave over a row already older than the stamp changes 0 rows';
+
+  -- (4) another tenant's lock: both statements, aimed at it with its own session and page, reach nothing (RLS).
+  update public.edit_locks set heartbeat_at = now(), page_id = 'theirs-p', page_left = false
+   where project_id = 'dddddddd-718c-0000-0000-000000000002' and holder_session_id = 'theirs-s'
+     and (page_left = false or page_id <> 'theirs-p');
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'FAIL (7.18c): a tenant''s beat changed % rows on another tenant''s lock', n; end if;
+  update public.edit_locks set heartbeat_at = stamp, page_left = true
+   where project_id = 'dddddddd-718c-0000-0000-000000000002' and holder_session_id = 'theirs-s'
+     and page_id = 'theirs-p' and page_left = false and heartbeat_at > stamp;
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'FAIL (7.18c): a tenant''s leave changed % rows on another tenant''s lock', n; end if;
+  raise notice 'PASS (7.18c): neither statement reaches another tenant''s lock';
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+do $$
+begin
+  if (select page_left from public.edit_locks where project_id = 'dddddddd-718c-0000-0000-000000000002')
+     or (select page_id from public.edit_locks where project_id = 'dddddddd-718c-0000-0000-000000000002') <> 'theirs-p'
+     or (select heartbeat_at from public.edit_locks where project_id = 'dddddddd-718c-0000-0000-000000000002')
+        < now() - interval '1 minute' then
+    raise exception 'FAIL (7.18c): another tenant''s lock was changed';
+  end if;
+  raise notice 'PASS (7.18c): the other tenant''s lock is as its own session wrote it';
+end $$;
+
+delete from auth.users where id in ('77777777-718c-0000-0000-000000000001',
+                                    '77777777-718c-0000-0000-000000000002');

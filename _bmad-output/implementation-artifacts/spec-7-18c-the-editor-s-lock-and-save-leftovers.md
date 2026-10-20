@@ -2,7 +2,7 @@
 title: 'Story 7.18c — The editor''s lock and save leftovers'
 type: 'bugfix'
 created: '2026-10-20'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '6095de06ede01b2b1617f59e3f24ca2ea00647ca'
 owner_test: pending
 review_loop_iteration: 0
@@ -195,16 +195,18 @@ Paths under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed)/pr
 ## Tasks & Acceptance
 
 **Dev gate.** Both questions are ruled (R-275, R-276). The Schema push is made, green, and applied to production on the
-owner's in-session go (R-99), before any code that writes the columns is pushed.
+owner's in-session go (R-99), before any code that writes the columns is pushed. Every production call — the apply, the
+lock walk's control, the walks — runs in the orchestrating session on the owner's in-session go, never in an
+implementation subagent (the owner's go of 2026-10-20 covers the apply and one lock-walk control run before the Dev push).
 
 **Execution — the `Schema` push (alone, first; R-99):**
-- [ ] `supabase/migrations/20261021120000_edit_lock_page.sql` -- add `edit_locks.page_id text` (null, or 1–64
+- [x] `supabase/migrations/20261021120000_edit_lock_page.sql` -- add `edit_locks.page_id text` (null, or 1–64
   characters) and `page_left boolean not null default false`; grant `authenticated` INSERT (`page_id`) and UPDATE
   (`page_id`, `page_left`); a `comment on` each naming DW-307 and what it holds; re-runnable (`if not exists`); the header
   says why no service-role grant -- the leave's own page, in a column (DW-307).
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the two columns in
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the two columns in
   `edit_locks` (`:543-554`) and both grant lines (`:1177-1180`, `:1343-1346`) -- the gate diffs it against the migrations.
-- [ ] `…/RLS-TEST.sql`, then copied byte-identical to `supabase/tests/rls.sql` -- the column-grant audit gains the new
+- [x] `…/RLS-TEST.sql`, then copied byte-identical to `supabase/tests/rls.sql` -- the column-grant audit gains the new
   grants; a **7.18c block**: (1) both columns' types, default and comments (coalesce, as 7.18b's); (2) as the tenant on
   its own lock, the Design Notes' two statements in every ordering, each `row_count` asserted — P's beat then P's leave
   → 1; P's leave then P's beat → 0 and the row still backdated; P's leave then Q's beat → 1 with `page_id` Q and
@@ -450,3 +452,24 @@ made, so T1 is not touched (R-238).
 
 **Manual checks:**
 - The owner walks "Owner's manual test" on `app.inflozo.com` after Deploy (R-80).
+
+**Executed — Schema phase (2026-10-20, pushed alone before any code, R-99):**
+- `bash supabase/tests/run-rls-gate.sh` — exit 0: no SCHEMA DRIFT (`SCHEMA.sql` carries both columns LAST in `edit_locks`,
+  their comments, and both grant lines), every earlier block passing, and the 7.18c block's PASS lines: both columns typed,
+  defaulted and commented, `authenticated` holding INSERT (`page_id`) and UPDATE (`page_id`, `page_left`) and no INSERT on
+  `page_left` (behaviourally too: 42501 on the tenant's own project); the control — HEAD's heard-beat leave after P's
+  in-flight beat changes 0 rows (DW-307 reproduced); P's beat then P's leave → 1, backdated with `page_left`; P's leave then
+  P's beat → 0, still backdated; P's leave then Q's beat → 1, `page_id` Q, `page_left` false; Q's beat then P's leave → 0;
+  a leave over a row older than its stamp → 0; neither statement reaches another tenant's lock, which stays as its own
+  session wrote it.
+- Control, over a scratch copy of `supabase/` without `20261021120000_edit_lock_page.sql` and with HEAD's `SCHEMA.sql`
+  (`INFLOZO_ARCH_DIR`): exit 3 at the 7.18c block's first check ("edit_locks.page_id (text, nullable) and page_left
+  (boolean, not null, default false) are missing"), 7.18b's block passing first.
+
+**Real services the Schema phase hit (R-82):**
+- **Supabase production** (`SUPABASE_DB_POOLER_URL`, read inside the script, never on argv; the owner's in-session go,
+  "1. Go, both"): before — `edit_locks` with its nine columns, no grant or check on the new names, 5 rows; the migration
+  applied in one transaction; after — `page_id` text nullable with its comment and `edit_locks_page_id_check`
+  (`char_length` 1–64), `page_left` boolean not null default false with its comment, `authenticated` holding
+  INSERT(`page_id`), UPDATE(`page_id`), UPDATE(`page_left`) (and the table-wide SELECT), the same 5 rows, none carrying a
+  page or `page_left`.

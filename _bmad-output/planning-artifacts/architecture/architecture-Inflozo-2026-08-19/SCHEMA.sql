@@ -549,8 +549,16 @@ create table public.edit_locks (
   unsynced_edits   integer not null default 0,            -- AD2: EDITS, never ops. The only surfaced count.
   nudge_requested_by text,
   nudge_requested_at timestamptz,
-  created_at       timestamptz not null default now()
+  created_at       timestamptz not null default now(),
+  -- Story 7.18c (DW-307): the page that last wrote the row, and whether it has gone, so a closing page's leave matches its
+  -- own page in either order of landing. LAST, because `add column` appends.
+  page_id          text check (char_length(page_id) between 1 and 64),
+  page_left        boolean not null default false
 );
+comment on column public.edit_locks.page_id is
+  'The page that last wrote this lock (Story 7.18c, DW-307): a random id the browser mints per page load (and again on a back-forward restore), compared only. A leave matches its own page; null until a page-sending client writes the row.';
+comment on column public.edit_locks.page_left is
+  'Whether the page in page_id has gone (Story 7.18c, DW-307): set by its leave, cleared by any beat. A late beat from a page that left matches nothing; a reload''s new page keeps the row.';
 create index on public.edit_locks (heartbeat_at);
 
 -- FR-D18's takeover protocol, decided in Round 4 by the owner.  [F4]
@@ -1176,7 +1184,7 @@ grant select, delete on public.assets to authenticated;
 -- choose its opening value could start at a number no legitimate takeover would beat.
 revoke insert on public.edit_locks from authenticated;
 grant  insert (project_id, user_id, holder_session_id, heartbeat_at, unsynced_edits,
-               nudge_requested_by, nudge_requested_at)
+               nudge_requested_by, nudge_requested_at, page_id)
   on public.edit_locks to authenticated;
 
 -- (3) profiles: the row is created at signup and never deleted by the client (FR-A5 is a soft
@@ -1342,7 +1350,7 @@ grant  update (display_name) on public.assets to authenticated;
 -- re-parent; what remains open is named so it is not mistaken for done.
 revoke update on public.edit_locks from authenticated;
 grant  update (holder_session_id, lock_generation, heartbeat_at, unsynced_edits,
-               nudge_requested_by, nudge_requested_at)
+               nudge_requested_by, nudge_requested_at, page_id, page_left)
   on public.edit_locks to authenticated;
 
 -- template_binding_checklist: FR-I6 is a checklist the user marks. The filename is the server's.
