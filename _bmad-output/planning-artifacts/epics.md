@@ -4395,14 +4395,18 @@ source), so knowing whether the live theme is Inflozo's needs no download (Story
 **And** snapshots are stored **per site record id**, survive project deletion and disconnect/reconnect, and are
 offered as a download before account purge
 **And** the gate matches D1d self-hosted, D1d′ with the shortcut ticked and D1e Ghost(Pro); the running and
-degraded snapshot states match B12a and B12b as corrected.
+degraded snapshot states match B12a and B12b as corrected. *(Story 7.20a's Questions 3 and 4 — owner, 2026-10-26,
+**R-283**: the gate asks for **two rows only**, Theme and `routes.yaml`, each with its tick and Download, under friendly
+advice marked optional that names what Ghost Admin itself downloads; the master confirm stays, reworded to the two files,
+greyed rather than `disabled` (R-98). The `ghost backup` shortcut (D1d′), the Ghost(Pro) block (D1e) and the other five
+rows are dropped, so every host draws D1d as cut and the host names the sub line alone.)*
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* `GET /themes/` without the staff token — `501` on Ghost 5,
 `403` on Ghost 6 (VERIFY-AT-BUILD 9) — is read as **one Inflozo code**, never two answers by major.
 **And** *(Story 7.18's Question 1 — owner, 2026-10-18, R-259)* its **Backup** step joins Story 7.18a's step rail after
 Story 7.19's Safety net, making the first deploy's six steps (UX-DR19).
 
-**FRs:** FR-J13. · **Frame:** `D1 First-Deploy Gates.dc.html` D1d · D1d′ · D1e · `B Missing Surfaces.dc.html`
-B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 (R-82); its restore is Story
+**FRs:** FR-J13. · **Frame:** `D1 First-Deploy Gates.dc.html` D1d (as R-283 cut it; D1d′ and D1e dropped) ·
+`B Missing Surfaces.dc.html` B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 (R-82); its restore is Story
 7.23's (R-281).
 
 ### Story 7.20b: The snapshot orphan purge
@@ -4425,6 +4429,10 @@ DW-75, AD-33)*: a snapshot whose site record has been disconnected for 90 days �
 after a notice and a download offer, and **the purge proceeds on its deadline whether or not the offer was
 taken**; objects before rows, through `drainPrefix`, as `purge-accounts` does
 **And** the purge's 90 days and the Sites card's 'kept for 90 days' have one home: the job takes `ORPHAN_SNAPSHOT_DAYS` rather than a second literal in SQL, and `connect-rule.test.ts`'s agreement test follows it (DW-79).
+**And** *(DW-390, Story 7.20a's Review, 2026-10-26)* the database's own comment on `sites.hosted_by_ghost`, applied at
+7.20a's Schema, still describes a Ghost(Pro) gate and "both paths"; since R-283 the column names the Backup step's sub line
+alone. This story's Schema push corrects it with one `comment on column` (and `SCHEMA.sql`'s mirror), or hands it to the
+next story that has a Schema phase.
 
 **FRs:** FR-C6 (the purge). · **Frame:** none drawn — the notice's form is its Create's question (R-281). · **Owner
 test:** yes. · **Verification:** the cron run on production against a planted disconnected site record, objects before
@@ -4531,6 +4539,10 @@ offering the zip as a download and pointing at Settings → Design
 **And** *(DW-389, Story 7.20's Create, 2026-10-26)* Ghost refuses an upload named `casper.zip` or `source.zip` on both
 majors and never deletes either, so restoring a default theme as the original is an activation of Ghost's installed copy,
 never a re-upload of the snapshot
+**And** *(DW-391, Story 7.20a's Review, 2026-10-26)* the snapshot's download is followed so that a failure of Story 2.5's
+route — a 404 when the row has gone, a 502 when signing fails, the sign-in redirect — is said where the button is and never
+replaces the page; one way for D2a's original-theme row and the Backup step's Theme Download (`deploy-wizard.tsx`
+`follow`)
 **And** the Roll back confirm **opens with focus on the cancelling action** (UX-DR14)
 **And** with no deploys the empty state is "Nothing shipped yet" **and the limit is stated anyway** (UX-DR6)
 **And** the history is reachable from a phone, because it is what the Small Screen Notice offers, and this story adds

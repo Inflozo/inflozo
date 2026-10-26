@@ -10553,6 +10553,8 @@ test('7.20a · (e) Ship it at a first upload, the token held: B12a at Ship, 600 
   await expect(archiveRows).toHaveText([new RegExp(`^${SNAP.reading}`), new RegExp(`^${SNAP.writing}`), SNAP.uploading, SNAP.checking])
   await expect(archiveRows.nth(0)).toContainText('casper 5.9.4', { timeout: 15_000 })
   await expect(archiveRows.nth(1)).toContainText(DEPLOY.themeSize(WROTE.bytes), { timeout: 15_000 })
+  // the size is known before the write lands: row 2 still running beside it, as the frame draws it (the review, 2026-10-26)
+  await expect(archiveRows.nth(1)).toHaveAttribute('data-archive-row', 'running')
   // then the upload, S8c's own
   await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
   expect(sent.map((b) => b.intent)).toEqual(['preflight', 'ship'])
@@ -10590,6 +10592,7 @@ test('7.20a · (e3) the live theme is already Inflozo\'s: B12a\'s row 2 says no 
   const row2 = wizard(page).locator('[data-archive-row]').nth(1)
   await expect(row2).toHaveText(new RegExp(`^${SNAP.marked}`), { timeout: 15_000 })
   await expect(row2).not.toContainText(SNAP.writing)
+  await expect(row2, 'nothing to write: done at once').toHaveAttribute('data-archive-row', 'done')
   await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
   expect(sent.map((b) => b.intent)).toEqual(['preflight', 'ship'])
 })

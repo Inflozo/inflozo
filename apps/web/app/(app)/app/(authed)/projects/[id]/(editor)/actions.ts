@@ -2,7 +2,7 @@
 
 import { orbitWeekly } from '@inflozo/library'
 import { CONNECT_MAX, hostOf, tokenRefusal } from '@/lib/connect-rule'
-import { BACKUP_WORDS, DEPLOY_WORDS, shipStateOf, SNAPSHOT_WORDS } from '@/lib/deploy'
+import { BACKUP_WORDS, DEPLOY_WORDS, shipStateOf } from '@/lib/deploy'
 import { canvasOfPageTwoKey, canvasOfTemplateKey, fileOf, isUuid } from '@/lib/editor'
 import { confirmedFrom, SWITCH_WORDS, switchWith, type SwitchAnswer } from '@/lib/site-switch'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
@@ -14,7 +14,7 @@ import { readSettings } from '@/server/site-probe'
 import { addStaffToken } from '@/server/staff-token'
 import { ROUTES_IO } from '@/server/routes-io'
 import { liveRoutesFile } from '@/server/routes-upload'
-import { captureSnapshot, STORAGE } from '@/server/snapshot'
+import { captureSnapshot, downloadSaid } from '@/server/snapshot'
 import { SNAPSHOT_IO } from '@/server/snapshot-io'
 
 /**
@@ -320,7 +320,7 @@ export async function declineSafetyNet(projectId: string, siteId: string): Promi
 }
 
 /**
- * STORY 7.20a — THE FIRST DEPLOY'S BACKUP STEP (F7, D1d/D1d′/D1e): the gate's three server actions, beside the Safety net's and in
+ * STORY 7.20a — THE FIRST DEPLOY'S BACKUP STEP (F7, D1d as R-283 cut it): the gate's three server actions, beside the Safety net's and in
  * their shape — the project's link read through the CALLER'S OWN session first (`linkedSite`, RLS), the site connected and still
  * the one the wizard named, a failed read ours (`DEPLOY_WORDS.infrastructure`). None takes the edit lock: none writes the project.
  *
@@ -375,11 +375,8 @@ export async function downloadLiveTheme(projectId: string, siteId: string): Prom
     return null
   })
   if (got === null) return { said: DEPLOY_WORDS.infrastructure }
-  if (got.ok) return 'marked' in got ? { said: BACKUP_WORDS.marked } : { ok: true, id: got.id }
-  if (got.status !== undefined) return { said: BACKUP_WORDS.downloadFailed(got.status) }
-  if (got.request === STORAGE) return { said: DEPLOY_WORDS.infrastructure }
-  if (got.code === 'snapshot_needs_token') return { said: SNAPSHOT_WORDS.noToken }
-  return { said: DEPLOY_WORDS.unreachable(hostOf(site.url)) }
+  if (got.ok && 'id' in got) return { ok: true, id: got.id }
+  return { said: downloadSaid(got, hostOf(site.url)) ?? DEPLOY_WORDS.infrastructure }
 }
 
 export async function downloadRoutes(projectId: string, siteId: string): Promise<{ ok: true; file: string } | { said: string }> {

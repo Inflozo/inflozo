@@ -4,7 +4,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { THEME_MARKER } from '@inflozo/theme-compiler'
-import { captureSnapshot, downloadPath, requestOf, STORAGE, THEMES_LIST, type SnapshotAnswer, type SnapshotIo, type SnapshotProgress } from './server/snapshot.ts'
+import { BACKUP_WORDS, DEPLOY_WORDS, SNAPSHOT_WORDS } from './lib/deploy.ts'
+import { captureSnapshot, downloadPath, downloadSaid, requestOf, STORAGE, THEMES_LIST, type SnapshotAnswer, type SnapshotIo, type SnapshotProgress } from './server/snapshot.ts'
 
 const S = '00000000-0000-4000-8000-0000000000bb'
 const U = '00000000-0000-4000-8000-0000000000cc'
@@ -145,4 +146,17 @@ test('the capture imports neither the service role nor the chokepoint, and reuse
   const code = readFileSync('server/snapshot.ts', 'utf8')
   assert.doesNotMatch(code, /supabaseAdmin|ghost-admin/)
   assert.match(code, /import \{ SNAPSHOT_BUCKET, snapshotObjectKey \} from '\.\.\/app\/\(app\)\/app\/\(authed\)\/account\/deletion-rule\.ts'/)
+})
+
+test('the Theme Download\'s answer (`downloadSaid`): a written row is followed; the marked theme, the token\'s two causes, our store, Ghost\'s status and no answer each say their own sentence — the causes before the status', () => {
+  const list = requestOf(THEMES_LIST)
+  assert.equal(downloadSaid({ ok: true, id: 'snap-1', theme: 'casper', version: '5.9.4', bytes: 8 }, 'ghost6.inflozo.com'), null, 'a row written: the browser follows it')
+  assert.equal(downloadSaid({ ok: true, marked: true }, 'ghost6.inflozo.com'), BACKUP_WORDS.marked, 'never a row id for a marked theme')
+  // a token gone meanwhile reads with the Admin key, which Ghost refuses at 403 — the cause, not the bare status
+  assert.equal(downloadSaid({ ok: false, code: 'snapshot_needs_token', request: list, status: 403 }, 'h'), SNAPSHOT_WORDS.noToken)
+  assert.equal(downloadSaid({ ok: false, code: 'snapshot_token_refused', request: list, status: 401 }, 'h'), SNAPSHOT_WORDS.tokenRefused)
+  assert.equal(downloadSaid({ ok: false, code: 'snapshot_failed', request: STORAGE }, 'h'), DEPLOY_WORDS.infrastructure)
+  // THE CONTROL: a failure with no cause of its own says Ghost's status
+  assert.equal(downloadSaid({ ok: false, code: 'snapshot_failed', request: requestOf(downloadPath('casper')), status: 503 }, 'h'), BACKUP_WORDS.downloadFailed(503))
+  assert.equal(downloadSaid({ ok: false, code: 'snapshot_failed', request: list }, 'ghost6.inflozo.com'), DEPLOY_WORDS.unreachable('ghost6.inflozo.com'))
 })

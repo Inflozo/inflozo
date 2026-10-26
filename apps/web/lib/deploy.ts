@@ -449,8 +449,8 @@ export const BACKUP_WORDS = {
 
 /** STORY 7.20a — B12a (the archive running) and B12b (it did not finish), every word the frames say (`B Missing Surfaces.dc.html:
  *  1044-1102`) as the spec corrected them: "this site" for "this project" (R-278's grain), Manage keys' "Add token" for "Add the
- *  token" (R-170), and Ghost's own "Design & branding" for the frame's "Settings → Design" — said as a description and a link
- *  (E-5's rule), never as a menu path. */
+ *  token" (R-170), and Ghost's own "Design & branding" for the frame's "Settings → Design" — its label said in a description and
+ *  linked to the site's own Design panel (E-5's rule), never a bare menu path to follow by hand. */
 export const SNAPSHOT_WORDS = {
   title: 'Archiving your current theme first',
   lead: 'If anything about the new theme is wrong, this is what we roll back to. It takes a few seconds, and we only do it the first time you upload to a site.',
@@ -483,10 +483,16 @@ export type SnapshotCode = (typeof SNAPSHOT_CODES)[number]
 export const isSnapshotError = (e: unknown): e is DeployError & { code: SnapshotCode } =>
   e !== null && typeof e === 'object' && !('level' in e) && (SNAPSHOT_CODES as readonly string[]).includes((e as { code?: unknown }).code as string)
 
+/** STORY 7.20a — the request a capture names when it is OUR store that refused (B12b's inset), not one of Ghost's */
+export const SNAPSHOT_STORAGE = 'Storage'
+
 /** B12b's envelope for a capture's answer: its body by cause, the request it failed on and Ghost's status (none where Ghost
- *  did not answer, or the store refused) */
+ *  did not answer, or the store refused). A refusal of our own store is ours, said as the infrastructure sentence — never "Ghost
+ *  didn't hand over" (the review, 2026-10-26) */
 export function snapshotError(code: SnapshotCode, request: string, status?: number | null): DeployError {
-  const message = code === 'snapshot_needs_token' ? SNAPSHOT_WORDS.noToken : code === 'snapshot_token_refused' ? SNAPSHOT_WORDS.tokenRefused : SNAPSHOT_WORDS.other
+  const message =
+    request === SNAPSHOT_STORAGE ? DEPLOY_WORDS.infrastructure
+    : code === 'snapshot_needs_token' ? SNAPSHOT_WORDS.noToken : code === 'snapshot_token_refused' ? SNAPSHOT_WORDS.tokenRefused : SNAPSHOT_WORDS.other
   return { code, message, request, ...(typeof status === 'number' ? { status } : {}) }
 }
 

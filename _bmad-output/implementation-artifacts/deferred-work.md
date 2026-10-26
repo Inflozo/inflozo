@@ -10585,3 +10585,37 @@ owner: Story 7.23 (Deploy history, rollback and restore-to-original), which took
   with Ghost's 422 fallback (VERIFY-AT-BUILD 10).
 location: Story 7.23's restore action (not yet built) · `apps/web/server/snapshot.ts` (Story 7.20a, which stores `theme_name`)
 reason: restore is not built in Story 7.20a; the finding must reach the story that builds it before its Create.
+
+### DW-390: the database's own note on `sites.hosted_by_ghost` still describes two Backup cards
+
+plain: A note stored inside the database still says Ghost(Pro) sites get a different Backup step; since the owner cut the step
+  to two rows, every host gets the same card, so the note is out of date (nothing a customer sees).
+status: open
+severity: low
+origin: Story 7.20a's Review (2026-10-26). R-283 made one card for every host after the Schema push had applied
+  `20261027120000_backup_gate.sql` to production, so its `comment on column public.sites.hosted_by_ghost` ("true = Ghost(Pro),
+  the D1e gate; false = self-hosted, D1d; null = not yet probed, both paths offered"), the migration's header and
+  `SCHEMA.sql`'s mirror describe behaviour that no longer exists. The code's own comments were corrected at the Review
+  (`lib/probe-rule.ts`). The column's meaning is unchanged: it names the Backup step's sub line alone.
+owner: Story 7.20b (the snapshot orphan purge), straight after: a one-statement `comment on column` migration in its Schema push
+  (R-99), mirrored in `SCHEMA.sql` and the RLS gate's comment check, applied on the owner's in-session go — or, if 7.20b has
+  no Schema phase, the next story that does.
+location: `supabase/migrations/20261027120000_backup_gate.sql` (applied; never edited) · `SCHEMA.sql` (`sites.hosted_by_ghost`)
+  · production's `col_description`
+reason: correcting it needs a production DDL apply on its own go, out of proportion for a Review patch to a comment.
+
+### DW-391: the Theme Download leaves the editor if Story 2.5's route answers anything but the zip
+
+plain: If the saved theme cannot be handed over (it vanished, the signing failed, or the sign-in lapsed), pressing Download on the
+  Backup step's Theme row swaps the editor page for a plain error page instead of saying so under the row.
+status: open
+severity: low
+origin: Story 7.20a's Review (2026-10-26; Blind Hunter and Edge Case Hunter). The wizard's `follow()` clicks a link to
+  `/snapshots/{id}/download`, which is right when the route answers its 303 to a signed attachment (walk 117a, on
+  production) — but the same route answers a 404 "Not found" when the row has gone, a 502 when signing fails, and a 303 to
+  `/sign-in` with no session. Each is improbable here (the row was written by the capture a moment before, under the same
+  session), and nothing is lost: leaving the editor sends its work.
+owner: Story 7.23 (Deploy history, rollback and restore-to-original), whose D2a original-theme row offers the same snapshot's
+  download from Deploy history: one way to follow it for both, checking the answer before leaving the page.
+location: `apps/web/components/editor/deploy-wizard.tsx` (`follow`, `fetchRow`) · `app/(app)/app/snapshots/[id]/download/route.ts`
+reason: an improbable failure of a route Story 2.5 owns; fixing it means a second way to fetch a signed URL, which 7.23 needs too.

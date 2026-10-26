@@ -6059,7 +6059,9 @@ and **Question 4, option 1** (the advice as drafted).
 - **Declined.** Question 3's two ticks only; Question 4's shorter advice.
 - Targets: ✅ this entry · ✅ Story 7.20a's spec (Intent, matrix, tasks, Words, Questions 3 and 4, the owner's test) · ✅
   `BACKUP-GATE.md` (status and a dated note) · ✅ `EXPERIENCE.md` F7 · ✅ `prd.md` FR-J13 (dated note) · ✅
-  `epic-7-context.md` · ✅ the code (`lib/backup-gate.ts`, `lib/deploy.ts`, the wizard, the tests and journeys, walk step 117).
+  `epic-7-context.md` · ✅ the code (`lib/backup-gate.ts`, `lib/deploy.ts`, the wizard, the tests and journeys, walk step 117) ·
+  ✅ `epics.md` Story 7.20a (a dated note on its frame criterion and its Frame line — missed at the ruling, landed by 7.20a's
+  Review, 2026-10-26).
 
 ## B · Approved decisions superseded by this session
 

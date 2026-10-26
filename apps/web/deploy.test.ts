@@ -371,7 +371,9 @@ test('7.20a: B12b\'s three causes — one code for an unreadable list, each body
   const needs = deployError('snapshot_needs_token', { host: 'ghost6.inflozo.com', request: 'GET /ghost/api/admin/themes/', status: 403 })
   assert.deepEqual(needs, { code: 'snapshot_needs_token', message: SNAPSHOT_WORDS.noToken, request: 'GET /ghost/api/admin/themes/', status: 403 })
   assert.equal(snapshotError('snapshot_token_refused', 'GET /ghost/api/admin/themes/', 401).message, SNAPSHOT_WORDS.tokenRefused)
-  assert.deepEqual(snapshotError('snapshot_failed', 'Storage'), { code: 'snapshot_failed', message: SNAPSHOT_WORDS.other, request: 'Storage' }, 'no status where Ghost did not answer')
+  // our store's refusal is ours (the review, 2026-10-26): the infrastructure sentence, never "Ghost didn't hand over"
+  assert.deepEqual(snapshotError('snapshot_failed', 'Storage'), { code: 'snapshot_failed', message: DEPLOY_WORDS.infrastructure, request: 'Storage' }, 'no status where Ghost did not answer')
+  assert.equal(snapshotError('snapshot_failed', 'GET /ghost/api/admin/themes/casper/download/', 503).message, SNAPSHOT_WORDS.other, 'the control: Ghost\'s refusal is Ghost\'s')
   assert.equal(SNAPSHOT_WORDS.request('GET /ghost/api/admin/themes/', 501), 'GET /ghost/api/admin/themes/ → 501')
   assert.equal(SNAPSHOT_WORDS.request('Storage'), 'Storage')
   assert.ok(isSnapshotError(needs))

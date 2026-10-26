@@ -1,5 +1,5 @@
 import { THEME_MARKER } from '@inflozo/theme-compiler'
-import type { SnapshotCode } from '../lib/deploy.ts'
+import { BACKUP_WORDS, DEPLOY_WORDS, SNAPSHOT_STORAGE, SNAPSHOT_WORDS, type SnapshotCode } from '../lib/deploy.ts'
 import { SNAPSHOT_BUCKET, snapshotObjectKey } from '../app/(app)/app/(authed)/account/deletion-rule.ts'
 
 /**
@@ -63,7 +63,7 @@ export const downloadPath = (name: string): string => `themes/${encodeURICompone
 /** …and as B12b names them: the method and the Admin API's own path */
 export const requestOf = (path: string): string => `GET /ghost/api/admin/${path}`
 /** The store, as B12b names it when it is ours that refused */
-export const STORAGE = 'Storage'
+export const STORAGE = SNAPSHOT_STORAGE
 
 /** A Ghost theme's name, as a path segment and an object key may carry it: the slug Ghost itself names a theme by */
 const SAFE_NAME = /^[a-z0-9][a-z0-9._-]{0,127}$/i
@@ -140,7 +140,11 @@ export async function captureSnapshot(
   // the write: the object, then the row, then the old object
   const capturedAt = io.now().toISOString()
   const key = `${userId}/${siteId}/${capturedAt.replace(/[-:.]/g, '')}-${name}.zip`
-  const before = await io.current({ siteId, userId }).catch(() => null)
+  const before = await io.current({ siteId, userId }).catch(() => {
+    // the capture goes on; the previous object, unread, is left for the prefix drains — said, never silent
+    io.log('snapshot: the previous row was not read', { site: siteId })
+    return null
+  })
   try {
     await io.put(key, zip.bytes)
   } catch (thrown) {
@@ -160,4 +164,16 @@ export async function captureSnapshot(
   const old = before === null ? null : snapshotObjectKey(before.storage_path)
   if (old !== null && old !== key) await io.remove(old).catch(() => io.log('snapshot: the previous object was not removed', { site: siteId }))
   return { ok: true, id, theme: name, version, bytes: zip.bytes.length }
+}
+
+/** THE THEME DOWNLOAD'S ANSWER (`downloadLiveTheme`): null when a row was written (the browser follows Story 2.5's route), else
+ *  the row's sentence. The capture's own causes first — a token gone meanwhile is B12b's no-token body and a revoked one its
+ *  "no longer recognises", whatever Ghost's status — then our store, then Ghost's status, then no answer at all */
+export function downloadSaid(got: Snapshot, host: string): string | null {
+  if (got.ok) return 'marked' in got ? BACKUP_WORDS.marked : null
+  if (got.request === STORAGE) return DEPLOY_WORDS.infrastructure
+  if (got.code === 'snapshot_needs_token') return SNAPSHOT_WORDS.noToken
+  if (got.code === 'snapshot_token_refused') return SNAPSHOT_WORDS.tokenRefused
+  if (got.status !== undefined) return BACKUP_WORDS.downloadFailed(got.status)
+  return DEPLOY_WORDS.unreachable(host)
 }

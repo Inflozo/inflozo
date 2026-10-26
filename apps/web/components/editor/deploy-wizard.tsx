@@ -599,8 +599,9 @@ export function DeployWizard({
 
   /* ── STORY 7.19 — the Safety net's three presses (FR-C1, R-278, R-280) ── */
   /** Add token: Ghost is asked whose token it is (`addSafetyToken`) and only an Owner's or an Administrator's is kept; a kept
-   *  token goes straight on to the checks ("Adding…", then "Starting…"). A refusal is its one sentence under the box, and no
-   *  step changes. Should the checks then refuse to start (unsent edits, the lock), Destination says why — the token is kept */
+   *  token goes on to Backup while it is owed (Story 7.20a, `afterSafety`), else straight to the checks ("Adding…", then
+   *  "Starting…") — and from B12b it ships again, now capturing. A refusal is its one sentence under the box, and no step
+   *  changes. Should the checks then refuse to start (unsent edits, the lock), Destination says why — the token is kept */
   const addSafety = async () => {
     if (adding || pressed !== null || site === null) return
     setAdding(true)
@@ -1303,7 +1304,7 @@ export function DeployWizard({
   )
 
   /* ── S8d · Live, with the routing's ending ── */
-  const total = (['compiling', 'checking', 'uploading', 'activating'] as const).reduce((ms, s) => ms + (timings[s]?.ms ?? 0), 0)
+  const total = (['compiling', 'checking', 'snapshotting', 'uploading', 'activating'] as const).reduce((ms, s) => ms + (timings[s]?.ms ?? 0), 0)
   const routing = timings.routes
   const live = (
     <div className="flex flex-col gap-[18px]">
@@ -1688,7 +1689,9 @@ export function DeployWizard({
      No coral bar: no real byte count exists while it works (DESIGN.md:518-522) — row 2 carries the size once it is known ── */
   const snap = timings.snapshotting ?? {}
   const readDone = snap.marked === true || snap.theme !== undefined
-  const wroteDone = snap.marked === true || snap.bytes !== undefined
+  // row 2 is done only when nothing is written (the marked theme): its size is known before the write lands, and the frame draws
+  // it still running beside that size (the review, 2026-10-26) — the upload's own view takes over once the write is in
+  const wroteDone = snap.marked === true
   const archiving = (
     <div data-archiving className="flex flex-col gap-[18px]">
       <Rail at="ship" state="current" steps={steps} />
@@ -1750,8 +1753,9 @@ export function DeployWizard({
       </div>
       <div className="flex flex-col gap-[6px]">
         <div className="flex items-center gap-[10px]">
-          <Button id="deploy-b12-token" variant="primary" size={38} aria-disabled={pressed !== null || undefined} onClick={() => (pressed === null ? setRetoken(true) : undefined)}>
-            {SNAP.addToken}
+          {/* a kept token's re-ship is this button's work: "Starting…" until the row moves (R-98; the review, 2026-10-26) */}
+          <Button id="deploy-b12-token" variant="primary" size={38} aria-disabled={pressed !== null || undefined} aria-busy={pressed === 'ship' || undefined} onClick={() => (pressed === null ? setRetoken(true) : undefined)}>
+            <BusyLabel pending={pressed === 'ship'} busy={W.starting}>{SNAP.addToken}</BusyLabel>
           </Button>
           <Button
             id="deploy-without"

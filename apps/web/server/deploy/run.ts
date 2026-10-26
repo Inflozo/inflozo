@@ -471,6 +471,9 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
     const first = !(await twice(io, 'site bound', () => io.siteBound({ siteId: job.site_id, userId: job.user_id })))
     const capture = first && a.withoutSnapshot !== true
     if (first && !capture) c.snapshot({ skipped: true })
+    // a re-ship after B12b starts the archive's record afresh: a stale artefact recompiles first, and the failed capture's `at`
+    // left standing would name a compile or check failure "Archiving … failed" (the review, 2026-10-26)
+    if (capture) delete c.timings.snapshotting
     // one Ship it per row: the invocation that moves it off `awaiting_ship` ships; a second press's finds it moved. A capture's
     // earlier answer (B12b) is cleared by the same write
     if (!(await c.claim(stale ? 'compiling' : capture ? 'snapshotting' : 'uploading', { error: null }))) return
@@ -484,6 +487,9 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
     if (capture) {
       const got = await io.snapshot({ siteId: job.site_id, userId: job.user_id, route: ROUTE, progress: (p) => c.progress(p) })
       if (!got.ok) {
+        // B12a's Cancel, pressed while a capture that then failed was running, is honoured here — left on the row, B12b's next
+        // press would find it and clear a Ship it the customer asked for (the review, 2026-10-26)
+        if (await cancelled(io, job, c)) return
         // nothing uploaded, nothing bound: the job rests where Ship it found it, with the capture's answer for B12b
         io.log('deploy: the capture did not finish', { job: job.id, code: got.code, status: got.status })
         return void (await c.end('awaiting_ship', { error: snapshotError(got.code, got.request, got.status) }))

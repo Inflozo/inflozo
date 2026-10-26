@@ -7,7 +7,7 @@ import {
   bytesEqual, downloadHref, GHOST_DEFAULT_ROUTES, ROUTES_FALLBACK_WORDS as W, routesAnswer, routesToOffer, routesWrite, sizeLabel,
 } from './lib/routes-upload.ts'
 import { AdminError } from './server/ghost-admin/admin-rule.ts'
-import { offerRoutes, verifyRoutes, type RoutesIo, type RoutesRead } from './server/routes-upload.ts'
+import { liveRoutesFile, offerRoutes, verifyRoutes, type RoutesIo, type RoutesRead } from './server/routes-upload.ts'
 
 /* STORY 7.17 — FR-I4's ROUTES STEP: the pure rule (`lib/routes-upload.ts`) through every row of the spec's I/O matrix from
    Upload to First read, each beside its control, and the shell (`server/routes-upload.ts`) over a FAKE `io` — the order of
@@ -309,6 +309,41 @@ test('offerRoutes (the Review, 2026-10-18): a staff token that stopped working i
   const answered = fake({ staffLive: utf8(F), live: utf8(G) })
   assert.deepEqual(await offerRoutes(ARGS, answered.io), { kind: 'unchanged', file: F, sha256: sha(F) })
   assert.ok(!answered.seen.some((s) => s.what.startsWith('GET') && s.kind === 'admin'))
+})
+
+test('7.20a (R-282): the Backup step\'s routes.yaml Download — the staff read where a token is stored, else the Admin key; a staff read Ghost refused falls back to the Admin key, one Ghost never answered does not (one wait, not two)', async () => {
+  type Seen = { kind: string }[]
+  const io = (answers: Record<'staff' | 'admin', Array<{ ok: boolean; status: number } | Error>>, seen: Seen): Pick<RoutesIo, 'call'> => ({
+    call: async (args) => {
+      const kind = args.kind === 'staff' ? 'staff' : 'admin'
+      seen.push({ kind })
+      const next = answers[kind].shift()
+      if (next instanceof Error) throw next
+      if (next === undefined) throw new Error('unexpected call')
+      return { ok: next.ok, status: next.status, body: null, bytes: next.ok ? utf8(F) : utf8('{}') } as Awaited<ReturnType<RoutesIo['call']>>
+    },
+  })
+  const at = { siteId: 'site', route: 'projects/editor/backup/routes' }
+  // no token stored: the Admin key alone
+  const plain: Seen = []
+  assert.deepEqual(await liveRoutesFile(io({ staff: [], admin: [{ ok: true, status: 200 }] }, plain), { ...at, staff: false }), { ok: true, bytes: utf8(F) })
+  assert.deepEqual(plain, [{ kind: 'admin' }])
+  // a token stored: the staff read, and only it, when it answers (THE CONTROL)
+  const staff: Seen = []
+  assert.deepEqual(await liveRoutesFile(io({ staff: [{ ok: true, status: 200 }], admin: [] }, staff), { ...at, staff: true }), { ok: true, bytes: utf8(F) })
+  assert.deepEqual(staff, [{ kind: 'staff' }])
+  // a revoked token: Ghost's 401 to the staff read, then the Admin key reads the file
+  const revoked: Seen = []
+  assert.deepEqual(await liveRoutesFile(io({ staff: [{ ok: false, status: 401 }], admin: [{ ok: true, status: 200 }] }, revoked), { ...at, staff: true }), { ok: true, bytes: utf8(F) })
+  assert.deepEqual(revoked, [{ kind: 'staff' }, { kind: 'admin' }])
+  // Ghost's own refusal is the row's status
+  assert.deepEqual(await liveRoutesFile(io({ staff: [], admin: [{ ok: false, status: 503 }] }, []), { ...at, staff: false }), { ok: false, status: 503 })
+  // no answer at all: unreachable, and a site that did not answer the staff read is not asked a second time
+  const silent: Seen = []
+  assert.deepEqual(await liveRoutesFile(io({ staff: [new AdminError({ code: 'ghost_unreachable', message: 'x' })], admin: [{ ok: true, status: 200 }] }, silent), { ...at, staff: true }), { ok: false, unreachable: true })
+  assert.deepEqual(silent, [{ kind: 'staff' }])
+  // another chokepoint error (ours) is neither Ghost's status nor unreachable
+  assert.deepEqual(await liveRoutesFile(io({ staff: [], admin: [new AdminError({ code: 'store_failed', message: 'x' })] }, []), { ...at, staff: false }), { ok: false })
 })
 
 test('verifyRoutes reads with the Admin key and compares bytes with the file offered; only verified writes', async () => {

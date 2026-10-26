@@ -84,7 +84,8 @@ async function liveAnswer(io: Pick<RoutesIo, 'call'>, siteId: string, route: str
  */
 export async function liveRoutesFile(io: Pick<RoutesIo, 'call'>, args: { siteId: string; route: string; staff: boolean }): Promise<{ ok: true; bytes: Uint8Array } | { ok: false; status?: number; unreachable?: true }> {
   const staff = args.staff ? await liveAnswer(io, args.siteId, args.route, 'staff') : null
-  const answer = staff !== null && 'bytes' in staff ? staff : await liveAnswer(io, args.siteId, args.route, 'admin')
+  // a site that did not answer the staff read is not asked again with the Admin key: one wait, never two (the review, 2026-10-26)
+  const answer = staff !== null && ('bytes' in staff || ('thrown' in staff && staff.thrown === 'ghost_unreachable')) ? staff : await liveAnswer(io, args.siteId, args.route, 'admin')
   if ('bytes' in answer) return { ok: true, bytes: answer.bytes }
   if ('status' in answer) return { ok: false, status: answer.status }
   return answer.thrown === 'ghost_unreachable' ? { ok: false, unreachable: true } : { ok: false }

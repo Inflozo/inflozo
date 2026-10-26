@@ -5,7 +5,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { CompileRefusal } from '@inflozo/theme-compiler/refusal'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
-import { DEPLOY_WORDS, endingOf, stepOf } from './lib/deploy.ts'
+import { DEPLOY_WORDS, endingOf, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
 import type { RoutesOutcome } from './lib/routes-upload.ts'
 import { activate, cancel, preflight, preflightFacts, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
 import type { ProjectRead } from './server/deploy/project-input.ts'
@@ -785,7 +785,9 @@ test('7.20a: a capture that does not finish UPLOADS NOTHING — the job rests at
     assert.equal(w.calls.length, 0, 'nothing reached Ghost\'s write path')
     assert.deepEqual(w.bound, [], 'nothing bound')
     const f = failure as { code: string; request: string; status?: number }
-    assert.deepEqual(rested.error, { code: f.code, message: (rested.error as { message: string }).message, request: f.request, ...(f.status === undefined ? {} : { status: f.status }) })
+    // B12b's body by cause — and a refusal of OUR store is ours, never "Ghost didn't hand over"
+    const message = f.request === 'Storage' ? DEPLOY_WORDS.infrastructure : f.code === 'snapshot_needs_token' ? SNAPSHOT_WORDS.noToken : SNAPSHOT_WORDS.tokenRefused
+    assert.deepEqual(rested.error, { code: f.code, message, request: f.request, ...(f.status === undefined ? {} : { status: f.status }) })
     assert.equal((w.deploys.get(job.deploy_id as string) as DeployRow).status, 'checking', 'the artefact stays shippable')
   }
 })
@@ -858,6 +860,55 @@ test('7.20a: B12b\'s Cancel cancels a job RESTING at awaiting_ship — its objec
   assert.equal(w.bucket.size, 0)
   const events = w.events.slice(w.events.indexOf('stage:awaiting_ship', w.events.indexOf('snapshot')))
   assert.ok(events.indexOf('object:remove') < events.indexOf('deploy:remove'), 'the object before the row (AD-29)')
+})
+
+test('7.20a: B12a\'s Cancel pressed while a capture that then FAILS runs is honoured — the job cancelled, not resting on B12b with the flag left for its next press', async () => {
+  let jobId = ''
+  const w = world({ siteBound: false, snapshot: [{ ok: false, code: 'snapshot_failed', request: 'GET /ghost/api/admin/themes/', status: 503 }], duringSnapshot: () => void cancel({ jobId, userId: U }, w.io) })
+  const job = await begin(w)
+  jobId = job.id
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  assert.equal(after.stage, 'cancelled', 'cancelled where the Cancel was pressed — was: awaiting_ship with cancel_requested still set')
+  assert.equal(w.calls.length, 0, 'nothing uploaded')
+  // THE CONTROL: the same failure with no Cancel rests on B12b
+  const rests = world({ siteBound: false, snapshot: [{ ok: false, code: 'snapshot_failed', request: 'GET /ghost/api/admin/themes/', status: 503 }] })
+  const j = await begin(rests)
+  await ship({ jobId: j.id, userId: U, mode: 'activate' }, rests.io)
+  assert.equal((rests.jobs.get(j.id) as JobRow).stage, 'awaiting_ship')
+})
+
+test('7.20a: a STALE artefact at a first upload recompiles, then archives, then uploads — and a re-ship after B12b starts the archive\'s record afresh, so a check that fails then is never "Archiving … failed"', async () => {
+  const w = world({ siteBound: false, hash: ['h1', 'h2'] })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const done = w.jobs.get(job.id) as JobRow
+  assert.equal(done.stage, 'done')
+  const stages = w.events.filter((e) => e.startsWith('stage:') || e === 'snapshot')
+  assert.deepEqual(stages.slice(stages.lastIndexOf('stage:awaiting_ship') + 1), ['stage:compiling', 'stage:checking', 'stage:snapshotting', 'snapshot', 'stage:uploading', 'stage:activating', 'stage:done'])
+
+  // B12b, then the project edited (stale), then a re-ship whose check fails: the failure is the check's, at Check
+  const r = world({ siteBound: false, hash: ['h1', 'h1', 'h2'], snapshot: [{ ok: false, code: 'snapshot_failed', request: 'GET /ghost/api/admin/themes/', status: 503 }] })
+  const j = await begin(r)
+  await ship({ jobId: j.id, userId: U, mode: 'activate' }, r.io)
+  assert.ok((r.jobs.get(j.id) as JobRow).stage_timings.snapshotting?.at !== undefined, 'the failed capture left its record')
+  r.io.gscan = async () => verdict([finding('error')])
+  await ship({ jobId: j.id, userId: U, mode: 'activate' }, r.io)
+  const failed = r.jobs.get(j.id) as JobRow
+  assert.notEqual(failed.stage, 'done')
+  assert.equal(failed.stage_timings.snapshotting, undefined, 'the old capture\'s record is gone — was: its `at` named the failure "Archiving … failed"')
+  assert.notEqual(stepOf(failed.stage, failed.stage_timings), 'ship')
+})
+
+test('7.20a: a capture that THROWS (no answer from us) is an infrastructure failure at Ship — nothing uploaded, the stage named as archiving', async () => {
+  const w = world({ siteBound: false, snapshot: [new Error('the store did not answer'), new Error('again')] })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  assert.equal(w.calls.length, 0, 'nothing uploaded')
+  assert.deepEqual(w.bound, [])
+  assert.notEqual(after.stage, 'done')
+  assert.ok(after.stage_timings.snapshotting?.at !== undefined && after.stage_timings.uploading === undefined, 'it failed in the archive, before any upload')
 })
 
 test('7.20a: Deploy only at a first upload captures exactly as Ship it does; Re-activate never captures', async () => {

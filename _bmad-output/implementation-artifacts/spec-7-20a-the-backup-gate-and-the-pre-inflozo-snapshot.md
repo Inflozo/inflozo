@@ -2,10 +2,10 @@
 title: 'Story 7.20a — The backup gate and the pre-Inflozo snapshot'
 type: 'feature'
 created: '2026-10-26'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'ad888249da79baed684a7ddff994cbcd6b7b981c'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-19-the-first-deploy-credential-step-and-its-decline-path.md', '{project-root}/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/BACKUP-GATE.md']
 ---
 
@@ -612,6 +612,40 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   The departures are those in Design Notes, each told.
 - Given the migrations are withheld, when the RLS gate runs, then the 7.20 block aborts at its first check.
 
+### Review Findings
+
+Five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the Real-infra verifier as subagents;
+walk step 117, T1's put-back and every T1 write in the main session, on the owner's in-session go). One decision for the
+owner (Question 5), 14 patches (all applied), 2 deferred, 18 dismissed — among them: B12b's Deploy without a snapshot is
+honoured on a ship that never rested on B12b (AD-29: a consent gate, not a control — it is the customer's own copy); the
+Theme Download's server action has no stated `maxDuration` (read from Vercel's project API: Fluid compute,
+`functionDefaultTimeout` 300 s, so the capture's 15 + 45 s of Ghost reads fit); a skipped capture leaves no trace (every Ghost
+call writes its audit row, `ghost-admin/index.ts`); two captures at once leaving an object behind (the prefix drains sweep it,
+as the capture's docblock says); B12b's "→ 200" for a list with no usable theme (true: Ghost answered 200 with nothing to
+take); B12b's "Settings → Design & branding" (the spec's Words, the label linked to the site's own panel — the doc comment
+that said "never a menu path" is corrected); the first upload after every linked project is deleted re-capturing (the I/O
+matrix's own "Project deleted" row — and Question 5's subject); the theme download's 45 s budget untested through `call()`
+(read: `ghost-admin/index.ts:377` hands `read` on and `:444` budgets by it); the route's `withoutSnapshot` and the server's
+writes proved only by source text (walk 117 executes both on production, below).
+
+- [ ] [Review][Decision] A Theme Download on a gate shown again after a reconnect replaces the snapshot the first upload took — AC5 says that snapshot "stays, through that"; Design Notes say the Download writes the site's row. Two approved texts disagree, so it is the owner's (Question 5) [`(editor)/actions.ts` `downloadLiveTheme` · `server/snapshot.ts`]
+- [x] [Review][Patch] B12a's Cancel pressed while a capture that then FAILED was running was lost: the job rested on B12b with `cancel_requested` still set, and B12b's next press (Deploy without a snapshot, or a kept token's re-ship) found it and cleared the job the customer had just asked to ship; the flag is now read before the job rests [`server/deploy/run.ts` `ship` · `deploy-run.test.ts`]
+- [x] [Review][Patch] A re-ship after B12b whose artefact had gone stale kept the failed capture's `at` through the recompile, so a compile or check failure then was named "Archiving your current theme failed" at Ship; a capturing re-ship now starts the archive's record afresh [`run.ts` · `deploy-run.test.ts`]
+- [x] [Review][Patch] B12b blamed Ghost ("Ghost didn't hand over your live theme") for a refusal of our own store; a `Storage` answer now says the infrastructure sentence, as the Theme Download already did [`lib/deploy.ts` `snapshotError` · `deploy.test.ts` · `deploy-run.test.ts`]
+- [x] [Review][Patch] The Theme Download read Ghost's status before the capture's cause, so a revoked token said "Ghost didn't hand over the file (401)" and a token removed meanwhile "(403)"; the mapping is now one pure function, causes first, and tested [`server/snapshot.ts` `downloadSaid` · `(editor)/actions.ts` · `snapshot.test.ts`]
+- [x] [Review][Patch] The `routes.yaml` Download asked again with the Admin key after the staff read found no Ghost at all — two 15-second waits before "unreachable" — and `liveRoutesFile` had no test; it now falls back only on Ghost's own refusal, with a test of every branch [`server/routes-upload.ts` · `routes-upload.test.ts`]
+- [x] [Review][Patch] A failed read of the site's current snapshot row was swallowed silently; it is now logged before the capture goes on [`server/snapshot.ts`]
+- [x] [Review][Patch] B12a ticked "Writing the snapshot" done as soon as its size was known, before the write; the frame draws it still running beside the size, and journeys (e) and (e3) now hold both states [`components/editor/deploy-wizard.tsx` · `journey.spec.mjs`]
+- [x] [Review][Patch] B12b's Add token started a re-ship that no control said was working (R-98); the button now says "Starting…" and is `aria-busy` until the row moves [`deploy-wizard.tsx` · `busy.test.ts`]
+- [x] [Review][Patch] Live's total time left out the archive's [`deploy-wizard.tsx` S8d]
+- [x] [Review][Patch] No test ran a stale artefact at a first upload (recompile, then archive, then upload), or a capture that throws [`deploy-run.test.ts`]
+- [x] [Review][Patch] `hostedByGhost` was inserted between `capabilityOf` and its docblock, orphaning it, and still said an unknown host "draws both paths" [`lib/probe-rule.ts`]
+- [x] [Review][Patch] Comments R-281 and R-283 left stale: the marker "gates restore scope" (7.23's since R-281), `addSafety`'s "straight on to the checks", the Backup actions' "D1d/D1d′/D1e", `SNAPSHOT_WORDS`' "never as a menu path", and `record-snapshot.mjs`' "six GETs and the capture's own two" (a count, already wrong) [`theme-compiler/src/compile.ts` · `deploy-wizard.tsx` · `(editor)/actions.ts` · `lib/deploy.ts` · `record-snapshot.mjs`]
+- [x] [Review][Patch] R-283 never reached `epics.md`: Story 7.20a's card still matched D1d′ and D1e; a dated note now says the gate as cut, and R-283's target list carries it [`epics.md` · `reconcile-designs-decisions.md`]
+- [x] [Review][Patch] `deploy-run.test.ts` built B12b's expected body from the actual one, so no body was ever checked; it now names each cause's sentence [`deploy-run.test.ts`]
+- [x] [Review][Defer] The database's own comment on `sites.hosted_by_ghost` (applied at Schema) and `SCHEMA.sql`'s mirror still describe a D1e gate and "both paths" [`20261027120000_backup_gate.sql` · `SCHEMA.sql`] — deferred, a production DDL apply of its own (DW-390, Story 7.20b's Schema)
+- [x] [Review][Defer] The Theme Download follows Story 2.5's route as a link, so its improbable 404, 502 or sign-in answer replaces the editor page instead of a sentence under the row [`deploy-wizard.tsx` `follow`] — deferred to the story that offers the same download again (DW-391, Story 7.23)
+
 ## Spec Change Log
 
 **Dev (2026-10-26) — readings and departures, each a routine call told in one line (none changes what a surface does):**
@@ -685,6 +719,19 @@ longer holds:
   and the link; the frame's lead (`:248`) is not drawn. The floor's Backup case holds the card to "scrolls inside the wizard
   wherever it is taller than the window" (cut to two rows, it may fit whole at 1440 × 900, which the floor does not assert;
   stacked at 390 it is taller and scrolls, which it does).
+
+**Review (2026-10-26) — readings, each a routine call told in one line (none changes what a surface does):**
+- **Our store's refusal says the infrastructure sentence** (`DEPLOY_WORDS.infrastructure`), on B12b as on the Theme row — an
+  approved sentence, never "Ghost didn't hand over"; the inset still names `Storage`.
+- **A revoked token's Theme Download says B12b's "no longer recognises" body** (`SNAPSHOT_WORDS.tokenRefused`), and a token
+  removed meanwhile its no-token body, whatever Ghost's status.
+- **B12a's row 2 stays running beside its size** until the upload's own view takes over, as the frame draws it; a marked theme's
+  row 2 is done at once.
+- **B12b's Add token says "Starting…"** while the re-ship its kept token started is out.
+- **Live's total counts the archive's time.**
+- **The `routes.yaml` Download asks once when Ghost does not answer** — the Admin key's fallback is for Ghost's own refusal.
+- **Weighed, and put to the owner (Question 5):** Dev's "For the Review to weigh" line above. AC5 and Design Notes disagree, so
+  the code is unchanged until he rules.
 
 ## Design Notes
 
@@ -824,7 +871,7 @@ Addresses that need your project's id are written `<P>`: copy it from the addres
 ## Questions for the owner
 
 Questions 1 and 2 were ruled on 2026-10-26, each option 1 (R-281, R-282). Questions 3 and 4 were ruled the same day after
-Dev, when the owner cut the gate to two rows (R-283). None is open. "Ruled values" in Design Notes holds what 1 and 2 set;
+Dev, when the owner cut the gate to two rows (R-283). **Question 5, from the Review, is open.** "Ruled values" in Design Notes holds what 1 and 2 set;
 the Intent's R-283 paragraph and "Words" hold what 3 and 4 set.
 
 ### Question 1 — One story or two (and restore with Deploy History)?
@@ -908,6 +955,32 @@ to you. Ghost's help on exports ↗"*, then *"To continue, save a copy of the tw
 2. **Shorter:** one sentence and the link, no lead-in line.
 
 **Ruled: option 1 (owner, 2026-10-26) — R-283.**
+
+### Question 5 — Once Inflozo has saved your original theme, can anything replace it?
+
+**In plain English.** The first time Inflozo uploads to a site, it saves a copy of the theme that was live there — your
+"original", the one "Restore original" (Story 7.23) puts back. Two things can replace that saved copy today: pressing
+**Download** on the Backup step's Theme row (it saves whatever theme is live at that moment, then hands it to you), and the
+first upload after every project linked to that site has been deleted. Usually nothing changes, because the live theme by
+then is Inflozo's own and is never saved. It changes only if someone has put a different, non-Inflozo theme live in Ghost
+Admin in between. The acceptance criteria say the first copy "stays, through" a disconnect and reconnect; the design notes
+say the Download writes the copy. They disagree, so this is yours.
+
+**An example.** Your site ran **Casper** when you first shipped with Inflozo, so Casper is saved. Later you disconnect, switch
+the site to a theme you bought, **Edition**, in Ghost Admin, and reconnect. The Backup step shows again, and you press
+**Download** on Theme.
+- Under option 1, you get your saved **Casper**, and Casper stays the original.
+- Under option 2, Inflozo saves **Edition**, hands it to you, and Edition becomes the original — Casper's copy is gone from
+  Inflozo (Ghost itself still keeps Casper installed).
+
+1. **(RECOMMENDED) Keep the first copy for ever.** Once a site has a saved original, nothing replaces it: the Theme row's
+   Download hands that saved copy back, and a later first upload (after projects are deleted) saves nothing new. It is what
+   "the original" means, and what the acceptance criteria promise.
+2. **Keep it as built.** The Download, and the first upload after every linked project is deleted, save whatever
+   non-Inflozo theme is live then, replacing the earlier copy — "what we roll back to" is the theme Inflozo replaced most
+   recently.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -1020,3 +1093,54 @@ R-82's real services for this story:
   reworded confirm and the footer, as R-283 rules.
 - Walk step 117 (re-expected for two rows) is still the Review's, on the deployed sha, with its own T1 go.
 
+
+**Executed — Review (2026-10-26 IST, Node 24; the owner's in-session go, "1. Go, the whole run", then "1. Yes, reset and
+re-run" for T1's leftover theme; keys read in-process by their variable names):**
+- **GitHub CI and Vercel** (`GITHUB_TOKEN`, `VERCEL_TOKEN`, read only) on the Dev head `c9b34168`: CI `rls` ✓, `check` ✓,
+  `deploy` ✓, Render matrix ✓; `dpl_8X8gdULkf7JJRPpdzBBA1M24PFpu` READY and serving `app.inflozo.com` and `inflozo.com`. The
+  project's function default, read from Vercel's API: Fluid compute, `functionDefaultTimeout` 300 s (the Theme Download's
+  server action runs under it).
+- **Supabase production, read only** (`SUPABASE_DB_POOLER_URL`, every read inside `BEGIN READ ONLY`): both columns
+  (`timestamp with time zone`, `boolean`, nullable, no default, their comments), `authenticated` reading and updating
+  neither (its UPDATE columns still `favicon_url, title, updated_at`), `job_stage` with `snapshotting` (3.75) between
+  `awaiting_ship` and `uploading`, `deploy_jobs_owner_cancel` on `{queued,compiling,checking,snapshotting}`, `site_snapshots`'
+  columns and `UNIQUE (site_id)`, its one select policy, and the `site-snapshots` bucket private with no Storage policy.
+  Controls: `hosted_on_ghost_pro` and `restoring` absent, `uploading` not in the cancel policy, `title` updatable. **R-99
+  holds: production is at least as new as the code.**
+- **Vercel, unauthenticated:** `GET /snapshots/{zero uuid}/download` → 303 to `/sign-in` (the route's own guard); `POST
+  /projects/{zero uuid}/deploy` with `withoutSnapshot: true` → 401 "Not signed in" (the route's own refusal; the control, a
+  route that does not exist, is the proxy's 307).
+- **T1, read only, through the product's `adminRequest`:** staff `GET themes/` → 200, `casper` 5.12.1 active,
+  `package.inflozo` false; staff `GET themes/casper/download/` → 200 `application/zip`, `attachment; filename=casper.zip`,
+  291174 bytes from `PK`; the same with one hex digit flipped → **401** (the control); the Admin key → **403** on the list
+  and on the download; `GET settings/routes/yaml/` with the Admin key → 200, 130 bytes; `GET config/` → no `hostSettings`
+  (`hostedByGhost` false). `captureSnapshot` with real T1 reads and recorded writes: captured (object, then row), and
+  `snapshot_needs_token` 403 with no token, `snapshot_token_refused` 401 with the flipped one, nothing written by either.
+- **Walk step 117 on production and T1** (a cut of steps 1–5 + 117, from a clean worktree at `c9b34168`, `T1_WRITES=1`):
+  - **Run 1** wrote nothing: its start guard read `inflozo-ghost6` live on T1 (left by an earlier test) and refused, as it
+    must. On the owner's go T1 was put back with the staff token: Casper activated (200), `inflozo-ghost6` deleted (204),
+    the list read back `casper* racer source`.
+  - **Run 2: 117a, 117b and 117c all PASS** (59 PASS, 1 FAIL). The gate on the real stack: `hosted_by_ghost` false at
+    connect; the six-step rail and Next; Add token → Backup with the advice, two rows and both Downloads; the Theme Download
+    wrote the row (`casper`, 291174 bytes) and Story 2.5's route answered 303 to a signed URL whose bytes equal Ghost's own
+    (sha256 595f6552…); `routes.yaml` saved byte for byte (130); `backup_confirmed_at` set by Run checks; Ship it archived
+    in its own stage (`casper` 5.12.1, 291174 bytes, 1.07 s), re-captured with the old object gone, and went Live. 117b:
+    four steps, the live `inflozo-` theme `marked`, the row unchanged. 117c: disconnect cleared `backup_confirmed_at` and
+    kept the row, reconnect re-adopted the record, the gate showed again with no Theme Download and `routes.yaml`'s, Ship it
+    rested on B12b with `GET /ghost/api/admin/themes/ → 403` and nothing uploaded, then Deploy without a snapshot went Live
+    with `{ skipped: true }`. **117d died** at its first `waitForURL` (the account's deletion request never reached
+    `/restore` within 30 s). `finally` put T1 back (`casper*`, no `inflozo-` theme), deleted account H and counted users and
+    projects back.
+  - **117d alone** (a T1-free cut: a throwaway account, `/account` → Delete account → the phrase → `/restore`, then Restore
+    account): **PASS both** — `POST /account → 200`, redirected to `/restore`, then `/?restored=1`; the account deleted.
+    The surface is Story 2.5's and holds; 117d is re-run whole on the Review's deployment (below).
+- **Patches, each test first seen red at the unpatched line** (`apps/web`, `node --test`; the file restored byte-identical
+  after each): the Cancel during a failing capture (`run.ts`), the stale re-ship's record (`run.ts`), the store's body
+  (`lib/deploy.ts`), `downloadSaid`'s order (`server/snapshot.ts`), `liveRoutesFile`'s one wait (`routes-upload.ts`) — all
+  five RED, then green; `busy.test.ts` RED without B12b's busy Add token; journey (e) RED at "running" with the old row-2
+  rule (`cmp` after).
+- `pnpm check` (Node 24): green, 0 failed (each package prints its own count).
+- `pnpm keyboard -g '7\.20a'`: 17 passed. Then `pnpm keyboard` whole on the patched tree: 313 passed, 8 failed in 21.9 min —
+  all eight floor cases (7.3's bin, 7.13's card clicks, the bar's widths, DW-283, 7.18a's narrow bar) waiting for a painted
+  canvas, while a server file was edited under `next dev` mid-run (the Dev run's own cause). `--last-failed`: 8 passed.
+  `pnpm check` re-run green after that edit.

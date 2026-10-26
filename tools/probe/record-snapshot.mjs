@@ -31,7 +31,7 @@
  * (object before row), a marked theme as `marked` (nothing written), an Admin key's 403 and 501 as `snapshot_needs_token`, and
  * a staff 401 as `snapshot_token_refused` (each the next one's control).
  *
- * THE --t1 HALF (T1 `GHOST6_URL`, 6.x). READ ONLY: six GETs and the capture's own two. Each row prints status, content type,
+ * THE --t1 HALF (T1 `GHOST6_URL`, 6.x). READ ONLY: the GETs below and the captures' own. Each row prints status, content type,
  * disposition, byte length, the `PK` magic and a sha256 — never a body, a name of a person or a key.
  * WHAT IT WRITES HERE: with --t1 and every row held, MEASUREMENTS.md §89 alone, replacing an earlier §89 of its own.
  *

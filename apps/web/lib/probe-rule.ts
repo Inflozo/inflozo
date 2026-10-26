@@ -451,6 +451,16 @@ export type CapabilityVerdict =
   | null
 
 /**
+ * STORY 7.20a — WHICH HOST THE BACKUP STEP IS DRAWN FOR (`sites.hosted_by_ghost`), from the `config` body the probe already
+ * parses: `hostSettings` present is Ghost(Pro), absent is self-hosted. Read in source: `public-config/config.js:61`
+ * answers `hostSettings: config.get('hostSettings')`, and no self-hosted default sets it — unobserved on a Ghost(Pro) site until
+ * the Ghost(Pro) launch gate. A body nobody parsed answers undefined, and the probe then writes nothing (null stays "not yet
+ * probed", whose sub line is the address alone — since R-283 the host names the sub line and nothing else).
+ */
+export const hostedByGhost = (body: { hostSettings?: unknown; [key: string]: unknown } | null | undefined): boolean | undefined =>
+  body === null || body === undefined || typeof body !== 'object' ? undefined : body.hostSettings !== undefined && body.hostSettings !== null
+
+/**
  * `customThemes` IS AN ALLOWLIST OF THEME NAMES, NOT A BOOLEAN (read in Ghost's source; EXPERIENCE
  * F5), so "present" does not mean "blocked". The test is whether any entry begins `inflozo-`; a
  * Starter allowlist of Ghost's own themes admits none, which is the answer FR-C2 wants.
@@ -474,16 +484,6 @@ export type CapabilityVerdict =
  * not a judgement about a plan, which is why T1 and T3 come out `full`/`probe` in production with
  * the flag off.
  */
-/**
- * STORY 7.20a — WHICH HOST THE BACKUP STEP IS DRAWN FOR (`sites.hosted_by_ghost`), from the `config` body the probe already
- * parses: `hostSettings` present is Ghost(Pro) (D1e), absent is self-hosted (D1d). Read in source: `public-config/config.js:61`
- * answers `hostSettings: config.get('hostSettings')`, and no self-hosted default sets it — unobserved on a Ghost(Pro) site until
- * the Ghost(Pro) launch gate. A body nobody parsed answers undefined, and the probe then writes nothing (null stays "not yet
- * probed", which draws both paths).
- */
-export const hostedByGhost = (body: { hostSettings?: unknown; [key: string]: unknown } | null | undefined): boolean | undefined =>
-  body === null || body === undefined || typeof body !== 'object' ? undefined : body.hostSettings !== undefined && body.hostSettings !== null
-
 export function capabilityOf(hostSettings: unknown, flagOn: boolean): CapabilityVerdict {
   if (hostSettings === undefined || hostSettings === null) return FULL
   if (!flagOn) return null
