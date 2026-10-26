@@ -4393,7 +4393,9 @@ is `THEME_MARKER` in `@inflozo/theme-compiler` — and it is read from **`GET /t
 returns each theme's whole parsed `package.json` as `package` on both majors (`core/server/lib/package-json`, read in
 source), so knowing whether the live theme is Inflozo's needs no download (Story 7.2's T1 run executes the read).
 **And** snapshots are stored **per site record id**, survive project deletion and disconnect/reconnect, and are
-offered as a download before account purge
+offered as a download before account purge *(Story 7.20a's Question 5 — owner, 2026-10-26, **R-284**: the site's one saved
+original is the theme Inflozo replaced most recently — the gate's Theme Download, and the first upload after every linked
+project is deleted, replace it with whatever non-Inflozo theme is live then)*
 **And** the gate matches D1d self-hosted, D1d′ with the shortcut ticked and D1e Ghost(Pro); the running and
 degraded snapshot states match B12a and B12b as corrected. *(Story 7.20a's Questions 3 and 4 — owner, 2026-10-26,
 **R-283**: the gate asks for **two rows only**, Theme and `routes.yaml`, each with its tick and Download, under friendly
@@ -4536,6 +4538,9 @@ require the edit lock**
 **And** *(moved from Story 7.20 by its Question 1 — owner, 2026-10-26, R-281)* restoring is a one-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload
 with its own gscan**, so an old fork can be rejected on the way back in; that case has a designed fallback too,
 offering the zip as a download and pointing at Settings → Design
+**And** *(R-284 — owner, 2026-10-26, Story 7.20a's Question 5)* "Restore original" puts back the site's one saved
+snapshot, which is **the theme Inflozo replaced most recently**: Story 7.20a's Theme Download and the first upload after
+every linked project is deleted each replace it with the non-Inflozo theme live then
 **And** *(DW-389, Story 7.20's Create, 2026-10-26)* Ghost refuses an upload named `casper.zip` or `source.zip` on both
 majors and never deletes either, so restoring a default theme as the original is an activation of Ghost's installed copy,
 never a re-upload of the snapshot

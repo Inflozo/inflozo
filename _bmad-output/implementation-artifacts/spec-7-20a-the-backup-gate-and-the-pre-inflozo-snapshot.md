@@ -601,7 +601,10 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   Deploy without a snapshot and Cancel. Ghost 5's 501 and Ghost 6's 403 read as one Inflozo code.
 - Given a confirmed gate, when the site is disconnected and reconnected, then the gate shows again. The snapshot taken at
   the first upload stays, through that and through project deletion, and is listed on `/restore` during an account
-  deletion window.
+  deletion window. *(R-284, owner, 2026-10-26, Question 5: "stays" means the disconnect, the reconnect and the deletion
+  themselves never touch the row. A later Theme Download, or the first upload after every linked project is deleted,
+  replaces it with whatever non-Inflozo theme is live then: the saved original is the theme Inflozo replaced most
+  recently.)*
 - Given each surface, when compared with its frame, then it matches:
   - the gate matches D1d in `D1 First-Deploy Gates.dc.html` (`:208-358`) as R-283 cut it — the panel, the advice in the
     shortcut panel's place, the Theme and `routes.yaml` rows, the rule, the master confirm and the footer — at 780px;
@@ -628,7 +631,7 @@ matrix's own "Project deleted" row — and Question 5's subject); the theme down
 (read: `ghost-admin/index.ts:377` hands `read` on and `:444` budgets by it); the route's `withoutSnapshot` and the server's
 writes proved only by source text (walk 117 executes both on production, below).
 
-- [ ] [Review][Decision] A Theme Download on a gate shown again after a reconnect replaces the snapshot the first upload took — AC5 says that snapshot "stays, through that"; Design Notes say the Download writes the site's row. Two approved texts disagree, so it is the owner's (Question 5) [`(editor)/actions.ts` `downloadLiveTheme` · `server/snapshot.ts`]
+- [x] [Review][Decision] A Theme Download on a gate shown again after a reconnect replaces the snapshot the first upload took — AC5 says that snapshot "stays, through that"; Design Notes say the Download writes the site's row. Two approved texts disagree, so it is the owner's (Question 5) [`(editor)/actions.ts` `downloadLiveTheme` · `server/snapshot.ts`] — **ruled option 2, keep it as built (R-284, owner, 2026-10-26)**: the code is unchanged, the rule is written beside it
 - [x] [Review][Patch] B12a's Cancel pressed while a capture that then FAILED was running was lost: the job rested on B12b with `cancel_requested` still set, and B12b's next press (Deploy without a snapshot, or a kept token's re-ship) found it and cleared the job the customer had just asked to ship; the flag is now read before the job rests [`server/deploy/run.ts` `ship` · `deploy-run.test.ts`]
 - [x] [Review][Patch] A re-ship after B12b whose artefact had gone stale kept the failed capture's `at` through the recompile, so a compile or check failure then was named "Archiving your current theme failed" at Ship; a capturing re-ship now starts the archive's record afresh [`run.ts` · `deploy-run.test.ts`]
 - [x] [Review][Patch] B12b blamed Ghost ("Ghost didn't hand over your live theme") for a refusal of our own store; a `Storage` answer now says the infrastructure sentence, as the Theme Download already did [`lib/deploy.ts` `snapshotError` · `deploy.test.ts` · `deploy-run.test.ts`]
@@ -731,8 +734,9 @@ longer holds:
 - **B12b's Add token says "Starting…"** while the re-ship its kept token started is out.
 - **Live's total counts the archive's time.**
 - **The `routes.yaml` Download asks once when Ghost does not answer** — the Admin key's fallback is for Ghost's own refusal.
-- **Weighed, and put to the owner (Question 5):** Dev's "For the Review to weigh" line above. AC5 and Design Notes disagree, so
-  the code is unchanged until he rules.
+- **Weighed, and put to the owner (Question 5):** Dev's "For the Review to weigh" line above. AC5 and Design Notes disagreed.
+  **Ruled option 2 (R-284, owner, 2026-10-26): kept as built** — the saved original is the theme Inflozo replaced most
+  recently; the rule is written in `server/snapshot.ts`' docblock.
 
 ## Design Notes
 
@@ -803,7 +807,8 @@ nothing else. *(Ruled: option 1 of each — R-281 and R-282, owner, 2026-10-26.)
 - **Sites already shipped to before this story show the gate once on their next deploy.** Consent was never collected
   there. Only test sites exist, because the product is pre-launch.
 - **The Theme Download writes the site's snapshot row,** because AD-13 serves bytes only from Storage. A later first upload
-  re-captures and replaces it. `ponytail:` a failed capture at ship leaves the gate-time row in place, labelled by its
+  re-captures and replaces it. *(R-284, owner, 2026-10-26: kept as built — every Download and every binding-less first
+  upload replace the row with the live non-Inflozo theme.)* `ponytail:` a failed capture at ship leaves the gate-time row in place, labelled by its
   `captured_at`.
 - **D1b's copy and D1c's first row** (7.19) become true with this story. Neither changes.
 
@@ -872,7 +877,8 @@ Addresses that need your project's id are written `<P>`: copy it from the addres
 ## Questions for the owner
 
 Questions 1 and 2 were ruled on 2026-10-26, each option 1 (R-281, R-282). Questions 3 and 4 were ruled the same day after
-Dev, when the owner cut the gate to two rows (R-283). **Question 5, from the Review, is open.** "Ruled values" in Design Notes holds what 1 and 2 set;
+Dev, when the owner cut the gate to two rows (R-283). Question 5, from the Review, was ruled the same day, option 2 (R-284).
+None is open. "Ruled values" in Design Notes holds what 1 and 2 set;
 the Intent's R-283 paragraph and "Words" hold what 3 and 4 set.
 
 ### Question 1 — One story or two (and restore with Deploy History)?
@@ -981,7 +987,9 @@ the site to a theme you bought, **Edition**, in Ghost Admin, and reconnect. The 
    non-Inflozo theme is live then, replacing the earlier copy — "what we roll back to" is the theme Inflozo replaced most
    recently.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-10-26) — R-284.** *"Keep it as built. The Download, and the first upload after every
+linked project is deleted, save whatever non-Inflozo theme is live then, replacing the earlier copy — "what we roll back to"
+is the theme Inflozo replaced most recently."*
 
 ## Verification
 

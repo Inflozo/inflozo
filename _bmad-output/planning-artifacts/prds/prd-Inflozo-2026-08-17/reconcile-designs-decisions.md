@@ -6063,6 +6063,26 @@ and **Question 4, option 1** (the advice as drafted).
   ✅ `epics.md` Story 7.20a (a dated note on its frame criterion and its Frame line — missed at the ruling, landed by 7.20a's
   Review, 2026-10-26).
 
+**R-284 — a site's saved original is the theme Inflozo replaced most recently.** Story 7.20a's Review, Question 5, ruled
+**option 2** (owner, 2026-10-26): *"Keep it as built. The Download, and the first upload after every linked project is
+deleted, save whatever non-Inflozo theme is live then, replacing the earlier copy — "what we roll back to" is the theme
+Inflozo replaced most recently."*
+
+- **Why it was a question.** Story 7.20a's acceptance criteria said the snapshot taken at the first upload "stays, through"
+  a disconnect and reconnect and through project deletion; its Design Notes said the Theme Download writes the site's
+  snapshot row, and its I/O matrix that the first upload after a project's deletion re-captures. Two approved texts
+  disagreed, and Dev and three review layers raised it.
+- **The rule.** The site keeps ONE pre-Inflozo snapshot (`site_snapshots`, one row per site record). Two things replace it,
+  each only when the live theme is not Inflozo's (the marker, FR-J13): the Backup step's **Theme Download**, whenever the
+  gate shows (a reconnect makes it owed again), and the **first upload to a site with no binding** — which includes the
+  first upload after every project linked to it was deleted. A disconnect and reconnect alone, or project deletion alone,
+  never touches the row; a deploy to a site that already has a binding never captures. Story 7.23's "Restore original"
+  puts back that one row: the theme Inflozo replaced most recently, B12a's "this is what we roll back to".
+- **Declined.** Option 1, keep the first copy for ever (the Download handing back the saved original).
+- Targets: ✅ this entry · ✅ Story 7.20a's spec (Question 5, the acceptance criterion's dated note, Design Notes, the
+  Review's findings) · ✅ `epics.md` Story 7.20a's card and Story 7.23's (dated) · ✅ `prd.md` FR-J13 (dated note) · ✅
+  `epic-7-context.md` · ✅ the code (`server/snapshot.ts`' docblock).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
