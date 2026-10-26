@@ -410,7 +410,9 @@ test('every emitted filter is the fixture\'s own, and reads back through readNql
 })
 
 for (const [version, nql] of MAJORS) {
-  test(`Ghost ${version}'s NQL parses every emitted filter, bare and as (\${f})+type:post, to the intended filter — never a yg key`, () => {
+  test(`Ghost ${version}'s NQL parses every emitted filter, bare and as (\${f})+type:post, to the intended filter — never a yg key`, (t) => {
+    // a relative date (now-1y) resolves at parse time, so two parses a second apart differ: freeze the clock (CI's deploy build flaked on it)
+    t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 26) })
     for (const { name, filters } of ROUTES_FIXTURES) {
       for (const f of filters) {
         const bare = nql(f.nql).parse()

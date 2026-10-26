@@ -830,7 +830,7 @@ is never enough. The owner is Story 7.23 (R-281).
 
 ## Owner's manual test
 
-You test as **`umngkmr+backup720@gmail.com`** (Part A) and **`umngkmr+backup720b@gmail.com`** (Part B), both fresh, on
+You test as **`umngkmr+backup720a@gmail.com`** (Part A) and **`umngkmr+backup720b@gmail.com`** (Part B), both fresh, on
 the Ghost 6 test site (T1). Deploy fills in the URLs and checks that both aliases are unused. Before you start, in
 **ghost6.inflozo.com's Ghost Admin** (`https://ghost6.inflozo.com/ghost/`):
 - **Casper** must be the active theme;
@@ -848,7 +848,7 @@ Addresses that need your project's id are written `<P>`: copy it from the addres
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the first alias and open the link in your inbox. | `umngkmr+backup720@gmail.com` | Start. |
+| 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the first alias and open the link in your inbox. | `umngkmr+backup720a@gmail.com` | Start. |
 | 2 | `https://app.inflozo.com/sites` | Sites | Press **Connect a site** and finish the wizard with the integration's two keys. | `https://ghost6.inflozo.com` + the two keys | ghost6 is **Connected**, and a project linked to it opens. |
 | 3 | `https://app.inflozo.com/projects/<P>` | Editor | Press **Ship it**. | — | The button reads **Next**, and the steps read **Destination · Safety net · Backup · Check · Ship · Live**. |
 | 4 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Next**, paste your profile's token, and press **Add token**. | your token | "Adding…", then a wide card: **"Back your site up before we replace the theme"**, with "Self-hosted Ghost · ghost6.inflozo.com" under it. |
