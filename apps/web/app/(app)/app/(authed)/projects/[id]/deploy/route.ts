@@ -43,11 +43,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return no(400, 'Not JSON')
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
-  const { intent, session, job, mode } = body as Record<string, unknown>
+  const { intent, session, job, mode, withoutSnapshot } = body as Record<string, unknown>
   if (typeof intent !== 'string' || !(INTENTS as readonly string[]).includes(intent)) return no(400, 'Not an intent')
   if (typeof session !== 'string' || session.length === 0 || session.length > 64) return no(400, 'Bad session')
   if (intent !== 'preflight' && (typeof job !== 'string' || !isUuid(job))) return no(400, 'Bad job')
   if (intent === 'ship' && (typeof mode !== 'string' || !(MODES as readonly string[]).includes(mode))) return no(400, 'Bad mode')
+  // Story 7.20a — B12b's Deploy without a snapshot: a boolean, or absent
+  if (withoutSnapshot !== undefined && typeof withoutSnapshot !== 'boolean') return no(400, 'Bad withoutSnapshot')
 
   const act = intent as DeployIntent
   if (act !== 'cancel' && !(await holdsLock(projectId, session))) return no(423, 'This session does not hold the edit lock')
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (mode === 'upload' && (await uploadOnlyRefused({ projectId, siteId: row.site_id, userId: user.id }, DEPLOY_IO).catch(() => true))) {
       return no(422, 'Deploy only is blocked')
     }
-    after(() => ship({ jobId: row.id, userId: user.id, mode: mode as Mode }, DEPLOY_IO))
+    after(() => ship({ jobId: row.id, userId: user.id, mode: mode as Mode, withoutSnapshot: withoutSnapshot === true }, DEPLOY_IO))
     return json(202, { job: row.id })
   }
   // re-activate: D2e's and D2f's button, on a job that uploaded and is not live

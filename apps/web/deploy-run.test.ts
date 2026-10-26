@@ -9,6 +9,7 @@ import { DEPLOY_WORDS, endingOf, stepOf } from './lib/deploy.ts'
 import type { RoutesOutcome } from './lib/routes-upload.ts'
 import { activate, cancel, preflight, preflightFacts, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
 import type { ProjectRead } from './server/deploy/project-input.ts'
+import type { Snapshot } from './server/snapshot.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
 const S = '00000000-0000-4000-8000-0000000000bb'
@@ -42,6 +43,11 @@ function world(over: {
   link?: { now: { id: string; url: string } | null; was: string | null }
   /** Story 7.18b — the compiled files (by default two) */
   files?: Record<string, string>
+  /** Story 7.20a — whether any project of the user's has a binding for the site; by default YES (not the first upload) */
+  siteBound?: boolean
+  /** Story 7.20a — the capture's answers in turn (by default a theme captured), and a hook run while it works */
+  snapshot?: Array<Snapshot | Error>
+  duringSnapshot?: (jobs: Map<string, JobRow>) => void
 } = {}) {
   let tick = Date.parse('2026-10-18T10:00:00Z')
   const jobs = new Map<string, JobRow>()
@@ -58,6 +64,8 @@ function world(over: {
   const routes = [...(over.routes ?? [{ kind: 'uploaded', file: 'routes:\n', sha256: 'x' } as RoutesOutcome])]
   const puts = [...(over.put ?? [])]
   const hashes = [...(over.hash ?? [])]
+  const snapshots = [...(over.snapshot ?? [])]
+  const captured: string[] = []
   const baseRead = (): ProjectRead => ({
     input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' }, language: 'en' } as ProjectRead['input'],
     reads: { project: 'p' },
@@ -150,6 +158,19 @@ function world(over: {
     capability: async ({ refused }) => {
       capability.push(refused)
     },
+    siteBound: async () => over.siteBound ?? true,
+    snapshot: async ({ progress }) => {
+      events.push('snapshot')
+      over.duringSnapshot?.(jobs)
+      const next = snapshots.shift() ?? ({ ok: true, id: 'snap-1', theme: 'casper', version: '5.9.4', bytes: 2_100_000 } as Snapshot)
+      if (next instanceof Error) throw next
+      if (next.ok && !('marked' in next)) {
+        await progress?.({ theme: next.theme, version: next.version })
+        await progress?.({ bytes: next.bytes })
+      }
+      captured.push(next.ok ? ('marked' in next ? 'marked' : next.theme) : next.code)
+      return next
+    },
     link: async () => over.link ?? { now: { id: S, url: 'https://ghost6.inflozo.com' }, was: 'https://ghost6.inflozo.com' },
     call: async (args) => {
       calls.push(args)
@@ -168,7 +189,7 @@ function world(over: {
     now: () => new Date((tick += 1000)),
     log: () => {},
   }
-  return { io, jobs, deploys, bucket, events, calls, capability, bound, baseRead, advance: (ms: number) => (tick += ms) }
+  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, baseRead, advance: (ms: number) => (tick += ms) }
 }
 
 const begin = async (w: ReturnType<typeof world>) => {
@@ -722,4 +743,129 @@ test('7.18b: the view carries the facts and "since your last deploy" — the lat
   const j = await begin(fresh)
   assert.equal((await view({ jobId: j.id, userId: U }, fresh.io))?.previousCustom, null)
   void second
+})
+
+
+/* ── STORY 7.20a — the capture at a site's first upload (FR-J13; B12a, B12b) ── */
+
+test('7.20a: a site\'s FIRST upload archives the live theme before anything is uploaded — snapshotting before uploading, its record on the stage; a site any project has uploaded to does not (the control)', async () => {
+  const w = world({ siteBound: false })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const done = w.jobs.get(job.id) as JobRow
+  assert.equal(done.stage, 'done')
+  assert.deepEqual(w.events.filter((e) => e.startsWith('stage:') || e === 'snapshot').slice(3), ['stage:snapshotting', 'snapshot', 'stage:uploading', 'stage:activating', 'stage:done'])
+  const record = done.stage_timings.snapshotting
+  assert.equal(record?.theme, 'casper')
+  assert.equal(record?.version, '5.9.4')
+  assert.equal(record?.bytes, 2_100_000)
+  assert.ok(record?.at !== undefined && (record.ms ?? -1) >= 0, 'a stage of its own, timed')
+  assert.equal(w.calls[0]?.item, 'theme_upload', 'the upload comes after the capture')
+  assert.equal(stepOf('snapshotting'), 'ship')
+
+  const bound = world({ siteBound: true })
+  const again = await begin(bound)
+  await ship({ jobId: again.id, userId: U, mode: 'activate' }, bound.io)
+  assert.ok(!bound.events.includes('snapshot') && !bound.events.includes('stage:snapshotting'), 'not the first upload: no capture')
+  assert.equal((bound.jobs.get(again.id) as JobRow).stage_timings.snapshotting, undefined)
+})
+
+test('7.20a: a capture that does not finish UPLOADS NOTHING — the job rests at awaiting_ship with the capture\'s answer (code, request, status), nothing bound, the deploy still checked', async () => {
+  for (const failure of [
+    { ok: false, code: 'snapshot_needs_token', request: 'GET /ghost/api/admin/themes/', status: 403 },
+    { ok: false, code: 'snapshot_needs_token', request: 'GET /ghost/api/admin/themes/', status: 501 },
+    { ok: false, code: 'snapshot_token_refused', request: 'GET /ghost/api/admin/themes/', status: 401 },
+    { ok: false, code: 'snapshot_failed', request: 'Storage' },
+  ] as Snapshot[]) {
+    const w = world({ siteBound: false, snapshot: [failure] })
+    const job = await begin(w)
+    await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+    const rested = w.jobs.get(job.id) as JobRow
+    assert.equal(rested.stage, 'awaiting_ship', JSON.stringify(failure))
+    assert.equal(w.calls.length, 0, 'nothing reached Ghost\'s write path')
+    assert.deepEqual(w.bound, [], 'nothing bound')
+    const f = failure as { code: string; request: string; status?: number }
+    assert.deepEqual(rested.error, { code: f.code, message: (rested.error as { message: string }).message, request: f.request, ...(f.status === undefined ? {} : { status: f.status }) })
+    assert.equal((w.deploys.get(job.deploy_id as string) as DeployRow).status, 'checking', 'the artefact stays shippable')
+  }
+})
+
+test('7.20a: after B12b — Deploy without a snapshot skips the capture ({ skipped: true }) and uploads; a re-ship after Add token captures again, the earlier answer cleared', async () => {
+  const w = world({ siteBound: false, snapshot: [{ ok: false, code: 'snapshot_needs_token', request: 'GET /ghost/api/admin/themes/', status: 403 }] })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal((w.jobs.get(job.id) as JobRow).stage, 'awaiting_ship')
+  await ship({ jobId: job.id, userId: U, mode: 'activate', withoutSnapshot: true }, w.io)
+  const done = w.jobs.get(job.id) as JobRow
+  assert.equal(done.stage, 'done')
+  assert.deepEqual(done.stage_timings.snapshotting, { skipped: true })
+  assert.equal(done.error, null)
+  assert.equal(w.captured.length, 1, 'the second press made no capture')
+
+  const r = world({ siteBound: false, snapshot: [{ ok: false, code: 'snapshot_needs_token', request: 'GET /ghost/api/admin/themes/', status: 403 }] })
+  const j = await begin(r)
+  await ship({ jobId: j.id, userId: U, mode: 'activate' }, r.io)
+  await ship({ jobId: j.id, userId: U, mode: 'activate' }, r.io)
+  const shipped = r.jobs.get(j.id) as JobRow
+  assert.equal(shipped.stage, 'done')
+  assert.deepEqual(r.captured, ['snapshot_needs_token', 'casper'], 'captured on the second press, now with the token')
+  assert.equal(shipped.error, null)
+})
+
+test('7.20a: a theme carrying the marker is never captured — the stage records `marked` and the upload goes on', async () => {
+  const w = world({ siteBound: false, snapshot: [{ ok: true, marked: true }] })
+  const job = await begin(w)
+  // B12a's row 2 says so only if `marked` is on the row WHILE the stage runs — never first written with the upload's edge
+  const update = w.io.jobs.update
+  let markedWhile: string | null = null
+  w.io.jobs.update = async (jid, u, patch) => {
+    const row = w.jobs.get(jid) as JobRow
+    if (markedWhile === null && patch.stage_timings?.snapshotting?.marked === true) markedWhile = patch.stage ?? row.stage
+    return update(jid, u, patch)
+  }
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const done = w.jobs.get(job.id) as JobRow
+  assert.equal(done.stage, 'done')
+  assert.equal(done.stage_timings.snapshotting?.marked, true)
+  assert.equal(done.stage_timings.snapshotting?.theme, undefined)
+  assert.equal(markedWhile, 'snapshotting', '`marked` first reached the row with the upload\'s edge')
+})
+
+test('7.20a: B12a\'s Cancel — pressed while the capture runs, read after it and before the upload: nothing uploaded, the job cancelled; at uploading it is refused (the control)', async () => {
+  let jobId = ''
+  const w = world({ siteBound: false, duringSnapshot: () => void cancel({ jobId, userId: U }, w.io) })
+  const job = await begin(w)
+  jobId = job.id
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  assert.equal(after.stage, 'cancelled')
+  assert.equal(w.calls.length, 0, 'nothing uploaded')
+  assert.deepEqual(w.captured, ['casper'], 'the capture\'s own row stays — it is the live theme')
+  const live = world({ siteBound: false })
+  const shipping = await begin(live)
+  await ship({ jobId: shipping.id, userId: U, mode: 'activate' }, live.io)
+  live.jobs.set(shipping.id, { ...(live.jobs.get(shipping.id) as JobRow), stage: 'uploading' })
+  assert.equal(await cancel({ jobId: shipping.id, userId: U }, live.io), false)
+})
+
+test('7.20a: B12b\'s Cancel cancels a job RESTING at awaiting_ship — its object, then its deploy row, gone', async () => {
+  const w = world({ siteBound: false, snapshot: [{ ok: false, code: 'snapshot_failed', request: 'GET /ghost/api/admin/themes/', status: 503 }] })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(await cancel({ jobId: job.id, userId: U }, w.io), true)
+  assert.equal((w.jobs.get(job.id) as JobRow).stage, 'cancelled')
+  assert.equal(w.deploys.size, 0)
+  assert.equal(w.bucket.size, 0)
+  const events = w.events.slice(w.events.indexOf('stage:awaiting_ship', w.events.indexOf('snapshot')))
+  assert.ok(events.indexOf('object:remove') < events.indexOf('deploy:remove'), 'the object before the row (AD-29)')
+})
+
+test('7.20a: Deploy only at a first upload captures exactly as Ship it does; Re-activate never captures', async () => {
+  const w = world({ siteBound: false })
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, w.io)
+  assert.deepEqual(w.captured, ['casper'])
+  assert.equal((w.jobs.get(job.id) as JobRow).stage, 'done')
+  await activate({ jobId: job.id, userId: U }, w.io)
+  assert.deepEqual(w.captured, ['casper'], 're-activate made no capture')
 })

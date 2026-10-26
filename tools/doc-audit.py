@@ -531,6 +531,19 @@ DOCS = [
   "control), and the integration's Admin API key is 404 NotFoundError — status, errors[0].type and role printed, keys read "
   "from tools/probe/.env in-process by name; §88 written only when every row held. Any argument but --t1 prints the "
   "header and exits 2."),
+ ('tools/probe/record-snapshot.mjs', 'tool', 'Snapshot recorder',
+  "Story 7.20a's recorder (standing rule 1, R-82, FR-J13, MEASUREMENTS §89): the live theme's capture, asked of T1 exactly "
+  "as server/snapshot.ts asks it. Node 24 with --experimental-strip-types; every request is built by the product's "
+  "adminRequest with the download's own read budget, and the reading is captureSnapshot's own, handed an io whose store "
+  "records and writes nothing. THE LOCAL HALF (no flag, no request, writes nothing): GET themes/ and GET "
+  "themes/casper/download/ at v6.0 with no body and a redirect never followed; the flipped control token one digit off; "
+  "captureSnapshot over a fake Ghost reads a staff list and zip as captured (object before row), a marked theme as marked, "
+  "the Admin key's 403 and 501 as the one code snapshot_needs_token, and a staff 401 as snapshot_token_refused. THE --t1 "
+  "HALF (the owner's go, the main session only; read only): the staff list names the active theme and its marker, the "
+  "staff download is a direct 200 application/zip attachment opening with PK, the flipped token is 401 (the control), the "
+  "Admin key is 403 on the download and on the list, and GET settings/routes/yaml/ with the Admin key is 200 — status, "
+  "type, disposition, length and a sha256 printed, keys read from tools/probe/.env in-process by name; §89 written only "
+  "when every row held. Any argument but --t1 prints the header and exits 2."),
  ('tools/probe/record-routes.mjs', 'tool', 'Routes recorder',
   "Story 7.16a's recorder (standing rule 1, R-82): every routes.yaml the Routes Manager writes, read by Ghost's own "
   "route-settings code, and one emitted file on T1. Node 24; it imports packages/section-runtime/src/routes.ts and "

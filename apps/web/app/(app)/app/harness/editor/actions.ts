@@ -3,7 +3,7 @@
 import { headers } from 'next/headers'
 import type { SafetyAnswer, SiteResult } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/actions'
 import { HARNESS } from '@/lib/harness'
-import { DEPLOY_WORDS } from '@/lib/deploy'
+import { BACKUP_WORDS, DEPLOY_WORDS } from '@/lib/deploy'
 import { storedSurfaces } from '@/lib/probe-rule'
 import { confirmedFrom, SWITCH_WORDS, type SwitchAnswer } from '@/lib/site-switch'
 import { tokenRefusal } from '@/lib/connect-rule'
@@ -83,4 +83,37 @@ export async function harnessDecline(projectId: string, siteId: string): Promise
   void siteId
   if ((await headers()).get('x-inflozo-harness-decline') === 'fail') return { ok: false }
   return { ok: HARNESS && projectId === HARNESS_PROJECT.id }
+}
+
+/** STORY 7.20a — THE HARNESS'S `confirmBackup`: recorded, with nothing to write. Only the harness project. */
+export async function harnessConfirm(projectId: string, siteId: string): Promise<{ ok: boolean }> {
+  void siteId
+  return { ok: HARNESS && projectId === HARNESS_PROJECT.id }
+}
+
+/** STORY 7.20a — the snapshot row's id the harness's Theme Download answers: the journey answers Story 2.5's route for it (a
+ *  'use server' file exports only actions, so the journey names the same id itself) */
+const HARNESS_SNAPSHOT_ID = '00000000-0000-4000-8000-000000000720'
+
+/** STORY 7.20a — THE HARNESS'S `downloadLiveTheme`, by `x-inflozo-harness-snapshot`: `ok` (and no header) a snapshot row's id,
+ *  `marked` the "Inflozo's own" sentence, `refused` a 403's and `failed` a 502's failure sentence — the app's own words. */
+export async function harnessTheme(projectId: string, siteId: string): Promise<{ ok: true; id: string } | { said: string }> {
+  void siteId
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id) return { said: DEPLOY_WORDS.infrastructure }
+  const asked = (await headers()).get('x-inflozo-harness-snapshot')
+  if (asked === 'marked') return { said: BACKUP_WORDS.marked }
+  if (asked === 'refused') return { said: BACKUP_WORDS.downloadFailed(403) }
+  if (asked === 'failed') return { said: BACKUP_WORDS.downloadFailed(502) }
+  return { ok: true, id: HARNESS_SNAPSHOT_ID }
+}
+
+/** STORY 7.20a — the live `routes.yaml` the harness's Download hands back: Ghost's own default file */
+const HARNESS_LIVE_ROUTES = 'routes:\n\ncollections:\n  /:\n    permalink: /{slug}/\n    template: index\n\ntaxonomies:\n  tag: /tag/{slug}/\n  author: /author/{slug}/\n'
+
+/** STORY 7.20a — THE HARNESS'S `downloadRoutes`: the live file, or under `x-inflozo-harness-snapshot: failed` Ghost's 502. */
+export async function harnessRoutes(projectId: string, siteId: string): Promise<{ ok: true; file: string } | { said: string }> {
+  void siteId
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id) return { said: DEPLOY_WORDS.infrastructure }
+  if ((await headers()).get('x-inflozo-harness-snapshot') === 'failed') return { said: BACKUP_WORDS.downloadFailed(502) }
+  return { ok: true, file: HARNESS_LIVE_ROUTES }
 }

@@ -325,7 +325,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 5.21 — and for the snapshot Ghost's two surfaces are drawn from (`storedSurfaces`)
     // Story 7.18b — and its `capability_source` (R-270: a refused upload's mark keeps Run checks)
     // Story 7.19 — and whether it holds a Staff Access Token or recorded a Not now (the Safety net's offer, `safetyOffered`)
-    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version, capability, capability_source, credentials_present, staff_token_declined_at').eq('id', linked).maybeSingle(),
+    // Story 7.20a — and whether its Backup step was confirmed and which host it is (the gate, `backupOwed` and its host's frame)
+    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version, capability, capability_source, credentials_present, staff_token_declined_at, backup_confirmed_at, hosted_by_ghost').eq('id', linked).maybeSingle(),
     // Story 7.10 — the project's custom settings, through the user's own session as Theme settings reads them (RLS)
     sb.from('custom_settings').select(SETTING_COLUMNS).eq('project_id', projectId).order('position').order('created_at'),
     // Story 7.12 — the project's translation overrides (FR-H5: the canvas renders them through the shim)

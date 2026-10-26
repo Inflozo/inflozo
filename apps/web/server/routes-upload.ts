@@ -62,13 +62,32 @@ const sha256 = (text: string) => createHash('sha256').update(text).digest('hex')
 
 /** The live file's bytes, or null when the read failed or threw — a failed read never blocks an upload (the read-back
  *  decides) and never puts Ghost's default over a file (`routesToOffer`). */
-async function readLive(io: RoutesIo, siteId: string, route: string, kind: 'admin' | 'staff'): Promise<Uint8Array | null> {
+async function readLive(io: Pick<RoutesIo, 'call'>, siteId: string, route: string, kind: 'admin' | 'staff'): Promise<Uint8Array | null> {
+  const answer = await liveAnswer(io, siteId, route, kind)
+  return 'bytes' in answer ? answer.bytes : null
+}
+/** …and why it failed: Ghost's status, or no answer at all, or another chokepoint error (by its code) */
+async function liveAnswer(io: Pick<RoutesIo, 'call'>, siteId: string, route: string, kind: 'admin' | 'staff'): Promise<{ bytes: Uint8Array } | { status: number } | { thrown: string }> {
   try {
     const answer = await io.call({ siteId, path: ROUTES_PATH, route, kind })
-    return answer.ok ? answer.bytes : null
-  } catch {
-    return null
+    return answer.ok ? { bytes: answer.bytes } : { status: answer.status }
+  } catch (thrown) {
+    return { thrown: (thrown as { name?: string; code?: string } | null)?.name === 'AdminError' ? ((thrown as { code?: string }).code ?? 'error') : 'error' }
   }
+}
+
+/**
+ * STORY 7.20a — THE BACKUP STEP'S `routes.yaml` DOWNLOAD (R-282): the live file, read as `offerRoutes` reads it — with the Staff
+ * Access Token when one is stored and the Admin key otherwise, the Admin key also answering a staff read that fails (§37: both
+ * may read it, on both majors). It is small, so it is handed to the browser as a file, as B16's download is — not an artefact
+ * under AD-13. Answers the bytes, or Ghost's status, or that Ghost did not answer.
+ */
+export async function liveRoutesFile(io: Pick<RoutesIo, 'call'>, args: { siteId: string; route: string; staff: boolean }): Promise<{ ok: true; bytes: Uint8Array } | { ok: false; status?: number; unreachable?: true }> {
+  const staff = args.staff ? await liveAnswer(io, args.siteId, args.route, 'staff') : null
+  const answer = staff !== null && 'bytes' in staff ? staff : await liveAnswer(io, args.siteId, args.route, 'admin')
+  if ('bytes' in answer) return { ok: true, bytes: answer.bytes }
+  if ('status' in answer) return { ok: false, status: answer.status }
+  return answer.thrown === 'ghost_unreachable' ? { ok: false, unreachable: true } : { ok: false }
 }
 
 /** A thrown chokepoint error the step answers itself: no answer is `ghost_unreachable`, a staff token gone from the store

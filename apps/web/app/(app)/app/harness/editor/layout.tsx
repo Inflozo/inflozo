@@ -20,7 +20,7 @@ import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCan
 import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
-import { harnessAddToken, harnessDecline, harnessReread, harnessSwitch } from './actions'
+import { harnessAddToken, harnessConfirm, harnessDecline, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
 import { standIns } from '../stand-ins'
 import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
@@ -146,6 +146,15 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * journeys read the sentences the app says. Not now is `harnessDecline` (recorded, nothing written; under
  * `x-inflozo-harness-decline: fail` the write that did not land, so a journey holds that the deploy goes on).
  * Its review adds `x-inflozo-harness-autosave: on`: autosave on, so the timer's tick is a journey's to see (R-275's no-tick).
+ *
+ * STORY 7.20a — the Backup step. Every shape's site has its Backup CONFIRMED (and is self-hosted), so no journey before 7.20a's
+ * meets it; `x-inflozo-harness-backup: self | pro | unknown` makes it OWED on a site of that host (D1d, D1e, both blocks), and
+ * `x-inflozo-harness-token: held` gives a `first` site a stored Staff Access Token (no Safety net, the Theme row's Download).
+ * The gate's three actions are `actions.ts`' `harnessConfirm` (recorded, nothing written), `harnessRoutes` (a fixture file) and
+ * `harnessTheme`, which answers by `x-inflozo-harness-snapshot`: `ok` a snapshot row's id (the browser then follows Story 2.5's
+ * route, which a journey answers), `marked` the "Inflozo's own" sentence, `refused` and `failed` the row's failure sentence for
+ * a 403 and a 502. The SHIP's capture is the deploy route's, which the harness never reaches: each wizard journey answers its
+ * `snapshotting` and its B12b views through `page.route`, as every other stage.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -324,7 +333,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     ...(await storedCards(asked.get('x-inflozo-harness-cards') === 'malformed' ? { divider: { glyph: 'on', icon: 'zz-no-such-icon' } } : null)),
     // Story 7.18a — the site Ship it ships to, by header (above), and the templates Checking's pass line names, from the
     // harness's own library as `read.ts` derives them
-    ship: withPreflight(shipOf(asked.get('x-inflozo-harness-ship'), requiredTemplates((id) => entries[id])), asked.get('x-inflozo-harness-preflight')),
+    ship: withBackup(withPreflight(shipOf(asked.get('x-inflozo-harness-ship'), requiredTemplates((id) => entries[id])), asked.get('x-inflozo-harness-preflight')), asked.get('x-inflozo-harness-backup'), asked.get('x-inflozo-harness-token')),
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -335,7 +344,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
       <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
-        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} {...data} />
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} {...data} />
       </ShellUserContext>
       {children}
     </>
@@ -395,7 +404,8 @@ const HARNESS_ROUTES: RoutesConfig = {
  *  before and the site shows another theme (Deploy only free); `live` is R-264 (a)'s case — this project's theme is the one
  *  live on the site, so Deploy only is greyed */
 function shipOf(shape: string | null, required: readonly string[]): ShipState {
-  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0', source: null, locale: 'en', staff: false, declined: false }
+  // Story 7.20a — confirmed and self-hosted on every shape: the Backup step is `withBackup`'s, by its own header
+  const site = { id: '00000000-0000-4000-8000-000000000718', host: 'harness.example', url: 'https://127.0.0.1:9', version: '6.58.0', source: null, locale: 'en', staff: false, declined: false, backupConfirmed: true, hosting: 'self' as const }
   // Story 7.18b — the picker's rows: the linked site, one another project holds (Question 1's confirm) and one set to German
   // (FR-Q6's) — none at all with no header, so Destination offers Go to Sites alone
   const sites: ShipState['sites'] = [
@@ -425,6 +435,16 @@ function shipOf(shape: string | null, required: readonly string[]): ShipState {
 function withPreflight(ship: ShipState, asked: string | null): ShipState {
   if (asked !== 'all' || ship.site === null) return ship
   return { ...ship, language: 'ar', rtlAckAt: '2026-10-19T08:00:00.000Z', site: { ...ship.site, version: '5.40.0' } }
+}
+
+/** Story 7.20a — `x-inflozo-harness-backup: self | pro | unknown`: the Backup step owed on a site of that host (D1d, D1e, both);
+ *  and `x-inflozo-harness-token: held`: a Staff Access Token already stored, so a `first` deploy skips the Safety net and the
+ *  Theme row offers its Download */
+function withBackup(ship: ShipState, asked: string | null, token: string | null): ShipState {
+  if (ship.site === null) return ship
+  const hosting = asked === 'pro' ? 'ghost_pro' as const : asked === 'unknown' ? null : 'self' as const
+  const owed = asked === 'self' || asked === 'pro' || asked === 'unknown'
+  return { ...ship, site: { ...ship.site, staff: token === 'held' || ship.site.staff, ...(owed ? { backupConfirmed: false, hosting } : {}) } }
 }
 
 /** Story 7.18a — R-260's fixture: the same routing, its collection's Primary tag condition negated */

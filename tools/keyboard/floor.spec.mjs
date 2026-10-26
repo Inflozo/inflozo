@@ -895,6 +895,104 @@ test.describe('7.19 · the Safety net at 1440, 820 and 390', () => {
   }
 })
 
+// ── Story 7.20a — the Backup step at its frame's width (D1d, `D1 First-Deploy Gates.dc.html:208-358`): at 1440 the card is 780
+// wide and scrolls INSIDE the wizard, the Downloads beside their rows' words; at 820 (under `tablet`) and 390 nothing scrolls
+// sideways and each Download sits under its row's words. B12a and B12b (`B Missing Surfaces.dc.html:1044-1102`) are 600 at 1440
+// and held by the window at 390. The deploy route is answered here with canned views, as the journeys answer it.
+const AT720 = '2026-10-26T10:00:00.000Z'
+const VIEW720 = (stage, timings, error = null) => ({
+  job: { id: 'job-720', stage, error, timings, cancelRequested: false },
+  deploy: { version: '1.0.0', themeName: 'inflozo-pilot-sections', status: 'checking', activated: false, bytes: 240_000, gscan: { major: 6, gscan: '6.4.2', blocked: false, errors: [], warnings: [] }, quality: { blocked: false, errors: [], warnings: [] } },
+  previous: null, routesFile: null,
+})
+const CHECKED720 = { compiling: { at: AT720, ms: 1400, bytes: 240_000 }, checking: { at: AT720, ms: 2100 } }
+async function plant720(page, shipView) {
+  let intent = null
+  await page.route((url) => /\/projects\/[^/]+\/deploy$/.test(url.pathname), (route) => {
+    const req = route.request()
+    if (req.method() === 'POST') {
+      intent = req.postDataJSON().intent
+      return route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ job: 'job-720' }) })
+    }
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(intent === 'ship' ? shipView : VIEW720('awaiting_ship', CHECKED720)) })
+  })
+}
+const measure720 = (page) => page.evaluate(() => {
+  const dialog = document.querySelector('dialog[data-deploy-wizard]')
+  const style = getComputedStyle(dialog)
+  const r = dialog.getBoundingClientRect()
+  return {
+    content: r.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+    right: r.right,
+    bottom: r.bottom,
+    scrolls: dialog.scrollHeight > dialog.clientHeight,
+    scroll: document.documentElement.scrollWidth,
+    inner: window.innerWidth,
+    innerHeight: window.innerHeight,
+  }
+})
+test.describe('7.20a · the Backup step at 1440, 820 and 390; B12a and B12b at 1440 and 390', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const width of [1440, 820, 390]) {
+    test(`Backup at ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'first', 'x-inflozo-harness-token': 'held', 'x-inflozo-harness-backup': 'self' })
+      await page.goto(HARNESS)
+      await painted(page)
+      const wizard = page.locator('dialog[data-deploy-wizard]')
+      await page.locator('#editor-ship').click()
+      await page.locator('#deploy-next').click()
+      await expect(wizard).toHaveAttribute('data-deploy-wizard', 'backup')
+      const m = await measure720(page)
+      const rows = await page.evaluate(() => [...document.querySelectorAll('[data-gate-row="theme"], [data-gate-row="routes"]')].map((row) => {
+        const words = row.querySelector('[id$="-body"]').getBoundingClientRect()
+        const button = row.querySelector('button').getBoundingClientRect()
+        return { beside: button.left >= words.right, under: button.top >= words.bottom, inside: button.right <= row.getBoundingClientRect().right + 0.5 }
+      }))
+      expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
+      expect(m.right).toBeLessThanOrEqual(m.inner)
+      expect(m.bottom, 'the card stays inside the window').toBeLessThanOrEqual(m.innerHeight)
+      expect(m.scrolls, 'the card scrolls inside the wizard').toBe(true)
+      for (const row of rows) expect(row.inside, 'each Download inside its row').toBe(true)
+      if (width === 1440) {
+        expect(m.content, 'D1d is 780 wide').toBe(780)
+        for (const row of rows) expect(row.beside, 'the Download beside its words').toBe(true)
+      } else {
+        if (width === 390) expect(m.content, 'held by the window').toBeLessThan(780)
+        for (const row of rows) expect(row.under, 'the Download under its words').toBe(true)
+      }
+      // the control: Destination keeps S8's 520
+      await page.locator('#deploy-backup-back').click()
+      await expect(wizard).toHaveAttribute('data-deploy-wizard', 'destination')
+      if (width === 1440) expect((await measure720(page)).content).toBe(520)
+    })
+  }
+  for (const width of [1440, 390]) {
+    for (const [name, view, mark] of [
+      ['B12a', VIEW720('snapshotting', { ...CHECKED720, snapshotting: { at: AT720, theme: 'casper', version: '5.9.4' } }), '[data-archiving]'],
+      ['B12b', VIEW720('awaiting_ship', { ...CHECKED720, snapshotting: { at: AT720, ms: 900 } }, { code: 'snapshot_needs_token', message: 'x', request: 'GET /ghost/api/admin/themes/', status: 403 }), '[data-capture-failed]'],
+    ]) {
+      test(`${name} at ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 })
+        await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'first', 'x-inflozo-harness-token': 'held' })
+        await plant720(page, view)
+        await page.goto(HARNESS)
+        await painted(page)
+        await page.locator('#editor-ship').click()
+        await page.locator('#deploy-run').click()
+        await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+        await page.locator('#deploy-ship').click()
+        await expect(page.locator(mark)).toBeVisible({ timeout: 15_000 })
+        const m = await measure720(page)
+        expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
+        expect(m.right).toBeLessThanOrEqual(m.inner)
+        if (width === 1440) expect(m.content, `${name} is 600 wide`).toBe(600)
+        else expect(m.content, 'held by the window').toBeLessThan(600)
+      })
+    }
+  }
+})
+
 // ── Story 7.18a — R-263: a touch screen below 768 that is not a phone. Ship it shares the bar, so Undo and Redo lead ⋯ and
 // the words "Template" and "View as" go; at 768 and up nothing changes. The sweep holds no bar control outside the window
 // at 600, 640 and 720 on Home and on the Paywall; its CONTROL is the same sweep with the rule switched off in the page

@@ -1,6 +1,6 @@
 import { versionVerdict } from '@/lib/connect-rule'
 import { ghostProPreviewProbe } from '@/lib/flags'
-import { capabilityOf, probePatch, settingsOf, settingsReadable, type Members, type Surfaces } from '@/lib/probe-rule'
+import { capabilityOf, hostedByGhost, probePatch, settingsOf, settingsReadable, type Members, type Surfaces } from '@/lib/probe-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
 import { ADMIN_PATHS as PATHS, patchSite, rereadSettings } from '@/server/site-settings'
@@ -106,6 +106,8 @@ export async function probeSite(args: {
     // claim "no hostSettings" about a body nobody parsed. `verdict` stays null and both capability
     // columns keep what they had.
     const verdict = body ? capabilityOf(body.hostSettings, await ghostProPreviewProbe()) : null
+    // Story 7.20a — the host the Backup step is drawn for, from the same body; an unparsed one writes nothing
+    const hosted = hostedByGhost(body)
 
     // THE WHOLE MAPPING IS PURE AND LIVES IN `probe-rule.ts`, where `node --test` can reach the
     // two verdicts no live Ghost can produce. `site_settings` GAINS keys and loses none:
@@ -124,6 +126,7 @@ export async function probeSite(args: {
       return {
         ...(version && floor.ok ? { ghost_version: version } : {}),
         ...(patch.capability ? { capability: patch.capability, capability_source: patch.capability_source } : {}),
+        ...(hosted === undefined ? {} : { hosted_by_ghost: hosted }),
         site_settings: patch.site_settings,
         settings_read_at: readAt,
       }

@@ -750,3 +750,21 @@ test('Story 7.12: the site\'s language (`locale`) is kept as Ghost holds it — 
   assert.equal(settingsPatch({ locale: 'de' }, settingsOf(payload({ locale: 7 }))).locale, 'de', 'junk is no reading')
   assert.equal(Object.hasOwn(settingsPatch({}, settingsOf(payload({ title: 'x' }))), 'locale'), false, 'nothing stored and nothing read: no key')
 })
+
+
+test('Story 7.20a: the host the Backup step is drawn for — `hostSettings` present is Ghost(Pro), absent self-hosted, an unparsed body nothing', async () => {
+  const { hostedByGhost } = await import('./lib/probe-rule.ts')
+  assert.equal(hostedByGhost({ version: '6.58.0', hostSettings: { limits: {} } }), true)
+  assert.equal(hostedByGhost({ version: '6.58.0', hostSettings: {} }), true, 'present, whatever it holds')
+  assert.equal(hostedByGhost({ version: '6.58.0' }), false, 'a self-hosted config carries none (public-config/config.js:61)')
+  assert.equal(hostedByGhost({ version: '6.58.0', hostSettings: null }), false)
+  assert.equal(hostedByGhost(undefined), undefined, 'a body nobody parsed writes nothing')
+  assert.equal(hostedByGhost(null), undefined)
+  // the probe writes it in the same patch, only when the body was parsed
+  const probe = readFileSync(join(import.meta.dirname, 'server', 'site-probe.ts'), 'utf8')
+  assert.match(probe, /const hosted = hostedByGhost\(body\)/)
+  assert.match(probe, /\.\.\.\(hosted === undefined \? \{\} : \{ hosted_by_ghost: hosted \}\)/)
+  // and disconnect sets the gate back to owed in its one stamp (F7)
+  const sites = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'sites', 'actions.ts'), 'utf8')
+  assert.match(sites, /\{ disconnected_at: stampedAt, content_key: null, credentials_present: \{ content: false, admin: false, staff: false \}, backup_confirmed_at: null \}/)
+})

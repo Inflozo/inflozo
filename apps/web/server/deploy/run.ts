@@ -4,10 +4,11 @@ import { DEFAULT_LANGUAGE, isRtl } from '@inflozo/library/languages'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import type { RoutesOutcome } from '../../lib/routes-upload.ts'
 import {
-  activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, isMoving, refusalWords, ROUTES_REASONS, thrownCode, uploadAnswer,
-  type DeployCode, type DeployError, type DeployStatus, type DeployView, type Mode, type PreflightFacts, type RoutesEnding, type Stage, type Timings,
+  activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, isMoving, isSnapshotError, refusalWords, ROUTES_REASONS, snapshotError, thrownCode, uploadAnswer,
+  type DeployCode, type DeployError, type DeployStatus, type DeployView, type Mode, type PreflightFacts, type RoutesEnding, type SnapshotTiming, type Stage, type Timings,
 } from '../../lib/deploy.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
+import type { Snapshot, SnapshotProgress } from '../snapshot.ts'
 import type { ProjectRead } from './project-input.ts'
 
 /**
@@ -114,6 +115,12 @@ export type DeployIo = {
   bind: (a: { projectId: string; siteId: string; userId: string; themeName: string; at: string }) => Promise<'ok' | 'taken'>
   /** FR-C2: the plan refusal marks the site Preview-only (`deploy_error`); an accepted upload clears a `deploy_error` mark */
   capability: (a: { siteId: string; userId: string; refused: boolean }) => Promise<void>
+  /** STORY 7.20a — FR-J13's "first upload to a site", per site record (R-278's grain): whether ANY project of the user's has a
+   *  binding for the site. `read.bound` is per project × site, so this is a read of its own */
+  siteBound: (a: { siteId: string; userId: string }) => Promise<boolean>
+  /** STORY 7.20a — the one capture (`server/snapshot.ts`' `captureSnapshot`), its real io bound in by `deploy-io.ts`, so this file
+   *  stays off the chokepoint and the service role */
+  snapshot: (a: { siteId: string; userId: string; route: string; progress?: (p: SnapshotProgress) => Promise<void> }) => Promise<Snapshot>
   call: DeployCall
   /** Story 7.17's step, with the real `ROUTES_IO` bound in */
   offerRoutes: (a: { projectId: string; siteId: string; userId: string; route: string }) => Promise<RoutesOutcome>
@@ -194,10 +201,12 @@ const shipsTo = (version: string | null): 5 | 6 | null => {
 /** The job's edges: `enter(stage)` closes the stage before (its `ms`) and opens this one. */
 function clock(io: DeployIo, job: JobRow) {
   const timings: Timings = { ...(job.stage_timings ?? {}) }
+  /** every stage's record by its name — `snapshotting`'s carries the capture's fields beside the same `at` and `ms` */
+  const edges = timings as Record<string, { at?: string; ms?: number } | undefined>
   let current: Stage = job.stage
   const close = () => {
-    const open = timings[current]
-    if (open !== undefined && open.ms === undefined) timings[current] = { ...open, ms: Math.max(0, io.now().getTime() - Date.parse(open.at)) }
+    const open = edges[current]
+    if (open?.at !== undefined && open.ms === undefined) edges[current] = { ...open, ms: Math.max(0, io.now().getTime() - Date.parse(open.at)) }
   }
   return {
     timings,
@@ -207,27 +216,37 @@ function clock(io: DeployIo, job: JobRow) {
     async enter(stage: Stage, extra: Partial<JobRow> = {}) {
       close()
       current = stage
-      timings[stage] = { at: io.now().toISOString() }
+      edges[stage] = { at: io.now().toISOString() }
       await twice(io, `stage ${stage}`, () => io.jobs.update(job.id, job.user_id, { stage, stage_timings: { ...timings }, ...extra }))
     },
     /** `enter`, but only off the stage the row was read at: false, and nothing written, when another invocation moved it */
     async claim(stage: Stage, extra: Partial<JobRow> = {}): Promise<boolean> {
       const from = current
       close()
-      timings[stage] = { at: io.now().toISOString() }
+      edges[stage] = { at: io.now().toISOString() }
       const moved = await twice(io, `claim ${stage}`, () => io.jobs.claim(job.id, job.user_id, from, { stage, stage_timings: { ...timings }, ...extra }))
       if (moved) current = stage
       return moved
     },
     /** a stage's own detail — the zip's size on compiling */
-    note(stage: Stage, patch: { bytes?: number }) {
+    note(stage: Exclude<Stage, 'snapshotting'>, patch: { bytes?: number }) {
       const t = timings[stage]
       if (t !== undefined) timings[stage] = { ...t, ...patch }
+    },
+    /** STORY 7.20a — the capture's record on its stage: the live theme's name, version and size, `marked`, or `skipped` (a stage
+     *  never entered, so no `at`) — written with the next edge */
+    snapshot(record: SnapshotTiming) {
+      timings.snapshotting = record.skipped ? { skipped: true } : { ...(timings.snapshotting ?? {}), ...record }
+    },
+    /** …and written at once, while the stage runs (B12a's rows): best effort — a failed write is logged, never the job's failure */
+    async progress(record: SnapshotTiming) {
+      timings.snapshotting = { ...(timings.snapshotting ?? {}), ...record }
+      await io.jobs.update(job.id, job.user_id, { stage_timings: { ...timings } }).catch(() => io.log('deploy: the capture\'s progress was not written', { job: job.id }))
     },
     async end(stage: Stage, extra: Partial<JobRow> = {}) {
       close()
       current = stage
-      if (stage !== 'failed' && stage !== 'cancelled' && stage !== 'awaiting_ship' && stage !== 'done') timings[stage] = { at: io.now().toISOString() }
+      if (stage !== 'failed' && stage !== 'cancelled' && stage !== 'awaiting_ship' && stage !== 'done') edges[stage] = { at: io.now().toISOString() }
       await twice(io, `stage ${stage}`, () => io.jobs.update(job.id, job.user_id, { stage, stage_timings: { ...timings }, ...extra }))
     },
     routes(ending: RoutesEnding) {
@@ -414,9 +433,17 @@ async function failInfra(io: DeployIo, job: JobRow, c: Clock, e: unknown): Promi
   }
 }
 
-/** SHIP IT: the same row, from `awaiting_ship` — re-made first only when stale — then `uploading`, `activating` when
- *  Deploy & activate was chosen, the routes step, and `done`. */
-export async function ship(a: { jobId: string; userId: string; mode: Mode }, io: DeployIo): Promise<void> {
+/** SHIP IT: the same row, from `awaiting_ship` — re-made first only when stale — then, at the site's FIRST upload, `snapshotting`
+ *  (Story 7.20a, FR-J13: the live theme archived before anything replaces it), then `uploading`, `activating` when Deploy &
+ *  activate was chosen, the routes step, and `done`.
+ *
+ *  STORY 7.20a — THE CAPTURE'S RULE. It runs while no project of the user's has a binding for the job's site (`siteBound`), in
+ *  either mode, and re-captures — replacing the site's earlier row — until that first binding exists; after it, no deploy
+ *  captures (a disconnect and reconnect keeps both). A capture that does not finish UPLOADS NOTHING: the job rests back at
+ *  `awaiting_ship` with the capture's answer in `error` (B12b). `withoutSnapshot` is B12b's Deploy without a snapshot: no
+ *  capture, `stage_timings.snapshotting = { skipped: true }`. A Cancel pressed during the capture (B12a's, `CANCELLABLE`) is read
+ *  after it and before the upload. Re-activate never captures. */
+export async function ship(a: { jobId: string; userId: string; mode: Mode; withoutSnapshot?: boolean }, io: DeployIo): Promise<void> {
   const job = await firstRead(io, a)
   if (job === null || job.stage !== 'awaiting_ship' || job.deploy_id === null) return
   const at = { projectId: job.project_id, siteId: job.site_id, userId: job.user_id }
@@ -439,13 +466,34 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode }, io:
     read = await readProject(io, at)
     if (read === null) return void (await fail(c, { code: 'site_not_found', message: DEPLOY_WORDS.noSite }))
     const stale = (await io.hash(read.reads)) !== deploy.inputs_sha256
-    // one Ship it per row: the invocation that moves it off `awaiting_ship` ships; a second press's finds it moved
-    if (!(await c.claim(stale ? 'compiling' : 'uploading'))) return
+    // Story 7.20a — the site's first upload, per site record: archive the live theme first, unless B12b's Deploy without a
+    // snapshot said not to
+    const first = !(await twice(io, 'site bound', () => io.siteBound({ siteId: job.site_id, userId: job.user_id })))
+    const capture = first && a.withoutSnapshot !== true
+    if (first && !capture) c.snapshot({ skipped: true })
+    // one Ship it per row: the invocation that moves it off `awaiting_ship` ships; a second press's finds it moved. A capture's
+    // earlier answer (B12b) is cleared by the same write
+    if (!(await c.claim(stale ? 'compiling' : capture ? 'snapshotting' : 'uploading', { error: null }))) return
     if (stale) {
       const again = await compileAndCheck(io, job, c, deploy)
       if (again.kind !== 'clean') return
       deploy = again.deploy
       read = again.read
+      await c.enter(capture ? 'snapshotting' : 'uploading')
+    }
+    if (capture) {
+      const got = await io.snapshot({ siteId: job.site_id, userId: job.user_id, route: ROUTE, progress: (p) => c.progress(p) })
+      if (!got.ok) {
+        // nothing uploaded, nothing bound: the job rests where Ship it found it, with the capture's answer for B12b
+        io.log('deploy: the capture did not finish', { job: job.id, code: got.code, status: got.status })
+        return void (await c.end('awaiting_ship', { error: snapshotError(got.code, got.request, got.status) }))
+      }
+      // a marked theme is written at once, as the capture's own progress is — with the next edge alone, B12a's row 2 could
+      // never say "No snapshot needed" before S8c took over
+      if ('marked' in got) await c.progress({ marked: true })
+      else c.snapshot({ theme: got.theme, version: got.version, bytes: got.bytes })
+      // B12a's Cancel, read after the capture and before the upload — the row the capture wrote stays (it IS the live theme)
+      if (await cancelled(io, job, c)) return
       await c.enter('uploading')
     }
     const bytes = await twice(io, 'artifact get', () => io.artifacts.get(deploy!.artifact_path as string))
@@ -584,13 +632,24 @@ export function endingOfRoutes(outcome: RoutesOutcome): RoutesEnding {
   }
 }
 
-/** CANCEL: set on a job still in `queued`, `compiling` or `checking` (the policy's three); the work stops at its next edge
+/** CANCEL: set on a job still in `queued`, `compiling`, `checking` or `snapshotting` (the policy's four); the work stops at its next edge
  *  (`preflight` asks once more after writing `awaiting_ship`). The flag is written only while the row still stands where it
  *  was read — the service role bypasses the policy's own stage test — and a row that moved on is read again, once. False
  *  when the job is past them. */
 export async function cancel(a: { jobId: string; userId: string }, io: DeployIo): Promise<boolean> {
   for (let attempt = 0; attempt < 2; attempt++) {
     const job = await io.jobs.read(a.jobId, a.userId)
+    // STORY 7.20a — B12b's Cancel: a job RESTING at `awaiting_ship` with a capture's answer has no work left to stop at an edge,
+    // so it is cancelled here — moved off `awaiting_ship` first, so a Ship it racing it finds it gone, then cleared (the object,
+    // then the deploy row: AD-29), as a new Pre-flight abandons a resting check. A clean resting check still refuses a Cancel
+    // (7.18a: a press that found Checking finished reads the row again, Ship it ready)
+    if (job !== null && job.stage === 'awaiting_ship' && isSnapshotError(job.error)) {
+      if (await twice(io, 'cancel resting', () => io.jobs.claim(job.id, job.user_id, 'awaiting_ship', { stage: 'cancelled' }))) {
+        await clear(io, job, null)
+        return true
+      }
+      continue
+    }
     if (job === null || !CANCELLABLE.includes(job.stage)) return false
     if (await twice(io, 'cancel', () => io.jobs.claim(job.id, job.user_id, job.stage, { cancel_requested: true }))) return true
   }

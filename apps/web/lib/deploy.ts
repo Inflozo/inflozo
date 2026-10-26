@@ -27,17 +27,19 @@ import type { SwitchSite } from './site-switch.ts'
 
 // ── the stages and the rail ─────────────────────────────────────────────────────────────────────────────────────────
 
-/** `job_stage` (AD-20's F-075 adds `awaiting_ship`, Story 7.18a's Schema). */
-export type Stage = 'queued' | 'compiling' | 'checking' | 'awaiting_ship' | 'uploading' | 'activating' | 'done' | 'failed' | 'cancelled'
+/** `job_stage` (AD-20's F-075 adds `awaiting_ship`, Story 7.18a's Schema; Story 7.20a's adds `snapshotting`, the archive of the
+ *  live theme at a site's first upload, before `uploading`). */
+export type Stage = 'queued' | 'compiling' | 'checking' | 'awaiting_ship' | 'snapshotting' | 'uploading' | 'activating' | 'done' | 'failed' | 'cancelled'
 /** `deploy_status`. */
 export type DeployStatus = 'compiling' | 'checking' | 'uploaded' | 'live' | 'failed'
 
 /** THE RAIL'S STEPS, in order — every step any deploy can show. Story 7.19 added the first deploy's Safety net (D1b/D1c);
- *  Story 7.20a adds Backup after it. A deploy's own rail is `stepsFor`'s — the steps THAT show — and the rail numbers itself
- *  from that list, never from a literal (D1's "the rail grows to show it"). */
+ *  Story 7.20a the Backup step after it (D1d/D1d′/D1e). A deploy's own rail is `stepsFor`'s — the steps THAT show — and the
+ *  rail numbers itself from that list, never from a literal (D1's "the rail grows to show it", UX-DR19). */
 export const STEPS = [
   { id: 'destination', label: 'Destination' },
   { id: 'safety', label: 'Safety net' },
+  { id: 'backup', label: 'Backup' },
   { id: 'check', label: 'Check' },
   { id: 'ship', label: 'Ship' },
   { id: 'live', label: 'Live' },
@@ -45,14 +47,16 @@ export const STEPS = [
 export type Step = (typeof STEPS)[number]['id']
 export type RailStep = (typeof STEPS)[number]
 
-/** STORY 7.19 — the rail a deploy shows: Safety net only where it is offered (`safetyOffered`, fixed for the wizard's mount, so
- *  a step answered stays ticked); every other deploy is the four. */
-export const stepsFor = (safety: boolean): readonly RailStep[] => STEPS.filter((s) => s.id !== 'safety' || safety)
+/** STORY 7.19 / 7.20a — the rail a deploy shows: Safety net only where it is offered (`safetyOffered`) and Backup only where
+ *  it is owed (`backupOwed`), each fixed for the wizard's mount so a step answered stays ticked; with neither, the four. */
+export const stepsFor = (show: { safety: boolean; backup: boolean }): readonly RailStep[] =>
+  STEPS.filter((s) => (s.id !== 'safety' || show.safety) && (s.id !== 'backup' || show.backup))
 
-/** The stages a Cancel may stop (FR-J8, AD-20's F-075 — the policy `deploy_jobs_owner_cancel` holds the same three). */
-export const CANCELLABLE: readonly Stage[] = ['queued', 'compiling', 'checking']
+/** The stages a Cancel may stop (FR-J8, AD-20's F-075 — the policy `deploy_jobs_owner_cancel` holds the same four). Story
+ *  7.20a adds `snapshotting`: the capture only READS Ghost, and `ship()` asks the flag once more before the upload (B12a). */
+export const CANCELLABLE: readonly Stage[] = ['queued', 'compiling', 'checking', 'snapshotting']
 /** The stages the work is still moving through — the wizard polls while the job is in one. `awaiting_ship` rests. */
-export const MOVING: readonly Stage[] = ['queued', 'compiling', 'checking', 'uploading', 'activating']
+export const MOVING: readonly Stage[] = ['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating']
 export const isMoving = (stage: Stage): boolean => MOVING.includes(stage)
 /** The stages Esc cannot close the wizard in: once it starts, it finishes. */
 export const UNSTOPPABLE: readonly Stage[] = ['uploading', 'activating']
@@ -60,7 +64,10 @@ export const UNSTOPPABLE: readonly Stage[] = ['uploading', 'activating']
 /** What `stage_timings` holds: each stage's start and, once it ends, its duration; compiling records the zip's size, and
  *  Ship it's routes step its outcome (`RoutesEnding`) — NFR-9's structured deploy log, one object per job. */
 export type Timing = { at: string; ms?: number; bytes?: number }
-export type Timings = Partial<Record<Stage, Timing>> & { routes?: RoutesEnding }
+/** STORY 7.20a — the capture's own record: the live theme's name and version and the zip's size, or `marked` (the live theme
+ *  is already Inflozo's, nothing captured), or `skipped` (Deploy without a snapshot — no stage entered, so no `at`) */
+export type SnapshotTiming = { at?: string; ms?: number; bytes?: number; theme?: string; version?: string | null; marked?: true; skipped?: true }
+export type Timings = Partial<Record<Exclude<Stage, 'snapshotting'>, Timing>> & { snapshotting?: SnapshotTiming; routes?: RoutesEnding }
 
 /** THE STAGE → STEP MAP (the spec's stage table). A failure sits on Ship when it happened while shipping (S8d′), and on
  *  Check otherwise (a blocked Pre-flight); a cancelled job is back at Destination. */
@@ -71,13 +78,14 @@ export function stepOf(stage: Stage, timings: Timings = {}): Step {
     case 'checking':
     case 'awaiting_ship':
       return 'check'
+    case 'snapshotting':
     case 'uploading':
     case 'activating':
       return 'ship'
     case 'done':
       return 'live'
     case 'failed':
-      return timings.uploading !== undefined ? 'ship' : 'check'
+      return timings.uploading !== undefined || timings.snapshotting?.at !== undefined ? 'ship' : 'check'
     case 'cancelled':
       return 'destination'
   }
@@ -134,8 +142,11 @@ export type DeployCode =
   | 'ghost_unavailable' | 'ghost_unreachable' | 'ghost_redirected' | 'theme_too_large' | 'write_not_allowed' | 'site_not_found'
   // Story 7.18b: Ship it re-reads the project's link (DW-374, R-269), and an RTL language blocks until acknowledged (FR-Q6)
   | 'site_changed' | 'site_unlinked' | 'rtl_unacknowledged'
+  // Story 7.20a: the archive of the live theme did not finish (B12b), so nothing was uploaded — `SNAPSHOT_CODES`
+  | SnapshotCode
 
-export type DeployError = { code: string; message: string; detail?: string; action?: string; href?: string }
+/** AD-24's envelope. Story 7.20a: a capture's answer also names the request it failed on and Ghost's status (B12b's inset) */
+export type DeployError = { code: string; message: string; detail?: string; action?: string; href?: string; request?: string; status?: number }
 
 // ── Ghost's answers ─────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -401,6 +412,107 @@ export const SAFETY_WORDS = {
   continue: 'Continue',
 } as const
 
+/** STORY 7.20a — THE FIRST DEPLOY'S BACKUP STEP, every word D1d (self-hosted), D1d′ (the shortcut ticked) and D1e (Ghost(Pro))
+ *  say, the frame's own (`D1 First-Deploy Gates.dc.html:208-533`) but where the spec's "Words" marks one extrapolated: the
+ *  unknown host's sub line, the singular reason, the polite "confirm available", the Download's busy and failure sentences and
+ *  the marked theme's line. Each row's words and help link are `lib/backup-gate.ts`' `gateRows`, built from `rows` here. */
+export const BACKUP_WORDS = {
+  rail: 'Backup',
+  title: 'Back your site up before we replace the theme',
+  sub: { self: (host: string) => `Self-hosted Ghost · ${host}`, ghost_pro: (host: string) => `Ghost(Pro) · ${host}`, unknown: (host: string) => host },
+  writesEyebrow: 'WHAT INFLOZO WRITES TO YOUR SITE',
+  writes: 'Inflozo writes exactly two things to your Ghost site: your theme, and routes.yaml. It never writes posts, pages, members, tags, settings or redirects.',
+  lead: 'A full backup is still the right thing to have. A theme change is reversible only if you can put the old theme back — and that means holding a copy of it before we replace it.',
+  shortcutChip: 'ghost backup',
+  shortcutHolds: 'one archive: content, members, every installed theme, images, files, media, routes and redirects.',
+  shortcut: 'I have run ghost backup and saved the archive somewhere off the server.',
+  shortcutNote: 'Ticking this ticks every row below and leaves them on screen, so you can see what you now hold.',
+  shortcutTicked: 'Everything the archive holds, still on screen and ticked.',
+  inArchive: 'in the archive',
+  pro: [
+    "On Ghost(Pro), themes, content, members, routes and redirects all download from Ghost Admin. Images and media do not — Ghost Admin has no bulk export for them, and there is no server to copy them from. Ghost's own documentation points you at your host's support for this.",
+    'Ghost(Pro) also takes its own platform backups; that is a Ghost service, not an Inflozo one, and it is worth confirming with Ghost what it covers and how to request a restore.',
+  ],
+  proInk: 'This is not something Inflozo can fix, and we are not going to pretend otherwise.',
+  rows: {
+    theme: { name: 'Theme', chip: 'INFLOZO REPLACES THIS', body: 'Look for the theme marked as active in Ghost Admin and download it as a zip.', warn: 'The one thing that makes rollback possible.', help: "Ghost's help on themes ↗" },
+    routes: { name: 'routes.yaml', chip: 'INFLOZO MAY OVERWRITE THIS', body: 'Wherever Ghost Admin accepts a routes file, it also offers the current one as a download.', help: "Ghost's docs on dynamic routing ↗" },
+    content: { name: 'Content', body: "Ghost Admin exports posts, pages, tags and settings as a single JSON file. Look for the export control in your site's settings.", warn: 'The JSON export does not include your images.', help: "Ghost's help on exports ↗" },
+    members: { name: 'Members', body: 'Your member list downloads as a CSV from the members area of Ghost Admin, including their subscription status.', help: "Ghost's help on member exports ↗" },
+    redirects: { name: 'Redirects', body: 'Ghost Admin offers your current redirects file as a download next to the control that accepts a new one.', help: "Ghost's help on redirects ↗" },
+    media: {
+      name: 'Images, files and media',
+      self: 'These live on your server rather than in any export. Copy the images, files and media folders out of your Ghost content directory yourself.',
+      selfHelp: "Ghost's docs on the content directory ↗",
+      pro: 'Save what matters by hand from Ghost Admin, one item at a time. There is no bulk export on Ghost(Pro), and no server to copy them from.',
+      proHelp: "Ghost's help on exports ↗",
+      warn: 'The gap most people miss.',
+    },
+    database: {
+      name: 'Database',
+      self: 'Take a dump of the MySQL database your Ghost install points at, from the server it runs on.',
+      selfHelp: "Ghost's docs on backing up ↗",
+      proChip: 'NOT YOURS TO TAKE',
+      pro: 'Ghost holds the database on Ghost(Pro). There is nothing here for you to download, so there is nothing to tick.',
+      proHelp: "Ghost's help on exports ↗",
+    },
+  },
+  download: 'Download',
+  preparing: 'Preparing…',
+  downloadFailed: (status: number) => `Ghost didn't hand over the file (${status}). Use the help link on this row to download it from Ghost Admin.`,
+  marked: "Your live theme is already an Inflozo theme, so there's no original to download here.",
+  confirm: 'I confirm I have a complete backup of my site and understand Inflozo will replace my theme.',
+  remaining: (n: number) => `${n} row${s(n)} still to tick, then the confirmation above.`,
+  oneLeft: 'One confirmation left.',
+  available: 'Every row is ticked. You can confirm now.',
+  back: DEPLOY_WORDS.back,
+  runChecks: DEPLOY_WORDS.runChecks,
+  starting: DEPLOY_WORDS.starting,
+} as const
+
+/** STORY 7.20a — B12a (the archive running) and B12b (it did not finish), every word the frames say (`B Missing Surfaces.dc.html:
+ *  1044-1102`) as the spec corrected them: "this site" for "this project" (R-278's grain), Manage keys' "Add token" for "Add the
+ *  token" (R-170), and Ghost's own "Design & branding" for the frame's "Settings → Design" — said as a description and a link
+ *  (E-5's rule), never as a menu path. */
+export const SNAPSHOT_WORDS = {
+  title: 'Archiving your current theme first',
+  lead: 'If anything about the new theme is wrong, this is what we roll back to. It takes a few seconds, and we only do it the first time you upload to a site.',
+  reading: 'Reading the live theme from Ghost',
+  writing: 'Writing the snapshot',
+  uploading: 'Uploading the new theme',
+  checking: DEPLOY_WORDS.checked,
+  marked: "No snapshot needed: the live theme is already Inflozo's",
+  foot: 'Kept outside your version limit.',
+  cancel: DEPLOY_WORDS.cancel,
+  /** the stage as the polite region says it starts (DW-378's rule: each stage entered is said) */
+  say: 'Archiving your current theme first.',
+  failedTitle: 'We could not archive your current theme',
+  noToken: "Reading your live theme needs a Staff Access Token from the site Owner or an Administrator, and this site doesn't have one. That's how Ghost works on every version and every host — there's no permission to switch on.",
+  tokenRefused: 'Ghost no longer recognises the Staff Access Token stored for this site, so no copy was made.',
+  other: "Ghost didn't hand over your live theme, so no copy was made.",
+  /** the inset's mono line: the request, then Ghost's status where it answered one */
+  request: (request: string, status?: number) => (status === undefined ? request : `${request} → ${status}`),
+  placeBefore: 'Ghost keeps your previous theme under Settings → ',
+  placeLink: 'Design & branding',
+  placeAfter: ', so you can put it back yourself if you need to.',
+  addToken: KEYS.staff.add,
+  without: 'Deploy without a snapshot',
+} as const
+
+/** STORY 7.20a — the codes a capture that did not finish rests the job with (B12b's three bodies). Ghost 5's 501 and Ghost 6's
+ *  403 to an Admin-key `GET themes/` are ONE code, `snapshot_needs_token` (VERIFY 9, MEASUREMENTS §15h; AD-24's code table). */
+export const SNAPSHOT_CODES = ['snapshot_needs_token', 'snapshot_token_refused', 'snapshot_failed'] as const
+export type SnapshotCode = (typeof SNAPSHOT_CODES)[number]
+export const isSnapshotError = (e: unknown): e is DeployError & { code: SnapshotCode } =>
+  e !== null && typeof e === 'object' && !('level' in e) && (SNAPSHOT_CODES as readonly string[]).includes((e as { code?: unknown }).code as string)
+
+/** B12b's envelope for a capture's answer: its body by cause, the request it failed on and Ghost's status (none where Ghost
+ *  did not answer, or the store refused) */
+export function snapshotError(code: SnapshotCode, request: string, status?: number | null): DeployError {
+  const message = code === 'snapshot_needs_token' ? SNAPSHOT_WORDS.noToken : code === 'snapshot_token_refused' ? SNAPSHOT_WORDS.tokenRefused : SNAPSHOT_WORDS.other
+  return { code, message, request, ...(typeof status === 'number' ? { status } : {}) }
+}
+
 /** D1b's picture (R-279): the owner's own screenshot of T1's profile sheet, the token blurred — 570×650, drawn in the 280×150
  *  slot from its bottom, where the Staff access token box is */
 export const SAFETY_PICTURE = { src: '/deploy/staff-token.png', width: 570, height: 650 } as const
@@ -418,16 +530,19 @@ export const seconds = (ms: number): string => (Math.max(0, ms) / 1000).toFixed(
 
 /** The failed stage's name in "{Stage} failed" — S8d′ names S8c's own row ("Uploading to Ghost failed", `S8 Deploy.dc.html`
  *  S8d′), and Pre-flight's rows their stage. */
-export const STAGE_NAMES: Readonly<Record<'compiling' | 'checking' | 'uploading' | 'activating', string>> = {
+export const STAGE_NAMES: Readonly<Record<'compiling' | 'checking' | 'snapshotting' | 'uploading' | 'activating', string>> = {
   compiling: 'Compiling',
   checking: 'Checking',
+  // Story 7.20a: B12a's own title, its "first" dropped ("Archiving your current theme failed") — an infrastructure failure while
+  // archiving; a capture Ghost or the store refused rests the job on B12b instead
+  snapshotting: SNAPSHOT_WORDS.title.replace(/ first$/, ''),
   uploading: DEPLOY_WORDS.uploadingRow,
   activating: 'Activating',
 }
 
 /** THE SENTENCE AND THE FIX FOR EACH CODE THIS MODULE OWNS — AD-24's envelope as the wizard stores it. `host` is the site's
  *  host as the wizard names it (`hostOf`), `version` its `ghost_version`, `siteId` for Reconnect. */
-export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string; projectId?: string; to?: string }): DeployError {
+export function deployError(code: DeployCode, ctx: { host: string; version?: string; siteId?: string; detail?: string; projectId?: string; to?: string; request?: string; status?: number | null }): DeployError {
   const { host } = ctx
   const with_ = (message: string, extra: Partial<DeployError> = {}): DeployError => ({ code, message, ...(ctx.detail === undefined ? {} : { detail: ctx.detail }), ...extra })
   switch (code) {
@@ -457,6 +572,11 @@ export function deployError(code: DeployCode, ctx: { host: string; version?: str
       return { code, message: DEPLOY_WORDS.siteChanged(ctx.to ?? '', host) }
     case 'site_unlinked':
       return { code, message: DEPLOY_WORDS.siteUnlinked(host) }
+    // Story 7.20a — B12b's three causes, each with the request it failed on and Ghost's status
+    case 'snapshot_needs_token':
+    case 'snapshot_token_refused':
+    case 'snapshot_failed':
+      return snapshotError(code, ctx.request ?? '', ctx.status)
     // the off-list write (DW-54), a site that is no longer the caller's, and every infrastructure failure: ours
     default:
       return with_(DEPLOY_WORDS.infrastructure)
@@ -602,7 +722,7 @@ export const MODES: readonly Mode[] = ['activate', 'upload']
 /** POST `projects/[id]/deploy`'s body. `session` is the tab's lock session (`lib/lock-client.ts`). */
 export type DeployIntent = 'preflight' | 'ship' | 'activate' | 'cancel'
 export const INTENTS: readonly DeployIntent[] = ['preflight', 'ship', 'activate', 'cancel']
-export type DeployRequest = { intent: DeployIntent; session: string; job?: string; mode?: Mode }
+export type DeployRequest = { intent: DeployIntent; session: string; job?: string; mode?: Mode; withoutSnapshot?: boolean }
 
 /** Routes at the ending — `offerRoutes`' outcome, as the job keeps it (no file: B16 reads `routes_last_offered`). */
 export type RoutesEnding =
@@ -611,6 +731,10 @@ export type RoutesEnding =
   | { kind: 'fallback'; cause: 'no_token' | 'revoked' | 'role' }
   | { kind: 'failed'; reason: string }
   | { kind: 'none' }
+
+/** STORY 7.20a — which host the gate is drawn for (`sites.hosted_by_ghost`): self-hosted (D1d), Ghost(Pro) (D1e), or null —
+ *  not yet probed, both paths offered (F7: "neither assumed") */
+export type Host = 'self' | 'ghost_pro' | null
 
 /** WHAT THE EDITOR KNOWS BEFORE ANY JOB, as server truth (`shipStateOf`, below, over `read.ts`' reads): the linked site as Ship it ships to
  *  it, the theme's frozen name, the next version and the one the site serves from this project — for the bar's label, the
@@ -624,6 +748,12 @@ export type ShipState = {
     staff: boolean
     /** STORY 7.19 — `staff_token_declined_at` is set: a Not now on the Safety net was recorded for the site (R-278: per site) */
     declined: boolean
+    /** STORY 7.20a — `backup_confirmed_at` is set: the Backup step was confirmed for the site (F7: once per site; disconnect
+     *  clears it). A value that could not be read counts as owed */
+    backupConfirmed: boolean
+    /** STORY 7.20a — `hosted_by_ghost`: Ghost(Pro) (D1e), self-hosted (D1d), or null — not yet probed, both paths offered.
+     *  (`host` is the site's address, as the wizard names it; this is who hosts it) */
+    hosting: Host
   } | null
   /** STORY 7.19 — FR-J13's "first deploy to a site", per site record: no project of the user's has a binding for the linked site
    *  (a binding is written at the first upload Ghost accepts). A failed read counts as none */
@@ -675,7 +805,7 @@ export function shipStateOf(a: {
   siteId: string | null
   site: {
     url?: unknown; ghost_version?: unknown; capability?: unknown; capability_source?: unknown; disconnected_at?: unknown; site_settings?: unknown
-    credentials_present?: unknown; staff_token_declined_at?: unknown
+    credentials_present?: unknown; staff_token_declined_at?: unknown; backup_confirmed_at?: unknown; hosted_by_ghost?: unknown
   } | null
   deploys: readonly { version: unknown; status: unknown; activated: unknown; activated_at: unknown }[] | null
   /** STORY 7.19 — every binding to the linked site among the user's projects (RLS scopes the read): this project's gives the
@@ -720,6 +850,8 @@ export function shipStateOf(a: {
           locale: localeOf(a.site?.site_settings),
           staff: (a.site?.credentials_present as { staff?: unknown } | null | undefined)?.staff === true,
           declined: typeof a.site?.staff_token_declined_at === 'string',
+          backupConfirmed: typeof a.site?.backup_confirmed_at === 'string',
+          hosting: a.site?.hosted_by_ghost === true ? 'ghost_pro' : a.site?.hosted_by_ghost === false ? 'self' : null,
         }
       : null,
     firstDeploy: (a.bindings ?? []).length === 0,
@@ -744,9 +876,24 @@ export function shipStateOf(a: {
 export function safetyOffered(ship: Pick<ShipState, 'site' | 'firstDeploy'> | null | undefined): boolean {
   const site = ship?.site ?? null
   if (site === null) return false
-  const runChecks = site.capability === 'full' || site.source === 'deploy_error'
-  return runChecks && ship?.firstDeploy === true && !site.staff && !site.declined
+  return runChecksOn(site) && ship?.firstDeploy === true && !site.staff && !site.declined
 }
+
+/** Destination draws Run checks: a connected `full` site, or a Preview-only one a refused upload marked (R-270) */
+const runChecksOn = (site: NonNullable<ShipState['site']>): boolean => site.capability === 'full' || site.source === 'deploy_error'
+
+/** STORY 7.20a — THE MATRIX'S "OWED": the Backup step shows on a deploy whose Destination draws Run checks, to a site with no
+ *  recorded confirmation (`backup_confirmed_at`, F7's once per site — disconnect clears it, so a reconnect owes it again).
+ *  Not keyed on the first deploy: a site shipped to before this story never gave its consent, so it is asked once. A consent
+ *  gate, not a technical control (AD-29): the server neither enforces nor checks it. */
+export function backupOwed(ship: Pick<ShipState, 'site'> | null | undefined): boolean {
+  const site = ship?.site ?? null
+  return site !== null && runChecksOn(site) && !site.backupConfirmed
+}
+
+/** STORY 7.20a — WHERE THE SAFETY NET GOES ON (D1c's Continue, a kept Add token): to Backup while it is owed in this mount and
+ *  not yet confirmed, else straight to the checks — one rule for both presses */
+export const afterSafety = (a: { backup: boolean; confirmed: boolean }): 'backup' | 'checks' => (a.backup && !a.confirmed ? 'backup' : 'checks')
 
 /** R-264 (a) — DEPLOY ONLY'S GUARD, the one rule the ▾ row, S8a's card and the server ask: while Inflozo's own record says
  *  this project's theme is the one live on the site, an upload under its frozen name (AD-19) replaces the live theme's

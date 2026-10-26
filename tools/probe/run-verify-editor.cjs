@@ -393,6 +393,17 @@
 // (R-280's second surface on the real stack), and after Add token a reload opening on Run checks (`credentials_present`, read
 // by the editor); and (d) F's captured Not now replayed under G's session writing nothing on F's site, the same replay under
 // F's own recording it (the service-role write's tenant guard, with its control).
+// Story 7.20a RE-EXPECTS STEPS 113, 114 AND 116: the Backup step is owed on a site with no `backup_confirmed_at`, so each step's
+// fixture confirms it through the service key (read back) and its presses are unchanged. And it adds step 117, WRITING TO T1
+// (theme uploads and activations through the product, then the put-back), so it runs only with `T1_WRITES=1` on the owner's
+// in-session go: THE BACKUP GATE AND THE PRE-INFLOZO SNAPSHOT (FR-J13, F7, R-282). A throwaway account H (`editor-harness-h-…`)
+// connects T1 through the wizard — `hosted_by_ghost` false — and walks (a) Add token → D1d with both Downloads (the Theme
+// Download's row and its signed URL's bytes against Ghost's own download; routes.yaml against `GET settings/routes/yaml/`),
+// every row and the confirm, Run checks (`backup_confirmed_at` set), Ship it (the capture re-made at the first upload); (b) a
+// new project, the live inflozo- theme read as marked; (c) Remove token, Disconnect (the record cleared), reconnect, a new
+// project: the gate again, B12b's `GET /ghost/api/admin/themes/ → 403`, Deploy without a snapshot; (d) the deletion window's
+// `/restore` listing the snapshot, its Download a 303 to a zip, then Restore account. Its finally puts T1's theme back (the one
+// live at the start, every inflozo- theme it uploaded deleted), removes H's objects, disconnects and deletes H, and counts back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -480,8 +491,8 @@ async function main() {
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
-  // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's
-  const stale = all.filter((u) => /^editor-harness-[abcdefg]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's; Story 7.20a: `h` is 117's
+  const stale = all.filter((u) => /^editor-harness-[abcdefgh]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -11793,9 +11804,12 @@ async function main() {
         // STORY 7.19 RE-EXPECTS THIS STEP: a first deploy to a site that holds no token now offers the Safety net (D1b) before
         // Run checks, and step 116 walks it. This step ships with no token as it always has, so the site's Safety net is
         // answered as a Not now answers it — `staff_token_declined_at`, through the service key — and read back
-        const declined113 = await call('/rest/v1', `/sites?id=eq.${siteId113}`, { method: 'PATCH', body: JSON.stringify({ staff_token_declined_at: new Date().toISOString() }) })
-        check('step 113a — Story 7.19: the site\'s Safety net answered "Not now" through the service key (step 116 walks the step itself), read back set',
-          [200, 204].includes(declined113.status) && typeof (await call('/rest/v1', `/sites?id=eq.${siteId113}&select=staff_token_declined_at`)).body?.[0]?.staff_token_declined_at === 'string', `HTTP ${declined113.status}`)
+        // STORY 7.20a RE-EXPECTS IT AGAIN: the site's Backup step is owed until confirmed, so it is answered too —
+        // `backup_confirmed_at`, through the service key — and read back (step 117 walks the step itself)
+        const declined113 = await call('/rest/v1', `/sites?id=eq.${siteId113}`, { method: 'PATCH', body: JSON.stringify({ staff_token_declined_at: new Date().toISOString(), backup_confirmed_at: new Date().toISOString() }) })
+        const answered113 = (await call('/rest/v1', `/sites?id=eq.${siteId113}&select=staff_token_declined_at,backup_confirmed_at`)).body?.[0]
+        check('step 113a — Story 7.19 and 7.20a: the site\'s Safety net answered "Not now" and its Backup step confirmed through the service key (steps 116 and 117 walk the steps themselves), both read back set',
+          [200, 204].includes(declined113.status) && typeof answered113?.staff_token_declined_at === 'string' && typeof answered113?.backup_confirmed_at === 'string', `HTTP ${declined113.status}`)
         const linked113 = await call('/rest/v1', `/projects?id=eq.${P113}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteId113 }) })
         check('step 113a — the seeded project linked to the new site through the service key (the product\'s site picker is Story 7.18b\'s), read back',
           [200, 204].includes(linked113.status) && (await project113())?.linked_site_id === siteId113, `HTTP ${linked113.status}`)
@@ -12387,12 +12401,15 @@ async function main() {
         if (A114 === null || t1114 === null) throw new Error('step 114: T1 did not connect, or no project was made')
         // STORY 7.19 RE-EXPECTS THIS STEP: a first deploy to T1 with no token now offers the Safety net (D1b) before Run checks,
         // which step 116 walks — so T1's row is answered as a Not now answers it, through the service key, and read back
-        const declined114 = await call('/rest/v1', `/sites?id=eq.${t1114}`, { method: 'PATCH', body: JSON.stringify({ staff_token_declined_at: new Date().toISOString() }) })
-        check('step 114 — Story 7.19: T1\'s Safety net answered "Not now" through the service key (step 116 walks the step itself), read back set',
-          [200, 204].includes(declined114.status) && typeof (await call('/rest/v1', `/sites?id=eq.${t1114}&select=staff_token_declined_at`)).body?.[0]?.staff_token_declined_at === 'string', `HTTP ${declined114.status}`)
+        // STORY 7.20a: and its Backup step confirmed the same way (step 117 walks it), read back
+        const declined114 = await call('/rest/v1', `/sites?id=eq.${t1114}`, { method: 'PATCH', body: JSON.stringify({ staff_token_declined_at: new Date().toISOString(), backup_confirmed_at: new Date().toISOString() }) })
+        const answered114 = (await call('/rest/v1', `/sites?id=eq.${t1114}&select=staff_token_declined_at,backup_confirmed_at`)).body?.[0]
+        check('step 114 — Story 7.19 and 7.20a: T1\'s Safety net answered "Not now" and its Backup step confirmed through the service key (steps 116 and 117 walk them), both read back set',
+          [200, 204].includes(declined114.status) && typeof answered114?.staff_token_declined_at === 'string' && typeof answered114?.backup_confirmed_at === 'string', `HTTP ${declined114.status}`)
         const seededB114 = await seed({ email: emailD, name: `Walk 114 B ${stamp}` })
         B114 = seededB114?.id ?? null
-        const plantedSite114 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: idD, url: PLANTED_URL114, title: 'Walk 114', ghost_version: '6.58.0', capability: 'full', site_settings: { locale: 'de' } }) })
+        // Story 7.20a: planted with its Backup step confirmed, so a Run checks on it is the checks (step 117 walks the gate)
+        const plantedSite114 = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: idD, url: PLANTED_URL114, title: 'Walk 114', ghost_version: '6.58.0', capability: 'full', site_settings: { locale: 'de' }, backup_confirmed_at: new Date().toISOString() }) })
         planted114 = plantedSite114.body?.[0]?.id ?? null
         const B0114 = B114 === null ? null : await projectOf114(B114)
         check(`step 114 — project B seeded (no site, English) and a second site row planted through the service key at ${PLANTED_HOST114}, its stored locale "de"`,
@@ -12888,8 +12905,8 @@ async function main() {
       const PLANTED_HOST116 = CR116.hostOf(PLANTED_URL116)
       // a well-formed token no Ghost holds (random hex, never a real key) — so only the planted host's silence answers it
       const FAKE116 = `${require('node:crypto').randomBytes(12).toString('hex')}:${require('node:crypto').randomBytes(32).toString('hex')}`
-      const FIVE116 = DEP116.stepsFor(true).map((s) => s.label)
-      const FOUR116 = DEP116.stepsFor(false).map((s) => s.label)
+      const FIVE116 = DEP116.stepsFor({ safety: true, backup: false }).map((s) => s.label)
+      const FOUR116 = DEP116.stepsFor({ safety: false, backup: false }).map((s) => s.label)
 
       const emailF = `editor-harness-f-${stamp}@inflozo.com`
       const emailG = `editor-harness-g-${stamp}@inflozo.com`
@@ -12975,7 +12992,9 @@ async function main() {
         ids116.F = madeF.status === 200 ? madeF.body.id ?? null : null
         if (!UUID.test(ids116.F ?? '')) throw new Error('step 116: account F was not made')
         projects116.F = (await seed({ email: emailF, name: `Walk 116 ${stamp}` }))?.id ?? null
-        const plantedF = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: ids116.F, url: PLANTED_URL116, title: 'Walk 116', ghost_version: '6.58.0', capability: 'full' }) })
+        // Story 7.20a RE-EXPECTS THIS STEP: planted with its Backup step CONFIRMED, so D1c's Continue and a kept token go
+        // straight to the checks as 7.19 built them (step 117 walks the Backup step itself)
+        const plantedF = await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: ids116.F, url: PLANTED_URL116, title: 'Walk 116', ghost_version: '6.58.0', capability: 'full', backup_confirmed_at: new Date().toISOString() }) })
         siteF116 = plantedF.body?.[0]?.id ?? null
         const linkedF = UUID.test(projects116.F ?? '') && UUID.test(siteF116 ?? '')
           ? await call('/rest/v1', `/projects?id=eq.${projects116.F}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteF116 }) }) : null
@@ -13103,6 +13122,10 @@ async function main() {
         check(`step 116c — T1 connected through the wizard (its keys checked with GETs) and a project linked to ${HOST116}, with no Staff Access Token`,
           UUID.test(projects116.G ?? '') && CR116.hostOf(rowG0?.url ?? '') === HOST116 && rowG0.credentials_present?.staff === false && rowG0.disconnected_at === null, JSON.stringify({ projects: projsG.length, keys: rowG0?.credentials_present }))
         if (siteG116 === null) throw new Error('step 116: T1 did not connect')
+        // Story 7.20a: the new record's Backup step is owed — confirmed through the service key, so Add token goes to the checks
+        const confirmedG116 = await call('/rest/v1', `/sites?id=eq.${siteG116}`, { method: 'PATCH', body: JSON.stringify({ backup_confirmed_at: new Date().toISOString() }) })
+        check('step 116c — Story 7.20a: T1\'s Backup step confirmed through the service key (step 117 walks it), read back set',
+          [200, 204].includes(confirmedG116.status) && typeof (await call('/rest/v1', `/sites?id=eq.${siteG116}&select=backup_confirmed_at`)).body?.[0]?.backup_confirmed_at === 'string', `HTTP ${confirmedG116.status}`)
         // Story 7.19's review — R-280 IN MANAGE KEYS, on the real screen (S11e's full page): the integration's own Admin API key
         // pasted in the token box is asked of Ghost and refused by its 404, the sentence under the token box, nothing stored
         await pg.goto(at(CR116.keysPath(siteG116)), { waitUntil: 'load' })
@@ -13200,6 +13223,339 @@ async function main() {
           `HTTP ${dels116.join(', ')}, users ${usersBefore116} → ${usersAfter}, projects ${projectsBefore116} → ${projectsAfter}`)
       }
       check('step 116 — the step\'s contexts recorded zero CSP violations', csp116.length === 0, JSON.stringify(csp116.slice(0, 3)))
+    }
+
+    // ── step 117 — STORY 7.20a: THE BACKUP GATE AND THE PRE-INFLOZO SNAPSHOT, ON PRODUCTION AND T1 (FR-J13, F7, R-282, R-82) ──
+    /* WRITES TO T1 (uploads and activations through the product, and the put-back), so it runs only with `T1_WRITES=1` on the
+       owner's in-session go, worded for the WHOLE run (memory: test-site writes need an in-session go). A throwaway account H
+       (`editor-harness-h-…`) connects T1 through the wizard.
+       (a) `hosted_by_ghost` reads false; Ship it → Next → Add token (`GHOST6_STAFF_ACCESS_TOKEN`) → Backup draws D1d with both
+           Downloads; the Theme Download writes a `site_snapshots` row naming the live theme with bytes > 0, and its signed URL's
+           bytes equal Ghost's own download; the routes.yaml Download equals `GET settings/routes/yaml/`; every row ticked and the
+           confirmation, then Run checks: `backup_confirmed_at` set; Ship it: `stage_timings.snapshotting` names the live theme and
+           its version, and the row is re-captured (`captured_at` moved, the old object gone); Live.
+       (b) the project deleted (its binding with it) and a new one linked (the token kept, the gate confirmed): Run checks with no
+           gate, Ship it: `snapshotting` reads the live `inflozo-…` theme as marked, and the snapshot row is unchanged.
+       (c) Remove token; Disconnect (`backup_confirmed_at` back to null, the row and the snapshot kept); reconnect (the record
+           re-adopted); the project deleted and a new one linked: Safety net → Not now → Continue → the gate again, with no Theme
+           Download and with routes.yaml's; Ship it: B12b with `GET /ghost/api/admin/themes/ → 403`, nothing uploaded; Deploy
+           without a snapshot → Live, `snapshotting` `{ skipped: true }`.
+       (d) the account's deletion request: `/restore` lists the snapshot, its Download answers 303 then a zip; Restore account.
+       FINALLY: every job at rest; the theme live at the start active again and every `inflozo-*` theme the run uploaded deleted,
+       read back; the snapshot objects under H's prefix removed; T1 disconnected through the product; H deleted; users and
+       projects counted back. Keys are read in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 116 is. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 117 — NOT RUN', 'it writes to T1 (theme uploads and activations through the product, and the put-back): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp117 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP117, CR117, PR117, AR117, RU117] = await Promise.all([
+        imp117('apps/web/lib/deploy.ts'), imp117('apps/web/lib/connect-rule.ts'), imp117('apps/web/lib/probe-rule.ts'),
+        imp117('apps/web/server/ghost-admin/admin-rule.ts'), imp117('apps/web/lib/routes-upload.ts'),
+      ])
+      const W117 = DEP117.DEPLOY_WORDS
+      const BW117 = DEP117.BACKUP_WORDS
+      const SNAP117 = DEP117.SNAPSHOT_WORDS
+      const until117 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV117 = {}
+      const NAMES117 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES117.includes(m[1]) && m[2].trim()) ENV117[m[1]] = m[2].trim()
+      }
+      const missing117 = NAMES117.filter((k) => !ENV117[k])
+      if (missing117.length) throw new Error(`step 117: ${missing117.join(', ')} not in tools/probe/.env`)
+      const SECRETS117 = [ENV117.GHOST6_ADMIN_API_KEY, ENV117.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV117.GHOST6_CONTENT_API_KEY]).filter((x) => x.length >= 8)
+      const scrub117 = (x) => SECRETS117.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const HOST117 = CR117.hostOf(ENV117.GHOST6_URL)
+      /** T1's Admin API through the product's own request builder, with the key named */
+      const ghost117 = async (credential, method, p) => {
+        const { url, init } = AR117.adminRequest({ credential, siteUrl: ENV117.GHOST6_URL, method, path: p, major: 6 })
+        const r = await fetch(url, init)
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let body = null
+        try { body = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body, bytes }
+      }
+      const staff117 = (method, p) => ghost117(ENV117.GHOST6_STAFF_ACCESS_TOKEN, method, p)
+      const themes117 = async () => {
+        const r = await staff117('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true, version: t.package?.version ?? null })) : null
+      }
+      const sha117 = (b) => (b === null ? null : require('node:crypto').createHash('sha256').update(b).digest('hex'))
+      const storage117 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const snapshotObject117 = async (storagePath) => {
+        const key = String(storagePath ?? '').replace(/^site-snapshots\//, '')
+        const r = await fetch(`${SB}/storage/v1/object/site-snapshots/${key}`, { headers: storage117 }).catch(() => null)
+        return r?.ok ? Buffer.from(await r.arrayBuffer()) : null
+      }
+
+      const emailH = `editor-harness-h-${stamp}@inflozo.com`
+      const usersBefore117 = (await users())?.length ?? null
+      const projectsBefore117 = await projectCount()
+      let idH = null
+      let siteH = null
+      let P117 = null
+      let prev117 = null
+      let start117 = []
+      const ctxs117 = []
+      const csp117 = []
+      const projectsMade117 = []
+
+      const siteRow117 = async () => (siteH === null ? null : (await call('/rest/v1', `/sites?id=eq.${siteH}&select=id,url,credentials_present,backup_confirmed_at,hosted_by_ghost,disconnected_at`)).body?.[0] ?? null)
+      const snapshot117 = async () => (siteH === null ? null : (await call('/rest/v1', `/site_snapshots?site_id=eq.${siteH}&select=id,storage_path,theme_name,bytes,captured_at`)).body?.[0] ?? null)
+      const job117 = async (P) => (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P}&select=id,stage,error,stage_timings&order=started_at.desc&limit=1`)).body?.[0] ?? null
+      const atRest117 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      const wiz117 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          title: d.querySelector('#deploy-title')?.textContent ?? null,
+          rail: [...d.querySelectorAll('ol li')].map((li) => li.textContent.trim().replace(/^\d+/, '')),
+          gate: d.querySelector('[data-backup-gate]')?.getAttribute('data-backup-gate') ?? null,
+          sub: d.querySelector('[data-backup-sub]')?.textContent ?? null,
+          theme: d.querySelector('#deploy-download-theme') !== null,
+          routes: d.querySelector('#deploy-download-routes') !== null,
+          capture: d.querySelector('[data-capture-failed]')?.getAttribute('data-capture-failed') ?? null,
+          request: d.querySelector('[data-capture-request]')?.textContent ?? null,
+          confetti: d.querySelector('[data-confetti]') !== null,
+        }
+      }).catch(() => null)
+      const context117 = async () => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true }))
+        ctxs117.push(ctx)
+        await recorder(ctx, csp117)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 117', scrub117(String(e))))
+        await pg.goto(await magic(emailH), { waitUntil: 'load' })
+        return pg
+      }
+      const painted117 = (pg) => pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).then(() => true, () => false)
+      const openShip117 = async (pg) => {
+        await pg.locator('#editor-ship').click()
+        return until117(() => wiz117(pg), (w) => w?.at === 'destination', 20000)
+      }
+      const connect117 = async (pg) => {
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV117.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV117.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV117.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+      }
+      /** a new project seeded for H and linked to T1's record through the service key, read back */
+      const relink117 = async (label) => {
+        if (P117 !== null) await call('/rest/v1', `/projects?id=eq.${P117}`, { method: 'DELETE' })
+        P117 = (await seed({ email: emailH, name: `Walk 117 ${label} ${stamp}` }))?.id ?? null
+        if (P117 !== null) projectsMade117.push(P117)
+        const linked = P117 === null ? null : await call('/rest/v1', `/projects?id=eq.${P117}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: siteH }) })
+        const bindings = (await call('/rest/v1', `/project_site_bindings?site_id=eq.${siteH}&select=project_id`)).body ?? []
+        return [200, 204].includes(linked?.status) && bindings.length === 0
+      }
+      const tickAll117 = async (pg) => {
+        for (const id of ['theme', 'routes', 'content', 'members', 'redirects', 'media', 'database']) await pg.locator(`#deploy-gate-${id}`).check()
+        await pg.locator('#deploy-gate-confirm').check()
+      }
+      /** Ship it pressed on a clean Pre-flight, and the job read until it rests */
+      const ship117 = async (pg) => {
+        await until117(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 180000)
+        await pg.locator('#deploy-ship').click()
+        return until117(() => job117(P117), (j) => j !== null && (j.stage === 'done' || j.stage === 'failed' || (j.stage === 'awaiting_ship' && j.error !== null)), 300000)
+      }
+
+      try {
+        // the start: T1's live theme, which the finally puts back — never begun on a theme the owner's test left live
+        start117 = (await themes117()) ?? []
+        prev117 = start117.find((t) => t.active)?.name ?? null
+        check(`step 117 — T1's live theme read with the staff token at the start (${prev117 ?? 'unread'}), and it is not an Inflozo theme a test left live`,
+          prev117 !== null && !/^inflozo-/.test(prev117), JSON.stringify(start117.map((t) => t.name)))
+        if (prev117 === null || /^inflozo-/.test(prev117)) throw new Error('step 117: T1 is not on its own theme — ask the owner before restoring it')
+        const madeH = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: emailH, email_confirm: true }) })
+        idH = madeH.status === 200 ? madeH.body.id ?? null : null
+        if (!UUID.test(idH ?? '')) throw new Error('step 117: account H was not made')
+        const pg = await context117()
+        await connect117(pg)
+        const use117 = pg.getByRole('button', { name: PR117.BRAND_COPY.use, exact: true })
+        if (await use117.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use117.click()
+        const projs = await until117(async () => (await call('/rest/v1', `/projects?user_id=eq.${idH}&select=id,linked_site_id`)).body ?? [], (ps) => ps.length === 1 && ps[0].linked_site_id !== null, 45000)
+        P117 = projs[0]?.id ?? null
+        if (P117 !== null) projectsMade117.push(P117)
+        siteH = projs[0]?.linked_site_id ?? null
+        const row0 = await until117(siteRow117, (r) => r?.hosted_by_ghost !== null && r?.hosted_by_ghost !== undefined, 30000)
+        check(`step 117a — T1 connected through the wizard: the probe stores hosted_by_ghost false (no hostSettings — self-hosted), backup_confirmed_at null, no staff token`,
+          row0?.hosted_by_ghost === false && row0.backup_confirmed_at === null && row0.credentials_present?.staff === false, JSON.stringify(row0))
+        if (siteH === null || P117 === null) throw new Error('step 117: T1 did not connect')
+
+        // ── 117a — the gate, its two Downloads, the confirmation, and the capture at the first upload ──
+        await pg.goto(at(`/projects/${P117}`), { waitUntil: 'load' })
+        await painted117(pg)
+        const a0 = await openShip117(pg)
+        check(`step 117a — a first deploy owes both steps: the rail reads ${DEP117.stepsFor({ safety: true, backup: true }).map((x) => x.label).join(' · ')} and Destination says Next`,
+          JSON.stringify(a0?.rail) === JSON.stringify(DEP117.stepsFor({ safety: true, backup: true }).map((x) => x.label)), JSON.stringify(a0))
+        await pg.locator('#deploy-next').click()
+        await until117(() => wiz117(pg), (w) => w?.at === 'safety', 15000)
+        await pg.locator('#deploy-token').fill(ENV117.GHOST6_STAFF_ACCESS_TOKEN)
+        await pg.locator('#deploy-add-token').click()
+        const a1 = await until117(() => wiz117(pg), (w) => w?.at === 'backup', 60000)
+        check(`step 117a — Add token kept the staff token and went on to Backup: D1d ("${BW117.sub.self(HOST117)}") with both Downloads (the token held; routes.yaml on every site, R-282)`,
+          a1?.gate === 'self' && a1.sub === BW117.sub.self(HOST117) && a1.theme && a1.routes, scrub117(JSON.stringify(a1)))
+        await pg.locator('#deploy-download-theme').click()
+        const snap1 = await until117(snapshot117, (r) => r !== null, 90000)
+        const ghostZip = await staff117('GET', `themes/${encodeURIComponent(prev117)}/download/`)
+        const download = await pg.context().request.get(at(`/snapshots/${snap1?.id}/download`), { maxRedirects: 0 })
+        const signed = download.headers().location ?? null
+        const signedBytes = signed === null ? null : Buffer.from(await (await fetch(signed)).arrayBuffer())
+        check(`step 117a — the Theme Download wrote the site's snapshot row (${prev117}, bytes > 0), and Story 2.5's route answers 303 to a signed URL whose bytes equal Ghost's own download`,
+          snap1?.theme_name === prev117 && Number(snap1.bytes) > 0 && download.status() === 303 && signedBytes !== null && sha117(signedBytes) === sha117(ghostZip.bytes),
+          JSON.stringify({ row: snap1 && { theme: snap1.theme_name, bytes: snap1.bytes }, status: download.status(), signed: sha117(signedBytes)?.slice(0, 12) ?? null, ghost: sha117(ghostZip.bytes)?.slice(0, 12) }))
+        const saved = pg.waitForEvent('download')
+        await pg.locator('#deploy-download-routes').click()
+        const routesFile = await saved
+        const routesBytes = fs.readFileSync(await routesFile.path())
+        const liveRoutes = await ghost117(ENV117.GHOST6_ADMIN_API_KEY, 'GET', RU117.ROUTES_PATH)
+        check('step 117a — the routes.yaml Download saves routes.yaml, byte for byte the file `GET settings/routes/yaml/` answers',
+          routesFile.suggestedFilename() === 'routes.yaml' && liveRoutes.ok && Buffer.compare(routesBytes, liveRoutes.bytes) === 0, `${routesBytes.length} vs ${liveRoutes.bytes.length} bytes`)
+        await tickAll117(pg)
+        await pg.locator('#deploy-backup-run').click()
+        await until117(() => wiz117(pg), (w) => w?.at === 'check', 30000)
+        const confirmed = await until117(siteRow117, (r) => typeof r?.backup_confirmed_at === 'string', 20000)
+        check('step 117a — every row and the confirmation ticked, then Run checks: the checks start and sites.backup_confirmed_at is set', typeof confirmed?.backup_confirmed_at === 'string', JSON.stringify(confirmed?.backup_confirmed_at ?? null))
+        const shipped = await ship117(pg)
+        const snap2 = await snapshot117()
+        const oldGone = (await snapshotObject117(snap1?.storage_path)) === null
+        const live = prev117 === null ? null : await themes117()
+        check(`step 117a — Ship it at the site's first upload: stage_timings.snapshotting names ${prev117} and its version, the row re-captured (captured_at moved, the old object gone), and the deploy Live`,
+          shipped?.stage === 'done' && shipped.stage_timings?.snapshotting?.theme === prev117 && shipped.stage_timings.snapshotting.version === start117.find((t) => t.active)?.version &&
+          snap2 !== null && snap2.captured_at !== snap1?.captured_at && snap2.storage_path !== snap1?.storage_path && oldGone && live?.find((t) => t.active)?.name?.startsWith('inflozo-') === true,
+          JSON.stringify({ stage: shipped?.stage, record: shipped?.stage_timings?.snapshotting ?? null, moved: snap2?.captured_at !== snap1?.captured_at, oldGone, live: live?.find((t) => t.active)?.name ?? null }))
+        await pg.keyboard.press('Escape').catch(() => {})
+
+        // ── 117b — another project, the token kept and the gate confirmed: the live theme is Inflozo's, so nothing is captured ──
+        const snapB0 = await snapshot117()
+        check('step 117b — the project deleted (its binding with it) and a new one linked to T1\'s record: no binding remains', await relink117('b'), String(P117))
+        await pg.goto(at(`/projects/${P117}`), { waitUntil: 'load' })
+        await painted117(pg)
+        const b0 = await openShip117(pg)
+        await pg.locator('#deploy-run').click()
+        const shippedB = await ship117(pg)
+        const snapB1 = await snapshot117()
+        check('step 117b — Run checks with no gate (four steps), then Ship it: `snapshotting` reads the live inflozo- theme as marked, and the snapshot row is unchanged',
+          b0?.rail.length === DEP117.stepsFor({ safety: false, backup: false }).length && shippedB?.stage === 'done' && shippedB.stage_timings?.snapshotting?.marked === true &&
+          snapB1?.captured_at === snapB0?.captured_at && snapB1?.storage_path === snapB0?.storage_path,
+          JSON.stringify({ rail: b0?.rail, record: shippedB?.stage_timings?.snapshotting ?? null, same: snapB1?.captured_at === snapB0?.captured_at }))
+        await pg.keyboard.press('Escape').catch(() => {})
+
+        // ── 117c — Remove token, disconnect, reconnect: the gate again, and no token means B12b ──
+        await pg.goto(at(CR117.keysPath(siteH)), { waitUntil: 'load' })
+        await pg.getByRole('button', { name: CR117.KEYS.staff.remove, exact: true }).click()
+        await until117(siteRow117, (r) => r?.credentials_present?.staff === false, 30000)
+        await pg.goto(at(`/sites/disconnect?site=${siteH}`), { waitUntil: 'load' })
+        await pg.locator('form').getByRole('button', { name: CR117.DISCONNECT.menu, exact: true }).first().click()
+        const gone = await until117(siteRow117, (r) => r?.disconnected_at != null, 30000)
+        const keptSnap = await snapshot117()
+        check('step 117c — Remove token, then Disconnect: backup_confirmed_at back to null in the same stamp, and the snapshot row kept',
+          gone?.disconnected_at != null && gone.backup_confirmed_at === null && keptSnap?.id === snapB1?.id, JSON.stringify({ gone: gone?.disconnected_at ?? null, confirmed: gone?.backup_confirmed_at ?? null, kept: keptSnap?.id === snapB1?.id }))
+        await connect117(pg)
+        const back = await until117(siteRow117, (r) => r?.disconnected_at === null, 45000)
+        check('step 117c — reconnected through the wizard: the SAME site record re-adopted, its snapshot row still there', back?.id === siteH && (await snapshot117())?.id === snapB1?.id, JSON.stringify({ id: back?.id === siteH }))
+        check('step 117c — the project deleted and a new one linked: no binding remains', await relink117('c'), String(P117))
+        await pg.goto(at(`/projects/${P117}`), { waitUntil: 'load' })
+        await painted117(pg)
+        await openShip117(pg)
+        await pg.locator('#deploy-next').click()
+        await until117(() => wiz117(pg), (w) => w?.at === 'safety', 15000)
+        await pg.locator('#deploy-not-now').click()
+        await pg.locator('#deploy-continue').click()
+        const c1 = await until117(() => wiz117(pg), (w) => w?.at === 'backup', 20000)
+        check('step 117c — the gate shows again after the reconnect: no Theme Download (no token), and routes.yaml\'s Download (R-282)', c1?.at === 'backup' && !c1.theme && c1.routes, JSON.stringify(c1))
+        const themesBefore = (await themes117())?.map((t) => t.name).sort() ?? null
+        await tickAll117(pg)
+        await pg.locator('#deploy-backup-run').click()
+        await until117(() => wiz117(pg), (w) => w?.at === 'check', 30000)
+        const rested = await ship117(pg)
+        const c2 = await until117(() => wiz117(pg), (w) => w?.capture !== null, 20000)
+        const themesAfter = (await themes117())?.map((t) => t.name).sort() ?? null
+        check(`step 117c — Ship it with no token: B12b — "${SNAP117.failedTitle}" with "GET /ghost/api/admin/themes/ → 403" — the job resting at awaiting_ship, and nothing uploaded`,
+          rested?.stage === 'awaiting_ship' && rested.error?.code === 'snapshot_needs_token' && c2?.request === 'GET /ghost/api/admin/themes/ → 403' && JSON.stringify(themesBefore) === JSON.stringify(themesAfter),
+          JSON.stringify({ stage: rested?.stage, error: rested?.error?.code ?? null, request: c2?.request ?? null, uploaded: JSON.stringify(themesBefore) !== JSON.stringify(themesAfter) }))
+        await pg.locator('#deploy-without').click()
+        const done = await until117(() => job117(P117), (j) => j?.stage === 'done' || j?.stage === 'failed', 300000)
+        const c3 = await until117(() => wiz117(pg), (w) => w?.at === 'live', 30000)
+        check('step 117c — Deploy without a snapshot: Live, `snapshotting` recorded { skipped: true }',
+          done?.stage === 'done' && JSON.stringify(done.stage_timings?.snapshotting) === JSON.stringify({ skipped: true }) && c3?.at === 'live', JSON.stringify({ stage: done?.stage, record: done?.stage_timings?.snapshotting ?? null, at: c3?.at ?? null }))
+        await pg.keyboard.press('Escape').catch(() => {})
+
+        // ── 117d — the account's deletion request: /restore lists the snapshot, and its Download is a zip ──
+        await pg.goto(at('/account'), { waitUntil: 'load' })
+        await pg.getByRole('button', { name: 'Delete account', exact: true }).first().click()
+        await pg.locator('#delete-account-confirm').fill('delete my account')
+        await pg.locator('dialog[open]').getByRole('button', { name: 'Delete account', exact: true }).click()
+        await pg.waitForURL((u) => u.pathname.endsWith('/restore'), { timeout: 30000 })
+        const listed = await pg.locator(`a[href$="/snapshots/${snapB1?.id}/download"]`).count()
+        const offered = await pg.context().request.get(at(`/snapshots/${snapB1?.id}/download`), { maxRedirects: 0 })
+        const zipAt = offered.headers().location ?? null
+        const zip = zipAt === null ? null : Buffer.from(await (await fetch(zipAt)).arrayBuffer())
+        check('step 117d — the deletion window\'s /restore lists the site\'s snapshot with its Download, which answers 303 to a zip (PK)',
+          listed === 1 && offered.status() === 303 && zip !== null && zip[0] === 0x50 && zip[1] === 0x4b, JSON.stringify({ listed, status: offered.status(), bytes: zip?.length ?? null }))
+        await pg.getByRole('button', { name: 'Restore account', exact: true }).click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/restore'), { timeout: 30000 })
+        const profile = (await call('/rest/v1', `/profiles?id=eq.${idH}&select=deleted_at`)).body?.[0] ?? null
+        check('step 117d — Restore account: the account is back (profiles.deleted_at null)', profile !== null && profile.deleted_at === null, JSON.stringify(profile))
+      } catch (e) {
+        check('step 117 — the step ran to its end', false, scrub117(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        for (const ctx of ctxs117) await ctx.close().catch(() => {})
+        for (const P of projectsMade117) await until117(() => job117(P), atRest117, 330000).catch(() => {})
+        if (prev117 !== null) {
+          try {
+            const now = await themes117()
+            if (now !== null && now.find((t) => t.active)?.name !== prev117) await staff117('PUT', `themes/${encodeURIComponent(prev117)}/activate/`)
+            const startNames = new Set(start117.map((t) => t.name))
+            for (const t of (await themes117()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff117('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+            const after = await themes117()
+            check(`step 117 — finally: T1 put back with the staff token — ${prev117} active again and every inflozo- theme the run uploaded deleted, read back`,
+              after !== null && after.find((t) => t.active)?.name === prev117 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)), JSON.stringify((after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`)))
+          } catch (e) {
+            check('step 117 — finally: T1 put back', false, scrub117(String(e?.message ?? e).split('\n')[0]))
+          }
+        }
+        if (idH !== null) {
+          // the snapshot objects under H's prefix (an object outlives its row), then T1's record disconnected through the product
+          const list = await fetch(`${SB}/storage/v1/object/list/site-snapshots`, { method: 'POST', headers: { ...storage117, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix: `${idH}/${siteH}`, limit: 100, offset: 0 }) }).then((r) => r.json()).catch(() => [])
+          for (const o of Array.isArray(list) ? list : []) if (typeof o?.name === 'string') await fetch(`${SB}/storage/v1/object/site-snapshots/${idH}/${siteH}/${o.name}`, { method: 'DELETE', headers: storage117 }).catch(() => {})
+          for (const P of projectsMade117) {
+            const objs = await fetch(`${SB}/storage/v1/object/list/deploy-artifacts`, { method: 'POST', headers: { ...storage117, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix: P, limit: 100, offset: 0 }) }).then((r) => r.json()).catch(() => [])
+            for (const o of Array.isArray(objs) ? objs : []) if (typeof o?.name === 'string') await fetch(`${SB}/storage/v1/object/deploy-artifacts/${P}/${o.name}`, { method: 'DELETE', headers: storage117 }).catch(() => {})
+          }
+          const row = await siteRow117().catch(() => null)
+          if (row !== null && row.disconnected_at === null) {
+            const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+            try {
+              const pd = steady(await ctx.newPage())
+              await pd.goto(await magic(emailH), { waitUntil: 'load' })
+              await pd.goto(at(`/sites/disconnect?site=${siteH}`), { waitUntil: 'load' })
+              await pd.locator('form').getByRole('button', { name: CR117.DISCONNECT.menu, exact: true }).first().click()
+              await until117(siteRow117, (r) => r?.disconnected_at != null, 30000)
+            } catch {} finally {
+              await ctx.close().catch(() => {})
+            }
+          }
+          const del = await admin(`/admin/users/${idH}`, { method: 'DELETE', body: '{}' })
+          const usersAfter = (await users())?.length ?? null
+          const projectsAfter = await projectCount()
+          check('step 117 — finally: account H deleted (its sites, projects, jobs, deploys and snapshot rows with it), users and projects counted back as the step found them',
+            del.status === 200 && usersBefore117 !== null && usersAfter === usersBefore117 && projectsBefore117 !== null && projectsAfter === projectsBefore117,
+            `HTTP ${del.status}, users ${usersBefore117} → ${usersAfter}, projects ${projectsBefore117} → ${projectsAfter}`)
+        }
+      }
+      check('step 117 — the step\'s contexts recorded zero CSP violations', csp117.length === 0, JSON.stringify(csp117.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

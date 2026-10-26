@@ -17,6 +17,7 @@ import {
   permitted,
   CALL_TIMEOUT_MS,
   ITEM_TIMEOUT_MS,
+  READ_TIMEOUT_MS,
   timeoutFor,
 } from './server/ghost-admin/admin-rule.ts'
 
@@ -258,4 +259,18 @@ test('Story 7.18a: the theme upload alone waits two minutes for Ghost (its own g
   assert.ok(permitted('POST', 'themes/upload/', form, 'theme_upload'))
   assert.ok(permitted('PUT', 'themes/inflozo-field-notes/activate/', undefined, 'theme_activate'))
   assert.ok(!permitted('POST', 'themes/upload/', form, 'theme_activate'), 'the control: an item admits its own write only')
+})
+
+
+test('Story 7.20a: the theme download has a READ budget of its own, keyed so it never becomes an allowlist item — and the ship\'s worst case fits AD-11\'s 300 s', () => {
+  assert.equal(timeoutFor(undefined, 'theme_download'), READ_TIMEOUT_MS.theme_download)
+  assert.ok(READ_TIMEOUT_MS.theme_download > CALL_TIMEOUT_MS, 'longer than an ordinary read: Ghost zips the theme before it answers')
+  for (const key of Object.keys(READ_TIMEOUT_MS)) assert.ok(!Object.hasOwn(ADMIN_WRITES, key), `${key} is no write item (R-22: the allowlist stays four)`)
+  // a GET needs no item: the download is permitted as a read, and naming a write item for it is refused
+  assert.ok(permitted('GET', 'themes/casper/download/', undefined))
+  assert.ok(!permitted('PUT', 'themes/casper/download/', undefined, 'theme_activate'))
+  assert.equal(timeoutFor('theme_upload', 'theme_download'), 120_000, 'a write item\'s own budget wins')
+  // the ship's worst case: the list, the download, the upload, the activation and the routes step's three calls
+  const worst = CALL_TIMEOUT_MS + READ_TIMEOUT_MS.theme_download + timeoutFor('theme_upload') + timeoutFor('theme_activate') + 3 * CALL_TIMEOUT_MS
+  assert.ok(worst < 300_000, `${worst} ms of Ghost inside maxDuration 300`)
 })

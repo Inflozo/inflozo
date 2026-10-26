@@ -138,7 +138,21 @@ export type AllowlistItem = keyof typeof ADMIN_WRITES
  */
 export const CALL_TIMEOUT_MS = 15_000
 export const ITEM_TIMEOUT_MS: Readonly<Partial<Record<AllowlistItem, number>>> = { theme_upload: 120_000 }
-export const timeoutFor = (item?: AllowlistItem | null): number => (item ? ITEM_TIMEOUT_MS[item] : undefined) ?? CALL_TIMEOUT_MS
+/**
+ * STORY 7.20a — A READ'S OWN BUDGET, keyed APART from `ADMIN_WRITES` so a read never becomes a fifth write item (R-22): a GET
+ * needs no item, and naming one would put it on the allowlist's path. `theme_download` is FR-J13's `GET themes/{name}/download/`,
+ * which Ghost answers only after it has zipped the theme into a temporary directory (`theme-storage.js` `serve()`, both
+ * majors) — a 15 s budget would cut a large theme's zip off mid-stream.
+ *
+ * THE SHIP'S WORST CASE, against the deploy route's `maxDuration` of 300 (AD-11): the capture's list 15 + the download 45 +
+ * the upload 120 + the activation 15 + the routes step's read, upload and read-back 3 × 15 = 240 s of Ghost, leaving 60 s for
+ * the store's two writes and the job's edges. A stale artefact's recompile also runs inside the same invocation — it is the
+ * rare path (the inputs moved between Pre-flight and Ship it), and it is AD-20's retry that answers a cut-off one.
+ */
+export const READ_TIMEOUT_MS = { theme_download: 45_000 } as const
+export type ReadBudget = keyof typeof READ_TIMEOUT_MS
+export const timeoutFor = (item?: AllowlistItem | null, read?: ReadBudget | null): number =>
+  (item ? ITEM_TIMEOUT_MS[item] : undefined) ?? (read ? READ_TIMEOUT_MS[read] : undefined) ?? CALL_TIMEOUT_MS
 
 /**
  * WHICH SETTINGS KEYS A BODY NAMES. Ghost's `PUT settings/` takes `{ settings: [{ key, value }] }`;

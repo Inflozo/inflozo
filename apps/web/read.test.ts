@@ -15,7 +15,7 @@ const base = (over: Partial<Parameters<typeof shipStateOf>[0]> = {}): Parameters
 
 test('a site never shipped to: v1, "your current theme", the theme named from the slug, the site with its source and locale', () => {
   const s = shipStateOf(base())
-  assert.deepEqual(s.site, { id: SITE, host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full', source: null, locale: 'en', staff: false, declined: false })
+  assert.deepEqual(s.site, { id: SITE, host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full', source: null, locale: 'en', staff: false, declined: false, backupConfirmed: false, hosting: null })
   assert.equal(s.n, 1)
   assert.equal(s.prev, null)
   assert.equal(s.shipped, false)
@@ -104,4 +104,18 @@ test('7.19: the site carries whether a token is stored and whether a Not now was
   assert.equal(at({ credentials_present: null })?.staff, false)
   assert.equal(at({ staff_token_declined_at: '2026-10-21T08:00:00+00:00' })?.declined, true)
   assert.equal(at({ staff_token_declined_at: null })?.declined, false)
+})
+
+
+test('7.20a: the editor\'s read carries the gate\'s two columns — `backup_confirmed_at` and `hosted_by_ghost` — through the user\'s own session, and shipStateOf reads them', async () => {
+  const { readFileSync } = await import('node:fs')
+  const read = readFileSync('app/(app)/app/(authed)/projects/[id]/(editor)/read.ts', 'utf8')
+  assert.match(read, /sb\.from\('sites'\)\.select\('url, title, [^']*\bbackup_confirmed_at, hosted_by_ghost'\)\.eq\('id', linked\)/)
+  const s = shipStateOf({
+    projectId: 'p', slug: 'notes', language: 'en', rtlAckAt: null, overridden: false, sites: [], linking: [], siteId: 's',
+    site: { url: 'https://ghost6.inflozo.com', disconnected_at: null, backup_confirmed_at: '2026-10-26T10:00:00Z', hosted_by_ghost: false },
+    deploys: [], bindings: [], liveHere: false, required: [],
+  })
+  assert.equal(s.site?.backupConfirmed, true)
+  assert.equal(s.site?.hosting, 'self')
 })

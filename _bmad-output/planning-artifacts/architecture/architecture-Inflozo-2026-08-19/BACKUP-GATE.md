@@ -1,6 +1,6 @@
 ---
 title: Inflozo — the pre-deploy backup gate
-status: specified 2026-08-21 by owner decision; Ghost paths cited, NOT yet executed against T1/T3
+status: specified 2026-08-21 by owner decision; built 2026-10-26 by Story 7.20a (D1d/D1d′/D1e) with every row DESCRIBING what to look for and LINKING Ghost's own unversioned help — no menu path hard-coded on either major (the Theme row links ghost.org/help/installing-a-theme/, the frame's help/themes/ being a 404); the paths in the table below remain cited Ghost 5 references, not executed against T1/T3
 owner: E3 (the connect/deploy surface) · E7 (the block) · E15 (verify the paths at the launch gate)
 supersedes: the open half of register item 38 — Inflozo does not back up customer data
 ---

@@ -26,6 +26,8 @@ const ROUTES_STEP = join('server', 'routes-upload.ts')
 const DEPLOY_IO = join('server', 'deploy', 'deploy-io.ts')
 const DEPLOY_RUN = join('server', 'deploy', 'run.ts')
 const STAFF_TOKEN = join('server', 'staff-token.ts')
+const SNAPSHOT = join('server', 'snapshot.ts')
+const SNAPSHOT_IO = join('server', 'snapshot-io.ts')
 const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
 const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
 const MIGRATIONS = '../../supabase/migrations'
@@ -161,6 +163,14 @@ test('the service-role client is imported by the flag reader and by nothing else
   // `authenticated` update grant — so `declineSafetyNet` writes it with the service role, scoped by `user_id` and
   // `disconnected_at is null`, after the caller's own session has read the project's link (RLS). It is the file's one such
   // write; its token write goes through `server/staff-token.ts` and the chokepoint, never this client.
+  //   Story 7.20a adds a second write to the same file, for the same reason: the Backup step's `confirmBackup` records the
+  //   confirmation on the SITE (`sites.backup_confirmed_at`, F7's once per site), another column with no `authenticated` update
+  //   grant, scoped by `user_id` and `disconnected_at is null` after the caller's own read of the link.
+  // The ELEVENTH, added by Story 7.20a with its reason: FR-J13's ONE capture's real `io`. `site_snapshots` is select-only for the
+  // tenant and the `site-snapshots` bucket has no Storage policy at all (AD-32 — a snapshot the client could write defeats
+  // FR-J13's purpose), so the archive's object and its row are the server's to write; it also reads the site's
+  // `credentials_present` to choose the credential. Every query carries `user_id`, and the site read `disconnected_at is null`.
+  // It is handed to `server/snapshot.ts`, which imports neither this client nor the chokepoint (held below).
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -172,6 +182,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     ROUTES_IO,
     DEPLOY_IO,
     EDITOR_ACTIONS,
+    SNAPSHOT_IO,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
@@ -488,7 +499,14 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     token IN HAND (`fetchWithKey`, a GET — no allowlist item) and only then `store({ kind: 'staff' })`. It is the ONE check
   //     both callers run — the first deploy's Safety net (`(editor)/actions.ts`, which imports this file and no part of the
   //     chokepoint, held below) and Manage keys (`sites/actions.ts`, already listed) — so a token that fails leaves nothing.
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN]
+  //   - THE CAPTURE'S IO, Story 7.20a's (FR-J13): two GETs — `themes/` and `themes/{name}/download/` (its own read budget,
+  //     never an allowlist item) — with the Staff Access Token when one is stored and the Admin key otherwise, so B12b prints the
+  //     site's real answer. It is the real `io` handed to `server/snapshot.ts`, which decides and imports no part of the
+  //     chokepoint (held below), and both its callers — `deploy-io.ts`' `snapshot` member and the Backup step's Theme Download —
+  //     reach Ghost through it alone. `ADMIN_WRITES` stays four (R-22): both are reads.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN, SNAPSHOT_IO]
+  assert.equal(reachesChokepoint(SNAPSHOT), false, `${SNAPSHOT} imports the chokepoint; its call() is handed in`)
+  assert.equal(reachesChokepoint(SNAPSHOT_IO), true, 'control: snapshot-io.ts imports the chokepoint')
   assert.equal(reachesChokepoint(STAFF_TOKEN), true, 'control: staff-token.ts imports the chokepoint')
   assert.equal(reachesChokepoint(EDITOR_ACTIONS), false, `${EDITOR_ACTIONS} imports the chokepoint; the token goes through staff-token.ts`)
   assert.equal(reachesChokepoint(ROUTES_STEP), false, `${ROUTES_STEP} imports the chokepoint; its call() is handed in`)
@@ -695,6 +713,10 @@ test('R-213: no editor action redirects a signed-out tab — each reads the user
     // Story 7.19 — the Safety net's two writes (the token's other refusals are its check's own sentences)
     addSafetyToken: '{ refused: DEPLOY_WORDS.infrastructure }',
     declineSafetyNet: '{ ok: false }',
+    // Story 7.20a — the Backup step's three (the downloads' other refusals are each row's own sentence)
+    confirmBackup: '{ ok: false }',
+    downloadLiveTheme: '{ said: DEPLOY_WORDS.infrastructure }',
+    downloadRoutes: '{ said: DEPLOY_WORDS.infrastructure }',
   }
   /** the file's code, comments out (its prose names `signedIn()` and `redirect` to say why neither is called) */
   const code = readFileSync(EDITOR_ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, '').replace(/\/\/.*$/gm, '')
@@ -781,4 +803,13 @@ test('DW-327 (Story 6.6): Use your brand writes style_pack only through sync_pro
   // THE PLANTED CONTROL: the write as `useBrand` made it before this story fires the rule
   assert.equal(wholeWrite(".from('projects')\n      .update({ style_pack: { ...pack, brand } })\n      .eq('id', project.id)"), true, 'control: the rule does not fire on the old write')
   assert.equal(wholeWrite(".update({ dark_enabled: next })"), false, 'control: the rule fires on another column')
+})
+
+test('7.20a: Disconnect sets the Backup step back to owed in the SAME write that stamps disconnected_at — so a reconnect shows the gate again (F7)', () => {
+  // `disconnectSite` is a server action that redirects, so no unit reaches its patch; the deployed walk's step 117c does, on
+  // production. This is the link the walk would find only after a deploy: the reset rides the stamp's own compare-and-set,
+  // never a second write that a lost race could skip.
+  const src = readFileSync(CONNECT_ACTIONS, 'utf8').replace(/\s+/g, ' ')
+  assert.match(src, /\{ disconnected_at: stampedAt, [^{}]*\{[^{}]*\}, backup_confirmed_at: null \}/, `${CONNECT_ACTIONS}: the disconnect stamp no longer clears backup_confirmed_at`)
+  assert.equal((src.match(/backup_confirmed_at: null/g) ?? []).length, 1, `${CONNECT_ACTIONS}: backup_confirmed_at is cleared somewhere other than the stamp`)
 })

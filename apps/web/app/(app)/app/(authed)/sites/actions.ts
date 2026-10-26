@@ -1109,7 +1109,7 @@ export async function disconnectSite(formData: FormData): Promise<void> {
     redirect(DISCONNECT_FAILED(site.id, q))
   }
 
-  // ── ...AND ONLY THEN THE STAMP. One write, three server-asserted columns, through the one
+  // ── ...AND ONLY THEN THE STAMP. One write of server-asserted columns (Story 7.20a adds `backup_confirmed_at`), through the one
   //    compare-and-set every writer of `credentials_present` uses (DW-65, Story 5.24b): the patch
   //    is decided from the row as it stands AT THE WRITE, and a write that lost its race re-reads.
   //    THE CLOCK IS WRITTEN ONCE. FR-C6's 90-day orphan deadline is DERIVED from this column
@@ -1122,7 +1122,9 @@ export async function disconnectSite(formData: FormData): Promise<void> {
   const stamped = await patchSite(supabaseAdmin(), { siteId: site.id, userId: at.userId }, (row) =>
     row.disconnected_at
       ? null
-      : { disconnected_at: stampedAt, content_key: null, credentials_present: { content: false, admin: false, staff: false } },
+      // Story 7.20a — and the Backup step's record set back to owed, in the same write: F7 shows the gate again after a
+      // reconnect, which re-adopts this record (bindings and the snapshot row survive it)
+      : { disconnected_at: stampedAt, content_key: null, credentials_present: { content: false, admin: false, staff: false }, backup_confirmed_at: null },
   )
   // REFUSED IS NOT A FAILURE HERE: the row was read under this caller's own session moments ago,
   // so the only way it is already stamped is that the other press won. The credentials are out

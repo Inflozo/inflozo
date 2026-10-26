@@ -44,7 +44,7 @@ test('Story 7.18b (DW-378): the theme upload\'s fetch is handed two minutes, eve
   try {
     const form = new FormData()
     form.append('file', new Blob([new Uint8Array([80, 75, 5, 6])], { type: 'application/zip' }), 'inflozo-x.zip')
-    const budget = async (args: { method: string; path: string; body?: unknown; item?: 'theme_upload' | 'theme_activate' }) => {
+    const budget = async (args: { method: string; path: string; body?: unknown; item?: 'theme_upload' | 'theme_activate'; read?: 'theme_download' }) => {
       seen.length = 0
       await fetchWithKey({ credential: KEY, siteUrl: 'https://93.184.215.14', route: 'test', major: 6, ...args }).catch(() => undefined)
       assert.equal(seen.length, 1, `${args.path}: one fetch, one signal`)
@@ -56,6 +56,9 @@ test('Story 7.18b (DW-378): the theme upload\'s fetch is handed two minutes, eve
     assert.ok(activate > 10_000 && activate <= 15_000, `activate: ${activate}`)
     const read = await budget({ method: 'GET', path: 'site/' })
     assert.ok(read > 10_000 && read <= 15_000, `read: ${read}`)
+    // Story 7.20a — the theme download is handed its own read budget, and a plain read the control
+    const download = await budget({ method: 'GET', path: 'themes/casper/download/', read: 'theme_download' })
+    assert.ok(download > 40_000 && download <= 45_000, `download: ${download}`)
   } finally {
     AbortSignal.timeout = original
     globalThis.fetch = realFetch

@@ -513,6 +513,15 @@ export const SquareArrowUp = ({ strokeWidth = 1.7, ...p }: IconProps) => (
     <rect x="3" y="3" width="18" height="18" rx="3" />
   </Icon>
 )
+/* STORY 7.20a — the Backup step's Download (D1d's tray and arrow, `D1 First-Deploy Gates.dc.html:276`), as Tabler's own `download`
+   outline in `packages/library/icons/tabler.json`, inlined for R-130's reason; it takes the frame's 1.8 stroke. */
+export const Download = ({ strokeWidth = 1.8, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+    <path d="M7 11l5 5l5 -5" />
+    <path d="M12 4l0 12" />
+  </Icon>
+)
 /** B16's file chip: an arrow down — download */
 export const ArrowDown = ({ strokeWidth = 1.9, ...p }: IconProps) => (
   <Icon strokeWidth={strokeWidth} {...p}>

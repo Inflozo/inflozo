@@ -8,9 +8,9 @@ import { CompileRefusal, REFUSAL } from '@inflozo/theme-compiler/refusal'
 import type { Finding } from '@inflozo/theme-compiler/gate'
 import { SETTING_WORDS } from '@inflozo/section-runtime/custom-settings'
 import {
-  activateAnswer, canonical, CHECK_FAILED, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash, placeOf, refusalWords,
-  SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, stepNumber, stepOf, STEPS, stepsFor, themeNameOf, thrownCode, uploadAnswer, versionLabel, versionNumber, versionOf,
-  type ShipState,
+  activateAnswer, afterSafety, BACKUP_WORDS, backupOwed, CANCELLABLE, canonical, CHECK_FAILED, checkRows, DEPLOY_WORDS, deployError, endingOf, fileLabel, GHOST_PLANS_HELP, inputsHash,
+  isSnapshotError, MOVING, placeOf, refusalWords, SAFETY_PICTURE, SAFETY_WORDS, safetyOffered, SNAPSHOT_CODES, SNAPSHOT_WORDS, snapshotError, STAGE_NAMES, stepNumber, stepOf, STEPS,
+  stepsFor, themeNameOf, thrownCode, UNSTOPPABLE, uploadAnswer, versionLabel, versionNumber, versionOf, type ShipState,
 } from './lib/deploy.ts'
 import { KEYS } from './lib/connect-rule.ts'
 import { keysPath } from './lib/connect-rule.ts'
@@ -21,15 +21,27 @@ const answer = (status: number, body: unknown = {}, text = JSON.stringify(body))
 const ghost = (type: string, extra: Record<string, string> = {}) => ({ errors: [{ type, ...extra }] })
 
 test('the rail is the steps that show, numbered from them; every stage maps to its step (the spec\'s stage table)', () => {
-  // Story 7.19: an ordinary deploy is the four (7.18a's pin, kept as the `false` case), a first deploy that offers the Safety
-  // net five — D1's rail less Backup (7.20a's), in D1's order
-  assert.deepEqual(stepsFor(false).map((s) => s.label), ['Destination', 'Check', 'Ship', 'Live'])
-  assert.deepEqual(stepsFor(true).map((s) => s.label), ['Destination', 'Safety net', 'Check', 'Ship', 'Live'])
-  assert.deepEqual(stepsFor(true), STEPS, 'every step any deploy shows')
-  for (const steps of [stepsFor(false), stepsFor(true)]) assert.deepEqual(steps.map((s) => stepNumber(s.id, steps)), steps.map((_, i) => i + 1))
-  assert.equal(stepNumber('check', stepsFor(true)), 3, 'Check is step 3 behind the Safety net')
-  assert.equal(stepNumber('check', stepsFor(false)), 2)
+  // Story 7.19: an ordinary deploy is the four (7.18a's pin, kept as the all-false case), a first deploy that offers the Safety
+  // net five; Story 7.20a: Backup where it is owed — D1's six-step rail when both show, in D1's order (UX-DR19)
+  const none = stepsFor({ safety: false, backup: false })
+  const both = stepsFor({ safety: true, backup: true })
+  assert.deepEqual(none.map((s) => s.label), ['Destination', 'Check', 'Ship', 'Live'])
+  assert.deepEqual(stepsFor({ safety: true, backup: false }).map((s) => s.label), ['Destination', 'Safety net', 'Check', 'Ship', 'Live'])
+  assert.deepEqual(stepsFor({ safety: false, backup: true }).map((s) => s.label), ['Destination', 'Backup', 'Check', 'Ship', 'Live'])
+  assert.deepEqual(both.map((s) => s.label), ['Destination', 'Safety net', 'Backup', 'Check', 'Ship', 'Live'])
+  assert.deepEqual(both, STEPS, 'every step any deploy shows')
+  for (const steps of [none, stepsFor({ safety: true, backup: false }), stepsFor({ safety: false, backup: true }), both]) {
+    assert.deepEqual(steps.map((s) => stepNumber(s.id, steps)), steps.map((_, i) => i + 1))
+  }
+  assert.equal(stepNumber('backup', both), 3, 'Backup is step 3 of 6 (D1d\'s caption)')
+  assert.equal(stepNumber('check', both), 4)
+  assert.equal(stepNumber('check', stepsFor({ safety: true, backup: false })), 3, 'Check is step 3 behind the Safety net')
+  assert.equal(stepNumber('check', none), 2)
   for (const stage of ['queued', 'compiling', 'checking', 'awaiting_ship'] as const) assert.equal(stepOf(stage), 'check', stage)
+  // Story 7.20a: the capture sits on Ship (B12a); a failure while it ran is S8d′'s, at Ship
+  assert.equal(stepOf('snapshotting'), 'ship')
+  assert.equal(stepOf('failed', { compiling: { at: 'x' }, snapshotting: { at: 'y' } }), 'ship')
+  assert.equal(stepOf('failed', { compiling: { at: 'x' }, snapshotting: { skipped: true } }), 'check', 'a skipped capture entered no stage')
   assert.equal(stepOf('uploading'), 'ship')
   assert.equal(stepOf('activating'), 'ship')
   assert.equal(stepOf('done'), 'live')
@@ -212,7 +224,7 @@ test('a theme\'s size as the frames draw it: bytes, then KB, then MB, one place'
 
 test('R-264: Deploy only\'s guard — greyed with the ruled sentence while this project\'s theme is the live one, free otherwise; Ghost\'s upload answer read for `active`', async () => {
   const { uploadOnlyBlock } = await import('./lib/deploy.ts')
-  const site = { id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full' as const, source: null, locale: null, staff: false, declined: false }
+  const site = { id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full' as const, source: null, locale: null, staff: false, declined: false, backupConfirmed: true, hosting: 'self' as const }
   assert.equal(uploadOnlyBlock({ liveHere: true, prev: 1, n: 2, site }), 'v1 is already live on ghost6.inflozo.com, so Ghost would switch to v2 the moment it uploads. Use Deploy & activate.')
   // the controls: another theme live (or none), no site, no state at all
   assert.equal(uploadOnlyBlock({ liveHere: false, prev: 1, n: 2, site }), null)
@@ -259,7 +271,8 @@ test('R-275 (Story 7.18c, DW-304): Run checks and Switch say the refusal\'s own 
 
 test('7.19: the Safety net is OFFERED on a first deploy to a site with no token and no recorded decline, where Run checks shows — and nowhere else', () => {
   const site = (over: Partial<NonNullable<ShipState['site']>> = {}): NonNullable<ShipState['site']> => ({
-    id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full', source: null, locale: 'en', staff: false, declined: false, ...over,
+    id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full', source: null, locale: 'en', staff: false, declined: false,
+    backupConfirmed: false, hosting: 'self', ...over,
   })
   assert.equal(safetyOffered({ site: site(), firstDeploy: true }), true, 'Offered')
   // first deploy × token × declined × capability, each flipped alone
@@ -305,4 +318,92 @@ test('7.19: the token is never asked at connect — the connect wizard draws no 
   assert.doesNotMatch(wizard, /KEYS\.staff/)
   // the control: the same read finds the field where it IS drawn
   assert.match(readFileSync('app/(app)/app/(authed)/sites/keys-panel.tsx', 'utf8'), /name="staff_token"/)
+})
+
+
+/* ── STORY 7.20a — the backup gate and the pre-Inflozo snapshot (FR-J13, F7, D1d/D1d′/D1e, B12a/B12b) ── */
+
+const gateSite = (over: Partial<NonNullable<ShipState['site']>> = {}): NonNullable<ShipState['site']> => ({
+  id: 's', host: 'ghost6.inflozo.com', url: 'https://ghost6.inflozo.com', version: '6.58.0', capability: 'full', source: null, locale: 'en', staff: false, declined: false,
+  backupConfirmed: false, hosting: 'self', ...over,
+})
+
+test('7.20a: the Backup step is OWED where Run checks shows and the site has no recorded confirmation — first deploy or not — and nowhere else', () => {
+  assert.equal(backupOwed({ site: gateSite() }), true, 'Owed')
+  assert.equal(backupOwed({ site: gateSite({ backupConfirmed: true }) }), false, 'confirmed once for the site')
+  assert.equal(backupOwed({ site: gateSite({ staff: true, declined: true }) }), true, 'a token or a decline answers the Safety net, not the gate')
+  assert.equal(backupOwed({ site: gateSite({ capability: 'preview_only', source: 'probe' }) }), false, 'probed Preview-only: no Run checks')
+  assert.equal(backupOwed({ site: gateSite({ capability: 'preview_only', source: 'deploy_error' }) }), true, 'R-270: Run checks stays')
+  assert.equal(backupOwed({ site: null }), false)
+  assert.equal(backupOwed(undefined), false)
+  // D1c's Continue and a kept Add token go on to Backup while it is owed and unconfirmed — one rule
+  assert.equal(afterSafety({ backup: true, confirmed: false }), 'backup')
+  assert.equal(afterSafety({ backup: true, confirmed: true }), 'checks')
+  assert.equal(afterSafety({ backup: false, confirmed: false }), 'checks')
+})
+
+test('7.20a: shipStateOf reads the gate\'s two columns — a confirmation that could not be read counts as owed, and the host is null until probed', async () => {
+  const { shipStateOf } = await import('./lib/deploy.ts')
+  const of = (site: Record<string, unknown>) => shipStateOf({
+    projectId: P, slug: 'notes', language: 'en', rtlAckAt: null, overridden: false, sites: [], linking: [], siteId: 's',
+    site: { url: 'https://ghost6.inflozo.com', ghost_version: '6.58.0', capability: 'full', disconnected_at: null, ...site },
+    deploys: [], bindings: [], liveHere: false, required: [],
+  }).site
+  assert.equal(of({ backup_confirmed_at: '2026-10-26T10:00:00Z' })?.backupConfirmed, true)
+  assert.equal(of({ backup_confirmed_at: null })?.backupConfirmed, false)
+  assert.equal(of({})?.backupConfirmed, false, 'a value the read did not carry is owed')
+  assert.equal(of({ hosted_by_ghost: true })?.hosting, 'ghost_pro')
+  assert.equal(of({ hosted_by_ghost: false })?.hosting, 'self')
+  assert.equal(of({ hosted_by_ghost: null })?.hosting, null)
+  assert.equal(of({})?.hosting, null)
+})
+
+test('7.20a: the capture stage — cancellable and moving (B12a\'s live Cancel), never unstoppable; its failure named from B12a\'s own title', () => {
+  assert.ok(CANCELLABLE.includes('snapshotting'))
+  assert.ok(MOVING.includes('snapshotting'))
+  assert.ok(!UNSTOPPABLE.includes('snapshotting'), 'Esc closes the wizard but not the job, as during Check')
+  assert.ok(!CANCELLABLE.includes('uploading'), 'the control: the lever ends where Ghost\'s writes begin')
+  assert.equal(STAGE_NAMES.snapshotting, 'Archiving your current theme')
+})
+
+test('7.20a: B12b\'s three causes — one code for an unreadable list, each body by cause, the request and Ghost\'s status kept', () => {
+  assert.deepEqual([...SNAPSHOT_CODES], ['snapshot_needs_token', 'snapshot_token_refused', 'snapshot_failed'])
+  const needs = deployError('snapshot_needs_token', { host: 'ghost6.inflozo.com', request: 'GET /ghost/api/admin/themes/', status: 403 })
+  assert.deepEqual(needs, { code: 'snapshot_needs_token', message: SNAPSHOT_WORDS.noToken, request: 'GET /ghost/api/admin/themes/', status: 403 })
+  assert.equal(snapshotError('snapshot_token_refused', 'GET /ghost/api/admin/themes/', 401).message, SNAPSHOT_WORDS.tokenRefused)
+  assert.deepEqual(snapshotError('snapshot_failed', 'Storage'), { code: 'snapshot_failed', message: SNAPSHOT_WORDS.other, request: 'Storage' }, 'no status where Ghost did not answer')
+  assert.equal(SNAPSHOT_WORDS.request('GET /ghost/api/admin/themes/', 501), 'GET /ghost/api/admin/themes/ → 501')
+  assert.equal(SNAPSHOT_WORDS.request('Storage'), 'Storage')
+  assert.ok(isSnapshotError(needs))
+  assert.ok(!isSnapshotError({ code: 'ghost_unavailable', message: 'x' }), 'the control: another envelope is not B12b\'s')
+  assert.ok(!isSnapshotError({ code: 'snapshot_failed', message: 'x', level: 'error', fatal: false, refs: [] }), 'nor a gate finding')
+  assert.ok(!isSnapshotError(null))
+  // "this site", not "this project" (R-278's grain); Ghost's own label, never "Settings → Design" alone
+  assert.match(SNAPSHOT_WORDS.noToken, /this site doesn't have one/)
+  assert.equal(`${SNAPSHOT_WORDS.placeBefore}${SNAPSHOT_WORDS.placeLink}${SNAPSHOT_WORDS.placeAfter}`,
+    'Ghost keeps your previous theme under Settings → Design & branding, so you can put it back yourself if you need to.')
+  assert.equal(SNAPSHOT_WORDS.addToken, KEYS.staff.add, 'R-170: one name for the action (B12b draws "Add the token")')
+  assert.equal(SNAPSHOT_WORDS.checking, DEPLOY_WORDS.checked)
+})
+
+test('7.20a: the gate\'s words — the frame\'s own, the reason singular at one, the rail the step\'s own name', () => {
+  assert.equal(BACKUP_WORDS.rail, STEPS.find((s) => s.id === 'backup')?.label)
+  assert.equal(BACKUP_WORDS.title, 'Back your site up before we replace the theme')
+  assert.equal(BACKUP_WORDS.sub.self('orbitweekly.com'), 'Self-hosted Ghost · orbitweekly.com')
+  assert.equal(BACKUP_WORDS.sub.ghost_pro('orbitweekly.com'), 'Ghost(Pro) · orbitweekly.com')
+  assert.equal(BACKUP_WORDS.sub.unknown('orbitweekly.com'), 'orbitweekly.com')
+  assert.equal(BACKUP_WORDS.remaining(7), '7 rows still to tick, then the confirmation above.')
+  assert.equal(BACKUP_WORDS.remaining(1), '1 row still to tick, then the confirmation above.')
+  assert.equal(BACKUP_WORDS.oneLeft, 'One confirmation left.')
+  assert.equal(BACKUP_WORDS.downloadFailed(403), "Ghost didn't hand over the file (403). Use the help link on this row to download it from Ghost Admin.")
+  assert.equal(BACKUP_WORDS.runChecks, DEPLOY_WORDS.runChecks)
+  assert.equal(BACKUP_WORDS.back, DEPLOY_WORDS.back)
+})
+
+test('7.20a: the Download glyph is Tabler\'s own `download` outline, path for path (R-130)', () => {
+  const tabler = JSON.parse(readFileSync('../../packages/library/icons/tabler.json', 'utf8'))
+  const want = (tabler.icons.download.outline as [string, { d: string }][]).map(([, a]) => a.d)
+  const icons = readFileSync('components/kit/icons.tsx', 'utf8')
+  const glyph = icons.slice(icons.indexOf('export const Download'), icons.indexOf(')\n', icons.indexOf('export const Download')))
+  assert.deepEqual([...glyph.matchAll(/<path d="([^"]+)" \/>/g)].map((m) => m[1]), want)
 })

@@ -7,6 +7,8 @@ import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
 import { ROUTES_IO } from '@/server/routes-io'
 import { offerRoutes } from '@/server/routes-upload'
+import { captureSnapshot } from '@/server/snapshot'
+import { SNAPSHOT_IO } from '@/server/snapshot-io'
 import { compileInputOf } from './project-input.ts'
 import type { DeployIo, DeployRow, JobRow } from './run.ts'
 import { zipTheme } from './zip.ts'
@@ -144,6 +146,14 @@ export const DEPLOY_IO: DeployIo = {
     const now = ok(await supabaseAdmin().from('sites').select('id, url').eq('id', linked).eq('user_id', userId).maybeSingle(), 'linked site') as { id: string; url: string } | null
     return { now: now ?? { id: linked, url: '' }, was: wasUrl }
   },
+  // Story 7.20a — FR-J13's first upload, per site record: any binding for the site among the user's projects
+  async siteBound({ siteId, userId }) {
+    const rows = ok(await supabaseAdmin().from('project_site_bindings').select('project_id').eq('site_id', siteId).eq('user_id', userId).limit(1), 'site bindings') as unknown[] | null
+    return (rows ?? []).length > 0
+  },
+  // Story 7.20a — the one capture, with its own real io (the staff token's reads and the `site-snapshots` writes are
+  // `snapshot-io.ts`', on `server-wiring.test.ts`' two lists), so `run.ts` stays off the chokepoint
+  snapshot: (a) => captureSnapshot(a, SNAPSHOT_IO),
   call: (args) => call({ ...args, kind: 'admin' }),
   offerRoutes: (a) => offerRoutes(a, ROUTES_IO),
   async routesFile({ siteId, userId }) {

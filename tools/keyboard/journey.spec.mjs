@@ -8796,7 +8796,8 @@ async function plantDeploy(page, plan) {
     if (req.method() === 'POST') {
       const body = req.postDataJSON()
       sent.push(body)
-      seq = plan[body.intent] ?? []
+      // Story 7.20a: B12b's Deploy without a snapshot is a Ship it of its own plan (`without`), where the journey gives one
+      seq = (body.withoutSnapshot === true ? plan.without : undefined) ?? plan[body.intent] ?? []
       n = 0
       return route.fulfill({ status: body.intent === 'cancel' ? 200 : 202, contentType: 'application/json', body: JSON.stringify({ job: 'job-718' }) })
     }
@@ -8836,7 +8837,7 @@ test('7.18a · Ship it is S4\'s coral split button after ⋯ with "Deploy option
   expect(await page.evaluate(() => document.querySelector('dialog[data-deploy-wizard]').contains(document.activeElement)), 'focus moved in').toBe(true)
   // the rail numbers the steps that show — every one, in order, its number before its name (on Destination none is done yet);
   // `full` is no first deploy, so Story 7.19's Safety net is not among them
-  await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.stepsFor(false).map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`)))
+  await expect(wizard(page).locator('ol li')).toHaveText(DEPLOY.stepsFor({ safety: false, backup: false }).map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`)))
   await expect(wizard(page).locator('[data-theme-name]')).toHaveText('inflozo-pilot-sections')
   await expect(wizard(page)).toContainText(DW.chip(1, null))
   await page.keyboard.press('Escape')
@@ -10060,7 +10061,7 @@ test('7.19 · (a) a first deploy: Destination says Next and the rail reads Desti
   await openWizard(page)
   await expect(page.locator('#deploy-run')).toBeVisible()
   await expect(page.locator('#deploy-next')).toHaveCount(0)
-  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor(false)))
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: false, backup: false })))
   await page.keyboard.press('Escape')
   await expect(wizard(page)).toHaveCount(0)
 
@@ -10069,8 +10070,8 @@ test('7.19 · (a) a first deploy: Destination says Next and the rail reads Desti
   await openWizard(page)
   await expect(page.locator('#deploy-next')).toHaveAccessibleName(DW.next)
   await expect(page.locator('#deploy-run')).toHaveCount(0)
-  expect(DEPLOY.stepsFor(true).map((s) => s.label)).toEqual(['Destination', 'Safety net', 'Check', 'Ship', 'Live'])
-  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor(true)))
+  expect(DEPLOY.stepsFor({ safety: true, backup: false }).map((s) => s.label)).toEqual(['Destination', 'Safety net', 'Check', 'Ship', 'Live'])
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: true, backup: false })))
   await toOffer(page)
   await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.title)
   await expect.poll(() => deploySaid(page), { message: 'D1b\'s heading said politely, focus being on the box' }).toBe(SN.title)
@@ -10126,7 +10127,7 @@ test('7.19 · (b) Not now opens D1c on Continue — the three losses, once — a
   await openWizard(page)
   await expect(page.locator('#deploy-run')).toBeVisible()
   await expect(page.locator('#deploy-next')).toHaveCount(0)
-  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor(false)))
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: false, backup: false })))
 })
 
 test('7.19 · (b2) Not now whose record does not land: D1c still shows on Continue, and Continue still starts the checks — the deploy never waits on the safety net', async ({ page }) => {
@@ -10285,4 +10286,422 @@ test('7.19 · (e) back to Destination from the Safety net (the review): Continue
   await expect(page.locator('#deploy-run')).toBeFocused()
   await expect(page.locator('#deploy-next')).toHaveCount(0)
   expect(sent.map((b) => b.intent), 'nothing more was started').toEqual(['preflight', 'cancel'])
+})
+
+
+/* ── Story 7.20a — the backup gate and the pre-Inflozo snapshot (FR-J13, F7; D1d/D1d′/D1e, B12a, B12b; UX-DR12, UX-DR19, R-98) ──
+   Every shape's site has its Backup CONFIRMED and is self-hosted, so no earlier journey meets the gate: `x-inflozo-harness-backup:
+   self | pro | unknown` makes it owed on a site of that host, and `x-inflozo-harness-token: held` stores a Staff Access Token (no
+   Safety net; the Theme row's Download). The gate's three actions are the harness's (`harnessConfirm`, `harnessTheme` by
+   `x-inflozo-harness-snapshot`, `harnessRoutes`); Ship it's capture is the deploy route's, answered here with CANNED views (B12a's
+   `snapshotting`, B12b's resting answer) as every other stage. Pointer-free: Space ticks a box, Enter presses. The real Ghost,
+   the real bucket and the real column are the deployed walk's step 117 and §89's. */
+
+const BW = DEPLOY.BACKUP_WORDS
+const SNAP = DEPLOY.SNAPSHOT_WORDS
+const GATE = await import(new URL('../../apps/web/lib/backup-gate.ts', import.meta.url).href)
+const GATE_ROWS = ['theme', 'routes', 'content', 'members', 'redirects', 'media', 'database']
+/** the harness's Theme Download answers this snapshot id (`harnessTheme`); Story 2.5's route for it is the journey's to answer */
+const SNAPSHOT_ID = '00000000-0000-4000-8000-000000000720'
+const SNAPSHOT_ROUTE = new RegExp(`/snapshots/${SNAPSHOT_ID}/download$`)
+const HELD = { ...FIRST, 'x-inflozo-harness-token': 'held' }
+const contentWidth = (page) => wizard(page).evaluate((d) => d.getBoundingClientRect().width - parseFloat(getComputedStyle(d).paddingLeft) * 2)
+/** every sentence the wizard's polite region says from now on, in order (its words change under one live region) */
+async function hearSaid(page) {
+  await page.evaluate(() => {
+    window.__said = []
+    const region = document.querySelector('[data-deploy-said]')
+    new MutationObserver(() => window.__said.push(region.innerText)).observe(region, { childList: true, subtree: true, characterData: true })
+  })
+}
+const heard = (page) => page.evaluate(() => window.__said ?? [])
+/** a box ticked from the keyboard: focused, then Space */
+async function tick(page, id) {
+  await page.locator(`#${id}`).focus()
+  await page.keyboard.press('Space')
+}
+/** Destination → Next → the Backup step (Safety net already answered or not offered), its first box focused */
+async function toGate(page) {
+  await page.locator('#deploy-next').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'backup')
+}
+/** the capture's canned views: archiving (the live theme read, then the snapshot written), then the upload and Live */
+const SNAP_AT = { ...CHECKED, snapshotting: { at: AT } }
+const READ = { at: AT, theme: 'casper', version: '5.9.4' }
+const WROTE = { ...READ, bytes: 2_202_009 }
+const ARCHIVED = { ...CHECKED, snapshotting: { ...WROTE, ms: 3200 } }
+const ARCHIVING = [viewOf('snapshotting', SNAP_AT), viewOf('snapshotting', SNAP_AT), viewOf('snapshotting', { ...CHECKED, snapshotting: READ }), viewOf('snapshotting', { ...CHECKED, snapshotting: WROTE })]
+const AFTER_ARCHIVE = [
+  viewOf('uploading', { ...ARCHIVED, uploading: { at: AT } }),
+  viewOf('activating', { ...ARCHIVED, uploading: TIMED.uploading, activating: { at: AT } }),
+]
+/** a capture that did not finish: the job rests at `awaiting_ship` with its answer (B12b) */
+const resting = (code, request, status) => viewOf('awaiting_ship', { ...CHECKED, snapshotting: { at: AT, ms: 900 } }, {
+  error: { code, message: code === 'snapshot_needs_token' ? SNAP.noToken : code === 'snapshot_token_refused' ? SNAP.tokenRefused : SNAP.other, request, ...(status === undefined ? {} : { status }) },
+})
+
+test('7.20a · (a) a first deploy, self-hosted, the token added: the six labels; Next → Safety net → Add token → Backup on its first box; the reason counts down, the master confirm and Run checks greyed with it, "confirm available" said once; the shortcut collapses and restores; Back keeps the ticks; confirm → Run checks → Pre-flight with both ticked — and a reopen shows Run checks with four (the control: a confirmed site shows four)', async ({ page }) => {
+  // the control first: a confirmed site whose token is stored — no Safety net, no Backup, four steps and Run checks
+  await page.setExtraHTTPHeaders(HELD)
+  await open(page)
+  await openWizard(page)
+  await expect(page.locator('#deploy-run')).toBeVisible()
+  await expect(page.locator('#deploy-next')).toHaveCount(0)
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: false, backup: false })))
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+
+  await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-backup': 'self', 'x-inflozo-harness-token': 'ok' })
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  await open(page)
+  await openWizard(page)
+  await expect(page.locator('#deploy-next')).toHaveAccessibleName(DW.next)
+  expect(DEPLOY.stepsFor({ safety: true, backup: true }).map((s) => s.label)).toEqual(['Destination', 'Safety net', 'Backup', 'Check', 'Ship', 'Live'])
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: true, backup: true })))
+  await toOffer(page)
+  await page.keyboard.insertText(TOKEN)
+  await page.locator('#deploy-add-token').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'backup', { timeout: 15_000 })
+  expect(sent, 'a kept token goes on to Backup, never straight to the checks').toEqual([])
+  await hearSaid(page)
+  await expect(page.locator('#deploy-gate-shortcut'), 'the first box focused').toBeFocused()
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(BW.title)
+  await expect(wizard(page).locator('[data-backup-sub]')).toHaveText('Self-hosted Ghost · harness.example')
+  await expect(wizard(page).locator('ol li[aria-current="step"]')).toHaveText(/^3\s*Backup$/)
+  await expect(wizard(page).locator('ol li').nth(1), 'Safety net ticked').toHaveText(/^Safety net$/)
+  expect(await contentWidth(page), 'D1d is 780 wide').toBe(780)
+  await expect(wizard(page).getByRole('button', { name: DW.close }), 'no ✕ on Backup').toHaveCount(0)
+  // both Downloads: the token is held now (R-282: routes.yaml on every connected site)
+  await expect(page.locator('#deploy-download-theme')).toHaveAccessibleName(BW.download)
+  await expect(page.locator('#deploy-download-routes')).toHaveAccessibleName(BW.download)
+  // greyed with the footer's reason, never `disabled`; a press does nothing
+  const reason = page.locator('#deploy-backup-reason')
+  await expect(reason).toHaveText(BW.remaining(7))
+  for (const id of ['deploy-gate-confirm', 'deploy-backup-run']) {
+    await expect(page.locator(`#${id}`)).toHaveAttribute('aria-disabled', 'true')
+    await expect(page.locator(`#${id}`)).toHaveAttribute('aria-describedby', 'deploy-backup-reason')
+    await expect(page.locator(`#${id}`)).not.toHaveAttribute('disabled', /.*/)
+  }
+  await page.locator('#deploy-backup-run').focus()
+  await page.keyboard.press('Enter')
+  await tick(page, 'deploy-gate-confirm')
+  await expect(page.locator('#deploy-gate-confirm')).not.toBeChecked()
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'backup')
+  expect(sent).toEqual([])
+  // two rows, then Back: Destination on Next, and the ticks kept while the wizard stays mounted
+  await tick(page, 'deploy-gate-theme')
+  await tick(page, 'deploy-gate-routes')
+  await expect(reason).toHaveText(BW.remaining(5))
+  await page.locator('#deploy-backup-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await expect(page.locator('#deploy-next')).toBeFocused()
+  await expect(wizard(page).locator('ol li').nth(1), 'the answered Safety net stays ticked').toHaveText(/^Safety net$/)
+  await toGate(page)
+  await expect(page.locator('#deploy-gate-theme')).toBeChecked()
+  await expect(page.locator('#deploy-gate-routes')).toBeChecked()
+  // the rest, counting down, then "confirm available" said politely as the last row is ticked
+  const rest = GATE_ROWS.slice(2)
+  for (const [i, id] of rest.entries()) {
+    await tick(page, `deploy-gate-${id}`)
+    const left = rest.length - i - 1
+    await expect(reason).toHaveText(left === 0 ? BW.oneLeft : BW.remaining(left))
+  }
+  await expect(page.locator('#deploy-gate-confirm')).not.toHaveAttribute('aria-disabled', 'true')
+  await expect.poll(() => deploySaid(page)).toBe(BW.available)
+  // the shortcut: every row collapses to one ticked line "in the archive"; unticked, each row's own tick is back
+  await tick(page, 'deploy-gate-shortcut')
+  await expect(wizard(page).locator('[data-backup-rows="collapsed"] li')).toHaveCount(GATE_ROWS.length)
+  for (const li of await wizard(page).locator('[data-backup-rows="collapsed"] li').all()) await expect(li).toContainText(BW.inArchive)
+  await expect(wizard(page)).toContainText(BW.shortcutTicked)
+  await tick(page, 'deploy-gate-shortcut')
+  for (const id of GATE_ROWS) await expect(page.locator(`#deploy-gate-${id}`), id).toBeChecked()
+  // confirm, then untick a row: the confirm unticks and Run checks greys again
+  await tick(page, 'deploy-gate-confirm')
+  await expect(page.locator('#deploy-gate-confirm')).toBeChecked()
+  await expect(page.locator('#deploy-backup-run')).not.toHaveAttribute('aria-disabled', 'true')
+  await tick(page, 'deploy-gate-members')
+  await expect(page.locator('#deploy-gate-confirm')).not.toBeChecked()
+  await expect(page.locator('#deploy-backup-run')).toHaveAttribute('aria-disabled', 'true')
+  await expect(reason).toHaveText(BW.remaining(1))
+  await tick(page, 'deploy-gate-members')
+  expect((await heard(page)).filter((w) => w === BW.available), '"confirm available" said once each time it becomes available').toHaveLength(2)
+  await tick(page, 'deploy-gate-confirm')
+  await expect(reason).toHaveCount(0)
+  // Run checks: the checks start, Safety net and Backup both ticked
+  await page.locator('#deploy-backup-run').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check', { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight'])
+  await expect(wizard(page).locator('ol li').nth(1)).toHaveText(/^Safety net$/)
+  await expect(wizard(page).locator('ol li').nth(2)).toHaveText(/^Backup$/)
+  await expect(wizard(page).locator('ol li[aria-current="step"]')).toHaveText(/^4\s*Check$/)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+  // the same page: the editor holds both answers — Run checks, four steps
+  await openWizard(page)
+  await expect(page.locator('#deploy-run')).toBeVisible()
+  await expect(page.locator('#deploy-next')).toHaveCount(0)
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: false, backup: false })))
+})
+
+test('7.20a · (b) Ghost(Pro): D1e — the sky block and its ink line, no shortcut, the database with no box and "NOT YOURS TO TAKE", "6 rows still to tick"; the token held, so the rail is five with no Safety net', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'pro' })
+  await open(page)
+  await openWizard(page)
+  await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: false, backup: true })))
+  await toGate(page)
+  await expect(wizard(page).locator('[data-backup-gate]')).toHaveAttribute('data-backup-gate', 'ghost_pro')
+  await expect(page.locator('#deploy-gate-theme'), 'no shortcut: the first box is the Theme row\'s').toBeFocused()
+  await expect(wizard(page).locator('[data-backup-sub]')).toHaveText('Ghost(Pro) · harness.example')
+  await expect(wizard(page).locator('[data-backup-pro]')).toContainText(BW.pro[0])
+  await expect(wizard(page)).toContainText(BW.proInk)
+  await expect(wizard(page).locator('[data-backup-shortcut]')).toHaveCount(0)
+  await expect(page.locator('#deploy-gate-database')).toHaveCount(0)
+  await expect(wizard(page).locator('[data-gate-row="database"]')).toContainText(BW.rows.database.proChip)
+  await expect(wizard(page).locator('[data-gate-row="media"]')).toContainText(BW.rows.media.pro)
+  await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.remaining(6))
+  for (const id of GATE_ROWS.filter((r) => r !== 'database')) await tick(page, `deploy-gate-${id}`)
+  await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.oneLeft)
+})
+
+test('7.20a · (c) a host not yet known: the sky block, then the shortcut, and D1d\'s seven rows all tickable; the sub line is the host alone', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'unknown' })
+  await open(page)
+  await openWizard(page)
+  await toGate(page)
+  await expect(wizard(page).locator('[data-backup-sub]')).toHaveText('harness.example')
+  const order = await wizard(page).evaluate((d) => !!(d.querySelector('[data-backup-pro]').compareDocumentPosition(d.querySelector('[data-backup-shortcut]')) & Node.DOCUMENT_POSITION_FOLLOWING))
+  expect(order, 'the sky block first, then the shortcut').toBe(true)
+  await expect(page.locator('#deploy-gate-shortcut')).toBeFocused()
+  await expect(page.locator('#deploy-gate-database')).toHaveCount(1)
+  await expect(wizard(page).locator('[data-gate-row="media"]')).toContainText(BW.rows.media.self)
+  await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.remaining(7))
+})
+
+test('7.20a · (d) no token (Not now): no Theme Download — it could never act — and routes.yaml\'s present (R-282): "Preparing…", then the live file saved; Ghost\'s failure leaves its sentence under the row', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-backup': 'self' })
+  let hold = null
+  await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+    const req = route.request()
+    // the download's action carries the decline's shape (the project and the site); `hold` is set only around its press
+    if (hold && isDecline(req)) await hold
+    return route.fallback()
+  })
+  await open(page)
+  await openWizard(page)
+  await toOffer(page)
+  await page.locator('#deploy-not-now').focus()
+  await page.keyboard.press('Enter')
+  await page.locator('#deploy-continue').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page), 'D1c\'s Continue goes on to Backup while it is owed').toHaveAttribute('data-deploy-wizard', 'backup')
+  await expect(page.locator('#deploy-download-theme')).toHaveCount(0)
+  const routes = page.locator('#deploy-download-routes')
+  await expect(routes).toBeVisible()
+  let release
+  hold = new Promise((r) => { release = r })
+  const saved = page.waitForEvent('download')
+  await routes.focus()
+  await page.keyboard.press('Enter')
+  await expect(routes).toHaveAccessibleName(BW.preparing)
+  await expect(routes).toHaveAttribute('aria-busy', 'true')
+  hold = null
+  release()
+  const file = await saved
+  expect(file.suggestedFilename()).toBe('routes.yaml')
+  expect(readFileSync(await file.path(), 'utf8')).toMatch(/^routes:\n\ncollections:\n {2}\/:\n/)
+  await expect(routes).toHaveAccessibleName(BW.download)
+  // Ghost's failure: the row's own sentence, the row's help link the way forward
+  await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-backup': 'self', 'x-inflozo-harness-snapshot': 'failed' })
+  await routes.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-download-routes-said')).toHaveText(BW.downloadFailed(502))
+  await expect(routes).toHaveAttribute('aria-describedby', 'deploy-download-routes-said')
+})
+
+test('7.20a · (e) Ship it at a first upload, the token held: B12a at Ship, 600 wide — the live theme\'s name and version, then the snapshot\'s size, "Kept outside your version limit." and a live Cancel — then S8c as 7.18a built it', async ({ page }) => {
+  await page.setExtraHTTPHeaders(HELD)
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT, ship: [...ARCHIVING, ...AFTER_ARCHIVE] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await hearSaid(page)
+  await page.locator('#deploy-ship').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('[data-archiving]')).toBeVisible({ timeout: 15_000 })
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'ship')
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(SNAP.title)
+  await expect(wizard(page).locator('ol li[aria-current="step"]')).toHaveText(/^3\s*Ship$/)
+  expect(await contentWidth(page), 'B12a is 600 wide').toBe(600)
+  await expect(wizard(page)).toContainText(SNAP.foot)
+  const cancel = page.locator('#deploy-cancel')
+  await expect(cancel, 'Cancel live until the upload begins').not.toHaveAttribute('aria-disabled', 'true')
+  const archiveRows = wizard(page).locator('[data-archive-row]')
+  await expect(archiveRows).toHaveText([new RegExp(`^${SNAP.reading}`), new RegExp(`^${SNAP.writing}`), SNAP.uploading, SNAP.checking])
+  await expect(archiveRows.nth(0)).toContainText('casper 5.9.4', { timeout: 15_000 })
+  await expect(archiveRows.nth(1)).toContainText(DEPLOY.themeSize(WROTE.bytes), { timeout: 15_000 })
+  // then the upload, S8c's own
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight', 'ship'])
+  expect(sent.at(-1).withoutSnapshot, 'Ship it asks for the capture').toBeUndefined()
+  expect(await heard(page), 'the stage said as it starts').toContain(SNAP.say)
+})
+
+test('7.20a · (e2) B12a\'s Cancel: the job is cancelled after the capture and before the upload, and the wizard is back at Destination', async ({ page }) => {
+  await page.setExtraHTTPHeaders(HELD)
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT, ship: [viewOf('snapshotting', SNAP_AT)], cancel: [viewOf('snapshotting', SNAP_AT), viewOf('cancelled', SNAP_AT, { deploy: null })] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await page.locator('#deploy-ship').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('[data-archiving]')).toBeVisible({ timeout: 15_000 })
+  await page.locator('#deploy-cancel').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination', { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight', 'ship', 'cancel'])
+})
+
+test('7.20a · (e3) the live theme is already Inflozo\'s: B12a\'s row 2 says no snapshot is needed and carries no size, then S8c (the control: (e)\'s row 2 is "Writing the snapshot" with its size)', async ({ page }) => {
+  await page.setExtraHTTPHeaders(HELD)
+  const MARKED = { ...CHECKED, snapshotting: { at: AT, marked: true } }
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT, ship: [viewOf('snapshotting', SNAP_AT), viewOf('snapshotting', MARKED), viewOf('snapshotting', MARKED), viewOf('uploading', { ...MARKED, uploading: { at: AT } })] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await page.locator('#deploy-ship').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('[data-archiving]')).toBeVisible({ timeout: 15_000 })
+  const row2 = wizard(page).locator('[data-archive-row]').nth(1)
+  await expect(row2).toHaveText(new RegExp(`^${SNAP.marked}`), { timeout: 15_000 })
+  await expect(row2).not.toContainText(SNAP.writing)
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight', 'ship'])
+})
+
+test('7.20a · (f) no token at the first upload: B12b at 600 — the 403 line, its body, Ghost\'s Design & branding linked — then Deploy without a snapshot ("Starting…") ships, S8c', async ({ page }) => {
+  await page.setExtraHTTPHeaders(FIRST)
+  const sent = await plantDeploy(page, {
+    preflight: PREFLIGHT,
+    ship: [viewOf('snapshotting', SNAP_AT), resting('snapshot_needs_token', 'GET /ghost/api/admin/themes/', 403)],
+    without: [viewOf('uploading', { ...CHECKED, snapshotting: { skipped: true }, uploading: { at: AT } }), ...AFTER_ARCHIVE.slice(1)],
+  })
+  await open(page)
+  await openWizard(page)
+  await toOffer(page)
+  await page.locator('#deploy-not-now').focus()
+  await page.keyboard.press('Enter')
+  await page.locator('#deploy-continue').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await page.locator('#deploy-ship').focus()
+  await page.keyboard.press('Enter')
+  const failed = wizard(page).locator('[data-capture-failed]')
+  await expect(failed).toHaveAttribute('data-capture-failed', 'snapshot_needs_token', { timeout: 15_000 })
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(SNAP.failedTitle)
+  await expect(failed).toContainText(SNAP.noToken)
+  await expect(wizard(page).locator('[data-capture-request]')).toHaveText('GET /ghost/api/admin/themes/ → 403')
+  const place = wizard(page).locator('[data-capture-place]')
+  await expect(place).toHaveAttribute('href', PAYWALL.adminAt('https://127.0.0.1:9', 'design'))
+  await expect(place).toHaveAttribute('target', '_blank')
+  await expect(place).toContainText(SNAP.placeLink)
+  expect(await contentWidth(page), 'B12b is 600 wide').toBe(600)
+  await expect.poll(() => deploySaid(page)).toBe(SNAP.failedTitle)
+  await expect(page.locator('#deploy-b12-token')).toHaveAccessibleName(SNAP.addToken)
+  await expect(page.locator('#deploy-b12-cancel')).toHaveAccessibleName(SNAP.cancel)
+  // Deploy without a snapshot: held on the wire, so "Starting…" is on screen; then S8c
+  let release
+  let hold = new Promise((r) => { release = r })
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), async (route) => {
+    if (route.request().method() === 'POST' && hold) await hold
+    return route.fallback()
+  })
+  const without = page.locator('#deploy-without')
+  await without.focus()
+  await page.keyboard.press('Enter')
+  await expect(without).toHaveAccessibleName(DW.starting)
+  await expect(without).toHaveAttribute('aria-busy', 'true')
+  hold = null
+  release()
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight', 'ship', 'ship'])
+  expect(sent.at(-1).withoutSnapshot).toBe(true)
+})
+
+test('7.20a · (g) a capture Ghost refused: B12b names the download and its status → Add token opens D1b over it (no Not now, the rail at Ship) → Back is B12b on Add token; a kept token ships again, capturing', async ({ page }) => {
+  await page.setExtraHTTPHeaders(HELD)
+  const sent = await plantDeploy(page, { preflight: PREFLIGHT, ship: [viewOf('snapshotting', SNAP_AT), resting('snapshot_failed', 'GET /ghost/api/admin/themes/casper/download/', 502)] })
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true', { timeout: 15_000 })
+  await page.locator('#deploy-ship').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('[data-capture-failed]')).toHaveAttribute('data-capture-failed', 'snapshot_failed', { timeout: 15_000 })
+  await expect(wizard(page).locator('[data-capture-request]')).toHaveText('GET /ghost/api/admin/themes/casper/download/ → 502')
+  await expect(wizard(page).locator('[data-capture-failed]')).toContainText(SNAP.other)
+  await page.locator('#deploy-b12-token').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-token')).toBeFocused()
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.title)
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'ship')
+  await expect(page.locator('#deploy-not-now')).toHaveCount(0)
+  expect(await contentWidth(page), 'D1b\'s 700').toBe(700)
+  await page.locator('#deploy-safety-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page).locator('[data-capture-failed]')).toBeVisible()
+  await expect(page.locator('#deploy-b12-token')).toBeFocused()
+  // a kept token ships again, capturing (the harness's Ghost now says the pasted token is an Administrator's)
+  await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-token': 'ok' })
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-token')).toBeFocused()
+  await page.keyboard.insertText(TOKEN)
+  await page.locator('#deploy-add-token').focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => sent.map((b) => b.intent), { timeout: 15_000 }).toEqual(['preflight', 'ship', 'ship'])
+  expect(sent.at(-1).withoutSnapshot, 'now capturing').toBeUndefined()
+})
+
+test('7.20a · (h) the Theme Download, the token held: "Preparing…", then Story 2.5\'s /snapshots/{id}/download is followed; a marked live theme says it is Inflozo\'s own, and Ghost\'s refusal says its status — nothing followed (the controls)', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'self' })
+  const followed = []
+  await page.route(SNAPSHOT_ROUTE, (route) => {
+    followed.push(new URL(route.request().url()).pathname)
+    return route.fulfill({ status: 200, headers: { 'content-type': 'application/zip', 'content-disposition': 'attachment; filename="harness-casper.zip"' }, body: 'PK\x03\x04' })
+  })
+  let hold = null
+  await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+    const req = route.request()
+    if (hold && req.method() === 'POST' && req.headers()['next-action']) await hold
+    return route.fallback()
+  })
+  await open(page)
+  await openWizard(page)
+  await toGate(page)
+  const theme = page.locator('#deploy-download-theme')
+  let release
+  hold = new Promise((r) => { release = r })
+  await theme.focus()
+  await page.keyboard.press('Enter')
+  await expect(theme).toHaveAccessibleName(BW.preparing)
+  hold = null
+  release()
+  await expect.poll(() => followed, { timeout: 15_000 }).toEqual([`/app${GATE.snapshotDownloadPath(SNAPSHOT_ID)}`])
+  await expect(theme).toHaveAccessibleName(BW.download)
+  await expect(wizard(page), 'the page stays on the gate').toHaveAttribute('data-deploy-wizard', 'backup')
+  for (const [answer, words] of [['marked', BW.marked], ['refused', BW.downloadFailed(403)]]) {
+    await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'self', 'x-inflozo-harness-snapshot': answer })
+    await theme.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#deploy-download-theme-said'), answer).toHaveText(words)
+  }
+  expect(followed, 'nothing more followed').toHaveLength(1)
 })

@@ -2,7 +2,7 @@
 
 import { orbitWeekly } from '@inflozo/library'
 import { CONNECT_MAX, hostOf, tokenRefusal } from '@/lib/connect-rule'
-import { DEPLOY_WORDS, shipStateOf } from '@/lib/deploy'
+import { BACKUP_WORDS, DEPLOY_WORDS, shipStateOf, SNAPSHOT_WORDS } from '@/lib/deploy'
 import { canvasOfPageTwoKey, canvasOfTemplateKey, fileOf, isUuid } from '@/lib/editor'
 import { confirmedFrom, SWITCH_WORDS, switchWith, type SwitchAnswer } from '@/lib/site-switch'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
@@ -12,6 +12,10 @@ import { quietSession, supabaseAdmin } from '@/lib/supabase/server'
 import { holdsLock } from '@/server/edit-lock'
 import { readSettings } from '@/server/site-probe'
 import { addStaffToken } from '@/server/staff-token'
+import { ROUTES_IO } from '@/server/routes-io'
+import { liveRoutesFile } from '@/server/routes-upload'
+import { captureSnapshot, STORAGE } from '@/server/snapshot'
+import { SNAPSHOT_IO } from '@/server/snapshot-io'
 
 /**
  * STORY 5.13 — THE ONE WRITE THE EDITOR'S OWN CHROME MAKES (FR-D22).
@@ -269,12 +273,12 @@ async function linkedSite(supabase: Awaited<ReturnType<typeof quietSession>>['su
   }
   if (project?.linked_site_id !== siteId) return null
   const { data: site, error: siteError } = await supabase
-    .from('sites').select('id, url, ghost_version').eq('id', siteId).is('disconnected_at', null).maybeSingle()
+    .from('sites').select('id, url, ghost_version, credentials_present').eq('id', siteId).is('disconnected_at', null).maybeSingle()
   if (siteError) {
     console.error('projects/editor: the safety net could not read the site', { code: siteError.code })
     return 'unread' as const
   }
-  return (site as { id: string; url: string; ghost_version: string | null } | null) ?? null
+  return (site as { id: string; url: string; ghost_version: string | null; credentials_present: { staff?: unknown } | null } | null) ?? null
 }
 
 export async function addSafetyToken(projectId: string, siteId: string, token: string): Promise<SafetyAnswer> {
@@ -313,4 +317,80 @@ export async function declineSafetyNet(projectId: string, siteId: string): Promi
     return { ok: false }
   }
   return { ok: true }
+}
+
+/**
+ * STORY 7.20a — THE FIRST DEPLOY'S BACKUP STEP (F7, D1d/D1d′/D1e): the gate's three server actions, beside the Safety net's and in
+ * their shape — the project's link read through the CALLER'S OWN session first (`linkedSite`, RLS), the site connected and still
+ * the one the wizard named, a failed read ours (`DEPLOY_WORDS.infrastructure`). None takes the edit lock: none writes the project.
+ *
+ * `confirmBackup` — Run checks on Backup records the confirmation on the SITE (`sites.backup_confirmed_at`, once per site; disconnect
+ * clears it, so a reconnect asks again). Server-asserted like `staff_token_declined_at` (no `authenticated` update grant — the
+ * Schema's header), so the write is the service role's, scoped by `user_id` and `disconnected_at is null`. The wizard never awaits
+ * it, as Not now's decline is not: a failed write is logged and the gate shows again on a later open. A consent gate, not a
+ * technical control (AD-29) — nothing on the server reads this column before a deploy.
+ *
+ * `downloadLiveTheme` — the Theme row's Download: the ONE capture (`captureSnapshot`, through `snapshot-io.ts`), which writes the
+ * site's snapshot row because AD-13 serves bytes only from Storage. It answers the row's id — the browser then follows Story 2.5's
+ * `/snapshots/{id}/download`, a 60-second signed URL — or the "Inflozo's own" sentence (nothing stored), or the row's failure
+ * sentence. A later first upload re-captures and replaces the row (FR-J13).
+ *
+ * `downloadRoutes` — the `routes.yaml` row's Download, on every connected site (R-282): the live file read with the Staff Access
+ * Token when one is stored and the Admin key otherwise (`liveRoutesFile`), handed back as text for the browser to save as
+ * `routes.yaml`, as B16's download is.
+ */
+const BACKUP_ROUTE = 'projects/editor/backup'
+
+export async function confirmBackup(projectId: string, siteId: string): Promise<{ ok: boolean }> {
+  if (!isUuid(projectId) || !isUuid(siteId)) return { ok: false }
+  const { user, supabase } = await quietSession()
+  if (!user) return { ok: false }
+  const site = await linkedSite(supabase, projectId, siteId)
+  if (site === null || site === 'unread') return { ok: false }
+  const { data, error } = await supabaseAdmin()
+    .from('sites')
+    .update({ backup_confirmed_at: new Date().toISOString() })
+    .eq('id', site.id)
+    .eq('user_id', user.id)
+    .is('disconnected_at', null)
+    .select('id')
+  if (error || !data?.length) {
+    console.error('projects/editor: the backup confirmation was not recorded', { code: error?.code ?? 'no_row' })
+    return { ok: false }
+  }
+  return { ok: true }
+}
+
+export type BackupDownload = { ok: true; id: string } | { said: string }
+
+export async function downloadLiveTheme(projectId: string, siteId: string): Promise<BackupDownload> {
+  if (!isUuid(projectId) || !isUuid(siteId)) return { said: DEPLOY_WORDS.infrastructure }
+  const { user, supabase } = await quietSession()
+  if (!user) return { said: DEPLOY_WORDS.infrastructure }
+  const site = await linkedSite(supabase, projectId, siteId)
+  if (site === 'unread') return { said: DEPLOY_WORDS.infrastructure }
+  if (site === null) return { said: SWITCH_WORDS.gone }
+  const got = await captureSnapshot({ siteId: site.id, userId: user.id, route: `${BACKUP_ROUTE}/theme` }, SNAPSHOT_IO).catch((thrown: unknown) => {
+    console.error('projects/editor: the live theme could not be captured', { name: (thrown as { name?: string })?.name })
+    return null
+  })
+  if (got === null) return { said: DEPLOY_WORDS.infrastructure }
+  if (got.ok) return 'marked' in got ? { said: BACKUP_WORDS.marked } : { ok: true, id: got.id }
+  if (got.status !== undefined) return { said: BACKUP_WORDS.downloadFailed(got.status) }
+  if (got.request === STORAGE) return { said: DEPLOY_WORDS.infrastructure }
+  if (got.code === 'snapshot_needs_token') return { said: SNAPSHOT_WORDS.noToken }
+  return { said: DEPLOY_WORDS.unreachable(hostOf(site.url)) }
+}
+
+export async function downloadRoutes(projectId: string, siteId: string): Promise<{ ok: true; file: string } | { said: string }> {
+  if (!isUuid(projectId) || !isUuid(siteId)) return { said: DEPLOY_WORDS.infrastructure }
+  const { user, supabase } = await quietSession()
+  if (!user) return { said: DEPLOY_WORDS.infrastructure }
+  const site = await linkedSite(supabase, projectId, siteId)
+  if (site === 'unread') return { said: DEPLOY_WORDS.infrastructure }
+  if (site === null) return { said: SWITCH_WORDS.gone }
+  const live = await liveRoutesFile(ROUTES_IO, { siteId: site.id, route: `${BACKUP_ROUTE}/routes`, staff: site.credentials_present?.staff === true })
+  if (live.ok) return { ok: true, file: new TextDecoder().decode(live.bytes) }
+  if (live.status !== undefined) return { said: BACKUP_WORDS.downloadFailed(live.status) }
+  return { said: live.unreachable ? DEPLOY_WORDS.unreachable(hostOf(site.url)) : DEPLOY_WORDS.infrastructure }
 }

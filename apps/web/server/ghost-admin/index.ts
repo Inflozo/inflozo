@@ -12,6 +12,7 @@ import {
   parseCredential,
   permitted,
   timeoutFor,
+  type ReadBudget,
 } from './admin-rule.ts'
 import { sql, type Client } from './db.ts'
 
@@ -350,6 +351,8 @@ export async function call(args: {
   item?: AllowlistItem
   route: string
   kind?: CredentialKind
+  /** Story 7.20a — a read's own budget (`READ_TIMEOUT_MS`), never an allowlist item */
+  read?: ReadBudget
 }): Promise<CallResult> {
   const kind = args.kind ?? 'admin'
   const row = await withStore(args.route, () => decrypt(args.siteId, kind, args.route))
@@ -371,6 +374,7 @@ export async function call(args: {
     body: args.body,
     item: args.item,
     route: args.route,
+    ...(args.read === undefined ? {} : { read: args.read }),
   })
 }
 
@@ -390,6 +394,7 @@ export async function fetchWithKey(args: {
   major?: number
   siteId?: string | null
   userId?: string | null
+  read?: ReadBudget
 }): Promise<CallResult> {
   const method = (args.method ?? 'GET').toUpperCase()
   const action = method === 'GET' ? 'admin_read' : 'admin_write'
@@ -435,7 +440,8 @@ export async function fetchWithKey(args: {
   // 2026-09-29): two full timeouts in a row would have let one Admin call sit for twice the ceiling
   // every caller — connect's three calls, the daily check's budget — was derived from.
   // Story 7.18a: the budget is the item's — `theme_upload` waits for Ghost's own gscan; everything else keeps 15 s
-  const budget = timeoutFor(args.item)
+  // Story 7.20a: or the read's own (`theme_download`, FR-J13's archive), never by naming a write item
+  const budget = timeoutFor(args.item, args.read)
   const deadline = started + budget
   const where = await whereTo(url, budget)
   if (where !== 'public') {

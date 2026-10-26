@@ -399,7 +399,7 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - as another tenant, none of it is visible.
 
 **Execution — Dev:**
-- [ ] `lib/deploy.ts` -- the rule, pure:
+- [x] `lib/deploy.ts` -- the rule, pure:
   - `STEPS` gains `{ id: 'backup', label: 'Backup' }` after `safety`. `stepsFor({ safety, backup })` replaces the boolean,
     with the four steps as its all-false case. The `:35-37` comment is updated;
   - `stepOf('snapshotting')` is `'ship'`;
@@ -409,13 +409,13 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - `afterSafety` decides between Backup and Run checks;
   - `BACKUP_WORDS` and `SNAPSHOT_WORDS` hold every string in "Words";
   - the snapshot codes and their B12b bodies are in `deployError`'s table.
-- [ ] `lib/backup-gate.ts` (**new**) -- the gate's pure rule. It is the one source the wizard, the harness and the tests
+- [x] `lib/backup-gate.ts` (**new**) -- the gate's pure rule. It is the one source the wizard, the harness and the tests
   read:
   - `gateRows(host)` gives the seven rows (Database untickable on `ghost_pro`);
   - `remaining(rows, ticks, shortcut)`, `confirmAvailable` and `reasonOf` give the footer;
   - `blocksFor(host)` decides between the shortcut, the sky block, or both;
   - `HELP` holds the links.
-- [ ] `server/snapshot.ts` (**new**) -- `captureSnapshot({ siteId, userId, route }, io?)`, with its io handed in:
+- [x] `server/snapshot.ts` (**new**) -- `captureSnapshot({ siteId, userId, route }, io?)`, with its io handed in:
   - `GET themes/` with the staff token, or with the Admin key when none is stored;
   - the marker check;
   - the download;
@@ -424,9 +424,9 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   It answers `{ ok: true; id; theme; version; bytes } | { ok: true; marked: true } | { ok: false; code; request; status }`.
   It names the request it failed on: `GET /ghost/api/admin/themes/`, `GET /ghost/api/admin/themes/{name}/download/`, or
   `Storage`. It joins both `server-wiring.test.ts` lists with numbered reasons -- the one capture.
-- [ ] `server/ghost-admin/admin-rule.ts` -- a read budget for the theme download, keyed so it never becomes an
+- [x] `server/ghost-admin/admin-rule.ts` -- a read budget for the theme download, keyed so it never becomes an
   `ADMIN_WRITES` item. The ship's worst case is noted beside it against `maxDuration` 300.
-- [ ] `server/deploy/run.ts` · `deploy-io.ts` · `projects/[id]/deploy/route.ts`:
+- [x] `server/deploy/run.ts` · `deploy-io.ts` · `projects/[id]/deploy/route.ts`:
   - `ship` takes `withoutSnapshot`;
   - on a first upload it claims `snapshotting` before `uploading`, calls `io.snapshot`, and writes
     `stage_timings.snapshotting` (`theme`, `version`, `bytes`, or `marked` / `skipped`);
@@ -434,11 +434,11 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - a failed capture rests the job at `awaiting_ship` with the answer in `error`, and nothing is uploaded or bound;
   - `io.siteBound(siteId)` is the per-site test;
   - `view` answers the snapshot's timings and error -- the capture in the deploy.
-- [ ] `server/site-probe.ts` -- `hosted_by_ghost: body.hostSettings != null` in the probe's write when `body` was parsed --
+- [x] `server/site-probe.ts` -- `hosted_by_ghost: body.hostSettings != null` in the probe's write when `body` was parsed --
   the host.
-- [ ] `sites/actions.ts` -- `disconnectSite`'s stamp sets `backup_confirmed_at: null` -- the gate shows again after a
+- [x] `sites/actions.ts` -- `disconnectSite`'s stamp sets `backup_confirmed_at: null` -- the gate shows again after a
   reconnect.
-- [ ] `E/actions.ts`:
+- [x] `E/actions.ts`:
   - `confirmBackup(projectId, siteId)`: the service role sets `backup_confirmed_at = now()`, scoped by `user_id` and the
     still-linked, still-connected site (7.19's Review shape);
   - `downloadLiveTheme(projectId, siteId)`: `linkedSite`, then `captureSnapshot` through a chokepoint-side module, answering
@@ -447,10 +447,10 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
     sentence;
 
   none of them takes the lock -- the gate's three server actions.
-- [ ] `E/read.ts` -- the site select gains `backup_confirmed_at, hosted_by_ghost` -- server truth for the gate.
-- [ ] `components/kit/icons.tsx` -- `Download` from Tabler's outline in `packages/library/icons/tabler.json` -- the
+- [x] `E/read.ts` -- the site select gains `backup_confirmed_at, hosted_by_ghost` -- server truth for the gate.
+- [x] `components/kit/icons.tsx` -- `Download` from Tabler's outline in `packages/library/icons/tabler.json` -- the
   frame's glyph.
-- [ ] `components/editor/deploy-wizard.tsx`:
+- [x] `components/editor/deploy-wizard.tsx`:
   - `backup` is fixed at mount from `backupOwed` and the editor's confirmed site; `local` gains `'backup'`, and the `at`
     mapping, the step switch and the width rule (780) follow it;
   - Destination shows Next while either step is owed; D1c's Continue and a kept Add token go through `afterSafety`;
@@ -467,15 +467,15 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - each view at its frame's width
 
   -- D1d, D1d′, D1e, B12a, B12b and the rail.
-- [ ] `E/editor.tsx` -- hold the confirmed site beside `answered`, so a reopen in the same page skips Backup.
-- [ ] `app/(app)/app/harness/editor/layout.tsx` and `actions.ts`:
+- [x] `E/editor.tsx` -- hold the confirmed site beside `answered`, so a reopen in the same page skips Backup.
+- [x] `app/(app)/app/harness/editor/layout.tsx` and `actions.ts`:
   - `x-inflozo-harness-backup: self | pro | unknown` makes the gate owed for that host, and a `first` ship with
     `x-inflozo-harness-token: held` holds a token;
   - `x-inflozo-harness-snapshot: ok | marked | no_token | refused | failed` cans the ship's capture;
   - the canned gate actions are `harnessConfirm`, `harnessTheme` and `harnessRoutes`
 
   -- the journeys' state.
-- [ ] `deploy.test.ts` · `backup-gate.test.ts` (**new**) · `snapshot.test.ts` (**new**) · `deploy-run.test.ts` ·
+- [x] `deploy.test.ts` · `backup-gate.test.ts` (**new**) · `snapshot.test.ts` (**new**) · `deploy-run.test.ts` ·
   `read.test.ts` · `admin-rule.test.ts` · `site-probe` / `probe-rule` tests -- every pure row of the matrix, each assertion
   first seen red:
   - the rails for each combination;
@@ -493,9 +493,9 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
     - Deploy only captures;
   - `hosted_by_ghost` from a `config` with, without and unparsed `hostSettings`;
   - the download budget is not an `ADMIN_WRITES` key.
-- [ ] `busy.test.ts` -- the wizard's press list gains the two Downloads ("Preparing…"), Backup's Run checks ("Starting…"),
+- [x] `busy.test.ts` -- the wizard's press list gains the two Downloads ("Preparing…"), Backup's Run checks ("Starting…"),
   Deploy without a snapshot, and B12b's Add token -- R-98.
-- [ ] `tools/keyboard/journey.spec.mjs`, pointer-free (Space ticks, Enter presses), each step with its control:
+- [x] `tools/keyboard/journey.spec.mjs`, pointer-free (Space ticks, Enter presses), each step with its control:
   - (a) `first` + `backup: self`, token held:
     - the six labels, Next → Safety net → … → Backup with the first box focused;
     - the reason counts down;
@@ -512,9 +512,9 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - (f) `no_token` → B12b with the 403 line and the Design & branding link → Deploy without a snapshot → S8c;
   - (g) `failed` → B12b's request and status → Add token → D1b → Back → B12b;
   - (h) Theme Download → the navigation to `/snapshots/{id}/download`, canned.
-- [ ] `tools/keyboard/floor.spec.mjs` -- Backup at 1440 (780 card, scrolling inside the dialog), 820 and 390 (no
+- [x] `tools/keyboard/floor.spec.mjs` -- Backup at 1440 (780 card, scrolling inside the dialog), 820 and 390 (no
   horizontal scroll; each Download under its text), and B12a and B12b at 1440 and 390 -- the frames' widths.
-- [ ] `tools/probe/record-snapshot.mjs` (**new**; a `doc-audit.py` catalogue row) -- §89, T1, read-only, keys read
+- [x] `tools/probe/record-snapshot.mjs` (**new**; a `doc-audit.py` catalogue row) -- §89, T1, read-only, keys read
   in-process by name, through the product's own `adminRequest`. It prints status, type and lengths only:
   - `GET themes/` with `GHOST6_STAFF_ACCESS_TOKEN` gives 200, the active theme's name and version, and its
     `package.inflozo` flag;
@@ -525,8 +525,9 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - `GET themes/` with the Admin key gives 403 (the one code's Ghost 6 half);
   - `GET settings/routes/yaml/` with the Admin key gives 200 (R-282's premise, §37 re-run)
 
-  -- standing rule 1, executed.
-- [ ] `tools/probe/run-verify-editor.cjs` -- steps 113a and 114 answer Backup as they answer Safety net (the column set
+  -- standing rule 1, executed. *(Dev: written; its local half holds. The `--t1` half — §89, which moves VERIFY-AT-BUILD 78 to
+  EXECUTED — is the main session's, on the owner's in-session go.)*
+- [x] `tools/probe/run-verify-editor.cjs` -- steps 113a and 114 answer Backup as they answer Safety net (the column set
   through the service key, read back). **Step 117**, on production, writes to T1 and puts it back:
   - (a) a throwaway account connects T1 through the wizard, and `hosted_by_ghost` reads `false`:
     - Ship it → Next → Add token (`GHOST6_STAFF_ACCESS_TOKEN`) → Backup shows D1d with both Downloads;
@@ -547,8 +548,9 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - `finally`: Casper active again, every `inflozo-*` theme the run uploaded deleted, the list read back, and the
     throwaway disconnected and deleted (`[abcdefgh]`)
 
-  -- R-82 on the real stack.
-- [ ] Docs -- each finding reaches its document:
+  -- R-82 on the real stack. *(Dev: written, gated on `T1_WRITES=1`; steps 113a, 114 and 116 now confirm the gate through the
+  service key. The run is the Review's, at the deployed sha, on an in-session go worded for the whole run.)*
+- [x] Docs -- each finding reaches its document:
   - **PRD:**
     - FR-J13 gets a dated note: the gate as drawn (seven rows, the shortcut, the host from `hostSettings`, the record
       cleared at disconnect); the `snapshotting` stage; the one code; and B12b's "Design & branding" link (R-282's
@@ -600,6 +602,49 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
 - Given the migrations are withheld, when the RLS gate runs, then the 7.20 block aborts at its first check.
 
 ## Spec Change Log
+
+**Dev (2026-10-26) — readings and departures, each a routine call told in one line (none changes what a surface does):**
+- **`ShipState.site.hosting`, not `host`**: `host` was already the site's address (`hostOf`); the host KIND is `hosting`
+  (`'self' | 'ghost_pro' | null`).
+- **The capture is two files, `server/snapshot.ts` and `server/snapshot-io.ts`** — `routes-upload.ts`/`routes-io.ts`' split: the
+  rule takes its io handed in and is what `node --test` reaches (a file that imports the service role cannot load there); the
+  real io is the file on both `server-wiring.test.ts` lists, with its reasons. `deploy-io.ts`' `snapshot` and `downloadLiveTheme`
+  hand it in.
+- **The download's read budget is 45 s** (`READ_TIMEOUT_MS.theme_download`); the ship's worst case of Ghost time (list 15 +
+  download 45 + upload 120 + activation 15 + routes 3 × 15) is 240 s, held by `ghost-admin-rule.test.ts` against 300.
+- **B12a's rows learn as the capture does**: `captureSnapshot` hands progress (the theme, then the size) that `ship()` writes to
+  `stage_timings.snapshotting` at once, best effort — without it row 1's name could never be seen before the upload.
+- **D1d′'s collapsed rows are a list, not boxes**: the shortcut holds them, as the frame draws them (no pointer on the ticked
+  marks); unticking the shortcut returns each row's own box and tick.
+- **"Confirm available" is said each time the confirm becomes available** — once per becoming, so an untick and a re-tick say it
+  again; a shortcut toggle over rows already ticked says nothing.
+- **Run checks greyed is S8b's greyed Ship it** (`opacity-35`, `greyedProps`, the footer's reason), not the frame's grey fill: a
+  caller's fill loses to the Kit's stylesheet order (7.19's reading).
+- **B12b's Add token view has no Not now**: over B12b, the way on without a token is B12b's own Deploy without a snapshot; Back
+  returns to B12b, and the rail stays at Ship.
+- **B12b's Cancel cancels a job RESTING with a capture's answer** (`cancel()` moves it off `awaiting_ship` first, then clears the
+  object and the deploy row, AD-29); a clean resting Pre-flight still refuses a Cancel, as 7.18a holds.
+- **The Theme Download's failure words**: Ghost's status → "Ghost didn't hand over the file ({status})…"; the store → the
+  infrastructure sentence; no answer → `DEPLOY_WORDS.unreachable(host)`; a token gone meanwhile → B12b's no-token body. Each from an
+  approved list; the row's help link stays the way forward.
+- **Two derived strings**: an infrastructure failure while archiving is "{B12a's title less "first"} failed" (`STAGE_NAMES`), and
+  the stage is said politely as it starts with B12a's title as a sentence (DW-378's rule). No new words.
+- **The harness's `x-inflozo-harness-snapshot` drives the Theme Download** (`harnessTheme`); Ship it's capture is the deploy
+  route's, which the harness never reaches, so the journeys can its `snapshotting` and B12b views through `page.route`, as every
+  other stage.
+- **Walk step 116 is re-expected too**: its planted site and G's T1 record are confirmed through the service key, so D1c's
+  Continue and a kept token still go straight to the checks; 117 walks the gate.
+- **The main session's matrix audit (2026-10-26) added two checks a row had no test for:**
+  - "Ship, first upload, marked" — `marked` reached the job only with the upload's edge, so B12a's row 2 could never say "No
+    snapshot needed" before S8c took over. `ship()` now writes it at once, as the capture's progress is
+    (`deploy-run.test.ts`, first seen red at the old line), and journey **(e3)** draws it (red with the wizard ignoring it);
+  - "Disconnect, reconnect" — `server-wiring.test.ts` holds that the reset rides the disconnect stamp's own write (red with it
+    removed); the walk's 117c proves it on production.
+- **For the Review to weigh, not a change:** a Theme Download on a gate RE-SHOWN after a reconnect writes the site's row (this
+  section's "The Theme Download writes the site's snapshot row"). A marked live theme writes nothing, so the usual case keeps the
+  first upload's original; only a customer who put a non-Inflozo theme live in Ghost Admin since would replace it with that one.
+- **Walk step 117a's byte comparison stands:** §89's capture downloaded Casper a second time and the bytes were identical
+  (sha256), so Ghost's zip-on-the-fly is deterministic on T1.
 
 ## Design Notes
 
@@ -826,3 +871,54 @@ R-82's real services for this story:
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS.
 - `grep -rn --exclude=.env -e 'Story 7.20a adds Backup' -e 'less Backup' -e 'Settings → Design,' apps tools _bmad-output/planning-artifacts`
   -- expected: nothing stale. The record documents keep theirs.
+
+**Executed — Dev, the main session (2026-10-26 IST, Node 24; the real services by their variable names):**
+- **Supabase (local gate):** `bash supabase/tests/run-rls-gate.sh` — green, the 7.20a block's 14 PASS lines (the columns, comments
+  and stage; the tenant's own read and not another's; 42501 on both columns with the title control; Cancel at `snapshotting`
+  with `uploading` refused as the control; `site_snapshots` insert, update and delete 42501; another tenant sees none of it, its
+  own snapshot the control; the refused writes changed nothing; the project's deletion left its site's snapshot). 7.18a's stage
+  check now sets `snapshotting` aside, so it still proves 7.18a's alone. **Control:** a scratch copy without both 7.20a
+  migrations (and HEAD's `SCHEMA.sql`) — exit 3 at `FAIL (7.20a): sites.backup_confirmed_at (timestamptz) or
+  sites.hosted_by_ghost (boolean), nullable with no default, is missing`, the block's first check, right after 7.19's last PASS.
+- **GitHub CI** (`GITHUB_TOKEN`, read only) on the Schema push `b5c151e689bbb6debe94d1d0f4e30254e525a9a9`: CI `rls` ✓,
+  `check` ✓, `deploy` ✓; Render matrix ✓.
+- **Supabase production** (`SUPABASE_DB_POOLER_URL`, read in-process; the owner's in-session go, "1. Yes, apply both"): before
+  the apply, neither column existed, `job_stage` had no `snapshotting` and `deploy_jobs_owner_cancel` held (queued, compiling,
+  checking) — the control. Both files applied, each in its own transaction. Read back:
+  - `information_schema.columns`: `backup_confirmed_at` `timestamp with time zone` and `hosted_by_ghost` `boolean`, both
+    nullable with no default; `col_description` gives each migration comment verbatim;
+  - `enum_range`: `{queued,compiling,checking,awaiting_ship,snapshotting,uploading,activating,done,failed,cancelled}`;
+  - `pg_policies`: `deploy_jobs_owner_cancel` with `snapshotting` among its stages;
+  - `authenticated` has no UPDATE on either column, and `sites`' UPDATE columns are still `favicon_url, title, updated_at`.
+- **T1** `ghost6.inflozo.com` (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_ADMIN_API_KEY`, read in-process; GETs only,
+  nothing written; the owner's in-session go, "1. Go, read-only"): `node --experimental-strip-types
+  tools/probe/record-snapshot.mjs --t1` — every row PASS, MEASUREMENTS §89 written. Nine GETs in all: the six rows, plus
+  `captureSnapshot`'s own three (two staff, one Admin). The results:
+  - `GET themes/` with the staff token → **200**, `casper` 5.12.1 active, `package.inflozo` false;
+  - `GET themes/casper/download/` with it → **200 `application/zip`**, `attachment; filename=casper.zip`, no `Location`, 291174
+    bytes opening with `PK`;
+  - the same download with one flipped digit → **401 `UnauthorizedError`** (the control, which held);
+  - the Admin key → **403 `NoPermissionError`** on the download and on the list;
+  - `GET settings/routes/yaml/` with the Admin key → **200** `application/yaml`, 130 bytes (R-282's premise);
+  - `captureSnapshot` read them as captured (object before row, recorded and not written), and as `snapshot_needs_token` with
+    the 403. Its own download was byte-identical to the first.
+
+  VERIFY-AT-BUILD 78 is moved to EXECUTED, and the capture's plan stands as built. Ghost 5's 501 goes to DW-326 (R-238).
+- `pnpm check` (Node 24): green — lint, typecheck, every package's tests, 0 failed. Each package prints its own count. Re-run
+  green after the audit's two additions.
+- `pnpm keyboard` (Node 24), the whole gate on the subagent's tree: 319 passed and 1 failed, in 18.2 min. The failure was the
+  bar-width floor (`floor.spec.mjs:610`): a canvas not painted in time, while a source file was briefly edited under `next dev`
+  for the disconnect test's red run. Re-run alone, it passed 2 of 2. Then `-g '7\.20a · \((e|e3)\)'` passed 2 of 2.
+  - **(e3)'s control:** with the wizard drawing "Writing the snapshot" whatever the stage says, (e3) FAILS at row 2. The file
+    was restored byte-identical (`cmp`).
+  - The subagent's own runs: journeys (a)–(h) with (e2), the floor, and 7.18/7.19's neighbours all PASS. Its spot controls each
+    went red: no marker check, Ghost 5's 501 unmapped, a capture on a bound site, no polite sentence, and a Theme Download
+    without a token.
+- `node --experimental-strip-types tools/probe/record-snapshot.mjs` (the local half): every row PASS. `--help` exits 2.
+- `node --check tools/probe/run-verify-editor.cjs`: clean. Steps 117 and the re-expected 113a, 114 and 116 are the Review's
+  part, on the Dev push's deployed sha, from a clean worktree, with their own T1 go.
+- The grep for "Story 7.20a adds Backup", "less Backup", "Settings → Design," and `stepsFor(true)` finds only dated notes, the
+  frames and the prototypes lifted from them, the Appendix A prompts (a record of what was asked), PRD backups, and build
+  caches. Nothing stale.
+- **Vercel** (`app.inflozo.com`) and the walk's step 117 are the Review's.
+

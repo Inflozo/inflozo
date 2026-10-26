@@ -10,16 +10,21 @@ import { ResultChip, VersionChip } from '@/components/kit/badge'
 import { Button, SplitButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, wideTitle } from '@/components/kit/dialog'
 import { greyedProps, ring } from '@/components/kit/greyed'
-import { AlertCircle, AlertTriangle, Bolt, ChevronDown, ChevronRight, ChevronUp, Copy, ExternalLink, Eye, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
+import { AlertCircle, AlertTriangle, Bolt, Check, ChevronDown, ChevronRight, ChevronUp, Copy, Download, ExternalLink, Eye, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { RadioCard } from '@/components/kit/radio-card'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { BusyLabel, Submit } from '@/components/kit/submit'
 import { RoutesFallback } from '@/components/routes-fallback'
 import {
-  CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, POSTS_CHECKED, SAFETY_PICTURE, SAFETY_WORDS as SN, safetyOffered, STAGE_NAMES, stepNumber, stepOf,
-  stepsFor, themeSize, UNSTOPPABLE, uploadOnlyBlock, versionNumber, type DeployRequest, type DeployView, type Mode, type RailStep, type ShipState, type Stage, type Step, type Timings,
+  afterSafety, BACKUP_WORDS as BW, backupOwed, CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, isSnapshotError, POSTS_CHECKED, SAFETY_PICTURE, SAFETY_WORDS as SN,
+  safetyOffered, SNAPSHOT_WORDS as SNAP, STAGE_NAMES, stepNumber, stepOf, stepsFor, themeSize, UNSTOPPABLE, uploadOnlyBlock, versionNumber, type DeployRequest, type DeployView, type Mode,
+  type RailStep, type ShipState, type Stage, type Step, type Timings,
 } from '@/lib/deploy'
+import {
+  blocksFor, confirmAvailable, gateRows, NO_TICKS, reasonOf, remaining, snapshotDownloadPath, subLineOf, toggleConfirm, toggleRow, toggleShortcut, type GateTicks, type RowId,
+} from '@/lib/backup-gate'
+import { adminAt } from '@/lib/paywall'
 import { CONNECT_MAX } from '@/lib/connect-rule'
 import { deployPath, type Canvas } from '@/lib/editor'
 import { preflightWarnings, rowCanvas, type PreflightInput, type PreflightRow } from '@/lib/preflight'
@@ -95,6 +100,14 @@ const twoLines = (title: string, caption?: string) => (
   </span>
 )
 
+/** STORY 7.20a — the Theme Download's address followed as a link would be: Story 2.5's route answers a 303 to Storage's signed URL,
+ *  which serves the zip as an attachment, so the page stays where it is */
+function follow(href: string) {
+  const a = document.createElement('a')
+  a.href = href
+  a.click()
+}
+
 /** the routes file, saved as Ghost names it — the same `data:` bytes B16's download carries (routine call 10) */
 function saveRoutes(file: string) {
   const a = document.createElement('a')
@@ -168,12 +181,13 @@ function StageRow({ tone, label, meta, chip, id }: { tone: Tone; label: ReactNod
   )
 }
 
-/** the rail, numbered from the steps that show (`stepsFor` — Story 7.19's Safety net on a first deploy that offers it): done
- *  steps mint-ticked, the current one coral — or red where it failed, green once Live — and the rest dimmed; D2e/D2f's Live is
- *  not reached (`waiting`). An ANSWERED Safety net stays ticked, back on Destination too (`answered`) */
-function Rail({ at, state, steps, answered = false }: { at: Step; state: 'current' | 'failed' | 'live' | 'waiting'; steps: readonly RailStep[]; answered?: boolean }) {
+/** the rail, numbered from the steps that show (`stepsFor` — Story 7.19's Safety net on a first deploy that offers it, Story
+ *  7.20a's Backup where it is owed): done steps mint-ticked, the current one coral — or red where it failed, green once Live — and
+ *  the rest dimmed; D2e/D2f's Live is not reached (`waiting`). An ANSWERED Safety net and a CONFIRMED Backup stay ticked, back on
+ *  Destination too (`answered`) */
+function Rail({ at, state, steps, answered = {} }: { at: Step; state: 'current' | 'failed' | 'live' | 'waiting'; steps: readonly RailStep[]; answered?: { safety?: boolean; backup?: boolean } }) {
   const c = stepNumber(at, steps) - 1
-  const long = steps.length > stepsFor(false).length
+  const long = steps.length > stepsFor({ safety: false, backup: false }).length
   const tick = (stroke: string) => (
     <svg aria-hidden width="10" height="10" viewBox="0 0 24 24" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={stroke}>
       <polyline points="20 6 9 17 4 12" />
@@ -182,7 +196,7 @@ function Rail({ at, state, steps, answered = false }: { at: Step; state: 'curren
   return (
     <ol className="m-0 flex list-none items-center gap-2 p-0">
       {steps.map((s, i) => {
-        const done = i < c || (i === c && state === 'live') || (s.id === 'safety' && answered && i !== c)
+        const done = i < c || (i === c && state === 'live') || (((s.id === 'safety' && answered.safety) || (s.id === 'backup' && answered.backup)) === true && i !== c)
         const now = i === c && state !== 'waiting'
         const round = 'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold leading-none'
         const disc =
@@ -246,16 +260,21 @@ function Confetti() {
 type Answer = { ok: true; job: string } | { ok: false; status: number }
 /** R-260's row: still reading, read (the posts no page lists), or the site's posts could not be read */
 type PostsCheck = { kind: 'reading' } | { kind: 'read'; unlisted: readonly { title: string }[]; capped: boolean } | { kind: 'unread' } | null
-type Pressed = 'start' | 'ship' | 'cancel' | 'activate' | null
+/** Story 7.20a: `without` is B12b's Deploy without a snapshot — a Ship it, busy on its own button */
+type Pressed = 'start' | 'ship' | 'without' | 'cancel' | 'activate' | null
 
 /** where the row stands, to wait past after a press: its stage and every stage edge it has recorded */
 const standing = (v: DeployView) => `${v.job.stage}:${JSON.stringify(v.job.timings)}`
 
 /** DW-378 — the stages the row has recorded entering, in the order they started (`at`, then the stage table's own order):
  *  each the wizard says once, whether or not a read ever saw the row standing in it */
-const SAID_STAGES = ['compiling', 'checking', 'uploading', 'activating'] as const
+const SAID_STAGES = ['compiling', 'checking', 'snapshotting', 'uploading', 'activating'] as const
 const entered = (timings: Timings): [(typeof SAID_STAGES)[number], string][] =>
-  SAID_STAGES.flatMap((st) => (timings[st] === undefined ? [] : [[st, (timings[st] as { at: string }).at] as [(typeof SAID_STAGES)[number], string]]))
+  SAID_STAGES.flatMap((st) => {
+    // Story 7.20a: a skipped capture (Deploy without a snapshot) entered no stage, so it has no `at` and is never said
+    const at = (timings[st] as { at?: string } | undefined)?.at
+    return at === undefined ? [] : [[st, at] as [(typeof SAID_STAGES)[number], string]]
+  })
     .sort((a, b) => (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : SAID_STAGES.indexOf(a[0]) - SAID_STAGES.indexOf(b[0])))
 
 /** a blocked Pre-flight stores the gate's first blocking finding; every other failure is AD-24's envelope */
@@ -282,6 +301,11 @@ export function DeployWizard({
   onAnswered,
   addToken,
   decline,
+  confirmed,
+  onConfirmed,
+  confirmBackup,
+  downloadTheme,
+  downloadRoutes,
   onClose,
 }: {
   request: ShipRequest
@@ -326,6 +350,17 @@ export function DeployWizard({
   addToken: (siteId: string, token: string) => Promise<{ ok: true } | { refused: string }>
   /** STORY 7.19 — Not now (`declineSafetyNet`): recorded on the site D1b named, never awaited by the deploy */
   decline: (siteId: string) => Promise<{ ok: boolean }>
+  /** STORY 7.20a — the site this page already confirmed the Backup step for, else null: a reopen in the same page skips it, before
+   *  the next read of the stored state (`backup_confirmed_at`) does the same */
+  confirmed: string | null
+  /** …and the confirmation, told to the editor */
+  onConfirmed: (siteId: string) => void
+  /** STORY 7.20a — Run checks on Backup (`confirmBackup`): recorded on the site, never awaited by the deploy */
+  confirmBackup: (siteId: string) => Promise<{ ok: boolean }>
+  /** STORY 7.20a — the Theme row's Download (`downloadLiveTheme`): the snapshot row's id to follow, or a sentence */
+  downloadTheme: (siteId: string) => Promise<{ ok: true; id: string } | { said: string }>
+  /** STORY 7.20a — the `routes.yaml` row's Download (`downloadRoutes`, R-282): the live file, or a sentence */
+  downloadRoutes: (siteId: string) => Promise<{ ok: true; file: string } | { said: string }>
   /** the wizard closed; `shipped` when a job reached its ending, so the bar re-reads its label and versions */
   onClose: (shipped: boolean) => void
 }) {
@@ -364,15 +399,29 @@ export function DeployWizard({
   const [safety] = useState(() => safetyOffered(ship) && (site === null || answered !== site.id))
   // …and D1b's picture asked for at once, so it is there when Next is pressed rather than arriving after (Story 7.19's review)
   if (safety) preload(SAFETY_PICTURE.src, { as: 'image' })
-  const steps = stepsFor(safety)
   /** …answered in this mount (Add token kept, or Not now): Destination then shows Run checks again (a cancelled job's way back
    *  included), and the rail keeps Safety net ticked */
   const [safeAnswered, setSafeAnswered] = useState(false)
-  /** while no job exists: Destination, D1b's offer, or D1c's decline */
-  const [local, setLocal] = useState<'destination' | 'offer' | 'declined'>('destination')
+  /** while no job exists: Destination, D1b's offer, D1c's decline, or Story 7.20a's Backup step */
+  const [local, setLocal] = useState<'destination' | 'offer' | 'declined' | 'backup'>('destination')
   const [token, setToken] = useState('')
   const [tokenRefused, setTokenRefused] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+  /** STORY 7.20a — the first deploy's Backup step (D1d/D1d′/D1e), FIXED AT MOUNT as the Safety net is: owed by the server's truth
+   *  (`backupOwed`) unless this page already confirmed it for the site — so a step confirmed in this mount stays ticked */
+  const [backup] = useState(() => backupOwed(ship) && (site === null || confirmed !== site.id))
+  const steps = stepsFor({ safety, backup })
+  /** …confirmed in this mount (Run checks on Backup): Destination then shows Run checks, and the rail keeps Backup ticked */
+  const [backupDone, setBackupDone] = useState(false)
+  /** the gate's ticks, kept while the wizard stays mounted (Back to Destination keeps them) */
+  const [ticks, setTicks] = useState<GateTicks>(NO_TICKS)
+  /** a token kept in this mount — the Safety net's Add token, or B12b's — so the Theme row offers its Download at once */
+  const [tokenKept, setTokenKept] = useState(false)
+  /** each Download's press in flight, and its sentence where it failed (or said the theme is Inflozo's own) */
+  const [fetching, setFetching] = useState<'theme' | 'routes' | null>(null)
+  const [fetched, setFetched] = useState<Partial<Record<'theme' | 'routes', string>>>({})
+  /** STORY 7.20a — B12b's Add token: D1b's view over a job resting with a capture's answer, Back returning to B12b */
+  const [retoken, setRetoken] = useState(false)
 
   useEffect(() => {
     alive.current = true
@@ -440,7 +489,13 @@ export function DeployWizard({
 
   const stage: Stage | null = view === null ? (job === null ? null : 'queued') : view.job.stage
   const timings = view?.job.timings ?? {}
-  const at: Step = stage === null ? (local === 'destination' ? 'destination' : 'safety') : stepOf(stage, timings)
+  const error = view?.job.error ?? null
+  /** STORY 7.20a — a capture that did not finish rests the job back at `awaiting_ship` with its answer (B12b), at Ship */
+  const captureFailed = stage === 'awaiting_ship' && isSnapshotError(error)
+  const at: Step =
+    stage === null ? (local === 'destination' ? 'destination' : local === 'backup' ? 'backup' : 'safety')
+    : captureFailed ? 'ship'
+    : stepOf(stage, timings)
   const ending_ = view === null ? null : endingOf(view.job.stage, view.deploy, timings)
   /** the version this job ships, else the next one */
   const n = view?.deploy ? versionNumber(view.deploy.version) || (ship?.n ?? 1) : (ship?.n ?? 1)
@@ -450,7 +505,6 @@ export function DeployWizard({
   // the checks FINISHED when their verdicts are stored — a Checking that ended on a failure stored none (the review, 2026-10-19)
   const checksDone = stage === 'awaiting_ship' || (timings.checking?.ms !== undefined && view?.deploy?.gscan != null)
   const filtered = routes !== null && routes.collections.some((c) => nodeOf(c.filter) !== null)
-  const error = view?.job.error ?? null
 
   // a cancelled job is back at Destination, with nothing left of it
   useEffect(() => {
@@ -472,8 +526,9 @@ export function DeployWizard({
   // a Re-activate DW-374 refused (the deploy still `uploaded`, the project's site changed) failed at activating, which it never
   // entered: nothing was sent
   const reactivateRefused = stage === 'failed' && error !== null && !isFinding(error) && (error.code === 'site_changed' || error.code === 'site_unlinked') && view?.deploy?.status === 'uploaded'
-  const failedAt: 'compiling' | 'checking' | 'uploading' | 'activating' =
-    timings.activating !== undefined || reactivateRefused ? 'activating' : timings.uploading !== undefined ? 'uploading' : timings.checking !== undefined ? 'checking' : 'compiling'
+  const failedAt: 'compiling' | 'checking' | 'snapshotting' | 'uploading' | 'activating' =
+    timings.activating !== undefined || reactivateRefused ? 'activating' : timings.uploading !== undefined ? 'uploading'
+    : timings.snapshotting?.at !== undefined ? 'snapshotting' : timings.checking !== undefined ? 'checking' : 'compiling'
 
   /* ONE POLITE REGION: each stage as it starts, and the outcome once (its heading). DW-378 — EVERY STAGE `stage_timings` SHOWS
      ENTERED is said, in order, even one that began and ended between two of the wizard's one-second reads (Checking ran 0.9 s
@@ -483,7 +538,7 @@ export function DeployWizard({
   // outcome was said already (the Review, 2026-10-19)
   const envelope = error !== null && !isFinding(error)
   const ending: string | null =
-    stage === 'awaiting_ship' ? W.sayChecked(checked.errors, checked.warnings)
+    stage === 'awaiting_ship' ? (captureFailed ? SNAP.failedTitle : W.sayChecked(checked.errors, checked.warnings))
     : stage === 'done' ? (ending_ === 'live' ? W.liveTitle : ending_ === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle)
     : stage === 'failed' ? (at === 'ship' ? W.stageFailed(STAGE_NAMES[failedAt]) : checksDone && !envelope ? W.sayChecked(checked.errors, checked.warnings) : block?.reason ?? null)
     : null
@@ -497,7 +552,7 @@ export function DeployWizard({
       const key = `start:${st}:${t}`
       if (heard.current.has(key)) continue
       heard.current.add(key)
-      fresh.push(st === 'compiling' ? W.sayCompiling : st === 'checking' ? W.sayChecking : st === 'uploading' ? W.sayUploading : W.sayActivating(n))
+      fresh.push(st === 'compiling' ? W.sayCompiling : st === 'checking' ? W.sayChecking : st === 'snapshotting' ? SNAP.say : st === 'uploading' ? W.sayUploading : W.sayActivating(n))
     }
     if (ending !== null && !heard.current.has(endKey)) {
       heard.current.add(endKey)
@@ -561,9 +616,22 @@ export function DeployWizard({
       setTokenRefused(answer.refused)
       return
     }
-    setSafeAnswered(true)
     setToken('')
+    setTokenKept(true)
+    // STORY 7.20a — B12b's Add token: the kept token ships again, now capturing (the Safety net was answered long ago)
+    if (retoken) {
+      setRetoken(false)
+      return void press('ship')
+    }
+    setSafeAnswered(true)
+    // STORY 7.20a — on to Backup while it is owed (`afterSafety`, one rule with D1c's Continue), else the checks at once
+    if (afterSafety({ backup, confirmed: backupDone }) === 'backup') return setLocal('backup')
     if (!(await runChecks()) && alive.current) setLocal('destination')
+  }
+  /** D1c's Continue: on to Backup while it is owed, else the checks (`afterSafety`) */
+  const continueSafety = () => {
+    if (afterSafety({ backup, confirmed: backupDone }) === 'backup') return setLocal('backup')
+    void runChecks()
   }
   /** Not now: D1c at once — the decline is the decision, D1c its acknowledgement — and the record is written WITHOUT WAITING;
    *  a failed write is logged by the action and the offer returns on a later page, while this deploy goes on (FR-J8, AD-10) */
@@ -574,24 +642,77 @@ export function DeployWizard({
     onAnswered(site.id)
     void decline(site.id).catch(() => undefined)
   }
-  // focus as each view arrives: D1b on its token box, D1c on Continue, and Back's Destination on Next — and D1b's and D1c's
-  // headings said in the polite region, since focus lands on a control and not on the words that changed (UX-DR12)
+  // focus as each view arrives: D1b on its token box, D1c on Continue, Backup on its first box, and Back's Destination on Next —
+  // and each heading said in the polite region, since focus lands on a control and not on the words that changed (UX-DR12)
   const wasLocal = useRef(local)
   useEffect(() => {
     if (wasLocal.current === local) return
-    const id = local === 'offer' ? 'deploy-token' : local === 'declined' ? 'deploy-continue' : wasLocal.current === 'offer' ? (safeAnswered ? 'deploy-run' : 'deploy-next') : null
+    const back = wasLocal.current === 'offer' || wasLocal.current === 'backup'
+    const id = local === 'offer' ? 'deploy-token' : local === 'declined' ? 'deploy-continue' : local === 'backup' ? null
+      : back ? ((safety && !safeAnswered) || (backup && !backupDone) ? 'deploy-next' : 'deploy-run') : null
     wasLocal.current = local
+    if (local === 'backup') dialog.current?.querySelector<HTMLElement>('[data-backup-gate] input[type="checkbox"]')?.focus()
     if (id !== null) document.getElementById(id)?.focus()
-    if (local !== 'destination') say(local === 'offer' ? SN.title : SN.declinedTitle)
+    if (local !== 'destination') say(local === 'offer' ? SN.title : local === 'declined' ? SN.declinedTitle : BW.title)
   }, [local])
+  // …and B12b's Add token on its token box, Back on B12b's own Add token
+  const wasRetoken = useRef(false)
+  useEffect(() => {
+    if (retoken) document.getElementById('deploy-token')?.focus()
+    else if (wasRetoken.current) document.getElementById('deploy-b12-token')?.focus()
+    if (retoken) say(SN.title)
+    wasRetoken.current = retoken
+  }, [retoken])
 
-  /** a press on a job that is already there (Ship it, Cancel, Re-activate): sent, then the row is read until it moves */
-  const press = async (intent: 'ship' | 'cancel' | 'activate') => {
+  /* ── STORY 7.20a — the Backup step's presses (F7, D1d/D1d′/D1e) ── */
+  const gateHost = site?.hosting ?? null
+  const rows = gateRows(gateHost)
+  const tokenHeld = site?.staff === true || tokenKept
+  const available = confirmAvailable(rows, ticks, gateHost)
+  // UX-DR12: the master confirm becoming available is said once, politely, as it turns live
+  const wasAvailable = useRef(available)
+  useEffect(() => {
+    if (available && !wasAvailable.current && local === 'backup') say(BW.available)
+    wasAvailable.current = available
+  }, [available])
+  /** Run checks on Backup: the confirmation recorded WITHOUT WAITING (a failed write is logged and the gate shows again on a later
+   *  open), told to the editor, then the checks. Greyed until the master confirm is ticked: a press then does nothing (R-98) */
+  const confirmGate = async () => {
+    if (!ticks.confirmed || pressed !== null || site === null) return
+    void confirmBackup(site.id).catch(() => undefined)
+    onConfirmed(site.id)
+    setBackupDone(true)
+    if (!(await runChecks()) && alive.current) setLocal('destination')
+  }
+  /** a row's Download: "Preparing…" while it works (R-98); the theme is the ONE capture, its row then followed through Story
+   *  2.5's signed-URL route (AD-13), and `routes.yaml` is saved as B16's file is. A failure leaves its sentence under the row */
+  const fetchRow = async (which: 'theme' | 'routes') => {
+    if (fetching !== null || site === null) return
+    setFetching(which)
+    setFetched((was) => ({ ...was, [which]: undefined }))
+    const failed = { said: W.infrastructure }
+    if (which === 'theme') {
+      const answer = await downloadTheme(site.id).catch(() => failed)
+      if (!alive.current) return
+      if ('ok' in answer) follow(`${prefix}${snapshotDownloadPath(answer.id)}`)
+      else setFetched((was) => ({ ...was, theme: answer.said }))
+    } else {
+      const answer = await downloadRoutes(site.id).catch(() => failed)
+      if (!alive.current) return
+      if ('ok' in answer) saveRoutes(answer.file)
+      else setFetched((was) => ({ ...was, routes: answer.said }))
+    }
+    setFetching(null)
+  }
+
+  /** a press on a job that is already there (Ship it, Cancel, Re-activate): sent, then the row is read until it moves. Story
+   *  7.20a: `without` is B12b's Deploy without a snapshot — a Ship it that skips the capture */
+  const press = async (intent: 'ship' | 'cancel' | 'activate', without = false) => {
     if (pressed !== null || job === null || view === null) return
-    setPressed(intent)
+    setPressed(without ? 'without' : intent)
     setRefused(null)
     waitFor.current = standing(view)
-    const answer = await post(intent === 'ship' ? { intent, session: session(), job, mode } : { intent, session: session(), job })
+    const answer = await post(intent === 'ship' ? { intent, session: session(), job, mode, ...(without ? { withoutSnapshot: true } : {}) } : { intent, session: session(), job })
     if (!alive.current) return
     if (!answer.ok) {
       waitFor.current = null
@@ -609,7 +730,7 @@ export function DeployWizard({
   }
 
   /** once it starts, it finishes: Esc and the backdrop do nothing while uploading or activating, or once Ship it is sent */
-  const unstoppable = (stage !== null && UNSTOPPABLE.includes(stage)) || pressed === 'ship' || pressed === 'activate'
+  const unstoppable = (stage !== null && UNSTOPPABLE.includes(stage)) || pressed === 'ship' || pressed === 'without' || pressed === 'activate'
   const close = () => dialog.current?.close()
 
   const footerCaption = (id: string, text: string, link?: { words: string; href: string }) => (
@@ -871,7 +992,7 @@ export function DeployWizard({
           <X size={16} />
         </button>
       </div>
-      <Rail at="destination" state="current" steps={steps} answered={safeAnswered} />
+      <Rail at="destination" state="current" steps={steps} answered={{ safety: safeAnswered, backup: backupDone }} />
       {picking ? picker : site === null ? (
         // no connected linked site: said, with the ways to one — no Run checks (the matrix's row)
         <div className="flex flex-col items-start gap-3 rounded-thumb border border-line p-[13px]">
@@ -933,9 +1054,10 @@ export function DeployWizard({
               <div className="flex flex-col gap-[6px]">
                 <div className="flex items-center">
                   <VersionChip>{W.chip(n, prev)}</VersionChip>
-                  {safety && !safeAnswered ? (
-                    // STORY 7.19 — D1a's Next (`D1 First-Deploy Gates.dc.html:89`): the Safety net comes first, and nothing starts
-                    <Button id="deploy-next" variant="primary" size={40} className="ml-auto" onClick={() => setLocal('offer')}>
+                  {(safety && !safeAnswered) || (backup && !backupDone) ? (
+                    // STORY 7.19 — D1a's Next (`D1 First-Deploy Gates.dc.html:89`): the Safety net comes first, and nothing starts;
+                    // STORY 7.20a — so does the Backup step while it is owed
+                    <Button id="deploy-next" variant="primary" size={40} className="ml-auto" onClick={() => setLocal(safety && !safeAnswered ? 'offer' : 'backup')}>
                       {W.next}
                       <ChevronRight size={13} strokeWidth={1.8} />
                     </Button>
@@ -1291,7 +1413,8 @@ export function DeployWizard({
   const paragraph = 'text-[12.5px] leading-[1.65] text-ink-soft-aa [text-wrap:pretty]'
   const offer = (
     <div className="flex flex-col gap-5">
-      <Rail at="safety" state="current" steps={steps} />
+      {/* Story 7.20a: opened from B12b's Add token the deploy is at Ship, and that is where the rail says it is */}
+      <Rail at={retoken ? 'ship' : 'safety'} state="current" steps={steps} />
       <div className="flex flex-col gap-[7px]">
         <h2 id="deploy-title" className={`m-0 ${wideTitle} [text-wrap:pretty]`}>{SN.title}</h2>
         <p className="max-w-[560px] text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{SN.lead}</p>
@@ -1344,7 +1467,8 @@ export function DeployWizard({
             className="px-[14px] text-[13px]"
             aria-disabled={adding || pressed === 'start' || undefined}
             onClick={() => {
-              if (!adding && pressed === null) setLocal('destination')
+              // Story 7.20a: from B12b's Add token, Back is B12b
+              if (!adding && pressed === null) return retoken ? setRetoken(false) : setLocal('destination')
             }}
           >
             {SN.back}
@@ -1360,9 +1484,12 @@ export function DeployWizard({
             >
               <BusyLabel pending={adding || pressed === 'start'} busy={adding ? SN.adding : W.starting}>{SN.add}</BusyLabel>
             </Button>
-            <Button id="deploy-not-now" variant="secondary" size={42} aria-disabled={adding || pressed === 'start' || undefined} onClick={notNow}>
-              {SN.notNow}
-            </Button>
+            {/* Story 7.20a: over B12b, the way on without the token is B12b's own Deploy without a snapshot — so no Not now */}
+            {retoken ? null : (
+              <Button id="deploy-not-now" variant="secondary" size={42} aria-disabled={adding || pressed === 'start' || undefined} onClick={notNow}>
+                {SN.notNow}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -1404,7 +1531,7 @@ export function DeployWizard({
             aria-disabled={pressed === 'start' || undefined}
             aria-busy={pressed === 'start' || undefined}
             aria-describedby={refused === null ? undefined : 'deploy-refused'}
-            onClick={() => void runChecks()}
+            onClick={continueSafety}
           >
             <BusyLabel pending={pressed === 'start'} busy={W.starting}>
               {SN.continue}
@@ -1417,13 +1544,295 @@ export function DeployWizard({
     </div>
   )
 
+  /* ── STORY 7.20a — D1d · D1d′ · D1e · the first deploy's Backup step (`D1 First-Deploy Gates.dc.html:208-533`), 780 wide and
+     scrolling inside the wizard; the unknown host draws both blocks (extrapolated from D1d and D1e). Every word is `BACKUP_WORDS`',
+     every row `gateRows`', every link Ghost's own help. No ✕, as on D1b. Each tick is a NATIVE checkbox in its own label, drawn as
+     the frame's 18px box; the master confirm and Run checks are GREYED with the footer's reason, never `disabled` (R-98) ── */
+  const blocks = blocksFor(gateHost)
+  const collapsed = ticks.shortcut && blocks.shortcut
+  const reasonWords = reasonOf(rows, ticks, gateHost)
+  const gateGreyed = !ticks.confirmed
+  const warn = (words: string) => (
+    <span className="inline-flex items-start gap-[6px] text-[11.5px] leading-[1.5] text-marigold-text">
+      <AlertTriangle size={12} strokeWidth={1.9} className="mt-[2px] shrink-0" />
+      {words}
+    </span>
+  )
+  const chipOn = (chip: { words: string; tone: 'coral' | 'grey' }) => (
+    <span className={`rounded-pill px-2 py-[2px] font-mono text-[9.5px] font-medium [font-variant-ligatures:none] ${chip.tone === 'coral' ? 'bg-coral-tint text-coral-text' : 'bg-paper-sunk text-ink-soft-aa'}`}>{chip.words}</span>
+  )
+  /** a row's Download, where the wizard can fetch its file: `routes.yaml` on every connected site (R-282), the theme only with a
+   *  Staff Access Token held — without one it could never act, so it is ABSENT (DESIGN.md:582) */
+  const downloadOn = (which: 'theme' | 'routes' | null) =>
+    which === null || (which === 'theme' && !tokenHeld) ? null : (
+      <Button
+        id={`deploy-download-${which}`}
+        variant="secondary"
+        size={32}
+        className="self-start"
+        aria-disabled={fetching !== null || undefined}
+        aria-busy={fetching === which || undefined}
+        aria-describedby={fetched[which] === undefined ? undefined : `deploy-download-${which}-said`}
+        onClick={() => void fetchRow(which)}
+      >
+        <BusyLabel pending={fetching === which} busy={BW.preparing}>
+          <Download size={12} />
+          {BW.download}
+        </BusyLabel>
+      </Button>
+    )
+  const gate = site === null ? null : (
+    <div data-backup-gate={gateHost ?? 'unknown'} className="flex flex-col gap-[18px]">
+      <Rail at="backup" state="current" steps={steps} />
+      <div className="flex flex-col gap-[6px]">
+        <h2 id="deploy-title" className={`m-0 ${wideTitle} [text-wrap:pretty]`}>{BW.title}</h2>
+        <p data-backup-sub className="text-[12px] text-ink-soft">{subLineOf(gateHost, host)}</p>
+      </div>
+      <div className="flex flex-col gap-[7px] rounded-[12px] border border-line bg-paper-raised p-[14px_16px]">
+        <span className="font-mono text-[10px] tracking-[0.06em] text-ink-soft-aa [font-variant-ligatures:none]">{BW.writesEyebrow}</span>
+        <p className="text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{BW.writes}</p>
+      </div>
+      <p className="text-[13.5px] leading-[1.65] text-ink [text-wrap:pretty]">{BW.lead}</p>
+      {blocks.pro ? (
+        <>
+          <div data-backup-pro className="flex gap-[11px] rounded-[12px] border border-sky-line bg-sky-tint p-[14px_16px]">
+            <InfoCircle size={16} className="mt-[3px] shrink-0 text-sky-text" />
+            <div className="flex flex-col gap-[9px]">
+              {BW.pro.map((words) => <p key={words} className="text-[13px] leading-[1.65] text-sky-text [text-wrap:pretty]">{words}</p>)}
+            </div>
+          </div>
+          <p className="text-[13.5px] font-medium leading-[1.65] text-ink [text-wrap:pretty]">{BW.proInk}</p>
+        </>
+      ) : null}
+      {blocks.shortcut ? (
+        <label data-backup-shortcut className="flex cursor-pointer items-start gap-3 rounded-[12px] border border-coral bg-coral-tint p-[14px_16px]">
+          <GateBox id="deploy-gate-shortcut" tone="coral" checked={ticks.shortcut} labelledBy="deploy-gate-shortcut-label" describedBy="deploy-gate-shortcut-holds" onChange={() => setTicks(toggleShortcut(rows, ticks, gateHost))} />
+          <span className={`flex flex-1 flex-col ${collapsed ? 'gap-[6px]' : 'gap-[7px]'}`}>
+            <span className="flex flex-wrap items-center gap-[9px]">
+              <span className="rounded-[6px] border border-coral-tint-strong bg-surface px-[9px] py-[3px] font-mono text-[12.5px] font-medium text-ink [font-variant-ligatures:none]">{BW.shortcutChip}</span>
+              <span id="deploy-gate-shortcut-holds" className="text-[12.5px] leading-[1.5] text-ink-soft-aa">{BW.shortcutHolds}</span>
+            </span>
+            <span id="deploy-gate-shortcut-label" className="text-[13.5px] font-semibold leading-[1.5] text-ink [text-wrap:pretty]">{BW.shortcut}</span>
+            {collapsed ? null : <span className="text-[11.5px] leading-[1.5] text-ink-soft">{BW.shortcutNote}</span>}
+          </span>
+        </label>
+      ) : null}
+      {collapsed ? (
+        // D1d′ — every row on one line, ticked, "in the archive": the shortcut holds them, so they are a list and not boxes
+        <>
+          <p className="-mb-[2px] text-[12px] leading-[1.5] text-ink-soft">{BW.shortcutTicked}</p>
+          <ul data-backup-rows="collapsed" className="m-0 flex list-none flex-col gap-2 p-0">
+            {rows.map((row) => (
+              <li key={row.id} data-gate-row={row.id} className="flex items-center gap-3 rounded-[12px] border border-line p-[11px_13px]">
+                <span aria-hidden className="inline-flex size-[18px] shrink-0 items-center justify-center rounded-[5px] bg-ink"><Check size={11} strokeWidth={3} className="text-surface" /></span>
+                <span className={row.mono ? 'font-mono text-[13px] font-medium [font-variant-ligatures:none]' : 'text-[13.5px] font-semibold'}>{row.name}</span>
+                {row.chip === null || row.chip.tone === 'grey' ? null : chipOn(row.chip)}
+                <span className="ml-auto text-[12px] text-ink-soft-aa">{BW.inArchive}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <div data-backup-rows="open" className="flex flex-col gap-[9px]">
+          {rows.map((row) => {
+            const box = `deploy-gate-${row.id}`
+            const said = row.download === null ? undefined : fetched[row.download]
+            const text = (
+              <span className="flex min-w-0 flex-1 flex-col gap-1">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span id={`${box}-name`} className={row.mono ? 'font-mono text-[13px] font-medium text-ink [font-variant-ligatures:none]' : `text-[13.5px] font-semibold ${row.tickable ? 'text-ink' : 'text-ink-soft-aa'}`}>{row.name}</span>
+                  {row.chip === null ? null : chipOn(row.chip)}
+                </span>
+                <span id={`${box}-body`} className="text-[12.5px] leading-[1.55] text-ink-soft-aa">{row.body}</span>
+                {row.warn === null ? null : warn(row.warn)}
+              </span>
+            )
+            return (
+              <div key={row.id} data-gate-row={row.id} className={`flex flex-col gap-[10px] rounded-[12px] border border-line p-[12px_13px] tablet:flex-row tablet:items-start tablet:gap-3 ${row.tickable ? '' : 'bg-paper-raised'}`}>
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  {row.tickable ? (
+                    <label className="flex cursor-pointer items-start gap-3">
+                      <GateBox id={box} checked={ticks.rows[row.id] === true} labelledBy={`${box}-name`} describedBy={`${box}-body`} onChange={() => setTicks(toggleRow(rows, ticks, gateHost, row.id as RowId))} />
+                      {text}
+                    </label>
+                  ) : (
+                    <div className="flex items-start gap-3">
+                      {/* D1e's "—": nothing to take on Ghost(Pro), so nothing to tick */}
+                      <span aria-hidden className="mt-[2px] inline-flex size-[18px] shrink-0 items-center justify-center text-[14px] text-ink-faint">—</span>
+                      {text}
+                    </div>
+                  )}
+                  <a href={row.help.href} target="_blank" rel="noreferrer" className={`ml-[30px] self-start text-[11.5px] font-medium text-coral-text ${ring}`}>
+                    {row.help.words}
+                    <span className="sr-only"> {W.newTab}</span>
+                  </a>
+                  {said === undefined ? null : <p id={`deploy-download-${row.download}-said`} role="status" className="ml-[30px] text-[11.5px] leading-[1.5] text-ink-soft">{said}</p>}
+                </div>
+                {/* below `tablet` the Download stacks under its text, inside the wizard's own width */}
+                <span className="ml-[30px] tablet:ml-0">{downloadOn(row.download)}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+      <div aria-hidden className="h-px bg-line" />
+      <label className={`flex items-start gap-3 ${available ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}>
+        <GateBox
+          id="deploy-gate-confirm"
+          checked={ticks.confirmed}
+          greyed={!available}
+          labelledBy="deploy-gate-confirm-label"
+          {...(available ? {} : { describedBy: 'deploy-backup-reason' })}
+          onChange={() => setTicks(toggleConfirm(rows, ticks, gateHost))}
+        />
+        <span id="deploy-gate-confirm-label" className="flex-1 text-[13.5px] font-medium leading-[1.55] text-ink [text-wrap:pretty]">{BW.confirm}</span>
+      </label>
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex items-center gap-3">
+          {reasonWords === null ? null : <span id="deploy-backup-reason" className="text-[12px] text-ink-soft">{reasonWords}</span>}
+          <Button
+            id="deploy-backup-back"
+            variant="ghost"
+            size={38}
+            weight="font-medium"
+            className="ml-auto px-[14px] text-[13px]"
+            aria-disabled={pressed === 'start' || undefined}
+            onClick={() => {
+              if (pressed === null) setLocal('destination')
+            }}
+          >
+            {BW.back}
+          </Button>
+          <Button
+            id="deploy-backup-run"
+            variant="primary"
+            size={40}
+            className={gateGreyed ? 'cursor-not-allowed opacity-35' : ''}
+            {...(gateGreyed
+              ? { ...greyedProps('deploy-backup-run', { reason: reasonWords ?? BW.oneLeft }), 'aria-describedby': 'deploy-backup-reason' }
+              : { 'aria-disabled': pressed === 'start' || undefined, 'aria-busy': pressed === 'start' || undefined, 'aria-describedby': refused === null ? undefined : 'deploy-refused' })}
+            onClick={gateGreyed ? undefined : () => void confirmGate()}
+          >
+            <BusyLabel pending={pressed === 'start'} busy={BW.starting}>
+              {BW.runChecks}
+              <ChevronRight size={13} strokeWidth={1.8} />
+            </BusyLabel>
+          </Button>
+        </div>
+        {refused === null ? null : footerCaption('deploy-refused', refused)}
+      </div>
+    </div>
+  )
+
+  /* ── STORY 7.20a — B12a · the archive running (`B Missing Surfaces.dc.html:1044-1078`), 600 wide, the rail at Ship: four named
+     steps, the live theme's name and version as a mono chip, the snapshot's real size, and Cancel live until the upload begins.
+     No coral bar: no real byte count exists while it works (DESIGN.md:518-522) — row 2 carries the size once it is known ── */
+  const snap = timings.snapshotting ?? {}
+  const readDone = snap.marked === true || snap.theme !== undefined
+  const wroteDone = snap.marked === true || snap.bytes !== undefined
+  const archiving = (
+    <div data-archiving className="flex flex-col gap-[18px]">
+      <Rail at="ship" state="current" steps={steps} />
+      <div className="flex flex-col gap-[9px]">
+        <h2 id="deploy-title" className="m-0 font-display text-[21px] font-bold tracking-[-0.02em] text-ink">{SNAP.title}</h2>
+        <p className="text-[13.5px] leading-[1.6] text-ink-mid [text-wrap:pretty]">{SNAP.lead}</p>
+      </div>
+      <div className="flex flex-col gap-[11px]">
+        <ArchiveRow tone={readDone ? 'done' : 'running'} label={SNAP.reading} {...(snap.theme === undefined ? {} : { meta: `${snap.theme}${snap.version ? ` ${snap.version}` : ''}` })} />
+        <ArchiveRow tone={wroteDone ? 'done' : readDone ? 'running' : 'pending'} label={snap.marked ? SNAP.marked : SNAP.writing} {...(snap.bytes === undefined ? {} : { meta: themeSize(snap.bytes) })} />
+        <ArchiveRow tone="pending" label={SNAP.uploading} />
+        <ArchiveRow tone="pending" label={SNAP.checking} />
+      </div>
+      <div className="flex items-center gap-3">
+        <span className="flex-1 text-[12px] text-ink-soft">{SNAP.foot}</span>
+        <Button
+          id="deploy-cancel"
+          variant="secondary"
+          size={36}
+          aria-disabled={pressed === 'cancel' || undefined}
+          aria-busy={pressed === 'cancel' || undefined}
+          onClick={() => void press('cancel')}
+        >
+          <BusyLabel pending={pressed === 'cancel'} busy={W.cancelling}>{SNAP.cancel}</BusyLabel>
+        </Button>
+      </div>
+      {refused === null ? null : footerCaption('deploy-refused', refused)}
+    </div>
+  )
+
+  /* ── STORY 7.20a — B12b · the archive did not finish (`:1080-1102`), 600 wide: nothing was uploaded, and it says the request and
+     Ghost's status, where Ghost keeps the previous theme (a description and a link to the site's own Design panel — E-5's rule,
+     never "Settings → Design"), and the three ways on: Add token (D1b's view, Back returning here), Deploy without a snapshot,
+     and Cancel ── */
+  const capture = isSnapshotError(error) ? error : null
+  const captureFailedView = capture === null || site === null ? null : (
+    <div data-capture-failed={capture.code} className="flex flex-col gap-[18px]">
+      <Rail at="ship" state="failed" steps={steps} />
+      <div className="flex items-start gap-[14px]">
+        <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-[11px] bg-danger-tint text-danger-text">
+          <AlertTriangle size={17} strokeWidth={1.8} />
+        </span>
+        <div className="flex flex-1 flex-col gap-2">
+          <h2 id="deploy-title" className="m-0 font-display text-[21px] font-bold tracking-[-0.02em] text-ink">{SNAP.failedTitle}</h2>
+          <p className="text-[13.5px] leading-[1.6] text-ink-mid [text-wrap:pretty]">{capture.message}</p>
+        </div>
+      </div>
+      <div className="flex flex-col gap-[7px] rounded-thumb border border-line bg-paper-raised p-[13px_15px]">
+        {capture.request === undefined || capture.request === '' ? null : (
+          <span data-capture-request className="font-mono text-[10.5px] text-ink-soft-aa [font-variant-ligatures:none]">{SNAP.request(capture.request, capture.status)}</span>
+        )}
+        <p className="text-[12.5px] leading-[1.5] text-ink-mid">
+          {SNAP.placeBefore}
+          <a data-capture-place href={adminAt(site.url, 'design')} target="_blank" rel="noreferrer" className={`font-semibold text-coral-text ${ring}`}>
+            {SNAP.placeLink} ↗<span className="sr-only"> {W.newTab}</span>
+          </a>
+          {SNAP.placeAfter}
+        </p>
+      </div>
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex items-center gap-[10px]">
+          <Button id="deploy-b12-token" variant="primary" size={38} aria-disabled={pressed !== null || undefined} onClick={() => (pressed === null ? setRetoken(true) : undefined)}>
+            {SNAP.addToken}
+          </Button>
+          <Button
+            id="deploy-without"
+            variant="secondary"
+            size={38}
+            aria-disabled={pressed !== null || undefined}
+            aria-busy={pressed === 'without' || undefined}
+            aria-describedby={refused === null ? undefined : 'deploy-refused'}
+            onClick={() => void press('ship', true)}
+          >
+            <BusyLabel pending={pressed === 'without'} busy={W.starting}>{SNAP.without}</BusyLabel>
+          </Button>
+          <Button
+            id="deploy-b12-cancel"
+            variant="ghost"
+            size={38}
+            weight="font-medium"
+            className="ml-auto"
+            aria-disabled={pressed !== null || undefined}
+            aria-busy={pressed === 'cancel' || undefined}
+            onClick={() => void press('cancel')}
+          >
+            <BusyLabel pending={pressed === 'cancel'} busy={W.cancelling}>{SNAP.cancel}</BusyLabel>
+          </Button>
+        </div>
+        {refused === null ? null : footerCaption('deploy-refused', refused)}
+      </div>
+    </div>
+  )
+
   const step =
     at === 'destination' ? destination
     : at === 'safety' ? (local === 'declined' ? declined : offer)
+    : at === 'backup' ? gate
     : at === 'check' ? preflight
-    : at === 'ship' ? (stage === 'failed' ? failedShip : shipping)
+    : at === 'ship' ? (retoken ? offer : captureFailed ? captureFailedView : stage === 'snapshotting' ? archiving : stage === 'failed' ? failedShip : shipping)
     : ending_ === 'live' ? live
     : notLive
+  /** each view at its frame's width (R-74): D1b/D1c 700, Backup 780, B12a/B12b 600, every other step S8's 520 */
+  const width = at === 'safety' || retoken ? 'w-[700px]' : at === 'backup' ? 'w-[780px]' : captureFailed || stage === 'snapshotting' ? 'w-[600px]' : 'w-[520px]'
 
   return (
     <dialog
@@ -1458,8 +1867,8 @@ export function DeployWizard({
         if (event.target !== event.currentTarget || dialog.current?.open) return
         onClose(stage === 'done' || timings.uploading !== undefined)
       }}
-      // STORY 7.19: D1b and D1c are drawn 700 wide; every other step keeps S8's 520 (R-74)
-      className={`relative m-auto box-content max-h-[calc(100dvh-72px)] ${at === 'safety' ? 'w-[700px]' : 'w-[520px]'} max-w-[calc(100vw-72px)] flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex`}
+      // STORY 7.19: D1b and D1c are drawn 700 wide; STORY 7.20a: Backup 780, B12a and B12b 600; every other step keeps S8's 520 (R-74)
+      className={`relative m-auto box-content max-h-[calc(100dvh-72px)] ${width} max-w-[calc(100vw-72px)] flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex`}
     >
       <div ref={body} tabIndex={-1} className="outline-none">
         {step}
@@ -1468,6 +1877,48 @@ export function DeployWizard({
         <span key={said.n}>{said.words}</span>
       </p>
     </dialog>
+  )
+}
+
+/** STORY 7.20a — D1d's 18px box: a NATIVE checkbox inside its label (`link-picker.tsx`'s precedent), drawn as the frame draws it —
+ *  hollow, then filled ink (coral for the `ghost backup` shortcut, D1d′) under the white tick. Greyed is `aria-disabled` with the
+ *  footer's reason, never `disabled` (R-98): a press changes nothing, because the rule's `toggleConfirm` answers the same ticks.
+ *  The Kit gains no component: one surface needs this */
+function GateBox({ id, checked, onChange, tone = 'ink', greyed = false, labelledBy, describedBy }: {
+  id: string; checked: boolean; onChange: () => void; tone?: 'ink' | 'coral'; greyed?: boolean; labelledBy: string; describedBy?: string
+}) {
+  return (
+    <span className="relative mt-[2px] inline-flex size-[18px] shrink-0">
+      <input
+        id={id}
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        aria-labelledby={labelledBy}
+        aria-describedby={describedBy}
+        aria-disabled={greyed || undefined}
+        className={`peer size-[18px] appearance-none rounded-[5px] border-[1.5px] ${greyed ? 'cursor-not-allowed border-grey-border bg-paper' : 'cursor-pointer border-line-strong bg-surface'} ${tone === 'coral' ? 'checked:border-coral-text checked:bg-coral-text' : 'checked:border-ink checked:bg-ink'} ${ring}`}
+      />
+      <Check aria-hidden size={11} strokeWidth={3} className="pointer-events-none absolute inset-0 m-auto hidden text-surface peer-checked:block" />
+    </span>
+  )
+}
+
+/** STORY 7.20a — one of B12a's four rows: its 22px disc — done mint with the tick, running coral with its dot, waiting hollow —
+ *  the words (500 while it runs) and the mono meta at the right */
+function ArchiveRow({ tone, label, meta }: { tone: 'done' | 'running' | 'pending'; label: string; meta?: string }) {
+  return (
+    <div data-archive-row={tone} className={`flex items-center gap-[11px] ${tone === 'pending' ? 'opacity-50' : ''}`}>
+      {tone === 'done' ? (
+        <span aria-hidden className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-mint-tint"><Check size={11} strokeWidth={2.6} className="text-mint" /></span>
+      ) : tone === 'running' ? (
+        <span aria-hidden className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-coral-tint"><span className="size-2 rounded-full bg-coral" /></span>
+      ) : (
+        <span aria-hidden className="size-[22px] shrink-0 rounded-full border border-line" />
+      )}
+      <span className={`flex-1 text-[13px] text-ink ${tone === 'running' ? 'font-medium' : ''}`}>{label}</span>
+      {meta === undefined ? null : <span className="font-mono text-[10.5px] text-ink-soft-aa [font-variant-ligatures:none]">{meta}</span>}
+    </div>
   )
 }
 

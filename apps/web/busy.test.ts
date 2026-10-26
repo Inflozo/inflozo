@@ -388,3 +388,23 @@ test('Story 7.18a: Ship it, Run checks, Cancel, Ship it and Re-activate say they
     assert.match(words, new RegExp(`${key}: '${said}'`), `${key} is "${said}"`)
   }
 })
+
+
+test('Story 7.20a (R-98): the Backup step\'s two Downloads say "Preparing…", its Run checks "Starting…", and B12b\'s Deploy without a snapshot "Starting…"; B12b\'s Add token stays put while another press is out', () => {
+  const wizard = readFileSync('components/editor/deploy-wizard.tsx', 'utf8')
+  const section = (id: string) => wizard.slice(wizard.indexOf(id), wizard.indexOf('</Button>', wizard.indexOf(id)))
+  const download = section('id={`deploy-download-${which}`}')
+  assert.match(download, /aria-busy=\{fetching === which \|\| undefined\}/)
+  assert.match(download, /aria-disabled=\{fetching !== null \|\| undefined\}/)
+  assert.match(download, /<BusyLabel pending=\{fetching === which\} busy=\{BW\.preparing\}>/, 'Download: its label swaps')
+  assert.equal(readFileSync('lib/deploy.ts', 'utf8').includes("preparing: 'Preparing…',"), true)
+  const run = section('id="deploy-backup-run"')
+  assert.match(run, /'aria-busy': pressed === 'start' \|\| undefined/)
+  assert.match(run, /<BusyLabel pending=\{pressed === 'start'\} busy=\{BW\.starting\}>/, 'Run checks: its label swaps')
+  const without = section('id="deploy-without"')
+  assert.match(without, /aria-busy=\{pressed === 'without' \|\| undefined\}/)
+  assert.match(without, /<BusyLabel pending=\{pressed === 'without'\} busy=\{W\.starting\}>\{SNAP\.without\}<\/BusyLabel>/)
+  assert.match(section('id="deploy-b12-token"'), /aria-disabled=\{pressed !== null \|\| undefined\}/)
+  const cancel = section('id="deploy-b12-cancel"')
+  assert.match(cancel, /<BusyLabel pending=\{pressed === 'cancel'\} busy=\{W\.cancelling\}>/)
+})

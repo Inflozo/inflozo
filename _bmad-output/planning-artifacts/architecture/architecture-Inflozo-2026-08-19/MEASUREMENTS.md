@@ -8424,3 +8424,36 @@ tenant's lock is gone", where three null subqueries joined by `or` raised nothin
 - **`users/me` with a staff token is the token's own user** (read in source: `api/endpoints/users.js:30`, `serializers/input/users.js:17,25`), roles included (`ALLOWED_INCLUDES`): T1 answered 200 with `Owner`, so Story 7.19's check keeps an Owner's or an Administrator's token and the Safety net can be added on T1.
 - **An integration's Admin API key answers 404 `NotFoundError`** — the reading `token_integration` keys on (an Admin key has no `context.user`, so `me` stays literal and `findOne` finds nobody). Read in source until now; executed here.
 - **What this does NOT say.** An Editor's token was not executed: T1 has no Editor, so `token_role` rests on both majors' `fixtures.json` and `staff-token.test.ts`. The product's `call()` path (Vault, `credentials_present`, the `admin_read` audit row) is the deployed walk's step 116 (c).
+
+## 89. The live theme's capture on T1 — `GET themes/` and `GET themes/{active}/download/` with the Staff Access Token through the product's `adminRequest`, read by its own `captureSnapshot`: a direct 200 `application/zip` of `casper`, a flipped digit 401, the Admin key 403 on both reads, and `routes.yaml` 200 with it · T1 · 2026-10-26
+
+**Command.** `node --experimental-strip-types tools/probe/record-snapshot.mjs --t1` — GETs only, nothing written anywhere: `captureSnapshot` is handed an io whose `call` sends `adminRequest`'s request to T1 and whose store records what it was asked.
+
+**Ghost.** T1 `ghost6.inflozo.com` (6.x). Ghost 5's half — the Admin key's 501 — is DW-326's (R-238, Story 15.7).
+
+**The control, which voids the run:** the same download with the token's last hex digit changed must answer 401, so the read can refuse at all.
+
+| Step | Row | Got | Held |
+|---|---|---|---|
+| adminRequest | GET themes/: no body, at v6.0, a redirect answered and never followed | `https://ghost.example/ghost/api/admin/themes/` | yes |
+| adminRequest | GET themes/casper/download/: no body, at v6.0, a redirect answered and never followed | `https://ghost.example/ghost/api/admin/themes/casper/download/` | yes |
+| budget | the download has its own read budget, longer than an ordinary read | `45000 ms` | yes |
+| flipped | the control token is well-formed and differs from the real one in its last digit alone | `89 characters` | yes |
+| captureSnapshot · staff · captured | read as the capture reads it | `{"ok":true,"id":"recorded-not-written","theme":"casper","version":"5.9.4","bytes":7}` | yes |
+| captureSnapshot · staff · marked | read as the capture reads it | `{"ok":true,"marked":true}` | yes |
+| captureSnapshot · admin · 403 | read as the capture reads it | `{"ok":false,"code":"snapshot_needs_token","request":"GET /ghost/api/admin/themes/","status":403}` | yes |
+| captureSnapshot · admin · 501 | read as the capture reads it | `{"ok":false,"code":"snapshot_needs_token","request":"GET /ghost/api/admin/themes/","status":501}` | yes |
+| captureSnapshot · staff · 401 | read as the capture reads it | `{"ok":false,"code":"snapshot_token_refused","request":"GET /ghost/api/admin/themes/","status":401}` | yes |
+| GET themes/ [staff] | 200, the active theme named with its package.json (and the marker read there) | `HTTP 200 · active casper 5.12.1 · package.inflozo false` | yes |
+| GET themes/casper/download/ [staff] | a direct 200 application/zip attachment, no redirect, opening with the zip's PK | `HTTP 200 · application/zip · attachment; filename=casper.zip · 291174 bytes · PK · sha256 595f65529f507ecd…` | yes |
+| GET themes/casper/download/ [flipped] (control) | 401 — a token Ghost does not know | `HTTP 401 · errors[0].type UnauthorizedError` | yes |
+| GET themes/casper/download/ [admin] | 403 — the integration key may not download a theme | `HTTP 403 · errors[0].type NoPermissionError` | yes |
+| GET themes/ [admin] | 403 — the one code's Ghost 6 half (snapshot_needs_token) | `HTTP 403 · errors[0].type NoPermissionError` | yes |
+| GET settings/routes/yaml/ [admin] | 200 — R-282's premise: routes.yaml reads with the integration key alone (§37 re-run) | `HTTP 200 · application/yaml; charset=utf-8 · 130 bytes` | yes |
+| captureSnapshot [staff] | captured: the object before the row (recorded, not written) | `{"ok":true,"id":"recorded-not-written","theme":"casper","version":"5.12.1","bytes":291174} · put 291174 bytes, row casper · byte-identical to the first download: yes` | yes |
+| captureSnapshot [admin] | snapshot_needs_token with the 403, nothing written | `{"ok":false,"code":"snapshot_needs_token","request":"GET /ghost/api/admin/themes/","status":403} · nothing` | yes |
+
+- **The download is a direct 200 attachment** (`theme-storage.js` `serve()`, read in source): 291174 bytes of `casper` 5.12.1 opening with `PK`, no redirect — so `fetchWithKey`'s `redirect: 'manual'` never meets one, and `CallResult.bytes` is the zip as-is. VERIFY-AT-BUILD 78 EXECUTED.
+- **The marker is read on the list** (`package.inflozo` false): T1's live theme is not Inflozo's, so a first upload would capture it.
+- **The Admin key is refused on both reads (403)**: B12b's `GET /ghost/api/admin/themes/ → 403` is T1's own answer, and the one code's Ghost 6 half. `routes.yaml` reads with it alone (R-282).
+- **What this does NOT say.** Nothing was stored: the bucket, the row and the signed URL are the deployed walk's step 117. Ghost 5's 501 is unexecuted here (T3 retired).
