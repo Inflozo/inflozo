@@ -2,9 +2,9 @@
 title: 'Story 7.19 — The first-deploy credential step, and its decline path'
 type: 'feature'
 created: '2026-10-20'
-status: 'in-review'
+status: 'done'
 baseline_commit: '10559fd767dcac60d54df6b2172acbf3b19fd799'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-18a-the-deploy-wizard.md']
 ---
@@ -658,6 +658,12 @@ connected on that account.
 4. **Not now.**
 
 **Ruled: option 1 (owner, 2026-10-26), asked in the Deploy session.** *"Fresh start: disconnect ghost6 through the product (so the stored keys are dropped), delete that account with its project and its one stored file, and make it again, so the test runs from step 1 as written. Nothing on ghost6 changes."*
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-10-26): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_6F5MSGDyY3XKMgvm267DE4sHE3V1`, `https://app.inflozo.com`) as `umngkmr+safety719@gmail.com` and reported *"passed"*. No
+findings.
 
 ## Verification
 
