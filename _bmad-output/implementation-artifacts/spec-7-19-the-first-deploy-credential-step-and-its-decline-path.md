@@ -537,7 +537,7 @@ gscan error, a closed wizard) has no binding yet, so without a record the next o
 
 ## Owner's manual test
 
-You test as **`umngkmr+safety719@gmail.com`**, a fresh alias, on the Ghost 6 test site (T1). Before you start, in
+You test as **`umngkmr+safety719@gmail.com`**, made fresh at Deploy (2026-10-26, on your go — Question 4) with no site and no project, on the Ghost 6 test site (T1). Before you start, in
 **ghost6.inflozo.com's Ghost Admin** (`https://ghost6.inflozo.com/ghost/`):
 - make a custom integration called **Owner test 7.19**, and keep its Admin API key and Content API key open;
 - open your avatar → **Your profile**, find **Staff access token**, and keep it ready to copy.
@@ -568,7 +568,7 @@ code (Verification).
 
 ## Questions for the owner
 
-Questions 1–3 were ruled on 2026-10-20, each option 1 (R-278, R-279, R-280); none is open. "Ruled values" in Design
+Questions 1–3 were ruled on 2026-10-20, each option 1 (R-278, R-279, R-280). Question 4 was asked and ruled in the Deploy session (2026-10-26); none is open. "Ruled values" in Design
 Notes holds what they set.
 
 ### Question 1 — After "Not now", where does Inflozo stop asking?
@@ -657,7 +657,7 @@ connected on that account.
 3. **A new alias instead** (`umngkmr+safety719b@gmail.com`), leaving the old account connected to ghost6.
 4. **Not now.**
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-26), asked in the Deploy session.** *"Fresh start: disconnect ghost6 through the product (so the stored keys are dropped), delete that account with its project and its one stored file, and make it again, so the test runs from step 1 as written. Nothing on ghost6 changes."*
 
 ## Verification
 
@@ -799,4 +799,9 @@ R-82's real services for this story:
   exists (made 2026-10-21) and is NOT fresh — ghost6 connected (`credentials_present` admin and content true, staff false), a
   project "Ghost6" linked to it, no binding, no decline, one `checking` deploy. **Not touched**: resetting it is Question 4,
   which is the owner's.
-- `owner_test: pending` — the manual test above is live on `https://app.inflozo.com` once Question 4 is ruled.
+- **The owner's test account, reset (Question 4, his in-session go; `SUPABASE_URL` and `SUPABASE_SECRET_KEY` read in process):** ghost6
+  disconnected THROUGH THE PRODUCT (`/sites/disconnect`, the "Disconnect" button, under a magic-link session; `credentials_present` read
+  back all false, so Vault dropped the keys); its one stored zip removed from `deploy-artifacts` (listed 1, removed 200); the account
+  deleted (200) and made again (200, confirmed, Free). Read back for the new user and the old id: `sites`, `projects` and `deploys` all
+  0 rows. T1 read again afterwards: `casper` active, `racer` and `source` — Ghost was not called by the reset, and no email was sent.
+- `owner_test: pending` — the manual test above is next, on `https://app.inflozo.com`.
