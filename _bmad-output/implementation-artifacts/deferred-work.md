@@ -10562,3 +10562,23 @@ location: `apps/web/app/(app)/app/(authed)/sites/keys-panel.tsx` (`subjectFor`) 
   (`saveKeys`' three branches)
 reason: pre-existing for every key on the screen, reached only by a failing store or a race with Disconnect; changing one
   key's words alone would make the three disagree.
+
+### DW-389: restoring a default theme (Casper, Source) as the original cannot be a re-upload
+
+plain: When a site's original theme is one of Ghost's own (Casper or Source), "Restore original" cannot simply upload the
+  saved copy back: Ghost refuses any upload named casper.zip or source.zip. It has to switch the site back to the copy Ghost
+  always keeps installed (Ghost refuses to delete either).
+status: open
+severity: medium
+origin: Story 7.20's Create (2026-10-26), read in Ghost's source on both pinned majors. `services/themes/storage.js`'
+  `setFromZip` throws a `ValidationError` ("Please rename your zip, it's not allowed to override the default theme.") when
+  `zip.name` is `casper.zip` or `source.zip` (6.58.0 and 5.130.6, `:53-56`). The snapshot names its download after the
+  theme (`theme-storage.js` `serve()`, `filename={name}.zip`). T1's live theme is Casper, so the first real restore on T1
+  would be refused. Ghost also refuses to delete either default theme (`storage.js` `destroy`, `:167-170`), so the installed
+  copy is always there to activate.
+owner: Story 7.23 (Deploy history, rollback and restore-to-original), which takes the restore criterion under Story 7.20's
+  Question 1 (recommended). If that question is ruled otherwise, the owner is the story that builds restore. It restores a
+  default theme by `PUT themes/{name}/activate/` (an Admin-key write already on `ADMIN_WRITES`), and anything else by upload,
+  with Ghost's 422 fallback (VERIFY-AT-BUILD 10).
+location: Story 7.23's restore action (not yet built) · `apps/web/server/snapshot.ts` (Story 7.20, which stores `theme_name`)
+reason: restore is not built in Story 7.20a; the finding must reach the story that builds it before its Create.

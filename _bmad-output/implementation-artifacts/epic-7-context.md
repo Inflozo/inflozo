@@ -725,6 +725,33 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **DW-338 (Story 7.21, from Story 7.1's review):** a layer name has no length cap, so the boundary comment has none while the file name is cut to 60 characters. The cap lands at the input, in the Layers rename flow, so the file and the label agree.
   - **Story 7.2's Create (2026-10-06):** the marker is `package.json`'s top-level `"inflozo": true`. Ghost's `GET /themes/` returns each theme's whole `package.json` as `package` on both majors (`core/server/lib/package-json`, read in source), so 7.20 reads the marker from that list with the staff token, and no download is needed. 7.2's T1 run executes the read.
   - **Story 7.2's Dev (2026-10-06):** Story 7.20's card gains the marker's key and the `GET /themes/` read. The key is `THEME_MARKER` (`@inflozo/theme-compiler`); 7.20 reads `package[THEME_MARKER] === true` from the themes list.
+  - **Story 7.20's Create (2026-10-26):** ready for Dev, planned as 7.20a, with two questions open. Both are needed before Dev.
+    - **Q1, the split.** Recommended: restore-to-original moves word for word to 7.23, which draws its button (D2a). FR-C6's
+      orphan purge and DW-79 become a new 7.20b, straight after.
+    - **Q2, F-077's loosening.** Recommended: `routes.yaml` is offered as a download on every connected site, read with
+      the Admin key (MEASUREMENTS §37).
+    - **Planned.**
+      - A Backup step (D1d / D1d′ / D1e, plus an unknown host showing both blocks) after Safety net. It shows while
+        `sites.backup_confirmed_at` is null, and disconnect clears it, so a reconnect shows it again (F7).
+      - Seven native checkboxes and the `ghost backup` shortcut, which covers the rows and restores them when unticked. The
+        master confirm and Run checks are greyed with their reasons, and "confirm available" is said politely (UX-DR12).
+      - The host is `sites.hosted_by_ghost`, from the `hostSettings` the probe already reads.
+      - One capture, `server/snapshot.ts`:
+        - `GET themes/` with the staff token, the marker check, then `GET themes/{name}/download/`;
+        - the object first, then the row upserted on `site_id`, then the old object removed;
+        - run by the Theme row's Download (served through Story 2.5's signed-URL route) and by `ship()` at a site's first
+          upload (no binding for the site), in a new `snapshotting` stage that the cancel policy covers.
+      - A failure rests the job at `awaiting_ship` with B12b's three actions.
+      - With no token, the list is asked with the Admin key, so B12b prints the site's real 403/501, as one code.
+      - A `Schema` push of two files comes first, because a new enum value cannot be used in the transaction that adds it.
+    - **Read in source (6.58.0, 5.130.6):**
+      - the download is `method: 'read'`, a direct 200 `application/zip` stream;
+      - `setFromZip` refuses `casper.zip`/`source.zip`, so a default theme's restore must activate it (DW-389, 7.23);
+      - "Design & branding" is the Design panel's label on both majors, so B12b's "Settings → Design" becomes a linked
+        "Design & branding" (E-5's rule).
+    - **Resolved:** the frame's `ghost.org/help/themes/` is a 404, so the Theme row links `ghost.org/help/installing-a-theme/`.
+    - **To run:** the recorder `record-snapshot.mjs` (§89, read-only) is Dev's, and walk step 117 (T1 writes, put back) is
+      the Review's, each on an in-session go.
 - **History is bounded, stated and pinnable, and rollback replays a stored artifact (7.22–7.26, FR-J7, FR-J9–J12).** Last 10 artifacts per project on Pro and 3 on Free, pins included and at most N−1 pinned, the limit printed and pruned versions absent; rollback skips the Pro exit gate, and neither rollback nor restore-to-original needs the edit lock; `inflozo-{slug}` freezes per site at the first upload; deploys are limited 10/hour per site inside a per-account count that includes export, serialized by a per-site advisory lock; export works on every plan and is recorded.
   - **MEASUREMENTS §26:** the database holds `guard_pin_leaves_a_slot()` (one version stays unpinned) and the plan's N−1 lives in the server route (AD-28); unpinning is unconditional. **VERIFY-AT-BUILD 30 (AD-19, AD-31):** Ghost names a theme by the zip's filename, so it derives from the frozen `projects.slug`, and `project_site_bindings` holds the frozen name.
   - **DW-60 (Story 7.26):** B15 regains Export theme zip and a greyed Ship it, and `PREVIEW_COPY.body` and `probe-rule.test.ts` flip in the same change.
@@ -795,6 +822,7 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **7.18:** AD-20's `awaiting_ship` stage is in no schema (`job_stage` lacks it), and the spine's stack table gives the compile function 2048 MB where AD-11 rules 4096.
   - **7.18 / 7.35:** 7.35 deploys "to T1–T3", and build-sequence owes T2 (Ghost(Pro) Publisher) "before the deploy paths are verified end to end"; no T2 is provisioned and R-238 leaves T1 the only test server.
   - **7.20:** BACKUP-GATE ties both downloads to the staff token (F-077), but the integration key alone reads `routes.yaml` (MEASUREMENTS §37), and the loosening is recorded as the owner's to take.
+    - **Story 7.20's Create (2026-10-26):** put to the owner as Question 2 (recommended: offer it with the Admin key).
   - **7.22:** FR-J7 and 7.22 enforce N−1 pins "in the database", while MEASUREMENTS §26 puts the plan's cap in the server route and only a one-slot floor in the database (AD-28).
   - **Epic 7's preamble:** it names the joint gate as story 7.33; it is 7.35 (7.33 is compile CI).
   - **Story 7.1's Create (2026-10-05):** the seven items 7.1 meets are settled in its spec as readings of rules the owner has already approved, so none is put to him:
