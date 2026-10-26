@@ -1,5 +1,5 @@
 ---
-title: 'Story 7.20 — The backup gate and the pre-Inflozo snapshot'
+title: 'Story 7.20a — The backup gate and the pre-Inflozo snapshot'
 type: 'feature'
 created: '2026-10-26'
 status: 'ready-for-dev'
@@ -23,10 +23,10 @@ cancel.
 
 ## Intent
 
-**Written to Question 1's recommended split (open).** This spec plans **Story 7.20a**: the Backup step and the snapshot
-taken at a site's first upload. Restore-to-original moves to Story 7.23, which draws its button (D2a). FR-C6's 90-day orphan
-purge becomes Story 7.20b, straight after this one. Question 2 is also open. Its recommended option is planned, and "Ruled
-values" in Design Notes is the one table both questions set.
+**Questions 1 and 2 were ruled by the owner (2026-10-26), each option 1: R-281 and R-282.** This is **Story 7.20a**: the
+Backup step and the snapshot taken at a site's first upload. Restore-to-original moved word for word to Story 7.23, which
+draws its button (D2a). FR-C6's 90-day orphan purge and DW-79 moved to Story 7.20b, straight after this one. `routes.yaml`
+is offered on every connected site. "Ruled values" in Design Notes is the one table the two rulings set.
 
 **Problem:**
 - **Nothing asks for the customer's own backup.** `BACKUP-GATE.md` and EXPERIENCE F7 specify a consent gate at step 3 of a
@@ -48,7 +48,7 @@ values" in Design Notes is the one table both questions set.
   - **The master confirm:** greyed until the last row is ticked. When it becomes available, that is announced politely
     (UX-DR12). Run checks stays greyed until the master confirm is ticked.
   - **Downloads:** the Theme row offers one when a Staff Access Token is held. `routes.yaml` offers one on every connected
-    site (Question 2's option 1).
+    site (R-282).
 - **A snapshot at the site's first upload.** In `ship()`, before the upload, a new `snapshotting` stage runs whenever no
   project of the user has uploaded to the site yet.
   - **The read:** `GET themes/` with the Staff Access Token finds the active theme. If its `package.json` carries
@@ -168,7 +168,7 @@ values" in Design Notes is the one table both questions set.
     the row's id, and the browser follows the route. A marked live theme answers with the "Inflozo's own" sentence and
     nothing is stored.
   - **`routes.yaml`:** read through `routes-upload.ts`' `readLive` (`:65`), with the Staff Access Token when one is stored
-    and the Admin key otherwise (Question 2). It is handed to the browser as a `routes.yaml` file, as B16's download is
+    and the Admin key otherwise (R-282). It is handed to the browser as a `routes.yaml` file, as B16's download is
     (`routes-fallback.tsx:75`). It is small, so it is not an artifact under AD-13.
   - **Busy and failure:** each button swaps to "Preparing…" while it works (R-98). A failure leaves its sentence under the
     row, and the row's help link stays the way forward.
@@ -187,8 +187,7 @@ values" in Design Notes is the one table both questions set.
   back. Ghost 5's half goes to DW-326.
 
 **Ask First:**
-- Questions 1 and 2 are open. Dev builds the recommended options from "Ruled values". A different ruling changes that table,
-  and Question 1's option 3 re-plans the spec.
+- Questions 1 and 2 were ruled (R-281, R-282). Dev builds them from "Ruled values".
 - Applying the Schema migrations to production (R-99) is an in-session R-83 ask, then the pooler.
 - Any T1 call, the read-only recorder included, needs an in-session go before the first one. The walk's writes need their
   own go, worded for the whole run.
@@ -196,8 +195,8 @@ values" in Design Notes is the one table both questions set.
 
 **Never:**
 - **Other stories' scope:**
-  - restore-to-original and its fallback (7.23, Question 1);
-  - the 90-day orphan purge, its notice and DW-79 (7.20b, Question 1);
+  - restore-to-original and its fallback (7.23, R-281);
+  - the 90-day orphan purge, its notice and DW-79 (7.20b, R-281);
   - the drift check (7.21);
   - D2a's original-theme row (7.23);
   - retention and pinning (7.22);
@@ -373,9 +372,8 @@ Paths are under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed
 
 ## Tasks & Acceptance
 
-**Dev gate.** Questions 1 and 2 must be ruled before Dev. Then the Schema push is made, green, and applied to production on
-the owner's in-session go (R-99), before any code that reads the columns or the stage is pushed. If Question 1 is ruled
-option 3, this spec is re-planned before Dev.
+**Dev gate.** Questions 1 and 2 are ruled (R-281, R-282). The Schema push is made, green, and applied to production on the
+owner's in-session go (R-99), before any code that reads the columns or the stage is pushed.
 
 **Execution — the `Schema` push (alone, first; R-99):**
 - [ ] `supabase/migrations/20261027120000_backup_gate.sql` -- all re-runnable (`if not exists`). PostgreSQL refuses a new
@@ -509,7 +507,7 @@ option 3, this spec is re-planned before Dev.
     - the control is a confirmed site, which shows four steps;
   - (b) `pro`: D1e, no shortcut, Database has no box, "6 rows still to tick";
   - (c) `unknown`: both blocks;
-  - (d) no token: no Theme Download, and `routes.yaml`'s present (Question 2);
+  - (d) no token: no Theme Download, and `routes.yaml`'s present (R-282);
   - (e) `snapshot: ok`, held: B12a's four rows with the name and version, Cancel live, then S8c;
   - (f) `no_token` → B12b with the 403 line and the Design & branding link → Deploy without a snapshot → S8c;
   - (g) `failed` → B12b's request and status → Add token → D1b → Back → B12b;
@@ -525,7 +523,7 @@ option 3, this spec is re-planned before Dev.
   - the same download with the token's last hex flipped gives 401 (the control);
   - the same download with `GHOST6_ADMIN_API_KEY` gives 403;
   - `GET themes/` with the Admin key gives 403 (the one code's Ghost 6 half);
-  - `GET settings/routes/yaml/` with the Admin key gives 200 (Question 2's premise, §37 re-run)
+  - `GET settings/routes/yaml/` with the Admin key gives 200 (R-282's premise, §37 re-run)
 
   -- standing rule 1, executed.
 - [ ] `tools/probe/run-verify-editor.cjs` -- steps 113a and 114 answer Backup as they answer Safety net (the column set
@@ -553,27 +551,26 @@ option 3, this spec is re-planned before Dev.
 - [ ] Docs -- each finding reaches its document:
   - **PRD:**
     - FR-J13 gets a dated note: the gate as drawn (seven rows, the shortcut, the host from `hostSettings`, the record
-      cleared at disconnect); the `snapshotting` stage; the one code; B12b's "Design & branding" link; Question 2's
-      ruling; and the restore sentence's move if Question 1 rules so;
+      cleared at disconnect); the `snapshotting` stage; the one code; and B12b's "Design & branding" link (R-282's
+      `routes.yaml` sentence and R-281's moves are already there, dated 2026-10-26);
     - FR-J8's progress line gains the first upload's "Archiving" stage.
   - **EXPERIENCE:**
     - the IA rows `:185`, `:188` and `:194` (the rail counts the steps that show, and Backup is skipped once confirmed);
     - F7's states (unknown host and confirmed, as built);
     - F1 (the stage, B12b's place link);
     - the Theme row's link.
-  - **BACKUP-GATE.md:** the status line (the routes download per Question 2, the Theme link, the paths described and
-    never hard-coded), and F-077's "Recorded, not ruled" note closed by the ruling.
+  - **BACKUP-GATE.md:** the status line (the Theme link, the paths described and never hard-coded). F-077's note was
+    closed by R-282 at the ruling.
   - **The spine:** AD-10 (the capture's two reads with the staff token, and the Admin-key list read for the one code) and
     AD-24's code table (`snapshot_needs_token`).
   - **VERIFY-AT-BUILD:**
     - item 78: the theme download with the staff token, EXECUTED by §89;
-    - item 10's open half moves with restore (DW-389);
+    - item 10's open half moved with restore to Story 7.23 (DW-389, R-281);
     - a dated note on E-5's B12b half, settled by reading both bundles.
   - **MEASUREMENTS:** §89, from the recorder.
-  - **deferred-work.md:** DW-389's owner as Question 1 rules.
   - **The epic context:** the 7.20 sub-bullet.
 
-  Then `grep -rn --exclude=.env` for "Story 7.20 adds Backup", "less Backup", "Settings → Design" and "stepsFor(true)"
+  Then `grep -rn --exclude=.env` for "Story 7.20a adds Backup", "less Backup", "Settings → Design" and "stepsFor(true)"
   outside their records, and expect nothing stale (standing rule 7).
 
 **Acceptance Criteria:**
@@ -607,11 +604,11 @@ option 3, this spec is re-planned before Dev.
 ## Design Notes
 
 **Ruled values — the one table Questions 1 and 2 set.** Dev builds this table, and a different ruling changes it and
-nothing else. *(Recommended options, awaiting the owner.)*
+nothing else. *(Ruled: option 1 of each — R-281 and R-282, owner, 2026-10-26.)*
 
-| Key | Value (recommended) | Where |
+| Key | Value (option 1) | Where |
 |---|---|---|
-| Scope (Q1) | **7.20a** is this spec. **Restore-to-original** moves word for word to **Story 7.23**: "restoring is a one-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload with its own gscan**, so an old fork can be rejected on the way back in; that case has a designed fallback too, offering the zip as a download and pointing at Settings → Design", plus Verification's "and restored". **FR-C6's 90-day orphan purge** (its criterion and DW-79's "one home") moves word for word to a new **Story 7.20b**, straight after. | `epics.md` 7.20, 7.20b, 7.23 · `sprint-status.yaml` · DW-75, DW-79, DW-389 |
+| Scope (Q1) | **7.20a** is this spec. **Restore-to-original** moves word for word to **Story 7.23**: "restoring is a one-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload with its own gscan**, so an old fork can be rejected on the way back in; that case has a designed fallback too, offering the zip as a download and pointing at Settings → Design", plus Verification's "and restored". **FR-C6's 90-day orphan purge** (its criterion and DW-79's "one home") moves word for word to a new **Story 7.20b**, straight after. | `epics.md` 7.20a, 7.20b, 7.23 · `sprint-status.yaml` · DW-75, DW-79, DW-389 *(all done at the ruling)* |
 | `routes.yaml` without the token (Q2) | Offered, read with the Admin key (MEASUREMENTS §37, both majors). D1e then shows one Download, on `routes.yaml`. | `downloadRoutes` · BACKUP-GATE F-077 |
 
 **Words** (the frame's own unless marked).
@@ -692,7 +689,7 @@ and gives the 7.7-assigned "one code" a real caller.
 **DW-389 (new, this Create).** Ghost refuses an upload named `casper.zip` or `source.zip` on both majors (read in source,
 above), and T1's live theme is Casper. Restoring a default theme as an original must therefore be
 `PUT themes/{name}/activate/` of the installed copy, or an upload under another name. A plain re-upload of the snapshot zip
-is never enough. The owner is Story 7.23, under Question 1's option 1.
+is never enough. The owner is Story 7.23 (R-281).
 
 ## Owner's manual test
 
@@ -733,7 +730,7 @@ Addresses that need your project's id are written `<P>`: copy it from the addres
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 15 | `https://app.inflozo.com/sign-in`, then `/sites` | Sites | Sign out, sign in with the second alias, and connect ghost6 with the same two keys. | `umngkmr+backup720b@gmail.com` | ghost6 **Connected**; a project opens. |
-| 16 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Ship it**, **Next**, **Not now**, then **Continue**. | — | The Backup card again, now with **no Download on Theme** and a Download on routes.yaml (Question 2). |
+| 16 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Ship it**, **Next**, **Not now**, then **Continue**. | — | The Backup card again, now with **no Download on Theme** and a Download on routes.yaml (R-282). |
 | 17 | `https://app.inflozo.com/projects/<P>` | Backup | Tick all seven rows one by one, then the confirmation, then **Run checks**, then **Ship it**. | — | **"We could not archive your current theme"**, the line **GET /ghost/api/admin/themes/ → 403**, "Ghost keeps your previous theme under Settings → **Design & branding**…", and **Add token**, **Deploy without a snapshot** and **Cancel**. |
 | 18 | `https://app.inflozo.com/projects/<P>` | Snapshot failed | Press **Add token**, then **Back**. | — | The token box from Safety net, then back to the same card. |
 | 19 | `https://app.inflozo.com/projects/<P>`, then `https://ghost6.inflozo.com` | Ship | Click **Design & branding ↗**. Then press **Deploy without a snapshot**. | — | Ghost Admin's Design panel for ghost6 opens in a new tab. Then "Starting…", Shipping, and Live. |
@@ -741,7 +738,8 @@ Addresses that need your project's id are written `<P>`: copy it from the addres
 
 ## Questions for the owner
 
-Two questions are open, and both are needed before Dev. "Ruled values" in Design Notes holds what they set.
+Questions 1 and 2 were ruled on 2026-10-26, each option 1 (R-281, R-282). None is open. "Ruled values" in Design Notes
+holds what they set.
 
 ### Question 1 — One story or two (and restore with Deploy History)?
 
@@ -768,7 +766,9 @@ in 7.23's test, beside Roll back.
 3. **Keep it one story.** This spec is re-planned to include Restore (its button drawn early, ahead of 7.23) and the
    clean-up.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-26) — R-281.** *"Split it. 7.20a (this spec) is the Backup step and the copy. "Restore
+original" moves, word for word, to Story 7.23, which already draws its button. The 90-day clean-up becomes Story 7.20b,
+straight after 7.20a, and asks you how the warning is sent."*
 
 ### Question 2 — Offer routes.yaml as a download even without the token?
 
@@ -786,7 +786,9 @@ Ghost Admin, with no button. Should the routes.yaml row still give you the file 
    without.
 2. **No, keep the 2026-09-03 rule.** Without the token, neither row offers a Download, and both point to Ghost Admin.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-26) — R-282.** *"Yes, always offer routes.yaml. The Theme row offers its Download only
+with the token. routes.yaml offers its Download on every connected site. On a Ghost(Pro) site with no token, that adds one
+button the design drew without."*
 
 ## Verification
 
@@ -822,5 +824,5 @@ R-82's real services for this story:
 - `node tools/probe/run-verify-editor.cjs` from a clean worktree at the deployed sha -- expected: step 117 PASS, with its
   `finally` leaving Casper active and no `inflozo-*` theme on T1, and steps 113–116 unchanged.
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS.
-- `grep -rn --exclude=.env -e 'Story 7.20 adds Backup' -e 'less Backup' -e 'Settings → Design,' apps tools _bmad-output/planning-artifacts`
+- `grep -rn --exclude=.env -e 'Story 7.20a adds Backup' -e 'less Backup' -e 'Settings → Design,' apps tools _bmad-output/planning-artifacts`
   -- expected: nothing stale. The record documents keep theirs.

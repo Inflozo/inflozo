@@ -270,7 +270,7 @@ export const DISCONNECT = {
  * to name it — "your old site's snapshot is kept for 90 days" — and `KEYS` below may hold no
  * number at all (standing rule 4, and `connect-rule.test.ts` asserts it), so the sentence takes the
  * figure as an argument and the figure lives here. The clock itself is DERIVED from
- * `sites.disconnected_at` and stamped nowhere (DW-43); the job that acts on it is Story 7.20's
+ * `sites.disconnected_at` and stamped nowhere (DW-43); the job that acts on it is Story 7.20b's
  * (DW-75), and it reads this constant rather than carrying a second copy of the number.
  */
 export const ORPHAN_SNAPSHOT_DAYS = 90

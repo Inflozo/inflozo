@@ -346,7 +346,7 @@ list gone stale — the sibling harness's own note):
                  to be). The vault ref is nulled and the secret behind it is GONE (DW-44's trigger).
                  NOTHING ELSE MOVED: the project, its name, its `style_pack` and its
                  `linked_site_id`, and a fixture `site_snapshots` row patched in through the service
-                 role — no product code writes one until Story 7.20 — are byte-identical after it,
+                 role — no product code writes one until Story 7.20a — are byte-identical after it,
                  its `purge_after` still null, because the 90-day orphan clock is DERIVED from
                  `sites.disconnected_at` and never stamped there (DW-43 closed, DW-75 owns the job).
                  AND THE RECORD DOES NOT COUNT AGAINST THE CAP — on Free, with it disconnected and
@@ -682,7 +682,7 @@ NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, nev
 ONE FIXTURE USER IS CREATED AND DELETED HERE, and its two sites go with it. The states no UI can
 yet produce are made on it by the service role and nothing else: a PRO entitlement (Epic 12's
 billing does not exist), a site row with no credential behind it, and a `site_snapshots` row (Story
-7.20 takes the first real one). **A DISCONNECTED RECORD IS NO LONGER ONE OF THEM** — Story 3.5
+7.20a takes the first real one). **A DISCONNECTED RECORD IS NO LONGER ONE OF THEM** — Story 3.5
 built its writer, so `re-adopt` is driven through the product's own ⋯ menu. The Admin-API user
 count is read before and after — BEFORE any sweep of strays, so a step that created a user it
 should not have is reported as the leak it is rather than tidied away — and a count that could not
@@ -4402,7 +4402,7 @@ const shoot = async (page, name) => {
 
     // ── THE PRESS. FR-C6 IN ONE STEP: the credentials go and NOTHING ELSE DOES. A fixture
     //    `site_snapshots` row is patched in through the service role — no product code writes one
-    //    until Story 7.20 (DW-75) — precisely so the promise "your archived theme stays" has
+    //    until Story 7.20a (DW-75) — precisely so the promise "your archived theme stays" has
     //    something to be true about; `brand-logo` is the precedent for a fixture row.
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
@@ -4462,7 +4462,7 @@ const shoot = async (page, name) => {
       `style_pack and all — with ${stillLinked} still carrying linked_site_id, and the fixture ` +
       `site_snapshots row untouched = ${snapAfter === snapBefore} (its purge_after is still null: ` +
       `the 90-day orphan clock is DERIVED from sites.disconnected_at and never stamped there, which ` +
-      `is what closes DW-43 with no SQL and leaves the job itself to Story 7.20, DW-75). And the ` +
+      `is what closes DW-43 with no SQL and leaves the job itself to Story 7.20b, DW-75). And the ` +
       `RECORD DOES NOT COUNT AGAINST THE CAP: on FREE with one disconnected row and no active one ` +
       `the grid draws ${slotsWhileGone} ghost slot and the connect form is open — which is what ` +
       `re-adopt below then walks through` +

@@ -995,7 +995,7 @@ association — Inflozo never adopts a snapshot on a URL match alone
 **And** the **90-day countdown starts here** — this story is the only writer of `disconnected_at`, and the
 deadline is derived from it, never stamped into `site_snapshots.purge_after` (which carries FR-A5's 14-day
 clock alone). **The purging job itself — the notice, the download offer, and the purge proceeding on its
-deadline whether or not the offer was taken — is Story 7.20's**, beside the snapshot it deletes, because
+deadline whether or not the offer was taken — is Story 7.20b's**, beside the snapshot it deletes, because
 nothing captures a snapshot until FR-J13's first upload *(the owner's ruling, 2026-09-09; DW-75)*
 **And** the screens match S11a and S11c.
 
@@ -2940,7 +2940,7 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 1. Ghost's raw `500` when two uploads of one theme name collide (`EEXIST … mkdir '/var/…'`), mapped to AD-24's own
 >    sentence and never passed through — **Story 7.18a**, with the upload;
 > 2. carrying both pinned checkers inside the deploy function, proved on Vercel — **Story 7.18a**;
-> 3. `GET /themes/` without the staff token (`501` on Ghost 5, `403` on Ghost 6) read as one Inflozo code — **Story 7.20**;
+> 3. `GET /themes/` without the staff token (`501` on Ghost 5, `403` on Ghost 6) read as one Inflozo code — **Story 7.20a**;
 > 4. a theme setting's key at least two characters long, so gscan's visibility test can read it — **Story 7.10**;
 > 5. a gscan pin moving only as a library release — **Story 7.27**; and re-running the whole library's lane before a
 >    pin move lands — **Story 7.33**.
@@ -3065,8 +3065,18 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 >    (DW-307), and the first-moment typist turned reader (DW-308) — **Story 7.18c**;
 > 3. from **Story 7.32**: (4), (5), "the wizard state matches D2e" and "the deploy-only ending matches D2f", with the
 >    one-click activate — **Story 7.18a**, because "Deploy only" needs its ending; 7.32 keeps the history row, D2d;
-> 4. the rail's growth to six on a site's first deploy — **Stories 7.19 and 7.20**, whose Safety net and Backup steps join
+> 4. the rail's growth to six on a site's first deploy — **Stories 7.19 and 7.20a**, whose Safety net and Backup steps join
 >    7.18a's rail; and the routes upload inside AD-19's lock span — **Story 7.25**, which builds the lock.
+>
+> **Moved from Story 7.20 by its Question 1 (owner, 2026-10-26, R-281), word for word, so none is missed (R-195).** Story
+> 7.20 is split: **Story 7.20a** builds the backup gate and the snapshot; **Story 7.20b**, straight after it, the orphan
+> purge. Every "Story 7.20" this file wrote before 2026-10-26 now names the part that holds its item.
+>
+> 1. FR-C6's 90-day orphan purge — its notice, its download offer and the purge proceeding on its deadline (DW-75) — and
+>    the 90 days' one home (DW-79) — **Story 7.20b**;
+> 2. restoring the snapshot, Ghost's own gscan on the way back in and its fallback, and the "and restored" of the
+>    verification — **Story 7.23**, whose D2a draws Restore original; with DW-389 (a default theme restores by
+>    activation).
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -3139,7 +3149,7 @@ to Stories 7.10 and 7.11, each of which emits it with the template lines that re
 *"`custom` carries the three dark built-ins **on every project** plus any user-defined settings,
 cap-enforced."*
 **And** *(FR-J13, DW-335 — from Story 7.1's Create, 2026-10-05)* it carries **FR-J13's marker**, the field Story
-7.20 gates restore scope on — the top-level **`"inflozo": true`**, written last *(Story 7.2, 2026-10-06)*. No story
+7.20a gates restore scope on — the top-level **`"inflozo": true`**, written last *(Story 7.2, 2026-10-06)*. No story
 emitted it before this line. Beside FR-J10's `inflozo-` name and the ruled `author`, it is one of the specified marks
 that FR-J1's no-fingerprint rule allows, and it joins Story 7.1's fingerprint scan as a named exception; every other
 byte of `package.json` is scanned like any emitted file.
@@ -4328,7 +4338,7 @@ may decline permanently and still ship**
 point forward** without pretending to reconstruct one
 **And** the screens match D1b and D1c declined.
 **And** *(Story 7.18's Question 1 — owner, 2026-10-18, R-259)* its **Safety net** step joins Story 7.18a's step rail
-(`STEPS`) between Destination and Check, so with Story 7.20's Backup the rail counts six on a site's first deploy (UX-DR19).
+(`STEPS`) between Destination and Check, so with Story 7.20a's Backup the rail counts six on a site's first deploy (UX-DR19).
 
 *(Ruled at this story's Create, owner, 2026-10-20, each option 1:* **R-278** *— a Not now is recorded per site
 (`sites.staff_token_declined_at`, a `Schema` push first): each site's first deploy asks once, a decline on one site never
@@ -4343,7 +4353,11 @@ profile." and "That's an integration's Admin API key. Your Staff Access Token is
 **FRs:** the deploy-time half of FR-C1 (E7's by §8). · **Frame:** `D1 First-Deploy Gates.dc.html` D1b · D1c. ·
 **Owner test:** yes.
 
-### Story 7.20: The backup gate and the pre-Inflozo snapshot
+### Story 7.20a: The backup gate and the pre-Inflozo snapshot
+
+*(Story 7.20 split by its Question 1 — owner, 2026-10-26, **R-281**: this card keeps the backup gate and the snapshot;
+**Story 7.20b**, straight after it, takes FR-C6's 90-day orphan purge and DW-79's one home, and **Story 7.23** takes
+restoring, each criterion word for word.)*
 
 As a user about to have my theme replaced,
 I want my current theme archived first,
@@ -4365,7 +4379,9 @@ master confirm becoming available is **announced politely**, because a button si
 without it (UX-DR12)
 **And** the gate **offers the two as downloads only when the token is present**, and **otherwise names the Ghost
 Admin path** for each, described and linked for the connected version rather than hard-coded — it never promises
-a file it cannot fetch
+a file it cannot fetch *(Story 7.20's Question 2 — owner, 2026-10-26, **R-282**: `routes.yaml` is offered on every
+connected site, read with the Admin key, which Ghost allows on both majors — MEASUREMENTS §37; the theme only with the
+token)*
 **And** where the token is absent or revoked the degraded path is a **designed flow, not a warning toast**: before
 activation the user is told no snapshot could be captured, and that **Ghost retains the previous theme under
 Settings → Design**, with guidance to reactivate it there
@@ -4376,27 +4392,43 @@ theme as that site's "original". **A theme carrying the marker is never captured
 is `THEME_MARKER` in `@inflozo/theme-compiler` — and it is read from **`GET /themes/` with the staff token**, which
 returns each theme's whole parsed `package.json` as `package` on both majors (`core/server/lib/package-json`, read in
 source), so knowing whether the live theme is Inflozo's needs no download (Story 7.2's T1 run executes the read).
-**And** restoring is a one-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload
-with its own gscan**, so an old fork can be rejected on the way back in; that case has a designed fallback too,
-offering the zip as a download and pointing at Settings → Design
 **And** snapshots are stored **per site record id**, survive project deletion and disconnect/reconnect, and are
 offered as a download before account purge
-**And** **FR-C6's 90-day orphan purge is built here** *(moved from Story 3.5 by the owner's ruling, 2026-09-09;
-DW-75, AD-33)*: a snapshot whose site record has been disconnected for 90 days — the deadline **derived from
-`sites.disconnected_at`**, which Story 3.5 already writes, never from `site_snapshots.purge_after` — is purged
-after a notice and a download offer, and **the purge proceeds on its deadline whether or not the offer was
-taken**; objects before rows, through `drainPrefix`, as `purge-accounts` does
 **And** the gate matches D1d self-hosted, D1d′ with the shortcut ticked and D1e Ghost(Pro); the running and
 degraded snapshot states match B12a and B12b as corrected.
-**And** the purge's 90 days and the Sites card's 'kept for 90 days' have one home: the job takes `ORPHAN_SNAPSHOT_DAYS` rather than a second literal in SQL, and `connect-rule.test.ts`'s agreement test follows it (DW-79).
-
 **And** *(given an owner by Story 7.7's Create, 2026-10-09)* `GET /themes/` without the staff token — `501` on Ghost 5,
 `403` on Ghost 6 (VERIFY-AT-BUILD 9) — is read as **one Inflozo code**, never two answers by major.
 **And** *(Story 7.18's Question 1 — owner, 2026-10-18, R-259)* its **Backup** step joins Story 7.18a's step rail after
 Story 7.19's Safety net, making the first deploy's six steps (UX-DR19).
 
 **FRs:** FR-J13. · **Frame:** `D1 First-Deploy Gates.dc.html` D1d · D1d′ · D1e · `B Missing Surfaces.dc.html`
-B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 and restored (R-82).
+B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 (R-82); its restore is Story
+7.23's (R-281).
+
+### Story 7.20b: The snapshot orphan purge
+
+*(Split from Story 7.20 by its Question 1 — owner, 2026-10-26, **R-281**. Every criterion below moved here word for word,
+but the first, which is R-281's own; it runs straight after Story 7.20a, whose snapshots it purges.)*
+
+As a user who disconnected a site,
+I want to be told before its saved original theme is deleted, and offered it first,
+So that nothing of mine disappears without warning.
+
+**Acceptance Criteria:**
+
+**Given** a pre-Inflozo snapshot (Story 7.20a) whose site record is disconnected
+**When** the purge's notice is sent
+**Then** how and when the user is warned is put to the owner at this story's Create (R-281)
+**And** **FR-C6's 90-day orphan purge is built here** *(moved from Story 3.5 by the owner's ruling, 2026-09-09;
+DW-75, AD-33)*: a snapshot whose site record has been disconnected for 90 days — the deadline **derived from
+`sites.disconnected_at`**, which Story 3.5 already writes, never from `site_snapshots.purge_after` — is purged
+after a notice and a download offer, and **the purge proceeds on its deadline whether or not the offer was
+taken**; objects before rows, through `drainPrefix`, as `purge-accounts` does
+**And** the purge's 90 days and the Sites card's 'kept for 90 days' have one home: the job takes `ORPHAN_SNAPSHOT_DAYS` rather than a second literal in SQL, and `connect-rule.test.ts`'s agreement test follows it (DW-79).
+
+**FRs:** FR-C6 (the purge). · **Frame:** none drawn — the notice's form is its Create's question (R-281). · **Owner
+test:** yes. · **Verification:** the cron run on production against a planted disconnected site record, objects before
+rows (R-82).
 
 ### Story 7.21: Pre-deploy drift detection
 
@@ -4493,6 +4525,12 @@ shown **without an active badge** and actioned as **re-activate rather than as a
 allowed, on any plan
 **And** **rollback and snapshot restore redeploy stored artifacts, not the working document, so they never
 require the edit lock**
+**And** *(moved from Story 7.20 by its Question 1 — owner, 2026-10-26, R-281)* restoring is a one-click redeploy that skips *Inflozo's* gscan gate — but **Ghost validates every upload
+with its own gscan**, so an old fork can be rejected on the way back in; that case has a designed fallback too,
+offering the zip as a download and pointing at Settings → Design
+**And** *(DW-389, Story 7.20's Create, 2026-10-26)* Ghost refuses an upload named `casper.zip` or `source.zip` on both
+majors and never deletes either, so restoring a default theme as the original is an activation of Ghost's installed copy,
+never a re-upload of the snapshot
 **And** the Roll back confirm **opens with focus on the cancelling action** (UX-DR14)
 **And** with no deploys the empty state is "Nothing shipped yet" **and the limit is stated anyway** (UX-DR6)
 **And** the history is reachable from a phone, because it is what the Small Screen Notice offers, and this story adds
@@ -4501,7 +4539,8 @@ D4f's Deploy history card to that notice — the live version and a one-tap Roll
 **And** the screens match S8e and D2a Pro pinning, D2b pin refusal and D2c Free.
 
 **FRs:** FR-J9. · **Frame:** `S8 Deploy.dc.html` S8e · `D2 Deploy History Completed.dc.html` D2a · D2b · D2c. ·
-**Owner test:** yes. · **Verification:** a real rollback on T1 and T3 (R-82).
+**Owner test:** yes. · **Verification:** a real rollback on T1 and T3 (R-82), and a real snapshot restored on T1 (moved
+from Story 7.20, R-281).
 
 ### Story 7.24: Theme naming, frozen per site
 

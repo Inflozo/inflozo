@@ -22,7 +22,7 @@ const ghost = (type: string, extra: Record<string, string> = {}) => ({ errors: [
 
 test('the rail is the steps that show, numbered from them; every stage maps to its step (the spec\'s stage table)', () => {
   // Story 7.19: an ordinary deploy is the four (7.18a's pin, kept as the `false` case), a first deploy that offers the Safety
-  // net five — D1's rail less Backup (7.20's), in D1's order
+  // net five — D1's rail less Backup (7.20a's), in D1's order
   assert.deepEqual(stepsFor(false).map((s) => s.label), ['Destination', 'Check', 'Ship', 'Live'])
   assert.deepEqual(stepsFor(true).map((s) => s.label), ['Destination', 'Safety net', 'Check', 'Ship', 'Live'])
   assert.deepEqual(stepsFor(true), STEPS, 'every step any deploy shows')

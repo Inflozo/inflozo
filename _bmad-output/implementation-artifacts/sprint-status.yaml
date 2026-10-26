@@ -152,7 +152,8 @@ development_status:
   7-18b-choosing-the-site-and-pre-flight-s-warnings: done
   7-18c-the-editor-s-lock-and-save-leftovers: done
   7-19-the-first-deploy-credential-step-and-its-decline-path: done
-  7-20-the-backup-gate-and-the-pre-inflozo-snapshot: ready-for-dev
+  7-20a-the-backup-gate-and-the-pre-inflozo-snapshot: ready-for-dev
+  7-20b-the-snapshot-orphan-purge: backlog
   7-21-pre-deploy-drift-detection: backlog
   7-22-artifacts-retention-and-pinning: backlog
   7-23-deploy-history-rollback-and-restore-to-original: backlog

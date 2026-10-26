@@ -293,7 +293,7 @@ const ROUTES_SENTENCE = "Ghost keeps this theme's routing outside the theme, in 
 
 // ── package.json (Story 7.2, FR-J2) ──────────────────────────────────────────────────────────────────────────────────
 
-/** FR-J13's marker (DW-335): `"inflozo": true`, top level, written last — what Story 7.20 gates restore scope on. It survives
+/** FR-J13's marker (DW-335): `"inflozo": true`, top level, written last — what Story 7.20a gates restore scope on. It survives
  *  a renamed package, sits outside Ghost's `config` namespace, and carries no id, hash or date. */
 export const THEME_MARKER = 'inflozo'
 /** The three named marks `package.json` may carry — FR-J10's `name`, the ruled `author` and the marker — and the only bytes

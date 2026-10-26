@@ -1039,7 +1039,7 @@ export async function skipBrand(formData: FormData): Promise<void> {
  * THE 90-DAY ORPHAN CLOCK IS DERIVED FROM `disconnected_at` AND NEVER STAMPED INTO
  * `site_snapshots.purge_after` — that column carries FR-A5's 14-day account-deletion clock and only
  * that, which is what keeps `restore_account()`'s `purge_after = null` correct as written and
- * closes DW-43 with no SQL. The purging job itself is **Story 7.20's**, beside the snapshot it
+ * closes DW-43 with no SQL. The purging job itself is **Story 7.20b's**, beside the snapshot it
  * deletes (the owner's ruling at Question 1, 2026-09-09; DW-75). This story owes only the clock's
  * origin, written once.
  *

@@ -382,7 +382,7 @@ test('DISCONNECT holds every word the confirm shows, and names no number', () =>
   assert.match(DISCONNECT.body, /keys/)
 
   // COUNTS ARE DERIVED (standing rule 4). The cap's number belongs to `siteCapSentence`, the
-  // 90-day orphan clock to Story 7.20 (DW-75) — nothing in this object may name either, or the
+  // 90-day orphan clock to Story 7.20b (DW-75) — nothing in this object may name either, or the
   // screen would carry a number whose source lives somewhere else.
   // A DIGIT IS NOT THE ONLY WAY TO WRITE A NUMBER. The body said "two Ghost keys" and passed this
   // assertion for a whole story, because `\d` cannot see a word (review, 2026-09-09). The small
@@ -712,18 +712,18 @@ test('the card tallies projects per site and pluralises the pill', () => {
  * IT READS THE COMMENT TOO, AND THAT IS DELIBERATE — the opposite of `deletion-rule.test.ts`'s
  * rule, for the opposite reason. There, prose naming another interval is NOT a stamp and had to be
  * stripped. Here the migration's sentence IS the only place the orphan window is written in SQL:
- * the view that will compute it is Story 7.20's, built beside the snapshot it deletes. When 7.20
+ * the view that will compute it is Story 7.20b's, built beside the snapshot it deletes. When 7.20b
  * writes that view this test needs no change — the expression it matches is the one the entry
  * names and the one the view will carry.
  *
  * WHAT THIS DOES NOT CLOSE, and the entry is amended to say so rather than closed twice: the
  * honest fix is ONE HOME — the view reading a setting the app also reads, or the app deriving its
- * figure from the view — and choosing between those belongs to Story 7.20, the first code that
+ * figure from the view — and choosing between those belongs to Story 7.20b, the first code that
  * depends on both. This closes the silent drift, which is the half that was costing something now.
  */
 test('the 90-day orphan window agrees between the app and the migration', async () => {
   const { readdirSync, readFileSync } = await import('node:fs')
-  // EVERY migration, not the one that wrote it first: Story 7.20's view will carry the same
+  // EVERY migration, not the one that wrote it first: Story 7.20b's view will carry the same
   // expression in a later file, and a test pinned to one path would never read it (review, 2026-09-11).
   const MIGRATION = '../../supabase/migrations'
   const sql = readdirSync(MIGRATION).filter((f) => f.endsWith('.sql')).sort()

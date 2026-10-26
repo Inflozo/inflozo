@@ -2891,7 +2891,8 @@ Two things recorded in passing from the same run, both majors:
 
 The first is why `BACKUP-GATE.md` records that `routes.yaml` *could* be offered as a download on the
 no-token path; the ruling of 2026-09-03 (F-077) ties both downloads to the staff token and the
-loosening is left to the owner.
+loosening is left to the owner. *(The owner took it on 2026-10-26, **R-282**: `routes.yaml` is offered on every connected
+site.)*
 
 ## 38. What connect can read with no key, and what a browser can read with the Content key · 2026-09-08
 
@@ -4664,7 +4665,7 @@ colour Ghost put on a recorded page, so `tokens.test.ts` admits it.
 - **Ghost renders what the compiler emits.** The formatted templates, the per-layer section partials, the hoisted shared partial and the parameterless `post-card` partial all resolve on both pages of the feed and on a post; each placed section draws its root once, in doc order.
 - **The boundary comments ship to no visitor**, a hostile layer name included: its braces were dropped at compile, so it stayed one Handlebars comment, and the layer word is on no page.
 - **User text ships inert.** A22 #1's AD-5 shapes reached the page as their literal characters, and the HTML carries no `{{` or `}}`.
-- **Ghost reads the compiled `package.json`.** `GET themes/` returns it whole, marker included, so Story 7.20 reads the marker with no download; `posts_per_page` sizes Home and the last page; a width only its `image_sizes` declares is served as a rendition; and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`: `card_assets: true` gives every card, as Ghost's own default does.
+- **Ghost reads the compiled `package.json`.** `GET themes/` returns it whole, marker included, so Story 7.20a reads the marker with no download; `posts_per_page` sizes Home and the last page; a width only its `image_sizes` declares is served as a rendition; and its `cards.min.css` hash equals the site theme's, whose `card_assets` is `true`: `card_assets: true` gives every card, as Ghost's own default does.
 - **What this does NOT say.** The scaffold is the later stories' (7.13, 7.4, 7.3), and nothing here deployed through Inflozo's own path (Story 7.18). Ghost 5's half — and Ghost 5's reading of an empty `card_assets` exclude list as no card — is DW-326's, at Story 15.7 (R-238: T3 retired).
 
 ## 72. Synthesis Defaults and the emptying rules — the pilots compiled with every standard template, and the paywall mechanism, rendered by Ghost, T1 · 2026-10-06

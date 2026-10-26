@@ -72,7 +72,9 @@ exist — every `GET /themes/*` with an Admin API key is refused (501 on Ghost 5
 *Recorded, not ruled:* `GET /admin/settings/routes/yaml/` answered **200 to the integration key
 alone** on both majors (`MEASUREMENTS.md` §37, 2026-09-03), so `routes.yaml` could be offered on both
 paths. That is a loosening of the ruling and is the owner's to take; until then the rule above is
-what E3 builds.
+what E3 builds. *(Taken — owner, 2026-10-26, **R-282**: the `routes.yaml` row offers its Download on every connected
+site, read with the Staff Access Token when one is stored and with the integration key otherwise; the Theme row's
+Download stays token-only.)*
 
 ### Self-hosted — one command covers everything
 

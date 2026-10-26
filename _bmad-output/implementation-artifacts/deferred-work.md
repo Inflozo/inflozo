@@ -2494,11 +2494,13 @@ plain: When someone deploys with Inflozo for the first time, Inflozo archives a 
 status: open
 severity: medium
 origin: Story 3.5 Create (2026-09-09) — the owner's ruling at Question 1, option 1
-owner: Story 7.20 (The backup gate and the pre-Inflozo snapshot), whose criteria already carry it with its id:
-  "FR-C6's 90-day orphan purge is built here". *(Story 5.24a's Dev, 2026-09-28: was "**Story 7.20** (the backup gate and
+owner: Story 7.20b (The snapshot orphan purge), straight after Story 7.20a, whose criteria carry it word for word with
+  its id: "FR-C6's 90-day orphan purge is built here". *(R-281, owner, 2026-10-26: Story 7.20 split; was "Story 7.20 (The
+  backup gate and the pre-Inflozo snapshot)". 7.20a writes the first `site_snapshots` row, so the purge still lands
+  beside its subject.)* *(Story 5.24a's Dev, 2026-09-28: was "**Story 7.20** (the backup gate and
   the pre-Inflozo snapshot), Epic 7 — the story that first writes a `site_snapshots` row, so the purge and its subject
   are designed together")*
-location: `_bmad-output/planning-artifacts/epics.md` Story 7.20 (its AC now carries the purge) and Story 3.5
+location: `_bmad-output/planning-artifacts/epics.md` Story 7.20b (its AC carries the purge, R-281) and Story 3.5
   (its AC now points here) · `ARCHITECTURE-SPINE.md` AD-33, AD-29, AD-32 (the cron's owning epic, amended
   2026-09-09) · `apps/web/lib/storage-drain.ts` (the header names its future callers) ·
   `supabase/migrations/20260904120000_complete_schema.sql:199` (`site_snapshots.purge_after`)
@@ -2641,8 +2643,9 @@ amended: THE SILENT DRIFT CLOSES AND THE "ONE HOME" HALF STAYS OPEN. A test now 
   **Story 7.20's**, the first code that depends on both.
 severity: low
 origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, against standing rule 4
-owner: Story 7.20 (The backup gate and the pre-Inflozo snapshot), whose criteria carry its requirement word for word
-  with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "**Story 7.20**, the orphan purge — the job that acts on the
+owner: Story 7.20b (The snapshot orphan purge), whose criteria carry its requirement word for word with its id (R-195).
+  *(R-281, owner, 2026-10-26: Story 7.20 split; was "Story 7.20 (The backup gate and the pre-Inflozo snapshot)".)*
+  *(Story 5.24a's Dev, 2026-09-28: was "**Story 7.20**, the orphan purge — the job that acts on the
   deadline, and the only place that can read both homes at once")*
 location: `apps/web/lib/connect-rule.ts` (`ORPHAN_SNAPSHOT_DAYS`) · `supabase/migrations/
   20260907150000_account_deletion_window.sql` (`disconnected_at + interval '90 days'` in the view)
@@ -10576,9 +10579,9 @@ origin: Story 7.20's Create (2026-10-26), read in Ghost's source on both pinned 
   theme (`theme-storage.js` `serve()`, `filename={name}.zip`). T1's live theme is Casper, so the first real restore on T1
   would be refused. Ghost also refuses to delete either default theme (`storage.js` `destroy`, `:167-170`), so the installed
   copy is always there to activate.
-owner: Story 7.23 (Deploy history, rollback and restore-to-original), which takes the restore criterion under Story 7.20's
-  Question 1 (recommended). If that question is ruled otherwise, the owner is the story that builds restore. It restores a
+owner: Story 7.23 (Deploy history, rollback and restore-to-original), which took the restore criterion word for word
+  under R-281 (owner, 2026-10-26), and whose card carries this entry's sentence with its id. It restores a
   default theme by `PUT themes/{name}/activate/` (an Admin-key write already on `ADMIN_WRITES`), and anything else by upload,
   with Ghost's 422 fallback (VERIFY-AT-BUILD 10).
-location: Story 7.23's restore action (not yet built) · `apps/web/server/snapshot.ts` (Story 7.20, which stores `theme_name`)
+location: Story 7.23's restore action (not yet built) · `apps/web/server/snapshot.ts` (Story 7.20a, which stores `theme_name`)
 reason: restore is not built in Story 7.20a; the finding must reach the story that builds it before its Create.

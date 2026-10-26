@@ -1315,7 +1315,7 @@ on every one. Each row names its targets so a later session can tick them. ✅ l
 | **2** | **The plan-limit strings the frames draw wrongly are patched in 5c to Appendix F.1 at lift time**, each patch carrying a comment naming this decision; the frames catch up in A7 | ✅ `EXPERIENCE.md` § Plan limits ("In the walk") · ✅ A7 item 20 · ⬜ `walkthrough/build-app.py` (the patches) |
 | **3** | **5b is R-75's gate, and "walked" means every journey and every flow on its front door, with the owner's notes in one named file** | ✅ `build-sequence.md` step 5b (the definition of done) · ⬜ `prototype/index.html` (the front door lists them) · ⬜ the notes file (owner) — landed 2026-09-03 by the docs pass; the walk itself 2026-09-04 (§A13) |
 | **4** | **An accessibility item that would change a frame goes to Claude Design prompt A7, not A8**, because it corrects an existing frame; nothing in 5b or 5c alters what a frame looks like | ✅ `EXPERIENCE.md` Appendix A7 items 7–10 (focus-ring token, accessible names, labels, placeholder colour) · ✅ A8 FRAMES 3 and 5 inherit A7's ring · ⬜ 5c may add attributes only, each naming its finding |
-| **5** | **FR-J13's gate offers the theme and `routes.yaml` downloads only when the Staff Access Token is present, and otherwise names the Ghost Admin path** (F-077 — FR-J13 and `BACKUP-GATE.md` had disagreed) | ✅ `prd.md` FR-J13 · ✅ `BACKUP-GATE.md` § What the gate offers as a download · ✅ `EXPERIENCE.md` F7 and A1 FRAME 4 · ⬜ `prototype/build.py` backup-gate note · *recorded for the owner:* `routes.yaml` alone is readable with the integration key (`MEASUREMENTS.md` §37) |
+| **5** | **FR-J13's gate offers the theme and `routes.yaml` downloads only when the Staff Access Token is present, and otherwise names the Ghost Admin path** (F-077 — FR-J13 and `BACKUP-GATE.md` had disagreed) | ✅ `prd.md` FR-J13 · ✅ `BACKUP-GATE.md` § What the gate offers as a download · ✅ `EXPERIENCE.md` F7 and A1 FRAME 4 · ⬜ `prototype/build.py` backup-gate note · *recorded for the owner:* `routes.yaml` alone is readable with the integration key (`MEASUREMENTS.md` §37) · *(2026-10-26, **R-282**: the owner took the loosening — `routes.yaml` is offered on every connected site, read with the Admin key; the theme stays token-only)* |
 | **6** | **The wrong-mechanism frames are held out of 5c until A7 runs, except copy the PRD owns**: Redesign Proposals (B22) held out entirely; the Pro Exit Sheet stays and its remedy count is A7's; the Starter Chooser stays and its roster is A7's; S4d's paid-tier rows are A7's | ✅ `EXPERIENCE.md` § Drawn, but on the wrong mechanism (preamble; S4d and B23a marked → A7) · ✅ A7 items 18 and 19 · ✅ `walkthrough/build-app.py` and `_screens.html` — B22 and B18 lifted once A9 corrected them (2026-09-04) |
 
 **Also taken by the pass, as routine judgement rather than owner decisions — flagged here so they are
@@ -5980,6 +5980,50 @@ first, keep nothing that fails, one sentence per cause. This applies in Safety n
     · ✅ `server/staff-token.ts` and `saveKeys` · ✅ `prd.md` FR-C1 and FR-C8 · ✅ the spine's AD-10 ·
     ✅ VERIFY-AT-BUILD's next item (77, EXECUTED) · ✅ MEASUREMENTS §88 (T1, executed at Dev on the owner's in-session
     go: the staff token 200 `Owner`, one flipped digit 401, the integration's Admin key 404 `NotFoundError`).
+
+**R-281 — Story 7.20 is two stories: 7.20a builds the backup gate and the snapshot, and 7.20b, straight after it, the
+90-day orphan purge; restoring the snapshot moves to Story 7.23.** Story 7.20's Create, Question 1, ruled **option 1**
+(owner, 2026-10-26): *"Split it. 7.20a (this spec) is the Backup step and the copy. "Restore original" moves, word for
+word, to Story 7.23, which already draws its button. The 90-day clean-up becomes Story 7.20b, straight after 7.20a, and
+asks you how the warning is sent."*
+
+- **Why it was a question.** The card held four deliverables: the backup gate, the snapshot at a site's first upload,
+  restore-to-original, and FR-C6's orphan purge. No frame of 7.20's draws a Restore control: D2a's "Restore original" is
+  Story 7.23's frame. The purge has no surface at all, and how its notice reaches the user was never decided.
+- **The rule.**
+  - **Story 7.20a** keeps the gate (D1d, D1d′, D1e) and the snapshot (B12a, B12b), with the one code for an unreadable
+    theme list.
+  - **Story 7.20b**, straight after it, takes FR-C6's purge criterion and DW-79's "one home" criterion, word for word.
+    Its first criterion puts the notice's form to the owner at its Create.
+  - **Story 7.23** takes the restore criterion word for word: the one-click redeploy that skips Inflozo's gscan, Ghost's
+    own gscan on the way back in, and the fallback. It also takes the verification's "and restored" and DW-389.
+- **Found at the same Create (DW-389, read in source).** Ghost refuses an upload named `casper.zip` or `source.zip`, and
+  refuses to delete either theme, on both majors (`services/themes/storage.js`). So a default theme restores by
+  activating Ghost's installed copy.
+- **Declined.** Three stories (Restore built ahead of 7.23 with a button of its own); one story.
+- **Not re-pointed:** the comments in the applied migrations `20260904120000_complete_schema.sql:202` and
+  `20260907150000_account_deletion_window.sql:81`, and SCHEMA.sql's mirror of the first. Each says "Story 7.20" about the
+  purge, and each is a record of its date. DW-75 carries the owner.
+- Targets: ✅ this entry · ✅ Story 7.20a's spec (renamed from 7.20's) · ✅ `epics.md` Stories 7.20a, 7.20b, 7.23, 3.5,
+  7.2, 7.19 and Epic 7's preamble · ✅ `sprint-status.yaml` · ✅ DW-75, DW-79 and DW-389 re-owned · ✅ the spine's AD-33 ·
+  ✅ `epic-7-context.md` · ✅ the code comments naming Story 7.20.
+
+**R-282 — the backup gate offers `routes.yaml` as a download on every connected site; the theme stays a download only
+with the Staff Access Token.** Story 7.20's Create, Question 2, ruled **option 1** (owner, 2026-10-26): *"Yes, always
+offer routes.yaml. The Theme row offers its Download only with the token. routes.yaml offers its Download on every
+connected site. On a Ghost(Pro) site with no token, that adds one button the design drew without."*
+
+- **Why it was a question.** Decision 5 (F-077, 2026-09-03) tied both of the gate's downloads to the token. Then
+  `GET /admin/settings/routes/yaml/` answered 200 to the integration key alone on both majors (MEASUREMENTS §37), and
+  BACKUP-GATE.md, EXPERIENCE F7 and MEASUREMENTS each recorded the loosening as the owner's to take.
+- **The rule.** The `routes.yaml` row's Download reads the live file with the Staff Access Token when one is stored and
+  with the Admin key otherwise. The product already reads it that way in 7.17's Verify. The Theme row's Download still
+  needs the token, because every `GET /themes/*` with the Admin key is refused (501 on Ghost 5, 403 on Ghost 6). On D1e
+  with no token, the one Download is on `routes.yaml`, which departs from the frame's "no download button anywhere".
+- **Declined.** Option 2, keep F-077 as ruled.
+- Targets: ✅ this entry · ✅ Decision 5's row (dated note) · ✅ Story 7.20a's spec (Question 2, Ruled values) · ✅
+  `epics.md` Story 7.20a's card (dated) · ✅ `prd.md` FR-J13 (dated note) · ✅ `BACKUP-GATE.md` (the "Recorded, not ruled"
+  note) · ✅ `EXPERIENCE.md` F7 · ✅ MEASUREMENTS §37's closing line · ✅ `epic-7-context.md`.
 
 ## B · Approved decisions superseded by this session
 

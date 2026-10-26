@@ -33,7 +33,7 @@ export type Stage = 'queued' | 'compiling' | 'checking' | 'awaiting_ship' | 'upl
 export type DeployStatus = 'compiling' | 'checking' | 'uploaded' | 'live' | 'failed'
 
 /** THE RAIL'S STEPS, in order — every step any deploy can show. Story 7.19 added the first deploy's Safety net (D1b/D1c);
- *  Story 7.20 adds Backup after it. A deploy's own rail is `stepsFor`'s — the steps THAT show — and the rail numbers itself
+ *  Story 7.20a adds Backup after it. A deploy's own rail is `stepsFor`'s — the steps THAT show — and the rail numbers itself
  *  from that list, never from a literal (D1's "the rail grows to show it"). */
 export const STEPS = [
   { id: 'destination', label: 'Destination' },

@@ -34,7 +34,8 @@ A user ships. The project compiles — purely, from what it is handed — into a
 - Story 7.18b: Choosing the site, and Pre-flight's warnings *(split from 7.18 by R-259)*
 - Story 7.18c: The editor's lock and save leftovers *(split from 7.18 by R-259)*
 - Story 7.19: The first-deploy credential step, and its decline path
-- Story 7.20: The backup gate and the pre-Inflozo snapshot
+- Story 7.20a: The backup gate and the pre-Inflozo snapshot *(split from 7.20 by R-281, 2026-10-26)*
+- Story 7.20b: The snapshot orphan purge *(split from 7.20 by R-281)*
 - Story 7.21: Pre-deploy drift detection
 - Story 7.22: Artifacts, retention and pinning
 - Story 7.23: Deploy history, rollback and restore-to-original
@@ -719,17 +720,19 @@ A user ships. The project compiles — purely, from what it is handed — into a
     - **Held:** `deploy.test.ts`, `read.test.ts`, `connect-rule.test.ts`, `staff-token.test.ts` (new), `ghost-admin-rule.test.ts` (`adminUrl` keeps `?include=roles`), `busy.test.ts`, `routing.test.ts`, `app-routes.test.ts`, `server-wiring.test.ts`; journeys 7.19 (a)–(d) and (b2) (a decline whose record does not land: the deploy goes on) and the floor at 1440/390. Executed at Dev by the main session on the owner's go: `tools/probe/record-staff-token.mjs --t1` (§88, read only — the staff token 200 `Owner`, one flipped digit 401, the integration's Admin key 404 `NotFoundError`; VERIFY-AT-BUILD 77 EXECUTED). Walk step 116 (production; T1 read only; its 116b ends on the site-gone row) is the Review's, at the deployed sha.
   - **Story 7.19's Review (2026-10-26):** five layers, then production and T1 on the owner's go. Walk steps 113 (T1 writes, put back) and 114 PASS, and 116 PASS but for D1b's picture read before it loaded (it is now preloaded once offered). Patched: Add token and Not now carry the site D1b named and refuse a moved link, and a failed read is the infrastructure sentence; a token kept with the wizard closed is told to the editor; Back is inert while Add token is out; a refusal is said once (the box's alert); the picture is at most 280 wide at every width; every Kit mono field has no spellcheck. Walk 116 gains Manage keys' refusal on the real screen with its `admin_read` row, the reload after a kept token, another project's binding (FR-J13 per site at the query) and the decline's tenant guard (a replay under another session); journeys (b2) hold the decline on the wire and (e) walks the ways back to Destination. DW-388 (Manage keys' words for a store or race failure) goes to Story 15.5. On the Review push's deployment (37c14dea) walk step 116, with those additions, ran 67 PASS, 0 FAIL.
 - **The live theme is archived before the first upload, and drift stops a later one (7.20, 7.21, FR-J13, FR-J16).** The snapshot is read with the staff token, gated on the `package.json` marker, kept per site record outside quota and pruning, behind a backup gate whose master confirm waits for the last tick; drift compares content manifests (SHA-256, line endings normalized), fails open, names files by layer name, and demands zero false positives — a compiled filename never changes when nothing did.
-  - **DW-75, DW-79 (Story 7.20):** the 90-day orphan purge is a cron deriving its deadline from `sites.disconnected_at`, deleting objects before rows through `drainPrefix`, and the 90 days get one home (`ORPHAN_SNAPSHOT_DAYS`).
+  - **DW-75, DW-79 (Story 7.20b since R-281):** the 90-day orphan purge is a cron deriving its deadline from `sites.disconnected_at`, deleting objects before rows through `drainPrefix`, and the 90 days get one home (`ORPHAN_SNAPSHOT_DAYS`).
   - **VERIFY-AT-BUILD 9, 10, 61; MEASUREMENTS §33:** the staff token lifts `GET /themes/` on both majors; a restore can be refused with a 422 and must say so; "Ghost keeps the previous theme" holds for the first upload only; Ghost Admin's backup paths differ by major, so the gate links Ghost's help.
   - **Story 7.1's Create (2026-10-05):** FR-J16's per-file fingerprint lives in `deploys.content_manifest`, never inside an emitted file, because FR-J1 forbids builder fingerprints in the output. 7.21's card carries this.
   - **DW-338 (Story 7.21, from Story 7.1's review):** a layer name has no length cap, so the boundary comment has none while the file name is cut to 60 characters. The cap lands at the input, in the Layers rename flow, so the file and the label agree.
   - **Story 7.2's Create (2026-10-06):** the marker is `package.json`'s top-level `"inflozo": true`. Ghost's `GET /themes/` returns each theme's whole `package.json` as `package` on both majors (`core/server/lib/package-json`, read in source), so 7.20 reads the marker from that list with the staff token, and no download is needed. 7.2's T1 run executes the read.
   - **Story 7.2's Dev (2026-10-06):** Story 7.20's card gains the marker's key and the `GET /themes/` read. The key is `THEME_MARKER` (`@inflozo/theme-compiler`); 7.20 reads `package[THEME_MARKER] === true` from the themes list.
-  - **Story 7.20's Create (2026-10-26):** ready for Dev, planned as 7.20a, with two questions open. Both are needed before Dev.
-    - **Q1, the split.** Recommended: restore-to-original moves word for word to 7.23, which draws its button (D2a). FR-C6's
-      orphan purge and DW-79 become a new 7.20b, straight after.
-    - **Q2, F-077's loosening.** Recommended: `routes.yaml` is offered as a download on every connected site, read with
-      the Admin key (MEASUREMENTS §37).
+  - **Story 7.20's Create (2026-10-26):** ready for Dev as 7.20a. Its two questions were ruled option 1 by the owner the
+    same day, **R-281** and **R-282**. Nothing waits on him before Dev but the `Schema` push's apply and the T1 runs'
+    in-session gos.
+    - **Q1, R-281, the split.** Restore-to-original moved word for word to 7.23, which draws its button (D2a), with DW-389.
+      FR-C6's orphan purge and DW-79 moved to a new 7.20b, straight after 7.20a, whose Create asks how the notice is sent.
+    - **Q2, R-282, F-077's loosening.** `routes.yaml` is offered as a download on every connected site, read with the
+      Admin key (MEASUREMENTS §37). The theme stays token-only, so D1e with no token shows one Download.
     - **Planned.**
       - A Backup step (D1d / D1d′ / D1e, plus an unknown host showing both blocks) after Safety net. It shows while
         `sites.backup_confirmed_at` is null, and disconnect clears it, so a reconnect shows it again (F7).
@@ -822,7 +825,8 @@ A user ships. The project compiles — purely, from what it is handed — into a
   - **7.18:** AD-20's `awaiting_ship` stage is in no schema (`job_stage` lacks it), and the spine's stack table gives the compile function 2048 MB where AD-11 rules 4096.
   - **7.18 / 7.35:** 7.35 deploys "to T1–T3", and build-sequence owes T2 (Ghost(Pro) Publisher) "before the deploy paths are verified end to end"; no T2 is provisioned and R-238 leaves T1 the only test server.
   - **7.20:** BACKUP-GATE ties both downloads to the staff token (F-077), but the integration key alone reads `routes.yaml` (MEASUREMENTS §37), and the loosening is recorded as the owner's to take.
-    - **Story 7.20's Create (2026-10-26):** put to the owner as Question 2 (recommended: offer it with the Admin key).
+    - **Story 7.20's Create (2026-10-26):** put to the owner as Question 2 and ruled option 1 the same day, **R-282**: offered
+      on every connected site, read with the Admin key.
   - **7.22:** FR-J7 and 7.22 enforce N−1 pins "in the database", while MEASUREMENTS §26 puts the plan's cap in the server route and only a one-slot floor in the database (AD-28).
   - **Epic 7's preamble:** it names the joint gate as story 7.33; it is 7.35 (7.33 is compile CI).
   - **Story 7.1's Create (2026-10-05):** the seven items 7.1 meets are settled in its spec as readings of rules the owner has already approved, so none is put to him:
