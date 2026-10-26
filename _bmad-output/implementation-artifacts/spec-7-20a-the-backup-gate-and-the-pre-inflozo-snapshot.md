@@ -616,7 +616,7 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
 
 Five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the Real-infra verifier as subagents;
 walk step 117, T1's put-back and every T1 write in the main session, on the owner's in-session go). One decision for the
-owner (Question 5), 14 patches (all applied), 2 deferred, 18 dismissed — among them: B12b's Deploy without a snapshot is
+owner (Question 5), 15 patches (all applied), 2 deferred, 18 dismissed — among them: B12b's Deploy without a snapshot is
 honoured on a ship that never rested on B12b (AD-29: a consent gate, not a control — it is the customer's own copy); the
 Theme Download's server action has no stated `maxDuration` (read from Vercel's project API: Fluid compute,
 `functionDefaultTimeout` 300 s, so the capture's 15 + 45 s of Ghost reads fit); a skipped capture leaves no trace (every Ghost
@@ -643,6 +643,7 @@ writes proved only by source text (walk 117 executes both on production, below).
 - [x] [Review][Patch] Comments R-281 and R-283 left stale: the marker "gates restore scope" (7.23's since R-281), `addSafety`'s "straight on to the checks", the Backup actions' "D1d/D1d′/D1e", `SNAPSHOT_WORDS`' "never as a menu path", and `record-snapshot.mjs`' "six GETs and the capture's own two" (a count, already wrong) [`theme-compiler/src/compile.ts` · `deploy-wizard.tsx` · `(editor)/actions.ts` · `lib/deploy.ts` · `record-snapshot.mjs`]
 - [x] [Review][Patch] R-283 never reached `epics.md`: Story 7.20a's card still matched D1d′ and D1e; a dated note now says the gate as cut, and R-283's target list carries it [`epics.md` · `reconcile-designs-decisions.md`]
 - [x] [Review][Patch] `deploy-run.test.ts` built B12b's expected body from the actual one, so no body was ever checked; it now names each cause's sentence [`deploy-run.test.ts`]
+- [x] [Review][Patch] Walk 117d read the restored account's profile by `id`, a column `profiles` does not have (its key is `user_id`), so the row always read null and the step FAILED on a restore that had worked [`run-verify-editor.cjs` 117d]
 - [x] [Review][Defer] The database's own comment on `sites.hosted_by_ghost` (applied at Schema) and `SCHEMA.sql`'s mirror still describe a D1e gate and "both paths" [`20261027120000_backup_gate.sql` · `SCHEMA.sql`] — deferred, a production DDL apply of its own (DW-390, Story 7.20b's Schema)
 - [x] [Review][Defer] The Theme Download follows Story 2.5's route as a link, so its improbable 404, 502 or sign-in answer replaces the editor page instead of a sentence under the row [`deploy-wizard.tsx` `follow`] — deferred to the story that offers the same download again (DW-391, Story 7.23)
 
@@ -1144,3 +1145,15 @@ re-run" for T1's leftover theme; keys read in-process by their variable names):*
   all eight floor cases (7.3's bin, 7.13's card clicks, the bar's widths, DW-283, 7.18a's narrow bar) waiting for a painted
   canvas, while a server file was edited under `next dev` mid-run (the Dev run's own cause). `--last-failed`: 8 passed.
   `pnpm check` re-run green after that edit.
+- **Walk step 117 on the Review's deployment** (`dpl_2pqi23AZV5TuqgaAWWZeHfV4q33Y` READY from `20f28424`, CI `check`, `rls`,
+  `deploy` and the Render matrix ✓; the walk's first line names it). One attempt died at step 1 on `fetch failed` (this
+  machine's DNS stub) before any account, T1 call or production write; the next ran the step: **60 PASS, 1 FAIL**. 117a–c
+  PASS again as on the Dev head (the archive 1.43 s, `casper` 5.12.1, 291174 bytes; `marked`; the reconnect; B12b's
+  `→ 403`; `{ skipped: true }`), and **117d's listing PASS** — `/restore` lists the snapshot, its Download 303 to a 291174-byte
+  zip from `PK`. The one FAIL was the walk's own read (`profiles?id=eq.…`; the key is `user_id`), now fixed. `finally`:
+  `casper*`, no `inflozo-` theme, account H deleted, users and projects counted back. T1 carried the step's writes twice in
+  all (the Dev head's run and this one), within the owner's go.
+- **117d's corrected read, on production** (the T1-free cut, a throwaway account): Delete account → `/restore` → Restore
+  account → `/?restored=1`, then `profiles?user_id=eq.…` reads `deleted_at` null — PASS; THE CONTROL, the old `id=eq.` read,
+  finds no row — the walk's FAIL reproduced. (One earlier attempt of the cut died at step 2 on a magic-link load hold, the
+  walk's known stall, having cleaned up.) `node --check` on the walk: clean.

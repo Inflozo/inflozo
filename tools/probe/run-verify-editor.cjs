@@ -13512,7 +13512,7 @@ async function main() {
           listed === 1 && offered.status() === 303 && zip !== null && zip[0] === 0x50 && zip[1] === 0x4b, JSON.stringify({ listed, status: offered.status(), bytes: zip?.length ?? null }))
         await pg.getByRole('button', { name: 'Restore account', exact: true }).click()
         await pg.waitForURL((u) => !u.pathname.endsWith('/restore'), { timeout: 30000 })
-        const profile = (await call('/rest/v1', `/profiles?id=eq.${idH}&select=deleted_at`)).body?.[0] ?? null
+        const profile = (await call('/rest/v1', `/profiles?user_id=eq.${idH}&select=deleted_at`)).body?.[0] ?? null
         check('step 117d — Restore account: the account is back (profiles.deleted_at null)', profile !== null && profile.deleted_at === null, JSON.stringify(profile))
       } catch (e) {
         check('step 117 — the step ran to its end', false, scrub117(String(e?.message ?? e).split('\n')[0]))
