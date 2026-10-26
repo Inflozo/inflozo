@@ -1165,3 +1165,24 @@ re-run" for T1's leftover theme; keys read in-process by their variable names):*
   account → `/?restored=1`, then `profiles?user_id=eq.…` reads `deleted_at` null — PASS; THE CONTROL, the old `id=eq.` read,
   finds no row — the walk's FAIL reproduced. (One earlier attempt of the cut died at step 2 on a magic-link load hold, the
   walk's known stall, having cleaned up.) `node --check` on the walk: clean.
+
+**Executed — Deploy (2026-10-26, Node 24; keys read in-process by their variable names, nothing written to T1 or production data):**
+- Deployment: dpl_AmkDeUw5iZDbYLi78DLna9PHuwf9 (`GITHUB_TOKEN` and `VERCEL_TOKEN` read only; commit `2b265cc7`, READY, serving
+  `app.inflozo.com` and `inflozo.com`; both answered 200 at `/sign-in` and `/`, and `/sites` and `/account` answered 307 to
+  `/sign-in`).
+- **The first Deploy push failed, and the cause was not the story.** CI run on `f04c9d4f` (the Review's last commit): `check` ✓,
+  `rls` ✓ and the Render matrix ✓, but `deploy` ✗ at `vercel build`, which runs `pnpm -w check` again. `packages/section-runtime`'s
+  `routes.test.ts:413` ("Ghost 5.130.6's NQL parses every emitted filter … never a yg key") parsed `published_at:<now-1y` twice
+  and the two parses fell either side of a second (`2025-10-26 16:52:35` against `…:34`). Nothing published (no deployment for
+  that sha). **Fix:** the test freezes the clock (`t.mock.timers.enable({ apis: ['Date'], now: Date.UTC(2026, 9, 26) })`).
+  **Control:** a `tick(1000)` between the two parses makes it FAIL (2 failed, both majors); without it 42 pass, 0 fail
+  (`node --test src/routes.test.ts`, Node 24); the file was restored byte-identical (`cmp`). eslint and `tsc --noEmit` clean.
+- CI on `2b265cc7` (`GITHUB_TOKEN`): `check` ✓, `rls` ✓ (`supabase/tests/rls.sql`, the 7.20a block), `deploy` ✓, Render matrix ✓ (its own job, R-116).
+- **Supabase production, read only** (`SUPABASE_DB_POOLER_URL`, inside `BEGIN READ ONLY`, no migration since the Dev head):
+  `sites.backup_confirmed_at` `timestamp with time zone` and `sites.hosted_by_ghost` `boolean`, both nullable; `job_stage` holds
+  `snapshotting` between `awaiting_ship` and `uploading`; `deploy_jobs_owner_cancel` names `snapshotting`. R-99 holds.
+- **The owner's test aliases:** `umngkmr+backup720b@gmail.com` is unused. **`umngkmr+backup720@gmail.com` is NOT** — an account
+  made at 12:00 UTC today (signed in 12:04, one site, one project, no snapshot) was already there, so Part A now uses
+  `umngkmr+backup720a@gmail.com` (checked unused against `auth/v1/admin/users`). The old account was left alone: it is not
+  Claude's to delete.
+- `owner_test: pending` — the manual test above is live on `https://app.inflozo.com`.
