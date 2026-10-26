@@ -181,10 +181,20 @@ create table public.sites (
   -- (R-278), so no project asks again on this site. Null = never declined. Server-written, select-only to the client
   -- like `routes_fallback`. LAST, because `add column` appends.
   staff_token_declined_at timestamptz,
+  -- Story 7.20a (FR-J13, F7): when the customer confirmed their own backup on the first-deploy Backup step. Null = owed;
+  -- `disconnectSite` sets it back to null, so a reconnect shows the gate again. Consent, not control (AD-29).
+  backup_confirmed_at timestamptz,
+  -- Story 7.20a: Ghost's public config carries `hostSettings` (true = Ghost(Pro), D1e; false = self-hosted, D1d; null =
+  -- not yet probed, both paths). Written by `probeSite`. Both server-written, select-only to the client. LAST, as above.
+  hosted_by_ghost boolean,
   unique (user_id, url)
 );
 comment on column public.sites.staff_token_declined_at is
   'When the customer pressed Not now on the first-deploy Staff Access Token step (Story 7.19, FR-C1, D1c: raised once, never again). Per site record (R-278): no project of the user''s asks again on this site, through disconnect and reconnect; another site still asks once. Null = never declined. Written only by the server.';
+comment on column public.sites.backup_confirmed_at is
+  'When the customer confirmed their own backup on the first-deploy Backup step (Story 7.20a, FR-J13, F7: once per site, re-shown after a reconnect). Null = owed; disconnectSite sets it back to null. A consent gate, not a technical control (AD-29). Written only by the server.';
+comment on column public.sites.hosted_by_ghost is
+  'Whether Ghost''s public config for this site carries hostSettings (Story 7.20a): true = Ghost(Pro), the D1e gate; false = self-hosted, D1d; null = not yet probed, both paths offered. Written only by probeSite.';
 create index on public.sites (user_id) where disconnected_at is null;
 create index on public.sites (last_checked_at) where disconnected_at is null;
 
@@ -443,7 +453,8 @@ create index on public.asset_usages (project_id);
 create type public.deploy_status as enum ('compiling','checking','uploaded','live','failed');
 create type public.deploy_kind   as enum ('normal','rollback','snapshot_restore','compat_redeploy','library_update');
 -- Story 7.18a (AD-20's F-075): `awaiting_ship` is where Pre-flight parks the row and Ship it resumes it.
-create type public.job_stage     as enum ('queued','compiling','checking','awaiting_ship','uploading','activating','done','failed','cancelled');
+-- Story 7.20a (FR-J13): `snapshotting` archives the live theme at a site's first upload, before anything is uploaded.
+create type public.job_stage     as enum ('queued','compiling','checking','awaiting_ship','snapshotting','uploading','activating','done','failed','cancelled');
 
 -- FR-J8: written from the FIRST stage, not on success — FR-J7 stores artifacts only on success,
 -- so without this a failed compile has nothing for the five-stage UI to poll.
@@ -454,7 +465,7 @@ create table public.deploy_jobs (
   site_id       uuid references public.sites(id) on delete set null,  -- null for FR-J12 export
   kind          public.deploy_kind not null default 'normal',
   stage         public.job_stage not null default 'queued',
-  cancel_requested boolean not null default false,        -- honoured in compiling/checking only (FR-J8)
+  cancel_requested boolean not null default false,        -- honoured before the upload only (FR-J8, 7.20a)
   deploy_id     uuid,                                     -- set once a deploys row exists
   error         jsonb,                                    -- FR-J6's mapped explanation, never a raw stack trace
   stage_timings jsonb not null default '{}'::jsonb,       -- NFR-9 structured deploy logs
@@ -949,10 +960,11 @@ create policy tbc_owner_mark on public.template_binding_checklist
   for update to authenticated
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
--- FR-J8: cancel is the one deploy_jobs field a client may set, in the first two stages only.
+-- FR-J8: cancel is the one deploy_jobs field a client may set, in the stages before anything reaches Ghost —
+-- `snapshotting` included (Story 7.20a, B12a's Cancel: the capture only reads Ghost).
 create policy deploy_jobs_owner_cancel on public.deploy_jobs
   for update to authenticated
-  using (user_id = (select auth.uid()) and stage in ('queued','compiling','checking'))
+  using (user_id = (select auth.uid()) and stage in ('queued','compiling','checking','snapshotting'))
   with check (user_id = (select auth.uid()));
 
 -- profiles: own row, and is_admin is not client-writable.

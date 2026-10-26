@@ -2,7 +2,7 @@
 title: 'Story 7.20a — The backup gate and the pre-Inflozo snapshot'
 type: 'feature'
 created: '2026-10-26'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'ad888249da79baed684a7ddff994cbcd6b7b981c'
 owner_test: pending
 review_loop_iteration: 0
@@ -376,7 +376,7 @@ Paths are under `apps/web/` unless written in full. `E` = `app/(app)/app/(authed
 owner's in-session go (R-99), before any code that reads the columns or the stage is pushed.
 
 **Execution — the `Schema` push (alone, first; R-99):**
-- [ ] `supabase/migrations/20261027120000_backup_gate.sql` -- all re-runnable (`if not exists`). PostgreSQL refuses a new
+- [x] `supabase/migrations/20261027120000_backup_gate.sql` -- all re-runnable (`if not exists`). PostgreSQL refuses a new
   enum value's use in the transaction that adds it, so the policy is a second file:
   - `alter type public.job_stage add value if not exists 'snapshotting' before 'uploading'`;
   - `sites.backup_confirmed_at timestamptz` (null means owed; `comment on` naming F7's "once per site, re-shown after a
@@ -385,11 +385,11 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
 
   The header says there is no new grant, as `staff_token_declined_at`'s does: the tenant reads both columns through
   table-wide select, and only the server writes them.
-- [ ] `supabase/migrations/20261027120100_snapshot_cancel.sql` -- `deploy_jobs_owner_cancel` is recreated with
+- [x] `supabase/migrations/20261027120100_snapshot_cancel.sql` -- `deploy_jobs_owner_cancel` is recreated with
   `snapshotting` among its stages -- B12a's Cancel.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the enum value, the
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the enum value, the
   two columns beside `staff_token_declined_at`, and the policy. The gate diffs them.
-- [ ] `…/RLS-TEST.sql`, then copied byte-identical to `supabase/tests/rls.sql` -- a **7.20 block**, one gate in Postgres:
+- [x] `…/RLS-TEST.sql`, then copied byte-identical to `supabase/tests/rls.sql` -- a **7.20 block**, one gate in Postgres:
   - the two columns' types, nullability and comments, and `snapshotting` in `job_stage`, ordered before `uploading`;
   - as the tenant:
     - an update of `backup_confirmed_at` or `hosted_by_ghost` is refused (42501);

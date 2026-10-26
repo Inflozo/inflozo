@@ -2580,7 +2580,8 @@ insert into public.projects(id,user_id,name,slug,style_pack) values
 do $$
 declare stages text[];
 begin
-  select array_agg(e.enumlabel order by e.enumsortorder) into stages
+  -- `snapshotting` is Story 7.20a's (its own block asserts it), removed here so this block keeps proving 7.18a's alone
+  select array_remove(array_agg(e.enumlabel order by e.enumsortorder), 'snapshotting') into stages
     from pg_enum e join pg_type t on t.oid = e.enumtypid
    where t.typname = 'job_stage' and t.typnamespace = 'public'::regnamespace;
   if stages is distinct from array['queued','compiling','checking','awaiting_ship','uploading','activating','done','failed','cancelled'] then
@@ -3123,3 +3124,196 @@ end $$;
 
 delete from auth.users where id in ('77777777-7190-0000-0000-000000000001',
                                     '77777777-7190-0000-0000-000000000002');
+
+-- ── STORY 7.20a — the backup gate's record, the host, and the stage that archives the live theme (FR-J13, F7) ──────────
+--
+-- BEHAVIOURAL. `sites.backup_confirmed_at` (null = the gate is owed) and `sites.hosted_by_ghost` (null = not yet probed)
+-- are the server's: the tenant reads them on its own site, never on another's, and writes neither. `job_stage` carries
+-- `snapshotting` before `uploading`, and B12a's Cancel holds there while `uploading` still refuses it. `site_snapshots`
+-- stays read-only to the tenant (the capture writes it with the service role), and a snapshot survives the deletion of the
+-- project whose first upload took it (FR-J13: keyed on the site record). With the 7.20a migrations withheld this block
+-- ABORTS at its first check — the control that the gate sees them at all.
+
+reset role;
+
+delete from auth.users where id in ('77777777-720a-0000-0000-000000000001',
+                                    '77777777-720a-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-720a-0000-0000-000000000001'),
+                                  ('77777777-720a-0000-0000-000000000002');
+insert into public.sites(id,user_id,url) values
+  ('eeeeeeee-720a-0000-0000-000000000001','77777777-720a-0000-0000-000000000001','https://own-720.example'),
+  ('eeeeeeee-720a-0000-0000-000000000002','77777777-720a-0000-0000-000000000002','https://theirs-720.example');
+insert into public.projects(id,user_id,name,slug,style_pack,linked_site_id) values
+  ('cccccccc-720a-0000-0000-000000000001','77777777-720a-0000-0000-000000000001','Own backup','own-backup-720','{}',
+   'eeeeeeee-720a-0000-0000-000000000001');
+
+-- (1) the two columns, their comments, no client write on either; the stage in its place.
+do $$
+declare stages text[];
+begin
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'sites' and is_nullable = 'YES' and column_default is null
+         and ((column_name = 'backup_confirmed_at' and data_type = 'timestamp with time zone')
+           or (column_name = 'hosted_by_ghost' and data_type = 'boolean'))) <> 2 then
+    raise exception 'FAIL (7.20a): sites.backup_confirmed_at (timestamptz) or sites.hosted_by_ghost (boolean), nullable with no default, is missing';
+  end if;
+  -- coalesce: a column with NO comment reads null, and `null not like …` is null — no exception (7.18b's Review)
+  if coalesce(col_description('public.sites'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.sites'::regclass and attname = 'backup_confirmed_at')), '')
+     not like '%once per site, re-shown after a reconnect%disconnectSite sets it back to null%' then
+    raise exception 'FAIL (7.20a): sites.backup_confirmed_at''s comment does not name F7''s rule and its reset';
+  end if;
+  if coalesce(col_description('public.sites'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.sites'::regclass and attname = 'hosted_by_ghost')), '')
+     not like '%hostSettings%null = not yet probed%' then
+    raise exception 'FAIL (7.20a): sites.hosted_by_ghost''s comment does not name hostSettings and the unprobed state';
+  end if;
+  if has_column_privilege('authenticated', 'public.sites', 'backup_confirmed_at', 'INSERT')
+     or has_column_privilege('authenticated', 'public.sites', 'backup_confirmed_at', 'UPDATE')
+     or has_column_privilege('authenticated', 'public.sites', 'hosted_by_ghost', 'INSERT')
+     or has_column_privilege('authenticated', 'public.sites', 'hosted_by_ghost', 'UPDATE') then
+    raise exception 'FAIL (7.20a): authenticated can write sites.backup_confirmed_at or sites.hosted_by_ghost';
+  end if;
+  select array_agg(e.enumlabel order by e.enumsortorder) into stages
+    from pg_enum e join pg_type t on t.oid = e.enumtypid
+   where t.typname = 'job_stage' and t.typnamespace = 'public'::regnamespace;
+  if stages is distinct from array['queued','compiling','checking','awaiting_ship','snapshotting','uploading','activating','done','failed','cancelled'] then
+    raise exception 'FAIL (7.20a): job_stage is % — snapshotting is missing or not right before uploading', stages;
+  end if;
+  raise notice 'PASS (7.20a): sites.backup_confirmed_at and hosted_by_ghost are nullable, commented and server-only; job_stage carries snapshotting before uploading';
+end $$;
+
+-- the server writes the gate, the host, the snapshot, the binding and two jobs (the service role, as the product does)
+set role service_role;
+update public.sites set backup_confirmed_at = '2026-10-27 12:00:00+00', hosted_by_ghost = false
+ where id = 'eeeeeeee-720a-0000-0000-000000000001';
+update public.sites set backup_confirmed_at = '2026-10-26 12:00:00+00', hosted_by_ghost = true
+ where id = 'eeeeeeee-720a-0000-0000-000000000002';
+insert into public.project_site_bindings(project_id,user_id,site_id,theme_name) values
+  ('cccccccc-720a-0000-0000-000000000001','77777777-720a-0000-0000-000000000001','eeeeeeee-720a-0000-0000-000000000001',
+   'inflozo-own-backup-720');
+insert into public.site_snapshots(id,user_id,site_id,storage_path,theme_name,bytes) values
+  ('aaaaaaaa-720a-0000-0000-000000000001','77777777-720a-0000-0000-000000000001','eeeeeeee-720a-0000-0000-000000000001',
+   'site-snapshots/77777777-720a-0000-0000-000000000001/eeeeeeee-720a-0000-0000-000000000001/2026-10-27-casper.zip',
+   'casper',1024),
+  ('aaaaaaaa-720a-0000-0000-000000000002','77777777-720a-0000-0000-000000000002','eeeeeeee-720a-0000-0000-000000000002',
+   'site-snapshots/77777777-720a-0000-0000-000000000002/eeeeeeee-720a-0000-0000-000000000002/2026-10-26-source.zip',
+   'source',2048);
+insert into public.deploy_jobs(id,project_id,user_id,site_id,stage) values
+  ('bbbbbbbb-720a-0000-0000-000000000001','cccccccc-720a-0000-0000-000000000001','77777777-720a-0000-0000-000000000001',
+   'eeeeeeee-720a-0000-0000-000000000001','snapshotting'),
+  ('bbbbbbbb-720a-0000-0000-000000000002','cccccccc-720a-0000-0000-000000000001','77777777-720a-0000-0000-000000000001',
+   'eeeeeeee-720a-0000-0000-000000000001','uploading');
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-720a-0000-0000-000000000001';
+
+-- (2) the tenant reads its own gate and host, and not another's; (3) it writes neither; (4) B12a's Cancel; (5) the
+-- snapshot is read-only to it.
+do $$
+declare b timestamptz; h boolean; theirs int; n int;
+begin
+  select backup_confirmed_at, hosted_by_ghost into strict b, h from public.sites where id = 'eeeeeeee-720a-0000-0000-000000000001';
+  if b is distinct from '2026-10-27 12:00:00+00'::timestamptz or h is distinct from false then
+    raise exception 'FAIL (7.20a): the tenant read % / % for its own backup_confirmed_at / hosted_by_ghost', b, h;
+  end if;
+  select count(*) into theirs from public.sites where id = 'eeeeeeee-720a-0000-0000-000000000002';
+  if theirs <> 0 then raise exception 'FAIL (7.20a): the tenant can see another tenant''s site'; end if;
+  raise notice 'PASS (7.20a): the tenant reads its own backup_confirmed_at and hosted_by_ghost and not another tenant''s';
+  begin
+    update public.sites set backup_confirmed_at = null where id = 'eeeeeeee-720a-0000-0000-000000000001';
+    raise exception 'FAIL (7.20a): the tenant wrote backup_confirmed_at directly';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.20a): the tenant cannot write backup_confirmed_at (%)', sqlstate;
+  end;
+  begin
+    update public.sites set hosted_by_ghost = true where id = 'eeeeeeee-720a-0000-0000-000000000001';
+    raise exception 'FAIL (7.20a): the tenant wrote hosted_by_ghost directly';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.20a): the tenant cannot write hosted_by_ghost (%)', sqlstate;
+  end;
+  -- CONTROL: the same tenant still writes a column its grant carries, so the refusals above are these columns'
+  update public.sites set title = 'Own 720' where id = 'eeeeeeee-720a-0000-0000-000000000001';
+  if not found then raise exception 'FAIL (7.20a): the control — the tenant could not write its own site''s title either'; end if;
+  raise notice 'PASS (7.20a): the control — the tenant still writes its own title';
+
+  update public.deploy_jobs set cancel_requested = true where id = 'bbbbbbbb-720a-0000-0000-000000000001';
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'FAIL (7.20a): the tenant could not cancel its own job at snapshotting (B12a''s Cancel)'; end if;
+  -- CONTROL: the lever still ends where Ghost's writes begin
+  update public.deploy_jobs set cancel_requested = true where id = 'bbbbbbbb-720a-0000-0000-000000000002';
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'FAIL (7.20a): the tenant cancelled a job at uploading — Cancel ends where Ghost''s writes begin'; end if;
+  raise notice 'PASS (7.20a): the tenant cancels at snapshotting; the control refuses it at uploading';
+
+  if (select count(*) from public.site_snapshots where id = 'aaaaaaaa-720a-0000-0000-000000000001') <> 1 then
+    raise exception 'FAIL (7.20a): the tenant cannot read its own site''s snapshot';
+  end if;
+  begin
+    insert into public.site_snapshots(user_id,site_id,storage_path,theme_name)
+    values ('77777777-720a-0000-0000-000000000001','eeeeeeee-720a-0000-0000-000000000001','forged.zip','forged');
+    raise exception 'FAIL (7.20a): the tenant inserted a snapshot';
+  exception when insufficient_privilege or unique_violation then
+    if sqlstate = '23505' then raise exception 'FAIL (7.20a): the tenant reached the snapshot''s unique key — the insert was not refused'; end if;
+    raise notice 'PASS (7.20a): the tenant cannot insert a snapshot (%)', sqlstate;
+  end;
+  begin
+    update public.site_snapshots set storage_path = 'forged.zip' where id = 'aaaaaaaa-720a-0000-0000-000000000001';
+    raise exception 'FAIL (7.20a): the tenant rewrote its snapshot';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.20a): the tenant cannot update a snapshot (%)', sqlstate;
+  end;
+  begin
+    delete from public.site_snapshots where id = 'aaaaaaaa-720a-0000-0000-000000000001';
+    raise exception 'FAIL (7.20a): the tenant deleted its snapshot';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.20a): the tenant cannot delete a snapshot (%)', sqlstate;
+  end;
+exception when no_data_found then
+  raise exception 'FAIL (7.20a): the tenant cannot read its own site';
+end $$;
+
+-- (6) as the other tenant: none of it is visible
+set request.jwt.claim.sub = '77777777-720a-0000-0000-000000000002';
+do $$
+begin
+  if (select count(*) from public.sites where id = 'eeeeeeee-720a-0000-0000-000000000001') <> 0
+     or (select count(*) from public.site_snapshots where id = 'aaaaaaaa-720a-0000-0000-000000000001') <> 0
+     or (select count(*) from public.deploy_jobs where id in ('bbbbbbbb-720a-0000-0000-000000000001',
+                                                               'bbbbbbbb-720a-0000-0000-000000000002')) <> 0 then
+    raise exception 'FAIL (7.20a): another tenant sees the site, its snapshot or its jobs';
+  end if;
+  -- CONTROL: it still sees its own snapshot, so the zero above is the tenancy's, not an empty table
+  if (select count(*) from public.site_snapshots where id = 'aaaaaaaa-720a-0000-0000-000000000002') <> 1 then
+    raise exception 'FAIL (7.20a): the control — the other tenant cannot see its own snapshot either';
+  end if;
+  raise notice 'PASS (7.20a): another tenant sees none of it; the control reads its own snapshot';
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+-- (7) the refused writes changed nothing, and deleting the project leaves its site's snapshot (FR-J13)
+do $$
+begin
+  if (select backup_confirmed_at from public.sites where id = 'eeeeeeee-720a-0000-0000-000000000001')
+       is distinct from '2026-10-27 12:00:00+00'::timestamptz
+     or (select hosted_by_ghost from public.sites where id = 'eeeeeeee-720a-0000-0000-000000000001') is distinct from false
+     or (select storage_path from public.site_snapshots where id = 'aaaaaaaa-720a-0000-0000-000000000001') like 'forged%'
+     or (select cancel_requested from public.deploy_jobs where id = 'bbbbbbbb-720a-0000-0000-000000000002') then
+    raise exception 'FAIL (7.20a): a refused tenant write changed the gate, the host, the snapshot or the uploading job';
+  end if;
+  raise notice 'PASS (7.20a): the refused writes left the gate, the host, the snapshot and the uploading job as the server wrote them';
+  delete from public.projects where id = 'cccccccc-720a-0000-0000-000000000001';
+  if (select count(*) from public.project_site_bindings where site_id = 'eeeeeeee-720a-0000-0000-000000000001') <> 0 then
+    raise exception 'FAIL (7.20a): the project''s binding outlived its project — the fixture is not what it claims';
+  end if;
+  if (select count(*) from public.site_snapshots where id = 'aaaaaaaa-720a-0000-0000-000000000001') <> 1 then
+    raise exception 'FAIL (7.20a): deleting the project removed its site''s snapshot (FR-J13: it survives project deletion)';
+  end if;
+  raise notice 'PASS (7.20a): deleting the project removed its binding and left its site''s snapshot';
+end $$;
+
+delete from auth.users where id in ('77777777-720a-0000-0000-000000000001',
+                                    '77777777-720a-0000-0000-000000000002');
