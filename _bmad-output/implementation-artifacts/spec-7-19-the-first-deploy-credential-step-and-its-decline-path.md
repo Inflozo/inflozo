@@ -2,10 +2,10 @@
 title: 'Story 7.19 — The first-deploy credential step, and its decline path'
 type: 'feature'
 created: '2026-10-20'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '10559fd767dcac60d54df6b2172acbf3b19fd799'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-18a-the-deploy-wizard.md']
 ---
 
@@ -268,9 +268,9 @@ and applied to production on the owner's in-session go (R-99), before any code t
 - [x] `sites/keys-panel.tsx` -- the error slot reads the new codes, and a `role` param outside the closed list reads as
   `token_role` with no name. `enables` comes from `KEYS.staff.full` -- S11e unchanged on screen.
 - [x] `E/actions.ts` -- two server actions beside `switchSite`:
-  - `addSafetyToken(projectId, token)`: the user's own read of the project's link and the site row (connected, its
+  - `addSafetyToken(projectId, token)` *(Review: `(projectId, siteId, token)`, the site D1b named)*: the user's own read of the project's link and the site row (connected, its
     `url` and `ghost_version`), then `addStaffToken`; it answers the sentence or ok;
-  - `declineSafetyNet(projectId)`: the service role sets `staff_token_declined_at = now()`, scoped by `user_id` and
+  - `declineSafetyNet(projectId)` *(Review: `(projectId, siteId)`)*: the service role sets `staff_token_declined_at = now()`, scoped by `user_id` and
     `.is('disconnected_at', null)`, and answers ok or not.
 
   Neither takes the lock (they write the site, not the project), and neither logs the token -- the wizard's two writes.
@@ -398,6 +398,36 @@ and applied to production on the owner's in-session go (R-99), before any code t
   Next matches D1a's button (`:89`), and the rail matches D1's rail less Backup (`:51-63`).
 - Given the migration is withheld, when the RLS gate runs, then the 7.19 block aborts at its first check.
 
+### Review Findings
+
+Five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor and the Real-infra verifier as subagents;
+the walk, the recorder and every T1 call in the main session, on the owner's in-session go). No decision for the owner,
+19 patches (all applied), 1 deferred, 14 dismissed — among them: a site switch keeps the old offer (it cannot: the
+`(editor)` layout keys the editor on the link, so a switch remounts it); a Contributor's `users/me` answering 403 (read in
+6.58.0's `fixtures.json`: every staff role holds `user: browse, read`, so `users/me` answers 200 with the role); the
+picture leaking the token (looked at: the token is pixelated, and the rest is T1's public author profile).
+
+- [x] [Review][Patch] D1b's picture was fetched only once D1b drew, so walk 116a read it unloaded on production; now preloaded once the step is offered, and the walk waits for it [`components/editor/deploy-wizard.tsx` · `run-verify-editor.cjs` 116a]
+- [x] [Review][Patch] Below `tablet` the picture took the card's whole width (700 at 820), so its crop lost the token box's label; held at D1b's 280 at every width, with a floor case at 820 [`deploy-wizard.tsx` the `<img>` · `floor.spec.mjs`]
+- [x] [Review][Patch] A token kept while the wizard was closed (Esc during "Adding…") was never told to the editor, so a reopen asked again [`deploy-wizard.tsx` `addSafety`]
+- [x] [Review][Patch] Back stayed live while Add token was out: a refusal then landed on a hidden view, a kept token started the checks from Destination [`deploy-wizard.tsx` `#deploy-safety-back`]
+- [x] [Review][Patch] A refused token was said twice — the polite region and the box's own alert [`deploy-wizard.tsx` `addSafety`]
+- [x] [Review][Patch] Both writes acted on the project's link as it stood at the press, so another tab's switch sent the token to, or recorded the decline on, a site D1b never named; each now takes D1b's site and refuses a moved link [`(editor)/actions.ts` · `editor.tsx` · `harness/editor/actions.ts`]
+- [x] [Review][Patch] A failed read of the project or the site said "That site is no longer connected."; it now says the infrastructure sentence [`(editor)/actions.ts` `linkedSite`]
+- [x] [Review][Patch] A credential field was spell-checked (Chrome's enhanced check sends what is typed away) — every Kit mono field now has no spellcheck and no capital [`components/kit/input.tsx`]
+- [x] [Review][Patch] D1b's footer caption could never show (a refused start after a kept token lands on Destination, which says it) — removed [`deploy-wizard.tsx` `offer`]
+- [x] [Review][Patch] Continue's `px-6` was dead: the Kit's 42 draws 22 across and a caller's padding loses to the stylesheet's order — removed, the Kit reading logged [`deploy-wizard.tsx` `#deploy-continue`]
+- [x] [Review][Patch] The rail aliased `steps` as an upper-case `STEPS`, shadowing the module's list — removed [`deploy-wizard.tsx` `Rail`]
+- [x] [Review][Patch] Manage keys' half of R-280 never ran on the real stack (a source grep and a harness page that renders from the URL) [`run-verify-editor.cjs` 116c]
+- [x] [Review][Patch] The editor's read of `credentials_present` was never proved: no check reloaded after a token was kept [`run-verify-editor.cjs` 116c]
+- [x] [Review][Patch] "First deploy" per SITE was proved only over arrays handed to `shipStateOf`, never at the query [`run-verify-editor.cjs` 116b]
+- [x] [Review][Patch] The decline is a service-role write, and its tenant guard ran nowhere [`run-verify-editor.cjs` 116d]
+- [x] [Review][Patch] No journey went back to Destination from the Safety net — a cancelled check, or a kept token whose checks are refused [`journey.spec.mjs` (e)]
+- [x] [Review][Patch] "Not now never waits" was never observed: the decline answered at once, so an awaited one passed too; (b2) now holds it on the wire [`journey.spec.mjs` (b2)]
+- [x] [Review][Patch] Continue's "Starting…" was held only by a source read [`journey.spec.mjs` (e)]
+- [x] [Review][Patch] Journey (b) counted the decline by a body the editor's re-read also sends; it now matches the decline's own shape (the project and D1b's site) [`journey.spec.mjs` `isDecline`]
+- [x] [Review][Defer] Manage keys says three failures in other words than the Safety net — `ghost_unreachable` names the site's title, a store that will not answer says connect's sentence, a site disconnected mid-save shows nothing — for all three keys alike [`sites/keys-panel.tsx` `subjectFor` · `sites/actions.ts` `saveKeys`] — deferred, pre-existing (DW-388, Story 15.5)
+
 ## Spec Change Log
 
 **Dev (2026-10-21) — readings and departures, each a routine call told in one line (none changes what a surface does):**
@@ -437,6 +467,20 @@ and applied to production on the owner's in-session go (R-99), before any code t
   check (the planted site disconnected through the service key while D1b is open → `SWITCH_WORDS.gone`, nothing stored);
   "Not now, a failed write" is journey 7.19 (b2) over `x-inflozo-harness-decline: fail` (`harnessDecline` answers the real
   action's `{ ok: false }`) — D1c still shows and Continue still starts the checks.
+
+**Review (2026-10-26) — readings, each a routine call told in one line (none changes what a surface does):**
+- **Continue is the Kit's 42, 22 across**, against D1c's 24 (`:202`): a caller's padding loses to the stylesheet's order
+  (`button.tsx`), as the token box is the Kit's 44.
+- **D1b's picture is at most 280 wide below `tablet` too** (extrapolated — no frame draws D1b narrow): wider, its bottom crop
+  lost the token box's label.
+- **Both writes name the site D1b showed** (`addSafetyToken(projectId, siteId, token)`, `declineSafetyNet(projectId, siteId)`)
+  and refuse a link that has moved since, `SWITCH_WORDS.gone` and `{ ok: false }`; a failed read is
+  `DEPLOY_WORDS.infrastructure`.
+- **Every Kit mono field has no spellcheck and no capital** — the connect wizard's and Manage keys' keys too, one line in the
+  Kit, since a credential typed there could leave by Chrome's enhanced spellcheck.
+- **D1b's picture is preloaded** (React's `preload`) the moment the step is offered.
+- **Not raised:** the wizard's focus on open stays on Destination's chosen mode, as 7.18a built it; Next is focused after
+  Back, as the matrix asks (journey (a), walk 116a).
 
 ## Design Notes
 
@@ -667,6 +711,47 @@ R-82's real services for this story:
 - `node --check tools/probe/run-verify-editor.cjs` — clean after step 116b's site-gone check was added.
 - **Vercel** (`app.inflozo.com`) and walk step 116 (with 113 and 114 re-expected): the Review's, on the Dev push's deployed
   sha, from a clean worktree.
+
+**Executed — Review (2026-10-26; the owner's in-session go for T1 reads and writes, "1. Go — reads and writes"):**
+- **GitHub CI** (`GITHUB_TOKEN`, read only) on the Dev head `b0cc4a4058647d32dd78adea1112f654338fd7a8`: CI `check` ✓,
+  `rls` ✓, `deploy` ✓; the Render matrix ✓. **Vercel** (`VERCEL_TOKEN`): `dpl_33e2nPmJFkMgNxx5brXsmWj2MNhf` READY, production,
+  aliased to `app.inflozo.com` and `inflozo.com`, built from that sha.
+- **Supabase production** (`SUPABASE_DB_POOLER_URL`, read in-process, `begin read only`, rolled back): R-99 holds —
+  `sites.staff_token_declined_at` is `timestamp with time zone`, nullable, no default, its comment the migration's;
+  `authenticated` SELECT only on it, and `sites`' `authenticated` UPDATE columns still `favicon_url, title, updated_at`; every
+  column the new code reads or writes exists (`sites`, `projects`, `project_site_bindings`, `deploys`, `private.site_credentials`,
+  `private.credential_audit`), `credential_action` holds `admin_read`; `project_site_bindings_owner_read` is SELECT on `user_id =
+  auth.uid()`. **Control:** a made-up column `staff_token_declined_nope` is absent and selecting it throws `42703`.
+- **The picture on the app host:** `https://app.inflozo.com/deploy/staff-token.png` → 200 `image/png`, 43422 bytes, byte-identical
+  to `public/deploy/staff-token.png` (and on `inflozo.com`), with no CSP header (outside the proxy, as `brand/`'s are).
+  **Control:** `/deploy/nope.png` → 404.
+- **T1** (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_ADMIN_API_KEY`, read in-process, from a worktree at the Dev head so
+  §88 stays Dev's record): `record-staff-token.mjs --t1` — every row PASS again: the staff token 200, role `Owner`, kept; one
+  flipped digit 401 `UnauthorizedError`, `token_unknown` (the control); the integration's Admin key 404 `NotFoundError`,
+  `token_integration`. Ghost 5's half: DW-326 (R-238).
+- **The walk on the Dev head's deployment**, from a clean worktree at `b0cc4a40` (cut copies: steps 1–5 + the step):
+  - **step 116** — 61 PASS, **1 FAIL**: 116a read D1b's picture as not yet loaded (`img.complete` false) on its first look,
+    while every later look read it loaded — the picture was fetched only once D1b drew. Patched (preloaded; the walk waits);
+    re-run below on the Review's deployment. Every other row held: Next and the five-step rail, Back on Next, Not now → D1c
+    with the decline stored before Continue, the job with Safety net ticked, Run checks on reopen and on reload; `hello` →
+    `token_malformed`, the planted host → `ghost_unreachable`, a disconnected site → `SWITCH_WORDS.gone`, nothing stored; T1
+    connected by G, its staff token kept (`credentials_present.staff` true), ONE `admin_read` ok and one staff
+    `credential_change` in, Disconnect leaving `credentials_present` all false; accounts, artefacts, users and projects counted
+    back.
+  - **step 114** (re-expected: T1's Safety net answered as a Not now through the service key) — 134 PASS, 0 FAIL.
+  - **step 113** (`T1_WRITES=1`, re-expected the same way) — 83 PASS, 0 FAIL: Deploy only, Re-activate, Deploy & activate on
+    T1, then 113j put T1 back — `casper` active, the step's theme deleted, `routes.yaml` byte for byte (130 → 130), the site
+    disconnected, the account deleted, users and projects counted back.
+- `pnpm check` (Node 24) after the patches — green.
+- `pnpm keyboard -g '7\.19|Ship it is S4|R-266|7\.18a · Cancel|7\.18a · Run checks with an edit'` — 13 passed: the floor at
+  1440, 820 and 390, journeys (a)–(e), and 7.18a's neighbours. **Controls, first seen red:** with the decline awaited before
+  D1c, a cancel's way back keeping the Safety net's view, the picture as wide as the card and the Kit's `spellCheck` removed,
+  the floor at 820 and 390 (picture 700 and 318 wide), (b2) (D1c never drawn while the decline is held), (c) (`spellcheck`
+  empty) and (e) (left on `safety` after Cancel) FAIL; with only a refused start's fallback to Destination removed, (e) FAILS
+  at the reason (no `#deploy-refused`); each file restored byte-identical (`cmp`).
+- `pnpm keyboard` (Node 24), the whole gate after the patches — 304 passed, 0 failed (17.6 min).
+- Walk step 116 with the Review's additions (116a's picture, 116b's binding, 116c's Manage keys and reload, 116d's replay):
+  the Review's, on the Review push's deployment, from a clean worktree — recorded in the next Review commit.
 
 **Manual checks:**
 - The owner walks "Owner's manual test" on `app.inflozo.com` after Deploy (R-80).

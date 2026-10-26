@@ -10540,3 +10540,25 @@ owner: Story 15.1 (the E2E suite), whose suite runs the app against a real stack
   a page's beat, its leave, then that page's late beat changing nothing — through the route itself.
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` · `apps/web/lock.test.ts` · `supabase/tests/rls.sql`
 reason: CI has no PostgREST in front of the gate's container; the walk is the Review's proof until 15.1's suite exists.
+
+## Deferred from: code review of spec-7-19-the-first-deploy-credential-step-and-its-decline-path (2026-10-26)
+
+### DW-388: Manage keys says three of a save's failures in other words than the Safety net
+
+plain: When saving a key in Manage keys fails for a reason that is not the key's own, the sentence can be off: an unreachable
+  site is named by its title ("We couldn't reach Orbit Weekly") where the Safety net names its address, a store that will not
+  answer says the connect wizard's sentence, and a site disconnected in the moment of the save shows no sentence at all.
+status: open
+severity: low
+origin: Story 7.19's Review (2026-10-26), the Blind Hunter and Edge Case Hunter layers. `keys-panel.tsx`'s `subjectFor` gives
+  every code but `ghost_refused` (and now `token_role`) the site's `name` (title, else host), so `ghost_unreachable` reads the
+  title; `saveKeys` passes `credential_store_unavailable` and `site_not_found` through as their codes, the first saying
+  `CONNECT_MESSAGES`' connect sentence and the second having none, so the screen draws nothing. The same for all three keys
+  since Story 3.6; 7.19's token check reaches the same branches, and the Safety net's `tokenRefusal` already says the host and
+  `keys_failed`.
+owner: Story 15.5 (reliability — alarms and the restore drill), which decides how a failure that is ours rather than the
+  customer's is told (DW-383's rule): one sentence per cause on both surfaces (R-170), a gone site as `keysGone` lands it.
+location: `apps/web/app/(app)/app/(authed)/sites/keys-panel.tsx` (`subjectFor`) · `apps/web/app/(app)/app/(authed)/sites/actions.ts`
+  (`saveKeys`' three branches)
+reason: pre-existing for every key on the screen, reached only by a failing store or a race with Disconnect; changing one
+  key's words alone would make the three disagree.

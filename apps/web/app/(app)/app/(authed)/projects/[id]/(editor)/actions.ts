@@ -240,8 +240,10 @@ export async function switchSite(projectId: string, siteId: string, session: str
  * STORY 7.19 — THE FIRST DEPLOY'S SAFETY NET (FR-C1, D1b/D1c): the wizard's two writes, beside `switchSite`. Each writes the
  * SITE, never the project, so neither takes the edit lock; each reads the project's link through the CALLER'S OWN session first
  * (RLS decides it is theirs), and the site with `disconnected_at is null`, so a site disconnected or unlinked meanwhile is
- * `SWITCH_WORDS.gone` and nothing is written. Neither logs the token, which arrives in the action's body and goes to the
- * chokepoint alone.
+ * `SWITCH_WORDS.gone` and nothing is written. Each takes the site D1b NAMED, and refuses when the link has moved since (another
+ * tab's switch): the token is never asked of, and the decline never recorded on, a site the customer was not shown. A read that
+ * FAILED is ours, not the site's, and says so (`DEPLOY_WORDS.infrastructure`) — Story 7.19's review. Neither logs the token,
+ * which arrives in the action's body and goes to the chokepoint alone.
  *
  * `addSafetyToken` — R-280: `addStaffToken` is Manage keys' check too, so a token is asked of Ghost (`GET users/me/?include=
  * roles`) and only an Owner's or an Administrator's is stored (Vault, the flag, the audit row). It answers ok, or the one
@@ -257,24 +259,30 @@ const TOKEN_ROUTE = 'projects/editor/safety-token'
 
 export type SafetyAnswer = { ok: true } | { refused: string }
 
-/** the project's linked site, CONNECTED, through the caller's own session (RLS) — null when there is none any more */
-async function linkedSite(supabase: Awaited<ReturnType<typeof quietSession>>['supabase'], projectId: string) {
+/** the project's linked site, CONNECTED and still the one the wizard named, through the caller's own session (RLS) — null when
+ *  there is none any more, `'unread'` when a read failed */
+async function linkedSite(supabase: Awaited<ReturnType<typeof quietSession>>['supabase'], projectId: string, siteId: string) {
   const { data: project, error } = await supabase.from('projects').select('linked_site_id').eq('id', projectId).maybeSingle()
-  if (error || !project?.linked_site_id) {
-    if (error) console.error('projects/editor: the safety net could not read the project', { code: error.code })
-    return null
+  if (error) {
+    console.error('projects/editor: the safety net could not read the project', { code: error.code })
+    return 'unread' as const
   }
+  if (project?.linked_site_id !== siteId) return null
   const { data: site, error: siteError } = await supabase
-    .from('sites').select('id, url, ghost_version').eq('id', project.linked_site_id as string).is('disconnected_at', null).maybeSingle()
-  if (siteError) console.error('projects/editor: the safety net could not read the site', { code: siteError.code })
+    .from('sites').select('id, url, ghost_version').eq('id', siteId).is('disconnected_at', null).maybeSingle()
+  if (siteError) {
+    console.error('projects/editor: the safety net could not read the site', { code: siteError.code })
+    return 'unread' as const
+  }
   return (site as { id: string; url: string; ghost_version: string | null } | null) ?? null
 }
 
-export async function addSafetyToken(projectId: string, token: string): Promise<SafetyAnswer> {
-  if (!isUuid(projectId) || typeof token !== 'string' || token.length > CONNECT_MAX) return { refused: tokenRefusal({ code: 'token_malformed' }, '') }
+export async function addSafetyToken(projectId: string, siteId: string, token: string): Promise<SafetyAnswer> {
+  if (!isUuid(projectId) || !isUuid(siteId) || typeof token !== 'string' || token.length > CONNECT_MAX) return { refused: tokenRefusal({ code: 'token_malformed' }, '') }
   const { user, supabase } = await quietSession()
   if (!user) return { refused: DEPLOY_WORDS.infrastructure }
-  const site = await linkedSite(supabase, projectId)
+  const site = await linkedSite(supabase, projectId, siteId)
+  if (site === 'unread') return { refused: DEPLOY_WORDS.infrastructure }
   if (site === null) return { refused: SWITCH_WORDS.gone }
   const answer = await addStaffToken({
     siteId: site.id, userId: user.id, url: site.url, version: site.ghost_version, token, route: TOKEN_ROUTE,
@@ -287,12 +295,12 @@ export async function addSafetyToken(projectId: string, token: string): Promise<
   return { refused: tokenRefusal(answer, hostOf(site.url)) }
 }
 
-export async function declineSafetyNet(projectId: string): Promise<{ ok: boolean }> {
-  if (!isUuid(projectId)) return { ok: false }
+export async function declineSafetyNet(projectId: string, siteId: string): Promise<{ ok: boolean }> {
+  if (!isUuid(projectId) || !isUuid(siteId)) return { ok: false }
   const { user, supabase } = await quietSession()
   if (!user) return { ok: false }
-  const site = await linkedSite(supabase, projectId)
-  if (site === null) return { ok: false }
+  const site = await linkedSite(supabase, projectId, siteId)
+  if (site === null || site === 'unread') return { ok: false }
   const { data, error } = await supabaseAdmin()
     .from('sites')
     .update({ staff_token_declined_at: new Date().toISOString() })

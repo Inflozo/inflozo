@@ -386,6 +386,13 @@
 // true, and `private.credential_audit` (the pooler) holds ONE `admin_read` ok row for the check and one staff `credential_change`
 // in; then Disconnect, after which `credentials_present` is all false. Every artefact a Pre-flight stored is removed from the
 // bucket, both accounts are deleted, and users and projects are counted back. Keys are read in-process by name, never printed.
+// Story 7.19's Review adds: D1b's picture waited for until it has loaded (it is preloaded once the step is offered); in (b) a
+// binding of ANOTHER of F's projects (F on Pro through the service key, a second project seeded) planted on the site — Run
+// checks with four steps — then removed, offered again (FR-J13 per site, at the query); in (c) Manage keys' token box on
+// S11e's full page refusing the integration's Admin API key with `token_integration` and ONE `admin_read` row on `sites/keys`
+// (R-280's second surface on the real stack), and after Add token a reload opening on Run checks (`credentials_present`, read
+// by the editor); and (d) F's captured Not now replayed under G's session writing nothing on F's site, the same replay under
+// F's own recording it (the service-role write's tenant guard, with its control).
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -12892,6 +12899,7 @@ async function main() {
       const projects116 = { F: null, G: null }
       let siteF116 = null
       let siteG116 = null
+      let declineReq116 = null
       const ctxs116 = []
       const csp116 = []
 
@@ -12952,6 +12960,12 @@ async function main() {
         if (!id) return
         await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
       }, `${PREFIX}/projects/${P}/lock`).catch(() => {})
+      /** Story 7.19's review — a captured server action sent again under another context's cookies (104j's replay) */
+      const replay116 = async (p, c) => {
+        const headers = Object.fromEntries(Object.entries(c.headers).filter(([k]) => !/^(cookie|content-length|host)$/i.test(k)))
+        const r = await p.context().request.post(c.url, { headers: { ...headers, origin: new URL(c.url).origin }, data: c.body, maxRedirects: 0 })
+        return { status: r.status() }
+      }
       /** a Pre-flight the step started, at rest (AD-11's budget at most) — so nothing is still writing when the step cleans up */
       const rested116 = (P) => until116(() => jobsOf116(P), (js) => js.every((j) => !['queued', 'compiling', 'checking'].includes(j.stage)), 330000)
 
@@ -12976,7 +12990,8 @@ async function main() {
         const d0 = await openShip116(pf)
         check(`step 116a — a first deploy: Destination offers "${W116.next}" (no Run checks) and the rail reads ${FIVE116.join(' · ')}`,
           d0?.next === true && d0.run === false && JSON.stringify(labels116(d0.rail)) === JSON.stringify(FIVE116), JSON.stringify(d0))
-        const d1 = await toOffer116(pf)
+        await toOffer116(pf)
+        const d1 = await until116(() => wiz116(pf), (w) => w?.at === 'safety' && w.img?.loaded === true, 15000)
         check(`step 116a — Next opens D1b at 700: "${SN116.title}", the token box focused, the disclosure in KEYS.staff.full's words, Safety net current at 2, and the owner's picture served`,
           d1?.at === 'safety' && d1.focused === 'deploy-token' && d1.full === CR116.KEYS.staff.full && d1.rail[1] === `2${SN116.rail}` && d1.img?.loaded === true && d1.img.src === DEP116.SAFETY_PICTURE.src && Math.round(d1.width) === 700,
           JSON.stringify(d1))
@@ -12984,12 +12999,22 @@ async function main() {
         const d2 = await until116(() => wiz116(pf), (w) => w?.at === 'destination', 10000)
         check('step 116a — Back is Destination, with Next focused', d2?.at === 'destination' && d2.focused === 'deploy-next', JSON.stringify(d2))
         await toOffer116(pf)
+        // the decline's own request, CAPTURED as it leaves (its body is the project and the site D1b named) — 116d replays it
+        const onDecline116 = (r) => {
+          if (declineReq116 !== null || r.method() !== 'POST' || !r.headers()['next-action']) return
+          try {
+            const args = JSON.parse(r.postData() ?? '')
+            if (Array.isArray(args) && args.length === 2 && args[0] === projects116.F && args[1] === siteF116) declineReq116 = { url: r.url(), headers: r.headers(), body: r.postData() }
+          } catch {}
+        }
+        pf.on('request', onDecline116)
         await pf.locator('#deploy-not-now').click()
         const d3 = await until116(() => wiz116(pf), (w) => w?.title === SN116.declinedTitle, 10000)
         const declined116 = await until116(() => siteRow116(siteF116), (r) => typeof r?.staff_token_declined_at === 'string', 20000)
         check(`step 116a — Not now opens D1c at once on Continue — "${SN116.declinedTitle}", its three losses — and the decline is stored on the SITE before Continue is pressed (staff_token_declined_at set)`,
           d3?.focused === 'deploy-continue' && JSON.stringify(d3.lost) === JSON.stringify(SN116.lost) && typeof declined116?.staff_token_declined_at === 'string',
           JSON.stringify({ d3, declined: declined116?.staff_token_declined_at ?? null }))
+        pf.off('request', onDecline116)
         await pf.locator('#deploy-continue').click()
         const d4 = await until116(() => wiz116(pf), (w) => w?.at === 'check', 20000)
         const jobF = await until116(() => jobsOf116(projects116.F), (js) => js.length === 1, 20000)
@@ -13015,6 +13040,28 @@ async function main() {
         await openShip116(pf)
         const b0 = await toOffer116(pf)
         check('step 116b — the control: with the decline gone the Safety net is offered again', b0?.at === 'safety', JSON.stringify(b0))
+        // Story 7.19's review — FR-J13's "first deploy to a SITE" read at the query: a binding of ANOTHER of F's projects (Pro
+        // through the service key, so F may hold two; a second project seeded; its binding planted) means the site has been
+        // shipped to, so this project's Ship it says Run checks — and with the binding removed it is offered again (the control)
+        await pf.keyboard.press('Escape')
+        const pro116 = await call('/rest/v1', `/entitlements?user_id=eq.${ids116.F}`, { method: 'PATCH', body: JSON.stringify({ state: 'pro_active' }) })
+        const otherF116 = (await seed({ email: emailF, name: `Walk 116 B ${stamp}` }))?.id ?? null
+        const bound116 = UUID.test(otherF116 ?? '')
+          ? await call('/rest/v1', '/project_site_bindings', { method: 'POST', body: JSON.stringify({ project_id: otherF116, user_id: ids116.F, site_id: siteF116, theme_name: `inflozo-walk-116-${stamp}` }) }) : null
+        await pf.reload({ waitUntil: 'load' })
+        await painted116(pf, 'home')
+        const bb = await openShip116(pf)
+        check('step 116b — a first deploy is per SITE (FR-J13): another of F\'s projects bound to the site, and this project\'s Ship it says Run checks with four steps',
+          [200, 204].includes(pro116.status) && [200, 201].includes(bound116?.status) && bb?.run === true && bb.next === false && JSON.stringify(labels116(bb.rail)) === JSON.stringify(FOUR116),
+          JSON.stringify({ pro: pro116.status, bound: bound116?.status ?? null, bb }))
+        await pf.keyboard.press('Escape')
+        const unbound116 = UUID.test(otherF116 ?? '') ? await call('/rest/v1', `/project_site_bindings?project_id=eq.${otherF116}&site_id=eq.${siteF116}`, { method: 'DELETE' }) : null
+        await pf.reload({ waitUntil: 'load' })
+        await painted116(pf, 'home')
+        await openShip116(pf)
+        const bc = await toOffer116(pf)
+        check('step 116b — …and with that binding removed, offered again (the control: the binding was the only cause)',
+          [200, 204].includes(unbound116?.status) && (await bindings116(siteF116)).length === 0 && bc?.at === 'safety', JSON.stringify({ unbound: unbound116?.status ?? null, at: bc?.at ?? null }))
         await addToken116(pf, 'hello')
         const b1 = await until116(() => wiz116(pf), (w) => w?.error !== null, 20000)
         check(`step 116b — Add token with "hello": "${CR116.connectMessage('token_malformed')}" under the box, and no step change`,
@@ -13056,6 +13103,19 @@ async function main() {
         check(`step 116c — T1 connected through the wizard (its keys checked with GETs) and a project linked to ${HOST116}, with no Staff Access Token`,
           UUID.test(projects116.G ?? '') && CR116.hostOf(rowG0?.url ?? '') === HOST116 && rowG0.credentials_present?.staff === false && rowG0.disconnected_at === null, JSON.stringify({ projects: projsG.length, keys: rowG0?.credentials_present }))
         if (siteG116 === null) throw new Error('step 116: T1 did not connect')
+        // Story 7.19's review — R-280 IN MANAGE KEYS, on the real screen (S11e's full page): the integration's own Admin API key
+        // pasted in the token box is asked of Ghost and refused by its 404, the sentence under the token box, nothing stored
+        await pg.goto(at(CR116.keysPath(siteG116)), { waitUntil: 'load' })
+        const staffBox116 = pg.locator('#keys-staff')
+        await staffBox116.waitFor({ state: 'visible', timeout: 30000 })
+        await staffBox116.fill(ENV116.GHOST6_ADMIN_API_KEY)
+        await pg.locator('form:has(#keys-staff) button[type="submit"]').click()
+        const keysErr116 = pg.locator('#keys-staff-error')
+        const keysSaid116 = await keysErr116.waitFor({ state: 'visible', timeout: 45000 }).then(() => keysErr116.textContent(), () => null)
+        const rowGk = await siteRow116(siteG116)
+        check(`step 116c — Manage keys runs the same check (R-280): the integration's Admin API key pasted as the token says "${CR116.connectMessage('token_integration')}" under the token box, and nothing is stored`,
+          keysSaid116 === CR116.connectMessage('token_integration') && rowGk?.credentials_present?.staff === false,
+          scrub116(JSON.stringify({ said: keysSaid116, keys: rowGk?.credentials_present ?? null, search: new URL(pg.url()).search })))
         await pg.goto(at(`/projects/${projects116.G}`), { waitUntil: 'load' })
         await painted116(pg, 'home')
         await openShip116(pg)
@@ -13066,10 +13126,12 @@ async function main() {
         check('step 116c — Add token with T1\'s own staff token: Ghost answers the Owner or an Administrator, the checks start (Pre-flight) with Safety net ticked, and credentials_present.staff is true',
           c1?.at === 'check' && c1.rail[1] === SN116.rail && rowG1?.credentials_present?.staff === true, scrub116(JSON.stringify({ c1, keys: rowG1?.credentials_present })))
         let audit116 = null
+        let keysAudit116 = null
         process.env.SUPABASE_DB_POOLER_URL = ENV116.SUPABASE_DB_POOLER_URL
         try {
           const DB116 = await imp116('apps/web/server/ghost-admin/db.ts')
           audit116 = await DB116.sql()`select action, outcome, allowlist_item, detail from private.credential_audit where site_id = ${siteG116} and route = 'projects/editor/safety-token' order by occurred_at, id`
+          keysAudit116 = await DB116.sql()`select action, outcome, detail from private.credential_audit where site_id = ${siteG116} and route = 'sites/keys' order by occurred_at, id`
           await DB116.sql().end({ timeout: 5 }).catch(() => {})
         } finally {
           delete process.env.SUPABASE_DB_POOLER_URL
@@ -13080,7 +13142,18 @@ async function main() {
           audit116 !== null && reads116.length === 1 && reads116[0].outcome === 'ok' && reads116[0].allowlist_item === null && reads116[0].detail?.status === 200 &&
           changes116.length === 1 && changes116[0].detail?.kind === 'staff' && changes116[0].detail?.direction === 'in' && audit116.length === 2,
           JSON.stringify((audit116 ?? []).map((r) => ({ action: r.action, outcome: r.outcome, item: r.allowlist_item, status: r.detail?.status ?? null, kind: r.detail?.kind ?? null }))))
+        check('step 116c — …and Manage keys\' refusal on its own route: ONE admin_read row (Ghost\'s 404), no credential_change — Ghost was asked, nothing was kept',
+          keysAudit116 !== null && keysAudit116.length === 1 && keysAudit116[0].action === 'admin_read' && keysAudit116[0].outcome !== 'ok' && keysAudit116[0].detail?.status === 404,
+          JSON.stringify((keysAudit116 ?? []).map((r) => ({ action: r.action, outcome: r.outcome, status: r.detail?.status ?? null }))))
         await rested116(projects116.G)
+        await pg.keyboard.press('Escape')
+        await until116(() => wiz116(pg), (w) => w === null, 10000)
+        // Story 7.19's review — the stored token, read by the editor (`credentials_present`): reloaded, no Safety net
+        await pg.reload({ waitUntil: 'load' })
+        await painted116(pg, 'home')
+        const c2 = await openShip116(pg)
+        check(`step 116c — reloaded: the stored token skips the Safety net — "${W116.runChecks}" and four steps (credentials_present.staff, the server's truth)`,
+          c2?.run === true && c2.next === false && JSON.stringify(labels116(c2.rail)) === JSON.stringify(FOUR116), JSON.stringify(c2))
         await pg.keyboard.press('Escape')
         await handBack116(pg, projects116.G)
         await pg.goto(at(`/sites/disconnect?site=${siteG116}`), { waitUntil: 'load' })
@@ -13091,6 +13164,20 @@ async function main() {
         check(`step 116c — "${CR116.DISCONNECT.menu}" through /sites/disconnect: disconnected_at set and credentials_present all false — the token went with the keys`,
           gone116?.disconnected_at != null && gone116.credentials_present?.admin === false && gone116.credentials_present?.content === false && gone116.credentials_present?.staff === false,
           JSON.stringify({ gone: gone116?.disconnected_at ?? null, keys: gone116?.credentials_present ?? null }))
+
+        // ── 116d (Story 7.19's review) — the decline is a SERVICE-ROLE write, so its one guard is the caller's own read: F's Not now,
+        //    replayed under G's session, writes nothing on F's site; the same replay under F's own session records it (the control,
+        //    so G's nothing is RLS answering, never a replay that could not have worked). F's site reconnected through the service key
+        //    first (116b disconnected it), with no decline on it ──
+        const back116 = await call('/rest/v1', `/sites?id=eq.${siteF116}`, { method: 'PATCH', body: JSON.stringify({ disconnected_at: null, staff_token_declined_at: null }) })
+        const asG116 = declineReq116 === null ? null : await replay116(pg, declineReq116)
+        await new Promise((r) => setTimeout(r, 1500))
+        const afterG116 = await siteRow116(siteF116)
+        const asF116 = declineReq116 === null ? null : await replay116(pf, declineReq116)
+        const afterF116 = await until116(() => siteRow116(siteF116), (r) => typeof r?.staff_token_declined_at === 'string', 15000)
+        check('step 116d — F\'s Not now replayed under G\'s session leaves F\'s site undeclined; under F\'s own session it records the decline (the control)',
+          declineReq116 !== null && [200, 204].includes(back116.status) && afterG116?.staff_token_declined_at === null && typeof afterF116?.staff_token_declined_at === 'string',
+          JSON.stringify({ captured: declineReq116 !== null, back: back116.status, asG: asG116?.status ?? null, afterG: afterG116?.staff_token_declined_at ?? null, asF: asF116?.status ?? null, afterF: afterF116?.staff_token_declined_at ?? null }))
       } catch (e) {
         check('step 116 — the step ran to its end', false, scrub116(String(e?.message ?? e).split('\n')[0]))
       } finally {

@@ -116,6 +116,10 @@ export function TextInput({
         name={name}
         type={type}
         autoComplete={autoComplete}
+        // a mono field holds a key, a token, a URL or a code — never prose: no spellcheck (Chrome's enhanced one sends what is
+        // typed to Google, and a Staff Access Token is a full-Administrator credential) and no capital (Story 7.19's review)
+        spellCheck={mono ? false : undefined}
+        autoCapitalize={mono ? 'off' : undefined}
         onChange={onChange}
         onKeyDown={onKeyDown}
         onBlur={onBlur}

@@ -10033,6 +10033,17 @@ const FIRST = { 'x-inflozo-harness-ship': 'first' }
 /** a well-formed token (`id:hex`), so only the harness's Ghost decides */
 const TOKEN = `6512a1b2c3d4e5f60718293a:${'ab'.repeat(32)}`
 const railOf = (steps) => steps.map((s, i) => new RegExp(`^${i + 1}\\s*${s.label}$`))
+/** the decline's action on the wire: its body is the project and the site D1b named — the editor's re-read sends the project
+ *  alone, and Add token the token too (Story 7.19's review: counted by its own shape, never by the press's timing) */
+const isDecline = (req) => {
+  if (req.method() !== 'POST' || !req.headers()['next-action']) return false
+  try {
+    const args = JSON.parse(req.postData() ?? '')
+    return Array.isArray(args) && args.length === 2 && args[0] === HARNESS_PROJECT_ID
+  } catch {
+    return false
+  }
+}
 /** Destination → Next → D1b, from the keyboard, its token box focused */
 async function toOffer(page) {
   const next = page.locator('#deploy-next')
@@ -10084,11 +10095,9 @@ test('7.19 · (a) a first deploy: Destination says Next and the rail reads Desti
 test('7.19 · (b) Not now opens D1c on Continue — the three losses, once — and records the decline at once; Continue starts the checks with Safety net ticked at 2; a reopen in the same page says Run checks with four steps', async ({ page }) => {
   await page.setExtraHTTPHeaders(FIRST)
   const sent = await plantDeploy(page, { preflight: PREFLIGHT })
-  // the decline's action: the project id alone in its body (the editor's re-read sends the same, so it is counted from the press)
   let declines = 0
   await page.route((url) => url.pathname.startsWith(HARNESS), (route) => {
-    const req = route.request()
-    if (req.method() === 'POST' && req.headers()['next-action'] && req.postData() === JSON.stringify([HARNESS_PROJECT_ID])) declines++
+    if (isDecline(route.request())) declines++
     return route.fallback()
   })
   await open(page)
@@ -10123,6 +10132,18 @@ test('7.19 · (b) Not now opens D1c on Continue — the three losses, once — a
 test('7.19 · (b2) Not now whose record does not land: D1c still shows on Continue, and Continue still starts the checks — the deploy never waits on the safety net', async ({ page }) => {
   await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-decline': 'fail' })
   const sent = await plantDeploy(page, { preflight: PREFLIGHT })
+  // the decline HELD on the wire until the checks have started (Story 7.19's review): a wizard that awaited it would never
+  // reach D1c, let alone the checks, while it is held — the answer it then gets is the write that did not land
+  let held = 0
+  let release
+  const hold = new Promise((r) => { release = r })
+  await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+    if (isDecline(route.request())) {
+      held++
+      await hold
+    }
+    return route.fallback()
+  })
   await open(page)
   await openWizard(page)
   await toOffer(page)
@@ -10130,9 +10151,11 @@ test('7.19 · (b2) Not now whose record does not land: D1c still shows on Contin
   await page.keyboard.press('Enter')
   await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.declinedTitle)
   await expect(page.locator('#deploy-continue')).toBeFocused()
+  await expect.poll(() => held, { message: 'the decline was sent, and is held' }).toBe(1)
   await page.keyboard.press('Enter')
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
   expect(sent.map((b) => b.intent)).toEqual(['preflight'])
+  release()
 })
 
 test('7.19 · (c) Add token: an Editor\'s, an unknown and an integration\'s each say their ruled sentence under the box, with no step change; an Administrator\'s says "Adding…", then the checks start', async ({ page }) => {
@@ -10149,6 +10172,8 @@ test('7.19 · (c) Add token: an Editor\'s, an unknown and an integration\'s each
   await openWizard(page)
   await toOffer(page)
   await page.keyboard.insertText(TOKEN)
+  // a credential is never spell-checked (Chrome's enhanced check sends what is typed away) — the Kit's mono field's rule
+  await expect(page.locator('#deploy-token')).toHaveAttribute('spellcheck', 'false')
   const error = page.locator('#deploy-token-error')
   await expect(error, 'the control: no sentence before a press').toHaveCount(0)
   for (const [answer, words] of [
@@ -10202,4 +10227,62 @@ test('7.19 · (d) Manage keys: a refused token says the same ruled sentence unde
   // the row still says the safety-net copy starts from then on, and the disclosure is the one sentence
   await expect(page.getByText(CONNECT.KEYS.staff.forward)).toBeVisible()
   await expect(page.getByText(CONNECT.KEYS.staff.enables, { exact: false })).toBeVisible()
+})
+
+test('7.19 · (e) back to Destination from the Safety net (the review): Continue says "Starting…" while the checks start; a cancelled check lands on Run checks, never D1c again; and a kept token whose checks are refused lands on Run checks with the reason', async ({ page }) => {
+  await page.setExtraHTTPHeaders(FIRST)
+  const checking = viewOf('checking', { compiling: TIMED.compiling, checking: { at: AT } })
+  const sent = await plantDeploy(page, { preflight: [PREFLIGHT[0], checking], cancel: [checking, viewOf('cancelled', { compiling: TIMED.compiling, checking: { at: AT } }, { deploy: null })] })
+  // the Pre-flight's POST held on the wire (registered after plantDeploy's, so it is asked first), so "Starting…" is on screen
+  let release
+  let hold = new Promise((r) => { release = r })
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), async (route) => {
+    if (route.request().method() === 'POST' && hold) await hold
+    return route.fallback()
+  })
+  await open(page)
+  await openWizard(page)
+  await toOffer(page)
+  await page.locator('#deploy-not-now').focus()
+  await page.keyboard.press('Enter')
+  const go = page.locator('#deploy-continue')
+  await expect(go).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(go).toHaveAccessibleName(DW.starting)
+  await expect(go).toHaveAttribute('aria-busy', 'true')
+  await expect(go).toHaveAttribute('aria-disabled', 'true')
+  hold = null
+  release()
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  const cancel = page.locator('#deploy-cancel')
+  await cancel.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination', { timeout: 15_000 })
+  expect(sent.map((b) => b.intent)).toEqual(['preflight', 'cancel'])
+  // the safety net was answered in this mount: Run checks, D1c not again, and the rail keeps Safety net ticked
+  await expect(page.locator('#deploy-run')).toBeVisible()
+  await expect(page.locator('#deploy-next')).toHaveCount(0)
+  await expect(wizard(page).locator('#deploy-title')).not.toHaveText(SN.declinedTitle)
+  await expect(wizard(page).locator('ol li').nth(1)).toHaveText(/^Safety net$/)
+  await page.keyboard.press('Escape')
+  await expect(wizard(page)).toHaveCount(0)
+
+  // a kept token whose checks are then refused (an edit the flush could not send): Destination, Run checks focused, the reason
+  await page.setExtraHTTPHeaders({ ...FIRST, 'x-inflozo-harness-token': 'ok' })
+  await page.route('**/sync', (route) => route.fulfill({ status: 503, body: '' }))
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).page.length).toBe(own.length + 1)
+  await openWizard(page)
+  await toOffer(page)
+  await page.keyboard.insertText(TOKEN)
+  await page.locator('#deploy-add-token').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-refused')).toHaveText(DW.editsUnsent, { timeout: 20_000 })
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
+  await expect(page.locator('#deploy-run')).toBeFocused()
+  await expect(page.locator('#deploy-next')).toHaveCount(0)
+  expect(sent.map((b) => b.intent), 'nothing more was started').toEqual(['preflight', 'cancel'])
 })

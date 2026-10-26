@@ -56,7 +56,8 @@ export async function harnessSwitch(projectId: string, siteId: string, session: 
  * the integration key's 404 `NotFoundError`, anything else the 401 of a token Ghost does not know. Each sentence is
  * `tokenRefusal`'s, the app's own. Only the harness project, and only where the harness exists at all.
  */
-export async function harnessAddToken(projectId: string, token: string): Promise<SafetyAnswer> {
+export async function harnessAddToken(projectId: string, siteId: string, token: string): Promise<SafetyAnswer> {
+  void siteId
   if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof token !== 'string') return { refused: DEPLOY_WORDS.infrastructure }
   const asked = (await headers()).get('x-inflozo-harness-token')
   const answer = (status: number, body: unknown) => {
@@ -78,7 +79,8 @@ export async function harnessAddToken(projectId: string, token: string): Promise
 /** STORY 7.19 — THE HARNESS'S `declineSafetyNet`: recorded, with nothing to write — or, under `x-inflozo-harness-decline: fail`,
  *  the write that did not land (`{ ok: false }`, as the real action answers one), so a journey holds that the deploy goes on.
  *  Only the harness project. */
-export async function harnessDecline(projectId: string): Promise<{ ok: boolean }> {
+export async function harnessDecline(projectId: string, siteId: string): Promise<{ ok: boolean }> {
+  void siteId
   if ((await headers()).get('x-inflozo-harness-decline') === 'fail') return { ok: false }
   return { ok: HARNESS && projectId === HARNESS_PROJECT.id }
 }

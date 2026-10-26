@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useActionState, useEffect, useRef, useState, type ReactNode } from 'react'
+import { preload } from 'react-dom'
 import { nodeOf, unlistedPosts, type ListedPost, type RoutesConfig } from '@inflozo/section-runtime/routes'
 import type { Finding } from '@inflozo/theme-compiler/gate'
 import { verifyRoutesAction } from '@/app/(app)/app/(authed)/sites/actions'
@@ -171,7 +172,6 @@ function StageRow({ tone, label, meta, chip, id }: { tone: Tone; label: ReactNod
  *  steps mint-ticked, the current one coral — or red where it failed, green once Live — and the rest dimmed; D2e/D2f's Live is
  *  not reached (`waiting`). An ANSWERED Safety net stays ticked, back on Destination too (`answered`) */
 function Rail({ at, state, steps, answered = false }: { at: Step; state: 'current' | 'failed' | 'live' | 'waiting'; steps: readonly RailStep[]; answered?: boolean }) {
-  const STEPS = steps
   const c = stepNumber(at, steps) - 1
   const long = steps.length > stepsFor(false).length
   const tick = (stroke: string) => (
@@ -181,7 +181,7 @@ function Rail({ at, state, steps, answered = false }: { at: Step; state: 'curren
   )
   return (
     <ol className="m-0 flex list-none items-center gap-2 p-0">
-      {STEPS.map((s, i) => {
+      {steps.map((s, i) => {
         const done = i < c || (i === c && state === 'live') || (s.id === 'safety' && answered && i !== c)
         const now = i === c && state !== 'waiting'
         const round = 'inline-flex size-[18px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold leading-none'
@@ -195,14 +195,14 @@ function Rail({ at, state, steps, answered = false }: { at: Step; state: 'curren
           ? `font-semibold ${state === 'failed' ? 'text-danger-text' : state === 'live' ? 'text-mint-text' : 'text-ink'}`
           : 'font-medium text-ink-soft'
         return (
-          <li key={s.id} aria-current={i === c ? 'step' : undefined} className={`flex items-center gap-2 ${i < STEPS.length - 1 ? 'flex-1' : ''}`}>
+          <li key={s.id} aria-current={i === c ? 'step' : undefined} className={`flex items-center gap-2 ${i < steps.length - 1 ? 'flex-1' : ''}`}>
             <span className={`inline-flex shrink-0 items-center gap-[6px] ${!done && !now ? 'opacity-55' : ''}`}>
               {disc}
               {/* STORY 7.19 (extrapolated — no frame draws the longer rail narrow): below `tablet` a rail longer than an
                   ordinary deploy's names its current step alone, the others their discs, so the five never run off the card */}
               <span className={`whitespace-nowrap text-[11px] leading-none ${words} ${long && i !== c ? 'max-tablet:sr-only' : ''}`}>{s.label}</span>
             </span>
-            {i < STEPS.length - 1 ? <span aria-hidden className={`h-px flex-1 ${long ? 'min-w-[10px]' : ''} ${i < c ? 'bg-mint/40' : 'bg-line'}`} /> : null}
+            {i < steps.length - 1 ? <span aria-hidden className={`h-px flex-1 ${long ? 'min-w-[10px]' : ''} ${i < c ? 'bg-mint/40' : 'bg-line'}`} /> : null}
           </li>
         )
       })}
@@ -321,10 +321,11 @@ export function DeployWizard({
   answered: string | null
   /** …and the answer, told to the editor */
   onAnswered: (siteId: string) => void
-  /** STORY 7.19 — Add token (`addSafetyToken`): ok, or the one sentence for why the token was not kept (R-280) */
-  addToken: (token: string) => Promise<{ ok: true } | { refused: string }>
-  /** STORY 7.19 — Not now (`declineSafetyNet`): recorded on the site, never awaited by the deploy */
-  decline: () => Promise<{ ok: boolean }>
+  /** STORY 7.19 — Add token (`addSafetyToken`): ok, or the one sentence for why the token was not kept (R-280). The site is
+   *  the one D1b names: the action refuses should the project's link have moved since (Story 7.19's review) */
+  addToken: (siteId: string, token: string) => Promise<{ ok: true } | { refused: string }>
+  /** STORY 7.19 — Not now (`declineSafetyNet`): recorded on the site D1b named, never awaited by the deploy */
+  decline: (siteId: string) => Promise<{ ok: boolean }>
   /** the wizard closed; `shipped` when a job reached its ending, so the bar re-reads its label and versions */
   onClose: (shipped: boolean) => void
 }) {
@@ -361,6 +362,8 @@ export function DeployWizard({
   /** STORY 7.19 — the first deploy's Safety net (D1b/D1c), FIXED AT MOUNT: offered by the server's truth (`safetyOffered`) unless
    *  this page already answered it for the site — so a step answered in this mount stays on the rail, ticked, all session */
   const [safety] = useState(() => safetyOffered(ship) && (site === null || answered !== site.id))
+  // …and D1b's picture asked for at once, so it is there when Next is pressed rather than arriving after (Story 7.19's review)
+  if (safety) preload(SAFETY_PICTURE.src, { as: 'image' })
   const steps = stepsFor(safety)
   /** …answered in this mount (Add token kept, or Not now): Destination then shows Run checks again (a cancelled job's way back
    *  included), and the rail keeps Safety net ticked */
@@ -548,16 +551,17 @@ export function DeployWizard({
     setAdding(true)
     setTokenRefused(null)
     setRefused(null)
-    const answer = await addToken(token).catch(() => ({ refused: W.infrastructure }))
+    const answer = await addToken(site.id, token).catch(() => ({ refused: W.infrastructure }))
+    // a kept token is told to the editor even when the wizard closed meanwhile: a reopen in this page must not ask again
+    if ('ok' in answer) onAnswered(site.id)
     if (!alive.current) return
     setAdding(false)
     if (!('ok' in answer)) {
+      // said by the box's own alert (the Kit's error slot), so not again in the polite region
       setTokenRefused(answer.refused)
-      say(answer.refused)
       return
     }
     setSafeAnswered(true)
-    onAnswered(site.id)
     setToken('')
     if (!(await runChecks()) && alive.current) setLocal('destination')
   }
@@ -568,7 +572,7 @@ export function DeployWizard({
     setLocal('declined')
     setSafeAnswered(true)
     onAnswered(site.id)
-    void decline().catch(() => undefined)
+    void decline(site.id).catch(() => undefined)
   }
   // focus as each view arrives: D1b on its token box, D1c on Continue, and Back's Destination on Next — and D1b's and D1c's
   // headings said in the polite region, since focus lands on a control and not on the words that changed (UX-DR12)
@@ -1320,18 +1324,29 @@ export function DeployWizard({
           />
           <p className="text-helper-caption leading-[1.55] text-ink-soft">{SN.note(host)}</p>
         </div>
-        {/* R-279: the owner's own screenshot, drawn from its bottom — the Staff access token box and the field above it */}
+        {/* R-279: the owner's own screenshot, drawn from its bottom — the Staff access token box and the field above it. At most
+            280 wide below `tablet` too, so the slot crops what D1b's does (wider, it showed the buttons alone) */}
         <img
           src={SAFETY_PICTURE.src}
           width={SAFETY_PICTURE.width}
           height={SAFETY_PICTURE.height}
           alt={SN.alt}
-          className="h-[150px] w-full shrink-0 rounded-[10px] object-cover object-bottom tablet:w-[280px]"
+          className="h-[150px] w-full max-w-[280px] shrink-0 rounded-[10px] object-cover object-bottom tablet:w-[280px]"
         />
       </div>
       <div className="flex flex-col gap-[6px]">
         <div className="flex items-center gap-3">
-          <Button id="deploy-safety-back" variant="ghost" size={38} weight="font-medium" className="px-[14px] text-[13px]" onClick={() => setLocal('destination')}>
+          <Button
+            id="deploy-safety-back"
+            variant="ghost"
+            size={38}
+            weight="font-medium"
+            className="px-[14px] text-[13px]"
+            aria-disabled={adding || pressed === 'start' || undefined}
+            onClick={() => {
+              if (!adding && pressed === null) setLocal('destination')
+            }}
+          >
             {SN.back}
           </Button>
           <div className="ml-auto flex gap-[10px]">
@@ -1350,7 +1365,6 @@ export function DeployWizard({
             </Button>
           </div>
         </div>
-        {refused === null ? null : footerCaption('deploy-refused', refused)}
       </div>
     </div>
   )
@@ -1386,7 +1400,7 @@ export function DeployWizard({
             id="deploy-continue"
             variant="primary"
             size={42}
-            className="ml-auto px-6"
+            className="ml-auto"
             aria-disabled={pressed === 'start' || undefined}
             aria-busy={pressed === 'start' || undefined}
             aria-describedby={refused === null ? undefined : 'deploy-refused'}

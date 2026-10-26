@@ -9839,6 +9839,9 @@ refusal no retry cures, in the owner's words if a new sentence is needed (DW-383
 refused and logged as a 502 every 15 s (DW-385)
 **And** *(the same)* a first opener whose save goes out before its first lock answer and meets the sync route's 423 never
 rewrites the shared on-device record its holder keeps — the journal emptied in memory, as `land()` does (DW-386)
+**And** *(given an owner by Story 7.19's Review, 2026-10-26)* Manage keys says a save's failures that are ours in the
+Safety net's words — an unreachable site by its address, a store that will not answer as `keys_failed`, a site disconnected
+mid-save landing as `keysGone` does — for all three keys alike (DW-388)
 **Owner test:** none. · **Verification:** a real restore drill on the production project (R-82).
 
 ### Story 15.6: G1 and G2, measured rather than asserted

@@ -6926,8 +6926,8 @@ function EditorShell({
           relinking={relinking}
           answered={answered}
           onAnswered={setAnswered}
-          addToken={(token) => addToken(project.id, token)}
-          decline={() => decline(project.id)}
+          addToken={(siteId, token) => addToken(project.id, siteId, token)}
+          decline={(siteId) => decline(project.id, siteId)}
           onClose={(shipped) => {
             // a relink's kept ask is spent: an editor the re-read did not remount (the harness) never reopens it later
             tabStore()?.removeItem(SHIP_AFTER)

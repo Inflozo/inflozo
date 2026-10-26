@@ -835,10 +835,11 @@ test.describe('7.18a · Ship it by pointer (1280 × 720)', () => {
 // ── Story 7.19 — D1b at the frame's two widths (`D1 First-Deploy Gates.dc.html:95-151`): at 1440 the card is 700 wide and the
 // picture sits beside the token box, its 280 × 150 slot; at 390 (a narrow desktop window — a fine pointer keeps the editor,
 // R-76) the picture stacks under the box and nothing scrolls sideways. `first` is the harness's first deploy (the Safety net
-// offered); D1c shares D1b's width.
-test.describe('7.19 · the Safety net at 1440 and 390', () => {
+// offered); D1c shares D1b's width. Story 7.19's review adds 820, just under `tablet`: the card is still 700 there, so a picture
+// as wide as the card cropped the box away — it stays at most 280 (D1b's own crop) at every width.
+test.describe('7.19 · the Safety net at 1440, 820 and 390', () => {
   test.use({ hasTouch: false, isMobile: false })
-  for (const width of [1440, 390]) {
+  for (const width of [1440, 820, 390]) {
     test(`D1b at ${width}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 })
       await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'first' })
@@ -870,6 +871,7 @@ test.describe('7.19 · the Safety net at 1440 and 390', () => {
       })
       expect(m.img.loaded, 'the picture is served on this host (`public/deploy/`, outside the proxy)').toBe(true)
       expect([m.img.fit, m.img.pos, m.img.height]).toEqual(['cover', '50% 100%', 150])
+      expect(m.img.width, 'D1b\'s 280 crop, never wider').toBeLessThanOrEqual(280)
       expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
       expect(m.right).toBeLessThanOrEqual(m.inner)
       expect(m.rail, 'the rail\'s five steps stay inside the card').toBeLessThanOrEqual(0.5)
@@ -880,7 +882,7 @@ test.describe('7.19 · the Safety net at 1440 and 390', () => {
         expect(m.img.left, 'the picture beside the box').toBeGreaterThan(m.input.right)
         expect(m.img.top).toBeLessThan(m.input.bottom)
       } else {
-        expect(m.content, 'held by the window').toBeLessThan(700)
+        if (width === 390) expect(m.content, 'held by the window').toBeLessThan(700)
         expect(m.img.top, 'the picture under the box').toBeGreaterThan(m.input.bottom)
       }
       // the control: Destination keeps S8's 520
