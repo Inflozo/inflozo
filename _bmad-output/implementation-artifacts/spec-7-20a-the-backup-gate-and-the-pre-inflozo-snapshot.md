@@ -12,9 +12,9 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.m
 ## In plain English
 
 After this story, the first time you ship to a Ghost site the deploy wizard adds a **Backup** step. It tells you plainly
-that Inflozo only ever writes your theme and `routes.yaml`, lists the seven things worth backing up (with a one-tick
-shortcut for self-hosted sites and Download buttons for your theme and routes file), and keeps **Run checks** off until you
-confirm you hold your own copy. Then, the moment before Inflozo uploads its first theme to that site, it quietly saves a
+that Inflozo only ever writes your theme and `routes.yaml`, gently recommends (never requires) a backup of the rest of
+your site from Ghost Admin, asks you to keep a copy of just those two files (with a Download button for each), and keeps
+**Run checks** off until you confirm you have them. Then, the moment before Inflozo uploads its first theme to that site, it quietly saves a
 copy of the theme that is live there now — you see "Archiving your current theme first" for a few seconds — and if it
 cannot (no Staff Access Token, or Ghost refuses), it tells you why and lets you add the token, ship without the copy, or
 cancel.
@@ -27,6 +27,19 @@ cancel.
 Backup step and the snapshot taken at a site's first upload. Restore-to-original moved word for word to Story 7.23, which
 draws its button (D2a). FR-C6's 90-day orphan purge and DW-79 moved to Story 7.20b, straight after this one. `routes.yaml`
 is offered on every connected site. "Ruled values" in Design Notes is the one table the two rulings set.
+
+**Renegotiated by the owner after Dev (2026-10-26) — R-283, Questions 3 and 4. Where any line below still describes the
+seven rows, it is superseded by this paragraph.** The gate asks for **two rows only**: Theme and `routes.yaml`, the two
+things Inflozo writes. Each keeps its tick and its Download. Above them sits a friendly, optional piece of advice,
+"OPTIONAL, BUT RECOMMENDED". It names what Ghost Admin can download (content, members, redirects and post analytics) and
+links Ghost's help on exports. A lead-in line then introduces the two rows. The master confirm stays, reworded to the
+two files (Question 3, option 2). **Dropped:**
+- the `ghost backup` shortcut (D1d′);
+- the Ghost(Pro) sky block and its ink line (D1e);
+- the rows Content, Members, Redirects, "Images, files and media" and Database.
+
+Every host sees the same card; the sub line still names the host. The owner's reason: Inflozo changes nothing else, and a
+database dump or a server copy is too technical for the customer and must not be a hard gate.
 
 **Problem:**
 - **Nothing asks for the customer's own backup.** `BACKUP-GATE.md` and EXPERIENCE F7 specify a consent gate at step 3 of a
@@ -43,8 +56,7 @@ is offered on every connected site. "Ruled values" in Design Notes is the one ta
 - **A Backup step, D1d / D1d′ / D1e, after Safety net and before Check.** It shows while the site has no recorded
   confirmation (`sites.backup_confirmed_at`), so it is once per site. Disconnect clears the record, so a reconnect shows it
   again (F7).
-  - **The checklist:** seven rows, the `ghost backup` shortcut on a self-hosted site, Ghost(Pro)'s block in its place there,
-    and both shortcut and block on a host not yet known.
+  - **The checklist (R-283):** the optional advice, then two rows, Theme and `routes.yaml`, the same on every host.
   - **The master confirm:** greyed until the last row is ticked. When it becomes available, that is announced politely
     (UX-DR12). Run checks stays greyed until the master confirm is ticked.
   - **Downloads:** the Theme row offers one when a Staff Access Token is held. `routes.yaml` offers one on every connected
@@ -70,13 +82,14 @@ is offered on every connected site. "Ruled values" in Design Notes is the one ta
     - the rail is `:224-236`;
     - the title and sub line are `:239-240`;
     - the "What Inflozo writes" panel is `:243-246`, followed by the lead `:248`;
-    - the shortcut panel is `:250-260`, and the seven rows are `:262-342`;
+    - the shortcut panel is `:250-260` (**dropped, R-283**; the advice takes its place in the same panel vocabulary), and
+      the seven rows are `:262-342` (**only Theme `:262-283` and `routes.yaml` stay, R-283**);
     - a rule `:344` separates the rows from the master confirm `:346-349`;
     - the footer `:351-355` carries the reason, Back, and Run checks with its chevron.
-  - **D1d′** (the shortcut ticked), `:360-397`. The shortcut's box ticks in coral (`#C2381F` in the frame, a
+  - **D1d′** (the shortcut ticked), `:360-397` — **dropped with the shortcut (R-283).** The shortcut's box ticks in coral (`#C2381F` in the frame, a
     `coral-text`-family token in the product). Each row collapses to one line ending "in the archive", the master
     confirm turns live, and the reason reads "One confirmation left."
-  - **D1e** (Ghost(Pro)), `:399-533`:
+  - **D1e** (Ghost(Pro)), `:399-533` — **dropped (R-283): every host draws D1d's two rows.** As drawn:
     - the sky block `:430-436` and the ink line `:438` replace the shortcut;
     - Images has its Ghost(Pro) wording `:495-503`;
     - Database has no checkbox, a "—", and a grey "NOT YOURS TO TAKE" chip `:505-515`;
@@ -99,11 +112,10 @@ is offered on every connected site. "Ruled values" in Design Notes is the one ta
   - **Widths.** Backup is 780px, B12a and B12b are 600px, and every other step keeps its width. Below `tablet`, each
     row's Download stacks under its text, inside the wizard's `max-w-[calc(100vw-72px)]`.
   - **No ✕** on Backup, B12a or B12b, as on D1b.
-- **Ticks.** Each row and the shortcut is a native `<input type="checkbox">` inside its own `<label>`, drawn as the frame's
+- **Ticks.** Each row (and, before R-283, the shortcut) is a native `<input type="checkbox">` inside its own `<label>`, drawn as the frame's
   18px box. `link-picker.tsx:320-327` is the app's one precedent. The Kit gains no component, because one surface needs
   this.
-  - Ticking the shortcut covers every row. Unticking it returns each row to its own tick, so nothing the user ticked is
-    lost.
+  - *(Before R-283: ticking the shortcut covered every row. The shortcut is gone.)*
   - Unticking any row while the master confirm is ticked also unticks the master confirm.
 - **Greyed, never `disabled` (R-98, DESIGN.md:582-585).**
   - **The master confirm** is greyed while a row is owed. It gets `aria-disabled` and its reason through `greyedProps`
@@ -220,12 +232,11 @@ the job's site.
 | Rail, both owed | first deploy, no token, no decline, gate owed | Destination · Safety net · Backup · Check · Ship · Live; Next | — |
 | Rail, gate only | token stored, or a decline recorded; gate owed | Destination · Backup · Check · Ship · Live; Next | — |
 | Rail, neither | gate confirmed, Safety net not offered | the four steps; Run checks | a failed read of the site counts as owed |
-| Self-hosted | `hosted_by_ghost = false` | D1d: shortcut, seven tickable rows, "7 rows still to tick…" | — |
-| Ghost(Pro) | `true` | D1e: sky block and ink line, no shortcut, Database "NOT YOURS TO TAKE" with no box, "6 rows still to tick…" | — |
-| Unknown host | `null` | the sky block, then the shortcut; D1d's seven rows, all tickable; sub line is the host alone | — |
+| Self-hosted *(R-283)* | `hosted_by_ghost = false` | the optional advice, then two tickable rows, Theme and `routes.yaml`; "2 rows still to tick…"; sub line "Self-hosted Ghost · {host}" | — |
+| Ghost(Pro) *(R-283)* | `true` | the same card; sub line "Ghost(Pro) · {host}" | — |
+| Unknown host *(R-283)* | `null` | the same card; sub line is the host alone | — |
 | Partly ticked | some rows | the reason counts the rest; the master confirm and Run checks are greyed with their reasons; a press does nothing | — |
 | Last row ticked | — | the master confirm turns live; "Confirm available" said once, politely | — |
-| Shortcut ticked | self-hosted or unknown | D1d′: every row collapses to one ticked line ending "in the archive"; "One confirmation left." | unticking restores each row's own tick |
 | Row unticked after confirm | — | the master confirm unticks; Run checks greyed | — |
 | Confirmed, Run checks | — | the confirmation is written without waiting; the checks start; Backup ticked | a failed write is logged, and the gate shows again on a later open |
 | Back (Backup) | — | Destination, Next focused; ticks kept while the wizard stays mounted | — |
@@ -411,9 +422,9 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - the snapshot codes and their B12b bodies are in `deployError`'s table.
 - [x] `lib/backup-gate.ts` (**new**) -- the gate's pure rule. It is the one source the wizard, the harness and the tests
   read:
-  - `gateRows(host)` gives the seven rows (Database untickable on `ghost_pro`);
-  - `remaining(rows, ticks, shortcut)`, `confirmAvailable` and `reasonOf` give the footer;
-  - `blocksFor(host)` decides between the shortcut, the sky block, or both;
+  - `GATE_ROWS` gives the two rows, Theme and `routes.yaml`, on every host (R-283; `gateRows(host)` and seven rows before it);
+  - `remaining(rows, ticks)`, `confirmAvailable` and `reasonOf` give the footer;
+  - *(before R-283, `blocksFor(host)` chose the shortcut or the sky block; both are gone)*;
   - `HELP` holds the links.
 - [x] `server/snapshot.ts` (**new**) -- `captureSnapshot({ siteId, userId, route }, io?)`, with its io handed in:
   - `GET themes/` with the staff token, or with the Admin key when none is stored;
@@ -454,8 +465,8 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   - `backup` is fixed at mount from `backupOwed` and the editor's confirmed site; `local` gains `'backup'`, and the `at`
     mapping, the step switch and the width rule (780) follow it;
   - Destination shows Next while either step is owed; D1c's Continue and a kept Add token go through `afterSafety`;
-  - the Backup view draws D1d, D1d′ and D1e, and the unknown-host state, from `lib/backup-gate.ts`:
-    - the ticks, the shortcut, the greyed master confirm and Run checks with their reasons;
+  - the Backup view draws D1d's card with R-283's advice and two rows, on every host, from `lib/backup-gate.ts`:
+    - the ticks, the greyed master confirm and Run checks with their reasons;
     - the polite "Confirm available";
     - the Theme and `routes.yaml` Downloads ("Preparing…"), with each row's failure sentence;
   - Run checks there calls `void confirmBackup()`, then `onBackup(siteId)`, then `runChecks()`;
@@ -466,7 +477,7 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
     B12b), Deploy without a snapshot (`ship` with `withoutSnapshot`, "Starting…") and Cancel;
   - each view at its frame's width
 
-  -- D1d, D1d′, D1e, B12a, B12b and the rail.
+  -- D1d as R-283 cut it, B12a, B12b and the rail.
 - [x] `E/editor.tsx` -- hold the confirmed site beside `answered`, so a reopen in the same page skips Backup.
 - [x] `app/(app)/app/harness/editor/layout.tsx` and `actions.ts`:
   - `x-inflozo-harness-backup: self | pro | unknown` makes the gate owed for that host, and a `first` ship with
@@ -479,7 +490,7 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   `read.test.ts` · `admin-rule.test.ts` · `site-probe` / `probe-rule` tests -- every pure row of the matrix, each assertion
   first seen red:
   - the rails for each combination;
-  - `backupOwed`, the rows per host, the counts and reasons, the shortcut's cover and restore, and an untick after confirm;
+  - `backupOwed`, the two rows on every host, the counts and reasons, and an untick after confirm (R-283);
   - the capture:
     - staff ok puts the object before the row and removes the old object last;
     - a marked theme writes nothing;
@@ -501,12 +512,11 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
     - the reason counts down;
     - the master confirm and Run checks are `aria-disabled` with their reasons;
     - the polite sentence fires once when the last row is ticked;
-    - the shortcut collapses the rows, and unticking it restores them;
     - confirm → Run checks → the canned Pre-flight with Safety net and Backup ticked;
     - a reopen shows Run checks with no Backup;
     - the control is a confirmed site, which shows four steps;
-  - (b) `pro`: D1e, no shortcut, Database has no box, "6 rows still to tick";
-  - (c) `unknown`: both blocks;
+  - (b) `pro`: the same two rows and the advice, the sub line "Ghost(Pro) · {host}", "2 rows still to tick" (R-283);
+  - (c) `unknown`: the same card, the sub line the host alone (R-283);
   - (d) no token: no Theme Download, and `routes.yaml`'s present (R-282);
   - (e) `snapshot: ok`, held: B12a's four rows with the name and version, Cancel live, then S8c;
   - (f) `no_token` → B12b with the 403 line and the Design & branding link → Deploy without a snapshot → S8c;
@@ -533,7 +543,7 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
     - Ship it → Next → Add token (`GHOST6_STAFF_ACCESS_TOKEN`) → Backup shows D1d with both Downloads;
     - Theme Download gives a `site_snapshots` row (`casper`, bytes > 0), and its signed URL's bytes equal Ghost's download;
     - `routes.yaml` Download equals `GET settings/routes/yaml/`;
-    - tick everything, then Run checks: `backup_confirmed_at` is set;
+    - tick both rows and the confirmation, then Run checks: `backup_confirmed_at` is set;
     - Ship it: `stage_timings.snapshotting` names `casper` and its version, and the row is re-captured (`captured_at`
       moved, the old object gone);
     - Live;
@@ -577,7 +587,8 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
 
 **Acceptance Criteria:**
 - Given the first deploy to a site, when the wizard reaches Backup, then it asks the user to confirm they hold their own
-  copy of the theme and `routes.yaml` among the seven rows. The master confirm and Run checks stay greyed with their reasons
+  copy of the theme and `routes.yaml`, its two rows (R-283), under advice that recommends, and never requires, a backup of
+  the rest of the site from Ghost Admin. The master confirm and Run checks stay greyed with their reasons
   until the last row is ticked and confirmed, and the master confirm becoming available is announced politely.
 - Given a Staff Access Token is held, when the gate draws, then the Theme row offers a Download, and that Download is the
   archived live theme handed back through a short-lived signed URL. Without the token, the Theme row offers none and names
@@ -592,8 +603,8 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
   the first upload stays, through that and through project deletion, and is listed on `/restore` during an account
   deletion window.
 - Given each surface, when compared with its frame, then it matches:
-  - the gate matches D1d (self-hosted), D1d′ (shortcut ticked) and D1e (Ghost(Pro)) in `D1 First-Deploy Gates.dc.html`
-    (`:208-533`), at 780px;
+  - the gate matches D1d in `D1 First-Deploy Gates.dc.html` (`:208-358`) as R-283 cut it — the panel, the advice in the
+    shortcut panel's place, the Theme and `routes.yaml` rows, the rule, the master confirm and the footer — at 780px;
   - the running and degraded snapshot states match B12a and B12b as corrected (`B Missing Surfaces.dc.html:1044-1102`), at
     600px;
   - the rail matches D1's six-step rail (`:51-63`) when both first-deploy steps show.
@@ -646,6 +657,35 @@ owner's in-session go (R-99), before any code that reads the columns or the stag
 - **Walk step 117a's byte comparison stands:** §89's capture downloaded Casper a second time and the bytes were identical
   (sha256), so Ghost's zip-on-the-fly is deterministic on T1.
 
+**R-283 (owner, 2026-10-26, after Dev) — the gate cut to two rows.** What changes, and what each Dev line above it no
+longer holds:
+- **The rows.** `gateRows` gives Theme and `routes.yaml` on every host. Content, Members, Redirects, "Images, files and
+  media" and Database are gone, and so is the Ghost(Pro) Database chip.
+- **The shortcut, D1d′ and the Ghost(Pro) block are gone,** and so are the collapsed list, the coral shortcut tick and
+  `blocksFor`. The two Dev lines on D1d′'s list and on a shortcut toggle no longer apply.
+- **The advice replaces the frame's lead.** It sits in the shortcut panel's place, in the "What Inflozo writes" panel's
+  vocabulary: its eyebrow, its body, and Ghost's help on exports. The lead-in line then introduces the rows.
+- **The master confirm is reworded** to the two files.
+- **`hosted_by_ghost` stays** (the probe writes it, already applied to production); it now decides the sub line alone.
+- **Read in source before writing the advice** (6.58.0 and 5.130.6 npm tarballs, standing rule 1): Ghost Admin's download
+  routes for each thing it names exist on both majors:
+  - `GET /posts/export` (`posts.exportCSV`, the post-analytics CSV; 6.58.0's settings bundle draws it beside "Content &
+    settings");
+  - `GET /members/upload` (`members.exportCSV`);
+  - `GET /redirects/download` (6.58.0 "Download current redirects");
+  - `GET /db` (the content export).
+
+  No menu path is named (BACKUP-GATE.md).
+- **The Backup footer wraps below `tablet`** (main session, after R-283's screenshots): at 390 the reason beside Back and Run
+  checks squeezed Run checks' label onto two lines. The reason now takes its own line there. The floor holds "Run checks on
+  one line" at 1440, 820 and 390, and it was seen red at 390 with the old row.
+- **Built under R-283 (Dev, 2026-10-26), each a routine call:** the rows are `GATE_ROWS`, a constant — no row depends on the
+  host any more, so `gateRows(host)` would carry a parameter nothing reads — and `remaining`, `reasonOf`, `toggleRow` and
+  `toggleConfirm` take the ticks alone. The advice is D1d's panel (`:243-246`) drawn a second time with its own eyebrow, its words
+  and the link; the frame's lead (`:248`) is not drawn. The floor's Backup case holds the card to "scrolls inside the wizard
+  wherever it is taller than the window" (cut to two rows, it may fit whole at 1440 × 900, which the floor does not assert;
+  stacked at 390 it is taller and scrolls, which it does).
+
 ## Design Notes
 
 **Ruled values — the one table Questions 1 and 2 set.** Dev builds this table, and a different ruling changes it and
@@ -664,21 +704,23 @@ nothing else. *(Ruled: option 1 of each — R-281 and R-282, owner, 2026-10-26.)
 | Gate title | Back your site up before we replace the theme |
 | Sub line | Self-hosted Ghost · {host} — Ghost(Pro) · {host} — {host} *(unknown, extrapolated)* |
 | Panel eyebrow · body | WHAT INFLOZO WRITES TO YOUR SITE · Inflozo writes exactly two things to your Ghost site: your theme, and routes.yaml. It never writes posts, pages, members, tags, settings or redirects. |
-| Lead | A full backup is still the right thing to have. A theme change is reversible only if you can put the old theme back — and that means holding a copy of it before we replace it. |
-| Shortcut | chip `ghost backup` · one archive: content, members, every installed theme, images, files, media, routes and redirects. · I have run ghost backup and saved the archive somewhere off the server. · Ticking this ticks every row below and leaves them on screen, so you can see what you now hold. |
-| Shortcut ticked caption | Everything the archive holds, still on screen and ticked. · each row: in the archive |
-| Ghost(Pro) block | On Ghost(Pro), themes, content, members, routes and redirects all download from Ghost Admin. Images and media do not — Ghost Admin has no bulk export for them, and there is no server to copy them from. Ghost's own documentation points you at your host's support for this. ¶ Ghost(Pro) also takes its own platform backups; that is a Ghost service, not an Inflozo one, and it is worth confirming with Ghost what it covers and how to request a restore. · ink: This is not something Inflozo can fix, and we are not going to pretend otherwise. |
+| ~~Lead~~ | *replaced by R-283's advice and lead-in, below* |
+| Advice *(R-283, the owner's wording, Question 4)* | eyebrow OPTIONAL, BUT RECOMMENDED · We recommend keeping a backup of your Ghost site. In Ghost Admin you can download your content, members, redirects and post analytics at any time. Inflozo never changes any of these, so this is up to you. · Ghost's help on exports ↗ |
+| Lead-in *(R-283)* | To continue, save a copy of the two things Inflozo writes: |
+| ~~Shortcut~~ | *dropped by R-283* |
+| ~~Shortcut ticked caption~~ | *dropped by R-283* |
+| ~~Ghost(Pro) block~~ | *dropped by R-283* |
 | Theme | INFLOZO REPLACES THIS · Look for the theme marked as active in Ghost Admin and download it as a zip. · ⚠ The one thing that makes rollback possible. · Ghost's help on themes ↗ |
 | routes.yaml | INFLOZO MAY OVERWRITE THIS · Wherever Ghost Admin accepts a routes file, it also offers the current one as a download. · Ghost's docs on dynamic routing ↗ |
-| Content | Ghost Admin exports posts, pages, tags and settings as a single JSON file. Look for the export control in your site's settings. · ⚠ The JSON export does not include your images. · Ghost's help on exports ↗ |
-| Members | Your member list downloads as a CSV from the members area of Ghost Admin, including their subscription status. · Ghost's help on member exports ↗ |
-| Redirects | Ghost Admin offers your current redirects file as a download next to the control that accepts a new one. · Ghost's help on redirects ↗ |
-| Images, files and media | self-hosted: These live on your server rather than in any export. Copy the images, files and media folders out of your Ghost content directory yourself. · Ghost's docs on the content directory ↗ — Ghost(Pro): Save what matters by hand from Ghost Admin, one item at a time. There is no bulk export on Ghost(Pro), and no server to copy them from. · Ghost's help on exports ↗ — ⚠ The gap most people miss. |
-| Database | self-hosted: Take a dump of the MySQL database your Ghost install points at, from the server it runs on. · Ghost's docs on backing up ↗ — Ghost(Pro): NOT YOURS TO TAKE · Ghost holds the database on Ghost(Pro). There is nothing here for you to download, so there is nothing to tick. · Ghost's help on exports ↗ |
+| ~~Content~~ | *dropped by R-283* |
+| ~~Members~~ | *dropped by R-283* |
+| ~~Redirects~~ | *dropped by R-283* |
+| ~~Images, files and media~~ | *dropped by R-283* |
+| ~~Database~~ | *dropped by R-283* |
 | Download · busy | Download · Preparing… *(busy, R-98)* |
 | Download failed *(extrapolated)* | Ghost didn't hand over the file ({status}). Use the help link on this row to download it from Ghost Admin. |
 | Live theme is Inflozo's *(extrapolated)* | Your live theme is already an Inflozo theme, so there's no original to download here. |
-| Master confirm | I confirm I have a complete backup of my site and understand Inflozo will replace my theme. |
+| Master confirm *(R-283, Question 3)* | I have a copy of my theme and routes.yaml, and I understand Inflozo will replace my theme. |
 | Reason | {n} rows still to tick, then the confirmation above. · 1 row still to tick, then the confirmation above. *(singular, extrapolated)* · One confirmation left. |
 | Confirm available *(polite, extrapolated)* | Every row is ticked. You can confirm now. |
 | Buttons | Back (`DEPLOY_WORDS.back`) · Run checks (`DEPLOY_WORDS`'s, chevron) · Starting… |
@@ -697,10 +739,8 @@ nothing else. *(Ruled: option 1 of each — R-281 and R-282, owner, 2026-10-26.)
 |---|---|
 | Theme | `https://ghost.org/help/installing-a-theme/` *(the frame's `ghost.org/help/themes/` answers 404; this page says "Select the Installed option … You can also download copies of your themes")* |
 | routes.yaml | `GHOST_ROUTES_HELP` (`https://docs.ghost.org/themes/routing/`, where the frame's address redirects) |
-| Content · Members · Ghost(Pro) rows | `https://ghost.org/help/exports/` |
-| Redirects | `https://ghost.org/help/redirects/` |
-| Images (self-hosted) | `https://docs.ghost.org/config/` |
-| Database (self-hosted) | `https://docs.ghost.org/ghost-cli/` (the frame's `#ghost-backup` anchor kept) |
+| The advice *(R-283)* | `https://ghost.org/help/exports/` |
+| ~~Redirects~~ | *dropped by R-283* |
 
 **Routine calls**, each a reading of an approved source, told to the owner in one line each; none is put to him:
 - **"Add token" on B12b,** not "Add the token". R-170 makes it the one name, as 7.19 ruled D1b's.
@@ -711,8 +751,7 @@ nothing else. *(Ruled: option 1 of each — R-281 and R-282, owner, 2026-10-26.)
 - **No coral progress bar on B12a.** DESIGN.md:518-522 allows one only where a real byte count exists, and the server
   reports none while it works. Row 2 carries the real size once it is known.
 - **Greyed, not `disabled`.** The frames' native `disabled` on Run checks loses the reason and the focus (R-98).
-- **Unknown host shows both blocks.** F7 says "both paths offered, neither assumed". It is extrapolated from D1d and D1e,
-  and the Database row is tickable.
+- *(Before R-283: an unknown host showed both blocks. Every host now draws the same card.)*
 - **Sites already shipped to before this story show the gate once on their next deploy.** Consent was never collected
   there. Only test sites exist, because the product is pre-launch.
 - **The Theme Download writes the site's snapshot row,** because AD-13 serves bytes only from Storage. A later first upload
@@ -748,7 +787,8 @@ the Ghost 6 test site (T1). Deploy fills in the URLs and checks that both aliase
 Addresses that need your project's id are written `<P>`: copy it from the address bar after step 2.
 
 **Not in this test:**
-- **the Ghost(Pro) and unknown-host versions of the Backup step.** T1 is self-hosted, so the keyboard journeys prove both;
+- **the Ghost(Pro) and unknown-host sub lines of the Backup step.** Since R-283 every host draws the same card, and T1 is
+  self-hosted, so the keyboard journeys prove the other two sub lines;
 - **"the live theme is already Inflozo's".** The walk (step 117b) proves it.
 
 **Part A — with the token**
@@ -759,11 +799,11 @@ Addresses that need your project's id are written `<P>`: copy it from the addres
 | 2 | `https://app.inflozo.com/sites` | Sites | Press **Connect a site** and finish the wizard with the integration's two keys. | `https://ghost6.inflozo.com` + the two keys | ghost6 is **Connected**, and a project linked to it opens. |
 | 3 | `https://app.inflozo.com/projects/<P>` | Editor | Press **Ship it**. | — | The button reads **Next**, and the steps read **Destination · Safety net · Backup · Check · Ship · Live**. |
 | 4 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Next**, paste your profile's token, and press **Add token**. | your token | "Adding…", then a wide card: **"Back your site up before we replace the theme"**, with "Self-hosted Ghost · ghost6.inflozo.com" under it. |
-| 5 | `https://app.inflozo.com/projects/<P>` | Backup | Read down the card. | — | A panel saying Inflozo writes only your theme and routes.yaml. Then a coral-bordered **ghost backup** box. Then seven rows (Theme, routes.yaml, Content, Members, Redirects, Images files and media, Database), each with a box, a line of help and a "↗" link. **Download** sits on Theme and routes.yaml. At the bottom: a grey confirmation, **"7 rows still to tick, then the confirmation above."**, Back, and a grey **Run checks**. |
+| 5 | `https://app.inflozo.com/projects/<P>` | Backup | Read down the card. | — | A panel saying Inflozo writes only your theme and routes.yaml. Then **"OPTIONAL, BUT RECOMMENDED"**: a friendly note that you can download your content, members, redirects and post analytics from Ghost Admin, with **Ghost's help on exports ↗**. Then "To continue, save a copy of the two things Inflozo writes:" and **two rows only**, Theme and routes.yaml, each with a box, a line of help, a "↗" link and **Download**. No `ghost backup` box, and no Content, Members, Redirects, Images or Database rows. At the bottom: a grey confirmation, **"2 rows still to tick, then the confirmation above."**, Back, and a grey **Run checks**. |
 | 6 | `https://app.inflozo.com/projects/<P>` | Backup | Press **Download** on the Theme row. | — | "Preparing…", then a zip named for ghost6 and **casper** downloads. Open it: Casper's files. |
 | 7 | `https://app.inflozo.com/projects/<P>` | Backup | Press **Download** on routes.yaml. Then click **Ghost's help on themes ↗**. | — | A `routes.yaml` file downloads. Ghost's "Installing a theme" page opens in a new tab. |
-| 8 | `https://app.inflozo.com/projects/<P>` | Backup | Tick Theme, routes.yaml, Members and Redirects. Then press the grey **Run checks**. | — | **"3 rows still to tick, then the confirmation above."** Run checks does nothing. |
-| 9 | `https://app.inflozo.com/projects/<P>` | Backup | Tick the **ghost backup** box. Then untick it. Then tick it again. | — | Ticked: every row shrinks to one ticked line ending "in the archive", and the footer reads **"One confirmation left."** The confirmation is no longer grey. Unticked: the four rows you ticked are back as they were. |
+| 8 | `https://app.inflozo.com/projects/<P>` | Backup | Tick **Theme** only. Then press the grey **Run checks**. Then click **Ghost's help on exports ↗**. | — | **"1 row still to tick, then the confirmation above."** Run checks does nothing. Ghost's exports help page opens in a new tab. |
+| 9 | `https://app.inflozo.com/projects/<P>` | Backup | Tick **routes.yaml**. Tick the confirmation. Then untick **routes.yaml**, and tick it again. | — | With both rows ticked, the footer reads **"One confirmation left."** and the confirmation is no longer grey. Ticking it makes Run checks no longer grey. Unticking routes.yaml unticks the confirmation and greys Run checks again; ticking routes.yaml again brings back "One confirmation left." |
 | 10 | `https://app.inflozo.com/projects/<P>` | Backup | Tick the confirmation and press **Run checks**. | — | "Starting…", then Pre-flight, with **Safety net** and **Backup** both ticked in the steps. |
 | 11 | `https://app.inflozo.com/projects/<P>` | Ship | Press **Ship it**. | — | For a moment, **"Archiving your current theme first"**: "Reading the live theme from Ghost" with **casper** and its version, "Writing the snapshot" with a size, and "Kept outside your version limit." Then Shipping, then Live. |
 | 12 | `https://app.inflozo.com/projects/<P>` | Destination | Close the wizard and press **Ship it** again. | — | No Safety net and no Backup: **Run checks**, four steps. |
@@ -775,16 +815,17 @@ Addresses that need your project's id are written `<P>`: copy it from the addres
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 15 | `https://app.inflozo.com/sign-in`, then `/sites` | Sites | Sign out, sign in with the second alias, and connect ghost6 with the same two keys. | `umngkmr+backup720b@gmail.com` | ghost6 **Connected**; a project opens. |
-| 16 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Ship it**, **Next**, **Not now**, then **Continue**. | — | The Backup card again, now with **no Download on Theme** and a Download on routes.yaml (R-282). |
-| 17 | `https://app.inflozo.com/projects/<P>` | Backup | Tick all seven rows one by one, then the confirmation, then **Run checks**, then **Ship it**. | — | **"We could not archive your current theme"**, the line **GET /ghost/api/admin/themes/ → 403**, "Ghost keeps your previous theme under Settings → **Design & branding**…", and **Add token**, **Deploy without a snapshot** and **Cancel**. |
+| 16 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Ship it**, **Next**, **Not now**, then **Continue**. | — | The Backup card again — the same two rows — now with **no Download on Theme** and a Download on routes.yaml (R-282). |
+| 17 | `https://app.inflozo.com/projects/<P>` | Backup | Tick both rows, then the confirmation, then **Run checks**, then **Ship it**. | — | **"We could not archive your current theme"**, the line **GET /ghost/api/admin/themes/ → 403**, "Ghost keeps your previous theme under Settings → **Design & branding**…", and **Add token**, **Deploy without a snapshot** and **Cancel**. |
 | 18 | `https://app.inflozo.com/projects/<P>` | Snapshot failed | Press **Add token**, then **Back**. | — | The token box from Safety net, then back to the same card. |
 | 19 | `https://app.inflozo.com/projects/<P>`, then `https://ghost6.inflozo.com` | Ship | Click **Design & branding ↗**. Then press **Deploy without a snapshot**. | — | Ghost Admin's Design panel for ghost6 opens in a new tab. Then "Starting…", Shipping, and Live. |
 | 20 | `https://ghost6.inflozo.com/ghost/`, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: **Settings → Design & branding → Change theme → Casper → Activate**, delete the `inflozo-…` themes, and delete the Owner test 7.20 integration. In Inflozo, on each alias: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was, and Inflozo holds no key of yours. |
 
 ## Questions for the owner
 
-Questions 1 and 2 were ruled on 2026-10-26, each option 1 (R-281, R-282). None is open. "Ruled values" in Design Notes
-holds what they set.
+Questions 1 and 2 were ruled on 2026-10-26, each option 1 (R-281, R-282). Questions 3 and 4 were ruled the same day after
+Dev, when the owner cut the gate to two rows (R-283). None is open. "Ruled values" in Design Notes holds what 1 and 2 set;
+the Intent's R-283 paragraph and "Words" hold what 3 and 4 set.
 
 ### Question 1 — One story or two (and restore with Deploy History)?
 
@@ -834,6 +875,39 @@ Ghost Admin, with no button. Should the routes.yaml row still give you the file 
 **Ruled: option 1 (owner, 2026-10-26) — R-282.** *"Yes, always offer routes.yaml. The Theme row offers its Download only
 with the token. routes.yaml offers its Download on every connected site. On a Ghost(Pro) site with no token, that adds one
 button the design drew without."*
+
+### Question 3 — With two rows left, is there still a separate confirmation?
+
+**The owner's instruction (2026-10-26, after Dev), in his words:** *"Cut it to only two rows. And add a disclaimer at top,
+that we advise to take a backup of your Ghost site. They might not be technical to use tools to take DB backup, etc. But just
+inform that they can take backup like they can do via Ghost Admin to take backup like redirects, content, members, post
+analytics. This is a hard gate and taking a DB backup using Mysql dump is too technical for users which I want to avoid.
+Just add two rows and allow them to download it. The top advice should not be like a harsh wording so they get scared, just
+inform them that it is advisable and not a mandatory step. Use friendly and formal English - simple to understand."*
+
+**In plain English.** With only Theme and routes.yaml left, should the customer tick the two rows and go on, or tick them
+and then one more confirmation box?
+
+**An example.** A customer downloads both files and ticks them. Under option 1, Run checks turns on. Under option 2, they
+also tick "I have a copy of my theme and routes.yaml, and I understand Inflozo will replace my theme."
+
+1. **(RECOMMENDED) Two ticks only.** No extra box; with two rows it would repeat what the ticks say.
+2. **Two ticks and a confirmation,** as the design draws it, reworded to the two files.
+
+**Ruled: option 2 (owner, 2026-10-26) — R-283.**
+
+### Question 4 — The wording of the friendly advice
+
+**In plain English.** The advice at the top says a full backup is optional and names only what Ghost Admin can download.
+
+**An example.** *"OPTIONAL, BUT RECOMMENDED — We recommend keeping a backup of your Ghost site. In Ghost Admin you can
+download your content, members, redirects and post analytics at any time. Inflozo never changes any of these, so this is up
+to you. Ghost's help on exports ↗"*, then *"To continue, save a copy of the two things Inflozo writes:"*
+
+1. **(RECOMMENDED) Use this wording.**
+2. **Shorter:** one sentence and the link, no lead-in line.
+
+**Ruled: option 1 (owner, 2026-10-26) — R-283.**
 
 ## Verification
 
@@ -921,4 +995,28 @@ R-82's real services for this story:
   frames and the prototypes lifted from them, the Appendix A prompts (a record of what was asked), PRD backups, and build
   caches. Nothing stale.
 - **Vercel** (`app.inflozo.com`) and the walk's step 117 are the Review's.
+
+**Executed — the R-283 rework (2026-10-26 IST, Node 24; no T1 or production call):**
+- **Read in source, standing rule 1, before the advice was written.** These are Ghost's own npm tarballs for 6.58.0 and
+  5.130.6, read-only from registry.npmjs.org. Ghost Admin's download routes exist on both majors:
+  - `GET /posts/export` (`posts.exportCSV`, filename `…analytics…csv`; 6.58.0's `settings-KSWWQanQ.js` draws it beside
+    "Content & settings", `post-analytics-export-button`);
+  - `GET /members/upload` (`members.exportCSV`);
+  - `GET /redirects/download` (6.58.0 "Download current redirects");
+  - `GET /db` (the content export).
+
+  So "content, members, redirects and post analytics" names what Ghost Admin really downloads, and Ghost's exports help page
+  answered 200 at this Create.
+- `pnpm check` — green, 0 failed (each package prints its own count).
+- `pnpm keyboard`, the whole gate on the R-283 tree — **321 passed, 0 failed** (21.8 min). After the footer fix,
+  `-g '7\.20a|7\.19'` — 26 passed, and `pnpm lint` is clean.
+  - The Backup floor's first run after the fix lost one case to a cold compile (`toBeVisible`); re-run, it passed 7 of 7.
+  - **The footer's control:** with the old single row, "Run checks on one line" FAILS at 390 and holds at 1440. The wizard
+    was restored byte-identical (`cmp`).
+- The subagent's controls, each seen red then green: five extra rows counted, the confirm not unticking, the wrong exports
+  link, the old lead in the advice's place, a third row, and the old confirm sentence. It also caught that the floor missed a
+  third row, and it now counts every row. Journey (a)'s "said" count is polled after it flaked 2 in 5; then 8 of 8.
+- **Screenshots** of the harness card at 1440 and 390: the panel, the advice, the lead-in, two rows with Download, the
+  reworded confirm and the footer, as R-283 rules.
+- Walk step 117 (re-expected for two rows) is still the Review's, on the deployed sha, with its own T1 go.
 

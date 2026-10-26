@@ -34,7 +34,7 @@ export type Stage = 'queued' | 'compiling' | 'checking' | 'awaiting_ship' | 'sna
 export type DeployStatus = 'compiling' | 'checking' | 'uploaded' | 'live' | 'failed'
 
 /** THE RAIL'S STEPS, in order — every step any deploy can show. Story 7.19 added the first deploy's Safety net (D1b/D1c);
- *  Story 7.20a the Backup step after it (D1d/D1d′/D1e). A deploy's own rail is `stepsFor`'s — the steps THAT show — and the
+ *  Story 7.20a the Backup step after it (D1d, as R-283 cut it). A deploy's own rail is `stepsFor`'s — the steps THAT show — and the
  *  rail numbers itself from that list, never from a literal (D1's "the rail grows to show it", UX-DR19). */
 export const STEPS = [
   { id: 'destination', label: 'Destination' },
@@ -412,56 +412,33 @@ export const SAFETY_WORDS = {
   continue: 'Continue',
 } as const
 
-/** STORY 7.20a — THE FIRST DEPLOY'S BACKUP STEP, every word D1d (self-hosted), D1d′ (the shortcut ticked) and D1e (Ghost(Pro))
- *  say, the frame's own (`D1 First-Deploy Gates.dc.html:208-533`) but where the spec's "Words" marks one extrapolated: the
- *  unknown host's sub line, the singular reason, the polite "confirm available", the Download's busy and failure sentences and
- *  the marked theme's line. Each row's words and help link are `lib/backup-gate.ts`' `gateRows`, built from `rows` here. */
+/** STORY 7.20a — THE FIRST DEPLOY'S BACKUP STEP, every word D1d says (`D1 First-Deploy Gates.dc.html:208-358`) as R-283 cut it
+ *  (owner, 2026-10-26): the frame's title, panel and two rows; the owner's own advice and lead-in in place of the frame's lead
+ *  and shortcut (Question 4), and the confirm reworded to the two files (Question 3). The spec's "Words" marks the rest
+ *  extrapolated: the unknown host's sub line, the singular reason, the polite "confirm available", the Download's busy and
+ *  failure sentences and the marked theme's line. Each row's words and help link are `lib/backup-gate.ts`' `GATE_ROWS`. */
 export const BACKUP_WORDS = {
   rail: 'Backup',
   title: 'Back your site up before we replace the theme',
   sub: { self: (host: string) => `Self-hosted Ghost · ${host}`, ghost_pro: (host: string) => `Ghost(Pro) · ${host}`, unknown: (host: string) => host },
   writesEyebrow: 'WHAT INFLOZO WRITES TO YOUR SITE',
   writes: 'Inflozo writes exactly two things to your Ghost site: your theme, and routes.yaml. It never writes posts, pages, members, tags, settings or redirects.',
-  lead: 'A full backup is still the right thing to have. A theme change is reversible only if you can put the old theme back — and that means holding a copy of it before we replace it.',
-  shortcutChip: 'ghost backup',
-  shortcutHolds: 'one archive: content, members, every installed theme, images, files, media, routes and redirects.',
-  shortcut: 'I have run ghost backup and saved the archive somewhere off the server.',
-  shortcutNote: 'Ticking this ticks every row below and leaves them on screen, so you can see what you now hold.',
-  shortcutTicked: 'Everything the archive holds, still on screen and ticked.',
-  inArchive: 'in the archive',
-  pro: [
-    "On Ghost(Pro), themes, content, members, routes and redirects all download from Ghost Admin. Images and media do not — Ghost Admin has no bulk export for them, and there is no server to copy them from. Ghost's own documentation points you at your host's support for this.",
-    'Ghost(Pro) also takes its own platform backups; that is a Ghost service, not an Inflozo one, and it is worth confirming with Ghost what it covers and how to request a restore.',
-  ],
-  proInk: 'This is not something Inflozo can fix, and we are not going to pretend otherwise.',
+  /** R-283: friendly, never a requirement — it names only what Ghost Admin itself downloads (read in source, both majors) */
+  advice: {
+    eyebrow: 'OPTIONAL, BUT RECOMMENDED',
+    body: 'We recommend keeping a backup of your Ghost site. In Ghost Admin you can download your content, members, redirects and post analytics at any time. Inflozo never changes any of these, so this is up to you.',
+    help: "Ghost's help on exports ↗",
+  },
+  leadIn: 'To continue, save a copy of the two things Inflozo writes:',
   rows: {
     theme: { name: 'Theme', chip: 'INFLOZO REPLACES THIS', body: 'Look for the theme marked as active in Ghost Admin and download it as a zip.', warn: 'The one thing that makes rollback possible.', help: "Ghost's help on themes ↗" },
     routes: { name: 'routes.yaml', chip: 'INFLOZO MAY OVERWRITE THIS', body: 'Wherever Ghost Admin accepts a routes file, it also offers the current one as a download.', help: "Ghost's docs on dynamic routing ↗" },
-    content: { name: 'Content', body: "Ghost Admin exports posts, pages, tags and settings as a single JSON file. Look for the export control in your site's settings.", warn: 'The JSON export does not include your images.', help: "Ghost's help on exports ↗" },
-    members: { name: 'Members', body: 'Your member list downloads as a CSV from the members area of Ghost Admin, including their subscription status.', help: "Ghost's help on member exports ↗" },
-    redirects: { name: 'Redirects', body: 'Ghost Admin offers your current redirects file as a download next to the control that accepts a new one.', help: "Ghost's help on redirects ↗" },
-    media: {
-      name: 'Images, files and media',
-      self: 'These live on your server rather than in any export. Copy the images, files and media folders out of your Ghost content directory yourself.',
-      selfHelp: "Ghost's docs on the content directory ↗",
-      pro: 'Save what matters by hand from Ghost Admin, one item at a time. There is no bulk export on Ghost(Pro), and no server to copy them from.',
-      proHelp: "Ghost's help on exports ↗",
-      warn: 'The gap most people miss.',
-    },
-    database: {
-      name: 'Database',
-      self: 'Take a dump of the MySQL database your Ghost install points at, from the server it runs on.',
-      selfHelp: "Ghost's docs on backing up ↗",
-      proChip: 'NOT YOURS TO TAKE',
-      pro: 'Ghost holds the database on Ghost(Pro). There is nothing here for you to download, so there is nothing to tick.',
-      proHelp: "Ghost's help on exports ↗",
-    },
   },
   download: 'Download',
   preparing: 'Preparing…',
   downloadFailed: (status: number) => `Ghost didn't hand over the file (${status}). Use the help link on this row to download it from Ghost Admin.`,
   marked: "Your live theme is already an Inflozo theme, so there's no original to download here.",
-  confirm: 'I confirm I have a complete backup of my site and understand Inflozo will replace my theme.',
+  confirm: 'I have a copy of my theme and routes.yaml, and I understand Inflozo will replace my theme.',
   remaining: (n: number) => `${n} row${s(n)} still to tick, then the confirmation above.`,
   oneLeft: 'One confirmation left.',
   available: 'Every row is ticked. You can confirm now.',
@@ -732,8 +709,8 @@ export type RoutesEnding =
   | { kind: 'failed'; reason: string }
   | { kind: 'none' }
 
-/** STORY 7.20a — which host the gate is drawn for (`sites.hosted_by_ghost`): self-hosted (D1d), Ghost(Pro) (D1e), or null —
- *  not yet probed, both paths offered (F7: "neither assumed") */
+/** STORY 7.20a — which host the site is (`sites.hosted_by_ghost`): self-hosted, Ghost(Pro), or null — not yet probed. Since
+ *  R-283 every host draws the same Backup card, and this names its sub line alone */
 export type Host = 'self' | 'ghost_pro' | null
 
 /** WHAT THE EDITOR KNOWS BEFORE ANY JOB, as server truth (`shipStateOf`, below, over `read.ts`' reads): the linked site as Ship it ships to
@@ -751,7 +728,7 @@ export type ShipState = {
     /** STORY 7.20a — `backup_confirmed_at` is set: the Backup step was confirmed for the site (F7: once per site; disconnect
      *  clears it). A value that could not be read counts as owed */
     backupConfirmed: boolean
-    /** STORY 7.20a — `hosted_by_ghost`: Ghost(Pro) (D1e), self-hosted (D1d), or null — not yet probed, both paths offered.
+    /** STORY 7.20a — `hosted_by_ghost`: Ghost(Pro), self-hosted, or null — not yet probed; the Backup step's sub line (R-283).
      *  (`host` is the site's address, as the wizard names it; this is who hosts it) */
     hosting: Host
   } | null

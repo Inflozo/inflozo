@@ -185,7 +185,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Deploy Wizard** | `S8 Deploy.dc.html` S8a–d | "Ship it" · `⌘⏎` | 4 steps normally; **6 on the first deploy to a site** *(Story 7.19, 2026-10-21: the rail counts the steps that SHOW — Safety net is skipped when the site already holds a Staff Access Token or recorded a Not now, because nothing would be asked; so a first deploy reads Destination · Safety net · Check · Ship · Live until Story 7.20a adds Backup, and four where the step is skipped. "6" assumed the token is asked there. Below `tablet` a rail longer than four names its current step alone, the others their discs.)* *(Story 7.20a, 2026-10-26: Backup joins the rail where it is owed — D1's six, Destination · Safety net · Backup · Check · Ship · Live, when both show; five where one is skipped; the four otherwise. Backup is skipped once the site's confirmation is recorded (`sites.backup_confirmed_at`), and shows again after a disconnect and reconnect.)* |
 | **Deploy Destination** | S8a · `D1 First-Deploy Gates.dc.html` D1a on the first deploy | step 1 | The site, Deploy & activate vs Deploy only, **and the theme name** (FR-J10). *(Story 7.18b, 2026-10-19: S8a's **Switch** after the Connected chip — on the Preview-only card too — and **Choose a site** on a project with no site open a **site picker** inside the wizard (undrawn: S8a's card per row, D4d's radio and coral wash, S11's chips, in S8's 520px modal; focus on the chosen row; Esc and Back return to Destination). A site another project links asks first in S8e's dialog on Cancel and MOVES here (R-267); a site whose stored Ghost language differs from the project's asks first too, and the project keeps its language (FR-Q6); a first link from no site while the language is still English takes the site's language, said on the chosen row. A site a refused upload marked Preview-only keeps Run checks, with one line under B15's panel (R-270).)* *(Story 7.18c, 2026-10-20: when the sites could not be read, the picker says R-276's sentence — "Your connected sites couldn't be loaded just now. Reload the page to try again.", the Sites page's banner's too since R-277 (owner, 2026-10-20, 7.18c's Review) — as its lead's next paragraph, with no list and no Use this site, and Choose a site still shows on a project with no site so it is reachable (DW-381). A save refused for good stops Run checks and a switch with Can't sync's own sentence (R-275).)* |
 | **Staff Token Offer** | D1b · D1c declined | step 2, first deploy to a site only | "One more step unlocks a safety net" — and its decline path (FR-C1) *(Story 7.19, 2026-10-21: built. "First deploy to a site" is per site record — no binding for it among the user's projects; the step is skipped where a token is stored or a decline is recorded (`sites.staff_token_declined_at`, R-278). Destination's button reads **Next** (D1a). **Add token** — Manage keys' name for the action (R-170; D1b draws "Add the token") — asks Ghost whose token it is and keeps only an Owner's or an Administrator's, then starts the checks at once; each refusal is its one sentence under the box (R-280). **Not now** opens D1c and records the decline at once; **Continue** starts the checks. D1b and D1c are 700 wide, with no ✕ (Esc and the backdrop close the wizard); the picture is the owner's own T1 screenshot (R-279), stacked under the box below `tablet`.)* |
-| **Backup Gate** | D1d self-hosted · D1d′ shortcut ticked · D1e Ghost(Pro) | step 3, once per site | The consent checklist. **Blocks the deploy button** (`BACKUP-GATE.md`) *(Story 7.20a, 2026-10-26: built, 780 wide. It shows while Run checks would show and the site has no recorded confirmation — first deploy or not, since a site shipped to before it never gave consent — and is skipped once confirmed, so its step number follows the steps that show. Destination's Next and D1c's Continue (and a kept Add token) go on to it while it is owed. "Blocks" is greyed, never `disabled`: the master confirm and Run checks carry the footer's reason. The host is `sites.hosted_by_ghost`, from `config`'s `hostSettings`.)* |
+| **Backup Gate** | D1d self-hosted · D1d′ shortcut ticked · D1e Ghost(Pro) | step 3, once per site | The consent checklist. **Blocks the deploy button** (`BACKUP-GATE.md`) *(Story 7.20a, 2026-10-26: built on D1d, 780 wide — and CUT TO TWO ROWS by the owner (R-283): Theme and `routes.yaml`, under optional advice; D1d′ and D1e are dropped and every host sees the same card, the sub line naming the host (`sites.hosted_by_ghost`, from `config`'s `hostSettings`). It shows while Run checks would show and the site has no recorded confirmation — first deploy or not, since a site shipped to before it never gave consent — and is skipped once confirmed, so its step number follows the steps that show. Destination's Next and D1c's Continue (and a kept Add token) go on to it while it is owed. "Blocks" is greyed, never `disabled`: the master confirm and Run checks carry the footer's reason.)* |
 | **Pre-flight Check** | S8b *(extended)* | step 4 | **Compiles the theme and runs gscan on it** — the `compiling` and `checking` stages of the deploy job (AD-20): templates, helpers, routes, and every warning the PRD names. The compiled artefact is what Ship it uploads. *(Story 7.18b, 2026-10-19 — after R-260's row, S8b's warning rows, in this order, none blocking: the RTL acknowledgement repeated with its date; the site's Ghost language differing from the project's; the starting words nobody retyped; the members switches that stop a placed ask or the Paywall (the Sites card's sentences); free sign-ups hidden on a Ghost below 5.62 (R-268); the settings Ghost will forget and the built-ins whose start changed since the last ACTIVATED deploy; a feed-less Tag or Author page; a page past 25 hand-picked posts; the pages nobody viewed as every visitor. The one block is an unacknowledged right-to-left language, before any compile. R-260's read says "Checking that every post appears on a page…" while it reads, the newest 2,000 posts on its own allowance (R-271).)* |
 | **Drift Report** | `D3 The Drift Report.dc.html` D3a drift found · D3b could not verify · D3c no drift | inside Pre-flight, every deploy after the first | A passing row when nothing changed; **it stops the deploy** when something did, naming the files by layer name (FR-J16) |
 | **Library Update Notice** | B14a | project card | "Updates available" (FR-J14) |
@@ -722,7 +722,7 @@ evidence, frame by frame, is `reconcile-designs-decisions.md` §A15.
 | §37.7 item | Verdict today |
 |---|---|
 | **Paywall editor** (FR-H6) | **DRAWN — §37.7 was wrong.** `C Post Body.dc.html` **C3a** is the paywall canvas at 1440, with its six controls, its "how readers reach it" explainer, three of the twelve designs, and an empty state whose condition is **members switched off** — C3b was corrected on 2026-09-04 (A7 item 12; until then it said "no paid tiers", which § State Patterns had already refused). Its entry point is drawn twice more ("Open paywall editor →" on C1a, "Open Paywall →" on C2a) and it sits in a drawn left-nav group, **Template surfaces** |
-| Backup gate consent checklist | **drawn** — `D1 First-Deploy Gates.dc.html` D1d, D1d′ and D1e, with the `ghost backup` shortcut, the seven rows and the disabled master confirm (was not drawn until the D canvases landed on 2026-09-04) |
+| Backup gate consent checklist | **drawn** — `D1 First-Deploy Gates.dc.html` D1d, D1d′ and D1e, with the `ghost backup` shortcut, the seven rows and the disabled master confirm (was not drawn until the D canvases landed on 2026-09-04) *(R-283, owner, 2026-10-26: the product builds D1d cut to two rows, Theme and `routes.yaml`, under optional advice; D1d′ and D1e are not built — F7's last note)* |
 | Drift report (FR-J16) | **drawn** — `D3 The Drift Report.dc.html` D3a drift found, D3b could not verify, D3c no drift (was not drawn until 2026-09-04) |
 | Credit toggle (FR-J15) | **drawn** — `D6 Theme Settings Completed.dc.html` D6a (Pro, a working toggle) and D6b (Free, greyed with "Credits stay on with the Free plan."); until 2026-09-04 the only "credit" in the app frames was S14's per-card image-credit control |
 | Page-2 preview (FR-D21) | **drawn** — `D5 Canvas Markers and Template Switcher.dc.html` D5d (was not drawn until 2026-09-04) |
@@ -1307,6 +1307,11 @@ naming the consequence: *the page still loads, wearing a different design.*
 
 ### F7 · The pre-deploy backup gate — `BACKUP-GATE.md`
 
+> **Cut to two rows — owner, 2026-10-26, R-283.** The gate asks for the Theme and `routes.yaml` only, under optional advice that
+> recommends a backup from Ghost Admin and never requires one; the `ghost backup` shortcut (D1d′), the Ghost(Pro) block (D1e)
+> and the five other rows are dropped, and every host sees one card. What follows is the 2026-09 specification as recorded; the
+> gate as built is this section's last note.
+
 **Surface: Backup Gate** — `D1 First-Deploy Gates.dc.html` **D1d** (self-hosted, token given),
 **D1d′** (the shortcut ticked) and **D1e** (Ghost(Pro), token declined), drawn on 2026-09-04 from
 Appendix A prompt A1. Extrapolated from the **Deploy Wizard**'s step card (S8b's checked-row list)
@@ -1414,19 +1419,27 @@ the block above) · *unknown host* (both paths offered, neither assumed) · *par
 confirm disabled, and it says which rows remain) · *confirmed* (the gate collapses to one line for
 the rest of the wizard, and never fires again for this site).
 
-*(Story 7.20a, 2026-10-26 — the states as built.* **Unknown host** (`sites.hosted_by_ghost` null, a site not yet probed): the
-sky block and its ink line first, then the shortcut, and D1d's seven rows all tickable; the sub line is the host alone.
-**Ghost(Pro)**: the Database row has no box and a grey "NOT YOURS TO TAKE" chip, so the count is six. **Partially ticked**: the
-master confirm and Run checks are greyed (`aria-disabled`, never `disabled`) with the footer's reason, "{n} rows still to tick,
-then the confirmation above." (one row in the singular), then "One confirmation left."; the confirm becoming available is said
-politely once. Unticking a row after the confirm unticks the confirm. The shortcut collapses every row to one ticked line "in
-the archive" and, unticked, gives each row its own tick back. **Confirmed**: Run checks records `sites.backup_confirmed_at`
-without waiting and the gate is skipped on every later open (Disconnect clears it, so a reconnect asks again); within the same
-page the editor remembers it. **The Theme row's link** is Ghost's "Installing a theme" (`ghost.org/help/installing-a-theme/` —
-the frame's `ghost.org/help/themes/` answers 404), the page that says where installed themes are downloaded. **Downloads**:
-the Theme row's is the one capture, served through Story 2.5's signed-URL route; it is absent without a Staff Access Token
-(it could never act). `routes.yaml`'s is on every connected site (R-282). Each says "Preparing…" while it works and leaves its
-sentence under the row when Ghost does not hand the file over. *)*
+*(Story 7.20a, 2026-10-26 — the gate as built, after **R-283** (owner, 2026-10-26, `reconcile-designs-decisions.md`).* **The
+gate asks for the two things Inflozo writes, and only recommends the rest.** On D1d's vocabulary (R-74): the title, the sub
+line, the "What Inflozo writes" panel; then, in the shortcut panel's place and in that panel's own look, **optional advice** —
+"OPTIONAL, BUT RECOMMENDED — We recommend keeping a backup of your Ghost site. In Ghost Admin you can download your content,
+members, redirects and post analytics at any time. Inflozo never changes any of these, so this is up to you." with **Ghost's help
+on exports ↗** (each download it names read in source on both majors); then "To continue, save a copy of the two things Inflozo
+writes:" and **two rows, Theme and `routes.yaml`**; the rule; the master confirm, reworded to "I have a copy of my theme and
+routes.yaml, and I understand Inflozo will replace my theme."; the footer. **Dropped by R-283:** the `ghost backup` shortcut and
+D1d′, the Ghost(Pro) block and its ink line (D1e), and the Content, Members, Redirects, "Images, files and media" and Database
+rows — so the checklist above, the shortcut and the Ghost(Pro) wording are this section's record of the 2026-08-21
+specification, not the surface. **Every host draws the same card**: the sub line reads "Self-hosted Ghost · {host}",
+"Ghost(Pro) · {host}", or the host alone while `sites.hosted_by_ghost` is null. **Partially ticked**: the master confirm and Run
+checks are greyed (`aria-disabled`, never `disabled`) with the footer's reason, "2 rows still to tick, then the confirmation
+above." (one row in the singular), then "One confirmation left."; the confirm becoming available is said politely. Unticking a
+row after the confirm unticks the confirm. **Confirmed**: Run checks records `sites.backup_confirmed_at` without waiting and the
+gate is skipped on every later open (Disconnect clears it, so a reconnect asks again); within the same page the editor remembers
+it. **The Theme row's link** is Ghost's "Installing a theme" (`ghost.org/help/installing-a-theme/` — the frame's
+`ghost.org/help/themes/` answers 404), the page that says where installed themes are downloaded. **Downloads**: the Theme row's
+is the one capture, served through Story 2.5's signed-URL route; it is absent without a Staff Access Token (it could never act).
+`routes.yaml`'s is on every connected site (R-282). Each says "Preparing…" while it works and leaves its sentence under the row
+when Ghost does not hand the file over. *)*
 
 ---
 

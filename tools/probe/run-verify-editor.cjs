@@ -399,7 +399,7 @@
 // in-session go: THE BACKUP GATE AND THE PRE-INFLOZO SNAPSHOT (FR-J13, F7, R-282). A throwaway account H (`editor-harness-h-…`)
 // connects T1 through the wizard — `hosted_by_ghost` false — and walks (a) Add token → D1d with both Downloads (the Theme
 // Download's row and its signed URL's bytes against Ghost's own download; routes.yaml against `GET settings/routes/yaml/`),
-// every row and the confirm, Run checks (`backup_confirmed_at` set), Ship it (the capture re-made at the first upload); (b) a
+// both rows (R-283: Theme and routes.yaml) and the confirm, Run checks (`backup_confirmed_at` set), Ship it (the capture re-made at the first upload); (b) a
 // new project, the live inflozo- theme read as marked; (c) Remove token, Disconnect (the record cleared), reconnect, a new
 // project: the gate again, B12b's `GET /ghost/api/admin/themes/ → 403`, Deploy without a snapshot; (d) the deletion window's
 // `/restore` listing the snapshot, its Download a 303 to a zip, then Restore account. Its finally puts T1's theme back (the one
@@ -13231,7 +13231,7 @@ async function main() {
        (`editor-harness-h-…`) connects T1 through the wizard.
        (a) `hosted_by_ghost` reads false; Ship it → Next → Add token (`GHOST6_STAFF_ACCESS_TOKEN`) → Backup draws D1d with both
            Downloads; the Theme Download writes a `site_snapshots` row naming the live theme with bytes > 0, and its signed URL's
-           bytes equal Ghost's own download; the routes.yaml Download equals `GET settings/routes/yaml/`; every row ticked and the
+           bytes equal Ghost's own download; the routes.yaml Download equals `GET settings/routes/yaml/`; both rows (Theme and routes.yaml, R-283) ticked and the
            confirmation, then Run checks: `backup_confirmed_at` set; Ship it: `stage_timings.snapshotting` names the live theme and
            its version, and the row is re-captured (`captured_at` moved, the old object gone); Live.
        (b) the project deleted (its binding with it) and a new one linked (the token kept, the gate confirmed): Run checks with no
@@ -13321,6 +13321,8 @@ async function main() {
           rail: [...d.querySelectorAll('ol li')].map((li) => li.textContent.trim().replace(/^\d+/, '')),
           gate: d.querySelector('[data-backup-gate]')?.getAttribute('data-backup-gate') ?? null,
           sub: d.querySelector('[data-backup-sub]')?.textContent ?? null,
+          rows: [...d.querySelectorAll('[data-gate-row]')].map((r) => r.getAttribute('data-gate-row')),
+          advice: d.querySelector('[data-backup-advice]')?.textContent ?? null,
           theme: d.querySelector('#deploy-download-theme') !== null,
           routes: d.querySelector('#deploy-download-routes') !== null,
           capture: d.querySelector('[data-capture-failed]')?.getAttribute('data-capture-failed') ?? null,
@@ -13359,8 +13361,10 @@ async function main() {
         const bindings = (await call('/rest/v1', `/project_site_bindings?site_id=eq.${siteH}&select=project_id`)).body ?? []
         return [200, 204].includes(linked?.status) && bindings.length === 0
       }
+      /** R-283: the gate's rows, from the rule itself (Theme and routes.yaml), then the confirmation */
+      const GATE117 = await imp117('apps/web/lib/backup-gate.ts')
       const tickAll117 = async (pg) => {
-        for (const id of ['theme', 'routes', 'content', 'members', 'redirects', 'media', 'database']) await pg.locator(`#deploy-gate-${id}`).check()
+        for (const { id } of GATE117.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
         await pg.locator('#deploy-gate-confirm').check()
       }
       /** Ship it pressed on a clean Pre-flight, and the job read until it rests */
@@ -13404,8 +13408,9 @@ async function main() {
         await pg.locator('#deploy-token').fill(ENV117.GHOST6_STAFF_ACCESS_TOKEN)
         await pg.locator('#deploy-add-token').click()
         const a1 = await until117(() => wiz117(pg), (w) => w?.at === 'backup', 60000)
-        check(`step 117a — Add token kept the staff token and went on to Backup: D1d ("${BW117.sub.self(HOST117)}") with both Downloads (the token held; routes.yaml on every site, R-282)`,
-          a1?.gate === 'self' && a1.sub === BW117.sub.self(HOST117) && a1.theme && a1.routes, scrub117(JSON.stringify(a1)))
+        check(`step 117a — Add token kept the staff token and went on to Backup: D1d as R-283 cut it ("${BW117.sub.self(HOST117)}") — the advice, then Theme and routes.yaml alone — with both Downloads (the token held; routes.yaml on every site, R-282)`,
+          a1?.gate === 'self' && a1.sub === BW117.sub.self(HOST117) && JSON.stringify(a1.rows) === JSON.stringify(GATE117.GATE_ROWS.map((r) => r.id)) &&
+          (a1.advice ?? '').includes(BW117.advice.body) && a1.theme && a1.routes, scrub117(JSON.stringify(a1)))
         await pg.locator('#deploy-download-theme').click()
         const snap1 = await until117(snapshot117, (r) => r !== null, 90000)
         const ghostZip = await staff117('GET', `themes/${encodeURIComponent(prev117)}/download/`)
@@ -13426,7 +13431,7 @@ async function main() {
         await pg.locator('#deploy-backup-run').click()
         await until117(() => wiz117(pg), (w) => w?.at === 'check', 30000)
         const confirmed = await until117(siteRow117, (r) => typeof r?.backup_confirmed_at === 'string', 20000)
-        check('step 117a — every row and the confirmation ticked, then Run checks: the checks start and sites.backup_confirmed_at is set', typeof confirmed?.backup_confirmed_at === 'string', JSON.stringify(confirmed?.backup_confirmed_at ?? null))
+        check('step 117a — both rows (R-283) and the confirmation ticked, then Run checks: the checks start and sites.backup_confirmed_at is set', typeof confirmed?.backup_confirmed_at === 'string', JSON.stringify(confirmed?.backup_confirmed_at ?? null))
         const shipped = await ship117(pg)
         const snap2 = await snapshot117()
         const oldGone = (await snapshotObject117(snap1?.storage_path)) === null
@@ -13474,7 +13479,8 @@ async function main() {
         await pg.locator('#deploy-not-now').click()
         await pg.locator('#deploy-continue').click()
         const c1 = await until117(() => wiz117(pg), (w) => w?.at === 'backup', 20000)
-        check('step 117c — the gate shows again after the reconnect: no Theme Download (no token), and routes.yaml\'s Download (R-282)', c1?.at === 'backup' && !c1.theme && c1.routes, JSON.stringify(c1))
+        check('step 117c — the gate shows again after the reconnect, the same two rows: no Theme Download (no token), and routes.yaml\'s Download (R-282)',
+          c1?.at === 'backup' && JSON.stringify(c1.rows) === JSON.stringify(GATE117.GATE_ROWS.map((r) => r.id)) && !c1.theme && c1.routes, JSON.stringify(c1))
         const themesBefore = (await themes117())?.map((t) => t.name).sort() ?? null
         await tickAll117(pg)
         await pg.locator('#deploy-backup-run').click()

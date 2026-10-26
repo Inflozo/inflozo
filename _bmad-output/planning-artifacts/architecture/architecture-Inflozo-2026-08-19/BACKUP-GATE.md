@@ -1,6 +1,6 @@
 ---
 title: Inflozo — the pre-deploy backup gate
-status: specified 2026-08-21 by owner decision; built 2026-10-26 by Story 7.20a (D1d/D1d′/D1e) with every row DESCRIBING what to look for and LINKING Ghost's own unversioned help — no menu path hard-coded on either major (the Theme row links ghost.org/help/installing-a-theme/, the frame's help/themes/ being a 404); the paths in the table below remain cited Ghost 5 references, not executed against T1/T3
+status: specified 2026-08-21 by owner decision; CUT TO TWO ROWS 2026-10-26 by the owner (R-283) — the gate asks for the theme and routes.yaml alone and only RECOMMENDS the rest (see the dated note under "What the customer is asked to confirm"); built 2026-10-26 by Story 7.20a on D1d's vocabulary, every row DESCRIBING what to look for and LINKING Ghost's own unversioned help — no menu path hard-coded on either major (the Theme row links ghost.org/help/installing-a-theme/, the frame's help/themes/ being a 404; the advice links ghost.org/help/exports/); the sections below the note are the 2026-08-21 specification as recorded, and the paths in their table remain cited Ghost 5 references, not executed against T1/T3
 owner: E3 (the connect/deploy surface) · E7 (the block) · E15 (verify the paths at the launch gate)
 supersedes: the open half of register item 38 — Inflozo does not back up customer data
 ---
@@ -51,6 +51,21 @@ change is reversible only if you can put the old theme back, and the cheapest in
 every other surprise is the backup you already have.
 
 ## What the customer is asked to confirm
+
+> **Cut to two rows — owner, 2026-10-26, R-283** (`reconcile-designs-decisions.md`, after R-282; Story 7.20a's spec, Questions 3
+> and 4). The gate now asks for **the two things Inflozo writes, and only those**: **Theme** (*Inflozo replaces this*) and
+> **`routes.yaml`** (*Inflozo may overwrite this*), each with its own tick and its Download (the theme with the Staff Access
+> Token, `routes.yaml` on every site, R-282). Above them sits **optional advice**, never a requirement — "OPTIONAL, BUT
+> RECOMMENDED — We recommend keeping a backup of your Ghost site. In Ghost Admin you can download your content, members,
+> redirects and post analytics at any time. Inflozo never changes any of these, so this is up to you." — linking Ghost's help
+> on exports (each named download read in source on both majors), then "To continue, save a copy of the two things Inflozo
+> writes:". The master confirm stays, reworded: "I have a copy of my theme and routes.yaml, and I understand Inflozo will
+> replace my theme." **Gone:** the `ghost backup` shortcut, the Ghost(Pro) block, and the Content, Members, Redirects,
+> "Images, files and media" and Database rows; every host sees the same card, the sub line naming the host. **Why:** Inflozo
+> writes exactly two things, and a hard gate on a database dump or a server copy asks a non-technical customer for something
+> Inflozo never touches. The 2026-08-21 decision's "blocked until they confirm they hold their own backup" now means a copy of
+> what Inflozo replaces — Inflozo is still not a backup tool. The checklist, the shortcut and the Ghost(Pro) wording below are
+> the 2026-08-21 specification, kept as its record.
 
 Each item is its own checkbox, because a single "I have a backup" invites a single reflex. The two
 Inflozo actually touches are marked; the rest are recommended.

@@ -148,7 +148,7 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * Its review adds `x-inflozo-harness-autosave: on`: autosave on, so the timer's tick is a journey's to see (R-275's no-tick).
  *
  * STORY 7.20a — the Backup step. Every shape's site has its Backup CONFIRMED (and is self-hosted), so no journey before 7.20a's
- * meets it; `x-inflozo-harness-backup: self | pro | unknown` makes it OWED on a site of that host (D1d, D1e, both blocks), and
+ * meets it; `x-inflozo-harness-backup: self | pro | unknown` makes it OWED on a site of that host (one card on every host since R-283 — the sub line names it), and
  * `x-inflozo-harness-token: held` gives a `first` site a stored Staff Access Token (no Safety net, the Theme row's Download).
  * The gate's three actions are `actions.ts`' `harnessConfirm` (recorded, nothing written), `harnessRoutes` (a fixture file) and
  * `harnessTheme`, which answers by `x-inflozo-harness-snapshot`: `ok` a snapshot row's id (the browser then follows Story 2.5's
@@ -437,7 +437,7 @@ function withPreflight(ship: ShipState, asked: string | null): ShipState {
   return { ...ship, language: 'ar', rtlAckAt: '2026-10-19T08:00:00.000Z', site: { ...ship.site, version: '5.40.0' } }
 }
 
-/** Story 7.20a — `x-inflozo-harness-backup: self | pro | unknown`: the Backup step owed on a site of that host (D1d, D1e, both);
+/** Story 7.20a — `x-inflozo-harness-backup: self | pro | unknown`: the Backup step owed on a site of that host (the sub line's three forms, R-283);
  *  and `x-inflozo-harness-token: held`: a Staff Access Token already stored, so a `first` deploy skips the Safety net and the
  *  Theme row offers its Download */
 function withBackup(ship: ShipState, asked: string | null, token: string | null): ShipState {

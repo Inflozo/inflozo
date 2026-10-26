@@ -392,8 +392,19 @@ test('7.20a: the gate\'s words — the frame\'s own, the reason singular at one,
   assert.equal(BACKUP_WORDS.sub.self('orbitweekly.com'), 'Self-hosted Ghost · orbitweekly.com')
   assert.equal(BACKUP_WORDS.sub.ghost_pro('orbitweekly.com'), 'Ghost(Pro) · orbitweekly.com')
   assert.equal(BACKUP_WORDS.sub.unknown('orbitweekly.com'), 'orbitweekly.com')
-  assert.equal(BACKUP_WORDS.remaining(7), '7 rows still to tick, then the confirmation above.')
+  assert.equal(BACKUP_WORDS.remaining(2), '2 rows still to tick, then the confirmation above.')
   assert.equal(BACKUP_WORDS.remaining(1), '1 row still to tick, then the confirmation above.')
+  // R-283 (owner, 2026-10-26): the friendly advice and its lead-in in the owner's words (Question 4), and the confirm reworded to
+  // the two files (Question 3); the shortcut, the Ghost(Pro) block and the five rows Inflozo never writes are gone
+  assert.equal(BACKUP_WORDS.advice.eyebrow, 'OPTIONAL, BUT RECOMMENDED')
+  assert.equal(BACKUP_WORDS.advice.body, 'We recommend keeping a backup of your Ghost site. In Ghost Admin you can download your content, members, redirects and post analytics at any time. Inflozo never changes any of these, so this is up to you.')
+  assert.equal(BACKUP_WORDS.advice.help, "Ghost's help on exports ↗")
+  assert.equal(BACKUP_WORDS.leadIn, 'To continue, save a copy of the two things Inflozo writes:')
+  assert.equal(BACKUP_WORDS.confirm, 'I have a copy of my theme and routes.yaml, and I understand Inflozo will replace my theme.')
+  assert.deepEqual(Object.keys(BACKUP_WORDS.rows), ['theme', 'routes'])
+  for (const gone of ['lead', 'shortcutChip', 'shortcutHolds', 'shortcut', 'shortcutNote', 'shortcutTicked', 'inArchive', 'pro', 'proInk']) {
+    assert.ok(!(gone in BACKUP_WORDS), `${gone}: dropped by R-283`)
+  }
   assert.equal(BACKUP_WORDS.oneLeft, 'One confirmation left.')
   assert.equal(BACKUP_WORDS.downloadFailed(403), "Ghost didn't hand over the file (403). Use the help link on this row to download it from Ghost Admin.")
   assert.equal(BACKUP_WORDS.runChecks, DEPLOY_WORDS.runChecks)

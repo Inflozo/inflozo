@@ -10300,7 +10300,8 @@ test('7.19 · (e) back to Destination from the Safety net (the review): Continue
 const BW = DEPLOY.BACKUP_WORDS
 const SNAP = DEPLOY.SNAPSHOT_WORDS
 const GATE = await import(new URL('../../apps/web/lib/backup-gate.ts', import.meta.url).href)
-const GATE_ROWS = ['theme', 'routes', 'content', 'members', 'redirects', 'media', 'database']
+/** R-283: the gate's rows, from the rule itself — Theme and routes.yaml */
+const GATE_ROWS = GATE.GATE_ROWS.map((r) => r.id)
 /** the harness's Theme Download answers this snapshot id (`harnessTheme`); Story 2.5's route for it is the journey's to answer */
 const SNAPSHOT_ID = '00000000-0000-4000-8000-000000000720'
 const SNAPSHOT_ROUTE = new RegExp(`/snapshots/${SNAPSHOT_ID}/download$`)
@@ -10341,7 +10342,32 @@ const resting = (code, request, status) => viewOf('awaiting_ship', { ...CHECKED,
   error: { code, message: code === 'snapshot_needs_token' ? SNAP.noToken : code === 'snapshot_token_refused' ? SNAP.tokenRefused : SNAP.other, request, ...(status === undefined ? {} : { status }) },
 })
 
-test('7.20a · (a) a first deploy, self-hosted, the token added: the six labels; Next → Safety net → Add token → Backup on its first box; the reason counts down, the master confirm and Run checks greyed with it, "confirm available" said once; the shortcut collapses and restores; Back keeps the ticks; confirm → Run checks → Pre-flight with both ticked — and a reopen shows Run checks with four (the control: a confirmed site shows four)', async ({ page }) => {
+/** R-283: the card as the owner cut it — the panel, the advice (its eyebrow, its words, Ghost's exports help in a new tab), the
+ *  lead-in, and two rows only; no shortcut, no Ghost(Pro) block, none of the five rows Inflozo never writes */
+async function expectCutCard(page) {
+  const gate = wizard(page).locator('[data-backup-gate]')
+  await expect(gate.locator('[data-backup-advice]')).toContainText(BW.advice.eyebrow)
+  await expect(gate.locator('[data-backup-advice]')).toContainText(BW.advice.body)
+  const help = gate.locator('[data-backup-advice] a')
+  await expect(help).toHaveAttribute('href', GATE.HELP.exports)
+  await expect(help).toHaveAttribute('target', '_blank')
+  await expect(help).toContainText(BW.advice.help)
+  await expect(gate).toContainText(BW.leadIn)
+  await expect(gate.locator('[data-gate-row]')).toHaveCount(2)
+  await expect(gate.locator('[data-gate-row]')).toHaveText([new RegExp(`^${BW.rows.theme.name}`), new RegExp(`^${BW.rows.routes.name}`)])
+  await expect(gate.locator('input[type="checkbox"]'), 'two rows and the confirm').toHaveCount(3)
+  await expect(gate.locator('[data-backup-shortcut], [data-backup-pro]')).toHaveCount(0)
+  await expect(gate.locator('#deploy-gate-confirm-label')).toHaveText(BW.confirm)
+  // the advice sits in the frame's panel vocabulary, after the "What Inflozo writes" panel and before the lead-in
+  const order = await gate.evaluate((g) => {
+    const advice = g.querySelector('[data-backup-advice]')
+    return !!(g.querySelector('[data-backup-writes]').compareDocumentPosition(advice) & Node.DOCUMENT_POSITION_FOLLOWING)
+      && !!(advice.compareDocumentPosition(g.querySelector('[data-backup-lead-in]')) & Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+  expect(order, 'the panel, then the advice, then the lead-in').toBe(true)
+}
+
+test('7.20a · (a) a first deploy, self-hosted, the token added: the six labels; Next → Safety net → Add token → Backup on its first box, the card R-283 cut — the advice, the lead-in, Theme and routes.yaml; the reason counts down from two, the master confirm and Run checks greyed with it, "confirm available" said politely; an untick after the confirm unticks it; Back keeps the ticks; confirm → Run checks → Pre-flight with both ticked — and a reopen shows Run checks with four (the control: a confirmed site shows four)', async ({ page }) => {
   // the control first: a confirmed site whose token is stored — no Safety net, no Backup, four steps and Run checks
   await page.setExtraHTTPHeaders(HELD)
   await open(page)
@@ -10366,19 +10392,20 @@ test('7.20a · (a) a first deploy, self-hosted, the token added: the six labels;
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'backup', { timeout: 15_000 })
   expect(sent, 'a kept token goes on to Backup, never straight to the checks').toEqual([])
   await hearSaid(page)
-  await expect(page.locator('#deploy-gate-shortcut'), 'the first box focused').toBeFocused()
+  await expect(page.locator('#deploy-gate-theme'), 'the first box — the Theme row\'s — focused').toBeFocused()
   await expect(wizard(page).locator('#deploy-title')).toHaveText(BW.title)
   await expect(wizard(page).locator('[data-backup-sub]')).toHaveText('Self-hosted Ghost · harness.example')
   await expect(wizard(page).locator('ol li[aria-current="step"]')).toHaveText(/^3\s*Backup$/)
   await expect(wizard(page).locator('ol li').nth(1), 'Safety net ticked').toHaveText(/^Safety net$/)
   expect(await contentWidth(page), 'D1d is 780 wide').toBe(780)
   await expect(wizard(page).getByRole('button', { name: DW.close }), 'no ✕ on Backup').toHaveCount(0)
+  await expectCutCard(page)
   // both Downloads: the token is held now (R-282: routes.yaml on every connected site)
   await expect(page.locator('#deploy-download-theme')).toHaveAccessibleName(BW.download)
   await expect(page.locator('#deploy-download-routes')).toHaveAccessibleName(BW.download)
   // greyed with the footer's reason, never `disabled`; a press does nothing
   const reason = page.locator('#deploy-backup-reason')
-  await expect(reason).toHaveText(BW.remaining(7))
+  await expect(reason).toHaveText(BW.remaining(2))
   for (const id of ['deploy-gate-confirm', 'deploy-backup-run']) {
     await expect(page.locator(`#${id}`)).toHaveAttribute('aria-disabled', 'true')
     await expect(page.locator(`#${id}`)).toHaveAttribute('aria-describedby', 'deploy-backup-reason')
@@ -10390,10 +10417,9 @@ test('7.20a · (a) a first deploy, self-hosted, the token added: the six labels;
   await expect(page.locator('#deploy-gate-confirm')).not.toBeChecked()
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'backup')
   expect(sent).toEqual([])
-  // two rows, then Back: Destination on Next, and the ticks kept while the wizard stays mounted
+  // the Theme row, then Back: Destination on Next, and the tick kept while the wizard stays mounted
   await tick(page, 'deploy-gate-theme')
-  await tick(page, 'deploy-gate-routes')
-  await expect(reason).toHaveText(BW.remaining(5))
+  await expect(reason).toHaveText(BW.remaining(1))
   await page.locator('#deploy-backup-back').focus()
   await page.keyboard.press('Enter')
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'destination')
@@ -10401,33 +10427,23 @@ test('7.20a · (a) a first deploy, self-hosted, the token added: the six labels;
   await expect(wizard(page).locator('ol li').nth(1), 'the answered Safety net stays ticked').toHaveText(/^Safety net$/)
   await toGate(page)
   await expect(page.locator('#deploy-gate-theme')).toBeChecked()
-  await expect(page.locator('#deploy-gate-routes')).toBeChecked()
-  // the rest, counting down, then "confirm available" said politely as the last row is ticked
-  const rest = GATE_ROWS.slice(2)
-  for (const [i, id] of rest.entries()) {
-    await tick(page, `deploy-gate-${id}`)
-    const left = rest.length - i - 1
-    await expect(reason).toHaveText(left === 0 ? BW.oneLeft : BW.remaining(left))
-  }
+  // the last row: "One confirmation left.", and "confirm available" said politely as it turns live
+  await tick(page, 'deploy-gate-routes')
+  await expect(reason).toHaveText(BW.oneLeft)
   await expect(page.locator('#deploy-gate-confirm')).not.toHaveAttribute('aria-disabled', 'true')
   await expect.poll(() => deploySaid(page)).toBe(BW.available)
-  // the shortcut: every row collapses to one ticked line "in the archive"; unticked, each row's own tick is back
-  await tick(page, 'deploy-gate-shortcut')
-  await expect(wizard(page).locator('[data-backup-rows="collapsed"] li')).toHaveCount(GATE_ROWS.length)
-  for (const li of await wizard(page).locator('[data-backup-rows="collapsed"] li').all()) await expect(li).toContainText(BW.inArchive)
-  await expect(wizard(page)).toContainText(BW.shortcutTicked)
-  await tick(page, 'deploy-gate-shortcut')
-  for (const id of GATE_ROWS) await expect(page.locator(`#deploy-gate-${id}`), id).toBeChecked()
-  // confirm, then untick a row: the confirm unticks and Run checks greys again
+  // confirm, then untick a row: the confirm unticks and Run checks greys again; re-ticked, one confirmation is left
   await tick(page, 'deploy-gate-confirm')
   await expect(page.locator('#deploy-gate-confirm')).toBeChecked()
   await expect(page.locator('#deploy-backup-run')).not.toHaveAttribute('aria-disabled', 'true')
-  await tick(page, 'deploy-gate-members')
+  await tick(page, 'deploy-gate-routes')
   await expect(page.locator('#deploy-gate-confirm')).not.toBeChecked()
   await expect(page.locator('#deploy-backup-run')).toHaveAttribute('aria-disabled', 'true')
   await expect(reason).toHaveText(BW.remaining(1))
-  await tick(page, 'deploy-gate-members')
-  expect((await heard(page)).filter((w) => w === BW.available), '"confirm available" said once each time it becomes available').toHaveLength(2)
+  await tick(page, 'deploy-gate-routes')
+  await expect(reason).toHaveText(BW.oneLeft)
+  // the polite region is written by an effect after the paint, so its second sentence is waited for rather than read at once
+  await expect.poll(async () => (await heard(page)).filter((w) => w === BW.available).length, { message: '"confirm available" said once each time it becomes available' }).toBe(2)
   await tick(page, 'deploy-gate-confirm')
   await expect(reason).toHaveCount(0)
   // Run checks: the checks start, Safety net and Backup both ticked
@@ -10448,38 +10464,29 @@ test('7.20a · (a) a first deploy, self-hosted, the token added: the six labels;
   await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: false, backup: false })))
 })
 
-test('7.20a · (b) Ghost(Pro): D1e — the sky block and its ink line, no shortcut, the database with no box and "NOT YOURS TO TAKE", "6 rows still to tick"; the token held, so the rail is five with no Safety net', async ({ page }) => {
+test('7.20a · (b) Ghost(Pro) (R-283): the same card — the advice and the two rows, "2 rows still to tick" — its sub line "Ghost(Pro) · {host}"; the token held, so the rail is five with no Safety net', async ({ page }) => {
   await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'pro' })
   await open(page)
   await openWizard(page)
   await expect(wizard(page).locator('ol li')).toHaveText(railOf(DEPLOY.stepsFor({ safety: false, backup: true })))
   await toGate(page)
-  await expect(wizard(page).locator('[data-backup-gate]')).toHaveAttribute('data-backup-gate', 'ghost_pro')
-  await expect(page.locator('#deploy-gate-theme'), 'no shortcut: the first box is the Theme row\'s').toBeFocused()
+  await expect(page.locator('#deploy-gate-theme')).toBeFocused()
   await expect(wizard(page).locator('[data-backup-sub]')).toHaveText('Ghost(Pro) · harness.example')
-  await expect(wizard(page).locator('[data-backup-pro]')).toContainText(BW.pro[0])
-  await expect(wizard(page)).toContainText(BW.proInk)
-  await expect(wizard(page).locator('[data-backup-shortcut]')).toHaveCount(0)
-  await expect(page.locator('#deploy-gate-database')).toHaveCount(0)
-  await expect(wizard(page).locator('[data-gate-row="database"]')).toContainText(BW.rows.database.proChip)
-  await expect(wizard(page).locator('[data-gate-row="media"]')).toContainText(BW.rows.media.pro)
-  await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.remaining(6))
-  for (const id of GATE_ROWS.filter((r) => r !== 'database')) await tick(page, `deploy-gate-${id}`)
+  await expectCutCard(page)
+  await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.remaining(2))
+  for (const id of GATE_ROWS) await tick(page, `deploy-gate-${id}`)
   await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.oneLeft)
 })
 
-test('7.20a · (c) a host not yet known: the sky block, then the shortcut, and D1d\'s seven rows all tickable; the sub line is the host alone', async ({ page }) => {
+test('7.20a · (c) a host not yet known (R-283): the same card, its sub line the host alone', async ({ page }) => {
   await page.setExtraHTTPHeaders({ ...HELD, 'x-inflozo-harness-backup': 'unknown' })
   await open(page)
   await openWizard(page)
   await toGate(page)
   await expect(wizard(page).locator('[data-backup-sub]')).toHaveText('harness.example')
-  const order = await wizard(page).evaluate((d) => !!(d.querySelector('[data-backup-pro]').compareDocumentPosition(d.querySelector('[data-backup-shortcut]')) & Node.DOCUMENT_POSITION_FOLLOWING))
-  expect(order, 'the sky block first, then the shortcut').toBe(true)
-  await expect(page.locator('#deploy-gate-shortcut')).toBeFocused()
-  await expect(page.locator('#deploy-gate-database')).toHaveCount(1)
-  await expect(wizard(page).locator('[data-gate-row="media"]')).toContainText(BW.rows.media.self)
-  await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.remaining(7))
+  await expect(page.locator('#deploy-gate-theme')).toBeFocused()
+  await expectCutCard(page)
+  await expect(page.locator('#deploy-backup-reason')).toHaveText(BW.remaining(2))
 })
 
 test('7.20a · (d) no token (Not now): no Theme Download — it could never act — and routes.yaml\'s present (R-282): "Preparing…", then the live file saved; Ghost\'s failure leaves its sentence under the row', async ({ page }) => {
@@ -10499,6 +10506,7 @@ test('7.20a · (d) no token (Not now): no Theme Download — it could never act 
   await page.locator('#deploy-continue').focus()
   await page.keyboard.press('Enter')
   await expect(wizard(page), 'D1c\'s Continue goes on to Backup while it is owed').toHaveAttribute('data-deploy-wizard', 'backup')
+  await expectCutCard(page)
   await expect(page.locator('#deploy-download-theme')).toHaveCount(0)
   const routes = page.locator('#deploy-download-routes')
   await expect(routes).toBeVisible()

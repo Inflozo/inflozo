@@ -895,8 +895,9 @@ test.describe('7.19 · the Safety net at 1440, 820 and 390', () => {
   }
 })
 
-// ── Story 7.20a — the Backup step at its frame's width (D1d, `D1 First-Deploy Gates.dc.html:208-358`): at 1440 the card is 780
-// wide and scrolls INSIDE the wizard, the Downloads beside their rows' words; at 820 (under `tablet`) and 390 nothing scrolls
+// ── Story 7.20a — the Backup step at its frame's width (D1d, `D1 First-Deploy Gates.dc.html:208-358`, as R-283 cut it to two rows):
+// at 1440 the card is 780 wide, scrolling INSIDE the wizard where it is taller than the window, the Downloads beside their rows'
+// words; at 820 (under `tablet`) and 390 nothing scrolls
 // sideways and each Download sits under its row's words. B12a and B12b (`B Missing Surfaces.dc.html:1044-1102`) are 600 at 1440
 // and held by the window at 390. The deploy route is answered here with canned views, as the journeys answer it.
 const AT720 = '2026-10-26T10:00:00.000Z'
@@ -926,6 +927,7 @@ const measure720 = (page) => page.evaluate(() => {
     right: r.right,
     bottom: r.bottom,
     scrolls: dialog.scrollHeight > dialog.clientHeight,
+    overflow: style.overflowY,
     scroll: document.documentElement.scrollWidth,
     inner: window.innerWidth,
     innerHeight: window.innerHeight,
@@ -944,7 +946,8 @@ test.describe('7.20a · the Backup step at 1440, 820 and 390; B12a and B12b at 1
       await page.locator('#deploy-next').click()
       await expect(wizard).toHaveAttribute('data-deploy-wizard', 'backup')
       const m = await measure720(page)
-      const rows = await page.evaluate(() => [...document.querySelectorAll('[data-gate-row="theme"], [data-gate-row="routes"]')].map((row) => {
+      // every row the card draws — R-283's two, each with its Download (the token is held)
+      const rows = await page.evaluate(() => [...document.querySelectorAll('[data-gate-row]')].map((row) => {
         const words = row.querySelector('[id$="-body"]').getBoundingClientRect()
         const button = row.querySelector('button').getBoundingClientRect()
         return { beside: button.left >= words.right, under: button.top >= words.bottom, inside: button.right <= row.getBoundingClientRect().right + 0.5 }
@@ -952,8 +955,17 @@ test.describe('7.20a · the Backup step at 1440, 820 and 390; B12a and B12b at 1
       expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
       expect(m.right).toBeLessThanOrEqual(m.inner)
       expect(m.bottom, 'the card stays inside the window').toBeLessThanOrEqual(m.innerHeight)
-      expect(m.scrolls, 'the card scrolls inside the wizard').toBe(true)
+      // R-283 cut the card to two rows, so at 1440 × 900 it may fit whole; wherever it is taller than the window it scrolls inside
+      expect(m.overflow, 'the card scrolls inside the wizard, never the page').toBe('auto')
+      if (width === 390) expect(m.scrolls, 'stacked at 390, it is taller than the window and scrolls inside it').toBe(true)
+      expect(rows, 'R-283: two rows, Theme and routes.yaml').toHaveLength(2)
       for (const row of rows) expect(row.inside, 'each Download inside its row').toBe(true)
+      // the footer: Run checks' label on one line at every width (at 390 the reason once squeezed it onto two)
+      const run = await page.locator('#deploy-backup-run').evaluate((b) => {
+        const label = b.querySelector('span > span') ?? b
+        return { lines: Math.round(label.getBoundingClientRect().height / parseFloat(getComputedStyle(label).lineHeight)) }
+      })
+      expect(run.lines, 'Run checks on one line').toBe(1)
       if (width === 1440) {
         expect(m.content, 'D1d is 780 wide').toBe(780)
         for (const row of rows) expect(row.beside, 'the Download beside its words').toBe(true)

@@ -22,7 +22,7 @@ import {
   type RailStep, type ShipState, type Stage, type Step, type Timings,
 } from '@/lib/deploy'
 import {
-  blocksFor, confirmAvailable, gateRows, NO_TICKS, reasonOf, remaining, snapshotDownloadPath, subLineOf, toggleConfirm, toggleRow, toggleShortcut, type GateTicks, type RowId,
+  confirmAvailable, GATE_ROWS, HELP, NO_TICKS, reasonOf, snapshotDownloadPath, subLineOf, toggleConfirm, toggleRow, type GateTicks, type RowId,
 } from '@/lib/backup-gate'
 import { adminAt } from '@/lib/paywall'
 import { CONNECT_MAX } from '@/lib/connect-rule'
@@ -407,7 +407,7 @@ export function DeployWizard({
   const [token, setToken] = useState('')
   const [tokenRefused, setTokenRefused] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
-  /** STORY 7.20a — the first deploy's Backup step (D1d/D1d′/D1e), FIXED AT MOUNT as the Safety net is: owed by the server's truth
+  /** STORY 7.20a — the first deploy's Backup step (D1d, as R-283 cut it), FIXED AT MOUNT as the Safety net is: owed by the server's truth
    *  (`backupOwed`) unless this page already confirmed it for the site — so a step confirmed in this mount stays ticked */
   const [backup] = useState(() => backupOwed(ship) && (site === null || confirmed !== site.id))
   const steps = stepsFor({ safety, backup })
@@ -664,11 +664,11 @@ export function DeployWizard({
     wasRetoken.current = retoken
   }, [retoken])
 
-  /* ── STORY 7.20a — the Backup step's presses (F7, D1d/D1d′/D1e) ── */
+  /* ── STORY 7.20a — the Backup step's presses (F7, D1d as R-283 cut it) ── */
+  /** the host names the card's sub line alone (R-283: every host draws the same card) */
   const gateHost = site?.hosting ?? null
-  const rows = gateRows(gateHost)
   const tokenHeld = site?.staff === true || tokenKept
-  const available = confirmAvailable(rows, ticks, gateHost)
+  const available = confirmAvailable(ticks)
   // UX-DR12: the master confirm becoming available is said once, politely, as it turns live
   const wasAvailable = useRef(available)
   useEffect(() => {
@@ -1544,27 +1544,19 @@ export function DeployWizard({
     </div>
   )
 
-  /* ── STORY 7.20a — D1d · D1d′ · D1e · the first deploy's Backup step (`D1 First-Deploy Gates.dc.html:208-533`), 780 wide and
-     scrolling inside the wizard; the unknown host draws both blocks (extrapolated from D1d and D1e). Every word is `BACKUP_WORDS`',
-     every row `gateRows`', every link Ghost's own help. No ✕, as on D1b. Each tick is a NATIVE checkbox in its own label, drawn as
-     the frame's 18px box; the master confirm and Run checks are GREYED with the footer's reason, never `disabled` (R-98) ── */
-  const blocks = blocksFor(gateHost)
-  const collapsed = ticks.shortcut && blocks.shortcut
-  const reasonWords = reasonOf(rows, ticks, gateHost)
+  /* ── STORY 7.20a — D1d · the first deploy's Backup step (`D1 First-Deploy Gates.dc.html:208-358`), 780 wide and scrolling inside
+     the wizard, AS R-283 CUT IT (owner, 2026-10-26): the frame's title, sub line and "What Inflozo writes" panel; the owner's
+     optional advice in the shortcut panel's place, drawn in the panel's own vocabulary, with Ghost's help on exports; the lead-in;
+     the Theme and `routes.yaml` rows; the rule, the reworded confirm and the footer. The same card on every host — the host names
+     the sub line alone. Every word is `BACKUP_WORDS`', every row `GATE_ROWS`', every link Ghost's own help. No ✕, as on D1b. Each
+     tick is a NATIVE checkbox in its own label, drawn as the frame's 18px box; the master confirm and Run checks are GREYED with
+     the footer's reason, never `disabled` (R-98) ── */
+  const reasonWords = reasonOf(ticks)
   const gateGreyed = !ticks.confirmed
-  const warn = (words: string) => (
-    <span className="inline-flex items-start gap-[6px] text-[11.5px] leading-[1.5] text-marigold-text">
-      <AlertTriangle size={12} strokeWidth={1.9} className="mt-[2px] shrink-0" />
-      {words}
-    </span>
-  )
-  const chipOn = (chip: { words: string; tone: 'coral' | 'grey' }) => (
-    <span className={`rounded-pill px-2 py-[2px] font-mono text-[9.5px] font-medium [font-variant-ligatures:none] ${chip.tone === 'coral' ? 'bg-coral-tint text-coral-text' : 'bg-paper-sunk text-ink-soft-aa'}`}>{chip.words}</span>
-  )
   /** a row's Download, where the wizard can fetch its file: `routes.yaml` on every connected site (R-282), the theme only with a
    *  Staff Access Token held — without one it could never act, so it is ABSENT (DESIGN.md:582) */
-  const downloadOn = (which: 'theme' | 'routes' | null) =>
-    which === null || (which === 'theme' && !tokenHeld) ? null : (
+  const downloadOn = (which: RowId) =>
+    which === 'theme' && !tokenHeld ? null : (
       <Button
         id={`deploy-download-${which}`}
         variant="secondary"
@@ -1581,6 +1573,13 @@ export function DeployWizard({
         </BusyLabel>
       </Button>
     )
+  /** D1d's panel (`:243-246`): its eyebrow and its words — the "What Inflozo writes" panel, and R-283's advice in the same look */
+  const panel = (mark: string, eyebrow: string, children: ReactNode) => (
+    <div {...{ [mark]: '' }} className="flex flex-col gap-[7px] rounded-[12px] border border-line bg-paper-raised p-[14px_16px]">
+      <span className="font-mono text-[10px] tracking-[0.06em] text-ink-soft-aa [font-variant-ligatures:none]">{eyebrow}</span>
+      {children}
+    </div>
+  )
   const gate = site === null ? null : (
     <div data-backup-gate={gateHost ?? 'unknown'} className="flex flex-col gap-[18px]">
       <Rail at="backup" state="current" steps={steps} />
@@ -1588,93 +1587,52 @@ export function DeployWizard({
         <h2 id="deploy-title" className={`m-0 ${wideTitle} [text-wrap:pretty]`}>{BW.title}</h2>
         <p data-backup-sub className="text-[12px] text-ink-soft">{subLineOf(gateHost, host)}</p>
       </div>
-      <div className="flex flex-col gap-[7px] rounded-[12px] border border-line bg-paper-raised p-[14px_16px]">
-        <span className="font-mono text-[10px] tracking-[0.06em] text-ink-soft-aa [font-variant-ligatures:none]">{BW.writesEyebrow}</span>
-        <p className="text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{BW.writes}</p>
-      </div>
-      <p className="text-[13.5px] leading-[1.65] text-ink [text-wrap:pretty]">{BW.lead}</p>
-      {blocks.pro ? (
+      {panel('data-backup-writes', BW.writesEyebrow, <p className="text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{BW.writes}</p>)}
+      {panel('data-backup-advice', BW.advice.eyebrow, (
         <>
-          <div data-backup-pro className="flex gap-[11px] rounded-[12px] border border-sky-line bg-sky-tint p-[14px_16px]">
-            <InfoCircle size={16} className="mt-[3px] shrink-0 text-sky-text" />
-            <div className="flex flex-col gap-[9px]">
-              {BW.pro.map((words) => <p key={words} className="text-[13px] leading-[1.65] text-sky-text [text-wrap:pretty]">{words}</p>)}
-            </div>
-          </div>
-          <p className="text-[13.5px] font-medium leading-[1.65] text-ink [text-wrap:pretty]">{BW.proInk}</p>
+          <p className="text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{BW.advice.body}</p>
+          <a href={HELP.exports} target="_blank" rel="noreferrer" className={`self-start text-[11.5px] font-medium text-coral-text ${ring}`}>
+            {BW.advice.help}
+            <span className="sr-only"> {W.newTab}</span>
+          </a>
         </>
-      ) : null}
-      {blocks.shortcut ? (
-        <label data-backup-shortcut className="flex cursor-pointer items-start gap-3 rounded-[12px] border border-coral bg-coral-tint p-[14px_16px]">
-          <GateBox id="deploy-gate-shortcut" tone="coral" checked={ticks.shortcut} labelledBy="deploy-gate-shortcut-label" describedBy="deploy-gate-shortcut-holds" onChange={() => setTicks(toggleShortcut(rows, ticks, gateHost))} />
-          <span className={`flex flex-1 flex-col ${collapsed ? 'gap-[6px]' : 'gap-[7px]'}`}>
-            <span className="flex flex-wrap items-center gap-[9px]">
-              <span className="rounded-[6px] border border-coral-tint-strong bg-surface px-[9px] py-[3px] font-mono text-[12.5px] font-medium text-ink [font-variant-ligatures:none]">{BW.shortcutChip}</span>
-              <span id="deploy-gate-shortcut-holds" className="text-[12.5px] leading-[1.5] text-ink-soft-aa">{BW.shortcutHolds}</span>
-            </span>
-            <span id="deploy-gate-shortcut-label" className="text-[13.5px] font-semibold leading-[1.5] text-ink [text-wrap:pretty]">{BW.shortcut}</span>
-            {collapsed ? null : <span className="text-[11.5px] leading-[1.5] text-ink-soft">{BW.shortcutNote}</span>}
-          </span>
-        </label>
-      ) : null}
-      {collapsed ? (
-        // D1d′ — every row on one line, ticked, "in the archive": the shortcut holds them, so they are a list and not boxes
-        <>
-          <p className="-mb-[2px] text-[12px] leading-[1.5] text-ink-soft">{BW.shortcutTicked}</p>
-          <ul data-backup-rows="collapsed" className="m-0 flex list-none flex-col gap-2 p-0">
-            {rows.map((row) => (
-              <li key={row.id} data-gate-row={row.id} className="flex items-center gap-3 rounded-[12px] border border-line p-[11px_13px]">
-                <span aria-hidden className="inline-flex size-[18px] shrink-0 items-center justify-center rounded-[5px] bg-ink"><Check size={11} strokeWidth={3} className="text-surface" /></span>
-                <span className={row.mono ? 'font-mono text-[13px] font-medium [font-variant-ligatures:none]' : 'text-[13.5px] font-semibold'}>{row.name}</span>
-                {row.chip === null || row.chip.tone === 'grey' ? null : chipOn(row.chip)}
-                <span className="ml-auto text-[12px] text-ink-soft-aa">{BW.inArchive}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <div data-backup-rows="open" className="flex flex-col gap-[9px]">
-          {rows.map((row) => {
-            const box = `deploy-gate-${row.id}`
-            const said = row.download === null ? undefined : fetched[row.download]
-            const text = (
-              <span className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="flex flex-wrap items-center gap-2">
-                  <span id={`${box}-name`} className={row.mono ? 'font-mono text-[13px] font-medium text-ink [font-variant-ligatures:none]' : `text-[13.5px] font-semibold ${row.tickable ? 'text-ink' : 'text-ink-soft-aa'}`}>{row.name}</span>
-                  {row.chip === null ? null : chipOn(row.chip)}
-                </span>
-                <span id={`${box}-body`} className="text-[12.5px] leading-[1.55] text-ink-soft-aa">{row.body}</span>
-                {row.warn === null ? null : warn(row.warn)}
-              </span>
-            )
-            return (
-              <div key={row.id} data-gate-row={row.id} className={`flex flex-col gap-[10px] rounded-[12px] border border-line p-[12px_13px] tablet:flex-row tablet:items-start tablet:gap-3 ${row.tickable ? '' : 'bg-paper-raised'}`}>
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  {row.tickable ? (
-                    <label className="flex cursor-pointer items-start gap-3">
-                      <GateBox id={box} checked={ticks.rows[row.id] === true} labelledBy={`${box}-name`} describedBy={`${box}-body`} onChange={() => setTicks(toggleRow(rows, ticks, gateHost, row.id as RowId))} />
-                      {text}
-                    </label>
-                  ) : (
-                    <div className="flex items-start gap-3">
-                      {/* D1e's "—": nothing to take on Ghost(Pro), so nothing to tick */}
-                      <span aria-hidden className="mt-[2px] inline-flex size-[18px] shrink-0 items-center justify-center text-[14px] text-ink-faint">—</span>
-                      {text}
-                    </div>
-                  )}
-                  <a href={row.help.href} target="_blank" rel="noreferrer" className={`ml-[30px] self-start text-[11.5px] font-medium text-coral-text ${ring}`}>
-                    {row.help.words}
-                    <span className="sr-only"> {W.newTab}</span>
-                  </a>
-                  {said === undefined ? null : <p id={`deploy-download-${row.download}-said`} role="status" className="ml-[30px] text-[11.5px] leading-[1.5] text-ink-soft">{said}</p>}
-                </div>
-                {/* below `tablet` the Download stacks under its text, inside the wizard's own width */}
-                <span className="ml-[30px] tablet:ml-0">{downloadOn(row.download)}</span>
+      ))}
+      <p data-backup-lead-in className="text-[13.5px] leading-[1.65] text-ink [text-wrap:pretty]">{BW.leadIn}</p>
+      <div className="flex flex-col gap-[9px]">
+        {GATE_ROWS.map((row) => {
+          const box = `deploy-gate-${row.id}`
+          const said = fetched[row.download]
+          return (
+            <div key={row.id} data-gate-row={row.id} className="flex flex-col gap-[10px] rounded-[12px] border border-line p-[12px_13px] tablet:flex-row tablet:items-start tablet:gap-3">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <GateBox id={box} checked={ticks.rows[row.id] === true} labelledBy={`${box}-name`} describedBy={`${box}-body`} onChange={() => setTicks(toggleRow(ticks, row.id))} />
+                  <span className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span id={`${box}-name`} className={row.mono ? 'font-mono text-[13px] font-medium text-ink [font-variant-ligatures:none]' : 'text-[13.5px] font-semibold text-ink'}>{row.name}</span>
+                      <span className="rounded-pill bg-coral-tint px-2 py-[2px] font-mono text-[9.5px] font-medium text-coral-text [font-variant-ligatures:none]">{row.chip}</span>
+                    </span>
+                    <span id={`${box}-body`} className="text-[12.5px] leading-[1.55] text-ink-soft-aa">{row.body}</span>
+                    {row.warn === null ? null : (
+                      <span className="inline-flex items-start gap-[6px] text-[11.5px] leading-[1.5] text-marigold-text">
+                        <AlertTriangle size={12} strokeWidth={1.9} className="mt-[2px] shrink-0" />
+                        {row.warn}
+                      </span>
+                    )}
+                  </span>
+                </label>
+                <a href={row.help.href} target="_blank" rel="noreferrer" className={`ml-[30px] self-start text-[11.5px] font-medium text-coral-text ${ring}`}>
+                  {row.help.words}
+                  <span className="sr-only"> {W.newTab}</span>
+                </a>
+                {said === undefined ? null : <p id={`deploy-download-${row.download}-said`} role="status" className="ml-[30px] text-[11.5px] leading-[1.5] text-ink-soft">{said}</p>}
               </div>
-            )
-          })}
-        </div>
-      )}
+              {/* below `tablet` the Download stacks under its text, inside the wizard's own width */}
+              <span className="ml-[30px] tablet:ml-0">{downloadOn(row.download)}</span>
+            </div>
+          )
+        })}
+      </div>
       <div aria-hidden className="h-px bg-line" />
       <label className={`flex items-start gap-3 ${available ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`}>
         <GateBox
@@ -1683,13 +1641,14 @@ export function DeployWizard({
           greyed={!available}
           labelledBy="deploy-gate-confirm-label"
           {...(available ? {} : { describedBy: 'deploy-backup-reason' })}
-          onChange={() => setTicks(toggleConfirm(rows, ticks, gateHost))}
+          onChange={() => setTicks(toggleConfirm(ticks))}
         />
         <span id="deploy-gate-confirm-label" className="flex-1 text-[13.5px] font-medium leading-[1.55] text-ink [text-wrap:pretty]">{BW.confirm}</span>
       </label>
       <div className="flex flex-col gap-[6px]">
-        <div className="flex items-center gap-3">
-          {reasonWords === null ? null : <span id="deploy-backup-reason" className="text-[12px] text-ink-soft">{reasonWords}</span>}
+        {/* below `tablet` the reason takes its own line above the buttons — beside them at 390 it squeezed Run checks onto two */}
+        <div className="flex flex-wrap items-center gap-3">
+          {reasonWords === null ? null : <span id="deploy-backup-reason" className="max-tablet:basis-full text-[12px] text-ink-soft">{reasonWords}</span>}
           <Button
             id="deploy-backup-back"
             variant="ghost"
@@ -1881,11 +1840,11 @@ export function DeployWizard({
 }
 
 /** STORY 7.20a — D1d's 18px box: a NATIVE checkbox inside its label (`link-picker.tsx`'s precedent), drawn as the frame draws it —
- *  hollow, then filled ink (coral for the `ghost backup` shortcut, D1d′) under the white tick. Greyed is `aria-disabled` with the
- *  footer's reason, never `disabled` (R-98): a press changes nothing, because the rule's `toggleConfirm` answers the same ticks.
- *  The Kit gains no component: one surface needs this */
-function GateBox({ id, checked, onChange, tone = 'ink', greyed = false, labelledBy, describedBy }: {
-  id: string; checked: boolean; onChange: () => void; tone?: 'ink' | 'coral'; greyed?: boolean; labelledBy: string; describedBy?: string
+ *  hollow, then filled ink under the white tick. Greyed is `aria-disabled` with the footer's reason, never `disabled` (R-98): a
+ *  press changes nothing, because the rule's `toggleConfirm` answers the same ticks. The Kit gains no component: one surface needs
+ *  this */
+function GateBox({ id, checked, onChange, greyed = false, labelledBy, describedBy }: {
+  id: string; checked: boolean; onChange: () => void; greyed?: boolean; labelledBy: string; describedBy?: string
 }) {
   return (
     <span className="relative mt-[2px] inline-flex size-[18px] shrink-0">
@@ -1897,7 +1856,7 @@ function GateBox({ id, checked, onChange, tone = 'ink', greyed = false, labelled
         aria-labelledby={labelledBy}
         aria-describedby={describedBy}
         aria-disabled={greyed || undefined}
-        className={`peer size-[18px] appearance-none rounded-[5px] border-[1.5px] ${greyed ? 'cursor-not-allowed border-grey-border bg-paper' : 'cursor-pointer border-line-strong bg-surface'} ${tone === 'coral' ? 'checked:border-coral-text checked:bg-coral-text' : 'checked:border-ink checked:bg-ink'} ${ring}`}
+        className={`peer size-[18px] appearance-none rounded-[5px] border-[1.5px] ${greyed ? 'cursor-not-allowed border-grey-border bg-paper' : 'cursor-pointer border-line-strong bg-surface'} checked:border-ink checked:bg-ink ${ring}`}
       />
       <Check aria-hidden size={11} strokeWidth={3} className="pointer-events-none absolute inset-0 m-auto hidden text-surface peer-checked:block" />
     </span>

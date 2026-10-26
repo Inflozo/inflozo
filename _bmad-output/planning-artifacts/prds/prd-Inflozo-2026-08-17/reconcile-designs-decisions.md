@@ -6025,6 +6025,42 @@ connected site. On a Ghost(Pro) site with no token, that adds one button the des
   `epics.md` Story 7.20a's card (dated) · ✅ `prd.md` FR-J13 (dated note) · ✅ `BACKUP-GATE.md` (the "Recorded, not ruled"
   note) · ✅ `EXPERIENCE.md` F7 · ✅ MEASUREMENTS §37's closing line · ✅ `epic-7-context.md`.
 
+**R-283 — the backup gate asks for the two things Inflozo writes, and only recommends the rest.** The owner, reading Story
+7.20a's Backup step after its Dev (2026-10-26): *"Cut it to only two rows. And add a disclaimer at top, that we advise to
+take a backup of your Ghost site. They might not be technical to use tools to take DB backup, etc. … This is a hard gate and
+taking a DB backup using Mysql dump is too technical for users which I want to avoid. Just add two rows and allow them to
+download it. The top advice should not be like a harsh wording so they get scared, just inform them that it is advisable and
+not a mandatory step."* Then two R-83 questions in the same session: **Question 3, option 2** (two ticks and a confirmation)
+and **Question 4, option 1** (the advice as drafted).
+
+- **Why.** Inflozo writes exactly two things (P8; AD-10's allowlist). A hard gate on a database dump and a server copy asks
+  a non-technical customer for something Inflozo never touches, and frightens them away from the product.
+- **The rule.**
+  - **Two rows:** Theme (INFLOZO REPLACES THIS) and `routes.yaml` (INFLOZO MAY OVERWRITE THIS). Each keeps its tick and its
+    Download: the theme with the Staff Access Token, `routes.yaml` on every site (R-282).
+  - **Above them, optional advice:** "OPTIONAL, BUT RECOMMENDED — We recommend keeping a backup of your Ghost site. In Ghost
+    Admin you can download your content, members, redirects and post analytics at any time. Inflozo never changes any of
+    these, so this is up to you." It links Ghost's help on exports. Then "To continue, save a copy of the two things Inflozo
+    writes:".
+  - **The confirmation, reworded:** "I have a copy of my theme and routes.yaml, and I understand Inflozo will replace my
+    theme."
+  - **What it names was read in source on both majors** (6.58.0 and 5.130.6): Ghost Admin's download routes for posts'
+    analytics, members, redirects and the content export.
+- **Gone.**
+  - the `ghost backup` shortcut (D1d′);
+  - the Ghost(Pro) block and its ink line (D1e);
+  - the rows Content, Members, Redirects, "Images, files and media" and Database.
+
+  Every host sees one card; the sub line still names the host.
+- **What it narrows.** The 2026-08-21 owner decision in `BACKUP-GATE.md` — blocked until the customer "confirm[s] they hold
+  their own backup" — now means a copy of what Inflozo replaces. Inflozo is still not a backup tool.
+- **The frames.** D1d stays the vocabulary (R-74): its panel, its row, its rule, its confirm and its footer. The content is
+  the owner's, a departure from D1d, D1d′ and D1e, told in the spec.
+- **Declined.** Question 3's two ticks only; Question 4's shorter advice.
+- Targets: ✅ this entry · ✅ Story 7.20a's spec (Intent, matrix, tasks, Words, Questions 3 and 4, the owner's test) · ✅
+  `BACKUP-GATE.md` (status and a dated note) · ✅ `EXPERIENCE.md` F7 · ✅ `prd.md` FR-J13 (dated note) · ✅
+  `epic-7-context.md` · ✅ the code (`lib/backup-gate.ts`, `lib/deploy.ts`, the wizard, the tests and journeys, walk step 117).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
