@@ -2,9 +2,9 @@
 title: 'Story 7.20a — The backup gate and the pre-Inflozo snapshot'
 type: 'feature'
 created: '2026-10-26'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'ad888249da79baed684a7ddff994cbcd6b7b981c'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-19-the-first-deploy-credential-step-and-its-decline-path.md', '{project-root}/_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/BACKUP-GATE.md']
 ---
@@ -991,6 +991,12 @@ the site to a theme you bought, **Edition**, in Ghost Admin, and reconnect. The 
 linked project is deleted, save whatever non-Inflozo theme is live then, replacing the earlier copy — "what we roll back to"
 is the theme Inflozo replaced most recently."*
 
+## Owner's test findings
+
+**Owner's test (owner, 2026-10-26): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_AmkDeUw5iZDbYLi78DLna9PHuwf9`, `https://app.inflozo.com`) as `umngkmr+backup720a@gmail.com` (Part A) and
+`umngkmr+backup720b@gmail.com` (Part B) and reported *"passed"*. No findings.
+
 ## Verification
 
 R-82's real services for this story:
@@ -1185,4 +1191,4 @@ re-run" for T1's leftover theme; keys read in-process by their variable names):*
   made at 12:00 UTC today (signed in 12:04, one site, one project, no snapshot) was already there, so Part A now uses
   `umngkmr+backup720a@gmail.com` (checked unused against `auth/v1/admin/users`). The old account was left alone: it is not
   Claude's to delete.
-- `owner_test: pending` — the manual test above is live on `https://app.inflozo.com`.
+- `owner_test: passed` — the owner walked the manual test above on `https://app.inflozo.com` (2026-10-26).
