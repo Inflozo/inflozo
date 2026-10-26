@@ -750,8 +750,15 @@ R-82's real services for this story:
   empty) and (e) (left on `safety` after Cancel) FAIL; with only a refused start's fallback to Destination removed, (e) FAILS
   at the reason (no `#deploy-refused`); each file restored byte-identical (`cmp`).
 - `pnpm keyboard` (Node 24), the whole gate after the patches — 304 passed, 0 failed (17.6 min).
-- Walk step 116 with the Review's additions (116a's picture, 116b's binding, 116c's Manage keys and reload, 116d's replay):
-  the Review's, on the Review push's deployment, from a clean worktree — recorded in the next Review commit.
+- **The Review push** `37c14dea`: CI `check` ✓, `rls` ✓, `deploy` ✓; Vercel `dpl_8LuNvCMwrGRXcWJZAqUJnjKS3hUC` READY from it.
+- **Walk step 116 with the Review's additions, on that deployment** (a clean worktree at `37c14dea`, steps 1–5 + 116) —
+  **67 PASS, 0 FAIL**: D1b's picture loaded on its first look; (b) another of F's projects bound to the site → Run checks
+  with four steps (Pro 200, binding 201), the binding removed → offered again; (c) Manage keys on S11e's full page refused
+  the integration's Admin API key with `token_integration` under the token box, `staff` still false, and `private.credential_audit`
+  holds ONE `admin_read` on `sites/keys` (error, Ghost's 404) beside the Safety net's one ok `admin_read` and one staff
+  `credential_change`; after Add token a reload opened on Run checks with four steps; (d) F's captured Not now replayed under
+  G's session left F's site undeclined (`null`), and under F's own session recorded it (the control). Accounts, artefacts,
+  users (19 → 19) and projects (14 → 14) counted back; zero CSP violations.
 
 **Manual checks:**
 - The owner walks "Owner's manual test" on `app.inflozo.com` after Deploy (R-80).
