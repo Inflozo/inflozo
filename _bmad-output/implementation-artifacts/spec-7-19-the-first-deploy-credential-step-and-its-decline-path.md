@@ -552,17 +552,17 @@ code (Verification).
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+safety719@gmail.com` | Start. |
 | 2 | `https://app.inflozo.com/sites` | Sites | Press **Connect a site** and finish the wizard with the integration's two keys. | `https://ghost6.inflozo.com` + the two keys | ghost6 is **Connected**, and a project linked to it opens. |
 | 3 | `https://app.inflozo.com/projects/<P>` | Editor | Press **Ship it**. | — | The wizard opens. The button reads **Next**, not Run checks, and the steps read **Destination · Safety net · Check · Ship · Live**. |
-| 4 | same | Safety net | Press **Next**. | — | A wider card: "One more step unlocks a safety net". The sentence "It is a full-Administrator credential…" is in dark text, there is a token box with your screenshot beside it (the Staff access token box outlined in red) and "Stored encrypted, and only ever sent to ghost6.inflozo.com.", **Back** on the left, and **Add token** and **Not now** the same size. |
-| 5 | same | Safety net | Press **Back**, then **Next** again. | — | Back to the first step, then Safety net again. |
-| 6 | same | Safety net | Type in the box and press **Add token**. | `hello` | "That doesn't look like a Staff Access Token — copy the whole thing…" under the box. |
-| 7 | same | Safety net | Replace it with this made-up token and press **Add token**. | `aaaaaaaaaaaaaaaaaaaaaaaa:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` | "Adding…", then Question 3's "Ghost doesn't recognise this token…" under the box. |
-| 8 | same | Safety net | Paste the integration's **Admin API key** and press **Add token**. | the Admin API key | Question 3's sentence that it is an integration's key. |
-| 9 | same | Safety net | Paste **your profile's Staff access token** and press **Add token**. | your token | "Adding…", then the checks run, and the steps show **Safety net** ticked. |
+| 4 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Next**. | — | A wider card: "One more step unlocks a safety net". The sentence "It is a full-Administrator credential…" is in dark text, there is a token box with your screenshot beside it (the Staff access token box outlined in red) and "Stored encrypted, and only ever sent to ghost6.inflozo.com.", **Back** on the left, and **Add token** and **Not now** the same size. |
+| 5 | `https://app.inflozo.com/projects/<P>` | Safety net | Press **Back**, then **Next** again. | — | Back to the first step, then Safety net again. |
+| 6 | `https://app.inflozo.com/projects/<P>` | Safety net | Type in the box and press **Add token**. | `hello` | "That doesn't look like a Staff Access Token — copy the whole thing…" under the box. |
+| 7 | `https://app.inflozo.com/projects/<P>` | Safety net | Replace it with this made-up token and press **Add token**. | `aaaaaaaaaaaaaaaaaaaaaaaa:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` | "Adding…", then Question 3's "Ghost doesn't recognise this token…" under the box. |
+| 8 | `https://app.inflozo.com/projects/<P>` | Safety net | Paste the integration's **Admin API key** and press **Add token**. | the Admin API key | Question 3's sentence that it is an integration's key. |
+| 9 | `https://app.inflozo.com/projects/<P>` | Safety net | Paste **your profile's Staff access token** and press **Add token**. | your token | "Adding…", then the checks run, and the steps show **Safety net** ticked. |
 | 10 | `https://app.inflozo.com/sites` | Sites → Manage keys | Close the wizard. On ghost6 press ⋯ → **Manage keys**. | — | Staff Access Token says **Added**. Press **Remove token**: it says **Not added**. |
 | 11 | `https://app.inflozo.com/projects/<P>` | Editor → Safety net | Press **Ship it**, then **Next**, then **Not now**. | — | "Continuing without the token" with three rows: no copy of your theme, no check for changes, routes.yaml by hand. Then "You can add it any time from Manage keys." and **Continue**. |
-| 12 | same | Pre-flight | Press **Continue**. | — | "Starting…", then the checks, with Safety net ticked. |
-| 13 | same | Destination | Close the wizard and press **Ship it** again. | — | No Safety net: the button reads **Run checks**, and four steps. Inflozo does not ask again. |
-| 14 | same, then `https://ghost6.inflozo.com` | Ship | Press **Run checks**, then **Ship it**, then **View site ↗**. | — | Live, with the confetti, and "Upload routes.yaml yourself" below it (no token). The site shows your design. Do not follow that card. |
+| 12 | `https://app.inflozo.com/projects/<P>` | Pre-flight | Press **Continue**. | — | "Starting…", then the checks, with Safety net ticked. |
+| 13 | `https://app.inflozo.com/projects/<P>` | Destination | Close the wizard and press **Ship it** again. | — | No Safety net: the button reads **Run checks**, and four steps. Inflozo does not ask again. |
+| 14 | `https://app.inflozo.com/projects/<P>`, then `https://ghost6.inflozo.com` | Ship | Press **Run checks**, then **Ship it**, then **View site ↗**. | — | Live, with the confetti, and "Upload routes.yaml yourself" below it (no token). The site shows your design. Do not follow that card. |
 | 15 | `https://app.inflozo.com/sites` | Manage keys | On ghost6, ⋯ → **Manage keys**. Paste the integration's Admin API key in the token box and press **Add token**. Then paste your profile's token and press **Add token**. | the two keys | The same sentence as step 8, then **Added**. The row still says the safety-net copy starts "from then on". |
 | 16 | `https://ghost6.inflozo.com/ghost/`, then `https://app.inflozo.com/sites` | Cleanup | In Ghost, go to **Settings → Design → Change theme → Casper → Activate**, delete the `inflozo-…` theme, and delete the Owner test 7.19 integration. In Inflozo, ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was, and Inflozo holds no key of yours. |
 
@@ -638,6 +638,26 @@ integration's Admin API key by mistake: it looks just like a token.
 
 **Ruled: option 1 (owner, 2026-10-20) — R-280.** *"Ask Ghost first, keep nothing that fails, one sentence per cause.
 This applies in Safety net and in Manage keys alike."*
+
+### Question 4 — Your test account already exists: what to do with it?
+
+**In plain English.** The test starts with a fresh account that has never connected a site. At Deploy,
+`umngkmr+safety719@gmail.com` already existed: made on 2026-10-21, with ghost6.inflozo.com **already connected** (no Staff
+Access Token, no "Not now"), one project named "Ghost6" linked to it, and one unfinished check. ghost6 itself is clean
+(Casper live, no Inflozo theme). Nothing has been changed.
+
+**An example.** Kept as it is, step 2 ("Connect a site… finish the wizard") would fail, because ghost6 is already
+connected on that account.
+
+1. **(RECOMMENDED) Fresh start:** disconnect ghost6 through the product (so the stored keys are dropped), delete that account
+   with its project and its one stored file, and make it again, so the test runs from step 1 as written. Nothing on ghost6
+   changes.
+2. **Keep it as it is;** skip step 2 and use the "Ghost6" project that is already linked to ghost6. The Safety net still
+   shows, because no token and no "Not now" is recorded. You would copy the project's address from the editor.
+3. **A new alias instead** (`umngkmr+safety719b@gmail.com`), leaving the old account connected to ghost6.
+4. **Not now.**
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
@@ -763,3 +783,20 @@ R-82's real services for this story:
 **Manual checks:**
 - The owner walks "Owner's manual test" on `app.inflozo.com` after Deploy (R-80).
 - D1b and D1c beside the built wizard at 1440 and 390.
+
+**Executed — Deploy (2026-10-26, the main session):**
+- `Deployment: dpl_6F5MSGDyY3XKMgvm267DE4sHE3V1` — READY, production, built from `151c8136` (the head; it changed documents only, so
+  the code is the Review push `37c14dea`'s `dpl_8LuNvCMwrGRXcWJZAqUJnjKS3hUC`, also READY), aliased to `app.inflozo.com`,
+  `inflozo.com` and `www.inflozo.com` (Vercel API, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT` read in process); it is
+  the newest production deployment. CI at `151c8136`: `CI` and the Render matrix success; at `37c14dea`: `check`, `rls`, `deploy`
+  and `matrix` success (`GITHUB_TOKEN`, read only).
+- Schema: `sites.staff_token_declined_at` was applied at the Schema phase and read back at Dev and at the Review (R-99); the
+  `rls` job is green at the code's head. Nothing to apply at Deploy.
+- T1, read only, `GET themes/` with `GHOST6_STAFF_ACCESS_TOKEN` (`GHOST6_URL`): 200, `casper` active, `racer` and `source`
+  installed, no Inflozo theme. Nothing was written to T1. (The command read the two variables through `env $(grep … | xargs)`, so
+  their values were on that process's argument list for its second of life; nothing printed one.)
+- **The owner's test account** (`SUPABASE_URL` and `SUPABASE_SECRET_KEY`, read in process, read only): `umngkmr+safety719@gmail.com`
+  exists (made 2026-10-21) and is NOT fresh — ghost6 connected (`credentials_present` admin and content true, staff false), a
+  project "Ghost6" linked to it, no binding, no decline, one `checking` deploy. **Not touched**: resetting it is Question 4,
+  which is the owner's.
+- `owner_test: pending` — the manual test above is live on `https://app.inflozo.com` once Question 4 is ruled.
