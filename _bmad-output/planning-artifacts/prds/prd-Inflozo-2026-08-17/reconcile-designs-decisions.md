@@ -6083,6 +6083,35 @@ Inflozo replaced most recently."*
   Review's findings) · ✅ `epics.md` Story 7.20a's card and Story 7.23's (dated) · ✅ `prd.md` FR-J13 (dated note) · ✅
   `epic-7-context.md` · ✅ the code (`server/snapshot.ts`' docblock).
 
+**R-285 — a disconnected site's original theme is announced by one email, two weeks before it is deleted, and listed on
+Sites until then; FR-P1 gains its ninth email.** Story 7.20b's Create, Question 1, ruled **option 1** (owner, 2026-10-27):
+*"1"*, which is *"One email, two weeks before the deletion. It arrives when it matters, even if you never sign in again
+after disconnecting. This makes nine emails."*
+
+- **Why it was a question.** FR-C6 says an orphaned snapshot is purged "after a notice and a download offer", and R-281
+  left the notice's form to this Create. The bell is E13's. FR-P1 said exactly eight emails exist.
+- **The rule.**
+  - **On Sites.** From the moment of disconnect, Sites lists each original theme still kept for a disconnected site, with
+    its deletion date and a Download.
+  - **The email.** `ORPHAN_NOTICE_DAYS` (14) before the deadline, one email names the site, the theme and the date. It is
+    sent once per disconnect and never repeated. A later disconnect owes a new one.
+  - **The deletion.** The theme is deleted only once that email has gone out, at the later of the deadline and the email
+    plus 14 days, whether or not it was downloaded.
+  - **Not a nudge.** Like R-96's confirmation it is a notice, so FR-P2 is untouched.
+- **Declined.**
+  - One email on the day of disconnect.
+  - No email.
+  - Two emails.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.20b's spec (the ruling under Question 1, its Intent, the Dev gate, Ruled values);
+  - ✅ `epics.md` Story 7.20b's card;
+  - ✅ `prd.md` FR-P1 (eight → nine, the new **(9)**; (1)–(8) keep their numbers) and FR-C6 (dated note);
+  - ✅ `epic-7-context.md`;
+  - ⬜ the code, `EXPERIENCE.md`'s Sites row and DW-75/DW-79/DW-390's closure (Story 7.20b's Dev).
+- **Deliberately not touched:** FR-P2 (a notice, not a nudge), and the spine's `resend` row, which defers to FR-P1 for the
+  count.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

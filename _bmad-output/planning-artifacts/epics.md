@@ -4436,6 +4436,11 @@ taken**; objects before rows, through `drainPrefix`, as `purge-accounts` does
 alone. This story's Schema push corrects it with one `comment on column` (and `SCHEMA.sql`'s mirror), or hands it to the
 next story that has a Schema phase.
 
+*(Ruled at this story's Create, owner, 2026-10-27, option 1:* **R-285** *— the warning is one email, FR-P1's ninth, sent
+two weeks (`ORPHAN_NOTICE_DAYS`) before the deadline; from the moment of disconnect the Sites page lists each original theme
+still kept for a disconnected site, with its deletion date and a Download; the purge waits for the email and never comes
+sooner than two weeks after it, whether or not the theme was downloaded.)*
+
 **FRs:** FR-C6 (the purge). · **Frame:** none drawn — the notice's form is its Create's question (R-281). · **Owner
 test:** yes. · **Verification:** the cron run on production against a planted disconnected site record, objects before
 rows (R-82).

@@ -29,8 +29,8 @@ on its date whether or not the offer was taken. Nothing warns the customer, offe
 enough. It sends the notice when the notice is due. It deletes the theme (objects before rows) when its date has passed and
 the notice went out. The date is derived from `sites.disconnected_at` and `ORPHAN_SNAPSHOT_DAYS`, the one home of the 90. The
 Sites page lists every theme still kept for a disconnected site, with its date and a Download. **How and when the notice is
-sent is the owner's (R-281, Question 1, open).** This spec plans option 1 (one email, two weeks before), and "Ruled values"
-holds what a different answer changes.
+sent was the owner's (R-281): he ruled Question 1 option 1 on 2026-10-27, R-285.** The notice is one email, two weeks
+before. "Ruled values" holds it.
 
 **Frame:** none is drawn (the epics.md card). The section is extrapolated (R-74) from two sources:
 - `S11 Sites.dc.html` S11a, the page it sits on;
@@ -89,7 +89,7 @@ The epic's criteria, word for word (R-195):
 - Anything on production or T1 outside the harness's own fixtures, and the Schema apply. Each needs an in-session go from
   the owner (R-99, R-82), run in the main session, never through a subagent.
 - Anything that would add a deletion path beyond AD-29's five. This job is one of the five, built where AD-33 puts it.
-- If Question 1 is ruled other than option 1, change only "Ruled values" and what it lists, then build.
+- Any change to R-285's notice: one email, two weeks before the deadline.
 
 **Never:**
 - No notification-bell row: the bell is E13's. No new enum value. No GoTrue template for the email.
@@ -101,7 +101,7 @@ The epic's criteria, word for word (R-195):
 
 ## I/O & Edge-Case Matrix
 
-*N* = `ORPHAN_SNAPSHOT_DAYS`, *n* = `ORPHAN_NOTICE_DAYS`. The rows are option 1's; "Ruled values" changes the notice rows.
+*N* = `ORPHAN_SNAPSHOT_DAYS`, *n* = `ORPHAN_NOTICE_DAYS`. The rows are R-285's (option 1).
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |---|---|---|---|
@@ -181,9 +181,8 @@ The epic's criteria, word for word (R-195):
 
 ## Tasks & Acceptance
 
-**Dev gate.** Question 1 must be ruled before Dev. Then the Schema push is made, green, and applied to production on the
-owner's in-session go (R-99), before any code that reads `orphan_notice_at` is pushed. A ruling other than option 1 changes
-"Ruled values" first; under option 3 the column is dropped from the Schema push.
+**Dev gate.** Question 1 is ruled (option 1, R-285). The Schema push is made first, green, and applied to production on the
+owner's in-session go (R-99), before any code that reads `orphan_notice_at` is pushed.
 
 **Execution — the `Schema` push (alone, first; R-99):**
 - [ ] `supabase/migrations/20261028120000_snapshot_orphans.sql` -- re-runnable. It holds:
@@ -264,11 +263,11 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
   - the section at 1440 and 390, with each row's words and date;
   - Tab reaches each Download, and its 303 leads to a zip;
   - the section is absent with no orphan, and on the list screen sits after the cards.
-- [ ] Propagation (standing rule 3):
-  - PRD FR-P1 gains the ninth email and FR-C6 the notice's form;
+- [ ] Propagation (standing rule 3). R-285 already reached the register, `prd.md` FR-P1 (9) and FR-C6, and `epics.md`'s
+  card at the Create. Dev adds:
   - the spine's AD-33 says it is built at its path;
   - `EXPERIENCE.md`'s Sites row names the section;
-  - `epics.md`'s 7.20b card carries the ruling;
+  - R-285's ⬜ target ticked in the register;
   - `deferred-work.md` closes DW-75, DW-79 and DW-390;
   - `epic-7-context.md` gets a sub-bullet;
   - finish with a grep for `Story 7.20's`, `7.20b's (DW-75)` and `both paths offered`.
@@ -286,22 +285,25 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
 - **R-98.** Given the section, when Download is pressed, then the browser follows a link to the route's 303, as on
   `/restore`. No work starts in the app, so no busy label is owed. `/sites` keeps its own `loading.tsx`, unchanged: the
   section may be absent, so the skeleton does not draw it, and `busy.test.ts` stays green.
-- Given Question 1 ruled, when Dev starts, then "Ruled values" matches the ruling and every task it names follows it.
+- Given R-285, when the job runs, then a disconnected site's owner gets exactly one email per disconnect,
+  `ORPHAN_NOTICE_DAYS` before the deadline. The theme is never deleted before that email has gone out, nor sooner than
+  `ORPHAN_NOTICE_DAYS` after it.
 
 ## Spec Change Log
 
 ## Design Notes
 
-**Ruled values — the one table Question 1 sets.** Dev builds the row the owner rules, and option 1 is planned.
+**Ruled values — the one table Question 1 set.** Dev builds option 1, ruled by the owner on 2026-10-27 (R-285). The other
+rows are kept as the record of what was declined.
 
 | Option | Emails | `orphan_notice_at` | Deleted when |
 |---|---|---|---|
-| **1 (planned)** | one, from deadline − n | the send | the later of the deadline and notice + n |
+| **1 (ruled, R-285)** | one, from deadline − n | the send | the later of the deadline and notice + n |
 | 2 | one, at the first run after the disconnect (the horizon becomes 0 days) | the send | as 1 (on time, simply the deadline) |
 | 3 | none. The Sites list is the notice, from the moment of disconnect | dropped from the Schema push | the deadline |
 | 4 | two: the first run after the disconnect, and from deadline − n | the latest send | as 1, counted from the second |
 
-Under options 1, 2 and 4, FR-P1 gains a ninth email. Under option 4 one column is enough: the second notice is owed when
+FR-P1 gains its ninth email (`prd.md`, written with the ruling). Under option 4 one column is enough: the second notice is owed when
 `now ≥ deadline − n` and the latest notice is older than `deadline − n`.
 
 **Why a column, not `download_offered_at`.** `request_account_deletion()` already stamps that column for FR-A5. Sharing it
@@ -358,7 +360,7 @@ In **ghost6.inflozo.com's Ghost Admin** (`https://ghost6.inflozo.com/ghost/`), m
 
 ## Questions for the owner
 
-One question is open, and it is needed before Dev. "Ruled values" in Design Notes holds what it sets.
+Question 1 was ruled on 2026-10-27, option 1 (R-285). None is open. "Ruled values" in Design Notes holds what it set.
 
 ### Question 1 — How and when do we warn someone before a disconnected site's original theme is deleted?
 
@@ -384,7 +386,7 @@ forbids.
    theme without hearing about it.
 4. **Two emails, on the day you disconnect and two weeks before.** The most warning, and ten emails.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-27) — R-285.** *"1"* — one email, two weeks before the deletion.
 
 ## Verification
 
