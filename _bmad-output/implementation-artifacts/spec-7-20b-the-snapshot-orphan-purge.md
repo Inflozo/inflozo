@@ -2,7 +2,7 @@
 title: 'Story 7.20b — The snapshot orphan purge'
 type: 'feature'
 created: '2026-10-26'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'c77b737a5093cab805ccdb1940f09c2983b8bbbb'
 owner_test: pending
 review_loop_iteration: 0
@@ -289,7 +289,79 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
   `ORPHAN_NOTICE_DAYS` before the deadline. The theme is never deleted before that email has gone out, nor sooner than
   `ORPHAN_NOTICE_DAYS` after it.
 
+### Review Findings
+
+Five layers: the Blind Hunter, the Edge Case Hunter, the Verification Gap reviewer and the Acceptance Auditor as subagents;
+the Real-infra verifier's read-only half as a subagent, and every production write (the harness, the walk) in the main
+session. One decision for the owner (Question 2), 13 patches (all applied), 4 deferred (DW-392 to DW-395), 17 dismissed.
+Among the dismissed:
+- the purge draining `{userId}/{siteId}/` rather than the row's `storage_path`: `server/snapshot.ts:163` writes every key
+  under that prefix by construction, and `rls.sql`'s fixture path is SQL-only;
+- the email's button losing `#original-themes` through sign-in: the spec's own Design Note, and the owner's test step 5
+  walks it;
+- the copy's "reconnect" with no link beside it: Connect site is on the same page, and `connectSite` re-adopts the
+  record by its URL (`actions.ts:279`, `KEPT`);
+- the "deleted on" date of a theme whose purge failed reading as past: a failure path the job answers 500 for;
+- a CR/LF site title in the subject: the health email's subject carries the title the same way;
+- the RLS gate not reading the page's `sites!inner` embed through a session: walk step 118 does, on production;
+- the counts in comments ("the TWELFTH", "AD-29's five"): the file's own ordinal convention and the spec's own words;
+- `lib/` importing `deadlineLabel` from `account/deletion-rule.ts`: where the Code Map put the one home;
+- FR-C6's "proceeds on its deadline": the same sentence carries R-285's amendment;
+- DW-75/79 closed at Dev: this Review runs the proof;
+- `sprint-status.yaml` at `in-progress`: the board reads the phase from `git log`;
+- the plain-text footer literal: `health-email.ts`' own.
+
+- [ ] [Review][Decision] When Inflozo cannot tell whether the one warning email went out (a function killed between the
+  claim and the send, or a send that timed out after Resend took it), it guesses one way in each case: the first counts as
+  sent, so the theme can go with no email; the second as not sent, so the "only" email can go twice. "The notice is never
+  skipped" and "claimed before it is sent, never twice" pull apart only there, and the notice is "Ask First", so it is the
+  owner's (Question 2) [`lib/orphan-rule.ts` `runOrphans`]
+- [x] [Review][Patch] The email went a day late and named a date a day past the deadline for every disconnect after 04:30
+  UTC: `decide` compared exact instants while the job runs once a day, so R-285's own example (16 Jan → "Jan 30") came out
+  17 Jan → "Jan 31", and the Sites row's date moved when the email went. The notice is now owed from the start of the
+  deadline's UTC day − n (`noticeFrom`), `dueSince` reaches back to that day's start, and a test walks five times of day
+  through the daily run (seen red against the old threshold) [`lib/orphan-rule.ts` · `orphans.test.ts`]
+- [x] [Review][Patch] The route named the site with its own copy of "title, else host"; one `siteLabel` now serves the Sites
+  row and the email (R-170) [`lib/orphan-rule.ts` · `app/api/cron/purge-snapshots/route.ts`]
+- [x] [Review][Patch] Every row's link read "Download" alone to a screen reader's list of links; each is now described by
+  its row (WCAG 2.4.4), on Sites and on the `/restore` row it reuses [`sites/(list)/page.tsx` · `app/restore/page.tsx`]
+- [x] [Review][Patch] No test ran past one batch, a throwing claim, or a put-back that itself fails; three tests now do
+  [`orphans.test.ts`]
+- [x] [Review][Patch] DW-79's test let the usual due-query shape (`disconnected_at <= now() - interval …`) through, and
+  nothing proved the comment stripper keeps executable SQL; the pattern now matches either order in one statement, with
+  the stripper's own control [`connect-rule.test.ts`]
+- [x] [Review][Patch] The harness never ran a claim from a stale notice, an account waiting to be deleted, the
+  compare-and-set's put-back, or read back the email Resend received; fixtures S and D and the `claims` and `delivered`
+  steps do [`tools/probe/run-verify-snapshot-orphans.py`]
+- [x] [Review][Patch] The harness's "once a day" check passed `* * * * *` [`run-verify-snapshot-orphans.py` `offline`]
+- [x] [Review][Patch] The harness's W fixture (one day short of its notice day) could be owed in the first hour of a UTC
+  day under `noticeFrom`; it is two days short [`run-verify-snapshot-orphans.py`]
+- [x] [Review][Patch] `--owner-test` planted orphan-a at 80 days, so the owner's one email was a LATE notice naming
+  disconnect + 94 days beside "keeps it for 90 days"; A is now planted on time (the last second of the UTC day 76 days ago)
+  [`run-verify-snapshot-orphans.py` `owner_test` · Owner's manual test]
+- [x] [Review][Patch] `--owner-test` left a half-planted alias behind on a failed plant, which its `fresh` guard then
+  refused for ever; it takes back what it put [`run-verify-snapshot-orphans.py` `owner_test`]
+- [x] [Review][Patch] The harness's docstring carried the owner's address, claimed `noticed` counts only a send with an id
+  (it counts Resend's 2xx), and never said a full run refuses once a real theme is due [`run-verify-snapshot-orphans.py`]
+- [x] [Review][Patch] The Owner's manual test listed orphan-a before ghost6; the section is newest disconnect first
+  [Owner's manual test, step 2]
+- [x] [Review][Patch] The epics.md card still said the notice's form was the Create's question [`epics.md` Story 7.20b]
+- [x] [Review][Defer] A notice that can never be delivered keeps its theme and answers 500 every day [`lib/orphan-rule.ts`
+  `runOrphans`] — deferred, DW-392 (R-285: the purge waits for the email)
+- [x] [Review][Defer] Every tried id rides the due query's URL; a few hundred noticed themes waiting out their window
+  outgrow it [`route.ts` `due`] — deferred, DW-393 (marked `ponytail:`)
+- [x] [Review][Defer] A site reconnected in the seconds between the due read and its notice still gets the email
+  [`lib/orphan-rule.ts` `runOrphans`] — deferred, DW-394
+- [x] [Review][Defer] A late notice says "keeps it for 90 days, so on {a later date}" [`ORPHANS.emailBody`, `.caption`] —
+  deferred, DW-395
+
 ## Spec Change Log
+
+**Review (2026-11-24) — one reading of the frozen I/O matrix, told in one line.** Its "disconnected ≥ N−n days" is read
+at the job's own granularity, the UTC day: the notice is owed from the start of the deadline's day − n (`noticeFrom`), so
+the on-time email goes on R-285's ruled day and names the deadline's day. Nothing is ever deleted sooner: the purge still
+waits for the exact deadline and the notice's full `ORPHAN_NOTICE_DAYS`, so it lands on that day's 04:30 UTC run or the
+next, as FR-A5's does.
 
 ## Design Notes
 
@@ -337,7 +409,7 @@ You test as **`umngkmr+orphan720b@gmail.com`**, a fresh alias. Before you start,
 
    | Site | Disconnected | What the run does to it |
    |---|---|---|
-   | `orphan-a.example` | 80 days ago | Due for its warning: the run emails you. |
+   | `orphan-a.example` | 76 days ago (the last second of that day) | Due for its warning: the run emails you, on time. |
    | `orphan-b.example` | 100 days ago, warned 15 days ago | Past its date: the run deletes it. |
    | `ghost6.inflozo.com` | 10 days ago | Not due yet. |
 
@@ -350,7 +422,7 @@ In **ghost6.inflozo.com's Ghost Admin** (`https://ghost6.inflozo.com/ghost/`), m
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+orphan720b@gmail.com` | Projects (the first-run screen). |
-| 2 | `https://app.inflozo.com/sites` | Sites | Look under **Connect site**. | — | The empty Sites screen. Under it, **"ORIGINAL THEMES FROM DISCONNECTED SITES"** and the line "…keeps it for 90 days after you disconnect, then deletes it. Reconnect a site to keep its theme." Then two rows: **casper** · orphan-a.example · deleted on *A's date*, and **casper** · ghost6.inflozo.com · deleted on *ghost6's date*, each with **Download**. **orphan-b.example is not there.** |
+| 2 | `https://app.inflozo.com/sites` | Sites | Look under **Connect site**. | — | The empty Sites screen. Under it, **"ORIGINAL THEMES FROM DISCONNECTED SITES"** and the line "…keeps it for 90 days after you disconnect, then deletes it. Reconnect a site to keep its theme." Then two rows, newest disconnect first: **casper** · ghost6.inflozo.com · deleted on *ghost6's date*, and **casper** · orphan-a.example · deleted on *A's date*, each with **Download**. **orphan-b.example is not there.** |
 | 3 | the same page | Sites | Press **Download** on orphan-a's row. | — | A zip named for orphan-a and casper downloads. |
 | 4 | your Gmail inbox | Email | Open the email from Inflozo. | — | Exactly one new email: **"Your original theme from orphan-a.example will be deleted on *A's date*"**. It names casper and the date it was disconnected, has a **Download it from Sites** button, and ends "This is the only email we'll send about this." Nothing about ghost6 or orphan-b. |
 | 5 | the email | Sites | Press **Download it from Sites**. | — | Inflozo opens, after sign-in if asked; if it lands on Projects, open **Sites**. The same two rows as step 2. |
@@ -360,7 +432,8 @@ In **ghost6.inflozo.com's Ghost Admin** (`https://ghost6.inflozo.com/ghost/`), m
 
 ## Questions for the owner
 
-Question 1 was ruled on 2026-10-27, option 1 (R-285). None is open. "Ruled values" in Design Notes holds what it set.
+Question 1 was ruled on 2026-10-27, option 1 (R-285). "Ruled values" in Design Notes holds what it set. **Question 2,
+from the Review, is open.**
 
 ### Question 1 — How and when do we warn someone before a disconnected site's original theme is deleted?
 
@@ -387,6 +460,32 @@ forbids.
 4. **Two emails, on the day you disconnect and two weeks before.** The most warning, and ten emails.
 
 **Ruled: option 1 (owner, 2026-10-27) — R-285.** *"1"* — one email, two weeks before the deletion.
+
+### Question 2 — If Inflozo can't tell whether the warning email went out, which mistake should it risk?
+
+**In plain English.** Inflozo writes down "warning sent" a moment before it hands the email to the email service, so two
+nightly runs can never both send it. Very rarely it cannot be sure the email went: Inflozo crashes in that moment, or the
+email service takes the email but answers too slowly. Today it guesses one way for each:
+- **A crash in that moment counts as sent.** No email goes, and the theme is deleted two weeks later anyway. The Sites page
+  still showed it with its date the whole time.
+- **A slow answer counts as not sent.** The next night sends it again, so you get the "only email we'll send about this"
+  twice.
+
+Both need a failure in the same second as the send.
+
+**An example.** `blog.example.com`'s theme is due to go on **Jan 30**. On **Jan 16** Inflozo notes the warning as sent.
+- If it crashes before the email leaves, you get no email, and Casper is deleted on Jan 30.
+- If the email service is slow to answer, you get the email on Jan 16 and again on Jan 17.
+
+1. **(RECOMMENDED) Keep it as built.** Both cases are very rare. The Sites page lists the theme and its date from the day you
+   disconnect, so the email is not the only warning. The slow answer is logged, and the job reports a failure that night.
+2. **Never delete without proof the email went.** Inflozo keeps the email service's receipt in a new database column and
+   deletes only a theme whose warning has one. A warning without a receipt is sent again, so a second email stays possible
+   in the rare case. This needs a database change and about a day's work.
+3. **Never send twice.** A slow answer counts as sent too. The duplicate goes, but in that rare case a theme can also be
+   deleted with no email.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 

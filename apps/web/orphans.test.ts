@@ -1,9 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { deadlineLabel } from './app/(app)/app/(authed)/account/deletion-rule.ts'
 import { ORPHAN_SNAPSHOT_DAYS } from './lib/connect-rule.ts'
 import { orphanEmail } from './lib/orphan-email.ts'
 import {
+  BATCH,
   BUDGET_MS,
   decide,
   dueSince,
@@ -14,6 +16,7 @@ import {
   purgeDateOf,
   runOrphans,
   SECTION_ID,
+  siteLabel,
   themeLabel,
   type Orphan,
   type OrphanDeps,
@@ -57,6 +60,8 @@ function world(
     drained?: number
     taken?: string[]
     dueFails?: boolean
+    claimThrows?: boolean
+    unclaimFails?: boolean
   } = {},
 ) {
   const calls: string[] = []
@@ -68,10 +73,12 @@ function world(
     },
     async claim(id, from) {
       calls.push(`claim:${id}:${from}`)
+      if (o.claimThrows) throw Object.assign(new Error('claim'), { step: 'claim', code: '57014' })
       return !o.taken?.includes(id)
     },
     async unclaim(id, back) {
       calls.push(`unclaim:${id}:${back}`)
+      if (o.unclaimFails) throw Object.assign(new Error('unclaim'), { step: 'unclaim', code: '57014' })
     },
     async address(userId) {
       calls.push(`address:${userId}`)
@@ -116,8 +123,34 @@ test('the deadline is ORPHAN_SNAPSHOT_DAYS after the disconnect; on time, the pu
   assert.equal(iso(purgeDateOf({ disconnectedAt: t, noticeAt: iso(NOW) })), iso(orphanDeadline(t)))
   // …and with no notice yet, before the notice is due, the Sites row says the same day
   assert.equal(iso(purgeDateOf({ disconnectedAt: ago(10), noticeAt: null }, NOW)), iso(orphanDeadline(ago(10))))
-  // the due query reaches back exactly to where a notice becomes owed
-  assert.equal(iso(dueSince(NOW)), ago(N - n))
+  // the due query's bound holds every disconnect a notice is owed for, from the start of its day; just after it, none
+  const bound = dueSince(NOW).getTime()
+  assert.equal(decide({ disconnectedAt: iso(new Date(bound - 1)), noticeAt: null }, NOW), 'notice')
+  assert.equal(decide({ disconnectedAt: iso(new Date(bound + 1)), noticeAt: null }, NOW), 'wait')
+})
+
+/* Review, 2026-11-24: NOW is 04:30 UTC like the job, and every `ago()` a whole number of days, so the tests above could
+   never see a disconnect made at another time of day — which, under a threshold at the deadline's exact instant, got its
+   email the NEXT morning, naming a date a day past the one the Sites row had shown (R-285's own example, 16 Jan → Jan 30,
+   came out 17 Jan → Jan 31). */
+test('the daily 04:30 UTC run: a disconnect at any time of day is emailed on the deadline\'s day − n, naming the deadline\'s own day, and the Sites row never changes its date', () => {
+  for (const time of ['00:00:01', '04:29:59', '04:30:00', '10:00:00', '23:59:59']) {
+    const disconnectedAt = `2026-11-01T${time}Z`
+    const shown = deadlineLabel(purgeDateOf({ disconnectedAt, noticeAt: null }, new Date('2026-12-01T12:00:00Z')))
+    assert.equal(shown, 'Jan 30, 2027', `${time}: the Sites row, from the disconnect`)
+    let run = Date.parse('2027-01-10T04:30:00Z')
+    while (decide({ disconnectedAt, noticeAt: null }, new Date(run)) !== 'notice') run += DAY
+    const noticeAt = new Date(run).toISOString()
+    assert.equal(noticeAt, '2027-01-16T04:30:00.000Z', `${time}: the email goes on R-285's day`)
+    const named = deadlineLabel(purgeDateOf({ disconnectedAt, noticeAt }, new Date(run)))
+    assert.equal(named, shown, `${time}: the email names the day the Sites row showed`)
+    assert.equal(deadlineLabel(purgeDateOf({ disconnectedAt, noticeAt }, new Date(run + DAY))), shown, `${time}: …and the row still does`)
+    // the purge: never before the exact deadline nor the notice's full window, and on the named day's run or the next
+    let purge = run
+    while (decide({ disconnectedAt, noticeAt }, new Date(purge)) !== 'purge') purge += DAY
+    assert.ok(purge >= orphanDeadline(disconnectedAt).getTime() && purge >= run + n * DAY, time)
+    assert.ok(['2027-01-30', '2027-01-31'].includes(new Date(purge).toISOString().slice(0, 10)), `${time}: purged ${new Date(purge).toISOString()}`)
+  }
 })
 
 test('a late notice names the real date: today + ORPHAN_NOTICE_DAYS, never a day already past', () => {
@@ -240,6 +273,34 @@ test('a failure never stops the rest: a refused drain, then a notice and a purge
   assert.ok(calls.includes('remove:gone') && calls.some((c) => c.startsWith('send:tell:')), calls.join(' '))
 })
 
+test('notice: a claim that throws counts failed, sends nothing and puts nothing back', async () => {
+  const { deps, calls } = world([row()], { claimThrows: true })
+  const { lines, log } = recorder()
+  assert.deepEqual(await runOrphans(deps, log, clock), { noticed: 0, purged: 0, failed: 1 })
+  assert.deepEqual(calls, ['due', 'claim:s1:null', 'due'])
+  assert.match(JSON.stringify(lines), /"step":"claim","code":"57014"/)
+})
+
+test('notice: a put-back that itself fails is logged loudly as a notice recorded that never went out, and counts failed', async () => {
+  const { deps, calls } = world([row()], { sent: () => ({ ok: false, status: 0 }), unclaimFails: true })
+  const { lines, log } = recorder()
+  assert.deepEqual(await runOrphans(deps, log, clock), { noticed: 0, purged: 0, failed: 1 })
+  assert.ok(calls.includes('unclaim:s1:null'), calls.join(' '))
+  assert.match(JSON.stringify(lines), /unclaim failed — a notice is recorded that never went out/)
+  assert.match(JSON.stringify(lines), /"step":"send","code":0/, 'the send\'s own failure is what the run counts')
+})
+
+test('more than one batch: every theme past BATCH is reached, each tried once, and a batch of waiting themes never hides a due one', async () => {
+  const many = Array.from({ length: BATCH + 1 }, (_, i) => row({ id: `s${i}`, siteId: `site${i}` }))
+  const one = world(many)
+  assert.deepEqual(await runOrphans(one.deps, recorder().log, clock), { noticed: BATCH + 1, purged: 0, failed: 0 })
+  assert.equal(one.calls.filter((c) => c === 'due').length, 3, 'a full batch, the one left over, then the empty queue')
+  const waiting = Array.from({ length: BATCH }, (_, i) => row({ id: `w${i}`, siteId: `w${i}`, disconnectedAt: ago(N - n + 3), noticeAt: ago(1) }))
+  const two = world([...waiting, row({ id: 'last', siteId: 'siteLast' })])
+  assert.deepEqual(await runOrphans(two.deps, recorder().log, clock), { noticed: 1, purged: 0, failed: 0 })
+  assert.ok(two.calls.some((c) => c.startsWith('send:last:')), two.calls.join(' '))
+})
+
 test('a queue that cannot be read ends the run red', async () => {
   const { deps } = world([row()], { dueFails: true })
   assert.deepEqual(await runOrphans(deps, recorder().log, clock), { noticed: 0, purged: 0, failed: 1 })
@@ -273,6 +334,8 @@ test('ORPHANS holds every word, names no number, and calls the thing "original t
   assert.match(ORPHANS.caption(N), new RegExp(`keeps it for ${N} days after you disconnect`))
   assert.equal(ORPHANS.row('blog.example', 'Jan 30, 2027'), 'blog.example · deleted on Jan 30, 2027')
   assert.equal(themeLabel('  '), 'Original theme')
+  assert.equal(siteLabel('  ', 'https://blog.example/'), 'blog.example')
+  assert.equal(siteLabel(' Blog ', 'https://blog.example/'), 'Blog')
   assert.equal(ORPHANS.emailOnly, "This is the only email we'll send about this.")
 })
 
@@ -313,6 +376,7 @@ test('the route: the door before any read, the service role built after it, the 
   assert.match(flat, /\.order\('sites\(disconnected_at\)'\)/, 'oldest disconnect first')
   assert.match(flat, /drainPrefix\(admin\.storage\.from\(SNAPSHOT_BUCKET\), prefix\)/)
   assert.match(flat, /runOrphans\(deps\)/)
+  assert.match(flat, /site: siteLabel\(row\.sites\?\.title, row\.sites\?\.url \?\? ''\)/, 'the email names the site as the Sites row does')
   assert.match(flat, /status: failed \? 500 : 200/)
   assert.doesNotMatch(flat, /interval|\b90\b|\b14\b/, 'no figure of the clock in the route')
 })

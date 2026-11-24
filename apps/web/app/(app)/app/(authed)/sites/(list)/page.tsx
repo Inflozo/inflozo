@@ -181,11 +181,16 @@ function OriginalThemes({
       <p className="text-helper-caption leading-[1.5] text-ink-soft">{ORPHANS.caption(ORPHAN_SNAPSHOT_DAYS)}</p>
       {rows.map((row) => (
         <div key={row.id} className="flex items-center gap-3" data-original-theme={row.id}>
-          <span className="flex min-w-0 flex-col gap-px">
+          <span id={`${SECTION_ID}-${row.id}`} className="flex min-w-0 flex-col gap-px">
             <span className="truncate font-mono text-control-label text-ink">{row.theme}</span>
             <span className="truncate text-helper-caption text-ink-soft">{ORPHANS.row(row.site, row.date)}</span>
           </span>
-          <a href={`/snapshots/${row.id}/download`} className={`ml-auto shrink-0 ${buttonClasses('secondary', 32)}`}>
+          {/* Described by its row, so a screen reader's list of links tells one Download from the next (WCAG 2.4.4). */}
+          <a
+            href={`/snapshots/${row.id}/download`}
+            aria-describedby={`${SECTION_ID}-${row.id}`}
+            className={`ml-auto shrink-0 ${buttonClasses('secondary', 32)}`}
+          >
             {ORPHANS.download}
           </a>
         </div>

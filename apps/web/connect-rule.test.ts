@@ -719,9 +719,17 @@ test('DW-79: the orphan deadline is ORPHAN_SNAPSHOT_DAYS after the disconnect, a
   assert.equal(orphanDeadline(t).getTime() - t.getTime(), ORPHAN_SNAPSHOT_DAYS * 86_400_000)
 
   const MIGRATION = '../../supabase/migrations'
-  const CLOCK = /disconnected_at\s*\+\s*interval/i
+  // Any one statement naming both the column and an interval, either way round: `disconnected_at + interval …`,
+  // `disconnected_at <= now() - interval …`, `make_interval(…) + disconnected_at` (review, 2026-11-24: the first
+  // pattern let the usual shape of a due query through).
+  const CLOCK = /disconnected_at[^;]*interval|interval[^;]*disconnected_at/i
   const files = readdirSync(MIGRATION).filter((f) => f.endsWith('.sql')).sort()
   const executable = (sql: string) => sql.replace(/\/\*[^]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ')
+  // (d) THE STRIPPER'S OWN CONTROL: it keeps executable SQL and drops only comments — a stripper that returned
+  // nothing would pass (b) on every file.
+  assert.ok(CLOCK.test(executable("select id from sites where disconnected_at <= now() - interval '90 days';")), 'executable SQL survives the strip')
+  assert.ok(CLOCK.test(executable("select make_interval(days => 90) + disconnected_at from sites;")), 'either way round')
+  assert.ok(!CLOCK.test(executable("-- disconnected_at + interval '90 days'\n/* disconnected_at + interval */ select 1;")), 'comments do not')
   // (c) THE CONTROL, FIRST: the regex does find the expression where it is still written — the applied
   // migration's comment — before the comments are stripped. Without this, (b) could pass on a regex that
   // matches nothing.

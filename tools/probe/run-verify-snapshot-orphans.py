@@ -4,7 +4,7 @@
     python3 tools/probe/run-verify-snapshot-orphans.py --check          # offline: the app's own rule, words, schedule, email
     python3 tools/probe/run-verify-snapshot-orphans.py                  # the whole purge (Review and Deploy)
     python3 tools/probe/run-verify-snapshot-orphans.py --url https://<deployment>.vercel.app
-    python3 tools/probe/run-verify-snapshot-orphans.py --owner-test umngkmr+orphan720b@gmail.com
+    python3 tools/probe/run-verify-snapshot-orphans.py --owner-test <alias>   # the spec's Owner's manual test names it
 
 `run-verify-account-purge.py` IS THE PATTERN, and its helpers are imported rather than copied: the
 route called with redirects DISABLED (a 3xx is a FAIL, never a bearer re-sent), a 401 that must come
@@ -28,26 +28,36 @@ THE STEPS, in the order a run prints them:
   email         `orphanEmail` composed for the notice fixture: the site, the theme, both dates, the button
                 to `/sites#original-themes`, the only-email note. Composed, never sent, in `--check`
   ── from here on a deployment and the live project are needed; `--check` stops above.
-  seeded        one fixture user (a `+orphan-harness-` alias of `RESEND_TEST_INBOX`, so the one real email
-                lands in the test inbox) with four disconnected-site records, each with one object under
-                `site-snapshots/{user}/{site}/` and its `site_snapshots` row: W not yet due, T notice due, P
-                purge due (notice n+1 days old), R reconnected (`disconnected_at` null, an old notice). The
-                route's own due query, run here FIFTEEN MINUTES AHEAD, selects exactly {T, P} — any row this
-                run did not create stops the run before the route is ever called — and every prefix lists one
+  seeded        one fixture user (a `+orphan-harness-` alias of `RESEND_TEST_INBOX`, so the two real emails
+                land in the test inbox) with five disconnected-site records, each with one object under
+                `site-snapshots/{user}/{site}/` and its `site_snapshots` row: W not yet due, T notice due, S
+                notice due on a STALE notice (one older than its latest disconnect — disconnected again), P
+                purge due (notice n+1 days old), R reconnected (`disconnected_at` null, an old notice); and a
+                second fixture user D, WAITING TO BE DELETED (`profiles.deleted_at` set), holding one purge-due
+                theme. The route's own due query, run here FIFTEEN MINUTES AHEAD, selects exactly {T, S, P, D}
+                — any row this run did not create stops the run before the route is ever called — and every
+                prefix lists one. SO A FULL RUN NEEDS A PRODUCTION WITH NO REAL THEME PAST ITS NOTICE DAY: once
+                a customer has one, the run refuses (safely) and the route's proof is `--owner-test`'s alone
   no-header     THE CONTROL, FIRST: no `Authorization` → 401 from the route, and nothing moved
   wrong-secret  a wrong bearer of the same shape → 401 from the route, and nothing moved
-  run           the real bearer → 200 `{"noticed": 1, "purged": 1, "failed": 0}` with `no-store`. `noticed`
-                counts only a send Resend accepted with an id, which the route logs as
-                `purge-snapshots: notice sent` (read it with `npx vercel logs`)
-  noticed       T's `orphan_notice_at` stamped inside the run's window
+  run           the real bearer → 200 `{"noticed": 2, "purged": 1, "failed": 0}` with `no-store`. `noticed`
+                counts a send Resend accepted (2xx), whose id the route logs as `purge-snapshots: notice sent`
+  noticed       T's `orphan_notice_at` stamped inside the run's window, and S's moved FROM its stale value
+  delivered     the two emails Resend holds for the fixture address, read back with `RESEND_READ_API_KEY`:
+                exactly T's and S's, each subject and text equal to the app's `orphanEmail` composed from the
+                row as stamped, the html carrying the button to `/sites#original-themes`
   purged        P's prefix lists EMPTY (HTTP 200 — an errored listing is not an empty one) and its row is gone
-  untouched     W's and R's rows are field-for-field what they were, and each object's bytes hash the same
-  idempotent    a second call → 200 `{"noticed": 0, "purged": 0, "failed": 0}`, T's stamp unmoved
-  cleanup       (the `finally`) every fixture object removed, the user deleted (its sites and rows with it),
-                the Admin-API user count back where it started, no stray fixture left
+  untouched     W's, R's and D's rows are field-for-field what they were, and each object's bytes hash the same
+  claims        the route's compare-and-set, as postgrest-js sends it, on R's row: a claim FROM the value as
+                read moves it (1 row), the same claim again moves nothing (another run took it), a claim from
+                null moves nothing (the control), and the put-back restores the value read
+  idempotent    a second call → 200 `{"noticed": 0, "purged": 0, "failed": 0}`, T's and S's stamps unmoved
+  cleanup       (the `finally`) every fixture object removed, both users deleted (their sites and rows with
+                them), the Admin-API user count back where it started, no stray fixture left
 
 `--owner-test <alias>` is Deploy's, on the owner's in-session go: it creates the alias if it is not there,
-plants the owner's three disconnected sites (orphan-a.example 80 days ago; orphan-b.example 100 days ago,
+plants the owner's three disconnected sites (orphan-a.example at the last second of the UTC day 76 days ago, so
+its email goes ON TIME and names the 90-day date; orphan-b.example 100 days ago,
 warned 15 days ago; T1's own address 10 days ago), each holding a small theme named casper, guards the due
 set to exactly A and B, runs the route ONCE, reads back A stamped, B gone and T1's untouched, and prints the
 two dates the spec's manual test needs (`purgeDateOf`'s, through `deadlineLabel`). It leaves the alias in
@@ -56,7 +66,7 @@ place: its two themes delete themselves on their dates.
 NO KEY AND NO ADDRESS IS EVER PRINTED. Keys reach requests through headers built from the environment.
 """
 import argparse, calendar, hashlib, importlib.util, io, json, os, re, subprocess, sys, time, zipfile
-import urllib.parse
+import urllib.error, urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WEB = os.path.join(HERE, '..', '..', 'apps', 'web')
@@ -139,6 +149,20 @@ def due_ids(sb, secret, since):
     return status, sorted(row['id'] for row in rows) if isinstance(rows, list) else None
 
 
+def resend_get(key, path):
+    """Resend's API with the READING key. Its Cloudflare front answers urllib's default User-Agent with 403
+    "error code: 1010" — a transport quirk (`check-access.py`), so a real one is sent."""
+    req = urllib.request.Request(f'https://api.resend.com{path}',
+                                 headers={'Authorization': f'Bearer {key}', 'User-Agent': 'inflozo-probe/1.0'})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return r.status, json.loads(r.read() or b'{}')
+    except urllib.error.HTTPError as e:
+        return e.code, None
+    except (urllib.error.URLError, TimeoutError, OSError):
+        return 0, None
+
+
 def snapshot_row(sb, secret, sid):
     status, rows = rest(sb, secret, 'GET', f'/site_snapshots?id=eq.{sid}&select=*')
     return rows[0] if status == 200 and isinstance(rows, list) and rows else None
@@ -188,11 +212,14 @@ def offline(run, env, needed):
     jobs = [j for j in vercel.get('crons') or [] if j.get('path') == figures['path']]
     fields = jobs[0]['schedule'].split() if jobs else []
     exists = os.path.exists(os.path.join(WEB, 'app', figures['path'].lstrip('/'), 'route.ts'))
-    run.step('schedule', len(jobs) == 1 and fields[2:] == ['*', '*', '*'] and exists,
+    # once a day: a fixed minute and hour, every day — `* * * * *` would pass a check on the last three fields alone
+    run.step('schedule', len(jobs) == 1 and len(fields) == 5 and all(f.isdigit() for f in fields[:2]) and fields[2:] == ['*', '*', '*'] and exists,
              f'vercel.json schedules {figures["path"]} at {jobs[0]["schedule"] if jobs else "NOTHING"}; route.ts present: {exists}')
 
     N, n = figures['N'], figures['n']
-    shapes = {'W': (N - n - 1, None), 'T': (N - n, None), 'P': (N + 1, n + 1)}
+    # W two days short of its notice day: `noticeFrom` reaches back to the START of a UTC day, so one day short
+    # can already be owed when the run is in the first hour of the day
+    shapes = {'W': (N - n - 2, None), 'T': (N - n, None), 'P': (N + 1, n + 1)}
     verdicts, error = app('Object.fromEntries(Object.entries(' + json.dumps(shapes) + ').map(([k, [d, s]]) => {'
                           ' const now = new Date(); const ago = (x) => new Date(now.getTime() - x * 86400000 - 3600000).toISOString();'
                           ' return [k, r.decide({ disconnectedAt: ago(d), noticeAt: s === null ? null : ago(s) }, now)] }))')
@@ -233,9 +260,22 @@ def owner_test(run, env, figures, alias, route, path):
         return
     now = time.time()
     stamp = int(now)
-    a = plant(sb, secret, uid, wanted[0], 'orphan-a.example', iso(-80 * DAY, now), None, stamp)
-    b = plant(sb, secret, uid, wanted[1], 'orphan-b.example', iso(-100 * DAY, now), iso(-15 * DAY, now), stamp)
-    g = plant(sb, secret, uid, ghost6, urllib.parse.urlparse(ghost6).hostname, iso(-10 * DAY, now), None, stamp)
+    N, n = figures['N'], figures['n']
+    # A ON TIME: the last second of the UTC day N − n days ago, so its notice is owed from today's start
+    # (`noticeFrom`) and the email names A's 90-day date — never a late notice's later one (review, 2026-11-24)
+    a_disconnected = (int(now // DAY) + 1) * DAY - 1 - (N - n) * DAY
+    planted = []
+    try:
+        planted.append(plant(sb, secret, uid, wanted[0], 'orphan-a.example', iso(a_disconnected - now, now), None, stamp))
+        planted.append(plant(sb, secret, uid, wanted[1], 'orphan-b.example', iso(-100 * DAY, now), iso(-15 * DAY, now), stamp))
+        planted.append(plant(sb, secret, uid, ghost6, urllib.parse.urlparse(ghost6).hostname, iso(-10 * DAY, now), None, stamp))
+    except SystemExit:
+        # a half-planted alias would make `fresh` refuse every re-run: take back what this run put, object first
+        for p in planted:
+            storage_delete(sb, secret, p['key'])
+            rest(sb, secret, 'DELETE', f'/sites?id=eq.{p["site"]}')
+        raise
+    a, b, g = planted
     print('  three sites planted, each with a casper theme')
     since, _ = app(f'r.dueSince(new Date(Date.now() + {LOOK_AHEAD * 1000})).toISOString()')
     status, ids = due_ids(sb, secret, since or '')
@@ -253,7 +293,7 @@ def owner_test(run, env, figures, alias, route, path):
     run.step('read-back', bool(ra and ra.get('orphan_notice_at')) and rb is None and lb == (200, [])
              and bool(rg) and rg.get('orphan_notice_at') is None,
              f'A stamped = {bool(ra and ra.get("orphan_notice_at"))}; B row gone = {rb is None}, prefix {lb}; T1 untouched = {bool(rg)}')
-    dates, error = app('{ a: d.deadlineLabel(r.purgeDateOf({ disconnectedAt: ' + json.dumps(iso(-80 * DAY, now))
+    dates, error = app('{ a: d.deadlineLabel(r.purgeDateOf({ disconnectedAt: ' + json.dumps(iso(a_disconnected - now, now))
                        + ', noticeAt: ' + json.dumps((ra or {}).get('orphan_notice_at')) + ' })),'
                        ' g: d.deadlineLabel(r.purgeDateOf({ disconnectedAt: ' + json.dumps(iso(-10 * DAY, now)) + ', noticeAt: null })) }')
     run.step('dates', dates is not None, error or f"A's date = {dates['a']} · ghost6's date = {dates['g']}  (write both into the spec)")
@@ -269,8 +309,7 @@ def main():
     env = load_env()
     run = Run()
     needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'CRON_SECRET', 'RESEND_TEST_INBOX']
-    if args.owner_test:
-        needed.append('GHOST6_URL')
+    needed.append('GHOST6_URL' if args.owner_test else 'RESEND_READ_API_KEY')
     figures = offline(run, env, needed)
     if figures is None or args.check:
         print('  --check: the deployed route was not called' if args.check else '')
@@ -299,30 +338,46 @@ def main():
     N, n = figures['N'], figures['n']
     now = time.time()
     stamp = int(now)
-    uid, planted = None, {}
+    uid, did, planted = None, None, {}
+    address = f'{local}+orphan-harness-{stamp}@{domain}'
     try:
-        status, user = admin.call('POST', '/admin/users', {'email': f'{local}+orphan-harness-{stamp}@{domain}', 'email_confirm': True})
+        status, user = admin.call('POST', '/admin/users', {'email': address, 'email_confirm': True})
         uid = user.get('id') if status in (200, 201) else None
-        if not uid:
-            print(f'  FAIL  could not create the fixture user: HTTP {status}')
+        # D: an account WAITING TO BE DELETED — FR-A5's, so the job must leave its theme alone
+        status, user = admin.call('POST', '/admin/users', {'email': f'{local}+orphan-harness-{stamp + 1}@{domain}', 'email_confirm': True})
+        did = user.get('id') if status in (200, 201) else None
+        if not uid or not did:
+            print(f'  FAIL  could not create the two fixture users: HTTP {status}')
             return 1
         hour = 3600
-        for k, disconnected, notice in (('W', iso(-(N - n - 1) * DAY, now), None),
+        discs = {}
+        for k, disconnected, notice in (('W', iso(-(N - n - 2) * DAY, now), None),
                                         ('T', iso(-(N - n) * DAY - hour, now), None),
+                                        # S: disconnected again — its notice belongs to an EARLIER disconnect
+                                        ('S', iso(-(N - n) * DAY - hour, now), iso(-(N + 10) * DAY, now)),
                                         ('P', iso(-(N + 1) * DAY, now), iso(-(n + 1) * DAY, now)),
                                         ('R', None, iso(-(n + 1) * DAY, now))):
+            discs[k] = disconnected
             planted[k] = plant(sb, secret, uid, f'https://orphan-harness-{stamp}-{k.lower()}.example', None,
                                disconnected, notice, stamp)
+        planted['D'] = plant(sb, secret, did, f'https://orphan-harness-{stamp}-d.example', None,
+                             iso(-(N + 1) * DAY, now), iso(-(n + 1) * DAY, now), stamp)
+        marked, _ = rest(sb, secret, 'PATCH', f'/profiles?user_id=eq.{did}',
+                         {'deleted_at': iso(0, now), 'purge_after': iso(14 * DAY, now)}, prefer='return=minimal')
+        _, profile = rest(sb, secret, 'GET', f'/profiles?user_id=eq.{did}&select=deleted_at')
+        deleting = marked in (200, 204) and isinstance(profile, list) and bool(profile) and profile[0].get('deleted_at') is not None
         rows = {k: snapshot_row(sb, secret, p['id']) for k, p in planted.items()}
         listings = {k: storage_list(sb, secret, p['prefix']) for k, p in planted.items()}
 
         # ── seeded, and THE SAFETY CONTROL: the route's own due query, fifteen minutes ahead.
         since, error = app(f'r.dueSince(new Date(Date.now() + {LOOK_AHEAD * 1000})).toISOString()')
         status, ids = due_ids(sb, secret, since or '')
-        fixture = sorted([planted['T']['id'], planted['P']['id']])
+        fixture = sorted(planted[k]['id'] for k in ('T', 'S', 'P', 'D'))
         strangers = [i for i in ids or [] if i not in fixture]
-        ok = (status == 200 and ids == fixture and all(v == (200, [planted[k]['key']]) for k, v in listings.items()))
-        run.step('seeded', ok, f'the route would act on {len(ids or [])} theme(s), exactly T and P = {ids == fixture}; '
+        ok = (status == 200 and ids == fixture and deleting
+              and all(v == (200, [planted[k]['key']]) for k, v in listings.items()))
+        run.step('seeded', ok, f'the route would act on {len(ids or [])} theme(s), exactly T, S, P and D = {ids == fixture}; '
+                 f'D\'s account waiting to be deleted = {deleting}; '
                  f'each prefix lists {json.dumps({k: len(v[1]) for k, v in listings.items()})} object(s)')
         if strangers:
             print(f'  FAIL  {len(strangers)} theme(s) this run did not plant are due. Refusing to call the route.')
@@ -342,35 +397,82 @@ def main():
         started = time.time()
         status, body, headers = call_route(route, cron)
         cache = (headers.get('cache-control') or '').lower()
-        run.step('run', status == 200 and body == {'noticed': 1, 'purged': 1, 'failed': 0} and 'no-store' in cache,
+        run.step('run', status == 200 and body == {'noticed': 2, 'purged': 1, 'failed': 0} and 'no-store' in cache,
                  f'GET with CRON_SECRET -> HTTP {status} {json.dumps(body)}, cache-control {cache!r}')
 
-        t = snapshot_row(sb, secret, planted['T']['id']) or {}
-        stamped = t.get('orphan_notice_at')
-        when = calendar.timegm(time.strptime(stamped[:19], '%Y-%m-%dT%H:%M:%S')) if stamped else None
-        run.step('noticed', when is not None and started - 5 <= when <= time.time() + 5,
-                 f"T's orphan_notice_at = {stamped} (the run began {iso(0, started)})")
+        stamps = {}
+        for k in ('T', 'S'):
+            stamped = (snapshot_row(sb, secret, planted[k]['id']) or {}).get('orphan_notice_at')
+            when = calendar.timegm(time.strptime(stamped[:19], '%Y-%m-%dT%H:%M:%S')) if stamped else None
+            stamps[k] = stamped if when is not None and started - 5 <= when <= time.time() + 5 else None
+        run.step('noticed', all(stamps.values()) and rows['S']['orphan_notice_at'] != stamps['S'],
+                 f"T's orphan_notice_at = {stamps['T']}; S's moved from its stale {rows['S']['orphan_notice_at']} to "
+                 f"{stamps['S']} (the run began {iso(0, started)})")
+
+        # ── delivered: what Resend holds for the fixture address, against the app's own email for each row
+        inputs = {k: {'url': f'https://orphan-harness-{stamp}-{k.lower()}.example', 'disc': discs[k], 'at': stamps[k]}
+                  for k in ('T', 'S')}
+        want, error = app('Object.fromEntries(Object.entries(' + json.dumps(inputs) + ').map(([k, v]) => [k, m.orphanEmail({'
+                          ' site: r.siteLabel(null, v.url), theme: r.themeLabel("casper"),'
+                          ' date: r.purgeDateOf({ disconnectedAt: v.disc, noticeAt: v.at }, new Date(v.at)), disconnected: v.disc,'
+                          ' url: "https://app.inflozo.com" + c.sitesPath() + "#" + r.SECTION_ID })]))')
+        held, mails = [], {}
+        for _ in range(8):
+            status, listed = resend_get(env['RESEND_READ_API_KEY'], '/emails?limit=100')
+            held = [e for e in ((listed or {}).get('data') or []) if address in (e.get('to') or [])]
+            if len(held) >= 2:
+                break
+            time.sleep(5)
+        for e in held:
+            got, one = resend_get(env['RESEND_READ_API_KEY'], f'/emails/{e["id"]}')
+            mails[e['id']] = one if got == 200 else None
+        matched = {}
+        for k, mail in (want or {}).items():
+            matched[k] = [i for i, one in mails.items() if one and one.get('subject') == mail['subject']
+                          and one.get('text') == mail['text'] and 'original-themes' in (one.get('html') or '')]
+        run.step('delivered', want is not None and len(held) == 2 and all(len(v) == 1 for v in matched.values()),
+                 error or f'Resend holds {len(held)} email(s) for the fixture address (last_event '
+                 f'{[e.get("last_event") for e in held]}); subject + text equal to the app\'s own for T and S: '
+                 f'{ {k: len(v) == 1 for k, v in matched.items()} }; subjects {[(m or {}).get("subject") for m in mails.values()]}')
 
         lp = storage_list(sb, secret, planted['P']['prefix'])
         rp = snapshot_row(sb, secret, planted['P']['id'])
         run.step('purged', lp == (200, []) and rp is None, f"P's prefix -> {lp}; P's row gone = {rp is None}")
 
         same = {}
-        for k in ('W', 'R'):
+        for k in ('W', 'R', 'D'):
             got, raw = storage_get(sb, secret, planted[k]['key'])
             same[k] = (snapshot_row(sb, secret, planted[k]['id']) == rows[k] and got == 200
                        and isinstance(raw, bytes) and hashlib.sha256(raw).hexdigest() == planted[k]['sha'])
         run.step('untouched', all(same.values()), f'row and object unchanged: {json.dumps(same)}')
 
+        # ── claims: the route's compare-and-set on `orphan_notice_at`, as postgrest-js sends it, on R (outside the due set)
+        def cas(frm, to):
+            where = 'is.null' if frm is None else 'eq.' + urllib.parse.quote(frm, safe='')
+            got, body = rest(sb, secret, 'PATCH', f'/site_snapshots?id=eq.{planted["R"]["id"]}&orphan_notice_at={where}&select=id',
+                             {'orphan_notice_at': to}, prefer='return=representation')
+            return got, len(body) if isinstance(body, list) else None
+        old = rows['R']['orphan_notice_at']
+        mine, theirs = iso(0, time.time()).replace('Z', '.123Z'), iso(1, time.time()).replace('Z', '.456Z')
+        claimed = cas(old, mine)          # from the value as read: moved
+        again = cas(old, theirs)          # the same claim again: another run already moved it
+        control = cas(None, theirs)       # from null on a row that holds one: nothing
+        put_back = cas(mine, old)         # the put-back: `to` → `back`, only while it still reads `to`
+        restored = (snapshot_row(sb, secret, planted['R']['id']) or {}).get('orphan_notice_at') == old
+        run.step('claims', claimed == (200, 1) and again == (200, 0) and control == (200, 0) and put_back == (200, 1) and restored,
+                 f'claim from the value read {claimed}; the same again {again}; from null {control}; put back {put_back}; '
+                 f'R back to what it was = {restored}')
+
         status, body, _ = call_route(route, cron)
-        again = (snapshot_row(sb, secret, planted['T']['id']) or {}).get('orphan_notice_at')
-        run.step('idempotent', status == 200 and body == {'noticed': 0, 'purged': 0, 'failed': 0} and again == stamped,
-                 f'a second call -> HTTP {status} {json.dumps(body)}; T\'s stamp unmoved = {again == stamped}')
+        later = {k: (snapshot_row(sb, secret, planted[k]['id']) or {}).get('orphan_notice_at') for k in ('T', 'S')}
+        run.step('idempotent', status == 200 and body == {'noticed': 0, 'purged': 0, 'failed': 0} and later == stamps,
+                 f'a second call -> HTTP {status} {json.dumps(body)}; T\'s and S\'s stamps unmoved = {later == stamps}')
     finally:
         for p in planted.values():
             storage_delete(sb, secret, p['key'])
-        if uid:
-            admin.call('DELETE', f'/admin/users/{uid}', {})
+        for user_id in (uid, did):
+            if user_id:
+                admin.call('DELETE', f'/admin/users/{user_id}', {})
         after = admin.user_count()
         strays = admin.sweep_stale_fixtures(fixture_re)
         left = [k for k, p in planted.items() if storage_list(sb, secret, p['prefix']) != (200, [])]

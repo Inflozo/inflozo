@@ -60,8 +60,8 @@ export function noticeCounts({ disconnectedAt, noticeAt }: { disconnectedAt: str
 
 /**
  * THE DATE THE THEME IS DELETED — the later of the deadline and the notice + `ORPHAN_NOTICE_DAYS`.
- * With no notice for this disconnect yet, it is the date the notice WILL name: sent on time, that is
- * exactly the deadline; sent late (a send that failed for days), it is `now` + `ORPHAN_NOTICE_DAYS`.
+ * With no notice for this disconnect yet, it is the date the notice WILL name: sent on time (`noticeFrom`),
+ * that is the deadline's own day; sent late (a send that failed for days), it is `now` + `ORPHAN_NOTICE_DAYS`.
  * So the Sites row, the email and the job never disagree about the day.
  */
 export function purgeDateOf(
@@ -73,13 +73,31 @@ export function purgeDateOf(
   return new Date(Math.max(deadline, from + ORPHAN_NOTICE_DAYS * DAY_MS))
 }
 
-/** The oldest disconnect the due query may skip: anything disconnected at or before this owes a notice or more. */
-export function dueSince(now: Date): Date {
-  return new Date(now.getTime() - (ORPHAN_SNAPSHOT_DAYS - ORPHAN_NOTICE_DAYS) * DAY_MS)
+/** The start of `at`'s UTC day — the day `deadlineLabel` names. */
+const dayStart = (at: number) => Math.floor(at / DAY_MS) * DAY_MS
+
+/**
+ * WHEN THE ONE EMAIL IS OWED: from the START of the UTC day `ORPHAN_NOTICE_DAYS` before the deadline's day.
+ * The job runs once a day (04:30 UTC), so a threshold at the deadline's own time of day sent the email the NEXT
+ * morning for any disconnect after 04:30 UTC — most of them — and the date it named (notice + n) landed a day past
+ * the deadline the Sites row had shown since the disconnect (Review, 2026-11-24). From the day's start, the on-time
+ * email goes on R-285's day ("on 16 January … deleted on Jan 30") and names the deadline's own day, so the Sites
+ * row's date never moves. The deletion still waits for the exact deadline and the notice's full window.
+ */
+export function noticeFrom(disconnectedAt: string | Date): Date {
+  return new Date(dayStart(orphanDeadline(disconnectedAt).getTime()) - ORPHAN_NOTICE_DAYS * DAY_MS)
 }
 
 /**
- * R-285's ONE DECISION. `notice` from `deadline − n` while no notice counts for this disconnect (late or
+ * The due query's bound: every disconnect that can owe a notice (or more) at `now` is at or before it —
+ * `noticeFrom` reaches back to the start of a day — and `decide` says what each row is owed.
+ */
+export function dueSince(now: Date): Date {
+  return new Date(dayStart(now.getTime()) + DAY_MS - (ORPHAN_SNAPSHOT_DAYS - ORPHAN_NOTICE_DAYS) * DAY_MS)
+}
+
+/**
+ * R-285's ONE DECISION. `notice` from `noticeFrom` while no notice counts for this disconnect (late or
  * not); `purge` once a counted notice's full window and the deadline have both passed; `wait` otherwise.
  */
 export function decide(
@@ -89,7 +107,7 @@ export function decide(
   if (row.disconnectedAt === null) return 'wait'
   const at = now.getTime()
   if (!noticeCounts({ disconnectedAt: row.disconnectedAt, noticeAt: row.noticeAt })) {
-    return at >= orphanDeadline(row.disconnectedAt).getTime() - ORPHAN_NOTICE_DAYS * DAY_MS ? 'notice' : 'wait'
+    return at >= noticeFrom(row.disconnectedAt).getTime() ? 'notice' : 'wait'
   }
   return at >= purgeDateOf({ disconnectedAt: row.disconnectedAt, noticeAt: row.noticeAt }, now).getTime() ? 'purge' : 'wait'
 }
@@ -125,6 +143,9 @@ export const ORPHANS = {
 /** The theme's name as the row and the email say it. */
 export const themeLabel = (name: string | null | undefined) => name?.trim() || ORPHANS.unnamed
 
+/** What the customer calls the site — its title, else its host — on the Sites row and in the email alike (one home, R-170). */
+export const siteLabel = (title: string | null | undefined, url: string) => title?.trim() || hostOf(url)
+
 /** One `site_snapshots` row with its site, as the Sites page's originals read answers it (the caller's own session). */
 export type OriginalRead = {
   id: string
@@ -144,7 +165,7 @@ export function originalRows(read: readonly OriginalRead[] | null, now: Date): {
       ? [{
           id: row.id,
           theme: themeLabel(row.theme_name),
-          site: row.sites.title?.trim() || hostOf(row.sites.url),
+          site: siteLabel(row.sites.title, row.sites.url),
           date: deadlineLabel(purgeDateOf({ disconnectedAt: row.sites.disconnected_at, noticeAt: row.orphan_notice_at }, now)),
         }]
       : [],

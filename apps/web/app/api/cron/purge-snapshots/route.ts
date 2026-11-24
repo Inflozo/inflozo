@@ -1,8 +1,8 @@
 import { authorized } from '@/lib/cron-auth'
-import { hostOf, sitesPath } from '@/lib/connect-rule'
+import { sitesPath } from '@/lib/connect-rule'
 import { sendEmail } from '@/lib/email'
 import { orphanEmail } from '@/lib/orphan-email'
-import { dueSince, runOrphans, SECTION_ID, themeLabel, type Orphan, type OrphanDeps } from '@/lib/orphan-rule'
+import { dueSince, runOrphans, SECTION_ID, siteLabel, themeLabel, type Orphan, type OrphanDeps } from '@/lib/orphan-rule'
 import { drainPrefix } from '@/lib/storage-drain'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { APP } from '@/routing'
@@ -73,6 +73,9 @@ export async function GET(request: Request) {
       const rows = admin
         .from('site_snapshots')
         .select('id, user_id, site_id, theme_name, orphan_notice_at, sites!inner(title, url, disconnected_at)')
+      // ponytail: every id this run tried rides the URL, and the due set holds ~ORPHAN_NOTICE_DAYS of noticed
+      // themes waiting out their window — a few hundred of those outgrow the gateway's URL limit and `due` fails
+      // the run red. Keyset paging on (disconnected_at, id) is the upgrade, the day that many are waiting.
       const untried = excluding.length ? rows.not('id', 'in', `(${excluding.join(',')})`) : rows
       const { data, error } = await untried
         .lte('sites.disconnected_at', since)
@@ -94,7 +97,7 @@ export async function GET(request: Request) {
           userId: row.user_id,
           siteId: row.site_id,
           theme: row.theme_name,
-          site: row.sites?.title?.trim() || hostOf(row.sites?.url ?? ''),
+          site: siteLabel(row.sites?.title, row.sites?.url ?? ''),
           disconnectedAt: row.sites?.disconnected_at as string,
           noticeAt: row.orphan_notice_at,
           deleting: deleting.has(row.user_id),

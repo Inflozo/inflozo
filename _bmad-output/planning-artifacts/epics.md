@@ -4441,7 +4441,8 @@ two weeks (`ORPHAN_NOTICE_DAYS`) before the deadline; from the moment of disconn
 still kept for a disconnected site, with its deletion date and a Download; the purge waits for the email and never comes
 sooner than two weeks after it, whether or not the theme was downloaded.)*
 
-**FRs:** FR-C6 (the purge). · **Frame:** none drawn — the notice's form is its Create's question (R-281). · **Owner
+**FRs:** FR-C6 (the purge). · **Frame:** none drawn — the Sites section is extrapolated from S11a and `/restore`'s rows
+(R-74), and the notice's form was ruled at the Create (R-285). · **Owner
 test:** yes. · **Verification:** the cron run on production against a planted disconnected site record, objects before
 rows (R-82).
 
@@ -9903,6 +9904,11 @@ rewrites the shared on-device record its holder keeps — the journal emptied in
 **And** *(given an owner by Story 7.19's Review, 2026-10-26)* Manage keys says a save's failures that are ours in the
 Safety net's words — an unreachable site by its address, a store that will not answer as `keys_failed`, a site disconnected
 mid-save landing as `keysGone` does — for all three keys alike (DW-388)
+**And** *(given an owner by Story 7.20b's Review, 2026-11-24)* the snapshot orphan purge (`/api/cron/purge-snapshots`,
+which answers 500 when a theme failed) reaches a person as the account purge does, and a warning email refused for good
+is told from one that may yet go (DW-392); its due query pages without naming every id it tried once noticed themes are
+counted in hundreds (DW-393); a site reconnected in the seconds before its warning is sent gets none (DW-394); and a late
+warning's words agree with its later date, in the owner's words (DW-395)
 **Owner test:** none. · **Verification:** a real restore drill on the production project (R-82).
 
 ### Story 15.6: G1 and G2, measured rather than asserted

@@ -10636,3 +10636,65 @@ owner: Story 7.23 (Deploy history, rollback and restore-to-original), whose D2a 
   download from Deploy history: one way to follow it for both, checking the answer before leaving the page.
 location: `apps/web/components/editor/deploy-wizard.tsx` (`follow`, `fetchRow`) · `app/(app)/app/snapshots/[id]/download/route.ts`
 reason: an improbable failure of a route Story 2.5 owns; fixing it means a second way to fetch a signed URL, which 7.23 needs too.
+
+## Deferred from: code review of spec-7-20b-the-snapshot-orphan-purge (2026-11-24)
+
+### DW-392: a warning email that can never be delivered keeps its theme, and the job answers 500 every night
+
+plain: If the one warning email before a disconnected site's original theme is deleted can never go out (the account has
+  no address, or the email service refuses the message for good), Inflozo keeps the theme, tries again every night, and the
+  nightly job reports a failure each time. The Sites row's date moves a day later each night.
+status: open
+severity: low
+origin: Story 7.20b's Review (2026-11-24), the Edge Case Hunter and Blind Hunter layers. `runOrphans` puts the claim back
+  on `no_address` or a refused send, so `decide` answers `notice` again tomorrow and `purgeDateOf` with no counted notice
+  is `now + ORPHAN_NOTICE_DAYS`. That is R-285 as ruled ("the purge waits for the email"), and the 500 is the alarm; but
+  nothing tells a permanent refusal (a 4xx from Resend) from a passing one, and nobody is told but the log.
+owner: Story 15.5 (reliability — alarms and the restore drill), which wires the crons' 500s to NFR-9's alerting path and
+  can give a permanent refusal its own code and a person to read it.
+location: `apps/web/lib/orphan-rule.ts` (`runOrphans`' notice branch) · `apps/web/lib/email.ts` (`sendEmail`'s `status`)
+reason: as ruled; reached only by an account with no address or a message Resend refuses for good, neither seen yet.
+
+### DW-393: every id the purge job tried rides its due query's URL
+
+plain: The nightly clean-up re-reads its list of due themes in batches, and each read names every theme it has already
+  looked at that night. A few hundred themes waiting out their two weeks would make that address too long, and the night's
+  run would stop red before reaching the rest.
+status: open
+severity: low
+origin: Story 7.20b's Review (2026-11-24), the Edge Case Hunter and Blind Hunter layers. `route.ts`' `due` builds
+  `.not('id', 'in', (…))` from every tried id; the due set holds every noticed theme still inside its
+  `ORPHAN_NOTICE_DAYS` window (about two weeks of disconnects), every account waiting to be deleted and every row that keeps
+  failing. Marked `ponytail:` beside the line. `purge-rule.ts` (Story 2.6) pages the same way.
+owner: Story 15.5 (reliability), with the crons' alarms: keyset paging on `(disconnected_at, id)` for both jobs, the day the
+  waiting set is counted in hundreds.
+location: `apps/web/app/api/cron/purge-snapshots/route.ts` (`due`)
+reason: pre-launch the waiting set is counted in ones; the upgrade is named in the code.
+
+### DW-394: a site reconnected in the seconds before its warning is sent still gets the warning
+
+plain: If someone reconnects a disconnected site in the few seconds between the nightly job reading its list and reaching
+  that site, they still get the "your original theme will be deleted" email, although reconnecting has kept the theme.
+status: open
+severity: low
+origin: Story 7.20b's Review (2026-11-24), the Edge Case Hunter layer. `runOrphans` re-reads `sites.disconnected_at` before a
+  purge, never before a notice; the window is the run's own (at most `BUDGET_MS`), and the email already says "reconnect …
+  before then and Inflozo keeps it".
+owner: Story 15.5 (reliability), if it is ever seen: the purge's re-read moved ahead of the claim, one more read per notice.
+location: `apps/web/lib/orphan-rule.ts` (`runOrphans`' notice branch)
+reason: a window of seconds once a night, and the email it sends is true for the customer who reconnected.
+
+### DW-395: a late warning says "keeps it for 90 days, so on" a date later than 90 days
+
+plain: If the warning email could not go out on its day and goes later, it still says "It keeps it for 90 days, so on
+  {date} it will be permanently deleted", but the date is two weeks after the late email, which is more than 90 days after
+  the disconnect. The Sites caption says the same "90 days" beside that later date.
+status: open
+severity: low
+origin: Story 7.20b's Review (2026-11-24), the Verification Gap, Blind Hunter and Acceptance Auditor layers. R-285 gives a
+  late notice its full window (`purgeDateOf`), and `ORPHANS.emailBody` and `.caption` were written for the on-time case.
+  The owner's test plant made the one email he reads a late one; the Review moved it on time instead.
+owner: Story 15.5 (reliability), which decides how a failure that is ours is told (DW-383's rule): a late-notice sentence in
+  `ORPHANS`, put to the owner in R-83 shape.
+location: `apps/web/lib/orphan-rule.ts` (`ORPHANS.emailBody`, `.caption`)
+reason: reached only after the send failed on several nights in a row; the customer gets more time, never less.

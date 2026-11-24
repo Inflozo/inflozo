@@ -104,7 +104,7 @@ export default async function RestorePage() {
             </p>
             {themes.map((theme) => (
               <div key={theme.id} className="flex items-center gap-3">
-                <span className="flex min-w-0 flex-col gap-px">
+                <span id={`theme-${theme.id}`} className="flex min-w-0 flex-col gap-px">
                   <span className="truncate font-mono text-control-label text-ink">
                     {theme.theme_name?.trim() || 'Original theme'}
                   </span>
@@ -114,9 +114,12 @@ export default async function RestorePage() {
                   </span>
                 </span>
                 {/* A LINK, not a button: the route answers 303 to a signed URL and the browser
-                    follows it. Drawn with the Kit's own secondary 32 (`buttonClasses`). */}
+                    follows it. Drawn with the Kit's own secondary 32 (`buttonClasses`). Described by its
+                    row, so a screen reader's list of links tells one Download from the next (WCAG 2.4.4;
+                    Story 7.20b's review, where the Sites section reuses this row). */}
                 <a
                   href={`/snapshots/${theme.id}/download`}
+                  aria-describedby={`theme-${theme.id}`}
                   className={`ml-auto shrink-0 ${buttonClasses('secondary', 32)}`}
                 >
                   Download
