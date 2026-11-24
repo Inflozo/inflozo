@@ -406,10 +406,11 @@ download route needs a session, and sign-in lands on Projects whichever link was
 
 ## Owner's manual test
 
-You test as **`umngkmr+orphan720b@gmail.com`**, a fresh alias. Before you start, Deploy does three things:
+You test as **`umngkmr+orphan720b@gmail.com`**, a fresh alias. **Deploy has done all three things below (2026-11-24, on
+your go):**
 
-1. It creates the alias and runs `run-verify-snapshot-orphans.py --owner-test` on your go. That plants three disconnected
-   sites, each holding a small saved theme named **casper**:
+1. It created the alias and ran `run-verify-snapshot-orphans.py --owner-test`. That planted three disconnected sites, each
+   holding a small saved theme named **casper**:
 
    | Site | Disconnected | What the run does to it |
    |---|---|---|
@@ -417,21 +418,23 @@ You test as **`umngkmr+orphan720b@gmail.com`**, a fresh alias. Before you start,
    | `orphan-b.example` | 100 days ago, warned 15 days ago | Past its date: the run deletes it. |
    | `ghost6.inflozo.com` | 10 days ago | Not due yet. |
 
-2. It runs the clean-up once.
-3. It writes the two dates here: **A's date = `<filled at Deploy>`** and **ghost6's date = `<filled at Deploy>`**.
+2. It ran the clean-up once: orphan-a's email went (Resend: delivered, 13:07 UTC), orphan-b's theme was deleted, and
+   ghost6's was left alone.
+3. The two dates: **A's date = Dec 8, 2026** (orphan-a was disconnected on Sep 9, 2026) and **ghost6's date = Feb 12,
+   2027**.
 
 In **ghost6.inflozo.com's Ghost Admin** (`https://ghost6.inflozo.com/ghost/`), make a custom integration called **Owner test
 7.20b** and keep its Admin API key and Content API key open.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+orphan720b@gmail.com` | Projects (the first-run screen). |
-| 2 | `https://app.inflozo.com/sites` | Sites | Look under **Connect site**. | — | The empty Sites screen. Under it, **"ORIGINAL THEMES FROM DISCONNECTED SITES"** and the line "…keeps it for 90 days after you disconnect, then deletes it. Reconnect a site to keep its theme." Then two rows, newest disconnect first: **casper** · ghost6.inflozo.com · deleted on *ghost6's date*, and **casper** · orphan-a.example · deleted on *A's date*, each with **Download**. **orphan-b.example is not there.** |
-| 3 | the same page | Sites | Press **Download** on orphan-a's row. | — | A zip named for orphan-a and casper downloads. |
-| 4 | your Gmail inbox | Email | Open the email from Inflozo. | — | Exactly one new email: **"Your original theme from orphan-a.example will be deleted on *A's date*"**. It names casper and the date it was disconnected, has a **Download it from Sites** button, and ends "This is the only email we'll send about this." Nothing about ghost6 or orphan-b. |
-| 5 | the email | Sites | Press **Download it from Sites**. | — | Inflozo opens, after sign-in if asked; if it lands on Projects, open **Sites**. The same two rows as step 2. |
+| 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+orphan720b@gmail.com` | Inflozo's first-run screen (the alias has no project). |
+| 2 | `https://app.inflozo.com/sites` | Sites | Look under **Connect site**. | — | The empty Sites screen. Under it, **"ORIGINAL THEMES FROM DISCONNECTED SITES"** and the line "…keeps it for 90 days after you disconnect, then deletes it. Reconnect a site to keep its theme." Then two rows, newest disconnect first: **casper** · ghost6.inflozo.com · deleted on **Feb 12, 2027**, and **casper** · orphan-a.example · deleted on **Dec 8, 2026**, each with **Download**. **orphan-b.example is not there.** |
+| 3 | `https://app.inflozo.com/sites` | Sites | Press **Download** on orphan-a's row. | — | A file **orphan-a.example-casper.zip** downloads. |
+| 4 | `https://mail.google.com/` (the inbox `umngkmr+orphan720b@gmail.com` lands in) | Email | Open the email from Inflozo. | — | Exactly one email about this: **"Your original theme from orphan-a.example will be deleted on Dec 8, 2026"**. It names casper and the day it was disconnected (**Sep 9, 2026**), has a **Download it from Sites** button, and ends "This is the only email we'll send about this." Nothing about ghost6 or orphan-b. |
+| 5 | the email's button → `https://app.inflozo.com/sites#original-themes` | Sites | Press **Download it from Sites**. | — | Inflozo opens, after sign-in if asked; if it lands elsewhere, open **Sites**. The same two rows as step 2. |
 | 6 | `https://app.inflozo.com/sites` | Sites | Press **Connect site** and finish the wizard with the integration's two keys. | `https://ghost6.inflozo.com` + the two keys | ghost6 is **Connected**. The list now shows **only orphan-a**: ghost6's theme stays because the site is connected again. |
-| 7 | `https://app.inflozo.com/sites` | Sites | On ghost6's card, **⋯ → Disconnect**, then confirm. | — | ghost6's card goes. The list shows ghost6 again, now **deleted on a date 90 days from today**. |
+| 7 | `https://app.inflozo.com/sites` | Sites | On ghost6's card, **⋯ → Disconnect**, then confirm. | — | ghost6's card goes. The list shows ghost6 again, now **deleted on a date 90 days from the day you disconnect** (Feb 22, 2027 if that is Nov 24). |
 | 8 | `https://ghost6.inflozo.com/ghost/` | Cleanup | Delete the **Owner test 7.20b** integration. | — | Done. Leave the alias: its two themes delete themselves on their dates. |
 
 ## Questions for the owner
@@ -683,3 +686,32 @@ T1 is touched only by the owner's own reconnect, which is a read.
   - The `/sites` read through a signed-in session (`sites!inner`, RLS) is what drew those rows.
 - **Not run at Review, by design:** `--owner-test` (Deploy's, on the owner's alias with his go), and T1 (this story's code
   never touches it).
+
+**Executed — Deploy (2026-11-24 IST, Node 24; the real services by their variable names, no value printed):**
+- **Deployment: `dpl_2KraX3BWZorTHDxAo1Km1AYidA39`** (`inflozo-gmd9ixnp1-umangkagathara.vercel.app`), READY. Built from
+  `ad64013c`, it serves both `app.inflozo.com` and `inflozo.com` (Vercel's `v13/deployments/{host}`, `VERCEL_TOKEN` read
+  in-process). The only app change since is R-286's comment in `lib/orphan-rule.ts` (`git diff --stat ad64013c HEAD --
+  apps packages`), so this deployment is the story as shipped.
+- **The two pushes since, red on two keyboard-gate flakes.** Neither touched app code, so CI's `check` failed and `deploy`
+  was skipped both times. Each fix is in the gate's own test:
+  - **`d1924b8c` (R-286's ruling).** `floor.spec.mjs` 7.19 · the Safety net read its picture once, before the bytes landed.
+    It now waits for the picture. Control: with the picture blocked, all three widths fail with the same message.
+  - **`8729f8ef` (that fix).** `journey.spec.mjs` DW-241 compared the journal's count for equality, and an earlier typed
+    entry synced away meanwhile (1 → 0). It now asserts no new entry; the draft's own trace (`paper` not kept) is
+    unchanged.
+  - Both ran green locally: 12 of 12, three repeats each.
+  - This Deploy commit is the re-push. Its own CI run is read after the push.
+- **The schema.** The migration was applied to production at Schema (R-99), and read back byte for byte at the Review.
+  `bash supabase/tests/run-rls-gate.sh` (PostgreSQL 17 container): exit 0, and 7.20b's six PASS lines among the rest. CI's
+  `rls` was green on every push of this story.
+- **The owner's test plant**, `python3 tools/probe/run-verify-snapshot-orphans.py --owner-test <the alias>`, ran on the
+  owner's in-session go ("1. Go"). Every step PASS:
+  - the alias was created;
+  - the due set was exactly A and B across production;
+  - the route answered 200 `{"noticed": 1, "purged": 1, "failed": 0}`;
+  - A is stamped, B's row is gone and its prefix empty, and ghost6's row is untouched;
+  - the dates: **A's = Dec 8, 2026, ghost6's = Feb 12, 2027**.
+
+  Resend (`RESEND_READ_API_KEY`, read only) holds exactly one email for the alias, `delivered` at 13:07 UTC: "Your
+  original theme from orphan-a.example will be deleted on Dec 8, 2026".
+- **The Owner's manual test** carries the live URL and both dates in every step. `owner_test` stays `pending`.

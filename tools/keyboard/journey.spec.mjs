@@ -6703,7 +6703,10 @@ test('DW-241 (Story 5.24e): losing the lock closes every menu, confirm and picke
       // the draft is dropped: no form is left in the dialog, nothing was journaled or kept, and the canvas is as it was
       await expect(page.locator('dialog[data-pack-editor] #pack-name'), `${what}: the draft is dropped`).toHaveCount(0)
       const after = await held(page)
-      expect(after.entries, `${what}: nothing journaled`).toBe(journalled)
+      // NO NEW ENTRY, never "the same count": the inline field's typed entry from the opener before can sync away
+      // meanwhile, so the count may FALL (CI, Story 7.20b's Deploy, 2026-11-24: 1 → 0 on a push that touched no app
+      // code); the draft journaled would raise it, and `paper` kept below is the draft's own trace
+      expect(after.entries, `${what}: nothing journaled`).toBeLessThanOrEqual(journalled)
       expect('paper' in after.packs, `${what}: nothing kept`).toBe(false)
       expect(await tokenOf(page, '--accent'), `${what}: the canvas untouched`).toBe(recordOf('paper').light.accent)
     }
