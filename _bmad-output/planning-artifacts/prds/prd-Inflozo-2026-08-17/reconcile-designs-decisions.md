@@ -6112,6 +6112,29 @@ after disconnecting. This makes nine emails."*
 - **Deliberately not touched:** FR-P2 (a notice, not a nudge), and the spine's `resend` row, which defers to FR-P1 for the
   count.
 
+**R-286 — when Inflozo cannot tell whether a disconnected site's warning email went out, it keeps the guesses it makes
+today.** Story 7.20b's Review, Question 2, ruled **option 1** (owner, 2026-11-24): *"1 (RECOMMENDED) Keep it as built. Both
+need a failure in the same second as the send, and the Sites page is a second warning."*
+
+- **Why it was a question.** R-285's notice is claimed before it is sent, so two runs never send it twice. Its spec also
+  says the notice is never skipped. The two pull apart only when the send is in doubt, and a change to the notice is "Ask
+  First".
+- **The rule.** Two guesses stand, each needing a failure in the same second as the send:
+  - **A crash between the claim and the send** counts as sent. The theme can go after its window with no email.
+  - **A send that times out after Resend took it** counts as not sent. The claim is put back, and the email can go twice.
+
+  The Sites list shows each kept theme and its date from the moment of disconnect, and is the second warning.
+- **Declined.**
+  - Option 2: store Resend's id beside the stamp and delete only with it. This needs a Schema push.
+  - Option 3: count a slow answer as sent too.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.20b's spec (Question 2, the Review's findings);
+  - ✅ `epic-7-context.md`;
+  - ✅ the code (`lib/orphan-rule.ts`' `runOrphans` docblock).
+- **Deliberately not touched:** R-285, which this leaves as ruled, and DW-392 (a send refused for good), which is
+  Story 15.5's.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

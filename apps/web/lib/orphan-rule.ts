@@ -222,9 +222,11 @@ const fail = (step: string, code?: string | number) => Object.assign(new Error(s
  *
  * A NOTICE IS CLAIMED BEFORE IT IS SENT, so two overlapping runs never send twice, and the claim is put
  * back when the address or the send fails, so tomorrow owes it again.
- * ponytail: a function killed between the claim and the send, or an unclaim that itself fails, leaves a
- * notice recorded that never went out — logged loudly in the second case, invisible in the first. A
- * `notice_id` from Resend stored beside the stamp is the upgrade the day that is observed.
+ * WHEN THE SEND IS IN DOUBT, KEPT AS BUILT (R-286, owner, 2026-11-24). A function killed between the claim
+ * and the send, or an unclaim that itself fails, leaves a notice recorded that never went out — logged loudly
+ * in the second case, invisible in the first — and a send that times out after Resend took it is put back, so
+ * the email can go twice. Both need a failure in the same second as the send, and the Sites list is the
+ * second warning. ponytail: Resend's id stored beside the stamp (a Schema push) is the upgrade he declined.
  *
  * A PURGE RE-READS THE SITE FIRST: null (reconnected) or a different disconnect is skipped untouched.
  * Then objects before rows (AD-32): a failed drain leaves the row. ponytail: a reconnect landing in the

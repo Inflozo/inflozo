@@ -311,11 +311,12 @@ Among the dismissed:
 - `sprint-status.yaml` at `in-progress`: the board reads the phase from `git log`;
 - the plain-text footer literal: `health-email.ts`' own.
 
-- [ ] [Review][Decision] When Inflozo cannot tell whether the one warning email went out (a function killed between the
+- [x] [Review][Decision] When Inflozo cannot tell whether the one warning email went out (a function killed between the
   claim and the send, or a send that timed out after Resend took it), it guesses one way in each case: the first counts as
   sent, so the theme can go with no email; the second as not sent, so the "only" email can go twice. "The notice is never
   skipped" and "claimed before it is sent, never twice" pull apart only there, and the notice is "Ask First", so it is the
-  owner's (Question 2) [`lib/orphan-rule.ts` `runOrphans`]
+  owner's (Question 2) [`lib/orphan-rule.ts` `runOrphans`] — **ruled option 1, keep it as built (R-286, owner,
+  2026-11-24)**: the code is unchanged, the rule is written beside it
 - [x] [Review][Patch] The email went a day late and named a date a day past the deadline for every disconnect after 04:30
   UTC: `decide` compared exact instants while the job runs once a day, so R-285's own example (16 Jan → "Jan 30") came out
   17 Jan → "Jan 31", and the Sites row's date moved when the email went. The notice is now owed from the start of the
@@ -435,8 +436,8 @@ In **ghost6.inflozo.com's Ghost Admin** (`https://ghost6.inflozo.com/ghost/`), m
 
 ## Questions for the owner
 
-Question 1 was ruled on 2026-10-27, option 1 (R-285). "Ruled values" in Design Notes holds what it set. **Question 2,
-from the Review, is open.**
+Question 1 was ruled on 2026-10-27, option 1 (R-285). "Ruled values" in Design Notes holds what it set. Question 2, from
+the Review, was ruled on 2026-11-24, option 1 (R-286). None is open.
 
 ### Question 1 — How and when do we warn someone before a disconnected site's original theme is deleted?
 
@@ -488,7 +489,8 @@ Both need a failure in the same second as the send.
 3. **Never send twice.** A slow answer counts as sent too. The duplicate goes, but in that rare case a theme can also be
    deleted with no email.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-24) — R-286.** *"1 (RECOMMENDED) Keep it as built. Both need a failure in the same
+second as the send, and the Sites page is a second warning."*
 
 ## Verification
 
