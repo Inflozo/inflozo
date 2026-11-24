@@ -776,6 +776,31 @@ Ghost 5's half goes to DW-326 (R-238). There is no migration, so there is no Sch
   7.20a (f). The new journey assertions were seen red together under three planted wizard reversions (the drift row after the
   routes row, `overwrite` sent by default, D3a's Cancel unguarded): 7.21 (b), (c), (e) and 7.20a (f) all failed, then the
   wizard was restored (`cmp`). CI's full run on the Review push is the next reading.
-- **Owed to the Review's deploy:** walk step 119 (production + T1 writes, the owner's in-session go, "1. Go"), from a clean
-  worktree at the deployed sha.
+- **The Review's deploy.** `a6e91807` was green on CI's `check` (the full `pnpm keyboard` included), `rls` and `deploy`, and on
+  the Render matrix; Vercel serves it READY as `dpl_8i2km7PGqich4UYQp4gecJRxnCP9`. Everything below ran against it.
+- **Walk step 119 on production and T1** (the owner's in-session go, "1. Go"; the main session; `T1_WRITES=1`; keys read
+  in-process by name). Run from a detached worktree at `a6e91807` as a cut copy — steps 1–5, then 119, then `finally` — because
+  the go covered step 119's writes and not steps 113 and 117's. **60 PASS, 0 FAIL:**
+  - (a) the first deploy, Deploy only: no drift row and no `stage_timings.drift`; v1 `uploaded`, not activated, its
+    `content_manifest` naming all 26 files of the artefact, the hero partial fingerprinted by its instance id;
+  - (b) **R-287 executed:** Run checks → D3c "Nothing changed on your site since v1", the passes box's second line, record
+    `{ clean, since 1 }` — v1 was never live;
+  - (c) v2 live; the hero renamed "Drift hero renamed" → D3c "since v2", and the control: this Pre-flight files the hero at
+    `…/drift-hero-renamed.hbs`, not T1's `…/hero-latest-post.hbs`;
+  - (d) T1 hand-edited under the bound name (read back): D3a with exactly three — Changed "Drift hero renamed" (the layer's
+    current name), Added "A template Inflozo didn't write", Removed "Read me" — the chip "3 files differ", the footer's "all
+    three", focus on Cancel. **The record came back in jsonb's key order** (`kind, added, since, theme, …`), which the Review's
+    field-by-field compare reads and the Dev's `JSON.stringify` compare would have failed. Download → **303** to a signed URL
+    serving `inflozo-drift-test-live.zip`, the edit inside it (AD-13);
+  - (e) **the control:** a `ship` POST without `overwrite` → **409 "Drift found"**, the job still resting, T1's themes untouched;
+    Overwrite and ship anyway → Live, T1's theme Inflozo's again file for file (`storage.js:95-107` executed); Run checks → D3c
+    "since v3";
+  - (f) Casper activated and `inflozo-drift-test` deleted on T1 (200, 204): Run checks → D3b "ghost6.inflozo.com no longer has
+    inflozo-drift-test, the theme Inflozo last put there. Shipping anyway.", no Add token, Ship it not greyed (R-288 on
+    production); Ship it → Live;
+  - `finally`: Casper active again, every `inflozo-` theme the run uploaded deleted, `routes.yaml` 130 → 130 bytes byte for byte,
+    read back; no object left under the account's prefixes (`deploy-artifacts/{P}/live/…` included); T1 disconnected; both
+    accounts deleted, users and projects counted back (19 → 19, 12 → 12); zero CSP violations.
+- **Not run here:** Deploy's plant for the owner's test (`STEP119_PLANT`), which is Deploy's. Ghost 5's half goes to DW-326
+  (R-238).
 
