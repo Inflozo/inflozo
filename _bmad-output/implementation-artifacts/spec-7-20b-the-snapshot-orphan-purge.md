@@ -2,9 +2,9 @@
 title: 'Story 7.20b — The snapshot orphan purge'
 type: 'feature'
 created: '2026-10-26'
-status: 'in-review'
+status: 'done'
 baseline_commit: 'c77b737a5093cab805ccdb1940f09c2983b8bbbb'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-20a-the-backup-gate-and-the-pre-inflozo-snapshot.md']
 ---
@@ -494,6 +494,12 @@ Both need a failure in the same second as the send.
 
 **Ruled: option 1 (owner, 2026-11-24) — R-286.** *"1 (RECOMMENDED) Keep it as built. Both need a failure in the same
 second as the send, and the Sites page is a second warning."*
+
+## Owner's test findings
+
+**Owner's test (owner, 2026-11-24): passed.** The owner walked "Owner's manual test" on the deployed site
+(`dpl_2KraX3BWZorTHDxAo1Km1AYidA39`, `https://app.inflozo.com`) as `umngkmr+orphan720b@gmail.com`. Asked to confirm a
+reply that carried no result, he chose *"Passed (RECOMMENDED if all 8 steps matched)"*. No findings.
 
 ## Verification
 
