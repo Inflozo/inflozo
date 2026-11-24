@@ -4484,6 +4484,9 @@ output, and a content hash can match a renamed file without any mark in it.
 **And** *(DW-338 — from Story 7.1's review, 2026-10-06)* a layer name has no length cap, so the boundary comment
 `{{!-- {Layer name} · … --}}` has none while the file name is cut to 60; the cap lands at the input, in the Layers
 rename flow, so the file and the label agree.
+**And** *(Story 7.21's Create — owner, 2026-11-24, **R-287**)* "what Inflozo last deployed there" is **the newest upload
+Ghost accepted** from this project to this site, live or not (`deploys.status` `uploaded` or `live`): Ghost replaces every
+file under a theme's name on every upload, so after a Deploy only the theme on the site is that upload.
 
 ### Story 7.22: Artifacts, retention and pinning
 
@@ -4826,8 +4829,10 @@ So that "failed" is not written over something that worked.
 **And** **(1)** the artifact is **retained** like any successful compile and appears in history **without an
 active badge**, so a retry is a **one-click re-activation rather than a recompile**
 **And** **(2)** the **theme name freezes**, because the name is claimed the moment a theme lands
-**And** **(3)** the **drift baseline does not move**, because drift compares against what Inflozo last put
-**live**, and an uploaded-but-inactive theme is not what visitors are served
+**And** **(3)** the **drift baseline moves to this upload**, because drift compares against the newest upload Ghost
+accepted under the frozen name, live or not — Ghost replaces every file under that name on every upload *(Story 7.21's
+Create — owner, 2026-11-24, R-287; this read "the drift baseline does not move, because drift compares against what
+Inflozo last put live, and an uploaded-but-inactive theme is not what visitors are served")*
 **And** *(moved word for word to Story 7.18a by Story 7.18's Question 1 — owner, 2026-10-18, R-259: **(4)**, **(5)**, "the
 wizard state matches D2e" and "the deploy-only ending matches D2f", with their one-click activate — "Deploy only" needs its
 ending; this story keeps the history row)*

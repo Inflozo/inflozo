@@ -1512,7 +1512,7 @@ not a failure**, and six things follow:
    badge.
 2. **The theme name freezes**, because the name is claimed on the site the moment a theme lands
    there.
-3. **The drift baseline does not move** — FR-J16 compares against what Inflozo last put **live**.
+3. **The drift baseline moves to this upload** — FR-J16 compares against the newest upload Ghost accepted, live or not, because Ghost replaces every file under the theme's name on every upload *(Story 7.21's Create — owner, 2026-11-24, R-287; this read "the drift baseline does not move — FR-J16 compares against what Inflozo last put live")*.
 4. **"Never leaves a partially active theme" is unaffected** — the site's active theme is still the
    previous one, untouched.
 5. **The user is told plainly: "Your theme is on your site but isn't live yet."** With a re-activate

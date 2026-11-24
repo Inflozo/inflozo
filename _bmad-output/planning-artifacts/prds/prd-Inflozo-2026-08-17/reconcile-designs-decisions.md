@@ -6135,6 +6135,32 @@ need a failure in the same second as the send, and the Sites page is a second wa
 - **Deliberately not touched:** R-285, which this leaves as ruled, and DW-392 (a send refused for good), which is
   Story 15.5's.
 
+**R-287 — the drift check compares the site with the newest upload Ghost accepted, live or not.** Story 7.21's Create,
+Question 1, ruled **option 1** (owner, 2026-11-24): *"1"*, which is *"Compare with the newest upload Ghost accepted, live or
+not. This matches what is on your site, file for file, and keeps 'never a false alarm'."*
+
+- **Why it was a question.** FR-J8's consequence (3), ruled at the PRD's encode pass (M-4), said a Deploy only does not
+  move the drift baseline, because "drift compares against what Inflozo last put live". FR-J16 reads Inflozo's theme by its
+  frozen name and requires zero false positives. Ghost 6.58.0's `storage.js` `setFromZip` (`:95-107`, read in source at the
+  Create) moves an existing theme of the same name aside and saves the new upload whole, active or not. So after a Deploy
+  only, the theme under the name is that upload. The old rule would skip the check after a first Deploy only, and would
+  report Inflozo's own upload as drift after a later one.
+- **The rule.** The baseline is this project's newest `deploys` row to the site with status `uploaded` or `live`. A Deploy
+  only upload and an upload whose activation failed both count. Nothing else about either changes: not live, no active
+  badge, no deploy-failure email.
+- **Declined.** Option 2, keep "the newest LIVE deploy only".
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.21's spec (Question 1, Ruled value 1, the Dev gate);
+  - ✅ `prd.md` FR-J8's consequence (3) (corrected, with a dated note quoting the old reading);
+  - ✅ `EXPERIENCE.md`'s partial-success list, item 3 (the same);
+  - ✅ step 5b's annotation on Partial Success (`prototype/build.py`, regenerated);
+  - ✅ `epics.md` Story 7.32's card (3) and Story 7.21's card (dated);
+  - ✅ `epic-7-context.md`;
+  - ☐ the code and FR-J16's dated note (Story 7.21's Dev).
+- **Deliberately not touched:** the record documents (`encode-propagation-map.md`, `.memlog.md`, `.v4.0-backup/`), which
+  keep the wording as it was ruled then.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

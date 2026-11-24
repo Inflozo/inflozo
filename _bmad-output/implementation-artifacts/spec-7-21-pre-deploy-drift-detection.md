@@ -218,7 +218,8 @@ Everything else is S8b's Pre-flight as built (`S8 Deploy.dc.html` S8b), whose st
 
 ## Tasks & Acceptance
 
-**Dev gate:** Question 1 must be ruled before Dev. This plan builds option 1, held in Ruled value 1.
+**Dev gate:** none left with the owner. Question 1 was ruled option 1 (R-287), which this plan builds as Ruled value 1. Dev
+still asks his in-session go for the T1 and production writes (Ask First).
 
 **Execution:**
 - [ ] `packages/section-runtime/src/doc-edit.ts` -- export `LAYER_NAME_MAX = 60`. `renameSection` refuses a trimmed name
@@ -357,9 +358,10 @@ Everything else is S8b's Pre-flight as built (`S8 Deploy.dc.html` S8b), whose st
   - `finally`: Casper active, `inflozo-*` deleted, the site disconnected, the account deleted.
 
   `STEP119_PLANT=<email>` runs it as that address and stops after (d)'s plant, for the owner's test.
-- [ ] **Propagation**, each a dated note (Story 7.21's Dev):
+- [ ] **Propagation**, each a dated note (Story 7.21's Dev). R-287's own targets (FR-J8's (3), EXPERIENCE's
+  partial-success item 3, 7.32's and 7.21's cards, the register) landed with the ruling at the Create. Dev ticks the
+  register's last target.
   - FR-J16 in `prd.md`;
-  - FR-J8's consequence (3) in `prd.md`, EXPERIENCE `:1515` and 7.32's card in `epics.md` (3): Ruled value 1's wording;
   - 7.23's card: a rollback or restore that uploads a stored artefact records that upload as the newest accepted one, with
     the artefact's manifest;
   - SCHEMA.sql's `content_manifest` comment, `path → {sha256, fingerprint, layer?, category?}` (a `--` comment: no
@@ -393,11 +395,10 @@ Everything else is S8b's Pre-flight as built (`S8 Deploy.dc.html` S8b), whose st
 
 ## Design Notes
 
-**Ruled value 1 — the baseline (Question 1, open; option 1 planned).** This project's newest `deploys` row to this site with
-status `uploaded` or `live`, ordered by `created_at`, other than the job's own. Every upload Ghost accepted is one of these
-(`demote` writes `uploaded`). A Deploy only upload and an upload whose activation failed both count, because
-`storage.js:95-107` replaces every file under the name. If the owner rules option 2, the query becomes the newest **activated**
-row (`activated_at` desc), the walk's (b) expects no row, and the propagation task is dropped.
+**Ruled value 1 — the baseline (Question 1, ruled option 1, R-287, owner, 2026-11-24).** This project's newest `deploys` row
+to this site with status `uploaded` or `live`, ordered by `created_at`, other than the job's own. Every upload Ghost accepted
+is one of these (`demote` writes `uploaded`). A Deploy only upload and an upload whose activation failed both count, because
+`storage.js:95-107` replaces every file under the name.
 
 **Why the fingerprint is the layer's id.** The live theme carries no fingerprint (FR-J1), so live files can only be matched
 to the baseline by path or by content.
@@ -495,7 +496,7 @@ removes `README.md`. Deploy fills in the addresses and the section's name. Addre
 
 ## Questions for the owner
 
-Question 1 is open, and Dev waits for it.
+Question 1 was ruled option 1 by the owner on 2026-11-24 (R-287). None is open. Ruled value 1 in Design Notes holds it.
 
 ### Question 1 — After a "Deploy only", what does the next check compare with?
 
@@ -523,7 +524,8 @@ you change a heading and run checks for v2.
 2. **Keep the October rule: compare with the newest LIVE deploy only.** The check is skipped when this project never went
    live there. After a Deploy only that followed a live version, it may show Inflozo's own changes as edits.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-24) — R-287.** *"1"*, which is *"Compare with the newest upload Ghost accepted, live or
+not. This matches what is on your site, file for file, and keeps 'never a false alarm'."*
 
 ## Verification
 
