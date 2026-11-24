@@ -592,26 +592,26 @@ paths are `partials/sections/{dir}/{slug}.hbs` (Story 7.1's slug rule).
 
 ## Owner's manual test
 
-You test as **`umngkmr+drift721@gmail.com`** on the Ghost 6 test site (T1). **Deploy plants the start on your go:** the
-account, ghost6 connected with your keys, a project called **Drift test** shipped once and live, and then a hand edit made
-on ghost6 behind Inflozo's back. The edit changes one section's file, adds a template called `custom-handmade.hbs` and
-removes `README.md`. Deploy fills in the addresses and the section's name. Addresses that need the project's id are written
-`<P>`.
+You test as **`umngkmr+drift721@gmail.com`** on the Ghost 6 test site (T1). **Deploy planted the start on your go
+(2026-11-24):** the account, ghost6 connected with the test keys, a project called **Drift test** shipped once and live
+(v1), and then a hand edit made on ghost6 behind Inflozo's back. The edit changes the **Hero — Latest Post** section's file
+(`partials/sections/shared/hero-latest-post.hbs`), adds a template called `custom-handmade.hbs` and removes `README.md`.
+Until you finish step 13, ghost6.inflozo.com shows the Drift test theme instead of Casper.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+drift721@gmail.com` | Projects, with **Drift test**. |
-| 2 | `https://app.inflozo.com/projects/<P>` | Editor | Open Drift test, press **Ship it**, then **Run checks**. | — | "Theme compiled", the theme check, then **"Comparing with your live theme…"** for a moment. |
-| 3 | the same | Drift report | Wait for the checks to finish. | — | A wider card: **"Something changed on your site since we last shipped."** Under it, the same lines as an ordinary check ("Theme compiled", the theme check and its passing lines). Then **"Comparing with your live theme"** with a "3 files differ" chip, and three groups. **Changed**: the section's own name (the one Deploy names), with its file path in small grey text under it. **Added on your site**: "A template Inflozo didn't write" / `custom-handmade.hbs`. **Removed from your site**: "Read me" / `README.md`. Then "routes.yaml is valid — pass", "Shipping replaces all three with Inflozo's versions…", and **Cancel**, **Download the live theme first**, and a black **Overwrite and ship anyway**. |
-| 4 | the same | Drift report | Without clicking, press **Tab** once, then **Shift+Tab** once. | — | Focus starts on **Cancel** (a ring around it). Tab moves to Download, and Shift+Tab returns to Cancel. |
-| 5 | the same | Drift report | Press **Download the live theme first**. Open the zip. | — | A zip named `inflozo-drift-test-live.zip` downloads. Inside are `custom-handmade.hbs` and no `README.md`. |
-| 6 | the same | Drift report | Press **Overwrite and ship anyway**. | — | "Shipping…", then Shipping and **Live**. |
-| 7 | the same | Pre-flight | Close the wizard. Press **Ship it**, then **Run checks**. | — | The ordinary Pre-flight. Among the passing lines, second: **"Nothing changed on your site since v2 — pass"**. No drift card. |
-| 8 | the same | Layers | Close the wizard. In **Layers**, open a section's ⋯ → **Rename**. Clear the name and paste the long text, then press Save. | `A very long section name that keeps going well past the sixty character limit` | The field keeps only the first 60 characters, and Save renames the section to them. |
-| 9 | the same | Pre-flight | Press **Ship it**, then **Run checks**. | — | Still **"Nothing changed on your site since v2 — pass"**. A rename changes nothing on your site, so it is never drift. |
+| 2 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Editor | Open Drift test, press **Ship it**, then **Run checks**. | — | "Theme compiled", the theme check, then **"Comparing with your live theme…"** for a moment. |
+| 3 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Drift report | Wait for the checks to finish. | — | A wider card: **"Something changed on your site since we last shipped."** Under it, the same lines as an ordinary check ("Theme compiled", the theme check and its passing lines). Then **"Comparing with your live theme"** with a "3 files differ" chip, and three groups. **Changed**: **"Hero — Latest Post"**, with `partials/sections/shared/hero-latest-post.hbs` in small grey text under it. **Added on your site**: "A template Inflozo didn't write" / `custom-handmade.hbs`. **Removed from your site**: "Read me" / `README.md`. Then "routes.yaml is valid — pass", "Shipping replaces all three with Inflozo's versions…", and **Cancel**, **Download the live theme first**, and a black **Overwrite and ship anyway**. |
+| 4 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Drift report | Without clicking, press **Tab** once, then **Shift+Tab** once. | — | Focus starts on **Cancel** (a ring around it). Tab moves to Download, and Shift+Tab returns to Cancel. |
+| 5 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Drift report | Press **Download the live theme first**. Open the zip. | — | A zip named `inflozo-drift-test-live.zip` downloads. Inside are `custom-handmade.hbs` and no `README.md`. |
+| 6 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Drift report | Press **Overwrite and ship anyway**. | — | "Shipping…", then Shipping and **Live**. |
+| 7 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Pre-flight | Close the wizard. Press **Ship it**, then **Run checks**. | — | The ordinary Pre-flight. Among the passing lines, second: **"Nothing changed on your site since v2 — pass"**. No drift card. |
+| 8 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Layers | Close the wizard. In **Layers**, open a section's ⋯ → **Rename**. Clear the name and paste the long text, then press Save. | `A very long section name that keeps going well past the sixty character limit` | The field keeps only the first 60 characters, and Save renames the section to them. |
+| 9 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Pre-flight | Press **Ship it**, then **Run checks**. | — | Still **"Nothing changed on your site since v2 — pass"**. A rename changes nothing on your site, so it is never drift. |
 | 10 | `https://ghost6.inflozo.com/ghost/` | Ghost Admin | **Settings → Design & branding → Change theme**: activate **Casper**, then delete the `inflozo-drift-test` theme. | — | Casper is active; the Inflozo theme is gone. |
-| 11 | `https://app.inflozo.com/projects/<P>` | Pre-flight | Back in Inflozo, press **Ship it**, then **Run checks**. | — | A blue row: **"Couldn't check whether your live theme changed."** "ghost6.inflozo.com no longer has inflozo-drift-test, the theme Inflozo last put there. Shipping anyway." Ship it is **not** greyed. |
-| 12 | the same | Ship | Press **Ship it**. | — | Shipping, then **Live**. The theme is back on ghost6. |
+| 11 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Pre-flight | Back in Inflozo, press **Ship it**, then **Run checks**. | — | A blue row: **"Couldn't check whether your live theme changed."** "ghost6.inflozo.com no longer has inflozo-drift-test, the theme Inflozo last put there. Shipping anyway." Ship it is **not** greyed. |
+| 12 | `https://app.inflozo.com/projects/01d38753-52fc-4176-8e97-ed88c1b97cae` | Ship | Press **Ship it**. | — | Shipping, then **Live**. The theme is back on ghost6. |
 | 13 | `https://ghost6.inflozo.com/ghost/`, then `https://app.inflozo.com/sites` | Cleanup | In Ghost: activate **Casper** and delete `inflozo-drift-test`. In Inflozo: ⋯ → **Disconnect** on ghost6. | — | T1 is back as it was, and Inflozo holds no key of yours. |
 
 **Not in this test:**
@@ -804,3 +804,32 @@ Ghost 5's half goes to DW-326 (R-238). There is no migration, so there is no Sch
 - **Not run here:** Deploy's plant for the owner's test (`STEP119_PLANT`), which is Deploy's. Ghost 5's half goes to DW-326
   (R-238).
 
+
+**Executed — Deploy (2026-11-24, Node 24; the real services by their variable names, no value printed):**
+- **Deployment: `dpl_2RUuMUMWdCdbJMkaJyQ2er7DK2Lt`** (`inflozo-98s9b6z38-umangkagathara.vercel.app`), READY, built from
+  `d5f0b1f2`, the Review commit. It serves both `app.inflozo.com` and `inflozo.com` (Vercel's `v13/deployments/{host}`,
+  `VERCEL_TOKEN` read in-process). `d5f0b1f2` changed no code over `a6e91807`, the deployment walk 119 passed on
+  (`git diff --stat a6e91807 d5f0b1f2 -- apps packages` is empty), so this deployment is the story as reviewed.
+- **CI on `d5f0b1f2`** (`GITHUB_TOKEN`, read only): `check` (the full `pnpm keyboard` included), `rls` and `deploy` green; the
+  Render matrix green.
+- **No schema change.** There is no migration, so nothing was applied; CI's `rls` (the RLS gate) was green on this push.
+- **The owner's test plant**, on the owner's in-session go ("1. Go"), run in the main session from a detached worktree at
+  `d5f0b1f2` as a cut copy (steps 1–5, then 119, then `finally`) with `STEP119_PLANT=umngkmr+drift721@gmail.com T1_WRITES=1`
+  and `GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`, `SUPABASE_URL`,
+  `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` read in-process. **43 PASS, 2 FAIL — the two FAILs are the plant
+  itself:**
+  - T1 at the start: Casper active, no `inflozo-` theme, `routes.yaml` 130 bytes;
+  - the alias made (it had no account), T1 connected through the wizard, **Drift test** seeded and linked (theme
+    `inflozo-drift-test`, hero "Hero — Latest Post");
+  - shipped once with Deploy & activate: v1 **live** on T1, its manifest filing the hero under
+    `partials/sections/shared/hero-latest-post.hbs`;
+  - the hand edit uploaded under `inflozo-drift-test` with the Admin key and read back with the staff token: the hero's
+    partial edited, `custom-handmade.hbs` added, `README.md` removed;
+  - zero CSP violations; one `stall` note (a step-2 page load retried once, then held).
+  - **The two FAILs** are the walk's whole-run counts, `users 19 → 20` and `projects 12 → 13`: the alias and its Drift test,
+    which the plant leaves on purpose. Throwaway accounts A and B were deleted (HTTP 200, 200). The walk's end-of-run count does
+    not exclude an account the plant keeps; recorded here, with no change to the walk.
+  - Read back afterwards (staff token, GET only): T1's themes are `casper`, `racer`, `source` and `inflozo-drift-test*`
+    (active).
+- **The Owner's manual test** carries the live URL in every step, the project id and the section's name. `owner_test` stays
+  `pending`. Step 13 puts T1 back on Casper.
