@@ -3165,8 +3165,9 @@ begin
   end if;
   if coalesce(col_description('public.sites'::regclass,
        (select attnum from pg_attribute where attrelid = 'public.sites'::regclass and attname = 'hosted_by_ghost')), '')
-     not like '%hostSettings%null = not yet probed%' then
-    raise exception 'FAIL (7.20a): sites.hosted_by_ghost''s comment does not name hostSettings and the unprobed state';
+     not like '%hostSettings%sub line%null = not yet probed%' then
+    -- DW-390 (Story 7.20b's migration): since R-283 the column names the Backup step's sub line alone
+    raise exception 'FAIL (7.20a): sites.hosted_by_ghost''s comment does not name hostSettings, the sub line and the unprobed state';
   end if;
   if has_column_privilege('authenticated', 'public.sites', 'backup_confirmed_at', 'INSERT')
      or has_column_privilege('authenticated', 'public.sites', 'backup_confirmed_at', 'UPDATE')
@@ -3317,3 +3318,116 @@ end $$;
 
 delete from auth.users where id in ('77777777-720a-0000-0000-000000000001',
                                     '77777777-720a-0000-0000-000000000002');
+
+-- ── STORY 7.20b — the snapshot orphan purge's notice record (FR-C6, AD-33, R-285) ─────────────────────────────────────────
+--
+-- BEHAVIOURAL. `site_snapshots.orphan_notice_at` records when FR-C6's one notice went out; only the purge job writes it,
+-- with the service role. The tenant reads it on its own original theme (the Sites list draws from the same rows), never on
+-- another tenant's, and cannot write it: `site_snapshots` carries no client write at all, so no grant was added. With the
+-- 7.20b migration withheld this block ABORTS at its first check — the control that the gate sees it at all.
+
+reset role;
+
+delete from auth.users where id in ('77777777-720b-0000-0000-000000000001',
+                                    '77777777-720b-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-720b-0000-0000-000000000001'),
+                                  ('77777777-720b-0000-0000-000000000002');
+insert into public.sites(id,user_id,url,disconnected_at) values
+  ('eeeeeeee-720b-0000-0000-000000000001','77777777-720b-0000-0000-000000000001','https://own-720b.example',
+   '2026-08-01 12:00:00+00'),
+  ('eeeeeeee-720b-0000-0000-000000000002','77777777-720b-0000-0000-000000000002','https://theirs-720b.example',
+   '2026-08-01 12:00:00+00');
+
+-- (1) the column, nullable with no default, its comment; no client write on it
+do $$
+begin
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'site_snapshots' and column_name = 'orphan_notice_at'
+         and data_type = 'timestamp with time zone' and is_nullable = 'YES' and column_default is null) <> 1 then
+    raise exception 'FAIL (7.20b): site_snapshots.orphan_notice_at (timestamptz, nullable, no default) is missing';
+  end if;
+  if coalesce(col_description('public.site_snapshots'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.site_snapshots'::regclass and attname = 'orphan_notice_at')), '')
+     not like '%FR-C6%one email two weeks before%sites.disconnected_at%Written only by the purge job%' then
+    raise exception 'FAIL (7.20b): site_snapshots.orphan_notice_at''s comment does not name FR-C6, R-285''s notice, the clock it is read against and its one writer';
+  end if;
+  if has_column_privilege('authenticated', 'public.site_snapshots', 'orphan_notice_at', 'INSERT')
+     or has_column_privilege('authenticated', 'public.site_snapshots', 'orphan_notice_at', 'UPDATE') then
+    raise exception 'FAIL (7.20b): authenticated can write site_snapshots.orphan_notice_at';
+  end if;
+  raise notice 'PASS (7.20b): site_snapshots.orphan_notice_at is a nullable timestamptz with no default, commented and client-unwritable';
+end $$;
+
+-- the purge job stamps both notices (the service role, as the product does: its compare-and-set from null)
+set role service_role;
+insert into public.site_snapshots(id,user_id,site_id,storage_path,theme_name,bytes) values
+  ('aaaaaaaa-720b-0000-0000-000000000001','77777777-720b-0000-0000-000000000001','eeeeeeee-720b-0000-0000-000000000001',
+   '77777777-720b-0000-0000-000000000001/eeeeeeee-720b-0000-0000-000000000001/2026-07-01-casper.zip','casper',1024),
+  ('aaaaaaaa-720b-0000-0000-000000000002','77777777-720b-0000-0000-000000000002','eeeeeeee-720b-0000-0000-000000000002',
+   '77777777-720b-0000-0000-000000000002/eeeeeeee-720b-0000-0000-000000000002/2026-07-01-source.zip','source',2048);
+do $$
+declare n int;
+begin
+  update public.site_snapshots set orphan_notice_at = '2026-10-16 04:30:00+00'
+   where id = 'aaaaaaaa-720b-0000-0000-000000000001' and orphan_notice_at is null;
+  get diagnostics n = row_count;
+  update public.site_snapshots set orphan_notice_at = '2026-10-15 04:30:00+00'
+   where id = 'aaaaaaaa-720b-0000-0000-000000000002' and orphan_notice_at is null;
+  if n <> 1 or not found then raise exception 'FAIL (7.20b): the service role could not record a notice'; end if;
+  raise notice 'PASS (7.20b): the service role records a notice';
+end $$;
+reset role;
+
+set role authenticated;
+set request.jwt.claim.sub = '77777777-720b-0000-0000-000000000001';
+
+-- (2) the tenant reads its own notice and not another's; (3) it cannot write it
+do $$
+declare mine timestamptz; theirs int;
+begin
+  select orphan_notice_at into strict mine from public.site_snapshots where id = 'aaaaaaaa-720b-0000-0000-000000000001';
+  if mine is distinct from '2026-10-16 04:30:00+00'::timestamptz then
+    raise exception 'FAIL (7.20b): the tenant read % for its own orphan_notice_at', coalesce(mine::text, 'null');
+  end if;
+  select count(*) into theirs from public.site_snapshots where id = 'aaaaaaaa-720b-0000-0000-000000000002';
+  if theirs <> 0 then raise exception 'FAIL (7.20b): the tenant can see another tenant''s original theme'; end if;
+  raise notice 'PASS (7.20b): the tenant reads its own orphan_notice_at and not another tenant''s';
+  begin
+    update public.site_snapshots set orphan_notice_at = null where id = 'aaaaaaaa-720b-0000-0000-000000000001';
+    raise exception 'FAIL (7.20b): the tenant wrote orphan_notice_at directly';
+  exception when insufficient_privilege then
+    raise notice 'PASS (7.20b): the tenant cannot write orphan_notice_at (%)', sqlstate;
+  end;
+exception when no_data_found then
+  raise exception 'FAIL (7.20b): the tenant cannot read its own original theme';
+end $$;
+
+-- (4) as the other tenant: the zero above is the tenancy's — it reads its own notice
+set request.jwt.claim.sub = '77777777-720b-0000-0000-000000000002';
+do $$
+begin
+  if (select count(*) from public.site_snapshots where id = 'aaaaaaaa-720b-0000-0000-000000000001') <> 0 then
+    raise exception 'FAIL (7.20b): another tenant sees the original theme';
+  end if;
+  if (select orphan_notice_at from public.site_snapshots where id = 'aaaaaaaa-720b-0000-0000-000000000002')
+       is distinct from '2026-10-15 04:30:00+00'::timestamptz then
+    raise exception 'FAIL (7.20b): the control — the other tenant cannot read its own orphan_notice_at either';
+  end if;
+  raise notice 'PASS (7.20b): another tenant sees none of it; the control reads its own notice';
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+-- (5) the refused write changed nothing
+do $$
+begin
+  if (select orphan_notice_at from public.site_snapshots where id = 'aaaaaaaa-720b-0000-0000-000000000001')
+       is distinct from '2026-10-16 04:30:00+00'::timestamptz then
+    raise exception 'FAIL (7.20b): a refused tenant write changed the recorded notice';
+  end if;
+  raise notice 'PASS (7.20b): the refused write left the notice as the purge job wrote it';
+end $$;
+
+delete from auth.users where id in ('77777777-720b-0000-0000-000000000001',
+                                    '77777777-720b-0000-0000-000000000002');

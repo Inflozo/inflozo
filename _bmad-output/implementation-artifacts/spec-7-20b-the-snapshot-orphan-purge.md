@@ -2,7 +2,7 @@
 title: 'Story 7.20b — The snapshot orphan purge'
 type: 'feature'
 created: '2026-10-26'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'c77b737a5093cab805ccdb1940f09c2983b8bbbb'
 owner_test: pending
 review_loop_iteration: 0
@@ -185,16 +185,16 @@ The epic's criteria, word for word (R-195):
 owner's in-session go (R-99), before any code that reads `orphan_notice_at` is pushed.
 
 **Execution — the `Schema` push (alone, first; R-99):**
-- [ ] `supabase/migrations/20261028120000_snapshot_orphans.sql` -- re-runnable. It holds:
+- [x] `supabase/migrations/20261028120000_snapshot_orphans.sql` -- re-runnable. It holds:
   - `alter table public.site_snapshots add column if not exists orphan_notice_at timestamptz`;
   - a `comment on column` saying that column records when FR-C6's notice was last sent, that it is compared against
     `sites.disconnected_at`, and that only the purge job writes it;
   - DW-390's `comment on column public.sites.hosted_by_ghost`, saying it is whether Ghost's public config carries
     `hostSettings`, that it names the Backup step's sub line alone, and that null means not yet probed;
   - a header saying no new grant is needed and why.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the column in
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` -- the column in
   `site_snapshots` and both comments. The gate diffs them.
-- [ ] `…/RLS-TEST.sql`, copied byte-identical to `supabase/tests/rls.sql`:
+- [x] `…/RLS-TEST.sql`, copied byte-identical to `supabase/tests/rls.sql`:
   - 7.20a's `hosted_by_ghost` check matches the new comment (`%hostSettings%sub line%null = not yet probed%`);
   - a **7.20b block** checks the column's type, that it is nullable with no default, and its comment;
   - in the same block, the tenant reads its own row's column and not another tenant's, and its update of it is refused

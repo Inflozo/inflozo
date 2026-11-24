@@ -184,8 +184,9 @@ create table public.sites (
   -- Story 7.20a (FR-J13, F7): when the customer confirmed their own backup on the first-deploy Backup step. Null = owed;
   -- `disconnectSite` sets it back to null, so a reconnect shows the gate again. Consent, not control (AD-29).
   backup_confirmed_at timestamptz,
-  -- Story 7.20a: Ghost's public config carries `hostSettings` (true = Ghost(Pro), D1e; false = self-hosted, D1d; null =
-  -- not yet probed, both paths). Written by `probeSite`. Both server-written, select-only to the client. LAST, as above.
+  -- Story 7.20a: Ghost's public config carries `hostSettings` (true = Ghost(Pro), false = self-hosted, null = not yet
+  -- probed). Since R-283 it names the Backup step's sub line alone (DW-390, Story 7.20b). Written by `probeSite`. Both
+  -- server-written, select-only to the client. LAST, as above.
   hosted_by_ghost boolean,
   unique (user_id, url)
 );
@@ -194,7 +195,7 @@ comment on column public.sites.staff_token_declined_at is
 comment on column public.sites.backup_confirmed_at is
   'When the customer confirmed their own backup on the first-deploy Backup step (Story 7.20a, FR-J13, F7: once per site, re-shown after a reconnect). Null = owed; disconnectSite sets it back to null. A consent gate, not a technical control (AD-29). Written only by the server.';
 comment on column public.sites.hosted_by_ghost is
-  'Whether Ghost''s public config for this site carries hostSettings (Story 7.20a): true = Ghost(Pro), the D1e gate; false = self-hosted, D1d; null = not yet probed, both paths offered. Written only by probeSite.';
+  'Whether Ghost''s public config for this site carries hostSettings (Story 7.20a): true = Ghost(Pro), false = self-hosted. Since R-283 every host draws the same Backup card, and this names the Backup step''s sub line alone. null = not yet probed. Written only by probeSite.';
 create index on public.sites (user_id) where disconnected_at is null;
 create index on public.sites (last_checked_at) where disconnected_at is null;
 
@@ -229,13 +230,21 @@ create table public.site_snapshots (
   -- FR-A5's 14-DAY ACCOUNT-DELETION CLOCK, AND ONLY THAT (Story 3.5, 2026-09-09 — DW-43 closed).
   -- FR-C6's 90-day ORPHAN clock is DERIVED from `public.sites.disconnected_at` and is never
   -- stamped here: two clocks in one column is what made `restore_account()`'s `purge_after = null`
-  -- ambiguous. `disconnectSite` is `disconnected_at`'s only writer; Story 7.20 reads the derived
-  -- deadline (DW-75). See the comment beside `restore_account()` in
+  -- ambiguous. `disconnectSite` is `disconnected_at`'s only writer; Story 7.20b's purge job reads the
+  -- derived deadline (DW-75, `lib/orphan-rule.ts`). See the comment beside `restore_account()` in
   -- `supabase/migrations/20260907150000_account_deletion_window.sql`.
   purge_after   timestamptz,
   download_offered_at timestamptz,
+  -- Story 7.20b (FR-C6, R-285): when the orphan notice -- ONE email two weeks before the deletion -- was last sent. The
+  -- deadline itself is derived (`sites.disconnected_at` + `ORPHAN_SNAPSHOT_DAYS`, `lib/orphan-rule.ts`) and never stored;
+  -- this is the one thing the job cannot derive. A notice older than the latest disconnect no longer counts. Not
+  -- `download_offered_at`, which FR-A5 stamps (DW-43: one column, one meaning). Purge-job-written, select-only to the
+  -- client. LAST, because `add column` appends.
+  orphan_notice_at timestamptz,
   unique (site_id)                                        -- one pre-Inflozo snapshot per site record
 );
+comment on column public.site_snapshots.orphan_notice_at is
+  'When FR-C6''s orphan notice (Story 7.20b, R-285: one email two weeks before the deletion) was last sent for this original theme. Compared against sites.disconnected_at: a notice older than the latest disconnect no longer counts. Null = never sent. Written only by the purge job (purge-snapshots).';
 
 -- ============================================================================
 -- 3. projects & canvases — FR-B1..B7, FR-D5..D22, FR-E1..E5, FR-Q1
