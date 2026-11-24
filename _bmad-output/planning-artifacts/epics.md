@@ -4526,6 +4526,8 @@ on the old site after a switch keeps its own (DW-380).
 snapshot, and is never listed as a version; and pruning **never removes the drift baseline's `content_manifest`** — the newest
 upload Ghost accepted from this project to each site (R-287) — or the next check would compare the site with an older upload
 and report Inflozo's own changes as drift.
+**And** *(given an owner by Story 7.21's Review, 2026-11-24)* a live theme past the size the buckets keep never fails the
+Pre-flight that found its drift: the live copy is not kept, and D3a is drawn without its Download (DW-396)
 
 **FRs:** FR-J7. · **Frame:** `D2 Deploy History Completed.dc.html` D2a · D2b. · **Owner test:** yes.
 
@@ -4562,6 +4564,9 @@ never a re-upload of the snapshot
 route — a 404 when the row has gone, a 502 when signing fails, the sign-in redirect — is said where the button is and never
 replaces the page; one way for D2a's original-theme row and the Backup step's Theme Download (`deploy-wizard.tsx`
 `follow`)
+**And** *(DW-391, extended by Story 7.21's Review, 2026-11-24)* the same way serves D3a's **Download the live theme first**
+(`#deploy-drift-download` → `projects/[id]/deploy/live`): its 404, 502 and sign-in redirect are said under the button, never in
+place of the editor
 **And** *(Story 7.21's Dev, 2026-11-24, under R-287)* a rollback or a restore that **uploads a stored artefact records that
 upload as the newest accepted one** — a `deploys` row with status `uploaded` or `live` carrying **the artefact's own
 `content_manifest`** — because Ghost replaces every file under the theme's name on that upload, and the next drift check
@@ -4847,6 +4852,9 @@ wizard state matches D2e" and "the deploy-only ending matches D2f", with their o
 ending; this story keeps the history row)*
 **And** **(6)** it **sends no deploy-failure email**
 **And** the history row matches D2d.
+**And** *(given an owner by Story 7.21's Review, 2026-11-24)* an upload Ghost kept whose answer was lost (its row `failed`) is
+not left to read as drift: a found drift that matches a newer `failed` row's manifest exactly is clean against that version
+(DW-397)
 
 **FRs:** FR-J8 (the partial-success half). · **Frame:** `D2 Deploy History Completed.dc.html` D2d. ·
 **Owner test:** yes.
@@ -9820,6 +9828,9 @@ Story 7.11's Review, 2026-10-14)
 itself on a real stack — a first acquire, a page's beat, its leave, then that page's late beat changing nothing — where today
 only the production lock walk sends them through PostgREST (DW-387); and the lock walk's early stops (Hand over, the matrix's
 Heartbeat, DW-240 (a)'s held reload) stop failing intermittently against production (DW-382)
+**And** *(given an owner by Story 7.21's Review, 2026-11-24)* after a kept token, focus lands in the new view — its heading or
+first control — when the Add token that opened D1b is gone, for D3b's and B12b's alike, with a journey that reads
+`document.activeElement` (DW-398)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

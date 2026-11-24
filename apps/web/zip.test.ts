@@ -146,7 +146,13 @@ test(`7.21 · what is never read throws: past the cap (${LIVE_MAX_BYTES} bytes b
   const ok = { 'a.hbs': 'x'.repeat(100), 'b.hbs': 'y'.repeat(100) }
   assert.doesNotThrow(() => unzipTheme(archiverZip(ok), 200), 'the control: exactly the cap reads')
   assert.throws(() => unzipTheme(archiverZip(ok), 199), /past the size cap/)
-  assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x'.repeat(100) }, undefined, { unpacked: 10 })), /not what its header says/, 'a declared size is a claim')
+  assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x'.repeat(100) }, () => 0, { unpacked: 10 })), /not what its header says/, 'a declared size is a claim')
+  // Story 7.21's Review: a deflated entry that declares little is cut off AT ITS CLAIM, inside the inflate — never inflated toward the
+  // cap first and refused after (the bomb's memory): Node's own refusal, not the header check that follows it
+  assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x'.repeat(100_000) }, undefined, { unpacked: 10 })), { code: 'ERR_BUFFER_TOO_LARGE' }, 'a bomb stops at its claim')
+  assert.doesNotThrow(() => unzipTheme(archiverZip({ 'a.hbs': 'x'.repeat(100_000) })), 'the control: the same entry, honestly declared, reads')
+  // …and an entry named `__proto__` is a file like any other
+  assert.deepEqual(Object.keys(unzipTheme(archiverZip(JSON.parse('{"__proto__":"x","a.hbs":"y"}') as Record<string, string>))).sort(), ['__proto__', 'a.hbs'])
   assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x' }, undefined, { unpacked: 0xffffffff })), /ZIP64/)
   assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x' }, undefined, { flags: 0x0001 })), /encrypted/)
   assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x' }, undefined, { method: 12 })), /method 12/)

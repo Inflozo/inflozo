@@ -33,7 +33,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!isUuid(projectId) || !isUuid(jobId)) return no(404, 'Not found')
 
   const { data: job, error } = await (await supabaseServer()).from('deploy_jobs').select('project_id, site_id, stage_timings').eq('id', jobId).maybeSingle()
-  if (error) console.error('deploy/live: the job could not be read', { code: error.code })
+  // a read that failed is ours and passing — a 502, never a 404 that says the job is not there (the deploy GET's rule)
+  if (error) {
+    console.error('deploy/live: the job could not be read', { code: error.code })
+    return no(502, 'Could not prepare that download')
+  }
   const drift = (job?.stage_timings as { drift?: { kind?: unknown; theme?: unknown } } | null | undefined)?.drift
   if (!job || job.project_id !== projectId || drift?.kind !== 'found' || typeof job.site_id !== 'string') return no(404, 'Not found')
 

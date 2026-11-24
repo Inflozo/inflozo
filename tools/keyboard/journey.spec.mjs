@@ -10648,6 +10648,8 @@ test('7.20a · (f) no token at the first upload: B12b at 600 — the 403 line, i
   await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
   expect(sent.map((b) => b.intent)).toEqual(['preflight', 'ship', 'ship'])
   expect(sent.at(-1).withoutSnapshot).toBe(true)
+  // Story 7.21's Review: neither Ship it nor Deploy without a snapshot carries D3a's overwrite
+  for (const b of sent.filter((s) => s.intent === 'ship')) expect(b).not.toHaveProperty('overwrite')
 })
 
 test('7.20a · (g) a capture Ghost refused: B12b names the download and its status → Add token opens D1b over it (no Not now, the rail at Ship) → Back is B12b on Add token; a kept token ships again, capturing', async ({ page }) => {
@@ -10765,7 +10767,8 @@ const SHIPPING_OVER = [
   LIVE_ENDING,
 ]
 /** the drift journeys' world: the header for the page and the fake route alike, the canned route, its 409 over a found drift
- *  without the customer's word, and the live copy's 303 → a tiny zip. Answers every body sent and every ship refused */
+ *  without the customer's word, and the live copy answered as the signed URL's own attachment (a tiny zip — never a 303, see
+ *  below). Answers every body sent and every ship refused */
 async function plantDrift(page, value, plan = {}) {
   await page.setExtraHTTPHeaders({ ...SHIPPED_SITE, 'x-inflozo-harness-drift': value, ...(plan.headers ?? {}) })
   const sent = await plantDeploy(page, { preflight: driftPreflight(value), ship: SHIPPING_OVER, ...plan })
@@ -10875,6 +10878,12 @@ test('7.21 · (b) Overwrite and ship anyway is the ONE control that sends `overw
   await expect(overwrite).toHaveAccessibleName(DRW.shipping)
   await expect(overwrite).toHaveAttribute('aria-busy', 'true')
   await expect(overwrite).toHaveAttribute('aria-disabled', 'true')
+  // once it starts, it finishes: D3a's Cancel is inert while the press is out — the wizard stays open (Story 7.21's Review)
+  const cancel = page.locator('#deploy-drift-cancel')
+  await expect(cancel).toHaveAttribute('aria-disabled', 'true')
+  await cancel.focus()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveAttribute('open', '')
   hold = null
   release()
   await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
@@ -10886,18 +10895,24 @@ test('7.21 · (b) Overwrite and ship anyway is the ONE control that sends `overw
 })
 
 test('7.21 · (c) D3b, no token: the sky row after the checks and before the routes row, its title, its body ending "Shipping anyway.", Add token — Ship it stays live; Add token → D1b over Pre-flight (no Not now, the rail at Check) → Back is D3b on Add token; a kept token checks again ("Starting…")', async ({ page }) => {
-  const { sent } = await toDrift(page, 'unverified-no_token', { headers: { 'x-inflozo-harness-token': 'ok' } })
+  // `x-inflozo-harness-routes: on` draws the routes row the order is read against (7.18a's clean Pre-flight)
+  const { sent } = await toDrift(page, 'unverified-no_token', { headers: { 'x-inflozo-harness-token': 'ok', 'x-inflozo-harness-routes': 'on' } })
   const row = wizard(page).locator('[data-drift-row="unverified"]')
   await expect(row).toHaveAttribute('data-drift-cause', 'no_token', { timeout: 15_000 })
   await expect(row).toContainText(DRW.unverified)
   await expect(row).toContainText(DRIFT.causeBody('no_token', { host: 'harness.example', theme: DRIFT_THEME }))
   // after the check rows and before the routes row (the frame's order)
-  const order = await wizard(page).evaluate((w) => {
+  await expect(wizard(page)).toContainText(DW.routesValid)
+  const order = await wizard(page).evaluate((w, routes) => {
     const r = w.querySelector('[data-drift-row="unverified"]')
     const checks = w.querySelector('[data-check-rows]')
-    return !!(checks.compareDocumentPosition(r) & Node.DOCUMENT_POSITION_FOLLOWING)
-  })
-  expect(order, 'after the passes').toBe(true)
+    const routesRow = [...w.querySelectorAll('*')].find((e) => e.childElementCount === 0 && e.textContent === routes)
+    return {
+      afterPasses: !!(checks.compareDocumentPosition(r) & Node.DOCUMENT_POSITION_FOLLOWING),
+      beforeRoutes: routesRow !== undefined && !!(r.compareDocumentPosition(routesRow) & Node.DOCUMENT_POSITION_FOLLOWING),
+    }
+  }, DW.routesValid)
+  expect(order, 'after the passes and before the routes row').toEqual({ afterPasses: true, beforeRoutes: true })
   await expect(page.locator('#deploy-ship'), 'Ship it is not greyed: the deploy goes on').not.toHaveAttribute('aria-disabled', 'true')
   await expect(page.locator('#deploy-drift-token')).toHaveAccessibleName(DRW.addToken)
   expect(await contentWidth(page), 'S8b keeps its 520').toBe(520)
@@ -10906,6 +10921,7 @@ test('7.21 · (c) D3b, no token: the sky row after the checks and before the rou
   await expect(page.locator('#deploy-token')).toBeFocused()
   await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.title)
   await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  await expect(wizard(page).locator('ol li[aria-current="step"]')).toHaveText(/^\d\s*Check$/)
   await expect(page.locator('#deploy-not-now')).toHaveCount(0)
   expect(await contentWidth(page), 'D1b\'s 700').toBe(700)
   await page.locator('#deploy-safety-back').focus()
@@ -10949,7 +10965,7 @@ test('7.21 · (d) D3b on a site whose Not now is recorded: the decline\'s own wo
 })
 
 test('7.21 · (e) D3c: "Nothing changed on your site since v{n}" is a pass line, SECOND in the passes box after the major\'s, and said once — no D3a, no D3b; while the live theme is read, a running row says so and Ship it waits (the control)', async ({ page }) => {
-  await toDrift(page, 'clean')
+  const { sent } = await toDrift(page, 'clean')
   const passes = wizard(page).locator('[data-check-rows] > div')
   await expect(wizard(page).locator('[data-drift-row="clean"]')).toBeVisible({ timeout: 15_000 })
   await expect(passes.nth(0)).toContainText(DW.passMajor(6))
@@ -10958,7 +10974,14 @@ test('7.21 · (e) D3c: "Nothing changed on your site since v{n}" is a pass line,
   await expect(passes.nth(1)).toContainText(DW.pass)
   await expect(wizard(page).locator('[data-drift-report], [data-drift-row="unverified"]')).toHaveCount(0)
   await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true')
-  await expect.poll(() => deploySaid(page)).toContain(`${DRW.clean(2)}.`)
+  // said ONCE: the line's sentence occurs one time in the polite region, not merely somewhere in it
+  await expect.poll(async () => (await deploySaid(page)).split(`${DRW.clean(2)}.`).length - 1).toBe(1)
+  // an ordinary Ship it never carries the customer's word to overwrite — only D3a's Overwrite does (journey (b)), so the route's
+  // 409 and `ship()`'s stale rest stay the control (Story 7.21's Review)
+  await page.locator('#deploy-ship').focus()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => sent.filter((b) => b.intent === 'ship').length, { timeout: 15_000 }).toBe(1)
+  expect(sent.find((b) => b.intent === 'ship'), 'Ship it sends no overwrite').not.toHaveProperty('overwrite')
   // the control: a check still reading draws its running row and keeps Ship it waiting
   await page.unrouteAll({ behavior: 'ignoreErrors' })
   await toDrift(page, 'reading')
@@ -10986,6 +11009,10 @@ test('7.21 · (f) DW-338: the Layers rename field stops at 60 characters, typed 
   await expect(page.locator(`[data-layer-row="${key}"]`)).toContainText(long.slice(0, 60).trim())
   // the rule is the control past the field: a name the field could never hold, set programmatically, is refused
   await rowItem(page, key, 'Rename')
+  // the sheet opens a frame later and REMOUNTS the field on the row's name: wait for both, or the value set below lands on the
+  // field being replaced and Enter on nothing (CI's red on the Dev push, Story 7.21's Review)
+  await expect(page.locator('dialog[aria-labelledby="layers-rename-title"] [data-cancel]')).toBeFocused()
+  await expect(field).toHaveValue(long.slice(0, 60).trim())
   await field.focus()
   await field.evaluate((input, value) => { input.value = value }, 'n'.repeat(61))
   await page.keyboard.press('Enter')

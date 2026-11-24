@@ -3,7 +3,7 @@
 // A layer name becomes a section partial's file name. The rule is §7.4's custom-template rule plus a length cap, so the
 // product keeps ONE rule for a name that becomes a file: NFKD, combining marks dropped, `toLowerCase` (never a locale
 // form, AD-1), spaces and underscores to `-`, everything outside `[a-z0-9-]` dropped, runs of `-` collapsed and trimmed,
-// cut to 60 and trimmed again. DETERMINISTIC IS NOT UNIQUE — `Hero` and `HERO` slug alike — so names are handed out per
+// cut to `SLUG_MAX` and trimmed again. DETERMINISTIC IS NOT UNIQUE — `Hero` and `HERO` slug alike — so names are handed out per
 // directory in placement order, each its slug while free and otherwise the first free `-2`, `-3`, …
 
 import { LAYER_NAME_MAX } from '@inflozo/section-runtime'

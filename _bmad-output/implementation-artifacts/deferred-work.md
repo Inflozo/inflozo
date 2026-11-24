@@ -10641,6 +10641,10 @@ owner: Story 7.23 (Deploy history, rollback and restore-to-original), whose D2a 
   download from Deploy history: one way to follow it for both, checking the answer before leaving the page.
 location: `apps/web/components/editor/deploy-wizard.tsx` (`follow`, `fetchRow`) · `app/(app)/app/snapshots/[id]/download/route.ts`
 reason: an improbable failure of a route Story 2.5 owns; fixing it means a second way to fetch a signed URL, which 7.23 needs too.
+also: *(Story 7.21's Review, 2026-11-24)* D3a's **Download the live theme first** is the same shape: a plain link to
+  `projects/[id]/deploy/live`, whose 404 (no live copy, or not this job's), 502 (signing failed) and sign-in 303 each replace
+  the editor with a bare page. The spec asked for "a plain link" (AD-13's 303). Story 7.23's one way to follow a signed URL
+  serves both links (`#deploy-drift-download`, `deploy/live/route.ts`).
 
 ## Deferred from: code review of spec-7-20b-the-snapshot-orphan-purge (2026-11-24)
 
@@ -10703,3 +10707,51 @@ owner: Story 15.5 (reliability), which decides how a failure that is ours is tol
   `ORPHANS`, put to the owner in R-83 shape.
 location: `apps/web/lib/orphan-rule.ts` (`ORPHANS.emailBody`, `.caption`)
 reason: reached only after the send failed on several nights in a row; the customer gets more time, never less.
+
+## Deferred from: code review of spec-7-21-pre-deploy-drift-detection (2026-11-24)
+
+### DW-396: a live theme Inflozo's store cannot hold fails every Pre-flight that finds drift on that site
+
+plain: If someone adds very large files to the Inflozo theme on their Ghost site, so that it is bigger than Inflozo's file
+  store accepts, every check that finds the edit would fail with "something went wrong on our side" instead of showing the
+  drift report, and the customer could not ship to that site until the files were removed.
+status: open
+severity: low
+origin: Story 7.21's Review (2026-11-24), the Blind Hunter and Edge Case Hunter layers. `driftStep` keeps the live zip for
+  D3a's Download BEFORE its record, through `twice()` — the spec's rule for our own store (AD-20: retry once, then
+  `deploy_infrastructure`) — and a put Storage refuses for size refuses again on the retry. Nothing caps the downloaded
+  zip's size before the put; `unzipTheme`'s 256 MiB cap is on the unpacked files. 7.20a's capture stores the same theme the
+  same way.
+owner: Story 7.22 (Artifacts, retention and pinning), which sizes what the buckets hold: a size the live copy is not kept
+  past, with D3a then drawn without its Download rather than the Pre-flight failing.
+location: `apps/web/server/deploy/run.ts` (`driftStep`, the `live copy` put) · `apps/web/server/deploy/deploy-io.ts` (`artifacts.put`)
+reason: needs a theme far past anything Inflozo writes, edited by hand; the fix needs a size rule 7.22 owns.
+
+### DW-397: an upload Ghost kept but Inflozo marked failed is not the drift baseline, so the next check can blame the site
+
+plain: If Ghost saves a theme upload but its answer never reaches Inflozo (a timeout), Inflozo marks that deploy failed, while
+  the theme on the site is the new one. The next check then compares the site with the older version and can show
+  Inflozo's own changes as "Something changed on your site". Pressing Overwrite fixes it; nothing is lost.
+status: open
+severity: low
+origin: Story 7.21's Review (2026-11-24), the Edge Case Hunter and Blind Hunter layers. R-287's baseline is the newest
+  `uploaded` or `live` row; a row whose upload Ghost accepted but whose answer was lost ends `failed`. It is the same class
+  as the spec's own ponytail (a binding that lost a race is `failed`, Story 7.25's advisory lock).
+owner: Story 7.32 (Partial success — uploaded, not activated), which reads what Ghost holds after an upload whose answer was
+  lost: a found drift that matches a newer `failed` row's manifest exactly reads as clean against that version.
+location: `apps/web/server/deploy/deploy-io.ts` (`deploys.baseline`) · `apps/web/server/deploy/run.ts` (`driftStep`)
+reason: needs Ghost to keep an upload whose answer is lost, and the false report it makes is undone by the button beside it.
+
+### DW-398: after a kept token, focus goes to the page body when the row that opened Add token is gone
+
+plain: When you add a Staff Access Token from the drift check's blue row (or from a failed snapshot's), Inflozo runs the checks
+  again. The blue row is usually gone by then, so keyboard focus falls to the page instead of somewhere in the card.
+status: open
+severity: low
+origin: Story 7.21's Review (2026-11-24), the Acceptance Auditor layer. The retoken effect focuses the Add token that opened
+  D1b (`deploy-drift-token`, or B12b's `deploy-b12-token`), which a fresh check no longer draws. The spec says "focus as
+  B12b's", and B12b's has the same gap (Story 7.20a).
+owner: Story 15.1 (the E2E suite, including the keyboard-only journey): one fallback for both — the new view's heading or its
+  first control — with a journey that reads `document.activeElement` after a kept token.
+location: `apps/web/components/editor/deploy-wizard.tsx` (the `retoken` focus effect)
+reason: a keyboard user still reaches the card on the next Tab; the fix is one rule for two presses that only 15.1 walks.

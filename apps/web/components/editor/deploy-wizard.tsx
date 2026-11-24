@@ -1185,11 +1185,12 @@ export function DeployWizard({
         })
   /* STORY 7.21 — D3c: "Nothing changed on your site since v{n}" is one pass among the others, at the same weight, SECOND — after
      the major's line, as the frame lists it (`D3 The Drift Report.dc.html:206-225`) */
-  const passes = driftClean === null ? checked.passes : [...checked.passes.slice(0, 1), DW.clean(driftClean.since), ...checked.passes.slice(1)]
+  const cleanLine = driftClean === null ? null : DW.clean(driftClean.since)
+  const passes = cleanLine === null ? checked.passes : [...checked.passes.slice(0, 1), cleanLine, ...checked.passes.slice(1)]
   const passesBox = checksDone && (passes.length > 0 || checked.rows.length > 0) ? (
     <div data-check-rows className="ml-[31px] overflow-hidden rounded-thumb border border-line">
       {passes.map((p) => (
-        <div key={p} {...(driftClean !== null && p === passes[1] ? { 'data-drift-row': 'clean' } : {})} className="flex items-center gap-[9px] border-b border-line px-[13px] py-[9px] last:border-b-0">
+        <div key={p} {...(p === cleanLine ? { 'data-drift-row': 'clean' } : {})} className="flex items-center gap-[9px] border-b border-line px-[13px] py-[9px] last:border-b-0">
           <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 stroke-mint">
             <polyline points="20 6 9 17 4 12" />
           </svg>
@@ -1254,7 +1255,7 @@ export function DeployWizard({
             <div className={`flex items-center gap-[7px] border-b border-line bg-paper-raised px-3 py-[9px] ${i > 0 ? 'border-t' : ''}`}>
               {GROUP_GLYPH[g]}
               <span id={`deploy-drift-${g}`} className={`text-[10px] font-semibold uppercase tracking-[0.04em] ${GROUP_HUE[g]}`}>{DW.groups[g]}</span>
-              <span data-drift-count className="ml-auto font-mono text-[9.5px] text-ink-soft [font-variant-ligatures:none]">{driftFound[g].length}</span>
+              <span data-drift-count className="ml-auto font-mono text-[9.5px] text-ink-soft-aa [font-variant-ligatures:none]">{driftFound[g].length}</span>
             </div>
             <ul aria-labelledby={`deploy-drift-${g}`} className="m-0 flex list-none flex-col gap-[2px] p-[6px]">
               {driftFound[g].map((f: DriftFile) => (
@@ -1262,7 +1263,7 @@ export function DeployWizard({
                   {f.category === undefined ? <DriftFileGlyph /> : <LayerThumb glyph={glyphOf(f.category)} />}
                   <span className="flex min-w-0 flex-1 flex-col gap-px">
                     <span data-drift-label className="truncate text-[12.5px] font-medium text-ink">{f.label}</span>
-                    <span className="truncate font-mono text-[10px] text-ink-soft [font-variant-ligatures:none]">{f.path}</span>
+                    <span className="truncate font-mono text-[10px] text-ink-soft-aa [font-variant-ligatures:none]">{f.path}</span>
                   </span>
                 </li>
               ))}
@@ -1399,7 +1400,15 @@ export function DeployWizard({
       <p data-drift-foot className="text-[12px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{DW.foot(driftCount(driftFound))}</p>
       <div className="flex flex-col gap-[6px]">
         <div className="flex flex-wrap items-center gap-[10px]">
-          <Button id="deploy-drift-cancel" variant="ghost" size={38} weight="font-medium" onClick={close}>
+          <Button
+            id="deploy-drift-cancel"
+            variant="ghost"
+            size={38}
+            weight="font-medium"
+            // once Overwrite is sent it finishes: Cancel is inert while the press is out, as S8b's is (`press`) and Esc is (`unstoppable`)
+            aria-disabled={pressed !== null || undefined}
+            onClick={() => (pressed === null ? close() : undefined)}
+          >
             {DW.cancel}
           </Button>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-[10px]">

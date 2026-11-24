@@ -330,6 +330,9 @@ export function preflightFacts(theme: Pick<CompiledTheme, 'files' | 'noindex'>):
  */
 async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: DeployRow | null): Promise<{ kind: 'clean'; deploy: DeployRow; read: ProjectRead } | { kind: 'stopped' }> {
   const at = { projectId: job.project_id, siteId: job.site_id, userId: job.user_id }
+  // Story 7.21 — a re-made artefact starts with no drift verdict: the last check's record leaves with this first edge, so a
+  // re-make that stops before the drift step never shows the old one beside its own findings (Story 7.21's Review)
+  await c.drift(null)
   await c.enter('compiling')
   const read = await readProject(io, at)
   if (read === null) {
@@ -429,7 +432,7 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
  *     the zip this check read.
  */
 async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead, own: string): Promise<void> {
-  await c.drift(null)
+  // no record yet: `compileAndCheck` cleared the last check's at its first edge
   if (read.bound === null) return
   const baseline = await twice(io, 'drift baseline', () => io.deploys.baseline({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, except: own }))
   if (baseline === null || baseline.content_manifest === null || typeof baseline.content_manifest !== 'object') return
@@ -442,7 +445,9 @@ async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead,
     answer = await io.liveTheme({ siteId: job.site_id, userId: job.user_id, name: theme, route: ROUTE })
   } catch (e) {
     const code = (e as { name?: string; code?: string } | null)?.name === 'AdminError' ? (e as { code?: string }).code : undefined
-    io.log('deploy: the live theme was not read', { job: job.id, code })
+    // a throw that is not the chokepoint's keeps its name and the head of its message, as the unzip's does (Story 7.21's Review)
+    const why = code === undefined ? { name: String((e as Error | null)?.name ?? typeof e), why: String((e as Error | null)?.message ?? e).slice(0, 120) } : {}
+    io.log('deploy: the live theme was not read', { job: job.id, code, ...why })
     return void (await c.drift(unverified(code === 'credential_missing' ? 'no_token' : 'unreachable')))
   }
   if (!answer.ok) {

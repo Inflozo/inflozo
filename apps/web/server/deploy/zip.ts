@@ -114,7 +114,8 @@ export function unzipTheme(bytes: Uint8Array, cap: number = LIVE_MAX_BYTES): Rec
   if (count === 0xffff || size === 0xffffffff || start === 0xffffffff) throw new Error('unzip: ZIP64 is not read')
   if (b.readUInt16LE(end + 4) !== 0 || b.readUInt16LE(end + 6) !== 0 || b.readUInt16LE(end + 8) !== count) throw new Error('unzip: a split zip is not read')
   if (start + size > end) throw new Error('unzip: the central directory overruns the end record')
-  const out: Record<string, Uint8Array> = {}
+  // no prototype: an entry named `__proto__` is a file like any other, never the object's prototype (Story 7.21's Review)
+  const out: Record<string, Uint8Array> = Object.create(null)
   let total = 0
   let at = start
   for (let i = 0; i < count; i++) {
@@ -143,8 +144,9 @@ export function unzipTheme(bytes: Uint8Array, cap: number = LIVE_MAX_BYTES): Rec
     const from = local + 30 + b.readUInt16LE(local + 26) + b.readUInt16LE(local + 28)
     if (from + packed > b.length) throw new Error(`unzip: ${JSON.stringify(path)} runs past the zip`)
     const data = b.subarray(from, from + packed)
-    // a declared size is a claim: the inflate is held to what is left of the cap, then to the claim and the CRC
-    const body = method === STORED ? data : inflateRawSync(data, { maxOutputLength: Math.max(1, cap - (total - unpacked)) })
+    // a declared size is a claim, and the inflate is held to it (within the cap, checked above): a bomb that declares little stops
+    // at its claim — `inflateRawSync` throws past `maxOutputLength` — never at the cap (Story 7.21's Review); then the CRC
+    const body = method === STORED ? data : inflateRawSync(data, { maxOutputLength: Math.max(1, unpacked) })
     if (body.length !== unpacked || crc32(body) !== crc) throw new Error(`unzip: ${JSON.stringify(path)} is not what its header says`)
     out[path] = new Uint8Array(body)
   }

@@ -555,7 +555,7 @@ DOCS = [
   "pilot uploaded and downloaded with the staff token at zero differences (the zero-false-positive control), naming any "
   "entry Ghost adds; a hand-edited copy and a copy missing a file uploaded under the same inactive name, the download "
   "showing exactly those (a full replacement, storage.js:95-107); a flipped token 401, the Admin key 403 and an unknown "
-  "name 404; the probe deleted and the active theme read back as found; §90 written only when every row held. --help "
+  "name 400 (R-288: Ghost's answer for a theme it does not hold); the probe deleted and the active theme read back as found; §90 written only when every row held. --help "
   "exits 2 before anything."),
  ('tools/probe/run-verify-snapshot-orphans.py', 'tool', 'Snapshot orphan purge harness',
   "Story 7.20b's harness (standing rule 1, R-82, FR-C6, R-285): AD-33's E7 cron, purge-snapshots, called on the deployed "

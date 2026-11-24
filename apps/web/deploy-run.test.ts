@@ -1130,6 +1130,37 @@ test('7.21: the server is the control — a Ship it over a found drift without `
   assert.equal(uploads(), before + 1, 'Overwrite ships')
 })
 
+test('7.21 (Review): "reading" is ON THE ROW while the live theme is read — stage checking, its duration closed, the record { reading } — so the wizard draws "Comparing with your live theme…" through the download (the control: the record that lands after is the verdict)', async () => {
+  const seen: { stage: string; drift: unknown; ms: number | undefined }[] = []
+  const { w, state } = project({
+    live: [liveOf(SHIPPED)],
+    duringLive: (jobs) => {
+      for (const j of jobs.values()) if (j.stage === 'checking') seen.push({ stage: j.stage, drift: j.stage_timings.drift, ms: j.stage_timings.checking?.ms })
+    },
+  })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  const job = await begin(w)
+  assert.equal(seen.length, 1, 'one job checking while the read ran')
+  assert.deepEqual(seen[0]?.drift, { kind: 'reading' })
+  assert.ok((seen[0]?.ms ?? -1) >= 0, "checking's duration closed before the read")
+  assert.deepEqual(driftOf(job), { kind: 'clean', since: 1 }, 'the control: the verdict replaces it at the next edge')
+})
+
+test('7.21 (Review): a stale re-make the compile refuses leaves NO drift verdict behind — the last check\'s D3c never sits beside the new findings (the control: the job held one before the re-make)', async () => {
+  let refuse = false
+  const { w, state } = project({ live: [liveOf(SHIPPED)], hash: ['h1', 'h1', 'h1', 'h2', 'h2'], compile: () => { if (refuse) throw new CompileRefusal('cardDesigns', 'card designs: nope') } })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  const job = await begin(w)
+  assert.equal(driftOf(job)?.kind, 'clean', 'the control: the Pre-flight left a verdict')
+  refuse = true
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const after = w.jobs.get(job.id) as JobRow
+  assert.equal(after.stage, 'failed')
+  assert.equal(driftOf(after), undefined, 'the old verdict left with the re-make\'s first edge')
+})
+
 test('7.21: stale at Ship it — re-made and re-read; a drift found now without `overwrite` rests at awaiting_ship on D3a with no error and nothing uploaded; with `overwrite` the re-made artefact ships', async () => {
   const edited = { ...SHIPPED, 'README.md': '# Edited in Ghost\n' }
   for (const overwrite of [false, true]) {

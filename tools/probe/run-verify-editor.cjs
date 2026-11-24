@@ -13809,7 +13809,8 @@ async function main() {
       /** T1's Admin API through the product's own request builder, with the key named (117's) */
       const ghost119 = async (credential, method, p, body) => {
         const { url, init } = AR119.adminRequest({ credential, siteUrl: ENV119.GHOST6_URL, method, path: p, body, major: 6 })
-        const r = await fetch(url, init)
+        // bounded, so a hung T1 can never hold the walk — or its `finally`, which puts T1 back (Story 7.21's Review)
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
         const bytes = Buffer.from(await r.arrayBuffer())
         let parsed = null
         try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
@@ -13828,6 +13829,13 @@ async function main() {
       const liveFiles119 = async (theme) => {
         const r = await staff119('GET', `themes/${encodeURIComponent(theme)}/download/`).catch(() => null)
         return r?.ok ? ZIP119.unzipTheme(new Uint8Array(r.bytes)) : null
+      }
+      /** a record as Postgres hands it back compared by its fields, never its key order: jsonb stores an object's keys by length,
+       *  then bytes, so `{ kind, since, theme, changed, added, removed }` comes back as `{ kind, added, since, theme, … }` (Story
+       *  7.21's Review) */
+      const same119 = (a, b) => {
+        const canon = (v) => JSON.stringify(v, (_, x) => (x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([k], [l]) => (k < l ? -1 : k > l ? 1 : 0))) : x))
+        return canon(a) === canon(b)
       }
       const text119 = (b) => (b === undefined || b === null ? null : Buffer.from(b).toString('utf8'))
       const storage119 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
@@ -14055,7 +14063,7 @@ async function main() {
           const sinceB = DEP119.versionNumber(v1?.version ?? '')
           const b = await runChecks119(pg, (w) => w.driftRows.includes('clean'))
           check(`step 119b — R-287 (Ruled value 1): the baseline is v1, uploaded and never live — D3c "${DW119.clean(sinceB)}" is the passes box's SECOND line, and the record is { clean, since ${sinceB} }`,
-            sinceB === 1 && b.job?.stage === 'awaiting_ship' && JSON.stringify(b.job.stage_timings?.drift) === JSON.stringify({ kind: 'clean', since: 1 }) &&
+            sinceB === 1 && b.job?.stage === 'awaiting_ship' && same119(b.job.stage_timings?.drift, { kind: 'clean', since: 1 }) &&
             b.shown?.passes[1]?.clean === true && b.shown.passes[1].text.startsWith(DW119.clean(1)) && !b.shown.report,
             JSON.stringify({ drift: b.job?.stage_timings?.drift ?? null, passes: b.shown?.passes ?? null }))
 
@@ -14080,7 +14088,7 @@ async function main() {
           const pathV2 = heroPath119(v2, hero0.instanceId)
           const pathNow = heroPath119(madeC, hero0.instanceId)
           check(`step 119c — the hero renamed "${RENAMED119}" and saved, then Run checks: D3c "${DW119.clean(sinceC)}" — a rename changes nothing on the site; the control: this Pre-flight files the hero at ${pathNow ?? 'nothing'}, not v2's ${pathV2 ?? 'nothing'} on T1`,
-            heroC?.layerName === RENAMED119 && c.job?.stage === 'awaiting_ship' && JSON.stringify(c.job.stage_timings?.drift) === JSON.stringify({ kind: 'clean', since: sinceC }) &&
+            heroC?.layerName === RENAMED119 && c.job?.stage === 'awaiting_ship' && same119(c.job.stage_timings?.drift, { kind: 'clean', since: sinceC }) &&
             c.shown?.passes[1]?.clean === true && c.shown.passes[1].text.startsWith(DW119.clean(sinceC)) && pathV2 !== null && pathNow !== null && pathNow !== pathV2,
             JSON.stringify({ renamed: heroC?.layerName ?? null, drift: c.job?.stage_timings?.drift ?? null, pathV2, pathNow }))
 
@@ -14099,7 +14107,7 @@ async function main() {
             removed: [{ path: 'README.md', label: DW119.labels.readMe }],
           }
           check(`step 119d — Run checks: the record names exactly the three — Changed "${RENAMED119}" (the layer's CURRENT name, never its path), Added "${DW119.labels.addedTemplate}", Removed "${DW119.labels.readMe}"`,
-            d.job?.stage === 'awaiting_ship' && JSON.stringify(d.job.stage_timings?.drift) === JSON.stringify(wantD), scrub119(JSON.stringify(d.job?.stage_timings?.drift ?? null)))
+            d.job?.stage === 'awaiting_ship' && same119(d.job.stage_timings?.drift, wantD), scrub119(JSON.stringify(d.job?.stage_timings?.drift ?? null)))
           const groupsD = (d.shown?.groups ?? []).map((g) => ({ group: g.group, count: g.count, files: g.files }))
           check(`step 119d — D3a: "${DW119.title}", the chip "${DW119.chip(3)}", Changed / Added on your site / Removed from your site at 1 each with each label over its path, "${DW119.foot(3)}" — and focus on Cancel (UX-DR14)`,
             d.shown?.report === true && d.shown.title === DW119.title && d.shown.chip === DW119.chip(3) && d.shown.foot === DW119.foot(3) && d.shown.focus === 'deploy-drift-cancel' &&
@@ -14143,7 +14151,7 @@ async function main() {
           const sinceE = DEP119.versionNumber(v3?.version ?? '')
           const e2 = await runChecks119(pg, (w) => w.driftRows.includes('clean'))
           check(`step 119e — Run checks after the overwrite: D3c "${DW119.clean(sinceE)}"`,
-            JSON.stringify(e2.job?.stage_timings?.drift) === JSON.stringify({ kind: 'clean', since: sinceE }) && e2.shown?.passes[1]?.clean === true && e2.shown.passes[1].text.startsWith(DW119.clean(sinceE)),
+            same119(e2.job?.stage_timings?.drift, { kind: 'clean', since: sinceE }) && e2.shown?.passes[1]?.clean === true && e2.shown.passes[1].text.startsWith(DW119.clean(sinceE)),
             JSON.stringify({ drift: e2.job?.stage_timings?.drift ?? null }))
 
           // ── 119f — the bound theme gone from T1: D3b `missing`, no Add token, Ship it live; Ship it puts it back ──
@@ -14157,7 +14165,7 @@ async function main() {
           const f = await runChecks119(pg, (w) => w.unverified !== null)
           const bodyF = DR119.causeBody('missing', { host: HOST119, theme: theme119 })
           check(`step 119f — Run checks: D3b "${DW119.unverified}" — "${bodyF}" — with no Add token, and Ship it NOT greyed (the check fails open)`,
-            JSON.stringify(f.job?.stage_timings?.drift) === JSON.stringify({ kind: 'unverified', cause: 'missing', theme: theme119 }) && f.shown?.unverified?.cause === 'missing' &&
+            same119(f.job?.stage_timings?.drift, { kind: 'unverified', cause: 'missing', theme: theme119 }) && f.shown?.unverified?.cause === 'missing' &&
             f.shown.unverified.text.includes(DW119.unverified) && f.shown.unverified.text.includes(bodyF) && f.shown.unverified.token === false && f.shown.ship !== 'true',
             JSON.stringify({ drift: f.job?.stage_timings?.drift ?? null, shown: f.shown?.unverified ?? null, ship: f.shown?.ship ?? null }))
           const endF = await ship119(pg, f.job)

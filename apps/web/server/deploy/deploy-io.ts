@@ -165,7 +165,7 @@ export const DEPLOY_IO: DeployIo = {
   snapshot: (a) => captureSnapshot(a, SNAPSHOT_IO),
   call: (args) => call({ ...args, kind: 'admin' }),
   // Story 7.21 — the drift check's read: the capture's download, under the bound name, with the Staff Access Token and the
-  // download's own read budget — a read, so `ADMIN_WRITES` stays four (R-22)
+  // download's own read budget — a read, so `ADMIN_WRITES` is unchanged (R-22)
   liveTheme: ({ siteId, name, route }) => call({ siteId, path: downloadPath(name), route, kind: 'staff', read: 'theme_download' }),
   offerRoutes: (a) => offerRoutes(a, ROUTES_IO),
   async routesFile({ siteId, userId }) {

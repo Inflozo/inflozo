@@ -2,7 +2,7 @@
 title: 'Story 7.21 — Pre-deploy drift detection'
 type: 'feature'
 created: '2026-11-24'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '9a139db609248e3c733ca714bc52fb3845e813a9'
 owner_test: pending
 review_loop_iteration: 0
@@ -344,7 +344,8 @@ still asks his in-session go for the T1 and production writes (Ask First).
   - upload a hand-edited copy (one section partial's text, `custom-handmade.hbs` added, `README.md` removed) under the same
     INACTIVE name: the download shows exactly those three;
   - upload a third copy without a file: it is gone from the download (a full replacement, `storage.js:95-107` executed);
-  - one flipped digit → 401; the Admin key → 403; an unknown name → 404 (the controls);
+  - one flipped digit → 401; the Admin key → 403; an unknown name → 404 (the controls) *(Story 7.21's Review, 2026-11-24: 400 —
+    Ghost's real answer, R-288)*;
   - delete the probe theme, and put T1 back as found.
 - [x] `tools/probe/run-verify-editor.cjs` -- step 119, production plus T1 writes, put back in `finally`:
   - a throwaway account connects T1 through the wizard with the staff token;
@@ -391,6 +392,84 @@ still asks his in-session go for the T1 and production writes (Ask First).
 - Given Question 1, when the owner rules, then Ruled value 1 holds his option, and the documents in the propagation task say
   the same (R-83, standing rule 3).
 
+### Review Findings
+
+Story 7.21's Review, 2026-11-24: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, the
+read-only Real-infra verifier). 19 patches applied, 3 deferred (DW-396–398), 19 dismissed as noise or as the spec's own
+choices. No decision was left for the owner.
+
+- [x] [Review][Patch] CI's `check` was red on the Dev push, so `deploy` was skipped and production never got this story:
+  journey 7.21 (f) set the 61-character value before the rename sheet had opened and remounted its field, so Enter landed on
+  nothing (passed 5 of 6 locally, failed in CI). It now waits for Cancel's focus and the remounted field's value first
+  [`tools/keyboard/journey.spec.mjs` 7.21 (f)]
+- [x] [Review][Patch] Walk step 119 compared each drift record with `JSON.stringify`, but Postgres's jsonb hands keys back in
+  its own order (length, then bytes), so 119d's `found` record could never match. Records are now compared by their fields
+  (`same119`; executed: raw false, canonical true, a changed field false) [`tools/probe/run-verify-editor.cjs` step 119]
+- [x] [Review][Patch] `unzipTheme` held an entry's inflate to what was left of the 256 MiB cap, not to its own declared size,
+  so a zip bomb that declares 10 bytes inflated toward the cap before the size check refused it. It now stops at its claim,
+  and `zip.test.ts` proves the bomb throws `ERR_BUFFER_TOO_LARGE` (seen red with the old bound) [`apps/web/server/deploy/zip.ts`
+  `unzipTheme`]
+- [x] [Review][Patch] A live file named `__proto__` set the object's prototype instead of being read, so it vanished from the
+  comparison. `unzipTheme`'s and `liveManifest`'s maps have no prototype (seen red with `{}`) [`zip.ts`, `apps/web/lib/drift.ts`
+  `liveManifest`]
+- [x] [Review][Patch] A stale re-make at Ship it that the compile or gscan then stopped kept the old Pre-flight's drift verdict,
+  so the wizard showed the old "Nothing changed" line beside the new findings. The record now leaves at the re-make's first edge
+  (`compileAndCheck`), with a test seen red without it [`apps/web/server/deploy/run.ts` `compileAndCheck`]
+- [x] [Review][Patch] D3a's Cancel closed the wizard while Overwrite was still being sent, against the wizard's own rule ("once
+  it starts, it finishes"). It is `aria-disabled` and inert while a press is out, as S8b's is [`apps/web/components/editor/
+  deploy-wizard.tsx` D3a]
+- [x] [Review][Patch] Nothing checked that an ordinary Ship it leaves `overwrite` out, which is what keeps the route's 409 a
+  control: journey (e) now presses Ship it from D3c and 7.20a (f)'s Deploy without a snapshot is read too — neither carries it
+  [`tools/keyboard/journey.spec.mjs` 7.21 (e), 7.20a (f)]
+- [x] [Review][Patch] Nothing tested that "Comparing with your live theme…" is on the row WHILE Ghost hands the theme over (up
+  to 45 s): a `duringLive` test reads `{ reading }`, stage `checking` and its closed duration mid-read (seen red with the write
+  removed) [`apps/web/deploy-run.test.ts`]
+- [x] [Review][Patch] The live route answered a failed job read with 404 "Not found"; it is now 502, the deploy GET's rule for a
+  failure that is ours [`apps/web/app/(app)/app/(authed)/projects/[id]/deploy/live/route.ts`]
+- [x] [Review][Patch] A throw from the live read that is not the chokepoint's logged no reason; it now logs its name and the
+  head of its message, as the unzip's failure does [`run.ts` `driftStep`]
+- [x] [Review][Patch] D3c's `data-drift-row="clean"` was put on the second pass by position, not on its own line; it now marks
+  the line itself [`deploy-wizard.tsx` `passesBox`]
+- [x] [Review][Patch] Journey (c) claimed "before the routes row" and "the rail at Check" without asserting either, and (e)
+  claimed "said once" with a `toContain`; each is now asserted [`journey.spec.mjs` 7.21 (c), (e)]
+- [x] [Review][Patch] The harness's and `plantDrift`'s comments said the fake answers D3a's copy with a 303; it answers the zip
+  itself, as the inline comment explains [`apps/web/app/(app)/app/harness/editor/layout.tsx`, `journey.spec.mjs` `plantDrift`]
+- [x] [Review][Patch] R-288 had not reached the catalogue: `doc-audit.py`'s row (so INDEX.md) still said "an unknown name 404",
+  and so did this spec's recorder task and the epic context's Dev bullet, which also still called §90 pending (standing rule 7)
+  [`tools/doc-audit.py`, `epic-7-context.md`, this spec's Tasks]
+- [x] [Review][Patch] Walk step 119's T1 calls had no timeout, so a hung T1 could hold the walk and the `finally` that puts T1
+  back; each is now bounded at 90 s [`run-verify-editor.cjs` `ghost119`]
+- [x] [Review][Patch] Two comments wrote a count down: "`ADMIN_WRITES` stays four" and the slug rule's "cut to 60" (counts are
+  derived) [`apps/web/server/deploy/deploy-io.ts`, `packages/theme-compiler/src/slug.ts`]
+- [x] [Review][Patch] D3a's group counts and file paths used `ink-soft` (#6E6A64); the frame draws them in #6B6459, which is the
+  `ink-soft-aa` token [`deploy-wizard.tsx` D3a, `D3 The Drift Report.dc.html:28-151`]
+- [x] [Review][Patch] The owner's test step 3 did not say that D3a keeps the ordinary check's lines above the comparison (the
+  spec's "D3 inherits S8b's rows"); it now does, so his test judges what is drawn [this spec, `## Owner's manual test`]
+- [x] [Review][Patch] D3a's Download is a plain link with DW-391's defect (a 404, 502 or sign-in answer replaces the editor), and
+  DW-391 named only 7.20a's Theme Download. DW-391 and Story 7.23's card now name both links (standing rule 3)
+  [`deferred-work.md` DW-391, `epics.md` 7.23]
+- [x] [Review][Defer] A live theme too big for Inflozo's store fails every Pre-flight that finds its drift (the live copy's put
+  goes through AD-20's retry, then infra) [`run.ts` `driftStep`] — deferred, DW-396, owner Story 7.22
+- [x] [Review][Defer] An upload Ghost kept whose answer was lost ends `failed`, so it is not the baseline and the next check can
+  show Inflozo's own changes as drift (the spec's own ponytail's class) [`deploy-io.ts` `deploys.baseline`] — deferred, DW-397,
+  owner Story 7.32
+- [x] [Review][Defer] After a kept token, focus falls to the page when the Add token that opened D1b is gone — D3b's and B12b's
+  alike [`deploy-wizard.tsx` the `retoken` effect] — deferred, DW-398, owner Story 15.1
+
+**Dismissed (19), each in one line:** the move rule hides nothing (a moved file's content is identical, and the frozen matrix
+rules it) · one live copy per project × site, kept until purge (Design Notes) · `overwrite` not tied to the listed files after a
+stale re-make (the spec's ponytail window) · `ship()`'s silent return (the route reads `stage_timings` and 409s first) · Cancel
+leaves the job resting (reopening starts at Destination; "Cancel" is the frame's word) · no mode control on D3a (chosen at
+Destination; the frame draws none) · NFKD-expanding names (the slug is a lossy fold by design) · the cap only in
+`renameSection` (every other writer uses a design's short name or keeps one) · a shared partial named by its first placement
+(the Code Map) · the routes held by their source and the baseline by a fake (the spec's pattern; walk step 119 runs them on
+production) · no migration in the diff (the column is on production, read by the verifier) · no D3b at 390 (the spec asks
+1440) · `record-drift.mjs`' unused fields and its second zip fixture (tooling) · `credential_store_unavailable` read as
+`unreachable` (the matrix's "any other"; the capture's precedent) · the Kit's button sizes, Tabler's download glyph and the
+AA marigold mark (the Kit and Tabler rulings) · no `busy.test.ts` line for Overwrite (journey (b) holds it) · the journey's 409
+answered by its own fake (walk 119e is the real control) · the literal 60 in tests and the file's ordinal comment (a test
+pins the value on purpose) · very long drift lists (a whole other theme under the bound name; read once at rest).
+
 ## Spec Change Log
 
 **Dev (2026-11-24) — readings and departures, each a routine call told in one line (none changes what a surface does):**
@@ -433,6 +512,11 @@ still asks his in-session go for the T1 and production writes (Ask First).
   `missing`, `deploy-run.test.ts`' cause table holds the 400 (seen red with the 400 dropped from the mapping), the recorder's
   control expects 400, and the second run wrote §90 with every row held. The frozen matrix row "Theme gone | 404" keeps its
   behaviour; only the wire answer differs.
+
+**Review (2026-11-24) — one routine call, told in one line.** D3a keeps S8b's inherited rows above the comparison (the
+spec's "Everything else is S8b's Pre-flight as built, whose step card, rows and footer D3 inherits"), so its warnings stay in
+view when the customer decides to overwrite; the frame draws a shortened D3a, and the owner's test step 3 now says what is
+drawn, so his test rules on it (R-80).
 
 ## Design Notes
 
@@ -518,7 +602,7 @@ removes `README.md`. Deploy fills in the addresses and the section's name. Addre
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/sign-in` | Sign in | Sign in with the alias and open the link in your inbox. | `umngkmr+drift721@gmail.com` | Projects, with **Drift test**. |
 | 2 | `https://app.inflozo.com/projects/<P>` | Editor | Open Drift test, press **Ship it**, then **Run checks**. | — | "Theme compiled", the theme check, then **"Comparing with your live theme…"** for a moment. |
-| 3 | the same | Drift report | Wait for the checks to finish. | — | A wider card: **"Something changed on your site since we last shipped."** A "3 files differ" chip, then three groups. **Changed**: the section's own name (the one Deploy names), with its file path in small grey text under it. **Added on your site**: "A template Inflozo didn't write" / `custom-handmade.hbs`. **Removed from your site**: "Read me" / `README.md`. Then "routes.yaml is valid — pass", "Shipping replaces all three with Inflozo's versions…", and **Cancel**, **Download the live theme first**, and a black **Overwrite and ship anyway**. |
+| 3 | the same | Drift report | Wait for the checks to finish. | — | A wider card: **"Something changed on your site since we last shipped."** Under it, the same lines as an ordinary check ("Theme compiled", the theme check and its passing lines). Then **"Comparing with your live theme"** with a "3 files differ" chip, and three groups. **Changed**: the section's own name (the one Deploy names), with its file path in small grey text under it. **Added on your site**: "A template Inflozo didn't write" / `custom-handmade.hbs`. **Removed from your site**: "Read me" / `README.md`. Then "routes.yaml is valid — pass", "Shipping replaces all three with Inflozo's versions…", and **Cancel**, **Download the live theme first**, and a black **Overwrite and ship anyway**. |
 | 4 | the same | Drift report | Without clicking, press **Tab** once, then **Shift+Tab** once. | — | Focus starts on **Cancel** (a ring around it). Tab moves to Download, and Shift+Tab returns to Cancel. |
 | 5 | the same | Drift report | Press **Download the live theme first**. Open the zip. | — | A zip named `inflozo-drift-test-live.zip` downloads. Inside are `custom-handmade.hbs` and no `README.md`. |
 | 6 | the same | Drift report | Press **Overwrite and ship anyway**. | — | "Shipping…", then Shipping and **Live**. |
@@ -663,3 +747,35 @@ Ghost 5's half goes to DW-326 (R-238). There is no migration, so there is no Sch
     `pnpm keyboard -g "every whole-page change repaints" --repeat-each=5` passed 5 of 5. The failure is intermittent (the
     render-timing class of DW-292). CI's own full run on the Dev push is the next reading.
   - The implementation pass saw each 7.21 journey red with the wizard, the Layers panel and the harness layout put back to HEAD.
+
+**Executed — Review (2026-11-24, Node 24; the real services by their variable names, no value printed):**
+- **The Dev head first, and it was red.** `eadeb967`'s CI (`GITHUB_TOKEN`, read in-process): `rls` green, **`check` red** at
+  `pnpm keyboard` (330 passed, 1 failed: journey 7.21 (f), the dialog open with no sentence), so **`deploy` was skipped**. Vercel
+  (`VERCEL_TOKEN`, GET only) still served the Create commit `c9fe6de4` as `dpl_7MEyewErAxPCVgg8GBC9RHtm8X9s`: none of this story
+  was live, and the live route answered production's catch-all (307 to `/sign-in`, `x-matched-path: /app/[...unbuilt]`). The
+  Render matrix was red on `route.fetch: read ECONNRESET` (a network reset, 0 violations; not in `deploy`'s needs, R-116).
+  - The cause was the journey, not the app: its second rename set the value before the sheet opened a frame later and
+    remounted its field. Locally 5 of 6 passed at HEAD; patched, it passed 5 of 5 with `--repeat-each=5`.
+- **The read-only real-infra layer** (a subagent, on the owner's in-session go, "1. Go"):
+  - **R-99, production's schema** through `SUPABASE_DB_POOLER_URL` in a `read only` transaction (control: an `UPDATE … WHERE
+    false` refused with 25006): `deploys.content_manifest` is jsonb, nullable, no default, with no CHECK and no trigger on
+    `deploys`; `deploy_jobs.stage_timings` (where the drift record rides) is jsonb NOT NULL default `{}`, no CHECK, and its
+    one trigger (`touch_updated_at`) reads neither column. Every column the new queries name exists; `deploy_status` holds
+    `uploaded` and `live`. `deploy-artifacts` is private and no `storage.objects` policy names it (AD-29). Counts only: 0
+    manifests, 0 drift records, 0 objects under `/live/` — consistent with nothing deployed.
+  - **T1, read only** (`GHOST6_URL`, `GHOST6_STAFF_ACCESS_TOKEN`, in-process; GET only): `themes/` → Casper active, no
+    `inflozo-*`. `themes/casper/download/` twice → 200 `application/zip`, 76 central entries (11 directories, 65 files, one dot
+    file `.github/workflows/test.yml`): **the story's own `unzipTheme` read 65 files without a throw**, no path outside the
+    theme folder, and the two live manifests were identical (`compareManifests` → nothing). Controls: one byte added →
+    exactly one changed path; a flipped digit → 401; a name T1 does not hold → **400** "Please select a valid theme." (R-288).
+  - **The recorder's local half** (`node --experimental-strip-types tools/probe/record-drift.mjs`): all 10 rows PASS.
+- **`pnpm check`** with the patches: green, 0 failed in every package (each prints its own count). Each new unit assertion
+  was seen red under a planted reversion and the file restored (`cmp`): the inflate bound, the null prototype, the re-make's
+  reset, the `reading` write.
+- **`pnpm keyboard -g "7\.21|7\.20a · \(f\)"`**: 11 passed — journeys 7.21 (a)–(f) and (a2), the floor's three widths, and
+  7.20a (f). The new journey assertions were seen red together under three planted wizard reversions (the drift row after the
+  routes row, `overwrite` sent by default, D3a's Cancel unguarded): 7.21 (b), (c), (e) and 7.20a (f) all failed, then the
+  wizard was restored (`cmp`). CI's full run on the Review push is the next reading.
+- **Owed to the Review's deploy:** walk step 119 (production + T1 writes, the owner's in-session go, "1. Go"), from a clean
+  worktree at the deployed sha.
+

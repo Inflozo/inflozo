@@ -90,7 +90,7 @@ export async function contentManifest(
 
 /** THE LIVE THEME'S MANIFEST: its unzipped entries, hashed by the same rule — no fingerprint (FR-J1: none is in a file) */
 export async function liveManifest(entries: Readonly<Record<string, Uint8Array>>): Promise<Record<string, { sha256: string }>> {
-  const out: Record<string, { sha256: string }> = {}
+  const out: Record<string, { sha256: string }> = Object.create(null) // `__proto__` is a path like any other
   for (const path of Object.keys(entries).sort(byCode)) out[path] = { sha256: await sha256Hex(normalizedBytes(entries[path] as Uint8Array)) }
   return out
 }

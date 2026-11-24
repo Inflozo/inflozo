@@ -159,8 +159,8 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * STORY 7.21 — `x-inflozo-harness-drift: found | clean | reading | unverified-<cause> | declined` names the drift check a journey
  * meets (D3a, D3c, the running row, D3b for each of `lib/drift.ts`' causes). The check is the deploy route's, which the harness never
  * reaches: the journey's fake route reads the same value and answers the job with that `stage_timings.drift` record — refusing a
- * `ship` without `overwrite` with a 409 while it is `found`, as the real route does — and answers D3a's live copy with a 303 to a tiny
- * zip. Here, `declined` alone changes the page: the site's Not now is recorded (`withDrift`), so a missing token reads as the
+ * `ship` without `overwrite` with a 409 while it is `found`, as the real route does — and answers D3a's live copy with the signed
+ * URL's own answer, a tiny zip as an attachment (a 303 `route.fulfill` answers is followed past `page.route`). Here, `declined` alone changes the page: the site's Not now is recorded (`withDrift`), so a missing token reads as the
  * decline's words, with no Add token. Use it on a `shipped` site (a deploy after the first); the real Ghost, the real bucket and the
  * real column are walk step 119's and §90's.
  *
