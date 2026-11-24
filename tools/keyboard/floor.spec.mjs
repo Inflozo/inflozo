@@ -850,6 +850,13 @@ test.describe('7.19 · the Safety net at 1440, 820 and 390', () => {
       await page.locator('#deploy-next').click()
       await expect(wizard).toHaveAttribute('data-deploy-wizard', 'safety')
       await expect(page.locator('#deploy-token')).toBeFocused()
+      // THE PICTURE IS FETCHED WHEN THE STEP OPENS: wait for it, never read it once. A single read landed before its bytes
+      // on CI (Story 7.20b's Deploy, 2026-11-24, a push that touched no code here); a picture that never loads still fails
+      // the `loaded` expectation below, after the wait.
+      await page.waitForFunction(() => {
+        const img = document.querySelector('dialog[data-deploy-wizard] img')
+        return Boolean(img && img.complete && img.naturalWidth > 0)
+      }, null, { timeout: 10_000 }).catch(() => {})
       const m = await page.evaluate(() => {
         const box = (el) => el.getBoundingClientRect()
         const dialog = document.querySelector('dialog[data-deploy-wizard]')
