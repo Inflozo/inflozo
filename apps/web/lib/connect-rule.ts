@@ -270,8 +270,10 @@ export const DISCONNECT = {
  * to name it — "your old site's snapshot is kept for 90 days" — and `KEYS` below may hold no
  * number at all (standing rule 4, and `connect-rule.test.ts` asserts it), so the sentence takes the
  * figure as an argument and the figure lives here. The clock itself is DERIVED from
- * `sites.disconnected_at` and stamped nowhere (DW-43); the job that acts on it is Story 7.20b's
- * (DW-75), and it reads this constant rather than carrying a second copy of the number.
+ * `sites.disconnected_at` and stamped nowhere (DW-43). The job that acts on it is BUILT (Story 7.20b,
+ * DW-75): `app/api/cron/purge-snapshots` reads this constant through `lib/orphan-rule.ts`'s
+ * `orphanDeadline`, as the Sites section and the notice email do, and no SQL carries the figure (DW-79's
+ * one home — `connect-rule.test.ts` holds both halves).
  */
 export const ORPHAN_SNAPSHOT_DAYS = 90
 

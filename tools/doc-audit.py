@@ -544,6 +544,22 @@ DOCS = [
   "Admin key is 403 on the download and on the list, and GET settings/routes/yaml/ with the Admin key is 200 — status, "
   "type, disposition, length and a sha256 printed, keys read from tools/probe/.env in-process by name; §89 written only "
   "when every row held. Any argument but --t1 prints the header and exits 2."),
+ ('tools/probe/run-verify-snapshot-orphans.py', 'tool', 'Snapshot orphan purge harness',
+  "Story 7.20b's harness (standing rule 1, R-82, FR-C6, R-285): AD-33's E7 cron, purge-snapshots, called on the deployed "
+  "route and read back off the wire, in run-verify-account-purge.py's shape and with its helpers (redirects disabled, a 401 "
+  "that must come from the route). The app's own CRON_PATH, ORPHAN_SNAPSHOT_DAYS, ORPHAN_NOTICE_DAYS, dueSince, decide, "
+  "purgeDateOf, ORPHANS and orphanEmail are evaluated out of apps/web with node --experimental-strip-types, never retyped. "
+  "--check is offline: the keys by name, the app's figures and words, vercel.json's daily schedule with its route.ts, decide "
+  "over the four fixture shapes, and the email composed (not sent). The full run (Review, Deploy) seeds one fixture user — a "
+  "+orphan-harness- alias of RESEND_TEST_INBOX, so the one real email lands in the test inbox — with four disconnected-site "
+  "records, each an object under site-snapshots/{user}/{site}/ and its row: not yet due, notice due, purge due with the "
+  "notice n+1 days old, and a reconnected control holding an old notice. It REFUSES to call the route unless the route's own "
+  "due query, fifteen minutes ahead, selects exactly its notice and purge fixtures. Then the 401 controls with nothing moved; "
+  "the bearer's 200 {noticed 1, purged 1, failed 0} with no-store; the notice stamped in the run's window; the purge "
+  "fixture's prefix listing empty and its row gone; the other two byte-identical; a second call acting on nothing; and the "
+  "cleanup counted back. --owner-test <alias> is Deploy's, on the owner's go: it plants his three sites, guards the due set, "
+  "runs the route once, reads back, and prints the two dates his manual test names. --url points a Review run at a "
+  "deployment; it defaults to the apex, never app.inflozo.com."),
  ('tools/probe/record-routes.mjs', 'tool', 'Routes recorder',
   "Story 7.16a's recorder (standing rule 1, R-82): every routes.yaml the Routes Manager writes, read by Ghost's own "
   "route-settings code, and one emitted file on T1. Node 24; it imports packages/section-runtime/src/routes.ts and "

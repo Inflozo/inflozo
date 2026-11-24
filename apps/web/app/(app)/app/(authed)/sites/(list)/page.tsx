@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { Banner } from '@/components/kit/banner'
+import { buttonClasses } from '@/components/kit/button'
 import { ring } from '@/components/kit/greyed'
 import { ExternalLink, Refresh } from '@/components/kit/icons'
 import { ConnectSiteButton } from '@/components/shell/shell'
@@ -25,6 +26,7 @@ import {
 import { resolveEntitlement } from '@/lib/entitlement'
 import { openHealthNotices, reasonSentence } from '@/lib/health-rule'
 import { atSiteCap, goProLabel, siteCapSentence } from '@/lib/plan'
+import { originalRows, ORPHANS, SECTION_ID, type OriginalRead } from '@/lib/orphan-rule'
 import { hasBrand, PREVIEW_COPY } from '@/lib/probe-rule'
 import { CLEAR_SEARCH } from '@/lib/projects'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
@@ -123,7 +125,20 @@ import { SiteNotices, type NoticeSite } from '../site-notices'
    column to `sites` and needed no migration (`server/site-health.ts` carries that argument).
 
    `?health=` READS EXACTLY AS `?recheck=`, `?disconnect=` AND `?moved=` DO, so one card owns a
-   check that could not be finished and no other claims it. */
+   check that could not be finished and no other claims it.
+
+   STORY 7.20b ADDED A SECTION BELOW THE CARDS, AND IT IS THIS PAGE'S FOURTH DEPARTURE (R-74, FR-C6,
+   R-285). **"Original themes from disconnected sites"** lists every original theme (Story 7.20a's
+   capture) still kept for a site the customer disconnected, with the day it will be deleted and a
+   Download, from the moment of disconnect until it goes. No frame draws it, so it is extrapolated from
+   S11a's own page tokens and from `/restore`'s "Your original themes" rows (Story 2.5) — the same h2,
+   caption, mono name and secondary-32 Download, at `/restore`'s card width. It sits AFTER the cards (the
+   list and `noMatch`) and UNDER the empty screen's Connect site, which departs from UX-DR6's "the
+   connect card is the whole page" on purpose: the page a disconnect lands on is where its theme is
+   listed. It OBEYS DW-57 — no card moves and nothing joins one. Absent with no row, and absent (logged)
+   when its read fails; the cards never wait on it or fail with it. Read through the caller's own
+   session, so `site_snapshots_owner_read` scopes it; the date is `purgeDateOf`'s, the one clock the job
+   and the email read too. */
 
 export const metadata: Metadata = {
   title: 'Sites · Inflozo',
@@ -142,6 +157,41 @@ type Row = NoticeSite & {
   health: 'healthy' | 'unhealthy' | null
   last_checked_at: string | null
   site_settings: (NonNullable<NoticeSite['site_settings']> & { public_url?: string }) | null
+}
+
+/**
+ * STORY 7.20b — "Original themes from disconnected sites": `/restore`'s rows (Story 2.5), word for word in
+ * their classes, with the caption "{site} · deleted on {date}". Drawn only when there is a row. Download is
+ * a LINK to the route's 303 (AD-13's signed URL), as on `/restore`: no work starts in the app, so no busy
+ * label is owed (R-98).
+ */
+function OriginalThemes({
+  rows,
+  className = '',
+}: {
+  rows: { id: string; theme: string; site: string; date: string }[]
+  className?: string
+}) {
+  if (!rows.length) return null
+  return (
+    <section id={SECTION_ID} aria-labelledby={`${SECTION_ID}-title`} className={`flex w-full max-w-[440px] flex-col gap-2.5 ${className}`}>
+      <h2 id={`${SECTION_ID}-title`} className="text-ui-dense font-semibold uppercase tracking-[0.04em] text-ink-soft">
+        {ORPHANS.heading}
+      </h2>
+      <p className="text-helper-caption leading-[1.5] text-ink-soft">{ORPHANS.caption(ORPHAN_SNAPSHOT_DAYS)}</p>
+      {rows.map((row) => (
+        <div key={row.id} className="flex items-center gap-3" data-original-theme={row.id}>
+          <span className="flex min-w-0 flex-col gap-px">
+            <span className="truncate font-mono text-control-label text-ink">{row.theme}</span>
+            <span className="truncate text-helper-caption text-ink-soft">{ORPHANS.row(row.site, row.date)}</span>
+          </span>
+          <a href={`/snapshots/${row.id}/download`} className={`ml-auto shrink-0 ${buttonClasses('secondary', 32)}`}>
+            {ORPHANS.download}
+          </a>
+        </div>
+      ))}
+    </section>
+  )
 }
 
 export default async function Sites({
@@ -190,8 +240,13 @@ export default async function Sites({
   const supabase = await supabaseServer()
   // THE PLAN IS READ, READ-ONLY, exactly as the dashboard reads it for S3c's upgrade tile: S11c's
   // ghost slot is the same decision one row down the plan table (`lib/plan.ts`).
-  const [{ data, error }, { data: projects, error: projectsError }, { data: notices, error: noticesError }, { plan }] =
-    await Promise.all([
+  const [
+    { data, error },
+    { data: projects, error: projectsError },
+    { data: notices, error: noticesError },
+    { plan },
+    { data: originals, error: originalsError },
+  ] = await Promise.all([
       supabase
         .from('sites')
         .select(
@@ -217,6 +272,14 @@ export default async function Sites({
         .is('resolved_at', null)
         .order('created_at', { ascending: false }),
       resolveEntitlement(user.id),
+      /* STORY 7.20b — THE ORIGINAL THEMES OF DISCONNECTED SITES, newest disconnect first. `sites!inner`
+         with the embed filtered keeps only a theme whose site is disconnected, and the order is the
+         parent's, by the to-one embed (postgrest-js's "Order parent table by a referenced table"). */
+      supabase
+        .from('site_snapshots')
+        .select('id, theme_name, orphan_notice_at, sites!inner(title, url, disconnected_at)')
+        .not('sites.disconnected_at', 'is', null)
+        .order('sites(disconnected_at)', { ascending: false }),
     ])
 
   const sites: Row[] = data ?? []
@@ -233,6 +296,8 @@ export default async function Sites({
      content (the rule this file's projects tally already follows). */
   if (noticesError) console.error('sites: health notices read failed', { code: noticesError.code })
   const openNotices = openHealthNotices(notices)
+  // A FAILED ORIGINALS READ IS NO SECTION, logged without an id; the cards are unaffected.
+  if (originalsError) console.error('sites: original themes read failed', { code: originalsError.code })
 
   const { query, shown } = filterSites(sites, q)
   // B15's own: `recheckPlan` redirects here when the re-run probe could not reach Ghost, and it
@@ -257,6 +322,7 @@ export default async function Sites({
   // WHICH OF THE FOUR SCREENS, DECIDED IN ONE PURE PLACE (DW-59): `sitesScreen` in `lib/connect-rule.ts`,
   // where `node --test` holds "a failed read is not an empty account" as `showsFirstRun` holds the dashboard's.
   const screen = sitesScreen({ unread, sites: sites.length, shown: shown.length })
+  const kept = originalRows(originalsError ? null : (originals as unknown as OriginalRead[] | null), now)
 
   if (screen === 'unread') {
     return (
@@ -315,6 +381,7 @@ export default async function Sites({
           {/* The top bar keeps its own "Connect site" — Projects draws both (UX-DR6). At 390 the
               top bar has none, so this centred one is the only one and is still right. */}
           <ConnectSiteButton look="empty" />
+          <OriginalThemes rows={kept} className="mt-4 text-left" />
         </div>
       ) : (
         <div className="flex flex-col gap-4 p-[16px_20px] tablet:gap-5 tablet:p-6">
@@ -559,6 +626,7 @@ export default async function Sites({
               ) : null}
             </div>
           )}
+          <OriginalThemes rows={kept} className="mt-2" />
         </div>
       )}
       {/* THE TWO PANELS THIS LIST CAN DRAW OVER ITSELF (the owner's test of Story 3.6, findings

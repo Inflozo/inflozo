@@ -404,6 +404,14 @@
 // project: the gate again, B12b's `GET /ghost/api/admin/themes/ → 403`, Deploy without a snapshot; (d) the deletion window's
 // `/restore` listing the snapshot, its Download a 303 to a zip, then Restore account. Its finally puts T1's theme back (the one
 // live at the start, every inflozo- theme it uploaded deleted), removes H's objects, disconnects and deletes H, and counts back.
+// Story 7.20b adds step 118, on production alone (no T1 write, so it runs on every walk): THE ORIGINAL THEMES OF DISCONNECTED
+// SITES ON SITES (FR-C6, R-285). A throwaway account I (`editor-harness-i-…`): (a) nothing planted — the empty screen and no
+// `#original-themes` (the control); (b) two disconnected sites and their themes planted through the service key and read back —
+// at 1440 the section under the empty screen's Connect site, newest disconnect first, each row's words and date from the app's own
+// `purgeDateOf`/`deadlineLabel`; at 390 the same rows inside the viewport; Tab from Connect site reaching each Download; each
+// Download's 303 leading to a zip; (c) a connected site with its own theme: the section after the cards, that theme not in it;
+// (d) one theme purged as the job purges it (object, then row): gone from the section, and its stale Download the route's 404.
+// Its finally removes every object it put, deletes I and counts users back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -491,8 +499,9 @@ async function main() {
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
-  // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's; Story 7.20a: `h` is 117's
-  const stale = all.filter((u) => /^editor-harness-[abcdefgh]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's; Story 7.20a: `h` is 117's;
+  // Story 7.20b: `i` is 118's
+  const stale = all.filter((u) => /^editor-harness-[abcdefghi]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -13562,6 +13571,162 @@ async function main() {
         }
       }
       check('step 117 — the step\'s contexts recorded zero CSP violations', csp117.length === 0, JSON.stringify(csp117.slice(0, 3)))
+    }
+
+    // ── step 118 — STORY 7.20b: THE ORIGINAL THEMES OF DISCONNECTED SITES, ON SITES (FR-C6, R-285, R-74, R-82) ──
+    /* Production alone and NO T1 WRITE, so it runs on every walk. A throwaway account I (`editor-harness-i-…`):
+       (a) nothing planted: /sites is the empty screen and `#original-themes` is ABSENT — the control for (b);
+       (b) two disconnected sites planted through the service key, each a theme object under `site-snapshots/{I}/{site}/` and
+           its row (X disconnected 30 days ago with no notice; Y 80 days ago, noticed on time), read back. At 1440 the section
+           sits under the empty screen's Connect site, newest disconnect first, each row "casper", "{site} · deleted on {date}"
+           (the app's own `purgeDateOf` and `deadlineLabel`) and Download; at 390 the same rows, inside the viewport with no
+           sideways scroll; Tab from Connect site reaches each Download in turn; each Download's 303 leads to a zip (PK);
+       (c) a CONNECTED site Z planted with a theme of its own: the list screen, the section AFTER the cards, Z's theme not in it;
+       (d) X purged as the job purges it (object, then row): the section lists Y alone, and X's Download is the route's 404.
+       FINALLY: every object it put removed, I deleted (its sites and rows with it), users counted back. */
+    {
+      const imp118 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [OR118, DR118, CR118] = await Promise.all([
+        imp118('apps/web/lib/orphan-rule.ts'), imp118('apps/web/app/(app)/app/(authed)/account/deletion-rule.ts'), imp118('apps/web/lib/connect-rule.ts'),
+      ])
+      const emailI = `editor-harness-i-${stamp}@inflozo.com`
+      const usersBefore118 = (await users())?.length ?? null
+      const ctxs118 = []
+      const csp118 = []
+      const keys118 = []
+      let idI = null
+      const DAY118 = 86_400_000
+      const ago118 = (days) => new Date(Date.now() - days * DAY118).toISOString()
+      const storage118 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      // an empty zip — the end-of-central-directory record alone — which is all a Download's bytes need to be read as one
+      const ZIP118 = Buffer.concat([Buffer.from('504b0506', 'hex'), Buffer.alloc(18)])
+      /** a site record and its original theme through the service key, the object first; read back by the caller */
+      const plant118 = async (label, disconnectedAt, noticeAt) => {
+        const site = (await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: idI, url: `https://${label}-${stamp}.example`, title: `${label}.example`, disconnected_at: disconnectedAt }) })).body?.[0]?.id ?? null
+        if (!UUID.test(site ?? '')) throw new Error(`step 118: the ${label} site was not planted`)
+        const key = `${idI}/${site}/${stamp}-casper.zip`
+        keys118.push(key)
+        const put = await fetch(`${SB}/storage/v1/object/site-snapshots/${key}`, { method: 'POST', headers: { ...storage118, 'Content-Type': 'application/zip' }, body: ZIP118 })
+        const row = (await call('/rest/v1', '/site_snapshots', { method: 'POST', body: JSON.stringify({ user_id: idI, site_id: site, storage_path: `site-snapshots/${key}`, theme_name: 'casper', bytes: ZIP118.length, orphan_notice_at: noticeAt }) })).body?.[0] ?? null
+        if (!put.ok || !UUID.test(row?.id ?? '')) throw new Error(`step 118: the ${label} theme was not planted (HTTP ${put.status})`)
+        return { site, id: row.id, label: `${label}.example`, disconnectedAt, noticeAt }
+      }
+      /** the section as drawn: its words, its rows, where it sits, and whether the page scrolls sideways */
+      const section118 = (pg) => pg.evaluate((sid) => {
+        const s = document.getElementById(sid)
+        if (!s) return null
+        const r = s.getBoundingClientRect()
+        const grid = document.querySelector('article')?.closest('.grid') ?? null
+        const connects = [...document.querySelectorAll('main a[href$="/sites/connect"]')]
+        const connect = connects[connects.length - 1] ?? null
+        return {
+          heading: s.querySelector('h2')?.textContent ?? null,
+          caption: s.querySelector('p')?.textContent ?? null,
+          rows: [...s.querySelectorAll('[data-original-theme]')].map((row) => ({
+            id: row.getAttribute('data-original-theme'),
+            name: row.querySelector('.font-mono')?.textContent ?? null,
+            caption: row.querySelector('.font-mono + span')?.textContent ?? null,
+            href: row.querySelector('a')?.getAttribute('href') ?? null,
+            label: row.querySelector('a')?.textContent ?? null,
+          })),
+          left: Math.round(r.left), right: Math.round(r.right), width: window.innerWidth, scroll: document.documentElement.scrollWidth,
+          afterCards: grid === null ? null : Boolean(grid.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING),
+          afterConnect: connect === null ? null : Boolean(connect.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING),
+          cards: document.querySelectorAll('article').length,
+        }
+      }, OR118.SECTION_ID).catch(() => null)
+      const context118 = async (viewport) => {
+        const ctx = steadyRequests(await browser.newContext({ viewport }))
+        ctxs118.push(ctx)
+        await recorder(ctx, csp118)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 118', String(e)))
+        await pg.goto(await magic(emailI), { waitUntil: 'load' })
+        await pg.goto(at('/sites'), { waitUntil: 'load' })
+        return pg
+      }
+      /** what a row must say, from the app's own clock and words — never restated here */
+      const expect118 = (p) => ({
+        id: p.id, name: OR118.themeLabel('casper'),
+        caption: OR118.ORPHANS.row(p.label, DR118.deadlineLabel(OR118.purgeDateOf({ disconnectedAt: p.disconnectedAt, noticeAt: p.noticeAt }, new Date()))),
+        href: `/snapshots/${p.id}/download`, label: OR118.ORPHANS.download,
+      })
+      try {
+        const madeI = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: emailI, email_confirm: true }) })
+        idI = madeI.status === 200 ? madeI.body.id ?? null : null
+        if (!UUID.test(idI ?? '')) throw new Error('step 118: account I was not made')
+
+        // ── 118a — the control: no original theme, no section ──
+        const p0 = await context118({ width: 1440, height: 900 })
+        const none = await section118(p0)
+        const empty = await p0.getByRole('heading', { level: 1, name: CR118.SITES_EMPTY.title }).count()
+        check('step 118a — no original theme kept: /sites is the empty screen and #original-themes is absent', none === null && empty === 1, JSON.stringify({ section: none !== null, empty }))
+
+        // ── 118b — two disconnected sites' themes: the section under Connect site, at 1440 and 390 ──
+        const X = await plant118('orphan-x', ago118(30), null)
+        // Y's notice went on time: deadline − ORPHAN_NOTICE_DAYS after its disconnect, so its date is still the deadline
+        const Y = await plant118('orphan-y', ago118(80), ago118(80 - (CR118.ORPHAN_SNAPSHOT_DAYS - OR118.ORPHAN_NOTICE_DAYS)))
+        const back = (await call('/rest/v1', `/site_snapshots?user_id=eq.${idI}&select=id,orphan_notice_at,sites(disconnected_at)`)).body ?? []
+        check('step 118b — two disconnected sites and their themes planted through the service key, read back', Array.isArray(back) && back.length === 2 && back.every((r) => r.sites?.disconnected_at), JSON.stringify(back.map((r) => ({ notice: r.orphan_notice_at !== null, disconnected: Boolean(r.sites?.disconnected_at) }))))
+        await p0.reload({ waitUntil: 'load' })
+        const wide = await section118(p0)
+        const want = [expect118(X), expect118(Y)]
+        check(`step 118b — at 1440 under the empty screen's Connect site: "${OR118.ORPHANS.heading}", its caption, then newest disconnect first, each "casper", "{site} · deleted on {date}" and Download`,
+          wide !== null && wide.heading === OR118.ORPHANS.heading && wide.caption === OR118.ORPHANS.caption(CR118.ORPHAN_SNAPSHOT_DAYS) && wide.afterConnect === true && wide.cards === 0 && JSON.stringify(wide.rows) === JSON.stringify(want),
+          JSON.stringify({ got: wide?.rows ?? null, want, afterConnect: wide?.afterConnect ?? null }))
+        // Tab from the empty screen's Connect site reaches each Download in turn — keyboard alone, no pointer
+        await p0.locator('main a[href$="/sites/connect"]').last().focus()
+        const tabbed = []
+        for (let i = 0; i < 2; i++) {
+          await p0.keyboard.press('Tab')
+          tabbed.push(await p0.evaluate(() => document.activeElement?.getAttribute('href') ?? null))
+        }
+        check('step 118b — Tab from Connect site reaches each Download in turn', JSON.stringify(tabbed) === JSON.stringify(want.map((r) => r.href)), JSON.stringify(tabbed))
+        const zips = []
+        for (const p of [X, Y]) {
+          const offered = await p0.context().request.get(at(`/snapshots/${p.id}/download`), { maxRedirects: 0 })
+          const to = offered.headers().location ?? null
+          const bytes = to === null ? null : Buffer.from(await (await fetch(to)).arrayBuffer())
+          zips.push({ status: offered.status(), zip: bytes !== null && bytes[0] === 0x50 && bytes[1] === 0x4b })
+        }
+        check('step 118b — each Download answers 303 to a zip (PK), through the route /restore uses', zips.every((z) => z.status === 303 && z.zip), JSON.stringify(zips))
+        const p1 = await context118({ width: 390, height: 844 })
+        const narrow = await section118(p1)
+        check('step 118b — at 390 the same rows, inside the viewport and with no sideways scroll',
+          narrow !== null && JSON.stringify(narrow.rows) === JSON.stringify(want) && narrow.left >= 0 && narrow.right <= narrow.width && narrow.scroll <= narrow.width,
+          JSON.stringify({ left: narrow?.left, right: narrow?.right, width: narrow?.width, scroll: narrow?.scroll }))
+
+        // ── 118c — a connected site with a theme of its own: the list screen, the section after the cards, Z not in it ──
+        const Z = await plant118('orphan-z', null, null)
+        await p0.reload({ waitUntil: 'load' })
+        const list = await section118(p0)
+        check('step 118c — a connected site\'s card: the section sits AFTER the cards, and the connected site\'s theme is not in it',
+          list !== null && list.cards === 1 && list.afterCards === true && JSON.stringify(list.rows) === JSON.stringify(want) && !list.rows.some((r) => r.id === Z.id),
+          JSON.stringify({ cards: list?.cards ?? null, afterCards: list?.afterCards ?? null, rows: (list?.rows ?? []).map((r) => r.id === Z.id ? 'Z' : r.id === X.id ? 'X' : r.id === Y.id ? 'Y' : '?') }))
+
+        // ── 118d — purged as the job purges (object, then row, through the service key): gone from the list, and the stale
+        //    Download is the download route's own 404 (the spec's "Purge due" and "Stale Download" rows) ──
+        const goneObject = await fetch(`${SB}/storage/v1/object/site-snapshots/${keys118[0]}`, { method: 'DELETE', headers: storage118 })
+        const goneRow = await call('/rest/v1', `/site_snapshots?id=eq.${X.id}`, { method: 'DELETE' })
+        await p0.reload({ waitUntil: 'load' })
+        const after = await section118(p0)
+        const stale = await p0.context().request.get(at(`/snapshots/${X.id}/download`), { maxRedirects: 0 })
+        check('step 118d — X purged (object, then row): the section lists Y alone, and X\'s stale Download answers the route\'s 404',
+          goneObject.ok && goneRow.status === 200 && after !== null && JSON.stringify(after.rows) === JSON.stringify([expect118(Y)]) && stale.status() === 404,
+          JSON.stringify({ object: goneObject.status, row: goneRow.status, rows: (after?.rows ?? []).map((r) => r.id === X.id ? 'X' : r.id === Y.id ? 'Y' : '?'), stale: stale.status() }))
+      } catch (e) {
+        check('step 118 — the step ran to its end', false, String(e?.message ?? e).split('\n')[0])
+      } finally {
+        for (const ctx of ctxs118) await ctx.close().catch(() => {})
+        for (const key of keys118) await fetch(`${SB}/storage/v1/object/site-snapshots/${key}`, { method: 'DELETE', headers: storage118 }).catch(() => {})
+        if (idI !== null) {
+          const del = await admin(`/admin/users/${idI}`, { method: 'DELETE', body: '{}' })
+          const usersAfter = (await users())?.length ?? null
+          check('step 118 — finally: every object it put removed, account I deleted (its sites and rows with it), users counted back',
+            del.status === 200 && usersBefore118 !== null && usersAfter === usersBefore118, `HTTP ${del.status}, users ${usersBefore118} → ${usersAfter}`)
+        }
+      }
+      check('step 118 — the step\'s contexts recorded zero CSP violations', csp118.length === 0, JSON.stringify(csp118.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

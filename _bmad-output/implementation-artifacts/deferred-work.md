@@ -2491,7 +2491,16 @@ plain: When someone deploys with Inflozo for the first time, Inflozo archives a 
   running nightly over an empty cupboard for months and offering a download link to a file whose shape is not
   decided. **The 90-day countdown itself is built now, in Story 3.5** — nothing is lost and nothing needs
   re-doing later.
-status: open
+status: **closed** — Story 7.20b Dev, 2026-11-24
+resolution: built as its own criteria say. `apps/web/app/api/cron/purge-snapshots/route.ts` (AD-33's E7 cron, daily
+  `30 4 * * *`, the owning epic in its header, `authorized()` before any read, 500 when anything failed) runs
+  `lib/orphan-rule.ts`'s pure `runOrphans`: the deadline derived from `sites.disconnected_at` + `ORPHAN_SNAPSHOT_DAYS`, the
+  notice R-285's one email `ORPHAN_NOTICE_DAYS` before it (claimed in `site_snapshots.orphan_notice_at`, put back on a
+  failed send), the theme deleted only once that email has gone out — at the later of the deadline and the email plus
+  `ORPHAN_NOTICE_DAYS`, whether or not it was downloaded — objects before rows through `drainPrefix`, after a re-read that
+  skips a reconnected site; an account waiting to be deleted is FR-A5's. The download offer is the Sites section
+  "Original themes from disconnected sites" and the email's button to it. Held by `orphans.test.ts`; executed on the
+  deployed route by `tools/probe/run-verify-snapshot-orphans.py` and walk step 118 (Review, Deploy).
 severity: medium
 origin: Story 3.5 Create (2026-09-09) — the owner's ruling at Question 1, option 1
 owner: Story 7.20b (The snapshot orphan purge), straight after Story 7.20a, whose criteria carry it word for word with
@@ -2632,7 +2641,12 @@ reason: The value is DERIVABLE — it is the half of the stored secret in front 
 
 plain: "Your old site's copy is kept for 90 days" is stored as a number in the app's code and computed
   separately in the database. If one were ever changed the other would not follow, and nothing would notice.
-status: open — amended by Story 3.9 (2026-09-11); the half named below is closed
+status: **closed** — Story 7.20b Dev, 2026-11-24 (amended by Story 3.9, 2026-09-11)
+closed: ONE HOME, AND IT IS `ORPHAN_SNAPSHOT_DAYS`. The job computes the deadline in TypeScript (`lib/orphan-rule.ts`'s
+  `orphanDeadline`, which the Sites section and the email call too), so no SQL carries the figure. `connect-rule.test.ts`'s
+  DW-79 test now asserts (a) `orphanDeadline(t) − t` is `ORPHAN_SNAPSHOT_DAYS` days, (b) no migration's executable SQL
+  computes the clock (comments stripped, `disconnected_at + interval` absent) and (c), as its control, that the regex
+  finds the expression in `20260907150000`'s applied comment before stripping.
 resolution: Story 3.9 (2026-09-11) — the SILENT DRIFT closes: `apps/web/connect-rule.test.ts`
   reads `disconnected_at + interval '<n> days'` out of
   `20260907150000_account_deletion_window.sql` and asserts it equals `ORPHAN_SNAPSHOT_DAYS`, so
@@ -10590,7 +10604,10 @@ reason: restore is not built in Story 7.20a; the finding must reach the story th
 
 plain: A note stored inside the database still says Ghost(Pro) sites get a different Backup step; since the owner cut the step
   to two rows, every host gets the same card, so the note is out of date (nothing a customer sees).
-status: open
+status: **closed** — Story 7.20b Dev, 2026-11-24 (the comment rode the Schema push, de69ef1c; production's col_description is read back at its apply, R-99)
+resolution: `supabase/migrations/20261028120000_snapshot_orphans.sql` replaces the column's comment (Ghost's public config
+  carries `hostSettings`; it names the Backup step's sub line alone; null = not yet probed), mirrored in `SCHEMA.sql` and the
+  RLS gate's 7.20a check (`%hostSettings%sub line%null = not yet probed%`). The applied 7.20a migration stays as written.
 severity: low
 origin: Story 7.20a's Review (2026-10-26). R-283 made one card for every host after the Schema push had applied
   `20261027120000_backup_gate.sql` to production, so its `comment on column public.sites.hosted_by_ghost` ("true = Ghost(Pro),

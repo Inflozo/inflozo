@@ -202,7 +202,7 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
   - with the migration withheld, the block aborts at its first check (the control).
 
 **Execution — `Dev`:**
-- [ ] `apps/web/lib/orphan-rule.ts` -- new, pure (no Next, no Supabase import):
+- [x] `apps/web/lib/orphan-rule.ts` -- new, pure (no Next, no Supabase import):
   - the constants: `ORPHAN_NOTICE_DAYS = 14`, `CRON_PATH = '/api/cron/purge-snapshots'`, `BATCH`, `BUDGET_MS`;
   - the dates: `orphanDeadline(disconnectedAt)` (from `ORPHAN_SNAPSHOT_DAYS`) and `purgeDateOf({ disconnectedAt, noticeAt })`
     (the later of the deadline and notice + n);
@@ -212,9 +212,9 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
     - for a notice: claim, address, send, and unclaim on failure;
     - for a purge: re-read, drain, delete row;
     - it answers `{ noticed, purged, failed }`.
-- [ ] `apps/web/lib/orphan-email.ts` -- new. `orphanEmail({ site, theme, date, disconnected, url })` on `emailShell`; the site
+- [x] `apps/web/lib/orphan-email.ts` -- new. `orphanEmail({ site, theme, date, disconnected, url })` on `emailShell`; the site
   and theme are escaped in the HTML, and a plain `text` part is built too. Pure.
-- [ ] `apps/web/app/api/cron/purge-snapshots/route.ts` -- new. The owning epic (E7, AD-33, FR-C6) is named in its header.
+- [x] `apps/web/app/api/cron/purge-snapshots/route.ts` -- new. The owning epic (E7, AD-33, FR-C6) is named in its header.
   - The door comes first.
   - Then one inner-joined read, oldest first: the `site_snapshots` rows whose site was disconnected at least N−n days ago,
     with their `sites(title, url, disconnected_at)`.
@@ -222,17 +222,17 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
   - The deps are built from `supabaseAdmin()`: `getUserById`, compare-and-set on `orphan_notice_at`, the
     `disconnected_at` re-read, `drainPrefix`, and a row delete by id.
   - It answers JSON with 500 when anything failed.
-- [ ] `apps/web/vercel.json` -- `{ "path": "/api/cron/purge-snapshots", "schedule": "30 4 * * *" }`.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- the originals read (the caller's session; the
+- [x] `apps/web/vercel.json` -- `{ "path": "/api/cron/purge-snapshots", "schedule": "30 4 * * *" }`.
+- [x] `apps/web/app/(app)/app/(authed)/sites/(list)/page.tsx` -- the originals read (the caller's session; the
   disconnected sites' rows with `sites!inner(title, url, disconnected_at)`) joins the `Promise.all`.
   - **"Original themes from disconnected sites"** is drawn after the cards (list and `noMatch`) and under the empty
     screen's Connect button, with the id `original-themes`. It is shown only when there is at least one row.
   - The rows are newest disconnect first. Each is the /restore row with the caption "{site} · deleted on {date}"
     (`purgeDateOf`).
   - The header records this departure from S11a and from UX-DR6's "the connect card is the whole page".
-- [ ] `apps/web/lib/connect-rule.ts` -- `ORPHAN_SNAPSHOT_DAYS`'s docblock says the job now reads it. The value is unchanged.
+- [x] `apps/web/lib/connect-rule.ts` -- `ORPHAN_SNAPSHOT_DAYS`'s docblock says the job now reads it. The value is unchanged.
   `apps/web/lib/storage-drain.ts`' header says the second caller is built.
-- [ ] `apps/web/orphans.test.ts` -- new. It holds:
+- [x] `apps/web/orphans.test.ts` -- new. It holds:
   - every I/O row through `decide` and `runOrphans` with stubs, the call order logged (drain before delete; claim before
     send; unclaim after a failed send);
   - a failure that never stops the rest;
@@ -243,14 +243,14 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
   - the email escaping a hostile site title and naming the date.
 
   Each new assertion is seen red against a planted reversion.
-- [ ] `apps/web/connect-rule.test.ts` -- DW-79's test now asserts:
+- [x] `apps/web/connect-rule.test.ts` -- DW-79's test now asserts:
   - (a) `orphanDeadline(t) − t` is `ORPHAN_SNAPSHOT_DAYS` days;
   - (b) no migration's executable SQL computes the orphan clock (`--` comments stripped, `disconnected_at\s*\+\s*interval`
     absent);
   - (c) as the control, the regex does find it in the applied migration's comment before stripping.
-- [ ] `apps/web/purge.test.ts` (`CRON_CONSTANTS` gains `purge-snapshots (Epic 7, Story 7.20b)`) ·
+- [x] `apps/web/purge.test.ts` (`CRON_CONSTANTS` gains `purge-snapshots (Epic 7, Story 7.20b)`) ·
   `apps/web/server-wiring.test.ts` (the route joins `allowed`, with its reason).
-- [ ] `tools/probe/run-verify-snapshot-orphans.py` -- new, in `run-verify-account-purge.py`'s shape. It has three modes:
+- [x] `tools/probe/run-verify-snapshot-orphans.py` -- new, in `run-verify-account-purge.py`'s shape. It has three modes:
   - `--check`, which runs offline;
   - the full run (Review, Deploy), which seeds one fixture user with four disconnected sites and their objects and rows:
     one not yet due, one notice due, one purge due with the notice n+1 days old, and one reconnected control. It refuses
@@ -259,11 +259,11 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
   - `--owner-test <alias>`, which plants the owner's three sites (below) and runs the route once.
 
   It needs a row in `tools/doc-audit.py`'s catalogue.
-- [ ] `tools/probe/run-verify-editor.cjs` -- **walk step 118** on production, with planted rows read back:
+- [x] `tools/probe/run-verify-editor.cjs` -- **walk step 118** on production, with planted rows read back:
   - the section at 1440 and 390, with each row's words and date;
   - Tab reaches each Download, and its 303 leads to a zip;
   - the section is absent with no orphan, and on the list screen sits after the cards.
-- [ ] Propagation (standing rule 3). R-285 already reached the register, `prd.md` FR-P1 (9) and FR-C6, and `epics.md`'s
+- [x] Propagation (standing rule 3). R-285 already reached the register, `prd.md` FR-P1 (9) and FR-C6, and `epics.md`'s
   card at the Create. Dev adds:
   - the spine's AD-33 says it is built at its path;
   - `EXPERIENCE.md`'s Sites row names the section;
@@ -423,3 +423,94 @@ T1 is touched only by the owner's own reconnect, which is a read.
 - `node tools/probe/run-verify-editor.cjs` from a clean worktree at the deployed sha -- expected: step 118 PASS, and steps
   113–117 unchanged.
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS.
+
+**Executed — Dev (2026-11-24 IST, Node 24; the real services by their variable names, no value printed):**
+- **Supabase (local gate):** `bash supabase/tests/run-rls-gate.sh` — green. The 7.20b block printed six PASS lines:
+  - the column is a nullable timestamptz with no default, commented, and the client cannot write it;
+  - the service role records a notice;
+  - the tenant reads its own `orphan_notice_at` and not another tenant's;
+  - the tenant's update is refused (42501);
+  - the other tenant sees none of it, and reads its own notice (the control);
+  - the refused write changed nothing.
+
+  7.20a's `hosted_by_ghost` check passes on the new comment. **Controls**, on scratch copies:
+  - (a) the 7.20b migration withheld, with HEAD's `SCHEMA.sql`: exit 3 at `FAIL (7.20a): sites.hosted_by_ghost's comment does
+    not name hostSettings, the sub line and the unprobed state`. That is DW-390's line, the first check to need the file.
+  - (b) only the column withheld, with DW-390's comment kept: exit 3 at `FAIL (7.20b): site_snapshots.orphan_notice_at
+    (timestamptz, nullable, no default) is missing`, the block's first check, right after 7.20a's last PASS.
+- **GitHub CI** (`GITHUB_TOKEN`, read only), on the Schema push `de69ef1c47f19672c3bc85a9357214f4efde2a43`: CI's `rls`,
+  `check` and `deploy` all ✓, and the Render matrix ✓.
+- **Supabase production, the apply** (`SUPABASE_DB_POOLER_URL`, read in-process; the owner's in-session go, "1. Go"):
+  - Before, as the control: no `orphan_notice_at` column, no comment for it, and `hosted_by_ghost` still carried the old
+    comment.
+  - Applied in one transaction.
+  - Read back:
+    - `information_schema.columns`: `orphan_notice_at` is `timestamp with time zone`, nullable, with no default;
+    - both `col_description`s equal the file's text byte for byte;
+    - `authenticated` has SELECT on the column and neither INSERT nor UPDATE;
+    - `site_snapshots` holds 0 rows on production, so there is nothing to back-fill.
+- **Supabase production, read only** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, read in-process; no
+  write). PostgREST was handed the two new query shapes as the code builds them:
+  - the cron's due read, `sites!inner(…)` with `.lte('sites.disconnected_at', since)` and `.order('sites(disconnected_at)')`,
+    with and without the `not id in (…)` exclusion → 200, 0 rows each;
+  - the Sites page's read, `.not('sites.disconnected_at', 'is', null)`, newest first → 200, 0 rows with the service key. With
+    the publishable key it answered 401 `42501`, because anon has no grant; the page reads as the signed-in user.
+  - **Control:** the same embed ordered by a column it lacks → refused, 400 `42703`. So the 200s above are PostgREST
+    accepting the shapes, not a client hiding errors.
+
+  That the filter keeps exactly the due rows is the harness's `seeded` step at Review, which runs on real rows.
+- `pnpm check` (Node 24): green, 0 failed. Each package prints its own count. This includes `orphans.test.ts`, the
+  rewritten DW-79 test with its control, and `purge.test.ts`/`server-wiring.test.ts`' additions.
+- `python3 tools/probe/run-verify-snapshot-orphans.py --check`: every step PASS (keys by name, the app's figures and words,
+  the schedule, `decide` over the fixture, the email composed and not sent). The deployed route was not called.
+- `node --check tools/probe/run-verify-editor.cjs`: clean.
+- `pnpm build` then `node tools/check-traces.mjs` (Node 24, CI's own two steps): green. `/api/cron/purge-snapshots` is built as
+  a dynamic function (`ƒ`), and every route carries its files.
+- The subagent's controls, each seen red and then restored:
+  - a stale notice counting;
+  - rows deleted before objects;
+  - no unclaim, and no claim;
+  - the purge date taken as the deadline alone;
+  - a deleting account not skipped;
+  - no re-read skip;
+  - the run stopping at the first failure;
+  - a digit in `ORPHANS`;
+  - the site title not escaped;
+  - the route always answering 200;
+  - for DW-79, a planted SQL view and a regex that matches nothing.
+- **The matrix audit (main session).** Every I/O row maps to a check that ran:
+
+  | Row | Check |
+  |---|---|
+  | Not yet due | `decide — not yet due…` (wait); `the Sites rows…`; walk 118b (Review) |
+  | Notice due (and its error column) | `notice due: claimed, then the address, then ONE email…`; `a refused send puts the claim back…`; `no address puts the claim back…`; `a claim another run took first…`; the route's `failed ? 500 : 200` |
+  | Notice late | `notice late: the email goes now, dated today + n…`; `a late notice names the real date…` |
+  | Purge due (and its error column) | `purge due: re-read, then the prefix drained, then the row`; `a refused drain leaves the row…`; walk 118d (Review) |
+  | Object already gone | `purge: the object already gone — the drain removes 0…` **(added at the audit)**; `purge.test.ts`'s empty-prefix drain |
+  | Reconnected | `purge: a reconnected site (null, or a different disconnect…)`; `decide`'s reconnected case |
+  | Disconnected again | `decide — disconnected again…`; `the stale notice is claimed FROM its own value…` |
+  | Account deleting | `an account waiting to be deleted is skipped…` |
+  | Bad door | `purge.test.ts`'s `authorized` cases (the shared door); `the route: the door before any read…`; the harness's two 401 controls (Review) |
+  | Page read fails | `page read fails: no section…` **(added at the audit**, with the rows lifted into `originalRows` so they run under `node --test`) |
+  | Stale Download | walk **118d (added at the audit)**: a theme is purged as the job does it, object then row; the section drops it, and its Download answers the route's 404 (Review) |
+
+  Each audit addition was seen red against a planted reversion and then restored with `cmp`:
+  - the loop skipping the row delete when the drain removed 0;
+  - `originalRows` keeping a connected site's theme;
+  - the page's failure log deleted.
+- **Judgement calls**, routine, so no question for the owner:
+  - `purgeDateOf` takes an optional `now`. A theme not yet noticed then shows the date its notice will name, rather than a date
+    already past.
+  - A notice claimed by a function that is killed before it sends stays recorded as sent. The theme would then go after
+    `ORPHAN_NOTICE_DAYS` with no email. This is the spec's claim-before-send order, chosen so an email is never sent twice; it
+    is marked `ponytail:` in `runOrphans`.
+  - The job runs once a day, so a purge can land on the run after the stated date. FR-A5's deletion email has the same
+    property.
+- **Not run at Dev, all needing the Dev push deployed:**
+  - **Resend** (the one real notice);
+  - the harness's full run, and its `--owner-test` (production writes, with their own in-session go);
+  - **Vercel**'s cron list;
+  - walk step 118.
+
+  These belong to the Review and Deploy phases. T1 is not touched by this story's code.
+- `python3 tools/doc-audit.py --check` (twice): PASS.

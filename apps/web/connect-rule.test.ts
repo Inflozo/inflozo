@@ -702,47 +702,38 @@ test('the card tallies projects per site and pluralises the pill', () => {
 })
 
 /**
- * DW-79 — THE 90-DAY ORPHAN WINDOW IS WRITTEN DOWN TWICE, IN TWO LANGUAGES.
+ * DW-79 — THE 90-DAY ORPHAN WINDOW HAS ONE HOME, AND IT IS `ORPHAN_SNAPSHOT_DAYS` (Story 7.20b).
  *
- * `ORPHAN_SNAPSHOT_DAYS` is the app's copy and `disconnected_at + interval '90 days'` is the
- * database's. They agree today, and the test above pins the app's figure at 90 — so a silent drift
- * needs someone to edit the SQL alone, which is exactly the edit nothing would catch. This reads
- * the SQL's own figure back.
- *
- * IT READS THE COMMENT TOO, AND THAT IS DELIBERATE — the opposite of `deletion-rule.test.ts`'s
- * rule, for the opposite reason. There, prose naming another interval is NOT a stamp and had to be
- * stripped. Here the migration's sentence IS the only place the orphan window is written in SQL:
- * the view that will compute it is Story 7.20b's, built beside the snapshot it deletes. When 7.20b
- * writes that view this test needs no change — the expression it matches is the one the entry
- * names and the one the view will carry.
- *
- * WHAT THIS DOES NOT CLOSE, and the entry is amended to say so rather than closed twice: the
- * honest fix is ONE HOME — the view reading a setting the app also reads, or the app deriving its
- * figure from the view — and choosing between those belongs to Story 7.20b, the first code that
- * depends on both. This closes the silent drift, which is the half that was costing something now.
+ * Until 7.20b this read `disconnected_at + interval '<n> days'` out of every migration, comments included,
+ * and asserted the SQL's figure equalled the app's — closing the silent drift between two homes. 7.20b
+ * chose the one home: the job computes the deadline in TypeScript (`lib/orphan-rule.ts`'s
+ * `orphanDeadline`), so the figure lives in the constant alone and no SQL may compute the clock at all.
+ * The applied migration `20260907150000`'s prose still names the expression, and stays as written (an
+ * applied migration is never edited) — which is what makes it this test's control.
  */
-test('the 90-day orphan window agrees between the app and the migration', async () => {
+test('DW-79: the orphan deadline is ORPHAN_SNAPSHOT_DAYS after the disconnect, and no migration computes it in SQL', async () => {
   const { readdirSync, readFileSync } = await import('node:fs')
-  // EVERY migration, not the one that wrote it first: Story 7.20b's view will carry the same
-  // expression in a later file, and a test pinned to one path would never read it (review, 2026-09-11).
+  const { orphanDeadline } = await import('./lib/orphan-rule.ts')
+  // (a) the one home, executed: the deadline is the constant's days after the disconnect, to the millisecond.
+  const t = new Date('2026-11-01T09:30:00Z')
+  assert.equal(orphanDeadline(t).getTime() - t.getTime(), ORPHAN_SNAPSHOT_DAYS * 86_400_000)
+
   const MIGRATION = '../../supabase/migrations'
-  const sql = readdirSync(MIGRATION).filter((f) => f.endsWith('.sql')).sort()
-    .map((f) => readFileSync(`${MIGRATION}/${f}`, 'utf8')).join('\n')
-  const written = [...sql.matchAll(/disconnected_at\s*\+\s*interval '(\d+) days'/g)].map((m) => Number(m[1]))
+  const CLOCK = /disconnected_at\s*\+\s*interval/i
+  const files = readdirSync(MIGRATION).filter((f) => f.endsWith('.sql')).sort()
+  const executable = (sql: string) => sql.replace(/\/\*[^]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ')
+  // (c) THE CONTROL, FIRST: the regex does find the expression where it is still written — the applied
+  // migration's comment — before the comments are stripped. Without this, (b) could pass on a regex that
+  // matches nothing.
+  const prose = files.filter((f) => CLOCK.test(readFileSync(`${MIGRATION}/${f}`, 'utf8')))
   assert.ok(
-    written.length > 0,
-    `${MIGRATION} no longer writes the orphan clock as \`disconnected_at + interval '<n> days'\` — ` +
-      'this test reads that figure rather than restating it, so either the expression moved (point ' +
-      'this at its new home) or the clock is gone.',
+    prose.includes('20260907150000_account_deletion_window.sql'),
+    `the control did not pass: no migration's text matches ${CLOCK} — read ${prose.join(', ') || 'none'}`,
   )
-  for (const days of written) {
-    assert.equal(
-      days,
-      ORPHAN_SNAPSHOT_DAYS,
-      `the migration computes the orphan deadline at ${days} days and the app tells the customer ` +
-        `${ORPHAN_SNAPSHOT_DAYS} — one of the two was changed alone, which is DW-79 exactly.`,
-    )
-  }
+  // (b) …and no migration's EXECUTABLE SQL computes the orphan clock: a view or a job written in SQL would be a
+  // second home for the figure, which is DW-79 exactly.
+  const computing = files.filter((f) => CLOCK.test(executable(readFileSync(`${MIGRATION}/${f}`, 'utf8'))))
+  assert.deepEqual(computing, [], `${computing.join(', ')} computes the orphan clock in SQL — ORPHAN_SNAPSHOT_DAYS is its one home`)
 })
 
 /* ── STORY 7.19 — WHOSE TOKEN IT IS (R-280): the role rule and its sentences, one for both surfaces ── */

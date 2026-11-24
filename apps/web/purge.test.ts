@@ -17,6 +17,7 @@ import {
    this is where it was written and where the reasons for each of its cases are recorded. */
 import { authorized } from './lib/cron-auth.ts'
 import { CRON_PATH as HEALTH_CRON_PATH } from './lib/health-rule.ts'
+import { CRON_PATH as ORPHAN_CRON_PATH } from './lib/orphan-rule.ts'
 import { MAX_ROUNDS, drainPrefix, type DrainBucket } from './lib/storage-drain.ts'
 
 /* Story 2.6 — FR-A5's purge, every part of it a test can reach. The ROUTE cannot be one of them:
@@ -337,7 +338,11 @@ test('the clock stops the loop: no account is started once BUDGET_MS is spent', 
    which is exactly how a hardcoded total goes stale; what it asserts now is a PROPERTY of whatever
    entries the file carries, plus that each path a constant names is really one of them. AD-33's v1
    set is closed and adding a third is an `Ask First`, so the constants are the list. */
-const CRON_CONSTANTS = { 'purge-accounts (Epic 2, Story 2.6)': CRON_PATH, 'site-health (Epic 3, Story 3.7)': HEALTH_CRON_PATH }
+const CRON_CONSTANTS = {
+  'purge-accounts (Epic 2, Story 2.6)': CRON_PATH,
+  'site-health (Epic 3, Story 3.7)': HEALTH_CRON_PATH,
+  'purge-snapshots (Epic 7, Story 7.20b)': ORPHAN_CRON_PATH,
+}
 
 test('every scheduled job names a route that exists, and each runs once a day', () => {
   // A path typed twice is a cron that invokes a 404 once a day for ever, and every check stays

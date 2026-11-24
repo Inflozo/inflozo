@@ -6108,7 +6108,7 @@ after disconnecting. This makes nine emails."*
   - ✅ `epics.md` Story 7.20b's card;
   - ✅ `prd.md` FR-P1 (eight → nine, the new **(9)**; (1)–(8) keep their numbers) and FR-C6 (dated note);
   - ✅ `epic-7-context.md`;
-  - ⬜ the code, `EXPERIENCE.md`'s Sites row and DW-75/DW-79/DW-390's closure (Story 7.20b's Dev).
+  - ✅ the code, `EXPERIENCE.md`'s Sites row and DW-75/DW-79/DW-390's closure (Story 7.20b's Dev, 2026-11-24: `lib/orphan-rule.ts`, `lib/orphan-email.ts`, `app/api/cron/purge-snapshots`, the Sites section; the spine's AD-33).
 - **Deliberately not touched:** FR-P2 (a notice, not a nudge), and the spine's `resend` row, which defers to FR-P1 for the
   count.
 

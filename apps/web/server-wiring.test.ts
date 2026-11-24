@@ -17,6 +17,7 @@ const CONNECT_ACTIONS = join('app', '(app)', 'app', '(authed)', 'sites', 'action
 const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'download', 'route.ts')
 const PURGE_ROUTE = join('app', 'api', 'cron', 'purge-accounts', 'route.ts')
 const HEALTH_ROUTE = join('app', 'api', 'cron', 'site-health', 'route.ts')
+const ORPHAN_ROUTE = join('app', 'api', 'cron', 'purge-snapshots', 'route.ts')
 const SITE_PROBE = join('server', 'site-probe.ts')
 const SITE_SETTINGS = join('server', 'site-settings.ts')
 const SITE_HEALTH = join('server', 'site-health.ts')
@@ -171,11 +172,17 @@ test('the service-role client is imported by the flag reader and by nothing else
   // FR-J13's purpose), so the archive's object and its row are the server's to write; it also reads the site's
   // `credentials_present` to choose the credential. Every query carries `user_id`, and the site read `disconnected_at is null`.
   // It is handed to `server/snapshot.ts`, which imports neither this client nor the chokepoint (held below).
+  // The TWELFTH, added by Story 7.20b with its reason: FR-C6's snapshot orphan purge, AD-33's E7 cron. Like the account purge it
+  // acts for NOBODY behind Vercel's `CRON_SECRET` bearer (`lib/cron-auth.ts`): it selects every disconnected site's kept theme
+  // across accounts, stamps `site_snapshots.orphan_notice_at` (select-only to the tenant, no write grant), drains the
+  // `site-snapshots` bucket (no Storage policy at all, AD-32), deletes the row, and reads the owner's address through GoTrue's
+  // admin API. Its loop is `lib/orphan-rule.ts`, pure, which imports neither this client nor `lib/email.ts`.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
     PURGE_ROUTE,
     HEALTH_ROUTE,
+    ORPHAN_ROUTE,
     CONNECT_ACTIONS,
     SITE_PROBE,
     SITE_HEALTH,
