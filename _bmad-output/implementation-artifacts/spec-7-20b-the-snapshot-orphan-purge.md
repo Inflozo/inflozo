@@ -293,7 +293,7 @@ owner's in-session go (R-99), before any code that reads `orphan_notice_at` is p
 
 Five layers: the Blind Hunter, the Edge Case Hunter, the Verification Gap reviewer and the Acceptance Auditor as subagents;
 the Real-infra verifier's read-only half as a subagent, and every production write (the harness, the walk) in the main
-session. One decision for the owner (Question 2), 13 patches (all applied), 4 deferred (DW-392 to DW-395), 17 dismissed.
+session. One decision for the owner (Question 2), 14 patches (all applied), 4 deferred (DW-392 to DW-395), 12 dismissed.
 Among the dismissed:
 - the purge draining `{userId}/{siteId}/` rather than the row's `storage_path`: `server/snapshot.ts:163` writes every key
   under that prefix by construction, and `rls.sql`'s fixture path is SQL-only;
@@ -346,6 +346,9 @@ Among the dismissed:
 - [x] [Review][Patch] The Owner's manual test listed orphan-a before ghost6; the section is newest disconnect first
   [Owner's manual test, step 2]
 - [x] [Review][Patch] The epics.md card still said the notice's form was the Create's question [`epics.md` Story 7.20b]
+- [x] [Review][Patch] Two harness docstrings said the app host answers a cron path with a 404; signed out it is the authed
+  layout's 307 to `/sign-in`, and Vercel's schedule calls the deployment's own host (the Real-infra verifier, read on
+  production) [`run-verify-snapshot-orphans.py` · `run-verify-site-health.py`]
 - [x] [Review][Defer] A notice that can never be delivered keeps its theme and answers 500 every day [`lib/orphan-rule.ts`
   `runOrphans`] — deferred, DW-392 (R-285: the purge waits for the email)
 - [x] [Review][Defer] Every tried id rides the due query's URL; a few hundred noticed themes waiting out their window
@@ -613,3 +616,68 @@ T1 is touched only by the owner's own reconnect, which is a read.
 
   These belong to the Review and Deploy phases. T1 is not touched by this story's code.
 - `python3 tools/doc-audit.py --check` (twice): PASS.
+
+**Executed — Review (2026-11-24 IST, Node 24; the real services by their variable names, no value printed):**
+- **The Dev head first.** `44e161f9` was green before any review layer ran: CI's `rls`, `check` and `deploy`, and the Render
+  matrix (`GITHUB_TOKEN`, read in-process). Vercel served it READY (`dpl_B8dzAqkC5bkDwn3bV4xtbd81wMNJ`).
+- **The Review's patches, deployed.** The first Review commit `d353e320` was green on CI's `check`, `rls` and `deploy`, and on
+  the Render matrix. Vercel serves it READY as `dpl_9pov5av26Mtg9dS4SmzG2WT8jmJc`. Every run below is against that deployment.
+- **`pnpm check`** (Node 24), with the patches: green, 0 failed in every package. Each prints its own count.
+  - The new daily-run test went red against the old exact-instant threshold, then was restored (`cmp`).
+  - DW-79's widened pattern still finds the applied migration's comment, which is its control.
+  - Its stripper control keeps `disconnected_at <= now() - interval …` and drops comments.
+- **The read-only real-infra layer** (a subagent; `GITHUB_TOKEN`, `VERCEL_*`, `SUPABASE_*` and `CRON_SECRET`'s length only,
+  all in-process; no write):
+  - **Vercel's project crons.** `/api/cron/purge-snapshots` at `30 4 * * *`, beside `purge-accounts` (`15 3`) and
+    `site-health` (`40 5`), `disabledAt` null. Each cron's `host` is the deployment's `*.vercel.app` URL, which reaches the
+    route as the apex does (401, `x-matched-path: /api/cron/purge-snapshots`).
+  - **The door, on `https://inflozo.com/api/cron/purge-snapshots`.** No bearer → 401, `no-store`, `x-matched-path` the
+    route. A wrong bearer of the same shape → the same.
+  - **The door's controls.**
+    - `/api/cron/no-such-job` → 404 (`/404`), so a 401 is the route's own.
+    - `app.inflozo.com/api/cron/purge-snapshots` → 307 to `/sign-in` (`/app/[...unbuilt]`). That host is not the route.
+      Both harness docstrings that said "a 404 there" are corrected.
+  - **R-99, production's schema, through `SUPABASE_DB_POOLER_URL`** in a `read only` transaction:
+    - `orphan_notice_at` is a nullable `timestamptz` with no default.
+    - Both comments equal the migration's text byte for byte.
+    - `authenticated` has SELECT only.
+    - Every other column the code reads exists.
+    - Controls: a column that does not exist reads as absent, and `service_role`'s UPDATE reads true.
+  - **PostgREST.** The route's due query → 200, 0 rows; production held no theme at all, so nothing real was due. Control:
+    the embed ordered by a column it lacks → 400 `42703`.
+- **The harness's full run, `python3 tools/probe/run-verify-snapshot-orphans.py`, on production** (the main session, its
+  own fixtures only): every step PASS.
+  - **`seeded`.** The route's own due query, fifteen minutes ahead, selected exactly T, S, P and D. D's
+    `profiles.deleted_at` read back set. Six prefixes listed one object each.
+  - **`no-header` and `wrong-secret`.** 401 from the route (`x-matched-path`, `no-store`), with nothing moved.
+  - **`run`.** HTTP 200 `{"noticed": 2, "purged": 1, "failed": 0}`, `no-store`.
+  - **`noticed`.** T stamped `2026-11-24T12:06:58.686+00:00`. S moved FROM its stale `2026-08-16T12:06:28+00:00` to
+    `…12:06:59.087+00:00`: a claim from a non-null value, at the route.
+  - **`delivered`** (`RESEND_READ_API_KEY`). Resend holds exactly two emails for the fixture address, both
+    `last_event: delivered`. Each subject and plain text equals the app's own `orphanEmail` composed from the row as
+    stamped: "Your original theme from orphan-harness-…-t.example will be deleted on Dec 8, 2026", and S's.
+  - **`purged`.** P's prefix lists empty (HTTP 200), and its row is gone.
+  - **`untouched`.** W (not yet due), R (reconnected) and D (an account waiting to be deleted) are row-for-row the same, and
+    their objects' bytes hash the same.
+  - **`claims`,** the route's compare-and-set as postgrest-js sends it, on R:
+    - from the value read → 1 row;
+    - the same claim again → 0 rows;
+    - from null → 0 rows (the control);
+    - the put-back → 1 row, and R reads back exactly as it was.
+  - **`idempotent`.** A second call → `{"noticed": 0, "purged": 0, "failed": 0}`, with both stamps unmoved.
+  - **`cleanup`.** Users 18 → 18, no stray fixture, every prefix empty.
+- **Walk step 118 on production.** `run-verify-editor.cjs`, cut to steps 1–5 + 118 and its `finally`, run from a clean
+  worktree at `d353e320`. Its first line names `dpl_9pov5av26Mtg9dS4SmzG2WT8jmJc`, built from that HEAD. 50 PASS, 0 FAIL:
+  - **118a.** With nothing planted, the empty screen and no section: the control.
+  - **118b.**
+    - At 1440, under Connect site: the heading, the caption, and newest disconnect first, each row "casper", "{site} ·
+      deleted on {date}" (the app's own `purgeDateOf`) and Download.
+    - Tab from Connect site reaches each Download in turn.
+    - Each Download → 303 to a zip (`PK`).
+    - At 390, the same rows inside the viewport with no sideways scroll.
+  - **118c.** With a connected site's card, the section sits after the cards, and that site's theme is not in it.
+  - **118d.** X purged object-then-row: the section lists Y alone, and X's stale Download is the route's 404.
+  - Zero CSP violations, account I deleted, users and projects counted back.
+  - The `/sites` read through a signed-in session (`sites!inner`, RLS) is what drew those rows.
+- **Not run at Review, by design:** `--owner-test` (Deploy's, on the owner's alias with his go), and T1 (this story's code
+  never touches it).

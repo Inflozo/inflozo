@@ -11,8 +11,10 @@ route called with redirects DISABLED (a 3xx is a FAIL, never a bearer re-sent), 
 FROM THE ROUTE (`x-matched-path`, `no-store`) so a platform's 401 cannot pass for the control, and a run
 that REFUSES TO PRESS THE BUTTON unless the route's due set is exactly its own fixture.
 
-THE CRON LIVES ON THE APEX, never on `app.inflozo.com` (`routing.ts` rewrites every app-host path under
-`/app`, so `/api/cron/*` is a 404 there by construction — `run-verify-site-health.py`'s finding).
+THE CRON IS CALLED ON THE APEX, never on `app.inflozo.com` (`routing.ts` rewrites every app-host path under
+`/app`, so `/api/cron/*` is not the route there — signed out it is the authed layout's 307 to `/sign-in`, read at
+7.20b's Review, 2026-11-24). Vercel's own schedule calls the deployment's `*.vercel.app` host, which reaches the route
+as the apex does (`crons[].host`, read from the project the same day).
 
 THE APP'S OWN RULE, NEVER A COPY. `CRON_PATH`, the two constants, `dueSince`, `decide`, `purgeDateOf`,
 `ORPHANS` and `orphanEmail` are evaluated out of `apps/web` with `node --experimental-strip-types`, so the

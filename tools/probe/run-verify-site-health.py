@@ -6,10 +6,11 @@
     python3 tools/probe/run-verify-site-health.py --url https://inflozo.com   # the same, spelled out
 
 THE CRON LIVES ON THE APEX, NEVER ON `app.inflozo.com`: `apps/web/routing.ts` rewrites every path
-on the app host under `/app`, so `/api/cron/site-health` is a 404 there by construction — reproduced
-at review with `purge-accounts` as the control — and Vercel invokes the schedule on the apex. A run
-pointed at the app host fails its three `cron-*` steps with 404 and that is the run's answer, not
-the route's (review, 2026-09-10).
+on the app host under `/app`, so `/api/cron/site-health` is not the route there — a 404 at this review
+(2026-09-10, with `purge-accounts` as the control); since Story 3.9's `[...unbuilt]` catch-all, a signed-out
+call is the authed layout's 307 to `/sign-in` (read at Story 7.20b's Review, 2026-11-24). Vercel's own
+schedule calls the deployment's `*.vercel.app` host (`crons[].host`), which reaches the route as the apex does.
+A run pointed at the app host fails its three `cron-*` steps, and that is the run's answer, not the route's.
 
 WHY IT EXISTS. Story 3.7 rests on claims about two real Ghosts, about Supabase's RLS on a table
 nothing had ever written, and about a scheduled route nothing had ever called — and CLAUDE.md's
