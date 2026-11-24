@@ -218,6 +218,39 @@ const compileHome = (home: ProjectDoc, over: Partial<CompileInput> = {}) => comp
 
 // ─── the I/O matrix ───────────────────────────────────────────────────────────────────────────────────────────────
 
+// ─── Story 7.21 — the compiler's half of "zero false positives" (FR-J16), and the fingerprint beside the files ─────────
+
+test('7.21 · two compiles of one input give identical paths, identical bytes and an identical `sections` record — a compiled filename never changes when nothing did', () => {
+  const templates = project()
+  const two = projectTwo()
+  const a = build(templates, { pageTwo: two })
+  const b = build(templates, { pageTwo: two })
+  assert.deepEqual(Object.keys(b.files), Object.keys(a.files))
+  for (const path of Object.keys(a.files)) assert.deepEqual(b.files[path], a.files[path], path)
+  assert.deepEqual(b.sections, a.sections)
+  // every section partial written has its record, and nothing else does
+  assert.deepEqual(Object.keys(a.sections), Object.keys(a.files).filter((p) => p.startsWith('partials/sections/')))
+  assert.ok(Object.keys(a.sections).length > 0, 'the control: the project places sections')
+  // the control: an input that differs gives a record that differs
+  const moved = build({ ...templates, 'home.hbs': docOf(...(templates['home.hbs'] as ProjectDoc).instances.slice(1)) }, { pageTwo: two })
+  assert.notDeepEqual(moved.sections, a.sections)
+})
+
+test('7.21 · a renamed layer moves its partial\'s path while `sections[path].id` stays the instance\'s — the record carries the layer name the boundary comment says and its category, and no file carries the id (FR-J1)', () => {
+  const hero = at('a4/13', 'Latest post', { content: { eyebrow: 'Issue 48' } })
+  const before = build({ 'home.hbs': docOf(hero) }, { pageTwo: projectTwo() })
+  const after = build({ 'home.hbs': docOf({ ...hero, layerName: 'Front page story' }) }, { pageTwo: projectTwo() })
+  const was = Object.entries(before.sections).find(([, r]) => r.id === hero.instanceId)
+  const now = Object.entries(after.sections).find(([, r]) => r.id === hero.instanceId)
+  assert.deepEqual(was, ['partials/sections/home/latest-post.hbs', { id: hero.instanceId, layer: 'Latest post', category: 'a4' }])
+  assert.deepEqual(now, ['partials/sections/home/front-page-story.hbs', { id: hero.instanceId, layer: 'Front page story', category: 'a4' }])
+  // the partial's bytes are the same file under its new name — only Inflozo's bookkeeping moved
+  assert.deepEqual(after.files['partials/sections/home/front-page-story.hbs'], before.files['partials/sections/home/latest-post.hbs'])
+  for (const [path, body] of Object.entries(after.files)) {
+    if (typeof body === 'string') assert.ok(!body.includes(hero.instanceId), `${path} carries the instance id`)
+  }
+})
+
 test('a designed Home: the layout line, then each section\'s label and invocation, a blank line between; its own files in its directory, the feed every archive shares in shared/; post-card once', () => {
   const out = compileHome(project()['home.hbs'] as ProjectDoc)
   assert.equal(out['home.hbs'], [

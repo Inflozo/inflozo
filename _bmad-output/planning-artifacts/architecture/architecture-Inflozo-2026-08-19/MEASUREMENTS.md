@@ -8457,3 +8457,40 @@ tenant's lock is gone", where three null subqueries joined by `or` raised nothin
 - **The marker is read on the list** (`package.inflozo` false): T1's live theme is not Inflozo's, so a first upload would capture it.
 - **The Admin key is refused on both reads (403)**: B12b's `GET /ghost/api/admin/themes/ → 403` is T1's own answer, and the one code's Ghost 6 half. `routes.yaml` reads with it alone (R-282).
 - **What this does NOT say.** Nothing was stored: the bucket, the row and the signed URL are the deployed walk's step 117. Ghost 5's 501 is unexecuted here (T3 retired).
+
+## 90. The drift check's two manifests on T1 — the pilot theme zipped by Inflozo, uploaded, downloaded with the Staff Access Token and compared by the product's own `compareManifests`: zero differences; a hand edit read back as exactly its three files; a later upload dropping a file Ghost then no longer serves; a flipped digit 401, the Admin key 403, an unknown name 400 (R-288) · T1 · 2026-11-24
+
+**Command.** `node --experimental-strip-types tools/probe/record-drift.mjs --t1` — three uploads of `inflozo-probe-drift.zip` with the Admin key, never activated, each downloaded with the staff token; then, in a `finally`, the probe deleted and `GET themes/` read back. No activation, post, setting or `routes.yaml` written.
+
+**Ghost.** T1 `ghost6.inflozo.com` (6.x). Ghost 5's half is DW-326's (R-238, Story 15.7).
+
+**The control, which voids the run:** the pilot theme's own round trip must compare with zero differences — a drift check that cried drift here would cry it on every deploy.
+
+| Step | Row | Got | Held |
+|---|---|---|---|
+| zipTheme → unzipTheme | the pilot theme (28 files) read back compares with ZERO differences | `changed [] · added [] · removed []` | yes |
+| zipTheme → unzipTheme (control) | one byte more in one file is exactly one changed file | `changed [README.md] · added [] · removed []` | yes |
+| archiver-shaped zip | directory entries skipped, data descriptors read, the dot file kept: its files alone, zero differences | `3 files of 5 entries` | yes |
+| archiver-shaped zip (control) | the directory entries ARE in the zip — the reader skipped them, not the writer | `partials/, partials/sections/` | yes |
+| the hand-edited copy | exactly its three edits: partials/sections/default/header-layer3804b63b.hbs changed, custom-handmade.hbs added, README.md removed | `changed [partials/sections/default/header-layer3804b63b.hbs] · added [custom-handmade.hbs] · removed [README.md]` | yes |
+| a CRLF-only copy | every text file's line endings rewritten: clean | `changed [] · added [] · removed []` | yes |
+| a CRLF-only copy (control) | a CR before no LF is a change | `changed [README.md] · added [] · removed []` | yes |
+| a moved partial | the same bytes under another path: clean (identity is content) | `changed [] · added [] · removed []` | yes |
+| a moved partial (control) | moved AND changed is a removal and an addition | `changed [] · added [partials/sections/default/header-layer3804b63b-moved.hbs] · removed [partials/sections/default/header-layer3804b63b.hbs]` | yes |
+| flipped | the control token is well-formed and differs in its last digit alone | `89 characters` | yes |
+| 1 POST themes/upload/ (the pilot theme) | accepted under inflozo-probe-drift, inactive (Admin key) | `HTTP 200; themes[0] inflozo-probe-drift active false` | yes |
+| 1 GET themes/inflozo-probe-drift/download/ [staff] | a 200 zip the product's reader opens | `HTTP 200 · application/zip · 325577 bytes · sha256 db9f03e3d48fb39e… · 40 entries, 12 directories, dot entries []` | yes |
+| 1 the pilot's round trip | ZERO differences — the zero false positive control (any file Ghost adds or drops: STOP AND REPORT) | `changed [] · added [] · removed []` | yes |
+| 2 POST themes/upload/ (the hand-edited copy) | accepted under inflozo-probe-drift, inactive (Admin key) | `HTTP 200; themes[0] inflozo-probe-drift active false` | yes |
+| 2 GET themes/inflozo-probe-drift/download/ [staff] | exactly the three edits: partials/sections/default/header-layer3804b63b.hbs changed, custom-handmade.hbs added, README.md removed | `changed [partials/sections/default/header-layer3804b63b.hbs] · added [custom-handmade.hbs] · removed [README.md]` | yes |
+| 3 POST themes/upload/ (without custom-handmade.hbs) | accepted under inflozo-probe-drift, inactive (Admin key) | `HTTP 200; themes[0] inflozo-probe-drift active false` | yes |
+| 3 GET themes/inflozo-probe-drift/download/ [staff] | custom-handmade.hbs is gone — the upload replaced every file under the name (step 2's download held it: the control) | `custom-handmade.hbs gone · 27 files` | yes |
+| 4 GET themes/inflozo-probe-drift/download/ [flipped] (control) | 401 — a token Ghost does not know (D3b token_refused) | `HTTP 401 · UnauthorizedError` | yes |
+| 4 GET themes/inflozo-probe-drift/download/ [admin key] (control) | 403 — the integration key may not download a theme (D3b role) | `HTTP 403 · NoPermissionError` | yes |
+| 4 GET themes/inflozo-probe-drift-none-3804b63b/download/ [staff] (control) | 400 BadRequestError — a name T1 does not hold: getZip's "Please select a valid theme." (D3b missing, R-288) | `HTTP 400 · BadRequestError` | yes |
+| 5 DELETE themes/{probe}/ + GET themes/ [staff] | casper still the active theme and no probe installed, read back | `active casper; probes none` | yes |
+
+- **Zero false positives on a real Ghost** (FR-J16, VERIFY-AT-BUILD 79 EXECUTED): Ghost re-zips the theme on download (325577 bytes, 12 directory entries, no dot entry), and the content manifests — path → SHA-256, CR-before-LF dropped — still match file for file. The zip's bytes are never compared.
+- **Every upload replaces every file under the name, live or not** (`storage.js:95-107`, executed): `custom-handmade.hbs`, in the second upload, was gone after the third — R-287's baseline (the newest upload Ghost accepted) is what the site holds.
+- **D3b's three Ghost causes are Ghost's answers**: a flipped token 401, the Admin key 403, an unknown theme 400 — Ghost's `BadRequestError` "Please select a valid theme." (`getZip`, `storage.js:43-50`), never a 404, so the check reads a 400 on this download as `missing` (R-288, owner, 2026-11-24).
+- **What this does NOT say.** Nothing went through the product's `call()`, its database, Vault or bucket: walk step 119 is the deploy route end to end. `casper` stayed active throughout.

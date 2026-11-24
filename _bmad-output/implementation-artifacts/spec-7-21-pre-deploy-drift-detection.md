@@ -2,7 +2,7 @@
 title: 'Story 7.21 — Pre-deploy drift detection'
 type: 'feature'
 created: '2026-11-24'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '9a139db609248e3c733ca714bc52fb3845e813a9'
 owner_test: pending
 review_loop_iteration: 0
@@ -222,17 +222,17 @@ Everything else is S8b's Pre-flight as built (`S8 Deploy.dc.html` S8b), whose st
 still asks his in-session go for the T1 and production writes (Ask First).
 
 **Execution:**
-- [ ] `packages/section-runtime/src/doc-edit.ts` -- export `LAYER_NAME_MAX = 60`. `renameSection` refuses a trimmed name
+- [x] `packages/section-runtime/src/doc-edit.ts` -- export `LAYER_NAME_MAX = 60`. `renameSection` refuses a trimmed name
   longer than it with `` `Keep the name to ${LAYER_NAME_MAX} characters.` `` and still refuses an empty one. -- DW-338: the
   cap at the input.
-- [ ] `packages/theme-compiler/src/slug.ts` -- `SLUG_MAX = LAYER_NAME_MAX` (imported), so the file name and the label have
+- [x] `packages/theme-compiler/src/slug.ts` -- `SLUG_MAX = LAYER_NAME_MAX` (imported), so the file name and the label have
   one cap. Re-read `slug.test.ts`.
-- [ ] `apps/web/components/controls/layers.tsx` -- `maxLength={LAYER_NAME_MAX}` on the rename field. -- DW-338.
-- [ ] `packages/theme-compiler/src/compile.ts` -- add `sections` to `CompiledTheme` (Code Map), filled in the partition loop.
+- [x] `apps/web/components/controls/layers.tsx` -- `maxLength={LAYER_NAME_MAX}` on the rename field. -- DW-338.
+- [x] `packages/theme-compiler/src/compile.ts` -- add `sections` to `CompiledTheme` (Code Map), filled in the partition loop.
   Add tests in `compile.test.ts`:
   - two compiles of one input give identical paths, bytes and `sections` (the compiler's half of zero false positives);
   - a renamed layer moves its partial's path while `sections[path].id` stays the instance's.
-- [ ] `apps/web/lib/drift.ts` (new, pure, no runtime imports beyond `lib/deploy.ts`' words and labels):
+- [x] `apps/web/lib/drift.ts` (new, pure, no runtime imports beyond `lib/deploy.ts`' words and labels):
   - the types: `ManifestEntry` `{ sha256, fingerprint, layer?, category? }`, `ContentManifest`, `DriftFile`, `DriftCause`,
     `DriftRecord` (`reading` · `clean` · `found` · `unverified`);
   - `normalizedBytes`, `sha256Hex`;
@@ -246,13 +246,13 @@ still asks his in-session go for the T1 and production writes (Ask First).
 
   `lib/deploy.ts`' `Timings` gains `drift?: DriftRecord` (a type-only import), and `DeployRequest` gains
   `overwrite?: boolean`.
-- [ ] `apps/web/server/deploy/zip.ts` -- `unzipTheme(bytes, cap)` → path → bytes:
+- [x] `apps/web/server/deploy/zip.ts` -- `unzipTheme(bytes, cap)` → path → bytes:
   - read through the end-of-central-directory record and the central directory;
   - methods 0 and 8, inflated with `inflateRawSync` under `maxOutputLength`;
   - directory entries skipped;
   - a total past `LIVE_MAX_BYTES` (stated with its reason), ZIP64, an encrypted entry or any other method throws;
   - the caller reads every throw as `unreadable`.
-- [ ] `apps/web/server/deploy/run.ts`:
+- [x] `apps/web/server/deploy/run.ts`:
   - **Write the manifest.** `compileAndCheck` writes `content_manifest: await contentManifest(theme.files,
     theme.sections)` in the artefact's patch. The re-made-artefact reset nulls it.
   - **Then the drift step,** inside `checking` and only when nothing blocked:
@@ -265,22 +265,22 @@ still asks his in-session go for the T1 and production writes (Ask First).
   - `ship()` takes `overwrite`. After a stale re-make, a `found` record without it ends at `awaiting_ship` with no error.
   - `DeployRow` and the update patch gain `content_manifest`.
   - `DeployIo` gains `deploys.baseline` and `liveTheme`, with `clock.drift(record)`.
-- [ ] `apps/web/server/deploy/deploy-io.ts`:
+- [x] `apps/web/server/deploy/deploy-io.ts`:
   - `deploys.baseline({ projectId, siteId, userId, except })` → `{ version, content_manifest }` of the newest row with
     status `uploaded` or `live`, `created_at` desc, the job's own deploy excepted (Ruled value 1);
   - `liveTheme({ siteId, userId, name, route })` → the chokepoint's `call` with `kind: 'staff'`, `read: 'theme_download'`,
     `path: downloadPath(name)`;
   - `artifacts.put` gains an overwrite (upsert) for the live copy's fixed key.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/route.ts`:
   - POST takes `overwrite` (a boolean or absent);
   - `ship` answers 409 `Drift found` when the row's `stage_timings.drift?.kind === 'found'` and `overwrite !== true`;
   - it hands `overwrite` to `ship()`.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/live/route.ts` (new) -- GET `?job=`:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/deploy/live/route.ts` (new) -- GET `?job=`:
   - the job read is the caller's (as the poll reads it), its project this one, and its drift record `found`, else 404;
   - sign `{projectId}/live/{siteId}.zip` in `deploy-artifacts` for 60 s with `download: {theme}-live.zip`, and answer 303;
   - `NoSuchKey` → 404; any other signing failure → 502;
   - add it to `server-wiring.test.ts`' service-role list, with the reason (the bucket has no policy, AD-29).
-- [ ] `apps/web/components/editor/deploy-wizard.tsx` -- D3, built from the frame (R-74):
+- [x] `apps/web/components/editor/deploy-wizard.tsx` -- D3, built from the frame (R-74):
   - **D3a, while `stage === 'awaiting_ship'` and the record is `found`:**
     - the view is 600 wide, with D3a's heading and body in place of S8b's;
     - the "Comparing with your live theme" row carries its "{n} files differ" chip, the marigold mark and the frame's
@@ -298,11 +298,11 @@ still asks his in-session go for the T1 and production writes (Ask First).
   - **D3c:** "Nothing changed on your site since v{n}" in the passes box, second, after the major's line (the frame's order).
   - **While reading:** a running row "Comparing with your live theme…".
   - Each outcome is said once in the polite region (`driftSaid`).
-- [ ] `apps/web/app/(app)/app/harness/editor/{layout.tsx,actions.ts}` -- `x-inflozo-harness-drift`:
+- [x] `apps/web/app/(app)/app/harness/editor/{layout.tsx,actions.ts}` -- `x-inflozo-harness-drift`:
   - the values: `found`, `clean`, `reading`, `unverified-<cause>` for each cause, and `declined`;
   - the fake ship answers 409 to a ship without `overwrite` while `found`;
   - the fake live route answers a 303 to a tiny zip.
-- [ ] `apps/web/drift.test.ts` (new) -- every I/O row this layer owns. Each assertion is first seen red under a planted
+- [x] `apps/web/drift.test.ts` (new) -- every I/O row this layer owns. Each assertion is first seen red under a planted
   reversion:
   - CRLF;
   - move;
@@ -327,7 +327,7 @@ still asks his in-session go for the T1 and production writes (Ask First).
   - `read.bound` is the name asked, not the active theme.
 
   `deploy.test.ts`: the route's 409 and `overwrite` validation (the route source read, as `lock.test.ts` does).
-- [ ] `tools/keyboard/journey.spec.mjs` -- journeys 7.21 (a)–(f). Each new assertion is first seen red at HEAD:
+- [x] `tools/keyboard/journey.spec.mjs` -- journeys 7.21 (a)–(f). Each new assertion is first seen red at HEAD:
   - (a) D3a: focus on Cancel; the group headers and counts; a renamed layer's current name; the two "didn't write" labels;
     the footer's count word; Download's href;
   - (b) Overwrite sends `overwrite: true` and goes to Shipping; a ship without it is refused (the control);
@@ -337,7 +337,7 @@ still asks his in-session go for the T1 and production writes (Ask First).
   - (f) the rename field stops at 60, and Save refuses a programmatic 61.
 
   `floor.spec.mjs`: D3a at 1440 and 390, and D3b at 1440.
-- [ ] `tools/probe/record-drift.mjs` (new, §90; VERIFY-AT-BUILD 79) -- `--t1` writes, its local half the default; read
+- [x] `tools/probe/record-drift.mjs` (new, §90; VERIFY-AT-BUILD 79) -- `--t1` writes, its local half the default; read
   `record-snapshot.mjs`' shape first. On T1, with a probe theme name, never the active theme:
   - upload the pilot theme zipped by `zipTheme`, download it with the staff token, and compare: **zero differences (the zero
     false positive control)**, with the directory and dot entries Ghost adds named;
@@ -346,7 +346,7 @@ still asks his in-session go for the T1 and production writes (Ask First).
   - upload a third copy without a file: it is gone from the download (a full replacement, `storage.js:95-107` executed);
   - one flipped digit → 401; the Admin key → 403; an unknown name → 404 (the controls);
   - delete the probe theme, and put T1 back as found.
-- [ ] `tools/probe/run-verify-editor.cjs` -- step 119, production plus T1 writes, put back in `finally`:
+- [x] `tools/probe/run-verify-editor.cjs` -- step 119, production plus T1 writes, put back in `finally`:
   - a throwaway account connects T1 through the wizard with the staff token;
   - (a) the first deploy is **Deploy only**: no drift row;
   - (b) Run checks → D3c "since v1", which proves Ruled value 1;
@@ -358,7 +358,7 @@ still asks his in-session go for the T1 and production writes (Ask First).
   - `finally`: Casper active, `inflozo-*` deleted, the site disconnected, the account deleted.
 
   `STEP119_PLANT=<email>` runs it as that address and stops after (d)'s plant, for the owner's test.
-- [ ] **Propagation**, each a dated note (Story 7.21's Dev). R-287's own targets (FR-J8's (3), EXPERIENCE's
+- [x] **Propagation**, each a dated note (Story 7.21's Dev). R-287's own targets (FR-J8's (3), EXPERIENCE's
   partial-success item 3, 7.32's and 7.21's cards, the register) landed with the ruling at the Create. Dev ticks the
   register's last target.
   - FR-J16 in `prd.md`;
@@ -392,6 +392,47 @@ still asks his in-session go for the T1 and production writes (Ask First).
   the same (R-83, standing rule 3).
 
 ## Spec Change Log
+
+**Dev (2026-11-24) — readings and departures, each a routine call told in one line (none changes what a surface does):**
+- **The drift step reads before it writes:** the binding and the baseline are asked FIRST, and `reading` is written (with
+  `checking`'s duration closed) only once a read will happen — so a first deploy and a null-manifest baseline never flash
+  "Comparing with your live theme…" (the I/O rows' "no read, no row").
+- **Two extrapolated kind words**, the label table naming neither: a family's licence (`LICENSE-*.txt`, which every theme ships)
+  is "Licence", and a file of no listed kind is "Theme file". Both in `DRIFT_WORDS.labels`.
+- **The cause `declined` is the wizard's reading of `no_token`** on a site whose Not now is recorded (`ShipState.site.declined`,
+  `causeShown`): the server stores `no_token`, as the chokepoint's `credential_missing` cannot tell the two apart.
+- **A thrown non-Admin error from the read is `unreachable`** (no status), like a timeout: the check never fails the job. Only the
+  baseline read and the live copy's put follow AD-20's `twice` (our database and our store).
+- **D3a keeps S8b's inherited rows** (Theme compiled, the check row with its passes and findings, the routes row, R-260's and the
+  warning rows) with the comparison's row and list where D3b's row sits — after the check rows, before the routes row — so the
+  two states share one order; the frame's D3a draws Theme compiled and the comparison alone.
+- **`ship()` asks the record too when nothing is stale** (no upload, the row resting), beside the route's 409 — the defence the
+  spec names for the stale path, extended to the unmoved one at no cost.
+- **`DeployRow.content_manifest` is written, never polled:** `DEPLOY_COLUMNS` leaves it out, so the wizard's one-a-second read does
+  not carry every file's hash; `deploys.baseline` reads it alone.
+- **`ARTIFACT_BUCKET`** (`lib/deploy.ts`) is the bucket's one name for the live route and `deploy-io.ts`; the account purge's own
+  copy (`purge-rule.ts`) is left as it is.
+- **The harness's `x-inflozo-harness-drift`:** only `declined` changes the page (the site's Not now recorded); every value names the
+  canned record the journeys' fake route answers (`plantDrift`), with its 409 while `found`. **The fake answers D3a's live copy with
+  the zip itself, not a 303:** a redirect `route.fulfill` answers is followed by the browser without `page.route` seeing the next
+  request (executed: the 303 left the editor for the dev server's 404). The 303 is held by `deploy.test.ts` (the route's source)
+  and walk step 119 (d) on production.
+- **Journeys 7.21 (a)–(f) and (a2), and the floor's three widths, were each seen red** with the wizard, the Layers panel and the
+  harness layout put back to HEAD (all ten failed), and green with them.
+- **`compilePilots` returns `sections`**, so `record-drift.mjs` keeps the manifest the deploy keeps (`tools/pilot-theme.mjs`).
+- **Not done here (Ask First, the main session's on the owner's in-session go):** walk step 119 (`T1_WRITES=1`, from a clean
+  worktree at the deployed sha — the Review's) and Deploy's plant (`STEP119_PLANT`). `record-drift.mjs --t1` ran in the main
+  session on the owner's go (below).
+- **Story 7.22's card gains a dated criterion** (`epics.md`): the live copy is outside its count and never listed as a
+  version, and pruning never removes the drift baseline's `content_manifest`, which would turn Inflozo's own changes into
+  drift. Design Notes said the first part. The second follows from R-287 and had no owner.
+- **R-288 (Question 2, owner, 2026-11-24) — the theme gone is Ghost's 400, not the matrix's 404.** The first `--t1` run held
+  every row but one: the download of a name T1 does not hold answered **400 `BadRequestError`** "Please select a valid theme."
+  Ghost's source agrees in both majors (`getZip`, `storage.js:43-50` in 6.58.0, `:35-42` in 5.130.6). The run voided and Dev
+  stopped (Verification: any other answer stops Dev); the owner ruled option 1. The drift step now reads a 400 or a 404 as
+  `missing`, `deploy-run.test.ts`' cause table holds the 400 (seen red with the 400 dropped from the mapping), the recorder's
+  control expects 400, and the second run wrote §90 with every row held. The frozen matrix row "Theme gone | 404" keeps its
+  behaviour; only the wire answer differs.
 
 ## Design Notes
 
@@ -496,7 +537,8 @@ removes `README.md`. Deploy fills in the addresses and the section's name. Addre
 
 ## Questions for the owner
 
-Question 1 was ruled option 1 by the owner on 2026-11-24 (R-287). None is open. Ruled value 1 in Design Notes holds it.
+Question 1 was ruled option 1 by the owner on 2026-11-24 (R-287). Ruled value 1 in Design Notes holds it. Question 2 (Dev)
+was ruled option 1 the same day (R-288). None is open.
 
 ### Question 1 — After a "Deploy only", what does the next check compare with?
 
@@ -527,6 +569,24 @@ you change a heading and run checks for v2.
 **Ruled: option 1 (owner, 2026-11-24) — R-287.** *"1"*, which is *"Compare with the newest upload Ghost accepted, live or
 not. This matches what is on your site, file for file, and keeps 'never a false alarm'."*
 
+### Question 2 — A deleted theme: what should the blue row say? (Dev)
+
+**In plain English.** When the theme Inflozo last shipped has been deleted from the Ghost site, Ghost answers the drift check's
+download with error 400 "Please select a valid theme.", not the 404 this spec expected. Seen on ghost6, and read in Ghost
+6.58.0's and 5.130.6's own code: that 400 is the only refusal this download gives for a missing theme. As built, the check
+would say "ghost6.inflozo.com didn't hand over the live theme (400). Shipping anyway."
+
+**An example.** You delete `inflozo-drift-test` in Ghost Admin, then press Run checks in Inflozo (the manual test, step 11).
+
+1. **(RECOMMENDED) Treat 400 as gone.** Read Ghost's 400 on this download as "the theme is gone" (404 still counts too), so the
+   row says "ghost6.inflozo.com no longer has inflozo-drift-test, the theme Inflozo last put there. Shipping anyway.", as test
+   step 11 expects. The recorder's control then expects 400, and the spec, MEASUREMENTS §90 and VERIFY-AT-BUILD 79 record
+   Ghost's real answer.
+2. **Keep as built.** A deleted theme shows the generic "didn't hand over the live theme (400)" sentence; test step 11 and walk
+   step 119 (f) change to expect it.
+
+**Ruled: option 1 (owner, 2026-11-24) — R-288.** *"1. Treat 400 as gone"*.
+
 ## Verification
 
 R-82's real services for this story:
@@ -552,7 +612,8 @@ Ghost 5's half goes to DW-326 (R-238). There is no migration, so there is no Sch
   - the clean round trip shows **zero differences**;
   - the hand-edited copy shows exactly one changed, one added and one removed file;
   - the third upload drops its file;
-  - 401, 403 and 404 on the controls;
+  - 401, 403 and 404 on the controls (*Story 7.21's Dev, 2026-11-24: Ghost answers 400 for an unknown name, R-288; the control
+    expects 400*);
   - the probe theme deleted, and T1's active theme as found.
 
   Any other answer stops Dev (Ask First).
@@ -563,3 +624,42 @@ Ghost 5's half goes to DW-326 (R-238). There is no migration, so there is no Sch
 - `python3 tools/doc-audit.py --check` (twice) -- expected: PASS.
 - `grep -rn --exclude=.env -e 'baseline does not move' -e 'last put \*\*live' -e 'baseline unmoved' apps tools _bmad-output/planning-artifacts _bmad-output/implementation-artifacts/epic-7-context.md`
   -- expected: only dated notes that record the old wording. The record documents keep theirs.
+
+**Executed — Dev (2026-11-24, Node 24; the real services by their variable names, no value printed):**
+- **T1 `ghost6.inflozo.com`** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`, read in-process by the
+  recorder; the owner's in-session go, "1. Go"). `node --experimental-strip-types tools/probe/record-drift.mjs --t1`:
+  - **First run — VOID** at one control: a name T1 does not hold answered **400 `BadRequestError`**, not 404. Every other row
+    held, and the `finally` left Casper active with no probe. Dev stopped (any other answer stops Dev); Question 2 was asked
+    in-session and ruled option 1 (R-288).
+  - **Second run — every row held; §90 written:**
+    - the pilot theme uploaded under `inflozo-probe-drift` (200, inactive), downloaded with the staff token (200
+      `application/zip`; Ghost's re-zip carries 12 directory entries and no dot entry) and compared: **zero differences**,
+      the zero-false-positive control;
+    - the hand-edited copy under the same inactive name: exactly one changed section partial, `custom-handmade.hbs` added and
+      `README.md` removed;
+    - a third upload without `custom-handmade.hbs`: the file is gone from the download (step 2's held it), so
+      `storage.js:95-107` is executed and R-287's premise holds;
+    - the controls: a flipped digit → 401 `UnauthorizedError`, the Admin key → 403 `NoPermissionError`, an unknown name → 400
+      `BadRequestError` (R-288);
+    - the `finally`: the probe deleted, `GET themes/` read back, Casper still active and no probe installed.
+  - The local half: every row PASS, each beside its control; `--help` exits 2 without a request.
+- **Ghost's source** (read only, `registry.npmjs.org` tarballs `ghost-6.58.0.tgz` and `ghost-5.130.6.tgz`): `getZip` throws
+  `BadRequestError` "Please select a valid theme." when `list.get(name)` finds nothing (`storage.js:43-50` in 6.58.0, `:35-42` in
+  5.130.6). The download endpoint's permission is `read` in both. Ghost 5's execution goes to DW-326 (R-238).
+- **Supabase (local gate):** `bash supabase/tests/run-rls-gate.sh` is green and unchanged. There is no migration, and SCHEMA.sql
+  changed only in a `--` comment.
+- **Not hit in Dev:** production Supabase, Vercel, Resend and Dodo. The production writes (`deploys.content_manifest`, the
+  `deploy-artifacts/{projectId}/live/…` copy and its signed URL) are walk step 119's, run at Review from a clean worktree at the
+  deployed sha on the owner's in-session go. Deploy's plant (`STEP119_PLANT`) is Deploy's.
+- **`pnpm check`:** green. Every package passes with 0 failing, each printing its own count. `deploy-run.test.ts`' new 400 row
+  was seen red with the 400 dropped from the mapping, and green with it restored.
+- **Propagation grep** (the last command above): only dated notes keep the old wording (`epics.md` 7.32's card,
+  `epic-7-context.md`, EXPERIENCE's item 3), plus the record `.v4.0-backup/prd.md`.
+- **`pnpm keyboard`** (the full gate, the working tree): every journey passed but one. Journeys 7.21 (a)–(f) and (a2), the
+  floor's D3a and D3b widths, and 7.18–7.20a's deploy journeys all passed.
+  - The failure was Story 5.23a's `every whole-page change repaints the whole page`, at its `a subject` poll. This story
+    touches neither the canvas nor its repaint.
+  - Re-runs: `pnpm keyboard -g "Story 5.23a"` passed all of 5.23a's journeys, and
+    `pnpm keyboard -g "every whole-page change repaints" --repeat-each=5` passed 5 of 5. The failure is intermittent (the
+    render-timing class of DW-292). CI's own full run on the Dev push is the next reading.
+  - The implementation pass saw each 7.21 journey red with the wizard, the Layers panel and the harness layout put back to HEAD.

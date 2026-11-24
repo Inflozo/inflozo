@@ -10719,3 +10719,276 @@ test('7.20a · (h) the Theme Download, the token held: "Preparing…", then Stor
   }
   expect(followed, 'nothing more followed').toHaveLength(1)
 })
+
+/* ── Story 7.21 — pre-deploy drift detection (FR-J16, R-287; D3a/D3b/D3c; UX-DR12, UX-DR14, R-98, R-170; DW-338) ──
+   A drift check runs on a deploy AFTER THE FIRST, so every journey here ships to the `shipped` site. The check is the deploy
+   route's, answered with CANNED views as every stage is: `x-inflozo-harness-drift` names the record the fake route answers
+   (`plantDrift` reads the same value) — `found` (D3a), `clean` (D3c), `reading`, `unverified-<cause>` (D3b) and `declined`, which
+   the harness's layout also turns into the site's recorded Not now. While it is `found` the fake route refuses a ship without
+   `overwrite` (409), as the real route does, and answers D3a's live copy with a tiny zip. Pointer-free. The real Ghost,
+   the real bucket and the real column are walk step 119's and §90's. */
+
+const DRIFT = await import(new URL('../../apps/web/lib/drift.ts', import.meta.url).href)
+const DRW = DRIFT.DRIFT_WORDS
+const SHIPPED_SITE = { 'x-inflozo-harness-ship': 'shipped' }
+const DRIFT_THEME = 'inflozo-pilot-sections'
+/** D3a's record: a section by its layer's name today (its file still slugged from the name it shipped with), Inflozo's own stylesheet,
+ *  a template and a file the site gained, and the read me it lost — every group, and both "didn't write" labels */
+const FOUND_DRIFT = {
+  kind: 'found', since: 2, theme: DRIFT_THEME,
+  changed: [
+    { path: 'partials/sections/home/a4-latest-post.hbs', label: 'Front page story', category: 'a4' },
+    { path: 'assets/css/screen.css', label: DRW.labels.stylesheet },
+  ],
+  added: [
+    { path: 'custom-handmade.hbs', label: DRW.labels.addedTemplate },
+    { path: 'assets/css/hand.css', label: DRW.labels.addedFile },
+  ],
+  removed: [{ path: 'README.md', label: DRW.labels.readMe }],
+}
+const driftRecordOf = (value) =>
+  value === 'found' ? FOUND_DRIFT
+  : value === 'clean' ? { kind: 'clean', since: 2 }
+  : value === 'reading' ? { kind: 'reading' }
+  : value === 'declined' ? { kind: 'unverified', cause: 'no_token', theme: DRIFT_THEME }
+  : { kind: 'unverified', cause: value.replace(/^unverified-/, ''), theme: DRIFT_THEME, ...(value === 'unverified-unreachable' ? { status: 502 } : {}) }
+const READING_DRIFT = viewOf('checking', { compiling: TIMED.compiling, checking: { at: AT, ms: 2100 }, drift: { kind: 'reading' } })
+/** Pre-flight as the route answers it with a drift check: the stages, the read, then the job resting with its record */
+const driftPreflight = (value) => [
+  ...PREFLIGHT.slice(0, 3),
+  READING_DRIFT,
+  ...(value === 'reading' ? [] : [viewOf('awaiting_ship', { ...CHECKED, drift: driftRecordOf(value) })]),
+]
+const SHIPPING_OVER = [
+  viewOf('uploading', { ...CHECKED, drift: FOUND_DRIFT, uploading: { at: AT } }),
+  viewOf('activating', { ...CHECKED, drift: FOUND_DRIFT, uploading: TIMED.uploading, activating: { at: AT } }),
+  LIVE_ENDING,
+]
+/** the drift journeys' world: the header for the page and the fake route alike, the canned route, its 409 over a found drift
+ *  without the customer's word, and the live copy's 303 → a tiny zip. Answers every body sent and every ship refused */
+async function plantDrift(page, value, plan = {}) {
+  await page.setExtraHTTPHeaders({ ...SHIPPED_SITE, 'x-inflozo-harness-drift': value, ...(plan.headers ?? {}) })
+  const sent = await plantDeploy(page, { preflight: driftPreflight(value), ship: SHIPPING_OVER, ...plan })
+  const refused = []
+  // registered after plantDeploy's, so it is asked first: the real route's 409, and the fallback to the canned answers
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), (route) => {
+    const req = route.request()
+    const body = req.method() === 'POST' ? req.postDataJSON() : null
+    if (value === 'found' && body?.intent === 'ship' && body.overwrite !== true) {
+      refused.push(body)
+      return route.fulfill({ status: 409, contentType: 'text/plain', body: 'Drift found' })
+    }
+    return route.fallback()
+  })
+  // the live copy: the real route's 303 goes to Storage's signed URL, whose answer is the zip as an attachment. A redirect that
+  // `route.fulfill` answers is followed by the browser WITHOUT `page.route` seeing the next request (executed: the 303 left the
+  // editor for the dev server's 404), so the fake answers the signed URL's own answer at the link's address; the 303 itself is
+  // `deploy.test.ts`' (the route's source) and walk step 119 (d)'s (production)
+  const live = []
+  await page.route((url) => url.pathname.endsWith(`/projects/${HARNESS_PROJECT_ID}/deploy/live`), (route) => {
+    live.push(new URL(route.request().url()).search)
+    return route.fulfill({ status: 200, headers: { 'content-type': 'application/zip', 'content-disposition': `attachment; filename="${DRIFT.liveFileName(DRIFT_THEME)}"`, 'cache-control': 'no-store' }, body: Buffer.from('PK\x05\x06' + '\0'.repeat(18), 'binary') })
+  })
+  return { sent, refused, live }
+}
+/** Ship it → Run checks, landed on D3a, D3b, D3c or the running row */
+async function toDrift(page, value, plan) {
+  const planted = await plantDrift(page, value, plan)
+  await open(page)
+  await openWizard(page)
+  await runChecks(page)
+  return planted
+}
+
+test('7.21 · (a) D3a: focus on Cancel (UX-DR14) — neither ⌘⏎ nor Enter overwrites — the frame\'s title and body, 600 wide, the chip, the three groups with their counts in order, a section by its layer\'s name today with its path beneath, the two "didn\'t write" labels, the footer\'s count word, Download\'s address, and the outcome said once', async ({ page }) => {
+  const { sent } = await toDrift(page, 'found')
+  const report = wizard(page).locator('[data-drift-report]')
+  await expect(report).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('#deploy-drift-cancel'), 'the cancelling action takes focus as D3a opens').toBeFocused()
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DRW.title)
+  await expect(report).toContainText(DRW.body)
+  expect(await contentWidth(page), 'D3a is 600 wide').toBe(600)
+  await expect(report.locator('[data-drift-chip]')).toHaveText(DRW.chip(5))
+  // the groups, in the frame's order, each with its count; the words are the list's (drawn in capitals by style)
+  const groups = report.locator('[data-drift-group]')
+  await expect(groups).toHaveCount(3)
+  expect(await groups.evaluateAll((gs) => gs.map((g) => g.dataset.driftGroup))).toEqual(['changed', 'added', 'removed'])
+  for (const g of ['changed', 'added', 'removed']) {
+    const group = report.locator(`[data-drift-group="${g}"]`)
+    expect(await group.locator(`#deploy-drift-${g}`).evaluate((e) => e.textContent)).toBe(DRW.groups[g])
+    await expect(group.locator('[data-drift-count]')).toHaveText(String(FOUND_DRIFT[g].length))
+    await expect(group.locator('[data-drift-file]')).toHaveCount(FOUND_DRIFT[g].length)
+  }
+  // a section is named by its layer's name TODAY, never by its path — the path in mono beneath, and the Layers row's picture
+  const hero = report.locator('[data-drift-file="partials/sections/home/a4-latest-post.hbs"]')
+  await expect(hero.locator('[data-drift-label]')).toHaveText('Front page story')
+  await expect(hero).toContainText('partials/sections/home/a4-latest-post.hbs')
+  await expect(hero.locator('[data-glyph="hero"]')).toHaveCount(1)
+  await expect(report.locator('[data-drift-file="assets/css/screen.css"] [data-glyph]'), 'a file of no section draws the file glyph').toHaveCount(0)
+  await expect(report.locator('[data-drift-file="custom-handmade.hbs"] [data-drift-label]')).toHaveText("A template Inflozo didn't write")
+  await expect(report.locator('[data-drift-file="assets/css/hand.css"] [data-drift-label]')).toHaveText("A file Inflozo didn't write")
+  await expect(report.locator('[data-drift-file="README.md"] [data-drift-label]')).toHaveText(DRW.labels.readMe)
+  await expect(report.locator('[data-drift-foot]')).toHaveText(DRW.foot(5))
+  expect(DRW.foot(5)).toContain('all five')
+  await expect(page.locator('#deploy-drift-download')).toHaveAttribute('href', `/app${DRIFT.liveDownloadPath(HARNESS_PROJECT_ID, 'job-718')}`)
+  await expect(page.locator('#deploy-drift-download')).toHaveAccessibleName(DRW.download)
+  await expect(page.locator('#deploy-overwrite')).toHaveAccessibleName(DRW.overwrite)
+  await expect(page.locator('#deploy-ship'), 'Ship it is not drawn over drift').toHaveCount(0)
+  // the polite region says the checks and the drift once, together
+  await expect.poll(() => deploySaid(page)).toBe(`${DW.sayChecked(0, 1)} ${DRIFT.driftSaid(FOUND_DRIFT, { host: 'harness.example' })}`)
+  // ⌘⏎ inside the wizard presses nothing (an open dialog owns the page), and Enter on arrival is Cancel: the wizard closes
+  await page.keyboard.press('ControlOrMeta+Enter')
+  await expect(report).toBeVisible()
+  await expect(page.locator('#deploy-drift-cancel')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(wizard(page)).toHaveCount(0)
+  expect(sent.map((b) => b.intent), 'no ship was ever sent').toEqual(['preflight'])
+})
+
+test('7.21 · (a2) Download the live theme first is a plain link: Enter follows it to the live copy of THIS job, saved as {theme}-live.zip, and D3a stays', async ({ page }) => {
+  const { live } = await toDrift(page, 'found')
+  await expect(wizard(page).locator('[data-drift-report]')).toBeVisible({ timeout: 15_000 })
+  const link = page.locator('#deploy-drift-download')
+  await link.focus()
+  const [download] = await Promise.all([page.waitForEvent('download'), page.keyboard.press('Enter')])
+  expect(download.suggestedFilename()).toBe(DRIFT.liveFileName(DRIFT_THEME))
+  expect(live).toEqual(['?job=job-718'])
+  await expect(wizard(page).locator('[data-drift-report]'), 'the page stays on D3a').toBeVisible()
+})
+
+test('7.21 · (b) Overwrite and ship anyway is the ONE control that sends `overwrite: true` — "Shipping…" with aria-disabled and aria-busy while it is out (R-98) — and the deploy goes to Shipping; a ship without it is refused (the control)', async ({ page }) => {
+  const { sent, refused } = await toDrift(page, 'found')
+  await expect(wizard(page).locator('[data-drift-report]')).toBeVisible({ timeout: 15_000 })
+  // the control: a ship WITHOUT the customer's word is refused by the route, and nothing moves
+  const status = await page.evaluate(async (path) => (await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'ship', session: 's', job: 'job-718', mode: 'activate' }) })).status, `/app/projects/${HARNESS_PROJECT_ID}/deploy`)
+  expect(status).toBe(409)
+  expect(refused).toHaveLength(1)
+  let release
+  let hold = new Promise((r) => { release = r })
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), async (route) => {
+    if (route.request().method() === 'POST' && hold) await hold
+    return route.fallback()
+  })
+  const overwrite = page.locator('#deploy-overwrite')
+  await overwrite.focus()
+  await page.keyboard.press('Enter')
+  await expect(overwrite).toHaveAccessibleName(DRW.shipping)
+  await expect(overwrite).toHaveAttribute('aria-busy', 'true')
+  await expect(overwrite).toHaveAttribute('aria-disabled', 'true')
+  hold = null
+  release()
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(DW.shippingTitle(1), { timeout: 15_000 })
+  const ships = sent.filter((b) => b.intent === 'ship')
+  expect(ships).toHaveLength(1)
+  expect(ships[0].overwrite, 'Overwrite says the customer\'s word').toBe(true)
+  expect(ships[0].mode).toBe('activate')
+  expect(refused, 'the press was never refused').toHaveLength(1)
+})
+
+test('7.21 · (c) D3b, no token: the sky row after the checks and before the routes row, its title, its body ending "Shipping anyway.", Add token — Ship it stays live; Add token → D1b over Pre-flight (no Not now, the rail at Check) → Back is D3b on Add token; a kept token checks again ("Starting…")', async ({ page }) => {
+  const { sent } = await toDrift(page, 'unverified-no_token', { headers: { 'x-inflozo-harness-token': 'ok' } })
+  const row = wizard(page).locator('[data-drift-row="unverified"]')
+  await expect(row).toHaveAttribute('data-drift-cause', 'no_token', { timeout: 15_000 })
+  await expect(row).toContainText(DRW.unverified)
+  await expect(row).toContainText(DRIFT.causeBody('no_token', { host: 'harness.example', theme: DRIFT_THEME }))
+  // after the check rows and before the routes row (the frame's order)
+  const order = await wizard(page).evaluate((w) => {
+    const r = w.querySelector('[data-drift-row="unverified"]')
+    const checks = w.querySelector('[data-check-rows]')
+    return !!(checks.compareDocumentPosition(r) & Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+  expect(order, 'after the passes').toBe(true)
+  await expect(page.locator('#deploy-ship'), 'Ship it is not greyed: the deploy goes on').not.toHaveAttribute('aria-disabled', 'true')
+  await expect(page.locator('#deploy-drift-token')).toHaveAccessibleName(DRW.addToken)
+  expect(await contentWidth(page), 'S8b keeps its 520').toBe(520)
+  await page.locator('#deploy-drift-token').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-token')).toBeFocused()
+  await expect(wizard(page).locator('#deploy-title')).toHaveText(SN.title)
+  await expect(wizard(page)).toHaveAttribute('data-deploy-wizard', 'check')
+  await expect(page.locator('#deploy-not-now')).toHaveCount(0)
+  expect(await contentWidth(page), 'D1b\'s 700').toBe(700)
+  await page.locator('#deploy-safety-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(row).toBeVisible()
+  await expect(page.locator('#deploy-drift-token')).toBeFocused()
+  // a kept token checks again: "Starting…" on Add token until the new Pre-flight is in
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-token')).toBeFocused()
+  await page.keyboard.insertText(TOKEN)
+  let release
+  let hold = new Promise((r) => { release = r })
+  await page.route((url) => DEPLOY_PATH.test(url.pathname), async (route) => {
+    if (route.request().method() === 'POST' && hold) await hold
+    return route.fallback()
+  })
+  const add = page.locator('#deploy-add-token')
+  await add.focus()
+  await page.keyboard.press('Enter')
+  await expect(add).toHaveAccessibleName(DW.starting, { timeout: 15_000 })
+  hold = null
+  release()
+  await expect.poll(() => sent.map((b) => b.intent), { timeout: 15_000 }).toEqual(['preflight', 'preflight'])
+})
+
+test('7.21 · (d) D3b on a site whose Not now is recorded: the decline\'s own words and NO link (R-278: never raised again) — the control: a refused token and a role that cannot read themes offer Add token, the theme gone and an unreadable zip do not', async ({ page }) => {
+  await toDrift(page, 'declined')
+  const row = wizard(page).locator('[data-drift-row="unverified"]')
+  await expect(row).toHaveAttribute('data-drift-cause', 'declined', { timeout: 15_000 })
+  await expect(row).toContainText(DRIFT.causeBody('declined', { host: 'harness.example', theme: DRIFT_THEME }))
+  await expect(page.locator('#deploy-drift-token')).toHaveCount(0)
+  await expect.poll(() => deploySaid(page)).toContain(DRIFT.causeBody('declined', { host: 'harness.example', theme: DRIFT_THEME }))
+  for (const cause of ['token_refused', 'role', 'missing', 'unreachable', 'unreadable']) {
+    await page.unrouteAll({ behavior: 'ignoreErrors' })
+    await toDrift(page, `unverified-${cause}`)
+    const r = wizard(page).locator('[data-drift-row="unverified"]')
+    await expect(r, cause).toHaveAttribute('data-drift-cause', cause, { timeout: 15_000 })
+    await expect(r).toContainText(DRIFT.causeBody(cause, { host: 'harness.example', theme: DRIFT_THEME, ...(cause === 'unreachable' ? { status: 502 } : {}) }))
+    await expect(page.locator('#deploy-drift-token'), cause).toHaveCount(DRIFT.ADDS_TOKEN.includes(cause) ? 1 : 0)
+  }
+})
+
+test('7.21 · (e) D3c: "Nothing changed on your site since v{n}" is a pass line, SECOND in the passes box after the major\'s, and said once — no D3a, no D3b; while the live theme is read, a running row says so and Ship it waits (the control)', async ({ page }) => {
+  await toDrift(page, 'clean')
+  const passes = wizard(page).locator('[data-check-rows] > div')
+  await expect(wizard(page).locator('[data-drift-row="clean"]')).toBeVisible({ timeout: 15_000 })
+  await expect(passes.nth(0)).toContainText(DW.passMajor(6))
+  await expect(passes.nth(1)).toHaveAttribute('data-drift-row', 'clean')
+  await expect(passes.nth(1)).toContainText(DRW.clean(2))
+  await expect(passes.nth(1)).toContainText(DW.pass)
+  await expect(wizard(page).locator('[data-drift-report], [data-drift-row="unverified"]')).toHaveCount(0)
+  await expect(page.locator('#deploy-ship')).not.toHaveAttribute('aria-disabled', 'true')
+  await expect.poll(() => deploySaid(page)).toContain(`${DRW.clean(2)}.`)
+  // the control: a check still reading draws its running row and keeps Ship it waiting
+  await page.unrouteAll({ behavior: 'ignoreErrors' })
+  await toDrift(page, 'reading')
+  await expect(page.locator('#deploy-drift-reading')).toHaveText(DRW.reading, { timeout: 15_000 })
+  await expect(wizard(page).locator('[data-drift-row="clean"]')).toHaveCount(0)
+  await expect(page.locator('#deploy-ship')).toHaveAttribute('aria-disabled', 'true')
+})
+
+test('7.21 · (f) DW-338: the Layers rename field stops at 60 characters, typed or pasted, and Save keeps the 60; a name of 61 set behind the field\'s back is refused by the rule with its sentence', async ({ page }) => {
+  await open(page)
+  const key = (await rows(page)).page[0]
+  const long = 'A very long section name that keeps going well past the sixty character limit'
+  expect(long.length).toBeGreaterThan(60)
+  await rowItem(page, key, 'Rename')
+  const field = page.locator('#layers-rename-name')
+  // the sheet opens on its cancelling action (UX-DR14); the field is the next stop back
+  await expect(page.locator('dialog[aria-labelledby="layers-rename-title"] [data-cancel]')).toBeFocused()
+  await field.focus()
+  await expect(field).toHaveAttribute('maxlength', '60')
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.insertText(long)
+  await expect(field).toHaveValue(long.slice(0, 60))
+  await page.keyboard.press('Enter')
+  await expect(page.locator('dialog[aria-labelledby="layers-rename-title"]')).not.toHaveAttribute('open', '')
+  await expect(page.locator(`[data-layer-row="${key}"]`)).toContainText(long.slice(0, 60).trim())
+  // the rule is the control past the field: a name the field could never hold, set programmatically, is refused
+  await rowItem(page, key, 'Rename')
+  await field.focus()
+  await field.evaluate((input, value) => { input.value = value }, 'n'.repeat(61))
+  await page.keyboard.press('Enter')
+  await expect(page.locator('dialog[aria-labelledby="layers-rename-title"]')).toHaveAttribute('open', '')
+  await expect(page.locator('dialog[aria-labelledby="layers-rename-title"]')).toContainText('Keep the name to 60 characters.')
+})

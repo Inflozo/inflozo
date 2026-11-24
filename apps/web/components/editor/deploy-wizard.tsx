@@ -7,7 +7,7 @@ import { nodeOf, unlistedPosts, type ListedPost, type RoutesConfig } from '@infl
 import type { Finding } from '@inflozo/theme-compiler/gate'
 import { verifyRoutesAction } from '@/app/(app)/app/(authed)/sites/actions'
 import { ResultChip, VersionChip } from '@/components/kit/badge'
-import { Button, SplitButton } from '@/components/kit/button'
+import { Button, buttonClasses, SplitButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, wideTitle } from '@/components/kit/dialog'
 import { greyedProps, ring } from '@/components/kit/greyed'
 import { AlertCircle, AlertTriangle, Bolt, Check, ChevronDown, ChevronRight, ChevronUp, Copy, Download, ExternalLink, Eye, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
@@ -15,6 +15,7 @@ import { TextInput } from '@/components/kit/input'
 import { RadioCard } from '@/components/kit/radio-card'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { BusyLabel, Submit } from '@/components/kit/submit'
+import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { RoutesFallback } from '@/components/routes-fallback'
 import {
   afterSafety, BACKUP_WORDS as BW, backupOwed, CANCELLABLE, CHECK_FAILED, checkRows, DEPLOY_WORDS as W, endingOf, isMoving, isSnapshotError, POSTS_CHECKED, SAFETY_PICTURE, SAFETY_WORDS as SN,
@@ -24,6 +25,7 @@ import {
 import {
   confirmAvailable, GATE_ROWS, HELP, NO_TICKS, reasonOf, snapshotDownloadPath, subLineOf, toggleConfirm, toggleRow, type GateTicks, type RowId,
 } from '@/lib/backup-gate'
+import { ADDS_TOKEN, causeBody, causeShown, DRIFT_WORDS as DW, driftCount, driftSaid, liveDownloadPath, type DriftFile, type DriftRecord } from '@/lib/drift'
 import { adminAt } from '@/lib/paywall'
 import { CONNECT_MAX } from '@/lib/connect-rule'
 import { deployPath, type Canvas } from '@/lib/editor'
@@ -91,6 +93,21 @@ const FileGlyph = () => (
     <polyline points="14 2 14 8 20 8" />
   </svg>
 )
+
+/** STORY 7.21 — D3a's glyphs, drawn as the frame draws them (`D3 The Drift Report.dc.html`): a file Inflozo or the site wrote
+ *  (`:107`), and the three group heads' pencil, plus and minus (`:65`, `:105`, `:120`) in their own hues */
+const DriftFileGlyph = () => (
+  <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 stroke-ink-soft">
+    <path d="M14 3H6a1.5 1.5 0 0 0-1.5 1.5v15A1.5 1.5 0 0 0 6 21h12a1.5 1.5 0 0 0 1.5-1.5V8.5z" />
+    <path d="M14 3v5.5h5.5" />
+  </svg>
+)
+const GROUP_GLYPH: Readonly<Record<'changed' | 'added' | 'removed', ReactNode>> = {
+  changed: <svg aria-hidden width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 stroke-marigold-text"><path d="M17 3l4 4-11 11H6v-4L17 3z" /></svg>,
+  added: <svg aria-hidden width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" className="shrink-0 stroke-mint-text"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>,
+  removed: <svg aria-hidden width="12" height="12" viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" className="shrink-0 stroke-danger-text"><line x1="5" y1="12" x2="19" y2="12" /></svg>,
+}
+const GROUP_HUE: Readonly<Record<'changed' | 'added' | 'removed', string>> = { changed: 'text-marigold-text', added: 'text-mint-text', removed: 'text-danger-text' }
 
 /** a ▾ row's two lines (S4d: 13px/500, then 11px ink-soft) */
 const twoLines = (title: string, caption?: string) => (
@@ -260,8 +277,11 @@ function Confetti() {
 type Answer = { ok: true; job: string } | { ok: false; status: number }
 /** R-260's row: still reading, read (the posts no page lists), or the site's posts could not be read */
 type PostsCheck = { kind: 'reading' } | { kind: 'read'; unlisted: readonly { title: string }[]; capped: boolean } | { kind: 'unread' } | null
-/** Story 7.20a: `without` is B12b's Deploy without a snapshot — a Ship it, busy on its own button */
-type Pressed = 'start' | 'ship' | 'without' | 'cancel' | 'activate' | null
+/** Story 7.20a: `without` is B12b's Deploy without a snapshot — a Ship it, busy on its own button. Story 7.21: `overwrite` is D3a's
+ *  Overwrite and ship anyway — a Ship it that says the customer's word (`overwrite: true`) */
+type Pressed = 'start' | 'ship' | 'without' | 'overwrite' | 'cancel' | 'activate' | null
+/** D1b's token view over a view of its own: B12b's (Story 7.20a — a kept token ships again) or D3b's (Story 7.21 — it checks again) */
+type Retoken = 'capture' | 'drift' | null
 
 /** where the row stands, to wait past after a press: its stage and every stage edge it has recorded */
 const standing = (v: DeployView) => `${v.job.stage}:${JSON.stringify(v.job.timings)}`
@@ -420,8 +440,9 @@ export function DeployWizard({
   /** each Download's press in flight, and its sentence where it failed (or said the theme is Inflozo's own) */
   const [fetching, setFetching] = useState<'theme' | 'routes' | null>(null)
   const [fetched, setFetched] = useState<Partial<Record<'theme' | 'routes', string>>>({})
-  /** STORY 7.20a — B12b's Add token: D1b's view over a job resting with a capture's answer, Back returning to B12b */
-  const [retoken, setRetoken] = useState(false)
+  /** STORY 7.20a — B12b's Add token: D1b's view over a job resting with a capture's answer, Back returning to B12b; STORY 7.21 —
+   *  D3b's, over Pre-flight, Back returning to D3b */
+  const [retoken, setRetoken] = useState<Retoken>(null)
 
   useEffect(() => {
     alive.current = true
@@ -504,6 +525,13 @@ export function DeployWizard({
   const checked = checkRows({ gscan: view?.deploy?.gscan ?? null, quality: view?.deploy?.quality ?? null }, major, ship?.required ?? [], names)
   // the checks FINISHED when their verdicts are stored — a Checking that ended on a failure stored none (the review, 2026-10-19)
   const checksDone = stage === 'awaiting_ship' || (timings.checking?.ms !== undefined && view?.deploy?.gscan != null)
+  /** STORY 7.21 — the drift check's record (`stage_timings.drift`): read while `checking` runs on, then D3a (the job resting on a
+   *  found drift), D3b (couldn't verify — a row, never a stop) or D3c (one more pass line) */
+  const drift: DriftRecord | null = timings.drift ?? null
+  const driftFound = stage === 'awaiting_ship' && drift?.kind === 'found' ? drift : null
+  const driftReading = stage === 'checking' && drift?.kind === 'reading'
+  const driftUnverified = checksDone && drift?.kind === 'unverified' ? drift : null
+  const driftClean = checksDone && drift?.kind === 'clean' ? drift : null
   const filtered = routes !== null && routes.collections.some((c) => nodeOf(c.filter) !== null)
 
   // a cancelled job is back at Destination, with nothing left of it
@@ -538,7 +566,7 @@ export function DeployWizard({
   // outcome was said already (the Review, 2026-10-19)
   const envelope = error !== null && !isFinding(error)
   const ending: string | null =
-    stage === 'awaiting_ship' ? (captureFailed ? SNAP.failedTitle : W.sayChecked(checked.errors, checked.warnings))
+    stage === 'awaiting_ship' ? (captureFailed ? SNAP.failedTitle : [W.sayChecked(checked.errors, checked.warnings), ...(drift === null || drift.kind === 'reading' ? [] : [driftSaid(drift, { host, declined: site?.declined === true })])].join(' '))
     : stage === 'done' ? (ending_ === 'live' ? W.liveTitle : ending_ === 'notLive' ? W.notLiveTitle : W.uploadOnlyTitle)
     : stage === 'failed' ? (at === 'ship' ? W.stageFailed(STAGE_NAMES[failedAt]) : checksDone && !envelope ? W.sayChecked(checked.errors, checked.warnings) : block?.reason ?? null)
     : null
@@ -546,6 +574,8 @@ export function DeployWizard({
   const startsKey = starts.map(([st, t]) => `${st}@${t}`).join(',')
   /** an ending is keyed on the last stage it followed, so the same ending after a Re-activate is said again (the Review) */
   const endKey = `end:${stage}:${ending}:${starts.at(-1)?.[1] ?? ''}`
+  /** Story 7.21 — the drift read starting is said once per check (its `checking` start keys it) */
+  const readingKey = driftReading ? `drift:${timings.checking?.at ?? ''}` : null
   useEffect(() => {
     const fresh: string[] = []
     for (const [st, t] of starts) {
@@ -554,12 +584,16 @@ export function DeployWizard({
       heard.current.add(key)
       fresh.push(st === 'compiling' ? W.sayCompiling : st === 'checking' ? W.sayChecking : st === 'snapshotting' ? SNAP.say : st === 'uploading' ? W.sayUploading : W.sayActivating(n))
     }
+    if (readingKey !== null && !heard.current.has(readingKey)) {
+      heard.current.add(readingKey)
+      fresh.push(driftSaid({ kind: 'reading' }, { host }))
+    }
     if (ending !== null && !heard.current.has(endKey)) {
       heard.current.add(endKey)
       fresh.push(ending)
     }
     if (fresh.length > 0) say(fresh.join(' '))
-  }, [startsKey, stage, ending, endKey])
+  }, [startsKey, stage, ending, endKey, readingKey])
 
   /** Run checks: the editor's flush first — work it cannot send is work the compile would not see */
   const runChecks = async (): Promise<boolean> => {
@@ -620,9 +654,15 @@ export function DeployWizard({
     setToken('')
     setTokenKept(true)
     // STORY 7.20a — B12b's Add token: the kept token ships again, now capturing (the Safety net was answered long ago)
-    if (retoken) {
-      setRetoken(false)
+    if (retoken === 'capture') {
+      setRetoken(null)
       return void press('ship')
+    }
+    // STORY 7.21 — D3b's Add token: the kept token checks again — "Starting…" on Add token until the new Pre-flight is in
+    if (retoken === 'drift') {
+      await runChecks()
+      if (alive.current) setRetoken(null)
+      return
     }
     setSafeAnswered(true)
     // STORY 7.20a — on to Backup while it is owed (`afterSafety`, one rule with D1c's Continue), else the checks at once
@@ -656,14 +696,20 @@ export function DeployWizard({
     if (id !== null) document.getElementById(id)?.focus()
     if (local !== 'destination') say(local === 'offer' ? SN.title : local === 'declined' ? SN.declinedTitle : BW.title)
   }, [local])
-  // …and B12b's Add token on its token box, Back on B12b's own Add token
-  const wasRetoken = useRef(false)
+  // …and B12b's (or D3b's) Add token on its token box, Back on the Add token that opened it
+  const wasRetoken = useRef<Retoken>(null)
   useEffect(() => {
-    if (retoken) document.getElementById('deploy-token')?.focus()
-    else if (wasRetoken.current) document.getElementById('deploy-b12-token')?.focus()
-    if (retoken) say(SN.title)
+    if (retoken !== null) document.getElementById('deploy-token')?.focus()
+    else if (wasRetoken.current !== null) document.getElementById(wasRetoken.current === 'capture' ? 'deploy-b12-token' : 'deploy-drift-token')?.focus()
+    if (retoken !== null) say(SN.title)
     wasRetoken.current = retoken
   }, [retoken])
+  // STORY 7.21 — D3a opens with focus on Cancel, the cancelling action (UX-DR14): neither Enter on arrival nor ⌘⏎ ships over drift
+  const wasFound = useRef(false)
+  useEffect(() => {
+    if (driftFound !== null && !wasFound.current && retoken === null) document.getElementById('deploy-drift-cancel')?.focus()
+    wasFound.current = driftFound !== null
+  }, [driftFound !== null])
 
   /* ── STORY 7.20a — the Backup step's presses (F7, D1d as R-283 cut it) ── */
   /** the host names the card's sub line alone (R-283: every host draws the same card) */
@@ -707,13 +753,14 @@ export function DeployWizard({
   }
 
   /** a press on a job that is already there (Ship it, Cancel, Re-activate): sent, then the row is read until it moves. Story
-   *  7.20a: `without` is B12b's Deploy without a snapshot — a Ship it that skips the capture */
-  const press = async (intent: 'ship' | 'cancel' | 'activate', without = false) => {
+   *  7.20a: `without` is B12b's Deploy without a snapshot — a Ship it that skips the capture. Story 7.21: `overwrite` is D3a's
+   *  Overwrite and ship anyway — the ONE press that sends `overwrite: true` */
+  const press = async (intent: 'ship' | 'cancel' | 'activate', without = false, overwrite = false) => {
     if (pressed !== null || job === null || view === null) return
-    setPressed(without ? 'without' : intent)
+    setPressed(without ? 'without' : overwrite ? 'overwrite' : intent)
     setRefused(null)
     waitFor.current = standing(view)
-    const answer = await post(intent === 'ship' ? { intent, session: session(), job, mode, ...(without ? { withoutSnapshot: true } : {}) } : { intent, session: session(), job })
+    const answer = await post(intent === 'ship' ? { intent, session: session(), job, mode, ...(without ? { withoutSnapshot: true } : {}), ...(overwrite ? { overwrite: true } : {}) } : { intent, session: session(), job })
     if (!alive.current) return
     if (!answer.ok) {
       waitFor.current = null
@@ -731,7 +778,7 @@ export function DeployWizard({
   }
 
   /** once it starts, it finishes: Esc and the backdrop do nothing while uploading or activating, or once Ship it is sent */
-  const unstoppable = (stage !== null && UNSTOPPABLE.includes(stage)) || pressed === 'ship' || pressed === 'without' || pressed === 'activate'
+  const unstoppable = (stage !== null && UNSTOPPABLE.includes(stage)) || pressed === 'ship' || pressed === 'without' || pressed === 'overwrite' || pressed === 'activate'
   const close = () => dialog.current?.close()
 
   const footerCaption = (id: string, text: string, link?: { words: string; href: string }) => (
@@ -1136,6 +1183,131 @@ export function DeployWizard({
           names,
           projectId,
         })
+  /* STORY 7.21 — D3c: "Nothing changed on your site since v{n}" is one pass among the others, at the same weight, SECOND — after
+     the major's line, as the frame lists it (`D3 The Drift Report.dc.html:206-225`) */
+  const passes = driftClean === null ? checked.passes : [...checked.passes.slice(0, 1), DW.clean(driftClean.since), ...checked.passes.slice(1)]
+  const passesBox = checksDone && (passes.length > 0 || checked.rows.length > 0) ? (
+    <div data-check-rows className="ml-[31px] overflow-hidden rounded-thumb border border-line">
+      {passes.map((p) => (
+        <div key={p} {...(driftClean !== null && p === passes[1] ? { 'data-drift-row': 'clean' } : {})} className="flex items-center gap-[9px] border-b border-line px-[13px] py-[9px] last:border-b-0">
+          <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 stroke-mint">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span className="flex-1 text-[12.5px] font-medium text-ink">{p}</span>
+          <ResultChip tone="clean">{W.pass}</ResultChip>
+        </div>
+      ))}
+      {checked.rows.map((row, i) => (
+        <FindingRow key={`${i}:${row.code}`} row={row} n={i} href={row.canvas === null ? null : canvasHref(row.canvas)} onFix={close} />
+      ))}
+    </div>
+  ) : null
+  /* STORY 7.21 — the drift check's row, after the check rows and before the routes row: running while it reads, then D3b's sky
+     row where the live theme could not be read (`:157-203`) — a check that didn't run, not one that failed, so sky and never
+     marigold or danger, and Ship it stays as it is. Add token (the causes `ADDS_TOKEN` names; never on a recorded Not now) opens
+     D1b's view over Pre-flight, as B12b's does */
+  const driftRow = driftReading ? (
+    <StageRow id="deploy-drift-reading" tone="running" label={DW.reading} />
+  ) : driftUnverified !== null ? (() => {
+    const cause = causeShown(driftUnverified.cause, site?.declined === true)
+    return (
+      <div data-drift-row="unverified" data-drift-cause={cause} className="flex gap-[11px] rounded-thumb border border-sky-line bg-sky-tint p-[12px_13px]">
+        <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" strokeLinecap="round" className="shrink-0">
+          <circle cx="12" cy="12" r="10" className="fill-sky-line" />
+          <line x1="12" y1="11" x2="12" y2="16.5" className="stroke-sky-text" strokeWidth="2" />
+          <circle cx="12" cy="7.8" r="1" className="fill-sky-text" />
+        </svg>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <span className="text-ui-dense font-semibold text-sky-text">{DW.unverified}</span>
+          <span className="text-[12.5px] leading-[1.55] text-sky-text [text-wrap:pretty]">
+            {causeBody(cause, { host, theme: driftUnverified.theme, ...(driftUnverified.status === undefined ? {} : { status: driftUnverified.status }) })}
+          </span>
+          {ADDS_TOKEN.includes(cause) ? (
+            <button
+              type="button"
+              id="deploy-drift-token"
+              aria-disabled={pressed !== null || undefined}
+              onClick={() => (pressed === null ? setRetoken('drift') : undefined)}
+              className={`mt-[2px] self-start rounded-sm text-[12px] font-medium text-sky-text hover:underline ${ring}`}
+            >
+              {DW.addToken}
+            </button>
+          ) : null}
+        </div>
+      </div>
+    )
+  })() : null
+  /* STORY 7.21 — D3a's row and its list (`:28-151`): "Comparing with your live theme" with the marigold mark and its count, then the
+     frame's bordered list — Changed / Added on your site / Removed from your site, each group only where it holds a file, its
+     glyph and count at its head — every file by its label (a section by its layer's name, never its path) with its path in mono
+     beneath, and a section's Layers-row picture as its icon */
+  const driftList = driftFound === null ? null : (
+    <div data-drift-row="found" className="flex flex-col gap-3">
+      <div className="flex items-center gap-[11px]">
+        <Mark tone="warning" />
+        <span className="text-ui-dense font-semibold text-ink">{DW.row}</span>
+        <span className="ml-auto" data-drift-chip><ResultChip tone="warned">{DW.chip(driftCount(driftFound))}</ResultChip></span>
+      </div>
+      <div data-drift-list className="ml-[31px] overflow-hidden rounded-[10px] border border-line">
+        {(['changed', 'added', 'removed'] as const).filter((g) => driftFound[g].length > 0).map((g, i) => (
+          <div key={g} data-drift-group={g}>
+            <div className={`flex items-center gap-[7px] border-b border-line bg-paper-raised px-3 py-[9px] ${i > 0 ? 'border-t' : ''}`}>
+              {GROUP_GLYPH[g]}
+              <span id={`deploy-drift-${g}`} className={`text-[10px] font-semibold uppercase tracking-[0.04em] ${GROUP_HUE[g]}`}>{DW.groups[g]}</span>
+              <span data-drift-count className="ml-auto font-mono text-[9.5px] text-ink-soft [font-variant-ligatures:none]">{driftFound[g].length}</span>
+            </div>
+            <ul aria-labelledby={`deploy-drift-${g}`} className="m-0 flex list-none flex-col gap-[2px] p-[6px]">
+              {driftFound[g].map((f: DriftFile) => (
+                <li key={f.path} data-drift-file={f.path} className="flex items-center gap-[9px] rounded-[8px] px-2 py-[7px]">
+                  {f.category === undefined ? <DriftFileGlyph /> : <LayerThumb glyph={glyphOf(f.category)} />}
+                  <span className="flex min-w-0 flex-1 flex-col gap-px">
+                    <span data-drift-label className="truncate text-[12.5px] font-medium text-ink">{f.label}</span>
+                    <span className="truncate font-mono text-[10px] text-ink-soft [font-variant-ligatures:none]">{f.path}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+  const afterRows = (
+    <>
+      {checksDone && routesFile !== null ? <StageRow tone="done" label={W.routesValid} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} /> : null}
+      {checksDone && filtered && posts !== null ? (
+        posts.kind === 'reading' ? (
+          // R-271 (DW-377): the read in flight says so, and never holds Ship it
+          <StageRow id="deploy-posts-reading" tone="running" label={W.postsReading} />
+        ) : posts.kind === 'read' && posts.unlisted.length === 0 ? (
+          <div data-posts-listed className="flex flex-col gap-1">
+            <StageRow tone="done" label={W.everyPostListed} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} />
+            {posts.capped ? <p data-posts-capped className="ml-[31px] text-control-label text-ink-soft">{W.postsCapped}</p> : null}
+          </div>
+        ) : (
+          <div data-unlisted className="flex items-start gap-[11px]">
+            <Mark tone="warning" />
+            <p className="text-ui-dense leading-[1.5] text-ink">
+              {posts.kind === 'unread'
+                ? W.unlistedUnread(host)
+                : posts.unlisted.length === 1
+                  ? W.unlistedOne(posts.unlisted[0]?.title ?? '')
+                  : W.unlistedMany(posts.unlisted.map((p) => p.title))}
+              {posts.kind === 'read' && posts.capped ? <span data-posts-capped> {W.postsCapped}</span> : null}
+            </p>
+          </div>
+        )
+      ) : null}
+      {/* Story 7.18b — the warning rows, after R-260's, each S8b's row in Design Notes' order (`preflightWarnings`) */}
+      {checksDone && warnings.length > 0 ? (
+        <div data-preflight-rows className="ml-[31px] overflow-hidden rounded-thumb border border-line">
+          {warnings.map((row, i) => (
+            <WarningRow key={`${row.kind}:${i}`} row={row} n={i} canvasHref={canvasHref} onFix={close} />
+          ))}
+        </div>
+      ) : null}
+    </>
+  )
   const preflight = (
     <div className="flex flex-col gap-[18px]">
       <Rail at="check" state={stage === 'failed' ? 'failed' : 'current'} steps={steps} />
@@ -1146,54 +1318,9 @@ export function DeployWizard({
       <div className="flex flex-col gap-3 empty:hidden">
         {compileRow}
         {checkRow}
-        {checksDone && (checked.passes.length > 0 || checked.rows.length > 0) ? (
-          <div data-check-rows className="ml-[31px] overflow-hidden rounded-thumb border border-line">
-            {checked.passes.map((p) => (
-              <div key={p} className="flex items-center gap-[9px] border-b border-line px-[13px] py-[9px] last:border-b-0">
-                <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 stroke-mint">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span className="flex-1 text-[12.5px] font-medium text-ink">{p}</span>
-                <ResultChip tone="clean">{W.pass}</ResultChip>
-              </div>
-            ))}
-            {checked.rows.map((row, i) => (
-              <FindingRow key={`${i}:${row.code}`} row={row} n={i} href={row.canvas === null ? null : canvasHref(row.canvas)} onFix={close} />
-            ))}
-          </div>
-        ) : null}
-        {checksDone && routesFile !== null ? <StageRow tone="done" label={W.routesValid} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} /> : null}
-        {checksDone && filtered && posts !== null ? (
-          posts.kind === 'reading' ? (
-            // R-271 (DW-377): the read in flight says so, and never holds Ship it
-            <StageRow id="deploy-posts-reading" tone="running" label={W.postsReading} />
-          ) : posts.kind === 'read' && posts.unlisted.length === 0 ? (
-            <div data-posts-listed className="flex flex-col gap-1">
-              <StageRow tone="done" label={W.everyPostListed} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} />
-              {posts.capped ? <p data-posts-capped className="ml-[31px] text-control-label text-ink-soft">{W.postsCapped}</p> : null}
-            </div>
-          ) : (
-            <div data-unlisted className="flex items-start gap-[11px]">
-              <Mark tone="warning" />
-              <p className="text-ui-dense leading-[1.5] text-ink">
-                {posts.kind === 'unread'
-                  ? W.unlistedUnread(host)
-                  : posts.unlisted.length === 1
-                    ? W.unlistedOne(posts.unlisted[0]?.title ?? '')
-                    : W.unlistedMany(posts.unlisted.map((p) => p.title))}
-                {posts.kind === 'read' && posts.capped ? <span data-posts-capped> {W.postsCapped}</span> : null}
-              </p>
-            </div>
-          )
-        ) : null}
-        {/* Story 7.18b — the warning rows, after R-260's, each S8b's row in Design Notes' order (`preflightWarnings`) */}
-        {checksDone && warnings.length > 0 ? (
-          <div data-preflight-rows className="ml-[31px] overflow-hidden rounded-thumb border border-line">
-            {warnings.map((row, i) => (
-              <WarningRow key={`${row.kind}:${i}`} row={row} n={i} canvasHref={canvasHref} onFix={close} />
-            ))}
-          </div>
-        ) : null}
+        {passesBox}
+        {driftRow}
+        {afterRows}
       </div>
       <div className="flex flex-col gap-[6px]">
         <div className="flex items-center gap-[10px]">
@@ -1245,6 +1372,55 @@ export function DeployWizard({
           </Button>
         </div>
         {block !== null ? footerCaption('deploy-ship-reason', block.reason, block.link) : refused !== null ? footerCaption('deploy-refused', refused) : null}
+      </div>
+    </div>
+  )
+
+  /* ── STORY 7.21 — D3a · drift found, the deploy stops (`D3 The Drift Report.dc.html:28-151`), 600 wide: D3a's heading and body in
+     place of S8b's; S8b's rows with the comparison's row and list where D3b's row sits; the footer's sentence; then Cancel (ghost,
+     closing the wizard — FOCUSED ON OPEN, UX-DR14), Download the live theme first (a plain link to the live route: a 303 to a
+     signed URL, AD-13) and Overwrite and ship anyway (the Kit's ink primary — never coral or danger — "Shipping…" while it is
+     out, R-98). Overwrite is the only control that sends `overwrite: true`; Ship it is not drawn here, so ⌘⏎ opens the wizard
+     and presses nothing in it ── */
+  const driftView = driftFound === null || job === null ? null : (
+    <div data-drift-report className="flex flex-col gap-[18px]">
+      <Rail at="check" state="current" steps={steps} />
+      <div className="flex flex-col gap-[6px]">
+        <h2 id="deploy-title" className={`m-0 ${wideTitle} [text-wrap:pretty]`}>{DW.title}</h2>
+        <p className="text-ui-dense leading-[1.55] text-ink-soft [text-wrap:pretty]">{DW.body}</p>
+      </div>
+      <div className="flex flex-col gap-3">
+        {compileRow}
+        {checkRow}
+        {passesBox}
+        {driftList}
+        {afterRows}
+      </div>
+      <p data-drift-foot className="text-[12px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{DW.foot(driftCount(driftFound))}</p>
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex flex-wrap items-center gap-[10px]">
+          <Button id="deploy-drift-cancel" variant="ghost" size={38} weight="font-medium" onClick={close}>
+            {DW.cancel}
+          </Button>
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-[10px]">
+            <a id="deploy-drift-download" href={hrefOn(prefix, liveDownloadPath(projectId, job))} className={buttonClasses('secondary', 40)}>
+              <Download size={13} />
+              {DW.download}
+            </a>
+            <Button
+              id="deploy-overwrite"
+              variant="primary"
+              size={40}
+              aria-disabled={pressed !== null || undefined}
+              aria-busy={pressed === 'overwrite' || undefined}
+              aria-describedby={refused === null ? undefined : 'deploy-refused'}
+              onClick={() => void press('ship', false, true)}
+            >
+              <BusyLabel pending={pressed === 'overwrite'} busy={DW.shipping}>{DW.overwrite}</BusyLabel>
+            </Button>
+          </div>
+        </div>
+        {refused === null ? null : footerCaption('deploy-refused', refused)}
       </div>
     </div>
   )
@@ -1414,8 +1590,9 @@ export function DeployWizard({
   const paragraph = 'text-[12.5px] leading-[1.65] text-ink-soft-aa [text-wrap:pretty]'
   const offer = (
     <div className="flex flex-col gap-5">
-      {/* Story 7.20a: opened from B12b's Add token the deploy is at Ship, and that is where the rail says it is */}
-      <Rail at={retoken ? 'ship' : 'safety'} state="current" steps={steps} />
+      {/* Story 7.20a: opened from B12b's Add token the deploy is at Ship, and that is where the rail says it is; Story 7.21: from D3b's,
+          at Check */}
+      <Rail at={retoken === 'capture' ? 'ship' : retoken === 'drift' ? 'check' : 'safety'} state="current" steps={steps} />
       <div className="flex flex-col gap-[7px]">
         <h2 id="deploy-title" className={`m-0 ${wideTitle} [text-wrap:pretty]`}>{SN.title}</h2>
         <p className="max-w-[560px] text-[13.5px] leading-[1.6] text-ink [text-wrap:pretty]">{SN.lead}</p>
@@ -1468,8 +1645,8 @@ export function DeployWizard({
             className="px-[14px] text-[13px]"
             aria-disabled={adding || pressed === 'start' || undefined}
             onClick={() => {
-              // Story 7.20a: from B12b's Add token, Back is B12b
-              if (!adding && pressed === null) return retoken ? setRetoken(false) : setLocal('destination')
+              // Story 7.20a: from B12b's Add token, Back is B12b; Story 7.21: from D3b's, D3b
+              if (!adding && pressed === null) return retoken !== null ? setRetoken(null) : setLocal('destination')
             }}
           >
             {SN.back}
@@ -1485,8 +1662,9 @@ export function DeployWizard({
             >
               <BusyLabel pending={adding || pressed === 'start'} busy={adding ? SN.adding : W.starting}>{SN.add}</BusyLabel>
             </Button>
-            {/* Story 7.20a: over B12b, the way on without the token is B12b's own Deploy without a snapshot — so no Not now */}
-            {retoken ? null : (
+            {/* Story 7.20a: over B12b, the way on without the token is B12b's own Deploy without a snapshot — so no Not now; Story
+                7.21: over D3b, Ship it itself (the deploy goes on without the check) */}
+            {retoken !== null ? null : (
               <Button id="deploy-not-now" variant="secondary" size={42} aria-disabled={adding || pressed === 'start' || undefined} onClick={notNow}>
                 {SN.notNow}
               </Button>
@@ -1754,7 +1932,7 @@ export function DeployWizard({
       <div className="flex flex-col gap-[6px]">
         <div className="flex items-center gap-[10px]">
           {/* a kept token's re-ship is this button's work: "Starting…" until the row moves (R-98; the review, 2026-10-26) */}
-          <Button id="deploy-b12-token" variant="primary" size={38} aria-disabled={pressed !== null || undefined} aria-busy={pressed === 'ship' || undefined} onClick={() => (pressed === null ? setRetoken(true) : undefined)}>
+          <Button id="deploy-b12-token" variant="primary" size={38} aria-disabled={pressed !== null || undefined} aria-busy={pressed === 'ship' || undefined} onClick={() => (pressed === null ? setRetoken('capture') : undefined)}>
             <BusyLabel pending={pressed === 'ship'} busy={W.starting}>{SNAP.addToken}</BusyLabel>
           </Button>
           <Button
@@ -1790,12 +1968,12 @@ export function DeployWizard({
     at === 'destination' ? destination
     : at === 'safety' ? (local === 'declined' ? declined : offer)
     : at === 'backup' ? gate
-    : at === 'check' ? preflight
-    : at === 'ship' ? (retoken ? offer : captureFailed ? captureFailedView : stage === 'snapshotting' ? archiving : stage === 'failed' ? failedShip : shipping)
+    : at === 'check' ? (retoken === 'drift' ? offer : driftView ?? preflight)
+    : at === 'ship' ? (retoken === 'capture' ? offer : captureFailed ? captureFailedView : stage === 'snapshotting' ? archiving : stage === 'failed' ? failedShip : shipping)
     : ending_ === 'live' ? live
     : notLive
-  /** each view at its frame's width (R-74): D1b/D1c 700, Backup 780, B12a/B12b 600, every other step S8's 520 */
-  const width = at === 'safety' || retoken ? 'w-[700px]' : at === 'backup' ? 'w-[780px]' : captureFailed || stage === 'snapshotting' ? 'w-[600px]' : 'w-[520px]'
+  /** each view at its frame's width (R-74): D1b/D1c 700, Backup 780, B12a/B12b and D3a 600, every other step S8's 520 */
+  const width = at === 'safety' || retoken !== null ? 'w-[700px]' : at === 'backup' ? 'w-[780px]' : captureFailed || stage === 'snapshotting' || (at === 'check' && driftView !== null) ? 'w-[600px]' : 'w-[520px]'
 
   return (
     <dialog
@@ -1830,7 +2008,8 @@ export function DeployWizard({
         if (event.target !== event.currentTarget || dialog.current?.open) return
         onClose(stage === 'done' || timings.uploading !== undefined)
       }}
-      // STORY 7.19: D1b and D1c are drawn 700 wide; STORY 7.20a: Backup 780, B12a and B12b 600; every other step keeps S8's 520 (R-74)
+      // STORY 7.19: D1b and D1c are drawn 700 wide; STORY 7.20a: Backup 780, B12a and B12b 600; STORY 7.21: D3a 600; every other step
+      // keeps S8's 520 (R-74)
       className={`relative m-auto box-content max-h-[calc(100dvh-72px)] ${width} max-w-[calc(100vw-72px)] flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-surface p-[26px] shadow-modal backdrop:bg-scrim open:flex`}
     >
       <div ref={body} tabIndex={-1} className="outline-none">

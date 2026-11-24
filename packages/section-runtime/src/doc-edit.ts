@@ -120,10 +120,18 @@ export function removeSection(doc: ProjectDoc, instanceId: string): ProjectDoc |
   return withInstances(doc, doc.instances.filter((_, i) => i !== n))
 }
 
+/** DW-338 (Story 7.21) — THE LONGEST LAYER NAME, one number in one home: the Layers rename field stops here (`maxLength`), this
+ *  rule refuses past it, and the theme compiler's partial slug is cut to it (`SLUG_MAX`), so a section's file name and the label
+ *  in its boundary comment agree. A stored name over it (made before the cap) still parses — `doc-schema.ts`' `layerName` is
+ *  left alone — and keeps working until it is renamed. */
+export const LAYER_NAME_MAX = 60
+
 /** The per-instance rename Layers offers. A blank name is refused, because the row, the canvas name tag and the
- *  panel's heading are all this string and an empty one would leave three places unnamed. */
+ *  panel's heading are all this string and an empty one would leave three places unnamed; a name past `LAYER_NAME_MAX`
+ *  is refused with its sentence (DW-338). */
 export function renameSection(doc: ProjectDoc, instanceId: string, name: string): ProjectDoc | string {
   if (name.trim() === '') return 'Give this section a name.'
+  if (name.trim().length > LAYER_NAME_MAX) return `Keep the name to ${LAYER_NAME_MAX} characters.`
   return withOne(doc, instanceId, (i) => ({ ...i, layerName: name.trim() }))
 }
 

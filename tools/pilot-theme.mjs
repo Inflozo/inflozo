@@ -230,7 +230,8 @@ export function compilePilots(words, { theme, postsPerPage = 12, find: given = l
   edit?.(project)
   const templates = project.templates
   const pageTwo = overTwo ?? project.pageTwo
-  const { files, css, js, custom } = compileTheme(new JSDOM('<body></body>').window.document, {
+  // Story 7.21 — and `sections`, the fingerprint beside the files (FR-J16), so the drift recorder keeps the manifest the deploy keeps
+  const { files, css, js, custom, sections } = compileTheme(new JSDOM('<body></body>').window.document, {
     templates, pageTwo, library: find, pack: REFERENCE_PACK, assets: {}, postsPerPage, theme, pairing: PAPER.pairing, fonts: poolFonts, darkEnabled,
     modules, ghostCards: ghostCards(), ...(cardDesigns === undefined ? {} : { cardDesigns }),
     ...(settings === false ? {} : { settings: settings === true ? pilotSettings(templates) : settings }),
@@ -243,7 +244,7 @@ export function compilePilots(words, { theme, postsPerPage = 12, find: given = l
     ...(routes === undefined ? {} : { routes }),
   })
   const docs = [...Object.values(templates), ...Object.values(pageTwo)]
-  return { files, css, js, custom, templates, pageTwo, find, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
+  return { files, css, js, custom, sections, templates, pageTwo, find, instanceIds: docs.flatMap((d) => d.instances.map((i) => i.instanceId)) }
 }
 
 /** A compiled theme's text files alone — a font is bytes, and no text check reads it (Story 7.4). */

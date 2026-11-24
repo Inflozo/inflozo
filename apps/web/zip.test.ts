@@ -2,8 +2,8 @@
 // directory, its CRC and sizes checked; two runs byte-identical, and the input's key order changes nothing (AD-14).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { crc32, inflateRawSync } from 'node:zlib'
-import { zipTheme } from './server/deploy/zip.ts'
+import { crc32, deflateRawSync, inflateRawSync } from 'node:zlib'
+import { LIVE_MAX_BYTES, unzipTheme, zipTheme } from './server/deploy/zip.ts'
 
 /** A zip's entries, read the way an extractor reads them: the end record, then the central directory, then each local entry. */
 function unzip(bytes: Uint8Array): { path: string; data: Buffer; time: number; date: number; flags: number }[] {
@@ -72,4 +72,90 @@ test('a path that is no relative file path is refused, never written', () => {
     assert.throws(() => zipTheme({ [bad]: 'x' }), /is no relative file path/, JSON.stringify(bad))
   }
   assert.doesNotThrow(() => zipTheme({ 'partials/a.hbs': 'x' }), 'the control')
+})
+
+// ── Story 7.21 — the live theme read back (`unzipTheme`): untrusted input, central directory, stored and deflated, size-capped ──
+
+/** A zip as Ghost's `@tryghost/zip` (archiver) writes one: a directory entry per folder, each file's sizes and CRC left out of its
+ *  local header and written after its data in a data descriptor (flag bit 3), some entries stored. `method` per path */
+function archiverZip(files: Record<string, string | null>, method: (path: string) => 0 | 8 = () => 8, extra: Partial<{ flags: number; method: number; unpacked: number }> = {}): Uint8Array {
+  const parts: Buffer[] = []
+  const centrals: Buffer[] = []
+  let offset = 0
+  for (const [path, body] of Object.entries(files)) {
+    const name = Buffer.from(path, 'utf8')
+    const data = Buffer.from(body ?? '', 'utf8')
+    const m = body === null ? 0 : (extra.method ?? method(path))
+    const packed = m === 8 ? deflateRawSync(data) : data
+    const flags = (body === null ? 0 : 0x0008) | (extra.flags ?? 0)
+    const crc = crc32(data)
+    const local = Buffer.alloc(30)
+    local.writeUInt32LE(0x04034b50, 0)
+    local.writeUInt16LE(20, 4)
+    local.writeUInt16LE(flags, 6)
+    local.writeUInt16LE(m, 8)
+    local.writeUInt16LE(name.length, 26)
+    const descriptor = Buffer.alloc(body === null ? 0 : 16)
+    if (body !== null) {
+      descriptor.writeUInt32LE(0x08074b50, 0)
+      descriptor.writeUInt32LE(crc, 4)
+      descriptor.writeUInt32LE(packed.length, 8)
+      descriptor.writeUInt32LE(data.length, 12)
+    }
+    const central = Buffer.alloc(46)
+    central.writeUInt32LE(0x02014b50, 0)
+    central.writeUInt16LE(20, 4)
+    central.writeUInt16LE(20, 6)
+    central.writeUInt16LE(flags, 8)
+    central.writeUInt16LE(m, 10)
+    central.writeUInt32LE(crc, 16)
+    central.writeUInt32LE(packed.length, 20)
+    central.writeUInt32LE(extra.unpacked ?? data.length, 24)
+    central.writeUInt16LE(name.length, 28)
+    central.writeUInt32LE(offset, 42)
+    parts.push(local, name, packed, descriptor)
+    centrals.push(central, name)
+    offset += local.length + name.length + packed.length + descriptor.length
+  }
+  const directory = Buffer.concat(centrals)
+  const end = Buffer.alloc(22)
+  end.writeUInt32LE(0x06054b50, 0)
+  end.writeUInt16LE(Object.keys(files).length, 8)
+  end.writeUInt16LE(Object.keys(files).length, 10)
+  end.writeUInt32LE(directory.length, 12)
+  end.writeUInt32LE(offset, 16)
+  return new Uint8Array(Buffer.concat([...parts, directory, end]))
+}
+const text = (files: Record<string, Uint8Array>) => Object.fromEntries(Object.entries(files).map(([p, b]) => [p, Buffer.from(b).toString('utf8')]))
+
+test('7.21 · zipTheme → unzipTheme: every file back byte for byte, binary included, under its own path', () => {
+  const back = unzipTheme(zipTheme(FILES))
+  assert.deepEqual(Object.keys(back).sort(), Object.keys(FILES).sort())
+  for (const [path, want] of Object.entries(FILES)) {
+    assert.deepEqual(Buffer.from(back[path] as Uint8Array), typeof want === 'string' ? Buffer.from(want, 'utf8') : Buffer.from(want), path)
+  }
+})
+
+test('7.21 · an archiver-shaped zip — directory entries, data descriptors, stored and deflated entries, a dot file — reads right; its directories are skipped', () => {
+  const files = { 'partials/': null, 'partials/sections/': null, 'partials/sections/home/hero.hbs': '<section>Hand edited</section>\n', '.editorconfig': 'root = true\n', 'package.json': '{}\n' }
+  const back = unzipTheme(archiverZip(files, (p) => (p === 'package.json' ? 0 : 8)))
+  assert.deepEqual(text(back), { 'partials/sections/home/hero.hbs': '<section>Hand edited</section>\n', '.editorconfig': 'root = true\n', 'package.json': '{}\n' })
+})
+
+test(`7.21 · what is never read throws: past the cap (${LIVE_MAX_BYTES} bytes by default), a lying size, ZIP64, an encrypted entry, another method, not a zip — the check reads each as unreadable`, () => {
+  const ok = { 'a.hbs': 'x'.repeat(100), 'b.hbs': 'y'.repeat(100) }
+  assert.doesNotThrow(() => unzipTheme(archiverZip(ok), 200), 'the control: exactly the cap reads')
+  assert.throws(() => unzipTheme(archiverZip(ok), 199), /past the size cap/)
+  assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x'.repeat(100) }, undefined, { unpacked: 10 })), /not what its header says/, 'a declared size is a claim')
+  assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x' }, undefined, { unpacked: 0xffffffff })), /ZIP64/)
+  assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x' }, undefined, { flags: 0x0001 })), /encrypted/)
+  assert.throws(() => unzipTheme(archiverZip({ 'a.hbs': 'x' }, undefined, { method: 12 })), /method 12/)
+  const zip64 = Buffer.from(zipTheme({ 'a.hbs': 'x' }))
+  zip64.writeUInt32LE(0xffffffff, zip64.length - 22 + 16)
+  assert.throws(() => unzipTheme(new Uint8Array(zip64)), /ZIP64/)
+  for (const junk of [new TextEncoder().encode('<html>Bad gateway</html>'), new Uint8Array(), new Uint8Array([0x50, 0x4b, 3, 4])]) {
+    assert.throws(() => unzipTheme(junk), /not a zip|no end record/)
+  }
+  const cut = zipTheme({ 'a.hbs': 'x' }).slice(0, -5)
+  assert.throws(() => unzipTheme(cut), /no end record/, 'a zip cut short')
 })

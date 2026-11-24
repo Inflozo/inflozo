@@ -24,6 +24,7 @@ import { sizeLabel } from './routes-upload.ts'
 import { EVERY_PAGE } from './theme-settings.ts'
 import { RAIL_WORDS } from './translations.ts'
 import type { SwitchSite } from './site-switch.ts'
+import type { DriftRecord } from './drift.ts'
 
 // ── the stages and the rail ─────────────────────────────────────────────────────────────────────────────────────────
 
@@ -67,7 +68,9 @@ export type Timing = { at: string; ms?: number; bytes?: number }
 /** STORY 7.20a — the capture's own record: the live theme's name and version and the zip's size, or `marked` (the live theme
  *  is already Inflozo's, nothing captured), or `skipped` (Deploy without a snapshot — no stage entered, so no `at`) */
 export type SnapshotTiming = { at?: string; ms?: number; bytes?: number; theme?: string; version?: string | null; marked?: true; skipped?: true }
-export type Timings = Partial<Record<Exclude<Stage, 'snapshotting'>, Timing>> & { snapshotting?: SnapshotTiming; routes?: RoutesEnding }
+/** STORY 7.21 — and `drift`, the drift check's record (`lib/drift.ts`' `DriftRecord`): read inside `checking` and riding its next
+ *  edge, as `snapshotting`'s and the routes step's ride theirs — no stage of its own, no migration */
+export type Timings = Partial<Record<Exclude<Stage, 'snapshotting'>, Timing>> & { snapshotting?: SnapshotTiming; routes?: RoutesEnding; drift?: DriftRecord }
 
 /** THE STAGE → STEP MAP (the spec's stage table). A failure sits on Ship when it happened while shipping (S8d′), and on
  *  Check otherwise (a blocked Pre-flight); a cancelled job is back at Destination. */
@@ -107,6 +110,8 @@ export function endingOf(stage: Stage, deploy: { activated: boolean } | null, ti
 export const versionOf = (n: number): string => `${n}.0.0`
 /** …as the wizard shows it. */
 export const versionLabel = (n: number): string => `v${n}`
+/** The bucket every stored artefact lives in (server-only: no Storage policy, AD-29) — and, since Story 7.21, D3a's live copy */
+export const ARTIFACT_BUCKET = 'deploy-artifacts'
 /** `1.0.0` → 1, the number a stored version names; NaN for anything else. */
 export const versionNumber = (version: string): number => (/^(\d+)\.0\.0$/.test(version) ? Number(version.split('.')[0]) : Number.NaN)
 /** FR-J10 / AD-19: the theme's name, from the frozen `projects.slug` — and the zip's filename, which is what Ghost names a
@@ -705,7 +710,9 @@ export const MODES: readonly Mode[] = ['activate', 'upload']
 /** POST `projects/[id]/deploy`'s body. `session` is the tab's lock session (`lib/lock-client.ts`). */
 export type DeployIntent = 'preflight' | 'ship' | 'activate' | 'cancel'
 export const INTENTS: readonly DeployIntent[] = ['preflight', 'ship', 'activate', 'cancel']
-export type DeployRequest = { intent: DeployIntent; session: string; job?: string; mode?: Mode; withoutSnapshot?: boolean }
+/** Story 7.20a: `withoutSnapshot` is B12b's Deploy without a snapshot. Story 7.21: `overwrite` is D3a's Overwrite and ship anyway —
+ *  the only press that ships over a found drift (the route answers 409 without it) */
+export type DeployRequest = { intent: DeployIntent; session: string; job?: string; mode?: Mode; withoutSnapshot?: boolean; overwrite?: boolean }
 
 /** Routes at the ending — `offerRoutes`' outcome, as the job keeps it (no file: B16 reads `routes_last_offered`). */
 export type RoutesEnding =

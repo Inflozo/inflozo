@@ -420,3 +420,36 @@ test('7.20a: the Download glyph is Tabler\'s own `download` outline, path for pa
   const glyph = icons.slice(icons.indexOf('export const Download'), icons.indexOf(')\n', icons.indexOf('export const Download')))
   assert.deepEqual([...glyph.matchAll(/<path d="([^"]+)" \/>/g)].map((m) => m[1]), want)
 })
+
+// ── Story 7.21 — the one door's drift rules, read from the route's own source (`lock.test.ts`' way: no request is made here) ──
+
+const DEPLOY_ROUTE = readFileSync('app/(app)/app/(authed)/projects/[id]/deploy/route.ts', 'utf8')
+const LIVE_ROUTE = readFileSync('app/(app)/app/(authed)/projects/[id]/deploy/live/route.ts', 'utf8')
+const sliceOf = (source: string, from: string, to: string) => {
+  const at = source.indexOf(from)
+  assert.ok(at > -1, `the route still has ${from}`)
+  const end = source.indexOf(to, at)
+  assert.ok(end > at, `…and ${to} after it`)
+  return source.slice(at, end)
+}
+
+test('7.21: POST takes `overwrite` as a boolean or absent, and `ship` answers 409 "Drift found" over a found drift without it — BEFORE any work is handed on — then hands the word to `ship()`', () => {
+  assert.match(DEPLOY_ROUTE, /const \{ intent, session, job, mode, withoutSnapshot, overwrite \} = body/)
+  assert.match(DEPLOY_ROUTE, /if \(overwrite !== undefined && typeof overwrite !== 'boolean'\) return no\(400, 'Bad overwrite'\)/)
+  const shipArm = sliceOf(DEPLOY_ROUTE, "if (act === 'ship') {", '\n  }\n')
+  const refuse = shipArm.indexOf("if (row.stage_timings?.drift?.kind === 'found' && overwrite !== true) return no(409, 'Drift found')")
+  assert.ok(refuse > -1, 'the 409')
+  assert.ok(refuse < shipArm.indexOf('after(() => ship('), 'refused before the ship is handed on')
+  assert.match(shipArm, /ship\(\{ jobId: row\.id, userId: user\.id, mode: mode as Mode, withoutSnapshot: withoutSnapshot === true, overwrite: overwrite === true \}, DEPLOY_IO\)/)
+})
+
+test('7.21: the live copy\'s route — the job read on the caller\'s own session, this project\'s with a FOUND drift or a 404; a 60-second signed URL named {theme}-live.zip and a 303 (AD-13); NoSuchKey a 404, any other signing failure a 502', () => {
+  assert.match(LIVE_ROUTE, /\(await supabaseServer\(\)\)\.from\('deploy_jobs'\)/, 'whose job it is is RLS\'s to answer')
+  assert.match(LIVE_ROUTE, /job\.project_id !== projectId \|\| drift\?\.kind !== 'found'/)
+  assert.match(LIVE_ROUTE, /const SIGNED_URL_TTL_S = 60\n/)
+  assert.match(LIVE_ROUTE, /createSignedUrl\(liveCopyPath\(projectId, job\.site_id\), SIGNED_URL_TTL_S, \{ download: liveFileName\(theme\)/)
+  assert.match(LIVE_ROUTE, /code === 'NoSuchKey'\) \{[\s\S]*?return no\(404, 'Not found'\)/)
+  assert.match(LIVE_ROUTE, /return no\(502, 'Could not prepare that download'\)/)
+  assert.match(LIVE_ROUTE, /NextResponse\.redirect\(signed\.signedUrl, 303\)/)
+  assert.doesNotMatch(LIVE_ROUTE, /\.download\(/, 'no bytes through a function body')
+})

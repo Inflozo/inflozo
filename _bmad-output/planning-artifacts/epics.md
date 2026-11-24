@@ -4521,6 +4521,11 @@ never deletes (DW-372).
 **And** *(given an owner by Story 7.18b's Review, 2026-10-19)* a stored zip nothing can ship is pruned too: a Ship it Story
 7.18b refused because the project's site changed (DW-374) marks its deploy failed and keeps the zip, and a check left resting
 on the old site after a switch keeps its own (DW-380).
+**And** *(given an owner by Story 7.21's Dev, 2026-11-24)* the drift check's live copy (`deploy-artifacts/{projectId}/live/
+{siteId}.zip`, one per project × site, overwritten by each found drift) is **outside this count**, like the pre-Inflozo
+snapshot, and is never listed as a version; and pruning **never removes the drift baseline's `content_manifest`** — the newest
+upload Ghost accepted from this project to each site (R-287) — or the next check would compare the site with an older upload
+and report Inflozo's own changes as drift.
 
 **FRs:** FR-J7. · **Frame:** `D2 Deploy History Completed.dc.html` D2a · D2b. · **Owner test:** yes.
 
@@ -4557,6 +4562,10 @@ never a re-upload of the snapshot
 route — a 404 when the row has gone, a 502 when signing fails, the sign-in redirect — is said where the button is and never
 replaces the page; one way for D2a's original-theme row and the Backup step's Theme Download (`deploy-wizard.tsx`
 `follow`)
+**And** *(Story 7.21's Dev, 2026-11-24, under R-287)* a rollback or a restore that **uploads a stored artefact records that
+upload as the newest accepted one** — a `deploys` row with status `uploaded` or `live` carrying **the artefact's own
+`content_manifest`** — because Ghost replaces every file under the theme's name on that upload, and the next drift check
+compares the site with the newest upload Ghost accepted (`deploys.baseline`)
 **And** the Roll back confirm **opens with focus on the cancelling action** (UX-DR14)
 **And** with no deploys the empty state is "Nothing shipped yet" **and the limit is stated anyway** (UX-DR6)
 **And** the history is reachable from a phone, because it is what the Small Screen Notice offers, and this story adds

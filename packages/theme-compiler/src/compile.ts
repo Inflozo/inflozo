@@ -213,7 +213,15 @@ export type CustomRecord = { emitted: readonly string[]; parked: readonly string
 /** Story 7.18b — `noindex` is FR-H2's guard as it is emitted: the page-2 contexts `default.hbs`'s `noindex` names, deduped, in the
  *  guard's own order (`index`, `tag`, `author`, then each feed-less listed template's) — none when no page 2 is feed-less. The
  *  guard and Pre-flight's feed-less warning read this one fact. */
-export type CompiledTheme = { files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord; custom: CustomRecord; noindex: readonly string[] }
+/** STORY 7.21 — FR-J16's fingerprint, handed out as DATA BESIDE the files, never inside one (FR-J1): for each section partial
+ *  the compile wrote (`partials/sections/{dir}/{name}.hbs`), the placement its file is slugged from — the first instance of its
+ *  group (`sectionSlug`) — by its instance id, its layer name as the boundary comment says it, and its category. The deploy keeps
+ *  it in `deploys.content_manifest`, so a drifted partial is named by the layer's own name today, never by its path. */
+export type SectionRecord = { id: string; layer: string; category: string }
+export type CompiledTheme = {
+  files: Readonly<Record<string, string | Uint8Array>>; css: CssRecord; js: JsRecord; custom: CustomRecord; noindex: readonly string[]
+  sections: Readonly<Record<string, SectionRecord>>
+}
 
 /** The site doc's file. */
 const SITE_DOC = 'default.hbs'
@@ -1083,11 +1091,14 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
   }
   const taken = new Map<string, Set<string>>()
   const invocation = new Map<Placed, string>()
+  /** Story 7.21 — each partial's placement, the deploy's fingerprint (`SectionRecord`) */
+  const sections: Record<string, SectionRecord> = {}
   for (const group of groups.values()) {
     const first = group[0] as Placed
     const dir = new Set(group.map((p) => p.file)).size > 1 ? 'shared' : stemOf(first.file)
     const name = claim(taken.get(dir) ?? taken.set(dir, new Set()).get(dir) as Set<string>, sectionSlug(first.instance.layerName, first.entry))
     tree[`partials/sections/${dir}/${name}.hbs`] = `${first.template}\n`
+    sections[`partials/sections/${dir}/${name}.hbs`] = { id: first.instance.instanceId, layer: first.instance.layerName || first.entry.name, category: first.entry.category }
     for (const p of group) invocation.set(p, `{{> "sections/${dir}/${name}"}}`)
   }
   const indent = (text: string, by: string): string => text.split('\n').map((l) => (l === '' ? l : `${by}${l}`)).join('\n')
@@ -1301,5 +1312,5 @@ export function compileTheme(doc: RuntimeDocument, input: CompileInput): Compile
     throw why === null ? new Error(sentence) : refuse('settingUnread', sentence, why)
   }
   const all: Record<string, string | Uint8Array> = { ...fonts.files, ...text }
-  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js, custom: custom.record, noindex }
+  return { files: Object.fromEntries(Object.keys(all).sort(byCode).map((path) => [path, all[path] as string | Uint8Array])), css: { global, sheets, reach }, js, custom: custom.record, noindex, sections: Object.fromEntries(Object.keys(sections).sort(byCode).map((path) => [path, sections[path] as SectionRecord])) }
 }

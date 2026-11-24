@@ -6,8 +6,11 @@
 // cut to 60 and trimmed again. DETERMINISTIC IS NOT UNIQUE — `Hero` and `HERO` slug alike — so names are handed out per
 // directory in placement order, each its slug while free and otherwise the first free `-2`, `-3`, …
 
-/** The longest slug, before a collision suffix. */
-export const SLUG_MAX = 60
+import { LAYER_NAME_MAX } from '@inflozo/section-runtime'
+
+/** The longest slug, before a collision suffix — the longest layer name (DW-338, Story 7.21): one cap, so the file name and
+ *  the label in its boundary comment agree. */
+export const SLUG_MAX = LAYER_NAME_MAX
 
 /** A name's slug — `''` when nothing in it survives (an emoji, a CJK name). */
 export function partialSlug(name: string): string {

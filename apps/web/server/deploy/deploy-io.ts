@@ -2,12 +2,12 @@ import { JSDOM } from 'jsdom'
 import { CATALOG } from '@inflozo/library'
 import { compileTheme } from '@inflozo/theme-compiler'
 import { gscanGate, qualityGate } from '@inflozo/theme-compiler/gate'
-import { inputsHash } from '@/lib/deploy'
+import { ARTIFACT_BUCKET, inputsHash } from '@/lib/deploy'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
 import { ROUTES_IO } from '@/server/routes-io'
 import { offerRoutes } from '@/server/routes-upload'
-import { captureSnapshot } from '@/server/snapshot'
+import { captureSnapshot, downloadPath } from '@/server/snapshot'
 import { SNAPSHOT_IO } from '@/server/snapshot-io'
 import { compileInputOf } from './project-input.ts'
 import type { DeployIo, DeployRow, JobRow } from './run.ts'
@@ -21,13 +21,14 @@ import { zipTheme } from './zip.ts'
  *     (AD-7). EVERY QUERY CARRIES `user_id`, the clause that stands in for the RLS the service role bypasses, and a site
  *     read carries `disconnected_at is null` (`ROUTES_IO`'s rule).
  *   - THE CHOKEPOINT: `call()` with the Admin key for `theme_upload` (a multipart `FormData`, DW-51's transport — the second
- *     multipart write after the routes upload) and `theme_activate`; the routes step is Story 7.17's, with its own io.
+ *     multipart write after the routes upload) and `theme_activate`; the routes step is Story 7.17's, with its own io. Story
+ *     7.21 adds one READ with the Staff Access Token: the drift check's `GET themes/{bound}/download/` (`liveTheme`).
  * The gates and JSDOM run here, in the one function AD-11 sizes; `gscan4` and `gscan6` are server externals
  * (`next.config.ts`) and their trees reach the route's trace (`tools/check-traces.mjs`). jsdom is BUNDLED, never an external:
  * Vercel refuses the require-of-ESM jsdom 30 is built on (the owner's test, 2026-10-19; `next.config.ts` says how).
  */
 
-const BUCKET = 'deploy-artifacts'
+const BUCKET = ARTIFACT_BUCKET
 const JOB_COLUMNS = 'id, project_id, user_id, site_id, stage, cancel_requested, deploy_id, error, stage_timings, updated_at'
 const DEPLOY_COLUMNS = 'id, version, theme_name, status, activated, artifact_path, artifact_bytes, gscan, quality, inputs_sha256, activated_at, preflight'
 
@@ -98,6 +99,12 @@ export const DEPLOY_IO: DeployIo = {
       const custom = rows?.[0]?.preflight?.custom
       return typeof custom === 'object' && custom !== null && !Array.isArray(custom) ? (custom as Record<string, unknown>) : null
     },
+    // Story 7.21 — R-287's drift baseline: the newest upload Ghost accepted (`uploaded` or `live`), never the job's own
+    async baseline({ projectId, siteId, userId, except }) {
+      const rows = ok(await supabaseAdmin().from('deploys').select('version, content_manifest').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('status', ['uploaded', 'live']).neq('id', except).order('created_at', { ascending: false }).limit(1), 'drift baseline') as { version: string; content_manifest: DeployRow['content_manifest'] }[] | null
+      const row = rows?.[0]
+      return row === undefined ? null : { version: row.version, content_manifest: row.content_manifest ?? null }
+    },
     async previous({ projectId, siteId, userId, except }) {
       let q = supabaseAdmin().from('deploys').select('version').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).eq('activated', true)
       if (except !== undefined) q = q.neq('id', except)
@@ -107,6 +114,8 @@ export const DEPLOY_IO: DeployIo = {
     },
   },
   artifacts: {
+    // `upsert`: an artefact's key is new each deploy, and Story 7.21's live copy (`{projectId}/live/{siteId}.zip`) is one fixed key
+    // that each found drift overwrites
     async put(path, bytes) {
       ok(await supabaseAdmin().storage.from(BUCKET).upload(path, bytes, { contentType: 'application/zip', upsert: true }), 'artifact upload')
     },
@@ -155,6 +164,9 @@ export const DEPLOY_IO: DeployIo = {
   // `snapshot-io.ts`', on `server-wiring.test.ts`' two lists), so `run.ts` stays off the chokepoint
   snapshot: (a) => captureSnapshot(a, SNAPSHOT_IO),
   call: (args) => call({ ...args, kind: 'admin' }),
+  // Story 7.21 — the drift check's read: the capture's download, under the bound name, with the Staff Access Token and the
+  // download's own read budget — a read, so `ADMIN_WRITES` stays four (R-22)
+  liveTheme: ({ siteId, name, route }) => call({ siteId, path: downloadPath(name), route, kind: 'staff', read: 'theme_download' }),
   offerRoutes: (a) => offerRoutes(a, ROUTES_IO),
   async routesFile({ siteId, userId }) {
     const row = ok(await supabaseAdmin().from('sites').select('routes_last_offered').eq('id', siteId).eq('user_id', userId).maybeSingle(), 'routes file') as { routes_last_offered: string | null } | null

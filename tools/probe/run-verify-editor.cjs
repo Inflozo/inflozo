@@ -4,7 +4,10 @@
 //   env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) OUT_DIR=/tmp/x node tools/probe/run-verify-editor.cjs
 //   APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app …   # a local `next start`: no Vercel check, and not a deployed result
 //   T1_WRITES=1 …   # step 113 too (Story 7.18a): it WRITES TO T1, so only on the owner's in-session go, in the main session
-//                   (step 114, Story 7.18b, always runs: it writes to production through a throwaway account and reads T1)
+//                   (step 114, Story 7.18b, always runs: it writes to production through a throwaway account and reads T1);
+//                   steps 117 (Story 7.20a) and 119 (Story 7.21) write to T1 too, and run under the same switch
+//   STEP119_PLANT=<email> T1_WRITES=1 …   # Story 7.21: step 119 as Deploy's plant for the owner's test, as that address —
+//                   run it in a cut copy (steps 1–5 and 119); it stops after the hand edit and leaves T1 and the account planted
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -412,6 +415,18 @@
 // Download's 303 leading to a zip; (c) a connected site with its own theme: the section after the cards, that theme not in it;
 // (d) one theme purged as the job purges it (object, then row): gone from the section, and its stale Download the route's 404.
 // Its finally removes every object it put, deletes I and counts users back.
+// Story 7.21 adds step 119, WRITING TO T1, so it runs only with `T1_WRITES=1` on the owner's in-session go (worded for the whole
+// run): PRE-DEPLOY DRIFT DETECTION (FR-J16, R-287; D3a/D3b/D3c). A throwaway account J (`editor-harness-j-…`) connects T1 through
+// the wizard and "Drift test" (step 1's fixture) is linked: (a) the first deploy is ▾ → Deploy only — no drift row, and v1's
+// `content_manifest` names every file of its artefact zip; (b) Run checks → D3c "since v1", R-287's Ruled value 1; (c) Deploy &
+// activate → Live, the hero renamed and saved, Run checks → D3c (the control: Inflozo's own file name moved); (d) the bound theme
+// hand-edited on T1 (one partial's text, `custom-handmade.hbs` added, `README.md` removed; the Admin key, under the bound name) →
+// Run checks → D3a with exactly those three rows, focus on Cancel, Download a 303 to the zip with the edit; (e) a `ship` without
+// `overwrite` → 409 (the control), Overwrite and ship anyway → Live and every file Inflozo's again, Run checks → D3c; (f) the start
+// theme activated and `inflozo-<slug>` deleted on T1 → Run checks → D3b `missing`, Ship it → Live. Its finally puts T1 back (the
+// start theme active, every inflozo- theme it uploaded deleted, routes.yaml byte for byte), removes J's objects, disconnects and
+// deletes J, and counts back. `STEP119_PLANT=<email>` is Deploy's plant for the owner's test instead: that address, "Drift test"
+// shipped once and live, (d)'s hand edit read back from T1 — and it stops, printing the project's id and the section's name.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -500,8 +515,8 @@ async function main() {
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
   // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's; Story 7.20a: `h` is 117's;
-  // Story 7.20b: `i` is 118's
-  const stale = all.filter((u) => /^editor-harness-[abcdefghi]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.20b: `i` is 118's; Story 7.21: `j` is 119's (never the plant's address, which is the owner's)
+  const stale = all.filter((u) => /^editor-harness-[abcdefghij]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -13727,6 +13742,495 @@ async function main() {
         }
       }
       check('step 118 — the step\'s contexts recorded zero CSP violations', csp118.length === 0, JSON.stringify(csp118.slice(0, 3)))
+    }
+
+    // ── step 119 — STORY 7.21: PRE-DEPLOY DRIFT DETECTION, ON PRODUCTION AND T1 (FR-J16, R-287, D3a/D3b/D3c, DW-338, R-82) ──
+    /* WRITES TO T1, so it runs only with `T1_WRITES=1` on the owner's in-session go, worded for the WHOLE run (memory: test-site
+       writes need an in-session go). Every T1 write it causes: the product's uploads of `inflozo-<slug>` (a: Deploy only; c: Deploy &
+       activate, with its PUT activate; e: Overwrite, under the live name, so no PUT; f: a re-upload with its PUT activate); the
+       walk's own Admin-key upload of the hand-edited copy under the bound name (d); the staff token's PUT activate of the start
+       theme and DELETE of `inflozo-<slug>` (f); and the finally's put-back (the start theme active, every `inflozo-*` theme the run
+       uploaded deleted, T1's routes.yaml uploaded back only if a routes step changed it). A throwaway account J
+       (`editor-harness-j-…`) connects T1 through the wizard, and a seeded project ("Drift test", step 1's fixture) is linked to it
+       through the service key.
+       (a) the FIRST deploy is ▾ → Deploy only (Next → Add token with `GHOST6_STAFF_ACCESS_TOKEN` → Backup → Run checks): no drift
+           row and no `stage_timings.drift` (no binding — a first deploy reads nothing); v1 uploaded, not activated, and its
+           `content_manifest` names every file of the artefact zip, the hero partial fingerprinted by its instance id.
+       (b) Ship it → Run checks: D3c "Nothing changed on your site since v1", second in the passes box — R-287's Ruled value 1
+           (under the October rule v1 never went live, so there would have been no baseline and no row).
+       (c) Ship it → Live (v2); the hero layer renamed in Layers and saved; Run checks: D3c "since v2" — and the control: the new
+           Pre-flight's manifest names the hero by its NEW path, which T1 does not hold (Inflozo's file name moved, the site did not).
+       (d) the bound theme hand-edited on T1 as the recorder does (downloaded with the staff token, the hero partial's text changed,
+           `custom-handmade.hbs` added, `README.md` removed, uploaded with the Admin key under the bound name): Run checks → D3a —
+           exactly three rows (Changed by the layer's CURRENT name, "A template Inflozo didn't write", "Read me") with their
+           counts, the chip and the footer, focus on Cancel; Download a 303 to a signed URL serving `{theme}-live.zip`, the edit in it.
+       (e) the control: a `ship` POST without `overwrite` → 409 "Drift found", the job still resting and T1 untouched; then Overwrite
+           and ship anyway → Live, T1's theme every file Inflozo's again (`storage.js:95-107`, executed); Run checks → D3c.
+       (f) the start theme activated and `inflozo-<slug>` deleted on T1 with the staff token: Run checks → D3b `missing` with no Add
+           token, Ship it live (not greyed); Ship it → Live, the theme back.
+       FINALLY: every job at rest; T1 put back and read back; J's objects removed (`site-snapshots/{J}/{site}/…`,
+       `deploy-artifacts/{P}/…` and `{P}/live/…`); T1 disconnected through the product; J deleted; users and projects counted back.
+       `STEP119_PLANT=<email>` (with `T1_WRITES=1`, in a cut copy of steps 1–5 and this one) is Deploy's plant for the owner's test
+       instead: that account (made if absent), T1 connected, "Drift test" shipped ONCE with Deploy & activate (v1 live), then (d)'s
+       hand edit — read back from T1 — and it STOPS there, printing the project's id, the hero's layer name and the addresses; it
+       leaves T1 and the account as planted (put back as the finally does only should the plant fail). Keys are read in-process by
+       NAME and scrubbed; never printed. SELF-CONTAINED, as 117 is. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 119 — NOT RUN', 'it writes to T1 (theme uploads and activations through the product, a hand-edited upload and a delete, and the put-back): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp119 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP119, DR119, CR119, PR119, AR119, RU119, ZIP119, GATE119] = await Promise.all([
+        imp119('apps/web/lib/deploy.ts'), imp119('apps/web/lib/drift.ts'), imp119('apps/web/lib/connect-rule.ts'), imp119('apps/web/lib/probe-rule.ts'),
+        imp119('apps/web/server/ghost-admin/admin-rule.ts'), imp119('apps/web/lib/routes-upload.ts'), imp119('apps/web/server/deploy/zip.ts'),
+        imp119('apps/web/lib/backup-gate.ts'),
+      ])
+      const W119 = DEP119.DEPLOY_WORDS
+      const DW119 = DR119.DRIFT_WORDS
+      const PLANT119 = (process.env.STEP119_PLANT ?? '').trim()
+      const until119 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV119 = {}
+      const NAMES119 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES119.includes(m[1]) && m[2].trim()) ENV119[m[1]] = m[2].trim()
+      }
+      const missing119 = NAMES119.filter((k) => !ENV119[k])
+      if (missing119.length) throw new Error(`step 119: ${missing119.join(', ')} not in tools/probe/.env`)
+      const SECRETS119 = [ENV119.GHOST6_ADMIN_API_KEY, ENV119.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV119.GHOST6_CONTENT_API_KEY]).filter((x) => x.length >= 8)
+      const scrub119 = (x) => SECRETS119.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const HOST119 = CR119.hostOf(ENV119.GHOST6_URL)
+      /** T1's Admin API through the product's own request builder, with the key named (117's) */
+      const ghost119 = async (credential, method, p, body) => {
+        const { url, init } = AR119.adminRequest({ credential, siteUrl: ENV119.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, init)
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      const staff119 = (method, p, body) => ghost119(ENV119.GHOST6_STAFF_ACCESS_TOKEN, method, p, body)
+      const themes119 = async () => {
+        const r = await staff119('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true })) : null
+      }
+      const routesFile119 = async () => {
+        const r = await staff119('GET', RU119.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      /** the theme under a name, downloaded with the staff token and read by the product's own reader; null when Ghost refused */
+      const liveFiles119 = async (theme) => {
+        const r = await staff119('GET', `themes/${encodeURIComponent(theme)}/download/`).catch(() => null)
+        return r?.ok ? ZIP119.unzipTheme(new Uint8Array(r.bytes)) : null
+      }
+      const text119 = (b) => (b === undefined || b === null ? null : Buffer.from(b).toString('utf8'))
+      const storage119 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed119 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage119, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const object119 = async (bucket, key) => {
+        const r = await fetch(`${SB}/storage/v1/object/${bucket}/${key}`, { headers: storage119 }).catch(() => null)
+        return r?.ok ? Buffer.from(await r.arrayBuffer()) : null
+      }
+      /** the hand edit (d): its marker, and the template the site gains */
+      const MARK119 = `\n<!-- edited by hand in Ghost Admin — walk 119, ${stamp} -->\n`
+      const HANDMADE119 = '{{!< default}}\n<p>Made by hand</p>\n'
+      const RENAMED119 = 'Drift hero renamed'
+
+      const email119 = PLANT119 || `editor-harness-j-${stamp}@inflozo.com`
+      const usersBefore119 = (await users())?.length ?? null
+      const projectsBefore119 = await projectCount()
+      let id119 = null
+      let site119 = null
+      let P119 = null
+      let theme119 = null
+      let prev119 = null
+      let start119 = []
+      let routesBefore119 = null
+      let planted119 = false
+      /** the account was made by this step (J always; the plant's only when its address had none) — only such an account is deleted */
+      let made119 = false
+      const ctxs119 = []
+      const csp119 = []
+
+      const siteRow119 = async () => (site119 === null ? null : (await call('/rest/v1', `/sites?id=eq.${site119}&select=id,credentials_present,backup_confirmed_at,disconnected_at`)).body?.[0] ?? null)
+      const job119 = async () => (P119 === null ? null : (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P119}&select=id,stage,error,deploy_id,stage_timings&order=started_at.desc&limit=1`)).body?.[0] ?? null)
+      const deploy119 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=id,version,status,activated,artifact_path,content_manifest`)).body?.[0] ?? null)
+      const atRest119 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      const heroOf119 = async () => {
+        const doc = (await call('/rest/v1', `/project_templates?project_id=eq.${P119}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+        return (doc?.instances ?? []).find((i) => i.designId === 'a4/13') ?? null
+      }
+      /** the path a deploy's manifest files the hero under: the entry its instance id fingerprints */
+      const heroPath119 = (deploy, heroId) => Object.entries(deploy?.content_manifest ?? {}).find(([, e]) => e?.fingerprint === heroId)?.[0] ?? null
+      const wiz119 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const box = d.querySelector('[data-check-rows]')
+        const u = d.querySelector('[data-drift-row="unverified"]')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          title: d.querySelector('#deploy-title')?.textContent ?? null,
+          report: d.querySelector('[data-drift-report]') !== null,
+          reading: d.querySelector('#deploy-drift-reading') !== null,
+          driftRows: [...d.querySelectorAll('[data-drift-row]')].map((r) => r.getAttribute('data-drift-row')),
+          passes: box ? [...box.children].filter((c) => !c.hasAttribute('data-finding')).map((c) => ({ text: c.textContent.trim(), clean: c.getAttribute('data-drift-row') === 'clean' })) : [],
+          unverified: u ? { cause: u.getAttribute('data-drift-cause'), text: u.textContent, token: u.querySelector('#deploy-drift-token') !== null } : null,
+          groups: [...d.querySelectorAll('[data-drift-group]')].map((g) => ({
+            group: g.getAttribute('data-drift-group'),
+            count: g.querySelector('[data-drift-count]')?.textContent ?? null,
+            files: [...g.querySelectorAll('[data-drift-file]')].map((f) => ({ path: f.getAttribute('data-drift-file'), label: f.querySelector('[data-drift-label]')?.textContent ?? null })),
+          })),
+          chip: d.querySelector('[data-drift-chip]')?.textContent ?? null,
+          foot: d.querySelector('[data-drift-foot]')?.textContent ?? null,
+          download: d.querySelector('#deploy-drift-download')?.getAttribute('href') ?? null,
+          focus: document.activeElement?.id ?? null,
+          ship: d.querySelector('#deploy-ship')?.getAttribute('aria-disabled') ?? null,
+          confetti: d.querySelector('[data-confetti]') !== null,
+        }
+      }).catch(() => null)
+      const context119 = async () => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true }))
+        ctxs119.push(ctx)
+        await recorder(ctx, csp119)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 119', scrub119(String(e))))
+        await pg.goto(await magic(email119), { waitUntil: 'load' })
+        return pg
+      }
+      const painted119 = (pg) => pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).then(() => true, () => false)
+      const closed119 = async (pg) => {
+        if ((await wiz119(pg)) === null) return
+        await pg.keyboard.press('Escape').catch(() => {})
+        await pg.waitForFunction(() => !document.querySelector('dialog[data-deploy-wizard]'), null, { timeout: 15000 }).catch(() => {})
+      }
+      /** Ship it's own press (Deploy & activate): Destination */
+      const openShip119 = async (pg) => {
+        await closed119(pg)
+        await pg.locator('#editor-ship').click()
+        return until119(() => wiz119(pg), (w) => w?.at === 'destination', 20000)
+      }
+      /** Run checks pressed, and the job it made read until it rests: its record, and the wizard once it draws the outcome */
+      const runChecks119 = async (pg, ready = () => true) => {
+        const was = (await job119())?.id ?? null
+        await pg.locator('#deploy-run').click()
+        const job = await until119(job119, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+        const shown = await until119(() => wiz119(pg), (w) => w?.at === 'check' && !w.reading && ready(w), 30000)
+        return { job, shown }
+      }
+      /** Ship it pressed on a resting Pre-flight, and the same job read until it ends */
+      const ship119 = async (pg, job) => {
+        await until119(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        await pg.locator('#deploy-ship').click()
+        return until119(job119, (j) => j?.id === job?.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
+      }
+      const connect119 = async (pg) => {
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV119.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV119.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV119.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+      }
+      /** the first deploy's two steps answered as a customer answers them: Add token (the staff token), then the Backup gate */
+      const firstSteps119 = async (pg) => {
+        await pg.locator('#deploy-next').click()
+        await until119(() => wiz119(pg), (w) => w?.at === 'safety', 15000)
+        await pg.locator('#deploy-token').fill(ENV119.GHOST6_STAFF_ACCESS_TOKEN)
+        await pg.locator('#deploy-add-token').click()
+        await until119(() => wiz119(pg), (w) => w?.at === 'backup', 60000)
+        for (const { id } of GATE119.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
+        await pg.locator('#deploy-gate-confirm').check()
+      }
+      /** (d)'s plant: the bound theme downloaded with the staff token, the hero's partial edited, a template added and the read me
+       *  removed, re-zipped by the product's writer and uploaded with the Admin key under the SAME name — the theme a customer
+       *  edited in Ghost Admin. Answers the upload's status and the files T1 then holds, read back */
+      const handEdit119 = async (heroPath) => {
+        const files = await liveFiles119(theme119)
+        if (files === null || files[heroPath] === undefined || files['README.md'] === undefined) throw new Error(`step 119: T1's ${theme119} does not hold ${heroPath} and README.md to edit`)
+        const edited = { ...files, [heroPath]: Buffer.concat([Buffer.from(files[heroPath]), Buffer.from(MARK119)]), 'custom-handmade.hbs': HANDMADE119 }
+        delete edited['README.md']
+        const form = new FormData()
+        form.append('file', new Blob([ZIP119.zipTheme(edited)], { type: 'application/zip' }), `${theme119}.zip`)
+        const up = await ghost119(ENV119.GHOST6_ADMIN_API_KEY, 'POST', 'themes/upload/', form)
+        return { status: up.status, name: up.body?.themes?.[0]?.name ?? null, after: await liveFiles119(theme119) }
+      }
+      const handEdited119 = (after, heroPath) => after !== null && (text119(after[heroPath]) ?? '').endsWith(MARK119) && text119(after['custom-handmade.hbs']) === HANDMADE119 && after['README.md'] === undefined
+
+      try {
+        // the start: T1's live theme and routes.yaml, which the finally puts back — never begun on a theme a test left live
+        start119 = (await themes119()) ?? []
+        prev119 = start119.find((t) => t.active)?.name ?? null
+        routesBefore119 = await routesFile119()
+        check(`step 119 — T1's live theme read with the staff token at the start (${prev119 ?? 'unread'}), not an Inflozo theme a test left live, and routes.yaml read (${routesBefore119?.length ?? 'unread'} bytes)`,
+          prev119 !== null && !/^inflozo-/.test(prev119) && routesBefore119 !== null, JSON.stringify(start119.map((t) => `${t.name}${t.active ? '*' : ''}`)))
+        if (prev119 === null || /^inflozo-/.test(prev119) || routesBefore119 === null) throw new Error('step 119: T1 is not on its own theme — ask the owner before restoring it')
+        // the account: J (made here), or the owner's alias the plant names (made only if absent)
+        const known = PLANT119 ? ((await users()) ?? []).find((u) => (u.email ?? '').toLowerCase() === PLANT119.toLowerCase()) ?? null : null
+        if (known !== null) {
+          // the plant never touches an account's own work: an address that already holds a project is refused, not cleared
+          const held = (await call('/rest/v1', `/projects?user_id=eq.${known.id}&select=id`)).body ?? null
+          if (!Array.isArray(held) || held.length > 0) throw new Error('step 119: the plant\'s account already holds a project (or could not be read) — clean it up first')
+          id119 = known.id
+        } else {
+          const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: email119, email_confirm: true }) })
+          id119 = made.status === 200 ? made.body.id ?? null : null
+          made119 = UUID.test(id119 ?? '')
+        }
+        if (!UUID.test(id119 ?? '')) throw new Error('step 119: the account was not made')
+        const pg = await context119()
+        await connect119(pg)
+        const use = pg.getByRole('button', { name: PR119.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until119(async () => (await call('/rest/v1', `/projects?user_id=eq.${id119}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        site119 = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (site119 === null) throw new Error('step 119: T1 did not connect')
+        // the wizard's own project goes (the account held none before it), and "Drift test" — step 1's fixture, so the hero's layer
+        // name is known — takes the link
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        const seeded = await seed({ email: email119, name: 'Drift test' })
+        if (!seeded?.created) throw new Error('step 119: "Drift test" already exists on the account — a plant left behind; clean it up first')
+        P119 = seeded.id
+        const link = await call('/rest/v1', `/projects?id=eq.${P119}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site119 }) })
+        const slug = (await call('/rest/v1', `/projects?id=eq.${P119}&select=slug`)).body?.[0]?.slug ?? null
+        theme119 = slug === null ? null : DEP119.themeNameOf(slug)
+        const hero0 = await heroOf119()
+        check(`step 119 — the fixture: account ${PLANT119 ? 'the plant\'s' : 'J'}, T1 connected through the wizard, "Drift test" seeded and linked (theme ${theme119}), its hero "${hero0?.layerName ?? 'unread'}", no binding yet`,
+          [200, 204].includes(link.status) && theme119 !== null && hero0 !== null && ((await call('/rest/v1', `/project_site_bindings?site_id=eq.${site119}&select=project_id`)).body ?? []).length === 0,
+          JSON.stringify({ link: link.status, theme: theme119, hero: hero0?.layerName ?? null }))
+        if (theme119 === null || hero0 === null) throw new Error('step 119: the project was not linked')
+        await pg.goto(at(`/projects/${P119}`), { waitUntil: 'load' })
+        await painted119(pg)
+
+        if (PLANT119) {
+          // ── the plant: shipped ONCE and live, then (d)'s hand edit — and it stops there ──
+          await openShip119(pg)
+          await firstSteps119(pg)
+          const before = (await job119())?.id ?? null
+          await pg.locator('#deploy-backup-run').click()
+          const pre = await until119(job119, (j) => j !== null && j.id !== before && ['awaiting_ship', 'failed'].includes(j.stage), 180000)
+          const live = await ship119(pg, pre)
+          const v1 = await deploy119(live?.deploy_id)
+          const heroPath = heroPath119(v1, hero0.instanceId)
+          check(`step 119 (plant) — "Drift test" shipped once with Deploy & activate: ${theme119} v1 live on T1, its manifest filing the hero under ${heroPath ?? 'nothing'}`,
+            live?.stage === 'done' && v1?.status === 'live' && heroPath !== null && (await themes119())?.find((t) => t.active)?.name === theme119, JSON.stringify({ stage: live?.stage, status: v1?.status ?? null, heroPath }))
+          await closed119(pg)
+          if (heroPath === null) throw new Error('step 119: the plant has no hero partial to edit')
+          const edit = await handEdit119(heroPath)
+          planted119 = edit.status === 200 && edit.name === theme119 && handEdited119(edit.after, heroPath)
+          check(`step 119 (plant) — the hand edit on T1 under ${theme119}, read back with the staff token: ${heroPath} edited, custom-handmade.hbs added, README.md removed`,
+            planted119, JSON.stringify({ status: edit.status, name: edit.name }))
+          note('step 119 — PLANT for the owner\'s test', `account ${PLANT119} · project "Drift test" <P> = ${P119} · ${at(`/projects/${P119}`)} · the section's layer name "${hero0.layerName}" (${heroPath}) · theme ${theme119} (its live copy ${DR119.liveFileName(theme119)}) on ${HOST119} · Ghost Admin ${new URL(ENV119.GHOST6_URL).origin}/ghost/`)
+        } else {
+          // ── 119a — the FIRST deploy is ▾ → Deploy only: no drift row, and the manifest written with the artefact ──
+          await closed119(pg)
+          await pg.locator('#editor-ship + button').click()
+          await pg.locator('#editor-ship-menu li', { hasText: W119.uploadOnly }).locator('button, a').first().click()
+          await until119(() => wiz119(pg), (w) => w?.at === 'destination', 15000)
+          await firstSteps119(pg)
+          const wasA = (await job119())?.id ?? null
+          await pg.locator('#deploy-backup-run').click()
+          const preA = await until119(job119, (j) => j !== null && j.id !== wasA && ['awaiting_ship', 'failed'].includes(j.stage), 180000)
+          const shownA = await until119(() => wiz119(pg), (w) => w?.at === 'check' && w.passes.length > 0, 30000)
+          check('step 119a — the first deploy (no binding): Pre-flight draws no drift row and nothing reads — no `stage_timings.drift`',
+            preA?.stage === 'awaiting_ship' && preA.stage_timings?.drift === undefined && shownA?.driftRows.length === 0 && !shownA.reading,
+            JSON.stringify({ stage: preA?.stage, drift: preA?.stage_timings?.drift ?? null, rows: shownA?.driftRows ?? null }))
+          const endA = await ship119(pg, preA)
+          const v1 = await deploy119(endA?.deploy_id)
+          const zipA = v1?.artifact_path ? await object119('deploy-artifacts', v1.artifact_path) : null
+          const entriesA = zipA === null ? null : Object.keys(ZIP119.unzipTheme(new Uint8Array(zipA))).sort()
+          const heroPathA = heroPath119(v1, hero0.instanceId)
+          check(`step 119a — Deploy only: v1 uploaded and NOT activated (D2f), and its content_manifest names every file of the artefact zip, the hero partial (${heroPathA ?? 'none'}) fingerprinted by its instance id with its layer's name`,
+            endA?.stage === 'done' && v1?.status === 'uploaded' && v1.activated === false && entriesA !== null && JSON.stringify(Object.keys(v1.content_manifest ?? {}).sort()) === JSON.stringify(entriesA) &&
+            heroPathA !== null && v1.content_manifest[heroPathA]?.layer === hero0.layerName && v1.content_manifest[heroPathA]?.category === 'a4',
+            JSON.stringify({ stage: endA?.stage, status: v1?.status ?? null, activated: v1?.activated ?? null, files: entriesA?.length ?? null, manifest: Object.keys(v1?.content_manifest ?? {}).length, heroPathA }))
+
+          // ── 119b — Run checks after a Deploy only: D3c "since v1" — R-287's baseline is the newest upload Ghost ACCEPTED ──
+          await openShip119(pg)
+          const sinceB = DEP119.versionNumber(v1?.version ?? '')
+          const b = await runChecks119(pg, (w) => w.driftRows.includes('clean'))
+          check(`step 119b — R-287 (Ruled value 1): the baseline is v1, uploaded and never live — D3c "${DW119.clean(sinceB)}" is the passes box's SECOND line, and the record is { clean, since ${sinceB} }`,
+            sinceB === 1 && b.job?.stage === 'awaiting_ship' && JSON.stringify(b.job.stage_timings?.drift) === JSON.stringify({ kind: 'clean', since: 1 }) &&
+            b.shown?.passes[1]?.clean === true && b.shown.passes[1].text.startsWith(DW119.clean(1)) && !b.shown.report,
+            JSON.stringify({ drift: b.job?.stage_timings?.drift ?? null, passes: b.shown?.passes ?? null }))
+
+          // ── 119c — Deploy & activate → Live; a layer renamed; Run checks: still D3c (nothing on the site changed) ──
+          const endC = await ship119(pg, b.job)
+          const v2 = await deploy119(endC?.deploy_id)
+          const shownC = await until119(() => wiz119(pg), (w) => w?.title === W119.liveTitle, 30000)
+          check(`step 119c — Ship it: v2 live on T1 (${theme119} active), the wizard on "${W119.liveTitle}"`,
+            endC?.stage === 'done' && v2?.status === 'live' && shownC?.title === W119.liveTitle && (await themes119())?.find((t) => t.active)?.name === theme119,
+            JSON.stringify({ stage: endC?.stage, status: v2?.status ?? null, title: shownC?.title ?? null }))
+          await closed119(pg)
+          await pg.locator('#editor-layers').getByRole('button', { name: `More for ${hero0.layerName}`, exact: true }).click()
+          await pg.getByRole('button', { name: 'Rename', exact: true }).click()
+          await pg.locator('#layers-rename-name').fill(RENAMED119)
+          await pg.locator('dialog[aria-labelledby="layers-rename-title"]').getByRole('button', { name: 'Save', exact: true }).click()
+          await pg.keyboard.press('ControlOrMeta+s')
+          const heroC = await until119(heroOf119, (h) => h?.layerName === RENAMED119, 30000)
+          await openShip119(pg)
+          const sinceC = DEP119.versionNumber(v2?.version ?? '')
+          const c = await runChecks119(pg, (w) => w.driftRows.includes('clean'))
+          const madeC = await deploy119(c.job?.deploy_id)
+          const pathV2 = heroPath119(v2, hero0.instanceId)
+          const pathNow = heroPath119(madeC, hero0.instanceId)
+          check(`step 119c — the hero renamed "${RENAMED119}" and saved, then Run checks: D3c "${DW119.clean(sinceC)}" — a rename changes nothing on the site; the control: this Pre-flight files the hero at ${pathNow ?? 'nothing'}, not v2's ${pathV2 ?? 'nothing'} on T1`,
+            heroC?.layerName === RENAMED119 && c.job?.stage === 'awaiting_ship' && JSON.stringify(c.job.stage_timings?.drift) === JSON.stringify({ kind: 'clean', since: sinceC }) &&
+            c.shown?.passes[1]?.clean === true && c.shown.passes[1].text.startsWith(DW119.clean(sinceC)) && pathV2 !== null && pathNow !== null && pathNow !== pathV2,
+            JSON.stringify({ renamed: heroC?.layerName ?? null, drift: c.job?.stage_timings?.drift ?? null, pathV2, pathNow }))
+
+          // ── 119d — the theme edited by hand on T1, under the bound name: D3a, three rows, focus on Cancel, the live copy ──
+          await closed119(pg)
+          if (pathV2 === null) throw new Error('step 119: v2 files no hero partial to edit')
+          const edit = await handEdit119(pathV2)
+          check(`step 119d — the hand edit on T1 (the Admin key, under ${theme119}), read back with the staff token: ${pathV2} edited, custom-handmade.hbs added, README.md removed`,
+            edit.status === 200 && edit.name === theme119 && handEdited119(edit.after, pathV2), JSON.stringify({ status: edit.status, name: edit.name }))
+          await openShip119(pg)
+          const d = await runChecks119(pg, (w) => w.report)
+          const wantD = {
+            kind: 'found', since: sinceC, theme: theme119,
+            changed: [{ path: pathV2, label: RENAMED119, category: 'a4' }],
+            added: [{ path: 'custom-handmade.hbs', label: DW119.labels.addedTemplate }],
+            removed: [{ path: 'README.md', label: DW119.labels.readMe }],
+          }
+          check(`step 119d — Run checks: the record names exactly the three — Changed "${RENAMED119}" (the layer's CURRENT name, never its path), Added "${DW119.labels.addedTemplate}", Removed "${DW119.labels.readMe}"`,
+            d.job?.stage === 'awaiting_ship' && JSON.stringify(d.job.stage_timings?.drift) === JSON.stringify(wantD), scrub119(JSON.stringify(d.job?.stage_timings?.drift ?? null)))
+          const groupsD = (d.shown?.groups ?? []).map((g) => ({ group: g.group, count: g.count, files: g.files }))
+          check(`step 119d — D3a: "${DW119.title}", the chip "${DW119.chip(3)}", Changed / Added on your site / Removed from your site at 1 each with each label over its path, "${DW119.foot(3)}" — and focus on Cancel (UX-DR14)`,
+            d.shown?.report === true && d.shown.title === DW119.title && d.shown.chip === DW119.chip(3) && d.shown.foot === DW119.foot(3) && d.shown.focus === 'deploy-drift-cancel' &&
+            JSON.stringify(groupsD) === JSON.stringify([
+              { group: 'changed', count: '1', files: [{ path: pathV2, label: RENAMED119 }] },
+              { group: 'added', count: '1', files: [{ path: 'custom-handmade.hbs', label: DW119.labels.addedTemplate }] },
+              { group: 'removed', count: '1', files: [{ path: 'README.md', label: DW119.labels.readMe }] },
+            ]),
+            JSON.stringify({ title: d.shown?.title ?? null, chip: d.shown?.chip ?? null, focus: d.shown?.focus ?? null, groups: groupsD }))
+          const href = d.shown?.download ?? null
+          const away = href === null ? null : await pg.context().request.get(`${APP}${href}`, { maxRedirects: 0 })
+          const signed = away?.headers().location ?? null
+          const got = signed === null ? null : await fetch(signed).catch(() => null)
+          const gotBytes = got?.ok ? Buffer.from(await got.arrayBuffer()) : null
+          const gotFiles = gotBytes === null ? null : ZIP119.unzipTheme(new Uint8Array(gotBytes))
+          check(`step 119d — Download the live theme first: ${DR119.liveDownloadPath(P119, d.job?.id ?? '')} answers 303 to a signed URL serving ${DR119.liveFileName(theme119)} — the zip this check read, the edit in it (AD-13)`,
+            href === `${PREFIX}${DR119.liveDownloadPath(P119, d.job?.id ?? '')}` && away?.status() === 303 && got?.ok === true && (got.headers.get('content-disposition') ?? '').includes(DR119.liveFileName(theme119)) && handEdited119(gotFiles, pathV2),
+            JSON.stringify({ href, status: away?.status() ?? null, disposition: got?.headers.get('content-disposition') ?? null, edited: handEdited119(gotFiles, pathV2) }))
+
+          // ── 119e — the control: a ship without `overwrite` is refused; Overwrite and ship anyway → Live; Run checks → D3c ──
+          const themesE0 = JSON.stringify(await themes119())
+          const refusedE = await pg.evaluate(async ({ url, job }) => {
+            const session = sessionStorage.getItem('inflozo-lock-session')
+            const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'ship', session, job, mode: 'activate' }) })
+            return { status: r.status, text: await r.text() }
+          }, { url: `${PREFIX}/projects/${P119}/deploy`, job: d.job?.id ?? '' }).catch(() => null)
+          const restingE = await job119()
+          check('step 119e — the control: a `ship` POST without `overwrite` answers 409 "Drift found" — the job still resting at awaiting_ship and T1\'s themes untouched',
+            refusedE?.status === 409 && refusedE.text === 'Drift found' && restingE?.id === d.job?.id && restingE?.stage === 'awaiting_ship' && JSON.stringify(await themes119()) === themesE0,
+            JSON.stringify({ refusedE, stage: restingE?.stage ?? null }))
+          await pg.locator('#deploy-overwrite').click()
+          const endE = await until119(job119, (j) => j?.id === d.job?.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
+          const v3 = await deploy119(endE?.deploy_id)
+          const shownE = await until119(() => wiz119(pg), (w) => w?.title === W119.liveTitle, 30000)
+          const afterE = await liveFiles119(theme119)
+          check(`step 119e — ${DW119.overwrite}: Live, and T1's ${theme119} is Inflozo's again file for file — custom-handmade.hbs gone, README.md back, the edit nowhere (Ghost replaces every file under the name, storage.js:95-107)`,
+            endE?.stage === 'done' && v3?.status === 'live' && shownE?.title === W119.liveTitle && afterE !== null && afterE['custom-handmade.hbs'] === undefined && afterE['README.md'] !== undefined &&
+            !Object.values(afterE).some((b) => Buffer.from(b).toString('utf8').includes(MARK119.trim())),
+            JSON.stringify({ stage: endE?.stage, status: v3?.status ?? null, title: shownE?.title ?? null, files: afterE === null ? null : Object.keys(afterE).length }))
+          await openShip119(pg)
+          const sinceE = DEP119.versionNumber(v3?.version ?? '')
+          const e2 = await runChecks119(pg, (w) => w.driftRows.includes('clean'))
+          check(`step 119e — Run checks after the overwrite: D3c "${DW119.clean(sinceE)}"`,
+            JSON.stringify(e2.job?.stage_timings?.drift) === JSON.stringify({ kind: 'clean', since: sinceE }) && e2.shown?.passes[1]?.clean === true && e2.shown.passes[1].text.startsWith(DW119.clean(sinceE)),
+            JSON.stringify({ drift: e2.job?.stage_timings?.drift ?? null }))
+
+          // ── 119f — the bound theme gone from T1: D3b `missing`, no Add token, Ship it live; Ship it puts it back ──
+          await closed119(pg)
+          const activated = await staff119('PUT', `themes/${encodeURIComponent(prev119)}/activate/`)
+          const deleted = await staff119('DELETE', `themes/${encodeURIComponent(theme119)}/`)
+          const themesF = await themes119()
+          check(`step 119f — ${prev119} activated and ${theme119} deleted on T1 with the staff token, read back`,
+            activated.ok && deleted.ok && themesF?.find((t) => t.active)?.name === prev119 && !themesF.some((t) => t.name === theme119), JSON.stringify({ activate: activated.status, delete: deleted.status }))
+          await openShip119(pg)
+          const f = await runChecks119(pg, (w) => w.unverified !== null)
+          const bodyF = DR119.causeBody('missing', { host: HOST119, theme: theme119 })
+          check(`step 119f — Run checks: D3b "${DW119.unverified}" — "${bodyF}" — with no Add token, and Ship it NOT greyed (the check fails open)`,
+            JSON.stringify(f.job?.stage_timings?.drift) === JSON.stringify({ kind: 'unverified', cause: 'missing', theme: theme119 }) && f.shown?.unverified?.cause === 'missing' &&
+            f.shown.unverified.text.includes(DW119.unverified) && f.shown.unverified.text.includes(bodyF) && f.shown.unverified.token === false && f.shown.ship !== 'true',
+            JSON.stringify({ drift: f.job?.stage_timings?.drift ?? null, shown: f.shown?.unverified ?? null, ship: f.shown?.ship ?? null }))
+          const endF = await ship119(pg, f.job)
+          const themesF2 = await themes119()
+          check(`step 119f — Ship it: Live, ${theme119} back on T1 and active`,
+            endF?.stage === 'done' && themesF2?.find((t) => t.active)?.name === theme119, JSON.stringify({ stage: endF?.stage, active: themesF2?.find((t) => t.active)?.name ?? null }))
+          await closed119(pg)
+        }
+      } catch (e) {
+        check('step 119 — the step ran to its end', false, scrub119(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        for (const ctx of ctxs119) await ctx.close().catch(() => {})
+        if (P119 !== null) await until119(job119, atRest119, 330000).catch(() => {})
+        if (PLANT119 && planted119) {
+          note('step 119 — the plant is left in place', `T1 holds ${theme119} active and hand-edited, ${PLANT119} keeps the site and the project; the owner's test step 13 puts T1 back`)
+        } else {
+          if (prev119 !== null) {
+            try {
+              const now = await themes119()
+              if (now !== null && now.find((t) => t.active)?.name !== prev119) await staff119('PUT', `themes/${encodeURIComponent(prev119)}/activate/`)
+              const startNames = new Set(start119.map((t) => t.name))
+              for (const t of (await themes119()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff119('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+              // a routes step that uploaded routes.yaml (the staff token is held) is undone with the file read at the start
+              const routesNow = await routesFile119()
+              if (routesBefore119 !== null && routesNow !== null && Buffer.compare(routesBefore119, routesNow) !== 0) await staff119('POST', RU119.ROUTES_PATH, RU119.routesForm(routesBefore119.toString('utf8')))
+              const after = await themes119()
+              const routesAfter = await routesFile119()
+              check(`step 119 — finally: T1 put back with the staff token — ${prev119} active again, every inflozo- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+                after !== null && after.find((t) => t.active)?.name === prev119 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)) &&
+                routesAfter !== null && routesBefore119 !== null && Buffer.compare(routesAfter, routesBefore119) === 0,
+                JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`), routes: `${routesBefore119?.length ?? 'unread'} → ${routesAfter?.length ?? 'unread'} bytes` }))
+            } catch (e) {
+              check('step 119 — finally: T1 put back', false, scrub119(String(e?.message ?? e).split('\n')[0]))
+            }
+          }
+          if (id119 !== null) {
+            // the objects (an object outlives its row): the snapshot the first upload captured, and the project's artefacts and live copy
+            if (site119 !== null) for (const o of await listed119('site-snapshots', `${id119}/${site119}`)) await fetch(`${SB}/storage/v1/object/site-snapshots/${id119}/${site119}/${o.name}`, { method: 'DELETE', headers: storage119 }).catch(() => {})
+            if (P119 !== null) {
+              for (const prefix of [P119, `${P119}/live`]) for (const o of await listed119('deploy-artifacts', prefix)) await fetch(`${SB}/storage/v1/object/deploy-artifacts/${prefix}/${o.name}`, { method: 'DELETE', headers: storage119 }).catch(() => {})
+            }
+            const row = await siteRow119().catch(() => null)
+            if (row !== null && row.disconnected_at === null) {
+              const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+              try {
+                const pd = steady(await ctx.newPage())
+                await pd.goto(await magic(email119), { waitUntil: 'load' })
+                await pd.goto(at(`/sites/disconnect?site=${site119}`), { waitUntil: 'load' })
+                await pd.locator('form').getByRole('button', { name: CR119.DISCONNECT.menu, exact: true }).first().click()
+                await until119(siteRow119, (r) => r?.disconnected_at != null, 30000)
+              } catch {} finally {
+                await ctx.close().catch(() => {})
+              }
+            }
+            const leftObjects = [...(site119 === null ? [] : await listed119('site-snapshots', `${id119}/${site119}`)), ...(P119 === null ? [] : [...await listed119('deploy-artifacts', P119), ...await listed119('deploy-artifacts', `${P119}/live`)])]
+            if (made119) {
+              const del = await admin(`/admin/users/${id119}`, { method: 'DELETE', body: '{}' })
+              const usersAfter = (await users())?.length ?? null
+              const projectsAfter = await projectCount()
+              check('step 119 — finally: no object left under the account\'s prefixes, T1 disconnected, the account deleted (its sites, projects, jobs and deploys with it), users and projects counted back as the step found them',
+                leftObjects.length === 0 && del.status === 200 && usersBefore119 !== null && usersAfter === usersBefore119 && projectsBefore119 !== null && projectsAfter === projectsBefore119,
+                `objects ${leftObjects.length}, HTTP ${del.status}, users ${usersBefore119} → ${usersAfter}, projects ${projectsBefore119} → ${projectsAfter}`)
+            } else {
+              // a failed plant on the owner's own address: its projects (it held none before) go, the account stays
+              for (const p of (await call('/rest/v1', `/projects?user_id=eq.${id119}&select=id`)).body ?? []) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+              const projectsAfter = await projectCount()
+              check('step 119 — finally (a plant that failed): no object left, T1 disconnected, the plant\'s projects removed and projects counted back; the account kept',
+                leftObjects.length === 0 && projectsBefore119 !== null && projectsAfter === projectsBefore119, `objects ${leftObjects.length}, projects ${projectsBefore119} → ${projectsAfter}`)
+            }
+          }
+        }
+      }
+      check('step 119 — the step\'s contexts recorded zero CSP violations', csp119.length === 0, JSON.stringify(csp119.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

@@ -1012,6 +1012,57 @@ test.describe('7.20a · the Backup step at 1440, 820 and 390; B12a and B12b at 1
   }
 })
 
+// ── Story 7.21 — D3a at its frame's width (`D3 The Drift Report.dc.html:28-151`): 600 at 1440, held by the window at 390 with
+// nothing scrolling sideways and its three buttons inside the card; D3b's row (`:157-203`) inside S8b's 520 at 1440. The deploy
+// route is answered with canned views, as the journeys answer it (`x-inflozo-harness-drift` there; the record itself here).
+const DRIFT721 = { kind: 'found', since: 2, theme: 'inflozo-pilot-sections', changed: [{ path: 'partials/sections/home/a-very-long-section-name-that-keeps-going-well-past-sixty.hbs', label: 'A very long section name that keeps going well past the sixty', category: 'a4' }], added: [{ path: 'custom-handmade.hbs', label: "A template Inflozo didn't write" }], removed: [{ path: 'README.md', label: 'Read me' }] }
+const UNVERIFIED721 = { kind: 'unverified', cause: 'no_token', theme: 'inflozo-pilot-sections' }
+test.describe('7.21 · D3a at 1440 and 390; D3b at 1440', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const [name, record, width, mark] of [
+    ['D3a', DRIFT721, 1440, '[data-drift-report]'], ['D3a', DRIFT721, 390, '[data-drift-report]'], ['D3b', UNVERIFIED721, 1440, '[data-drift-row="unverified"]'],
+  ]) {
+    test(`${name} at ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
+      await page.route((url) => /\/projects\/[^/]+\/deploy$/.test(url.pathname), (route) =>
+        route.request().method() === 'POST'
+          ? route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ job: 'job-720' }) })
+          : route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(VIEW720('awaiting_ship', { ...CHECKED720, drift: record })) }))
+      await page.goto(HARNESS)
+      await painted(page)
+      await page.locator('#editor-ship').click()
+      await page.locator('#deploy-run').click()
+      await expect(page.locator(mark)).toBeVisible({ timeout: 15_000 })
+      const m = await measure720(page)
+      expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
+      expect(m.right).toBeLessThanOrEqual(m.inner)
+      expect(m.bottom, 'the card stays inside the window').toBeLessThanOrEqual(m.innerHeight)
+      if (name === 'D3b') {
+        expect(m.content, 'D3b sits in S8b\'s 520').toBe(520)
+        const row = await page.locator(mark).evaluate((r) => ({ right: r.getBoundingClientRect().right, card: r.closest('dialog').getBoundingClientRect().right }))
+        expect(row.right).toBeLessThanOrEqual(row.card)
+        return
+      }
+      if (width === 1440) expect(m.content, 'D3a is 600 wide').toBe(600)
+      else expect(m.content, 'held by the window').toBeLessThan(600)
+      // every file's label and path, and the three buttons, inside the card
+      const inside = await page.evaluate(() => {
+        const card = document.querySelector('dialog[data-deploy-wizard]').getBoundingClientRect()
+        return [...document.querySelectorAll('[data-drift-file], #deploy-drift-cancel, #deploy-drift-download, #deploy-overwrite')]
+          .filter((el) => el.getBoundingClientRect().right > card.right + 0.5 || el.getBoundingClientRect().left < card.left - 0.5)
+          .map((el) => el.id || el.dataset.driftFile)
+      })
+      expect(inside, 'nothing sits outside the card').toEqual([])
+      // each button's label on one line
+      for (const id of ['#deploy-drift-download', '#deploy-overwrite']) {
+        const lines = await page.locator(id).evaluate((b) => Math.round(b.getBoundingClientRect().height / 40))
+        expect(lines, `${id} on one line`).toBe(1)
+      }
+    })
+  }
+})
+
 // ── Story 7.18a — R-263: a touch screen below 768 that is not a phone. Ship it shares the bar, so Undo and Redo lead ⋯ and
 // the words "Template" and "View as" go; at 768 and up nothing changes. The sweep holds no bar control outside the window
 // at 600, 640 and 720 on Home and on the Paywall; its CONTROL is the same sweep with the rule switched off in the page

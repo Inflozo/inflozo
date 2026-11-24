@@ -31,6 +31,7 @@ const SNAPSHOT = join('server', 'snapshot.ts')
 const SNAPSHOT_IO = join('server', 'snapshot-io.ts')
 const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
 const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
+const LIVE_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'deploy', 'live', 'route.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -177,6 +178,10 @@ test('the service-role client is imported by the flag reader and by nothing else
   // across accounts, stamps `site_snapshots.orphan_notice_at` (select-only to the tenant, no write grant), drains the
   // `site-snapshots` bucket (no Storage policy at all, AD-32), deletes the row, and reads the owner's address through GoTrue's
   // admin API. Its loop is `lib/orphan-rule.ts`, pure, which imports neither this client nor `lib/email.ts`.
+  // The THIRTEENTH, added by Story 7.21 with its reason: D3a's "Download the live theme first" signs the drift check's live copy
+  // (`deploy-artifacts/{projectId}/live/{siteId}.zip`), and the `deploy-artifacts` bucket has NO Storage policy at all (server-only,
+  // AD-29), so the service role is its only reader — Story 2.5's snapshot download's reason, for the other bucket. It never touches
+  // a user ROW: the job (whose it is, that it is this project's, that its check found drift) is read on the caller's own session.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -190,6 +195,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     DEPLOY_IO,
     EDITOR_ACTIONS,
     SNAPSHOT_IO,
+    LIVE_ROUTE,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))

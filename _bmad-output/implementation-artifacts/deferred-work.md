@@ -9415,7 +9415,12 @@ reason: 7.4 rewrites every `url()` to a bundled asset and is the story that read
 
 plain: The one-line label above each section in a theme file repeats the section's name from Layers. Nothing limits how
   long that name can be, so a very long name makes a very long line — harmless to Ghost, untidy to a hand editor.
-status: open
+status: done 2026-11-24 (Story 7.21)
+resolution: Story 7.21's Dev (2026-11-24) — the cap lands at the input, one number in one home: `LAYER_NAME_MAX` (60),
+  exported by `packages/section-runtime` beside `renameSection`, which refuses a trimmed name past it with "Keep the name to
+  60 characters."; the Layers rename field carries `maxLength={LAYER_NAME_MAX}`; and the compiler's `SLUG_MAX` IS it, so the
+  file name and the boundary comment's label agree. `doc-schema.ts`' `layerName` is untouched: a stored name over the cap
+  still parses and keeps working until it is renamed. Held by `doc-edit.test.ts`, `slug.test.ts` and journey 7.21 (f).
 severity: low
 origin: Story 7.1's review (2026-10-06). The file name is cut to 60 characters (`SLUG_MAX`); the comment is not.
 owner: Story 7.21 (drift and the Layers rename flow), whose criteria carry this entry with its id — or the Layers

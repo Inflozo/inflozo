@@ -2,6 +2,7 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { LAYER_NAME_MAX } from '@inflozo/section-runtime'
 import { claim, partialSlug, sectionSlug, SLUG_MAX } from './slug.ts'
 
 test('partialSlug: NFKD, marks dropped, lowercase, spaces and underscores to hyphens, the rest dropped, hyphens collapsed and trimmed', () => {
@@ -21,6 +22,11 @@ test('partialSlug: NFKD, marks dropped, lowercase, spaces and underscores to hyp
     ['', ''],
   ]
   for (const [name, slug] of cases) assert.equal(partialSlug(name), slug, JSON.stringify(name))
+})
+
+test('DW-338 (Story 7.21): the slug\'s cut IS the longest layer name, one number in one home, so a name the rename rule keeps never loses a character to its file name', () => {
+  assert.equal(SLUG_MAX, LAYER_NAME_MAX)
+  assert.equal(partialSlug('n'.repeat(LAYER_NAME_MAX)), 'n'.repeat(LAYER_NAME_MAX))
 })
 
 test(`partialSlug: cut to ${SLUG_MAX}, and a hyphen left at the cut is trimmed again`, () => {

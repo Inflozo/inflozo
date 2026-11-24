@@ -157,6 +157,8 @@ export {
   isDesigned,
   moveSection,
   removeSection,
+  // DW-338 (Story 7.21) — the longest layer name: the rename field's `maxLength`, this rule's refusal and the slug's cut
+  LAYER_NAME_MAX,
   renameSection,
   setHidden,
   setMemberVisibility,

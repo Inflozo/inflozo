@@ -12,7 +12,7 @@ import { glyphOf, LayerThumb, LayersRow, SiteWideGroup } from '@/components/kit/
 import { Menu } from '@/components/kit/select'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Layout, type Store } from '@/lib/reorder'
-import { sectionKey } from '@inflozo/section-runtime'
+import { LAYER_NAME_MAX, sectionKey } from '@inflozo/section-runtime'
 import { landWithin } from '@/lib/editor'
 import { canvasFirst, counted, useHanded, useStable } from '@/lib/renders'
 import { MAKE_MAIN_FEED } from '@/lib/data-group'
@@ -635,6 +635,8 @@ export const Layers = memo(function Layers({
             name="layerName"
             label="Name"
             defaultValue={renaming?.layerName ?? ''}
+            // DW-338 (Story 7.21): the field stops where the rename rule does, so a typed or pasted name never outgrows its file
+            maxLength={LAYER_NAME_MAX}
             error={nameError}
           />
           <div className="flex justify-end gap-[10px]">

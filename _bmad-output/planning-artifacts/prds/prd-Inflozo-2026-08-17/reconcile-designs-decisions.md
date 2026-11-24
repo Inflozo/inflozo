@@ -6157,9 +6157,32 @@ not. This matches what is on your site, file for file, and keeps 'never a false 
   - ✅ step 5b's annotation on Partial Success (`prototype/build.py`, regenerated);
   - ✅ `epics.md` Story 7.32's card (3) and Story 7.21's card (dated);
   - ✅ `epic-7-context.md`;
-  - ☐ the code and FR-J16's dated note (Story 7.21's Dev).
+  - ✅ the code and FR-J16's dated note (Story 7.21's Dev, 2026-11-24: `deploys.baseline` reads the newest `uploaded` or `live`
+    row, the job's own excepted; FR-J16's note, 7.23's card, SCHEMA.sql's `content_manifest` comment and EXPERIENCE's Drift
+    Report row follow).
 - **Deliberately not touched:** the record documents (`encode-propagation-map.md`, `.memlog.md`, `.v4.0-backup/`), which
   keep the wording as it was ruled then.
+
+**R-288 — a theme the site no longer holds is Ghost's 400, and the drift check reads it as "the theme is gone".** Story 7.21's
+Dev, Question 2, ruled **option 1** (owner, 2026-11-24): *"1. Treat 400 as gone"*.
+
+- **Why it was a question.** The spec's matrix and the recorder's control expected a **404** for a deleted theme. On T1 the
+  download of a name Ghost does not hold answered **400 `BadRequestError`** "Please select a valid theme.", and Ghost's
+  source agrees in both majors: `getZip` throws it when `list.get(name)` finds nothing (`storage.js:43-50` in 6.58.0,
+  `:35-42` in 5.130.6), the download's one refusal for a missing theme. As built, D3b would have said "{host} didn't hand
+  over the live theme (400)" for a deleted theme. The spec's Verification stops Dev on any other answer.
+- **The rule.** A 400 or a 404 on `GET themes/{name}/download/` is D3b's `missing`: "{host} no longer has {theme}, the theme
+  Inflozo last put there. Shipping anyway." 401 stays `token_refused` and 403 stays `role`.
+- **Declined.** Option 2, keep the generic `unreachable` sentence for a 400.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.21's spec (Question 2, the Spec Change Log, Verification);
+  - ✅ the code (`server/deploy/run.ts`' drift step, `deploy-run.test.ts`' cause table);
+  - ✅ `tools/probe/record-drift.mjs`' control, and `MEASUREMENTS.md` §90 (executed on T1);
+  - ✅ `VERIFY-AT-BUILD.md` 79;
+  - ✅ `epic-7-context.md`.
+- **Deliberately not touched:** the spec's frozen I/O matrix row "Theme gone | 404", whose behaviour this keeps; the Spec
+  Change Log records the wire answer.
 
 ## B · Approved decisions superseded by this session
 

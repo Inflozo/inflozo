@@ -8,7 +8,7 @@ import { activate, cancel, preflight, ship, start, uploadOnlyRefused, view } fro
 
 /**
  * STORY 7.18a — THE DEPLOY WIZARD'S ONE DOOR (the lock route's pattern: `force-dynamic`, `currentUser()`, `isUuid`, a
- * plain-text refusal with `Cache-Control: no-store`). POST `{ intent, session, job?, mode? }` starts a Pre-flight, a Ship it,
+ * plain-text refusal with `Cache-Control: no-store`). POST `{ intent, session, job?, mode?, withoutSnapshot?, overwrite? }` starts a Pre-flight, a Ship it,
  * a re-activate or a Cancel; GET `?job=` is the wizard's poll (`DeployView`).
  *
  * TWO INVOCATIONS ON ONE ROW (AD-20's F-075). Each POST answers AT ONCE with the job id and the work continues in Next's
@@ -43,13 +43,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return no(400, 'Not JSON')
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
-  const { intent, session, job, mode, withoutSnapshot } = body as Record<string, unknown>
+  const { intent, session, job, mode, withoutSnapshot, overwrite } = body as Record<string, unknown>
   if (typeof intent !== 'string' || !(INTENTS as readonly string[]).includes(intent)) return no(400, 'Not an intent')
   if (typeof session !== 'string' || session.length === 0 || session.length > 64) return no(400, 'Bad session')
   if (intent !== 'preflight' && (typeof job !== 'string' || !isUuid(job))) return no(400, 'Bad job')
   if (intent === 'ship' && (typeof mode !== 'string' || !(MODES as readonly string[]).includes(mode))) return no(400, 'Bad mode')
   // Story 7.20a — B12b's Deploy without a snapshot: a boolean, or absent
   if (withoutSnapshot !== undefined && typeof withoutSnapshot !== 'boolean') return no(400, 'Bad withoutSnapshot')
+  // Story 7.21 — D3a's Overwrite and ship anyway: a boolean, or absent
+  if (overwrite !== undefined && typeof overwrite !== 'boolean') return no(400, 'Bad overwrite')
 
   const act = intent as DeployIntent
   if (act !== 'cancel' && !(await holdsLock(projectId, session))) return no(423, 'This session does not hold the edit lock')
@@ -81,7 +83,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (mode === 'upload' && (await uploadOnlyRefused({ projectId, siteId: row.site_id, userId: user.id }, DEPLOY_IO).catch(() => true))) {
       return no(422, 'Deploy only is blocked')
     }
-    after(() => ship({ jobId: row.id, userId: user.id, mode: mode as Mode, withoutSnapshot: withoutSnapshot === true }, DEPLOY_IO))
+    // Story 7.21 — THE SERVER IS THE CONTROL: a Pre-flight that found drift (D3a) ships only on the customer's word, Overwrite and
+    // ship anyway — nothing is uploaded otherwise. `ship()` asks again after a stale re-make
+    if (row.stage_timings?.drift?.kind === 'found' && overwrite !== true) return no(409, 'Drift found')
+    after(() => ship({ jobId: row.id, userId: user.id, mode: mode as Mode, withoutSnapshot: withoutSnapshot === true, overwrite: overwrite === true }, DEPLOY_IO))
     return json(202, { job: row.id })
   }
   // re-activate: D2e's and D2f's button, on a job that uploaded and is not live

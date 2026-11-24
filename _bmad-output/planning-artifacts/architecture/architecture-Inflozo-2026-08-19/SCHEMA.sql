@@ -496,7 +496,12 @@ create table public.deploys (
   artifact_path text,                                     -- deploy-artifacts/{projectId}/… ; null while compiling
   artifact_bytes bigint,
   gscan         jsonb,
-  -- FR-J16: path → {sha256, fingerprint}. Fingerprint is why a layer RENAME produces no drift.
+  -- FR-J16: path → {sha256, fingerprint, layer?, category?} (Story 7.21's Dev, 2026-11-24: `lib/drift.ts`' `contentManifest`,
+  -- written with the stored artefact). sha256 is over the file's bytes with every CR before an LF dropped; the fingerprint is
+  -- a section partial's layer (instance) id, else the path; layer and category are a section partial's, for its label and
+  -- icon. A layer RENAME produces no drift because the check compares the live theme with what is ON THE SITE (R-287: the
+  -- newest upload Ghost accepted), never with the next upload; the fingerprint NAMES a changed row by the layer's name today.
+  -- Never in an emitted file (FR-J1). Null on a deploy made before Story 7.21, which the check treats as no baseline.
   content_manifest jsonb,
   -- FR-J14/FR-J16 substrate: what this deploy actually shipped
   library_version  text,

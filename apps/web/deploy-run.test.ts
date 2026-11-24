@@ -9,7 +9,9 @@ import { DEPLOY_WORDS, endingOf, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
 import type { RoutesOutcome } from './lib/routes-upload.ts'
 import { activate, cancel, preflight, preflightFacts, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
 import type { ProjectRead } from './server/deploy/project-input.ts'
-import type { Snapshot } from './server/snapshot.ts'
+import type { Snapshot, SnapshotAnswer } from './server/snapshot.ts'
+import { zipTheme } from './server/deploy/zip.ts'
+import { liveCopyPath, type DriftRecord } from './lib/drift.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
 const S = '00000000-0000-4000-8000-0000000000bb'
@@ -48,6 +50,11 @@ function world(over: {
   /** Story 7.20a — the capture's answers in turn (by default a theme captured), and a hook run while it works */
   snapshot?: Array<Snapshot | Error>
   duringSnapshot?: (jobs: Map<string, JobRow>) => void
+  /** Story 7.21 — the compile's section record (by default none), and the live theme's answers in turn — each read recorded by
+   *  the name it asked — with a hook run while it reads */
+  sections?: Record<string, { id: string; layer: string; category: string }>
+  live?: Array<SnapshotAnswer | Error>
+  duringLive?: (jobs: Map<string, JobRow>) => void
 } = {}) {
   let tick = Date.parse('2026-10-18T10:00:00Z')
   const jobs = new Map<string, JobRow>()
@@ -66,6 +73,8 @@ function world(over: {
   const hashes = [...(over.hash ?? [])]
   const snapshots = [...(over.snapshot ?? [])]
   const captured: string[] = []
+  const lives = [...(over.live ?? [])]
+  const liveReads: string[] = []
   const baseRead = (): ProjectRead => ({
     input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' }, language: 'en' } as ProjectRead['input'],
     reads: { project: 'p' },
@@ -83,7 +92,7 @@ function world(over: {
     compile: () => {
       events.push('compile')
       if (over.compile) over.compile()
-      return { files: over.files ?? { 'package.json': '{}\n', 'index.hbs': 'x' }, css: {} as never, js: { bundled: [], atRest: [] }, custom: { emitted: [], parked: [] }, noindex: [] }
+      return { files: { ...(over.files ?? { 'package.json': '{}\n', 'index.hbs': 'x' }) }, css: {} as never, js: { bundled: [], atRest: [] }, custom: { emitted: [], parked: [] }, noindex: [], sections: over.sections ?? {} }
     },
     gscan: async () => over.gscan ?? verdict(),
     quality: () => over.quality ?? quality(),
@@ -112,7 +121,7 @@ function world(over: {
     },
     deploys: {
       insert: async (row) => {
-        const d = { id: id(), version: row.version, theme_name: row.theme_name, status: row.status, activated: false, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, activated_at: null, preflight: null }
+        const d = { id: id(), version: row.version, theme_name: row.theme_name, status: row.status, activated: false, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, activated_at: null, preflight: null, content_manifest: null }
         deploys.set(d.id, d)
         events.push('deploy:insert')
         return { ...d }
@@ -132,6 +141,11 @@ function world(over: {
       previousCustom: async ({ except }) => {
         const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
         return live?.preflight?.custom ?? null
+      },
+      // R-287: the newest upload Ghost accepted, the job's own excepted — the Map keeps insertion (created) order
+      baseline: async ({ except }) => {
+        const row = [...deploys.values()].filter((d) => d.id !== except && (d.status === 'uploaded' || d.status === 'live')).at(-1)
+        return row === undefined ? null : { version: row.version, content_manifest: row.content_manifest ?? null }
       },
       previous: async ({ except }) => {
         const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
@@ -171,6 +185,14 @@ function world(over: {
       captured.push(next.ok ? ('marked' in next ? 'marked' : next.theme) : next.code)
       return next
     },
+    liveTheme: async ({ name }) => {
+      events.push('live')
+      liveReads.push(name)
+      over.duringLive?.(jobs)
+      const next = lives.shift() ?? ({ ok: false, status: 404, body: {}, bytes: new Uint8Array() } as SnapshotAnswer)
+      if (next instanceof Error) throw next
+      return next
+    },
     link: async () => over.link ?? { now: { id: S, url: 'https://ghost6.inflozo.com' }, was: 'https://ghost6.inflozo.com' },
     call: async (args) => {
       calls.push(args)
@@ -189,7 +211,7 @@ function world(over: {
     now: () => new Date((tick += 1000)),
     log: () => {},
   }
-  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, baseRead, advance: (ms: number) => (tick += ms) }
+  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, liveReads, baseRead, advance: (ms: number) => (tick += ms) }
 }
 
 const begin = async (w: ReturnType<typeof world>) => {
@@ -919,4 +941,243 @@ test('7.20a: Deploy only at a first upload captures exactly as Ship it does; Re-
   assert.equal((w.jobs.get(job.id) as JobRow).stage, 'done')
   await activate({ jobId: job.id, userId: U }, w.io)
   assert.deepEqual(w.captured, ['casper'], 're-activate made no capture')
+})
+
+// ── Story 7.21 — pre-deploy drift detection (FR-J16, R-287; D3a/D3b/D3c) ────────────────────────────────────────────────
+
+const HERO = 'partials/sections/home/hero.hbs'
+/** the theme a project ships: a section partial (fingerprinted), a template, the settings and the read me */
+const SHIPPED = { 'package.json': '{}\n', 'index.hbs': '{{!< default}}\n', [HERO]: '<section class="a4-13">Hero</section>\n', 'README.md': '# Notes\n' }
+const SECTIONS = { [HERO]: { id: 'inst-hero', layer: 'Hero', category: 'a4' } }
+const liveOf = (files: Record<string, string>): SnapshotAnswer => ({ ok: true, status: 200, body: null, bytes: zipTheme(files) })
+const ghostSays = (status: number): SnapshotAnswer => ({ ok: false, status, body: {}, bytes: new Uint8Array() })
+const driftOf = (job: JobRow): DriftRecord | undefined => job.stage_timings.drift
+
+/** A project the tests ship once (Deploy & activate, v1, no binding yet), so each later Pre-flight — once `state.bound` holds the
+ *  frozen name — is a deploy after the first. `state` moves the files, the version, the layer's name and the bound name */
+function project(over: Parameters<typeof world>[0] = {}) {
+  const state = { files: { ...SHIPPED } as Record<string, string>, n: 1, bound: null as string | null, layer: 'Hero' }
+  const w = world({
+    sections: SECTIONS,
+    ...over,
+    read: () => ({
+      ...w.baseRead(),
+      bound: state.bound,
+      input: {
+        theme: { name: 'inflozo-notes', version: `${state.n}.0.0`, description: 'Notes' }, language: 'en',
+        templates: { 'home.hbs': { schemaVersion: 1, instances: [{ instanceId: 'inst-hero', layerName: state.layer }] } },
+      } as unknown as ProjectRead['input'],
+    }),
+  })
+  // the files are read at each compile, so a test moves them between deploys
+  const compile = w.io.compile
+  w.io.compile = (input) => ({ ...compile(input), files: { ...state.files } })
+  return { w, state }
+}
+async function shipOnce(w: ReturnType<typeof world>, mode: 'activate' | 'upload' = 'activate', extra: { overwrite?: boolean } = {}) {
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode, ...extra }, w.io)
+  return w.jobs.get(job.id) as JobRow
+}
+
+test('7.21: the manifest is written WITH the artefact — every file of the zip, hashed, a section partial fingerprinted by its layer\'s id with its name and category, every other file by its path — and no drift record on a FIRST deploy (no binding: no read)', async () => {
+  const { w } = project()
+  const job = await begin(w)
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.deepEqual(Object.keys(d.content_manifest ?? {}), Object.keys(SHIPPED).sort())
+  assert.deepEqual({ ...d.content_manifest?.[HERO], sha256: undefined }, { sha256: undefined, fingerprint: 'inst-hero', layer: 'Hero', category: 'a4' })
+  assert.equal(d.content_manifest?.['index.hbs']?.fingerprint, 'index.hbs')
+  assert.match(d.content_manifest?.['index.hbs']?.sha256 ?? '', /^[0-9a-f]{64}$/)
+  assert.equal(w.liveReads.length, 0, 'a first deploy reads nothing')
+  assert.equal(driftOf(job), undefined, 'and draws no drift row')
+})
+
+test('7.21: a baseline whose manifest is null (a deploy made before this story) is no baseline — no read, no row, as a first deploy', async () => {
+  const { w, state } = project()
+  await shipOnce(w)
+  for (const [k, d] of w.deploys) w.deploys.set(k, { ...d, content_manifest: null })
+  state.bound = 'inflozo-notes'
+  const job = await begin(w)
+  assert.equal(job.stage, 'awaiting_ship')
+  assert.equal(w.liveReads.length, 0)
+  assert.equal(driftOf(job), undefined)
+})
+
+test('7.21: clean — the live theme matches the newest accepted upload: D3c "since v{n}" rides awaiting_ship, checking\'s duration closed; a CRLF-only difference is clean (the control: one changed byte is found)', async () => {
+  const { w, state } = project({ live: [liveOf({ ...SHIPPED, 'README.md': '# Notes\r\n' }), liveOf({ ...SHIPPED, 'README.md': '# Notez\n' })] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  state.n = 2
+  const job = await begin(w)
+  assert.deepEqual(driftOf(job), { kind: 'clean', since: 1 })
+  assert.ok((job.stage_timings.checking?.ms ?? -1) >= 0)
+  assert.equal(job.stage, 'awaiting_ship')
+  const control = await begin(w)
+  assert.equal(driftOf(control)?.kind, 'found', 'the control: one changed byte is drift')
+})
+
+test('7.21: found — Changed by the layer\'s CURRENT name with its category, Added as "didn\'t write", Removed by its kind word; the live zip kept at {projectId}/live/{siteId}.zip BEFORE the record lands', async () => {
+  const edited = { ...SHIPPED, [HERO]: '<section class="a4-13">Hand edited</section>\n', 'custom-handmade.hbs': '{{!< default}}\n' } as Record<string, string>
+  delete edited['README.md']
+  const live = liveOf(edited)
+  const { w, state } = project({ live: [live] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  state.layer = 'Front page story'
+  state.n = 2
+  const job = await begin(w)
+  assert.deepEqual(driftOf(job), {
+    kind: 'found', since: 1, theme: 'inflozo-notes',
+    changed: [{ path: HERO, label: 'Front page story', category: 'a4' }],
+    added: [{ path: 'custom-handmade.hbs', label: "A template Inflozo didn't write" }],
+    removed: [{ path: 'README.md', label: 'Read me' }],
+  })
+  assert.equal(job.stage, 'awaiting_ship', 'a found drift stops nothing at Pre-flight: the job rests, D3a draws it')
+  const copy = liveCopyPath(P, S)
+  assert.deepEqual(w.bucket.get(copy), live.bytes, 'the zip this check read, as it came')
+  const second = w.events.lastIndexOf('live')
+  assert.ok(w.events.indexOf(`put:${copy}`, second) > second && w.events.indexOf(`put:${copy}`, second) < w.events.indexOf('stage:awaiting_ship', second), 'the live copy is put before the record rides the edge')
+})
+
+test('7.21: a moved file (removed and added with one hash) is no drift, and a layer renamed in Inflozo with the site untouched is clean — nothing on the site changed (D3\'s "What drift is not")', async () => {
+  const moved = { ...SHIPPED } as Record<string, string>
+  moved['partials/sections/home/front-page-story.hbs'] = moved[HERO] as string
+  delete moved[HERO]
+  const { w, state } = project({ live: [liveOf(moved), liveOf(SHIPPED)] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  assert.equal(driftOf(await begin(w))?.kind, 'clean', 'a move is identity by content')
+  state.layer = 'Renamed since'
+  state.files = { ...SHIPPED, 'partials/sections/home/renamed-since.hbs': SHIPPED[HERO] as string }
+  delete state.files[HERO]
+  assert.equal(driftOf(await begin(w))?.kind, 'clean', 'the rename moves what Inflozo uploads NEXT, never what is on the site')
+})
+
+test('7.21: every cause maps, and the deploy proceeds (D3b): no token, a refused token, a role that cannot read themes, the theme gone (Ghost\'s 400, R-288), Ghost unreachable or answering 5xx, a zip that is not one — Ship it then uploads', async () => {
+  const thrown = (code: string) => Object.assign(new Error(code), { name: 'AdminError', code })
+  const cases: [SnapshotAnswer | Error, DriftRecord][] = [
+    [thrown('credential_missing'), { kind: 'unverified', cause: 'no_token', theme: 'inflozo-notes' }],
+    [ghostSays(401), { kind: 'unverified', cause: 'token_refused', theme: 'inflozo-notes' }],
+    [ghostSays(403), { kind: 'unverified', cause: 'role', theme: 'inflozo-notes' }],
+    // R-288: Ghost's own answer for a theme it no longer holds is 400 (`getZip`, both majors; T1, §90)
+    [ghostSays(400), { kind: 'unverified', cause: 'missing', theme: 'inflozo-notes' }],
+    [ghostSays(404), { kind: 'unverified', cause: 'missing', theme: 'inflozo-notes' }],
+    [thrown('ghost_unreachable'), { kind: 'unverified', cause: 'unreachable', theme: 'inflozo-notes' }],
+    [new Error('a timeout'), { kind: 'unverified', cause: 'unreachable', theme: 'inflozo-notes' }],
+    [ghostSays(502), { kind: 'unverified', cause: 'unreachable', theme: 'inflozo-notes', status: 502 }],
+    [ghostSays(418), { kind: 'unverified', cause: 'unreachable', theme: 'inflozo-notes', status: 418 }],
+    [{ ok: true, status: 200, body: null, bytes: new TextEncoder().encode('<html>not a zip</html>') }, { kind: 'unverified', cause: 'unreadable', theme: 'inflozo-notes' }],
+  ]
+  for (const [answer, want] of cases) {
+    const { w, state } = project({ live: [answer] })
+    await shipOnce(w)
+    state.bound = 'inflozo-notes'
+    const job = await begin(w)
+    assert.deepEqual(driftOf(job), want, JSON.stringify(want))
+    assert.equal(job.stage, 'awaiting_ship')
+    await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+    assert.equal((w.jobs.get(job.id) as JobRow).stage, 'done', `${want.kind}: drift is never asserted, the deploy goes on`)
+    assert.ok(![...w.bucket.keys()].includes(liveCopyPath(P, S)), 'no live copy without a found drift')
+  }
+})
+
+test('7.21 (R-287): the baseline is the NEWEST upload Ghost accepted — a newer Deploy only upload wins over an older live one, so its files read clean (the control: an older live baseline would read them as drift)', async () => {
+  // another project's theme is live on the site, so Deploy only is free (R-264 (a))
+  const { w, state } = project({ liveProject: 'someone-else' })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  state.n = 2
+  state.files = { ...SHIPPED, 'index.hbs': '{{!< default}}\n<p>v2</p>\n' }
+  const v2 = await shipOnce(w, 'upload')
+  assert.equal(w.deploys.get(v2.deploy_id as string)?.status, 'uploaded', 'v2 is on the site and not live')
+  // the site now holds v2's files under the name (storage.js:95-107): the next check reads them
+  state.n = 3
+  const live = { ...state.files }
+  w.io.liveTheme = async ({ name }) => (w.liveReads.push(name), liveOf(live))
+  const job = await begin(w)
+  assert.deepEqual(driftOf(job), { kind: 'clean', since: 2 }, 'compared with v2, the newest accepted upload')
+  // the control: had the baseline been v1 (the newest LIVE deploy), v2's own change reads as drift
+  const v1 = [...w.deploys.values()].find((d) => d.version === '1.0.0') as DeployRow
+  for (const [k, d] of w.deploys) if (d.version !== '1.0.0') w.deploys.set(k, { ...d, status: 'failed' })
+  const control = await begin(w)
+  assert.equal(driftOf(control)?.kind, 'found')
+  assert.equal((driftOf(control) as { since: number }).since, Number(v1.version.split('.')[0]))
+})
+
+test('7.21: the live side is the theme under the BOUND name — the name asked is `read.bound`, never the active theme\'s or the project\'s slug', async () => {
+  const { w, state } = project({ live: [liveOf(SHIPPED)] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes-2'
+  const job = await begin(w)
+  assert.deepEqual(w.liveReads, ['inflozo-notes-2'])
+  assert.equal((driftOf(job) as { kind: string }).kind, 'clean')
+})
+
+test('7.21: the server is the control — a Ship it over a found drift without `overwrite` uploads nothing and the job rests; with it, it ships', async () => {
+  const edited = { ...SHIPPED, 'README.md': '# Edited in Ghost\n' }
+  const { w, state } = project({ live: [liveOf(edited)] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  const job = await begin(w)
+  assert.equal(driftOf(job)?.kind, 'found')
+  const uploads = () => w.calls.filter((c) => c.item === 'theme_upload').length
+  const before = uploads()
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal((w.jobs.get(job.id) as JobRow).stage, 'awaiting_ship')
+  assert.equal(uploads(), before, 'nothing uploaded without the customer\'s word')
+  await ship({ jobId: job.id, userId: U, mode: 'activate', overwrite: true }, w.io)
+  assert.equal((w.jobs.get(job.id) as JobRow).stage, 'done')
+  assert.equal(uploads(), before + 1, 'Overwrite ships')
+})
+
+test('7.21: stale at Ship it — re-made and re-read; a drift found now without `overwrite` rests at awaiting_ship on D3a with no error and nothing uploaded; with `overwrite` the re-made artefact ships', async () => {
+  const edited = { ...SHIPPED, 'README.md': '# Edited in Ghost\n' }
+  for (const overwrite of [false, true]) {
+    // the first deploy's two hashes, the clean Pre-flight's, then Ship it's stale read and the re-make's
+    const { w, state } = project({ live: [liveOf(SHIPPED), liveOf(edited)], hash: ['h1', 'h1', 'h1', 'h2', 'h2'] })
+    await shipOnce(w)
+    state.bound = 'inflozo-notes'
+    const job = await begin(w)
+    assert.equal(driftOf(job)?.kind, 'clean')
+    const uploads = w.calls.filter((c) => c.item === 'theme_upload').length
+    await ship({ jobId: job.id, userId: U, mode: 'activate', ...(overwrite ? { overwrite } : {}) }, w.io)
+    const after = w.jobs.get(job.id) as JobRow
+    assert.equal(w.liveReads.length, 2, 're-read at the re-make')
+    if (overwrite) {
+      assert.equal(after.stage, 'done')
+      assert.equal(w.calls.filter((c) => c.item === 'theme_upload').length, uploads + 1)
+    } else {
+      assert.equal(after.stage, 'awaiting_ship')
+      assert.equal(after.error, null)
+      assert.equal(driftOf(after)?.kind, 'found', 'D3a, from the new record')
+      assert.equal(w.calls.filter((c) => c.item === 'theme_upload').length, uploads, 'nothing uploaded')
+    }
+  }
+})
+
+test('7.21: Cancel pressed while the live theme is read is honoured AFTER the read — the job cancelled, its object then its deploy row gone', async () => {
+  const { w, state } = project({ live: [liveOf(SHIPPED)] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  w.io.liveTheme = async ({ name }) => {
+    w.liveReads.push(name)
+    for (const [k, j] of w.jobs) if (j.stage === 'checking') w.jobs.set(k, { ...j, cancel_requested: true })
+    return liveOf(SHIPPED)
+  }
+  const job = await begin(w)
+  assert.equal(w.liveReads.length, 1, 'the read ran')
+  assert.equal(job.stage, 'cancelled')
+  assert.equal(w.deploys.has(String(job.deploy_id)), false)
+})
+
+test('7.21: a stale re-make nulls the old manifest with the old artefact — a re-make the compile then refuses leaves no manifest behind (the control: a clean re-make writes one)', async () => {
+  let refuse = false
+  const { w, state } = project({ hash: ['h1', 'h2'], compile: () => { if (refuse) throw new CompileRefusal('cardDesigns', 'card designs: nope') } })
+  const job = await begin(w)
+  const id = job.deploy_id as string
+  assert.ok(w.deploys.get(id)?.content_manifest !== null, 'written with the artefact')
+  refuse = true
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  assert.equal(w.deploys.get(id)?.content_manifest, null, 'nulled with the artefact on the reset')
+  void state
 })

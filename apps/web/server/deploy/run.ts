@@ -4,12 +4,14 @@ import { DEFAULT_LANGUAGE, isRtl } from '@inflozo/library/languages'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import type { RoutesOutcome } from '../../lib/routes-upload.ts'
 import {
-  activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, isMoving, isSnapshotError, refusalWords, ROUTES_REASONS, snapshotError, thrownCode, uploadAnswer,
+  activateAnswer, CANCELLABLE, deployError, DEPLOY_WORDS, isMoving, isSnapshotError, refusalWords, ROUTES_REASONS, snapshotError, thrownCode, uploadAnswer, versionNumber,
   type DeployCode, type DeployError, type DeployStatus, type DeployView, type Mode, type PreflightFacts, type RoutesEnding, type SnapshotTiming, type Stage, type Timings,
 } from '../../lib/deploy.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
-import type { Snapshot, SnapshotProgress } from '../snapshot.ts'
+import { compareManifests, contentManifest, labelOf, liveCopyPath, liveManifest, type ContentManifest, type DriftCause, type DriftFile, type DriftRecord, type ManifestEntry } from '../../lib/drift.ts'
+import type { Snapshot, SnapshotAnswer, SnapshotProgress } from '../snapshot.ts'
 import type { ProjectRead } from './project-input.ts'
+import { unzipTheme } from './zip.ts'
 
 /**
  * STORY 7.18a — THE DEPLOY'S ONE SHELL (AD-20 with F-075): `start`, `preflight`, `ship`, `activate`, `cancel` and `view`,
@@ -56,6 +58,9 @@ export type DeployRow = {
   activated_at: string | null
   /** Story 7.18b — the compile's facts for Pre-flight's warning rows (`preflightFacts`) */
   preflight: PreflightFacts | null
+  /** Story 7.21 — FR-J16's content manifest of the stored artefact (`lib/drift.ts`' `contentManifest`); null before it is stored,
+   *  and on a deploy made before the story. Written with the artefact, never read back by the poll (`DEPLOY_COLUMNS` leaves it out) */
+  content_manifest?: ContentManifest | null
 }
 
 /** The chokepoint's `call()`, as much of it as a deploy uses — handed in (`RoutesCall`'s shape). */
@@ -101,6 +106,10 @@ export type DeployIo = {
     /** Story 7.18b — `config.custom` as this project's latest ACTIVATED deploy to the site shipped it (its `preflight.custom`),
      *  other than `except`; null when there is none or it predates the facts */
     previousCustom: (a: { projectId: string; siteId: string; userId: string; except?: string }) => Promise<Readonly<Record<string, unknown>> | null>
+    /** STORY 7.21 — THE DRIFT BASELINE (R-287, Ruled value 1): this project's newest deploy to the site with status `uploaded` or
+     *  `live`, by `created_at`, other than `except` (the job's own) — every upload Ghost accepted is one, because Ghost replaces
+     *  every file under a theme's name on each (`storage.js:95-107`). Its version and manifest, or null when there is none */
+    baseline: (a: { projectId: string; siteId: string; userId: string; except: string }) => Promise<{ version: string; content_manifest: ContentManifest | null } | null>
   }
   /** Story 7.18b (DW-374) — the project's link as it stands NOW (`projects.linked_site_id` and that site's address, or null when
    *  unlinked), and the job's own site's address — read at Ship it, so a theme only ever goes to the project's current site */
@@ -122,6 +131,10 @@ export type DeployIo = {
    *  stays off the chokepoint and the service role */
   snapshot: (a: { siteId: string; userId: string; route: string; progress?: (p: SnapshotProgress) => Promise<void> }) => Promise<Snapshot>
   call: DeployCall
+  /** STORY 7.21 — the live theme under the bound name, read with the Staff Access Token: `GET themes/{name}/download/` through the
+   *  chokepoint (`kind: 'staff'`, `theme_download`'s read budget) — the capture's read (`server/snapshot.ts`' `downloadPath`), not
+   *  the capture. It throws the chokepoint's `AdminError` (`credential_missing` where no token is stored) */
+  liveTheme: (a: { siteId: string; userId: string; name: string; route: string }) => Promise<SnapshotAnswer>
   /** Story 7.17's step, with the real `ROUTES_IO` bound in */
   offerRoutes: (a: { projectId: string; siteId: string; userId: string; route: string }) => Promise<RoutesOutcome>
   /** `sites.routes_last_offered` — B16's file */
@@ -252,6 +265,17 @@ function clock(io: DeployIo, job: JobRow) {
     routes(ending: RoutesEnding) {
       timings.routes = ending
     },
+    /** STORY 7.21 — the drift check's record, riding the next edge as the routes step's does; null removes it (a first deploy, a
+     *  baseline with no manifest, a stale re-make starting afresh). `reading` is written AT ONCE, best effort, with `checking`'s
+     *  duration closed — so the check row shows done beside "Comparing with your live theme…" — and a failed write is logged,
+     *  never the job's failure */
+    async drift(record: DriftRecord | null) {
+      if (record === null) return void delete timings.drift
+      timings.drift = record
+      if (record.kind !== 'reading') return
+      close()
+      await io.jobs.update(job.id, job.user_id, { stage_timings: { ...timings } }).catch(() => io.log('deploy: the drift check\'s start was not written', { job: job.id }))
+    },
   }
 }
 type Clock = ReturnType<typeof clock>
@@ -346,8 +370,8 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
   } else {
     // a stale artefact is re-made on the same row: the old object goes first
     if (deploy.artifact_path) await twice(io, 'artifact remove', () => io.artifacts.remove(deploy!.artifact_path as string))
-    await twice(io, 'deploy reset', () => io.deploys.update(deploy!.id, job.user_id, { status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, preflight: null }))
-    deploy = { ...deploy, status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, preflight: null }
+    await twice(io, 'deploy reset', () => io.deploys.update(deploy!.id, job.user_id, { status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, preflight: null, content_manifest: null }))
+    deploy = { ...deploy, status: 'compiling', version, theme_name: read.themeName, artifact_path: null, artifact_bytes: null, gscan: null, quality: null, inputs_sha256: null, preflight: null, content_manifest: null }
   }
   const hash = await io.hash(read.reads)
 
@@ -379,14 +403,82 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
     return { kind: 'stopped' }
   }
 
-  // nothing blocks: the artefact is stored, and only now (routine call 6)
+  // nothing blocks: the artefact is stored, and only now (routine call 6) — with its content manifest (Story 7.21, FR-J16): every
+  // file of the zip, hashed, each section partial fingerprinted by its layer's id from the compiler's record beside the files
   const path = `${job.project_id}/${deploy.id}.zip`
   await twice(io, 'artifact put', () => io.artifacts.put(path, zip))
-  const patch = { gscan, quality, preflight, artifact_path: path, artifact_bytes: zip.length, inputs_sha256: hash, settings_snapshot: read.site.site_settings ?? null }
+  const content_manifest = await contentManifest(theme.files, theme.sections)
+  const patch = { gscan, quality, preflight, artifact_path: path, artifact_bytes: zip.length, inputs_sha256: hash, settings_snapshot: read.site.site_settings ?? null, content_manifest }
   await twice(io, 'deploy stored', () => io.deploys.update(deploy!.id, job.user_id, patch))
   deploy = { ...deploy, ...patch }
+  // Story 7.21 — the drift check, still inside `checking`; a Cancel pressed while it read is honoured after it, as today
+  await driftStep(io, job, c, read, deploy.id)
   if (await cancelled(io, job, c)) return { kind: 'stopped' }
   return { kind: 'clean', deploy, read }
+}
+
+/**
+ * STORY 7.21 — THE DRIFT CHECK (FR-J16, D3), inside `checking`, once nothing blocked and the artefact is stored. Its record rides
+ * the next edge (`stage_timings.drift`); it never fails the job — every Ghost answer and every unzip failure is a cause and the
+ * deploy goes on (D3b). Only our own store and database follow AD-20's retry rule (`twice`).
+ *   - NO BINDING (`read.bound`, this project × site): a first deploy — no read and no record. No baseline, or one whose manifest
+ *     is null (a deploy made before this story): the same, as a first deploy.
+ *   - THE BASELINE is R-287's: the newest upload Ghost accepted from this project to this site (`deploys.baseline`).
+ *   - THE LIVE SIDE is the theme under the BOUND name, active or not — the active theme is never read.
+ *   - FOUND: the live zip is kept at `{projectId}/live/{siteId}.zip` (overwriting) BEFORE the record, so D3a's Download always has
+ *     the zip this check read.
+ */
+async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead, own: string): Promise<void> {
+  await c.drift(null)
+  if (read.bound === null) return
+  const baseline = await twice(io, 'drift baseline', () => io.deploys.baseline({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, except: own }))
+  if (baseline === null || baseline.content_manifest === null || typeof baseline.content_manifest !== 'object') return
+  const since = versionNumber(baseline.version)
+  await c.drift({ kind: 'reading' })
+  const theme = read.bound
+  const unverified = (cause: DriftCause, status?: number): DriftRecord => ({ kind: 'unverified', cause, theme, ...(status === undefined ? {} : { status }) })
+  let answer: SnapshotAnswer
+  try {
+    answer = await io.liveTheme({ siteId: job.site_id, userId: job.user_id, name: theme, route: ROUTE })
+  } catch (e) {
+    const code = (e as { name?: string; code?: string } | null)?.name === 'AdminError' ? (e as { code?: string }).code : undefined
+    io.log('deploy: the live theme was not read', { job: job.id, code })
+    return void (await c.drift(unverified(code === 'credential_missing' ? 'no_token' : 'unreachable')))
+  }
+  if (!answer.ok) {
+    io.log('deploy: Ghost did not hand over the live theme', { job: job.id, status: answer.status })
+    // R-288: a theme the site no longer holds is Ghost's 400 "Please select a valid theme." — `getZip`'s one refusal (storage.js:43-50
+    // in 6.58.0, :35-42 in 5.130.6; executed on T1, MEASUREMENTS §90); a 404 from anything in front of Ghost is read the same
+    const gone = answer.status === 400 || answer.status === 404
+    return void (await c.drift(answer.status === 401 ? unverified('token_refused') : answer.status === 403 ? unverified('role') : gone ? unverified('missing') : unverified('unreachable', answer.status)))
+  }
+  let live: Record<string, { sha256: string }>
+  try {
+    live = await liveManifest(unzipTheme(answer.bytes))
+  } catch (e) {
+    io.log('deploy: the live theme could not be read', { job: job.id, why: String((e as Error | null)?.message ?? e).slice(0, 120) })
+    return void (await c.drift(unverified('unreadable')))
+  }
+  const diff = compareManifests(baseline.content_manifest, live)
+  if (diff.changed.length + diff.added.length + diff.removed.length === 0) return void (await c.drift({ kind: 'clean', since }))
+  // each partial by its layer's CURRENT name: the instance its fingerprint names, in the docs this check compiled
+  const layers: Record<string, string> = {}
+  for (const doc of [...Object.values(read.input.templates), ...Object.values(read.input.pageTwo ?? {})]) {
+    for (const i of doc.instances) if (i.layerName.trim() !== '') layers[i.instanceId] = i.layerName
+  }
+  const names = { layers, canvases: read.names }
+  const kept = (path: string, kind: 'changed' | 'removed'): DriftFile => {
+    const entry = baseline.content_manifest?.[path] as ManifestEntry | undefined
+    return { path, label: labelOf({ path, ...(entry === undefined ? {} : { entry }) }, kind, names), ...(entry?.category === undefined ? {} : { category: entry.category }) }
+  }
+  const record: DriftRecord = {
+    kind: 'found', since, theme,
+    changed: diff.changed.map((p) => kept(p, 'changed')),
+    added: diff.added.map((path) => ({ path, label: labelOf({ path }, 'added', names) })),
+    removed: diff.removed.map((p) => kept(p, 'removed')),
+  }
+  await twice(io, 'live copy', () => io.artifacts.put(liveCopyPath(job.project_id, job.site_id), answer.bytes))
+  await c.drift(record)
 }
 
 // ── the doors ───────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -443,7 +535,12 @@ async function failInfra(io: DeployIo, job: JobRow, c: Clock, e: unknown): Promi
  *  `awaiting_ship` with the capture's answer in `error` (B12b). `withoutSnapshot` is B12b's Deploy without a snapshot: no
  *  capture, `stage_timings.snapshotting = { skipped: true }`. A Cancel pressed during the capture (B12a's, `CANCELLABLE`) is read
  *  after it and before the upload. Re-activate never captures. */
-export async function ship(a: { jobId: string; userId: string; mode: Mode; withoutSnapshot?: boolean }, io: DeployIo): Promise<void> {
+/*  STORY 7.21 — OVERWRITE ONLY ON THE CUSTOMER'S WORD. A Pre-flight that found drift (`stage_timings.drift`, D3a) ships only with
+ *  `overwrite` — the route answers 409 without it, and this asks again: unmoved, it does nothing; after a stale re-make, whose
+ *  check runs again, a found drift without it rests the job at `awaiting_ship` with no error (D3a, from the new record). A
+ *  hand edit made between Run checks and Ship it is missed when nothing is stale (the spec's ponytail: a second download on every
+ *  ship to close a minutes-wide window). */
+export async function ship(a: { jobId: string; userId: string; mode: Mode; withoutSnapshot?: boolean; overwrite?: boolean }, io: DeployIo): Promise<void> {
   const job = await firstRead(io, a)
   if (job === null || job.stage !== 'awaiting_ship' || job.deploy_id === null) return
   const at = { projectId: job.project_id, siteId: job.site_id, userId: job.user_id }
@@ -466,6 +563,8 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
     read = await readProject(io, at)
     if (read === null) return void (await fail(c, { code: 'site_not_found', message: DEPLOY_WORDS.noSite }))
     const stale = (await io.hash(read.reads)) !== deploy.inputs_sha256
+    // Story 7.21 — the server is the control: a found drift is never shipped over without the customer's word
+    if (!stale && job.stage_timings?.drift?.kind === 'found' && a.overwrite !== true) return
     // Story 7.20a — the site's first upload, per site record: archive the live theme first, unless B12b's Deploy without a
     // snapshot said not to
     const first = !(await twice(io, 'site bound', () => io.siteBound({ siteId: job.site_id, userId: job.user_id })))
@@ -482,6 +581,8 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
       if (again.kind !== 'clean') return
       deploy = again.deploy
       read = again.read
+      // Story 7.21 — re-made and re-read: a drift found now, without the customer's word, rests on D3a and ships nothing
+      if (c.timings.drift?.kind === 'found' && a.overwrite !== true) return void (await c.end('awaiting_ship', { error: null }))
       await c.enter(capture ? 'snapshotting' : 'uploading')
     }
     if (capture) {

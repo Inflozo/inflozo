@@ -156,6 +156,14 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * a 403 and a 502. The SHIP's capture is the deploy route's, which the harness never reaches: each wizard journey answers its
  * `snapshotting` and its B12b views through `page.route`, as every other stage.
  *
+ * STORY 7.21 — `x-inflozo-harness-drift: found | clean | reading | unverified-<cause> | declined` names the drift check a journey
+ * meets (D3a, D3c, the running row, D3b for each of `lib/drift.ts`' causes). The check is the deploy route's, which the harness never
+ * reaches: the journey's fake route reads the same value and answers the job with that `stage_timings.drift` record — refusing a
+ * `ship` without `overwrite` with a 409 while it is `found`, as the real route does — and answers D3a's live copy with a 303 to a tiny
+ * zip. Here, `declined` alone changes the page: the site's Not now is recorded (`withDrift`), so a missing token reads as the
+ * decline's words, with no Add token. Use it on a `shipped` site (a deploy after the first); the real Ghost, the real bucket and the
+ * real column are walk step 119's and §90's.
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -333,7 +341,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     ...(await storedCards(asked.get('x-inflozo-harness-cards') === 'malformed' ? { divider: { glyph: 'on', icon: 'zz-no-such-icon' } } : null)),
     // Story 7.18a — the site Ship it ships to, by header (above), and the templates Checking's pass line names, from the
     // harness's own library as `read.ts` derives them
-    ship: withBackup(withPreflight(shipOf(asked.get('x-inflozo-harness-ship'), requiredTemplates((id) => entries[id])), asked.get('x-inflozo-harness-preflight')), asked.get('x-inflozo-harness-backup'), asked.get('x-inflozo-harness-token')),
+    ship: withDrift(withBackup(withPreflight(shipOf(asked.get('x-inflozo-harness-ship'), requiredTemplates((id) => entries[id])), asked.get('x-inflozo-harness-preflight')), asked.get('x-inflozo-harness-backup'), asked.get('x-inflozo-harness-token')), asked.get('x-inflozo-harness-drift')),
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -445,6 +453,14 @@ function withBackup(ship: ShipState, asked: string | null, token: string | null)
   const hosting = asked === 'pro' ? 'ghost_pro' as const : asked === 'unknown' ? null : 'self' as const
   const owed = asked === 'self' || asked === 'pro' || asked === 'unknown'
   return { ...ship, site: { ...ship.site, staff: token === 'held' || ship.site.staff, ...(owed ? { backupConfirmed: false, hosting } : {}) } }
+}
+
+/** Story 7.21 — `x-inflozo-harness-drift: declined`: the site's Not now recorded (R-278), so a drift check with no token reads as
+ *  the decline's own D3b words, with no Add token. Every other value of the header names the canned drift record the journey's
+ *  fake deploy route answers with (it is the journey's — the route is never reached here), and leaves the site as it is */
+function withDrift(ship: ShipState, asked: string | null): ShipState {
+  if (asked !== 'declined' || ship.site === null) return ship
+  return { ...ship, site: { ...ship.site, staff: false, declined: true } }
 }
 
 /** Story 7.18a — R-260's fixture: the same routing, its collection's Primary tag condition negated */

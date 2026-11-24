@@ -4,7 +4,7 @@ import { UNIVERSALS } from '@inflozo/library'
 import type { ControlEntry } from './controls.ts'
 import {
   clearDarkOverrides, clearProject, darkOverrideCount, duplicateSection, holdsDarkOverride, insertSection, isDesigned, moveSection,
-  removeSection, renameSection, setHidden, setMemberVisibility, switchDesign,
+  LAYER_NAME_MAX, removeSection, renameSection, setHidden, setMemberVisibility, switchDesign,
 } from './doc-edit.ts'
 import { parseDoc, type DocInstance, type ProjectDoc } from './doc-schema.ts'
 
@@ -109,6 +109,14 @@ test('renameSection: the name is trimmed, and an empty or blank one is refused',
     assert.equal(renameSection(home(), 'hero', name), 'Give this section a name.', JSON.stringify(name))
   }
   assert.match(String(renameSection(home(), 'nope', 'x')), /no section nope/)
+})
+
+test(`renameSection (DW-338): a name of ${LAYER_NAME_MAX} characters is kept, one more is refused with its sentence, measured after the trim`, () => {
+  const most = 'n'.repeat(LAYER_NAME_MAX)
+  assert.equal(ok(renameSection(home(), 'hero', most)).instances[0]?.layerName, most)
+  assert.equal(ok(renameSection(home(), 'hero', `  ${most}  `)).instances[0]?.layerName, most, 'the spaces the trim drops do not count')
+  assert.equal(renameSection(home(), 'hero', `${most}n`), `Keep the name to ${LAYER_NAME_MAX} characters.`)
+  assert.equal(LAYER_NAME_MAX, 60, 'the cap the spec rules (DW-338)')
 })
 
 test('setHidden: retained, never removed, and off again', () => {

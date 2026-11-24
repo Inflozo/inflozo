@@ -544,6 +544,19 @@ DOCS = [
   "Admin key is 403 on the download and on the list, and GET settings/routes/yaml/ with the Admin key is 200 — status, "
   "type, disposition, length and a sha256 printed, keys read from tools/probe/.env in-process by name; §89 written only "
   "when every row held. Any argument but --t1 prints the header and exits 2."),
+ ('tools/probe/record-drift.mjs', 'tool', 'Drift recorder',
+  "Story 7.21's recorder (standing rule 1, R-82, FR-J16, R-287, MEASUREMENTS §90, VERIFY-AT-BUILD 79): the drift check's "
+  "comparison, asked of T1 exactly as the deploy asks it. Node 24 with --experimental-strip-types; every manifest is the "
+  "product's own (apps/web/lib/drift.ts' contentManifest, liveManifest and compareManifests) and every zip the product's "
+  "(apps/web/server/deploy/zip.ts' zipTheme and unzipTheme). THE LOCAL HALF (no flag, no request, writes nothing): the "
+  "pilot theme zipped, read back and compared at zero differences; an archiver-shaped zip read; a hand-edited copy showing "
+  "exactly one changed, one added and one removed file; a CRLF-only copy and a moved partial clean — each beside its "
+  "control. THE --t1 HALF (the owner's go, the main session only; writes under a probe theme name, never activated): the "
+  "pilot uploaded and downloaded with the staff token at zero differences (the zero-false-positive control), naming any "
+  "entry Ghost adds; a hand-edited copy and a copy missing a file uploaded under the same inactive name, the download "
+  "showing exactly those (a full replacement, storage.js:95-107); a flipped token 401, the Admin key 403 and an unknown "
+  "name 404; the probe deleted and the active theme read back as found; §90 written only when every row held. --help "
+  "exits 2 before anything."),
  ('tools/probe/run-verify-snapshot-orphans.py', 'tool', 'Snapshot orphan purge harness',
   "Story 7.20b's harness (standing rule 1, R-82, FR-C6, R-285): AD-33's E7 cron, purge-snapshots, called on the deployed "
   "route and read back off the wire, in run-verify-account-purge.py's shape and with its helpers (redirects disabled, a 401 "
