@@ -528,12 +528,18 @@ create table public.deploys (
   inputs_sha256 text,
   -- Story 7.18b: Pre-flight's compile facts, kept per deploy so "since your last deploy" can compare; the warning rows
   -- are derived from them at read (`lib/preflight.ts`). Server-written, select-only to the client like the two above.
-  preflight     jsonb
+  preflight     jsonb,
+  -- Story 7.23a: when Ghost last accepted this artefact's files — by Ship it's upload or a Roll back's re-upload (a Roll back
+  -- updates this row; it never copies it). Orders the History list, retention's "newest" (DW-400) and the drift baseline
+  -- (R-287: the newest upload Ghost accepted); `created_at` stays the Pre-flight's time. Server-written, select-only. LAST.
+  accepted_at   timestamptz
 );
 comment on column public.deploys.preflight is
   'Pre-flight''s compile facts (Story 7.18b): {templates: string[], custom: object, noindex: string[], freeAsks: string[]} — every .hbs file shipped, config.custom as shipped, FR-H2''s feed-guarded contexts, and the files carrying @site.allow_self_signup. Written only by the server; null before 7.18b.';
 comment on column public.deploys.pinned is
   'FR-J7 (Story 7.22): keep this stored version through pruning. At most N−1 of a project''s stored versions are pinned (N = PLANS[plan].history: 10 Pro, 3 Free), pinned ones counted in N. Set only through pin_version(), which counts and pins in one serialized step with the N the server''s plan resolver hands it (AD-28); cleared by a plain server update, never refused.';
+comment on column public.deploys.accepted_at is
+  'When Ghost last accepted this artefact''s files (Story 7.23a): written by the server when Ghost accepts a Ship it''s upload or a Roll back''s re-upload. Orders the History list, retention''s newest (DW-400) and the drift baseline (R-287: the newest upload Ghost accepted). Null on a row Ghost never accepted; select-only to the client (AD-8).';
 create index on public.deploys (project_id, site_id, created_at desc);
 create index on public.deploys (site_id, created_at desc) where status = 'live';
 

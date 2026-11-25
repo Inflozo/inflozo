@@ -2,7 +2,7 @@
 title: 'Story 7.23a — Roll back and Re-activate from History (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-25'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: 'e3ea8624b9bf53b9d06b4aff50aec7ad648c2781'
 owner_test: pending
 review_loop_iteration: 0
@@ -295,13 +295,13 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
 **Execution:**
 
 *Schema — its own push, first (R-99):*
-- [ ] `supabase/migrations/<Dev's date>120000_deploys_accepted_at.sql` -- create it:
+- [x] `supabase/migrations/<Dev's date>120000_deploys_accepted_at.sql` -- create it *(Dev: `20261125120100_deploys_accepted_at.sql`, because `20261125120000` is 7.22's `pin_version`)*:
   - `add column if not exists accepted_at timestamptz`;
   - backfill `coalesce(activated_at, created_at)` on `uploaded`/`live` rows;
   - `comment on column`, naming DW-400 and R-287.
 
   The column is not client-writable (AD-8).
-- [ ] Architecture `SCHEMA.sql` -- the same, in place. Then `RLS-TEST.sql`, copied byte for byte to `supabase/tests/rls.sql`:
+- [x] Architecture `SCHEMA.sql` -- the same, in place. Then `RLS-TEST.sql`, copied byte for byte to `supabase/tests/rls.sql`:
   - the protected list gains `accepted_at`;
   - one assertion that the column exists.
 

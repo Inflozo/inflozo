@@ -604,7 +604,7 @@ begin
     ('custom_settings','frozen_at','BOTH'),
     ('deploy_jobs','stage','BOTH'),('deploy_jobs','error','BOTH'),
     ('deploys','pinned','BOTH'),('deploys','quality','BOTH'),('deploys','inputs_sha256','BOTH'),
-    ('deploys','preflight','BOTH'),
+    ('deploys','preflight','BOTH'),('deploys','accepted_at','BOTH'),
     ('template_binding_checklist','filename','BOTH')
   ) as v(t,c,verbs)
   cross join lateral (values ('INSERT'),('UPDATE')) as p(priv)
@@ -3562,3 +3562,27 @@ end $$;
 
 delete from auth.users where id in ('77777777-720b-0000-0000-000000000001',
                                     '77777777-720b-0000-0000-000000000002');
+
+-- ============================================================================
+-- Story 7.23a — `deploys.accepted_at`: when Ghost last accepted this artefact's files. It orders the History list,
+-- retention's newest (DW-400) and the drift baseline (R-287). Server-written: the F3 list above holds that `authenticated`
+-- cannot write it; this block holds that it exists with its shape and its comment. With the 7.23a migration withheld it fails.
+-- ============================================================================
+do $$
+begin
+  if (select count(*) from information_schema.columns
+       where table_schema = 'public' and table_name = 'deploys' and column_name = 'accepted_at'
+         and data_type = 'timestamp with time zone' and is_nullable = 'YES' and column_default is null) <> 1 then
+    raise exception 'FAIL (7.23a): deploys.accepted_at (timestamptz, nullable, no default) is missing';
+  end if;
+  if coalesce(col_description('public.deploys'::regclass,
+       (select attnum from pg_attribute where attrelid = 'public.deploys'::regclass and attname = 'accepted_at')), '')
+     not like '%Ghost last accepted%DW-400%R-287%select-only to the client%' then
+    raise exception 'FAIL (7.23a): deploys.accepted_at''s comment does not name what it records, DW-400, R-287 and AD-8''s select-only';
+  end if;
+  if has_column_privilege('authenticated', 'public.deploys', 'accepted_at', 'INSERT')
+     or has_column_privilege('authenticated', 'public.deploys', 'accepted_at', 'UPDATE') then
+    raise exception 'FAIL (7.23a): authenticated can write deploys.accepted_at';
+  end if;
+  raise notice 'PASS (7.23a): deploys.accepted_at is a nullable timestamptz with no default, commented and client-unwritable';
+end $$;
