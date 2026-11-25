@@ -14918,7 +14918,7 @@ async function main() {
 
       /** R-291 (121i, and the plant): A HAND EDIT of v3 as a designer makes one in Ghost Admin — v3's stored zip read (the service key),
        *  one template given a Handlebars comment (so the page still reads "Version 3"), re-zipped by the product's writer and uploaded
-       *  with the staff token under the frozen name: live at once where that name is active, held where it is not (R-264). Answers
+       *  with the Admin API key under the frozen name: live at once where that name is active, held where it is not (R-264). Answers
        *  the upload's status and name, whether Ghost made it active, the file edited, its label as the check names it (the
        *  manifest's own: `labelOf` with the entry and no current names, as `compareLive` labels it), and T1's download compared
        *  with v3's manifest */
@@ -15307,7 +15307,7 @@ async function main() {
           const answerP = await history121(pg)
           const rowsP = rowsOf121(answerP)
           const themesP = (await themes121()) ?? []
-          planted121 = check(`step 121 (plant) — ${PLANT121}: T1 connected through the wizard, "Rollback test" shipped v1–v3 ("Version n" on T1 each time); then ${prev121} activated with the staff token (T1 still holding ${theme121}, which the owner's Re-activate needs), v3's row \`uploaded\` (service key — as a Deploy only leaves it; R-264 (a) refuses a real one while the record says live), v1's zip swapped for one the pinned v6 gscan blocks (${fatal.said}), and v3's files with an invisible hand edit to ${editP.path} uploaded under ${theme121} with the staff token, NOT live (R-264), T1's download differing from v3 by that file alone (R-291); the route lists v3 (Re-activate) v2 v1 (Roll back), nothing Live, 0 errors each`,
+          planted121 = check(`step 121 (plant) — ${PLANT121}: T1 connected through the wizard, "Rollback test" shipped v1–v3 ("Version n" on T1 each time); then ${prev121} activated with the staff token (T1 still holding ${theme121}, which the owner's Re-activate needs), v3's row \`uploaded\` (service key — as a Deploy only leaves it; R-264 (a) refuses a real one while the record says live), v1's zip swapped for one the pinned v6 gscan blocks (${fatal.said}), and v3's files with an invisible hand edit to ${editP.path} uploaded under ${theme121} with the Admin API key, NOT live (R-264), T1's download differing from v3 by that file alone (R-291); the route lists v3 (Re-activate) v2 v1 (Roll back), nothing Live, 0 errors each`,
             own.ok && themesP.find((t) => t.active)?.name === prev121 && themesP.some((t) => t.name === theme121) && [200, 204].includes(written.status) && swapped.gone === 200 && swapped.put === 200 && swapped.same &&
             editP.status === 200 && editP.name === theme121 && editP.active === false && editedOnly121(editP) && answerP.status === 200 &&
             answerP.body?.liveVersion === null && rowsP.map((r) => `v${r.n}:${r.action}`).join(' ') === 'v3:reactivate v2:rollback v1:rollback' && rowsP.every((r) => !r.live && r.gscan?.errors === 0) &&

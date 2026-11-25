@@ -683,7 +683,7 @@ tasks below); Story 7.23b's card carries the same question for Restore original.
 
 ## Owner's manual test
 
-**Before you start:** Deploy plants a Free test account on your go and fills in the address and links below. The account is
+**Before you start:** Deploy planted a Free test account on your go (2026-11-25), `umngkmr+rollback723a@gmail.com`. The account is
 connected to T1 (`ghost6.inflozo.com`), and its project **Rollback test** holds three versions:
 - **v1**, **v2** and **v3** were shipped live in turn, and each version's home page headline names its number ("Version 1",
   "Version 2", "Version 3").
@@ -693,10 +693,10 @@ connected to T1 (`ghost6.inflozo.com`), and its project **Rollback test** holds 
 - v3's files on T1 were then changed by one invisible line, as if someone had edited the theme in Ghost Admin, so that Roll back's
   check has something to find in steps 4 and 5 (R-291).
 
-Sign in at `https://app.inflozo.com/sign-in` with `{address filled at Deploy}` and open the link that arrives. Use a desktop
+Sign in at `https://app.inflozo.com/sign-in` with `umngkmr+rollback723a@gmail.com` and open the link that arrives. Use a desktop
 browser at least **1366 px** wide. Keep a second tab on `https://ghost6.inflozo.com`.
 
-1. **URL:** `https://app.inflozo.com/projects/{id filled at Deploy}`. **Screen:** the editor. **Do:** rest the pointer on the
+1. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f`. **Screen:** the editor. **Do:** rest the pointer on the
    clock icon just left of **Ship it**, then press it. **Type:** nothing. **See:**
    - the tooltip reads "History — every version, one click back";
    - a panel titled **HISTORY — ROLLBACK TEST** opens, and nothing in it names a person.
@@ -706,27 +706,27 @@ browser at least **1366 px** wide. Keep a second tab on `https://ghost6.inflozo.
      a **Roll back** button and a pin.
    - Nothing shows a green **Live** dot.
 2. **URL:** `https://ghost6.inflozo.com`. **Screen:** your test site. **Do:** reload it. **See:** Casper.
-3. **URL:** the same editor. **Do:** press **Re-activate** on v3. **See:** the button says "Activating…", then v3 shows the
+3. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f` (the same editor). **Do:** press **Re-activate** on v3. **See:** the button says "Activating…", then v3 shows the
    green **Live** dot, and v2's Roll back becomes the outlined red one. Reload ghost6.inflozo.com: the headline reads
    "Version 3".
-4. **URL:** the same editor. **Do:** press **Roll back** on v2. **See:** a box "**Roll back to v2?**" with "Your live site
+4. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f` (the same editor). **Do:** press **Roll back** on v2. **See:** a box "**Roll back to v2?**" with "Your live site
    switches to v2 instantly. v3 stays in history — nothing is lost.", v2's chip, time and **0 · 1**, and **Cancel** already
    highlighted. For a moment it says "Comparing with your live theme…", then a warning with a yellow "**1 file differs**", the one file
    the plant changed listed under **Changed**, the line "Rolling back replaces it with v2's. Take a copy of the live theme first if
    you want to keep those edits.", and **Download the live theme first**. **Do:** press
    **Download the live theme first**. **See:** a zip downloads (your site's theme as it is now). **Do:** press **Cancel**.
    **See:** the box closes and nothing changed.
-5. **URL:** the same editor. **Do:** press **Roll back** on v2 again, wait for "1 file differs", then press the box's **Roll
+5. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f` (the same editor). **Do:** press **Roll back** on v2 again, wait for "1 file differs", then press the box's **Roll
    back**. **See:** "Rolling back…", then the panel lists **v2** (Live) first and **v3** second with the outlined Roll back.
    Reload ghost6.inflozo.com: the headline reads "Version 2".
-6. **URL:** the same editor. **Do:** press **Roll back** on v3. **See:** this time the box says "**Nothing changed on your site
+6. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f` (the same editor). **Do:** press **Roll back** on v3. **See:** this time the box says "**Nothing changed on your site
    since v2**". **Do:** confirm. **See:** v3 is Live again and first; ghost6.inflozo.com says "Version 3".
-7. **URL:** the same editor. **Do:** press **Roll back** on v1 and confirm. **See:** under v1, a line saying Ghost's own theme
+7. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f` (the same editor). **Do:** press **Roll back** on v1 and confirm. **See:** under v1, a line saying Ghost's own theme
    check refused v1, followed by Ghost's message in small grey type. v3 stays Live, and ghost6.inflozo.com still says
    "Version 3".
-8. **URL:** the same editor. **Do:** close the panel, open the small ▾ on **Ship it**. **See:** the **History** row's second
+8. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f` (the same editor). **Do:** close the panel, open the small ▾ on **Ship it**. **See:** the **History** row's second
    line reads "Versions, gscan reports, rollback".
-9. **URL:** the same editor, **keyboard only.** **Do:**
+9. **URL:** `https://app.inflozo.com/projects/31885d91-cea5-4043-b0b2-30ae4545d93f` (the same editor), **keyboard only.** **Do:**
    - open History from the clock with Enter;
    - press Tab until v2's Roll back is focused, then press Enter;
    - in the box, press Esc.
@@ -983,3 +983,41 @@ argv, no value printed; the owner's in-session go to walk step 121's whole run, 
     T1 disconnected, users 24 → 24, projects 17 → 17.
   - The committed walk now RECORDS a Ship it press that sends nothing within 20 s (the button, the refusal caption, a screenshot)
     and never presses again (DW-404).
+
+**Executed — Deploy (2026-11-25, Node 24; keys by their variable names, read in-process, no value printed; the production and T1
+writes on the owner's in-session go, "1. Go", run in the main session):**
+- **Deployment: `dpl_CP7B8vxvzRzWPfSdxvxRpJeT3mPY`** (`inflozo-jwgrkebk3-umangkagathara.vercel.app`), READY, target production,
+  built from `dc59385e` (the Review's last commit), aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com` (`VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID`, `VERCEL_PROJECT`, `v6/deployments` and `v13/deployments/{id}`); `https://app.inflozo.com/sign-in` and
+  `https://inflozo.com/` answer 200. `git diff --stat 650c8899 dc59385e -- apps packages supabase` is empty, so this is the app
+  code walk step 121 ran 0 FAIL 76 PASS on at Review.
+- **CI on `dc59385e`** (`GITHUB_TOKEN`, read only): run 45665349342 — `check` (the whole keyboard gate among it), `rls` and `deploy`
+  success; the Render matrix (45665349513) success.
+- **Schema:** applied on production at Dev (the Schema push, R-99) and read back at Dev and at Review; nothing since.
+  **`bash supabase/tests/run-rls-gate.sh`: exit 0**, with "PASS (7.23a): deploys.accepted_at is a nullable timestamptz with no
+  default, commented and client-unwritable".
+- **Before the plant, read only:** T1's themes with `GHOST6_STAFF_ACCESS_TOKEN` (`GET themes/`, 200): `casper*`, `racer`, `source`,
+  no `inflozo-` theme; `umngkmr+rollback723a@gmail.com` not among production's 22 users (`SUPABASE_SECRET_KEY`); Story 7.22's
+  **Pro history test** (`5b9724e4-…`, owner step 10) still there, its ghost6 site connected.
+- **The owner's test plant** — walk step 121's `STEP121_PLANT=umngkmr+rollback723a@gmail.com` with `T1_WRITES=1`, as a cut copy
+  (steps 1–5, then 121, then the walk's `finally`) from a clean detached worktree at the deployed `dc59385e` (`tools/probe/.env`
+  linked in, never copied), the launcher reading `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_DB_POOLER_URL`, `VERCEL_TOKEN`
+  and `VERCEL_TEAM_ID` in-process and the step its own `GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST6_CONTENT_API_KEY` and
+  `GHOST6_STAFF_ACCESS_TOKEN`. **First run: 0 FAIL, 44 PASS** (one `stall` note in step 5, a 30 s page load retried once):
+  - T1 connected through the wizard; **Rollback test** (`31885d91-cea5-4043-b0b2-30ae4545d93f`) shipped three times, T1's Home
+    reading "Version 1", "Version 2", "Version 3" after each, every version 0 errors and 1 warning (`page_switch_unused`);
+  - then `casper` activated with the staff token (200), v3's row written `uploaded`, v1's stored zip swapped for the planted one
+    (removed 200, stored 200, read back equal) after the pinned gscan 6.4.2 proved it blocked locally (`GS005-TPL-ERR` fatal,
+    `GS120-NO-UNKNOWN-GLOBALS`; v1 itself 0 errors), and v3's files with the invisible hand edit to `home.hbs` uploaded under
+    `inflozo-rollback-test` with the Admin API key: 200, **not active**, T1's download differing from v3 by `home.hbs` alone;
+  - the history route on the account's own session listing `v3:reactivate v2:rollback v1:rollback`, nothing live; zero CSP
+    violations; the throwaway A and B deleted, users 22 → 23 and projects 15 → 16 (one each kept by the plant).
+  - The walk's check label and helper comment said the hand edit went up "with the staff token"; the code uses the Admin API key
+    (as the Review recorded), so both now say so. Wording only.
+- **Read back afterwards, GET only** (`GHOST6_STAFF_ACCESS_TOKEN`, `SUPABASE_SECRET_KEY`): T1's themes `casper*`, `racer`, `source`,
+  `inflozo-rollback-test`, and its Home carrying no A4 #13 headline (Casper); the account on `free`, Rollback test linked to a
+  connected site; deploys 1.0.0 `uploaded` (activated), 2.0.0 `uploaded` (activated), 3.0.0 `uploaded` (never activated), each
+  with its zip and an `accepted_at`; the last job `done`.
+- **The Owner's manual test** carries the address and the project's URL in every step. `owner_test` stays `pending`. Afterwards T1
+  goes back to Casper (and `inflozo-rollback-test` is deleted) on his go.
+- **Not hit in Deploy:** Resend and Dodo (a put-back sends no email and reads no plan).
