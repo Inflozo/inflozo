@@ -6,8 +6,10 @@ import assert from 'node:assert/strict'
 import { deployPath } from './lib/editor.ts'
 import { SNAPSHOT_WORDS } from './lib/deploy.ts'
 import { KEYS } from './lib/connect-rule.ts'
+import { readFileSync } from 'node:fs'
+import { LIVE_MAX_BYTES } from './server/deploy/zip.ts'
 import {
-  ADDS_TOKEN, causeBody, causeShown, compareManifests, contentManifest, DRIFT_CAUSES, DRIFT_WORDS, driftSaid, labelOf, liveCopyPath,
+  ADDS_TOKEN, causeBody, causeShown, compareManifests, contentManifest, DRIFT_CAUSES, DRIFT_WORDS, driftSaid, labelOf, LIVE_COPY_MAX_BYTES, liveCopyPath,
   liveDownloadPath, liveFileName, liveManifest, normalizedBytes, sha256Hex, type DriftRecord, type ManifestEntry,
 } from './lib/drift.ts'
 
@@ -133,4 +135,29 @@ test('the live copy: one object per project × site, its address under the deplo
   assert.equal(liveCopyPath('p', 's'), 'p/live/s.zip')
   assert.equal(liveDownloadPath('p', 'j'), `${deployPath('p')}/live?job=j`)
   assert.equal(liveFileName('inflozo-drift-test'), 'inflozo-drift-test-live.zip')
+})
+
+test('7.22 (DW-396): the live copy is kept up to the store\'s own limit read at Dev — 50 MiB, the project\'s storage config, its source in the comment — and that limit is the PACKED zip\'s, apart from the unzip\'s cap on the unpacked files', () => {
+  assert.equal(LIVE_COPY_MAX_BYTES, 52_428_800)
+  const source = readFileSync('lib/drift.ts', 'utf8')
+  const comment = source.slice(source.lastIndexOf('/**', source.indexOf('export const LIVE_COPY_MAX_BYTES')), source.indexOf('export const LIVE_COPY_MAX_BYTES'))
+  assert.match(comment, /fileSizeLimit/)
+  assert.match(comment, /config\/storage/)
+  assert.notEqual(LIVE_COPY_MAX_BYTES, LIVE_MAX_BYTES, 'two caps, two reasons')
+  // a found record that kept no copy still says it was found: D3a draws, without its Download
+  const unkept: DriftRecord = { kind: 'found', since: 2, theme: 'inflozo-notes', changed: [], added: [{ path: 'x.css', label: 'x' }], removed: [], kept: false }
+  assert.match(driftSaid(unkept, { host: 'a.com' }), new RegExp(DRIFT_WORDS.title))
+})
+
+test('7.22: pruning never touches the drift baseline — the prune\'s clear writes the pointer and its bytes alone (never `content_manifest`), and the baseline read never asks for a stored zip, so a pruned row stays R-287\'s baseline', () => {
+  const io = readFileSync('server/retention-io.ts', 'utf8')
+  const clears = [...io.matchAll(/\.update\(([^)]*)\)/g)].map((m) => m[1])
+  assert.deepEqual(clears, ['{ artifact_path: null, artifact_bytes: null }'], 'the one write the prune makes')
+  assert.doesNotMatch(io, /content_manifest/, 'the prune never names the manifest')
+  const sweep = readFileSync('app/api/cron/prune-artifacts/route.ts', 'utf8')
+  assert.doesNotMatch(sweep, /content_manifest/, 'nor does the sweep')
+  const deployIo = readFileSync('server/deploy/deploy-io.ts', 'utf8')
+  const baseline = deployIo.slice(deployIo.indexOf('async baseline('), deployIo.indexOf('async previous('))
+  assert.match(baseline, /\.in\('status', \['uploaded', 'live'\]\)/, 'the baseline is the newest accepted upload (R-287)')
+  assert.doesNotMatch(baseline, /artifact_path/, 'whether or not its zip is still stored')
 })

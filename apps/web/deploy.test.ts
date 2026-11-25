@@ -453,3 +453,51 @@ test('7.21: the live copy\'s route — the job read on the caller\'s own session
   assert.match(LIVE_ROUTE, /NextResponse\.redirect\(signed\.signedUrl, 303\)/)
   assert.doesNotMatch(LIVE_ROUTE, /\.download\(/, 'no bytes through a function body')
 })
+
+// ── Story 7.22 — the History drawer's door, the number that goes on, the immutable put — read from the files' own source ──
+
+const HISTORY_ROUTE = readFileSync('app/(app)/app/(authed)/projects/[id]/history/route.ts', 'utf8')
+const flatOf = (source: string) => source.replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ').replace(/\s+/g, ' ')
+
+test('7.22: the history route — GET lists the stored versions on the CALLER\'S session (RLS), every site, newest first; POST pins through pin_version with the plan\'s number from resolveEntitlement (409 cap, 404 gone) and unpins with a plain update scoped by user and project; no-store on every answer', () => {
+  const flat = flatOf(HISTORY_ROUTE)
+  assert.match(flat, /export const dynamic = 'force-dynamic'/)
+  const get = sliceOf(flat, 'export async function GET', 'export async function POST')
+  assert.ok(get.indexOf('currentUser()') < get.indexOf('supabaseServer()') && get.includes("if (!isUuid(projectId)) return no(404, 'Not found')"))
+  assert.match(get, /const sb = await supabaseServer\(\)/, 'the list is the caller\'s, read through RLS')
+  assert.doesNotMatch(get, /supabaseAdmin/, 'never the service role for the list')
+  assert.match(get, /\.in\('status', \['uploaded', 'live'\]\) \.not\('artifact_path', 'is', null\) \.order\('created_at', \{ ascending: false \}\)/, 'stored versions only (isStoredVersion), newest first — a pruned one is absent, never greyed')
+  assert.doesNotMatch(get, /\.eq\('site_id'/, 'every site: one list per project')
+  const post = flat.slice(flat.indexOf('export async function POST'))
+  assert.ok(post.indexOf('currentUser()') < post.indexOf("isUuid(projectId)") && post.indexOf("isUuid(deploy)") < post.indexOf('resolveEntitlement'))
+  assert.match(post, /if \(typeof pinned !== 'boolean'\) return no\(400, 'Bad pinned'\)/)
+  assert.match(post, /const \{ caps \} = await resolveEntitlement\(user\.id\)/, 'AD-28: the plan from the one resolver')
+  assert.match(post, /rpc\('pin_version', \{ p_deploy: deploy, p_user: user\.id, p_cap: caps\.history \}\)/, 'FR-J7: the database counts and pins, with the server\'s number')
+  assert.match(post, /if \(data === 'cap'\) return no\(409, /)
+  assert.match(post, /if \(data === 'gone'\) return no\(404, 'Not found'\)/)
+  const unpin = sliceOf(post, 'if (!pinned) {', 'const { caps }')
+  assert.match(unpin, /\.update\(\{ pinned: false \}\) \.eq\('id', deploy\) \.eq\('user_id', user\.id\) \.eq\('project_id', projectId\)/, 'unpinning is a plain update, never refused, scoped by user and project')
+  assert.doesNotMatch(unpin, /rpc|resolveEntitlement/)
+  assert.doesNotMatch(flat, /holdsLock|edit_locks/, 'a history control needs no edit lock (R-192)')
+  assert.equal((HISTORY_ROUTE.match(/new NextResponse\(body, \{ status, headers: NO_STORE \}\)|NextResponse\.json\(body, \{ status, headers: NO_STORE \}\)/g) ?? []).length, 2, 'both answer shapes carry no-store')
+})
+
+test('7.22 (DW-372): the next version is ONE function — `project-input.ts` and `shipStateOf` both read `nextVersion`, and nothing counts rows any more', () => {
+  const input = readFileSync('server/deploy/project-input.ts', 'utf8')
+  const deploy = readFileSync('lib/deploy.ts', 'utf8')
+  assert.match(input, /const n = nextVersion\(uploads\)/)
+  assert.match(deploy, /n: nextVersion\(rows\),/)
+  for (const [name, source] of [['project-input.ts', input], ['lib/deploy.ts', deploy]] as const) {
+    assert.doesNotMatch(flatOf(source), /uploads\.length \+ 1|rows\.length \+ 1/, `${name} counts rows`)
+  }
+})
+
+test('7.22 (NFR-4): an artefact\'s put never overwrites — `upsert` only for the live copy\'s `replace`; and DW-396\'s live copy is refused for a job whose record says it was not kept', () => {
+  const io = flatOf(readFileSync('server/deploy/deploy-io.ts', 'utf8'))
+  assert.match(io, /async put\(path, bytes, opts\) \{ ok\(await supabaseAdmin\(\)\.storage\.from\(BUCKET\)\.upload\(path, bytes, \{ contentType: 'application\/zip', upsert: opts\?\.replace === true \}\)/)
+  assert.doesNotMatch(io, /upsert: true/)
+  const run = flatOf(readFileSync('server/deploy/run.ts', 'utf8'))
+  assert.match(run, /io\.artifacts\.put\(liveCopyPath\(job\.project_id, job\.site_id\), answer\.bytes, \{ replace: true \}\)/, 'the live copy alone overwrites')
+  assert.match(run, /io\.artifacts\.put\(path, zip\)\)/, 'the artefact asks no overwrite')
+  assert.match(LIVE_ROUTE, /drift\.kept === false/, 'an earlier check\'s copy is never served for a check that kept none')
+})

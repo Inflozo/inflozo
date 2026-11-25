@@ -333,6 +333,11 @@ export const lockPath = (projectId: string) => `/projects/${projectId}/${LOCK}`
 export const DEPLOY = 'deploy'
 export const deployPath = (projectId: string) => `/projects/${projectId}/${DEPLOY}`
 
+/** STORY 7.22 — the History drawer's one door (`projects/[id]/history/route.ts`): GET the project's stored versions, POST a pin or
+ *  an unpin. A route handler for the lock route's reasons, a STATIC sibling of `[template]` like the three above */
+export const HISTORY = 'history'
+export const historyPath = (projectId: string) => `/projects/${projectId}/${HISTORY}`
+
 /** The canvas a segment names, or null for a reserved, unknown or CONDITIONAL one — a canvas the switcher offers to
  *  nobody must not be reachable by typing its address either, and refusing it here is the only refusal that is
  *  synchronous (see `CONDITIONAL`). `'home'` is a key; the route 308s it.

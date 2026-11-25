@@ -106,7 +106,7 @@ export function endingOf(stage: Stage, deploy: { activated: boolean } | null, ti
 
 // ── the theme's name and version ────────────────────────────────────────────────────────────────────────────────────
 
-/** FR-J10's version: `{n}.0.0`, n being this project's uploads to this site plus one. */
+/** FR-J10's version: `{n}.0.0`, n being `nextVersion`'s. */
 export const versionOf = (n: number): string => `${n}.0.0`
 /** …as the wizard shows it. */
 export const versionLabel = (n: number): string => `v${n}`
@@ -114,6 +114,15 @@ export const versionLabel = (n: number): string => `v${n}`
 export const ARTIFACT_BUCKET = 'deploy-artifacts'
 /** `1.0.0` → 1, the number a stored version names; NaN for anything else. */
 export const versionNumber = (version: string): number => (/^(\d+)\.0\.0$/.test(version) ? Number(version.split('.')[0]) : Number.NaN)
+/** STORY 7.22 (DW-372) — THE NEXT VERSION: 1 + the highest number among this project × site's `uploaded`/`live` rows (the caller's
+ *  read). Pruning keeps every row (`lib/retention.ts`), so the highest number survives it — counting rows stopped growing once old
+ *  zips were pruned. A deploy failed after Ghost took it (a lost binding race) is not counted, so its number can recur, under
+ *  another theme name (Design Notes; Story 7.25's per-site lock removes the race). Read by `project-input.ts` and `shipStateOf`. */
+export const nextVersion = (rows: readonly { version: unknown }[]): number =>
+  1 + rows.reduce<number>((top, r) => {
+    const n = versionNumber(String(r.version))
+    return Number.isFinite(n) && n > top ? n : top
+  }, 0)
 /** FR-J10 / AD-19: the theme's name, from the frozen `projects.slug` — and the zip's filename, which is what Ghost names a
  *  theme by (VERIFY 30). The collision suffix is Story 7.24's. */
 export const themeNameOf = (slug: string): string => `inflozo-${slug}`
@@ -851,7 +860,7 @@ export function shipStateOf(a: {
     overridden: a.overridden,
     sites,
     themeName: typeof binding?.theme_name === 'string' ? binding.theme_name : themeNameOf(a.slug),
-    n: rows.length + 1,
+    n: nextVersion(rows),
     prev: Number.isFinite(prev) ? prev : null,
     shipped: rows.length > 0,
     liveHere: connected && a.liveHere,

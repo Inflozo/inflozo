@@ -5,7 +5,7 @@
 //   APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app …   # a local `next start`: no Vercel check, and not a deployed result
 //   T1_WRITES=1 …   # step 113 too (Story 7.18a): it WRITES TO T1, so only on the owner's in-session go, in the main session
 //                   (step 114, Story 7.18b, always runs: it writes to production through a throwaway account and reads T1);
-//                   steps 117 (Story 7.20a) and 119 (Story 7.21) write to T1 too, and run under the same switch
+//                   steps 117 (Story 7.20a), 119 (Story 7.21) and 120 (Story 7.22) write to T1 too, and run under the same switch
 //   STEP119_PLANT=<email> T1_WRITES=1 …   # Story 7.21: step 119 as Deploy's plant for the owner's test, as that address —
 //                   run it in a cut copy (steps 1–5 and 119); it stops after the hand edit and leaves T1 and the account planted
 //
@@ -427,6 +427,14 @@
 // start theme active, every inflozo- theme it uploaded deleted, routes.yaml byte for byte), removes J's objects, disconnects and
 // deletes J, and counts back. `STEP119_PLANT=<email>` is Deploy's plant for the owner's test instead: that address, "Drift test"
 // shipped once and live, (d)'s hand edit read back from T1 — and it stops, printing the project's id and the section's name.
+// Story 7.22 adds step 120, WRITING TO T1 and to production, so it runs only with `T1_WRITES=1` on the owner's in-session go:
+// ARTIFACTS, RETENTION AND PINNING (FR-J7; DW-372, DW-374, DW-380). A throwaway Free account K (`editor-harness-k-…`) connects T1
+// and "History test" is linked: (a) four ships — v1's row kept with a null pointer and its object gone, the route and the drawer
+// listing v4 v3 v2; (b) v2 and v3 pinned through the drawer, v4's pin D2b and a 409; (c) v4 (the drift baseline) pruned as the
+// prune prunes, Run checks → D3c on its kept manifest, the new version 5.0.0 in the row and the artefact's package.json; (d) the
+// `prune-artifacts` cron — 401 without the secret; a planted DW-380 resting check abandoned and a planted failed row's zip dropped,
+// the check resting on the linked site and a live copy untouched; (e) Pro: nine pins 200, the tenth 409. Its finally puts T1 back,
+// removes K's objects, disconnects and deletes K, and counts back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -515,8 +523,8 @@ async function main() {
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
   // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's; Story 7.20a: `h` is 117's;
-  // Story 7.20b: `i` is 118's; Story 7.21: `j` is 119's (never the plant's address, which is the owner's)
-  const stale = all.filter((u) => /^editor-harness-[abcdefghij]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.20b: `i` is 118's; Story 7.21: `j` is 119's (never the plant's address, which is the owner's); Story 7.22: `k` is 120's
+  const stale = all.filter((u) => /^editor-harness-[abcdefghijk]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -14239,6 +14247,395 @@ async function main() {
         }
       }
       check('step 119 — the step\'s contexts recorded zero CSP violations', csp119.length === 0, JSON.stringify(csp119.slice(0, 3)))
+    }
+
+    /* ── step 120 — Story 7.22: ARTIFACTS, RETENTION AND PINNING (FR-J7, AD-29, AD-33; DW-372, DW-374, DW-380), WRITING TO T1 ──
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: four T1 uploads and activations through
+       the product, production rows and objects planted for the sweep and the Pro cap, one call of the `prune-artifacts` cron on
+       production (it sweeps every account, as its nightly run will), and the put-back. A throwaway Free account K
+       (`editor-harness-k-…`) connects T1 through the wizard and "History test" (step 1's fixture) is linked:
+       (a) FOUR SHIPS (Deploy & activate): after the fourth, v1's row is KEPT with a null pointer and its object gone (Free keeps 3,
+           the prune ran on the upload Ghost accepted); v2–v4 keep theirs; the history route and the drawer (the bar's clock at
+           1440) list exactly v4 v3 v2 — v1 absent, never greyed.
+       (b) PINS through the drawer: v2 and v3 pin (2 = N−1 on Free); v4's pin is the database's `cap` — D2b under it with focus on
+           Got it, the pin unfilled — and the same POST through the route answers 409; v3 unpins (never refused).
+       (c) THE NUMBER AND THE BASELINE: v4 — the newest upload, the drift baseline (R-287) — pruned as the prune prunes (the pointer
+           cleared, then the object removed); the page read again; Run checks → D3c "since v4" against v4's kept manifest, the new
+           deploy's version 5.0.0 (DW-372: counting stored rows would say 3) and its artefact's `package.json` saying 5.0.0.
+       (d) THE SWEEP: planted — a check resting on T1 for an UNLINKED project R (DW-380), a failed row of P's two days old naming an
+           object (DW-374), the control: (c)'s check resting on P's linked site with its row back-dated two days, and an object under
+           `{P}/live/`. `GET /api/cron/prune-artifacts` without the secret → 401; with `CRON_SECRET` → R's job cancelled, its row and
+           object gone; the failed row kept, its pointer null and its object gone; the control untouched; the live copy untouched.
+       (e) PRO STOPS AT NINE: K made Pro (`entitlements.state`), project Q planted with ten stored versions on the site (rows only —
+           `pin_version` reads the pointer, never the object): nine pins answer 200, the tenth 409, an unpin 200.
+       FINALLY: every job at rest; T1 put back and read back; K's objects removed (`site-snapshots/{K}/{site}/…` and
+       `deploy-artifacts/{P|R|Q}/…`); T1 disconnected through the product; K deleted; users and projects counted back. Keys are read
+       in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 119 is. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 120 — NOT RUN', 'it writes to T1 (four uploads and activations through the product, and the put-back) and to production (planted rows and objects, one call of the prune-artifacts cron): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp120 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP120, RET120, DR120, CR120, PR120, AR120, RU120, ZIP120, GATE120, SW120] = await Promise.all([
+        imp120('apps/web/lib/deploy.ts'), imp120('apps/web/lib/retention.ts'), imp120('apps/web/lib/drift.ts'), imp120('apps/web/lib/connect-rule.ts'),
+        imp120('apps/web/lib/probe-rule.ts'), imp120('apps/web/server/ghost-admin/admin-rule.ts'), imp120('apps/web/lib/routes-upload.ts'),
+        imp120('apps/web/server/deploy/zip.ts'), imp120('apps/web/lib/backup-gate.ts'), imp120('apps/web/lib/artifact-sweep.ts'),
+      ])
+      const HW120 = RET120.HISTORY_WORDS
+      const DW120 = DR120.DRIFT_WORDS
+      const until120 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV120 = {}
+      const NAMES120 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN', 'CRON_SECRET']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES120.includes(m[1]) && m[2].trim()) ENV120[m[1]] = m[2].trim()
+      }
+      const missing120 = NAMES120.filter((k) => !ENV120[k])
+      if (missing120.length) throw new Error(`step 120: ${missing120.join(', ')} not in tools/probe/.env`)
+      const SECRETS120 = [ENV120.GHOST6_ADMIN_API_KEY, ENV120.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV120.GHOST6_CONTENT_API_KEY, ENV120.CRON_SECRET]).filter((x) => x.length >= 8)
+      const scrub120 = (x) => SECRETS120.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const ghost120 = async (credential, method, p, body) => {
+        const { url, init } = AR120.adminRequest({ credential, siteUrl: ENV120.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      const staff120 = (method, p, body) => ghost120(ENV120.GHOST6_STAFF_ACCESS_TOKEN, method, p, body)
+      const themes120 = async () => {
+        const r = await staff120('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true })) : null
+      }
+      const routesFile120 = async () => {
+        const r = await staff120('GET', RU120.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      const storage120 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed120 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage120, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const object120 = async (key) => {
+        const r = await fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { headers: storage120 }).catch(() => null)
+        return r?.ok ? Buffer.from(await r.arrayBuffer()) : null
+      }
+      const putObject120 = (key, bytes) => fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { method: 'POST', headers: { ...storage120, 'Content-Type': 'application/zip' }, body: bytes }).then((r) => r.status)
+      const removeObject120 = (key) => fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { method: 'DELETE', headers: storage120 }).then((r) => r.status).catch(() => 0)
+      const PLANTED_ZIP120 = Buffer.from(ZIP120.zipTheme({ 'README.md': `walk 120 plant ${stamp}\n` }))
+      const DAYS_AGO120 = new Date(Date.now() - 2 * SW120.DEAD_AFTER_MS).toISOString()
+
+      const email120 = `editor-harness-k-${stamp}@inflozo.com`
+      const usersBefore120 = (await users())?.length ?? null
+      const projectsBefore120 = await projectCount()
+      let id120 = null
+      let site120 = null
+      let P120 = null
+      let R120 = null
+      let Q120 = null
+      let theme120 = null
+      let prev120 = null
+      let start120 = []
+      let routesBefore120 = null
+      const ctxs120 = []
+      const csp120 = []
+
+      const siteRow120 = async () => (site120 === null ? null : (await call('/rest/v1', `/sites?id=eq.${site120}&select=id,disconnected_at`)).body?.[0] ?? null)
+      const job120 = async () => (P120 === null ? null : (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P120}&select=id,stage,error,deploy_id,stage_timings&order=started_at.desc&limit=1`)).body?.[0] ?? null)
+      const jobById120 = async (id) => (await call('/rest/v1', `/deploy_jobs?id=eq.${id}&select=id,stage,deploy_id`)).body?.[0] ?? null
+      const deploy120 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=id,version,status,activated,artifact_path,pinned,content_manifest,created_at`)).body?.[0] ?? null)
+      const versions120 = async (project) => (await call('/rest/v1', `/deploys?project_id=eq.${project}&status=in.(uploaded,live)&select=id,version,status,artifact_path,pinned&order=created_at.asc`)).body ?? []
+      const atRest120 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      const wiz120 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const box = d.querySelector('[data-check-rows]')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          title: d.querySelector('#deploy-title')?.textContent ?? null,
+          reading: d.querySelector('#deploy-drift-reading') !== null,
+          passes: box ? [...box.children].filter((c) => !c.hasAttribute('data-finding')).map((c) => ({ text: c.textContent.trim(), clean: c.getAttribute('data-drift-row') === 'clean' })) : [],
+        }
+      }).catch(() => null)
+      const context120 = async () => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs120.push(ctx)
+        await recorder(ctx, csp120)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 120', scrub120(String(e))))
+        await pg.goto(await magic(email120), { waitUntil: 'load' })
+        return pg
+      }
+      const painted120 = (pg) => pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).then(() => true, () => false)
+      const closed120 = async (pg) => {
+        for (const sel of ['dialog[data-deploy-wizard]', 'dialog[data-deploy-history]']) {
+          if (!(await pg.locator(sel).count())) continue
+          await pg.keyboard.press('Escape').catch(() => {})
+          await pg.waitForFunction((s) => !document.querySelector(s), sel, { timeout: 15000 }).catch(() => {})
+        }
+      }
+      const runChecks120 = async (pg) => {
+        const was = (await job120())?.id ?? null
+        await pg.locator('#deploy-run').click()
+        const job = await until120(job120, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+        const shown = await until120(() => wiz120(pg), (w) => w?.at === 'check' && !w.reading && w.passes.length > 0, 30000)
+        return { job, shown }
+      }
+      const ship120 = async (pg, job) => {
+        await until120(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        await pg.locator('#deploy-ship').click()
+        return until120(job120, (j) => j?.id === job?.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
+      }
+      /** the history route, read on K's own session from the page — what the drawer reads */
+      const history120 = (pg, project) => pg.evaluate(async (u) => {
+        const r = await fetch(u, { cache: 'no-store' })
+        return { status: r.status, body: await r.json().catch(() => null) }
+      }, at(`/projects/${project}/history`))
+      const pin120 = (pg, project, deploy, pinned) => pg.evaluate(async ([u, d, p]) => (await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy: d, pinned: p }) })).status, [at(`/projects/${project}/history`), deploy, pinned])
+      const drawerRows120 = (pg) => pg.evaluate(() => [...document.querySelectorAll('dialog[data-deploy-history] [data-history-row]')].map((r) => ({ v: r.getAttribute('data-history-row'), pinned: r.hasAttribute('data-pinned'), pressed: r.querySelector('[data-history-pin]')?.getAttribute('aria-pressed') ?? null })))
+      const openDrawer120 = async (pg) => {
+        await closed120(pg)
+        await pg.locator('#deploy-history-open').click()
+        await pg.waitForFunction(() => document.querySelector('dialog[data-deploy-history]') && !document.querySelector('[data-history-loading]'), null, { timeout: 20000 })
+      }
+
+      try {
+        start120 = (await themes120()) ?? []
+        prev120 = start120.find((t) => t.active)?.name ?? null
+        routesBefore120 = await routesFile120()
+        check(`step 120 — T1's live theme read with the staff token at the start (${prev120 ?? 'unread'}), not an Inflozo theme a test left live, and routes.yaml read`,
+          prev120 !== null && !/^inflozo-/.test(prev120) && routesBefore120 !== null, JSON.stringify(start120.map((t) => `${t.name}${t.active ? '*' : ''}`)))
+        if (prev120 === null || /^inflozo-/.test(prev120) || routesBefore120 === null) throw new Error('step 120: T1 is not on its own theme — ask the owner before restoring it')
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: email120, email_confirm: true }) })
+        id120 = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(id120 ?? '')) throw new Error('step 120: the account was not made')
+        const pg = await context120()
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV120.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV120.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV120.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR120.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until120(async () => (await call('/rest/v1', `/projects?user_id=eq.${id120}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        site120 = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (site120 === null) throw new Error('step 120: T1 did not connect')
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        const seeded = await seed({ email: email120, name: 'History test' })
+        if (!seeded?.created) throw new Error('step 120: "History test" was not seeded')
+        P120 = seeded.id
+        await call('/rest/v1', `/projects?id=eq.${P120}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site120 }) })
+        const slug = (await call('/rest/v1', `/projects?id=eq.${P120}&select=slug`)).body?.[0]?.slug ?? null
+        theme120 = slug === null ? null : DEP120.themeNameOf(slug)
+        if (theme120 === null) throw new Error('step 120: the project was not linked')
+        await pg.goto(at(`/projects/${P120}`), { waitUntil: 'load' })
+        await painted120(pg)
+
+        // ── 120a — four ships; the fourth prunes v1 (Free keeps 3) ──
+        const shipped = []
+        for (let n = 1; n <= 4; n++) {
+          await closed120(pg)
+          if (n > 1) {
+            await pg.reload({ waitUntil: 'load' })
+            await painted120(pg)
+          }
+          await pg.locator('#editor-ship').click()
+          await until120(() => wiz120(pg), (w) => w?.at === 'destination', 20000)
+          let pre
+          if (n === 1) {
+            // the first deploy's two steps, as a customer answers them: Add token, then the Backup gate
+            await pg.locator('#deploy-next').click()
+            await until120(() => wiz120(pg), (w) => w?.at === 'safety', 15000)
+            await pg.locator('#deploy-token').fill(ENV120.GHOST6_STAFF_ACCESS_TOKEN)
+            await pg.locator('#deploy-add-token').click()
+            await until120(() => wiz120(pg), (w) => w?.at === 'backup', 60000)
+            for (const { id } of GATE120.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
+            await pg.locator('#deploy-gate-confirm').check()
+            const was = (await job120())?.id ?? null
+            await pg.locator('#deploy-backup-run').click()
+            pre = await until120(job120, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed'].includes(j.stage), 180000)
+          } else {
+            pre = (await runChecks120(pg)).job
+          }
+          const end = await ship120(pg, pre)
+          shipped.push(await deploy120(end?.deploy_id))
+          if (end?.stage !== 'done') throw new Error(`step 120: ship ${n} ended ${end?.stage ?? 'unread'}`)
+        }
+        const [v1, v2, v3, v4] = shipped
+        const v1Now = await deploy120(v1?.id)
+        const kept = await Promise.all([v2, v3, v4].map((d) => (d?.artifact_path ? object120(d.artifact_path) : null)))
+        check('step 120a — four ships: v1–v4 numbered in order, each live in turn on T1',
+          shipped.map((d) => d?.version).join(',') === '1.0.0,2.0.0,3.0.0,4.0.0' && (await themes120())?.find((t) => t.active)?.name === theme120,
+          JSON.stringify(shipped.map((d) => d?.version ?? null)))
+        check('step 120a — the fourth prunes v1 (Free keeps 3): its ROW kept with a null pointer and its version, its object gone; v2–v4 keep theirs',
+          v1Now !== null && v1Now.artifact_path === null && v1Now.version === '1.0.0' && v1Now.content_manifest !== null && v1?.artifact_path && (await object120(v1.artifact_path)) === null && kept.every((b) => b !== null),
+          JSON.stringify({ row: v1Now !== null, pointer: v1Now?.artifact_path ?? null, manifest: v1Now?.content_manifest !== null, kept: kept.map((b) => b !== null) }))
+        const listed = await history120(pg, P120)
+        const versions = RET120.historyRows(listed.body ?? { linkedSiteId: null, rows: [] }).map((r) => `v${r.n}`)
+        check('step 120a — the history route lists exactly v4 v3 v2, newest first: v1 absent, never greyed',
+          listed.status === 200 && versions.join(' ') === 'v4 v3 v2', `HTTP ${listed.status}, ${versions.join(' ')}`)
+        await pg.reload({ waitUntil: 'load' })
+        await painted120(pg)
+        await openDrawer120(pg)
+        const rowsA = await drawerRows120(pg)
+        const limit = await pg.locator('[data-history-limit]').textContent().catch(() => null)
+        check(`step 120a — the drawer (the clock at 1440): "${HW120.title('History test')}", rows v4 v3 v2, and the limit line from PLANS`,
+          rowsA.map((r) => r.v).join(' ') === 'v4 v3 v2' && limit === HW120.limit, JSON.stringify(rowsA.map((r) => r.v)))
+
+        // ── 120b — pins through the drawer: N−1 on Free is two ──
+        const pinIn = (v) => pg.locator(`[data-history-row="${v}"] [data-history-pin]`).click()
+        await pinIn('v2')
+        await until120(() => drawerRows120(pg), (rs) => rs.find((r) => r.v === 'v2')?.pressed === 'true', 15000)
+        await pinIn('v3')
+        const twoPinned = await until120(() => drawerRows120(pg), (rs) => rs.find((r) => r.v === 'v3')?.pressed === 'true', 15000)
+        await pinIn('v4')
+        const refusal = await pg.locator('[data-history-refusal]').waitFor({ state: 'visible', timeout: 15000 }).then(() => true, () => false)
+        const focusGotIt = await pg.evaluate(() => document.activeElement?.id ?? null)
+        const after4 = await drawerRows120(pg)
+        check(`step 120b — v2 and v3 pin (two = N−1 on Free); v4's pin is the database's cap: D2b "${HW120.refusal}" under it, focus on ${HW120.gotIt}, the pin unfilled`,
+          twoPinned.filter((r) => r.pressed === 'true').length === 2 && refusal && focusGotIt === 'history-got-it' && after4.find((r) => r.v === 'v4')?.pressed === 'false',
+          JSON.stringify({ pinned: twoPinned.filter((r) => r.pressed === 'true').map((r) => r.v), refusal, focus: focusGotIt }))
+        const direct = await pin120(pg, P120, v4.id, true)
+        const rowsDb = await versions120(P120)
+        check('step 120b — the same pin POSTed to the route answers 409, and the rows say v2 and v3 pinned, v4 not (pin_version, FR-J7)',
+          direct === 409 && rowsDb.filter((r) => r.pinned).map((r) => r.version).sort().join(',') === '2.0.0,3.0.0', `HTTP ${direct}, ${JSON.stringify(rowsDb.map((r) => [r.version, r.pinned]))}`)
+        await pg.locator('#history-got-it').click()
+        await pg.locator('[data-history-row="v3"] [data-history-pin]').click()
+        const unpinned = await until120(() => drawerRows120(pg), (rs) => rs.find((r) => r.v === 'v3')?.pressed === 'false', 15000)
+        check('step 120b — v3 unpins: never refused', unpinned.find((r) => r.v === 'v3')?.pressed === 'false' && (await deploy120(v3.id))?.pinned === false)
+        await closed120(pg)
+
+        // ── 120c — the baseline's zip pruned (the prune's two steps on v4, the newest accepted upload): D3c on its kept manifest, v5 ──
+        const clearedV4 = await call('/rest/v1', `/deploys?id=eq.${v4.id}&artifact_path=eq.${encodeURIComponent(v4.artifact_path)}`, { method: 'PATCH', body: JSON.stringify({ artifact_path: null, artifact_bytes: null }) })
+        const goneV4 = await removeObject120(v4.artifact_path)
+        await pg.reload({ waitUntil: 'load' })
+        await painted120(pg)
+        await pg.locator('#editor-ship').click()
+        await until120(() => wiz120(pg), (w) => w?.at === 'destination', 20000)
+        const { job: preC, shown: shownC } = await runChecks120(pg)
+        const v5 = await deploy120(preC?.deploy_id)
+        const zip5 = v5?.artifact_path ? await object120(v5.artifact_path) : null
+        const pkg5 = zip5 === null ? null : JSON.parse(Buffer.from(ZIP120.unzipTheme(new Uint8Array(zip5))['package.json'] ?? '{}').toString('utf8'))
+        check(`step 120c — v4 (the drift baseline) pruned as the prune prunes; Run checks: D3c "${DW120.clean(4)}" against its kept manifest`,
+          [200, 204].includes(clearedV4.status) && [200, 204].includes(goneV4) && preC?.stage === 'awaiting_ship' && preC.stage_timings?.drift?.kind === 'clean' && preC.stage_timings.drift.since === 4 &&
+          (shownC?.passes ?? []).some((p) => p.clean && p.text.includes(DW120.clean(4))),
+          JSON.stringify({ clear: clearedV4.status, object: goneV4, stage: preC?.stage, drift: preC?.stage_timings?.drift ?? null }))
+        check('step 120c — the number goes on (DW-372): the new deploy is 5.0.0 — counting the stored rows would say 3 — and its artefact\'s package.json says 5.0.0',
+          v5?.version === '5.0.0' && pkg5?.version === '5.0.0', JSON.stringify({ deploy: v5?.version ?? null, packageJson: pkg5?.version ?? null }))
+        await closed120(pg)
+
+        // ── 120d — the sweep ──
+        // R: an UNLINKED project with a check resting on T1 (DW-380) — its row and object planted, its job resting
+        const seededR = await seed({ email: email120, name: 'Stranded check' })
+        R120 = seededR?.id ?? null
+        if (R120 === null) throw new Error('step 120: "Stranded check" was not seeded')
+        const rDeploy = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: R120, user_id: id120, site_id: site120, version: '1.0.0', theme_name: 'inflozo-stranded-check', status: 'checking' }) })).body?.[0] ?? null
+        const rKey = `${R120}/${rDeploy?.id}.zip`
+        const rPut = await putObject120(rKey, PLANTED_ZIP120)
+        await call('/rest/v1', `/deploys?id=eq.${rDeploy?.id}`, { method: 'PATCH', body: JSON.stringify({ artifact_path: rKey, artifact_bytes: PLANTED_ZIP120.length }) })
+        const rJob = (await call('/rest/v1', '/deploy_jobs', { method: 'POST', body: JSON.stringify({ project_id: R120, user_id: id120, site_id: site120, stage: 'awaiting_ship', deploy_id: rDeploy?.id }) })).body?.[0] ?? null
+        // P: a failed row two days old naming an object (DW-374)
+        const fDeploy = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: P120, user_id: id120, site_id: site120, version: '9.0.0', theme_name: theme120, status: 'failed', created_at: DAYS_AGO120 }) })).body?.[0] ?? null
+        const fKey = `${P120}/${fDeploy?.id}.zip`
+        const fPut = await putObject120(fKey, PLANTED_ZIP120)
+        await call('/rest/v1', `/deploys?id=eq.${fDeploy?.id}`, { method: 'PATCH', body: JSON.stringify({ artifact_path: fKey, artifact_bytes: PLANTED_ZIP120.length }) })
+        // the controls: (c)'s check resting on P's LINKED site, its row back-dated past a day; and a live copy under `{P}/live/`
+        await call('/rest/v1', `/deploys?id=eq.${v5.id}`, { method: 'PATCH', body: JSON.stringify({ created_at: DAYS_AGO120 }) })
+        const liveKey = `${P120}/live/${site120}.zip`
+        const livePut = await putObject120(liveKey, PLANTED_ZIP120)
+        check('step 120d — planted: R\'s resting check (row, object, job), P\'s failed row with its object, the control\'s row back-dated, and a live copy',
+          rDeploy !== null && rJob !== null && fDeploy !== null && [rPut, fPut, livePut].every((s) => s === 200), JSON.stringify({ r: rPut, f: fPut, live: livePut }))
+        // THE CRON LIVES ON THE APEX, never on app.inflozo.com, where `routing.ts` rewrites every path under `/app`
+        // (`run-verify-snapshot-orphans.py` says so); a local run has one host
+        const cron = `${LOCAL ? APP : 'https://inflozo.com'}${SW120.CRON_PATH}`
+        const shut = await fetch(cron).then((r) => r.status).catch(() => 0)
+        const swept = await fetch(cron, { headers: { Authorization: `Bearer ${ENV120.CRON_SECRET}` }, signal: AbortSignal.timeout(300_000) })
+        const totals = await swept.json().catch(() => null)
+        check('step 120d — without the secret the job answers 401; with CRON_SECRET it runs and answers its totals', shut === 401 && swept.ok && totals !== null && typeof totals.abandoned === 'number',
+          `HTTP ${shut} without, ${swept.status} with — ${scrub120(JSON.stringify(totals))}`)
+        const rJobNow = await jobById120(rJob?.id)
+        const rRowNow = await deploy120(rDeploy?.id)
+        check('step 120d — DW-380: R\'s resting check is abandoned as start() abandons one — its object gone, its row gone, its job cancelled',
+          rJobNow?.stage === 'cancelled' && rRowNow === null && (await object120(rKey)) === null, JSON.stringify({ job: rJobNow?.stage ?? null, row: rRowNow !== null }))
+        const fNow = await deploy120(fDeploy?.id)
+        check('step 120d — DW-374: P\'s failed row is kept with its pointer null, and its object is gone',
+          fNow !== null && fNow.artifact_path === null && (await object120(fKey)) === null, JSON.stringify({ row: fNow !== null, pointer: fNow?.artifact_path ?? null }))
+        const controlJob = await jobById120(preC?.id)
+        const controlRow = await deploy120(v5?.id)
+        check('step 120d — the controls are untouched: the check resting on P\'s linked site keeps its row, pointer and object; the live copy under live/ stays',
+          controlJob?.stage === 'awaiting_ship' && controlRow?.artifact_path === v5.artifact_path && (await object120(v5.artifact_path)) !== null && (await object120(liveKey)) !== null,
+          JSON.stringify({ job: controlJob?.stage ?? null, pointer: controlRow?.artifact_path === v5.artifact_path }))
+
+        // ── 120e — Pro stops at nine ──
+        const pro = await call('/rest/v1', `/entitlements?user_id=eq.${id120}`, { method: 'PATCH', body: JSON.stringify({ state: 'pro_active' }) })
+        const seededQ = await seed({ email: email120, name: 'Pro history test' })
+        Q120 = seededQ?.id ?? null
+        if (Q120 === null) throw new Error('step 120: "Pro history test" was not seeded')
+        const ten = []
+        for (let n = 1; n <= 10; n++) {
+          const row = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: Q120, user_id: id120, site_id: site120, version: `${n}.0.0`, theme_name: 'inflozo-pro-history-test', status: n === 10 ? 'live' : 'uploaded', artifact_path: `${Q120}/plant-${n}.zip`, created_at: new Date(Date.now() - (11 - n) * 60_000).toISOString() }) })).body?.[0] ?? null
+          ten.push(row)
+        }
+        const answers = []
+        for (const row of ten) answers.push(await pin120(pg, Q120, row?.id, true))
+        const unpin = await pin120(pg, Q120, ten[0]?.id, false)
+        check('step 120e — Pro (10): nine pins answer 200, the tenth 409 — and an unpin 200',
+          [200, 204].includes(pro.status) && ten.every((r) => r !== null) && answers.slice(0, 9).every((s) => s === 200) && answers[9] === 409 && unpin === 200, JSON.stringify({ entitlement: pro.status, answers, unpin }))
+      } catch (e) {
+        check('step 120 — the step ran to its end', false, scrub120(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        for (const ctx of ctxs120) await ctx.close().catch(() => {})
+        if (P120 !== null) await until120(job120, atRest120, 330000).catch(() => {})
+        if (prev120 !== null) {
+          try {
+            const now = await themes120()
+            if (now !== null && now.find((t) => t.active)?.name !== prev120) await staff120('PUT', `themes/${encodeURIComponent(prev120)}/activate/`)
+            const startNames = new Set(start120.map((t) => t.name))
+            for (const t of (await themes120()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff120('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+            const routesNow = await routesFile120()
+            if (routesBefore120 !== null && routesNow !== null && Buffer.compare(routesBefore120, routesNow) !== 0) await staff120('POST', RU120.ROUTES_PATH, RU120.routesForm(routesBefore120.toString('utf8')))
+            const after = await themes120()
+            const routesAfter = await routesFile120()
+            check(`step 120 — finally: T1 put back with the staff token — ${prev120} active again, every inflozo- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+              after !== null && after.find((t) => t.active)?.name === prev120 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)) &&
+              routesAfter !== null && routesBefore120 !== null && Buffer.compare(routesAfter, routesBefore120) === 0,
+              JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`) }))
+          } catch (e) {
+            check('step 120 — finally: T1 put back', false, scrub120(String(e?.message ?? e).split('\n')[0]))
+          }
+        }
+        if (id120 !== null) {
+          if (site120 !== null) for (const o of await listed120('site-snapshots', `${id120}/${site120}`)) await fetch(`${SB}/storage/v1/object/site-snapshots/${id120}/${site120}/${o.name}`, { method: 'DELETE', headers: storage120 }).catch(() => {})
+          const prefixes = [P120, R120, Q120].filter((p) => p !== null).flatMap((p) => [p, `${p}/live`])
+          for (const prefix of prefixes) for (const o of await listed120('deploy-artifacts', prefix)) await removeObject120(`${prefix}/${o.name}`)
+          const row = await siteRow120().catch(() => null)
+          if (row !== null && row.disconnected_at === null) {
+            const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+            try {
+              const pd = steady(await ctx.newPage())
+              await pd.goto(await magic(email120), { waitUntil: 'load' })
+              await pd.goto(at(`/sites/disconnect?site=${site120}`), { waitUntil: 'load' })
+              await pd.locator('form').getByRole('button', { name: CR120.DISCONNECT.menu, exact: true }).first().click()
+              await until120(siteRow120, (r) => r?.disconnected_at != null, 30000)
+            } catch {} finally {
+              await ctx.close().catch(() => {})
+            }
+          }
+          const leftObjects = [...(site120 === null ? [] : await listed120('site-snapshots', `${id120}/${site120}`)), ...(await Promise.all(prefixes.map((p) => listed120('deploy-artifacts', p)))).flat()]
+          const del = await admin(`/admin/users/${id120}`, { method: 'DELETE', body: '{}' })
+          const usersAfter = (await users())?.length ?? null
+          const projectsAfter = await projectCount()
+          check('step 120 — finally: no object left under the account\'s prefixes, T1 disconnected, K deleted (its sites, projects, jobs and deploys with it), users and projects counted back',
+            leftObjects.length === 0 && del.status === 200 && usersBefore120 !== null && usersAfter === usersBefore120 && projectsBefore120 !== null && projectsAfter === projectsBefore120,
+            `objects ${leftObjects.length}, HTTP ${del.status}, users ${usersBefore120} → ${usersAfter}, projects ${projectsBefore120} → ${projectsAfter}`)
+        }
+      }
+      check('step 120 — the step\'s contexts recorded zero CSP violations', csp120.length === 0, JSON.stringify(csp120.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

@@ -39,7 +39,7 @@ export const DRIFT_CAUSES: readonly DriftCause[] = ['no_token', 'declined', 'tok
 export type DriftRecord =
   | { kind: 'reading' }
   | { kind: 'clean'; since: number }
-  | { kind: 'found'; since: number; theme: string; changed: DriftFile[]; added: DriftFile[]; removed: DriftFile[] }
+  | { kind: 'found'; since: number; theme: string; changed: DriftFile[]; added: DriftFile[]; removed: DriftFile[]; kept?: false }
   | { kind: 'unverified'; cause: DriftCause; theme: string; status?: number }
 
 // ── the hash ────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -239,8 +239,17 @@ export function driftSaid(record: DriftRecord, ctx: { host: string; declined?: b
   }
 }
 
+/** STORY 7.22 (DW-396) — THE LARGEST LIVE COPY KEPT: a found drift whose live zip is past this is not put (`kept: false` on its
+ *  record) and D3a draws no Download; the Pre-flight goes on. It is the store's own limit: `deploy-artifacts`' `file_size_limit` is
+ *  null (as on all four buckets), so the project's storage config governs — `fileSizeLimit` 52428800 bytes (50 MiB), read at Story
+ *  7.22's Dev (2026-11-25, the owner's go) with `SUPABASE_ACCESS_TOKEN` from `GET /v1/projects/{ref}/config/storage`. A put past it
+ *  was refused twice (`twice()`) and failed the job as ours. Raising it past the store's limit is the owner's call (Ask First).
+ *  It is the PACKED zip's size; `server/deploy/zip.ts`' `LIVE_MAX_BYTES` caps the unpacked files and is separate */
+export const LIVE_COPY_MAX_BYTES = 52_428_800
+
 /** The live copy D3a's Download serves: one object per project × site in `deploy-artifacts`, overwritten by each found drift —
- *  bounded by construction, drained with the project's prefix at purge */
+ *  bounded by construction, drained with the project's prefix at purge. Outside the version count and never listed (Story 7.22):
+ *  the prune and the sweep touch only objects a `deploys` row names */
 export const liveCopyPath = (projectId: string, siteId: string): string => `${projectId}/live/${siteId}.zip`
 /** …its address in the app (`projects/[id]/deploy/live`), for the job that found it */
 export const liveDownloadPath = (projectId: string, jobId: string): string => `/projects/${projectId}/deploy/live?job=${encodeURIComponent(jobId)}`

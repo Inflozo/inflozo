@@ -43,7 +43,7 @@ import { closeOnBackdrop, openOnCancel, sheet as dialogSheet, title } from '@/co
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { Skeleton } from '@/components/kit/loading'
 import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
-import { AlertTriangle, ChevronLeft, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, ThemeSettingsGear, Undo as UndoIcon, X } from '@/components/kit/icons'
+import { AlertTriangle, ChevronLeft, HistoryClock, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, ThemeSettingsGear, Undo as UndoIcon, X } from '@/components/kit/icons'
 import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { PanelLabel } from '@/components/kit/labels'
@@ -52,7 +52,7 @@ import { addressOf, canvasAssets, canvasSrc, packed, paywallPage, renderSection,
 import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, labelOf, landWithin, namesOf, ROUTED_EMPTY_ASK, routesPath, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
+import { canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, EMPTY_TEMPLATE_ASK, emptiesCustomTemplate, fileOf, fileOfKey, isCards, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, labelOf, landWithin, historyPath, namesOf, ROUTED_EMPTY_ASK, routesPath, settingsPath, SITE, siteSlot, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type RouteTemplate } from '@/lib/editor'
 import { CARD_WORDS, cardOrFirst, customisedCount, FIRST_CARD, lastCardKey, parseStoredCards } from '@/lib/cards'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
@@ -101,6 +101,8 @@ import { PackEditor, type PackEditing } from './pack-editor'
 import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
+import { DeployHistory } from '@/components/editor/deploy-history'
+import { HISTORY_WORDS, pinOutcomeOf, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
 import { DEPLOY_WORDS, POSTS_CHECKED, type Mode as ShipMode } from '@/lib/deploy'
 import { queriesFor } from '@/lib/preflight'
 import type { Confirmed, SwitchAnswer } from '@/lib/site-switch'
@@ -571,6 +573,10 @@ type EditorProps = EditorData & {
   backupConfirm?: typeof confirmBackup
   themeDownload?: typeof downloadLiveTheme
   routesDownload?: typeof downloadRoutes
+  /** STORY 7.22 — the History drawer's read and pin, the route's (`projects/[id]/history`) unless named: the keyboard harness names
+   *  its own server actions, which answer canned histories with no database (`harnessHistory`, `harnessPin`). The app passes none. */
+  historyRead?: (projectId: string) => Promise<HistoryAnswer | null>
+  historyPin?: (projectId: string, deploy: string, pinned: boolean) => Promise<PinOutcome>
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -871,6 +877,8 @@ function EditorShell({
   backupConfirm = confirmBackup,
   themeDownload = downloadLiveTheme,
   routesDownload = downloadRoutes,
+  historyRead,
+  historyPin,
 }: EditorProps) {
   const pathname = usePathname()
   /** Story 7.12 — the project's strings (FR-H5): the overrides the server's judge passed, over the catalog's English. Fixed for
@@ -2575,6 +2583,26 @@ function EditorShell({
       return
     }
     setWizard((was) => ({ mode, n: (was?.n ?? 0) + 1 }))
+  }
+  /** STORY 7.22 — the History drawer, mounted while open (a fresh read each time it opens), from the bar's clock or Ship it ▾ */
+  const [history, setHistory] = useState<{ n: number; open: boolean }>({ n: 0, open: false })
+  const openHistory = () => setHistory((was) => ({ n: was.n + 1, open: true }))
+  const historyUrl = () => `${isApp(pathname) ? '/app' : ''}${historyPath(project.id)}`
+  /** the read, the route's unless the harness names its own; a failure is logged by status and drawn as the drawer's sentence */
+  const readHistory = async (): Promise<HistoryAnswer | null> => {
+    if (historyRead) return historyRead(project.id)
+    const answer = await fetch(historyUrl(), { cache: 'no-store' }).catch(() => null)
+    if (answer?.ok) return (await answer.json()) as HistoryAnswer
+    console.error('history: the read failed', { status: answer?.status ?? 0 })
+    return null
+  }
+  /** a pin or an unpin, answered as its outcome (`pinOutcomeOf`); a failure is logged by status */
+  const pinHistory = async (deploy: string, pinned: boolean): Promise<PinOutcome> => {
+    if (historyPin) return historyPin(project.id, deploy, pinned)
+    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy, pinned }) }).catch(() => null)
+    const outcome = pinOutcomeOf(answer?.status ?? 0, pinned)
+    if (outcome === 'failed') console.error('history: the pin failed', { status: answer?.status ?? 0 })
+    return outcome
   }
   const takeOverToShip = () =>
     void takeOver(shipTakeover, () => {
@@ -6019,9 +6047,28 @@ function EditorShell({
           <div id="editor-more-menu" popover="auto" onKeyDown={arrowKeys} className="overflow-visible border-0 bg-transparent p-0">
             <Menu label="More editor actions" items={more} />
           </div>
+          {/* STORY 7.22 — S8e's clock (`S8 Deploy.dc.html:278-281`), just before Ship it: the History drawer. Hidden where the bar is
+              compact — Ship it ▾ → History is the way in there, at every width. A history control (R-192's view side), so it is live
+              reading along, and its tint while the drawer is open is the frame's. Its tooltip says "History" until Story 7.23's
+              Roll back makes S8e's "every version, one click back" true.
+              AND BELOW 1366 TOO — R-289 (owner, 2026-11-25, Story 7.22's Question 1, option 1): R-266 holds S4's centred group
+              within 6px of centre at 1280, and the clock's 28px + 8px gap moved it 42px off there — measured 0 at 1366, 7 at 1350, 42
+              at 1280. Hidden below 1366, the R-266 journey holds unchanged and the drawer's way in there is Ship it ▾ → History */}
+          <IconButton
+            id="deploy-history-open"
+            hidden={compact}
+            label={HISTORY_WORDS.open}
+            title={HISTORY_WORDS.open}
+            aria-haspopup="dialog"
+            style={history.open ? undefined : onInk}
+            className={`max-[1366px]:hidden ${history.open ? 'bg-coral-tint text-coral-deep hover:bg-coral-tint' : ''}`}
+            onClick={openHistory}
+          >
+            <HistoryClock size={15} />
+          </IconButton>
           {/* STORY 7.18a — S4's Ship it with S4d's ▾, AFTER ⋯ and at EVERY width (D8a/D8b draw it there below 1440): never in the
               hidden cluster, and live reading along — it changes nothing, and a reader's press meets D8g first */}
-          <ShipButton ship={ship} routes={shipRoutes} busy={shipOpening} onShip={openShip} />
+          <ShipButton ship={ship} routes={shipRoutes} busy={shipOpening} onShip={openShip} onHistory={openHistory} />
         </div>
       </header>
 
@@ -6954,6 +7001,17 @@ function EditorShell({
           }}
         />
       )}
+
+      {/* STORY 7.22 — the History drawer (S8e, D2a–c), mounted while open; focus goes back to what opened it on close */}
+      {history.open ? (
+        <DeployHistory
+          key={history.n}
+          projectName={project.name}
+          read={readHistory}
+          pin={pinHistory}
+          onClose={() => setHistory((was) => ({ ...was, open: false }))}
+        />
+      ) : null}
 
       {/* R-147's card, opened by `?` — the editor draws no account menu (`shell.tsx:295-297`), so this is its only
           door from in here. Its rows are the map's own (R-145): exactly the keys that work. */}

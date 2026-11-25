@@ -7,6 +7,8 @@ import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
 import { ROUTES_IO } from '@/server/routes-io'
 import { offerRoutes } from '@/server/routes-upload'
+import { pruneProject } from '@/server/retention'
+import { RETENTION_IO } from '@/server/retention-io'
 import { captureSnapshot, downloadPath } from '@/server/snapshot'
 import { SNAPSHOT_IO } from '@/server/snapshot-io'
 import { compileInputOf } from './project-input.ts'
@@ -114,10 +116,12 @@ export const DEPLOY_IO: DeployIo = {
     },
   },
   artifacts: {
-    // `upsert`: an artefact's key is new each deploy, and Story 7.21's live copy (`{projectId}/live/{siteId}.zip`) is one fixed key
-    // that each found drift overwrites
-    async put(path, bytes) {
-      ok(await supabaseAdmin().storage.from(BUCKET).upload(path, bytes, { contentType: 'application/zip', upsert: true }), 'artifact upload')
+    // STORY 7.22 — IMMUTABLE (NFR-4): `upsert: false`, so a put over an existing key is refused (409 "The resource already exists",
+    // executed on production's bucket at 7.22's Dev with a new key as the control). `replace` is Story 7.21's live copy alone
+    // (`{projectId}/live/{siteId}.zip`), the one fixed key each found drift overwrites. ponytail: a put that landed but whose answer
+    // was lost meets its own object on AD-20's retry and fails the job as ours — the upgrade reads the key back on a 409
+    async put(path, bytes, opts) {
+      ok(await supabaseAdmin().storage.from(BUCKET).upload(path, bytes, { contentType: 'application/zip', upsert: opts?.replace === true }), 'artifact upload')
     },
     async get(path) {
       const blob = ok(await supabaseAdmin().storage.from(BUCKET).download(path), 'artifact download') as Blob
@@ -160,6 +164,9 @@ export const DEPLOY_IO: DeployIo = {
     const rows = ok(await supabaseAdmin().from('project_site_bindings').select('project_id').eq('site_id', siteId).eq('user_id', userId).limit(1), 'site bindings') as unknown[] | null
     return (rows ?? []).length > 0
   },
+  // Story 7.22 — the one prune, with its own real io (`retention-io.ts`, on `server-wiring.test.ts`' service-role list): the plan read
+  // through `plan.ts` (a failed read prunes nothing), then the conditional clears and only then the objects
+  prune: (a) => pruneProject(a, RETENTION_IO),
   // Story 7.20a — the one capture, with its own real io (the staff token's reads and the `site-snapshots` writes are
   // `snapshot-io.ts`', on `server-wiring.test.ts`' two lists), so `run.ts` stays off the chokepoint
   snapshot: (a) => captureSnapshot(a, SNAPSHOT_IO),

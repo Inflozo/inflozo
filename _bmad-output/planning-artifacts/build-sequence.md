@@ -745,7 +745,10 @@ surface has to carry: **the limit is stated, not implied** — a list that silen
 entry reads as complete when it is not; **the history must never show a version it cannot restore**,
 because a dead Restore button is worse than a shorter list; and **at least one version must stay
 unpinned**, enforced in the database, so the pin control needs a clear refusal state rather than a
-silent failure. Unpinning is always allowed, by design, so nobody can trap themselves.
+silent failure. Unpinning is always allowed, by design, so nobody can trap themselves. *(Story 7.22's Dev,
+2026-11-25: as built, the third rule is the owner's **at most N−1 pinned** — 9 of 10 on Pro, 2 of 3 on Free — counted over
+STORED versions by `pin_version()` with the plan's N; "at least one version must stay unpinned" was the retired database
+floor's wording, which refused pinning a project's only version. EXPERIENCE F8 rule 3 carries the same note.)*
 
 **One input this step now has that it did not when it was written** *(Round 4, finding F4)*: the
 FR-D18 edit-lock choreography has been **decided by the owner**, and the decision has a shape the

@@ -8906,6 +8906,8 @@ test('7.18a · ⌘⏎ does what Ship it does — from the canvas and with the ca
   await expect(wizard(page)).toHaveCount(0)
 })
 
+/** Story 7.22's ▾ row, read from its one list (`lib/retention.ts`) */
+const HISTORY_ROW = (await import(new URL('../../apps/web/lib/retention.ts', import.meta.url).href)).HISTORY_WORDS.open
 test('7.18a · the ▾ menu: Deploy & activate (⌘⏎) and Deploy only with their captions, Download routes.yaml only while the project has routing; Deploy only opens the wizard with Deploy only chosen', async ({ page }) => {
   const menuRows = async () => {
     const caret = page.locator('#editor-ship + button')
@@ -8918,7 +8920,9 @@ test('7.18a · the ▾ menu: Deploy & activate (⌘⏎) and Deploy only with the
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped' })
   await open(page)
   const plain = await menuRows()
-  expect(plain).toHaveLength(2)
+  // Story 7.22 — History is the menu's last row at every width (RE-EXPECTED: it was absent until then)
+  expect(plain).toHaveLength(3)
+  expect(plain[2]).toContain(HISTORY_ROW)
   await page.keyboard.press('Escape')
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-routes': 'on' })
   await open(page)
@@ -8929,7 +8933,9 @@ test('7.18a · the ▾ menu: Deploy & activate (⌘⏎) and Deploy only with the
   expect(routed[1]).toContain(DW.uploadOnly)
   expect(routed[1]).toContain(DW.uploadOnlyCaption(3, 2))
   expect(routed[2]).toContain(DW.downloadRoutes)
-  expect(routed.join(' '), 'Download theme and History are absent (UX-DR3)').not.toMatch(/Download theme|History/)
+  expect(routed[3]).toContain(HISTORY_ROW)
+  expect(routed, 'Download theme is absent until Story 7.26 (UX-DR3)').toHaveLength(4)
+  expect(routed.join(' ')).not.toMatch(/Download theme/)
   // ↓ to Deploy only, Enter: the wizard, with that card chosen
   await page.keyboard.press('ArrowDown')
   await expect(shipMenu(page).locator('li button').nth(1)).toBeFocused()
@@ -10750,6 +10756,8 @@ const FOUND_DRIFT = {
 }
 const driftRecordOf = (value) =>
   value === 'found' ? FOUND_DRIFT
+  // Story 7.22 (DW-396): a found drift whose live zip was past the store's size — no copy kept
+  : value === 'found-unkept' ? { ...FOUND_DRIFT, kept: false }
   : value === 'clean' ? { kind: 'clean', since: 2 }
   : value === 'reading' ? { kind: 'reading' }
   : value === 'declined' ? { kind: 'unverified', cause: 'no_token', theme: DRIFT_THEME }
@@ -10777,7 +10785,7 @@ async function plantDrift(page, value, plan = {}) {
   await page.route((url) => DEPLOY_PATH.test(url.pathname), (route) => {
     const req = route.request()
     const body = req.method() === 'POST' ? req.postDataJSON() : null
-    if (value === 'found' && body?.intent === 'ship' && body.overwrite !== true) {
+    if ((value === 'found' || value === 'found-unkept') && body?.intent === 'ship' && body.overwrite !== true) {
       refused.push(body)
       return route.fulfill({ status: 409, contentType: 'text/plain', body: 'Drift found' })
     }
@@ -11018,4 +11026,223 @@ test('7.21 · (f) DW-338: the Layers rename field stops at 60 characters, typed 
   await page.keyboard.press('Enter')
   await expect(page.locator('dialog[aria-labelledby="layers-rename-title"]')).toHaveAttribute('open', '')
   await expect(page.locator('dialog[aria-labelledby="layers-rename-title"]')).toContainText('Keep the name to 60 characters.')
+})
+
+
+/* ── Story 7.22 — artifacts, retention and pinning (FR-J7; S8e's drawer, D2a/D2b/D2c; UX-DR6, UX-DR12, R-98; DW-396) ─────────
+   The drawer's read and pin are the harness's own server actions (`harnessHistory`, `harnessPin`), answered by
+   `x-inflozo-harness-history`: `free` (v3 live, v2, v1), `free-full` (v1 and v2 pinned — N−1, so v3's pin is refused),
+   `pro-full` (ten, nine pinned), `two-sites`, `empty`, `fail`. Pointer-free. The real list, the real cap (`pin_version`) and the
+   real prune are walk step 120's and the RLS gate's. */
+
+const RETENTION = await import(new URL('../../apps/web/lib/retention.ts', import.meta.url).href)
+const HW = RETENTION.HISTORY_WORDS
+const drawer = (page) => page.locator('dialog[data-deploy-history]')
+const historySaid = (page) => page.locator('[data-history-said]').innerText()
+const historyRow = (page, v) => drawer(page).locator(`[data-history-row="${v}"]`)
+const pinOf = (page, v) => historyRow(page, v).locator('[data-history-pin]')
+/** the editor with a history at S8e's 1440 (the clock is drawn from 1366 up — `editor.tsx`, R-266), its drawer opened from the
+ *  bar's clock by the keyboard, landed on its rows (or its sentence) */
+async function openHistory(page, value) {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': value })
+  await open(page)
+  await page.locator('#deploy-history-open').focus()
+  await page.keyboard.press('Enter')
+  await expect(drawer(page)).toBeVisible()
+  await expect(drawer(page).locator('[data-history-loading]')).toHaveCount(0, { timeout: 15_000 })
+}
+/** each server action the drawer sends, held until released — so a press's busy state can be read while it is out */
+async function holdActions(page) {
+  let release
+  const held = new Promise((r) => { release = r })
+  await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+    if (route.request().method() === 'POST' && route.request().headers()['next-action']) await held
+    return route.fallback()
+  })
+  return () => release()
+}
+
+test('7.22 · (a) the clock just before Ship it opens S8e\'s drawer — 420 wide at the right edge, below the bar, over a scrim — on ✕; its title, three rows newest first with v3 Live and each one\'s gscan chip, and both plans\' limit; Esc closes it and focus is back on the clock', async ({ page }) => {
+  await openHistory(page, 'free')
+  await expect(page.locator('#deploy-history-close'), 'the drawer opens on ✕').toBeFocused()
+  await expect(page.locator('#deploy-history-open')).toHaveAccessibleName(HW.open)
+  // just before Ship it in the bar
+  expect(await page.locator('#deploy-history-open').evaluate((b) => b.nextElementSibling?.querySelector('#editor-ship') !== null || b.nextElementSibling?.id === 'editor-ship')).toBe(true)
+  await expect(drawer(page).locator('#deploy-history-title')).toHaveText(HW.title('Pilot sections'))
+  const box = await drawer(page).evaluate((d) => ({ ...d.getBoundingClientRect().toJSON(), inner: window.innerWidth, inner_h: window.innerHeight, bar: document.querySelector('header').getBoundingClientRect().bottom }))
+  expect(box.width, 'S8e\'s 420').toBe(420)
+  expect(box.right, 'at the right edge').toBe(box.inner)
+  expect(box.top, 'below the bar').toBe(box.bar)
+  expect(box.bottom).toBe(box.inner_h)
+  // the rows: exactly what is kept, newest first, every one compact
+  expect(await drawer(page).locator('[data-history-row]').evaluateAll((rs) => rs.map((r) => r.dataset.historyRow))).toEqual(['v3', 'v2', 'v1'])
+  await expect(historyRow(page, 'v3')).toContainText(HW.live)
+  await expect(historyRow(page, 'v2')).not.toContainText(HW.live)
+  await expect(historyRow(page, 'v3').locator('[data-history-gscan]')).toHaveText('0 · 0')
+  await expect(historyRow(page, 'v2').locator('[data-history-gscan]')).toHaveText('0 · 2')
+  await expect(historyRow(page, 'v1')).toContainText('Nov 1 · ')
+  await expect(drawer(page).locator('[data-history-pinned]'), 'nothing pinned').toHaveCount(0)
+  await expect(drawer(page).locator('[data-history-limit]')).toHaveText(HW.limit)
+  expect(HW.limit).toContain('Pro keeps the last 10 versions. Free keeps the last 3.')
+  // Tab reaches each pin from ✕, newest first
+  for (const v of ['v3', 'v2', 'v1']) {
+    await page.keyboard.press('Tab')
+    await expect(pinOf(page, v)).toBeFocused()
+    await expect(pinOf(page, v)).toHaveAccessibleName(HW.pin(Number(v.slice(1))))
+  }
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveCount(0)
+  await expect(page.locator('#deploy-history-open'), 'focus back on what opened it').toBeFocused()
+  // closing and opening again asks again (a fresh read)
+  await page.keyboard.press('Enter')
+  await expect(drawer(page).locator('[data-history-row]')).toHaveCount(3, { timeout: 15_000 })
+})
+
+test('7.22 · (b) Space pins and unpins: the pin fills, the row takes the marigold wash and its PINNED tag; "Pinning v1…" with aria-busy and aria-disabled while it is out (R-98), every other pin waiting; each outcome said once, politely', async ({ page }) => {
+  await openHistory(page, 'free')
+  const pin = pinOf(page, 'v1')
+  await pin.focus()
+  await expect(pin).toHaveAttribute('aria-pressed', 'false')
+  await expect(pin).toHaveAttribute('title', HW.pinTitle)
+  const release = await holdActions(page)
+  await page.keyboard.press('Space')
+  await expect(pin).toHaveAccessibleName(HW.pinning(1))
+  await expect(pin).toHaveAttribute('aria-busy', 'true')
+  await expect(pin).toHaveAttribute('aria-disabled', 'true')
+  await expect(pinOf(page, 'v2'), 'every pin waits while one is out').toHaveAttribute('aria-disabled', 'true')
+  release()
+  await expect(pin).toHaveAttribute('aria-pressed', 'true', { timeout: 15_000 })
+  await expect(pin).toHaveAccessibleName(HW.pin(1))
+  await expect(pin).not.toHaveAttribute('aria-busy', 'true')
+  await expect(pin).toHaveAttribute('title', HW.unpinTitle)
+  await expect(historyRow(page, 'v1')).toHaveAttribute('data-pinned', 'true')
+  await expect(historyRow(page, 'v1').locator('[data-history-pinned]')).toHaveText(HW.pinnedTag)
+  expect(await historyRow(page, 'v1').evaluate((r) => getComputedStyle(r).backgroundColor), 'the marigold wash').not.toBe('rgba(0, 0, 0, 0)')
+  await expect.poll(() => historySaid(page)).toBe(RETENTION.pinSaid('pinned', 1))
+  await expect(pin, 'focus stays on the pin').toBeFocused()
+  // unpinning is never refused
+  await page.keyboard.press('Space')
+  await expect(pin).toHaveAttribute('aria-pressed', 'false', { timeout: 15_000 })
+  await expect(historyRow(page, 'v1')).not.toHaveAttribute('data-pinned', 'true')
+  await expect(historyRow(page, 'v1').locator('[data-history-pinned]')).toHaveCount(0)
+  await expect.poll(() => historySaid(page)).toBe(RETENTION.pinSaid('unpinned', 1))
+})
+
+test('7.22 · (b2) a pin the server answers `gone` (pruned since the list was read) re-reads: the row leaves the list, its sentence said once, focus on ✕; a pin whose request fails leaves the pin as it was, and says so once', async ({ page }) => {
+  await openHistory(page, 'free')
+  await expect(drawer(page).locator('[data-history-row]')).toHaveCount(3)
+  // v1 is pruned while the drawer is open: the database answers `gone`, and the re-read no longer lists it
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'gone' })
+  await pinOf(page, 'v1').focus()
+  await page.keyboard.press('Space')
+  await expect(historyRow(page, 'v1')).toHaveCount(0, { timeout: 15_000 })
+  expect(await drawer(page).locator('[data-history-row]').evaluateAll((rs) => rs.map((r) => r.dataset.historyRow))).toEqual(['v3', 'v2'])
+  await expect.poll(() => historySaid(page)).toBe(RETENTION.pinSaid('gone', 1))
+  await expect(page.locator('#deploy-history-close'), 'focus, whose pin left with its row, is on ✕').toBeFocused()
+  // a request that fails: the pin unchanged, one sentence
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'pin-fails' })
+  await pinOf(page, 'v2').focus()
+  await page.keyboard.press('Space')
+  await expect.poll(() => historySaid(page)).toBe(RETENTION.pinSaid('failed', 2))
+  await expect(pinOf(page, 'v2')).toHaveAttribute('aria-pressed', 'false')
+  await expect(pinOf(page, 'v2')).not.toHaveAttribute('aria-busy', 'true')
+  await expect(historyRow(page, 'v2')).not.toHaveAttribute('data-pinned', 'true')
+})
+
+test('7.22 · (c) at N−1 the server refuses (cap): D2b opens under that pin with focus on Got it, its sentence said once, the pin unfilled; Got it — or Esc, which closes D2b and not the drawer — puts focus back on the pin; unpinning stays allowed; Pro stops at nine', async ({ page }) => {
+  await openHistory(page, 'free-full')
+  await expect(drawer(page).locator('[data-history-pinned]')).toHaveCount(2)
+  const pin = pinOf(page, 'v3')
+  await pin.focus()
+  await page.keyboard.press('Space')
+  const note = drawer(page).locator('[data-history-refusal]')
+  await expect(note).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('#history-got-it'), 'D2b opens on Got it').toBeFocused()
+  await expect(page.locator('#history-got-it')).toHaveText(HW.gotIt)
+  await expect(note).toContainText(HW.refusal)
+  await expect(pin, 'the pin stays unfilled').toHaveAttribute('aria-pressed', 'false')
+  await expect(historyRow(page, 'v3')).not.toHaveAttribute('data-pinned', 'true')
+  await expect.poll(() => historySaid(page)).toBe(HW.refusal)
+  // D2b sits under its own pin, inside the drawer
+  const at = await page.evaluate(() => {
+    const n = document.querySelector('[data-history-refusal]').getBoundingClientRect()
+    const p = document.querySelector('[data-history-row="v3"] [data-history-pin]').getBoundingClientRect()
+    const d = document.querySelector('dialog[data-deploy-history]').getBoundingClientRect()
+    return { below: n.top >= p.bottom, right: n.right <= d.right, width: n.width }
+  })
+  expect(at).toEqual({ below: true, right: true, width: 296 })
+  await page.keyboard.press('Enter')
+  await expect(note).toHaveCount(0)
+  await expect(pin, 'Got it returns focus to the pin').toBeFocused()
+  // Esc closes D2b alone
+  await page.keyboard.press('Space')
+  await expect(page.locator('#history-got-it')).toBeFocused({ timeout: 15_000 })
+  await page.keyboard.press('Escape')
+  await expect(note).toHaveCount(0)
+  await expect(drawer(page), 'the drawer stays').toBeVisible()
+  await expect(pin).toBeFocused()
+  // unpinning a pinned row is never refused
+  await pinOf(page, 'v2').focus()
+  await page.keyboard.press('Space')
+  await expect(pinOf(page, 'v2')).toHaveAttribute('aria-pressed', 'false', { timeout: 15_000 })
+  // Pro: ten rows, nine pinned — the tenth's pin is refused the same way
+  await page.keyboard.press('Escape')
+  await openHistory(page, 'pro-full')
+  await expect(drawer(page).locator('[data-history-row]')).toHaveCount(10)
+  await expect(drawer(page).locator('[data-history-pinned]')).toHaveCount(9)
+  await pinOf(page, 'v10').focus()
+  await page.keyboard.press('Space')
+  await expect(page.locator('#history-got-it')).toBeFocused({ timeout: 15_000 })
+  await expect(pinOf(page, 'v10')).toHaveAttribute('aria-pressed', 'false')
+})
+
+test('7.22 · (d) Ship it ▾ → History: the menu\'s last row, the clock\'s glyph and words, opens the same drawer on ✕; Esc puts focus back on the ▾', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-history': 'free' })
+  await open(page)
+  const caret = page.locator('#editor-ship + button')
+  await caret.focus()
+  await page.keyboard.press('Enter')
+  await expect(shipMenu(page)).toBeVisible()
+  await expect(shipMenu(page).locator('li button').first()).toBeFocused()
+  const row = shipMenu(page).locator('li button').last()
+  await expect(row).toContainText(HW.open)
+  await expect(row).toContainText(HW.menuCaption)
+  for (let i = 0; i < 6 && !(await row.evaluate((b) => b === document.activeElement)); i++) await page.keyboard.press('ArrowDown')
+  await expect(row).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(drawer(page)).toBeVisible()
+  await expect(page.locator('#deploy-history-close')).toBeFocused()
+  await expect(drawer(page).locator('[data-history-row]')).toHaveCount(3, { timeout: 15_000 })
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveCount(0)
+  await expect(caret).toBeFocused()
+})
+
+test('7.22 · (e) nothing shipped: "Nothing shipped yet" and still the limit (UX-DR6); a failed read is one sentence where the rows go, said, and the limit stays; two sites list together, the other site\'s row saying where it is', async ({ page }) => {
+  await openHistory(page, 'empty')
+  await expect(drawer(page).locator('[data-history-empty]')).toHaveText(HW.empty)
+  await expect(drawer(page).locator('[data-history-row]')).toHaveCount(0)
+  await expect(drawer(page).locator('[data-history-limit]')).toHaveText(HW.limit)
+  await page.keyboard.press('Escape')
+  await openHistory(page, 'fail')
+  await expect(drawer(page).locator('[data-history-failed]')).toHaveText(HW.readFailed)
+  await expect(drawer(page).locator('[data-history-limit]')).toHaveText(HW.limit)
+  await expect.poll(() => historySaid(page)).toBe(HW.readFailed)
+  await page.keyboard.press('Escape')
+  await openHistory(page, 'two-sites')
+  expect(await drawer(page).locator('[data-history-row]').evaluateAll((rs) => rs.map((r) => r.dataset.historyRow))).toEqual(['v3', 'v2', 'v1'])
+  await expect(historyRow(page, 'v2').locator('[data-history-site]')).toHaveText(HW.on('de.harness.example'))
+  await expect(historyRow(page, 'v3').locator('[data-history-site]'), 'the linked site\'s rows say nothing').toHaveCount(0)
+  await expect(historyRow(page, 'v1').locator('[data-history-site]')).toHaveCount(0)
+})
+
+test('7.22 · (f) DW-396: a found drift whose live zip was too large to keep draws D3a WITHOUT its Download — Cancel focused, Overwrite and ship anyway still there (the control: `found` draws it)', async ({ page }) => {
+  await toDrift(page, 'found-unkept')
+  const report = wizard(page).locator('[data-drift-report]')
+  await expect(report).toBeVisible({ timeout: 15_000 })
+  await expect(page.locator('#deploy-drift-cancel')).toBeFocused()
+  await expect(page.locator('#deploy-drift-download')).toHaveCount(0)
+  await expect(page.locator('#deploy-overwrite')).toHaveAccessibleName(DRW.overwrite)
+  await expect(report.locator('[data-drift-file]')).toHaveCount(5)
 })

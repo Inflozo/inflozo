@@ -5,7 +5,7 @@ import { resolveStrings, type SectionRegistryEntry } from '@inflozo/library'
 import { parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import { listsOf, parseRoutesConfig, routedOf, routesYaml, validateRoutes, type RouteProblem, type RoutesConfig } from '@inflozo/section-runtime/routes'
 import type { CompileInput, CompileSetting } from '@inflozo/theme-compiler'
-import { themeNameOf, versionNumber, versionOf } from '../../lib/deploy.ts'
+import { nextVersion, themeNameOf, versionNumber, versionOf } from '../../lib/deploy.ts'
 import { canvasOfPageTwoKey, fileOf, fileOfKey, isRouteKey, routeCanvasOf, templateKeyOf } from '../../lib/editor.ts'
 import { docRefusal, pilot, pilotIds } from '../../lib/pilots.ts'
 import { templatesOf } from '../../lib/routes.ts'
@@ -154,7 +154,8 @@ export async function compileInputOf(a: { projectId: string; siteId: string; use
     .filter((u) => u.activated && typeof u.activated_at === 'string')
     .sort((x, y) => (String(x.activated_at) < String(y.activated_at) ? 1 : -1))[0]
   const prev = activated === undefined ? Number.NaN : versionNumber(activated.version)
-  const n = uploads.length + 1
+  // Story 7.22 (DW-372): the highest number plus one — pruning keeps every row, so the number goes on
+  const n = nextVersion(uploads)
   const themeName = bound ?? themeNameOf(p.slug)
   const lists = config === null ? {} : Object.fromEntries([...listsOf(config)].map(([file, ls]) => [file, ls.map((l) => l.context)]))
   const input: CompileInput = {

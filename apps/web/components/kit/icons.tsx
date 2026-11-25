@@ -413,6 +413,22 @@ export const Bolt = (p: IconProps) => (
     <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
   </Icon>
 )
+/** STORY 7.22 — S8e's and D2's history clock (`S8 Deploy.dc.html:279`, `D2 Deploy History Completed.dc.html:38`; S4d's ▾ row
+ *  `S4 Editor.dc.html:387`), drawn as the frames draw it */
+export const HistoryClock = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <polyline points="12 7 12 12 15 14" />
+  </Icon>
+)
+/** STORY 7.22 — D2's pin (`D2 Deploy History Completed.dc.html:80`, `:89`): outlined to pin, FILLED once pinned (the caller
+ *  passes `fill="currentColor"`), at the frame's 1.6 stroke */
+export const Pin = ({ strokeWidth = 1.6, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <line x1="12" y1="17" x2="12" y2="22" />
+    <path d="M5 17h14l-2-3V7a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v7l-2 3z" />
+  </Icon>
+)
 export const Undo = (p: IconProps) => (
   <Icon {...p}>
     <path d="M9 14L4 9l5-5" />

@@ -10286,7 +10286,13 @@ plain: Inflozo numbers each ship v1, v2, v3… by counting this project's upload
   one. Once Story 7.22 deletes old deploys (Free keeps three), the count stops growing and every later ship would be called
   the same version. A deploy Ghost took but Inflozo then marked failed (a name another deploy claimed first) drops out of
   the count too, so the next ship reuses its number.
-status: open
+status: done 2026-11-25 (Story 7.22)
+resolution: Story 7.22's Dev (2026-11-25) — the next version is 1 + the highest number among this project × site's
+  `uploaded`/`live` rows: one function, `nextVersion` in `apps/web/lib/deploy.ts`, read by `project-input.ts` and `shipStateOf`.
+  Retention never deletes a row (it clears the pointer), so the highest number survives pruning. The second half — a deploy
+  failed after Ghost took it — can still recur, under another theme name (the binding refused its name), and Story 7.25's
+  per-site lock removes the race (the spec's Design Notes). `retention.test.ts` holds v1–v3 pruned and v4–v6 stored → v7, with
+  a planted `rows.length + 1` seen red; walk step 120c holds 5.0.0 in the row and the artefact's `package.json` on production.
 severity: low
 origin: Story 7.18a's Review (2026-10-19), the Blind Hunter layer — `project-input.ts`' `n = uploads.length + 1`, mirrored in
   `read.ts`' `shipStateOf`.
@@ -10320,6 +10326,9 @@ location: `apps/web/server/deploy/run.ts` (`ship`) · `apps/web/app/(app)/app/(a
 reason: nothing in the product relinks a project before 7.18b's site picker.
 note (Story 7.18b's Create, 2026-10-19): ruled **R-269**, option 1 — `site_changed` and `site_unlinked`, each naming the sites
   (the spec's Words). Built at 7.18b's Dev.
+note (Story 7.22's Dev, 2026-11-25): the zip a refused Ship it leaves behind (its deploy marked failed, `artifact_path` kept) is
+  dropped by AD-33's artifact-retention job a day later — pointer first, then object, the row kept (`lib/artifact-sweep.ts`'
+  pass 2, DW-380's resolution).
 resolution: Story 7.18b's Dev (2026-10-19), as R-269 ruled — `ship()` re-reads the project's link (`DeployIo.link`) after R-264's
   guard and before the claim: unlinked → `site_unlinked`, linked elsewhere → `site_changed`, each naming the sites, nothing
   uploaded and the deploy marked failed; the wizard's Back after either re-reads the page. `deploy-run.test.ts` holds both with
@@ -10429,7 +10438,14 @@ reason: it needs the advisory lock 7.25 builds; the same user, two windows, insi
 
 plain: When Ship it refuses because the project's site changed, or a project switches sites while finished checks wait for
   the old one, the theme Inflozo built for those checks stays in storage with nothing that will ever ship it.
-status: open
+status: done 2026-11-25 (Story 7.22)
+resolution: Story 7.22's Dev (2026-11-25) — AD-33's artifact-retention job (`app/api/cron/prune-artifacts`, daily `50 4`, its loop
+  `lib/artifact-sweep.ts`' `runSweep`): pass 1 abandons every check resting at `awaiting_ship` on a site its project no longer
+  links (or on none) exactly as `start()` abandons one (`run.ts`' exported `abandon`: the object, the deploy row, the job
+  `cancelled`); pass 2 drops every zip a non-version row still names once it is a day old and no resting check names it —
+  pointer first, then object, the row kept. A check resting on the linked site is the control and is never touched.
+  `artifact-sweep.test.ts` and `deploy-run.test.ts` hold both, each seen red under a planted reversion; walk step 120d runs
+  the job on production against planted rows.
 severity: low
 origin: Story 7.18b's Review (2026-10-19), the Blind Hunter and Edge Case Hunter layers: `ship()` marks the deploy `failed` and
   keeps `artifact_path` (as every failed upload does); `start()` abandons only jobs resting on the SAME site.
@@ -10715,7 +10731,7 @@ reason: reached only after the send failed on several nights in a row; the custo
 plain: If someone adds very large files to the Inflozo theme on their Ghost site, so that it is bigger than Inflozo's file
   store accepts, every check that finds the edit would fail with "something went wrong on our side" instead of showing the
   drift report, and the customer could not ship to that site until the files were removed.
-status: open
+status: done 2026-11-25 (Story 7.22)
 severity: low
 origin: Story 7.21's Review (2026-11-24), the Blind Hunter and Edge Case Hunter layers. `driftStep` keeps the live zip for
   D3a's Download BEFORE its record, through `twice()` — the spec's rule for our own store (AD-20: retry once, then
@@ -10726,6 +10742,13 @@ owner: Story 7.22 (Artifacts, retention and pinning), which sizes what the bucke
   past, with D3a then drawn without its Download rather than the Pre-flight failing.
 location: `apps/web/server/deploy/run.ts` (`driftStep`, the `live copy` put) · `apps/web/server/deploy/deploy-io.ts` (`artifacts.put`)
 reason: needs a theme far past anything Inflozo writes, edited by hand; the fix needs a size rule 7.22 owns.
+resolution: Story 7.22's Dev (2026-11-25) — `LIVE_COPY_MAX_BYTES` (`apps/web/lib/drift.ts`) is the store's own limit, read on
+  production at Dev with the owner's go: `deploy-artifacts`' `file_size_limit` is null, so the project's storage config's
+  `fileSizeLimit` governs, 52428800 bytes. A found drift whose live zip is past it puts no copy, its record says `kept: false`,
+  D3a draws no Download (Overwrite stays), the Pre-flight goes on, and the live route refuses that job's Download rather than
+  serve an earlier check's copy. 7.20a's capture (`site-snapshots`) is unchanged: it is FR-J13's, and its own put failing is
+  B12b's answer, never a failed Pre-flight. `deploy-run.test.ts` holds it with a real zip past the limit and the control within
+  it; journey 7.22 (f) holds D3a without its Download.
 
 ### DW-397: an upload Ghost kept but Inflozo marked failed is not the drift baseline, so the next check can blame the site
 
@@ -10755,3 +10778,22 @@ owner: Story 15.1 (the E2E suite, including the keyboard-only journey): one fall
   first control — with a journey that reads `document.activeElement` after a kept token.
 location: `apps/web/components/editor/deploy-wizard.tsx` (the `retoken` focus effect)
 reason: a keyboard user still reaches the card on the next Tab; the fix is one rule for two presses that only 15.1 walks.
+
+## Deferred from: spec-7-22-artifacts-retention-and-pinning (2026-11-25)
+
+### DW-399: an account that falls from Pro to Free would have its stored versions pruned to Free's three
+
+plain: When an account goes from Pro back to Free, the plan promises that the theme versions already kept stay kept and only
+  new ones stop being added. Inflozo's new cleanup trims each project to its plan's limit every night and after every ship, so
+  a downgraded project with ten versions would be cut to three. No account can fall to Free today; this must be fixed before
+  that becomes possible.
+status: open
+severity: medium
+origin: Story 7.22's Create and Dev (2026-11-25) — the retention rule (`lib/retention.ts`' `prunable`) applies the plan's cap
+  as it is now, and FR-L3's downgrade rule (Story 12.4) says retained artifacts above Free's 3 are "kept but no new ones are
+  retained".
+owner: Story 12.4 (downgrade, and block-until-resolved), built before Story 12.2 ships the first `pro_* → free` edge: it decides
+  what "kept" means for a project over the cap and changes the one rule, with its own test. Both cards carry it.
+location: `apps/web/lib/retention.ts` (`prunable`) · `apps/web/server/retention.ts` (`pruneProject`) ·
+  `apps/web/app/api/cron/prune-artifacts/route.ts`
+reason: unreachable until Story 12.2 lets an account fall to Free; the spec's Never list keeps 12.4's rule out of 7.22.

@@ -32,6 +32,10 @@ const SNAPSHOT_IO = join('server', 'snapshot-io.ts')
 const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
 const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
 const LIVE_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'deploy', 'live', 'route.ts')
+const HISTORY_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'history', 'route.ts')
+const SWEEP_ROUTE = join('app', 'api', 'cron', 'prune-artifacts', 'route.ts')
+const RETENTION = join('server', 'retention.ts')
+const RETENTION_IO = join('server', 'retention-io.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -182,6 +186,17 @@ test('the service-role client is imported by the flag reader and by nothing else
   // (`deploy-artifacts/{projectId}/live/{siteId}.zip`), and the `deploy-artifacts` bucket has NO Storage policy at all (server-only,
   // AD-29), so the service role is its only reader — Story 2.5's snapshot download's reason, for the other bucket. It never touches
   // a user ROW: the job (whose it is, that it is this project's, that its check found drift) is read on the caller's own session.
+  // The FOURTEENTH, FIFTEENTH and SIXTEENTH, added by Story 7.22 with their reasons — FR-J7's retention:
+  //   - `server/retention-io.ts`, the one prune's real `io`: `deploys` is select-only to the tenant (AD-8) and the
+  //     `deploy-artifacts` bucket has NO Storage policy (AD-29), so only the server clears a version's pointer and removes its
+  //     object; it reads the plan through `plan.ts`' `readEntitlement` (AD-28), handed this client because the nightly job has no
+  //     session. Every query carries `user_id`. It is handed to `server/retention.ts`, which imports neither this client nor the
+  //     plan's read (held below).
+  //   - the History drawer's route: a pin is `pin_version()`, executable by the service role ALONE (Story 7.22's Schema), with the
+  //     cap `resolveEntitlement` reads; an unpin is a plain update of a select-only table, scoped by `user_id` and `project_id`. The
+  //     LIST is read on the caller's own session (RLS).
+  //   - AD-33's artifact-retention cron: like the other purges it acts for NOBODY behind Vercel's `CRON_SECRET` bearer, across
+  //     every account — it abandons checks nothing can ship, drops zips no version names, and runs the one prune.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -196,6 +211,9 @@ test('the service-role client is imported by the flag reader and by nothing else
     EDITOR_ACTIONS,
     SNAPSHOT_IO,
     LIVE_ROUTE,
+    RETENTION_IO,
+    HISTORY_ROUTE,
+    SWEEP_ROUTE,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
@@ -825,4 +843,15 @@ test('7.20a: Disconnect sets the Backup step back to owed in the SAME write that
   const src = readFileSync(CONNECT_ACTIONS, 'utf8').replace(/\s+/g, ' ')
   assert.match(src, /\{ disconnected_at: stampedAt, [^{}]*\{[^{}]*\}, backup_confirmed_at: null \}/, `${CONNECT_ACTIONS}: the disconnect stamp no longer clears backup_confirmed_at`)
   assert.equal((src.match(/backup_confirmed_at: null/g) ?? []).length, 1, `${CONNECT_ACTIONS}: backup_confirmed_at is cleared somewhere other than the stamp`)
+})
+
+test('Story 7.22: the one prune decides and is handed its world — `server/retention.ts` imports neither the service role nor the plan\'s read; its real io does both', () => {
+  const imports = (file: string) => [...readFileSync(file, 'utf8').matchAll(/^import[^'"]*['"]([^'"]+)['"]/gm)].map((m) => m[1])
+  const prune = imports(RETENTION)
+  assert.ok(!prune.some((m) => /supabase|entitlement|ghost-admin/.test(m)), `${RETENTION} imports ${prune.join(', ')} — the io is handed in`)
+  assert.ok(prune.some((m) => /lib\/retention/.test(m)), 'control: it imports the rule it runs')
+  const io = imports(RETENTION_IO)
+  assert.ok(io.includes('@/lib/supabase/server') && io.includes('@/lib/plan'), `${RETENTION_IO} is the real io: the service role and plan.ts`)
+  // the plan is decided in plan.ts alone (AD-28): no SQL here reads `entitlements`, and no file but plan.ts compares a plan state
+  assert.doesNotMatch(readFileSync(RETENTION_IO, 'utf8'), /from\('entitlements'\)/, 'the plan is read through readEntitlement, never queried here')
 })

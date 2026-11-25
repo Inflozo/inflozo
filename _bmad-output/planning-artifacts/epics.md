@@ -4577,6 +4577,18 @@ compares the site with the newest upload Ghost accepted (`deploys.baseline`)
 D4f's Deploy history card to that notice — the live version and a one-tap Roll back to the one before it — which Story
 5.22 built without it (R-118)
 **And** the screens match S8e and D2a Pro pinning, D2b pin refusal and D2c Free.
+**And** *(Story 7.22's Dev, 2026-11-25)* **the drawer is 7.22's** (`components/editor/deploy-history.tsx`, opened by the bar's
+clock from 1366 up and by Ship it ▾ → History at every width): its header, D2a's compact row for every version with the Live
+badge, the pin with D2b's refusal (`pin_version`, N−1), the limit line, the empty state and a failed read. **This story adds**
+D2a's expanded rows (thumbnail, Changed line, by-line, Roll back), the original-theme row, D2d's Re-activate row, S8e's Roll
+back confirm and the phone card — and S8e's full clock tooltip, "History — every version, one click back", and the ▾ row's
+"rollback" in its caption, both held back until Roll back exists
+**And** *(Story 7.22's Dev)* **one list per project, across every site** (FR-J7 counts per project): a row of another site says
+"on {host}" and this story decides what its Roll back does there — the frozen name is per site
+**And** *(Story 7.22's Dev)* **a rollback row that shares its object with an older row prunes by object**: today every row names
+its own `{projectId}/{deployId}.zip` and the prune clears a pointer and removes that key; once a rollback records an upload of a
+STORED artefact, two rows can name one object, so the prune must remove an object only when no remaining row names it
+(`server/retention.ts`, `pruneProject`)
 
 **FRs:** FR-J9. · **Frame:** `S8 Deploy.dc.html` S8e · `D2 Deploy History Completed.dc.html` D2a · D2b · D2c. ·
 **Owner test:** yes. · **Verification:** a real rollback on T1 and T3 (R-82), and a real snapshot restored on T1 (moved
@@ -9316,6 +9328,11 @@ the end of the paid period, then downgrades
 **And** there is **one entitlement resolver and one exit gate** (AD-28), and `entitlements` has exactly three
 states — `free`, `pro_active`, `pro_past_due` — with **`pro_past_due` never shown as a plan**.
 
+**And** *(DW-399, Story 7.22's Dev, 2026-11-25)* **no account falls from Pro to Free before Story 12.4 has built the
+downgrade's artifact rule**: Story 7.22's retention prunes each project to its plan's cap on every accepted upload and every
+night (`pruneProject`, `api/cron/prune-artifacts`), so the first `pro_* → free` edge this story ships would prune a
+downgraded project's versions past Free's 3 — the "kept, no new ones retained" Story 12.4 promises would not hold
+
 **FRs:** FR-L2. · **Owner test:** none (a state machine). · **Verification:** real Dodo events replayed against
 the live webhook endpoint, with one negative control (R-82).
 
@@ -9374,6 +9391,13 @@ disconnected
 compatibility redeploy — noting that they execute via the site's Admin API, so a disconnected site has neither
 until reconnected, and a reconnection performed to run a restore counts against the cap like any other
 **And** the sheets match D4c itemised, D4d "Which project stays editable?" and D4e the read-only project.
+
+**And** *(DW-399, Story 7.22's Dev, 2026-11-25)* **"kept but no new ones are retained" is built here, before Story 12.2 can
+let an account fall to Free**: Story 7.22's prune (`server/retention.ts`' `pruneProject`, run when Ghost accepts an upload and
+nightly by `api/cron/prune-artifacts`) keeps every pin and the newest `max(1, cap − pinned)` unpinned versions at the plan's
+cap — so on a downgraded account it would prune past Free's 3 today. This story decides what "kept" means for a project over
+the cap (no prune at all while over it, or every version kept and the newest replacing nothing) and changes the one rule in
+`lib/retention.ts`' `prunable`, with its own test; the database's `pin_version` cap stays the plan's N−1
 
 **FRs:** FR-L3 (the downgrade rules). · **Frame:** `D4 Dashboard Sheets and Blocks.dc.html` D4c · D4d · D4e. ·
 **Owner test:** yes.

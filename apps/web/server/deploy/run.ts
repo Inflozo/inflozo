@@ -8,7 +8,7 @@ import {
   type DeployCode, type DeployError, type DeployStatus, type DeployView, type Mode, type PreflightFacts, type RoutesEnding, type SnapshotTiming, type Stage, type Timings,
 } from '../../lib/deploy.ts'
 import { hostOf } from '../../lib/connect-rule.ts'
-import { compareManifests, contentManifest, labelOf, liveCopyPath, liveManifest, type ContentManifest, type DriftCause, type DriftFile, type DriftRecord, type ManifestEntry } from '../../lib/drift.ts'
+import { compareManifests, contentManifest, labelOf, LIVE_COPY_MAX_BYTES, liveCopyPath, liveManifest, type ContentManifest, type DriftCause, type DriftFile, type DriftRecord, type ManifestEntry } from '../../lib/drift.ts'
 import type { Snapshot, SnapshotAnswer, SnapshotProgress } from '../snapshot.ts'
 import type { ProjectRead } from './project-input.ts'
 import { unzipTheme } from './zip.ts'
@@ -115,10 +115,15 @@ export type DeployIo = {
    *  unlinked), and the job's own site's address — read at Ship it, so a theme only ever goes to the project's current site */
   link: (a: { projectId: string; siteId: string; userId: string }) => Promise<{ now: { id: string; url: string } | null; was: string | null }>
   artifacts: {
-    put: (path: string, bytes: Uint8Array) => Promise<void>
+    /** STORY 7.22 — an artefact is IMMUTABLE (NFR-4): a put never overwrites an existing key (the store refuses it). `replace` is
+     *  the drift check's live copy alone — one fixed key per project × site that each found drift overwrites */
+    put: (path: string, bytes: Uint8Array, opts?: { replace?: true }) => Promise<void>
     get: (path: string) => Promise<Uint8Array>
     remove: (path: string) => Promise<void>
   }
+  /** STORY 7.22 — the one prune (`server/retention.ts`' `pruneProject`, its real io bound in by `deploy-io.ts`): this project's
+   *  stored versions past its plan's cap lose their zip, the rows kept. Called once Ghost accepts an upload, best effort */
+  prune: (a: { projectId: string; userId: string }) => Promise<unknown>
   /** claim the frozen name at the first accepted upload (AD-19, VERIFY 30): `ok`, or `taken` on a 23505 whose stored row is
    *  not this name (a concurrent first upload) */
   bind: (a: { projectId: string; siteId: string; userId: string; themeName: string; at: string }) => Promise<'ok' | 'taken'>
@@ -176,7 +181,7 @@ async function readProject(io: DeployIo, at: { projectId: string; siteId: string
 }
 
 /** AD-20's rule, once: an infrastructure failure is retried once, then thrown as `Infra`. */
-async function twice<T>(io: DeployIo, what: string, run: () => Promise<T>): Promise<T> {
+async function twice<T>(io: Pick<DeployIo, 'log'>, what: string, run: () => Promise<T>): Promise<T> {
   try {
     return await run()
   } catch (first) {
@@ -283,8 +288,16 @@ type Clock = ReturnType<typeof clock>
 /** The one way a job fails: its envelope stored, the stage `failed`. */
 const fail = (c: Clock, error: DeployError | Finding): Promise<void> => c.end('failed', { error })
 
+/** What `clear` needs of the world — the nightly sweep builds no more than this (`app/api/cron/prune-artifacts`) */
+export type AbandonIo = {
+  deploys: Pick<DeployIo['deploys'], 'read' | 'remove'>
+  artifacts: Pick<DeployIo['artifacts'], 'remove'>
+  jobs: Pick<DeployIo['jobs'], 'update'>
+  log: DeployIo['log']
+}
+
 /** A cancelled or abandoned job leaves nothing: the object first, then the `deploys` row (AD-29), then the job's stage. */
-async function clear(io: DeployIo, job: JobRow, c: Clock | null): Promise<void> {
+async function clear(io: AbandonIo, job: JobRow, c: Clock | null): Promise<void> {
   if (job.deploy_id !== null) {
     const deploy = await twice(io, 'deploy read', () => io.deploys.read(job.deploy_id as string, job.user_id))
     if (deploy?.artifact_path) await twice(io, 'artifact remove', () => io.artifacts.remove(deploy.artifact_path as string))
@@ -429,7 +442,8 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
  *   - THE BASELINE is R-287's: the newest upload Ghost accepted from this project to this site (`deploys.baseline`).
  *   - THE LIVE SIDE is the theme under the BOUND name, active or not — the active theme is never read.
  *   - FOUND: the live zip is kept at `{projectId}/live/{siteId}.zip` (overwriting) BEFORE the record, so D3a's Download always has
- *     the zip this check read.
+ *     the zip this check read — unless it is past `LIVE_COPY_MAX_BYTES` (Story 7.22, DW-396): then nothing is put, the record says
+ *     `kept: false`, and D3a draws no Download.
  */
 async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead, own: string): Promise<void> {
   // no record yet: `compileAndCheck` cleared the last check's at its first edge
@@ -482,11 +496,22 @@ async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead,
     added: diff.added.map((path) => ({ path, label: labelOf({ path }, 'added', names) })),
     removed: diff.removed.map((p) => kept(p, 'removed')),
   }
-  await twice(io, 'live copy', () => io.artifacts.put(liveCopyPath(job.project_id, job.site_id), answer.bytes))
+  // Story 7.22 (DW-396): a live zip past the store's own size is not kept — a put the store refuses would refuse again on the retry
+  // and fail the Pre-flight that found the drift. The record says so, D3a draws no Download, and the Pre-flight goes on
+  if (answer.bytes.length > LIVE_COPY_MAX_BYTES) {
+    io.log('deploy: the live theme is past the live copy\'s size, not kept', { job: job.id, bytes: answer.bytes.length })
+    return void (await c.drift({ ...record, kept: false }))
+  }
+  await twice(io, 'live copy', () => io.artifacts.put(liveCopyPath(job.project_id, job.site_id), answer.bytes, { replace: true }))
   await c.drift(record)
 }
 
 // ── the doors ───────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** STORY 7.22 (DW-380) — `start()`'s abandon, for the nightly sweep: a check resting at `awaiting_ship` that nothing can ship any
+ *  more (its project now links another site, or none) is cancelled and leaves nothing — its object, then its deploy row, then the
+ *  job `cancelled`, exactly as a new Pre-flight abandons a resting check on the same site */
+export const abandon = (io: AbandonIo, job: JobRow): Promise<void> => clear(io, job, null)
 
 /** A NEW PRE-FLIGHT'S ROW, before any work (AD-20: the row exists from `queued`). Any older check of this project to this
  *  site resting at `awaiting_ship` is ABANDONED first — cancelled, its deploy and object deleted. */
@@ -638,8 +663,9 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
     // R-264 (b): Ghost's answer says the upload is ALREADY live — it replaced the active theme's files under the frozen name
     // and made them live (`storage.js`' `activateFromAPIOverride`) — so the deploy is live, no activation is sent, routes are
     // offered and the ending is Live, whichever mode was chosen
-    if (upload.active) return void (await goLive(io, job, c, deploy))
+    if (upload.active) return void (await goLive(io, job, c, deploy, true))
     await twice(io, 'deploy uploaded', () => io.deploys.update(deploy!.id, job.user_id, { status: 'uploaded', activated: false }))
+    await pruneAfter(io, job)
     if (a.mode === 'upload') return void (await c.end('done', { error: null }))
     await activateStep(io, job, c, deploy, read)
   } catch (e) {
@@ -700,13 +726,27 @@ async function activateStep(io: DeployIo, job: JobRow, c: Clock, deploy: DeployR
 }
 
 /** THE DEPLOY IS LIVE — by its activation, or by Ghost's own answer to the upload (R-264 b): live, activated, stamped; every
- *  other deploy live on the site demoted; then the routes step (R-254) and `done`. */
-async function goLive(io: DeployIo, job: JobRow, c: Clock, deploy: DeployRow): Promise<void> {
+ *  other deploy live on the site demoted; then the routes step (R-254) and `done`. `first` is the upload's own answer — the row's
+ *  first write as a version, so the prune follows it (Story 7.22); an activation of an `uploaded` row was pruned for at its upload */
+async function goLive(io: DeployIo, job: JobRow, c: Clock, deploy: DeployRow, first = false): Promise<void> {
   const now = io.now().toISOString()
   await twice(io, 'deploy live', () => io.deploys.update(deploy.id, job.user_id, { status: 'live', activated: true, activated_at: now }))
+  if (first) await pruneAfter(io, job)
   await twice(io, 'demote', () => io.deploys.demote({ siteId: job.site_id, userId: job.user_id, except: deploy.id }))
   c.routes(await routesStep(io, job))
   await c.end('done', { error: null })
+}
+
+/** STORY 7.22 — PRUNE WHEN A VERSION ARRIVES (FR-J7), right after Ghost's acceptance is written (`uploaded`, or `live` by the
+ *  upload's own answer): the project's stored versions past its plan's cap lose their zip. Never when a zip is merely stored — a
+ *  Pre-flight that never ships must not evict a real version. BEST EFFORT: a failure is logged by code and never the job's; the
+ *  nightly sweep (`api/cron/prune-artifacts`) runs the same prune again. */
+async function pruneAfter(io: DeployIo, job: JobRow): Promise<void> {
+  try {
+    await io.prune({ projectId: job.project_id, userId: job.user_id })
+  } catch (e) {
+    io.log('deploy: the prune failed', { job: job.id, code: (e as { code?: string } | null)?.code })
+  }
 }
 
 /** R-264 (a) — DEPLOY ONLY'S GUARD, as the server asks it: Inflozo's own record says this project's theme is the one live on

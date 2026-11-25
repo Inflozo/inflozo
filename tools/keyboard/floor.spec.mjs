@@ -1063,6 +1063,52 @@ test.describe('7.21 · D3a at 1440 and 390; D3b at 1440', () => {
   }
 })
 
+// ── Story 7.22 — the History drawer (S8e `:264-350`) at 1440, 1280 and 820. At 1440 the bar's clock opens it — 420 at the right
+// edge below the bar, nothing scrolling sideways; at 820 the bar is compact, so the clock is ABSENT and Ship it ▾ → History is the
+// way in. At 1280 the clock is absent too, below 1366, so R-266's centred group holds (`editor.tsx` says why). The read is the
+// harness's (`x-inflozo-harness-history`).
+test.describe('7.22 · the History drawer at 1440, 1280 and 820', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const width of [1440, 1280, 820]) {
+    test(`at ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-history': 'pro-full' })
+      await page.goto(HARNESS)
+      // the first page a cold dev server compiles can outlast `painted`'s 5 s (executed: this test's first run, alone)
+      await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible({ timeout: 30_000 })
+      const clock = page.locator('#deploy-history-open')
+      if (width === 1440) {
+        await expect(clock).toBeVisible()
+        await clock.click()
+      } else {
+        await expect(clock, 'the clock is absent where the bar is compact, and below 1366').toBeHidden()
+        await page.locator('#editor-ship + button').click()
+        const row = page.locator('#editor-ship-menu li button').last()
+        await expect(row, 'Ship it ▾ → History is present').toContainText('History')
+        await row.click()
+      }
+      const drawer = page.locator('dialog[data-deploy-history]')
+      await expect(drawer.locator('[data-history-row]')).toHaveCount(10, { timeout: 15_000 })
+      const m = await drawer.evaluate((d) => ({
+        box: d.getBoundingClientRect().toJSON(),
+        inner: window.innerWidth,
+        scroll: document.documentElement.scrollWidth,
+        bar: document.querySelector('header').getBoundingClientRect().bottom,
+        // every row's pin inside the drawer, and every row on one line of its own height
+        outside: [...d.querySelectorAll('[data-history-row]')].filter((r) => r.getBoundingClientRect().right > d.getBoundingClientRect().right + 0.5).length,
+      }))
+      expect(m.box.width).toBe(Math.min(420, m.inner))
+      expect(m.box.right).toBe(m.inner)
+      expect(m.box.top).toBe(m.bar)
+      expect(m.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(m.inner)
+      expect(m.outside).toBe(0)
+      // the list scrolls inside the drawer and the limit line is the drawer's last
+      await drawer.locator('[data-history-limit]').scrollIntoViewIfNeeded()
+      await expect(drawer.locator('[data-history-limit]')).toBeInViewport()
+    })
+  }
+})
+
 // ── Story 7.18a — R-263: a touch screen below 768 that is not a phone. Ship it shares the bar, so Undo and Redo lead ⋯ and
 // the words "Template" and "View as" go; at 768 and up nothing changes. The sweep holds no bar control outside the window
 // at 600, 640 and 720 on Home and on the Paywall; its CONTROL is the same sweep with the rule switched off in the page

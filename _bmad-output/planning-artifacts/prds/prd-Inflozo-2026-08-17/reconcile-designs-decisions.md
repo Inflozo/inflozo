@@ -6184,6 +6184,23 @@ Dev, Question 2, ruled **option 1** (owner, 2026-11-24): *"1. Treat 400 as gone"
 - **Deliberately not touched:** the spec's frozen I/O matrix row "Theme gone | 404", whose behaviour this keeps; the Spec
   Change Log records the wire answer.
 
+**R-289 — the bar's History clock shows from 1366px up; below that, History is Ship it ▾'s row.** Story 7.22's Dev,
+Question 1, ruled **option 1** (owner, 2026-11-25): *"1. Clock from 1366 up (RECOMMENDED)"*.
+
+- **Why it was a question.** The spec put S8e's clock (`S8 Deploy.dc.html:278-281`) just before Ship it wherever the bar is
+  not compact, 1280px and up. R-266 holds S4's centred group within 6px of centre at 1280. The clock's 28px target and its
+  8px gap moved that group 42px left at 1280, measured in the harness: 0 at 1366, 7 at 1350.
+- **The rule.** The clock `#deploy-history-open` is drawn from **1366px** wide up, where the bar is not compact. Below 1366,
+  and wherever the bar is compact, the way in is **Ship it ▾ → History**, a row present at every width. R-266 holds as ruled.
+- **Declined.** Option 2, the clock from 1280 with R-266 relaxed to about 42px there; option 3, no clock at all.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.22's spec (Question 1, the Spec Change Log, the Owner's manual test's width);
+  - ✅ `editor.tsx` (the clock's `max-[1366px]:hidden` and its comment);
+  - ✅ `tools/keyboard/floor.spec.mjs` (the clock absent at 1280 and 820, the ▾ row present) and the R-266 journey, unchanged;
+  - ✅ `EXPERIENCE.md` (beside R-266, and F8 rule 3's note);
+  - ✅ `epic-7-context.md`.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

@@ -653,7 +653,10 @@ the Paywall: at 600 only both together fit, at 640 the words alone fit, at 720 e
 three on touch.)* *(Story 7.18a's Review, **R-266**, owner, 2026-10-19: at 1280 and up the full bar keeps S4a's centred group
 centred beside Ship it because the **"Theme settings" link is a gear** — Tabler's `settings` in a 28px target, "Theme
 settings" still its accessible name, ⋯'s row and its tooltip — and the right side is spaced at S4's own **8px**: centred from
-about 1300px up, 6px off at 1280. As first built it sat 17px off centre at 1440 and 97px at 1280.)*
+about 1300px up, 6px off at 1280. As first built it sat 17px off centre at 1440 and 97px at 1280.)* *(Story 7.22's Dev,
+**R-289**, owner, 2026-11-25: S8e's History clock sits just before Ship it from **1366px** up only — at 1280 its 28px and
+8px gap moved the centred group 42px off. Below 1366, and wherever the bar is compact, History is Ship it ▾'s row, present
+at every width.)*
 
 > **The floor is a device test, not a width test — and that distinction is load-bearing.** A 1440px
 > display at 200% browser zoom presents roughly a 720px CSS viewport. Keying the notice on CSS width
@@ -1469,8 +1472,16 @@ shorter list. So:
   file** rather than recompiling. **The retention limit is therefore the true bound on how far back a
   customer can go, and the surface says so** in one line beside the limit.
 
-**3. At least one version must stay unpinned**, enforced in the database. Reserving one slot for the
-newest build means deploying can never be blocked by pinning.
+**3. One slot stays unpinned: at most N−1 versions may be pinned** — 9 of 10 on Pro, 2 of 3 on Free —
+enforced in the database. Reserving one slot for the newest build means deploying can never be
+blocked by pinning. *(Story 7.22's Dev, 2026-11-25: this rule read "at least one version must stay
+unpinned", the retired database floor's wording, which refused pinning a project's only version and
+let a project with failed or pruned rows pin every stored one. As built it is the owner's N−1 counted
+over STORED versions — `pin_version()` with the plan's N from `plan.ts` — so a lone version pins, and
+the refusal (D2b, "One version has to stay unpinned so your next deploy has somewhere to go. Unpin
+another first.") comes at N−1. Unpinning is never refused. The drawer is reached from the bar's clock
+from 1366 up (R-289) and from Ship it ▾ → History at every width; every row is D2a's compact row until Story
+7.23 draws the expanded ones.)*
 
 **Pinning, drawn on rows that already exist.**
 

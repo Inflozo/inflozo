@@ -2110,6 +2110,20 @@ Both new guards are caught by an assertion written over a **catalogue** rather t
 neither needed a bespoke check. That is AD-26's "prefer an assertion over a catalogue" paying off on
 the first change made after it was written down.
 
+*(Story 7.22, 2026-11-25 — a dated note; the record above is unchanged.)* **The floor is retired and the
+reading is settled.** `guard_pin_leaves_a_slot()` and its trigger are dropped by
+`20261125120000_pin_version.sql` (pushed first, R-99): it refused pinning a project's ONLY version,
+which N−1 allows, and it counted failed and pruned rows as unpinned, so it mostly never fired. FR-J7's
+"enforced in the database" and AD-28's "the plan in the server" are both met by
+**`pin_version(p_deploy, p_user, p_cap)`**: the route reads N through `plan.ts` and hands it in; the
+function takes a per-project advisory lock, counts the project's pinned stored versions and answers
+`pinned`, `cap` (at N−1, nothing changed) or `gone`, its update re-checking the pointer so a pin
+meeting a prune is kept or gone. The RLS gate's FR-J7 block now holds the lone version pinning (the
+floor's false refusal as the control), `cap`, `gone`, unpin, 42501 for `authenticated`, and two
+concurrent pins of the last slot (one `pinned`, one `cap`; without the lock, both pinned). 26d's
+three items are built by the same story: the History drawer prints both plans' limits, lists stored
+versions only, and the prune skips pinned rows with N from `plan.ts`.
+
 ### 26d. Still owed to this decision, and it is not a database concern
 - **The UI must state the limit** — a history list that silently drops its oldest entry reads as
   complete when it is not (E7/E13).

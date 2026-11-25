@@ -265,42 +265,42 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
   Update the catalogue lists at `:526` and `:653`.
 
 *Server:*
-- [ ] `apps/web/lib/retention.ts` (new, pure) -- `isStoredVersion`, `prunable(versions, cap)`, `HISTORY_WORDS` (every drawer
+- [x] `apps/web/lib/retention.ts` (new, pure) -- `isStoredVersion`, `prunable(versions, cap)`, `HISTORY_WORDS` (every drawer
   word, the limit line built from `PLANS`, "Nothing shipped yet", D2b's sentence and Got it, the pin labels, their busy and
   said forms, "on {host}"), and the time label.
-- [ ] `apps/web/lib/deploy.ts` -- `nextVersion(rows)`. `shipStateOf`'s `n` reads it.
-- [ ] `apps/web/server/deploy/project-input.ts` -- `n = nextVersion(uploads)`.
-- [ ] `apps/web/server/retention.ts` + `server/retention-io.ts` (new) -- `pruneProject({ projectId, userId }, io)`:
+- [x] `apps/web/lib/deploy.ts` -- `nextVersion(rows)`. `shipStateOf`'s `n` reads it.
+- [x] `apps/web/server/deploy/project-input.ts` -- `n = nextVersion(uploads)`.
+- [x] `apps/web/server/retention.ts` + `server/retention-io.ts` (new) -- `pruneProject({ projectId, userId }, io)`:
   - reads the cap through `readEntitlement` and the project's stored versions;
   - runs `prunable`;
   - clears each pointer conditionally, then removes each object it cleared;
   - returns what it did.
 
   The io joins `server-wiring.test.ts`' lists. This is the `snapshot.ts`/`snapshot-io.ts` split.
-- [ ] `apps/web/server/deploy/run.ts`, `deploy-io.ts`:
+- [x] `apps/web/server/deploy/run.ts`, `deploy-io.ts`:
   - add `DeployIo.prune`, called best effort right after the row is first written `uploaded` or `live`;
   - `artifacts.put(path, bytes, { replace })`, with `replace` passed for the live copy alone;
   - `driftStep` skips the put past `LIVE_COPY_MAX_BYTES` and records `kept: false`;
   - export `abandon` (`start()`'s `clear` with no clock).
-- [ ] `apps/web/lib/drift.ts` -- `DriftRecord`'s `found` gains `kept?: false`. Add `LIVE_COPY_MAX_BYTES`, its value and its
+- [x] `apps/web/lib/drift.ts` -- `DriftRecord`'s `found` gains `kept?: false`. Add `LIVE_COPY_MAX_BYTES`, its value and its
   source (Dev's read) in a comment.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/history/route.ts` (new):
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/history/route.ts` (new):
   - GET: the project's stored versions with each one's site host and the project's linked site, newest first, through the
     user's session (RLS);
   - POST `{ deploy, pinned }`: `currentUser`, `isUuid`, then `resolveEntitlement` → `pin_version` with `caps.history` (409 on
     `cap`, 404 on `gone`); an unpin is the service role's update scoped by `user_id` and `project_id`;
   - `no-store` on every answer.
-- [ ] `apps/web/lib/artifact-sweep.ts` (new, pure loop) and `apps/web/app/api/cron/prune-artifacts/route.ts` (new) -- three
+- [x] `apps/web/lib/artifact-sweep.ts` (new, pure loop) and `apps/web/app/api/cron/prune-artifacts/route.ts` (new) -- three
   passes, in order:
   1. DW-380's resting jobs are abandoned;
   2. DW-374's dead zips are dropped;
   3. each project is pruned.
 
   Use the purge routes' door and budget, and answer 500 when anything failed. The header names E7, FR-J7 and AD-33.
-- [ ] `apps/web/vercel.json` -- schedule `/api/cron/prune-artifacts` daily at `50 4 * * *`.
+- [x] `apps/web/vercel.json` -- schedule `/api/cron/prune-artifacts` daily at `50 4 * * *`.
 
 *UI:*
-- [ ] `apps/web/components/editor/deploy-history.tsx` (new) -- the drawer:
+- [x] `apps/web/components/editor/deploy-history.tsx` (new) -- the drawer:
   - a `<dialog>` opened with `showModal`, S8e's 420 right drawer below the bar, focus opening on ✕ (`openOnCancel`), Esc
     closing it and focus returning to the opener;
   - loading rows in the compact row's shape;
@@ -311,20 +311,20 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
   - D2b's popover on `cap`: focus on Got it; Got it or Esc returns focus to the pin; the pin stays unfilled;
   - one polite live region;
   - the footer limit line.
-- [ ] `apps/web/components/editor/deploy-wizard.tsx`:
+- [x] `apps/web/components/editor/deploy-wizard.tsx`:
   - `ShipButton`'s menu gains **History** at every width;
   - D3a omits `#deploy-drift-download` when `kept === false`;
   - correct the header comment.
-- [ ] `editor.tsx` -- the clock `IconButton` `#deploy-history-open` (label and title "History") just before `ShipButton`,
+- [x] `editor.tsx` -- the clock `IconButton` `#deploy-history-open` (label and title "History") just before `ShipButton`,
   `hidden={compact}`, and mount the drawer.
-- [ ] Harness `layout.tsx`/`actions.ts`:
+- [x] Harness `layout.tsx`/`actions.ts`:
   - `x-inflozo-harness-history: empty | free | free-full | pro-full | two-sites | fail`;
   - `x-inflozo-harness-drift: found-unkept`.
 
 *Tests* (each assertion seen red under a planted reversion):
-- [ ] `lib/retention.test.ts`, `server/retention.test.ts`, `lib/artifact-sweep.test.ts`, `deploy-run.test.ts`,
+- [x] `lib/retention.test.ts`, `server/retention.test.ts`, `lib/artifact-sweep.test.ts`, `deploy-run.test.ts`,
   `deploy.test.ts`, `drift.test.ts`, `busy.test.ts`, `server-wiring.test.ts` -- every row of the I/O matrix.
-- [ ] `tools/keyboard/journey.spec.mjs` -- the 7.22 journeys:
+- [x] `tools/keyboard/journey.spec.mjs` -- the 7.22 journeys:
   - (a) the clock opens the drawer, focus on ✕, Esc returns it;
   - (b) Space pins and unpins, said once;
   - (c) `cap` opens D2b, focus on Got it, returning to an unfilled pin;
@@ -334,10 +334,10 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
 
   `floor.spec.mjs` covers the drawer at 1440 and 820: the clock is absent where the bar is compact, and the menu row is
   present.
-- [ ] `tools/probe/run-verify-editor.cjs` step 120 -- the Verification's real-infra run.
+- [x] `tools/probe/run-verify-editor.cjs` step 120 -- the Verification's real-infra run.
 
 *Propagation* (standing rules 3 and 7; end with a grep for `guard_pin_leaves_a_slot` and `uploads.length + 1`):
-- [ ] Planning documents:
+- [x] Planning documents:
   - FR-J7: a dated note;
   - AD-29 and AD-33: "built" notes naming the cron and the inline prune;
   - MEASUREMENTS §26c: the reading, and the retired floor;
@@ -345,7 +345,7 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
   - `epics.md` Story 7.23: the drawer is 7.22's, 7.23 adds the expanded rows and actions; a rollback row that shares an object
     with an older row prunes by object; another site's rows; the full S8e tooltip;
   - `epics.md` Stories 12.2 and 12.4: DW-399.
-- [ ] `deferred-work.md` -- resolve DW-372, DW-374's zip, DW-380 and DW-396, and open DW-399 (owner: Story 12.4, before 12.2
+- [x] `deferred-work.md` -- resolve DW-372, DW-374's zip, DW-380 and DW-396, and open DW-399 (owner: Story 12.4, before 12.2
   lets an account fall to Free).
 
 **Acceptance Criteria:**
@@ -375,6 +375,44 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
   `deploy-artifacts` object, and none sums artefact bytes into a quota (grep in Verification).
 
 ## Spec Change Log
+
+- **2026-11-25, Schema (on the owner's in-session go, option 1 of 4).** Production never had `deploys.pinned`. The first
+  apply through `SUPABASE_DB_POOLER_URL` stopped at `comment on column public.deploys.pinned` with 42703 and rolled back
+  whole. A catalogue diff of production against every migration (columns, functions, triggers, policies, indexes, enums,
+  constraints in `public` and `private`) found exactly three objects missing — the column, `guard_pin_leaves_a_slot()` and
+  its trigger — and nothing else. The migration therefore also runs `add column if not exists pinned boolean not null
+  default false` (a no-op on every database the migrations build), proven on a production-shaped container first. Applied
+  and read back: production's catalogue now equals a fresh build from every migration.
+- **2026-11-25, Dev's read of the store's limit (same go).** `deploy-artifacts`' `file_size_limit` is null (as on all four
+  buckets), so the project's storage config governs: `fileSizeLimit` **52428800 bytes (50 MiB)**, read with
+  `SUPABASE_ACCESS_TOKEN` from `GET /v1/projects/{ref}/config/storage`. **`LIVE_COPY_MAX_BYTES` is 52428800**, with that
+  source in its comment. On the same bucket an `upsert: false` put over an existing scratch key answered 409 "The resource
+  already exists" and left the first bytes; the control (a new key) was accepted; both scratch objects were removed.
+
+- **2026-11-25, Dev — what landed beside the plan, each a routine call unless it says otherwise.**
+  - **The clock hides below 1366, as well as where the bar is compact** — put to the owner as Question 1 below (R-266
+    against the plan's `hidden={compact}`) and **ruled option 1 in the session (owner, 2026-11-25), recorded as R-289**. With
+    the clock drawn from 1280, S4's centred group sat 42px off centre at 1280 (measured: 0 at 1366, 7 at 1350, 42 at 1280),
+    and R-266 holds it within 6px there. R-266's journey holds unchanged and Ship it ▾ → History is the drawer's way in below
+    1366. The floor gains 1280.
+  - **The schedule.** `50 4 * * *` is twenty minutes after the orphan purge's `30 4`, and `purge.test.ts` held "no two jobs
+    share an HOUR" (Story 3.7's "never share a cold start"). The test now holds that reason itself: each job starts only after
+    the one before it can have ended (its route's `maxDuration`, 300 s where none is stated).
+  - **A failed plan read prunes nothing.** AD-28 degrades a failed `entitlements` read to Free so a page still draws; a prune is
+    irreversible, so the job's read refuses the degradation (`strictPlan` over `readEntitlement`, `plan.ts` still the one
+    decider) and the sweep retries the next night.
+  - **The live route refuses a `kept: false` job's Download** (404): the key can still hold an EARLIER check's copy, which is
+    not the theme this check read.
+  - **The tests live at `apps/web/`'s root** (`retention.test.ts`, `artifact-sweep.test.ts`), where `node --test '*.test.ts'`
+    finds them; `server/retention.ts`' rows are in `retention.test.ts`.
+  - **The ▾ row's caption is "Versions, gscan reports"** — S4d's, without "rollback" until Story 7.23 builds Roll back (as the
+    clock's tooltip is "History" until then). 7.23's card carries both.
+  - **The harness's history header gains `gone` and `pin-fails`**, so journey (b2) holds the matrix's "Pin what is gone" (the
+    re-read drops the row, its sentence said, focus on ✕) and "Pin request fails" (the pin unchanged, one sentence); the 7.18a
+    ▾-menu journey is re-expected with History as its last row; the colour `marigold-glyph` (#B87A00, D2's filled pin) is
+    recorded in DESIGN.md beside the token.
+  - **An artefact put that landed but whose answer was lost** meets its own object on AD-20's retry and now fails the job as
+    ours (`upsert: false`); `deploy-io.ts`' ponytail names the upgrade (read the key back on a 409).
 
 ## Design Notes
 
@@ -411,6 +449,30 @@ original-theme row. The clock's tooltip says "History" until 7.23's Roll back ma
 **DW-372's other half.** An upload that lost the binding race is marked `failed`, so its number can recur. It recurs under
 another theme name, though (the binding refused this upload's name), and Story 7.25's per-site lock removes the race.
 
+## Questions for the owner
+
+Question 1 was raised at Dev (2026-11-25) and ruled in the same session: option 1, recorded as **R-289**.
+
+### Question 1 — Where does the History clock show on a laptop-sized window?
+
+**In plain English.** The plan put a small clock icon, which opens History, just left of **Ship it** on every window that is
+not "compact" (1280 pixels wide and up). On 2026-10-19 you ruled (R-266) that the group in the middle of the editor's top bar
+— Template, View as, the device buttons — stays centred to within 6 pixels at 1280. With the clock added, that group is pushed
+42 pixels off centre at 1280; it is centred again from about 1366 up. **History is always reachable from Ship it's little ▾
+menu**, at every width.
+
+**An example.** On a 13-inch laptop (a 1280-wide window) you open the editor. With option 1 there is no clock in the bar; you
+open History from **Ship it ▾ → History**. On a 1440-wide screen the clock is there. With option 2 the clock is there at 1280
+too, and the middle group sits visibly left of centre.
+
+1. **(RECOMMENDED) Show the clock from 1366 up; below that, History is in the ▾ menu.** Your R-266 centring holds as ruled, and
+   the frame's own width (1440) shows the clock exactly as drawn. This is what is built now.
+2. **Show the clock from 1280 up, as planned, and relax R-266 there** — the middle group may sit up to about 42 pixels off
+   centre between 1280 and 1366.
+3. **Never show the clock; History only in the ▾ menu.** The bar stays as it is today at every width; S8e's clock is not drawn.
+
+**Ruled: option 1 (owner, 2026-11-25).** *"1. Clock from 1366 up (RECOMMENDED)"* — R-289.
+
 ## Owner's manual test
 
 **Before you start:** on your go, Deploy plants two test accounts and fills in their addresses and links below:
@@ -418,7 +480,8 @@ another theme name, though (the binding refused this upload's name), and Story 7
   (v1–v3);
 - a **Pro** account whose project "Pro history test" holds ten stored versions (v1–v10), eight of them pinned.
 
-Use a desktop browser at full width unless a step says otherwise.
+Use a desktop browser at full width — at least **1366 px** wide, where the bar shows the clock (R-289) — unless a step says
+otherwise.
 
 1. **URL:** `https://app.inflozo.com/projects/<History test — Deploy fills>`, signed in as the Free account. **Screen:** the
    editor. **Do:** press the **clock icon** just left of **Ship it**. **Type:** nothing. **See:** a panel from the right titled
@@ -479,3 +542,81 @@ Casper on your go.
   - Afterwards T1 is back on Casper, and the accounts and objects are gone.
 - **Vercel:** the deployment is READY with `prune-artifacts` in its crons, and the first scheduled run has a log line.
 - **The owner's test above (R-80).**
+
+**Executed — Dev (2026-11-25, Node 24; the real services by their variable names, no value printed):**
+- **Supabase production database** (`SUPABASE_DB_POOLER_URL`, read inside each scratch script, never on argv; the owner's
+  in-session go, "1. Go — all four"):
+  - **Before:** `pin_version` absent, and no `deploys_pin_leaves_a_slot` trigger. A catalogue read (`information_schema.columns`,
+    `pg_proc`, `pg_trigger`, `pg_policies`, `pg_indexes`, `pg_enum`, `pg_constraint` over `public` and `private`) diffed against a
+    PostgreSQL 17 container built from every migration found exactly three objects missing on production: `deploys.pinned`,
+    `guard_pin_leaves_a_slot()` and its trigger. Nothing else differed.
+  - **First apply — rolled back whole:** 42703 at `comment on column public.deploys.pinned`. The migration gained `add column if
+    not exists pinned …` (Spec Change Log), proven first on a container shaped like production (applies, re-applies, and ends
+    equal to a fresh build), and pushed as a second `Schema` commit (c48e4416).
+  - **Second apply — held, then read back:**
+    - `pin_version(p_deploy uuid, p_user uuid, p_cap integer)` exists, its `prosrc` equals the file's body;
+    - the trigger and the floor function are gone;
+    - EXECUTE: `anon` false, `authenticated` false, `service_role` true;
+    - `deploys.pinned` is `boolean not null default false`, with 0 of 8 rows pinned, `authenticated` unable to write it, and
+      the column's comment naming FR-J7 and `pin_version`;
+    - production's catalogue now equals the fresh build line for line.
+  - **The proof, in one rolled-back transaction:** a throwaway user, site, project and one stored version. As `service_role`
+    the lone version under cap 3 answered `pinned` (the retired floor's refusal) and under cap 1 `cap`; as `authenticated`,
+    **42501**. Afterwards 0 proof rows were left behind.
+- **Supabase production Storage** (`SUPABASE_SECRET_KEY` and `SUPABASE_URL` through `@supabase/supabase-js`;
+  `SUPABASE_ACCESS_TOKEN` on `GET api.supabase.com/v1/projects/{ref}/config/storage`; same go):
+  - all four buckets' `file_size_limit` is null, so the project's `fileSizeLimit` governs: **52428800** (200). That is
+    `LIVE_COPY_MAX_BYTES`.
+  - On `deploy-artifacts`, under a scratch prefix `_probe-7-22/<uuid>/`:
+    - a new key with `upsert: false` was accepted;
+    - the same key again was refused with **409 "The resource already exists"**, and the object still held its first bytes;
+    - the control, a second new key, was accepted;
+    - both objects were removed, and 0 were left under the prefix.
+- **Two tabs at once** (the matrix row the RLS gate's single session cannot reach): a PostgreSQL 17 container built from every
+  migration, three stored versions with one pinned and cap 3. Tab A pinned the last slot and held its transaction open for
+  3 s; tab B's pin waited 2 s for A's lock. **A `pinned`, B `cap`, 2 pinned in all.** The control, `pin_version` without its
+  advisory lock: A `pinned`, B `pinned`, 3 pinned — every version.
+- **The RLS gate** (`bash supabase/tests/run-rls-gate.sh`): exit 0, every FR-J7 PASS line (the lone version, unpin, under the cap
+  up to N−1, `cap` changing nothing, cap 10 pinning what cap 3 refused, re-pin, `gone` for pruned, failed, another user's and
+  unknown rows with the owner's own pin as control, unpin at the cap, the prune's clear sparing a pin and a later pin `gone`,
+  42501, EXECUTE the service role's alone and the floor gone). The control, with the 7.22 migration withheld (and the
+  architecture's SCHEMA.sql at HEAD): exit 3, aborting at the block's first call, `function public.pin_version(…) does not exist`.
+- **Not hit in Dev:** T1, Vercel, Resend and Dodo. Walk step 120 (production + T1 writes, and one call of `prune-artifacts` on
+  production) is written and has never run; it is the Review's, from a clean worktree at the deployed sha, on the owner's
+  in-session go. The Vercel cron reading needs the Dev push's deployment. Deploy's plants are Deploy's.
+- **`pnpm check`:** green after the last edit. Lint, typecheck and every package pass with 0 failing, each printing its own
+  count; the web package's run includes the retention, sweep, deploy-run, deploy, drift, busy, server-wiring, editor and purge
+  tests.
+- **`pnpm keyboard`** (the full gate, on the working tree): every journey passed but one, including 7.22 (a)–(f) and (b2), the
+  floor at 1440, 1280 and 820, R-266's centring stop, and 7.18a's ▾-menu journey with History as its last row.
+  - The failure was Story 7.19's `(e) back to Destination from the Safety net`: after Cancel at `check` the wizard stayed on
+    `check` for 15 s. This story changes neither that Cancel nor its route; `deploy-wizard.tsx` gained only Ship it ▾'s
+    History row and D3a's conditional Download.
+  - Re-run: `pnpm keyboard -g "7.19 · \(e\) back to Destination" --repeat-each=5` passed 5 of 5. The failure is intermittent.
+    CI's own full run on the Dev push is the next reading.
+  - The implementation pass saw all nine 7.22 tests red with `editor.tsx` and `deploy-wizard.tsx` put back to HEAD.
+- **The matrix audit** (every row mapped to a check that ran in that state):
+  - the rule's rows (first version, under/over the cap, pinned survive, pinned ≥ cap, two sites, number after pruning) →
+    `retention.test.ts`;
+  - "over the cap"'s failed prune → `deploy-run.test.ts`, with the job still `done`;
+  - the pin rows → the RLS gate's FR-J7 block, the route's 409/404 → `deploy-run.test.ts`' history-route test, and D2b,
+    `gone`, a failed pin, the empty state and a failed read → journeys 7.22 (b), (b2), (c) and (e);
+  - two tabs → the executed race above;
+  - the sweep's four rows → `artifact-sweep.test.ts` (and `deploy-run.test.ts` for `abandon`);
+  - DW-396 → `deploy-run.test.ts`, `drift.test.ts` and journey (f);
+  - immutable → `deploy-run.test.ts`, `deploy.test.ts` and production's 409 above.
+  - **The audit found one row with no test: "Baseline after prune".** Two tests were added, each seen red under a planted
+    reversion:
+    - `deploy-run.test.ts`' "the baseline survives its prune" — v1's pointer cleared, then the next Pre-flight on an untouched
+      site is D3c "since v1". The control: with the manifest nulled there is no baseline.
+    - `drift.test.ts`' static read — the prune's one write is the pointer and its bytes, the sweep never names
+      `content_manifest`, and the baseline query has no `artifact_path` filter. A planted `.not('artifact_path', 'is', null)`
+      in `deploy-io.ts`' baseline turned it red.
+- **One deleter** (the grep above): the removals of `deploy-artifacts` objects are `retention-io.ts` (`pruneProject`'s), the sweep
+  route's (pass 2's `drop`, and pass 1 through `abandon` = `clear()`), and `run.ts`' `clear()`. There is one more, which the
+  spec's Code Map did not name: 7.18a's stale re-make in `compileAndCheck` (`run.ts:388`) removes the row's OWN superseded zip
+  before re-making it on the same row, and that row is never a version. Kept as built; it is a routine call. No quota reads
+  `artifact_bytes`.
+- **Propagation grep** (`guard_pin_leaves_a_slot`, `uploads.length + 1`): only the frozen applied migration, the new migration's
+  and the architecture files' dated comments, MEASUREMENTS §26's history, the epic context's Create notes and this spec.
+- **`python3 tools/doc-audit.py --check`**, twice: PASS.

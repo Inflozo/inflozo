@@ -38,8 +38,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     console.error('deploy/live: the job could not be read', { code: error.code })
     return no(502, 'Could not prepare that download')
   }
-  const drift = (job?.stage_timings as { drift?: { kind?: unknown; theme?: unknown } } | null | undefined)?.drift
-  if (!job || job.project_id !== projectId || drift?.kind !== 'found' || typeof job.site_id !== 'string') return no(404, 'Not found')
+  const drift = (job?.stage_timings as { drift?: { kind?: unknown; theme?: unknown; kept?: unknown } } | null | undefined)?.drift
+  // Story 7.22 (DW-396): a found drift whose live zip was too large to keep has no copy of its own — the key may still hold an
+  // EARLIER check's copy, which is not the theme this check read, so it is never served for this job
+  if (!job || job.project_id !== projectId || drift?.kind !== 'found' || drift.kept === false || typeof job.site_id !== 'string') return no(404, 'Not found')
 
   const theme = typeof drift.theme === 'string' && drift.theme.trim() !== '' ? drift.theme : 'theme'
   const { data: signed, error: signError } = await supabaseAdmin()

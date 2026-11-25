@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, captionOf,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, siteSlot,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, emptiesCustomTemplate, EMPTY_TEMPLATE_ASK, fileOf, fileOfKey, isCards, isEditorPath, isMembership, isPaywall, isRouteCanvas, isRouteKey, isSiteFooter, isSurface, isUuid, labelOf, landWithin, LOCK, HISTORY, siteSlot,
   lockPath, NEW_TEMPLATE_QUERY, newTemplatePath, PAGE_TWO, pageTwoOfCanvas,
   pageTwoKeyOf, routeCanvasOf, ROUTED_EMPTY_ASK, ROUTES, ROUTES_GROUP, routesPath, SETTINGS, settingsPath, SITE, SYNC, syncPath, TEMPLATE_GONE, templateKeyOf, type Canvas, type CanvasKey,
 } from './lib/editor.ts'
@@ -33,7 +33,7 @@ test('every canvas key round-trips through its address', () => {
 test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
   // Story 7.13 opened `cards` (Editor cards, the second template surface) — it is a canvas now, held below. Story 7.16b
   // opened `custom-x` — a Routes Manager segment, held in the next test
-  for (const s of ['index', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK, ROUTES]) {
+  for (const s of ['index', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK, ROUTES, HISTORY]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)

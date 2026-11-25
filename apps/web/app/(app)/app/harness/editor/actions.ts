@@ -8,6 +8,7 @@ import { storedSurfaces } from '@/lib/probe-rule'
 import { confirmedFrom, SWITCH_WORDS, type SwitchAnswer } from '@/lib/site-switch'
 import { tokenRefusal } from '@/lib/connect-rule'
 import { addStaffToken, type StaffTokenIo } from '@/server/staff-token'
+import type { HistoryAnswer, PinOutcome } from '@/lib/retention'
 import { HARNESS_PROJECT, HARNESS_SITES, SURFACES } from './sites'
 
 /**
@@ -116,4 +117,53 @@ export async function harnessRoutes(projectId: string, siteId: string): Promise<
   if (!HARNESS || projectId !== HARNESS_PROJECT.id) return { said: DEPLOY_WORDS.infrastructure }
   if ((await headers()).get('x-inflozo-harness-snapshot') === 'failed') return { said: BACKUP_WORDS.downloadFailed(502) }
   return { ok: true, file: HARNESS_LIVE_ROUTES }
+}
+
+/** STORY 7.22 — the linked site's id in every Ship it shape (`layout.tsx`' `shipOf`), and the second site `two-sites` adds */
+const HISTORY_SITE = '00000000-0000-4000-8000-000000000718'
+const OTHER_SITE = HARNESS_SITES.german
+/** one stored version of the harness project: v{n} on day n of November 2026, at nine in the morning, gscan clean */
+const stored = (n: number, over: Partial<HistoryAnswer['rows'][number]> = {}): HistoryAnswer['rows'][number] => ({
+  id: `00000000-0000-4000-8000-0000000722${String(n).padStart(2, '0')}`,
+  version: `${n}.0.0`, status: 'uploaded', pinned: false, createdAt: `2026-11-${String(n).padStart(2, '0')}T09:00:00.000Z`,
+  errors: 0, warnings: 0, siteId: HISTORY_SITE, host: 'harness.example', ...over,
+})
+
+/**
+ * STORY 7.22 — THE HARNESS'S HISTORY READ, the editor's `historyRead` seam (the route's GET everywhere else): no database, so the
+ * drawer is answered by `x-inflozo-harness-history`:
+ *   - `free`: three stored versions on Free's cap, v3 live, none pinned;
+ *   - `free-full`: the same with v1 and v2 pinned — N−1, so pinning v3 is refused (`harnessPin`);
+ *   - `pro-full`: Pro's ten, v10 live, nine pinned — the tenth's pin is refused;
+ *   - `two-sites`: the linked site's v3 (live) and v1, and v2 on another site ("on de.harness.example");
+ *   - `fail`: the read that failed (null);
+ *   - `gone`: `free` with v1 pruned since it was listed — a journey switches to it after the drawer has read `free`, so a pin of
+ *     v1 is `gone` and the re-read drops the row; `pin-fails`: `free`, every pin answering as a request that failed;
+ *   - `empty`, or no header: nothing shipped yet.
+ * Only the harness project, and only where the harness exists at all.
+ */
+export async function harnessHistory(projectId: string): Promise<HistoryAnswer | null> {
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id) return null
+  const asked = (await headers()).get('x-inflozo-harness-history')
+  const answer = (rows: HistoryAnswer['rows']): HistoryAnswer => ({ linkedSiteId: HISTORY_SITE, rows: [...rows].reverse() })
+  if (asked === 'fail') return null
+  if (asked === 'free' || asked === 'pin-fails') return answer([stored(1), stored(2, { warnings: 2 }), stored(3, { status: 'live' })])
+  if (asked === 'gone') return answer([stored(2, { warnings: 2 }), stored(3, { status: 'live' })])
+  if (asked === 'free-full') return answer([stored(1, { pinned: true }), stored(2, { pinned: true }), stored(3, { status: 'live' })])
+  if (asked === 'pro-full') return answer(Array.from({ length: 10 }, (_, i) => stored(i + 1, { pinned: i < 9, ...(i === 9 ? { status: 'live' } : {}) })))
+  if (asked === 'two-sites') return answer([stored(1), stored(2, { siteId: OTHER_SITE, host: 'de.harness.example', status: 'live' }), stored(3, { status: 'live' })])
+  return answer([])
+}
+
+/** STORY 7.22 — THE HARNESS'S PIN, the editor's `historyPin` seam: a pin under `free-full` or `pro-full` is the database's `cap`
+ *  (the drawer's D2b), any press under `gone` is `gone` and under `pin-fails` a failed request; every other pin and every unpin
+ *  lands. ponytail: stateless — a pin after an unpin in a full history is still
+ *  refused, which no journey asks; `pin_version`'s own count is the RLS gate's and walk step 120's. Only the harness project. */
+export async function harnessPin(projectId: string, deploy: string, pinned: boolean): Promise<PinOutcome> {
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof deploy !== 'string') return 'failed'
+  const asked = (await headers()).get('x-inflozo-harness-history')
+  if (asked === 'gone') return 'gone'
+  if (asked === 'pin-fails') return 'failed'
+  if (pinned && (asked === 'free-full' || asked === 'pro-full')) return 'cap'
+  return pinned ? 'pinned' : 'unpinned'
 }

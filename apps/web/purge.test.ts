@@ -18,6 +18,7 @@ import {
 import { authorized } from './lib/cron-auth.ts'
 import { CRON_PATH as HEALTH_CRON_PATH } from './lib/health-rule.ts'
 import { CRON_PATH as ORPHAN_CRON_PATH } from './lib/orphan-rule.ts'
+import { CRON_PATH as SWEEP_CRON_PATH } from './lib/artifact-sweep.ts'
 import { MAX_ROUNDS, drainPrefix, type DrainBucket } from './lib/storage-drain.ts'
 
 /* Story 2.6 — FR-A5's purge, every part of it a test can reach. The ROUTE cannot be one of them:
@@ -342,6 +343,7 @@ const CRON_CONSTANTS = {
   'purge-accounts (Epic 2, Story 2.6)': CRON_PATH,
   'site-health (Epic 3, Story 3.7)': HEALTH_CRON_PATH,
   'purge-snapshots (Epic 7, Story 7.20b)': ORPHAN_CRON_PATH,
+  'prune-artifacts (Epic 7, Story 7.22)': SWEEP_CRON_PATH,
 }
 
 test('every scheduled job names a route that exists, and each runs once a day', () => {
@@ -375,10 +377,24 @@ test('every scheduled job names a route that exists, and each runs once a day', 
     assert.match(hour, /^\d+$/, 'a daily job pins its hour')
     assert.deepEqual(rest, ['*', '*', '*'], `'${job.schedule}' does not run once a day`)
   }
-  // THE TWO JOBS MUST NOT SHARE AN HOUR (the spec's own line): two cold starts in the same minute
-  // is one function competing with itself for the pooler and for somebody else's Ghost.
-  const hours = jobs.map((job) => job.schedule.trim().split(/\s+/)[1])
-  assert.equal(new Set(hours).size, hours.length, `two scheduled jobs share an hour: ${hours.join(', ')}`)
+  // NO TWO JOBS EVER RUN AT ONCE (Story 3.7's line: "never share a cold start"): two runs side by side are one function
+  // competing with itself for the pooler and for somebody else's Ghost. Story 3.7 kept them an hour apart; Story 7.22's spec
+  // schedules artifact retention at 4:50, twenty minutes after the orphan purge's 4:30, so the property is held as it was meant —
+  // each job starts only after the one before it can have ended, its route's own `maxDuration` (300 s where a route states none,
+  // AD-11's ceiling) — rather than as a whole hour. A gap shorter than that is red.
+  const starts = jobs
+    .map((job) => {
+      const [minute, hour] = job.schedule.trim().split(/\s+/).map(Number)
+      const route = readFileSync(join('app', job.path, 'route.ts'), 'utf8')
+      const ceiling = Number(/export const maxDuration = (\d+)/.exec(route)?.[1] ?? 300)
+      return { path: job.path, at: hour * 60 + minute, runs: Math.ceil(ceiling / 60) }
+    })
+    .sort((a, b) => a.at - b.at)
+  starts.forEach((job, i) => {
+    const next = starts[(i + 1) % starts.length]
+    const gap = (next.at - job.at + 24 * 60) % (24 * 60) || 24 * 60
+    assert.ok(starts.length === 1 || gap >= job.runs, `${next.path} starts ${gap} min after ${job.path}, which may still be running for ${job.runs}`)
+  })
 })
 
 test('nothing in the purge sends mail — FR-A5 says so in its last sentence', () => {

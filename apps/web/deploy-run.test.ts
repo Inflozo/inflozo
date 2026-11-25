@@ -3,15 +3,16 @@
 // rule (Ghost's answers, the sentences, the step) is `lib/deploy.ts`'s and has its own test (`deploy.test.ts`).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { randomBytes } from 'node:crypto'
 import { CompileRefusal } from '@inflozo/theme-compiler/refusal'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import { DEPLOY_WORDS, endingOf, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
 import type { RoutesOutcome } from './lib/routes-upload.ts'
-import { activate, cancel, preflight, preflightFacts, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
+import { abandon, activate, cancel, preflight, preflightFacts, ship, start, uploadOnlyRefused, view, type DeployIo, type DeployRow, type JobRow } from './server/deploy/run.ts'
 import type { ProjectRead } from './server/deploy/project-input.ts'
 import type { Snapshot, SnapshotAnswer } from './server/snapshot.ts'
 import { zipTheme } from './server/deploy/zip.ts'
-import { liveCopyPath, type DriftRecord } from './lib/drift.ts'
+import { LIVE_COPY_MAX_BYTES, liveCopyPath, type DriftRecord } from './lib/drift.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
 const S = '00000000-0000-4000-8000-0000000000bb'
@@ -55,6 +56,8 @@ function world(over: {
   sections?: Record<string, { id: string; layer: string; category: string }>
   live?: Array<SnapshotAnswer | Error>
   duringLive?: (jobs: Map<string, JobRow>) => void
+  /** Story 7.22 — the prune's answers in turn (by default it prunes nothing and answers) */
+  prune?: Array<Error | null>
 } = {}) {
   let tick = Date.parse('2026-10-18T10:00:00Z')
   const jobs = new Map<string, JobRow>()
@@ -75,6 +78,9 @@ function world(over: {
   const captured: string[] = []
   const lives = [...(over.live ?? [])]
   const liveReads: string[] = []
+  const prunes = [...(over.prune ?? [])]
+  /** Story 7.22 — each put's options by its path (`replace` is the live copy's alone) */
+  const putOpts = new Map<string, { replace?: true } | undefined>()
   const baseRead = (): ProjectRead => ({
     input: { theme: { name: 'inflozo-notes', version: '1.0.0', description: 'Notes' }, language: 'en' } as ProjectRead['input'],
     reads: { project: 'p' },
@@ -153,10 +159,11 @@ function world(over: {
       },
     },
     artifacts: {
-      put: async (path, bytes) => {
+      put: async (path, bytes, opts) => {
         const e = puts.shift()
         if (e) throw e
         events.push(`put:${path}`)
+        putOpts.set(path, opts)
         bucket.set(path, bytes)
       },
       get: async (path) => bucket.get(path) as Uint8Array,
@@ -173,6 +180,13 @@ function world(over: {
       capability.push(refused)
     },
     siteBound: async () => over.siteBound ?? true,
+    prune: async ({ projectId, userId }) => {
+      // the row's status as the prune would read it, at the moment it runs
+      events.push(`prune:${projectId === P && userId === U ? 'ok' : 'wrong'}:${[...deploys.values()].map((d) => d.status).join(',')}`)
+      const e = prunes.shift()
+      if (e) throw e
+      return { cap: 3, pruned: [], failed: 0 }
+    },
     snapshot: async ({ progress }) => {
       events.push('snapshot')
       over.duringSnapshot?.(jobs)
@@ -211,7 +225,7 @@ function world(over: {
     now: () => new Date((tick += 1000)),
     log: () => {},
   }
-  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, liveReads, baseRead, advance: (ms: number) => (tick += ms) }
+  return { io, jobs, deploys, bucket, events, calls, capability, bound, captured, liveReads, putOpts, baseRead, advance: (ms: number) => (tick += ms) }
 }
 
 const begin = async (w: ReturnType<typeof world>) => {
@@ -1211,4 +1225,116 @@ test('7.21: a stale re-make nulls the old manifest with the old artefact — a r
   await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
   assert.equal(w.deploys.get(id)?.content_manifest, null, 'nulled with the artefact on the reset')
   void state
+})
+
+// ── Story 7.22 — artifacts, retention and pinning (FR-J7, AD-29; DW-380, DW-396) ──────────────────────────────────────────
+
+test('7.22: the prune follows Ghost\'s acceptance — right after the row is written `uploaded` (Deploy only) or `live` (the upload\'s own answer), for this project and user; never at Pre-flight, never on a refused upload, never at a Re-activate', async () => {
+  const prunes = (w: ReturnType<typeof world>) => w.events.filter((e) => e.startsWith('prune:'))
+  const up = world({})
+  const job = await begin(up)
+  assert.deepEqual(prunes(up), [], 'a Pre-flight that never ships evicts nothing')
+  await ship({ jobId: job.id, userId: U, mode: 'upload' }, up.io)
+  assert.deepEqual(prunes(up), ['prune:ok:uploaded'], 'once, after the row is uploaded — so the new version is counted')
+  await activate({ jobId: job.id, userId: U }, up.io)
+  assert.deepEqual(prunes(up), ['prune:ok:uploaded'], 'an activation adds no version')
+  // R-264 (b): the upload's own answer makes it live — the prune follows the `live` write
+  const active = world({ upload: [okAnswer({ themes: [{ name: 'inflozo-notes', active: true }] })] })
+  const live = await begin(active)
+  await ship({ jobId: live.id, userId: U, mode: 'activate' }, active.io)
+  assert.deepEqual(prunes(active), ['prune:ok:live'])
+  // Deploy & activate: the upload is written `uploaded` first, and the prune follows that write
+  const both = world({})
+  await ship({ jobId: (await begin(both)).id, userId: U, mode: 'activate' }, both.io)
+  assert.deepEqual(prunes(both), ['prune:ok:uploaded'])
+  // the control: Ghost refused the upload — no version arrived, nothing is pruned
+  const refused = world({ upload: [bad(422, { errors: [{ type: 'ValidationError', message: 'nope' }] })] })
+  await ship({ jobId: (await begin(refused)).id, userId: U, mode: 'activate' }, refused.io)
+  assert.equal((refused.jobs.values().next().value as JobRow).stage, 'failed')
+  assert.deepEqual(prunes(refused), [])
+})
+
+test('7.22: a prune that fails is logged and never the job\'s — the ship still ends `done` and Live; the sweep retries it', async () => {
+  const logged: string[] = []
+  const w = world({ prune: [new Error('storage 503')] })
+  w.io.log = (message) => void logged.push(message)
+  const job = await begin(w)
+  await ship({ jobId: job.id, userId: U, mode: 'activate' }, w.io)
+  const done = w.jobs.get(job.id) as JobRow
+  assert.equal(done.stage, 'done')
+  assert.equal(w.deploys.get(job.deploy_id as string)?.status, 'live')
+  assert.equal(done.error, null)
+  assert.ok(logged.includes('deploy: the prune failed'))
+})
+
+test('7.22: artefacts are immutable (NFR-4) — the stored zip is put WITHOUT `replace`; the drift check\'s live copy is the one put that overwrites', async () => {
+  const edited = { ...SHIPPED, 'README.md': '# Hand edited\n' }
+  const { w, state } = project({ live: [liveOf(edited)] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  state.n = 2
+  const job = await begin(w)
+  const d = w.deploys.get(job.deploy_id as string) as DeployRow
+  assert.equal(w.putOpts.get(d.artifact_path as string), undefined, 'the artefact\'s put asks no overwrite')
+  assert.deepEqual(w.putOpts.get(liveCopyPath(P, S)), { replace: true }, 'the live copy, one fixed key, overwrites')
+})
+
+test('7.22 (DW-396): a found drift whose live zip is past LIVE_COPY_MAX_BYTES is not kept — no live copy put, the record `kept: false`, the Pre-flight resting on D3a, never failed; the control: a live zip within it is kept, with no `kept` field', async () => {
+  // a hand-added file of random bytes, which no deflate shrinks, takes the zip past the store's limit
+  const huge = liveOf({ ...SHIPPED, 'README.md': '# Hand edited\n', 'assets/huge.bin': '' })
+  const bytes = zipTheme({ ...SHIPPED, 'README.md': '# Hand edited\n', 'assets/huge.bin': randomBytes(LIVE_COPY_MAX_BYTES) })
+  assert.ok(bytes.length > LIVE_COPY_MAX_BYTES, 'the planted zip is past the limit')
+  const { w, state } = project({ live: [{ ...huge, bytes }, liveOf({ ...SHIPPED, 'README.md': '# Hand edited\n' })] })
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  state.n = 2
+  const job = await begin(w)
+  const record = driftOf(job)
+  assert.equal(record?.kind, 'found')
+  assert.equal(record?.kind === 'found' ? record.kept : undefined, false, 'the record says the copy was not kept')
+  assert.equal(job.stage, 'awaiting_ship', 'the Pre-flight goes on, resting on D3a')
+  assert.equal(job.error, null, 'never failed as ours')
+  assert.equal(w.bucket.has(liveCopyPath(P, S)), false, 'no live copy put')
+  const control = await begin(w)
+  const kept = driftOf(control)
+  assert.equal(kept?.kind, 'found')
+  assert.equal(kept !== undefined && 'kept' in kept, false, 'a live zip within the limit is kept, and its record carries no `kept`')
+  assert.equal(w.bucket.has(liveCopyPath(P, S)), true)
+})
+
+test('7.22 (DW-380): `abandon` is start()\'s — a resting check\'s object goes, then its deploy row, then the job is cancelled; the other resting check is untouched (the control)', async () => {
+  const w = world({})
+  const stranded = await begin(w)
+  const d = w.deploys.get(stranded.deploy_id as string) as DeployRow
+  // a second check resting beside it, the sweep's control — inserted, not `start`ed, which would abandon the first itself
+  const other = await w.io.jobs.insert({ project_id: P, user_id: U, site_id: S })
+  await preflight({ jobId: other.id, userId: U }, w.io)
+  assert.equal(w.jobs.get(stranded.id)?.stage, 'awaiting_ship')
+  w.events.length = 0
+  await abandon(w.io, w.jobs.get(stranded.id) as JobRow)
+  assert.deepEqual(w.events.filter((e) => e === 'object:remove' || e === 'deploy:remove' || e.startsWith('stage:')), ['object:remove', 'deploy:remove', 'stage:cancelled'], 'the object first, then the row (AD-29), then the job')
+  assert.equal(w.bucket.has(d.artifact_path as string), false)
+  assert.equal(w.deploys.has(d.id), false)
+  assert.equal(w.jobs.get(stranded.id)?.stage, 'cancelled')
+  assert.equal(w.jobs.get(other.id)?.stage, 'awaiting_ship', 'the control: the other check rests as it was')
+})
+
+test('7.22: the baseline survives its prune — the newest accepted upload\'s zip pruned (pointer null, row and manifest kept), the next Pre-flight on an untouched site is D3c "since v1"; the control: a prune that took the manifest too leaves no baseline at all', async () => {
+  const { w, state } = project({ live: [liveOf(SHIPPED)] })
+  const v1 = await shipOnce(w)
+  const id = v1.deploy_id as string
+  // what `pruneProject`'s conditional clear writes (`retention-io.ts`): the pointer and its bytes, nothing else
+  const row = w.deploys.get(id) as DeployRow
+  w.bucket.delete(row.artifact_path as string)
+  w.deploys.set(id, { ...row, artifact_path: null, artifact_bytes: null })
+  state.bound = 'inflozo-notes'
+  state.n = 2
+  const job = await begin(w)
+  assert.deepEqual(driftOf(job), { kind: 'clean', since: 1 }, 'compared with the pruned v1\'s manifest')
+  assert.equal(w.liveReads.length, 1)
+  // the control: had the prune nulled the manifest, the check would have nothing to compare with (no read, no row)
+  w.deploys.set(id, { ...(w.deploys.get(id) as DeployRow), content_manifest: null })
+  const control = await begin(w)
+  assert.equal(driftOf(control), undefined, 'the control: no manifest, no baseline')
+  assert.equal(w.liveReads.length, 1, 'and no second read')
 })

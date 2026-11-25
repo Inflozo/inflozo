@@ -20,7 +20,7 @@ import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCan
 import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
-import { harnessAddToken, harnessConfirm, harnessDecline, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
+import { harnessAddToken, harnessConfirm, harnessDecline, harnessHistory, harnessPin, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
 import { standIns } from '../stand-ins'
 import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
@@ -163,6 +163,12 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * URL's own answer, a tiny zip as an attachment (a 303 `route.fulfill` answers is followed past `page.route`). Here, `declined` alone changes the page: the site's Not now is recorded (`withDrift`), so a missing token reads as the
  * decline's words, with no Add token. Use it on a `shipped` site (a deploy after the first); the real Ghost, the real bucket and the
  * real column are walk step 119's and §90's.
+ *
+ * STORY 7.22 — `x-inflozo-harness-history: empty | free | free-full | pro-full | two-sites | fail | gone | pin-fails` names the History drawer's canned
+ * read, answered by `actions.ts`' `harnessHistory` and `harnessPin` through the editor's two seams (the route is never reached here):
+ * `free-full` and `pro-full` refuse a pin at N−1 as `pin_version` does. And `x-inflozo-harness-drift: found-unkept` is one more of
+ * 7.21's journey-side values: the fake deploy route answers D3a's record with `kept: false` (DW-396), so D3a draws no Download. The
+ * real list, the real cap and the real prune are walk step 120's and the RLS gate's.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -352,7 +358,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
       <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
-        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} {...data} />
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} historyRead={harnessHistory} historyPin={harnessPin} {...data} />
       </ShellUserContext>
       {children}
     </>

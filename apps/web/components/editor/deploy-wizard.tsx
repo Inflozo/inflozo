@@ -10,7 +10,7 @@ import { ResultChip, VersionChip } from '@/components/kit/badge'
 import { Button, buttonClasses, SplitButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, wideTitle } from '@/components/kit/dialog'
 import { greyedProps, ring } from '@/components/kit/greyed'
-import { AlertCircle, AlertTriangle, Bolt, Check, ChevronDown, ChevronRight, ChevronUp, Copy, Download, ExternalLink, Eye, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
+import { AlertCircle, AlertTriangle, Bolt, Check, ChevronDown, ChevronRight, ChevronUp, Copy, Download, ExternalLink, Eye, HistoryClock, InfoCircle, Refresh, Upload, X } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { RadioCard } from '@/components/kit/radio-card'
 import { Menu, type MenuItem } from '@/components/kit/select'
@@ -39,6 +39,7 @@ import { PREVIEW_COPY } from '@/lib/probe-rule'
 import { useSaid } from '@/lib/renders'
 import { resetRoutingPath } from '@/lib/routes'
 import { downloadHref, ROUTES_FALLBACK_WORDS as RW } from '@/lib/routes-upload'
+import { HISTORY_WORDS as HW } from '@/lib/retention'
 
 /* ───────── STORY 7.18a — SHIP IT AND THE DEPLOY WIZARD (FR-J8, AD-20's F-075), from the export (R-74):
  *
@@ -135,11 +136,12 @@ function saveRoutes(file: string) {
 
 /* ─────────────────────────────────────────────── the bar's control ─────────────────────────────────────────────── */
 
-/** S4's Ship it with S4d's ▾ menu: Deploy & activate (⌘⏎), Deploy only, and Download routes.yaml while the project has
- *  routing. Download theme and History are ABSENT until their stories (7.26, 7.23 — UX-DR3). R-264 (a): Deploy only is
- *  GREYED while this project's theme is the one live on the site (`uploadOnlyBlock`), its reason in the row's caption slot,
- *  and a press on it opens nothing. */
-export function ShipButton({ ship, routes, busy, onShip }: { ship: ShipState | undefined; routes: string | null; busy: boolean; onShip: (mode: Mode) => void }) {
+/** S4's Ship it with S4d's ▾ menu: Deploy & activate (⌘⏎), Deploy only, Download routes.yaml while the project has routing, and
+ *  — since Story 7.22 — History (S4d `:387`'s clock row, last, at every width: the bar's clock hides where the bar is compact, so
+ *  this row is the drawer's way in there; its caption says no "rollback" until Story 7.23 builds Roll back). Download theme is
+ *  ABSENT until Story 7.26 (UX-DR3). R-264 (a): Deploy only is GREYED while this project's theme is the one live on the site
+ *  (`uploadOnlyBlock`), its reason in the row's caption slot, and a press on it opens nothing. */
+export function ShipButton({ ship, routes, busy, onShip, onHistory }: { ship: ShipState | undefined; routes: string | null; busy: boolean; onShip: (mode: Mode) => void; onHistory: () => void }) {
   const n = ship?.n ?? 1
   const prev = ship?.prev ?? null
   const blocked = uploadOnlyBlock(ship)
@@ -155,6 +157,7 @@ export function ShipButton({ ship, routes, busy, onShip }: { ship: ShipState | u
       ? { label: W.uploadOnly, icon: <ArrowUpGlyph />, contents: twoLines(W.uploadOnly, W.uploadOnlyCaption(n, prev)), onSelect: () => onShip('upload') }
       : { label: W.uploadOnly, icon: <ArrowUpGlyph />, greyed: blocked },
     ...(routes === null ? [] : [{ label: W.downloadRoutes, icon: <FileGlyph />, contents: twoLines(W.downloadRoutes), onSelect: () => saveRoutes(routes) }]),
+    { label: HW.open, icon: <HistoryClock size={15} className="shrink-0 text-ink-soft" />, contents: twoLines(HW.open, HW.menuCaption), onSelect: onHistory },
   ]
   return (
     <SplitButton id="editor-ship" menuLabel={W.options} busy={busy} onPress={() => onShip('activate')} menu={<Menu label={W.options} items={items} width="w-[270px]" />}>
@@ -1412,10 +1415,13 @@ export function DeployWizard({
             {DW.cancel}
           </Button>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-[10px]">
-            <a id="deploy-drift-download" href={hrefOn(prefix, liveDownloadPath(projectId, job))} className={buttonClasses('secondary', 40)}>
-              <Download size={13} />
-              {DW.download}
-            </a>
+            {/* Story 7.22 (DW-396): a live zip past the store's size was not kept — no copy, so no Download; Overwrite stays */}
+            {driftFound.kept === false ? null : (
+              <a id="deploy-drift-download" href={hrefOn(prefix, liveDownloadPath(projectId, job))} className={buttonClasses('secondary', 40)}>
+                <Download size={13} />
+                {DW.download}
+              </a>
+            )}
             <Button
               id="deploy-overwrite"
               variant="primary"
