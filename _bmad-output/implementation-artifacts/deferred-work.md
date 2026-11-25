@@ -10810,7 +10810,16 @@ plain: Inflozo decides which old versions to remove by when each was BUILT (its 
   project moves to another site, ships there, and later moves back and ships a check it had built before the move, the version
   it just put live counts as "older" than the other site's, and on a plan already full of pins it can lose its stored copy at
   once — it would then not appear in History, and could never be rolled back to.
-status: open
+status: done 2026-11-25 (Story 7.23a)
+resolution: Story 7.23a's Dev (2026-11-25) — "newest" is the upload Ghost ACCEPTED. `deploys.accepted_at` (the Schema push
+  `20261125120100_deploys_accepted_at.sql`, backfilled from `activated_at`, else `created_at`, on uploaded and live rows) is
+  stamped by `ship()` whenever Ghost accepts an upload (written `uploaded`, or live by the upload's own answer) and by a Roll
+  back's accepted re-upload (`server/deploy/put-back.ts`); an activation alone accepts no files and leaves it. `lib/retention.ts`'
+  `newestFirst` orders by it (`created_at` breaking a tie, and standing in on a row the column never reached), so the prune, the
+  History list and its time label (`timeLabel(acceptedAt)`) all say when Ghost took the version; `deploy-io.ts`' drift baseline
+  (R-287) and the put-back's "Ghost holds these files" read the same order in SQL. Held by `retention.test.ts` (a check made on
+  day 0 and accepted on day 9 is kept as the newest; the control, by `created_at`, prunes it), `deploy-run.test.ts` (both of
+  `ship()`'s stamps, an activation keeping it, and the baseline following a Roll back) and `drift.test.ts` (the query's order).
 severity: low
 origin: Story 7.22's Review (2026-11-25), the Edge Case Hunter and Blind Hunter layers. The rule orders a project's stored
   versions by `deploys.created_at` (the spec's frozen "newest first by `created_at`"), and `created_at` is the Pre-flight's

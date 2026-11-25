@@ -10,6 +10,8 @@
 //                   run it in a cut copy (steps 1–5 and 119); it stops after the hand edit and leaves T1 and the account planted
 //   STEP120_PLANT=<free email>,<pro email> T1_WRITES=1 …   # Story 7.22: step 120 as Deploy's plant, in a cut copy (steps 1–5 and
 //                   120): two NEW addresses — Pro holds ten stored versions, eight pinned; Free ships "History test" v1–v3 live on T1
+//   STEP121_PLANT=<free email> T1_WRITES=1 …   # Story 7.23a: step 121 as Deploy's plant, in a cut copy (steps 1–5 and 121): a
+//                   NEW address — "Rollback test" v1–v3 ("Version n" on Home), T1 back on its own theme, v3 `uploaded`, v1's zip refused
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -438,6 +440,16 @@
 // the check resting on the linked site, a Ship it under way (the Review's) and a live copy untouched; (e) Pro: nine pins 200,
 // the tenth 409. Its finally puts T1 back,
 // removes K's objects, disconnects and deletes K, and counts back.
+// Story 7.23a adds step 121, WRITING TO T1 and to production, so it runs only with `T1_WRITES=1` on the owner's in-session go:
+// ROLL BACK AND RE-ACTIVATE FROM HISTORY (FR-J9, FR-J8's D2d, R-264; DW-400). A throwaway Free account L (`editor-harness-l-…`)
+// connects T1 and "Rollback test" is linked, each version's Home headline naming its number: (a) three ships; (b) the drawer at
+// 1440 — v3 Live, three expanded rows, the Changed lines, a Roll back on v2 (the undo) and v1; (c) Roll back to v1 by the keyboard
+// — T1's active theme downloaded and equal to v1's manifest, the row updated never copied, the next Run checks D3c "since v1";
+// (d) the undo; (e) T1's own theme activated, v3's row `uploaded` (as a Deploy only leaves it), D2d's Re-activate; (f) v1's zip
+// swapped for one the pinned gscan blocks (asserted locally first): Ghost's 422 said under v1 and nothing changed, the real zip
+// the control; (g) a Roll back from a second session reading along; (h) `busy` and `elsewhere` 409s through the route, each with
+// its control. Its finally removes the plants, puts T1 back, removes L's objects, disconnects and deletes L, and counts back.
+// `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead: it stops after (a) and the D2d state with v1 refused.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -526,8 +538,9 @@ async function main() {
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   // Story 7.18a: `c` is step 113's account, swept too should a run die before its own `finally`
   // Story 7.18b: `d` is step 114's; Story 7.18c: `e` is step 115's; Story 7.19: `f` and `g` are step 116's; Story 7.20a: `h` is 117's;
-  // Story 7.20b: `i` is 118's; Story 7.21: `j` is 119's (never the plant's address, which is the owner's); Story 7.22: `k` is 120's
-  const stale = all.filter((u) => /^editor-harness-[abcdefghijk]-\d+@inflozo\.com$/.test(u.email || ''))
+  // Story 7.20b: `i` is 118's; Story 7.21: `j` is 119's (never the plant's address, which is the owner's); Story 7.22: `k` is 120's;
+  // Story 7.23a: `l` is 121's
+  const stale = all.filter((u) => /^editor-harness-[abcdefghijkl]-\d+@inflozo\.com$/.test(u.email || ''))
   for (const u of stale) await admin(`/admin/users/${u.id}`, { method: 'DELETE', body: '{}' })
   if (stale.length) note('swept stale fixtures', String(stale.length))
   const before = (await users()).length
@@ -541,7 +554,7 @@ async function main() {
   const ids = []
   let browser = null
   let entitlementBack = null
-  // what a Deploy plant leaves on purpose (STEP120_PLANT), so the end-of-run counts expect it
+  // what a Deploy plant leaves on purpose (STEP120_PLANT, STEP121_PLANT), so the end-of-run counts expect it
   const plantKept = { users: 0, projects: 0 }
   try {
     // ── step 1 — the fixtures ──
@@ -14733,6 +14746,663 @@ async function main() {
         }
       }
       check('step 120 — the step\'s contexts recorded zero CSP violations', csp120.length === 0, JSON.stringify(csp120.slice(0, 3)))
+    }
+
+    /* ── step 121 — Story 7.23a: ROLL BACK AND RE-ACTIVATE FROM HISTORY (FR-J9, FR-J8's D2d, R-264; DW-400), WRITING TO T1 ──
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: three ships and about ten put-backs on T1
+       through the product (uploads and activations under the frozen name), one activation of T1's own theme with the staff token,
+       production rows and one object planted, and the put-back. A throwaway Free account L (`editor-harness-l-…`) connects T1
+       through the wizard and "Rollback test" (step 1's fixture) is linked. Each version's Home headline names its number ("Version
+       n": the stored doc written through the service key with the editor LEFT first, 5.8's order), so a read of T1's `/` says which
+       version is live:
+       (a) THREE SHIPS (Deploy & activate), each read back on T1's `/`.
+       (b) THE DRAWER (the clock at 1440): v3 Live first, three expanded rows with the route's Changed lines (v1 "First deploy"),
+           times and chips, no action on v3, a Roll back on v2 (the emphasised undo) and on v1.
+       (c) ROLL BACK TO v1 BY THE KEYBOARD: Enter on its Roll back opens S8e's confirm on Cancel, Tab, Enter — "Rolling back…" —
+           then T1's active theme, downloaded with the staff token, compares at ZERO differences with v1's `content_manifest`
+           (the drift check's own `liveManifest`/`compareManifests`) and `/` says "Version 1"; the records: v1's own row live with
+           the newest `accepted_at`, v3 `uploaded`, no row added, v1's object still stored; and the next Run checks is D3c "since v1".
+       (d) THE UNDO: Roll back v3 — live, "Version 3".
+       (e) D2d: T1's own theme activated with the staff token (what Ghost Admin's switch does), and v3's row written `uploaded` with
+           `activated` false through the service key — what a Deploy only leaves. A REAL Deploy only cannot make this state: R-264
+           (a) refuses it while Inflozo's own record says this project's theme is live on the site (`uploadOnlyRefused`), and
+           after a switch in Ghost Admin the record still says so. The drawer: v3's chip, line and Re-activate, nothing Live;
+           Re-activate — "Activating…" — v3 live with its `accepted_at` unchanged, T1's active theme Inflozo's again holding v3's
+           files, "Version 3", and v2's Roll back the emphasised one.
+       (f) GHOST REFUSES: v1's stored zip swapped (removed, then stored again under its key) for itself plus one template Handlebars
+           cannot parse — asserted HERE as blocked on the pinned v6 gscan (GS005-TPL-ERR fatal; §91 executed Ghost's 422 for it), the
+           real zip clean (the control) — then Roll back v1: Ghost's 422 said under v1 with its detail, v1's row unchanged, T1's
+           themes unchanged, still v3's files and "Version 3". The control: the real zip stored back, the same Roll back accepted
+           ("Version 1"); then v3 rolled back to.
+       (g) A SECOND SESSION of L whose editor reads along (`[data-readonly]`; the first holds the lock): Roll back v2 from its drawer.
+       (h) 409s through the route on L's session: `busy` with a `deploy_jobs` row of P × T1 at `uploading`, fresh; `elsewhere` for a
+           stored version of P on another (planted, disconnected) site of L's; the controls — that row moved onto the linked site
+           answers `busy`, not `elsewhere`, and with the busy row removed the same POST is accepted (v3 live).
+       FINALLY: (h)'s plants removed; every job at rest; T1 put back (its own theme active, every inflozo- theme uploaded deleted,
+       routes.yaml byte for byte) and read back; L's objects removed; T1 disconnected through the product; L deleted; users and
+       projects counted back. `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead (see PLANT121). Keys are read
+       in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 120 is. */
+    if (process.env.T1_WRITES !== '1') {
+      note('step 121 — NOT RUN', 'it writes to T1 (three ships and the put-backs through the product, one activation of T1\'s own theme, and the put-back) and to production (planted rows and one swapped object): set T1_WRITES=1 on the owner\'s in-session go')
+    } else {
+      const imp121 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
+      const [DEP121, RET121, DR121, CR121, PR121, AR121, RU121, ZIP121, GATE121, GS121] = await Promise.all([
+        imp121('apps/web/lib/deploy.ts'), imp121('apps/web/lib/retention.ts'), imp121('apps/web/lib/drift.ts'), imp121('apps/web/lib/connect-rule.ts'),
+        imp121('apps/web/lib/probe-rule.ts'), imp121('apps/web/server/ghost-admin/admin-rule.ts'), imp121('apps/web/lib/routes-upload.ts'),
+        imp121('apps/web/server/deploy/zip.ts'), imp121('apps/web/lib/backup-gate.ts'), imp121('packages/theme-compiler/gate/index.ts'),
+      ])
+      const HW121 = RET121.HISTORY_WORDS
+      const DW121 = DR121.DRIFT_WORDS
+      const until121 = async (read, test, ms) => {
+        const by = Date.now() + ms
+        for (;;) {
+          const v = await read()
+          if (test(v) || Date.now() > by) return v
+          await new Promise((r) => setTimeout(r, 500))
+        }
+      }
+      const ENV121 = {}
+      const NAMES121 = ['GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN']
+      for (const line of fs.readFileSync(path.join(REPO, 'tools/probe/.env'), 'utf8').split('\n')) {
+        const m = /^([A-Z0-9_]+)=(.*)$/.exec(line)
+        if (m && NAMES121.includes(m[1]) && m[2].trim()) ENV121[m[1]] = m[2].trim()
+      }
+      const missing121 = NAMES121.filter((k) => !ENV121[k])
+      if (missing121.length) throw new Error(`step 121: ${missing121.join(', ')} not in tools/probe/.env`)
+      const SECRETS121 = [ENV121.GHOST6_ADMIN_API_KEY, ENV121.GHOST6_STAFF_ACCESS_TOKEN].flatMap((k) => [k, k.split(':')[1] ?? '']).concat([ENV121.GHOST6_CONTENT_API_KEY]).filter((x) => x.length >= 8)
+      const scrub121 = (x) => SECRETS121.reduce((t, k) => t.split(k).join('<key>'), String(x))
+      const ORIGIN121 = new URL(ENV121.GHOST6_URL).origin
+      const ghost121 = async (credential, method, p, body) => {
+        const { url, init } = AR121.adminRequest({ credential, siteUrl: ENV121.GHOST6_URL, method, path: p, body, major: 6 })
+        const r = await fetch(url, { ...init, signal: AbortSignal.timeout(90_000) })
+        const bytes = Buffer.from(await r.arrayBuffer())
+        let parsed = null
+        try { parsed = JSON.parse(bytes.toString('utf8')) } catch {}
+        return { ok: r.ok, status: r.status, body: parsed, bytes }
+      }
+      const staff121 = (method, p, body) => ghost121(ENV121.GHOST6_STAFF_ACCESS_TOKEN, method, p, body)
+      const themes121 = async () => {
+        const r = await staff121('GET', 'themes/').catch(() => null)
+        return r?.ok && Array.isArray(r.body?.themes) ? r.body.themes.map((t) => ({ name: t.name, active: t.active === true })) : null
+      }
+      const active121 = async () => (await themes121())?.find((t) => t.active)?.name ?? null
+      const routesFile121 = async () => {
+        const r = await staff121('GET', RU121.ROUTES_PATH).catch(() => null)
+        return r?.ok ? r.bytes : null
+      }
+      /** the theme under T1's frozen name, downloaded with the staff token (119's), compared with a stored manifest exactly as the drift
+       *  check compares them (`liveManifest` over `unzipTheme`, then `compareManifests`); null when Ghost refused the download */
+      const liveDiff121 = async (manifest) => {
+        const r = await staff121('GET', `themes/${encodeURIComponent(theme121)}/download/`).catch(() => null)
+        return r?.ok && manifest ? DR121.compareManifests(manifest, await DR121.liveManifest(ZIP121.unzipTheme(new Uint8Array(r.bytes)))) : null
+      }
+      const none121 = (d) => d !== null && d.changed.length + d.added.length + d.removed.length === 0
+      /** T1's Home, read as a visitor reads it: the A4 #13 headline's words — null when the page carries none (T1's own theme),
+       *  undefined when the page was not read */
+      const headline121 = async () => {
+        const r = await fetch(`${ORIGIN121}/?walk121=${Date.now()}`, { redirect: 'manual', headers: { 'Cache-Control': 'no-cache' } }).catch(() => null)
+        if (!r?.ok) return undefined
+        return /class="[^"]*\ba4-13__headline\b[^"]*"[^>]*>\s*([^<]*?)\s*</.exec(await r.text())?.[1] ?? null
+      }
+      const homeSays121 = (n) => until121(headline121, (h) => h === `Version ${n}`, 45000)
+      const storage121 = { apikey: SECRET, Authorization: `Bearer ${SECRET}` }
+      const listed121 = (bucket, prefix) => fetch(`${SB}/storage/v1/object/list/${bucket}`, { method: 'POST', headers: { ...storage121, 'Content-Type': 'application/json' }, body: JSON.stringify({ prefix, limit: 100, offset: 0 }) })
+        .then((r) => r.json()).then((l) => (Array.isArray(l) ? l.filter((o) => typeof o?.name === 'string' && o.id !== null) : [])).catch(() => [])
+      const object121 = async (key) => {
+        const r = await fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { headers: storage121 }).catch(() => null)
+        return r?.ok ? Buffer.from(await r.arrayBuffer()) : null
+      }
+      const putObject121 = (key, bytes) => fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { method: 'POST', headers: { ...storage121, 'Content-Type': 'application/zip' }, body: bytes }).then((r) => r.status).catch(() => 0)
+      const removeObject121 = (key) => fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { method: 'DELETE', headers: storage121 }).then((r) => r.status).catch(() => 0)
+      /** a stored object replaced: the bucket replaces nothing in place, so removed and stored again under its key, then read back */
+      const swap121 = async (key, bytes) => {
+        const gone = await removeObject121(key)
+        const put = await putObject121(key, bytes)
+        const back = await object121(key)
+        return { gone, put, same: back !== null && Buffer.compare(back, Buffer.from(bytes)) === 0 }
+      }
+      /** jsonb hands an object's keys back reordered (Story 7.21's Review): compared by fields */
+      const same121 = (a, b) => {
+        const canon = (v) => JSON.stringify(v, (_, x) => (x !== null && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([k], [l]) => (k < l ? -1 : k > l ? 1 : 0))) : x))
+        return canon(a) === canon(b)
+      }
+      /** (f)'s plant: v1's zip plus one template Handlebars cannot parse — gscan's GS005-TPL-ERR, fatal (record-rollback.mjs' FATAL,
+       *  whose 422 `ThemeValidationError` under the active name §91 executed on T1) */
+      const FATAL121 = { 'custom-inflozo-walk-121-fatal.hbs': '{{!< default}}\n{{#if @site.title}}\n  <p>unclosed\n' }
+      /** v1's stored zip and its planted twin, each judged HERE by the pinned v6 gscan Ghost's `checkSafe` runs before it writes: the
+       *  real one clean (the control) and the planted one blocked on GS005-TPL-ERR fatal — or nothing is stored (standing rule 2) */
+      const fatal121 = async (key) => {
+        const real = await object121(key)
+        if (real === null) throw new Error('step 121: v1\'s stored zip could not be read')
+        const files = ZIP121.unzipTheme(new Uint8Array(real))
+        const planted = Buffer.from(ZIP121.zipTheme({ ...files, ...FATAL121 }))
+        const clean = await GS121.gscanGate(files, 6)
+        const blocked = await GS121.gscanGate(ZIP121.unzipTheme(new Uint8Array(planted)), 6)
+        const proved = clean.blocked === false && clean.errors.length === 0 && blocked.blocked === true && blocked.errors.some((e) => e.rule === 'GS005-TPL-ERR' && e.fatal)
+        return { real, planted, proved, said: `gscan ${blocked.gscan}: v1 ${clean.errors.length} errors; planted [${blocked.errors.map((e) => `${e.rule}${e.fatal ? ' (fatal)' : ''}`).join(', ')}]` }
+      }
+
+      // STORY 7.23a's DEPLOY: `STEP121_PLANT=<address>` plants the owner's test instead of (b)–(h). The address must be NEW (the plant
+      // never touches an account that exists). It connects T1 through the wizard and ships "Rollback test" three times as (a) does
+      // ("Version 1"…"Version 3"); then T1's own theme is activated with the staff token, v3's row written `uploaded` as (e) writes it
+      // (D2d: nothing Live, v3 "Uploaded, not live" with Re-activate) and v1's stored zip swapped for (f)'s planted one, proved fatal
+      // locally first (the owner's step 7 meets Ghost's refusal). Then it stops and leaves the account, its site, T1 and the inflozo
+      // theme Ghost holds as they are, printing the address and the project's id; the owner's test ends with T1 put back on his go.
+      const PLANT121 = (process.env.STEP121_PLANT ?? '').trim().toLowerCase()
+      let planted121 = false
+      const STOP121 = Symbol('step 121 planted') // thrown past (b)–(h) once the plant is read back; the catch knows it
+
+      const email121 = PLANT121 || `editor-harness-l-${stamp}@inflozo.com`
+      const usersBefore121 = (await users())?.length ?? null
+      const projectsBefore121 = await projectCount()
+      let id121 = null
+      let site121 = null
+      let P121 = null
+      let theme121 = null
+      let prev121 = null
+      let start121 = []
+      let routesBefore121 = null
+      let pg121 = null
+      /** (h)'s plants, removed in the step or by the finally should it die between */
+      let busy121 = null
+      let otherSite121 = null
+      let otherDeploy121 = null
+      const ctxs121 = []
+      const csp121 = []
+
+      const ROW121 = 'id,version,status,activated,activated_at,accepted_at,artifact_path,content_manifest,created_at,site_id'
+      const siteRow121 = async () => (site121 === null ? null : (await call('/rest/v1', `/sites?id=eq.${site121}&select=id,disconnected_at`)).body?.[0] ?? null)
+      const job121 = async () => (P121 === null ? null : (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P121}&select=id,stage,error,deploy_id,stage_timings&order=started_at.desc&limit=1`)).body?.[0] ?? null)
+      const deploy121 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=${ROW121}`)).body?.[0] ?? null)
+      const rows121 = async () => (P121 === null ? [] : (await call('/rest/v1', `/deploys?project_id=eq.${P121}&select=${ROW121}&order=created_at.asc`)).body ?? [])
+      /** what a refused put-back must leave exactly as it was */
+      const kept121 = (r) => (r === null ? null : { status: r.status, activated: r.activated, activated_at: r.activated_at, accepted_at: r.accepted_at, artifact_path: r.artifact_path })
+      const atRest121 = (j) => j === null || !['queued', 'compiling', 'checking', 'snapshotting', 'uploading', 'activating'].includes(j.stage)
+      const wiz121 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-wizard]')
+        if (!d) return null
+        const box = d.querySelector('[data-check-rows]')
+        return {
+          at: d.getAttribute('data-deploy-wizard'),
+          title: d.querySelector('#deploy-title')?.textContent ?? null,
+          reading: d.querySelector('#deploy-drift-reading') !== null,
+          passes: box ? [...box.children].filter((c) => !c.hasAttribute('data-finding')).map((c) => ({ text: c.textContent.trim(), clean: c.getAttribute('data-drift-row') === 'clean' })) : [],
+        }
+      }).catch(() => null)
+      const context121 = async () => {
+        const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+        ctxs121.push(ctx)
+        await recorder(ctx, csp121)
+        const pg = steady(await ctx.newPage())
+        pg.on('pageerror', (e) => note('pageerror 121', scrub121(String(e))))
+        await pg.goto(await magic(email121), { waitUntil: 'load' })
+        return pg
+      }
+      /** T1 connected through the wizard on `pg`'s session; the wizard's own project goes (the account held none), and the site's id */
+      const connect121 = async (pg) => {
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV121.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV121.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV121.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR121.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until121(async () => (await call('/rest/v1', `/projects?user_id=eq.${id121}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        const site = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (site === null) throw new Error('step 121: T1 did not connect')
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        return site
+      }
+      /** 5.17's hand-back, for P: the lock released through the app's own route on the page's own session */
+      const handBack121 = (p) => p.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${P121}/lock`).catch(() => {})
+      const painted121 = (pg) => pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).then(() => true, () => false)
+      const closed121 = async (pg) => {
+        for (const sel of ['dialog[data-deploy-wizard]', 'dialog[data-deploy-history]']) {
+          if (!(await pg.locator(sel).count().catch(() => 0))) continue
+          await pg.keyboard.press('Escape').catch(() => {})
+          await pg.waitForFunction((s) => !document.querySelector(s), sel, { timeout: 15000 }).catch(() => {})
+        }
+      }
+      /** LEAVE THE EDITOR AND LET ITS LAST FLUSH LAND (5.8's `leaveEditor`): its device copy dropped, the page gone — so a doc written
+       *  next through the service key is never overwritten by the departing tab, and the next open hydrates from the server */
+      const leave121 = async (pg) => {
+        await closed121(pg)
+        await pg.evaluate((u) => new Promise((done) => {
+          const req = indexedDB.deleteDatabase(`inflozo-doc-${u}`)
+          req.onsuccess = req.onerror = req.onblocked = () => done(true)
+        }), id121).catch(() => null)
+        await pg.goto('about:blank')
+        await pg.waitForTimeout(1000)
+      }
+      /** Home's A4 #13 headline written "Version n" in the STORED doc (the service key), and read back until it holds (5.8's
+       *  `freshLoad` rule: written, then read, up to three times) — so the next Pre-flight compiles it */
+      const headlineDoc121 = async (n) => {
+        const want = `Version ${n}`
+        for (let tries = 0; tries < 4; tries++) {
+          const doc = (await call('/rest/v1', `/project_templates?project_id=eq.${P121}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? null
+          const hero = doc?.instances?.find((i) => i.designId === 'a4/13') ?? null
+          if (hero === null) throw new Error('step 121: Home holds no A4 #13 to name the version in')
+          if (hero.content?.headline === want) return true
+          if (tries === 3) break
+          const next = { ...doc, instances: doc.instances.map((i) => (i === hero ? { ...i, content: { ...i.content, headline: want } } : i)) }
+          await call('/rest/v1', `/project_templates?project_id=eq.${P121}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: next }) })
+          await new Promise((r) => setTimeout(r, 1500))
+        }
+        return false
+      }
+      const runChecks121 = async (pg, ready = () => true) => {
+        const was = (await job121())?.id ?? null
+        await pg.locator('#deploy-run').click()
+        const job = await until121(job121, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed', 'cancelled'].includes(j.stage), 180000)
+        const shown = await until121(() => wiz121(pg), (w) => w?.at === 'check' && !w.reading && w.passes.length > 0 && ready(w), 30000)
+        return { job, shown }
+      }
+      const ship121 = async (pg, job) => {
+        await until121(() => pg.locator('#deploy-ship').getAttribute('aria-disabled').catch(() => 'true'), (v) => v !== 'true', 60000)
+        await pg.locator('#deploy-ship').click()
+        return until121(job121, (j) => j?.id === job?.id && (j.stage === 'done' || j.stage === 'failed'), 300000)
+      }
+      /** ship n of (a): the editor left, Home's headline "Version n" stored, the editor opened, Ship it (Deploy & activate) — the first
+       *  deploy's two steps answered as a customer answers them — and T1's `/` read until it says so */
+      const shipOne121 = async (pg, n) => {
+        if (n > 1) await leave121(pg)
+        if (!(await headlineDoc121(n))) throw new Error(`step 121: Home's stored headline did not hold "Version ${n}"`)
+        await pg.goto(at(`/projects/${P121}`), { waitUntil: 'load' })
+        await painted121(pg)
+        await pg.locator('#editor-ship').click()
+        await until121(() => wiz121(pg), (w) => w?.at === 'destination', 20000)
+        let pre
+        if (n === 1) {
+          await pg.locator('#deploy-next').click()
+          await until121(() => wiz121(pg), (w) => w?.at === 'safety', 15000)
+          await pg.locator('#deploy-token').fill(ENV121.GHOST6_STAFF_ACCESS_TOKEN)
+          await pg.locator('#deploy-add-token').click()
+          await until121(() => wiz121(pg), (w) => w?.at === 'backup', 60000)
+          for (const { id } of GATE121.GATE_ROWS) await pg.locator(`#deploy-gate-${id}`).check()
+          await pg.locator('#deploy-gate-confirm').check()
+          const was = (await job121())?.id ?? null
+          await pg.locator('#deploy-backup-run').click()
+          pre = await until121(job121, (j) => j !== null && j.id !== was && ['awaiting_ship', 'failed'].includes(j.stage), 180000)
+        } else {
+          pre = (await runChecks121(pg)).job
+        }
+        const end = await ship121(pg, pre)
+        if (end?.stage !== 'done') throw new Error(`step 121: ship ${n} ended ${end?.stage ?? 'unread'}`)
+        return { row: await deploy121(end.deploy_id), home: await homeSays121(n) }
+      }
+      /** the history route, read on L's own session from the page — what the drawer reads */
+      const history121 = (pg) => pg.evaluate(async (u) => {
+        const r = await fetch(u, { cache: 'no-store' })
+        return { status: r.status, body: await r.json().catch(() => null) }
+      }, at(`/projects/${P121}/history`))
+      const rowsOf121 = (answer) => RET121.historyRows(answer?.body ?? { linkedSiteId: null, liveVersion: null, rows: [] })
+      /** the put-back POSTed to the route on `p`'s session, as the drawer sends it: its status and answer */
+      const post121 = (p, deploy) => p.evaluate(async ([u, d]) => {
+        const r = await fetch(u, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy: d, act: 'live' }) })
+        return { status: r.status, body: await r.json().catch(() => null) }
+      }, [at(`/projects/${P121}/history`), deploy])
+      const openDrawer121 = async (pg) => {
+        await closed121(pg)
+        await pg.locator('#deploy-history-open').click()
+        await pg.waitForFunction(() => document.querySelector('dialog[data-deploy-history]') && !document.querySelector('[data-history-loading]'), null, { timeout: 20000 })
+      }
+      /** the drawer as drawn: its title and each row's version, shape, Live dot (LiveBadge's mint dot), D2d's chip and line, Changed
+       *  line, time, gscan chip and action */
+      const drawer121 = (p) => p.evaluate(() => {
+        const d = document.querySelector('dialog[data-deploy-history]')
+        if (!d) return null
+        return {
+          title: d.querySelector('#deploy-history-title')?.textContent ?? null,
+          rows: [...d.querySelectorAll('[data-history-row]')].map((r) => {
+            const a = r.querySelector('[data-history-act]')
+            return {
+              v: r.getAttribute('data-history-row'),
+              expanded: r.hasAttribute('data-history-expanded'),
+              uploaded: r.hasAttribute('data-history-uploaded'),
+              live: r.querySelector('.bg-mint') !== null,
+              chip: r.querySelector('[data-history-uploaded-chip]')?.textContent ?? null,
+              line: r.querySelector('[data-history-line]')?.textContent ?? null,
+              changed: r.querySelector('[data-history-changed]')?.textContent ?? null,
+              time: r.querySelector('[data-history-time]')?.textContent ?? null,
+              gscan: r.querySelector('[data-history-gscan] [aria-hidden]')?.textContent ?? null,
+              act: a === null ? null : { id: a.getAttribute('data-history-act'), name: a.getAttribute('aria-label'), emphasis: a.hasAttribute('data-emphasis'), disabled: a.getAttribute('aria-disabled') === 'true' },
+            }
+          }),
+        }
+      }).catch(() => null)
+      /** a put-back read until it ends: an ending is said in the drawer's region and focus goes to ✕ once the list is read again; a
+       *  refusal is said under its row, Ghost's words in [data-history-detail]. Null when neither came within AD-11's budget */
+      const ended121 = (p, id) => p.waitForFunction((rowId) => {
+        const d = document.querySelector('dialog[data-deploy-history]')
+        if (!d || d.hasAttribute('data-unstoppable')) return false
+        const said = d.querySelector('[data-history-said]')?.textContent ?? ''
+        const line = d.querySelector(`[data-history-note="${rowId}"]`)
+        const words = line?.querySelector('span:not([data-history-detail])')?.textContent ?? ''
+        if (said === '' && words === '') return false
+        if (said !== '' && document.activeElement?.id !== 'deploy-history-close') return false
+        return { said, note: words, detail: line?.querySelector('[data-history-detail]')?.textContent ?? null, focus: document.activeElement?.id || document.activeElement?.getAttribute('data-history-act') || null }
+      }, id, { timeout: 300000, polling: 250 }).then((h) => h.jsonValue(), () => null)
+      /** ONE PUT-BACK THROUGH A FRESH DRAWER on `p`: Roll back opens S8e's confirm (its title, body and focus read) and its Roll back is
+       *  pressed; Re-activate acts at once. `keys`: the row's action focused and Enter, then Tab and Enter in the confirm. The busy
+       *  label is watched from before the press ("Rolling back…" on the confirm's button, "Activating…" on Re-activate) */
+      const putBack121 = async (p, v, keys = false) => {
+        await openDrawer121(p)
+        const row = p.locator(`dialog[data-deploy-history] [data-history-row="v${v}"]`)
+        const act = row.locator('[data-history-act]')
+        const id = await act.getAttribute('data-history-act', { timeout: 10000 }).catch(() => null)
+        if (id === null) return { id: null, asked: null, busy: false, ended: null }
+        const reactivate = (await row.getAttribute('data-history-uploaded')) !== null
+        const busyFrom = (sel, word, byName) => p.waitForFunction(([s, w, n]) => {
+          const b = document.querySelector(s)
+          return b?.getAttribute('aria-busy') === 'true' && (n ? b.getAttribute('aria-label') === w : b.innerText.trim() === w)
+        }, [sel, word, byName], { timeout: 120000, polling: 'raf' }).then(() => true, () => false)
+        if (keys) await act.focus()
+        let asked = null
+        let busy
+        if (reactivate) {
+          busy = busyFrom(`[data-history-act="${id}"]`, HW121.activating, true)
+          if (keys) await p.keyboard.press('Enter')
+          else await act.click()
+        } else {
+          if (keys) await p.keyboard.press('Enter')
+          else await act.click()
+          await p.waitForFunction(() => document.querySelector('dialog[data-history-confirm]')?.open === true, null, { timeout: 15000 })
+          // opened on Cancel (`openOnCancel`): read once focus has landed inside it, or after 3 s for the check to name where it is
+          await p.waitForFunction(() => document.activeElement?.closest('dialog[data-history-confirm]') != null, null, { timeout: 3000 }).catch(() => {})
+          asked = await p.evaluate(() => ({
+            title: document.querySelector('#history-confirm-title')?.textContent ?? null,
+            body: document.querySelector('#history-confirm-body')?.textContent ?? null,
+            onCancel: document.activeElement?.hasAttribute('data-cancel') === true && document.activeElement.closest('dialog[data-history-confirm]') !== null,
+          }))
+          busy = busyFrom('#history-confirm-go', HW121.rollingBack, false)
+          if (keys) {
+            await p.keyboard.press('Tab')
+            asked.tab = await p.evaluate(() => document.activeElement?.id ?? null)
+            await p.keyboard.press('Enter')
+          } else await p.locator('#history-confirm-go').click()
+        }
+        const ended = await ended121(p, id)
+        return { id, asked, busy: await busy, ended }
+      }
+
+      try {
+        // the start: T1's live theme and routes.yaml, which the finally puts back — never begun on a theme a test left live
+        start121 = (await themes121()) ?? []
+        prev121 = start121.find((t) => t.active)?.name ?? null
+        routesBefore121 = await routesFile121()
+        check(`step 121 — T1's live theme read with the staff token at the start (${prev121 ?? 'unread'}), not an Inflozo theme a test left live, and routes.yaml read`,
+          prev121 !== null && !/^inflozo-/.test(prev121) && routesBefore121 !== null, JSON.stringify(start121.map((t) => `${t.name}${t.active ? '*' : ''}`)))
+        if (prev121 === null || /^inflozo-/.test(prev121) || routesBefore121 === null) throw new Error('step 121: T1 is not on its own theme — ask the owner before restoring it')
+        if (PLANT121) {
+          const all121 = await users()
+          if (all121 === null) throw new Error('step 121: the user list is unreadable, so the plant cannot tell its address is new')
+          if (all121.some((u) => (u.email ?? '').toLowerCase() === PLANT121)) throw new Error(`step 121: the plant's address must be new, and ${PLANT121} already has an account`)
+        }
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: email121, email_confirm: true }) })
+        id121 = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(id121 ?? '')) throw new Error('step 121: the account was not made')
+        const pg = await context121()
+        pg121 = pg
+        site121 = await connect121(pg)
+        const seeded = await seed({ email: email121, name: 'Rollback test' })
+        if (!seeded?.created) throw new Error('step 121: "Rollback test" was not seeded')
+        P121 = seeded.id
+        await call('/rest/v1', `/projects?id=eq.${P121}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: site121 }) })
+        const linked = (await call('/rest/v1', `/projects?id=eq.${P121}&select=slug,linked_site_id`)).body?.[0] ?? null
+        theme121 = linked?.linked_site_id === site121 && linked.slug ? DEP121.themeNameOf(linked.slug) : null
+        if (theme121 === null) throw new Error('step 121: the project was not linked')
+
+        // ── 121a — three ships, each Home naming its version ──
+        const shipped = []
+        for (let n = 1; n <= 3; n++) shipped.push(await shipOne121(pg, n))
+        const [v1, v2, v3] = shipped.map((s) => s.row)
+        const answerA = await history121(pg)
+        const wantA = rowsOf121(answerA)
+        const HOST121 = wantA[0]?.host ?? CR121.hostOf(ENV121.GHOST6_URL)
+        check(`step 121a — three ships (Deploy & activate): v1–v3 numbered in order, ${ORIGIN121}/ reading "Version 1", "Version 2", "Version 3" after each, v3 live on T1 under ${theme121}; each version checked at 0 errors (the fixture's one gscan warning, page_switch_unused, is real)`,
+          shipped.map((s) => s.row?.version).join(',') === '1.0.0,2.0.0,3.0.0' && shipped.every((s, i) => s.home === `Version ${i + 1}`) && (await active121()) === theme121 &&
+          answerA.status === 200 && wantA.map((r) => `v${r.n}${r.live ? '*' : ''}`).join(' ') === 'v3* v2 v1' && wantA.every((r) => r.gscan?.errors === 0 && r.elsewhere === null),
+          JSON.stringify({ versions: shipped.map((s) => s.row?.version ?? null), home: shipped.map((s) => s.home ?? null), rows: wantA.map((r) => ({ v: r.n, live: r.live, gscan: r.gscan })) }))
+        if (shipped.some((s) => s.row === null || !s.row.artifact_path || s.row.content_manifest === null)) throw new Error('step 121: a shipped version has no stored zip or manifest')
+
+        if (PLANT121) {
+          // ── the plant: D2d's state and v1's refused zip, read back, then STOP — (b)–(h) are the walk's, never the owner's ──
+          const fatal = await fatal121(v1.artifact_path)
+          if (!fatal.proved) throw new Error(`step 121: the planted zip is not proved fatal locally (${fatal.said}) — nothing is stored`)
+          await closed121(pg)
+          const own = await staff121('PUT', `themes/${encodeURIComponent(prev121)}/activate/`)
+          const written = await call('/rest/v1', `/deploys?id=eq.${v3.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'uploaded', activated: false }) })
+          const swapped = await swap121(v1.artifact_path, fatal.planted)
+          const answerP = await history121(pg)
+          const rowsP = rowsOf121(answerP)
+          const themesP = (await themes121()) ?? []
+          planted121 = check(`step 121 (plant) — ${PLANT121}: T1 connected through the wizard, "Rollback test" shipped v1–v3 ("Version n" on T1 each time); then ${prev121} activated with the staff token (T1 still holding ${theme121}, which the owner's Re-activate needs), v3's row \`uploaded\` (service key — as a Deploy only leaves it; R-264 (a) refuses a real one while the record says live) and v1's zip swapped for one the pinned v6 gscan blocks (${fatal.said}); the route lists v3 (Re-activate) v2 v1 (Roll back), nothing Live, 0 errors each`,
+            own.ok && themesP.find((t) => t.active)?.name === prev121 && themesP.some((t) => t.name === theme121) && [200, 204].includes(written.status) && swapped.gone === 200 && swapped.put === 200 && swapped.same && answerP.status === 200 &&
+            answerP.body?.liveVersion === null && rowsP.map((r) => `v${r.n}:${r.action}`).join(' ') === 'v3:reactivate v2:rollback v1:rollback' && rowsP.every((r) => !r.live && r.gscan?.errors === 0) &&
+            (await until121(headline121, (h) => h === null, 30000)) === null,
+            JSON.stringify({ activate: own.status, row: written.status, swap: swapped, rows: rowsP.map((r) => `v${r.n}:${r.action}${r.live ? '*' : ''}`) }))
+          if (planted121) {
+            plantKept.users += 1
+            plantKept.projects += 1
+            note('step 121 — PLANT for the owner\'s test', `address ${PLANT121} · project "Rollback test" id ${P121} · ${at(`/projects/${P121}`)} · theme ${theme121} held by ${HOST121}, which shows ${prev121}`)
+          }
+          throw STOP121
+        }
+
+        // ── 121b — the drawer at 1440: v3 Live first, three expanded rows, the Changed lines, a Roll back on v2 and v1 ──
+        await closed121(pg)
+        await openDrawer121(pg)
+        const shownB = await drawer121(pg)
+        const zone = await pg.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone).catch(() => undefined)
+        const rowsB = shownB?.rows ?? []
+        check(`step 121b — the drawer (the clock at 1440): "${HW121.title('Rollback test')}", v3 v2 v1 all expanded, v3 Live and no other; each row's Changed line, time and gscan chip as the route answers them, v1 "${HW121.firstDeploy}" and v2, v3 "${HW121.changed}…"`,
+          shownB?.title === HW121.title('Rollback test') && rowsB.map((r) => r.v).join(' ') === 'v3 v2 v1' && rowsB.every((r) => r.expanded && !r.uploaded) &&
+          rowsB.map((r) => r.live).join(',') === 'true,false,false' &&
+          rowsB.every((r, i) => wantA[i]?.gscan != null && r.changed === wantA[i].changed && r.time === RET121.timeLabel(wantA[i].acceptedAt, new Date(), zone) && r.gscan === HW121.gscan(wantA[i].gscan.errors, wantA[i].gscan.warnings)) &&
+          rowsB[2]?.changed === HW121.firstDeploy && rowsB.slice(0, 2).every((r) => (r.changed ?? '').startsWith(HW121.changed)),
+          JSON.stringify(rowsB.map((r) => ({ v: r.v, live: r.live, changed: r.changed, time: r.time, gscan: r.gscan }))))
+        check(`step 121b — the actions: none on v3 (Live); "${HW121.rollBackName(2)}" the emphasised undo; "${HW121.rollBackName(1)}" quiet`,
+          rowsB[0]?.act === null && rowsB[1]?.act?.name === HW121.rollBackName(2) && rowsB[1].act.emphasis === true && rowsB[2]?.act?.name === HW121.rollBackName(1) && rowsB[2].act.emphasis === false,
+          JSON.stringify(rowsB.map((r) => r.act)))
+
+        // ── 121c — Roll back to v1 by the keyboard ──
+        const beforeC = await rows121()
+        const liveC = DEP121.versionNumber(answerA.body?.liveVersion ?? '')
+        const c = await putBack121(pg, 1, true)
+        const shownC = await drawer121(pg)
+        check(`step 121c — Roll back to v1 by the keyboard: Enter on its Roll back opens "${HW121.confirmTitle(1)}" — "${HW121.confirmBody(1, liveC, (wantA[2]?.drops ?? []).length > 0)}" — with focus on ${HW121.cancel}; Tab reaches its Roll back and Enter says "${HW121.rollingBack}"; then "${HW121.said.live(1, HOST121)}", v1 Live first and focus on ✕`,
+          c.asked?.title === HW121.confirmTitle(1) && c.asked.body === HW121.confirmBody(1, liveC, (wantA[2]?.drops ?? []).length > 0) && c.asked.onCancel === true && c.asked.tab === 'history-confirm-go' &&
+          c.busy === true && c.ended?.said === HW121.said.live(1, HOST121) && c.ended.focus === 'deploy-history-close' && shownC?.rows[0]?.v === 'v1' && shownC.rows[0].live === true,
+          JSON.stringify({ asked: c.asked, busy: c.busy, ended: c.ended, first: shownC?.rows[0] ?? null }))
+        const activeC = await active121()
+        const diffC = await liveDiff121(v1.content_manifest)
+        const homeC = await homeSays121(1)
+        check(`step 121c — T1's active theme is ${theme121}, and its download (the staff token) compares at ZERO differences with v1's content_manifest — the stored zip went back, nothing recompiled; ${ORIGIN121}/ says "Version 1"`,
+          activeC === theme121 && none121(diffC) && homeC === 'Version 1', JSON.stringify({ active: activeC, diff: diffC, home: homeC ?? null }))
+        const afterC = await rows121()
+        const accepted = afterC.filter((r) => r.status === 'uploaded' || r.status === 'live').sort((a, b) => Date.parse(b.accepted_at) - Date.parse(a.accepted_at))
+        const byId = (rows, id) => rows.find((r) => r.id === id) ?? null
+        const v1C = byId(afterC, v1.id)
+        check('step 121c — the records: v1\'s OWN row live, activated, with a new accepted_at that is the project\'s newest; v3 and v2 `uploaded`; the same rows as before (updated, never copied); v1\'s object still stored',
+          v1C?.status === 'live' && v1C.activated === true && v1C.activated_at !== null && accepted[0]?.id === v1.id && Date.parse(v1C.accepted_at) > Date.parse(byId(beforeC, v1.id)?.accepted_at ?? '') &&
+          byId(afterC, v3.id)?.status === 'uploaded' && byId(afterC, v2.id)?.status === 'uploaded' && afterC.filter((r) => r.status === 'live').length === 1 &&
+          afterC.map((r) => r.id).join(',') === beforeC.map((r) => r.id).join(',') && (await object121(v1.artifact_path)) !== null,
+          JSON.stringify({ rows: `${beforeC.length} → ${afterC.length}`, statuses: afterC.map((r) => `${r.version}:${r.status}`), newest: accepted[0]?.version ?? null }))
+        await closed121(pg)
+        await pg.locator('#editor-ship').click()
+        await until121(() => wiz121(pg), (w) => w?.at === 'destination', 20000)
+        const { job: preC, shown: wizC } = await runChecks121(pg, (w) => w.passes.some((p) => p.clean))
+        check(`step 121c — the next Run checks: D3c "${DW121.clean(1)}" — the drift baseline is the newest upload Ghost accepted (R-287, DW-400), which the roll back made v1`,
+          preC?.stage === 'awaiting_ship' && same121(preC.stage_timings?.drift, { kind: 'clean', since: 1 }) && (wizC?.passes ?? []).some((p) => p.clean && p.text.includes(DW121.clean(1))),
+          JSON.stringify({ stage: preC?.stage ?? null, drift: preC?.stage_timings?.drift ?? null }))
+        await closed121(pg)
+
+        // ── 121d — the undo ──
+        const d = await putBack121(pg, 3)
+        check(`step 121d — the undo: Roll back v3 from the drawer — "${HW121.said.live(3, HOST121)}", v3 live and v1 uploaded, and ${ORIGIN121}/ says "Version 3"`,
+          d.ended?.said === HW121.said.live(3, HOST121) && (await deploy121(v3.id))?.status === 'live' && (await deploy121(v1.id))?.status === 'uploaded' && (await homeSays121(3)) === 'Version 3',
+          JSON.stringify({ ended: d.ended }))
+
+        // ── 121e — T1's own theme back as Ghost Admin's switch does, v3 left as a Deploy only leaves it: D2d, then Re-activate ──
+        await closed121(pg)
+        const ownE = await staff121('PUT', `themes/${encodeURIComponent(prev121)}/activate/`)
+        const writtenE = await call('/rest/v1', `/deploys?id=eq.${v3.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'uploaded', activated: false }) })
+        const v3E0 = await deploy121(v3.id)
+        const homeE0 = await until121(headline121, (h) => h === null, 30000)
+        check(`step 121e — ${prev121} activated on T1 with the staff token (Ghost Admin's switch) and ${ORIGIN121}/ no longer an Inflozo page; v3's row written \`uploaded\`, \`activated\` false through the service key — what a Deploy only leaves; R-264 (a) refuses a real Deploy only while Inflozo's own record says this theme is live on the site, which after a switch in Ghost Admin it still does`,
+          ownE.ok && (await active121()) === prev121 && homeE0 === null && [200, 204].includes(writtenE.status) && v3E0?.status === 'uploaded' && v3E0.activated === false,
+          JSON.stringify({ activate: ownE.status, row: writtenE.status, home: homeE0 === undefined ? 'unread' : homeE0 }))
+        await openDrawer121(pg)
+        const shownE = await drawer121(pg)
+        const rowsE = shownE?.rows ?? []
+        check(`step 121e — D2d in the drawer: v3 first with "${HW121.uploadedChip}", "${HW121.notLive}" and "${HW121.reactivateName(3)}"; no row Live; v2 and v1 each a Roll back, neither emphasised (nothing is live to undo)`,
+          rowsE.map((r) => r.v).join(' ') === 'v3 v2 v1' && rowsE[0].uploaded && rowsE[0].chip === HW121.uploadedChip && rowsE[0].line === HW121.notLive && rowsE[0].act?.name === HW121.reactivateName(3) &&
+          rowsE.every((r) => !r.live) && rowsE.slice(1).every((r) => !r.uploaded && r.act?.name === HW121.rollBackName(Number(r.v.slice(1))) && r.act.emphasis === false),
+          JSON.stringify(rowsE.map((r) => ({ v: r.v, uploaded: r.uploaded, chip: r.chip, line: r.line, live: r.live, act: r.act }))))
+        const e = await putBack121(pg, 3)
+        const v3E = await deploy121(v3.id)
+        const shownE2 = await drawer121(pg)
+        const activeE = await active121()
+        const diffE = await liveDiff121(v3.content_manifest)
+        check(`step 121e — Re-activate: "${HW121.activating}", then "${HW121.said.live(3, HOST121)}"; v3's own row live and activated with its accepted_at unchanged (an activation alone — Ghost held the files); T1's active theme ${theme121} again holding v3's files at zero differences, ${ORIGIN121}/ "Version 3"; v2's Roll back now the emphasised undo`,
+          e.busy === true && e.asked === null && e.ended?.said === HW121.said.live(3, HOST121) && v3E?.status === 'live' && v3E.activated === true && v3E.accepted_at === v3E0?.accepted_at &&
+          activeE === theme121 && none121(diffE) && (await homeSays121(3)) === 'Version 3' && shownE2?.rows[0]?.v === 'v3' && shownE2.rows[0].live && shownE2.rows[1]?.v === 'v2' && shownE2.rows[1].act?.emphasis === true,
+          JSON.stringify({ busy: e.busy, ended: e.ended, row: kept121(v3E), active: activeE, diff: diffE }))
+
+        // ── 121f — a stored zip Ghost refuses ──
+        await closed121(pg)
+        const fatal = await fatal121(v1.artifact_path)
+        check(`step 121f — LOCALLY, before anything is stored: the pinned v6 gscan passes v1's real stored zip (the control) and BLOCKS the planted one, v1 plus one template Handlebars cannot parse, on GS005-TPL-ERR fatal — the check Ghost's checkSafe runs before it writes`,
+          fatal.proved, fatal.said)
+        if (!fatal.proved) throw new Error('step 121: the planted zip is not proved fatal locally — nothing is stored')
+        const swapF = await swap121(v1.artifact_path, fatal.planted)
+        check('step 121f — v1\'s stored object swapped for the planted zip (removed, then stored again under its key — the bucket replaces nothing in place), read back',
+          swapF.gone === 200 && swapF.put === 200 && swapF.same, JSON.stringify(swapF))
+        const v1F0 = await deploy121(v1.id)
+        const themesF0 = JSON.stringify(await themes121())
+        const f = await putBack121(pg, 1)
+        const v1F = await deploy121(v1.id)
+        const diffF = await liveDiff121(v3.content_manifest)
+        check(`step 121f — Roll back v1: Ghost's 422 said under v1 — "${HW121.ghostRefused(1)}" over Ghost's own words — and nothing changed: v1's row as it was, T1's themes as they were, its live theme still v3's files and ${ORIGIN121}/ "Version 3"`,
+          f.ended?.note === HW121.ghostRefused(1) && (f.ended.detail ?? '').trim() !== '' && f.ended.said === '' && same121(kept121(v1F), kept121(v1F0)) &&
+          JSON.stringify(await themes121()) === themesF0 && none121(diffF) && (await headline121()) === 'Version 3',
+          scrub121(JSON.stringify({ ended: f.ended, row: kept121(v1F), diff: diffF })))
+        const backF = await swap121(v1.artifact_path, fatal.real)
+        const g = await putBack121(pg, 1)
+        check(`step 121f — the control: v1's real zip stored back (read back), and the same Roll back is accepted — "${HW121.said.live(1, HOST121)}", ${ORIGIN121}/ "Version 1"`,
+          backF.gone === 200 && backF.put === 200 && backF.same && g.ended?.said === HW121.said.live(1, HOST121) && (await deploy121(v1.id))?.status === 'live' && (await homeSays121(1)) === 'Version 1',
+          JSON.stringify({ swap: backF, ended: g.ended }))
+        const g3 = await putBack121(pg, 3)
+        check('step 121f — …and v3 rolled back to, so (g) starts from a known state: v3 live, "Version 3"',
+          g3.ended?.said === HW121.said.live(3, HOST121) && (await deploy121(v3.id))?.status === 'live' && (await homeSays121(3)) === 'Version 3', JSON.stringify({ ended: g3.ended }))
+        await closed121(pg)
+
+        // ── 121g — a Roll back from a second session that does not hold the edit lock ──
+        const p2 = await context121()
+        await p2.goto(at(`/projects/${P121}`), { waitUntil: 'load' })
+        await painted121(p2)
+        const reading = await until121(() => p2.evaluate(() => document.querySelector('[data-readonly]') !== null).catch(() => false), (v) => v === true, 30000)
+        const holding = await pg.evaluate(() => document.querySelector('[data-readonly]') === null).catch(() => false)
+        const h = await putBack121(p2, 2)
+        const v2G = await deploy121(v2.id)
+        check(`step 121g — a SECOND session of L reading along (its editor [data-readonly]) while the first holds the edit lock: Roll back v2 from its drawer — "${HW121.said.live(2, HOST121)}", v2 live, ${ORIGIN121}/ "Version 2" (the put-back reads no lock)`,
+          reading === true && holding === true && h.asked?.title === HW121.confirmTitle(2) && h.ended?.said === HW121.said.live(2, HOST121) && v2G?.status === 'live' && (await homeSays121(2)) === 'Version 2',
+          JSON.stringify({ reading, holding, ended: h.ended, status: v2G?.status ?? null }))
+        // the reader goes now (never the holder), so nothing of it reads along through (h); its CSP reports are already recorded
+        await p2.context().close().catch(() => {})
+
+        // ── 121h — `busy` and `elsewhere` answer 409 through the route, each with its control ──
+        const themesH0 = JSON.stringify(await themes121())
+        busy121 = (await call('/rest/v1', '/deploy_jobs', { method: 'POST', body: JSON.stringify({ project_id: P121, user_id: id121, site_id: site121, stage: 'uploading' }) })).body?.[0]?.id ?? null
+        const busyH = await post121(pg, v3.id)
+        check('step 121h — busy: a deploy_jobs row of P on T1 at `uploading`, touched now (planted with the service key) → the put-back POST answers 409 { code: busy }, and nothing reaches Ghost (T1\'s themes as they were)',
+          busy121 !== null && busyH.status === 409 && busyH.body?.code === 'busy' && JSON.stringify(await themes121()) === themesH0, JSON.stringify(busyH))
+        otherSite121 = (await call('/rest/v1', '/sites', { method: 'POST', body: JSON.stringify({ user_id: id121, url: `https://walk-121-${stamp}.example`, title: 'Walk 121', disconnected_at: new Date().toISOString() }) })).body?.[0]?.id ?? null
+        otherDeploy121 = otherSite121 === null ? null : (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: P121, user_id: id121, site_id: otherSite121, version: '9.0.0', theme_name: theme121, status: 'uploaded', artifact_path: `${P121}/walk-121-elsewhere.zip` }) })).body?.[0]?.id ?? null
+        const awayH = otherDeploy121 === null ? null : await post121(pg, otherDeploy121)
+        const movedH = otherDeploy121 === null ? null : await call('/rest/v1', `/deploys?id=eq.${otherDeploy121}`, { method: 'PATCH', body: JSON.stringify({ site_id: site121 }) })
+        const hereH = otherDeploy121 === null ? null : await post121(pg, otherDeploy121)
+        check('step 121h — elsewhere: a stored version of P on another site of L\'s (planted, disconnected) → 409 { code: elsewhere }; the control: the same row moved onto the linked site answers 409 { code: busy } — the site decided it, and the busy row keeps Ghost out of it',
+          awayH?.status === 409 && awayH.body?.code === 'elsewhere' && [200, 204].includes(movedH?.status) && hereH?.status === 409 && hereH.body?.code === 'busy' && JSON.stringify(await themes121()) === themesH0,
+          JSON.stringify({ away: awayH, moved: movedH?.status ?? null, here: hereH }))
+        if (otherDeploy121 !== null) await call('/rest/v1', `/deploys?id=eq.${otherDeploy121}`, { method: 'DELETE' })
+        if (otherSite121 !== null) await call('/rest/v1', `/sites?id=eq.${otherSite121}`, { method: 'DELETE' })
+        const plantsGone = (otherDeploy121 === null || (await deploy121(otherDeploy121)) === null) && (otherSite121 === null || ((await call('/rest/v1', `/sites?id=eq.${otherSite121}&select=id`)).body ?? []).length === 0)
+        if (plantsGone) { otherDeploy121 = null; otherSite121 = null }
+        await call('/rest/v1', `/deploy_jobs?id=eq.${busy121}`, { method: 'DELETE' })
+        const busyGone = ((await call('/rest/v1', `/deploy_jobs?id=eq.${busy121}&select=id`)).body ?? []).length === 0
+        if (busyGone) busy121 = null
+        const freeH = await post121(pg, v3.id)
+        check(`step 121h — the control: the planted rows removed (read back), the same POST is accepted — 200 { outcome: live }, v3 live, ${ORIGIN121}/ "Version 3"`,
+          plantsGone && busyGone && freeH.status === 200 && freeH.body?.outcome === 'live' && (await deploy121(v3.id))?.status === 'live' && (await homeSays121(3)) === 'Version 3',
+          JSON.stringify({ plantsGone, busyGone, free: freeH }))
+      } catch (e) {
+        if (e !== STOP121) check('step 121 — the step ran to its end', false, scrub121(String(e?.message ?? e).split('\n')[0]))
+      } finally {
+        if (pg121 !== null && P121 !== null) await handBack121(pg121)
+        for (const ctx of ctxs121) await ctx.close().catch(() => {})
+        // (h)'s plants, should the step have died between planting and removing them
+        if (busy121 !== null) await call('/rest/v1', `/deploy_jobs?id=eq.${busy121}`, { method: 'DELETE' }).catch(() => {})
+        if (otherDeploy121 !== null) await call('/rest/v1', `/deploys?id=eq.${otherDeploy121}`, { method: 'DELETE' }).catch(() => {})
+        if (otherSite121 !== null) await call('/rest/v1', `/sites?id=eq.${otherSite121}`, { method: 'DELETE' }).catch(() => {})
+        if (P121 !== null) await until121(job121, atRest121, 330000).catch(() => {})
+        if (planted121) {
+          note('step 121 — the plant is left in place', `T1 shows ${prev121} and still holds ${theme121}; ${PLANT121} keeps the site and "Rollback test"; the owner's test ends with T1 put back on his go`)
+        } else {
+          if (prev121 !== null) {
+            try {
+              const now = await themes121()
+              if (now !== null && now.find((t) => t.active)?.name !== prev121) await staff121('PUT', `themes/${encodeURIComponent(prev121)}/activate/`)
+              const startNames = new Set(start121.map((t) => t.name))
+              for (const t of (await themes121()) ?? []) if (/^inflozo-/.test(t.name) && !startNames.has(t.name)) await staff121('DELETE', `themes/${encodeURIComponent(t.name)}/`)
+              const routesNow = await routesFile121()
+              if (routesBefore121 !== null && routesNow !== null && Buffer.compare(routesBefore121, routesNow) !== 0) await staff121('POST', RU121.ROUTES_PATH, RU121.routesForm(routesBefore121.toString('utf8')))
+              const after = await themes121()
+              const routesAfter = await routesFile121()
+              check(`step 121 — finally: T1 put back with the staff token — ${prev121} active again, every inflozo- theme the run uploaded deleted, routes.yaml byte for byte as at the start, read back`,
+                after !== null && after.find((t) => t.active)?.name === prev121 && after.every((t) => !/^inflozo-/.test(t.name) || startNames.has(t.name)) &&
+                routesAfter !== null && routesBefore121 !== null && Buffer.compare(routesAfter, routesBefore121) === 0,
+                JSON.stringify({ themes: (after ?? []).map((t) => `${t.name}${t.active ? '*' : ''}`), routes: `${routesBefore121?.length ?? 'unread'} → ${routesAfter?.length ?? 'unread'} bytes` }))
+            } catch (e) {
+              check('step 121 — finally: T1 put back', false, scrub121(String(e?.message ?? e).split('\n')[0]))
+            }
+          }
+          if (id121 !== null) {
+            if (site121 !== null) for (const o of await listed121('site-snapshots', `${id121}/${site121}`)) await fetch(`${SB}/storage/v1/object/site-snapshots/${id121}/${site121}/${o.name}`, { method: 'DELETE', headers: storage121 }).catch(() => {})
+            const prefixes = P121 === null ? [] : [P121, `${P121}/live`]
+            for (const prefix of prefixes) for (const o of await listed121('deploy-artifacts', prefix)) await removeObject121(`${prefix}/${o.name}`)
+            // T1 disconnected through the product, on L's own session
+            const row = await siteRow121().catch(() => null)
+            if (row !== null && row.disconnected_at === null) {
+              const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
+              try {
+                const pd = steady(await ctx.newPage())
+                await pd.goto(await magic(email121), { waitUntil: 'load' })
+                await pd.goto(at(`/sites/disconnect?site=${site121}`), { waitUntil: 'load' })
+                await pd.locator('form').getByRole('button', { name: CR121.DISCONNECT.menu, exact: true }).first().click()
+                await until121(siteRow121, (r) => r?.disconnected_at != null, 30000)
+              } catch {} finally {
+                await ctx.close().catch(() => {})
+              }
+            }
+            const leftObjects = [...(site121 === null ? [] : await listed121('site-snapshots', `${id121}/${site121}`)), ...(await Promise.all(prefixes.map((p) => listed121('deploy-artifacts', p)))).flat()]
+            const disconnected = site121 === null || (await siteRow121().catch(() => null))?.disconnected_at != null
+            // the account is always this step's own (a plant refuses an address that exists), so a failed plant's goes too
+            const del = await admin(`/admin/users/${id121}`, { method: 'DELETE', body: '{}' })
+            const usersAfter = (await users())?.length ?? null
+            const projectsAfter = await projectCount()
+            check(`step 121 — finally: no object left under the account's prefixes, T1 disconnected, ${PLANT121 ? 'the failed plant\'s account' : 'L'} deleted (its sites, projects, jobs and deploys with it), users and projects counted back`,
+              leftObjects.length === 0 && disconnected && del.status === 200 && usersBefore121 !== null && usersAfter === usersBefore121 && projectsBefore121 !== null && projectsAfter === projectsBefore121,
+              `objects ${leftObjects.length}, disconnected ${disconnected}, HTTP ${del.status}, users ${usersBefore121} → ${usersAfter}, projects ${projectsBefore121} → ${projectsAfter}`)
+          }
+        }
+      }
+      check('step 121 — the step\'s contexts recorded zero CSP violations', csp121.length === 0, JSON.stringify(csp121.slice(0, 3)))
     }
 
     // ── step 9 — the skeleton streams first ──

@@ -306,7 +306,7 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
   - one assertion that the column exists.
 
 *Server:*
-- [ ] `apps/web/lib/retention.ts` -- add the following, every word from `HISTORY_WORDS`:
+- [x] `apps/web/lib/retention.ts` -- add the following, every word from `HISTORY_WORDS`:
   - `newestFirst` by `accepted_at` (`created_at` as the tie-break);
   - `actionOf`, the emphasised row (the one right after the site's Live row);
   - `changedLine`;
@@ -315,8 +315,8 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
   - the new words: tooltip, the menu caption, Roll back and Rolling back…, the confirm's title and its two bodies, the D2d
     chip "Uploaded, not live", Re-activate, the outcomes, the refusal, `elsewhere`/`live`/`disconnected`/`busy`, and the "and
     {k} more" and "No changes since" forms.
-- [ ] `apps/web/lib/preflight.ts` -- extract `droppedKeys(previous, now)` and use it in the dropped row.
-- [ ] `apps/web/server/deploy/put-back.ts` (new) -- `putBack(io, { userId, projectId, deployId, now })` as Always states. It
+- [x] `apps/web/lib/preflight.ts` -- extract `droppedKeys(previous, now)` and use it in the dropped row.
+- [x] `apps/web/server/deploy/put-back.ts` (new) -- `putBack(io, { userId, projectId, deployId, now })` as Always states. It
   returns `live | uploaded | gone | elsewhere | live-already | disconnected | busy | { refused: DeployError }`. Its io is
   `deploy-io.ts`' own, plus four reads:
   - the row;
@@ -324,16 +324,19 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
   - the linked site with its `disconnected_at`;
   - fresh moving jobs.
 
-  It joins `server-wiring.test.ts`' lists.
-- [ ] `apps/web/server/deploy/run.ts`, `deploy-io.ts`:
+  It joins `server-wiring.test.ts`' lists. *(Dev: the real io is `server/deploy/put-back-io.ts` — `deploy-io.ts`' own update, demote,
+  stored-zip read and `call()`, held equal to them by `put-back.test.ts`, plus the four reads — so the History route's function
+  carries none of the compile; it is the file on both lists.)*
+- [x] `apps/web/server/deploy/run.ts`, `deploy-io.ts`:
   - `accepted_at` is written with `uploaded` (`:667`) and with `goLive`'s live write when the upload was accepted (`:666`);
   - `baseline` orders by `accepted_at`;
   - `DEPLOY_COLUMNS` gains it;
   - export `callTwice` and `activateStep`'s answer handling, or the minimal shared helper, so the put-back sends exactly what
-    Ship it sends.
-- [ ] `apps/web/server/retention-io.ts` and `api/cron/prune-artifacts/route.ts` -- version reads select and order by
-  `accepted_at`.
-- [ ] `history/route.ts`:
+    Ship it sends. *(Dev: `sendUpload` and `sendActivate`, the two requests both send, with `callTwice`, `twice` and `STALLED_MS`
+    exported; each reads Ghost's answer with `uploadAnswer`/`activateAnswer`.)*
+- [x] `apps/web/server/retention-io.ts` and `api/cron/prune-artifacts/route.ts` -- version reads select and order by
+  `accepted_at`. *(Dev: the cron's only `created_at` order is pass 2's over non-version rows, which stays.)*
+- [x] `history/route.ts`:
   - GET returns each stored row's `acceptedAt`, `changed`, `drops` and `action`, newest accepted first. It reads at most twice
     the plan's cap manifests: the listed rows and each one's predecessor.
   - POST `{ deploy, act: 'live' }`: `currentUser`, `isUuid`, `putBack`. The answers:
@@ -346,7 +349,7 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
     Every answer is `no-store`, and the route sets `maxDuration = 300`. The pin branch is unchanged.
 
 *UI:*
-- [ ] `apps/web/components/editor/deploy-history.tsx`:
+- [x] `apps/web/components/editor/deploy-history.tsx`:
   - **Expanded rows** for the first three rows (S8e `:300-323`):
     - the thumbnail, one aria-hidden component in the frame's shape `D2:76`;
     - chip, Live badge or PINNED, the time;
@@ -366,26 +369,27 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
     - Cancel or Esc closes it and returns focus to the Roll back that opened it.
   - **Outcomes:** said once; the list re-reads; focus goes to ✕.
   - **Refusals:** each is said under its row in a `role="status"` line. Ghost's detail is shown in mono.
-- [ ] Kit `button.tsx` -- add the quiet Roll back variant (`D2:98`) if no existing variant matches, recorded on the Kit page.
-- [ ] `editor.tsx`:
+- [x] Kit `button.tsx` -- add the quiet Roll back variant (`D2:98`) if no existing variant matches, recorded on the Kit page.
+- [x] `editor.tsx`:
   - the clock's `title` becomes the tooltip; its label stays "History";
   - `actHistory` posts the act, and the harness gets its seam `historyAct`.
 
   `deploy-wizard.tsx`: the ▾ row's caption becomes S4d's.
-- [ ] Harness `layout.tsx`/`actions.ts` -- the `x-inflozo-harness-history` header gains these values:
+- [x] Harness `layout.tsx`/`actions.ts` -- the `x-inflozo-harness-history` header gains these values:
   - `rollback`: v3 live, v2, v1 with Changed lines; v1 drops a setting;
   - `uploaded`: D2d's v3, then v2 and v1;
   - `refused`;
   - `elsewhere`;
   - `busy`.
 
-  `harnessAct` answers by header. A seam for the rows' new fields.
+  `harnessAct` answers by header. A seam for the rows' new fields. *(Dev: `rollback` lists five versions — v5 live, v4, v3, v2
+  pinned, v1 dropping a setting — so the compact rows and their Roll back are walked too; 7.22's values carry no action.)*
 
 *Tests* (each assertion seen red under a planted reversion):
-- [ ] `apps/web/retention.test.ts`, `put-back.test.ts` (new, at `apps/web/`'s root), `deploy-run.test.ts`, `drift.test.ts`,
+- [x] `apps/web/retention.test.ts`, `put-back.test.ts` (new, at `apps/web/`'s root), `deploy-run.test.ts`, `drift.test.ts`,
   `deploy.test.ts`, `busy.test.ts`, `server-wiring.test.ts` -- every row of the I/O matrix. A source test proves the put-back
   module and the route's act branch name no `holdsLock`, `resolveEntitlement` or gscan gate.
-- [ ] `tools/keyboard/journey.spec.mjs` -- the 7.23a journeys:
+- [x] `tools/keyboard/journey.spec.mjs` -- the 7.23a journeys:
   - (a) the expanded and compact rows, the tooltip, the caption;
   - (b) Enter on Roll back opens the confirm, focus on Cancel; Esc returns focus to that Roll back;
   - (c) Roll back confirmed: "Rolling back…", said once, focus on ✕;
@@ -394,18 +398,19 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
   - (f) the dropped-settings block.
 
   `floor.spec.mjs`: the expanded rows and the confirm at 1440, 1280 and 820, with no sideways scroll.
-- [ ] `tools/probe/run-verify-editor.cjs` step 121 -- the Verification's real-infra run, with a `STEP121_PLANT` mode for
+- [x] `tools/probe/run-verify-editor.cjs` step 121 -- the Verification's real-infra run, with a `STEP121_PLANT` mode for
   Deploy.
 
 *Propagation* (standing rules 3 and 7; end with a grep over `apps/web` for `order('created_at'` on `deploys` version reads):
-- [ ] Planning documents:
+- [x] Planning documents:
   - FR-J9: a dated note;
   - EXPERIENCE F8: the order, the rows, R-189's by-line, another site's rows, the dropped-settings line;
   - AD-19's note and Story 7.25's card: the put-back takes the per-site lock when it lands;
   - Story 7.32's card: D2d's row is built by 7.23a;
-  - MEASUREMENTS: a new § for the rollback executed on T1;
+  - MEASUREMENTS: a new § for the rollback executed on T1; *(§91, written by `tools/probe/record-rollback.mjs`' `--t1` run in
+    the main session)*
   - VERIFY-AT-BUILD 10's rollback half.
-- [ ] `deferred-work.md` -- resolve DW-400.
+- [x] `deferred-work.md` -- resolve DW-400.
 
 **Acceptance Criteria:**
 - **Matches the frame.** Given the editor at 1440, when History opens on a project with stored versions:
@@ -426,6 +431,35 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
 - **DW-400.** Given a version accepted after newer-checked versions, when the prune runs, then it is kept as the newest.
 
 ## Spec Change Log
+
+- **2026-11-25, Dev — what landed beside the plan, each a routine call.**
+  - **The put-back's real io is its own file**, `server/deploy/put-back-io.ts`: `deploy-io.ts`' update, demote, stored-zip read
+    and `call()` (held equal to `deploy-io.ts`' own by `put-back.test.ts`) plus the four reads. Importing `deploy-io.ts` would
+    have put jsdom and both gates into the History route's function for nothing.
+  - **Two exported requests**, `sendUpload` and `sendActivate` (`run.ts`): Ship it and the put-back both build their Ghost writes
+    through them, so "exactly what Ship it sends" is one piece of code, held by a source test.
+  - **Re-activate refused** by Ghost's activation (`activateAnswer`'s not-live answer, which runs Ghost's own check,
+    `activate.js:55-60`) is said as Ghost's own check with its detail — the same 422 words as an upload Ghost refuses. A **Roll back
+    whose upload Ghost accepted but whose activation it did not** ends `uploaded` whatever the activation answered (the theme is on
+    the site: D2d's row, Re-activate from there); an infrastructure failure, twice, is `deploy_infrastructure` (502).
+  - **The drawer waits too.** The confirm is nested in the drawer, so while a put-back is out the drawer also carries
+    `data-unstoppable`, and its Esc, ✕ and backdrop wait; every pin and action waits as the pins already waited for each other.
+  - **A compact row too full for one line** — PINNED plus the quiet Roll back does not fit 420 — moves its time, Roll back and pin
+    TOGETHER to a second line (unpinned rows stay on one).
+  - **The Changed line** names a template by `fileLabel` ("Home page 2", "404"), "added {label} template" / "removed {label}
+    template" where the other version lacks it (the frame's "added 404 template"), and draws the plain names first.
+  - **Three tokens** for frame values with none (R-236), recorded in DESIGN.md: `mint-wash` (the Live row), `sky-wash` (D2d's
+    row) and `sky-ink` (its chip's words). The thumbnail's accent block is `coral-deep` (`#E84B34` for the frame's `#E8450A`).
+  - **The harness's `rollback`** lists five versions (v5 live, v4, v3, v2 pinned, v1 dropping a setting) so the compact rows'
+    Roll back is walked; 7.22's header values keep no action, so 7.22's journeys walk the drawer as 7.22 drew it.
+  - **Two of 7.22's unit tests re-expected**, each by the rule this spec changed: `deploy.test.ts`' GET reads "newest first" from
+    `historyAnswer` (DW-400) instead of the query's `created_at`, and `busy.test.ts`' pin also waits while a put-back is out.
+  - **Walk step 121's D2d state and the owner's plant.** R-264 (a) refuses a Deploy only while Inflozo's own record says this
+    project's theme is live on the site, and putting T1 back on Casper outside Inflozo does not change that record. So both write
+    the record as a refused activation leaves it (v3 `uploaded`, `activated` false) with the service key after Casper is put back,
+    and say so; the owner's "Before you start" now describes that. The planted refused zip is v1's own files plus one template
+    Handlebars cannot parse (`GS005-TPL-ERR`, fatal) — the case §91 executed on T1 — proved fatal on gscan 6.4.2 locally before the
+    step stores it.
 
 ## Design Notes
 
@@ -520,9 +554,10 @@ move word for word into its own card."* `epics.md` carries the three cards and E
 
 **Before you start:** Deploy plants a Free test account on your go and fills in the address and links below. The account is
 connected to T1 (`ghost6.inflozo.com`), and its project **Rollback test** holds three versions:
-- **v1** and **v2** were shipped live, and each version's home page headline names its number ("Version 1", "Version 2").
-- T1 was then put back on Casper, as you would do in Ghost Admin.
-- **v3** was shipped with **Deploy only**, so it is on T1 but not live. v3's headline is "Version 3".
+- **v1**, **v2** and **v3** were shipped live in turn, and each version's home page headline names its number ("Version 1",
+  "Version 2", "Version 3").
+- T1 was then put back on Casper, as you would do in Ghost Admin, and Inflozo's record of v3 marked "uploaded, not live" — the
+  state a Deploy only, or an activation Ghost refused, leaves. So v3 is on T1 but not live.
 - v1's stored zip was swapped for one Ghost refuses, so that step 7 can show the refusal.
 
 Sign in at `https://app.inflozo.com/sign-in` with `{address filled at Deploy}` and open the link that arrives. Use a desktop
@@ -596,3 +631,128 @@ back on Casper on your go.
   **Ghost 5's half** (T3, R-238) is postponed to DW-326's pass at Story 15.7.
 - **Vercel:** the deployment is READY from the Dev head.
 - **The owner's test above (R-80).**
+
+**Executed — Dev, the main session (2026-11-25, Node 24; the real services by their variable names, every key read inside the
+script from `tools/probe/.env`, never on argv, no value printed; the owner's in-session go to both writes, "1. Go" and "1. Go"):**
+- **Supabase production database** (`SUPABASE_DB_POOLER_URL`):
+  - **Before, read-only:** a catalogue of `public` and `private` (columns; functions without the extension-owned ones, each with
+    `md5(prosrc)`; triggers; policies; indexes; enums; constraints; the client's column privileges on `deploys`) read on
+    production inside a `read only` transaction, against a PostgreSQL 17 container built from the prelude and every migration
+    except 7.23a's. Both had 576 rows, and `diff` was empty: production had drifted nowhere (7.22's lesson). `accepted_at` was absent
+    on production — the control.
+  - **First attempt — nothing applied:** the apply script's own "before" read named `accepted_at`, so it stopped with 42703
+    before any statement of the migration ran. The read was fixed and the script run again.
+  - **The apply, one transaction, then read back:**
+    - the column is `timestamp with time zone`, nullable, no default, and its comment names DW-400, R-287 and AD-8's
+      select-only;
+    - the backfill: of 5 `live` rows and 14 `uploaded` rows, all 19 carry `accepted_at = coalesce(activated_at, created_at)`; the 2
+      `checking` rows stay null;
+    - privileges: `authenticated` INSERT false, UPDATE false, SELECT true (the table-wide read); `service_role` UPDATE true;
+    - as a signed-in customer (`set local role authenticated` with a JWT sub, in a transaction rolled back): a read of the column
+      is allowed (the control), and `update public.deploys set accepted_at = now()` is refused, **42501**.
+  - **After:** production's catalogue against a container built from every migration, 7.23a's applied twice (it re-runs
+    cleanly): 578 rows each, and `diff` empty. Production before against after differs in exactly two lines: the column and the
+    customer's SELECT on it.
+- **The RLS gate's control:** the architecture's `SCHEMA.sql` at HEAD with the 7.23a migration withheld: **exit 3**, stopping
+  at the F3 list (`column "accepted_at" of relation "deploys" does not exist`). With it: exit 0 (below).
+- **T1 `ghost6.inflozo.com`** (`GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`):
+  - first, read-only, `GET themes/` with the staff token: 200, `casper` active, with `racer` and `source` beside it, and no probe
+    theme;
+  - then `node --experimental-strip-types tools/probe/record-rollback.mjs --t1`: exit 0, every row held behind its control →
+    **MEASUREMENTS §91**:
+    - the local half: v1 and v2 zipped by `zipTheme` read back with zero differences; v2 against v1 is exactly `home.hbs`;
+      gscan 6.4.2 scores v1 0 · 0 and blocks the planted theme on `GS005-TPL-ERR`.
+    - Step 1: v1 uploaded under the inactive probe name → `active false` (the control).
+    - Step 2: activated → 200, and the download equals v1.
+    - Step 3: v2 under the ACTIVE name → `active true` with no PUT (R-264), and the download is v2's.
+    - **Step 4, the Roll back:** v1's same zip again under the active name → `active true`, no PUT, and the download equals v1's
+      manifest again.
+    - **Step 5, Ghost refuses:** the planted fatal theme → **422 `ThemeValidationError`** (`GS005-TPL-ERR` fatal, `GS120`),
+      read by `uploadAnswer` as `ghost_theme_refused` with Ghost's detail. The download still equals v1's, and the probe is still
+      active: Ghost replaced nothing.
+    - **Step 6, Re-activate:** `casper` activated (the control), then the probe's activation ALONE → active, and its files are
+      still v1's.
+    - Step 7, in the `finally`: `casper` active again, the probe deleted, read back.
+- **CI on the Schema push 43392c29** (`GITHUB_TOKEN`): run 45598344309 — `check`, `rls` and `deploy` success; the Render matrix
+  success. **Vercel** (`VERCEL_TOKEN`): `dpl_8f4iMHA7BRB1bDx2Nsii4RG5AfhY` READY on production, built from 43392c29.
+- **The main session's own gates, on the final tree:** `pnpm check` exit 0 (every package 0 failing, each printing its own
+  count); `bash supabase/tests/run-rls-gate.sh` exit 0 with the 7.23a PASS line.
+- **`pnpm keyboard`, the whole gate, on the final tree:** every 7.23a journey (a)–(l), the 7.23a floor, 7.22's journeys and the
+  no-pointer sentinel passed; 2 others failed:
+  - `DW-273 (the review of 5.24e)`, waiting 5 s for the Paywall's URL;
+  - `7.18a · an activation that did not complete`, waiting 5 s for the editor's first canvas child in `open()`.
+
+  Both stopped on a page load before their own first step, as the implementation pass's floor failure did. Neither touches a
+  file this story changed: `deploy-wizard.tsx` gained a comment only. Re-run with `-g` on the two titles and
+  `--repeat-each=5`: **10 of 10 passed**, so both are intermittent. CI's full run on the Dev push is the next reading.
+- **Not hit in Dev:** Resend and Dodo (a put-back sends no email and reads no plan). Walk step 121 (production + T1) and
+  `STEP121_PLANT` are written and have never run: they are the Review's and Deploy's, from a clean worktree at the deployed sha,
+  each on the owner's in-session go.
+
+**Executed — Dev, the implementation pass (2026-11-25, Node 24; local only — it made no production, Vercel, Resend, Dodo or T1
+call):**
+- **`pnpm check`:** green (exit 0) — lint, typecheck and every package's tests, each printing its own count, the web package's
+  run with the retention, put-back, deploy-run, drift, deploy, busy and server-wiring tests among them. (On Node 22 the shell's
+  default, `live-content.test.ts` is cancelled by the runner before it runs; on Node 24, the project's, it passes.)
+- **Each new assertion seen red under a planted reversion**, then restored:
+  - `retention.test.ts`: `newestFirst` by `created_at` alone (3 red), `changedLine` without its dedupe (1), `actionOf` on any
+    site (2);
+  - `put-back.test.ts`: no demote (4), a PUT even when the upload is live (3), Re-activate uploading (1), no `disconnected`
+    refusal (1), no `accepted_at` on an accepted upload (1), Ghost's 422 detail dropped (1), a plan read in the route's act
+    branch (1);
+  - `deploy-run.test.ts`: Ship it's `uploaded` write without `accepted_at` (2); `drift.test.ts`: the baseline by `created_at`
+    (1); `busy.test.ts`: the confirm without `data-unstoppable` (1).
+- **`bash supabase/tests/run-rls-gate.sh`:** exit 0, with "PASS (7.23a): deploys.accepted_at is a nullable timestamptz with no
+  default, commented and client-unwritable".
+- **`grep -rn "holdsLock\|resolveEntitlement" apps/web/server/deploy/put-back.ts`:** nothing (and nothing in `put-back-io.ts`).
+- **The propagation grep** for `order('created_at'` on `deploys` version reads in `apps/web`: only the tie-breaks after
+  `accepted_at` (the drift baseline, the put-back's newest accepted); the sweep's pass 2 orders non-version rows and stays.
+- **The journeys, against a harness dev server:** 7.23a (a)–(l) and the floor's 7.23a at 1440/1280/820 green; with
+  `deploy-history.tsx` and `editor.tsx` put back to HEAD all nine red; 7.22's journeys, its floor, R-266's centring stop, 7.18a's
+  ▾-menu journey and the no-pointer sentinel unchanged and green.
+- **`pnpm keyboard`** (the full gate, on the working tree, Node 24): 349 passed and 1 failed — every 7.23a journey, the 7.23a and
+  7.22 floors, 7.22's journeys, R-266's centring stop and 7.18a's ▾-menu journey among the passes. The failure was the floor's
+  "the bar at every width from 720 … fine" at its first line: the Paywall's canvas frame was not there within 5 s, the page still
+  on its "Opening the editor…" skeleton — it never reached the bar's measurement. Re-run, `-g "the bar at every width from 720"
+  --repeat-each=3`: 5 of 6 passed, and the one failure was the same skeleton at the same line in the touch variant, on Home. This
+  story changes nothing the editor loads before that line (the clock's `title` is its only bar change), so it is read as the dev
+  server's intermittent first paint; CI's full run on the Dev push is the next reading.
+- **After the matrix audit's additions:** `pnpm keyboard -g "7\.23a" --repeat-each 3` (journeys (a)–(l) and the 7.23a floor):
+  the first run, 44 passed and 1 failed — (b) once, the confirm reopened before its last `close` event, fixed above; after the
+  fix, 45 passed. `pnpm check` green again (exit 0). The whole keyboard gate is the main session's.
+- **`python3 tools/doc-audit.py --check`**, twice: the first regenerated the story board (STALE), the second PASS.
+- **The matrix audit** (each row to a check that ran in that row's state; widened after the coordinator's audit found seven rows
+  checked only by words, a status code or a static read — each new check seen red under a planted reversion, then restored):
+  - Roll back over the live theme; theme not active (and the activation refused); Re-activate (and Ghost refusing again);
+    Ghost's 422; other Ghost failures; the undo; elsewhere, live, disconnected and busy as the server answers them → `put-back.test.ts`.
+  - **Number after Roll back** → `put-back.test.ts`' first test: v3 exists, v2 is put back with the newest `accepted_at`, and
+    `nextVersion` over the rows still answers 4 (red under a planted put-back that renumbers the row).
+  - Another site's row (no Roll back), the Live row (no action), order and shape, the confirm's focus, Cancel and Esc,
+    "Rolling back…", Re-activate's "Activating…", Ghost's refusal and `busy` under the row, the dropped settings → journeys 7.23a
+    (a)–(f) and `retention.test.ts`.
+  - **Gone** → journey (g): v4 pruned while its confirm is open (`rollback-gone`): the confirm closes, the re-read drops v4,
+    `said.gone(4)` is said once in the drawer's region and focus is on ✕ (red with `gone` treated as a refusal).
+  - **Reading along** → journey (h): `x-inflozo-harness-lock: reader` (the control: `#editor-add-section` disabled), a Roll back
+    confirmed and a Re-activate pressed there, each outcome said (red with the editor refusing a put-back while not holding);
+    and the act branch's source test (no lock, no plan). Walk step 121g repeats it on production once it runs.
+  - **Any plan** → the act branch's source test (no plan read); walk step 121 runs on a Free account.
+  - **Request fails** → journey (i): the put-back's request dropped by the network (`route.abort`): v4 unchanged, `actFailed(4)`
+    under it, focus back on its Roll back, nothing in the drawer's region (red with the drawer's `catch` removed); a 5xx's
+    reading is `actOutcomeOf`'s rows.
+  - **Lock lost mid-request** → journey (j): the put-back held (`page.route`), another session takes the lock through DW-241's lock
+    route and `took-over` broadcast, the bar goes up, and the confirm and the drawer stay open; released, the outcome is said and
+    focus is on ✕ (red with `data-unstoppable` removed from either dialog); and `busy.test.ts`' static read.
+  - **Dropped settings** → journey (f). **Nothing live on the site** → journey (k): `uploaded`'s v2 confirm reads "Your live site
+    switches to v2 instantly." alone (red with a live version invented for it).
+  - **A confirm closed and opened again at once** (found by the ×3 run below, not a matrix row) → journey (b)'s last block: Cancel
+    then an immediate second press, five times, opens the confirm each time. The dialog's `close` event is queued, so the second
+    press could land while `asking` still held the same row and React rendered nothing; the drawer now counts its openings
+    (`opens`) and a late `close` event for a confirm already open again does nothing. Red 3 of 3 with those lines reverted.
+  - **Disconnected** → journey (l): `disconnected` answers the 409, and "Reconnect harness.example in Sites to roll back." is said
+    under v4 with focus back on its Roll back (red with the sentence's branch removed).
+  - DW-400 → `retention.test.ts`; the baseline after a Roll back → `deploy-run.test.ts`; the Changed line's four →
+    `retention.test.ts`; order and shape → `retention.test.ts` and journey (a).
+- **Written, the main session's to run on the owner's in-session go:** walk step 121 (production + T1, `T1_WRITES=1`, from a
+  clean worktree at the deployed sha — it has never run; iterate it as a cut of steps 1–5 + 121) and `STEP121_PLANT=<address>`
+  for Deploy. Its T1 writes: three ships, the put-backs' re-uploads and activations, one refused upload, one Re-activate and a
+  staff-token activation of T1's own theme, then the `finally`'s activation and deletes.

@@ -20,7 +20,7 @@ import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCan
 import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
-import { harnessAddToken, harnessConfirm, harnessDecline, harnessHistory, harnessPin, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
+import { harnessAct, harnessAddToken, harnessConfirm, harnessDecline, harnessHistory, harnessPin, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
 import { standIns } from '../stand-ins'
 import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
@@ -169,6 +169,13 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * `free-full` and `pro-full` refuse a pin at N−1 as `pin_version` does. And `x-inflozo-harness-drift: found-unkept` is one more of
  * 7.21's journey-side values: the fake deploy route answers D3a's record with `kept: false` (DW-396), so D3a draws no Download. The
  * real list, the real cap and the real prune are walk step 120's and the RLS gate's.
+ *
+ * STORY 7.23a — the same header gains `rollback | uploaded | refused | elsewhere | busy | disconnected | rollback-gone`: `rollback` five versions with their
+ * Changed lines and Roll backs (v5 live, v4 the undo, v2 pinned, v1 dropping a setting), `uploaded` D2d's v3 with Re-activate,
+ * `refused`, `busy` and `disconnected` the `rollback` list whose put-back Ghost's check refuses (422), a ship holds or a
+ * disconnected site refuses (409), `rollback-gone` the `rollback` list with v4 pruned since it was read (404), and `elsewhere`
+ * another site's live row with no Roll back. `actions.ts`' `harnessAct` answers each put-back through the editor's `historyAct`
+ * seam; 7.22's values carry no action, so 7.22's journeys walk the drawer as 7.22 drew it.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -358,7 +365,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
       <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
-        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} historyRead={harnessHistory} historyPin={harnessPin} {...data} />
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} historyRead={harnessHistory} historyPin={harnessPin} historyAct={harnessAct} {...data} />
       </ShellUserContext>
       {children}
     </>

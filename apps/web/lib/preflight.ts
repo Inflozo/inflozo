@@ -107,6 +107,12 @@ export const PREFLIGHT_WORDS = {
   unviewedItem: (canvas: string, visitors: readonly string[]) => `${canvas}: ${visitors.join(', ')}`,
 } as const
 
+/** 7.10'S QUESTION 2, ONE RULE: the custom settings `previous` declares that `now` does not — Ghost deletes each one's stored value
+ *  when the version declaring `now` goes live (VERIFY 76, executed at §78). Pre-flight's dropped row and the History drawer's Roll
+ *  back confirm (Story 7.23a, `lib/retention.ts`) both ask it. */
+export const droppedKeys = (previous: Readonly<Record<string, unknown>>, now: Readonly<Record<string, unknown>> | null): string[] =>
+  Object.keys(previous).filter((k) => !Object.hasOwn(now ?? {}, k))
+
 /** FR-H6's free ask's flag and the first Ghost that carries it (`matrix.json`, F3) — read, never restated */
 const FREE_SINCE = CONTEXT_MATRIX.universal[ASK_FLAGS.free]?.since ?? '5.62.0'
 const [FREE_MAJOR, FREE_MINOR] = FREE_SINCE.split('.').map(Number) as [number, number]
@@ -237,8 +243,7 @@ export function preflightWarnings(f: PreflightInput): PreflightRow[] {
 
   // 7.10's Question 2: a key the last activated deploy declared and this one does not — Ghost deletes its value at activation
   if (facts !== null && f.previousCustom !== null) {
-    const now = facts.custom ?? {}
-    const gone = Object.keys(f.previousCustom).filter((k) => !Object.hasOwn(now, k))
+    const gone = droppedKeys(f.previousCustom, facts.custom)
     if (gone.length > 0) rows.push({ kind: 'dropped', title: W.dropped(gone.length, f.host), body: W.droppedBody, items: gone.map((k) => ({ text: ghostName(k) })) })
     // 7.11's Question 2: a built-in whose start moved — Ghost keeps the value it already holds
     for (const key of STARTED) {

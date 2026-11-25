@@ -11,7 +11,7 @@ import { ConditionRow } from '@/components/kit/condition-row'
 import { DesignPicker } from '@/components/kit/design-picker'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { DragGrip } from '@/components/kit/grip'
-import { Bolt, Link, LinkOff, Redo, Undo } from '@/components/kit/icons'
+import { Bolt, Link, LinkOff, Redo, RollBack, Undo } from '@/components/kit/icons'
 import { AssetRow, DropZone } from '@/components/kit/image-control'
 import { Multiline, SearchInput, TextInput } from '@/components/kit/input'
 import { ControlLabel, HelperCaption, PanelLabel, SectionHeader } from '@/components/kit/labels'
@@ -352,6 +352,10 @@ export default function KitGallery() {
           </div>
           <div className="flex flex-wrap items-center gap-[10px]">
             <Button variant="coral-outline" size={32}>Coral outline</Button>
+            {/* STORY 7.23a — the history row's two Roll backs (D2 :89, :98) and Re-activate (D2d :199), 26 high */}
+            <Button variant="coral-outline" size={26}><RollBack size={11} />Roll back</Button>
+            <Button variant="quiet" size={26} weight="font-medium"><RollBack size={11} />Roll back — quiet</Button>
+            <Button variant="coral" size={26}><Bolt size={11} strokeWidth={1.9} />Re-activate</Button>
             <Button variant="danger" size={32}>Danger</Button>
             <Button variant="danger-outline" size={32}>Danger outline</Button>
           </div>

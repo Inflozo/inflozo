@@ -8,7 +8,7 @@ import { storedSurfaces } from '@/lib/probe-rule'
 import { confirmedFrom, SWITCH_WORDS, type SwitchAnswer } from '@/lib/site-switch'
 import { tokenRefusal } from '@/lib/connect-rule'
 import { addStaffToken, type StaffTokenIo } from '@/server/staff-token'
-import type { HistoryAnswer, PinOutcome } from '@/lib/retention'
+import { HISTORY_WORDS, type ActOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
 import { HARNESS_PROJECT, HARNESS_SITES, SURFACES } from './sites'
 
 /**
@@ -122,12 +122,26 @@ export async function harnessRoutes(projectId: string, siteId: string): Promise<
 /** STORY 7.22 — the linked site's id in every Ship it shape (`layout.tsx`' `shipOf`), and the second site `two-sites` adds */
 const HISTORY_SITE = HARNESS_SITES.linked
 const OTHER_SITE = HARNESS_SITES.german
-/** one stored version of the harness project: v{n} on day n of November 2026, at nine in the morning, gscan clean */
+/** one stored version of the harness project: v{n} on day n of November 2026, at nine in the morning (accepted then too), gscan
+ *  clean — with no Changed line, no dropped setting and NO ACTION, as Story 7.22's shapes stand (their journeys walk the drawer as
+ *  7.22 drew it); Story 7.23a's shapes below hand each row its own */
 const stored = (n: number, over: Partial<HistoryAnswer['rows'][number]> = {}): HistoryAnswer['rows'][number] => ({
   id: `00000000-0000-4000-8000-0000000722${String(n).padStart(2, '0')}`,
   version: `${n}.0.0`, status: 'uploaded', pinned: false, createdAt: `2026-11-${String(n).padStart(2, '0')}T09:00:00.000Z`,
-  errors: 0, warnings: 0, siteId: HISTORY_SITE, host: 'harness.example', ...over,
+  acceptedAt: `2026-11-${String(n).padStart(2, '0')}T09:00:00.000Z`,
+  errors: 0, warnings: 0, siteId: HISTORY_SITE, host: 'harness.example', changed: null, drops: [], action: null, ...over,
 })
+/** STORY 7.23a — a Changed line in the frame's shape, from the drawer's own words (`changedLine` builds the real one on the server) */
+const changed = (...names: string[]) => `${HISTORY_WORDS.changed}${names.join(', ')}`
+/** STORY 7.23a's `rollback`: five versions on the linked site — v5 live, then v4 (the undo, emphasised), v3, v2 pinned and v1, the
+ *  last two compact, each with its Roll back; v1 drops a custom setting the live v5 declares (`accent_label`) */
+const ROLLBACK = [
+  stored(1, { changed: HISTORY_WORDS.firstDeploy, drops: ['accent_label'], action: 'rollback' }),
+  stored(2, { changed: changed('Header'), pinned: true, action: 'rollback' }),
+  stored(3, { changed: `${changed('Header')} · ${HISTORY_WORDS.addedTemplate('404')}`, warnings: 2, action: 'rollback' }),
+  stored(4, { changed: changed('Post Grid', 'Newsletter'), action: 'rollback' }),
+  stored(5, { changed: changed('Hero', 'Footer'), status: 'live' }),
+]
 
 /**
  * STORY 7.22 — THE HARNESS'S HISTORY READ, the editor's `historyRead` seam (the route's GET everywhere else): no database, so the
@@ -145,7 +159,29 @@ const stored = (n: number, over: Partial<HistoryAnswer['rows'][number]> = {}): H
 export async function harnessHistory(projectId: string): Promise<HistoryAnswer | null> {
   if (!HARNESS || projectId !== HARNESS_PROJECT.id) return null
   const asked = (await headers()).get('x-inflozo-harness-history')
-  const answer = (rows: HistoryAnswer['rows']): HistoryAnswer => ({ linkedSiteId: HISTORY_SITE, rows: [...rows].reverse() })
+  const answer = (rows: HistoryAnswer['rows']): HistoryAnswer => ({
+    linkedSiteId: HISTORY_SITE,
+    liveVersion: rows.find((r) => r.status === 'live' && r.siteId === HISTORY_SITE)?.version ?? null,
+    rows: [...rows].reverse(),
+  })
+  // Story 7.23a's shapes (`harnessAct` answers each one's put-back)
+  if (asked === 'rollback' || asked === 'refused' || asked === 'busy' || asked === 'disconnected') return answer(ROLLBACK)
+  // `rollback` with v4 pruned since the drawer read it: a journey switches to it while v4's confirm is open
+  if (asked === 'rollback-gone') return answer(ROLLBACK.filter((r) => r.version !== '4.0.0'))
+  if (asked === 'uploaded') {
+    return answer([
+      stored(1, { changed: HISTORY_WORDS.firstDeploy, action: 'rollback' }),
+      stored(2, { changed: changed('Header'), action: 'rollback' }),
+      stored(3, { changed: changed('Hero'), action: 'reactivate' }),
+    ])
+  }
+  if (asked === 'elsewhere') {
+    return answer([
+      stored(1, { changed: HISTORY_WORDS.firstDeploy, action: 'rollback' }),
+      stored(2, { changed: HISTORY_WORDS.firstDeploy, siteId: OTHER_SITE, host: 'de.harness.example', status: 'live' }),
+      stored(3, { changed: changed('Hero'), status: 'live' }),
+    ])
+  }
   if (asked === 'fail') return null
   if (asked === 'free' || asked === 'pin-fails') return answer([stored(1), stored(2, { warnings: 2 }), stored(3, { status: 'live' })])
   if (asked === 'gone') return answer([stored(2, { warnings: 2 }), stored(3, { status: 'live' })])
@@ -159,6 +195,22 @@ export async function harnessHistory(projectId: string): Promise<HistoryAnswer |
  *  (the drawer's D2b), any press under `gone` is `gone` and under `pin-fails` a failed request; every other pin and every unpin
  *  lands. ponytail: stateless — a pin after an unpin in a full history is still
  *  refused, which no journey asks; `pin_version`'s own count is the RLS gate's and walk step 120's. Only the harness project. */
+/** STORY 7.23a — THE HARNESS'S PUT-BACK, the editor's `historyAct` seam (the route's POST `{ deploy, act: 'live' }` everywhere else),
+ *  answered by `x-inflozo-harness-history`: `rollback` and `uploaded` go live; `refused` is Ghost's own check refusing the upload
+ *  (the route's 422, with Ghost's detail); `busy` a ship of the site under way, `disconnected` the linked site disconnected and
+ *  `elsewhere` another site's row (the route's 409s); `gone` and `rollback-gone` the route's 404 (`rollback-gone`'s read lacks v4,
+ *  so the re-read drops it); anything else a request that failed. Stateless, as `harnessPin` is: the drawer's re-read answers the same
+ *  list. The real put-back is `put-back.test.ts`' and walk step 121's. Only the harness project. */
+export async function harnessAct(projectId: string, deploy: string): Promise<ActOutcome> {
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof deploy !== 'string') return { kind: 'failed' }
+  const asked = (await headers()).get('x-inflozo-harness-history')
+  if (asked === 'rollback' || asked === 'uploaded') return { kind: 'live' }
+  if (asked === 'refused') return { kind: 'refused', code: 'ghost_theme_refused', detail: 'The theme "inflozo-pilot-sections" is not compatible or contains errors. Missing template index.hbs.' }
+  if (asked === 'busy' || asked === 'elsewhere' || asked === 'disconnected') return { kind: 'refused', code: asked }
+  if (asked === 'gone' || asked === 'rollback-gone') return { kind: 'gone' }
+  return { kind: 'failed' }
+}
+
 export async function harnessPin(projectId: string, deploy: string, pinned: boolean): Promise<PinOutcome> {
   if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof deploy !== 'string') return 'failed'
   const asked = (await headers()).get('x-inflozo-harness-history')

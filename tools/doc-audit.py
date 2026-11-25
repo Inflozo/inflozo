@@ -557,6 +557,20 @@ DOCS = [
   "showing exactly those (a full replacement, storage.js:95-107); a flipped token 401, the Admin key 403 and an unknown "
   "name 400 (R-288: Ghost's answer for a theme it does not hold); the probe deleted and the active theme read back as found; §90 written only when every row held. --help "
   "exits 2 before anything."),
+ ('tools/probe/record-rollback.mjs', 'tool', 'Rollback recorder',
+  "Story 7.23a's recorder (standing rule 1, R-82, FR-J9, R-264, MEASUREMENTS §91, VERIFY-AT-BUILD 10's rollback half): Roll "
+  "back and Re-activate asked of T1 exactly as the put-back asks. Node 24 with --experimental-strip-types; every request is "
+  "the product's adminRequest, every answer its uploadAnswer and activateAnswer, every zip its zipTheme and every "
+  "comparison its drift check's contentManifest, liveManifest and compareManifests. THE LOCAL HALF (no flag, no request, "
+  "writes nothing): two versions of the pilot theme differing in home.hbs alone, each read back at zero differences and "
+  "v2 against v1 exactly that file (the control); the pinned v6 gscan clean on v1 and blocking a planted fatal theme on "
+  "GS005-TPL-ERR (the control). THE --t1 HALF (the owner's go, the main session only; writes under a probe theme name and "
+  "makes it T1's live theme for about a minute): v1 uploaded inactive (active false, the control) and activated, its "
+  "download equal to v1; v2 and then v1's same zip uploaded under the active name, each live with no PUT and downloaded "
+  "as that version; the fatal theme under the active name refused with a 422 ThemeValidationError read as "
+  "ghost_theme_refused with Ghost's detail, the download still v1 and the probe still active; casper made live, then the "
+  "probe's activation alone making v1 live again; in a finally the start's theme re-activated, the probe deleted and both "
+  "read back; §91 written only when every row held. Any argument but --t1 prints the header and exits 2."),
  ('tools/probe/run-verify-snapshot-orphans.py', 'tool', 'Snapshot orphan purge harness',
   "Story 7.20b's harness (standing rule 1, R-82, FR-C6, R-285): AD-33's E7 cron, purge-snapshots, called on the deployed "
   "route and read back off the wire, in run-verify-account-purge.py's shape and with its helpers (redirects disabled, a 401 "

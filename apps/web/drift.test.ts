@@ -161,3 +161,15 @@ test('7.22: pruning never touches the drift baseline — the prune\'s clear writ
   assert.match(baseline, /\.in\('status', \['uploaded', 'live'\]\)/, 'the baseline is the newest accepted upload (R-287)')
   assert.doesNotMatch(baseline, /artifact_path/, 'whether or not its zip is still stored')
 })
+
+test('7.23a (DW-400, R-287): the drift baseline is the newest upload Ghost ACCEPTED — the query orders by `accepted_at` (nulls last), `created_at` breaking a tie — so a Roll back\'s upload of an older version becomes the baseline; the put-back\'s "newest accepted" asks in the same order', () => {
+  const deployIo = readFileSync('server/deploy/deploy-io.ts', 'utf8')
+  const baseline = deployIo.slice(deployIo.indexOf('async baseline('), deployIo.indexOf('async previous('))
+  const order = ".order('accepted_at', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }).limit(1)"
+  assert.ok(baseline.includes(order), 'by accepted_at, then created_at')
+  assert.doesNotMatch(baseline.replace(order, ''), /\.order\('created_at'/, 'never by the Pre-flight\'s time alone')
+  assert.ok(readFileSync('server/deploy/put-back-io.ts', 'utf8').includes(order), 'Re-activate\'s "Ghost holds these files" is the same newest')
+  // the poll reads the column with the row; the prune reads it to order its rule
+  assert.match(deployIo, /const DEPLOY_COLUMNS = '[^']*\baccepted_at\b/)
+  assert.match(readFileSync('server/retention-io.ts', 'utf8'), /\.select\('id, status, artifact_path, pinned, created_at, accepted_at'\)/)
+})

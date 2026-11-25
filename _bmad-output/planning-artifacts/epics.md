@@ -4730,6 +4730,10 @@ runs on beside the new one (DW-373).
 **And** *(given an owner by Story 7.18b's Review, 2026-10-19)* a switch never moves a site while a deploy to it is uploading
 or activating: Story 7.18b's `switchSite` and Ship it's re-read of the link (DW-374) do not see a job already past its claim, so
 the switch takes the site's lock, or waits for the job moving on it (DW-379).
+**And** *(given an owner by Story 7.23a's Dev, 2026-11-25)* the History drawer's put-back — Roll back and Re-activate
+(`apps/web/server/deploy/put-back.ts`), which upload and activate a stored artefact with no `deploy_jobs` row — takes the same
+per-site lock: today it refuses while a ship of the project × site is moving, and a ship that starts during a put-back can
+still race it (Ghost answers `EEXIST` to one of them, `deploy_running`); the lock closes that race.
 
 **FRs:** FR-J11. · **Owner test:** none.
 
@@ -4939,7 +4943,10 @@ Inflozo last put live, and an uploaded-but-inactive theme is not what visitors a
 wizard state matches D2e" and "the deploy-only ending matches D2f", with their one-click activate — "Deploy only" needs its
 ending; this story keeps the history row)*
 **And** **(6)** it **sends no deploy-failure email**
-**And** the history row matches D2d.
+**And** the history row matches D2d. *(Built by Story 7.23a's Dev, 2026-11-25: D2d's row in the History drawer — the sky chip
+"Uploaded, not live", the wizard's own D2e line and a one-press Re-activate, drawn for an `uploaded` row that is the newest upload
+Ghost accepted for the project × site — and its Re-activate, `PUT activate` alone through `server/deploy/put-back.ts`. This story
+keeps its other criteria.)*
 **And** *(given an owner by Story 7.21's Review, 2026-11-24)* an upload Ghost kept whose answer was lost (its row `failed`) is
 not left to read as drift: a found drift that matches a newer `failed` row's manifest exactly is clean against that version
 (DW-397)

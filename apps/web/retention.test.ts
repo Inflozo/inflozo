@@ -8,8 +8,13 @@ import { readFileSync } from 'node:fs'
 import { nextVersion, shipStateOf } from './lib/deploy.ts'
 import { PLANS, type PlanId } from './lib/plan.ts'
 import {
-  chipTone, FEWEST_KEPT, historyCap, historyRows, HISTORY_WORDS, isStoredVersion, pinOutcomeOf, pinSaid, prunable, timeLabel, type HistoryAnswer, type Stored,
+  actionOf, actOutcomeOf, actSaid, changedLine, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
+  newestAccepted, pinOutcomeOf, pinSaid, prunable, timeLabel, type AcceptedRow, type HistoryAnswer, type Stored,
 } from './lib/retention.ts'
+import { droppedKeys } from './lib/preflight.ts'
+import { PREFLIGHT_WORDS } from './lib/preflight.ts'
+import { DEPLOY_WORDS, deployError } from './lib/deploy.ts'
+import type { ContentManifest } from './lib/drift.ts'
 import { pruneProject, strictPlan, type RetentionIo } from './server/retention.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
@@ -160,7 +165,11 @@ const A = 'site-a'
 const B = 'site-b'
 const answerOf = (rows: Partial<HistoryAnswer['rows'][number]>[], linked: string | null = A): HistoryAnswer => ({
   linkedSiteId: linked,
-  rows: rows.map((r, i) => ({ id: `d${i}`, version: `${i + 1}.0.0`, status: 'uploaded', pinned: false, createdAt: at(i + 1), errors: 0, warnings: 0, siteId: A, host: 'a.com', ...r })),
+  liveVersion: null,
+  rows: rows.map((r, i) => ({
+    id: `d${i}`, version: `${i + 1}.0.0`, status: 'uploaded', pinned: false, createdAt: at(i + 1), acceptedAt: at(i + 1), errors: 0, warnings: 0, siteId: A, host: 'a.com',
+    changed: null, drops: [], action: null, ...r,
+  })),
 })
 
 test('the drawer\'s rows: stored versions only, newest first, the Live one marked, the gscan counts kept, and "on {host}" only where the row\'s site is not the linked one', () => {
@@ -240,4 +249,157 @@ test('the REAL clear (`server/retention-io.ts`) carries every condition the fake
   }
   // the versions read is the same predicate as `isStoredVersion`, scoped to the user
   assert.match(flat, /\.eq\('project_id', projectId\) \.eq\('user_id', userId\) \.in\('status', \['uploaded', 'live'\]\) \.not\('artifact_path', 'is', null\)/)
+})
+
+// ── Story 7.23a — newest accepted, who may act, the Changed line, the route's answer and the put-back's words ─────────────
+
+test('7.23a (DW-400): newest is the upload Ghost ACCEPTED — a version checked before newer ones and shipped after them is the newest, so the prune keeps it; the control: by `created_at` alone it would be pruned the moment Ghost took it', () => {
+  const free = historyCap('free')
+  // v1–v3 checked and shipped in turn; then a check made on day 0 (before a re-link) is shipped on day 9
+  const late = v(0, { id: 'late', accepted_at: at(9) })
+  const rows = [v(1, { accepted_at: at(1) }), v(2, { accepted_at: at(2) }), v(3, { accepted_at: at(3) }), late]
+  assert.deepEqual(ids(prunable(rows, free)), ['v1'], 'the late upload is the newest: v1 goes, never it')
+  // the control: with no accepted time the late upload stands on its check's time — the oldest — and is pruned
+  assert.deepEqual(ids(prunable([...rows.slice(0, 3), v(0, { id: 'late' })], free)), ['late'])
+  // a tie on `accepted_at` falls back to `created_at`, then the id
+  assert.deepEqual(ids(prunable([v(1, { accepted_at: at(5) }), v(2, { accepted_at: at(5) }), v(3, { accepted_at: at(5) }), v(4, { accepted_at: at(5) })], free)), ['v1'])
+  // the list orders the same way, and the row's time is the accepted one
+  const listed = historyRows(answerOf([{ createdAt: at(1), acceptedAt: at(9) }, { createdAt: at(2), acceptedAt: at(2) }, { createdAt: at(3), acceptedAt: at(3) }]))
+  assert.deepEqual(listed.map((r) => r.n), [1, 3, 2])
+  assert.equal(listed[0]?.acceptedAt, at(9))
+})
+
+test('7.23a: who may act — a stored version on the linked site that is not its Live row; Re-activate when it is `uploaded` AND the newest accepted on its site, Roll back otherwise; another site\'s row, the Live row and a pruned row have none', () => {
+  const row = (over: Partial<{ id: string; status: string; artifact_path: string | null; site_id: string }> = {}) => ({ id: 'v2', status: 'uploaded', artifact_path: 'p/v2.zip', site_id: A, ...over })
+  assert.equal(actionOf(row(), { linkedSiteId: A, newest: 'v3' }), 'rollback')
+  assert.equal(actionOf(row(), { linkedSiteId: A, newest: 'v2' }), 'reactivate', 'Ghost holds its files: the activation alone')
+  assert.equal(actionOf(row({ status: 'live' }), { linkedSiteId: A, newest: 'v2' }), null, 'the Live row')
+  assert.equal(actionOf(row({ site_id: B }), { linkedSiteId: A, newest: 'v2' }), null, 'another site\'s row (Design Notes)')
+  assert.equal(actionOf(row(), { linkedSiteId: null, newest: 'v2' }), null, 'a project linked to no site')
+  assert.equal(actionOf(row({ artifact_path: null }), { linkedSiteId: A, newest: 'v3' }), null, 'a pruned row is no version')
+  assert.equal(actionOf(row({ status: 'failed' }), { linkedSiteId: A, newest: 'v2' }), null)
+  // the newest accepted is read over stored AND pruned rows, by `accepted_at`
+  const site = [
+    { id: 'v1', status: 'uploaded', created_at: at(1), accepted_at: at(1) },
+    { id: 'v2', status: 'live', created_at: at(2), accepted_at: at(8) },
+    { id: 'v3', status: 'uploaded', created_at: at(3), accepted_at: at(3) },
+    { id: 'v4', status: 'failed', created_at: at(9), accepted_at: null },
+  ]
+  assert.equal(newestAccepted(site), 'v2', 'a failed row was never accepted')
+  assert.equal(newestAccepted([]), null)
+})
+
+const m = (files: Record<string, string | { sha256: string; layer: string }>): ContentManifest =>
+  Object.fromEntries(Object.entries(files).map(([path, f]) => [path, typeof f === 'string' ? { sha256: f, fingerprint: path } : { sha256: f.sha256, fingerprint: `id-${f.layer}`, layer: f.layer, category: 'hero' }]))
+
+test('7.23a: the Changed line, the matrix\'s four — "First deploy" with no earlier version, a section by its SHIPPED layer and a template the earlier lacks marked "added", no line where either manifest is null, and "No changes since v1"', () => {
+  const v1 = m({ 'index.hbs': 'a', 'partials/sections/home/hero.hbs': { sha256: 'h1', layer: 'Hero' }, 'package.json': 'p' })
+  const v2 = m({ 'index.hbs': 'a', 'partials/sections/home/hero.hbs': { sha256: 'h2', layer: 'Hero' }, 'package.json': 'p', 'error.hbs': 'e' })
+  assert.equal(changedLine(v1, null), HISTORY_WORDS.firstDeploy)
+  assert.equal(changedLine(v2, { version: '1.0.0', manifest: v1 }), 'Changed: Hero · added 404 template')
+  assert.equal(changedLine(null, { version: '1.0.0', manifest: v1 }), null)
+  assert.equal(changedLine(v2, { version: '1.0.0', manifest: null }), null)
+  assert.equal(changedLine(v1, { version: '1.0.0', manifest: v1 }), 'No changes since v1')
+  // a removed template, every other file by its kind word, each name once, plain names first
+  const v3 = m({ 'index.hbs': 'b', 'partials/sections/home/hero.hbs': { sha256: 'h2', layer: 'Hero' }, 'package.json': 'q', 'assets/css/screen.css': 's' })
+  assert.equal(changedLine(v3, { version: '2.0.0', manifest: v2 }), `Changed: Home page 2, Theme settings, Stylesheet ${HISTORY_WORDS.more(1)}`)
+  const few = m({ 'index.hbs': 'a', 'partials/sections/home/hero.hbs': { sha256: 'h2', layer: 'Hero' }, 'package.json': 'p' })
+  assert.equal(changedLine(few, { version: '2.0.0', manifest: v2 }), 'Changed: removed 404 template')
+  // two fonts are one name; a move (same bytes, a new path) is no change
+  const fonts = m({ 'assets/fonts/a.woff2': '1', 'assets/fonts/b.woff2': '2' })
+  assert.equal(changedLine(m({ 'assets/fonts/a.woff2': '9', 'assets/fonts/b.woff2': '8' }), { version: '4.0.0', manifest: fonts }), 'Changed: Font')
+  assert.equal(changedLine(m({ 'assets/fonts/c.woff2': '1', 'assets/fonts/b.woff2': '2' }), { version: '4.0.0', manifest: fonts }), 'No changes since v4')
+})
+
+const accepted = (n: number, over: Partial<AcceptedRow> = {}): AcceptedRow =>
+  ({ id: `v${n}`, version: `${n}.0.0`, status: 'uploaded', site_id: A, created_at: at(n), accepted_at: at(n), artifact_path: `${P}/v${n}.zip`, ...over })
+
+test('7.23a: the route\'s answer — newest accepted first, each row\'s Changed line against its predecessor (a pruned one counts), the settings Ghost would forget against the site\'s Live row, the action, and the live version; the manifests read are bounded by the listed rows, their predecessors and the Live rows', () => {
+  const rows = [
+    accepted(1, { artifact_path: null }), // pruned: its manifest is kept, and it is v2's predecessor
+    accepted(2),
+    accepted(3, { status: 'live' }),
+    accepted(4, { site_id: B }),
+  ]
+  const heavy = new Map([
+    ['v1', { content_manifest: m({ 'index.hbs': 'a' }), preflight: { custom: { accent_label: 'x' } } }],
+    ['v2', { content_manifest: m({ 'index.hbs': 'b' }), preflight: { custom: {} } }],
+    ['v3', { content_manifest: m({ 'index.hbs': 'b' }), preflight: { custom: { accent_label: 'x', hero_size: 'Large' } } }],
+    ['v4', { content_manifest: null, preflight: null }],
+  ])
+  assert.deepEqual(heavyIds(rows).sort(), ['v1', 'v2', 'v3', 'v4'], 'v1 is read only as v2\'s predecessor')
+  assert.deepEqual(heavyIds([accepted(5, { artifact_path: null }), accepted(6, { artifact_path: null }), accepted(7)]).sort(), ['v6', 'v7'], 'an older pruned row no listed row needs is never read')
+  const listed = rows.filter(isStoredVersion).map((r) => ({ id: r.id, pinned: false, errors: 0, warnings: 0, host: r.site_id === A ? 'a.com' : 'b.com' }))
+  const answer = historyAnswer({ linkedSiteId: A, listed: listed.reverse(), rows, heavy })
+  assert.equal(answer.liveVersion, '3.0.0')
+  assert.deepEqual(answer.rows.map((r) => r.id), ['v4', 'v3', 'v2'], 'newest accepted first')
+  const by = Object.fromEntries(answer.rows.map((r) => [r.id, r]))
+  assert.equal(by.v2?.changed, 'Changed: Home page 2', 'compared with the pruned v1')
+  assert.equal(by.v3?.changed, 'No changes since v2')
+  assert.equal(by.v4?.changed, HISTORY_WORDS.firstDeploy, 'v4 is the first on its own site')
+  assert.deepEqual(by.v2?.drops, ['accent_label', 'hero_size'], 'the Live v3 declares two settings v2 lacks (`droppedKeys`, Pre-flight\'s rule)')
+  assert.deepEqual(by.v3?.drops, [], 'the Live row drops nothing')
+  assert.deepEqual(by.v4?.drops, [], 'a row with no facts lists nothing (Pre-flight\'s own rule)')
+  assert.deepEqual([by.v4?.action, by.v3?.action, by.v2?.action], [null, null, 'rollback'])
+  // the drawer: the first three expanded, the undo emphasised, the dropped settings named as Ghost names them
+  const drawn = historyRows(answer)
+  assert.deepEqual(drawn.map((r) => [r.n, r.expanded, r.emphasis]), [[4, true, false], [3, true, false], [2, true, true]])
+  assert.deepEqual(drawn[2]?.drops, ['Accent label', 'Hero size'])
+  assert.equal(EXPANDED, 3)
+})
+
+test('7.23a: D2d\'s row — an `uploaded` row that is the newest accepted on the linked site answers Re-activate; once another upload is newer it is a Roll back', () => {
+  const rows = [accepted(1, { status: 'live' }), accepted(2)]
+  const listed = rows.map((r) => ({ id: r.id, pinned: false, errors: 0, warnings: 0, host: 'a.com' }))
+  const heavy = new Map(rows.map((r) => [r.id, { content_manifest: null, preflight: null }]))
+  assert.deepEqual(historyAnswer({ linkedSiteId: A, listed, rows, heavy }).rows.map((r) => r.action), ['reactivate', null])
+  const later = [accepted(1, { status: 'live', accepted_at: at(9) }), accepted(2)]
+  assert.deepEqual(historyAnswer({ linkedSiteId: A, listed, rows: later, heavy }).rows.map((r) => [r.id, r.action]), [['v1', null], ['v2', 'rollback']])
+})
+
+test('7.23a: the emphasised Roll back is the row right after the linked site\'s Live row — the undo — and nothing is emphasised with nothing live', () => {
+  const rows = historyRows(answerOf([{ action: 'rollback' }, { action: 'rollback' }, { status: 'live' }, { action: 'rollback' }]))
+  assert.deepEqual(rows.map((r) => [r.n, r.emphasis, r.expanded]), [[4, false, true], [3, false, true], [2, true, true], [1, false, false]])
+  assert.deepEqual(historyRows(answerOf([{ action: 'rollback' }, { action: 'reactivate' }])).map((r) => r.emphasis), [false, false])
+  // another site's Live row is not the linked site's
+  assert.deepEqual(historyRows(answerOf([{ action: 'rollback' }, { status: 'live', siteId: B }])).map((r) => r.emphasis), [false, false])
+})
+
+test('7.23a: the put-back\'s outcome from the route\'s answer — 200 live/uploaded, 404 gone, 409 its four codes, 422 Ghost\'s check with its detail, 502 the code and message — and anything else a request that failed; each said once in its own words', () => {
+  assert.deepEqual(actOutcomeOf(200, { outcome: 'live' }), { kind: 'live' })
+  assert.deepEqual(actOutcomeOf(200, { outcome: 'uploaded' }), { kind: 'uploaded' })
+  assert.deepEqual(actOutcomeOf(404, null), { kind: 'gone' })
+  for (const code of ['elsewhere', 'live', 'disconnected', 'busy']) assert.deepEqual(actOutcomeOf(409, { code }), { kind: 'refused', code })
+  assert.deepEqual(actOutcomeOf(409, { code: 'other' }), { kind: 'failed' })
+  assert.deepEqual(actOutcomeOf(422, { code: 'ghost_theme_refused', detail: 'Missing index.hbs' }), { kind: 'refused', code: 'ghost_theme_refused', detail: 'Missing index.hbs' })
+  const key = deployError('ghost_key_refused', { host: 'a.com' })
+  assert.deepEqual(actOutcomeOf(502, { code: key.code, message: key.message }), { kind: 'refused', code: key.code, message: key.message })
+  for (const [status, body] of [[0, null], [500, null], [200, {}], [502, {}]] as const) assert.deepEqual(actOutcomeOf(status, body), { kind: 'failed' })
+  assert.equal(actSaid({ kind: 'live' }, 2, 'a.com'), 'v2 is live on a.com.')
+  assert.equal(actSaid({ kind: 'uploaded' }, 2, 'a.com'), "v2 is on a.com but isn't live yet.")
+  assert.equal(actSaid({ kind: 'gone' }, 2, 'a.com'), HISTORY_WORDS.said.gone(2))
+  assert.equal(actSaid({ kind: 'refused', code: 'ghost_theme_refused', detail: 'x' }, 1, 'a.com'), HISTORY_WORDS.ghostRefused(1))
+  assert.equal(actSaid({ kind: 'refused', code: 'disconnected' }, 1, 'a.com'), 'Reconnect a.com in Sites to roll back.')
+  assert.equal(actSaid({ kind: 'refused', code: 'busy' }, 1, 'a.com'), 'A deploy to a.com is under way. Try again when it ends.')
+  assert.equal(actSaid({ kind: 'refused', code: key.code, message: key.message }, 1, 'a.com'), key.message, 'Ghost\'s other answers: `deployError`\'s words')
+  assert.equal(actSaid({ kind: 'failed' }, 1, 'a.com'), HISTORY_WORDS.actFailed(1))
+})
+
+test('7.23a: the words — S8e\'s tooltip and S4d\'s caption whole, the confirm\'s title and its three bodies (nothing live; the frame\'s; ending at "stays in history." where Ghost will forget a setting), D2d\'s chip and the wizard\'s own line and busy word', () => {
+  assert.equal(HISTORY_WORDS.tooltip, 'History — every version, one click back')
+  assert.equal(HISTORY_WORDS.menuCaption, 'Versions, gscan reports, rollback')
+  assert.equal(HISTORY_WORDS.open, 'History', 'the clock\'s name stays')
+  assert.equal(HISTORY_WORDS.confirmTitle(4), 'Roll back to v4?')
+  assert.equal(HISTORY_WORDS.confirmBody(4, 5, false), 'Your live site switches to v4 instantly. v5 stays in history — nothing is lost.')
+  assert.equal(HISTORY_WORDS.confirmBody(4, 5, true), 'Your live site switches to v4 instantly. v5 stays in history.')
+  assert.equal(HISTORY_WORDS.confirmBody(4, null, false), 'Your live site switches to v4 instantly.')
+  assert.equal(HISTORY_WORDS.uploadedChip, 'Uploaded, not live')
+  assert.equal(HISTORY_WORDS.notLive, DEPLOY_WORDS.notLiveTitle)
+  assert.equal(HISTORY_WORDS.activating, DEPLOY_WORDS.activating)
+  assert.equal(HISTORY_WORDS.rollingBack, 'Rolling back…')
+  assert.equal(HISTORY_WORDS.rollBackName(3), 'Roll back to v3')
+  // Pre-flight's own rule, one function for both callers
+  assert.deepEqual(droppedKeys({ a: 1, b: 2 }, { a: 1 }), ['b'])
+  assert.deepEqual(droppedKeys({ a: 1 }, null), ['a'])
+  assert.match(PREFLIGHT_WORDS.dropped(1, 'a.com'), /^Ghost will forget 1 setting on a\.com$/)
 })

@@ -138,7 +138,7 @@ function saveRoutes(file: string) {
 
 /** S4's Ship it with S4d's ▾ menu: Deploy & activate (⌘⏎), Deploy only, Download routes.yaml while the project has routing, and
  *  — since Story 7.22 — History (S4d `:387`'s clock row, last, at every width: the bar's clock hides where the bar is compact, so
- *  this row is the drawer's way in there; its caption says no "rollback" until Story 7.23a builds Roll back). Download theme is
+ *  this row is the drawer's way in there; its caption is S4d's whole since Story 7.23a built Roll back). Download theme is
  *  ABSENT until Story 7.26 (UX-DR3). R-264 (a): Deploy only is GREYED while this project's theme is the one live on the site
  *  (`uploadOnlyBlock`), its reason in the row's caption slot, and a press on it opens nothing. */
 export function ShipButton({ ship, routes, busy, onShip, onHistory }: { ship: ShipState | undefined; routes: string | null; busy: boolean; onShip: (mode: Mode) => void; onHistory: () => void }) {

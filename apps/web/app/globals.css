@@ -82,6 +82,11 @@
   --color-mint-line: #BFE7D6;
   --color-marigold-line: #F5E3B8;
   --color-marigold-glyph: #B87A00;      /* D2's filled pin and D2b's warning glyph (`D2 Deploy History Completed.dc.html:89`, `:178`), Story 7.22 */
+  /* Story 7.23a — D2's expanded rows: the Live row's mint wash, D2d's sky wash and its chip's words (`D2 Deploy History
+     Completed.dc.html:75`, `:194`, `:197`) */
+  --color-mint-wash: #F7FDF9;
+  --color-sky-wash: #F7FAFF;
+  --color-sky-ink: #2A448C;
   /* B18's right-to-left strip (B Missing Surfaces :1797, :1800): its title and Understood's words, and Understood's border
      (Story 7.12's review) */
   --color-marigold-ink: #5C4200;

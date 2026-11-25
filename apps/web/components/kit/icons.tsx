@@ -421,6 +421,13 @@ export const HistoryClock = (p: IconProps) => (
     <polyline points="12 7 12 12 15 14" />
   </Icon>
 )
+/** STORY 7.23a — S8e's and D2's Roll back glyph (`S8 Deploy.dc.html:313`, `D2 Deploy History Completed.dc.html:89`), as drawn */
+export const RollBack = ({ strokeWidth = 1.8, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M3 12a9 9 0 1 0 3-6.7" />
+    <polyline points="3 4 3 9 8 9" />
+  </Icon>
+)
 /** STORY 7.22 — D2's pin (`D2 Deploy History Completed.dc.html:80`, `:89`): outlined to pin, FILLED once pinned (the caller
  *  passes `fill="currentColor"`), at the frame's 1.6 stroke */
 export const Pin = ({ strokeWidth = 1.6, ...p }: IconProps) => (

@@ -11,14 +11,16 @@ import { greyedProps, reason, ring, type Greyed } from './greyed'
    `Button` has no `disabled` (a compile error, like an unreasoned grey); a control another
    control switched off is greyed with its reason, and that lives on the controls. */
 
-type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | 'danger' | 'danger-outline' | 'marigold'
+type Variant = 'coral' | 'primary' | 'secondary' | 'ghost' | 'coral-outline' | 'quiet' | 'danger' | 'danger-outline' | 'marigold'
 /* STORY 7.16a — a fourth height, a frame's: the sheets' footers in S9c/S9e (`S9 Routes.dc.html:226-227`, `:268-269`) and S7c
    draw 38 high at radius 10 and 13px, the primary 0 20 across. Said HERE, as the weight is, so no caller overrides a
    height through `className` and loses to the stylesheet's order. */
 /* STORY 7.18a — and two more, S8's and D2's: the deploy wizard's footers draw 40 high (Run checks, Ship it, S8d′'s pair,
    `S8 Deploy.dc.html:68`, `:127`, `:237-238`) and its endings 42 (S8d's View site and Done, D2e/D2f's pair, `:206-207`,
    `D2 Deploy History Completed.dc.html:337-338`), both at radius 12, 14px and 22 across. */
-type Size = 44 | 42 | 40 | 38 | 36 | 32
+/* STORY 7.23a — and the smallest, D2's and S8e's row actions: Roll back and Re-activate draw 26 high at radius 10, 12px and 11
+   across (`D2 Deploy History Completed.dc.html:89`, `:98`, `:199`; `S8 Deploy.dc.html:313`, `:321`). */
+type Size = 44 | 42 | 40 | 38 | 36 | 32 | 26
 /* The Kit's own weight is 600. A FRAME MAY DRAW A DIFFERENT ONE, and it must be said HERE rather
    than passed through `className`: both are plain utilities in the same `@layer utilities`, so the
    class attribute's order is irrelevant and the stylesheet's decides — Tailwind emits font-weights
@@ -33,6 +35,9 @@ export const variants: Record<Variant, string> = {
   secondary: 'border border-line bg-surface text-ink hover:bg-paper',
   ghost: 'text-ink-soft hover:bg-paper-sunk',
   'coral-outline': 'border border-coral bg-surface text-coral-text hover:bg-coral-tint',
+  /* STORY 7.23a — THE QUIET ROLL BACK: a hairline that turns coral only under the pointer (`D2 Deploy History Completed.dc.html:98`,
+     `S8 Deploy.dc.html:321`, drawn at weight 500) — the history row's action when it is not THE undo, which is coral-outline */
+  quiet: 'border border-line bg-surface text-ink-soft hover:border-coral hover:text-coral-deep',
   danger: 'bg-danger-text text-surface hover:bg-danger-text-hover',
   'danger-outline': 'border border-danger bg-surface text-danger-text hover:bg-danger-tint',
   /* STORY 7.3 — A NOTICE, NOT DANGER: the gold fill D4b's Go Pro and D5f's Delete section draw. The frames' resting gold fails
@@ -48,6 +53,7 @@ const sizes: Record<Size, string> = {
   38: 'h-[38px] px-5 text-ui-dense rounded-thumb',
   36: 'h-9 px-4 text-ui-dense rounded',
   32: 'h-8 px-[13px] text-control-label rounded-thumb',
+  26: 'h-[26px] px-[11px] text-[12px] rounded-thumb',
 }
 
 /** The same look on something that is not a `<button>` — a link that acts as a button. */

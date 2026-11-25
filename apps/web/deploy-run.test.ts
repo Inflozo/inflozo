@@ -148,9 +148,11 @@ function world(over: {
         const live = [...deploys.values()].filter((d) => d.activated && d.id !== except).sort((a, b) => ((a.activated_at ?? '') < (b.activated_at ?? '') ? 1 : -1))[0]
         return live?.preflight?.custom ?? null
       },
-      // R-287: the newest upload Ghost accepted, the job's own excepted — the Map keeps insertion (created) order
+      // R-287: the newest upload Ghost accepted, the job's own excepted — by `accepted_at` (Story 7.23a, DW-400; none stands last),
+      // then insertion (created) order, as `deploy-io.ts`' query orders
       baseline: async ({ except }) => {
-        const row = [...deploys.values()].filter((d) => d.id !== except && (d.status === 'uploaded' || d.status === 'live')).at(-1)
+        const accepted = [...deploys.values()].filter((d) => d.id !== except && (d.status === 'uploaded' || d.status === 'live'))
+        const row = accepted.map((d, i) => ({ d, i })).sort((a, b) => (b.d.accepted_at ?? '').localeCompare(a.d.accepted_at ?? '') || b.i - a.i)[0]?.d
         return row === undefined ? null : { version: row.version, content_manifest: row.content_manifest ?? null }
       },
       previous: async ({ except }) => {
@@ -1337,4 +1339,58 @@ test('7.22: the baseline survives its prune — the newest accepted upload\'s zi
   const control = await begin(w)
   assert.equal(driftOf(control), undefined, 'the control: no manifest, no baseline')
   assert.equal(w.liveReads.length, 1, 'and no second read')
+})
+
+// ── Story 7.23a — `accepted_at` (DW-400): every upload Ghost accepts stamps it; the drift baseline follows it ────────────────
+
+test('7.23a (DW-400): Ship it stamps `accepted_at` whenever Ghost accepts an upload — written `uploaded` (Deploy only) and live by the upload\'s own answer (R-264) — and an activation of an uploaded row keeps the time its upload was accepted', async () => {
+  const { w, state } = project({ liveProject: 'someone-else', upload: [okAnswer({ themes: [{ name: 'inflozo-notes', active: true }] }), okAnswer()] })
+  const v1 = await shipOnce(w)
+  const d1 = w.deploys.get(v1.deploy_id as string) as DeployRow
+  assert.equal(d1.status, 'live', 'live by the upload\'s own answer')
+  assert.match(d1.accepted_at ?? '', /^2026-/, 'accepted when Ghost took it')
+  assert.equal(d1.accepted_at, d1.activated_at)
+  state.bound = 'inflozo-notes'
+  state.n = 2
+  const v2 = await shipOnce(w, 'upload')
+  const d2 = w.deploys.get(v2.deploy_id as string) as DeployRow
+  assert.equal(d2.status, 'uploaded')
+  assert.ok((d2.accepted_at ?? '') > (d1.accepted_at ?? ''), 'a Deploy only upload is accepted too, later')
+  const accepted = d2.accepted_at
+  // Re-activate (the wizard's D2f button): the activation alone — the upload's time stands
+  await activate({ jobId: v2.id, userId: U }, w.io)
+  const live = w.deploys.get(v2.deploy_id as string) as DeployRow
+  assert.equal(live.status, 'live')
+  assert.equal(live.accepted_at, accepted, 'an activation accepts no files')
+  // the control: a refused upload stamps nothing
+  const refused = project({ upload: [bad(422, { errors: [{ type: 'ThemeValidationError', message: 'no' }] })] })
+  const failed = await shipOnce(refused.w)
+  assert.equal((refused.w.deploys.get(failed.deploy_id as string) as DeployRow).accepted_at ?? null, null)
+})
+
+test('7.23a: the baseline follows a Roll back — v2 put back (its own row, `accepted_at` now, as `put-back.ts` writes it), the next Pre-flight on an untouched site is D3c "since v2"; the control: by check time it would be v3, and v2\'s files would read as drift', async () => {
+  const { w, state } = project()
+  await shipOnce(w)
+  state.bound = 'inflozo-notes'
+  const files = (n: number) => ({ ...SHIPPED, 'index.hbs': `{{!< default}}\n<p>v${n}</p>\n` })
+  state.n = 2
+  state.files = files(2)
+  const v2 = await shipOnce(w)
+  state.n = 3
+  state.files = files(3)
+  await shipOnce(w)
+  // the Roll back to v2: Ghost now serves v2's files, and v2's row is the newest accepted (no row copied)
+  const id = v2.deploy_id as string
+  w.deploys.set(id, { ...(w.deploys.get(id) as DeployRow), status: 'live', accepted_at: new Date(Date.parse('2027-01-01T00:00:00Z')).toISOString() })
+  const live = files(2)
+  w.io.liveTheme = async ({ name }) => (w.liveReads.push(name), liveOf(live))
+  state.n = 4
+  const job = await begin(w)
+  assert.deepEqual(driftOf(job), { kind: 'clean', since: 2 }, 'compared with v2, the newest accepted')
+  assert.equal((job.deploy_id === null ? null : w.deploys.get(job.deploy_id))?.version, '4.0.0', 'the number goes on: v4 (`nextVersion`)')
+  // the control: v2 accepted before v3, as it was before the Roll back — the check compares with v3, and v2's files differ
+  w.deploys.set(id, { ...(w.deploys.get(id) as DeployRow), accepted_at: '2026-01-01T00:00:00.000Z' })
+  const control = await begin(w)
+  assert.equal(driftOf(control)?.kind, 'found')
+  assert.equal((driftOf(control) as { since: number }).since, 3)
 })

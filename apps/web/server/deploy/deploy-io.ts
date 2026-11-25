@@ -32,7 +32,7 @@ import { zipTheme } from './zip.ts'
 
 const BUCKET = ARTIFACT_BUCKET
 const JOB_COLUMNS = 'id, project_id, user_id, site_id, stage, cancel_requested, deploy_id, error, stage_timings, updated_at'
-const DEPLOY_COLUMNS = 'id, version, theme_name, status, activated, artifact_path, artifact_bytes, gscan, quality, inputs_sha256, activated_at, preflight'
+const DEPLOY_COLUMNS = 'id, version, theme_name, status, activated, artifact_path, artifact_bytes, gscan, quality, inputs_sha256, activated_at, accepted_at, preflight'
 
 /** A write or read the database refused: thrown, marked as infrastructure for `run.ts`'s retry rule. Logged by code only. */
 function ok<T>(answer: { data: T; error: unknown }, what: string): T {
@@ -101,9 +101,12 @@ export const DEPLOY_IO: DeployIo = {
       const custom = rows?.[0]?.preflight?.custom
       return typeof custom === 'object' && custom !== null && !Array.isArray(custom) ? (custom as Record<string, unknown>) : null
     },
-    // Story 7.21 — R-287's drift baseline: the newest upload Ghost accepted (`uploaded` or `live`), never the job's own
+    // Story 7.21 — R-287's drift baseline: the newest upload Ghost accepted (`uploaded` or `live`), never the job's own. Story 7.23a
+    // (DW-400): newest by `accepted_at` — a Roll back's upload of an older version is the newest accepted — as `lib/retention.ts`'
+    // `newestFirst` orders, `created_at` breaking a tie. ponytail: a row with no `accepted_at` stands last here and on its
+    // `created_at` there; the Schema's backfill gave every accepted row one, so only code older than the column writes such a row
     async baseline({ projectId, siteId, userId, except }) {
-      const rows = ok(await supabaseAdmin().from('deploys').select('version, content_manifest').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('status', ['uploaded', 'live']).neq('id', except).order('created_at', { ascending: false }).limit(1), 'drift baseline') as { version: string; content_manifest: DeployRow['content_manifest'] }[] | null
+      const rows = ok(await supabaseAdmin().from('deploys').select('version, content_manifest').eq('project_id', projectId).eq('site_id', siteId).eq('user_id', userId).in('status', ['uploaded', 'live']).neq('id', except).order('accepted_at', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }).limit(1), 'drift baseline') as { version: string; content_manifest: DeployRow['content_manifest'] }[] | null
       const row = rows?.[0]
       return row === undefined ? null : { version: row.version, content_manifest: row.content_manifest ?? null }
     },

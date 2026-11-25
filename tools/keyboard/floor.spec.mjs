@@ -1109,6 +1109,56 @@ test.describe('7.22 · the History drawer at 1440, 1280 and 820', () => {
   }
 })
 
+// ── Story 7.23a — the expanded rows (S8e `:300-323`) and S8e's Roll back confirm (`:337-345`) at 1440, 1280 and 820: the three
+// expanded rows and the compact rows with their Roll back inside the drawer, the confirm at its 410 (or the window less 20), and
+// nothing scrolling sideways. The rows are the harness's (`x-inflozo-harness-history: rollback`); the way in below 1366 is Ship it ▾.
+test.describe('7.23a · the expanded rows and the Roll back confirm at 1440, 1280 and 820', () => {
+  test.use({ hasTouch: false, isMobile: false })
+  for (const width of [1440, 1280, 820]) {
+    test(`at ${width}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-history': 'rollback' })
+      await page.goto(HARNESS)
+      await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible({ timeout: 30_000 })
+      if (width >= 1366) await page.locator('#deploy-history-open').click()
+      else {
+        await page.locator('#editor-ship + button').click()
+        await page.locator('#editor-ship-menu li button').last().click()
+      }
+      const drawer = page.locator('dialog[data-deploy-history]')
+      await expect(drawer.locator('[data-history-row]')).toHaveCount(5, { timeout: 15_000 })
+      await expect(drawer.locator('[data-history-expanded]')).toHaveCount(3)
+      const rows = await drawer.evaluate((d) => {
+        const edge = d.getBoundingClientRect().right
+        return {
+          // every row, and every control in it, inside the drawer
+          outside: [...d.querySelectorAll('[data-history-row], [data-history-row] button')].filter((e) => e.getBoundingClientRect().right > edge + 0.5).length,
+          // the expanded row's thumbnail as drawn (`D2:76`): 64 × 44
+          thumb: (({ width: w, height: h }) => [w, h])(d.querySelector('[data-history-expanded] > span[aria-hidden]').getBoundingClientRect()),
+          // the Roll back as drawn: 26 high
+          act: Math.round(d.querySelector('[data-history-act]').getBoundingClientRect().height),
+          scroll: document.documentElement.scrollWidth,
+          inner: window.innerWidth,
+        }
+      })
+      expect(rows.outside).toBe(0)
+      expect(rows.thumb).toEqual([64, 44])
+      expect(rows.act).toBe(26)
+      expect(rows.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(rows.inner)
+      // v1's confirm, with Pre-flight's dropped-settings block — its fullest shape
+      await drawer.locator('[data-history-row="v1"] [data-history-act]').click()
+      const confirm = page.locator('dialog[data-history-confirm]')
+      await expect(confirm.locator('[data-history-drops]')).toBeVisible()
+      const box = await confirm.evaluate((c) => ({ ...c.getBoundingClientRect().toJSON(), inner: window.innerWidth, scroll: document.documentElement.scrollWidth }))
+      expect(box.width).toBe(Math.min(410, box.inner - 20))
+      expect(box.left).toBeGreaterThanOrEqual(0)
+      expect(box.right).toBeLessThanOrEqual(box.inner)
+      expect(box.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(box.inner)
+      await expect(confirm.locator('[data-cancel]')).toBeFocused()
+    })
+  }
+})
+
 // ── Story 7.18a — R-263: a touch screen below 768 that is not a phone. Ship it shares the bar, so Undo and Redo lead ⋯ and
 // the words "Template" and "View as" go; at 768 and up nothing changes. The sweep holds no bar control outside the window
 // at 600, 640 and 720 on Home and on the Paywall; its CONTROL is the same sweep with the rule switched off in the page

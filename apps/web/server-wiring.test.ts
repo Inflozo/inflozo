@@ -36,6 +36,8 @@ const HISTORY_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]'
 const SWEEP_ROUTE = join('app', 'api', 'cron', 'prune-artifacts', 'route.ts')
 const RETENTION = join('server', 'retention.ts')
 const RETENTION_IO = join('server', 'retention-io.ts')
+const PUT_BACK = join('server', 'deploy', 'put-back.ts')
+const PUT_BACK_IO = join('server', 'deploy', 'put-back-io.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -197,6 +199,12 @@ test('the service-role client is imported by the flag reader and by nothing else
   //     LIST is read on the caller's own session (RLS).
   //   - AD-33's artifact-retention cron: like the other purges it acts for NOBODY behind Vercel's `CRON_SECRET` bearer, across
   //     every account — it abandons checks nothing can ship, drops zips no version names, and runs the one prune.
+  // The SEVENTEENTH, added by Story 7.23a with its reason: the History drawer's put-back's real `io` (`server/deploy/put-back-io.ts`).
+  //   A Roll back or Re-activate writes the version's own `deploys` row (`status`, `activated`, `activated_at`, `accepted_at` —
+  //   select-only to the tenant, AD-8, and `accepted_at` server-written by grant) and demotes the site's other live row, reads the
+  //   stored zip from `deploy-artifacts` (no Storage policy at all, AD-29), and reads the row, the project's link with its site's
+  //   `disconnected_at` and the site's moving `deploy_jobs` for its refusals. Every query carries `user_id`. It is handed to
+  //   `server/deploy/put-back.ts`, which imports neither this client nor the chokepoint (held below).
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -214,6 +222,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     RETENTION_IO,
     HISTORY_ROUTE,
     SWEEP_ROUTE,
+    PUT_BACK_IO,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
@@ -535,7 +544,13 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //     site's real answer. It is the real `io` handed to `server/snapshot.ts`, which decides and imports no part of the
   //     chokepoint (held below), and both its callers — `deploy-io.ts`' `snapshot` member and the Backup step's Theme Download —
   //     reach Ghost through it alone. `ADMIN_WRITES` stays four (R-22): both are reads.
-  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN, SNAPSHOT_IO]
+  //   - THE PUT-BACK'S IO, Story 7.23a's (FR-J9): the History drawer's Roll back and Re-activate send the same two writes Ship it sends
+  //     — `theme_upload` (the stored zip under the frozen name) and `theme_activate` — with the Admin key, so `ADMIN_WRITES` stays
+  //     four (R-22). It is the real `io` handed to `server/deploy/put-back.ts`, which decides and imports no part of the chokepoint
+  //     (held below); it is not `deploy-io.ts` itself so the History route's function carries none of the compile.
+  const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN, SNAPSHOT_IO, PUT_BACK_IO]
+  assert.equal(reachesChokepoint(PUT_BACK), false, `${PUT_BACK} imports the chokepoint; its call() is handed in`)
+  assert.equal(reachesChokepoint(PUT_BACK_IO), true, 'control: put-back-io.ts imports the chokepoint')
   assert.equal(reachesChokepoint(SNAPSHOT), false, `${SNAPSHOT} imports the chokepoint; its call() is handed in`)
   assert.equal(reachesChokepoint(SNAPSHOT_IO), true, 'control: snapshot-io.ts imports the chokepoint')
   assert.equal(reachesChokepoint(STAFF_TOKEN), true, 'control: staff-token.ts imports the chokepoint')

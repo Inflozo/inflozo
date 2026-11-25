@@ -56,6 +56,9 @@ export type DeployRow = {
   quality: QualityVerdict | null
   inputs_sha256: string | null
   activated_at: string | null
+  /** Story 7.23a — when Ghost last accepted this version's files (DW-400): written with every upload Ghost takes, by Ship it and by
+   *  a Roll back. The list, the prune and the drift baseline order by it */
+  accepted_at?: string | null
   /** Story 7.18b — the compile's facts for Pre-flight's warning rows (`preflightFacts`) */
   preflight: PreflightFacts | null
   /** Story 7.21 — FR-J16's content manifest of the stored artefact (`lib/drift.ts`' `contentManifest`); null before it is stored,
@@ -107,7 +110,8 @@ export type DeployIo = {
      *  other than `except`; null when there is none or it predates the facts */
     previousCustom: (a: { projectId: string; siteId: string; userId: string; except?: string }) => Promise<Readonly<Record<string, unknown>> | null>
     /** STORY 7.21 — THE DRIFT BASELINE (R-287, Ruled value 1): this project's newest deploy to the site with status `uploaded` or
-     *  `live`, by `created_at`, other than `except` (the job's own) — every upload Ghost accepted is one, because Ghost replaces
+     *  `live`, by `accepted_at` (Story 7.23a: a Roll back's upload of an OLDER version is the newest accepted), other than `except`
+     *  (the job's own) — every upload Ghost accepted is one, because Ghost replaces
      *  every file under a theme's name on each (`storage.js:95-107`). Its version and manifest, or null when there is none */
     baseline: (a: { projectId: string; siteId: string; userId: string; except: string }) => Promise<{ version: string; content_manifest: ContentManifest | null } | null>
   }
@@ -151,8 +155,9 @@ export type DeployIo = {
 }
 
 const ROUTE = 'projects/deploy'
-/** A moving job not touched for longer than AD-11's 300 s (and a margin) was abandoned by a killed invocation. */
-const STALLED_MS = 330_000
+/** A moving job not touched for longer than AD-11's 300 s (and a margin) was abandoned by a killed invocation. Story 7.23a's put-back
+ *  refuses while a job of the site moved more recently than this (`server/deploy/put-back.ts`). */
+export const STALLED_MS = 330_000
 
 class Infra extends Error {}
 /** A throw out of the project read that is NOT infrastructure — a stored doc the editor's own door refuses: Inflozo's fault,
@@ -180,8 +185,9 @@ async function readProject(io: DeployIo, at: { projectId: string; siteId: string
   throw new Infra('project read')
 }
 
-/** AD-20's rule, once: an infrastructure failure is retried once, then thrown as `Infra`. */
-async function twice<T>(io: Pick<DeployIo, 'log'>, what: string, run: () => Promise<T>): Promise<T> {
+/** AD-20's rule, once: an infrastructure failure is retried once, then thrown as `Infra`. Story 7.23a's put-back reads its zip
+ *  through it too. */
+export async function twice<T>(io: Pick<DeployIo, 'log'>, what: string, run: () => Promise<T>): Promise<T> {
   try {
     return await run()
   } catch (first) {
@@ -197,7 +203,8 @@ async function twice<T>(io: Pick<DeployIo, 'log'>, what: string, run: () => Prom
 
 /** A chokepoint call with the same rule: Ghost unreachable and an off-list write are answers (thrown on, never retried);
  *  anything else thrown is infrastructure, retried once. */
-async function callTwice(io: DeployIo, args: Parameters<DeployCall>[0]): Promise<Awaited<ReturnType<DeployCall>> | { thrown: 'ghost_unreachable' | 'write_not_allowed' | 'deploy_infrastructure' }> {
+export type Called = Awaited<ReturnType<DeployCall>> | { thrown: 'ghost_unreachable' | 'write_not_allowed' | 'deploy_infrastructure' }
+export async function callTwice(io: Pick<DeployIo, 'call' | 'log'>, args: Parameters<DeployCall>[0]): Promise<Called> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       return await io.call(args)
@@ -209,6 +216,19 @@ async function callTwice(io: DeployIo, args: Parameters<DeployCall>[0]): Promise
   }
   return { thrown: 'deploy_infrastructure' }
 }
+
+/** STORY 7.23a — THE TWO GHOST WRITES, ONCE: Ship it and the History drawer's put-back (`server/deploy/put-back.ts`) send exactly
+ *  these. The upload: the stored zip as `file`, named `{theme_name}.zip` — Ghost names a theme by the zip's filename (VERIFY 30), the
+ *  frozen name, and reads it under `file` (`themeZip('file')`, 6.58.0 `web/api/endpoints/admin/routes.js:251`; `single('file')`,
+ *  5.130.6 `:202`). Read its answer with `uploadAnswer`. */
+export function sendUpload(io: Pick<DeployIo, 'call' | 'log'>, a: { siteId: string; themeName: string; bytes: Uint8Array; route: string }): Promise<Called> {
+  const form = new FormData()
+  form.append('file', new Blob([a.bytes as BlobPart], { type: 'application/zip' }), `${a.themeName}.zip`)
+  return callTwice(io, { siteId: a.siteId, method: 'POST', path: 'themes/upload/', body: form, item: 'theme_upload', route: a.route })
+}
+/** …and the activation, `PUT themes/{name}/activate/`. Read its answer with `activateAnswer`. */
+export const sendActivate = (io: Pick<DeployIo, 'call' | 'log'>, a: { siteId: string; themeName: string; route: string }): Promise<Called> =>
+  callTwice(io, { siteId: a.siteId, method: 'PUT', path: `themes/${encodeURIComponent(a.themeName)}/activate/`, item: 'theme_activate', route: a.route })
 
 /** Is this major one a theme ships to — FR-J8's "version mismatch" otherwise. */
 const shipsTo = (version: string | null): 5 | 6 | null => {
@@ -634,11 +654,7 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
       await c.enter('uploading')
     }
     const bytes = await twice(io, 'artifact get', () => io.artifacts.get(deploy!.artifact_path as string))
-    const form = new FormData()
-    // Ghost names the theme by the zip's filename (VERIFY 30) — the frozen name — and reads the file under `file`
-    // (`themeZip('file')`, 6.58.0 `web/api/endpoints/admin/routes.js:251`; `single('file')`, 5.130.6 `:202`)
-    form.append('file', new Blob([bytes as BlobPart], { type: 'application/zip' }), `${deploy.theme_name}.zip`)
-    const posted = await callTwice(io, { siteId: job.site_id, method: 'POST', path: 'themes/upload/', body: form, item: 'theme_upload', route: ROUTE })
+    const posted = await sendUpload(io, { siteId: job.site_id, themeName: deploy.theme_name, bytes, route: ROUTE })
     const ctx = errorCtx(read, job.site_id)
     if ('thrown' in posted) {
       await twice(io, 'deploy failed', () => io.deploys.update(deploy!.id, job.user_id, { status: 'failed' }))
@@ -664,7 +680,8 @@ export async function ship(a: { jobId: string; userId: string; mode: Mode; witho
     // and made them live (`storage.js`' `activateFromAPIOverride`) — so the deploy is live, no activation is sent, routes are
     // offered and the ending is Live, whichever mode was chosen
     if (upload.active) return void (await goLive(io, job, c, deploy, true))
-    await twice(io, 'deploy uploaded', () => io.deploys.update(deploy!.id, job.user_id, { status: 'uploaded', activated: false }))
+    // Story 7.23a (DW-400): Ghost took these files now — the version's place in the list, the prune and the drift baseline
+    await twice(io, 'deploy uploaded', () => io.deploys.update(deploy!.id, job.user_id, { status: 'uploaded', activated: false, accepted_at: io.now().toISOString() }))
     await pruneAfter(io, job)
     if (a.mode === 'upload') return void (await c.end('done', { error: null }))
     await activateStep(io, job, c, deploy, read)
@@ -710,7 +727,7 @@ export async function activate(a: { jobId: string; userId: string }, io: DeployI
 async function activateStep(io: DeployIo, job: JobRow, c: Clock, deploy: DeployRow, read: ProjectRead): Promise<void> {
   await c.enter('activating', { error: null })
   const ctx = errorCtx(read, job.site_id)
-  const answer = await callTwice(io, { siteId: job.site_id, method: 'PUT', path: `themes/${encodeURIComponent(deploy.theme_name)}/activate/`, item: 'theme_activate', route: ROUTE })
+  const answer = await sendActivate(io, { siteId: job.site_id, themeName: deploy.theme_name, route: ROUTE })
   if ('thrown' in answer) {
     // the theme is on the site whatever happened here — D2e, never "nothing reached your site"
     if (answer.thrown === 'write_not_allowed') return void (await fail(c, deployError('write_not_allowed', ctx)))
@@ -730,7 +747,9 @@ async function activateStep(io: DeployIo, job: JobRow, c: Clock, deploy: DeployR
  *  first write as a version, so the prune follows it (Story 7.22); an activation of an `uploaded` row was pruned for at its upload */
 async function goLive(io: DeployIo, job: JobRow, c: Clock, deploy: DeployRow, first = false): Promise<void> {
   const now = io.now().toISOString()
-  await twice(io, 'deploy live', () => io.deploys.update(deploy.id, job.user_id, { status: 'live', activated: true, activated_at: now }))
+  // Story 7.23a (DW-400): live by the upload's own answer is an upload Ghost accepted now; an activation of an `uploaded` row keeps
+  // the time its upload was accepted
+  await twice(io, 'deploy live', () => io.deploys.update(deploy.id, job.user_id, { status: 'live', activated: true, activated_at: now, ...(first ? { accepted_at: now } : {}) }))
   if (first) await pruneAfter(io, job)
   await twice(io, 'demote', () => io.deploys.demote({ siteId: job.site_id, userId: job.user_id, except: deploy.id }))
   c.routes(await routesStep(io, job))

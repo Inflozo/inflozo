@@ -102,7 +102,7 @@ import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
 import { DeployHistory } from '@/components/editor/deploy-history'
-import { HISTORY_WORDS, pinOutcomeOf, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
+import { actOutcomeOf, HISTORY_WORDS, pinOutcomeOf, type ActOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
 import { DEPLOY_WORDS, POSTS_CHECKED, type Mode as ShipMode } from '@/lib/deploy'
 import { queriesFor } from '@/lib/preflight'
 import type { Confirmed, SwitchAnswer } from '@/lib/site-switch'
@@ -577,6 +577,9 @@ type EditorProps = EditorData & {
    *  its own server actions, which answer canned histories with no database (`harnessHistory`, `harnessPin`). The app passes none. */
   historyRead?: (projectId: string) => Promise<HistoryAnswer | null>
   historyPin?: (projectId: string, deploy: string, pinned: boolean) => Promise<PinOutcome>
+  /** STORY 7.23a — the drawer's put-back (Roll back or Re-activate), the route's POST `{ deploy, act: 'live' }` unless named: the
+   *  harness names `harnessAct`, which answers by its header with no database and no Ghost. The app passes none. */
+  historyAct?: (projectId: string, deploy: string) => Promise<ActOutcome>
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -879,6 +882,7 @@ function EditorShell({
   routesDownload = downloadRoutes,
   historyRead,
   historyPin,
+  historyAct,
 }: EditorProps) {
   const pathname = usePathname()
   /** Story 7.12 — the project's strings (FR-H5): the overrides the server's judge passed, over the catalog's English. Fixed for
@@ -2602,6 +2606,15 @@ function EditorShell({
     const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy, pinned }) }).catch(() => null)
     const outcome = pinOutcomeOf(answer?.status ?? 0, pinned)
     if (outcome === 'failed') console.error('history: the pin failed', { status: answer?.status ?? 0 })
+    return outcome
+  }
+  /** STORY 7.23a — a put-back, answered as its outcome (`actOutcomeOf`); a request that failed is logged by status */
+  const actHistory = async (deploy: string): Promise<ActOutcome> => {
+    if (historyAct) return historyAct(project.id, deploy)
+    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy, act: 'live' }) }).catch(() => null)
+    const body: unknown = await answer?.json().catch(() => null)
+    const outcome = actOutcomeOf(answer?.status ?? 0, body)
+    if (outcome.kind === 'failed') console.error('history: the put-back failed', { status: answer?.status ?? 0 })
     return outcome
   }
   const takeOverToShip = () =>
@@ -6049,8 +6062,8 @@ function EditorShell({
           </div>
           {/* STORY 7.22 — S8e's clock (`S8 Deploy.dc.html:278-281`), just before Ship it: the History drawer. Hidden where the bar is
               compact — Ship it ▾ → History is the way in there, at every width. A history control (R-192's view side), so it is live
-              reading along, and its tint while the drawer is open is the frame's. Its tooltip says "History" until Story 7.23a's
-              Roll back makes S8e's "every version, one click back" true.
+              reading along, and its tint while the drawer is open is the frame's. Its tooltip is S8e's `:280` since Story 7.23a's
+              Roll back made "every version, one click back" true; its name stays "History".
               AND BELOW 1366 TOO — R-289 (owner, 2026-11-25, Story 7.22's Question 1, option 1): R-266 holds S4's centred group
               within 6px of centre at 1280, and the clock's 28px + 8px gap moved it 42px off there — measured 0 at 1366, 7 at 1350, 42
               at 1280. Hidden below 1366, the R-266 journey holds unchanged and the drawer's way in there is Ship it ▾ → History */}
@@ -6058,7 +6071,7 @@ function EditorShell({
             id="deploy-history-open"
             hidden={compact}
             label={HISTORY_WORDS.open}
-            title={HISTORY_WORDS.open}
+            title={HISTORY_WORDS.tooltip}
             aria-haspopup="dialog"
             style={history.open ? undefined : onInk}
             className={`max-[1366px]:hidden ${history.open ? 'bg-coral-tint text-coral-deep hover:bg-coral-tint' : ''}`}
@@ -7009,6 +7022,7 @@ function EditorShell({
           projectName={project.name}
           read={readHistory}
           pin={pinHistory}
+          act={actHistory}
           onClose={() => setHistory((was) => ({ ...was, open: false }))}
         />
       ) : null}

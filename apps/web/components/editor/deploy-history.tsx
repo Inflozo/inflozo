@@ -2,13 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { LiveBadge, ResultChip } from '@/components/kit/badge'
-import { IconButton } from '@/components/kit/button'
+import { Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
-import { AlertTriangle, Pin, X } from '@/components/kit/icons'
-import { versionLabel } from '@/lib/deploy'
+import { AlertTriangle, Bolt, Pin, RollBack, X } from '@/components/kit/icons'
+import { BusyLabel } from '@/components/kit/submit'
+import { versionLabel, versionNumber } from '@/lib/deploy'
+import { PREFLIGHT_WORDS } from '@/lib/preflight'
 import { useSaid } from '@/lib/renders'
-import { chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type HistoryAnswer, type HistoryRow, type PinOutcome } from '@/lib/retention'
+import {
+  actSaid, chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type ActOutcome, type HistoryAnswer, type HistoryRow, type PinOutcome,
+} from '@/lib/retention'
 
 /* ───────── STORY 7.22 — THE HISTORY DRAWER (FR-J7), from the export (R-74):
  *
@@ -19,11 +23,24 @@ import { chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type Hi
  *     the Live badge D2a's `:78`;
  *   - the refusal: D2b `:158-186` — the note under the pin, its sentence `:180` and Got it `:181`; the pin stays unfilled.
  *
- * EVERY ROW IS DRAWN COMPACT, the frame's row for older versions, with the Live badge added (the spec's Design Notes): Story 7.23a
- * draws the expanded rows (thumbnail, Changed line, by-line, Roll back) and D2d, Story 7.23b the original-theme row (R-290).
- * Extrapolated in the same
- * tokens: the loading rows (in the compact row's shape — R-98, never a spinner), the empty state (UX-DR6, the limit line still
- * under it), a failed read (one sentence where the rows go), and "on {host}" on a row of another site (one list per project).
+ * STORY 7.23a — THE FIRST THREE ROWS ARE EXPANDED (S8e `:300-323`, D2a `:75-100`): the frame's schematic thumbnail (`D2:76`,
+ * drawn alike on every expanded row and aria-hidden — no record holds a version's look, and none is rendered to make one), the
+ * version chip with the Live badge, PINNED or D2d's "Uploaded, not live", the time Ghost accepted it, the Changed line, the gscan
+ * chip, the row's action and the pin. NO BY-LINE: the frame's "by Maya" names a person, and R-189 rules that no surface names one.
+ * The rest are 7.22's compact rows, each with the quiet Roll back before its pin (FR-J9's "any retained artifact redeploys in one
+ * click"; the export decides what the row is built from, so the expanded row's button, sized as drawn). D2d's row (D2 `:194-201`):
+ * the sky border and wash, the chip, the wizard's own D2e line and the coral Re-activate. Story 7.23b adds the original-theme row
+ * (R-290). Extrapolated in the same tokens: the loading rows (in the compact row's shape — R-98, never a spinner), the empty state
+ * (UX-DR6, the limit line still under it), a failed read (one sentence where the rows go), and "on {host}" on a row of another site
+ * (one list per project) — which carries no Roll back (Design Notes: its zip is that site's, and that site may be another project's
+ * now).
+ *
+ * THE PUT-BACK (`server/deploy/put-back.ts` through the editor's `act`). Roll back opens S8e's confirm (`:337-345`), a nested
+ * `<dialog>` in the wizard's switch-site confirm's shape, opened on Cancel (UX-DR14) — Cancel or Esc closes it and puts focus back on
+ * the Roll back that opened it. Its Roll back says "Rolling back…" (R-98), and while the request is out Cancel and Esc do nothing
+ * ("Once it starts, it finishes", S8c's rule) and the confirm and the drawer carry `data-unstoppable`, so R-192's lost-lock sweep
+ * cannot close them. Re-activate needs no confirm: "Activating…" on the button. An ending is said once in the drawer's region, the
+ * list is read again, and focus goes to ✕; a refusal is said under its row, in its own `role="status"` line, Ghost's detail in mono.
  *
  * THE LIST IS EXACTLY WHAT IS KEPT. The route lists stored versions only (`isStoredVersion`), so a pruned version is absent —
  * never a greyed row with a dead Restore (the epic's criterion). Every word is `HISTORY_WORDS`' (R-170), its numbers `PLANS`'.
@@ -34,14 +51,28 @@ import { chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type Hi
  * with focus on Got it, and Got it or Esc returns focus to the pin; `gone` re-reads, so the row leaves the list.
  */
 
-type Shown = { kind: 'loading' } | { kind: 'failed' } | { kind: 'rows'; rows: HistoryRow[] }
+type Shown = { kind: 'loading' } | { kind: 'failed' } | { kind: 'rows'; rows: HistoryRow[]; live: number | null }
 
-export function DeployHistory({ projectName, read, pin, onClose }: {
+/** D2's thumbnail (`D2 Deploy History Completed.dc.html:76`): the frame's schematic of a page, drawn alike on every expanded row */
+const Thumb = () => (
+  <span aria-hidden className="flex h-11 w-16 shrink-0 flex-col gap-[2px] rounded-[6px] border border-line bg-paper-raised p-[5px]">
+    <span className="h-1 w-[60%] rounded-[1px] bg-ink" />
+    <span className="h-[3px] w-[40%] rounded-[1px] bg-line-strong" />
+    <span className="mt-[2px] flex gap-[2px]">
+      <span className="h-[10px] flex-1 rounded-[2px] bg-line" />
+      <span className="h-[10px] w-[14px] rounded-[2px] bg-coral-deep" />
+    </span>
+  </span>
+)
+
+export function DeployHistory({ projectName, read, pin, act, onClose }: {
   projectName: string
   /** the project's stored versions (GET `projects/[id]/history`), or null when the read failed */
   read: () => Promise<HistoryAnswer | null>
   /** a pin or an unpin (POST), answered as its outcome */
   pin: (deploy: string, pinned: boolean) => Promise<PinOutcome>
+  /** Story 7.23a — a put-back (POST `{ deploy, act: 'live' }`), answered as its outcome */
+  act: (deploy: string) => Promise<ActOutcome>
   onClose: () => void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -54,6 +85,15 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
   const [refused, setRefused] = useState<string | null>(null)
   const [said, say] = useSaid()
   const now = useMemo(() => new Date(), [])
+  /** Story 7.23a — the row whose put-back is out (every action and pin waits for it), the row S8e's confirm is open for, and the
+   *  refusal said under a row */
+  const [acting, setActing] = useState<string | null>(null)
+  const [asking, setAsking] = useState<HistoryRow | null>(null)
+  /** each press of a Roll back, so a confirm reopened before the last one's `close` event has run still opens: that event is
+   *  queued, so `asking` can still hold the same row when the next press sets it (seen once in three runs of journey (b)) */
+  const [opens, setOpens] = useState(0)
+  const [note, setNote] = useState<{ id: string; words: string; detail?: string } | null>(null)
+  const confirm = useRef<HTMLDialogElement>(null)
 
   const load = async (): Promise<void> => {
     const answer = await read().catch(() => null)
@@ -62,7 +102,8 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
       say(HW.readFailed)
       return
     }
-    setShown({ kind: 'rows', rows: historyRows(answer) })
+    const live = answer.liveVersion === null ? Number.NaN : versionNumber(answer.liveVersion)
+    setShown({ kind: 'rows', rows: historyRows(answer), live: Number.isFinite(live) ? live : null })
   }
 
   useEffect(() => {
@@ -84,15 +125,50 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
     if (id !== null) pinOf(id)?.focus()
   }
 
+  // S8e's confirm opens on Cancel (UX-DR14)
+  useEffect(() => {
+    if (asking !== null && confirm.current?.open !== true) openOnCancel(confirm.current)
+  }, [asking, opens])
+
+  const actOf = (id: string) => dialog.current?.querySelector<HTMLElement>(`[data-history-act="${id}"]`) ?? null
+  /** Cancel or Esc: the confirm closes and focus goes back to the Roll back that opened it — never while its request is out */
+  const cancelConfirm = () => {
+    if (acting !== null) return
+    confirm.current?.close()
+  }
+
+  /** THE PUT-BACK: an ending is said in the drawer's region, the list read again and focus put on ✕; a refusal is said under its row
+   *  and focus goes back to the row's action */
+  const putBack = async (row: HistoryRow): Promise<void> => {
+    if (acting !== null || busy !== null) return
+    setNote(null)
+    setActing(row.id)
+    const outcome: ActOutcome = await act(row.id).catch((): ActOutcome => ({ kind: 'failed' }))
+    setActing(null)
+    const words = actSaid(outcome, row.n, row.host)
+    const back = asking === null ? null : row.id
+    if (outcome.kind === 'live' || outcome.kind === 'uploaded' || outcome.kind === 'gone') {
+      setAsking(null)
+      confirm.current?.close()
+      say(words)
+      await load()
+      document.getElementById('deploy-history-close')?.focus()
+      return
+    }
+    setNote({ id: row.id, words, ...(outcome.kind === 'refused' && outcome.detail !== undefined ? { detail: outcome.detail } : {}) })
+    if (back !== null) confirm.current?.close()
+    else actOf(row.id)?.focus()
+  }
+
   const toggle = async (row: HistoryRow): Promise<void> => {
-    if (busy !== null) return
+    if (busy !== null || acting !== null) return
     setRefused(null)
     setBusy(row.id)
     const outcome: PinOutcome = await pin(row.id, !row.pinned).catch((): PinOutcome => 'failed')
     setBusy(null)
     say(pinSaid(outcome, row.n))
     if (outcome === 'pinned' || outcome === 'unpinned') {
-      setShown((was) => (was.kind === 'rows' ? { kind: 'rows', rows: was.rows.map((r) => (r.id === row.id ? { ...r, pinned: outcome === 'pinned' } : r)) } : was))
+      setShown((was) => (was.kind === 'rows' ? { ...was, rows: was.rows.map((r) => (r.id === row.id ? { ...r, pinned: outcome === 'pinned' } : r)) } : was))
     } else if (outcome === 'cap') {
       setRefused(row.id)
     } else if (outcome === 'gone') {
@@ -103,75 +179,205 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
     }
   }
 
-  const close = () => dialog.current?.close()
+  const close = () => {
+    if (acting === null) dialog.current?.close()
+  }
+
+  /** the version chip — on a tinted row it sits on the surface, as drawn */
+  const chip = (r: HistoryRow, tinted: boolean) => (
+    <span className={`inline-flex items-center rounded-pill border border-line px-2 py-px font-mono text-[11px] font-medium text-ink [font-variant-ligatures:none] ${tinted ? 'bg-surface' : ''}`}>
+      {versionLabel(r.n)}
+    </span>
+  )
+  const gscanChip = (r: HistoryRow) =>
+    r.gscan === null ? null : (
+      <span data-history-gscan>
+        <ResultChip tone={chipTone(r.gscan)}>
+          <span aria-hidden>{HW.gscan(r.gscan.errors, r.gscan.warnings)}</span>
+          <span className="sr-only">{HW.gscanSaid(r.gscan.errors, r.gscan.warnings)}</span>
+        </ResultChip>
+      </span>
+    )
+  const pinnedTag = (r: HistoryRow) =>
+    r.pinned ? (
+      <span data-history-pinned className="inline-flex items-center rounded-pill bg-marigold-tint px-2 py-[2px] text-[10px] font-semibold uppercase text-marigold-text">
+        {HW.pinnedTag}
+      </span>
+    ) : null
+  const time = (r: HistoryRow) => <span data-history-time className="ml-auto shrink-0 text-[11px] text-ink-soft">{timeLabel(r.acceptedAt, now)}</span>
+  const elsewhere = (r: HistoryRow) => (r.elsewhere === null ? null : <span data-history-site className="min-w-0 truncate text-[11px] text-ink-soft">{HW.on(r.elsewhere)}</span>)
+
+  /** THE ROW'S ACTION (S8e `:313`, `:321`; D2d `:199`): Re-activate on D2d's row, else Roll back — coral-outline on the row right
+   *  after the Live one (the undo), quiet elsewhere — each naming its version; while its request is out, its present tense (R-98) */
+  const action = (r: HistoryRow) => {
+    if (r.action === null) return null
+    const waiting = acting !== null || busy !== null || undefined
+    if (r.action === 'reactivate') {
+      const out = acting === r.id
+      return (
+        <Button
+          variant="coral"
+          size={26}
+          data-history-act={r.id}
+          aria-label={out ? HW.activating : HW.reactivateName(r.n)}
+          aria-busy={out || undefined}
+          aria-disabled={waiting}
+          onClick={() => void putBack(r)}
+          className="shrink-0"
+        >
+          <BusyLabel pending={out} busy={HW.activating}>
+            <Bolt size={11} strokeWidth={1.9} />
+            {HW.reactivate}
+          </BusyLabel>
+        </Button>
+      )
+    }
+    return (
+      <Button
+        variant={r.emphasis ? 'coral-outline' : 'quiet'}
+        size={26}
+        weight={r.emphasis ? 'font-semibold' : 'font-medium'}
+        data-history-act={r.id}
+        data-emphasis={r.emphasis || undefined}
+        aria-label={`${HW.rollBackName(r.n)}${r.elsewhere === null ? '' : ` ${HW.on(r.elsewhere)}`}`}
+        aria-haspopup="dialog"
+        aria-disabled={waiting}
+        onClick={() => {
+          if (waiting) return
+          setNote(null)
+          setAsking(r)
+          setOpens((n) => n + 1)
+        }}
+        className="shrink-0"
+      >
+        <RollBack size={11} />
+        {HW.rollBack}
+      </Button>
+    )
+  }
+
+  /** a refusal, said under its row — its own polite region, there (empty, and out of the row's flow) before its words so they are
+   *  heard; Ghost's own words in mono */
+  const status = (r: HistoryRow) => (
+    <p role="status" data-history-note={r.id} className="m-0 flex basis-full flex-col gap-[3px] text-[11.5px] leading-[1.5] text-danger-text empty:absolute [text-wrap:pretty]">
+      {note?.id === r.id ? (
+        <>
+          <span>{note.words}</span>
+          {note.detail === undefined ? null : <span data-history-detail className="break-words font-mono text-[10.5px] text-ink-soft">{note.detail}</span>}
+        </>
+      ) : null}
+    </p>
+  )
 
   const row = (r: HistoryRow) => {
     const out = busy === r.id
-    const note = refused === r.id
+    const capped = refused === r.id
+    const pinButton = (
+      <button
+        type="button"
+        data-history-pin={r.id}
+        aria-pressed={r.pinned}
+        aria-label={`${out ? (r.pinned ? HW.unpinning(r.n) : HW.pinning(r.n)) : HW.pin(r.n)}${r.elsewhere === null ? '' : ` ${HW.on(r.elsewhere)}`}`}
+        title={r.pinned ? HW.unpinTitle : HW.pinTitle}
+        aria-busy={out || undefined}
+        aria-disabled={busy !== null || acting !== null || undefined}
+        aria-describedby={capped ? 'history-refusal' : undefined}
+        onClick={() => void toggle(r)}
+        className={`inline-flex size-7 shrink-0 items-center justify-center rounded-sm transition-colors ${ring} ${
+          r.pinned ? 'bg-marigold-tint text-marigold-glyph' : capped ? 'bg-line-soft text-ink-soft shadow-[0_0_0_2px_var(--color-surface),0_0_0_3.5px_var(--color-marigold-line)]' : 'text-ink-soft hover:bg-line-soft'
+        }`}
+      >
+        <Pin size={14} fill={r.pinned ? 'currentColor' : 'none'} />
+      </button>
+    )
+    const refusal = capped ? (
+        /* D2b `:176-185`: under the pin, right-aligned, its arrow pointing up at it */
+        <div
+          id="history-refusal"
+          data-history-refusal
+          className="absolute right-2 top-full z-10 mt-[9px] flex w-[296px] max-w-[calc(100%-16px)] gap-[10px] rounded border border-marigold-line bg-marigold-tint-soft px-[14px] py-[13px] shadow-popover"
+        >
+          <AlertTriangle size={15} strokeWidth={1.8} className="mt-[2px] shrink-0 text-marigold-glyph" />
+          <div className="flex flex-1 flex-col gap-[10px]">
+            <span className="text-[12.5px] leading-[1.55] text-marigold-text [text-wrap:pretty]">{HW.refusal}</span>
+            <button
+              id="history-got-it"
+              type="button"
+              onClick={closeRefusal}
+              className={`h-[30px] self-start rounded-thumb border border-marigold-line bg-surface px-[14px] text-[12.5px] font-semibold text-marigold-text transition-colors hover:bg-marigold-tint ${ring}`}
+            >
+              {HW.gotIt}
+            </button>
+          </div>
+          <span aria-hidden className="absolute -top-[5px] right-4 size-[9px] rotate-45 border-l border-t border-marigold-line bg-marigold-tint-soft" />
+        </div>
+      ) : null
+    const reactivate = r.action === 'reactivate'
+
+    if (r.expanded) {
+      // S8e `:300-323`, D2a `:75-100`: the Live row mint, a pinned row marigold, D2d's row sky — else the hairline alone
+      const tone = r.live ? 'border-mint-line bg-mint-wash' : reactivate ? 'border-sky-line bg-sky-wash' : r.pinned ? 'border-marigold-line bg-marigold-tint-soft' : 'border-line'
+      return (
+        <li
+          key={r.id}
+          data-history-row={versionLabel(r.n)}
+          data-history-expanded
+          data-pinned={r.pinned || undefined}
+          data-history-uploaded={reactivate || undefined}
+          className={`relative flex gap-3 rounded border px-[14px] py-[13px] ${tone}`}
+        >
+          <Thumb />
+          <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+            <div className="flex items-center gap-[7px]">
+              {chip(r, r.live || r.pinned || reactivate)}
+              {r.live ? <LiveBadge label={HW.live} /> : null}
+              {pinnedTag(r)}
+              {reactivate ? (
+                <span data-history-uploaded-chip className="inline-flex items-center rounded-pill border border-sky-line bg-sky-tint px-2 py-[2px] text-[10px] font-semibold text-sky-ink">
+                  {HW.uploadedChip}
+                </span>
+              ) : null}
+              {elsewhere(r)}
+              {time(r)}
+            </div>
+            {reactivate ? (
+              <span data-history-line className="text-[11.5px] leading-[1.5] text-ink-soft">{HW.notLive}</span>
+            ) : r.changed === null ? null : (
+              <span data-history-changed className="text-[12px] leading-[1.45] text-ink-soft [text-wrap:pretty]">{r.changed}</span>
+            )}
+            <div className="flex items-center gap-[7px]">
+              {gscanChip(r)}
+              <span className="ml-auto flex items-center gap-[7px]">
+                {action(r)}
+                {pinButton}
+              </span>
+            </div>
+            {status(r)}
+          </div>
+          {refusal}
+        </li>
+      )
+    }
     return (
       <li
         key={r.id}
         data-history-row={versionLabel(r.n)}
         data-pinned={r.pinned || undefined}
-        className={`relative flex items-center gap-2 rounded border px-3 py-[9px] ${r.pinned ? 'border-marigold-line bg-marigold-tint-soft' : 'border-line'}`}
+        className={`relative flex flex-wrap items-center gap-x-2 gap-y-[6px] rounded border px-3 py-[9px] ${r.pinned ? 'border-marigold-line bg-marigold-tint-soft' : 'border-line'}`}
       >
-        <span className={`inline-flex items-center rounded-pill border border-line px-2 py-px font-mono text-[11px] font-medium text-ink [font-variant-ligatures:none] ${r.pinned ? 'bg-surface' : ''}`}>
-          {versionLabel(r.n)}
-        </span>
+        {chip(r, r.pinned)}
         {r.live ? <LiveBadge label={HW.live} /> : null}
-        {r.pinned ? (
-          <span data-history-pinned className="inline-flex items-center rounded-pill bg-marigold-tint px-2 py-[2px] text-[10px] font-semibold uppercase text-marigold-text">
-            {HW.pinnedTag}
-          </span>
-        ) : null}
-        {r.gscan === null ? null : (
-          <span data-history-gscan>
-            <ResultChip tone={chipTone(r.gscan)}>
-              <span aria-hidden>{HW.gscan(r.gscan.errors, r.gscan.warnings)}</span>
-              <span className="sr-only">{HW.gscanSaid(r.gscan.errors, r.gscan.warnings)}</span>
-            </ResultChip>
-          </span>
-        )}
-        {r.elsewhere === null ? null : <span data-history-site className="min-w-0 truncate text-[11px] text-ink-soft">{HW.on(r.elsewhere)}</span>}
-        <span className="ml-auto shrink-0 text-[11px] text-ink-soft">{timeLabel(r.createdAt, now)}</span>
-        <button
-          type="button"
-          data-history-pin={r.id}
-          aria-pressed={r.pinned}
-          aria-label={`${out ? (r.pinned ? HW.unpinning(r.n) : HW.pinning(r.n)) : HW.pin(r.n)}${r.elsewhere === null ? '' : ` ${HW.on(r.elsewhere)}`}`}
-          title={r.pinned ? HW.unpinTitle : HW.pinTitle}
-          aria-busy={out || undefined}
-          aria-disabled={busy !== null || undefined}
-          aria-describedby={note ? 'history-refusal' : undefined}
-          onClick={() => void toggle(r)}
-          className={`inline-flex size-7 shrink-0 items-center justify-center rounded-sm transition-colors ${ring} ${
-            r.pinned ? 'bg-marigold-tint text-marigold-glyph' : note ? 'bg-line-soft text-ink-soft shadow-[0_0_0_2px_var(--color-surface),0_0_0_3.5px_var(--color-marigold-line)]' : 'text-ink-soft hover:bg-line-soft'
-          }`}
-        >
-          <Pin size={14} fill={r.pinned ? 'currentColor' : 'none'} />
-        </button>
-        {note ? (
-          /* D2b `:176-185`: under the pin, right-aligned, its arrow pointing up at it */
-          <div
-            id="history-refusal"
-            data-history-refusal
-            className="absolute right-2 top-full z-10 mt-[9px] flex w-[296px] max-w-[calc(100%-16px)] gap-[10px] rounded border border-marigold-line bg-marigold-tint-soft px-[14px] py-[13px] shadow-popover"
-          >
-            <AlertTriangle size={15} strokeWidth={1.8} className="mt-[2px] shrink-0 text-marigold-glyph" />
-            <div className="flex flex-1 flex-col gap-[10px]">
-              <span className="text-[12.5px] leading-[1.55] text-marigold-text [text-wrap:pretty]">{HW.refusal}</span>
-              <button
-                id="history-got-it"
-                type="button"
-                onClick={closeRefusal}
-                className={`h-[30px] self-start rounded-thumb border border-marigold-line bg-surface px-[14px] text-[12.5px] font-semibold text-marigold-text transition-colors hover:bg-marigold-tint ${ring}`}
-              >
-                {HW.gotIt}
-              </button>
-            </div>
-            <span aria-hidden className="absolute -top-[5px] right-4 size-[9px] rotate-45 border-l border-t border-marigold-line bg-marigold-tint-soft" />
-          </div>
-        ) : null}
+        {pinnedTag(r)}
+        {gscanChip(r)}
+        {elsewhere(r)}
+        {/* the time, the quiet Roll back and the pin keep together: a row too full for one line moves them, together, to a second */}
+        <span className="ml-auto flex shrink-0 items-center gap-2">
+          {time(r)}
+          {action(r)}
+          {pinButton}
+        </span>
+        {r.action === null ? null : status(r)}
+        {refusal}
       </li>
     )
   }
@@ -180,15 +386,22 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
     <dialog
       ref={dialog}
       data-deploy-history
+      // Story 7.23a: while a put-back is out the drawer stays — R-192's lost-lock sweep (`editor.tsx`) skips it, and Esc and ✕ wait
+      data-unstoppable={acting !== null || undefined}
       aria-labelledby="deploy-history-title"
-      onClick={closeOnBackdrop}
+      onClick={(event) => {
+        if (acting === null) closeOnBackdrop(event)
+      }}
       // D2b is closed by Esc first, and focus goes back to its pin; the next Esc closes the drawer
       onCancel={(event) => {
-        if (event.target !== event.currentTarget || refused === null) return
+        if (event.target !== event.currentTarget) return
+        if (acting !== null) return void event.preventDefault()
+        if (refused === null) return
         event.preventDefault()
         closeRefusal()
       }}
       onKeyDown={(event) => {
+        if (event.key === 'Escape' && acting !== null) return void event.preventDefault()
         if (event.key !== 'Escape' || refused === null) return
         event.preventDefault()
         event.stopPropagation()
@@ -208,7 +421,7 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
         <h2 id="deploy-history-title" className="text-[13px] font-semibold uppercase tracking-[0.04em] text-ink-soft">
           {HW.title(projectName)}
         </h2>
-        <IconButton id="deploy-history-close" data-cancel label={HW.close} title={HW.close} onClick={close}>
+        <IconButton id="deploy-history-close" data-cancel label={HW.close} title={HW.close} aria-disabled={acting !== null || undefined} onClick={close}>
           <X size={16} />
         </IconButton>
       </div>
@@ -241,6 +454,91 @@ export function DeployHistory({ projectName, read, pin, onClose }: {
       <p data-history-said aria-live="polite" className="sr-only">
         <span key={said.n}>{said.words}</span>
       </p>
+      {/* STORY 7.23a — S8e's Roll back confirm (`S8 Deploy.dc.html:337-345`), nested in the drawer in the wizard's switch-site
+          confirm's shape: 410 wide, opened on Cancel (UX-DR14); the summary row is the version's chip, time and gscan chip with no
+          by-line (R-189); Pre-flight's own marigold block where Ghost will forget a setting (VERIFY 76) */}
+      <dialog
+        ref={confirm}
+        data-history-confirm
+        data-unstoppable={acting !== null || undefined}
+        aria-labelledby="history-confirm-title"
+        aria-describedby="history-confirm-body"
+        onClick={(event) => {
+          // the drawer's own backdrop test must never see a click on this one
+          event.stopPropagation()
+          if (acting === null) closeOnBackdrop(event)
+        }}
+        // once it starts, it finishes (S8c's rule): the cancel is refused, and so is the keydown that would ask for it — a second Esc
+        // after a refused cancel would close it anyway (the wizard's own note). Esc here is this dialog's alone
+        onKeyDown={(event) => {
+          if (event.key !== 'Escape') return
+          event.stopPropagation()
+          if (acting !== null) event.preventDefault()
+        }}
+        onCancel={(event) => {
+          event.stopPropagation()
+          if (acting !== null) event.preventDefault()
+        }}
+        onClose={(event) => {
+          event.stopPropagation()
+          // a close event that arrives after the confirm was opened again belongs to the last opening: nothing to do
+          if (confirm.current?.open === true) return
+          const id = asking?.id
+          setAsking(null)
+          // back to the Roll back that opened it (an ending moves it on to ✕ once the list is read again)
+          if (id !== undefined) actOf(id)?.focus()
+        }}
+        className="m-auto w-[410px] max-w-[calc(100vw-20px)] flex-col gap-4 rounded-lg bg-surface p-6 text-ink shadow-modal backdrop:bg-scrim open:flex"
+      >
+        {asking === null ? null : (
+          <>
+            <div className="flex flex-col gap-[5px]">
+              <h3 id="history-confirm-title" className="m-0 font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{HW.confirmTitle(asking.n)}</h3>
+              <p id="history-confirm-body" className="m-0 text-ui-dense leading-[1.5] text-ink-soft">
+                {HW.confirmBody(asking.n, shown.kind === 'rows' ? shown.live : null, asking.drops.length > 0)}
+              </p>
+            </div>
+            <div data-history-confirm-row className="flex items-center gap-2 rounded-thumb border border-line px-3 py-[9px]">
+              {chip(asking, false)}
+              <span className="text-[12px] text-ink-soft">{timeLabel(asking.acceptedAt, now)}</span>
+              <span className="ml-auto">{gscanChip(asking)}</span>
+            </div>
+            {asking.drops.length === 0 ? null : (
+              <div data-history-drops className="flex gap-[9px] rounded border border-marigold-line bg-marigold-tint-soft px-[13px] py-[11px]">
+                <AlertTriangle size={14} strokeWidth={1.8} className="mt-px shrink-0 text-marigold-text" />
+                <div className="flex min-w-0 flex-1 flex-col gap-[3px]">
+                  <span className="text-[12.5px] font-semibold text-ink">{PREFLIGHT_WORDS.dropped(asking.drops.length, asking.host)}</span>
+                  <span className="text-control-label leading-[1.5] text-ink-soft">{PREFLIGHT_WORDS.droppedBody}</span>
+                  <ul className="m-0 flex list-none flex-col gap-1 p-0">
+                    {asking.drops.map((name) => (
+                      <li key={name} className="text-control-label leading-[1.5] text-ink">{name}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end gap-[10px]">
+              <Button type="button" variant="ghost" size={38} weight="font-medium" data-cancel aria-disabled={acting !== null || undefined} onClick={cancelConfirm}>
+                {HW.cancel}
+              </Button>
+              <Button
+                type="button"
+                id="history-confirm-go"
+                variant="primary"
+                size={38}
+                aria-disabled={acting !== null || undefined}
+                aria-busy={acting === asking.id || undefined}
+                onClick={() => void putBack(asking)}
+              >
+                <BusyLabel pending={acting === asking.id} busy={HW.rollingBack}>
+                  <RollBack size={12} />
+                  {HW.rollBack}
+                </BusyLabel>
+              </Button>
+            </div>
+          </>
+        )}
+      </dialog>
     </dialog>
   )
 }

@@ -1481,7 +1481,7 @@ over STORED versions — `pin_version()` with the plan's N from `plan.ts` — so
 the refusal (D2b, "One version has to stay unpinned so your next deploy has somewhere to go. Unpin
 another first.") comes at N−1. Unpinning is never refused. The drawer is reached from the bar's clock
 from 1366 up (R-289) and from Ship it ▾ → History at every width; every row is D2a's compact row until Story
-7.23 draws the expanded ones.)*
+7.23 draws the expanded ones — Story 7.23a drew them, below.)*
 
 **Pinning, drawn on rows that already exist.**
 
@@ -1509,6 +1509,28 @@ working document, so **they never require the edit lock**.
 
 **The roll-back confirm stays exactly as drawn** (S8e): "Your live site switches to v4 instantly. v5
 stays in history — nothing is lost."
+
+*(Story 7.23a's Dev, 2026-11-25 — Roll back and Re-activate as built; Restore original is Story 7.23b's, the phone card 7.23c's,
+R-290.)*
+- **The order** is newest ACCEPTED first — when Ghost last took a version's files (`deploys.accepted_at`, DW-400) — and each row's
+  time says so; a version put back rises to the top with its Live badge, and the one it replaced sits second with the coral-outline
+  Roll back, the undo (S8e `:313`).
+- **The rows.** The newest three are drawn expanded (S8e `:300-323`, D2a `:75-100`): the frame's schematic thumbnail, alike on
+  every row and hidden from a screen reader (no record holds a version's look, and none is rendered to make one); the chip with
+  Live, PINNED or D2d's "Uploaded, not live"; the Changed line — this version's files against the version below it, sections by
+  the layer name they shipped with, "added"/"removed" before a template the other lacks, "First deploy" on the first and "No
+  changes since v{n}" when nothing differs; the gscan chip, the action and the pin. The rest stay compact, each with the quiet
+  Roll back before its pin — FR-J9's "any retained artifact", though the frame draws it on three. D2d's row has Re-activate (one
+  press, no confirm) in place of Roll back.
+- **No by-line.** The frame's "by Maya" names a person; R-189 rules no surface names one, so it is not drawn, in the rows or in
+  the confirm's summary.
+- **Another site's rows** (one list per project) say "on {host}" and keep their pin, with **no Roll back**: each zip is that site's,
+  and that site may be linked to another project now (R-267). To roll back there, link the project to it first (S8a's Switch).
+- **The dropped-settings line.** Where the live version declares a custom setting the target lacks, Ghost deletes its value when
+  the target goes live (VERIFY 76), so "nothing is lost" would be false: the confirm adds Pre-flight's own marigold block — "Ghost
+  will forget N settings on {host}", the names, Pre-flight's body — and its sentence stops at "…stays in history.".
+- **Refusals** are said under the row: Ghost's own check refusing an old version (its message in mono, the site untouched),
+  "Reconnect {host} in Sites to roll back.", "A deploy to {host} is under way. Try again when it ends."
 
 > **A defect in the PRD, closed by this pass.** Pinning was decided by the owner on 2026-08-21 and
 > lived only in `BACKUP-GATE.md`; `prd.md` carried no requirement for it, so a story written from the

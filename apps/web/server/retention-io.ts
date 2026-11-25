@@ -26,7 +26,7 @@ export const RETENTION_IO: RetentionIo = {
   async versions({ projectId, userId }) {
     const answer = await supabaseAdmin()
       .from('deploys')
-      .select('id, status, artifact_path, pinned, created_at')
+      .select('id, status, artifact_path, pinned, created_at, accepted_at')
       .eq('project_id', projectId)
       .eq('user_id', userId)
       .in('status', ['uploaded', 'live'])

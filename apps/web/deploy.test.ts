@@ -466,7 +466,9 @@ test('7.22: the history route — GET lists the stored versions on the CALLER\'S
   assert.ok(get.indexOf('currentUser()') < get.indexOf('supabaseServer()') && get.includes("if (!isUuid(projectId)) return no(404, 'Not found')"))
   assert.match(get, /const sb = await supabaseServer\(\)/, 'the list is the caller\'s, read through RLS')
   assert.doesNotMatch(get, /supabaseAdmin/, 'never the service role for the list')
-  assert.match(get, /\.in\('status', \['uploaded', 'live'\]\) \.not\('artifact_path', 'is', null\) \.order\('created_at', \{ ascending: false \}\)/, 'stored versions only (isStoredVersion), newest first — a pruned one is absent, never greyed')
+  // RE-EXPECTED by Story 7.23a (DW-400): newest ACCEPTED first — `historyAnswer` orders the rows by `accepted_at`, no longer the query
+  assert.match(get, /\.in\('status', \['uploaded', 'live'\]\) \.not\('artifact_path', 'is', null\)/, 'stored versions only (isStoredVersion) — a pruned one is absent, never greyed')
+  assert.match(get, /const answer = historyAnswer\(\{/, 'newest accepted first (`lib/retention.ts`)')
   assert.doesNotMatch(get, /\.eq\('site_id'/, 'every site: one list per project')
   const post = flat.slice(flat.indexOf('export async function POST'))
   assert.ok(post.indexOf('currentUser()') < post.indexOf("isUuid(projectId)") && post.indexOf("isUuid(deploy)") < post.indexOf('resolveEntitlement'))
@@ -480,6 +482,25 @@ test('7.22: the history route — GET lists the stored versions on the CALLER\'S
   assert.doesNotMatch(unpin, /rpc|resolveEntitlement/)
   assert.doesNotMatch(flat, /holdsLock|edit_locks/, 'a history control needs no edit lock (R-192)')
   assert.equal((HISTORY_ROUTE.match(/new NextResponse\(body, \{ status, headers: NO_STORE \}\)|NextResponse\.json\(body, \{ status, headers: NO_STORE \}\)/g) ?? []).length, 2, 'both answer shapes carry no-store')
+})
+
+test('7.23a: the history route\'s act branch — POST `{ deploy, act: \'live\' }` is the put-back over its real io, answered 200 `{ outcome }`, 404 gone, 409 `{ code }`, 422 Ghost\'s check with its detail, 502 the code and message, every answer no-store, inside `maxDuration = 300`; the GET reads the manifests of only the rows `heavyIds` names, on the caller\'s session', () => {
+  const flat = flatOf(HISTORY_ROUTE)
+  assert.match(flat, /export const maxDuration = 300/)
+  const act = sliceOf(flat, 'if (act !== undefined) {', "if (typeof pinned !== 'boolean')")
+  assert.ok(flat.indexOf("isUuid(deploy)") < flat.indexOf('if (act !== undefined) {'), 'the deploy id is judged first')
+  assert.match(act, /if \(act !== 'live'\) return no\(400, 'Bad act'\)/)
+  assert.match(act, /const outcome = await putBack\(PUT_BACK_IO, \{ userId: user\.id, projectId, deployId: deploy, now: new Date\(\) \}\)/)
+  assert.match(act, /if \(outcome === 'live' \|\| outcome === 'uploaded'\) return json\(200, \{ outcome \}\)/)
+  assert.match(act, /if \(outcome === 'gone'\) return no\(404, 'Not found'\)/)
+  assert.match(act, /if \(outcome === 'live-already'\) return json\(409, \{ code: 'live' \}\)/)
+  assert.match(act, /if \(typeof outcome === 'string'\) return json\(409, \{ code: outcome \}\)/)
+  assert.match(act, /if \(code === 'ghost_theme_refused'\) return json\(422, \{ code, \.\.\.\(detail === undefined \? \{\} : \{ detail \}\) \}\)/)
+  assert.match(act, /return json\(502, \{ code, message \}\)/)
+  const get = sliceOf(flat, 'export async function GET', 'export async function POST')
+  assert.match(get, /const ids = heavyIds\(rows\)/)
+  assert.match(get, /sb\.from\('deploys'\)\.select\('id, content_manifest, preflight'\)\.in\('id', ids\)/, 'the manifests of the named rows alone, through RLS')
+  assert.doesNotMatch(get, /supabaseAdmin/)
 })
 
 test('7.22 (DW-372): the next version is ONE function — `project-input.ts` and `shipStateOf` both read `nextVersion`, and nothing counts rows any more', () => {
