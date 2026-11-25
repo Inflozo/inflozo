@@ -2,7 +2,7 @@
 title: 'Story 7.22 — Artifacts, retention and pinning'
 type: 'feature'
 created: '2026-11-25'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '0c8f8da48f4b331c075191eb832bf4f93abe7a14'
 owner_test: pending
 review_loop_iteration: 0
@@ -244,7 +244,7 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
 **Execution:**
 
 *Schema — its own push, first (R-99):*
-- [ ] `supabase/migrations/20261125120000_pin_version.sql` -- create it:
+- [x] `supabase/migrations/20261125120000_pin_version.sql` -- create it:
   - drop the trigger `deploys_pin_leaves_a_slot` and the function `guard_pin_leaves_a_slot()`;
   - create `public.pin_version(p_deploy uuid, p_user uuid, p_cap int) returns text`, with `search_path` fixed and the project
     serialized by `pg_advisory_xact_lock` on its id, returning `'pinned' | 'cap' | 'gone'` as Always states;
@@ -252,8 +252,8 @@ the original-theme row, D2d's Re-activate row and S8e's Roll back confirm.
   - restate `comment on column deploys.pinned`.
 
   -- FR-J7's "in the database" with AD-28's number.
-- [ ] architecture `SCHEMA.sql` -- the same change, in place. The function joins the revoke list.
-- [ ] architecture `RLS-TEST.sql` → copied byte for byte to `supabase/tests/rls.sql` -- rewrite the FR-J7 block. It asserts
+- [x] architecture `SCHEMA.sql` -- the same change, in place. The function joins the revoke list.
+- [x] architecture `RLS-TEST.sql` → copied byte for byte to `supabase/tests/rls.sql` -- rewrite the FR-J7 block. It asserts
   that:
   - a pin under the cap answers `pinned`;
   - at `cap − 1` it answers `cap` and changes nothing;

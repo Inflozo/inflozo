@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 2026-11-24
+last_updated: 2026-11-25
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -155,7 +155,7 @@ development_status:
   7-20a-the-backup-gate-and-the-pre-inflozo-snapshot: done
   7-20b-the-snapshot-orphan-purge: done
   7-21-pre-deploy-drift-detection: done
-  7-22-artifacts-retention-and-pinning: ready-for-dev
+  7-22-artifacts-retention-and-pinning: in-progress
   7-23-deploy-history-rollback-and-restore-to-original: backlog
   7-24-theme-naming-frozen-per-site: backlog
   7-25-rate-limits-the-compile-budget-and-the-advisory-lock: backlog

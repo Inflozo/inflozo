@@ -528,6 +528,8 @@ begin
   -- `public` that RETURNS TRIGGER** must not be EXECUTE to PUBLIC. That covers every guard, freeze
   -- and provisioning function automatically, and correctly excludes `pgcrypto`'s ~40 functions,
   -- which SCHEMA.sql §11c leaves alone deliberately and explains why.
+  -- (Story 7.22 retired that guard; its replacement `pin_version()` returns text, so this class does
+  -- not see it — FR-J7's own block asserts its EXECUTE is the service role's alone.)
   -- ⚠️ AND THE TEST ITSELF WAS TESTING THE WRONG THING, which the same audit surfaced.
   -- It asked `proacl is null` — "has this function never been granted or revoked?" — as a PROXY for
   -- "can a client execute it?". The proxy has a hole: an EXPLICIT `grant execute … to public` sets a
@@ -650,7 +652,8 @@ begin
     ('custom_settings_key_frozen'),     -- AD-9's fourth frozen column
     ('edit_locks_takeover_advances'),   -- FR-D18's takeover must advance the generation
     ('auth_user_profile'),              -- a profiles row at signup
-    ('deploys_pin_leaves_a_slot'),      -- FR-J7: a project cannot pin away its last free slot
+    -- `deploys_pin_leaves_a_slot` (FR-J7's floor) stood here until Story 7.22 retired it for `pin_version()`, whose
+    -- own block below asserts the trigger is GONE and that only the service role executes the function.
     ('site_credentials_drop_vault_secrets')  -- DW-44: a Vault secret dies with its ref (Story 3.1)
   ) as x(want)
   where not exists (select 1 from pg_trigger g where g.tgname = x.want and not g.tgisinternal);
@@ -889,34 +892,155 @@ begin
   raise notice 'PASS (F4): a displaced heartbeat changes nothing and unsynced_edits survives the takeover';
 end $$;
 
--- FR-J7's pin floor, against the OWNER — the plan-specific cap lives in the server route, so this
--- is the database floor underneath it and must hold even against the service role (AD-31).
+-- FR-J7's pin cap (Story 7.22): `pin_version(p_deploy, p_user, p_cap)` counts and pins in ONE serialized step with the N
+-- the server's plan resolver hands it (AD-28), and only the service role executes it. It replaced the floor trigger
+-- `guard_pin_leaves_a_slot()` ("one row stays unpinned"), which refused pinning a project's only version: the lone-version
+-- line below is that floor's false refusal, now the control. A stored version is `uploaded`/`live` with an artifact_path.
+-- With the 7.22 migration withheld this block ABORTS at its first call (the function does not exist).
+reset role;
+delete from auth.users where id in ('77777777-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000002');
+insert into auth.users(id) values ('77777777-7220-0000-0000-000000000001'),('77777777-7220-0000-0000-000000000002');
+insert into public.sites(id,user_id,url) values
+  ('eeeeeeee-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001','https://own-722.example'),
+  ('eeeeeeee-7220-0000-0000-000000000002','77777777-7220-0000-0000-000000000002','https://theirs-722.example');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001','Own history','own-history-722','{}'),
+  ('cccccccc-7220-0000-0000-000000000002','77777777-7220-0000-0000-000000000002','Their history','their-history-722','{}');
+-- v1 alone first: the lone version
+insert into public.deploys(id,project_id,user_id,site_id,version,theme_name,status,artifact_path) values
+  ('dddddddd-7220-0000-0000-000000000001','cccccccc-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',
+   'eeeeeeee-7220-0000-0000-000000000001','1.0.1','inflozo-own','uploaded','cccccccc-7220-0000-0000-000000000001/v1.zip');
+
+set role service_role;
 do $$
-declare d1 uuid; d2 uuid;
+declare r text;
 begin
-  insert into public.deploys(project_id,user_id,site_id,version,theme_name,status)
-    values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
-            'aaaaaaaa-0000-0000-0000-000000000001','1.0.0','inflozo-a','live') returning id into d1;
-  insert into public.deploys(project_id,user_id,site_id,version,theme_name,status)
-    values ('aaaaaaaa-1111-0000-0000-000000000001','11111111-1111-1111-1111-111111111111',
-            'aaaaaaaa-0000-0000-0000-000000000001','1.0.1','inflozo-a','live') returning id into d2;
-
-  -- pinning one of two is fine: one unpinned slot remains
-  update public.deploys set pinned = true where id = d1;
-  raise notice 'PASS (FR-J7): a version can be pinned while an unpinned slot remains';
-
-  -- pinning the LAST unpinned one must be refused
-  begin
-    update public.deploys set pinned = true where id = d2;
-    raise exception 'FAIL (FR-J7): every version was pinned — the next deploy has nowhere to go';
-  exception when insufficient_privilege then
-    raise notice 'PASS (FR-J7): the last unpinned version cannot be pinned (42501)'; end;
-
-  -- and unpinning must always work, or a customer could trap themselves
-  update public.deploys set pinned = false where id = d1;
-  raise notice 'PASS (FR-J7): unpinning is always allowed';
-  delete from public.deploys where id in (d1,d2);
+  -- (1) a project's ONLY version pins under cap 3 — the retired floor refused exactly this
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',3);
+  if r <> 'pinned' then raise exception 'FAIL (FR-J7): a lone version under cap 3 answered % (the retired floor''s refusal)', r; end if;
+  raise notice 'PASS (FR-J7): a project''s only version pins under cap 3 (the retired floor refused it)';
+  -- (2) unpinning is a plain update, never refused
+  update public.deploys set pinned = false where id = 'dddddddd-7220-0000-0000-000000000001';
+  if (select pinned from public.deploys where id = 'dddddddd-7220-0000-0000-000000000001') then
+    raise exception 'FAIL (FR-J7): unpinning did not take';
+  end if;
+  raise notice 'PASS (FR-J7): unpinning a lone pinned version works';
 end $$;
+reset role;
+
+-- v2, v3 stored; a failed row with a zip, a pruned row (pointer null) and a pinned PRUNED row, none of them counted
+insert into public.deploys(id,project_id,user_id,site_id,version,theme_name,status,artifact_path,pinned) values
+  ('dddddddd-7220-0000-0000-000000000002','cccccccc-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',
+   'eeeeeeee-7220-0000-0000-000000000001','1.0.2','inflozo-own','live','cccccccc-7220-0000-0000-000000000001/v2.zip',false),
+  ('dddddddd-7220-0000-0000-000000000003','cccccccc-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',
+   'eeeeeeee-7220-0000-0000-000000000001','1.0.3','inflozo-own','uploaded','cccccccc-7220-0000-0000-000000000001/v3.zip',false),
+  ('dddddddd-7220-0000-0000-000000000004','cccccccc-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',
+   'eeeeeeee-7220-0000-0000-000000000001','1.0.4','inflozo-own','failed','cccccccc-7220-0000-0000-000000000001/v4.zip',false),
+  ('dddddddd-7220-0000-0000-000000000005','cccccccc-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',
+   'eeeeeeee-7220-0000-0000-000000000001','1.0.0','inflozo-own','live',null,false),
+  ('dddddddd-7220-0000-0000-000000000006','cccccccc-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',
+   'eeeeeeee-7220-0000-0000-000000000001','0.9.0','inflozo-own','uploaded',null,true),
+  ('dddddddd-7220-0000-0000-000000000009','cccccccc-7220-0000-0000-000000000002','77777777-7220-0000-0000-000000000002',
+   'eeeeeeee-7220-0000-0000-000000000002','1.0.1','inflozo-theirs','live','cccccccc-7220-0000-0000-000000000002/v1.zip',false);
+
+set role service_role;
+do $$
+declare r text; n int;
+begin
+  -- (3) under the cap: Free, three stored, none pinned → the first pin lands (a pinned PRUNED row is not counted)
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',3);
+  if r <> 'pinned' then raise exception 'FAIL (FR-J7): a pin under the cap answered %', r; end if;
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000002','77777777-7220-0000-0000-000000000001',3);
+  if r <> 'pinned' then raise exception 'FAIL (FR-J7): the second pin under cap 3 (2 = N−1) answered %', r; end if;
+  raise notice 'PASS (FR-J7): pins under the cap answer pinned, up to N−1';
+  -- (4) at cap − 1 the next answers 'cap' and changes nothing
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000003','77777777-7220-0000-0000-000000000001',3);
+  if r <> 'cap' then raise exception 'FAIL (FR-J7): a pin at cap − 1 answered % — every version could be pinned', r; end if;
+  if (select pinned from public.deploys where id = 'dddddddd-7220-0000-0000-000000000003') then
+    raise exception 'FAIL (FR-J7): a refused pin changed the row';
+  end if;
+  raise notice 'PASS (FR-J7): at cap − 1 the next pin answers cap and changes nothing';
+  -- (4b) the same row under Pro's cap pins: the number is the server's, not the database's
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000003','77777777-7220-0000-0000-000000000001',10);
+  if r <> 'pinned' then raise exception 'FAIL (FR-J7): the same pin under cap 10 answered %', r; end if;
+  update public.deploys set pinned = false where id = 'dddddddd-7220-0000-0000-000000000003';
+  raise notice 'PASS (FR-J7): the cap is the number handed in (cap 10 pins what cap 3 refused)';
+  -- (5) re-pinning a pinned row at the cap answers pinned (idempotent), not cap
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000001',3);
+  if r <> 'pinned' then raise exception 'FAIL (FR-J7): re-pinning a pinned version answered %', r; end if;
+  raise notice 'PASS (FR-J7): re-pinning a pinned version answers pinned';
+  -- (6) gone: a pruned row, a failed row with a zip, another tenant's row, an unknown id — each changes nothing
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000005','77777777-7220-0000-0000-000000000001',10);
+  if r <> 'gone' then raise exception 'FAIL (FR-J7): a row with a null pointer answered %', r; end if;
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000004','77777777-7220-0000-0000-000000000001',10);
+  if r <> 'gone' then raise exception 'FAIL (FR-J7): a failed row answered %', r; end if;
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000009','77777777-7220-0000-0000-000000000001',10);
+  if r <> 'gone' then raise exception 'FAIL (FR-J7): another user''s row answered %', r; end if;
+  r := public.pin_version(gen_random_uuid(),'77777777-7220-0000-0000-000000000001',10);
+  if r <> 'gone' then raise exception 'FAIL (FR-J7): an unknown id answered %', r; end if;
+  select count(*) into n from public.deploys
+   where id in ('dddddddd-7220-0000-0000-000000000004','dddddddd-7220-0000-0000-000000000005',
+                'dddddddd-7220-0000-0000-000000000009') and pinned;
+  if n <> 0 then raise exception 'FAIL (FR-J7): a gone answer pinned % row(s)', n; end if;
+  -- the control: the other tenant pins its own row with its own id
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000009','77777777-7220-0000-0000-000000000002',3);
+  if r <> 'pinned' then raise exception 'FAIL (FR-J7): the control — the owner could not pin its own row (%)', r; end if;
+  raise notice 'PASS (FR-J7): a null pointer, a failed row, another user''s row and an unknown id answer gone; the owner''s own pins';
+  -- (7) unpinning always works, even with the cap reached
+  update public.deploys set pinned = false
+   where id in ('dddddddd-7220-0000-0000-000000000001','dddddddd-7220-0000-0000-000000000002');
+  get diagnostics n = row_count;
+  if n <> 2 or exists (select 1 from public.deploys where id in ('dddddddd-7220-0000-0000-000000000001',
+                                                               'dddddddd-7220-0000-0000-000000000002') and pinned) then
+    raise exception 'FAIL (FR-J7): unpinning at the cap was refused';
+  end if;
+  raise notice 'PASS (FR-J7): unpinning is always allowed';
+  -- (8) the prune's conditional clear spares a pinned row; a pin then finds a cleared row gone
+  update public.deploys set pinned = true where id = 'dddddddd-7220-0000-0000-000000000001';
+  update public.deploys set artifact_path = null, artifact_bytes = null
+   where id in ('dddddddd-7220-0000-0000-000000000001','dddddddd-7220-0000-0000-000000000002')
+     and pinned = false and artifact_path is not null;
+  get diagnostics n = row_count;
+  if n <> 1 or (select artifact_path from public.deploys where id = 'dddddddd-7220-0000-0000-000000000001') is null then
+    raise exception 'FAIL (FR-J7): the prune''s clear touched a pinned row or missed the unpinned one (% row(s))', n;
+  end if;
+  r := public.pin_version('dddddddd-7220-0000-0000-000000000002','77777777-7220-0000-0000-000000000001',10);
+  if r <> 'gone' then raise exception 'FAIL (FR-J7): a pin after the prune''s clear answered % — pinned without its object', r; end if;
+  raise notice 'PASS (FR-J7): the prune''s clear spares a pinned row, and a pin after it answers gone';
+end $$;
+reset role;
+
+-- (9) a client cannot execute it at all: authenticated (and anon) get 42501
+set role authenticated;
+set request.jwt.claim.sub = '77777777-7220-0000-0000-000000000001';
+do $$
+begin
+  begin
+    perform public.pin_version('dddddddd-7220-0000-0000-000000000003','77777777-7220-0000-0000-000000000001',10);
+    raise exception 'FAIL (FR-J7): authenticated executed pin_version — a client could pin past the plan''s cap';
+  exception when insufficient_privilege then
+    raise notice 'PASS (FR-J7): authenticated gets % on executing pin_version', sqlstate;
+  end;
+end $$;
+reset role;
+set request.jwt.claim.sub = '';
+do $$
+begin
+  if has_function_privilege('anon', 'public.pin_version(uuid, uuid, int)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.pin_version(uuid, uuid, int)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.pin_version(uuid, uuid, int)', 'EXECUTE') then
+    raise exception 'FAIL (FR-J7): pin_version''s EXECUTE is not the service role''s alone';
+  end if;
+  if exists (select 1 from pg_trigger where tgname = 'deploys_pin_leaves_a_slot')
+     or exists (select 1 from pg_proc where proname = 'guard_pin_leaves_a_slot') then
+    raise exception 'FAIL (FR-J7): the retired pin floor is still in the database';
+  end if;
+  if (select pinned from public.deploys where id = 'dddddddd-7220-0000-0000-000000000003') then
+    raise exception 'FAIL (FR-J7): the refused client call changed the row';
+  end if;
+  raise notice 'PASS (FR-J7): only the service role executes pin_version, and the retired floor is gone';
+end $$;
+delete from auth.users where id in ('77777777-7220-0000-0000-000000000001','77777777-7220-0000-0000-000000000002');
 
 -- F12: AD-9's fourth frozen column, against the OWNER -- a server bug is what this guards.
 do $$ begin

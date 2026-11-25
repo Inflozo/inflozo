@@ -514,9 +514,10 @@ create table public.deploys (
   -- FR-J7 retention, owner decision 2026-08-21: at most 10 stored versions per project on Pro and
   -- 3 on Free, PINNED INCLUDED IN THAT COUNT. A pin is "keep this one, it was good" — it survives
   -- pruning. Server-asserted: `deploys` is select-only to the client (AD-8), so a pin is set by a
-  -- server route, never by the browser. The route is where the plan-specific cap lives, because
-  -- AD-28 makes resolveEntitlement the ONLY thing that decides plan state and a trigger that read
-  -- `entitlements` to find the limit would be a second decider.
+  -- server route, never by the browser. Since Story 7.22 the N−1 cap is enforced HERE, by
+  -- `pin_version()` (§11, FR-J7's pin cap), with the N the route reads through `plan.ts` — AD-28 makes the plan
+  -- resolver the ONLY thing that decides plan state, so a trigger that read `entitlements` to find
+  -- the limit would be a second decider.
   pinned        boolean not null default false,
   created_at    timestamptz not null default now(),
   activated_at  timestamptz,
@@ -531,6 +532,8 @@ create table public.deploys (
 );
 comment on column public.deploys.preflight is
   'Pre-flight''s compile facts (Story 7.18b): {templates: string[], custom: object, noindex: string[], freeAsks: string[]} — every .hbs file shipped, config.custom as shipped, FR-H2''s feed-guarded contexts, and the files carrying @site.allow_self_signup. Written only by the server; null before 7.18b.';
+comment on column public.deploys.pinned is
+  'FR-J7 (Story 7.22): keep this stored version through pruning. At most N−1 of a project''s stored versions are pinned (N = PLANS[plan].history: 10 Pro, 3 Free), pinned ones counted in N. Set only through pin_version(), which counts and pins in one serialized step with the N the server''s plan resolver hands it (AD-28); cleared by a plain server update, never refused.';
 create index on public.deploys (project_id, site_id, created_at desc);
 create index on public.deploys (site_id, created_at desc) where status = 'live';
 
@@ -1389,34 +1392,55 @@ grant  update (holder_session_id, lock_generation, heartbeat_at, unsynced_edits,
 revoke update on public.template_binding_checklist from authenticated;
 grant  update (marked_done_at) on public.template_binding_checklist to authenticated;
 
--- FR-J7's pin floor.  [owner decision 2026-08-21]
+-- FR-J7's pin cap.  [owner decision 2026-08-21; enforced here since Story 7.22]
 --
 -- The rule the owner set is "at most N-1 pinned", N being 10 on Pro and 3 on Free — so a customer
 -- who pins every slot can never be left unable to deploy. N is plan-dependent and AD-28 reserves
--- plan decisions to one resolver, so the split follows AD-9's established shape: **the server route
--- enforces the plan-specific cap, and this trigger is the floor underneath it.**
+-- plan decisions to one resolver, so **the route reads N through `plan.ts` and hands it in, and the
+-- database counts and pins in one serialized step** (an advisory lock per project), so two tabs
+-- cannot both take the last slot. A stored version is `status in ('uploaded','live')` with an
+-- `artifact_path` — `isStoredVersion` in `apps/web/lib/retention.ts` is the same predicate.
+-- 'gone': not one of this user's stored versions; 'cap': p_cap − 1 others are pinned, nothing
+-- changed; 'pinned': done. The update re-checks the predicate, so a pin that meets a prune's
+-- conditional clear is pinned and kept or 'gone', never pinned without its object. Unpinning is a
+-- plain server update, never refused. Service role only.
 --
--- The floor is stated plan-independently, which is what lets it live in the database at all:
--- **at least one version must remain unpinned.** A project whose every version is pinned has
--- nowhere to put its next build, and the only ways out would be refusing the deploy or silently
--- unpinning something the customer explicitly asked to keep. Both are worse than refusing the pin.
-create or replace function public.guard_pin_leaves_a_slot() returns trigger
-language plpgsql as $$
-declare unpinned_left int;
+-- It replaced `guard_pin_leaves_a_slot()` ("at least one row stays unpinned"), a trigger that
+-- refused pinning a project's only version — which N−1 allows — and counted failed and pruned rows
+-- as unpinned, so it mostly never fired. Mirrors `supabase/migrations/20261125120000_pin_version.sql`.
+create or replace function public.pin_version(p_deploy uuid, p_user uuid, p_cap int)
+returns text
+language plpgsql security invoker set search_path = public as $$
+declare
+  v_project uuid;
+  v_pinned int;
 begin
-  if new.pinned and not old.pinned then
-    select count(*) into unpinned_left
-      from public.deploys d
-     where d.project_id = new.project_id and not d.pinned and d.id <> new.id;
-    if unpinned_left = 0 then
-      raise exception 'cannot pin every version of a project: at least one must stay unpinned so the next deploy has a slot (project %)', new.project_id
-        using errcode = '42501';
-    end if;
+  select project_id into v_project from public.deploys
+   where id = p_deploy and user_id = p_user
+     and status in ('uploaded', 'live') and artifact_path is not null;
+  if v_project is null then
+    return 'gone';
   end if;
-  return new;
+
+  perform pg_advisory_xact_lock(hashtextextended('pin_version:' || v_project::text, 0));
+
+  select count(*) into v_pinned from public.deploys
+   where project_id = v_project and pinned and id <> p_deploy
+     and status in ('uploaded', 'live') and artifact_path is not null;
+  if v_pinned >= p_cap - 1 then
+    return 'cap';
+  end if;
+
+  update public.deploys set pinned = true
+   where id = p_deploy and user_id = p_user
+     and status in ('uploaded', 'live') and artifact_path is not null;
+  if not found then
+    return 'gone';
+  end if;
+  return 'pinned';
 end $$;
-create trigger deploys_pin_leaves_a_slot before update on public.deploys
-  for each row execute function public.guard_pin_leaves_a_slot();
+-- Its revoke from public, anon and authenticated is §11c's list; the service role's grant is here.
+grant  execute on function public.pin_version(uuid, uuid, int) to service_role;
 
 -- AD-15 depends on `revision` being monotonic and server-asserted. A trigger, not a convention.
 create or replace function public.guard_revision() returns trigger
@@ -1549,7 +1573,7 @@ create trigger auth_user_profile after insert on auth.users
 -- is every guard function here. §0a fixes this for future functions only, so the ones this file
 -- already created are revoked explicitly.  [R1 decision 16, widened by R2-11]
 --
--- These are all trigger functions. Nothing calls them directly and nothing should be able to:
+-- These are all trigger functions but one (pin_version, below). Nothing calls them directly and nothing should be able to:
 -- sync_vote_count is SECURITY DEFINER, so a direct call executes as its owner.
 do $$
 declare f text;
@@ -1561,7 +1585,9 @@ begin
     -- Round 4's three new guards. RLS-TEST asserts this list against the catalogue, which is how
     -- the first two were caught here rather than in a later round.
     'public.guard_lock_takeover()','public.guard_custom_setting_freeze()','public.provision_profile()',
-    'public.guard_pin_leaves_a_slot()'
+    -- `guard_pin_leaves_a_slot()` stood here until Story 7.22 retired it for `pin_version()` (§11, FR-J7's pin cap),
+    -- which is NOT a trigger function: the history route calls it, as the service role alone (granted beside it).
+    'public.pin_version(uuid, uuid, int)'
   ] loop
     execute format('revoke execute on function %s from public, anon, authenticated', f);
   end loop;
