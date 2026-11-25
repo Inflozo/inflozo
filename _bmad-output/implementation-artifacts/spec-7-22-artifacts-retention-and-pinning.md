@@ -2,9 +2,9 @@
 title: 'Story 7.22 — Artifacts, retention and pinning'
 type: 'feature'
 created: '2026-11-25'
-status: 'in-review'
+status: 'done'
 baseline_commit: '0c8f8da48f4b331c075191eb832bf4f93abe7a14'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-7-context.md', '{project-root}/_bmad-output/implementation-artifacts/spec-7-21-pre-deploy-drift-detection.md']
 ---
@@ -610,6 +610,22 @@ otherwise.
 **After the test:** say "passed", or list what you saw. Your ships leave an Inflozo theme live on T1, so Claude puts T1 back on
 Casper on your go.
 
+## Owner's test findings
+
+**Owner's test (owner, 2026-11-25): passed.** The owner replied *"passed"* to "Owner's manual test" on the deployed site
+(`dpl_GCBzx5Sh8qtjAJCNkYN7VMV7GjZo`, `https://app.inflozo.com`). No findings.
+
+**What production showed, recorded on his ruling.** Before recording, a read of production (`SUPABASE_SECRET_KEY`, GET only)
+found no test activity on the planted accounts. Neither `umngkmr+history722@gmail.com` nor `umngkmr+prohistory722@gmail.com` had
+signed in after the plant (last sign-ins 06:55 and 06:54 UTC, the plant's own). Production had no sign-in, no deploy job and no
+pin change on any account after 06:57 UTC. History test still held v1, v2, v3 (live) with no pins, and Pro history test still held
+the planted eight pins. Asked in R-83's shape, the owner ruled *"3. Record it as passed anyway"*: Story 7.22 is done on his word.
+The steps were not walked on these accounts; walk step 120 is this story's executed proof on production and T1.
+
+**Afterwards T1 was put back** on the owner's in-session go (*"1. Yes, put it back"*), with `GHOST6_STAFF_ACCESS_TOKEN` read
+in-process: Casper activated (200), `inflozo-history-test` deleted (204), and the read-back shows `casper*`, `racer`, `source`,
+with `routes.yaml` at 130 bytes and the same SHA-256 before and after. Both test accounts and their projects were left as they are.
+
 ## Verification
 
 **Commands:**
@@ -836,3 +852,8 @@ writes on the owner's in-session go, "1. Go — all of it", run in the main sess
     `source`, `inflozo-history-test*`.
 - **The Owner's manual test** carries both addresses, both project links and the sign-in route in every step. `owner_test` stays
   `pending`. Afterwards T1 goes back to Casper on his go.
+- **CI on the Deploy commit `d4382201`** (`GITHUB_TOKEN`, read only): run 45564519408. `rls` succeeded; `check` failed on one
+  journey this story does not touch: Story 5.23a's "every whole-page change repaints the whole page" timed out at "a subject"
+  (5 s), with 340 passed. So `deploy` was skipped, and production stayed on `dpl_GCBzx5Sh8qtjAJCNkYN7VMV7GjZo`, the same app code
+  (the commit changed the spec, the board and a probe script). Locally, `pnpm keyboard -g "every whole-page change repaints the
+  whole page" --repeat-each=5` passed 5 of 5, so the failure is intermittent. The Done push is the next CI reading.
