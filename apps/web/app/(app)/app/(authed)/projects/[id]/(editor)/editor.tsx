@@ -6049,7 +6049,7 @@ function EditorShell({
           </div>
           {/* STORY 7.22 — S8e's clock (`S8 Deploy.dc.html:278-281`), just before Ship it: the History drawer. Hidden where the bar is
               compact — Ship it ▾ → History is the way in there, at every width. A history control (R-192's view side), so it is live
-              reading along, and its tint while the drawer is open is the frame's. Its tooltip says "History" until Story 7.23's
+              reading along, and its tint while the drawer is open is the frame's. Its tooltip says "History" until Story 7.23a's
               Roll back makes S8e's "every version, one click back" true.
               AND BELOW 1366 TOO — R-289 (owner, 2026-11-25, Story 7.22's Question 1, option 1): R-266 holds S4's centred group
               within 6px of centre at 1280, and the clock's 28px + 8px gap moved it 42px off there — measured 0 at 1366, 7 at 1350, 42

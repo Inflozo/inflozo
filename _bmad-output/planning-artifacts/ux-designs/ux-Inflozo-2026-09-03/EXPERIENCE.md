@@ -1035,7 +1035,7 @@ in mono — Ghost 5's 501 and Ghost 6's 403 to the Admin key's `GET themes/` are
 line is "Ghost keeps your previous theme under Settings → **Design & branding** ↗": Ghost's own label on both majors, linked to
 the site's Design panel, never a menu path (E-5's rule). "this project" reads "this site" (R-278's grain), and its first action
 is Manage keys' **Add token** (R-170), which opens D1b's view inside the wizard; a kept token ships again, capturing, and Back
-returns to B12b. **Deploy without a snapshot** ships with the capture skipped. **Restore** is Story 7.23's (R-281). *)*
+returns to B12b. **Deploy without a snapshot** ships with the capture skipped. **Restore** is Story 7.23b's (R-281, R-290). *)*
 
 > **B12b's copy was wrong in the way that matters most** (corrected 2026-09-04, A7 item 2). It said "your integration key may not have
 > theme read permission … Check the key." Ghost's `tokenPermissionCheck` allowlists only

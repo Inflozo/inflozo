@@ -20,7 +20,7 @@ import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/serve
  * `deploys` is select-only to the tenant (AD-8) and `pin_version` is executable by the service role alone, so
  * `server-wiring.test.ts` names this file with that reason.
  *
- * NO EDIT LOCK. A pin is a history control, as Story 7.23's Roll back will be: it changes no design, so it is live in a read-only
+ * NO EDIT LOCK. A pin is a history control, as Story 7.23a's Roll back will be: it changes no design, so it is live in a read-only
  * editor (R-192's view-control side). ponytail: `pin_version` scopes by the user, not by this URL's project — a deploy of another
  * of the user's projects pinned through this address pins under ITS project's count, which is still the user's own row.
  */

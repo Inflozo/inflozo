@@ -122,9 +122,9 @@ export function timeLabel(at: string, now: Date, timeZone?: string): string {
  * the same voice: the busy and said forms (R-98, UX-DR12), the empty state (UX-DR6), a failed read and "on {host}".
  */
 export const HISTORY_WORDS = {
-  /** the clock's name and tooltip, and Ship it ▾'s row — "every version, one click back" is S8e's once Story 7.23's Roll back lands */
+  /** the clock's name and tooltip, and Ship it ▾'s row — "every version, one click back" is S8e's once Story 7.23a's Roll back lands */
   open: 'History',
-  /** S4d's row caption, without "rollback" until Story 7.23 builds it */
+  /** S4d's row caption, without "rollback" until Story 7.23a builds it */
   menuCaption: 'Versions, gscan reports',
   title: (project: string) => `History — ${project}`,
   close: 'Close history',

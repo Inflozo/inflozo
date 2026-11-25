@@ -1,5 +1,5 @@
 ---
-title: 'Story 7.23 — Deploy history, rollback and restore-to-original (planned as 7.23a: Roll back and Re-activate from History)'
+title: 'Story 7.23a — Roll back and Re-activate from History (split from Story 7.23 by R-290)'
 type: 'feature'
 created: '2026-11-25'
 status: 'ready-for-dev'
@@ -19,8 +19,8 @@ live in one press. The newest three versions show a small picture and a line say
 back button, the clock's tooltip now reads "History — every version, one click back", and if Ghost itself refuses an old
 version the panel says so in Ghost's own words while your site stays exactly as it was.
 
-**Dev gate:** Question 1 below must be ruled before Dev. This spec plans its recommended option (the story split in three);
-a different ruling moves the restore and the phone card back into this spec at the Record, before Dev.
+Question 1 was ruled option 1 (R-290, owner, 2026-11-25): Story 7.23 is split in three, and this spec is 7.23a. Restore
+original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each with its criteria word for word in `epics.md`.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -60,10 +60,12 @@ a different ruling moves the restore and the phone card back into this spec at t
     `:400-413`.
 - `S4 Editor.dc.html` S4d: the ▾ row's caption, "Versions, gscan reports, rollback".
 
-**Moved by Question 1, if ruled as recommended (R-195; each pasted word for word into its story's card at the Record):**
+**Moved by Question 1 (R-290, owner, 2026-11-25; each pasted word for word into its story's card, R-195):**
 - to a new **Story 7.23b, Restore original** — the original-theme row (D2a `:58-73`), R-281's restore paragraph, R-284,
   DW-389, both DW-391 paragraphs, and the Verification's "a real snapshot restored on T1";
-- to a new **Story 7.23c, the phone's Deploy history card** (D4f) — the Small Screen Notice paragraph.
+- to a new **Story 7.23c, the phone's Deploy history card** (D4f) — the Small Screen Notice paragraph;
+- to both 7.23a and 7.23b — the criteria naming rollback and restore alike (the edit lock, the Pro exit exemption,
+  R-287's newest accepted upload).
 
 **The epic's criteria this story keeps, word for word (R-195):**
 - **Given** deploy history per project × site, **when** I open it, **then** each row lists version, timestamp, gscan summary
@@ -383,7 +385,7 @@ a different ruling moves the restore and the phone card back into this spec at t
 - [ ] `apps/web/retention.test.ts`, `put-back.test.ts` (new, at `apps/web/`'s root), `deploy-run.test.ts`, `drift.test.ts`,
   `deploy.test.ts`, `busy.test.ts`, `server-wiring.test.ts` -- every row of the I/O matrix. A source test proves the put-back
   module and the route's act branch name no `holdsLock`, `resolveEntitlement` or gscan gate.
-- [ ] `tools/keyboard/journey.spec.mjs` -- the 7.23 journeys:
+- [ ] `tools/keyboard/journey.spec.mjs` -- the 7.23a journeys:
   - (a) the expanded and compact rows, the tooltip, the caption;
   - (b) Enter on Roll back opens the confirm, focus on Cancel; Esc returns focus to that Roll back;
   - (c) Roll back confirmed: "Rolling back…", said once, focus on ✕;
@@ -400,7 +402,7 @@ a different ruling moves the restore and the phone card back into this spec at t
   - FR-J9: a dated note;
   - EXPERIENCE F8: the order, the rows, R-189's by-line, another site's rows, the dropped-settings line;
   - AD-19's note and Story 7.25's card: the put-back takes the per-site lock when it lands;
-  - Story 7.32's card: D2d's row is built by 7.23;
+  - Story 7.32's card: D2d's row is built by 7.23a;
   - MEASUREMENTS: a new § for the rollback executed on T1;
   - VERIFY-AT-BUILD 10's rollback half.
 - [ ] `deferred-work.md` -- resolve DW-400.
@@ -510,7 +512,9 @@ Without the split, all of that is one test after one long build.
 2. **Split in two:** 7.23a takes Roll back, Re-activate and the phone card; 7.23b takes Restore original.
 3. **Keep one story** with everything in it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-25) — R-290.** *"1. (RECOMMENDED) Split in three, done in order: 7.23a (Roll back and
+Re-activate in History; this spec), then 7.23b (Restore original), then 7.23c (the phone card). Each piece's requirements
+move word for word into its own card."* `epics.md` carries the three cards and Epic 7's moved list.
 
 ## Owner's manual test
 
@@ -571,7 +575,7 @@ back on Casper on your go.
   deploy-run, drift, deploy, busy and server-wiring tests. The run prints its own counts; never write one down.
 - `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0, with `accepted_at` protected and present.
 - `python3 tools/doc-audit.py --check`, run twice -- expected: green.
-- `pnpm keyboard` -- expected: journeys 7.23 (a)–(f), 7.22's unchanged, and the floor all green.
+- `pnpm keyboard` -- expected: journeys 7.23a (a)–(f), 7.22's unchanged, and the floor all green.
 - `grep -rn "holdsLock\|resolveEntitlement" apps/web/server/deploy/put-back.ts` -- expected: nothing.
 
 **Real infrastructure** (R-82; on the owner's in-session go, in the main session):

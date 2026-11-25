@@ -19,8 +19,9 @@ import { chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type Hi
  *     the Live badge D2a's `:78`;
  *   - the refusal: D2b `:158-186` — the note under the pin, its sentence `:180` and Got it `:181`; the pin stays unfilled.
  *
- * EVERY ROW IS DRAWN COMPACT, the frame's row for older versions, with the Live badge added (the spec's Design Notes): Story 7.23
- * draws the expanded rows (thumbnail, Changed line, by-line, Roll back), the original-theme row and D2d. Extrapolated in the same
+ * EVERY ROW IS DRAWN COMPACT, the frame's row for older versions, with the Live badge added (the spec's Design Notes): Story 7.23a
+ * draws the expanded rows (thumbnail, Changed line, by-line, Roll back) and D2d, Story 7.23b the original-theme row (R-290).
+ * Extrapolated in the same
  * tokens: the loading rows (in the compact row's shape — R-98, never a spinner), the empty state (UX-DR6, the limit line still
  * under it), a failed read (one sentence where the rows go), and "on {host}" on a row of another site (one list per project).
  *

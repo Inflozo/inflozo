@@ -2411,7 +2411,7 @@ So that zooming to read is not treated as using a phone.
 **Then** on a **phone — a touch screen whose shorter side is under 500 px, decided once as the project opens (R-201,
 amending R-87's 834)** — I land on the **Small Screen Notice**, which says the
 editor needs a wider screen and offers what genuinely works from a phone: **the project's deploy history with
-one-tap rollback, the sites list and billing** *(one row today, Your sites; Stories 7.23 and 12.5 add theirs — R-118)*
+one-tap rollback, the sites list and billing** *(one row today, Your sites; Stories 7.23c and 12.5 add theirs — R-118, R-290)*
 **And** on **any other touch screen** — a tablet, whichever way it is held (R-201) — I get the editor as drawn: the Layers panel as an
 icon rail, the Controls sidebar as an overlay with a scrim, **every target at least 44 px**, and one overflow
 menu (UX-DR18)
@@ -3075,8 +3075,21 @@ overwritten, routes uploaded automatically, and every theme setting and translat
 > 1. FR-C6's 90-day orphan purge — its notice, its download offer and the purge proceeding on its deadline (DW-75) — and
 >    the 90 days' one home (DW-79) — **Story 7.20b**;
 > 2. restoring the snapshot, Ghost's own gscan on the way back in and its fallback, and the "and restored" of the
->    verification — **Story 7.23**, whose D2a draws Restore original; with DW-389 (a default theme restores by
+>    verification — **Story 7.23b** *(R-290)*, whose D2a draws Restore original; with DW-389 (a default theme restores by
 >    activation).
+>
+> **Moved from Story 7.23 by its Question 1 (owner, 2026-11-25, R-290), word for word, so none is missed (R-195).** Story
+> 7.23 is split: **Story 7.23a** builds Roll back and Re-activate in History; **Story 7.23b**, straight after it, Restore
+> original; **Story 7.23c**, after that, the phone's Deploy history card. Every "Story 7.23" this file wrote before
+> 2026-11-25 now names the part that holds its item.
+>
+> 1. the original-theme row (D2a), restoring the snapshot with Ghost's own gscan and its fallback (R-281), the saved
+>    original's meaning (R-284), a default theme restored by activation (DW-389), the downloads that never replace the page
+>    (DW-391, both paragraphs), and the verification's "a real snapshot restored on T1" — **Story 7.23b**;
+> 2. D4f's Deploy history card on the Small Screen Notice (R-118), with Story 5.22's "Stories 7.23 and 12.5 add theirs" —
+>    **Story 7.23c**;
+> 3. the criteria naming rollback and restore alike — no edit lock, the Pro exit exemption, and R-287's newest accepted
+>    upload — are pasted into **Stories 7.23a and 7.23b** both.
 
 ### Story 7.1: Theme assembly — the mechanism, and the formatting contract
 
@@ -4356,7 +4369,7 @@ profile." and "That's an integration's Admin API key. Your Staff Access Token is
 ### Story 7.20a: The backup gate and the pre-Inflozo snapshot
 
 *(Story 7.20 split by its Question 1 — owner, 2026-10-26, **R-281**: this card keeps the backup gate and the snapshot;
-**Story 7.20b**, straight after it, takes FR-C6's 90-day orphan purge and DW-79's one home, and **Story 7.23** takes
+**Story 7.20b**, straight after it, takes FR-C6's 90-day orphan purge and DW-79's one home, and **Story 7.23b** *(R-290)* takes
 restoring, each criterion word for word.)*
 
 As a user about to have my theme replaced,
@@ -4409,7 +4422,7 @@ Story 7.19's Safety net, making the first deploy's six steps (UX-DR19).
 
 **FRs:** FR-J13. · **Frame:** `D1 First-Deploy Gates.dc.html` D1d (as R-283 cut it; D1d′ and D1e dropped) ·
 `B Missing Surfaces.dc.html` B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 (R-82); its restore is Story
-7.23's (R-281).
+7.23b's (R-281, R-290).
 
 ### Story 7.20b: The snapshot orphan purge
 
@@ -4531,7 +4544,12 @@ Pre-flight that found its drift: the live copy is not kept, and D3a is drawn wit
 
 **FRs:** FR-J7. · **Frame:** `D2 Deploy History Completed.dc.html` D2a · D2b. · **Owner test:** yes.
 
-### Story 7.23: Deploy history, rollback and restore-to-original
+### Story 7.23a: Roll back and Re-activate from History
+
+*(Story 7.23 split by its Question 1 — owner, 2026-11-25, **R-290**: this card keeps the history's Roll back and
+Re-activate; **Story 7.23b**, straight after it, takes restoring the original theme, and **Story 7.23c**, after that, the
+phone's Deploy history card, each criterion word for word. The criteria naming rollback and restore alike are in both 7.23a
+and 7.23b.)*
 
 As a user who just shipped something wrong,
 I want one click back,
@@ -4545,8 +4563,57 @@ So that regret is cheap.
 redeploys in one click**
 **And** each row carries a **pin control** obeying the three retention rules
 **And** the list carries **two rows that are not ordinary versions**: **the pre-Inflozo snapshot**, above the
-versions, outside the count, actioned as **restore original**; and an **`uploaded`-but-not-`activated` row**,
+versions, outside the count, actioned as **restore original** *(→ Story 7.23b, R-290)*; and an **`uploaded`-but-not-`activated` row**,
 shown **without an active badge** and actioned as **re-activate rather than as a recompile**
+**And** **rollback is exempt from the Pro exit gating** — restoring an artifact that already ran is always
+allowed, on any plan
+**And** **rollback and snapshot restore redeploy stored artifacts, not the working document, so they never
+require the edit lock**
+**And** *(Story 7.21's Dev, 2026-11-24, under R-287)* a rollback or a restore that **uploads a stored artefact records that
+upload as the newest accepted one** — a `deploys` row with status `uploaded` or `live` carrying **the artefact's own
+`content_manifest`** — because Ghost replaces every file under the theme's name on that upload, and the next drift check
+compares the site with the newest upload Ghost accepted (`deploys.baseline`)
+**And** the Roll back confirm **opens with focus on the cancelling action** (UX-DR14)
+**And** with no deploys the empty state is "Nothing shipped yet" **and the limit is stated anyway** (UX-DR6)
+**And** the screens match S8e and D2a Pro pinning, D2b pin refusal and D2c Free.
+**And** *(Story 7.22's Dev, 2026-11-25)* **the drawer is 7.22's** (`components/editor/deploy-history.tsx`, opened by the bar's
+clock from 1366 up and by Ship it ▾ → History at every width): its header, D2a's compact row for every version with the Live
+badge, the pin with D2b's refusal (`pin_version`, N−1), the limit line, the empty state and a failed read. **This story adds**
+D2a's expanded rows (thumbnail, Changed line, by-line, Roll back), the original-theme row *(→ 7.23b)*, D2d's Re-activate row, S8e's Roll
+back confirm and the phone card *(→ 7.23c)* — and S8e's full clock tooltip, "History — every version, one click back", and the ▾ row's
+"rollback" in its caption, both held back until Roll back exists
+**And** *(Story 7.22's Dev)* **one list per project, across every site** (FR-J7 counts per project): a row of another site says
+"on {host}" and this story decides what its Roll back does there — the frozen name is per site
+**And** *(Story 7.22's Dev)* **a rollback row that shares its object with an older row prunes by object**: today every row names
+its own `{projectId}/{deployId}.zip` and the prune clears a pointer and removes that key; once a rollback records an upload of a
+STORED artefact, two rows can name one object, so the prune must remove an object only when no remaining row names it
+(`server/retention.ts`, `pruneProject`)
+**And** *(DW-400, Story 7.22's Review, 2026-11-25)* **"newest" for retention is decided here, with the rows of two sites**: the
+rule orders a project's stored versions by `deploys.created_at`, the Pre-flight's time, so a check made before a re-link and
+shipped after one can be pruned the moment Ghost accepts it; this story decides whether newest is the upload Ghost accepted, and
+what the row's time label says after a stale re-make (`lib/retention.ts`' `newestFirst`)
+
+**FRs:** FR-J9. · **Frame:** `S8 Deploy.dc.html` S8e · `D2 Deploy History Completed.dc.html` D2a · D2b · D2c · D2d (the
+Re-activate row). · **Owner test:** yes. · **Verification:** a real rollback on T1 and T3 (R-82) *(T3's half postponed to
+DW-326's pass, R-238)*.
+
+### Story 7.23b: Restore original
+
+*(Split from Story 7.23 by its Question 1 — owner, 2026-11-25, **R-290**. Every criterion below moved here word for word,
+or is pasted from Story 7.23a where it names restore as well as rollback, but the last, which is R-290's own; it runs
+straight after Story 7.23a, whose History drawer it adds a row to.)*
+
+As a user whose site Inflozo's theme replaced,
+I want one click to put my original theme back,
+So that trying Inflozo never costs me the site I had.
+
+**Acceptance Criteria:**
+
+**Given** deploy history per project × site, on a site with a pre-Inflozo snapshot (Story 7.20a)
+**When** I open it
+**Then** the list carries **two rows that are not ordinary versions**: **the pre-Inflozo snapshot**, above the
+versions, outside the count, actioned as **restore original**; and an **`uploaded`-but-not-`activated` row**,
+shown **without an active badge** and actioned as **re-activate rather than as a recompile** *(Story 7.23a's, R-290)*
 **And** **rollback is exempt from the Pro exit gating** — restoring an artifact that already ran is always
 allowed, on any plan
 **And** **rollback and snapshot restore redeploy stored artifacts, not the working document, so they never
@@ -4571,32 +4638,37 @@ place of the editor
 upload as the newest accepted one** — a `deploys` row with status `uploaded` or `live` carrying **the artefact's own
 `content_manifest`** — because Ghost replaces every file under the theme's name on that upload, and the next drift check
 compares the site with the newest upload Ghost accepted (`deploys.baseline`)
-**And** the Roll back confirm **opens with focus on the cancelling action** (UX-DR14)
-**And** with no deploys the empty state is "Nothing shipped yet" **and the limit is stated anyway** (UX-DR6)
+**And** *(Story 7.22's Dev, 2026-11-25, moved by R-290)* **this story adds** the original-theme row
+**And** the original-theme row matches D2a (R-290).
+
+**FRs:** FR-J9 (restore original) · FR-J13 (the snapshot's restore). · **Frame:** `D2 Deploy History Completed.dc.html` D2a
+(the original-theme row). · **Owner test:** yes. · **Verification:** a real snapshot restored on T1 (moved from Story 7.20,
+R-281; from Story 7.23, R-290).
+
+### Story 7.23c: The phone's Deploy history card
+
+*(Split from Story 7.23 by its Question 1 — owner, 2026-11-25, **R-290**. The criteria below moved here word for word, but
+the last, which is R-290's own; it runs after Story 7.23b, and its Roll back is Story 7.23a's.)*
+
+As a user who opens a project on a phone,
+I want the live version and a one-tap Roll back to the one before it,
+So that a bad ship can be undone wherever I am.
+
+**Acceptance Criteria:**
+
+**Given** a project opened on a phone (Story 5.22's Small Screen Notice)
+**When** the notice shows
+**Then** the project's deploy history with one-tap rollback is one of its rows *(Story 5.22's card: "one row today, Your
+sites; Stories 7.23 and 12.5 add theirs — R-118")*
 **And** the history is reachable from a phone, because it is what the Small Screen Notice offers, and this story adds
 D4f's Deploy history card to that notice — the live version and a one-tap Roll back to the one before it — which Story
 5.22 built without it (R-118)
-**And** the screens match S8e and D2a Pro pinning, D2b pin refusal and D2c Free.
-**And** *(Story 7.22's Dev, 2026-11-25)* **the drawer is 7.22's** (`components/editor/deploy-history.tsx`, opened by the bar's
-clock from 1366 up and by Ship it ▾ → History at every width): its header, D2a's compact row for every version with the Live
-badge, the pin with D2b's refusal (`pin_version`, N−1), the limit line, the empty state and a failed read. **This story adds**
-D2a's expanded rows (thumbnail, Changed line, by-line, Roll back), the original-theme row, D2d's Re-activate row, S8e's Roll
-back confirm and the phone card — and S8e's full clock tooltip, "History — every version, one click back", and the ▾ row's
-"rollback" in its caption, both held back until Roll back exists
-**And** *(Story 7.22's Dev)* **one list per project, across every site** (FR-J7 counts per project): a row of another site says
-"on {host}" and this story decides what its Roll back does there — the frozen name is per site
-**And** *(Story 7.22's Dev)* **a rollback row that shares its object with an older row prunes by object**: today every row names
-its own `{projectId}/{deployId}.zip` and the prune clears a pointer and removes that key; once a rollback records an upload of a
-STORED artefact, two rows can name one object, so the prune must remove an object only when no remaining row names it
-(`server/retention.ts`, `pruneProject`)
-**And** *(DW-400, Story 7.22's Review, 2026-11-25)* **"newest" for retention is decided here, with the rows of two sites**: the
-rule orders a project's stored versions by `deploys.created_at`, the Pre-flight's time, so a check made before a re-link and
-shipped after one can be pruned the moment Ghost accepts it; this story decides whether newest is the upload Ghost accepted, and
-what the row's time label says after a stale re-make (`lib/retention.ts`' `newestFirst`)
+**And** *(Story 7.22's Dev, 2026-11-25, moved by R-290)* **this story adds** the phone card
+**And** the card matches D4f at 390 (R-290).
 
-**FRs:** FR-J9. · **Frame:** `S8 Deploy.dc.html` S8e · `D2 Deploy History Completed.dc.html` D2a · D2b · D2c. ·
-**Owner test:** yes. · **Verification:** a real rollback on T1 and T3 (R-82), and a real snapshot restored on T1 (moved
-from Story 7.20, R-281).
+**FRs:** FR-J9 (from a phone, R-118). · **Frame:** `D4 Dashboard Sheets and Blocks.dc.html` D4f `:401-413` (the Deploy
+history card). · **Owner test:** yes. · **Verification:** the card's Roll back on production and T1, at 390 with a coarse
+pointer (R-82).
 
 ### Story 7.24: Theme naming, frozen per site
 

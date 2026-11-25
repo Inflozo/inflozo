@@ -10617,11 +10617,11 @@ origin: Story 7.20's Create (2026-10-26), read in Ghost's source on both pinned 
   theme (`theme-storage.js` `serve()`, `filename={name}.zip`). T1's live theme is Casper, so the first real restore on T1
   would be refused. Ghost also refuses to delete either default theme (`storage.js` `destroy`, `:167-170`), so the installed
   copy is always there to activate.
-owner: Story 7.23 (Deploy history, rollback and restore-to-original), which took the restore criterion word for word
+owner: Story 7.23b (Restore original; split from Story 7.23 by R-290, owner, 2026-11-25), which took the restore criterion word for word
   under R-281 (owner, 2026-10-26), and whose card carries this entry's sentence with its id. It restores a
   default theme by `PUT themes/{name}/activate/` (an Admin-key write already on `ADMIN_WRITES`), and anything else by upload,
   with Ghost's 422 fallback (VERIFY-AT-BUILD 10).
-location: Story 7.23's restore action (not yet built) · `apps/web/server/snapshot.ts` (Story 7.20a, which stores `theme_name`)
+location: Story 7.23b's restore action (not yet built) · `apps/web/server/snapshot.ts` (Story 7.20a, which stores `theme_name`)
 reason: restore is not built in Story 7.20a; the finding must reach the story that builds it before its Create.
 
 ### DW-390: the database's own note on `sites.hosted_by_ghost` still describes two Backup cards
@@ -10656,13 +10656,13 @@ origin: Story 7.20a's Review (2026-10-26; Blind Hunter and Edge Case Hunter). Th
   production) — but the same route answers a 404 "Not found" when the row has gone, a 502 when signing fails, and a 303 to
   `/sign-in` with no session. Each is improbable here (the row was written by the capture a moment before, under the same
   session), and nothing is lost: leaving the editor sends its work.
-owner: Story 7.23 (Deploy history, rollback and restore-to-original), whose D2a original-theme row offers the same snapshot's
+owner: Story 7.23b (Restore original; split from Story 7.23 by R-290, owner, 2026-11-25), whose D2a original-theme row offers the same snapshot's
   download from Deploy history: one way to follow it for both, checking the answer before leaving the page.
 location: `apps/web/components/editor/deploy-wizard.tsx` (`follow`, `fetchRow`) · `app/(app)/app/snapshots/[id]/download/route.ts`
-reason: an improbable failure of a route Story 2.5 owns; fixing it means a second way to fetch a signed URL, which 7.23 needs too.
+reason: an improbable failure of a route Story 2.5 owns; fixing it means a second way to fetch a signed URL, which 7.23b needs too.
 also: *(Story 7.21's Review, 2026-11-24)* D3a's **Download the live theme first** is the same shape: a plain link to
   `projects/[id]/deploy/live`, whose 404 (no live copy, or not this job's), 502 (signing failed) and sign-in 303 each replace
-  the editor with a bare page. The spec asked for "a plain link" (AD-13's 303). Story 7.23's one way to follow a signed URL
+  the editor with a bare page. The spec asked for "a plain link" (AD-13's 303). Story 7.23b's one way to follow a signed URL
   serves both links (`#deploy-drift-download`, `deploy/live/route.ts`).
 
 ## Deferred from: code review of spec-7-20b-the-snapshot-orphan-purge (2026-11-24)
@@ -10818,7 +10818,7 @@ origin: Story 7.22's Review (2026-11-25), the Edge Case Hunter and Blind Hunter 
   version was rebuilt or shipped. It needs a check made on site A, resting, a re-link to B and a ship there, then a re-link to A
   and Ship it on the old check (DW-380's nightly sweep now abandons a check resting off its project's link, which narrows it to
   a re-link and back within one day).
-owner: Story 7.23 (Roll back, and another site's rows): it decides how rows on two sites are ordered and rolled back to, and
+owner: Story 7.23a (Roll back, and another site's rows; split from Story 7.23 by R-290): it decides how rows on two sites are ordered and rolled back to, and
   whether "newest" is the upload Ghost accepted (`activated_at`, or an `uploaded_at` it records) rather than `created_at`.
 location: `apps/web/lib/retention.ts` (`newestFirst`, `prunable`) · `apps/web/components/editor/deploy-history.tsx` (the row's time)
 reason: the frozen rule names `created_at`; changing what "newest" means is a rule change (the spec's Ask First), and the path

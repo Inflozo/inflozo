@@ -6201,6 +6201,37 @@ Question 1, ruled **option 1** (owner, 2026-11-25): *"1. Clock from 1366 up (REC
   - ✅ `EXPERIENCE.md` (beside R-266, and F8 rule 3's note);
   - ✅ `epic-7-context.md`.
 
+**R-290 — Story 7.23 is three stories, done in order: 7.23a Roll back and Re-activate in History, 7.23b Restore original,
+7.23c the phone's Deploy history card.** Story 7.23's Create, Question 1, ruled **option 1** (owner, 2026-11-25): *"1.
+(RECOMMENDED) Split in three, done in order: 7.23a (Roll back and Re-activate in History; this spec), then 7.23b (Restore
+original), then 7.23c (the phone card). Each piece's requirements move word for word into its own card."*
+
+- **Why it was a question.** The card held three surfaces, each with its own owner test: the drawer's Roll back and
+  Re-activate (S8e, D2a's expanded rows, D2d); Restore original (D2a's original-theme row, with Ghost's 422 fallback,
+  DW-389's default-theme activation, DW-391's downloads and a real snapshot restore on T1); and D4f's Deploy history card at
+  390. Story 7.22 alone was one drawer.
+- **The rule.**
+  - **Story 7.23a** keeps the card's history criteria, the rollback, D2d's Re-activate, the Roll back confirm and DW-400. Its
+    spec is Story 7.23's, renamed.
+  - **Story 7.23b**, straight after it, takes the original-theme row, R-281's restore criterion, R-284, DW-389, both DW-391
+    paragraphs and the verification's "a real snapshot restored on T1", word for word.
+  - **Story 7.23c**, after 7.23b, takes the Small Screen Notice criterion (R-118, D4f) word for word, and Story 5.22's
+    "Stories 7.23 and 12.5 add theirs".
+  - The criteria that name both rollback and restore (no edit lock, the Pro exit exemption, R-287's newest accepted upload)
+    are pasted into 7.23a and 7.23b alike.
+- **Declined.** Option 2, two stories (the phone card with 7.23a); option 3, one story.
+- **Not re-pointed:** the specs of done stories (5.22, 7.18a, 7.20a, 7.21, 7.22) and the register's earlier entries. Each
+  says "Story 7.23" as of its date. Every "Story 7.23" written before 2026-11-25 now names the part that holds its item.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.23a's spec (renamed from 7.23's; Question 1's Ruled line);
+  - ✅ `epics.md`: Stories 7.23a, 7.23b and 7.23c, 7.20a's and 5.22's cards, and Epic 7's preamble;
+  - ✅ `sprint-status.yaml`;
+  - ✅ DW-389 and DW-391 re-owned to 7.23b, DW-400 to 7.23a;
+  - ✅ `prd.md` FR-J13's note, VERIFY-AT-BUILD 10, `EXPERIENCE.md`'s B12 note;
+  - ✅ `epic-7-context.md`;
+  - ✅ the code comments naming Story 7.23.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

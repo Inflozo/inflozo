@@ -85,7 +85,7 @@ test.describe('R-201 · a phone gets D4f, never the editor', () => {
       "Dragging sections and a 280-pixel control panel don't fit on a phone yet. Open this project on a laptop or tablet.",
     )
     await expect(page.locator('[data-small-screen] h2')).toHaveText(/what works here/i)
-    // ONE row today (R-118): the sites list. Deploy history and Billing arrive with 7.23 and 12.5 — absent, never greyed
+    // ONE row today (R-118): the sites list. Deploy history and Billing arrive with 7.23c and 12.5 — absent, never greyed
     const rows = page.locator('[data-small-screen] section a')
     await expect(rows).toHaveCount(1)
     await expect(rows.first()).toHaveText('Your sites')

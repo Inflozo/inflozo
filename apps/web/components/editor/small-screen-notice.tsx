@@ -14,7 +14,7 @@ import { useShellUser } from '@/components/shell/shell'
    because the editor that starts them is never mounted. It is a state of the project's own route, never a redirect.
 
    ONE ROW, NOT THREE (R-118, UX-DR3): D4f offers the deploy history with a one-tap Roll back, the sites list and
-   billing, and only the sites list exists today. The Deploy history card arrives with Story 7.23 and the Billing row with
+   billing, and only the sites list exists today. The Deploy history card arrives with Story 7.23c and the Billing row with
    Story 12.5, whose criteria name this notice; until then they are ABSENT, never greyed.
 
    THE AVATAR IS DECORATIVE, as D4f draws it (a circle with no role), and it is the user's own initial — the Kit's

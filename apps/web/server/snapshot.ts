@@ -33,7 +33,7 @@ import { SNAPSHOT_BUCKET, snapshotObjectKey } from '../app/(app)/app/(authed)/ac
  * THE SAVED ORIGINAL IS THE THEME INFLOZO REPLACED MOST RECENTLY (R-284, owner, 2026-10-26, Story 7.20a's Question 5). Every
  * capture replaces the site's one row: the Theme Download whenever the gate shows (a reconnect makes it owed again), and the
  * first upload to a site with no binding — the first upload after every linked project is deleted included. A disconnect,
- * a reconnect or a project's deletion alone never touches it, a marked live theme writes nothing, and Story 7.23's Restore
+ * a reconnect or a project's deletion alone never touches it, a marked live theme writes nothing, and Story 7.23b's Restore
  * original puts back this one row.
  */
 
