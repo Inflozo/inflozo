@@ -560,41 +560,51 @@ too, and the middle group sits visibly left of centre.
 
 ## Owner's manual test
 
-**Before you start:** on your go, Deploy plants two test accounts and fills in their addresses and links below:
-- a **Free** account whose project "History test" is connected to T1 (`ghost6.inflozo.com`) and has shipped three times
-  (v1–v3);
-- a **Pro** account whose project "Pro history test" holds ten stored versions (v1–v10), eight of them pinned.
+**Before you start:** Deploy planted two test accounts on your go (2026-11-25). Both are connected to T1
+(`ghost6.inflozo.com`):
+- **Free:** `umngkmr+history722@gmail.com`. Its project **History test** has shipped three times (v1–v3), and v3 is live on
+  T1. Until the test ends, ghost6.inflozo.com shows the History test theme instead of Casper.
+- **Pro:** `umngkmr+prohistory722@gmail.com`. Its project **Pro history test** holds ten stored versions (v1–v10), with v1–v8
+  pinned.
+
+To sign in as either one, go to `https://app.inflozo.com/sign-in`, type the address, and open the link that arrives in your
+inbox. Use a second browser (or a private window) for the Pro account.
 
 Use a desktop browser at full width — at least **1366 px** wide, where the bar shows the clock (R-289) — unless a step says
 otherwise.
 
-1. **URL:** `https://app.inflozo.com/projects/<History test — Deploy fills>`, signed in as the Free account. **Screen:** the
-   editor. **Do:** press the **clock icon** just left of **Ship it**. **Type:** nothing. **See:** a panel from the right titled
-   **HISTORY — HISTORY TEST**, with rows **v3** (green **Live** dot), **v2** and **v1**, newest first. Each row has a green
-   **0 · 0** chip, a date and time, and an outline pin at the right. At the bottom: "Pro keeps the last 10 versions. Free keeps
-   the last 3. Older versions are removed, not hidden — an Inflozo theme can't be rebuilt later, so this is how far back you
-   can go." Nothing offers an upgrade.
-2. **Same screen.** **Do:** press **v1's pin**, then **v2's pin**. **See:** each pin fills yellow, its row takes a faint yellow
+1. **URL:** `https://app.inflozo.com/projects/21467393-8fc7-490f-93d4-59e73023e8eb`, signed in as
+   `umngkmr+history722@gmail.com`. **Screen:** the editor. **Do:** press the **clock icon** just left of **Ship it**.
+   **Type:** nothing. **See:** a panel from the right titled **HISTORY — HISTORY TEST**, with rows **v3** (green **Live**
+   dot), **v2** and **v1**, newest first. Each row has a yellow **0 · 1** chip (0 errors, 1 warning: the test project's one
+   theme-check warning, "The switch that hides a page's title and feature image does nothing on this site"), a date and time,
+   and an outline pin at the right. At the bottom: "Pro keeps the last 10 versions. Free keeps the last 3. Older versions are
+   removed, not hidden — an Inflozo theme can't be rebuilt later, so this is how far back you can go." Nothing offers an
+   upgrade.
+2. **URL:** `https://app.inflozo.com/projects/21467393-8fc7-490f-93d4-59e73023e8eb` (same screen). **Do:** press **v1's
+   pin**, then **v2's pin**. **See:** each pin fills yellow, its row takes a faint yellow
    wash and shows a **PINNED** tag.
-3. **Same screen.** **Do:** press **v3's pin**. **See:** a small yellow note under that pin says "One version has to stay
+3. **URL:** the same History test editor. **Do:** press **v3's pin**. **See:** a small yellow note under that pin says "One version has to stay
    unpinned so your next deploy has somewhere to go. Unpin another first.", with **Got it**. v3's pin stays an outline. Press
    **Got it**, and the note closes.
-4. **Same screen.** **Do:** press **v2's pin** again. **See:** v2 is unpinned — outline pin, no wash, no tag. Unpinning is
+4. **URL:** the same History test editor. **Do:** press **v2's pin** again. **See:** v2 is unpinned — outline pin, no wash, no tag. Unpinning is
    never refused.
-5. **Same screen.** **Do:** close the panel (✕ or Esc), press **Ship it**, run the checks, and ship with **Deploy & activate**
-   until **Live**. **See:** the theme goes live as **v4**.
-6. **Same screen.** **Do:** open **Ship it ▾** (the small arrow on Ship it) and choose **History**. **See:** the panel shows
+5. **URL:** the same History test editor. **Do:** close the panel (✕ or Esc), press **Ship it**, run the checks (the same one
+   warning shows; Ship it still works), and ship with **Deploy & activate** until **Live**. **See:** the theme goes live as
+   **v4**.
+6. **URL:** the same History test editor. **Do:** open **Ship it ▾** (the small arrow on Ship it) and choose **History**. **See:** the panel shows
    **v4** (Live), **v3** and **v1** (PINNED). **v2 is gone** — not greyed, simply not there — because it was the oldest
    unpinned version and Free keeps three.
-7. **Same screen.** **Do:** ship once more, as in step 5, then open History. **See:** the new version is **v5** (not v4 again),
+7. **URL:** the same History test editor. **Do:** ship once more, as in step 5, then open History. **See:** the new version is **v5** (not v4 again),
    and the list is **v5**, **v4**, **v1** (PINNED). v3 is gone.
-8. **Same screen, keyboard only.** **Do:** close the panel, press Tab until the clock icon is focused, and press Enter. **See:**
+8. **URL:** the same History test editor, **keyboard only.** **Do:** close the panel, press Tab until the clock icon is focused, and press Enter. **See:**
    the panel opens with focus on its ✕. Tab reaches each pin, and Space pins or unpins it. Esc closes the panel and puts focus
    back on the clock icon.
-9. **URL:** `https://app.inflozo.com/projects/<Pro history test — Deploy fills>`, signed in as the Pro account. **Do:** open
-   History. **See:** ten rows, v10 to v1, eight PINNED. Pin one unpinned row: it pins (nine pinned). Pin the last unpinned row:
+9. **URL:** `https://app.inflozo.com/projects/5b9724e4-5fab-4dc6-8853-56cec9a4bd44`, signed in as
+   `umngkmr+prohistory722@gmail.com`. **Screen:** the editor. **Do:** open History. **See:** ten rows, v10 to v1, eight PINNED. Pin one unpinned row: it pins (nine pinned). Pin the last unpinned row:
    the yellow note appears and the pin stays unfilled. Unpin any row: allowed.
-10. **Same project, browser window narrowed to about 820 px wide.** **See:** the clock icon is gone from the bar, which is
+10. **URL:** `https://app.inflozo.com/projects/5b9724e4-5fab-4dc6-8853-56cec9a4bd44`, with the browser window narrowed to
+    about 820 px wide. **See:** the clock icon is gone from the bar, which is
     compact there. **Do:** choose **Ship it ▾ → History**. **See:** the panel opens.
 
 **After the test:** say "passed", or list what you saw. Your ships leave an Inflozo theme live on T1, so Claude puts T1 back on
@@ -780,3 +790,49 @@ writes on the owner's in-session go, "1. Go — all of it", run in the main sess
     disconnected; the account deleted; users 22 → 22, projects 15 → 15; zero CSP violations.
 - **Still to read, for Deploy:** the first SCHEDULED run of `prune-artifacts`, due 06:50 UTC on 2026-11-25 on this deployment. Read
   its request row and log line (Vercel's request-logs, or `npx vercel logs`).
+
+**Executed — Deploy (2026-11-25, Node 24; keys by their variable names, read in-process, no value printed; the production and T1
+writes on the owner's in-session go, "1. Go — all of it", run in the main session):**
+- **Deployment: `dpl_GCBzx5Sh8qtjAJCNkYN7VMV7GjZo`** (`inflozo-gl5bz6kl3-umangkagathara.vercel.app`), READY, built from
+  `dbece68d` (the Review's second commit), serving both `app.inflozo.com` and `inflozo.com` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+  `v13/deployments/{host}`). `git diff --stat e3363c54 dbece68d -- apps packages supabase` is empty, so this deployment is the code
+  walk step 120 passed on. Its `crons` list `/api/cron/prune-artifacts` at `50 6 * * *` beside `purge-accounts` (`15 3`),
+  `purge-snapshots` (`30 4`) and `site-health` (`40 5`).
+- **CI on `dbece68d`** (`GITHUB_TOKEN`, read only): run 45558382006 — `rls`, `check` (the full `pnpm keyboard` among its steps) and
+  `deploy` success; the Render matrix (45558381918) success.
+- **Schema:** applied at Dev (two `Schema` pushes, R-99) and read back equal to a fresh build at Dev and at Review; nothing since.
+  The RLS gate is green on this push (CI's `rls`, `bash supabase/tests/run-rls-gate.sh`).
+- **The first SCHEDULED `prune-artifacts`** (`VERCEL_TOKEN`, Vercel's request-logs endpoint): `GET /api/cron/prune-artifacts` at
+  06:50:38 UTC from `vercel-cron/1.0` on `dpl_GCBzx5Sh8qtjAJCNkYN7VMV7GjZo`, **200 in 961 ms** (the function 736 ms, hot, `fra1`),
+  with no function log line — the route logs only a failed step, so none failed.
+- **The owner's test plant** — walk step 120 with a new `STEP120_PLANT=<free>,<pro>` mode (`tools/probe/run-verify-editor.cjs`),
+  run as a cut copy (steps 1–5, then 120, then the walk's `finally`) from a clean detached worktree at `dbece68d`, with
+  `T1_WRITES=1`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and the walk's own reads of
+  `GHOST6_URL`, `GHOST6_ADMIN_API_KEY`, `GHOST6_CONTENT_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`, `CRON_SECRET`. The mode needs both
+  addresses new, plants the Pro half while T1 is still on its own theme, then the Free half, and stops.
+  - **First run — its own check was wrong, and everything was undone:** the plant held, but the check expected a `0 · 0` chip and
+    T1's real check gives every ship of this fixture **0 errors and 1 warning** (`page_switch_unused`, the same warning 7.18a
+    recorded). The failed check ran the `finally`: T1 back on `casper*` with every `inflozo-` theme deleted and routes.yaml byte for
+    byte, both sites disconnected through the product, no object left, both accounts deleted, users 22 → 22 and projects 15 → 15.
+    The check now asks for 0 errors, and owner step 1 says the chip is a yellow **0 · 1**, with the warning's own sentence.
+  - **Second run — planted.** T1 at the start: `casper*`, `racer`, `source`.
+    - **Pro** `umngkmr+prohistory722@gmail.com`: T1 connected through the wizard, **Pro history test**
+      (`5b9724e4-5fab-4dc6-8853-56cec9a4bd44`) linked to it, `entitlements.state` `pro_active`, ten stored versions an hour apart
+      with their zips under `{project}/{deploy}.zip` (v10 live), v1–v8 pinned through the history route on its own session (eight
+      200s); the route lists v10 (Live) to v1 with v1–v8 pinned.
+    - **Free** `umngkmr+history722@gmail.com`: T1 connected through the wizard, **History test**
+      (`21467393-8fc7-490f-93d4-59e73023e8eb`) seeded and linked, shipped three times with Deploy & activate (the first through Add
+      token and the Backup gate): v1–v3, **v3 live on T1** as `inflozo-history-test`; the route lists v3 (Live) v2 v1, each 0 errors
+      and 1 warning, none pinned.
+    - Zero CSP violations; the throwaway A and B deleted (200, 200).
+    - **Three FAILs, all the new mode's bookkeeping and none the plant's:** the plant's counter was named `kept`, which step
+      120a's own `const kept` shadows, so incrementing it threw after the plant had been read back. The step's catch reported it,
+      and the end-of-run counts then saw the plant's two accounts and two projects as leftovers (users 20 → 22, projects 13 → 15).
+      The counter is now `plantKept`; the walk was not re-run, because the plant is in place and the mode refuses addresses that
+      exist.
+  - **Read back afterwards** (`SUPABASE_SECRET_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`, GET only): Free on `free` with ghost6 connected and
+    linked, deploys 1.0.0 uploaded, 2.0.0 uploaded, 3.0.0 live, its last job `done`; Pro on `pro_active` with ghost6 connected and
+    linked, 1.0.0–8.0.0 uploaded and pinned, 9.0.0 uploaded, 10.0.0 live, every row with its zip; T1's themes `casper`, `racer`,
+    `source`, `inflozo-history-test*`.
+- **The Owner's manual test** carries both addresses, both project links and the sign-in route in every step. `owner_test` stays
+  `pending`. Afterwards T1 goes back to Casper on his go.

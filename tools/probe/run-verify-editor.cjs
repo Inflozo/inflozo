@@ -8,6 +8,8 @@
 //                   steps 117 (Story 7.20a), 119 (Story 7.21) and 120 (Story 7.22) write to T1 too, and run under the same switch
 //   STEP119_PLANT=<email> T1_WRITES=1 …   # Story 7.21: step 119 as Deploy's plant for the owner's test, as that address —
 //                   run it in a cut copy (steps 1–5 and 119); it stops after the hand edit and leaves T1 and the account planted
+//   STEP120_PLANT=<free email>,<pro email> T1_WRITES=1 …   # Story 7.22: step 120 as Deploy's plant, in a cut copy (steps 1–5 and
+//                   120): two NEW addresses — Pro holds ten stored versions, eight pinned; Free ships "History test" v1–v3 live on T1
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -539,6 +541,8 @@ async function main() {
   const ids = []
   let browser = null
   let entitlementBack = null
+  // what a Deploy plant leaves on purpose (STEP120_PLANT), so the end-of-run counts expect it
+  const plantKept = { users: 0, projects: 0 }
   try {
     // ── step 1 — the fixtures ──
     for (const email of [emailA, emailB]) {
@@ -14329,8 +14333,18 @@ async function main() {
       const removeObject120 = (key) => fetch(`${SB}/storage/v1/object/deploy-artifacts/${key}`, { method: 'DELETE', headers: storage120 }).then((r) => r.status).catch(() => 0)
       const PLANTED_ZIP120 = Buffer.from(ZIP120.zipTheme({ 'README.md': `walk 120 plant ${stamp}\n` }))
       const DAYS_AGO120 = new Date(Date.now() - 2 * SW120.DEAD_AFTER_MS).toISOString()
+      // STORY 7.22's DEPLOY: `STEP120_PLANT=<free address>,<pro address>` plants the owner's test instead of (a)–(e). Both addresses
+      // must be NEW (the plant never touches an account that exists). The Pro address connects T1 through the wizard while T1 is
+      // still on its own theme, holds "Pro history test" linked there with ten stored versions (rows and small zips), is made Pro and
+      // pins eight through the route; the Free address connects T1 and ships "History test" three times (v1–v3, v3 live). Then it
+      // stops and leaves both accounts, their sites and T1 as they are; the owner's test ends with T1 put back on his go.
+      const [PLANT120 = '', PLANT_PRO120 = ''] = (process.env.STEP120_PLANT ?? '').split(',').map((s) => s.trim().toLowerCase())
+      let planted120 = false
+      const STOP120 = Symbol('step 120 planted') // thrown past (a)–(e) once the plant is read back; the catch knows it
+      let idPro120 = null
+      let sitePro120 = null
 
-      const email120 = `editor-harness-k-${stamp}@inflozo.com`
+      const email120 = PLANT120 || `editor-harness-k-${stamp}@inflozo.com`
       const usersBefore120 = (await users())?.length ?? null
       const projectsBefore120 = await projectCount()
       let id120 = null
@@ -14345,7 +14359,7 @@ async function main() {
       const ctxs120 = []
       const csp120 = []
 
-      const siteRow120 = async () => (site120 === null ? null : (await call('/rest/v1', `/sites?id=eq.${site120}&select=id,disconnected_at`)).body?.[0] ?? null)
+      const siteRow120 = async (site = site120) => (site === null ? null : (await call('/rest/v1', `/sites?id=eq.${site}&select=id,disconnected_at`)).body?.[0] ?? null)
       const job120 = async () => (P120 === null ? null : (await call('/rest/v1', `/deploy_jobs?project_id=eq.${P120}&select=id,stage,error,deploy_id,stage_timings&order=started_at.desc&limit=1`)).body?.[0] ?? null)
       const jobById120 = async (id) => (await call('/rest/v1', `/deploy_jobs?id=eq.${id}&select=id,stage,deploy_id`)).body?.[0] ?? null
       const deploy120 = async (id) => (id == null ? null : (await call('/rest/v1', `/deploys?id=eq.${id}&select=id,version,status,activated,artifact_path,pinned,content_manifest,created_at`)).body?.[0] ?? null)
@@ -14362,14 +14376,64 @@ async function main() {
           passes: box ? [...box.children].filter((c) => !c.hasAttribute('data-finding')).map((c) => ({ text: c.textContent.trim(), clean: c.getAttribute('data-drift-row') === 'clean' })) : [],
         }
       }).catch(() => null)
-      const context120 = async () => {
+      const context120 = async (email = email120) => {
         const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
         ctxs120.push(ctx)
         await recorder(ctx, csp120)
         const pg = steady(await ctx.newPage())
         pg.on('pageerror', (e) => note('pageerror 120', scrub120(String(e))))
-        await pg.goto(await magic(email120), { waitUntil: 'load' })
+        await pg.goto(await magic(email), { waitUntil: 'load' })
         return pg
+      }
+      /** T1 connected through the wizard on `pg`'s session; the wizard's own project goes (the account held none), and the site's id */
+      const connect120 = async (pg, user) => {
+        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
+        await pg.locator('#s2b-api-url').fill(ENV120.GHOST6_URL)
+        await pg.locator('#s2b-admin-key').fill(ENV120.GHOST6_ADMIN_API_KEY)
+        await pg.locator('#s2b-content-key').fill(ENV120.GHOST6_CONTENT_API_KEY)
+        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
+        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
+        const use = pg.getByRole('button', { name: PR120.BRAND_COPY.use, exact: true })
+        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
+        const linked = await until120(async () => (await call('/rest/v1', `/projects?user_id=eq.${user}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
+        const site = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
+        if (site === null) throw new Error('step 120: T1 did not connect')
+        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        return site
+      }
+      /** the plant's Pro half (see PLANT120): run while T1 is still on its own theme, before the Free address ships */
+      const plantPro120 = async () => {
+        const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: PLANT_PRO120, email_confirm: true }) })
+        idPro120 = made.status === 200 ? made.body.id ?? null : null
+        if (!UUID.test(idPro120 ?? '')) throw new Error(`step 120: the Pro account was not made (HTTP ${made.status})`)
+        const pp = await context120(PLANT_PRO120)
+        sitePro120 = await connect120(pp, idPro120)
+        const seededQ = await seed({ email: PLANT_PRO120, name: 'Pro history test' })
+        Q120 = seededQ?.created ? seededQ.id : null
+        if (Q120 === null) throw new Error('step 120: "Pro history test" was not seeded')
+        const linkQ = await call('/rest/v1', `/projects?id=eq.${Q120}`, { method: 'PATCH', body: JSON.stringify({ linked_site_id: sitePro120 }) })
+        const slugQ = (await call('/rest/v1', `/projects?id=eq.${Q120}&select=slug`)).body?.[0]?.slug ?? null
+        const pro = await call('/rest/v1', `/entitlements?user_id=eq.${idPro120}`, { method: 'PATCH', body: JSON.stringify({ state: 'pro_active' }) })
+        // ten stored versions on its site as the product writes them — the zip at `{project}/{deploy}.zip`, a check of 0 · 0 — an hour
+        // apart, the newest live
+        const ten = []
+        for (let n = 1; n <= 10; n++) {
+          const row = (await call('/rest/v1', '/deploys', { method: 'POST', body: JSON.stringify({ project_id: Q120, user_id: idPro120, site_id: sitePro120, version: `${n}.0.0`, theme_name: DEP120.themeNameOf(slugQ ?? 'pro-history-test'), status: n === 10 ? 'live' : 'uploaded', activated: n === 10, gscan: { errors: [], warnings: [] }, created_at: new Date(Date.now() - (11 - n) * 3_600_000).toISOString() }) })).body?.[0] ?? null
+          const key = `${Q120}/${row?.id}.zip`
+          const put = row === null ? 0 : await putObject120(key, PLANTED_ZIP120)
+          const pointer = put === 200 ? await call('/rest/v1', `/deploys?id=eq.${row.id}`, { method: 'PATCH', body: JSON.stringify({ artifact_path: key, artifact_bytes: PLANTED_ZIP120.length }) }) : null
+          ten.push([200, 204].includes(pointer?.status) ? row : null)
+        }
+        // eight pinned through the route on the Pro address's own session — pin_version's count with Pro's cap, never a planted flag
+        await pp.goto(at(`/projects/${Q120}`), { waitUntil: 'load' })
+        const answers = []
+        for (const row of ten.slice(0, 8)) answers.push(await pin120(pp, Q120, row?.id, true))
+        const listed = await history120(pp, Q120)
+        const rows = RET120.historyRows(listed.body ?? { linkedSiteId: null, rows: [] })
+        return check('step 120 (plant) — the Pro address: T1 connected through the wizard, "Pro history test" linked to it, Pro, ten stored versions with their zips, eight pinned through the route (200 each); the route lists v10 (Live) to v1, v1–v8 pinned',
+          [200, 204].includes(linkQ.status) && [200, 204].includes(pro.status) && (pro.body?.length ?? 0) === 1 && ten.every((r) => r !== null) && answers.every((s) => s === 200) && listed.status === 200 &&
+          rows.map((r) => `v${r.n}`).join(' ') === 'v10 v9 v8 v7 v6 v5 v4 v3 v2 v1' && rows.filter((r) => r.pinned).map((r) => r.n).join(',') === '8,7,6,5,4,3,2,1' && rows[0]?.live === true && rows.every((r) => r.elsewhere === null),
+          JSON.stringify({ link: linkQ.status, pro: pro.status, answers, rows: rows.map((r) => `v${r.n}${r.live ? '*' : ''}${r.pinned ? 'P' : ''}`) }))
       }
       const painted120 = (pg) => pg.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 }).then(() => true, () => false)
       const closed120 = async (pg) => {
@@ -14411,22 +14475,19 @@ async function main() {
         check(`step 120 — T1's live theme read with the staff token at the start (${prev120 ?? 'unread'}), not an Inflozo theme a test left live, and routes.yaml read`,
           prev120 !== null && !/^inflozo-/.test(prev120) && routesBefore120 !== null, JSON.stringify(start120.map((t) => `${t.name}${t.active ? '*' : ''}`)))
         if (prev120 === null || /^inflozo-/.test(prev120) || routesBefore120 === null) throw new Error('step 120: T1 is not on its own theme — ask the owner before restoring it')
+        if (PLANT120) {
+          const all120 = await users()
+          if (all120 === null || !PLANT_PRO120 || PLANT_PRO120 === PLANT120) throw new Error('step 120: STEP120_PLANT names two different addresses, Free then Pro (or the user list is unreadable)')
+          const taken = all120.filter((u) => [PLANT120, PLANT_PRO120].includes((u.email ?? '').toLowerCase())).map((u) => u.email)
+          if (taken.length) throw new Error(`step 120: the plant's addresses must be new, and ${taken.join(', ')} already has an account`)
+        }
         const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email: email120, email_confirm: true }) })
         id120 = made.status === 200 ? made.body.id ?? null : null
         if (!UUID.test(id120 ?? '')) throw new Error('step 120: the account was not made')
+        const plantedPro = PLANT120 ? await plantPro120() : true
+        if (!plantedPro) throw new Error('step 120: the Pro half of the plant did not hold')
         const pg = await context120()
-        await pg.goto(at('/sites/connect?step=keys'), { waitUntil: 'load' })
-        await pg.locator('#s2b-api-url').fill(ENV120.GHOST6_URL)
-        await pg.locator('#s2b-admin-key').fill(ENV120.GHOST6_ADMIN_API_KEY)
-        await pg.locator('#s2b-content-key').fill(ENV120.GHOST6_CONTENT_API_KEY)
-        await pg.locator('form:has(#s2b-api-url) button[type="submit"]').click()
-        await pg.waitForURL((u) => !u.pathname.endsWith('/sites/connect'), { timeout: 60000 })
-        const use = pg.getByRole('button', { name: PR120.BRAND_COPY.use, exact: true })
-        if (await use.waitFor({ state: 'visible', timeout: 20000 }).then(() => true, () => false)) await use.click()
-        const linked = await until120(async () => (await call('/rest/v1', `/projects?user_id=eq.${id120}&select=id,linked_site_id`)).body ?? [], (ps) => ps.some((p) => p.linked_site_id !== null), 45000)
-        site120 = linked.find((p) => p.linked_site_id !== null)?.linked_site_id ?? null
-        if (site120 === null) throw new Error('step 120: T1 did not connect')
-        for (const p of linked) await call('/rest/v1', `/projects?id=eq.${p.id}`, { method: 'DELETE' })
+        site120 = await connect120(pg, id120)
         const seeded = await seed({ email: email120, name: 'History test' })
         if (!seeded?.created) throw new Error('step 120: "History test" was not seeded')
         P120 = seeded.id
@@ -14439,7 +14500,7 @@ async function main() {
 
         // ── 120a — four ships; the fourth prunes v1 (Free keeps 3) ──
         const shipped = []
-        for (let n = 1; n <= 4; n++) {
+        for (let n = 1; n <= (PLANT120 ? 3 : 4); n++) {
           await closed120(pg)
           if (n > 1) {
             await pg.reload({ waitUntil: 'load' })
@@ -14466,6 +14527,21 @@ async function main() {
           const end = await ship120(pg, pre)
           shipped.push(await deploy120(end?.deploy_id))
           if (end?.stage !== 'done') throw new Error(`step 120: ship ${n} ended ${end?.stage ?? 'unread'}`)
+        }
+        if (PLANT120) {
+          // the plant's Free half read back, then it STOPS: (a)–(e) are the walk's, never the owner's accounts'
+          const listedP = await history120(pg, P120)
+          const rowsP = RET120.historyRows(listedP.body ?? { linkedSiteId: null, rows: [] })
+          planted120 = check('step 120 (plant) — the Free address: T1 connected through the wizard, "History test" shipped three times with Deploy & activate (v1–v3), v3 live on T1; the route lists v3 (Live) v2 v1, each with 0 errors on the linked site (the fixture\'s one gscan warning, page_switch_unused, is real), none pinned',
+            shipped.map((d) => d?.version).join(',') === '1.0.0,2.0.0,3.0.0' && (await themes120())?.find((t) => t.active)?.name === theme120 && listedP.status === 200 &&
+            rowsP.map((r) => `v${r.n}${r.live ? '*' : ''}`).join(' ') === 'v3* v2 v1' && rowsP.every((r) => r.gscan?.errors === 0 && r.elsewhere === null && !r.pinned),
+            JSON.stringify(rowsP.map((r) => ({ v: r.n, live: r.live, gscan: r.gscan, pinned: r.pinned }))))
+          if (planted120) {
+            plantKept.users += 2
+            plantKept.projects += 2
+            note('step 120 — PLANT for the owner\'s test', `Free ${PLANT120}: "History test" ${at(`/projects/${P120}`)} · theme ${theme120} v3 live on ${new URL(ENV120.GHOST6_URL).host} — Pro ${PLANT_PRO120}: "Pro history test" ${at(`/projects/${Q120}`)}`)
+          }
+          throw STOP120
         }
         const [v1, v2, v3, v4] = shipped
         const v1Now = await deploy120(v1?.id)
@@ -14601,10 +14677,13 @@ async function main() {
         check('step 120e — Pro (10): nine pins answer 200, the tenth 409 — and an unpin 200',
           [200, 204].includes(pro.status) && ten.every((r) => r !== null) && answers.slice(0, 9).every((s) => s === 200) && answers[9] === 409 && unpin === 200, JSON.stringify({ entitlement: pro.status, answers, unpin }))
       } catch (e) {
-        check('step 120 — the step ran to its end', false, scrub120(String(e?.message ?? e).split('\n')[0]))
+        if (e !== STOP120) check('step 120 — the step ran to its end', false, scrub120(String(e?.message ?? e).split('\n')[0]))
       } finally {
         for (const ctx of ctxs120) await ctx.close().catch(() => {})
         if (P120 !== null) await until120(job120, atRest120, 330000).catch(() => {})
+        if (planted120) {
+          note('step 120 — the plant is left in place', `T1 keeps ${theme120} live; both addresses keep their site and project; the owner's test ends with T1 put back on his go`)
+        } else {
         if (prev120 !== null) {
           try {
             const now = await themes120()
@@ -14627,26 +14706,30 @@ async function main() {
           if (site120 !== null) for (const o of await listed120('site-snapshots', `${id120}/${site120}`)) await fetch(`${SB}/storage/v1/object/site-snapshots/${id120}/${site120}/${o.name}`, { method: 'DELETE', headers: storage120 }).catch(() => {})
           const prefixes = [P120, R120, Q120].filter((p) => p !== null).flatMap((p) => [p, `${p}/live`])
           for (const prefix of prefixes) for (const o of await listed120('deploy-artifacts', prefix)) await removeObject120(`${prefix}/${o.name}`)
-          const row = await siteRow120().catch(() => null)
-          if (row !== null && row.disconnected_at === null) {
+          // T1 disconnected through the product on each account that connected it (K; or a failed plant's two addresses)
+          for (const [email, site] of [[email120, site120], [PLANT_PRO120, sitePro120]]) {
+            const row = await siteRow120(site).catch(() => null)
+            if (row === null || row.disconnected_at !== null) continue
             const ctx = steadyRequests(await browser.newContext({ viewport: { width: 1440, height: 900 } }))
             try {
               const pd = steady(await ctx.newPage())
-              await pd.goto(await magic(email120), { waitUntil: 'load' })
-              await pd.goto(at(`/sites/disconnect?site=${site120}`), { waitUntil: 'load' })
+              await pd.goto(await magic(email), { waitUntil: 'load' })
+              await pd.goto(at(`/sites/disconnect?site=${site}`), { waitUntil: 'load' })
               await pd.locator('form').getByRole('button', { name: CR120.DISCONNECT.menu, exact: true }).first().click()
-              await until120(siteRow120, (r) => r?.disconnected_at != null, 30000)
+              await until120(() => siteRow120(site), (r) => r?.disconnected_at != null, 30000)
             } catch {} finally {
               await ctx.close().catch(() => {})
             }
           }
           const leftObjects = [...(site120 === null ? [] : await listed120('site-snapshots', `${id120}/${site120}`)), ...(await Promise.all(prefixes.map((p) => listed120('deploy-artifacts', p)))).flat()]
           const del = await admin(`/admin/users/${id120}`, { method: 'DELETE', body: '{}' })
+          const delPro = idPro120 === null ? 200 : (await admin(`/admin/users/${idPro120}`, { method: 'DELETE', body: '{}' })).status
           const usersAfter = (await users())?.length ?? null
           const projectsAfter = await projectCount()
-          check('step 120 — finally: no object left under the account\'s prefixes, T1 disconnected, K deleted (its sites, projects, jobs and deploys with it), users and projects counted back',
-            leftObjects.length === 0 && del.status === 200 && usersBefore120 !== null && usersAfter === usersBefore120 && projectsBefore120 !== null && projectsAfter === projectsBefore120,
-            `objects ${leftObjects.length}, HTTP ${del.status}, users ${usersBefore120} → ${usersAfter}, projects ${projectsBefore120} → ${projectsAfter}`)
+          check(`step 120 — finally: no object left under the account's prefixes, T1 disconnected, ${PLANT120 ? 'the failed plant\'s two accounts' : 'K'} deleted (its sites, projects, jobs and deploys with it), users and projects counted back`,
+            leftObjects.length === 0 && del.status === 200 && delPro === 200 && usersBefore120 !== null && usersAfter === usersBefore120 && projectsBefore120 !== null && projectsAfter === projectsBefore120,
+            `objects ${leftObjects.length}, HTTP ${del.status}/${delPro}, users ${usersBefore120} → ${usersAfter}, projects ${projectsBefore120} → ${projectsAfter}`)
+        }
         }
       }
       check('step 120 — the step\'s contexts recorded zero CSP violations', csp120.length === 0, JSON.stringify(csp120.slice(0, 3)))
@@ -14676,10 +14759,10 @@ async function main() {
     for (const id of ids) if (id) dels.push((await admin(`/admin/users/${id}`, { method: 'DELETE', body: '{}' })).status)
     const afterList = await users()
     const after = afterList ? afterList.length : null
-    check('DELETE both accounts and the user count is unchanged', dels.length === 2 && dels.every((s) => s === 200) && after === before, `HTTP ${dels.join(', ')}, users ${before} → ${after ?? 'unreadable'}`)
+    check('DELETE both accounts and the user count is unchanged', dels.length === 2 && dels.every((s) => s === 200) && after === before + plantKept.users, `HTTP ${dels.join(', ')}, users ${before} → ${after ?? 'unreadable'}${plantKept.users ? ` (${plantKept.users} kept by the plant)` : ''}`)
     // Story 7.16a — the projects too: A's seeded one and B's bare one go with their accounts (`on delete cascade`)
     const projectsAfter = await projectCount()
-    check('…and the project count is unchanged — both accounts\' projects went with them', projectsBefore !== null && projectsAfter === projectsBefore, `projects ${projectsBefore ?? 'unreadable'} → ${projectsAfter ?? 'unreadable'}`)
+    check('…and the project count is unchanged — both accounts\' projects went with them', projectsBefore !== null && projectsAfter === projectsBefore + plantKept.projects, `projects ${projectsBefore ?? 'unreadable'} → ${projectsAfter ?? 'unreadable'}${plantKept.projects ? ` (${plantKept.projects} kept by the plant)` : ''}`)
     console.log(results.join('\n'))
     console.log(`\n${fails} FAIL, ${results.filter((r) => r.startsWith('PASS')).length} PASS · screenshots in ${OUT}`)
     process.exitCode = fails ? 1 : 0
