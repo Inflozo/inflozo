@@ -25,7 +25,7 @@ import {
 import {
   confirmAvailable, GATE_ROWS, HELP, NO_TICKS, reasonOf, snapshotDownloadPath, subLineOf, toggleConfirm, toggleRow, type GateTicks, type RowId,
 } from '@/lib/backup-gate'
-import { ADDS_TOKEN, causeBody, causeShown, DRIFT_WORDS as DW, driftCount, driftSaid, liveDownloadPath, type DriftFile, type DriftRecord } from '@/lib/drift'
+import { ADDS_TOKEN, causeBody, causeShown, DRIFT_WORDS as DW, driftCount, driftSaid, liveDownloadPath, type DriftCause, type DriftFile, type DriftRecord } from '@/lib/drift'
 import { adminAt } from '@/lib/paywall'
 import { CONNECT_MAX } from '@/lib/connect-rule'
 import { deployPath, type Canvas } from '@/lib/editor'
@@ -189,14 +189,89 @@ function Mark({ tone }: { tone: Tone }) {
   return svg(<><circle cx="12" cy="12" r="10" className={disc} /><line x1="12" y1="8" x2="12" y2="12.5" className={stroke} strokeWidth="2" /><circle cx="12" cy="16" r="1" className={dot} /></>)
 }
 
-/** one of S8's stage rows: the mark, the words (600 while it runs, as S8c draws it), and the mono meta at the right */
-function StageRow({ tone, label, meta, chip, id }: { tone: Tone; label: ReactNode; meta?: string; chip?: ReactNode; id?: string }) {
+/** one of S8's stage rows: the mark, the words (600 while it runs, as S8c draws it), and the mono meta at the right. Story 7.23a's
+ *  Roll back confirm draws D3's running row with it too (R-291) */
+export function StageRow({ tone, label, meta, chip, id }: { tone: Tone; label: ReactNode; meta?: string; chip?: ReactNode; id?: string }) {
   return (
     <div id={id} className={`flex items-center gap-[11px] ${tone === 'pending' ? 'opacity-45' : ''}`}>
       <Mark tone={tone} />
       <span className={`text-ui-dense ${tone === 'running' || tone === 'failed' ? 'font-semibold' : 'font-medium'} ${tone === 'failed' ? 'text-danger-text' : 'text-ink'}`}>{label}</span>
       {meta ? <span className="ml-auto font-mono text-helper-caption text-ink-soft [font-variant-ligatures:none]">{meta}</span> : null}
       {chip === undefined ? null : <span className="ml-auto">{chip}</span>}
+    </div>
+  )
+}
+
+/* ── STORY 7.21's D3 rows, shared with Story 7.23a's Roll back confirm (R-291: the check before a Roll back is D3's, drawn in D3's
+   components and words — `components/editor/deploy-history.tsx`) ── */
+
+/** D3c's pass row — one of the check rows' passes (`:206-225`), the mint tick, the words and the pass chip; `clean` marks the drift
+ *  check's own line */
+export function PassRow({ words, clean = false }: { words: string; clean?: boolean }) {
+  return (
+    <div {...(clean ? { 'data-drift-row': 'clean' } : {})} className="flex items-center gap-[9px] border-b border-line px-[13px] py-[9px] last:border-b-0">
+      <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 stroke-mint">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+      <span className="flex-1 text-[12.5px] font-medium text-ink">{words}</span>
+      <ResultChip tone="clean">{W.pass}</ResultChip>
+    </div>
+  )
+}
+
+/** D3b's sky row (`:157-203`): a check that didn't run, not one that failed — sky, never marigold or danger. `body` is the cause's
+ *  words; `children` what the caller adds under them (the wizard's Add token) */
+export function DriftUnverified({ cause, body, children }: { cause: DriftCause; body: string; children?: ReactNode }) {
+  return (
+    <div data-drift-row="unverified" data-drift-cause={cause} className="flex gap-[11px] rounded-thumb border border-sky-line bg-sky-tint p-[12px_13px]">
+      <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" strokeLinecap="round" className="shrink-0">
+        <circle cx="12" cy="12" r="10" className="fill-sky-line" />
+        <line x1="12" y1="11" x2="12" y2="16.5" className="stroke-sky-text" strokeWidth="2" />
+        <circle cx="12" cy="7.8" r="1" className="fill-sky-text" />
+      </svg>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-ui-dense font-semibold text-sky-text">{DW.unverified}</span>
+        <span className="text-[12.5px] leading-[1.55] text-sky-text [text-wrap:pretty]">{body}</span>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+/** D3a's row and its list (`:28-151`): "Comparing with your live theme" with the marigold mark and its count, then the frame's
+ *  bordered list — Changed / Added on your site / Removed from your site, each group only where it holds a file, its glyph and count
+ *  at its head — every file by its label (a section by its layer's name, never its path) with its path in mono beneath, and a
+ *  section's Layers-row picture as its icon. `idPrefix` names the group heads (`{idPrefix}-changed`…), one set per surface */
+export function DriftFound({ record, idPrefix }: { record: Extract<DriftRecord, { kind: 'found' }>; idPrefix: string }) {
+  return (
+    <div data-drift-row="found" className="flex flex-col gap-3">
+      <div className="flex items-center gap-[11px]">
+        <Mark tone="warning" />
+        <span className="text-ui-dense font-semibold text-ink">{DW.row}</span>
+        <span className="ml-auto" data-drift-chip><ResultChip tone="warned">{DW.chip(driftCount(record))}</ResultChip></span>
+      </div>
+      <div data-drift-list className="ml-[31px] overflow-hidden rounded-[10px] border border-line">
+        {(['changed', 'added', 'removed'] as const).filter((g) => record[g].length > 0).map((g, i) => (
+          <div key={g} data-drift-group={g}>
+            <div className={`flex items-center gap-[7px] border-b border-line bg-paper-raised px-3 py-[9px] ${i > 0 ? 'border-t' : ''}`}>
+              {GROUP_GLYPH[g]}
+              <span id={`${idPrefix}-${g}`} className={`text-[10px] font-semibold uppercase tracking-[0.04em] ${GROUP_HUE[g]}`}>{DW.groups[g]}</span>
+              <span data-drift-count className="ml-auto font-mono text-[9.5px] text-ink-soft-aa [font-variant-ligatures:none]">{record[g].length}</span>
+            </div>
+            <ul aria-labelledby={`${idPrefix}-${g}`} className="m-0 flex list-none flex-col gap-[2px] p-[6px]">
+              {record[g].map((f: DriftFile) => (
+                <li key={f.path} data-drift-file={f.path} className="flex items-center gap-[9px] rounded-[8px] px-2 py-[7px]">
+                  {f.category === undefined ? <DriftFileGlyph /> : <LayerThumb glyph={glyphOf(f.category)} />}
+                  <span className="flex min-w-0 flex-1 flex-col gap-px">
+                    <span data-drift-label className="truncate text-[12.5px] font-medium text-ink">{f.label}</span>
+                    <span className="truncate font-mono text-[10px] text-ink-soft-aa [font-variant-ligatures:none]">{f.path}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -1192,15 +1267,7 @@ export function DeployWizard({
   const passes = cleanLine === null ? checked.passes : [...checked.passes.slice(0, 1), cleanLine, ...checked.passes.slice(1)]
   const passesBox = checksDone && (passes.length > 0 || checked.rows.length > 0) ? (
     <div data-check-rows className="ml-[31px] overflow-hidden rounded-thumb border border-line">
-      {passes.map((p) => (
-        <div key={p} {...(p === cleanLine ? { 'data-drift-row': 'clean' } : {})} className="flex items-center gap-[9px] border-b border-line px-[13px] py-[9px] last:border-b-0">
-          <svg aria-hidden width="13" height="13" viewBox="0 0 24 24" fill="none" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 stroke-mint">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          <span className="flex-1 text-[12.5px] font-medium text-ink">{p}</span>
-          <ResultChip tone="clean">{W.pass}</ResultChip>
-        </div>
-      ))}
+      {passes.map((p) => <PassRow key={p} words={p} clean={p === cleanLine} />)}
       {checked.rows.map((row, i) => (
         <FindingRow key={`${i}:${row.code}`} row={row} n={i} href={row.canvas === null ? null : canvasHref(row.canvas)} onFix={close} />
       ))}
@@ -1215,67 +1282,26 @@ export function DeployWizard({
   ) : driftUnverified !== null ? (() => {
     const cause = causeShown(driftUnverified.cause, site?.declined === true)
     return (
-      <div data-drift-row="unverified" data-drift-cause={cause} className="flex gap-[11px] rounded-thumb border border-sky-line bg-sky-tint p-[12px_13px]">
-        <svg aria-hidden width="20" height="20" viewBox="0 0 24 24" fill="none" strokeLinecap="round" className="shrink-0">
-          <circle cx="12" cy="12" r="10" className="fill-sky-line" />
-          <line x1="12" y1="11" x2="12" y2="16.5" className="stroke-sky-text" strokeWidth="2" />
-          <circle cx="12" cy="7.8" r="1" className="fill-sky-text" />
-        </svg>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <span className="text-ui-dense font-semibold text-sky-text">{DW.unverified}</span>
-          <span className="text-[12.5px] leading-[1.55] text-sky-text [text-wrap:pretty]">
-            {causeBody(cause, { host, theme: driftUnverified.theme, ...(driftUnverified.status === undefined ? {} : { status: driftUnverified.status }) })}
-          </span>
-          {ADDS_TOKEN.includes(cause) ? (
-            <button
-              type="button"
-              id="deploy-drift-token"
-              aria-disabled={pressed !== null || undefined}
-              onClick={() => (pressed === null ? setRetoken('drift') : undefined)}
-              className={`mt-[2px] self-start rounded-sm text-[12px] font-medium text-sky-text hover:underline ${ring}`}
-            >
-              {DW.addToken}
-            </button>
-          ) : null}
-        </div>
-      </div>
+      <DriftUnverified cause={cause} body={causeBody(cause, { host, theme: driftUnverified.theme, ...(driftUnverified.status === undefined ? {} : { status: driftUnverified.status }) })}>
+        {ADDS_TOKEN.includes(cause) ? (
+          <button
+            type="button"
+            id="deploy-drift-token"
+            aria-disabled={pressed !== null || undefined}
+            onClick={() => (pressed === null ? setRetoken('drift') : undefined)}
+            className={`mt-[2px] self-start rounded-sm text-[12px] font-medium text-sky-text hover:underline ${ring}`}
+          >
+            {DW.addToken}
+          </button>
+        ) : null}
+      </DriftUnverified>
     )
   })() : null
   /* STORY 7.21 — D3a's row and its list (`:28-151`): "Comparing with your live theme" with the marigold mark and its count, then the
      frame's bordered list — Changed / Added on your site / Removed from your site, each group only where it holds a file, its
      glyph and count at its head — every file by its label (a section by its layer's name, never its path) with its path in mono
      beneath, and a section's Layers-row picture as its icon */
-  const driftList = driftFound === null ? null : (
-    <div data-drift-row="found" className="flex flex-col gap-3">
-      <div className="flex items-center gap-[11px]">
-        <Mark tone="warning" />
-        <span className="text-ui-dense font-semibold text-ink">{DW.row}</span>
-        <span className="ml-auto" data-drift-chip><ResultChip tone="warned">{DW.chip(driftCount(driftFound))}</ResultChip></span>
-      </div>
-      <div data-drift-list className="ml-[31px] overflow-hidden rounded-[10px] border border-line">
-        {(['changed', 'added', 'removed'] as const).filter((g) => driftFound[g].length > 0).map((g, i) => (
-          <div key={g} data-drift-group={g}>
-            <div className={`flex items-center gap-[7px] border-b border-line bg-paper-raised px-3 py-[9px] ${i > 0 ? 'border-t' : ''}`}>
-              {GROUP_GLYPH[g]}
-              <span id={`deploy-drift-${g}`} className={`text-[10px] font-semibold uppercase tracking-[0.04em] ${GROUP_HUE[g]}`}>{DW.groups[g]}</span>
-              <span data-drift-count className="ml-auto font-mono text-[9.5px] text-ink-soft-aa [font-variant-ligatures:none]">{driftFound[g].length}</span>
-            </div>
-            <ul aria-labelledby={`deploy-drift-${g}`} className="m-0 flex list-none flex-col gap-[2px] p-[6px]">
-              {driftFound[g].map((f: DriftFile) => (
-                <li key={f.path} data-drift-file={f.path} className="flex items-center gap-[9px] rounded-[8px] px-2 py-[7px]">
-                  {f.category === undefined ? <DriftFileGlyph /> : <LayerThumb glyph={glyphOf(f.category)} />}
-                  <span className="flex min-w-0 flex-1 flex-col gap-px">
-                    <span data-drift-label className="truncate text-[12.5px] font-medium text-ink">{f.label}</span>
-                    <span className="truncate font-mono text-[10px] text-ink-soft-aa [font-variant-ligatures:none]">{f.path}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  const driftList = driftFound === null ? null : <DriftFound record={driftFound} idPrefix="deploy-drift" />
   const afterRows = (
     <>
       {checksDone && routesFile !== null ? <StageRow tone="done" label={W.routesValid} chip={<ResultChip tone="clean">{W.pass}</ResultChip>} /> : null}

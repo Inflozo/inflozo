@@ -2,17 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+import { DriftFound, DriftUnverified, PassRow, StageRow } from '@/components/editor/deploy-wizard'
 import { LiveBadge, ResultChip } from '@/components/kit/badge'
-import { Button, IconButton } from '@/components/kit/button'
+import { Button, buttonClasses, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
-import { AlertTriangle, Bolt, Pin, RollBack, X } from '@/components/kit/icons'
+import { AlertTriangle, Bolt, Download, Pin, RollBack, X } from '@/components/kit/icons'
 import { BusyLabel } from '@/components/kit/submit'
 import { versionLabel, versionNumber } from '@/lib/deploy'
+import { causeSentence, DRIFT_WORDS as DW, driftCount } from '@/lib/drift'
 import { PREFLIGHT_WORDS } from '@/lib/preflight'
 import { useSaid } from '@/lib/renders'
 import {
-  actSaid, chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type ActOutcome, type HistoryAnswer, type HistoryRow, type PinOutcome,
+  actSaid, chipTone, HISTORY_WORDS as HW, historyRows, pinSaid, timeLabel, type ActOutcome, type CheckOutcome, type HistoryAnswer, type HistoryRow, type PinOutcome,
 } from '@/lib/retention'
 
 /* ───────── STORY 7.22 — THE HISTORY DRAWER (FR-J7), from the export (R-74):
@@ -45,6 +47,18 @@ import {
  * A refusal that proves the list stale (409 `live` or `elsewhere`) and a request whose fate is unknown read the list again first,
  * then say their sentence once: under the row while it still has an action, else in the drawer's region with focus on ✕.
  *
+ * R-291 — THE CHECK BEFORE A ROLL BACK (FR-J16; the owner's "Check first, in this story"). The confirm still opens on Cancel and
+ * sends the check at once (`check`, POST `{ deploy, act: 'check' }`); its answer is drawn in ONE `role="status"` region of the
+ * confirm, between the summary row and the dropped-settings block — D3's own order, where the drift row comes before Pre-flight's
+ * warning rows — in D3's own components and words, extrapolated (no frame draws a Roll back's check): while it reads, D3's running
+ * row "Comparing with your live theme…" (R-98: the work in flight is said, never a spinner) and the confirm's Roll back
+ * `aria-disabled` — the check is busy, not the Roll back — with Cancel and Esc still closing it (a read is cancellable; an answer
+ * for an opening since closed or replaced is dropped); clean, D3c's pass row; found, D3a's row and list, its foot said of a Roll
+ * back and "Download the live theme first" (`history/live`), the Roll back still allowed; couldn't verify — or the check's own
+ * request failing — D3b's sky row with the cause's sentence alone (Ship it's "Shipping anyway." is not this box's) and no Add token,
+ * the Roll back allowed; null (no two manifests), nothing. A check REFUSED (404, 409) closes the confirm and is handled exactly as
+ * the put-back's same refusal (`settle`). Focus stays on Cancel as it lands. Re-activate runs no check: it replaces nothing.
+ *
  * THE LIST IS EXACTLY WHAT IS KEPT. The route lists stored versions only (`isStoredVersion`), so a pruned version is absent —
  * never a greyed row with a dead Restore (the epic's criterion). Every word is `HISTORY_WORDS`' (R-170), its numbers `PLANS`'.
  *
@@ -55,6 +69,8 @@ import {
  */
 
 type Shown = { kind: 'loading' } | { kind: 'failed' } | { kind: 'rows'; rows: HistoryRow[]; live: number | null }
+/** R-291 — the check before a Roll back, as the confirm draws it: reading, its record (null: nothing to compare), or its request failed */
+type Checked = { kind: 'reading' } | Extract<CheckOutcome, { kind: 'drift' | 'failed' }>
 
 /** D2's thumbnail (`D2 Deploy History Completed.dc.html:76`): the frame's schematic of a page, drawn alike on every expanded row */
 const Thumb = () => (
@@ -68,7 +84,7 @@ const Thumb = () => (
   </span>
 )
 
-export function DeployHistory({ projectName, read, pin, act, onClose }: {
+export function DeployHistory({ projectName, read, pin, act, check, liveHref, onClose }: {
   projectName: string
   /** the project's stored versions (GET `projects/[id]/history`), or null when the read failed */
   read: () => Promise<HistoryAnswer | null>
@@ -76,6 +92,10 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
   pin: (deploy: string, pinned: boolean) => Promise<PinOutcome>
   /** Story 7.23a — a put-back (POST `{ deploy, act: 'live' }`), answered as its outcome */
   act: (deploy: string) => Promise<ActOutcome>
+  /** R-291 — the drift check before a Roll back (POST `{ deploy, act: 'check' }`), answered as its outcome */
+  check: (deploy: string) => Promise<CheckOutcome>
+  /** R-291 — the address of the live zip a found check kept (`history/live`), named by the theme it read */
+  liveHref: (theme: string) => string
   onClose: () => void
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
@@ -97,6 +117,11 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
   const [opens, setOpens] = useState(0)
   const [note, setNote] = useState<{ id: string; words: string; detail?: string } | null>(null)
   const confirm = useRef<HTMLDialogElement>(null)
+  /** R-291 — the check before a Roll back, and the opening it answers for: a press of a Roll back and the confirm closing each move
+   *  it on, so an answer that lands for an opening since closed or replaced is dropped */
+  const [checked, setChecked] = useState<Checked | null>(null)
+  const checking = useRef(0)
+  const reading = checked?.kind === 'reading'
 
   /** the list, read and DRAWN before it returns (`flushSync`), so focus lands on what it drew — its rows, or null when it failed */
   const load = async (): Promise<HistoryRow[] | null> => {
@@ -151,8 +176,26 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
     setActing(row.id)
     const outcome: ActOutcome = await act(row.id).catch((): ActOutcome => ({ kind: 'failed' }))
     setActing(null)
+    await settle(row, outcome, asking !== null)
+  }
+
+  /** R-291 — THE CHECK BEFORE A ROLL BACK, sent as its confirm opens: its record is drawn in the confirm, a failed request as D3b's
+   *  unreachable row; a refusal closes the confirm and is the put-back's own (`settle`). An answer for another opening is dropped */
+  const checkFirst = async (row: HistoryRow): Promise<void> => {
+    const ticket = ++checking.current
+    setChecked({ kind: 'reading' })
+    const outcome: CheckOutcome = await check(row.id).catch((): CheckOutcome => ({ kind: 'failed' }))
+    if (ticket !== checking.current) return
+    if (outcome.kind === 'drift' || outcome.kind === 'failed') return setChecked(outcome)
+    setChecked(null)
+    await settle(row, outcome, true)
+  }
+
+  /** AN OUTCOME, SAID ONCE — a put-back's, or the check's refusal (R-291: handled exactly as the put-back's same refusal). `inConfirm`:
+   *  it came from the confirm, which closes (its close puts focus back on the row's action) */
+  const settle = async (row: HistoryRow, outcome: ActOutcome, inConfirm: boolean): Promise<void> => {
     const words = actSaid(outcome, row.n, row.host)
-    const back = asking === null ? null : row.id
+    const back = inConfirm ? row.id : null
     if (outcome.kind === 'live' || outcome.kind === 'uploaded' || outcome.kind === 'gone') {
       setAsking(null)
       confirm.current?.close()
@@ -274,6 +317,7 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
           setNote(null)
           setAsking(r)
           setOpens((n) => n + 1)
+          void checkFirst(r)
         }}
         className="shrink-0"
       >
@@ -512,9 +556,14 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
           if (confirm.current?.open === true) return
           const id = asking?.id
           setAsking(null)
+          // the check this opening sent is dropped should it land now (R-291)
+          checking.current++
+          setChecked(null)
           // back to the Roll back that opened it (an ending moves it on to ✕ once the list is read again)
           if (id !== undefined) actOf(id)?.focus()
         }}
+        // R-291: a drift list longer than the window scrolls INSIDE the confirm — the modal dialog's own `max-height` and
+        // `overflow: auto` (the browser's, which `floor.spec.mjs` measures in a short window) — so nothing is drawn past it
         className="m-auto w-[410px] max-w-[calc(100vw-20px)] flex-col gap-4 rounded-lg bg-surface p-6 text-ink shadow-modal backdrop:bg-scrim open:flex"
       >
         {asking === null ? null : (
@@ -529,6 +578,32 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
               {chip(asking, false)}
               <span className="text-[12px] text-ink-soft">{timeLabel(asking.acceptedAt, now)}</span>
               <span className="ml-auto">{gscanChip(asking)}</span>
+            </div>
+            {/* R-291 — the check's one region, heard once (UX-DR12) */}
+            <div role="status" data-history-check={checked === null ? undefined : checked.kind === 'drift' ? (checked.drift?.kind ?? 'none') : checked.kind} className="flex flex-col gap-3 empty:hidden">
+              {checked === null ? null : checked.kind === 'reading' ? (
+                <StageRow tone="running" label={DW.reading} />
+              ) : checked.kind === 'failed' ? (
+                <DriftUnverified cause="unreachable" body={causeSentence('unreachable', { host: asking.host, theme: '' })} />
+              ) : checked.drift === null ? null : checked.drift.kind === 'clean' ? (
+                <div className="overflow-hidden rounded-thumb border border-line">
+                  <PassRow words={DW.clean(checked.drift.since)} clean />
+                </div>
+              ) : checked.drift.kind === 'unverified' ? (
+                <DriftUnverified cause={checked.drift.cause} body={causeSentence(checked.drift.cause, { host: asking.host, theme: checked.drift.theme, ...(checked.drift.status === undefined ? {} : { status: checked.drift.status }) })} />
+              ) : (
+                <>
+                  <DriftFound record={checked.drift} idPrefix="history-drift" />
+                  <p data-drift-foot className="m-0 text-[12px] leading-[1.55] text-ink-soft [text-wrap:pretty]">{HW.checkFoot(driftCount(checked.drift), asking.n)}</p>
+                  {/* Story 7.22 (DW-396): a live zip past the store's size was not kept — no copy, so no Download; the Roll back stays */}
+                  {checked.drift.kept === false ? null : (
+                    <a id="history-drift-download" href={liveHref(checked.drift.theme)} className={`self-start ${buttonClasses('secondary', 40)}`}>
+                      <Download size={13} />
+                      {DW.download}
+                    </a>
+                  )}
+                </>
+              )}
             </div>
             {asking.drops === null || asking.drops.length === 0 ? null : (
               <div data-history-drops className="flex gap-[9px] rounded border border-marigold-line bg-marigold-tint-soft px-[13px] py-[11px]">
@@ -553,9 +628,10 @@ export function DeployHistory({ projectName, read, pin, act, onClose }: {
                 id="history-confirm-go"
                 variant="primary"
                 size={38}
-                aria-disabled={acting !== null || undefined}
+                // R-291: while the check reads it waits — the check is what is busy, and its running row says so
+                aria-disabled={acting !== null || reading || undefined}
                 aria-busy={acting === asking.id || undefined}
-                onClick={() => void putBack(asking)}
+                onClick={() => (reading ? undefined : void putBack(asking))}
               >
                 <BusyLabel pending={acting === asking.id} busy={HW.rollingBack}>
                   <RollBack size={12} />

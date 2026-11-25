@@ -11264,11 +11264,19 @@ test('7.22 · (f) DW-396: a found drift whose live zip was too large to keep dra
    The drawer's put-back is the harness's own server action (`harnessAct`), answered by `x-inflozo-harness-history`: `rollback`
    (v5 live, v4 the undo, v3, v2 pinned and v1 compact, v1 dropping a setting), `uploaded` (D2d's v3), `refused` (Ghost's check
    says no, 422), `busy` (a ship of the site under way, 409) and `elsewhere` (another site's live row). Pointer-free. The real
-   put-back is `put-back.test.ts`' and walk step 121's (production + T1). */
+   put-back is `put-back.test.ts`' and walk step 121's (production + T1).
+   R-291: every Roll back's confirm runs the drift check first (`harnessCheck`, by `x-inflozo-harness-check`: no header D3c's pass),
+   and its Roll back waits for it, so every journey that presses that Roll back waits for the check to end (`checkEnded`). */
 
 const { PREFLIGHT_WORDS: PFW } = await import(new URL('../../apps/web/lib/preflight.ts', import.meta.url).href)
 const actOf = (page, v) => historyRow(page, v).locator('[data-history-act]')
 const historyConfirm = (page) => page.locator('dialog[data-history-confirm]')
+/** R-291 — the confirm's check has ended (its one region no longer reads) and its Roll back no longer waits */
+const CHECK_ENDED = /^(clean|found|unverified|none|failed)$/
+async function checkEnded(page) {
+  await expect(historyConfirm(page).locator('[data-history-check]')).toHaveAttribute('data-history-check', CHECK_ENDED, { timeout: 15_000 })
+  await expect(page.locator('#history-confirm-go')).not.toHaveAttribute('aria-disabled', 'true')
+}
 /** Tab from wherever focus is until `target` has it — the drawer's Tab path, walked, never jumped */
 async function tabToRow(page, target, most = 20) {
   for (let i = 0; i < most && !(await target.evaluate((t) => t === document.activeElement)); i++) await page.keyboard.press('Tab')
@@ -11374,6 +11382,7 @@ test('7.23a · (c) Roll back confirmed: "Rolling back…" with aria-busy and ari
   await tabToRow(page, actOf(page, 'v4'))
   await page.keyboard.press('Enter')
   await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  await checkEnded(page)
   const release = await holdActions(page)
   await page.keyboard.press('Tab')
   const go = page.locator('#history-confirm-go')
@@ -11435,6 +11444,7 @@ test('7.23a · (e) refusals, each said under its row: Ghost\'s own check refusin
   await openHistory(page, 'refused')
   await tabToRow(page, actOf(page, 'v1'))
   await page.keyboard.press('Enter')
+  await checkEnded(page)
   await page.keyboard.press('Tab')
   await page.keyboard.press('Enter')
   await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
@@ -11453,6 +11463,7 @@ test('7.23a · (e) refusals, each said under its row: Ghost\'s own check refusin
   await openHistory(page, 'busy')
   await tabToRow(page, actOf(page, 'v4'))
   await page.keyboard.press('Enter')
+  await checkEnded(page)
   await page.keyboard.press('Tab')
   await page.keyboard.press('Enter')
   await expect(historyRow(page, 'v4').locator('[data-history-note]')).toHaveText(HW.refused.busy('harness.example'), { timeout: 15_000 })
@@ -11485,11 +11496,16 @@ test('7.23a · (f) Ghost will forget a setting: the confirm adds Pre-flight\'s o
   await expect(historyConfirm(page).locator('#history-confirm-body')).toHaveText(HW.confirmBody(4, 5, []))
 })
 
-/** a put-back pressed through the keyboard: Tab to the row's Roll back, Enter (the confirm opens on Cancel), Tab, Enter */
-async function rollBackByKeys(page, v) {
+/** a confirm opened through the keyboard: Tab to the row's Roll back, Enter (the confirm opens on Cancel), and its check ended */
+async function openConfirmByKeys(page, v) {
   await tabToRow(page, actOf(page, v))
   await page.keyboard.press('Enter')
   await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  await checkEnded(page)
+}
+/** a put-back pressed through the keyboard: the confirm opened (`openConfirmByKeys`), then Tab, Enter */
+async function rollBackByKeys(page, v) {
+  await openConfirmByKeys(page, v)
   await page.keyboard.press('Tab')
   await expect(page.locator('#history-confirm-go')).toBeFocused()
   await page.keyboard.press('Enter')
@@ -11497,9 +11513,7 @@ async function rollBackByKeys(page, v) {
 
 test('7.23a · (g) gone (404): a version pruned since the drawer read it — the confirm closes, the list is read again and the row is absent, its sentence said once, focus on ✕', async ({ page }) => {
   await openHistory(page, 'rollback')
-  await tabToRow(page, actOf(page, 'v4'))
-  await page.keyboard.press('Enter')
-  await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  await openConfirmByKeys(page, 'v4')
   // v4 is pruned while the confirm is open: the server answers 404, and the re-read no longer lists it
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'rollback-gone' })
   await page.keyboard.press('Tab')
@@ -11556,11 +11570,15 @@ test('7.23a · (i) the request fails (the network drops it): its fate unknown, t
   })
   await openHistory(page, 'rollback')
   await expect.poll(() => reads, 'the drawer read its list, opening').toBeGreaterThan(0)
+  // R-291: the confirm's check carries v4's id too — so the drop is armed once it has ended, for the put-back alone
+  await openConfirmByKeys(page, 'v4')
   await page.route((url) => url.pathname.startsWith(HARNESS), (route) => {
     const r = route.request()
     return r.method() === 'POST' && r.headers()['next-action'] && (r.postData() ?? '').includes(v4) ? route.abort('connectionreset') : route.fallback()
   })
-  await rollBackByKeys(page, 'v4')
+  await page.keyboard.press('Tab')
+  await expect(page.locator('#history-confirm-go')).toBeFocused()
+  await page.keyboard.press('Enter')
   await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
   await expect(historyRow(page, 'v4').locator('[data-history-note]')).toHaveText(HW.actFailed(4))
   await expect.poll(() => atFailure, 'the put-back\'s request failed').not.toBeNull()
@@ -11587,9 +11605,7 @@ test('7.23a · (j) the lock lost mid-request (R-192\'s sweep): with the put-back
   await openHistory(page, 'rollback')
   // held first, confirmed by the server: a session that never held cannot be taken from
   await expect.poll(() => page.evaluate(() => document.getElementById('editor-lock-bar') === null)).toBe(true)
-  await tabToRow(page, actOf(page, 'v4'))
-  await page.keyboard.press('Enter')
-  await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  await openConfirmByKeys(page, 'v4')
   const release = await holdActions(page)
   await page.keyboard.press('Tab')
   await page.keyboard.press('Enter')
@@ -11625,4 +11641,222 @@ test('7.23a · (l) disconnected (409): the linked site is disconnected — "Reco
   await expect(actOf(page, 'v4')).toBeFocused()
   await expect(historyRow(page, 'v5')).toContainText(HW.live)
   expect(await historySaid(page)).toBe('')
+})
+
+/* ── R-291 — the drift check before a Roll back (FR-J16, the owner's "Check first, in this story"): the confirm opens on Cancel
+   and sends the check at once, answered by the harness's `harnessCheck` through `x-inflozo-harness-check` — no header D3c's pass
+   since the list's newest accepted version (v5 in `rollback`), `found` / `found-unkept` D3a's record (two of Inflozo's files
+   changed, one the site added), `unverified` D3b's `role`, `none` nothing to compare, `fail` a request that failed, `busy` and
+   `gone` the put-back's own refusals answered first. Drawn in the confirm's one `role="status"` region in D3's own rows and words.
+   Pointer-free. The real check is `put-back.test.ts`' and walk step 121's. */
+
+const checkRegion = (page) => historyConfirm(page).locator('[data-history-check]')
+/** the history drawer opened with the check's header beside the history one (`openHistory` sets the history header alone) */
+async function openHistoryChecked(page, history, check) {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': history, 'x-inflozo-harness-check': check })
+  await open(page)
+  await page.locator('#deploy-history-open').focus()
+  await page.keyboard.press('Enter')
+  await expect(drawer(page)).toBeVisible()
+  await expect(drawer(page).locator('[data-history-loading]')).toHaveCount(0, { timeout: 15_000 })
+}
+
+test('7.23a · (m) R-291: the confirm opens on Cancel and the check starts at once — D3\'s running row "Comparing with your live theme…" in the confirm\'s one status region, its Roll back aria-disabled (not busy, its name unchanged) and a press of it doing nothing; then D3c\'s pass "since v5", the Roll back live, focus still on Cancel — and the Roll back confirms as before', async ({ page }) => {
+  await openHistory(page, 'rollback')
+  await tabToRow(page, actOf(page, 'v4'))
+  const release = await holdActions(page)
+  await page.keyboard.press('Enter')
+  await expect(historyConfirm(page).locator('[data-cancel]'), 'still opened on Cancel (UX-DR14)').toBeFocused()
+  const region = checkRegion(page)
+  await expect(region).toHaveAttribute('role', 'status')
+  await expect(region).toHaveAttribute('data-history-check', 'reading')
+  await expect(region).toHaveText(DRW.reading)
+  expect(DRW.reading).toBe('Comparing with your live theme…')
+  const go = page.locator('#history-confirm-go')
+  await expect(go, 'the check is busy, not the Roll back').toHaveAttribute('aria-disabled', 'true')
+  await expect(go).not.toHaveAttribute('aria-busy', 'true')
+  await expect(go).toHaveAccessibleName(HW.rollBack)
+  // pressed while the check reads: nothing happens — no "Rolling back…", the confirm stays, still reading
+  await page.keyboard.press('Tab')
+  await expect(go).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(go).toHaveAccessibleName(HW.rollBack)
+  await expect(region).toHaveAttribute('data-history-check', 'reading')
+  await expect(historyConfirm(page)).toHaveAttribute('open', '')
+  await page.keyboard.press('Shift+Tab')
+  await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  release()
+  await expect(region).toHaveAttribute('data-history-check', 'clean', { timeout: 15_000 })
+  await expect(region.locator('[data-drift-row="clean"]')).toContainText(DRW.clean(5))
+  expect(DRW.clean(5)).toBe('Nothing changed on your site since v5')
+  await expect(go).not.toHaveAttribute('aria-disabled', 'true')
+  // focus stays on Cancel as the check lands — and after it, frame after frame
+  for (let i = 0; i < 20; i++) {
+    await expect(historyConfirm(page).locator('[data-cancel]'), 'focus stays on Cancel as the check lands').toBeFocused({ timeout: 0 })
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)))
+  }
+  expect(await historySaid(page), 'the check says nothing in the drawer\'s region').toBe('')
+  // and the Roll back confirms as it always did
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe('v4 is live on harness.example.')
+})
+
+test('7.23a · (n) R-291: something changed on the site — D3a\'s block between the summary row and the dropped settings (D3\'s own order): the warning row and its chip, the groups with each file\'s label and mono path, the foot said of a Roll back, and "Download the live theme first" to the check\'s own copy; Tab from Cancel reaches the Roll back, Shift+Tab the Download; the Roll back still confirms; unkept, no Download', async ({ page }) => {
+  await openHistoryChecked(page, 'rollback', 'found')
+  await openConfirmByKeys(page, 'v1')
+  const region = checkRegion(page)
+  await expect(region).toHaveAttribute('data-history-check', 'found')
+  const block = region.locator('[data-drift-row="found"]')
+  await expect(block).toContainText(DRW.row)
+  await expect(block.locator('[data-drift-chip]')).toHaveText(DRW.chip(3))
+  expect(DRW.chip(3)).toBe('3 files differ')
+  await expect(block.locator('[data-drift-group]')).toHaveCount(2)
+  await expect(block.locator('[data-drift-group="changed"] [data-drift-label]')).toHaveText(['Hero', 'Home'])
+  await expect(block.locator('[data-drift-group="changed"]')).toContainText(DRW.groups.changed, { ignoreCase: true })
+  await expect(block.locator('[data-drift-group="added"] [data-drift-label]')).toHaveText([DRW.labels.addedTemplate])
+  await expect(block.locator('[data-drift-file="home.hbs"]')).toContainText('home.hbs')
+  expect(await block.locator('[data-drift-file="home.hbs"] .font-mono').evaluate((e) => getComputedStyle(e).fontFamily)).toMatch(/mono/i)
+  await expect(region.locator('[data-drift-foot]')).toHaveText(HW.checkFoot(3, 1))
+  expect(HW.checkFoot(3, 1)).toBe("Rolling back replaces all three with v1's. Take a copy of the live theme first if you want to keep those edits.")
+  const download = region.locator('#history-drift-download')
+  await expect(download).toHaveText(DRW.download)
+  await expect(download).toHaveAttribute('href', `/app${DRIFT.historyLiveDownloadPath(HARNESS_PROJECT_ID, DRIFT_THEME)}`)
+  // D3's order: the summary row, the check, then Pre-flight's dropped settings (v1 drops one)
+  const order = await historyConfirm(page).evaluate((c) => [...c.querySelectorAll('[data-history-confirm-row], [data-history-check], [data-history-drops]')].map((e) => [...e.attributes].map((a) => a.name).find((n) => n.startsWith('data-history-'))))
+  expect(order).toEqual(['data-history-confirm-row', 'data-history-check', 'data-history-drops'])
+  // the Roll back stays allowed (R-291): Tab from Cancel to it; the Download is reachable behind Cancel
+  const go = page.locator('#history-confirm-go')
+  await expect(go).not.toHaveAttribute('aria-disabled', 'true')
+  await page.keyboard.press('Shift+Tab')
+  await expect(download).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(go).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe('v1 is live on harness.example.')
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveCount(0)
+  // past the store's size the live zip was not kept (DW-396): the same block, no Download — and the Roll back still allowed
+  await openHistoryChecked(page, 'rollback', 'found-unkept')
+  await openConfirmByKeys(page, 'v4')
+  await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'found')
+  await expect(checkRegion(page).locator('[data-drift-foot]')).toHaveText(HW.checkFoot(3, 4))
+  await expect(checkRegion(page).locator('#history-drift-download')).toHaveCount(0)
+  await expect(page.locator('#history-confirm-go')).not.toHaveAttribute('aria-disabled', 'true')
+})
+
+test('7.23a · (o) R-291: the check could not run — D3b\'s sky row, "Couldn\'t check whether your live theme changed." and the cause\'s sentence alone (never Ship it\'s "Shipping anyway."), no Add token; its request failing is D3b\'s unreachable for the row\'s host; each time the Roll back is allowed and works', async ({ page }) => {
+  await openHistoryChecked(page, 'rollback', 'unverified')
+  await openConfirmByKeys(page, 'v4')
+  const region = checkRegion(page)
+  await expect(region).toHaveAttribute('data-history-check', 'unverified')
+  const row = region.locator('[data-drift-row="unverified"]')
+  await expect(row).toHaveAttribute('data-drift-cause', 'role')
+  await expect(row).toContainText(DRW.unverified)
+  await expect(row).toContainText(DRW.causes.role)
+  await expect(row).not.toContainText(DRW.anyway)
+  await expect(region.locator('button, a'), 'no Add token here').toHaveCount(0)
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe('v4 is live on harness.example.')
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveCount(0)
+
+  await openHistoryChecked(page, 'rollback', 'fail')
+  await openConfirmByKeys(page, 'v3')
+  await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'failed')
+  const failed = checkRegion(page).locator('[data-drift-row="unverified"]')
+  await expect(failed).toHaveAttribute('data-drift-cause', 'unreachable')
+  await expect(failed).toContainText(DRW.unverified)
+  await expect(failed).toContainText(DRW.causes.unreachable('harness.example'))
+  expect(DRW.causes.unreachable('harness.example')).toBe("harness.example didn't hand over the live theme.")
+  await page.keyboard.press('Tab')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#deploy-history-close')).toBeFocused({ timeout: 15_000 })
+  await expect.poll(() => historySaid(page)).toBe('v3 is live on harness.example.')
+})
+
+test('7.23a · (p) R-291: nothing to compare (no two manifests, FR-J16) — nothing is drawn, and the Roll back is allowed', async ({ page }) => {
+  await openHistoryChecked(page, 'rollback', 'none')
+  await openConfirmByKeys(page, 'v4')
+  const region = checkRegion(page)
+  await expect(region).toHaveAttribute('data-history-check', 'none')
+  await expect(region).toBeEmpty()
+  await expect(region).toBeHidden()
+  await expect(historyConfirm(page).locator('[data-drift-row]')).toHaveCount(0)
+  await expect(page.locator('#history-confirm-go')).not.toHaveAttribute('aria-disabled', 'true')
+})
+
+test('7.23a · (q) R-291: a read is cancellable — Cancel and Esc close the confirm while its check reads; and an answer that lands for an opening since closed is dropped, never drawn in the opening that followed', async ({ page }) => {
+  const v4 = '00000000-0000-4000-8000-000000072204'
+  await openHistoryChecked(page, 'rollback', 'found')
+  await tabToRow(page, actOf(page, 'v4'))
+  // the first two checks of v4 are held, each until released; the first answers `found`
+  const held = []
+  await page.route((url) => url.pathname.startsWith(HARNESS), async (route) => {
+    const r = route.request()
+    if (held.length < 2 && r.method() === 'POST' && r.headers()['next-action'] && (r.postData() ?? '').includes(v4)) {
+      let release
+      const gate = new Promise((done) => { release = done })
+      held.push({ request: r, release })
+      await gate
+    }
+    return route.fallback()
+  })
+  await page.keyboard.press('Enter')
+  await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'reading')
+  await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(historyConfirm(page), 'Cancel closes it while it reads').not.toHaveAttribute('open', '')
+  await expect(actOf(page, 'v4')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'reading')
+  await page.keyboard.press('Escape')
+  await expect(historyConfirm(page), 'Esc closes it while it reads').not.toHaveAttribute('open', '')
+  await expect(actOf(page, 'v4')).toBeFocused()
+  // opened a third time, with nothing changed on the site; then the first check — long closed — answers `found`
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'rollback', 'x-inflozo-harness-check': 'clean' })
+  await page.keyboard.press('Enter')
+  await expect(historyConfirm(page).locator('[data-cancel]')).toBeFocused()
+  await expect.poll(() => held.length).toBeGreaterThan(0)
+  held[0].release()
+  await held[0].request.response()
+  for (let i = 0; i < 20; i++) {
+    expect(await checkRegion(page).getAttribute('data-history-check'), 'the late answer is dropped').not.toBe('found')
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(r)))
+  }
+  await expect(historyConfirm(page).locator('[data-drift-row="found"]')).toHaveCount(0)
+  await expect.poll(() => held.length, 'the second opening\'s check, held in its turn').toBe(2)
+  held[1].release()
+  await expect(checkRegion(page)).toHaveAttribute('data-history-check', 'clean', { timeout: 15_000 })
+  await expect(page.locator('#history-confirm-go')).not.toHaveAttribute('aria-disabled', 'true')
+})
+
+test('7.23a · (r) R-291: a check REFUSED is the put-back\'s own refusal — `busy` (409) closes the confirm and is said under the row, focus back on its Roll back, nothing in the drawer\'s region; `gone` (404) closes it, reads the list again without the row, says so once and puts focus on ✕', async ({ page }) => {
+  await openHistoryChecked(page, 'rollback', 'busy')
+  await tabToRow(page, actOf(page, 'v4'))
+  await page.keyboard.press('Enter')
+  await expect(historyConfirm(page)).not.toHaveAttribute('open', '', { timeout: 15_000 })
+  await expect(historyRow(page, 'v4').locator('[data-history-note]')).toHaveText(HW.refused.busy('harness.example'))
+  await expect(actOf(page, 'v4')).toBeFocused()
+  expect(await historySaid(page)).toBe('')
+  await page.keyboard.press('Escape')
+  await expect(drawer(page)).toHaveCount(0)
+
+  await openHistoryChecked(page, 'rollback', 'clean')
+  await tabToRow(page, actOf(page, 'v4'))
+  // v4 pruned since the drawer read it: the check answers 404 and the re-read no longer lists it
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-history': 'rollback-gone', 'x-inflozo-harness-check': 'gone' })
+  await page.keyboard.press('Enter')
+  await expect(historyRow(page, 'v4'), 'the re-read drops the row').toHaveCount(0, { timeout: 15_000 })
+  await expect(historyConfirm(page)).not.toHaveAttribute('open', '')
+  await expect.poll(() => historySaid(page)).toBe(HW.said.gone(4))
+  await expect(page.locator('#deploy-history-close')).toBeFocused()
+  await expect(drawer(page).locator('[data-history-note]:not(:empty)')).toHaveCount(0)
 })

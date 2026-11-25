@@ -464,53 +464,84 @@ async function compileAndCheck(io: DeployIo, job: JobRow, c: Clock, existing: De
  *   - FOUND: the live zip is kept at `{projectId}/live/{siteId}.zip` (overwriting) BEFORE the record, so D3a's Download always has
  *     the zip this check read — unless it is past `LIVE_COPY_MAX_BYTES` (Story 7.22, DW-396): then nothing is put, the record says
  *     `kept: false`, and D3a draws no Download.
+ *   - THE READ AND THE COMPARISON are `compareLive`, below — one function since Story 7.23a, shared with the check before a Roll
+ *     back (R-291); this step keeps the baseline, the layers' current names, the live copy's key and the record's edges.
  */
 async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead, own: string): Promise<void> {
   // no record yet: `compileAndCheck` cleared the last check's at its first edge
   if (read.bound === null) return
   const baseline = await twice(io, 'drift baseline', () => io.deploys.baseline({ projectId: job.project_id, siteId: job.site_id, userId: job.user_id, except: own }))
   if (baseline === null || baseline.content_manifest === null || typeof baseline.content_manifest !== 'object') return
-  const since = versionNumber(baseline.version)
   await c.drift({ kind: 'reading' })
-  const theme = read.bound
-  const unverified = (cause: DriftCause, status?: number): DriftRecord => ({ kind: 'unverified', cause, theme, ...(status === undefined ? {} : { status }) })
-  let answer: SnapshotAnswer
-  try {
-    answer = await io.liveTheme({ siteId: job.site_id, userId: job.user_id, name: theme, route: ROUTE })
-  } catch (e) {
-    const code = (e as { name?: string; code?: string } | null)?.name === 'AdminError' ? (e as { code?: string }).code : undefined
-    // a throw that is not the chokepoint's keeps its name and the head of its message, as the unzip's does (Story 7.21's Review)
-    const why = code === undefined ? { name: String((e as Error | null)?.name ?? typeof e), why: String((e as Error | null)?.message ?? e).slice(0, 120) } : {}
-    io.log('deploy: the live theme was not read', { job: job.id, code, ...why })
-    return void (await c.drift(unverified(code === 'credential_missing' ? 'no_token' : 'unreachable')))
-  }
-  if (!answer.ok) {
-    io.log('deploy: Ghost did not hand over the live theme', { job: job.id, status: answer.status })
-    // R-288: a theme the site no longer holds is Ghost's 400 "Please select a valid theme." — `getZip`'s one refusal (storage.js:43-50
-    // in 6.58.0, :35-42 in 5.130.6; executed on T1, MEASUREMENTS §90); a 404 from anything in front of Ghost is read the same
-    const gone = answer.status === 400 || answer.status === 404
-    return void (await c.drift(answer.status === 401 ? unverified('token_refused') : answer.status === 403 ? unverified('role') : gone ? unverified('missing') : unverified('unreachable', answer.status)))
-  }
-  let live: Record<string, { sha256: string }>
-  try {
-    live = await liveManifest(unzipTheme(answer.bytes))
-  } catch (e) {
-    io.log('deploy: the live theme could not be read', { job: job.id, why: String((e as Error | null)?.message ?? e).slice(0, 120) })
-    return void (await c.drift(unverified('unreadable')))
-  }
-  const diff = compareManifests(baseline.content_manifest, live)
-  if (diff.changed.length + diff.added.length + diff.removed.length === 0) return void (await c.drift({ kind: 'clean', since }))
   // each partial by its layer's CURRENT name: the instance its fingerprint names, in the docs this check compiled
   const layers: Record<string, string> = {}
   for (const doc of [...Object.values(read.input.templates), ...Object.values(read.input.pageTwo ?? {})]) {
     for (const i of doc.instances) if (i.layerName.trim() !== '') layers[i.instanceId] = i.layerName
   }
-  const names = { layers, canvases: read.names }
+  const answer = await compareLive(io, {
+    siteId: job.site_id, userId: job.user_id, theme: read.bound, route: ROUTE, since: versionNumber(baseline.version), manifest: baseline.content_manifest,
+    names: { layers, canvases: read.names }, at: { job: job.id },
+  })
+  if ('bytes' in answer) await twice(io, 'live copy', () => io.artifacts.put(liveCopyPath(job.project_id, job.site_id), answer.bytes, { replace: true }))
+  await c.drift(answer.record)
+}
+
+/**
+ * STORY 7.23a (R-291) — THE ONE COMPARISON both drift checks run: Ship it's (`driftStep`, inside `checking`) and the History
+ * drawer's before a Roll back (`server/deploy/put-back.ts`' `checkBeforePutBack`). It reads the theme under the frozen name with
+ * the Staff Access Token (`io.liveTheme`) and compares it with the baseline's manifest; it never throws — every Ghost answer and
+ * every unzip failure is a cause (D3b), and the deploy or the Roll back goes on:
+ *   - a throw: the chokepoint's `credential_missing` is `no_token`, anything else `unreachable`;
+ *   - Ghost's 401 `token_refused`, 403 `role`, 400 or 404 `missing` (R-288), anything else `unreachable` with its status;
+ *   - a zip that will not unzip: `unreadable`;
+ *   - nothing different: D3c's `clean` since the baseline's version;
+ *   - else D3a's `found`, each file labelled by `labelOf` — a partial by its layer's CURRENT name where `names` holds it (Ship it
+ *     compiled the docs), else by the name the manifest kept (the History check reads no working document).
+ * A FOUND drift within `LIVE_COPY_MAX_BYTES` hands back the bytes it read, for the caller to keep under ITS key before it records,
+ * so D3a's Download always serves the zip this read; past the size it hands back none and the record says `kept: false` (DW-396).
+ * `at` names the caller's row in the logs.
+ */
+export async function compareLive(
+  io: Pick<DeployIo, 'liveTheme' | 'log'>,
+  a: {
+    siteId: string; userId: string; theme: string; route: string; since: number; manifest: ContentManifest
+    names?: Parameters<typeof labelOf>[2]; at: Record<string, string>
+  },
+): Promise<{ record: Exclude<DriftRecord, { kind: 'reading' }> } | { record: Extract<DriftRecord, { kind: 'found' }>; bytes: Uint8Array }> {
+  const { theme, since, manifest } = a
+  const unverified = (cause: DriftCause, status?: number) => ({ record: { kind: 'unverified' as const, cause, theme, ...(status === undefined ? {} : { status }) } })
+  let answer: SnapshotAnswer
+  try {
+    answer = await io.liveTheme({ siteId: a.siteId, userId: a.userId, name: theme, route: a.route })
+  } catch (e) {
+    const code = (e as { name?: string; code?: string } | null)?.name === 'AdminError' ? (e as { code?: string }).code : undefined
+    // a throw that is not the chokepoint's keeps its name and the head of its message, as the unzip's does (Story 7.21's Review)
+    const why = code === undefined ? { name: String((e as Error | null)?.name ?? typeof e), why: String((e as Error | null)?.message ?? e).slice(0, 120) } : {}
+    io.log('deploy: the live theme was not read', { ...a.at, code, ...why })
+    return unverified(code === 'credential_missing' ? 'no_token' : 'unreachable')
+  }
+  if (!answer.ok) {
+    io.log('deploy: Ghost did not hand over the live theme', { ...a.at, status: answer.status })
+    // R-288: a theme the site no longer holds is Ghost's 400 "Please select a valid theme." — `getZip`'s one refusal (storage.js:43-50
+    // in 6.58.0, :35-42 in 5.130.6; executed on T1, MEASUREMENTS §90); a 404 from anything in front of Ghost is read the same
+    const gone = answer.status === 400 || answer.status === 404
+    return answer.status === 401 ? unverified('token_refused') : answer.status === 403 ? unverified('role') : gone ? unverified('missing') : unverified('unreachable', answer.status)
+  }
+  let live: Record<string, { sha256: string }>
+  try {
+    live = await liveManifest(unzipTheme(answer.bytes))
+  } catch (e) {
+    io.log('deploy: the live theme could not be read', { ...a.at, why: String((e as Error | null)?.message ?? e).slice(0, 120) })
+    return unverified('unreadable')
+  }
+  const diff = compareManifests(manifest, live)
+  if (diff.changed.length + diff.added.length + diff.removed.length === 0) return { record: { kind: 'clean', since } }
+  const names = a.names ?? {}
   const kept = (path: string, kind: 'changed' | 'removed'): DriftFile => {
-    const entry = baseline.content_manifest?.[path] as ManifestEntry | undefined
+    const entry = manifest[path] as ManifestEntry | undefined
     return { path, label: labelOf({ path, ...(entry === undefined ? {} : { entry }) }, kind, names), ...(entry?.category === undefined ? {} : { category: entry.category }) }
   }
-  const record: DriftRecord = {
+  const record: Extract<DriftRecord, { kind: 'found' }> = {
     kind: 'found', since, theme,
     changed: diff.changed.map((p) => kept(p, 'changed')),
     added: diff.added.map((path) => ({ path, label: labelOf({ path }, 'added', names) })),
@@ -519,11 +550,10 @@ async function driftStep(io: DeployIo, job: JobRow, c: Clock, read: ProjectRead,
   // Story 7.22 (DW-396): a live zip past the store's own size is not kept — a put the store refuses would refuse again on the retry
   // and fail the Pre-flight that found the drift. The record says so, D3a draws no Download, and the Pre-flight goes on
   if (answer.bytes.length > LIVE_COPY_MAX_BYTES) {
-    io.log('deploy: the live theme is past the live copy\'s size, not kept', { job: job.id, bytes: answer.bytes.length })
-    return void (await c.drift({ ...record, kept: false }))
+    io.log('deploy: the live theme is past the live copy\'s size, not kept', { ...a.at, bytes: answer.bytes.length })
+    return { record: { ...record, kept: false } }
   }
-  await twice(io, 'live copy', () => io.artifacts.put(liveCopyPath(job.project_id, job.site_id), answer.bytes, { replace: true }))
-  await c.drift(record)
+  return { record, bytes: answer.bytes }
 }
 
 // ── the doors ───────────────────────────────────────────────────────────────────────────────────────────────────────

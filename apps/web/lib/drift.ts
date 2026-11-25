@@ -146,6 +146,11 @@ export function labelOf(
 
 /** "both" for two, then "all three" … "all ten"; numerals above (Design Notes) */
 const ALL = ['both', 'all three', 'all four', 'all five', 'all six', 'all seven', 'all eight', 'all nine', 'all ten'] as const
+/** D3a's foot's rule for what is replaced: "it" for one file, then `ALL`'s words — Story 7.23a's Roll back confirm says its own foot
+ *  by the same rule (`HISTORY_WORDS.checkFoot`, R-291) */
+export const replacedOf = (n: number): string => (n === 1 ? 'it' : (ALL[n - 2] ?? `all ${n}`))
+/** D3a's foot's second sentence, said by the Roll back confirm's foot too */
+export const KEEP_EDITS = 'Take a copy of the live theme first if you want to keep those edits.'
 /** the sentence every D3b body ends on */
 const ANYWAY = 'Shipping anyway.'
 
@@ -159,8 +164,7 @@ export const DRIFT_WORDS = {
   row: 'Comparing with your live theme',
   chip: (n: number) => (n === 1 ? `${n} file differs` : `${n} files differ`),
   groups: { changed: 'Changed', added: 'Added on your site', removed: 'Removed from your site' },
-  foot: (n: number) =>
-    `Shipping replaces ${n === 1 ? 'it' : (ALL[n - 2] ?? `all ${n}`)} with Inflozo's version${n === 1 ? '' : 's'}. Take a copy of the live theme first if you want to keep those edits.`,
+  foot: (n: number) => `Shipping replaces ${replacedOf(n)} with Inflozo's version${n === 1 ? '' : 's'}. ${KEEP_EDITS}`,
   cancel: DEPLOY_WORDS.cancel,
   download: 'Download the live theme first',
   overwrite: 'Overwrite and ship anyway',
@@ -210,16 +214,17 @@ export const ADDS_TOKEN: readonly DriftCause[] = ['no_token', 'token_refused', '
 /** The cause D3b shows: the record's, where a missing token on a site with a recorded decline is the decline's own words */
 export const causeShown = (cause: DriftCause, declined: boolean): DriftCause => (cause === 'no_token' && declined ? 'declined' : cause)
 
-/** D3b's body for a cause: its sentence, then "Shipping anyway." */
-export function causeBody(cause: DriftCause, ctx: { host: string; theme: string; status?: number }): string {
+/** D3b's sentence for a cause alone — the Roll back confirm's D3b row says it without Ship it's "Shipping anyway." (R-291) */
+export function causeSentence(cause: DriftCause, ctx: { host: string; theme: string; status?: number }): string {
   const C = DRIFT_WORDS.causes
-  const sentence =
-    cause === 'missing' ? C.missing(ctx.host, ctx.theme)
+  return cause === 'missing' ? C.missing(ctx.host, ctx.theme)
     : cause === 'unreachable' ? C.unreachable(ctx.host, ctx.status)
     : cause === 'unreadable' ? C.unreadable(ctx.host)
     : C[cause]
-  return `${sentence} ${ANYWAY}`
 }
+
+/** D3b's body for a cause: its sentence, then "Shipping anyway." */
+export const causeBody = (cause: DriftCause, ctx: { host: string; theme: string; status?: number }): string => `${causeSentence(cause, ctx)} ${ANYWAY}`
 
 /** Every file the report names, in its three groups' order */
 export const driftCount = (r: Extract<DriftRecord, { kind: 'found' }>): number => r.changed.length + r.added.length + r.removed.length
@@ -255,3 +260,10 @@ export const liveCopyPath = (projectId: string, siteId: string): string => `${pr
 export const liveDownloadPath = (projectId: string, jobId: string): string => `/projects/${projectId}/deploy/live?job=${encodeURIComponent(jobId)}`
 /** …and the name the browser saves it under */
 export const liveFileName = (theme: string): string => `${theme}-live.zip`
+/** STORY 7.23a (R-291) — THE CHECK BEFORE A ROLL BACK keeps its own live copy, one per project × site beside Ship it's and never Ship
+ *  it's key: a Roll back's check must never replace the zip a resting D3a's Download serves (Story 7.22's DW-396 guarantee). Under
+ *  `live/` with it, so the nightly sweep and the prune (which touch only objects a `deploys` row names) pass it by and the account
+ *  purge drains it with the project's prefix */
+export const historyCopyPath = (projectId: string, siteId: string): string => `${projectId}/live/${siteId}-history.zip`
+/** …its address in the app (`projects/[id]/history/live`), named by the theme the check read */
+export const historyLiveDownloadPath = (projectId: string, theme: string): string => `/projects/${projectId}/history/live?theme=${encodeURIComponent(theme)}`

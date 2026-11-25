@@ -8,13 +8,13 @@ import { readFileSync } from 'node:fs'
 import { nextVersion, shipStateOf } from './lib/deploy.ts'
 import { PLANS, type PlanId } from './lib/plan.ts'
 import {
-  actionOf, actOutcomeOf, actSaid, changedLine, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
+  actionOf, actOutcomeOf, actSaid, changedLine, checkOutcomeOf, chipTone, EXPANDED, FEWEST_KEPT, heavyIds, historyAnswer, historyCap, historyRows, HISTORY_WORDS, isStoredVersion,
   newestAccepted, pinOutcomeOf, pinSaid, prunable, timeLabel, type AcceptedRow, type HeavyRow, type HistoryAnswer, type Stored,
 } from './lib/retention.ts'
 import { droppedKeys } from './lib/preflight.ts'
 import { PREFLIGHT_WORDS } from './lib/preflight.ts'
 import { DEPLOY_WORDS, deployError } from './lib/deploy.ts'
-import type { ContentManifest } from './lib/drift.ts'
+import { DRIFT_WORDS, type ContentManifest } from './lib/drift.ts'
 import { pruneProject, strictPlan, type RetentionIo } from './server/retention.ts'
 
 const P = '00000000-0000-4000-8000-0000000000aa'
@@ -443,4 +443,33 @@ test('7.23a: the words — S8e\'s tooltip and S4d\'s caption whole, the confirm\
   assert.deepEqual(droppedKeys({ a: 1, b: 2 }, { a: 1 }), ['b'])
   assert.deepEqual(droppedKeys({ a: 1 }, null), ['a'])
   assert.match(PREFLIGHT_WORDS.dropped(1, 'a.com'), /^Ghost will forget 1 setting on a\.com$/)
+})
+
+test('R-291: the check before a Roll back, from the route\'s answer — 200 `{ drift }` D3\'s record (clean, found, couldn\'t verify) or null (nothing to compare), 404 gone and 409 the put-back\'s own four codes read as `actOutcomeOf` reads them; anything else — a 502, the network, an answer that is no record — a check that failed (drawn as D3b, the Roll back allowed)', () => {
+  const found = { kind: 'found', since: 3, theme: 't', changed: [{ path: 'home.hbs', label: 'Home' }], added: [], removed: [] }
+  assert.deepEqual(checkOutcomeOf(200, { drift: { kind: 'clean', since: 3 } }), { kind: 'drift', drift: { kind: 'clean', since: 3 } })
+  assert.deepEqual(checkOutcomeOf(200, { drift: found }), { kind: 'drift', drift: found })
+  assert.deepEqual(checkOutcomeOf(200, { drift: { kind: 'unverified', cause: 'role', theme: 't' } }), { kind: 'drift', drift: { kind: 'unverified', cause: 'role', theme: 't' } })
+  assert.deepEqual(checkOutcomeOf(200, { drift: null }), { kind: 'drift', drift: null })
+  assert.deepEqual(checkOutcomeOf(404, null), { kind: 'gone' })
+  for (const code of ['elsewhere', 'live', 'disconnected', 'busy']) assert.deepEqual(checkOutcomeOf(409, { code }), { kind: 'refused', code })
+  const ours = deployError('deploy_infrastructure', { host: '' })
+  for (const [status, body] of [
+    [502, { code: ours.code, message: ours.message }], [0, null], [500, null], [409, { code: 'other' }], [422, { code: 'ghost_theme_refused' }],
+    [200, {}], [200, { drift: { kind: 'reading' } }], [200, { drift: { kind: 'found', since: 3, theme: 't', changed: [] } }], [200, { drift: 'clean' }],
+  ] as const) assert.deepEqual(checkOutcomeOf(status, body), { kind: 'failed' }, JSON.stringify([status, body]))
+})
+
+test('R-291: the confirm\'s foot under a found drift is D3a\'s foot said of a Roll back — the same "it", "both", "all three"… rule and the same second sentence — and no other new word: the rest is D3\'s own', () => {
+  assert.equal(HISTORY_WORDS.checkFoot(1, 2), "Rolling back replaces it with v2's. Take a copy of the live theme first if you want to keep those edits.")
+  assert.equal(HISTORY_WORDS.checkFoot(2, 2), "Rolling back replaces both with v2's. Take a copy of the live theme first if you want to keep those edits.")
+  assert.equal(HISTORY_WORDS.checkFoot(3, 4), "Rolling back replaces all three with v4's. Take a copy of the live theme first if you want to keep those edits.")
+  assert.match(HISTORY_WORDS.checkFoot(11, 4), /replaces all 11 with v4's/)
+  // one rule with D3a's own foot: the quantifier and the second sentence are the same words for every count
+  for (const n of [1, 2, 5, 10, 11]) {
+    const theirs = DRIFT_WORDS.foot(n)
+    const ours = HISTORY_WORDS.checkFoot(n, 2)
+    assert.equal(ours.split(' with ')[0]?.replace('Rolling back', ''), theirs.split(' with ')[0]?.replace('Shipping', ''), `${n}: the same "replaces …"`)
+    assert.equal(ours.slice(ours.indexOf('. ') + 2), theirs.slice(theirs.indexOf('. ') + 2), `${n}: the same second sentence`)
+  }
 })

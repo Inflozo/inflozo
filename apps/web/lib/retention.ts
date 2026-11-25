@@ -1,7 +1,7 @@
 import { ghostName } from '@inflozo/section-runtime/custom-settings'
 import { PLANS } from './plan.ts'
 import { DEPLOY_WORDS, fileLabel, versionLabel, versionNumber } from './deploy.ts'
-import { compareManifests, labelOf, type ContentManifest } from './drift.ts'
+import { compareManifests, KEEP_EDITS, labelOf, replacedOf, type ContentManifest, type DriftRecord } from './drift.ts'
 import { droppedKeys } from './preflight.ts'
 
 /**
@@ -379,6 +379,9 @@ export const HISTORY_WORDS = {
   /** Ghost took the version (an upload accepted or an activation made) and the record then failed, twice: never "nothing reached
    *  your site" (`DEPLOY_WORDS.infrastructure`) */
   unrecorded: (n: number, host: string) => `${versionLabel(n)} reached ${host}, but History couldn't record it. Try again.`,
+  /** R-291 — the confirm's foot under a found drift, D3a's foot (`DRIFT_WORDS.foot`) said of a Roll back: the same rule for what is
+   *  replaced ("it", "both", "all three"…) and the same second sentence. Every other word the check draws is D3's own (R-170) */
+  checkFoot: (files: number, n: number) => `Rolling back replaces ${replacedOf(files)} with ${versionLabel(n)}'s. ${KEEP_EDITS}`,
 } as const
 
 /** what the polite region says for a pin's outcome (the refusal is D2b's own sentence) */
@@ -423,4 +426,25 @@ export function actSaid(outcome: ActOutcome, n: number, host: string): string {
       if (outcome.code === 'disconnected' || outcome.code === 'busy') return HISTORY_WORDS.refused[outcome.code](host)
       return outcome.message ?? HISTORY_WORDS.actFailed(n)
   }
+}
+
+/** R-291 — THE CHECK BEFORE A ROLL BACK, as the route answers it (POST `{ deploy, act: 'check' }`): 200 `{ drift }` — D3's record,
+ *  or null where there are not two manifests to compare (nothing is drawn) — and the put-back's own refusals (404 gone, 409
+ *  `{ code }`), read as `actOutcomeOf` reads them, so the drawer handles each exactly as it handles a put-back's. Anything else — a
+ *  502, a network failure, an answer that is not one — is a check that failed: D3b's row, and the Roll back goes on (FR-J16 fails
+ *  open) */
+export type CheckOutcome = { kind: 'drift'; drift: Exclude<DriftRecord, { kind: 'reading' }> | null } | Extract<ActOutcome, { kind: 'gone' | 'refused' | 'failed' }>
+
+export function checkOutcomeOf(status: number, body: unknown): CheckOutcome {
+  if (status === 200) {
+    const drift = (typeof body === 'object' && body !== null ? (body as { drift?: unknown }).drift : undefined) as Record<string, unknown> | null | undefined
+    if (drift === null) return { kind: 'drift', drift: null }
+    // ponytail: our own server's answer — the discriminant and the lists the confirm maps over are read, not every field
+    const kind = drift?.kind
+    const lists = kind !== 'found' || (['changed', 'added', 'removed'] as const).every((g) => Array.isArray(drift?.[g]))
+    if ((kind === 'clean' || kind === 'found' || kind === 'unverified') && lists) return { kind: 'drift', drift: drift as unknown as Exclude<DriftRecord, { kind: 'reading' }> }
+    return { kind: 'failed' }
+  }
+  const act = status === 404 || status === 409 ? actOutcomeOf(status, body) : null
+  return act !== null && (act.kind === 'gone' || act.kind === 'refused') ? act : { kind: 'failed' }
 }

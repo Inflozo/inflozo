@@ -4592,6 +4592,9 @@ STORED artefact, two rows can name one object, so the prune must remove an objec
 rule orders a project's stored versions by `deploys.created_at`, the Pre-flight's time, so a check made before a re-link and
 shipped after one can be pruned the moment Ghost accepts it; this story decides whether newest is the upload Ghost accepted, and
 what the row's time label says after a stale re-make (`lib/retention.ts`' `newestFirst`)
+**And** *(Story 7.23a's Review — owner, 2026-11-25, R-291)* a Roll back runs FR-J16's drift check first, in its confirm: it
+says "Comparing with your live theme…" while it reads, then D3c's line, or D3a's list with "Download the live theme first" and
+the Roll back still available, or D3b's "couldn't verify" with its reason and the Roll back going on; Re-activate runs none
 
 **FRs:** FR-J9. · **Frame:** `S8 Deploy.dc.html` S8e · `D2 Deploy History Completed.dc.html` D2a · D2b · D2c · D2d (the
 Re-activate row). · **Owner test:** yes. · **Verification:** a real rollback on T1 and T3 (R-82) *(T3's half postponed to
@@ -4640,6 +4643,9 @@ upload as the newest accepted one** — a `deploys` row with status `uploaded` o
 compares the site with the newest upload Ghost accepted (`deploys.baseline`)
 **And** *(Story 7.22's Dev, 2026-11-25, moved by R-290)* **this story adds** the original-theme row
 **And** the original-theme row matches D2a (R-290).
+**And** *(Story 7.23a's Review, 2026-11-25 — an open question for this story's Create)* R-291 made a Roll back run FR-J16's drift
+check first, its confirm listing any drift with the live theme's download; whether Restore original, which also replaces the
+theme on the site, runs the same check is this story's to ask the owner (R-83)
 
 **FRs:** FR-J9 (restore original) · FR-J13 (the snapshot's restore). · **Frame:** `D2 Deploy History Completed.dc.html` D2a
 (the original-theme row). · **Owner test:** yes. · **Verification:** a real snapshot restored on T1 (moved from Story 7.20,
@@ -9942,6 +9948,9 @@ first control — when the Add token that opened D1b is gone, for D3b's and B12b
 **And** *(given an owner by Story 7.23a's Review, 2026-11-25)* the Layers-row reveal journey (`journey.spec.mjs`, "choosing a
 Layers row scrolls the canvas…") reads the scroll only once it settles — two reads 200 ms apart agreeing — with a budget CI can
 meet: it failed once in CI at 111 for 24 while passing 5 of 5 locally (DW-402)
+**And** *(given an owner by Story 7.23a's Review, 2026-11-25)* Story 5.23a's "every whole-page change repaints the whole page"
+waits for the repaint (`rendersSettle`, DW-292) before it reads the tags at "a subject" — it timed out twice, 5 of 5 on each
+re-run (DW-403)
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

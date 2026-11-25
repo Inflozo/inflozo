@@ -102,7 +102,8 @@ import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 import { CardMenu, CardPanel, CardPanelHead, CardsCanvas, CardsLayers } from './cards-surface'
 import { DeployWizard, ShipButton, type ShipRequest } from '@/components/editor/deploy-wizard'
 import { DeployHistory } from '@/components/editor/deploy-history'
-import { actOutcomeOf, HISTORY_WORDS, pinOutcomeOf, type ActOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
+import { historyLiveDownloadPath } from '@/lib/drift'
+import { actOutcomeOf, checkOutcomeOf, HISTORY_WORDS, pinOutcomeOf, type ActOutcome, type CheckOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
 import { DEPLOY_WORDS, POSTS_CHECKED, type Mode as ShipMode } from '@/lib/deploy'
 import { queriesFor } from '@/lib/preflight'
 import type { Confirmed, SwitchAnswer } from '@/lib/site-switch'
@@ -580,6 +581,9 @@ type EditorProps = EditorData & {
   /** STORY 7.23a — the drawer's put-back (Roll back or Re-activate), the route's POST `{ deploy, act: 'live' }` unless named: the
    *  harness names `harnessAct`, which answers by its header with no database and no Ghost. The app passes none. */
   historyAct?: (projectId: string, deploy: string) => Promise<ActOutcome>
+  /** R-291 — the drift check before a Roll back, the route's POST `{ deploy, act: 'check' }` unless named: the harness names
+   *  `harnessCheck`, which answers by its header with no database and no Ghost. The app passes none. */
+  historyCheck?: (projectId: string, deploy: string) => Promise<CheckOutcome>
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -883,6 +887,7 @@ function EditorShell({
   historyRead,
   historyPin,
   historyAct,
+  historyCheck,
 }: EditorProps) {
   const pathname = usePathname()
   /** Story 7.12 — the project's strings (FR-H5): the overrides the server's judge passed, over the catalog's English. Fixed for
@@ -2615,6 +2620,15 @@ function EditorShell({
     const body: unknown = await answer?.json().catch(() => null)
     const outcome = actOutcomeOf(answer?.status ?? 0, body)
     if (outcome.kind === 'failed') console.error('history: the put-back failed', { status: answer?.status ?? 0 })
+    return outcome
+  }
+  /** R-291 — the check before a Roll back, answered as its outcome (`checkOutcomeOf`); a request that failed is logged by status */
+  const checkHistory = async (deploy: string): Promise<CheckOutcome> => {
+    if (historyCheck) return historyCheck(project.id, deploy)
+    const answer = await fetch(historyUrl(), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ deploy, act: 'check' }) }).catch(() => null)
+    const body: unknown = await answer?.json().catch(() => null)
+    const outcome = checkOutcomeOf(answer?.status ?? 0, body)
+    if (outcome.kind === 'failed') console.error('history: the check failed', { status: answer?.status ?? 0 })
     return outcome
   }
   const takeOverToShip = () =>
@@ -7023,6 +7037,8 @@ function EditorShell({
           read={readHistory}
           pin={pinHistory}
           act={actHistory}
+          check={checkHistory}
+          liveHref={(theme) => `${isApp(pathname) ? '/app' : ''}${historyLiveDownloadPath(project.id, theme)}`}
           onClose={() => setHistory((was) => ({ ...was, open: false }))}
         />
       ) : null}

@@ -1531,6 +1531,15 @@ R-290.)*
   will forget N settings on {host}", the names, Pre-flight's body — and its sentence stops at "…stays in history.".
 - **Refusals** are said under the row: Ghost's own check refusing an old version (its message in mono, the site untouched),
   "Reconnect {host} in Sites to roll back.", "A deploy to {host} is under way. Try again when it ends."
+- **The drift check runs first** *(Story 7.23a's Review — owner, 2026-11-25, R-291)*. The confirm opens on Cancel and at once
+  compares the live theme with the newest upload Ghost accepted — Ship it's own check (FR-J16, D3), extrapolated into the confirm
+  in D3's components and words. While it reads, it says "Comparing with your live theme…" and its Roll back waits. Then one of three:
+  - D3c's line, "Nothing changed on your site since v{n}";
+  - D3a's list of the changed, added and removed files, named as they shipped, with "Download the live theme first" and a line
+    saying the Roll back replaces them — the Roll back stays available, because the customer chose it;
+  - D3b's "Couldn't check whether your live theme changed." with its reason, the Roll back going on, as Ship it's does.
+
+  Re-activate runs no check: it replaces nothing.
 
 > **A defect in the PRD, closed by this pass.** Pinning was decided by the owner on 2026-08-21 and
 > lived only in `BACKUP-GATE.md`; `prd.md` carried no requirement for it, so a story written from the

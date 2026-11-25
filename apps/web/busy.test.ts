@@ -435,7 +435,9 @@ test('Story 7.23a (R-98): the confirm\'s Roll back says "Rolling back…" and th
   const drawer = readFileSync('components/editor/deploy-history.tsx', 'utf8')
   const go = drawer.slice(drawer.indexOf('id="history-confirm-go"'), drawer.indexOf('</Button>', drawer.indexOf('id="history-confirm-go"')))
   assert.match(go, /aria-busy=\{acting === asking\.id \|\| undefined\}/)
-  assert.match(go, /aria-disabled=\{acting !== null \|\| undefined\}/)
+  // RE-EXPECTED by R-291: it also waits while the check before it reads — and the press then does nothing
+  assert.match(go, /aria-disabled=\{acting !== null \|\| reading \|\| undefined\}/)
+  assert.match(go, /onClick=\{\(\) => \(reading \? undefined : void putBack\(asking\)\)\}/)
   assert.match(go, /<BusyLabel pending=\{acting === asking\.id\} busy=\{HW\.rollingBack\}>/)
   const reactivate = drawer.slice(drawer.indexOf("if (r.action === 'reactivate') {"), drawer.indexOf('</Button>', drawer.indexOf("if (r.action === 'reactivate') {")))
   assert.match(reactivate, /aria-busy=\{out \|\| undefined\}/)
@@ -455,4 +457,17 @@ test('Story 7.23a (R-98): the confirm\'s Roll back says "Rolling back…" and th
   const words = readFileSync('lib/retention.ts', 'utf8')
   assert.match(words, /rollingBack: 'Rolling back…'/)
   assert.match(words, /activating: DEPLOY_WORDS\.activating/)
+})
+
+test('R-291 (R-98): the check before a Roll back says its work — D3\'s running row, "Comparing with your live theme…", while it reads, never a spinner — and it is the check that is busy: the confirm\'s Roll back waits `aria-disabled` (never `disabled`), its label unchanged, while Cancel and Esc still close the confirm (a read is cancellable)', () => {
+  const drawer = readFileSync('components/editor/deploy-history.tsx', 'utf8')
+  const region = drawer.slice(drawer.indexOf('role="status" data-history-check'), drawer.indexOf('{asking.drops === null'))
+  assert.match(region, /checked\.kind === 'reading' \? \(\s+<StageRow tone="running" label=\{DW\.reading\} \/>/, 'D3\'s running row says the read')
+  assert.match(drawer, /const reading = checked\?\.kind === 'reading'/)
+  const cancel = drawer.slice(drawer.indexOf('const cancelConfirm = () => {'), drawer.indexOf('}', drawer.indexOf('const cancelConfirm = () => {')))
+  assert.doesNotMatch(cancel, /reading/, 'Cancel never waits for the check')
+  const confirm = drawer.slice(drawer.indexOf('data-history-confirm\n'), drawer.indexOf('className="m-auto'))
+  assert.doesNotMatch(confirm, /reading/, 'nor Esc, nor the backdrop')
+  const words = readFileSync('lib/drift.ts', 'utf8')
+  assert.match(words, /reading: 'Comparing with your live theme…'/)
 })

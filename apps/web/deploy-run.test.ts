@@ -4,6 +4,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { CompileRefusal } from '@inflozo/theme-compiler/refusal'
 import type { Finding, QualityVerdict, Verdict } from '@inflozo/theme-compiler/gate'
 import { DEPLOY_WORDS, endingOf, SNAPSHOT_WORDS, stepOf } from './lib/deploy.ts'
@@ -1393,4 +1394,19 @@ test('7.23a: the baseline follows a Roll back — v2 put back (its own row, `acc
   const control = await begin(w)
   assert.equal(driftOf(control)?.kind, 'found')
   assert.equal((driftOf(control) as { since: number }).since, 3)
+})
+
+test('R-291 (Story 7.23a): ONE comparison — Ship it\'s drift check (`driftStep`) and the check before a Roll back (`put-back.ts`\' `checkBeforePutBack`) both call `run.ts`\' `compareLive`, the one place the live theme is read, unzipped and compared; neither reads or compares on its own (the behaviour of both is this file\'s 7.21 rows and `put-back.test.ts`\' R-291 rows)', () => {
+  const flat = (f: string) => readFileSync(f, 'utf8').replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ').replace(/\s+/g, ' ')
+  const run = flat('server/deploy/run.ts')
+  const step = run.slice(run.indexOf('async function driftStep('), run.indexOf('export async function compareLive('))
+  const shared = run.slice(run.indexOf('export async function compareLive('), run.indexOf('export const abandon'))
+  const check = flat('server/deploy/put-back.ts')
+  assert.match(step, /await compareLive\(io, \{/, 'Ship it\'s check calls it')
+  assert.match(check, /await compareLive\(io, \{/, 'the Roll back\'s check calls it')
+  for (const [name, text] of [['driftStep', step], ['checkBeforePutBack', check]] as const) {
+    assert.doesNotMatch(text, /io\.liveTheme|liveManifest|compareManifests|unzipTheme/, `${name} reads or compares on its own`)
+  }
+  for (const piece of ['io.liveTheme(', 'liveManifest(unzipTheme(', 'compareManifests(', 'LIVE_COPY_MAX_BYTES']) assert.ok(shared.includes(piece), `compareLive holds ${piece}`)
+  assert.equal((run.match(/io\.liveTheme\(/g) ?? []).length, 1, 'one live read in the shell')
 })

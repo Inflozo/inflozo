@@ -3,12 +3,13 @@
 import { headers } from 'next/headers'
 import type { SafetyAnswer, SiteResult } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/actions'
 import { HARNESS } from '@/lib/harness'
-import { BACKUP_WORDS, DEPLOY_WORDS } from '@/lib/deploy'
+import { BACKUP_WORDS, DEPLOY_WORDS, versionNumber } from '@/lib/deploy'
 import { storedSurfaces } from '@/lib/probe-rule'
 import { confirmedFrom, SWITCH_WORDS, type SwitchAnswer } from '@/lib/site-switch'
 import { tokenRefusal } from '@/lib/connect-rule'
 import { addStaffToken, type StaffTokenIo } from '@/server/staff-token'
-import { HISTORY_WORDS, type ActOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
+import { HISTORY_WORDS, type ActOutcome, type CheckOutcome, type HistoryAnswer, type PinOutcome } from '@/lib/retention'
+import { labelOf } from '@/lib/drift'
 import { HARNESS_PROJECT, HARNESS_SITES, SURFACES } from './sites'
 
 /**
@@ -205,6 +206,39 @@ export async function harnessAct(projectId: string, deploy: string): Promise<Act
   if (asked === 'busy' || asked === 'elsewhere' || asked === 'disconnected') return { kind: 'refused', code: asked }
   if (asked === 'gone' || asked === 'rollback-gone') return { kind: 'gone' }
   return { kind: 'failed' }
+}
+
+/** R-291 — the theme the harness's check reads, and the files its found drift names: two of Inflozo's changed — a section partial
+ *  labelled by the manifest's own layer, a template by its canvas — and one the site added, each labelled by `labelOf` as the
+ *  server labels them (no working document: the manifest's own names) */
+const CHECK_THEME = 'inflozo-pilot-sections'
+const CHECK_FOUND = {
+  changed: [
+    { path: 'partials/sections/hero-a4-13.hbs', label: labelOf({ path: 'partials/sections/hero-a4-13.hbs', entry: { sha256: '', fingerprint: 'harness-hero', layer: 'Hero', category: 'a4' } }, 'changed'), category: 'a4' },
+    { path: 'home.hbs', label: labelOf({ path: 'home.hbs' }, 'changed') },
+  ],
+  added: [{ path: 'custom-handmade.hbs', label: labelOf({ path: 'custom-handmade.hbs' }, 'added') }],
+  removed: [],
+}
+
+/** R-291 — THE HARNESS'S CHECK BEFORE A ROLL BACK, the editor's `historyCheck` seam (the route's POST `{ deploy, act: 'check' }`
+ *  everywhere else), answered by `x-inflozo-harness-check`: no header (or `clean`) D3c's pass since the linked site's newest accepted
+ *  version in this list (`x-inflozo-harness-history`'s), so every journey's Roll back works as before; `found` D3a's record — two
+ *  changed files and one added — with its live copy kept; `found-unkept` the same past the store's size (no Download); `unverified`
+ *  D3b's `role` (a token that cannot read themes); `none` null (no two manifests: nothing drawn); `fail` a request that failed (the
+ *  route's 502); `busy` and `gone` the put-back's own refusals, which the check answers first. Only the harness project. */
+export async function harnessCheck(projectId: string, deploy: string): Promise<CheckOutcome> {
+  if (!HARNESS || projectId !== HARNESS_PROJECT.id || typeof deploy !== 'string') return { kind: 'failed' }
+  const asked = (await headers()).get('x-inflozo-harness-check')
+  const list = await harnessHistory(projectId)
+  const since = Math.max(0, ...(list?.rows ?? []).filter((r) => r.siteId === list?.linkedSiteId).map((r) => versionNumber(r.version)).filter(Number.isFinite))
+  if (asked === 'found' || asked === 'found-unkept') return { kind: 'drift', drift: { kind: 'found', since, theme: CHECK_THEME, ...CHECK_FOUND, ...(asked === 'found-unkept' ? { kept: false as const } : {}) } }
+  if (asked === 'unverified') return { kind: 'drift', drift: { kind: 'unverified', cause: 'role', theme: CHECK_THEME } }
+  if (asked === 'none') return { kind: 'drift', drift: null }
+  if (asked === 'fail') return { kind: 'failed' }
+  if (asked === 'busy') return { kind: 'refused', code: 'busy' }
+  if (asked === 'gone') return { kind: 'gone' }
+  return { kind: 'drift', drift: { kind: 'clean', since } }
 }
 
 /** STORY 7.22 — THE HARNESS'S PIN, the editor's `historyPin` seam: a pin under `free-full` or `pro-full` is the database's `cap`

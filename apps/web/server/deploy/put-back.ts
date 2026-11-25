@@ -1,7 +1,8 @@
 import { hostOf } from '../../lib/connect-rule.ts'
 import { activateAnswer, deployError, themeNotHeld, uploadAnswer, versionNumber, type DeployCode, type DeployError } from '../../lib/deploy.ts'
+import { causeShown, historyCopyPath, type ContentManifest, type DriftRecord } from '../../lib/drift.ts'
 import { actionOf, HISTORY_WORDS, isStoredVersion } from '../../lib/retention.ts'
-import { sendActivate, sendUpload, STALLED_MS, twice, type Called, type DeployIo } from './run.ts'
+import { compareLive, sendActivate, sendUpload, STALLED_MS, twice, type Called, type DeployIo } from './run.ts'
 
 /**
  * STORY 7.23a — PUT A STORED VERSION BACK ON ITS SITE (FR-J9, FR-J8's D2d row). The History drawer's Roll back and Re-activate are
@@ -29,6 +30,14 @@ import { sendActivate, sendUpload, STALLED_MS, twice, type Called, type DeployIo
  * NO JOB ROW AND NO LOCK OF ITS OWN. A put-back is one request: at most two uploads of 120 s and an activation of 15 s, inside the
  * route's 300 s. It refuses while a ship of the same project × site is moving; the races that leaves open, and the story that
  * closes them, are named at that refusal (`busy`, below).
+ *
+ * THE CHECK BEFORE A ROLL BACK (R-291, the owner's Question 2: "Check first, in this story"). A Roll back replaces the theme on the
+ * site, so its confirm first runs FR-J16's drift check, `checkBeforePutBack`: the same refusals in the same order (`admit`, shared),
+ * then Ship it's own comparison (`run.ts`' `compareLive`) of the theme under the frozen name with this project × site's newest
+ * accepted upload — R-287's baseline, as Ship it reads it. It never blocks: the customer may roll back over a found drift, and a
+ * check that cannot run says "couldn't verify" and lets them go on, as Ship it does. Its file labels are the manifest's own — it
+ * reads no working document. A found drift's live zip is kept at `historyCopyPath`, never Ship it's key. Re-activate runs no check:
+ * it switches on files Ghost already holds and replaces nothing.
  */
 
 /** what the put-back reads of the version's row */
@@ -42,45 +51,93 @@ export type PutBackRow = {
   artifact_path: string | null
 }
 
-export type PutBackIo = Pick<DeployIo, 'call' | 'log'> & {
-  artifacts: Pick<DeployIo['artifacts'], 'get'>
+export type PutBackIo = Pick<DeployIo, 'call' | 'log' | 'liveTheme'> & {
+  /** `put` is the check's live copy alone (`historyCopyPath`, `replace`) */
+  artifacts: Pick<DeployIo['artifacts'], 'get' | 'put'>
   deploys: Pick<DeployIo['deploys'], 'update' | 'demote'>
   /** the row, the user's own (`user_id`), or null */
   row: (a: { deployId: string; userId: string }) => Promise<PutBackRow | null>
   /** this project × site's newest upload Ghost accepted (`uploaded`/`live`, stored or pruned), by `accepted_at` — its id, or null */
   newest: (a: { projectId: string; siteId: string; userId: string }) => Promise<string | null>
-  /** the project's linked site with its address and whether it is disconnected, or null when the project links none */
-  linked: (a: { projectId: string; userId: string }) => Promise<{ siteId: string; url: string; disconnected: boolean } | null>
+  /** R-291 — the same newest accepted upload's version and manifest: the drift baseline (R-287), `deploys.baseline` with no row
+   *  excepted (a Roll back has no row of its own in flight); null when there is none */
+  baseline: (a: { projectId: string; siteId: string; userId: string }) => Promise<{ version: string; content_manifest: ContentManifest | null } | null>
+  /** the project's linked site with its address, whether it is disconnected and whether its token's Not now is recorded (R-278), or
+   *  null when the project links none */
+  linked: (a: { projectId: string; userId: string }) => Promise<{ siteId: string; url: string; disconnected: boolean; declined: boolean } | null>
   /** whether a job of this project × site is uploading — `snapshotting`, `uploading` or `activating` — and was touched after `since` */
   moving: (a: { projectId: string; siteId: string; userId: string; since: string }) => Promise<boolean>
 }
 
+/** a refusal with nothing sent to Ghost — the put-back's and the check's alike */
+export type Refusal = 'gone' | 'elsewhere' | 'live-already' | 'disconnected' | 'busy'
+
 /** what a put-back ended as: live, or uploaded and not live (D2d); or why nothing was sent, or Ghost's refusal (nothing changed) */
-export type PutBackOutcome = 'live' | 'uploaded' | 'gone' | 'elsewhere' | 'live-already' | 'disconnected' | 'busy' | { refused: DeployError }
+export type PutBackOutcome = 'live' | 'uploaded' | Refusal | { refused: DeployError }
+
+/** what the check before a Roll back answers: D3's record — or null where there are not two manifests to compare (FR-J16: drift is
+ *  never asserted without both; nothing is drawn) — or the put-back's own refusal, or ours */
+export type CheckBefore = { drift: Exclude<DriftRecord, { kind: 'reading' }> | null } | Refusal | { refused: DeployError }
 
 /** the audit row's route (AD-10) */
 const ROUTE = 'projects/history'
 
-export async function putBack(io: PutBackIo, a: { userId: string; projectId: string; deployId: string; now: Date }): Promise<PutBackOutcome> {
+type Asked = { userId: string; projectId: string; deployId: string; now: Date }
+type Admitted = { row: PutBackRow; linked: NonNullable<Awaited<ReturnType<PutBackIo['linked']>>>; at: { projectId: string; siteId: string; userId: string } }
+
+/** 1–2, ONCE for the put-back and the check before it: the row, the user's own — this project's stored version, else it is gone
+ *  (pruned, failed, or never theirs) — then the refusals, in this order, with nothing sent to Ghost */
+async function admit(io: PutBackIo, a: Asked): Promise<Refusal | Admitted> {
+  const row = await twice(io, 'put-back row', () => io.row({ deployId: a.deployId, userId: a.userId }))
+  if (row === null || row.project_id !== a.projectId || !isStoredVersion(row)) return 'gone'
+  const linked = await twice(io, 'linked site', () => io.linked({ projectId: a.projectId, userId: a.userId }))
+  if (linked === null || linked.siteId !== row.site_id) return 'elsewhere'
+  if (row.status === 'live') return 'live-already'
+  if (linked.disconnected) return 'disconnected'
+  const at = { projectId: a.projectId, siteId: row.site_id, userId: a.userId }
+  const since = new Date(a.now.getTime() - STALLED_MS).toISOString()
+  // ponytail: refusing while a ship MOVES leaves two races open — a ship that starts DURING a put-back, and two put-backs at once
+  // (two tabs, or a reader, whom R-192 lets act) — and of two uploads of one name Ghost answers `EEXIST` (`deploy_running`) to
+  // one. Story 7.25's per-site advisory lock (AD-19) closes both, and this function joins it when it lands
+  if (await twice(io, 'moving jobs', () => io.moving({ ...at, since }))) return 'busy'
+  return { row, linked, at }
+}
+
+/**
+ * R-291 — THE DRIFT CHECK BEFORE A ROLL BACK (FR-J16), run when its confirm opens: `admit`'s refusals, then the baseline — this
+ * project × site's newest accepted upload (R-287) — and, with its manifest in hand, `compareLive` on the theme under the row's
+ * frozen name. No baseline, or one with no manifest: null, and nothing is read from Ghost. A found drift within the live copy's size
+ * keeps the zip it read at `historyCopyPath` (overwriting — one per project × site) BEFORE it answers, so the confirm's Download
+ * serves exactly that zip. R-278: a missing token on a site whose Not now is recorded is said as the decline. It writes no row and
+ * reads no lock, plan or gate; an infrastructure failure, twice, is ours (`deploy_infrastructure`).
+ */
+export async function checkBeforePutBack(io: PutBackIo, a: Asked): Promise<CheckBefore> {
+  try {
+    const admitted = await admit(io, a)
+    if (typeof admitted === 'string') return admitted
+    const { row, linked, at } = admitted
+    const baseline = await twice(io, 'drift baseline', () => io.baseline(at))
+    if (baseline === null || baseline.content_manifest === null || typeof baseline.content_manifest !== 'object') return { drift: null }
+    const answer = await compareLive(io, { siteId: row.site_id, userId: a.userId, theme: row.theme_name, route: ROUTE, since: versionNumber(baseline.version), manifest: baseline.content_manifest, at: { deploy: row.id } })
+    if ('bytes' in answer) await twice(io, 'history copy', () => io.artifacts.put(historyCopyPath(a.projectId, row.site_id), answer.bytes, { replace: true }))
+    const { record } = answer
+    return { drift: record.kind === 'unverified' ? { ...record, cause: causeShown(record.cause, linked.declined) } : record }
+  } catch (e) {
+    io.log('put-back: the check failed', { code: (e as { code?: string } | null)?.code })
+    return { refused: deployError('deploy_infrastructure', { host: '' }) }
+  }
+}
+
+export async function putBack(io: PutBackIo, a: Asked): Promise<PutBackOutcome> {
   let host = ''
   /** the version Ghost has acted on — an upload accepted or an activation made — once it has: a record failing after that is not
    *  "nothing reached your site" (`DEPLOY_WORDS.infrastructure`) but History failing to note what did */
   let acted: number | null = null
   try {
-    // 1. the row, the user's own — and this project's stored version, else it is gone (pruned, failed, or never theirs)
-    const row = await twice(io, 'put-back row', () => io.row({ deployId: a.deployId, userId: a.userId }))
-    if (row === null || row.project_id !== a.projectId || !isStoredVersion(row)) return 'gone'
-    // 2. the refusals, with nothing sent to Ghost
-    const linked = await twice(io, 'linked site', () => io.linked({ projectId: a.projectId, userId: a.userId }))
-    if (linked === null || linked.siteId !== row.site_id) return 'elsewhere'
-    if (row.status === 'live') return 'live-already'
-    if (linked.disconnected) return 'disconnected'
-    const at = { projectId: a.projectId, siteId: row.site_id, userId: a.userId }
-    const since = new Date(a.now.getTime() - STALLED_MS).toISOString()
-    // ponytail: refusing while a ship MOVES leaves two races open — a ship that starts DURING a put-back, and two put-backs at once
-    // (two tabs, or a reader, whom R-192 lets act) — and of two uploads of one name Ghost answers `EEXIST` (`deploy_running`) to
-    // one. Story 7.25's per-site advisory lock (AD-19) closes both, and this function joins it when it lands
-    if (await twice(io, 'moving jobs', () => io.moving({ ...at, since }))) return 'busy'
+    // 1–2. the row and the refusals, with nothing sent to Ghost
+    const admitted = await admit(io, a)
+    if (typeof admitted === 'string') return admitted
+    const { row, linked, at } = admitted
     host = hostOf(linked.url)
     const ctx = { host, siteId: row.site_id }
     const now = a.now.toISOString()

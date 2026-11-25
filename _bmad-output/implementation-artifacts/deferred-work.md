@@ -10872,3 +10872,18 @@ owner: Story 15.1 (the E2E suite, including the keyboard-only journey): if it re
   scroll checks use (two reads 200 ms apart agreeing) and a longer budget on CI.
 location: `tools/keyboard/journey.spec.mjs` (the Layers-row reveal journey)
 reason: one sighting; a red CI run publishes nothing (DW-7), so it costs a re-run, never a bad deploy.
+
+### DW-403: the keyboard journey "every whole-page change repaints the whole page" times out at "a subject" now and then
+
+plain: Another automatic editor test fails once in a while and passes when run again. It checks that choosing a subject redraws
+  the whole page; once in a while the check gives up waiting a moment too early. Nothing in the product changed either time.
+status: open
+severity: low
+origin: Story 7.23a's Review (2026-11-25): the full keyboard gate on the R-291 tree, 361 passed and 1 failed —
+  `journey.spec.mjs:5643`, `expect.poll(allNew(await tagsOf(page)), 'a subject')` false within 5 s; re-run cold `-g "every
+  whole-page change repaints the whole page" --repeat-each 5`: 5 of 5 passed. The second sighting: Story 7.22's Deploy (2026-11-25)
+  went red in CI on the same poll, 340 passed beside it, 5 of 5 locally, the next push green. Neither story touches the canvas.
+owner: Story 15.1 (the E2E suite, including the keyboard-only journey): wait for the repaint the way the render-count stops wait
+  (`rendersSettle`, DW-292) before reading the tags, and give the poll CI's budget.
+location: `tools/keyboard/journey.spec.mjs` (Story 5.23a's "every whole-page change repaints the whole page")
+reason: a red run publishes nothing (DW-7), so each sighting costs a re-run, never a bad deploy.

@@ -33,6 +33,7 @@ const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]
 const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
 const LIVE_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'deploy', 'live', 'route.ts')
 const HISTORY_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'history', 'route.ts')
+const HISTORY_LIVE_ROUTE = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', 'history', 'live', 'route.ts')
 const SWEEP_ROUTE = join('app', 'api', 'cron', 'prune-artifacts', 'route.ts')
 const RETENTION = join('server', 'retention.ts')
 const RETENTION_IO = join('server', 'retention-io.ts')
@@ -205,6 +206,10 @@ test('the service-role client is imported by the flag reader and by nothing else
   //   stored zip from `deploy-artifacts` (no Storage policy at all, AD-29), and reads the row, the project's link with its site's
   //   `disconnected_at` and the site's moving `deploy_jobs` for its refusals. Every query carries `user_id`. It is handed to
   //   `server/deploy/put-back.ts`, which imports neither this client nor the chokepoint (held below).
+  // The EIGHTEENTH, added by Story 7.23a (R-291) with its reason — the THIRTEENTH's, for the other copy: the Roll back confirm's
+  //   "Download the live theme first" signs the check's own live copy (`deploy-artifacts/{projectId}/live/{siteId}-history.zip`), and
+  //   that bucket has NO Storage policy at all (server-only, AD-29), so the service role is its only reader. It never touches a user
+  //   ROW: the project and its link are read on the caller's own session (RLS), and it signs only that project × linked site's key.
   const allowed = [
     join('lib', 'flags.ts'),
     SNAPSHOT_ROUTE,
@@ -223,6 +228,7 @@ test('the service-role client is imported by the flag reader and by nothing else
     HISTORY_ROUTE,
     SWEEP_ROUTE,
     PUT_BACK_IO,
+    HISTORY_LIVE_ROUTE,
   ]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
@@ -547,7 +553,9 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   //   - THE PUT-BACK'S IO, Story 7.23a's (FR-J9): the History drawer's Roll back and Re-activate send the same two writes Ship it sends
   //     — `theme_upload` (the stored zip under the frozen name) and `theme_activate` — with the Admin key, so `ADMIN_WRITES` stays
   //     four (R-22). It is the real `io` handed to `server/deploy/put-back.ts`, which decides and imports no part of the chokepoint
-  //     (held below); it is not `deploy-io.ts` itself so the History route's function carries none of the compile.
+  //     (held below); it is not `deploy-io.ts` itself so the History route's function carries none of the compile. R-291 adds one
+  //     READ to it, the check before a Roll back: `GET themes/{name}/download/` with the Staff Access Token (`deploy-io.ts`' own
+  //     `liveTheme`), so `ADMIN_WRITES` is still unchanged.
   const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN, ROUTES_IO, DEPLOY_IO, STAFF_TOKEN, SNAPSHOT_IO, PUT_BACK_IO]
   assert.equal(reachesChokepoint(PUT_BACK), false, `${PUT_BACK} imports the chokepoint; its call() is handed in`)
   assert.equal(reachesChokepoint(PUT_BACK_IO), true, 'control: put-back-io.ts imports the chokepoint')

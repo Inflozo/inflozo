@@ -20,7 +20,7 @@ import { CANVASES, canvasesOf, routeCanvasOf, SITE, templateKeyOf, type RouteCan
 import { themeNameOf, type ShipState } from '@/lib/deploy'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
-import { harnessAct, harnessAddToken, harnessConfirm, harnessDecline, harnessHistory, harnessPin, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
+import { harnessAct, harnessAddToken, harnessCheck, harnessConfirm, harnessDecline, harnessHistory, harnessPin, harnessReread, harnessRoutes, harnessSwitch, harnessTheme } from './actions'
 import { standIns } from '../stand-ins'
 import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
@@ -176,6 +176,11 @@ import { GHOST_5_SITE, HARNESS_PROJECT, HARNESS_SITES, MEMBERS_OFF_SITE, SURFACE
  * disconnected site refuses (409), `rollback-gone` the `rollback` list with v4 pruned since it was read (404), and `elsewhere`
  * another site's live row with no Roll back. `actions.ts`' `harnessAct` answers each put-back through the editor's `historyAct`
  * seam; 7.22's values carry no action, so 7.22's journeys walk the drawer as 7.22 drew it.
+ *
+ * R-291 — `x-inflozo-harness-check: clean | found | found-unkept | unverified | none | fail | busy | gone` names the answer of the
+ * check a Roll back's confirm sends first (`actions.ts`' `harnessCheck`, the editor's `historyCheck` seam): with no header, D3c's
+ * pass since the list's newest accepted version, so every journey's Roll back works as before. The real check is
+ * `put-back.test.ts`' and walk step 121's.
  *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
@@ -365,7 +370,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
       <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
-        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} historyRead={harnessHistory} historyPin={harnessPin} historyAct={harnessAct} {...data} />
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} switchTo={harnessSwitch} addToken={harnessAddToken} decline={harnessDecline} backupConfirm={harnessConfirm} themeDownload={harnessTheme} routesDownload={harnessRoutes} historyRead={harnessHistory} historyPin={harnessPin} historyAct={harnessAct} historyCheck={harnessCheck} {...data} />
       </ShellUserContext>
       {children}
     </>

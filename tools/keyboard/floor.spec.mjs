@@ -1112,12 +1112,14 @@ test.describe('7.22 · the History drawer at 1440, 1280 and 820', () => {
 // ── Story 7.23a — the expanded rows (S8e `:300-323`) and S8e's Roll back confirm (`:337-345`) at 1440, 1280 and 820: the three
 // expanded rows and the compact rows with their Roll back inside the drawer, the confirm at its 410 (or the window less 20), and
 // nothing scrolling sideways. The rows are the harness's (`x-inflozo-harness-history: rollback`); the way in below 1366 is Ship it ▾.
+// R-291: the confirm is measured at its fullest — the check found drift (`x-inflozo-harness-check: found`: D3a's block, its foot and
+// the Download) over Pre-flight's dropped-settings block — inside the window, scrolling INSIDE itself should it outgrow it.
 test.describe('7.23a · the expanded rows and the Roll back confirm at 1440, 1280 and 820', () => {
   test.use({ hasTouch: false, isMobile: false })
   for (const width of [1440, 1280, 820]) {
     test(`at ${width}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 })
-      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-history': 'rollback' })
+      await page.setExtraHTTPHeaders({ 'x-inflozo-harness-ship': 'shipped', 'x-inflozo-harness-history': 'rollback', 'x-inflozo-harness-check': 'found' })
       await page.goto(HARNESS)
       await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible({ timeout: 30_000 })
       if (width >= 1366) await page.locator('#deploy-history-open').click()
@@ -1145,16 +1147,46 @@ test.describe('7.23a · the expanded rows and the Roll back confirm at 1440, 128
       expect(rows.thumb).toEqual([64, 44])
       expect(rows.act).toBe(26)
       expect(rows.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(rows.inner)
-      // v1's confirm, with Pre-flight's dropped-settings block — its fullest shape
+      // v1's confirm, with the check's D3a block and Pre-flight's dropped-settings block — its fullest shape
       await drawer.locator('[data-history-row="v1"] [data-history-act]').click()
       const confirm = page.locator('dialog[data-history-confirm]')
       await expect(confirm.locator('[data-history-drops]')).toBeVisible()
-      const box = await confirm.evaluate((c) => ({ ...c.getBoundingClientRect().toJSON(), inner: window.innerWidth, scroll: document.documentElement.scrollWidth }))
+      await expect(confirm.locator('[data-history-check="found"] [data-drift-row="found"]')).toBeVisible({ timeout: 15_000 })
+      await expect(confirm.locator('#history-drift-download')).toBeVisible()
+      const box = await confirm.evaluate((c) => ({
+        ...c.getBoundingClientRect().toJSON(),
+        inner: window.innerWidth,
+        innerH: window.innerHeight,
+        scroll: document.documentElement.scrollWidth,
+        // inside it: nothing past its own right edge, and nothing scrolling it sideways
+        outside: [...c.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > c.getBoundingClientRect().right + 0.5).map((e) => e.outerHTML.slice(0, 80)),
+        sideways: c.scrollWidth - c.clientWidth,
+      }))
       expect(box.width).toBe(Math.min(410, box.inner - 20))
       expect(box.left).toBeGreaterThanOrEqual(0)
       expect(box.right).toBeLessThanOrEqual(box.inner)
+      expect(box.top, 'the confirm inside the window').toBeGreaterThanOrEqual(0)
+      expect(box.bottom).toBeLessThanOrEqual(box.innerH)
       expect(box.scroll, 'nothing scrolls sideways').toBeLessThanOrEqual(box.inner)
+      expect(box.outside, 'nothing inside the confirm past its edge').toEqual([])
+      expect(box.sideways, 'the confirm never scrolls sideways').toBeLessThanOrEqual(0)
       await expect(confirm.locator('[data-cancel]')).toBeFocused()
+      // a window shorter than the confirm: it stays inside the window and scrolls INSIDE itself — D3a's list drawn whole, never
+      // squeezed — and its own Roll back is reached by that scroll
+      await page.setViewportSize({ width, height: 480 })
+      const short = await confirm.evaluate((c) => {
+        const list = c.querySelector('[data-drift-list]')
+        return {
+          top: c.getBoundingClientRect().top, bottom: c.getBoundingClientRect().bottom, innerH: window.innerHeight,
+          scrolls: c.scrollHeight - c.clientHeight, squeezed: list.scrollHeight - list.clientHeight,
+        }
+      })
+      expect(short.top).toBeGreaterThanOrEqual(0)
+      expect(short.bottom, 'the confirm inside a short window').toBeLessThanOrEqual(short.innerH)
+      expect(short.scrolls, 'it scrolls inside itself').toBeGreaterThan(0)
+      expect(short.squeezed, 'D3a\'s list drawn whole, never squeezed by the scrolling confirm').toBeLessThanOrEqual(0)
+      await confirm.locator('#history-confirm-go').scrollIntoViewIfNeeded()
+      await expect(confirm.locator('#history-confirm-go')).toBeInViewport()
     })
   }
 })

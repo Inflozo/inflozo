@@ -4,7 +4,7 @@ import { isUuid } from '@/lib/editor'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { heavyIds, historyAnswer, type AcceptedRow, type HeavyRow } from '@/lib/retention'
 import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
-import { putBack } from '@/server/deploy/put-back'
+import { checkBeforePutBack, putBack } from '@/server/deploy/put-back'
 import { PUT_BACK_IO } from '@/server/deploy/put-back-io'
 
 /**
@@ -30,8 +30,12 @@ import { PUT_BACK_IO } from '@/server/deploy/put-back-io'
  * Re-activate, the server deciding which. 200 `{ outcome }` (`live` · `uploaded`), 404 gone, 409 `{ code }` (`elsewhere` · `live` ·
  * `disconnected` · `busy`), 422 `{ code: 'ghost_theme_refused', detail }` (Ghost's own check, never retried — VERIFY 10), 502
  * `{ code, message }` (Ghost's other answers and ours, `deployError`'s words). It runs in this request, inside `maxDuration`.
+ * POST `{ deploy, act: 'check' }` — R-291's drift check before a Roll back (`checkBeforePutBack`, the same io), sent as its confirm
+ * opens: 200 `{ drift }` — D3's record, or null where there are not two manifests to compare — and the put-back's own refusals,
+ * answered as above (404 gone, 409 `{ code }`), and 502 `{ code, message }` for ours. It writes no row; a found drift's live zip is
+ * kept for `history/live`'s Download.
  * THE ACT BRANCH READS NO PLAN AND NO LOCK, and runs no gscan (FR-J9: a stored artefact already ran; rollback is exempt from the Pro
- * exit gating) — `put-back.test.ts` reads this branch's source and holds it so.
+ * exit gating) — `put-back.test.ts` reads this branch's source, the check with it, and holds it so.
  *
  * NO EDIT LOCK. A pin and a put-back are history controls: they change no design, so they are live in a read-only editor
  * (R-192's view-control side). ponytail: `pin_version` scopes by the user, not by this URL's project — a deploy of another
@@ -122,8 +126,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   // ── the act branch: Story 7.23a's put-back. No plan, no lock, no gscan (the header says why) ──
   if (act !== undefined) {
-    if (act !== 'live') return no(400, 'Bad act')
-    const outcome = await putBack(PUT_BACK_IO, { userId: user.id, projectId, deployId: deploy, now: new Date() })
+    if (act !== 'live' && act !== 'check') return no(400, 'Bad act')
+    const asked = { userId: user.id, projectId, deployId: deploy, now: new Date() }
+    // R-291: the check refuses exactly as the put-back does, so both are answered below alike
+    const outcome = act === 'check' ? await checkBeforePutBack(PUT_BACK_IO, asked) : await putBack(PUT_BACK_IO, asked)
+    if (typeof outcome === 'object' && 'drift' in outcome) return json(200, { drift: outcome.drift })
     if (outcome === 'live' || outcome === 'uploaded') return json(200, { outcome })
     if (outcome === 'gone') return no(404, 'Not found')
     if (outcome === 'live-already') return json(409, { code: 'live' })

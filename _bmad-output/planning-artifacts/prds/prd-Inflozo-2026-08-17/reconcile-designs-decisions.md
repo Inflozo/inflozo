@@ -6232,6 +6232,37 @@ original), then 7.23c (the phone card). Each piece's requirements move word for 
   - ✅ `epic-7-context.md`;
   - ✅ the code comments naming Story 7.23.
 
+**R-291 — a Roll back from History runs the drift check first; the customer may still roll back.** Story 7.23a's Review,
+Question 2, ruled **option 1** (owner, 2026-11-25): *"(RECOMMENDED) Check first, in this story. Roll back checks your site first
+(about a second). If something changed, the box lists it and offers the download; you can still roll back. If the check can't
+run, it says "couldn't verify" and lets you continue, as Ship it does."*
+
+- **Why it was a question.** FR-J16 runs the drift check "before every deploy after the first", and a Roll back replaces the
+  theme's files on the site as a Ship it does — but Story 7.23a's spec never said whether a Roll back is a deploy for FR-J16. As
+  built, a hand edit made in Ghost Admin since Inflozo's last upload was replaced by a Roll back with no warning and no copy.
+- **The rule.**
+  - **Roll back** opens S8e's confirm on Cancel as before and runs Story 7.21's check at once — the same comparison Ship it's
+    Pre-flight runs (the live theme under the frozen name, read with the Staff Access Token, against the newest upload Ghost
+    accepted, R-287), one shared function. While it reads, the confirm says "Comparing with your live theme…" and its Roll back
+    waits. Then D3c's line ("Nothing changed on your site since v{n}"), or D3a's list of what changed with "Download the live
+    theme first" — the Roll back stays available, because the customer chose it — or D3b's "Couldn't check whether your live
+    theme changed." with its reason, and the Roll back goes on, as Ship it's does (FR-J16 fails open).
+  - Files are named by the manifest's own names (the put-back never reads the working document), and the live copy is kept under
+    its own key, so a Ship it's resting D3a Download is never replaced.
+  - **Re-activate** runs no check: it switches on files Ghost already holds and replaces nothing.
+  - Still no lock, no plan read and no Inflozo gscan on the put-back path (FR-J9, the spec's Never).
+- **Declined.** Option 2, no check (the confirm saying Ghost Admin's edits are replaced); option 3, the check built with Story
+  7.23b. **Not decided here:** whether Story 7.23b's Restore original runs the check too — its card carries the question to its
+  Create.
+- Targets:
+  - ✅ this entry;
+  - ✅ Story 7.23a's spec (Question 2's Ruled line, the Review Findings, the Spec Change Log, the I/O rows, the owner's test);
+  - ✅ `prd.md` FR-J16 (dated note);
+  - ✅ `EXPERIENCE.md` F8;
+  - ✅ `epics.md`: Story 7.23a's card, and Story 7.23b's (the open question for its Create);
+  - ✅ `epic-7-context.md`;
+  - ✅ the code (`server/deploy/put-back.ts`, `run.ts`, the History route, `deploy-history.tsx`) — Story 7.23a's Review.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

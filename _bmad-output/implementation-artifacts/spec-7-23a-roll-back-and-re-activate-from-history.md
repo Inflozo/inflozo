@@ -210,6 +210,11 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
 | Number after Roll back | v3 exists, v2 rolled back | next ship is v4 (`nextVersion`, unchanged) | N/A |
 | Changed line | v1 / v2 vs v1 / a null manifest / identical files | "First deploy" / "Changed: Hero · added 404 template" / no line / "No changes since v1" | N/A |
 | Order and shape | any list | `accepted_at` newest first; first three rows expanded, the rest compact, each with its action | N/A |
+| Drift check, clean *(R-291)* | Roll back pressed; the live theme equals the newest accepted upload | the confirm opens on Cancel, says "Comparing with your live theme…" with its Roll back waiting, then D3c's "Nothing changed on your site since v{n}" | N/A |
+| Drift check, found *(R-291)* | a file on the site differs from the newest accepted upload (a hand edit in Ghost Admin) | D3a's list — changed, added, removed, named as they shipped — the foot, "Download the live theme first" (the live copy, its own key); the Roll back still available and confirmed as usual | a live zip past the store's size: the list without the Download |
+| Drift check, couldn't verify *(R-291)* | no Staff Access Token, a refused or weak token, the theme gone, Ghost unreachable, or the check's request failing | D3b's "Couldn't check whether your live theme changed." and its reason; the Roll back goes on | N/A |
+| Drift check, no verdict *(R-291)* | the newest accepted upload has no manifest (before Story 7.21) | nothing drawn; Roll back available | N/A |
+| Re-activate *(R-291)* | D2d's row | no check: it replaces nothing | N/A |
 
 </frozen-after-approval>
 
@@ -430,14 +435,25 @@ original is Story 7.23b and the phone's Deploy history card is Story 7.23c, each
   active theme is unchanged, and Ghost's detail is said under the row.
 - **DW-400.** Given a version accepted after newer-checked versions, when the prune runs, then it is kept as the newest.
 
+*Review — R-291 (owner, 2026-11-25), the drift check before a Roll back:*
+- [x] One comparison shared by `driftStep` and the put-back's check; `checkBeforePutBack` with the put-back's refusals, the newest
+  accepted baseline, the staff-token read, the manifest's own labels, the live copy at `historyCopyPath`.
+- [x] The History route's `act: 'check'` (no lock, plan or gscan, held by the source test) and `history/live` (AD-13's signed
+  303), on `server-wiring.test.ts`' service-role list.
+- [x] The confirm: "Comparing with your live theme…" with its Roll back waiting, then D3c, D3a (the Download, the foot) or D3b;
+  the harness's `harnessCheck`; every 7.23a journey waits for the check; journeys (m)–(p) and the floor at 1440/1280/820.
+- [x] Walk 121: the clean line before (c)'s Roll back, and 121i — a hand edit on T1, D3a's list in the confirm, the Download's
+  zip equal to the live theme, the Roll back anyway; `STEP121_PLANT` leaves the same invisible hand edit for the owner's test.
+
 ### Review Findings
 
 Story 7.23a's Review, 2026-11-25: five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, the read-only
 Real-infra verifier), then walk step 121 on production and T1 on the owner's in-session go. Every patch below is applied; one
-decision is the owner's (Question 2, open); three items are deferred to the stories that own them; the rest are dismissed below.
+decision was the owner's (Question 2, ruled option 1 — R-291, built in this Review); three items are deferred to the stories that own them; the rest are dismissed below.
 
-- [ ] [Review][Decision] **Roll back replaces the theme on the site without FR-J16's drift check** — FR-J16 runs the check "before
-  every deploy after the first", and the spec never says whether a Roll back is one. Question 2 below.
+- [x] [Review][Decision] **Roll back replaces the theme on the site without FR-J16's drift check** — FR-J16 runs the check "before
+  every deploy after the first", and the spec never says whether a Roll back is one. Question 2 below — **ruled option 1, R-291**:
+  the check runs first, in the confirm, and is built in this Review (the tasks below)
 - [x] [Review][Patch] **Every failed Re-activate was "Ghost's own theme check refused vN"** — `activateAnswer`'s `notLive` covers a
   5xx, a 429 and Ghost saying it does not hold the theme. A 429/5xx is now `ghost_unavailable`; Ghost's `ValidationError` "…cannot
   be activated because it was not found in the theme directory" (`activate.js:46-54`, read in source in 6.58.0 and 5.130.6) falls
@@ -541,6 +557,12 @@ through the product (the walk is this Review's, below).
     never says "nothing is lost" of settings nobody read.
   - **One new word**, `HISTORY_WORDS.unrecorded`, for a record write that failed after Ghost acted (R-170, R-283's plain voice).
   - **D2d's row is always expanded**, and the undo is the next row on the linked site, raised with `shadow-md` (S8e `:308`).
+- **2026-11-25, Review — R-291 (owner, Question 2, option 1): a Roll back runs FR-J16's drift check first.** The owner renegotiated
+  the intent, so the I/O matrix gains its five rows. The comparison is Story 7.21's own, extracted from `driftStep` into one
+  function both call; the put-back's check answers the same refusals as the put-back, reads the newest accepted upload as its
+  baseline and Ghost's live theme with the Staff Access Token, names files by the manifest's own names (the working document is
+  still never read), and keeps a found drift's live copy under its own key (`historyCopyPath`), served by `history/live` as
+  `deploy/live` serves D3a's. In the confirm it is D3's components and words, extrapolated (R-74). Re-activate runs none.
 
 ## Design Notes
 
@@ -654,7 +676,10 @@ you press **Roll back** to v2.
 3. **Check, but later.** 7.23a ships as it is now, and the check is built with Story 7.23b (Restore original), which also replaces
    the theme on your site.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-11-25) — R-291.** *"(RECOMMENDED) Check first, in this story. Roll back checks your site first
+(about a second). If something changed, the box lists it and offers the download; you can still roll back. If the check can't run,
+it says "couldn't verify" and lets you continue, as Ship it does."* Built in this Review (the Spec Change Log, the I/O rows, the
+tasks below); Story 7.23b's card carries the same question for Restore original.
 
 ## Owner's manual test
 
@@ -665,6 +690,8 @@ connected to T1 (`ghost6.inflozo.com`), and its project **Rollback test** holds 
 - T1 was then put back on Casper, as you would do in Ghost Admin, and Inflozo's record of v3 marked "uploaded, not live" — the
   state a Deploy only, or an activation Ghost refused, leaves. So v3 is on T1 but not live.
 - v1's stored zip was swapped for one Ghost refuses, so that step 7 can show the refusal.
+- v3's files on T1 were then changed by one invisible line, as if someone had edited the theme in Ghost Admin, so that Roll back's
+  check has something to find in steps 4 and 5 (R-291).
 
 Sign in at `https://app.inflozo.com/sign-in` with `{address filled at Deploy}` and open the link that arrives. Use a desktop
 browser at least **1366 px** wide. Keep a second tab on `https://ghost6.inflozo.com`.
@@ -684,12 +711,16 @@ browser at least **1366 px** wide. Keep a second tab on `https://ghost6.inflozo.
    "Version 3".
 4. **URL:** the same editor. **Do:** press **Roll back** on v2. **See:** a box "**Roll back to v2?**" with "Your live site
    switches to v2 instantly. v3 stays in history — nothing is lost.", v2's chip, time and **0 · 1**, and **Cancel** already
-   highlighted. **Do:** press **Enter**. **See:** the box closes and nothing changed.
-5. **URL:** the same editor. **Do:** press **Roll back** on v2 again, then the box's **Roll back**. **See:** "Rolling back…",
-   then the panel lists **v2** (Live) first and **v3** second with the outlined Roll back. Reload ghost6.inflozo.com: the
-   headline reads "Version 2".
-6. **URL:** the same editor. **Do:** press **Roll back** on v3 and confirm. **See:** v3 is Live again and first; ghost6.inflozo.com
-   says "Version 3".
+   highlighted. For a moment it says "Comparing with your live theme…", then a warning with a yellow "**1 file differs**", the one file
+   the plant changed listed under **Changed**, the line "Rolling back replaces it with v2's. Take a copy of the live theme first if
+   you want to keep those edits.", and **Download the live theme first**. **Do:** press
+   **Download the live theme first**. **See:** a zip downloads (your site's theme as it is now). **Do:** press **Cancel**.
+   **See:** the box closes and nothing changed.
+5. **URL:** the same editor. **Do:** press **Roll back** on v2 again, wait for "1 file differs", then press the box's **Roll
+   back**. **See:** "Rolling back…", then the panel lists **v2** (Live) first and **v3** second with the outlined Roll back.
+   Reload ghost6.inflozo.com: the headline reads "Version 2".
+6. **URL:** the same editor. **Do:** press **Roll back** on v3. **See:** this time the box says "**Nothing changed on your site
+   since v2**". **Do:** confirm. **See:** v3 is Live again and first; ghost6.inflozo.com says "Version 3".
 7. **URL:** the same editor. **Do:** press **Roll back** on v1 and confirm. **See:** under v1, a line saying Ghost's own theme
    check refused v1, followed by Ghost's message in small grey type. v3 stays Live, and ghost6.inflozo.com still says
    "Version 3".
@@ -918,3 +949,17 @@ argv, no value printed; the owner's in-session go to walk step 121's whole run, 
   - Three runs, the owner's limit. The walk's 121e fix is in this commit; the cut used was built from it, with the app modules the
     deployed ones.
 - **Not hit in Review:** Resend and Dodo (a put-back sends no email and reads no plan). `STEP121_PLANT` is Deploy's.
+
+**Executed — Review, R-291 (2026-11-25, Node 24; local only until the deploy below):**
+- **Each new assertion seen red under a planted reversion**, then restored byte for byte (sha256): the check reading Ghost before
+  its refusals (6 red), with no manifest (1), its copy at Ship it's key (2) or not kept (1), the decline unapplied (1), labels by
+  current names (1), the size limit doubled (2), a 400 not read as `missing` (2, both checks), the route refusing `check` (1), a plan
+  read in it (1), `history/live` signing Ship it's copy (1) or an unvalidated `?theme=` (1), the io's baseline by `created_at` (1)
+  or its read with the Admin key (1), `driftStep` reading on its own (1); in the journeys, no check sent (16 of 21), the Roll back
+  not waiting (1), the region not `role="status"` (1), the foot missing (1), a `kept: false` copy still offered (1), "Shipping
+  anyway." appended (1) and a late answer drawn into a reopened confirm (1).
+- **`pnpm check`:** exit 0, every package 0 failing. **`pnpm keyboard`, the whole gate:** 361 passed, 1 failed — Story 5.23a's "every
+  whole-page change repaints the whole page" timing out at "a subject", which this change does not touch; re-run cold, `-g "every
+  whole-page change repaints the whole page" --repeat-each 5`: 5 of 5 — its second sighting (CI at Story 7.22's Deploy), now DW-403.
+- **The walk's hand edit** uploads with the Admin API key, as step 119's does on T1 (executed at Story 7.21); a staff-token upload
+  was never executed, so it is not the one relied on.

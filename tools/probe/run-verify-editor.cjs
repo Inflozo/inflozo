@@ -11,7 +11,8 @@
 //   STEP120_PLANT=<free email>,<pro email> T1_WRITES=1 …   # Story 7.22: step 120 as Deploy's plant, in a cut copy (steps 1–5 and
 //                   120): two NEW addresses — Pro holds ten stored versions, eight pinned; Free ships "History test" v1–v3 live on T1
 //   STEP121_PLANT=<free email> T1_WRITES=1 …   # Story 7.23a: step 121 as Deploy's plant, in a cut copy (steps 1–5 and 121): a
-//                   NEW address — "Rollback test" v1–v3 ("Version n" on Home), T1 back on its own theme, v3 `uploaded`, v1's zip refused
+//                   NEW address — "Rollback test" v1–v3 ("Version n" on Home), T1 back on its own theme, v3 `uploaded`, v1's zip refused,
+//                   and v3 with an invisible hand edit held under the frozen name, not live (R-291's drift for the owner's Roll back)
 //
 // Node 24 (it imports the seed, which reads the app's own TypeScript). Keys reach it through process.env only and it
 // prints none. Two throwaway accounts through the Auth Admin API: A is seeded with `seed-editor-project.mjs` ("Pilot
@@ -451,9 +452,14 @@
 // its control. The code review adds: (c) the dropped settings through the REAL route (v3's `preflight.custom` planted with one
 // key, restored after (c)) and the prune's REAL read (`retention-io.ts`' own select: v2 the oldest accepted goes, never v1);
 // (e2) Re-activate when Ghost no longer holds the theme (deleted on T1 with the staff token): the stored zip goes up again; and
-// (h) the cross-account door — the walk's account A POSTs L's version to L's route, 404. Its finally removes the plants, puts T1
-// back, removes L's objects, disconnects and deletes L, and counts back.
-// `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead: it stops after (a) and the D2d state with v1 refused.
+// (h) the cross-account door — the walk's account A POSTs L's version to L's route, 404. R-291 (Question 2, "Check first"): every
+// Roll back's confirm runs the drift check first and the walk waits for it — (c) asserts it real on T1 (the running row, then D3c
+// "since v3"), (e) that Re-activate runs none — and (i) a hand edit uploaded on T1 with the Admin API key is FOUND by the next Roll
+// back's check (D3a naming the file, the Download followed to a zip equal to T1's live one), which still rolls back; the control,
+// the Roll back after it, checks clean. Its finally removes the plants, puts T1 back, removes L's objects, disconnects and deletes
+// L, and counts back.
+// `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead: it stops after (a) and the D2d state with v1 refused,
+// and v3's files with (i)'s invisible hand edit held under the frozen name, not live — found by the owner's first Roll back.
 // Story 7.12 also RE-EXPECTS STEP 52: the rail's Theme settings and Translations are drawn, and only Credits and the rail's
 // three Ghost links (absent on a project with no site) stay absent.
 // Story 7.9 RE-EXPECTS STEP 52 and adds step 104, in contexts of its own. Step 52: Theme settings now carries Posts per page,
@@ -14753,9 +14759,10 @@ async function main() {
     }
 
     /* ── step 121 — Story 7.23a: ROLL BACK AND RE-ACTIVATE FROM HISTORY (FR-J9, FR-J8's D2d, R-264; DW-400), WRITING TO T1 ──
-       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: three ships and about ten put-backs on T1
-       through the product (uploads and activations under the frozen name), one activation of T1's own theme with the staff token,
-       production rows and one object planted, and the put-back. A throwaway Free account L (`editor-harness-l-…`) connects T1
+       Runs only with `T1_WRITES=1`, on the owner's in-session go worded for the whole run: three ships and about a dozen put-backs on
+       T1 through the product (uploads and activations under the frozen name), activations of T1's own theme and one deletion with the
+       staff token, one hand-edited theme uploaded with the Admin API key under the frozen name (121i, R-291), production rows and
+       one object planted, and the put-back. A throwaway Free account L (`editor-harness-l-…`) connects T1
        through the wizard and "Rollback test" (step 1's fixture) is linked. Each version's Home headline names its number ("Version
        n": the stored doc written through the service key with the editor LEFT first, 5.8's order), so a read of T1's `/` says which
        version is live:
@@ -14793,12 +14800,23 @@ async function main() {
            stored version of P on another (planted, disconnected) site of L's; the controls — that row moved onto the linked site
            answers `busy`, not `elsewhere`, and with the busy row removed the same POST is accepted (v3 live). Before that control,
            the cross-account door: the walk's own account A (step 1's page) POSTs v3 to L's project's route — 404, T1 untouched.
+       R-291 (the owner's Question 2, "Check first, in this story"): every Roll back's confirm now runs the drift check first, and
+       `putBack121` waits for it to end — its running row watched from before the press — and records what it drew. (c) asserts it
+       REAL on T1 before the Roll back to v1: the running row, then D3c "Nothing changed on your site since v3"; (e) that Re-activate
+       runs none. And:
+       (i) A HAND EDIT, THEN A ROLL BACK: after (h)'s control leaves v3 live, v3's stored zip (the service key) with one template given
+           a Handlebars comment (the page still reads "Version 3") uploaded with the Admin API key under the frozen name — active, so
+           live at once (R-264) — T1's download differing from v3 by that file alone. Roll back v2: the confirm's check finds it —
+           D3a's block naming that file by the manifest's own label, its foot and "Download the live theme first"; the Download
+           followed on L's session (303 → a signed URL) serves a zip whose manifest equals T1's live one, kept at the check's own key
+           and never Ship it's; then the Roll back still goes — "v2 is live", "Version 2", T1 at zero differences from v2. The
+           control: the next Roll back, to v3, checks clean "since v2".
        FINALLY: (h)'s plants and (c)'s planted key removed; every job at rest; T1 put back (its own theme active, every inflozo- theme uploaded deleted,
        routes.yaml byte for byte) and read back; L's objects removed; T1 disconnected through the product; L deleted; users and
        projects counted back. `STEP121_PLANT=<address>` is Deploy's plant for the owner's test instead (see PLANT121). Keys are read
        in-process by NAME and scrubbed; never printed. SELF-CONTAINED, as 120 is. */
     if (process.env.T1_WRITES !== '1') {
-      note('step 121 — NOT RUN', 'it writes to T1 (three ships and the put-backs through the product, one activation of T1\'s own theme, and the put-back) and to production (planted rows and one swapped object): set T1_WRITES=1 on the owner\'s in-session go')
+      note('step 121 — NOT RUN', 'it writes to T1 (three ships and the put-backs through the product, activations of T1\'s own theme, one hand-edited theme uploaded with the Admin API key, and the put-back) and to production (planted rows and one swapped object): set T1_WRITES=1 on the owner\'s in-session go')
     } else {
       const imp121 = (f) => import(require('node:url').pathToFileURL(path.join(REPO, f)).href)
       const [DEP121, RET121, DR121, CR121, PR121, AR121, RU121, ZIP121, GATE121, GS121, CS121] = await Promise.all([
@@ -14898,12 +14916,41 @@ async function main() {
         return { real, planted, proved, said: `gscan ${blocked.gscan}: v1 ${clean.errors.length} errors; planted [${blocked.errors.map((e) => `${e.rule}${e.fatal ? ' (fatal)' : ''}`).join(', ')}]` }
       }
 
+      /** R-291 (121i, and the plant): A HAND EDIT of v3 as a designer makes one in Ghost Admin — v3's stored zip read (the service key),
+       *  one template given a Handlebars comment (so the page still reads "Version 3"), re-zipped by the product's writer and uploaded
+       *  with the staff token under the frozen name: live at once where that name is active, held where it is not (R-264). Answers
+       *  the upload's status and name, whether Ghost made it active, the file edited, its label as the check names it (the
+       *  manifest's own: `labelOf` with the entry and no current names, as `compareLive` labels it), and T1's download compared
+       *  with v3's manifest */
+      const EDIT121 = '\n{{!-- walk 121: edited in Ghost Admin --}}\n'
+      const handEdit121 = async (v3) => {
+        const zip = await object121(v3.artifact_path)
+        if (zip === null) throw new Error('step 121: v3\'s stored zip could not be read')
+        const files = ZIP121.unzipTheme(new Uint8Array(zip))
+        const file = ['home.hbs', 'index.hbs'].find((f) => files[f] !== undefined)
+        if (file === undefined) throw new Error('step 121: v3 holds neither home.hbs nor index.hbs to edit')
+        const form = new FormData()
+        form.append('file', new Blob([ZIP121.zipTheme({ ...files, [file]: Buffer.concat([Buffer.from(files[file]), Buffer.from(EDIT121)]) })], { type: 'application/zip' }), `${theme121}.zip`)
+        // the Admin API key, as step 119's hand edit uploads (executed on T1 at Story 7.21) — a staff-token upload was never executed
+        const up = await ghost121(ENV121.GHOST6_ADMIN_API_KEY, 'POST', 'themes/upload/', form)
+        const entry = v3.content_manifest?.[file]
+        return {
+          status: up.status, name: up.body?.themes?.[0]?.name ?? null, active: up.body?.themes?.[0]?.active === true, path: file,
+          label: DR121.labelOf({ path: file, ...(entry === undefined ? {} : { entry }) }, 'changed'), diff: await liveDiff121(v3.content_manifest),
+        }
+      }
+      /** exactly the one file edited differs — nothing added, nothing removed */
+      const editedOnly121 = (e) => e.diff !== null && same121(e.diff, { changed: [e.path], added: [], removed: [] })
+
       // STORY 7.23a's DEPLOY: `STEP121_PLANT=<address>` plants the owner's test instead of (b)–(h). The address must be NEW (the plant
       // never touches an account that exists). It connects T1 through the wizard and ships "Rollback test" three times as (a) does
       // ("Version 1"…"Version 3"); then T1's own theme is activated with the staff token, v3's row written `uploaded` as (e) writes it
       // (D2d: nothing Live, v3 "Uploaded, not live" with Re-activate) and v1's stored zip swapped for (f)'s planted one, proved fatal
-      // locally first (the owner's step 7 meets Ghost's refusal). Then it stops and leaves the account, its site, T1 and the inflozo
-      // theme Ghost holds as they are, printing the address and the project's id; the owner's test ends with T1 put back on his go.
+      // locally first (the owner's step 7 meets Ghost's refusal). R-291: then v3's files with 121i's invisible hand edit are uploaded
+      // under the frozen name with the Admin API key — T1's own theme still active, so NOT live (R-264) — so the owner's Re-activate
+      // puts the edited v3 live and his next Roll back's confirm shows D3a's block naming the edited file. Then it stops and leaves
+      // the account, its site, T1 and the inflozo theme Ghost holds as they are, printing the address and the project's id; the
+      // owner's test ends with T1 put back on his go.
       const PLANT121 = (process.env.STEP121_PLANT ?? '').trim().toLowerCase()
       let planted121 = false
       const STOP121 = Symbol('step 121 planted') // thrown past (b)–(h) once the plant is read back; the catch knows it
@@ -15106,15 +15153,40 @@ async function main() {
         if (said !== '' && document.activeElement?.id !== 'deploy-history-close') return false
         return { said, note: words, detail: line?.querySelector('[data-history-detail]')?.textContent ?? null, focus: document.activeElement?.id || document.activeElement?.getAttribute('data-history-act') || null }
       }, id, { timeout: 300000, polling: 250 }).then((h) => h.jsonValue(), () => null)
-      /** ONE PUT-BACK THROUGH A FRESH DRAWER on `p`: Roll back opens S8e's confirm (its title, body and focus read) and its Roll back is
-       *  pressed; Re-activate acts at once. `keys`: the row's action focused and Enter, then Tab and Enter in the confirm. The busy
-       *  label is watched from before the press ("Rolling back…" on the confirm's button, "Activating…" on Re-activate) */
-      const putBack121 = async (p, v, keys = false) => {
+      /** R-291 — what the confirm's drift check drew, read from its one status region: its state, D3c's line, D3a's chip, groups (each
+       *  file's path and label), foot and Download, D3b's cause and words — and whether focus is still on Cancel as it landed */
+      const drawnCheck121 = (p) => p.evaluate(() => {
+        const r = document.querySelector('dialog[data-history-confirm] [data-history-check]')
+        if (!r) return null
+        const unverified = r.querySelector('[data-drift-row="unverified"]')
+        return {
+          state: r.getAttribute('data-history-check'),
+          role: r.getAttribute('role'),
+          clean: r.querySelector('[data-drift-row="clean"] > span')?.textContent ?? null,
+          chip: r.querySelector('[data-drift-chip]')?.textContent ?? null,
+          groups: [...r.querySelectorAll('[data-drift-group]')].map((g) => ({
+            group: g.getAttribute('data-drift-group'),
+            files: [...g.querySelectorAll('[data-drift-file]')].map((f) => ({ path: f.getAttribute('data-drift-file'), label: f.querySelector('[data-drift-label]')?.textContent ?? null })),
+          })),
+          foot: r.querySelector('[data-drift-foot]')?.textContent ?? null,
+          download: r.querySelector('#history-drift-download')?.getAttribute('href') ?? null,
+          cause: unverified?.getAttribute('data-drift-cause') ?? null,
+          unverified: unverified?.textContent ?? null,
+          onCancel: document.activeElement?.hasAttribute('data-cancel') === true && document.activeElement.closest('dialog[data-history-confirm]') !== null,
+        }
+      }).catch(() => null)
+      /** ONE PUT-BACK THROUGH A FRESH DRAWER on `p`: Roll back opens S8e's confirm (its title, body and focus read), its drift check
+       *  (R-291) is waited for — the running row watched from before the press, then what it drew read (`checked`) — `before`, if
+       *  given, runs on that, and the confirm's Roll back is pressed; Re-activate acts at once, with no check. `keys`: the row's action
+       *  focused and Enter, then Tab and Enter in the confirm. The busy label is watched from before the press ("Rolling back…" on the
+       *  confirm's button, "Activating…" on Re-activate) */
+      const CHECK_ENDED121 = /^(clean|found|unverified|none|failed)$/
+      const putBack121 = async (p, v, keys = false, before = null) => {
         await openDrawer121(p)
         const row = p.locator(`dialog[data-deploy-history] [data-history-row="v${v}"]`)
         const act = row.locator('[data-history-act]')
         const id = await act.getAttribute('data-history-act', { timeout: 10000 }).catch(() => null)
-        if (id === null) return { id: null, asked: null, busy: false, ended: null }
+        if (id === null) return { id: null, asked: null, checked: null, busy: false, ended: null }
         const reactivate = (await row.getAttribute('data-history-uploaded')) !== null
         const busyFrom = (sel, word, byName) => p.waitForFunction(([s, w, n]) => {
           const b = document.querySelector(s)
@@ -15122,12 +15194,18 @@ async function main() {
         }, [sel, word, byName], { timeout: 120000, polling: 'raf' }).then(() => true, () => false)
         if (keys) await act.focus()
         let asked = null
+        let checked = null
         let busy
         if (reactivate) {
           busy = busyFrom(`[data-history-act="${id}"]`, HW121.activating, true)
           if (keys) await p.keyboard.press('Enter')
           else await act.click()
         } else {
+          // R-98: the check's running row — D3's "Comparing with your live theme…" — with the confirm's Roll back waiting on it
+          const reading = p.waitForFunction((w) => {
+            const r = document.querySelector('dialog[data-history-confirm] [data-history-check]')
+            return r?.getAttribute('data-history-check') === 'reading' && r.textContent.trim() === w && document.querySelector('#history-confirm-go')?.getAttribute('aria-disabled') === 'true'
+          }, DW121.reading, { timeout: 60000, polling: 'raf' }).then(() => true, () => false)
           if (keys) await p.keyboard.press('Enter')
           else await act.click()
           await p.waitForFunction(() => document.querySelector('dialog[data-history-confirm]')?.open === true, null, { timeout: 15000 })
@@ -15139,6 +15217,12 @@ async function main() {
             drops: [...document.querySelectorAll('dialog[data-history-confirm] [data-history-drops] li')].map((li) => li.textContent),
             onCancel: document.activeElement?.hasAttribute('data-cancel') === true && document.activeElement.closest('dialog[data-history-confirm]') !== null,
           }))
+          // R-291: the check ends — its region past `reading` and the Roll back no longer waiting — before anything is pressed
+          await p.waitForFunction((re) => new RegExp(re).test(document.querySelector('dialog[data-history-confirm] [data-history-check]')?.getAttribute('data-history-check') ?? '') &&
+            document.querySelector('#history-confirm-go')?.getAttribute('aria-disabled') !== 'true', CHECK_ENDED121.source, { timeout: 120000 }).catch(() => {})
+          checked = await drawnCheck121(p)
+          if (checked !== null) checked.reading = await Promise.race([reading, new Promise((r) => setTimeout(() => r(false), 2000))])
+          if (before) await before(checked)
           busy = busyFrom('#history-confirm-go', HW121.rollingBack, false)
           if (keys) {
             await p.keyboard.press('Tab')
@@ -15147,7 +15231,7 @@ async function main() {
           } else await p.locator('#history-confirm-go').click()
         }
         const ended = await ended121(p, id)
-        return { id, asked, busy: await busy, ended }
+        return { id, asked, checked, busy: await busy, ended }
       }
 
       try {
@@ -15207,18 +15291,21 @@ async function main() {
           const own = await staff121('PUT', `themes/${encodeURIComponent(prev121)}/activate/`)
           const written = await call('/rest/v1', `/deploys?id=eq.${v3.id}`, { method: 'PATCH', body: JSON.stringify({ status: 'uploaded', activated: false }) })
           const swapped = await swap121(v1.artifact_path, fatal.planted)
+          // R-291: the edited v3 held under the frozen name, not live — the owner's Re-activate makes it live, his next Roll back finds it
+          const editP = await handEdit121(v3)
           const answerP = await history121(pg)
           const rowsP = rowsOf121(answerP)
           const themesP = (await themes121()) ?? []
-          planted121 = check(`step 121 (plant) — ${PLANT121}: T1 connected through the wizard, "Rollback test" shipped v1–v3 ("Version n" on T1 each time); then ${prev121} activated with the staff token (T1 still holding ${theme121}, which the owner's Re-activate needs), v3's row \`uploaded\` (service key — as a Deploy only leaves it; R-264 (a) refuses a real one while the record says live) and v1's zip swapped for one the pinned v6 gscan blocks (${fatal.said}); the route lists v3 (Re-activate) v2 v1 (Roll back), nothing Live, 0 errors each`,
-            own.ok && themesP.find((t) => t.active)?.name === prev121 && themesP.some((t) => t.name === theme121) && [200, 204].includes(written.status) && swapped.gone === 200 && swapped.put === 200 && swapped.same && answerP.status === 200 &&
+          planted121 = check(`step 121 (plant) — ${PLANT121}: T1 connected through the wizard, "Rollback test" shipped v1–v3 ("Version n" on T1 each time); then ${prev121} activated with the staff token (T1 still holding ${theme121}, which the owner's Re-activate needs), v3's row \`uploaded\` (service key — as a Deploy only leaves it; R-264 (a) refuses a real one while the record says live), v1's zip swapped for one the pinned v6 gscan blocks (${fatal.said}), and v3's files with an invisible hand edit to ${editP.path} uploaded under ${theme121} with the staff token, NOT live (R-264), T1's download differing from v3 by that file alone (R-291); the route lists v3 (Re-activate) v2 v1 (Roll back), nothing Live, 0 errors each`,
+            own.ok && themesP.find((t) => t.active)?.name === prev121 && themesP.some((t) => t.name === theme121) && [200, 204].includes(written.status) && swapped.gone === 200 && swapped.put === 200 && swapped.same &&
+            editP.status === 200 && editP.name === theme121 && editP.active === false && editedOnly121(editP) && answerP.status === 200 &&
             answerP.body?.liveVersion === null && rowsP.map((r) => `v${r.n}:${r.action}`).join(' ') === 'v3:reactivate v2:rollback v1:rollback' && rowsP.every((r) => !r.live && r.gscan?.errors === 0) &&
             (await until121(headline121, (h) => h === null, 30000)) === null,
-            JSON.stringify({ activate: own.status, row: written.status, swap: swapped, rows: rowsP.map((r) => `v${r.n}:${r.action}${r.live ? '*' : ''}`) }))
+            JSON.stringify({ activate: own.status, row: written.status, swap: swapped, edit: { status: editP.status, name: editP.name, active: editP.active, path: editP.path, diff: editP.diff }, rows: rowsP.map((r) => `v${r.n}:${r.action}${r.live ? '*' : ''}`) }))
           if (planted121) {
             plantKept.users += 1
             plantKept.projects += 1
-            note('step 121 — PLANT for the owner\'s test', `address ${PLANT121} · project "Rollback test" id ${P121} · ${at(`/projects/${P121}`)} · theme ${theme121} held by ${HOST121}, which shows ${prev121}`)
+            note('step 121 — PLANT for the owner\'s test', `address ${PLANT121} · project "Rollback test" id ${P121} · ${at(`/projects/${P121}`)} · theme ${theme121} held by ${HOST121}, which shows ${prev121} · ${theme121} holds v3 plus an invisible hand edit to ${editP.path} (a Handlebars comment), not live: the owner's Re-activate puts it live, and his next Roll back's confirm shows D3a's block naming "${editP.label}" with "${DW121.download}"`)
           }
           throw STOP121
         }
@@ -15249,6 +15336,9 @@ async function main() {
         const dropsC = wantA[2] === undefined ? [] : wantA[2].drops
         const c = await putBack121(pg, 1, true)
         const shownC = await drawer121(pg)
+        check(`step 121c — R-291, the drift check before the Roll back, REAL on T1 with the staff token: the confirm's one status region says D3's running row "${DW121.reading}" with its Roll back waiting (aria-disabled), then D3c "${DW121.clean(3)}" — T1 holds v3, the newest accepted — with focus still on ${HW121.cancel}`,
+          c.checked?.role === 'status' && c.checked.reading === true && c.checked.state === 'clean' && c.checked.clean === DW121.clean(3) && c.checked.onCancel === true,
+          JSON.stringify(c.checked))
         check(`step 121c — Roll back to v1 by the keyboard: Enter on its Roll back opens "${HW121.confirmTitle(1)}" — "${HW121.confirmBody(1, liveC, dropsC)}", stopping at "stays in history." over Pre-flight's block naming "${CS121.ghostName(PROBE121)}" — with focus on ${HW121.cancel}; Tab reaches its Roll back and Enter says "${HW121.rollingBack}"; then "${HW121.said.live(1, HOST121)}", v1 Live first and focus on ✕`,
           c.asked?.title === HW121.confirmTitle(1) && c.asked.body === HW121.confirmBody(1, liveC, dropsC) && c.asked.body.endsWith(' stays in history.') && same121(c.asked.drops, [CS121.ghostName(PROBE121)]) &&
           c.asked.onCancel === true && c.asked.tab === 'history-confirm-go' &&
@@ -15325,8 +15415,8 @@ async function main() {
         const shownE2 = await drawer121(pg)
         const activeE = await active121()
         const diffE = await liveDiff121(v3.content_manifest)
-        check(`step 121e — Re-activate: "${HW121.activating}", then "${HW121.said.live(3, HOST121)}"; v3's own row live and activated with its accepted_at unchanged (an activation alone — Ghost held the files); T1's active theme ${theme121} again holding v3's files at zero differences, ${ORIGIN121}/ "Version 3"; the next row, ${orderE[1]} (the version live before v3), now carries the emphasised undo`,
-          e.busy === true && e.asked === null && e.ended?.said === HW121.said.live(3, HOST121) && v3E?.status === 'live' && v3E.activated === true && v3E.accepted_at === v3E0?.accepted_at &&
+        check(`step 121e — Re-activate: no confirm and no drift check (R-291: it replaces nothing), "${HW121.activating}", then "${HW121.said.live(3, HOST121)}"; v3's own row live and activated with its accepted_at unchanged (an activation alone — Ghost held the files); T1's active theme ${theme121} again holding v3's files at zero differences, ${ORIGIN121}/ "Version 3"; the next row, ${orderE[1]} (the version live before v3), now carries the emphasised undo`,
+          e.busy === true && e.asked === null && e.checked === null && e.ended?.said === HW121.said.live(3, HOST121) && v3E?.status === 'live' && v3E.activated === true && v3E.accepted_at === v3E0?.accepted_at &&
           activeE === theme121 && none121(diffE) && (await homeSays121(3)) === 'Version 3' && shownE2?.rows[0]?.v === 'v3' && shownE2.rows[0].live && shownE2.rows[1]?.v === orderE[1] && shownE2.rows[1].act?.emphasis === true,
           JSON.stringify({ busy: e.busy, ended: e.ended, row: kept121(v3E), was: v3E0?.accepted_at ?? null, active: activeE, diff: diffE, shown: (shownE2?.rows ?? []).map((r) => `${r.v}${r.live ? '*' : ''}${r.act?.emphasis ? '!' : ''}`) }))
 
@@ -15423,6 +15513,42 @@ async function main() {
         check(`step 121h — the control: the planted rows removed (read back), the same POST is accepted — 200 { outcome: live }, v3 live, ${ORIGIN121}/ "Version 3"`,
           plantsGone && busyGone && freeH.status === 200 && freeH.body?.outcome === 'live' && (await deploy121(v3.id))?.status === 'live' && (await homeSays121(3)) === 'Version 3',
           JSON.stringify({ plantsGone, busyGone, free: freeH }))
+
+        // ── 121i — R-291: a hand edit in Ghost Admin, then a Roll back — the check finds it, keeps it for Download, and lets it go ──
+        await closed121(pg)
+        const editI = await handEdit121(v3)
+        check(`step 121i — a HAND EDIT on T1 as Ghost Admin makes one: v3's stored zip read, ${editI.path} given a Handlebars comment and uploaded with the Admin API key under ${theme121} (active, so live at once — R-264); T1's download differs from v3's manifest by exactly that file, and ${ORIGIN121}/ still says "Version 3"`,
+          editI.status === 200 && editI.name === theme121 && editI.active === true && (await active121()) === theme121 && editedOnly121(editI) && (await homeSays121(3)) === 'Version 3',
+          JSON.stringify({ status: editI.status, name: editI.name, active: editI.active, path: editI.path, diff: editI.diff }))
+        const liveI = await staff121('GET', `themes/${encodeURIComponent(theme121)}/download/`).catch(() => null)
+        const liveManifestI = liveI?.ok ? await DR121.liveManifest(ZIP121.unzipTheme(new Uint8Array(liveI.bytes))) : null
+        let downloadI = null
+        // the Download followed on L's own session BEFORE the Roll back is confirmed, as a customer keeping the edit would
+        const i = await putBack121(pg, 2, false, async (drawn) => {
+          const href = drawn?.download ?? null
+          const away = href === null ? null : await pg.context().request.get(`${APP}${href}`, { maxRedirects: 0 })
+          const signed = away?.headers().location ?? null
+          const got = signed === null ? null : await fetch(signed).catch(() => null)
+          const bytes = got?.ok ? Buffer.from(await got.arrayBuffer()) : null
+          downloadI = { href, status: away?.status() ?? null, disposition: got?.headers.get('content-disposition') ?? null, manifest: bytes === null ? null : await DR121.liveManifest(ZIP121.unzipTheme(new Uint8Array(bytes))) }
+        })
+        const objectsI = (await listed121('deploy-artifacts', `${P121}/live`)).map((o) => o.name)
+        check(`step 121i — Roll back v2: the confirm's check, REAL on T1, FINDS the edit — D3a's block, "${DW121.chip(1)}", Changed "${editI.label}" over ${editI.path} (the manifest's own name), "${HW121.checkFoot(1, 2)}" and "${DW121.download}"; focus still on ${HW121.cancel}`,
+          i.checked?.state === 'found' && i.checked.chip === DW121.chip(1) && same121(i.checked.groups, [{ group: 'changed', files: [{ path: editI.path, label: editI.label }] }]) &&
+          i.checked.foot === HW121.checkFoot(1, 2) && i.checked.download === `${PREFIX}${DR121.historyLiveDownloadPath(P121, theme121)}` && i.checked.onCancel === true,
+          JSON.stringify(i.checked))
+        const equalI = liveManifestI !== null && downloadI?.manifest != null && same121(downloadI.manifest, liveManifestI)
+        check(`step 121i — Download the live theme first: ${DR121.historyLiveDownloadPath(P121, theme121)} on L's session answers 303 to a signed URL serving ${DR121.liveFileName(theme121)} — the zip the check read, its manifest equal to T1's live one, the hand edit in it (AD-13); kept at the check's own key (live/${site121}-history.zip), never Ship it's (live/${site121}.zip)`,
+          downloadI?.status === 303 && (downloadI.disposition ?? '').includes(DR121.liveFileName(theme121)) && equalI && objectsI.includes(`${site121}-history.zip`) && !objectsI.includes(`${site121}.zip`),
+          JSON.stringify({ href: downloadI?.href ?? null, status: downloadI?.status ?? null, disposition: downloadI?.disposition ?? null, equal: equalI, objects: objectsI }))
+        const diffI = await liveDiff121(v2.content_manifest)
+        check(`step 121i — …and the Roll back still goes (R-291: the customer may roll back over it): "${HW121.said.live(2, HOST121)}", T1's live theme v2's files at zero differences (the hand edit replaced), ${ORIGIN121}/ "Version 2"`,
+          i.busy === true && i.ended?.said === HW121.said.live(2, HOST121) && (await deploy121(v2.id))?.status === 'live' && none121(diffI) && (await homeSays121(2)) === 'Version 2',
+          JSON.stringify({ busy: i.busy, ended: i.ended, diff: diffI }))
+        const j = await putBack121(pg, 3)
+        check(`step 121i — the control: the next Roll back, to v3, checks clean — D3c "${DW121.clean(2)}" (T1 holds v2, the newest accepted) — and goes: "${HW121.said.live(3, HOST121)}", ${ORIGIN121}/ "Version 3"`,
+          j.checked?.state === 'clean' && j.checked.clean === DW121.clean(2) && j.ended?.said === HW121.said.live(3, HOST121) && (await homeSays121(3)) === 'Version 3',
+          JSON.stringify({ checked: j.checked, ended: j.ended }))
       } catch (e) {
         if (e !== STOP121) check('step 121 — the step ran to its end', false, scrub121(String(e?.message ?? e).split('\n')[0]))
       } finally {

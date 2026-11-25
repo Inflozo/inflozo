@@ -454,6 +454,23 @@ test('7.21: the live copy\'s route — the job read on the caller\'s own session
   assert.doesNotMatch(LIVE_ROUTE, /\.download\(/, 'no bytes through a function body')
 })
 
+test('R-291: the Roll back confirm\'s Download — `history/live` reads the project and its link on the CALLER\'S session (RLS: another account\'s is a 404), signs the check\'s OWN copy (`historyCopyPath`, never Ship it\'s) for 60 seconds named {theme}-live.zip with `?theme=` a plain name or "theme", and answers a 303 (AD-13); signed-out a 303 to sign in; NoSuchKey a 404, any other signing failure a 502', () => {
+  const route = readFileSync('app/(app)/app/(authed)/projects/[id]/history/live/route.ts', 'utf8')
+  assert.match(route, /if \(!\(await currentUser\(\)\)\) return NextResponse\.redirect\(new URL\('\/sign-in', request\.url\), 303\)/)
+  assert.match(route, /if \(!isUuid\(projectId\)\) return no\(404, 'Not found'\)/)
+  assert.match(route, /\(await supabaseServer\(\)\)\.from\('projects'\)\.select\('linked_site_id'\)\.eq\('id', projectId\)\.maybeSingle\(\)/, 'whose project it is is RLS\'s to answer')
+  assert.match(route, /if \(!project \|\| typeof project\.linked_site_id !== 'string'\) return no\(404, 'Not found'\)/)
+  assert.match(route, /const SIGNED_URL_TTL_S = 60\n/)
+  assert.match(route, /createSignedUrl\(historyCopyPath\(projectId, project\.linked_site_id\), SIGNED_URL_TTL_S, \{ download: liveFileName\(theme\) \}\)/)
+  assert.doesNotMatch(flatOf(route), /liveCopyPath/, 'never Ship it\'s copy')
+  assert.match(route, /const PLAIN = \/\^\[\\w\.-\]\{1,120\}\$\/\n/)
+  assert.match(route, /const theme = PLAIN\.test\(asked\) \? asked : 'theme'/)
+  assert.match(route, /code === 'NoSuchKey'\) \{[\s\S]*?return no\(404, 'Not found'\)/)
+  assert.match(route, /return no\(502, 'Could not prepare that download'\)/)
+  assert.match(route, /NextResponse\.redirect\(signed\.signedUrl, 303\)/)
+  assert.doesNotMatch(route, /\.download\(/, 'no bytes through a function body')
+})
+
 // ── Story 7.22 — the History drawer's door, the number that goes on, the immutable put — read from the files' own source ──
 
 const HISTORY_ROUTE = readFileSync('app/(app)/app/(authed)/projects/[id]/history/route.ts', 'utf8')
@@ -489,8 +506,11 @@ test('7.23a: the history route\'s act branch — POST `{ deploy, act: \'live\' }
   assert.match(flat, /export const maxDuration = 300/)
   const act = sliceOf(flat, 'if (act !== undefined) {', "if (typeof pinned !== 'boolean')")
   assert.ok(flat.indexOf("isUuid(deploy)") < flat.indexOf('if (act !== undefined) {'), 'the deploy id is judged first')
-  assert.match(act, /if \(act !== 'live'\) return no\(400, 'Bad act'\)/)
-  assert.match(act, /const outcome = await putBack\(PUT_BACK_IO, \{ userId: user\.id, projectId, deployId: deploy, now: new Date\(\) \}\)/)
+  // RE-EXPECTED by R-291: the act is `live` (the put-back) or `check` (the drift check before a Roll back), answered alike
+  assert.match(act, /if \(act !== 'live' && act !== 'check'\) return no\(400, 'Bad act'\)/)
+  assert.match(act, /const asked = \{ userId: user\.id, projectId, deployId: deploy, now: new Date\(\) \}/)
+  assert.match(act, /const outcome = act === 'check' \? await checkBeforePutBack\(PUT_BACK_IO, asked\) : await putBack\(PUT_BACK_IO, asked\)/)
+  assert.match(act, /if \(typeof outcome === 'object' && 'drift' in outcome\) return json\(200, \{ drift: outcome\.drift \}\)/, 'R-291: the check\'s record, 200')
   assert.match(act, /if \(outcome === 'live' \|\| outcome === 'uploaded'\) return json\(200, \{ outcome \}\)/)
   assert.match(act, /if \(outcome === 'gone'\) return no\(404, 'Not found'\)/)
   assert.match(act, /if \(outcome === 'live-already'\) return json\(409, \{ code: 'live' \}\)/)
